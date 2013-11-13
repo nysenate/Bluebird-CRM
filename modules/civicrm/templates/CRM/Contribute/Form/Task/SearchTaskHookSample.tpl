@@ -31,7 +31,7 @@
 </div>
 
 {else}
-   <div class="messages status">
+   <div class="messages status no-popup">
     <div class="icon inform-icon"></div>
     {ts}There are no records selected.{/ts}
    </div>

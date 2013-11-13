@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -62,11 +62,11 @@ class CRM_Contribute_Form_Task_PickProfile extends CRM_Contribute_Form_Task {
    *
    * @return void
    * @access public
-   */ function preProcess() {
+   */
+  function preProcess() {
     /*
-         * initialize the task and row fields
-         */
-
+     * initialize the task and row fields
+     */
     parent::preProcess();
     $session = CRM_Core_Session::singleton();
     $this->_userContext = $session->readUserContext();
@@ -76,7 +76,7 @@ class CRM_Contribute_Form_Task_PickProfile extends CRM_Contribute_Form_Task {
     $validate = FALSE;
     //validations
     if (count($this->_contributionIds) > $this->_maxContributions) {
-      CRM_Core_Session::setStatus("The maximum number of contributions you can select for Batch Update is {$this->_maxContributions}. You have selected " . count($this->_contributionIds) . ". Please select fewer contributions from your search results and try again.");
+      CRM_Core_Session::setStatus(ts("The maximum number of contributions you can select for Batch Update is %1. You have selected %2. Please select fewer contributions from your search results and try again.", array(1 => $this->_maxContributions, 2 => count($this->_contributionIds))), ts('Batch Update Error'), 'error');
       $validate = TRUE;
     }
 
@@ -99,7 +99,7 @@ class CRM_Contribute_Form_Task_PickProfile extends CRM_Contribute_Form_Task {
     $profiles = CRM_Core_BAO_UFGroup::getProfiles($types, TRUE);
 
     if (empty($profiles)) {
-      CRM_Core_Session::setStatus("You will need to create a Profile containing the {$types[0]} fields you want to edit before you can use Batch Update via Profile. Navigate to Administer CiviCRM >> CiviCRM Profile to configure a Profile. Consult the online Administrator documentation for more information.");
+      CRM_Core_Session::setStatus(ts("You will need to create a Profile containing the %1 fields you want to edit before you can use Batch Update via Profile. Navigate to Administer CiviCRM >> CiviCRM Profile to configure a Profile. Consult the online Administrator documentation for more information.", array(1 => $types[0])), 'Profile Required', 'error');
       CRM_Utils_System::redirect($this->_userContext);
     }
 
@@ -130,8 +130,7 @@ class CRM_Contribute_Form_Task_PickProfile extends CRM_Contribute_Form_Task {
    * @static
    * @access public
    */
-  static
-  function formRule($fields) {
+  static function formRule($fields) {
     return TRUE;
   }
 

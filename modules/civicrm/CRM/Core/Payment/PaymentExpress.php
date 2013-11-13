@@ -1,7 +1,7 @@
 <?php
 /*
   +--------------------------------------------------------------------+
-  | CiviCRM version 4.2                                                |
+  | CiviCRM version 4.4                                                |
   +--------------------------------------------------------------------+
   | This file is a part of CiviCRM.                                    |
   |                                                                    |
@@ -34,9 +34,8 @@
  */
 class CRM_Core_Payment_PaymentExpress extends CRM_Core_Payment {
   CONST CHARSET = 'iso-8859-1';
-  static protected $_mode = NULL;
 
-  static protected $_params = array();
+  protected $_mode = NULL;
 
   /**
    * We only need one instance of this object. So we use the singleton
@@ -53,7 +52,8 @@ class CRM_Core_Payment_PaymentExpress extends CRM_Core_Payment {
    * @param string $mode the mode of operation: live or test
    *
    * @return void
-   */ function __construct($mode, &$paymentProcessor) {
+   */
+  function __construct($mode, &$paymentProcessor) {
 
     $this->_mode = $mode;
     $this->_paymentProcessor = $paymentProcessor;
@@ -69,8 +69,7 @@ class CRM_Core_Payment_PaymentExpress extends CRM_Core_Payment {
    * @static
    *
    */
-  static
-  function &singleton($mode, &$paymentProcessor) {
+  static function &singleton($mode, &$paymentProcessor) {
     $processorName = $paymentProcessor['name'];
     if (self::$_singleton[$processorName] === NULL) {
       self::$_singleton[$processorName] = new CRM_Core_Payment_PaymentExpress($mode, $paymentProcessor);
@@ -84,11 +83,11 @@ class CRM_Core_Payment_PaymentExpress extends CRM_Core_Payment {
     $error = array();
 
     if (empty($this->_paymentProcessor['user_name'])) {
-      $error[] = ts('UserID is not set in the Administer CiviCRM &raquo; System Settings &raquo; Payment Processors.');
+      $error[] = ts('UserID is not set in the Administer &raquo; System Settings &raquo; Payment Processors');
     }
 
     if (empty($this->_paymentProcessor['password'])) {
-      $error[] = ts('pxAccess / pxPay Key is not set in the Administer CiviCRM &raquo; System Settings &raquo; Payment Processors.');
+      $error[] = ts('pxAccess / pxPay Key is not set in the Administer &raquo; System Settings &raquo; Payment Processors');
     }
 
     if (!empty($error)) {
@@ -158,7 +157,7 @@ class CRM_Core_Payment_PaymentExpress extends CRM_Core_Payment {
     $privateData = "a={$params['contactID']},b={$params['contributionID']},c={$params['contributionTypeID']},d={$params['invoiceID']}";
 
     if ($component == 'event') {
-      $merchantRef = substr($params['contactID'] . "-" . $params['contributionID'] . " " . substr($params['description'], 27, 20), 0, 24);
+    $merchantRef = substr($params['contactID'] . "-" . $params['contributionID'] . " " . substr($params['description'], 27, 20), 0, 24);
       $privateData .= ",f={$params['participantID']},g={$params['eventID']}";
     }
     elseif ($component == 'contribute') {
@@ -193,10 +192,10 @@ class CRM_Core_Payment_PaymentExpress extends CRM_Core_Payment {
 
     if (empty($this->_paymentProcessor['signature'])) {
       /*
-             * Processor is pxpay
-             *
-             * This contains the XML/Curl functions we'll need to generate the XML request
-             */
+       * Processor is pxpay
+       *
+       * This contains the XML/Curl functions we'll need to generate the XML request
+       */
 
       $dpsParams['PxPayUserId'] = $this->_paymentProcessor['user_name'];
       $dpsParams['PxPayKey'] = $this->_paymentProcessor['password'];

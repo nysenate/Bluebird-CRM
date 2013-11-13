@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -129,7 +129,7 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
     }
   }
 
-  function getTagsUsedFor($usedFor = array('civicrm_contact'),
+  static function getTagsUsedFor($usedFor = array('civicrm_contact'),
     $buildSelect = TRUE,
     $all         = FALSE,
     $parentId    = NULL
@@ -275,14 +275,14 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
    *
    */
   static function del($id) {
+    // since this is a destructive operation, lets make sure
+    // id is a postive number
+    CRM_Utils_Type::validate($id, 'Positive');
+
     // delete all crm_entity_tag records with the selected tag id
     $entityTag = new CRM_Core_DAO_EntityTag();
     $entityTag->tag_id = $id;
-    if ($entityTag->find()) {
-      while ($entityTag->fetch()) {
         $entityTag->delete();
-      }
-    }
 
     // delete from tag table
     $tag = new CRM_Core_DAO_Tag();
@@ -292,7 +292,7 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
 
     if ($tag->delete()) {
       CRM_Utils_Hook::post('delete', 'Tag', $id, $tag);
-      CRM_Core_Session::setStatus(ts('Selected tag has been deleted successfully.'));
+      CRM_Core_Session::setStatus(ts('Selected tag has been deleted successfuly.'), ts('Tag Deleted'), 'success');
 
       //NYSS
       //Overkill for now. Need a way to have targetted invalidation.
@@ -312,13 +312,14 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
    * pairs
    *
    * @param array  $params         (reference) an assoc array of name/value pairs
-   * @param array  $ids            (reference) the array that holds all the db ids
+   * @param array  $ids  (optional)  the array that holds all the db ids - we are moving away from this in bao
+   * signatures
    *
    * @return object    CRM_Core_DAO_Tag object on success, otherwise null
    * @access public
    * @static
    */
-  static function add(&$params, &$ids) {
+  static function add(&$params, $ids = array()) {
     if (!self::dataExists($params)) {
       return NULL;
     }
@@ -332,15 +333,9 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
     }
 
     $tag->copyValues($params);
-    $tag->id = CRM_Utils_Array::value('tag', $ids);
-
-    $edit = ($tag->id) ? TRUE : FALSE;
-    if ($edit) {
-      CRM_Utils_Hook::pre('edit', 'Tag', $tag->id, $tag);
-    }
-    else {
-      CRM_Utils_Hook::pre('create', 'Tag', NULL, $tag);
-    }
+    $tag->id = CRM_Utils_Array::value('id', $params, CRM_Utils_Array::value('tag', $ids));
+    $hook = empty($params['id']) ? 'create' : 'edit';
+    CRM_Utils_Hook::pre($hook, 'Tag', $tag->id, $params);
 
     // save creator id and time
     if (!$tag->id) {
@@ -350,13 +345,7 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
     }
 
     $tag->save();
-
-    if ($edit) {
-      CRM_Utils_Hook::post('edit', 'Tag', $tag->id, $tag);
-    }
-    else {
-      CRM_Utils_Hook::post('create', 'Tag', NULL, $tag);
-    }
+    CRM_Utils_Hook::post($hook, 'Tag', $tag->id, $tag);
 
     // if we modify parent tag, then we need to update all children
     if ($tag->parent_id === 'null') {

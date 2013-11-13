@@ -1,34 +1,39 @@
 <?php
-
-
-
-/*
- 
+/**
+ * Test Generated example of using price_set get API
+ * *
  */
 function price_set_get_example(){
-$params = array( 
-  'version' => 3,
+$params = array(
   'name' => 'default_contribution_amount',
 );
 
-  require_once 'api/api.php';
-  $result = civicrm_api( 'price_set','get',$params );
-
-  return $result;
+try{
+  $result = civicrm_api3('price_set', 'get', $params);
+}
+catch (CiviCRM_API3_Exception $e) {
+  // handle error here
+  $errorMessage = $e->getMessage();
+  $errorCode = $e->getErrorCode();
+  $errorData = $e->getExtraParams();
+  return array('error' => $errorMessage, 'error_code' => $errorCode, 'error_data' => $errorData);
 }
 
-/*
+return $result;
+}
+
+/**
  * Function returns array of result expected from previous function
  */
 function price_set_get_expectedresult(){
 
-  $expectedResult = array( 
+  $expectedResult = array(
   'is_error' => 0,
   'version' => 3,
   'count' => 1,
   'id' => 1,
-  'values' => array( 
-      '1' => array( 
+  'values' => array(
+      '1' => array(
           'id' => '1',
           'name' => 'default_contribution_amount',
           'title' => 'Contribution Amount',
@@ -36,26 +41,33 @@ function price_set_get_expectedresult(){
           'extends' => '2',
           'is_quick_config' => '1',
           'is_reserved' => '1',
+          'entity' => array(),
         ),
     ),
 );
 
-  return $expectedResult  ;
+  return $expectedResult;
 }
-
-
 
 
 /*
 * This example has been generated from the API test suite. The test that created it is called
-* 
-* testGetBasicPriceSet and can be found in 
-* http://svn.civicrm.org/civicrm/branches/v3.4/tests/phpunit/CiviTest/api/v3/PriceSetTest.php
-* 
-* You can see the outcome of the API tests at 
+*
+* testGetBasicPriceSet and can be found in
+* http://svn.civicrm.org/civicrm/trunk/tests/phpunit/CiviTest/api/v3/PriceSetTest.php
+*
+* You can see the outcome of the API tests at
 * http://tests.dev.civicrm.org/trunk/results-api_v3
+*
+* To Learn about the API read
+* http://book.civicrm.org/developer/current/techniques/api/
+*
 * and review the wiki at
 * http://wiki.civicrm.org/confluence/display/CRMDOC/CiviCRM+Public+APIs
+*
 * Read more about testing here
 * http://wiki.civicrm.org/confluence/display/CRM/Testing
+*
+* API Standards documentation:
+* http://wiki.civicrm.org/confluence/display/CRM/API+Architecture+Standards
 */

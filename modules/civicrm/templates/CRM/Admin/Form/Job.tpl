@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,12 +29,12 @@
  <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
 
 {if $action eq 8}
-  <div class="messages status">
+  <div class="messages status no-popup">
       <div class="icon inform-icon"></div>
         {ts}WARNING: Deleting this Scheduled Job will cause some important site functionality to stop working.{/ts} {ts}Do you want to continue?{/ts}
   </div>
 {elseif $action eq 128}
-  <div class="messages status">
+  <div class="messages status no-popup">
       <div class="icon inform-icon"></div>
         {ts}Are you sure you would like to execute this job?{/ts}
   </div>
@@ -55,7 +55,6 @@
 
         <div id="fname"><br/>
         </div>
-        {$form.api_prefix.html}
         <select name="api_entity" type="text" id="api_entity" class="form-select required">
           {crmAPI entity="Entity" action="get" var="entities" version=3}
           {foreach from=$entities.values item=entity}
@@ -73,18 +72,12 @@
     var apiName = "";
 
     // building prefix
-    var apiPrefixRaw = cj('#api_prefix').val();
-
-    if( apiPrefixRaw == '' ) {
+    if( cj('#api_action').val() == '' ) {
       cj('#fname').html( "<em>API name will start appearing here as you type in fields below.</em>" );
       return;
     }
 
-    if( apiPrefixRaw == 'civicrm_api3' ) {
-      apiPrefix = 'api'
-    } else {
-      apiPrefix = apiPrefixRaw;
-    }
+    apiPrefix = 'api'
 
     // building entity
     var apiEntity = cj('#api_entity').val().replace( /([A-Z])/g, function($1) {
@@ -98,7 +91,6 @@
 
   // bind to different events to build API name live
   cj(document).ready( function() { assembleName() } );
-  cj('#api_prefix').keyup( function() { assembleName() } );
   cj('#api_entity').change( function() { assembleName() } );
   cj('#api_action').keyup( function() { assembleName() } );
 

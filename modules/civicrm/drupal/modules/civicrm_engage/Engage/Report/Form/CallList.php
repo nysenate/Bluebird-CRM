@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,7 +27,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * @copyright DharmaTech  (c) 2009
  * $Id$
  *
@@ -290,7 +290,7 @@ class Engage_Report_Form_CallList extends Engage_Report_Form_List {
 
   function alterDisplay(&$rows) {
     // custom code to alter rows
-    $genderList = CRM_Core_PseudoConstant::gender();
+    $genderList = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'gender_id');
     $entryFound = FALSE;
     foreach ($rows as $rowNum => $row) {
       // handle state province

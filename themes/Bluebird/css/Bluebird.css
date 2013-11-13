@@ -988,15 +988,24 @@ ul.token-input-list-facebook { width:265px;}
 .main-container #edit-profile .sitedetails span {
 	color:#4EBAFF;
 }
-#crm-container #existing-dashlets-col-0,
-#crm-container #dashlets-header-col-0 {
+
+/*dashboard*/
+#crm-container #configure-dashlet #existing-dashlets-col-0,
+#crm-container #configure-dashlet #dashlets-header-col-0 {
 	width: 70%;
 }
-#crm-container #existing-dashlets-col-1,
-#crm-container #dashlets-header-col-1 {
+#crm-container #configure-dashlet #existing-dashlets-col-1,
+#crm-container #configure-dashlet #dashlets-header-col-1 {
 	margin-left:72%;
 	width:26%;
 }
+#crm-container #civicrm-dashboard #column-0 {
+  width: 75%;
+}
+#crm-container #civicrm-dashboard #column-1 {
+  width:25%;
+}
+
 #check_291 {
 	display: none;
 }
@@ -1038,7 +1047,7 @@ ul.token-input-list-facebook { width:265px;}
   padding-top: 2px;
   padding-bottom: 2px;
 }
-#Advanced .crm-accordion-open > .crm-accordion-body {
+#Advanced .crm-accordion-body {
   padding: 4px;
 }
 #Advanced .crm-form-block.crm-search-form-block {
@@ -1046,31 +1055,10 @@ ul.token-input-list-facebook { width:265px;}
 }
 /*these only impact advanced search dropdown*/
 #advanced-search-form .crm-submit-buttons {
-  width: 90px;
+  width: 84px;
 }
-#advanced-search-form #Advanced div.reset-advanced-search {
-  display: block;
-  background: url("../nyss_skin/images/crm-button-bg.gif") repeat-x scroll left top transparent;
-  border: 1px solid #3E3E3E;
-  border-radius: 4px 4px 4px 4px;
-  color: #FFFFFF;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: normal;
-  margin-top: 0;
-  padding: 2px 6px;
-  text-decoration: none;
-  text-shadow: 0 1px 0 black;
-  width: 77px;
-  float: left;
-}
-#advanced-search-form .reset-advanced-search a {
-  color: white;
-  display: block;
-}
-#advanced-search-form #Advanced .advsearch_buttons_top div.reset-advanced-search {
-  float: right;
-  margin-top: 6px;
+#advanced-search-form .crm-submit-buttons a {
+  margin-right: 0;
 }
 
 #crm-container #crm-tagRow291 {
@@ -1118,6 +1106,17 @@ ul.token-input-list-facebook { width:265px;}
 }
 
 /* Contact summary/edit stuff */
+#crm-container div.crm-summary-contactname-block {
+  margin-top: -6px;
+}
+#crm-container div.crm-summary-display_name {
+  padding: 6px 0 2px;
+  color: #435263;
+  font-size: 17px;
+}
+div.crm-summary-display_name div.crm-icon {
+  margin-top: 0;
+}
 #contact-summary .crm-accordion-wrapper .crm-accordion-header .crm-accordion-pointer {
 	background-image: url("../nyss_skin/images/icons-3e3e3e.png");
 }
@@ -1188,7 +1187,7 @@ ul.token-input-list-facebook { width:265px;}
 	font-size:11px;
 }
 #_qf_Advanced_refresh {
-	width: 100px;
+	width: 84px;
 	float: left;
 }
 .advsearch_bottom_buttons #_qf_Advanced_refresh {
@@ -1237,7 +1236,6 @@ ul.token-input-list-facebook { width:265px;}
 }
 
 /*override tag tree expand/close icons*/
- 
 .jstree-default ins {
     background-color: transparent;
     background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png");
@@ -1301,7 +1299,7 @@ ul.token-input-list-facebook { width:265px;}
 }
 
 /*recently viewed block*/
-#footer .block-civicrm div#recently-viewed ul li {
+#footer .block-civicrm div#crm-recently-viewed ul li {
   background-color:transparent;
   border:none;
   margin:0 1em 0 0;
@@ -1310,18 +1308,18 @@ ul.token-input-list-facebook { width:265px;}
   white-space:nowrap;
   float: left;
 }
-.block-civicrm div#recently-viewed ul li.crm-recently-viewed div {
+.block-civicrm div#crm-recently-viewed ul li.crm-recently-viewed div {
 	-moz-border-radius: 0px 4px 4px 4px; 
  	-webkit-border-radius: 0px 4px 4px 4px;   
  	-khtml-border-radius: 0px 4px 4px 4px; 
  	border-radius:0px 4px 4px 4px;
  	padding: 2px 8px;
 }
-.block-civicrm div#recently-viewed ul li.crm-recently-viewed div a {
+.block-civicrm div#crm-recently-viewed ul li.crm-recently-viewed div a {
 	padding: 0 2px;
   display: inline-block;
 }
-.block-civicrm div#recently-viewed ul li.crm-recently-viewed div {
+.block-civicrm div#crm-recently-viewed ul li.crm-recently-viewed div {
 	background-color: #131A1C;
   border-color: #000;
 	margin-top: -16px !important;
@@ -1330,17 +1328,20 @@ ul.token-input-list-facebook { width:265px;}
 	-moz-border-radius: 4px 4px 0 0;
 	border-radius: 4px 4px 0px 0px;
 }
-.block-civicrm div#recently-viewed.right .crm-recentview-wrapper {
+.block-civicrm div#crm-recently-viewed.right .crm-recentview-wrapper {
   left: auto;
   border-right: 1px;
   border-bottom: none;
   width: auto;
 }
-.block-civicrm div#recently-viewed li.crm-recently-viewed {
+.block-civicrm div#crm-recently-viewed li.crm-recently-viewed {
   position: inherit;
 }
-#footer #block-civicrm-2 div#recently-viewed ul li.crm-recently-viewed div a {
+#footer #block-civicrm-2 div#crm-recently-viewed ul li.crm-recently-viewed div a {
   padding-top: 2px;
+}
+.block-civicrm div#crm-recently-viewed ul {
+  margin: 0;
 }
 
 /*activity search*/
@@ -1519,11 +1520,11 @@ div#crm-toolTip {
 .env-crmtest,
 .env-crmdev {
 	background:transparent url(../nyss_skin/images/env-marker-test.png) no-repeat;
-    bottom: 0;
-    right: 0;
-    position: fixed;
+  bottom: 0;
+  right: 0;
+  position: fixed;
 	height: 120px;
-    width: 120px;
+  width: 120px;
 	z-index: 2000;
 }
 .env-crmdev {
@@ -1532,11 +1533,10 @@ div#crm-toolTip {
 
 /*5092*/
 span.do-not-mail {
-    background-position: 3px;
-    background-repeat: no-repeat;
-    background-image: url("/sites/all/modules/civicrm/i/stop-icon.png");
-    padding-left: 24px;
-    color: #F65 !important;
+  background-position: 3px;
+  background-repeat: no-repeat;
+  background-image: url("/sites/all/modules/civicrm/i/stop-icon.png");
+  color: #F65 !important;
 }
 
 /*4963*/

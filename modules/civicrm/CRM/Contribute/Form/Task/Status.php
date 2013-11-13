@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  *
  */
 
@@ -53,7 +53,7 @@ class CRM_Contribute_Form_Task_Status extends CRM_Contribute_Form_Task {
    *
    * @return void
    * @access public
-   */ 
+   */
   function preProcess() {
     $id = CRM_Utils_Request::retrieve('id', 'Positive',
       $this, FALSE
@@ -191,8 +191,7 @@ AND    co.id IN ( $contribIDs )";
    * @static
    * @access public
    */
-  static
-  function formRule($fields) {
+  static function formRule($fields) {
     $seen = $errors = array();
     foreach ($fields as $name => $value) {
       if (strpos($name, 'trxn_id_') !== FALSE) {
@@ -299,11 +298,10 @@ AND    co.id IN ( $contribIDs )";
       $template->clearTemplateVars();
     }
 
-    CRM_Core_Session::setStatus(ts('Contribution status has been updated for selected record(s).'));
+    CRM_Core_Session::setStatus(ts('Contribution status has been updated for selected record(s).'), ts('Status Updated'), 'success');
   }
 
-  static
-  function &getDetails($contributionIDs) {
+  static function &getDetails($contributionIDs) {
     $query = "
 SELECT    c.id              as contribution_id,
           c.contact_id      as contact_id     ,

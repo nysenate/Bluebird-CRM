@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -51,8 +51,8 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form {
   // see HTML_QuickForm_advcheckbox::setValues() - but patching that doesn't
   // help, as QF doesn't put the 0-value elements in exportValues() anyway...
   // to side-step this, we use the below UUID as a (re)placeholder
-  var $_qfZeroBug = 'e8cddb72-a257-11dc-b9cc-0016d3330ee9'; 
-  
+  var $_qfZeroBug = 'e8cddb72-a257-11dc-b9cc-0016d3330ee9';
+
   function preProcess() {
     if (!CRM_Core_Permission::check('merge duplicate contacts')) {
       CRM_Core_Error::fatal(ts('You do not have access to this page'));
@@ -77,7 +77,7 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form {
     $cacheKey .= $rgid ? "_{$rgid}" : '_0';
     $cacheKey .= $gid ? "_{$gid}" : '_0';
 
-    $join = "LEFT JOIN civicrm_dedupe_exception de ON ( pn.entity_id1 = de.contact_id1 AND 
+    $join = "LEFT JOIN civicrm_dedupe_exception de ON ( pn.entity_id1 = de.contact_id1 AND
                                                              pn.entity_id2 = de.contact_id2 )";
     $where = "de.id IS NULL";
 
@@ -193,12 +193,12 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form {
     $subtypes = CRM_Contact_BAO_ContactType::subTypePairs(NULL, TRUE, '');
 
     $this->assign('contact_type', $main['contact_type']);
-    if (isset($main['contact_sub_type'])) {
+    if (!empty($main['contact_sub_type'])) {
       $this->assign('main_contact_subtype',
         CRM_Utils_Array::value('contact_sub_type', $subtypes[$main['contact_sub_type'][0]])
       );
     }
-    if (isset($other['contact_sub_type'])) {
+    if (!empty($other['contact_sub_type'])) {
       $this->assign('other_contact_subtype',
         CRM_Utils_Array::value('contact_sub_type', $subtypes[$other['contact_sub_type'][0]])
       );
@@ -238,7 +238,7 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form {
       $element = $this->addElement($relTableElement[0], $relTableElement[1]);
       $element->setChecked(TRUE);
     }
-    
+
     $this->assign('rel_tables', $rowsElementsAndInfo['rel_tables']);
     $this->assign('userContextURL', $session->readUserContext());
   }
@@ -266,6 +266,10 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form {
         array(
           'type' => 'submit',
           'name' => ts('Merge and Goto Listing'),
+        ),
+        array(
+          'type' => 'done',
+          'name' => ts('Merge and View Result'),
         ),
         array(
           'type' => 'cancel',
@@ -307,7 +311,7 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form {
 
     CRM_Dedupe_Merger::moveAllBelongings($this->_cid, $this->_oid, $formValues);
 
-    CRM_Core_Session::setStatus(ts('The contacts have been merged.'));
+    CRM_Core_Session::setStatus(ts('Contact id %1 has been updated and contact id %2 has been deleted.', array(1 => $this->_cid, 2 => $this->_oid)), ts('Contacts Merged'), 'success');
     $url = CRM_Utils_System::url('civicrm/contact/view', "reset=1&cid={$this->_cid}");
     if (CRM_Utils_Array::value('_qf_Merge_submit', $formValues)) {
       $listParamsURL = "reset=1&action=update&rgid={$this->_rgid}";
@@ -319,13 +323,16 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form {
       );
       CRM_Utils_System::redirect($lisitingURL);
     }
+     if (CRM_Utils_Array::value('_qf_Merge_done', $formValues)) {
+      CRM_Utils_System::redirect($url);
+    }
 
     if ($this->next && $this->_mergeId) {
       $cacheKey = "merge {$this->_contactType}";
       $cacheKey .= $this->_rgid ? "_{$this->_rgid}" : '_0';
       $cacheKey .= $this->_gid ? "_{$this->_gid}" : '_0';
 
-      $join = "LEFT JOIN civicrm_dedupe_exception de ON ( pn.entity_id1 = de.contact_id1 AND 
+      $join = "LEFT JOIN civicrm_dedupe_exception de ON ( pn.entity_id1 = de.contact_id1 AND
                                                                  pn.entity_id2 = de.contact_id2 )";
       $where = "de.id IS NULL";
 

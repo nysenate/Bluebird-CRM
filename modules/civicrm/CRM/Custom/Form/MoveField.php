@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -78,7 +78,7 @@ class CRM_Custom_Form_MoveField extends CRM_Core_Form {
    *
    * @return void
    * @acess protected
-   */ 
+   */
   function preProcess() {
     $this->_srcFID = CRM_Utils_Request::retrieve('fid', 'Positive',
       $this, TRUE
@@ -110,7 +110,7 @@ class CRM_Custom_Form_MoveField extends CRM_Core_Form {
    */
   public function buildQuickForm() {
 
-    $customGroup = CRM_Core_PseudoConstant::customGroup();
+    $customGroup = CRM_Core_PseudoConstant::get('CRM_Core_DAO_CustomField', 'custom_group_id');
     unset($customGroup[$this->_srcGID]);
     if (empty($customGroup)) {
       CRM_Core_Error::statusBounce(ts('You need more than one custom group to move fields'));
@@ -167,10 +167,10 @@ class CRM_Custom_Form_MoveField extends CRM_Core_Form {
     $srcUrl = CRM_Utils_System::url('civicrm/admin/custom/group/field', "reset=1&action=browse&gid={$this->_dstGID}");
     CRM_Core_Session::setStatus(ts("%1 has been moved to the custom set <a href='%3'>%2</a>.",
       array(
-        1 => $this->_srcFieldLabel,
-        2 => $dstGroup,
+      1 => $this->_srcFieldLabel,
+          2 => $dstGroup,
         3 => $srcUrl
-      )));
+        )), '', 'success');
   }
 }
 

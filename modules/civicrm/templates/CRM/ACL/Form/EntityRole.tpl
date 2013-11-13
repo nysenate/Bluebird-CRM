@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 <fieldset><legend>{if $action eq 1}{ts}Assign ACL Role{/ts}{elseif $action eq 2}{ts}Assign ACL Role{/ts}{else}{ts}Delete ACL Role Assignment{/ts}{/if}</legend>
  <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
 {if $action eq 8}
-  <div class="messages status">
+  <div class="messages status no-popup">
   <div class="icon inform-icon"></div>
        {ts}WARNING: Deleting this option will remove this ACL Role Assignment.{/ts} {ts}Do you want to continue?{/ts}
   </div>
@@ -43,7 +43,7 @@
       <tr class="crm-acl-entityrole-form-block-entity_id">
          <td class="label">{$form.entity_id.label}</td>
          <td>{$form.entity_id.html}<br />
-            <span class="description">{ts}Select a group of contacts who should have this role when logged in to your site. Groups must be assigned the 'Access Control' type (Manage Groups &raquo; Settings) to be included in this list.{/ts}</span>
+            <span class="description">{ts}Select a group of contacts who should have this role when logged in to your site. Groups must be assigned the 'Access Control' type (Contacts &raquo; Manage Groups &raquo; Settings) to be included in this list.{/ts}</span>
          </td>
       <tr class="crm-acl-entityrole-form-block-is_active">
          <td class="label">{$form.is_active.label}</td>

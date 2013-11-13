@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
  * CiviCRM's Smarty gettext plugin
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  */
 
@@ -46,7 +46,7 @@
 function smarty_block_htxt($params, $text, &$smarty) {
   $id = $params['id'];
   if ($id == $smarty->_tpl_vars['id']) {
-    return "<div class='crm-help'>$text</div>";
+    return $text;
   }
   else {
     return NULL;

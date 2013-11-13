@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -39,6 +39,10 @@
  */
 class CRM_Admin_Form_Setting_UF extends CRM_Admin_Form_Setting {
 
+  protected $_settings = array();
+
+  protected $_uf = NULL;
+
   /**
    * Function to build the form
    *
@@ -47,23 +51,46 @@ class CRM_Admin_Form_Setting_UF extends CRM_Admin_Form_Setting {
    */
   public function buildQuickForm() {
     $config = CRM_Core_Config::singleton();
-    $uf = $config->userFramework;
+    $this->_uf = $config->userFramework;
 
-    CRM_Utils_System::setTitle(ts('Settings - %1 Integration',
-        array(1 => $uf)
-      ));
+    if ($this->_uf == 'WordPress') {
+      $this->_settings = array('wpBasePage' => CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME);
+    }
 
-    $this->addElement('text', 'userFrameworkUsersTableName', ts('%1 Users Table Name', array(1 => $uf)));
-    if (function_exists('module_exists') &&
+    CRM_Utils_System::setTitle(
+      ts('Settings - %1 Integration', array(1 => $this->_uf))
+    );
+
+    $this->addElement('text', 'userFrameworkUsersTableName', ts('%1 Users Table Name', array(1 => $this->_uf)));
+    // find out if drupal has its database prefixed
+    global $databases;
+    $drupal_prefix = '';
+    if (isset($databases['default']['default']['prefix'])) {
+      if (is_array($databases['default']['default']['prefix'])) {
+        $drupal_prefix = $databases['default']['default']['prefix']['default'];
+      }
+      else {
+        $drupal_prefix = $databases['default']['default']['prefix'];
+      }
+    }
+
+    if (
+      function_exists('module_exists') &&
       module_exists('views') &&
-      $config->dsn != $config->userFrameworkDSN
+      (
+        $config->dsn != $config->userFrameworkDSN || !empty($drupal_prefix)
+      )
     ) {
-      $dsnArray      = DB::parseDSN($config->dsn);
-      $tableNames    = CRM_Core_DAO::GetStorageValues(NULL, 0, 'Name');
-      $tablePrefixes = '$databases[\'default\'][\'default\'][\'prefix\']= array(
-        ';
+      $dsnArray = DB::parseDSN($config->dsn);
+      $tableNames = CRM_Core_DAO::GetStorageValues(NULL, 0, 'Name');
+      $tablePrefixes = '$databases[\'default\'][\'default\'][\'prefix\']= array(';
+      $tablePrefixes .= "\n  'default' => '$drupal_prefix',"; // add default prefix: the drupal database prefix
+      $prefix = "";
+      if ($config->dsn != $config->userFrameworkDSN) {
+        $prefix = "`{$dsnArray['database']}`.";
+      }
       foreach ($tableNames as $tableName => $value) {
-        $tablePrefixes .= "\n  '" . str_pad($tableName . "'", 41) . " => '`{$dsnArray['database']}`.',";
+        $tablePrefixes .= "\n  '" . str_pad($tableName . "'", 41) . " => '{$prefix}',";
       }
       $tablePrefixes .= "\n);";
       $this->assign('tablePrefixes', $tablePrefixes);

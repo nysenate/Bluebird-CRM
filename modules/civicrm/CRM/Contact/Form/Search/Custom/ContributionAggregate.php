@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,24 +28,30 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
 class CRM_Contact_Form_Search_Custom_ContributionAggregate implements CRM_Contact_Form_Search_Interface {
 
-  protected $_formValues; function __construct(&$formValues) {
-    $this->_formValues = $formValues;
+  protected $_formValues;
+  public $_permissionedComponent;
 
+  function __construct(&$formValues) {
+    $this->_formValues = $formValues;
     /**
      * Define the columns for search result rows
      */
+
     $this->_columns = array(
       ts('Contact Id') => 'contact_id',
       ts('Name') => 'sort_name',
       ts('Donation Count') => 'donation_count',
       ts('Donation Amount') => 'donation_amount',
     );
+
+    // define component access permission needed
+    $this->_permissionedComponent = 'CiviContribute';
   }
 
   function buildForm(&$form) {
@@ -73,30 +79,35 @@ class CRM_Contact_Form_Search_Custom_ContributionAggregate implements CRM_Contac
     $form->addDate('start_date', ts('Contribution Date From'), FALSE, array('formatType' => 'custom'));
     $form->addDate('end_date', ts('...through'), FALSE, array('formatType' => 'custom'));
 
+    $financial_types = CRM_Contribute_PseudoConstant::financialType();
+    foreach($financial_types as $financial_type_id => $financial_type) {
+      $form->addElement('checkbox', "financial_type_id[{$financial_type_id}]", 'Financial Type', $financial_type);
+    }
+
     /**
      * If you are using the sample template, this array tells the template fields to render
      * for the search form.
      */
-    $form->assign('elements', array('min_amount', 'max_amount', 'start_date', 'end_date'));
+    $form->assign('elements', array('min_amount', 'max_amount', 'start_date', 'end_date', 'financial_type_id'));
   }
 
   /**
    * Define the smarty template used to layout the search form and results listings.
    */
   function templateFile() {
-    return 'CRM/Contact/Form/Search/Custom.tpl';
+    return 'CRM/Contact/Form/Search/Custom/ContributionAggregate.tpl';
   }
 
   /**
    * Construct the search query
    */
   function all($offset = 0, $rowcount = 0, $sort = NULL,
-    $includeContactIDs = FALSE, $onlyIDs = FALSE
+    $includeContactIDs = FALSE, $justIDs = FALSE
   ) {
 
     // SELECT clause must include contact_id as an alias for civicrm_contact.id
-    if ($onlyIDs) {
-      $select = "DISTINCT contact_a.id as contact_id";
+    if ($justIDs) {
+      $select = "contact_a.id as contact_id";
     }
     else {
       $select = "
@@ -123,10 +134,11 @@ GROUP BY contact_a.id
 $having
 ";
     //for only contact ids ignore order.
-    if (!$onlyIDs) {
+    if (!$justIDs) {
       // Define ORDER BY for query in $sort, with default value
       if (!empty($sort)) {
         if (is_string($sort)) {
+          $sort = CRM_Utils_Type::escape($sort, 'String');
           $sql .= " ORDER BY $sort ";
         }
         else {
@@ -139,6 +151,8 @@ $having
     }
 
     if ($rowcount > 0 && $offset >= 0) {
+      $offset = CRM_Utils_Type::escape($offset, 'Int');
+      $rowcount = CRM_Utils_Type::escape($rowcount, 'Int');
       $sql .= " LIMIT $offset, $rowcount ";
     }
     return $sql;
@@ -187,6 +201,11 @@ civicrm_contact AS contact_a
       }
     }
 
+    if (!empty($this->_formValues['financial_type_id'])) {
+      $financial_type_ids = implode(',', array_keys($this->_formValues['financial_type_id']));
+      $clauses[] = "contrib.financial_type_id IN ($financial_type_ids)";
+    }
+
     return implode(' AND ', $clauses);
   }
 
@@ -207,7 +226,7 @@ civicrm_contact AS contact_a
     return implode(' AND ', $clauses);
   }
 
-  /* 
+  /*
      * Functions below generally don't need to be modified
      */
   function count() {

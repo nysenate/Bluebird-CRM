@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id: $
  *
  */
@@ -37,7 +37,9 @@
  *
  */
 class CRM_SMS_Form_Provider extends CRM_Core_Form {
-  protected $_id = NULL; function preProcess() {
+  protected $_id = NULL;
+
+  function preProcess() {
 
     $this->_id = $this->get('id');
 
@@ -103,7 +105,7 @@ class CRM_SMS_Form_Provider extends CRM_Core_Form {
     $providerNames = CRM_Core_OptionGroup::values('sms_provider_name', FALSE, FALSE, FALSE, NULL, 'label');
     $apiTypes = CRM_Core_OptionGroup::values('sms_api_type', FALSE, FALSE, FALSE, NULL, 'label');
 
-    $this->add('select', 'name', ts('Name'), $providerNames, TRUE);
+    $this->add('select', 'name', ts('Name'), array('' => '- select -') + $providerNames, TRUE, array('onchange' => "reload(true)"));
 
     $this->add('text', 'title', ts('Title'),
       $attributes['title'], TRUE
@@ -134,17 +136,25 @@ class CRM_SMS_Form_Provider extends CRM_Core_Form {
 
   function setDefaultValues() {
     $defaults = array();
-    $providerValues = CRM_SMS_Provider::singleton(array('provider' => 'Clickatell'));
-    $defaults['api_url'] = $providerValues->_apiURL;
+
+    $name = CRM_Utils_Request::retrieve('key', 'String', $this, FALSE, NULL);
+    if ($name) {
+      $defaults['name'] = $name;
+      $provider = CRM_SMS_Provider::singleton(array('provider' => $name));
+      $defaults['api_url'] = $provider->_apiURL;
+    }
 
     if (!$this->_id) {
       $defaults['is_active'] = $defaults['is_default'] = 1;
-
       return $defaults;
     }
 
     $dao = new CRM_SMS_DAO_Provider();
     $dao->id = $this->_id;
+
+    if ($name)
+      $dao->name = $name;
+
     if (!$dao->find(TRUE)) {
       return $defaults;
     }
@@ -167,7 +177,7 @@ class CRM_SMS_Form_Provider extends CRM_Core_Form {
 
     if ($this->_action & CRM_Core_Action::DELETE) {
       CRM_SMS_BAO_Provider::del($this->_id);
-      CRM_Core_Session::setStatus(ts('Selected Provider has been deleted.'));
+      CRM_Core_Session::setStatus(ts('Selected Provider has been deleted.'), ts('Deleted'), 'success');
       return;
     }
 

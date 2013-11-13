@@ -175,8 +175,8 @@
             <th>{ts}Qty{/ts}</th>
             <th>{ts}Each{/ts}</th>
             <th>{ts}Total{/ts}</th>
-	    <th>{ts}Membership Start Date{/ts}</th>
-	    <th>{ts}Membership End Date{/ts}</th>
+      <th>{ts}Membership Start Date{/ts}</th>
+      <th>{ts}Membership End Date{/ts}</th>
            </tr>
            {foreach from=$value item=line}
             <tr>
@@ -195,7 +195,7 @@
              <td>
               {$line.start_date}
              </td>
-	     <td>
+       <td>
               {$line.end_date}
              </td>
             </tr>
@@ -320,7 +320,7 @@
       {if $pcp_roll_nickname}
        <tr>
         <td {$labelStyle}>
-         {ts}Nick Name{/ts}
+         {ts}Nickname{/ts}
         </td>
         <td {$valueStyle}>
          {$pcp_roll_nickname}
@@ -356,7 +356,7 @@
         </tr>
       {/foreach}
      {/if}
-     
+
      {if ! ($contributeMode eq 'notify' OR $contributeMode eq 'directIPN') and $is_monetary}
       {if $is_pay_later}
        <tr>

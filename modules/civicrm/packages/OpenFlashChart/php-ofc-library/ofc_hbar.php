@@ -22,6 +22,12 @@ class hbar_value
 	{
 		$this->tip = $tip;	
 	}
+		
+	function set_on_click( $text )
+	{
+		$tmp = 'on-click';
+		$this->$tmp = $text;
+	}
 }
 
 class hbar
@@ -48,7 +54,12 @@ class hbar
 	{
 		$this->colour = $colour;	
 	}
-	
+		
+	function set_on_click( $text )
+	{
+		$tmp = 'on-click';
+		$this->$tmp = $text;
+	}
 	function set_key( $text, $size )
 	{
 		$this->text = $text;

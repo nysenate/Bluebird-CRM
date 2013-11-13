@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -94,7 +94,7 @@ class CRM_Contact_Form_CustomData extends CRM_Core_Form {
   protected $_groupCollapseDisplay;
 
   /**
-   * custom group id 
+   * custom group id
    *
    * @int
    * @access public
@@ -112,7 +112,7 @@ class CRM_Contact_Form_CustomData extends CRM_Core_Form {
    *
    * @access public
    *
-   */ 
+   */
   function preProcess() {
     $this->_cdType = CRM_Utils_Array::value('type', $_GET);
 
@@ -180,7 +180,7 @@ class CRM_Contact_Form_CustomData extends CRM_Core_Form {
    *
    * @return array the default array reference
    */
-  function &setDefaultValues() {
+  function setDefaultValues() {
     if ($this->_cdType) {
       $customDefaultValue = CRM_Custom_Form_CustomData::setDefaultValues($this);
       return $customDefaultValue;

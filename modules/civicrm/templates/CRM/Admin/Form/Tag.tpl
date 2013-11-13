@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -39,23 +39,23 @@
        </tr>
          {if $form.parent_id.html}
        <tr class="crm-tag-form-block-parent_id">
- 	  <td class="label">{$form.parent_id.label}</td>
+     <td class="label">{$form.parent_id.label}</td>
           <td>{$form.parent_id.html}</td>
        </tr>
-	 {/if}
-       <tr class="crm-tag-form-block-used_for">	  
+   {/if}
+       <tr class="crm-tag-form-block-used_for">
           <td class="label">{$form.used_for.label}</td>
-	  <td>{$form.used_for.html} <br />
-	        <span class="description">
-	               {if $is_parent}{ts}You can change the types of records which this tag can be used for by editing the 'Parent' tag.{/ts}
-	                {else}{ts}What types of record(s) can this tag be used for?{/ts}
-	                {/if}
-	            </span>
-	        </td>
+    <td>{$form.used_for.html} <br />
+          <span class="description">
+                 {if $is_parent}{ts}You can change the types of records which this tag can be used for by editing the 'Parent' tag.{/ts}
+                  {else}{ts}What types of record(s) can this tag be used for?{/ts}
+                  {/if}
+              </span>
+          </td>
         </tr>
         <tr class="crm-tag-form-block-is_reserved">
            <td class="label">{$form.is_reserved.label}</td>
-           <td>{$form.is_reserved.html} <br /><span class="description">{ts}Reserved tags can not be deleted. Users with 'administer reserved tags' permission can set or unset the reserved flag. You must uncheck 'Reserved' (and delete any child tags) before you can delete a tag.{/ts} 
+           <td>{$form.is_reserved.html} <br /><span class="description">{ts}Reserved tags can not be deleted. Users with 'administer reserved tags' permission can set or unset the reserved flag. You must uncheck 'Reserved' (and delete any child tags) before you can delete a tag.{/ts}
            </td>
         </tr>
     </table>

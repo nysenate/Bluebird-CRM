@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -38,7 +38,6 @@
  *
  */
 class CRM_Utils_Cache {
-
   /**
    * We only need one instance of this object. So we use the singleton
    * pattern and cache the instance in this variable
@@ -101,33 +100,67 @@ class CRM_Utils_Cache {
    * @static
    */
   static function getCacheSettings($cachePlugin) {
-    if ($cachePlugin !== 'Memcache' && $cachePlugin !== 'Memcached') {
-      return array();
-    }
-    $defaults = array(
-      'host' => 'localhost',
-      'port' => 11211,
-      'timeout' => 3600,
-      'prefix' => '',
-    );
+    switch ($cachePlugin) {
+      case 'ArrayCache':
+      case 'NoCache':
+        $defaults = array();
+        break;
 
-    if (defined('CIVICRM_MEMCACHE_HOST')) {
-      $defaults['host'] = CIVICRM_MEMCACHE_HOST;
-    }
+      case 'Memcache':
+      case 'Memcached':
+        $defaults = array(
+          'host' => 'localhost',
+          'port' => 11211,
+          'timeout' => 3600,
+          'prefix' => '',
+        );
 
-    if (defined('CIVICRM_MEMCACHE_PORT')) {
-      $defaults['port'] = CIVICRM_MEMCACHE_PORT;
-    }
+        // Use old constants if needed to ensure backward compatability
+        if (defined('CIVICRM_MEMCACHE_HOST')) {
+          $defaults['host'] = CIVICRM_MEMCACHE_HOST;
+        }
 
-    if (defined('CIVICRM_MEMCACHE_TIMEOUT')) {
-      $defaults['timeout'] = CIVICRM_MEMCACHE_TIMEOUT;
-    }
+        if (defined('CIVICRM_MEMCACHE_PORT')) {
+          $defaults['port'] = CIVICRM_MEMCACHE_PORT;
+        }
 
-    if (defined('CIVICRM_MEMCACHE_PREFIX')) {
-      $defaults['prefix'] = CIVICRM_MEMCACHE_PREFIX;
-    }
+        if (defined('CIVICRM_MEMCACHE_TIMEOUT')) {
+          $defaults['timeout'] = CIVICRM_MEMCACHE_TIMEOUT;
+        }
 
+        if (defined('CIVICRM_MEMCACHE_PREFIX')) {
+          $defaults['prefix'] = CIVICRM_MEMCACHE_PREFIX;
+        }
+
+        // Use new constants if possible
+        if (defined('CIVICRM_DB_CACHE_HOST')) {
+          $defaults['host'] = CIVICRM_DB_CACHE_HOST;
+        }
+
+        if (defined('CIVICRM_DB_CACHE_PORT')) {
+          $defaults['port'] = CIVICRM_DB_CACHE_PORT;
+        }
+
+        if (defined('CIVICRM_DB_CACHE_TIMEOUT')) {
+          $defaults['timeout'] = CIVICRM_DB_CACHE_TIMEOUT;
+        }
+
+        if (defined('CIVICRM_DB_CACHE_PREFIX')) {
+          $defaults['prefix'] = CIVICRM_DB_CACHE_PREFIX;
+        }
+
+        break;
+
+      case 'APCcache':
+        $defaults = array();
+        if (defined('CIVICRM_DB_CACHE_TIMEOUT')) {
+          $defaults['timeout'] = CIVICRM_DB_CACHE_TIMEOUT;
+        }
+        if (defined('CIVICRM_DB_CACHE_PREFIX')) {
+          $defaults['prefix'] = CIVICRM_DB_CACHE_PREFIX;
+        }
+        break;
+    }
     return $defaults;
   }
 }
-

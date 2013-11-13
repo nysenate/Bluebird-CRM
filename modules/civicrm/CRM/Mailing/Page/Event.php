@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -53,26 +53,38 @@ class CRM_Mailing_Page_Event extends CRM_Core_Page {
    * run this page (figure out the action needed and perform it).
    *
    * @return void
-   */ function run() {
+   */
+  function run() {
     $selector = &new CRM_Mailing_Selector_Event(
-      CRM_Utils_Request::retrieve('event', 'String',
-        $this
-      ),
-      CRM_Utils_Request::retrieve('distinct', 'Boolean',
-        $this
-      ),
-      CRM_Utils_Request::retrieve('mid', 'Positive',
-        $this
-      ),
-      CRM_Utils_Request::retrieve('jid', 'Positive',
-        $this
-      ),
-      CRM_Utils_Request::retrieve('uid', 'Positive',
-        $this
-      )
+      CRM_Utils_Request::retrieve('event', 'String', $this),
+      CRM_Utils_Request::retrieve('distinct', 'Boolean', $this),
+      CRM_Utils_Request::retrieve('mid', 'Positive', $this),
+      CRM_Utils_Request::retrieve('jid', 'Positive', $this),
+      CRM_Utils_Request::retrieve('uid', 'Positive', $this)
     );
 
     $mailing_id = CRM_Utils_Request::retrieve('mid', 'Positive', $this);
+
+    //assign backurl
+    $context = CRM_Utils_Request::retrieve('context', 'String', $this);
+
+    if ($context == 'activitySelector') {
+      $cid = CRM_Utils_Request::retrieve('cid', 'Positive', $this);
+      $backUrl = CRM_Utils_System::url('civicrm/contact/view', "reset=1&cid={$cid}&selectedChild=activity");
+      $backUrlTitle = ts('Back to Activities');
+    }
+    elseif ($context == 'mailing') {
+      $cid = CRM_Utils_Request::retrieve('cid', 'Positive', $this);
+      $backUrl = CRM_Utils_System::url('civicrm/contact/view', "reset=1&cid={$cid}&selectedChild=mailing");
+      $backUrlTitle = ts('Back to Mailing');
+    }
+    else {
+      $backUrl = CRM_Utils_System::url('civicrm/mailing', 'reset=1');
+      $backUrlTitle = ts('Back to Report');
+    }
+
+    $this->assign('backUrl', $backUrl);
+    $this->assign('backUrlTitle', $backUrlTitle);
 
     CRM_Utils_System::setTitle($selector->getTitle());
     $this->assign('title', $selector->getTitle());

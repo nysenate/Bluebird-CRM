@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -46,8 +46,7 @@ class CRM_Utils_System_UnitTests extends CRM_Utils_System_Drupal {
     return;
   }
 
-  static
-  function authenticate($name, $password, $loadCMSBootstrap = FALSE, $realPath = NULL) {
+  static function authenticate($name, $password, $loadCMSBootstrap = FALSE, $realPath = NULL) {
     $retVal = array(1, 1, 12345);
     return $retVal;
   }
@@ -73,7 +72,10 @@ class CRM_Utils_System_UnitTests extends CRM_Utils_System_Drupal {
     return;
   }
 
-  function url($path = NULL, $query = NULL, $absolute = TRUE, $fragment = NULL, $htmlize = TRUE, $frontend = FALSE) {
+  function url($path = NULL, $query = NULL, $absolute = FALSE,
+    $fragment = NULL, $htmlize = TRUE,
+    $frontend = FALSE, $forceBackend = FALSE
+  ) {
     $config = CRM_Core_Config::singleton();
     static $script = 'index.php';
 
@@ -159,5 +161,18 @@ class CRM_Utils_System_UnitTests extends CRM_Utils_System_Drupal {
   function getModules() {
     return array();
   }
+
+  /**
+   * Get user login URL for hosting CMS (method declared in each CMS system class)
+   *
+   * @param string $destination - if present, add destination to querystring (works for Drupal only)
+   *
+   * @return string - loginURL for the current CMS
+   * @static
+   */
+  public function getLoginURL($destination = '') {
+    throw new Exception("Method not implemented: getLoginURL");
+  }
+
 }
 

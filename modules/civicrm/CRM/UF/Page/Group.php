@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -57,7 +57,8 @@ class CRM_UF_Page_Group extends CRM_Core_Page {
    *
    * @return array $_actionLinks
    *
-   */ function &actionLinks() {
+   */
+  function &actionLinks() {
     // check if variable _actionsLinks is populated
     if (!self::$_actionLinks) {
       // helper variable for nicer formatting
@@ -234,20 +235,18 @@ class CRM_UF_Page_Group extends CRM_Core_Page {
     }
     $profile = str_replace('civicrm/admin/uf/group', $urlReplaceWith, $profile);
 
-    // FIXME: (CRM-3587) hack to make standalone profile in joomla work
-    // without administrator login
+    // FIXME: (CRM-3587) hack to make standalone profile work
+    // in wordpress and joomla without administrator login
     if ($config->userFramework == 'Joomla') {
       $profile = str_replace('/administrator/', '/index.php', $profile);
     }
-    else if ($config->userFramework == 'WordPress') {
+    elseif ($config->userFramework == 'WordPress') {
       $profile = str_replace('/wp-admin/admin.php', '/index.php', $profile);
     }
 
     // add jquery files
     $profile = CRM_Utils_String::addJqueryFiles($profile);
 
-    // prevent jquery conflict
-    $profile .= '<script type="text/javascript">jQuery.noConflict(true);</script>';
     $this->assign('profile', htmlentities($profile, ENT_NOQUOTES, 'UTF-8'));
     //get the title of uf group
     if ($gid) {
@@ -292,20 +291,23 @@ class CRM_UF_Page_Group extends CRM_Core_Page {
    * @static
    */
   function browse($action = NULL) {
-    $ufGroup     = array();
+    $ufGroup = array();
     $allUFGroups = array();
     $allUFGroups = CRM_Core_BAO_UFGroup::getModuleUFGroup();
     if (empty($allUFGroups)) {
       return;
     }
 
-    $ufGroups = CRM_Core_PseudoConstant::ufGroup();
+    $ufGroups = CRM_Core_PseudoConstant::get('CRM_Core_DAO_UFField', 'uf_group_id');
     CRM_Utils_Hook::aclGroup(CRM_Core_Permission::ADMIN, NULL, 'civicrm_uf_group', $ufGroups, $allUFGroups);
 
     foreach ($allUFGroups as $id => $value) {
       $ufGroup[$id] = array();
       $ufGroup[$id]['id'] = $id;
       $ufGroup[$id]['title'] = $value['title'];
+      $ufGroup[$id]['created_id'] = $value['created_id'];
+      $ufGroup[$id]['created_by'] = CRM_Contact_BAO_Contact::displayName($value['created_id']);
+      $ufGroup[$id]['description'] = $value['description'];
       $ufGroup[$id]['is_active'] = $value['is_active'];
       $ufGroup[$id]['group_type'] = $value['group_type'];
       $ufGroup[$id]['is_reserved'] = $value['is_reserved'];
@@ -393,24 +395,18 @@ class CRM_UF_Page_Group extends CRM_Core_Page {
       $context = 'group';
     }
 
-    switch ($context) {
-      case 'group':
-        $url = CRM_Utils_System::url('civicrm/admin/uf/group', 'reset=1&action=browse');
-        break;
-
-      case 'field':
-        $url = CRM_Utils_System::url('civicrm/admin/uf/group/field',
-          "reset=1&action=browse&gid={$id}"
-        );
-        break;
+    if ($context == 'field') {
+      $url = CRM_Utils_System::url('civicrm/admin/uf/group/field', "reset=1&action=browse&gid={$id}");
+    }
+    else {
+      $url = CRM_Utils_System::url('civicrm/admin/uf/group', 'reset=1&action=browse');
     }
 
     $session = CRM_Core_Session::singleton();
     $session->pushUserContext($url);
   }
 
-  static
-  function extractGroupTypes($groupType) {
+  static function extractGroupTypes($groupType) {
     $returnGroupTypes = array();
     if (!$groupType) {
       return $returnGroupTypes;
@@ -424,12 +420,12 @@ class CRM_UF_Page_Group extends CRM_Core_Page {
     if (CRM_Utils_Array::value(1, $groupTypeParts)) {
       foreach (explode(',', $groupTypeParts[1]) as $typeValue) {
         $groupTypeValues = $valueLabels = array();
-        $valueParts      = explode(':', $typeValue);
-        $typeName        = NULL;
+        $valueParts = explode(':', $typeValue);
+        $typeName = NULL;
         switch ($valueParts[0]) {
           case 'ContributionType':
             $typeName = 'Contribution';
-            $valueLabels = CRM_Contribute_PseudoConstant::contributionType();
+            $valueLabels = CRM_Contribute_PseudoConstant::financialType();
             break;
 
           case 'ParticipantRole':

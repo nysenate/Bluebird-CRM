@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
@@ -23,13 +23,16 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
+{htxt id="id-custom-searches-title"}
+  {ts}Custom Search{/ts}
+{/htxt}
 {htxt id="id-custom-searches"}
 <p>
-{ts}Custom searches are developed and contributed by members of the CiviCRM community. Consider adding any custom searches which you
-use often to your Search menu (from Administer > Customize > Navigation Menu). As new custom searches become
-available they can be viewed (and installed if useful) from Administer > Customize > Manage Extensions.{/ts}  {docURL page="developer/the-extensions-framework/custom-searches"}
+  {ts}These are developed and contributed by members of the CiviCRM community. Consider adding any custom searches which you use often to your Search menu (from Administer > Customize Data and Screens > Navigation Menu). As new custom searches become available they can be viewed (and installed if useful) from Administer > System Settings > Manage Extensions.{/ts}
+</p>
+<p>{docURL page="developer/the-extensions-framework/custom-searches"}</p>
 </p>
 <p>
-{ts}NOTE: Some of these searches may rely on specific site configurations - and may not work as expected on your site.{/ts}
+  {ts}NOTE: Some of these searches may rely on specific site configurations - and may not work as expected on your site.{/ts}
 </p>
 {/htxt}

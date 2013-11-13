@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -47,15 +47,19 @@ class CRM_Core_Form_Tag {
    * @param string  $parentName parent name ( tag name)
    * @param string  $entityTable entitytable 'eg: civicrm_contact'
    * @param int     $entityId    entityid  'eg: contact id'
+   * @param boolean $skipTagCreate true if tag need be created using ajax
+   * @param boolean $skipEntityAction true if need to add entry in entry table via ajax
+   * @param boolean $searchMode true if widget is used in search eg: advanced search
+   * @param string  $tagsetElementName if you need to create tagsetlist with specific name
    *
    * @return void
    * @access public
    * @static
    */
   static function buildQuickForm(&$form, $parentNames, $entityTable, $entityId = NULL, $skipTagCreate = FALSE,
-    $skipEntityAction = FALSE, $searchMode = FALSE
-  ) {
+    $skipEntityAction = FALSE, $searchMode = FALSE, $tagsetElementName = NULL ) {
     $tagset = $form->_entityTagValues = array();
+    $form->assign("isTagset", FALSE);
     $mode = NULL;
 
     foreach ($parentNames as & $parentNameItem) {
@@ -76,10 +80,7 @@ class CRM_Core_Form_Tag {
           $qparams .= '&search=1';
         }
 
-        $tagUrl = CRM_Utils_System::url('civicrm/ajax/taglist',
-          $qparams,
-          FALSE, NULL, FALSE
-        );
+        $tagUrl = CRM_Utils_System::url('civicrm/ajax/taglist', $qparams, FALSE, NULL, FALSE);
 
         $tagset[$tagsetItem]['tagUrl'] = $tagUrl;
         $tagset[$tagsetItem]['entityTable'] = $entityTable;
@@ -97,14 +98,20 @@ class CRM_Core_Form_Tag {
             $mode = 'case';
             break;
 
+          case 'civicrm_file':
+            $mode = 'attachment';
+            break;
+
           default:
             $tagsetElementName = "contact_taglist";
             $mode = 'contact';
         }
 
         $tagset[$tagsetItem]['tagsetElementName'] = $tagsetElementName;
+        if ($tagsetElementName) {
+          $form->add('text', "{$tagsetElementName}[{$parentId}]", NULL);
+        }
 
-        $form->add('text', "{$tagsetElementName}[{$parentId}]", NULL);
         if ($entityId) {
           $tagset[$tagsetItem]['entityId'] = $entityId;
           $entityTags = CRM_Core_BAO_EntityTag::getChildEntityTags($parentId, $entityId, $entityTable);
@@ -116,7 +123,7 @@ class CRM_Core_Form_Tag {
               if (!empty($form->_submitValues['activity_taglist']) &&
                 CRM_Utils_Array::value($parentId, $form->_submitValues['activity_taglist'])
               ) {
-                $allTags = CRM_Core_PseudoConstant::tag();
+                $allTags = CRM_Core_PseudoConstant::get('CRM_Core_DAO_EntityTag', 'tag_id', array('onlyActive' => FALSE));
                 $tagIds = explode(',', $form->_submitValues['activity_taglist'][$parentId]);
                 foreach ($tagIds as $tagId) {
                   if (is_numeric($tagId)) {
@@ -137,7 +144,7 @@ class CRM_Core_Form_Tag {
               if (!empty($form->_submitValues['case_taglist']) &&
                 CRM_Utils_Array::value($parentId, $form->_submitValues['case_taglist'])
               ) {
-                $allTags = CRM_Core_PseudoConstant::tag();
+                $allTags = CRM_Core_PseudoConstant::get('CRM_Core_DAO_EntityTag', 'tag_id', array('onlyActive' => FALSE));
                 $tagIds = explode(',', $form->_submitValues['case_taglist'][$parentId]);
                 foreach ($tagIds as $tagId) {
                   if (is_numeric($tagId)) {
@@ -152,6 +159,33 @@ class CRM_Core_Form_Tag {
                   );
                 }
               }
+              break;
+            case 'civicrm_file':
+              $numAttachments = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME, 'max_attachments');
+              for ($i = 1; $i <= $numAttachments; $i++) {
+                $tagset[$i] = $tagset[$tagsetItem];
+                $tagset[$i]['tagsetElementName'] = "attachment_taglist_$i";
+                $form->add('text', "attachment_taglist_{$i}[{$parentId}]", NULL);
+                if (!empty($form->_submitValues["attachment_taglist_$i"]) &&
+                  CRM_Utils_Array::value($parentId, $form->_submitValues["attachment_taglist_$i"])
+                ) {
+                  $allTags = CRM_Core_PseudoConstant::get('CRM_Core_DAO_EntityTag', 'tag_id', array('onlyActive' => FALSE));
+                  $tagIds = explode(',', $form->_submitValues["attachment_taglist_$i"][$parentId]);
+                  foreach ($tagIds as $tagId) {
+                    if (is_numeric($tagId)) {
+                      $tagName = $allTags[$tagId];
+                    }
+                    else {
+                      $tagName = $tagId;
+                    }
+                    $entityTags[$tagId] = array(
+                      'id' => $tagId,
+                      'name' => $tagName,
+                    );
+                  }
+                }
+              }
+              unset($tagset[$tagsetItem]);
               break;
 
             default:
@@ -205,6 +239,7 @@ class CRM_Core_Form_Tag {
 
     if (!empty($tagset)) {
       $form->assign("tagsetInfo_$mode", $tagset);
+      $form->assign("isTagset", TRUE);
     }
   }
 
@@ -212,8 +247,7 @@ class CRM_Core_Form_Tag {
    * Function to save entity tags when it is not save used AJAX
    *
    */
-  static
-  function postProcess(&$params, $entityId, $entityTable = 'civicrm_contact', &$form) {
+  static function postProcess(&$params, $entityId, $entityTable = 'civicrm_contact', &$form) {
     foreach ($params as $value) {
       if (!$value) {
         continue;
@@ -224,10 +258,10 @@ class CRM_Core_Form_Tag {
       if (!empty($tagsIDs)) {
         foreach ($tagsIDs as $tagId) {
           if (is_numeric($tagId)) {
-            if ($form->_action != CRM_Core_Action::UPDATE) {
+            if ($form && $form->_action != CRM_Core_Action::UPDATE) {
               $insertValues[] = "( {$tagId}, {$entityId}, '{$entityTable}' ) ";
             }
-            elseif (!array_key_exists($tagId, $form->_entityTagValues)) {
+            elseif (!$form || !array_key_exists($tagId, $form->_entityTagValues)) {
               $insertValues[] = "( {$tagId}, {$entityId}, '{$entityTable}' ) ";
             }
           }

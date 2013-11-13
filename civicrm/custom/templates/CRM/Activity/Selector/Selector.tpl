@@ -1,180 +1,203 @@
-<span id="fileOnCaseStatusMsg-{$context}" style="display:none;"></span>
+{*
+ +--------------------------------------------------------------------+
+ | CiviCRM version 4.4                                                |
+ +--------------------------------------------------------------------+
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
+ +--------------------------------------------------------------------+
+ | This file is a part of CiviCRM.                                    |
+ |                                                                    |
+ | CiviCRM is free software; you can copy, modify, and distribute it  |
+ | under the terms of the GNU Affero General Public License           |
+ | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
+ |                                                                    |
+ | CiviCRM is distributed in the hope that it will be useful, but     |
+ | WITHOUT ANY WARRANTY; without even the implied warranty of         |
+ | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
+ | See the GNU Affero General Public License for more details.        |
+ |                                                                    |
+ | You should have received a copy of the GNU Affero General Public   |
+ | License and the CiviCRM Licensing Exception along                  |
+ | with this program; if not, contact CiviCRM LLC                     |
+ | at info[AT]civicrm[DOT]org. If you have questions about the        |
+ | GNU Affero General Public License or the licensing of CiviCRM,     |
+ | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ +--------------------------------------------------------------------+
+*}
+
 <div class="crm-activity-selector-{$context}">
-<div class="crm-accordion-wrapper crm-search_filters-accordion crm-accordion-closed">
- <div class="crm-accordion-header">
-  <div class="icon crm-accordion-pointer"></div> 
-	{ts}Filter by Activity Type{/ts}</a>
- </div><!-- /.crm-accordion-header -->
- <div class="crm-accordion-body">
+  <div class="crm-accordion-wrapper crm-search_filters-accordion">
+    <div class="crm-accordion-header">
+    {ts}Filter by Activity Type{/ts}</a>
+    </div><!-- /.crm-accordion-header -->
+    <div class="crm-accordion-body">
+      <div class="no-border form-layout-compressed" id="searchOptions">
+          <div class="crm-contact-form-block-activity_type_filter_id crm-inline-edit-field">
+            {$form.activity_type_filter_id.label} {$form.activity_type_filter_id.html|crmAddClass:big}
+          </div>
+          <div class="crm-contact-form-block-activity_type_exclude_filter_id crm-inline-edit-field">
+            {$form.activity_type_exclude_filter_id.label} {$form.activity_type_exclude_filter_id.html|crmAddClass:big}
+          </div>
+      </div>
+    </div><!-- /.crm-accordion-body -->
+  </div><!-- /.crm-accordion-wrapper -->
 
-  <table class="no-border form-layout-compressed" id="searchOptions">
-    <tr>
-        <td class="crm-contact-form-block-activity_type_filter_id">
-            {$form.activity_type_filter_id.html}
-        </td>
-        {*NYSS 5462*}
-        <td class="crm-contact-form-block-activity_type_exclude_filter_id">
-            {$form.activity_type_exclude_filter_id.html}
-        </td>
-        <!--td style="vertical-align: bottom;">
-		<span class="crm-button"><input class="form-submit default" name="_qf_Basic_refresh" value="Search" type="button" onclick="buildContactActivities( true )"; /></span>
-	</td-->
-    </tr>
-  </table>
- </div><!-- /.crm-accordion-body -->
-</div><!-- /.crm-accordion-wrapper -->
-
-{*NYSS*}
-<div id="contact-activity-selector-dashlet_pastDays">
-    Show activities for past 
+  {*NYSS*}
+  <div id="contact-activity-selector-dashlet_pastDays">
+    Show activities for past
     <select id='pastDays'>
-        <option value='all' selected="selected"> - All - </option>
-        <option value='7'>7</option>
-        <option value='14'>14</option>
-        <option value='30'>30</option>
+      <option value='all' selected="selected"> - All - </option>
+      <option value='7'>7</option>
+      <option value='14'>14</option>
+      <option value='30'>30</option>
     </select> days,
     and for
     <select id="statusID">
-        <option value="all" selected="selected"> - All - </option>
-        {foreach from=$activityStatusList key=statusID item=statusLabel}
-            <option value="{$statusID}">{$statusLabel}</option>
-        {/foreach}
+      <option value="all" selected="selected"> - All - </option>
+      {foreach from=$activityStatusList key=statusID item=statusLabel}
+        <option value="{$statusID}">{$statusLabel}</option>
+      {/foreach}
     </select>
     status.
-</div>
+  </div>
 
-<table id="contact-activity-selector-{$context}">
+  <table id="contact-activity-selector-{$context}">
     <thead>
-        <tr>
-            <th class='crm-contact-activity-activity_type'>{ts}Type{/ts}</th>
-            <th class='crm-contact-activity_subject'>{ts}Subject{/ts}</th>
-            <th class='crm-contact-activity-source_contact'>{ts}Added By{/ts}</th>
-            <th class='crm-contact-activity-target_contact nosort'>{ts}With{/ts}</th>
-            <th class='crm-contact-activity-assignee_contact nosort'>{ts}Assigned{/ts}</th>
-            <th class='crm-contact-activity-activity_date'>{ts}Date{/ts}</th>
-            <th class='crm-contact-activity-activity_status'>{ts}Status{/ts}</th>
-            <th class='crm-contact-activity-links nosort'>&nbsp;</th>
-            <th class='hiddenElement'>&nbsp;</th>
-        </tr>
+    <tr>
+      <th class='crm-contact-activity-activity_type'>{ts}Type{/ts}</th>
+      <th class='crm-contact-activity_subject'>{ts}Subject{/ts}</th>
+      <th class='crm-contact-activity-source_contact'>{ts}Added By{/ts}</th>
+      <th class='crm-contact-activity-target_contact nosort'>{ts}With{/ts}</th>
+      <th class='crm-contact-activity-assignee_contact nosort'>{ts}Assigned{/ts}</th>
+      <th class='crm-contact-activity-activity_date'>{ts}Date{/ts}</th>
+      <th class='crm-contact-activity-activity_status'>{ts}Status{/ts}</th>
+      <th class='crm-contact-activity-links nosort'>&nbsp;</th>
+      <th class='hiddenElement'>&nbsp;</th>
+    </tr>
     </thead>
-</table>
+  </table>
 </div>
 {include file="CRM/Case/Form/ActivityToCase.tpl" contactID=$contactId}
 {literal}
 <script type="text/javascript">
-var {/literal}{$context}{literal}oTable;
+  var {/literal}{$context}{literal}oTable;
 
-cj( function ( ) {
-   cj().crmaccordions(); 
-   var context = {/literal}"{$context}"{literal}; 
-   buildContactActivities{/literal}{$context}{literal}( false );
-   cj('.crm-activity-selector-'+ context +' #activity_type_filter_id').change( function( ) {
-       buildContactActivities{/literal}{$context}{literal}( true );
-   });
-   //NYSS
-   cj('.crm-activity-selector-'+ context +' #activity_type_exclude_filter_id').change( function( ) {
-       buildContactActivities{/literal}{$context}{literal}( true );
-   });
-   //NYSS 5088
-   cj('#pastDays').change( function( ) {
-       buildContactActivities{/literal}{$context}{literal}( true );
-   });
-   //NYSS 5149
-   cj('#statusID').change( function( ) {
-       buildContactActivities{/literal}{$context}{literal}( true );
-   });
-});
+  cj(function ( ) {
+    cj().crmAccordions();
+    var context = {/literal}"{$context}"{literal};
+    var filterSearchOnLoad = false;
+    if (context == 'activity') {
+      filterSearchOnLoad = true;
+    }
+    buildContactActivities{/literal}{$context}{literal}( filterSearchOnLoad );
+
+    cj('.crm-activity-selector-'+ context +' #activity_type_filter_id').change( function( ) {
+      buildContactActivities{/literal}{$context}{literal}( true );
+    });
+
+    cj('.crm-activity-selector-'+ context +' #activity_type_exclude_filter_id').change( function( ) {
+      buildContactActivities{/literal}{$context}{literal}( true );
+    });
+    //NYSS 5088
+    cj('#pastDays').change( function( ) {
+      buildContactActivities{/literal}{$context}{literal}( true );
+    });
+    //NYSS 5149
+    cj('#statusID').change( function( ) {
+      buildContactActivities{/literal}{$context}{literal}( true );
+    });
+  });
 
 function buildContactActivities{/literal}{$context}{literal}( filterSearch ) {
-    if ( filterSearch ) {
-        {/literal}{$context}{literal}oTable.fnDestroy();
-    }
-    var context = {/literal}"{$context}"{literal}; 
-    var columns = '';
-    var sourceUrl = {/literal}'{crmURL p="civicrm/ajax/contactactivity" h=0 q="snippet=4&context=$context&cid=$contactId"}'{literal};
+  if ( filterSearch && {/literal}{$context}{literal}oTable ) {
+    {/literal}{$context}{literal}oTable.fnDestroy();
+  }
 
-    var ZeroRecordText = {/literal}'{ts escape="js"}No matches found{/ts}'{literal};
-    if ( cj('.crm-activity-selector-'+ context +' select#activity_type_filter_id').val( ) ) {
-      ZeroRecordText += {/literal}'{ts escape="js"} for Activity Type = "{/ts}'{literal} +  cj('.crm-activity-selector-'+ context +' select#activity_type_filter_id :selected').text( ) + '"';
-    } else {
-      ZeroRecordText += '.';
-    }
+  var context = {/literal}"{$context}"{literal};
+  var columns = '';
+  var sourceUrl = {/literal}'{crmURL p="civicrm/ajax/contactactivity" h=0 q="snippet=4&context=$context&cid=$contactId"}'{literal};
 
-    {/literal}{$context}{literal}oTable = cj('#contact-activity-selector-' + context ).dataTable({
-        "bFilter"    : false,
-        "bAutoWidth" : false,
-        "aaSorting"  : [],
-        "aoColumns"  : [
-                        {sClass:'crm-contact-activity-activity_type'},
-                        {sClass:'crm-contact-activity_subject'},
-                        {sClass:'crm-contact-activity-source_contact'},
-                        {sClass:'crm-contact-activity-target_contact', bSortable:false},
-                        {sClass:'crm-contact-activity-assignee_contact', bSortable:false},
-                        {sClass:'crm-contact-activity-activity_date'},
-                        {sClass:'crm-contact-activity-activity_status'},
-                        {sClass:'crm-contact-activity-links', bSortable:false},
-                        {sClass:'hiddenElement', bSortable:false}
-                       ],
-        "bProcessing": true,
-        "sPaginationType": "full_numbers",
-        "sDom"       : '<"crm-datatable-pager-top"lfp>rt<"crm-datatable-pager-bottom"ip>',	
-        "bServerSide": true,
-        "bJQueryUI": true,
-        "sAjaxSource": sourceUrl,
-        "iDisplayLength": 25,
-        "oLanguage": { "sZeroRecords":  ZeroRecordText,
-                       "sProcessing":   {/literal}"{ts escape='js'}Processing...{/ts}"{literal},
-                       "sLengthMenu":   {/literal}"{ts escape='js'}Show _MENU_ entries{/ts}"{literal},
-                       "sInfo":         {/literal}"{ts escape='js'}Showing _START_ to _END_ of _TOTAL_ entries{/ts}"{literal},
-                       "sInfoEmpty":    {/literal}"{ts escape='js'}Showing 0 to 0 of 0 entries{/ts}"{literal},
-                       "sInfoFiltered": {/literal}"{ts escape='js'}(filtered from _MAX_ total entries){/ts}"{literal},
-                       "sSearch":       {/literal}"{ts escape='js'}Search:{/ts}"{literal},
-                       "oPaginate": {
-                            "sFirst":    {/literal}"{ts escape='js'}First{/ts}"{literal},
-                            "sPrevious": {/literal}"{ts escape='js'}Previous{/ts}"{literal},
-                            "sNext":     {/literal}"{ts escape='js'}Next{/ts}"{literal},
-                            "sLast":     {/literal}"{ts escape='js'}Last{/ts}"{literal}
-                        }
-                    },
-        "fnDrawCallback": function() { setSelectorClass{/literal}{$context}{literal}( context ); },
-        "fnServerData": function ( sSource, aoData, fnCallback ) {
-          aoData.push( {name:'contact_id', value: {/literal}{$contactId}{literal}},
-                       {name:'admin',   value: {/literal}'{$admin}'{literal}}
-          );
-          if ( filterSearch ) {
-            aoData.push(
-              {name:'activity_type_id', value: cj('.crm-activity-selector-'+ context +' select#activity_type_filter_id').val()}
-            );
-            aoData.push(
-              //NYSS
-              {name:'activity_type_exclude_id', value: cj('.crm-activity-selector-'+ context +' select#activity_type_exclude_filter_id').val()}
-            );
-          }
-          //NYSS 5088
-          aoData.push(
-            {name:'past_days', value: cj(' select#pastDays').val()}
-          );
-          //NYSS 5149
-          aoData.push(
-            {name:'status_id', value: cj(' select#statusID').val()}
-          );
-          cj.ajax( {
-            "dataType": 'json',
-            "type": "POST",
-            "url": sSource,
-            "data": aoData,
-                "success": fnCallback,
-    // CRM-10244
-    "dataFilter": function(data, type) { return data.replace(/[\n\v\t]/g, " "); }
-          });
-        }
-    });
+  var ZeroRecordText = {/literal}'{ts escape="js"}No matches found{/ts}'{literal};
+  if ( cj('.crm-activity-selector-'+ context +' select#activity_type_filter_id').val( ) ) {
+    ZeroRecordText += {/literal}'{ts escape="js"} for Activity Type = "{/ts}'{literal} +  cj('.crm-activity-selector-'+ context +' select#activity_type_filter_id :selected').text( ) + '"';
+  }
+  else {
+    ZeroRecordText += '.';
+  }
+
+  {/literal}{$context}{literal}oTable = cj('#contact-activity-selector-' + context ).dataTable({
+    "bFilter"    : false,
+    "bAutoWidth" : false,
+    "aaSorting"  : [],
+    "aoColumns"  : [
+      {sClass:'crm-contact-activity-activity_type'},
+      {sClass:'crm-contact-activity_subject'},
+      {sClass:'crm-contact-activity-source_contact'},
+      {sClass:'crm-contact-activity-target_contact', bSortable:false},
+      {sClass:'crm-contact-activity-assignee_contact', bSortable:false},
+      {sClass:'crm-contact-activity-activity_date'},
+      {sClass:'crm-contact-activity-activity_status'},
+      {sClass:'crm-contact-activity-links', bSortable:false},
+      {sClass:'hiddenElement', bSortable:false}
+    ],
+    "bProcessing": true,
+    "sPaginationType": "full_numbers",
+    "sDom"       : '<"crm-datatable-pager-top"lfp>rt<"crm-datatable-pager-bottom"ip>',
+    "bServerSide": true,
+    "bJQueryUI": true,
+    "sAjaxSource": sourceUrl,
+    "iDisplayLength": 25,
+    "oLanguage": {
+      "sZeroRecords":  ZeroRecordText,
+      "sProcessing":   {/literal}"{ts escape='js'}Processing...{/ts}"{literal},
+      "sLengthMenu":   {/literal}"{ts escape='js'}Show _MENU_ entries{/ts}"{literal},
+      "sInfo":         {/literal}"{ts escape='js'}Showing _START_ to _END_ of _TOTAL_ entries{/ts}"{literal},
+      "sInfoEmpty":    {/literal}"{ts escape='js'}Showing 0 to 0 of 0 entries{/ts}"{literal},
+      "sInfoFiltered": {/literal}"{ts escape='js'}(filtered from _MAX_ total entries){/ts}"{literal},
+      "sSearch":       {/literal}"{ts escape='js'}Search:{/ts}"{literal},
+      "oPaginate": {
+        "sFirst":    {/literal}"{ts escape='js'}First{/ts}"{literal},
+        "sPrevious": {/literal}"{ts escape='js'}Previous{/ts}"{literal},
+        "sNext":     {/literal}"{ts escape='js'}Next{/ts}"{literal},
+        "sLast":     {/literal}"{ts escape='js'}Last{/ts}"{literal}
+      }
+    },
+    "fnDrawCallback": function() { setSelectorClass{/literal}{$context}{literal}( context ); },
+    "fnServerData": function ( sSource, aoData, fnCallback ) {
+        aoData.push( {name:'contact_id', value: {/literal}{$contactId}{literal}},
+      {name:'admin',   value: {/literal}'{$admin}'{literal}}
+      );
+
+      if ( filterSearch ) {
+        aoData.push(
+          {name:'activity_type_id', value: cj('.crm-activity-selector-'+ context +' select#activity_type_filter_id').val()},
+          {name:'activity_type_exclude_id', value: cj('.crm-activity-selector-'+ context +' select#activity_type_exclude_filter_id').val()}
+        );
+      }
+      //NYSS 5088
+      aoData.push(
+        {name:'past_days', value: cj(' select#pastDays').val()}
+      );
+      //NYSS 5149
+      aoData.push(
+        {name:'status_id', value: cj(' select#statusID').val()}
+      );
+      cj.ajax( {
+        "dataType": 'json',
+        "type": "POST",
+        "url": sSource,
+        "data": aoData,
+        "success": fnCallback,
+        // CRM-10244
+        "dataFilter": function(data, type) { return data.replace(/[\n\v\t]/g, " "); }
+      });
+    }
+  });
 }
 
 function setSelectorClass{/literal}{$context}{literal}( context ) {
-    cj('#contact-activity-selector-' + context + ' td:last-child').each( function( ) {
-       cj(this).parent().addClass(cj(this).text() );
-    });
+  cj('#contact-activity-selector-' + context + ' td:last-child').each( function( ) {
+    cj(this).parent().addClass(cj(this).text() );
+  });
 }
 </script>
 {/literal}

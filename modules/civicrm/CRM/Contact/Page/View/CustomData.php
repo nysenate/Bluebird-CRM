@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -100,9 +100,9 @@ class CRM_Contact_Page_View_CustomData extends CRM_Core_Page {
     $session->pushUserContext(CRM_Utils_System::url($doneURL, 'action=browse&selectedChild=custom_' . $this->_groupId), FALSE);
 
     // get permission detail view or edit
-    $permUser = CRM_Core_Permission::getPermission();
-
-    $editCustomData = (CRM_Core_Permission::VIEW == $permUser) ? 0 : 1;
+    // use a comtact id specific function which gives us much better granularity
+    // CRM-12646
+    $editCustomData = CRM_Contact_BAO_Contact_Permission::allow($this->_contactId, CRM_Core_Permission::EDIT);
     $this->assign('editCustomData', $editCustomData);
 
     //allow to edit own customdata CRM-5518

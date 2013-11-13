@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,16 +28,13 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
 
 /**
- * Replace the value of an attribute in the input string. Assume
- * the the attribute is well formed, of the type name="value". If
- * no replacement is mentioned the value is inserted at the end of
- * the form element
+ * Adds inline help
  *
  * @param array  $params the function params
  * @param object $smarty reference to the smarty object
@@ -50,34 +47,34 @@ function smarty_function_help($params, &$smarty) {
     return;
   }
 
-  $help = '';
-  if (isset($params['text'])) {
-    $help = '<div class="crm-help">' . $params['text'] . '</div>';
+  if (empty($params['file']) && isset($smarty->_tpl_vars['tplFile'])) {
+    $params['file'] = $smarty->_tpl_vars['tplFile'];
+  }
+  elseif (empty($params['file'])) {
+    return $help;
   }
 
-  if (isset($params['file'])) {
-    $file = $params['file'];
-  }
-  elseif (isset($smarty->_tpl_vars['tplFile'])) {
-    $file = $smarty->_tpl_vars['tplFile'];
+  $params['file'] = str_replace(array('.tpl', '.hlp'), '', $params['file']);
+
+  if (empty($params['title'])) {
+    // Avod overwriting existing vars CRM-11900
+    $oldID = $smarty->get_template_vars('id');
+    $smarty->assign('id', $params['id'] . '-title');
+    $name = trim($smarty->fetch($params['file'] . '.hlp'));
+    $smarty->assign('id', $oldID);
   }
   else {
-    return;
+    $name = trim(strip_tags($params['title']));
   }
+  // Escape for html
+  $title = htmlspecialchars(ts('%1 Help', array(1 => $name)));
+  // Escape for html and js
+  $name = htmlspecialchars(json_encode($name), ENT_QUOTES);
 
-  $file = str_replace('.tpl', '.hlp', $file);
-  $id = urlencode($params['id']);
-  if ($id == 'accesskeys') {
-    $file = 'CRM/common/accesskeys.hlp';
+  // Format params to survive being passed through json & the url
+  unset($params['text'], $params['title']);
+  foreach ($params as &$param) {
+    $param = is_bool($param) || is_numeric($param) ? (int) $param : (string) $param;
   }
-  $config = CRM_Core_Config::singleton();
-  $smarty->assign('id', $params['id']);
-  if (!$help) {
-    $help = $smarty->fetch($file);
-  }
-  return <<< EOT
-<script type="text/javascript"> cj( function() { cj(".helpicon").toolTip(); });</script>
-<div class="helpicon">&nbsp;<span id="{$id}_help" style="display:none">$help</span></div>&nbsp;&nbsp;&nbsp;
-EOT;
+  return '<a class="helpicon" title="' . $title . '" href="#" onclick=\'CRM.help(' . $name . ', ' . json_encode($params) . '); return false;\'>&nbsp;</a>';
 }
-

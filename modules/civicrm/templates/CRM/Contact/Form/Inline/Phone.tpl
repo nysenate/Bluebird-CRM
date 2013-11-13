@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,87 +24,47 @@
  +--------------------------------------------------------------------+
 *}
 {* This file provides the template for inline editing of phones *}
+{$form.oplock_ts.html}
 <table class="crm-inline-edit-form">
     <tr>
       <td colspan="5">
-        <div class="crm-submit-buttons"> 
+        <div class="crm-submit-buttons">
           {include file="CRM/common/formButtons.tpl"}
         </div>
       </td>
     </tr>
     <tr>
-      <td>{ts}Phone{/ts}&nbsp; 
+      <td>{ts}Phone{/ts}&nbsp;
       {if $actualBlockCount lt 5 }
-        <span id="add-more-phone" title="{ts}click to add more{/ts}"><a class="crm-link-action">{ts}add{/ts}</a></span>
+        <span id="add-more-phone" title="{ts}click to add more{/ts}"><a class="crm-link-action add-more-inline">{ts}add{/ts}</a></span>
       {/if}
       </td>
-	    <td>{ts}Phone Location{/ts}</td>
-	    <td>{ts}Phone Type{/ts}</td>
+      <td>{ts}Phone Location{/ts}</td>
+      <td>{ts}Phone Type{/ts}</td>
       <td>{ts}Primary?{/ts}</td>
       <td>&nbsp;</td>
     </tr>
     {section name='i' start=1 loop=$totalBlocks}
-    {assign var='blockId' value=$smarty.section.i.index} 
+    {assign var='blockId' value=$smarty.section.i.index}
     <tr id="Phone_Block_{$blockId}" {if $blockId gt $actualBlockCount}class="hiddenElement"{/if}>
-        <td>{$form.phone.$blockId.phone.html}&nbsp;&nbsp;{ts}ext.{/ts}&nbsp;{$form.phone.$blockId.phone_ext.html|crmReplace:class:four}&nbsp;</td>
+        <td>{$form.phone.$blockId.phone.html}&nbsp;&nbsp;{ts}ext.{/ts}&nbsp;{$form.phone.$blockId.phone_ext.html|crmAddClass:four}&nbsp;</td>
         <td>{$form.phone.$blockId.location_type_id.html}</td>
         <td>{$form.phone.$blockId.phone_type_id.html}</td>
         <td align="center" class="crm-phone-is_primary">{$form.phone.$blockId.is_primary.1.html}</td>
         <td>
           {if $blockId gt 1}
-            <a class="crm-delete-phone crm-link-action" title="{ts}delete phone block{/ts}">{ts}delete{/ts}</a>
+            <a class="crm-delete-inline crm-link-action" title="{ts}delete phone block{/ts}">{ts}delete{/ts}</a>
           {/if}
         </td>
     </tr>
     {/section}
 </table>
 
-{include file="CRM/Contact/Form/Inline/InlineCommon.tpl"}
-
 {literal}
 <script type="text/javascript">
-    cj( function() {
-      // check first primary radio
-      cj('#Phone_1_IsPrimary').prop('checked', true );
-     
-      // make sure only one is primary radio is checked
-      cj('.crm-phone-is_primary input').click(function(){
-        cj('.crm-phone-is_primary input').each(function(){
-          cj(this).prop('checked', false);
-        });
-        cj(this).prop('checked', true);
-      });
-
-      // handle delete of block
-      cj('.crm-delete-phone').click( function(){
-        cj(this).closest('tr').each(function(){
-          cj(this).find('input').val('');
-          //if the primary is checked for deleted block
-          //unset and set first as primary
-          if (cj(this).find('.crm-phone-is_primary input').prop('checked') ) {
-            cj(this).find('.crm-phone-is_primary input').prop('checked', false);
-            cj('#Phone_1_IsPrimary').prop('checked', true );
-          }
-          cj(this).addClass('hiddenElement');
-        });
-      });
-
-      // add more and set focus to new row
-      cj('#add-more-phone').click(function() {
-        var rowSelector = cj('tr[id^="Phone_Block_"][class="hiddenElement"] :first').parent(); 
-        rowSelector.removeClass('hiddenElement');
-        var rowId = rowSelector.attr('id').replace('Phone_Block_', '');
-        cj('#phone_' + rowId + '_phone').focus();
-        console.log(rowId);
-        if ( cj('tr[id^="Phone_Block_"][class="hiddenElement"]').length == 0  ) {
-          cj('#add-more-phone').hide();
-        }
-      });
-
-      // add ajax form submitting
-      inlineEditForm( 'Phone', 'phone-block', {/literal}{$contactId}{literal} ); 
- 
-    });
-
+  cj(function($) {
+    // check first primary radio
+    $('#Phone_1_IsPrimary').prop('checked', true );
+  });
 </script>
 {/literal}

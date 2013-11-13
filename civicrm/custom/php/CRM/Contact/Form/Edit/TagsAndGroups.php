@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,11 +28,11 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
-class CRM_Contact_Form_Edit_TagsandGroups {
+class CRM_Contact_Form_Edit_TagsAndGroups {
 
   /**
    * constant to determine which forms we are generating
@@ -56,39 +56,36 @@ class CRM_Contact_Form_Edit_TagsandGroups {
    * @static
    * @access public
    */
-  //NYSS 6102
-  static
-  function buildQuickForm(&$form,
-    $contactId  = 0,
-    $type       = CRM_Contact_Form_Edit_TagsandGroups::ALL,
+  static function buildQuickForm(&$form,
+    $contactId = 0,
+    $type = self::ALL,
     $visibility = FALSE,
     $isRequired = NULL,
-    $groupName  = 'Group(s)',
-    $tagName    = 'Tag(s)',
-    $fieldName  = NULL,
+    $groupName = 'Group(s)',
+    $tagName = 'Tag(s)',
+    $fieldName = NULL,
     $groupElementType = 'checkbox'
   ) {
     if (!isset($form->_tagGroup)) {
       $form->_tagGroup = array();
     }
 
-    //NYSS 5670
+    // NYSS 5670
     if (!$contactId && !empty($form->_contactId)) {
       $contactId = $form->_contactId;
     }
 
-    $type = (int ) $type;
-    if ($type & CRM_Contact_Form_Edit_TagsandGroups::GROUP) {
+    $type = (int) $type;
+    if ($type & self::GROUP) {
 
       $fName = 'group';
       if ($fieldName) {
         $fName = $fieldName;
       }
 
-      //$elements = array();//NYSS 6102
       $groupID = isset($form->_grid) ? $form->_grid : NULL;
       if ($groupID && $visibility) {
-        $ids = "= {$groupID}";
+        $ids = array($groupID => $groupID);
       }
       else {
         if ($visibility) {
@@ -97,49 +94,38 @@ class CRM_Contact_Form_Edit_TagsandGroups {
         else {
           $group = CRM_Core_PseudoConstant::group();
         }
-        $ids = implode(',', array_keys($group));
-        $ids = 'IN (' . $ids . ')';
+        $ids = $group;
       }
 
       if ($groupID || !empty($group)) {
-        $sql = "
-    SELECT   id, title, description, visibility
-    FROM     civicrm_group
-    WHERE    id $ids
-    ORDER BY title
-    ";
-        $dao = CRM_Core_DAO::executeQuery($sql);
+        $groups = CRM_Contact_BAO_Group::getGroupsHierarchy($ids);
 
         $attributes['skiplabel'] = TRUE;
-        //NYSS 6102
         $elements = array();
         $groupsOptions = array();
-        while ($dao->fetch()) {
+        foreach ($groups as $id => $group) {
           // make sure that this group has public visibility
           if ($visibility &&
-            $dao->visibility == 'User and User Admin Only'
+            $group['visibility'] == 'User and User Admin Only'
           ) {
             continue;
           }
-          //NYSS 6102
-          //$form->_tagGroup[$fName][$dao->id]['description'] = $dao->description;
-          //$elements[] = &$form->addElement('advcheckbox', $dao->id, NULL, $dao->title, $attributes);
+          
           if ($groupElementType == 'crmasmSelect') {
-            $groupsOptions[$dao->id] = $dao->title;
+            $groupsOptions[$id] = $group['title'];
           }
           else {
-            $form->_tagGroup[$fName][$id]['description'] = $dao->description;
-            $elements[] = &$form->addElement('advcheckbox', $id, NULL, $dao->title, $attributes);
+            $form->_tagGroup[$fName][$id]['description'] = $group['description'];
+            $elements[] = &$form->addElement('advcheckbox', $id, NULL, $group['title'], $attributes);
           }
         }
 
-        //NYSS 6102
         if ($groupElementType == 'crmasmSelect' && !empty($groupsOptions)) {
           $form->add('select', $fName, ts('%1', array(1 => $groupName)), $groupsOptions, FALSE,
             array('id' => $fName, 'multiple' => 'multiple', 'title' => ts('- select -'))
           );
           $form->assign('groupCount', count($groupsOptions));
-         }
+        }
 
         if ($groupElementType == 'checkbox' && !empty($elements)) {
           $form->addGroup($elements, $fName, $groupName, '&nbsp;<br />');
@@ -152,7 +138,7 @@ class CRM_Contact_Form_Edit_TagsandGroups {
       }
     }
 
-    if ($type & CRM_Contact_Form_Edit_TagsandGroups::TAG) {
+    if ($type & self::TAG) {
       $fName = 'tag';
       if ($fieldName) {
         $fName = $fieldName;
@@ -174,6 +160,7 @@ class CRM_Contact_Form_Edit_TagsandGroups {
       }
 
       // build tag widget
+      //NYSS
       // $parentNames = CRM_Core_BAO_Tag::getTagSet('civicrm_contact');
       // array(2) { [296]=> string(8) "Keywords" [292]=> string(9) "Positions" }
       $parentNames[291] = "Issue Codes";
@@ -197,9 +184,7 @@ class CRM_Contact_Form_Edit_TagsandGroups {
    * @access public
    * @static
    */
-  //NYSS 6102
-  static
-  function setDefaults($id, &$defaults, $type = self::ALL, $fieldName = NULL, $groupElementType = 'checkbox') {
+  static function setDefaults($id, &$defaults, $type = self::ALL, $fieldName = NULL, $groupElementType = 'checkbox') {
     $type = (int ) $type;
     if ($type & self::GROUP) {
       $fName = 'group';
@@ -210,8 +195,6 @@ class CRM_Contact_Form_Edit_TagsandGroups {
       $contactGroup = CRM_Contact_BAO_GroupContact::getContactGroup($id, 'Added', NULL, FALSE, TRUE);
       if ($contactGroup) {
         foreach ($contactGroup as $group) {
-          //NYSS 6102
-          //$defaults[$fName . '[' . $group['group_id'] . ']'] = 1;
           if ($groupElementType == 'crmasmSelect') {
             $defaults[$fName][] = $group['group_id'];
           }
@@ -245,7 +228,7 @@ class CRM_Contact_Form_Edit_TagsandGroups {
    *
    * @return None
    */
-  function setDefaultValues(&$form, &$defaults) {
+  public static function setDefaultValues(&$form, &$defaults) {
     $contactEditOptions = $form->get('contactEditOptions');
     if ($form->_action & CRM_Core_Action::ADD) {
       if (array_key_exists('TagsAndGroups', $contactEditOptions)) {
@@ -261,8 +244,6 @@ class CRM_Contact_Form_Edit_TagsandGroups {
     else {
       if (array_key_exists('TagsAndGroups', $contactEditOptions)) {
         // set the group and tag ids
-        //NYSS 6102
-        //self::setDefaults($form->_contactId, $defaults, self::ALL);
         $groupElementType = 'checkbox';
         if (CRM_Utils_System::getClassName($form) == 'CRM_Contact_Form_Contact') {
           $groupElementType = 'crmasmSelect';

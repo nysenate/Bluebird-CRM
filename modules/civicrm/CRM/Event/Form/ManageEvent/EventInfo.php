@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
  *
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -50,7 +50,8 @@ class CRM_Event_Form_ManageEvent_EventInfo extends CRM_Event_Form_ManageEvent {
    *
    * @return void
    * @access public
-   */ function preProcess() {
+   */
+  function preProcess() {
     //custom data related code
     $this->_cdType = CRM_Utils_Array::value('type', $_GET);
     $this->assign('cdType', FALSE);
@@ -175,10 +176,11 @@ class CRM_Event_Form_ManageEvent_EventInfo extends CRM_Event_Form_ManageEvent {
 
     if ($this->_action & CRM_Core_Action::ADD) {
       $eventTemplates = CRM_Event_PseudoConstant::eventTemplates();
-      if (CRM_Utils_System::isNull($eventTemplates)) {
-        $this->assign('noEventTemplates', TRUE);
+      if (CRM_Utils_System::isNull($eventTemplates) && !$this->_isTemplate) {
+        $url = CRM_Utils_System::url('civicrm/admin/eventTemplate', array('reset' => 1));
+        CRM_Core_Session::setStatus(ts('If you find that you are creating multiple events with similar settings, you may want to use the <a href="%1">Event Templates</a> feature to streamline your workflow.', array(1 => $url)), ts('Tip'), 'info');
       }
-      else {
+      if (!CRM_Utils_System::isNull($eventTemplates)) {
         $this->add('select', 'template_id', ts('From Template'), array(
           '' => ts('- select -')) + $eventTemplates,
           FALSE, array('onchange' => "reloadWindow( this.value );")
@@ -197,7 +199,7 @@ class CRM_Event_Form_ManageEvent_EventInfo extends CRM_Event_Form_ManageEvent {
       array(
         '' => ts('- select -')) + $event,
       TRUE,
-      array('onChange' => "buildCustomData( 'Event', this.value );")
+      array('onChange' => "CRM.buildCustomData( 'Event', this.value );")
     );
 
     //CRM-7362 --add campaigns.
@@ -234,15 +236,18 @@ class CRM_Event_Form_ManageEvent_EventInfo extends CRM_Event_Form_ManageEvent {
     $this->addDateTime('end_date', ts('End Date / Time'), FALSE, array('formatType' => 'activityDateTime'));
 
     $this->add('text', 'max_participants', ts('Max Number of Participants'),
-      array('onchange' => "if (this.value != '') {show('id-waitlist','table-row'); showHideByValue('has_waitlist','0','id-waitlist-text','table-row','radio',false); showHideByValue('has_waitlist','0','id-event_full','table-row','radio',true); return;} else {hide('id-event_full','table-row'); hide('id-waitlist','table-row'); hide('id-waitlist-text','table-row'); return;}")
+      array('onchange' => "if (this.value != '') {cj('#id-waitlist').show(); showHideByValue('has_waitlist','0','id-waitlist-text','table-row','radio',false); showHideByValue('has_waitlist','0','id-event_full','table-row','radio',true); return;} else {cj('#id-event_full, #id-waitlist, #id-waitlist-text').hide(); return;}")
     );
     $this->addRule('max_participants', ts('Max participants should be a positive number'), 'positiveInteger');
 
     $participantStatuses = CRM_Event_PseudoConstant::participantStatus();
+    $waitlist = 0;
     if (in_array('On waitlist', $participantStatuses) and in_array('Pending from waitlist', $participantStatuses)) {
       $this->addElement('checkbox', 'has_waitlist', ts('Offer a Waitlist?'), NULL, array('onclick' => "showHideByValue('has_waitlist','0','id-event_full','table-row','radio',true); showHideByValue('has_waitlist','0','id-waitlist-text','table-row','radio',false);"));
       $this->add('textarea', 'waitlist_text', ts('Waitlist Message'), $attributes['waitlist_text']);
+      $waitlist = 1;
     }
+    $this->assign('waitlist', $waitlist);
 
     $this->add('textarea', 'event_full_text', ts('Message if Event Is Full'), $attributes['event_full_text']);
 
@@ -262,8 +267,7 @@ class CRM_Event_Form_ManageEvent_EventInfo extends CRM_Event_Form_ManageEvent {
    * @static
    * @access public
    */
-  static
-  function formRule($values) {
+  static function formRule($values) {
     $errors = array();
 
     if (!$values['is_template']) {
@@ -329,60 +333,12 @@ class CRM_Event_Form_ManageEvent_EventInfo extends CRM_Event_Form_ManageEvent {
 
     // now that we have the event’s id, do some more template-based stuff
     if (CRM_Utils_Array::value('template_id', $params)) {
-      // copy price sets if any
-      $priceSetId = CRM_Price_BAO_Set::getFor('civicrm_event', $params['template_id']);
-      if ($priceSetId) {
-        $isQuickConfig = CRM_Core_DAO::getFieldValue('CRM_Price_DAO_Set',
-          $priceSetId,
-          'is_quick_config'
-        );
-        if ($isQuickConfig) {
-          $copyPriceSet = &CRM_Price_BAO_Set::copy($priceSetId);
-          $priceSetId = $copyPriceSet->id;
-        }
-        CRM_Price_BAO_Set::addTo('civicrm_event', $event->id, $priceSetId);
-      }
-
-      // link profiles if none linked
-      $ufParams = array('entity_table' => 'civicrm_event', 'entity_id' => $event->id);
-      if (!CRM_Core_BAO_UFJoin::findUFGroupId($ufParams)) {
-        CRM_Core_DAO::copyGeneric('CRM_Core_DAO_UFJoin',
-          array('entity_id' => $params['template_id'], 'entity_table' => 'civicrm_event'),
-          array('entity_id' => $event->id)
-        );
-      }
-
-      // if no Tell-a-Friend defined, check whether there’s one for template and copy if so
-      $tafParams = array('entity_table' => 'civicrm_event', 'entity_id' => $event->id);
-      if (!CRM_Friend_BAO_Friend::getValues($tafParams)) {
-        $tafParams['entity_id'] = $params['template_id'];
-        if (CRM_Friend_BAO_Friend::getValues($tafParams)) {
-          $tafParams['entity_id'] = $event->id;
-          if (isset($tafParams['id'])) {
-            unset($tafParams['id']);
-          }
-          CRM_Friend_BAO_Friend::addTellAFriend($tafParams);
-        }
-      }
-
-      //copy pcp settings
-      CRM_Core_DAO::copyGeneric('CRM_PCP_DAO_PCPBlock',
-        array(
-          'entity_id' => $params['template_id'],
-          'entity_table' => 'civicrm_event',
-        ),
-        array('entity_id' => $event->id),
-        array('replace' => array('target_entity_id' => $event->id))
-      );
-
-      //copy event schedule remainder
-      CRM_Core_DAO::copyGeneric('CRM_Core_DAO_ActionSchedule',
-        array('entity_value' => $params['template_id']),
-        array('entity_value' => $event->id)
-      );
+      CRM_Event_BAO_Event::copy($params['template_id'], $event, TRUE);
     }
 
     $this->set('id', $event->id);
+
+    $this->postProcessHook();
 
     if ($this->_action & CRM_Core_Action::ADD) {
       $url = 'civicrm/event/manage/location';
@@ -393,7 +349,7 @@ class CRM_Event_Form_ManageEvent_EventInfo extends CRM_Event_Form_ManageEvent {
         $urlParams = 'reset=1';
         CRM_Core_Session::setStatus(ts("'%1' information has been saved.",
             array(1 => $this->getTitle())
-          ));
+          ), ts('Saved'), 'success');
       }
 
       CRM_Utils_System::redirect(CRM_Utils_System::url($url, $urlParams));
@@ -413,7 +369,7 @@ class CRM_Event_Form_ManageEvent_EventInfo extends CRM_Event_Form_ManageEvent {
     return ts('Event Information and Settings');
   }
 
-  /* Retrieve event template custom data values 
+  /* Retrieve event template custom data values
      * and set as default values for current new event.
      *
      * @params int $tempId event template id.

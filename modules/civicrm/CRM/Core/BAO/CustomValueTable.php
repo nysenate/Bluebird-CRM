@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -254,9 +254,7 @@ class CRM_Core_BAO_CustomValueTable {
    * @access public
    * @static
    */
-  public static function fieldToSQLType($type,
-    $maxLength = 255
-  ) {
+  public static function fieldToSQLType($type, $maxLength = 255) {
     if (!isset($maxLength) ||
       !is_numeric($maxLength) ||
       $maxLength <= 0
@@ -372,7 +370,7 @@ class CRM_Core_BAO_CustomValueTable {
    * @access public
    * @static
    */
-  public static function &getEntityValues($entityID, $entityType = NULL, $fieldIDs = NULL) {
+  public static function &getEntityValues($entityID, $entityType = NULL, $fieldIDs = NULL, $formatMultiRecordField = FALSE) {
     if (!$entityID) {
       // adding this here since an empty contact id could have serious repurcussions
       // like looping forever
@@ -431,7 +429,11 @@ AND    $cond
         foreach ($fields[$tableName] as $fieldID) {
           $fieldName = "custom_{$fieldID}";
           if ($isMultiple[$tableName]) {
-            $result["{$fieldID}_{$dao->id}"] = $dao->$fieldName;
+            if ($formatMultiRecordField) {
+              $result["{$dao->id}"]["{$fieldID}"] = $dao->$fieldName;
+            } else {
+              $result["{$fieldID}_{$dao->id}"] = $dao->$fieldName;
+            }
           }
           else {
             $result[$fieldID] = $dao->$fieldName;
@@ -455,9 +457,7 @@ AND    $cond
   static function setValues(&$params) {
 
     if (!isset($params['entityID']) ||
-      CRM_Utils_Type::escape($params['entityID'],
-        'Integer', FALSE
-      ) === NULL
+      CRM_Utils_Type::escape($params['entityID'], 'Integer', FALSE) === NULL
     ) {
       return CRM_Core_Error::createAPIError(ts('entityID needs to be set and of type Integer'));
     }
@@ -469,9 +469,7 @@ AND    $cond
     foreach ($params as $n => $v) {
       if ($customFieldInfo = CRM_Core_BAO_CustomField::getKeyID($n, TRUE)) {
         $fieldID = (int ) $customFieldInfo[0];
-        if (CRM_Utils_Type::escape($fieldID,
-            'Integer', FALSE
-          ) === NULL) {
+        if (CRM_Utils_Type::escape($fieldID, 'Integer', FALSE) === NULL) {
           return CRM_Core_Error::createAPIError(ts('field ID needs to be of type Integer for index %1',
               array(1 => $fieldID)
             ));
@@ -535,9 +533,7 @@ AND    cf.id IN ( $fieldIDList )
           }
         }
         // Ensure that value is of the right data type
-        elseif (CRM_Utils_Type::escape($fieldValue['value'],
-            $dataType, FALSE
-          ) === NULL) {
+        elseif (CRM_Utils_Type::escape($fieldValue['value'], $dataType, FALSE) === NULL) {
           return CRM_Core_Error::createAPIError(ts('value: %1 is not of the right field data type: %2',
               array(
                 1 => $fieldValue['value'],
@@ -615,9 +611,7 @@ AND    cf.id IN ( $fieldIDList )
       $key = $idx = NULL;
       if (substr($n, 0, 7) == 'custom_') {
         $idx = substr($n, 7);
-        if (CRM_Utils_Type::escape($idx,
-            'Integer', FALSE
-          ) === NULL) {
+        if (CRM_Utils_Type::escape($idx, 'Integer', FALSE) === NULL) {
           return CRM_Core_Error::createAPIError(ts('field ID needs to be of type Integer for index %1',
               array(1 => $idx)
             ));

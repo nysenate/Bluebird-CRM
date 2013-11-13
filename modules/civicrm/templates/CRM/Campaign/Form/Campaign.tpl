@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,13 +26,10 @@
 <div class="crm-block crm-form-block crm-campaign-form-block">
 
 {* load the custom data *}
-{if $cdType} 
-    {include file="CRM/Custom/Form/CustomData.tpl"} 
-{else} 
+{if $cdType}
+    {include file="CRM/Custom/Form/CustomData.tpl"}
+{else}
 
-<div class="crm-submit-buttons">
-     {include file="CRM/common/formButtons.tpl" location="top"}
-</div>
 {if $action eq 8}
   <table class="form-layout">
     <tr>
@@ -42,64 +39,67 @@
     </tr>
   </table>
 {else}
+  <div class="crm-submit-buttons">
+       {include file="CRM/common/formButtons.tpl" location="top"}
+  </div>
 
-    <table class="form-layout-compressed">
-	<tr class="crm-campaign-form-block-title">
-	    <td class="label">{$form.title.label}</td>
-	    <td class="view-value">{$form.title.html}</td>
-	</tr>
-	<tr class="crm-campaign-form-block-campaign_type_id">
-	    <td class="label">{$form.campaign_type_id.label}</td>
-	    <td class="view-value">{$form.campaign_type_id.html}</td>
-	</tr>
-	<tr class="crm-campaign-form-block-description">
-	    <td class="label">{$form.description.label}</td>
-	    <td class="view-value">{$form.description.html}</td>
-	</tr>
-	<tr class="crm-campaign-form-block-includeGroups">
-	    <td class="label">{$form.includeGroups.label}</td>
-	    <td>{$form.includeGroups.html}</td>  
-	</tr>
-	<tr class="crm-campaign-form-block-start_date">
-	    <td class="label">{$form.start_date.label}</td>
-	    <td class="view-value">{include file="CRM/common/jcalendar.tpl" elementName=start_date}
-	    </td>
-	</tr>
-	<tr class="crm-campaign-form-block-end_date">
-	    <td class="label">{$form.end_date.label}</td>
-	    <td class="view-value">{include file="CRM/common/jcalendar.tpl" elementName=end_date}</td>
-	</tr>
-	<tr class="crm-campaign-form-block-status_id">
-	    <td class="label">{$form.status_id.label}</td>
-	    <td class="view-value">{$form.status_id.html}</td>
-	</tr>
-	<tr class="crm-campaign-form-block-goal_general">
-	    <td class="label">{$form.goal_general.label}</td>
-	    <td class="view-value">{$form.goal_general.html}</td>
-	</tr>
-	<tr class="crm-campaign-form-block-goal_revenue">
-	    <td class="label">{$form.goal_revenue.label}</td>
-	    <td class="view-value">{$form.goal_revenue.html}</td>
-	</tr>
-	<tr class="crm-campaign-form-block-external_identifier">
-	    <td class="label">{$form.external_identifier.label}</td>
-	    <td class="view-value">{$form.external_identifier.html}</td>
-	</tr>
-	
-	{* Suppress parent-child feature for now. dgg *}
-	{*
-	<tr class="crm-campaign-form-block-parent_id">
-	    <td class="label">{$form.parent_id.label}</td>
-	    <td class="view-value">{$form.parent_id.html}</td>
-	</tr> *}
-	
-	<tr class="crm-campaign-form-block-is_active">
-	    <td class="label">{$form.is_active.label}</td>
-	    <td class="view-value">{$form.is_active.html}</td>
-	</tr>
-    </table>
+  <table class="form-layout-compressed">
+  <tr class="crm-campaign-form-block-title">
+      <td class="label">{$form.title.label}</td>
+      <td class="view-value">{$form.title.html}</td>
+  </tr>
+  <tr class="crm-campaign-form-block-campaign_type_id">
+      <td class="label">{$form.campaign_type_id.label}</td>
+      <td class="view-value">{$form.campaign_type_id.html}</td>
+  </tr>
+  <tr class="crm-campaign-form-block-description">
+      <td class="label">{$form.description.label}</td>
+      <td class="view-value">{$form.description.html}</td>
+  </tr>
+  <tr class="crm-campaign-form-block-includeGroups">
+      <td class="label">{$form.includeGroups.label}</td>
+      <td>{$form.includeGroups.html}</td>
+  </tr>
+  <tr class="crm-campaign-form-block-start_date">
+      <td class="label">{$form.start_date.label}</td>
+      <td class="view-value">{include file="CRM/common/jcalendar.tpl" elementName=start_date}
+      </td>
+  </tr>
+  <tr class="crm-campaign-form-block-end_date">
+      <td class="label">{$form.end_date.label}</td>
+      <td class="view-value">{include file="CRM/common/jcalendar.tpl" elementName=end_date}</td>
+  </tr>
+  <tr class="crm-campaign-form-block-status_id">
+      <td class="label">{$form.status_id.label}</td>
+      <td class="view-value">{$form.status_id.html}</td>
+  </tr>
+  <tr class="crm-campaign-form-block-goal_general">
+      <td class="label">{$form.goal_general.label}</td>
+      <td class="view-value">{$form.goal_general.html}</td>
+  </tr>
+  <tr class="crm-campaign-form-block-goal_revenue">
+      <td class="label">{$form.goal_revenue.label}</td>
+      <td class="view-value">{$form.goal_revenue.html}</td>
+  </tr>
+  <tr class="crm-campaign-form-block-external_identifier">
+      <td class="label">{$form.external_identifier.label}</td>
+      <td class="view-value">{$form.external_identifier.html}</td>
+  </tr>
 
-    <div id="customData"></div>
+  {* Suppress parent-child feature for now. dgg *}
+  {*
+  <tr class="crm-campaign-form-block-parent_id">
+      <td class="label">{$form.parent_id.label}</td>
+      <td class="view-value">{$form.parent_id.html}</td>
+  </tr> *}
+
+  <tr class="crm-campaign-form-block-is_active">
+      <td class="label">{$form.is_active.label}</td>
+      <td class="view-value">{$form.is_active.html}</td>
+  </tr>
+  </table>
+
+  <div id="customData"></div>
 
 {/if}
 <div class="crm-submit-buttons">
@@ -113,11 +113,11 @@
 {literal}
 <script type="text/javascript">
 cj( document ).ready( function( ) {
-    {/literal}{if $customDataSubType} 
-		 buildCustomData( '{$customDataType}', {$customDataSubType} );
-	      {else}
-		 buildCustomData( '{$customDataType}' );
-	      {/if}
+    {/literal}{if $customDataSubType}
+     CRM.buildCustomData( '{$customDataType}', {$customDataSubType} );
+        {else}
+     CRM.buildCustomData( '{$customDataType}' );
+        {/if}
     {literal}
 });
 </script>

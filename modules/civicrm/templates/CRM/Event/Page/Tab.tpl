@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,7 +23,7 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-{if $action eq 1 or $action eq 2 or $action eq 8} {* add, update or view *}            
+{if $action eq 1 or $action eq 2 or $action eq 8} {* add, update or view *}
     {include file="CRM/Event/Form/Participant.tpl"}
 {elseif $action eq 4}
     {include file="CRM/Event/Form/ParticipantView.tpl"}
@@ -32,7 +32,7 @@
     {/if}
 
     <div id="help">
-        <p>{ts 1=$displayName}This page lists all event registrations for %1 since inception.{/ts} 
+        <p>{ts 1=$displayName}This page lists all event registrations for %1 since inception.{/ts}
         {if $permission EQ 'edit'}{ts 1=$newEventURL}Click <a accesskey="N" href='%1'>Add Event Registration</a> to register this contact for an event.{/ts}{/if}
         {if $accessContribution and $newCredit}
             {capture assign=newCreditURL}{crmURL p="civicrm/contact/view/participant" q="reset=1&action=add&cid=`$contactId`&context=participant&mode=live"}{/capture}
@@ -51,11 +51,11 @@
    {/if}
 
     {if $rows}
-    	{include file="CRM/common/pager.tpl" location="top"}
+      {include file="CRM/common/pager.tpl" location="top"}
         {include file="CRM/Event/Form/Selector.tpl"}
-	{include file="CRM/common/pager.tpl" location="bottom"}
+  {include file="CRM/common/pager.tpl" location="bottom"}
     {else}
-       <div class="messages status">
+       <div class="messages status no-popup">
            <table class="form-layout">
              <tr><div class="icon inform-icon"></div>
                    {ts}No event registrations have been recorded for this contact.{/ts}

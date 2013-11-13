@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -37,7 +37,7 @@
 {/if}
 
 <tr id="IM_Block_{$blockId}">
-    <td>{$form.im.$blockId.name.html|crmReplace:class:twenty}&nbsp;</td>
+    <td>{$form.im.$blockId.name.html|crmAddClass:twenty}&nbsp;</td>
     <td>{$form.im.$blockId.location_type_id.html}</td>
     <td colspan="2">{$form.im.$blockId.provider_id.html}</td>
     <td align="center" id="IM-Primary-html" {if $blockId eq 1}class="hiddenElement"{/if}>{$form.im.$blockId.is_primary.1.html}</td>

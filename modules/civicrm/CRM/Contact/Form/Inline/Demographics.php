@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,79 +28,25 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
 
 /**
- * form helper class for demographics section 
+ * form helper class for demographics section
  */
-class CRM_Contact_Form_Inline_Demographics extends CRM_Core_Form {
+class CRM_Contact_Form_Inline_Demographics extends CRM_Contact_Form_Inline {
 
   /**
-   * contact id of the contact that is been viewed
-   */
-  public $_contactId;
-
-  /**
-   * call preprocess
-   */
-  public function preProcess() {
-    //get all the existing email addresses
-    $this->_contactId = CRM_Utils_Request::retrieve('cid', 'Positive', $this, TRUE, NULL, $_REQUEST);
-    $this->assign('contactId', $this->_contactId);
-  }
-
-  /**
-   * build the form elements for an email object
+   * build the form elements
    *
    * @return void
    * @access public
    */
   public function buildQuickForm() {
-    CRM_Contact_Form_Edit_Demographics::buildQuickForm( $this );
-
-    $buttons = array(
-      array(
-        'type' => 'upload',
-        'name' => ts('Save'),
-        'isDefault' => TRUE,
-      ),
-      array(
-        'type' => 'cancel',
-        'name' => ts('Cancel'),
-      ),
-    );
-
-    $this->addButtons($buttons);
-  }
-
-  /**
-   * Override default cancel action
-   */
-  function cancelAction() {
-    $response = array('status' => 'cancel');
-    echo json_encode($response);
-    CRM_Utils_System::civiExit();
-  }
-
-  /**
-   * set defaults for the form
-   *
-   * @return void
-   * @access public
-   */
-  public function setDefaultValues() {
-    $defaults = array();
-    $params = array(
-      'id' => $this->_contactId
-    );
-
-    $defaults = array();
-    CRM_Contact_BAO_Contact::getValues( $params, $defaults );
-
-    return $defaults;
+    parent::buildQuickForm();
+    CRM_Contact_Form_Edit_Demographics::buildQuickForm($this);
   }
 
   /**
@@ -112,20 +58,21 @@ class CRM_Contact_Form_Inline_Demographics extends CRM_Core_Form {
   public function postProcess() {
     $params = $this->exportValues();
 
-    // need to process / save demographics 
-    if ( !CRM_Utils_Array::value('is_deceased', $params) ) {
-      $params['is_deceased'  ] = FALSE;
+    // Process / save demographics
+    if (!CRM_Utils_Array::value('is_deceased', $params)) {
+      $params['is_deceased'] = FALSE;
       $params['deceased_date'] = NULL;
     }
 
     $params['contact_type'] = 'Individual';
-    $params['contact_id']   = $this->_contactId;
-    CRM_Contact_BAO_Contact::create( $params );
+    $params['contact_id'] = $this->_contactId;
 
-    $response = array('status' => 'save');
-    $this->postProcessHook();
-    echo json_encode($response);
-    CRM_Utils_System::civiExit();
+    if (!empty($this->_contactSubType)) {
+      $params['contact_sub_type'] = $this->_contactSubType;
+    }
+
+    CRM_Contact_BAO_Contact::create($params);
+
+    $this->response();
   }
 }
-

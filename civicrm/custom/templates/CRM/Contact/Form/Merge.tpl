@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -31,7 +31,7 @@
 <div class="crm-submit-buttons">{if $prev}<a href="{$prev}" class="button"><span>{ts}<< Prev{/ts}</span></a>{/if}{include file="CRM/common/formButtons.tpl" location="top"}{if $next}<a href="{$next}" class="button"><span>{ts}Next >>{/ts}</span></a>{/if}</div>
 
 <div class="action-link">
-    	<a href="{$flip}">&raquo; {ts}Flip between original and duplicate contacts.{/ts}</a>
+      <a href="{$flip}">&raquo; {ts}Flip between original and duplicate contacts.{/ts}</a>
 </div>
 
 <div class="action-link">
@@ -41,7 +41,7 @@
     {else}
        <a id='notDuplicate' href="#" title={ts}Mark this pair as not a duplicate.{/ts} onClick="processDupes( {$main_cid}, {$other_cid}, 'dupe-nondupe', 'merge-contact', '{crmURL p="civicrm/contact/deduperules" q="reset=1&context=nonDupe"}' );return false;">&raquo; {ts}Mark this pair as not a duplicate.{/ts}</a>
     {/if}
-</div>	
+</div>
 
 <table>
   <tr class="columnheader">
@@ -58,47 +58,47 @@
                {$row.other}
            {else}
                {$row.other.fileName}
-           {/if} 
+           {/if}
         </td>
         <td style='white-space: nowrap'>{if $form.$field}=={$form.$field.html}==&gt;{/if}</td>
         <td>
-            {if $row.title|substr:0:5 == "Email"   OR 
-                $row.title|substr:0:7 == "Address" OR 
-                $row.title|substr:0:2 == "IM"      OR 
-                $row.title|substr:0:6 == "OpenID"  OR 
+            {if $row.title|substr:0:5 == "Email"   OR
+                $row.title|substr:0:7 == "Address" OR
+                $row.title|substr:0:2 == "IM"      OR
+                $row.title|substr:0:6 == "OpenID"  OR
                 $row.title|substr:0:5 == "Phone"}
 
-	        {assign var=position  value=$field|strrpos:'_'}
+          {assign var=position  value=$field|strrpos:'_'}
                 {assign var=blockId   value=$field|substr:$position+1}
                 {assign var=blockName value=$field|substr:14:$position-14}
 
                 {$form.location.$blockName.$blockId.locTypeId.html}&nbsp;
                 {if $blockName eq 'email' || $blockName eq 'phone' }
-		 <span id="main_{$blockName}_{$blockId}_overwrite">{if $row.main}(overwrite){$form.location.$blockName.$blockId.operation.html}&nbsp;<br />{else}(add){/if}</span>
-		{literal}
-		<script type="text/javascript">
-		function mergeBlock(blockname, element, blockId) {
-   		    var allBlock = {/literal}{$mainLocBlock}{literal};
-   		    var block    = eval( "allBlock." + 'main_'+ blockname + element.value);
-		    if(blockname == 'email' || blockname == 'phone'){
-   		          var label = '(overwrite)'+<span id="main_blockname_blockId_overwrite">{/literal}{$form.location.$blockName.$blockId.operation.html}{literal}<br /></span>;
-		    }
-      else {
-		        label = '(overwrite)<br />';
-		    }
- 	
-		    if ( !block ) { 
-     		       	block = '';
-     			label   = '(add)';
-   		    }
-   			cj( "#main_"+ blockname +"_" + blockId ).html( block );	
-   			cj( "#main_"+ blockname +"_" + blockId +"_overwrite" ).html( label );
-		}
-		</script>
-		{/literal}
-		{else}
-		<span id="main_{$blockName}_{$blockId}_overwrite">{if $row.main}(overwrite)<br />{else}(add){/if}</span>
-                {/if} 
+     <span id="main_{$blockName}_{$blockId}_overwrite">{if $row.main}(overwrite){$form.location.$blockName.$blockId.operation.html}&nbsp;<br />{else}(add){/if}</span>
+    {literal}
+    <script type="text/javascript">
+    function mergeBlock(blockname, element, blockId) {
+        var allBlock = {/literal}{$mainLocBlock}{literal};
+        var block    = eval( "allBlock." + 'main_'+ blockname + element.value);
+        if(blockname == 'email' || blockname == 'phone'){
+           var label = '(overwrite)'+ '<span id="main_blockname_blockId_overwrite">{/literal}{$form.location.$blockName.$blockId.operation.html}{literal}<br /></span>';
+        }
+        else {
+          label = '(overwrite)<br />';
+        }
+
+        if ( !block ) {
+                  block = '';
+           label   = '(add)';
+           }
+         cj( "#main_"+ blockname +"_" + blockId ).html( block );
+         cj( "#main_"+ blockname +"_" + blockId +"_overwrite" ).html( label );
+    }
+    </script>
+    {/literal}
+    {else}
+    <span id="main_{$blockName}_{$blockId}_overwrite">{if $row.main}(overwrite)<br />{else}(add){/if}</span>
+                {/if}
 
             {/if}
             {*NYSS 5546*}
@@ -147,7 +147,7 @@ You will need to manually delete that user (click on the link to open Drupal Use
 {literal}
 <script type="text/javascript">
 
-cj(document).ready(function(){ 
+cj(document).ready(function(){
     cj('table td input.form-checkbox').each(function() {
        var ele = null;
        var element = cj(this).attr('id').split('_',3);
@@ -165,7 +165,7 @@ cj(document).ready(function(){
 
        if( ele ) {
           cj(this).bind( 'click', function() {
- 
+
               if( cj( this).attr( 'checked' ) ){
                   cj('input' + ele ).attr('checked', true );
                   cj('input' + ele + '_custom' ).attr('checked', true );

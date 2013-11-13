@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -38,7 +38,7 @@
       <tr {if $row.id EQ $latestRevisionID}style="font-weight: bold;"{/if}>
          <td class="crm-case-activityview-form-block-name">{$row.name}</td>
          <td class="crm-case-activityview-form-block-date">{$row.date|crmDate}</td>
-         <td class="crm-case-activityview-form-block-{$row.id}"><a href="javascript:viewRevision( {$row.id} );" title="{ts}View this revision of the activity record.{/ts}">{if $row.id != $latestRevisionID}View Prior Revision{else}View Current Revision{/if}</a></td>
+         <td class="crm-case-activityview-form-block-{$row.id}"><a href="#" onclick="viewRevision( {$row.id} ); return false;" title="{ts}View this revision of the activity record.{/ts}">{if $row.id != $latestRevisionID}View Prior Revision{else}View Current Revision{/if}</a></td>
       </tr>
        {/foreach}
   </table>
@@ -47,7 +47,7 @@
 {if $report}
 {if $caseID}
 <div id="activity-content">
-{/if}        
+{/if}
 <table class="crm-info-panel" id="crm-activity-view-table">
 {foreach from=$report.fields item=row name=report}
 <tr class="crm-case-activity-view-{$row.label}">
@@ -56,9 +56,9 @@
     {if $smarty.foreach.report.first AND ( $activityID OR $parentID OR $latestRevisionID )} {* Add a cell to first row with links to prior revision listing and Prompted by (parent) as appropriate *}
         <td>{if $row.value eq 'Client'}Constituent{else}{$row.value}{/if}</td>
         <td style="padding-right: 50px; text-align: right; font-size: .8em;">
-            {if $activityID}<a href="javascript:listRevisions({$activityID});">&raquo; {ts}List all revisions{/ts}</a>{if !$latestRevisionID}<br />{ts}(this is the current revision){/ts}{/if}<br />{/if}
-            {if $latestRevisionID}<a href="javascript:viewRevision({$latestRevisionID});">&raquo; {ts}View current revision{/ts}</a><br /><span style="color: red;">{ts}(this is not the current revision){/ts}</span><br />{/if}                   
-            {if $parentID}<a href="javascript:viewRevision({$parentID});">&raquo; {ts}Prompted by{/ts}</a>{/if}
+            {if $activityID}<a href="#" onclick="listRevisions({$activityID}); return false;">&raquo; {ts}List all revisions{/ts}</a>{if !$latestRevisionID}<br />{ts}(this is the current revision){/ts}{/if}<br />{/if}
+            {if $latestRevisionID}<a href="#" onclick="viewRevision({$latestRevisionID}); return false;">&raquo; {ts}View current revision{/ts}</a><br /><span style="color: red;">{ts}(this is not the current revision){/ts}</span><br />{/if}
+            {if $parentID}<a href="#" onclick="viewRevision({$parentID}); return false;">&raquo; {ts}Prompted by{/ts}</a>{/if}
         </td>
     {else}
         <td colspan="2">{if $row.label eq 'Details'}{$row.value|crmStripAlternatives|nl2br}{elseif $row.type eq 'Date'}{$row.value|crmDate}{else}{$row.value}{/if}</td>
@@ -73,8 +73,8 @@
         </tr>
         {foreach from=$customGroup item=customField name=fields}
             <tr{if ! $smarty.foreach.fields.last} style="border-bottom: 1px solid #F6F6F6;"{/if}>
-	       <td class="label">{$customField.label}</td>
-	       <td>{$customField.value}</td>
+         <td class="label">{$customField.label}</td>
+         <td>{$customField.value}</td>
             </tr>
         {/foreach}
     {/foreach}
@@ -86,7 +86,7 @@
     </div>
 {/if}
 {else}
-    <div class="messages status">{ts}This activity might not be attached to any case. Please investigate.{/ts}</div>
+    <div class="messages status no-popup">{ts}This activity might not be attached to any case. Please investigate.{/ts}</div>
 {/if}
 {/if}
 
@@ -98,7 +98,7 @@ function viewRevision( activityId ) {
       var type = {/literal}"{$type}"{literal};
       var viewAct = cj("#view-activity" + type+ ".ui-dialog-content" );
       var viewUrl = {/literal}"{crmURL p='civicrm/case/activity/view' h=0 q="snippet=4" }"{literal};
-  	  cj("#activity-content" + type, viewAct).load( viewUrl + "&cid="+cid + "&aid=" + activityId +"&type=" + type);
+      cj("#activity-content" + type, viewAct).load( viewUrl + "&cid="+cid + "&aid=" + activityId +"&type=" + type);
 }
 
 function listRevisions( activityId ) {
@@ -106,7 +106,7 @@ function listRevisions( activityId ) {
       var type = {/literal}"{$type}"{literal};
       var viewAct = cj("#view-activity" + type + ".ui-dialog-content" );
       var viewUrl = {/literal}"{crmURL p='civicrm/case/activity/view' h=0 q="snippet=4" }"{literal};
-  	  cj("#activity-content" + type, viewAct).load( viewUrl + "&cid=" + cid + "&aid=" + activityId + "&revs=1" +"&type=" + type);
+      cj("#activity-content" + type, viewAct).load( viewUrl + "&cid=" + cid + "&aid=" + activityId + "&revs=1" +"&type=" + type);
 }
 </script>
 {/literal}

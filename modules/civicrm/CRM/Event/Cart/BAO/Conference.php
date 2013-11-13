@@ -2,8 +2,7 @@
 class CRM_Event_Cart_BAO_Conference {
   //XXX assumes we don't allow a contact to register for the same conference more than once
   //XXX flattens the object tree for convenient templating
-  static
-  function get_participant_sessions($main_event_participant_id) {
+  static function get_participant_sessions($main_event_participant_id) {
     $sql = <<<EOS
 SELECT sub_event.* FROM civicrm_participant main_participant
     JOIN civicrm_event sub_event ON sub_event.parent_event_id = main_participant.event_id

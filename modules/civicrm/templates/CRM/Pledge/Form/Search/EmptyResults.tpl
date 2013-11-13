@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,7 +24,7 @@
  +--------------------------------------------------------------------+
 *}
 {* No matches for submitted search request. *}
-<div class="messages status">
+<div class="messages status no-popup">
     <div class="icon inform-icon"></div>
         {if $qill}{ts}No matches found for:{/ts}
             {include file="CRM/common/displaySearchCriteria.tpl"}

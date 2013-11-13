@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,12 +28,14 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
 class CRM_Group_Page_Group extends CRM_Core_Page_Basic {
-  protected $_sortByCharacter; function getBAOName() {
+  protected $_sortByCharacter;
+
+  function getBAOName() {
     return 'CRM_Contact_BAO_Group';
   }
 
@@ -63,16 +65,6 @@ class CRM_Group_Page_Group extends CRM_Core_Page_Basic {
    */
   function editName() {
     return ts('Edit Group');
-  }
-
-  /**
-   * return class name of delete form
-   *
-   * @return string
-   * @access public
-   */
-  function deleteForm() {
-    return 'CRM_Group_Form_Delete';
   }
 
   /**

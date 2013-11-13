@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -22,9 +22,9 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*}	
-{if $outputMode eq 'html' && !$rows}	
-    <div class="messages status">	
-        <div class="icon inform-icon"></div>&nbsp; {ts}Sorry. No results found.{/ts}		
+*}
+{if $outputMode eq 'html' && !$rows}
+    <div class="messages status no-popup">
+        <div class="icon inform-icon"></div>&nbsp; {ts}Sorry. No results found.{/ts}
     </div>
 {/if}

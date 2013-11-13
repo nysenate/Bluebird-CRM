@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -71,6 +71,7 @@ class CRM_Utils_PDF_Utils {
     $r           = CRM_Core_BAO_PdfFormat::getValue('margin_right', $format);
     $b           = CRM_Core_BAO_PdfFormat::getValue('margin_bottom', $format);
     $l           = CRM_Core_BAO_PdfFormat::getValue('margin_left', $format);
+    $margins     = array($metric,$t,$r,$b,$l);
 
     $config = CRM_Core_Config::singleton();
 
@@ -135,12 +136,12 @@ class CRM_Utils_PDF_Utils {
     return $rc;
   }
 
-  static function _html2pdf_dompdf( $paper_size, $orientation, $html_infile, $output, $filename ) {
+  static function _html2pdf_dompdf($paper_size, $orientation, $html, $output, $fileName) {
     require_once 'packages/dompdf/dompdf_config.inc.php';
     spl_autoload_register('DOMPDF_autoload');
     $dompdf = new DOMPDF();
     $dompdf->set_paper($paper_size, $orientation);
-    $dompdf->load_html_file($html_infile);
+    $dompdf->load_html($html);
     $dompdf->render();
 
     if ($output) {
@@ -153,14 +154,8 @@ class CRM_Utils_PDF_Utils {
 
 
   //NYSS 5097 - implement snappy/wkhtmltopdf
-  //restructure code so that we don't use the autoloader and namespaces until we implement PHP 5.3
-  static function _html2pdf_wkhtmltopdf( $paper_size, $orientation, $html_infile, $output , $filename )
-  {
-    //require_once 'packages/snappy/src/autoload.php';
-    require_once 'packages/snappy/src/Knp/Snappy/GeneratorInterface.php';
-    require_once 'packages/snappy/src/Knp/Snappy/AbstractGenerator.php';
-    require_once 'packages/snappy/src/Knp/Snappy/Image.php';
-    require_once 'packages/snappy/src/Knp/Snappy/Pdf.php';
+  static function _html2pdf_wkhtmltopdf($paper_size, $orientation, $margins, $html, $output, $fileName) {
+    require_once 'packages/snappy/src/autoload.php';
     $config = CRM_Core_Config::singleton();
 
     //NYSS - set default path to /usr/local/bin/ for now.
@@ -174,19 +169,23 @@ class CRM_Utils_PDF_Utils {
       return null;
     }
 
+    //NYSS
     //$snappy = new Knp_Snappy_Pdf($config->wkhtmltopdfPath);
-    // kz - Snappy is now using PHP namespaces
-    $snappy = new \Knp\Snappy\Pdf($wkhtmltopdfPath);
-    $snappy->setOption( "page-width", $paper_size[2]."pt" );
-    $snappy->setOption( "page-height", $paper_size[3]."pt" );
-    $snappy->setOption( "orientation", $orientation );
+    $snappy->setOption("page-width", $paper_size[2] . "pt");
+    $snappy->setOption("page-height", $paper_size[3] . "pt");
+    $snappy->setOption("orientation", $orientation);
+    $snappy->setOption("margin-top", $margins[1] . $margins[0]);
+    $snappy->setOption("margin-right", $margins[2] . $margins[0]);
+    $snappy->setOption("margin-bottom", $margins[3] . $margins[0]);
+    $snappy->setOption("margin-left", $margins[4] . $margins[0]);
+    $pdf = $snappy->getOutputFromHtml($html);
 
+    //NYSS
     if ( empty($filename) ) {
       $filename = 'BluebirdPDF.pdf';
     }
 
-    $pdf = $snappy->getOutput($html_infile);
-    if ( $output ) {
+    if ($output) {
       return $pdf;
     }
     else {
@@ -197,9 +196,8 @@ class CRM_Utils_PDF_Utils {
   }
 
   /*
-     * function to convert value from one metric to another
-     */
-
+   * function to convert value from one metric to another
+   */
   static function convertMetric($value, $from, $to, $precision = NULL) {
     switch ($from . $to) {
       case 'incm':

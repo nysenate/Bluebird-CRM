@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -54,7 +54,7 @@ class CRM_Dedupe_Finder {
     $rgBao->id         = $rgid;
     $rgBao->contactIds = $cids;
     if (!$rgBao->find(TRUE)) {
-      CRM_Core_Error::fatal("$level rule for $ctype does not exist");
+      CRM_Core_Error::fatal("Dedupe rule not found for selected contacts");
     }
 
     $rgBao->fillTable();
@@ -72,7 +72,7 @@ class CRM_Dedupe_Finder {
   /**
    * Return an array of possible dupes, based on the provided array of
    * params, using the default rule group for the given contact type and
-   * level.
+   * usage.
    *
    * check_permission is a boolean flag to indicate if permission should be considered.
    * default is to always check permissioning but public pages for example might not want
@@ -81,7 +81,7 @@ class CRM_Dedupe_Finder {
    *
    * @param array  $params  array of params of the form $params[$table][$field] == $value
    * @param string $ctype   contact type to match against
-   * @param string $level   dedupe rule group level ('Fuzzy' or 'Strict')
+   * @param string $used    dedupe rule group usage ('Unsupervised' or 'Supervised' or 'General')
    * @param array  $except  array of contacts that shouldn't be considered dupes
    * @param int    $ruleGroupID the id of the dedupe rule we should be using
    *
@@ -89,7 +89,7 @@ class CRM_Dedupe_Finder {
    */
   static function dupesByParams($params,
     $ctype,
-    $level       = 'Strict',
+    $used        = 'Unsupervised',
     $except      = array(),
     $ruleGroupID = NULL
   ) {
@@ -111,10 +111,9 @@ class CRM_Dedupe_Finder {
     if (!$foundByID) {
       $rgBao               = new CRM_Dedupe_BAO_RuleGroup();
       $rgBao->contact_type = $ctype;
-      $rgBao->level        = $level;
-      $rgBao->is_default   = 1;
+      $rgBao->used         = $used;
       if (!$rgBao->find(TRUE)) {
-        CRM_Core_Error::fatal("$level rule for $ctype does not exist");
+        CRM_Core_Error::fatal("$used rule for $ctype does not exist");
       }
     }
     $params['check_permission'] = CRM_Utils_Array::value('check_permission', $params, TRUE);
@@ -130,7 +129,6 @@ class CRM_Dedupe_Finder {
       }
     }
     $dao->query($rgBao->tableDropQuery());
-
     return array_diff($dupes, $except);
   }
 
@@ -145,21 +143,21 @@ class CRM_Dedupe_Finder {
   static function dupesInGroup($rgid, $gid) {
     $cids = array_keys(CRM_Contact_BAO_Group::getMember($gid));
     if ( !empty($cids) ) {
-      return self::dupes($rgid, $cids);
-    } 
+    return self::dupes($rgid, $cids);
+  }
     return array();
   }
 
   /**
-   * Return dupes of a given contact, using the default rule group (of a provided level).
+   * Return dupes of a given contact, using the default rule group (of a provided usage).
    *
    * @param int    $cid    contact id of the given contact
-   * @param string $level  dedupe rule group level ('Fuzzy' or 'Strict')
+   * @param string $used   dedupe rule group usage ('Unsupervised' or 'Supervised' or 'General')
    * @param string $ctype  contact type of the given contact
    *
    * @return array  array of dupe contact_ids
    */
-  static function dupesOfContact($cid, $level = 'Strict', $ctype = NULL) {
+  static function dupesOfContact($cid, $used = 'Unsupervised', $ctype = NULL) {
     // if not provided, fetch the contact type from the database
     if (!$ctype) {
       $dao = new CRM_Contact_DAO_Contact();
@@ -170,11 +168,10 @@ class CRM_Dedupe_Finder {
       $ctype = $dao->contact_type;
     }
     $rgBao               = new CRM_Dedupe_BAO_RuleGroup();
-    $rgBao->level        = $level;
+    $rgBao->used         = $used;
     $rgBao->contact_type = $ctype;
-    $rgBao->is_default   = 1;
     if (!$rgBao->find(TRUE)) {
-      CRM_Core_Error::fatal("$level rule for $ctype does not exist");
+      CRM_Core_Error::fatal("$used rule for $ctype does not exist");
     }
     $dupes = self::dupes($rgBao->id, array($cid));
 
@@ -204,14 +201,13 @@ class CRM_Dedupe_Finder {
     $flat = array();
     CRM_Utils_Array::flatten($fields, $flat);
 
+    // FIXME: This may no longer be necessary - check inputs
     $replace_these = array(
       'individual_prefix' => 'prefix_id',
       'individual_suffix' => 'suffix_id',
       'gender' => 'gender_id',
     );
-    //handle for individual_suffix, individual_prefix, gender
-    foreach (array(
-      'individual_suffix', 'individual_prefix', 'gender') as $name) {
+    foreach (array('individual_suffix', 'individual_prefix', 'gender') as $name) {
       if (CRM_Utils_Array::value($name, $fields)) {
         $flat[$replace_these[$name]] = $flat[$name];
         unset($flat[$name]);
@@ -260,7 +256,8 @@ class CRM_Dedupe_Finder {
     // if the key is dotted, keep just the last part of it
     foreach ($flat as $key => $value) {
       if (substr_count($key, '.')) {
-        $last = array_pop(explode('.', $key));
+        $last = explode('.', $key);
+        $last = array_pop($last);
         // make sure the first occurence is kept, not the last
         if (!isset($flat[$last])) {
           $flat[$last] = $value;

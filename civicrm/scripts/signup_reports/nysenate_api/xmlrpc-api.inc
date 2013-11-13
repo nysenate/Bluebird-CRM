@@ -5,7 +5,7 @@
  * http://phpxmlrpc.sourceforge.net/
  * http://sourceforge.net/projects/phpxmlrpc/files/phpxmlrpc/3.0.0beta/xmlrpc-3.0.0.beta.zip/download
  */
-require_once(dirname(__FILE__).'./../../../../modules/civicrm/libs/xmlrpc/lib/xmlrpc.inc');
+require_once(dirname(__FILE__).'./../../../../modules/civicrm/NYSS/xmlrpc/lib/xmlrpc.inc');
 
 /**
  * Superclass for all Service classes.

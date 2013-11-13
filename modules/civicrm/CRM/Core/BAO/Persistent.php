@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -48,8 +48,7 @@ class CRM_Core_BAO_Persistent extends CRM_Core_DAO_Persistent {
    * @access public
    * @static
    */
-  static
-  function retrieve(&$params, &$defaults) {
+  static function retrieve(&$params, &$defaults) {
     $dao = new CRM_Core_DAO_Persistent();
     $dao->copyValues($params);
 
@@ -74,8 +73,7 @@ class CRM_Core_BAO_Persistent extends CRM_Core_DAO_Persistent {
    *
    * @return object
    */
-  static
-  function add(&$params, &$ids) {
+  static function add(&$params, &$ids) {
     if (CRM_Utils_Array::value('is_config', $params) == 1) {
       $params['data'] = serialize(explode(',', $params['data']));
     }
@@ -87,8 +85,7 @@ class CRM_Core_BAO_Persistent extends CRM_Core_DAO_Persistent {
     return $persistentDAO;
   }
 
-  static
-  function getContext($context, $name = NULL) {
+  static function getContext($context, $name = NULL) {
     static $contextNameData = array();
 
     if (!array_key_exists($context, $contextNameData)) {

@@ -1,11 +1,9 @@
 <?php
-// $Id$
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -46,9 +44,22 @@ class CRM_Report_Form_Member_Summary extends CRM_Report_Form {
   protected $_add2groupSupported = FALSE;
 
   protected $_customGroupExtends = array('Membership');
-  protected $_customGroupGroupBy = FALSE; function __construct() {
+  protected $_customGroupGroupBy = FALSE;
+  public $_drilldownReport = array('member/detail' => 'Link to Detail Report');
+
+  function __construct() {
+
     // UI for selecting columns to appear in the report list
-    // array conatining the columns, group_bys and filters build and provided to Form
+    // Array containing the columns, group_bys and filters build and provided to Form
+
+    // Check if CiviCampaign is a) enabled and b) has active campaigns
+  $config = CRM_Core_Config::singleton();
+    $campaignEnabled = in_array("CiviCampaign", $config->enableComponents);
+    if ($campaignEnabled) {
+      $getCampaigns = CRM_Campaign_BAO_Campaign::getPermissionedCampaigns(NULL, NULL, TRUE, FALSE, TRUE);
+      $this->activeCampaigns = $getCampaigns['campaigns'];
+      asort($this->activeCampaigns);
+    }
 
     $this->_columns = array(
       'civicrm_membership' =>
@@ -83,6 +94,11 @@ class CRM_Report_Form_Member_Summary extends CRM_Report_Form {
             'title' => ts('Membership End Date'),
             'type' => CRM_Utils_Type::T_DATE,
             'operatorType' => CRM_Report_Form::OP_DATE,
+          ),
+          'owner_membership_id' =>
+          array('title' => ts('Membership Owner ID'),
+            'type' => CRM_Utils_Type::T_INT,
+            'operatorType' => CRM_Report_Form::OP_INT,
           ),
           'membership_type_id' =>
           array('title' => ts('Membership Type'),
@@ -121,6 +137,14 @@ class CRM_Report_Form_Member_Summary extends CRM_Report_Form {
           array(
             'no_display' => TRUE,
           ),
+          'contact_type' =>
+          array(
+            'title' => ts('Contact Type'),
+          ),
+          'contact_sub_type' =>
+          array(
+            'title' => ts('Contact SubType'),
+          ),
         ),
       ),
       'civicrm_contribution' =>
@@ -128,6 +152,10 @@ class CRM_Report_Form_Member_Summary extends CRM_Report_Form {
         'dao' => 'CRM_Contribute_DAO_Contribution',
         'fields' =>
         array(
+          'currency' =>
+          array('required' => TRUE,
+            'no_display' => TRUE,
+          ),
           'total_amount' =>
           array('title' => ts('Amount Statistics'),
             'required' => TRUE,
@@ -140,6 +168,13 @@ class CRM_Report_Form_Member_Summary extends CRM_Report_Form {
         ),
         'filters' =>
         array(
+          'currency' =>
+          array('title' => 'Currency',
+            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+            'options' => CRM_Core_OptionGroup::values('currencies_enabled'),
+            'default' => NULL,
+            'type' => CRM_Utils_Type::T_STRING,
+          ),
           'contribution_status_id' =>
           array('title' => ts('Contribution Status'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
@@ -150,7 +185,24 @@ class CRM_Report_Form_Member_Summary extends CRM_Report_Form {
       ),
     );
     $this->_tagFilter = TRUE;
+
+    // If we have a campaign, build out the relevant elements
+    if ($campaignEnabled && !empty($this->activeCampaigns)) {
+      $this->_columns['civicrm_membership']['fields']['campaign_id'] = array(
+        'title' => 'Campaign',
+        'default' => 'false',
+      );
+      $this->_columns['civicrm_membership']['filters']['campaign_id'] = array('title' => ts('Campaign'),
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => $this->activeCampaigns,
+      );
+      $this->_columns['civicrm_membership']['grouping']['campaign_id'] = 'contri-fields';
+      $this->_columns['civicrm_membership']['group_bys']['campaign_id'] = array('title' => ts('Campaign'));
+    }
+
+
     $this->_groupFilter = TRUE;
+    $this->_currencyColumn = 'civicrm_contribution_currency';
     parent::__construct();
   }
 
@@ -285,57 +337,21 @@ class CRM_Report_Form_Member_Summary extends CRM_Report_Form {
   function from() {
     $this->_from = "
         FROM  civicrm_membership {$this->_aliases['civicrm_membership']}
-               
-              LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']} ON ( {$this->_aliases['civicrm_membership']}.contact_id = {$this->_aliases['civicrm_contact']}.id )  
-               
-              LEFT JOIN civicrm_membership_status 
+
+              LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']} ON ( {$this->_aliases['civicrm_membership']}.contact_id = {$this->_aliases['civicrm_contact']}.id )
+
+              LEFT JOIN civicrm_membership_status
                         ON ({$this->_aliases['civicrm_membership']}.status_id = civicrm_membership_status.id  )
               LEFT JOIN civicrm_membership_payment payment
                         ON ( {$this->_aliases['civicrm_membership']}.id = payment.membership_id )
-              LEFT JOIN civicrm_contribution {$this->_aliases['civicrm_contribution']} 
+              LEFT JOIN civicrm_contribution {$this->_aliases['civicrm_contribution']}
                          ON payment.contribution_id = {$this->_aliases['civicrm_contribution']}.id";
   }
   // end of from
+
   function where() {
-    $clauses = array();
-    foreach ($this->_columns as $tableName => $table) {
-      if (array_key_exists('filters', $table)) {
-        foreach ($table['filters'] as $fieldName => $field) {
-          $clause = NULL;
-
-          if ($field['operatorType'] & CRM_Utils_Type::T_DATE) {
-            $relative = CRM_Utils_Array::value("{$fieldName}_relative", $this->_params);
-            $from     = CRM_Utils_Array::value("{$fieldName}_from", $this->_params);
-            $to       = CRM_Utils_Array::value("{$fieldName}_to", $this->_params);
-
-            if ($relative || $from || $to) {
-              $clause = $this->dateClause($field['name'], $relative, $from, $to, $field['type']);
-            }
-          }
-          else {
-            $op = CRM_Utils_Array::value("{$fieldName}_op", $this->_params);
-            if ($op) {
-              $clause = $this->whereClause($field,
-                $op,
-                CRM_Utils_Array::value("{$fieldName}_value", $this->_params),
-                CRM_Utils_Array::value("{$fieldName}_min", $this->_params),
-                CRM_Utils_Array::value("{$fieldName}_max", $this->_params)
-              );
-            }
-          }
-          if (!empty($clause)) {
-            $clauses[$fieldName] = $clause;
-          }
-        }
-      }
-    }
-
-    if (!empty($clauses)) {
-      $this->_where = "WHERE {$this->_aliases['civicrm_membership']}.is_test = 0 AND " . implode(' AND ', $clauses);
-    }
-    else {
-      $this->_where = "WHERE {$this->_aliases['civicrm_membership']}.is_test = 0";
-    }
+    $this->_whereClauses[] = "{$this->_aliases['civicrm_membership']}.is_test = 0";
+    parent::where();
   }
 
   function groupBy() {
@@ -381,41 +397,50 @@ class CRM_Report_Form_Member_Summary extends CRM_Report_Form {
 
   function statistics(&$rows) {
     $statistics = parent::statistics($rows);
-
     $select = "
         SELECT COUNT({$this->_aliases['civicrm_contribution']}.total_amount ) as count,
                IFNULL(SUM({$this->_aliases['civicrm_contribution']}.total_amount ), 0) as amount,
                IFNULL(ROUND(AVG({$this->_aliases['civicrm_contribution']}.total_amount), 2),0) as avg,
-               COUNT( DISTINCT {$this->_aliases['civicrm_membership']}.id ) as memberCount
+               COUNT( DISTINCT {$this->_aliases['civicrm_membership']}.id ) as memberCount,
+               {$this->_aliases['civicrm_contribution']}.currency as currency
         ";
 
-    $sql = "{$select} {$this->_from} {$this->_where}";
+    $sql = "{$select} {$this->_from} {$this->_where}
+GROUP BY    {$this->_aliases['civicrm_contribution']}.currency
+";
+
     $dao = CRM_Core_DAO::executeQuery($sql);
 
-    if ($dao->fetch()) {
-      $statistics['counts']['amount'] = array(
-        'value' => $dao->amount,
-        'title' => 'Total Amount',
-        'type' => CRM_Utils_Type::T_MONEY,
-      );
-      $statistics['counts']['count '] = array(
-        'value' => $dao->count,
-        'title' => 'Total Donations',
-      );
-      $statistics['counts']['memberCount'] = array(
-        'value' => $dao->memberCount,
-        'title' => 'Total Members',
-      );
-      $statistics['counts']['avg   '] = array(
-        'value' => $dao->avg,
-        'title' => 'Average',
-        'type' => CRM_Utils_Type::T_MONEY,
-      );
+    $totalAmount = $average = array();
+    $count = $memberCount = 0;
+    while ($dao->fetch()) {
+      $totalAmount[] = CRM_Utils_Money::format($dao->amount, $dao->currency)."(".$dao->count.")";
+      $average[] =   CRM_Utils_Money::format($dao->avg, $dao->currency);
+      $count += $dao->count;
+      $memberCount += $dao->memberCount;
+    }
+    $statistics['counts']['amount'] = array(
+      'title' => ts('Total Amount'),
+      'value' => implode(',  ', $totalAmount),
+      'type' => CRM_Utils_Type::T_STRING,
+    );
+    $statistics['counts']['count'] = array(
+      'title' => ts('Total Donations'),
+      'value' => $count,
+    );
+    $statistics['counts']['memberCount'] = array(
+      'title' => ts('Total Members'),
+      'value' => $memberCount,
+    );
+    $statistics['counts']['avg'] = array(
+      'title' => ts('Average'),
+      'value' => implode(',  ', $average),
+      'type' => CRM_Utils_Type::T_STRING,
+    );
 
-      if (!(int)$statistics['counts']['amount']['value']) {
-        //if total amount is zero then hide Chart Options
-        $this->assign('chartSupported', FALSE);
-      }
+    if (!(int)$statistics['counts']['amount']['value']) {
+      //if total amount is zero then hide Chart Options
+      $this->assign('chartSupported', FALSE);
     }
 
     return $statistics;
@@ -552,7 +577,7 @@ class CRM_Report_Form_Member_Summary extends CRM_Report_Form {
         }
         $url = CRM_Report_Utils_Report::getNextUrl('member/detail',
           "reset=1&force=1&join_date_from={$dateStart}&join_date_to={$dateEnd}{$typeUrl}{$statusUrl}",
-          $this->_absoluteUrl, $this->_id
+          $this->_absoluteUrl, $this->_id, $this->_drilldownReport
         );
         $row['civicrm_membership_join_date_start'] = CRM_Utils_Date::format($row['civicrm_membership_join_date_start']);
         $rows[$rowNum]['civicrm_membership_join_date_start_link'] = $url;
@@ -586,6 +611,15 @@ class CRM_Report_Form_Member_Summary extends CRM_Report_Form {
       ) {
         $this->fixSubTotalDisplay($rows[$rowNum], $this->_statFields, FALSE);
         $rows[$rowNum]['civicrm_membership_membership_type_id'] = '<b>SubTotal</b>';
+        $entryFound = TRUE;
+      }
+
+
+      // If using campaigns, convert campaign_id to campaign title
+      if (array_key_exists('civicrm_membership_campaign_id', $row)) {
+        if ($value = $row['civicrm_membership_campaign_id']) {
+          $rows[$rowNum]['civicrm_membership_campaign_id'] = $this->activeCampaigns[$value];
+        }
         $entryFound = TRUE;
       }
 

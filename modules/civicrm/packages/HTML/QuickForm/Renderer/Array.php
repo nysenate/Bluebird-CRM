@@ -226,7 +226,7 @@ class HTML_QuickForm_Renderer_Array extends HTML_QuickForm_Renderer
     } // end func renderElement
 
 
-    function renderHidden(&$element, $required, $error)
+    function renderHidden(&$element, $required = FALSE, $error = FALSE)
     {
         if ($this->_collectHidden) {
             // add to error array 

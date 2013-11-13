@@ -1,9 +1,9 @@
 <?php
 /*
    +--------------------------------------------------------------------+
-   | CiviCRM version 4.2                                                |
+   | CiviCRM version 4.4                                                |
    +--------------------------------------------------------------------+
-   | Copyright CiviCRM LLC (c) 2004-2012                                |
+   | Copyright CiviCRM LLC (c) 2004-2013                                |
    +--------------------------------------------------------------------+
    | This file is a part of CiviCRM.                                    |
    |                                                                    |
@@ -29,7 +29,7 @@
  * This class handles all REST client requests.
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  *
  */
 class CRM_Utils_REST {
@@ -66,56 +66,15 @@ class CRM_Utils_REST {
    * @return string       $var
    * @access public
    */
-  public function ping($var = NULL) {
+  public static function ping($var = NULL) {
     $session = CRM_Core_Session::singleton();
     $key = $session->get('key');
     //$session->set( 'key', $var );
     return self::simple(array('message' => "PONG: $key"));
   }
 
-  /**
-   * Authentication wrapper to the UF Class
-   *
-   * @param string $name      Login name
-   * @param string $pass      Password
-   *
-   * @return string           The REST Client key
-   * @access public
-   * @static
-   */
-  public function authenticate($name, $pass) {
-
-    $result = &CRM_Utils_System::authenticate($name, $pass);
-
-    if (empty($result)) {
-      return self::error('Could not authenticate user, invalid name or password.');
-    }
-
-    $session = CRM_Core_Session::singleton();
-    $api_key = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $result[0], 'api_key');
-
-    if (empty($api_key)) {
-      // These two lines can be used to set the initial value of the key.  A better means is needed.
-      //CRM_Core_DAO::setFieldValue('CRM_Contact_DAO_Contact', $result[0], 'api_key', sha1($result[2]) );
-      //$api_key = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $result[0], 'api_key');
-      return self::error("This user does not have a valid API key in the database, and therefore cannot authenticate through this interface");
-    }
-
-    // Test to see if I can pull the data I need, since I know I have a good value.
-    $user = &CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $api_key, 'id', $api_key);
-
-    $session->set('api_key', $api_key);
-    $session->set('key', $result[2]);
-    $session->set('rest_time', time());
-    $session->set('PHPSESSID', session_id());
-    $session->set('cms_user_id', $result[1]);
-
-    return self::simple(array('api_key' => $api_key, 'PHPSESSID' => session_id(), 'key' => sha1($result[2])));
-  }
-
   // Generates values needed for error messages
-  function error($message = 'Unknown Error') {
-
+  static function error($message = 'Unknown Error') {
     $values = array(
       'error_message' => $message,
       'is_error' => 1,
@@ -124,7 +83,7 @@ class CRM_Utils_REST {
   }
 
   // Generates values needed for non-error responses.
-  function simple($params) {
+  static function simple($params) {
     $values = array('is_error' => 0);
     $values += $params;
     return $values;
@@ -135,7 +94,15 @@ class CRM_Utils_REST {
     return self::output($result);
   }
 
-  function output(&$result) {
+  function bootAndRun() {
+    $response = $this->loadCMSBootstrap();
+    if (is_array($response)) {
+      return self::output($response);
+    }
+    return $this->run();
+  }
+
+  static function output(&$result) {
     $hier = FALSE;
     if (is_scalar($result)) {
       if (!$result) {
@@ -159,7 +126,7 @@ class CRM_Utils_REST {
       header('Content-Type: text/javascript');
       $json = json_encode(array_merge($result));
       if (CRM_Utils_Array::value('debug', $_REQUEST)) {
-        return CRM_Utils_REST::jsonFormated($json);
+        return self::jsonFormated($json);
       }
       return $json;
     }
@@ -191,7 +158,7 @@ class CRM_Utils_REST {
     return $xml;
   }
 
-  function jsonFormated($json) {
+  static function jsonFormated($json) {
     $tabcount   = 0;
     $result     = '';
     $inquote    = FALSE;
@@ -269,7 +236,7 @@ class CRM_Utils_REST {
     return $result;
   }
 
-  function handle() {
+  static function handle() {
     // Get the function name being called from the q parameter in the query string
     $q = CRM_Utils_array::value('q', $_REQUEST);
     // or for the rest interface, from fnName
@@ -285,32 +252,26 @@ class CRM_Utils_REST {
       }
 
       // If the query string is malformed, reject the request.
-      if ((count($args) != 3) && ($args[1] != 'login') && ($args[1] != 'ping')) {
+      // Does this mean it will reject it
+      if ((count($args) != 3) && ($args[1] != 'ping')) {
         return self::error('Unknown function invocation.');
       }
       $store = NULL;
-      if ($args[1] == 'login') {
-        $name = CRM_Utils_Request::retrieve('name', 'String', $store, FALSE, NULL, 'REQUEST');
-        $pass = CRM_Utils_Request::retrieve('pass', 'String', $store, FALSE, NULL, 'REQUEST');
-        if (empty($name) ||
-          empty($pass)
-        ) {
-          return self::error('Invalid name / password.');
-        }
-        return self::authenticate($name, $pass);
-      }
-      elseif ($args[1] == 'ping') {
+
+      if ($args[1] == 'ping') {
         return self::ping();
       }
-    }
-    else {
+    } else {
       // or the new format (entity+action)
+      $args = array();
+      $args[0] = 'civicrm';
       $args[1] = CRM_Utils_array::value('entity', $_REQUEST);
       $args[2] = CRM_Utils_array::value('action', $_REQUEST);
     }
+
+
     // Everyone should be required to provide the server key, so the whole
     //  interface can be disabled in more change to the configuration file.
-    //  This used to be done in the authenticate function, but that was bad...trust me
     // first check for civicrm site key
     if (!CRM_Utils_System::authenticateKey(FALSE)) {
       $docLink = CRM_Utils_System::docURL2("Managing Scheduled Jobs", TRUE, NULL, NULL, NULL, "wiki");
@@ -322,45 +283,28 @@ class CRM_Utils_REST {
     }
 
 
-    // At this point we know we are not calling either login or ping (neither of which
-    //  require authentication prior to being called.  Therefore, at this point we need
-    //  to make sure we're working with a trusted user.
-
-    // There are two ways to check for a trusted user:
-    //  First: they can be someone that has a valid session currently
-    //  Second: they can be someone that has provided an API_Key
+    // At this point we know we are not calling ping which does not require authentication.
+    //  Therefore, at this point we need to make sure we're working with a trusted user.
+    //  Valid users are those who provide a valid server key and API key
 
     $valid_user = FALSE;
 
-    // Check for valid session.  Session ID's only appear here if you have
-    // run the rest_api login function.  That might be a problem for the
-    // AJAX methods.
-    $session = CRM_Core_Session::singleton();
-    if ($session->get('PHPSESSID')) {
-      $valid_user = TRUE;
+    // Check and see if a valid secret API key is provided.
+    $api_key = CRM_Utils_Request::retrieve('api_key', 'String', $store, FALSE, NULL, 'REQUEST');
+    if (!$api_key || strtolower($api_key) == 'null') {
+      return self::error("FATAL: mandatory param 'api_key' (user key) missing");
     }
+    $valid_user = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $api_key, 'id', 'api_key');
 
-    // If the user does not have a valid session (most likely to be used by people using
-    // an ajax interface), we need to check to see if they are carring a valid user's
-    // secret key.
-    if (!$valid_user) {
-      $api_key = CRM_Utils_Request::retrieve('api_key', 'String', $store, FALSE, NULL, 'REQUEST');
-      if (!$api_key || strtolower($api_key) == 'null') {
-        return ("FATAL:mandatory param 'api_key' (user key) missing");
-      }
-      $valid_user = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $api_key, 'id', 'api_key');
-    }
-
-    // If we didn't find a valid user either way, then die.
+    // If we didn't find a valid user, die
     if (empty($valid_user)) {
-      return self::error("Invalid session or user api_key invalid");
+      return self::error("User API key invalid");
     }
 
     return self::process($args);
   }
 
-  static
-  function process(&$args, $restInterface = TRUE) {
+  static function process(&$args, $restInterface = TRUE) {
     $params = &self::buildParamList();
 
     $params['check_permissions'] = TRUE;
@@ -396,8 +340,8 @@ class CRM_Utils_REST {
       return $result;
     }
 
-    if ($_SERVER['REQUEST_METHOD'] == 'GET' && strtolower (substr( $args[2],0,3)) != 'get' ) {
-    // get only valid for non destructive methods
+    if ($_SERVER['REQUEST_METHOD'] == 'GET' && strtolower(substr( $args[2],0,3)) != 'get') {
+      // get only valid for non destructive methods
       require_once 'api/v3/utils.php';
       return civicrm_api3_create_error("SECURITY: All requests that modify the database must be http POST, not GET.",
         array(
@@ -420,8 +364,7 @@ class CRM_Utils_REST {
     return $result;
   }
 
-  static
-  function &buildParamList() {
+  static function &buildParamList() {
     $params = array();
 
     $skipVars = array(
@@ -435,8 +378,8 @@ class CRM_Utils_REST {
 
     if (array_key_exists('json', $_REQUEST) &&  $_REQUEST['json'][0] == "{") {
       $params = json_decode($_REQUEST['json'], TRUE);
-      if(empty($params)) {
-        echo json_encode(array('is_error' => 1, 'error_message', 'invalid json format: ?{"param_with_double_quote":"value"}'));
+      if($params === NULL) {
+        echo json_encode(array('is_error' => 1, 'error_message', 'Unable to decode supplied JSON.'));
         CRM_Utils_System::civiExit();
       }
     }
@@ -451,8 +394,7 @@ class CRM_Utils_REST {
     return $params;
   }
 
-  static
-  function fatal($pearError) {
+  static function fatal($pearError) {
     header('Content-Type: text/xml');
     $error = array();
     $error['code'] = $pearError->getCode();
@@ -469,31 +411,21 @@ class CRM_Utils_REST {
     CRM_Utils_System::civiExit();
   }
 
-  static
-  function APIDoc() {
+  static function APIDoc() {
 
     CRM_Utils_System::setTitle("API Parameters");
     $template = CRM_Core_Smarty::singleton();
-    return CRM_Utils_System::theme('page',
-      $template->fetch('CRM/Core/APIDoc.tpl'),
-      TRUE
+    return CRM_Utils_System::theme(
+      $template->fetch('CRM/Core/APIDoc.tpl')
     );
   }
 
-  static
-  function ajaxDoc() {
-
-    CRM_Utils_System::setTitle("API explorer and generator");
-    $template = CRM_Core_Smarty::singleton();
-    return CRM_Utils_System::theme('page',
-      $template->fetch('CRM/Core/AjaxDoc.tpl'),
-      TRUE
-    );
+  static function ajaxDoc() {
+    return CRM_Utils_System::redirect(CRM_Utils_System::url('civicrm/api/explorer'));
   }
 
   /** used to load a template "inline", eg. for ajax, without having to build a menu for each template */
-  static
-  function loadTemplate () {
+  static  function loadTemplate () {
     $request = CRM_Utils_Request::retrieve( 'q', 'String');
     if (false !== strpos($request, '..')) {
       die ("SECURITY FATAL: the url can't contain '..'. Please report the issue on the forum at civicrm.org");
@@ -529,12 +461,12 @@ class CRM_Utils_REST {
         $config = CRM_Core_Config::singleton();
         $content = $smarty->fetch( 'CRM/common/'. strtolower($config->userFramework) .'.tpl' );
 
-        if ($region = CRM_Core_Region::instance('html-header', FALSE)) {
+        if (!defined('CIVICRM_UF_HEAD') && $region = CRM_Core_Region::instance('html-header', FALSE)) {
           CRM_Utils_System::addHTMLHead($region->render(''));
         }
         CRM_Utils_System::appendTPLFile( $tpl, $content );
 
-        return CRM_Utils_System::theme( 'page', $content, true);
+        return CRM_Utils_System::theme($content);
 
       } else {
         $content = "<!-- .tpl file embeded: $tpl -->\n";
@@ -548,13 +480,12 @@ class CRM_Utils_REST {
    * http://example.org/civicrm/api/json?entity=Contact&action=Get"&json={"contact_type":"Individual","email.get.email":{}} to take all the emails from individuals
    * works for POST & GET (POST recommended)
    **/
-  static
-  function ajaxJson() {
+  static function ajaxJson() {
     require_once 'api/v3/utils.php';
     if (!$config->debug && (!array_key_exists('HTTP_X_REQUESTED_WITH', $_SERVER) ||
         $_SERVER['HTTP_X_REQUESTED_WITH'] != "XMLHttpRequest"
       )) {
-      $error = civicrm_api3_create_error("SECURITY ALERT: Ajax requests can only be issued by javascript clients, eg. $().crmAPI().",
+      $error = civicrm_api3_create_error("SECURITY ALERT: Ajax requests can only be issued by javascript clients, eg. CRM.api().",
         array(
           'IP' => $_SERVER['REMOTE_ADDR'],
           'level' => 'security',
@@ -600,8 +531,7 @@ class CRM_Utils_REST {
     CRM_Utils_System::civiExit();
   }
 
-  static
-  function ajax() {
+  static function ajax() {
     // this is driven by the menu system, so we can use permissioning to
     // restrict calls to this etc
     // the request has to be sent by an ajax call. First line of protection against csrf
@@ -612,7 +542,7 @@ class CRM_Utils_REST {
       )
     ) {
       require_once 'api/v3/utils.php';
-      $error = civicrm_api3_create_error("SECURITY ALERT: Ajax requests can only be issued by javascript clients, eg. $().crmAPI().",
+      $error = civicrm_api3_create_error("SECURITY ALERT: Ajax requests can only be issued by javascript clients, eg. CRM.api().",
         array(
           'IP' => $_SERVER['REMOTE_ADDR'],
           'level' => 'security',
@@ -643,9 +573,7 @@ class CRM_Utils_REST {
     $className = CRM_Utils_Array::value('className', $_REQUEST);
 
     // If the function isn't in the civicrm namespace, reject the request.
-    if (($args[0] != 'civicrm' &&
-        count($args) != 3
-      ) && !$className) {
+    if (($args[0] != 'civicrm' && count($args) != 3) && !$className) {
       return self::error('Unknown function invocation.');
     }
 
@@ -656,41 +584,42 @@ class CRM_Utils_REST {
     CRM_Utils_System::civiExit();
   }
 
+  /**
+   * @return array|NULL NULL if execution should proceed; array if the response is already known
+   */
   function loadCMSBootstrap() {
     $q = CRM_Utils_array::value('q', $_REQUEST);
     $args = explode('/', $q);
 
-    // If the function isn't in the civicrm namespace or request
-    // is for login or ping
-    if (empty($args) ||
-      $args[0] != 'civicrm' ||
-      ((count($args) != 3) && ($args[1] != 'login') && ($args[1] != 'ping')) ||
-      $args[1] == 'ping'
-    ) {
-      return;
+    // Proceed with bootstrap for "?entity=X&action=Y"
+    // Proceed with bootstrap for "?q=civicrm/X/Y" but not "?q=civicrm/ping"
+    if (!empty($q)) {
+      if (count($args) == 2 && $args[1] == 'ping') {
+        return NULL; // this is pretty wonky but maybe there's some reason I can't see
+      }
+      if (count($args) != 3) {
+        return self::error('ERROR: Malformed REST path');
+      }
+      if ($args[0] != 'civicrm') {
+        return self::error('ERROR: Malformed REST path');
+      }
+      // Therefore we have reasonably well-formed "?q=civicrm/X/Y"
     }
 
     if (!CRM_Utils_System::authenticateKey(FALSE)) {
-      return;
-    }
-
-    if ($args[1] == 'login') {
-      CRM_Utils_System::loadBootStrap(CRM_Core_DAO::$_nullArray, TRUE, FALSE);
-      return;
+      // FIXME: At time of writing, this doesn't actually do anything because
+      // authenticateKey abends, but that's a bad behavior which sends a
+      // malformed response.
+      return self::error('Failed to authenticate key');
     }
 
     $uid = NULL;
-    $session = CRM_Core_Session::singleton();
-
-    if ($session->get('PHPSESSID') &&
-      $session->get('cms_user_id')
-    ) {
-      $uid = $session->get('cms_user_id');
-    }
-
     if (!$uid) {
       $store      = NULL;
       $api_key    = CRM_Utils_Request::retrieve('api_key', 'String', $store, FALSE, NULL, 'REQUEST');
+      if (empty($api_key)) {
+        return self::error("FATAL: mandatory param 'api_key' (user key) missing");
+      }
       $contact_id = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $api_key, 'id', 'api_key');
       if ($contact_id) {
         $uid = CRM_Core_BAO_UFMatch::getUFId($contact_id);
@@ -699,6 +628,10 @@ class CRM_Utils_REST {
 
     if ($uid) {
       CRM_Utils_System::loadBootStrap(array('uid' => $uid), TRUE, FALSE);
+      return NULL;
+    }
+    else {
+      return self::error('ERROR: No CMS user associated with given api-key');
     }
   }
 }

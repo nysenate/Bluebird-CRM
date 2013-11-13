@@ -1,9 +1,9 @@
 <?php
 /*
   +--------------------------------------------------------------------+
-  | CiviCRM version 4.2                                                |
+  | CiviCRM version 4.4                                                |
   +--------------------------------------------------------------------+
-  | Copyright CiviCRM LLC (c) 2004-2012                                |
+  | Copyright CiviCRM LLC (c) 2004-2013                                |
   +--------------------------------------------------------------------+
   | This file is a part of CiviCRM.                                    |
   |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -38,8 +38,17 @@
  */
 class CRM_Custom_Form_CustomData {
 
+  /**
+   * @param CRM_Core_Form $form
+   * @param null|string $subName
+   * @param null|string $subType
+   * @param null|int $groupCount
+   * @param null|String $type
+   * @param null|int $entityID
+   * @return void
+   */
   static function preProcess(&$form, $subName = NULL, $subType = NULL,
-    $groupCount = NULL, $type = NULL, $entityID = NULL
+    $groupCount = NULL, $type = NULL, $entityID = NULL, $onlySubType = NULL
   ) {
     if ($type) {
       $form->_type = $type;
@@ -91,21 +100,35 @@ class CRM_Custom_Form_CustomData {
       $form->_entityId = CRM_Utils_Request::retrieve('entityID', 'Positive', $form);
     }
 
-    $form->_groupID = CRM_Utils_Request::retrieve('groupID', 'Positive', $form);
+    $typeCheck = CRM_Utils_Request::retrieve( 'type', 'String', CRM_Core_DAO::$_nullObject );
+    $urlGroupId = CRM_Utils_Request::retrieve('groupID', 'Positive', CRM_Core_DAO::$_nullObject);
+    if ( isset($typeCheck) && $urlGroupId) {
+      $form->_groupID = $urlGroupId;
+    } else {
+      $form->_groupID = CRM_Utils_Request::retrieve('groupID', 'Positive', $form);
+    }
+
+    $gid = (isset($form->_groupID)) ? $form->_groupID : NULL;
+    $getCachedTree = isset($form->_getCachedTree) ? $form->_getCachedTree : TRUE;
 
     $subType = $form->_subType;
     if (!is_array($subType) && strstr($subType, CRM_Core_DAO::VALUE_SEPARATOR)) {
       $subType = str_replace(CRM_Core_DAO::VALUE_SEPARATOR, ',', trim($subType, CRM_Core_DAO::VALUE_SEPARATOR));
     }
-    
+
     $groupTree = &CRM_Core_BAO_CustomGroup::getTree($form->_type,
       $form,
       $form->_entityId,
-      $form->_groupID,
+      $gid,
       $subType,
-      $form->_subName
+      $form->_subName,
+      $getCachedTree,
+      $onlySubType
     );
 
+    if (property_exists($form, '_customValueCount') && !empty($groupTree)) {
+      $form->_customValueCount = CRM_Core_BAO_CustomGroup::buildCustomDataView($form, $groupTree, TRUE, NULL, NULL);
+    }
     // we should use simplified formatted groupTree
     $groupTree = CRM_Core_BAO_CustomGroup::formatGroupTree($groupTree, $form->_groupCount, $form);
 
@@ -126,10 +149,14 @@ class CRM_Custom_Form_CustomData {
     return $defaults;
   }
 
+  /**
+   * @param CRM_Core_Form $form
+   * @return void
+   */
   static function buildQuickForm(&$form) {
     $form->addElement('hidden', 'hidden_custom', 1);
     $form->addElement('hidden', "hidden_custom_group_count[{$form->_groupID}]", $form->_groupCount);
-    CRM_Core_BAO_CustomGroup::buildQuickForm($form, $form->_groupTree, FALSE, $form->_groupCount);
+    CRM_Core_BAO_CustomGroup::buildQuickForm($form, $form->_groupTree);
   }
 }
 

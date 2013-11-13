@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -131,6 +131,7 @@ class CRM_Profile_Selector_Listings extends CRM_Core_Selector_Base implements CR
    */
   protected $_profileIds = array();
 
+  protected $_multiRecordTableName = NULL;
   /**
    * Class constructor
    *
@@ -138,8 +139,14 @@ class CRM_Profile_Selector_Listings extends CRM_Core_Selector_Base implements CR
    *
    * @return CRM_Contact_Selector_Profile
    * @access public
-   */ function __construct(&$params, &$customFields, $ufGroupIds = NULL, $map = FALSE,
-    $editLink = FALSE, $linkToUF = FALSE
+   */
+  function __construct(
+    &$params,
+    &$customFields,
+    $ufGroupIds = NULL,
+    $map = FALSE,
+    $editLink = FALSE,
+    $linkToUF = FALSE
   ) {
     $this->_params = $params;
 
@@ -178,6 +185,7 @@ class CRM_Profile_Selector_Listings extends CRM_Core_Selector_Base implements CR
       CRM_Core_BAO_UFGroup::LISTINGS_VISIBILITY,
       FALSE, $this->_profileIds
     );
+
     $this->_customFields = &$customFields;
 
     $returnProperties = CRM_Contact_BAO_Contact::makeHierReturnProperties($this->_fields);
@@ -187,6 +195,11 @@ class CRM_Profile_Selector_Listings extends CRM_Core_Selector_Base implements CR
 
     $queryParams    = CRM_Contact_BAO_Query::convertFormValues($this->_params, 1);
     $this->_query   = new CRM_Contact_BAO_Query($queryParams, $returnProperties, $this->_fields);
+
+    //the below is done for query building for multirecord custom field listing
+    //to show all the custom field multi valued records of a particular contact
+    $this->setMultiRecordTableName($this->_fields);
+
     $this->_options = &$this->_query->_options;
   }
   //end of constructor
@@ -198,8 +211,7 @@ class CRM_Profile_Selector_Listings extends CRM_Core_Selector_Base implements CR
    * @access public
    *
    */
-  static
-  function &links($map = FALSE, $editLink = FALSE, $ufLink = FALSE, $gids = NULL) {
+  static function &links($map = FALSE, $editLink = FALSE, $ufLink = FALSE, $gids = NULL) {
     if (!self::$_links) {
       self::$_links = array();
 
@@ -262,7 +274,9 @@ class CRM_Profile_Selector_Listings extends CRM_Core_Selector_Base implements CR
    * @access public
    */
   function getPagerParams($action, &$params) {
-    $params['status']    = ts('Contact %%StatusMessage%%');
+    $status =
+      CRM_Utils_System::isNull($this->_multiRecordTableName) ? ts('Contact %%StatusMessage%%') : ts('Contact Multi Records %%StatusMessage%%');
+    $params['status']    = $status;
     $params['csvString'] = NULL;
     $params['rowCount']  = CRM_Utils_Pager::ROWCOUNT;
 
@@ -292,12 +306,18 @@ class CRM_Profile_Selector_Listings extends CRM_Core_Selector_Base implements CR
           'name' => ts('Name'),
           'sort' => 'sort_name',
           'direction' => CRM_Utils_Sort::ASCENDING,
+          'field_name' => 'sort_name',
         ),
       );
 
-      $locationTypes = CRM_Core_PseudoConstant::locationType();
+      $locationTypes = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Address', 'location_type_id');
 
       foreach ($this->_fields as $name => $field) {
+        // skip pseudo fields
+        if (substr($name, 0, 9) == 'phone_ext') {
+          continue;
+        }
+
         if (CRM_Utils_Array::value('in_selector', $field) &&
           !in_array($name, $skipFields)
         ) {
@@ -338,6 +358,7 @@ class CRM_Profile_Selector_Listings extends CRM_Core_Selector_Base implements CR
             'name' => $field['title'],
             'sort' => $name,
             'direction' => $direction,
+            'field_name' => CRM_Core_BAO_UFField::isValidFieldName($name) ? $name : $fieldName,
           );
 
           $direction = CRM_Utils_Sort::DONTCARE;
@@ -367,9 +388,27 @@ class CRM_Profile_Selector_Listings extends CRM_Core_Selector_Base implements CR
    */
   function getTotalCount($action) {
     $additionalWhereClause = 'contact_a.is_deleted = 0';
-    return $this->_query->searchQuery(0, 0, NULL, TRUE, NULL, NULL, NULL,
-      NULL, $additionalWhereClause
+    $additionalFromClause = NULL;
+    $returnQuery = NULL;
+
+    if ($this->_multiRecordTableName &&
+        !array_key_exists($this->_multiRecordTableName, $this->_query->_whereTables)) {
+      $additionalFromClause = CRM_Utils_Array::value($this->_multiRecordTableName, $this->_query->_tables);
+      $returnQuery = TRUE;
+    }
+
+    $countVal = $this->_query->searchQuery(0, 0, NULL, TRUE, NULL, NULL, NULL,
+      $returnQuery, $additionalWhereClause, NULL, $additionalFromClause
     );
+
+    if (!$returnQuery) {
+      return $countVal;
+    }
+
+    if ($returnQuery) {
+      $sql = preg_replace('/DISTINCT/', '', $countVal);
+      return CRM_Core_DAO::singleValueQuery($sql);
+    }
   }
 
   /**
@@ -427,9 +466,20 @@ class CRM_Profile_Selector_Listings extends CRM_Core_Selector_Base implements CR
     $sort->_vars = $varArray;
 
     $additionalWhereClause = 'contact_a.is_deleted = 0';
+    $returnQuery = NULL;
+    if ($this->_multiRecordTableName) {
+      $returnQuery = TRUE;
+    }
+
     $result = $this->_query->searchQuery($offset, $rowCount, $sort, NULL, NULL,
-      NULL, NULL, NULL, $additionalWhereClause
+      NULL, NULL, $returnQuery, $additionalWhereClause
     );
+
+    if ($returnQuery) {
+      $resQuery = preg_replace('/GROUP BY contact_a.id[\s]+ORDER BY/', ' ORDER BY', $result);
+      $result   = CRM_Core_DAO::executeQuery($resQuery);
+    }
+
     // process the result of the query
     $rows = array();
 
@@ -449,12 +499,17 @@ class CRM_Profile_Selector_Listings extends CRM_Core_Selector_Base implements CR
     }
     $links = self::links($this->_map, $this->_editLink, $this->_linkToUF, $this->_profileIds);
 
-    $locationTypes = CRM_Core_PseudoConstant::locationType();
+    $locationTypes = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Address', 'location_type_id');
 
     $names = array();
     static $skipFields = array('group', 'tag');
 
     foreach ($this->_fields as $key => $field) {
+      // skip pseudo fields
+      if (substr($key, 0, 9) == 'phone_ext') {
+        continue;
+      }
+
       if (CRM_Utils_Array::value('in_selector', $field) &&
         !in_array($key, $skipFields)
       ) {
@@ -507,17 +562,17 @@ class CRM_Profile_Selector_Listings extends CRM_Core_Selector_Base implements CR
 
 
     $multipleSelectFields = array('preferred_communication_method' => 1);
-    if (CRM_Core_Permission::access('Quest')) {
-      $multipleSelectFields = CRM_Quest_BAO_Student::$multipleSelectFields;
+    $multiRecordTableId = NULL;
+    if ($this->_multiRecordTableName) {
+      $multiRecordTableId = "{$this->_multiRecordTableName}_id";
     }
 
     // we need to determine of overlay profile should be shown
     $showProfileOverlay = CRM_Core_BAO_UFGroup::showOverlayProfile();
 
-    $imProviders  = CRM_Core_PseudoConstant::IMProvider();
-    $websiteTypes = CRM_Core_PseudoConstant::websiteType();
-    $languages    = CRM_Core_PseudoConstant::languages();
     while ($result->fetch()) {
+      $this->_query->convertToPseudoNames($result);
+
       if (isset($result->country)) {
         // the query returns the untranslated country name
         $i18n = CRM_Core_I18n::singleton();
@@ -532,7 +587,7 @@ class CRM_Profile_Selector_Listings extends CRM_Core_Selector_Base implements CR
         $showProfileOverlay
       );
       if ($result->sort_name) {
-        $row['sort_name'] = $result->sort_name;
+        $row[] = $result->sort_name;
         $empty = FALSE;
       }
       else {
@@ -552,7 +607,7 @@ class CRM_Profile_Selector_Listings extends CRM_Core_Selector_Base implements CR
         ) {
           $url      = CRM_Utils_System::fixURL($result->$name);
           $typeId   = substr($name, 0, -4) . "-website_type_id";
-          $typeName = $websiteTypes[$result->$typeId];
+          $typeName = CRM_Core_PseudoConstant::getLabel('CRM_Core_DAO_Website', 'website_type_id', $result->$typeId);
           if ($typeName) {
             $row[] = "<a href=\"$url\">{$result->$name} (${typeName})</a>";
           }
@@ -561,38 +616,37 @@ class CRM_Profile_Selector_Listings extends CRM_Core_Selector_Base implements CR
           }
         }
         elseif ($name == 'preferred_language') {
-          $row[] = $languages[$result->$name];
+          $row[] = CRM_Core_PseudoConstant::getLabel('CRM_Contact_DAO_Contact', 'preferred_language', $result->$name);
+        }
+        elseif (in_array(substr($name, 0, -3), array('gender', 'prefix', 'suffix'))) {
+          $row[] = CRM_Core_PseudoConstant::getLabel('CRM_Contact_DAO_Contact', $name, $result->$name);
         }
         elseif ($multipleSelectFields &&
           array_key_exists($name, $multipleSelectFields)
         ) {
-          //fix to display student checkboxes
-          $key = $name;
-          $paramsNew = array($key => $result->$name);
-          if ($key == 'test_tutoring') {
-            $name = array($key => array('newName' => $key, 'groupName' => 'test'));
-            // for  readers group
-          }
-          elseif (substr($key, 0, 4) == 'cmr_') {
-            $name = array(
-              $key => array('newName' => $key,
-                'groupName' => substr($key, 0, -3),
-              ));
-          }
-          else {
-            $name = array($key => array('newName' => $key, 'groupName' => $key));
-          }
+          $paramsNew = array($name => $result->$name);
+          $name = array($name => array('newName' => $name, 'groupName' => $name));
+
           CRM_Core_OptionGroup::lookupValues($paramsNew, $name, FALSE);
           $row[] = $paramsNew[$key];
         }
         elseif (strpos($name, '-im')) {
           if (!empty($result->$name)) {
             $providerId   = $name . "-provider_id";
-            $providerName = $imProviders[$result->$providerId];
+            $providerName = CRM_Core_PseudoConstant::getLabel('CRM_Core_DAO_IM', 'provider_id', $result->$providerId);
             $row[]        = $result->$name . " ({$providerName})";
           }
           else {
             $row[] = '';
+          }
+        }
+        elseif (strpos($name, '-phone-')) {
+          $phoneExtField = str_replace('phone', 'phone_ext', $name);
+          if (isset($result->$phoneExtField)) {
+            $row[] = $result->$name . " (" . $result->$phoneExtField . ")";
+          }
+          else {
+            $row[] = $result->$name;
           }
         }
         elseif (in_array($name, array(
@@ -621,6 +675,16 @@ class CRM_Profile_Selector_Listings extends CRM_Core_Selector_Base implements CR
         'id' => $result->contact_id,
         'gid' => implode(',', $this->_profileIds),
       );
+
+      // pass record id param to view url for multi record view
+      if ($multiRecordTableId && $newLinks) {
+        if ($result->$multiRecordTableId){
+          if ($newLinks[CRM_Core_Action::VIEW]['url'] == 'civicrm/profile/view') {
+            $newLinks[CRM_Core_Action::VIEW]['qs'] .= "&multiRecord=view&recordId=%%recordId%%&allFields=1";
+            $params['recordId'] = $result->$multiRecordTableId;
+          }
+        }
+      }
 
       if ($this->_linkToUF) {
         $ufID = CRM_Core_BAO_UFMatch::getUFId($result->contact_id);
@@ -654,6 +718,59 @@ class CRM_Profile_Selector_Listings extends CRM_Core_Selector_Base implements CR
   function getExportFileName($output = 'csv') {
     return ts('CiviCRM Profile Listings');
   }
+
+  /**
+   *  set the _multiRecordTableName to display the result set
+   *  according to multi record custom field values
+   */
+  function setMultiRecordTableName($fields) {
+   $customGroupId = $multiRecordTableName = NULL;
+   $selectorSet = FALSE;
+
+    foreach ($fields as $field => $properties) {
+      if (!CRM_Core_BAO_CustomField::getKeyID($field)) {
+        continue;
+      }
+      if ($cgId = CRM_Core_BAO_CustomField::isMultiRecordField($field)) {
+        $customGroupId = CRM_Utils_System::isNull($customGroupId) ? $cgId : $customGroupId;
+
+        //if the field is submitted set multiRecordTableName
+        if ($customGroupId) {
+          $isSubmitted = FALSE;
+          foreach ($this->_query->_params as $key => $value) {
+            //check the query params 'where' element
+            if ($value[0] == $field) {
+              $isSubmitted = TRUE;
+              break;
+            }
+          }
+
+          if ($isSubmitted) {
+            $this->_multiRecordTableName = $multiRecordTableName =
+              CRM_Core_DAO::getFieldValue('CRM_Core_DAO_CustomGroup', $customGroupId, 'table_name');
+            if ($multiRecordTableName) {
+              return;
+            }
+          }
+
+          if (CRM_Utils_Array::value('in_selector', $properties)) {
+            $selectorSet = TRUE;
+          }
+        }
+      }
+    }
+
+    if (!isset($customGroupId) || !$customGroupId) {
+      return;
+    }
+
+    //if the field is in selector and not a searchable field
+    //get the proper customvalue table name
+    if ($selectorSet) {
+      $this->_multiRecordTableName = $multiRecordTableName =
+        CRM_Core_DAO::getFieldValue('CRM_Core_DAO_CustomGroup', $customGroupId, 'table_name');
+    }
+  } //func close
 }
 //end of class
 

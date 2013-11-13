@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -53,7 +53,7 @@ class CRM_Member_Form_Task_Delete extends CRM_Member_Form_Task {
    *
    * @return void
    * @access public
-   */ 
+   */
   function preProcess() {
     //check for delete
     if (!CRM_Core_Permission::checkActionPermission('CiviMember', CRM_Core_Action::DELETE)) {
@@ -83,16 +83,13 @@ class CRM_Member_Form_Task_Delete extends CRM_Member_Form_Task {
   public function postProcess() {
     $deletedMembers = 0;
     foreach ($this->_memberIds as $memberId) {
-      if (CRM_Member_BAO_Membership::deleteMembership($memberId)) {
+      if (CRM_Member_BAO_Membership::del($memberId)) {
         $deletedMembers++;
       }
     }
 
-    $status = array(
-      ts('Deleted Member(s): %1', array(1 => $deletedMembers)),
-      ts('Total Selected Membership(s): %1', array(1 => count($this->_memberIds))),
-    );
-    CRM_Core_Session::setStatus($status);
+    CRM_Core_Session::setStatus($deletedMembers, ts('Deleted Member(s)'), 'success');
+    CRM_Core_Session::setStatus(ts('Total Selected Membership(s): %1', array(1 => count($this->_memberIds))), '', 'info');
   }
 }
 

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,6 +29,9 @@
     {if $context EQ 'statusChange'} {* Update Participant Status task *}
         {ts}Update the status for each participant individually, OR change all statuses to:{/ts}
         {$form.status_change.html}  {help id="id-status_change"}
+        <div class="status">
+          {ts}Participants whose status is changed FROM Pending Pay Later TO Registered or Attended will receive a confirmation email and their payment status will be set to completed. If this is not what you want to do, you can change their participant status by editing their event registration record directly.{/ts}
+        </div>
         {if $notifyingStatuses}
           <div class="status">
             {ts 1=$notifyingStatuses}Participants whose status is changed TO any of the following will be automatically notified via email: %1.{/ts}
@@ -41,32 +44,32 @@
 </div>
     <legend>{$profileTitle}</legend>
         <table class="crm-copy-fields">
-	     <thead class="sticky">
+       <thead class="sticky">
             <tr class="columnheader">
              {foreach from=$readOnlyFields item=fTitle key=fName}
-	            <td>{$fTitle}</td>
-	         {/foreach}
+              <td>{$fTitle}</td>
+           {/foreach}
 
              <td>{ts}Event{/ts}</td>
              {foreach from=$fields item=field key=fieldName}
                 <td><img  src="{$config->resourceBase}i/copy.png" alt="{ts 1=$field.title}Click to copy %1 from row one to all rows.{/ts}" fname="{$field.name}" class="action-icon" title="{ts}Click here to copy the value in row one to ALL rows.{/ts}" />{$field.title}</td>
              {/foreach}
- 
+
          </tr>
          </thead>
             {foreach from=$componentIds item=pid}
              <tr class="{cycle values="odd-row,even-row"}" entity_id="{$pid}">
-	      {foreach from=$readOnlyFields item=fTitle key=fName}
-	         <td>{$contactDetails.$pid.$fName}</td>
-	      {/foreach}
+        {foreach from=$readOnlyFields item=fTitle key=fName}
+           <td>{$contactDetails.$pid.$fName}</td>
+        {/foreach}
 
-              <td class="crm-event-title">{$details.$pid.title}</td>   
+              <td class="crm-event-title">{$details.$pid.title}</td>
               {foreach from=$fields item=field key=fieldName}
                 {assign var=n value=$field.name}
                 {if ( $fields.$n.data_type eq 'Date') or ( $n eq 'participant_register_date' ) }
                    <td class="compressed">{include file="CRM/common/jcalendar.tpl" elementName=$n elementIndex=$pid batchUpdate=1}</td>
                 {else}
-                	<td class="compressed">{$form.field.$pid.$n.html}</td> 
+                  <td class="compressed">{$form.field.$pid.$n.html}</td>
                 {/if}
               {/foreach}
              </tr>
@@ -79,7 +82,7 @@
               </td>
            </tr>
          </table>
-        
+
 </fieldset>
 </div>
 
@@ -87,14 +90,14 @@
 {literal}
 <script type="text/javascript">
 /**
- * Function to update participant status 
+ * Function to update participant status
  */
 cj( function(){
    cj('#status_change').change( function() {
       if ( cj(this).val() ) {
-        cj('.crm-copy-fields [name^="field["][name*="[participant_status]"]').val( cj(this).val() ); 
+        cj('.crm-copy-fields [name^="field["][name*="[participant_status]"]').val( cj(this).val() );
       }
-   }); 
+   });
 
 });
 </script>

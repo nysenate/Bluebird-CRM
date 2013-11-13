@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -83,7 +83,9 @@ class CRM_Bridge_OG_CiviCRM {
   }
 
   static function groupContact($groupID, $contactIDs, $op) {
+    $config = CRM_Core_Config::singleton();
     $ogID = CRM_Bridge_OG_Utils::ogID($groupID, FALSE);
+
     if (!$ogID) {
       return;
     }
@@ -92,14 +94,10 @@ class CRM_Bridge_OG_CiviCRM {
       $drupalID = CRM_Core_BAO_UFMatch::getUFId($contactID);
       if ($drupalID) {
         if ($op == 'add') {
-          $group_membership = og_membership_create($ogID, 'user', $drupalID, array('is_active' => 1));
-          $group_membership->save();
+          $group_membership = $config->userSystem->og_membership_create($ogID, $drupalID);
         }
         else {
-          $membership = og_get_group_membership($ogID, 'user', $drupalID);
-          if ($membership) {
-            og_membership_delete($membership->id);
-          }
+          $group_membership = $config->userSystem->og_membership_delete($ogID, $drupalID);
         }
       }
     }

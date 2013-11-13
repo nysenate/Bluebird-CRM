@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -68,7 +68,7 @@ class CRM_Activity_Form_ActivityView extends CRM_Core_Form {
     }
 
     $session->pushUserContext($url);
-
+    $defaults = array();
     $params = array('id' => $activityId);
     CRM_Activity_BAO_Activity::retrieve($params, $defaults);
 
@@ -83,6 +83,13 @@ class CRM_Activity_Form_ActivityView extends CRM_Core_Form {
       $mailingReport = CRM_Mailing_BAO_Mailing::report($this->_mailing_id, TRUE);
       CRM_Mailing_BAO_Mailing::getMailingContent($mailingReport, $this);
       $this->assign('mailingReport', $mailingReport);
+
+      $full_open_report = CRM_Mailing_Event_BAO_Opened::getRows(
+        $this->_mailing_id, NULL, FALSE, NULL, NULL, NULL, $cid);
+      $this->assign('openreport',$full_open_report);
+
+      $click_thru_report = CRM_Mailing_Event_BAO_TrackableURLOpen::getRows( $this->_mailing_id, NULL, FALSE, NULL, NULL, NULL, NULL, $cid);
+      $this->assign('clickreport',$click_thru_report);
     }
 
     foreach ($defaults as $key => $value) {
@@ -101,9 +108,7 @@ class CRM_Activity_Form_ActivityView extends CRM_Core_Form {
       $values['engagement_level'] = CRM_Utils_Array::value($engagementLevel, $engagementLevels, $engagementLevel);
     }
 
-    $values['attachment'] = CRM_Core_BAO_File::attachmentInfo('civicrm_activity',
-      $activityId
-    );
+    $values['attachment'] = CRM_Core_BAO_File::attachmentInfo('civicrm_activity', $activityId);
     $this->assign('values', $values);
   }
 

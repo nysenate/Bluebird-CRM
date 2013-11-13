@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -38,13 +38,6 @@
  * polluting the core class and isolates the mass mailer class
  */
 class CRM_Mailing_PseudoConstant extends CRM_Core_PseudoConstant {
-
-  /**
-   * mailing approval status
-   * @var array
-   * @static
-   */
-  private static $approvalStatus;
 
   /**
    * mailing templates
@@ -181,24 +174,6 @@ class CRM_Mailing_PseudoConstant extends CRM_Core_PseudoConstant {
   }
 
   /**
-   * Get all mail approval status.
-   *
-   * The static array approvalStatus is returned
-   *
-   * @access public
-   * @static
-   *
-   * @return array - array reference of all mail approval statuses
-   *
-   */
-  public static function &approvalStatus() {
-    if (!self::$approvalStatus) {
-      self::$approvalStatus = CRM_Core_OptionGroup::values('mail_approval_status');
-    }
-    return self::$approvalStatus;
-  }
-
-  /**
    * Labels for advanced search against mailing summary.
    *
    * @param $field
@@ -227,6 +202,22 @@ class CRM_Mailing_PseudoConstant extends CRM_Core_PseudoConstant {
       );
     }
     return $options[$field];
+  }
+
+  /**
+   * Flush given pseudoconstant so it can be reread from db
+   * next time it's requested.
+   *
+   * @access public
+   * @static
+   *
+   * @param boolean $name pseudoconstant to be flushed
+   *
+   */
+  public static function flush($name = 'template') {
+   if (isset(self::$$name)) {
+      self::$$name = NULL;
+    }
   }
 }
 

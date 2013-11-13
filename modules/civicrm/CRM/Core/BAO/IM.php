@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -47,13 +47,16 @@ class CRM_Core_BAO_IM extends CRM_Core_DAO_IM {
    * @access public
    * @static
    */
-  static
-  function add(&$params) {
+  static function add(&$params) {
+    $hook = empty($params['id']) ? 'create' : 'edit';
+    CRM_Utils_Hook::pre($hook, 'IM', CRM_Utils_Array::value('id', $params), $params);
+
     $im = new CRM_Core_DAO_IM();
-
     $im->copyValues($params);
+    $im->save();
 
-    return $im->save();
+    CRM_Utils_Hook::post($hook, 'IM', $im->id, $im);
+    return $im;
   }
 
   /**
@@ -66,8 +69,7 @@ class CRM_Core_BAO_IM extends CRM_Core_DAO_IM {
    * @access public
    * @static
    */
-  static
-  function &getValues($entityBlock) {
+  static function &getValues($entityBlock) {
     return CRM_Core_BAO_Block::getValues('im', $entityBlock);
   }
 
@@ -80,8 +82,7 @@ class CRM_Core_BAO_IM extends CRM_Core_DAO_IM {
    * @access public
    * @static
    */
-  static
-  function allIMs($id, $updateBlankLocInfo = FALSE) {
+  static function allIMs($id, $updateBlankLocInfo = FALSE) {
     if (!$id) {
       return NULL;
     }
@@ -132,8 +133,7 @@ ORDER BY
    * @access public
    * @static
    */
-  static
-  function allEntityIMs(&$entityElements) {
+  static function allEntityIMs(&$entityElements) {
     if (empty($entityElements)) {
       return NULL;
     }
@@ -165,6 +165,13 @@ ORDER BY cim.is_primary DESC, im_id ASC ";
       );
     }
     return $ims;
+  }
+
+  /**
+   * Call common delete function
+   */
+  static function del($id) {
+    return CRM_Contact_BAO_Contact::deleteObjectWithPrimary('IM', $id);
   }
 }
 

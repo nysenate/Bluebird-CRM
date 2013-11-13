@@ -67,7 +67,7 @@
 
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.FormNavigate.js"></script>
 {*NYSS*}
-<script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.cursorStart.js"></script>
+<script type="text/javascript" src="{$config->resourceBase}NYSS/jquery.cursorStart.js"></script>
 
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.validate.js"></script>
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.civicrm-validate.js"></script>

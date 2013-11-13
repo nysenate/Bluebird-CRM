@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -44,7 +44,7 @@ class civicrm_handler_field_link_pcp extends views_handler_field {
   function construct() {
     parent::construct();
     $this->additional_fields['id'] = 'id';
-    $this->additional_fields['contribution_page_id'] = 'contribution_page_id';
+    $this->additional_fields['page_id'] = 'page_id';
   }
 
   function option_definition() {
@@ -98,7 +98,7 @@ class civicrm_handler_field_link_pcp extends views_handler_field {
         if (user_access('make online contributions')) {
           return civicrm_views_url(
             'civicrm/contribute/transact',
-            "id={$values->civicrm_pcp_contribution_page_id}&pcpId={$values->id}&reset=1",
+            "id={$values->page_id}&pcpId={$values->id}&reset=1",
             // results in an absolute URL
             TRUE
           );

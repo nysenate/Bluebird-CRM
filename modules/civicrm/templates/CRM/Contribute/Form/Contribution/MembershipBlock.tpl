@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -67,13 +67,12 @@
         {/if}
 
         {include file="CRM/Price/Form/PriceSet.tpl" extends="Membership"}
-      	<div id="allow_auto_renew">
+        <div id="allow_auto_renew">
             <div class='crm-section auto-renew'>
                 <div class='label'></div>
                 <div class ='content'>
                     {if isset($form.auto_renew) }
                         {$form.auto_renew.html}&nbsp;{$form.auto_renew.label}
-                        <span class="description crm-auto-renew-cancel-info">({ts}Your initial membership fee will be processed once you complete the confirmation step. You will be able to cancel automatic renewals at any time by logging in to your account or contacting us.{/ts})</span>
                     {/if}
                 </div>
             </div>
@@ -218,14 +217,13 @@ cj(function(){
         </tr>
 
         {/foreach}
-	    {if isset($form.auto_renew) }
-	        <tr id="allow_auto_renew">
-	        <td style="width: auto;">{$form.auto_renew.html}</td>
-	        <td style="width: auto;">
-	            {$form.auto_renew.label}
-                <div class="description crm-auto-renew-cancel-info">({ts}Your initial membership fee will be processed once you complete the confirmation step. You will be able to cancel automatic renewals at any time by logging in to your account or contacting us.{/ts})</div>
-	        </td>
-    	    </tr>
+      {if isset($form.auto_renew) }
+          <tr id="allow_auto_renew">
+          <td style="width: auto;">{$form.auto_renew.html}</td>
+          <td style="width: auto;">
+              {$form.auto_renew.label}
+          </td>
+          </tr>
         {/if}
         {if $showRadio}
             {if $showRadioNoThanks } {* Provide no-thanks option when Membership signup is not required - per membership block configuration. *}

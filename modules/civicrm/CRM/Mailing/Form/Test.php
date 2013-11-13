@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -51,11 +51,11 @@ class CRM_Mailing_Form_Test extends CRM_Core_Form {
     $this->_searchBasedMailing = CRM_Contact_Form_Search::isSearchContext($this->get('context'));
     if(CRM_Contact_Form_Search::isSearchContext($this->get('context')) && !$ssID){
       $params = array();
-      $value = CRM_Core_BAO_PrevNextCache::buildSelectedContactPager($this,$params);
-      $result = CRM_Core_BAO_PrevNextCache::getSelectedContacts($value['offset'],$value['rowCount1']);
+      $result = CRM_Core_BAO_PrevNextCache::getSelectedContacts();
       $this->assign("value", $result);
     }
   }
+
   /**
    * This function sets the default values for the form.
    *
@@ -91,46 +91,25 @@ class CRM_Mailing_Form_Test extends CRM_Core_Form {
       }
     }
 
-    //FIXME : currently we are hiding save an continue later when
-    //search base mailing, we should handle it when we fix CRM-3876
-    if ($this->_searchBasedMailing) {
-      $buttons = array(
-        array('type' => 'back',
-          'name' => ts('<< Previous'),
-        ),
-        array(
-          'type' => 'next',
-          'name' => $name,
-          'spacing' => '&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;',
-          'isDefault' => TRUE,
-        ),
-        array(
-          'type' => 'cancel',
-          'name' => ts('Cancel'),
-        ),
-      );
-    }
-    else {
-      $buttons = array(
-        array('type' => 'back',
-          'name' => ts('<< Previous'),
-        ),
-        array(
-          'type' => 'next',
-          'name' => $name,
-          'spacing' => '&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;',
-          'isDefault' => TRUE,
-        ),
-        array(
-          'type' => 'submit',
-          'name' => ts('Save & Continue Later'),
-        ),
-        array(
-          'type' => 'cancel',
-          'name' => ts('Cancel'),
-        ),
-      );
-    }
+    $buttons = array(
+      array('type' => 'back',
+        'name' => ts('<< Previous'),
+      ),
+      array(
+        'type' => 'next',
+        'name' => $name,
+        'spacing' => '&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;',
+        'isDefault' => TRUE,
+      ),
+      array(
+        'type' => 'submit',
+        'name' => ts('Save & Continue Later'),
+      ),
+      array(
+        'type' => 'cancel',
+        'name' => ts('Cancel'),
+      ),
+    );
 
     $this->addButtons($buttons);
 
@@ -147,9 +126,7 @@ class CRM_Mailing_Form_Test extends CRM_Core_Form {
       $preview['html_link'] = CRM_Utils_System::url('civicrm/mailing/preview', "type=html&qfKey=$qfKey");
     }
 
-    $preview['attachment'] = CRM_Core_BAO_File::attachmentInfo('civicrm_mailing',
-      $mailingID
-    );
+    $preview['attachment'] = CRM_Core_BAO_File::attachmentInfo('civicrm_mailing', $mailingID);
     $this->assign('preview', $preview);
     //Token Replacement of Subject in preview mailing
     $options = array();
@@ -165,7 +142,7 @@ class CRM_Mailing_Form_Test extends CRM_Core_Form {
     $fromEmail = $mailing->from_email;
     $replyToEmail = $mailing->replyto_email;
 
-    $attachments = &CRM_Core_BAO_File::getEntityFile('civicrm_mailing',
+    $attachments = CRM_Core_BAO_File::getEntityFile('civicrm_mailing',
       $mailing->id
     );
 
@@ -199,11 +176,10 @@ class CRM_Mailing_Form_Test extends CRM_Core_Form {
    * @param array $files      Any files posted to the form
    * @param array $self       an current this object
    *
-   * @return boolean          true on succesful SMTP handoff
+   * @return boolean          true on successful SMTP handoff
    * @access public
    */
-  static
-  function &testMail($testParams, $files, $self) {
+  static function testMail($testParams, $files, $self) {
     $error = NULL;
 
     $urlString = 'civicrm/mailing/send';
@@ -228,7 +204,7 @@ class CRM_Mailing_Form_Test extends CRM_Core_Form {
     $emails = NULL;
     if (CRM_Utils_Array::value('sendtest', $testParams)) {
       if (!($testParams['test_group'] || $testParams['test_email'])) {
-        CRM_Core_Session::setStatus(ts('Your did not provided any email address or selected any group. No test mail is sent.'));
+        CRM_Core_Session::setStatus(ts('You did not provide an email address or select a group.'), ts('Test not sent.'), 'error');
         $error = TRUE;
       }
 
@@ -239,7 +215,7 @@ class CRM_Mailing_Form_Test extends CRM_Core_Form {
           $testParams['emails'][] = $email;
           $emails .= $emails ? ",'$email'" : "'$email'";
           if (!CRM_Utils_Rule::email($email)) {
-            CRM_Core_Session::setStatus(ts('Please enter valid email addresses only.'));
+            CRM_Core_Session::setStatus(ts('Please enter a valid email addresses.'), ts('Test not sent.'), 'error');
             $error = TRUE;
           }
         }
@@ -257,8 +233,7 @@ class CRM_Mailing_Form_Test extends CRM_Core_Form {
       //redirect it to search result CRM-3711.
       if ($ssID && $self->_searchBasedMailing) {
         $draftURL = CRM_Utils_System::url('civicrm/mailing/browse/unscheduled', 'scheduled=false&reset=1');
-        $status = ts("Your mailing has been saved. You can continue later by clicking the 'Continue' action to resume working on it.<br /> From <a href='%1'>Draft and Unscheduled Mailings</a>.", array(1 => $draftURL));
-        CRM_Core_Session::setStatus($status);
+        $status = ts("You can continue later by clicking the 'Continue' action to resume working on it.<br />From <a href='%1'>Draft and Unscheduled Mailings</a>.", array(1 => $draftURL));
 
         //replace user context to search.
         $context = $self->get('context');
@@ -266,16 +241,14 @@ class CRM_Mailing_Form_Test extends CRM_Core_Form {
           $context = 'search';
         }
         $urlParams = "force=1&reset=1&ssID={$ssID}&context={$context}&qfKey={$testParams['qfKey']}";
-
         $url = CRM_Utils_System::url($urlString, $urlParams);
-        CRM_Utils_System::redirect($url);
       }
       else {
-        $status = ts("Your mailing has been saved. Click the 'Continue' action to resume working on it.");
-        CRM_Core_Session::setStatus($status);
+        $status = ts("Click the 'Continue' action to resume working on it.");
         $url = CRM_Utils_System::url('civicrm/mailing/browse/unscheduled', 'scheduled=false&reset=1');
-        CRM_Utils_System::redirect($url);
       }
+      CRM_Core_Session::setStatus($status, ts('Mailing Saved'), 'success');
+      CRM_Utils_System::redirect($url);
     }
 
     if (CRM_Mailing_Info::workflowEnabled()) {
@@ -287,6 +260,14 @@ class CRM_Mailing_Form_Test extends CRM_Core_Form {
       }
     }
 
+    if (CRM_Utils_Array::value('_qf_Test_next', $testParams) &&
+      $self->get('count') <= 0) {
+      return array(
+        '_qf_default' =>
+        ts("You can not schedule or send this mailing because there are currently no recipients selected. Click 'Previous' to return to the Select Recipients step, OR click 'Save & Continue Later'."),
+      );
+    }
+
     if (CRM_Utils_Array::value('_qf_Import_refresh', $_POST) ||
       CRM_Utils_Array::value('_qf_Test_next', $testParams) ||
       !CRM_Utils_Array::value('sendtest', $testParams)
@@ -295,7 +276,7 @@ class CRM_Mailing_Form_Test extends CRM_Core_Form {
       return $error;
     }
 
-    $job             = new CRM_Mailing_BAO_Job();
+    $job             = new CRM_Mailing_BAO_MailingJob();
     $job->mailing_id = $self->get('mailing_id');
     $job->is_test    = TRUE;
     $job->save();
@@ -303,9 +284,17 @@ class CRM_Mailing_Form_Test extends CRM_Core_Form {
     $session = CRM_Core_Session::singleton();
     if (!empty($testParams['emails'])) {
       $query = "
-                      SELECT id, contact_id, email  
-                      FROM civicrm_email  
-                      WHERE civicrm_email.email IN ($emails)";
+SELECT     e.id, e.contact_id, e.email
+FROM       civicrm_email e
+INNER JOIN civicrm_contact c ON e.contact_id = c.id
+WHERE      e.email IN ($emails)
+AND        e.on_hold = 0
+AND        c.is_opt_out = 0
+AND        c.do_not_email = 0
+AND        c.is_deceased = 0
+GROUP BY   e.id
+ORDER BY   e.is_bulkmail DESC, e.is_primary DESC
+";
 
       $dao = CRM_Core_DAO::executeQuery($query);
       $emailDetail = array();
@@ -353,25 +342,28 @@ class CRM_Mailing_Form_Test extends CRM_Core_Form {
     $testParams['job_id'] = $job->id;
     $isComplete = FALSE;
     while (!$isComplete) {
-      $isComplete = CRM_Mailing_BAO_Job::runJobs($testParams);
+      $isComplete = CRM_Mailing_BAO_MailingJob::runJobs($testParams);
     }
 
     if (CRM_Utils_Array::value('sendtest', $testParams)) {
-      $status = ts('Your test message has been sent.');
+      $status = NULL;
       if (CRM_Mailing_Info::workflowEnabled()) {
-        if ((CRM_Core_Permission::check('schedule mailings') &&
+        if ((
+            CRM_Core_Permission::check('schedule mailings') &&
             CRM_Core_Permission::check('create mailings')
           ) ||
           CRM_Core_Permission::check('access CiviMail')
         ) {
-          $status .= ts(" Click 'Next' when you are ready to Schedule or Send your live mailing (you will still have a chance to confirm or cancel sending this mailing on the next page).");
+          $status = ts("Click 'Next' when you are ready to Schedule or Send your live mailing (you will still have a chance to confirm or cancel sending this mailing on the next page).");
         }
       }
       else {
-        $status .= ts(" Click 'Next' when you are ready to Schedule or Send your live mailing (you will still have a chance to confirm or cancel sending this mailing on the next page).");
+        $status = ts("Click 'Next' when you are ready to Schedule or Send your live mailing (you will still have a chance to confirm or cancel sending this mailing on the next page).");
       }
 
-      CRM_Core_Session::setStatus($status);
+      if ($status) {
+        CRM_Core_Session::setStatus($status, ts('Test message sent'), 'success');
+      }
       $url = CRM_Utils_System::url($urlString, $urlParams);
       CRM_Utils_System::redirect($url);
     }
@@ -390,6 +382,8 @@ class CRM_Mailing_Form_Test extends CRM_Core_Form {
     return ts('Test');
   }
 
-  public function postProcess() {}
+  public function postProcess() {
+  }
+
 }
 

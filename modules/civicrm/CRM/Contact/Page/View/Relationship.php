@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -58,7 +58,8 @@ class CRM_Contact_Page_View_Relationship extends CRM_Core_Page {
    * @return void
    *
    * @access public
-   */ function view() {
+   */
+  function view() {
     $viewRelationship = CRM_Contact_BAO_Relationship::getRelationship($this->_contactId, NULL, NULL, NULL, $this->_id);
     //To check whether selected contact is a contact_id_a in
     //relationship type 'a_b' in relationship table, if yes then
@@ -76,10 +77,13 @@ class CRM_Contact_Page_View_Relationship extends CRM_Core_Page {
 
     $employerId = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $this->_contactId, 'employer_id');
     $this->assign('isCurrentEmployer', FALSE);
+
+    $relTypes = CRM_Utils_Array::index(array('name_a_b'), CRM_Core_PseudoConstant::relationshipType('name'));
+    
     if ($viewRelationship[$this->_id]['employer_id'] == $this->_contactId) {
       $this->assign('isCurrentEmployer', TRUE);
     }
-    elseif ($relType == 4 &&
+    elseif ($relType == $relTypes['Employee of']['id'] &&
       ($viewRelationship[$this->_id]['cid'] == $employerId)
     ) {
       // make sure we are viewing employee of relationship
@@ -117,6 +121,7 @@ class CRM_Contact_Page_View_Relationship extends CRM_Core_Page {
 
     $displayName = CRM_Contact_BAO_Contact::displayName($this->_contactId);
     $this->assign('displayName', $displayName);
+    CRM_Utils_System::setTitle(ts('View Relationship for') . ' ' . $displayName);
 
     $title = $displayName . ' (' . $viewRelationship[$this->_id]['relation'] . ' ' . CRM_Contact_BAO_Contact::displayName($viewRelationship[$this->_id]['cid']) . ')';
 
@@ -197,7 +202,7 @@ class CRM_Contact_Page_View_Relationship extends CRM_Core_Page {
       if ($this->_caseId) {
         //create an activity for case role removal.CRM-4480
         CRM_Case_BAO_Case::createCaseRoleActivity($this->_caseId, $this->_id);
-        CRM_Core_Session::setStatus(ts('Case Role has been deleted successfully.'), FALSE);
+        CRM_Core_Session::setStatus(ts('Case Role has been deleted successfully.'), ts('Record Deleted'), 'success');
       }
 
       // delete relationship
@@ -305,8 +310,7 @@ class CRM_Contact_Page_View_Relationship extends CRM_Core_Page {
    * @return array (reference) of action links
    * @static
    */
-  static
-  function &links() {
+  static function &links() {
     if (!(self::$_links)) {
       $deleteExtra  = ts('Are you sure you want to delete this relationship?');
       $disableExtra = ts('Are you sure you want to disable this relationship?');

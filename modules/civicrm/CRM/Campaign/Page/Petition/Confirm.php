@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -62,10 +62,11 @@ class CRM_Campaign_Page_Petition_Confirm extends CRM_Core_Page {
     $this->assign('petition_id', $petition_id);
 
     $this->assign('survey_id', $petition_id);
-    
+
     $pparams['id']   = $petition_id;
     $this->petition = array();
     CRM_Campaign_BAO_Survey::retrieve($pparams, $this->petition);
+    $this->assign('is_share', CRM_Utils_Array::value('is_share', $this->petition));
     $this->assign('thankyou_title', CRM_Utils_Array::value('thankyou_title', $this->petition));
     $this->assign('thankyou_text', CRM_Utils_Array::value('thankyou_text', $this->petition));
     CRM_Utils_System::setTitle(CRM_Utils_Array::value('thankyou_title', $this->petition));

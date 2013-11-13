@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,7 +27,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -53,10 +53,10 @@ class CRM_Contribute_Form_Task_SearchTaskHookSample extends CRM_Contribute_Form_
     $query = "
     SELECT co.total_amount as amount,
            co.receive_date as receive_date,
-           co.source       as source,   
-           ct.display_name as display_name  
-      FROM civicrm_contribution co 
-INNER JOIN civicrm_contact ct ON ( co.contact_id = ct.id )      
+           co.source       as source,
+           ct.display_name as display_name
+      FROM civicrm_contribution co
+INNER JOIN civicrm_contact ct ON ( co.contact_id = ct.id )
      WHERE co.id IN ( $contribIDs )";
 
     $dao = CRM_Core_DAO::executeQuery($query,

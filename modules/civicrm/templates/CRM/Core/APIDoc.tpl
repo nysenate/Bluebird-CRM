@@ -11,12 +11,11 @@ h2.entity {cursor:pointer}
 {/literal}
 </style>
 <script>
-resourceBase = '{$config->resourceBase}';
 if (!jQuery) {ldelim}  
 var head= document.getElementsByTagName('head')[0];
 var script= document.createElement('script');
 script.type= 'text/javascript';
-script.src= resourceBase + 'js/packages/jquery/jquery.js';
+script.src= CRM.config.resourceBase + 'js/packages/jquery/jquery.js';
 head.appendChild(script);
 {rdelim} 
 restURL = '{crmURL p="civicrm/api/json"}';
@@ -37,7 +36,7 @@ function APIDoc(entity){
     return;
   } // else fetch the field list
   return function(entity){
-  $().crmAPI (entity,'getFields',{version : 3}
+  CRM.api (entity,'getFields',{version : 3}
       ,{ success:function (data){
         var h="<table id=detail_"+entity+"><tr><th>Attribute</th><th>Name</th><th>type</th></tr>";
         var type="";

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -51,20 +51,19 @@
 <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl"}</div>
 
 {if $preview}
-<div class="crm-accordion-wrapper crm-plain_text_sms-accordion crm-accordion-closed">
+<div class="crm-accordion-wrapper crm-plain_text_sms-accordion collapsed">
     <div class="crm-accordion-header">
-        <div class="icon crm-accordion-pointer"></div> 
         {ts}Preview SMS{/ts}
     </div><!-- /.crm-accordion-header -->
     <div class="crm-accordion-body">
         <table class="form-layout">
-      
+
           {if $preview.viewURL}
-	  <tr><td class="label">{if $preview.type eq 'html'}{ts}SMS HTML:{/ts}{else}{ts}SMS Text:{/ts}{/if}</td><td><iframe height="300" src="{$preview.viewURL}" width="80%"><a href="{$preview.viewURL}" onclick="window.open(this.href); return false;">{ts}SMS Text:{/ts}</a></iframe></td></tr>
+    <tr><td class="label">{if $preview.type eq 'html'}{ts}SMS HTML:{/ts}{else}{ts}SMS Text:{/ts}{/if}</td><td><iframe height="300" src="{$preview.viewURL}" width="80%"><a href="{$preview.viewURL}" onclick="window.open(this.href); return false;">{ts}SMS Text:{/ts}</a></iframe></td></tr>
           {/if}
         </table>
     </div><!-- /.crm-accordion-body -->
-</div><!-- /.crm-accordion-wrapper -->    
+</div><!-- /.crm-accordion-wrapper -->
 {/if}
 
 {* include jscript to warn if unsaved form field changes *}
@@ -76,7 +75,7 @@
 {if $preview}
 {literal}
 cj(function() {
-   cj().crmaccordions(); 
+   cj().crmAccordions();
 });
 {/literal}
 {/if}
@@ -86,6 +85,13 @@ cj(function() {
    cj('#start_date_display').change( function( ) { 
        if ( cj(this).val( ) ) {
           cj('#now').attr( 'checked', false );
+       }
+   });
+   cj('#now').change( function( ) { 
+       if ( cj('#now').attr('checked', true ) ) {
+          cj('#start_date_display').val( '' );
+          cj('#start_date').val( '' );
+          cj('#start_date_time').val( '' );
        }
    });
 });

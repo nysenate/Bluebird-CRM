@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -23,6 +23,9 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
+{htxt id="id-dash_welcome-title"}
+  {ts}Dashboard{/ts}
+{/htxt}
 {htxt id="id-dash_welcome"}
 <p>
   {ts}To include a dashlet report click "Configure Dashboard" and drag the desired dashlet from the "Available Dashlets" block to one of the columns (use the right column for a better fit).{/ts}
@@ -40,6 +43,9 @@
 </p>
 {/htxt}
 
+{htxt id="id-dash_configure-title"}
+  {ts}Configuration{/ts}
+{/htxt}
 {htxt id="id-dash_configure"}
 <p>
   {ts}To include a dashlet report drag it from the "Available Dashlets" block to one of the two columns (use the right column for a better fit).{/ts}
@@ -55,7 +61,7 @@
     <li>{ts}You can now drag the reports onto the right or left columns and click 'Done' to save your layout.{/ts}</li>
   </ul>
 </p>
-{if $admin}
+{if $params.admin}
   <p>
     {ts}If you want to remove dashlets from the set of 'Available Dashlets' you can click the 'x' in the right corner of any dashlet. This will also remove the dashlet from any users' dashboards that currently include it. You can make a dashlet available again by checking the 'Available for Dashboard' box in the Report Settings of the associated report instance.{/ts}
   </p>

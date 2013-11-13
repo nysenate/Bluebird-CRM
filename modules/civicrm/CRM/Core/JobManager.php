@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,15 +30,20 @@
  * by every scheduled job (cron task) in CiviCRM.
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
 class CRM_Core_JobManager {
 
-
+  /**
+   * @var array ($id => CRM_Core_ScheduledJob)
+   */
   var $jobs = NULL;
 
+  /**
+   * @var CRM_Core_ScheduledJob
+   */
   var $currentJob = NULL;
 
   var $singleRunParams = array();
@@ -47,13 +52,12 @@ class CRM_Core_JobManager {
 
 
   /*
-     * Class constructor
-     * 
-     * @param void
-     * @access public
-     * 
-     */
-
+   * Class constructor
+   *
+   * @param void
+   * @access public
+   *
+   */
   public function __construct() {
     $config = CRM_Core_Config::singleton();
     $config->fatalErrorHandler = 'CRM_Core_JobManager_scheduledJobFatalErrorHandler';
@@ -62,12 +66,11 @@ class CRM_Core_JobManager {
   }
 
   /*
-     * 
-     * @param void
-     * @access private
-     * 
-     */
-
+   *
+   * @param void
+   * @access private
+   *
+   */
   public function execute($auth = TRUE) {
 
     $this->logEntry('Starting scheduled jobs execution');
@@ -78,6 +81,7 @@ class CRM_Core_JobManager {
     require_once 'api/api.php';
 
     // it's not asynchronous at this stage
+    CRM_Utils_Hook::cron($this);
     foreach ($this->jobs as $job) {
       if ($job->is_active) {
         if ($job->needsRunning()) {
@@ -89,13 +93,12 @@ class CRM_Core_JobManager {
   }
 
   /*
-     * Class destructor
-     * 
-     * @param void
-     * @access public
-     * 
-     */
-
+   * Class destructor
+   *
+   * @param void
+   * @access public
+   *
+   */
   public function __destruct() {}
 
   public function executeJobByAction($entity, $action) {
@@ -108,7 +111,9 @@ class CRM_Core_JobManager {
     $this->executeJob($job);
   }
 
-
+  /**
+   * @param CRM_Core_ScheduledJob $job
+   */
   public function executeJob($job) {
     $this->currentJob = $job;
     $this->logEntry('Starting execution of ' . $job->name);
@@ -134,18 +139,19 @@ class CRM_Core_JobManager {
   }
 
   /*
-     * Retrieves the list of jobs from the database,
-     * populates class param.
-     * 
-     * @param void
-     * @access private
-     * 
-     */
-
+   * Retrieves the list of jobs from the database,
+   * populates class param.
+   *
+   * @param void
+   * @return array ($id => CRM_Core_ScheduledJob)
+   * @access private
+   *
+   */
   private function _getJobs() {
     $jobs = array();
     $dao = new CRM_Core_DAO_Job();
     $dao->orderBy('name');
+    $dao->domain_id = CRM_Core_Config::domainID();
     $dao->find();
     while ($dao->fetch()) {
       $temp = array();
@@ -156,14 +162,13 @@ class CRM_Core_JobManager {
   }
 
   /*
-     * Retrieves specific job from the database by id
-     * and creates ScheduledJob object.
-     * 
-     * @param void
-     * @access private
-     * 
-     */
-
+   * Retrieves specific job from the database by id
+   * and creates ScheduledJob object.
+   *
+   * @param void
+   * @access private
+   *
+   */
   private function _getJob($id = NULL, $entity = NULL, $action = NULL) {
     if (is_null($id) && is_null($action)) {
       CRM_Core_Error::fatal('You need to provide either id or name to use this method');
@@ -187,14 +192,12 @@ class CRM_Core_JobManager {
     $this->singleRunParams[$key]['version'] = 3;
   }
 
-
   /*
-     *
-     * @return array|null collection of permissions, null if none
-     * @access public
-     *
-     */
-
+   *
+   * @return array|null collection of permissions, null if none
+   * @access public
+   *
+   */
   public function logEntry($message) {
     $domainID = CRM_Core_Config::domainID();
     $dao = new CRM_Core_DAO_JobLog();
@@ -207,7 +210,7 @@ class CRM_Core_JobManager {
     if ($this->currentJob) {
       $dao->job_id  = $this->currentJob->id;
       $dao->name    = $this->currentJob->name;
-      $dao->command = ts("Prefix:") . " " . $this->currentJob->api_prefix + " " . ts("Entity:") . " " + $this->currentJob->api_entity + " " . ts("Action:") . " " + $this->currentJob->api_action;
+      $dao->command = ts("Entity:") . " " + $this->currentJob->api_entity + " " . ts("Action:") . " " + $this->currentJob->api_action;
       $data         = "";
       if (!empty($this->currentJob->parameters)) {
         $data .= "\n\nParameters raw (from db settings): \n" . $this->currentJob->parameters;

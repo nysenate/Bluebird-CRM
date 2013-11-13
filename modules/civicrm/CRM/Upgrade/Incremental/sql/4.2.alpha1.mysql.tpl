@@ -13,7 +13,7 @@ INSERT INTO `civicrm_report_instance`
 VALUES
     ( {$domainID}, 'Mailing Detail Report', 'mailing/detail', 'Provides reporting on Intended and Successful Deliveries, Unsubscribes and Opt-outs, Replies and Forwards.', 'access CiviMail', '{literal}a:30:{s:6:"fields";a:6:{s:9:"sort_name";s:1:"1";s:12:"mailing_name";s:1:"1";s:11:"delivery_id";s:1:"1";s:14:"unsubscribe_id";s:1:"1";s:9:"optout_id";s:1:"1";s:5:"email";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:13:"mailing_id_op";s:2:"in";s:16:"mailing_id_value";a:0:{}s:18:"delivery_status_op";s:2:"eq";s:21:"delivery_status_value";s:0:"";s:18:"is_unsubscribed_op";s:2:"eq";s:21:"is_unsubscribed_value";s:0:"";s:12:"is_optout_op";s:2:"eq";s:15:"is_optout_value";s:0:"";s:13:"is_replied_op";s:2:"eq";s:16:"is_replied_value";s:0:"";s:15:"is_forwarded_op";s:2:"eq";s:18:"is_forwarded_value";s:0:"";s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:9:"order_bys";a:1:{i:1;a:2:{s:6:"column";s:9:"sort_name";s:5:"order";s:3:"ASC";}}s:11:"description";s:21:"Mailing Detail Report";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:15:"access CiviMail";s:9:"parent_id";s:0:"";s:6:"groups";s:0:"";s:9:"domain_id";i:1;}{/literal}');
 
-SELECT @reportlastID       := MAX(id) FROM civicrm_navigation where name = 'Reports';
+SELECT @reportlastID       := MAX(id) FROM civicrm_navigation where name = 'Reports' AND domain_id = {$domainID};
 SELECT @nav_max_weight     := MAX(ROUND(weight)) from civicrm_navigation WHERE parent_id = @reportlastID;
 
 SET @instanceID:=LAST_INSERT_ID();
@@ -102,8 +102,8 @@ VALUES
        ( @uf_group_membership_batch_entry,     'contribution_status_id',      1, 1, 11, 'User and User Admin Only', 0, 0, NULL, {localize}'Payment Status'{/localize}, 'Membership' );
 
 --navigation menu entries
-SELECT @navContributionsID := MAX(id) FROM civicrm_navigation where name = 'Contributions';
-SELECT @navMembershipsID := MAX(id) FROM civicrm_navigation where name = 'Memberships';
+SELECT @navContributionsID := MAX(id) FROM civicrm_navigation where name = 'Contributions' AND domain_id = {$domainID};
+SELECT @navMembershipsID := MAX(id) FROM civicrm_navigation where name = 'Memberships' AND domain_id = {$domainID};
 
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
@@ -165,7 +165,7 @@ VALUES
      (@option_group_id_sms_api_type, {localize}'smtp'{/localize},  3, 'smtp',  3, NULL, 0, 1, NULL);
 
 -- CRM-9784
-SELECT @adminSystemSettingsID := MAX(id) FROM civicrm_navigation where name = 'System Settings';
+SELECT @adminSystemSettingsID := MAX(id) FROM civicrm_navigation where name = 'System Settings' AND domain_id = {$domainID};
 
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
@@ -174,14 +174,14 @@ VALUES
 
 -- CRM-9799
 
-SELECT @mailingsID := MAX(id) FROM civicrm_navigation where name = 'Mailings';
+SELECT @mailingsID := MAX(id) FROM civicrm_navigation where name = 'Mailings' AND domain_id = {$domainID};
 
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES
     ( {$domainID}, 'civicrm/sms/send?reset=1', '{ts escape="sql" skip="true"}New SMS{/ts}', 'New SMS', 'administer CiviCRM', NULL, @mailingsID, '1', 1, 8 );
 
-SELECT @fromEmailAddressesID := MAX(id) FROM civicrm_navigation where name = 'From Email Addresses';
+SELECT @fromEmailAddressesID := MAX(id) FROM civicrm_navigation where name = 'From Email Addresses' AND domain_id = {$domainID};
 
 UPDATE civicrm_navigation SET has_separator = 1 WHERE parent_id = @mailingsID AND name = 'From Email Addresses';
 
@@ -215,13 +215,13 @@ ALTER TABLE `civicrm_contribution_page` ADD COLUMN is_confirm_enabled tinyint(4)
   {/if}
     ALTER TABLE civicrm_group ADD title_{$locale} VARCHAR(64);
     ALTER TABLE civicrm_group ADD UNIQUE KEY `UI_title_{$locale}` (title_{$locale});
-    
-    ALTER TABLE `civicrm_batch` CHANGE `label_{$locale}` `title_{$locale}` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Friendly Name.'; 
+
+    ALTER TABLE `civicrm_batch` CHANGE `label_{$locale}` `title_{$locale}` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Friendly Name.';
     UPDATE civicrm_group SET title_{$locale} = title;
-  
+
     ALTER TABLE civicrm_survey
      ADD COLUMN thankyou_title_{$locale} varchar(255)    COMMENT 'Title for Thank-you page (header title tag, and display at the top of the page).',
-     ADD COLUMN thankyou_text_{$locale}  text    COMMENT 'text and html allowed. displayed above result on success page';    
+     ADD COLUMN thankyou_text_{$locale}  text    COMMENT 'text and html allowed. displayed above result on success page';
   {/foreach}
 
   ALTER TABLE civicrm_group DROP INDEX `UI_title`;
@@ -243,6 +243,15 @@ SELECT @region_id   := max(id) from civicrm_worldregion where name = "America So
 INSERT INTO civicrm_country (name,iso_code,region_id,is_province_abbreviated) VALUES("Curaçao", "CW", @region_id, 0);
 INSERT INTO civicrm_country (name,iso_code,region_id,is_province_abbreviated) VALUES("Sint Maarten (Dutch Part)", "SX", @region_id, 0);
 INSERT INTO civicrm_country (name,iso_code,region_id,is_province_abbreviated) VALUES("Bonaire, Saint Eustatius and Saba", "BQ", @region_id, 0);
+
+-- CRM-12428
+{if $multilingual}
+    {foreach from=$locales item=locale}
+      ALTER TABLE `civicrm_price_field_value` CHANGE label_{$locale} label_{$locale} VARCHAR(255)  NULL DEFAULT NULL;
+    {/foreach}
+{else}
+  ALTER TABLE `civicrm_price_field_value` CHANGE `label` `label` VARCHAR(255)  NULL DEFAULT NULL;
+{/if}
 
 -- CRM-9714 create a default price set for contribution and membership
 ALTER TABLE `civicrm_price_set`
@@ -288,7 +297,7 @@ LEFT JOIN civicrm_price_field cpf ON  cps.id = cpf.price_set_id
 LEFT JOIN civicrm_price_field_value cpfv ON cpf.id = cpfv.price_field_id
 WHERE cps.name = 'default_contribution_amount';
 
-INSERT INTO civicrm_line_item ( entity_table, entity_id, price_field_id,label, qty, unit_price, line_total, participant_count, price_field_value_id )
+INSERT INTO civicrm_line_item ( entity_table, entity_id, price_field_id, label, qty, unit_price, line_total, participant_count, price_field_value_id )
 SELECT 'civicrm_contribution', cc.id, @fieldID, 'Contribution Amount', 1, total_amount, total_amount , 0, @fieldValueID
 FROM `civicrm_contribution` cc
 LEFT JOIN civicrm_line_item cli ON cc.id=cli.entity_id and cli.entity_table = 'civicrm_contribution'
@@ -310,7 +319,7 @@ INSERT INTO `civicrm_report_instance`
 VALUES
     ( {$domainID}, 'Contribution and Membership Details', 'member/contributionDetail', 'Contribution details for any type of contribution, plus associated membership information for contributions which are in payment for memberships.', 'access CiviMember', '{literal}a:67:{s:6:"fields";a:12:{s:9:"sort_name";s:1:"1";s:5:"email";s:1:"1";s:5:"phone";s:1:"1";s:20:"contribution_type_id";s:1:"1";s:12:"receive_date";s:1:"1";s:12:"total_amount";s:1:"1";s:18:"membership_type_id";s:1:"1";s:21:"membership_start_date";s:1:"1";s:19:"membership_end_date";s:1:"1";s:9:"join_date";s:1:"1";s:22:"membership_status_name";s:1:"1";s:10:"country_id";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:21:"receive_date_relative";s:1:"0";s:17:"receive_date_from";s:0:"";s:15:"receive_date_to";s:0:"";s:23:"contribution_type_id_op";s:2:"in";s:26:"contribution_type_id_value";a:0:{}s:24:"payment_instrument_id_op";s:2:"in";s:27:"payment_instrument_id_value";a:0:{}s:25:"contribution_status_id_op";s:2:"in";s:28:"contribution_status_id_value";a:0:{}s:16:"total_amount_min";s:0:"";s:16:"total_amount_max";s:0:"";s:15:"total_amount_op";s:3:"lte";s:18:"total_amount_value";s:0:"";s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:13:"ordinality_op";s:2:"in";s:16:"ordinality_value";a:0:{}s:18:"join_date_relative";s:1:"0";s:14:"join_date_from";s:0:"";s:12:"join_date_to";s:0:"";s:30:"membership_start_date_relative";s:1:"0";s:26:"membership_start_date_from";s:0:"";s:24:"membership_start_date_to";s:0:"";s:28:"membership_end_date_relative";s:1:"0";s:24:"membership_end_date_from";s:0:"";s:22:"membership_end_date_to";s:0:"";s:23:"owner_membership_id_min";s:0:"";s:23:"owner_membership_id_max";s:0:"";s:22:"owner_membership_id_op";s:3:"lte";s:25:"owner_membership_id_value";s:0:"";s:6:"tid_op";s:2:"in";s:9:"tid_value";a:0:{}s:6:"sid_op";s:2:"in";s:9:"sid_value";a:0:{}s:17:"street_number_min";s:0:"";s:17:"street_number_max";s:0:"";s:16:"street_number_op";s:3:"lte";s:19:"street_number_value";s:0:"";s:14:"street_name_op";s:3:"has";s:17:"street_name_value";s:0:"";s:15:"postal_code_min";s:0:"";s:15:"postal_code_max";s:0:"";s:14:"postal_code_op";s:3:"lte";s:17:"postal_code_value";s:0:"";s:7:"city_op";s:3:"has";s:10:"city_value";s:0:"";s:12:"county_id_op";s:2:"in";s:15:"county_id_value";a:0:{}s:20:"state_province_id_op";s:2:"in";s:23:"state_province_id_value";a:0:{}s:13:"country_id_op";s:2:"in";s:16:"country_id_value";a:0:{}s:8:"tagid_op";s:2:"in";s:11:"tagid_value";a:0:{}s:11:"description";s:35:"Contribution and Membership Details";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:17:"access CiviMember";s:9:"domain_id";i:1;}{s:6:"fields";a:12:{s:9:"sort_name";s:1:"1";s:5:"email";s:1:"1";s:5:"phone";s:1:"1";s:20:"contribution_type_id";s:1:"1";s:12:"receive_date";s:1:"1";s:12:"total_amount";s:1:"1";s:18:"membership_type_id";s:1:"1";s:21:"membership_start_date";s:1:"1";s:19:"membership_end_date";s:1:"1";s:9:"join_date";s:1:"1";s:22:"membership_status_name";s:1:"1";s:10:"country_id";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:21:"receive_date_relative";s:1:"0";s:17:"receive_date_from";s:0:"";s:15:"receive_date_to";s:0:"";s:23:"contribution_type_id_op";s:2:"in";s:26:"contribution_type_id_value";a:0:{}s:24:"payment_instrument_id_op";s:2:"in";s:27:"payment_instrument_id_value";a:0:{}s:25:"contribution_status_id_op";s:2:"in";s:28:"contribution_status_id_value";a:0:{}s:16:"total_amount_min";s:0:"";s:16:"total_amount_max";s:0:"";s:15:"total_amount_op";s:3:"lte";s:18:"total_amount_value";s:0:"";s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:13:"ordinality_op";s:2:"in";s:16:"ordinality_value";a:0:{}s:18:"join_date_relative";s:1:"0";s:14:"join_date_from";s:0:"";s:12:"join_date_to";s:0:"";s:30:"membership_start_date_relative";s:1:"0";s:26:"membership_start_date_from";s:0:"";s:24:"membership_start_date_to";s:0:"";s:28:"membership_end_date_relative";s:1:"0";s:24:"membership_end_date_from";s:0:"";s:22:"membership_end_date_to";s:0:"";s:23:"owner_membership_id_min";s:0:"";s:23:"owner_membership_id_max";s:0:"";s:22:"owner_membership_id_op";s:3:"lte";s:25:"owner_membership_id_value";s:0:"";s:6:"tid_op";s:2:"in";s:9:"tid_value";a:0:{}s:6:"sid_op";s:2:"in";s:9:"sid_value";a:0:{}s:17:"street_number_min";s:0:"";s:17:"street_number_max";s:0:"";s:16:"street_number_op";s:3:"lte";s:19:"street_number_value";s:0:"";s:14:"street_name_op";s:3:"has";s:17:"street_name_value";s:0:"";s:15:"postal_code_min";s:0:"";s:15:"postal_code_max";s:0:"";s:14:"postal_code_op";s:3:"lte";s:17:"postal_code_value";s:0:"";s:7:"city_op";s:3:"has";s:10:"city_value";s:0:"";s:12:"county_id_op";s:2:"in";s:15:"county_id_value";a:0:{}s:20:"state_province_id_op";s:2:"in";s:23:"state_province_id_value";a:0:{}s:13:"country_id_op";s:2:"in";s:16:"country_id_value";a:0:{}s:8:"tagid_op";s:2:"in";s:11:"tagid_value";a:0:{}s:11:"description";s:35:"Contribution and Membership Details";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:1:"0";s:9:"domain_id";i:1;}{/literal}');
 
-SELECT @reportlastID       := MAX(id) FROM civicrm_navigation where name = 'Reports';
+SELECT @reportlastID       := MAX(id) FROM civicrm_navigation where name = 'Reports' AND domain_id = {$domainID};
 SELECT @nav_max_weight     := MAX(ROUND(weight)) from civicrm_navigation WHERE parent_id = @reportlastID;
 
 SET @instanceID:=LAST_INSERT_ID();
@@ -321,8 +330,7 @@ VALUES
 UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
 
 -- CRM-9936
--- NYSS remove as already present
--- ALTER TABLE civicrm_group ADD is_reserved TINYINT( 4 ) NULL DEFAULT '0' ;
+ALTER TABLE civicrm_group ADD is_reserved TINYINT( 4 ) NULL DEFAULT '0' ;
 
 -- CRM-9501 price set report templates
 SELECT @option_group_id_report := MAX(id)     FROM civicrm_option_group WHERE name = 'report_template';

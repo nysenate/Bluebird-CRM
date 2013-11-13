@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -32,7 +32,7 @@
  * process
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -114,6 +114,16 @@ class CRM_Core_Controller_Simple extends CRM_Core_Controller {
     list($pageName, $action) = $actionName;
 
     return $this->_pages[$pageName]->getTemplateFileName();
+  }
+
+  /**
+   * A wrapper for getTemplateFileName that includes calling the hook to
+   * prevent us from having to copy & paste the logic of calling the hook
+   */
+  function getHookedTemplateFileName() {
+    $pageTemplateFile = $this->getTemplateFileName();
+    CRM_Utils_Hook::alterTemplateFile(get_class($this), $this, 'page', $pageTemplateFile);
+    return $pageTemplateFile;
   }
 }
 

@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -55,8 +55,7 @@ class CRM_Pledge_BAO_PledgeBlock extends CRM_Pledge_DAO_PledgeBlock {
    * @access public
    * @static
    */
-  static
-  function retrieve(&$params, &$defaults) {
+  static function retrieve(&$params, &$defaults) {
     $pledgeBlock = new CRM_Pledge_DAO_PledgeBlock();
     $pledgeBlock->copyValues($params);
     if ($pledgeBlock->find(TRUE)) {
@@ -75,8 +74,7 @@ class CRM_Pledge_BAO_PledgeBlock extends CRM_Pledge_DAO_PledgeBlock {
    * @access public
    * @static
    */
-  static
-  function &create(&$params) {
+  static function &create(&$params) {
     $transaction = new CRM_Core_Transaction();
     $pledgeBlock = self::add($params);
 
@@ -102,8 +100,7 @@ class CRM_Pledge_BAO_PledgeBlock extends CRM_Pledge_DAO_PledgeBlock {
    *
    * @return object
    */
-  static
-  function add(&$params) {
+  static function add(&$params) {
 
     if (CRM_Utils_Array::value('id', $params)) {
       CRM_Utils_Hook::pre('edit', 'PledgeBlock', $params['id'], $params);
@@ -157,8 +154,7 @@ class CRM_Pledge_BAO_PledgeBlock extends CRM_Pledge_DAO_PledgeBlock {
    * @access public
    * @static
    */
-  static
-  function deletePledgeBlock($id) {
+  static function deletePledgeBlock($id) {
     CRM_Utils_Hook::pre('delete', 'PledgeBlock', $id, CRM_Core_DAO::$_nullArray);
 
     $transaction = new CRM_Core_Transaction();
@@ -183,8 +179,7 @@ class CRM_Pledge_BAO_PledgeBlock extends CRM_Pledge_DAO_PledgeBlock {
    *
    * @static
    */
-  static
-  function getPledgeBlock($pageID) {
+  static function getPledgeBlock($pageID) {
     $pledgeBlock = array();
 
     $dao               = new CRM_Pledge_DAO_PledgeBlock();
@@ -200,10 +195,10 @@ class CRM_Pledge_BAO_PledgeBlock extends CRM_Pledge_DAO_PledgeBlock {
   /**
    * Function to build Pledge Block in Contribution Pages
    *
-   * @param int $pageId
+   * @param obj $form
    * @static
    */
-  function buildPledgeBlock($form) {
+  static function buildPledgeBlock($form) {
     //build pledge payment fields.
     if (CRM_Utils_Array::value('pledge_id', $form->_values)) {
       //get all payments required details.
@@ -272,7 +267,7 @@ class CRM_Pledge_BAO_PledgeBlock extends CRM_Pledge_DAO_PledgeBlock {
     }
     else {
 
-      $pledgeBlock = CRM_Pledge_BAO_PledgeBlock::getPledgeBlock($this->_id);
+      $pledgeBlock = self::getPledgeBlock($form->_id);
 
       //build form for pledge creation.
       $pledgeOptions = array('0' => ts('I want to make a one-time contribution'),

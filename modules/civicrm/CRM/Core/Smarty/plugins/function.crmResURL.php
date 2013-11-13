@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -45,5 +45,5 @@ function smarty_function_crmResURL($params, &$smarty) {
   if (!array_key_exists('file', $params)) {
     $params['file'] = NULL;
   }
-  return  $res->getUrl($params['ext'], $params['file']);
+  return  $res->getUrl($params['ext'], $params['file'], $params['addCacheCode']);
 }

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,59 +30,58 @@
 
 {strip}
 <div class="crm-block crm-form-block crm-basic-criteria-form-block">
-    <div class="crm-accordion-wrapper crm-case_search-accordion {if $rows}crm-accordion-closed{else}crm-accordion-open{/if}">
+    <div class="crm-accordion-wrapper crm-case_search-accordion {if $rows}collapsed{/if}">
      <div class="crm-accordion-header crm-master-accordion-header">
-      <div class="icon crm-accordion-pointer"></div> 
         {$editTitle}
     </div><!-- /.crm-accordion-header -->
     <div class="crm-accordion-body">
-        <div class="crm-section sort_name-section">	
-        	<div class="label">
-        		{$form.sort_name.label}
-        	</div>
-        	<div class="content">
-        		{$form.sort_name.html}
-        	</div>
-        	<div class="clear"></div> 
+        <div class="crm-section sort_name-section">
+          <div class="label">
+            {$form.sort_name.label}
+          </div>
+          <div class="content">
+            {$form.sort_name.html}
+          </div>
+          <div class="clear"></div>
         </div>
 
-        {if $form.contact_type}    
-        	<div class="crm-section contact_type-section">	
-        		<div class="label">
-        			{$form.contact_type.label}
-        		</div>
-            	<div class="content">
-            		{$form.contact_type.html}
-            	</div>
-            	<div class="clear"></div> 
-        	</div>
+        {if $form.contact_type}
+          <div class="crm-section contact_type-section">
+            <div class="label">
+              {$form.contact_type.label}
+            </div>
+              <div class="content">
+                {$form.contact_type.html}
+              </div>
+              <div class="clear"></div>
+          </div>
         {/if}
 
         {if $form.group}
-        <div class="crm-section group_selection-section">	
-        	<div class="label">
-        	    {$form.group.label}
+        <div class="crm-section group_selection-section">
+          <div class="label">
+              {$form.group.label}
                 </div>
-        	<div class="content">
-                    {$form.group.html|crmReplace:class:big}
+          <div class="content">
+                    {$form.group.html|crmAddClass:big}
                 </div>
-        	<div class="clear"></div> 
+          <div class="clear"></div>
         </div>
         {/if}
 
         {if $form.tag}
-            <div class="crm-section tag-section">	
-            	<div class="label">
-            		{$form.tag.label}
-            	</div>
-            	<div class="content">
-            		{$form.tag.html|crmReplace:class:medium}
-            	</div>
-            	<div class="clear"></div> 
+            <div class="crm-section tag-section">
+              <div class="label">
+                {$form.tag.label}
+              </div>
+              <div class="content">
+                {$form.tag.html|crmAddClass:medium}
+              </div>
+              <div class="clear"></div>
             </div>
         {/if}
-        
-        	{* Choose regular or 'tall' listing-box class for Group select box based on # of groups. *}
+
+          {* Choose regular or 'tall' listing-box class for Group select box based on # of groups. *}
             {if $form.custom_group|@count GT 8}
                 {assign var="boxClass" value="listing-box-tall"}
             {else}
@@ -90,7 +89,7 @@
             {/if}
             <div class="crm-section crm-contact-custom-search-multipleValues-form-block-custom_group">
                 <div class="label">
-                	{ts}Custom Group(s){/ts}
+                  {ts}Custom Group(s){/ts}
                 </div>
                 <div class="content">
                     <div class="{$boxClass}">
@@ -101,8 +100,8 @@
                         {/foreach}
                     </div>
                 </div>
-            </div> 
-                   
+            </div>
+
         <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl"}</div>
     </div><!-- /.crm-accordion-body -->
     </div><!-- /.crm-accordion-wrapper -->
@@ -111,7 +110,7 @@
 {literal}
 <script type="text/javascript">
 cj(function() {
-   cj().crmaccordions(); 
+   cj().crmAccordions();
 });
 </script>
 {/literal}

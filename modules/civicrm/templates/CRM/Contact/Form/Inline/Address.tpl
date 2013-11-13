@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,24 +24,24 @@
  +--------------------------------------------------------------------+
 *}
 {* This file builds html for address block inline edit *}
-<div id="Address_Block_{$blockId}"class="boxBlock crm-edit-address-block">
+{$form.oplock_ts.html}
   <table class="form-layout crm-edit-address-form crm-inline-edit-form">
     <tr>
       <td>
         <div class="crm-submit-buttons"> 
           {include file="CRM/common/formButtons.tpl"}
+          {if $addressId}
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <a class="button delete-button" href="#" style="display:inline-block;float:none;"><div class="icon delete-icon"></div> {ts}Delete{/ts}</a>
+          {/if}
         </div>
       </td>
     </tr>
-    {if $masterAddress.$blockId gt 0 }
-        <tr><td><div class="message status"><div class="icon inform-icon"></div>&nbsp; {ts 1=$masterAddress.$blockId}This address is shared with %1 contact record(s). Modifying this address will automatically update the shared address for these contacts.{/ts}</div></td></tr>
-    {/if}
      <tr>
         <td>
            <span class="crm-address-element location_type_id-address-element">
             {$form.address.$blockId.location_type_id.label}&nbsp;{$form.address.$blockId.location_type_id.html}
-            </span>&nbsp;
-            <!--a href="#" title="{ts}Delete Address Block{/ts}">{ts}Delete this address{/ts}</a-->
+            </span>
         </td>
      </tr>
      <tr>
@@ -56,7 +56,7 @@
  
      <tr>
       <td>
-        <table id="address_{$blockId}" class="form-layout-compressed">
+        <table id="address_table_{$blockId}" class="form-layout-compressed">
            {* build address block w/ address sequence. *}
            {foreach item=addressElement from=$addressSequence}
             {include file=CRM/Contact/Form/Edit/Address/$addressElement.tpl}
@@ -70,35 +70,21 @@
   <div class="crm-edit-address-custom_data crm-inline-edit-form crm-address-custom-set-block-{$blockId}"> 
     {include file="CRM/Contact/Form/Edit/Address/CustomData.tpl"}
   </div> 
-</div>
-
-{include file="CRM/Contact/Form/Inline/InlineCommon.tpl"}
-
 {literal}
 <script type="text/javascript">
-cj( function() {
-  cj().crmaccordions(); 
-  
-  var blockId   = {/literal}{$blockId}{literal};
-  var addressId = {/literal}{$addressId}{literal};
-  
-  // add ajax form submitting
-  inlineEditForm( 'Address', 'address-block-'+ blockId,
-    {/literal}{$contactId}{literal},
-    null, blockId, addressId );
-
+  {/literal}{* // Enforce unique location_type_id fields *}{literal}
   cj('#address_{/literal}{$blockId}{literal}_location_type_id').change(function() {
     var ele = cj(this);
     var lt = ele.val();
-    var container = ele.closest('div.crm-address-block');
+    var container = ele.closest('div.crm-inline-edit.address');
     container.data('location-type-id', '');
+    var ok = true;
     if (lt != '') {
-      var ok = true;
-      cj('.crm-address-block').each(function() {
-        if (cj(this).data('location-type-id') == lt) {
+      cj('.crm-inline-edit.address').each(function() {
+        if (ok && cj(this).data('location-type-id') == lt) {
           var label = cj('option:selected', ele).text();
           ele.val('');
-          alert("{/literal}{ts escape='js'}Location type{/ts} {literal}" + label + "{/literal} {ts escape='js'}has already been assigned to another address. Please select another location type for this address.{/ts}{literal}");
+          ele.crmError(label + "{/literal} {ts escape='js'}has already been assigned to another address. Please select another location for this address.{/ts}"{literal});
           ok = false;
         }
       });
@@ -107,18 +93,21 @@ cj( function() {
       }
     }
   });
-  cj(':checkbox[id*="[is_"]', 'form#Address_{/literal}{$blockId}{literal}').change(function() {
-    if (cj(this).is(':checked')) {
-      var ids = cj(this).attr('id').slice(-9);
-      cj('.crm-address-block :checkbox:checked[id$="' + ids + '"]').not(this).removeAttr('checked');
-    }
-    else if (cj(this).is("[id*=is_primary]")) {
-      alert("{/literal}{ts escape='js'}Please choose another address to be primary before changing this one.{/ts}{literal}");
-      cj(this).attr('checked', 'checked');
+  {/literal}{* // Enforce unique is_primary fields *}{literal}
+  cj(':checkbox[id*="[is_primary"]', 'form#Address_{/literal}{$blockId}{literal}').change(function() {
+    if (this.defaultChecked) {
+      cj(this).crmError("{/literal} {ts escape='js'}Please choose another address to be primary before changing this one.{/ts}{literal}");
+      cj(this).prop('checked', true);
     }
   });
-});
-
+  {/literal}{* // Reset location_type_id when cancel button pressed *}{literal}
+  cj(':submit[name$=cancel]', 'form#Address_{/literal}{$blockId}{literal}').click(function() {
+    var container = cj(this).closest('div.crm-inline-edit.address');
+    var origValue = container.attr('data-location-type-id') || '';
+    container.data('location-type-id', origValue);
+  });
+  {/literal}
+  {if $masterAddress.$blockId}
+    CRM.alert('{ts escape="js" 1=$masterAddress.$blockId}This address is shared with %1 contact record(s). Modifying this address will automatically update the shared address for these contacts.{/ts}', '{ts escape="js"}Editing Master Address{/ts}', 'info', {ldelim}expires: 0{rdelim});
+  {/if}
 </script>
-{/literal}
-

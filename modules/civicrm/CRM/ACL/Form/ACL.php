@@ -1,11 +1,9 @@
 <?php
-// $Id$
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -38,7 +36,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -168,11 +166,11 @@ class CRM_ACL_Form_ACL extends CRM_Admin_Form {
 
     $customGroup = array('-1' => ts('- select -'),
       '0' => ts('All Custom Groups'),
-    ) + CRM_Core_PseudoConstant::customGroup();
+    ) + CRM_Core_PseudoConstant::get('CRM_Core_DAO_CustomField', 'custom_group_id');
 
     $ufGroup = array('-1' => ts('- select -'),
       '0' => ts('All Profiles'),
-    ) + CRM_Core_PseudoConstant::ufGroup();
+    ) + CRM_Core_PseudoConstant::get('CRM_Core_DAO_UFField', 'uf_group_id');
 
     $event = array('-1' => ts('- select -'),
       '0' => ts('All Events'),
@@ -188,9 +186,7 @@ class CRM_ACL_Form_ACL extends CRM_Admin_Form {
     $this->addFormRule(array('CRM_ACL_Form_ACL', 'formRule'));
   }
 
-
-  static
-  function formRule($params) {
+  static function formRule($params) {
     $showHide = new CRM_Core_ShowHideBlocks();
 
     // Make sure role is not -1
@@ -272,7 +268,7 @@ class CRM_ACL_Form_ACL extends CRM_Admin_Form {
 
     if ($this->_action & CRM_Core_Action::DELETE) {
       CRM_ACL_BAO_ACL::del($this->_id);
-      CRM_Core_Session::setStatus(ts('Selected ACL has been deleted.'));
+      CRM_Core_Session::setStatus(ts('Selected ACL has been deleted.'), ts('Record Deleted'), 'success');
     }
     else {
       $params = $this->controller->exportValues($this->_name);

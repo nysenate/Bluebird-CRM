@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
  * This class contains functions for managing Tag(tag) for a contact
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -49,8 +49,7 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
    * @access public
    * @static
    */
-  static
-  function &getTag($entityID, $entityTable = 'civicrm_contact') {
+  static function &getTag($entityID, $entityTable = 'civicrm_contact') {
     $tags = array();
 
     $entityTag = new CRM_Core_BAO_EntityTag();
@@ -77,9 +76,7 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
    * @access public
    * @static
    */
-  static
-  function add(&$params) {
-
+  static function add(&$params) {
     $dataExists = self::dataExists($params);
     if (!$dataExists) {
       return NULL;
@@ -98,7 +95,6 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
       $object = array(0 => array(0 => $params['entity_id']), 1 => $params['entity_table']);
       CRM_Utils_Hook::post('create', 'EntityTag', $params['tag_id'], $object);
     }
-
     return $entityTag;
   }
 
@@ -111,8 +107,7 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
    * @access public
    * @static
    */
-  static
-  function dataExists(&$params) {
+  static function dataExists(&$params) {
     return ($params['tag_id'] == 0) ? FALSE : TRUE;
   }
 
@@ -126,8 +121,7 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
    * @static
    *
    */
-  static
-  function del(&$params) {
+  static function del(&$params) {
     $entityTag = new CRM_Core_BAO_EntityTag();
     $entityTag->copyValues($params);
     if ($entityTag->find(TRUE)) {
@@ -150,8 +144,7 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
    * @access public
    * @static
    */
-  static
-  function addEntitiesToTag(&$entityIds, $tagId, $entityTable = 'civicrm_contact') {
+  static function addEntitiesToTag(&$entityIds, $tagId, $entityTable = 'civicrm_contact') {
     $numEntitiesAdded    = 0;
     $numEntitiesNotAdded = 0;
     $entityIdsAdded      = array();
@@ -194,8 +187,7 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
    * @access public
    * @static
    */
-  static
-  function removeEntitiesFromTag(&$entityIds, $tagId, $entityTable = 'civicrm_contact') {
+  static function removeEntitiesFromTag(&$entityIds, $tagId, $entityTable = 'civicrm_contact') {
     $numEntitiesRemoved = 0;
     $numEntitiesNotRemoved = 0;
     $entityIdsRemoved = array();
@@ -228,8 +220,7 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
   }
 
   /**
-   * takes an associative array and creates a contact tags object
-   *
+   * takes an associative array and creates tag entity record for all tag entities
    *
    * @param array $params (reference )  an assoc array of name/value pairs
    * @param array $contactId            contact id
@@ -238,9 +229,8 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
    * @access public
    * @static
    */
-  static
-  function create(&$params, $entityTable, $entityID) {
-    // get categories for the contact id
+  static function create(&$params, $entityTable, $entityID) {
+    // get categories for the entity id
     $entityTag = CRM_Core_BAO_EntityTag::getTag($entityID, $entityTable);
 
     // get the list of all the categories
@@ -278,25 +268,24 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
    *
    * @param object  $tag    an object of a tag.
    *
-   * @return  array   $contactIds    array of contact ids
+   * @return  array   $entityIds    array of entity ids
    * @access public
    */
   function getEntitiesByTag($tag) {
-    $contactIds = array();
+    $entityIds = array();
     $entityTagDAO = new CRM_Core_DAO_EntityTag();
     $entityTagDAO->tag_id = $tag->id;
     $entityTagDAO->find();
     while ($entityTagDAO->fetch()) {
-      $contactIds[] = $entityTagDAO->contact_id;
+      $entityIds[] = $entityTagDAO->entity_id;
     }
-    return $contactIds;
+    return $entityIds;
   }
 
   /**
    * Function to get contact tags
    */
-  static
-  function getContactTags($contactID, $count = FALSE) {
+  static function getContactTags($contactID, $count = FALSE) {
     $contactTags = array();
     if (!$count) {
       $select = "SELECT name ";
@@ -305,8 +294,8 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
       $select = "SELECT count(*) as cnt";
     }
 
-    $query = "{$select} 
-        FROM civicrm_tag ct 
+    $query = "{$select}
+        FROM civicrm_tag ct
         INNER JOIN civicrm_entity_tag et ON ( ct.id = et.tag_id AND
             et.entity_id    = {$contactID} AND
             et.entity_table = 'civicrm_contact' AND
@@ -329,8 +318,7 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
   /**
    * Function to get child contact tags given parentId
    */
-  static
-  function getChildEntityTags($parentId, $entityId, $entityTable = 'civicrm_contact') {
+  static function getChildEntityTags($parentId, $entityId, $entityTable = 'civicrm_contact') {
     $entityTags = array();
     $query = "SELECT ct.id as tag_id, name FROM civicrm_tag ct
                     INNER JOIN civicrm_entity_tag et ON ( et.entity_id = {$entityId} AND
@@ -373,13 +361,15 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
     // get all merge queries together
     $sqls = array(
       // 1. update entity tag entries
-      "UPDATE civicrm_entity_tag SET tag_id = %1 WHERE tag_id = %2",
+      "UPDATE IGNORE civicrm_entity_tag SET tag_id = %1 WHERE tag_id = %2",
       // 2. update used_for info for tag B
       "UPDATE civicrm_tag SET used_for = '{$usedFor}' WHERE id = %1",
       // 3. remove tag A, if tag A is getting merged into B
       "DELETE FROM civicrm_tag WHERE id = %2",
       // 4. remove duplicate entity tag records
       "DELETE et2.* from civicrm_entity_tag et1 INNER JOIN civicrm_entity_tag et2 ON et1.entity_table = et2.entity_table AND et1.entity_id = et2.entity_id AND et1.tag_id = et2.tag_id WHERE et1.id < et2.id",
+      // 5. remove orphaned entity_tags
+      "DELETE FROM civicrm_entity_tag WHERE tag_id = %2",
     );
     $tables = array('civicrm_entity_tag', 'civicrm_tag');
 

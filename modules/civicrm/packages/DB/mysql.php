@@ -248,7 +248,7 @@ class DB_mysql extends DB_common
         if (!$this->connection) {
             if (($err = @mysql_error()) != '') {
                 return $this->raiseError(DB_ERROR_CONNECT_FAILED,
-                                         null, null, null, 
+                                         null, null, null,
                                          $err);
             } else {
                 return $this->raiseError(DB_ERROR_CONNECT_FAILED,
@@ -778,7 +778,7 @@ class DB_mysql extends DB_common
     /**
      * @deprecated  Deprecated in release 1.6.0
      */
-    function quote($str)
+    function quote($str = null)
     {
         return $this->quoteSmart($str);
     }
@@ -938,7 +938,7 @@ class DB_mysql extends DB_common
                     return $this->mysqlRaiseError(DB_ERROR_NODBSELECTED);
                 }
             }
-            
+
             /*
              * Probably received a table name.
              * Create a result resource identifier.

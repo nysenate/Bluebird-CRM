@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -36,12 +36,7 @@
 /**
  * form helper class for an Phone object
  */
-class CRM_Contact_Form_Inline_Phone extends CRM_Core_Form {
-
-  /**
-   * contact id of the contact that is been viewed
-   */
-  public $_contactId;
+class CRM_Contact_Form_Inline_Phone extends CRM_Contact_Form_Inline {
 
   /**
    * phones of the contact that is been viewed
@@ -57,10 +52,9 @@ class CRM_Contact_Form_Inline_Phone extends CRM_Core_Form {
    * call preprocess
    */
   public function preProcess() {
-    //get all the existing phones
-    $this->_contactId = CRM_Utils_Request::retrieve('cid', 'Positive', $this, TRUE, NULL, $_REQUEST);
+    parent::preProcess();
 
-    $this->assign('contactId', $this->_contactId);
+    //get all the existing phones
     $phone = new CRM_Core_BAO_Phone();
     $phone->contact_id = $this->_contactId;
 
@@ -74,14 +68,16 @@ class CRM_Contact_Form_Inline_Phone extends CRM_Core_Form {
    * @access public
    */
   public function buildQuickForm() {
+    parent::buildQuickForm();
+
     $totalBlocks = $this->_blockCount;
     $actualBlockCount = 1;
     if (count($this->_phones) > 1) {
       $actualBlockCount = $totalBlocks = count($this->_phones);
-      if ( $totalBlocks < $this->_blockCount ) {
-        $additionalBlocks = $this->_blockCount - $totalBlocks;
-        $totalBlocks += $additionalBlocks;
-      }
+      if ($totalBlocks < $this->_blockCount) {
+      $additionalBlocks = $this->_blockCount - $totalBlocks;
+      $totalBlocks += $additionalBlocks;
+    }
       else {
         $actualBlockCount++;
         $totalBlocks++;
@@ -97,21 +93,7 @@ class CRM_Contact_Form_Inline_Phone extends CRM_Core_Form {
       CRM_Contact_Form_Edit_Phone::buildQuickForm($this, $blockId, TRUE);
     }
 
-    $buttons = array(
-      array(
-        'type' => 'upload',
-        'name' => ts('Save'),
-        'isDefault' => TRUE,
-      ),
-      array(
-        'type' => 'cancel',
-        'name' => ts('Cancel'),
-      ),
-    );
-
-    $this->addButtons($buttons);
-    
-    $this->addFormRule( array( 'CRM_Contact_Form_Inline_Phone', 'formRule' ) );
+    $this->addFormRule(array('CRM_Contact_Form_Inline_Phone', 'formRule'));
   }
 
   /**
@@ -124,49 +106,40 @@ class CRM_Contact_Form_Inline_Phone extends CRM_Core_Form {
    * @static
    * @access public
    */
-  static function formRule( $fields, $errors ) {
-    $hasData = $hasPrimary = $errors = array( );
-    if ( CRM_Utils_Array::value( 'phone', $fields ) && is_array( $fields['phone'] ) ) {
+  static function formRule($fields, $errors) {
+    $hasData = $hasPrimary = $errors = array();
+    if (CRM_Utils_Array::value('phone', $fields) && is_array($fields['phone'])) {
       $primaryID = null;
-      foreach ( $fields['phone'] as $instance => $blockValues ) {
-        $dataExists = CRM_Contact_Form_Contact::blockDataExists( $blockValues );
+      foreach ($fields['phone'] as $instance => $blockValues) {
+        $dataExists = CRM_Contact_Form_Contact::blockDataExists($blockValues);
 
-        if ( $dataExists ) {
+        if ($dataExists) {
           $hasData[] = $instance;
-          if ( CRM_Utils_Array::value( 'is_primary', $blockValues ) ) {
+          if (CRM_Utils_Array::value('is_primary', $blockValues)) {
             $hasPrimary[] = $instance;
-            if ( !$primaryID &&
-              CRM_Utils_Array::value( 'phone', $blockValues ) ) {
+            if (!$primaryID &&
+              CRM_Utils_Array::value('phone', $blockValues)) {
                 $primaryID = $blockValues['phone'];
             }
           }
         }
       }
 
-      if ( empty( $hasPrimary ) && !empty( $hasData ) ) {
-        $errors["phone[1][is_primary]"] = ts('One phone should be marked as primary.' );
+      if (empty($hasPrimary) && !empty($hasData)) {
+        $errors["phone[1][is_primary]"] = ts('One phone should be marked as primary.');
       }
 
-      if ( count( $hasPrimary ) > 1 ) {
-        $errors["phone[".array_pop($hasPrimary)."][is_primary]"] = ts( 'Only one phone can be marked as primary.' );
+      if (count($hasPrimary) > 1) {
+        $errors["phone[".array_pop($hasPrimary)."][is_primary]"] = ts('Only one phone can be marked as primary.');
       }
     }
     return $errors;
   }
 
   /**
-   * Override default cancel action
-   */
-  function cancelAction() {
-    $response = array('status' => 'cancel');
-    echo json_encode($response);
-    CRM_Utils_System::civiExit();
-  }
-
-  /**
    * set defaults for the form
    *
-   * @return void
+   * @return array
    * @access public
    */
   public function setDefaultValues() {
@@ -193,23 +166,12 @@ class CRM_Contact_Form_Inline_Phone extends CRM_Core_Form {
   public function postProcess() {
     $params = $this->exportValues();
 
-    // need to process / save phones
+    // Process / save phones
     $params['contact_id'] = $this->_contactId;
     $params['updateBlankLocInfo'] = TRUE;
-
-    // save phone changes
     CRM_Core_BAO_Block::create('phone', $params);
 
-    // make entry in log table
-    CRM_Core_BAO_Log::register( $this->_contactId,
-      'civicrm_contact',
-      $this->_contactId
-    );
-
-    $response = array('status' => 'save');
-    $this->postProcessHook();
-    echo json_encode($response);
-    CRM_Utils_System::civiExit();
+    $this->log();
+    $this->response();
   }
 }
-

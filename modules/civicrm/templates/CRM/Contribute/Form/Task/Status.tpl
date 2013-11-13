@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -55,9 +55,9 @@
     {assign var="element_name" value="payment_instrument_id_"|cat:$row.contribution_id}
     <td class="form-text four">{$form.$element_name.html}</td>
     {assign var="element_name" value="check_number_"|cat:$row.contribution_id}
-    <td class="form-text four">{$form.$element_name.html|crmReplace:class:four}</td>
+    <td class="form-text four">{$form.$element_name.html|crmAddClass:four}</td>
     {assign var="element_name" value="trxn_id_"|cat:$row.contribution_id}
-    <td>{$form.$element_name.html|crmReplace:class:eight}</td>
+    <td>{$form.$element_name.html|crmAddClass:eight}</td>
     {assign var="element_name" value="trxn_date_"|cat:$row.contribution_id}
     <td>{include file="CRM/common/jcalendar.tpl" elementName=$element_name}</td>
 </tr>

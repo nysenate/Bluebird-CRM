@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,7 +24,7 @@
  +--------------------------------------------------------------------+
 *}
 {if $confirm}
-    <div class="messages status">
+    <div class="messages status no-popup">
           <div class="icon inform-icon"></div>&nbsp;
           <label>{$display_name} ({$email})</label> {ts}has been successfully removed from the specified mailing list(s).{/ts}
     </div>
@@ -32,7 +32,7 @@
     <div>
     <form action="{$confirmURL}" method="post">
       {if $groupExist}
-        <div class="messages status">
+        <div class="messages status no-popup">
           {ts 1=$display_name 2=$email} %1 (%2){/ts}<br/>
           {ts}Are you sure you want to be removed from the mailing list(s) shown below:{/ts}<br/>
         </div>
@@ -50,7 +50,7 @@
             <span class="crm-button crm-button-type-cancel"><input type="submit" name="_qf_unsubscribe_cancel" value="{ts}Cancel{/ts}" class="form-submit" /></span>
         </div>
       {else}
-        <div class="messages status">
+        <div class="messages status no-popup">
           {ts 1=$display_name 2=$email} %1 (%2){/ts}<br/>
           {ts}Sorry you are not currently on this mailing list. Perhaps you have already unsubscribed.{/ts}<br/>
         </div>

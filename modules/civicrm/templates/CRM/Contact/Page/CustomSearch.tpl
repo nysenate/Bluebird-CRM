@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,7 +25,7 @@
 *}
 {strip}
 <fieldset>
-<div id="help">
+<div id="help" class="messages help">
     <div class="icon info-icon"></div>&nbsp;
     {ts}Custom searches are developed and contributed by members of the CiviCRM community.{/ts} {help id="id-custom-searches"}
 </div>
@@ -36,10 +36,8 @@
         </div>
     {/foreach}
 {else}
-    <div class="messages status">
-      <div class="icon alert-icon"></div>
-       {ts}There are currently no Custom Searches.{/ts}
-    </div>
+    {capture assign=infoTitle}{ts}There are currently no Custom Searches{/ts}{/capture}
+    {include file="CRM/common/info.tpl" infoType="info" infoMessage=""}
 {/if}
 </fieldset>
 {/strip}

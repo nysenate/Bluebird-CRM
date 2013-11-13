@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -37,7 +37,7 @@
  * This class handles all SOAP client requests.
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -124,12 +124,13 @@ class CRM_Utils_SoapServer {
    */
   public function authenticate($name, $pass, $loadCMSBootstrap = FALSE) {
     require_once (str_replace('_', DIRECTORY_SEPARATOR, $this->ufClass) . '.php');
-        
-        if($this->ufClass == 'CRM_Utils_System_Joomla'){
-            $loadCMSBootstrap = true;
-        }
-        
-    eval('$result =& ' . $this->ufClass . '::authenticate($name, $pass, $loadCMSBootstrap );');
+
+    if ($this->ufClass == 'CRM_Utils_System_Joomla'){
+      $loadCMSBootstrap = true;
+    }
+
+    $className = $this->ufClass;
+    $result =& $className::authenticate($name, $pass, $loadCMSBootstrap );
 
     if (empty($result)) {
       throw new SoapFault('Client', 'Invalid login');

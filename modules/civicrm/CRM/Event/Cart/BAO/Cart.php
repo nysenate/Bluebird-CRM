@@ -138,8 +138,7 @@ class CRM_Event_Cart_BAO_Cart extends CRM_Event_Cart_DAO_Cart {
     return $all;
   }
 
-  static
-  function compare_event_dates($event_in_cart_1, $event_in_cart_2) {
+  static function compare_event_dates($event_in_cart_1, $event_in_cart_2) {
     $date_1 = CRM_Utils_Date::unixTime($event_in_cart_1->event->start_date);
     $date_2 = CRM_Utils_Date::unixTime($event_in_cart_2->event->start_date);
 

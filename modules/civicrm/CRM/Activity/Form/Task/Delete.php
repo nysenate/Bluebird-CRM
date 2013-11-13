@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -53,7 +53,8 @@ class CRM_Activity_Form_Task_Delete extends CRM_Activity_Form_Task {
    *
    * @return void
    * @access public
-   */ function preProcess() {
+   */
+  function preProcess() {
     parent::preProcess();
   }
 
@@ -84,11 +85,8 @@ class CRM_Activity_Form_Task_Delete extends CRM_Activity_Form_Task {
       }
     }
 
-    $status = array(
-      ts('Deleted Activities: %1', array(1 => $deletedActivities)),
-      ts('Total Selected Activities: %1', array(1 => count($this->_activityHolderIds))),
-    );
-    CRM_Core_Session::setStatus($status);
+    CRM_Core_Session::setStatus($deletedActivities, ts('Deleted Activities'), "success");
+    CRM_Core_Session::setStatus("", ts('Total Selected Activities: %1', array(1 => count($this->_activityHolderIds))), "info");
   }
 }
 

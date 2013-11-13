@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -38,9 +38,9 @@
  */
 class CRM_Contribute_Form_ContributionPage_AddProduct extends CRM_Contribute_Form_ContributionPage {
 
-  static $_products;
+  protected $_products;
 
-  static $_pid;
+  protected $_pid;
 
   /**
    * Function to pre  process the form
@@ -84,7 +84,13 @@ class CRM_Contribute_Form_ContributionPage_AddProduct extends CRM_Contribute_For
       $dao->id = $this->_pid;
       $dao->find(TRUE);
       $defaults['product_id'] = $dao->product_id;
+            $defaults['financial_type_id']   = $dao->financial_type_id;
       $defaults['weight'] = $dao->weight;
+    } else {
+      $dao = new CRM_Contribute_DAO_Product();
+      $dao->id = key($this->_products);
+      $dao->find(TRUE);
+      $defaults['financial_type_id'] = $dao->financial_type_id;
     }
     if (!isset($defaults['weight']) || !($defaults['weight'])) {
       $pageID = CRM_Utils_Request::retrieve('id', 'Positive',
@@ -123,10 +129,9 @@ class CRM_Contribute_Form_ContributionPage_AddProduct extends CRM_Contribute_For
         $dao = new CRM_Contribute_DAO_PremiumsProduct();
         $dao->id = $this->_pid;
         $dao->delete();
-        CRM_Core_Session::setStatus(ts('Selected Premium Product has been removed from this Contribution Page.'));
+        CRM_Core_Session::setStatus(ts('Selected Premium Product has been removed from this Contribution Page.'), ts('Saved'), 'success');
         CRM_Utils_System::redirect($url);
       }
-
 
       $this->addButtons(array(
           array(
@@ -165,6 +170,40 @@ class CRM_Contribute_Form_ContributionPage_AddProduct extends CRM_Contribute_For
 
     $this->addElement('text', 'weight', ts('Weight'), CRM_Core_DAO::getAttribute('CRM_Contribute_DAO_PremiumsProduct', 'weight'));
 
+    $financialType = CRM_Contribute_PseudoConstant::financialType( );
+    $premiumFinancialType = array();
+    CRM_Core_PseudoConstant::populate(
+      $premiumFinancialType,
+      'CRM_Financial_DAO_EntityFinancialAccount',
+      $all = True,
+      $retrieve = 'entity_id',
+      $filter = null,
+      'account_relationship = 8'
+    );
+
+    $costFinancialType = array();
+    CRM_Core_PseudoConstant::populate(
+      $costFinancialType,
+      'CRM_Financial_DAO_EntityFinancialAccount',
+      $all = True,
+      $retrieve = 'entity_id',
+      $filter = null,
+      'account_relationship = 7'
+    );
+    $productFinancialType = array_intersect($costFinancialType, $premiumFinancialType);
+    foreach( $financialType as $key => $financialTypeName ){
+      if(!in_array( $key, $productFinancialType))
+        unset( $financialType[$key] );
+    }
+    if( count( $financialType ) ){
+      $this->assign( 'financialType', $financialType );
+    }
+    $this->add(
+      'select',
+      'financial_type_id',
+      ts( 'Financial Type' ),
+      array(''=>ts('- select -')) + $financialType
+    );
     $this->addRule('weight', ts('Please enter integer value for weight'), 'integer');
     $session->pushUserContext(CRM_Utils_System::url($urlParams, 'action=update&reset=1&id=' . $this->_id));
 
@@ -213,7 +252,7 @@ class CRM_Contribute_Form_ContributionPage_AddProduct extends CRM_Contribute_For
       $dao     = new CRM_Contribute_DAO_PremiumsProduct();
       $dao->id = $this->_pid;
       $dao->delete();
-      CRM_Core_Session::setStatus(ts('Selected Premium Product has been removed from this Contribution Page.'));
+      CRM_Core_Session::setStatus(ts('Selected Premium Product has been removed from this Contribution Page.'), ts('Saved'), 'success');
       CRM_Utils_System::redirect($url);
     }
     else {
@@ -229,6 +268,14 @@ class CRM_Contribute_Form_ContributionPage_AddProduct extends CRM_Contribute_For
       $premiumID = $dao->id;
       $params['premiums_id'] = $premiumID;
 
+      $oldWeight = NULL;
+      if ($this->_pid) {
+        $oldWeight = CRM_Core_DAO::getFieldValue('CRM_Contribute_DAO_PremiumsProduct', $this->_pid, 'weight', 'id');
+      }
+
+      // updateOtherWeights needs to filter on premiums_id
+      $filter = array('premiums_id' => $params['premiums_id']);
+      $params['weight'] = CRM_Utils_Weight::updateOtherWeights('CRM_Contribute_DAO_PremiumsProduct', $oldWeight, $params['weight'], $filter);
 
       $dao = new CRM_Contribute_DAO_PremiumsProduct();
       $dao->copyValues($params);

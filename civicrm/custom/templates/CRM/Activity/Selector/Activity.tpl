@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,11 +26,10 @@
 {* Displays Activities. *}
 
 <div>
-  {if empty($noFieldSet)}	
+  {if empty($noFieldSet)}
   <h3 class="crm-table-title">{ts}Activities{/ts}</h3>
   {/if}
 {if $rows}
-  <span id='fileOnCaseStatusMsg' style="display:none;"></span>
   <form title="activity_pager" action="{crmURL}" method="post">
   {include file="CRM/common/pager.tpl" location="top"}
 
@@ -63,7 +62,7 @@
           <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.source_contact_id`"}" title="{ts}View contact{/ts}">{$row.source_contact_name|regex_replace:$pattern:$repl}</a>
         {else}
           <em>n/a</em>
-        {/if}			
+        {/if}
         </td>
 
         <td class="crm-activity-target_contact_name">
@@ -97,7 +96,7 @@
                 {/if}
             {/foreach}
             {if count($row.assignee_contact_name) > 5}({ts}more{/ts}){/if}
-        {/if}	
+        {/if}
         </td>
 
         <td class="crm-activity-date_time">{$row.activity_date_time|crmDate}</td>
@@ -110,12 +109,12 @@
   {/strip}
 
   {include file="CRM/common/pager.tpl" location="bottom"}
-  
+
   {include file="CRM/Case/Form/ActivityToCase.tpl" contactID=$contactId}
   </form>
 {else}
 
-  <div class="messages status">
+  <div class="messages status no-popup">
     {if isset($caseview) and $caseview}
       {ts}There are no Activities attached to this case record.{/ts}{if $permission EQ 'edit'} {ts}You can go to the Activities tab to create or attach activity records.{/ts}{/if}
     {elseif $context eq 'home'}

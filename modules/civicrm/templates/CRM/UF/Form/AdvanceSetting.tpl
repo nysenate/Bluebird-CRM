@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,15 +26,14 @@
 {literal}
 <script type="text/javascript">
     cj(function() {
-        cj().crmaccordions(); 
+        cj().crmAccordions();
     });
 </script>
 {/literal}
 
-<div class="crm-accordion-wrapper crm-accordion_title-accordion crm-accordion-closed">
+<div class="crm-accordion-wrapper collapsed">
  <div class="crm-accordion-header">
-    <div class="icon crm-accordion-pointer"></div> 
-    Advanced Settings 
+    Advanced Settings
   </div><!-- /.crm-accordion-header -->
   <div class="crm-accordion-body">
   <div class="crm-block crm-form-block crm-uf-advancesetting-form-block">
@@ -48,37 +47,37 @@
             <td class="label">{$form.add_contact_to_group.label}</td>
             <td>{$form.add_contact_to_group.html} {help id='id-add_group' file="CRM/UF/Form/Group.hlp"}</td>
         </tr>
-        
+
         <tr class="crm-uf-advancesetting-form-block-notify">
             <td class="label">{$form.notify.label}</td>
             <td>{$form.notify.html} {help id='id-notify_email' file="CRM/UF/Form/Group.hlp"}</td>
         </tr>
-        
+
         <tr class="crm-uf-advancesetting-form-block-post_URL">
             <td class="label">{$form.post_URL.label}</td>
             <td>{$form.post_URL.html} {help id='id-post_URL' file="CRM/UF/Form/Group.hlp"}</td>
         </tr>
-        
+
         <tr class="crm-uf-advancesetting-form-block-cancel_URL">
             <td class="label">{$form.cancel_URL.label}</td>
             <td>{$form.cancel_URL.html} {help id='id-cancel_URL' file="CRM/UF/Form/Group.hlp"}</td>
         </tr>
-        
+
         <tr class="crm-uf-advancesetting-form-block-add_captcha">
             <td class="label"></td>
             <td>{$form.add_captcha.html} {$form.add_captcha.label} {help id='id-add_captcha' file="CRM/UF/Form/Group.hlp"}</td>
         </tr>
-        
+
         <tr class="crm-uf-advancesetting-form-block-is_cms_user">
                 <td class="label">{$form.is_cms_user.label}</td>
                 <td>{$form.is_cms_user.html} {help id='id-is_cms_user' file="CRM/UF/Form/Group.hlp"}</td>
-        </tr>		
+        </tr>
 
         <tr class="crm-uf-advancesetting-form-block-is_update_dupe">
             <td class="label">{$form.is_update_dupe.label}</td>
             <td>{$form.is_update_dupe.html} {help id='id-is_update_dupe' file="CRM/UF/Form/Group.hlp"}</td>
         </tr>
-        
+
         <tr class="crm-uf-advancesetting-form-block-is_proximity_search">
             <td class="label">{$form.is_proximity_search.label}</td>
             <td>{$form.is_proximity_search.html} {help id='id-is_proximity_search' file="CRM/UF/Form/Group.hlp"}</td></tr>
@@ -87,12 +86,12 @@
             <td class="label"></td>
             <td>{$form.is_map.html} {$form.is_map.label} {help id='id-is_map' file="CRM/UF/Form/Group.hlp"}</td>
         </tr>
-        
+
         <tr class="crm-uf-advancesetting-form-block-is_edit_link">
             <td class="label"></td>
             <td>{$form.is_edit_link.html} {$form.is_edit_link.label} {help id='id-is_edit_link' file="CRM/UF/Form/Group.hlp"}</td>
         </tr>
-        
+
         <tr class="crm-uf-advancesetting-form-block-is_uf_link">
             <td class="label"></td>
             <td>{$form.is_uf_link.html} {$form.is_uf_link.label} {help id='id-is_uf_link' file="CRM/UF/Form/Group.hlp"}</td>

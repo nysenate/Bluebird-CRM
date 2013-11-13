@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -38,8 +38,7 @@
  *
  */
 class CRM_Case_Form_Activity_LinkCases {
-  static
-  function preProcess(&$form) {
+  static function preProcess(&$form) {
     if (!isset($form->_caseId)) {
       CRM_Core_Error::fatal(ts('Case Id not found.'));
     }
@@ -68,12 +67,11 @@ class CRM_Case_Form_Activity_LinkCases {
    *
    * @return None
    */
-  function setDefaultValues(&$form) {
+  static function setDefaultValues(&$form) {
     return $defaults = array();
   }
 
-  static
-  function buildQuickForm(&$form) {
+  static function buildQuickForm(&$form) {
     $form->add('text', 'link_to_case', ts('Link To Case'));
     $form->add('hidden', 'link_to_case_id', '', array('id' => 'link_to_case_id'));
   }
@@ -87,8 +85,7 @@ class CRM_Case_Form_Activity_LinkCases {
    * @static
    * @access public
    */
-  static
-  function formRule($values, $files, $form) {
+  static function formRule($values, $files, $form) {
     $errors = array();
 
     $linkCaseId = CRM_Utils_Array::value('link_to_case_id', $values);
@@ -115,7 +112,7 @@ class CRM_Case_Form_Activity_LinkCases {
    *
    * @return None
    */
-  public function beginPostProcess(&$form, &$params) {
+  static function beginPostProcess(&$form, &$params) {
     $params['id'] = $params['case_id'];
   }
 
@@ -126,7 +123,7 @@ class CRM_Case_Form_Activity_LinkCases {
    *
    * @return None
    */
-  public function endPostProcess(&$form, &$params, &$activity) {
+  static function endPostProcess(&$form, &$params, &$activity) {
     $activityId = $activity->id;
     $linkCaseID = CRM_Utils_Array::value('link_to_case_id', $params);
 

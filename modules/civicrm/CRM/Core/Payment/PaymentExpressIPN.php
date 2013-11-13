@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -47,9 +47,8 @@ class CRM_Core_Payment_PaymentExpressIPN extends CRM_Core_Payment_BaseIPN {
    * mode of operation: live or test
    *
    * @var object
-   * @static
    */
-  static protected $_mode = NULL;
+  protected $_mode = NULL;
 
   static function retrieve($name, $type, $object, $abort = TRUE) {
     $value = CRM_Utils_Array::value($name, $object);
@@ -92,8 +91,7 @@ class CRM_Core_Payment_PaymentExpressIPN extends CRM_Core_Payment_BaseIPN {
    * @return object
    * @static
    */
-  static
-  function &singleton($mode, $component, &$paymentProcessor) {
+  static function &singleton($mode, $component, &$paymentProcessor) {
     if (self::$_singleton === NULL) {
       self::$_singleton = new CRM_Core_Payment_PaymentExpressIPN($mode, $paymentProcessor);
     }
@@ -127,7 +125,7 @@ class CRM_Core_Payment_PaymentExpressIPN extends CRM_Core_Payment_BaseIPN {
     }
     $ids['contributionRecur'] = $ids['contributionPage'] = NULL;
 
-    $paymentProcessorID = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_PaymentProcessorType',
+    $paymentProcessorID = CRM_Core_DAO::getFieldValue('CRM_Financial_DAO_PaymentProcessorType',
       'PayPal_Express', 'id', 'name'
     );
 
@@ -160,11 +158,6 @@ class CRM_Core_Payment_PaymentExpressIPN extends CRM_Core_Payment_BaseIPN {
     }
 
     $transaction = new CRM_Core_Transaction();
-
-    // fix for CRM-2842
-    // if ( ! $this->createContact( $input, $ids, $objects ) ) {
-    //     return false;
-    // }
 
     // check if contribution is already completed, if so we ignore this ipn
 
@@ -200,8 +193,7 @@ class CRM_Core_Payment_PaymentExpressIPN extends CRM_Core_Payment_BaseIPN {
    * @return array context of this call (test, component, payment processor id)
    * @static
    */
-  static
-  function getContext($privateData, $orderNo) {
+  static function getContext($privateData, $orderNo) {
 
     $component = NULL;
     $isTest = NULL;
@@ -259,7 +251,7 @@ class CRM_Core_Payment_PaymentExpressIPN extends CRM_Core_Payment_BaseIPN {
     }
 
     return array($isTest, $component, $duplicateTransaction);
-  }
+    }
 
   /**
    * This method is handles the response that will be invoked by the
@@ -268,9 +260,7 @@ class CRM_Core_Payment_PaymentExpressIPN extends CRM_Core_Payment_BaseIPN {
    * mac_key is only passed if the processor is pxaccess as it is used for decryption
    * $dps_method is either pxaccess or pxpay
    */
-
-  static
-  function main($dps_method, $rawPostData, $dps_url, $dps_user, $dps_key, $mac_key) {
+  static function main($dps_method, $rawPostData, $dps_url, $dps_user, $dps_key, $mac_key) {
 
     $config = CRM_Core_Config::singleton();
     define('RESPONSE_HANDLER_LOG_FILE', $config->uploadDir . 'CiviCRM.PaymentExpress.log');
@@ -372,7 +362,7 @@ class CRM_Core_Payment_PaymentExpressIPN extends CRM_Core_Payment_BaseIPN {
     $mode = $mode ? 'test' : 'live';
 
 
-    $paymentProcessor = CRM_Core_BAO_PaymentProcessor::getPayment($paymentProcessorID,
+    $paymentProcessor = CRM_Financial_BAO_PaymentProcessor::getPayment($paymentProcessorID,
       $mode
     );
 
@@ -424,8 +414,7 @@ class CRM_Core_Payment_PaymentExpressIPN extends CRM_Core_Payment_BaseIPN {
    * Converts the comma separated name-value pairs in <TxnData2>
    * to an array of values.
    */
-  static
-  function stringToArray($str) {
+  static function stringToArray($str) {
     $vars = $labels = array();
     $labels = explode(',', $str);
     foreach ($labels as $label) {

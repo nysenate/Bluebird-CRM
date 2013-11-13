@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,7 +26,7 @@
 <script type="text/javascript" src="{$config->resourceBase}js/rest.js"></script>
 {if $showBestResult }
     <span class="font-red">{ts}For best results, the Country field should precede the State-Province field in your Profile form. You can use the up and down arrows on field listing page for this profile to change the order of these fields or manually edit weight for Country/State-Province Field.{/ts}</span>
-{/if}    
+{/if}
 
 {if $action eq 1 or $action eq 2 or $action eq 4 or $action eq 8 }
     {include file="CRM/UF/Form/Field.tpl"}
@@ -44,8 +44,8 @@
         {/if}
         {strip}
         {* handle enable/disable actions*}
- 	{include file="CRM/common/enableDisable.tpl"}
- 	{include file="CRM/common/jsortable.tpl"}
+   {include file="CRM/common/enableDisable.tpl"}
+   {include file="CRM/common/jsortable.tpl"}
         <table id="options" class="display">
             <thead>
             <tr>
@@ -55,12 +55,12 @@
                 <th>{ts}Searchable?{/ts}</th>
                 <th>{ts}In Selector?{/ts}</th>
                 {/if}
-                <th id="order" class="sortable">{ts}Order{/ts}</th>	
-                <th>{ts}Required{/ts}</th>	
-                <th>{ts}View Only{/ts}</th>	
+                <th id="order" class="sortable">{ts}Order{/ts}</th>
+                <th>{ts}Required{/ts}</th>
+                <th>{ts}View Only{/ts}</th>
                 <th>{ts}Reserved{/ts}</th>
                 <th></th>
-		            <th class="hiddenElement"></th>
+                <th class="hiddenElement"></th>
             </tr>
             </thead>
             {foreach from=$ufField item=row}
@@ -86,13 +86,13 @@
                 <a href="{crmURL p="civicrm/admin/uf/group/field/add" q="reset=1&action=add&gid=$gid"}" class="button"><span><div class="icon add-icon"></div>{ts}Add Field{/ts}</span></a>{if !$isGroupReserved}<a href="{crmURL p="civicrm/admin/uf/group" q="action=update&id=`$gid`&reset=1&context=field"}" class="button"><span><div class="icon edit-icon"></div>{ts}Edit Settings{/ts}</span></a>{/if}<a href="{crmURL p="civicrm/admin/uf/group" q="action=preview&id=`$gid`&reset=1&field=0&context=field"}" class="button"><span><div class="icon preview-icon"></div>{ts}Preview (all fields){/ts}</span></a>{if !$skipCreate }<a href="{crmURL p="civicrm/profile/create" q="gid=$gid&reset=1"}" class="button"><span><div class="icon play-icon"></div>{ts}Use (create mode){/ts}</span></a>{/if}
                 <div class="clear"></div>
             </div>
-        {/if}    
-        
+        {/if}
+
         </div>
     {else}
         {if $action eq 16}
         {capture assign=crmURL}{crmURL p="civicrm/admin/uf/group/field/add" q="reset=1&action=add&gid=$gid"}{/capture}
-        <div class="messages status">
+        <div class="messages status no-popup">
         <div class="icon inform-icon"></div>
        {ts 1=$groupTitle 2=$crmURL}There are no CiviCRM Profile Fields for '%1', you can <a href='%2'>add one now</a>.{/ts}
         </div>
@@ -101,5 +101,5 @@
 </div>
 {/if}
 
-{include file="CRM/common/crmeditable.tpl"} 
+{include file="CRM/common/crmeditable.tpl"}
 

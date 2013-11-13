@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,20 +30,19 @@
 <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
 <table class="form-layout-compressed">
   <tr class="crm-campaign-task-reserve-form-block-surveytitle">
-    <td colspan=2> 
+    <td colspan=2>
       <div class="status">
         <div class="icon inform-icon"></div>&nbsp;{ts 1=$surveyTitle}Do you want to reserve respondents for '%1' ?{/ts}
-      </div> 
-    </td>      
+      </div>
+    </td>
   </tr>
   <tr><td colspan=2>{include file="CRM/Contact/Form/Task.tpl"}</td></tr>
 </table>
 
 {* Group options *}
  {* New Group *}
- <div id="new-group" class="crm-accordion-wrapper crm-accordion_title-accordion crm-accordion-closed">
+ <div id="new-group" class="crm-accordion-wrapper collapsed">
  <div class="crm-accordion-header">
- <div class="icon crm-accordion-pointer"></div> 
  {ts}Add respondent(s) to a new group{/ts}
  </div><!-- /.crm-accordion-header -->
  <div class="crm-accordion-body">
@@ -62,13 +61,12 @@
 
 
  {* Existing Group *}
- <div class="crm-accordion-wrapper crm-existing_group-accordion {if $hasExistingGroups}crm-accordion-open{else}crm-accordion-closed{/if}">
+ <div class="crm-accordion-wrapper crm-existing_group-accordion {if $hasExistingGroups} {else}collapsed{/if}">
  <div class="crm-accordion-header">
-  <div class="icon crm-accordion-pointer"></div>
   {ts}Add respondent(s) to existing group(s){/ts}
  </div><!-- /.crm-accordion-header -->
  <div class="crm-accordion-body">
-  
+
         <div class="form-item">
         <table><tr><td style="width: 14em;"></td><td>{$form.groups.html}</td></tr></table>
         </div>
@@ -84,19 +82,19 @@
 <script type="text/javascript">
 
  cj(function() {
-   cj().crmaccordions();
+   cj().crmAccordions();
    setDefaultGroup( );
  });
 
- function setDefaultGroup( ) 
+ function setDefaultGroup( )
  {
-    var invalidGroupName = {/literal}'{$invalidGroupName}'{literal};	  	  
+    var invalidGroupName = {/literal}'{$invalidGroupName}'{literal};
     if ( invalidGroupName ) {
-       cj("#new-group").removeClass( 'crm-accordion-closed' ).addClass( 'crm-accordion-open' );
+       cj("#new-group.collapsed").crmAccordionToggle();
     } else {
        cj("#newGroupName").val( '' );
        cj("#newGroupDesc").val( '' );
     }
  }
 </script>
-{/literal} 
+{/literal}

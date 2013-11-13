@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -60,10 +60,10 @@ class CRM_Mailing_Event_BAO_Subscribe extends CRM_Mailing_Event_DAO_Subscribe {
    */
   public static function &subscribe($group_id, $email, $contactId = NULL, $context = NULL) {
     // CRM-1797 - allow subscription only to public groups
-    $params     = array('id' => (int) $group_id);
-    $defaults   = array();
+    $params = array('id' => (int) $group_id);
+    $defaults = array();
     $contact_id = NULL;
-    $success    = NULL;
+    $success = NULL;
 
     $bao = CRM_Contact_BAO_Group::retrieve($params, $defaults);
     if ($bao && substr($bao->visibility, 0, 6) != 'Public' && $context != 'profile') {
@@ -81,14 +81,14 @@ class CRM_Mailing_Event_BAO_Subscribe extends CRM_Mailing_Event_DAO_Subscribe {
       /* First, find out if the contact already exists */
 
       $query = "
-   SELECT DISTINCT contact_a.id as contact_id 
-     FROM civicrm_contact contact_a 
+   SELECT DISTINCT contact_a.id as contact_id
+     FROM civicrm_contact contact_a
 LEFT JOIN civicrm_email      ON contact_a.id = civicrm_email.contact_id
     WHERE civicrm_email.email = %1 AND contact_a.is_deleted = 0";
 
       $params = array(1 => array($email, 'String'));
-      $dao    = CRM_Core_DAO::executeQuery($query, $params);
-      $id     = array();
+      $dao = CRM_Core_DAO::executeQuery($query, $params);
+      $id = array();
       // lets just use the first contact id we got
       if ($dao->fetch()) {
         $contact_id = $dao->contact_id;
@@ -99,7 +99,7 @@ LEFT JOIN civicrm_email      ON contact_a.id = civicrm_email.contact_id
     $transaction = new CRM_Core_Transaction();
 
     if (!$contact_id) {
-      require_once 'api/v3/DeprecatedUtils.php';
+      require_once 'CRM/Utils/DeprecatedUtils.php';
 
       /* If the contact does not exist, create one. */
 
@@ -150,11 +150,11 @@ SELECT     civicrm_email.id as email_id
       return $success;
     }
 
-    $se             = new CRM_Mailing_Event_BAO_Subscribe();
-    $se->group_id   = $group_id;
+    $se = new CRM_Mailing_Event_BAO_Subscribe();
+    $se->group_id = $group_id;
     $se->contact_id = $contact_id;
     $se->time_stamp = date('YmdHis');
-    $se->hash       = substr(sha1("{$group_id}:{$contact_id}:{$dao->email_id}:" . time()),
+    $se->hash = substr(sha1("{$group_id}:{$contact_id}:{$dao->email_id}:" . time()),
       0, 16
     );
     $se->save();
@@ -180,11 +180,11 @@ SELECT     civicrm_email.id as email_id
    * @static
    */
   public static function &verify($contact_id, $subscribe_id, $hash) {
-    $success        = NULL;
-    $se             = new CRM_Mailing_Event_BAO_Subscribe();
+    $success = NULL;
+    $se = new CRM_Mailing_Event_BAO_Subscribe();
     $se->contact_id = $contact_id;
-    $se->id         = $subscribe_id;
-    $se->hash       = $hash;
+    $se->id = $subscribe_id;
+    $se->hash = $hash;
     if ($se->find(TRUE)) {
       $success = $se;
     }
@@ -252,10 +252,10 @@ SELECT     civicrm_email.id as email_id
       $text = CRM_Utils_String::htmlToText($component->body_html);
     }
 
-    $bao            = new CRM_Mailing_BAO_Mailing();
+    $bao = new CRM_Mailing_BAO_Mailing();
     $bao->body_text = $text;
     $bao->body_html = $html;
-    $tokens         = $bao->getTokens();
+    $tokens = $bao->getTokens();
 
     $html = CRM_Utils_Token::replaceDomainTokens($html, $domain, TRUE, $tokens['html']);
     $html = CRM_Utils_Token::replaceSubscribeTokens($html,
@@ -276,13 +276,13 @@ SELECT     civicrm_email.id as email_id
     $message->setHTMLBody($html);
     $message->setTxtBody($text);
     $b = CRM_Utils_Mail::setMimeParams($message);
-    $h = &$message->headers($headers);
+    $h = $message->headers($headers);
     CRM_Mailing_BAO_Mailing::addMessageIdHeader($h, 's',
       $this->contact_id,
       $this->id,
       $this->hash
     );
-    $mailer = &$config->getMailer();
+    $mailer = $config->getMailer();
 
     PEAR::setErrorHandling(PEAR_ERROR_CALLBACK,
       array('CRM_Core_Error', 'nullHandler')
@@ -315,10 +315,10 @@ SELECT     civicrm_email.id as email_id
    * @return array $groups    array of group ids
    * @access public
    */
-  function getContactGroups($email, $contactID = NULL) {
+  public static function getContactGroups($email, $contactID = NULL) {
     if ($contactID) {
       $query = "
-                 SELECT DISTINCT group_a.group_id, group_a.status, civicrm_group.title 
+                 SELECT DISTINCT group_a.group_id, group_a.status, civicrm_group.title
                  FROM civicrm_group_contact group_a
                  LEFT JOIN civicrm_group ON civicrm_group.id = group_a.group_id
                  LEFT JOIN civicrm_contact ON ( group_a.contact_id = civicrm_contact.id )
@@ -331,7 +331,7 @@ SELECT     civicrm_email.id as email_id
       $email = $strtolower($email);
 
       $query = "
-                 SELECT DISTINCT group_a.group_id, group_a.status, civicrm_group.title 
+                 SELECT DISTINCT group_a.group_id, group_a.status, civicrm_group.title
                  FROM civicrm_group_contact group_a
                  LEFT JOIN civicrm_group ON civicrm_group.id = group_a.group_id
                  LEFT JOIN civicrm_contact ON ( group_a.contact_id = civicrm_contact.id ) AND civicrm_contact.is_deleted = 0
@@ -366,11 +366,13 @@ SELECT     civicrm_email.id as email_id
    * @public
    *
    * @return void
+   * @static
+   * @access public
    */
-  function commonSubscribe(&$groups, &$params, $contactId = NULL, $context = NULL) {
+  public static function commonSubscribe(&$groups, &$params, $contactId = NULL, $context = NULL) {
     $contactGroups = CRM_Mailing_Event_BAO_Subscribe::getContactGroups($params['email'], $contactId);
-    $group         = array();
-    $success       = NULL;
+    $group = array();
+    $success = NULL;
     foreach ($groups as $groupID) {
       $title = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Group', $groupID, 'title');
       if (array_key_exists($groupID, $contactGroups) && $contactGroups[$groupID]['status'] != 'Removed') {
@@ -399,12 +401,12 @@ SELECT     civicrm_email.id as email_id
       }
     }
     if ($success) {
-      $groupTitle = implode(',', $groupAdded);
-      CRM_Utils_System::setUFMessage(ts('Your subscription request has been submitted for group %1. Check your inbox shortly for the confirmation email(s). If you do not see a confirmation email, please check your spam/junk mail folder.', array(1 => $groupTitle)));
+      $groupTitle = implode(', ', $groupAdded);
+      CRM_Utils_System::setUFMessage(ts('Your subscription request has been submitted for %1. Check your inbox shortly for the confirmation email(s). If you do not see a confirmation email, please check your spam/junk mail folder.', array(1 => $groupTitle)));
     }
     elseif ($success === FALSE) {
       $groupTitle = implode(',', $groupFailed);
-      CRM_Utils_System::setUFMessage(ts('We had a problem processing your subscription request for group %1. You have tried to subscribe to a private group and/or we encountered a database error. Please contact the site administrator.', array(1 => $groupTitle)));
+      CRM_Utils_System::setUFMessage(ts('We had a problem processing your subscription request for %1. You have tried to subscribe to a private group and/or we encountered a database error. Please contact the site administrator.', array(1 => $groupTitle)));
     }
   }
   //end of function

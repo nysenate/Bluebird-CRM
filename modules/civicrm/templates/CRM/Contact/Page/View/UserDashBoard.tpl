@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,10 +28,10 @@
     <tr>
         <td>
           <div class="header-dark">
-          {ts}Your Group(s){/ts}  
-          </div>	  
-          {include file="CRM/Contact/Page/View/UserDashBoard/GroupContact.tpl"}	
-            
+          {ts}Your Group(s){/ts}
+          </div>
+          {include file="CRM/Contact/Page/View/UserDashBoard/GroupContact.tpl"}
+
         </td>
     </tr>
 {/if}
@@ -39,7 +39,7 @@
     {foreach from=$dashboardElements item=element}
     <tr>
         <td>
-            <div class="header-dark">{$element.sectionTitle}</div>	        
+            <div class="header-dark">{$element.sectionTitle}</div>
             {include file=$element.templatePath}
         </td>
     </tr>

@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -23,6 +23,9 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
+{htxt id="id-actual_participant_count-title"}
+  {ts}Actual Participant Count{/ts}
+{/htxt}
 {htxt id="id-actual_participant_count"}
-{ts}'Actual participant count' is displayed for events which use Price Set field(s) to increment the number of participants counted against the event's maximum participant level. For example, someone may select a 'Table for 8' when registering for a fundraising dinner. This registration will increment the 'actual participant count' by 8, even though only one participant record is displayed in search results.{/ts}
+{ts}This is displayed for events which use Price Set field(s) to increment the number of participants counted against the event's maximum participant level. For example, someone may select a 'Table for 8' when registering for a fundraising dinner. This registration will increment the 'actual participant count' by 8, even though only one participant record is displayed in search results.{/ts}
 {/htxt}

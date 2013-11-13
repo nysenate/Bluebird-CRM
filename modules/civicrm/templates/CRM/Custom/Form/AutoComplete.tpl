@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -32,18 +32,18 @@ cj( function( ) {
 
     var customObj   = cj(custom);
     var customIdObj = cj(custom_id);
-    
+
     if ( !customObj.hasClass('ac_input') ) {
-        customObj.autocomplete( url, 
-            { width : 250, selectFirst : false, matchContains: true
-            }).result( 
+        customObj.autocomplete( url,
+            { width : 250, selectFirst : false, matchContains: true, max: {/literal}{crmSetting name="search_autocomplete_count" group="Search Preferences"}{literal}
+            }).result(
                 function(event, data ) {
                     customIdObj.val( data[1] );
                 }
         );
         customObj.click( function( ) {
             customIdObj.val('');
-	    }); 
+      });
      }
 });
 </script>

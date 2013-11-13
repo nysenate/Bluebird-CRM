@@ -1,445 +1,448 @@
 <?php
 
 function nyss_dedupe_civicrm_triggerInfo(&$triggers, $tableName=NULL) {
-    $triggers[] = array(
-        'table' => 'civicrm_contact',
-        'event' => array('update', 'insert'),
-        'when'  => 'after',
-        'variables' => "
-            DECLARE norm_first_name VARCHAR(255);
-            DECLARE norm_middle_name VARCHAR(255);
-            DECLARE norm_last_name VARCHAR(255);
-            DECLARE norm_household_name VARCHAR(255);
-            DECLARE norm_organization_name VARCHAR(255);",
-        'sql' => "
-            SET norm_first_name = BB_NORMALIZE(NEW.first_name);
-            SET norm_middle_name = BB_NORMALIZE(NEW.middle_name);
-            SET norm_last_name = BB_NORMALIZE(NEW.last_name);
-            SET norm_household_name = BB_NORMALIZE(NEW.household_name);
-            SET norm_organization_name = BB_NORMALIZE(NEW.organization_name);
+  $triggers[] = array(
+    'table' => 'civicrm_contact',
+    'event' => array('update', 'insert'),
+    'when'  => 'after',
+    'variables' => "
+      DECLARE norm_first_name VARCHAR(255);
+      DECLARE norm_middle_name VARCHAR(255);
+      DECLARE norm_last_name VARCHAR(255);
+      DECLARE norm_household_name VARCHAR(255);
+      DECLARE norm_organization_name VARCHAR(255);",
+    'sql' => "
+      SET norm_first_name = BB_NORMALIZE(NEW.first_name);
+      SET norm_middle_name = BB_NORMALIZE(NEW.middle_name);
+      SET norm_last_name = BB_NORMALIZE(NEW.last_name);
+      SET norm_household_name = BB_NORMALIZE(NEW.household_name);
+      SET norm_organization_name = BB_NORMALIZE(NEW.organization_name);
 
-            INSERT INTO shadow_contact
-            (contact_id, first_name, middle_name, last_name, suffix_id, birth_date, gender_id, contact_type, household_name, organization_name)
-            VALUES (NEW.id, norm_first_name, norm_middle_name, norm_last_name, NEW.suffix_id, NEW.birth_date, NEW.gender_id, NEW.contact_type, norm_household_name, norm_organization_name)
-            ON DUPLICATE KEY UPDATE
-            first_name=norm_first_name,
-            middle_name=norm_middle_name,
-            last_name=norm_last_name,
-            suffix_id=NEW.suffix_id,
-            birth_date=NEW.birth_date,
-            gender_id=NEW.gender_id,
-            contact_type=NEW.contact_type,
-            household_name=norm_household_name,
-            organization_name=norm_organization_name;"
-    );
+      INSERT INTO shadow_contact
+        (contact_id, first_name, middle_name, last_name, suffix_id, birth_date, gender_id, contact_type, household_name, organization_name)
+      VALUES
+        (NEW.id, norm_first_name, norm_middle_name, norm_last_name, NEW.suffix_id, NEW.birth_date, NEW.gender_id, NEW.contact_type, norm_household_name, norm_organization_name)
+      ON DUPLICATE KEY UPDATE
+        first_name=norm_first_name,
+        middle_name=norm_middle_name,
+        last_name=norm_last_name,
+        suffix_id=NEW.suffix_id,
+        birth_date=NEW.birth_date,
+        gender_id=NEW.gender_id,
+        contact_type=NEW.contact_type,
+        household_name=norm_household_name,
+        organization_name=norm_organization_name;"
+  );
 
-    $triggers[] = array(
-        'table' => 'civicrm_address',
-        'event' => array('update','insert'),
-        'when'  => 'after',
-        'variables' => "
-            DECLARE norm_supplemental_address_1 VARCHAR(255);
-            DECLARE norm_supplemental_address_2 VARCHAR(255);
-            DECLARE norm_street_address VARCHAR(255);
-            DECLARE norm_postal_code VARCHAR(255);
-            DECLARE norm_city VARCHAR(255);",
-        'sql' => "
-            SET norm_supplemental_address_1 = BB_NORMALIZE_ADDR(NEW.supplemental_address_1);
-            SET norm_supplemental_address_2 = BB_NORMALIZE_ADDR(NEW.supplemental_address_2);
-            SET norm_street_address = BB_NORMALIZE_ADDR(NEW.street_address);
-            SET norm_postal_code = IFNULL(NEW.postal_code,'');
-            SET norm_city = IFNULL(NEW.city,'');
+  $triggers[] = array(
+    'table' => 'civicrm_address',
+    'event' => array('update','insert'),
+    'when'  => 'after',
+    'variables' => "
+      DECLARE norm_supplemental_address_1 VARCHAR(255);
+      DECLARE norm_supplemental_address_2 VARCHAR(255);
+      DECLARE norm_street_address VARCHAR(255);
+      DECLARE norm_postal_code VARCHAR(255);
+      DECLARE norm_city VARCHAR(255);",
+    'sql' => "
+      SET norm_supplemental_address_1 = BB_NORMALIZE_ADDR(NEW.supplemental_address_1);
+      SET norm_supplemental_address_2 = BB_NORMALIZE_ADDR(NEW.supplemental_address_2);
+      SET norm_street_address = BB_NORMALIZE_ADDR(NEW.street_address);
+      SET norm_postal_code = IFNULL(NEW.postal_code,'');
+      SET norm_city = IFNULL(NEW.city,'');
 
-            INSERT INTO shadow_address
-                        (address_id, contact_id, street_address, postal_code, city, country_id, state_province_id, supplemental_address_1, supplemental_address_2)
-                 VALUES (NEW.id, NEW.contact_id, norm_street_address, norm_postal_code, norm_city, NEW.country_id, NEW.state_province_id, norm_supplemental_address_1, norm_supplemental_address_2)
-                 ON DUPLICATE KEY UPDATE
-                        street_address=norm_street_address,
-                        postal_code=norm_postal_code,
-                        city=norm_city,
-                        country_id=NEW.country_id,
-                        state_province_id=NEW.state_province_id,
-                        supplemental_address_1=norm_supplemental_address_1,
-                        supplemental_address_2=norm_supplemental_address_2;"
-    );
+      INSERT INTO shadow_address
+        (address_id, contact_id, street_address, postal_code, city, country_id, state_province_id, supplemental_address_1, supplemental_address_2)
+      VALUES
+        (NEW.id, NEW.contact_id, norm_street_address, norm_postal_code, norm_city, NEW.country_id, NEW.state_province_id, norm_supplemental_address_1, norm_supplemental_address_2)
+      ON DUPLICATE KEY UPDATE
+        street_address=norm_street_address,
+        postal_code=norm_postal_code,
+        city=norm_city,
+        country_id=NEW.country_id,
+        state_province_id=NEW.state_province_id,
+        supplemental_address_1=norm_supplemental_address_1,
+        supplemental_address_2=norm_supplemental_address_2;"
+  );
 
-    $triggers[] = array(
-        'table' => 'civicrm_contact',
-        'event' => 'delete',
-        'when'  => 'after',
-        'sql'   => 'DELETE FROM shadow_contact WHERE contact_id=OLD.id;'
-    );
+  $triggers[] = array(
+    'table' => 'civicrm_contact',
+    'event' => 'delete',
+    'when' => 'after',
+    'sql' => 'DELETE FROM shadow_contact WHERE contact_id=OLD.id;'
+  );
 
-    $triggers[] = array(
-        'table' => 'civicrm_address',
-        'event' => 'delete',
-        'when'  => 'after',
-        'sql'   => 'DELETE FROM shadow_address WHERE address_id=OLD.id;'
-    );
+  $triggers[] = array(
+    'table' => 'civicrm_address',
+    'event' => 'delete',
+    'when' => 'after',
+    'sql' => 'DELETE FROM shadow_address WHERE address_id=OLD.id;'
+  );
 }
 
 function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
-    //var_dump($o);
-    //var_dump($table);
-    //don't run these during user account/contact creation
-    if( $o->noRules || $table != 'table')
-        return;
+  //var_dump($o);
+  //var_dump($table);
+  //don't run these during user account/contact creation
+  if( $o->noRules || $table != 'table')
+    return;
 
-    $ruleMap = array(
-        'Individual Strict (first + last + (street + zip | email))' => array(
-            'internal' => 'nyss_dedupe_individual_default_strict_internal',
-            'record' => 'nyss_dedupe_individual_default_strict_record',
-        ),
-        'Individual Fuzzy (nick + last + (street | mail | email))' => array(
-            'internal' => 'nyss_dedupe_individual_default_fuzzy_internal',
-            'record' => 'nyss_dedupe_individual_default_fuzzy_record'
-        ),
-        'Organization 1 (name + street + city + email)' => array(
-            'internal' => 'nyss_dedupe_org1_internal',
-            'record' => 'nyss_dedupe_org1_record'
-        ),
-        'Organization 2 (name + street + city + zip)' => array(
-            'internal' => 'nyss_dedupe_org2_internal',
-            'record' => ''
-        ),
-        'Organization 3 (name + street + city)' => array(
-            'internal' => 'nyss_dedupe_org3_internal',
-            'record' => ''
-        ),
-        'Household 1 (name + street + city + email)' => array(
-            'internal' => 'nyss_dedupe_house1_internal',
-            'record' => 'nyss_dedupe_house1_record'
-        ),
-        'Household 2 (name + street + city + zip)' => array(
-            'internal' => 'nyss_dedupe_house2_internal',
-            'record' => ''
-        ),
-        'Household 3 (name + street + city)' => array(
-            'internal' => 'nyss_dedupe_house3_internal',
-            'record' => ''
-        )
-    );
+  $ruleMap = array(
+    'Individual Strict (first + last + (street + zip | email))' => array(
+      'internal' => 'nyss_dedupe_individual_default_strict_internal',
+      'record' => 'nyss_dedupe_individual_default_strict_record',
+    ),
+    'Individual Fuzzy (nick + last + (street | mail | email))' => array(
+      'internal' => 'nyss_dedupe_individual_default_fuzzy_internal',
+      'record' => 'nyss_dedupe_individual_default_fuzzy_record'
+    ),
+    'Organization 1 (name + street + city + email)' => array(
+      'internal' => 'nyss_dedupe_org1_internal',
+      'record' => 'nyss_dedupe_org1_record'
+    ),
+    'Organization 2 (name + street + city + zip)' => array(
+      'internal' => 'nyss_dedupe_org2_internal',
+      'record' => ''
+    ),
+    'Organization 3 (name + street + city)' => array(
+      'internal' => 'nyss_dedupe_org3_internal',
+      'record' => ''
+    ),
+    'Household 1 (name + street + city + email)' => array(
+      'internal' => 'nyss_dedupe_house1_internal',
+      'record' => 'nyss_dedupe_house1_record'
+    ),
+    'Household 2 (name + street + city + zip)' => array(
+      'internal' => 'nyss_dedupe_house2_internal',
+      'record' => ''
+    ),
+    'Household 3 (name + street + city)' => array(
+      'internal' => 'nyss_dedupe_house3_internal',
+      'record' => ''
+    )
+  );
 
-    $ruleName = $o->name;
-    $ruleType = empty($o->params) ? 'internal' : 'record';
+  $ruleName = $o->title;
+  $ruleType = empty($o->params) ? 'internal' : 'record';
 
-    // If its a rule that we've overridden
-    if(array_key_exists($ruleName, $ruleMap) && $rule=$ruleMap[$ruleName][$ruleType]) {
-        //Set some default override values, individual rule functions can override these
-        $o->threshold = 5;
-        // Build our customized query, allow override of $o values.
+  // If its a rule that we've overridden
+  if(array_key_exists($ruleName, $ruleMap) && $rule=$ruleMap[$ruleName][$ruleType]) {
+    //Set some default override values, individual rule functions can override these
+    $o->threshold = 5;
+    // Build our customized query, allow override of $o values.
 
-        $query = call_user_func($rule, $o);
+    $query = call_user_func($rule, $o);
 
-        // For internal queries, make sure to respect the contactIds constraints
-        // Also avoid mirror results, i.e. (1,2) and (2,1)
-        // Verify that conact1._contact_id and contact2.contact_id are not the same as well.
-        if($ruleType == 'internal') {
-            if( !empty($o->contactIds) ) {
-                $cids = implode(',',$o->contactIds);
-                $query .= " AND contact1.contact_id IN($cids) AND ( contact2.contact_id NOT IN($cids) OR (contact2.contact_id IN($cids) AND contact1.contact_id < contact2.contact_id) )";
-            } else {
-                $query .= " AND contact1.contact_id < contact2.contact_id";
-            }
-        }
-
-        // Wipe the query array clean and insert our customized query.
-        foreach(array_keys($tableQueries) as $key)
-            unset($tableQueries[$key]);
-
-        // Set tableQueries
-        $tableQueries['civicrm.custom.5'] = $query;
+    // For internal queries, make sure to respect the contactIds constraints
+    // Also avoid mirror results, i.e. (1,2) and (2,1)
+    // Verify that conact1._contact_id and contact2.contact_id are not the same as well.
+    if($ruleType == 'internal') {
+      if( !empty($o->contactIds) ) {
+        $cids = implode(',',$o->contactIds);
+        $query .= " AND contact1.contact_id IN($cids) AND ( contact2.contact_id NOT IN($cids) OR (contact2.contact_id IN($cids) AND contact1.contact_id < contact2.contact_id) )";
+      }
+      else {
+        $query .= " AND contact1.contact_id < contact2.contact_id";
+      }
     }
 
-    //CRM_Core_Error::debug($tableQueries);exit();
+    // Wipe the query array clean and insert our customized query.
+    foreach(array_keys($tableQueries) as $key)
+      unset($tableQueries[$key]);
+
+    // Set tableQueries
+    $tableQueries['civicrm.custom.5'] = $query;
+  }
+
+  //CRM_Core_Error::debug($tableQueries);exit();
 }
 
 /*
  * individual rules
  */
 function nyss_dedupe_individual_default_strict_internal($o) {
-    return "
-        SELECT DISTINCT
-          contact1.contact_id AS id1,
-          contact2.contact_id AS id2,
-          5 AS weight
+  return "
+    SELECT DISTINCT
+      contact1.contact_id AS id1,
+      contact2.contact_id AS id2,
+      5 AS weight
 
-        FROM   shadow_contact AS contact1
-          JOIN shadow_contact AS contact2 ON contact1.contact_type = contact2.contact_type
-          LEFT JOIN shadow_address AS address1 ON address1.contact_id = contact1.contact_id
-          LEFT JOIN shadow_address AS address2 ON address2.contact_id = contact2.contact_id
-          LEFT JOIN civicrm_email AS email1 ON email1.contact_id = contact1.contact_id
-          LEFT JOIN civicrm_email AS email2 ON email2.contact_id = contact2.contact_id
+    FROM   shadow_contact AS contact1
+      JOIN shadow_contact AS contact2 ON contact1.contact_type = contact2.contact_type
+      LEFT JOIN shadow_address AS address1 ON address1.contact_id = contact1.contact_id
+      LEFT JOIN shadow_address AS address2 ON address2.contact_id = contact2.contact_id
+      LEFT JOIN civicrm_email AS email1 ON email1.contact_id = contact1.contact_id
+      LEFT JOIN civicrm_email AS email2 ON email2.contact_id = contact2.contact_id
 
-        WHERE contact1.contact_type = 'Individual'
-          AND contact1.last_name = contact2.last_name
-          AND contact1.first_name = contact2.first_name
-          AND (
-               (address1.street_address = address2.street_address AND address1.postal_code=address2.postal_code) OR
-               (email1.email = email2.email)
-              )
+    WHERE contact1.contact_type = 'Individual'
+      AND contact1.last_name = contact2.last_name
+      AND contact1.first_name = contact2.first_name
+      AND (
+           (address1.street_address = address2.street_address AND address1.postal_code=address2.postal_code) OR
+           (email1.email = email2.email)
+          )
 
-          AND (contact1.suffix_id IS NULL OR contact2.suffix_id IS NULL OR contact1.suffix_id = contact2.suffix_id)
-          AND (contact1.middle_name IS NULL OR contact2.middle_name IS NULL OR contact1.middle_name = contact2.middle_name)
-          AND (contact1.birth_date IS NULL OR contact2.birth_date IS NULL OR contact1.birth_date = contact2.birth_date)
-          AND (contact1.gender_id IS NULL OR contact2.gender_id IS NULL OR contact1.gender_id = contact2.gender_id)
-          AND (address1.city IS NULL OR address2.city IS NULL OR address1.city = address2.city)
-          AND (address1.state_province_id IS NULL OR address2.state_province_id IS NULL OR address1.state_province_id = address2.state_province_id)
-          AND (address1.country_id IS NULL OR address2.country_id IS NULL OR address1.country_id = address2.country_id)
-          ";
-}
-
-function nyss_dedupe_individual_default_fuzzy_internal($o) {
-    return "
-        SELECT DISTINCT
-          contact1.contact_id AS id1,
-          contact2.contact_id AS id2,
-          5 AS weight
-
-        FROM   shadow_contact AS contact1
-          JOIN shadow_contact AS contact2 ON contact1.contact_type = contact2.contact_type
-          JOIN fn_group_contact AS fn1 ON fn1.contact_id=contact1.contact_id
-          JOIN fn_group_contact AS fn2 ON fn2.contact_id=contact2.contact_id
-          LEFT JOIN shadow_address AS address1 ON address1.contact_id = contact1.contact_id
-          LEFT JOIN shadow_address AS address2 ON address2.contact_id = contact2.contact_id
-          LEFT JOIN civicrm_email AS email1 ON email1.contact_id = contact1.contact_id
-          LEFT JOIN civicrm_email AS email2 ON email2.contact_id = contact2.contact_id
-
-        WHERE contact1.contact_type = 'Individual'
-          AND fn1.fn_group_id=fn2.fn_group_id
-          AND contact1.last_name = contact2.last_name
-          AND (
-               (address1.street_address = address2.street_address) OR
-               (address1.supplemental_address_1 = address2.supplemental_address_1) OR
-               (address1.supplemental_address_2 = address2.supplemental_address_2) OR
-               (address1.street_address = address2.supplemental_address_1) OR
-               (address1.supplemental_address_1 = address2.street_address) OR
-               (email1.email = email2.email)
-              )
-
-          AND (contact1.suffix_id IS NULL OR contact2.suffix_id IS NULL OR contact1.suffix_id = contact2.suffix_id)
-          AND (contact1.middle_name IS NULL OR contact2.middle_name IS NULL OR contact1.middle_name = contact2.middle_name)
-          AND (contact1.birth_date IS NULL OR contact2.birth_date IS NULL OR contact1.birth_date = contact2.birth_date)
-          AND (contact1.gender_id IS NULL OR contact2.gender_id IS NULL OR contact1.gender_id = contact2.gender_id)
-          AND (address1.postal_code IS NULL OR address2.postal_code IS NULL OR address1.postal_code = address2.postal_code)
-          AND (address1.city IS NULL OR address2.city IS NULL OR address1.city = address2.city)
-          AND (address1.state_province_id IS NULL OR address2.state_province_id IS NULL OR address1.state_province_id = address2.state_province_id)
-          AND (address1.country_id IS NULL OR address2.country_id IS NULL OR address1.country_id = address2.country_id)
+      AND (contact1.suffix_id IS NULL OR contact2.suffix_id IS NULL OR contact1.suffix_id = contact2.suffix_id)
+      AND (contact1.middle_name IS NULL OR contact2.middle_name IS NULL OR contact1.middle_name = contact2.middle_name)
+      AND (contact1.birth_date IS NULL OR contact2.birth_date IS NULL OR contact1.birth_date = contact2.birth_date)
+      AND (contact1.gender_id IS NULL OR contact2.gender_id IS NULL OR contact1.gender_id = contact2.gender_id)
+      AND (address1.city IS NULL OR address2.city IS NULL OR address1.city = address2.city)
+      AND (address1.state_province_id IS NULL OR address2.state_province_id IS NULL OR address1.state_province_id = address2.state_province_id)
+      AND (address1.country_id IS NULL OR address2.country_id IS NULL OR address1.country_id = address2.country_id)
       ";
 }
 
+function nyss_dedupe_individual_default_fuzzy_internal($o) {
+  return "
+    SELECT DISTINCT
+      contact1.contact_id AS id1,
+      contact2.contact_id AS id2,
+      5 AS weight
+
+    FROM   shadow_contact AS contact1
+      JOIN shadow_contact AS contact2 ON contact1.contact_type = contact2.contact_type
+      JOIN fn_group_contact AS fn1 ON fn1.contact_id=contact1.contact_id
+      JOIN fn_group_contact AS fn2 ON fn2.contact_id=contact2.contact_id
+      LEFT JOIN shadow_address AS address1 ON address1.contact_id = contact1.contact_id
+      LEFT JOIN shadow_address AS address2 ON address2.contact_id = contact2.contact_id
+      LEFT JOIN civicrm_email AS email1 ON email1.contact_id = contact1.contact_id
+      LEFT JOIN civicrm_email AS email2 ON email2.contact_id = contact2.contact_id
+
+    WHERE contact1.contact_type = 'Individual'
+      AND fn1.fn_group_id=fn2.fn_group_id
+      AND contact1.last_name = contact2.last_name
+      AND (
+           (address1.street_address = address2.street_address) OR
+           (address1.supplemental_address_1 = address2.supplemental_address_1) OR
+           (address1.supplemental_address_2 = address2.supplemental_address_2) OR
+           (address1.street_address = address2.supplemental_address_1) OR
+           (address1.supplemental_address_1 = address2.street_address) OR
+           (email1.email = email2.email)
+          )
+
+      AND (contact1.suffix_id IS NULL OR contact2.suffix_id IS NULL OR contact1.suffix_id = contact2.suffix_id)
+      AND (contact1.middle_name IS NULL OR contact2.middle_name IS NULL OR contact1.middle_name = contact2.middle_name)
+      AND (contact1.birth_date IS NULL OR contact2.birth_date IS NULL OR contact1.birth_date = contact2.birth_date)
+      AND (contact1.gender_id IS NULL OR contact2.gender_id IS NULL OR contact1.gender_id = contact2.gender_id)
+      AND (address1.postal_code IS NULL OR address2.postal_code IS NULL OR address1.postal_code = address2.postal_code)
+      AND (address1.city IS NULL OR address2.city IS NULL OR address1.city = address2.city)
+      AND (address1.state_province_id IS NULL OR address2.state_province_id IS NULL OR address1.state_province_id = address2.state_province_id)
+      AND (address1.country_id IS NULL OR address2.country_id IS NULL OR address1.country_id = address2.country_id)
+    ";
+}
+
 function nyss_dedupe_individual_default_strict_record($o) {
-    // Fetch and clean all input data
-    $civicrm_contact = CRM_Utils_Array::value('civicrm_contact',$o->params);
-    $civicrm_address = CRM_Utils_Array::value('civicrm_address',$o->params);
-    $civicrm_email = CRM_Utils_Array::value('civicrm_email',$o->params);
+  // Fetch and clean all input data
+  $civicrm_contact = CRM_Utils_Array::value('civicrm_contact',$o->params);
+  $civicrm_address = CRM_Utils_Array::value('civicrm_address',$o->params);
+  $civicrm_email = CRM_Utils_Array::value('civicrm_email',$o->params);
 
-    $email = nyss_dedupe_get_safe('email',$civicrm_email,'');
-    $first_name  = nyss_dedupe_get_safe('first_name' ,$civicrm_contact,'');
-    $last_name   = nyss_dedupe_get_safe('last_name'  ,$civicrm_contact,'');
-    $birth_date  = nyss_dedupe_get_safe('birth_date' ,$civicrm_contact,'');
-    $suffix_id   = nyss_dedupe_get_safe('suffix_id'  ,$civicrm_contact,'');
-    $middle_name = nyss_dedupe_get_safe('middle_name',$civicrm_contact,'');
-    $gender_id   = nyss_dedupe_get_safe('gender_id'  ,$civicrm_contact,'');
-    $city           = nyss_dedupe_get_safe('city'                  ,$civicrm_address,'');
-    $postal_code    = nyss_dedupe_get_safe('postal_code'           ,$civicrm_address,'');
-    $street_address = nyss_dedupe_get_safe('street_address'        ,$civicrm_address,'');
-    $state_id       = nyss_dedupe_get_safe('state_province_id'     ,$civicrm_address,'');
-    $country_id     = nyss_dedupe_get_safe('country_id'            ,$civicrm_address,'');
+  $email = nyss_dedupe_get_safe('email',$civicrm_email,'');
+  $first_name = nyss_dedupe_get_safe('first_name', $civicrm_contact,'');
+  $last_name = nyss_dedupe_get_safe('last_name', $civicrm_contact,'');
+  $birth_date = nyss_dedupe_get_safe('birth_date', $civicrm_contact,'');
+  $suffix_id = nyss_dedupe_get_safe('suffix_id', $civicrm_contact,'');
+  $middle_name = nyss_dedupe_get_safe('middle_name', $civicrm_contact,'');
+  $gender_id = nyss_dedupe_get_safe('gender_id', $civicrm_contact,'');
+  $city = nyss_dedupe_get_safe('city', $civicrm_address,'');
+  $postal_code = nyss_dedupe_get_safe('postal_code', $civicrm_address,'');
+  $street_address = nyss_dedupe_get_safe('street_address', $civicrm_address,'');
+  $state_id = nyss_dedupe_get_safe('state_province_id', $civicrm_address,'');
+  $country_id = nyss_dedupe_get_safe('country_id', $civicrm_address,'');
 
-    // If we don't have a first and last name, do nothing
-    if(!$first_name || !$last_name)
-        return "SELECT 0 as id1, 0 as weight FROM civicrm_contact as contact1 WHERE 1";
+  // If we don't have a first and last name, do nothing
+  if(!$first_name || !$last_name)
+    return "SELECT 0 as id1, 0 as weight FROM civicrm_contact as contact1 WHERE 1";
 
-    // If we don't have some sort of address element, do nothing
-    if((!$street_address || !$postal_code) && !$email)
-        return "SELECT 0 as id1, 0 as weight FROM civicrm_contact as contact1 WHERE 1";
+  // If we don't have some sort of address element, do nothing
+  if((!$street_address || !$postal_code) && !$email)
+    return "SELECT 0 as id1, 0 as weight FROM civicrm_contact as contact1 WHERE 1";
 
-    // Build the barebones query if no address or email is present
-    $select = "
-        SELECT DISTINCT contact1.contact_id id1, 5 weight";
+  // Build the barebones query if no address or email is present
+  $select = "
+    SELECT DISTINCT contact1.contact_id id1, 5 weight";
 
-    $from = "
-        FROM   shadow_contact AS contact1";
+  $from = "
+    FROM   shadow_contact AS contact1";
 
-    $where = "
-        WHERE contact1.contact_type = 'Individual'
-          AND contact1.first_name = BB_NORMALIZE('$first_name')
-          AND contact1.last_name = BB_NORMALIZE('$last_name')";
+  $where = "
+    WHERE contact1.contact_type = 'Individual'
+      AND contact1.first_name = BB_NORMALIZE('$first_name')
+      AND contact1.last_name = BB_NORMALIZE('$last_name')";
 
-    if($birth_date)
+  if($birth_date)
+    $where .= "
+      AND (contact1.birth_date IS NULL or contact1.birth_date = '$birth_date')";
+
+  if($gender_id)
+    $where .= "
+      AND (contact1.gender_id IS NULL or contact1.gender_id = '$gender_id')";
+
+  if($suffix_id)
+    $where .= "
+      AND (contact1.suffix_id IS NULL or contact1.suffix_id = $suffix_id)";
+
+  if($middle_name)
+    $where .= "
+      AND (contact1.middle_name IS NULL or contact1.middle_name = BB_NORMALIZE('$middle_name'))";
+
+
+  // Add on the bits that make us smart around addresses
+  if($street_address && $postal_code) {
+    $from .= "
+      LEFT JOIN shadow_address AS address1 USING(contact_id)";
+
+    if($city)
         $where .= "
-          AND (contact1.birth_date IS NULL or contact1.birth_date = '$birth_date')";
+      AND (address1.city IS NULL or address1.city = '$city')";
 
-    if($gender_id)
+    if($state_id)
         $where .= "
-          AND (contact1.gender_id IS NULL or contact1.gender_id = '$gender_id')";
+      AND (address1.state_province_id IS NULL or address1.state_province_id = '$state_id')\n";
 
-    if($suffix_id)
+    if($country_id)
         $where .= "
-          AND (contact1.suffix_id IS NULL or contact1.suffix_id = $suffix_id)";
+      AND (address1.country_id IS NULL or address1.country_id = '$country_id')\n";
+  }
 
-    if($middle_name)
-        $where .= "
-          AND (contact1.middle_name IS NULL or contact1.middle_name = BB_NORMALIZE('$middle_name'))";
+  // Add on the bits that make us smart around emails
+  if($email) {
+    $from .= "
+      LEFT JOIN civicrm_email AS email1 USING(contact_id)";
+  }
 
+  // Add on the primary inclusion rules
+  if($street_address && $postal_code && $email)
+    $where .= "
+      AND (
+        (address1.street_address = BB_NORMALIZE_ADDR('$street_address') AND address1.postal_code = '$postal_code') OR
+        (email1.email = '$email')
+      )";
+elseif($street_address && $postal_code)
+    $where .= "
+      AND address1.street_address = BB_NORMALIZE_ADDR('$street_address')
+      AND address1.postal_code = '$postal_code'";
+elseif($email)
+    $where .= "
+      AND email1.email = '$email'";
 
-    // Add on the bits that make us smart around addresses
-    if($street_address && $postal_code) {
-        $from .= "
-          LEFT JOIN shadow_address AS address1 USING(contact_id)";
-
-        if($city)
-            $where .= "
-          AND (address1.city IS NULL or address1.city = '$city')";
-
-        if($state_id)
-            $where .= "
-          AND (address1.state_province_id IS NULL or address1.state_province_id = '$state_id')\n";
-
-        if($country_id)
-            $where .= "
-          AND (address1.country_id IS NULL or address1.country_id = '$country_id')\n";
-    }
-
-    // Add on the bits that make us smart around emails
-    if($email) {
-        $from .= "
-          LEFT JOIN civicrm_email AS email1 USING(contact_id)";
-    }
-
-    // Add on the primary inclusion rules
-    if($street_address && $postal_code && $email)
-        $where .= "
-          AND (
-            (address1.street_address = BB_NORMALIZE_ADDR('$street_address') AND address1.postal_code = '$postal_code') OR
-            (email1.email = '$email')
-          )";
-    elseif($street_address && $postal_code)
-        $where .= "
-          AND address1.street_address = BB_NORMALIZE_ADDR('$street_address')
-          AND address1.postal_code = '$postal_code'";
-    elseif($email)
-        $where .= "
-          AND email1.email = '$email'";
-
-    return $select.$from.$where;
+  return $select.$from.$where;
 }
 
 
 function nyss_dedupe_individual_default_fuzzy_record($o) {
-    // Fetch and clean all input data
-    $civicrm_contact = CRM_Utils_Array::value('civicrm_contact',$o->params,array());
-    $civicrm_address = CRM_Utils_Array::value('civicrm_address',$o->params,array());
-    $civicrm_email   = CRM_Utils_Array::value('civicrm_email',  $o->params,array());
+  // Fetch and clean all input data
+  $civicrm_contact = CRM_Utils_Array::value('civicrm_contact', $o->params,array());
+  $civicrm_address = CRM_Utils_Array::value('civicrm_address', $o->params,array());
+  $civicrm_email = CRM_Utils_Array::value('civicrm_email', $o->params,array());
 
-    $email = nyss_dedupe_get_safe('email',$civicrm_email,'');
-    $first_name  = nyss_dedupe_get_safe('first_name' ,$civicrm_contact,'');
-    $last_name   = nyss_dedupe_get_safe('last_name'  ,$civicrm_contact,'');
-    $birth_date  = nyss_dedupe_get_safe('birth_date' ,$civicrm_contact,'');
-    $suffix_id   = nyss_dedupe_get_safe('suffix_id'  ,$civicrm_contact,'');
-    $middle_name = nyss_dedupe_get_safe('middle_name',$civicrm_contact,'');
-    $gender_id   = nyss_dedupe_get_safe('gender_id'  ,$civicrm_contact,'');
-    $city           = nyss_dedupe_get_safe('city'                  ,$civicrm_address,'');
-    $postal_code    = nyss_dedupe_get_safe('postal_code'           ,$civicrm_address,'');
-    $street_address = nyss_dedupe_get_safe('street_address'        ,$civicrm_address,'');
-    $state_id       = nyss_dedupe_get_safe('state_province_id'     ,$civicrm_address,'');
-    $country_id     = nyss_dedupe_get_safe('country_id'            ,$civicrm_address,'');
-    $supp_address_1 = nyss_dedupe_get_safe('supplemental_address_1',$civicrm_address,'');
-    $supp_address_2 = nyss_dedupe_get_safe('supplemental_address_2',$civicrm_address,'');
+  $email = nyss_dedupe_get_safe('email',$civicrm_email,'');
+  $first_name = nyss_dedupe_get_safe('first_name', $civicrm_contact,'');
+  $last_name = nyss_dedupe_get_safe('last_name', $civicrm_contact,'');
+  $birth_date = nyss_dedupe_get_safe('birth_date', $civicrm_contact,'');
+  $suffix_id = nyss_dedupe_get_safe('suffix_id', $civicrm_contact,'');
+  $middle_name = nyss_dedupe_get_safe('middle_name',$civicrm_contact,'');
+  $gender_id = nyss_dedupe_get_safe('gender_id', $civicrm_contact,'');
+  $city = nyss_dedupe_get_safe('city', $civicrm_address,'');
+  $postal_code = nyss_dedupe_get_safe('postal_code', $civicrm_address,'');
+  $street_address = nyss_dedupe_get_safe('street_address', $civicrm_address,'');
+  $state_id = nyss_dedupe_get_safe('state_province_id', $civicrm_address,'');
+  $country_id = nyss_dedupe_get_safe('country_id', $civicrm_address,'');
+  $supp_address_1 = nyss_dedupe_get_safe('supplemental_address_1', $civicrm_address,'');
+  $supp_address_2 = nyss_dedupe_get_safe('supplemental_address_2', $civicrm_address,'');
 
-    // If we don't have a first and last name, do nothing
-    if( !$first_name || !$last_name )
-        return "SELECT 0 as id1, 0 as weight FROM civicrm_contact as contact1 WHERE 1 ";
+  // If we don't have a first and last name, do nothing
+  if( !$first_name || !$last_name )
+    return "SELECT 0 as id1, 0 as weight FROM civicrm_contact as contact1 WHERE 1 ";
 
-    // If we don't have some sort of address element, do nothing
-    if(!$email && !$street_address && !$supp_address_1 && !$supp_address_2)
-        return "SELECT 0 as id1, 0 as weight FROM civicrm_contact as contact1 WHERE 1 ";
+  // If we don't have some sort of address element, do nothing
+  if(!$email && !$street_address && !$supp_address_1 && !$supp_address_2)
+    return "SELECT 0 as id1, 0 as weight FROM civicrm_contact as contact1 WHERE 1 ";
 
-    // Build the barebones query if no address or email is present
-    $select = "
-        SELECT DISTINCT contact1.contact_id as id1, 5 as weight";
+  // Build the barebones query if no address or email is present
+  $select = "
+    SELECT DISTINCT contact1.contact_id as id1, 5 as weight";
 
-    $from = "
-        FROM shadow_contact as contact1
-          JOIN fn_group_contact as fn ON fn.contact_id=contact1.contact_id";
+  $from = "
+    FROM shadow_contact as contact1
+      JOIN fn_group_contact as fn ON fn.contact_id=contact1.contact_id";
 
-    $where = "
-        WHERE contact1.contact_type = 'Individual'
-          AND fn.fn_group_id IN ( SELECT fn_group_id
-                                  FROM fn_group_name
-                                  WHERE name = BB_NORMALIZE('$first_name'))
-          AND contact1.last_name = BB_NORMALIZE('$last_name')";
+  $where = "
+    WHERE contact1.contact_type = 'Individual'
+      AND fn.fn_group_id IN ( SELECT fn_group_id
+                              FROM fn_group_name
+                              WHERE name = BB_NORMALIZE('$first_name'))
+      AND contact1.last_name = BB_NORMALIZE('$last_name')";
 
-    if($birth_date)
-        $where .= "
-          AND (contact1.birth_date IS NULL or contact1.birth_date = '$birth_date')";
-
-    if($gender_id)
-        $where .= "
-          AND (contact1.gender_id IS NULL or contact1.gender_id = '$gender_id')";
-
-    if($suffix_id)
-        $where .= "
-          AND (contact1.suffix_id IS NULL or contact1.suffix_id = $suffix_id)";
-
-    if($middle_name)
-        $where .= "
-          AND (contact1.middle_name IS NULL or contact1.middle_name = BB_NORMALIZE('$middle_name'))";
-
-
-    // Add on the bits that make us smart around addresses if we have any address parts
-    if($street_address || $supp_address_1 || $supp_address_2 || $city || $state_id || $country_id || $postal_code) {
-        $from .= "
-            LEFT JOIN shadow_address as address1 ON contact1.contact_id=address1.contact_id";
-
-        if($postal_code)
-            $where .= "
-          AND (address1.postal_code IS NULL or address1.postal_code = '$postal_code')";
-
-        if($city)
-            $where .= "
-          AND (address1.city IS NULL or address1.city = '$city')";
-
-        if($state_id)
-            $where .= "
-          AND (address1.state_province_id IS NULL or address1.state_province_id = '$state_id')";
-
-        if($country_id)
-            $where .= "
-          AND (address1.country_id IS NULL or address1.country_id = '$country_id')";
-    }
-
-    // Add on the bits that make us smart around emails
-    if($email) {
-        $from  .= "
-            LEFT JOIN civicrm_email as email1 on contact1.contact_id=email1.contact_id";
-    }
-
-    // Add on the primary inclusion rules
-    $emailClause  = "(email1.email IS NULL OR email1.email = '$email')";
-    $supp1Clause  = "(address1.supplemental_address_1 IS NULL OR address1.supplemental_address_1 = BB_NORMALIZE_ADDR('$supp_address_1'))";
-    $supp2Clause  = "(address1.supplemental_address_2 IS NULL OR address1.supplemental_address_2 = BB_NORMALIZE_ADDR('$supp_address_2'))";
-    $streetClause = "(address1.street_address IS NULL OR address1.street_address = BB_NORMALIZE_ADDR('$street_address') )";
-    $crossClause = "(address1.street_address = BB_NORMALIZE_ADDR('$supp_address_1') OR address1.supplemental_address_1 = BB_NORMALIZE_ADDR('$street_address'))";
-
-    $clauses = array();
-    if($email)
-        $clauses[] = $emailClause;
-    if($street_address)
-        $clauses[] = $streetClause;
-    if($street_address && $supp_address_1)
-        $clauses[] = $crossClause;
-    if($supp_address_1)
-        $clauses[] = $supp1Clause;
-    if($supp_address_2)
-        $clauses[] = $supp2Clause;
-
+  if($birth_date)
     $where .= "
-          AND ".implode("\n          AND ",$clauses)."
-          ";
+      AND (contact1.birth_date IS NULL or contact1.birth_date = '$birth_date')";
 
-    return $select.$from.$where;
+  if($gender_id)
+    $where .= "
+      AND (contact1.gender_id IS NULL or contact1.gender_id = '$gender_id')";
+
+  if($suffix_id)
+    $where .= "
+      AND (contact1.suffix_id IS NULL or contact1.suffix_id = $suffix_id)";
+
+  if($middle_name)
+    $where .= "
+      AND (contact1.middle_name IS NULL or contact1.middle_name = BB_NORMALIZE('$middle_name'))";
+
+
+  // Add on the bits that make us smart around addresses if we have any address parts
+  if($street_address || $supp_address_1 || $supp_address_2 || $city || $state_id || $country_id || $postal_code) {
+    $from .= "
+      LEFT JOIN shadow_address as address1 ON contact1.contact_id=address1.contact_id";
+
+    if($postal_code)
+      $where .= "
+        AND (address1.postal_code IS NULL or address1.postal_code = '$postal_code')";
+
+    if($city)
+      $where .= "
+        AND (address1.city IS NULL or address1.city = '$city')";
+
+    if($state_id)
+      $where .= "
+        AND (address1.state_province_id IS NULL or address1.state_province_id = '$state_id')";
+
+    if($country_id)
+      $where .= "
+        AND (address1.country_id IS NULL or address1.country_id = '$country_id')";
+  }
+
+  // Add on the bits that make us smart around emails
+  if($email) {
+    $from  .= "
+      LEFT JOIN civicrm_email as email1 on contact1.contact_id=email1.contact_id";
+  }
+
+  // Add on the primary inclusion rules
+  $emailClause  = "(email1.email IS NULL OR email1.email = '$email')";
+  $supp1Clause  = "(address1.supplemental_address_1 IS NULL OR address1.supplemental_address_1 = BB_NORMALIZE_ADDR('$supp_address_1'))";
+  $supp2Clause  = "(address1.supplemental_address_2 IS NULL OR address1.supplemental_address_2 = BB_NORMALIZE_ADDR('$supp_address_2'))";
+  $streetClause = "(address1.street_address IS NULL OR address1.street_address = BB_NORMALIZE_ADDR('$street_address') )";
+  $crossClause = "(address1.street_address = BB_NORMALIZE_ADDR('$supp_address_1') OR address1.supplemental_address_1 = BB_NORMALIZE_ADDR('$street_address'))";
+
+  $clauses = array();
+  if($email)
+    $clauses[] = $emailClause;
+  if($street_address)
+    $clauses[] = $streetClause;
+  if($street_address && $supp_address_1)
+    $clauses[] = $crossClause;
+  if($supp_address_1)
+    $clauses[] = $supp1Clause;
+  if($supp_address_2)
+    $clauses[] = $supp2Clause;
+
+  $where .= "
+    AND ".implode("\n          AND ",$clauses)."
+    ";
+
+  return $select.$from.$where;
 }
 
 
@@ -449,69 +452,72 @@ function nyss_dedupe_individual_default_fuzzy_record($o) {
  */
 
 function nyss_dedupe_org1_internal($o) {
-    //name + street + city + email
-    return "SELECT DISTINCT contact1.contact_id AS id1, contact2.contact_id AS id2, 5 AS weight
-            FROM shadow_contact AS contact1
-              JOIN shadow_contact AS contact2 ON (
-                    contact1.contact_type = contact2.contact_type AND
-                    contact1.organization_name = contact2.organization_name)
-              INNER JOIN shadow_address address1 ON contact1.contact_id = address1.contact_id
-              INNER JOIN shadow_address address2 ON (
-                    contact2.contact_id = address2.contact_id AND
-                    address1.street_address = address2.street_address AND
-                    address1.city = address2.city)
-              INNER JOIN civicrm_email email1 ON contact1.contact_id=email1.contact_id
-              INNER JOIN civicrm_email email2 ON (
-                    contact2.contact_id=email2.contact_id AND
-                    email1.email=email2.email AND
-                    email1.is_primary = email2.is_primary)
-            WHERE contact1.contact_type = 'Organization'
-              AND contact1.organization_name IS NOT NULL
-              AND address1.street_address IS NOT NULL
-              AND address1.city IS NOT NULL
-              AND email1.email IS NOT NULL
-              AND email1.email != ''
-              ";
+  //name + street + city + email
+  return "
+    SELECT DISTINCT contact1.contact_id AS id1, contact2.contact_id AS id2, 5 AS weight
+    FROM shadow_contact AS contact1
+      JOIN shadow_contact AS contact2 ON (
+            contact1.contact_type = contact2.contact_type AND
+            contact1.organization_name = contact2.organization_name)
+      INNER JOIN shadow_address address1 ON contact1.contact_id = address1.contact_id
+      INNER JOIN shadow_address address2 ON (
+            contact2.contact_id = address2.contact_id AND
+            address1.street_address = address2.street_address AND
+            address1.city = address2.city)
+      INNER JOIN civicrm_email email1 ON contact1.contact_id=email1.contact_id
+      INNER JOIN civicrm_email email2 ON (
+            contact2.contact_id=email2.contact_id AND
+            email1.email=email2.email AND
+            email1.is_primary = email2.is_primary)
+    WHERE contact1.contact_type = 'Organization'
+      AND contact1.organization_name IS NOT NULL
+      AND address1.street_address IS NOT NULL
+      AND address1.city IS NOT NULL
+      AND email1.email IS NOT NULL
+      AND email1.email != ''
+      ";
 }
 
 function nyss_dedupe_org2_internal($o) {
-    //name + street + city + zip
-    return "SELECT DISTINCT contact1.contact_id AS id1, contact2.contact_id AS id2, 5 AS weight
-            FROM shadow_contact AS contact1
-              JOIN shadow_contact AS contact2 ON (
-                    contact1.contact_type = contact2.contact_type AND
-                    contact1.organization_name = contact2.organization_name)
-              INNER JOIN shadow_address AS address1 ON contact1.contact_id=address1.contact_id
-              INNER JOIN shadow_address AS address2 ON (
-                    contact2.contact_id = address2.contact_id AND
-                    address1.street_address = address2.street_address AND
-                    address1.city = address2.city AND
-                    address1.postal_code = address2.postal_code)
-            WHERE contact1.contact_type = 'Organization'
-              AND contact1.organization_name IS NOT NULL
-              AND address1.street_address IS NOT NULL
-              AND address1.city IS NOT NULL
-              AND address1.postal_code IS NOT NULL
-              ";
+  //name + street + city + zip
+  return "
+    SELECT DISTINCT contact1.contact_id AS id1, contact2.contact_id AS id2, 5 AS weight
+    FROM shadow_contact AS contact1
+      JOIN shadow_contact AS contact2 ON (
+            contact1.contact_type = contact2.contact_type AND
+            contact1.organization_name = contact2.organization_name)
+      INNER JOIN shadow_address AS address1 ON contact1.contact_id=address1.contact_id
+      INNER JOIN shadow_address AS address2 ON (
+            contact2.contact_id = address2.contact_id AND
+            address1.street_address = address2.street_address AND
+            address1.city = address2.city AND
+            address1.postal_code = address2.postal_code)
+    WHERE contact1.contact_type = 'Organization'
+      AND contact1.organization_name IS NOT NULL
+      AND address1.street_address IS NOT NULL
+      AND address1.city IS NOT NULL
+      AND address1.postal_code IS NOT NULL
+      ";
 }
 
 function nyss_dedupe_org3_internal($o) {
-    //name + street + city
-    return "SELECT DISTINCT contact1.contact_id AS id1, contact2.contact_id AS id2, 5 AS weight
-            FROM shadow_contact contact1
-              JOIN shadow_contact contact2 ON (
-                    contact1.contact_type = contact2.contact_type AND
-                    contact1.organization_name = contact2.organization_name)
-              INNER JOIN shadow_address address1 ON contact1.contact_id = address1.contact_id
-              INNER JOIN shadow_address address2 ON (
-                    contact2.contact_id = address2.contact_id AND
-                    address1.street_address = address2.street_address AND
-                    address1.city = address2.city)
-            WHERE contact1.contact_type = 'Organization'
-              AND contact1.organization_name IS NOT NULL
-              AND address1.street_address IS NOT NULL
-              AND address1.city IS NOT NULL
-              ";
+  //name + street + city
+  return "
+    SELECT DISTINCT contact1.contact_id AS id1, contact2.contact_id AS id2, 5 AS weight
+    FROM shadow_contact contact1
+      JOIN shadow_contact contact2 ON (
+            contact1.contact_type = contact2.contact_type AND
+            contact1.organization_name = contact2.organization_name)
+      INNER JOIN shadow_address address1 ON contact1.contact_id = address1.contact_id
+      INNER JOIN shadow_address address2 ON (
+            contact2.contact_id = address2.contact_id AND
+            address1.street_address = address2.street_address AND
+            address1.city = address2.city)
+    WHERE contact1.contact_type = 'Organization'
+      AND contact1.organization_name IS NOT NULL
+      AND address1.street_address IS NOT NULL
+      AND address1.city IS NOT NULL
+      ";
 }
 
 /*

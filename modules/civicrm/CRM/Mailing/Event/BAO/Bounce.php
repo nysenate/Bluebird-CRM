@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -44,8 +44,7 @@ class CRM_Mailing_Event_BAO_Bounce extends CRM_Mailing_Event_DAO_Bounce {
   /**
    * Create a new bounce event, update the email address if necessary
    */
-  static
-  function &create(&$params) {
+  static function &create(&$params) {
     $q = &CRM_Mailing_Event_BAO_Queue::verify($params['job_id'],
       $params['event_queue_id'],
       $params['hash']
@@ -72,6 +71,9 @@ class CRM_Mailing_Event_BAO_Bounce extends CRM_Mailing_Event_DAO_Bounce {
         $params['bounce_reason'] = ts('Unknown bounce type: Could not parse bounce email');
       }
     }
+
+    // CRM-11989
+    $params['bounce_reason'] = substr($params['bounce_reason'], 0, 254);
 
     $bounce->copyValues($params);
     $bounce->save();
@@ -135,7 +137,7 @@ class CRM_Mailing_Event_BAO_Bounce extends CRM_Mailing_Event_DAO_Bounce {
     $bounce  = self::getTableName();
     $queue   = CRM_Mailing_Event_BAO_Queue::getTableName();
     $mailing = CRM_Mailing_BAO_Mailing::getTableName();
-    $job     = CRM_Mailing_BAO_Job::getTableName();
+    $job     = CRM_Mailing_BAO_MailingJob::getTableName();
 
     $query = "
             SELECT      COUNT($bounce.id) as bounce
@@ -190,7 +192,7 @@ class CRM_Mailing_Event_BAO_Bounce extends CRM_Mailing_Event_DAO_Bounce {
     $bounceType = CRM_Mailing_DAO_BounceType::getTableName();
     $queue      = CRM_Mailing_Event_BAO_Queue::getTableName();
     $mailing    = CRM_Mailing_BAO_Mailing::getTableName();
-    $job        = CRM_Mailing_BAO_Job::getTableName();
+    $job        = CRM_Mailing_BAO_MailingJob::getTableName();
     $contact    = CRM_Contact_BAO_Contact::getTableName();
     $email      = CRM_Core_BAO_Email::getTableName();
 
@@ -228,6 +230,7 @@ class CRM_Mailing_Event_BAO_Bounce extends CRM_Mailing_Event_DAO_Bounce {
     $orderBy = "sort_name ASC, {$bounce}.time_stamp DESC";
     if ($sort) {
       if (is_string($sort)) {
+        $sort = CRM_Utils_Type::escape($sort, 'String');
         $orderBy = $sort;
       }
       else {

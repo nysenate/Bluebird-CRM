@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -69,9 +69,8 @@ class CRM_Contact_Form_Task_AddToGroup extends CRM_Contact_Form_Task {
    */
   function preProcess() {
     /*
-         * initialize the task and row fields
-         */
-
+     * initialize the task and row fields
+     */
     parent::preProcess();
 
     $this->_context = $this->get('context');
@@ -158,7 +157,7 @@ class CRM_Contact_Form_Task_AddToGroup extends CRM_Contact_Form_Task {
    *
    * @return array the default array reference
    */
-  function &setDefaultValues() {
+  function setDefaultValues() {
     $defaults = array();
 
     if ($this->_context === 'amtg') {
@@ -189,8 +188,7 @@ class CRM_Contact_Form_Task_AddToGroup extends CRM_Contact_Form_Task {
    * @static
    * @access public
    */
-  static
-  function formRule($params) {
+  static function formRule($params) {
     $errors = array();
 
     if (!empty($params['group_option']) && empty($params['title'])) {
@@ -240,18 +238,12 @@ class CRM_Contact_Form_Task_AddToGroup extends CRM_Contact_Form_Task {
 
     list($total, $added, $notAdded) = CRM_Contact_BAO_GroupContact::addContactsToGroup($this->_contactIds, $groupID);
 
-    $status = array(
-      ts('Added Contact(s) to %1', array(1 => $groupName)),
-      ts('Total Selected Contact(s): %1', array(1 => $total)),
-    );
-    if ($added) {
-      $status[] = ts('Total Contact(s) added to group: %1', array(1 => $added));
-    }
+    $status = array(ts('%count contact added to group', array('count' => $added, 'plural' => '%count contacts added to group')));
     if ($notAdded) {
-      $status[] = ts('Total Contact(s) already in group: %1', array(1 => $notAdded));
+      $status[] = ts('%count contact was already in group', array('count' => $notAdded, 'plural' => '%count contacts were already in group'));
     }
-    $status = implode('<br/>', $status);
-    CRM_Core_Session::setStatus($status);
+    $status = '<ul><li>' . implode('</li><li>', $status) . '</li></ul>';
+    CRM_Core_Session::setStatus($status, ts('Added Contact to %1', array(1 => $groupName, 'count' => $added, 'plural' => 'Added Contacts to %1')), 'success', array('expires' => 0));
   }
   //end of function
 }

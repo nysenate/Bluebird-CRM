@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -49,7 +49,8 @@ class CRM_PCP_Page_PCPInfo extends CRM_Core_Page {
    * @return void
    * @access public
    *
-   */ function run() {
+   */
+  function run() {
     $session         = CRM_Core_Session::singleton();
     $config          = CRM_Core_Config::singleton();
     $permissionCheck = FALSE;
@@ -77,27 +78,15 @@ class CRM_PCP_Page_PCPInfo extends CRM_Core_Page {
     CRM_Utils_System::setTitle($pcpInfo['title']);
     $this->assign('pcp', $pcpInfo);
 
-    $pcpStatus = CRM_PCP_PseudoConstant::pcpStatus();
+    $pcpStatus = CRM_Core_OptionGroup::values("pcp_status");
     $approvedId = CRM_Core_OptionGroup::getValue('pcp_status', 'Approved', 'name');
 
     // check if PCP is created by anonymous user
     $anonymousPCP = CRM_Utils_Request::retrieve('ap', 'Boolean', $this);
     if ($anonymousPCP) {
-      $loginUrl = $config->userFrameworkBaseURL;
-
-      switch (ucfirst($config->userFramework)) {
-        case 'Joomla':
-          $loginUrl = str_replace('administrator/', '', $loginUrl);
-          $loginUrl .= 'index.php?option=com_users&view=login';
-          break;
-
-        case 'Drupal':
-          $loginUrl .= 'user';
-          break;
-      }
-
-      $anonMessage = ts('Once you\'ve received your new account welcome email, you can <a href=%1>click here</a> to login and promote your campaign page.', array(1 => $loginUrl));
-      CRM_Core_Session::setStatus($anonMessage);
+      $loginURL = $config->userSystem->getLoginURL();
+      $anonMessage = ts('Once you\'ve received your new account welcome email, you can <a href=%1>click here</a> to login and promote your campaign page.', array(1 => $loginURL));
+      CRM_Core_Session::setStatus($anonMessage, ts('Success'), 'success');
     }
     else {
       $statusMessage = ts('The personal campaign page you requested is currently unavailable. However you can still support the campaign by making a contribution here.');
@@ -184,7 +173,7 @@ class CRM_PCP_Page_PCPInfo extends CRM_Core_Page {
         'pageComponent' => $this->_component,
       );
 
-      if ($pcpBlock->is_tellfriend_enabled || CRM_Utils_Array::value('status_id', $pcpInfo) != $approvedId) {
+      if (!$pcpBlock->is_tellfriend_enabled || CRM_Utils_Array::value('status_id', $pcpInfo) != $approvedId) {
         unset($link['all'][CRM_Core_Action::DETACH]);
       }
 
@@ -205,9 +194,10 @@ class CRM_PCP_Page_PCPInfo extends CRM_Core_Page {
 
     $honor = CRM_PCP_BAO_PCP::honorRoll($this->_id);
 
-    if ($file_id = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_EntityFile', $this->_id, 'file_id', 'entity_id')) {
+    if ($fileInfo = reset(CRM_Core_BAO_File::getEntityFile('civicrm_pcp', $this->_id))) {
+      $fileId = $fileInfo['fileID'];
       $image = '<img src="' . CRM_Utils_System::url('civicrm/file',
-        "reset=1&id=$file_id&eid={$this->_id}"
+        "reset=1&id=$fileId&eid={$this->_id}"
       ) . '" />';
       $this->assign('image', $image);
     }

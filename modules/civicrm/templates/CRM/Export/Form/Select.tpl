@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -43,7 +43,7 @@
         {$form.exportOption.html}
    </div>
   </div>
-  
+
   <div id="map" class="crm-section crm-export-mapping-section">
       {if $form.mapping }
         <div class="label crm-label-export-mapping">
@@ -52,7 +52,7 @@
         <div class="content crm-content-export-mapping">
             {$form.mapping.html}
         </div>
-		<div class="clear"></div> 
+    <div class="clear"></div>
       {/if}
   </div>
 
@@ -99,10 +99,10 @@
     <div class="content crm-content-additionalGroup">
         &nbsp;{$form.additional_group.html}
     </div>
-	<div class="clear"></div> 
+  <div class="clear"></div>
   </div>
   {/if}
-    
+
  </div>
 
  <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
@@ -111,14 +111,14 @@
   <script type="text/javascript">
      function showMappingOption( )
      {
-	var element = document.getElementsByName("exportOption");
+  var element = document.getElementsByName("exportOption");
 
-	if ( element[1].checked ) { 
-	  show('map');
+  if ( element[1].checked ) {
+    cj('#map').show();
         } else {
-	  hide('map');
-	}
-     } 
+    cj('#map').hide();
+  }
+     }
      showMappingOption( );
 
      var matchingContacts = '';
@@ -129,22 +129,22 @@
      function showGreetingOptions( )
      {
         var mergeAddress = cj( "input[name='mergeOption']:checked" ).val( );
-	
+
         if ( mergeAddress == 1 ) {
             cj( "#greetings" ).show( );
         } else {
             cj( "#greetings" ).hide( );
-	}
+  }
      }
 
-     function showOther( ele ) 
+     function showOther( ele )
      {
-        if ( cj('option:selected', ele).text( ) == '{/literal}{ts}Other{/ts}{literal}' ) {
-	   cj('#' + cj(ele).attr('id') + '_other_wrapper').show( );  
-        } else {	
+        if ( cj('option:selected', ele).text( ) == '{/literal}{ts escape='js'}Other{/ts}{literal}' ) {
+     cj('#' + cj(ele).attr('id') + '_other_wrapper').show( );
+        } else {
           cj('#' + cj(ele).attr('id') + '_other').val('');
-	  cj('#' + cj(ele).attr('id') + '_other_wrapper').hide( );
-	}
+    cj('#' + cj(ele).attr('id') + '_other_wrapper').hide( );
+  }
      }
 
      showGreetingOptions( );

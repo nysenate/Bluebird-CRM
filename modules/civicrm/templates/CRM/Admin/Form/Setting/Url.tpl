@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -34,7 +34,7 @@
             {$form.userFrameworkResourceURL.label}
         </td>
         <td>
-            {$form.userFrameworkResourceURL.html|crmReplace:class:'huge40'} {help id='id-resource_url'}
+            {$form.userFrameworkResourceURL.html|crmAddClass:'huge40'} {help id='id-resource_url'}
         </td>
     </tr>
     <tr class="crm-url-form-block-imageUploadURL">
@@ -42,7 +42,7 @@
             {$form.imageUploadURL.label}
         </td>
         <td>
-            {$form.imageUploadURL.html|crmReplace:class:'huge40'} {help id='id-image_url'}
+            {$form.imageUploadURL.html|crmAddClass:'huge40'} {help id='id-image_url'}
         </td>
     </tr>
     <tr class="crm-url-form-block-customCSSURL">
@@ -50,7 +50,7 @@
             {$form.customCSSURL.label}
         </td>
         <td>
-            {$form.customCSSURL.html|crmReplace:class:'huge40'} {help id='id-css_url'}
+            {$form.customCSSURL.html|crmAddClass:'huge40'} {help id='id-css_url'}
         </td>
     </tr>
     <tr class="crm-url-form-block-extensionsURL">
@@ -58,7 +58,7 @@
             {$form.extensionsURL.label}
         </td>
         <td>
-            {$form.extensionsURL.html|crmReplace:class:'huge40'} {help id='id-extensions_url'}
+            {$form.extensionsURL.html|crmAddClass:'huge40'} {help id='id-extensions_url'}
         </td>
     </tr>
     <tr class="crm-url-form-block-enableSSL">
@@ -74,9 +74,17 @@
             {$form.verifySSL.label}
         </td>
         <td>
-            {$form.verifySSL.html} {help id='id-verify_ssl'}
+            {$form.verifySSL.html} {help id='id-verify_ssl'}<br/>
+            <p class="description font-red">{ts}{$verifySSL_description}{/ts}</p>
         </td>
     </tr>
+    <tr class="crm-miscellaneous-form-block-cvv-backoffice-required">
+          <td class="label">{$form.cvv_backoffice_required.label}</td>
+          <td>
+            {$form.cvv_backoffice_required.html}<br />
+            <p class="description">{ts}{$cvv_backoffice_required_description}{/ts}</p>
+          </td>
+        </tr>
 </table>
 <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
 </div>

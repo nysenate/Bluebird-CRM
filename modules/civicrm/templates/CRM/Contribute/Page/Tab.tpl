@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,7 +23,7 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-{if $action eq 1 or $action eq 2 or $action eq 8} {* add, update or view *}            
+{if $action eq 1 or $action eq 2 or $action eq 8} {* add, update or view *}
     {include file="CRM/Contribute/Form/Contribution.tpl"}
 {elseif $action eq 4}
     {include file="CRM/Contribute/Form/ContributionView.tpl"}
@@ -38,10 +38,10 @@
                     {ts 1=$newCreditURL}Click <a href='%1'>Submit Credit Card Contribution</a> to process a new contribution on behalf of the contributor using their credit card.{/ts}
                 {/if}
             {else}
-                {ts 1=$displayName}Contributions received from %1 since inception.{/ts} 
+                {ts 1=$displayName}Contributions received from %1 since inception.{/ts}
             {/if}
         </div>
-    
+
         {if $action eq 16 and $permission EQ 'edit'}
             <div class="action-link">
                 <a accesskey="N" href="{$newContribURL}" class="button"><span><div class="icon add-icon"></div>{ts}Record Contribution (Check, Cash, EFT ...){/ts}</span></a>
@@ -50,16 +50,16 @@
                 {/if}
                 <br /><br />
             </div>
-	    <div class='clear'> </div>
+      <div class='clear'> </div>
         {/if}
 
 
         {if $rows}
             {include file="CRM/Contribute/Page/ContributionTotals.tpl" mode="view"}
             <p> </p>
-            {include file="CRM/Contribute/Form/Selector.tpl"}            
+            {include file="CRM/Contribute/Form/Selector.tpl"}
         {else}
-            <div class="messages status">
+            <div class="messages status no-popup">
                     <div class="icon inform-icon"></div>
                     {ts}No contributions have been recorded from this contact.{/ts}
             </div>
@@ -70,15 +70,15 @@
                 <br /><label>{ts 1=$displayName}Recurring Contributions{/ts}</label>
             </div>
             {include file="CRM/Contribute/Page/ContributionRecur.tpl"}
-        {/if}             
+        {/if}
 
-        {if $honor}	
+        {if $honor}
             <div class="solid-border-top">
                 <br /><label>{ts 1=$displayName}Contributions made in honor of %1{/ts}</label>
             </div>
-            {include file="CRM/Contribute/Page/ContributionHonor.tpl"}	
-        {/if} 
-        
+            {include file="CRM/Contribute/Page/ContributionHonor.tpl"}
+        {/if}
+
         {if $softCredit}
             <div class="solid-border-top">
                 <br />

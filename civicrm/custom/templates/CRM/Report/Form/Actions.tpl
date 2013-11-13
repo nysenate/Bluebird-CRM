@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,6 +28,7 @@
   {* build the print pdf buttons *}
   {if $rows}
     <div class="crm-tasks">
+      {*NYSS*}
       {*top buttons*}
       {assign var=save value="_qf_"|cat:$form.formName|cat:"_submit_save"}
       {assign var=next value="_qf_"|cat:$form.formName|cat:"_submit_next"}

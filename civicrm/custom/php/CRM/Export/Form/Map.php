@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -80,8 +80,8 @@ class CRM_Export_Form_Map extends CRM_Core_Form {
     $this->_mappingId = $this->get('mappingId');
 		
 	  //NYSS 4426
-	  $this->_streetLong = $this->get('streetLong');
-	  //CRM_Core_Error::debug_var('this',$this);
+    $this->_streetLong = $this->get('streetLong');
+    //CRM_Core_Error::debug_var('this',$this);
   }
 
   public function buildQuickForm() {
@@ -120,8 +120,7 @@ class CRM_Export_Form_Map extends CRM_Core_Form {
    * @static
    * @access public
    */
-  static
-  function formRule($fields, $values, $mappingTypeId) {
+  static function formRule($fields, $values, $mappingTypeId) {
     $errors = array();
 
     if (CRM_Utils_Array::value('saveMapping', $fields) && CRM_Utils_Array::value('_qf_Map_next', $fields)) {
@@ -163,8 +162,7 @@ class CRM_Export_Form_Map extends CRM_Core_Form {
     if (!empty($greetingOptions)) {
       foreach ($greetingOptions as $key => $value) {
         if ($option = CRM_Utils_Array::value($key, $exportParams)) {
-					//NYSS 5026
-					if ( $greetingOptions[$key][$option] == ts('Other') ) {
+          if ( $greetingOptions[$key][$option] == ts('Other') ) {
              $exportParams[$key] = $exportParams["{$key}_other"];
           }
           elseif ( $greetingOptions[$key][$option] == ts('List of names') ) {

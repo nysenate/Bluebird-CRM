@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -42,11 +42,11 @@
     </table>
 
     <table class="form-layout">
-        <tr class="crm-miscellaneous-form-block-contactUndelete">
-          <td class="label">{$form.contactUndelete.label}</td>
+        <tr class="crm-miscellaneous-form-block-contact_undelete">
+          <td class="label">{$form.contact_undelete.label}</td>
           <td>
-            {$form.contactUndelete.html}<br />
-            <p class="description">{ts}If enabled, deleted contacts will be moved to trash (instead of being destroyed). Users with the proper permission are able to search for the deleted contacts and restore them (or delete permanently).{/ts}</p>
+            {$form.contact_undelete.html}<br />
+            <p class="description">{ts}{$contact_undelete_description}{/ts}</p>
           </td>
         </tr>
         <tr class="crm-miscellaneous-form-block-logging">
@@ -73,26 +73,36 @@
                 <p class="description">{ts 1="http://code.google.com/p/wkhtmltopdf/"}<a href="%1">wkhtmltopdf is an alternative utility for generating PDF's</a> which may provide better performance especially if you are generating a large number of PDF letters or receipts. Your system administrator will need to download and install this utility, and enter the executable path here.{/ts}</p>
             </td>
         </tr>
+        <tr class="crm-miscellaneous-form-block-versionAlert">
+            <td class="label">{$form.versionAlert.label}</td>
+            <td>{$form.versionAlert.html}<br />
+                <p class="description">{ts}Displays an on-screen alert to users with "Administer CiviCRM" permissions when a new version of CiviCRM is available. This setting will only work if the "Version Check &amp; Statistics Reporting" setting is enabled.{/ts}</p></td>
+        </tr>
         <tr class="crm-miscellaneous-form-block-versionCheck">
             <td class="label">{$form.versionCheck.label}</td>
             <td>{$form.versionCheck.html}<br />
-                <p class="description">{ts}If enabled, CiviCRM automatically checks availablity of a newer version of the software. New version alerts will be displayed on the main CiviCRM Administration page.{/ts}</p>
                 <p class="description">{ts}When enabled, statistics about your CiviCRM installation are reported anonymously to the CiviCRM team to assist in prioritizing ongoing development efforts. The following information is gathered: CiviCRM version, versions of PHP, MySQL and framework (Drupal/Joomla/standalone), and default language. Counts (but no actual data) of the following record types are reported: contacts, activities, cases, relationships, contributions, contribution pages, contribution products, contribution widgets, discounts, price sets, profiles, events, participants, tell-a-friend pages, grants, mailings, memberships, membership blocks, pledges, pledge blocks and active payment processor types.{/ts}</p></td>
         </tr>
-        <tr class="crm-miscellaneous-form-block-maxAttachments">
-            <td class="label">{$form.maxAttachments.label}</td>
-            <td>{$form.maxAttachments.html}<br />
+        <tr class="crm-miscellaneous-form-block-max_attachments">
+            <td class="label">{$form.max_attachments.label}</td>
+            <td>{$form.max_attachments.html}<br />
                 <span class="description">{ts}Maximum number of files (documents, images, etc.) which can attached to emails or activities.{/ts}</span></td>
         </tr>
-	<tr class="crm-miscellaneous-form-block-maxFileSize">
-	    <td class="label">{$form.maxFileSize.label} (in MB)</td>
+  <tr class="crm-miscellaneous-form-block-maxFileSize">
+      <td class="label">{$form.maxFileSize.label}</td>
             <td>{$form.maxFileSize.html}<br />
-                <span class="description">{ts}Maximum Size of file (documents, images, etc.) which can attached to emails or activities.<br />Note: php.ini should support this file size.{/ts}</span></td>
+                <span class="description">{$maxFileSize_description}</span></td>
+        </tr>
+        <tr class="crm-miscellaneous-form-block-secondDegRelPermissions">
+            <td class="label">{$form.secondDegRelPermissions.label}</td>
+            <td>{$form.secondDegRelPermissions.html}<br />
+                <p class="description">{ts}If enabled, contacts with the permission to edit a related contact will inherit that contact's permission to edit other related contacts.{/ts}</p>
+            </td>
         </tr>
     </table>
 <h3>{ts}reCAPTCHA Keys{/ts}</h3>
     <div class="description">
-        {ts}reCAPTCHA is a free service that helps prevent automated abuse of your site. To use reCAPTCHA on public-facing CiviCRM forms: sign up at <a href="http://recaptcha.net" "target=_blank">recaptcha.net</a>; enter the provided public and private reCAPTCHA keys here; then enable reCAPTCHA under Advanced Settings in any Profile.{/ts}
+        {ts 1="https://www.google.com/recaptcha"}reCAPTCHA is a free service that helps prevent automated abuse of your site. To use reCAPTCHA on public-facing CiviCRM forms: sign up at <a href="%1" "target=_blank">Google's reCaptcha site</a>; enter the provided public and private reCAPTCHA keys here; then enable reCAPTCHA under Advanced Settings in any Profile.{/ts}
     </div>
     <table class="form-layout">
         <tr class="crm-miscellaneous-form-block-recaptchaPublicKey">

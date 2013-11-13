@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +30,7 @@
     <link rel="stylesheet" href="{$config->resourceBase}css/deprecate.css" type="text/css" />
     <link rel="stylesheet" href="{$config->resourceBase}css/civicrm.css" type="text/css" />
     <link rel="stylesheet" href="{$config->resourceBase}css/extras.css" type="text/css" />
-  {/if} 
+  {/if}
 {elseif $config->userFramework eq 'Joomla'}
   <link rel="stylesheet" href="{$config->resourceBase}css/deprecate.css" type="text/css" />
   <link rel="stylesheet" href="{$config->resourceBase}css/civicrm.css" type="text/css" />

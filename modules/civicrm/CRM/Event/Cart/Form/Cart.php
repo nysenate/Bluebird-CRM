@@ -15,7 +15,7 @@ class CRM_Event_Cart_Form_Cart extends CRM_Core_Form {
 
     $this->checkWaitingList();
 
-    $locationTypes = CRM_Core_PseudoConstant::locationType();
+    $locationTypes = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Address', 'location_type_id');
     $this->_bltID = array_search('Billing', $locationTypes);
     $this->assign('bltID', $this->_bltID);
 
@@ -45,11 +45,12 @@ class CRM_Event_Cart_Form_Cart extends CRM_Core_Form {
 
     foreach ($this->cart->get_main_events_in_carts() as $event_in_cart) {
       if (empty($event_in_cart->participants)) {
-        $participant = CRM_Event_Cart_BAO_MerParticipant::create(array(
+        $participant_params = array(
             'cart_id' => $this->cart->id,
             'event_id' => $event_in_cart->event_id,
             'contact_id' => self::find_or_create_contact($this->getContactID()),
-          ));
+        );
+        $participant = CRM_Event_Cart_BAO_MerParticipant::create($participant_params);
         $participant->save();
         $event_in_cart->add_participant($participant);
       }
@@ -84,8 +85,7 @@ class CRM_Event_Cart_Form_Cart extends CRM_Core_Form {
     }
   }
 
-  static
-  function is_administrator() {
+  static function is_administrator() {
     global $user;
     return CRM_Core_Permission::check('administer CiviCRM');
   }
@@ -109,8 +109,7 @@ class CRM_Event_Cart_Form_Cart extends CRM_Core_Form {
     return $session->get('userID');
   }
 
-  static
-  function find_contact($fields) {
+  static function find_contact($fields) {
     $dedupe_params = CRM_Dedupe_Finder::formatParams($fields, 'Individual');
     $dedupe_params['check_permission'] = FALSE;
     $ids = CRM_Dedupe_Finder::dupesByParams($dedupe_params, 'Individual');
@@ -120,8 +119,7 @@ class CRM_Event_Cart_Form_Cart extends CRM_Core_Form {
     else return NULL;
   }
 
-  static
-  function find_or_create_contact($registeringContactID = NULL, $fields = array(
+  static function find_or_create_contact($registeringContactID = NULL, $fields = array(
     )) {
     $contact_id = self::find_contact($fields);
 

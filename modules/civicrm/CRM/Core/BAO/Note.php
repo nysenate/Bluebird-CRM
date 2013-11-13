@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -54,8 +54,7 @@ class CRM_Core_BAO_Note extends CRM_Core_DAO_Note {
    * @access public
    * @static
    */
-  static
-  function getNoteText($id) {
+  static function getNoteText($id) {
     return CRM_Core_DAO::getFieldValue('CRM_Core_DAO_Note', $id, 'note');
   }
 
@@ -69,23 +68,21 @@ class CRM_Core_BAO_Note extends CRM_Core_DAO_Note {
    * @access public
    * @static
    */
-  static
-  function getNoteSubject($id) {
+  static function getNoteSubject($id) {
     return CRM_Core_DAO::getFieldValue('CRM_Core_DAO_Note', $id, 'subject');
   }
 
   /**
    * given a note id, decide if the note should be displayed based on privacy setting
    *
-   * @param int|obj  $note Either the id of the note to retrieve, or the CRM_Core_DAO_Note object itself
+   * @param object  $note Either the id of the note to retrieve, or the CRM_Core_DAO_Note object itself
    *
    * @return boolean TRUE if the note should be displayed, otherwise FALSE
    *
    * @access public
    * @static
    */
-  static
-  function getNotePrivacyHidden($note) {
+  static function getNotePrivacyHidden($note) {
     if (CRM_Core_Permission::check('view all notes')) {
       return FALSE;
     }
@@ -113,9 +110,8 @@ class CRM_Core_BAO_Note extends CRM_Core_DAO_Note {
       return $noteValues['notePrivacy_hidden'];
     }
     else {
-      /* Default behavior (if hook has not set visibility)
-             * is to hide privacy notes unless the note creator is the current user.
-             */
+      // Default behavior (if hook has not set visibility)
+      // is to hide privacy notes unless the note creator is the current user.
 
       if ($noteValues['privacy']) {
         $session = CRM_Core_Session::singleton();
@@ -135,14 +131,14 @@ class CRM_Core_BAO_Note extends CRM_Core_DAO_Note {
    * note object. the params array could contain additional unused name/value
    * pairs
    *
-   * @param array  $params         (reference ) an assoc array of name/value pairs
+   * @param array $params  (reference) an assoc array of name/value pairs
+   * @param array $ids (deprecated) associated array with note id - preferably set $params['id']
    *
-   * @return object CRM_Core_BAO_Note object
+   * @return object $note CRM_Core_BAO_Note object
    * @access public
    * @static
    */
-  static
-  function &add(&$params, $ids) {
+  static function &add(&$params, $ids = array()) {
     $dataExists = self::dataExists($params);
     if (!$dataExists) {
       return CRM_Core_DAO::$_nullObject;
@@ -164,12 +160,15 @@ class CRM_Core_BAO_Note extends CRM_Core_DAO_Note {
         $note->contact_id = $params['entity_id'];
       }
     }
-
-    if (CRM_Utils_Array::value('id', $ids)) {
-      $note->id = CRM_Utils_Array::value('id', $ids);
+    $id = CRM_Utils_Array::value('id', $params, CRM_Utils_Array::value('id', $ids));
+    if ($id) {
+      $note->id = $id;
     }
 
     $note->save();
+
+    // check and attach and files as needed
+    CRM_Core_BAO_File::processAttachment($params, 'civicrm_note', $note->id);
 
     if ($note->entity_table == 'civicrm_contact') {
       CRM_Core_BAO_Log::register($note->entity_id,
@@ -226,8 +225,7 @@ class CRM_Core_BAO_Note extends CRM_Core_DAO_Note {
    * @access public
    * @static
    */
-  static
-  function dataExists(&$params) {
+  static function dataExists(&$params) {
     // return if no data present
     if (!strlen($params['note'])) {
       return FALSE;
@@ -244,12 +242,11 @@ class CRM_Core_BAO_Note extends CRM_Core_DAO_Note {
    * @param array $ids           the array that holds all the db ids
    * @param int   $numNotes      the maximum number of notes to return (0 if all)
    *
-   * @return object   Object of CRM_Core_BAO_Note
+   * @return object $notes  Object of CRM_Core_BAO_Note
    * @access public
    * @static
    */
-  static
-  function &getValues(&$params, &$values, $numNotes = self::MAX_NOTES) {
+  static function &getValues(&$params, &$values, $numNotes = self::MAX_NOTES) {
     if (empty($params)) {
       return NULL;
     }
@@ -285,15 +282,15 @@ class CRM_Core_BAO_Note extends CRM_Core_DAO_Note {
   /**
    * Function to delete the notes
    *
-   * @param int $id    note id
+   * @param int $id  note id
+   * @param boolean $showStatus do we need to set status or not
    *
-   * @return $return   no of deleted notes on success, false otherwise
+   * @return $return no of deleted notes on success, false otherwise
+   *
    * @access public
    * @static
-   *
    */
-  static
-  function del($id, $showStatus = TRUE) {
+  static function del($id, $showStatus = TRUE) {
     $return   = NULL;
     $recent   = array($id);
     $note     = new CRM_Core_DAO_Note();
@@ -312,14 +309,14 @@ class CRM_Core_BAO_Note extends CRM_Core_DAO_Note {
       $childNote = new CRM_Core_DAO_Note();
       $childNote->id = $childId;
       $childNote->delete();
-      $childNote->free();//NYSS free dao
+      $childNote->free();
       $recent[] = $childId;
     }
 
     $return = $note->delete();
-    $note->free();//NYSS free dao
+    $note->free();
     if ($showStatus) {
-      CRM_Core_Session::setStatus($status);
+      CRM_Core_Session::setStatus($status, ts('Deleted'), 'success');
     }
 
     // delete the recently created Note
@@ -336,7 +333,7 @@ class CRM_Core_BAO_Note extends CRM_Core_DAO_Note {
   /**
    * delete all records for this contact id
    *
-   * @param int  $id    ID of the contact for which records needs to be deleted.
+   * @param int  $id ID of the contact for which note needs to be deleted.
    *
    * @return void
    *
@@ -361,7 +358,7 @@ class CRM_Core_BAO_Note extends CRM_Core_DAO_Note {
    *
    * @param int  $id ID of the relationship for which records needs to be retrieved.
    *
-   * @return array    Array of note properties
+   * @return array $viewNote array of note properties
    *
    * @access public
    * @static
@@ -370,8 +367,8 @@ class CRM_Core_BAO_Note extends CRM_Core_DAO_Note {
     $viewNote = array();
 
     $query = "
-  SELECT  id, 
-          note 
+  SELECT  id,
+          note
     FROM  civicrm_note
    WHERE  entity_table=\"{$entityTable}\"
      AND  entity_id = %1
@@ -393,12 +390,12 @@ ORDER BY  modified_date desc";
    *
    * @param int $contactId Contact ID
    *
-   * @return int count of log records
+   * @return int $count count of log records
+   *
    * @access public
    * @static
    */
-  static
-  function getContactNoteCount($contactID) {
+  static function getContactNoteCount($contactID) {
     $note               = new CRM_Core_DAO_Note();
     $note->entity_id    = $contactID;
     $note->entity_table = 'civicrm_contact';
@@ -420,6 +417,9 @@ ORDER BY  modified_date desc";
    * @param bool $snippet If TRUE, returned values will be pre-formatted for display in a table of notes.
    *
    * @return array Nested associative array beginning with direct children of given note.
+   *
+   * @static
+   * @access public
    */
   public static function getNoteTree($parentId, $maxDepth = 0, $snippet = FALSE) {
     return self::buildNoteTree($parentId, $maxDepth, $snippet);
@@ -430,7 +430,10 @@ ORDER BY  modified_date desc";
    *
    * @param int $id Note ID
    *
-   * @return int Number of notes having the give note as parent
+   * @return int $count Number of notes having the give note as parent
+   *
+   * @static
+   * @access public
    */
   public static function getChildCount($id) {
     $note               = new CRM_Core_DAO_Note();
@@ -456,11 +459,12 @@ ORDER BY  modified_date desc";
    * @param int $depth Depth of current iteration within the descendent tree (used for comparison against maxDepth)
    *
    * @return array Nested associative array beginning with direct children of given note.
+   * @static
    */
   private static function buildNoteTree($parentId, $maxDepth = 0, $snippet = FALSE, &$tree = array(
     ), $depth = 0) {
     if ($maxDepth && $depth > $maxDepth) {
-      return;
+      return false;
     }
 
     // get direct children of given parentId note
@@ -513,7 +517,7 @@ ORDER BY  modified_date desc";
    * @param int $parentId Id of the given note
    * @param array $ids (reference) one-dimensional array to store found descendent ids
    *
-   * @return array One-dimensional array containing ids of all desendent notes
+   * @return array $ids One-dimensional array containing ids of all desendent notes
    */
   public static function getDescendentIds($parentId, &$ids = array(
     )) {
@@ -533,17 +537,18 @@ ORDER BY  modified_date desc";
   /**
    * function to delete all note related to contact when contact is deleted
    *
-   * @param $contactID of contact to be deleted
+   * @param int $contactID contact id whose notes to be deleted
    * @param array $deleteNoteID to store all deleted note ids
    *
+   * @return void
+   * @static
    */
-  static
-  function cleanContactNotes($contactID) {
+  static function cleanContactNotes($contactID) {
     $params = array(1 => array($contactID, 'Integer'));
 
     // delete all notes related to contribution
-    $contributeQuery = "DELETE note.* 
-FROM civicrm_note note LEFT JOIN civicrm_contribution contribute ON note.entity_id = contribute.id 
+    $contributeQuery = "DELETE note.*
+FROM civicrm_note note LEFT JOIN civicrm_contribution contribute ON note.entity_id = contribute.id
 WHERE contribute.contact_id = %1 AND note.entity_table = 'civicrm_contribution'";
 
     CRM_Core_DAO::executeQuery($contributeQuery, $params);

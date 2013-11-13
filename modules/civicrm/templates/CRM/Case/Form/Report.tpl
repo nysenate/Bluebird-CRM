@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,26 +29,26 @@
 {else}
 <div id="reportForm" class="crm-block crm-form-block crm-case-report-form-block">
 <h3>{ts}Report Parameters{/ts}</h3>
-    {strip} 
+    {strip}
         <table class="form-layout">
         <tr class="crm-case-report-form-block-include_activities">
            <td class="label">
                {$form.include_activities.label}
-           </td>       
+           </td>
            <td>
                {$form.include_activities.html}
-           </td>       
+           </td>
         </tr>
         <tr class="crm-case-report-form-block-is_redact">
            <td>
-	       &nbsp;
-           </td>       
+         &nbsp;
+           </td>
            <td>
                {$form.is_redact.html}&nbsp;{$form.is_redact.label}
-           </td>       
+           </td>
         </tr>
         </table>
-	<div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
+  <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
     {/strip}
 </div>
 {/if}

@@ -1,11 +1,10 @@
 <?php
-// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -32,10 +31,8 @@
  *
  * @package CiviCRM_APIv3
  * @subpackage API_Grant
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  */
-
-require_once 'CRM/Grant/BAO/Grant.php';
 
 /**
  * create/update grant
@@ -54,24 +51,11 @@ require_once 'CRM/Grant/BAO/Grant.php';
 function civicrm_api3_grant_create($params) {
   $values = array();
   _civicrm_api3_custom_format_params($params, $values, 'Grant');
-  $params = array_merge($values,$params);
-  // BAO is non standard to we need to construct $ids array. Ideally we would fix BAO to accept $params without
-  // id for standardisation
-  $ids = array();
-  if (CRM_Utils_Array::value('id', $params)) {
-    $ids['grant'] = $params['id'];
-  }
-  $bao = CRM_GRANT_BAO_GRANT::create($params, $ids);
-  if (is_null($bao)) {
-    return civicrm_api3_create_error('Grant not created ');
-  }
-  else {
-    $values = array();
-    _civicrm_api3_object_to_array($bao, $values[$bao->id]);
-    return civicrm_api3_create_success($values, $params, $bao, 'create');
-  }
+  $params = array_merge($values, $params);
+  return _civicrm_api3_basic_create(_civicrm_api3_get_BAO(__FUNCTION__), $params, 'grant');
 }
-/*
+
+/**
  * Adjust Metadata for Create action
  *
  * The metadata is used for setting defaults, documentation & validation

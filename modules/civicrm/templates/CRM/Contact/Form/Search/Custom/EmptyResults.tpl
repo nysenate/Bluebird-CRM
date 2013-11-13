@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,23 +24,20 @@
  +--------------------------------------------------------------------+
 *}
 {* Custom searches. Default template for NO MATCHES on submitted search request. *}
-<div class="messages status">
-  			<div class="icon inform-icon"></div>&nbsp;
-            {if $qill}{ts}No matches found for:{/ts}
-                {include file="CRM/common/displaySearchCriteria.tpl"}
-                <br />
-            {else}
-                {ts}No matches found.{/ts}
-                <br />
-            {/if}
-</div>
-<div class="crm-suggestions">
-            <h3>{ts}Suggestions:{/ts}</h3>
-            <ul>
-                <li>{ts}check your spelling{/ts}</li>
-                <li>{ts}try a different spelling or use fewer letters{/ts}</li>
-                <li>{ts}make sure you have enough privileges in the access control system{/ts}</li>
-            </ul>
-        </dd>
-    </dl>
+<div class="messages status no-popup">
+  <div class="icon inform-icon"></div>&nbsp;
+  {if $qill}
+    {ts}No matches found for:{/ts}
+    {include file="CRM/common/displaySearchCriteria.tpl"}
+    <br />
+  {else}
+    {ts}No matches found.{/ts}
+    <br />
+  {/if}
+  {ts}Suggestions:{/ts}
+  <ul>
+    <li>{ts}check your spelling{/ts}</li>
+    <li>{ts}try a different spelling or use fewer letters{/ts}</li>
+    <li>{ts}make sure you have enough privileges in the access control system{/ts}</li>
+  </ul>
 </div>

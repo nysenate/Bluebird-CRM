@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -71,12 +71,12 @@ class CRM_Activity_Selector_Activity extends CRM_Core_Selector_Base implements C
    *
    * @return CRM_Contact_Selector_Activity
    * @access public
-   */ function __construct($contactId,
-    $permission,
-    $admin           = FALSE,
-    $context         = 'activity',
-    $activityTypeIDs = NULL
-  ) {
+   */
+  function __construct($contactId,
+                       $permission,
+                       $admin           = FALSE,
+                       $context         = 'activity',
+                       $activityTypeIDs = NULL) {
     $this->_contactId = $contactId;
     $this->_permission = $permission;
     $this->_admin = $admin;
@@ -102,12 +102,11 @@ class CRM_Activity_Selector_Activity extends CRM_Core_Selector_Base implements C
    *
    */
   public static function actionLinks($activityTypeId,
-    $sourceRecordId      = NULL,
-    $accessMailingReport = FALSE,
-    $activityId          = NULL,
-    $key                 = NULL,
-    $compContext         = NULL
-  ) {
+                                     $sourceRecordId      = NULL,
+                                     $accessMailingReport = FALSE,
+                                     $activityId          = NULL,
+                                     $key                 = NULL,
+                                     $compContext         = NULL) {
     static $activityActTypes = NULL;
 
     $extraParams = ($key) ? "&key={$key}" : NULL;
@@ -117,7 +116,7 @@ class CRM_Activity_Selector_Activity extends CRM_Core_Selector_Base implements C
 
     $showView   = TRUE;
     $showUpdate = $showDelete = FALSE;
-    $qsDelete   = $qsView = $qsUpdate = NULL;
+    $qsUpdate = NULL;
 
     if (!$activityActTypes) {
       $activeActTypes = CRM_Core_PseudoConstant::activityType(TRUE, TRUE, FALSE, 'name', TRUE);
@@ -191,25 +190,15 @@ class CRM_Activity_Selector_Activity extends CRM_Core_Selector_Base implements C
     }
 
     $qsDelete = "atype={$activityTypeId}&action=delete&reset=1&id=%%id%%&cid=%%cid%%&context=%%cxt%%{$extraParams}";
-    /*
-        // Not sure if we need this code
-        if ( $this->_context == 'case' ) {
-            $qsView   .= "&caseid=%%caseid%%";
-            $qsDelete .= "&caseid=%%caseid%%";
-            if ( $showUpdate ) {
-                $qsUpdate .= "&caseid=%%caseid%%";
-            }
-        }*/
-
 
     $actionLinks = array();
 
     if ($showView) {
       $actionLinks += array(CRM_Core_Action::VIEW => array('name' => ts('View'),
-          'url' => $url,
-          'qs' => $qsView,
-          'title' => ts('View Activity'),
-        ));
+        'url' => $url,
+        'qs' => $qsView,
+        'title' => ts('View Activity'),
+      ));
     }
 
     if ($showUpdate) {
@@ -220,21 +209,24 @@ class CRM_Activity_Selector_Activity extends CRM_Core_Selector_Base implements C
       elseif ($activityTypeName == 'Print PDF Letter') {
         $updateUrl = 'civicrm/activity/pdf/add';
       }
-      $actionLinks += array(CRM_Core_Action::UPDATE => array('name' => ts('Edit'),
+      if ( CRM_Activity_BAO_Activity::checkPermission($activityId, CRM_Core_Action::UPDATE) ) {
+        $actionLinks += array(CRM_Core_Action::UPDATE => array('name' => ts('Edit'),
           'url' => $updateUrl,
           'qs' => $qsUpdate,
           'title' => ts('Update Activity'),
         ));
+      }
     }
 
-    if ($activityTypeName &&
+    if (
+      $activityTypeName &&
       CRM_Case_BAO_Case::checkPermission($activityId, 'File On Case', $activityTypeId)
     ) {
       $actionLinks += array(CRM_Core_Action::ADD => array('name' => ts('File On Case'),
-          'url' => '#',
-          'extra' => 'onclick="javascript:fileOnCase( \'file\', \'%%id%%\' ); return false;"',
-          'title' => ts('File On Case'),
-        ));
+        'url' => '#',
+        'extra' => 'onclick="javascript:fileOnCase( \'file\', \'%%id%%\' ); return false;"',
+        'title' => ts('File On Case'),
+      ));
     }
 
     if ($showDelete) {
@@ -242,30 +234,18 @@ class CRM_Activity_Selector_Activity extends CRM_Core_Selector_Base implements C
         $delUrl = $url;
       }
       $actionLinks += array(CRM_Core_Action::DELETE => array('name' => ts('Delete'),
-          'url' => $delUrl,
-          'qs' => $qsDelete,
-          'title' => ts('Delete Activity'),
-        ));
+        'url' => $delUrl,
+        'qs' => $qsDelete,
+        'title' => ts('Delete Activity'),
+      ));
     }
-
-    /*
-        // Not sure if we need this code
-        if ( $this->_context == 'case' ) {
-            $qsDetach = "atype={$activityTypeId}&action=detach&reset=1&id=%%id%%&cid=%%cid%%&context=%%cxt%%&caseid=%%caseid%%{$extraParams}";
-            $actionLinks += array ( CRM_Core_Action::DETACH => array( 'name'     => ts('Detach'),
-                                                                      'url'      => $url,
-                                                                      'qs'       => $qsDetach,
-                                                                      'title'    => ts('Detach Activity') ) );
-        }
-        */
-
 
     if ($accessMailingReport) {
       $actionLinks += array(CRM_Core_Action::BROWSE => array('name' => ts('Mailing Report'),
-          'url' => 'civicrm/mailing/report',
-          'qs' => "mid={$sourceRecordId}&reset=1&cid=%%cid%%&context=activitySelector",
-          'title' => ts('View Mailing Report'),
-        ));
+        'url' => 'civicrm/mailing/report',
+        'qs' => "mid={$sourceRecordId}&reset=1&cid=%%cid%%&context=activitySelector",
+        'title' => ts('View Mailing Report'),
+      ));
     }
 
     return $actionLinks;

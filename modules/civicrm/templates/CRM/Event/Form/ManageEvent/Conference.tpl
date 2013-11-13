@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,9 +30,9 @@
 
     <table class="form-layout">
        <tr class="crm-event-conference-form-block-title">
-	  <td class="label">{$form.title.label}</td>
-	  <td>{$form.title.html}</td>
-       </tr>	
+    <td class="label">{$form.title.label}</td>
+    <td>{$form.title.html}</td>
+       </tr>
     </table>
 
     <div id="parent_event_name">
@@ -40,7 +40,7 @@
           <tr class="crm-event-conference-form-block-parent_event_name">
              <td class="label">{$form.parent_event_name.label}</td>
              <td>
-                 {$form.parent_event_name.html|crmReplace:class:huge}
+                 {$form.parent_event_name.html|crmAddClass:huge}
              </td>
           </tr>
       </table>
@@ -50,7 +50,7 @@
       <table id="conference_slot_id" class="form-layout">
           <tr class="crm-event-conference-form-block-slot_label_id">
              <td class="label">{$form.slot_label_id.label}</td>
-             <td>{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_event' field='slot_label_id' id=$id}{/if}{$form.slot_label_id.html|crmReplace:class:big}
+             <td>{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_event' field='slot_label_id' id=$id}{/if}{$form.slot_label_id.html|crmAddClass:big}
              </td>
           </tr>
       </table>
@@ -63,8 +63,8 @@
 {include file="CRM/common/formNavigate.tpl"}
 
 {literal}
-<script type="text/javascript"> 
-var eventUrl = "{/literal}{crmURL p='civicrm/ajax/event'}{literal}";
+<script type="text/javascript">
+var eventUrl = "{/literal}{crmURL p='civicrm/ajax/event' h=0}{literal}";
 
 cj('input#parent_event_name').autocomplete(
     eventUrl,

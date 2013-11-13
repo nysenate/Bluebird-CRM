@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -40,10 +40,10 @@ class CRM_Queue_Page_AJAX {
         $activeQueueRunner = CRM_Queue_Runner::instance($qrid);
         if (!is_object($activeQueueRunner)) {
           throw new Exception('Queue runner must be configured before execution.');
-        }
+      }
         $result = $activeQueueRunner->runNext(TRUE);
         CRM_Queue_Page_AJAX::_return('runNext', $result);
-    }
+      }
     );
   }
 
@@ -61,10 +61,10 @@ class CRM_Queue_Page_AJAX {
         $activeQueueRunner = CRM_Queue_Runner::instance($qrid);
         if (!is_object($activeQueueRunner)) {
           throw new Exception('Queue runner must be configured before execution.');
-        }
+      }
         $result = $activeQueueRunner->skipNext(TRUE);
         CRM_Queue_Page_AJAX::_return('skipNext', $result);
-    }
+      }
     );
   }
 
@@ -82,7 +82,7 @@ class CRM_Queue_Page_AJAX {
         $activeQueueRunner = CRM_Queue_Runner::instance($qrid);
         if (!is_object($activeQueueRunner)) {
           throw new Exception('Queue runner must be configured before execution. - onEnd');
-        }
+      }
         $result = $activeQueueRunner->handleEnd(FALSE);
         CRM_Queue_Page_AJAX::_return('onEnd', $result);
     }
@@ -93,14 +93,14 @@ class CRM_Queue_Page_AJAX {
    * Performing any view-layer filtering on result and send to client.
    */
   static function _return($op, $result) {
-    if ($result['is_error']) {
+        if ($result['is_error']) {
       if (is_object($result['exception'])) {
         CRM_Core_Error::debug_var("CRM_Queue_Page_AJAX_{$op}_error", CRM_Core_Error::formatTextException($result['exception']));
 
         $config = CRM_Core_Config::singleton();
         if ($config->backtrace || CRM_Core_Config::isUpgradeMode()) {
           $result['exception'] = CRM_Core_Error::formatHtmlException($result['exception']);
-        }
+      }
         else {
           $result['exception'] = $result['exception']->getMessage();
         }
@@ -108,8 +108,8 @@ class CRM_Queue_Page_AJAX {
         CRM_Core_Error::debug_var("CRM_Queue_Page_AJAX_{$op}_error", $result);
       }
     }
-    echo json_encode($result);
-    CRM_Utils_System::civiExit();
+        echo json_encode($result);
+        CRM_Utils_System::civiExit();
+    }
   }
-}
 

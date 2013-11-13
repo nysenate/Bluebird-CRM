@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -162,7 +162,7 @@ class CRM_Campaign_Form_Task_Release extends CRM_Campaign_Form_Task {
           array(1 => (count($this->_contactIds) - count($deleteActivityIds)))
         );
       }
-      CRM_Core_Session::setStatus(implode('&nbsp;', $status));
+      CRM_Core_Session::setStatus(implode('&nbsp;', $status), '', 'info');
     }
   }
 }

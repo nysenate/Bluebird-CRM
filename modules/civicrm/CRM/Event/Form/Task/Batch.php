@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -70,9 +70,9 @@ class CRM_Event_Form_Task_Batch extends CRM_Event_Form_Task {
    * @access public
    */
   function preProcess() {
-    /*
-     * initialize the task and row fields
-     */
+   /*
+    * initialize the task and row fields
+    */
     parent::preProcess();
 
     //get the contact read only fields to display.
@@ -201,7 +201,7 @@ class CRM_Event_Form_Task_Batch extends CRM_Event_Form_Task {
           }
         }
         else {
-          if ($field['name'] == 'participant_role_id') {
+          if ($field['name'] == 'participant_role') {
             $field['is_multiple'] = TRUE;
           }
           // handle non custom fields
@@ -216,7 +216,7 @@ class CRM_Event_Form_Task_Batch extends CRM_Event_Form_Task {
     $buttonName = $this->controller->getButtonName('submit');
 
     if ($suppressFields && $buttonName != '_qf_Batch_next') {
-      CRM_Core_Session::setStatus("FILE or Autocomplete Select type field(s) in the selected profile are not supported for Batch Update and have been excluded.");
+      CRM_Core_Session::setStatus(ts("FILE or Autocomplete Select type field(s) in the selected profile are not supported for Batch Update and have been excluded."), ts('Unsupported Field Type'), 'info');
     }
 
     $this->addDefaultButtons(ts('Update Participant(s)'));
@@ -269,6 +269,7 @@ class CRM_Event_Form_Task_Batch extends CRM_Event_Form_Task {
    */
   public function postProcess() {
     $params = $this->exportValues();
+    $statusClasses = CRM_Event_PseudoConstant::participantStatusClass();
     if (isset($params['field'])) {
       foreach ($params['field'] as $key => $value) {
 
@@ -296,6 +297,7 @@ class CRM_Event_Form_Task_Batch extends CRM_Event_Form_Task {
 
         //need to send mail when status change
         $statusChange = FALSE;
+        $relatedStatusChange = FALSE;
         if (CRM_Utils_Array::value('participant_status', $value)) {
           $value['status_id'] = $value['participant_status'];
           $fromStatusId = CRM_Utils_Array::value($key, $this->_fromStatusIds);
@@ -304,6 +306,9 @@ class CRM_Event_Form_Task_Batch extends CRM_Event_Form_Task {
           }
 
           if ($fromStatusId != $value['status_id']) {
+            $relatedStatusChange = TRUE;
+          }
+          if ($statusClasses[$fromStatusId] != $statusClasses[$value['status_id']]) {
             $statusChange = TRUE;
           }
         }
@@ -320,15 +325,16 @@ class CRM_Event_Form_Task_Batch extends CRM_Event_Form_Task {
         //need to trigger mails when we change status
         if ($statusChange) {
           CRM_Event_BAO_Participant::transitionParticipants(array($key), $value['status_id'], $fromStatusId);
-
+        }
+        if ($relatedStatusChange) {
           //update related contribution status, CRM-4395
           self::updatePendingOnlineContribution($key, $value['status_id']);
         }
       }
-      CRM_Core_Session::setStatus(ts('The updates have been saved.'));
+      CRM_Core_Session::setStatus(ts('The updates have been saved.'), ts('Saved'), 'success');
     }
     else {
-      CRM_Core_Session::setStatus(ts('No updates have been saved.'));
+      CRM_Core_Session::setStatus(ts('No updates have been saved.'), ts('Not Saved'), 'alert');
     }
   }
   //end of function
@@ -370,6 +376,7 @@ class CRM_Event_Form_Task_Batch extends CRM_Event_Form_Task {
       'componentName' => 'Event',
       'contribution_id' => $contributionId,
       'contribution_status_id' => $contributionStatusId,
+      'skipComponentSync' => 1
     );
 
     //change related contribution status.

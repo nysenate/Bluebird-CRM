@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,29 +30,29 @@
     function createSWFObject( chartID, divName, xSize, ySize, loadDataFunction ) {
        var flashFilePath = {/literal}"{$config->resourceBase}packages/OpenFlashChart/open-flash-chart.swf"{literal};
 
-       //create object.  	   
+       //create object.
        swfobject.embedSWF( flashFilePath, divName,
-    		                 xSize, ySize, "9.0.0",
-    		                 "expressInstall.swf",
-    		                 {"get-data":loadDataFunction, "id":chartID},
-    		                 null,
-    		                 {"wmode": 'transparent'}
-    		                );
+                         xSize, ySize, "9.0.0",
+                         "expressInstall.swf",
+                         {"get-data":loadDataFunction, "id":chartID},
+                         null,
+                         {"wmode": 'transparent'}
+                        );
     }
   OFC = {};
   OFC.jquery = {
-  	       name: "jQuery",
-    	       image: function(src) { return "<img src='data:image/png;base64," + $('#'+src)[0].get_img_binary() + "' />"},
-	           popup: function(src) {
- 		        var img_win = window.open('', 'Save Chart as Image');
-     			img_win.document.write('<html><head><title>Save Chart as Image<\/title><\/head><body>' + OFC.jquery.image(src) + ' <\/body><\/html>'); 
-     			img_win.document.close();
-                       }					
-    	           }   		
-			
+           name: "jQuery",
+             image: function(src) { return "<img src='data:image/png;base64," + $('#'+src)[0].get_img_binary() + "' />"},
+             popup: function(src) {
+             var img_win = window.open('', 'Save Chart as Image');
+           img_win.document.write('<html><head><title>Save Chart as Image<\/title><\/head><body>' + OFC.jquery.image(src) + ' <\/body><\/html>');
+           img_win.document.close();
+                       }
+                 }
+
 function save_image( divName ) {
       var divId = {/literal}"{$contriChart}"{literal} ? 'open_flash_chart_'+divName : {/literal}"{$divId}"{literal};
-          if( !divId ) { 
+          if( !divId ) {
                divId = 'open_flash_'+divName;
         }
       OFC.jquery.popup( divId );

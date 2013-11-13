@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,13 +28,13 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
 
 /**
- * This class generates form components for Location Type
+ * Base class for settings forms
  *
  */
 class CRM_Admin_Form_Preferences extends CRM_Core_Form {
@@ -48,7 +48,9 @@ class CRM_Admin_Form_Preferences extends CRM_Core_Form {
 
   protected $_config = NULL;
 
-  protected $_params = NULL; function preProcess() {
+  protected $_params = NULL;
+
+  function preProcess() {
     $this->_contactID = CRM_Utils_Request::retrieve('cid', 'Positive',
       $this, FALSE
     );
@@ -161,17 +163,16 @@ class CRM_Admin_Form_Preferences extends CRM_Core_Form {
               break;
 
             case 'textarea':
-              $this->addElement('textarea',
+            case 'checkbox':
+              $this->add($fieldValue['html_type'],
                 $fieldName,
                 $fieldValue['title']
               );
               break;
 
-            case 'checkbox':
-              $this->addElement('checkbox',
-                $fieldName,
-                $fieldValue['title']
-              );
+            case 'radio':
+              $options = CRM_Core_OptionGroup::values($fieldName, FALSE, FALSE, TRUE);
+              $this->addRadio($fieldName, $fieldValue['title'], $options, NULL, '&nbsp;&nbsp;');
               break;
 
             case 'checkboxes':
@@ -262,6 +263,7 @@ class CRM_Admin_Form_Preferences extends CRM_Core_Form {
 
           case 'text':
           case 'select':
+          case 'radio':
             $this->_config->$settingName = CRM_Utils_Array::value($settingName, $this->_params);
             break;
 
@@ -287,7 +289,7 @@ class CRM_Admin_Form_Preferences extends CRM_Core_Form {
       }
     }
 
-    CRM_Core_Session::setStatus(ts('Your changes have been saved.'));
+    CRM_Core_Session::setStatus(ts('Your changes have been saved.'), ts('Saved'), 'success');
   }
 
 }

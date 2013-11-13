@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -92,7 +92,10 @@ class CRM_Admin_Form_Navigation extends CRM_Admin_Form {
     $operators = array('AND' => 'AND', 'OR' => 'OR');
     $this->add('select', 'permission_operator', ts('Operator'), $operators);
 
-    $this->add('checkbox', 'has_separator', ts('Separator?'));
+    //make separator location configurable
+    $separator = array(0 => 'None', 1 => 'After Menu Element', 2 => 'Before Menu Element');
+    $this->add('select', 'has_separator', ts('Separator?'), $separator);
+
     $active = $this->add('checkbox', 'is_active', ts('Enabled?'));
 
     if (CRM_Utils_Array::value('name', $this->_defaults) == 'Home') {
@@ -159,8 +162,6 @@ class CRM_Admin_Form_Navigation extends CRM_Admin_Form {
 
     CRM_Core_Session::setStatus(ts('Menu \'%1\' has been saved.',
         array(1 => $navigation->label)
-      ));
+      ), ts('Saved'), 'success');
   }
-  //end of function
 }
-

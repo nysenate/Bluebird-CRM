@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -104,7 +104,9 @@ class CRM_Contact_Form_Relationship extends CRM_Core_Form {
   /**
    * casid if it called from case context
    */
-  protected $_caseId; function preProcess() {
+  protected $_caseId;
+
+  function preProcess() {
     //custom data related code
     $this->_cdType = CRM_Utils_Array::value('type', $_GET);
     $this->assign('cdType', FALSE);
@@ -124,6 +126,7 @@ class CRM_Contact_Form_Relationship extends CRM_Core_Form {
     $this->_display_name_a = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $this->_contactId, 'display_name');
 
     $this->assign('sort_name_a', $this->_display_name_a);
+    CRM_Utils_System::setTitle(ts('Relationships for') . ' ' . $this->_display_name_a);
 
     $this->_caseId = CRM_Utils_Request::retrieve('caseID', 'Integer', $this);
 
@@ -341,7 +344,7 @@ class CRM_Contact_Form_Relationship extends CRM_Core_Form {
 
     $this->addDate('start_date', ts('Start Date'), FALSE, array('formatType' => 'searchDate'));
     $this->addDate('end_date', ts('End Date'), FALSE, array('formatType' => 'searchDate'));
-    $this->addElement('checkbox', 'is_active', ts('Enabled?'), NULL, 'setChecked()');
+    $this->addElement('checkbox', 'is_active', ts('Enabled?'), NULL, NULL);
 
     $this->addElement('checkbox', 'is_permission_a_b', ts('Permission for contact a to view and update information for contact b'), NULL);
     $this->addElement('checkbox', 'is_permission_b_a', ts('permission for contact b to view and update information for contact a'), NULL);
@@ -527,6 +530,12 @@ class CRM_Contact_Form_Relationship extends CRM_Core_Form {
       if ($employerId && ($isDisabled || $relChanged)) {
         CRM_Contact_BAO_Contact_Utils::clearCurrentEmployer($this->_values['current_employee_id']);
       }
+
+      //if field key doesn't exists in params that means the user has unchecked checkbox,
+      //hence fill FALSE to params
+      $params['is_active'] = $isDisabled ? FALSE : TRUE;
+      $params['is_permission_a_b'] = CRM_Utils_Array::value('is_permission_a_b', $params, FALSE);
+      $params['is_permission_b_a'] = CRM_Utils_Array::value('is_permission_b_a', $params, FALSE);
     }
     elseif ($quickSave) {
       if (CRM_Utils_Array::value('add_current_employee', $params) &&
@@ -552,7 +561,8 @@ class CRM_Contact_Form_Relationship extends CRM_Core_Form {
 
     //special case to handle if all checkboxes are unchecked
     $customFields = CRM_Core_BAO_CustomField::getFields('Relationship', FALSE, FALSE, $relationshipTypeId);
-    $params['custom'] = CRM_Core_BAO_CustomField::postProcess($params,
+    $params['custom'] = CRM_Core_BAO_CustomField::postProcess(
+      $params,
       $customFields,
       $this->_relationshipId,
       'Relationship'
@@ -568,16 +578,16 @@ class CRM_Contact_Form_Relationship extends CRM_Core_Form {
 
     $status = '';
     if ($valid) {
-      $status .= ' ' . ts('%count new relationship record created.', array('count' => $valid, 'plural' => '%count new relationship records created.'));
+      CRM_Core_Session::setStatus(ts('New relationship created.', array('count' => $valid, 'plural' => '%count new relationships created.')), ts('Saved'), 'success');
     }
     if ($invalid) {
-      $status .= ' ' . ts('%count relationship record not created due to invalid target contact type.', array('count' => $invalid, 'plural' => '%count relationship records not created due to invalid target contact type.'));
+      CRM_Core_Session::setStatus(ts('%count relationship record was not created due to an invalid target contact type.', array('count' => $invalid, 'plural' => '%count relationship records were not created due to invalid target contact types.')), ts('%count invalid relationship record', array('count' => $invalid, 'plural' => '%count invalid relationship records')));
     }
     if ($duplicate) {
-      $status .= ' ' . ts('%count relationship record not created - duplicate of existing relationship.', array('count' => $duplicate, 'plural' => '%count relationship records not created - duplicate of existing relationship.'));
+      CRM_Core_Session::setStatus(ts('One relationship was not created because it already exists.', array('count' => $duplicate, 'plural' => '%count relationships were not created because they already exist.')), ts('%count duplicate relationship', array('count' => $duplicate, 'plural' => '%count duplicate relationships')));
     }
     if ($saved) {
-      $status .= ts('Relationship record has been updated.');
+      CRM_Core_Session::setStatus(ts('Relationship record has been updated.'), ts('Saved'), 'success');
     }
 
     if (!empty($relationshipIds)) {
@@ -681,7 +691,6 @@ class CRM_Contact_Form_Relationship extends CRM_Core_Form {
       }
     }
 
-    CRM_Core_Session::setStatus($status);
     if ($quickSave) {
       $session = CRM_Core_Session::singleton();
       CRM_Utils_System::redirect($session->popUserContext());
@@ -698,8 +707,7 @@ class CRM_Contact_Form_Relationship extends CRM_Core_Form {
    * @access public
    * @static
    */
-  static
-  function formRule($params, $files, $form) {
+  static function formRule($params, $files, $form) {
     // hack, no error check for refresh
     if (CRM_Utils_Array::value('_qf_Relationship_refresh', $_POST) ||
       CRM_Utils_Array::value('_qf_Relationship_refresh_save', $_POST) ||
@@ -774,8 +782,7 @@ class CRM_Contact_Form_Relationship extends CRM_Core_Form {
    * @access public
    * @static
    */
-  static
-  function dateRule($params) {
+  static function dateRule($params) {
     $errors = array();
 
     // check start and end date

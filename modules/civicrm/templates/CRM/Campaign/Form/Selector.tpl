@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -32,10 +32,10 @@
   <thead class="sticky">
   <tr>
     {if !$single and $context eq 'Search' }
-        <th scope="col" title="Select Rows">{$form.toggleSelect.html}</th> 
+        <th scope="col" title="Select Rows">{$form.toggleSelect.html}</th>
     {/if}
     {foreach from=$columnHeaders item=header}
-        
+
         <th scope="col">
         {if $header.sort}
           {assign var='key' value=$header.sort}
@@ -52,20 +52,20 @@
   {foreach from=$rows item=row}
   <tr id='rowid{$row.contact_id}' class="{cycle values="odd-row,even-row"} crm-campaign">
     {if !$single }
-        {if $context eq 'Search' }       
-    	    {assign var=cbName value=$row.checkbox}
-    	    <td>{$form.$cbName.html}</td> 
- 	{/if}
+        {if $context eq 'Search' }
+          {assign var=cbName value=$row.checkbox}
+          <td>{$form.$cbName.html}</td>
+   {/if}
     <td>{$row.contact_type} &nbsp;<a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`"}">{$row.sort_name}</a></td>
-	<td>{$row.street_number}</td>
-	<td>{$row.street_name}</td>
-	<td>{$row.street_address}</td>
-	<td>{$row.city}</td>
-	<td>{$row.postal_code}</td>
-	<td>{$row.state_province}</td>
-	<td>{$row.country}</td>
-	<td>{$row.email}</td>
-	<td>{$row.phone}</td>	
+  <td>{$row.street_number}</td>
+  <td>{$row.street_name}</td>
+  <td>{$row.street_address}</td>
+  <td>{$row.city}</td>
+  <td>{$row.postal_code}</td>
+  <td>{$row.state_province}</td>
+  <td>{$row.country}</td>
+  <td>{$row.email}</td>
+  <td>{$row.phone}</td>
     {/if}
   </tr>
   {/foreach}
@@ -76,7 +76,7 @@
 {if $context EQ 'Search'}
  <script type="text/javascript">
  {* this function is called to change the color of selected row(s) *}
-    var fname = "{$form.formName}";	
+    var fname = "{$form.formName}";
     on_load_init_checkboxes(fname);
  </script>
 {/if}

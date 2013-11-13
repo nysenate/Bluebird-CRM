@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,7 +27,7 @@
     {* Add or edit Profile Group form *}
     {include file="CRM/UF/Form/Group.tpl"}
 {elseif $action eq 1024}
-    {* Preview Profile Group form *}	
+    {* Preview Profile Group form *}
     {include file="CRM/UF/Form/Preview.tpl"}
 {elseif $action eq 8192}
     {* Display HTML Form Snippet Code *}
@@ -38,8 +38,8 @@
     <form name="html_code" action="{crmURL p='civicrm/admin/uf/group' q="action=profile&gid=$gid"}">
     <div id="standalone-form">
         <textarea rows="20" cols="80" name="profile" id="profile">{$profile}</textarea>
-        <div class="spacer"></div>    
-        <a href="#" onclick="html_code.profile.select(); return false;" class="button"><span>Select HTML Code</span></a> 
+        <div class="spacer"></div>
+        <a href="#" onclick="html_code.profile.select(); return false;" class="button"><span>Select HTML Code</span></a>
     </div>
     <div class="action-link">
         &nbsp; <a href="{crmURL p='civicrm/admin/uf/group' q="reset=1"}">&raquo;  {ts}Back to Profile Listings{/ts}</a>
@@ -62,7 +62,7 @@
             <li id='tab_user'>    <a href='#user-profiles'     title='{ts}User-defined Profile{/ts}'>{ts}User-defined Profiles{/ts}</a></li>
             <li id='tab_reserved'><a href='#reserved-profiles' title='{ts}Reserved Profiles{/ts}'>{ts}Reserved Profiles{/ts}</a></li>
         </ul>
-    
+
         {* handle enable/disable actions*}
         {include file="CRM/common/enableDisable.tpl"}
         {include file="CRM/common/jsortable.tpl"}
@@ -72,17 +72,25 @@
              <thead>
               <tr>
                 <th id="sortable">{ts}Profile Title{/ts}</th>
+                <th>{ts}Created By{/ts}</th>
+                <th>{ts}Description{/ts}</th>
                 <th>{ts}Type{/ts}</th>
                 <th>{ts}ID{/ts}</th>
                 <th id="nosort">{ts}Used For{/ts}</th>
                 <th></th>
               </tr>
-            </thead> 
+            </thead>
             <tbody>
             {foreach from=$rows item=row}
             {if !$row.is_reserved }
-  	          <tr id="UFGroup-{$row.id}"class="crm-entity {$row.class}{if NOT $row.is_active} disabled{/if}">
+              <tr id="UFGroup-{$row.id}"class="crm-entity {$row.class}{if NOT $row.is_active} disabled{/if}">
                 <td><span class="crmf-title crm-editable">{$row.title}</span></td>
+                <td>
+                  {if $row.created_id && $row.created_by}
+                    <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.created_id`"}">{ts}{$row.created_by}{/ts}</a>
+                  {/if}
+                </td>
+                <td>{$row.description}</td>
                 <td>{$row.group_type}</td>
                 <td>{$row.id}</td>
                 <td>{$row.module}</td>
@@ -92,7 +100,7 @@
             {/foreach}
             </tbody>
             </table>
-        
+
             {if NOT ($action eq 1 or $action eq 2)}
             <div class="crm-submit-buttons">
                 <a href="{crmURL p='civicrm/admin/uf/group/add' q='action=add&reset=1'}" id="newCiviCRMProfile-bottom" class="button"><span><div class="icon add-icon"></div>{ts}Add Profile{/ts}</span></a>
@@ -107,17 +115,25 @@
              <thead>
               <tr>
                 <th id="sortable">{ts}Profile Title{/ts}</th>
+                <th>{ts}Created By{/ts}</th>
+                <th>{ts}Description{/ts}</th>
                 <th>{ts}Type{/ts}</th>
                 <th>{ts}ID{/ts}</th>
                 <th id="nosort">{ts}Used For{/ts}</th>
                 <th></th>
               </tr>
-            </thead> 
+            </thead>
             <tbody>
             {foreach from=$rows item=row}
             {if $row.is_reserved}
-  	          <tr id="row_{$row.id}"class="{$row.class}{if NOT $row.is_active} disabled{/if}">
+              <tr id="row_{$row.id}"class="{$row.class}{if NOT $row.is_active} disabled{/if}">
                 <td>{$row.title}</td>
+                <td>
+                  {if $row.created_id && $row.created_by}
+                    <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.created_id`"}">{ts}{$row.created_by}{/ts}</a>
+                  {/if}
+                </td>
+                <td>{$row.description}</td>
                 <td>{$row.group_type}</td>
                 <td>{$row.id}</td>
                 <td>{$row.module}</td>
@@ -127,7 +143,7 @@
             {/foreach}
             </tbody>
             </table>
-        
+
             {if NOT ($action eq 1 or $action eq 2)}
             <div class="crm-submit-buttons">
                 <a href="{crmURL p='civicrm/admin/uf/group/add' q='action=add&reset=1'}" id="newCiviCRMProfile-bottom" class="button"><span><div class="icon add-icon"></div>{ts}Add Profile{/ts}</span></a>
@@ -150,11 +166,11 @@
 
     {else}
     {if $action ne 1} {* When we are adding an item, we should not display this message *}
-       <div class="messages status">
+       <div class="messages status no-popup">
          <div class="icon inform-icon"></div> &nbsp;
          {capture assign=crmURL}{crmURL p='civicrm/admin/uf/group/add' q='action=add&reset=1'}{/capture}{ts 1=$crmURL}No CiviCRM Profiles have been created yet. You can <a href='%1'>add one now</a>.{/ts}
        </div>
     {/if}
     {/if}
 {/if}
-{include file="CRM/common/crmeditable.tpl"} 
+{include file="CRM/common/crmeditable.tpl"}

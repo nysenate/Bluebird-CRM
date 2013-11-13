@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -23,9 +23,11 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-{capture assign=newPageURL}{crmURL p='civicrm/admin/contribute/add' q='action=add&reset=1'}{/capture}
+{htxt id="id-intro-title"}
+  {ts}Contribution Pages{/ts}
+{/htxt}
 {htxt id="id-intro"}
-<div id="help">
+    {capture assign=newPageURL}{crmURL p='civicrm/admin/contribute/add' q='action=add&reset=1'}{/capture}
     <p>{ts}CiviContribute allows you to create and maintain any number of Online Contribution Pages. You can create different pages for different programs or campaigns - and customize text, amounts, types of information collected from contributors, etc.{/ts}</p>
     {ts}For existing pages{/ts}:
     <ul class="indented">
@@ -35,5 +37,4 @@
     </ul>
     <p>{ts 1=$newPageURL}Click <a href='%1'>New Contribution Page</a> to create and configure a new online contribution page using the step-by-step wizard.{/ts}</p>
     <p>{docURL page="user/contributions/what-you-need-to-know"}</p>
-</div>
 {/htxt}

@@ -62,7 +62,6 @@ function nyss_civihooks_page_alter(&$page) {
 }
 
 function nyss_civihooks_permission() {
-
   return array(
     'export print production files' => array(
       'title' => t('Bluebird: Export Print Production Files'),
@@ -86,7 +85,6 @@ function nyss_civihooks_permission() {
 }
 
 function nyss_civihooks_getfile() {
-
   civicrm_initialize( );
   require_once 'CRM/Core/Config.php';
   $config =& CRM_Core_Config::singleton();
@@ -130,6 +128,18 @@ function nyss_civihooks_getfile() {
   }
   fclose($fh);
 }
+
+function nyss_civihooks_civicrm_config(&$config) {
+  $session = CRM_Core_Session::singleton();
+
+  //NYSS JobID handling
+  $jobID = $session->get('jobID');
+  if ($jobID) {
+    CRM_Core_DAO::executeQuery('SET @jobID = %1',
+      array(1 => array($jobID, 'String'))
+    );
+  }
+}//config
 
 function nyss_civihooks_civicrm_contactListQuery( &$query, $name, $context, $id ) {
 

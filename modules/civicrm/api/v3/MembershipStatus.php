@@ -1,11 +1,10 @@
 <?php
-// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -33,16 +32,10 @@
  * @package CiviCRM_APIv3
  * @subpackage API_Membership
  *
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * @version $Id: MembershipStatus.php 30171 2010-10-14 09:11:27Z mover $
  *
  */
-
-/**
- * Files required for this package
- */
-
-require_once 'CRM/Member/BAO/MembershipStatus.php';
 
 /**
  * Create a Membership Status
@@ -56,33 +49,17 @@ require_once 'CRM/Member/BAO/MembershipStatus.php';
  * @access public
  */
 function civicrm_api3_membership_status_create($params) {
+  return _civicrm_api3_basic_create(_civicrm_api3_get_BAO(__FUNCTION__), $params);
+}
 
-  civicrm_api3_verify_one_mandatory($params, 'CRM_Member_DAO_MembershipStatus', array('name', 'label'));
-  //move before verifiy? DAO check requires?
-  if (empty($params['name'])) {
-    $params['name'] = CRM_Utils_Array::value('label', $params);
-  }
-
-  //don't allow duplicate names.
-  require_once 'CRM/Member/DAO/MembershipStatus.php';
-  $status = new CRM_Member_DAO_MembershipStatus();
-  $status->name = $params['name'];
-  if ($status->find(TRUE)) {
-    return civicrm_api3_create_error(ts('A membership status with this name already exists.'));
-  }
-
-  require_once 'CRM/Member/BAO/MembershipStatus.php';
-  $ids = array();
-  $membershipStatusBAO = CRM_Member_BAO_MembershipStatus::add($params, $ids);
-  if (is_a($membershipStatusBAO, 'CRM_Core_Error')) {
-    return civicrm_api3_create_error("Membership is not created");
-  }
-  else {
-    $values             = array();
-    $values['id']       = $membershipStatusBAO->id;
-    $values['is_error'] = 0;
-    return civicrm_api3_create_success($values, $params);
-  }
+/**
+ * Adjust Metadata for Create action
+ *
+ * The metadata is used for setting defaults, documentation & validation
+ * @param array $params array or parameters determined by getfields
+ */
+function _civicrm_api3_membership_status_create_spec(&$params) {
+  $params['name']['api.aliases'] = array('label');
 }
 
 /**
@@ -97,7 +74,6 @@ function civicrm_api3_membership_status_create($params) {
  * @access public
  */
 function civicrm_api3_membership_status_get($params) {
-
   return _civicrm_api3_basic_get('CRM_Member_BAO_MembershipStatus', $params);
 }
 
@@ -119,7 +95,6 @@ function &civicrm_api3_membership_status_update($params) {
   //don't allow duplicate names.
   $name = CRM_Utils_Array::value('name', $params);
   if ($name) {
-    require_once 'CRM/Member/DAO/MembershipStatus.php';
     $status = new CRM_Member_DAO_MembershipStatus();
     $status->name = $params['name'];
     if ($status->find(TRUE) && $status->id != $params['id']) {
@@ -127,7 +102,6 @@ function &civicrm_api3_membership_status_update($params) {
     }
   }
 
-  require_once 'CRM/Member/BAO/MembershipStatus.php';
   $membershipStatusBAO = new CRM_Member_BAO_MembershipStatus();
   $membershipStatusBAO->id = $params['id'];
   if ($membershipStatusBAO->find(TRUE)) {
@@ -189,16 +163,14 @@ SELECT start_date, end_date, join_date
   $params = array(1 => array($membershipID, 'Integer'));
   $dao = &CRM_Core_DAO::executeQuery($query, $params);
   if ($dao->fetch()) {
-    require_once 'CRM/Member/BAO/MembershipStatus.php';
-
     // Take the is_admin column in MembershipStatus into consideration when requested
     if (! CRM_Utils_Array::value('ignore_admin_only', $membershipParams) ) {
       $result = &CRM_Member_BAO_MembershipStatus::getMembershipStatusByDate($dao->start_date, $dao->end_date, $dao->join_date, 'today', TRUE);
-    } 
-    else {
-      $result = &CRM_Member_BAO_MembershipStatus::getMembershipStatusByDate($dao->start_date, $dao->end_date, $dao->join_date);
     }
-    
+    else {
+    $result = &CRM_Member_BAO_MembershipStatus::getMembershipStatusByDate($dao->start_date, $dao->end_date, $dao->join_date);
+    }
+
     //make is error zero only when valid status found.
     if (CRM_Utils_Array::value('id', $result)) {
       $result['is_error'] = 0;

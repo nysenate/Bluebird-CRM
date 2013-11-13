@@ -1,8 +1,8 @@
 <?php
 /**
  * @package dompdf
- * @link    http://www.dompdf.com/
- * @author  Benj Carson <benjcarson@digitaljunkies.ca>
+ * @link http://www.dompdf.com/
+ * @author Benj Carson <benjcarson@digitaljunkies.ca>
  * @author  Helmut Tischer <htischer@weihenstephan.org>
  * @author  Fabien Ménager <fabien.menager@gmail.com>
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
@@ -86,7 +86,12 @@ class Text_Renderer extends Abstract_Renderer {
       //$base = ($cpdf_font["UnderlinePosition"]*$size)/1000;
       //$descent = (($cpdf_font["Ascender"]-$cpdf_font["Descender"])*$size)/1000;
       
-      $fontBBox = $cpdf->fonts[$style->font_family]['FontBBox'];
+      if (array_key_exists($style->font_family, $cpdf->fonts)) {
+        $fontBBox = $cpdf->fonts[$style->font_family]['FontBBox'];
+      }
+      else {
+        $fontBBox = $cpdf->fonts[$cpdf->currentFont]['FontBBox'];
+      }
       $base = (($fontBBox[3]*$size)/1000) * 0.90;
       $descent = ($fontBBox[1]*$size)/1000;
       //print '<pre>Text_Renderer cpdf:'.$base.' '.$descent.' '.$size.'</pre>';

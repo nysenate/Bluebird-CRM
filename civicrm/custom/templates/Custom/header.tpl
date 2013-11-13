@@ -25,9 +25,9 @@
 *}
 
 {if not $urlIsPublic}
- <div id="header-access">
-   {ts}Access Keys:{/ts}{help id='accesskeys'}
- </div>
+<div id="header-access">
+  {ts}Access Keys:{/ts}{help id='accesskeys'}
+</div>
 {/if}
 
 {php}
@@ -119,123 +119,119 @@ cj( document ).ready( function( ) {
     }
   });
 });
-
 </script>
 {/literal}
-            
 {/if}
 
 </div>
 <span class="primary-link create-link">
-    <span id="create-link" class="main-menu-item">
-      <div class="skin-icon link-icon"></div>
-      CREATE
-    </span>
-    <div class="menu-container">
-      <ul class="menu-ul innerbox">
-
-  {if call_user_func(array('CRM_Core_Permission','check'), 'view all activities')}
-  <li><div class="menu-item">
-  <a href="{crmURL p='civicrm/activity' q='reset=1&action=add&context=standalone'}">New Activity</a></div></li>
-    {/if}
-  {if call_user_func(array('CRM_Core_Permission','check'), 'access all cases and activities')}
-    <li><div class="menu-item">
-    <a href="{crmURL p='civicrm/case/add' q='reset=1&action=add&atype=13&context=standalone'}">New Case</a></div></li>
-  {/if}
-  {if call_user_func(array('CRM_Core_Permission','check'), 'add contacts')}
-    <li><div class="menu-item">
-    <a href="{crmURL p='civicrm/activity/email/add' q='atype=3&action=add&reset=1&context=standalone'}">New Email</a></div></li>
-  {/if}
-  {if call_user_func(array('CRM_Core_Permission','check'), 'add contacts')}
-    <li style="position: relative;" class="menu-separator"><div class="menu-item"></div></li>  
-    <li><div class="menu-item">
-    <a href="{crmURL p='civicrm/contact/add' q='reset=1&ct=Individual'}">New Individual</a></div></li>
-    <li><div class="menu-item">
-    <a href="{crmURL p='civicrm/contact/add' q='reset=1&ct=Household'}">New Household</a></div></li>
-    <li><div class="menu-item">
-    <a href="{crmURL p='civicrm/contact/add' q='reset=1&ct=Organization'}">New Organization</a></div></li>
-  {/if}
-  {if call_user_func(array('CRM_Core_Permission','check'), 'edit groups')}
-    <li style="position: relative;" class="menu-separator"><div class="menu-item"></div></li>
-    <li><div class="menu-item">
+  <span id="create-link" class="main-menu-item">
+    <div class="skin-icon link-icon"></div>
+    CREATE
+  </span>
+  <div class="menu-container">
+    <ul class="menu-ul innerbox">
+      {if call_user_func(array('CRM_Core_Permission','check'), 'view all activities')}
+        <li><div class="menu-item">
+        <a href="{crmURL p='civicrm/activity' q='reset=1&action=add&context=standalone'}">New Activity</a></div></li>
+      {/if}
+      {if call_user_func(array('CRM_Core_Permission','check'), 'access all cases and activities')}
+        <li><div class="menu-item">
+        <a href="{crmURL p='civicrm/case/add' q='reset=1&action=add&atype=13&context=standalone'}">New Case</a></div></li>
+      {/if}
+      {if call_user_func(array('CRM_Core_Permission','check'), 'add contacts')}
+        <li><div class="menu-item">
+        <a href="{crmURL p='civicrm/activity/email/add' q='atype=3&action=add&reset=1&context=standalone'}">New Email</a></div></li>
+      {/if}
+      {if call_user_func(array('CRM_Core_Permission','check'), 'add contacts')}
+        <li style="position: relative;" class="menu-separator"><div class="menu-item"></div></li>
+        <li><div class="menu-item">
+        <a href="{crmURL p='civicrm/contact/add' q='reset=1&ct=Individual'}">New Individual</a></div></li>
+        <li><div class="menu-item">
+        <a href="{crmURL p='civicrm/contact/add' q='reset=1&ct=Household'}">New Household</a></div></li>
+        <li><div class="menu-item">
+        <a href="{crmURL p='civicrm/contact/add' q='reset=1&ct=Organization'}">New Organization</a></div></li>
+      {/if}
+      {if call_user_func(array('CRM_Core_Permission','check'), 'edit groups')}
+        <li style="position: relative;" class="menu-separator"><div class="menu-item"></div></li>
+        <li><div class="menu-item">
         <a href="{crmURL p='civicrm/group/add' q='reset=1'}">New Group</a></div></li>
-  {/if}
-  </ul>
-    </div>
-  </span><!-- /.custom-search-link -->  
-
+      {/if}
+    </ul>
+  </div>
+</span><!-- /.custom-search-link -->
 </div>
+
 <div id="bluebirds"></div>
 <div class="clear"></div>
-<div class="civi-navigation-section">
-<div class="civi-adv-search-linkwrap">
-{if $ssID or $rows or $savedSearch}
-  <div class="civi-advanced-search-button">
-  <div class="civi-advanced-search-link-inner">
-    <span>
-    <div class="icon crm-accordion-pointer"></div>
-    {if $ssID or $rows}
-  {if $savedSearch}
-    {ts 1=$savedSearch.name}Edit %1 Smart Group Below{/ts}
-  {else}
-    {ts}Edit Search Criteria Below{/ts}
-  {/if}
-  {else}
-  {if $savedSearch}
-    {ts 1=$savedSearch.name}Edit %1 Smart Group Below{/ts}
-  {else}
-    {ts}Search Criteria Below{/ts}
-  {/if}
-  {/if}
-    </span>
+<div class="civi-navigation-section crm-container">
+  <div class="civi-adv-search-linkwrap">
+    {if $ssID or $rows or $savedSearch}
+      <div class="civi-advanced-search-button">
+      <div class="civi-advanced-search-link-inner">
+        <span>
+        <div class="icon crm-accordion-pointer"></div>
+        {if $ssID or $rows}
+      {if $savedSearch}
+        {ts 1=$savedSearch.name}Edit %1 Smart Group Below{/ts}
+      {else}
+        {ts}Edit Search Criteria Below{/ts}
+      {/if}
+      {else}
+      {if $savedSearch}
+        {ts 1=$savedSearch.name}Edit %1 Smart Group Below{/ts}
+      {else}
+        {ts}Search Criteria Below{/ts}
+      {/if}
+      {/if}
+        </span>
+      </div>
+      </div>
+    {else}
+      <div class="civi-advanced-search-link">
+      <div class="civi-advanced-search-link-inner">
+        <span>
+        <div class="icon crm-accordion-pointer"></div>
+        ADVANCED SEARCH
+        </span>
+      </div>
+      </div>
+    {/if}
   </div>
-  </div>  
-{else}
-  <div class="civi-advanced-search-link">
-  <div class="civi-advanced-search-link-inner">
-    <span>
-    <div class="icon crm-accordion-pointer"></div>
-    ADVANCED SEARCH
-    </span>
-  </div>
-  </div>  
-{/if}
+  <div class="civi-menu">
+  {if isset($browserPrint) and $browserPrint}
+  {* Javascript window.print link. Used for public pages where we can't do printer-friendly view. *}
+    <div id="printer-friendly">
+      <a href="javascript:window.print()" title="{ts}Print this page.{/ts}">
+        <div class="ui-icon ui-icon-print"></div>
+      </a>
+    </div>
+  {else}
+    {* Printer friendly link/icon. *}
+    <div id="printer-friendly">
+      <a href="{$printerFriendly}" title="{ts}Printer-friendly view of this page.{/ts}" target="_blank">
+        <div class="ui-icon ui-icon-print"></div>
+      </a>
+    </div>
+  {/if}
+  <ul id="nyss-menu">
+    {$navigation}
+  </ul>
 
-</div>
-<div class="civi-menu">
-{if isset($browserPrint) and $browserPrint}
-{* Javascript window.print link. Used for public pages where we can't do printer-friendly view. *}
-<div id="printer-friendly">
-<a href="javascript:window.print()" title="{ts}Print this page.{/ts}">
-  <div class="ui-icon ui-icon-print"></div>
-</a>
-</div>
-{else}
-{* Printer friendly link/icon. *}
-<div id="printer-friendly">
-<a href="{$printerFriendly}" title="{ts}Printer-friendly view of this page.{/ts}" target="_blank">
-  <div class="ui-icon ui-icon-print"></div>
-</a>
-</div>
-{/if}
-<ul id="nyss-menu">
-  {$navigation}
-</ul>
-{literal}
-<script type="text/javascript">
-     cj('div#toolbar-box div.m').html(cj(".civi-menu").html());
-     cj('#nyss-menu').ready( function(){ 
+  {literal}
+  <script type="text/javascript">
+    cj('div#toolbar-box div.m').html(cj(".civi-menu").html());
+    cj('#nyss-menu').ready( function(){
       cj('.outerbox').css({ 'margin-top': '4px'});
       cj('#root-menu-div .menu-ul li').css({ 'padding-bottom' : '2px', 'margin-top' : '2px' });
-      cj('img.menu-item-arrow').css({ 'top' : '4px' }); 
+      cj('img.menu-item-arrow').css({ 'top' : '4px' });
     });
     cj('#civicrm-home').parent().hide();
-  var resourceBase   = {/literal}"{$config->resourceBase}"{literal};
-  cj('#nyss-menu').menu( {arrowSrc: resourceBase + 'packages/jquery/css/images/arrow.png'} );
-</script>
-{/literal}
-
-</div><!-- /.civi-menu -->
+    var resourceBase   = {/literal}"{$config->resourceBase}"{literal};
+    cj('#nyss-menu').menu( {arrowSrc: resourceBase + 'packages/jquery/css/images/arrow.png'} );
+  </script>
+  {/literal}
+  </div><!-- /.civi-menu -->
 
 <div class="civi-adv-search-body crm-form-block">
   <div id="advanced-search-form"></div>
@@ -249,23 +245,7 @@ cj( document ).ready( function( ) {
         cj('.civi-adv-search-linkwrap').addClass('crm-loading');
         cj('#advanced-search-form').load('{/literal}{crmURL p="civicrm/contact/search/advanced" q="snippet=1&reset=1"}{literal}', function(){
           cj('.civi-adv-search-linkwrap').removeClass('crm-loading');
-          if (cj('#advanced-search-form .crm-accordion-processed').length == 0) {
-            cj('#advanced-search-form .crm-accordion-header').bind('mouseenter', function(){
-              cj(this).addClass('crm-accordion-header-hover');
-            });
-            cj('#advanced-search-form .crm-accordion-header').bind('mouseleave', function(){
-              cj(this).removeClass('crm-accordion-header-hover');
-            });
-            cj('#advanced-search-form .crm-accordion-header').bind('click', function (){
-              cj(this).parent().toggleClass('crm-accordion-open');
-              cj(this).parent().toggleClass('crm-accordion-closed');
-              //return false to prevent wiring of click event
-              return false;
-            });
-            cj('.crm-accordion-wrapper').addClass('crm-accordion-processed'); // only attached to accordions processed during first run
-          };
-
-          cj('div.crm-search_criteria_basic-accordion div.crm-accordion-body table tr:first td:first div.helpicon').
+          cj('div.crm-advanced_search_form-accordion div.crm-accordion-header a.helpicon').
             insertAfter('.civi-advanced-search-link-inner').
             css('float', 'right').
             css('position', 'relative');
@@ -294,7 +274,7 @@ cj( document ).ready( function( ) {
 {literal}
 <script type="text/javascript">
 cj(function() {
-   cj().crmaccordions(); 
+  cj().crmAccordions();
 });
 </script>
 {/literal}

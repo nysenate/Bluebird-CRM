@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -63,7 +63,7 @@
             </table>
         {/strip}
     {else}
-        <div class="messages status">
+        <div class="messages status no-popup">
            <div class="icon inform-icon"></div>&nbsp;
                  {ts}You are not registered for any current or upcoming Events.{/ts}
                
