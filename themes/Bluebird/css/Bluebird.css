@@ -1510,11 +1510,11 @@ div#crm-toolTip {
 .env-crmtest,
 .env-crmdev {
 	background:transparent url(../nyss_skin/images/env-marker-test.png) no-repeat;
-    bottom: 0;
-    right: 0;
-    position: fixed;
+  bottom: 0;
+  right: 0;
+  position: fixed;
 	height: 120px;
-    width: 120px;
+  width: 120px;
 	z-index: 2000;
 }
 .env-crmdev {
@@ -1523,11 +1523,10 @@ div#crm-toolTip {
 
 /*5092*/
 span.do-not-mail {
-    background-position: 3px;
-    background-repeat: no-repeat;
-    background-image: url("/sites/all/modules/civicrm/i/stop-icon.png");
-    padding-left: 24px;
-    color: #F65 !important;
+  background-position: 3px;
+  background-repeat: no-repeat;
+  background-image: url("/sites/all/modules/civicrm/i/stop-icon.png");
+  color: #F65 !important;
 }
 
 /*4963*/

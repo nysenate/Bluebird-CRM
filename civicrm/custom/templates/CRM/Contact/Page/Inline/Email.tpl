@@ -52,8 +52,8 @@
         <a href="mailto:{$item.email}">{$item.email}</a>{if $item.on_hold == 2}&nbsp;({ts}On Hold - Opt Out{/ts}){elseif $item.on_hold}&nbsp;({ts}On Hold{/ts}){/if}{if $item.is_bulkmail}&nbsp;({ts}Bulk{/ts}){/if}
          {if $emailMailing.$blockId.mailingID}
             {assign var=mid value=$emailMailing.$blockId.mailingID}
-            <a href="{crmURL p='civicrm/mailing/report/event' q="reset=1&event=bounce&mid=$mid"}" title="{ts}view bounce report{/ts}" target="_blank">{$item.hold_date|crmDate:"%m/%d/%Y"}</a>)
-          {else}{$item.hold_date|crmDate:"%m/%d/%Y"})
+            <a href="{crmURL p='civicrm/mailing/report/event' q="reset=1&event=bounce&mid=$mid"}" title="{ts}view bounce report{/ts}" target="_blank">{$item.hold_date|crmDate:"%m/%d/%Y"}</a>
+          {else}{$item.hold_date|crmDate:"%m/%d/%Y"}
           {/if}
         {if $item.signature_text OR $item.signature_html}
         <span class="signature-link description">

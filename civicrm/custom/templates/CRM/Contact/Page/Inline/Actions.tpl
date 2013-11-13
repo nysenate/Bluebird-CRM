@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,8 +25,8 @@
 *}
 {* this template is used for the dropdown menu of the "Actions" button on contacts. *}
 
-<div id="crm-contact-actions-wrapper">
-	<div id="crm-contact-actions-link"><span><div class="icon dropdown-icon"></div>{ts}Actions{/ts}</span></div>
+<div id="crm-contact-actions-wrapper" data-edit-params='{ldelim}"cid": "{$contactId}", "class_name": "CRM_Contact_Page_Inline_Actions"{rdelim}'>
+  <a id="crm-contact-actions-link" class="button"><span><div class="icon dropdown-icon"></div>{ts}Actions{/ts}</span></a>
 		<div class="ac_results" id="crm-contact-actions-list">
 			<div class="crm-contact-actions-list-inner">
 			  <div class="crm-contact_activities-list">
@@ -44,7 +44,7 @@
                         <a class="vcard " title="{ts}vCard record for this contact.{/ts}" href="{crmURL p='civicrm/contact/view/vcard' q="reset=1&cid=$contactId"}"><span><div class="icon vcard-icon"></div>{ts}vCard{/ts}</span>
                         </a>
                   </li>
-                 {if $dashboardURL }
+                 {if !empty($dashboardURL)}
                    <li class="crm-contact-dashboard">
                       <a href="{$dashboardURL}" class="dashboard " title="{ts}dashboard{/ts}">
                        	<span><div class="icon dashboard-icon"></div>{ts}Contact Dashboard{/ts}</span>
@@ -62,12 +62,12 @@
                  {*NYSS 4715*}
                  {* Check for permissions to provide Restore and Delete Permanently buttons for contacts that are in the trash. *}
                  {if call_user_func(array('CRM_Core_Permission','check'), 'delete contacts')}
-                     {assign var='deleteParams' value=$urlParams|cat:"&reset=1&delete=1&cid=$contactId"}
-                     <li class="crm-delete-action crm-contact-delete-action">
-                         <a href="{crmURL p='civicrm/contact/view/delete' q=$deleteParams}" class="delete" title="{ts}Delete{/ts}">
-                         <span><div class="icon delete-icon"></div>{ts}Delete Contact{/ts}</span>
-                         </a>
-                     </li>
+                   {assign var='deleteParams' value=$urlParams|cat:"&reset=1&delete=1&cid=$contactId"}
+                   <li class="crm-delete-action crm-contact-delete-action">
+                     <a href="{crmURL p='civicrm/contact/view/delete' q=$deleteParams}" class="delete" title="{ts}Delete{/ts}">
+                       <span><div class="icon delete-icon"></div>{ts}Delete Contact{/ts}</span>
+                     </a>
+                   </li>
                  {/if}
                  
 			  </ul>
@@ -92,22 +92,14 @@
 {literal}
 <script type="text/javascript">
 
-cj('body').click(function() {
-    cj('#crm-contact-actions-list').hide();
-});
-	
 cj('#crm-contact-actions-list').click(function(event){
     event.stopPropagation();
 });
 
-cj('#crm-contact-actions-list li').hover(
-	function(){ cj(this).addClass('ac_over');},
-	function(){ cj(this).removeClass('ac_over');}
-);
-
 cj('#crm-contact-actions-link').click(function(event) {
 	cj('#crm-contact-actions-list').toggle();
 	event.stopPropagation();
+  return false;
 });
 
 </script>
