@@ -61,8 +61,11 @@ $script_dir/dedupeSetup.sh $instance -r
 ## rebuild word replacement
 echo "rebuilding word replacement list..."
 sql="
-  ALTER TABLE civicrm_word_replacement DROP INDEX UI_find,
-  ADD INDEX UI_find (find_word) COMMENT  '';
+  ALTER TABLE civicrm_word_replacement DROP INDEX UI_find;
+"
+$execSql $instance -c "$sql" -q
+sql="
+  ALTER TABLE civicrm_word_replacement DROP INDEX UI_domain_find, ADD INDEX UI_domain_find (domain_id, find_word) COMMENT  '';
 "
 $execSql $instance -c "$sql" -q
 $execSql $instance -f $app_rootdir/scripts/sql/wordReplacement.sql -q
