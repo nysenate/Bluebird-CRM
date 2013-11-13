@@ -84,7 +84,7 @@ BBTree.startInstance({pullSets: [291, 296], buttonType: 'tagging', onSave: true}
 						    {if $k|is_numeric}
 							<tr class={cycle values="'odd-row','even-row'" name=$key} id="crm-tagRow{$k}">
 							    <td>
-			                   			<strong>{$it.html}</strong><br /> *}{*LCD retain for groups list*}{*
+			                   			<strong>{$it.html}</strong><br /> *}{*NYSS retain for groups list*}{*
 								{if $item.$k.description}
 								    <div class="description">
 									{$item.$k.description}

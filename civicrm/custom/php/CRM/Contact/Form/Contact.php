@@ -437,6 +437,7 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
         $className::setDefaultValues($this, $defaults);
       }
     }
+
     //set address block defaults
     CRM_Contact_Form_Edit_Address::setDefaultValues( $defaults, $this );
 
@@ -742,76 +743,6 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
    * @access public
    */
   public function buildQuickForm() {
-
-    //NYSS 5504 (Enhancement); limit to when a contact exists
-    if ( $this->_contactId ) {
-      require_once('CRM/Utils/Cache.php');
-      $cache = CRM_Utils_Cache::singleton();
-      $cacheKeyElements = "CRM_Contact_Form_Contact_elements_{$this->_contactId}";
-      $cacheKeyTagValues = "CRM_Contact_Form_Contact_tagValues_{$this->_contactId}";
-      $cacheElements = $cache->get($cacheKeyElements);
-      $cacheTagValues = $cache->get($cacheKeyTagValues);
-
-      // We're on the edit or save page, and it's not via ajax (_get['block'])
-      if( $cacheElements && $this->controller->isModal() && empty($_GET['block']) && !empty($_POST) ) {
-        // Load the classes for all of the QuickForm element types or else
-        // we'll get PHP Incomplete Class objects.
-        require_once('HTML/QuickForm.php');
-        foreach($GLOBALS['HTML_QUICKFORM_ELEMENT_TYPES'] as $elements) {
-          require_once($elements[0]);
-        }
-        // Load the elements and tag values out of cache and assign them
-        $cacheElements = unserialize($cacheElements);
-
-        //unset subrecords if deleted
-        $subTypes = array('email', 'phone', 'im', 'website');
-        $postEles = array();
-        foreach ( $subTypes as $st ) {
-          foreach ( $_POST[$st] as $fID => $fData ) {
-            $postEles[] = "{$st}[{$fID}]";
-          }
-        }
-        foreach ( $cacheElements as $eID => $ele ) {
-          $fldName = $ele->_attributes['name'];
-          $fldType = strstr($fldName, '[', TRUE);
-          if ( in_array($fldType, $subTypes) ) {
-            $fldTypeID = strstr($fldName, ']', TRUE).']';
-            if ( !in_array($fldTypeID, $postEles) ) {
-              unset($cacheElements[$eID]);
-            }
-          }
-        }
-
-        $this->_elements = $cacheElements;
-        if($cacheTagValues) {
-          $cacheTagValues = unserialize($cacheTagValues);
-          $this->_entityTagValues = $cacheTagValues;
-        }
-
-        // if(empty($_POST)) means we're on the edit page, not the save page
-        // so we need to build the form elements instead of just submitting it
-
-        if ( $this->_addBlockName ) {
-          require_once( str_replace('_', DIRECTORY_SEPARATOR, 'CRM_Contact_Form_Edit_' . $this->_addBlockName ) . '.php');
-          eval( 'CRM_Contact_Form_Edit_' . $this->_addBlockName . '::buildQuickForm( $this );' );
-        }
-        require_once(str_replace('_', DIRECTORY_SEPARATOR, 'CRM_Contact_Form_Edit_' . $this->_contactType) . '.php');
-        foreach( $this->_editOptions as $name => $label ) {
-          if ( $name == 'Address' ) {
-            $this->_blocks['Address'] = $this->_editOptions['Address'];
-            continue;
-          }
-          require_once(str_replace('_', DIRECTORY_SEPARATOR, 'CRM_Contact_Form_Edit_' . $name ) . '.php');
-          eval( 'CRM_Contact_Form_Edit_' . $name . '::buildQuickForm( $this );' );
-        }
-
-        // If it's a form (not a submission) then build the location quick form.
-        CRM_Contact_Form_Location::buildQuickForm( $this );
-
-        return;
-      }
-    }
-
     //load form for child blocks
     if ($this->_addBlockName) {
       $className = 'CRM_Contact_Form_Edit_' . $this->_addBlockName;
@@ -929,12 +860,6 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
     $this->assign('oldSubtypes', json_encode($this->_oldSubtypes));
 
     $this->addButtons($buttons);
-
-    //NYSS 6608
-    if ( $this->_contactId ) {
-      $cache->set($cacheKeyElements, serialize($this->_elements));
-      $cache->set($cacheKeyTagValues, serialize($this->_entityTagValues));
-    }
   }
 
   /**
@@ -1072,8 +997,7 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
     // Allow un-setting of location info, CRM-5969
     $params['updateBlankLocInfo'] = TRUE;
 
-    //NYSS 5263 - $fixAddress should always be false because the
-    //address will be updated later
+    //NYSS 5263 - $fixAddress should always be false because the address will be updated later
     $contact = CRM_Contact_BAO_Contact::create($params, FALSE, FALSE, TRUE);
 
     // status message
