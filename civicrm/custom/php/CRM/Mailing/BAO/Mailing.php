@@ -2911,9 +2911,9 @@ AND        m.id = %1
         CRM_Core_Permission::check('approve mailings') ||
         CRM_Core_Permission::check('access CiviMail')
       ) {
-      $contactMailings[$mailingId]['recipients'] = CRM_Utils_System::href(ts('(recipients)'), 'civicrm/mailing/report/event',
-        "mid={$values['mailing_id']}&reset=1&cid={$params['contact_id']}&event=queue&context=mailing");
-
+        $contactMailings[$mailingId]['recipients'] = CRM_Utils_System::href(ts('(recipients)'), 'civicrm/mailing/report/event',
+          "mid={$values['mailing_id']}&reset=1&cid={$params['contact_id']}&event=queue&context=mailing");
+      }
       $contactMailings[$mailingId]['mailing_creator'] = CRM_Utils_System::href(
         $values['creator_name'],
         'civicrm/contact/view',
