@@ -2911,10 +2911,17 @@ AND        m.id = %1
         CRM_Core_Permission::check('approve mailings') ||
         CRM_Core_Permission::check('access CiviMail')
       ) {
-        $contactMailings[$mailingId]['recipients'] = CRM_Utils_System::href(ts('(recipients)'),
-          'civicrm/mailing/report/event',
-          "mid={$values['mailing_id']}&reset=1&cid={$params['contact_id']}&event=delivered&context=mailing"
-        );
+      $contactMailings[$mailingId]['recipients'] = CRM_Utils_System::href(ts('(recipients)'), 'civicrm/mailing/report/event',
+        "mid={$values['mailing_id']}&reset=1&cid={$params['contact_id']}&event=queue&context=mailing");
+
+      $contactMailings[$mailingId]['mailing_creator'] = CRM_Utils_System::href(
+        $values['creator_name'],
+        'civicrm/contact/view',
+        "reset=1&cid={$values['creator_id']}");
+
+      //CRM-12814
+      $contactMailings[$mailingId]['openstats'] = ts('Opens') . ': ' . $openCounts[$values['mailing_id']] .
+        '<br />' . ts('Clicks') . ': ' . $clickCounts[$values['mailing_id']];
 
         $actionLinks = array(
           CRM_Core_Action::VIEW => array(
@@ -2931,16 +2938,6 @@ AND        m.id = %1
             'title' => ts('View Mailing Report'),
           )
         );
-      }
-      else {
-        $contactMailings[$mailingId]['recipients'] = '(recipients)';
-        $actionLinks = array();
-      }
-
-      $contactMailings[$mailingId]['mailing_creator'] = CRM_Utils_System::href(
-        $values['creator_name'],
-        'civicrm/contact/view',
-        "reset=1&cid={$values['creator_id']}");
 
       //NYSS 6698/6890
       $contactMailings[$mailingId]['openstats'] = "Opens: ".

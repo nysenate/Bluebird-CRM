@@ -504,6 +504,7 @@ class CRM_Contact_BAO_Query {
 
     $this->selectClause();
     $this->_whereClause = $this->whereClause();
+
     $this->_fromClause = self::fromClause($this->_tables, NULL, NULL, $this->_primaryLocation, $this->_mode, $forcePrimary);//NYSS
     $this->_simpleFromClause = self::fromClause($this->_whereTables, NULL, NULL, $this->_primaryLocation, $this->_mode, $forcePrimary);//NYSS
 
@@ -1850,8 +1851,8 @@ class CRM_Contact_BAO_Query {
     $locationType = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Address', 'location_type_id');
 
     if (substr($name, 0, 14) === 'state_province') {
-      $setTables = FALSE;
       if (isset($locType[1]) && is_numeric($locType[1])) {
+        $setTables = FALSE;
         $aName = "{$locationType[$locType[1]]}-address";
         $where = "`$aName`.state_province_id";
       }
@@ -1889,8 +1890,8 @@ class CRM_Contact_BAO_Query {
       }
     }
     elseif (substr($name, 0, 7) === 'country') {
-      $setTables = FALSE;
       if (isset($locType[1]) && is_numeric($locType[1])) {
+      $setTables = FALSE;
         $aName = "{$locationType[$locType[1]]}-address";
         $where = "`$aName`.country_id";
       }
@@ -1915,8 +1916,8 @@ class CRM_Contact_BAO_Query {
       }
     }
     elseif (substr($name, 0, 6) === 'county') {
-      $setTables = FALSE;
       if (isset($locType[1]) && is_numeric($locType[1])) {
+      $setTables = FALSE;
         $aName = "{$locationType[$locType[1]]}-address";
         $where = "`$aName`.county_id";
       }

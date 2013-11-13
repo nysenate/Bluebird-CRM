@@ -209,7 +209,6 @@ AND    TABLE_NAME LIKE 'log_civicrm_%'
       $this->fixSchemaDifferencesForALL();
     }
     // invoke the meta trigger creation call
-    //NYSS force column rebuild
     CRM_Core_DAO::triggerRebuild(NULL, TRUE);
   }
 
@@ -343,7 +342,6 @@ AND    TABLE_NAME LIKE 'log_civicrm_%'
   /**
    * Get an array of column names of the given table.
    */
-  //NYSS
   private function columnsOf($table, $force = FALSE) {
     static $columnsOf = array();
 
@@ -361,7 +359,6 @@ AND    TABLE_NAME LIKE 'log_civicrm_%'
         $columnsOf[$table][] = $dao->Field;
       }
     }
-    //CRM_Core_Error::debug_var("columnsOf[{$table}] (force = {$force})", $columnsOf[$table]);
 
     return $columnsOf[$table];
   }
@@ -418,7 +415,6 @@ WHERE  table_schema IN ('{$this->db}', '{$civiDB}')";
     // NOTE: we consider only those columns for modifications where there is a spec change, and that the column definition
     // wasn't deliberately modified by fixTimeStampAndNotNullSQL() method.
     foreach ($civiTableSpecs as $col => $colSpecs) {
-      //NYSS
       if ( !is_array($logTableSpecs[$col]) ) {
         $logTableSpecs[$col] = array();
       }

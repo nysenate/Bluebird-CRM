@@ -101,13 +101,11 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
       // TODO: for now, let's just fetch first row
       $defaults['assignee_contact'] = CRM_Activity_BAO_ActivityContact::retrieveContactIdsByActivityId($activity->id, $assigneeID);
       $assignee_contact_names = CRM_Activity_BAO_ActivityContact::getNames($activity->id, $assigneeID);
-
       $defaults['assignee_contact_value'] = implode('; ', $assignee_contact_names);
       $sourceContactId = self::getActivityContact($activity->id, $sourceID);
       if ($activity->activity_type_id != CRM_Core_OptionGroup::getValue('activity_type', 'Bulk Email', 'name')) {
         $defaults['target_contact'] = CRM_Activity_BAO_ActivityContact::retrieveContactIdsByActivityId($activity->id, $targetID);
         $target_contact_names = CRM_Activity_BAO_ActivityContact::getNames($activity->id, $targetID);
-
         $defaults['target_contact_value'] = implode('; ', $target_contact_names);
       }
       elseif (CRM_Core_Permission::check('access CiviMail') ||
@@ -2193,7 +2191,16 @@ AND cl.modified_id  = c.id
    */
   static function getProfileFields() {
     $exportableFields = self::exportableFields('Activity');
-    $skipFields = array('activity_id', 'activity_type', 'source_contact_id', 'activity_campaign', 'activity_is_test', 'is_current_revision', 'activity_is_deleted',);
+    $skipFields = array(
+      'activity_id',
+      'activity_type',
+      'source_contact_id',
+      'source_contact',
+      'activity_campaign',
+      'activity_is_test',
+      'is_current_revision',
+      'activity_is_deleted',
+    );
     $config = CRM_Core_Config::singleton();
     if (!in_array('CiviCampaign', $config->enableComponents)) {
       $skipFields[] = 'activity_engagement_level';

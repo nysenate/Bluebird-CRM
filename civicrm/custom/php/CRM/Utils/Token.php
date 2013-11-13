@@ -1089,8 +1089,6 @@ class CRM_Utils_Token {
 
     //get the total number of contacts to fetch from database.
     $numberofContacts = count($contactIDs);
-
-
     $query = new CRM_Contact_BAO_Query($params, $returnProperties);
 
     //NYSS 5873 allow modifying sort order so we can try to get primary email
@@ -1215,7 +1213,7 @@ class CRM_Utils_Token {
    * @param array $membershipIDs array of membership IDS
    */
   static function getMembershipTokenDetails($membershipIDs) {
-    $memberships = civicrm_api3('membership', 'get', array('membership_id' => array('IN' => (array) $membershipIDs)));
+    $memberships = civicrm_api3('membership', 'get', array('options' => array('limit' => 200000), 'membership_id' => array('IN' => (array) $membershipIDs)));
     return $memberships['values'];
   }
   /**
