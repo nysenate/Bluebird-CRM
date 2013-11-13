@@ -12,12 +12,15 @@
 # Revised: 2013-07-12 - Major interface change: removed -i option, added -n
 # Revised: 2013-10-17 - Added ability to skip tables when dumping a db
 # Revised: 2013-11-01 - Added --login-path to support MySQL 5.6 logins
+# Revised: 2013-11-13 - mysql/mysqldump need --login-path first
+#                     - using MYSQL_TEST_LOGIN_PATH to set mylogin.cnf location
 #
 
 prog=`basename $0`
 script_dir=`dirname $0`
 readConfig=$script_dir/readConfig.sh
 DEFAULT_MYSQL_ARGS="--batch --raw"
+export MYSQL_TEST_LOGIN_FILE=/etc/mysql/bluebird_mylogin.cnf
 
 . $script_dir/defaults.sh
 
@@ -98,6 +101,10 @@ if [ "$instance" ]; then
   dbname="$db_prefix$db_basename"
 fi
  
+# The login-path value is read from the config file, since it is safe.
+# The other login values, such as host, user, and password, are no longer
+# read from the config file, since mysql clients do not support using them
+# on the command line.
 [ "$dbloginpath" ] || dbloginpath=`$readConfig $ig_opt db.login_path` || dbloginpath=$DEFAULT_DB_LOGIN_PATH
 
 common_args=
@@ -115,7 +122,7 @@ if [ $dump_db -eq 1 ]; then
       ignore_tabs_arg="$ignore_tabs_arg --ignore-table $dbname.$tab"
     done
   fi
-  mysqldump -R $common_args $ignore_tabs_arg $dbname $dump_tabs
+  mysqldump $common_args $ignore_tabs_arg --routines $dbname $dump_tabs
 elif [ $create_db -eq 1 ]; then
   if [ ! "$dbname" ]; then
     echo "$prog: Cannot create a database without specifying its name or instance." >&2
