@@ -43,8 +43,7 @@
 </table>
 <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl"}</div>
 
-{*NYSS 5885 default open*}
-<div class="crm-accordion-wrapper crm-plain_text_email-accordion crm-accordion-open">
+<div class="crm-accordion-wrapper crm-plain_text_email-accordion collapsed">
     <div class="crm-accordion-header">
         {ts}Preview Mailing{/ts}
     </div><!-- /.crm-accordion-header -->
@@ -66,8 +65,11 @@
 {literal}
 <script type="text/javascript">
 cj(function() {
-   cj().crmAccordions();
-   $('iframe').iframeAutoHeight({heightOffset: 20});//NYSS
+  cj().crmAccordions();
+  $('iframe').iframeAutoHeight({heightOffset: 20});//NYSS
+
+  //NYSS 5885 default open
+  cj('div.crm-plain_text_email-accordion').removeClass('collapsed');
 });
 </script>
 {/literal}
