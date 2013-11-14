@@ -1,11 +1,10 @@
 <?php
-// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -81,11 +80,6 @@ class CRM_Report_Form_Case_TimeSpent extends CRM_Report_Form {
         'dao' => 'CRM_Activity_DAO_Activity',
         'fields' =>
         array(
-          'source_contact_id' =>
-          array('title' => ts('Contact ID'),
-            'default' => TRUE,
-            'no_display' => TRUE,
-          ),
           'activity_type_id' =>
           array('title' => ts('Activity Type'),
             'default' => TRUE,
@@ -136,13 +130,6 @@ class CRM_Report_Form_Case_TimeSpent extends CRM_Report_Form {
             'options' => $this->activityStatuses,
           ),
         ),
-        'group_bys' =>
-        array(
-          'source_contact_id' =>
-          array('title' => ts('Totals Only'),
-            'default' => TRUE,
-          ),
-        ),
         //NYSS 4936
         'order_bys'  =>
         array(
@@ -164,6 +151,27 @@ class CRM_Report_Form_Case_TimeSpent extends CRM_Report_Form {
           ),
         ),
         'grouping'  => 'case-fields',
+      ),
+      'civicrm_activity_source' =>
+        array(
+          'dao' => 'CRM_Activity_DAO_ActivityContact',
+          'fields' =>
+          array(
+            'contact_id' =>
+            array(
+              'title' => ts('Contact ID'),
+              'default' => TRUE,
+              'no_display' => TRUE,
+            ),
+          ),
+          'group_bys' =>
+          array(
+            'contact_id' =>
+            array('title' => ts('Totals Only'),
+              'default' => TRUE,
+            ),
+          ),
+        'grouping' => 'activity-fields',
       ),
       'civicrm_case_activity' =>
       array(
@@ -242,9 +250,10 @@ class CRM_Report_Form_Case_TimeSpent extends CRM_Report_Form {
 
     $this->_from = "
         FROM civicrm_activity {$this->_aliases['civicrm_activity']}
-        
+             LEFT JOIN civicrm_activity_contact {$this->_aliases['civicrm_activity_source']}
+                    ON {$this->_aliases['civicrm_activity']}.id = {$this->_aliases['civicrm_activity_source']}.activity_id
              LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
-                    ON {$this->_aliases['civicrm_activity']}.source_contact_id = {$this->_aliases['civicrm_contact']}.id 
+                    ON {$this->_aliases['civicrm_activity_source']}.contact_id = {$this->_aliases['civicrm_contact']}.id
              LEFT JOIN civicrm_case_activity {$this->_aliases['civicrm_case_activity']}
                     ON {$this->_aliases['civicrm_case_activity']}.activity_id = {$this->_aliases['civicrm_activity']}.id
 ";
@@ -327,8 +336,7 @@ GROUP BY {$this->_aliases['civicrm_contact']}.id,
     parent::postProcess();
   }
 
-  static
-  function formRule($fields, $files, $self) {
+  static function formRule($fields, $files, $self) {
     $errors = array();
     if (!empty($fields['group_bys']) &&
       (!array_key_exists('id', $fields['fields']) || !array_key_exists('activity_date_time', $fields['fields']) || !array_key_exists('duration', $fields['fields']))

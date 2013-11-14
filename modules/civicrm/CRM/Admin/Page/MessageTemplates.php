@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -50,7 +50,9 @@ class CRM_Admin_Page_MessageTemplates extends CRM_Core_Page_Basic {
   protected $_revertible = array();
 
   // set to the id that we’re reverting at the given moment (if we are)
-  protected $_revertedId; function __construct($title = NULL, $mode = NULL) {
+  protected $_revertedId;
+
+  function __construct($title = NULL, $mode = NULL) {
     parent::__construct($title, $mode);
 
     // fetch the ids of templates which diverted from defaults and can be reverted –
@@ -78,7 +80,7 @@ class CRM_Admin_Page_MessageTemplates extends CRM_Core_Page_Basic {
    * @return string Classname of BAO.
    */
   function getBAOName() {
-    return 'CRM_Core_BAO_MessageTemplates';
+    return 'CRM_Core_BAO_MessageTemplate';
   }
 
   /**
@@ -98,13 +100,13 @@ class CRM_Admin_Page_MessageTemplates extends CRM_Core_Page_Basic {
         ),
         CRM_Core_Action::DISABLE => array(
           'name' => ts('Disable'),
-          'extra' => 'onclick = "enableDisable( %%id%%,\'' . 'CRM_Core_BAO_MessageTemplates' . '\',\'' . 'enable-disable' . '\' );"',
+          'extra' => 'onclick = "enableDisable( %%id%%,\'' . 'CRM_Core_BAO_MessageTemplate' . '\',\'' . 'enable-disable' . '\' );"',
           'ref' => 'disable-action',
           'title' => ts('Disable this message template'),
         ),
         CRM_Core_Action::ENABLE => array(
           'name' => ts('Enable'),
-          'extra' => 'onclick = "enableDisable( %%id%%,\'' . 'CRM_Core_BAO_MessageTemplates' . '\',\'' . 'disable-enable' . '\' );"',
+          'extra' => 'onclick = "enableDisable( %%id%%,\'' . 'CRM_Core_BAO_MessageTemplate' . '\',\'' . 'disable-enable' . '\' );"',
           'ref' => 'enable-action',
           'title' => ts('Enable this message template'),
         ),
@@ -173,7 +175,7 @@ class CRM_Admin_Page_MessageTemplates extends CRM_Core_Page_Basic {
 
       $this->_revertedId = $id;
 
-      CRM_Core_BAO_MessageTemplates::revert($id);
+      CRM_Core_BAO_MessageTemplate::revert($id);
     }
 
     $this->assign('selectedChild', CRM_Utils_Request::retrieve('selectedChild', 'String', $this));
@@ -236,7 +238,7 @@ class CRM_Admin_Page_MessageTemplates extends CRM_Core_Page_Basic {
       $action -= CRM_Core_Action::ENABLE;
     }
 
-    $messageTemplate = new CRM_Core_BAO_MessageTemplates();
+    $messageTemplate = new CRM_Core_BAO_MessageTemplate();
     $messageTemplate->orderBy('msg_title' . ' asc');
 
     $userTemplates = array();

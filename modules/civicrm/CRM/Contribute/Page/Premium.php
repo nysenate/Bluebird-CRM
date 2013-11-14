@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -169,6 +169,10 @@ class CRM_Contribute_Page_Premium extends CRM_Core_Page_Basic {
         $premiums[$dao->product_id]['action'] = CRM_Core_Action::formLink(self::links(), $action,
           array('id' => $pageID, 'pid' => $dao->id)
         );
+        //Financial Type
+        if (!empty($dao->financial_type_id)) {
+          $premiums[$productDAO->id]['financial_type_id'] = CRM_Core_DAO::getFieldValue( 'CRM_Financial_DAO_FinancialType', $dao->financial_type_id, 'name' );
+        }
       }
     }
 

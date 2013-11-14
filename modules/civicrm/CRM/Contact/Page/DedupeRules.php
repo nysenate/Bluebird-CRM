@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -59,7 +59,6 @@ class CRM_Contact_Page_DedupeRules extends CRM_Core_Page_Basic {
   function &links() {
     if (!(self::$_links)) {
       $deleteExtra = ts('Are you sure you want to delete this Rule?');
-      $defaultExtra = ts('Are you sure you want to make this Rule default?');
 
       // helper variable for nicer formatting
       $links = array();
@@ -78,13 +77,6 @@ class CRM_Contact_Page_DedupeRules extends CRM_Core_Page_Basic {
           'url' => 'civicrm/contact/deduperules',
           'qs' => 'action=update&id=%%id%%',
           'title' => ts('Edit DedupeRule'),
-        );
-        $links[CRM_Core_Action::MAP] = array(
-          'name' => ts('Make Default'),
-          'url' => 'civicrm/contact/deduperules',
-          'qs' => 'action=map&id=%%id%%',
-          'extra' => 'onclick = "return confirm(\'' . $defaultExtra . '\');"',
-          'title' => ts('Default DedupeRule'),
         );
         $links[CRM_Core_Action::DELETE] = array(
           'name' => ts('Delete'),
@@ -121,7 +113,7 @@ class CRM_Contact_Page_DedupeRules extends CRM_Core_Page_Basic {
 
     $context = CRM_Utils_Request::retrieve('context', 'String', $this, FALSE);
     if ($context == 'nonDupe') {
-      CRM_Core_Session::setStatus(ts('Selected contacts have been marked as not duplicates'));
+      CRM_Core_Session::setStatus(ts('Selected contacts have been marked as not duplicates'), ts('Changes Saved'), 'success');
     }
 
     // assign permissions vars to template
@@ -134,15 +126,6 @@ class CRM_Contact_Page_DedupeRules extends CRM_Core_Page_Basic {
     }
     if ($action & CRM_Core_Action::DELETE) {
       $this->delete($id);
-    }
-    if ($action & CRM_Core_Action::MAP) {
-      $rgDao = new CRM_Dedupe_DAO_RuleGroup();
-      $rgDao->id = $id;
-      $rgDao->find(TRUE);
-      $rgDao->is_default = 1;
-      $query = "UPDATE civicrm_dedupe_rule_group SET is_default = 0 WHERE contact_type = '{$rgDao->contact_type}' AND LEVEL = '{$rgDao->level}'";
-      CRM_Core_DAO::executeQuery($query, CRM_Core_DAO::$_nullArray);
-      $rgDao->save();
     }
 
     // browse the rules
@@ -162,29 +145,30 @@ class CRM_Contact_Page_DedupeRules extends CRM_Core_Page_Basic {
     // get all rule groups
     $ruleGroups = array();
     $dao = new CRM_Dedupe_DAO_RuleGroup();
-    $dao->orderBy('contact_type,level,is_default DESC');
+    $dao->orderBy('contact_type,used ASC');
     $dao->find();
 
     while ($dao->fetch()) {
-      $ruleGroups[$dao->id] = array();
-      CRM_Core_DAO::storeValues($dao, $ruleGroups[$dao->id]);
+      $ruleGroups[$dao->contact_type][$dao->id] = array();
+      CRM_Core_DAO::storeValues($dao, $ruleGroups[$dao->contact_type][$dao->id]);
 
       // form all action links
       $action = array_sum(array_keys($this->links()));
       $links = self::links();
-      if ($dao->is_default) {
+      /* if ($dao->is_default) {
         unset($links[CRM_Core_Action::MAP]);
         unset($links[CRM_Core_Action::DELETE]);
-      }
+        }*/
 
       if ($dao->is_reserved) {
         unset($links[CRM_Core_Action::DELETE]);
       }
 
-      $ruleGroups[$dao->id]['action'] = CRM_Core_Action::formLink($links, $action, array('id' => $dao->id));
-      CRM_Dedupe_DAO_RuleGroup::addDisplayEnums($ruleGroups[$dao->id]);
+      $ruleGroups[$dao->contact_type][$dao->id]['action'] = CRM_Core_Action::formLink($links, $action, array('id' => $dao->id));
+      CRM_Dedupe_DAO_RuleGroup::addDisplayEnums($ruleGroups[$dao->contact_type][$dao->id]);
     }
-    $this->assign('rows', $ruleGroups);
+
+    $this->assign('brows', $ruleGroups);
   }
 
   /**

@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id: $
  *
  */
@@ -46,8 +46,7 @@ class CRM_Utils_File {
    * @return boolean     true if file is ascii
    * @access public
    */
-  static
-  function isAscii($name) {
+  static function isAscii($name) {
     $fd = fopen($name, "r");
     if (!$fd) {
       return FALSE;
@@ -74,8 +73,7 @@ class CRM_Utils_File {
    * @return boolean     true if file is html
    * @access public
    */
-  static
-  function isHtml($name) {
+  static function isHtml($name) {
     $fd = fopen($name, "r");
     if (!$fd) {
       return FALSE;
@@ -107,8 +105,7 @@ class CRM_Utils_File {
    * @access public
    * @static
    */
-  static
-  function createDir($path, $abort = TRUE) {
+  static function createDir($path, $abort = TRUE) {
     if (is_dir($path) || empty($path)) {
       return;
     }
@@ -138,7 +135,7 @@ class CRM_Utils_File {
    * @access public
    * @static
    */
-  public static function cleanDir($target, $rmdir = TRUE, $verbose = TRUE) {
+  static function cleanDir($target, $rmdir = TRUE, $verbose = TRUE) {
     static $exceptions = array('.', '..');
     if ($target == '' || $target == '/') {
       throw new Exception("Overly broad deletion");
@@ -150,33 +147,32 @@ class CRM_Utils_File {
           $object = $target . DIRECTORY_SEPARATOR . $sibling;
 
           if (is_dir($object)) {
-            CRM_Utils_File::cleanDir($object, $rmdir);
+            CRM_Utils_File::cleanDir($object, $rmdir, $verbose);
           }
           elseif (is_file($object)) {
             if (!unlink($object)) {
-              CRM_Core_Session::setStatus(ts('Unable to remove file %1', array(1 => $object)) . '<br/>');
-            }
+              CRM_Core_Session::setStatus(ts('Unable to remove file %1', array(1 => $object)), ts('Warning'), 'error');
           }
         }
+      }
       }
       closedir($sourcedir);
 
       if ($rmdir) {
         if (rmdir($target)) {
           if ($verbose) {
-            CRM_Core_Session::setStatus(ts('Removed directory %1', array(1 => $target)) . '<br/>');
+            CRM_Core_Session::setStatus(ts('Removed directory %1', array(1 => $target)), '', 'success');
           }
           return TRUE;
-        }
-        else {
-          CRM_Core_Session::setStatus(ts('Unable to remove directory %1', array(1 => $target)) . '<br/>');
-        }
       }
+        else {
+          CRM_Core_Session::setStatus(ts('Unable to remove directory %1', array(1 => $target)), ts('Warning'), 'error');
+    }
+  }
     }
   }
 
-  public function copyDir($source, $destination) {
-
+  static function copyDir($source, $destination) {
     $dir = opendir($source);
     @mkdir($destination);
     while (FALSE !== ($file = readdir($dir))) {
@@ -200,8 +196,7 @@ class CRM_Utils_File {
    * @return boolean  whether the file was recoded properly
    * @access public
    */
-  static
-  function toUtf8($name) {
+  static function toUtf8($name) {
     static $config = NULL;
     static $legacyEncoding = NULL;
     if ($config == NULL) {
@@ -246,8 +241,7 @@ class CRM_Utils_File {
    * @access public
    * @static
    */
-  static
-  function addTrailingSlash($name, $separator = NULL) {
+  static function addTrailingSlash($name, $separator = NULL) {
     if (!$separator) {
       $separator = DIRECTORY_SEPARATOR;
     }
@@ -258,12 +252,15 @@ class CRM_Utils_File {
     return $name;
   }
 
-  function sourceSQLFile($dsn, $fileName, $prefix = NULL, $isQueryString = FALSE, $dieOnErrors = TRUE) {
+  static function sourceSQLFile($dsn, $fileName, $prefix = NULL, $isQueryString = FALSE, $dieOnErrors = TRUE) {
     require_once 'DB.php';
 
     $db = DB::connect($dsn);
     if (PEAR::isError($db)) {
       die("Cannot open $dsn: " . $db->getMessage());
+    }
+    if (CRM_Utils_Constant::value('CIVICRM_MYSQL_STRICT', CRM_Utils_System::isDevelopment())) {
+      $db->query('SET SESSION sql_mode = STRICT_TRANS_TABLES');
     }
 
     if (!$isQueryString) {
@@ -297,8 +294,7 @@ class CRM_Utils_File {
     }
   }
 
-  static
-  function isExtensionSafe($ext) {
+  static function isExtensionSafe($ext) {
     static $extensions = NULL;
     if (!$extensions) {
       $extensions = CRM_Core_OptionGroup::values('safe_file_extension', TRUE);
@@ -328,8 +324,7 @@ class CRM_Utils_File {
    *
    * @return boolean  whether the file can be include()d or require()d
    */
-  static
-  function isIncludable($name) {
+  static function isIncludable($name) {
     $x = @fopen($name, 'r', TRUE);
     if ($x) {
       fclose($x);
@@ -344,15 +339,13 @@ class CRM_Utils_File {
    * remove the 32 bit md5 we add to the fileName
    * also remove the unknown tag if we added it
    */
-  static
-  function cleanFileName($name) {
+  static function cleanFileName($name) {
     // replace the last 33 character before the '.' with null
     $name = preg_replace('/(_[\w]{32})\./', '.', $name);
     return $name;
   }
 
-  static
-  function makeFileName($name) {
+  static function makeFileName($name) {
     $uniqID   = md5(uniqid(rand(), TRUE));
     $info     = pathinfo($name);
     $basename = substr($info['basename'],
@@ -369,8 +362,7 @@ class CRM_Utils_File {
     }
   }
 
-  static
-  function getFilesByExtension($path, $ext) {
+  static function getFilesByExtension($path, $ext) {
     $path  = self::addTrailingSlash($path);
     $dh    = opendir($path);
     $files = array();
@@ -388,8 +380,7 @@ class CRM_Utils_File {
    *
    * @param string $dir  the directory to be secured
    */
-  static
-  function restrictAccess($dir) {
+  static function restrictAccess($dir) {
     // note: empty value for $dir can play havoc, since that might result in putting '.htaccess' to root dir
     // of site, causing site to stop functioning.
     // FIXME: we should do more checks here -
@@ -412,8 +403,7 @@ HTACCESS;
    * Create the base file path from which all our internal directories are
    * offset. This is derived from the template compile directory set
    */
-  static
-  function baseFilePath($templateCompileDir = NULL) {
+  static function baseFilePath($templateCompileDir = NULL) {
     static $_path = NULL;
     if (!$_path) {
       if ($templateCompileDir == NULL) {
@@ -437,8 +427,7 @@ HTACCESS;
     return $_path;
   }
 
-  static
-  function relativeDirectory($directory) {
+  static function relativeDirectory($directory) {
     // Do nothing on windows
     if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
       return $directory;
@@ -461,8 +450,7 @@ HTACCESS;
     return $directory;
   }
 
-  static
-  function absoluteDirectory($directory) {
+  static function absoluteDirectory($directory) {
     // Do nothing on windows - config will need to specify absolute path
     if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
       return $directory;
@@ -480,6 +468,19 @@ HTACCESS;
   }
 
   /**
+   * Make a file path relative to some base dir
+   *
+   * @return string
+   */
+  static function relativize($directory, $basePath) {
+    if (substr($directory, 0, strlen($basePath)) == $basePath) {
+      return substr($directory, strlen($basePath));
+    } else {
+      return $directory;
+    }
+  }
+
+  /**
    * Create a path to a temporary file which can endure for multiple requests
    *
    * TODO: Automatic file cleanup using, eg, TTL policy
@@ -489,8 +490,7 @@ HTACCESS;
    * @return string, path to an openable/writable file
    * @see tempnam
    */
-  static
-  function tempnam($prefix = 'tmp-') {
+  static function tempnam($prefix = 'tmp-') {
     //$config = CRM_Core_Config::singleton();
     //$nonce = md5(uniqid() . $config->dsn . $config->userFrameworkResourceURL);
     //$fileName = "{$config->configAndLogDir}" . $prefix . $nonce . $suffix;
@@ -513,6 +513,96 @@ HTACCESS;
     unlink($fileName);
     mkdir($fileName, 0700);
     return $fileName . '/';
+  }
+
+  /**
+   * Search directory tree for files which match a glob pattern.
+   *
+   * Note: Dot-directories (like "..", ".git", or ".svn") will be ignored.
+   *
+   * @param $dir string, base dir
+   * @param $pattern string, glob pattern, eg "*.txt"
+   * @return array(string)
+   */
+  static function findFiles($dir, $pattern) {
+    $todos = array($dir);
+    $result = array();
+    while (!empty($todos)) {
+      $subdir = array_shift($todos);
+      $matches = glob("$subdir/$pattern");
+      if (is_array($matches)) {
+        foreach ($matches as $match) {
+          if (!is_dir($match)) {
+            $result[] = $match;
+          }
+        }
+      }
+      $dh = opendir($subdir);
+      if ($dh) {
+        while (FALSE !== ($entry = readdir($dh))) {
+          $path = $subdir . DIRECTORY_SEPARATOR . $entry;
+          if ($entry{0} == '.') {
+            // ignore
+          } elseif (is_dir($path)) {
+            $todos[] = $path;
+          }
+        }
+        closedir($dh);
+      }
+    }
+    return $result;
+  }
+
+  /**
+   * Determine if $child is a sub-directory of $parent
+   *
+   * @param string $parent
+   * @param string $child
+   * @return bool
+   */
+  static function isChildPath($parent, $child, $checkRealPath = TRUE) {
+    if ($checkRealPath) {
+      $parent = realpath($parent);
+      $child = realpath($child);
+    }
+    $parentParts = explode('/', rtrim($parent, '/'));
+    $childParts = explode('/', rtrim($child, '/'));
+    while (($parentPart = array_shift($parentParts)) !== NULL) {
+      $childPart = array_shift($childParts);
+      if ($parentPart != $childPart) {
+        return FALSE;
+      }
+    }
+    if (empty($childParts)) {
+      return FALSE; // same directory
+    } else {
+      return TRUE;
+    }
+  }
+
+  /**
+   * Move $fromDir to $toDir, replacing/deleting any
+   * pre-existing content.
+   *
+   * @param string $fromDir the directory which should be moved
+   * @param string $toDir the new location of the directory
+   * @return bool TRUE on success
+   */
+  static function replaceDir($fromDir, $toDir, $verbose = FALSE) {
+    if (is_dir($toDir)) {
+      if (!self::cleanDir($toDir, TRUE, $verbose)) {
+        return FALSE;
+      }
+    }
+
+    // return rename($fromDir, $toDir); // CRM-11987, https://bugs.php.net/bug.php?id=54097
+
+    CRM_Utils_File::copyDir($fromDir, $toDir);
+    if (!CRM_Utils_File::cleanDir($fromDir, TRUE, FALSE)) {
+       CRM_Core_Session::setStatus(ts('Failed to clean temp dir: %1', array(1 => $fromDir)), '', 'alert');
+      return FALSE;
+    }
+    return TRUE;
   }
 }
 

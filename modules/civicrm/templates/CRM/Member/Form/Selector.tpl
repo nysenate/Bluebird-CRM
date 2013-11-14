@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -31,7 +31,7 @@
 <table class="selector">
 <thead class="sticky">
 {if ! $single and $context eq 'Search' }
-  <th scope="col" title="Select Rows">{$form.toggleSelect.html}</th> 
+  <th scope="col" title="Select Rows">{$form.toggleSelect.html}</th>
 {/if}
   {foreach from=$columnHeaders item=header}
     <th scope="col">
@@ -49,14 +49,14 @@
   {foreach from=$rows item=row}
   <tr id='rowid{$row.membership_id}' class="{cycle values="odd-row,even-row"} {*if $row.cancel_date} disabled{/if*} crm-membership_{$row.membership_id}">
      {if ! $single }
-       {if $context eq 'Search' }       
+       {if $context eq 'Search' }
           {assign var=cbName value=$row.checkbox}
-          <td>{$form.$cbName.html}</td> 
+          <td>{$form.$cbName.html}</td>
        {/if}
        <td>{$row.contact_type}</td>
        <td>
             <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`"}" title="{ts}View contact record{/ts}">{$row.sort_name}</a>
-        </td> 
+        </td>
     {/if}
     <td class="crm-membership-type crm-membership-type_{$row.membership_type}">
         {$row.membership_type}
@@ -71,7 +71,7 @@
     <td>
         {$row.action|replace:'xx':$row.membership_id}
         {if $row.owner_membership_id}
-            &nbsp;|&nbsp;<a href="{crmURL p='civicrm/membership/view' q="reset=1&id=`$row.owner_membership_id`&action=view&context=search"}" title="{ts}View Primary member record{/ts}">{ts}View Primary{/ts}</a>
+            <a href="{crmURL p='civicrm/membership/view' q="reset=1&id=`$row.owner_membership_id`&action=view&context=search"}" title="{ts}View Primary member record{/ts}" class="action-item">{ts}View Primary{/ts}</a>
         {/if}
     </td>
    </tr>
@@ -93,7 +93,7 @@
 {if $context EQ 'Search'}
  <script type="text/javascript">
  {* this function is called to change the color of selected row(s) *}
-    var fname = "{$form.formName}";	
+    var fname = "{$form.formName}";
     on_load_init_checkboxes(fname);
  </script>
 {/if}

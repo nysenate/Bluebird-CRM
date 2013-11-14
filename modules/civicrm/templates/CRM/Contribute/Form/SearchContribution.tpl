@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -35,9 +35,9 @@
         </td>
         
         <td>
-            <label>{ts}Contribution Type{/ts}</label>
+            <label>{ts}Financial Type{/ts}</label>
             <div class="listing-box">
-                {foreach from=$form.contribution_type_id item="contribution_val"}
+                {foreach from=$form.financial_type_id item="contribution_val"}
                 <div class="{cycle values="odd-row,even-row"}">
                      {$contribution_val.html}
                   </div>

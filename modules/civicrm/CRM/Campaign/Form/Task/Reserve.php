@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -72,7 +72,8 @@ class CRM_Campaign_Form_Task_Reserve extends CRM_Campaign_Form_Task {
    *
    * @return void
    * @access public
-   */ function preProcess() {
+   */
+  function preProcess() {
     parent::preProcess();
 
     //get the survey id from user submitted values.
@@ -112,6 +113,8 @@ class CRM_Campaign_Form_Task_Reserve extends CRM_Campaign_Form_Task {
     //validate the selected survey.
     $this->validateSurvey();
     $this->assign('surveyTitle', $this->_surveyDetails['title']);
+    $this->assign('activityType', $this->_surveyDetails['activity_type_id']);
+    $this->assign('surveyId', $this->_surveyId);
 
     //append breadcrumb to survey dashboard.
     if (CRM_Campaign_BAO_Campaign::accessCampaign()) {
@@ -158,6 +161,7 @@ class CRM_Campaign_Form_Task_Reserve extends CRM_Campaign_Form_Task {
    */
   function buildQuickForm() {
     // allow to add contact to either new or existing group.
+    $this->addElement('text', 'ActivityType', ts('Activity Type'));
     $this->addElement('text', 'newGroupName', ts('Name for new group'));
     $this->addElement('text', 'newGroupDesc', ts('Description of new group'));
     $groups = CRM_Core_PseudoConstant::group();
@@ -205,8 +209,7 @@ class CRM_Campaign_Form_Task_Reserve extends CRM_Campaign_Form_Task {
    * @static
    * @access public
    */
-  static
-  function formRule($fields, $files, $self) {
+  static function formRule($fields, $files, $self) {
     $errors = array();
     $invalidGroupName = FALSE;
     if (CRM_Utils_Array::value('newGroupName', $fields)) {
@@ -265,26 +268,24 @@ class CRM_Campaign_Form_Task_Reserve extends CRM_Campaign_Form_Task {
       }
     }
 
-    $status = array();
-    if ($countVoters > 0) {
-      $status[] = ts('Reservation has been added for %1 Contact(s).', array(1 => $countVoters));
-    }
-    if (count($this->_contactIds) > $countVoters) {
-      $status[] = ts('Reservation did not add for %1 Contact(s).',
-        array(1 => (count($this->_contactIds) - $countVoters))
-      );
-    }
-
     //add reserved voters to groups.
     $groupAdditions = $this->_addRespondentToGroup($reservedVoterIds);
-    if (!empty($groupAdditions)) {
-      $status[] = ts('<br />Respondent(s) has been added to %1 group(s).',
-        array(1 => implode(', ', $groupAdditions))
-      );
-    }
 
-    if (!empty($status)) {
-      CRM_Core_Session::setStatus(implode('&nbsp;&nbsp;', $status));
+    // Success message
+    if ($countVoters > 0) {
+      $status = '<p>' . ts("%1 Contact(s) have been reserved.", array(1 => $countVoters)) . '</p>';
+      if ($groupAdditions) {
+        $status .= '<p>' . ts('Respondent(s) has been added to %1 group(s).',
+          array(1 => implode(', ', $groupAdditions))
+        ) . '</p>';
+      }
+      CRM_Core_Session::setStatus($status, ts('Reservation Added'), 'success');
+    }
+    // Error message
+    if (count($this->_contactIds) > $countVoters) {
+      CRM_Core_Session::setStatus(ts('Reservation did not add for %1 contact(s).',
+        array(1 => (count($this->_contactIds) - $countVoters))
+      ), ts('Notice'));
     }
 
     //get ready to jump to voter interview form.

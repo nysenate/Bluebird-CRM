@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -42,7 +42,7 @@
        {/foreach}
        </table>
      {else}
-     <div class="messages status">	
+     <div class="messages status no-popup">
       <div class="icon inform-icon"></div> &nbsp;
       {ts}No modifications have been logged for this contact.{/ts}
      </div>	
@@ -71,7 +71,6 @@
     });
   });
 
-  //NYSS 5719
   cj('div#changeLog div#instance_data .report-pager .crm-pager-nav a').live("click", function(e) {
     cj.ajax({
       url: this.href + '&snippet=4&section=2',

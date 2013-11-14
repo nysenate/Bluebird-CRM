@@ -1,11 +1,10 @@
 <?php
-// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -34,7 +33,7 @@
  * @package CiviCRM_APIv3
  * @subpackage API_Event
  *
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * @version $Id: Event.php 30964 2010-11-29 09:41:54Z shot $
  *
  */
@@ -42,7 +41,6 @@
 /**
  * Files required for this package
  */
-require_once 'CRM/Event/BAO/Event.php';
 
 /**
  * Create a Event
@@ -57,31 +55,45 @@ require_once 'CRM/Event/BAO/Event.php';
  * @access public
  */
 function civicrm_api3_event_create($params) {
+  civicrm_api3_verify_one_mandatory($params, NULL, array('event_type_id', 'template_id'));
+
+  // Clone event from template
+  if (!empty($params['template_id']) && empty($params['id'])) {
+    $copy = CRM_Event_BAO_Event::copy($params['template_id']);
+    $params['id'] = $copy->id;
+    unset($params['template_id']);
+    if (empty($params['is_template'])) {
+      $params['is_template'] = 0;
+    }
+  }
 
   _civicrm_api3_event_create_legacy_support_42($params);
+
   //format custom fields so they can be added
-  $value = array();
+  $values = array();
   _civicrm_api3_custom_format_params($params, $values, 'Event');
   $params = array_merge($values, $params);
-  require_once 'CRM/Event/BAO/Event.php';
 
   $eventBAO = CRM_Event_BAO_Event::create($params);
   $event = array();
   _civicrm_api3_object_to_array($eventBAO, $event[$eventBAO->id]);
   return civicrm_api3_create_success($event, $params);
 }
-/*
+
+/**
  * Adjust Metadata for Create action
  *
  * The metadata is used for setting defaults, documentation & validation
  * @param array $params array or parameters determined by getfields
  */
 function _civicrm_api3_event_create_spec(&$params) {
-  $params['event_type_id']['api.required'] = 1;;
   $params['start_date']['api.required'] = 1;
   $params['title']['api.required'] = 1;
+  $params['is_active']['api.default'] = 1;
+  $params['financial_type_id']['api.aliases'] = array('contribution_type_id');
 }
-/*
+
+/**
  * Support for schema changes made in 4.2
  * The main purpose of the API is to provide integrators a level of stability not provided by
  * the core code or schema - this means we have to provide support for api calls (where possible)
@@ -112,7 +124,7 @@ function civicrm_api3_event_get($params) {
     unset($params['return.sort']);
   }
 
-  //legacy support for $params['return.sort']
+  //legacy support for $params['return.offset']
   if (CRM_Utils_Array::value('return.offset', $params)) {
     $params['options']['offset'] = $params['return.offset'];
     unset($params['return.offset']);
@@ -124,15 +136,13 @@ function civicrm_api3_event_get($params) {
     unset($params['return.max_results']);
   }
 
-  require_once 'CRM/Core/BAO/CustomGroup.php';
-
   $eventDAO = new CRM_Event_BAO_Event();
   _civicrm_api3_dao_set_filter($eventDAO, $params, TRUE, 'Event');
 
   if (CRM_Utils_Array::value('is_template', $params)) {
     $eventDAO->whereAdd( '( is_template = 1 )' );
   }
-  else {
+  elseif(empty($eventDAO->id)){
     $eventDAO->whereAdd('( is_template IS NULL ) OR ( is_template = 0 )');
   }
 
@@ -159,7 +169,17 @@ function civicrm_api3_event_get($params) {
   return civicrm_api3_create_success($event, $params, 'event', 'get', $eventDAO);
 }
 
-/*
+/**
+ * Adjust Metadata for Get action
+ *
+ * The metadata is used for setting defaults, documentation & validation
+ * @param array $params array or parameters determined by getfields
+ */
+function _civicrm_api3_event_get_spec(&$params) {
+  $params['financial_type_id']['api.aliases'] = array('contribution_type_id');
+}
+
+/**
  * Support for schema changes made in 4.2
  * The main purpose of the API is to provide integrators a level of stability not provided by
  * the core code or schema - this means we have to provide support for api calls (where possible)
@@ -192,7 +212,7 @@ function civicrm_api3_event_delete($params) {
 }
 /*
 
-/*
+/**
  * Function to add 'is_full' & 'available_seats' to the return array. (this might be better in the BAO)
  * Default BAO function returns a string if full rather than a Bool - which is more appropriate to a form
  *
@@ -201,7 +221,6 @@ function civicrm_api3_event_delete($params) {
  *
  */
 function _civicrm_api3_event_getisfull(&$event, $event_id) {
-  require_once 'CRM/Event/BAO/Participant.php';
   $eventFullResult = CRM_Event_BAO_Participant::eventFull($event_id, 1);
   if (!empty($eventFullResult) && is_int($eventFullResult)) {
     $event[$event_id]['available_places'] = $eventFullResult;

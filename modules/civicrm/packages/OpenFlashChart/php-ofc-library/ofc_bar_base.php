@@ -34,6 +34,27 @@ class bar_base
 	{
 		$this->values = $v;		
 	}
+
+	/**
+     * Sets the text for the line.
+     *
+     * @param string $text
+     */   
+    function set_text($text)
+    {
+        $this->text = $text;
+    }
+	
+	function set_key_on_click( $action )
+	{
+		$tmp = 'key-on-click';
+		$this->$tmp = $action;
+	}
+
+	function set_group_id( $id )
+	{
+		$this->id = $id;
+	}
 	
 	/**
 	 * see set_values

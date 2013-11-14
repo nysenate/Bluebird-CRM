@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,29 +23,33 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-{* add/update/view CiviCRM Profile *} 
+{* add/update/view CiviCRM Profile *}
 {if $action eq 8}
- <h3> {ts}Delete CiviCRM Profile{/ts}</h3>
+ <h3> {ts}Delete CiviCRM Profile{/ts} - {$profileTitle}</h3>
 {/if}
-<div class=" crm-block crm-form-block crm-uf_group-form-block">  
+<div class=" crm-block crm-form-block crm-uf_group-form-block">
 <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
 {if $action eq 2 or $action eq 4 } {* Update or View*}
     <div class="action-link">
-	<a href="{crmURL p='civicrm/admin/uf/group/field' q="action=browse&reset=1&gid=$gid"}" class="button"><span>{ts}View or Edit Fields for this Profile{/ts}</a></span>
-	<div class="clear"></div>
+  <a href="{crmURL p='civicrm/admin/uf/group/field' q="action=browse&reset=1&gid=$gid"}" class="button"><span>{ts}View or Edit Fields for this Profile{/ts}</a></span>
+  <div class="clear"></div>
     </div>
-{/if}      
- 
+{/if}
+
 {if $action eq 8 or $action eq 64}
-    <div class="messages status">
+    <div class="messages status no-popup">
            <div class="icon inform-icon"></div>
            {$message}
-    </div>   	       
-{else}       
+    </div>
+{else}
     <table class="form-layout">
         <tr class="crm-uf_group-form-block-title">
             <td class="label">{$form.title.label} {if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_uf_group' field='title' id=$gid}{/if}</td>
             <td class="html-adjust">{$form.title.html}</td>
+        </tr>
+        <tr class="crm-uf_group-form-block-description">
+            <td class="label">{$form.description.label} {help id='id-description' file="CRM/UF/Form/Group.hlp"}</td>
+            <td class="html-adjust">{$form.description.html}</td>   
         </tr>
         <tr class="crm-uf_group-form-block-uf_group_type">
             <td class="label">{$form.uf_group_type.label} {help id='id-used_for' file="CRM/UF/Form/Group.hlp"}</td>
@@ -68,7 +72,7 @@
         </tr>
     </table>
     {* adding advance setting tab *}
-    {include file='CRM/UF/Form/AdvanceSetting.tpl'}        
+    {include file='CRM/UF/Form/AdvanceSetting.tpl'}
 {/if}
 
 <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>

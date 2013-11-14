@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,11 +28,18 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
 class CRM_Mailing_Config extends CRM_Core_Component_Config {
+
+  const OUTBOUND_OPTION_SMTP = 0;
+  const OUTBOUND_OPTION_SENDMAIL = 1;
+  const OUTBOUND_OPTION_DISABLED = 2;
+  const OUTBOUND_OPTION_MAIL = 3;
+  const OUTBOUND_OPTION_MOCK = 4; // seems to be the same as 2, but also calls Mail's pre/post hooks? - see packages/Mail
+  const OUTBOUND_OPTION_REDIRECT_TO_DB = 5;
 
   /**
    * What should be the verp separator we use

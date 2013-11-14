@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,17 +30,17 @@
           {$form.changed_by.label}<br />
           {$form.changed_by.html}
         </td>
-	<td width="100%">
-	  {$form.log_date.html}<span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('log_date', '{$form.formName}'); return false;" >{ts}clear{/ts}</a>)</span><br />
+  <td width="100%">
+    {$form.log_date.html}<span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('log_date', '{$form.formName}'); return false;" >{ts}clear{/ts}</a>)</span><br />
         </td>
      </tr>
      <tr>
-	<td>
-	   <label>{ts}Modified Between{/ts}</label>
-	</td>
+  <td>
+     <label>{ts}Modified Between{/ts}</label>
+  </td>
      </tr>
      <tr>
-	{include file="CRM/Core/DateRange.tpl" fieldName="log_date" from='_low' to='_high'}
+  {include file="CRM/Core/DateRange.tpl" fieldName="log_date" from='_low' to='_high'}
      </tr>
    </table>
  </div>

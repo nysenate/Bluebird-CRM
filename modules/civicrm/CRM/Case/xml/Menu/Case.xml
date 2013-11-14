@@ -12,7 +12,7 @@
   <item>
      <path>civicrm/case/add</path>
      <title>Open Case</title>
-     <page_callback>CRM_Case_Page_Tab</page_callback>
+     <page_callback>CRM_Case_Form_Case</page_callback>
      <page_type>1</page_type>
      <component>CiviCase</component>
   </item>
@@ -27,18 +27,18 @@
      <path>civicrm/case/activity</path>
      <title>Case Activity</title>
      <page_callback>CRM_Case_Form_Activity</page_callback>
-  </item>  
+  </item>
   <item>
      <path>civicrm/case/report</path>
      <title>Case Report</title>
      <page_callback>CRM_Case_Form_Report</page_callback>
      <access_arguments>access all cases and activities</access_arguments>
-  </item>  
+  </item>
   <item>
      <path>civicrm/case/cd/edit</path>
      <title>Case Custom Set</title>
      <page_callback>CRM_Case_Form_CustomData</page_callback>
-  </item>  
+  </item>
   <item>
      <path>civicrm/contact/view/case</path>
      <title>Case</title>
@@ -63,13 +63,13 @@
      <path>civicrm/case/details</path>
      <title>Case Details</title>
      <page_callback>CRM_Case_Page_CaseDetails</page_callback>
-  </item>  
+  </item>
   <item>
      <path>civicrm/admin/options/case_type</path>
      <title>Case Types</title>
-     <desc>List of types which can be assigned to Cases. (Enable the Cases tab from Global Settings - Site Preferences if you want to track cases.)</desc>
+     <desc>List of types which can be assigned to Cases. (Enable the Cases tab from System Settings - Enable Components if you want to track cases.)</desc>
      <path_arguments>group=case_type</path_arguments>
-     <access_arguments>administer CiviCase</access_arguments> 
+     <access_arguments>administer CiviCase</access_arguments>
      <page_callback>CRM_Admin_Page_Options</page_callback>
      <adminGroup>CiviCase</adminGroup>
      <icon>admin/small/case_type.png</icon>
@@ -107,7 +107,7 @@
      <adminGroup>CiviCase</adminGroup>
      <icon>admin/small/case_type.png</icon>
      <weight>400</weight>
-  </item>  
+  </item>
   <item>
      <path>civicrm/case/report/print</path>
      <page_callback>CRM_Case_XMLProcessor_Report::printCaseReport</page_callback>
@@ -124,7 +124,7 @@
   <item>
      <path>civicrm/case/ajax/addclient</path>
      <page_callback>CRM_Case_Page_AJAX::addClient</page_callback>
-  </item>  
+  </item>
   <item>
      <path>civicrm/case/ajax/processtags</path>
      <page_callback>CRM_Case_Page_AJAX::processCaseTags</page_callback>
@@ -134,5 +134,14 @@
    <item>
      <path>civicrm/case/ajax/details</path>
      <page_callback>CRM_Case_Page_AJAX::CaseDetails</page_callback>
+  </item>
+  <item>
+    <path>civicrm/ajax/delcaserole</path>
+    <page_callback>CRM_Case_Page_AJAX::deleteCaseRoles</page_callback>
+  </item>
+  <item>
+    <path>civicrm/case/changeactivitystatus</path>
+    <title>Change Activity Status</title>
+    <page_callback>CRM_Case_Form_ActivityChangeStatus</page_callback>
   </item>
 </menu>

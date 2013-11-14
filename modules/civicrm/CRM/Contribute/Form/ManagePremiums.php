@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -173,6 +173,41 @@ class CRM_Contribute_Form_ManagePremiums extends CRM_Contribute_Form {
 
     $this->add('text', 'frequency_interval', ts('Frequency'), CRM_Core_DAO::getAttribute('CRM_Contribute_DAO_Product', 'frequency_interval'));
 
+    //Financial Type CRM-11106
+    $financialType = CRM_Contribute_PseudoConstant::financialType( );
+    $premiumFinancialType = array();
+    CRM_Core_PseudoConstant::populate(
+      $premiumFinancialType,
+      'CRM_Financial_DAO_EntityFinancialAccount',
+      $all = True,
+      $retrieve = 'entity_id',
+      $filter = null,
+      'account_relationship = 8'
+    );
+
+    $costFinancialType = array();
+    CRM_Core_PseudoConstant::populate(
+      $costFinancialType,
+      'CRM_Financial_DAO_EntityFinancialAccount',
+      $all = True,
+      $retrieve = 'entity_id',
+      $filter = null,
+      'account_relationship = 7'
+    );
+    $productFinancialType = array_intersect($costFinancialType, $premiumFinancialType);
+    foreach( $financialType as $key => $financialTypeName ){
+      if(!in_array( $key, $productFinancialType))
+        unset( $financialType[$key] );
+    }
+    if( count( $financialType ) ){
+      $this->assign( 'financialType', $financialType );
+    }
+    $this->add(
+      'select',
+      'financial_type_id',
+      ts( 'Financial Type' ),
+      array(''=>ts('- select -')) + $financialType
+    );
 
     $this->add('checkbox', 'is_active', ts('Enabled?'));
 
@@ -203,18 +238,21 @@ class CRM_Contribute_Form_ManagePremiums extends CRM_Contribute_Form {
    * @access public
    * @static
    */
-  public function formRule($params, $files) {
+  public static function formRule($params, $files) {
     if (isset($params['imageOption'])) {
       if ($params['imageOption'] == 'thumbnail') {
         if (!$params['imageUrl']) {
-          $errors['imageUrl'] = 'Image URL is Required ';
+          $errors['imageUrl'] = ts('Image URL is Required');
         }
         if (!$params['thumbnailUrl']) {
-          $errors['thumbnailUrl'] = 'Thumbnail URL is Required ';
+          $errors['thumbnailUrl'] = ts('Thumbnail URL is Required');
         }
       }
     }
-
+    // CRM-13231 financial type required if product has cost
+    if (CRM_Utils_Array::value('cost', $params) && !CRM_Utils_Array::value('financial_type_id', $params)) {
+      $errors['financial_type_id'] = ts('Financial Type is required for product having cost.');
+    }
     $fileLocation = $files['uploadFile']['tmp_name'];
     if ($fileLocation != "") {
       list($width, $height) = getimagesize($fileLocation);
@@ -271,7 +309,7 @@ class CRM_Contribute_Form_ManagePremiums extends CRM_Contribute_Form {
 
     if ($this->_action & CRM_Core_Action::DELETE) {
       CRM_Contribute_BAO_ManagePremiums::del($this->_id);
-      CRM_Core_Session::setStatus(ts('Selected Premium Product type has been deleted.'));
+      CRM_Core_Session::setStatus(ts('Selected Premium Product type has been deleted.'), ts('Deleted'), 'info');
     }
     else {
       $params    = $this->controller->exportValues($this->_name);
@@ -288,69 +326,28 @@ class CRM_Contribute_Form_ManagePremiums extends CRM_Contribute_Form {
       if (CRM_Utils_Array::value('imageOption', $params, FALSE)) {
         $value = CRM_Utils_Array::value('imageOption', $params, FALSE);
         if ($value == 'image') {
-          if ($imageFile) {
-            $fileName = basename($imageFile);
-            $params['image'] = $config->imageUploadURL . $fileName;
 
-            // to check wether GD is installed or not
-            $gdSupport = CRM_Utils_System::getModuleSetting('gd', 'GD Support');
-            $error = FALSE;
-
-            if ($gdSupport == 'enabled') {
-              list($width_orig, $height_orig) = getimagesize($imageFile);
-              $imageInfo = getimagesize($imageFile);
-              $width_orig . "<br>";
-              $height_orig . "<br>";
-              $path          = explode('/', $imageFile);
-              $thumbFileName = $path[count($path) - 1];
-              $info          = pathinfo($thumbFileName);
-              $basename      = substr($info['basename'], 0, -(strlen($info['extension']) + ($info['extension'] == '' ? 0 : 1))
-              );
-              $thumbFileName = $basename . "_thumb." . $info['extension'];
-              $path[count($path) - 1] = $thumbFileName;
-              $path = implode('/', $path);
-
-              $width = $height = 100;
-
-              $thumb = imagecreate($width, $height);
-              if ($imageInfo['mime'] == 'image/gif') {
-                $source = imagecreatefromgif($imageFile);
-              }
-              elseif ($imageInfo['mime'] == 'image/png') {
-                $source = imagecreatefrompng($imageFile);
-              }
-              else {
-                $source = imagecreatefromjpeg($imageFile);
-              }
-              imagecopyresized($thumb, $source, 0, 0, 0, 0, $width, $height, $width_orig, $height_orig);
-
-              $fp = fopen($path, 'w+');
-              ob_start();
-              ImageJPEG($thumb);
-              $image_buffer = ob_get_contents();
-              ob_end_clean();
-              ImageDestroy($thumb);
-              fwrite($fp, $image_buffer);
-              rewind($fp);
-              fclose($fp);
-              $params['thumbnail'] = $config->imageUploadURL . $thumbFileName;
+          // to check wether GD is installed or not
+          $gdSupport = CRM_Utils_System::getModuleSetting('gd', 'GD Support');
+          if($gdSupport) {
+            if($imageFile) {
+              $error = false;
+              $params['image'] = $this->_resizeImage($imageFile, "_full", 200, 200);
+              $params['thumbnail'] = $this->_resizeImage($imageFile, "_thumb", 50, 50);
             }
-            else {
-              $error = TRUE;
-              $params['thumbnail'] = $config->resourceBase . 'i/contribute/default_premium_thumb.jpg';
-            }
+          } else {
+            $error = true;
+            $params['image'] = $config->resourceBase . 'i/contribute/default_premium.jpg';
+            $params['thumbnail'] = $config->resourceBase . 'i/contribute/default_premium_thumb.jpg';
           }
-        }
-        elseif ($value == 'thumbnail') {
+        } elseif ($value == 'thumbnail') {
           $params['image'] = $params['imageUrl'];
           $params['thumbnail'] = $params['thumbnailUrl'];
-        }
-        elseif ($value == 'default_image') {
-          $url                 = parse_url($config->userFrameworkBaseURL);
-          $params['image']     = $config->resourceBase . 'i/contribute/default_premium.jpg';
+        } elseif ($value == 'default_image') {
+          $url = parse_url($config->userFrameworkBaseURL);
+          $params['image'] = $config->resourceBase . 'i/contribute/default_premium.jpg';
           $params['thumbnail'] = $config->resourceBase . 'i/contribute/default_premium_thumb.jpg';
-        }
-        else {
+        } else {
           $params['image'] = "";
           $params['thumbnail'] = "";
         }
@@ -368,12 +365,56 @@ class CRM_Contribute_Form_ManagePremiums extends CRM_Contribute_Form {
 
       $premium = CRM_Contribute_BAO_ManagePremiums::add($params, $ids);
       if ($error) {
-        CRM_Core_Session::setStatus(ts('NOTICE: No thumbnail of your image was created because the GD image library is not currently compiled in your PHP installation. Product is currently configured to use default thumbnail image. If you have a local thumbnail image you can upload it separately and input the thumbnail URL by editing this premium.'));
+        CRM_Core_Session::setStatus(ts('No thumbnail of your image was created because the GD image library is not currently compiled in your PHP installation. Product is currently configured to use default thumbnail image. If you have a local thumbnail image you can upload it separately and input the thumbnail URL by editing this premium.'), ts('Notice'), 'alert');
       }
       else {
-        CRM_Core_Session::setStatus(ts('The Premium \'%1\' has been saved.', array(1 => $premium->name)));
+        CRM_Core_Session::setStatus(ts("The Premium '%1' has been saved.", array(1 => $premium->name)), ts('Saved'), 'success');
       }
     }
+  }
+
+  /**
+   * Resize a premium image to a different size
+   *
+   * @access private
+   *
+   * @return Path to image
+   */
+  private function _resizeImage($filename, $resizedName, $width, $height) {
+    // figure out the new filename
+    $pathParts = pathinfo($filename);
+    $newFilename = $pathParts['dirname']."/".$pathParts['filename'].$resizedName.".".$pathParts['extension'];
+
+    // get image about original image
+    $imageInfo = getimagesize($filename);
+    $widthOrig = $imageInfo[0];
+    $heightOrig = $imageInfo[1];
+    $image = imagecreatetruecolor($width, $height);
+    if($imageInfo['mime'] == 'image/gif') {
+      $source = imagecreatefromgif($filename);
+    } elseif($imageInfo['mime'] == 'image/png') {
+      $source = imagecreatefrompng($filename);
+    } else {
+      $source = imagecreatefromjpeg($filename);
+    }
+
+    // resize
+    imagecopyresized($image, $source, 0, 0, 0, 0, $width, $height, $widthOrig, $heightOrig);
+
+    // save the resized image
+    $fp = fopen($newFilename, 'w+');
+    ob_start();
+    ImageJPEG($image);
+    $image_buffer = ob_get_contents();
+    ob_end_clean();
+    ImageDestroy($image);
+    fwrite($fp, $image_buffer);
+    rewind($fp);
+    fclose($fp);
+
+    // return the URL to link to
+    $config = CRM_Core_Config::singleton();
+    return $config->imageUploadURL.basename($newFilename);
   }
 }
 

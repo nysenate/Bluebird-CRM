@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,17 +23,12 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-{if $groupCount == 0 and $mailingCount == 0}
-  <div class="status">
-	<div class="icon inform-icon"></div>
-        {ts}To send a mailing, you must have a valid group of recipients - either at least one group that's a Mailing List or at least one previous mailing.{/ts}
-  </div>
-{else}
+
 <div class="crm-block crm-form-block crm-mailing-group-form-block">
 {include file="CRM/common/WizardHeader.tpl"}
 
   <table class="form-layout">
-   <tr class="crm-mailing-group-form-block-name"><td class="label">{$form.name.label}</td><td>{$form.name.html} {help id="mailing-name"}</td></tr>   
+   <tr class="crm-mailing-group-form-block-name"><td class="label">{$form.name.label}</td><td>{$form.name.html} {help id="mailing-name"}</td></tr>
      {* CRM-7362 --add campaign *}
      {include file="CRM/Campaign/Form/addCampaignToComponent.tpl"
      campaignTrClass="crm-mailing-group-form-block-campaign_id"}
@@ -44,18 +39,17 @@
             <td>{$form.baseGroup.html} {help id="base-group"}</td>
         </tr>
     {/if}
-    
+
     <tr class="crm-mailing-group-form-block-dedupeemail">
         <td class="label">{$form.dedupe_email.label}</td>
         <td>{$form.dedupe_email.html} {help id="dedupe-email"}</td>
     </tr>
   </table>
 
-
+{if ($groupCount > 0|| $mailingCount > 0)}
 <div id="id-additional" class="form-item">
-<div class="crm-accordion-wrapper crm-accordion_title-accordion crm-accordion-open">
+<div class="crm-accordion-wrapper ">
  <div class="crm-accordion-header">
-  <div class="icon crm-accordion-pointer"></div> 
  {if $context EQ 'search'}{ts}Additional Mailing Recipients{/ts}{else}{ts}Mailing Recipients{/ts}{/if}
  </div><!-- /.crm-accordion-header -->
  <div class="crm-accordion-body">
@@ -79,14 +73,14 @@
   {/strip}
  </div><!-- /.crm-accordion-body -->
 </div><!-- /.crm-accordion-wrapper -->
-
+{/if}
   <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl"}</div>
 </div>
 
 {literal}
 <script type="text/javascript">
 cj(function() {
-   cj().crmaccordions(); 
+   cj().crmAccordions();
 });
 </script>
 {/literal}
@@ -94,4 +88,4 @@ cj(function() {
 {* include jscript to warn if unsaved form field changes *}
 {include file="CRM/common/formNavigate.tpl"}
 </div>
-{/if}
+

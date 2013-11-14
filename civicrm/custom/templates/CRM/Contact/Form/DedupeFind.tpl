@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,6 +25,7 @@
 *}
 <div class="crm-block crm-form-block crm-dedupe-find-form-block">
 <div id="help">
+    {*NYSS*}
     {ts}You can search all contacts for duplicates or limit the search to a specific group. After initiating the rule, please be patient as it may take some time to fully process.{/ts} 
 </div>
    <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div> 

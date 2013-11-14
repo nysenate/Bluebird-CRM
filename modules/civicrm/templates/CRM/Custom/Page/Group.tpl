@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -39,9 +39,9 @@
     <div class="crm-content-block crm-block">
     <div id="custom_group">
      {strip}
-	 {* handle enable/disable actions*}
-	 {include file="CRM/common/enableDisable.tpl"} 
-   {include file="CRM/common/jsortable.tpl"}   
+   {* handle enable/disable actions*}
+   {include file="CRM/common/enableDisable.tpl"}
+   {include file="CRM/common/jsortable.tpl"}
       <table id="options" class="display">
         <thead>
           <tr>
@@ -70,7 +70,7 @@
         {/foreach}
         </tbody>
       </table>
-        
+
         {if NOT ($action eq 1 or $action eq 2) }
         <div class="action-link">
         <a href="{crmURL p='civicrm/admin/custom/group' q="action=add&reset=1"}" id="newCustomDataGroup" class="button"><span><div class="icon add-icon"></div>{ts}Add Set of Custom Fields{/ts}</span></a>
@@ -82,7 +82,7 @@
     </div>
     {else}
        {if $action ne 1} {* When we are adding an item, we should not display this message *}
-       <div class="messages status">
+       <div class="messages status no-popup">
        <img src="{$config->resourceBase}i/Inform.gif" alt="{ts}status{/ts}"/> &nbsp;
          {capture assign=crmURL}{crmURL p='civicrm/admin/custom/group' q='action=add&reset=1'}{/capture}
          {ts 1=$crmURL}No custom data groups have been created yet. You can <a id="newCustomDataGroup" href='%1'>add one</a>.{/ts}
@@ -90,5 +90,5 @@
        {/if}
     {/if}
 {/if}
-{include file="CRM/common/crmeditable.tpl"} 
+{include file="CRM/common/crmeditable.tpl"}
 

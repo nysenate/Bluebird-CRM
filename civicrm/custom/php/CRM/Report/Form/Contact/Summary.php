@@ -1,11 +1,10 @@
 <?php
-// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -44,8 +43,10 @@ class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
 
   protected $_customGroupExtends = array(
     'Contact', 'Individual', 'Household', 'Organization');
-    
-    function __construct( ) {
+
+  public $_drilldownReport = array('contact/detail' => 'Link to Detail Report');
+
+  function __construct() {
     $this->_autoIncludeIndexedFieldsAsOrderBys = 1;
     $this->_columns = array(
       'civicrm_contact' =>
@@ -58,10 +59,24 @@ class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
             'required' => TRUE,
             'no_repeat' => TRUE,
           ),
+          'first_name' => array(
+            'title' => ts('First Name'),
+          ),
+          'last_name' => array(
+            'title' => ts('Last Name'),
+          ),
           'id' =>
           array(
             'no_display' => TRUE,
             'required' => TRUE,
+          ),
+          'contact_type' =>
+          array(
+            'title' => ts('Contact Type'),
+          ),
+          'contact_sub_type' =>
+          array(
+            'title' => ts('Contact SubType'),
           ),
         ),
         'filters' =>
@@ -163,7 +178,13 @@ class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
       array(
         'dao' => 'CRM_Core_DAO_Phone',
         'fields' =>
-        array('phone' => NULL),
+        array(
+          'phone' => NULL,   
+          'phone_ext' =>
+          array(
+            'title' => ts('Phone Extension')
+          )
+        ),
         'grouping' => 'contact-fields',
       ),
       'civicrm_group' =>
@@ -191,29 +212,28 @@ class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
   function preProcess() {
     parent::preProcess();
   }
-  
+
   //NYSS 5057 - remove some of the custom field order bys
   function buildForm( ) {
-
     parent::buildForm( );
     
     $elements   = $this->_elementIndex;
     $orderByEle = $elements['order_bys[1][column]'];
     $orderBys   =& $this->_elements[$orderByEle];  
       
-    $removeOrderBys = array( 'custom_64', //privacy options note
-                             'custom_25', //DOS
-                             'custom_26', //EIN
-                             'custom_58', //Ethnicity
-                             'custom_62', //Other Ethnicity
-                             'custom_16', //Professional Accreditation
-                 );
+    $removeOrderBys = array(
+      'custom_64', //privacy options note
+      'custom_25', //DOS
+      'custom_26', //EIN
+      'custom_58', //Ethnicity
+      'custom_62', //Other Ethnicity
+      'custom_16', //Professional Accreditation
+    );
     foreach ( $orderBys->_options as $k => $fld ) {
       if ( in_array( $fld['attr']['value'], $removeOrderBys ) ) {
         unset( $orderBys->_options[$k] );
       }
     }
-    
     //CRM_Core_Error::debug_var('orderBys',$orderBys);
   }
     
@@ -249,8 +269,7 @@ class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
     $this->_select = "SELECT " . implode(', ', $select) . " ";
   }
 
-  static
-  function formRule($fields, $files, $self) {
+  static function formRule($fields, $files, $self) {
     $errors = $grouping = array();
     return $errors;
   }
@@ -258,21 +277,21 @@ class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
   function from() {
     $this->_from = "
         FROM civicrm_contact {$this->_aliases['civicrm_contact']} {$this->_aclFrom}
-            LEFT JOIN civicrm_address {$this->_aliases['civicrm_address']} 
-                   ON ({$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_address']}.contact_id AND 
+            LEFT JOIN civicrm_address {$this->_aliases['civicrm_address']}
+                   ON ({$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_address']}.contact_id AND
                       {$this->_aliases['civicrm_address']}.is_primary = 1 ) ";
 
     if ($this->isTableSelected('civicrm_email')) {
       $this->_from .= "
-            LEFT JOIN  civicrm_email {$this->_aliases['civicrm_email']} 
+            LEFT JOIN  civicrm_email {$this->_aliases['civicrm_email']}
                    ON ({$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_email']}.contact_id AND
                       {$this->_aliases['civicrm_email']}.is_primary = 1) ";
     }
 
     if ($this->_phoneField) {
       $this->_from .= "
-            LEFT JOIN civicrm_phone {$this->_aliases['civicrm_phone']} 
-                   ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_phone']}.contact_id AND 
+            LEFT JOIN civicrm_phone {$this->_aliases['civicrm_phone']}
+                   ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_phone']}.contact_id AND
                       {$this->_aliases['civicrm_phone']}.is_primary = 1 ";
     }
 
@@ -310,12 +329,11 @@ class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
       if (array_key_exists('civicrm_contact_sort_name', $row) &&
         array_key_exists('civicrm_contact_id', $row)
       ) {
-        //NYSS - LCD #2059
-        /*$url = CRM_Report_Utils_Report::getNextUrl( 'contact/detail', 
-          'reset=1&force=1&id_op=eq&id_value=' . $row['civicrm_contact_id'],
-          $this->_absoluteUrl, $this->_id );*/
-        $url = CRM_Utils_System::url( 'civicrm/contact/view', 'reset=1&cid='.$row['civicrm_contact_id'] );
-        //NYSS end
+        //NYSS 2059
+        $url = CRM_Utils_System::url( 'civicrm/contact/view',
+          'reset=1&cid='.$row['civicrm_contact_id'],
+          $this->_absoluteUrl, $this->_id, $this->_drilldownReport
+        );
         $rows[$rowNum]['civicrm_contact_sort_name_link'] = $url;
         $rows[$rowNum]['civicrm_contact_sort_name_hover'] = ts("View Constituent Detail Report for this contact.");
         $entryFound = TRUE;

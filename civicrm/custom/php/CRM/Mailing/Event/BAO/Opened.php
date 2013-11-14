@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -88,7 +88,7 @@ class CRM_Mailing_Event_BAO_Opened extends CRM_Mailing_Event_DAO_Opened {
     $open    = self::getTableName();
     $queue   = CRM_Mailing_Event_BAO_Queue::getTableName();
     $mailing = CRM_Mailing_BAO_Mailing::getTableName();
-    $job     = CRM_Mailing_BAO_Job::getTableName();
+    $job     = CRM_Mailing_BAO_MailingJob::getTableName();
 
     $query = "
             SELECT      COUNT($open.id) as opened
@@ -120,13 +120,13 @@ class CRM_Mailing_Event_BAO_Opened extends CRM_Mailing_Event_DAO_Opened {
     }
   }
 
-  //NYSS 6698
   /**
+   * CRM-12814
    * Get opened count for each mailing for a given set of mailing IDs
    *
-   * @param int $mailingIDs      IDs of the mailing (comma separated)
+   * @param int $contactID  ID of the mailing
    *
-   * @return int                 Number of rows in result set
+   * @return array          Opened count per mailing ID
    * @access public
    * @static
    */
@@ -136,7 +136,7 @@ class CRM_Mailing_Event_BAO_Opened extends CRM_Mailing_Event_DAO_Opened {
 
     $open    = self::getTableName();
     $queue   = CRM_Mailing_Event_BAO_Queue::getTableName();
-    $job     = CRM_Mailing_BAO_Job::getTableName();
+    $job     = CRM_Mailing_BAO_MailingJob::getTableName();
     $mailingIDs = implode(',', $mailingIDs);
 
     $query = "
@@ -177,7 +177,7 @@ class CRM_Mailing_Event_BAO_Opened extends CRM_Mailing_Event_DAO_Opened {
 
     $open    = self::getTableName();
     $queue   = CRM_Mailing_Event_BAO_Queue::getTableName();
-    $job     = CRM_Mailing_BAO_Job::getTableName();
+    $job     = CRM_Mailing_BAO_MailingJob::getTableName();
     $mailingIDs = implode(',', $mailingIDs);
 
     $query = "
@@ -217,7 +217,7 @@ class CRM_Mailing_Event_BAO_Opened extends CRM_Mailing_Event_DAO_Opened {
    * @static
    */
   public static function &getRows($mailing_id, $job_id = NULL,
-    $is_distinct = FALSE, $offset = NULL, $rowCount = NULL, $sort = NULL
+    $is_distinct = FALSE, $offset = NULL, $rowCount = NULL, $sort = NULL, $contact_id= NULL
   ) {
 
     $dao = new CRM_Core_Dao();
@@ -225,7 +225,7 @@ class CRM_Mailing_Event_BAO_Opened extends CRM_Mailing_Event_DAO_Opened {
     $open    = self::getTableName();
     $queue   = CRM_Mailing_Event_BAO_Queue::getTableName();
     $mailing = CRM_Mailing_BAO_Mailing::getTableName();
-    $job     = CRM_Mailing_BAO_Job::getTableName();
+    $job     = CRM_Mailing_BAO_MailingJob::getTableName();
     $contact = CRM_Contact_BAO_Contact::getTableName();
     $email   = CRM_Core_BAO_Email::getTableName();
 
@@ -252,6 +252,10 @@ class CRM_Mailing_Event_BAO_Opened extends CRM_Mailing_Event_DAO_Opened {
       $query .= " AND $job.id = " . CRM_Utils_Type::escape($job_id, 'Integer');
     }
 
+    if (!empty($contact_id)) {
+      $query .= " AND $contact.id = " . CRM_Utils_Type::escape($contact_id, 'Integer');
+    }
+
     if ($is_distinct) {
       $query .= " GROUP BY $queue.id ";
     }
@@ -259,6 +263,7 @@ class CRM_Mailing_Event_BAO_Opened extends CRM_Mailing_Event_DAO_Opened {
     $orderBy = "sort_name ASC, {$open}.time_stamp DESC";
     if ($sort) {
       if (is_string($sort)) {
+        $sort = CRM_Utils_Type::escape($sort, 'String');
         $orderBy = $sort;
       }
       else {

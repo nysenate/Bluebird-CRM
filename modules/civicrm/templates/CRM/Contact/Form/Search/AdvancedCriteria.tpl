@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,56 +26,112 @@
 {* Advanced Search Criteria Fieldset *}
 {literal}
 <script type="text/javascript">
-// bind first click of accordion header to load crm-accordion-body with snippet
-// everything else taken care of by cj().crm-accordions()
-cj(document).ready( function() {
-    cj('.crm-ajax-accordion .crm-accordion-header').one('click', function() { 
-    	loadPanes(cj(this).attr('id')); 
-    	});
-    cj('.crm-ajax-accordion.crm-accordion-open .crm-accordion-header').each(function(index) { 
-    	loadPanes(cj(this).attr('id')); 
-    	});
-});
-// load panes function calls for snippet based on id of crm-accordion-header
-function loadPanes( id ) {
+cj(function($) {
+  $().crmAccordions();
+  // Bind first click of accordion header to load crm-accordion-body with snippet
+  // everything else is taken care of by crmAccordions()
+  $('.crm-search_criteria_basic-accordion .crm-accordion-header').addClass('active');
+  $('.crm-ajax-accordion').on('click', '.crm-accordion-header:not(.active)', function() {
+    loadPanes($(this).attr('id'));
+  });
+  $('.crm-ajax-accordion:not(.collapsed) .crm-accordion-header').each(function() {
+    loadPanes($(this).attr('id'));
+  });
+  $('.crm-ajax-accordion').on('click', '.crm-close-accordion', function() {
+    var header = $(this).parent();
+    header.next().html('');
+    header.removeClass('active');
+    header.parent('.crm-ajax-accordion:not(.collapsed)').crmAccordionToggle();
+    // Reset results-display mode if it depends on this pane
+    var mode = modes[$('#component_mode').val()] || null;
+    if (mode && header.attr('id') == mode) {
+      var oldMode = $('#component_mode :selected').text();
+      $('#component_mode').val('1');
+      {/literal}
+      var msg = '{ts escape="js"}Displaying results as "%1" is not available without search criteria from the pane you just closed.{/ts}';
+      msg = msg.replace('%1', oldMode);
+      CRM.alert(msg, '{ts escape="js"}Display Results have been Reset{/ts}');
+      {literal}
+    }
+    $(this).remove();
+    return false;
+  });
+  // TODO: Why are the modes numeric? If they used the string there would be no need for this map
+  var modes = {
+    '2': 'CiviContribute',
+    '3': 'CiviEvent',
+    '4': 'activity',
+    '5': 'CiviMember',
+    '6': 'CiviCase',
+    '8': 'CiviMail'
+  };
+  // Handle change of results mode
+  $('#component_mode').change(function() {
+    // Reset task dropdown
+    $('#task').val('');
+    var mode = modes[$('#component_mode').val()] || null;
+    if (mode) {
+      $('.crm-' + mode + '-accordion.collapsed').crmAccordionToggle();
+      loadPanes(mode);
+    }
+    if ($('#component_mode').val() == '7') {
+      $('#crm-display_relationship_type').show();
+    }
+    else {
+      $('#display_relationship_type').val('');
+      $('#crm-display_relationship_type').hide();
+    }
+  }).change();
+  /**
+  * Loads snippet based on id of crm-accordion-header
+  */
+  function loadPanes(id) {
     var url = "{/literal}{crmURL p='civicrm/contact/search/advanced' q="snippet=1&qfKey=`$qfKey`&searchPane=" h=0}{literal}" + id;
-   if ( ! cj('div.'+id).html() ) {
-	    var loading = '<div class="crm-loading-element"><span class="loading-text">{/literal}{ts}Loading{/ts}{literal}...</span></div>';
-	    cj('div.'+id).html(loading);
-	    cj.ajax({
-	        url    : url,
-	        success: function(data) { cj('div.'+id).html(data); }
-	        });
-    	}
-	}
+    var header = $('#' + id);
+    var body = $('.crm-accordion-body.' + id);
+    if (header.length > 0 && body.length > 0 && !body.html()) {
+      body.html('<div class="crm-loading-element"><span class="loading-text">{/literal}{ts escape='js'}Loading{/ts}{literal}...</span></div>');
+      header.append('{/literal}<a href="#" class="crm-close-accordion" title="{ts escape='js'}Remove from search criteria{/ts}"><span>{ts escape='js'}Reset{/ts}</span> &nbsp;<img src="{$config->resourceBase}i/close.png" /></a>{literal}');
+      header.addClass('active');
+      $.ajax({
+        url : url,
+        success: function(data) {
+          body.html(data);
+        },
+        error: function() {
+          CRM.alert({/literal}'{ts escape="js"}Sorry, could not load the requested information from the server.{/ts}', '{ts escape="js"}Network Error{/ts}'{literal});
+          $('.crm-close-accordion', header).click();
+        }
+      });
+    }
+  }
+});
 </script>
 {/literal}
-		
-		{if $context EQ 'smog' || $context EQ 'amtg' || $savedSearch}
-        	<h3>
-        	{if $context EQ 'smog'}{ts}Find Contacts within this Group{/ts}
-        	{elseif $context EQ 'amtg'}{ts}Find Contacts to Add to this Group{/ts}
-        	{elseif $savedSearch}{ts 1=$savedSearch.name}%1 Smart Group Criteria{/ts} &nbsp; {help id='id-advanced-smart'}
-        	{/if}
-        	</h3>
+
+    {if $context EQ 'smog' || $context EQ 'amtg' || $savedSearch}
+          <h3>
+          {if $context EQ 'smog'}{ts}Find Contacts within this Group{/ts}
+          {elseif $context EQ 'amtg'}{ts}Find Contacts to Add to this Group{/ts}
+          {elseif $savedSearch}{ts 1=$savedSearch.name}%1 Smart Group Criteria{/ts} &nbsp; {help id='id-advanced-smart'}
+          {/if}
+          </h3>
         {/if}
 
 {strip}
-<div class="crm-accordion-wrapper crm-search_criteria_basic-accordion crm-accordion-open">
- <div class="crm-accordion-header">
-  <div class="icon crm-accordion-pointer"></div>
-  {ts}Basic Criteria{/ts} 
- </div><!-- /.crm-accordion-header -->
+<div class="crm-accordion-wrapper crm-search_criteria_basic-accordion ">
+  <div class="crm-accordion-header">
+    {ts}Basic Criteria{/ts}
+  </div><!-- /.crm-accordion-header -->
  <div class="crm-accordion-body">
-        {include file="CRM/Contact/Form/Search/Criteria/Basic.tpl"}
-    </div><!-- /.crm-accordion-body -->
+      {include file="CRM/Contact/Form/Search/Criteria/Basic.tpl"}
+  </div><!-- /.crm-accordion-body -->
 </div><!-- /.crm-accordion-wrapper -->
-    
+
     {foreach from=$allPanes key=paneName item=paneValue}
-      <div class="crm-accordion-wrapper crm-ajax-accordion crm-{$paneValue.id}-accordion {if $paneValue.open eq 'true' and $openedPanes.$paneName}crm-accordion-open{else}crm-accordion-closed{/if}">
+      <div class="crm-accordion-wrapper crm-ajax-accordion crm-{$paneValue.id}-accordion {if $paneValue.open eq 'true' and $openedPanes.$paneName} {else}collapsed{/if}">
        <div class="crm-accordion-header" id="{$paneValue.id}">
-       	<div class="icon crm-accordion-pointer"></div>
-       	{$paneName}
+         {$paneName}
        </div>
        <div class="crm-accordion-body {$paneValue.id}"></div>
        </div>

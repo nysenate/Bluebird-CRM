@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -93,7 +93,7 @@ class CRM_Admin_Form_Options extends CRM_Admin_Form {
       $isInUse    = CRM_Core_DAO::singleValueQuery($sql, $queryParam);
       if ($isInUse) {
         $scriptURL = "<a href='" . CRM_Utils_System::docURL2('Update Greetings and Address Data for Contacts', TRUE, NULL, NULL, NULL, "wiki") . "'>" . ts('Learn more about a script that can automatically update contact addressee and greeting options.') . "</a>";
-        CRM_Core_Session::setStatus(ts('The selected %1 option has <strong>not been deleted</strong> because it is currently in use. Please update these contacts to use a different format before deleting this option. %2', array(1 => $this->_GName, 2 => $scriptURL)) . "<br /><br />");
+        CRM_Core_Session::setStatus(ts('The selected %1 option has <strong>not been deleted</strong> because it is currently in use. Please update these contacts to use a different format before deleting this option. %2', array(1 => $this->_GName, 2 => $scriptURL)), ts('Sorry'), 'error');
         $redirect = CRM_Utils_System::url($url, $params);
         CRM_Utils_System::redirect($redirect);
       }
@@ -131,6 +131,10 @@ class CRM_Admin_Form_Options extends CRM_Admin_Form {
     if (in_array($this->_gName, array(
       'email_greeting', 'postal_greeting', 'addressee'))) {
       $defaults['contactOptions'] = (CRM_Utils_Array::value('filter', $defaults)) ? $defaults['filter'] : NULL;
+    }
+    // CRM-11516
+    if ($this->_gName == 'payment_instrument' && $this->_id) {
+      $defaults['financial_account_id'] = CRM_Financial_BAO_FinancialTypeAccount::getFinancialAccount($this->_id, 'civicrm_option_value', 'financial_account_id');
     }
     return $defaults;
   }
@@ -183,6 +187,15 @@ class CRM_Admin_Form_Options extends CRM_Admin_Form {
       if ($isReserved) {
         $grouping->freeze();
       }
+    }
+    // CRM-11516
+    if ($this->_gName == 'payment_instrument') {
+      $accountType = CRM_Core_PseudoConstant::accountOptionValues('financial_account_type', NULL, " AND v.name = 'Asset' ");
+      $financialAccount = CRM_Contribute_PseudoConstant::financialAccount(NULL, key($accountType));
+
+      $this->add('select', 'financial_account_id', ts('Financial Account'),
+        array('' => ts('- select -')) + $financialAccount
+      );
     }
 
     $required = FALSE;
@@ -242,7 +255,7 @@ class CRM_Admin_Form_Options extends CRM_Admin_Form {
       (($this->_action & CRM_Core_Action::ADD) || !$isReserved)
     ) {
       $caseID = CRM_Core_Component::getComponentID('CiviCase');
-      $components = array('' => ts('Contact'), $caseID => 'CiviCase');
+      $components = array('' => ts('Contacts OR Cases'), $caseID => ts('Cases Only'));
       $this->add('select',
         'component_id',
         ts('Component'),
@@ -299,8 +312,7 @@ class CRM_Admin_Form_Options extends CRM_Admin_Form {
    * @access public
    * @static
    */
-  static
-  function formRule($fields, $files, $self) {
+  static function formRule($fields, $files, $self) {
     $errors = array();
     if ($self->_gName == 'case_status' && !CRM_Utils_Array::value('grouping', $fields)) {
       $errors['grouping'] = ts('Status class is a required field');
@@ -355,10 +367,10 @@ class CRM_Admin_Form_Options extends CRM_Admin_Form {
           CRM_Core_BAO_Phone::setOptionToNull(CRM_Utils_Array::value('value', $this->_defaultValues));
         }
 
-        CRM_Core_Session::setStatus(ts('Selected %1 type has been deleted.', array(1 => $this->_GName)));
+        CRM_Core_Session::setStatus(ts('Selected %1 type has been deleted.', array(1 => $this->_GName)), ts('Record Deleted'), 'success');
       }
       else {
-        CRM_Core_Session::setStatus(ts('Selected %1 type has not been deleted.', array(1 => $this->_GName)));
+        CRM_Core_Session::setStatus(ts('Selected %1 type has not been deleted.', array(1 => $this->_GName)), ts('Sorry'), 'error');
         CRM_Utils_Weight::correctDuplicateWeights('CRM_Core_DAO_OptionValue', $fieldValues);
       }
     }
@@ -391,8 +403,19 @@ class CRM_Admin_Form_Options extends CRM_Admin_Form {
       $groupParams = array('name' => ($this->_gName));
       $optionValue = CRM_Core_OptionValue::addOptionValue($params, $groupParams, $this->_action, $this->_id);
 
-      CRM_Core_Session::setStatus(ts('The %1 \'%2\' has been saved.', array(1 => $this->_GName, 2 => $optionValue->label)));
+      // CRM-11516
+      if (CRM_Utils_Array::value('financial_account_id', $params)) {
+        $relationTypeId = key(CRM_Core_PseudoConstant::accountOptionValues('account_relationship', NULL, " AND v.name LIKE 'Asset Account is' "));
+        $params = array(
+          'entity_table' => 'civicrm_option_value',
+          'entity_id' => $optionValue->id,
+          'account_relationship' => $relationTypeId,
+          'financial_account_id' => $params['financial_account_id']
+        );
+        CRM_Financial_BAO_FinancialTypeAccount::add($params);
+      }
+
+      CRM_Core_Session::setStatus(ts('The %1 \'%2\' has been saved.', array(1 => $this->_GName, 2 => $optionValue->label)), ts('Saved'), 'success');
     }
   }
 }
-

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,16 +25,16 @@
 *}
 {* this template is used for adding/editing batch  *}
 {if $action eq 8}
-  <h3>{ts}Delete Bulk Data Entry Batch{/ts}</h3>
+  <h3>{ts}Delete Data Entry Batch{/ts}</h3>
 {elseif $action eq 2}
-	<h3>{ts}Edit Bulk Data Entry Batch{/ts}</h3>
+  <h3>{ts}Edit Data Entry Batch{/ts}</h3>
 {else}
-  <h3>{ts}New Bulk Data Entry Batch{/ts}</h3>
+  <h3>{ts}New Data Entry Batch{/ts}</h3>
 {/if}
 <div class="crm-block crm-form-block crm-batch-form-block">
 <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
 {if $action eq 8}
-  <div class="messages status">
+  <div class="messages status no-popup">
      <div class="icon inform-icon"></div>
         {ts}WARNING: Deleting this batch will result in the loss of all data entered for the batch.{/ts} {ts}This may mean the loss of a substantial amount of data, and the action cannot be undone.{/ts} {ts}Do you want to continue?{/ts}
       </div>
@@ -52,17 +52,13 @@
           <td class="label">{$form.description.label}</td>
           <td>{$form.description.html}</td>
       </tr>
-      <tr class="crm-batch-form-block-status_id">
-          <td class="label">{$form.status_id.label}</td>
-          <td>{$form.status_id.html}</td>
-      </tr>
       <tr class="crm-batch-form-block-item_count">
           <td class="label">{$form.item_count.label}</td>
           <td>{$form.item_count.html}</td>
       </tr>
       <tr  class="crm-batch-form-block-total">
            <td class="label">{$form.total.label}</td>
-           <td>{$form.total.html|crmReplace:class:eight}</td>
+           <td>{$form.total.html|crmAddClass:eight}</td>
       </tr>
   </table>
 {/if}

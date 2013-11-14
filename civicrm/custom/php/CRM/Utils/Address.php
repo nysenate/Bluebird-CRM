@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -48,8 +48,8 @@ class CRM_Utils_Address {
    *
    * @static
    */
-  static
-  function format($fields,
+  static function format(
+    $fields,
     $format           = NULL,
     $microformat      = FALSE,
     $mailing          = FALSE,
@@ -59,15 +59,13 @@ class CRM_Utils_Address {
     static $config = NULL;
 
     if (!$format) {
-      $format = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
-        'address_format'
-      );
+      $format =
+        CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME, 'address_format');
     }
 
     if ($mailing) {
-      $format = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
-        'mailing_format'
-      );
+      $format =
+        CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME, 'mailing_format');
     }
 
     $formatted = $format;
@@ -204,13 +202,14 @@ class CRM_Utils_Address {
     // for every token, replace {fooTOKENbar} with fooVALUEbar if
     // the value is not empty, otherwise drop the whole {fooTOKENbar}
     foreach ($replacements as $token => $value) {
-      if ($value) {
+      if ($value && is_string($value)) {
         $formatted = preg_replace("/{([^{}]*)\b{$token}\b([^{}]*)}/u", "\${1}{$value}\${2}", $formatted);
       }
       else {
         $formatted = preg_replace("/{[^{}]*\b{$token}\b[^{}]*}/u", '', $formatted);
       }
     }
+
     // drop any {...} constructs from lines' ends
     if (!$microformat) {
       $formatted = "\n$formatted\n";
@@ -266,8 +265,7 @@ class CRM_Utils_Address {
     return $finalFormatted;
   }
 
-  static
-  function sequence($format) {
+  static function sequence($format) {
     // also compute and store the address sequence
     $addressSequence = array(
       'address_name',

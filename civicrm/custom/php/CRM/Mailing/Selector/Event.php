@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -92,7 +92,8 @@ class CRM_Mailing_Selector_Event extends CRM_Core_Selector_Base implements CRM_C
    *
    * @return CRM_Contact_Selector_Profile
    * @access public
-   */ function __construct($event, $distinct, $mailing, $job = NULL, $url = NULL) {
+   */
+  function __construct($event, $distinct, $mailing, $job = NULL, $url = NULL) {
     $this->_event_type  = $event;
     $this->_is_distinct = $distinct;
     $this->_mailing_id  = $mailing;
@@ -108,8 +109,7 @@ class CRM_Mailing_Selector_Event extends CRM_Core_Selector_Base implements CRM_C
    * @access public
    * @static
    */
-  static
-  function &links() {
+  static function &links() {
     return self::$_links;
   }
   //end of function
@@ -123,11 +123,7 @@ class CRM_Mailing_Selector_Event extends CRM_Core_Selector_Base implements CRM_C
   function getPagerParams($action, &$params) {
     $params['csvString'] = NULL;
     $params['rowCount']  = CRM_Utils_Pager::ROWCOUNT;
-    $params['status']    = ts('%1 %%StatusMessage%%', array(
-      1 =>
-        $this->eventToTitle(),
-      ));
-
+    $params['status']    = ts('%1 %%StatusMessage%%', array(1 => $this->eventToTitle()));
     $params['buttonTop'] = 'PagerTopButton';
     $params['buttonBottom'] = 'PagerBottomButton';
   }
@@ -150,7 +146,7 @@ class CRM_Mailing_Selector_Event extends CRM_Core_Selector_Base implements CRM_C
 
     $email = CRM_Core_BAO_Email::getTableName();
 
-    $job = CRM_Mailing_BAO_Job::getTableName();
+    $job = CRM_Mailing_BAO_MailingJob::getTableName();
     if (!isset($this->_columnHeaders)) {
 
       $this->_columnHeaders = array(

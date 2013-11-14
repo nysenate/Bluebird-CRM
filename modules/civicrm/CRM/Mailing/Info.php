@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -31,7 +31,7 @@
  * abstract class.
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -52,9 +52,7 @@ class CRM_Mailing_Info extends CRM_Core_Component_Info {
     );
   }
 
-
-  static
-  function workflowEnabled() {
+  static function workflowEnabled() {
     $config = CRM_Core_Config::singleton();
 
     // early exit, since not true for most
@@ -80,7 +78,7 @@ class CRM_Mailing_Info extends CRM_Core_Component_Info {
   }
 
   // docs inherited from interface
-  public function getPermissions() {
+  public function getPermissions($getAllUnconditionally = FALSE) {
     $permissions = array(
       'access CiviMail',
       'access CiviMail subscribe/unsubscribe pages',
@@ -88,7 +86,7 @@ class CRM_Mailing_Info extends CRM_Core_Component_Info {
       'view public CiviMail content',
     );
 
-    if (self::workflowEnabled()) {
+    if (self::workflowEnabled() || $getAllUnconditionally) {
       $permissions[] = 'create mailings';
       $permissions[] = 'schedule mailings';
       $permissions[] = 'approve mailings';
@@ -111,8 +109,12 @@ class CRM_Mailing_Info extends CRM_Core_Component_Info {
 
   // docs inherited from interface
   public function registerTab() {
-    // this component doesn't use contact record tabs
-    return NULL;
+    return array(
+      'title' => ts('Mailings'),
+      'id' => 'mailing',
+      'url' => 'mailing',
+      'weight' => 45,
+    );
   }
 
   // docs inherited from interface

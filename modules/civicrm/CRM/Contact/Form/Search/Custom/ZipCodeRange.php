@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -75,14 +75,19 @@ class CRM_Contact_Form_Search_Custom_ZipCodeRange extends CRM_Contact_Form_Searc
   }
 
   function all($offset = 0, $rowcount = 0, $sort = NULL,
-    $includeContactIDs = FALSE
+    $includeContactIDs = FALSE, $justIDs = FALSE
   ) {
-    $selectClause = "
+    if ($justIDs) {
+      $selectClause = "contact_a.id as contact_id";
+    }
+    else {
+      $selectClause = "
 contact_a.id           as contact_id ,
 contact_a.sort_name    as sort_name  ,
 email.email            as email   ,
 address.postal_code    as postal_code
 ";
+    }
     return $this->sql($selectClause,
       $offset, $rowcount, $sort,
       $includeContactIDs, NULL

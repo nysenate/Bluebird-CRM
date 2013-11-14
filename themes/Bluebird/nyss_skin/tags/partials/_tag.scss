@@ -1,0 +1,174 @@
+dt {
+  .tag {
+    padding: 0px;
+    // height: 20px;
+    line-height:20px;
+    overflow-y:hidden;
+    .ddControl {
+      height:20px; width:20px; float:left; margin:0px;
+      &.treeButton{
+        background: url($defaultIconLink) no-repeat -32px -15px;
+        cursor:pointer;
+      }
+    }
+    .name {
+      line-height:20px;
+      float:left;
+    }
+    position: relative;
+    z-index:2;
+
+  }
+  &.open .tag .ddControl.treeButton {
+    background: url($defaultIconLink) no-repeat -64px -15px;
+  }
+  &.longName {
+    line-height:12px;
+    height:35px;
+  }
+  .fCB {
+    display:none;
+    padding:1px 0;
+    // float:right;
+    position:absolute;
+    z-index:5;
+    right:0px;
+    ul {
+      margin:0;
+      li {
+        height:16px;
+        width:16px;
+        float:left;
+        margin:1px 1px 0 0;
+        list-style-image:none !important;
+        list-style-type:none !important;
+      }
+    }
+    @include addTag;
+    @include removeTag;
+    @include moveTag;
+    @include updateTag;
+    @include mergeTag;
+    @include convertTag;
+    @include printTag;
+  }
+  &:hover {
+    .fCB {
+      display:inline;
+    }
+    &.lv-0
+    {
+      background-color:transparent;
+    }
+  }
+  &.subChecked {
+    // background-color: #F1F8EB;
+    border: 1px dashed #B0D730;
+    &:hover {
+      // background-color:#DEDEDE;
+    }
+  }
+  &.checked {
+    // background-color: #F1F8EB;
+    border: 1px solid #B0D730;
+    &:hover {
+      // background-color:#DEDEDE;
+    }
+  }
+}
+dt.shaded {
+  .name {
+    font-weight:bold;
+  }
+}
+// dt.shadedChildren {
+//   @include inset-shadow(3px,-1px,6px,.15);
+// }
+dt {
+  height:20px;
+}
+dt.description, dt.longdescription {
+  div.description {
+    font-style:italic;
+    font-size:11px;
+    margin-left:20px;
+    margin-top:-3px;
+    color:lighten(black,50%);
+  }
+  .fCB {
+
+  }
+}
+dt.description {
+  @include descriptionChange(2);
+  .fCB {
+    // margin-top:10px;
+  }
+  &.longName {
+    line-height:12px;
+    height:50px;
+    .tag {
+      height:50px;
+      line-height: 12px;
+      .name {
+      }
+    }
+    .fCB {
+      // margin-top:10px;
+    }
+  }
+}
+dt.shortdescription.description {
+  @include descriptionChange(1.5);
+  .fCB {
+    // margin-top:5px;
+  }
+  &.longName {
+    line-height:12px;
+    height:50px;
+    .tag {
+      height:50px;
+      line-height: 12px;
+      .name {
+      }
+    }
+    .fCB {
+      // margin-top:10px;
+    }
+  }
+}
+dt.longdescription {
+  @include descriptionChange(3);
+  .fCB {
+    // margin-top:10px;
+  }
+  height:52px;
+  .tag {
+    height:52px;
+  }
+}
+&.tagging {
+  dt .tag .name{
+    vertical-align: baseline;
+    display:inline-table;
+  }
+  .fCB {
+    display:inline;
+    float:left;
+    margin: 0px;
+    padding: 0px;
+    margin-right:5px;
+    position:static;
+    input.checkbox {
+      margin-top:2px;
+    }
+  }
+  dt.description, dt.shortdescription, dt.longdescription {
+    div.description {
+      margin-left:40px;
+    }
+    .fCB {
+      margin-top:0px;
+    }
+  }
+}

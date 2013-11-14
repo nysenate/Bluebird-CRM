@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -42,8 +42,10 @@ class CRM_Event_Page_Tab extends CRM_Core_Page {
    *
    * return null
    * @access public
-   */ function browse() {
-    $controller = new CRM_Core_Controller_Simple('CRM_Event_Form_Search',
+   */
+  function browse() {
+    $controller = new CRM_Core_Controller_Simple(
+      'CRM_Event_Form_Search',
       ts('Events'),
       $this->_action
     );
@@ -70,8 +72,9 @@ class CRM_Event_Page_Tab extends CRM_Core_Page {
     // build associated contributions
     $this->associatedContribution();
 
-    $controller = new CRM_Core_Controller_Simple('CRM_Event_Form_ParticipantView',
-      'View Participant',
+    $controller = new CRM_Core_Controller_Simple(
+      'CRM_Event_Form_ParticipantView',
+      ts('View Participant'),
       $this->_action
     );
     $controller->setEmbedded(TRUE);
@@ -99,7 +102,8 @@ class CRM_Event_Page_Tab extends CRM_Core_Page {
       $this->associatedContribution();
     }
 
-    $controller = new CRM_Core_Controller_Simple('CRM_Event_Form_Participant',
+    $controller = new CRM_Core_Controller_Simple(
+      'CRM_Event_Form_Participant',
       'Create Participation',
       $this->_action
     );
@@ -149,15 +153,7 @@ class CRM_Event_Page_Tab extends CRM_Core_Page {
     $this->preProcess();
 
     // check if we can process credit card registration
-    $processors = CRM_Core_PseudoConstant::paymentProcessor(FALSE, FALSE,
-      "billing_mode IN ( 1, 3 )"
-    );
-    if (count($processors) > 0) {
-      $this->assign('newCredit', TRUE);
-    }
-    else {
-      $this->assign('newCredit', FALSE);
-    }
+    CRM_Core_Payment::allowBackofficeCreditCard($this);
 
     // Only show credit card registration button if user has CiviContribute permission
     if (CRM_Core_Permission::access('CiviContribute')) {
@@ -287,7 +283,12 @@ class CRM_Event_Page_Tab extends CRM_Core_Page {
   function associatedContribution() {
     if (CRM_Core_Permission::access('CiviContribute')) {
       $this->assign('accessContribution', TRUE);
-      $controller = new CRM_Core_Controller_Simple('CRM_Contribute_Form_Search', ts('Contributions'), NULL);
+      $controller = new CRM_Core_Controller_Simple(
+        'CRM_Contribute_Form_Search',
+        ts('Contributions'),
+        NULL,
+        FALSE, FALSE, TRUE
+      );
       $controller->setEmbedded(TRUE);
       $controller->set('force', 1);
       $controller->set('cid', $this->_contactId);

@@ -1,30 +1,35 @@
 <?php
-
-
-
-/*
- This demonstrates use of the 'format.single_entity_array' param.
+/**
+ * Test Generated example of using contact getsingle API
+ * This demonstrates use of the 'format.single_entity_array' param.
     /* This param causes the only contact to be returned as an array without the other levels.
-    /* it will be ignored if there is not exactly 1 result
+    /* it will be ignored if there is not exactly 1 result *
  */
 function contact_getsingle_example(){
-$params = array( 
-  'version' => 3,
+$params = array(
   'id' => 17,
 );
 
-  require_once 'api/api.php';
-  $result = civicrm_api( 'contact','getsingle',$params );
-
-  return $result;
+try{
+  $result = civicrm_api3('contact', 'getsingle', $params);
+}
+catch (CiviCRM_API3_Exception $e) {
+  // handle error here
+  $errorMessage = $e->getMessage();
+  $errorCode = $e->getErrorCode();
+  $errorData = $e->getExtraParams();
+  return array('error' => $errorMessage, 'error_code' => $errorCode, 'error_data' => $errorData);
 }
 
-/*
+return $result;
+}
+
+/**
  * Function returns array of result expected from previous function
  */
 function contact_getsingle_expectedresult(){
 
-  $expectedResult = array( 
+  $expectedResult = array(
   'contact_id' => '17',
   'contact_type' => 'Individual',
   'contact_sub_type' => '',
@@ -45,7 +50,10 @@ function contact_getsingle_expectedresult(){
   'first_name' => 'Test',
   'middle_name' => '',
   'last_name' => 'Contact',
+  'prefix_id' => '',
+  'suffix_id' => '',
   'job_title' => '',
+  'gender_id' => '',
   'birth_date' => '',
   'is_deceased' => 0,
   'deceased_date' => '',
@@ -53,12 +61,6 @@ function contact_getsingle_expectedresult(){
   'organization_name' => '',
   'sic_code' => '',
   'contact_is_deleted' => 0,
-  'gender_id' => '',
-  'gender' => '',
-  'prefix_id' => '',
-  'prefix' => '',
-  'suffix_id' => '',
-  'suffix' => '',
   'current_employer' => '',
   'address_id' => '',
   'street_address' => '',
@@ -70,10 +72,7 @@ function contact_getsingle_expectedresult(){
   'geo_code_1' => '',
   'geo_code_2' => '',
   'state_province_id' => '',
-  'state_province_name' => '',
-  'state_province' => '',
   'country_id' => '',
-  'country' => '',
   'phone_id' => '',
   'phone_type_id' => '',
   'phone' => '',
@@ -85,25 +84,37 @@ function contact_getsingle_expectedresult(){
   'im' => '',
   'worldregion_id' => '',
   'world_region' => '',
+  'individual_prefix' => '',
+  'individual_suffix' => '',
+  'gender' => '',
+  'state_province_name' => '',
+  'state_province' => '',
+  'country' => '',
   'id' => '17',
 );
 
-  return $expectedResult  ;
+  return $expectedResult;
 }
-
-
 
 
 /*
 * This example has been generated from the API test suite. The test that created it is called
-* 
-* testContactGetSingle_entity_array and can be found in 
-* http://svn.civicrm.org/civicrm/branches/v3.4/tests/phpunit/CiviTest/api/v3/ContactTest.php
-* 
-* You can see the outcome of the API tests at 
+*
+* testContactGetSingle_entity_array and can be found in
+* http://svn.civicrm.org/civicrm/trunk/tests/phpunit/CiviTest/api/v3/ContactTest.php
+*
+* You can see the outcome of the API tests at
 * http://tests.dev.civicrm.org/trunk/results-api_v3
+*
+* To Learn about the API read
+* http://book.civicrm.org/developer/current/techniques/api/
+*
 * and review the wiki at
 * http://wiki.civicrm.org/confluence/display/CRMDOC/CiviCRM+Public+APIs
+*
 * Read more about testing here
 * http://wiki.civicrm.org/confluence/display/CRM/Testing
+*
+* API Standards documentation:
+* http://wiki.civicrm.org/confluence/display/CRM/API+Architecture+Standards
 */

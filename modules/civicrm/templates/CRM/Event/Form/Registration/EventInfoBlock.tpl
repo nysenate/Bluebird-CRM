@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -54,24 +54,24 @@
       <tr><td><label>{ts}Location{/ts}</label></td>
           <td>
             {$location.address.1.display|nl2br}
-            {if ( $event.is_map && 
-	          $config->mapProvider && 
-		  ( ( !empty($location.address.1.geo_code_1) && is_numeric($location.address.1.geo_code_1) )  || 
-		    ( $config->mapGeoCoding && !empty($location.address.1.city) AND !empty($location.address.1.state_province) ) ) ) }
+            {if ( $event.is_map &&
+            $config->mapProvider &&
+      ( ( !empty($location.address.1.geo_code_1) && is_numeric($location.address.1.geo_code_1) )  ||
+        ( $config->mapGeoCoding && !empty($location.address.1.city) AND !empty($location.address.1.state_province) ) ) ) }
               <br/><a href="{crmURL p='civicrm/contact/map/event' q="reset=1&eid=`$event.id`"}" title="{ts}Map this Address{/ts}" target="_blank">{ts}Map this Location{/ts}</a>
             {/if}
           </td>
       </tr>
     {/if}
   {/if}{*End of isShowLocation condition*}
-  
+
   {if $location.phone.1.phone || $location.email.1.email}
     <tr><td><label>{ts}Contact{/ts}</label></td>
         <td>
         {* loop on any phones and emails for this event *}
            {foreach from=$location.phone item=phone}
              {if $phone.phone}
-                {if $phone.phone_type}{$phone.phone_type_display}{else}{ts}Phone{/ts}{/if}: {$phone.phone}
+                {if $phone.phone_type}{$phone.phone_type_display}{else}{ts}Phone{/ts}{/if}: {$phone.phone} {if $phone.phone_ext}&nbsp;{ts}ext.{/ts} {$phone.phone_ext}{/if}
                 <br />
             {/if}
            {/foreach}

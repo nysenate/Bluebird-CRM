@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -134,7 +134,6 @@ class CRM_Activity_Form_Task_FileOnCase extends CRM_Activity_Form_Task {
    */
 
   public function postProcess() {
-    $errors          = array();
     $formparams      = $this->exportValues();
     $caseId          = $formparams['unclosed_case_id'];
     $filedActivities = 0;
@@ -164,22 +163,19 @@ class CRM_Activity_Form_Task_FileOnCase extends CRM_Activity_Form_Task {
           $filedActivities++;
         }
         else {
-          $errors[] = $error_msg['error_msg'];
+          CRM_Core_Session::setStatus($error_msg['error_msg'], ts("Error"), "error");
         }
       }
       else {
-        $errors[] = ts('Not permitted to file activity %1 %2.', array(
+        CRM_Core_Session::setStatus(ts('Not permitted to file activity %1 %2.', array(
           1 => empty($defaults['subject']) ? '' : $defaults['subject'],
-          2 => $defaults['activity_date_time']
-        ));
+          2 => $defaults['activity_date_time'])),
+          ts("Error"), "error");
       }
     }
 
-    $status   = $errors;
-    $status[] = ts('Filed Activities: %1', array(1 => $filedActivities));
-    $status[] = ts('Total Selected Activities: %1', array(1 => count($this->_activityHolderIds)));
-
-    CRM_Core_Session::setStatus($status);
+    CRM_Core_Session::setStatus($filedActivities, ts("Filed Activities"), "success");
+    CRM_Core_Session::setStatus("", ts('Total Selected Activities: %1', array(1 => count($this->_activityHolderIds))), "info");
   }
 }
 

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,40 +24,34 @@
  +--------------------------------------------------------------------+
 *}
 {* Search Builder *}
-{capture assign=docLink}{docURL page="user/the-user-interface/searching" text="Search documentation in the User Guide"}{/capture}
-<div class="messages help" id="help">
-<strong>{ts 1=$docLink}IMPORTANT: Search Builder requires you to use specific formats for your search values. Review the %1 before building your first search.{/ts}</strong> {help id='builder-intro'}
-</div>
 
 <div class="crm-form-block crm-search-form-block">
-<div class="crm-accordion-wrapper crm-search_builder-accordion {if $rows and !$showSearchForm}crm-accordion-closed{else}crm-accordion-open{/if}">
- <div class="crm-accordion-header crm-master-accordion-header">
-  <div class="icon crm-accordion-pointer"></div>
-        {ts}Edit Search Criteria{/ts}
-</div><!-- /.crm-accordion-header -->
-<div class="crm-accordion-body">
-<div id = "searchForm">
-{* Table for adding search criteria. *}
-{include file="CRM/Contact/Form/Search/table.tpl"}
-
-<div class="clear"></div>
-<div id="crm-submit-buttons">
-    {$form.buttons.html}
-</div>
-</div>
-</div><!-- /.crm-accordion-body -->
-</div><!-- /.crm-accordion-wrapper -->
+  <div class="crm-accordion-wrapper crm-search_builder-accordion {if $rows and !$showSearchForm}collapsed{/if}">
+    <div class="crm-accordion-header crm-master-accordion-header">
+      {ts}Search Criteria{/ts} {help id='builder-intro'}
+    </div>
+    <div class="crm-accordion-body">
+      <div id="searchForm">
+        {* Table for adding search criteria. *}
+        {include file="CRM/Contact/Form/Search/table.tpl"}
+        <div class="clear"></div>
+        <div id="crm-submit-buttons">
+          {$form.buttons.html}
+        </div>
+      </div>
+    </div><!-- /.crm-accordion-body -->
+  </div><!-- /.crm-accordion-wrapper -->
 </div><!-- /.crm-form-block -->
 {if $rowsEmpty || $rows}
 <div class="crm-content-block">
 {if $rowsEmpty}
-	<div class="crm-results-block crm-results-block-empty">
+  <div class="crm-results-block crm-results-block-empty">
     {include file="CRM/Contact/Form/Search/EmptyResults.tpl"}
-	</div>
+  </div>
 {/if}
 
 {if $rows}
-	<div class="crm-results-block">
+  <div class="crm-results-block">
        {* This section handles form elements for action task select and submit *}
        <div class="crm-search-tasks">
        {include file="CRM/Contact/Form/Search/ResultTasks.tpl"}
@@ -75,17 +69,4 @@
 </div>
 {/if}
 {$initHideBoxes}
-<script type="text/javascript">
-    var showBlock = new Array({$showBlock});
-    var hideBlock = new Array({$hideBlock});
-
-{* hide and display the appropriate blocks *}
-    on_load_init_blocks( showBlock, hideBlock );
-</script>
-{literal}
-<script type="text/javascript">
-cj(function() {
-   cj().crmaccordions();
-});
-</script>
-{/literal}
+{include file="CRM/Form/validate.tpl"}

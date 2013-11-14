@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -55,8 +55,7 @@ class CRM_Mailing_BAO_Component extends CRM_Mailing_DAO_Component {
    * @access public
    * @static
    */
-  static
-  function retrieve(&$params, &$defaults) {
+  static function retrieve(&$params, &$defaults) {
     $component = new CRM_Mailing_DAO_Component();
     $component->copyValues($params);
     if ($component->find(TRUE)) {
@@ -75,8 +74,7 @@ class CRM_Mailing_BAO_Component extends CRM_Mailing_DAO_Component {
    * @return Object             DAO object on sucess, null otherwise
    * @static
    */
-  static
-  function setIsActive($id, $is_active) {
+  static function setIsActive($id, $is_active) {
     return CRM_Core_DAO::setFieldValue('CRM_Mailing_DAO_Component', $id, 'is_active', $is_active);
   }
 
@@ -91,8 +89,7 @@ class CRM_Mailing_BAO_Component extends CRM_Mailing_DAO_Component {
    * @access public
    * @static
    */
-  static
-  function add(&$params, &$ids) {
+  static function add(&$params, &$ids) {
     // action is taken depending upon the mode
     $component = new CRM_Mailing_DAO_Component();
     $component->name = $params['name'];
@@ -119,7 +116,6 @@ class CRM_Mailing_BAO_Component extends CRM_Mailing_DAO_Component {
 
     CRM_Core_Session::setStatus(ts('The mailing component \'%1\' has been saved.',
         array(1 => $component->name)
-      ));
+      ), ts('Saved'), 'success');
   }
 }
-

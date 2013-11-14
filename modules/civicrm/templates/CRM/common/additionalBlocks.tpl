@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -31,14 +31,14 @@ cj( function( ) {
         {foreach from=$ajaxRequestBlocks key="blockName" item="instances"}
             {foreach from=$instances key="instance" item="active"}
                 buildAdditionalBlocks( '{$blockName}', '{$className}' );
-            {/foreach}  	
+            {/foreach}
         {/foreach}
     {/if}
 
     {if $loadShowHideAddressFields}
         {foreach from=$showHideAddressFields key="blockId" item="fieldName"}
            processAddressFields( '{$fieldName}', '{$blockId}', 0 );
-        {/foreach}  
+        {/foreach}
     {/if}
     {literal}
 });
@@ -63,7 +63,7 @@ function buildAdditionalBlocks( blockName, className ) {
     }
 
     {/literal}
-    {if $qfKey}    
+    {if $qfKey}
         dataUrl += "&qfKey={$qfKey}";
     {/if}
     {literal}
@@ -75,14 +75,14 @@ function buildAdditionalBlocks( blockName, className ) {
     var fname = '#' + blockName + '_Block_'+ previousInstance;
 
     cj('#addMore' + blockName + previousInstance ).hide( );
-    cj.ajax({ 
-        url     : dataUrl,   
+    cj.ajax({
+        url     : dataUrl,
         async   : false,
         success : function(html){
             cj(fname).after(html);
             if ((typeof(Drupal) != 'undefined') && Drupal.attachBehaviors) {
-            	Drupal.attachBehaviors(cj('#' + blockName + '_Block_'+ currentInstance)[0]);
-          	}
+              Drupal.attachBehaviors(cj('#' + blockName + '_Block_'+ currentInstance)[0]);
+            }
         }
     });
 
@@ -112,18 +112,18 @@ function singleSelect( object ) {
         cj( '#' + object ).attr( 'checked', false );
     }
 
-	//check if non of elements is set Primary / Allowed to Login.
-	if( cj.inArray( element['2'].slice('2'), [ 'Primary', 'Login' ] ) != -1 ) {
-		primary = false;
-		cj( execBlock ).each( function( ) { 
-			if ( cj(this).attr( 'checked' ) ) {
-				primary = true;				
-			}
-		});
-		if( ! primary ) {
-			cj('#' + object).attr( 'checked', true );
-		}
-	}
+  //check if non of elements is set Primary / Allowed to Login.
+  if( cj.inArray( element['2'].slice('2'), [ 'Primary', 'Login' ] ) != -1 ) {
+    primary = false;
+    cj( execBlock ).each( function( ) {
+      if ( cj(this).attr( 'checked' ) ) {
+        primary = true;
+      }
+    });
+    if( ! primary ) {
+      cj('#' + object).attr( 'checked', true );
+    }
+  }
 }
 
 function removeBlock( blockName, blockId ) {
@@ -133,24 +133,24 @@ function removeBlock( blockName, blockId ) {
     }
 
     if ( cj( "#"+ blockName + "_" + blockId + "_IsPrimary").attr('checked') ) {
-       	var primaryBlockId = 1;
+         var primaryBlockId = 1;
         // consider next block as a primary,
-        // when user delete first block 
+        // when user delete first block
         if ( blockId >= 1 ) {
            var blockIds = getAddressBlock('next');
            for ( var i = 0; i <= blockIds.length; i++) {
                var curBlockId = blockIds[i];
-	           if ( curBlockId != blockId ) {
-	               primaryBlockId = curBlockId;
-	               break;
-	           }
-            }  
-        } 
-    
+             if ( curBlockId != blockId ) {
+                 primaryBlockId = curBlockId;
+                 break;
+             }
+            }
+        }
+
         // finally sets the primary address
         cj( '#'+ blockName + '_' + primaryBlockId + '_IsPrimary').attr('checked', true);
     }
-    
+
     //remove the spacer for address block only.
     if ( blockName == 'Address' && cj( "#"+ blockName + "_Block_" + blockId ).prev().attr('class') == 'spacer' ){
         cj( "#"+ blockName + "_Block_" + blockId ).prev().remove();
@@ -165,16 +165,17 @@ function removeBlock( blockName, blockId ) {
         var lastBlockId = lastAddressBlock.split( '_' );
         if ( lastBlockId[2] ) {
             cj( '#addMoreAddress' + lastBlockId[2] ).show();
-        } 
+        }
     }
 }
 
 function clearFirstBlock( blockName , blockId ) {
     var element =  blockName + '_Block_' + blockId;
     cj("#" + element +" input, " + "#" + element + " select").each(function () {
-        cj(this).val(''); 
+        cj(this).val('');
     });
-    cj("#addressBlockId").removeClass('crm-accordion-open').addClass('crm-accordion-closed');
+    cj("#addressBlockId:not(.collapsed)").crmAccordionToggle();
+    cj("#addressBlockId .active").removeClass('active');
 }
 
 function getAddressBlock( position ) {
@@ -187,7 +188,7 @@ function getAddressBlock( position ) {
               break;
         case 'next':
               cj("#addressBlockId > div").children().each( function() {
-                  if ( cj(this).attr('id') ) {    
+                  if ( cj(this).attr('id') ) {
                      var blockInfo = cj(this).attr('id').split( '_', 3);
                      addressBlockIds[i] = blockInfo['2'];
                      i++;

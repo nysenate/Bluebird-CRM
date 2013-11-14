@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,7 +26,7 @@
 <fieldset>
     <legend>{ts}By Distance from a Location{/ts}</legend>
     <table class="form-layout-compressed">
-       <tr><td class="label">{$form.prox_distance.label}</td><td>{$form.prox_distance.html|crmReplace:class:four} {$form.prox_distance_unit.html}</td></tr>
+       <tr><td class="label">{$form.prox_distance.label}</td><td>{$form.prox_distance.html|crmAddClass:four} {$form.prox_distance_unit.html}</td></tr>
        <tr><td class="label">FROM...</td><td></td></tr>
        <tr><td class="label">{$form.prox_street_address.label}</td><td>{$form.prox_street_address.html}</td></tr>
        <tr><td class="label">{$form.prox_city.label}</td><td>{$form.prox_city.html}</td></tr>

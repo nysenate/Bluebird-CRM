@@ -2,9 +2,9 @@
 /*
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -49,7 +49,8 @@
 function civicrm_api3_line_item_create($params) {
   return _civicrm_api3_basic_create(_civicrm_api3_get_BAO(__FUNCTION__), $params);
 }
-/*
+
+/**
  * Adjust Metadata for Create action
  *
  * The metadata is used for setting defaults, documentation & validation
@@ -57,7 +58,10 @@ function civicrm_api3_line_item_create($params) {
  */
 function _civicrm_api3_line_item_create_spec(&$params) {
   $params['entity_id']['api.required'] = 1;
-  $params['price_field_id']['api.required'] = 1;
+  $params['qty']['api.required'] = 1;
+  $params['unit_price']['api.required'] = 1;
+  $params['line_total']['api.required'] = 1;
+  $params['label']['api.default'] = 'line item';
 }
 
 /**

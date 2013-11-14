@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
  * Redefine the display action.
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -110,7 +110,7 @@ class CRM_Core_QuickForm_Action_Display extends CRM_Core_QuickForm_Action {
    * @return void
    * @access public
    */
-  function renderForm(&$page, $ret = FALSE) {
+  function renderForm(&$page) {
     $this->_setRenderTemplates($page);
     $template = CRM_Core_Smarty::singleton();
     $form = $page->toSmarty();
@@ -132,12 +132,12 @@ class CRM_Core_QuickForm_Action_Display extends CRM_Core_QuickForm_Action {
 
     $template->assign('action', $page->getAction());
 
-    $pageTemplateFile = $page->getTemplateFileName();
+    $pageTemplateFile = $page->getHookedTemplateFileName();
     $template->assign('tplFile', $pageTemplateFile);
 
     $content = $template->fetch($controller->getTemplateFile());
 
-    if ($region = CRM_Core_Region::instance('html-header', FALSE)) {
+    if (!defined('CIVICRM_UF_HEAD') && $region = CRM_Core_Region::instance('html-header', FALSE)) {
       CRM_Utils_System::addHTMLHead($region->render(''));
     }
     CRM_Utils_System::appendTPLFile($pageTemplateFile,
@@ -153,12 +153,12 @@ class CRM_Core_QuickForm_Action_Display extends CRM_Core_QuickForm_Action {
       $html = &$content;
     }
     else {
-      $html = CRM_Utils_System::theme('page', $content, TRUE, $print, $ret);
+      $html = CRM_Utils_System::theme($content, $print);
     }
 
     if ($controller->_QFResponseType == 'json') {
       $response = array('content' => $html);
-      // @see http://www.malsup.com/jquery/form/#file-upload
+      // CRM-11831 @see http://www.malsup.com/jquery/form/#file-upload
       $xhr = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest';
       if (!$xhr) {
         echo '<textarea>';
@@ -168,10 +168,6 @@ class CRM_Core_QuickForm_Action_Display extends CRM_Core_QuickForm_Action {
         echo '</textarea>';
       }
       CRM_Utils_System::civiExit();
-    }
-
-    if ($ret) {
-      return $html;
     }
 
     if ($print) {

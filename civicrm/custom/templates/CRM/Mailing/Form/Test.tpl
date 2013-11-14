@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -50,9 +50,8 @@
   </table>
 </fieldset>
 
-<div class="crm-accordion-wrapper crm-plain_text_email-accordion crm-accordion-open">
+<div class="crm-accordion-wrapper crm-plain_text_email-accordion collapsed">
     <div class="crm-accordion-header">
-        <div class="icon crm-accordion-pointer"></div>
         {ts}Preview Mailing{/ts}
     </div><!-- /.crm-accordion-header -->
     <div class="crm-accordion-body">
@@ -75,6 +74,7 @@
 
 </div><!-- / .crm-form-block -->
 
+{*NYSS*}
 <div id="send-confirm" title="Please confirm that you want to send this test message" style="display:none;">
   <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span><span class="message"></span></p>
 </div>
@@ -83,8 +83,9 @@
 {literal}
 <script type="text/javascript">
 cj(function() {
-  cj().crmaccordions();
-  $('iframe').iframeAutoHeight({heightOffset: 20}); //NYSS
+   cj().crmAccordions(); 
+  //NYSS
+  $('iframe').iframeAutoHeight({heightOffset: 20});
   //NYSS-6957
   cj( "#sendtest" ).hide();
   cj( "#send-confirm" ).dialog({
@@ -127,7 +128,6 @@ cj(function() {
       });
     }
   });
-  //NYSS
 });
 </script>
 {/literal}

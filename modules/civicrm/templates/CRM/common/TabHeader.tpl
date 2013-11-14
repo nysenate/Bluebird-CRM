@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -60,7 +60,8 @@ cj( function() {
         spinner: spinnerImage,
         select: function(event, ui) {
             // we need to change the action of parent form, so that form submits to correct page
-            var url = cj.data(ui.tab, 'load.tabs');
+            var url = ui.tab.href;
+
             {/literal}{if $config->userSystem->is_drupal}{literal}
                 var actionUrl = url.split( '?' );
                 {/literal}{if $config->cleanURL}{literal}
@@ -89,6 +90,11 @@ cj( function() {
         load: function(event, ui) {
           if ((typeof(Drupal) != 'undefined') && Drupal.attachBehaviors) {
             Drupal.attachBehaviors(ui.panel);
+          }
+          cj(ui.panel).trigger('crmFormLoad');
+          // FIXME - decouple scanProfileSelectors and TabHeader
+          if (CRM.scanProfileSelectors) {
+            CRM.scanProfileSelectors();
           }
         }
     });

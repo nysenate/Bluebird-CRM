@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,22 +28,21 @@
 {* @var $blockId Contains the current address block id, and assigned in the  CRM/Contact/Form/Location.php file *}
 
 {if $title and $className eq 'CRM_Contact_Form_Contact'}
-<div id = "addressBlockId" class="crm-accordion-wrapper crm-address-accordion crm-accordion-closed">
+<div id="addressBlockId" class="crm-accordion-wrapper crm-address-accordion collapsed">
  <div class="crm-accordion-header">
-  <div class="icon crm-accordion-pointer"></div> 
-        <a href="#" class="whiteanchor">{$title}</a>
+    {$title}
  </div><!-- /.crm-accordion-header -->
  <div class="crm-accordion-body" id="addressBlock">
 {/if}
 
  <div id="Address_Block_{$blockId}" {if $className eq 'CRM_Contact_Form_Contact'} class="boxBlock crm-edit-address-block crm-address_{$blockId}"{/if}>
-  {if $blockId gt 1}<fieldset><legend>{ts}Additional Address{/ts}</legend>{/if}
+  {if $blockId gt 1}<fieldset><legend>{ts}Supplemental Address{/ts}</legend>{/if}
   <table class="form-layout-compressed crm-edit-address-form">
      {if $masterAddress.$blockId gt 0 }
         <tr><td><div class="message status"><div class="icon inform-icon"></div>&nbsp; {ts 1=$masterAddress.$blockId}This address is shared with %1 contact record(s). Modifying this address will automatically update the shared address for these contacts.{/ts}</div></td></tr>
      {/if}
-     
-	   {if $className eq 'CRM_Contact_Form_Contact'}
+
+   {if $className eq 'CRM_Contact_Form_Contact'}
      <tr>
         <td id='Address-Primary-html' colspan="2">
            <span class="crm-address-element location_type_id-address-element">{$form.address.$blockId.location_type_id.label}
@@ -51,31 +50,31 @@
            <span class="crm-address-element is_primary-address-element">{$form.address.$blockId.is_primary.html}</span>
            <span class="crm-address-element is_billing-address-element">{$form.address.$blockId.is_billing.html}</span>
         </td>
-        {if $blockId gt 0}
-        <td>
-          <a href="#" title="{ts}Delete Address Block{/ts}" onClick="removeBlock( 'Address', '{$blockId}' ); return false;">{ts}Delete this address{/ts}</a>
-        </td>
-        {/if}
-    </tr>
+     {if $blockId gt 0}
+         <td>
+             <a href="#" title="{ts}Delete Address Block{/ts}" onClick="removeBlock( 'Address', '{$blockId}' ); return false;">{ts}Delete this address{/ts}</a>
+         </td>
+     {/if}
+     </tr>
 
     {* include shared address template *}
     {include file="CRM/Contact/Form/ShareAddress.tpl"}
 
-    {/if}    
+    {/if}
      <tr>
         <td>
-          <table id="address_{$blockId}" style="display:block" class="form-layout-compressed">
-            {* build address block w/ address sequence. *}
-            {foreach item=addressElement from=$addressSequence}
+     <table id="address_{$blockId}" style="display:block" class="form-layout-compressed">
+         {* build address block w/ address sequence. *}
+         {foreach item=addressElement from=$addressSequence}
               {include file=CRM/Contact/Form/Edit/Address/$addressElement.tpl}
-            {/foreach}
-            {include file=CRM/Contact/Form/Edit/Address/geo_code.tpl}
-          </table>
+         {/foreach}
+         {include file=CRM/Contact/Form/Edit/Address/geo_code.tpl}
+     </table>
         </td>
         <td colspan="2">
-           <div class="crm-edit-address-custom_data crm-address-custom-set-block-{$blockId}"> 
+           <div class="crm-edit-address-custom_data crm-address-custom-set-block-{$blockId}">
             {include file="CRM/Contact/Form/Edit/Address/CustomData.tpl"}
-            </div> 
+            </div>
         </td>
      </tr>
   </table>
@@ -95,24 +94,25 @@
 <script type="text/javascript">
 //to check if same location type is already selected.
 function checkLocation( object, noAlert ) {
-    var selectedText = cj( '#' + object + ' :selected').text();
-	cj( 'td#Address-Primary-html select' ).each( function() {
-		element = cj(this).attr('id');
-		if ( cj(this).val() && element != object && selectedText == cj( '#' + element + ' :selected').text() ) {
-			if ( ! noAlert ) {
-			    var alertText = "{/literal}{ts escape='js'}Location type{/ts} {literal}" + selectedText + "{/literal} {ts escape='js'}has already been assigned to another address. Please select another location type for this address.{/ts}{literal}";
-			    alert( alertText );
-			}
-			cj( '#' + object ).val('');
-		}
-	});
+  var ele = cj('#' + object);
+  var selectedText = cj(':selected', ele).text();
+  cj('td#Address-Primary-html select').each( function() {
+    element = cj(this).attr('id');
+    if ( cj(this).val() && element != object && selectedText == cj(':selected', this).text() ) {
+      if ( !noAlert ) {
+          var alertText = selectedText + {/literal}" {ts escape='js'}has already been assigned to another address. Please select another location for this address.{/ts}"{literal};
+          ele.crmError(alertText);
+      }
+      cj( '#' + object ).val('');
+    }
+  });
 }
 </script>
 {/literal}
 {literal}
 <script type="text/javascript">
 cj(function() {
-   cj().crmaccordions(); 
+   cj().crmAccordions();
 });
 </script>
 {/literal}

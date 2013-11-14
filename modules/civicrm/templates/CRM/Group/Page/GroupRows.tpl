@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,13 +26,12 @@
 {foreach from=$current_rows item=row}
 
 <tr class="{cycle values="odd-row,even-row"}{if NOT $row.is_active} disabled{/if}">
-<td>{if NOT $row.is_active}hey{/if}{section name = "indentation" loop = $row.level}>{/section}{$row.title}</td>	
+<td>{if NOT $row.is_active}hey{/if}{section name = "indentation" loop = $row.level}>{/section}{$row.title}</td>
     <td>{$row.id}</td>
     <td>
     {$row.description|mb_truncate:80:"...":true}
     </td>
-    <td>{$row.visibility}</td>	
+    <td>{$row.visibility}</td>
     <td>{$row.action|replace:'xx':$row.id}</td>
     </tr>
 {/foreach}
-    

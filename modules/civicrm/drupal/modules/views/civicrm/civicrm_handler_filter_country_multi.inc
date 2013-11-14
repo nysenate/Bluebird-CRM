@@ -1,7 +1,7 @@
 <?php
 /*
    +--------------------------------------------------------------------+
-   | CiviCRM version 4.2                                                |
+   | CiviCRM version 4.4                                                |
    +--------------------------------------------------------------------+
    | This file is a part of CiviCRM.                                    |
    |                                                                    |
@@ -21,7 +21,7 @@
    | GNU Affero General Public License or the licensing of CiviCRM,     |
    | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
    +--------------------------------------------------------------------+
-   
+
    **
    * @file Provides Views integration for CiviCRM Multi-Select Country custom fields
    *
@@ -38,7 +38,6 @@ class civicrm_handler_filter_country_multi extends views_handler_filter_in_opera
 
   function get_value_options() {
     if (!isset($this->value_options)) {
-      require_once 'CRM/Core/PseudoConstant.php';
       $countries = CRM_Core_PseudoConstant::country();
       $options = array();
       if (is_array($countries)) {
@@ -50,6 +49,20 @@ class civicrm_handler_filter_country_multi extends views_handler_filter_in_opera
     }
   }
 
+  function operators() {
+    $operators = parent::operators();
+    $operators += array(
+      'all' => array(
+        'title' => t('Is all of'),
+        'short' => t('all'),
+        'method' => 'op_simple',
+        'values' => 1,
+        ),
+      );
+
+    return $operators;
+  }
+
   function op_simple() {
     if (empty($this->value)) {
       return;
@@ -57,15 +70,29 @@ class civicrm_handler_filter_country_multi extends views_handler_filter_in_opera
 
     $this->ensure_my_table();
 
-    $sep = CRM_Core_DAO::VALUE_SEPARATOR;
-
     // negated operator uses AND, positive uses OR
-    $op = ($this->operator == 'in') ? 'LIKE' : 'NOT LIKE';
-    $glue = ($this->operator == 'in') ? 'OR ' : 'AND ';
-    foreach ($this->value as $value) {
-      $clauses[] = "$this->table_alias.$this->real_field " . $op . " '%" . $sep . $value . $sep . "%' ";
+    $op = $glue = null;
+    switch ($this->operator) {
+      case 'in':
+        $op = ' = ';
+        $glue = ' OR ';
+        break;
+      case 'not in':
+        $op = ' != ';
+        $glue = ' AND ';
+        break;
+      case 'all' :
+        $clause = "$this->table_alias.$this->real_field IN (" . implode(',', $this->value) . ")";
+        break;
     }
-    $clause = implode($glue, $clauses);
+
+    if ($op) {
+      foreach ($this->value as $value) {
+        $clauses[] = "$this->table_alias.$this->real_field " . $op . $value;
+      }
+      $clause = implode($glue, $clauses);
+    }
+
     $this->query->add_where_expression($this->options['group'], $clause);
   }
 }

@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,7 +27,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -115,8 +115,8 @@ function civicrmtheme_custom_theme() {
   }
 
   // Get the menu items.
-  $args = explode('/', $_GET['q']);
-  $path = implode('/', $args);
+  $args = explode('?', $_GET['q']);
+  $path = $args[0];
 
   // Get the menu for above URL.
   $item = CRM_Core_Menu::get($path);

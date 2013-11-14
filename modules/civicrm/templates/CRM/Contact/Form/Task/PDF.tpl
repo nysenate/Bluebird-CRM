@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,7 +26,7 @@
 <div class="crm-form-block crm-block crm-contact-task-pdf-form-block">
 <h3>{ts}Create Printable Letters (PDF){/ts}</h3>
 {if $single eq false}
-    <div class="messages status">{include file="CRM/Contact/Form/Task.tpl"}</div>
+    <div class="messages status no-popup">{include file="CRM/Contact/Form/Task.tpl"}</div>
 {/if}
 {include file="CRM/Contact/Form/Task/PDFLetterCommon.tpl"}
 <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>

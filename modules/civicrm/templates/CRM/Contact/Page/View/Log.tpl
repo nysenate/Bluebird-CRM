@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -31,7 +31,7 @@
      <div class='hiddenElement' id='instance_data'> </div>
    {else}
     <div class="form-item">
-     {if $logCount > 0 }  	
+     {if $logCount > 0 }
        <table>
        <tr class="columnheader"><th>{ts}Changed By{/ts}</th><th>{ts}Change Date{/ts}</th></tr>
        {foreach from=$log item=row}
@@ -42,10 +42,10 @@
        {/foreach}
        </table>
      {else}
-     <div class="messages status">	
+     <div class="messages status no-popup">
       <div class="icon inform-icon"></div> &nbsp;
       {ts}No modifications have been logged for this contact.{/ts}
-     </div>	
+     </div>
      {/if}
     </div>
    {/if}
@@ -64,6 +64,28 @@
       }
     });
   });
-</script>
+
+  cj('div#changeLog div#instance_data .report-pager .crm-pager-nav a').live("click", function(e) {
+    cj.ajax({
+      url: this.href + '&snippet=4&section=2',
+      success: function( content ) {
+        cj('div#changeLog div#instance_data').html(content);
+      }
+    });
+    return false;
+  });
+
+  cj('input[name="PagerBottomButton"], input[name="PagerTopButton"]').live("click", function(e) {
+    var crmpid  = (this.name == 'PagerBottomButton') ? cj('input[name="crmPID_B"]').val() : cj('input[name="crmPID"]').val();
+    cj.ajax({
+      url: cj('div#changeLog div#instance_data .report-pager .crm-pager-nav a:first').attr('href') + '&snippet=4&section=2&crmPID=' + crmpid,
+      success: function( content ) {
+        cj('div#changeLog div#instance_data').html(content);
+      }
+    });
+    return false;
+  });
+
+  </script>
 {/literal}
 {/if}

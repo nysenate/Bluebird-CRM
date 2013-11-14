@@ -1,11 +1,10 @@
 <?php
-// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -52,7 +51,8 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
 
   protected $_includeCaseDetailExtra = FALSE;
 
-  protected $_caseDetailExtra = array();
+  protected $_caseDetailExtra = array(
+    );
   
   function __construct() {
     $this->case_statuses = CRM_Case_PseudoConstant::caseStatus();
@@ -66,6 +66,7 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
         $this->rel_types[$relid] = $v['label_b_a'];
       }
     }
+    $this->deleted_labels = array('' => ts('- select -'), 0 => ts('No'), 1 => ts('Yes'));
 
     $this->caseActivityTypes = array();
     foreach (CRM_Case_PseudoConstant::caseActivityType() as $typeDetail) {
@@ -93,6 +94,10 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
           ),
           'status_id' => array('title' => ts('Case Status')),
           'case_type_id' => array('title' => ts('Case Type')),
+          'is_deleted' => array('title' => ts('Deleted?'),
+            'default' => FALSE,
+            'type' => CRM_Utils_Type::T_INT,
+          ),
         ),
         'filters' =>
         array(
@@ -111,6 +116,12 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
           'case_type_id' => array('title' => ts('Case Type'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => $this->case_types,
+          ),
+          'is_deleted' => array('title' => ts('Deleted?'),
+            'type' => CRM_Utils_Type::T_INT,
+            'operatorType' => CRM_Report_Form::OP_SELECT,
+            'options' => $this->deleted_labels,
+            'default' => 0,
           ),
         ),
         'order_bys'  =>
@@ -310,9 +321,7 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
     );
     $this->addGroup($elements, 'case_detail_extra');
 
-    $this->_caseDetailExtra = array('case_activity_all_dates' =>
-    array(
-      'title' => ts('List of all dates of activities of Type'),
+    $this->_caseDetailExtra = array('case_activity_all_dates' => array('title' => ts('List of all dates of activities of Type'),
       'name' => 'activity_date_time',
       ),
     );
@@ -384,15 +393,12 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
 
     $this->_from = "
 FROM civicrm_case $case
-LEFT JOIN civicrm_case_contact civireport_case_contact
-  ON civireport_case_contact.case_id = {$case}.id
-LEFT JOIN civicrm_contact $conact
-  ON {$conact}.id = civireport_case_contact.contact_id
+ LEFT JOIN civicrm_case_contact civireport_case_contact on civireport_case_contact.case_id = {$case}.id
+ LEFT JOIN civicrm_contact $conact ON {$conact}.id = civireport_case_contact.contact_id
 ";
     if ( $this->_relField ) {
       $this->_from .= "
-LEFT JOIN  civicrm_relationship {$this->_aliases['civicrm_relationship']}
-ON {$this->_aliases['civicrm_relationship']}.case_id = {$case}.id
+             LEFT JOIN  civicrm_relationship {$this->_aliases['civicrm_relationship']} ON {$this->_aliases['civicrm_relationship']}.case_id = {$case}.id
 ";
     }
 
@@ -460,9 +466,10 @@ ON {$this->_aliases['civicrm_relationship']}.case_id = {$case}.id
             $from     = CRM_Utils_Array::value( "{$fieldName}_from"    , $this->_params );
             $to       = CRM_Utils_Array::value( "{$fieldName}_to"      , $this->_params );
 
-            $clause = $this->dateClause( $field['name'], $relative, $from, $to, $field['type'] );
+            $clause = $this->dateClause($field['dbAlias'], $relative, $from, $to, $field['type']);
           }
           else {
+
             $op = CRM_Utils_Array::value( "{$fieldName}_op", $this->_params );
             if( $fieldName =='case_type_id' && CRM_Utils_Array::value('case_type_id_value', $this->_params) ) {
               foreach( $this->_params['case_type_id_value'] as $key => $value ) {
@@ -512,7 +519,6 @@ ON {$this->_aliases['civicrm_relationship']}.case_id = {$case}.id
     $this->_groupBy = " GROUP BY {$this->_aliases['civicrm_case']}.id";
   }
 
-    
   function statistics( &$rows ) {
     $statistics = parent::statistics( $rows );
 
@@ -559,17 +565,10 @@ ON {$this->_aliases['civicrm_relationship']}.case_id = {$case}.id
     $case = $this->_aliases['civicrm_case'];
 
     if ( $activityType = CRM_Utils_Array::value( 'case_activity_all_dates', $this->_params['case_detail_extra']) ) {
-      $select[] = "
-        GROUP_CONCAT(DISTINCT(civireport_activity_all_{$activityType}.{$this->_caseDetailExtra['case_activity_all_dates']['name']})
-        ORDER BY civireport_activity_all_{$activityType}.{$this->_caseDetailExtra['case_activity_all_dates']['name']}) as case_activity_all_dates";
+      $select[] = "GROUP_CONCAT(DISTINCT(civireport_activity_all_{$activityType}.{$this->_caseDetailExtra['case_activity_all_dates']['name']}) ORDER BY civireport_activity_all_{$activityType}.{$this->_caseDetailExtra['case_activity_all_dates']['name']}) as case_activity_all_dates";
 
-      $from[] = "
-        LEFT JOIN civicrm_case_activity civireport_case_activity_all_{$activityType}
-          ON ( civireport_case_activity_all_{$activityType}.case_id = {$case}.id)
-        LEFT JOIN civicrm_activity civireport_activity_all_{$activityType}
-          ON ( civireport_activity_all_{$activityType}.id = civireport_case_activity_all_{$activityType}.activity_id
-          AND civireport_activity_all_{$activityType}.activity_type_id = {$activityType}
-          )";
+      $from[] = " LEFT JOIN civicrm_case_activity civireport_case_activity_all_{$activityType} ON ( civireport_case_activity_all_{$activityType}.case_id = {$case}.id)
+                        LEFT JOIN civicrm_activity civireport_activity_all_{$activityType} ON ( civireport_activity_all_{$activityType}.id = civireport_case_activity_all_{$activityType}.activity_id AND civireport_activity_all_{$activityType}.activity_type_id = {$activityType})";
 
       $this->_columnHeaders['case_activity_all_dates'] = array(
         'title' => $this->_caseDetailExtra['case_activity_all_dates']['title'] . ": {$this->caseActivityTypes[$activityType]}",
@@ -715,9 +714,16 @@ ON {$this->_aliases['civicrm_relationship']}.case_id = {$case}.id
         $entryFound = TRUE;
       }
             
+      if (array_key_exists('civicrm_case_is_deleted', $row)) {
+        $value = $row['civicrm_case_is_deleted'];
+        $rows[$rowNum]['civicrm_case_is_deleted'] = $this->deleted_labels[$value];
+        $entryFound = TRUE;
+      }
+
       if ( !$entryFound ) {
         break;
       }
     }
   }
 }
+

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -31,7 +31,7 @@
 {include file="Custom/header.tpl"}
 <div class="clear"></div>
 
-<div id="crm-container" lang="{$config->lcMessages|truncate:2:"":true}" xml:lang="{$config->lcMessages|truncate:2:"":true}">
+<div id="crm-container" class="crm-container{if $urlIsPublic} crm-public{/if}" lang="{$config->lcMessages|truncate:2:"":true}" xml:lang="{$config->lcMessages|truncate:2:"":true}">
 
 {include file="CRM/common/action.tpl"}
 {*NYSS remove nav*}
@@ -71,6 +71,8 @@
     </h1>
 </div>
 
+{crmRegion name='page-header'}
+{/crmRegion}
 
 {*{include file="CRM/common/langSwitch.tpl"}*}
 
@@ -81,30 +83,29 @@
 
 {include file="CRM/common/status.tpl"}
 
+{crmRegion name='page-body'}
 <!-- .tpl file invoked: {$tplFile}. Call via form.tpl if we have a form in the page. -->
 {if isset($isForm) and $isForm}
     {include file="CRM/Form/$formTpl.tpl"}
 {else}
     {include file=$tplFile}
 {/if}
+{/crmRegion}
 
+{crmRegion name='page-footer'}
 <div id="crm-seal"></div>
 
 {if ! $urlIsPublic}
 {include file="CRM/common/footer.tpl"}
 {/if}
+{/crmRegion}
+
 
 {literal}
 <script type="text/javascript">
 cj(function() {
-   cj().crmtooltip(); 
-   cj().crmaccordions(); 
-});
-cj(document).ready(function() {
-  advmultiselectResize();
-});
-cj(window).resize(function() {
-  advmultiselectResize();
+  cj().crmtooltip();
+  cj().crmAccordions();
 });
 </script>
 {/literal}

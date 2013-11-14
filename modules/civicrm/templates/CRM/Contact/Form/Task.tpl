@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,63 +27,91 @@
 
 {if $searchtype eq 'ts_sel'}
 <div id="popupContainer">
-{ts 1=$totalSelectedContacts}Number of selected contacts: %1{/ts}    
-     {include file="CRM/common/pager.tpl" location="top" noForm=1}
-<table>
-<tr class="columnheader">
-   <th>{ts}Name{/ts}</th>
-</tr>
-{foreach from=$value item="row"}
-<tr class="{cycle values="odd-row,even-row"}">
-    <td>{$row}<br/></td>
-</tr>
-{/foreach}
-</table>
- {include file="CRM/common/pager.tpl" location="bottom" noForm=1}
-</div>
-<br /><a href="#" id="popup-button">{ts}View Selected Contacts{/ts}</a>
+  <table id="selectedRecords" class="display crm-copy-fields">
+    <thead>
+    <tr class="columnheader">
+      <th class="contact_details">{ts}Name{/ts}</th>
+    </tr>
+    </thead>
 
+    <tbody>
+      {foreach from=$value item='row'}
+      <tr class="{cycle values="odd-row,even-row"}">
+        <td class="name">{$row}</td>
+      </tr>
+      {/foreach}
+    </tbody>
+  </table>
+
+</div><br />
+<a href="#" id="popup-button" title="{ts}View Selected Contacts{/ts}">{ts}View Selected Contacts{/ts}</a>
+{/if}
+
+{if $searchtype eq 'ts_sel'}
 {literal}
 <script type="text/javascript">
-cj(function($) {
-  $("#popupContainer").css({
-    "background-color":"#E0E0E0",
-    'display':'none',
+  cj(function($) {
+    $("#popupContainer").css({
+      "background-color":"#E0E0E0",
+      'display':'none',
+    });
+
+    $("#popup-button").click(function() {
+      $("#popupContainer").dialog({
+        title: "Selected Contacts",
+        width:700,
+        height:500,
+        modal: true,
+        overlay: {
+          opacity: 0.5,
+          background: "black"
+        }
+      });
+      return false;
+    });
+
+    var count = 0; var columns = ''; var sortColumn = '';
+    $('#selectedRecords th').each(function() {
+      if ($(this).attr('class') == 'contact_details') {
+        sortColumn += '[' + count + ', "asc" ],';
+        columns += '{"sClass": "contact_details"},';
+      }
+      else {
+        columns += '{ "bSortable": false },';
+      }
+      count++;
+    });
+
+    columns    = columns.substring(0, columns.length - 1 );
+    sortColumn = sortColumn.substring(0, sortColumn.length - 1 );
+    eval('sortColumn =[' + sortColumn + ']');
+    eval('columns =[' + columns + ']');
+
+    //load jQuery data table.
+    $('#selectedRecords').dataTable( {
+      "sPaginationType": "full_numbers",
+      "bJQueryUI"  : true,
+      "aaSorting"  : sortColumn,
+      "aoColumns"  : columns,
+      "bFilter"    : false
+    });
   });
 
-  $("#popup-button").click(function() {
-    $("#popupContainer").dialog({
-      title: "Selected Contacts",
-      width:600,
-      height:400,
-      modal: true,
-      overlay: {
-        opacity: 0.5,
-        background: "black"
-      }
-    });
-    return false;
-  });
-  // FIXME
-  var url=location.href.split('&');
-  if (url[3]) {   
-    $('#popup-button').click();
-  }
-});
 </script>
 {/literal}
 {/if}
-{if $rows } 
+
+{if $rows}
 <div class="form-item">
-<table width="30%">
-  <tr class="columnheader">
-    <th>{ts}Name{/ts}</th>
-  </tr>
-{foreach from=$rows item=row}
-<tr class="{cycle values="odd-row,even-row"}">
-<td>{$row.displayName}</td>
-</tr>
-{/foreach}
-</table>
+  <table width="30%">
+    <tr class="columnheader">
+      <th>{ts}Name{/ts}</th>
+    </tr>
+    {foreach from=$rows item=row}
+      <tr class="{cycle values="odd-row,even-row"}">
+        <td>{$row.displayName}</td>
+      </tr>
+    {/foreach}
+  </table>
 </div>
 {/if}

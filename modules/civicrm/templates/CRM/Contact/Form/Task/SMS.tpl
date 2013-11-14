@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -93,7 +93,7 @@
 
 {literal}
 
-var hintText = "{/literal}{ts}Type in a partial or complete name or email address of an existing contact.{/ts}{literal}";
+var hintText = "{/literal}{ts escape='js'}Type in a partial or complete name or email address of an existing contact.{/ts}{literal}";
 var sourceDataUrl = "{/literal}{crmURL p='civicrm/ajax/checkphone' h=0 }{literal}";
 var toDataUrl     = "{/literal}{crmURL p='civicrm/ajax/checkphone' q='id=1' h=0 }{literal}";
 

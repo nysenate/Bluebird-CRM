@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -72,9 +72,13 @@ class CRM_UF_Form_Group extends CRM_Core_Form {
     $this->assign('gid', $this->_id);
     $this->_group = CRM_Core_PseudoConstant::group();
 
+    if ($this->_action & (CRM_Core_Action::UPDATE | CRM_Core_Action::DELETE)) {
+      $title = CRM_Core_BAO_UFGroup::getTitle($this->_id);
+      $this->assign('profileTitle', $title);
+    }
+
     // setting title for html page
     if ($this->_action & CRM_Core_Action::UPDATE) {
-      $title = CRM_Core_BAO_UFGroup::getTitle($this->_id);
       CRM_Utils_System::setTitle(ts('Profile Settings') . " - $title");
     }
     elseif ($this->_action & (CRM_Core_Action::DISABLE | CRM_Core_Action::DELETE)) {
@@ -137,6 +141,7 @@ class CRM_UF_Form_Group extends CRM_Core_Form {
 
     // title
     $this->add('text', 'title', ts('Profile Name'), CRM_Core_DAO::getAttribute('CRM_Core_DAO_UFGroup', 'title'), TRUE);
+    $this->add('textarea', 'description', ts('Description'), CRM_Core_DAO::getAttribute('CRM_Core_DAO_UFGroup', 'description'));
 
 
     //add checkboxes
@@ -176,7 +181,7 @@ class CRM_UF_Form_Group extends CRM_Core_Form {
         'id' => $type,
       );
 
-      eval('CRM_UF_Form_AdvanceSetting::' . $type . '( $this );');
+      CRM_UF_Form_AdvanceSetting::$type($this);
     }
 
     $this->addButtons(array(
@@ -290,8 +295,7 @@ class CRM_UF_Form_Group extends CRM_Core_Form {
    * @access public
    * @static
    */
-  static
-  function formRule($fields, $files, $self) {
+  static function formRule($fields, $files, $self) {
     $errors = array();
 
     //validate profile title as well as name.
@@ -319,7 +323,7 @@ class CRM_UF_Form_Group extends CRM_Core_Form {
     if ($this->_action & CRM_Core_Action::DELETE) {
       $title = CRM_Core_BAO_UFGroup::getTitle($this->_id);
       CRM_Core_BAO_UFGroup::del($this->_id);
-      CRM_Core_Session::setStatus(ts("Your CiviCRM Profile '%1' has been deleted.", array(1 => $title)));
+      CRM_Core_Session::setStatus(ts("Your CiviCRM Profile '%1' has been deleted.", array(1 => $title)), ts('Profile Deleted'), 'success');
     }
     elseif ($this->_action & CRM_Core_Action::DISABLE) {
       $ufJoinParams = array('uf_group_id' => $this->_id);
@@ -362,13 +366,13 @@ class CRM_UF_Form_Group extends CRM_Core_Form {
 
       if ($this->_action & CRM_Core_Action::UPDATE) {
         $url = CRM_Utils_System::url('civicrm/admin/uf/group', 'reset=1&action=browse');
-        CRM_Core_Session::setStatus(ts("Your CiviCRM Profile '%1' has been saved.", array(1 => $ufGroup->title)));
+        CRM_Core_Session::setStatus(ts("Your CiviCRM Profile '%1' has been saved.", array(1 => $ufGroup->title)), ts('Profile Saved'), 'success');
       }
       else {
         $url = CRM_Utils_System::url('civicrm/admin/uf/group/field/add', 'reset=1&action=add&gid=' . $ufGroup->id);
         CRM_Core_Session::setStatus(ts('Your CiviCRM Profile \'%1\' has been added. You can add fields to this profile now.',
             array(1 => $ufGroup->title)
-          ));
+          ), ts('Profile Added'), 'success');
       }
       $session = CRM_Core_Session::singleton();
       $session->replaceUserContext($url);

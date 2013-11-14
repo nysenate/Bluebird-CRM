@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
  * This file contains the various menus of the CiviCRM module
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -175,9 +175,7 @@ class CRM_Core_Menu {
     }
 
     $args = explode('/', $path);
-    while (!self::isArrayTrue($fieldsPresent) &&
-      !empty($args)
-    ) {
+    while (!self::isArrayTrue($fieldsPresent) && !empty($args)) {
 
       array_pop($args);
       $parentPath = implode('/', $args);
@@ -620,7 +618,7 @@ UNION (
     if (preg_match('/^civicrm\/(upgrade\/)?queue\//', $path)) {
       CRM_Queue_Menu::alter($path, $menuPath);
     }
-    
+
     // Part of upgrade framework but not run inside main upgrade because it deletes data
     // Once we have another example of a 'cleanup' we should generalize the clause below so it grabs string
     // which follows upgrade/ and checks for existence of a function in Cleanup class.

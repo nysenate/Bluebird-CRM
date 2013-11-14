@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,32 +23,30 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-{*this is included inside the table*}
+{*this is included inside a table row*}
 {assign var=relativeName   value=$fieldName|cat:"_relative"}
 <td>{$form.$relativeName.html}</td>
-<td>   
-    <span id="absolute_{$relativeName}"> 
-        {assign var=fromName   value=$fieldName|cat:$from}
-        {$form.$fromName.label}
-        {include file="CRM/common/jcalendar.tpl" elementName=$fromName} 
-        {assign var=toName   value=$fieldName|cat:$to}
-        {$form.$toName.label}
-        {include file="CRM/common/jcalendar.tpl" elementName=$toName} 
-    </span>   
-            
-</td>
-{literal}
-<script type="text/javascript">
-    var val       = document.getElementById("{/literal}{$relativeName}{literal}").value;
-    var fieldName = "{/literal}{$relativeName}{literal}";
-    showAbsoluteRange( val, fieldName );
-
-    function showAbsoluteRange( val, fieldName ) {
-        if ( val == "0" ) {
-            cj('#absolute_'+ fieldName).show();
+<td>
+  <span class="crm-absolute-date-range">
+    {assign var=fromName   value=$fieldName|cat:$from}
+    {$form.$fromName.label}
+    {include file="CRM/common/jcalendar.tpl" elementName=$fromName}
+    &nbsp;&nbsp;
+    {assign var=toName   value=$fieldName|cat:$to}
+    {$form.$toName.label}
+    {include file="CRM/common/jcalendar.tpl" elementName=$toName}
+  </span>
+  {literal}
+    <script type="text/javascript">
+      cj("#{/literal}{$relativeName}{literal}").change(function() {
+        var n = cj(this).parent().parent();
+        if (cj(this).val() == "0") {
+          cj(".crm-absolute-date-range", n).show();
         } else {
-            cj('#absolute_'+ fieldName).hide();
+          cj(".crm-absolute-date-range", n).hide();
+          cj(':text', n).val('');
         }
-    }
-</script>
-{/literal}        
+      }).change();
+    </script>
+  {/literal}
+</td>

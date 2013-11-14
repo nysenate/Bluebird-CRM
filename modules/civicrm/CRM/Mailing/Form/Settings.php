@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -37,6 +37,7 @@
  * This file is used to build the form configuring mailing details
  */
 class CRM_Mailing_Form_Settings extends CRM_Core_Form {
+
   /**
    * Function to set variables up before form is built
    *
@@ -50,12 +51,11 @@ class CRM_Mailing_Form_Settings extends CRM_Core_Form {
     $this->_searchBasedMailing = CRM_Contact_Form_Search::isSearchContext($this->get('context'));
     if(CRM_Contact_Form_Search::isSearchContext($this->get('context')) && !$ssID){
     $params = array();
-    $value = CRM_Core_BAO_PrevNextCache::buildSelectedContactPager($this,$params);
-    $result = CRM_Core_BAO_PrevNextCache::getSelectedContacts($value['offset'],$value['rowCount1']);
+    $result = CRM_Core_BAO_PrevNextCache::getSelectedContacts();
     $this->assign("value", $result);
     }
   }
- 
+
   /**
    * This function sets the default values for the form.
    * the default values are retrieved from the database
@@ -141,46 +141,25 @@ class CRM_Mailing_Form_Settings extends CRM_Core_Form {
       CRM_Mailing_PseudoConstant::component('OptOut'), TRUE
     );
 
-    //FIXME : currently we are hiding save an continue later when
-    //search base mailing, we should handle it when we fix CRM-3876
-    if ($this->_searchBasedMailing) {
-      $buttons = array(
-        array('type' => 'back',
-          'name' => ts('<< Previous'),
-        ),
-        array(
-          'type' => 'next',
-          'name' => ts('Next >>'),
-          'spacing' => '&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;',
-          'isDefault' => TRUE,
-        ),
-        array(
-          'type' => 'cancel',
-          'name' => ts('Cancel'),
-        ),
-      );
-    }
-    else {
-      $buttons = array(
-        array('type' => 'back',
-          'name' => ts('<< Previous'),
-        ),
-        array(
-          'type' => 'next',
-          'name' => ts('Next >>'),
-          'spacing' => '&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;',
-          'isDefault' => TRUE,
-        ),
-        array(
-          'type' => 'submit',
-          'name' => ts('Save & Continue Later'),
-        ),
-        array(
-          'type' => 'cancel',
-          'name' => ts('Cancel'),
-        ),
-      );
-    }
+    $buttons = array(
+      array('type' => 'back',
+        'name' => ts('<< Previous'),
+      ),
+      array(
+        'type' => 'next',
+        'name' => ts('Next >>'),
+        'spacing' => '&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;',
+        'isDefault' => TRUE,
+      ),
+      array(
+        'type' => 'submit',
+        'name' => ts('Save & Continue Later'),
+      ),
+      array(
+        'type' => 'cancel',
+        'name' => ts('Cancel'),
+      ),
+    );
 
     $this->addButtons($buttons);
 
@@ -189,6 +168,9 @@ class CRM_Mailing_Form_Settings extends CRM_Core_Form {
 
   public function postProcess() {
     $params = $ids = array();
+
+    $session = CRM_Core_Session::singleton();
+    $params['created_id'] = $session->get('userID');
 
     $uploadParams = array('reply_id', 'unsubscribe_id', 'optout_id', 'resubscribe_id');
     $uploadParamsBoolean = array('override_verp', 'forward_replies', 'url_tracking', 'open_tracking', 'auto_responder');
@@ -251,19 +233,17 @@ class CRM_Mailing_Form_Settings extends CRM_Core_Form {
         }
 
         $draftURL = CRM_Utils_System::url('civicrm/mailing/browse/unscheduled', 'scheduled=false&reset=1');
-        $status = ts("Your mailing has been saved. You can continue later by clicking the 'Continue' action to resume working on it.<br /> From <a href='%1'>Draft and Unscheduled Mailings</a>.", array(1 => $draftURL));
-        CRM_Core_Session::setStatus($status);
+        $status = ts("You can continue later by clicking the 'Continue' action to resume working on it.<br />From <a href='%1'>Draft and Unscheduled Mailings</a>.", array(1 => $draftURL));
 
-        //replace user context to search.
+        // Redirect user to search.
         $url = CRM_Utils_System::url('civicrm/contact/' . $fragment, $urlParams);
-        CRM_Utils_System::redirect($url);
       }
       else {
-        $status = ts("Your mailing has been saved. Click the 'Continue' action to resume working on it.");
-        CRM_Core_Session::setStatus($status);
+        $status = ts("Click the 'Continue' action to resume working on it.");
         $url = CRM_Utils_System::url('civicrm/mailing/browse/unscheduled', 'scheduled=false&reset=1');
-        CRM_Utils_System::redirect($url);
       }
+      CRM_Core_Session::setStatus($status, ts('Mailing Saved'), 'success');
+      CRM_Utils_System::redirect($url);
     }
   }
 
@@ -278,4 +258,3 @@ class CRM_Mailing_Form_Settings extends CRM_Core_Form {
     return ts('Track and Respond');
   }
 }
-

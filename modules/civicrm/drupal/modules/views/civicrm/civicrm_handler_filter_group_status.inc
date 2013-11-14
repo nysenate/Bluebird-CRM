@@ -1,7 +1,7 @@
 <?php
 /*
   +--------------------------------------------------------------------+
-  | CiviCRM version 4.2                                                |
+  | CiviCRM version 4.4                                                |
   +--------------------------------------------------------------------+
   | This file is a part of CiviCRM.                                    |
   |                                                                    |
@@ -27,10 +27,6 @@
 /*
  * Heavily based on anonymous code contribution. No claim.
  * CiviCRM Views Integration
- *
- * civicrm_handler_filter_contribution_type.inc
- * Filters Contribution Types, and is configured using the labels from the database
- *
  */
 class civicrm_handler_filter_group_status extends views_handler_filter_in_operator {
 

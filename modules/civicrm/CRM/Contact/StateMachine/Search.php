@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -108,8 +108,8 @@ class CRM_Contact_StateMachine_Search extends CRM_Core_StateMachine {
     if ($value) {
       $componentMode = $this->_controller->get('component_mode');
       $modeValue = CRM_Contact_Form_Search::getModeValue($componentMode);
-      require_once (str_replace('_', DIRECTORY_SEPARATOR, $modeValue['taskClassName']) . '.php');
-      return eval("return {$modeValue['taskClassName']}::getTask( $value );");
+      $taskClassName = $modeValue['taskClassName'];
+      return $taskClassName::getTask($value);
     }
     else {
       return CRM_Contact_Task::getTask($value);
@@ -132,6 +132,11 @@ class CRM_Contact_StateMachine_Search extends CRM_Core_StateMachine {
     }
   }
 
+  /**
+   * Since this is a state machine for search and we want to come back to the same state
+   * we dont want to issue a reset of the state session when we are done processing a task
+   *
+   */
   function shouldReset() {
     return FALSE;
   }

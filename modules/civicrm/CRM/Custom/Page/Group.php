@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -57,7 +57,7 @@ class CRM_Custom_Page_Group extends CRM_Core_Page {
    *
    * @return  array   array of action links that we need to display for the browse screen
    * @access public
-   */ 
+   */
   function &actionLinks() {
     // check if variable _actionsLinks is populated
     if (!isset(self::$_actionLinks)) {
@@ -208,7 +208,7 @@ class CRM_Custom_Page_Group extends CRM_Core_Page {
     // get all custom groups sorted by weight
     $customGroup = array();
     $dao = new CRM_Core_DAO_CustomGroup();
-
+    $dao->is_reserved = FALSE;
     $dao->orderBy('weight, title');
     $dao->find();
 
@@ -241,7 +241,7 @@ class CRM_Custom_Page_Group extends CRM_Core_Page {
     $subTypes = array();
 
     $subTypes['Activity'] = CRM_Core_PseudoConstant::activityType(FALSE, TRUE, FALSE, 'label', TRUE);
-    $subTypes['Contribution'] = CRM_Contribute_PseudoConstant::contributionType();
+        $subTypes['Contribution'] = CRM_Contribute_PseudoConstant::financialType( );
     $subTypes['Membership'] = CRM_Member_BAO_MembershipType::getMembershipTypes(FALSE);
     $subTypes['Event'] = CRM_Core_OptionGroup::values('event_type');
     $subTypes['Grant'] = CRM_Core_OptionGroup::values('grant_type');

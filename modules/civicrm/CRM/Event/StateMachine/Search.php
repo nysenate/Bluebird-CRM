@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -44,7 +44,8 @@ class CRM_Event_StateMachine_Search extends CRM_Core_StateMachine {
 
   /**
    * class constructor
-   */ function __construct($controller, $action = CRM_Core_Action::NONE) {
+   */
+  function __construct($controller, $action = CRM_Core_Action::NONE) {
     parent::__construct($controller, $action);
 
     $this->_pages = array();
@@ -103,6 +104,15 @@ class CRM_Event_StateMachine_Search extends CRM_Core_StateMachine {
    */
   function getTaskFormName() {
     return CRM_Utils_String::getClassName($this->_task);
+  }
+
+  /**
+   * Since this is a state machine for search and we want to come back to the same state
+   * we dont want to issue a reset of the state session when we are done processing a task
+   *
+   */
+  function shouldReset() {
+    return FALSE;
   }
 }
 

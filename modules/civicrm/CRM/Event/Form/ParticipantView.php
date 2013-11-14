@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -154,18 +154,20 @@ class CRM_Event_Form_ParticipantView extends CRM_Core_Form {
     }
 
     $participantRoles = CRM_Event_PseudoConstant::participantRole();
-    $displayName = CRM_Contact_BAO_Contact::displayName($contactID);
+    $displayName = CRM_Contact_BAO_Contact::displayName($values[$participantID]['contact_id']);
 
     $participantCount = array();
     foreach ($lineItem as $k => $v) {
       if (CRM_Utils_Array::value('participant_count', $lineItem[$k]) > 0) {
-        $participantCount[] = $lineItem['participant_count'];
+        $participantCount[] = $lineItem[$k]['participant_count'];
       }
     }
     if ($participantCount) {
       $this->assign('pricesetFieldsCount', $participantCount);
     }
     $this->assign('displayName', $displayName);
+    // omitting contactImage from title for now since the summary overlay css doesn't work outside of our crm-container
+    CRM_Utils_System::setTitle(ts('View Event Registration for') .  ' ' . $displayName);
 
     $roleId = CRM_Utils_Array::value('role_id', $values[$participantID]);
     $title = $displayName . ' (' . CRM_Utils_Array::value($roleId, $participantRoles) . ' - ' . $eventTitle . ')';

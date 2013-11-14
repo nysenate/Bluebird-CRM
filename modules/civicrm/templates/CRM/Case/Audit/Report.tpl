@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,37 +27,37 @@
 <head>
   <title>{$pageTitle}</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <base href="{crmURL p="" a=true}" /><!--[if IE]></base><![endif]-->
+  <base href="{crmURL p="" a=1}" /><!--[if IE]></base><![endif]-->
   <style type="text/css" media="screen, print">@import url({$config->userFrameworkResourceURL}css/print.css);</style>
 </head>
 
 <body>
-<div id="crm-container">
+<div id="crm-container" class="crm-container">
 <h1>{$pageTitle}</h1>
 <div id="report-date">{$reportDate}</div>
 <h2>{ts}Case Summary{/ts}</h2>
 <table class="report-layout">
     <tr>
-    	<th class="reports-header">{ts}Client{/ts}</th>
-    	<th class="reports-header">{ts}Case Type{/ts}</th>
-       	<th class="reports-header">{ts}Status{/ts}</th>
+      <th class="reports-header">{ts}Client{/ts}</th>
+      <th class="reports-header">{ts}Case Type{/ts}</th>
+         <th class="reports-header">{ts}Status{/ts}</th>
         <th class="reports-header">{ts}Start Date{/ts}</th>
-    	<th class="reports-header">{ts}Case ID{/ts}</th>
+      <th class="reports-header">{ts}Case ID{/ts}</th>
     </tr>
     <tr>
         <td class="crm-case-report-clientName">{$case.clientName}</td>
         <td class="crm-case-report-caseType">{$case.caseType}</td>
         <td class="crm-case-report-status">{$case.status}</td>
         <td class="crm-case-report-start_date">{$case.start_date}</td>
-        <td class="crm-case-report-{$caseId}">{$caseId}</td> 
+        <td class="crm-case-report-{$caseId}">{$caseId}</td>
     </tr>
 </table>
 <h2>{ts}Case Roles{/ts}</h2>
 <table class ="report-layout">
     <tr>
-    	<th class="reports-header">{ts}Case Role{/ts}</th>
-    	<th class="reports-header">{ts}Name{/ts}</th>
-       	<th class="reports-header">{ts}Phone{/ts}</th>
+      <th class="reports-header">{ts}Case Role{/ts}</th>
+      <th class="reports-header">{ts}Name{/ts}</th>
+         <th class="reports-header">{ts}Phone{/ts}</th>
         <th class="reports-header">{ts}Email{/ts}</th>
     </tr>
 
@@ -66,11 +66,11 @@
           <td class="crm-case-report-caserelationships-relation">{$row.relation}</td>
           <td class="crm-case-report-caserelationships-name">{$row.name}</td>
           <td class="crm-case-report-caserelationships-phone">{$row.phone}</td>
-          <td class="crm-case-report-caserelationships-email">{$row.email}</td> 
+          <td class="crm-case-report-caserelationships-email">{$row.email}</td>
        </tr>
     {/foreach}
     {foreach from=$caseRoles item=relName key=relTypeID}
-         {if $relTypeID neq 'client'} 
+         {if $relTypeID neq 'client'}
            <tr>
                <td>{$relName}</td>
                <td>{ts}(not assigned){/ts}</td>
@@ -83,20 +83,20 @@
                <td class="crm-case-report-caseroles-sort_name">{$relName.sort_name}</td>
                <td class="crm-case-report-caseroles-phone">{$relName.phone}</td>
                <td class="crm-case-report-caseroles-email">{$relName.email}</td>
-           </tr> 
+           </tr>
          {/if}
-	{/foreach}
+  {/foreach}
 </table>
 <br />
 
 {if $otherRelationships}
     <table  class ="report-layout">
-       	<tr>
-    		<th class="reports-header">{ts}Client Relationship{/ts}</th>
-    		<th class="reports-header">{ts}Name{/ts}</th>
-    		<th class="reports-header">{ts}Phone{/ts}</th>
-    		<th class="reports-header">{ts}Email{/ts}</th>
-    	</tr>
+         <tr>
+        <th class="reports-header">{ts}Client Relationship{/ts}</th>
+        <th class="reports-header">{ts}Name{/ts}</th>
+        <th class="reports-header">{ts}Phone{/ts}</th>
+        <th class="reports-header">{ts}Email{/ts}</th>
+      </tr>
         {foreach from=$otherRelationships item=row key=relId}
         <tr>
             <td class="crm-case-report-otherrelationships-relation">{$row.relation}</td>
@@ -111,18 +111,18 @@
 
 {if $globalRelationships}
     <table class ="report-layout">
-       	<tr>
-    	 	<th class="reports-header">{$globalGroupInfo.title}</th>
-     	 	<th class="reports-header">{ts}Phone{/ts}</th>
-    	 	<th class="reports-header">{ts}Email{/ts}</th>
-    	</tr>
+         <tr>
+         <th class="reports-header">{$globalGroupInfo.title}</th>
+          <th class="reports-header">{ts}Phone{/ts}</th>
+         <th class="reports-header">{ts}Email{/ts}</th>
+      </tr>
         {foreach from=$globalRelationships item=row key=relId}
         <tr>
             <td class="crm-case-report-globalrelationships-sort_name">{$row.sort_name}</td>
             <td class="crm-case-report-globalrelationships-phone">{$row.phone}</td>
             <td class="crm-case-report-globalrelationships-email">{$row.email}</td>
         </tr>
-	    {/foreach}
+      {/foreach}
     </table>
 {/if}
 
@@ -133,11 +133,11 @@
            <tr class="crm-case-report-activity-{$field.label}">
              <th scope="row" class="label">{$field.label|escape}</th>
              {if $field.label eq 'Activity Type' or $field.label eq 'Status'}
-                <td class="bold">{$field.value|escape}</td> 
+                <td class="bold">{$field.value|escape}</td>
              {elseif $field.label eq 'Details' or $field.label eq 'Subject'}
                 <td>{$field.value}</td>
-             {else} 
-                <td>{$field.value|escape}</td> 
+             {else}
+                <td>{$field.value|escape}</td>
              {/if}
            </tr>
        {/foreach}

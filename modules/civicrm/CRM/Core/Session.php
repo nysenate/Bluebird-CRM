@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -53,7 +53,7 @@ class CRM_Core_Session {
    *
    * @var object
    */
-  protected $_session;
+  protected $_session = NULL;
 
   /**
    * We only need one instance of this object. So we use the singleton
@@ -82,13 +82,13 @@ class CRM_Core_Session {
    * @return void
    */
   function __construct() {
-    $this->_session = &$_SESSION;
+    $this->_session = null;
   }
 
   /**
    * singleton function used to manage this object
    *
-   * @return object
+   * @return CRM_CoreSession
    * @static
    */
   static function &singleton() {
@@ -102,11 +102,36 @@ class CRM_Core_Session {
    * Creates an array in the session. All variables now will be stored
    * under this array
    *
+   * @param boolean isRead is this a read operation, in this case, the session will not be touched
+   *
    * @access private
    *
    * @return void
    */
-  function create() {
+  function initialize($isRead = FALSE) {
+    // lets initialize the _session variable just before we need it
+    // hopefully any bootstrapping code will actually load the session from the CMS
+    if (!isset($this->_session)) {
+      // CRM-9483
+      if (!isset($_SESSION) && PHP_SAPI !== 'cli') {
+        if ($isRead) {
+          return;
+        }
+        $config =& CRM_Core_Config::singleton();
+        if ($config->userSystem->is_drupal && function_exists('drupal_session_start')) {
+          drupal_session_start();
+        }
+        else {
+          session_start();
+        }
+      }
+      $this->_session =& $_SESSION;
+    }
+
+    if ($isRead) {
+      return;
+    }
+
     if (!isset($this->_session[$this->_key]) ||
       !is_array($this->_session[$this->_key])
     ) {
@@ -124,6 +149,8 @@ class CRM_Core_Session {
    */
   function reset($all = 1) {
     if ($all != 1) {
+      $this->initialize();
+
       // to make certain we clear it, first initialize it to empty
       $this->_session[$this->_key] = array();
       unset($this->_session[$this->_key]);
@@ -138,13 +165,17 @@ class CRM_Core_Session {
   /**
    * creates a session local scope
    *
-   * @param string local scope name
+   * @param string  prefix local scope name
+   * @param boolean isRead is this a read operation, in this case, the session will not be touched
+   *
    * @access public
    *
    * @return void
    */
-  function createScope($prefix) {
-    if (empty($prefix)) {
+  function createScope($prefix, $isRead = FALSE) {
+    $this->initialize($isRead);
+
+    if ($isRead || empty($prefix)) {
       return;
     }
 
@@ -162,6 +193,8 @@ class CRM_Core_Session {
    * @return void
    */
   function resetScope($prefix) {
+    $this->initialize();
+
     if (empty($prefix)) {
       return;
     }
@@ -190,7 +223,6 @@ class CRM_Core_Session {
    */
   function set($name, $value = NULL, $prefix = NULL) {
     // create session scope
-    $this->create();
     $this->createScope($prefix);
 
     if (empty($prefix)) {
@@ -226,14 +258,20 @@ class CRM_Core_Session {
    */
   function get($name, $prefix = NULL) {
     // create session scope
-    $this->create();
-    $this->createScope($prefix);
+    $this->createScope($prefix, TRUE);
+
+    if (empty($this->_session) || empty($this->_session[$this->_key])) {
+      return null;
+    }
 
     if (empty($prefix)) {
-      $session = &$this->_session[$this->_key];
+      $session =& $this->_session[$this->_key];
     }
     else {
-      $session = &$this->_session[$this->_key][$prefix];
+      if (empty($this->_session[$this->_key][$prefix])) {
+        return null;
+      }
+      $session =& $this->_session[$this->_key][$prefix];
     }
 
     return CRM_Utils_Array::value($name, $session);
@@ -253,8 +291,7 @@ class CRM_Core_Session {
    */
   function getVars(&$vars, $prefix = '') {
     // create session scope
-    $this->create();
-    $this->createScope($prefix);
+    $this->createScope($prefix, TRUE);
 
     if (empty($prefix)) {
       $values = &$this->_session[$this->_key];
@@ -268,6 +305,29 @@ class CRM_Core_Session {
         $vars[$name] = $value;
       }
     }
+  }
+
+  /**
+   * Set and check a timer. If it's expired, it will be set again.
+   * Good for showing a message to the user every hour or day (so not bugging them on every page)
+   * Returns true-ish values if the timer is not set or expired, and false if the timer is still running
+   * If you want to get more nuanced, you can check the type of the return to see if it's 'not set' or actually expired at a certain time
+   *
+   * @access public
+   *
+   * @param  string name : name of the timer
+   * @param  int expire  : expiry time (in seconds)
+   *
+   * @return mixed
+   *
+   */
+  function timer($name, $expire) {
+    $ts = $this->get($name, 'timer');
+    if (!$ts || $ts < time() - $expire) {
+      $this->set($name, time(), 'timer');
+      return $ts ? $ts : 'not set';
+    }
+    return false;
   }
 
   /**
@@ -308,7 +368,6 @@ class CRM_Core_Session {
       }
       array_push($this->_session[$this->_key][self::USER_CONTEXT], $userContext);
     }
-    // CRM_Core_Error::debug( 'UC', $this->_session[$this->_key][self::USER_CONTEXT] );
   }
 
   /**
@@ -366,6 +425,7 @@ class CRM_Core_Session {
    * dumps the session to the log
    */
   function debug($all = 1) {
+    $this->initialize();
     if ($all != 1) {
       CRM_Core_Error::debug('CRM Session', $this->_session);
     }
@@ -375,14 +435,14 @@ class CRM_Core_Session {
   }
 
   /**
-   * stores a status message, resets status if asked to
+   * Fetches status messages
    *
    * @param $reset boolean should we reset the status variable?
    *
    * @return string        the status message if any
    */
   function getStatus($reset = FALSE) {
-    $this->create();
+    $this->initialize();
 
     $status = NULL;
     if (array_key_exists('status', $this->_session[$this->_key])) {
@@ -396,42 +456,61 @@ class CRM_Core_Session {
   }
 
   /**
-   * stores the status message in the session
+   * Stores an alert to be displayed to the user via crm-messages
    *
-   * @param $status string the status message
-   * @param $append boolean if you want to append or set new status
+   * @param $text string
+   *   The status message
+   *
+   * @param $title string
+   *   The optional title of this message
+   *
+   * @param $type string
+   *   The type of this message (printed as a css class). Possible options:
+   *     - 'alert' (default)
+   *     - 'info'
+   *     - 'success'
+   *     - 'error' (this message type by default will remain on the screen
+   *               until the user dismisses it)
+   *     - 'no-popup' (will display in the document like old-school)
+   *
+   * @param $options array
+   *   Additional options. Possible values:
+   *     - 'unique' (default: true) Check if this message was already set before adding
+   *     - 'expires' how long to display this message before fadeout (in ms)
+   *                 set to 0 for no expiration
+   *                 defaults to 10 seconds for most messages, 5 if it has a title but no body,
+   *                 or 0 for errors or messages containing links
    *
    * @static
    *
    * @return void
    */
-  static function setStatus($status, $append = TRUE) {
+  static function setStatus($text, $title = '', $type = 'alert', $options = array()) {
     // make sure session is initialized, CRM-8120
     $session = self::singleton();
+    $session->initialize();
 
-    if (isset(self::$_singleton->_session[self::$_singleton->_key]['status'])) {
-      if ($append) {
-        if (is_array($status)) {
-          if (is_array(self::$_singleton->_session[self::$_singleton->_key]['status'])) {
-            self::$_singleton->_session[self::$_singleton->_key]['status'] += $status;
-          }
-          else {
-            $currentStatus = self::$_singleton->_session[self::$_singleton->_key]['status'];
-            // add an empty element to the beginning which will go in the <h3>
-            self::$_singleton->_session[self::$_singleton->_key]['status'] = array(
-              '', $currentStatus) + $status;
-          }
-        }
-        else {
-          self::$_singleton->_session[self::$_singleton->_key]['status'] .= " $status";
-        }
-      }
-      else {
-        self::$_singleton->_session[self::$_singleton->_key]['status'] = " $status";
-      }
+    // default options
+    $options += array('unique' => TRUE);
+
+    if (!isset(self::$_singleton->_session[self::$_singleton->_key]['status'])) {
+      self::$_singleton->_session[self::$_singleton->_key]['status'] = array();
     }
-    else {
-      self::$_singleton->_session[self::$_singleton->_key]['status'] = $status;
+    if ($text) {
+      if ($options['unique']) {
+        foreach (self::$_singleton->_session[self::$_singleton->_key]['status'] as $msg) {
+          if ($msg['text'] == $text && $msg['title'] == $title) {
+            return;
+          }
+        }
+      }
+      unset($options['unique']);
+      self::$_singleton->_session[self::$_singleton->_key]['status'][] = array(
+        'text' => $text,
+        'title' => $title,
+        'type' => $type,
+        'options' => $options ? json_encode($options) : NULL,
+      );
     }
   }
 

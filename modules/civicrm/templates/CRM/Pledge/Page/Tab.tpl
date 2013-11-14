@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,13 +24,13 @@
  +--------------------------------------------------------------------+
 *}
 <div class="view-content">
-{if $action eq 1 or $action eq 2 or $action eq 8} {* add, update or view *}            
+{if $action eq 1 or $action eq 2 or $action eq 8} {* add, update or view *}
     {include file="CRM/Pledge/Form/Pledge.tpl"}
 {elseif $action eq 4}
     {include file="CRM/Pledge/Form/PledgeView.tpl"}
 {else}
 <div id="help">
-    {ts 1=$displayName}Pledges received from %1 since inception.{/ts} 
+    {ts 1=$displayName}Pledges received from %1 since inception.{/ts}
     {if $permission EQ 'edit'}
      {capture assign=newContribURL}{crmURL p="civicrm/contact/view/pledge" q="reset=1&action=add&cid=`$contactId`&context=pledge"}{/capture}
      {ts 1=$newContribURL}Click <a href='%1'>Add Pledge</a> to record a new pledge received from this contact.{/ts}
@@ -48,20 +48,20 @@
 {if $rows}
     <p> </p>
     {include file="CRM/Pledge/Form/Selector.tpl"}
-    
+
 {else}
-   <div class="messages status">
+   <div class="messages status no-popup">
        <div class="icon inform-icon"></div>
             {ts}No pledges have been recorded from this contact.{/ts}
        </div>
 {/if}
 
-{if $honor}	
+{if $honor}
     <div class="solid-border-top">
         <br /><label>{ts 1=$displayName}Contributions made in honor of %1{/ts}</label>
     </div>
-    {include file="CRM/Contribute/Page/ContributionHonor.tpl"}	
-{/if} 
+    {include file="CRM/Contribute/Page/ContributionHonor.tpl"}
+{/if}
 
 {/if}
 </div>

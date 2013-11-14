@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,14 +27,14 @@
 <table class="form-layout-compressed">
 	<tr>
        <td>{$form.organization_name.label}<br/>
-       		{$form.organization_name.html|crmReplace:class:big}
+         {$form.organization_name.html}
         </td>
 
        <td>{$form.legal_name.label}<br/>
-       {$form.legal_name.html|crmReplace:class:big}</td>
+       {$form.legal_name.html}</td>
 
        <td>{$form.nick_name.label}<br/>
-       {$form.nick_name.html|crmReplace:class:big}</td>
+       {$form.nick_name.html}</td>
         <td>
         	{assign var='custom_41' value=$groupTree.3.fields.41.element_name}
             {$form.$custom_41.label}<br/>

@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -267,7 +267,7 @@ class CRM_Contribute_Form_ContributionPage extends CRM_Core_Form {
       // get price set of type contributions
       //this is the value for stored in db if price set extends contribution
       $usedFor = 2;
-      $this->_priceSetID = CRM_Price_BAO_Set::getFor('civicrm_contribution_page', $this->_id, $usedFor, 1);
+      $this->_priceSetID = CRM_Price_BAO_PriceSet::getFor('civicrm_contribution_page', $this->_id, $usedFor, 1);
       if ($this->_priceSetID) {
         $defaults['price_set_id'] = $this->_priceSetID;
       }
@@ -296,7 +296,8 @@ class CRM_Contribute_Form_ContributionPage extends CRM_Core_Form {
         ), '1');
     }
     else {
-      $defaults['recur_frequency_unit'] = array_fill_keys(CRM_Core_OptionGroup::values('recur_frequency_units'), '1');
+      # CRM 10860
+      $defaults['recur_frequency_unit'] = array('month' => 1);
     }
 
     if (CRM_Utils_Array::value('is_for_organization', $defaults)) {
@@ -380,7 +381,7 @@ class CRM_Contribute_Form_ContributionPage extends CRM_Core_Form {
 
       CRM_Core_Session::setStatus(ts("'%1' information has been saved.",
           array(1 => $subPageName)
-        ));
+        ), ts('Saved'), 'success');
 
       $this->postProcessHook();
 
@@ -416,6 +417,8 @@ class CRM_Contribute_Form_ContributionPage extends CRM_Core_Form {
       return parent::getTemplateFileName();
     }
     else {
+      // hack lets suppress the form rendering for now
+      self::$_template->assign('isForm', FALSE);
       return 'CRM/Contribute/Form/ContributionPage/Tab.tpl';
     }
   }

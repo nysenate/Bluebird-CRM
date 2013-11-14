@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<metadata>
-	<view title="Mailing List Subscription">
-		<message>Use this link to allow users to signup for mailing lists by being added to public access groups. Note that the addition of contacts to groups will respect your single or double opt-in settings in CiviCRM.</message>
-	</view>
-</metadata>

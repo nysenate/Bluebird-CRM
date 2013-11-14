@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,7 +27,7 @@
     <p></p>
     <div class="bold">{ts}Elected Officals:{/ts} {$displayName}</div>
     <div class="form-item">
-     {if $rowCount > 0 }  	
+     {if $rowCount > 0 }
        <table>
        <tr class="columnheader">
           <th>{ts}Image{/ts}</th>
@@ -49,10 +49,10 @@
        {/foreach}
        </table>
      {else}
-     <div class="messages status">	
+     <div class="messages status no-popup">
      <img src="{$config->resourceBase}i/Inform.gif" alt="{ts}status{/ts}"> &nbsp;
       {ts}No data available for this contact. Please check city/state/zipcode{/ts}
-     </div>	
+     </div>
      {/if}
     </div>
  </p>

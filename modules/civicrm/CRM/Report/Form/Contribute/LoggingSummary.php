@@ -1,11 +1,10 @@
 <?php
-// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -90,7 +89,7 @@ class CRM_Report_Form_Contribute_LoggingSummary extends CRM_Logging_ReportSummar
             'default' => TRUE,
             'title' => ts('Action'),
           ),
-          'contribution_type_id' => array(
+          'financial_type_id' => array(
             'no_display' => TRUE,
             'required' => TRUE,
           ),
@@ -123,15 +122,15 @@ class CRM_Report_Form_Contribute_LoggingSummary extends CRM_Logging_ReportSummar
           ),
         ),
       ),
-      'civicrm_contribution_type' => array(
-        'dao' => 'CRM_Contribute_DAO_ContributionType',
+      'civicrm_financial_type' => array(
+        'dao' => 'CRM_Financial_DAO_FinancialType',
         'fields' => array(
           'id' => array(
             'no_display' => TRUE,
             'required' => TRUE,
           ),
           'name' => array(
-            'title' => ts('Contribution Type'),
+            'title' => ts('Financial Type'),
             'type' => CRM_Utils_Type::T_STRING,
           ),
         ),
@@ -218,8 +217,8 @@ class CRM_Report_Form_Contribute_LoggingSummary extends CRM_Logging_ReportSummar
             ON ({$this->_aliases['log_civicrm_contribution']}.log_user_id = {$this->_aliases['civicrm_contact_altered_by']}.id)
             LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact_altered_contact']}
             ON ({$this->_aliases['log_civicrm_contribution']}.contact_id = {$this->_aliases['civicrm_contact_altered_contact']}.id)
-            LEFT JOIN civicrm_contribution_type {$this->_aliases['civicrm_contribution_type']}
-            ON ({$this->_aliases['log_civicrm_contribution']}.contribution_type_id = {$this->_aliases['civicrm_contribution_type']}.id)
+            LEFT JOIN civicrm_financial_type {$this->_aliases['civicrm_financial_type']}
+            ON ({$this->_aliases['log_civicrm_contribution']}.financial_type_id = {$this->_aliases['civicrm_financial_type']}.id)
             LEFT JOIN civicrm_option_value {$this->_aliases['civicrm_contribution_status']}
             ON ({$this->_aliases['log_civicrm_contribution']}.contribution_status_id = {$this->_aliases['civicrm_contribution_status']}.value)
             INNER JOIN civicrm_option_group

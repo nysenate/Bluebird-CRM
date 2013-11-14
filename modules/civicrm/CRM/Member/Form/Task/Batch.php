@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -62,11 +62,11 @@ class CRM_Member_Form_Task_Batch extends CRM_Member_Form_Task {
    *
    * @return void
    * @access public
-   */ 
+   */
   function preProcess() {
     /*
-     * initialize the task and row fields
-     */
+         * initialize the task and row fields
+         */
     parent::preProcess();
 
     //get the contact read only fields to display.
@@ -183,7 +183,7 @@ class CRM_Member_Form_Task_Batch extends CRM_Member_Form_Task {
     $buttonName = $this->controller->getButtonName('submit');
 
     if ($suppressFields && $buttonName != '_qf_Batch_next') {
-      CRM_Core_Session::setStatus("FILE or Autocomplete Select type field(s) in the selected profile are not supported for Batch Update and have been excluded.");
+      CRM_Core_Session::setStatus(ts("FILE or Autocomplete Select type field(s) in the selected profile are not supported for Batch Update and have been excluded."), ts('Unsupport Field Type'), 'error');
     }
 
     $this->addDefaultButtons(ts('Update Memberships'));
@@ -278,10 +278,11 @@ class CRM_Member_Form_Task_Batch extends CRM_Member_Form_Task {
           CRM_Core_BAO_CustomValueTable::store($value['custom'], 'civicrm_membership', $membership->id);
         }
       }
-      CRM_Core_Session::setStatus(ts('Your updates have been saved.'));
+
+      CRM_Core_Session::setStatus(ts("Your updates have been saved."), ts('Saved'), 'success');
     }
     else {
-      CRM_Core_Session::setStatus(ts('No updates have been saved.'));
+      CRM_Core_Session::setStatus(ts("No updates have been saved."), ts('Not Saved'), 'alert');
     }
   }
   //end of function

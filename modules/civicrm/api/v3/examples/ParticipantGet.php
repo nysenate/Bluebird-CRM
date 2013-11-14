@@ -1,34 +1,39 @@
 <?php
-
-
-
-/*
- 
+/**
+ * Test Generated example of using participant get API
+ * *
  */
 function participant_get_example(){
-$params = array( 
-  'id' => 14,
-  'version' => 3,
+$params = array(
+  'id' => 1,
 );
 
-  require_once 'api/api.php';
-  $result = civicrm_api( 'participant','get',$params );
-
-  return $result;
+try{
+  $result = civicrm_api3('participant', 'get', $params);
+}
+catch (CiviCRM_API3_Exception $e) {
+  // handle error here
+  $errorMessage = $e->getMessage();
+  $errorCode = $e->getErrorCode();
+  $errorData = $e->getExtraParams();
+  return array('error' => $errorMessage, 'error_code' => $errorCode, 'error_data' => $errorData);
 }
 
-/*
+return $result;
+}
+
+/**
  * Function returns array of result expected from previous function
  */
 function participant_get_expectedresult(){
 
-  $expectedResult = array( 
+  $expectedResult = array(
   'is_error' => 0,
   'version' => 3,
   'count' => 1,
-  'id' => 14,
-  'values' => array( 
-      '14' => array( 
+  'id' => 1,
+  'values' => array(
+      '1' => array(
           'contact_id' => '2',
           'contact_type' => 'Individual',
           'contact_sub_type' => '',
@@ -36,9 +41,9 @@ function participant_get_expectedresult(){
           'display_name' => 'Mr. Anthony Anderson II',
           'event_id' => '5',
           'event_title' => 'Annual CiviCRM meet',
-          'event_start_date' => '2008-10-21 00:00:00',
-          'event_end_date' => '2008-10-23 00:00:00',
-          'participant_id' => '14',
+          'event_start_date' => '2013-07-29 00:00:00',
+          'event_end_date' => '2013-08-04 00:00:00',
+          'participant_id' => '1',
           'participant_fee_level' => '',
           'participant_fee_amount' => '',
           'participant_fee_currency' => '',
@@ -54,27 +59,33 @@ function participant_get_expectedresult(){
           'participant_registered_by_id' => '',
           'participant_discount_name' => '',
           'participant_campaign_id' => '',
-          'id' => '14',
+          'id' => '1',
         ),
     ),
 );
 
-  return $expectedResult  ;
+  return $expectedResult;
 }
-
-
 
 
 /*
 * This example has been generated from the API test suite. The test that created it is called
-* 
-* testGetParamsAsIdOnly and can be found in 
-* http://svn.civicrm.org/civicrm/branches/v3.4/tests/phpunit/CiviTest/api/v3/ParticipantTest.php
-* 
-* You can see the outcome of the API tests at 
+*
+* testGetParamsAsIdOnly and can be found in
+* http://svn.civicrm.org/civicrm/trunk/tests/phpunit/CiviTest/api/v3/ParticipantTest.php
+*
+* You can see the outcome of the API tests at
 * http://tests.dev.civicrm.org/trunk/results-api_v3
+*
+* To Learn about the API read
+* http://book.civicrm.org/developer/current/techniques/api/
+*
 * and review the wiki at
 * http://wiki.civicrm.org/confluence/display/CRMDOC/CiviCRM+Public+APIs
+*
 * Read more about testing here
 * http://wiki.civicrm.org/confluence/display/CRM/Testing
+*
+* API Standards documentation:
+* http://wiki.civicrm.org/confluence/display/CRM/API+Architecture+Standards
 */

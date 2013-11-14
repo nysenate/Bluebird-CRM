@@ -1,12 +1,14 @@
 <?php
 class CRM_Event_Cart_Form_MerParticipant extends CRM_Core_Form {
-  public $participant = NULL; function __construct($participant) {
+  public $participant = NULL;
+
+  function __construct($participant) {
     parent::__construct();
     //XXX
     $this->participant = $participant;
   }
 
-  function buildQuickForm(&$form) {
+  function appendQuickForm(&$form) {
     $textarea_size = array('size' => 30, 'maxlength' => 60);
     $form->add('text', $this->email_field_name(), ts('Email Address'), $textarea_size, TRUE);
 
@@ -57,8 +59,7 @@ class CRM_Event_Cart_Form_MerParticipant extends CRM_Core_Form {
     return $this->html_field_name("email");
   }
 
-  static
-  function full_field_name($event_id, $participant_id, $field_name) {
+  static function full_field_name($event_id, $participant_id, $field_name) {
     return "event[$event_id][participant][$participant_id][$field_name]";
   }
 

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -39,7 +39,7 @@
 {/if}
 
 <tr id="Website_Block_{$blockId}">
-    <td>{$form.website.$blockId.url.html|crmReplace:class:twenty}&nbsp;</td>
+    <td>{$form.website.$blockId.url.html|crmAddClass:url}&nbsp;</td>
     <td>{$form.website.$blockId.website_type_id.html}</td>
     <td colspan="3">{if $blockId > 1} <a href="#" title="{ts}Delete Website Block{/ts}" onClick="removeBlock('Website','{$blockId}'); return false;">{ts}delete{/ts}</a>{/if}</td>
 </tr>

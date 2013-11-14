@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -44,9 +44,9 @@
             <tr class="{cycle values="odd-row,even-row"} {$row.class}">
                 <td>{$row.name}</td>
                 <td>{$row.description}</td>
-                <td class="nowrap">{if !$row.date_format}{ts}Default{/ts}{else}{$row.date_format}{/if}</td>	
-                <td align="right">{$row.start}</td>	
-                <td align="right">{$row.end}</td>	
+                <td class="nowrap">{if !$row.date_format}{ts}Default{/ts}{else}{$row.date_format}{/if}</td>
+                <td align="right">{$row.start}</td>
+                <td align="right">{$row.end}</td>
                 <td><span>{$row.action|replace:'xx':$row.id}</span></td>
             </tr>
             {/foreach}

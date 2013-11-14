@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -56,7 +56,6 @@ class CRM_Utils_Signer {
    * @var int
    */
   const SALT_LEN = 4;
-  const SALT_ALPHABET = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
 
   /**
    * Instantiate a signature-processor
@@ -69,13 +68,7 @@ class CRM_Utils_Signer {
     $this->secret = $secret;
     $this->paramNames = $paramNames;
     $this->signDelim = "_"; // chosen to be valid in URLs but not in salt or md5
-    $this->defaultSalt = '';
-    
-    $alphabet = self::SALT_ALPHABET;
-    $alphabetSize = strlen(self::SALT_ALPHABET);
-    for ($i = 0; $i < self::SALT_LEN; $i++) {
-      $this->defaultSalt .= $alphabet{ rand(1, $alphabetSize)-1 };
-    }
+    $this->defaultSalt = CRM_Utils_String::createRandom(self::SALT_LEN, CRM_Utils_String::ALPHANUMERIC);
   }
 
   /**
@@ -99,7 +92,7 @@ class CRM_Utils_Signer {
       if (isset($params[$paramName])) {
         if (is_numeric($params[$paramName])) {
           $params[$paramName] = (string) $params[$paramName];
-        } 
+        }
       } else { // $paramName is not included or ===NULL
         $params[$paramName] = '';
       }
@@ -108,7 +101,7 @@ class CRM_Utils_Signer {
     $token = $message['salt'] . $this->signDelim . md5(serialize($message));
     return $token;
   }
-  
+
   /**
    * Determine whether a token represents a proper signature for $params
    *
@@ -124,7 +117,7 @@ class CRM_Utils_Signer {
     $newToken = $this->sign($params, $salt);
     return ($token == $newToken);
   }
-  
+
   function createSalt() {
     // It would be more secure to generate a new value but liable to run this
     // many times on certain admin pages; so instead we'll re-use the hash.

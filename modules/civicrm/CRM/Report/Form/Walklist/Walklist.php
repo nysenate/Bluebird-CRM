@@ -1,11 +1,10 @@
 <?php
-// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -43,8 +42,13 @@ class CRM_Report_Form_Walklist_Walklist extends CRM_Report_Form {
 
   protected $_summary = NULL;
 
+  public $_drilldownReport = array('contact/detail' => 'Link to Detail Report');
+
   protected $_customGroupExtends = array(
-    'Contact', 'Individual', 'Household', 'Organization'); function __construct() {
+    'Contact', 'Individual', 'Household', 'Organization'
+  );
+
+  function __construct() {
     $this->_columns = array(
       'civicrm_contact' =>
       array(
@@ -264,7 +268,7 @@ FROM       civicrm_contact {$this->_aliases['civicrm_contact']} {$this->_aclFrom
       ) {
         $url = CRM_Report_Utils_Report::getNextUrl('contact/detail',
           'reset=1&force=1&id_op=eq&id_value=' . $row['civicrm_contact_id'],
-          $this->_absoluteUrl, $this->_id
+          $this->_absoluteUrl, $this->_id, $this->_drilldownReport
         );
         $rows[$rowNum]['civicrm_contact_sort_name_link'] = $url;
         $entryFound = TRUE;

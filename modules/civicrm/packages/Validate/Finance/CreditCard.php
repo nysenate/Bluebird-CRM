@@ -57,7 +57,7 @@ class Validate_Finance_CreditCard
      * @return bool    TRUE if number is valid, FALSE otherwise
      * @access public
      * @static
-     * @deprecated 
+     * @deprecated
      * @link http://www.webopedia.com/TERM/L/Luhn_formula.html
      * @link http://www.merriampark.com/anatomycc.htm
      * @link http://hysteria.sk/prielom/prielom-12.html#3 (Slovak language)
@@ -84,7 +84,7 @@ class Validate_Finance_CreditCard
      * @link http://hysteria.sk/prielom/prielom-12.html#3 (Slovak language)
      * @link http://www.speech.cs.cmu.edu/~sburke/pub/luhn_lib.html (Perl lib)
      */
-    function _luhn($number)
+    static function _luhn($number)
     {
         $len_number = strlen($number);
         $sum        = 0;
@@ -121,7 +121,7 @@ class Validate_Finance_CreditCard
      * @access public
      * @static
      */
-    function number($creditCard, $cardType = null)
+    static function number($creditCard, $cardType = null)
     {
         $cc = str_replace(array('-', ' '), '', $creditCard);
         if (($len = strlen($cc)) < 13
@@ -172,7 +172,7 @@ class Validate_Finance_CreditCard
      * @static
      * @link http://www.beachnet.com/~hstiles/cardtype.html
      */
-    function type($creditCard, $cardType)
+    static function type($creditCard, $cardType)
     {
         switch (strtoupper($cardType)) {
         case 'MASTERCARD':
@@ -259,7 +259,7 @@ class Validate_Finance_CreditCard
      * @static
      * @link http://www.pcisecuritystandards.org/
      */
-    function cvv($cvv, $cardType)
+    static function cvv($cvv, $cardType)
     {
         switch (strtoupper($cardType)) {
         case 'MASTERCARD':

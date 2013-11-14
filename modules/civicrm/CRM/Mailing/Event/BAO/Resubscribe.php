@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -57,8 +57,8 @@ class CRM_Mailing_Event_BAO_Resubscribe {
     }
 
     // check if this queue_id was actually unsubscribed
-    $ue                  = new CRM_Mailing_Event_BAO_Unsubscribe();
-    $ue->event_queue_id  = $queue_id;
+    $ue = new CRM_Mailing_Event_BAO_Unsubscribe();
+    $ue->event_queue_id = $queue_id;
     $ue->org_unsubscribe = 0;
     if (!$ue->find(TRUE)) {
       return $success;
@@ -68,16 +68,16 @@ class CRM_Mailing_Event_BAO_Resubscribe {
 
     $transaction = new CRM_Core_Transaction();
 
-    $do      = new CRM_Core_DAO();
-    $mg      = CRM_Mailing_DAO_Group::getTableName();
-    $job     = CRM_Mailing_BAO_Job::getTableName();
+    $do = new CRM_Core_DAO();
+    $mg = CRM_Mailing_DAO_MailingGroup::getTableName();
+    $job = CRM_Mailing_BAO_MailingJob::getTableName();
     $mailing = CRM_Mailing_BAO_Mailing::getTableName();
-    $group   = CRM_Contact_BAO_Group::getTableName();
-    $gc      = CRM_Contact_BAO_GroupContact::getTableName();
+    $group = CRM_Contact_BAO_Group::getTableName();
+    $gc = CRM_Contact_BAO_GroupContact::getTableName();
 
     //We Need the mailing Id for the hook...
-    $do->query("SELECT $job.mailing_id as mailing_id 
-                     FROM   $job 
+    $do->query("SELECT $job.mailing_id as mailing_id
+                     FROM   $job
                      WHERE $job.id = " . CRM_Utils_Type::escape($job_id, 'Integer'));
     $do->fetch();
     $mailing_id = $do->mailing_id;
@@ -95,7 +95,7 @@ class CRM_Mailing_Event_BAO_Resubscribe {
                 AND     $group.is_hidden = 0"
     );
 
-    /* Make a list of groups and a list of prior mailings that received 
+    /* Make a list of groups and a list of prior mailings that received
          * this mailing */
 
 
@@ -169,8 +169,8 @@ class CRM_Mailing_Event_BAO_Resubscribe {
     }
 
     // remove entry from Unsubscribe table.
-    $ue                  = new CRM_Mailing_Event_BAO_Unsubscribe();
-    $ue->event_queue_id  = $queue_id;
+    $ue = new CRM_Mailing_Event_BAO_Unsubscribe();
+    $ue->event_queue_id = $queue_id;
     $ue->org_resubscribe = 0;
     if ($ue->find(TRUE)) {
       $ue->delete();
@@ -199,19 +199,19 @@ class CRM_Mailing_Event_BAO_Resubscribe {
     $config = CRM_Core_Config::singleton();
     $domain = CRM_Core_BAO_Domain::getDomain();
 
-    $jobTable     = CRM_Mailing_BAO_Job::getTableName();
+    $jobTable = CRM_Mailing_BAO_MailingJob::getTableName();
     $mailingTable = CRM_Mailing_DAO_Mailing::getTableName();
-    $contacts     = CRM_Contact_DAO_Contact::getTableName();
-    $email        = CRM_Core_DAO_Email::getTableName();
-    $queue        = CRM_Mailing_Event_BAO_Queue::getTableName();
+    $contacts = CRM_Contact_DAO_Contact::getTableName();
+    $email = CRM_Core_DAO_Email::getTableName();
+    $queue = CRM_Mailing_Event_BAO_Queue::getTableName();
 
     //get the default domain email address.
     list($domainEmailName, $domainEmailAddress) = CRM_Core_BAO_Domain::getNameAndEmail();
 
     $dao = new CRM_Mailing_BAO_Mailing();
-    $dao->query("   SELECT * FROM $mailingTable 
+    $dao->query("   SELECT * FROM $mailingTable
                         INNER JOIN $jobTable ON
-                            $jobTable.mailing_id = $mailingTable.id 
+                            $jobTable.mailing_id = $mailingTable.id
                         WHERE $jobTable.id = $job");
     $dao->fetch();
 
@@ -248,10 +248,10 @@ class CRM_Mailing_Event_BAO_Resubscribe {
     $message = new Mail_mime("\n");
 
     list($addresses, $urls) = CRM_Mailing_BAO_Mailing::getVerpAndUrls($job, $queue_id, $eq->hash, $eq->email);
-    $bao            = new CRM_Mailing_BAO_Mailing();
+    $bao = new CRM_Mailing_BAO_Mailing();
     $bao->body_text = $text;
     $bao->body_html = $html;
-    $tokens         = $bao->getTokens();
+    $tokens = $bao->getTokens();
     if ($eq->format == 'HTML' || $eq->format == 'Both') {
       $html = CRM_Utils_Token::replaceDomainTokens($html, $domain, TRUE, $tokens['html']);
       $html = CRM_Utils_Token::replaceResubscribeTokens($html, $domain, $groups, TRUE, $eq->contact_id, $eq->hash);
@@ -278,9 +278,9 @@ class CRM_Mailing_Event_BAO_Resubscribe {
     );
     CRM_Mailing_BAO_Mailing::addMessageIdHeader($headers, 'e', $job, $queue_id, $eq->hash);
     $b = CRM_Utils_Mail::setMimeParams($message);
-    $h = &$message->headers($headers);
+    $h = $message->headers($headers);
 
-    $mailer = &$config->getMailer();
+    $mailer = $config->getMailer();
 
     PEAR::setErrorHandling(PEAR_ERROR_CALLBACK,
       array('CRM_Core_Error', 'nullHandler')

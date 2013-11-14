@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -80,10 +80,10 @@ class CRM_Admin_Form_ParticipantStatus extends CRM_Admin_Form {
   function postProcess() {
     if ($this->_action & CRM_Core_Action::DELETE) {
       if (CRM_Event_BAO_ParticipantStatusType::deleteParticipantStatusType($this->_id)) {
-        CRM_Core_Session::setStatus(ts('Selected participant status has been deleted.'));
+        CRM_Core_Session::setStatus(ts('Selected participant status has been deleted.'), ts('Record Deleted'), 'success');
       }
       else {
-        CRM_Core_Session::setStatus(ts('Selected participant status has <strong>NOT</strong> been deleted; there are still participants with this status.'));
+        CRM_Core_Session::setStatus(ts('Selected participant status has <strong>NOT</strong> been deleted; there are still participants with this status.'), ts('Sorry'), 'error');
       }
       return;
     }
@@ -121,14 +121,14 @@ class CRM_Admin_Form_ParticipantStatus extends CRM_Admin_Form {
 
     if ($participantStatus->id) {
       if ($this->_action & CRM_Core_Action::UPDATE) {
-        CRM_Core_Session::setStatus(ts('The Participant Status has been updated.'));
+        CRM_Core_Session::setStatus(ts('The Participant Status has been updated.'), ts('Saved'), 'success');
       }
       else {
-        CRM_Core_Session::setStatus(ts('The new Participant Status has been saved.'));
+        CRM_Core_Session::setStatus(ts('The new Participant Status has been saved.'), ts('Saved'), 'success');
       }
     }
     else {
-      CRM_Core_Session::setStatus(ts('The changes have not been saved.'));
+      CRM_Core_Session::setStatus(ts('The changes have not been saved.'), ts('Saved'), 'success');
     }
   }
 }

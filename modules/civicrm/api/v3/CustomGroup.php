@@ -1,11 +1,10 @@
 <?php
-// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -33,12 +32,9 @@
  * @package CiviCRM_APIv3
  * @subpackage API_CustomGroup
  *
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * @version $Id: CustomGroup.php 30879 2010-11-22 15:45:55Z shot $
  */
-
-
-require_once 'CRM/Core/BAO/CustomGroup.php';
 
 /**
  * Most API functions take in associative arrays ( name => value pairs
@@ -64,11 +60,10 @@ require_once 'CRM/Core/BAO/CustomGroup.php';
  *
  * @return   Newly create custom_group object
  * @todo $params['extends'] is array format - is that std compatible
- * @todo review custom field create if 'html' approx line 110
  * @access public
  */
 function civicrm_api3_custom_group_create($params) {
-  if (is_string($params['extends'])) {
+  if (isset($params['extends']) && is_string($params['extends'])) {
     $extends = explode(",", $params['extends']);
     unset($params['extends']);
     $params['extends'] = $extends;
@@ -76,35 +71,28 @@ function civicrm_api3_custom_group_create($params) {
   if (!isset($params['extends'][0]) || !trim($params['extends'][0])) {
     return civicrm_api3_create_error("First item in params['extends'] must be a class name (e.g. 'Contact').");
   }
+  if (isset($params['extends_entity_column_value']) && !is_array($params['extends_entity_column_value'])) {
+    // BAO fails if this is a string, but API getFields says this must be a string, so we'll do a double backflip
+    $params['extends_entity_column_value'] = CRM_Utils_Array::explodePadded($params['extends_entity_column_value']);
+  }
 
 
   $customGroup = CRM_Core_BAO_CustomGroup::create($params);
 
   _civicrm_api3_object_to_array($customGroup, $values[$customGroup->id]);
-
-  if (CRM_Utils_Array::value('html_type', $params)) {
-    $fparams = array(
-      'custom_group_id' => $customGroup->id,
-      'version' => $params['version'],
-      // should put something cleverer here but this will do for now
-      'label' => 'api created field',
-    );
-    require_once 'api/v3/CustomField.php';
-    $fieldValues = civicrm_api3_custom_field_create($fparams);
-    $values[$fieldValues['id']] = array_merge($values[$customGroup->id], $fieldValues['values'][$fieldValues['id']]);
-  }
   return civicrm_api3_create_success($values, $params, 'custom_group', $customGroup);
 }
 
-/*
+/**
  * Adjust Metadata for Create action
- * 
+ *
  * @param array $params array or parameters determined by getfields
  */
 function _civicrm_api3_custom_group_create_spec(&$params) {
   $params['extends']['api.required'] = 1;
   $params['title']['api.required'] = 1;
   $params['style']['api.default'] = 'Inline';
+  $params['is_active']['api.default'] = 1;
 }
 
 /**
@@ -123,7 +111,6 @@ function civicrm_api3_custom_group_delete($params) {
   $values->id = $params['id'];
   $values->find(TRUE);
 
-  require_once 'CRM/Core/BAO/CustomGroup.php';
   $result = CRM_Core_BAO_CustomGroup::deleteGroup($values, TRUE);
   return $result ? civicrm_api3_create_success() : civicrm_api3_create_error('Error while deleting custom group');
 }

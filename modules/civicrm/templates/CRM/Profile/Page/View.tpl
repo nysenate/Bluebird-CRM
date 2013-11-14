@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,17 +26,17 @@
 {* If you want a custom profile view, you can access field labels and values in $profileFields_N array - where N is profile ID. *}
 {* EXAMPLES *}{* $profileFields_1.last_name.label *}{* $profileFields_1.last_name.value *}
 
-{if $overlayProfile } 
+{if $overlayProfile }
     {foreach from=$profileGroups item=group}
         <div class="crm-summary-group">
-        	 {$group.content}
+           {$group.content}
         </div>
     {/foreach}
 {else}
     {foreach from=$profileGroups item=group}
         <h2>{$group.title}</h2>
-        <div id="profilewrap{$groupID}">
-        	 {$group.content}
+        <div id="profilewrap{$groupID}" class="crm-profile-view">
+           {$group.content}
         </div>
     {/foreach}
     <div class="action-link">
@@ -51,7 +51,7 @@
 {literal}
      <script type='text/javascript'>
           function contactImagePopUp (url, width, height) {
- 	          newWindow = window.open( url,'name', 'width='+width+', height='+height );
+             newWindow = window.open( url,'name', 'width='+width+', height='+height );
           }
      </script>
 {/literal}

@@ -1,277 +1,38 @@
-/*
-
-Tags CSS
-SassCommandWin: sass --update themes\Bluebird\nyss_skin\tags\tags.scss:themes\Bluebird\nyss_skin\tags\tags.css
-SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/Bluebird/nyss_skin/tags/tags.css
-
-
-*/
-/*mixins*/
-/*icons*/
-$functionIconLink : "/sites/default/themes/Bluebird/nyss_skin/images/fcb.png";
-$defaultIconLink : "/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png";
-$levelClassSlug : "lv";
-$inputBoxWidth: 522px;
-
-/* fCB icon mixins, would like to make this into an each statement once Variable Interpolation comes out */
-@mixin functionIcon($setIconLink) {
-	background-image: url('#{$setIconLink}') !important;
-	cursor: pointer;
-}
-@mixin addTag {@include functionIcon($functionIconLink); background-position: 0;}
-@mixin removeTag {@include functionIcon($functionIconLink); background-position: -17px 0px;}
-@mixin moveTag {@include functionIcon($functionIconLink); background-position: -34px 0px;}
-@mixin updateTag {@include functionIcon($functionIconLink); background-position: -50px 0px;}
-@mixin mergeTag {@include functionIcon($functionIconLink); background-position: -66px 0px;}
-@mixin convertTag {@include functionIcon($functionIconLink); background-position: -107px 0px;}
-@mixin printTag {@include functionIcon($defaultIconLink); background-position: -160px -96px;}
-@mixin closeButton {@include functionIcon($defaultIconLink); background-position: -97px -129px;}
-
-/*to put in bb css, not tagging.css*/
-#crm-container 
-{
-	#crm-tagListWrap {
-		clear:both;
-		height:auto;
-	}
-}
-@import "bbmessages";
-
-/* view & edit contact page fixes */
-#mainTabContainer, #tagSelect, form#Contact .groupTagsKeywords {
-	.tag-section { 
-		width: $inputBoxWidth + 2px;
-		margin-left: auto;
-		margin-right: auto;
-		float:none;
-		.content {
-			margin-left:0px;
-		}
-	}
-	ul.token-input-list-facebook {
-		width:$inputBoxWidth;
-	}
-}
-
+@import "utils/tagsUtil";
 
 /*pagestructure*/
+@import "partials/slideBox";
 
-.BBTree, #BBTreeContainer .BBTree, #BBDialog .BBTree{
-	width:520px;
-	overflow-x:hidden;
-	overflow-y:scroll;
-	height:400px;
-	background-color:#fff;
-	border:1px solid #ccc;
-	cursor:default;
-	/* for tag hirarchy structure */
-	dt {
-		float: inherit;
-		clear: inherit;
-		text-align: inherit;
-		vertical-align: inherit;
-		padding: 0px;
-		font-size: inherit;
-		white-space: inherit;
-		width:inherit;
-		height: 20px;
-		line-height:20px;
-		.ddControl {
-			height:20px; width:20px; float:left; margin:0px;
-			&.treeButton{
-				background: url($defaultIconLink) no-repeat -32px -15px;
-			 	cursor:pointer;
-			 	&.open {
-			 		background-position: -64px -15px;
-			 	}
-			}
-
-		}
-		.tag {
-			display:inline;
-			font: {
-				family: Arial;
-    			size: 12px;
-    			weight: normal;
-			};
-			padding-left:5px;
-		}
-		.fCB {
-			display:none;
-			padding:1px 0;
-			float:right;
-			ul {
-				margin:0;
-				li {
-					height:16px;
-					width:16px;
-					float:left;
-					margin:1px 2px 0 0;
-					list-style-image:none !important;
-					list-style-type:none !important;
-					&.addTag {@include addTag}
-					&.removeTag {@include removeTag}
-					&.moveTag {@include moveTag}
-					&.updateTag {@include updateTag}
-					&.mergeTag {@include mergeTag}
-					&.convertTag {@include convertTag}
-					&.printTag {@include printTag}
-				}
-			}
-		}
-		&:hover {
-			.fCB {
-				display:inline;
-			}
-			background-color:#DEDEDE;
-			&.lv-0
-			{
-				background-color:transparent;
-			}
-		}
-		&.subChecked {
-			background-color: #F1F8EB;
-			border: 1px dashed #B0D730;
-			&:hover {
-				background-color:#DEDEDE;
-			}
-		}
-		&.checked {
-			background-color: #F1F8EB;
-			border: 1px solid #B0D730;
-			&:hover {
-				background-color:#DEDEDE;
-			}
-		}
-	}
-	@for $i from 0 through 10
-	{
-  		dl.#{$levelClassSlug}-#{$i}
-  		{
-			
-			width: 485px - (10*$i);
-    		@if $i != 0
-    		{
-    			margin-left: 10px;
-    		}
-    		@if $i == 0
-    		{
-    			margin:0 10px;
-    		}
-    		@if $i > 0
-    		{
-    			display:none;
-    		}
-  			
-  		}
-  		dt.#{$levelClassSlug}-#{$i}
-    	{
-    		@if $i == 0
-    		{
-    			width: 485px;
-    			margin: 10px 10px 0;
-    			.treeButton {
-    				display:none;
-    			}
-    			.tag {
-    				font-size: 14px;
-    				font-weight:bold;
-    			}
-    		}
-    	}
+#JSTree-container.BBTreeContainer, #BBTreeContainer {
+    @import "utils/reset";
+    width: $inputBoxWidthFull;
+    // background-color:#fff;
+    overflow-x: hidden;
+    // border:1px solid #ccc;
+    cursor: default;
+    position: relative;
+    margin: 0 auto;
+    // temp
+    margin: 15px auto;
+    @include round-corners(3px);
+    border: 1px solid #ccc;
+    // endtemp
+    @import "partials/menu";
+    @import "partials/tree";
+    &.short {
+        // width: $inputBoxWidthShort;
+        @import "shape/short";
     }
-	&.hidden{
-		display:none;
-	}
-	&.edit{
-
-	}
-	&.modal{
-		margin: 0 auto;
-		border: 0px;
-		.fCB {
-			display: inline;
-			float:left;
-			margin: -1px 0px -2px 0px;
-			input[type="checkbox"]{
-				margin:0px;
-				&.checked
-				{
-					left:-1px;
-				}
-			}
-		}
-	}
-	&.tagging{
-		.fCB {
-			display: inline;
-			float:left;
-			margin: 0px -2px 0px 5px;
-			input[type="checkbox"]{
-				margin:0px;
-				&.checked
-				{
-					left:-1px;
-				}
-			}
-		}
-	}
-	* {
-		font-size: 1em;
-	}
-	dl {
-		margin: 0px;
-	}
-} /*BBTree*/
-
-#BBTreeContainer, #BBDialog {
-	width:$inputBoxWidth;
-	position:relative;
-	margin: 0 auto;
-	overflow:hidden;
+    &.narrow {
+        width: 294px;
+        @import "shape/narrow";
+    }
+    &.short.narrow {
+        @import "shape/shortnarrow";
+    }
+    &.dropdown {
+        position: static;
+        border-bottom-width: 0px;
+        border-right-width: 0px;
+    }
 }
-#BBDialog {
-	overflow:auto;
-	.BBTree{
-		overflow:visible;
-		height:auto;
-	}
-}
-
-/*BBContainer*/
-.loadingGif{
-		background: url("/sites/default/themes/Bluebird/images/loading.gif") no-repeat scroll center white !important;
-		.lv-0{
-			display:none;
-		}
-	}
-/* tabs */
-.crm-tagTabHeader, .BBTree-Tags {
-	height:15px; clear:both;
-	li{
-		float:left;
-		margin-right:15px;
-		background: transparent url(/sites/default/themes/Bluebird/nyss_skin/images/button.png) no-repeat scroll right -30px !important;
-		list-style: none; 
-		width:135px; 
-		color:#fff; 
-		text-align:center;
-		cursor:pointer; 
-		font-size:12px;
-
-		&:hover{
-		color:#ccc;
-		border-top:#457AA4 3px solid; 
-		margin-top:-3px;
-		}
-		&.active{
-			border-top:#457AA4 3px solid; 
-			margin-top:-3px; 
-			font-size: 14px;
-		}		
-	}
-
-}
-
-@import "bbtreelegend";
-@import "printtree";

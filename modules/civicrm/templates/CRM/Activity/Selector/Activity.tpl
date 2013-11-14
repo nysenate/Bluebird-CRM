@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +30,6 @@
   <h3 class="crm-table-title">{ts}Activities{/ts}</h3>
   {/if}
 {if $rows}
-  <span id='fileOnCaseStatusMsg' style="display:none;"></span>
   <form title="activity_pager" action="{crmURL}" method="post">
   {include file="CRM/common/pager.tpl" location="top"}
 
@@ -113,7 +112,7 @@
   </form>
 {else}
 
-  <div class="messages status">
+  <div class="messages status no-popup">
     {if isset($caseview) and $caseview}
       {ts}There are no Activities attached to this case record.{/ts}{if $permission EQ 'edit'} {ts}You can go to the Activities tab to create or attach activity records.{/ts}{/if}
     {elseif $context eq 'home'}

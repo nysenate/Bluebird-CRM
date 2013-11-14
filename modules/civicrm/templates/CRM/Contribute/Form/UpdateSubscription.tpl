@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,16 +24,16 @@
  +--------------------------------------------------------------------+
 *}
 <div class="crm-block crm-form-block crm-recurcontrib-form-block">
-	{if $isChangeSupported}
-	  <div id="help">
-			{ts}Use this form to change the amount or number of installments for this recurring contribution. Changes will be automatically sent to the payment processor. You can not change the contribution frequency.{/ts}
+  {if $isChangeSupported}
+    <div id="help">
+      {ts}Use this form to change the amount or number of installments for this recurring contribution. Changes will be automatically sent to the payment processor. You can not change the contribution frequency.{/ts}
   </div>
-	{/if}
+  {/if}
   <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
   <table class="form-layout">
     <tr>
       <td class="label">{$form.amount.label}</td>
-      <td>{$form.currency.html|crmReplace:class:eight}&nbsp;{$form.amount.html|crmReplace:class:eight} ({ts}every{/ts} {$frequency_interval} {$frequency_unit})</td>
+      <td>{$form.currency.html|crmAddClass:eight}&nbsp;{$form.amount.html|crmAddClass:eight} ({ts}every{/ts} {$frequency_interval} {$frequency_unit})</td>
     </tr>
     <tr><td class="label">{$form.installments.label}</td><td>{$form.installments.html}<br />
           <span class="description">{ts}Total number of payments to be made. Set this to 0 if this is an open-ended commitment i.e. no set end date.{/ts}</span></td></tr>
@@ -54,6 +54,6 @@
 
   <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
 </div>
-  
+
 {* include jscript to warn if unsaved form field changes *}
 {include file="CRM/common/formNavigate.tpl"}

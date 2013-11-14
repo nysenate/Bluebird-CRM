@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -84,13 +84,13 @@ class CRM_Price_Page_Set extends CRM_Core_Page {
         ),
         CRM_Core_Action::DISABLE => array(
           'name' => ts('Disable'),
-          'extra' => 'onclick = "enableDisable( %%sid%%,\'' . 'CRM_Price_BAO_Set' . '\',\'' . 'enable-disable' . '\' );"',
+          'extra' => 'onclick = "enableDisable( %%sid%%,\'' . 'CRM_Price_BAO_PriceSet' . '\',\'' . 'enable-disable' . '\' );"',
           'ref' => 'disable-action',
           'title' => ts('Disable Price Set'),
         ),
         CRM_Core_Action::ENABLE => array(
           'name' => ts('Enable'),
-          'extra' => 'onclick = "enableDisable( %%sid%%,\'' . 'CRM_Price_BAO_Set' . '\',\'' . 'disable-enable' . '\' );"',
+          'extra' => 'onclick = "enableDisable( %%sid%%,\'' . 'CRM_Price_BAO_PriceSet' . '\',\'' . 'disable-enable' . '\' );"',
           'ref' => 'enable-action',
           'title' => ts('Enable Price Set'),
         ),
@@ -140,7 +140,7 @@ class CRM_Price_Page_Set extends CRM_Core_Page {
     );
 
     if ($sid) {
-      CRM_Price_BAO_Set::checkPermission($sid);
+      CRM_Price_BAO_PriceSet::checkPermission($sid);
     }
     // what action to take ?
     if ($action & (CRM_Core_Action::UPDATE | CRM_Core_Action::ADD)) {
@@ -151,14 +151,14 @@ class CRM_Price_Page_Set extends CRM_Core_Page {
     }
     elseif ($action & CRM_Core_Action::COPY) {
       $session = CRM_Core_Session::singleton();
-      CRM_Core_Session::setStatus(ts('A copy of the price set has been created'));
+      CRM_Core_Session::setStatus(ts('A copy of the price set has been created'), ts('Saved'), 'success');
       $this->copy();
     }
     else {
 
       // if action is delete do the needful.
       if ($action & (CRM_Core_Action::DELETE)) {
-        $usedBy = CRM_Price_BAO_Set::getUsedBy($sid);
+        $usedBy = CRM_Price_BAO_PriceSet::getUsedBy($sid);
 
         if (empty($usedBy)) {
           // prompt to delete
@@ -175,12 +175,13 @@ class CRM_Price_Page_Set extends CRM_Core_Page {
           // add breadcrumb
           $url = CRM_Utils_System::url('civicrm/admin/price', 'reset=1');
           CRM_Utils_System::appendBreadCrumb(ts('Price Sets'), $url);
-          $this->assign('usedPriceSetTitle', CRM_Price_BAO_Set::getTitle($sid));
+          $this->assign('usedPriceSetTitle', CRM_Price_BAO_PriceSet::getTitle($sid));
           $this->assign('usedBy', $usedBy);
 
           $comps = array(
             'Event' => 'civicrm_event',
             'Contribution' => 'civicrm_contribution_page',
+            'EventTemplate' => 'civicrm_event_template'
           );
           $priceSetContexts = array();
           foreach ($comps as $name => $table) {
@@ -261,8 +262,8 @@ class CRM_Price_Page_Set extends CRM_Core_Page {
       'CiviMember' => ts('Membership'),
     );
 
-    $dao = new CRM_Price_DAO_Set();
-    if (CRM_Price_BAO_Set::eventPriceSetDomainID()) {
+    $dao = new CRM_Price_DAO_PriceSet();
+    if (CRM_Price_BAO_PriceSet::eventPriceSetDomainID()) {
       $dao->domain_id = CRM_Core_Config::domainID();
     }
     $dao->is_quick_config = 0;
@@ -317,7 +318,7 @@ class CRM_Price_Page_Set extends CRM_Core_Page {
       $this, TRUE, 0, 'GET'
     );
 
-    CRM_Price_BAO_Set::copy($id);
+    CRM_Price_BAO_PriceSet::copy($id);
 
     CRM_Utils_System::redirect(CRM_Utils_System::url(CRM_Utils_System::currentPath(), 'reset=1'));
   }

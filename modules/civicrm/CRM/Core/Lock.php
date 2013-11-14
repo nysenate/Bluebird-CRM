@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,14 +28,14 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
 class CRM_Core_Lock {
 
-  // lets have a 1 second timeout for now
-  CONST TIMEOUT = 1;
+  // lets have a 3 second timeout for now
+  CONST TIMEOUT = 3;
 
   protected $_hasLock = FALSE;
 
@@ -54,7 +54,8 @@ class CRM_Core_Lock {
    *
    * @return object the lock object
    *
-   */ function __construct($name, $timeout = NULL, $serverWideLock = FALSE) {
+   */
+ function __construct($name, $timeout = NULL, $serverWideLock = FALSE) {
     $config   = CRM_Core_Config::singleton();
     $dsnArray = DB::parseDSN($config->dsn);
     $database = $dsnArray['database'];

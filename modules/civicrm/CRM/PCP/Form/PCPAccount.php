@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -55,6 +55,15 @@ class CRM_PCP_Form_PCPAccount extends CRM_Core_Form {
    * @access protected
    */
   public $_single;
+
+  /**
+   * the default values for the form
+   *
+   * @var array
+   * @protected
+   */
+  protected $_defaults;
+
 
   public function preProcess() {
     $session          = CRM_Core_Session::singleton();
@@ -108,15 +117,15 @@ class CRM_PCP_Form_PCPAccount extends CRM_Core_Form {
   }
 
   function setDefaultValues() {
-    if (!$this->_contactID) {
-      return;
-    }
-    foreach ($this->_fields as $name => $dontcare) {
-      $fields[$name] = 1;
-    }
+    $this->_defaults = array();
+    if ($this->_contactID) {
+      foreach ($this->_fields as $name => $dontcare) {
+        $fields[$name] = 1;
+      }
 
-    CRM_Core_BAO_UFGroup::setProfileDefaults($this->_contactID, $fields, $this->_defaults);
-
+      CRM_Core_BAO_UFGroup::setProfileDefaults($this->_contactID, $fields, $this->_defaults);
+    }
+    $stateCountryMap = array();
     //set custom field defaults
     foreach ($this->_fields as $name => $field) {
       if ($customFieldID = CRM_Core_BAO_CustomField::getKeyID($name)) {
@@ -126,8 +135,21 @@ class CRM_PCP_Form_PCPAccount extends CRM_Core_Form {
           );
         }
       }
-    }
+      if ((substr($name, 0, 14) === 'state_province') || (substr($name, 0, 7) === 'country') || (substr($name, 0, 6) === 'county')) {
+        list($fieldName, $index) = CRM_Utils_System::explode('-', $name, 2);
+        if (!array_key_exists($index, $stateCountryMap)) {
+          $stateCountryMap[$index] = array();
+        }
+        $stateCountryMap[$index][$fieldName] = $name;
+      }
 
+      // also take care of state country widget
+      if (!empty($stateCountryMap)) {
+        CRM_Core_BAO_Address::addStateCountryMap($stateCountryMap, $this->_defaults);
+      }
+    }
+    // now fix all state country selectors
+    CRM_Core_BAO_Address::fixAllStateSelects($this, $this->_defaults);
     return $this->_defaults;
   }
 
@@ -165,7 +187,9 @@ class CRM_PCP_Form_PCPAccount extends CRM_Core_Form {
         }
         CRM_Core_BAO_UFGroup::buildProfile($this, $field, CRM_Profile_Form::MODE_CREATE);
         $this->_fields[$key] = $field;
-        if ($field['add_captcha']) {
+
+        // CRM-11316 Is ReCAPTCHA enabled for this profile AND is this an anonymous visitor
+        if ($field['add_captcha'] && !$this->_contactID) {
           $addCaptcha = TRUE;
         }
       }
@@ -173,7 +197,7 @@ class CRM_PCP_Form_PCPAccount extends CRM_Core_Form {
       if ($addCaptcha) {
         $captcha = &CRM_Utils_ReCAPTCHA::singleton();
         $captcha->add($this);
-        $this->assign("isCaptcha", TRUE);
+        $this->assign('isCaptcha', TRUE);
       }
     }
 
@@ -221,8 +245,7 @@ class CRM_PCP_Form_PCPAccount extends CRM_Core_Form {
    * @access public
    * @static
    */
-  static
-  function formRule($fields, $files, $self) {
+  static function formRule($fields, $files, $self) {
     $errors = array();
     foreach ($fields as $key => $value) {
       if (strpos($key, 'email-') !== FALSE && !empty($value)) {
@@ -268,11 +291,11 @@ class CRM_PCP_Form_PCPAccount extends CRM_Core_Form {
     }
 
     $dedupeParams = CRM_Dedupe_Finder::formatParams($params, 'Individual');
-    $ids = CRM_Dedupe_Finder::dupesByParams($dedupeParams, 'Individual', 'Strict');
+    $ids = CRM_Dedupe_Finder::dupesByParams($dedupeParams, 'Individual', 'Unsupervised');
     if ($ids) {
       $this->_contactID = $ids['0'];
     }
-    $contactID = &CRM_Contact_BAO_Contact::createProfileContact($params, $this->_fields, $this->_contactID);
+    $contactID = CRM_Contact_BAO_Contact::createProfileContact($params, $this->_fields, $this->_contactID);
     $this->set('contactID', $contactID);
 
     if (!empty($params['email'])) {

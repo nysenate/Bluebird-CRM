@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -68,16 +68,16 @@
   {/literal}
 </head>
 <body>
-<div id="crm-container" lang="{$config->lcMessages|truncate:2:"":true}" xml:lang="{$config->lcMessages|truncate:2:"":true}">
+<div id="crm-container" class="crm-container" lang="{$config->lcMessages|truncate:2:"":true}" xml:lang="{$config->lcMessages|truncate:2:"":true}">
 {else}
-<div id="crm-container" lang="{$config->lcMessages|truncate:2:"":true}" xml:lang="{$config->lcMessages|truncate:2:"":true}">
+<div id="crm-container" class="crm-container" lang="{$config->lcMessages|truncate:2:"":true}" xml:lang="{$config->lcMessages|truncate:2:"":true}">
   <style type="text/css" media="screen">@import url({$config->resourceBase}css/civicrm.css);</style>
   <style type="text/css" media="screen">@import url({$config->resourceBase}css/extras.css);</style>
 {/if}
 
 {*NYSS*}
 {if $config->debug}
-<div class="messages status">  <div class="icon red-icon alert-icon"></div>
+<div class="messages status no-popup">  <div class="icon red-icon alert-icon"></div>
  <span class="status-fatal">{ts}Sorry but we are not able to provide this at the moment.{/ts}</span>
     <div class="crm-section crm-error-message">{$message}</div>
     {if $error.message && $message != $error.message}
@@ -85,10 +85,9 @@
         <div class="crm-section crm-error-message">{$error.message}</div>
     {/if}
     {if ($code OR $mysql_code OR $errorDetails) AND $config->debug}
-        <div class="crm-accordion-wrapper crm-accordion_title-accordion crm-accordion-closed crm-fatal-error-details-block" onclick="toggle(this);";>
+        <div class="crm-accordion-wrapper collapsed crm-fatal-error-details-block" onclick="toggle(this);";>
          <div class="crm-accordion-header">
-          <div class="icon crm-accordion-pointer"></div>
-        	{ts}Error Details{/ts}
+          {ts}Error Details{/ts}
          </div><!-- /.crm-accordion-header -->
          <div class="crm-accordion-body">
             {if $code}
@@ -132,10 +131,10 @@
 <script language="JavaScript">
 function toggle( element ) {
     var className = element.className;
-    if ( className  == 'crm-accordion-wrapper crm-accordion_title-accordion crm-accordion-closed crm-fatal-error-details-block') {
-        element.className = 'crm-accordion-wrapper crm-accordion_title-accordion crm-accordion-open crm-fatal-error-details-block';
+    if ( className  == 'crm-accordion-wrapper collapsed crm-fatal-error-details-block') {
+        element.className = 'crm-accordion-wrapper  crm-fatal-error-details-block';
     } else {
-        element.className = 'crm-accordion-wrapper crm-accordion_title-accordion crm-accordion-closed crm-fatal-error-details-block';
+        element.className = 'crm-accordion-wrapper collapsed crm-fatal-error-details-block';
     }
 }
 </script>

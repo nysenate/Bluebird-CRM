@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,7 +27,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -49,15 +49,19 @@ class CRM_Activity_Form_Task_SearchTaskHookSample extends CRM_Activity_Form_Task
     $rows = array();
     // display name and activity details of all selected contacts
     $activityIDs = implode(',', $this->_activityHolderIds);
+
+    $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
+    $sourceID = CRM_Utils_Array::key('Activity Source', $activityContacts);
     $query = "
     SELECT at.subject      as subject,
            ov.label        as activity_type,
-           at.activity_date_time as activity_date,  
+           at.activity_date_time as activity_date,
            ct.display_name as display_name
       FROM civicrm_activity at
-INNER JOIN civicrm_contact ct ON ( at.source_contact_id = ct.id )   
+LEFT JOIN  civicrm_activity_contact ac ON ( ac.activity_id = at.id AND ac.record_type_id = {$sourceID} )
+INNER JOIN civicrm_contact ct ON ( ac.contact_id = ct.id )
  LEFT JOIN civicrm_option_group og ON ( og.name = 'activity_type' )
- LEFT JOIN civicrm_option_value ov ON (at.activity_type_id = ov.value AND og.id = ov.option_group_id )   
+ LEFT JOIN civicrm_option_value ov ON (at.activity_type_id = ov.value AND og.id = ov.option_group_id )
      WHERE at.id IN ( $activityIDs )";
 
     $dao = CRM_Core_DAO::executeQuery($query,

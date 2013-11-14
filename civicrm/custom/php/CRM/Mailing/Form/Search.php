@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -50,7 +50,7 @@ class CRM_Mailing_Form_Search extends CRM_Core_Form {
       CRM_Core_DAO::getAttribute('CRM_Mailing_DAO_Mailing', 'subject')
     );
                 
-    CRM_Core_Form_Date::buildDateRange($this, 'mailing', 1, '_from', '_to', ts('From'), FALSE, FALSE);
+    CRM_Core_Form_Date::buildDateRange($this, 'mailing', 1, '_from', '_to', ts('From'), FALSE);
 
     $this->add('text', 'sort_name', ts('Created or Sent by'),
       CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Contact', 'sort_name')
@@ -58,12 +58,18 @@ class CRM_Mailing_Form_Search extends CRM_Core_Form {
 
     CRM_Campaign_BAO_Campaign::addCampaignInComponentSearch($this);
 
-    foreach (array(
-      'Scheduled', 'Complete', 'Running') as $status) {
+    $statusVals = array('Scheduled', 'Complete', 'Running', 'Canceled');
+    foreach ($statusVals as $status) {
       $this->addElement('checkbox', "mailing_status[$status]", NULL, $status);
     }
+    $this->addElement('checkbox', 'status_unscheduled', NULL, 'Draft / Unscheduled');
+    $this->addYesNo('is_archived', ts('Mailing is Archived'));
 
-    //$this->addElement('checkbox', "sms", 'Is SMS'); //NYSS
+    //NYSS
+    /*if ($parent->_sms) {
+      $this->addElement('hidden', 'sms', $parent->_sms);
+    }*/
+    $this->add('hidden', 'hidden_find_mailings', 1);
 
     $this->addButtons(array(
         array(
@@ -75,13 +81,23 @@ class CRM_Mailing_Form_Search extends CRM_Core_Form {
   }
 
   function setDefaultValues() {
-    $defaults = array();
-    foreach (array(
-      'Scheduled', 'Complete', 'Running') as $status) {
+    $defaults = $statusVals = array();
+    $parent = $this->controller->getParent();
+
+    if ($parent->get('unscheduled')) {
+      $defaults['status_unscheduled'] = 1;
+    }
+    if ($parent->get('scheduled')) {
+      $statusVals = array('Scheduled', 'Complete', 'Running', 'Canceled');
+      $defaults['is_archived'] = 0;
+    }
+    if ($parent->get('archived')) {
+      $defaults['is_archived'] = 1;
+    }
+    foreach ($statusVals as $status) {
       $defaults['mailing_status'][$status] = 1;
     }
 
-    $parent = $this->controller->getParent();
     if ($parent->_sms) {
       $defaults['sms'] = 1;
     }
@@ -96,7 +112,7 @@ class CRM_Mailing_Form_Search extends CRM_Core_Form {
     $parent = $this->controller->getParent();
     if (!empty($params)) {
       //NYSS 4845
-      $fields = array('mailing_name', 'mailing_from', 'mailing_to', 'sort_name', 'campaign_id', 'mailing_status', 'mailing_subject', 'sms');
+      $fields = array('mailing_name', 'mailing_from', 'mailing_to', 'sort_name', 'campaign_id', 'mailing_status', 'mailing_subject', 'sms', 'status_unscheduled', 'is_archived', 'hidden_find_mailings');
       foreach ($fields as $field) {
         if (isset($params[$field]) &&
           !CRM_Utils_System::isNull($params[$field])

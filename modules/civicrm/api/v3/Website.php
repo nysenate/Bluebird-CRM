@@ -1,11 +1,10 @@
 <?php
-// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -33,11 +32,9 @@
  * @package CiviCRM_APIv3
  * @subpackage API_Website
  *
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * @version $Id: Website.php 2011-03-16 ErikHommel $
  */
-
-require_once 'CRM/Core/BAO/Website.php';
 
 /**
  *  Add an Website for a contact
@@ -52,13 +49,15 @@ require_once 'CRM/Core/BAO/Website.php';
  * @todo convert to using basic create - BAO function non-std
  */
 function civicrm_api3_website_create($params) {
+  //DO NOT USE THIS FUNCTION AS THE BASIS FOR A NEW API http://wiki.civicrm.org/confluence/display/CRM/API+Architecture+Standards
+
   $websiteBAO = CRM_Core_BAO_Website::add($params);
     $values = array();
     _civicrm_api3_object_to_array($websiteBAO, $values[$websiteBAO->id]);
     return civicrm_api3_create_success($values, $params, 'website', 'get');
-
 }
-/*
+
+/**
  * Adjust Metadata for Create action
  *
  * The metadata is used for setting defaults, documentation & validation
@@ -80,9 +79,9 @@ function _civicrm_api3_website_create_spec(&$params) {
  * @todo convert to using Basic delete - BAO function non standard
  */
 function civicrm_api3_website_delete($params) {
+  //DO NOT USE THIS FUNCTION AS THE BASIS FOR A NEW API http://wiki.civicrm.org/confluence/display/CRM/API+Architecture+Standards
   $websiteID = CRM_Utils_Array::value('id', $params);
 
-  require_once 'CRM/Core/DAO/Website.php';
   $websiteDAO = new CRM_Core_DAO_Website();
   $websiteDAO->id = $websiteID;
   if ($websiteDAO->find()) {

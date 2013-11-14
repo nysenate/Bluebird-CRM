@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -64,8 +64,8 @@ class CRM_PCP_Form_Event extends CRM_Event_Form_ManageEvent {
 
     $defaults = array();
     if (isset($this->_id)) {
-      $title = CRM_Core_DAO::getFieldValue('CRM_Event_DAO_Event', $this->_id, 'title');
-      CRM_Utils_System::setTitle(ts('Personal Campaign Page Settings (%1)', array(1 => $title)));
+    $title = CRM_Core_DAO::getFieldValue('CRM_Event_DAO_Event', $this->_id, 'title');
+    CRM_Utils_System::setTitle(ts('Personal Campaign Page Settings (%1)', array(1 => $title)));
 
       $params = array('entity_id' => $this->_id, 'entity_table' => 'civicrm_event');
       CRM_Core_DAO::commonRetrieve('CRM_PCP_DAO_PCPBlock', $params, $defaults);
@@ -81,7 +81,7 @@ class CRM_PCP_Form_Event extends CRM_Event_Form_ManageEvent {
       $defaults['tellfriend_limit'] = 5;
       $defaults['link_text'] = ts('Promote this event with a personal campaign page');
 
-      if ($this->_id && 
+      if ($this->_id &&
           $ccReceipt = CRM_Core_DAO::getFieldValue('CRM_Contribute_DAO_ContributionPage', $this->_id, 'cc_receipt')) {
         $defaults['notify_email'] = $ccReceipt;
       }

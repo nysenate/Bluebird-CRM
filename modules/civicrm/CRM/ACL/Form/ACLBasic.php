@@ -1,11 +1,9 @@
 <?php
-// $Id$
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -38,7 +36,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -112,9 +110,7 @@ SELECT object_table
     $this->addFormRule(array('CRM_ACL_Form_ACLBasic', 'formRule'));
   }
 
-
-  static
-  function formRule($params) {
+  static function formRule($params) {
     if ($params['entity_id'] == -1) {
       $errors = array('entity_id' => ts('Role is a required field'));
       return $errors;
@@ -147,7 +143,7 @@ DELETE
       $dao = CRM_Core_DAO::executeQuery($query, $deleteParams);
 
       if ($this->_action & CRM_Core_Action::DELETE) {
-        CRM_Core_Session::setStatus(ts('Selected ACL has been deleted.'));
+        CRM_Core_Session::setStatus(ts('Selected ACL has been deleted.'), ts('Record Deleted'), 'success');
         return;
       }
     }

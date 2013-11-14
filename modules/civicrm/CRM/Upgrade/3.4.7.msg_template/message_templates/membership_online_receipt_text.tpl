@@ -114,7 +114,7 @@
 ===========================================================
 {ts}Display In Honor Roll{/ts}: {if $pcp_display_in_roll}{ts}Yes{/ts}{else}{ts}No{/ts}{/if}
 
-{if $pcp_roll_nickname}{ts}Nick Name{/ts}: {$pcp_roll_nickname}{/if}
+{if $pcp_roll_nickname}{ts}Nickname{/ts}: {$pcp_roll_nickname}{/if}
 
 {if $pcp_personal_note}{ts}Personal Note{/ts}: {$pcp_personal_note}{/if}
 

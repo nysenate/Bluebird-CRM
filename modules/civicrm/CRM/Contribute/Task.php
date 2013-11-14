@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -65,8 +65,7 @@ class CRM_Contribute_Task {
    * @static
    * @access public
    */
-  static
-  function &tasks() {
+  static function &tasks() {
     if (!(self::$_tasks)) {
       self::$_tasks = array(
         1 => array('title' => ts('Delete Contributions'),
@@ -129,8 +128,7 @@ class CRM_Contribute_Task {
    * @static
    * @access public
    */
-  static
-  function &taskTitles() {
+  static function &taskTitles() {
     self::tasks();
     $titles = array();
     foreach (self::$_tasks as $id => $value) {
@@ -151,8 +149,7 @@ class CRM_Contribute_Task {
    * @return array set of tasks that are valid for the user
    * @access public
    */
-  static
-  function &permissionedTaskTitles($permission) {
+  static function &permissionedTaskTitles($permission) {
     $tasks = array();
     if (($permission == CRM_Core_Permission::EDIT)
       || CRM_Core_Permission::check('edit contributions')
@@ -184,12 +181,16 @@ class CRM_Contribute_Task {
    * @static
    * @access public
    */
-  static
-  function getTask($value) {
+  static function getTask($value) {
     self::tasks();
     if (!$value || !CRM_Utils_Array::value($value, self::$_tasks)) {
       // make the print task by default
       $value = 2;
+    }
+    // this is possible since hooks can inject a task
+    // CRM-13697
+    if (!isset(self::$_tasks[$value]['result'])) {
+      self::$_tasks[$value]['result'] = NULL;
     }
     return array(
       self::$_tasks[$value]['class'],

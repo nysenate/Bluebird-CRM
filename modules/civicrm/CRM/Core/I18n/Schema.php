@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -174,8 +174,8 @@ class CRM_Core_I18n_Schema {
       return;
     }
 
-    eval("\$columns =& $class::columns();");
-    eval("\$indices =& $class::indices();");
+    $columns =& $class::columns();
+    $indices =& $class::indices();
     $queries = array();
     $dropQueries = array();
     // drop indices
@@ -216,17 +216,17 @@ class CRM_Core_I18n_Schema {
 
     if ( !empty($triggers)) {
       if (CRM_Core_Config::isUpgradeMode()) {
-        foreach ($triggers as $triggerInfo) {
-          $when = $triggerInfo['when'];
-          $event = $triggerInfo['event'];
-          $triggerName = "{$table}_{$when}_{$event}";
-          CRM_Core_DAO::executeQuery("DROP TRIGGER IF EXISTS {$triggerName}");
-        }
+      foreach ($triggers as $triggerInfo) {
+        $when = $triggerInfo['when'];
+        $event = $triggerInfo['event'];
+        $triggerName = "{$table}_{$when}_{$event}";
+        CRM_Core_DAO::executeQuery("DROP TRIGGER IF EXISTS {$triggerName}");
       }
-
-      // invoke the meta trigger creation call
-      CRM_Core_DAO::triggerRebuild($table);
     }
+
+    // invoke the meta trigger creation call
+    CRM_Core_DAO::triggerRebuild($table);
+  }
   }
 
   /**
@@ -304,8 +304,8 @@ class CRM_Core_I18n_Schema {
     else {
       $class = 'CRM_Core_I18n_SchemaStructure';
     }
-    eval("\$indices =& $class::indices();");
-    eval("\$tables  =& $class::tables();");
+    $indices =& $class::indices();
+    $tables  =& $class::tables();
     $queries = array();
     $dao = new CRM_Core_DAO;
 
@@ -378,7 +378,7 @@ class CRM_Core_I18n_Schema {
         // class loader look for file like - CRM/Core/I18n/SchemaStructure/4/1/0.php which is not what we want to be loaded
         require_once "CRM/Core/I18n/SchemaStructure_{$latest}.php";
         $class = "CRM_Core_I18n_SchemaStructure_{$latest}";
-        eval("\$tables  =& $class::tables();");
+        $tables  =& $class::tables();
       }
       else {
         $tables = CRM_Core_I18n_SchemaStructure::tables();
@@ -420,8 +420,8 @@ class CRM_Core_I18n_Schema {
    * @return array          array of CREATE INDEX queries
    */
   private static function createIndexQueries($locale, $table, $class = 'CRM_Core_I18n_SchemaStructure') {
-    eval("\$indices =& $class::indices();");
-    eval("\$columns =& $class::columns();");
+    $indices =& $class::indices();
+    $columns =& $class::columns();
     if (!isset($indices[$table])) {
       return array();
     }
@@ -460,7 +460,7 @@ class CRM_Core_I18n_Schema {
    * @return array          array of CREATE INDEX queries
    */
   private static function createViewQuery($locale, $table, &$dao, $class = 'CRM_Core_I18n_SchemaStructure') {
-    eval("\$columns =& $class::columns();");
+    $columns =& $class::columns();
     $cols = array();
     $dao->query("DESCRIBE {$table}", FALSE);
     while ($dao->fetch()) {
@@ -478,7 +478,7 @@ class CRM_Core_I18n_Schema {
     return "CREATE OR REPLACE VIEW {$table}_{$locale} AS SELECT " . implode(', ', $cols) . " FROM {$table}";
   }
 
-  function triggerInfo(&$info, $tableName = NULL) {
+  static function triggerInfo(&$info, $tableName = NULL) {
     // get the current supported locales
     $domain = new CRM_Core_DAO_Domain();
     $domain->find(TRUE);
@@ -506,7 +506,7 @@ class CRM_Core_I18n_Schema {
       $class = 'CRM_Core_I18n_SchemaStructure';
     }
 
-    eval("\$columns =& $class::columns();");
+    $columns =& $class::columns();
 
     foreach ($columns as $table => $hash) {
       if ($tableName &&

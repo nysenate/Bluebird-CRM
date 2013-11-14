@@ -1,11 +1,10 @@
 <?php
-// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -48,7 +47,9 @@ class CRM_Report_Form_Mailing_Opened extends CRM_Report_Form {
     '' => 'Tabular',
     'barChart' => 'Bar Chart',
     'pieChart' => 'Pie Chart',
-  ); function __construct() {
+  );
+
+  function __construct() {
     $this->_columns = array();
 
     $this->_columns['civicrm_contact'] = array(
@@ -200,8 +201,7 @@ class CRM_Report_Form_Mailing_Opened extends CRM_Report_Form {
     $this->_select = "SELECT " . implode(', ', $select) . " ";
   }
 
-  static
-  function formRule($fields, $files, $self) {
+  static function formRule($fields, $files, $self) {
     $errors = $grouping = array();
     return $errors;
   }
@@ -211,23 +211,23 @@ class CRM_Report_Form_Mailing_Opened extends CRM_Report_Form {
         FROM civicrm_contact {$this->_aliases['civicrm_contact']} {$this->_aclFrom}";
 
     $this->_from .= "
-				INNER JOIN civicrm_mailing_event_queue
-					ON civicrm_mailing_event_queue.contact_id = {$this->_aliases['civicrm_contact']}.id
-				INNER JOIN civicrm_email {$this->_aliases['civicrm_email']}
-					ON civicrm_mailing_event_queue.email_id = {$this->_aliases['civicrm_email']}.id
-				INNER JOIN civicrm_mailing_event_opened
-					ON civicrm_mailing_event_opened.event_queue_id = civicrm_mailing_event_queue.id
-				INNER JOIN civicrm_mailing_job
-					ON civicrm_mailing_event_queue.job_id = civicrm_mailing_job.id
-				INNER JOIN civicrm_mailing {$this->_aliases['civicrm_mailing']}
-					ON civicrm_mailing_job.mailing_id = {$this->_aliases['civicrm_mailing']}.id
-					AND civicrm_mailing_job.is_test = 0
-			";
+        INNER JOIN civicrm_mailing_event_queue
+          ON civicrm_mailing_event_queue.contact_id = {$this->_aliases['civicrm_contact']}.id
+        INNER JOIN civicrm_email {$this->_aliases['civicrm_email']}
+          ON civicrm_mailing_event_queue.email_id = {$this->_aliases['civicrm_email']}.id
+        INNER JOIN civicrm_mailing_event_opened
+          ON civicrm_mailing_event_opened.event_queue_id = civicrm_mailing_event_queue.id
+        INNER JOIN civicrm_mailing_job
+          ON civicrm_mailing_event_queue.job_id = civicrm_mailing_job.id
+        INNER JOIN civicrm_mailing {$this->_aliases['civicrm_mailing']}
+          ON civicrm_mailing_job.mailing_id = {$this->_aliases['civicrm_mailing']}.id
+          AND civicrm_mailing_job.is_test = 0
+      ";
 
     if ($this->_phoneField) {
       $this->_from .= "
-            LEFT JOIN civicrm_phone {$this->_aliases['civicrm_phone']} 
-                   ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_phone']}.contact_id AND 
+            LEFT JOIN civicrm_phone {$this->_aliases['civicrm_phone']}
+                   ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_phone']}.contact_id AND
                       {$this->_aliases['civicrm_phone']}.is_primary = 1 ";
     }
   }

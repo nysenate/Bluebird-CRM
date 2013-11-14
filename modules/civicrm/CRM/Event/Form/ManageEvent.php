@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -80,11 +80,18 @@ class CRM_Event_Form_ManageEvent extends CRM_Core_Form {
   protected $_cancelURL = NULL;
 
   /**
+   * The campaign id of the existing event, we use this to know if we need to update
+   * the participant records
+   */
+  protected $_campaignID = NULL;
+
+  /**
    * Function to set variables up before form is built
    *
    * @return void
    * @access public
-   */ function preProcess() {
+   */
+  function preProcess() {
     $config = CRM_Core_Config::singleton();
     if (in_array('CiviEvent', $config->enableComponents)) {
       $this->assign('CiviEvent', TRUE);
@@ -94,7 +101,7 @@ class CRM_Event_Form_ManageEvent extends CRM_Core_Form {
 
     $this->assign('action', $this->_action);
 
-    $this->_id = CRM_Utils_Request::retrieve('id', 'Positive', $this, FALSE);
+    $this->_id = CRM_Utils_Request::retrieve('id', 'Positive', $this, FALSE, NULL, 'GET');
     if ($this->_id) {
       $this->assign('eventId', $this->_id);
       if (empty($this->_addProfileBottom) && empty($this->_addProfileBottomAdd)) {
@@ -213,6 +220,8 @@ class CRM_Event_Form_ManageEvent extends CRM_Core_Form {
     if (isset($this->_id)) {
       $params = array('id' => $this->_id);
       CRM_Event_BAO_Event::retrieve($params, $defaults);
+
+      $this->_campaignID = CRM_Utils_Array::value('campaign_id', $defaults);
     }
     elseif ($this->_templateId) {
       $params = array('id' => $this->_templateId);
@@ -236,7 +245,6 @@ class CRM_Event_Form_ManageEvent extends CRM_Core_Form {
    * @access public
    */
   public function buildQuickForm() {
-    $className = CRM_Utils_System::getClassName($this);
     $session = CRM_Core_Session::singleton();
 
     $this->_cancelURL = CRM_Utils_Array::value('cancelURL', $_POST);
@@ -258,10 +266,7 @@ class CRM_Event_Form_ManageEvent extends CRM_Core_Form {
       $this->addElement('hidden', 'cancelURL', $this->_cancelURL);
     }
 
-    $buttons = array();
     if ($this->_single) {
-      // make this form an upload since we dont know if the custom data injected dynamically
-      // is of type file etc $uploadNames = $this->get( 'uploadNames' );
       $buttons = array(
         array(
           'type' => 'upload',
@@ -334,9 +339,17 @@ class CRM_Event_Form_ManageEvent extends CRM_Core_Form {
 
       CRM_Core_Session::setStatus(ts("'%1' information has been saved.",
           array(1 => ($subPage == 'friend') ? 'Friend' : $className)
-        ));
+        ), ts('Saved'), 'success');
 
-      $this->postProcessHook();
+      $config = CRM_Core_Config::singleton();
+      if (in_array('CiviCampaign', $config->enableComponents)) {
+        $values = $this->controller->exportValues($this->_name);
+        $newCampaignID = CRM_Utils_Array::value('campaign_id', $values);
+        $eventID = CRM_Utils_Array::value('id', $values);
+        if ($eventID && $this->_campaignID != $newCampaignID) {
+          CRM_Event_BAO_Event::updateParticipantCampaignID($eventID, $newCampaignID);
+        }
+      }
 
       if ($this->controller->getButtonName('submit') == "_qf_{$className}_upload_done") {
         if ($this->_isTemplate) {
@@ -366,6 +379,8 @@ class CRM_Event_Form_ManageEvent extends CRM_Core_Form {
       return parent::getTemplateFileName();
     }
     else {
+      // hack lets suppress the form rendering for now
+      self::$_template->assign('isForm', FALSE);
       return 'CRM/Event/Form/ManageEvent/Tab.tpl';
     }
   }

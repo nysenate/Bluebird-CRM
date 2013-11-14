@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
        {include file="CRM/Case/Page/DashboardSelector.tpl" context="$context" list="upcoming" rows=$upcomingCases}
    </div>
 {else}
-    <div class="messages status">
+    <div class="messages status no-popup">
      {capture assign="findCasesURL"}{crmURL p='civicrm/case/search' q='reset=1'}{/capture}
      {ts 1=$findCasesURL}There are no open cases with activities scheduled in the next two weeks. Use <a href="%1">Find Cases</a> to expand your search.{/ts}
     </div>

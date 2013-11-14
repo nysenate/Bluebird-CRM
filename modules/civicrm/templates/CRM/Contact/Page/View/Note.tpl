@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -33,6 +33,10 @@
             <tr><td class="label">{ts}Date:{/ts}</td><td>{$note.modified_date|crmDate}</td></tr>
             <tr><td class="label">{ts}Privacy:{/ts}</td><td>{$note.privacy}</td></tr>
             <tr><td class="label"></td><td>{$note.note|nl2br}</td></tr>
+
+            {if $currentAttachmentInfo}
+               {include file="CRM/Form/attachment.tpl"}
+            {/if}
           </table>
           <div class="crm-submit-buttons"><input type="button" name='cancel' value="{ts}Done{/ts}" onclick="location.href='{crmURL p='civicrm/contact/view' q='action=browse&selectedChild=note'}';"/></div>
 
@@ -44,7 +48,7 @@
                     <tr><th>{ts}Comment{/ts}</th><th>{ts}Created By{/ts}</th><th>{ts}Date{/ts}</th></tr>
                 </thead>
                 {foreach from=$comments item=comment}
-                    <tr class="{cycle values="odd-row,even-row"}"><td>{$comment.note}</td><td>{$comment.createdBy}</td><td>{$comment.modified_date}</td></tr>
+                    <tr class="{cycle values='odd-row,even-row'}"><td>{$comment.note}</td><td>{$comment.createdBy}</td><td>{$comment.modified_date}</td></tr>
                 {/foreach}
             </table>
         </fieldset>
@@ -60,7 +64,7 @@
             {if $action eq 1}{ts}New Note{/ts}{else}{ts}Edit Note{/ts}{/if}
         {/if}
     </h3>
-	<div class="crm-block crm-form-block crm-note-form-block">
+  <div class="crm-block crm-form-block crm-note-form-block">
     <div class="content crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
         <table class="form-layout">
             <tr>
@@ -81,12 +85,17 @@
                     {$form.note.html}
                 </td>
             </tr>
+            <tr class="crm-activity-form-block-attachment">
+                <td colspan="2">
+                    {include file="CRM/Form/attachment.tpl"}
+                </td>
+            </tr>
         </table>
 
-	<div class="crm-section note-buttons-section no-label">
-	 <div class="content crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
-	 <div class="clear"></div> 
-	</div>
+  <div class="crm-section note-buttons-section no-label">
+   <div class="content crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
+   <div class="clear"></div>
+  </div>
     </div>
     {* include jscript to warn if unsaved form field changes *}
     {include file="CRM/common/formNavigate.tpl"}
@@ -101,7 +110,7 @@
 
 {if $permission EQ 'edit' AND ($action eq 16 or $action eq 4 or $action eq 8)}
    <div class="action-link">
-	 <a accesskey="N" href="{crmURL p='civicrm/contact/view/note' q="cid=`$contactId`&action=add"}" class="button"><span><div class="icon add-icon"></div>{ts}Add Note{/ts}</span></a>
+   <a accesskey="N" href="{crmURL p='civicrm/contact/view/note' q="cid=`$contactId`&action=add"}" class="button"><span><div class="icon add-icon"></div>{ts}Add Note{/ts}</span></a>
    </div>
    <div class="clear"></div>
 {/if}
@@ -111,7 +120,7 @@
 
 <script type="text/javascript">
     var commentAction = '{$commentAction|escape:quotes}'
-    
+
     {literal}
     var commentRows = {};
 
@@ -147,11 +156,11 @@
             }
 
             if ( commentRows['cnote_'+ noteId] ) {
-                for ( var i in commentRows['cnote_'+ noteId] ) { 
+                for ( var i in commentRows['cnote_'+ noteId] ) {
                     return false;
                 }
             } else {
-                commentRows['cnote_'+ noteId] = {}; 
+                commentRows['cnote_'+ noteId] = {};
             }
             for (i in response['values']) {
                 if ( response['values'][i].id ) {
@@ -179,7 +188,7 @@
             cj('tr#cnote_'+ noteId +' span.icon_comments_show').hide();
             cj('tr#cnote_'+ noteId +' span.icon_comments_hide').show();
         } else {
-            alert('{/literal}{ts}No comments found for this Note{/ts}{literal}');
+            CRM.alert('{/literal}{ts escape="js"}There are no comments for this note{/ts}{literal}', '{/literal}{ts escape="js"}None Found{/ts}{literal}', 'alert');
         }
 
     }
@@ -207,7 +216,7 @@
             var tabId = cj.fn.dataTableSettings[0].sInstance;
 
             cj('table#'+ tabId).dataTable().fnSettings().aoDrawCallback.push( {
-                    "fn": function () { 
+                    "fn": function () {
                         cj('#'+ tabId +' tr').each( function() {
                             drawCommentRows(this.id)
                         });
@@ -222,12 +231,12 @@
         <table id="options" class="display">
         <thead>
         <tr>
-	        <th></th>
-	        <th>{ts}Note{/ts}</th>
-	        <th>{ts}Subject{/ts}</th>
-	        <th>{ts}Date{/ts}</th>
-	        <th>{ts}Created By{/ts}</th>
-	        <th></th>
+          <th></th>
+          <th>{ts}Note{/ts}</th>
+          <th>{ts}Subject{/ts}</th>
+          <th>{ts}Date{/ts}</th>
+          <th>{ts}Created By{/ts}</th>
+          <th></th>
         </tr>
         </thead>
 
@@ -250,7 +259,7 @@
                 {* Include '(more)' link to view entire note if it has been truncated *}
                 {assign var="noteSize" value=$note.note|count_characters:true}
                 {if $noteSize GT 80}
-		        <a href="{crmURL p='civicrm/contact/view/note' q="action=view&selectedChild=note&reset=1&cid=`$contactId`&id=`$note.id`"}">{ts}(more){/ts}</a>
+            <a href="{crmURL p='civicrm/contact/view/note' q="action=view&selectedChild=note&reset=1&cid=`$contactId`&id=`$note.id`"}">{ts}(more){/ts}</a>
                 {/if}
             </td>
             <td class="crm-note-subject">{$note.subject}</td>
@@ -266,7 +275,7 @@
  </div>
 </div>
 {elseif ! ($action eq 1)}
-   <div class="messages status">
+   <div class="messages status no-popup">
         <div class="icon inform-icon"></div>
         {capture assign=crmURL}{crmURL p='civicrm/contact/view/note' q="cid=`$contactId`&action=add"}{/capture}
         {ts 1=$crmURL}There are no Notes for this contact. You can <a accesskey="N" href='%1'>add one</a>.{/ts}

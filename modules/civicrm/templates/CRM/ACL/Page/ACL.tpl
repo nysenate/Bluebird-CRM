@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -80,7 +80,7 @@
         {/if}
 </div>
 {elseif $action ne 1 and $action ne 2 and $action ne 8}
-    <div class="messages status">
+    <div class="messages status no-popup">
         <img src="{$config->resourceBase}i/Inform.gif" alt="{ts}status{/ts}"/>
         {capture assign=crmURL}{crmURL q="action=add&reset=1"}{/capture}
         {ts 1=$crmURL}There are no ACLs entered. You can <a href='%1'>add one</a>.{/ts}

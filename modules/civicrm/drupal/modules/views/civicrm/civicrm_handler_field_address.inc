@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -74,7 +74,7 @@ class civicrm_handler_field_address extends civicrm_handler_field_location {
           'operator' => '=',
         );
       }
-      if (isset($extra)) {
+      if (isset($extra) && !empty($extra)) {
         $join              = $this->get_join();
         $join->extra       = $extra;
         $join->extra_type  = self::$_locationOps[$this->options['location_op']];

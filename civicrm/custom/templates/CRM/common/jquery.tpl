@@ -67,7 +67,7 @@
 
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.FormNavigate.js"></script>
 {*NYSS*}
-<script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.cursorStart.js"></script>
+<script type="text/javascript" src="{$config->resourceBase}NYSS/jquery.cursorStart.js"></script>
 
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.validate.js"></script>
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.civicrm-validate.js"></script>
@@ -92,5 +92,10 @@
 {if $l10nURL}
   <script type="text/javascript" src="{$l10nURL}"></script>
 {/if}
+<script type="text/javascript" src="/sites/default/themes/Bluebird/scripts/bbUtils/bbUtils.js"></script>
+<script type="text/javascript" src="/sites/default/themes/Bluebird/scripts/bbJSsettings/bbhg.js"></script>
+<script type="text/javascript" src="/sites/default/themes/Bluebird/scripts/tagging/tag/JSTree.js"></script>
+<script type="text/javascript" src="/sites/default/themes/Bluebird/scripts/jquery.taggingAutocomplete/jquery.taggingAutocomplete.js"></script>
+<script type="text/javascript" src="/sites/default/themes/Bluebird/scripts/jquery.infiniScroll/jquery.infiniScroll.js"></script>
 
 <script type="text/javascript">var cj = jQuery.noConflict();</script>

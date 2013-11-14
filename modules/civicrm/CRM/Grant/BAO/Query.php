@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,13 +29,12 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
 class CRM_Grant_BAO_Query {
-  static
-  function &getFields() {
+  static function &getFields() {
     $fields = array();
     $fields = CRM_Grant_BAO_Grant::exportableFields();
     return $fields;
@@ -47,8 +46,7 @@ class CRM_Grant_BAO_Query {
    * @return void
    * @access public
    */
-  static
-  function select(&$query) {
+  static function select(&$query) {
     if ($query->_mode & CRM_Contact_BAO_Query::MODE_GRANT) {
       if (CRM_Utils_Array::value('grant_status_id', $query->_returnProperties)) {
         $query->_select['grant_status_id'] = 'grant_status.id as grant_status_id';
@@ -103,17 +101,19 @@ class CRM_Grant_BAO_Query {
    * @return void
    * @access public
    */
-  static
-  function where(&$query) {
-    foreach (array_keys($query->_params) as $id) {
-      if (substr($query->_params[$id][0], 0, 6) == 'grant_') {
-        self::whereClauseSingle($query->_params[$id], $query);
+  static function where(&$query) {
+    foreach ($query->_params as $id => $values) {
+      if (!is_array($values) || count($values) != 5) {
+        continue;
+      }
+
+      if (substr($values[0], 0, 6) == 'grant_') {
+        self::whereClauseSingle($values, $query);
       }
     }
   }
 
-  static
-  function whereClauseSingle(&$values, &$query) {
+  static function whereClauseSingle(&$values, &$query) {
     $strtolower = function_exists('mb_strtolower') ? 'mb_strtolower' : 'strtolower';
     list($name, $op, $value, $grouping, $wildcard) = $values;
     switch ($name) {
@@ -226,8 +226,7 @@ class CRM_Grant_BAO_Query {
     }
   }
 
-  static
-  function from($name, $mode, $side) {
+  static function from($name, $mode, $side) {
     $from = NULL;
     switch ($name) {
       case 'civicrm_grant':
@@ -267,8 +266,7 @@ class CRM_Grant_BAO_Query {
     return (isset($this->_qill)) ? $this->_qill : "";
   }
 
-  static
-  function defaultReturnProperties($mode,
+  static function defaultReturnProperties($mode,
     $includeCustomFields = TRUE
   ) {
     $properties = NULL;
@@ -299,19 +297,18 @@ class CRM_Grant_BAO_Query {
    * @return void
    * @static
    */
-  static
-  function buildSearchForm(&$form) {
+  static function buildSearchForm(&$form) {
 
     $grantType = CRM_Core_OptionGroup::values('grant_type');
     $form->add('select', 'grant_type_id', ts('Grant Type'),
       array(
-        '' => ts('- select -')) + $grantType
+        '' => ts('- any -')) + $grantType
     );
 
     $grantStatus = CRM_Core_OptionGroup::values('grant_status');
     $form->add('select', 'grant_status_id', ts('Grant Status'),
       array(
-        '' => ts('- select -')) + $grantStatus
+        '' => ts('- any -')) + $grantStatus
     );
 
     $form->addDate('grant_application_received_date_low', ts('App. Received Date - From'), FALSE, array('formatType' => 'searchDate'));
@@ -363,16 +360,13 @@ class CRM_Grant_BAO_Query {
     $form->assign('validGrant', TRUE);
   }
 
-  static
-  function addShowHide(&$showHide) {
+  static function addShowHide(&$showHide) {
     $showHide->addHide('grantForm');
     $showHide->addShow('grantForm_show');
   }
 
-  static
-  function searchAction(&$row, $id) {}
+  static function searchAction(&$row, $id) {}
 
-  static
-  function tableNames(&$tables) {}
+  static function tableNames(&$tables) {}
 }
 

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,7 +25,7 @@
 *}
 {capture assign=wikiLink}{docURL page="Setting up a SMS Provider for CiviSMS" text="(How to add a SMS Provider)" resource="wiki"}{/capture}
 <div id="help">
-    {ts}You can configure one or more SMS Providers for your CiviCRM installation. To learn more about the procedure to add a SMS Provider, refer{/ts} {$wikiLink}
+    {ts}You can configure one or more SMS Providers for your CiviCRM installation. To learn more about the procedure to install SMS extension and Provider, refer{/ts} {$wikiLink}
 </div>
 {if $action eq 1 or $action eq 2 or $action eq 8}
    {include file="CRM/SMS/Form/Provider.tpl"}
@@ -42,12 +42,12 @@
 <div id="ltype">
     {strip}
         {* handle enable/disable actions*}
- 	    {include file="CRM/common/enableDisable.tpl"}
+       {include file="CRM/common/enableDisable.tpl"}
         <br/><table class="selector">
         <tr class="columnheader">
             <th >{ts}Provider Details{/ts}</th>
             <th >{ts}Username{/ts}</th>
-	    <th >{ts}API Parameters{/ts}</th>
+      <th >{ts}API Parameters{/ts}</th>
             <th >{ts}Action{/ts}</th>
         </tr>
         {foreach from=$rows item=row}
@@ -57,23 +57,23 @@
                 {ts}API Url:{/ts} {$row.api_url}<br/>
             </td>
             <td class="crm-provider-username">{$row.username}
-  	    </td>
+        </td>
             <td class="crm-api-params">{if $row.api_params eq null}<em>{ts}no parameters{/ts}</em>{else}<pre>{$row.api_params}</pre>{/if}</td>
-           
-	        <td>{$row.action|replace:'xx':$row.id}</td>
+
+          <td>{$row.action|replace:'xx':$row.id}</td>
         </tr>
         {/foreach}
         </table>
     {/strip}
 </div>
 {elseif $action ne 1}
-    <div class="messages status">
+    <div class="messages status no-popup">
       <div class="icon inform-icon"></div>
         {ts}There are no providers configured.{/ts}
-     </div>    
+     </div>
      <div class="action-link">
        <a href="{crmURL p='civicrm/admin/sms/provider' q="action=add&reset=1"}" class="button"><span><div class="icon add-icon"></div>{ts}Add SMS Provider{/ts}</span></a>
      </div>
- 
+
 {/if}
 {/if}

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -39,7 +39,7 @@
 <div id="ltype">
         {strip}
         {* handle enable/disable actions*}
- 	{include file="CRM/common/enableDisable.tpl"}
+   {include file="CRM/common/enableDisable.tpl"}
         <table class="selector">
         <tr class="columnheader">
             <th >{ts}Date{/ts}</th>
@@ -53,7 +53,7 @@
             <td class="crm-joblog-details">
                 <div class="crm-joblog-command">{$row.command}</div>
                 {if $row.description}<div class="crm-joblog-description"><span class="bold">Summary</span><br/>{$row.description}</div>{/if}
-	            {if $row.data}<div class="crm-joblog-data" style="border-top:1px solid #ccc; margin-top: 10px;"><span class="bold">Details</span><br/><pre>{$row.data}</pre></div>{/if}
+              {if $row.data}<div class="crm-joblog-data" style="border-top:1px solid #ccc; margin-top: 10px;"><span class="bold">Details</span><br/><pre>{$row.data}</pre></div>{/if}
             </td>
         </tr>
         {/foreach}
@@ -62,14 +62,14 @@
 
 </div>
 {elseif $action ne 1}
-    <div class="messages status">
+    <div class="messages status no-popup">
       <div class="icon inform-icon"></div>&nbsp;
       {if $jobId}
         {ts}This scheduled job does not have any log entries.{/ts}
       {else}
         {ts}There are no scheduled job log entries.{/ts}
       {/if}
-     </div>    
+     </div>
 {/if}
 
 <div class="action-link">

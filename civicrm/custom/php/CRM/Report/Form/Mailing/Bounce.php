@@ -1,11 +1,10 @@
 <?php
-// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -51,7 +50,9 @@ class CRM_Report_Form_Mailing_Bounce extends CRM_Report_Form {
     '' => 'Tabular',
     'barChart' => 'Bar Chart',
     'pieChart' => 'Pie Chart',
-  ); function __construct() {
+  );
+
+  function __construct() {
     $this->_columns = array();
 
     $this->_columns['civicrm_contact'] = array(
@@ -152,7 +153,7 @@ class CRM_Report_Form_Mailing_Bounce extends CRM_Report_Form {
           //'type' => CRM_Utils_Type::T_DATE,
 					'default' => true,
         ),
-			),
+      ),
       'filters' => array(
         'time_stamp' => array(
           'title' => ts('Bounce Date'),
@@ -160,35 +161,33 @@ class CRM_Report_Form_Mailing_Bounce extends CRM_Report_Form {
           'type'=> CRM_Utils_Type::T_DATE,
         ),
       ),
-      'order_bys'  =>
+      'order_bys' =>
       array(
         'bounce_reason' =>
-        array( 'title' => ts( 'Bounce Reason') ),
-				  'time_stamp'    =>
-				  array( 'title' => ts('Bounce Date') )
-			),
+        array('title' => ts('Bounce Reason')),
+      ),
       'grouping' => 'mailing-fields',
-		);
-		
-		$this->_columns['civicrm_mailing_bounce_type'] = array(
-			'dao' => 'CRM_Mailing_DAO_BounceType',
-			'fields' => array(
-				'bounce_name' => array(
-					'name' => 'name',
-					'title' => ts('Bounce Type'),
-				),
-			),
-			'filters' => array(
-				'bounce_type_name' => array(
-					'name' => 'name',
-					'title' => ts('Bounce Type'),
-					'operatorType' => CRM_Report_Form::OP_MULTISELECT, //NYSS 4943
-					'type'=> CRM_Utils_Type::T_STRING,
-					'options' => self::bounce_type(),
-					'operator' => 'like',							
-				),
-			),
-      'order_bys'  =>
+    );
+
+    $this->_columns['civicrm_mailing_bounce_type'] = array(
+      'dao' => 'CRM_Mailing_DAO_BounceType',
+      'fields' => array(
+        'bounce_name' => array(
+          'name' => 'name',
+          'title' => ts('Bounce Type'),
+        ),
+      ),
+      'filters' => array(
+        'bounce_type_name' => array(
+          'name' => 'name',
+          'title' => ts('Bounce Type'),
+          'operatorType' => CRM_Report_Form::OP_MULTISELECT, //NYSS 4943
+          'type' => CRM_Utils_Type::T_STRING,
+          'options' => self::bounce_type(),
+          'operator' => 'like',
+        ),
+      ),
+      'order_bys' =>
       array(
         'bounce_name' =>
         array(
@@ -280,8 +279,7 @@ class CRM_Report_Form_Mailing_Bounce extends CRM_Report_Form {
     $this->_select = "SELECT " . implode(', ', $select) . " ";
   }
 
-  static
-  function formRule($fields, $files, $self) {
+  static function formRule($fields, $files, $self) {
     $errors = $grouping = array();
     return $errors;
   }
@@ -294,24 +292,24 @@ class CRM_Report_Form_Mailing_Bounce extends CRM_Report_Form {
     // {$this->_aliases['civicrm_address']}.is_primary = 1 ) ";
 
     $this->_from .= "
-				INNER JOIN civicrm_mailing_event_queue
-					ON civicrm_mailing_event_queue.contact_id = {$this->_aliases['civicrm_contact']}.id
-				INNER JOIN civicrm_email {$this->_aliases['civicrm_email']}
-					ON civicrm_mailing_event_queue.email_id = {$this->_aliases['civicrm_email']}.id
-				INNER JOIN civicrm_mailing_event_bounce {$this->_aliases['civicrm_mailing_event_bounce']}
-					ON {$this->_aliases['civicrm_mailing_event_bounce']}.event_queue_id = civicrm_mailing_event_queue.id
-				LEFT JOIN civicrm_mailing_bounce_type {$this->_aliases['civicrm_mailing_bounce_type']}
-					ON {$this->_aliases['civicrm_mailing_event_bounce']}.bounce_type_id = {$this->_aliases['civicrm_mailing_bounce_type']}.id
-				INNER JOIN civicrm_mailing_job
-					ON civicrm_mailing_event_queue.job_id = civicrm_mailing_job.id
-				INNER JOIN civicrm_mailing {$this->_aliases['civicrm_mailing']}
-					ON civicrm_mailing_job.mailing_id = {$this->_aliases['civicrm_mailing']}.id
-			";
+        INNER JOIN civicrm_mailing_event_queue
+          ON civicrm_mailing_event_queue.contact_id = {$this->_aliases['civicrm_contact']}.id
+        INNER JOIN civicrm_email {$this->_aliases['civicrm_email']}
+          ON civicrm_mailing_event_queue.email_id = {$this->_aliases['civicrm_email']}.id
+        INNER JOIN civicrm_mailing_event_bounce {$this->_aliases['civicrm_mailing_event_bounce']}
+          ON {$this->_aliases['civicrm_mailing_event_bounce']}.event_queue_id = civicrm_mailing_event_queue.id
+        LEFT JOIN civicrm_mailing_bounce_type {$this->_aliases['civicrm_mailing_bounce_type']}
+          ON {$this->_aliases['civicrm_mailing_event_bounce']}.bounce_type_id = {$this->_aliases['civicrm_mailing_bounce_type']}.id
+        INNER JOIN civicrm_mailing_job
+          ON civicrm_mailing_event_queue.job_id = civicrm_mailing_job.id
+        INNER JOIN civicrm_mailing {$this->_aliases['civicrm_mailing']}
+          ON civicrm_mailing_job.mailing_id = {$this->_aliases['civicrm_mailing']}.id
+      ";
 
     if ($this->_phoneField) {
       $this->_from .= "
-            LEFT JOIN civicrm_phone {$this->_aliases['civicrm_phone']} 
-                   ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_phone']}.contact_id AND 
+            LEFT JOIN civicrm_phone {$this->_aliases['civicrm_phone']}
+                   ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_phone']}.contact_id AND
                       {$this->_aliases['civicrm_phone']}.is_primary = 1 ";
     }
   }

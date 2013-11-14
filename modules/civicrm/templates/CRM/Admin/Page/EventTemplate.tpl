@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -36,7 +36,7 @@
       </div>
 {/if}
 {if $rows}
-    
+
 {include file="CRM/common/jsortable.tpl"}
     {strip}
       <table id="options" class="display">
@@ -49,16 +49,16 @@
             <th>{ts}Public Event{/ts}</th>
             <th>{ts}Paid Event{/ts}</th>
             <th>{ts}Allow Online Registration{/ts}</th>
-	        <th>{ts}Is Active?{/ts}</th>
+          <th>{ts}Is Active?{/ts}</th>
             <th></th>
         </tr>
         </thead>
         {foreach from=$rows item=row}
           <tr id='rowid{$row.id}' class="{cycle values="odd-row,even-row"} crm-event crm-event_{$row.id}">
-              <td class="crm-event-template_title">{$row.template_title}</td>	
-              <td class="crm-event-event_type">{$row.event_type}</td>	
-              <td class="crm-event-participant_role">{$row.participant_role}</td>	
-              <td class="crm-event-participant_listing">{$row.participant_listing}</td>	
+              <td class="crm-event-template_title">{$row.template_title}</td>
+              <td class="crm-event-event_type">{$row.event_type}</td>
+              <td class="crm-event-participant_role">{$row.participant_role}</td>
+              <td class="crm-event-participant_listing">{$row.participant_listing}</td>
               <td class="crm-event-is_public">{if $row.is_public eq 1}{ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
               <td class="crm-event-is_monetary">{if $row.is_monetary eq 1}{ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
               <td class="crm-event-is_online_registration">{if $row.is_online_registration eq 1}{ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
@@ -72,10 +72,10 @@
 
 
 {else}
-    <div class="messages status">
+    <div class="messages status no-popup">
     <div class="icon inform-icon"></div>
     {capture assign=crmURL}{crmURL p='civicrm/event/add' q="action=add&is_template=1&reset=1"}{/capture}
-        {ts 1=$crmURL}There are no Event Templates present. You can <a href='%1'>add one</a>.{/ts}    
-    </div>    
+        {ts 1=$crmURL}There are no Event Templates present. You can <a href='%1'>add one</a>.{/ts}
+    </div>
 {/if}
 </div>

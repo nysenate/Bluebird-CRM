@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,7 +27,7 @@
 <h3>{if $action eq 1}{ts}New Tag{/ts}{elseif $action eq 2}{ts}Edit Mapping{/ts}{else}{ts}Delete Mapping{/ts}{/if}</h3>
 <div class="crm-block crm-form-block crm-mapping-form-block">
     {if $action eq 1 or $action eq 2 }
-      <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>                  
+      <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
       <table class="form-layout-compressed">
        <tr class="crm-mapping-form-block-name">
           <td class="label">{$form.name.label}</td>
@@ -43,7 +43,7 @@
        </tr>
       </table>
     {else}
-        <div class="messages status">
+        <div class="messages status no-popup">
             <div class="icon inform-icon"></div> &nbsp;
             {ts 1=$mappingName}WARNING: Are you sure you want to delete mapping '<b>%1</b>'?{/ts} {ts}This action cannot be undone.{/ts}
         </div>

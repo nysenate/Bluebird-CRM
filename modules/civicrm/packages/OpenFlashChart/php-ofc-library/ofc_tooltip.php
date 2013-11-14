@@ -23,6 +23,14 @@ class tooltip
 	}
 	
 	/**
+	 * @param $clash as bolean
+	 */
+	function set_clash( $clash )
+	{
+		$this->clash = $clash;
+	}
+	
+	/**
 	 * @param $colour as string, HEX colour e.g. '#0000ff'
 	 */
 	function set_colour( $colour )

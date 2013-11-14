@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -70,7 +70,7 @@ class CRM_Contact_BAO_SearchCustom {
       return $error;
     }
 
-    $ext = new CRM_Core_Extensions();
+    $ext = CRM_Extension_System::singleton()->getMapper();
 
     if (!$ext->isExtensionKey($customSearchClass)) {
       $customSearchFile = str_replace('_',
@@ -99,7 +99,7 @@ class CRM_Contact_BAO_SearchCustom {
     }
 
     // instantiate the new class
-    eval('$customClass = new ' . $customSearchClass . '( $formValues );');
+    $customClass = new $customSearchClass( $formValues );
 
     return $customClass;
   }

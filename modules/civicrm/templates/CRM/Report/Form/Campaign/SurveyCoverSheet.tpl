@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -34,20 +34,20 @@
 <h4>{ts}Result Set{/ts}</h4>
 <div id='survey_result_fields'>
 <table class="report-layout">
-  {foreach from=$surveyResultFields key=surveyId item=result}     
+  {foreach from=$surveyResultFields key=surveyId item=result}
       <tr><th scope="row">{ts 1=$result.title}Survey Title = %1{/ts}</th></tr>
       <tr><td>
           <div id='survey_result_fields_options'>
           <table class="report-layout">
-	    {foreach from=$result.options key=value item=label}
-	       <tr><td>{$value} = {$label}</td></tr>
-	    {/foreach}
-	  </table>
-	  </div>
-          </td>     
+      {foreach from=$result.options key=value item=label}
+         <tr><td>{$value} = {$label}</td></tr>
+      {/foreach}
+    </table>
+    </div>
+          </td>
       </tr>
 
-  {/foreach}     
+  {/foreach}
 </table>
 </div>
 
@@ -60,30 +60,30 @@
 <h4>{ts}Response Codes{/ts}</h4>
 <div id='survey_response_fields'>
 <table class="report-layout">
-     
+
      {assign var=resFldCnt value=1}
      {foreach from=$surveyResponseFields key=id item=responseField}
 
-     	 <tr><th>{ts 1=$resFldCnt 2=$responseField.title}Q%1 = %2{/ts}</th></tr>
-	 
-	 {if $responseField.options}
-	 <tr><td>
-              <div id='survey_response_fields_codes'>
-	      <table class="report-layout">
-	        {foreach from=$responseField.options key=value item=label}
-	           <tr><td>{$value} = {$label}</td></tr>
-	        {/foreach}
-	      </table>
-	      </div>
-	     </td> 
-         </tr>
-	 {/if}
+        <tr><th>{ts 1=$resFldCnt 2=$responseField.title}Q%1 = %2{/ts}</th></tr>
 
-	 {* clean separation of each response question *}
-	 <tr><td><br /></td></tr>
-	 
-     {assign var=resFldCnt value=`$resFldCnt+1`} 
-     {/foreach}  
+   {if $responseField.options}
+   <tr><td>
+              <div id='survey_response_fields_codes'>
+        <table class="report-layout">
+          {foreach from=$responseField.options key=value item=label}
+             <tr><td>{$value} = {$label}</td></tr>
+          {/foreach}
+        </table>
+        </div>
+       </td>
+         </tr>
+   {/if}
+
+   {* clean separation of each response question *}
+   <tr><td><br /></td></tr>
+
+     {assign var=resFldCnt value=`$resFldCnt+1`}
+     {/foreach}
 
 </table>
 </div>

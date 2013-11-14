@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,25 +28,19 @@
 {* @var $blockId Contains the current block Id, and assigned in the CRM/Contact/Form/Location.php file *}
 
 {if !$addBlock}
-    <tr>
-	<td>{ts}Open ID{/ts}</td>
-	<td>{ts}Open ID Location{/ts}</td>
-	<td align="center" colspan="2">
-	    {if $config->userFramework eq "Standalone"}{ts}Allowed to Login?{/ts}{/if}
-	</td>
-	<td id="OpenID-Primary" class="hiddenElement">{ts}Primary?{/ts}</td>
-    </tr>
+<tr>
+  <td>{ts}Open ID{/ts}</td>
+  <td>{ts}Open ID Location{/ts}</td>
+  <td id="OpenID-Primary" class="hiddenElement">{ts}Primary?{/ts}</td>
+</tr>
 {/if}
 
 <tr id="OpenID_Block_{$blockId}">
-    <td>{$form.openid.$blockId.openid.html|crmReplace:class:twenty}&nbsp;</td>
+    <td>{$form.openid.$blockId.openid.html|crmAddClass:twenty}&nbsp;</td>
     <td>{$form.openid.$blockId.location_type_id.html}</td>
-    <td align="center" id="OpenID-Login-html" colspan="2">
-	{if $config->userFramework eq "Standalone"}{$form.openid.$blockId.allowed_to_login.html}{/if}
-    </td>
     <td align="center" id="OpenID-Primary-html" {if $blockId eq 1}class="hiddenElement"{/if}>{$form.openid.$blockId.is_primary.1.html}</td>
     {if $blockId gt 1}
-	<td><a href="#" title="{ts}Delete OpenID Block{/ts}" onClick="removeBlock('OpenID','{$blockId}'); return false;">{ts}delete{/ts}</a></td>
+    <td><a href="#" title="{ts}Delete OpenID Block{/ts}" onClick="removeBlock('OpenID','{$blockId}'); return false;">{ts}delete{/ts}</a></td>
     {/if}
 </tr>
 {if !$addBlock}

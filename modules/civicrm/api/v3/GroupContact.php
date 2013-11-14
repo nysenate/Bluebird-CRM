@@ -3,9 +3,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -33,7 +33,7 @@
  * @package CiviCRM_APIv3
  * @subpackage API_Group
  *
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * @version $Id: GroupContact.php 30171 2010-10-14 09:11:27Z mover $
  *
  */
@@ -108,9 +108,10 @@ function civicrm_api3_group_contact_create($params) {
   $action = CRM_Utils_Array::value('status', $params, 'Added');
   return _civicrm_api3_group_contact_common($params, $action);
 }
-/*
+
+/**
  * Adjust Metadata for Create action
- * 
+ *
  * The metadata is used for setting defaults, documentation & validation
  * @param array $params array or parameters determined by getfields
  */
@@ -130,7 +131,8 @@ function civicrm_api3_group_contact_delete($params) {
   $params['status'] = 'Removed';
   return civicrm_api('GroupContact', 'Create', $params);
 }
-/*
+
+/**
  * modify metadata
  */
 function _civicrm_api3_group_contact_delete_spec(&$params) {
@@ -156,7 +158,7 @@ function civicrm_api3_group_contact_pending($params) {
  * @param string $op
  *
  * @return Array
- * @todo behaviour is highly non-standard - need to figure out how to make this 'behave' 
+ * @todo behaviour is highly non-standard - need to figure out how to make this 'behave'
  * & at the very least return IDs & details of the groups created / changed
  */
 function _civicrm_api3_group_contact_common($params, $op = 'Added') {
@@ -183,7 +185,6 @@ function _civicrm_api3_group_contact_common($params, $op = 'Added') {
   $method = CRM_Utils_Array::value('method', $params, 'API');
   $status = CRM_Utils_Array::value('status', $params, $op);
   $tracking = CRM_Utils_Array::value('tracking', $params);
-  
 
   if ($op == 'Added' || $op == 'Pending') {
     $extraReturnValues= array(
@@ -219,7 +220,8 @@ function _civicrm_api3_group_contact_common($params, $op = 'Added') {
   $dao = null;// can't pass this by reference
   return civicrm_api3_create_success(1,$params,'group_contact','create',$dao,$extraReturnValues);
 }
-/*
+
+/**
  * @deprecated - this should be part of create but need to know we aren't missing something
  */
 function civicrm_api3_group_contact_update_status($params) {

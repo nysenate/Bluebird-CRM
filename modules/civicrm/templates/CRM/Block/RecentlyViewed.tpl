@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,7 +24,7 @@
  +--------------------------------------------------------------------+
 *}
 {* Displays recently viewed objects (contacts and other objects like groups, notes, etc. *}
-<div id="recently-viewed" class="left">
+<div id="crm-recently-viewed" class="left crm-container">
     <ul>
     {foreach from=$recentlyViewed item=item}
          <li class="crm-recently-viewed" ><a  href="{$item.url}" title="{$item.title}">
@@ -36,19 +36,19 @@
          {if $item.isDeleted}<del>{/if}{$item.title|mb_truncate:25:"..":true}{if $item.isDeleted}</del>{/if}</a>
          <div class="crm-recentview-wrapper">
            <a href='{$item.url}' class="crm-actions-view">{ts}View{/ts}</a>
-           {if $item.edit_url}<a href='{$item.edit_url}' class="crm-actions-edit">{ts}Edit{/ts}</a>{/if}    
-           {if $item.delete_url}<a href='{$item.delete_url}' class="crm-actions-delete">{ts}Delete{/ts}</a>{/if}
+         {if $item.edit_url}<a href='{$item.edit_url}' class="crm-actions-edit">{ts}Edit{/ts}</a>{/if}
+       {if $item.delete_url}<a href='{$item.delete_url}' class="crm-actions-delete">{ts}Delete{/ts}</a>{/if}
          </div>
-         </li>
+       </li>
     {/foreach}
    </ul>
 </div>
 {literal}
 <script type="text/javascript">
-    cj(function() {
-      if (cj('#recently-viewed').offset().left > 150) {
-        cj('#recently-viewed').removeClass('left').addClass('right');
-      }
+    cj( function( ) {
+      if (cj('#crm-recently-viewed').offset().left > 150) {
+        cj('#crm-recently-viewed').removeClass('left').addClass('right');
+          }
     });
 </script>
 {/literal}

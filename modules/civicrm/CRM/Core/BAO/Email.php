@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -37,20 +37,19 @@
  * This class contains functions for email handling
  */
 class CRM_Core_BAO_Email extends CRM_Core_DAO_Email {
-  /*
+
+  /**
    * Create email address - note that the create function calls 'add' but
-   * has more business logic 
+   * has more business logic
    *
    * @param array $params input parameters
    */
-
   static function create($params) {
-    if (is_numeric(CRM_Utils_Array::value('is_primary', $params)) ||
-      // if id is set & is_primary isn't we can assume no change
-      empty($params['id'])
-    ) {
+    // if id is set & is_primary isn't we can assume no change
+    if (is_numeric(CRM_Utils_Array::value('is_primary', $params)) || empty($params['id'])) {
       CRM_Core_BAO_Block::handlePrimary($params, get_class());
     }
+
     $email = CRM_Core_BAO_Email::add($params);
 
     return $email;
@@ -66,29 +65,31 @@ class CRM_Core_BAO_Email extends CRM_Core_DAO_Email {
    * @static
    */
   static function add(&$params) {
+    $hook = empty($params['id']) ? 'create' : 'edit';
+    CRM_Utils_Hook::pre($hook, 'Email', CRM_Utils_Array::value('id', $params), $params);
+
     $email = new CRM_Core_DAO_Email();
     $email->copyValues($params);
-
-    // CRM-11006 move calls to pre hook from create function to add function
-    if (!empty($params['id'])) {
-      CRM_Utils_Hook::pre('edit', 'Email', $params['id'], $email);
-    }
-    else {
-      CRM_Utils_Hook::pre('create', 'Email', NULL, $e);
-    }
 
     // lower case email field to optimize queries
     $strtolower = function_exists('mb_strtolower') ? 'mb_strtolower' : 'strtolower';
     $email->email = $strtolower($email->email);
 
-    // since we're setting bulkmail for 1 of this contact's emails, first reset all their emails to is_bulkmail false
-    // (only 1 email address can have is_bulkmail = true)
+    /*
+    * since we're setting bulkmail for 1 of this contact's emails, first reset all their other emails to is_bulkmail false
+    *  We shouldn't not set the current email to false even though we
+    *  are about to reset it to avoid contaminating the changelog if logging is enabled
+    * (only 1 email address can have is_bulkmail = true)
+    */
     if ($email->is_bulkmail != 'null' && $params['contact_id'] && !self::isMultipleBulkMail()) {
       $sql = "
 UPDATE civicrm_email
 SET    is_bulkmail = 0
 WHERE  contact_id = {$params['contact_id']}
 ";
+    if($hook == 'edit'){
+      $sql .= " AND id <> {$params['id']}";
+    }
       CRM_Core_DAO::executeQuery($sql);
     }
 
@@ -96,15 +97,13 @@ WHERE  contact_id = {$params['contact_id']}
     self::holdEmail($email);
 
     $email->save();
-        
-    // CRM-11006 move calls to pre hook from create function to add function
-    if (!empty($params['id'])) {
-      CRM_Utils_Hook::post('edit', 'Email', $email->id, $email);
-    }
-    else {
-      CRM_Utils_Hook::post('create', 'Email', $email->id, $email);
+
+    if ($email->is_primary) {
+      // update the UF user email if that has changed
+      CRM_Core_BAO_UFMatch::updateUFName($email->contact_id);
     }
 
+    CRM_Utils_Hook::post($hook, 'Email', $email->id, $email);
     return $email;
   }
 
@@ -317,6 +316,13 @@ AND    reset_date IS NULL
 
   static function isMultipleBulkMail() {
     return CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::MAILING_PREFERENCES_NAME, 'civimail_multiple_bulk_emails', NULL, FALSE);
+  }
+
+  /**
+   * Call common delete function
+   */
+  static function del($id) {
+    return CRM_Contact_BAO_Contact::deleteObjectWithPrimary('Email', $id);
   }
 }
 

@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -57,7 +57,8 @@ class CRM_Dashlet_Page_AllCases extends CRM_Core_Page {
 
     $session  = CRM_Core_Session::singleton();
     $userID   = $session->get('userID');
-    $upcoming = CRM_Case_BAO_Case::getCases(TRUE, $userID, 'all', $context);//NYSS 2173
+    //NYSS 2173
+    $upcoming = CRM_Case_BAO_Case::getCases(TRUE, $userID, 'all', $context);
 
     if (!empty($upcoming)) {
       $this->assign('AllCases', $upcoming);

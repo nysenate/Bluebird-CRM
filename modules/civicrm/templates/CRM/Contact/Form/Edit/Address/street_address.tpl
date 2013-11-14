@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -34,24 +34,24 @@
         {/if}
         </td>
     </tr>
-        
+
     {if $parseStreetAddress eq 1 && $action eq 2}
            <tr id="addressElements_{$blockId}" class=hiddenElement>
                <td>
                   {$form.address.$blockId.street_number.label}<br />
                   {$form.address.$blockId.street_number.html}
                 </td>
-           
+
                <td>
                   {$form.address.$blockId.street_name.label}<br />
                   {$form.address.$blockId.street_name.html}<br />
                </td>
-               
+
                <td colspan="2">
-                  {$form.address.$blockId.street_unit.label}<br />       
+                  {$form.address.$blockId.street_unit.label}<br />
                   {$form.address.$blockId.street_unit.html}
                   <a href="#" title="{ts}Edit Street Address{/ts}" onClick="processAddressFields( 'streetAddress', '{$blockId}', 1 );return false;">{ts}Edit Complete Street Address{/ts}</a>
-                  {help id="id-edit-complete-street" file="CRM/Contact/Form/Contact.hlp"} 
+                  {help id="id-edit-complete-street" file="CRM/Contact/Form/Contact.hlp"}
                </td>
            </tr>
     {/if}
@@ -61,48 +61,42 @@
 <script type="text/javascript">
 function processAddressFields( name, blockId, loadData ) {
 
-  if ( loadData ) { 
-    var allAddressValues = {/literal}{if $allAddressFieldValues}{$allAddressFieldValues}{else}''{/if}{literal};
-
-    var streetName    = eval( "allAddressValues.street_name_"    + blockId );
-    if (streetName === null) streetName = '';  
-    var streetUnit    = eval( "allAddressValues.street_unit_"    + blockId );
-    if (streetUnit === null) streetUnit = '';  
-    var streetNumber  = eval( "allAddressValues.street_number_"  + blockId );
-    if (streetNumber === null) streetNumber = '';  
-    var streetAddress = eval( "allAddressValues.street_address_" + blockId );
-    if (streetAddress === null) streetAddress = '';  
-  }
-
-  var showBlockName = '';
-  var hideBlockName = '';
-
-  if ( name == 'addressElements' ) {
-    if ( loadData ) {
-      streetAddress = '';
-    }
-
-    showBlockName = 'addressElements_' + blockId;		   
-    hideBlockName = 'streetAddress_' + blockId;
-  } else {
-    if ( loadData ) {
-      streetNumber = streetName = streetUnit = ''; 
-    }
-
-    showBlockName = 'streetAddress_' +  blockId;
-    hideBlockName = 'addressElements_'+ blockId;
-  }
-
-  show( showBlockName );
-  hide( hideBlockName );
-
-  // set the values.
   if ( loadData ) {
-    cj( '#address_' + blockId +'_street_name'    ).val( streetName    );   
-    cj( '#address_' + blockId +'_street_unit'    ).val( streetUnit    );
-    cj( '#address_' + blockId +'_street_number'  ).val( streetNumber  );
-    cj( '#address_' + blockId +'_street_address' ).val( streetAddress );
+            var allAddressValues = {/literal}{if $allAddressFieldValues}{$allAddressFieldValues}{else}''{/if}{literal};
+
+      var streetName    = eval( "allAddressValues.street_name_"    + blockId );
+      if (streetName === null) streetName = '';
+      var streetUnit    = eval( "allAddressValues.street_unit_"    + blockId );
+      if (streetUnit === null) streetUnit = '';
+      var streetNumber  = eval( "allAddressValues.street_number_"  + blockId );
+      if (streetNumber === null) streetNumber = '';
+      var streetAddress = eval( "allAddressValues.street_address_" + blockId );
+      if (streetAddress === null) streetAddress = '';
   }
+
+        if ( name == 'addressElements' ) {
+             if ( loadData ) {
+            streetAddress = '';
+       }
+
+       cj('#addressElements_' + blockId).show();
+       cj('#streetAddress_' + blockId).hide();
+  } else {
+             if ( loadData ) {
+                  streetNumber = streetName = streetUnit = '';
+             }
+
+             cj('#streetAddress_' +  blockId).show();
+             cj('#addressElements_'+ blockId).hide();
+       }
+
+       // set the values.
+       if ( loadData ) {
+          cj( '#address_' + blockId +'_street_name'    ).val( streetName    );
+          cj( '#address_' + blockId +'_street_unit'    ).val( streetUnit    );
+          cj( '#address_' + blockId +'_street_number'  ).val( streetNumber  );
+          cj( '#address_' + blockId +'_street_address' ).val( streetAddress );
+       }
 }
 
 </script>

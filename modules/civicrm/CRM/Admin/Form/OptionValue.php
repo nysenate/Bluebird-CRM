@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -38,7 +38,7 @@
  *
  */
 class CRM_Admin_Form_OptionValue extends CRM_Admin_Form {
-  static $_gid = NULL;
+  protected $_gid = NULL;
 
   /**
    * The option group name
@@ -46,7 +46,7 @@ class CRM_Admin_Form_OptionValue extends CRM_Admin_Form {
    * @var string
    * @static
    */
-  static $_gName = NULL;
+  protected $_gName = NULL;
 
   /**
    * Function to for pre-processing
@@ -94,6 +94,11 @@ class CRM_Admin_Form_OptionValue extends CRM_Admin_Form {
       $dao->query($query);
       $dao->fetch();
       $defaults['weight'] = ($dao->weight + 1);
+    }
+
+    // CRM-11516
+    if ($this->_gName == 'payment_instrument' && $this->_id) {
+      $defaults['financial_account_id'] = CRM_Financial_BAO_FinancialTypeAccount::getFinancialAccount($this->_id, 'civicrm_option_value', 'financial_account_id');
     }
     //setDefault of contact types for email greeting, postal greeting, addressee, CRM-4575
     if (in_array($this->_gName, array(
@@ -155,6 +160,15 @@ class CRM_Admin_Form_OptionValue extends CRM_Admin_Form {
     $this->add('checkbox', 'is_default', ts('Default Option?'));
     $this->add('checkbox', 'is_optgroup', ts('Is OptGroup?'));
 
+    // CRM-11516
+    if ($this->_gName == 'payment_instrument') {
+      $accountType = CRM_Core_PseudoConstant::accountOptionValues('financial_account_type', NULL, " AND v.name = 'Asset' ");
+      $financialAccount = CRM_Contribute_PseudoConstant::financialAccount(NULL, key($accountType));
+
+      $this->add('select', 'financial_account_id', ts('Financial Account'),
+        array('' => ts('- select -')) + $financialAccount
+      );
+    }
     // CRM-9953
     // we dont display this in the template, but the form sets the default values which are then saved
     // this allow us to retain the previous values
@@ -205,8 +219,7 @@ class CRM_Admin_Form_OptionValue extends CRM_Admin_Form {
    * @access public
    * @static
    */
-  static
-  function formRule($fields, $files, $self) {
+  static function formRule($fields, $files, $self) {
     $errors = array();
 
     //don't allow duplicate value within group.
@@ -237,7 +250,7 @@ class CRM_Admin_Form_OptionValue extends CRM_Admin_Form {
     $params = $this->exportValues();
     if ($this->_action & CRM_Core_Action::DELETE) {
       CRM_Core_BAO_OptionValue::del($this->_id);
-      CRM_Core_Session::setStatus(ts('Selected option value has been deleted.'));
+      CRM_Core_Session::setStatus(ts('Selected option value has been deleted.'), ts('Record Deleted'), 'success');
     }
     else {
 
@@ -257,8 +270,18 @@ class CRM_Admin_Form_OptionValue extends CRM_Admin_Form {
       }
 
       $optionValue = CRM_Core_BAO_OptionValue::add($params, $ids);
-      CRM_Core_Session::setStatus(ts('The Option Value \'%1\' has been saved.', array(1 => $optionValue->label)));
+      // CRM-11516
+      if (CRM_Utils_Array::value('financial_account_id', $params)) {
+        $relationTypeId = key(CRM_Core_PseudoConstant::accountOptionValues('account_relationship', NULL, " AND v.name LIKE 'Asset Account is' "));
+        $params = array(
+          'entity_table' => 'civicrm_option_value',
+          'entity_id' => $optionValue->id,
+          'account_relationship' => $relationTypeId,
+          'financial_account_id' => $params['financial_account_id']
+        );
+        CRM_Financial_BAO_FinancialTypeAccount::add($params);
+      }
+      CRM_Core_Session::setStatus(ts('The Option Value \'%1\' has been saved.', array(1 => $optionValue->label)), ts('Saved'), 'success');
     }
   }
 }
-

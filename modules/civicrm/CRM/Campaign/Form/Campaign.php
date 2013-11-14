@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -241,7 +241,7 @@ class CRM_Campaign_Form_Campaign extends CRM_Core_Form {
     $this->add('select', 'campaign_type_id', ts('Campaign Type'),
       array(
         '' => ts('- select -')) + $campaignTypes, TRUE,
-      array('onChange' => "buildCustomData( 'Campaign', this.value );")
+      array('onChange' => "CRM.buildCustomData( 'Campaign', this.value );")
     );
 
     // add campaign status
@@ -268,7 +268,7 @@ class CRM_Campaign_Form_Campaign extends CRM_Core_Form {
     }
 
     //get the campaign groups.
-    $groups = CRM_Core_PseudoConstant::group('Campaign');
+    $groups = CRM_Core_PseudoConstant::group();
 
     $inG = &$this->addElement('advmultiselect', 'includeGroups',
       ts('Include Group(s)') . ' ',
@@ -318,9 +318,7 @@ class CRM_Campaign_Form_Campaign extends CRM_Core_Form {
    * @access public
    * @see valid_date
    */
-
-  static
-  function formRule($fields, $files, $errors) {
+  static function formRule($fields, $files, $errors) {
     $errors = array();
 
     return empty($errors) ? TRUE : $errors;
@@ -342,7 +340,7 @@ class CRM_Campaign_Form_Campaign extends CRM_Core_Form {
     if (isset($this->_campaignId)) {
       if ($this->_action & CRM_Core_Action::DELETE) {
         CRM_Campaign_BAO_Campaign::del($this->_campaignId);
-        CRM_Core_Session::setStatus(ts(' Campaign has been deleted.'));
+        CRM_Core_Session::setStatus(ts('Campaign has been deleted.'), ts('Record Deleted'), 'success');
         $session->replaceUserContext(CRM_Utils_System::url('civicrm/campaign', 'reset=1&subPage=campaign'));
         return;
       }
@@ -391,13 +389,13 @@ class CRM_Campaign_Form_Campaign extends CRM_Core_Form {
     $result = CRM_Campaign_BAO_Campaign::create($params);
 
     if ($result) {
-      CRM_Core_Session::setStatus(ts('Campaign %1 has been saved.', array(1 => $result->title)));
+      CRM_Core_Session::setStatus(ts('Campaign %1 has been saved.', array(1 => $result->title)), ts('Saved'), 'success');
       $session->pushUserContext(CRM_Utils_System::url('civicrm/campaign', 'reset=1&subPage=campaign'));
     }
 
     $buttonName = $this->controller->getButtonName();
     if ($buttonName == $this->getButtonName('upload', 'new')) {
-      CRM_Core_Session::setStatus(ts(' You can add another Campaign.'));
+      CRM_Core_Session::setStatus(ts(' You can add another Campaign.'), '', 'info');
       $session->replaceUserContext(CRM_Utils_System::url('civicrm/campaign/add', 'reset=1&action=add'));
     }
     else {

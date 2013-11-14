@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -69,7 +69,8 @@ class CRM_Contact_Form_RelatedContact extends CRM_Core_Form {
    *
    * @return void
    * @access public
-   */ function preProcess() {
+   */
+  function preProcess() {
     // reset action from the session
     $this->_action = CRM_Utils_Request::retrieve('action', 'String',
       $this, FALSE, 'update'
@@ -125,12 +126,16 @@ class CRM_Contact_Form_RelatedContact extends CRM_Core_Form {
     $params['id'] = $params['contact_id'] = $this->_contactId;
     $contact      = CRM_Contact_BAO_Contact::retrieve($params, $this->_defaults);
 
-    $countryID = CRM_Utils_Array::value('country_id',
-      $this->_defaults['address'][1]
-    );
-    $stateID = CRM_Utils_Array::value('state_province_id',
-      $this->_defaults['address'][1]
-    );
+    $countryID = '';
+    $stateID = '';
+    if (!empty($this->_defaults['address'][1])) {
+      $countryID = CRM_Utils_Array::value('country_id',
+        $this->_defaults['address'][1]
+      );
+      $stateID = CRM_Utils_Array::value('state_province_id',
+        $this->_defaults['address'][1]
+      );
+    }
     CRM_Contact_BAO_Contact_Utils::buildOnBehalfForm($this,
       $this->_contactType,
       $countryID,
@@ -182,9 +187,13 @@ class CRM_Contact_Form_RelatedContact extends CRM_Core_Form {
     $contact = CRM_Contact_BAO_Contact::create($params, TRUE);
 
     // set status message.
-    CRM_Core_Session::setStatus(ts('Your %1 contact record has been saved.',
-        array(1 => $contact->contact_type_display)
-      ));
+    if ($this->_contactId) {
+      $message = ts('%1 has been updated.', array(1 => $contact->display_name));
+    }
+    else {
+      $message = ts('%1 has been created.', array(1 => $contact->display_name));
+    }
+    CRM_Core_Session::setStatus($message, ts('Contact Saved'), 'success');
   }
 }
 

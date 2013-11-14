@@ -1,4 +1,0 @@
-Joomla! is licensed under the GNU General Public License, but does not specify
-a version number of the license. As per section 9 of the GNU General Public
-License version 2 distributed with Joomla!, CiviCRM chooses to use Joomla! code
-under the terms of GNU General Public License version 3.

@@ -9,6 +9,7 @@ Licensing info in this file:
   LGPL 2.1+ GNU Lesser General Public License 2.1 or later
   LGPL 3    GNU Lesser General Public License 3
   LGPL 3+   GNU Lesser General Public License 3 or later
+  PUBDOM    Public domain
   PHP 2     PHP License 2.*
   PHP 3     PHP License 3.*
   X11       X11 (a.k.a. MIT) license
@@ -72,6 +73,7 @@ Pager                         2.4.8      BSD 3-cl.
 PEAR                          1.9.0      PHP 3.0
 PHP_Beautifier                0.1.14     PHP 3.0
 Services_JSON                 1.0.1      BSD 2-cl.
+Services_Twilio               3.10.0     MIT
 Structures_Graph              1.0.2      LGPL 2.1+
 System_Command                1.0.6      PHP 2
 Validate                      0.8.2      BSD 3-cl.
@@ -85,16 +87,27 @@ NON-PEAR
 ========
 PHP gettext    1.0.7      GPL 2+      http://savannah.nongnu.org/projects/php-gettext/
 PHPIDS         0.7        LGPL 3+     http://phpids.org/
-Smarty         2.6.26     LGPL 2.1+   http://smarty.php.net/                                        local changes
+Smarty         2.6.27     LGPL 2.1+   http://smarty.php.net/                                        local changes ( use only lib )
 Smarty Gettext 1.0b1      LGPL 2.1+   http://smarty.incutio.com/?page=SmartyGettext
-TCPDF          4.8.027    LGPL 2.1+   http://tecnick.com/public/code/cp_dpage.php?aiocp_dp=tcpdf    doc, examples, images and most of fonts removed
+TCPDF          6.0.020    GPL 3+      http://www.tcpdf.org/                                         doc, examples, images and most of fonts removed
 dompdf         0.6.0.beta3 LGPL 2.1+  http://code.google.com/p/dompdf/                              local changes (removed tests and index.php)
 eZ Components  2009.1.2   BSD 3-cl.   http://ezcomponents.org/                                      local changes
-html2text      1.0.0      GPL 2+      http://chuggnutt.com/html2text.php                            local changes
+html2text      0.9.1      GPL 3+      http://roundcube.net/download             copied from program/lib/Roundcube/rcube_html2text.php
 reCAPTCHA      1.10       X11         http://recaptcha.net/
 OpenFlashChart 2.0        LGPL        http://teethgrinder.co.uk/open-flash-chart-2/
 Snappy         ??         X11         https://github.com/knplabs/snappy
+Backbone       0.9.9      X11/MIT     http://backbonejs.org/
+Backone Forms  c6920b3c89 X11/MIT     https://github.com/powmedia/backbone-forms
+Backbon.Collectionsubset d3de0d6804 X11/MIT https://github.com/anthonyshort/backbone.collectionsubset
+Backbone.ModelBinder 448472f X11/MIT  https://github.com/theironcook/Backbone.ModelBinder
+git-footnote   2013-03-27 LGPL 3      https://github.com/totten/git-footnote
+json2          2012-10-08 PUBDOM      https://github.com/douglascrockford/JSON-js
+Marionette     1.0.0-rc2  X11/MIT     http://marionettejs.com/
+QUnit          1.10.0     X11/MIT     http://qunitjs.com/
+Simple HTML DOM 1.5       X11/MIT     http://simplehtmldom.sourceforge.net/
+Underscore     1.4.3      X11/MIT     http://underscorejs.org/
 CKEditor       4.0.1      GPL 3/LGPL 3/MPL 1.1
+
 
 payment processors for CiviCRM
 ==============================

@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -70,7 +70,7 @@ class CRM_Admin_Form_MailSettings extends CRM_Admin_Form {
 
     $this->add('select', 'protocol',
       ts('Protocol'),
-      array('' => ts('- select -')) + CRM_Core_PseudoConstant::mailProtocol(),
+      array('' => ts('- select -')) + CRM_Core_PseudoConstant::get('CRM_Core_DAO_MailSettings', 'protocol'),
       TRUE
     );
 
@@ -110,11 +110,10 @@ class CRM_Admin_Form_MailSettings extends CRM_Admin_Form {
    * @static
    * @access public
    */
-  static
-  function formRule($fields) {
+  static function formRule($fields) {
     $errors = array();
     // Check for default from email address and organization (domain) name. Force them to change it.
-    if ($fields['domain'] == 'FIXME.ORG') {
+    if ($fields['domain'] == 'EXAMPLE.ORG') {
       $errors['domain'] = ts('Please enter a valid domain for this mailbox account (the part after @).');
     }
 
@@ -131,7 +130,7 @@ class CRM_Admin_Form_MailSettings extends CRM_Admin_Form {
   function postProcess() {
     if ($this->_action & CRM_Core_Action::DELETE) {
       CRM_Core_BAO_MailSettings::deleteMailSettings($this->_id);
-      CRM_Core_Session::setStatus(ts('Selected Mail Setting has been deleted.'));
+      CRM_Core_Session::setStatus("", ts('Mail Setting Deleted.'), "success");
       return;
     }
 
@@ -177,10 +176,10 @@ class CRM_Admin_Form_MailSettings extends CRM_Admin_Form {
     $mailSettings = CRM_Core_BAO_MailSettings::create($params);
 
     if ($mailSettings->id) {
-      CRM_Core_Session::setStatus($status);
+      CRM_Core_Session::setStatus($status, ts("Saved"), "success");
     }
     else {
-      CRM_Core_Session::setStatus(ts('Your changes are not saved.'));
+      CRM_Core_Session::setStatus("", ts('Changes Not Saved.'), "info");
     }
   }
 }

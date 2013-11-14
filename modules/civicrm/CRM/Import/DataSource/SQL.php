@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -46,8 +46,7 @@ class CRM_Import_DataSource_SQL extends CRM_Import_DataSource {
     $form->addFormRule(array('CRM_Import_DataSource_SQL', 'formRule'), $form);
   }
 
-  static
-  function formRule($fields, $files, $form) {
+  static function formRule($fields, $files, $form) {
     $errors = array();
 
     // poor man's query validation (case-insensitive regex matching on word boundaries)
@@ -61,10 +60,8 @@ class CRM_Import_DataSource_SQL extends CRM_Import_DataSource {
     return $errors ? $errors : TRUE;
   }
 
-
   public function postProcess(&$params, &$db, &$form) {
-    require_once 'CRM/Import/ImportJob.php';
-    $importJob = new CRM_Import_ImportJob(
+    $importJob = new CRM_Contact_Import_ImportJob(
       CRM_Utils_Array::value( 'import_table_name', $params ),
       $params['sqlQuery'], true
     );

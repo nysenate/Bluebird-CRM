@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,26 +26,13 @@
 {* Check for Status message for the page (stored in session->getStatus). Status is cleared on retrieval. *}
 
 {if $session->getStatus(false)}
-    {assign var="status" value=$session->getStatus(true)}
-    <div class="messages status">
-    	<div class="icon inform-icon"></div>&nbsp;
-        {if is_array($status)}
-            {foreach name=statLoop item=statItem from=$status}
-                {if $smarty.foreach.statLoop.first}
-                    {if $statItem}<h3>{$statItem}</h3><div class='spacer'></div>{/if}
-                {else}               
-                   <ul><li>{$statItem}</li></ul>
-                {/if}                
-            {/foreach}
-        {else}
-            {$status}
-        {/if}
-    </div>
-{/if}
-
-{if ! $urlIsPublic AND $config->debug}
-    <div class="messages status">
-      <div class="icon inform-icon"></div>
-        &nbsp;{ts}WARNING: Debug is currently enabled in Global Settings.{/ts} {docURL page="developer/development-environment/debugging"}
-    </div>
+  {assign var="status" value=$session->getStatus(true)}
+  {foreach name=statLoop item=statItem from=$status}
+    {if $urlIsPublic}
+      {assign var="infoType" value="no-popup"}
+    {else}
+      {assign var="infoType" value=$statItem.type}
+    {/if}
+    {include file="CRM/common/info.tpl" infoTitle=$statItem.title infoMessage=$statItem.text infoOptions=$statItem.options}
+  {/foreach}
 {/if}

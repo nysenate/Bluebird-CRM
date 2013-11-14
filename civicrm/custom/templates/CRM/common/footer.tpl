@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,23 +23,16 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-{include file="CRM/common/version.tpl" assign=version}
 {include file="CRM/common/bbversion.tpl" assign=bbversion}
 {include file="CRM/Block/RecentlyViewed.extra.tpl"}{*NYSS*}
 {include file="CRM/common/accesskeys.tpl"}
-{if isset($contactId) and $contactId} {* Display contact-related footer. *}
-    <div class="footer" id="record-log">
-    <span class="col1">{if isset($external_identifier) and $external_identifier}{ts}External ID{/ts}:&nbsp;{$external_identifier}{/if}{if $action NEQ 2}&nbsp; &nbsp;{ts}CiviCRM ID{/ts}:&nbsp;{$contactId}{/if}</span>
-    {if isset($lastModified) and $lastModified}
-        {ts}Last Change by{/ts} <a href="{crmURL p='civicrm/contact/view' q="action=view&reset=1&cid=`$lastModified.id`"}">{$lastModified.name}</a> ({$lastModified.date|crmDate}) &nbsp;
-	{if $changeLog != '0'}
-	    <a href="{crmURL p='civicrm/contact/view' q="reset=1&action=browse&selectedChild=log&cid=`$contactId`"}">&raquo; {ts}View Change Log{/ts}</a>
-	{/if}
-    {/if}
-    </div>
+{if !empty($contactId)}
+  {include file="CRM/common/contactFooter.tpl"}
 {/if}
 
 <div class="footer" id="civicrm-footer">{*NYSS*}
+  {include file="CRM/common/version.tpl" assign=version}
 Bluebird v{ts 1=$bbversion}%1.{/ts} Powered by <a href='http://civicrm.org/' target="_blank">CiviCRM</a> {ts 1=$version}%1.{/ts}<br />
 CiviCRM{ts 1='http://www.gnu.org/licenses/agpl-3.0.html'} is openly available under the <a href='%1' target="_blank">GNU Affero General Public License (GNU AGPL)</a>.{/ts}
 </div>
+{include file="CRM/common/notifications.tpl"}

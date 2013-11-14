@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,17 +28,17 @@
 {include file="CRM/Contact/Form/Search/Intro.tpl"}
 <div class="crm-form-block crm-search-form-block">
 {* This section handles form elements for search criteria *}
-<div id="searchForm">
+  <div id="searchForm">
     {include file="CRM/Contact/Form/Search/BasicCriteria.tpl"}
-</div>
+  </div>
 </div>
 <div class="crm-content-block">
 {if $rowsEmpty}
-	<div class="crm-results-block crm-results-block-empty">
+  <div class="crm-results-block crm-results-block-empty">
           {include file="CRM/Contact/Form/Search/EmptyResults.tpl"}
-	</div>
-{elseif $rows}    
-	<div class="crm-results-block">
+  </div>
+{elseif $rows}
+  <div class="crm-results-block">
     {* Search request has returned 1 or more matching rows. *}
        {* This section handles form elements for action task select and submit *}
        <div class="crm-search-tasks">
@@ -65,7 +65,7 @@
          {include file="CRM/Contact/Form/Selector.tpl"}
        {/if}
        </div>
-       
+
     {* END Actions/Results section *}
     </div>
 {else}

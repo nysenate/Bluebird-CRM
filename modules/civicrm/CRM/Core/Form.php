@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -31,7 +31,7 @@
  * machine. Each form can also operate in various modes
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -75,6 +75,21 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
    * @var object
    */
   protected $_renderer;
+
+  /**
+   * An array to hold a list of datefields on the form
+   * so that they can be converted to ISO in a consistent manner
+   *
+   * @var array
+   *
+   * e.g on a form declare $_dateFields = array(
+   *  'receive_date' => array('default' => 'now'),
+   *  );
+   *  then in postProcess call $this->convertDateFieldsToMySQL($formValues)
+   *  to have the time field re-incorporated into the field & 'now' set if
+   *  no value has been passed in
+   */
+  protected $_dateFields = array();
 
   /**
    * cache the smarty template for efficiency reasons
@@ -257,9 +272,7 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
    *
    */
   function postProcessHook() {
-    CRM_Utils_Hook::postProcess(get_class($this),
-      $this
-    );
+    CRM_Utils_Hook::postProcess(get_class($this), $this);
   }
 
   /**
@@ -347,6 +360,9 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
       $this->assign('qfKey', $this->controller->_key);
     }
 
+    if ($this->controller->_entryURL) {
+      $this->addElement('hidden', 'entryURL', $this->controller->_entryURL);
+    }
 
     $this->buildQuickForm();
 
@@ -360,9 +376,7 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
     // call the form hook
     // also call the hook function so any modules can set thier own custom defaults
     // the user can do both the form and set default values with this hook
-    CRM_Utils_Hook::buildForm(get_class($this),
-      $this
-    );
+    CRM_Utils_Hook::buildForm(get_class($this), $this);
 
     $this->addRules();
   }
@@ -574,7 +588,7 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
    * @access public
    */
   function getTemplateFileName() {
-    $ext = new CRM_Core_Extensions();
+    $ext = CRM_Extension_System::singleton()->getMapper();
     if ($ext->isExtensionClass(CRM_Utils_System::getClassName($this))) {
       $filename = $ext->getTemplateName(CRM_Utils_System::getClassName($this));
       $tplname = $ext->getTemplatePath(CRM_Utils_System::getClassName($this)) . DIRECTORY_SEPARATOR . $filename;
@@ -586,6 +600,16 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
       ) . '.tpl';
     }
     return $tplname;
+  }
+
+  /**
+   * A wrapper for getTemplateFileName that includes calling the hook to
+   * prevent us from having to copy & paste the logic of calling the hook
+   */
+  function getHookedTemplateFileName() {
+    $pageTemplateFile = $this->getTemplateFileName();
+    CRM_Utils_Hook::alterTemplateFile(get_class($this), $this, 'page', $pageTemplateFile);
+    return $pageTemplateFile;
   }
 
   /**
@@ -696,8 +720,36 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
     self::$_template->assign_by_ref($var, $value);
   }
 
+  /**
+   * appends values to template variables
+   *
+   * @param array|string $tpl_var the template variable name(s)
+   * @param mixed $value the value to append
+   * @param bool $merge
+   */
+  function append($tpl_var, $value=NULL, $merge=FALSE) {
+    self::$_template->append($tpl_var, $value, $merge);
+  }
+
+  /**
+   * Returns an array containing template variables
+   *
+   * @param string $name
+   * @param string $type
+   * @return array
+   */
+  function get_template_vars($name=null) {
+    return self::$_template->get_template_vars($name);
+  }
+
   function &addRadio($name, $title, &$values, $attributes = NULL, $separator = NULL, $required = FALSE) {
     $options = array();
+    if (empty($attributes)) {
+      $attributes = array('id_suffix' => $name);
+    }
+    else {
+      $attributes = array_merge($attributes, array('id_suffix' => $name));
+    }
     foreach ($values as $key => $var) {
       $options[] = $this->createElement('radio', NULL, NULL, $var, $key, $attributes);
     }
@@ -709,13 +761,19 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
   }
 
   function addYesNo($id, $title, $dontKnow = NULL, $required = NULL, $attribute = NULL) {
+    if (empty($attribute)) {
+      $attribute = array('id_suffix' => $id);
+    }
+    else {
+      $attribute = array_merge($attribute, array('id_suffix' => $id));
+    }
     $choice   = array();
     $choice[] = $this->createElement('radio', NULL, '11', ts('Yes'), '1', $attribute);
     $choice[] = $this->createElement('radio', NULL, '11', ts('No'), '0', $attribute);
     if ($dontKnow) {
       $choice[] = $this->createElement('radio', NULL, '22', ts("Don't Know"), '2', $attribute);
     }
-    $group = $this->addGroup($choice, $id, $title);
+    $this->addGroup($choice, $id, $title);
 
     if ($required) {
       $this->addRule($id, ts('%1 is a required field.', array(1 => $title)), 'required');
@@ -802,9 +860,14 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
     $this->addButtons($buttons);
   }
 
-  function addDateRange($name, $from = '_from', $to = '_to', $label = 'From:', $dateFormat = 'searchDate', $required = FALSE) {
-    $this->addDate($name . $from, $label, $required, array('formatType' => $dateFormat));
-    $this->addDate($name . $to, ts('To:'), $required, array('formatType' => $dateFormat));
+  function addDateRange($name, $from = '_from', $to = '_to', $label = 'From:', $dateFormat = 'searchDate', $required = FALSE, $displayTime = FALSE) {
+    if ($displayTime) {
+      $this->addDateTime($name . $from, $label, $required, array('formatType' => $dateFormat));
+      $this->addDateTime($name . $to, ts('To:'), $required, array('formatType' => $dateFormat));
+    } else {
+      $this->addDate($name . $from, $label, $required, array('formatType' => $dateFormat));
+      $this->addDate($name . $to, ts('To:'), $required, array('formatType' => $dateFormat));
+    }
   }
 
   function addSelect($name, $label, $prefix = NULL, $required = NULL, $extra = NULL, $select = '- select -') {
@@ -828,6 +891,28 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
     }
   }
 
+  /**
+   * Add a widget for selecting/editing/creating/copying a profile form
+   *
+   * @param string $name HTML form-element name
+   * @param string $label Printable label
+   * @param string $allowCoreTypes only present a UFGroup if its group_type includes a subset of $allowCoreTypes; e.g. 'Individual', 'Activity'
+   * @param string $allowSubTypes only present a UFGroup if its group_type is compatible with $allowSubypes
+   * @param array $entities
+   */
+  function addProfileSelector($name, $label, $allowCoreTypes, $allowSubTypes, $entities) {
+    // Output widget
+    // FIXME: Instead of adhoc serialization, use a single json_encode()
+    CRM_UF_Page_ProfileEditor::registerProfileScripts();
+    CRM_UF_Page_ProfileEditor::registerSchemas(CRM_Utils_Array::collect('entity_type', $entities));
+    $this->add('text', $name, $label, array(
+      'class' => 'crm-profile-selector',
+      // Note: client treats ';;' as equivalent to \0, and ';;' works better in HTML
+      'data-group-type' => CRM_Core_BAO_UFGroup::encodeGroupType($allowCoreTypes, $allowSubTypes, ';;'),
+      'data-entities' => json_encode($entities),
+    ));
+  }
+
   function addWysiwyg($name, $label, $attributes, $forceTextarea = FALSE) {
     // 1. Get configuration option for editor (tinymce, ckeditor, pure textarea)
     // 2. Based on the option, initialise proper editor
@@ -835,7 +920,7 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
       'editor_id'
     );
     $editor = strtolower(CRM_Utils_Array::value($editorID,
-        CRM_Core_PseudoConstant::wysiwygEditor()
+        CRM_Core_OptionGroup::values('wysiwyg_editor')
       ));
     if (!$editor || $forceTextarea) {
       $editor = 'textarea';
@@ -903,10 +988,10 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
       $this->addRule("{$locationName}[$locationId][address][street_address]", ts("Please enter the Street Address for %1.", array(1 => $title)), 'required');
     }
 
-    $location[$locationId]['address']['supplemental_address_1'] = $this->addElement('text', "{$locationName}[$locationId][address][supplemental_address_1]", ts('Additional Address 1'),
+    $location[$locationId]['address']['supplemental_address_1'] = $this->addElement('text', "{$locationName}[$locationId][address][supplemental_address_1]", ts('Supplemental Address 1'),
       $attributes['supplemental_address_1']
     );
-    $location[$locationId]['address']['supplemental_address_2'] = $this->addElement('text', "{$locationName}[$locationId][address][supplemental_address_2]", ts('Additional Address 2'),
+    $location[$locationId]['address']['supplemental_address_2'] = $this->addElement('text', "{$locationName}[$locationId][address][supplemental_address_2]", ts('Supplemental Address 2'),
       $attributes['supplemental_address_2']
     );
 
@@ -984,8 +1069,7 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
     return $this->getRootTitle() . $this->getTitle();
   }
 
-  static
-  function &getTemplate() {
+  static function &getTemplate() {
     return self::$_template;
   }
 
@@ -1184,6 +1268,34 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
     $this->setDefaults(array($name => $defaultCurrency));
   }
 
+  /**
+   * Convert all date fields within the params to mysql date ready for the
+   * BAO layer. In this case fields are checked against the $_datefields defined for the form
+   * and if time is defined it is incorporated
+   *
+   * @param array $params input params from the form
+   *
+   * @todo it would probably be better to work on $this->_params than a passed array
+   * @todo standardise the format which dates are passed to the BAO layer in & remove date
+   * handling from BAO
+   */
+  function convertDateFieldsToMySQL(&$params){
+    foreach ($this->_dateFields as $fieldName => $specs){
+      if(!empty($params[$fieldName])){
+        $params[$fieldName] = CRM_Utils_Date::isoToMysql(
+          CRM_Utils_Date::processDate(
+          $params[$fieldName],
+          CRM_Utils_Array::value("{$fieldName}_time", $params), TRUE)
+        );
+      }
+      else{
+        if(isset($specs['default'])){
+          $params[$fieldName] = date('YmdHis', strtotime($specs['default']));
+        }
+      }
+    }
+  }
+
   function removeFileRequiredRules($elementName) {
     $this->_required = array_diff($this->_required, array($elementName));
     if (isset($this->_rules[$elementName])) {
@@ -1205,5 +1317,167 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
    * @access public
    */
   function cancelAction() {}
+
+  /**
+   * Helper function to verify that required fields have been filled
+   * Typically called within the scope of a FormRule function
+   */
+  static function validateMandatoryFields($fields, $values, &$errors) {
+    foreach ($fields as $name => $fld) {
+      if (!empty($fld['is_required']) && CRM_Utils_System::isNull(CRM_Utils_Array::value($name, $values))) {
+        $errors[$name] = ts('%1 is a required field.', array(1 => $fld['title']));
+      }
+    }
+  }
+
+/**
+ * Get contact if for a form object. Prioritise
+ *  - cid in URL if 0 (on behalf on someoneelse)
+ *      (@todo consider setting a variable if onbehalf for clarity of downstream 'if's
+ *  - logged in user id if it matches the one in the cid in the URL
+ *  - contact id validated from a checksum from a checksum
+ *  - cid from the url if the caller has ACL permission to view
+ *  - fallback is logged in user (or ? NULL if no logged in user) (@todo wouldn't 0 be more intuitive?)
+ *
+ * @return Ambigous <mixed, NULL, value, unknown, array, number>|unknown
+ */
+  function getContactID() {
+    $tempID = CRM_Utils_Request::retrieve('cid', 'Positive', $this);
+    if(isset($this->_params) && isset($this->_params['select_contact_id'])) {
+      $tempID = $this->_params['select_contact_id'];
+    }
+    if(isset($this->_params, $this->_params[0]) && !empty($this->_params[0]['select_contact_id'])) {
+      // event form stores as an indexed array, contribution form not so much...
+      $tempID = $this->_params[0]['select_contact_id'];
+    }
+    // force to ignore the authenticated user
+    if ($tempID === '0') {
+      return $tempID;
+    }
+
+    $userID = $this->getLoggedInUserContactID();
+
+    if ($tempID == $userID) {
+      return $userID;
+    }
+
+    //check if this is a checksum authentication
+    $userChecksum = CRM_Utils_Request::retrieve('cs', 'String', $this);
+    if ($userChecksum) {
+      //check for anonymous user.
+      $validUser = CRM_Contact_BAO_Contact_Utils::validChecksum($tempID, $userChecksum);
+      if ($validUser) {
+        return $tempID;
+      }
+    }
+    // check if user has permission, CRM-12062
+    else if ($tempID && CRM_Contact_BAO_Contact_Permission::allow($tempID)) {
+      return $tempID;
+    }
+
+    return $userID;
+  }
+
+ /**
+  * Get the contact id of the logged in user
+  */
+  function getLoggedInUserContactID() {
+    // check if the user is logged in and has a contact ID
+    $session = CRM_Core_Session::singleton();
+    return $session->get('userID');
+  }
+
+  /**
+   * add autoselector field -if user has permission to view contacts
+   * If adding this to a form you also need to add to the tpl e.g
+   *
+   * {if !empty($selectable)}
+   * <div class="crm-summary-row">
+   *   <div class="crm-label">{$form.select_contact.label}</div>
+   *   <div class="crm-content">
+   *     {$form.select_contact.html}
+   *   </div>
+   * </div>
+   * {/if}
+   * @param array $profiles ids of profiles that are on the form (to be autofilled)
+   * @param array $field metadata of field to use as selector including
+   *  - name_field
+   *  - id_field
+   *  - url (for ajax lookup)
+   *
+   *  @todo add data attributes so we can deal with multiple instances on a form
+   */
+  function addAutoSelector($profiles = array(), $autoCompleteField = array()) {
+    $autoCompleteField = array_merge(array(
+        'name_field' => 'select_contact',
+        'id_field' => 'select_contact_id',
+        'field_text' => ts('Select Contact'),
+        'show_hide' => TRUE,
+        'show_text' => ts('to select someone already in our database.'),
+        'hide_text' => ts('to clear this person\'s information, and fill the form in for someone else'),
+        'url' => array('civicrm/ajax/rest', 'className=CRM_Contact_Page_AJAX&fnName=getContactList&json=1'),
+        'max' => civicrm_api3('setting', 'getvalue', array(
+        'name' => 'search_autocomplete_count',
+        'group' => 'Search Preferences',
+        ))
+      ), $autoCompleteField);
+
+    if(0 < (civicrm_api3('contact', 'getcount', array('check_permissions' => 1)))) {
+      $this->addElement('text', $autoCompleteField['name_field'] , $autoCompleteField['field_text']);
+      $this->addElement('hidden',  $autoCompleteField['id_field'], '', array('id' => $autoCompleteField['id_field']));
+      $this->assign('selectable', $autoCompleteField['id_field']);
+
+      CRM_Core_Resources::singleton()->addScriptFile('civicrm', 'js/AutoComplete.js')
+      ->addSetting(array(
+      'form' => array('autocompletes' => $autoCompleteField),
+      'ids' => array('profile' => $profiles),
+      ));
+    }
+  }
+
+  /**
+   * Add the options appropriate to cid = zero - ie. autocomplete
+   *
+   * @todo there is considerable code duplication between the contribution forms & event forms. It is apparent
+   * that small pieces of duplication are not being refactored into separate functions because their only shared parent
+   * is this form. Inserting a class FrontEndForm.php between the contribution & event & this class would allow functions like this
+   * and a dozen other small ones to be refactored into a shared parent with the reduction of much code duplication
+   */
+  function addCIDZeroOptions($onlinePaymentProcessorEnabled) {
+    $this->assign('nocid', TRUE);
+    $profiles = array();
+    if($this->_values['custom_pre_id']) {
+      $profiles[] = $this->_values['custom_pre_id'];
+    }
+    if($this->_values['custom_post_id']) {
+      $profiles[] = $this->_values['custom_post_id'];
+    }
+    if($onlinePaymentProcessorEnabled) {
+      $profiles[] = 'billing';
+    }
+    if(!empty($this->_values)) {
+      $this->addAutoSelector($profiles);
+    }
+  }
+
+  /**
+   * Set default values on form for given contact (or no contact defaults)
+   * @param mixed $profile_id (can be id, or profile name)
+   * @param integer $contactID
+   */
+  function getProfileDefaults($profile_id = 'Billing', $contactID = NULL) {
+    try{
+      $defaults = civicrm_api3('profile', 'getsingle', array(
+        'profile_id' => (array) $profile_id,
+        'contact_id' => $contactID,
+      ));
+      return $defaults;
+    }
+    catch (Exception $e) {
+      // the try catch block gives us silent failure -not 100% sure this is a good idea
+      // as silent failures are often worse than noisy ones
+      return array();
+    }
+  }
 }
 

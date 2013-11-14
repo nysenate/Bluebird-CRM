@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
  | Copyright (C) 2011 Marty Wright                                    |
  | Licensed to CiviCRM under the Academic Free License version 3.0.   |
@@ -27,7 +27,7 @@
 {* this template is for configuring Scheduled Reminders Table*}
 
         {strip}
-	{include file="CRM/common/enableDisable.tpl"} 
+  {include file="CRM/common/enableDisable.tpl"}
         {include file="CRM/common/jsortable.tpl"}
         <table id="scheduleReminders" class="display">
         <thead>
@@ -49,9 +49,9 @@
             <td class="crm-scheduleReminders-description">{if $row.absolute_date}{$row.absolute_date|crmDate}{else}{$row.start_action_offset}&nbsp;{$row.start_action_unit}{if $row.start_action_offset > 1}{ts}(s){/ts}{/if}&nbsp;{$row.start_action_condition}&nbsp;{$row.entityDate}{/if}</td>
             <td class="crm-scheduleReminders-title">{$row.status}</td>
             <td class="crm-scheduleReminders-is_repeat">{if $row.is_repeat eq 1}{ts}Yes{/ts}{else}{ts}No{/ts}{/if}&nbsp;</td>
-	    <td id="row_{$row.id}_status" class="crm-scheduleReminders-is_active">{if $row.is_active eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
-	    <td>{$row.action|replace:'xx':$row.id}</td>
-	    <td class="hiddenElement"></td>
+      <td id="row_{$row.id}_status" class="crm-scheduleReminders-is_active">{if $row.is_active eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
+      <td>{$row.action|replace:'xx':$row.id}</td>
+      <td class="hiddenElement"></td>
         </tr>
         {/foreach}
         </table>

@@ -1,11 +1,10 @@
 <?php
-// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,13 +29,14 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
 class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
 
-  protected $_summary = NULL; function __construct() {
+  protected $_summary = NULL;
+  function __construct() {
 
     $this->activityTypes = CRM_Core_PseudoConstant::activityType(TRUE, TRUE);
     asort($this->activityTypes);
@@ -106,7 +106,15 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
           'activity_type_id' => array('title' => ts('Activity Type'),
             'required' => TRUE,
           ),
-          'source_contact_id' => array(
+        ),
+      ),
+      'civicrm_activity_source' =>
+      array(
+        'dao' => 'CRM_Activity_DAO_ActivityContact',
+        'fields' =>
+        array(
+          'contact_id' =>
+          array(
             'no_display' => TRUE,
             'required' => TRUE,
           ),
@@ -165,18 +173,22 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
     $this->_select = "SELECT " . implode(', ', $select) . " ";
   }
 
-  static
-  function formRule($fields, $files, $self) {
+  static function formRule($fields, $files, $self) {
     $errors = $grouping = array();
     return $errors;
   }
 
   function from() {
+    $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
+    $sourceID = CRM_Utils_Array::key('Activity Source', $activityContacts);
     $this->_from = "
         FROM civicrm_log {$this->_aliases['civicrm_log']}
         inner join civicrm_contact {$this->_aliases['civicrm_contact']} on {$this->_aliases['civicrm_log']}.modified_id = {$this->_aliases['civicrm_contact']}.id
         left join civicrm_contact {$this->_aliases['civicrm_contact_touched']} on ({$this->_aliases['civicrm_log']}.entity_table='civicrm_contact' AND {$this->_aliases['civicrm_log']}.entity_id = {$this->_aliases['civicrm_contact_touched']}.id)
         left join civicrm_activity {$this->_aliases['civicrm_activity']} on ({$this->_aliases['civicrm_log']}.entity_table='civicrm_activity' AND {$this->_aliases['civicrm_log']}.entity_id = {$this->_aliases['civicrm_activity']}.id)
+        LEFT JOIN civicrm_activity_contact {$this->_aliases['civicrm_activity_source']} ON
+          {$this->_aliases['civicrm_activity']}.id = {$this->_aliases['civicrm_activity_source']}.activity_id AND
+          {$this->_aliases['civicrm_activity_source']}.record_type_id = {$sourceID}
         ";
   }
 
@@ -187,7 +199,7 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
       if (array_key_exists('filters', $table)) {
         foreach ($table['filters'] as $fieldName => $field) {
           $clause = NULL;
-          if ($field['operatorType'] & CRM_Report_Form::OP_DATE) {
+          if (CRM_Utils_Array::value('operatorType', $field) & CRM_Report_Form::OP_DATE) {
             $relative = CRM_Utils_Array::value("{$fieldName}_relative", $this->_params);
             $from     = CRM_Utils_Array::value("{$fieldName}_from", $this->_params);
             $to       = CRM_Utils_Array::value("{$fieldName}_to", $this->_params);

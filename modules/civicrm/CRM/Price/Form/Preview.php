@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -65,7 +65,7 @@ class CRM_Price_Form_Preview extends CRM_Core_Form {
     $fieldId = $this->get('fieldId');
 
     if ($fieldId) {
-      $groupTree = CRM_Price_BAO_Set::getSetDetail($groupId);
+      $groupTree = CRM_Price_BAO_PriceSet::getSetDetail($groupId);
       $this->_groupTree[$groupId]['fields'][$fieldId] = $groupTree[$groupId]['fields'][$fieldId];
       $this->assign('preview_type', 'field');
       $url = CRM_Utils_System::url('civicrm/admin/price/field', "reset=1&action=browse&sid={$groupId}");
@@ -75,9 +75,9 @@ class CRM_Price_Form_Preview extends CRM_Core_Form {
     }
     else {
       // group preview
-      $this->_groupTree = CRM_Price_BAO_Set::getSetDetail($groupId);
+      $this->_groupTree = CRM_Price_BAO_PriceSet::getSetDetail($groupId);
       $this->assign('preview_type', 'group');
-      $this->assign('setTitle', CRM_Price_BAO_Set::getTitle($groupId));
+      $this->assign('setTitle', CRM_Price_BAO_PriceSet::getTitle($groupId));
       $url = CRM_Utils_System::url('civicrm/admin/price', 'reset=1');
       $breadCrumb = array(array('title' => ts('Price Sets'),
           'url' => $url,
@@ -94,7 +94,7 @@ class CRM_Price_Form_Preview extends CRM_Core_Form {
    * @return array   the default array reference
    * @access protected
    */
-  function &setDefaultValues() {
+  function setDefaultValues() {
     $defaults = array();
     $groupId  = $this->get('groupId');
     $fieldId  = $this->get('fieldId');
@@ -133,7 +133,7 @@ class CRM_Price_Form_Preview extends CRM_Core_Form {
         foreach ($group['fields'] as $field) {
           $fieldId = $field['id'];
           $elementName = 'price_' . $fieldId;
-          CRM_Price_BAO_Field::addQuickFormElement($this, $elementName, $fieldId, FALSE, $field['is_required']);
+          CRM_Price_BAO_PriceField::addQuickFormElement($this, $elementName, $fieldId, FALSE, $field['is_required']);
         }
       }
     }
