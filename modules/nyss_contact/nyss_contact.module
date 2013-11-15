@@ -343,17 +343,24 @@ function _getFldOpts($id) {
     'version' => 3,
     'id' => $id,
   );
-  $ethnicity = civicrm_api('custom_field', 'get', $params);
-  //CRM_Core_Error::debug_var('$ethnicity', $ethnicity);
+  $fld = civicrm_api('custom_field', 'get', $params);
+  //CRM_Core_Error::debug_var('$fld', $fld);
 
   $params = array(
     'version' => 3,
-    'option_group_id' => $ethnicity['values'][$id]['option_group_id'],
+    'option_group_id' => $fld['values'][$id]['option_group_id'],
   );
   $opts = civicrm_api('option_value', 'get', $params);
   //CRM_Core_Error::debug_var('$opts', $opts);
 
-  $optList = array();
+  //if select list, prepend -select-
+  if ( $fld['values'][$id]['html_type'] == 'Select' ) {
+    $optList = array('' => '- select -');
+  }
+  else {
+    $optList = array();
+  }
+
   foreach ( $opts['values'] as $opt ) {
     $optList[$opt['value']] = $opt['label'];
   }
@@ -368,21 +375,28 @@ function _setCustomData($formName, $vals) {
   //construct map of form and custom field ids
   $formFlds = array(
     'CRM_Contact_Form_Inline_Demographics' => array(
-      'custom_63',
-      'custom_45',
-      'custom_58',
-      'custom_62',
+      'custom_63' => 'text',
+      'custom_45' => 'text',
+      'custom_58' => 'multi',
+      'custom_62' => 'text',
     ),
     'CRM_Contact_Form_Inline_CommunicationPreferences' => array(
-      'custom_64',
+      'custom_64' => 'text',
     ),
     'CRM_Contact_Form_Inline_ContactInfo' => array(
-      'custom_60',
-      'custom_42',
+      'custom_60' => 'select',
+      'custom_42' => 'select',
     ),
   );
 
-  foreach ( $formFlds[$formName] as $fld ) {
+  foreach ( $formFlds[$formName] as $fld => $type ) {
+    //CRM_Core_Error::debug_var("vals[{$fld}]", $vals[$fld]);
+
+    //if a multi field and not set, set to empty array
+    if ( $type == 'multi' && !isset($vals[$fld]) ) {
+      $vals[$fld] = array();
+    }
+
     //set custom data
     if ( isset($vals[$fld]) ) {
       civicrm_api('contact', 'create', array(
