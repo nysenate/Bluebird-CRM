@@ -83,9 +83,14 @@
 {literal}
 <script type="text/javascript">
 cj(function() {
-   cj().crmAccordions(); 
+   cj().crmAccordions();
+
   //NYSS
+  cj('div.crm-plain_text_email-accordion').removeClass('collapsed');
+
+  //NYSS 7345
   $('iframe').iframeAutoHeight({heightOffset: 20});
+
   //NYSS-6957
   cj( "#sendtest" ).hide();
   cj( "#send-confirm" ).dialog({

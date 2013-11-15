@@ -22,5 +22,7 @@ VALUES
   ('CiviReport', 'Reports', 1, 'exactMatch', 1),
   ('CiviCase', 'Cases', 1, 'exactMatch', 1),
   ('Do not trade', 'Undeliverable: Do not mail', 1, 'exactMatch', 1),
-  ('Do not mail', 'Do not postal mail', 1, 'exactMatch', 1)
+  ('Do not mail', 'Do not postal mail', 1, 'exactMatch', 1),
+  ('Supplemental Address 1', 'Mailing Address', 1, 'wildcardMatch', 1),
+  ('Supplemental Address 2', 'Building', 1, 'wildcardMatch', 1)
 ;

@@ -100,6 +100,8 @@ class Net_URL
     */
     var $useBrackets;
 
+    //NYSS remove php4 constructor
+
     /**
     * PHP5 Constructor
     *
