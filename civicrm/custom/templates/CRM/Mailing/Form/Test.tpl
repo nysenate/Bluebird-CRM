@@ -52,6 +52,7 @@
 
 <div class="crm-accordion-wrapper crm-plain_text_email-accordion collapsed">
     <div class="crm-accordion-header">
+
         {ts}Preview Mailing{/ts}
     </div><!-- /.crm-accordion-header -->
     <div class="crm-accordion-body">

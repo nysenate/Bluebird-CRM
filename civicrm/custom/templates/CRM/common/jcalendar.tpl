@@ -84,6 +84,7 @@
       var alt_field   = '#{$elementId}';
       cj( alt_field ).hide();
       var date_format = cj( alt_field ).attr('format');
+
       var altDateFormat = 'mm/dd/yy';
       {literal}
       switch ( date_format ) {
@@ -92,6 +93,7 @@
             altDateFormat = 'mm/dd';
             break;
       }
+
       if ( !( ( date_format == 'M yy' ) || ( date_format == 'yy' ) || ( date_format == 'yy-mm' ) ) ) {
           cj( element_date ).addClass( 'dpDate' );
       }
@@ -127,6 +129,7 @@
       // is not working hence using below logic
       // parse the date
       var displayDateValue = cj.datepicker.parseDate( altDateFormat, dateValue );
+
       // format date according to display field
       displayDateValue = cj.datepicker.formatDate( date_format, displayDateValue );
       cj( element_date).val( displayDateValue );
@@ -145,6 +148,7 @@
             cj(".ui-datepicker-year").css( 'display', 'none' );
         }
     }
+
     function clearDateTime( element ) {
         cj('input#' + element + ',input#' + element + '_time' + ',input#' + element + '_display').val('');
     }
