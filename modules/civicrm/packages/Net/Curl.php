@@ -408,10 +408,11 @@ class Net_Curl
      * @access public
      * @return void
      */
-    function Net_Curl($url = '', $userAgent = '')
+    //remove php4 constructor
+    /*function Net_Curl($url = '', $userAgent = '')
     {
         $this->__construct($url, $userAgent);
-    }
+    }*/
     // }}}
 
     // {{{ execute()
