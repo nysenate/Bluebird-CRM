@@ -1006,7 +1006,7 @@ LIMIT {$offset}, {$rowCount}
         $searchRows[$contactID]['id'] = $contactID;
         $searchRows[$contactID]['name'] = $typeImage . ' ' . $result->sort_name;
         //NYSS include address in case resources listing
-        $searchRows[$contactID]['address']  = $result->street_address;
+        $searchRows[$contactID]['address'] = $result->street_address;
         $searchRows[$contactID]['city'] = $result->city;
         $searchRows[$contactID]['state'] = $result->state_province;
         $searchRows[$contactID]['email'] = $result->email;

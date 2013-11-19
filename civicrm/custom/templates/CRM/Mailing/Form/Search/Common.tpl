@@ -75,7 +75,8 @@
     <br />
     {$form.mailing_reply_status.html}
     <span class="crm-clear-link">
-      (<a href="#" onclick="unselectRadio('mailing_reply_status','{$form.formName}')">{ts}clear{/ts}</a>)
+      {*NYSS 7378*}
+      (<a href="#" onclick="unselectRadio('mailing_reply_status','{$form.formName}'); return false;">{ts}clear{/ts}</a>)
     </span>
   </td>
 </tr>

@@ -118,8 +118,8 @@ function processAddressFields( name, loadData ) {
                   cj( '#street_address' ).val( '' );
              }
              
-             showBlockName = 'addressElements';
-             hideBlockName = 'streetAddress';
+      cj('#addressElements').show();
+      cj('#streetAddress').hide();
         } else {
              if ( loadData ) {
                   cj( '#street_name'   ).val( '' );
@@ -127,12 +127,10 @@ function processAddressFields( name, loadData ) {
 				  cj( '#street_number' ).val( '' );
              }
 
-             showBlockName = 'streetAddress';
-             hideBlockName = 'addressElements';
+        cj('#streetAddress').show();
+        cj('#addressElements').hide();
        }
 
-       show( showBlockName );
-       hide( hideBlockName );
 }
 
 cj(function( ) {
@@ -154,5 +152,6 @@ cj(function( ) {
   cj('#postal_code_low').css('width', '100px');
   cj('#postal_code_high').css('width', '100px');
   cj('#location_type_7').before('<br />');
+  cj('#District_Information div.crm-accordion-body').show();
 </script>
 {/literal}

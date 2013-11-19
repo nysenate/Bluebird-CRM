@@ -34,7 +34,6 @@
   <style type="text/css" media="print">@import url({$config->resourceBase}css/print.css);</style>
   <style type="text/css" media="screen, print">@import url(/sites/default/themes/Bluebird/css/Bluebird.css);</style>{*NYSS 4854*}
   {*<style type="text/css">@import url({$config->resourceBase}css/skins/aqua/theme.css);</style>*}
-  <script type="text/javascript" src="{$config->resourceBase}js/Common.js"></script>
 </head>
 
 <body>
