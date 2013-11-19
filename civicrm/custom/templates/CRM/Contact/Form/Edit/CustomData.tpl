@@ -26,8 +26,10 @@
 
 <script type="text/javascript">var showTab = Array();</script>
 {foreach from=$groupTree item=cd_edit key=group_id}
-{if $group_id neq 3 && $group_id neq 1 && $group_id neq 8} {*NYSS remove org and contact fields as they are integrated directly*}
-	<div class="crm-accordion-wrapper crm-address-accordion {if $cd_edit.collapse_display || $group_id eq 5}crm-accordion-closed{else}crm-accordion-open{/if}">
+{*NYSS remove org and contact fields as they are integrated directly; collapse attachments by default*}
+{if $group_id neq 3 && $group_id neq 1 && $group_id neq 8}
+  <div id="{$cd_edit.name}"
+       class="crm-accordion-wrapper crm-custom-accordion {if $cd_edit.collapse_display || $group_id eq 5}collapsed{/if}">
 		<div class="crm-accordion-header">
       {$cd_edit.title}
     </div>
@@ -58,6 +60,7 @@
 	</div>
   <!-- crm-accordion-wrapper -->
   <div id="custom_group_{$group_id}_{$cgCount}"></div>
+{/if}
 {/foreach}
 
 {include file="CRM/common/customData.tpl"}
