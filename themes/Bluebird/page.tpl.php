@@ -29,7 +29,7 @@ if ( isset($_POST['set_JobID']) && $_POST['set_JobID'] ) $_SESSION['CiviCRM']['j
     <?php if ($user->uid) { ?>
       <div id="footer" class="clear span-24">
       	<div id="dashboard-link-wrapper">
-      		<a href="<?php print base_path(); ?>civicrm?reset=1"><div class="icon dashboard-icon"></div> Dashboard</a>
+      		<a href="<?php print base_path(); ?>civicrm?reset=1"><div class="ui-icon dashboard-icon"></div> Dashboard</a>
       	</div>
         <?php print render($page['footer']); ?>
       </div>
@@ -81,11 +81,11 @@ if ( isset($_POST['set_JobID']) && $_POST['set_JobID'] ) $_SESSION['CiviCRM']['j
   		<div class="icon settings-icon"></div>Update your Profile
   	</a><?php */?> <!--#2288-->
   		<a href="<?php print base_path(); ?>user/logout" class="logout">
-  			<div class="icon logout-icon"></div> Logout
+  			<div class="ui-icon logout-icon"></div> Logout
   		</a>
-        <div class="sitedetails"><div class="icon key-icon"></div><span> <?php echo $role; ?> </span></div>
+        <div class="sitedetails"><div class="ui-icon key-icon"></div><span> <?php echo $role; ?> </span></div>
         <?php $instance = substr( $_SERVER['HTTP_HOST'], 0, strpos( $_SERVER['HTTP_HOST'], '.' ) ); ?>
-        <div class="sitedetails"><div class="icon flag-icon"></div><span> <?php echo $instance; ?> </span></div>
+        <div class="sitedetails"><div class="ui-icon flag-icon"></div><span> <?php echo $instance; ?> </span></div>
   	</div>
   	<div class="account-info-wrapper">
   		<div class="account-info">
