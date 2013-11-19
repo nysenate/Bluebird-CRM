@@ -26,6 +26,9 @@
       appendTo('div.crm-title h1.title');
   }
 
+  //7375 basic criteria panel
+  cj('div.crm-search_criteria_basic-accordion').prop('id', 'Basic_Criteria').addClass('crm-ajax-accordion');
+
   //toggle adv search panel; compensate for wrapper panel method
   cj('.crm-ajax-accordion').on('click', '.crm-accordion-header', function() {
     var pid = cj(this).attr('id');
