@@ -1365,11 +1365,6 @@ div.crm-summary-display_name div.crm-icon {
 	background: url(../images/t.gif) !important;
 }
 
-/*date clear link*/
-#BirthdayByMonth .crm-clear-link {
-	margin-left: -0.4em;
-}
-
 /*activity details*/
 #crm-container .crm-activity-form-block-details .view-value,
 #crm-container .crm-activity-form-block-details .view-value p {
