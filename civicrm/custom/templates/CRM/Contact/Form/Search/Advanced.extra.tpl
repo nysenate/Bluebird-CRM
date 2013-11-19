@@ -38,6 +38,13 @@
         cj('#' + pid + ' div.crm-accordion-body').toggle();
       }
     }
+
+    if ( cj(this).parent('div').hasClass('collapsed') ) {
+      cj(this).parent('div').removeClass('collapsed');
+    }
+    else {
+      cj(this).parent('div').addClass('collapsed');
+    }
   });
 </script>
 {/literal}
