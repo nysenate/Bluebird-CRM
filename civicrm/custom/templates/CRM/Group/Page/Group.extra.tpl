@@ -13,5 +13,8 @@
   cj('div#help div.helpicon').remove();
   cj('div#help').append('Groups which will be used for mass email should be marked "Email List" in the group settings. Use the text box and type/status options to filter the list of existing groups.');
   cj('div#help').html(cj('div#help').html().replace('&nbsp;&nbsp;&nbsp;', ''));
+
+  //7373
+  cj('div.crm-block div#help a.helpicon').remove();
 </script>
 {/literal}
