@@ -1757,22 +1757,22 @@ function _processEmailImport($new_contacts, $nyss_conn) {
   unset($newContactsCount);
 }//_processEmailImport
 
-function _processAddressDelete($addressDel) {
+function _processAddressDelete($addressDel, $nyss_conn) {
   if ( !empty($addressDel) && !$dryrun ) {
-    nyss_out('debug', "processing contacts to be trashed...", TRUE);
+    nyss_out('debug', "processing addresses to be trashed...", TRUE);
     $addressDelList  = implode( ',', $addressDel );
     $sqlAD = "
       DELETE FROM civicrm_address
       WHERE id IN ( $addressDelList );
     ";
     $result = mysql_query($sqlAD, $nyss_conn);
+
+    mysql_free_result($result);
+
+    unset($result);
+    unset($sqlAD);
+    unset($addressDelList);
   }
-
-  mysql_free_result($result);
-
-  unset($result);
-  unset($sqlAD);
-  unset($addressDelList);
 }
 
 function _cleanData(&$l) {
