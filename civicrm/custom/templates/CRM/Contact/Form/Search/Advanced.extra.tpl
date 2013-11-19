@@ -28,8 +28,16 @@
 
   //toggle adv search panel; compensate for wrapper panel method
   cj('.crm-ajax-accordion').on('click', '.crm-accordion-header', function() {
-    var pid = $(this).attr('id');
-    cj('div.crm-accordion-body.' + pid).toggle();
+    var pid = cj(this).attr('id');
+    if ( pid ) {
+      cj('div.crm-accordion-body.' + pid).toggle();
+    }
+    else {
+      pid = cj(this).parent('div').attr('id');
+      if ( pid ) {
+        cj('#' + pid + ' div.crm-accordion-body').toggle();
+      }
+    }
   });
 </script>
 {/literal}

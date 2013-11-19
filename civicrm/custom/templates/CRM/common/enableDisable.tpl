@@ -141,7 +141,7 @@ function enableDisable( recordID, recordBAO, op, reloadPage, rowId ) {
                    var postUrl = {/literal}"{crmURL p='civicrm/ajax/statusmsg' h=0 }"{literal};
             cj.post( postUrl, { recordID: recordID, recordBAO: recordBAO, op: op  }, function( statusMessage ) {
               if ( statusMessage.status ) {
-                //NYSS
+                //NYSS 7372
                 if ( stl ) { statusMessage.status = statusMessage.status.replace('record', stl); }
                    cj( '#enableDisableStatusMsg' ).show( ).html( statusMessage.status );
                           }
