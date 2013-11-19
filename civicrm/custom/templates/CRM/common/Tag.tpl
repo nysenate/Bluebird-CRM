@@ -113,6 +113,16 @@
     </div>
     <div class="clear"></div>
   </div>
+{if $action eq 16 || $action eq 2 || $action eq 1}
+    {if $tagset.parentID eq 296}
+        <div class="BBInit"></div>
+        {literal}
+        <script>
+            BBTree.initContainer('', {pullSets: [291]});
+        </script>
+        {/literal}
+    {/if}   
+{/if}  
   {/foreach}
 
 {elseif $tagsetType eq 'activity'}
@@ -414,38 +424,5 @@
       }
     }, 100);
   });
-</script>
-{/literal}
-<div class="JSTreeInit"></div>
-{literal}
-<script>
-  if(typeof test === "undefined"){
-    test=false;
-  }
-  var jsTreePageSettings = {
-    pageElements: {
-      wrapper: ['BBTreeContainer'],
-      tagHolder: ['BBTree'],
-      prefix: ['BBtree']
-    },
-    dataSettings: {
-      pullSets: [291,296,292],
-      // pullSets: [291],
-      // entity_id: 18002
-      entity_id: BBCID,
-      onSave:test
-    },
-    displaySettings: {
-      // wide:false
-      // lock:false
-      // edit:true
-      tagging:true
-    },
-    callAjax: {
-      // data: undefined,
-      // url: 'localtagdata.json'
-    }
-  }
-  jstree.init(jsTreePageSettings, jstree.views);
 </script>
 {/literal}

@@ -201,19 +201,29 @@
             </td>
             <td>
               Bluebird ID<br />
-              {$form.id.html|crmReplace:class:medium}
+              {$form.contact_id.html|crmReplace:class:medium}
             </td>
             <td colspan="2">
               {$form.external_identifier.label}<br />
               {$form.external_identifier.html|crmReplace:class:medium}
             </td>
         </tr>
-        {if $form.deleted_contacts}
         <tr>
-          <td colspan="5">
-            {$form.deleted_contacts.html} {$form.deleted_contacts.label|replace:'<br />':' '}
+          <td colspan="2">
+            {if $form.deleted_contacts}
+              {$form.deleted_contacts.html} {$form.deleted_contacts.label|replace:'<br />':' '}
+            {/if}
           </td>
+          <td>
+            <div>
+              {$form.phone_numeric.label}<br />{$form.phone_numeric.html}
+            </div>
+            <div class="description font-italic">
+              {ts}Punctuation and spaces are ignored.{/ts}
+            </div>
+          </td>
+          <td>{$form.phone_location_type_id.label}<br />{$form.phone_location_type_id.html}</td>
+          <td>{$form.phone_phone_type_id.label}<br />{$form.phone_phone_type_id.html}</td>
         </tr>
-        {/if}
         
     </table>

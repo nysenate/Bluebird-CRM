@@ -74,7 +74,7 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
             CRM_Utils_System::civiExit();
         }
         $start = microtime(TRUE);
-        // $entity_type = CRM_Core_DAO::escapeString(self::_require('entity_type', $_GET, "`entity_type` parameter is required."));
+        $entity_type = CRM_Core_DAO::escapeString(self::_require('entity_type', $_GET, "`entity_type` parameter is required."));
 
         //If they request entity counts, build that into the tree as well.
         $ec_start = microtime(TRUE);
@@ -85,23 +85,16 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
             // Hand rolled SQL it is...
             $dao = new CRM_Core_DAO();
             $conn = $dao->getDatabaseConnection()->connection;
-            // $result = mysql_query("
-            //     SELECT tag.id, count(entity_tag.entity_id) as entity_count
-            //     FROM civicrm_tag as tag
-            //       LEFT JOIN civicrm_entity_tag as entity_tag ON (
-            //              tag.id = entity_tag.tag_id AND
-            //              entity_tag.entity_table = '$entity_type')
-            //       LEFT JOIN $entity_type as entity ON (
-            //              entity.id = entity_tag.entity_id)
-            //     WHERE tag.used_for LIKE '%$entity_type%'
-            //       AND entity.is_deleted = 0
-            //     GROUP BY tag.id", $conn);
             $result = mysql_query("
                 SELECT tag.id, count(entity_tag.entity_id) as entity_count
                 FROM civicrm_tag as tag
                   LEFT JOIN civicrm_entity_tag as entity_tag ON (
-                         tag.id = entity_tag.tag_id')
-                WHERE entity.is_deleted = 0
+                         tag.id = entity_tag.tag_id AND
+                         entity_tag.entity_table = '$entity_type')
+                  LEFT JOIN $entity_type as entity ON (
+                         entity.id = entity_tag.entity_id)
+                WHERE tag.used_for LIKE '%$entity_type%'
+                  AND entity.is_deleted = 0
                 GROUP BY tag.id", $conn);
 
             $entity_counts = array();
@@ -179,7 +172,6 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         }
         if(array_key_exists('entity_id', $_GET)) {
             $entity_id = $_GET['entity_id'];
-            $entity_type = $_GET['entity_type'];
 
             //Get the tags for the specifed entity
             $params = array('version'=>3,
@@ -375,7 +367,7 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
 
         parse_str($call_uri['query'],$cid);
         $entityId = $cid['cid'];
-        $view_only = false;
+
         $session = CRM_Core_Session::singleton();
         $userid = $session->get('userID');
 
@@ -407,7 +399,8 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
             "view_only"=>$view_only,
             "userId"=>$userid,
             "message"=> $message, 
-            'build_time'=>(microtime(TRUE)-$start)
+            'build_time'=>(microtime(TRUE)-$start),
+            'bt_time'=>$bt_time
         );
 
         if($return == 'true'){

@@ -36,7 +36,7 @@
               <div class="crm-contact_print-list">
               <ul class="contact-print">
                   <li class="crm-contact-print">
-                 		<a class="print" title="{ts}Printer-friendly view of this page.{/ts}" href='{crmURL p='civicrm/contact/view/print' q="reset=1&print=1&cid=$contactId"}' target="_blank">{*NYSS*}
+                     <a class="print" title="{ts}Printer-friendly view of this page.{/ts}" href='{crmURL p='civicrm/contact/view/print' q="reset=1&print=1&cid=$contactId"}'>
                  		<span><div class="icon print-icon"></div>{ts}Print Summary{/ts}</span>
                  		</a>
                   </li>

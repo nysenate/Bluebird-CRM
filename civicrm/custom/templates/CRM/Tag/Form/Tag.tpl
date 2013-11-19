@@ -31,7 +31,11 @@ var BBActionConst = {/literal}{$action}{literal};
 </script>
 {/literal}
 {literal}
+<script src="/sites/default/themes/Bluebird/scripts/bbtree.js" type="text/javascript"></script>
 <link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/Bluebird/nyss_skin/tags/tags.css" />
+<script type="text/javascript">
+BBTree.startInstance({pullSets: [291], buttonType: 'tagging'}); 
+</script>
 <style>
 #crm-tagListWrap {padding:10px; height:auto;}
 </style>
@@ -42,39 +46,36 @@ var BBActionConst = {/literal}{$action}{literal};
     <div id="dialog">
     
     </div>
+    {*NYSS add list of Issue Codes*}
+    {if $contactIssueCode_list}
+    	<div class="contactTagsList help"><strong>Issue Codes: </strong><span>{$contactIssueCode_list}</span></div>
+    	<div class="clear"></div>
+    {/if}
+    <div id="crm-tagListWrap">
 
-    <div class="JSTreeInit"></div>
-    {literal}
-    <script>
-        console.log("trying");
-        var jsTreePageSettings = {
-          pageElements: {
-            wrapper: ['BBTreeContainer'],
-            tagHolder: ['BBTree'],
-            prefix: ['BBtree']
-          },
-          dataSettings: {
-            pullSets: [291,296,292],
-            // pullSets: [291],
-            // entity_id: 18002
-            entity_id: BBCID
-          },
-          displaySettings: {
-            // wide:false
-            // lock:false
-            // edit:true
-            tagging:true
-          },
-          callAjax: {
-            // data: undefined,
-            // url: 'localtagdata.json'
-          }
-        }
-        console.log("trying");
-        jstree.init(jsTreePageSettings, jstree.views);
-    </script>
-    {/literal}
-    
+    {include file="CRM/common/Tag.tpl"}
+        {*NYSS add list of leg positions with descriptions*}
+        {if $legpositions}
+        <div class="clear_left"></div>
+        <div class="legpositions help"><span class="label">Legislative Position Descriptions</span><br />
+        	<ul>
+            {foreach from=$legpositions item="legposition"}
+            	{if $legposition.description && $legposition.description neq 'No description available.'}
+                	<li><strong>{$legposition.name}</strong> :: {$legposition.description}</li>
+                {/if}
+            {/foreach}
+            </ul>
+        </div>
+        {/if}
+    </div>
+
+    {* Show Edit Tags link if in View mode *}
+    {if $permission EQ 'edit' AND $action eq 16}
+        <!--</fieldset>-->
+    {else}
+       <div class="form-item unobstructive">{$form.buttons.html}</div>
+       <!--</fieldset>-->
+    {/if}
   
 
     
@@ -94,6 +95,14 @@ if ( !cj('.tag-section').hasClass('crm-processed-input') ) {
 }
 </script>
 {/literal}
+
+{if $action eq 1 or $action eq 2 }
+ <script type="text/javascript">
+ {* this function is called to change the color of selected row(s) *}
+    var fname = "{$form.formName}";	
+    on_load_init_check(fname);
+ </script>
+{/if}
 <script type="text/javascript">
   //load_init_check(fname);
 </script>
