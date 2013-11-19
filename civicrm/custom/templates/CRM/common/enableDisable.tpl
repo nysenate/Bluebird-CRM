@@ -111,14 +111,17 @@ function enableDisable( recordID, recordBAO, op, reloadPage, rowId ) {
   if ( ! rowId ) rowId = 'row';
 
       //NYSS 3972 use title if available
+      var stl = '';
       if ( op == 'enable-disable' ) {
-            var st = {/literal}'{ts escape="js"}Disable Record{/ts}'{literal};
+        var st = {/literal}'{ts escape="js"}Disable Record{/ts}'{literal};
         if ( {/literal}'{$title}'{literal} ) {
           st = {/literal}'{ts escape="js"}Disable {/ts}{$title}'{literal};
+          stl = {/literal}'{$title|lower}'{literal};
         }
       } else if ( op == 'disable-enable' ) {
-            var st = {/literal}'{ts escape="js"}Enable Record{/ts}'{literal};
+        var st = {/literal}'{ts escape="js"}Enable Record{/ts}'{literal};
         if ( {/literal}'{$title}'{literal} ) {
+          stl = {/literal}'{$title|lower}'{literal};
           st = {/literal}'{ts escape="js"}Enable {/ts}{$title}'{literal};
         }
       }
@@ -138,6 +141,8 @@ function enableDisable( recordID, recordBAO, op, reloadPage, rowId ) {
                    var postUrl = {/literal}"{crmURL p='civicrm/ajax/statusmsg' h=0 }"{literal};
             cj.post( postUrl, { recordID: recordID, recordBAO: recordBAO, op: op  }, function( statusMessage ) {
               if ( statusMessage.status ) {
+                //NYSS
+                if ( stl ) { statusMessage.status = statusMessage.status.replace('record', stl); }
                    cj( '#enableDisableStatusMsg' ).show( ).html( statusMessage.status );
                           }
         if ( statusMessage.show == "noButton" ) {
