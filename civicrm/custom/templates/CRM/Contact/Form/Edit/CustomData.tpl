@@ -60,7 +60,7 @@
 	</div>
   <!-- crm-accordion-wrapper -->
   <div id="custom_group_{$group_id}_{$cgCount}"></div>
-{/if}
+{/if}{*NYSS close condition*}
 {/foreach}
 
 {include file="CRM/common/customData.tpl"}
