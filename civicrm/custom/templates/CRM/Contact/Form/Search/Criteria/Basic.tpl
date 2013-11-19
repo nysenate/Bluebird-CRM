@@ -201,7 +201,7 @@
             </td>
             <td>
               Bluebird ID<br />
-              {$form.id.html|crmReplace:class:medium}
+              {$form.contact_id.html|crmReplace:class:medium}
             </td>
             <td colspan="2">
               {$form.external_identifier.label}<br />
