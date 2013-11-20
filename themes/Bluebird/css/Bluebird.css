@@ -1342,6 +1342,11 @@ div.crm-summary-display_name div.crm-icon {
 .block-civicrm div#crm-recently-viewed ul {
   margin: 0;
 }
+#crm-recently-viewed.left .crm-recentview-wrapper {
+  right: auto;
+  width: auto;
+  border-bottom-color: #131A1C;
+}
 
 /*activity search*/
 #crm-container .activitySearch .listing-box,
