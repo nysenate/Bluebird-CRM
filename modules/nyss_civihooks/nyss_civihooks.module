@@ -657,7 +657,8 @@ function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) 
 
   //NYSS #2729 strip line break
   if ( ( $op == 'edit' || $op == 'create' ) &&
-       ( $objectName == 'Individual' || $objectName == 'Organization' || $objectName == 'Household' ) ) {
+    ( $objectName == 'Individual' || $objectName == 'Organization' || $objectName == 'Household' )
+  ) {
     if ( $objectRef['email'] ) {
       foreach ( $objectRef['email'] as $key => $block ) {
         if ( $block['signature_html'] == '<br />' ) {
@@ -668,9 +669,10 @@ function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) 
   }
 
   //4627 allow blank email overrides
-  if ( $op                       == 'edit' &&
-       $objectName               == 'Profile' &&
-       $objectRef['uf_group_id'] == 8 ) {
+  if ( $op == 'edit' &&
+    $objectName == 'Profile' &&
+    $objectRef['uf_group_id'] == 8
+  ) {
     $objectRef['updateBlankLocInfo'] = true;
   }
 
@@ -705,8 +707,9 @@ function nyss_civihooks_civicrm_pageRun( &$page ) {
 
   //4567 make admin breadcrumb unclickable if lacking permission
   if ( $pagename == 'CRM_Admin_Page_Tag' ||
-       $pagename == 'CRM_Admin_Page_Mapping' ||
-       $pagename == 'CRM_Report_Page_TemplateList' ) {
+    $pagename == 'CRM_Admin_Page_Mapping' ||
+    $pagename == 'CRM_Report_Page_TemplateList'
+  ) {
 
     if ( CRM_Core_Permission::check( 'administer CiviCRM' ) ) {
       return;
@@ -723,39 +726,26 @@ function nyss_civihooks_civicrm_pageRun( &$page ) {
 
   //NYSS 5149
   if ( $pagename == 'CRM_Dashlet_Page_Activity' ||
-       $pagename == 'CRM_Activity_Page_Tab' ) {
+    $pagename == 'CRM_Activity_Page_Tab'
+  ) {
     $activityStatusList = CRM_Core_PseudoConstant::activityStatus();
     $page->assign( 'activityStatusList', $activityStatusList);
-  }
-
-  //include inline edit page js
-  if ( strpos($pagename, 'CRM_Contact_Page_Inline_') !== FALSE ) {
-    $js = "
-    <script type='text/javascript'>
-      cj('.crm-summary-block .crm-table2div-layout .crm-label').each(function(){
-        if ( !cj(this).parent('div.bb-row-wrap').length ) {
-          cj(this).next('.crm-content').andSelf().wrapAll('<div class=\"bb-row-wrap\"/>');
-        }
-      });
-      cj('.crm-table2div-layout #crm-container-snippet').removeAttr('id');
-      cj('.crm-table2div-layout .crm-inline-edit-hover').removeClass('crm-inline-edit-hover');
-    </script>
-    ";
-    echo $js;
   }
 
   _setDBVars();
 }
 
 function nyss_civihooks_civicrm_validateForm( $formName, &$fields, &$files, &$form, &$errors ) {
+  CRM_Core_Error::debug_var('fields', $fields);
 
   //4272 ensure that target/with contact is set when activity created from contact record
   if ( $formName == 'CRM_Activity_Form_Activity' &&
-       $form->_context == 'activity' &&
-       $form->_action != 8 ) { //exclude delete
+    $form->_context == 'activity' &&
+    $form->_action != 8 //exclude delete
+  ) {
 
-    if ( empty($fields['target_contact_id']) ) {
-      $errors['target_contact_id'] = ts('Please add at least one target contact.');
+    if ( empty($fields['contact'][1]) ) {
+      $errors['source_contact_id'] = ts('Please add at least one target contact.');
     }
   }
 
