@@ -727,7 +727,7 @@ function nyss_civihooks_civicrm_pageRun( &$page ) {
 }
 
 function nyss_civihooks_civicrm_validateForm( $formName, &$fields, &$files, &$form, &$errors ) {
-  CRM_Core_Error::debug_var('fields', $fields);
+  //CRM_Core_Error::debug_var('fields', $fields);
 
   //4272 ensure that target/with contact is set when activity created from contact record
   if ( $formName == 'CRM_Activity_Form_Activity' &&
