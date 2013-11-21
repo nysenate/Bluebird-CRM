@@ -325,15 +325,6 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
     $formID     =  $form->_attributes['id'];
     $formAction =  $form->_attributes['action'];
 
-    //handle case add form differently as buttons element is constructed twice due to embedded form
-    if ( $formID == 'Case' &&
-         $formAction == '/civicrm/case/add' &&
-         $form->_context != 'standalone'
-    ) {
-      $form->removeElement( 'buttons' );
-      $buttons =& $form->getElement( 'buttons' );
-    }
-
     //list of exclusions by name or value
     $btnExcludeName  = array(
       '_qf_Select_next',
