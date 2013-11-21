@@ -1728,7 +1728,7 @@ div#contact-summary div#contactTopBar {
   border-color: #8BB381;
   color: #333;
 }
-.dataTables_wrapper {
+.crm-activity-selector-activity .dataTables_wrapper {
   overflow: auto;
 }
 #contact-log-report_processing {
