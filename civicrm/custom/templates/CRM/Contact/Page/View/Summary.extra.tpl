@@ -8,9 +8,8 @@
   //4715 remove delete/trash button; moved to action dropdown
   cj('a.delete.button').parent('li.crm-delete-action.crm-contact-delete').remove();
 
-  //insert display name
-  var displayNameBlock = "<div class='displayName'>{/literal}{$display_name|escape}{literal}</div>";
-  cj('div.contactTopBar').before(displayNameBlock);
+  //7367 move display name inline block; shrink form blocks
+  cj('div.crm-summary-contactname-block').insertBefore('div.contactTopBar');
 
   //remove move privacy notes set
   cj('div.crm-custom-set-block-8').remove();

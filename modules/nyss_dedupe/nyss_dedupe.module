@@ -759,3 +759,12 @@ function nyss_dedupe_house1_record($o) {
 function nyss_dedupe_get_safe($key, $array, $default) {
     return CRM_Core_DAO::escapeString(CRM_Utils_Array::value($key, $array, $default));
 }
+
+function nyss_dedupe_civicrm_pageRun( &$page ) {
+  //7388
+  if ( $page->getVar('_name') == 'CRM_Contact_Page_DedupeRules' &&
+    !CRM_Core_Permission::check('administer CiviCRM')
+  ) {
+    $page->assign('hideAddRule', 1);
+  }
+}//pageRun

@@ -2663,7 +2663,9 @@ class CRM_Contact_BAO_Query {
 
     if (!$skipGroup) {
       $gcTable = "`civicrm_group_contact-{$groupIds}`";
-      $this->_tables[$gcTable] = $this->_whereTables[$gcTable] = " LEFT JOIN civicrm_group_contact {$gcTable} ON contact_a.id = {$gcTable}.contact_id ";
+      //NYSS 4903
+      //$this->_tables[$gcTable] = $this->_whereTables[$gcTable] = " LEFT JOIN civicrm_group_contact {$gcTable} ON contact_a.id = {$gcTable}.contact_id ";
+      $this->_tables[$gcTable] = $this->_whereTables[$gcTable] = " LEFT JOIN civicrm_group_contact {$gcTable} ON ( contact_a.id = {$gcTable}.contact_id AND {$gcTable}.group_id $op ( $groupIds ) )";
     }
 
     $qill = ts('Contacts %1', array(1 => $op));

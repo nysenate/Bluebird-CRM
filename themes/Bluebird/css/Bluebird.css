@@ -1106,7 +1106,7 @@ ul.token-input-list-facebook { width:265px;}
 
 /* Contact summary/edit stuff */
 #crm-container div.crm-summary-contactname-block {
-  margin-top: -6px;
+  margin-top: 0px;
 }
 #crm-container div.crm-summary-display_name {
   padding: 6px 0 2px;
@@ -1341,6 +1341,11 @@ div.crm-summary-display_name div.crm-icon {
 }
 .block-civicrm div#crm-recently-viewed ul {
   margin: 0;
+}
+#crm-recently-viewed.left .crm-recentview-wrapper {
+  right: auto;
+  width: auto;
+  border-bottom-color: #131A1C;
 }
 
 /*activity search*/
@@ -1723,7 +1728,7 @@ div#contact-summary div#contactTopBar {
   border-color: #8BB381;
   color: #333;
 }
-.dataTables_wrapper {
+.crm-activity-selector-activity .dataTables_wrapper {
   overflow: auto;
 }
 #contact-log-report_processing {

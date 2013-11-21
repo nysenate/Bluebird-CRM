@@ -33,11 +33,12 @@ var BBActionConst = {/literal}{$action}{literal};
 {/literal}{else}{literal}
 	var BBLoadTaglist = [{/literal}{foreach key=tagID item=i from=$form.tag.value name=activeTagset}"{$tagID}"{if !$smarty.foreach.activeTagset.last},{/if}{/foreach}{literal}];
 {/literal}{/if}{literal}
-var test =true;
 </script>
-{/literal}
-{literal}
 <link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/Bluebird/nyss_skin/tags/tags.css" />
+<script src="/sites/default/themes/Bluebird/scripts/bbtree.js" type="text/javascript"></script>
+<script>
+BBTree.startInstance({pullSets: [291, 296], buttonType: 'tagging', onSave: true});
+</script>
 {/literal}
 {if $title}
 <div id="dialog"></div>{*NYSS*}
@@ -46,10 +47,10 @@ var test =true;
   <div class="crm-accordion-header">{$title}</div>
   <div class="crm-accordion-body" id="tagGroup">
 {/if}
-    <table class="form-layout-compressed{if $context EQ 'profile'} crm-profile-tagsandgroups{/if}">
+  <table class="form-layout-compressed{if $context EQ 'profile'} crm-profile-tagsandgroups{/if}" style="width:98%">
     <tr>
       {if $groupElementType eq 'crmasmSelect'}
-          <td><span class="label">{if $title}{$form.group.label}{/if}</span>
+        <td style="width:45%;"><span class="label">{if $title}{$form.group.label}{/if}</span>
           {$form.group.html}
           {literal}
           <script type="text/javascript">
@@ -65,6 +66,7 @@ var test =true;
 	  {foreach key=key item=item from=$tagGroup}
 		{* $type assigned from dynamic.tpl *}
 		{if !$type || $type eq $key }
+		
 			{if $key eq 'tag'}
 				<td width="100%" class="crm-tagList"><div class="label" onClick="rollDownGroup('.crm-tagList');"><div class="arrow"></div>{if $title}{$form.$key.label}{/if}</div>
 				  <div id="crm-tagListWrap">
