@@ -15,6 +15,7 @@
 # Revised: 2013-11-13 - mysql/mysqldump need --login-path first
 #                     - using MYSQL_TEST_LOGIN_PATH to set mylogin.cnf location
 # Revised: 2013-11-15 - Added db.insecure_cli_login to revert to old behavior
+# Revised: 2013-11-21 - Make sure login-path is not used if insecure login
 #
 
 prog=`basename $0`
@@ -109,13 +110,15 @@ fi
 # of "bluebird" will be used.
 # To disable this behavior and revert to the older, less secure method,
 # set db.insecure_cli_login to 1 in the config file.
-[ "$dbloginpath" ] || dbloginpath=`$readConfig $ig_opt db.login_path` || dbloginpath=$DEFAULT_DB_LOGIN_PATH
+
 insecure_cli_login=`$readConfig $ig_opt db.insecure_cli_login`
 
 if [ $? -eq 0 -a "$insecure_cli_login" = "1" ]; then
   [ "$dbhost" ] || dbhost=`$readConfig $ig_opt db.host`
   [ "$dbuser" ] || dbuser=`$readConfig $ig_opt db.user`
   [ "$dbpass" ] || dbpass=`$readConfig $ig_opt db.pass`
+else
+  [ "$dbloginpath" ] || dbloginpath=`$readConfig $ig_opt db.login_path` || dbloginpath=$DEFAULT_DB_LOGIN_PATH
 fi
 
 common_args=
