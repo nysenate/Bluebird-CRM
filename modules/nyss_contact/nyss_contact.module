@@ -272,7 +272,17 @@ function nyss_contact_civicrm_tabs( &$tabs, $contactID ) {
 }
 
 function _getContactCustom(&$obj, $return = FALSE) {
-  $contactId = CRM_Utils_Request::retrieve('cid', 'Positive', CRM_Core_DAO::$_nullObject, TRUE, NULL, $_REQUEST);
+  $contactId = CRM_Utils_Request::retrieve('cid', 'Positive');
+
+  //look for contact id in object if not in $_REQUEST
+  if ( empty($contactId) ) {
+    $contactId = $obj->getVar('_contactId');
+  }
+
+  //return immediately if no contact ID available; see 7370
+  if ( empty($contactId) ) {
+    return;
+  }
 
   $params = array(
     'version' => 3,
