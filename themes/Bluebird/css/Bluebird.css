@@ -1106,7 +1106,7 @@ ul.token-input-list-facebook { width:265px;}
 
 /* Contact summary/edit stuff */
 #crm-container div.crm-summary-contactname-block {
-  margin-top: -6px;
+  margin-top: 0px;
 }
 #crm-container div.crm-summary-display_name {
   padding: 6px 0 2px;
