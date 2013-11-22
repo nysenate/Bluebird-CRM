@@ -339,7 +339,7 @@ function updateEmailTemplate($dbcon, $bbcfg)
       $filename = $tpldir."/email_$comp_type.$cont_type";
       $comp_tpl = file_get_contents($filename);
       $comp_tpl = str_replace($search, $replace[$cont_type], $comp_tpl);
-      $body[$cont_type] = $comp_tpl;
+      $body[$cont_type] = mysql_real_escape_string($comp_tpl, $dbcon);
     }
 
     $sql = "UPDATE civicrm_mailing_component ".
