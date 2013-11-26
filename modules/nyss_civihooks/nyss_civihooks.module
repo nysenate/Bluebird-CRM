@@ -334,6 +334,7 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
       '_qf_Contact_upload_view', //handle separately
       '_qf_Contact_upload_new', //handle separately
       '_qf_Contact_upload_cancel', //handle separately
+      '_qf_Email_upload', //7393
       '_qf_Relationship_upload', //4414
       '_qf_Search_refresh',
       '_qf_ProofingReport_next',
