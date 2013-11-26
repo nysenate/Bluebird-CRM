@@ -303,6 +303,16 @@ function nyss_mail_civicrm_postProcess($formName, &$form)
       //CRM_Core_Error::debug_var('$mailing',$mailing);
     }
 
+    //disable click through/opens/replies
+    $mailing = new CRM_Mailing_DAO_Mailing();
+    $mailing->id = $mailingID;
+    $mailing->find(TRUE);
+    $mailing->url_tracking = 0;
+    $mailing->forward_replies = 0;
+    $mailing->auto_responder = 0;
+    $mailing->open_tracking = 0;
+    $mailing->save();
+
     //CRM_Core_Error::debug('postProcess Group form', $form); exit();
   }
   //CRM_Core_Error::debug($form); exit();
