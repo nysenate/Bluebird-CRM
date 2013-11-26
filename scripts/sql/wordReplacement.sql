@@ -24,5 +24,6 @@ VALUES
   ('Do not trade', 'Undeliverable: Do not mail', 1, 'exactMatch', 1),
   ('Do not mail', 'Do not postal mail', 1, 'exactMatch', 1),
   ('Supplemental Address 1', 'Mailing Address', 1, 'wildcardMatch', 1),
-  ('Supplemental Address 2', 'Building', 1, 'wildcardMatch', 1)
+  ('Supplemental Address 2', 'Building', 1, 'wildcardMatch', 1),
+  ('Next/Previous buttons are not available for searches which are sorted by email, phone or address fields.', 'Next/Previous navigation buttons are not available when alternate sorting has been used.', 1, 'exactMatch', 1)
 ;
