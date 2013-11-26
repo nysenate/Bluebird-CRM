@@ -47,5 +47,8 @@
       CRM.alert('Communication preferences have been updated to reflect the contact is deceased.', ts('Contact Marked Deceased'), 'alert');
     }
   });
+
+  //7401
+  _checkEmailLink();
 </script>
 {/literal}

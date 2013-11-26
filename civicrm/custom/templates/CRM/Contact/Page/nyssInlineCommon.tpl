@@ -89,5 +89,16 @@
         after('<div class="crm-summary-row nyss-privacyNote"><div class="crm-label">Privacy Note</div><div class="crm-content crm-custom_64">' + privacyNote + '</div></div>');
     }
   }
+
+  //7401
+  function _checkEmailLink(){
+    if ( cj('div.crm-contact-deceased_message').length ) {
+      cj('div.crm-contact_email').each(function(){
+        var emailText = cj(this).children('a').text();
+        cj(this).children('a').replaceWith(emailText);
+      })
+    }
+  }
+  _checkEmailLink();
 </script>
 {/literal}
