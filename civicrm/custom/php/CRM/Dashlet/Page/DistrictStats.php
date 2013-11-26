@@ -266,14 +266,16 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
 
     //mailing seed group
     $mailingSeedGroup = CRM_Core_DAO::singleValueQuery( "SELECT id FROM civicrm_group WHERE name = 'Mailing_Seeds';" );
-    $sql_MailingSeeds = "
-      SELECT COUNT( c.id ) AS mailingSeeds_count
-      FROM civicrm_contact c
-      JOIN civicrm_group_contact gc
-        ON ( c.id = gc.contact_id AND group_id = $mailingSeedGroup )
-      WHERE is_deleted != 1;
-    ";
-    $miscCounts['Mailing Seeds'] = CRM_Core_DAO::singleValueQuery( $sql_MailingSeeds );
+    if ( $mailingSeedGroup ) {
+      $sql_MailingSeeds = "
+        SELECT COUNT( c.id ) AS mailingSeeds_count
+        FROM civicrm_contact c
+        JOIN civicrm_group_contact gc
+          ON ( c.id = gc.contact_id AND group_id = $mailingSeedGroup )
+        WHERE is_deleted != 1;
+      ";
+      $miscCounts['Mailing Seeds'] = CRM_Core_DAO::singleValueQuery( $sql_MailingSeeds );
+    }
 
     //log last 30 days
     $sql_log30 = "
