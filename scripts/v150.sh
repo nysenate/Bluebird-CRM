@@ -101,6 +101,15 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
+## remove mapping key
+echo "removing google mapping key..."
+sql="
+UPDATE civicrm_domain
+  SET config_backend = REPLACE(config_backend, '\"mapAPIKey\";s:86:\"ABQIAAAAOAfBnp7jqzymWnSA-s1NzxQuOUP8hd2qhSL-nJEVisOKANWd3xTc9jRNBXFpXOoJGkNnNxugAV8jqg\";', '\"mapAPIKey\";s:0:\"\";')
+  WHERE id = 1;
+"
+$execSql -i $instance -c "$sql" -q
+
 ### Cleanup ###
 echo "Cleaning up by performing clearCache"
 $script_dir/clearCache.sh $instance
