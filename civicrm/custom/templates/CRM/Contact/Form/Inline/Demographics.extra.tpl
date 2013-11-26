@@ -22,7 +22,20 @@
   cj('#inline-ethnicity').appendTo(cj('#Demographics .crm-inline-edit-form .crm-clear'));
 
   //gender other
-  cj('input[name=gender_id]').parent().append('<br />{/literal}{$form.custom_45.html}{literal}')
+  cj('input[name=gender_id]').parent().append('<span class="other-gender"><br />{/literal}{$form.custom_45.html}{literal}</span>');
+  function _checkOtherGender() {
+    if ( cj('input#civicrm_gender_Other_4').is(':checked') ) {
+      cj('span.other-gender').show();
+    }
+    else {
+      cj('span.other-gender').hide();
+    }
+  }
+  _checkOtherGender();
+  cj('input[name=gender_id]').click(function(){
+    _checkOtherGender();
+  });
+
 
   //6803 alter comm pref when deceased
   //when dem block is saved, IF is_deceased is checked, alter UI

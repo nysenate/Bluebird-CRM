@@ -125,7 +125,6 @@ function nyss_contact_civicrm_buildForm( $formName, &$form ) {
 
   //contact form edits
   if ( $formName == 'CRM_Contact_Form_Contact' ) {
-
     //3527 add js action to deceased field
     if ( isset( $form->_elementIndex['is_deceased'] ) ) {
       $deceased =& $form->getElement( 'is_deceased' );
@@ -137,14 +136,14 @@ function nyss_contact_civicrm_buildForm( $formName, &$form ) {
     if ( isset( $form->_elementIndex['website[1][url]'] ) ) {
       $website =& $form->getElement( 'website[1][url]' );
       $js = "if(!this.value) {
-                 this.value='http://';
-                 if (this.createTextRange) {
-                   var FieldRange = this.createTextRange();
-                   FieldRange.moveStart('character', this.value.length);
-                   FieldRange.collapse();
-                   FieldRange.select();
-                 }
-               } else { return false; }";
+        this.value='http://';
+        if (this.createTextRange) {
+          var FieldRange = this.createTextRange();
+          FieldRange.moveStart('character', this.value.length);
+          FieldRange.collapse();
+          FieldRange.select();
+        }
+      } else { return false; }";
       $website->_attributes['onfocus'] = $js;
     }
 
@@ -212,7 +211,9 @@ function nyss_contact_civicrm_validateForm( $formName, &$fields, &$files, &$form
 function nyss_contact_civicrm_postProcess( $formName, &$form ) {
   //CRM_Core_Error::debug_var('$formName',$formName);
   if ( $formName == 'CRM_Contact_Form_Inline_Demographics' ) {
-    _setCustomData('CRM_Contact_Form_Inline_Demographics', $form->_submitValues);
+    $vals = $form->_submitValues;
+
+    _setCustomData('CRM_Contact_Form_Inline_Demographics', $vals);
 
     //6803 set comm pref when deceased
     if ( isset($vals['is_deceased']) && $vals['is_deceased'] ) {
