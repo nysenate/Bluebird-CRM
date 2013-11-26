@@ -110,6 +110,15 @@ UPDATE civicrm_domain
 "
 $execSql -i $instance -c "$sql" -q
 
+## 7397 remove version alert
+echo "removing version alert notification..."
+sql="
+  UPDATE civicrm_setting
+  SET value='s:1:\"0\";'
+  WHERE name='versionAlert';
+"
+$execSql -i $instance -c "$sql" -q
+
 ### Cleanup ###
 echo "Cleaning up by performing clearCache"
 $script_dir/clearCache.sh $instance
