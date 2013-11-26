@@ -60,6 +60,15 @@
 	</div>
   <!-- crm-accordion-wrapper -->
   <div id="custom_group_{$group_id}_{$cgCount}"></div>
+
+  {if $cd_edit.name eq 'Attachments'}
+    {literal}
+    <script type="text/javascript">
+      //NYSS 5396/7369 hackish solution to prevent msg from appearing in top panel
+      cj('#customData5 .messages.help').removeClass('messages').addClass('messages-block');
+    </script>
+    {/literal}
+  {/if}
 {/if}{*NYSS close condition*}
 {/foreach}
 
