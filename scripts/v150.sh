@@ -111,6 +111,20 @@ sql="
 "
 $execSql -i $instance -c "$sql" -q
 
+## 5533 cleanup some activity types we don't need
+echo "disabling some activity types we dont use..."
+sql="
+  SELECT @act:= id
+  FROM civicrm_option_group
+  WHERE name = 'activity_type';
+
+  UPDATE civicrm_option_value
+  SET is_active = 0
+  WHERE option_group_id = @act
+    AND ( component_id IN (1, 2, 3, 6, 9) OR name LIKE '%SMS%' OR name LIKE '%contribution%' );
+"
+$execSql -i $instance -c "$sql" -q
+
 ### Cleanup ###
 echo "Cleaning up by performing clearCache"
 $script_dir/clearCache.sh $instance
