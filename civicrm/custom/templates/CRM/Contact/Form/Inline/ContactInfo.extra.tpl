@@ -19,5 +19,6 @@
 <script type="text/javascript">
   cj('#inline-contact_source').appendTo(cj('#ContactInfo .crm-inline-edit-form .crm-clear'));
   cj('#inline-indiv_category').appendTo(cj('#ContactInfo .crm-inline-edit-form .crm-clear'));
+  cj('label[for=contact_source]').text('Other Source');
 </script>
 {/literal}

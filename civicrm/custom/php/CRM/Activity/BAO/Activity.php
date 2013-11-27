@@ -679,7 +679,7 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
       'activity_date_time' => 'datetime',
       'status_id' => 'int unsigned',
       'subject' => 'varchar(255)',
-      'source_record_id' => 'int unsigned',
+      'source_contact_name' => 'varchar(255)',//NYSS 7354
       'activity_type_id' => 'int unsigned',
       'activity_type' => 'varchar(128)',
       'case_id' => 'int unsigned',
@@ -1076,8 +1076,12 @@ LEFT JOIN   civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.a
 
     // build main activity table select clause
     $sourceSelect = '';
+
+    //NYSS 7354
+    $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
+    $sourceID = CRM_Utils_Array::key('Activity Source', $activityContacts);
     $sourceJoin = "
-INNER JOIN civicrm_activity_contact ac ON ac.activity_id = civicrm_activity.id
+INNER JOIN civicrm_activity_contact ac ON ac.activity_id = civicrm_activity.id AND record_type_id = {$sourceID}
 INNER JOIN civicrm_contact contact ON ac.contact_id = contact.id
 ";
 
@@ -1086,7 +1090,7 @@ INNER JOIN civicrm_contact contact ON ac.contact_id = contact.id
                 civicrm_activity.activity_date_time,
                 civicrm_activity.status_id,
                 civicrm_activity.subject,
-                civicrm_activity.source_record_id,
+                contact.sort_name as source_contact_name,
                 civicrm_option_value.value as activity_type_id,
                 civicrm_option_value.label as activity_type,
                 null as case_id, null as case_subject,
@@ -1121,7 +1125,7 @@ INNER JOIN civicrm_contact contact ON ac.contact_id = contact.id
                 civicrm_activity.status_id,
                 civicrm_activity.subject,
                 ac.contact_id,
-                civicrm_activity.source_record_id,
+                contact.sort_name as source_contact_name,
                 civicrm_option_value.value as activity_type_id,
                 civicrm_option_value.label as activity_type,
                 null as case_id, null as case_subject,

@@ -3214,11 +3214,18 @@ WHERE  id IN ( $groupIDs )
    */
   function phone_numeric(&$values) {
     list($name, $op, $value, $grouping, $wildcard) = $values;
+
+    //NYSS 5804 determine wildcard is explicit or we should imply
     // Strip non-numeric characters
-    $number = preg_replace('/[^\d]/', '', $value);
+    $number = preg_replace('/[^\d%]/', '', $value);
     if ($number) {
+      //NYSS
+      if ( strpos($number, '%') === FALSE ) {
+        $number = "%$number%";
+      }
+
       $this->_qill[$grouping][] = ts('Phone number contains') . " $number";
-      $this->_where[$grouping][] = self::buildClause('civicrm_phone.phone_numeric', 'LIKE', "%$number%", 'String');
+      $this->_where[$grouping][] = self::buildClause('civicrm_phone.phone_numeric', 'LIKE', "$number", 'String');//NYSS
       $this->_tables['civicrm_phone'] = $this->_whereTables['civicrm_phone'] = 1;
     }
   }

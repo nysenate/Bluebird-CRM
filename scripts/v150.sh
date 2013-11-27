@@ -60,14 +60,6 @@ $script_dir/dedupeSetup.sh $instance -r
 
 ## rebuild word replacement
 echo "rebuilding word replacement list..."
-sql="
-  ALTER TABLE civicrm_word_replacement DROP INDEX UI_find;
-"
-$execSql $instance -c "$sql" -q
-sql="
-  ALTER TABLE civicrm_word_replacement DROP INDEX UI_domain_find, ADD INDEX UI_domain_find (domain_id, find_word) COMMENT  '';
-"
-$execSql $instance -c "$sql" -q
 $execSql $instance -f $app_rootdir/scripts/sql/wordReplacement.sql -q
 
 ## resetting component config
@@ -100,6 +92,38 @@ sql="
     OR report_id LIKE 'survey%'
 "
 $execSql $instance -c "$sql" -q
+
+## remove mapping key
+echo "removing google mapping key..."
+sql="
+UPDATE civicrm_domain
+  SET config_backend = REPLACE(config_backend, '\"mapAPIKey\";s:86:\"ABQIAAAAOAfBnp7jqzymWnSA-s1NzxQuOUP8hd2qhSL-nJEVisOKANWd3xTc9jRNBXFpXOoJGkNnNxugAV8jqg\";', '\"mapAPIKey\";s:0:\"\";')
+  WHERE id = 1;
+"
+$execSql -i $instance -c "$sql" -q
+
+## 7397 remove version alert
+echo "removing version alert notification..."
+sql="
+  UPDATE civicrm_setting
+  SET value='s:1:\"0\";'
+  WHERE name='versionAlert';
+"
+$execSql -i $instance -c "$sql" -q
+
+## 5533 cleanup some activity types we don't need
+echo "disabling some activity types we dont use..."
+sql="
+  SELECT @act:= id
+  FROM civicrm_option_group
+  WHERE name = 'activity_type';
+
+  UPDATE civicrm_option_value
+  SET is_active = 0
+  WHERE option_group_id = @act
+    AND ( component_id IN (1, 2, 3, 6, 9) OR name LIKE '%SMS%' OR name LIKE '%contribution%' );
+"
+$execSql -i $instance -c "$sql" -q
 
 ### Cleanup ###
 echo "Cleaning up by performing clearCache"

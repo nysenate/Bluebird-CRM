@@ -18,9 +18,6 @@
   rfb.css('float', 'left').css('margin-top', '3px');
   cj('input#_qf_Advanced_refresh').after(rfb);
 
-  //5647 default open address block
-  cj('#location').parent().trigger('click');
-
   if ( cj('div.crm-advanced_search_form-accordion div.crm-accordion-header').css('display') == 'block' ) {
     cj('div.crm-advanced_search_form-accordion div.crm-accordion-header a.helpicon').
       appendTo('div.crm-title h1.title');
