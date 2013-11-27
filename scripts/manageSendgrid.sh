@@ -21,7 +21,7 @@ usage() {
   echo "Usage: $prog [options] instanceName
 where [options] are:
   --bluebird-setup|-bs
-  --get-blocks|-gbs
+  --get-blocks|-gbl
   --get-bounces|-gb
   --get-invalidemails|-gi
   --get-spamreports|-gs
