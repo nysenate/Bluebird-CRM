@@ -38,6 +38,7 @@
         <td>
       <label>{if $sms eq 1}{ts}SMS Date{/ts}{else}{ts}Mailing Date{/ts}{/if}</label>
 	</td>
+      <td></td>
     </tr>
     <tr>
 	{include file="CRM/Core/DateRange.tpl" fieldName="mailing" from='_from' to='_to'}
@@ -53,7 +54,8 @@
             </div>
         </td>
         {if $form.mailing_status}
-           <td width="100%"><label>{if $sms eq 1}{ts}SMS Status{/ts}{else}{ts}Mailing Status{/ts}{/if}</label><br />
+          {*NYSS 5391 reduce width*}
+           <td width="75%"><label>{if $sms eq 1}{ts}SMS Status{/ts}{else}{ts}Mailing Status{/ts}{/if}</label><br />
            <div class="listing-box" style="width: auto; height: 100px">
             {foreach from=$form.mailing_status item="mailing_status_val"}
             <div class="{cycle values="odd-row,even-row"}">

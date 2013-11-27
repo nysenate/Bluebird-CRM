@@ -90,39 +90,6 @@
     {/if}
 
 {* No mailings to list. Check isSearch flag to see if we're in a search or not. *}
-{elseif $isSearch eq 1}
-    {if $archived}
-        {capture assign=browseURL}{crmURL p='civicrm/mailing/browse/archived' q="reset=1"}{$qVal}{/capture}
-        {assign var="browseType" value="Archived"}
-    {elseif $unscheduled} 
-        {capture assign=browseURL}{crmURL p='civicrm/mailing/browse/unscheduled' q="scheduled=false&reset=1"}{$qVal}{/capture}
-        {assign var="browseType" value="Draft and Unscheduled"}
-    {else}
-        {capture assign=browseURL}{crmURL p='civicrm/mailing/browse/scheduled' q="scheduled=true&reset=1"}{$qVal}{/capture}
-        {assign var="browseType" value="Scheduled and Sent"}
-    {/if}
-    <div class="status messages">
-        <table class="form-layout">
-            <tr><div class="icon inform-icon"></div>
-               {ts 1=$componentName}No %1 match your search criteria. Suggestions:{/ts}
-	    </tr>
-                <div class="spacer"></div>
-                <ul>
-                <li>{ts}Check your spelling.{/ts}</li>
-                <li>{ts}Try a different spelling or use fewer letters.{/ts}</li>
-                </ul>
-            <tr>{ts 1=$browseURL 2=$browseType 3=$componentName}Or you can <a href='%1'>browse all %2 %3</a>.{/ts}</tr>
-        </table>
-    </div>
-{elseif $unscheduled}
-
-    <div class="messages status no-popup">
-            <div class="icon inform-icon"></div>&nbsp;
-            {capture assign=crmURL}{crmURL p=$newMassUrl q='reset=1'}{/capture}
-            {ts 1=$componentName}There are no Unscheduled %1.{/ts}
-	    {if $showLinks}{ts 1=$crmURL} You can <a href='%1'>create and send one</a>.{/ts}{/if}
-   </div>
-
 {elseif $archived}
     <div class="messages status no-popup">
             <div class="icon inform-icon"></div>&nbsp
@@ -130,12 +97,31 @@
             {ts 1=$crmURL 2=$componentName}There are no Archived %2. You can archive %2 from <a href='%1'>Scheduled or Sent %2</a>.{/ts}
    </div>
 {else}
-    <div class="messages status no-popup">
-            <div class="icon inform-icon"></div>&nbsp;
-            {capture assign=crmURL}{crmURL p=$newMassUrl q='reset=1'}{/capture}
-            {capture assign=archiveURL}{crmURL p='civicrm/mailing/browse/archived' q='reset=1'}{$qVal}{/capture}
-            {ts 1=$componentName}There are no Scheduled or Sent %1.{/ts}
-      {if $showLinks}{ts 1=$crmURL}You can <a href='%1'>create and send one</a>{/ts}{/if}{if $archiveLinks}{ts 1=$archiveURL 2=$componentName} OR you can search the <a href='%1'>Archived %2</a>{/ts}{/if}.
-   </div>
+  {*NYSS 5391 combine isSearch and unscheduled; genericize the text*}
+  {if $archived}
+    {capture assign=browseURL}{crmURL p='civicrm/mailing/browse/archived' q="reset=1"}{$qVal}{/capture}
+    {assign var="browseType" value="Archived"}
+  {elseif $unscheduled}
+    {capture assign=browseURL}{crmURL p='civicrm/mailing/browse/unscheduled' q="scheduled=false&reset=1"}{$qVal}{/capture}
+    {assign var="browseType" value="Draft and Unscheduled"}
+  {else}
+    {capture assign=browseURL}{crmURL p='civicrm/mailing/browse/scheduled' q="scheduled=true&reset=1"}{$qVal}{/capture}
+    {assign var="browseType" value="Scheduled and Sent"}
+  {/if}
+  <div class="status messages">
+    <table class="form-layout">
+      <tr><div class="icon inform-icon"></div>
+        {ts 1=$componentName}No %1 match your search criteria. Suggestions:{/ts}
+      </tr>
+      <tr>
+        <div class="spacer"></div>
+        <ul>
+          <li>{ts}Check your spelling.{/ts}</li>
+          <li>{ts}Try a different spelling or use fewer letters.{/ts}</li>
+          <li>{ts}Select different mailing statuses.{/ts}</li>
+        </ul>
+      </tr>
+    </table>
+  </div>
 {/if}
 </div> {*NYSS*}
