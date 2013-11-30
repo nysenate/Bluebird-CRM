@@ -2448,7 +2448,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
       //NYSS add printCivicrm.css to print view
       $config = CRM_Core_Config::singleton();
       $this->_formValues['report_header'] = str_replace( '</head>', '<style type="text/css">@import url('.$config->userFrameworkBaseURL.'sites/default/themes/Bluebird/css/printCivicrm.css);</style></head>', $this->_formValues['report_header'] );
-      $content = $this->_formValues['report_header'] . CRM_Core_Form::$_template->fetch($templateFile) . $this->_formValues['report_footer'];
+      $content = $this->_formValues['report_header'] . $content . CRM_Core_Form::$_template->fetch($templateFile) . $this->_formValues['report_footer'];
 
       if ($this->_sendmail) {
         //NYSS suppress email if no content
