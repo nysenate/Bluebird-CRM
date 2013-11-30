@@ -677,6 +677,7 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
     $tableFields = array(
       'activity_id' => 'int unsigned',
       'activity_date_time' => 'datetime',
+      'source_record_id' => 'int unsigned',//NYSS 7354
       'status_id' => 'int unsigned',
       'subject' => 'varchar(255)',
       'source_contact_name' => 'varchar(255)',//NYSS 7354
@@ -711,7 +712,7 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
     $insertSQL = "INSERT INTO {$activityTempTable} (" . implode(',', $insertValueSQL) . " ) ";
 
     $order = $limit = $groupBy = '';
-    $groupBy = " GROUP BY tbl.activity_id"; //NYSS
+    $groupBy = " GROUP BY tbl.activity_id"; //NYSS 7354
 
     if (!empty($input['sort'])) {
       if (is_a($input['sort'], 'CRM_Utils_Sort')) {
@@ -1081,13 +1082,15 @@ LEFT JOIN   civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.a
     $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
     $sourceID = CRM_Utils_Array::key('Activity Source', $activityContacts);
     $sourceJoin = "
-INNER JOIN civicrm_activity_contact ac ON ac.activity_id = civicrm_activity.id AND record_type_id = {$sourceID}
+INNER JOIN civicrm_activity_contact ac ON ac.activity_id = civicrm_activity.id
 INNER JOIN civicrm_contact contact ON ac.contact_id = contact.id
 ";
 
     if (!$input['count']) {
+      //NYSS 7354
       $sourceSelect = ',
                 civicrm_activity.activity_date_time,
+                civicrm_activity.source_record_id,
                 civicrm_activity.status_id,
                 civicrm_activity.subject,
                 contact.sort_name as source_contact_name,
@@ -1097,6 +1100,9 @@ INNER JOIN civicrm_contact contact ON ac.contact_id = contact.id
                 civicrm_activity.campaign_id as campaign_id
             ';
 
+      $sourceJoin .= "
+LEFT JOIN civicrm_activity_contact src ON (src.activity_id = ac.activity_id AND src.record_type_id = {$sourceID} AND src.contact_id = contact.id)
+";
     }
 
     $sourceClause = "
@@ -1120,11 +1126,12 @@ INNER JOIN civicrm_contact contact ON ac.contact_id = contact.id
     if ($includeCaseActivities) {
       $caseSelect = '';
       if (!$input['count']) {
+        //NYSS 7354
         $caseSelect = ',
                 civicrm_activity.activity_date_time,
+                civicrm_activity.source_record_id,
                 civicrm_activity.status_id,
                 civicrm_activity.subject,
-                ac.contact_id,
                 contact.sort_name as source_contact_name,
                 civicrm_option_value.value as activity_type_id,
                 civicrm_option_value.label as activity_type,
