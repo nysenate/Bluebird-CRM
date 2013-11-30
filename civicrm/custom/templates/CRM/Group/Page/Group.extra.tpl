@@ -6,8 +6,10 @@
   //6684 remove access control filter
   cj('.crm-group-search-form-block table td#group_type-block input#group_type_1').remove();
   cj('.crm-group-search-form-block table td#group_type-block label[for=group_type_1]').remove();
-  var emailList = cj('.crm-group-search-form-block table td#group_type-block').html().replace(/&nbsp;&nbsp;&nbsp;/g,'');
-  cj('.crm-group-search-form-block table tr:nth-child(1) td#group_type-block').html(emailList);
+  if (cj('.crm-group-search-form-block table td#group_type-block').length) {
+    var emailList = cj('.crm-group-search-form-block table td#group_type-block').html().replace(/&nbsp;&nbsp;&nbsp;/g,'');
+    cj('.crm-group-search-form-block table tr:nth-child(1) td#group_type-block').html(emailList);
+  }
 
   //expand status filter to fill space better
   cj('.crm-group-search-form-block table input#group_status_1').parent('td').css('width', '30em');
