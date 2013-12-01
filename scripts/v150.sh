@@ -125,6 +125,15 @@ sql="
 "
 $execSql -i $instance -c "$sql" -q
 
+## wkhtmltopdf
+echo "setting wkhtmltopdf path..."
+sql="
+UPDATE civicrm_domain
+  SET config_backend = REPLACE(config_backend, '\"wkhtmltopdfPath\";s:0:\"\"', '\"wkhtmltopdfPath\";s:26:\"/usr/local/bin/wkhtmltopdf\"')
+  WHERE id = 1;
+"
+$execSql -i $instance -c "$sql" -q
+
 ### Cleanup ###
 echo "Cleaning up by performing clearCache"
 $script_dir/clearCache.sh $instance

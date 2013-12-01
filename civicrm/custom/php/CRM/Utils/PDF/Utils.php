@@ -34,8 +34,7 @@
  */
 class CRM_Utils_PDF_Utils {
 
-  //NYSS
-  // use a 4MiB chunk size
+  //NYSS use a 4MiB chunk size
   const CHUNK_SIZE = 4194304;
   // No need to strip extra whitespace from the HTML, since the incoming
   // HTML should now be optimized.  Set this to TRUE to force this potentially
@@ -74,20 +73,33 @@ class CRM_Utils_PDF_Utils {
     $margins     = array($metric,$t,$r,$b,$l);
 
     $config = CRM_Core_Config::singleton();
+    $html = "
+<html>
+  <head>
+    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/>
+    <style>@page { margin: {$t}{$metric} {$r}{$metric} {$b}{$metric} {$l}{$metric}; }</style>
+    <style type=\"text/css\">@import url({$config->userFrameworkResourceURL}css/print.css);</style>
+  </head>
+  <body>
+    <div id=\"crm-container\">\n";
 
     $html_tmpfile = sys_get_temp_dir().DIRECTORY_SEPARATOR.uniqid('bbreport-', true).'.html';
 
     $fp = fopen($html_tmpfile, "w");
-    
-    fwrite($fp, "<html>\n<head>\n<style>body { margin: {$t}{$metric} {$r}{$metric} {$b}{$metric} {$l}{$metric}; }</style>\n<style type=\"text/css\">@import url({$config->userFrameworkResourceURL}css/print.css);</style>\n</head>\n<body>\n<div id=\"crm-container\">\n");
+    fwrite($fp, $html);
 
     // Strip <html>, <header>, and <body> tags from each page
-    $headerElems = array('@<!DOCTYPE[^>]*>@siu',
-                         '@<html[^>]*>@siu',
-                         '@<head[^>]*>.*?</head>@siu',
-                         '@<body>@siu');
+    $headerElems = array(
+      '@<head[^>]*?>.*?</head>@siu',
+      '@<body>@siu',
+      '@<html[^>]*?>@siu',
+      '@<!DOCTYPE[^>]*?>@siu',
+    );
 
-    $tailElems = array('#</body>#siu', '#</html>#siu');
+    $tailElems = array(
+      '@</body>@siu',
+      '@</html>@siu',
+    );
 
     for ($i = 0; $i < count($pages); $i++) {
       if ($i > 0) {
@@ -120,16 +132,20 @@ class CRM_Utils_PDF_Utils {
       }
     }
 
-    fwrite($fp, "\n</div>\n</body>\n</html>");
+    $html = "
+    </div>
+  </body>
+</html>
+";
+    fwrite($fp, $html);
     fclose($fp);
-    $pages = null;  // force garbage collection on the original HTML? Try it.
+    $pages = NULL; //force garbage collection on the original HTML? Try it.
 
-    //NYSS 5097 - force use of wkhtmltopdf
-    $rc = true;
-    if ($config->wkhtmltopdfPath || 1) {
-      $rc = self::_html2pdf_wkhtmltopdf( $paper_size, $orientation, $html_tmpfile, $output, $fileName );
-    } else { 
-      $rc = self::_html2pdf_dompdf( $paper_size, $orientation, $html_tmpfile, $output, $fileName );
+    if ($config->wkhtmltopdfPath) {
+      $rc = self::_html2pdf_wkhtmltopdf($paper_size, $orientation, $margins, $html_tmpfile, $output, $fileName, TRUE);
+    }
+    else {
+      $rc = self::_html2pdf_dompdf($paper_size, $orientation, $html, $output, $fileName);
     }
 
     unlink($html_tmpfile);
@@ -152,25 +168,11 @@ class CRM_Utils_PDF_Utils {
     }
   }
 
-
-  //NYSS 5097 - implement snappy/wkhtmltopdf
-  static function _html2pdf_wkhtmltopdf($paper_size, $orientation, $margins, $html, $output, $fileName) {
+  //NYSS support passing filename
+  static function _html2pdf_wkhtmltopdf($paper_size, $orientation, $margins, $html, $output, $fileName, $fileInput = FALSE) {
     require_once 'packages/snappy/src/autoload.php';
     $config = CRM_Core_Config::singleton();
-
-    //NYSS - set default path to /usr/local/bin/ for now.
-    $wkhtmltopdfPath = '/usr/local/bin/wkhtmltopdf';
-
-    //NYSS 5270 make sure binary exists
-    if ( !file_exists($wkhtmltopdfPath) ) {
-      header('Content-Type: text/plain');
-      header('Content-Disposition: attachment; filename="pdfError.txt"');
-      echo "The HTML-to-PDF converter is not properly installed.  Please contact your system administrator.\n";
-      return null;
-    }
-
-    //NYSS
-    //$snappy = new Knp_Snappy_Pdf($config->wkhtmltopdfPath);
+    $snappy = new Knp\Snappy\Pdf($config->wkhtmltopdfPath);
     $snappy->setOption("page-width", $paper_size[2] . "pt");
     $snappy->setOption("page-height", $paper_size[3] . "pt");
     $snappy->setOption("orientation", $orientation);
@@ -178,11 +180,13 @@ class CRM_Utils_PDF_Utils {
     $snappy->setOption("margin-right", $margins[2] . $margins[0]);
     $snappy->setOption("margin-bottom", $margins[3] . $margins[0]);
     $snappy->setOption("margin-left", $margins[4] . $margins[0]);
-    $pdf = $snappy->getOutputFromHtml($html);
 
-    //NYSS
-    if ( empty($filename) ) {
-      $filename = 'BluebirdPDF.pdf';
+    //NYSS support passing filename instead of HTML
+    if ( $fileInput ) {
+      $pdf = $snappy->getOutput($html);
+    }
+    else {
+      $pdf = $snappy->getOutputFromHtml($html);
     }
 
     if ($output) {
