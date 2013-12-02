@@ -64,7 +64,7 @@
       {/php}
     {else}
       {php}
-        print str_replace('CiviCRM', 'Bluebird', drupal_get_title());
+        print str_replace('CiviMail', 'BluebirdMail', str_replace('CiviCRM', 'Bluebird', drupal_get_title()));
       {/php}
     {/if}
     {if $isDeleted}</del>{/if}
