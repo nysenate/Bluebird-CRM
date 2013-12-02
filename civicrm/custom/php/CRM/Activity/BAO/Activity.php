@@ -2249,6 +2249,8 @@ AND cl.modified_id  = c.id
 
     $transaction = new CRM_Core_Transaction();
 
+    //NYSS fixes to ensure activity is not deleted if other linked contacts exist
+
     // delete activity if there is no record in civicrm_activity_contact pointing to any other contact record
     $activityContact = new CRM_Activity_DAO_ActivityContact();
     $activityContact->contact_id = $contactId;
