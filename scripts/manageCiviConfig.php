@@ -381,6 +381,8 @@ function updateCiviConfig($dbcon, $civicfg, $bbcfg)
     $cb['mailerJobSize'] = $jobsize;
     $cb['mailerJobsMax'] = $jobsmax;
     $cb['geoAPIKey'] = '';
+    $cb['mapAPIKey'] = '';
+    $cb['wkhtmltopdfPath'] = '/usr/local/bin/wkhtmltopdf';
     $rc &= updateConfigBackend($dbcon, $cb);
   }
 
