@@ -100,7 +100,7 @@ UPDATE civicrm_domain
   SET config_backend = REPLACE(config_backend, '\"mapAPIKey\";s:86:\"ABQIAAAAOAfBnp7jqzymWnSA-s1NzxQuOUP8hd2qhSL-nJEVisOKANWd3xTc9jRNBXFpXOoJGkNnNxugAV8jqg\";', '\"mapAPIKey\";s:0:\"\";')
   WHERE id = 1;
 "
-$execSql -i $instance -c "$sql" -q
+$execSql $instance -c "$sql" -q
 
 ## 7397 remove version alert
 echo "removing version alert notification..."
@@ -109,7 +109,7 @@ sql="
   SET value='s:1:\"0\";'
   WHERE name='versionAlert';
 "
-$execSql -i $instance -c "$sql" -q
+$execSql $instance -c "$sql" -q
 
 ## 5533 cleanup some activity types we don't need
 echo "disabling some activity types we dont use..."
@@ -123,7 +123,7 @@ sql="
   WHERE option_group_id = @act
     AND ( component_id IN (1, 2, 3, 6, 9) OR name LIKE '%SMS%' OR name LIKE '%contribution%' );
 "
-$execSql -i $instance -c "$sql" -q
+$execSql $instance -c "$sql" -q
 
 ## wkhtmltopdf
 echo "setting wkhtmltopdf path..."
@@ -132,11 +132,11 @@ UPDATE civicrm_domain
   SET config_backend = REPLACE(config_backend, '\"wkhtmltopdfPath\";s:0:\"\"', '\"wkhtmltopdfPath\";s:26:\"/usr/local/bin/wkhtmltopdf\"')
   WHERE id = 1;
 "
-$execSql -i $instance -c "$sql" -q
+$execSql $instance -c "$sql" -q
 
 ## reset rules config
 echo "setting rules config..."
-$execSql $instance -f $app_rootdir/scripts/sql/rulesConfig.sql -q
+$execSql $instance -f $app_rootdir/scripts/sql/rulesConfig.sql --drupal -q
 
 ### Cleanup ###
 echo "Cleaning up by performing clearCache"
