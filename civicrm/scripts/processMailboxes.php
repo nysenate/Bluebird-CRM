@@ -137,7 +137,7 @@ else {
 }
 
 // Grab default values for activities (priority, status, type).
-$aActivityPriority = CRM_Core_PseudoConstant::priority();
+$aActivityPriority = CRM_Core_PseudoConstant::get('CRM_Activity_DAO_Activity', 'priority_id');
 $aActivityType = CRM_Core_PseudoConstant::activityType();
 $aActivityStatus = CRM_Core_PseudoConstant::activityStatus();
 
