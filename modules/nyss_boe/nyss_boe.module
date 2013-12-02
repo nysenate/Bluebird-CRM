@@ -47,15 +47,17 @@ function nyss_boe_civicrm_buildForm( $formName, &$form )
     //do not allow to edit as well as set 'Board of Election' loc type.
     require_once 'CRM/Utils/Request.php';
     require_once 'CRM/Core/BAO/Preferences.php';
-    $blocks = array( 'Email'   => 'email',
-                     'Phone'   => 'phone',
-                     'IM'      => 'im',
-                     'OpenID'  => 'openid',
-                     'Address' => 'address' );
+    $blocks = array(
+      'Email' => 'email',
+      'Phone' => 'phone',
+      'IM' => 'im',
+      'OpenID' => 'openid',
+      'Address' => 'address'
+    );
 
-    $blockId   = CRM_Utils_Request::retrieve( 'count', 'Positive', CRM_Core_DAO::$_nullObject );
+    $blockId = CRM_Utils_Request::retrieve( 'count', 'Positive', CRM_Core_DAO::$_nullObject );
     $blockName = CRM_Utils_Request::retrieve( 'block', 'String', CRM_Core_DAO::$_nullObject );
-    $values    = $form->_values;
+    $values = $form->_values;
     if ( !empty( $_POST ) ) $values = $_POST;
 
     $locationTypes = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Address', 'location_type_id');
@@ -161,20 +163,32 @@ function nyss_boe_civicrm_buildForm( $formName, &$form )
         break;
     }
 
+    $excludeFlds = array(
+      'is_primary',
+    );
+
     $b = 0;
     foreach ( $form->_defaultValues[$name] as $blockId => $block ) {
+      //CRM_Core_Error::debug_var('block', $block);
+      //CRM_Core_Error::debug_var('elements', $form->_elementIndex);
       if ( $block['location_type_id'] == $boardOfElectionId ) {
-        $elementName = "{$name}[$blockId][$name]";
-        $elementLoc  = "{$name}[$blockId][location_type_id]";
-        if ( ! $form->elementExists( $elementName ) ) {
+        $elementLoc = "{$name}[$blockId][location_type_id]";
+        if ( !$form->elementExists( $elementLoc ) ) {
           continue;
         }
 
-        $element = $form->getElement( $elementName );
-        $element->freeze( );
+        $elementName = "{$name}[$blockId]";
 
-        $eleLoc  = $form->getElement( $elementLoc );
-        $eleLoc->freeze( );
+        foreach ( $form->_elementIndex as $ele => $dontcare ) {
+          if ( strpos($ele, $elementName) === 0 ) {
+            $fld = trim(str_replace($elementName, '', $ele),'[]');
+            //CRM_Core_Error::debug_var('$fld', $fld);
+            if ( !in_array($fld, $excludeFlds) && strpos($fld, 'custom_') === FALSE ) {
+              $element = $form->getElement( $ele );
+              $element->freeze();
+            }
+          }
+        }
       }
       $b++;
     }

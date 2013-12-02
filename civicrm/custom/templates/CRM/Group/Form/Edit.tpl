@@ -42,10 +42,13 @@
             </td>
         </tr>
 
+      {*NYSS 5684*}
+      {if $group.created_by}
         <tr class="crm-group-form-block-created">
            <td class="label">{ts}Created By{/ts}</td>
            <td>{if $group.created_by}{$group.created_by}{else}&nbsp;{/if}</td>
         </tr>
+      {/if}
 
         <tr class="crm-group-form-block-description">
       <td class="label">{$form.description.label}</td>

@@ -26,25 +26,27 @@
   //7375 basic criteria panel
   cj('div.crm-search_criteria_basic-accordion').prop('id', 'Basic_Criteria').addClass('crm-ajax-accordion');
 
-  //toggle adv search panel; compensate for wrapper panel method
-  cj('.crm-ajax-accordion').on('click', '.crm-accordion-header', function() {
-    var pid = cj(this).attr('id');
-    if ( pid ) {
-      cj('div.crm-accordion-body.' + pid).toggle();
-    }
-    else {
-      pid = cj(this).parent('div').attr('id');
+  //toggle adv search panel; compensate for wrapper panel method; only apply with adv search dropdown method
+  if (cj('form#Advanced').parent().parent().is('#advanced-search-form')) {
+    cj('.crm-ajax-accordion').on('click', '.crm-accordion-header', function() {
+      var pid = cj(this).attr('id');
       if ( pid ) {
-        cj('#' + pid + ' div.crm-accordion-body').toggle();
+        cj('div.crm-accordion-body.' + pid).toggle();
       }
-    }
+      else {
+        pid = cj(this).parent('div').attr('id');
+        if ( pid ) {
+          cj('#' + pid + ' div.crm-accordion-body').toggle();
+        }
+      }
 
-    if ( cj(this).parent('div').hasClass('collapsed') ) {
-      cj(this).parent('div').removeClass('collapsed');
-    }
-    else {
-      cj(this).parent('div').addClass('collapsed');
-    }
-  });
+      if ( cj(this).parent('div').hasClass('collapsed') ) {
+        cj(this).parent('div').removeClass('collapsed');
+      }
+      else {
+        cj(this).parent('div').addClass('collapsed');
+      }
+    });
+  }
 </script>
 {/literal}

@@ -373,7 +373,8 @@ class CRM_Contact_BAO_Group extends CRM_Contact_DAO_Group {
     }
 
     $session = CRM_Core_Session::singleton( );
-    if ($cid = $session->get('userID')) {
+    //NYSS 5684
+    if ($cid = $session->get('userID') && empty($params['id'])) {
       $params['created_id'] = $cid;
     }
 
