@@ -163,7 +163,7 @@ $session->set('userID', 1);
 
 // Directory where file attachments will be written.
 $uploadDir = $config->customFileUploadDir;
-$uploadInbox = "$uploadDir/inbox";
+$uploadInbox = $uploadDir."inbox";
 if (!is_dir($uploadInbox)) {
   mkdir($uploadInbox);
   chmod($uploadInbox, 0777);
