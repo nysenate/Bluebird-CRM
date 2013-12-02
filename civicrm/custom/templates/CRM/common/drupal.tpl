@@ -38,36 +38,36 @@
 
 {* temporary hack to fix wysiysg editor failure if js compression is on *}
 {if $defaultWysiwygEditor eq 1}
-    <script type="text/javascript" src="{$config->resourceBase}packages/tinymce/jscripts/tiny_mce/jquery.tinymce.js"></script>
-    <script type="text/javascript" src="{$config->resourceBase}packages/tinymce/jscripts/tiny_mce/tiny_mce.js"></script>
+  <script type="text/javascript" src="{$config->resourceBase}packages/tinymce/jscripts/tiny_mce/jquery.tinymce.js"></script>
+  <script type="text/javascript" src="{$config->resourceBase}packages/tinymce/jscripts/tiny_mce/tiny_mce.js"></script>
 {elseif $defaultWysiwygEditor eq 2}
-    <script type="text/javascript" src="{$config->resourceBase}packages/ckeditor/ckeditor.js"></script>
+  <script type="text/javascript" src="{$config->resourceBase}packages/ckeditor/ckeditor.js"></script>
 {/if}
 
 <div class="crm-title">
 	<h1 class="title">
-       	{if $isDeleted}<del>{/if}
-       	{if $tplFile eq 'CRM/Contact/Page/View/Summary.tpl'}
-        {php}
-	  		//NYSS 2724 TODO: look at more complete solution to long titles overlapping action buttons
-            $title = drupal_get_title();
-            //$strippedtitle = strip_tags($title);
-            $strippedtitlelen = strlen(strip_tags($title));
-            $titlelen = strlen($title);
-            
-            if( $strippedtitlelen > 28 ) {
-            	$shorttitle = substr( $title, 0, $titlelen-($strippedtitlelen-25));
-                print $shorttitle.'...';
-            } else {
-            	print $title;
-	  		}
-        {/php}
-        {else}
-        {php}
-        	print drupal_get_title();
-        {/php}
-        {/if}
-       	{if $isDeleted}</del>{/if}
+    {if $isDeleted}<del>{/if}
+    {if $tplFile eq 'CRM/Contact/Page/View/Summary.tpl'}
+      {php}
+      //NYSS 2724 TODO: look at more complete solution to long titles overlapping action buttons
+      $title = drupal_get_title();
+      $strippedtitlelen = strlen(strip_tags($title));
+      $titlelen = strlen($title);
+
+      if( $strippedtitlelen > 28 ) {
+        $shorttitle = substr( $title, 0, $titlelen-($strippedtitlelen-25));
+        print $shorttitle.'...';
+      }
+      else {
+        print $title;
+      }
+      {/php}
+    {else}
+      {php}
+        print str_replace('CiviCRM', 'Bluebird', drupal_get_title());
+      {/php}
+    {/if}
+    {if $isDeleted}</del>{/if}
     </h1>
 </div>
 
