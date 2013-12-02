@@ -128,7 +128,7 @@ class CRM_Report_Form_ActivityTag extends CRM_Report_Form {
           array( 
             'title' => ts('Priority'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => CRM_Core_PseudoConstant::priority(), 
+            'options' => CRM_Core_PseudoConstant::get('CRM_Activity_DAO_Activity', 'priority_id'),
           ),
         ),
         'group_bys' =>             
@@ -171,7 +171,7 @@ class CRM_Report_Form_ActivityTag extends CRM_Report_Form {
         'grouping' => 'activity-fields',
         'alias' => 'activity'
       ),
-      'civicrm_activity_assignment' =>
+      /*'civicrm_activity_assignment' =>
       array(
         'dao' => 'CRM_Activity_DAO_ActivityAssignment',
         'fields' =>
@@ -183,8 +183,8 @@ class CRM_Report_Form_ActivityTag extends CRM_Report_Form {
           ),
         ),
         'alias' => 'activity_assignment',
-      ),
-      'civicrm_activity_target' =>
+      ),*/
+      /*'civicrm_activity_target' =>
       array( 
         'dao' => 'CRM_Activity_DAO_ActivityTarget',
         'fields' =>
@@ -211,13 +211,13 @@ class CRM_Report_Form_ActivityTag extends CRM_Report_Form {
         ),
         'alias' => 'activity_target',
         'grouping' => 'total-fields',
-      ),                          
+      ),                    */
       'civicrm_contact' =>
       array( 
         'dao' => 'CRM_Contact_DAO_Contact',
         'fields' =>
         array(
-          'source_contact_id' =>
+          /*'source_contact_id' =>
           array(
             'name' => 'id',
             'alias' => 'civicrm_contact_source',
@@ -243,21 +243,101 @@ class CRM_Report_Form_ActivityTag extends CRM_Report_Form {
             'title' => ts( 'Target (With)' ),//NYSS
             'alias' => 'contact_civireport',
             'default' => TRUE,
-          ),
+          ),*/
+          'contact_source' =>
+            array(
+              'name' => 'sort_name',
+              'title' => ts('Source Contact Name'),
+              'alias' => 'civicrm_contact_source',
+              'no_repeat' => TRUE,
+            ),
+          'contact_assignee' =>
+            array(
+              'name' => 'sort_name',
+              'title' => ts('Assignee Contact Name'),
+              'alias' => 'civicrm_contact_assignee',
+              'dbAlias' => "civicrm_contact_assignee.sort_name",
+              'default' => TRUE,
+            ),
+          'contact_target' =>
+            array(
+              'name' => 'sort_name',
+              'title' => ts('Target Contact Name'),
+              'alias' => 'civicrm_contact_target',
+              'dbAlias' => "civicrm_contact_target.sort_name",
+              'default' => TRUE,
+            ),
+          'contact_source_id' =>
+            array(
+              'name' => 'id',
+              'alias' => 'civicrm_contact_source',
+              'dbAlias' => "civicrm_contact_source.id",
+              'no_display' => TRUE,
+              'default' => TRUE,
+              'required' => TRUE,
+            ),
+          'contact_assignee_id' =>
+            array(
+              'name' => 'id',
+              'alias' => 'civicrm_contact_assignee',
+              'dbAlias' => "civicrm_contact_assignee.id",
+              'no_display' => TRUE,
+              'default' => TRUE,
+              'required' => TRUE,
+            ),
+          'contact_target_id' =>
+            array(
+              'name' => 'id',
+              'alias' => 'civicrm_contact_target',
+              'dbAlias' => "civicrm_contact_target.id",
+              'no_display' => TRUE,
+              'default' => TRUE,
+              'required' => TRUE,
+            ),
         ),
         'filters' =>             
         array( 
-          'sort_name' =>
+          /*'sort_name' =>
           array(
             'title' => ts('Added By'),
-          ),
+          ),*/
+          'contact_source' =>
+            array(
+              'name' => 'sort_name',
+              'alias' => 'civicrm_contact_source',
+              'title' => ts('Source Contact Name'),
+              'operator' => 'like',
+              'type' => CRM_Report_Form::OP_STRING,
+            ),
+          'contact_assignee' =>
+            array(
+              'name' => 'sort_name',
+              'alias' => 'civicrm_contact_assignee',
+              'title' => ts('Assignee Contact Name'),
+              'operator' => 'like',
+              'type' => CRM_Report_Form::OP_STRING,
+            ),
+          'contact_target' =>
+            array(
+              'name' => 'sort_name',
+              'alias' => 'civicrm_contact_target',
+              'title' => ts('Target Contact Name'),
+              'operator' => 'like',
+              'type' => CRM_Report_Form::OP_STRING,
+            ),
         ),
         'order_bys' =>             
         array( 
-          'sort_name' =>
+          /*'sort_name' =>
           array( 
             'title' => ts('Added By')
-          ),
+          ),*/
+          'contact_source'  =>
+            array(
+              'name'  => 'sort_name',
+              'dbAlias' => 'civicrm_contact_source',
+              'title' => ts( 'Added By Contact Name' ),
+            ),
         ),
         'grouping' => 'contact-fields',
       ),
@@ -292,6 +372,14 @@ class CRM_Report_Form_ActivityTag extends CRM_Report_Form {
           )
         ),
         'grouping' => 'contact-fields',
+      ),
+      'civicrm_activity_contact' =>
+      array(
+        'dao' => 'CRM_Activity_DAO_ActivityContact',
+        'fields' =>
+          array(
+            // so we have $this->_alias populated
+          ),
       ),
     );
 
@@ -409,17 +497,18 @@ class CRM_Report_Form_ActivityTag extends CRM_Report_Form {
     $this->_from = "
       FROM civicrm_activity {$this->_aliases['civicrm_activity']}
 
-      LEFT JOIN civicrm_activity_target  {$this->_aliases['civicrm_activity_target']}
-        ON {$this->_aliases['civicrm_activity']}.id = {$this->_aliases['civicrm_activity_target']}.activity_id
-      LEFT JOIN civicrm_activity_assignment {$this->_aliases['civicrm_activity_assignment']}
-        ON {$this->_aliases['civicrm_activity']}.id = {$this->_aliases['civicrm_activity_assignment']}.activity_id
+      LEFT JOIN civicrm_activity_contact {$this->_aliases['civicrm_activity_contact']}
+        ON {$this->_aliases['civicrm_activity']}.id = {$this->_aliases['civicrm_activity_contact']}.activity_id
 
       LEFT JOIN civicrm_contact civicrm_contact_source
-        ON {$this->_aliases['civicrm_activity']}.source_contact_id = civicrm_contact_source.id
-      LEFT JOIN civicrm_contact contact_civireport
-        ON {$this->_aliases['civicrm_activity_target']}.target_contact_id = contact_civireport.id
+        ON civicrm_contact_source.id = {$this->_aliases['civicrm_activity_contact']}.contact_id
+        AND record_type_id = 2
+      LEFT JOIN civicrm_contact civicrm_contact_target
+        ON civicrm_contact_target.id = {$this->_aliases['civicrm_activity_contact']}.contact_id
+        AND record_type_id = 3
       LEFT JOIN civicrm_contact civicrm_contact_assignee
-        ON {$this->_aliases['civicrm_activity_assignment']}.assignee_contact_id = civicrm_contact_assignee.id
+        ON civicrm_contact_assignee.id = {$this->_aliases['civicrm_activity_contact']}.contact_id
+        AND record_type_id = 1
 
       {$this->_aclFrom}
 
@@ -437,7 +526,7 @@ class CRM_Report_Form_ActivityTag extends CRM_Report_Form {
 
       RIGHT JOIN civicrm_entity_tag
         ON civicrm_entity_tag.entity_id = {$this->_aliases['civicrm_activity']}.id
-        AND civicrm_entity_tag.entity_table = 'civicrm_activity'
+        AND civicrm_entity_tag.entity_table LIKE '%civicrm_activity%'
       LEFT JOIN civicrm_tag tag_civireport
         ON civicrm_entity_tag.tag_id = tag_civireport.id
     ";
@@ -506,7 +595,7 @@ class CRM_Report_Form_ActivityTag extends CRM_Report_Form {
     }
 
     if ( $this->_aclWhere ) {
-      $this->_where .= " AND {$this->_aclWhere} ";
+      //$this->_where .= " AND {$this->_aclWhere} ";
     }
   }
     
