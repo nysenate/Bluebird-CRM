@@ -840,6 +840,11 @@ ORDER BY    fixed_sort_order
         $values[$activityID]['target_contact_name'] = array();
       }
 
+      //NYSS if deleted, wrap in <del>
+      if ( $dao->is_deleted ) {
+        $dao->contact_name = "<del>{$dao->contact_name}</dao>";
+      }
+
       if ($dao->record_type_id == $sourceID  && $dao->contact_id) {
         $values[$activityID]['source_contact_id'] = $dao->contact_id;
         $values[$activityID]['source_contact_name'] = $dao->contact_name;
@@ -894,15 +899,6 @@ ORDER BY    fixed_sort_order
       $dels = array();
       while ($dao->fetch()) {
         $dels[] = $dao->id;
-      }
-
-      // hide the deleted contacts
-      foreach ($values as &$value) {
-        if (in_array($value['source_contact_id'], $dels)) {
-          //NYSS retain the deleted contact name and wrap in del tag for visual cue
-          $value['source_contact_name'] = '<del>'.$value['source_contact_name'].'</del>';
-          //unset($value['source_contact_id'], $value['source_contact_name']);
-        }
       }
     }
 
