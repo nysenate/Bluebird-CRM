@@ -540,14 +540,12 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                 <div class="clear"></div>
                             </div>
                             <div id="BBTreeContainer" class="BB_default">
-                                <div class="BBTree tagging BB_default tagLabel_291" id="tagLabel_291">
-                                    <script type="text/javascript">
-                                    var BBCID = 18304;
-                                    var BBActionConst = 16;
-                                    BBTree.startInstance({pullSets: [291], buttonType: 'tagging'});
-                                    BBTree.initContainer('', {pullSets: [291]});
-                                    </script>
-                                </div>
+                                <script type="text/javascript">
+                                var BBCID = 18304;
+                                var BBActionConst = 16;
+                                BBTree.startInstance({pullSets: [291], buttonType: 'tagging'});
+                                BBTree.initContainer('', {pullSets: [291]});
+                                </script>
                             </div>
 
                             <div class="crm-section tag-section contact-tagset-292-section crm-processed-input">
