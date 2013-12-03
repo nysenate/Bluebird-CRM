@@ -51,8 +51,8 @@ cj('input[name=_qf_Contact_cancel]').addClass('cancel');
 
 //1277 add contact view button to contact lock
 cj(function() {
-  if (cj('#update_modified_date').length != 0) {
-    cj('<button>')
+  if (cj('#update_modified_date').length != 0 && cj('.lock-view-contact').length == 0) {
+    cj('<button class="lock-view-contact">')
       .text("{/literal}{ts}View Modified Contact in New Window{/ts}{literal}")
       .click(function() {
         window.open(

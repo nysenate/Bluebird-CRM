@@ -1538,6 +1538,11 @@ span.do-not-mail {
   color: #F65 !important;
 }
 
+/*7429*/
+.crm-search-results span.do-not-mail {
+  padding-left: 24px;
+}
+
 /*4963*/
 li.token-input-input-token-facebook {
 	margin: 3px;

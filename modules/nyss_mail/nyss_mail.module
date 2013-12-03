@@ -229,7 +229,7 @@ function nyss_mail_civicrm_buildForm($formName, &$form)
 function nyss_mail_civicrm_postProcess($formName, &$form)
 {
   if ($formName == 'CRM_Mailing_Form_Group') {
-    $mailingID    = $form->getVar('_mailingID');
+    $mailingID = $form->getVar('_mailingID');
     $submitValues = $form->_submitValues;
     $dedupeEmails = $submitValues['dedupe_email'];
 
@@ -311,6 +311,7 @@ function nyss_mail_civicrm_postProcess($formName, &$form)
     $mailing->forward_replies = 0;
     $mailing->auto_responder = 0;
     $mailing->open_tracking = 0;
+    $mailing->created_date = date('YmdHis', strtotime($mailing->created_date));
     $mailing->save();
 
     //CRM_Core_Error::debug('postProcess Group form', $form); exit();

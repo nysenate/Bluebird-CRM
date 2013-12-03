@@ -93,15 +93,6 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
-## remove mapping key
-echo "removing google mapping key..."
-sql="
-UPDATE civicrm_domain
-  SET config_backend = REPLACE(config_backend, '\"mapAPIKey\";s:86:\"ABQIAAAAOAfBnp7jqzymWnSA-s1NzxQuOUP8hd2qhSL-nJEVisOKANWd3xTc9jRNBXFpXOoJGkNnNxugAV8jqg\";', '\"mapAPIKey\";s:0:\"\";')
-  WHERE id = 1;
-"
-$execSql $instance -c "$sql" -q
-
 ## 7397 remove version alert
 echo "removing version alert notification..."
 sql="
@@ -125,14 +116,9 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
-## wkhtmltopdf
-echo "setting wkhtmltopdf path..."
-sql="
-UPDATE civicrm_domain
-  SET config_backend = REPLACE(config_backend, '\"wkhtmltopdfPath\";s:0:\"\"', '\"wkhtmltopdfPath\";s:26:\"/usr/local/bin/wkhtmltopdf\"')
-  WHERE id = 1;
-"
-$execSql $instance -c "$sql" -q
+## wkhtmltopdf/remove mapping key
+echo "setting wkhtmltopdf path and removing mapping key..."
+$script_dir/manageCiviConfig.sh $instance --update --config-backend
 
 ## reset rules config
 echo "setting rules config..."
