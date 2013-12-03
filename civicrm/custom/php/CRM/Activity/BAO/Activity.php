@@ -760,34 +760,37 @@ LEFT JOIN  civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.ac
     // step 2: Get target and assignee contacts for above activities
     // create temp table for target contacts
     $activityContactTempTable = "civicrm_temp_activity_contact_{$randomNum}";
+    //NYSS account for is_deleted
     $query = "CREATE TEMPORARY TABLE {$activityContactTempTable} (
-                activity_id int unsigned, contact_id int unsigned, record_type_id varchar(16), contact_name varchar(255) )
+                activity_id int unsigned, contact_id int unsigned, record_type_id varchar(16), contact_name varchar(255), is_deleted int unsigned )
                 ENGINE=MYISAM DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci";
 
     CRM_Core_DAO::executeQuery($query);
 
     // note that we ignore bulk email for targets, since we don't show it in selector
+    //NYSS don't limit by is_deleted, but rather include in SELECT
     $query = "
-INSERT INTO {$activityContactTempTable} ( activity_id, contact_id, record_type_id, contact_name )
+INSERT INTO {$activityContactTempTable} ( activity_id, contact_id, record_type_id, contact_name, is_deleted )
 SELECT     ac.activity_id,
            ac.contact_id,
            ac.record_type_id,
-           c.sort_name
+           c.sort_name,
+           c.is_deleted
 FROM       civicrm_activity_contact ac
 INNER JOIN {$activityTempTable} ON ( ac.activity_id = {$activityTempTable}.activity_id )
 INNER JOIN civicrm_contact c ON c.id = ac.contact_id
-WHERE      c.is_deleted = 0
-
 ";
     CRM_Core_DAO::executeQuery($query);
 
     // step 3: Combine all temp tables to get final query for activity selector
     // sort by the original sort order, stored in fixed_sort_order
+    //NYSS account for is_deleted
     $query = "
 SELECT     {$activityTempTable}.*,
            {$activityContactTempTable}.contact_id,
            {$activityContactTempTable}.record_type_id,
-           {$activityContactTempTable}.contact_name
+           {$activityContactTempTable}.contact_name,
+           {$activityContactTempTable}.is_deleted
 FROM       {$activityTempTable}
 INNER JOIN {$activityContactTempTable} on {$activityTempTable}.activity_id = {$activityContactTempTable}.activity_id
 ORDER BY    fixed_sort_order
@@ -840,6 +843,7 @@ ORDER BY    fixed_sort_order
       if ($dao->record_type_id == $sourceID  && $dao->contact_id) {
         $values[$activityID]['source_contact_id'] = $dao->contact_id;
         $values[$activityID]['source_contact_name'] = $dao->contact_name;
+        $values[$activityID]['source_is_deleted'] = $dao->is_deleted;//NYSS
       }
 
       if (!$bulkActivityTypeID || ($bulkActivityTypeID != $dao->activity_type_id)) {
@@ -893,9 +897,11 @@ ORDER BY    fixed_sort_order
       }
 
       // hide the deleted contacts
-      foreach ($values as & $value) {
+      foreach ($values as &$value) {
         if (in_array($value['source_contact_id'], $dels)) {
-          unset($value['source_contact_id'], $value['source_contact_name']);
+          //NYSS retain the deleted contact name and wrap in del tag for visual cue
+          $value['source_contact_name'] = '<del>'.$value['source_contact_name'].'</del>';
+          //unset($value['source_contact_id'], $value['source_contact_name']);
         }
       }
     }

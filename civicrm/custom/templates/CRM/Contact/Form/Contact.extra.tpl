@@ -52,19 +52,22 @@ cj('input[name=_qf_Contact_cancel]').addClass('cancel');
 //1277 add contact view button to contact lock
 cj(function() {
   if (cj('#update_modified_date').length != 0 && cj('.lock-view-contact').length == 0) {
-    cj('<button class="lock-view-contact">')
-      .text("{/literal}{ts}View Modified Contact in New Window{/ts}{literal}")
-      .click(function() {
-        window.open(
-          CRM.url('civicrm/contact/view', {
-            reset: 1,
-            cid: {/literal}{$contactId}{literal}
-          }),
-          '_blank');
-        return false;
-      })
-      .appendTo(cj('#update_modified_date'))
-    ;
+    var contactId = '{/literal}{$contactId}{literal}';
+    if ( contactId ) {
+      cj('<button class="lock-view-contact">')
+        .text("{/literal}{ts}View Modified Contact in New Window{/ts}{literal}")
+        .click(function() {
+          window.open(
+            CRM.url('civicrm/contact/view', {
+              reset: 1,
+              cid: contactId
+            }),
+            '_blank');
+          return false;
+        })
+        .appendTo(cj('#update_modified_date'))
+      ;
+    }
   }
 });
 </script>
