@@ -202,6 +202,7 @@ function nyss_civihooks_civicrm_contactListQuery( &$query, $name, $context, $id 
 }
 
 function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
+  _fixTitles();
 
   //Limit case roles available to add new role dialog to only those that apply to cases
   if ( $formName=='CRM_Case_Form_CaseView' ) {
@@ -688,14 +689,10 @@ function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) 
 }//pre
 
 function nyss_civihooks_civicrm_pageRun( &$page ) {
-//CRM_Core_Error::debug($page);
-
+  //CRM_Core_Error::debug($page);
   $pagename = $page->getVar( '_name' );
 
-  //2960
-  if ( $pagename == 'CRM_Case_Page_DashBoard' ) {
-    CRM_Utils_System::setTitle( ts('Case Dashboard') );
-  }
+  _fixTitles();
 
   //4567 make admin breadcrumb unclickable if lacking permission
   if ( $pagename == 'CRM_Admin_Page_Tag' ||
@@ -1495,3 +1492,22 @@ function _buildSearchMenu($searchNavID) {
 
   return $search;
 }//_buildSearchMenu
+
+//4808/2960 word replacement for titles
+function _fixTitles() {
+  $currentTitle = drupal_get_title();
+  //CRM_Core_Error::debug_var('currentTitle', $currentTitle);
+
+  $stringReplacement = array(
+    'CiviCRM' => 'Bluebird',
+    'CiviMail' => 'BluebirdMail',
+    'CiviCase' => 'Case',
+    'CiviReport' => 'BluebirdReport',
+  );
+
+  foreach ( $stringReplacement as $search => $replace ) {
+    if (  strpos($currentTitle, $search) !== FALSE ) {
+      CRM_Utils_System::setTitle( str_replace($search, $replace, $currentTitle) );
+    }
+  }
+}
