@@ -43,10 +43,11 @@ var checkSimilar =  {$checkSimilar};
        return;//no dupe check if this is a modif or if checkSimilar is disabled (contact_ajax_check_similar in civicrm_setting table)
     }
 	     cj('#last_name').blur(function () {
-      // Close msg if it exists
-      lastnameMsg && lastnameMsg.close && lastnameMsg.close();
-             if (this.value =='') return;
-	     cj.getJSON(contactIndividual,{sort_name:cj('#last_name').val()},
+         // Close msg if it exists
+         lastnameMsg && lastnameMsg.close && lastnameMsg.close();
+         if (this.value =='') return;
+         //NYSS 7435 alter ajax contact search
+         cj.getJSON(contactIndividual,{first_name:cj('#first_name').val()+'%',last_name:cj('#last_name').val()+'%',sort:'sort_name'},
          function(data){
            if (data.is_error == 1 || data.count == 0) {
              return;
