@@ -1618,12 +1618,16 @@ ORDER BY   civicrm_email.is_bulkmail DESC
      * CRM_Mailing_Form_Schedule::postProcess() or via API.
      */
     if (isset($params['approval_status_id']) && $params['approval_status_id']) {
+      //NYSS create parent job if not yet created
       $job = new CRM_Mailing_BAO_MailingJob();
       $job->mailing_id = $mailing->id;
       $job->status = 'Scheduled';
       $job->is_test = 0;
-      $job->scheduled_date = $params['scheduled_date'];
-      $job->save();
+
+      if ( !$job->find(TRUE) ) {
+        $job->scheduled_date = $params['scheduled_date'];
+        $job->save();
+      }
       // Populate the recipients.
       $mailing->getRecipients($job->id, $mailing->id, NULL, NULL, TRUE, FALSE);
     }
