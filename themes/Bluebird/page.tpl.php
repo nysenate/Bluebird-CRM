@@ -138,7 +138,7 @@ $now = time() + (60 * 60 * $offset);
 	}
 	  if ( $jobuser ) { ?>
     	<div class="sos_job">
-        [<a href="#" class="setJob" title="Set SOS JobID" onclick="setJobID( );return false;">Job ID</a>
+        [<a href="#" class="setJob" title="Set SOS JobID" onclick="setJobID( );return false;">Job #</a>
     	  <?php if (isset($_SESSION['CiviCRM']['jobID']) && $_SESSION['CiviCRM']['jobID']) { echo ':: '.$_SESSION['CiviCRM']['jobID']; } ?>]
       </div>
     <?php } ?>
@@ -181,7 +181,7 @@ $now = time() + (60 * 60 * $offset);
 
 <div id="dialogJobID" style="display: none;">
   <form action="" method="post" id="formSetJob">
-    Enter a new SOS Job ID<br/>
+    Enter a new SOS Job #<br/>
     <input type="text" id="set_jobID" name="set_JobID" />
   </form>
 </div>
