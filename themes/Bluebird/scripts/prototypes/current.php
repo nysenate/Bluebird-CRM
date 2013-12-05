@@ -2,62 +2,62 @@
 <head>
     <title>Current Production Tagging</title>
     <style type="text/css" media="all">
-        @import url("http://sd99/modules/system/system.base.css?mwmgvm");
-        @import url("http://sd99/modules/system/system.menus.css?mwmgvm");
-        @import url("http://sd99/modules/system/system.messages.css?mwmgvm");
-        @import url("http://sd99/modules/system/system.theme.css?mwmgvm");
-        @import url("http://sd99/modules/field/theme/field.css?mwmgvm");
-        @import url("http://sd99/modules/node/node.css?mwmgvm");
-        @import url("http://sd99/modules/search/search.css?mwmgvm");
-        @import url("http://sd99/modules/user/user.css?mwmgvm");
-        @import url("http://sd99/sites/all/modules/civicrm/packages/jquery/css/jquery.autocomplete.css?mwmgvm");
-        @import url("http://sd99/sites/all/modules/civicrm/packages/jquery/css/menu.css?mwmgvm");
-        @import url("http://sd99/sites/all/modules/civicrm/packages/jquery/css/token-input-facebook.css?mwmgvm");
-        @import url("http://sd99/sites/all/modules/civicrm/packages/jquery/jquery-ui-1.9.0/css/smoothness/jquery-ui-1.9.0.custom.min.css?mwmgvm");
-        @import url("http://sd99/sites/all/modules/civicrm/packages/jquery/plugins/DataTables/media/css/demo_table_jui.css?mwmgvm");
-        @import url("http://sd99/sites/all/modules/civicrm/css/civicrm.css?mwmgvm");
-        @import url("http://sd99/sites/all/modules/civicrm/css/extras.css?mwmgvm");
+	@import url("/modules/system/system.base.css?mwmgvm");
+	@import url("/modules/system/system.menus.css?mwmgvm");
+	@import url("/modules/system/system.messages.css?mwmgvm");
+	@import url("/modules/system/system.theme.css?mwmgvm");
+	@import url("/modules/field/theme/field.css?mwmgvm");
+	@import url("/modules/node/node.css?mwmgvm");
+	@import url("/modules/search/search.css?mwmgvm");
+	@import url("/modules/user/user.css?mwmgvm");
+	@import url("/sites/all/modules/civicrm/packages/jquery/css/jquery.autocomplete.css?mwmgvm");
+	@import url("/sites/all/modules/civicrm/packages/jquery/css/menu.css?mwmgvm");
+	@import url("/sites/all/modules/civicrm/packages/jquery/css/token-input-facebook.css?mwmgvm");
+	@import url("/sites/all/modules/civicrm/packages/jquery/jquery-ui-1.9.0/css/smoothness/jquery-ui-1.9.0.custom.min.css?mwmgvm");
+	@import url("/sites/all/modules/civicrm/packages/jquery/plugins/DataTables/media/css/demo_table_jui.css?mwmgvm");
+	@import url("/sites/all/modules/civicrm/css/civicrm.css?mwmgvm");
+	@import url("/sites/all/modules/civicrm/css/extras.css?mwmgvm");
     </style>
     <style type="text/css" media="screen,projection">
-        @import url("http://sd99/sites/default/themes/Bluebird/css/Bluebird.css?mwmgvm");
-        @import url("http://sd99/sites/default/themes/Bluebird/nyss_skin/skin.css?mwmgvm");
-        @import url("http://sd99/sites/default/themes/Bluebird/nyss_skin/civi-header.css?mwmgvm");
-        @import url("http://sd99/sites/default/themes/Bluebird/css/style.css?mwmgvm");
+	@import url("/sites/default/themes/Bluebird/css/Bluebird.css?mwmgvm");
+	@import url("/sites/default/themes/Bluebird/nyss_skin/skin.css?mwmgvm");
+	@import url("/sites/default/themes/Bluebird/nyss_skin/civi-header.css?mwmgvm");
+	@import url("/sites/default/themes/Bluebird/css/style.css?mwmgvm");
     </style>
-    <script type="text/javascript" src="http://sd99/misc/jquery.js?v=1.4.4"></script>
-    <script type="text/javascript" src="http://sd99/misc/jquery.once.js?v=1.2"></script>
-    <script type="text/javascript" src="http://sd99/misc/drupal.js?mwmgvm"></script>
-    <script type="text/javascript" src="http://sd99/sites/all/modules/civicrm/packages/jquery/jquery-1.8.3.min.js?mwmgvm"></script>
-    <script type="text/javascript" src="http://sd99/sites/all/modules/civicrm/packages/jquery/jquery-ui-1.9.0/js/jquery-ui-1.9.0.custom.min.js?mwmgvm"></script>
-    <script type="text/javascript" src="http://sd99/sites/all/modules/civicrm/packages/jquery/plugins/jquery.autocomplete.js?mwmgvm"></script>
-    <script type="text/javascript" src="http://sd99/sites/all/modules/civicrm/packages/jquery/plugins/jquery.menu.pack.js?mwmgvm"></script>
-    <script type="text/javascript" src="http://sd99/sites/all/modules/civicrm/packages/jquery/plugins/jquery.chainedSelects.js?mwmgvm"></script>
-    <script type="text/javascript" src="http://sd99/sites/all/modules/civicrm/packages/jquery/plugins/jquery.tableHeader.js?mwmgvm"></script>
-    <script type="text/javascript" src="http://sd99/sites/all/modules/civicrm/packages/jquery/plugins/jquery.textarearesizer.js?mwmgvm"></script>
-    <script type="text/javascript" src="http://sd99/sites/all/modules/civicrm/packages/jquery/plugins/jquery.form.js?mwmgvm"></script>
-    <script type="text/javascript" src="http://sd99/sites/all/modules/civicrm/packages/jquery/plugins/jquery.tokeninput.js?mwmgvm"></script>
-    <script type="text/javascript" src="http://sd99/sites/all/modules/civicrm/packages/jquery/plugins/jquery.timeentry.pack.js?mwmgvm"></script>
-    <script type="text/javascript" src="http://sd99/sites/all/modules/civicrm/packages/jquery/plugins/jquery.mousewheel.pack.js?mwmgvm"></script>
-    <script type="text/javascript" src="http://sd99/sites/all/modules/civicrm/NYSS/jquery.toolTip.js?mwmgvm"></script>
-    <script type="text/javascript" src="http://sd99/sites/all/modules/civicrm/packages/jquery/plugins/DataTables/media/js/jquery.dataTables.min.js?mwmgvm"></script>
-    <script type="text/javascript" src="http://sd99/sites/all/modules/civicrm/packages/jquery/plugins/jquery.FormNavigate.js?mwmgvm"></script>
-    <script type="text/javascript" src="http://sd99/sites/all/modules/civicrm/packages/jquery/plugins/jquery.validate.min.js?mwmgvm"></script>
-    <script type="text/javascript" src="http://sd99/sites/all/modules/civicrm/packages/jquery/plugins/jquery.ui.datepicker.validation.pack.js?mwmgvm"></script>
-    <script type="text/javascript" src="http://sd99/sites/all/modules/civicrm/packages/jquery/plugins/jquery-fieldselection.js?mwmgvm"></script>
-    <script type="text/javascript" src="http://sd99/sites/all/modules/civicrm/packages/jquery/plugins/jquery.jeditable.mini.js?mwmgvm"></script>
-    <script type="text/javascript" src="http://sd99/sites/all/modules/civicrm/packages/jquery/plugins/jquery.blockUI.js?mwmgvm"></script>
-    <script type="text/javascript" src="http://sd99/sites/all/modules/civicrm/packages/jquery/plugins/jquery.notify.min.js?mwmgvm"></script>
-    <script type="text/javascript" src="http://sd99/sites/all/modules/civicrm/packages/jquery/plugins/jquery.redirect.min.js?mwmgvm"></script>
-    <script type="text/javascript" src="http://sd99/sites/all/modules/civicrm/js/rest.js?mwmgvm"></script>
-    <script type="text/javascript" src="http://sd99/sites/all/modules/civicrm/js/Common.js?mwmgvm"></script>
-    <script type="text/javascript" src="http://sd99/sites/all/modules/civicrm/js/jquery/jquery.crmeditable.js?mwmgvm"></script>
-    <script type="text/javascript" src="http://sd99/sites/all/modules/civicrm/js/jquery/jquery.crmasmselect.js?mwmgvm"></script>
-    <script type="text/javascript" src="http://sd99/sites/all/modules/civicrm/NYSS/jquery.cursorStart.js?mwmgvm"></script>
-    <script type="text/javascript" src="http://sd99/sites/all/modules/civicrm/packages/jquery/plugins/jstree/jquery.jstree.js?mwmgvm"></script>
-    <script type="text/javascript" src="http://sd99/sites/all/modules/civicrm/js/noconflict.js?mwmgvm"></script>
-    <script type="text/javascript" src="http://sd99/sites/default/themes/Bluebird/scripts/message-manager.js?mwmgvm"></script>
-    <script type="text/javascript" src="http://sd99/sites/default/themes/Bluebird/scripts/civi-header.js?mwmgvm"></script>
-    <script type="text/javascript" src="http://sd99/sites/default/themes/Bluebird/scripts/general.js?mwmgvm"></script>
+    <script type="text/javascript" src="/misc/jquery.js?v=1.4.4"></script>
+    <script type="text/javascript" src="/misc/jquery.once.js?v=1.2"></script>
+    <script type="text/javascript" src="/misc/drupal.js?mwmgvm"></script>
+    <script type="text/javascript" src="/sites/all/modules/civicrm/packages/jquery/jquery-1.8.3.min.js?mwmgvm"></script>
+    <script type="text/javascript" src="/sites/all/modules/civicrm/packages/jquery/jquery-ui-1.9.0/js/jquery-ui-1.9.0.custom.min.js?mwmgvm"></script>
+    <script type="text/javascript" src="/sites/all/modules/civicrm/packages/jquery/plugins/jquery.autocomplete.js?mwmgvm"></script>
+    <script type="text/javascript" src="/sites/all/modules/civicrm/packages/jquery/plugins/jquery.menu.pack.js?mwmgvm"></script>
+    <script type="text/javascript" src="/sites/all/modules/civicrm/packages/jquery/plugins/jquery.chainedSelects.js?mwmgvm"></script>
+    <script type="text/javascript" src="/sites/all/modules/civicrm/packages/jquery/plugins/jquery.tableHeader.js?mwmgvm"></script>
+    <script type="text/javascript" src="/sites/all/modules/civicrm/packages/jquery/plugins/jquery.textarearesizer.js?mwmgvm"></script>
+    <script type="text/javascript" src="/sites/all/modules/civicrm/packages/jquery/plugins/jquery.form.js?mwmgvm"></script>
+    <script type="text/javascript" src="/sites/all/modules/civicrm/packages/jquery/plugins/jquery.tokeninput.js?mwmgvm"></script>
+    <script type="text/javascript" src="/sites/all/modules/civicrm/packages/jquery/plugins/jquery.timeentry.pack.js?mwmgvm"></script>
+    <script type="text/javascript" src="/sites/all/modules/civicrm/packages/jquery/plugins/jquery.mousewheel.pack.js?mwmgvm"></script>
+    <script type="text/javascript" src="/sites/all/modules/civicrm/NYSS/jquery.toolTip.js?mwmgvm"></script>
+    <script type="text/javascript" src="/sites/all/modules/civicrm/packages/jquery/plugins/DataTables/media/js/jquery.dataTables.min.js?mwmgvm"></script>
+    <script type="text/javascript" src="/sites/all/modules/civicrm/packages/jquery/plugins/jquery.FormNavigate.js?mwmgvm"></script>
+    <script type="text/javascript" src="/sites/all/modules/civicrm/packages/jquery/plugins/jquery.validate.min.js?mwmgvm"></script>
+    <script type="text/javascript" src="/sites/all/modules/civicrm/packages/jquery/plugins/jquery.ui.datepicker.validation.pack.js?mwmgvm"></script>
+    <script type="text/javascript" src="/sites/all/modules/civicrm/packages/jquery/plugins/jquery-fieldselection.js?mwmgvm"></script>
+    <script type="text/javascript" src="/sites/all/modules/civicrm/packages/jquery/plugins/jquery.jeditable.mini.js?mwmgvm"></script>
+    <script type="text/javascript" src="/sites/all/modules/civicrm/packages/jquery/plugins/jquery.blockUI.js?mwmgvm"></script>
+    <script type="text/javascript" src="/sites/all/modules/civicrm/packages/jquery/plugins/jquery.notify.min.js?mwmgvm"></script>
+    <script type="text/javascript" src="/sites/all/modules/civicrm/packages/jquery/plugins/jquery.redirect.min.js?mwmgvm"></script>
+    <script type="text/javascript" src="/sites/all/modules/civicrm/js/rest.js?mwmgvm"></script>
+    <script type="text/javascript" src="/sites/all/modules/civicrm/js/Common.js?mwmgvm"></script>
+    <script type="text/javascript" src="/sites/all/modules/civicrm/js/jquery/jquery.crmeditable.js?mwmgvm"></script>
+    <script type="text/javascript" src="/sites/all/modules/civicrm/js/jquery/jquery.crmasmselect.js?mwmgvm"></script>
+    <script type="text/javascript" src="/sites/all/modules/civicrm/NYSS/jquery.cursorStart.js?mwmgvm"></script>
+    <script type="text/javascript" src="/sites/all/modules/civicrm/packages/jquery/plugins/jstree/jquery.jstree.js?mwmgvm"></script>
+    <script type="text/javascript" src="/sites/all/modules/civicrm/js/noconflict.js?mwmgvm"></script>
+    <script type="text/javascript" src="/sites/default/themes/Bluebird/scripts/message-manager.js?mwmgvm"></script>
+    <script type="text/javascript" src="/sites/default/themes/Bluebird/scripts/civi-header.js?mwmgvm"></script>
+    <script type="text/javascript" src="/sites/default/themes/Bluebird/scripts/general.js?mwmgvm"></script>
 
 
     <script src="/sites/default/themes/Bluebird/scripts/bbtree.js" type="text/javascript"></script>

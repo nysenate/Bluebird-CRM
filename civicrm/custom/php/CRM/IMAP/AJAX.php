@@ -157,7 +157,7 @@ class CRM_IMAP_AJAX {
         nyss_inbox_attachments.file_name,nyss_inbox_attachments.rejection,nyss_inbox_attachments.size
         FROM `nyss_inbox_messages`
         LEFT JOIN nyss_inbox_attachments ON (nyss_inbox_messages.id = nyss_inbox_attachments.email_id)
-        WHERE `status` = 0 LIMIT 0 , 100000";
+        WHERE `status` = 0 LIMIT 0 , 30";
 
         // echo $UnprocessedQuery;
 
@@ -379,7 +379,7 @@ class CRM_IMAP_AJAX {
         $state_id = self::get('state');
         if($state_id && trim(self::get('state')) !='' ) {
           $where.=" AND state.id='$state_id'\n";
-        } 
+        }
 
         if(self::get('phone')) $phone = (strtolower(self::get('phone')) == 'phone number'|| trim(self::get('phone')) =='') ? NULL : self::get('phone');
         if ($phone) {
