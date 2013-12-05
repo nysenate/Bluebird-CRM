@@ -78,6 +78,16 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
   clear: both;
   height: auto; }
 
+.crm-section .tag-label{
+  font-size: 120%;
+  margin-top: 20px;
+}
+#issue-code-search{
+  margin:0;
+  border-bottom:none;
+  width: 522px;
+  padding: 8px;
+ }
 .BBMessages {
   overflow: visible;
   height: auto;
@@ -154,6 +164,7 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
   background-color: #fff;
   border: 1px solid #ccc;
   cursor: default;
+  margin-top: 0px;
   /* for tag hirarchy structure */ }
   .BBTree dt, #BBTreeContainer .BBTree dt, #BBDialog .BBTree dt {
     float: inherit;
@@ -249,7 +260,9 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
       display: none; }
     .BBTree dt.lv-0 .tag, #BBTreeContainer .BBTree dt.lv-0 .tag, #BBDialog .BBTree dt.lv-0 .tag {
       font-size: 14px;
-      font-weight: bold; }
+      font-weight: bold;
+      display: none;
+    }
   .BBTree dl.lv-1, #BBTreeContainer .BBTree dl.lv-1, #BBDialog .BBTree dl.lv-1 {
     width: 475px;
     margin-left: 10px;
@@ -524,7 +537,7 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                         <h3>Tags</h3>
                         <div id="crm-tagListWrap">
                             <div class="crm-section tag-section contact-tagset-296-section crm-processed-input">
-                                <div class="label">
+				<div class="tag-label">
                                     <label>Keywords</label>
                                 </div>
                                 <div class="content">
@@ -539,17 +552,24 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                 </div>
                                 <div class="clear"></div>
                             </div>
-                            <div id="BBTreeContainer" class="BB_default">
+			    <div id="BBTreeContainer" class="BB_default crm-container crm-section tag-section crm-processed-input">
+				 <div class="tag-label">
+				    <label>Issue Codes</label>
+				</div>
+				<input type="text" autocomplete="off" maxlength="64" id="issue-code-search" style="outline: none; ">
+
                                 <script type="text/javascript">
                                 var BBCID = 18304;
                                 var BBActionConst = 16;
                                 BBTree.startInstance({pullSets: [291], buttonType: 'tagging'});
                                 BBTree.initContainer('', {pullSets: [291]});
                                 </script>
+				<div class="clear"></div>
+
                             </div>
 
-                            <div class="crm-section tag-section contact-tagset-292-section crm-processed-input">
-                                <div class="label">
+			    <div class="crm-section tag-section contact-tagset-296-section crm-processed-input">
+				<div class="tag-label">
                                     <label>Positions</label>
                                 </div>
                                 <div class="content">
