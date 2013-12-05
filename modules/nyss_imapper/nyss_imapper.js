@@ -1150,16 +1150,29 @@ function getReports() {
 // needed to format timestamps to allow sorting:
 // make a hidden data attribute with the non-readable date (date(U)) and sort on that
 cj.extend( cj.fn.dataTableExt.oSort, {
-  "title-string-pre": function ( a ) {
-    return a.match(/data-sort="(.*?)"/)[1].toLowerCase();
-  },
-  "title-string-asc": function ( a, b ) {
-    return ((a < b) ? -1 : ((a > b) ? 1 : 0));
-  },
-  "title-string-desc": function ( a, b ) {
-    return ((a < b) ? 1 : ((a > b) ? -1 : 0));
-  }
-});
+    "title-numeric-pre": function ( a ) {
+	var x = a.match(/data-sort="*(-?[0-9\.]+)/)[1];
+	return parseFloat( x );
+    },
+    "title-numeric-asc": function ( a, b ) {
+	return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+    },
+    "title-numeric-desc": function ( a, b ) {
+	return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+    }
+} );
+
+cj.extend( cj.fn.dataTableExt.oSort, {
+    "title-string-pre": function ( a ) {
+	return a.match(/data-sort="(.*?)"/)[1].toLowerCase();
+    },
+    "title-string-asc": function ( a, b ) {
+	return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+    },
+    "title-string-desc": function ( a, b ) {
+	return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+    }
+} );
 
 function makeListSortable(){
   cj("#sortable_results").dataTable({
@@ -1167,7 +1180,8 @@ function makeListSortable(){
     // "iDisplayLength": 1,
     "sPaginationType": "full_numbers",
     "aaSorting": [[ 3, "desc" ]],
-    "aoColumnDefs": [ { "sType": "title-string", "aTargets": [ 3,5 ] }],
+    "aoColumnDefs": [ { "sType": "title-numeric", "aTargets": [ 3 ] }],
+    "aoColumnDefs": [ { "sType": "title-string", "aTargets": [ 5 ] }],
     'aTargets': [ 1 ],
     "iDisplayLength": 50,
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
@@ -1252,7 +1266,7 @@ function buildMessageList() {
           var match_short = (value.match_count == 0) ? "NoMatch" : "MultiMatch" ;
 	  messagesHtml += '<td class="imap_match_column hidden"><span data="'+match_short+'">'+match_short +'</span></td>';
         }else{
-	  messagesHtml += '<td class="imap_match_column hidden"><span data-sort="Error">ProcessError</span></td>';
+	  messagesHtml += '<td class="imap_match_column hidden"><span data="Error">ProcessError</span></td>';
         }
 
         // check for direct messages & not empty forwarded messages
@@ -1372,6 +1386,8 @@ cj( ".range" ).live('change', function() {
     oTable.fnDraw();
 });
 
+// the filter box at the top of the page
+//
 cj.fn.dataTableExt.afnFiltering.push(
     function( oSettings, aData, iDataIndex ) {
         // "date-range" is the id for my input
