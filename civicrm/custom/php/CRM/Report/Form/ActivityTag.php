@@ -348,7 +348,7 @@ class CRM_Report_Form_ActivityTag extends CRM_Report_Form {
         array( 
           'email' =>
           array( 
-            'title' => 'Email',
+            'title' => 'Target Email',
             'default' => TRUE 
           ) 
         ),
@@ -368,7 +368,7 @@ class CRM_Report_Form_ActivityTag extends CRM_Report_Form {
         array( 
           'phone' => 
           array( 
-            'title' => 'Phone' 
+            'title' => 'Target Phone'
           )
         ),
         'grouping' => 'contact-fields',
@@ -534,7 +534,7 @@ class CRM_Report_Form_ActivityTag extends CRM_Report_Form {
     if ( $this->_emailField ) {
       $this->_from .= "
         LEFT JOIN civicrm_email  {$this->_aliases['civicrm_email']}
-          ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_email']}.contact_id
+          ON civicrm_contact_target.id = {$this->_aliases['civicrm_email']}.contact_id
           AND {$this->_aliases['civicrm_email']}.is_primary = 1
       ";
     }
@@ -542,7 +542,7 @@ class CRM_Report_Form_ActivityTag extends CRM_Report_Form {
     if ( $this->_phoneField ) {
       $this->_from .= "
         LEFT JOIN civicrm_phone  {$this->_aliases['civicrm_phone']}
-          ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_phone']}.contact_id
+          ON civicrm_contact_target.id = {$this->_aliases['civicrm_phone']}.contact_id
           AND {$this->_aliases['civicrm_phone']}.is_primary = 1
       ";
     }
