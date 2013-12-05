@@ -1206,9 +1206,8 @@ var BBTreeModal = {
 	},
 	makeModalBox: function(){
 		cj("#BBDialog").show();
-		cj("#BBDialog").dialog("open");
+		cj("#BBDialog").dialog(this.currentSettings).dialog("open");
 		cj("#BBDialog").removeClass('loadingGif');
-		cj("#BBDialog").dialog(this.currentSettings);
 		if(this.taggedReserved && this.taggedMethod != 'update')
 		{
 			return true;//if it's reserved, there should be no ability to edit it, unless you're updating it.
