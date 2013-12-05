@@ -171,79 +171,11 @@ class CRM_Report_Form_ActivityTag extends CRM_Report_Form {
         'grouping' => 'activity-fields',
         'alias' => 'activity'
       ),
-      /*'civicrm_activity_assignment' =>
-      array(
-        'dao' => 'CRM_Activity_DAO_ActivityAssignment',
-        'fields' =>
-        array(
-          'assignee_contact_id' =>
-          array(
-            'no_display' => TRUE,
-            'required' => TRUE,
-          ),
-        ),
-        'alias' => 'activity_assignment',
-      ),*/
-      /*'civicrm_activity_target' =>
-      array( 
-        'dao' => 'CRM_Activity_DAO_ActivityTarget',
-        'fields' =>
-        array(
-          'target_contact_id' =>
-          array( 
-            'title' => 'Total Target Contacts',
-            'statistics' =>
-            array(
-              'count' => ts('Target Count'), 
-            ),
-          ),
-        ),
-        'order_bys' =>
-        array(
-          'target_contact_id' =>
-          array( 
-            'title' => 'Target Count',
-            'statistics' =>
-            array(
-              'count' => TRUE 
-            ),
-          ),
-        ),
-        'alias' => 'activity_target',
-        'grouping' => 'total-fields',
-      ),                    */
       'civicrm_contact' =>
       array( 
         'dao' => 'CRM_Contact_DAO_Contact',
         'fields' =>
         array(
-          /*'source_contact_id' =>
-          array(
-            'name' => 'id',
-            'alias' => 'civicrm_contact_source',
-            'no_display' => TRUE,
-          ),
-          'contact_source' =>
-          array(
-            'name' => 'sort_name',
-            'title' => ts( 'Added By' ),//NYSS
-            'alias' => 'civicrm_contact_source',
-            'no_repeat' => TRUE,
-          ),
-          'contact_assignee' =>
-          array(
-            'name' => 'sort_name',
-            'title' => ts( 'Assigned' ),
-            'alias' => 'civicrm_contact_assignee',
-            'default' => TRUE,
-          ),
-          'contact_target' =>
-          array(
-            'name' => 'sort_name',
-            'title' => ts( 'Target (With)' ),//NYSS
-            'alias' => 'contact_civireport',
-            'default' => TRUE,
-          ),*/
           'contact_source' =>
             array(
               'name' => 'sort_name',
@@ -266,6 +198,13 @@ class CRM_Report_Form_ActivityTag extends CRM_Report_Form {
               'alias' => 'civicrm_contact_target',
               'dbAlias' => "civicrm_contact_target.sort_name",
               'default' => TRUE,
+            ),
+          'contact_id' =>
+            array(
+              'name' => 'id',
+              'title' => 'Target Contact ID',
+              'alias' => 'civicrm_contact_target',
+              'dbAlias' => "civicrm_contact_target.id",
             ),
           'contact_source_id' =>
             array(
@@ -296,11 +235,7 @@ class CRM_Report_Form_ActivityTag extends CRM_Report_Form {
             ),
         ),
         'filters' =>             
-        array( 
-          /*'sort_name' =>
-          array(
-            'title' => ts('Added By'),
-          ),*/
+        array(
           'contact_source' =>
             array(
               'name' => 'sort_name',
@@ -327,11 +262,7 @@ class CRM_Report_Form_ActivityTag extends CRM_Report_Form {
             ),
         ),
         'order_bys' =>             
-        array( 
-          /*'sort_name' =>
-          array( 
-            'title' => ts('Added By')
-          ),*/
+        array(
           'contact_source'  =>
             array(
               'name'  => 'sort_name',
@@ -356,7 +287,7 @@ class CRM_Report_Form_ActivityTag extends CRM_Report_Form {
         array( 
           'email' =>
           array( 
-            'title' => ts('Email') 
+            'title' => ts('Target Email')
           ) 
         ),
         'grouping' => 'contact-fields',
@@ -383,6 +314,8 @@ class CRM_Report_Form_ActivityTag extends CRM_Report_Form {
       ),
     );
 
+    $this->_exposeContactID = FALSE;
+
     //$this->_tagFilter = TRUE;
     parent::__construct( );
   }
@@ -390,6 +323,7 @@ class CRM_Report_Form_ActivityTag extends CRM_Report_Form {
   function select( ) {
     $select = array( );
     $this->_columnHeaders = array( );
+
     foreach ( $this->_columns as $tableName => $table ) {
       if ( array_key_exists('group_bys', $table) ) {
         foreach ( $table['group_bys'] as $fieldName => $field ) {
@@ -747,7 +681,6 @@ class CRM_Report_Form_ActivityTag extends CRM_Report_Form {
         }
       }
 
-
       if ( array_key_exists('civicrm_tag_name', $row ) && $this->_outputMode != 'csv' ) {
         if ( $value = $row['civicrm_tag_id'] ) {
           if( $rowNum == 0 ) {
@@ -768,7 +701,7 @@ class CRM_Report_Form_ActivityTag extends CRM_Report_Form {
             $rows[$rowNum]['civicrm_tag_name'] = "";
           }
           else {
-            $rows[$rowNum]['civicrm_tag_name'] =$row['civicrm_tag_name'];
+            $rows[$rowNum]['civicrm_tag_name'] = $row['civicrm_tag_name'];
           }
           $entryFound = TRUE;
         }
