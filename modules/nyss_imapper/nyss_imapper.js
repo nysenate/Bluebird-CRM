@@ -1151,7 +1151,7 @@ function getReports() {
 // make a hidden data attribute with the non-readable date (date(U)) and sort on that
 cj.extend( cj.fn.dataTableExt.oSort, {
   "title-string-pre": function ( a ) {
-    return a.match(/id="(.*?)"/)[1].toLowerCase();
+    return a.match(/data-sort="(.*?)"/)[1].toLowerCase();
   },
   "title-string-asc": function ( a, b ) {
     return ((a < b) ? -1 : ((a > b) ? 1 : 0));
@@ -1245,23 +1245,23 @@ function buildMessageList() {
           });
         }
 	messagesHtml += '<td class="imap_subject_column unmatched">'+shortenString(value.subject,40) +' '+icon+'</td>';
-	messagesHtml += '<td class="imap_date_column unmatched"><span id="'+value.date_u+'" title="'+value.date_long+'">'+value.date_short +'</span></td>';
+	messagesHtml += '<td class="imap_date_column unmatched"><span data-sort="'+value.date_u+'" title="'+value.date_long+'">'+value.date_short +'</span></td>';
 
         // hidden column to sort by
         if(value.match_count != 1){
           var match_short = (value.match_count == 0) ? "NoMatch" : "MultiMatch" ;
 	  messagesHtml += '<td class="imap_match_column hidden"><span data="'+match_short+'">'+match_short +'</span></td>';
         }else{
-	  messagesHtml += '<td class="imap_match_column hidden"><span data="Error">ProcessError</span></td>';
+	  messagesHtml += '<td class="imap_match_column hidden"><span data-sort="Error">ProcessError</span></td>';
         }
 
         // check for direct messages & not empty forwarded messages
 	if(value.forwarder === value.sender_email){
-	  messagesHtml += '<td class="imap_forwarder_column"><span id="'+value.forwarder+'">Direct '+shortenString(value.forwarder,10)+'</span></td>';
+	  messagesHtml += '<td class="imap_forwarder_column"><span data-sort="'+value.forwarder+'">Direct '+shortenString(value.forwarder,10)+'</span></td>';
         }else if(value.forwarder != ''){
-	  messagesHtml += '<td class="imap_forwarder_column"><span id="'+value.forwarder+'">'+shortenString(value.forwarder,14)+'</span></td>';
+	  messagesHtml += '<td class="imap_forwarder_column"><span data-sort="'+value.forwarder+'">'+shortenString(value.forwarder,14)+'</span></td>';
         }else{
-	  messagesHtml += '<td class="imap_forwarder_column"><span id=""> N/A </span></td>';
+	  messagesHtml += '<td class="imap_forwarder_column"><span data-sort=""> N/A </span></td>';
         }
 
 	messagesHtml += '<td class="imap_actions_column "><span class="find_match"><a href="#">Find match</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
@@ -1394,7 +1394,7 @@ cj.fn.dataTableExt.afnFiltering.push(
         var date = aData[3];
 
         // convert to unix time
-        date = date.match(/id="(.*?)"/)[1].toLowerCase()*1000;
+	date = date.match(/data-sort="(.*?)"/)[1].toLowerCase()*1000;
         // console.log(start +"<="+date+"<="+stop);
         // console.log(start <= date && date <= stop );
         // console.log(start <= date);

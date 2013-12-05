@@ -1736,6 +1736,9 @@ div#contact-summary div#contactTopBar {
 .crm-activity-selector-activity .dataTables_wrapper {
   overflow: auto;
 }
+body.page-civicrm-mailing-browse form#Search div.crm-content-block {
+  overflow: auto;
+}
 #contact-log-report_processing {
   position: relative;
   margin-bottom: 10px;
