@@ -92,7 +92,11 @@
 
   //7401
   function _checkEmailLink(){
-    if ( cj('div.crm-contact-deceased_message').length ) {
+    if ( cj('div.crm-contact-deceased_message').length ||
+      cj('div.crm-contact-privacy_values:contains("Do not email")').length ||
+      cj('div.crm-contact-privacy_values:contains("No Bulk Emails")').length ||
+      cj('div.crm-contact_email:contains("On Hold")').length
+    ) {
       cj('div.crm-contact_email').each(function(){
         var emailText = cj(this).children('a').text();
         cj(this).children('a').replaceWith(emailText);
