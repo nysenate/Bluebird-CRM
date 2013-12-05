@@ -89,11 +89,13 @@ class CRM_Utils_PDF_Utils {
     fwrite($fp, $html);
 
     // Strip <html>, <header>, and <body> tags from each page
+    //NYSS split into head/tail to account for chunk processing; add script tag
     $headerElems = array(
       '@<head[^>]*?>.*?</head>@siu',
       '@<body>@siu',
       '@<html[^>]*?>@siu',
       '@<!DOCTYPE[^>]*?>@siu',
+      '@<script[^>]*?>.*?</script>@siu',
     );
 
     $tailElems = array(
