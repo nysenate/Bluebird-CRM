@@ -1167,7 +1167,7 @@ function makeListSortable(){
     // "iDisplayLength": 1,
     "sPaginationType": "full_numbers",
     "aaSorting": [[ 3, "desc" ]],
-    "aoColumnDefs": [ { "sType": "title-string", "aTargets": [ 3 ] }],
+    "aoColumnDefs": [ { "sType": "title-string", "aTargets": [ 3,5 ] }],
     'aTargets': [ 1 ],
     "iDisplayLength": 50,
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
@@ -1256,12 +1256,12 @@ function buildMessageList() {
         }
 
         // check for direct messages & not empty forwarded messages
-        if((value.status == 'direct' ) && (value.forwarder != '')){
-	  messagesHtml += '<td class="imap_forwarder_column">Direct '+shortenString(value.from_email,10)+'</td>';
+	if(value.forwarder === value.sender_email){
+	  messagesHtml += '<td class="imap_forwarder_column"><span id="'+value.forwarder+'">Direct '+shortenString(value.forwarder,10)+'</span></td>';
         }else if(value.forwarder != ''){
-	  messagesHtml += '<td class="imap_forwarder_column">'+shortenString(value.forwarder,14)+'</td>';
+	  messagesHtml += '<td class="imap_forwarder_column"><span id="'+value.forwarder+'">'+shortenString(value.forwarder,14)+'</span></td>';
         }else{
-	  messagesHtml += '<td class="imap_forwarder_column"> N/A </td>';
+	  messagesHtml += '<td class="imap_forwarder_column"><span id=""> N/A </span></td>';
         }
 
 	messagesHtml += '<td class="imap_actions_column "><span class="find_match"><a href="#">Find match</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
