@@ -117,8 +117,9 @@ class CRM_Mailing_Event_BAO_TrackableURLOpen extends CRM_Mailing_Event_DAO_Track
     $mailing = CRM_Mailing_BAO_Mailing::getTableName();
     $job     = CRM_Mailing_BAO_MailingJob::getTableName();
 
+    //NYSS 7439 alter query to get proper count for unique vals
     $query = "
-            SELECT      COUNT($click.id) as opened
+            SELECT      $click.id click_id
             FROM        $click
             INNER JOIN  $queue
                     ON  $click.event_queue_id = $queue.id
@@ -137,8 +138,19 @@ class CRM_Mailing_Event_BAO_TrackableURLOpen extends CRM_Mailing_Event_DAO_Track
       $query .= " AND $click.trackable_url_id = " . CRM_Utils_Type::escape($url_id, 'Integer');
     }
 
+    //NYSS
     if ($is_distinct) {
-      $query .= " GROUP BY $queue.id ";
+      //$query .= " GROUP BY $queue.id ";
+      $query = "
+        SELECT count(click_id) opened
+        FROM ( $query GROUP BY $queue.id ) clicks
+      ";
+    }
+    else {
+      $query = "
+        SELECT count(click_id) opened
+        FROM ( $query ) clicks
+      ";
     }
 
     // query was missing
