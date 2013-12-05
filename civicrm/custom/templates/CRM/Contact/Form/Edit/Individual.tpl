@@ -29,7 +29,7 @@
 cj(function($) {
 {/literal}
 var cid=parseFloat("{$contactId}");//parseInt is octal by default
-var contactIndividual = "{crmURL p='civicrm/ajax/rest' q='entity=contact&action=get&json=1&contact_type=Individual&return=display_name,sort_name,email,phone,city&rowCount=50' h=0}";
+var contactIndividual = "{crmURL p='civicrm/ajax/rest' q='entity=contact&action=get&json=1&contact_type=Individual&return=display_name,sort_name,email,phone,city,street_address&rowCount=50' h=0}";
 var viewIndividual = "{crmURL p='civicrm/contact/view' q='reset=1&cid=' h=0}";
 var editIndividual = "{crmURL p='civicrm/contact/add' q='reset=1&action=update&cid=' h=0}";
 var checkSimilar =  {$checkSimilar};
@@ -66,6 +66,7 @@ var checkSimilar =  {$checkSimilar};
              //NYSS 7435 logic to construct additional data fields
              var contactDetails = (contact.email) ? ' | '+contact.email.trim() : '';
              contactDetails += (contact.phone) ? ' | '+contact.phone.trim() : '';
+             contactDetails += (contact.street_address) ? ' | '+contact.street_address.trim() : '';
              contactDetails += (contact.city) ? ' | '+contact.city.trim() : '';
           msg += '<li><a href="'+viewIndividual+contact.id+'">'+ contact.sort_name +'</a> '+contactDetails+'</li>';
            });
