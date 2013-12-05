@@ -43,14 +43,18 @@ require_once 'CRM/Core/DAO.php';
  */
 class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page 
 {
-    /**
-     * Assemble database stats
-     *
-     * @return none
-     *
-     * @access public
-     */
-    function run( ) {
+  /**
+   * Assemble database stats
+   *
+   * @return none
+   *
+   * @access public
+   */
+  function run( ) {
+    //7447
+    $breadCrumb = drupal_get_breadcrumb();
+    $breadCrumb[2] = '<a href="/civicrm?reset=1">Bluebird Home</a>';
+    drupal_set_breadcrumb($breadCrumb);
         
     //contact counts by type
     $allContacts  = 0;
