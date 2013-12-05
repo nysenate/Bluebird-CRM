@@ -1150,24 +1150,39 @@ function getReports() {
 // needed to format timestamps to allow sorting:
 // make a hidden data attribute with the non-readable date (date(U)) and sort on that
 cj.extend( cj.fn.dataTableExt.oSort, {
-  "title-string-pre": function ( a ) {
-    return a.match(/data-sort="(.*?)"/)[1].toLowerCase();
-  },
-  "title-string-asc": function ( a, b ) {
-    return ((a < b) ? -1 : ((a > b) ? 1 : 0));
-  },
-  "title-string-desc": function ( a, b ) {
-    return ((a < b) ? 1 : ((a > b) ? -1 : 0));
-  }
-});
+    "data-numeric-pre": function ( a ) {
+	var x = a.match(/data="*(-?[0-9\.]+)/)[1];
+	return parseFloat( x );
+    },
+    "data-numeric-asc": function ( a, b ) {
+	return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+    },
+    "data-numeric-desc": function ( a, b ) {
+	return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+    }
+} );
+
+cj.extend( cj.fn.dataTableExt.oSort, {
+    "data-string-pre": function ( a ) {
+	return a.match(/data="(.*?)"/)[1].toLowerCase();
+    },
+    "data-string-asc": function ( a, b ) {
+	return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+    },
+    "data-string-desc": function ( a, b ) {
+	return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+    }
+} );
 
 function makeListSortable(){
   cj("#sortable_results").dataTable({
     "sDom":'<"controlls"lif><"clear">rt <p>',//add i here this is the number of records
     // "iDisplayLength": 1,
     "sPaginationType": "full_numbers",
-    "aaSorting": [[ 3, "desc" ]],
-    "aoColumnDefs": [ { "sType": "title-string", "aTargets": [ 3,5 ] }],
+   "aaSorting": [[ 3, "desc" ]],
+
+    "aoColumnDefs": [ { "sType": "data-numeric", "aTargets": [ 3 ] }],
+    "aoColumnDefs": [ { "sType": "data-string", "aTargets": [ 5 ] }],
     'aTargets': [ 1 ],
     "iDisplayLength": 50,
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
@@ -1245,23 +1260,23 @@ function buildMessageList() {
           });
         }
 	messagesHtml += '<td class="imap_subject_column unmatched">'+shortenString(value.subject,40) +' '+icon+'</td>';
-	messagesHtml += '<td class="imap_date_column unmatched"><span data-sort="'+value.date_u+'" title="'+value.date_long+'">'+value.date_short +'</span></td>';
+	messagesHtml += '<td class="imap_date_column unmatched"><span data="'+value.date_u+'" title="'+value.date_long+'">'+value.date_short +'</span></td>';
 
         // hidden column to sort by
         if(value.match_count != 1){
           var match_short = (value.match_count == 0) ? "NoMatch" : "MultiMatch" ;
 	  messagesHtml += '<td class="imap_match_column hidden"><span data="'+match_short+'">'+match_short +'</span></td>';
         }else{
-	  messagesHtml += '<td class="imap_match_column hidden"><span data-sort="Error">ProcessError</span></td>';
+	  messagesHtml += '<td class="imap_match_column hidden"><span data="Error">ProcessError</span></td>';
         }
 
         // check for direct messages & not empty forwarded messages
 	if(value.forwarder === value.sender_email){
-	  messagesHtml += '<td class="imap_forwarder_column"><span data-sort="'+value.forwarder+'">Direct '+shortenString(value.forwarder,10)+'</span></td>';
+	  messagesHtml += '<td class="imap_forwarder_column"><span data="'+value.forwarder+'">Direct '+shortenString(value.forwarder,10)+'</span></td>';
         }else if(value.forwarder != ''){
-	  messagesHtml += '<td class="imap_forwarder_column"><span data-sort="'+value.forwarder+'">'+shortenString(value.forwarder,14)+'</span></td>';
+	  messagesHtml += '<td class="imap_forwarder_column"><span data="'+value.forwarder+'">'+shortenString(value.forwarder,14)+'</span></td>';
         }else{
-	  messagesHtml += '<td class="imap_forwarder_column"><span data-sort=""> N/A </span></td>';
+	  messagesHtml += '<td class="imap_forwarder_column"><span data=""> N/A </span></td>';
         }
 
 	messagesHtml += '<td class="imap_actions_column "><span class="find_match"><a href="#">Find match</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
@@ -1372,6 +1387,8 @@ cj( ".range" ).live('change', function() {
     oTable.fnDraw();
 });
 
+// the filter box at the top of the page
+//
 cj.fn.dataTableExt.afnFiltering.push(
     function( oSettings, aData, iDataIndex ) {
         // "date-range" is the id for my input
@@ -1394,7 +1411,7 @@ cj.fn.dataTableExt.afnFiltering.push(
         var date = aData[3];
 
         // convert to unix time
-	date = date.match(/data-sort="(.*?)"/)[1].toLowerCase()*1000;
+	date = date.match(/data="(.*?)"/)[1].toLowerCase()*1000;
         // console.log(start +"<="+date+"<="+stop);
         // console.log(start <= date && date <= stop );
         // console.log(start <= date);
