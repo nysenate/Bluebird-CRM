@@ -642,12 +642,21 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                 <script type="text/javascript">
                                   cj( document ).ready(function() {
                                       cj( "#issue-code-search" ).on('input',function(e){
-                                        var search = cj("#issue-code-search").val();
+					var search = cj("#issue-code-search").val().toLowerCase();
 					cj("dt").removeClass('searched');
+					// http://stackoverflow.com/questions/9424417/
 
+					cj("dt").filter(function() {
+					  return (cj(this).text().indexOf(search) > -1)
+					});
 					cj("dt:contains('"+search+"')").each( function( i, element ) {
 					  var content = cj(element).text();
 					  cj("#"+element.id).addClass('searched');
+					  console.log(cj("dt#"+element.id).attr( "parent" ));
+					  // for (var i = Things.length - 1; i >= 0; i--) {
+					  //   Things[i]
+					  // };
+					  // cj("#"+element.id)
 					  //console.log(cj("#"+element.id).prevAll()); //.parentsUntil( cj("dt.lv-0") )) //.addClass('searched');
 					});
 
