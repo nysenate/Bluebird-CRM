@@ -7,13 +7,15 @@
 # Organization: New York State Senate
 # Date: 2011-12-30
 # Revised: 2012-01-26
+# Revised: 2013-12-04 - added Event API v3 functionality; use JSON by default
 #
 
 prog=`basename $0`
 script_dir=`dirname $0`
 readConfig=$script_dir/readConfig.sh
 apiUrlBase="https://sendgrid.com/api"
-nyssEventCallbackUrl="http://sendgrid.nysenate.gov/callback.php"
+ev_url_v1="http://sendgrid.nysenate.gov/callback.php"
+ev_url_v3="http://sendgrid.nysenate.gov/callback_v3.php"
 
 . $script_dir/defaults.sh
 
@@ -36,8 +38,9 @@ where [options] are:
   --activate-app|-aa appName
   --deactivate-app|-da appName
   --setup-app|-sa appName
-  --enable-eventnotify|-ee
-  --disable-eventnotify
+  --enable-eventnotify|-ee|-ee3 [EventAPI v3]
+  --enable-oldeventnotify|-ee1 [EventAPI v1]
+  --disable-eventnotify|-de
   --enable-subscriptiontrack|-es
   --disable-subscriptiontrack|-ds
   --get-app-settings|-gas appName
@@ -47,6 +50,7 @@ where [options] are:
   --cmd|-c apiCommand
   --param|-p attr=val
   --json|-j
+  --xml|-x
   --pretty-print|-pp
   --http-headers|-hh
   --verbose|-v" >&2
@@ -62,7 +66,7 @@ if [ $# -lt 1 ]; then
   exit 1
 fi
 
-format=xml
+format=json
 instance=
 oper=
 cmd=
@@ -92,7 +96,8 @@ while [ $# -gt 0 ]; do
     --activate*|-aa) shift; cmd="filter.activate"; params="$params&name=$1" ;;
     --deactivate*|-da) shift; cmd="filter.deactivate"; params="$params&name=$1" ;;
     --setup*|-sa) shift; cmd="filter.setup"; params="$params&name=$1"; use_http_post=1 ;;
-    --enable-event*|-ee) multicmd=enable_eventnotify ;;
+    --enable-event*|-ee|-ee3) ev_url="$ev_url_v3"; ev_version=3; multicmd=enable_eventnotify ;;
+    --enable-oldevent*|-ee1) ev_url="$ev_url_v1"; ev_version=1; multicmd=enable_eventnotify ;;
     --disable-event*|-de) multicmd=disable_eventnotify ;;
     --enable-sub*|-es) multicmd=enable_subscriptiontrack ;;
     --disable-sub*|-ds) multicmd=disable_subscriptiontrack ;;
@@ -103,6 +108,7 @@ while [ $# -gt 0 ]; do
     --cmd|-c) shift; cmd="$1" ;;
     --param|-p) shift; params="$params&$1" ;;
     --json|-j) format=json; passthru_args="$passthru_args $1" ;;
+    --xml|-x) format=xml; passthru_args="$passthru_args $1" ;;
     --pretty*|-pp) postproc=pretty; passthru_args="$passthru_args $1" ;;
     --http*|-hh) curl_args="$curl_args --include"; passthru_args="$passthru_args $1" ;;
     --verbose|-v) verbose=1; passthru_args="$passthru_args $1" ;;
@@ -148,9 +154,8 @@ if [ "$multicmd" ]; then
     enable_eventnotify)
       # Note: url= parameter is required. All others are optional.
       $0 $passthru_args --activate-app eventnotify $instance && \
-        $0 $passthru_args --setup-app eventnotify -p url="$nyssEventCallbackUrl" -p processed=1 -p dropped=1 -p deferred=1 -p delivered=1 -p bounce=1 -p click=1 -p open=1 -p unsubscribe=1 -p spamreport=1 $instance
+        $0 $passthru_args --setup-app eventnotify -p url="$ev_url" -p version="$ev_version" -p processed=1 -p dropped=1 -p deferred=1 -p delivered=1 -p bounce=1 -p click=1 -p open=1 -p unsubscribe=1 -p spamreport=1 -p batch=1 $instance
       rc=$?
-      echo "$prog: Warning: The Batch Event Notifications setting is not accessible via the Sendgrid API.  It must be set manually via the Web interface."
       ;;
     disable_eventnotify)
       # Only need to specify url=%00.  The others will be set to blank.
@@ -169,6 +174,9 @@ if [ "$multicmd" ]; then
     *) echo "$prog: $multicmd: Unknown multi-command" >&2; rc=1 ;;
   esac
   exit $rc
+elif [ ! "$cmd" ]; then
+  echo "$prog: No command was specified" >&2
+  exit 1
 fi
 
 
