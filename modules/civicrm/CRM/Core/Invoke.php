@@ -415,8 +415,9 @@ class CRM_Core_Invoke {
 
     if ($secondArg == 'edit' || $secondArg == 'create') {
       // set the userContext stack
-      $session = CRM_Core_Session::singleton();
-      $session->pushUserContext(CRM_Utils_System::url('civicrm/profile', 'reset=1'));
+      //NYSS 5007
+      /*$session = CRM_Core_Session::singleton();
+      $session->pushUserContext(CRM_Utils_System::url('civicrm/profile', 'reset=1'));*/
 
       $buttonType = CRM_Utils_Array::value('_qf_Edit_cancel', $_POST);
       // CRM-5849: we should actually check the button *type*, but we get the *value*, potentially translated;
