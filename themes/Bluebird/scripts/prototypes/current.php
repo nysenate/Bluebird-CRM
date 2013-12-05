@@ -2,27 +2,27 @@
 <head>
     <title>Current Production Tagging</title>
     <style type="text/css" media="all">
-	@import url("/modules/system/system.base.css?mwmgvm");
-	@import url("/modules/system/system.menus.css?mwmgvm");
-	@import url("/modules/system/system.messages.css?mwmgvm");
-	@import url("/modules/system/system.theme.css?mwmgvm");
-	@import url("/modules/field/theme/field.css?mwmgvm");
-	@import url("/modules/node/node.css?mwmgvm");
-	@import url("/modules/search/search.css?mwmgvm");
-	@import url("/modules/user/user.css?mwmgvm");
-	@import url("/sites/all/modules/civicrm/packages/jquery/css/jquery.autocomplete.css?mwmgvm");
-	@import url("/sites/all/modules/civicrm/packages/jquery/css/menu.css?mwmgvm");
-	@import url("/sites/all/modules/civicrm/packages/jquery/css/token-input-facebook.css?mwmgvm");
-	@import url("/sites/all/modules/civicrm/packages/jquery/jquery-ui-1.9.0/css/smoothness/jquery-ui-1.9.0.custom.min.css?mwmgvm");
-	@import url("/sites/all/modules/civicrm/packages/jquery/plugins/DataTables/media/css/demo_table_jui.css?mwmgvm");
-	@import url("/sites/all/modules/civicrm/css/civicrm.css?mwmgvm");
-	@import url("/sites/all/modules/civicrm/css/extras.css?mwmgvm");
+        @import url("/modules/system/system.base.css?mwmgvm");
+        @import url("/modules/system/system.menus.css?mwmgvm");
+        @import url("/modules/system/system.messages.css?mwmgvm");
+        @import url("/modules/system/system.theme.css?mwmgvm");
+        @import url("/modules/field/theme/field.css?mwmgvm");
+        @import url("/modules/node/node.css?mwmgvm");
+        @import url("/modules/search/search.css?mwmgvm");
+        @import url("/modules/user/user.css?mwmgvm");
+        @import url("/sites/all/modules/civicrm/packages/jquery/css/jquery.autocomplete.css?mwmgvm");
+        @import url("/sites/all/modules/civicrm/packages/jquery/css/menu.css?mwmgvm");
+        @import url("/sites/all/modules/civicrm/packages/jquery/css/token-input-facebook.css?mwmgvm");
+        @import url("/sites/all/modules/civicrm/packages/jquery/jquery-ui-1.9.0/css/smoothness/jquery-ui-1.9.0.custom.min.css?mwmgvm");
+        @import url("/sites/all/modules/civicrm/packages/jquery/plugins/DataTables/media/css/demo_table_jui.css?mwmgvm");
+        @import url("/sites/all/modules/civicrm/css/civicrm.css?mwmgvm");
+        @import url("/sites/all/modules/civicrm/css/extras.css?mwmgvm");
     </style>
     <style type="text/css" media="screen,projection">
-	@import url("/sites/default/themes/Bluebird/css/Bluebird.css?mwmgvm");
-	@import url("/sites/default/themes/Bluebird/nyss_skin/skin.css?mwmgvm");
-	@import url("/sites/default/themes/Bluebird/nyss_skin/civi-header.css?mwmgvm");
-	@import url("/sites/default/themes/Bluebird/css/style.css?mwmgvm");
+        @import url("/sites/default/themes/Bluebird/css/Bluebird.css?mwmgvm");
+        @import url("/sites/default/themes/Bluebird/nyss_skin/skin.css?mwmgvm");
+        @import url("/sites/default/themes/Bluebird/nyss_skin/civi-header.css?mwmgvm");
+        @import url("/sites/default/themes/Bluebird/css/style.css?mwmgvm");
     </style>
     <script type="text/javascript" src="/misc/jquery.js?v=1.4.4"></script>
     <script type="text/javascript" src="/misc/jquery.once.js?v=1.2"></script>
@@ -462,7 +462,10 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
       background-color: transparent; }
       body.popup .BBTree dt:hover .fCB {
         display: none; } }
-
+ .searched {
+     text-decoration: underline;
+     background: red;
+ }
     </style>
 
 </head>
@@ -625,21 +628,42 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                   }
 
                                 </script>
+
                                 </div>
                                 <div class="clear"></div>
                             </div>
                             <div id="BBTreeContainer" class="BB_default crm-container crm-section tag-section crm-processed-input">
-                              <div class="tag-label">
-                                <label>Issue Codes</label>
-                              </div>
-                              <input type="text" autocomplete="off" maxlength="64" id="issue-code-search" style="outline: none; " />
-                              <script type="text/javascript">
-                                var BBCID = 18304;
+
+                                 <div class="tag-label">
+                                    <label>Issue Codes</label>
+                                </div>
+                                <input type="text" autocomplete="off" maxlength="64" id="issue-code-search" >
+
+                                <script type="text/javascript">
+                                  cj( document ).ready(function() {
+                                      cj( "#issue-code-search" ).on('input',function(e){
+                                        var search = cj("#issue-code-search").val();
+					cj("dt").removeClass('searched');
+
+					cj("dt:contains('"+search+"')").each( function( i, element ) {
+					  var content = cj(element).text();
+					  cj("#"+element.id).addClass('searched');
+					  //console.log(cj("#"+element.id).prevAll()); //.parentsUntil( cj("dt.lv-0") )) //.addClass('searched');
+					});
+
+                                      });
+
+                                  });
+                                </script>
+
+                                <script type="text/javascript">
+                                 var BBCID = 18304;
                                 var BBActionConst = 16;
                                 BBTree.startInstance({pullSets: [291], buttonType: 'tagging'});
                                 BBTree.initContainer('', {pullSets: [291]});
-                              </script>
+                               </script>
                               <div class="clear"></div>
+
                             </div>
                             <div class="crm-section tag-section contact-tagset-292-section">
                               <div class="tag-label">
@@ -652,7 +676,7 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                   var tagUrl = "/civicrm/ajax/taglist?parentId=292&key=459191e4b5403730b0af7a496ac52055";
                                   var contactEntityTags = '';
 
-                                  //NYSS
+                                   //NYSS
                                   var hintText = "Begin typing a tag name.";
 
                                   cj( ".contact-tagset-292-section:not(.crm-processed-input) input")
@@ -733,6 +757,7 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                 </script>
                               </div>
                             <div class="clear"></div>
+
                             </div>
                         </div>
                     </div>
