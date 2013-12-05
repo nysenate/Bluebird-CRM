@@ -1150,26 +1150,26 @@ function getReports() {
 // needed to format timestamps to allow sorting:
 // make a hidden data attribute with the non-readable date (date(U)) and sort on that
 cj.extend( cj.fn.dataTableExt.oSort, {
-    "title-numeric-pre": function ( a ) {
+    "data-numeric-pre": function ( a ) {
 	var x = a.match(/data-sort="*(-?[0-9\.]+)/)[1];
 	return parseFloat( x );
     },
-    "title-numeric-asc": function ( a, b ) {
+    "data-numeric-asc": function ( a, b ) {
 	return ((a < b) ? -1 : ((a > b) ? 1 : 0));
     },
-    "title-numeric-desc": function ( a, b ) {
+    "data-numeric-desc": function ( a, b ) {
 	return ((a < b) ? 1 : ((a > b) ? -1 : 0));
     }
 } );
 
 cj.extend( cj.fn.dataTableExt.oSort, {
-    "title-string-pre": function ( a ) {
+    "data-string-pre": function ( a ) {
 	return a.match(/data-sort="(.*?)"/)[1].toLowerCase();
     },
-    "title-string-asc": function ( a, b ) {
+    "data-string-asc": function ( a, b ) {
 	return ((a < b) ? -1 : ((a > b) ? 1 : 0));
     },
-    "title-string-desc": function ( a, b ) {
+    "data-string-desc": function ( a, b ) {
 	return ((a < b) ? 1 : ((a > b) ? -1 : 0));
     }
 } );
@@ -1179,9 +1179,10 @@ function makeListSortable(){
     "sDom":'<"controlls"lif><"clear">rt <p>',//add i here this is the number of records
     // "iDisplayLength": 1,
     "sPaginationType": "full_numbers",
-    "aaSorting": [[ 3, "desc" ]],
-    "aoColumnDefs": [ { "sType": "title-numeric", "aTargets": [ 3 ] }],
-    "aoColumnDefs": [ { "sType": "title-string", "aTargets": [ 5 ] }],
+   "aaSorting": [[ 3, "desc" ]],
+
+    "aoColumnDefs": [ { "sType": "data-numeric", "aTargets": [ 3 ] }],
+    "aoColumnDefs": [ { "sType": "data-string", "aTargets": [ 5 ] }],
     'aTargets': [ 1 ],
     "iDisplayLength": 50,
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
