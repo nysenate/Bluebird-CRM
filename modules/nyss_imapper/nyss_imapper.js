@@ -1362,8 +1362,8 @@ function buildReports() {
       message_status="Deleted";
       Deleted++;
      }
-  messagesHtml += '<td class="imap_date_column matched"><span id="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
-    messagesHtml += '<td class="imap_date_column matched"><span id="'+value.email_date_u+'"  title="'+value.email_date_long+'">'+value.email_date_short +'</span></td>';
+  messagesHtml += '<td class="imap_date_column matched"><span data-sort="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
+    messagesHtml += '<td class="imap_date_column matched"><span data-sort="'+value.email_date_u+'"  title="'+value.email_date_long+'">'+value.email_date_short +'</span></td>';
 
   messagesHtml += '<td class="imap_date_column">'+message_status +'</td>';
 
