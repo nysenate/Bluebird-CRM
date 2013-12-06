@@ -1179,9 +1179,22 @@ function makeListSortable(){
     "sDom":'<"controlls"lif><"clear">rt <p>',//add i here this is the number of records
     // "iDisplayLength": 1,
     "sPaginationType": "full_numbers",
-   "aaSorting": [[ 3, "desc" ]],
-
-    "aoColumnDefs": [ { "sType": "data-numeric", "aTargets": [ 3 ] }, { "sType": "data-string", "aTargets": [ 5 ] }], // working as expected
+    // "aoColumns": [
+    //   null,
+    //   null,
+    //   null,
+    //   { "sType": "data-numeric" },
+    //   null
+    //   { "sType": "data-string" },
+    //   null
+    // ],
+    "aoColumnDefs": [
+      // { 'bSortable': false, 'aTargets': [ 0 ] },
+      // { 'bSortable': false, 'aTargets': [ 6 ] },
+      { "sType": "data-numeric", "aTargets": [ 3 ] },
+      { "sType": "data-string", "aTargets": [ 5 ] }
+    ],
+    "aaSorting": [[ 3, "desc" ]],
     'aTargets': [ 1 ],
     "iDisplayLength": 50,
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],

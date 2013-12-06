@@ -82,7 +82,7 @@
 
   //privacy note
   if ( cj('div.nyss-privacyNote').length == 0 ) {
-    var privacyNote = '{/literal}{$contactDetails.custom_64}{literal}';
+    var privacyNote = '{/literal}{$contactDetails.custom_64|escape}{literal}';
     if ( privacyNote ) {
       cj('div.crm-contact-privacy_values').
         parent().

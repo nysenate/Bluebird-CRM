@@ -348,7 +348,6 @@ var BBTree = {
 						actionData.description += 'not ';
 					}
 					actionData.description += 'reserved</span>.';
-					console.log(actionData.description);
 				}
 				else { //would LOVE to be able to get contact name here...
 					if(message[3] == 'DB Error: already exists')
