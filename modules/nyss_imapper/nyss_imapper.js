@@ -1170,12 +1170,12 @@ function makeListSortable(){
     "aoColumnDefs": [
     { 'bSortable': false, 'aTargets': [ 0 ] },
     { 'bSortable': false, 'aTargets': [ 6 ] },
-    { "sType": "title-string", "aTargets": [ 3,5 ] },
+    { "sType": "title-string", "aTargets": [ 3,5 ] }
     ],
     'aTargets': [ 1 ],
     "iDisplayLength": 50,
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
-    "bAutoWidth": false,
+    "bAutoWidth": false
   });
   checks();
 }
@@ -1285,7 +1285,7 @@ function makeReportSortable(){
     'aTargets': [ 1 ],
     "iDisplayLength": 50,
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
-    "bAutoWidth": false,
+    "bAutoWidth": false
   });
   // var oTable = cj('#sortable_results').dataTable();
   // rows = oTable.fnGetVisibleData();
