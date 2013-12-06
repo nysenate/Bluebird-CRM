@@ -8,6 +8,9 @@ function nyss_imapper_init() {
 	    drupal_add_css('./sites/default/themes/Bluebird/nyss_skin/tags/tags.css');
 		  drupal_add_js($module_path.'/nyss_imapper.js');
 	    drupal_add_js('/sites/default/themes/Bluebird/scripts/bbtree.js');
+      // fixes nyss #7458
+      drupal_add_js($module_path.'/jquery.dataTables-1.9.4.min.js');
+      drupal_add_css($module_path.'/jquery.dataTables-1.9.4.css');
 	}
 }
 
