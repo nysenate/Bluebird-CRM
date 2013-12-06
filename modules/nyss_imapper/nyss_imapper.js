@@ -1151,8 +1151,8 @@ function getReports() {
 // make a hidden data attribute with the non-readable date (date(U)) and sort on that
 cj.extend( cj.fn.dataTableExt.oSort, {
     "data-numeric-pre": function ( a ) {
-	var x = a.match(/data="*(-?[0-9\.]+)/)[1];
-	return parseFloat( x );
+	var x = a.match(/data="(.*?)"/)[1];
+	return parseFloat( x )*1000;
     },
     "data-numeric-asc": function ( a, b ) {
 	return ((a < b) ? -1 : ((a > b) ? 1 : 0));
@@ -1164,7 +1164,7 @@ cj.extend( cj.fn.dataTableExt.oSort, {
 
 cj.extend( cj.fn.dataTableExt.oSort, {
     "data-string-pre": function ( a ) {
-	return a.match(/data="(.*?)"/)[1].toLowerCase();
+	    return a.match(/data="(.*?)"/)[1].toLowerCase();
     },
     "data-string-asc": function ( a, b ) {
 	return ((a < b) ? -1 : ((a > b) ? 1 : 0));
@@ -1181,8 +1181,7 @@ function makeListSortable(){
     "sPaginationType": "full_numbers",
    "aaSorting": [[ 3, "desc" ]],
 
-    "aoColumnDefs": [ { "sType": "data-numeric", "aTargets": [ 3 ] }],
-    "aoColumnDefs": [ { "sType": "data-string", "aTargets": [ 5 ] }],
+    "aoColumnDefs": [ { "sType": "data-numeric", "aTargets": [ 3 ] }, { "sType": "data-string", "aTargets": [ 5 ] }], // working as expected
     'aTargets': [ 1 ],
     "iDisplayLength": 50,
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
@@ -1361,8 +1360,8 @@ function buildReports() {
       message_status="Deleted";
       Deleted++;
      }
-  messagesHtml += '<td class="imap_date_column matched"><span id="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
-    messagesHtml += '<td class="imap_date_column matched"><span id="'+value.email_date_u+'"  title="'+value.email_date_long+'">'+value.email_date_short +'</span></td>';
+  messagesHtml += '<td class="imap_date_column matched"><span data="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
+    messagesHtml += '<td class="imap_date_column matched"><span data="'+value.email_date_u+'"  title="'+value.email_date_long+'">'+value.email_date_short +'</span></td>';
 
   messagesHtml += '<td class="imap_date_column">'+message_status +'</td>';
 
@@ -1409,9 +1408,9 @@ cj.fn.dataTableExt.afnFiltering.push(
 
         // 4 here is the column where my dates are.
         var date = aData[3];
-
         // convert to unix time
-	date = date.match(/data="(.*?)"/)[1].toLowerCase()*1000;
+	date = date.match(/data="*(-?[0-9\.]+)/)[1];
+	date = parseFloat(date)*1000;
         // console.log(start +"<="+date+"<="+stop);
         // console.log(start <= date && date <= stop );
         // console.log(start <= date);
@@ -1658,7 +1657,7 @@ function buildActivitiesList() {
           messagesHtml += '<div class="icon attachment-icon attachment" title="'+value.attachments.length+' Attachments" ></div>';
         }
         messagesHtml +='</td>';
-	messagesHtml += '<td class="imap_date_column matched"><span id="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
+	messagesHtml += '<td class="imap_date_column matched"><span data="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
 	messagesHtml += '<td class="imap_match_column matched  hidden">'+match_sort +'</td>';
 
 	messagesHtml += '<td class="imap_forwarder_column matched">'+shortenString(value.forwarder,14)+'</td>';
