@@ -59,11 +59,11 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
   if (isset($bbconfig['smtp.whitelist.location']) &&
             $bbconfig['smtp.whitelist.location'] == "bottom") {
     $params['text'] = $params['text']."\n\n".$whitelist_txt;
-    $params['html'] = preg_replace('#(\s*(</center>\s*)?</body>)#', "\n<br/><br/>\n<small>$whitelist_txt</small>$1", $params['html'], 1);
+    $params['html'] = preg_replace('#(\s*</body>)#', "\n<p style=\"text-align:center; font-size:10px;\">$whitelist_txt</p>$1", $params['html'], 1);
   }
   else {
     $params['text'] = $whitelist_txt."\n\n".$params['text'];
-    $params['html'] = preg_replace('/(<body( [^>]*)?>(\s*<center>)?\s*)/', "$1<small>$whitelist_txt</small>\n<br/><br/>\n", $params['html'], 1);
+    $params['html'] = preg_replace('/(<body( [^>]*)?>\s*)/', "$1<p style=\"text-align:center; font-size:10px;\">$whitelist_txt</p>\n<br/>\n", $params['html'], 1);
   }
 
   // Prevent Sendgrid from dropping any of our messages.
