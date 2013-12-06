@@ -32,11 +32,6 @@
   {include file="CRM/common/crmeditable.tpl"}
 {/if}
 {* this div is being used to apply special css *}
-{*NYSS include js files in print mode; allows sorting and removes IE erorrs*}
-{if $printOnly}
-  {include file="CRM/common/jquery.tpl"}
-{/if}
-
 {if $section eq 1}
   <div class="crm-block crm-content-block crm-report-layoutGraph-form-block">
     {*include the graph*}

@@ -300,7 +300,8 @@ class CRM_Activity_Selector_Search extends CRM_Core_Selector_Base implements CRM
       if (
         $accessCiviMail &&
         ($mailingIDs === TRUE || in_array($result->source_record_id, $mailingIDs)) &&
-        ($bulkActivityTypeID == $activityTypeId)
+        ($bulkActivityTypeID == $activityTypeId) &&
+        !empty($bulkActivityTypeID)//NYSS 7455
       ) {
         $row['mailingId'] = CRM_Utils_System::url('civicrm/mailing/report',
           "mid={$result->source_record_id}&reset=1&cid={$contactId}&context=activitySelector"

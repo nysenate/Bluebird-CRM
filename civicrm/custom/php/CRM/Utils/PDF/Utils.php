@@ -80,8 +80,7 @@ class CRM_Utils_PDF_Utils {
     <style>@page { margin: {$t}{$metric} {$r}{$metric} {$b}{$metric} {$l}{$metric}; }</style>
     <style type=\"text/css\">@import url({$config->userFrameworkResourceURL}css/print.css);</style>
   </head>
-  <body>
-    <div id=\"crm-container\">\n";
+  <body>\n";
 
     $html_tmpfile = sys_get_temp_dir().DIRECTORY_SEPARATOR.uniqid('bbreport-', true).'.html';
 
@@ -135,7 +134,6 @@ class CRM_Utils_PDF_Utils {
     }
 
     $html = "
-    </div>
   </body>
 </html>
 ";
