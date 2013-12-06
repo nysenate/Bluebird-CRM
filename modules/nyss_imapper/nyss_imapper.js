@@ -1177,10 +1177,6 @@ function makeListSortable(){
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
     "bAutoWidth": false,
   });
-  // var oTable = cj('#sortable_results').dataTable();
-  // rows = oTable.fnGetVisibleData();
-
-
   checks();
 }
 
@@ -1261,9 +1257,9 @@ function buildMessageList() {
 
         // check for direct messages & not empty forwarded messages
   if(value.forwarder === value.sender_email){
-    messagesHtml += '<td class="imap_forwarder_column"><span id="'+value.forwarder+'">Direct '+shortenString(value.forwarder,10)+'</span></td>';
+    messagesHtml += '<td class="imap_forwarder_column"><span id="'+value.forwarder.replace("@","_")+'">Direct '+shortenString(value.forwarder,10)+'</span></td>';
   }else if(value.forwarder != ''){
-	  messagesHtml += '<td class="imap_forwarder_column"><span id="'+value.forwarder+'">'+shortenString(value.forwarder,14)+'</span></td>';
+	  messagesHtml += '<td class="imap_forwarder_column"><span id="'+value.forwarder.replace("@","_")+'">'+shortenString(value.forwarder,14)+'</span></td>';
         }else{
 	  messagesHtml += '<td class="imap_forwarder_column"> N/A </td>';
         }
