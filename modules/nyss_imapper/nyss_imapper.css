@@ -230,23 +230,3 @@ a.stats_overview:hover{
 .imapperbox .warn {background-color: #FAA732; border-color: #FAA732; }
 .imapperbox .matchbubble.H{background-color: #468847; }
 .imapperbox .matchbubble.A{background-color: #999; }
-
-
-.example_alt_pagination div.dataTables_info {
-    width: 40%;
-}
-.paging_full_numbers a.paginate_button, .paging_full_numbers a.paginate_active {
-    border: 1px solid #AAAAAA;
-    cursor: pointer;
-    margin: 0 3px;
-    padding: 2px 5px;
-}
-.paging_full_numbers a.paginate_button {
-    background-color: #DDDDDD;
-}
-.paging_full_numbers a.paginate_button:hover {
-    background-color: #CCCCCC;
-}
-.paging_full_numbers a.paginate_active {
-    background-color: #99B3FF;
-}
