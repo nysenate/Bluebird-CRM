@@ -462,11 +462,15 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
       background-color: transparent; }
       body.popup .BBTree dt:hover .fCB {
         display: none; } }
- .searched {
+ .searched,.search-parent {
      text-decoration: underline;
-     background: red;
+     background: #e1e1e1;
+ }
+ .search-hidden{
+  display:  none;
  }
     </style>
+
 
 </head>
 <body>
@@ -641,24 +645,63 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
 
                                 <script type="text/javascript">
                                   cj( document ).ready(function() {
+				      // step up the tree to find the parent elements of a dt
+				      function highlightParent (data) {
+					var id ="#tagLabel_"+cj(data).attr('parent');
+					cj(id).addClass('search-parent');
+					if (cj(data).attr('tlvl')>1) {
+					  highlightParent(id);
+					};
+				      }
+
                                       cj( "#issue-code-search" ).on('input',function(e){
 					var search = cj("#issue-code-search").val().toLowerCase();
 					cj("dt").removeClass('searched');
+					cj("dt").removeClass('search-parent');
+					cj("dt").removeClass('search-hidden');
+					if (search.length > 2 ) {
+					  cj("dt").filter(function() {
+					    // if the search term exists within the tag body
+					    if(cj(this).text().toLowerCase().indexOf(search) > -1){
+					      cj(this).addClass('searched');
+
+					      // console.log(
+					      //   "Content: "+cj(this).find('.name').text()+" \t\t| "+
+					      //   "Parent: "+cj(this).attr('parent')+" \t\t| "+
+					      //   "TagLvl: "+cj(this).attr('tlvl')+" \t\t| "
+					      // );
+					      if (cj(this).attr('tlvl')>1) {
+						highlightParent(this);
+						//cj("#tagLabel_"+cj(this).attr('parent')).addClass('searched');
+						//cj("#tagLabel_"+cj(this).attr('parent')).find('.ddControl').click();
+					      };
+					    }
+					  });
+					  cj("dt").not( ".searched, .search-parent" ).addClass('search-hidden');
+					  cj("dt.search-parent" ).find('.ddControl').click();
+
+					}else{
+					  cj("dt").removeClass('searched');
+					  cj("dt").removeClass('search-parent');
+					  cj("dt").removeClass('search-hidden');
+					}
+
 					// http://stackoverflow.com/questions/9424417/
 
-					cj("dt").filter(function() {
-					  return (cj(this).text().indexOf(search) > -1)
-					});
-					cj("dt:contains('"+search+"')").each( function( i, element ) {
-					  var content = cj(element).text();
-					  cj("#"+element.id).addClass('searched');
-					  console.log(cj("dt#"+element.id).attr( "parent" ));
-					  // for (var i = Things.length - 1; i >= 0; i--) {
-					  //   Things[i]
-					  // };
-					  // cj("#"+element.id)
-					  //console.log(cj("#"+element.id).prevAll()); //.parentsUntil( cj("dt.lv-0") )) //.addClass('searched');
-					});
+
+
+
+					// cj("dt:contains('"+search+"')").each( function( i, element ) {
+					//   var content = cj(element).text();
+					//   cj("#"+element.id).addClass('searched');
+					//   console.log(cj("dt#"+element.id).attr( "parent" ));
+					//   // for (var i = Things.length - 1; i >= 0; i--) {
+					//   //   Things[i]
+					//   // };
+					//   // cj("#"+element.id)
+					//   //console.log(cj("#"+element.id).prevAll()); //.parentsUntil( cj("dt.lv-0") )) //.addClass('searched');
+					// });
+
 
                                       });
 
