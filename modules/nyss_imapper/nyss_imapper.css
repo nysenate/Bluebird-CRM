@@ -41,7 +41,7 @@ pre{white-space: pre-wrap;  white-space: -moz-pre-wrap; white-space: -pre-wrap; 
 .imapperbox .hidden,
 .page-civicrm-imap .hidden{display:none;}
 
-.imapperbox h1{padding:10px 3px; margin-bottom: 0;}
+.imapperbox h1{padding:10px; margin-bottom: 0;}
 .imapperbox h1 small{color:#999; font-size: 20px;}
 
 
