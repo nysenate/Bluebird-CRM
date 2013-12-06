@@ -1167,7 +1167,11 @@ function makeListSortable(){
     // "iDisplayLength": 1,
     "sPaginationType": "full_numbers",
     "aaSorting": [[ 3, "desc" ]],
-    "aoColumnDefs": [ { "sType": "title-string", "aTargets": [ 3 ] }],
+    "aoColumnDefs": [
+    { 'bSortable': false, 'aTargets': [ 0 ] },
+    { 'bSortable': false, 'aTargets': [ 6 ] },
+    { "sType": "title-string", "aTargets": [ 3,5 ] },
+    ],
     'aTargets': [ 1 ],
     "iDisplayLength": 50,
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
@@ -1259,7 +1263,7 @@ function buildMessageList() {
   if(value.forwarder === value.sender_email){
     messagesHtml += '<td class="imap_forwarder_column"><span id="'+value.forwarder+'">Direct '+shortenString(value.forwarder,10)+'</span></td>';
   }else if(value.forwarder != ''){
-	  messagesHtml += '<td class="imap_forwarder_column">'+shortenString(value.forwarder,14)+'</td>';
+	  messagesHtml += '<td class="imap_forwarder_column"><span id="'+value.forwarder+'">'+shortenString(value.forwarder,14)+'</span></td>';
         }else{
 	  messagesHtml += '<td class="imap_forwarder_column"> N/A </td>';
         }
@@ -1273,6 +1277,22 @@ function buildMessageList() {
     cj('.Actions').removeClass('sorting');
 
   }
+}
+
+function makeReportSortable(){
+  cj("#sortable_results").dataTable({
+    "sDom":'<"controlls"lif><"clear">rt <p>',//add i here this is the number of records
+    // "iDisplayLength": 1,
+    "sPaginationType": "full_numbers",
+    "aaSorting": [[ 3, "desc" ]],
+    "aoColumnDefs": [ { "sType": "title-string", "aTargets": [ 3,4 ] }],
+    'aTargets': [ 1 ],
+    "iDisplayLength": 50,
+    "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
+    "bAutoWidth": false,
+  });
+  // var oTable = cj('#sortable_results').dataTable();
+  // rows = oTable.fnGetVisibleData();
 }
 
 function buildReports() {
@@ -1357,7 +1377,7 @@ function buildReports() {
     });
     };
     cj('#imapper-messages-list').html(messagesHtml);
-    makeListSortable();
+    makeReportSortable();
   cj('#total').html(unMatched+Matched+Cleared+Errors+Deleted);
   cj('#total_unMatched').html(unMatched);
   // console.log(unMatched);
