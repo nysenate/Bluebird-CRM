@@ -1361,8 +1361,8 @@ function buildReports() {
       message_status="Deleted";
       Deleted++;
      }
-  messagesHtml += '<td class="imap_date_column matched"><span id="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
-    messagesHtml += '<td class="imap_date_column matched"><span id="'+value.email_date_u+'"  title="'+value.email_date_long+'">'+value.email_date_short +'</span></td>';
+  messagesHtml += '<td class="imap_date_column matched"><span data="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
+    messagesHtml += '<td class="imap_date_column matched"><span data="'+value.email_date_u+'"  title="'+value.email_date_long+'">'+value.email_date_short +'</span></td>';
 
   messagesHtml += '<td class="imap_date_column">'+message_status +'</td>';
 
@@ -1409,9 +1409,9 @@ cj.fn.dataTableExt.afnFiltering.push(
 
         // 4 here is the column where my dates are.
         var date = aData[3];
-
         // convert to unix time
-	date = date.match(/data="(.*?)"/)[1].toLowerCase()*1000;
+	date = date.match(/data="*(-?[0-9\.]+)/)[1];
+	date = parseFloat(date)*1000;
         // console.log(start +"<="+date+"<="+stop);
         // console.log(start <= date && date <= stop );
         // console.log(start <= date);
@@ -1658,7 +1658,7 @@ function buildActivitiesList() {
           messagesHtml += '<div class="icon attachment-icon attachment" title="'+value.attachments.length+' Attachments" ></div>';
         }
         messagesHtml +='</td>';
-	messagesHtml += '<td class="imap_date_column matched"><span id="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
+	messagesHtml += '<td class="imap_date_column matched"><span data="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
 	messagesHtml += '<td class="imap_match_column matched  hidden">'+match_sort +'</td>';
 
 	messagesHtml += '<td class="imap_forwarder_column matched">'+shortenString(value.forwarder,14)+'</td>';
