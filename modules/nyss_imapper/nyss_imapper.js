@@ -1150,51 +1150,24 @@ function getReports() {
 // needed to format timestamps to allow sorting:
 // make a hidden data attribute with the non-readable date (date(U)) and sort on that
 cj.extend( cj.fn.dataTableExt.oSort, {
-    "data-numeric-pre": function ( a ) {
-	var x = a.match(/data="(.*?)"/)[1];
-	return parseFloat( x )*1000;
-    },
-    "data-numeric-asc": function ( a, b ) {
-	return ((a < b) ? -1 : ((a > b) ? 1 : 0));
-    },
-    "data-numeric-desc": function ( a, b ) {
-	return ((a < b) ? 1 : ((a > b) ? -1 : 0));
-    }
-} );
-
-cj.extend( cj.fn.dataTableExt.oSort, {
-    "data-string-pre": function ( a ) {
-	    return a.match(/data="(.*?)"/)[1].toLowerCase();
-    },
-    "data-string-asc": function ( a, b ) {
-	return ((a < b) ? -1 : ((a > b) ? 1 : 0));
-    },
-    "data-string-desc": function ( a, b ) {
-	return ((a < b) ? 1 : ((a > b) ? -1 : 0));
-    }
-} );
+  "title-string-pre": function ( a ) {
+    return a.match(/id="(.*?)"/)[1].toLowerCase();
+  },
+  "title-string-asc": function ( a, b ) {
+    return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+  },
+  "title-string-desc": function ( a, b ) {
+    return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+  }
+});
 
 function makeListSortable(){
   cj("#sortable_results").dataTable({
     "sDom":'<"controlls"lif><"clear">rt <p>',//add i here this is the number of records
     // "iDisplayLength": 1,
     "sPaginationType": "full_numbers",
-    // "aoColumns": [
-    //   null,
-    //   null,
-    //   null,
-    //   { "sType": "data-numeric" },
-    //   null
-    //   { "sType": "data-string" },
-    //   null
-    // ],
-    "aoColumnDefs": [
-      // { 'bSortable': false, 'aTargets': [ 0 ] },
-      // { 'bSortable': false, 'aTargets': [ 6 ] },
-      { "sType": "data-numeric", "aTargets": [ 3 ] },
-      { "sType": "data-string", "aTargets": [ 5 ] }
-    ],
     "aaSorting": [[ 3, "desc" ]],
+    "aoColumnDefs": [ { "sType": "title-string", "aTargets": [ 3 ] }],
     'aTargets': [ 1 ],
     "iDisplayLength": 50,
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
@@ -1272,7 +1245,7 @@ function buildMessageList() {
           });
         }
 	messagesHtml += '<td class="imap_subject_column unmatched">'+shortenString(value.subject,40) +' '+icon+'</td>';
-	messagesHtml += '<td class="imap_date_column unmatched"><span data="'+value.date_u+'" title="'+value.date_long+'">'+value.date_short +'</span></td>';
+	messagesHtml += '<td class="imap_date_column unmatched"><span id="'+value.date_u+'" title="'+value.date_long+'">'+value.date_short +'</span></td>';
 
         // hidden column to sort by
         if(value.match_count != 1){
@@ -1283,12 +1256,12 @@ function buildMessageList() {
         }
 
         // check for direct messages & not empty forwarded messages
-	if(value.forwarder === value.sender_email){
-	  messagesHtml += '<td class="imap_forwarder_column"><span data="'+value.forwarder+'">Direct '+shortenString(value.forwarder,10)+'</span></td>';
-        }else if(value.forwarder != ''){
-	  messagesHtml += '<td class="imap_forwarder_column"><span data="'+value.forwarder+'">'+shortenString(value.forwarder,14)+'</span></td>';
+  if(value.forwarder === value.sender_email){
+    messagesHtml += '<td class="imap_forwarder_column"><span id="'+value.forwarder+'">Direct '+shortenString(value.forwarder,10)+'</span></td>';
+  }else if(value.forwarder != ''){
+	  messagesHtml += '<td class="imap_forwarder_column">'+shortenString(value.forwarder,14)+'</td>';
         }else{
-	  messagesHtml += '<td class="imap_forwarder_column"><span data=""> N/A </span></td>';
+	  messagesHtml += '<td class="imap_forwarder_column"> N/A </td>';
         }
 
 	messagesHtml += '<td class="imap_actions_column "><span class="find_match"><a href="#">Find match</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
@@ -1373,8 +1346,8 @@ function buildReports() {
       message_status="Deleted";
       Deleted++;
      }
-  messagesHtml += '<td class="imap_date_column matched"><span data="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
-    messagesHtml += '<td class="imap_date_column matched"><span data="'+value.email_date_u+'"  title="'+value.email_date_long+'">'+value.email_date_short +'</span></td>';
+  messagesHtml += '<td class="imap_date_column matched"><span id="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
+    messagesHtml += '<td class="imap_date_column matched"><span id="'+value.email_date_u+'"  title="'+value.email_date_long+'">'+value.email_date_short +'</span></td>';
 
   messagesHtml += '<td class="imap_date_column">'+message_status +'</td>';
 
@@ -1399,8 +1372,6 @@ cj( ".range" ).live('change', function() {
     oTable.fnDraw();
 });
 
-// the filter box at the top of the page
-//
 cj.fn.dataTableExt.afnFiltering.push(
     function( oSettings, aData, iDataIndex ) {
         // "date-range" is the id for my input
@@ -1421,9 +1392,9 @@ cj.fn.dataTableExt.afnFiltering.push(
 
         // 4 here is the column where my dates are.
         var date = aData[3];
+
         // convert to unix time
-	date = date.match(/data="*(-?[0-9\.]+)/)[1];
-	date = parseFloat(date)*1000;
+        date = date.match(/id="(.*?)"/)[1].toLowerCase()*1000;
         // console.log(start +"<="+date+"<="+stop);
         // console.log(start <= date && date <= stop );
         // console.log(start <= date);
@@ -1670,7 +1641,7 @@ function buildActivitiesList() {
           messagesHtml += '<div class="icon attachment-icon attachment" title="'+value.attachments.length+' Attachments" ></div>';
         }
         messagesHtml +='</td>';
-	messagesHtml += '<td class="imap_date_column matched"><span data="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
+	messagesHtml += '<td class="imap_date_column matched"><span id="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
 	messagesHtml += '<td class="imap_match_column matched  hidden">'+match_sort +'</td>';
 
 	messagesHtml += '<td class="imap_forwarder_column matched">'+shortenString(value.forwarder,14)+'</td>';
