@@ -1151,8 +1151,8 @@ function getReports() {
 // make a hidden data attribute with the non-readable date (date(U)) and sort on that
 cj.extend( cj.fn.dataTableExt.oSort, {
     "data-numeric-pre": function ( a ) {
-	var x = a.match(/data="*(-?[0-9\.]+)/)[1];
-	return parseFloat( x );
+	var x = a.match(/data="(.*?)"/)[1];
+	return parseFloat( x )*1000;
     },
     "data-numeric-asc": function ( a, b ) {
 	return ((a < b) ? -1 : ((a > b) ? 1 : 0));
@@ -1164,7 +1164,7 @@ cj.extend( cj.fn.dataTableExt.oSort, {
 
 cj.extend( cj.fn.dataTableExt.oSort, {
     "data-string-pre": function ( a ) {
-	return a.match(/data="(.*?)"/)[1].toLowerCase();
+	    return a.match(/data="(.*?)"/)[1].toLowerCase();
     },
     "data-string-asc": function ( a, b ) {
 	return ((a < b) ? -1 : ((a > b) ? 1 : 0));
@@ -1181,8 +1181,7 @@ function makeListSortable(){
     "sPaginationType": "full_numbers",
    "aaSorting": [[ 3, "desc" ]],
 
-    "aoColumnDefs": [ { "sType": "data-numeric", "aTargets": [ 3 ] }],
-    "aoColumnDefs": [ { "sType": "data-string", "aTargets": [ 5 ] }],
+    "aoColumnDefs": [ { "sType": "data-numeric", "aTargets": [ 3 ] }, { "sType": "data-string", "aTargets": [ 5 ] }], // working as expected
     'aTargets': [ 1 ],
     "iDisplayLength": 50,
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
