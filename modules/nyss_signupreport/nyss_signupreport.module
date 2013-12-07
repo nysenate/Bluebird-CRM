@@ -111,7 +111,7 @@ class Instance
       }
     }
     else {
-      echo "Non-existant or inaccessible directory: $reportdir\n";
+      echo "Non-existent or inaccessible directory: $reportdir\n";
     }
     return $entries;
   }
