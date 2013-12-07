@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -41,24 +41,24 @@
 <script type="text/javascript">
 var fieldName = "{/literal}{$field}{literal}";
 var tsLocale = "{/literal}{$tsLocale}{literal}";
-cj('#Form').submit(function() { 
-      cj(this).ajaxSubmit({ 
+cj('#Form').submit(function() {
+      cj(this).ajaxSubmit({
                             beforeSubmit: function (formData, jqForm, options) {
-                                                    var queryString = cj.param(formData); 
+                                                    var queryString = cj.param(formData);
                                                     var postUrl     = cj('#Form').attr('action');
                                                     cj.ajax({
                                                              type   : "POST",
-                                                             url    : postUrl,    
+                                                             url    : postUrl,
                                                              async  : false,
                                                              data   : queryString,
                                                              success: function( response ) {
-																	  cj('#' + fieldName).val( cj('#' + fieldName +'_' + tsLocale ).val() );
+                                    cj('#' + fieldName).val( cj('#' + fieldName +'_' + tsLocale ).val() );
                                                                       cj("#locale-dialog_"+fieldName).dialog("close");
                                                                      }
                                                     });
-                                                return false; 
-                                            }}); 
-          return false; 
+                                                return false;
+                                            }});
+          return false;
 });
 </script>
 {/literal}

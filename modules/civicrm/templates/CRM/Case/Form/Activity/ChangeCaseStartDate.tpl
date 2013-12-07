@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,15 +26,15 @@
 {* Template for "Change Case Type" activities *}
    <div class="crm-block crm-form-block crm-case-changecasestartdate-form-block">
     <tr class="crm-case-changecasestartdate-form-block-case_type_id">
-	<td class="label">{$form.case_type_id.label}</td>
-	<td>{$form.case_type_id.html}</td>
-    </tr>        
+  <td class="label">{$form.case_type_id.label}</td>
+  <td>{$form.case_type_id.html}</td>
+    </tr>
     <tr class="crm-case-changecasestartdate-form-block-current_start_date">
-	<td class="label">{ts}Current Start Date{/ts}</td>
+  <td class="label">{ts}Current Start Date{/ts}</td>
         <td>{$current_start_date|crmDate}</td>
     </tr>
-    <tr class="crm-case-changecasestartdate-form-block-start_date"> 
+    <tr class="crm-case-changecasestartdate-form-block-start_date">
         <td class="label">{$form.start_date.label}</td>
-	<td>{include file="CRM/common/jcalendar.tpl" elementName=start_date}</td>
-    </tr>	  
+  <td>{include file="CRM/common/jcalendar.tpl" elementName=start_date}</td>
+    </tr>
    </div>

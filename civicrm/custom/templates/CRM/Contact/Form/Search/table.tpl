@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -36,15 +36,18 @@
             <tr>
                 <td class="form-item even-row">
                     {$form.mapper[$x][$i].html}
-                    {$form.operator[$x][$i].html}
-                    &nbsp;&nbsp;{$form.value[$x][$i].html}
-                    &nbsp;&nbsp;<a href="javascript:resetBuilderValues({$x},{$i});"><img title="reset the values for this row" src="{$config->resourceBase}i/close.png" class="action-icon" alt="{ts}reset this row{/ts}" /></a>
-                    &nbsp;<strong>(AND)</strong>
+              {$form.operator[$x][$i].html|crmAddClass:'required'}&nbsp;&nbsp;
+              <span class="crm-search-value" id="crm_search_value_{$x}_{$i}">
+                {$form.value[$x][$i].html|crmAddClass:'required'}
+              </span>
+              {if $i gt 0 or $x gt 1}
+                &nbsp;&nbsp;<a href="#" class="crm-reset-builder-row" title="{ts}Remove this row{/ts}"><img src="{$config->resourceBase}i/close.png" class="action-icon" alt="X" /></a>&nbsp;<strong>(AND)</strong>{*NYSS*}
+              {/if}
                 </td>
             </tr>
         {/section}
     
-         <tr>
+        <tr class="crm-search-builder-add-row">
            <td class="form-item even-row underline-effect">
                {$form.addMore[$x].html}
            </td>
@@ -52,24 +55,6 @@
        </table>
       </div>
     {/section}
-    <div class="underline-effect">{$form.addBlock.html}</div> 
+  <h3 class="crm-search-builder-add-block underline-effect">{$form.addBlock.html}</h3>
   {/strip}
  </div>
-
-<script type="text/javascript">
-{literal}
-  function resetBuilderValues(x, i) {
-    cj('#mapper_'   + x + '_' + i + '_0').val('');
-    cj('#mapper_'   + x + '_' + i + '_1').val('');
-    cj('#mapper_'   + x + '_' + i + '_2').val('');
-    cj('#mapper_'   + x + '_' + i + '_3').val('');
-    cj('#mapper_'   + x + '_' + i + '_4').val('');
-    cj('#operator_' + x + '_' + i).val('');
-    cj('#value_'    + x + '_' + i).val('');
-
-    if ( i !== 0 ) {
-      cj('#mapper_' + x + '_' + i + '_0').parents('tr').remove();
-    }
-  }
-{/literal}
-</script>

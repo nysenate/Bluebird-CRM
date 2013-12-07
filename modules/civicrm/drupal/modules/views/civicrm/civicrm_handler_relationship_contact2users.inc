@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -70,7 +70,7 @@ class civicrm_handler_relationship_contact2users extends views_handler_relations
 
     $alias = $join->definition['table'] . '_' . $join->definition['left_table'];
 
-    $this->alias = $this->query->add_relationship($alias, $join, 'users', $this->relationship);
+    $this->alias = $this->query->add_relationship($alias, $join, 'users');
   }
 }
 

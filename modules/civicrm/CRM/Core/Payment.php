@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -41,7 +41,10 @@ abstract class CRM_Core_Payment {
    * FORM   - we collect it on the same page
    * BUTTON - the processor collects it and sends it back to us via some protocol
    */
-  CONST BILLING_MODE_FORM = 1, BILLING_MODE_BUTTON = 2, BILLING_MODE_NOTIFY = 4;
+  CONST
+    BILLING_MODE_FORM = 1,
+    BILLING_MODE_BUTTON = 2,
+    BILLING_MODE_NOTIFY = 4;
 
   /**
    * which payment type(s) are we using?
@@ -51,14 +54,18 @@ abstract class CRM_Core_Payment {
    * or both
    *
    */
-  CONST PAYMENT_TYPE_CREDIT_CARD = 1, PAYMENT_TYPE_DIRECT_DEBIT = 2;
+  CONST
+    PAYMENT_TYPE_CREDIT_CARD = 1,
+    PAYMENT_TYPE_DIRECT_DEBIT = 2;
 
   /**
    * Subscription / Recurring payment Status
    * START, END
    *
    */
-  CONST RECURRING_PAYMENT_START = 'START', RECURRING_PAYMENT_END = 'END';
+  CONST
+    RECURRING_PAYMENT_START = 'START',
+    RECURRING_PAYMENT_END = 'END';
 
   /**
    * We only need one instance of this object. So we use the singleton
@@ -76,7 +83,10 @@ abstract class CRM_Core_Payment {
   /**
    * singleton function used to manage this object
    *
-   * @param string $mode the mode of operation: live or test
+   * @param string  $mode the mode of operation: live or test
+   * @param object  $paymentProcessor the details of the payment processor being invoked
+   * @param object  $paymentForm      reference to the form object if available
+   * @param boolean $force            should we force a reload of this payment object
    *
    * @return object
    * @static
@@ -92,7 +102,7 @@ abstract class CRM_Core_Payment {
     $cacheKey = "{$mode}_{$paymentProcessor['id']}_" . (int)isset($paymentForm);
     if (!isset(self::$_singleton[$cacheKey]) || $force) {
       $config = CRM_Core_Config::singleton();
-      $ext = new CRM_Core_Extensions();
+      $ext = CRM_Extension_System::singleton()->getMapper();
       if ($ext->isExtensionKey($paymentProcessor['class_name'])) {
         $paymentClass = $ext->keyToClass($paymentProcessor['class_name'], 'payment');
         require_once ($ext->classToPath($paymentClass));
@@ -103,12 +113,12 @@ abstract class CRM_Core_Payment {
       }
 
       //load the object.
-      self::$_singleton[$cacheKey] = eval('return ' . $paymentClass . '::singleton( $mode, $paymentProcessor );');
+      self::$_singleton[$cacheKey] = $paymentClass::singleton($mode, $paymentProcessor);
+    }
 
-      //load the payment form for required processor.
-      if ($paymentForm !== NULL) {
-        self::$_singleton[$cacheKey]->setForm($paymentForm);
-      }
+    //load the payment form for required processor.
+    if ($paymentForm !== NULL) {
+      self::$_singleton[$cacheKey]->setForm($paymentForm);
     }
 
     return self::$_singleton[$cacheKey];
@@ -162,8 +172,7 @@ abstract class CRM_Core_Payment {
    */
   abstract function checkConfig();
 
-  static
-  function paypalRedirect(&$paymentProcessor) {
+  static function paypalRedirect(&$paymentProcessor) {
     if (!$paymentProcessor) {
       return FALSE;
     }
@@ -183,12 +192,12 @@ abstract class CRM_Core_Payment {
    * Page callback for civicrm/payment/ipn
    * @public
    */
-  static
-  function handleIPN() {
+  static function handleIPN() {
     self::handlePaymentMethod(
       'PaymentNotification',
       array(
         'processor_name' => @$_GET['processor_name'],
+        'processor_id' => @$_GET['processor_id'],
         'mode' => @$_GET['mode'],
       )
     );
@@ -200,37 +209,38 @@ abstract class CRM_Core_Payment {
    *
    * @public
    */
-  static
-  function handlePaymentMethod($method, $params = array(
-    )) {
-
-    if (!isset($params['processor_name'])) {
-
-      CRM_Core_Error::fatal("Missing 'processor_name' param for payment callback");
-
+  static function handlePaymentMethod($method, $params = array( )) {
+    if (!isset($params['processor_id']) && !isset($params['processor_name'])) {
+      CRM_Core_Error::fatal("Either 'processor_id' or 'processor_name' param is required for payment callback");
     }
 
     // Query db for processor ..
     $mode = @$params['mode'];
 
-    $dao = CRM_Core_DAO::executeQuery("
-             SELECT ppt.class_name, ppt.name as processor_name, pp.id AS processor_id
-               FROM civicrm_payment_processor_type ppt
-         INNER JOIN civicrm_payment_processor pp
-                 ON pp.payment_processor_type = ppt.name
-                AND pp.is_active
-                AND pp.is_test = %1
-              WHERE ppt.name = %2 
-        ",
-      array(
-        1 => array($mode == 'test' ? 1 : 0, 'Integer'),
-        2 => array($params['processor_name'], 'String'),
-      )
-    );
+    $sql = "SELECT ppt.class_name, ppt.name as processor_name, pp.id AS processor_id
+              FROM civicrm_payment_processor_type ppt
+        INNER JOIN civicrm_payment_processor pp
+                ON pp.payment_processor_type_id = ppt.id
+               AND pp.is_active
+               AND pp.is_test = %1";
+    $args[1] = array($mode == 'test' ? 1 : 0, 'Integer');
+
+    if (isset($params['processor_id'])) {
+      $sql .= " WHERE pp.id = %2";
+      $args[2] = array($params['processor_id'], 'Integer');
+      $notfound = "No active instances of payment processor ID#'{$params['processor_id']}'  were found.";
+    }
+    else {
+      $sql .= " WHERE ppt.name = %2";
+      $args[2] = array($params['processor_name'], 'String');
+      $notfound = "No active instances of the '{$params['processor_name']}' payment processor were found.";
+    }
+
+    $dao = CRM_Core_DAO::executeQuery($sql, $args);
 
     // Check whether we found anything at all ..
     if (!$dao->N) {
-      CRM_Core_Error::fatal("No active instances of the '{$params['processor_name']}' payment processor were found.");
+      CRM_Core_Error::fatal($notfound);
     }
 
     $method = 'handle' . $method;
@@ -238,11 +248,10 @@ abstract class CRM_Core_Payment {
 
     // In all likelihood, we'll just end up with the one instance returned here. But it's
     // possible we may get more. Hence, iterate through all instances ..
-    
-    while ($dao->fetch()) {
 
+    while ($dao->fetch()) {
       // Check pp is extension
-      $ext = new CRM_Core_Extensions();
+      $ext = CRM_Extension_System::singleton()->getMapper();
       if ($ext->isExtensionKey($dao->class_name)) {
         $extension_instance_found = TRUE;
         $paymentClass = $ext->keyToClass($dao->class_name, 'payment');
@@ -255,7 +264,7 @@ abstract class CRM_Core_Payment {
         continue;
       }
 
-      $paymentProcessor = CRM_Core_BAO_PaymentProcessor::getPayment($dao->processor_id, $mode);
+      $paymentProcessor = CRM_Financial_BAO_PaymentProcessor::getPayment($dao->processor_id, $mode);
 
       // Should never be empty - we already established this processor_id exists and is active.
       if (empty($paymentProcessor)) {
@@ -263,7 +272,7 @@ abstract class CRM_Core_Payment {
       }
 
       // Instantiate PP
-      eval('$processorInstance = ' . $paymentClass . '::singleton( $mode, $paymentProcessor );');
+      $processorInstance = $paymentClass::singleton($mode, $paymentProcessor);
 
       // Does PP implement this method, and can we call it?
       if (!method_exists($processorInstance, $method) ||
@@ -306,6 +315,10 @@ abstract class CRM_Core_Payment {
       $url = 'civicrm/contribute/unsubscribe';
     }
     elseif ($action == 'billing') {
+      //in notify mode don't return the update billing url
+      if ($this->_paymentProcessor['billing_mode'] == self::BILLING_MODE_NOTIFY) {
+        return NULL;
+      }
       $url = 'civicrm/contribute/updatebilling';
     }
     elseif ($action == 'update') {
@@ -321,7 +334,7 @@ abstract class CRM_Core_Payment {
         $checksumValue = CRM_Contact_BAO_Contact_Utils::generateChecksum($contactID, NULL, 'inf');
         $checksumValue = "&cs={$checksumValue}";
       }
-      return CRM_Utils_System::url($url, "reset=1&mid={$entityID}{$checksumValue}", TRUE, NULL, FALSE, FALSE);
+      return CRM_Utils_System::url($url, "reset=1&mid={$entityID}{$checksumValue}", TRUE, NULL, FALSE, TRUE);
     }
 
     if ($entityID && $entity == 'contribution') {
@@ -330,12 +343,12 @@ abstract class CRM_Core_Payment {
         $checksumValue = CRM_Contact_BAO_Contact_Utils::generateChecksum($contactID, NULL, 'inf');
         $checksumValue = "&cs={$checksumValue}";
       }
-      return CRM_Utils_System::url($url, "reset=1&coid={$entityID}{$checksumValue}", TRUE, NULL, FALSE, FALSE);
+      return CRM_Utils_System::url($url, "reset=1&coid={$entityID}{$checksumValue}", TRUE, NULL, FALSE, TRUE);
     }
 
     if ($entityID && $entity == 'recur') {
       if (!$userId) {
-        $sql = " 
+        $sql = "
     SELECT con.contact_id
       FROM civicrm_contribution_recur rec
 INNER JOIN civicrm_contribution con ON ( con.contribution_recur_id = rec.id )
@@ -345,7 +358,7 @@ INNER JOIN civicrm_contribution con ON ( con.contribution_recur_id = rec.id )
         $checksumValue = CRM_Contact_BAO_Contact_Utils::generateChecksum($contactID, NULL, 'inf');
         $checksumValue = "&cs={$checksumValue}";
       }
-      return CRM_Utils_System::url($url, "reset=1&crid={$entityID}{$checksumValue}", TRUE, NULL, FALSE, FALSE);
+      return CRM_Utils_System::url($url, "reset=1&crid={$entityID}{$checksumValue}", TRUE, NULL, FALSE, TRUE);
     }
 
     if ($this->isSupported('accountLoginURL')) {
@@ -353,5 +366,23 @@ INNER JOIN civicrm_contribution con ON ( con.contribution_recur_id = rec.id )
     }
     return $this->_paymentProcessor['url_recur'];
   }
-}
 
+  /**
+   * Check for presence of type 1 or type 3 enabled processors (means we can do back-office submit credit/debit card trxns)
+   * @public
+   */
+  static function allowBackofficeCreditCard($template = NULL, $variableName = 'newCredit') {
+    $newCredit = FALSE;
+    $processors = CRM_Core_PseudoConstant::paymentProcessor(FALSE, FALSE,
+      "billing_mode IN ( 1, 3 )"
+    );
+    if (count($processors) > 0) {
+      $newCredit = TRUE;
+    }
+    if ($template) {
+      $template->assign($variableName, $newCredit);
+    }
+    return $newCredit;
+  }
+
+}

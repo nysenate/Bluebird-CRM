@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -36,70 +36,59 @@
 /**
  *
  */
-class CRM_Core_Permission_Joomla {
-
-  /**
-   * get the current permission of this user
-   *
-   * @return string the permission of the user (edit or view or null)
-   */
-  public static function getPermission() {
-    return CRM_Core_Permission::EDIT;
-  }
-
-  /**
-   * Get the permissioned where clause for the user
-   *
-   * @param int $type the type of permission needed
-   * @param  array $tables (reference ) add the tables that are needed for the select clause
-   * @param  array $whereTables (reference ) add the tables that are needed for the where clause
-   *
-   * @return string the group where clause for this user
-   * @access public
-   */
-  public static function whereClause($type, &$tables, &$whereTables) {
-    return '( 1 )';
-  }
-
-  /**
-   * Get all groups from database, filtered by permissions
-   * for this user
-   *
-   * @param string $groupType     type of group(Access/Mailing)
-   * @param boolen $excludeHidden exclude hidden groups.
-   *
-   * @access public
-   * @static
-   *
-   * @return array - array reference of all groups.
-   *
-   */
-  public static function &group($groupType = NULL, $excludeHidden = TRUE) {
-    return CRM_Core_PseudoConstant::allGroup($groupType, $excludeHidden);
-  }
-
+class CRM_Core_Permission_Joomla extends CRM_Core_Permission_Base {
   /**
    * given a permission string, check for access requirements
    *
    * @param string $str the permission to check
    *
    * @return boolean true if yes, else false
-   * @static
    * @access public
    */
-  static function check($str) {
+  function check($str) {
     $config = CRM_Core_Config::singleton();
+
+    $translated = $this->translateJoomlaPermission($str);
+    if ($translated === CRM_Core_Permission::ALWAYS_DENY_PERMISSION) {
+      return FALSE;
+    }
+    if ($translated === CRM_Core_Permission::ALWAYS_ALLOW_PERMISSION) {
+      return TRUE;
+    }
 
     // ensure that we are running in a joomla context
     // we've not yet figured out how to bootstrap joomla, so we should
     // not execute hooks if joomla is not loaded
     if (defined('_JEXEC')) {
-      $permissionStr = 'civicrm.' . CRM_Utils_String::munge(strtolower($str));
-      $permission = JFactory::getUser()->authorise($permissionStr, 'com_civicrm');
+      $permission = JFactory::getUser()->authorise($translated[0], $translated[1]);
       return $permission;
     }
     else {
+      // This function is supposed to return a boolean. What does '(1)' mean?
       return '(1)';
+    }
+  }
+
+  /**
+   * @param string $name e.g. "administer CiviCRM", "cms:access user record", "Drupal:administer content", "Joomla:example.action:com_some_asset"
+   * @return ALWAYS_DENY_PERMISSION|ALWAYS_ALLOW_PERMISSION|array(0 => $joomlaAction, 1 => $joomlaAsset)
+   */
+  function translateJoomlaPermission($perm) {
+    if ($perm === CRM_Core_Permission::ALWAYS_DENY_PERMISSION || $perm === CRM_Core_Permission::ALWAYS_ALLOW_PERMISSION) {
+      return $perm;
+    }
+
+    list ($civiPrefix, $name) = CRM_Utils_String::parsePrefix(':', $perm, NULL);
+    switch($civiPrefix) {
+      case 'Joomla':
+        return explode(':', $name);
+      case 'cms':
+        // FIXME: This needn't be DENY, but we don't currently have any translations.
+        return CRM_Core_Permission::ALWAYS_DENY_PERMISSION;
+      case NULL:
+        return array('civicrm.' . CRM_Utils_String::munge(strtolower($name)), 'com_civicrm');
+      default:
+        return CRM_Core_Permission::ALWAYS_DENY_PERMISSION;
     }
   }
 
@@ -112,30 +101,8 @@ class CRM_Core_Permission_Joomla {
    * @static
    * @access public
    */
-  static function checkGroupRole($array) {
+  function checkGroupRole($array) {
     return FALSE;
-  }
-
-  /**
-   * Get all the contact emails for users that have a specific permission
-   *
-   * @param string $permissionName name of the permission we are interested in
-   *
-   * @return string a comma separated list of email addresses
-   */
-  public static function permissionEmails($permissionName) {
-    return '';
-  }
-
-  /**
-   * Get all the contact emails for users that have a specific role
-   *
-   * @param string $roleName name of the role we are interested in
-   *
-   * @return string a comma separated list of email addresses
-   */
-  public static function roleEmails($roleName) {
-    return '';
   }
 }
 

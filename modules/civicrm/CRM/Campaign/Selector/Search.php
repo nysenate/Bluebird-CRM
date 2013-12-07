@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -249,6 +249,7 @@ class CRM_Campaign_Selector_Search extends CRM_Core_Selector_Base implements CRM
     $rows = array();
 
     While ($result->fetch()) {
+      $this->_query->convertToPseudoNames($result);
       $row = array();
       // the columns we are interested in
       foreach (self::$_properties as $property) {
@@ -261,8 +262,42 @@ class CRM_Campaign_Selector_Search extends CRM_Core_Selector_Base implements CRM
 
       $rows[] = $row;
     }
+    $this->buildPrevNextCache($sort);
 
     return $rows;
+  }
+
+  function buildPrevNextCache($sort) {
+    //for prev/next pagination
+    $crmPID = CRM_Utils_Request::retrieve('crmPID', 'Integer', CRM_Core_DAO::$_nullObject);
+
+    if (!$crmPID) {
+      $cacheKey = "civicrm search {$this->_key}";
+      CRM_Core_BAO_PrevNextCache::deleteItem(NULL, $cacheKey, 'civicrm_contact');
+
+      $sql = $this->_query->searchQuery(0, 0, $sort,
+        FALSE, FALSE,
+        FALSE, FALSE,
+        TRUE, $this->_campaignWhereClause,
+        NULL,
+        $this->_campaignFromClause
+      );
+      list($select, $from) = explode(' FROM ', $sql);
+      $insertSQL = "
+INSERT INTO civicrm_prevnext_cache ( entity_table, entity_id1, entity_id2, cacheKey, data )
+SELECT 'civicrm_contact', contact_a.id, contact_a.id, '$cacheKey', contact_a.display_name
+FROM {$from}
+";
+      CRM_Core_Error::ignoreException();
+      $result = CRM_Core_DAO::executeQuery($insertSQL);
+      CRM_Core_Error::setCallback();
+
+      if (is_a($result, 'DB_Error')) {
+        return;
+      }
+      // also record an entry in the cache key table, so we can delete it periodically
+      CRM_Core_BAO_Cache::setItem($cacheKey, 'CiviCRM Search PrevNextCache', $cacheKey);
+    }
   }
 
   /**

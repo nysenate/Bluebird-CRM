@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -33,7 +33,7 @@
 <table class="form-layout-compressed">
     <tr class="crm-contactEmail-form-block-fromEmailAddress">
        <td class="label">{$form.fromEmailAddress.label}</td>
-       <td>{$form.fromEmailAddress.html} {help id ="id-from_email" file="CRM/Contact/Form/Task/Email.hlp"}</td>
+       <td>{$form.fromEmailAddress.html} {help id="id-from_email" file="CRM/Contact/Form/Task/Email.hlp" isAdmin=$isAdmin}</td>
     </tr>
     <tr class="crm-contactEmail-form-block-recipient">
        <td class="label">{if $single eq false}{ts}Recipient(s){/ts}{else}{$form.to.label}{/if}</td>
@@ -57,13 +57,13 @@
 {/if}
     <tr class="crm-contactEmail-form-block-subject">
        <td class="label">{$form.subject.label}</td>
-       <td>{$form.subject.html|crmReplace:class:huge}&nbsp;
+       <td>{$form.subject.html|crmAddClass:huge}&nbsp;
         <a href="#" onClick="return showToken('Subject', 3);">{$form.token3.label}</a>
-	    {help id="id-token-subject" file="CRM/Contact/Form/Task/Email.hlp"}
+      {help id="id-token-subject" file="CRM/Contact/Form/Task/Email.hlp"}
         <div id='tokenSubject' style="display:none">
-	      <input style="border:1px solid #999999;" type="text" id="filter3" size="20" name="filter3" onkeyup="filter(this, 3)"/><br />
-	      <span class="description">{ts}Begin typing to filter list of tokens{/ts}</span><br/>
-	      {$form.token3.html}
+        <input style="border:1px solid #999999;" type="text" id="filter3" size="20" name="filter3" onkeyup="filter(this, 3)"/><br />
+        <span class="description">{ts}Begin typing to filter list of tokens{/ts}</span><br/>
+        {$form.token3.html}
         </div>
        </td>
     </tr>
@@ -108,7 +108,7 @@ cj('#addbcc').toggle( function() { cj(this).text('Remove BCC');
                                    cj('tr#bcc ul li:not(:last)').remove();cj('#bcc').hide();
 });
 
-var hintText = "{/literal}{ts}Type in a partial or complete name or email address of an existing contact.{/ts}{literal}";
+var hintText = "{/literal}{ts escape='js'}Type in a partial or complete name or email address of an existing contact.{/ts}{literal}";
 var sourceDataUrl = "{/literal}{crmURL p='civicrm/ajax/checkemail' h=0 }{literal}";
 var toDataUrl     = "{/literal}{crmURL p='civicrm/ajax/checkemail' q='id=1' h=0 }{literal}";
 

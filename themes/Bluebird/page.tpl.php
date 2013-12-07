@@ -29,7 +29,7 @@ if ( isset($_POST['set_JobID']) && $_POST['set_JobID'] ) $_SESSION['CiviCRM']['j
     <?php if ($user->uid) { ?>
       <div id="footer" class="clear span-24">
       	<div id="dashboard-link-wrapper">
-      		<a href="<?php print base_path(); ?>civicrm?reset=1"><div class="icon dashboard-icon"></div> Dashboard</a>
+      		<a href="<?php print base_path(); ?>civicrm?reset=1"><div class="ui-icon dashboard-icon"></div> Dashboard</a>
       	</div>
         <?php print render($page['footer']); ?>
       </div>
@@ -81,11 +81,11 @@ if ( isset($_POST['set_JobID']) && $_POST['set_JobID'] ) $_SESSION['CiviCRM']['j
   		<div class="icon settings-icon"></div>Update your Profile
   	</a><?php */?> <!--#2288-->
   		<a href="<?php print base_path(); ?>user/logout" class="logout">
-  			<div class="icon logout-icon"></div> Logout
+  			<div class="ui-icon logout-icon"></div> Logout
   		</a>
-        <div class="sitedetails"><div class="icon key-icon"></div><span> <?php echo $role; ?> </span></div>
+        <div class="sitedetails"><div class="ui-icon key-icon"></div><span> <?php echo $role; ?> </span></div>
         <?php $instance = substr( $_SERVER['HTTP_HOST'], 0, strpos( $_SERVER['HTTP_HOST'], '.' ) ); ?>
-        <div class="sitedetails"><div class="icon flag-icon"></div><span> <?php echo $instance; ?> </span></div>
+        <div class="sitedetails"><div class="ui-icon flag-icon"></div><span> <?php echo $instance; ?> </span></div>
   	</div>
   	<div class="account-info-wrapper">
   		<div class="account-info">
@@ -110,16 +110,21 @@ $now = time() + (60 * 60 * $offset);
           <?php //insert first name in header greeting; #2288
 					civicrm_initialize( );
 					require_once 'CRM/Core/Config.php';
-					$config =& CRM_Core_Config::singleton( );
+					$config = CRM_Core_Config::singleton( );
 
-					require_once "api/v2/UFGroup.php";
-					$uid = $user->uid;
-					$contactid = civicrm_uf_match_id_get( $uid );
+					require_once 'api/api.php';
+          $params = array(
+            'version' => 3,
+            'uf_id' => $user->uid
+          );
+          $uf = civicrm_api('uf_match', 'getsingle', $params);
 
-					require_once "api/v2/Contact.php";
-					$params = array( 'contact_id' => $contactid );
-					$contactrecord = civicrm_contact_get( $params );
-					echo $contactrecord[$contactid]['first_name'];
+					$params = array(
+            'version' => 3,
+            'id' => $uf['contact_id'],
+          );
+          $contact = civicrm_api('contact', 'getsingle', $params);
+					echo $contact['first_name'];
 				?>
 
   			</div>
@@ -133,8 +138,8 @@ $now = time() + (60 * 60 * $offset);
 	}
 	  if ( $jobuser ) { ?>
     	<div class="sos_job">
-    	    [<?php if ( isset($_SESSION['CiviCRM']['jobID']) and $_SESSION['CiviCRM']['jobID'] ) { echo 'Job ID: '.$_SESSION['CiviCRM']['jobID'].' // '; } ?>
-        	<a href="#" class="setJob" title="Set SOS JobID" onclick="setJobID( );return false;">Set Job#</a>]
+        [<a href="#" class="setJob" title="Set SOS JobID" onclick="setJobID( );return false;">Job #</a>
+    	  <?php if (isset($_SESSION['CiviCRM']['jobID']) && $_SESSION['CiviCRM']['jobID']) { echo ':: '.$_SESSION['CiviCRM']['jobID']; } ?>]
       </div>
     <?php } ?>
 
@@ -176,7 +181,7 @@ $now = time() + (60 * 60 * $offset);
 
 <div id="dialogJobID" style="display: none;">
   <form action="" method="post" id="formSetJob">
-    Enter a new SOS Job ID<br/>
+    Enter a new SOS Job #<br/>
     <input type="text" id="set_jobID" name="set_JobID" />
   </form>
 </div>

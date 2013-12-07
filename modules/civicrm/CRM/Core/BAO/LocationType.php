@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -104,16 +104,46 @@ class CRM_Core_BAO_LocationType extends CRM_Core_DAO_LocationType {
     }
     return self::$_defaultLocationType;
   }
+
   /*
-     * Get ID of billing location type
-     * @return integer
-     */
-  function getBilling() {
+   * Get ID of billing location type
+   * @return integer
+   */
+  static function getBilling() {
     if (self::$_billingLocationType == NULL) {
-      $locationTypes = CRM_Core_PseudoConstant::locationType();
+      $locationTypes = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Address', 'location_type_id', array(), 'validate');
       self::$_billingLocationType = array_search('Billing', $locationTypes);
     }
     return self::$_billingLocationType;
+  }
+
+  /**
+   * Function to add a Location Type
+   *
+   * @param array $params reference array contains the values submitted by the form
+   * @param array $ids    reference array contains the id
+   *
+   * @access public
+   * @static
+   *
+   * @return object
+   */
+  static function create(&$params) {
+    $params['is_active'] = CRM_Utils_Array::value('is_active', $params, FALSE);
+    $params['is_default'] = CRM_Utils_Array::value('is_default', $params, FALSE);
+    $params['is_reserved'] = CRM_Utils_Array::value('is_reserved', $params, FALSE);
+
+    // action is taken depending upon the mode
+    $locationType = new CRM_Core_DAO_LocationType();
+    $locationType->copyValues($params);
+
+    if ($params['is_default']) {
+      $query = "UPDATE civicrm_location_type SET is_default = 0";
+      CRM_Core_DAO::executeQuery($query, CRM_Core_DAO::$_nullArray);
+    }
+
+    $locationType->save();
+    return $locationType;
   }
 
   /**
@@ -134,8 +164,8 @@ class CRM_Core_BAO_LocationType extends CRM_Core_DAO_LocationType {
       else {
         $name = ucfirst($key);
       }
-      require_once (str_replace('_', DIRECTORY_SEPARATOR, 'CRM_Core_DAO_' . $name) . ".php");
-      eval('$object = new CRM_Core_DAO_' . $name . '( );');
+      $baoString = 'CRM_Core_BAO_' . $name;
+      $object = new $baoString();
       $object->location_type_id = $locationTypeId;
       $object->delete();
     }

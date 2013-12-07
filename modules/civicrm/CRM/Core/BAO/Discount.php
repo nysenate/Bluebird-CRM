@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -51,10 +51,9 @@ class CRM_Core_BAO_Discount extends CRM_Core_DAO_Discount {
    * @static
    *
    */
-  static
-  function del($entityId,$entityTable) {
+  static function del($entityId,$entityTable) {
     // delete all discount records with the selected discounted id
-    $discount = new CRM_Core_DAO_Discount();
+    $discount = new CRM_Core_DAO_Discount( );
     $discount->entity_id    = $entityId;
     $discount->entity_table = $entityTable;
     if ($discount->delete()) {
@@ -75,9 +74,8 @@ class CRM_Core_BAO_Discount extends CRM_Core_DAO_Discount {
    * @access public
    * @static
    */
-  static
-  function add(&$params) {
-    $discount = new CRM_Core_DAO_Discount();
+  static function add(&$params) {
+    $discount = new CRM_Core_DAO_Discount( );
     $discount->copyValues($params);
     $discount->save();
     return $discount;
@@ -93,15 +91,14 @@ class CRM_Core_BAO_Discount extends CRM_Core_DAO_Discount {
    * @return array    $optionGroupIDs option group Ids associated with discount
    *
    */
-  static
-  function getOptionGroup($entityId, $entityTable) {
+  static function getOptionGroup($entityId, $entityTable) {
     $optionGroupIDs    = array();
-    $dao               = new CRM_Core_DAO_Discount();
+    $dao = new CRM_Core_DAO_Discount( );
     $dao->entity_id    = $entityId;
     $dao->entity_table = $entityTable;
     $dao->find();
     while ($dao->fetch()) {
-      $optionGroupIDs[$dao->id] = $dao->option_group_id;
+      $optionGroupIDs[$dao->id] = $dao->price_set_id;
     }
     return $optionGroupIDs;
   }
@@ -115,8 +112,7 @@ class CRM_Core_BAO_Discount extends CRM_Core_DAO_Discount {
    * @return integer  $dao->id       discount id of the set which matches
    *                                 the date criteria
    */
-  static
-  function findSet($entityID, $entityTable) {
+  static function findSet($entityID, $entityTable) {
     if (empty($entityID) ||
       empty($entityTable)
     ) {
@@ -125,7 +121,7 @@ class CRM_Core_BAO_Discount extends CRM_Core_DAO_Discount {
       return NULL;
     }
 
-    $dao               = new CRM_Core_DAO_Discount();
+    $dao = new CRM_Core_DAO_Discount( );
     $dao->entity_id    = $entityID;
     $dao->entity_table = $entityTable;
     $dao->find();
@@ -143,7 +139,6 @@ class CRM_Core_BAO_Discount extends CRM_Core_DAO_Discount {
     }
     return FALSE;
   }
-
 
 }
 

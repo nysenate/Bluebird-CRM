@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,6 +23,10 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
+{*NYSS 7449 include additional reports css*}
+{literal}
+  <link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/Bluebird/css/reportsCivicrm.css" />
+{/literal}
 {* this div is being used to apply special css *}
     {if $section eq 1}
     <div class="crm-block crm-content-block crm-report-layoutGraph-form-block">
@@ -35,13 +39,14 @@
         {include file="CRM/Report/Form/Layout/Table.tpl"}
 	</div>
     {else}
-    <div class="crm-block crm-form-block crm-report-field-form-block">
+      {*include actions*}
+      {include file="CRM/Report/Form/Actions.tpl"}
+
+      <div class="crm-block crm-form-block crm-report-field-form-block">
         {include file="CRM/Report/Form/Fields.tpl"}
-    </div>
+      </div>
     
-    <div class="crm-block crm-content-block crm-report-form-block">
-        {*include actions*}
-        {include file="CRM/Report/Form/Actions.tpl"}
+      <div class="crm-block crm-content-block crm-report-form-block">
 
         {*Statistics at the Top of the page*}
         {include file="CRM/Report/Form/Statistics.tpl" top=true}

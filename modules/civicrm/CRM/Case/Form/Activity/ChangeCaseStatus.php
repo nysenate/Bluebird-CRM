@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -39,8 +39,7 @@
  */
 class CRM_Case_Form_Activity_ChangeCaseStatus {
 
-  static
-  function preProcess(&$form) {
+  static function preProcess(&$form) {
     if (!isset($form->_caseId)) {
       CRM_Core_Error::fatal(ts('Case Id not found.'));
     }
@@ -54,7 +53,7 @@ class CRM_Case_Form_Activity_ChangeCaseStatus {
    *
    * @return None
    */
-  function setDefaultValues(&$form) {
+  static function setDefaultValues(&$form) {
     $defaults = array();
     // Retrieve current case status
     $defaults['case_status_id'] = $form->_defaultCaseStatus;
@@ -62,8 +61,7 @@ class CRM_Case_Form_Activity_ChangeCaseStatus {
     return $defaults;
   }
 
-  static
-  function buildQuickForm(&$form) {
+  static function buildQuickForm(&$form) {
     $form->removeElement('status_id');
     $form->removeElement('priority_id');
 
@@ -90,8 +88,7 @@ class CRM_Case_Form_Activity_ChangeCaseStatus {
    * @static
    * @access public
    */
-  static
-  function formRule($values, $files, $form) {
+  static function formRule($values, $files, $form) {
     return TRUE;
   }
 
@@ -102,7 +99,7 @@ class CRM_Case_Form_Activity_ChangeCaseStatus {
    *
    * @return None
    */
-  public function beginPostProcess(&$form, &$params) {
+  static function beginPostProcess(&$form, &$params) {
     $params['id'] = CRM_Utils_Array::value('case_id', $params);
   }
 
@@ -113,7 +110,7 @@ class CRM_Case_Form_Activity_ChangeCaseStatus {
    *
    * @return None
    */
-  public function endPostProcess(&$form, &$params, $activity) {
+  static function endPostProcess(&$form, &$params, $activity) {
     $groupingValues = CRM_Core_OptionGroup::values('case_status', FALSE, TRUE, FALSE, NULL, 'value');
 
     // Set case end_date if we're closing the case. Clear end_date if we're (re)opening it.
@@ -144,8 +141,7 @@ class CRM_Case_Form_Activity_ChangeCaseStatus {
         // FIXME: Is there an existing function?
         $query = 'UPDATE civicrm_relationship SET end_date=NULL WHERE id=%1';
         foreach ($rels as $relId => $relData) {
-          $relParams = array(1 => array($relId, 'Integer'),
-          );
+          $relParams = array(1 => array($relId, 'Integer'));
           CRM_Core_DAO::executeQuery($query, $relParams);
         }
       }
@@ -156,8 +152,9 @@ class CRM_Case_Form_Activity_ChangeCaseStatus {
     $activity->priority_id = $params['priority_id'];
 
     if ($activity->subject == 'null') {
-      $activity->subject = ts('Case status changed from %1 to %2', array(1 => CRM_Utils_Array::value($form->_defaults['case_status_id'], $form->_caseStatus),
-          2 => CRM_Utils_Array::value($params['case_status_id'], $form->_caseStatus),
+      $activity->subject = ts('Case status changed from %1 to %2', array(
+          1 => CRM_Utils_Array::value($form->_defaults['case_status_id'], $form->_caseStatus),
+          2 => CRM_Utils_Array::value($params['case_status_id'], $form->_caseStatus)
         )
       );
       $activity->save();

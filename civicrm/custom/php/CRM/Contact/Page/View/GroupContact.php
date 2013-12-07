@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -48,10 +48,24 @@ class CRM_Contact_Page_View_GroupContact extends CRM_Core_Page {
     $pending = CRM_Contact_BAO_GroupContact::getContactGroup($this->_contactId, 'Pending');
     $out     = CRM_Contact_BAO_GroupContact::getContactGroup($this->_contactId, 'Removed');
 
+    // keep track of all 'added' contact groups so we can remove them from the smart group
+    // section
+    $staticGroups = array();
+    if (!empty($in)) {
+      foreach ($in as $group) {
+        $staticGroups[$group['group_id']] = 1;
+      }
+    }
+
     $this->assign('groupCount', $count);
     $this->assign_by_ref('groupIn', $in);
     $this->assign_by_ref('groupPending', $pending);
     $this->assign_by_ref('groupOut', $out);
+
+    // get the info on contact smart groups
+    $contactSmartGroupSettings = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
+      'contact_smart_group_display');
+    $this->assign('contactSmartGroupSettings', $contactSmartGroupSettings);
   }
 
   /**
@@ -63,7 +77,8 @@ class CRM_Contact_Page_View_GroupContact extends CRM_Core_Page {
    * @access public
    */
   function edit($groupId = NULL) {
-    $controller = new CRM_Core_Controller_Simple('CRM_Contact_Form_GroupContact',
+    $controller = new CRM_Core_Controller_Simple(
+      'CRM_Contact_Form_GroupContact',
       ts('Contact\'s Groups'),
       $this->_action
     );
@@ -72,7 +87,9 @@ class CRM_Contact_Page_View_GroupContact extends CRM_Core_Page {
     // set the userContext stack
     $session = CRM_Core_Session::singleton();
 
-    $session->pushUserContext(CRM_Utils_System::url('civicrm/contact/view',
+    $session->pushUserContext(
+      CRM_Utils_System::url(
+        'civicrm/contact/view',
         "action=browse&selectedChild=group&cid={$this->_contactId}"
       ),
       FALSE
@@ -98,7 +115,6 @@ class CRM_Contact_Page_View_GroupContact extends CRM_Core_Page {
     else {
       $this->_contactId = $tmpContactId;
     }
-    //NYSS end
 
     $this->assign('contactId', $this->_contactId);
 
@@ -124,12 +140,8 @@ class CRM_Contact_Page_View_GroupContact extends CRM_Core_Page {
     $this->assign('displayName', $displayName);
 
     if ($this->_action == CRM_Core_Action::DELETE) {
-      $groupContactId = CRM_Utils_Request::retrieve('gcid', 'Positive',
-        CRM_Core_DAO::$_nullObject, TRUE
-      );
-      $status = CRM_Utils_Request::retrieve('st', 'String',
-        CRM_Core_DAO::$_nullObject, TRUE
-      );
+      $groupContactId = CRM_Utils_Request::retrieve('gcid', 'Positive', CRM_Core_DAO::$_nullObject, TRUE);
+      $status = CRM_Utils_Request::retrieve('st', 'String', CRM_Core_DAO::$_nullObject, TRUE);
       if (is_numeric($groupContactId) && $status) {
         $this->del($groupContactId, $status, $this->_contactId);
       }
@@ -150,7 +162,7 @@ class CRM_Contact_Page_View_GroupContact extends CRM_Core_Page {
    *
    * $access public
    */
-  function del($groupContactId, $status, $contactID) {
+  static function del($groupContactId, $status, $contactID) {
     $groupId = CRM_Contact_BAO_GroupContact::getGroupId($groupContactId);
 
     switch ($status) {
@@ -171,16 +183,15 @@ class CRM_Contact_Page_View_GroupContact extends CRM_Core_Page {
         break;
     }
 
-    $groupNum = CRM_Contact_BAO_GroupContact::getContactGroup($this->_contactId, 'Added',
-      NULL, TRUE, TRUE
-    );
+    $groupNum =
+      CRM_Contact_BAO_GroupContact::getContactGroup($contactID, 'Added', NULL, TRUE, TRUE);
     if ($groupNum == 1 &&
       $groupStatus == 'Removed' &&
       CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::MULTISITE_PREFERENCES_NAME,
         'is_enabled'
       )
     ) {
-      CRM_Core_Session::setStatus('make sure at least one contact group association is maintained.');
+      CRM_Core_Session::setStatus(ts('Please ensure at least one contact group association is maintained.'), ts('Could Not Remove'));
       return FALSE;
     }
 

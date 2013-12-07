@@ -2,7 +2,7 @@
 
 function nyss_imapper_init() {
 	if (substr(request_path(),0,13) == "civicrm/imap/") {
-	    //civicrm_initialize(); //Make sure to include jquery first
+	    // civicrm_initialize(); //Make sure to include jquery first
 	    $module_path = drupal_get_path('module', 'nyss_imapper');
 	    drupal_add_css($module_path.'/nyss_imapper.css');
 	    drupal_add_css('./sites/default/themes/Bluebird/nyss_skin/tags/tags.css');

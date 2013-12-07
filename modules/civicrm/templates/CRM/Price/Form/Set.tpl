@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,12 +30,12 @@
 {capture assign="enableComponents"}{crmURL p='civicrm/admin/setting/component' q="reset=1"}{/capture}
 <div class="crm-form-block">
     <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
-    
+
     <table class="form-layout">
         <tr class="crm-price-set-form-block-title">
            <td class="label">{$form.title.label}</td>
            <td>
-	   {if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_price_set' field='title' id=$sid}{/if}{$form.title.html}
+     {if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_price_set' field='title' id=$sid}{/if}{$form.title.html}
            </td>
         </tr>
         <tr>
@@ -46,19 +46,19 @@
            <td class="label">{$form.extends.label}</td>
            <td>
            {if $extends eq false}
-	            <div class="status message">{ts 1=$enableComponents}No Components have been enabled for your site that can be configured with the price sets. Click <a href='%1'>here</a> if you want to enable CiviEvent/CiviContribute for your site.{/ts}</div>
+              <div class="status message">{ts 1=$enableComponents}No Components have been enabled for your site that can be configured with the price sets. Click <a href='%1'>here</a> if you want to enable CiviEvent/CiviContribute for your site.{/ts}</div>
           {else}
-	            {$form.extends.html}
+              {$form.extends.html}
           {/if}
           </td>
         </tr>
-	<tr id="contribution_type_id" class="crm-price-set-form-block-contribution_type_id">
-	   <td class="label">{$form.contribution_type_id.label}</td>
-           <td>{$form.contribution_type_id.html}</td>
+  <tr id="financial_type_id_row" class="crm-price-set-form-block-contribution_type_id crm-price-set-form-block-financial_type_id">
+     <td class="label">{$form.financial_type_id.label}</td>
+           <td>{$form.financial_type_id.html}</td>
            <td>&nbsp;</td>
         </tr>
         <tr class="crm-price-set-form-block-help_pre">
-	   <td class="label">{$form.help_pre.label}</td>
+     <td class="label">{$form.help_pre.label}</td>
            <td>{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_price_set' field='help_pre' id=$sid}{/if}{$form.help_pre.html}
            </td>
            <td>&nbsp;</td>
@@ -69,7 +69,7 @@
           </td>
         </tr>
         <tr class="crm-price-set-form-block-help_post">
-           <td class="label">{$form.help_post.label}</td> 
+           <td class="label">{$form.help_post.label}</td>
            <td>{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_price_set' field='help_post' id=$sid}{/if}{$form.help_post.html}
            </td>
         </tr>
@@ -84,7 +84,7 @@
         </tr>
      </table>
      <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
-    
+
 </div>
 {if $action eq 2 or $action eq 4} {* Update or View*}
     <p></p>
@@ -92,30 +92,4 @@
     <a href="{crmURL p='civicrm/admin/price/field' q="action=browse&reset=1&sid=$sid"}" class="button"><span>{ts}Fields for this Set{/ts}</span></a>
     </div>
 {/if}
- 
 
-{literal}
-<script type="text/javascript">
-    cj( function( ) {
-    	showHideContribution();
-	var showContribution = {/literal}"{$showContribution}"{literal};
-	if (showContribution) {
-	    cj("#contribution_type_id").show();
-	}
-    	cj("#extends\\[3\\]").click(function(){
-    	showHideContribution();	
-	});
-
-    });
-
-    function showHideContribution() {
-	if(cj("#extends\\[3\\]").attr('checked') ) {
-	      cj("#contribution_type_id").show();
-	} else {
-	      cj("#contribution_type_id").hide();
-	}
-
-}
-{/literal}
-
-</script>

@@ -1,45 +1,47 @@
 <?php
-// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2		                         				  |
+ | CiviCRM version 4.4                                       |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012							      |
+ | Copyright CiviCRM LLC (c) 2004-2013                    |
  +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.								      |
- |																      |
+ | This file is a part of CiviCRM.                      |
+ |                                      |
  | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License			  |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.	  |
- |																	  |
- | CiviCRM is distributed in the hope that it will be useful, but	  |
- | WITHOUT ANY WARRANTY; without even the implied warranty of	      |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.				  |
- | See the GNU Affero General Public License for more details.		  |
- |																	  |
- | You should have received a copy of the GNU Affero General Public	  |
- | License and the CiviCRM Licensing Exception along				  |
- | with this program; if not, contact CiviCRM LLC					  |
- | at info[AT]civicrm[DOT]org. If you have questions about the		  |
- | GNU Affero General Public License or the licensing of CiviCRM,	  |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing		  |
+ | under the terms of the GNU Affero General Public License        |
+ | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.    |
+ |                                    |
+ | CiviCRM is distributed in the hope that it will be useful, but    |
+ | WITHOUT ANY WARRANTY; without even the implied warranty of        |
+ | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.          |
+ | See the GNU Affero General Public License for more details.      |
+ |                                    |
+ | You should have received a copy of the GNU Affero General Public    |
+ | License and the CiviCRM Licensing Exception along          |
+ | with this program; if not, contact CiviCRM LLC            |
+ | at info[AT]civicrm[DOT]org. If you have questions about the      |
+ | GNU Affero General Public License or the licensing of CiviCRM,    |
+ | see the CiviCRM license FAQ at http://civicrm.org/licensing      |
  +--------------------------------------------------------------------+
 */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
-class CRM_Report_Form_Event_ParticipantListCount extends CRM_Report_Form {
+class CRM_Report_Form_Event_ParticipantListCount extends CRM_Report_Form_Event {
 
   protected $_summary = NULL;
 
   protected $_customGroupExtends = array(
-    'Participant'); function __construct() {
+    'Participant');
+
+  public $_drilldownReport = array('event/income' => 'Link to Detail Report');
+  function __construct() {
     $this->_columns = array(
       'civicrm_contact' =>
       array(
@@ -66,6 +68,22 @@ class CRM_Report_Form_Event_ParticipantListCount extends CRM_Report_Form {
           ),
         ),
       ),
+      'civicrm_employer' =>
+      array(
+        'dao'       => 'CRM_Contact_DAO_Contact',
+        'grouping'  => 'contact-fields',
+        'fields'    => array(
+          'id'           => array(
+            'no_display' => true,
+            'required'   => true,
+          ),
+          'organization_name' => array(
+            'title'      => 'Employer',
+            'default'    => TRUE,
+            'no_repeat'  => TRUE,
+          ),
+        ),
+      ),
       'civicrm_email' =>
       array(
         'dao' => 'CRM_Core_DAO_Email',
@@ -85,15 +103,15 @@ class CRM_Report_Form_Event_ParticipantListCount extends CRM_Report_Form {
         ),
       ),
      'civicrm_phone' =>
-     array( 
+     array(
        'dao' => 'CRM_Core_DAO_Phone',
        'grouping' => 'contact-fields',
-       'fields' => array( 
+       'fields' => array(
          'phone' => array(
            'title' => ts( 'Phone No' ),
            'default' => true,
          ),
-       ), 
+       ),
      ),
      'civicrm_address' =>
       array(
@@ -101,6 +119,14 @@ class CRM_Report_Form_Event_ParticipantListCount extends CRM_Report_Form {
         'fields' =>
         array(
           'street_address' => NULL,
+          'city' => NULL,
+          'postal_code' => NULL,
+          'state_province_id' =>
+          array('title' => ts('State/Province'),
+          ),
+          'country_id' =>
+          array('title' => ts('Country'),
+          ),
         ),
         'grouping' => 'contact-fields',
       ),
@@ -137,7 +163,7 @@ class CRM_Report_Form_Event_ParticipantListCount extends CRM_Report_Form {
             'name' => 'event_id',
             'title' => ts('Event'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => CRM_Event_PseudoConstant::event(NULL, NULL, "is_template IS NULL OR is_template = 0"),
+            'options' => $this->getEventFilterOptions(),
           ),
           'sid' =>
           array(
@@ -261,8 +287,8 @@ class CRM_Report_Form_Event_ParticipantListCount extends CRM_Report_Form {
     $statistics = parent::statistics($rows);
     $avg        = NULL;
     $select     = " SELECT SUM( {$this->_aliases['civicrm_line_item']}.participant_count ) as count,
-									SUM( {$this->_aliases['civicrm_line_item']}.line_total )	 as amount
-						";
+                  SUM( {$this->_aliases['civicrm_line_item']}.line_total )   as amount
+            ";
     $sql = "{$select} {$this->_from} {$this->_where}";
     $dao = CRM_Core_DAO::executeQuery($sql);
     if ($dao->fetch()) {
@@ -280,7 +306,7 @@ class CRM_Report_Form_Event_ParticipantListCount extends CRM_Report_Form {
         'title' => 'Total Income',
         'type' => CRM_Utils_Type::T_MONEY,
       );
-      $statistics['counts']['avg	  '] = array(
+      $statistics['counts']['avg    '] = array(
         'value' => $avg,
         'title' => 'Average',
         'type' => CRM_Utils_Type::T_MONEY,
@@ -336,31 +362,32 @@ class CRM_Report_Form_Event_ParticipantListCount extends CRM_Report_Form {
     $this->_select = "SELECT " . implode(', ', $select) . " ";
   }
 
-  static
-  function formRule($fields, $files, $self) {
+  static function formRule($fields, $files, $self) {
     $errors = $grouping = array();
     return $errors;
   }
 
   function from() {
     $this->_from = "
-		  FROM civicrm_participant {$this->_aliases['civicrm_participant']}
-				 LEFT JOIN civicrm_event {$this->_aliases['civicrm_event']} 
-						  ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participant']}.event_id ) AND ({$this->_aliases['civicrm_event']}.is_template IS NULL OR {$this->_aliases['civicrm_event']}.is_template = 0)
-				 LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']} 
-						  ON ({$this->_aliases['civicrm_participant']}.contact_id  = {$this->_aliases['civicrm_contact']}.id	)
-				 {$this->_aclFrom}
-				 LEFT JOIN civicrm_address {$this->_aliases['civicrm_address']}
-						  ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_address']}.contact_id AND 
-							  {$this->_aliases['civicrm_address']}.is_primary = 1 
-				 LEFT JOIN	civicrm_email {$this->_aliases['civicrm_email']} 
-						  ON ({$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_email']}.contact_id AND
-							  {$this->_aliases['civicrm_email']}.is_primary = 1) 
-         LEFT  JOIN civicrm_phone  {$this->_aliases['civicrm_phone']} 
+      FROM civicrm_participant {$this->_aliases['civicrm_participant']}
+         LEFT JOIN civicrm_event {$this->_aliases['civicrm_event']}
+              ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participant']}.event_id ) AND ({$this->_aliases['civicrm_event']}.is_template IS NULL OR {$this->_aliases['civicrm_event']}.is_template = 0)
+         LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
+              ON ({$this->_aliases['civicrm_participant']}.contact_id  = {$this->_aliases['civicrm_contact']}.id  )
+         {$this->_aclFrom}
+         LEFT JOIN civicrm_contact {$this->_aliases['civicrm_employer']}
+              ON ({$this->_aliases['civicrm_employer']}.id  = {$this->_aliases['civicrm_contact']}.employer_id  )
+         LEFT JOIN civicrm_address {$this->_aliases['civicrm_address']}
+              ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_address']}.contact_id AND
+                {$this->_aliases['civicrm_address']}.is_primary = 1
+         LEFT JOIN  civicrm_email {$this->_aliases['civicrm_email']}
+              ON ({$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_email']}.contact_id AND
+                {$this->_aliases['civicrm_email']}.is_primary = 1)
+         LEFT  JOIN civicrm_phone  {$this->_aliases['civicrm_phone']}
               ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_phone']}.contact_id AND
                 {$this->_aliases['civicrm_phone']}.is_primary = 1
-				 LEFT JOIN civicrm_line_item {$this->_aliases['civicrm_line_item']}
-						  ON {$this->_aliases['civicrm_participant']}.id ={$this->_aliases['civicrm_line_item']}.entity_id AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant'";
+         LEFT JOIN civicrm_line_item {$this->_aliases['civicrm_line_item']}
+              ON {$this->_aliases['civicrm_participant']}.id ={$this->_aliases['civicrm_line_item']}.entity_id AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant'";
   }
 
   function where() {
@@ -510,7 +537,7 @@ class CRM_Report_Form_Event_ParticipantListCount extends CRM_Report_Form {
           $rows[$rowNum]['civicrm_participant_event_id'] = CRM_Event_PseudoConstant::event($value, FALSE);
           $url = CRM_Report_Utils_Report::getNextUrl('event/Income',
             'reset=1&force=1&event_id_op=eq&event_id_value=' . $value,
-            $this->_absoluteUrl, $this->_id
+            $this->_absoluteUrl, $this->_id, $this->_drilldownReport
           );
           $rows[$rowNum]['civicrm_participant_event_id_link'] = $url;
           $rows[$rowNum]['civicrm_participant_event_id_hover'] = ts("View Event Income Details for this Event");

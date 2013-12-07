@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +30,7 @@
  *
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -306,8 +306,10 @@ class CRM_Event_BAO_Participant extends CRM_Event_DAO_Participant {
         }
         $roles = implode(', ', $role);
       }
+
+      $roleString = empty($roles) ? '' : $roles;
       $eventTitle = CRM_Core_DAO::getFieldValue('CRM_Event_DAO_Event', $participant->event_id, 'title');
-      $title = CRM_Contact_BAO_Contact::displayName($participant->contact_id) . ' (' . $roles . ' - ' . $eventTitle . ')';
+      $title = CRM_Contact_BAO_Contact::displayName($participant->contact_id) . ' (' . $roleString . ' - ' . $eventTitle . ')';
 
       // add the recently created Participant
       CRM_Utils_Recent::add($title,
@@ -341,7 +343,8 @@ class CRM_Event_BAO_Participant extends CRM_Event_DAO_Participant {
    * @static
    * @access public
    */
-  static function eventFull($eventId,
+  static function eventFull(
+    $eventId,
     $returnEmptySeats = FALSE,
     $includeWaitingList = TRUE,
     $returnWaitingCount = FALSE,
@@ -393,7 +396,7 @@ class CRM_Event_BAO_Participant extends CRM_Event_DAO_Participant {
 INNER JOIN  civicrm_event event ON ( event.id = participant.event_id )
             {$whereClause}";
 
-      $eventFullText = ts('This event is full !!!');
+      $eventFullText = ts('This event is full!!!');
       $participants = CRM_Core_DAO::executeQuery($query, $eventParams);
       while ($participants->fetch()) {
         //oops here event is full and we don't want waiting count.
@@ -466,7 +469,7 @@ SELECT  event.event_full_text,
       return ($returnEmptySeats) ? (int) $eventMaxSeats : FALSE;
     }
 
-    return $evenFullText;
+    return $eventFullText;
   }
 
   /**
@@ -481,7 +484,8 @@ SELECT  event.event_full_text,
    * @static
    * @access public
    */
-  static function priceSetOptionsCount($eventId,
+  static function priceSetOptionsCount(
+    $eventId,
     $skipParticipantIds = array(),
     $considerCounted = TRUE,
     $considerWaiting = TRUE,
@@ -621,28 +625,33 @@ GROUP BY  participant.event_id
       $tmpFields = CRM_Event_DAO_Participant::import();
 
       $note = array(
-        'participant_note' => array('title' => 'Participant Note',
+        'participant_note' => array(
+          'title' => 'Participant Note',
           'name' => 'participant_note',
           'headerPattern' => '/(participant.)?note$/i',
         ));
 
       $participantStatus = array(
-        'participant_status' => array('title' => 'Participant Status',
+        'participant_status' => array(
+          'title' => 'Participant Status',
           'name' => 'participant_status',
           'data_type' => CRM_Utils_Type::T_STRING,
         ));
 
       $participantRole = array(
-        'participant_role' => array('title' => 'Participant Role',
+        'participant_role' => array(
+          'title' => 'Participant Role',
           'name' => 'participant_role',
           'data_type' => CRM_Utils_Type::T_STRING,
         ));
 
       $eventType = array(
-        'event_type' => array('title' => 'Event Type',
+        'event_type' => array(
+          'title' => 'Event Type',
           'name' => 'event_type',
           'data_type' => CRM_Utils_Type::T_STRING,
         ));
+
       $tmpContactField = $contactFields = array();
       $contactFields = array( );
       if (!$onlyParticipant) {
@@ -651,7 +660,7 @@ GROUP BY  participant.event_id
         // Using new Dedupe rule.
         $ruleParams = array(
           'contact_type' => $contactType,
-          'level' => 'Strict',
+          'used'         => 'Unsupervised',
         );
         $fieldsArray = CRM_Dedupe_BAO_Rule::dedupeRuleFields($ruleParams);
 
@@ -676,7 +685,7 @@ GROUP BY  participant.event_id
         }
       }
       $extIdentifier = CRM_Utils_Array::value('external_identifier', $contactFields);
-      if ( $extIdentifier ) {
+      if ($extIdentifier) {
         $tmpContactField['external_identifier'] = $extIdentifier;
         $tmpContactField['external_identifier']['title'] =
           CRM_Utils_Array::value('title', $extIdentifier) . ' (match to contact)';
@@ -692,8 +701,6 @@ GROUP BY  participant.event_id
       $fields = array_merge($fields, $tmpContactField);
       $fields = array_merge($fields, $tmpFields);
       $fields = array_merge($fields, $note, $participantStatus, $participantRole, $eventType);
-      //$fields = array_merge($fields, $optionFields);
-
       $fields = array_merge($fields, CRM_Core_BAO_CustomField::getFieldsForImport('Participant'));
 
       self::$_importableFields = $fields;
@@ -738,7 +745,7 @@ GROUP BY  participant.event_id
         $participantFields['participant_campaign'] = array('title' => ts('Campaign Title'));
       }
 
-      $discountFields = CRM_Core_DAO_Discount::export();
+      $discountFields  = CRM_Core_DAO_Discount::export();
 
       $fields = array_merge($participantFields, $participantStatus, $participantRole, $noteField, $discountFields);
 
@@ -1409,7 +1416,8 @@ UPDATE  civicrm_participant
    * @access public
    * @static
    */
-  function sendTransitionParticipantMail($participantId,
+  static function sendTransitionParticipantMail(
+    $participantId,
     $participantValues,
     $eventDetails,
     $contactDetails,
@@ -1450,7 +1458,7 @@ UPDATE  civicrm_participant
         $receiptFrom = $eventDetails['confirm_from_name'] . ' <' . $eventDetails['confirm_from_email'] . '>';
       }
 
-      list($mailSent, $subject, $message, $html) = CRM_Core_BAO_MessageTemplates::sendTemplate(
+      list($mailSent, $subject, $message, $html) = CRM_Core_BAO_MessageTemplate::sendTemplate(
         array(
           'groupName' => 'msg_tpl_workflow_event',
           'valueName' => 'participant_' . strtolower($mailType),
@@ -1714,6 +1722,60 @@ WHERE    civicrm_participant.contact_id = {$contactID} AND
       $links[] = "<td><a href='{$viewUrl}'>" . $details['name'] . "</a></td><td></td><td><a href='{$editUrl}'>" . ts('Edit') . "</a></td>";
       $links = "<table><tr>" . implode("</tr><tr>", $links) . "</tr></table>";
       return $links;
+    }
+  }
+
+  /**
+   * to create trxn entry if an event has discount.
+   *
+   * @param int     $eventID  event id
+   * @param array   $contributionParams  contribution params.
+   *
+   * @static
+   */
+  static function createDiscountTrxn($eventID, $contributionParams, $feeLevel) {
+    // CRM-11124
+    $checkDiscount = CRM_Core_BAO_Discount::findSet($eventID,'civicrm_event');
+    if (!empty($checkDiscount)) {
+      $feeLevel = current($feeLevel);
+      $priceSetId = CRM_Price_BAO_PriceSet::getFor('civicrm_event', $eventID, NULL);
+      $query = "SELECT cpfv.amount FROM `civicrm_price_field_value` cpfv
+LEFT JOIN civicrm_price_field cpf ON cpfv.price_field_id = cpf.id
+WHERE cpf.price_set_id = %1 AND cpfv.label LIKE %2";
+      $params = array(1 => array($priceSetId, 'Integer'),
+        2 => array($feeLevel, 'String'));
+      $mainAmount = CRM_Core_DAO::singleValueQuery($query, $params);
+      $relationTypeId = key(CRM_Core_PseudoConstant::accountOptionValues('account_relationship', NULL, " AND v.name LIKE 'Discounts Account is' "));
+      $contributionParams['trxnParams']['from_financial_account_id'] = CRM_Contribute_PseudoConstant::financialAccountType(
+        $contributionParams['contribution']->financial_type_id, $relationTypeId);
+      if (CRM_Utils_Array::value('from_financial_account_id', $contributionParams['trxnParams'])) {
+        $contributionParams['trxnParams']['total_amount'] = $mainAmount - $contributionParams['total_amount'];
+        $contributionParams['trxnParams']['payment_processor_id'] = $contributionParams['trxnParams']['payment_instrument_id'] =
+          $contributionParams['trxnParams']['check_number'] = $contributionParams['trxnParams']['trxn_id'] =
+          $contributionParams['trxnParams']['net_amount'] = $contributionParams['trxnParams']['fee_amount'] = NULL;
+
+        CRM_Core_BAO_FinancialTrxn::create($contributionParams['trxnParams']);
+      }
+    }
+    return;
+  }
+
+  /**
+   * Function to delete participants of contact
+   *
+   * CRM-12155
+   *
+   * @param integer $contactId contact id
+   *
+   * @access public
+   * @static
+   */
+  static function deleteContactParticipant($contactId) {
+    $participant = new CRM_Event_DAO_Participant();
+    $participant->contact_id = $contactId;
+    $participant->find();
+    while ($participant->fetch()) {
+      self::deleteParticipant($participant->id);
     }
   }
 }

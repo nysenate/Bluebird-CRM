@@ -1,11 +1,10 @@
 <?php
-// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -33,15 +32,9 @@
  * @package CiviCRM_APIv3
  * @subpackage API_Membership
  * @todo delete function doesn't exist
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * @version $Id: MembershipContributionLink.php 30171 2010-10-14 09:11:27Z mover $
  */
-
-/**
- * Include utility functions
- */
-
-require_once 'CRM/Member/DAO/MembershipPayment.php';
 
 /**
  * Add or update a link between contribution and membership
@@ -54,29 +47,12 @@ require_once 'CRM/Member/DAO/MembershipPayment.php';
  * @access public
  */
 function civicrm_api3_membership_payment_create($params) {
-
-  require_once 'CRM/Core/Transaction.php';
-  $transaction = new CRM_Core_Transaction();
-
-
-  $mpDAO = new CRM_Member_DAO_MembershipPayment();
-  $mpDAO->copyValues($params);
-  $result = $mpDAO->save();
-
-  if (is_a($result, 'CRM_Core_Error')) {
-    $transaction->rollback();
-    return civicrm_api3_create_error($result->_errors[0]['message']);
-  }
-
-  $transaction->commit();
-
-  _civicrm_api3_object_to_array($mpDAO, $mpArray[$mpDAO->id]);
-
-  return civicrm_api3_create_success($mpArray, $params);
+  return _civicrm_api3_basic_create(_civicrm_api3_get_BAO(__FUNCTION__), $params);
 }
-/*
+
+/**
  * Adjust Metadata for Create action
- * 
+ *
  * The metadata is used for setting defaults, documentation & validation
  * @param array $params array or parameters determined by getfields
  */
@@ -97,8 +73,6 @@ function _civicrm_api3_membership_payment_create_spec(&$params) {
  * @access public
  */
 function civicrm_api3_membership_payment_get($params) {
-
-
   return _civicrm_api3_basic_get('CRM_Member_DAO_MembershipPayment', $params);
 }
 

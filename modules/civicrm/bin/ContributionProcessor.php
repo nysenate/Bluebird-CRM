@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -381,8 +381,8 @@ class CiviContributeProcessor {
           CRM_Core_DAO::$_nullObject, FALSE, 'live', 'REQUEST'
         );
 
-        require_once 'CRM/Core/BAO/PaymentProcessor.php';
-        $paymentProcessor = CRM_Core_BAO_PaymentProcessor::getPayment($ppID, $mode);
+        require_once 'CRM/Financial/BAO/PaymentProcessor.php';
+        $paymentProcessor = CRM_Financial_BAO_PaymentProcessor::getPayment($ppID, $mode);
 
         CRM_Core_Error::debug_log_message("Start Date=$start,  End Date=$end, ppID=$ppID, mode=$mode <p>", TRUE);
 

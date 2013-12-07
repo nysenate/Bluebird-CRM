@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -128,17 +128,19 @@ class CRM_Campaign_Form_Petition_Signature extends CRM_Core_Form {
    *
    * @var int
    * EMAIL_THANK = 1,
-   * 		connected user via login/pwd - thank you
-   * 	 	or dedupe contact matched who doesn't have a tag CIVICRM_TAG_UNCONFIRMED - thank you
-   * 		or login using fb connect - thank you + click to add msg to fb wall
+   *     connected user via login/pwd - thank you
+   *      or dedupe contact matched who doesn't have a tag CIVICRM_TAG_UNCONFIRMED - thank you
+   *     or login using fb connect - thank you + click to add msg to fb wall
    * EMAIL_CONFIRM = 2;
-   *		send a confirmation request email
+   *    send a confirmation request email
    */
   protected $_sendEmailMode;
 
   protected $_image_URL;
 
-  protected $_defaults = NULL; function __construct() {
+  protected $_defaults = NULL;
+
+  function __construct() {
     parent::__construct();
     // this property used by civicrm_fb module and if true, forces thank you email to be sent
     // for users signing in via Facebook connect; also sets Fb email to check against
@@ -281,6 +283,9 @@ class CRM_Campaign_Form_Petition_Signature extends CRM_Core_Form {
     }
 
     $this->setDefaults($this->_defaults);
+
+    // add in all state country selectors for enabled countries
+    CRM_Core_BAO_Address::fixAllStateSelects($this, $this->_defaults);
   }
 
   public function buildQuickForm() {
@@ -392,13 +397,13 @@ class CRM_Campaign_Form_Petition_Signature extends CRM_Core_Form {
       $dedupeParams = CRM_Dedupe_Finder::formatParams($params, $params['contact_type']);
       $dedupeParams['check_permission'] = '';
 
-      //dupesByParams($params, $ctype, $level = 'Strict', $except = array())
+      //dupesByParams($params, $ctype, $level = 'Unsupervised', $except = array())
       $ids = CRM_Dedupe_Finder::dupesByParams($dedupeParams, $params['contact_type']);
     }
 
-    $petition_params['id'] = $this->_surveyId;
-    $petition = array();
-    CRM_Campaign_BAO_Survey::retrieve($petition_params, $petition);
+        $petition_params['id'] = $this->_surveyId;
+        $petition = array();
+        CRM_Campaign_BAO_Survey::retrieve($petition_params, $petition);
 
     switch (count($ids)) {
       case 0:
@@ -413,10 +418,10 @@ class CRM_Campaign_Form_Petition_Signature extends CRM_Core_Form {
           $params['statusId'] = 2;
         }
         else {
-          $this->_sendEmailMode = self::EMAIL_CONFIRM;
+        $this->_sendEmailMode = self::EMAIL_CONFIRM;
 
-          // Set status for signature activity to scheduled until email is verified
-          $params['statusId'] = 1;
+        // Set status for signature activity to scheduled until email is verified
+        $params['statusId'] = 1;
         }
         break;
 
@@ -523,6 +528,7 @@ class CRM_Campaign_Form_Petition_Signature extends CRM_Core_Form {
 
     // create the signature activity record
     $params['contactId'] = $this->_contactId;
+    $params['activity_campaign_id'] = CRM_Utils_Array::value('campaign_id', $this->petition);
     $result = $this->bao->createSignature($params);
 
     // send thank you or email verification emails
@@ -547,6 +553,7 @@ class CRM_Campaign_Form_Petition_Signature extends CRM_Core_Form {
           unset($tag_params);
           $tag_params['contact_id'] = $this->_contactId;
           $tag_params['tag_id'] = $this->_tagId;
+          $tag_params['version'] = 3;
           $tag_value = civicrm_api('entity_tag', 'create', $tag_params);
         }
         break;
@@ -555,9 +562,10 @@ class CRM_Campaign_Form_Petition_Signature extends CRM_Core_Form {
     //send email
     $params['activityId'] = $result->id;
     $params['tagId'] = $this->_tagId;
-    $this->bao->sendEmail($params, $this->_sendEmailMode);
 
     $transaction->commit();
+
+    $this->bao->sendEmail($params, $this->_sendEmailMode);
 
     if ($result) {
       // call the hook before we redirect
@@ -580,6 +588,9 @@ class CRM_Campaign_Form_Petition_Signature extends CRM_Core_Form {
    * @access public
    */
   function buildCustom($id, $name, $viewOnly = FALSE) {
+
+    // create state country map array to hold selectors
+    $stateCountryMap = array();
 
     if ($id) {
       $session = CRM_Core_Session::singleton();
@@ -622,17 +633,27 @@ class CRM_Campaign_Form_Petition_Signature extends CRM_Core_Form {
             continue;
           }
 
+          // if state or country in the profile, create map
+          list($prefixName, $index) = CRM_Utils_System::explode('-', $key, 2);
+          if ($prefixName == 'state_province' || $prefixName == 'country' || $prefixName == 'county') {
+            if (!array_key_exists($index, $stateCountryMap)) {
+              $stateCountryMap[$index] = array();
+            }
+            $stateCountryMap[$index][$prefixName] = $key;
+          }
 
           CRM_Core_BAO_UFGroup::buildProfile($this, $field, CRM_Profile_Form::MODE_CREATE, $contactID, TRUE);
           $this->_fields[$key] = $field;
-          if ($field['add_captcha']) {
+          // CRM-11316 Is ReCAPTCHA enabled for this profile AND is this an anonymous visitor
+          if ($field['add_captcha'] && !$this->_contactId) {
             $addCaptcha = TRUE;
           }
         }
 
-        if ($addCaptcha &&
-          !$viewOnly
-        ) {
+        // initialize the state country map
+        CRM_Core_BAO_Address::addStateCountryMap($stateCountryMap);
+
+        if ($addCaptcha && !$viewOnly) {
           $captcha = CRM_Utils_ReCAPTCHA::singleton();
           $captcha->add($this);
           $this->assign("isCaptcha", TRUE);

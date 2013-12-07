@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,13 +28,13 @@
 {assign var="hideBlock" value="'searchForm_show','searchForm_hide'"}
 <div class="crm-block crm-form-block crm-search-form-block">
 <div id="searchForm_show" class="form-item">
-    <a href="#" onclick="hide('searchForm_show'); show('searchForm'); return false;"><img src="{$config->resourceBase}i/TreePlus.gif" class="action-icon" alt="{ts}open section{/ts}" /></a>
+    <a href="#" onclick="cj('#searchForm_show').hide(); cj('#searchForm').show(); return false;"><img src="{$config->resourceBase}i/TreePlus.gif" class="action-icon" alt="{ts}open section{/ts}" /></a>
     <label>{ts}Edit Search Criteria{/ts}</label>
 </div>
 
 <div id="searchForm" class="crm-block crm-form-block crm-contact-custom-search-eventDetails-form-block">
     <fieldset>
-        <legend><span id="searchForm_hide"><a href="#" onclick="hide('searchForm','searchForm_hide'); show('searchForm_show'); return false;"><img src="{$config->resourceBase}i/TreeMinus.gif" class="action-icon" alt="{ts}close section{/ts}" /></a></span>{ts}Search Criteria{/ts}</legend>
+        <legend><span id="searchForm_hide"><a href="#" onclick="cj('#searchForm').hide(); cj('#searchForm_show').show(); return false;"><img src="{$config->resourceBase}i/TreeMinus.gif" class="action-icon" alt="{ts}close section{/ts}" /></a></span>{ts}Search Criteria{/ts}</legend>
       <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
         <table class="form-layout-compressed">
             {* Loop through all defined search criteria fields (defined in the buildForm() function). *}
@@ -52,7 +52,7 @@
             {/foreach}
             <tr class="crm-contact-custom-search-eventDetails-form-block-event_type">
                 <td class="label">{ts}Event Type{/ts}</td>
-                <td>     
+                <td>
                     <div class="listing-box">
                         {foreach from=$form.event_type_id item="event_val"}
                             <div class="{cycle values="odd-row,even-row"}">
@@ -76,17 +76,17 @@
     {* Search request has returned 1 or more matching rows. Display results and collapse the search criteria fieldset. *}
     {assign var="showBlock" value="'searchForm_show'"}
     {assign var="hideBlock" value="'searchForm'"}
-    
-    <fieldset>    
+
+    <fieldset>
         {* The action task select and submit has been removed from this custom search because we're not dealing with contact records (so it won't work). *}
 
         {* This section displays the rows along and includes the paging controls *}
         <p>
 
         {include file="CRM/common/pager.tpl" location="top"}
-        
+
         {include file="CRM/common/pagerAToZ.tpl"}
-        
+
         {strip}
         <table summary="{ts}Search results listings.{/ts}">
             <thead class="sticky">
@@ -105,7 +105,7 @@
             {counter start=0 skip=1 print=false}
             {foreach from=$rows item=row}
                 <tr id='rowid{$row.contact_id}' class="{cycle values="odd-row,even-row"}">
-                
+
                     {foreach from=$columnHeaders item=header}
                         {assign var=fName value=$header.sort}
                         {if $fName eq 'sort_name'}
@@ -136,12 +136,11 @@
 
         <script type="text/javascript">
             {* this function is called to change the color of selected row(s) *}
-            var fname = "{$form.formName}";	
-            on_load_init_checkboxes(fname);
+            on_load_init_checkboxes("{$form.formName}");
         </script>
-       
+
         {include file="CRM/common/pager.tpl" location="bottom"}
-       
+
         </p>
     </fieldset>
     {* END Actions/Results section *}
@@ -150,7 +149,7 @@
 <script type="text/javascript">
     var showBlock = new Array({$showBlock});
     var hideBlock = new Array({$hideBlock});
-    
+
     {* hide and display the appropriate blocks *}
     on_load_init_blocks( showBlock, hideBlock );
 </script>

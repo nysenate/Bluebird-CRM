@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -36,21 +36,21 @@
 
 {*CRM-4320*}
 {if $statusMessage}
-    <div class="messages status">
+    <div class="messages status no-popup">
         <p>{$statusMessage}</p>
     </div>
 {/if}
 
-{if $priceSet && $allowGroupOnWaitlist}   
+{if $priceSet && $allowGroupOnWaitlist}
     {include file="CRM/Price/Form/ParticipantCount.tpl"}
-    <div id="waiting-status" style="display:none;" class="messages status"></div>
-    <div class="messages status" style="width:25%"><span id="event_participant_status"></span></div> 
+    <div id="waiting-status" style="display:none;" class="messages status no-popup"></div>
+    <div class="messages status no-popup" style="width:25%"><span id="event_participant_status"></span></div>
 {/if}
 
 <div class="crm-block crm-event-additionalparticipant-form-block">
 {if $priceSet}
      <fieldset id="priceset" class="crm-group priceset-group"><legend>{$event.fee_label}</legend>
-     	 {include file="CRM/Price/Form/PriceSet.tpl" extends="Event"}
+        {include file="CRM/Price/Form/PriceSet.tpl" extends="Event"}
     </fieldset>
 {else}
     {if $paidEvent}
@@ -71,8 +71,8 @@
     </tr>
 </table>
 
-{include file="CRM/UF/Form/Block.tpl" fields=$additionalCustomPre} 
-{include file="CRM/UF/Form/Block.tpl" fields=$additionalCustomPost} 
+{include file="CRM/UF/Form/Block.tpl" fields=$additionalCustomPre}
+{include file="CRM/UF/Form/Block.tpl" fields=$additionalCustomPost}
 
 <div id="crm-submit-buttons">
     {include file="CRM/common/formButtons.tpl"}
@@ -80,24 +80,24 @@
 </div>
 
 {if $priceSet && $allowGroupOnWaitlist}
-{literal} 
+{literal}
 <script type="text/javascript">
 
-function allowGroupOnWaitlist( participantCount, currentCount ) 
+function allowGroupOnWaitlist( participantCount, currentCount )
 {
   var formId          = {/literal}'{$formId}'{literal};
   var waitingMsg      = {/literal}'{$waitingMsg}'{literal};
   var confirmedMsg    = {/literal}'{$confirmedMsg}'{literal};
   var paymentBypassed = {/literal}'{$paymentBypassed}'{literal};
 
-  var availableRegistrations = {/literal}{$availableRegistrations}{literal}; 
-  if ( !participantCount ) participantCount = {/literal}'{$currentParticipantCount}'{literal};	 
+  var availableRegistrations = {/literal}{$availableRegistrations}{literal};
+  if ( !participantCount ) participantCount = {/literal}'{$currentParticipantCount}'{literal};
   var totalParticipants = parseInt(participantCount) + parseInt(currentCount);
 
   var seatStatistics = '{/literal}{ts 1="' + totalParticipants + '"}Total Participants : %1{/ts}{literal}' + '<br />' + '{/literal}{ts 1="' + availableRegistrations + '"}Event Availability : %1{/ts}{literal}';
   cj("#event_participant_status").html( seatStatistics );
-  
-  if ( !{/literal}'{$lastParticipant}'{literal} ) return; 
+
+  if ( !{/literal}'{$lastParticipant}'{literal} ) return;
 
   if ( totalParticipants > availableRegistrations ) {
 
@@ -106,20 +106,20 @@ function allowGroupOnWaitlist( participantCount, currentCount )
     if ( paymentBypassed ) {
       cj('input[name=_qf_Participant_'+ formId +'_next]').parent( ).show( );
       cj('input[name=_qf_Participant_'+ formId +'_next_skip]').parent( ).show( );
-    }  
+    }
   } else {
     if ( paymentBypassed ) {
       confirmedMsg += '<br /> ' + paymentBypassed;
-    }	
+    }
     cj('#waiting-status').show( ).html(confirmedMsg);
 
     if ( paymentBypassed ) {
       cj('input[name=_qf_Participant_'+ formId +'_next]').parent( ).hide( );
       cj('input[name=_qf_Participant_'+ formId +'_next_skip]').parent( ).hide( );
-    }  
+    }
   }
 }
 
 </script>
-{/literal} 	
+{/literal}
 {/if}

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -40,7 +40,7 @@
                         <tr>
                             <td>{$form.$print.html}&nbsp;&nbsp;</td>
                             <td>{$form.$pdf.html}&nbsp;&nbsp;</td>
-                            <td>{$form.$csv.html}&nbsp;&nbsp;</td>                        
+                            <td>{$form.$csv.html}&nbsp;&nbsp;</td>
                             {if $instanceUrl}
                                 <td>&nbsp;&nbsp;&raquo;&nbsp;<a href="{$instanceUrl}">{ts}Existing report(s) from this template{/ts}</a></td>
                             {/if}
@@ -48,16 +48,16 @@
                     </table>
                 </td>
                 <td>
-                    <table class="form-layout-compressed" align="right">                        
+                    <table class="form-layout-compressed" align="right">
                         {if $chartSupported}
                             <tr>
-                                <td>{$form.charts.html|crmReplace:class:big}</td>
+                                <td>{$form.charts.html|crmAddClass:big}</td>
                                 <td align="right">{$form.$chart.html}</td>
                             </tr>
                         {/if}
                         {if $form.groups}
                             <tr>
-                                <td>{$form.groups.html|crmReplace:class:big}</td>
+                                <td>{$form.groups.html|crmAddClass:big}</td>
                                 <td align="right">{$form.$group.html}</td>
                             </tr>
                         {/if}
@@ -74,10 +74,10 @@
     function disablePrintPDFButtons( viewtype ) {
       if (viewtype && flashChartType != viewtype) {
         cj('#_qf_Summary_submit_pdf').attr('disabled', true).addClass('button-disabled');
-	cj('#_qf_Summary_submit_print').attr('disabled', true).addClass('button-disabled');
+  cj('#_qf_Summary_submit_print').attr('disabled', true).addClass('button-disabled');
       } else {
         cj('#_qf_Summary_submit_pdf').removeAttr('disabled').removeClass('button-disabled');
-	cj('#_qf_Summary_submit_print').removeAttr('disabled').removeClass('button-disabled');
+  cj('#_qf_Summary_submit_print').removeAttr('disabled').removeClass('button-disabled');
       }
     }
     </script>

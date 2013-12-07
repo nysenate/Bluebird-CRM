@@ -4,10 +4,10 @@
         font-size:12px;
         font-family:Helvetica, Arial, sans;
         padding:6px;
-        -moz-border-radius: 	    4px;
-        -webkit-border-radius: 	4px;
-        -khtml-border-radius: 	4px;
-        border-radius:			4px;
+        -moz-border-radius:       4px;
+        -webkit-border-radius:   4px;
+        -khtml-border-radius:   4px;
+        border-radius:      4px;
         border:1px solid #96C0E7;
         width:200px;
     }
@@ -16,16 +16,16 @@
         padding:3px;
         margin: 0px;
         text-align:center;
-        -moz-border-radius: 	4px;
-        -webkit-border-radius: 	4px;
-        -khtml-border-radius: 	4px;
-        border-radius:			4px;
+        -moz-border-radius:   4px;
+        -webkit-border-radius:   4px;
+        -khtml-border-radius:   4px;
+        border-radius:      4px;
     }
 
     .crm-contribute-widget .crm-amounts {
         height:1em;
         margin:.8em 0px;
-        fon-size:13px;
+        font-size:13px;
     }
     .crm-contribute-widget .crm-amount-low {
         float:left;
@@ -42,10 +42,10 @@
         width:100%;
         display:block;
         border:1px solid #CECECE;
-        -moz-border-radius: 	4px;
-        -webkit-border-radius: 	4px;
-        -khtml-border-radius: 	4px;
-        border-radius:			4px;
+        -moz-border-radius:   4px;
+        -webkit-border-radius:   4px;
+        -khtml-border-radius:   4px;
+        border-radius:      4px;
         margin-bottom:.8em;
         text-align:left;
     }
@@ -53,10 +53,10 @@
         background-color:#2786C2;
         height:1em;
         display:block;
-        -moz-border-radius: 	4px 0px 0px 4px;
-        -webkit-border-radius: 	4px 0px 0px 4px;
-        -khtml-border-radius: 	4px 0px 0px 4px;
-        border-radius:			4px 0px 0px 4px;
+        -moz-border-radius:   4px 0px 0px 4px;
+        -webkit-border-radius:   4px 0px 0px 4px;
+        -khtml-border-radius:   4px 0px 0px 4px;
+        border-radius:      4px 0px 0px 4px;
         text-align:left;
     }
     .crm-contribute-widget .crm-amount-raised-wrapper {
@@ -65,7 +65,7 @@
     .crm-contribute-widget .crm-amount-raised {
         font-weight:bold;
     }
-    
+
     .crm-contribute-widget .crm-logo {
         text-align:center;
     }
@@ -80,10 +80,10 @@
     .crm-contribute-widget .crm-contribute-button {
         display:block;
         background-color:#CECECE;
-        -moz-border-radius: 	    4px;
-        -webkit-border-radius: 	4px;
-        -khtml-border-radius: 	4px;
-        border-radius:			4px;
+        -moz-border-radius:       4px;
+        -webkit-border-radius:   4px;
+        -khtml-border-radius:   4px;
+        border-radius:      4px;
         text-align:center;
         margin:0px 10% .8em 10%;
         text-decoration:none;
@@ -99,7 +99,7 @@
 
 </style>
 <style>
-    .crm-contribute-widget { 
+    .crm-contribute-widget {
         background-color: {/literal}{$form.color_main.value}{literal}; /* background color */
         border-color:{/literal}{$form.color_bg.value}{literal}; /* border color */
     }
@@ -131,7 +131,7 @@
     .crm-contribute-widget .crm-campaign {
         color:{/literal}{$form.color_main_text.value}{literal} /* other color*/
     }
-    
+
     .crm-contribute-widget .crm-home-url {
         color:{/literal}{$form.color_homepage_link.value}{literal} /* home page link color*/
     }
@@ -150,7 +150,7 @@
         <div class="crm-amount-fill" id="crm_cpid_{$cpageId}_amt_fill"></div>
     </div>
     <div class="crm-amount-raised-wrapper">
-        <span id="crm_cpid_{$cpageId}_amt_raised" class="crm-amount-raised"></span>
+        <span id="crm_cpid_{$cpageId}_amt_raised" class="crm-amount-raised"> -- placeholder -- </span>
     </div>
     {if $form.url_logo.value}
         <div class="crm-logo"><img src="{$form.url_logo.value}" alt={ts}Logo{/ts}></div>
@@ -159,7 +159,7 @@
     <div id="crm_cpid_{$cpageId}_comments" class="crm-comments"></div>
     <div id="crm_cpid_{$cpageId}_campaign" class="crm-campaign"></div>
     <div class="crm-contribute-button-wrapper" id="crm_cpid_{$cpageId}_button">
-        <a href='{crmURL p="civicrm/contribute/transact" q="reset=1&id=$cpageId" h=0 a=1 fe=1}' class="crm-contribute-button"><span class="crm-contribute-button-inner" id="crm_cpid_{$cpageId}_btn_txt"></span></a>
+        <a href='{crmURL p="civicrm/contribute/transact" q="reset=1&id=$cpageId" h=0 a=1 fe=1}' class="crm-contribute-button"><span class="crm-contribute-button-inner" id="crm_cpid_{$cpageId}_btn_txt"> -- placeholder -- </span></a>
     </div>
 </div>
 
@@ -174,7 +174,7 @@ if ( document.addEventListener ) {
     };
 } else if ( document.attachEvent ) {
     DOMContentLoaded = function() {
-        // Make sure body exists, at least, in case IE gets a little overzealous 
+        // Make sure body exists, at least, in case IE gets a little overzealous
         if ( document.readyState === "complete" ) {
             document.detachEvent( "onreadystatechange", DOMContentLoaded );
             onReady();
@@ -206,7 +206,7 @@ if ( document.addEventListener ) {
 function onReady( ) {
     var cpid    = {/literal}{$cpageId}{literal};
     var jsonvar = eval('jsondata' + cpid);
-    
+
     var crmCurrency = jsonvar.currencySymbol;
     document.getElementById('crm_cpid_'+cpid+'_title').innerHTML        = jsonvar.title;
     if ( jsonvar.money_target > 0 ) {

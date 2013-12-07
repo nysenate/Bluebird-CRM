@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,10 +24,6 @@
  +--------------------------------------------------------------------+
 *}
 {* this div is being used to apply special css *}
-{*NYSS include js files in print mode; allows sorting and removes IE erorrs*}
-{if $printOnly}
-  {include file="CRM/common/jquery.tpl"}
-{/if}
 {*NYSS*}
 {if !$printOnly}
   <div class="help">

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,6 +26,7 @@
 {literal}
 <script type="text/javascript">
 cj( function( ) {
+// for date sorting see http://wiki.civicrm.org/confluence/display/CRMDOC/Sorting+Date+Fields+in+dataTables+Widget
 var useAjax = {/literal}{if $useAjax}1{else}0{/if}{literal};
 
 var sourceUrl = '';
@@ -36,8 +37,8 @@ if ( useAjax ) {
  {/literal}{if isset($sourceUrl)}sourceUrl = "{$sourceUrl}";{/if}{literal}
  useClass = 'pagerDisplay';
  tcount =5;
-} 
- 
+}
+
 var tableId = '';
 var count   = 1;
 
@@ -46,15 +47,15 @@ var count   = 1;
 cj('table.' + useClass).each(function(){
     cj(this).attr('id','option' + tcount + count);
     tableId += count + ',';
-    count++; 
+    count++;
 });
 
 //remove last comma
 tableId = tableId.substring(0, tableId.length - 1 );
 eval('tableId =[' + tableId + ']');
- 
+
   cj.each(tableId, function(i,n){
-    tabId = '#option' + tcount + n; 
+    tabId = '#option' + tcount + n;
     //get the object of first tr data row.
     tdObject = cj(tabId + ' tr:nth(1) td');
     var id = -1; var count = 0; var columns=''; var sortColumn = '';
@@ -63,9 +64,9 @@ eval('tableId =[' + tableId + ']');
         var option = cj(this).prop('id').split("_");
         option  = ( option.length > 1 ) ? option[1] : option[0];
         stype   = 'numeric';
-        switch( option ) { 
+        switch( option ) {
             case 'sortable':
-                sortColumn += '[' + count + ', "asc" ],'; 
+                sortColumn += '[' + count + ', "asc" ],';
                 columns += '{"sClass": "'+ getElementClass( this ) +'"},';
             break;
             case 'date':
@@ -74,18 +75,18 @@ eval('tableId =[' + tableId + ']');
                 if ( cj(this).attr('class') == 'sortable' ){
                     sortColumn += '[' + count + ', "asc" ],';
                 }
-                sortId   = getRowId(tdObject, cj(this).attr('id') +' hiddenElement' ); 
+                sortId   = getRowId(tdObject, cj(this).attr('id') +' hiddenElement' );
                 columns += '{ "sType": \'' + stype + '\', "fnRender": function (oObj) { return oObj.aData[' + sortId + ']; },"bUseRendered": false},';
             break;
-            case 'nosort':           
+            case 'nosort':
                 columns += '{ "bSortable": false, "sClass": "'+ getElementClass( this ) +'"},';
             break;
             case 'currency':
                 columns += '{ "sType": "currency" },';
             break;
             case 'link':
-                columns += '{"sType": "html"},';	    
-            break;   
+                columns += '{"sType": "html"},';
+            break;
             default:
                 if ( cj(this).text() ) {
                     columns += '{"sClass": "'+ getElementClass( this ) +'"},';
@@ -94,30 +95,30 @@ eval('tableId =[' + tableId + ']');
                 }
             break;
         }
-        count++; 
-	});
-	columns    = columns.substring(0, columns.length - 1 );
-	sortColumn = sortColumn.substring(0, sortColumn.length - 1 );
-	eval('sortColumn =[' + sortColumn + ']');
-	eval('columns =[' + columns + ']');
-    	
+        count++;
+  });
+  columns    = columns.substring(0, columns.length - 1 );
+  sortColumn = sortColumn.substring(0, sortColumn.length - 1 );
+  eval('sortColumn =[' + sortColumn + ']');
+  eval('columns =[' + columns + ']');
+
         var currTable = cj(tabId);
         if (currTable) {
             // contains the dataTables master records
             var s = cj(document).dataTableSettings;
             if (s != 'undefined') {
                 var len = s.length;
-                for (var i=0; i < len; i++) {  
+                for (var i=0; i < len; i++) {
                     // if already exists, remove from the array
                     if (s[i].sInstance = tabId) {
                         s.splice(i,1);
-	            }
-    	        }
-  	    }
-	}
+              }
+              }
+        }
+  }
 
     var noRecordFoundMsg  = {/literal}'{ts escape="js"}There are no records.{/ts}'{literal};
- 
+
     oTable = null;
     if ( useAjax ) {
       oTable = cj(tabId).dataTable({
@@ -132,8 +133,8 @@ eval('tableId =[' + tableId + ']');
               "sDom"       : '<"crm-datatable-pager-top"lfp>rt<"crm-datatable-pager-bottom"ip>',
               "bServerSide": true,
               "sAjaxSource": sourceUrl,
-        	  "oLanguage":{"sEmptyTable"  : noRecordFoundMsg,
-		                   "sZeroRecords" : noRecordFoundMsg },
+              "oLanguage":{"sEmptyTable"  : noRecordFoundMsg,
+              "sZeroRecords" : noRecordFoundMsg },
 
               {/literal}{if !empty($callBack)}{literal}
               "fnDrawCallback": function() { checkSelected(); },
@@ -141,14 +142,14 @@ eval('tableId =[' + tableId + ']');
 
               "fnServerData": function ( sSource, aoData, fnCallback ) {
                 cj.ajax( {
-                  "dataType": 'json', 
-                  "type": "POST", 
-                  "url": sSource, 
-                  "data": aoData, 
+                  "dataType": 'json',
+                  "type": "POST",
+                  "url": sSource,
+                  "data": aoData,
                   "success": fnCallback
-                }); 
+                });
               }
-     		}); 
+         });
     } else {
       oTable = cj(tabId).dataTable({
                 "aaSorting"    : sortColumn,
@@ -159,13 +160,13 @@ eval('tableId =[' + tableId + ']');
                 "asStripClasses" : [ "odd-row", "even-row" ],
                 "bAutoWidth"   : false,
                 "aoColumns"   : columns,
-        		"oLanguage":{"sEmptyTable"  : noRecordFoundMsg,
-		                     "sZeroRecords" : noRecordFoundMsg }
-              }); 
+            "oLanguage":{"sEmptyTable"  : noRecordFoundMsg,
+                         "sZeroRecords" : noRecordFoundMsg }
+              });
     }
     var object;
 
-    if ( !useAjax ) { 
+    if ( !useAjax ) {
     cj('a.action-item').click( function(){
         object = cj(this);
         cj('table.display').one( 'mouseover', function() {
@@ -175,9 +176,9 @@ eval('tableId =[' + tableId + ']');
             cj.each( nNodes, function(i,n) {
                 //operation on selected row element.
                 if ( closestEle == n.id ){
-                    var col = 0; 
+                    var col = 0;
                     cj('tr#' + closestEle + ' td:not(.hiddenElement)').each( function() {
-                        if ( tdSelected.get(0) !== cj(this).get(0)  ){ 
+                        if ( tdSelected.get(0) !== cj(this).get(0)  ){
                             oTable.fnUpdate( cj(this).html() , i, col );
                         }
                         col++;
@@ -187,12 +188,12 @@ eval('tableId =[' + tableId + ']');
         });
     });
     }
-    
-    });       
+
+    });
 });
 
 function getElementClass( element ) {
-if( cj(element).attr('class') )	 return cj(element).attr('class');
+if( cj(element).attr('class') )   return cj(element).attr('class');
 return '';
 }
 
@@ -209,19 +210,19 @@ return optionId;
 //plugin to sort on currency
 var symbol = "{/literal}{$config->defaultCurrencySymbol($config->defaultSymbol)}{literal}";
 cj.fn.dataTableExt.oSort['currency-asc']  = function(a,b) {
-	var x = (a == "-") ? 0 : a.replace( symbol, "" );
-	var y = (b == "-") ? 0 : b.replace( symbol, "" );
-	x = parseFloat( x );
-	y = parseFloat( y );
-	return ((x < y) ? -1 : ((x > y) ?  1 : 0));
+  var x = (a == "-") ? 0 : a.replace( symbol, "" );
+  var y = (b == "-") ? 0 : b.replace( symbol, "" );
+  x = parseFloat( x );
+  y = parseFloat( y );
+  return ((x < y) ? -1 : ((x > y) ?  1 : 0));
 };
 
 cj.fn.dataTableExt.oSort['currency-desc'] = function(a,b) {
-	var x = (a == "-") ? 0 : a.replace( symbol, "" );
-	var y = (b == "-") ? 0 : b.replace( symbol, "" );
-	x = parseFloat( x );
-	y = parseFloat( y );
-	return ((x < y) ?  1 : ((x > y) ? -1 : 0));
+  var x = (a == "-") ? 0 : a.replace( symbol, "" );
+  var y = (b == "-") ? 0 : b.replace( symbol, "" );
+  x = parseFloat( x );
+  y = parseFloat( y );
+  return ((x < y) ?  1 : ((x > y) ? -1 : 0));
 };
 </script>
 {/literal}

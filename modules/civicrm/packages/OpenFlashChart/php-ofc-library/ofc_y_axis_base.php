@@ -113,4 +113,10 @@ class y_axis_base
 	{
 		$this->rotate = "vertical";
 	}
+
+	function set_logScale( $logScale)
+	{
+		$tmp = 'log-scale';
+		$this->$tmp = $logScale;
+	}
 }

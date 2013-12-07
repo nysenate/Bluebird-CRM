@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -44,8 +44,7 @@ class CRM_Upgrade_Incremental_Legacy {
    *
    * @param $preUpgradeMessage string, alterable
    */
-  static
-  function setPreUpgradeMessage(&$preUpgradeMessage, $currentVer, $latestVer) {
+  static function setPreUpgradeMessage(&$preUpgradeMessage, $currentVer, $latestVer) {
     $upgrade = new CRM_Upgrade_Form();
     $template = CRM_Core_Smarty::singleton();
 
@@ -57,8 +56,8 @@ class CRM_Upgrade_Incremental_Legacy {
       )
     ) {
       $query = "
-SELECT  id 
-  FROM  civicrm_mailing_job 
+SELECT  id
+  FROM  civicrm_mailing_job
  WHERE  status NOT IN ( 'Complete', 'Canceled' ) AND is_test = 0 LIMIT 1";
       $mjId = CRM_Core_DAO::singleValueQuery($query);
       if ($mjId) {
@@ -91,10 +90,27 @@ SELECT  id
         $preUpgradeMessage .= '<br />' . ts('To continue using Google Checkout Payment Processor with latest version of CiviCRM, requires updating merchant account settings. Please refer "Set API callback URL and other settings" section of <a href="%1" target="_blank"><strong>Google Checkout Configuration</strong></a> doc.', array(1 => 'http://wiki.civicrm.org/confluence/x/zAJTAg'));
       }
     }
+
+    // http://issues.civicrm.org/jira/browse/CRM-13572
+    // Depending on how the code was upgraded, some sites may still have copies of old
+    // source files left behind. This is often a forgivable offense, but it's quite
+    // dangerous for CIVI-SA-2013-001.
+    global $civicrm_root;
+    $ofcFile = "$civicrm_root/packages/OpenFlashChart/php-ofc-library/ofc_upload_image.php";
+    if (file_exists($ofcFile)) {
+      if (@unlink($ofcFile)) {
+        $preUpgradeMessage .= '<br />' . ts('This system included an outdated, insecure script (%1). The file was automatically deleted.', array(
+          1 => $ofcFile
+        ));
+      } else {
+        $preUpgradeMessage .= '<br />' . ts('This system includes an outdated, insecure script (%1). Please delete it.', array(
+          1 => $ofcFile
+        ));
+      }
+    }
   }
 
-  static
-  function checkMessageTemplate(&$template, &$message, $latestVer, $currentVer) {
+  static function checkMessageTemplate(&$template, &$message, $latestVer, $currentVer) {
     if (version_compare($currentVer, '3.1.alpha1') < 0) {
       return;
     }
@@ -170,8 +186,7 @@ SELECT  id
    * @param $rev string, an intermediate version; note that setPostUpgradeMessage is called repeatedly with different $revs
    * @return void
    */
-  static
-  function setPostUpgradeMessage(&$postUpgradeMessage, $rev) {
+  static function setPostUpgradeMessage(&$postUpgradeMessage, $rev) {
     if ($rev == '3.2.alpha1') {
       $postUpgradeMessage .= '<br />' . ts("We have reset the COUNTED flag to false for the event participant status 'Pending from incomplete transaction'. This change ensures that people who have a problem during registration can try again.");
     }
@@ -209,8 +224,8 @@ SELECT  id
     if ($rev == '3.2.beta4') {
       $statuses = array('New', 'Current', 'Grace', 'Expired', 'Pending', 'Cancelled', 'Deceased');
       $sql = "
-SELECT  count( id ) as statusCount 
-  FROM  civicrm_membership_status 
+SELECT  count( id ) as statusCount
+  FROM  civicrm_membership_status
  WHERE  name IN ( '" . implode("' , '", $statuses) . "' ) ";
       $count = CRM_Core_DAO::singleValueQuery($sql);
       if ($count < count($statuses)) {
@@ -234,11 +249,10 @@ SELECT  count( id ) as statusCount
    *
    * @param $rev string, the revision to which we are upgrading (Note: When processing a series of upgrades, this is the immediate upgrade - not the final)
    */
-  static
-  function upgrade_2_2_alpha1($rev) {
+  static function upgrade_2_2_alpha1($rev) {
     for ($stepID = 1; $stepID <= 4; $stepID++) {
       $formName = "CRM_Upgrade_TwoTwo_Form_Step{$stepID}";
-      eval("\$form = new $formName( );");
+      $form = new $formName();
 
       $error = NULL;
       if (!$form->verifyPreDBState($error)) {
@@ -279,10 +293,9 @@ SELECT  count( id ) as statusCount
    *
    * @param $rev string, the revision to which we are upgrading (Note: When processing a series of upgrades, this is the immediate upgrade - not the final)
    */
-  static
-  function upgrade_2_1_2($rev) {
+  static function upgrade_2_1_2($rev) {
     $formName = "CRM_Upgrade_TwoOne_Form_TwoOneTwo";
-    eval("\$form = new $formName( '$rev' );");
+    $form = new $formName($rev);
 
     $error = NULL;
     if (!$form->verifyPreDBState($error)) {
@@ -307,8 +320,7 @@ SELECT  count( id ) as statusCount
    * Name of this function will change according to the latest release
    *
    */
-  static
-  function upgrade_2_2_alpha3($rev) {
+  static function upgrade_2_2_alpha3($rev) {
     // skip processing sql file, if fresh install -
     if (!CRM_Core_DAO::getFieldValue('CRM_Core_DAO_OptionGroup', 'mail_protocol', 'id', 'name')) {
       $upgrade = new CRM_Upgrade_Form();
@@ -322,8 +334,7 @@ SELECT  count( id ) as statusCount
    *
    * @param $rev string, the revision to which we are upgrading (Note: When processing a series of upgrades, this is the immediate upgrade - not the final)
    */
-  static
-  function upgrade_2_2_beta1($rev) {
+  static function upgrade_2_2_beta1($rev) {
     if (!CRM_Core_DAO::checkFieldExists('civicrm_pcp_block', 'notify_email')) {
       $template = CRM_Core_Smarty::singleton();
       $template->assign('notifyAbsent', TRUE);
@@ -337,8 +348,7 @@ SELECT  count( id ) as statusCount
    *
    * @param $rev string, the revision to which we are upgrading (Note: When processing a series of upgrades, this is the immediate upgrade - not the final)
    */
-  static
-  function upgrade_2_2_beta2($rev) {
+  static function upgrade_2_2_beta2($rev) {
     $template = CRM_Core_Smarty::singleton();
     if (!CRM_Core_DAO::getFieldValue('CRM_Core_DAO_OptionValue',
         'CRM_Contact_Form_Search_Custom_ZipCodeRange', 'id', 'name'
@@ -359,8 +369,7 @@ SELECT  count( id ) as statusCount
    *
    * @param $rev string, the revision to which we are upgrading (Note: When processing a series of upgrades, this is the immediate upgrade - not the final)
    */
-  static
-  function upgrade_2_2_beta3($rev) {
+  static function upgrade_2_2_beta3($rev) {
     $template = CRM_Core_Smarty::singleton();
     if (!CRM_Core_DAO::getFieldValue('CRM_Core_DAO_OptionGroup', 'custom_data_type', 'id', 'name')) {
       $template->assign('customDataType', TRUE);
@@ -375,8 +384,7 @@ SELECT  count( id ) as statusCount
    *
    * @param $rev string, the revision to which we are upgrading (Note: When processing a series of upgrades, this is the immediate upgrade - not the final)
    */
-  static
-  function upgrade_3_0_alpha1($rev) {
+  static function upgrade_3_0_alpha1($rev) {
 
     $threeZero = new CRM_Upgrade_ThreeZero_ThreeZero();
 
@@ -396,8 +404,7 @@ SELECT  count( id ) as statusCount
    *
    * @param $rev string, the revision to which we are upgrading (Note: When processing a series of upgrades, this is the immediate upgrade - not the final)
    */
-  static
-  function upgrade_3_1_alpha1($rev) {
+  static function upgrade_3_1_alpha1($rev) {
 
     $threeOne = new CRM_Upgrade_ThreeOne_ThreeOne();
 
@@ -417,11 +424,10 @@ SELECT  count( id ) as statusCount
    *
    * @param $rev string, the revision to which we are upgrading (Note: When processing a series of upgrades, this is the immediate upgrade - not the final)
    */
-  static
-  function upgrade_2_2_7($rev) {
+  static function upgrade_2_2_7($rev) {
     $upgrade = new CRM_Upgrade_Form();
     $upgrade->processSQL($rev);
-    $sql = "UPDATE civicrm_report_instance 
+    $sql = "UPDATE civicrm_report_instance
                        SET form_values = REPLACE(form_values,'#',';') ";
     CRM_Core_DAO::executeQuery($sql, CRM_Core_DAO::$_nullArray);
 
@@ -450,8 +456,7 @@ SELECT  count( id ) as statusCount
    *
    * @param $rev string, the revision to which we are upgrading (Note: When processing a series of upgrades, this is the immediate upgrade - not the final)
    */
-  static
-  function upgrade_3_0_2($rev) {
+  static function upgrade_3_0_2($rev) {
 
     $template = CRM_Core_Smarty::singleton();
     //check whether upgraded from 2.1.x or 2.2.x
@@ -473,8 +478,7 @@ SELECT  count( id ) as statusCount
    *
    * @param $rev string, the revision to which we are upgrading (Note: When processing a series of upgrades, this is the immediate upgrade - not the final)
    */
-  static
-  function upgrade_3_0_4($rev) {
+  static function upgrade_3_0_4($rev) {
     //make sure 'Deceased' membership status present in db,CRM-5636
     $template = CRM_Core_Smarty::singleton();
 
@@ -494,8 +498,7 @@ SELECT  count( id ) as statusCount
    *
    * @param $rev string, the revision to which we are upgrading (Note: When processing a series of upgrades, this is the immediate upgrade - not the final)
    */
-  static
-  function upgrade_3_1_0($rev) {
+  static function upgrade_3_1_0($rev) {
     // upgrade all roles who have 'access CiviEvent' permission, to also have
     // newly added permission 'edit_all_events', CRM-5472
     $config = CRM_Core_Config::singleton();
@@ -523,8 +526,7 @@ SELECT  count( id ) as statusCount
    *
    * @param $rev string, the revision to which we are upgrading (Note: When processing a series of upgrades, this is the immediate upgrade - not the final)
    */
-  static
-  function upgrade_3_1_3($rev) {
+  static function upgrade_3_1_3($rev) {
     $threeOne = new CRM_Upgrade_ThreeOne_ThreeOne();
     $threeOne->upgrade_3_1_3();
 
@@ -537,8 +539,7 @@ SELECT  count( id ) as statusCount
    *
    * @param $rev string, the revision to which we are upgrading (Note: When processing a series of upgrades, this is the immediate upgrade - not the final)
    */
-  static
-  function upgrade_3_1_4($rev) {
+  static function upgrade_3_1_4($rev) {
     $threeOne = new CRM_Upgrade_ThreeOne_ThreeOne();
     $threeOne->upgrade_3_1_4();
 

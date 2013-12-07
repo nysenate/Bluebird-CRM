@@ -1438,30 +1438,36 @@ EOQ;
         $city = (strtolower(self::get('city')) == 'city'|| trim(self::get('city')) =='') ? '' : self::get('city');
         $dob = (strtolower(self::get('dob')) == 'yyyy-mm-dd'|| trim(self::get('dob')) =='') ? '' : self::get('dob');
         $state = (trim(self::get('state')) =='') ? '' : self::get('state');
+	if((isset($first_name))||(isset($last_name))){
+	  $display_name = trim($first_name." ".$last_name);
+	}else{
+	  $display_name = $email;
+	}
 
         if ($debug){
           echo "<h1>inputs</h1>";
-          echo"first_name: ";
+	  echo "</pre> first_name: <pre>";
           var_dump($first_name);
-          echo"last_name: ";
+	  echo "</pre> last_name: <pre>";
           var_dump($last_name);
-          echo"email: ";
+	  echo "</pre> email: <pre>";
           var_dump($email);
-          echo"phone: ";
+	  echo "</pre> phone: <pre>";
           var_dump($phone);
-          echo"street_address: ";
+	  echo "</pre> street_address: <pre>";
           var_dump($street_address);
-          echo"street_address_2: ";
+	  echo "</pre> street_address_2: <pre>";
           var_dump($street_address_2);
-          echo"postal_code: ";
+	  echo "</pre> postal_code: <pre>";
           var_dump($postal_code);
-          echo"city: ";
+	  echo "</pre> city: <pre>";
           var_dump($city);
-          echo"dob: ";
+	  echo "</pre> dob: <pre>";
           var_dump($dob);
-          echo"state: ";
+	  echo "</pre> state: <pre>";
           var_dump($state);
-
+	  echo "</pre> display name: <pre>";
+	  var_dump($display_name);
         }
 
         if((isset($first_name))||(isset($last_name))||(isset($email))){
@@ -1478,6 +1484,8 @@ EOQ;
         $params = array(
             'first_name' => $first_name,
             'last_name' => $last_name,
+	    'sort_name' => $display_name,
+	    'display_name' => $display_name,
             'contact_type' => 'Individual',
             'birth_date' => $dob,
             'version' => 3,

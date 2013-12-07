@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -78,8 +78,7 @@ class CRM_Queue_Runner {
    *
    * @return CRM_Queue_Runner or NULL
    */
-  static
-  function instance($qrid) {
+  static function instance($qrid) {
     if (!empty($_SESSION['queueRunners'][$qrid])) {
       return unserialize($_SESSION['queueRunners'][$qrid]);
     }
@@ -142,7 +141,7 @@ class CRM_Queue_Runner {
       // setRaiseException should't be necessary here, but there's a bug
       // somewhere which causes this setting to be lost.  Observed while
       // upgrading 4.0=>4.2.  This preference really shouldn't be a global
-      // setting -- it should be more of a contextual/stack-based setting. 
+      // setting -- it should be more of a contextual/stack-based setting.
       // This should be appropriate because queue-runners are not used with
       // basic web pages -- they're used with CLI/REST/AJAX.
       $errorScope = CRM_Core_TemporaryErrorScope::useException();
@@ -187,12 +186,12 @@ class CRM_Queue_Runner {
         $isOK = $item->data->run($this->getTaskContext());
         if (!$isOK) {
           $exception = new Exception('Task returned false');
-        }
+      }
       }
       catch(Exception$e) {
         $isOK = FALSE;
         $exception = $e;
-      }
+        }
 
       if ($isOK) {
         $this->queue->deleteItem($item);

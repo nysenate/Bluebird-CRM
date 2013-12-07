@@ -3,14 +3,6 @@
 <head>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
 <title>CiviCRM Installer</title>
-<script>
-function show(id) {
-	document.getElementById(id).style.display = '';
-}
-function hide(id) {
-	document.getElementById(id).style.display = 'none';
-}
-</script>
 <link rel="stylesheet" type="text/css" href=<?php echo $installURLPath . "template.css"?> />
 </head>
 
@@ -30,19 +22,19 @@ function hide(id) {
 <p class="warning">There are some issues that we recommend you look at before installing, however, you are still able to install the software.  Please see below for details.</p>
 
 <?php } else if(!$dbReq->hasErrors()) { ?>
-<p class="good">You're ready to install! &nbsp;&nbsp; 
+<p class="good">You're ready to install! &nbsp;&nbsp;
 </p>
 
 <?php } ?>
 
 <p>
-	<input id="install_button" type="submit" name="go" value="Check Requirements and Install CiviCRM" onclick="document.getElementById('saving_top').style.display = ''; this.value = 'Installing CiviCRM...'" />
-	
-	<span id="saving_top" style="display: none">
-	&nbsp;
+  <input id="install_button" type="submit" name="go" value="Check Requirements and Install CiviCRM" onclick="document.getElementById('saving_top').style.display = ''; this.value = 'Installing CiviCRM...'" />
+
+  <span id="saving_top" style="display: none">
+  &nbsp;
     <img src=<?php echo $installURLPath . "network-save.gif"?> />
-	(this will take a few minutes)
-	</span>
+  (this will take a few minutes)
+  </span>
 </p>
 <?php } ?>
 
@@ -64,25 +56,25 @@ create the database for you; otherwise, you must give the name of a database tha
 
 <h4>CiviCRM Database Settings</h4>
 <p style="margin-left: 2em" id="mysql_credentials" > <!--style="display: none"-->
-	<label for="mysql_server"> <span>MySQL server:</span> <input id="mysql_server" type="text" name="mysql[server]" value="<?php echo $databaseConfig['server'] ?>" /></label> <br />
-	<label for="mysql_username"> <span>MySQL username:</span> <input id="mysql_username" type="text" name="mysql[username]" value="<?php echo $databaseConfig['username'] ?>"  /></label> <br />
-	<label for="mysql_password"> <span>MySQL password:</span> <input id="mysql_password" type="password" name="mysql[password]" value="<?php echo $databaseConfig['password'] ?>" /></label> <br />
-	<label for="mysql_database"><span>MySQL database:</span> <input id="mysql_database" type="text" name="mysql[database]" value="<?php echo $databaseConfig['database'] ?>" /></label> <br />
+  <label for="mysql_server"> <span>MySQL server:</span> <input id="mysql_server" type="text" name="mysql[server]" value="<?php echo $databaseConfig['server'] ?>" /></label> <br />
+  <label for="mysql_username"> <span>MySQL username:</span> <input id="mysql_username" type="text" name="mysql[username]" value="<?php echo $databaseConfig['username'] ?>"  /></label> <br />
+  <label for="mysql_password"> <span>MySQL password:</span> <input id="mysql_password" type="password" name="mysql[password]" value="<?php echo $databaseConfig['password'] ?>" /></label> <br />
+  <label for="mysql_database"><span>MySQL database:</span> <input id="mysql_database" type="text" name="mysql[database]" value="<?php echo $databaseConfig['database'] ?>" /></label> <br />
 </p>
 
 <?php if ($installType == 'drupal') { ?>
 <h4>Drupal Database Settings</h4>
 <p style="margin-left: 2em" id="drupal_credentials" > <!--style="display: none"-->
-	<label for="drupal_server"> <span>MySQL server:</span> <input id="drupal_server" type="text" name="drupal[server]" value="<?php echo $drupalConfig['server'] ?>" /></label> <br />
-	<label for="drupal_username"> <span>MySQL username:</span> <input id="drupal_username" type="text" name="drupal[username]" value="<?php echo $drupalConfig['username'] ?>"  /></label> <br />
-	<label for="drupal_password"> <span>MySQL password:</span> <input id="drupal_password" type="password" name="drupal[password]" value="<?php echo $drupalConfig['password'] ?>" /></label> <br />
-	<label for="drupal_database"><span>MySQL database:</span> <input id="drupal_database" type="text" name="drupal[database]" value="<?php echo $drupalConfig['database'] ?>" /></label> <br />
+  <label for="drupal_server"> <span>MySQL server:</span> <input id="drupal_server" type="text" name="drupal[server]" value="<?php echo $drupalConfig['server'] ?>" /></label> <br />
+  <label for="drupal_username"> <span>MySQL username:</span> <input id="drupal_username" type="text" name="drupal[username]" value="<?php echo $drupalConfig['username'] ?>"  /></label> <br />
+  <label for="drupal_password"> <span>MySQL password:</span> <input id="drupal_password" type="password" name="drupal[password]" value="<?php echo $drupalConfig['password'] ?>" /></label> <br />
+  <label for="drupal_database"><span>MySQL database:</span> <input id="drupal_database" type="text" name="drupal[database]" value="<?php echo $drupalConfig['database'] ?>" /></label> <br />
 </p>
 <?php } ?>
 
 
 <h4>Other Settings</h4>
-<p style="margin-left: 2em" id="misc_credentials" > 
+<p style="margin-left: 2em" id="misc_credentials" >
 <!--style="display: none"-->
 <label for="seedLanguage"><span>Language of basic data:</span></label><select id="seedLanguage" name="seedLanguage">
   <?php

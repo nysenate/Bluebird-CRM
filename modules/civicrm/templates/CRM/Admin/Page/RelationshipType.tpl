@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -31,42 +31,44 @@
 </div>
 
 {if $action eq 1 or $action eq 2 or $action eq 4 or $action eq 8}
-   {include file="CRM/Admin/Form/RelationshipType.tpl"}	
+   {include file="CRM/Admin/Form/RelationshipType.tpl"}
 {else}
 
 {if $rows}
 {if !($action eq 1 and $action eq 2)}
     <div class="action-link">
-	    <a href="{crmURL q="action=add&reset=1"}" id="newRelationshipType" class="button"><span><div class="icon add-icon"></div>{ts}Add Relationship Type{/ts}</span></a>
+      <a href="{crmURL q="action=add&reset=1"}" id="newRelationshipType" class="button"><span><div class="icon add-icon"></div>{ts}Add Relationship Type{/ts}</span></a>
     </div>
 {/if}
 
 <div id="ltype">
 
     {strip}
-	{* handle enable/disable actions*}
-	{include file="CRM/common/enableDisable.tpl"}
+  {* handle enable/disable actions*}
+  {include file="CRM/common/enableDisable.tpl"}
     {include file="CRM/common/jsortable.tpl"}
         <table id="options" class="display">
         <thead>
         <tr>
-	        <th id="sortable">{ts}Relationship A to B{/ts}</th>
-	        <th>{ts}Relationship B to A{/ts}</th>
-	        <th>{ts}Contact Type A{/ts}</th>
-	        <th>{ts}Contact Type B{/ts}</th>
-	        <th></th>
+          <th id="sortable">{ts}Relationship A to B{/ts}</th>
+          <th>{ts}Relationship B to A{/ts}</th>
+          <th>{ts}Contact Type A{/ts}</th>
+          <th>{ts}Contact Type B{/ts}</th>
+          <th>{ts}Enabled?{/ts}</th>
+          <th></th>
         </tr>
         </thead>
         {foreach from=$rows item=row}
         <tr id="row_{$row.id}" class="{cycle values="odd-row,even-row"} {$row.class}{if NOT $row.is_active} disabled{/if} crm-relationship">
-            <td class="crm-relationship-label_a_b">{$row.label_a_b}</td>	
-            <td class="crm-relationship-label_b_a">{$row.label_b_a}</td>	
-            <td class="crm-relationship-contact_type_a_display"> 
+            <td class="crm-relationship-label_a_b">{$row.label_a_b}</td>
+            <td class="crm-relationship-label_b_a">{$row.label_b_a}</td>
+            <td class="crm-relationship-contact_type_a_display">
                 {if $row.contact_type_a_display} {$row.contact_type_a_display}
-                {if $row.contact_sub_type_a} - {$row.contact_sub_type_a} {/if}{else} {ts}All Contacts{/ts} {/if} </td>	
-            <td class="crm-relationship-contact_type_b_display"> 
+                {if $row.contact_sub_type_a} - {$row.contact_sub_type_a} {/if}{else} {ts}All Contacts{/ts} {/if} </td>
+            <td class="crm-relationship-contact_type_b_display">
                 {if $row.contact_type_b_display} {$row.contact_type_b_display}
-                {if $row.contact_sub_type_b} - {$row.contact_sub_type_b}{/if} {else} {ts}All Contacts{/ts} {/if} </td>	
+                {if $row.contact_sub_type_b} - {$row.contact_sub_type_b}{/if} {else} {ts}All Contacts{/ts} {/if} </td>
+            <td class="crm-relationship-is_active" id="row_{$row.id}_status">{if $row.is_active eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td> 
             <td>{$row.action|replace:'xx':$row.id}</td>
         </tr>
         {/foreach}
@@ -75,15 +77,15 @@
 
         {if !($action eq 1 and $action eq 2)}
             <div class="action-link">
-        	    <a href="{crmURL q="action=add&reset=1"}" id="newRelationshipType" class="button"><span><div class="icon add-icon"></div>{ts}Add Relationship Type{/ts}</span></a>
+              <a href="{crmURL q="action=add&reset=1"}" id="newRelationshipType" class="button"><span><div class="icon add-icon"></div>{ts}Add Relationship Type{/ts}</span></a>
             </div>
         {/if}
 </div>
 {else}
-    <div class="messages status">
+    <div class="messages status no-popup">
         <div class="icon inform-icon"></div>
         {capture assign=crmURL}{crmURL p='civicrm/admin/reltype' q="action=add&reset=1"}{/capture}
         {ts 1=$crmURL}There are no relationship types present. You can <a href='%1'>add one</a>.{/ts}
-    </div>    
+    </div>
 {/if}
 {/if}

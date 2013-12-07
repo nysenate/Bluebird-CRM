@@ -1,11 +1,10 @@
 <?php
-// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,11 +28,11 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
-class CRM_Report_Form_Event_IncomeCountSummary extends CRM_Report_Form {
+class CRM_Report_Form_Event_IncomeCountSummary extends CRM_Report_Form_Event {
 
   protected $_summary = NULL;
 
@@ -46,7 +45,11 @@ class CRM_Report_Form_Event_IncomeCountSummary extends CRM_Report_Form {
   protected $_add2groupSupported = FALSE;
 
   protected $_customGroupExtends = array(
-    'Event'); function __construct() {
+    'Event');
+
+  public $_drilldownReport = array('event/participantlist' => 'Link to Detail Report');
+
+  function __construct() {
 
     $this->_columns = array(
       'civicrm_event' =>
@@ -76,7 +79,7 @@ class CRM_Report_Form_Event_IncomeCountSummary extends CRM_Report_Form {
         array(
           'id' => array('title' => ts('Event Title'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => CRM_Event_PseudoConstant::event(NULL, NULL, "is_template IS NULL OR is_template = 0"),
+            'options' => $this->getEventFilterOptions(),
           ),
           'event_type_id' => array(
             'name' => 'event_type_id',
@@ -192,13 +195,13 @@ class CRM_Report_Form_Event_IncomeCountSummary extends CRM_Report_Form {
   }
 
   function from() {
-    $this->_from = " 
+    $this->_from = "
         FROM civicrm_event {$this->_aliases['civicrm_event']}
-             LEFT JOIN civicrm_participant {$this->_aliases['civicrm_participant']} 
-                    ON {$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participant']}.event_id AND 
-                       {$this->_aliases['civicrm_participant']}.is_test = 0 
+             LEFT JOIN civicrm_participant {$this->_aliases['civicrm_participant']}
+                    ON {$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participant']}.event_id AND
+                       {$this->_aliases['civicrm_participant']}.is_test = 0
              LEFT JOIN civicrm_line_item {$this->_aliases['civicrm_line_item']}
-                    ON {$this->_aliases['civicrm_participant']}.id ={$this->_aliases['civicrm_line_item']}.entity_id AND 
+                    ON {$this->_aliases['civicrm_participant']}.id ={$this->_aliases['civicrm_line_item']}.entity_id AND
                        {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant' ";
   }
 
@@ -381,7 +384,7 @@ class CRM_Report_Form_Event_IncomeCountSummary extends CRM_Report_Form {
             CRM_Event_PseudoConstant::event($value, FALSE);
             $url = CRM_Report_Utils_Report::getNextUrl('event/participantlist',
               'reset=1&force=1&event_id_op=eq&event_id_value=' . $value,
-              $this->_absoluteUrl, $this->_id
+              $this->_absoluteUrl, $this->_id, $this->_drilldownReport
             );
             $rows[$rowNum]['civicrm_event_title_link'] = $url;
             $rows[$rowNum]['civicrm_event_title_hover'] = ts("View Event Participants For this Event");

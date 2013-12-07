@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -48,9 +48,15 @@ class CRM_Core_BAO_Website extends CRM_Core_DAO_Website {
    * @static
    */
   static function add(&$params) {
+    $hook = empty($params['id']) ? 'create' : 'edit';
+    CRM_Utils_Hook::pre($hook, 'Website', CRM_Utils_Array::value('id', $params), $params);
+
     $website = new CRM_Core_DAO_Website();
     $website->copyValues($params);
-    return $website->save();
+    $website->save();
+
+    CRM_Utils_Hook::post($hook, 'Website', $website->id, $website);
+    return $website;
   }
 
   /**
@@ -90,7 +96,8 @@ class CRM_Core_BAO_Website extends CRM_Core_DAO_Website {
         is_array($ids) && !empty($ids)
       ) {
         foreach ($ids as $id => $value) {
-          if ($value['website_type_id'] == $values['website_type_id']) {
+          if (($value['website_type_id'] == $values['website_type_id'])
+            && CRM_Utils_Array::value('url', $value)) {
             $values['id'] = $id;
             unset($ids[$id]);
             break;
@@ -98,7 +105,9 @@ class CRM_Core_BAO_Website extends CRM_Core_DAO_Website {
         }
       }
       $values['contact_id'] = $contactID;
+      if ( CRM_Utils_Array::value('url', $values) ) {
       self::add($values);
+    }
     }
 
     if ($skipDelete && !empty($ids)) {
@@ -117,6 +126,8 @@ class CRM_Core_BAO_Website extends CRM_Core_DAO_Website {
   static function del($ids) {
     $query = 'DELETE FROM civicrm_website WHERE id IN ( ' . implode(',', $ids) . ')';
     CRM_Core_DAO::executeQuery($query);
+    // FIXME: we should return false if the del was unsuccessful
+    return TRUE;
   }
 
   /**

@@ -442,7 +442,6 @@ class HTML_QuickForm_group extends HTML_QuickForm_element
             if ($this->_appendName) {
                 $elementName = $element->getName();
                 if (isset($elementName)) {
-                  //NYSS 2547 Jira 10566
                   $newName = $name . '['. (strlen($elementName)? $elementName: $key) .']';
  	 	              $newID   = str_replace(array(']', '['), array('', '_'), $newName);
  	 	              $element->setName($newName);

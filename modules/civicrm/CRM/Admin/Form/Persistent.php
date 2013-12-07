@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -87,15 +87,14 @@ class CRM_Admin_Form_Persistent extends CRM_Core_Form {
     $params['is_config'] = $this->_config;
 
     if ($this->_action & CRM_Core_Action::ADD) {
-      $statusMsg = ts('DB Template has been added successfully.');
+      CRM_Core_Session::setStatus(ts('DB Template has been added successfully.'), ts("Saved"), "success");
     }
     if ($this->_action & CRM_Core_Action::UPDATE) {
       $ids['persistent'] = $this->_indexID;
-      $statusMsg = ts('DB Template has been updated successfully.');
+      CRM_Core_Session::setStatus(ts('DB Template has been updated successfully.'), ts("Saved"), "success");
     }
     CRM_Core_BAO_Persistent::add($params, $ids);
 
-    CRM_Core_Session::setStatus($statusMsg);
     CRM_Utils_System::redirect(CRM_Utils_System::url('civicrm/admin/tplstrings', "reset=1"));
   }
 }

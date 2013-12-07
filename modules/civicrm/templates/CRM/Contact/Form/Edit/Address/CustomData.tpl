@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,12 +26,11 @@
 
 {foreach from=$address_groupTree.$blockId item=cd_edit key=group_id}
 <div id="{$cd_edit.name}_{$group_id}_{$blockId}" class="form-item">
-    <div class="crm-accordion-wrapper crm-{$cd_edit.name}_{$group_id}_{$blockId}-accordion {if $cd_edit.collapse_display eq 0 }crm-accordion-open{else}crm-accordion-closed{/if}">
-        <div class="crm-accordion-header">
-            <div class="icon crm-accordion-pointer"></div> 
-                {$cd_edit.title}
-        </div><!-- /.crm-accordion-header -->
-        <div class="crm-accordion-body">
+    <div class="crm-collapsible crm-{$cd_edit.name}_{$group_id}_{$blockId}-accordion {if $cd_edit.collapse_display}collapsed{/if}">
+        <div class="collapsible-title">
+            {$cd_edit.title}
+        </div>
+        <div>
             {if $cd_edit.help_pre}
                 <div class="messages help">{$cd_edit.help_pre}</div>
             {/if}
@@ -42,8 +41,8 @@
             </table>
             <div class="spacer"></div>
             {if $cd_edit.help_post}<div class="messages help">{$cd_edit.help_post}</div>{/if}
-        </div><!-- /.crm-accordion-body -->
-    </div><!-- /.crm-accordion-wrapper -->
+        </div>
+    </div>
 
     <div id="custom_group_{$group_id}_{$blockId}"></div>
 </div>

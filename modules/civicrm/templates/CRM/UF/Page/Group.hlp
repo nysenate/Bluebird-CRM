@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -23,6 +23,9 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
+{htxt id='profile_overview-title'}
+  {ts}About Profiles{/ts}
+{/htxt}
 {htxt id='profile_overview'}
     <p>{ts}Profiles may be linked to specific modules, accessed via built-in CiviCRM URLs, or embedded into any web page using the HTML Form Snippet feature. Examples include:{/ts}</p>
     <ul class="indented">
@@ -42,6 +45,9 @@
     <p>{docURL page="user/the-user-interface/profiles"}</p>
 {/htxt}
 
+{htxt id='standalone-title'}
+  {ts}Form Snippet{/ts}
+{/htxt}
 {htxt id='standalone'}
     <p>{ts}The HTML Form Snippet code will display a form consisting of the active fields in this Profile. You can copy this HTML code and paste it into any block or page on ANY website where you want to collect contact information.{/ts}</p>
     <p>{ts}You can control the web page that someone is directed to AFTER completing the form by modifying the contents of the hidden <strong>postURL</strong> input field. Replace the default value with any valid complete URL prior to saving the form code to the desired page(s).{/ts}</p>

@@ -137,7 +137,7 @@ else {
 }
 
 // Grab default values for activities (priority, status, type).
-$aActivityPriority = CRM_Core_PseudoConstant::priority();
+$aActivityPriority = CRM_Core_PseudoConstant::get('CRM_Activity_DAO_Activity', 'priority_id');
 $aActivityType = CRM_Core_PseudoConstant::activityType();
 $aActivityStatus = CRM_Core_PseudoConstant::activityStatus();
 
@@ -163,7 +163,7 @@ $session->set('userID', 1);
 
 // Directory where file attachments will be written.
 $uploadDir = $config->customFileUploadDir;
-$uploadInbox = "$uploadDir/inbox";
+$uploadInbox = $uploadDir."inbox";
 if (!is_dir($uploadInbox)) {
   mkdir($uploadInbox);
   chmod($uploadInbox, 0777);
@@ -330,7 +330,7 @@ function checkImapAccount($mbox, $params)
     echo "- - - - - - - - - - - - - - - - - - \n";
     echo "[INFO]    Retrieving message $msg_num / $msg_count\n";
     $msgMetaData = retrieveMetaData($mbox, $msg_num);
-    $fwder = strtolower($msgMetaData->fromEmail);
+    $fwder = 'crain@nysenate.gov'; //strtolower($msgMetaData->fromEmail);
 
     // check whether or not the forwarder is valid
     if (array_key_exists($fwder, $params['authForwarders'])) {
@@ -346,7 +346,7 @@ function checkImapAccount($mbox, $params)
       }
     }
     else {
-       echo "[WARN]    Forwarder [$fwder] is not allowed to forward/send messages to this CRM; deleting message\n";
+      echo "[WARN]    Forwarder [$fwder] is not allowed to forward/send messages to this CRM; deleting message\n";
       $invalid_fwders[$fwder] = true;
       if (imap_delete($mbox, $msg_num) === true) {
 	echo "[DEBUG]   Message $msg_num has been deleted\n";

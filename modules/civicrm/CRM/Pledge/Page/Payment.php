@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -66,15 +66,7 @@ class CRM_Pledge_Page_Payment extends CRM_Core_Page {
       $this->assign('contactId', $this->_contactId);
 
       // check if we can process credit card contribs
-      $processors = CRM_Core_PseudoConstant::paymentProcessor(FALSE, FALSE,
-        "billing_mode IN ( 1, 3 )"
-      );
-      if (count($processors) > 0) {
-        $this->assign('newCredit', TRUE);
-      }
-      else {
-        $this->assign('newCredit', FALSE);
-      }
+      CRM_Core_Payment::allowBackofficeCreditCard($this);
 
       // check is the user has view/edit signer permission
       $permission = 'view';

@@ -79,6 +79,8 @@ sql="
     (3, 'delete in CiviCase', 'civicrm'),
     (3, 'edit all contacts', 'civicrm'),
     (3, 'edit groups', 'civicrm'),
+    (3, 'view my contact', 'civicrm'),
+    (3, 'edit my contact', 'civicrm'),
 
     (3, 'edit users with role Administrator', 'administerusersbyrole'),
     (3, 'cancel users with role Administrator', 'administerusersbyrole'),
@@ -131,6 +133,8 @@ sql="
     (4, 'delete in CiviMail', 'civicrm'),
     (4, 'edit all contacts', 'civicrm'),
     (4, 'edit groups', 'civicrm'),
+    (4, 'view my contact', 'civicrm'),
+    (4, 'edit my contact', 'civicrm'),
 
     (4, 'edit users with no custom roles', 'administerusersbyrole'),
     (4, 'cancel users with no custom roles', 'administerusersbyrole'),
@@ -224,6 +228,8 @@ sql="
     (5, 'use text format 1', 'filter'),
     (5, 'view all activities', 'civicrm'),
     (5, 'view all contacts', 'civicrm'),
+    (5, 'view my contact', 'civicrm'),
+    (5, 'edit my contact', 'civicrm'),
 
     (6, 'access all custom data', 'civicrm'),
     (6, 'access CiviCRM', 'civicrm'),
@@ -240,6 +246,8 @@ sql="
     (6, 'use text format 1', 'filter'),
     (6, 'view all activities', 'civicrm'),
     (6, 'view all contacts', 'civicrm'),
+    (6, 'view my contact', 'civicrm'),
+    (6, 'edit my contact', 'civicrm'),
 
     (7, 'access all custom data', 'civicrm'),
     (7, 'access CiviCRM', 'civicrm'),
@@ -255,6 +263,7 @@ sql="
     (7, 'profile view', 'civicrm'),
     (7, 'use text format 1', 'filter'),
     (7, 'view all contacts', 'civicrm'),
+    (7, 'view my contact', 'civicrm'),
 
     (8, 'access all custom data', 'civicrm'),
     (8, 'access CiviCRM', 'civicrm'),
@@ -266,6 +275,7 @@ sql="
     (8, 'use text format 1', 'filter'),
     (8, 'view all activities', 'civicrm'),
     (8, 'view all contacts', 'civicrm'),
+    (8, 'view my contact', 'civicrm'),
 
     (9, 'access administration pages', 'system'),
     (9, 'access all cases and activities', 'civicrm'),
@@ -310,6 +320,8 @@ sql="
     (9, 'view all activities', 'civicrm'),
     (9, 'view all contacts', 'civicrm'),
     (9, 'view the administration theme', 'system'),
+    (9, 'view my contact', 'civicrm'),
+    (9, 'edit my contact', 'civicrm'),
 
     (10, 'access all cases and activities', 'civicrm'),
     (10, 'access all custom data', 'civicrm'),
@@ -335,6 +347,8 @@ sql="
     (10, 'use text format 1', 'filter'),
     (10, 'view all activities', 'civicrm'),
     (10, 'view all contacts', 'civicrm'),
+    (10, 'view my contact', 'civicrm'),
+    (10, 'edit my contact', 'civicrm'),
 
     (11, 'access all cases and activities', 'civicrm'),
     (11, 'access all custom data', 'civicrm'),
@@ -358,6 +372,8 @@ sql="
     (11, 'use text format 1', 'filter'),
     (11, 'view all activities', 'civicrm'),
     (11, 'view all contacts', 'civicrm'),
+    (11, 'view my contact', 'civicrm'),
+    (11, 'edit my contact', 'civicrm'),
 
     (12, 'access all custom data', 'civicrm'),
     (12, 'access CiviCRM', 'civicrm'),
@@ -371,6 +387,8 @@ sql="
     (12, 'use text format 1', 'filter'),
     (12, 'view all activities', 'civicrm'),
     (12, 'view all contacts', 'civicrm'),
+    (12, 'view my contact', 'civicrm'),
+    (12, 'edit my contact', 'civicrm'),
 
     (13, 'access all custom data', 'civicrm'),
     (13, 'access CiviCRM', 'civicrm'),
@@ -380,9 +398,11 @@ sql="
     (13, 'add contacts', 'civicrm'),
     (13, 'profile listings', 'civicrm'),
     (13, 'profile view', 'civicrm'),
+    (13, 'profile create', 'civicrm'),
     (13, 'use text format 1', 'filter'),
     (13, 'view all activities', 'civicrm'),
     (13, 'view all contacts', 'civicrm'),
+    (13, 'view my contact', 'civicrm'),
 
     (14, 'create mailings', 'civicrm'),
     (14, 'delete in CiviMail', 'civicrm'),
@@ -412,6 +432,7 @@ sql="
     (18, 'profile view', 'civicrm'),
     (18, 'use text format 1', 'filter'),
     (18, 'view all contacts', 'civicrm'),
+    (18, 'view my contact', 'civicrm'),
 
     (19, 'administer inbox polling', 'nyss_civihooks');
 "

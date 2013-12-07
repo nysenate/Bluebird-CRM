@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -66,12 +66,18 @@ function civicrm_rules_rules_action_mailing_send_email($to,
     // also allow some user permission tokens for the toEmail
     $tokens['user'] = array(
       'user.permission-schedule mailings',
-      'user.permission-create_mailings',
-      'user.permission-approve_mailings',
+      'user.permission-create mailings',
+      'user.permission-approve mailings',
     );
     foreach ($toEmails as $toEmail) {
       $params['toEmail'] = CRM_Utils_Token::replaceMailingTokens($toEmail, $state->variables['mailing'], NULL, $tokens);
-      $params['toEmail'] = CRM_Utils_Token::replaceUserTokens($params['toEmail'], $tokens);
+      //NYSS we require a TO email, but can only send one; so we strip the first off and send the rest as cc's
+      if ( in_array(trim($toEmail, '{}'), $tokens['user']) ) {
+        $userEmails = explode(',', CRM_Utils_Token::replaceUserTokens($params['toEmail'], $tokens));
+        $params['toEmail'] = $userEmails[0];
+        array_shift($userEmails);
+        $params['cc'] = implode(',', $userEmails);
+      }
 
       CRM_Utils_Mail::send($params);
     }

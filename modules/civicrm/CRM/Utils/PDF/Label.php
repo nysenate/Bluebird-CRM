@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
  *  Class to print labels in Avery or custom formats
  * functionality and smarts to the base PDF_Label.
  *
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  *
  *
  */
@@ -61,6 +61,8 @@ class CRM_Utils_PDF_Label extends TCPDF {
   public $width;
   // Height of label
   public $height;
+  // Line Height of label - used in event code
+  public $lineHeight = 0;
   // Space between text and left edge of label
   public $paddingLeft;
   // Space between text and top edge of label
@@ -92,7 +94,8 @@ class CRM_Utils_PDF_Label extends TCPDF {
    * @param $unit     Unit of measure for the PDF document
    *
    * @access public
-   */ function __construct($format, $unit = 'mm') {
+   */
+  function __construct($format, $unit = 'mm') {
     if (is_array($format)) {
       // Custom format
       $tFormat = $format;
@@ -124,7 +127,7 @@ class CRM_Utils_PDF_Label extends TCPDF {
       $metric = $this->format['metric'];
     }
     else {
-      $value = $this->defaults[$name];
+      $value = CRM_Utils_Array::value($name, $this->defaults);
       $metric = $this->defaults['metric'];
     }
     if ($convert) {
@@ -134,8 +137,8 @@ class CRM_Utils_PDF_Label extends TCPDF {
   }
 
   /*
-     * Function to initialize label format settings
-     */
+   * Function to initialize label format settings
+   */
   function LabelSetFormat(&$format, $unit) {
     $this->defaults = CRM_Core_BAO_LabelFormat::getDefaultValues();
     $this->format = &$format;
@@ -163,8 +166,8 @@ class CRM_Utils_PDF_Label extends TCPDF {
   }
 
   /*
-     * function to Generate the pdf of one label (can be modified using SetGenerator)
-     */
+   * function to Generate the pdf of one label (can be modified using SetGenerator)
+   */
   function generateLabel($text) {
     $args = array(
       'w' => $this->width,
@@ -207,9 +210,16 @@ class CRM_Utils_PDF_Label extends TCPDF {
   }
 
   /*
-     * function to Print a label
-     */
+   * function to Print a label
+   */
   function AddPdfLabel($texte) {
+    if ($this->countX == $this->xNumber) {
+      // Page full, we start a new one
+      $this->AddPage();
+      $this->countX = 0;
+      $this->countY = 0;
+    }
+
     $posX = $this->marginLeft + ($this->countX * ($this->width + $this->xSpace));
     $posY = $this->marginTop + ($this->countY * ($this->height + $this->ySpace));
     $this->SetXY($posX + $this->paddingLeft, $posY + $this->paddingTop);
@@ -226,17 +236,6 @@ class CRM_Utils_PDF_Label extends TCPDF {
       $this->countX++;
       $this->countY = 0;
     }
-
-    if ($this->countX == $this->xNumber) {
-      // Page full, we start a new one
-      $this->countX = 0;
-      $this->countY = 0;
-    }
-
-    // We are in a new page, then we must add a page
-    if (($this->countX == 0) and ($this->countY == 0)) {
-      $this->AddPage();
-    }
   }
 
   function getFontNames() {
@@ -247,12 +246,23 @@ class CRM_Utils_PDF_Label extends TCPDF {
       'times' => ts('Times New Roman'),
       'dejavusans' => ts('Deja Vu Sans (UTF-8)'),
     );
+
+
+    // Check to see if we have any additional fonts to add. You can specify more fonts in
+    // civicrm.settings.php via: $config['CiviCRM Preferences']['additional_fonts']
+    // CRM-13307
+    $additionalFonts = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME, 'additional_fonts');
+    if (is_array($additionalFonts)) {
+      $fontLabel = array_merge($fontLabel, $additionalFonts);
+    }
+
     $tcpdfFonts = $this->fontlist;
     foreach ($tcpdfFonts as $fontName) {
       if (array_key_exists($fontName, $fontLabel)) {
         $list[$fontName] = $fontLabel[$fontName];
       }
     }
+
     return $list;
   }
 }

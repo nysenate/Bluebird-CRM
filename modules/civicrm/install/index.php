@@ -266,6 +266,9 @@ else {
 class InstallRequirements {
   var $errors, $warnings, $tests;
 
+  // @see CRM_Upgrade_Form::MINIMUM_THREAD_STACK
+  const MINIMUM_THREAD_STACK = 192;
+
   /**
    * Just check that the database configuration is okay
    */
@@ -309,6 +312,17 @@ class InstallRequirements {
             "MySQL $dbName Configuration",
             "Is auto_increment_increment set to 1",
             "An auto_increment_increment value greater than 1 is not currently supported. Please see issue CRM-7923 for further details and potential workaround.",
+          )
+        );
+        $this->requireMySQLThreadStack($databaseConfig['server'],
+          $databaseConfig['username'],
+          $databaseConfig['password'],
+          $databaseConfig['database'],
+          self::MINIMUM_THREAD_STACK,
+          array(
+            "MySQL $dbName Configuration",
+            "Does MySQL thread_stack meet minimum (" . self::MINIMUM_THREAD_STACK . "k)",
+            "", // "The MySQL thread_stack does not meet minimum " . CRM_Upgrade_Form::MINIMUM_THREAD_STACK . "k. Please update thread_stack in my.cnf.",
           )
         );
       }
@@ -356,6 +370,16 @@ class InstallRequirements {
             'Unable to lock tables. This MySQL user is missing the LOCK TABLES privilege.',
           )
         );
+        $this->requireMySQLTrigger($databaseConfig['server'],
+          $databaseConfig['username'],
+          $databaseConfig['password'],
+          $databaseConfig['database'],
+          array(
+            "MySQL $dbName Configuration",
+            'Can I create triggers in the database',
+            'Unable to create triggers. This MySQL user is missing the CREATE TRIGGERS  privilege.',
+          )
+        );
       }
     }
   }
@@ -368,7 +392,7 @@ class InstallRequirements {
 
     $this->errors = NULL;
 
-    $this->requirePHPVersion('5.3.0', array("PHP Configuration", "PHP5 installed", NULL, "PHP version " . phpversion()));
+    $this->requirePHPVersion('5.3.3', array("PHP Configuration", "PHP5 installed", NULL, "PHP version " . phpversion()));
 
     // Check that we can identify the root folder successfully
     $this->requireFile($crmPath . CIVICRM_DIRECTORY_SEPARATOR . 'README.txt',
@@ -401,8 +425,8 @@ class InstallRequirements {
 
     $configIDSiniDir = NULL;
     global $cmsPath;
+    $siteDir = getSiteDir($cmsPath, $_SERVER['SCRIPT_FILENAME']);
     if ($installType == 'drupal') {
-      $siteDir = getSiteDir($cmsPath, $_SERVER['SCRIPT_FILENAME']);
 
       // make sure that we can write to sites/default and files/
       $writableDirectories = array(
@@ -757,10 +781,45 @@ class InstallRequirements {
 
     $result = mysql_query('CREATE TEMPORARY TABLE civicrm_install_temp_table_test (test text)', $conn);
     if (!$result) {
+      $testDetails[2] = 'Could not create a temp table.';
       $this->error($testDetails);
     }
     $result = mysql_query('DROP TEMPORARY TABLE civicrm_install_temp_table_test');
   }
+
+  function requireMySQLTrigger($server, $username, $password, $database, $testDetails) {
+    $this->testing($testDetails);
+    $conn = @mysql_connect($server, $username, $password);
+    if (!$conn) {
+      $testDetails[2] = 'Could not login to the database.';
+      $this->error($testDetails);
+      return;
+    }
+
+    if (!@mysql_select_db($database, $conn)) {
+      $testDetails[2] = 'Could not select the database.';
+      $this->error($testDetails);
+      return;
+    }
+
+    $result = mysql_query('CREATE TABLE civicrm_install_temp_table_test (test text)', $conn);
+    if (!$result) {
+      $testDetails[2] = 'Could not create a table.';
+      $this->error($testDetails);
+    }
+
+    $result = mysql_query('CREATE TRIGGER civicrm_install_temp_table_test_trigger BEFORE INSERT ON civicrm_install_temp_table_test FOR EACH ROW BEGIN END');
+    if (!$result) {
+      mysql_query('DROP TABLE civicrm_install_temp_table_test');
+      $testDetails[2] = 'Could not create a trigger.';
+      $this->error($testDetails);
+    }
+
+
+    mysql_query('DROP TRIGGER civicrm_install_temp_table_test_trigger');
+    mysql_query('DROP TABLE civicrm_install_temp_table_test');
+  }
+
 
   function requireMySQLLockTables($server, $username, $password, $database, $testDetails) {
     $this->testing($testDetails);
@@ -830,6 +889,34 @@ class InstallRequirements {
     }
   }
 
+  function requireMySQLThreadStack($server, $username, $password, $database, $minValueKB, $testDetails) {
+    $this->testing($testDetails);
+    $conn = @mysql_connect($server, $username, $password);
+    if (!$conn) {
+      $testDetails[2] = 'Could not login to the database.';
+      $this->error($testDetails);
+      return;
+    }
+
+    if (!@mysql_select_db($database, $conn)) {
+      $testDetails[2] = 'Could not select the database.';
+      $this->error($testDetails);
+      return;
+    }
+
+    $result = mysql_query("SHOW VARIABLES LIKE 'thread_stack'", $conn); // bytes => kb
+    if (!$result) {
+      $testDetails[2] = 'Could not query thread_stack.';
+      $this->error($testDetails);
+    } else {
+      $values = mysql_fetch_row($result);
+      if ($values[1] < (1024*$minValueKB)) {
+        $testDetails[2] = 'MySQL "thread_stack" is ' . ($values[1]/1024) . 'k';
+        $this->error($testDetails);
+      }
+    }
+  }
+
   function requireDatabaseOrCreatePermissions($server,
     $username,
     $password,
@@ -877,7 +964,7 @@ class InstallRequirements {
       return TRUE;
     }
     else {
-      $testDetails[2] .= " (the following PHP variables are missing: " . implode(", ", $missing) . ")";
+      $testDetails[2] = " (the following PHP variables are missing: " . implode(", ", $missing) . ")";
       $this->error($testDetails);
     }
   }
@@ -975,7 +1062,8 @@ class Installer extends InstallRequirements {
       global $installType, $installURLPath;
 
       $output = NULL;
-      if ($installType == 'drupal' &&
+      if (
+        $installType == 'drupal' &&
         version_compare(VERSION, '7.0-rc1') >= 0
       ) {
 
@@ -1033,8 +1121,8 @@ class Installer extends InstallRequirements {
         // now enable civicrm module.
         module_enable(array('civicrm', 'civicrmtheme'));
 
-        // clear block and page cache, to make sure civicrm link is present in navigation block
-        cache_clear_all();
+        // clear block, page, theme, and hook caches
+        drupal_flush_all_caches();
 
         //add basic drupal permissions
         civicrm_install_set_drupal_perms();
@@ -1095,8 +1183,8 @@ class Installer extends InstallRequirements {
         // now enable civicrm module.
         module_enable(array('civicrm'));
 
-        // clear block and page cache, to make sure civicrm link is present in navigation block
-        cache_clear_all();
+        // clear block, page, theme, and hook caches
+        drupal_flush_all_caches();
 
         //add basic drupal permissions
         db_query('UPDATE {permission} SET perm = CONCAT( perm, \', access CiviMail subscribe/unsubscribe pages, access all custom data, access uploaded files, make online contributions, profile create, profile edit, profile view, register for events, view event info\') WHERE rid IN (1, 2)');

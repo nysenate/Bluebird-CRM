@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,6 +23,9 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
+{htxt id="test-intro-title"}
+  {ts}Test Message{/ts}
+{/htxt}
 {htxt id="test-intro"}
 <p>{ts}It's a good idea to test your mailing by sending it to yourself and/or a selected group of people in your organization. You can also view your content in the preview panel below.{/ts}</p>
 <p>{ts}Enter a single email address or select an existing group and click "Send a Test Mailing." Once you receive the test mailing:{/ts}</p>

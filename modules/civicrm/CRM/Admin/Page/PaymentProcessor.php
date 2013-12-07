@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -52,7 +52,7 @@ class CRM_Admin_Page_PaymentProcessor extends CRM_Core_Page_Basic {
    * @return string Classname of BAO.
    */
   function getBAOName() {
-    return 'CRM_Core_BAO_PaymentProcessor';
+    return 'CRM_Financial_BAO_PaymentProcessor';
   }
 
   /**
@@ -71,13 +71,13 @@ class CRM_Admin_Page_PaymentProcessor extends CRM_Core_Page_Basic {
         ),
         CRM_Core_Action::DISABLE => array(
           'name' => ts('Disable'),
-          'extra' => 'onclick = "enableDisable( %%id%%,\'' . 'CRM_Core_BAO_PaymentProcessor' . '\',\'' . 'enable-disable' . '\' );"',
+          'extra' => 'onclick = "enableDisable( %%id%%,\'' . 'CRM_Financial_BAO_PaymentProcessor' . '\',\'' . 'enable-disable' . '\' );"',
           'ref' => 'disable-action',
           'title' => ts('Disable Payment Processor'),
         ),
         CRM_Core_Action::ENABLE => array(
           'name' => ts('Enable'),
-          'extra' => 'onclick = "enableDisable( %%id%%,\'' . 'CRM_Core_BAO_PaymentProcessor' . '\',\'' . 'disable-enable' . '\' );"',
+          'extra' => 'onclick = "enableDisable( %%id%%,\'' . 'CRM_Financial_BAO_PaymentProcessor' . '\',\'' . 'disable-enable' . '\' );"',
           'ref' => 'enable-action',
           'title' => ts('Enable Payment Processor'),
         ),
@@ -108,7 +108,7 @@ class CRM_Admin_Page_PaymentProcessor extends CRM_Core_Page_Basic {
     CRM_Utils_System::setTitle(ts('Settings - Payment Processor'));
     $breadCrumb = array(array('title' => ts('Administration'),
         'url' => CRM_Utils_System::url('civicrm/admin',
-          'reset=1'
+        'reset=1'
         ),
       ));
     CRM_Utils_System::appendBreadCrumb($breadCrumb);
@@ -125,7 +125,7 @@ class CRM_Admin_Page_PaymentProcessor extends CRM_Core_Page_Basic {
   function browse($action = NULL) {
     // get all custom groups sorted by weight
     $paymentProcessor = array();
-    $dao              = new CRM_Core_DAO_PaymentProcessor();
+    $dao = new CRM_Financial_DAO_PaymentProcessor();
     $dao->is_test     = 0;
     $dao->domain_id   = CRM_Core_Config::domainID();
     $dao->orderBy('name');
@@ -134,6 +134,9 @@ class CRM_Admin_Page_PaymentProcessor extends CRM_Core_Page_Basic {
     while ($dao->fetch()) {
       $paymentProcessor[$dao->id] = array();
       CRM_Core_DAO::storeValues($dao, $paymentProcessor[$dao->id]);
+      $paymentProcessor[$dao->id]['payment_processor_type'] = CRM_Core_DAO::getFieldValue('CRM_Financial_DAO_PaymentProcessorType',
+        $paymentProcessor[$dao->id]['payment_processor_type_id']);
+
       // form all action links
       $action = array_sum(array_keys($this->links()));
 
@@ -148,7 +151,9 @@ class CRM_Admin_Page_PaymentProcessor extends CRM_Core_Page_Basic {
       $paymentProcessor[$dao->id]['action'] = CRM_Core_Action::formLink(self::links(), $action,
         array('id' => $dao->id)
       );
+      $paymentProcessor[$dao->id]['financialAccount'] = CRM_Financial_BAO_FinancialTypeAccount::getFinancialAccount($dao->id, 'civicrm_payment_processor');
     }
+
     $this->assign('rows', $paymentProcessor);
   }
 

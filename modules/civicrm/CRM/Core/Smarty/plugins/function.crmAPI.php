@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -36,16 +36,13 @@
 /**
  */
 function smarty_function_crmAPI($params, &$smarty) {
-  if (array_key_exists('action', $params) && !array_key_exists('action', $params)) {
-    $params['action'] = $params['method'];
-  }
-  if (empty($params['action'])) {
+  if (!array_key_exists('action', $params)) {
     $params['action'] = "get";
   }
-  if (empty($params['sequential'])) {
+  if (!array_key_exists('sequential', $params)) {
     $params['sequential'] = 1;
   }
-  if (empty($params['entity'])) {
+  if (!array_key_exists('entity', $params)) {
     $smarty->trigger_error("assign: missing 'entity' parameter");
     return "crmAPI: missing 'entity' parameter";
   }
@@ -64,7 +61,7 @@ function smarty_function_crmAPI($params, &$smarty) {
     return;
   }
 
-  if (empty($params['var'])) {
+  if (!array_key_exists('var', $params)) {
     return json_encode($result);
   }
   if (!empty($params['json'])) {

@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,7 +27,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -73,9 +73,7 @@ class CRM_Activity_Selector_Search extends CRM_Core_Selector_Base implements CRM
     'activity_status_id',
     'activity_status',
     'activity_subject',
-    'source_contact_id',
     'source_record_id',
-    'source_contact_name',
     'activity_type_id',
     'activity_type',
     'activity_is_test',
@@ -157,7 +155,8 @@ class CRM_Activity_Selector_Search extends CRM_Core_Selector_Base implements CRM
    *
    * @return CRM_Contact_Selector
    * @access public
-   */ function __construct(&$queryParams,
+   */
+  function __construct(&$queryParams,
     $action         = CRM_Core_Action::NONE,
     $activityClause = NULL,
     $single         = FALSE,
@@ -235,7 +234,8 @@ class CRM_Activity_Selector_Search extends CRM_Core_Selector_Base implements CRM
    */
   function &getRows($action, $offset, $rowCount, $sort, $output = NULL) {
 
-    $result = $this->_query->searchQuery($offset, $rowCount, $sort,
+    $result = $this->_query->searchQuery(
+      $offset, $rowCount, $sort,
       FALSE, FALSE,
       FALSE, FALSE,
       FALSE,
@@ -252,6 +252,10 @@ class CRM_Activity_Selector_Search extends CRM_Core_Selector_Base implements CRM
     $allCampaigns = CRM_Campaign_BAO_Campaign::getCampaigns(NULL, NULL, FALSE, FALSE, FALSE, TRUE);
 
     $engagementLevels = CRM_Campaign_PseudoConstant::engagementLevel();
+    $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
+    $sourceID = CRM_Utils_Array::key('Activity Source', $activityContacts);
+    $assigneeID = CRM_Utils_Array::key('Activity Assignees', $activityContacts);
+    $targetID = CRM_Utils_Array::key('Activity Targets', $activityContacts);
 
     while ($result->fetch()) {
       $row = array();
@@ -273,12 +277,12 @@ class CRM_Activity_Selector_Search extends CRM_Core_Selector_Base implements CRM
         $contactId = CRM_Utils_Array::value('source_contact_id', $row);
       }
 
-      $row['target_contact_name'] = CRM_Activity_BAO_ActivityTarget::getTargetNames($row['activity_id']);
-      $row['assignee_contact_name'] = CRM_Activity_BAO_ActivityAssignment::getAssigneeNames($row['activity_id']);
+      $row['target_contact_name']   = CRM_Activity_BAO_ActivityContact::getNames($row['activity_id'], $targetID);
+      $row['assignee_contact_name'] = CRM_Activity_BAO_ActivityContact::getNames($row['activity_id'], $assigneeID);
+      list($row['source_contact_name'], $row['source_contact_id']) = CRM_Activity_BAO_ActivityContact::getNames($row['activity_id'], $sourceID, TRUE);
+      $row['source_contact_name'] = implode(',', array_values($row['source_contact_name']));
+      $row['source_contact_id'] = implode(',', $row['source_contact_id']);
 
-      if (CRM_Utils_Array::value('source_contact_id', $row)) {
-        $row['source_contact_name'] = CRM_Contact_BAO_Contact::displayName($row['source_contact_id']);
-      }
       if ($this->_context == 'search') {
         $row['checkbox'] = CRM_Core_Form::CB_PREFIX . $result->activity_id;
       }
@@ -293,9 +297,14 @@ class CRM_Activity_Selector_Search extends CRM_Core_Selector_Base implements CRM
       }
       $bulkActivityTypeID = CRM_Utils_Array::key('Bulk Email', $activityType);
       $row['mailingId'] = '';
-      if ($accessCiviMail && in_array($result->source_record_id, $mailingIDs) && ($bulkActivityTypeID == $activityTypeId)) {
+      if (
+        $accessCiviMail &&
+        ($mailingIDs === TRUE || in_array($result->source_record_id, $mailingIDs)) &&
+        ($bulkActivityTypeID == $activityTypeId) &&
+        !empty($bulkActivityTypeID)//NYSS 7455
+      ) {
         $row['mailingId'] = CRM_Utils_System::url('civicrm/mailing/report',
-          "mid={$result->source_record_id}&reset=1&cid={$result->source_contact_id}&context=activitySelector"
+          "mid={$result->source_record_id}&reset=1&cid={$contactId}&context=activitySelector"
         );
         $row['recipients'] = ts('(recipients)');
         $row['target_contact_name'] = '';

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,9 +24,9 @@
  +--------------------------------------------------------------------+
 *}
 
-{* 
+{*
 file contains function to add and remove overlay during ajax request,
-this is defined in template because we want to localize the 
+this is defined in template because we want to localize the
 display message message.
 *}
 {literal}
@@ -35,7 +35,7 @@ display message message.
  * function to add overlay during ajax action
  */
 function addCiviOverlay( element ) {
-  var message = {/literal}"{ts}Please wait...{/ts}"{literal}; 
+  var message = {/literal}"{ts escape='js'}Please wait...{/ts}"{literal};
   cj( element ).block({
     message: message,
     theme: true,

@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -40,6 +40,7 @@
 class CRM_Admin_Form_Setting extends CRM_Core_Form {
 
   protected $_defaults;
+  protected $_settings = array();
 
   /**
    * This function sets the default values for the form.
@@ -48,7 +49,8 @@ class CRM_Admin_Form_Setting extends CRM_Core_Form {
    * @access public
    *
    * @return None
-   */ function setDefaultValues() {
+   */
+  function setDefaultValues() {
     if (!$this->_defaults) {
       $this->_defaults = array();
       $formArray       = array('Component', 'Localization');
@@ -91,17 +93,21 @@ class CRM_Admin_Form_Setting extends CRM_Core_Form {
         '1' => 1) + $autoSearchFields;
       $this->_defaults['autocompleteContactReference'] = array(
         '1' => 1) + $cRSearchFields;
+
+      // we can handle all the ones defined in the metadata here. Others to be converted
+      foreach ($this->_settings as $setting => $group){
+        $settingMetaData = civicrm_api('setting', 'getfields', array('version' => 3, 'name' => $setting));
+        $this->_defaults[$setting] = civicrm_api('setting', 'getvalue', array(
+          'version' => 3,
+          'name' => $setting,
+          'group' => $group,
+          'default_value' => CRM_Utils_Array::value('default', $settingMetaData['values'][$setting])
+          )
+        );
+      }
+
       $this->_defaults['enableSSL'] = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME, 'enableSSL', NULL, 0);
       $this->_defaults['verifySSL'] = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME, 'verifySSL', NULL, 1);
-
-      $sql = "
-SELECT time_format
-FROM   civicrm_preferences_date
-WHERE  time_format IS NOT NULL
-AND    time_format <> ''
-LIMIT  1
-";
-      $this->_defaults['timeInputFormat'] = CRM_Core_DAO::singleValueQuery($sql);
     }
 
     return $this->_defaults;
@@ -130,6 +136,34 @@ LIMIT  1
         ),
       )
     );
+
+    foreach ($this->_settings as $setting => $group){
+      $settingMetaData = civicrm_api('setting', 'getfields', array('version' => 3, 'name' => $setting));
+      if(isset($settingMetaData['values'][$setting]['quick_form_type'])){
+        $add = 'add' . $settingMetaData['values'][$setting]['quick_form_type'];
+        if($add == 'addElement'){
+          $this->$add(
+            $settingMetaData['values'][$setting]['html_type'],
+            $setting,
+            ts($settingMetaData['values'][$setting]['title']),
+            CRM_Utils_Array::value('html_attributes', $settingMetaData['values'][$setting], array())
+          );
+        }
+        else{
+          $this->$add($setting, ts($settingMetaData['values'][$setting]['title']));
+        }
+        $this->assign("{$setting}_description", ts($settingMetaData['values'][$setting]['description']));
+        if($setting == 'max_attachments'){
+          //temp hack @todo fix to get from metadata
+          $this->addRule('max_attachments', ts('Value should be a positive number'), 'positiveInteger');
+        }
+        if($setting == 'maxFileSize'){
+          //temp hack
+          $this->addRule('maxFileSize', ts('Value should be a positive number'), 'positiveInteger');
+        }
+
+      }
+    }
   }
 
   /**
@@ -176,6 +210,16 @@ LIMIT  1
       unset($params['autocompleteContactReference']);
     }
 
+    // save components to be enabled
+    if (array_key_exists('enableComponents', $params)) {
+      CRM_Core_BAO_Setting::setItem($params['enableComponents'],
+        CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,'enable_components');
+
+      // unset params by emptying the values, so while retrieving we can detect and load from settings table
+      // instead of config-backend for backward compatibility. We could use unset() in later releases.
+      $params['enableComponents'] = $params['enableComponentIDs'] = array();
+    }
+
     // save checksum timeout
     if (CRM_Utils_Array::value('checksumTimeout', $params)) {
       CRM_Core_BAO_Setting::setItem($params['checksumTimeout'],
@@ -194,8 +238,6 @@ AND    time_format <> ''
 ";
       $sqlParams = array(1 => array($params['timeInputFormat'], 'String'));
       CRM_Core_DAO::executeQuery($query, $sqlParams);
-
-      unset($params['timeInputFormat']);
     }
 
     // verify ssl peer option
@@ -215,14 +257,14 @@ AND    time_format <> ''
       );
       unset($params['enableSSL']);
     }
-
-    CRM_Core_BAO_ConfigSetting::add($params);
-
-    // also delete the CRM_Core_Config key from the database
-    $cache = CRM_Utils_Cache::singleton();
-    $cache->delete('CRM_Core_Config');
-
-    CRM_Core_Session::setStatus(ts('Your changes have been saved.'));
+    $settings = array_intersect_key($params, $this->_settings);
+    $result = civicrm_api('setting', 'create', $settings + array('version' => 3));
+    foreach ($settings as $setting => $settingGroup){
+      //@todo array_diff this
+      unset($params[$setting]);
+    }
+    CRM_Core_BAO_ConfigSetting::create($params);
+    CRM_Core_Session::setStatus(" ", ts('Changes Saved.'), "success");
   }
 
   public function rebuildMenu() {

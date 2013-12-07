@@ -1,11 +1,10 @@
 <?php
-// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -33,13 +32,11 @@
  * @package CiviCRM_APIv3
  * @subpackage API_Group
  *
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * @version $Id: GroupContact.php 21624 2009-06-04 22:02:55Z mover $
  *
  */
 
-
-require_once 'CRM/Contact/BAO/GroupOrganization.php';
 
 /**
  * This API will give list of the groups for particular contact
@@ -78,9 +75,9 @@ function civicrm_api3_group_organization_create($params) {
   return civicrm_api3_create_success($values, $params, 'group_organization', 'get', $groupOrgBAO);
 }
 
-/*
+/**
  * Adjust Metadata for Create action
- * 
+ *
  * The metadata is used for setting defaults, documentation & validation
  * @param array $params array or parameters determined by getfields
  */

@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -41,7 +41,12 @@ class CRM_Pledge_Page_UserDashboard extends CRM_Contact_Page_View_UserDashBoard 
    * @access public
    */
   function listPledges() {
-    $controller = new CRM_Core_Controller_Simple('CRM_Pledge_Form_Search', ts('Pledges'), NULL);
+    $controller = new CRM_Core_Controller_Simple(
+      'CRM_Pledge_Form_Search',
+      ts('Pledges'),
+      NULL,
+      FALSE, FALSE, TRUE, FALSE
+    );
     $controller->setEmbedded(TRUE);
     $controller->reset();
     $controller->set('limit', 12);

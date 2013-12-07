@@ -10,14 +10,14 @@
 //alias/pathing object
 var BBTree = {
 	startInstance: function(config, entity_counts)
-	{	
+	{
 		//Check remote timestamp first
-		//then check cookie timestamp	
+		//then check cookie timestamp
 		//if cookies found skip getAjaxData
 		//if cookie is found, send json to separate.
 
-		//set settings, 
-		//BBTree.startInstance({displaySettings:{pullSets: [291,296], buttonType: 'edit'}}); 
+		//set settings,
+		//BBTree.startInstance({displaySettings:{pullSets: [291,296], buttonType: 'edit'}});
 		callTree.setCurrentSettings(config, entity_counts);
 		BBTreeModal.makeModalInit();
 	    //have to use a queue with ajax data because you do A, and once A is done, then do B.
@@ -30,7 +30,7 @@ var BBTree = {
 		//this is called x times, don't use each when none will do (this means you build boxes)
 		//format ('className', {treesToWrite: [array], typeOfManip: [edit/manage], tabLocation: 'class'})
 		//BBTree.initContainer('one', {write: [291,296], type: 'edit'});
-		callTree.treeSetupPage(instances, settings, contact); 
+		callTree.treeSetupPage(instances, settings, contact);
 	},
 	getAjaxData: function(next)
 	{
@@ -49,11 +49,11 @@ var BBTree = {
 			setTreeLoc();
 			//puts ALL THE DATA into the BBTree object
 			callTree.writeParsedData();
-			callTree.writeTabs(); 
+			callTree.writeTabs();
 			//writes jquery slidedown function (but needs to make sure it writes the CORRECT tree)
-			callTree.slideDownTree(); 
+			callTree.slideDownTree();
 			//list of where you're located. I don't think it's actually useful.
-			sortWindow(); 
+			sortWindow();
 			switch(callTree.currentSettings.displaySettings.buttonType) //useless.
 			{
 				case 'edit': BBTree.manageTree(); break;
@@ -124,7 +124,7 @@ var BBTree = {
 				cj('.moreHidden.item-'+totLength, messageBox).slideDown().addClass('open');
 				cj('.seeMore.item-'+ totLength, messageBox).addClass('open');
 			}
-			
+
 		});
 		messageBox.slideDown();
 		setTimeout(function(){
@@ -190,7 +190,7 @@ var BBTree = {
 			}
 			else if(typeof k === 'undefined')
 			{
-				message[i] = null;	
+				message[i] = null;
 			} else {
 				message[i] = k;
 			}
@@ -212,7 +212,7 @@ var BBTree = {
 
 		switch(message[0])
 		{
-			case 'craa': //["crar", 1, "123d", null] 
+			case 'craa': //["crar", 1, "123d", null]
 				actionData.name += ' - Add Tag';
 				if(passes)
 				{
@@ -227,7 +227,7 @@ var BBTree = {
 					}
 				}
 				break;
-			case 'crar': //["crar", 1, "123d", null] 
+			case 'crar': //["crar", 1, "123d", null]
 				actionData.name += ' - Remove Tag';
 				if(passes)
 				{
@@ -250,7 +250,7 @@ var BBTree = {
 				}
 				else {
 					actionData.description += 'Keywords and Issue Codes were unable to be loaded. Will attempt to reload again.';
-					//if you load 3 times and it fails, throw a different message. 
+					//if you load 3 times and it fails, throw a different message.
 					actionData.reload = true;
 				}
 				break;
@@ -262,7 +262,7 @@ var BBTree = {
 				}
 				else { //would LOVE to be able to get contact name here...
 					actionData.description += 'Contact tags for <span>'+message[2]+'</span> were unable to be loaded.';
-					//if you load 3 times and it fails, throw a different message. 
+					//if you load 3 times and it fails, throw a different message.
 				}
 				break;
 			case 'convt':
@@ -275,7 +275,7 @@ var BBTree = {
 				{
 					actionData.description += 'Keyword <span>'+tagname+'</span> was converted into an Issue Code under <span>'+tagdest+'</span>.';
 				}
-				else { 
+				else {
 					actionData.description += 'Keyword <span>'+tagname+'</span> was unable to be converted';
 					if(message[4] == 'DB Error: already exists')
 					{
@@ -285,7 +285,7 @@ var BBTree = {
 					}
 					actionData.description += '.';
 					actionData.more += message[4];
-				}	
+				}
 				break;
 			case 'movct':
 				//BBTree.reportAction(['movct',0,tagMove.currentId,BBTreeModal.radioSelectedTid, data.message]);
@@ -296,10 +296,10 @@ var BBTree = {
 				{
 					actionData.description += 'Tag <span>'+tagname+'</span> was moved under <span>'+tagdest+'</span>.';
 				}
-				else { 
+				else {
 					actionData.description += 'Tag <span>'+tagname+'</span> was unable to be moved under <span>'+tagdest+'</span>.';
 					actionData.more += message[4];
-				}	
+				}
 				break;
 			case 'merct':
 				//BBTree.reportAction(['merct',0,tagMove.currentId,BBTreeModal.radioSelectedTid, data.message]);
@@ -310,13 +310,13 @@ var BBTree = {
 				{
 					actionData.description += 'Tag <span>'+tagname+'</span> was merged into <span>'+tagdest+'</span>.';
 				}
-				else { 
+				else {
 					actionData.description += 'Tag <span>'+tagname+'</span> was unable to be merged';
-					(message[4] == 'Tag(s) do not exist') 
+					(message[4] == 'Tag(s) do not exist')
 						? actionData.description += ' because target no longer exists. <span style="text-decoration:underline; cursor:pointer;" onClick="document.location.reload(true)">Click here to clear the error</span>'
 						: actionData.description += '.';
 					actionData.more += message[4];
-				}	
+				}
 				break;
 			case 'updat':
 				//BBTree.reportAction(['updat',0,tagUpdate, data.message]);
@@ -324,7 +324,7 @@ var BBTree = {
 				actionData.name += ' - Update Tag';
 				if(passes)
 				{
-					
+
 					actionData.description += 'Tag <span>'+obj.prevName+'</span> was updated. ';
 					if(obj.tagName != null || obj.prevName != obj.tagName)
 					{
@@ -348,7 +348,6 @@ var BBTree = {
 						actionData.description += 'not ';
 					}
 					actionData.description += 'reserved</span>.';
-					console.log(actionData.description);
 				}
 				else { //would LOVE to be able to get contact name here...
 					if(message[3] == 'DB Error: already exists')
@@ -358,7 +357,7 @@ var BBTree = {
 						actionData.description += 'Tag <span>'+obj.tagName+'</span> was unable to be updated';
 					}
 					actionData.description += '.';
-				}	
+				}
 				break;
 			case 'removt':
 				//BBTree.reportAction(['removt',0,BBTreeModal.taggedName, tagRemove.parentId, data.message]);
@@ -371,7 +370,7 @@ var BBTree = {
 				else { //would LOVE to be able to get contact name here...
 					actionData.description += 'Tag <span>'+message[2]+'</span> was unable to be removed.';
 					actionData.more += message[4];
-				}	
+				}
 				break;
 			case 'addt':
 				//BBTree.reportAction(['addt',1,tagUpdate, data.message]);
@@ -410,7 +409,7 @@ var BBTree = {
 						actionData.description += ' because tag <span>'+obj.tagName+'</span> already exists';
 					}
 					actionData.description += '.';
-				}	
+				}
 				break;
 			default: actionData.description	+= 'No defined message.';
 		}
@@ -468,7 +467,7 @@ var callTree =  {
 	  	callTree.currentSettings.callSettings.ajaxSettings.entity_counts = entity_counts; //sets entity_counts before it's run
 	  }
 	},
-	treeSetupPage: function(instance, settings, contact){ 
+	treeSetupPage: function(instance, settings, contact){
 		//BBTree.initContainer('one', {pullSets: [291,296], buttonType: 'tagging',tabLocation: 'crm-tagTabHeader'}, {cid: 216352});
 		//first make current settings for the ajax
 		cj.extend(true,callTree.currentSettings.callSettings.ajaxSettings, callTree.defaultSettings.callSettings.ajaxSettings);
@@ -498,12 +497,12 @@ var callTree =  {
 	{
 		cj.each(callTree.currentSettings.displaySettings.pullSets, function(i, className){
 			var treeBox = '<div class="'+ callTree.currentSettings.pageSettings.tagHolder +' '+ callTree.currentSettings.displaySettings.buttonType.toLowerCase() + ' ' + callTree.currentSettings.displaySettings.currentInstance + ' ';
-			if(className != callTree.currentSettings.displaySettings.defaultTree && callTree.currentSettings.displaySettings.pullSets.length > 1) //hide all boxes that aren't 'default' 
+			if(className != callTree.currentSettings.displaySettings.defaultTree && callTree.currentSettings.displaySettings.pullSets.length > 1) //hide all boxes that aren't 'default'
 			{
 				treeBox += 'hidden ';
 			}
 			else { //or else we give it the 'loading' treatment
-				treeBox += 'loadingGif '; 
+				treeBox += 'loadingGif ';
 			}
 			treeBox += addTagLabel(className);
 			treeBox += '" id="'+addTagLabel(className)+'"></div>';
@@ -511,7 +510,7 @@ var callTree =  {
 		});
 		if(callTree.currentSettings.displaySettings.tabLocation == 'BBTree-Tags' && callTree.currentSettings.displaySettings.pullSets.length > 1 )
 		{
-			cj(aCSel(callTree.currentSettings.displaySettings.currentInstance)+aIDSel(callTree.currentSettings.pageSettings.wrapper)).prepend('<div class="BBTree-Tags"></div>');	
+			cj(aCSel(callTree.currentSettings.displaySettings.currentInstance)+aIDSel(callTree.currentSettings.pageSettings.wrapper)).prepend('<div class="BBTree-Tags"></div>');
 		}
 	},
 	//starts building tree data
@@ -533,7 +532,7 @@ var callTree =  {
 					callTree.separateTreeAjax(data.message);
 					callback();
 				}
-			} 
+			}
 		});
 	},
 	separateTreeAjax: function(data){
@@ -564,7 +563,7 @@ var callTree =  {
 		var tagLabel = addTagLabel(tID.id); //writes the identifying tag label
 		displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="'+tagLabel+'" tLvl="'+displayObj.tLvl+'">';
 		displayObj.output = '<dt class="lv-'+displayObj.tLvl+' issueCode-'+tID.id;
-		if(cj.inArray(parseFloat(tID.id), callTree.currentSettings.displaySettings.pullSets)>-1) //only writes the 
+		if(cj.inArray(parseFloat(tID.id), callTree.currentSettings.displaySettings.pullSets)>-1) //only writes the
 		{
 			if(callTree.currentSettings.callSettings.ajaxSettings.entity_id != 0)
 			{
@@ -591,7 +590,7 @@ var callTree =  {
 				callTree.writeJsonTag(cID, displayObj);
 			}
 		});
-		return(displayObj.output);	
+		return(displayObj.output);
 	},
 	writeJsonTag: function(tID, displayObj){//in second level & beyond
 		callTree.openChildJsonTag(tID, displayObj);
@@ -659,11 +658,11 @@ var callTree =  {
 				id: callTree.currentSettings.displaySettings.pullSets[i],
 				name: BBTree.parsedJsonData[callTree.currentSettings.displaySettings.pullSets[i]].name,
 				position: i,
-				length: callTree.currentSettings.displaySettings.pullSets.length, 
+				length: callTree.currentSettings.displaySettings.pullSets.length,
 				isActive: ''
 			};
 
-			if(className == callTree.currentSettings.displaySettings.defaultTree) //hide all boxes that aren't 
+			if(className == callTree.currentSettings.displaySettings.defaultTree) //hide all boxes that aren't
 			{
 				tabInfo.isActive = 'active';
 			}
@@ -672,7 +671,7 @@ var callTree =  {
 		});
 		cj(tabLoc).attr('assocTree', callTree.currentSettings.displaySettings.currentInstance);
 		cj(tabLoc).addClass('BBTree_Tabs_'+callTree.currentSettings.displaySettings.currentInstance);
-		
+
 	},
 	swapTrees: function(tab)
 	{
@@ -738,7 +737,7 @@ var BBTreeEdit = {
 		cj(BBTree.treeLoc+' dt').hover(
 		function(){
 			if(cj(this).attr('id') != 'tagLabel_291' && cj(this).attr('id') != 'tagLabel_296' )
-			{ 
+			{
 				var tagCount = ' ';
 				tagCount += cj('span.entityCount', this).html().match(/[0-9]+/);
 				if(tagCount == ' ' +null)
@@ -763,7 +762,7 @@ var BBTreeEdit = {
 			cj('.crm-tagListInfo .tagInfoBody .tagDescription span').html(tagDescription);
 			cj('.crm-tagListInfo .tagInfoBody .tagReserved span').html(isReserved);
 			cj('.crm-tagListInfo .tagInfoBody .tagCount span').html(tagCount);
-		}, 
+		},
 		function() {
 			cj('.crm-tagListInfo .tagInfoBody .tagName span').html('');
 			cj('.crm-tagListInfo .tagInfoBody .tagID span').html('');
@@ -792,7 +791,7 @@ var BBTreeTag = {
 	{
 		var holdID = callTree.currentSettings.callSettings.ajaxSettings.entity_id;
 		var holdLoc = BBTree.treeLoc;
-		if(typeof BBTree.contactTagData === 'undefined') 
+		if(typeof BBTree.contactTagData === 'undefined')
 		{
 			BBTree.contactTagData = {};
 			BBTree.contactTagData['cid_' + holdID] = {};
@@ -847,7 +846,7 @@ var BBTreeTag = {
 		var v = cj(BBTree.treeLoc + ' dt#'+ tagLabel);
 		var n = v.hasClass('checked');
 		if(n == false)
-		{	
+		{
 			if(!callTree.currentSettings.displaySettings.onSave)
 			{
 				cj.ajax({
@@ -890,7 +889,7 @@ var BBTreeTag = {
 						}
 						else{
 							BBTree.reportAction(['crar', 1, v.find('.name').text(),,]);
-							
+
 						}
 					}
 				});
@@ -923,11 +922,11 @@ var BBTreeTag = {
 	{
 		var jq_tagLabelDT = cj(BBTree.treeLoc + ' dt#' + tagLabel);
 		if(toggle == 'add') //adds subchecked in one big jq string
-		{ 
+		{
 			jq_tagLabelDT.parents('dl').not('.lv-0').prev('dt').addClass('subChecked');
 		}
-		if(toggle == 'remove') //remove subchecked 
-		{ 
+		if(toggle == 'remove') //remove subchecked
+		{
 			jq_tagLabelDT.removeClass('checked');
 			var checkChildren = cj(BBTree.treeLoc+' dl#'+tagLabel).children('dt.checked').length + cj(BBTree.treeLoc+' dl#'+tagLabel).children('dt.subChecked').length;
 			if(checkChildren > 0) // if children are checked, don't remove anything above
@@ -953,7 +952,7 @@ var BBTreeTag = {
 				}
 				var getSibLength = jq_tagLabelParentDT.siblings('.checked').length + jq_tagLabelParentDT.siblings('.subChecked').length;
 				if(getSibLength > 0 ){ //if the parent's siblings are checked/subchecked
-					var hasSibNoChildren = jq_tagLabelParentDL.children('dt.checked').length + jq_tagLabelParentDL.children('dt.subChecked').length 
+					var hasSibNoChildren = jq_tagLabelParentDL.children('dt.checked').length + jq_tagLabelParentDL.children('dt.subChecked').length
 					if(hasSibNoChildren == 0)
 					{
 						jq_tagLabelParentDT.removeClass('subChecked');
@@ -984,19 +983,19 @@ var BBTreeModal = {
 				callTree.currentSettings.displaySettings.buttonType = callTree.currentSettings.displaySettings.previousTree.toLowerCase();
 				callTree.currentSettings.displaySettings.previousTree = 'modal';
 			}
-			if(typeof BBTreeModal.modalParsedData[callTree.currentSettings.displaySettings.currentTree] !== 'undefined') 
+			if(typeof BBTreeModal.modalParsedData[callTree.currentSettings.displaySettings.currentTree] !== 'undefined')
 			{ //TODO -- Does this actually work? I think it does.
 				cj(BBTreeModal.taggedID, BBTreeModal.modalParsedData[callTree.currentSettings.displaySettings.currentTree]).show();
 			}
 			setTreeLoc();
 			cj(this).html('');
-		}, 
+		},
 		buttons: {
-			"Cancel": function() { 
-				cj(this).dialog("close"); 
-				cj(this).dialog("destroy"); 
+			"Cancel": function() {
+				cj(this).dialog("close");
+				cj(this).dialog("destroy");
 			}
-		} 
+		}
 	},
 	modalParsedData: {
 
@@ -1026,10 +1025,10 @@ var BBTreeModal = {
 		this.taggedParent = addTagLabel(jq_tagLabelDT.attr('parent'));
 		this.taggedDialog = BBTreeModal.addDialogInfo();
 		this.applyHtml(this.taggedDialog);
-		
+
 		// //make this into a subfunction to find proper greeting name if not reserved
-		
-		// cj('#dialog input:[name=tagName]').focus();
+
+		// cj('#dialog input[name=tagName]').focus();
 
 	},
 	setTreeType: function() // sets previous tree
@@ -1037,7 +1036,7 @@ var BBTreeModal = {
 		if(callTree.currentSettings.displaySettings.buttonType != 'modal')
 		{
 			callTree.currentSettings.displaySettings['previousTree'] = callTree.currentSettings.displaySettings.buttonType;
-		}	
+		}
 		callTree.currentSettings.displaySettings.buttonType = 'modal';
 		//Have to set Tree Loc individually, because the function add the instance name, and that'll screw up everything here
 		BBTree.treeLoc = '.'+callTree.currentSettings.pageSettings.tagHolder+'.'+callTree.currentSettings.displaySettings.buttonType.toLowerCase();
@@ -1058,11 +1057,11 @@ var BBTreeModal = {
 	},
 	getModalTagTree: function() //on open, so it all loads asynch
 	{
-		
+
 		BBTreeModal.setTreeType();
 		//TODO: Make it so that the modal tree doesn't have to be rewritten EVERY TIME.
 		// if(typeof this.modalParsedData[callTree.currentSettings.displaySettings.currentTree] === 'undefined')
-		// {	
+		// {
 			this.modalParsedData[callTree.currentSettings.displaySettings.currentTree] = cj(BBTree.parsedJsonData[callTree.currentSettings.displaySettings.currentTree].data).clone(true, true);
 			cj('span.fCB', this.modalParsedData[callTree.currentSettings.displaySettings.currentTree]).empty().html('<input type="radio" class="selectRadio" name="selectTag"/>');
 			cj(aIDSel(this.taggedID), this.modalParsedData[callTree.currentSettings.displaySettings.currentTree]).hide();
@@ -1130,7 +1129,7 @@ var BBTreeModal = {
 				break;
 			case 'merge':
 			case 'mergeKW':
-				addDialogText += '<div class="modalHeader">Merge <span id="modalNameTid" tID="'+this.taggedID+'">' + this.taggedName + '</span> into Selected Tag... (note: this is a slow process)</div>'; 
+				addDialogText += '<div class="modalHeader">Merge <span id="modalNameTid" tID="'+this.taggedID+'">' + this.taggedName + '</span> into Selected Tag... (note: this is a slow process)</div>';
 				addDialogText += this.addModalTagTree();
 				this.currentSettings['actionName'] = 'merged';
 				this.currentSettings['title'] = 'Merge Tag';
@@ -1147,11 +1146,11 @@ var BBTreeModal = {
 				addDialogText += '<div><span>Reserved:</span><input type="checkbox" name="isReserved" '
 				if(this.taggedReserved){addDialogText += "checked";}
 				addDialogText +='/></div>';
-				addDialogText += '</div>'; 
+				addDialogText += '</div>';
 				this.taggedReserved = false;
 				this.currentSettings['title'] = 'Update Tag';
 				break;
-			case 'convert': 
+			case 'convert':
 				if(callTree.currentSettings.displaySettings.currentTree == 296)
 				{
 					callTree.currentSettings.displaySettings.currentTree = 291;
@@ -1159,7 +1158,7 @@ var BBTreeModal = {
 				else{
 					callTree.currentSettings.displaySettings.currentTree = 296;
 				}
-				addDialogText += '<div class="modalHeader">Convert <span id="modalNameTid" tID="'+this.taggedID+'">' + this.taggedName + '</span> into a Issue Code under...</div>'; 
+				addDialogText += '<div class="modalHeader">Convert <span id="modalNameTid" tID="'+this.taggedID+'">' + this.taggedName + '</span> into a Issue Code under...</div>';
 				addDialogText += this.addModalTagTree();
 				this.currentSettings['actionName'] = 'converted';
 				this.currentSettings['title'] = 'Convert Keyword to Tag';
@@ -1199,16 +1198,15 @@ var BBTreeModal = {
 			case 'add': BBTreeModal.addTag.setOpen(); break;
 			default: alert('Invalid Modifier'); break;
 		}
-		
+
 	},
 	applyHtml: function(data){
 		cj('#BBDialog').append(data);
 	},
 	makeModalBox: function(){
 		cj("#BBDialog").show();
-		cj("#BBDialog").dialog("open");
+		cj("#BBDialog").dialog(this.currentSettings).dialog("open");
 		cj("#BBDialog").removeClass('loadingGif');
-		cj("#BBDialog").dialog(this.currentSettings);
 		if(this.taggedReserved && this.taggedMethod != 'update')
 		{
 			return true;//if it's reserved, there should be no ability to edit it, unless you're updating it.
@@ -1264,12 +1262,12 @@ var BBTreeModal = {
 						}
 					});
 				}
-			},	
+			},
 			{
 				text: "Cancel",
-				click: function() { 
-					cj(this).dialog("close"); 
-					cj(this).dialog("destroy"); 
+				click: function() {
+					cj(this).dialog("close");
+					cj(this).dialog("destroy");
 				}
 			}]);
 		},
@@ -1331,8 +1329,8 @@ var BBTreeModal = {
 							dataType: 'json',
 							success: function(data, status, XMLHttpRequest) {
 								if ( data.status == true ) {
-									cj("#BBDialog").dialog("close"); 
-									cj("#BBDialog").dialog("destroy"); 
+									cj("#BBDialog").dialog("close");
+									cj("#BBDialog").dialog("destroy");
 									BBTree.reportAction(['merct',1,tagMerge.currentId,BBTreeModal.radioSelectedTid, data.message]);
 									BBTreeModal.removeTag.removeInline(tagMerge.currentId);
 								}
@@ -1343,23 +1341,23 @@ var BBTreeModal = {
 									BBTree.reportAction(['merct',0,tagMerge.currentId,BBTreeModal.radioSelectedTid, data.message]);
 									modalLoadingGif('remove');
 								}
-								
+
 							},
 							error: function(data, status, errorThrown)	{
 								cj('#BBDialog').dialog('close');
 								cj('#BBDialog').dialog('destroy');
 								BBTree.reportAction(['merct',0,tagMerge.currentId,BBTreeModal.radioSelectedTid, errorThrown]);
 								modalLoadingGif('remove');
-							}	
+							}
 						});
 
 					}
 				},
 				{
 					text: "Cancel",
-					click: function() { 
-						cj(this).dialog("close"); 
-						cj(this).dialog("destroy"); 
+					click: function() {
+						cj(this).dialog("close");
+						cj(this).dialog("destroy");
 					}
 				}
 			]);
@@ -1378,10 +1376,10 @@ var BBTreeModal = {
 					tagUpdate = new Object();
 					tagUpdate.prevName = BBTreeModal.taggedName;
 					// NYSS-#6708
-					// tagUpdate.tagName = checkForHTMLinModalField(cj('#BBDialog .modalInputs input:[name=tagName]').val());
-					// tagUpdate.tagDescription = checkForHTMLinModalField(cj('#BBDialog .modalInputs input:[name=tagDescription]').val());
-					tagUpdate.tagName = cj('#BBDialog .modalInputs input:[name=tagName]').val();
-					tagUpdate.tagDescription = cj('#BBDialog .modalInputs input:[name=tagDescription]').val();
+					// tagUpdate.tagName = checkForHTMLinModalField(cj('#BBDialog .modalInputs input[name=tagName]').val());
+					// tagUpdate.tagDescription = checkForHTMLinModalField(cj('#BBDialog .modalInputs input[name=tagDescription]').val());
+					tagUpdate.tagName = cj('#BBDialog .modalInputs input[name=tagName]').val();
+					tagUpdate.tagDescription = cj('#BBDialog .modalInputs input[name=tagDescription]').val();
 					tagUpdate.parentId = removeTagLabel(BBTreeModal.taggedID);
 					tagUpdate.isReserved = cj('#BBDialog .modalInputs input:checked[name=isReserved]').length;
 					if(tagUpdate.tagName.length > 0)
@@ -1393,7 +1391,7 @@ var BBTreeModal = {
 								description: tagUpdate.tagDescription,
 								id: tagUpdate.parentId,
 								is_reserved: tagUpdate.isReserved,
-								call_uri: window.location.href	
+								call_uri: window.location.href
 							},
 							dataType: 'json',
 							success: function(data, status, XMLHttpRequest) {
@@ -1417,12 +1415,12 @@ var BBTreeModal = {
 						modalLoadingGif('remove');
 					}
 				}
-			},	
+			},
 			{
 				text: "Cancel",
-				click: function() { 
-					cj(this).dialog("close"); 
-					cj(this).dialog("destroy"); 
+				click: function() {
+					cj(this).dialog("close");
+					cj(this).dialog("destroy");
 				}
 			}]);
 		},
@@ -1488,12 +1486,12 @@ var BBTreeModal = {
 						modalLoadingGif('remove');
 					}
 				}
-			},	
+			},
 			{
 				text: "Cancel",
-				click: function() { 
-					cj(this).dialog("close"); 
-					cj(this).dialog("destroy"); 
+				click: function() {
+					cj(this).dialog("close");
+					cj(this).dialog("destroy");
 				}
 			}]);
 		}
@@ -1528,7 +1526,7 @@ var BBTreeModal = {
 								modalLoadingGif('remove');
 							}
 							else
-							{	
+							{
 								BBTree.reportAction(['removt',1,BBTreeModal.taggedName,removeTagLabel(BBTreeModal.taggedParent)]);
 								BBTreeModal.removeTag.removeInline(tagRemove.parentId);
 							}
@@ -1540,9 +1538,9 @@ var BBTreeModal = {
 			},
 			{
 				text: "Cancel",
-				click: function() { 
-					cj(this).dialog("close"); 
-					cj(this).dialog("destroy"); 
+				click: function() {
+					cj(this).dialog("close");
+					cj(this).dialog("destroy");
 				}
 			}]);
 		},
@@ -1553,7 +1551,7 @@ var BBTreeModal = {
 				cj('dl#'+BBTreeModal.taggedParent).remove();
 				cj('dt#'+BBTreeModal.taggedParent+' .ddControl').removeClass('treeButton').removeClass('open');
 			}
-			
+
 		}
 	},
 	addTag:  {
@@ -1565,8 +1563,8 @@ var BBTreeModal = {
 			{
 				return true;
 			}
-			cj('#BBDialog input:[name=tagName]').focus();
-			cj("#BBDialog").dialog( "option", "buttons", 
+			cj('#BBDialog input[name=tagName]').focus();
+			cj("#BBDialog").dialog( "option", "buttons",
 			[
 				{
 					text: "Done",
@@ -1575,11 +1573,11 @@ var BBTreeModal = {
 						tagCreate.tagDescription = '';
 						modalLoadingGif('add');
 						// NYSS-#6708
-						// tagCreate.tagName = checkForHTMLinModalField(cj('#BBDialog .modalInputs input:[name=tagName]').val());
-						tagCreate.tagName = cj('#BBDialog .modalInputs input:[name=tagName]').val();
+						// tagCreate.tagName = checkForHTMLinModalField(cj('#BBDialog .modalInputs input[name=tagName]').val());
+						tagCreate.tagName = cj('#BBDialog .modalInputs input[name=tagName]').val();
 						tagCreate.treeParent = BBTreeModal.treeParent;
-						// tagCreate.tagDescription = checkForHTMLinModalField(cj('#BBDialog .modalInputs input:[name=tagDescription]').val());
-						tagCreate.tagDescription = cj('#BBDialog .modalInputs input:[name=tagDescription]').val();
+						// tagCreate.tagDescription = checkForHTMLinModalField(cj('#BBDialog .modalInputs input[name=tagDescription]').val());
+						tagCreate.tagDescription = cj('#BBDialog .modalInputs input[name=tagDescription]').val();
 						tagCreate.parentId = removeTagLabel(BBTreeModal.taggedID);
 						tagCreate.isReserved = cj('#BBDialog .modalInputs input:checked[name=isReserved]').length;
 						if(tagCreate.tagName.length > 0 )
@@ -1591,7 +1589,7 @@ var BBTreeModal = {
 									description: tagCreate.tagDescription,
 									parent_id: tagCreate.parentId,
 									is_reserved: tagCreate.isReserved,
-									call_uri: window.location.href	
+									call_uri: window.location.href
 								},
 								dataType: 'json',
 								success: function(data, status, XMLHttpRequest) {
@@ -1617,9 +1615,9 @@ var BBTreeModal = {
 				},
 				{
 					text: "Cancel",
-					click: function() { 
-						cj(this).dialog("close"); 
-						cj(this).dialog("destroy"); 
+					click: function() {
+						cj(this).dialog("close");
+						cj(this).dialog("destroy");
 					}
 				}
 			]);
@@ -1634,7 +1632,7 @@ var BBTreeModal = {
 				{
 					toAddDT += 'isReserved';
 				}
-				toAddDT += '" id="tagLabel_'+data.id+'" description=\''+data.description+'\' tlvl="'+tlvl +'" tid="'+data.id+'" parent="'+removeTagLabel(BBTreeModal.taggedID)+'"><div class="ddControl"></div><div class="tag"><span class="name">'+data.name+'</span></div><span class="entityCount" style="display:none">Unknown</span>'+addControlBox(addTagLabel(data.id), callTree.currentSettings.displaySettings.currentTree )+'</dt>';	
+				toAddDT += '" id="tagLabel_'+data.id+'" description=\''+data.description+'\' tlvl="'+tlvl +'" tid="'+data.id+'" parent="'+removeTagLabel(BBTreeModal.taggedID)+'"><div class="ddControl"></div><div class="tag"><span class="name">'+data.name+'</span></div><span class="entityCount" style="display:none">Unknown</span>'+addControlBox(addTagLabel(data.id), callTree.currentSettings.displaySettings.currentTree )+'</dt>';
 				cj('dl.'+BBTreeModal.taggedID).prepend(toAddDT);
 				BBTreeEdit.setTagInfo();
 			}
@@ -1689,13 +1687,13 @@ var BBTreeModal = {
 	{
 		if(this.currentSettings.ysnp == true)
 		{
-			cj("#BBDialog").dialog( "option", "buttons", 
+			cj("#BBDialog").dialog( "option", "buttons",
 			[
 				{
 					text: "Cancel",
-					click: function() { 
-						cj(this).dialog("close"); 
-						cj(this).dialog("destroy"); 
+					click: function() {
+						cj(this).dialog("close");
+						cj(this).dialog("destroy");
 					}
 				}
 			]);
@@ -1762,7 +1760,7 @@ function addEntityCount(count)
 	}
 }
 //adds Control Box
-function addControlBox(tagLabel, treeTop, isChecked) { //should break this up 
+function addControlBox(tagLabel, treeTop, isChecked) { //should break this up
 	var floatControlBox;
 	if(callTree.currentSettings.displaySettings.buttonType == 'edit')
 	{
@@ -1784,7 +1782,7 @@ function addControlBox(tagLabel, treeTop, isChecked) { //should break this up
 			floatControlBox += '<li class="convertTag" title="Convert Keyword" do="convert" onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
 		}
 		floatControlBox += '</span>';
-		
+
 	}
 	if(callTree.currentSettings.displaySettings.buttonType == 'tagging')
 	{
@@ -1802,17 +1800,17 @@ function addControlBox(tagLabel, treeTop, isChecked) { //should break this up
 		if(tagLabel != 'tagLabel_291' && tagLabel != 'tagLabel_296')
 		{
 			return(floatControlBox);
-		} else { 
-			return ''; 
+		} else {
+			return '';
 		}
 	}
 	if((tagLabel == 'tagLabel_291' || tagLabel == 'tagLabel_296') && callTree.currentSettings.displaySettings.buttonType != 'modal')
 	{
-		return '<span class="fCB" ><ul><li class="printTag"  onClick="printTags()"> </li><li class="addTag" title="Add New Tag" do="add" onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li></ul></span>'; 
-	} 
-	else 
-	{ 
-		return(floatControlBox); 
+		return '<span class="fCB" ><ul><li class="printTag"  onClick="printTags()"> </li><li class="addTag" title="Add New Tag" do="add" onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li></ul></span>';
+	}
+	else
+	{
+		return(floatControlBox);
 	}
 }
 function updateViewContactPage(tagLabel, remove)
@@ -1837,7 +1835,7 @@ function updateViewContactPage(tagLabel, remove)
 	}
 	else
 	{
-		
+
 		if(headList)
 		{
 			var headSplit = headList.split(" • ");
@@ -1861,28 +1859,28 @@ function updateViewContactPage(tagLabel, remove)
 function modalLoadingGif(path, addLoc)
 {
 	switch(path){
-		case 'add': 
+		case 'add':
 			if(addLoc)
 			{
 				cj(addLoc).addClass('loadingGif');
 			}
 			else
 			{
-				cj('.ui-dialog-buttonpane').addClass('loadingGif');cj('.ui-dialog-buttonset').css("visibility", "hidden"); 
+				cj('.ui-dialog-buttonpane').addClass('loadingGif');cj('.ui-dialog-buttonset').css("visibility", "hidden");
 			}
 			break;
-		case 'remove': 
+		case 'remove':
 			if(addLoc)
 			{
 				cj(addLoc).removeClass('loadingGif');
 			}
 			else
 			{
-				cj('.ui-dialog-buttonpane').removeClass('loadingGif');cj('.ui-dialog-buttonset').css("visibility", "visible"); 
+				cj('.ui-dialog-buttonpane').removeClass('loadingGif');cj('.ui-dialog-buttonset').css("visibility", "visible");
 			}
 			break;
 		default: break;
-	}		
+	}
 }
 function sortWindow()
 {

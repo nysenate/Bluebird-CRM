@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,7 +24,7 @@
  +--------------------------------------------------------------------+
 *}
 {* Confirmation of participation deletes  *}
-<div class="messages status">
+<div class="messages status no-popup">
     <div class="icon inform-icon"></div>
         <p>{ts}Are you sure you want to delete the selected pledges? This delete operation cannot be undone and will delete all transactions associated with these pledges.{/ts}</p>
         <p>{include file="CRM/Pledge/Form/Task.tpl"}</p>

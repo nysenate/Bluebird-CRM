@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,11 +26,9 @@
 {* this template is used for adding/editing tags  *}
 {literal}
 <script>
-var BBCID = {/literal}{$entityID}{literal};
-var BBActionConst = {/literal}{$action}{literal};
+  var BBCID = {/literal}{$entityID}{literal};
+  var BBActionConst = {/literal}{$action}{literal};
 </script>
-{/literal}
-{literal}
 <script src="/sites/default/themes/Bluebird/scripts/bbtree.js" type="text/javascript"></script>
 <link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/Bluebird/nyss_skin/tags/tags.css" />
 <script type="text/javascript">

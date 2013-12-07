@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -39,8 +39,7 @@ class CRM_Core_Payment_PayPalIPN extends CRM_Core_Payment_BaseIPN {
     parent::__construct();
   }
 
-  static
-  function retrieve($name, $type, $location = 'POST', $abort = TRUE) {
+  static function retrieve($name, $type, $location = 'POST', $abort = TRUE) {
     static $store = NULL;
     $value = CRM_Utils_Request::retrieve($name, $type, $store,
       FALSE, NULL, $location
@@ -174,16 +173,27 @@ class CRM_Core_Payment_PayPalIPN extends CRM_Core_Payment_BaseIPN {
     }
 
     if (!$first) {
-      // create a contribution and then get it processed
+      //check if this contribution transaction is already processed
+      //if not create a contribution and then get it processed
       $contribution = new CRM_Contribute_BAO_Contribution();
+      $contribution->trxn_id = $input['trxn_id'];
+      if ($contribution->trxn_id && $contribution->find()) {
+        CRM_Core_Error::debug_log_message("returning since contribution has already been handled");
+        echo "Success: Contribution has already been handled<p>";
+        return TRUE;
+      }
+
       $contribution->contact_id = $ids['contact'];
-      $contribution->contribution_type_id = $objects['contributionType']->id;
+      $contribution->financial_type_id  = $objects['contributionType']->id;
       $contribution->contribution_page_id = $ids['contributionPage'];
       $contribution->contribution_recur_id = $ids['contributionRecur'];
       $contribution->receive_date = $now;
       $contribution->currency = $objects['contribution']->currency;
       $contribution->payment_instrument_id = $objects['contribution']->payment_instrument_id;
       $contribution->amount_level = $objects['contribution']->amount_level;
+      $contribution->honor_contact_id = $objects['contribution']->honor_contact_id;
+      $contribution->honor_type_id = $objects['contribution']->honor_type_id;
+      $contribution->campaign_id = $objects['contribution']->campaign_id;
 
       $objects['contribution'] = &$contribution;
     }
@@ -224,11 +234,6 @@ class CRM_Core_Payment_PayPalIPN extends CRM_Core_Payment_BaseIPN {
 
     $transaction = new CRM_Core_Transaction();
 
-    // fix for CRM-2842
-    //  if ( ! $this->createContact( $input, $ids, $objects ) ) {
-    //       return false;
-    //  }
-
     $participant = &$objects['participant'];
     $membership = &$objects['membership'];
 
@@ -257,12 +262,13 @@ class CRM_Core_Payment_PayPalIPN extends CRM_Core_Payment_BaseIPN {
     $this->completeTransaction($input, $ids, $objects, $transaction, $recur);
   }
 
-  function main($component = 'contribute') {
+  function main() {
     // CRM_Core_Error::debug_var( 'GET' , $_GET , true, true );
     // CRM_Core_Error::debug_var( 'POST', $_POST, true, true );
-
+   //@todo - this could be refactored like PayPalProIPN & a test could be added
 
     $objects = $ids = $input = array();
+    $component = CRM_Utils_Array::value('module', $_GET);
     $input['component'] = $component;
 
     // get the contribution and contact ids from the GET params
@@ -284,7 +290,7 @@ class CRM_Core_Payment_PayPalIPN extends CRM_Core_Payment_BaseIPN {
       $ids['onbehalf_dupe_alert'] = self::retrieve('onBehalfDupeAlert', 'Integer', 'GET', FALSE);
     }
 
-    $paymentProcessorID = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_PaymentProcessorType',
+    $paymentProcessorID = CRM_Core_DAO::getFieldValue('CRM_Financial_DAO_PaymentProcessorType',
       'PayPal_Standard', 'id', 'name'
     );
 
@@ -343,4 +349,3 @@ class CRM_Core_Payment_PayPalIPN extends CRM_Core_Payment_BaseIPN {
     $input['trxn_id']    = self::retrieve('txn_id', 'String', 'POST', FALSE);
   }
 }
-

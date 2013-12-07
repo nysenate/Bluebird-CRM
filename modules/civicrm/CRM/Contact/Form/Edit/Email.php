@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -42,20 +42,20 @@ class CRM_Contact_Form_Edit_Email {
    * build the form elements for an email object
    *
    * @param CRM_Core_Form $form              reference to the form object
-   * @param int           $addressBlockCount block number to build
+   * @param int           $blockCount block number to build
    * @param boolean       $blockEdit         is it block edit
    *
    * @return void
    * @access public
    * @static
    */
-  static function buildQuickForm(&$form, $addressBlockCount = NULL, $blockEdit = FALSE) {
+  static function buildQuickForm(&$form, $blockCount = NULL, $blockEdit = FALSE) {
     // passing this via the session is AWFUL. we need to fix this
-    if (!$addressBlockCount) {
+    if (!$blockCount) {
       $blockId = ($form->get('Email_Block_Count')) ? $form->get('Email_Block_Count') : 1;
     }
     else {
-      $blockId = $addressBlockCount;
+      $blockId = $blockCount;
     }
 
     $form->applyFilter('__ALL__', 'trim');
@@ -65,7 +65,7 @@ class CRM_Contact_Form_Edit_Email {
     $form->addRule("email[$blockId][email]", ts('Email is not valid.'), 'email');
     if (isset($form->_contactType) || $blockEdit) {
       //Block type
-      $form->addElement('select', "email[$blockId][location_type_id]", '', CRM_Core_PseudoConstant::locationType());
+      $form->addElement('select', "email[$blockId][location_type_id]", '', CRM_Core_PseudoConstant::get('CRM_Core_DAO_Address', 'location_type_id'));
 
       $multipleBulk = CRM_Core_BAO_Email::isMultipleBulkMail();
 

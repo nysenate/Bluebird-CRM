@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -38,21 +38,7 @@
  * for previewing Civicrm Profile Group
  *
  */
-class CRM_UF_Form_Preview extends CRM_Core_Form {
-
-  /**
-   * The group id that we are editing
-   *
-   * @var int
-   */
-  protected $_gid;
-
-  /**
-   * the fields needed to build this form
-   *
-   * @var array
-   */
-  public $_fields;
+class CRM_UF_Form_Preview extends CRM_UF_Form_AbstractPreview {
 
   /**
    * pre processing work done here.
@@ -65,16 +51,17 @@ class CRM_UF_Form_Preview extends CRM_Core_Form {
    *
    * @access public
    *
-   */ function preProcess() {
+   */
+  function preProcess() {
     $flag = FALSE;
-    $this->_gid = $this->get('id');
-    $this->set('gid', $this->_gid);
+    $gid = $this->get('id');
+    $this->set('gid', $gid);
     $field = CRM_Utils_Request::retrieve('field', 'Boolean', $this, TRUE, 0);
 
     if ($field) {
-      $this->_fields = CRM_Core_BAO_UFGroup::getFields($this->_gid, FALSE, NULL, NULL, NULL, TRUE);
-      $fieldDAO      = new CRM_Core_DAO_UFField();
-      $fieldDAO->id  = $this->get('fieldId');
+      $fields = CRM_Core_BAO_UFGroup::getFields($gid, FALSE, NULL, NULL, NULL, TRUE);
+      $fieldDAO = new CRM_Core_DAO_UFField();
+      $fieldDAO->id = $this->get('fieldId');
       $fieldDAO->find(TRUE);
 
       if ($fieldDAO->is_active == 0) {
@@ -84,8 +71,29 @@ class CRM_UF_Form_Preview extends CRM_Core_Form {
         CRM_Core_Error::statusBounce(ts('This field is view only so it will not be displayed on profile form.'));
       }
       $name = $fieldDAO->field_name;
+
+      if ($fieldDAO->field_name == 'phone_and_ext') {
+        $name = 'phone';
+      }
+
       // preview for field
-      $specialFields = array('address_name', 'street_address', 'supplemental_address_1', 'supplemental_address_2', 'city', 'postal_code', 'postal_code_suffix', 'geo_code_1', 'geo_code_2', 'state_province', 'country', 'county', 'phone', 'email', 'im');
+      $specialFields = array(
+        'address_name',
+        'street_address',
+        'supplemental_address_1',
+        'supplemental_address_2',
+        'city',
+        'postal_code',
+        'postal_code_suffix',
+        'geo_code_1',
+        'geo_code_2',
+        'state_province',
+        'country',
+        'county',
+        'phone',
+        'email',
+        'im'
+      );
 
       if ($fieldDAO->location_type_id) {
         $name .= '-' . $fieldDAO->location_type_id;
@@ -94,69 +102,27 @@ class CRM_UF_Form_Preview extends CRM_Core_Form {
         $name .= '-Primary';
       }
 
-      if (isset($fieldDAO->phone_type)) {
-        $name .= '-' . $fieldDAO->phone_type;
+      if (isset($fieldDAO->phone_type_id)) {
+        $name .= '-' . $fieldDAO->phone_type_id;
       }
 
-      $fieldArray[$name] = $this->_fields[$name];
-      $this->_fields = $fieldArray;
-      if (!is_array($this->_fields[$name])) {
+      $fieldArray[$name] = $fields[$name];
+
+      if ($fieldDAO->field_name == 'phone_and_ext') {
+        $phoneExtField = str_replace('phone', 'phone_ext', $name);;
+        $fieldArray[$phoneExtField] = $fields[$phoneExtField];
+      }
+
+      $fields = $fieldArray;
+      if (!is_array($fields[$name])) {
         $flag = TRUE;
       }
-      $this->assign('previewField', TRUE);
+      $this->setProfile($fields, TRUE, $flag);
     }
     else {
-      $this->_fields = CRM_Core_BAO_UFGroup::getFields($this->_gid);
+      $fields = CRM_Core_BAO_UFGroup::getFields($gid);
+      $this->setProfile($fields);
     }
-
-    if ($flag) {
-      $this->assign('viewOnly', FALSE);
-    }
-    else {
-      $this->assign('viewOnly', TRUE);
-    }
-
-    $this->set('fieldId', NULL);
-    $this->assign("fields", $this->_fields);
-  }
-
-  /**
-   * Set the default form values
-   *
-   * @access protected
-   *
-   * @return array the default array reference
-   */
-  function &setDefaultValues() {
-    $defaults = array();
-    $stateCountryMap = array();
-    foreach ($this->_fields as $name => $field) {
-      if ($customFieldID = CRM_Core_BAO_CustomField::getKeyID($field['name'])) {
-        CRM_Core_BAO_CustomField::setProfileDefaults($customFieldID, $name, $defaults, NULL, CRM_Profile_Form::MODE_REGISTER);
-      }
-
-      //CRM-5403
-      if ((substr($name, 0, 14) === 'state_province') || (substr($name, 0, 7) === 'country') || (substr($name, 0, 6) === 'county')) {
-        list($fieldName, $index) = CRM_Utils_System::explode('-', $name, 2);
-        if (!array_key_exists($index, $stateCountryMap)) {
-          $stateCountryMap[$index] = array();
-        }
-        $stateCountryMap[$index][$fieldName] = $name;
-      }
-    }
-
-    // also take care of state country widget
-    if (!empty($stateCountryMap)) {
-      CRM_Core_BAO_Address::addStateCountryMap($stateCountryMap, $defaults);
-    }
-
-    //set default for country.
-    CRM_Core_BAO_UFGroup::setRegisterDefaults($this->_fields, $defaults);
-
-    // now fix all state country selectors
-    CRM_Core_BAO_Address::fixAllStateSelects($this, $defaults);
-
-    return $defaults;
   }
 
   /**
@@ -166,11 +132,7 @@ class CRM_UF_Form_Preview extends CRM_Core_Form {
    * @access public
    */
   public function buildQuickForm() {
-    foreach ($this->_fields as $name => $field) {
-      if (!CRM_Utils_Array::value('is_view', $field)) {
-        CRM_Core_BAO_UFGroup::buildProfile($this, $field, CRM_Profile_Form::MODE_CREATE);
-      }
-    }
+    parent::buildQuickForm();
 
     $this->addButtons(array(
         array(
@@ -181,5 +143,5 @@ class CRM_UF_Form_Preview extends CRM_Core_Form {
       )
     );
   }
-}
 
+}

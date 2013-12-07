@@ -24,6 +24,7 @@ include_once 'ofc_y_axis_labels.php';
 include_once 'ofc_y_axis_label.php';
 include_once 'ofc_x_axis.php';
 
+include_once 'ofc_background.php';
 
 include_once 'ofc_pie.php';
 //include_once 'ofc_bar.php';
@@ -43,6 +44,7 @@ include_once 'ofc_arrow.php';
 //include_once 'ofc_area_hollow.php';
 //include_once 'ofc_area_line.php';
 
+include_once 'ofc_legend.php';
 include_once 'ofc_x_legend.php';
 include_once 'ofc_y_legend.php';
 include_once 'ofc_bar_sketch.php';
@@ -102,6 +104,11 @@ class open_flash_chart
 	{
 		$this->x_legend = $x;
 	}
+	
+	function set_legend( $legend )
+	{
+		$this->legend = $legend;
+	}
 
 	function set_y_legend( $y )
 	{
@@ -111,6 +118,16 @@ class open_flash_chart
 	function set_bg_colour( $colour )
 	{
 		$this->bg_colour = $colour;	
+	}
+	
+	function set_inner_bg_colour( $colour )
+	{
+		$this->inner_bg_colour = $colour;	
+	}
+	
+	function set_inner_bg_grad( $colour )
+	{
+		$this->inner_bg_grad = $colour;	
 	}
 	
 	function set_radar_axis( $radar )

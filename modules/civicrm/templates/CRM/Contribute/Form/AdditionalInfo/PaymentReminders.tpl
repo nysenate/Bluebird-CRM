@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -31,6 +31,6 @@
         <tr class="crm-contribution-form-block-max_reminders"><td class="label">{$form.max_reminders.label}</td><td>{$form.max_reminders.html}</td></tr>
         <tr><td class="label">&nbsp;</td><td class="description">{ts}Reminders for each scheduled payment.{/ts}</td></tr>
         <tr class="crm-contribution-form-block-additional_reminder_day"><td class="label">{$form.additional_reminder_day.label}</td><td>{$form.additional_reminder_day.html}</td></tr>
-	    <tr><td class="label">&nbsp;</td><td class="description">{ts}Days after the last one sent, up to the maximum number of reminders.{/ts}</td></tr>
+      <tr><td class="label">&nbsp;</td><td class="description">{ts}Days after the last one sent, up to the maximum number of reminders.{/ts}</td></tr>
       </table>
- </div>     
+ </div>

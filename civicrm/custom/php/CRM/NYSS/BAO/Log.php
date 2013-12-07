@@ -133,6 +133,7 @@ class CRM_NYSS_BAO_Log {
     ";
     $instanceId = CRM_Core_DAO::singleValueQuery($sql);
 
+    $_REQUEST['force'] = 1;
     $_GET = array(
       $config->userFrameworkURLVar => 'civicrm/report/instance',
       'altered_contact_id_op' => 'eq',

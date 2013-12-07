@@ -18,7 +18,7 @@
   <item>
     <path>civicrm/survey/add</path>
     <title>New Survey</title>
-    <page_callback>CRM_Campaign_Form_Survey</page_callback>
+    <page_callback>CRM_Campaign_Form_Survey_Main</page_callback>
     <access_arguments>administer CiviCampaign;manage campaign</access_arguments>
     <component>CiviCampaign</component>
   </item>
@@ -117,14 +117,14 @@
     <title>New Petition</title>
     <page_callback>CRM_Campaign_Form_Petition</page_callback>
     <access_arguments>administer CiviCampaign;manage campaign</access_arguments>
-  </item>  
+  </item>
   <item>
     <path>civicrm/petition/sign</path>
     <title>Sign Petition</title>
     <page_callback>CRM_Campaign_Form_Petition_Signature</page_callback>
     <access_arguments>sign CiviCRM Petition</access_arguments>
      <is_public>true</is_public>
-  </item>   
+  </item>
   <item>
     <path>civicrm/petition/browse</path>
     <title>View Petition Signatures</title>
@@ -148,5 +148,29 @@
      <path>civicrm/campaign/registerInterview</path>
      <page_callback>CRM_Campaign_Page_AJAX::registerInterview</page_callback>
      <access_arguments>administer CiviCampaign;manage campaign;interview campaign contacts</access_arguments>
+  </item>
+  <item>
+     <path>civicrm/survey/configure/main</path>
+     <title>Configure Survey</title>
+     <page_callback>CRM_Campaign_Form_Survey_Main</page_callback>
+     <access_arguments>administer CiviCampaign;manage campaign</access_arguments>
+  </item>
+  <item>
+     <path>civicrm/survey/configure/questions</path>
+     <title>Configure Survey</title>
+     <page_callback>CRM_Campaign_Form_Survey_Questions</page_callback>
+     <access_arguments>administer CiviCampaign;manage campaign</access_arguments>
+  </item>
+  <item>
+     <path>civicrm/survey/configure/results</path>
+     <title>Configure Survey</title>
+     <page_callback>CRM_Campaign_Form_Survey_Results</page_callback>
+     <access_arguments>administer CiviCampaign;manage campaign</access_arguments>
+  </item>
+  <item>
+     <path>civicrm/survey/delete</path>
+     <title>Delete Survey</title>
+     <page_callback>CRM_Campaign_Form_Survey_Delete</page_callback>
+     <access_arguments>administer CiviCampaign;manage campaign</access_arguments>
   </item>
  </menu>

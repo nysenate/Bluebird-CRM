@@ -2,9 +2,9 @@
 /*
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -52,20 +52,22 @@ function civicrm_api3_price_field_value_create($params) {
     $ids['id'] = $params['id'];
   }
 
-  $bao = CRM_Price_BAO_FieldValue::create($params, $ids);
+  $bao = CRM_Price_BAO_PriceFieldValue::create($params, $ids);
 
   $values = array();
   _civicrm_api3_object_to_array($bao, $values[$bao->id]);
   return civicrm_api3_create_success($values, $params, 'price_field_value', 'create', $bao);
 
-  }
-/*
+}
+
+/**
  * Adjust Metadata for Create action
  *
  * The metadata is used for setting defaults, documentation & validation
  * @param array $params array or parameters determined by getfields
  */
 function _civicrm_api3_price_field_value_create_spec(&$params) {
+  $params['price_field_id']['api.required'] = TRUE;
 }
 
 /**

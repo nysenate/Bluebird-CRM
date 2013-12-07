@@ -2,9 +2,9 @@
 /*
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -57,14 +57,14 @@ function civicrm_api3_price_set_create($params) {
     foreach ($entityId as $eid) {
       $eid = (int) trim($eid);
       if ($eid) {
-        CRM_Price_BAO_Set::addTo($params['entity_table'], $eid, $result['id']);
+        CRM_Price_BAO_PriceSet::addTo($params['entity_table'], $eid, $result['id']);
       }
     }
   }
   return $result;
 }
 
-/*
+/**
  * Adjust Metadata for Create action
  *
  * The metadata is used for setting defaults, documentation & validation
@@ -84,10 +84,15 @@ function _civicrm_api3_price_set_create_spec(&$params) {
  * @access public
  */
 function civicrm_api3_price_set_get($params) {
+  // hack to make getcount work. - not sure the best approach here
+  // as creating an alternate getcount function also feels a bit hacky
+  if(isset($params['options'])  && isset($params['options']['is_count'])) {
+    return _civicrm_api3_basic_get(_civicrm_api3_get_BAO(__FUNCTION__), $params);
+  }
   $result = _civicrm_api3_basic_get(_civicrm_api3_get_BAO(__FUNCTION__), $params, FALSE);
   // Fetch associated entities
   foreach ($result as &$item) {
-    $item['entity'] = CRM_Price_BAO_Set::getUsedBy($item['id'], 'entity');
+    $item['entity'] = CRM_Price_BAO_PriceSet::getUsedBy($item['id'], 'entity');
   }
   return civicrm_api3_create_success($result, $params);
 }

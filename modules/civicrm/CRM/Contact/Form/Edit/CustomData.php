@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -74,6 +74,17 @@ class CRM_Contact_Form_Edit_CustomData {
    * @static
    */
   static function buildQuickForm(&$form) {
+    if(!empty($form->_submitValues)) {
+      if ($customValueCount = CRM_Utils_Array::value('hidden_custom_group_count', $form->_submitValues)) {
+        if (is_array($customValueCount)) {
+          if (array_key_exists(0, $customValueCount)) {
+            unset($customValueCount[0]);
+          }
+          $form->_customValueCount = $customValueCount;
+          $form->assign( 'customValueCount', $customValueCount);
+        }
+      }
+    }
     CRM_Custom_Form_CustomData::buildQuickForm($form);
 
     //build custom data.
@@ -98,7 +109,7 @@ class CRM_Contact_Form_Edit_CustomData {
    *
    * @return None
    */
-  function setDefaultValues(&$form, &$defaults) {
+  static function setDefaultValues(&$form, &$defaults) {
     $defaults += CRM_Custom_Form_CustomData::setDefaultValues($form);
   }
 }

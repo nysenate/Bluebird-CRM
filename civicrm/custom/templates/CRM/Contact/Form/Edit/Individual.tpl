@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,45 +25,59 @@
 *}
 {* tpl for building Individual related fields *}
 <script type="text/javascript">
+{literal}
+cj(function($) {
+{/literal}
 var cid=parseFloat("{$contactId}");//parseInt is octal by default
-var contactIndividual = "{crmURL p='civicrm/ajax/rest' q='entity=contact&action=get&json=1&contact_type=Individual&return=display_name,sort_name,email&rowCount=50' h=0}";
+var contactIndividual = "{crmURL p='civicrm/ajax/rest' q='entity=contact&action=get&json=1&contact_type=Individual&return=display_name,sort_name,email,phone,city,street_address&rowCount=50' h=0}";
 var viewIndividual = "{crmURL p='civicrm/contact/view' q='reset=1&cid=' h=0}";
 var editIndividual = "{crmURL p='civicrm/contact/add' q='reset=1&action=update&cid=' h=0}";
 var checkSimilar =  {$checkSimilar};
+  var lastnameMsg;
 {literal}
-
-  cj(function( ) {
+  $(document).ready(function() {
      if (cj('#contact_sub_type *').length == 0) {//if they aren't any subtype we don't offer the option
         cj('#contact_sub_type').parent().hide();
      }
-
-     if (!isNaN(cid) || ! checkSimilar)
+    if (!isNaN(cid) || ! checkSimilar) {
        return;//no dupe check if this is a modif or if checkSimilar is disabled (contact_ajax_check_similar in civicrm_setting table)
-
+    }
 	     cj('#last_name').blur(function () {
-         cj('#lastname_msg').remove();
-             if (this.value =='') return;
-	     cj.getJSON(contactIndividual,{sort_name:cj('#last_name').val()},
+         // Close msg if it exists
+         lastnameMsg && lastnameMsg.close && lastnameMsg.close();
+         if (this.value =='') return;
+         //NYSS 7435 alter ajax contact search
+         cj.getJSON(contactIndividual,{first_name:cj('#first_name').val()+'%',last_name:cj('#last_name').val()+'%',sort:'sort_name',rowCount:'15'},
          function(data){
            if (data.is_error == 1 || data.count == 0) {
              return;
            }
-           var msg="<div id='lastname_msg' class='messages status'><div class='icon inform-icon'></div>";
+          var msg = "<em>{/literal}{ts escape='js'}If the person you were trying to add is listed below, click their name to view or edit their record{/ts}{literal}:</em>";
            if ( data.count == 1 ) {
-             msg = msg + "{/literal}{ts}There is a contact with a similar last name. If the person you were trying to add is listed below, click on their name to view or edit their record{/ts}{literal}";  
+            var title = "{/literal}{ts escape='js'}Similar Contact Found{/ts}{literal}";
            } else {
-             msg = msg + "{/literal}{ts}There are "+ data.length +" contacts with a similar last name({/ts}<a href='#' onclick='cj(\"#lastname_msg\").remove();cj(\"#current_employer\").focus();'>{ts}Click here{/ts}</a> {ts}to Skip and move to next form field). If the person you were trying to add is listed below, click on their name to view or edit their record{/ts}{literal}";
+            var title = "{/literal}{ts escape='js'}Similar Contacts Found{/ts}{literal}";
            }
-           msg = msg+ '<table class="matching-contacts-actions">';
+          msg += '<ul class="matching-contacts-actions">';
            cj.each(data.values, function(i,contact){
 	     if ( !(contact.email) ) {
 	       contact.email = '';
 	     }
-             msg = msg + '<tr><td><a href="'+viewIndividual+contact.id+'" target="_blank">'+ contact.display_name +'</a></td><td>'+contact.email+'</td><td class="action-items"><a class="action-item action-item-first" href="'+viewIndividual+contact.contact_id+'">{/literal}{ts}View{/ts}{literal}</a><a class="action-item" href="'+editIndividual+contact.contact_id+'">{/literal}{ts}Edit{/ts}{literal}</a></td></tr>';
+             //NYSS 7435 logic to construct additional data fields
+             var contactDetails = (contact.email) ? ' | '+contact.email.trim() : '';
+             contactDetails += (contact.phone) ? ' | '+contact.phone.trim() : '';
+             contactDetails += (contact.street_address) ? ' | '+contact.street_address.trim() : '';
+             contactDetails += (contact.city) ? ' | '+contact.city.trim() : '';
+          msg += '<li><a href="'+viewIndividual+contact.id+'">'+ contact.sort_name +'</a> '+contactDetails+'</li>';
            });
-           msg = msg+ '</table>';
-           cj('#last_name').closest('table').after(msg+'</div>');
-           cj('#lastname_msg a').click(function(){global_formNavigate =true; return true;});// No confirmation dialog on click
+        msg += '</ul>';
+        lastnameMsg = CRM.alert(msg, title);
+        cj('.matching-contacts-actions a').click(function(){
+          // No confirmation dialog on click
+          global_formNavigate = true;
+          return true;
+        });
+      });
          });
 	    });
   });
@@ -129,52 +143,5 @@ var checkSimilar =  {$checkSimilar};
     </td>
   </tr>
 </table>
-{literal}
-<script type="text/javascript">
-var dataUrl        = "{/literal}{$employerDataURL}{literal}";
-var newContactText = "{/literal}({ts}new contact record{/ts}){literal}";
-cj('#current_employer').attr("title","Current employer auto complete");
-cj('#current_employer').autocomplete( dataUrl, { 
-                                      width        : 250, 
-                                      selectFirst  : false,
-                                      matchCase    : true, 
-                                      matchContains: true
-    }).result( function(event, data, formatted) {
-        var foundContact   = ( parseInt( data[1] ) ) ? cj( "#current_employer_id" ).val( data[1] ) : cj( "#current_employer_id" ).val('');
-        if ( ! foundContact.val() ) {
-            cj('div#employer_address').html(newContactText).show();    
-        } else {
-            cj('div#employer_address').html('').hide();    
-        }
-    }).bind('change blur', function() {
-        if ( !cj( "#current_employer_id" ).val( ) ) {
-            cj('div#employer_address').html(newContactText).show();    
-        }
-});
 
-// remove current employer id when current employer removed.
-cj("form").submit(function() {
-  if ( !cj('#current_employer').val() ) cj( "#current_employer_id" ).val('');
-});
-
-//current employer default setting
-var employerId = "{/literal}{$currentEmployer}{literal}";
-if ( employerId ) {
-    var dataUrl = "{/literal}{crmURL p='civicrm/ajax/rest' h=0 q="className=CRM_Contact_Page_AJAX&fnName=getContactList&json=1&context=contact&org=1&id=" }{literal}" + employerId + "&employee_id=" + cid ;
-    cj.ajax({ 
-        url     : dataUrl,   
-        async   : false,
-        success : function(html){
-            //fixme for showing address in div
-            htmlText = html.split( '|' , 2);
-            cj('input#current_employer').val(htmlText[0]);
-            cj('input#current_employer_id').val(htmlText[1]);
-        }
-    }); 
-}
-
-cj("input#current_employer").click( function( ) {
-    cj("input#current_employer_id").val('');
-});
-</script>
-{/literal}
+{include file="CRM/Contact/Form/CurrentEmployer.tpl"}

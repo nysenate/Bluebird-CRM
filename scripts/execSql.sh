@@ -14,6 +14,8 @@
 # Revised: 2013-11-01 - Added --login-path to support MySQL 5.6 logins
 # Revised: 2013-11-13 - mysql/mysqldump need --login-path first
 #                     - using MYSQL_TEST_LOGIN_PATH to set mylogin.cnf location
+# Revised: 2013-11-15 - Added db.insecure_cli_login to revert to old behavior
+# Revised: 2013-11-21 - Make sure login-path is not used if insecure login
 #
 
 prog=`basename $0`
@@ -101,17 +103,29 @@ if [ "$instance" ]; then
   dbname="$db_prefix$db_basename"
 fi
  
-# The login-path value is read from the config file, since it is safe.
-# The other login values, such as host, user, and password, are no longer
-# read from the config file, since mysql clients do not support using them
-# on the command line.
-[ "$dbloginpath" ] || dbloginpath=`$readConfig $ig_opt db.login_path` || dbloginpath=$DEFAULT_DB_LOGIN_PATH
+# MySQL (as of 5.6.6) no longer supports passing login credentials on the
+# command line.  The login-path value, in conjunction with the .mylogin.cnf
+# file, is used instead.  If the db.login_path parameter is not specified
+# in the config file (and not on the command line), then the default value
+# of "bluebird" will be used.
+# To disable this behavior and revert to the older, less secure method,
+# set db.insecure_cli_login to 1 in the config file.
+
+insecure_cli_login=`$readConfig $ig_opt db.insecure_cli_login`
+
+if [ $? -eq 0 -a "$insecure_cli_login" = "1" ]; then
+  [ "$dbhost" ] || dbhost=`$readConfig $ig_opt db.host`
+  [ "$dbuser" ] || dbuser=`$readConfig $ig_opt db.user`
+  [ "$dbpass" ] || dbpass=`$readConfig $ig_opt db.pass`
+else
+  [ "$dbloginpath" ] || dbloginpath=`$readConfig $ig_opt db.login_path` || dbloginpath=$DEFAULT_DB_LOGIN_PATH
+fi
 
 common_args=
 [ "$dbloginpath" ] && common_args="$common_args --login-path=$dbloginpath"
 [ "$dbhost" ] && common_args="$common_args --host=$dbhost"
 [ "$dbuser" ] && common_args="$common_args --user=$dbuser"
-[ "$dbpass" ] && common_args="$common_args --pass=$dbpass"
+[ "$dbpass" ] && common_args="$common_args --password=$dbpass"
 mysql_args="$common_args $DEFAULT_MYSQL_ARGS $colname_arg $force_arg"
 
 if [ $dump_db -eq 1 ]; then

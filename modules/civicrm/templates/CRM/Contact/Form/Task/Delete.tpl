@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,10 +25,10 @@
 *}
 {* Confirmation of contact deletes  *}
 <div class="crm-block crm-form-block crm-contact-task-delete-form-block">
-<div class="messages status">
+<div class="messages status no-popup">
   <div class="icon inform-icon"></div>&nbsp;
       {if $restore}
-		{ts}Are you sure you want to restore the selected contact(s)? The contact(s) and all related data will be fully restored.{/ts}
+    {ts}Are you sure you want to restore the selected contact(s)? The contact(s) and all related data will be fully restored.{/ts}
       {elseif $trash}
         {ts}Are you sure you want to delete the selected contact(s)?{/ts} {ts}The contact(s) and all related data will be moved to trash and only users with the relevant permission will be able to restore it.{/ts}
       {else}
@@ -38,5 +38,5 @@
 
 
     <h3>{include file="CRM/Contact/Form/Task.tpl"}</h3>
-	<div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl"}</div>
+  <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl"}</div>
 </div>

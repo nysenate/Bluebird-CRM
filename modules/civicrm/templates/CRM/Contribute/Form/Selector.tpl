@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -32,7 +32,7 @@
   <thead class="sticky">
   <tr>
     {if !$single and $context eq 'Search' }
-        <th scope="col" title="Select Rows">{$form.toggleSelect.html}</th> 
+        <th scope="col" title="Select Rows">{$form.toggleSelect.html}</th>
     {/if}
     {foreach from=$columnHeaders item=header}
         <th scope="col">
@@ -49,27 +49,27 @@
 
   {counter start=0 skip=1 print=false}
   {foreach from=$rows item=row}
-  <tr id="rowid{$row.contribution_id}" class="{cycle values="odd-row,even-row"}{if $row.cancel_date} disabled{/if} crm-contribution_{$row.contribution_id}">
+  <tr id="rowid{$row.contribution_id}" class="{cycle values="odd-row,even-row"}{if $row.cancel_date} cancelled{/if} crm-contribution_{$row.contribution_id}">
     {if !$single }
-        {if $context eq 'Search' }       
-    	    {assign var=cbName value=$row.checkbox}
-    	    <td>{$form.$cbName.html}</td> 
- 	{/if}
-  	<td>{$row.contact_type}</td>	
-    	<td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`"}">{$row.sort_name}</a></td>
+        {if $context eq 'Search' }
+          {assign var=cbName value=$row.checkbox}
+          <td>{$form.$cbName.html}</td>
+   {/if}
+    <td>{$row.contact_type}</td>
+      <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`"}">{$row.sort_name}</a></td>
     {/if}
     <td class="right bold crm-contribution-amount"><span class="nowrap">{$row.total_amount|crmMoney:$row.currency}</span> {if $row.amount_level }<br /> ({$row.amount_level}){/if}
     {if $row.contribution_recur_id}
      <br /> {ts}(Recurring Contribution){/ts}
     {/if}
     </td>
-    <td class="crm-contribution-type crm-contribution-type_{$row.contribution_type_id}">{$row.contribution_type}</td>
+    <td class="crm-contribution-type crm-contribution-type_{$row.financial_type_id} crm-financial-type crm-financial-type_{$row.financial_type_id}">{$row.financial_type}</td>
     <td class="crm-contribution-source">{$row.contribution_source}</td>
     <td class="crm-contribution-receive_date">{$row.receive_date|crmDate}</td>
     <td class="crm-contribution-thankyou_date">{$row.thankyou_date|crmDate}</td>
-    <td class="crm-contribution-status"> 
+    <td class="crm-contribution-status">
         {$row.contribution_status}<br />
-        {if $row.cancel_date}    
+        {if $row.cancel_date}
         {$row.cancel_date|crmDate}
         {/if}
     </td>
@@ -80,11 +80,11 @@
 
 {* Link to "View all contributions" for Contact Summary selector display *}
 {if $limit and $pager->_totalItems GT $limit }
-  {if $context eq 'dashboard' } 
+  {if $context eq 'dashboard' }
       <tr class="even-row">
       <td colspan="10"><a href="{crmURL p='civicrm/contribute/search' q='reset=1'}">&raquo; {ts}Find more contributions{/ts}... </a></td>
       </tr>
-  {elseif $context eq 'contribution' } 
+  {elseif $context eq 'contribution' }
       <tr class="even-row">
       <td colspan="8"><a href="{crmURL p='civicrm/contact/view' q="reset=1&force=1&selectedChild=contribute&cid=$contactId"}">&raquo; {ts}View all contributions from this contact{/ts}... </a></td>
       </tr>
@@ -96,7 +96,7 @@
 {if $context EQ 'Search'}
  <script type="text/javascript">
  {* this function is called to change the color of selected row(s) *}
-    var fname = "{$form.formName}";	
+    var fname = "{$form.formName}";
     on_load_init_checkboxes(fname);
  </script>
 {/if}

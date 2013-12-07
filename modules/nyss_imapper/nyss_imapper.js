@@ -1151,7 +1151,7 @@ function getReports() {
 // make a hidden data attribute with the non-readable date (date(U)) and sort on that
 cj.extend( cj.fn.dataTableExt.oSort, {
   "title-string-pre": function ( a ) {
-    return a.match(/id="(.*?)"/)[1].toLowerCase();
+    return a.match(/data-sort="(.*?)"/)[1].toLowerCase();
   },
   "title-string-asc": function ( a, b ) {
     return ((a < b) ? -1 : ((a > b) ? 1 : 0));
@@ -1167,16 +1167,16 @@ function makeListSortable(){
     // "iDisplayLength": 1,
     "sPaginationType": "full_numbers",
     "aaSorting": [[ 3, "desc" ]],
-    "aoColumnDefs": [ { "sType": "title-string", "aTargets": [ 3 ] }],
+    "aoColumnDefs": [
+    { 'bSortable': false, 'aTargets': [ 0 ] },
+    { 'bSortable': false, 'aTargets': [ 6 ] },
+    { "sType": "title-string", "aTargets": [ 3,5 ] }
+    ],
     'aTargets': [ 1 ],
     "iDisplayLength": 50,
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
-    "bAutoWidth": false,
+    "bAutoWidth": false
   });
-  // var oTable = cj('#sortable_results').dataTable();
-  // rows = oTable.fnGetVisibleData();
-
-
   checks();
 }
 
@@ -1245,7 +1245,7 @@ function buildMessageList() {
           });
         }
 	messagesHtml += '<td class="imap_subject_column unmatched">'+shortenString(value.subject,40) +' '+icon+'</td>';
-	messagesHtml += '<td class="imap_date_column unmatched"><span id="'+value.date_u+'" title="'+value.date_long+'">'+value.date_short +'</span></td>';
+	messagesHtml += '<td class="imap_date_column unmatched"><span data-sort="'+value.date_u+'" title="'+value.date_long+'">'+value.date_short +'</span></td>';
 
         // hidden column to sort by
         if(value.match_count != 1){
@@ -1256,10 +1256,10 @@ function buildMessageList() {
         }
 
         // check for direct messages & not empty forwarded messages
-        if((value.status == 'direct' ) && (value.forwarder != '')){
-	  messagesHtml += '<td class="imap_forwarder_column">Direct '+shortenString(value.from_email,10)+'</td>';
-        }else if(value.forwarder != ''){
-	  messagesHtml += '<td class="imap_forwarder_column">'+shortenString(value.forwarder,14)+'</td>';
+  if(value.forwarder === value.sender_email){
+    messagesHtml += '<td class="imap_forwarder_column"><span data-sort="'+value.forwarder.replace("@","_")+'">Direct '+shortenString(value.forwarder,10)+'</span></td>';
+  }else if(value.forwarder != ''){
+	  messagesHtml += '<td class="imap_forwarder_column"><span data-sort="'+value.forwarder.replace("@","_")+'">'+shortenString(value.forwarder,14)+'</span></td>';
         }else{
 	  messagesHtml += '<td class="imap_forwarder_column"> N/A </td>';
         }
@@ -1273,6 +1273,22 @@ function buildMessageList() {
     cj('.Actions').removeClass('sorting');
 
   }
+}
+
+function makeReportSortable(){
+  cj("#sortable_results").dataTable({
+    "sDom":'<"controlls"lif><"clear">rt <p>',//add i here this is the number of records
+    // "iDisplayLength": 1,
+    "sPaginationType": "full_numbers",
+    "aaSorting": [[ 3, "desc" ]],
+    "aoColumnDefs": [ { "sType": "title-string", "aTargets": [ 3,4 ] }],
+    'aTargets': [ 1 ],
+    "iDisplayLength": 50,
+    "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
+    "bAutoWidth": false
+  });
+  // var oTable = cj('#sortable_results').dataTable();
+  // rows = oTable.fnGetVisibleData();
 }
 
 function buildReports() {
@@ -1346,8 +1362,8 @@ function buildReports() {
       message_status="Deleted";
       Deleted++;
      }
-  messagesHtml += '<td class="imap_date_column matched"><span id="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
-    messagesHtml += '<td class="imap_date_column matched"><span id="'+value.email_date_u+'"  title="'+value.email_date_long+'">'+value.email_date_short +'</span></td>';
+  messagesHtml += '<td class="imap_date_column matched"><span data-sort="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
+    messagesHtml += '<td class="imap_date_column matched"><span data-sort="'+value.email_date_u+'"  title="'+value.email_date_long+'">'+value.email_date_short +'</span></td>';
 
   messagesHtml += '<td class="imap_date_column">'+message_status +'</td>';
 
@@ -1357,7 +1373,7 @@ function buildReports() {
     });
     };
     cj('#imapper-messages-list').html(messagesHtml);
-    makeListSortable();
+    makeReportSortable();
   cj('#total').html(unMatched+Matched+Cleared+Errors+Deleted);
   cj('#total_unMatched').html(unMatched);
   // console.log(unMatched);
@@ -1392,9 +1408,8 @@ cj.fn.dataTableExt.afnFiltering.push(
 
         // 4 here is the column where my dates are.
         var date = aData[3];
-
         // convert to unix time
-        date = date.match(/id="(.*?)"/)[1].toLowerCase()*1000;
+        date = date.match(/data-sort="(.*?)"/)[1].toLowerCase()*1000;
         // console.log(start +"<="+date+"<="+stop);
         // console.log(start <= date && date <= stop );
         // console.log(start <= date);
@@ -1641,7 +1656,7 @@ function buildActivitiesList() {
           messagesHtml += '<div class="icon attachment-icon attachment" title="'+value.attachments.length+' Attachments" ></div>';
         }
         messagesHtml +='</td>';
-	messagesHtml += '<td class="imap_date_column matched"><span id="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
+	messagesHtml += '<td class="imap_date_column matched"><span data-sort="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
 	messagesHtml += '<td class="imap_match_column matched  hidden">'+match_sort +'</td>';
 
 	messagesHtml += '<td class="imap_forwarder_column matched">'+shortenString(value.forwarder,14)+'</td>';

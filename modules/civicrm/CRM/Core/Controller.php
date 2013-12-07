@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -38,7 +38,7 @@
  * for other useful tips and suggestions
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -146,6 +146,14 @@ class CRM_Core_Controller extends HTML_QuickForm_Controller {
   public $_destination = NULL;
 
   /**
+   * The entry url for a top level form or wizard. Typically the URL with a reset=1
+   * used to redirect back to when we land into some session wierdness
+   *
+   * @var string
+   */
+  public $_entryURL = NULL;
+
+  /**
    * All CRM single or multi page pages should inherit from this class.
    *
    * @param string  title        descriptive title of the controller
@@ -159,7 +167,6 @@ class CRM_Core_Controller extends HTML_QuickForm_Controller {
    * @return void
    *
    */
-
   function __construct(
     $title = NULL,
     $modal = TRUE,
@@ -171,8 +178,31 @@ class CRM_Core_Controller extends HTML_QuickForm_Controller {
     // this has to true for multiple tab session fix
     $addSequence = TRUE;
 
+    // let the constructor initialize this, should happen only once
+    if (!isset(self::$_template)) {
+      self::$_template = CRM_Core_Smarty::singleton();
+      self::$_session = CRM_Core_Session::singleton();
+    }
+
+    // lets try to get it from the session and/or the request vars
+    // we do this early on in case there is a fatal error in retrieving the
+    // key and/or session
+    $this->_entryURL = CRM_Utils_Request::retrieve(
+      'entryURL',
+      'String',
+      $this,
+      FALSE,
+      NULL,
+      $_REQUEST
+    );
+
     // add a unique validable key to the name
     $name         = CRM_Utils_System::getClassName($this);
+    if ($name == 'CRM_Core_Controller_Simple' && !empty($scope)) {
+      // use form name if we have, since its a lot better and
+      // definitely different for different forms
+      $name = $scope;
+    }
     $name         = $name . '_' . $this->key($name, $addSequence, $ignoreKey);
     $this->_title = $title;
     if ($scope) {
@@ -194,23 +224,20 @@ class CRM_Core_Controller extends HTML_QuickForm_Controller {
 
     $this->HTML_QuickForm_Controller($name, $modal);
 
-    // let the constructor initialize this, should happen only once
-    if (!isset(self::$_template)) {
-      self::$_template = CRM_Core_Smarty::singleton();
-      self::$_session = CRM_Core_Session::singleton();
-    }
-
     $snippet = CRM_Utils_Array::value('snippet', $_REQUEST);
     if ($snippet) {
       if ($snippet == 3) {
         $this->_print = CRM_Core_Smarty::PRINT_PDF;
       }
       elseif ($snippet == 4) {
+        // this is used to embed fragments of a form
         $this->_print = CRM_Core_Smarty::PRINT_NOFORM;
         self::$_template->assign('suppressForm', TRUE);
         $this->_generateQFKey = FALSE;
       }
       elseif ($snippet == 5) {
+        // this is used for popups and inlined ajax forms
+        // also used for the various tabs via TabHeader
         $this->_print = CRM_Core_Smarty::PRINT_NOFORM;
       }
       elseif ($snippet == 6) {
@@ -222,9 +249,14 @@ class CRM_Core_Controller extends HTML_QuickForm_Controller {
       }
     }
 
-    // if the request has a reset value, initialize the controller session
+   // if the request has a reset value, initialize the controller session
     if (CRM_Utils_Array::value('reset', $_GET)) {
       $this->reset();
+
+      // in this case we'll also cache the url as a hidden form variable, this allows us to
+      // redirect in case the session has disappeared on us
+      $this->_entryURL = CRM_Utils_System::makeURL(NULL, TRUE, FALSE, NULL, TRUE);
+      $this->set('entryURL', $this->_entryURL);
     }
 
     // set the key in the session
@@ -234,8 +266,13 @@ class CRM_Core_Controller extends HTML_QuickForm_Controller {
 
 
     // also retrieve and store destination in session
-    $this->_destination = CRM_Utils_Request::retrieve('civicrmDestination', 'String', $this,
-      FALSE, NULL, $_REQUEST
+    $this->_destination = CRM_Utils_Request::retrieve(
+      'civicrmDestination',
+      'String',
+      $this,
+      FALSE,
+      NULL,
+      $_REQUEST
     );
   }
 
@@ -258,7 +295,6 @@ class CRM_Core_Controller extends HTML_QuickForm_Controller {
       return NULL;
     }
 
-
     $key = CRM_Utils_Array::value('qfKey', $_REQUEST, NULL);
     if (!$key && $_SERVER['REQUEST_METHOD'] === 'GET') {
       $key = CRM_Core_Key::get($name, $addSequence);
@@ -268,8 +304,7 @@ class CRM_Core_Controller extends HTML_QuickForm_Controller {
     }
 
     if (!$key) {
-      $msg = ts('We can\'t load the requested web page. This page requires cookies to be enabled in your browser settings. Please check this setting and enable cookies (if they are not enabled). Then try again. If this error persists, contact the site adminstrator for assistance.') . '<br /><br />' . ts('Site Administrators: This error may indicate that users are accessing this page using a domain or URL other than the configured Base URL. EXAMPLE: Base URL is http://example.org, but some users are accessing the page via http://www.example.org or a domain alias like http://myotherexample.org.') . '<br /><br />' . ts('Error type: Could not find a valid session key.');
-      CRM_Core_Error::fatal($msg);
+      $this->invalidKey();
     }
 
     $this->_key = $key;
@@ -356,8 +391,7 @@ class CRM_Core_Controller extends HTML_QuickForm_Controller {
     );
 
     foreach ($names as $name => $classPath) {
-      require_once (str_replace('_', DIRECTORY_SEPARATOR, $classPath) . '.php');
-      $action = &new $classPath($this->_stateMachine);
+      $action = new $classPath($this->_stateMachine);
       $this->addAction($name, $action);
     }
 
@@ -412,7 +446,7 @@ class CRM_Core_Controller extends HTML_QuickForm_Controller {
         $formName = CRM_Utils_String::getClassName($name);
       }
 
-      $ext = new CRM_Core_Extensions();
+      $ext = CRM_Extension_System::singleton()->getMapper();
       if ($ext->isExtensionClass($className)) {
         require_once ($ext->classToPath($className));
       }
@@ -570,8 +604,39 @@ class CRM_Core_Controller extends HTML_QuickForm_Controller {
     self::$_template->assign($var, $value);
   }
 
+  /**
+   * assign value to name in template by reference
+   *
+   * @param array|string $name  name  of variable
+   * @param mixed $value (reference) value of varaible
+   *
+   * @return void
+   * @access public
+   */
   function assign_by_ref($var, &$value) {
     self::$_template->assign_by_ref($var, $value);
+  }
+
+  /**
+   * appends values to template variables
+   *
+   * @param array|string $tpl_var the template variable name(s)
+   * @param mixed $value the value to append
+   * @param bool $merge
+   */
+  function append($tpl_var, $value=NULL, $merge=FALSE) {
+    self::$_template->append($tpl_var, $value, $merge);
+  }
+
+  /**
+   * Returns an array containing template variables
+   *
+   * @param string $name
+   * @param string $type
+   * @return array
+   */
+  function get_template_vars($name=null) {
+    return self::$_template->get_template_vars($name);
   }
 
   /**
@@ -744,5 +809,36 @@ class CRM_Core_Controller extends HTML_QuickForm_Controller {
     list($pageName, $action) = $actionName;
     return $this->_pages[$pageName]->cancelAction();
   }
-}
 
+  /**
+   * Write a simple fatal error message. Other controllers can decide to do something else
+   * and present the user a better message and/or redirect to the same page with a reset url
+   *
+   * @return void
+   *
+   */
+  public function invalidKey() {
+    self::invalidKeyCommon();
+  }
+
+  public function invalidKeyCommon() {
+    $msg = ts('We can\'t load the requested web page. This page requires cookies to be enabled in your browser settings. Please check this setting and enable cookies (if they are not enabled). Then try again. If this error persists, contact the site adminstrator for assistance.') . '<br /><br />' . ts('Site Administrators: This error may indicate that users are accessing this page using a domain or URL other than the configured Base URL. EXAMPLE: Base URL is http://example.org, but some users are accessing the page via http://www.example.org or a domain alias like http://myotherexample.org.') . '<br /><br />' . ts('Error type: Could not find a valid session key.');
+    CRM_Core_Error::fatal($msg);
+  }
+
+  /**
+   * Instead of outputting a fatal error message, we'll just redirect to the entryURL if present
+   *
+   * @return void
+   */
+  public function invalidKeyRedirect() {
+    if ($this->_entryURL) {
+      CRM_Core_Session::setStatus(ts('Your browser session has expired and we are unable to complete your form submission. We have returned you to the initial step so you can complete and resubmit the form. If you experience continued difficulties, please contact us for assistance.'));
+      return CRM_Utils_System::redirect($this->_entryURL);
+    }
+    else {
+      self::invalidKeyCommon();
+    }
+  }
+
+}

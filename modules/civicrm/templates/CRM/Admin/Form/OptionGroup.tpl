@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 <div class="crm-block crm-form-block crm-admin-optiongroup-form-block">
   <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
    {if $action eq 8}
-      <div class="messages status">
+      <div class="messages status no-popup">
           <div class="icon inform-icon"></div>
           {ts}WARNING: Deleting this option gruop will result in the loss of all records which use the option.{/ts} {ts}This may mean the loss of a substantial amount of data, and the action cannot be undone.{/ts} {ts}Do you want to continue?{/ts}
       </div>
@@ -36,20 +36,20 @@
       <table class="form-layout-compressed">
           <tr class="crm-admin-optiongroup-form-block-name">
           <tr class="crm-admin-optiongroup-form-block-title">
-              <td class="label">{$form.title.label} 
+              <td class="label">{$form.title.label}
             {if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_option_group' field='title' id=$id}{/if}</td><td>{$form.title.html}</td>
           </tr>
           <tr class="crm-admin-optiongroup-form-block-description">
-              <td class="label">{$form.description.label} 
+              <td class="label">{$form.description.label}
             {if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_option_group' field='description' id=$id}{/if}</td><td>{$form.description.html}</td>
           </tr>
-	      <td class="label">{$form.name.label}</td>
+        <td class="label">{$form.name.label}</td>
               <td>{$form.name.html}</td></tr>
           <tr class="crm-admin-optiongroup-form-block-is_active">
               <td class="label">{$form.is_active.label}</td>
               <td>{$form.is_active.html}</td>
           </tr>
       </table>
-     {/if}   
+     {/if}
      <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
 </div>

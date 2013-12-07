@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,8 +30,8 @@
 {else}
   <h3>{ts}New Report Template{/ts}</h3>
 {/if}
-<div class="crm-block crm-form-block crm-report-register-form-block">	
-{if $action eq 8} 
+<div class="crm-block crm-form-block crm-report-register-form-block">
+{if $action eq 8}
     <table class="form-layout">
     <tr class="buttons">
         <td><div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
@@ -40,14 +40,14 @@
     </tr>
     <tr>
         <td colspan=2>
-        <div class="messages status"> 
-		  <div class="icon inform-icon"></div> &nbsp; 
+        <div class="messages status no-popup">
+      <div class="icon inform-icon"></div> &nbsp;
         {ts}WARNING: Deleting this option will result in the loss of all Report related records which use the option. This may mean the loss of a substantial amount of data, and the action cannot be undone. Do you want to continue?{/ts}
-        </div>        
+        </div>
         </td>
     </tr>
 {else}
-  	
+
     <table class="form-layout">
         <tr class="buttons crm-report-register-form-block-buttons">
             <td><div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
@@ -58,12 +58,12 @@
             <td class="label">{$form.label.label}</td>
             <td class="view-value">{$form.label.html} <br /><span class="description">{ts}Report title appear in the display screen.{/ts}</span>
             </td>
-        </tr>	   
+        </tr>
         <tr class="crm-report-register-form-block-description">
             <td class="label">{$form.description.label}</td>
             <td class="view-value">{$form.description.html} <br /><span class="description">{ts}Report description appear in the display screen.{/ts}</span>
             </td>
-        </tr>	   
+        </tr>
         <tr class="crm-report-register-form-block-url">
             <td class="label">{$form.value.label}</td>
             <td class="view-value">{$form.value.html} <br /><span class="description">{ts}Report Url must be like "contribute/summary"{/ts}</span>
@@ -86,12 +86,12 @@
         <tr class="crm-report-register-form-block-is_active">
             <td class="label">{$form.is_active.label}</td>
             <td class="view-value">{$form.is_active.html}</td>
-        </tr>  
-{/if} 
+        </tr>
+{/if}
     <tr class="buttons crm-report-register-form-block-buttons">
         <td><div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
         </td>
         <td></td>
     </tr>
-    </table>  
+    </table>
 </div>

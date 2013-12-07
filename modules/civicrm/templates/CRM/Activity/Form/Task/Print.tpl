@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,7 +25,7 @@
 *}
 <div class="crm-block crm-activity_task_print-form-block">
 <p>
-{if $rows } 
+{if $rows }
 <div class="crm-submit-buttons element-right">
   {include file="CRM/common/formButtons.tpl" location="top"}
 </div>
@@ -82,7 +82,7 @@
 <div class="crm-submit-buttons element-right">
   {include file="CRM/common/formButtons.tpl" location="bottom"}
 {else}
-   <div class="messages status">
+   <div class="messages status no-popup">
        <div class="icon inform-icon"></div>
          {ts}There are no records selected for Print.{/ts}
     </div>

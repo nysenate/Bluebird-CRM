@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -97,20 +97,20 @@ class CRM_PCP_Form_PCP extends CRM_Core_Form {
       switch ($this->_action) {
         case CRM_Core_Action::DELETE:
         case 'delete':
-          CRM_PCP_BAO_PCP::delete($this->_id);
-          CRM_Core_Session::setStatus(ts("The Campaign Page '%1' has been deleted.", array(1 => $this->_title)));
+          CRM_PCP_BAO_PCP::deleteById($this->_id);
+          CRM_Core_Session::setStatus(ts("The Campaign Page '%1' has been deleted.", array(1 => $this->_title)), ts('Page Deleted'), 'success');
           break;
 
         case CRM_Core_Action::DISABLE:
         case 'disable':
           CRM_PCP_BAO_PCP::setDisable($this->_id, '0');
-          CRM_Core_Session::setStatus(ts("The Campaign Page '%1' has been disabled.", array(1 => $this->_title)));
+          CRM_Core_Session::setStatus(ts("The Campaign Page '%1' has been disabled.", array(1 => $this->_title)), ts('Page Disabled'), 'success');
           break;
 
         case CRM_Core_Action::ENABLE:
         case 'enable':
           CRM_PCP_BAO_PCP::setDisable($this->_id, '1');
-          CRM_Core_Session::setStatus(ts("The Campaign Page '%1' has been enabled.", array(1 => $this->_title)));
+          CRM_Core_Session::setStatus(ts("The Campaign Page '%1' has been enabled.", array(1 => $this->_title)), ts('Page Enabled'), 'success');
           break;
       }
 
@@ -163,8 +163,12 @@ class CRM_PCP_Form_PCP extends CRM_Core_Form {
     }
     else {
 
-      $status       = array('' => ts('- select -')) + CRM_PCP_PseudoConstant::pcpStatus();
-      $types        = array('' => ts('- select -')) + CRM_PCP_PseudoConstant::pcpType();
+      $status = array('' => ts('- select -')) + CRM_Core_OptionGroup::values("pcp_status");
+      $types = array(
+        '' => ts('- select -'),
+        'contribute' => ts('Contribution'),
+        'event' => ts('Event'),
+      );
       $contribPages = array('' => ts('- select -')) + CRM_Contribute_PseudoConstant::contributionPage();
       $eventPages   = array('' => ts('- select -')) + CRM_Event_PseudoConstant::event(NULL, FALSE, "( is_template IS NULL OR is_template != 1 )");
 
@@ -194,8 +198,7 @@ class CRM_PCP_Form_PCP extends CRM_Core_Form {
    * @static
    * @access public
    */
-  static
-  function formRule($fields, $files, $form) {}
+  static function formRule($fields, $files, $form) {}
 
   /**
    * Process the form
@@ -207,8 +210,8 @@ class CRM_PCP_Form_PCP extends CRM_Core_Form {
    */
   public function postProcess() {
     if ($this->_action & CRM_Core_Action::DELETE) {
-      CRM_PCP_BAO_PCP::delete($this->_id);
-      CRM_Core_Session::setStatus(ts("The Campaign Page '%1' has been deleted.", array(1 => $this->_title)));
+      CRM_PCP_BAO_PCP::deleteById($this->_id);
+      CRM_Core_Session::setStatus(ts("The Campaign Page '%1' has been deleted.", array(1 => $this->_title)), ts('Page Deleted'), 'success');
     }
     else {
       $params = $this->controller->exportValues($this->_name);

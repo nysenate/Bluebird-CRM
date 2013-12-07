@@ -3,7 +3,9 @@ class CRM_Event_Cart_Form_Checkout_ConferenceEvents extends CRM_Event_Cart_Form_
   public $conference_event = NULL;
   public $events_by_slot = array();
   public $main_participant = NULL;
-  public $contact_id = NULL; function preProcess() {
+  public $contact_id = NULL;
+
+  function preProcess() {
     parent::preProcess();
     $matches = array();
     preg_match("/.*_(\d+)_(\d+)/", $this->getAttribute('name'), $matches);
@@ -17,7 +19,7 @@ class CRM_Event_Cart_Form_Checkout_ConferenceEvents extends CRM_Event_Cart_Form_
 
     $events = new CRM_Event_BAO_Event();
     $query = <<<EOS
-	  SELECT
+    SELECT
                civicrm_event.*,
                slot.label AS slot_label
           FROM
@@ -26,13 +28,13 @@ class CRM_Event_Cart_Form_Checkout_ConferenceEvents extends CRM_Event_Cart_Form_
                 civicrm_option_value slot ON civicrm_event.slot_label_id = slot.value
           JOIN
                 civicrm_option_group og ON slot.option_group_id = og.id
-	  WHERE
-		parent_event_id = {$this->conference_event->id}
+    WHERE
+    parent_event_id = {$this->conference_event->id}
                 AND civicrm_event.is_active = 1
                 AND COALESCE(civicrm_event.is_template, 0) = 0
                 AND og.name = 'conference_slot'
-	  ORDER BY
-		slot.weight, start_date
+    ORDER BY
+    slot.weight, start_date
 EOS;
     $events->query($query);
     while ($events->fetch()) {

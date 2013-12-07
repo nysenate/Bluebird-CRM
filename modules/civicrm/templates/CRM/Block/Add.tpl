@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,7 +23,7 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-<div id="crm-quick-create">
+<div id="crm-quick-create" class="crm-container">
 <form action="{$postURL}" method="post">
 
 <div class="form-item">
@@ -58,6 +58,7 @@
     <input type="hidden" name="email_greeting_id" value="{$email_greeting_id}" />
     <input type="hidden" name="postal_greeting_id" value="{$postal_greeting_id}" />
     <input type="hidden" name="addressee_id" value="{$addressee_id}" />
+    <input type="hidden" name="qfKey" value="{crmKey name='CRM_Contact_Form_Contact' addSequence=1}" />
 </div>
 
 <div class="form-item"><input type="submit" name="_qf_Contact_next" value="{ts}Save{/ts}" class="form-submit" /></div>

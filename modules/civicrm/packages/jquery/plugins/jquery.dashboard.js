@@ -413,7 +413,7 @@
         }
 
         $('<div id="crm-dashlet-container"></div>')
-            .html('<div id="crm-container"><div id="crm-dashlet-fullscreen-content">Loading...</div></div>')
+            .html('<div class="crm-container"><div id="crm-dashlet-fullscreen-content">Loading...</div></div>')
             .dialog({
                 autoOpen: true,
                 title: widget.title,
@@ -431,7 +431,7 @@
         $.ajax({
             url: widget.fullscreenUrl,
             success: function ( content ) {
-                $('#crm-dashlet-fullscreen-content').html( content );
+                $('#crm-dashlet-fullscreen-content').html(content).crmAccordions();
             }
         }); 
       };
@@ -638,4 +638,4 @@
       fullscreen: false
     }
   };
-})(jQuery); // end of closure
+})(jQuery);

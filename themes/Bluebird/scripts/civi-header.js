@@ -36,9 +36,6 @@ $(document).ready(function() {
     $('#civi-admin-menu').show();
   }
 
-  var extID = $('#external_identifier').val();
-  $('#external_identifier').after(extID).remove();
-
   //3674 prevent duplicate form submission with enter key
   //exclude export and report form as it does not redirect and thus the submit buttons should remain active
   var submitted = false;

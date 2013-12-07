@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -81,14 +81,19 @@ class CRM_Friend_Form extends CRM_Core_Form {
       $values = array();
       $params = array('id' => $this->_entityId);
       CRM_Core_DAO::commonRetrieve('CRM_Contribute_DAO_ContributionPage',
-        $params, $values, array('title', 'campaign_id')
+        $params, $values, array('title', 'campaign_id', 'is_share')
       );
       $this->_title       = CRM_Utils_Array::value('title', $values);
       $this->_campaignId  = CRM_Utils_Array::value('campaign_id', $values);
       $this->_entityTable = 'civicrm_contribution_page';
       if ($pcomponent == 'event') {
         $this->_entityTable = 'civicrm_event';
+        $isShare = CRM_Core_DAO::getFieldValue('CRM_Event_DAO_Event', $this->_entityId, 'is_share');
+      } else {
+        $isShare = CRM_Utils_Array::value('is_share', $values);
       }
+      // Tell Form.tpl whether to include SocialNetwork.tpl for social media sharing
+      $this->assign('isShare', $isShare);
     }
     elseif ($pcomponent == 'pcp') {
       $this->_pcpBlockId = CRM_Utils_Request::retrieve('blockId', 'Positive', $this, TRUE);
@@ -107,10 +112,10 @@ class CRM_Friend_Form extends CRM_Core_Form {
       $this->_entityTable = 'civicrm_pcp';
 
       $sql = '
-   SELECT  pcp.title, 
+   SELECT  pcp.title,
            contrib.campaign_id
   FROM  civicrm_pcp pcp
-    INNER JOIN  civicrm_contribution_page contrib ON ( pcp.page_id = contrib.id AND pcp.page_type = "contribute" )  
+    INNER JOIN  civicrm_contribution_page contrib ON ( pcp.page_id = contrib.id AND pcp.page_type = "contribute" )
   WHERE  pcp.id = %1';
       $pcp = CRM_Core_DAO::executeQuery($sql, array(1 => array($this->_entityId, 'Positive')));
       while ($pcp->fetch()) {
@@ -232,8 +237,7 @@ class CRM_Friend_Form extends CRM_Core_Form {
    * @access public
    * @static
    */
-  static
-  function formRule($fields) {
+  static function formRule($fields) {
 
     $errors = array();
 

@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -39,6 +39,7 @@ class CRM_Logging_ReportDetail extends CRM_Report_Form {
   protected $log_date;
   protected $raw;
   protected $tables = array();
+  protected $interval = '10 SECOND';
 
   // detail/summary report ids
   protected $detail;
@@ -75,7 +76,7 @@ class CRM_Logging_ReportDetail extends CRM_Report_Form {
     if (CRM_Utils_Request::retrieve('revert', 'Boolean', CRM_Core_DAO::$_nullObject)) {
       $reverter = new CRM_Logging_Reverter($this->log_conn_id, $this->log_date);
       $reverter->revert($this->tables);
-      CRM_Core_Session::setStatus(ts('The changes have been reverted.'));
+      CRM_Core_Session::setStatus(ts('The changes have been reverted.'), ts('Reverted'), 'success');
       if ($this->cid) {
         CRM_Utils_System::redirect(CRM_Utils_System::url('civicrm/contact/view', "reset=1&selectedChild=log&cid={$this->cid}", FALSE, NULL, FALSE));
       }
@@ -100,7 +101,7 @@ class CRM_Logging_ReportDetail extends CRM_Report_Form {
     );
   }
 
-  function buildQuery() {}
+  function buildQuery($applyLimit = TRUE) {}
 
   function buildRows($sql, &$rows) {
     // safeguard for when there aren’t any log entries yet
@@ -122,7 +123,7 @@ class CRM_Logging_ReportDetail extends CRM_Report_Form {
   protected function diffsInTable($table) {
     $rows = array();
 
-    $differ = new CRM_Logging_Differ($this->log_conn_id, $this->log_date);
+    $differ = new CRM_Logging_Differ($this->log_conn_id, $this->log_date, $this->interval);
     $diffs = $differ->diffsInTable($table, $this->cid);
 
     // return early if nothing found
@@ -151,18 +152,19 @@ class CRM_Logging_ReportDetail extends CRM_Report_Form {
         if ($from == $to) {
           continue;
         }
-        // only in PHP: '0' == false and null == false but '0' != null
-        //NYSS 5525 Jira 11102
-        /*if ($from == FALSE and $to == FALSE) {
-          continue;
-        }*/
 
-        // CRM-7251: special-case preferred_communication_method
-        if ($field == 'preferred_communication_method') {
-          $froms = array();
-          $tos = array();
-          foreach (explode(CRM_Core_DAO::VALUE_SEPARATOR, $from) as $val) $froms[] = CRM_Utils_Array::value($val, $values[$field]);
-          foreach (explode(CRM_Core_DAO::VALUE_SEPARATOR, $to) as $val) $tos[] = CRM_Utils_Array::value($val, $values[$field]);
+        // special-case for multiple values. Also works for CRM-7251: preferred_communication_method
+        if ((substr($from, 0, 1) == CRM_Core_DAO::VALUE_SEPARATOR && 
+            substr($from, -1, 1) == CRM_Core_DAO::VALUE_SEPARATOR) || 
+          (substr($to, 0, 1) == CRM_Core_DAO::VALUE_SEPARATOR && 
+            substr($to, -1, 1) == CRM_Core_DAO::VALUE_SEPARATOR)) {
+          $froms = $tos = array();
+          foreach (explode(CRM_Core_DAO::VALUE_SEPARATOR, trim($from, CRM_Core_DAO::VALUE_SEPARATOR)) as $val) {
+            $froms[] = CRM_Utils_Array::value($val, $values[$field]);
+          }
+          foreach (explode(CRM_Core_DAO::VALUE_SEPARATOR, trim($to, CRM_Core_DAO::VALUE_SEPARATOR)) as $val) {
+            $tos[] = CRM_Utils_Array::value($val, $values[$field]);
+          }
           $from = implode(', ', array_filter($froms));
           $to = implode(', ', array_filter($tos));
         }

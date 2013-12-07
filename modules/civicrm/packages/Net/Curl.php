@@ -394,6 +394,27 @@ class Net_Curl
     }
     // }}}
 
+    // {{{ Net_Curl($url = '', $userAgent = '')
+    /**
+     * Net_Curl
+     *
+     * PHP 4.x constructor.
+     *
+     * @param string $url       The URL to fetch (can be set using the $url 
+     *                          property as well)
+     * @param string $userAgent The userAgent string (can be set using the 
+     *                          $userAgent property as well)
+     *
+     * @access public
+     * @return void
+     */
+    //remove php4 constructor
+    /*function Net_Curl($url = '', $userAgent = '')
+    {
+        $this->__construct($url, $userAgent);
+    }*/
+    // }}}
+
     // {{{ execute()
     /**
      * Executes a prepared CURL transfer

@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -64,7 +64,7 @@ class CRM_Pledge_Form_PledgeView extends CRM_Core_Form {
         $url = CRM_Utils_System::url('civicrm/contact/view', "reset=1&cid=$values[honor_contact_id]");
         $values["honor_display"] = "<A href = $url>" . $dao->display_name . "</A>";
       }
-      $honor = CRM_Core_PseudoConstant::honor();
+      $honor = CRM_Core_PseudoConstant::get('CRM_Pledge_DAO_Pledge', 'honor_type_id');
       $values['honor_type'] = $honor[$values['honor_type_id']];
     }
 
@@ -76,7 +76,7 @@ class CRM_Pledge_Form_PledgeView extends CRM_Core_Form {
       $values['contribution_page'] = CRM_Core_DAO::getFieldValue('CRM_Contribute_DAO_ContributionPage', $values['contribution_page_id'], 'title');
     }
 
-    $values['contribution_type'] = CRM_Utils_Array::value($values['contribution_type_id'], CRM_Contribute_PseudoConstant::contributionType());
+        $values['financial_type'] = CRM_Utils_Array::value( $values['financial_type_id'], CRM_Contribute_PseudoConstant::financialType() );
 
     if ($values['status_id']) {
       $values['pledge_status'] = CRM_Utils_Array::value($values['status_id'], CRM_Contribute_PseudoConstant::contributionStatus());
@@ -101,7 +101,9 @@ class CRM_Pledge_Form_PledgeView extends CRM_Core_Form {
     $displayName = CRM_Contact_BAO_Contact::displayName($values['contact_id']);
     $this->assign('displayName', $displayName);
 
-    $title = $displayName . ' - (' . ts('Pledged') . ' ' . CRM_Utils_Money::format($values['pledge_amount']) . ' - ' . $values['contribution_type'] . ')';
+    $title = $displayName .
+      ' - (' . ts('Pledged') . ' ' . CRM_Utils_Money::format( $values['pledge_amount'] ) .
+      ' - ' . $values['financial_type'] . ')';
 
     // add Pledge to Recent Items
     CRM_Utils_Recent::add($title,
@@ -112,6 +114,13 @@ class CRM_Pledge_Form_PledgeView extends CRM_Core_Form {
       NULL,
       $recentOther
     );
+
+    // Check if this is default domain contact CRM-10482
+    if (CRM_Contact_BAO_Contact::checkDomainContact($values['contact_id'])) {
+      $displayName .= ' (' . ts('default organization') . ')';
+    }
+    // omitting contactImage from title for now since the summary overlay css doesn't work outside of our crm-container
+    CRM_Utils_System::setTitle(ts('View Pledge by') .  ' ' . $displayName);
 
     //do check for campaigns
     if ($campaignId = CRM_Utils_Array::value('campaign_id', $values)) {

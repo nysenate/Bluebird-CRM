@@ -34,7 +34,8 @@ class CRM_Core_Payment_PayJunction extends CRM_Core_Payment {
    * @param string $mode the mode of operation: live or test
    *
    * @return void
-   */ function __construct($mode, &$paymentProcessor) {
+   */
+  function __construct($mode, &$paymentProcessor) {
     //require PayJunction API library
     require_once 'PayJunction/pjClasses.php';
 
@@ -52,8 +53,7 @@ class CRM_Core_Payment_PayJunction extends CRM_Core_Payment {
    * @static
    *
    */
-  static
-  function &singleton($mode, &$paymentProcessor) {
+  static function &singleton($mode, &$paymentProcessor) {
     $processorName = $paymentProcessor['name'];
     if (self::$_singleton[$processorName] === NULL) {
       self::$_singleton[$processorName] = new CRM_Core_Payment_PayJunction($mode, $paymentProcessor);
@@ -62,9 +62,9 @@ class CRM_Core_Payment_PayJunction extends CRM_Core_Payment {
   }
 
   /*
-    * This function sends request and receives response from
-    * PayJunction payment process
-    */
+   * This function sends request and receives response from
+   * PayJunction payment process
+   */
   function doDirectPayment(&$params) {
     $logon    = $this->_paymentProcessor['user_name'];
     $password = $this->_paymentProcessor['password'];
@@ -183,8 +183,8 @@ class CRM_Core_Payment_PayJunction extends CRM_Core_Payment {
 
 
   /*
-    * This function checks the PayJunction response code
-    */
+   * This function checks the PayJunction response code
+   */
   function isError(&$response) {
     $responseCode = $response['dc_response_code'];
 

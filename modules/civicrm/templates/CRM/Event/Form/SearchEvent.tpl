@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,7 +27,7 @@
  <h3>{ts}Find Events{/ts}</h3>
   <table class="form-layout">
     <tr class="crm-event-searchevent-form-block-title">
-        <td>{$form.title.html|crmReplace:class:twenty}
+        <td>{$form.title.html|crmAddClass:twenty}
              <div class="description font-italic">
                     {ts}Complete OR partial Event name.{/ts}
              </div>
@@ -71,7 +71,7 @@
 {literal} 
 <script type="text/javascript">
 if ( document.getElementsByName('eventsByDates')[1].checked ) {
-   show( 'id_fromToDates', 'block' );
+  cj('#id_fromToDates').show();
 }
 </script>
 {/literal} 

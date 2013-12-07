@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,7 +26,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | eWAY Core Payment Module for CiviCRM version 4.2 & 1.9             |
+ | eWAY Core Payment Module for CiviCRM version 4.4 & 1.9             |
  +--------------------------------------------------------------------+
  | Licensed to CiviCRM under the Academic Free License version 3.0    |
  |                                                                    |
@@ -109,7 +109,8 @@ class CRM_Core_Payment_eWAY extends CRM_Core_Payment {
    * @param string $mode the mode of operation: live or test
    *
    * @return void
-   **********************************************************/ function __construct($mode, &$paymentProcessor) {
+   **********************************************************/
+  function __construct($mode, &$paymentProcessor) {
     // require Standaard eWAY API libraries
     require_once 'eWAY/eWAY_GatewayRequest.php';
     require_once 'eWAY/eWAY_GatewayResponse.php';
@@ -129,8 +130,7 @@ class CRM_Core_Payment_eWAY extends CRM_Core_Payment {
    * @static
    *
    */
-  static
-  function &singleton($mode, &$paymentProcessor) {
+  static function &singleton($mode, &$paymentProcessor) {
     $processorName = $paymentProcessor['name'];
     if (self::$_singleton[$processorName] === NULL) {
       self::$_singleton[$processorName] = new CRM_Core_Payment_eWAY($mode, $paymentProcessor);
@@ -143,7 +143,7 @@ class CRM_Core_Payment_eWAY extends CRM_Core_Payment {
    * eWAY payment process
    **********************************************************/
   function doDirectPayment(&$params) {
-    if ($params['is_recur'] == TRUE) {
+    if (CRM_Utils_Array::value('is_recur', $params) == TRUE) {
       CRM_Core_Error::fatal(ts('eWAY - recurring payments not implemented'));
     }
 
@@ -344,7 +344,7 @@ class CRM_Core_Payment_eWAY extends CRM_Core_Payment {
     curl_close($submit);
 
     //----------------------------------------------------------------------------------------------------
-    // Payment succesfully sent to gateway - process the response now
+    // Payment successfully sent to gateway - process the response now
     //----------------------------------------------------------------------------------------------------
     $eWAYResponse->ProcessResponse($responseData);
 
@@ -353,7 +353,7 @@ class CRM_Core_Payment_eWAY extends CRM_Core_Payment {
     //----------------------------------------------------------------------------------------------------
     if (self::isError($eWAYResponse)) {
       $eWayTrxnError = $eWAYResponse->Error();
-
+      CRM_Core_Error::debug_var('eWay Error', $eWayTrxnError, TRUE, TRUE);
       if (substr($eWayTrxnError, 0, 6) == "Error:") {
         return self::errorExit(9008, $eWayTrxnError);
       }

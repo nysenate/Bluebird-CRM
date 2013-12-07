@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -48,7 +48,7 @@
         <tr id='rowid{$row.id}' class="{cycle values="odd-row,even-row"}">
             <td><a href="{crmURL p="civicrm/contact/view" q="reset=1&cid=`$row.contributor_id`"}" id="view_contact" title="{ts}View contributor contact record{/ts}">{$row.contributor_name}</a></td>
             <td>{$row.amount|crmMoney:$row.currency}</td>
-            <td>{$row.contribution_type}</td>
+            <td>{$row.financial_type}</td>
             <td>{$row.receive_date|truncate:10:''|crmDate}</td>
             <td>{$row.contribution_status}</td>
             <td>{if $row.pcp_id}<a href="{crmURL p="civicrm/pcp/info" q="reset=1&id=`$row.pcp_id`"}" title="{ts}View Personal Campaign Page{/ts}">{$row.pcp_title}</a>{else}{ts}(n/a){/ts}{/if}</td>

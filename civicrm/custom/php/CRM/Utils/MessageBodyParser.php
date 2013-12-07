@@ -103,8 +103,9 @@ class MessageBodyParser
         }
       }
     }
-
-    //var_dump($HeaderBlocks);
+    // echo "\n\n\n";
+    // print_r($HeaderBlocks);
+    // echo "\n\n\n";
 
     // So we have single lines now, lets output it !
     $m=array();
@@ -145,8 +146,6 @@ class MessageBodyParser
     $fwdEmailLookup = $m[0]['From']['lookupType'];
     $fwdSubject = trim(strip_tags($m[0]['Subject']));
 
-
-
     // Remove all parentheses from the subject
     $fwdSubject = trim(preg_replace('/[()]/i', '', $fwdSubject));
 
@@ -159,8 +158,10 @@ class MessageBodyParser
         'fwd_lookup' => mysql_real_escape_string($fwdEmailLookup),
     );
 
+
     // custom body parsing for mysql entry,
     $body = $start;
+
     // strip out non-ascii characters
     $body = nl2br($body);
     $body = preg_replace('/[^(\x20-\x7F)]*/', '', $body);

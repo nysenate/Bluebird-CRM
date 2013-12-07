@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -43,9 +43,10 @@ class CRM_Contact_Form_Search_Custom extends CRM_Contact_Form_Search {
 
     $csID = CRM_Utils_Request::retrieve('csid', 'Integer', $this);
     $ssID = CRM_Utils_Request::retrieve('ssID', 'Integer', $this);
-    $gID  = CRM_Utils_Request::retrieve('gid', 'Integer', $this);
+    $gID = CRM_Utils_Request::retrieve('gid', 'Integer', $this);
 
-    list($this->_customSearchID,
+    list(
+      $this->_customSearchID,
       $this->_customSearchClass,
       $formValues
     ) = CRM_Contact_BAO_SearchCustom::details($csID, $ssID, $gID);
@@ -53,6 +54,10 @@ class CRM_Contact_Form_Search_Custom extends CRM_Contact_Form_Search {
     if (!$this->_customSearchID) {
       CRM_Core_Error::fatal('Could not get details for custom search.');
     }
+
+    // stash this as a hidden element so we can potentially go there if the session
+    // is reset but this is available in the POST
+    $this->addElement('hidden', 'csid', $csID);
 
     if (!empty($formValues)) {
       $this->_formValues = $formValues;
@@ -67,7 +72,7 @@ class CRM_Contact_Form_Search_Custom extends CRM_Contact_Form_Search {
     CRM_Utils_System::appendBreadCrumb($breadCrumb);
 
     // use the custom selector
-    $this->_selectorName = 'CRM_Contact_Selector_Custom';
+    self::$_selectorName = 'CRM_Contact_Selector_Custom';
 
     $this->set('customSearchID', $this->_customSearchID);
     $this->set('customSearchClass', $this->_customSearchClass);
@@ -75,7 +80,13 @@ class CRM_Contact_Form_Search_Custom extends CRM_Contact_Form_Search {
     parent::preProcess();
 
     // instantiate the new class
-    eval('$this->_customClass = new ' . $this->_customSearchClass . '( $this->_formValues );');
+    $this->_customClass = new $this->_customSearchClass( $this->_formValues );
+
+    // CRM-12747
+    if (isset($this->_customClass->_permissionedComponent) &&
+      !self::isPermissioned($this->_customClass->_permissionedComponent)) {
+      CRM_Utils_System::permissionDenied();
+    }
   }
 
   function setDefaultValues() {
@@ -93,7 +104,7 @@ class CRM_Contact_Form_Search_Custom extends CRM_Contact_Form_Search {
 
   function getTemplateFileName() {
 
-    $ext = new CRM_Core_Extensions();
+    $ext = CRM_Extension_System::singleton()->getMapper();
 
     if ($ext->isExtensionClass(CRM_Utils_System::getClassName($this->_customClass))) {
       $fileName = $ext->getTemplatePath(CRM_Utils_System::getClassName($this->_customClass)) . '/' . $ext->getTemplateName(CRM_Utils_System::getClassName($this->_customClass));
@@ -119,7 +130,7 @@ class CRM_Contact_Form_Search_Custom extends CRM_Contact_Form_Search {
     }
 
     //use the custom selector
-    $this->_selectorName = 'CRM_Contact_Selector_Custom';
+    self::$_selectorName = 'CRM_Contact_Selector_Custom';
 
     parent::postProcess();
   }
@@ -127,5 +138,23 @@ class CRM_Contact_Form_Search_Custom extends CRM_Contact_Form_Search {
   public function getTitle() {
     return ts('Custom Search');
   }
-}
 
+  function isPermissioned($components) {
+    if (empty($components)) {
+      return TRUE;
+    }
+    if (is_array($components)) {
+      foreach ($components as $component) {
+        if (!CRM_Core_Permission::access($component)) {
+          return FALSE;
+        }
+      }
+    }
+    else {
+      if (!CRM_Core_Permission::access($components)) {
+        return FALSE;
+      }
+    }
+    return TRUE;
+  }
+}

@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  --------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -52,7 +52,8 @@ class CRM_Campaign_Page_DashBoard extends CRM_Core_Page {
    *
    * @return array $_campaignActionLinks
    *
-   */ function &campaignActionLinks() {
+   */
+  function &campaignActionLinks() {
     // check if variable _actionsLinks is populated
     if (!isset(self::$_campaignActionLinks)) {
       $deleteExtra = ts('Are you sure you want to delete this Campaign?');
@@ -93,7 +94,7 @@ class CRM_Campaign_Page_DashBoard extends CRM_Core_Page {
       self::$_surveyActionLinks = array(
         CRM_Core_Action::UPDATE => array(
           'name' => ts('Edit'),
-          'url' => 'civicrm/survey/add',
+          'url' => 'civicrm/survey/configure/main',
           'qs' => 'action=update&id=%%id%%&reset=1',
           'title' => ts('Update Survey'),
         ),
@@ -111,8 +112,8 @@ class CRM_Campaign_Page_DashBoard extends CRM_Core_Page {
         ),
         CRM_Core_Action::DELETE => array(
           'name' => ts('Delete'),
-          'url' => 'civicrm/survey/add',
-          'qs' => 'action=delete&id=%%id%%&reset=1',
+          'url' => 'civicrm/survey/delete',
+          'qs' => 'id=%%id%%&reset=1',
           'title' => ts('Delete Survey'),
         ),
       );
@@ -312,8 +313,11 @@ class CRM_Campaign_Page_DashBoard extends CRM_Core_Page {
         $surveysData[$sid]['is_default'] = $isDefault;
 
         if ($surveysData[$sid]['result_id']) {
-          $resultSet = '<a href= "javascript:displayResultSet( ' . $sid . ',' . "'" . $surveysData[$sid]['title'] . "'" . ', ' . $surveysData[$sid]['result_id'] . ' )">' . ts('Result Set') . '</a>';
+          $resultSet = '<a href= "javascript:displayResultSet( ' . $sid . ',' . "'" . $surveysData[$sid]['title'] . "'" . ', ' . $surveysData[$sid]['result_id'] . ' )" title="' . ts('view result set').'">' . ts('Result Set') . '</a>';
           $surveysData[$sid]['result_id'] = $resultSet;
+        } else {
+          $resultUrl = CRM_Utils_System::url("civicrm/survey/configure/results", "action=update&id={$sid}&reset=1");
+          $surveysData[$sid]['result_id'] = "<a href='{$resultUrl}' class='status-warning'>(" . ts('Incomplete. Click to configure result set.') . ')</a>';
         }
         $surveysData[$sid]['action'] = CRM_Core_Action::formLink(self::surveyActionLinks($surveysData[$sid]['activity_type']),
           $action,
@@ -325,6 +329,11 @@ class CRM_Campaign_Page_DashBoard extends CRM_Core_Page {
             TRUE,
             ts('more')
           );
+        }
+
+        if ($reportID = CRM_Campaign_BAO_Survey::getReportID($sid)) {
+          $url = CRM_Utils_System::url("civicrm/report/instance/{$reportID}",'reset=1');
+          $surveysData[$sid]['title'] = "<a href='{$url}' title='View Survey Report'>{$surveysData[$sid]['title']}</a>";
         }
       }
     }

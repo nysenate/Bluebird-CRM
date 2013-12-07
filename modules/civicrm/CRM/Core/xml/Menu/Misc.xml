@@ -56,6 +56,12 @@
      <page_callback>CRM_Core_Page_File</page_callback>
   </item>
   <item>
+     <path>civicrm/file/delete</path>
+     <title>Delete file</title>
+     <access_arguments>access CiviCRM</access_arguments>
+     <page_callback>CRM_Core_BAO_File::deleteAttachment</page_callback>
+  </item>
+  <item>
      <path>civicrm/friend</path>
      <title>Tell a Friend</title>
      <page_callback>CRM_Friend_Form</page_callback>
@@ -82,12 +88,13 @@
   </item>
   <item>
      <path>civicrm/api/explorer</path>
-     <page_callback>CRM_Utils_REST::ajaxDoc</page_callback>
+     <page_callback>CRM_Admin_Page_APIExplorer</page_callback>
      <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
      <path>civicrm/api/doc</path>
-     <page_callback>CRM_Utils_REST::APIDoc</page_callback>
+     <aapage_callback>CRM_Utils_REST::APIDoc</aapage_callback>
+     <page_callback>CRM_Admin_Page_APIDoc</page_callback>
      <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
@@ -107,13 +114,13 @@
   </item>
   <item>
      <path>civicrm/ajax/chart</path>
-     <page_callback>CRM_Contribute_Form_ContributionCharts</page_callback> 
-     <access_arguments>access CiviCRM</access_arguments> 
+     <page_callback>CRM_Contribute_Form_ContributionCharts</page_callback>
+     <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
      <path>civicrm/contribute/ajax/tableview</path>
-     <page_callback>CRM_Contribute_Page_DashBoard</page_callback> 
-     <access_arguments>access CiviCRM</access_arguments> 
+     <page_callback>CRM_Contribute_Page_DashBoard</page_callback>
+     <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
      <path>civicrm/payment/ipn</path>
@@ -123,7 +130,7 @@
   </item>
   <item>
       <path>civicrm/batch</path>
-     <title>Bulk Data Entry</title>
+     <title>Batch Data Entry</title>
      <page_callback>CRM_Batch_Page_Batch</page_callback>
      <access_arguments>access CiviContribute</access_arguments>
   </item>
@@ -151,5 +158,17 @@
       <path>civicrm/ajax/inline</path>
      <page_callback>CRM_Core_Page_AJAX::run</page_callback>
      <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/dev/qunit</path>
+    <page_callback>CRM_Core_Page_QUnit</page_callback>
+    <title>QUnit</title>
+    <access_arguments>administer CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/profile-editor/schema</path>
+    <page_callback>CRM_UF_Page_ProfileEditor::getSchemaJSON</page_callback>
+    <title>ProfileEditor</title>
+    <access_arguments>access CiviCRM</access_arguments>
   </item>
 </menu>

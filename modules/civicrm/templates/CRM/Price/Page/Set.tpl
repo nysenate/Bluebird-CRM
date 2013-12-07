@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -36,14 +36,14 @@
 
     {if $usedBy}
     <div class='spacer'></div>
-    <div id="price_set_used_by" class="messages status">
+    <div id="price_set_used_by" class="messages status no-popup">
        <div class="icon inform-icon"></div>
         {if $action eq 8}
-            {ts 1=$usedPriceSetTitle}Unable to delete the '%1' price set - it is currently in use by one or more active events or contribution pages or contributions.{/ts}
+            {ts 1=$usedPriceSetTitle}Unable to delete the '%1' price set - it is currently in use by one or more active events or contribution pages or contributions or event templates.{/ts}
         {/if}
-        
-	    {if $usedBy.civicrm_event or $usedBy.civicrm_contribution_page} 
-            {include file="CRM/Price/Page/table.tpl"} 
+
+      {if $usedBy.civicrm_event or $usedBy.civicrm_contribution_page or $usedBy.civicrm_event_template}
+            {include file="CRM/Price/Page/table.tpl"}
         {/if}
     </div>
     {/if}
@@ -52,9 +52,9 @@
     <div id="price_set">
     <p></p>
         {strip}
-	{* handle enable/disable actions*}
- 	{include file="CRM/common/enableDisable.tpl"}
-	{include file="CRM/common/jsortable.tpl"}
+  {* handle enable/disable actions*}
+   {include file="CRM/common/enableDisable.tpl"}
+  {include file="CRM/common/jsortable.tpl"}
         <table id="price_set" class="display crm-price-set-listing">
         <thead>
         <tr>
@@ -65,15 +65,15 @@
         </tr>
         </thead>
         {foreach from=$rows item=row}
-	    <tr id="row_{$row.id}"class=" crm-price-set crm-price-set_{$row.id} {cycle values="even-row,odd-row"} {$row.class}{if NOT $row.is_active} disabled{/if}">
+      <tr id="row_{$row.id}"class=" crm-price-set crm-price-set_{$row.id} {cycle values="even-row,odd-row"} {$row.class}{if NOT $row.is_active} disabled{/if}">
             <td class="crm-price-set-title">{$row.title}</td>
-	        <td class="crm-price-set-extends">{$row.extends}</td>
-	        <td id="row_{$row.id}_status" class="crm-price-set-is_active">{if $row.is_active eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
+          <td class="crm-price-set-extends">{$row.extends}</td>
+          <td id="row_{$row.id}_status" class="crm-price-set-is_active">{if $row.is_active eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
             <td>{$row.action|replace:'xx':$row.id}</td>
         </tr>
         {/foreach}
         </table>
-        
+
         {if NOT ($action eq 1 or $action eq 2) }
         <div class="action-link">
             <a href="{crmURL p='civicrm/admin/price' q="action=add&reset=1"}" id="newPriceSet" class="button"><span><div class="icon add-icon"></div>{ts}Add Set of Price Fields{/ts}</span></a>
@@ -83,12 +83,12 @@
         {/strip}
     </div>
     {else}
-       {if $action ne 1} {* When we are adding an item, we should not display this message *}
-       <div class="messages status">
-         <div class="icon inform-icon"></div> &nbsp;
-         {capture assign=crmURL}{crmURL p='civicrm/admin/price' q='action=add&reset=1'}{/capture}
-         {ts 1=$crmURL}No price sets have been created yet. You can <a href='%1'>add one</a>.{/ts}
-       </div>
-       {/if}
+      {if $action ne 1} {* When we are adding an item, we should not display this message *}
+        {capture assign=infoTitle}{ts}No price sets have been added yet.{/ts}{/capture}
+        {assign var="infoType" value="no-popup"}
+        {capture assign=crmURL}{crmURL p='civicrm/admin/price' q='action=add&reset=1'}{/capture}
+        {capture assign=infoMessage}{ts 1=$crmURL}You can <a href='%1'>create one here</a>.{/ts}{/capture}
+        {include file="CRM/common/info.tpl"}
+      {/if}
     {/if}
 {/if}

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,12 +29,12 @@
  <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
 
 {if $action eq 8}
-  <div class="messages status">  
+  <div class="messages status no-popup">  
       <div class="icon inform-icon"></div> 
         {ts}Do you want to continue?{/ts}
   </div>
 {elseif $action eq 128}
-  <div class="messages status">  
+  <div class="messages status no-popup">  
       <div class="icon inform-icon"></div> 
         {ts}Are you sure you would like to execute this job?{/ts}
   </div>
@@ -74,3 +74,17 @@
   </fieldset>
 </div>
 
+{if $action eq 1  or $action eq 2}
+<script type="text/javascript" >
+{literal}
+    function reload(refresh) {
+        var provider = document.getElementById("name");
+        var url = {/literal}"{$refreshURL}"{literal}
+        var post = url + "&key=" + provider.value;
+        if( refresh ) {
+            window.location = post; 
+        }
+    }
+{/literal}
+</script>
+{/if}

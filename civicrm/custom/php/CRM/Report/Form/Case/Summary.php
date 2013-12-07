@@ -1,11 +1,10 @@
 <?php
-// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,14 +29,15 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
 class CRM_Report_Form_Case_Summary extends CRM_Report_Form {
 
   protected $_summary = NULL;
-  protected $_relField = FALSE; function __construct() {
+  protected $_relField = FALSE;
+  function __construct() {
     $this->case_types    = CRM_Case_PseudoConstant::caseType();
     $this->case_statuses = CRM_Case_PseudoConstant::caseStatus();
     $rels                = CRM_Core_PseudoConstant::relationshipType();
@@ -97,9 +97,11 @@ class CRM_Report_Form_Case_Summary extends CRM_Report_Form {
           ),
           'start_date' => array(
             'title' => ts('Start Date'), 'default' => TRUE,
+            'type' => CRM_Utils_Type::T_DATE,
           ),
           'end_date' => array(
             'title' => ts('End Date'), 'default' => TRUE,
+            'type' => CRM_Utils_Type::T_DATE,
           ),
           'duration' => array(
             'title' => ts('Duration (Days)'), 'default' => FALSE,
@@ -229,8 +231,7 @@ class CRM_Report_Form_Case_Summary extends CRM_Report_Form {
     $this->_select = "SELECT " . implode(', ', $select) . " ";
   }
 
-  static
-  function formRule($fields, $files, $self) {
+  static function formRule($fields, $files, $self) {
     $errors = $grouping = array();
     if (empty($fields['relationship_type_id_value']) && (array_key_exists('sort_name', $fields['fields']) || array_key_exists('label_b_a', $fields['fields']))) {
       $errors['fields'] = ts('Either filter on at least one relationship type, or de-select Staff Member and Relationship from the list of fields.');

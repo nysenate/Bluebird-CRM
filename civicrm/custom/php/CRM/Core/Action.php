@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -31,7 +31,7 @@
  * and similar across all objects (thus providing both reuse and standards)
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -65,7 +65,9 @@ class CRM_Core_Action {
     RENEW = 32768,
     DETACH = 65536,
     REVERT = 131072,
-    MAX_ACTION = 262143;
+    CLOSE        =  262144,
+    REOPEN       =  524288,
+    MAX_ACTION   = 1048575;
 
   //make sure MAX_ACTION = 2^n - 1 ( n = total number of actions )
 
@@ -96,6 +98,8 @@ class CRM_Core_Action {
     'renew' => self::RENEW,
     'detach' => self::DETACH,
     'revert' => self::REVERT,
+                           'close'         => self::CLOSE,
+                           'reopen'        => self::REOPEN,
   );
 
   /**
@@ -137,8 +141,7 @@ class CRM_Core_Action {
    * @static
    *
    */
-  static
-  function map($item) {
+  static function map($item) {
     $mask = 0;
 
     if (is_array($item)) {
@@ -162,8 +165,7 @@ class CRM_Core_Action {
    * @static
    *
    */
-  static
-  function mapItem($item) {
+  static function mapItem($item) {
     $mask = CRM_Utils_Array::value(trim($item), self::$_names);
     return $mask ? $mask : 0;
   }
@@ -179,8 +181,7 @@ class CRM_Core_Action {
    * @static
    *
    */
-  static
-  function description($mask) {
+  static function description($mask) {
     if (!isset($_description)) {
       self::$_description = array_flip(self::$_names);
     }
@@ -202,8 +203,7 @@ class CRM_Core_Action {
    * @access public
    * @static
    */
-  static
-  function formLink($links,
+  static function formLink($links,
     $mask,
     $values,
     $extraULName = 'more',
@@ -334,8 +334,7 @@ class CRM_Core_Action {
    * @access public
    * @static
    */
-  static
-  function &replace(&$str, &$values) {
+  static function &replace(&$str, &$values) {
     foreach ($values as $n => $v) {
       $str = str_replace("%%$n%%", $v, $str);
     }
@@ -351,8 +350,7 @@ class CRM_Core_Action {
    * @static
    * @access public
    */
-  static
-  function mask($permissions) {
+  static function mask($permissions) {
     $mask = NULL;
     if (!is_array($permissions) || CRM_Utils_System::isNull($permissions)) {
       return $mask;

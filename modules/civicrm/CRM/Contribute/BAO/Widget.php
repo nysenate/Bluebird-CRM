@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -46,7 +46,7 @@ class CRM_Contribute_BAO_Widget extends CRM_Contribute_DAO_Widget {
    *
    * @return stdClass
    */
-  public function getContributionPageData($contributionPageID, $widgetID) {
+  public static function getContributionPageData($contributionPageID, $widgetID) {
     $config = CRM_Core_Config::singleton();
 
     $data = array();
@@ -169,9 +169,7 @@ class CRM_Contribute_BAO_Widget extends CRM_Contribute_DAO_Widget {
       $percent = $data['money_raised'] / $data['money_target'];
       $data['money_raised_percentage'] = (round($percent, 2)) * 100 . "%";
       $data['money_target_display'] = CRM_Utils_Money::format($data['money_target']);
-      $data['money_raised'] = ts('Raised %1 of %2', array(1 => CRM_Utils_Money::format($data['money_raised']),
-          2 => $data['money_target_display'],
-        ));
+      $data['money_raised'] = ts('Raised %1 of %2', array(1 => CRM_Utils_Money::format($data['money_raised']), 2 => $data['money_target_display']));
     }
     else {
       $data['money_raised'] = ts('Raised %1', array(1 => CRM_Utils_Money::format($data['money_raised'])));

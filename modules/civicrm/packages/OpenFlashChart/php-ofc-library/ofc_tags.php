@@ -36,12 +36,11 @@ class ofc_tags
 		return $this;
 	}
 	
-	function rotate($angle)
+
+	function rotate( $angle )
 	{
-		$this->rotate($angle);
-		return $this;
-	}
-	
+		$this->rotate = $angle;
+	}	
 	function align_x_center()
 	{
 		$this->{"align-x"} = "center";

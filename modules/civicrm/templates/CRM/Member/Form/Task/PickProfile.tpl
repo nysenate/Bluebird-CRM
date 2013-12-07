@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,9 +29,9 @@
      <tr class="crm-member-task-pickprofile-form-block-uf_group_id">
        <td class="label">{$form.uf_group_id.label}</td><td>{$form.uf_group_id.html}</td>
      </tr>
-     <tr>	
+     <tr>
        <td></td><td>{include file="CRM/Member/Form/Task.tpl"}</td>
      </tr>
- </table>   
+ </table>
    <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
 </div>

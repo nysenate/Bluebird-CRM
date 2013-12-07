@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id: $
  *
  */
@@ -37,7 +37,9 @@
  *
  */
 class CRM_Admin_Form_Job extends CRM_Admin_Form {
-  protected $_id = NULL; function preProcess() {
+  protected $_id = NULL;
+
+  function preProcess() {
 
     parent::preProcess();
 
@@ -84,10 +86,6 @@ class CRM_Admin_Form_Job extends CRM_Admin_Form {
       $attributes['description']
     );
 
-    $this->add('text', 'api_prefix', ts('API Call Prefix'),
-      $attributes['api_prefix'], TRUE
-    );
-
     $this->add('text', 'api_entity', ts('API Call Entity'),
       $attributes['api_entity'], TRUE
     );
@@ -118,22 +116,13 @@ class CRM_Admin_Form_Job extends CRM_Admin_Form {
     require_once 'api/api.php';
 
     $apiRequest = array();
-    $apiRequest['entity'] = CRM_Utils_String::munge($fields['api_entity']);
-    $apiRequest['action'] = CRM_Utils_String::munge($fields['api_action']);
-    $apiRequest['version'] = substr($fields['api_prefix'], -1); // ie. civicrm_api3
+    $apiRequest['entity']  = CRM_Utils_String::munge($fields['api_entity']);
+    $apiRequest['action']  = CRM_Utils_String::munge($fields['api_action']);
+    $apiRequest['version'] = 3;
     $apiRequest += _civicrm_api_resolve($apiRequest);    // look up function, file, is_generic
 
     if( !$apiRequest['function'] ) {
       $errors['api_action'] = ts('Given API command is not defined.');
-    }
-
-    // CRM-9868- don't allow Enabled (is_active) for jobs that should never be run automatically via execute action or runjobs url
-    if (($fields['api_action'] == 'process_membership_reminder_date' || $fields['api_action'] == 'update_greeting') &&
-      CRM_Utils_Array::value('is_active', $fields) == 1
-    ) {
-      // pass "wiki" as 6th param to docURL2 if you are linking to a page in wiki.civicrm.org
-      $docLink = CRM_Utils_System::docURL2("Managing Scheduled Jobs", NULL, NULL, NULL, NULL, "wiki");
-      $errors['is_active'] = ts('You can not save this Scheduled Job as Active with the specified api action (%2). That action should not be run regularly - it should only be run manually for special conditions. %1', array(1 => $docLink, 2 => $fields['api_action']));
     }
 
     if (!empty($errors)) {
@@ -184,7 +173,7 @@ class CRM_Admin_Form_Job extends CRM_Admin_Form {
 
     if ($this->_action & CRM_Core_Action::DELETE) {
       CRM_Core_BAO_Job::del($this->_id);
-      CRM_Core_Session::setStatus(ts('Selected Scheduled Job has been deleted.'));
+      CRM_Core_Session::setStatus("", ts('Scheduled Job Deleted.'), "success");
       return;
     }
 
@@ -198,13 +187,22 @@ class CRM_Admin_Form_Job extends CRM_Admin_Form {
     $dao->run_frequency = $values['run_frequency'];
     $dao->parameters    = $values['parameters'];
     $dao->name          = $values['name'];
-    $dao->api_prefix    = $values['api_prefix'];
     $dao->api_entity    = $values['api_entity'];
     $dao->api_action    = $values['api_action'];
     $dao->description   = $values['description'];
     $dao->is_active     = CRM_Utils_Array::value('is_active', $values, 0);
 
     $dao->save();
+
+    // CRM-11143 - Give warning message if update_greetings is Enabled (is_active) since it generally should not be run automatically via execute action or runjobs url.
+    if ($values['api_action'] == 'update_greeting' && CRM_Utils_Array::value('is_active', $values) == 1) {
+      // pass "wiki" as 6th param to docURL2 if you are linking to a page in wiki.civicrm.org
+      $docLink = CRM_Utils_System::docURL2("Managing Scheduled Jobs", NULL, NULL, NULL, NULL, "wiki");
+      $msg = ts('The update greeting job can be very resource intensive and is typically not necessary to run on a regular basis. If you do choose to enable the job, we recommend you do not run it with the force=1 option, which would rebuild greetings on all records. Leaving that option absent, or setting it to force=0, will only rebuild greetings for contacts that do not currently have a value stored. %1', array(1 => $docLink));
+      CRM_Core_Session::setStatus($msg, ts('Warning: Update Greeting job enabled'), 'alert');
+    }
+
+
   }
   //end of function
 }

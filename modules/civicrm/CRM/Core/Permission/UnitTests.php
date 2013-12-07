@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -36,62 +36,28 @@
 /**
  *
  */
-class CRM_Core_Permission_UnitTests {
-
-  public static function getPermission() {
-    return CRM_Core_Permission::EDIT;
-  }
-
-  public static function whereClause($type, &$tables, &$whereTables) {
-    return '( 1 )';
-  }
-
-  public static function &group($groupType = NULL, $excludeHidden = TRUE) {
-    return CRM_Core_PseudoConstant::allGroup($groupType, $excludeHidden);
-  }
+class CRM_Core_Permission_UnitTests extends CRM_Core_Permission_Base {
 
   // permission mapping to stub check() calls
-  public static $permissions = NULL;
+  public $permissions = NULL;
 
-  static function check($str) {
+  function check($str) {
     // return the stubbed permission (defaulting to true if the array is missing)
-    return is_array(self::$permissions) ? in_array($str, self::$permissions) : TRUE;
+    return is_array($this->permissions) ? in_array($str, $this->permissions) : TRUE;
   }
 
   /**
-   * Given a roles array, check for access requirements
+   * Get the permissioned where clause for the user
    *
-   * @param array $array the roles to check
+   * @param int $type the type of permission needed
+   * @param  array $tables (reference ) add the tables that are needed for the select clause
+   * @param  array $whereTables (reference ) add the tables that are needed for the where clause
    *
-   * @return boolean true if yes, else false
-   * @static
+   * @return string the group where clause for this user
    * @access public
    */
-  static
-  function checkGroupRole($array) {
-    return FALSE;
-  }
-
-  /**
-   * Get all the contact emails for users that have a specific permission
-   *
-   * @param string $permissionName name of the permission we are interested in
-   *
-   * @return string a comma separated list of email addresses
-   */
-  public static function permissionEmails($permissionName) {
-    return '';
-  }
-
-  /**
-   * Get all the contact emails for users that have a specific role
-   *
-   * @param string $roleName name of the role we are interested in
-   *
-   * @return string a comma separated list of email addresses
-   */
-  public static function roleEmails($roleName) {
-    return '';
+  public function whereClause($type, &$tables, &$whereTables) {
+    return '( 1 )';
   }
 }
 

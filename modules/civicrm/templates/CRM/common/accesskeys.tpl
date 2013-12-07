@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,6 +25,6 @@
 *}
 {if not $urlIsPublic}
  <div class="footer" id="access">
- {ts}Access Keys:{/ts}{help id='accesskeys'}
+ {ts}Access Keys:{/ts}{help id='accesskeys' file='CRM/common/accesskeys'}
  </div>
 {/if}

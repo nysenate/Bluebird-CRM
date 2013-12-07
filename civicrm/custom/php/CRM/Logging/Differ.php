@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -36,14 +36,14 @@ class CRM_Logging_Differ {
   private $db;
   private $log_conn_id;
   private $log_date;
-  private $interval;//NYSS
+  private $interval;
 
-  function __construct($log_conn_id, $log_date, $interval = '10 SECOND') {//NYSS
+  function __construct($log_conn_id, $log_date, $interval = '10 SECOND') {
     $dsn               = defined('CIVICRM_LOGGING_DSN') ? DB::parseDSN(CIVICRM_LOGGING_DSN) : DB::parseDSN(CIVICRM_DSN);
     $this->db          = $dsn['database'];
     $this->log_conn_id = $log_conn_id;
     $this->log_date    = $log_date;
-    $this->interval    = $interval;//NYSS
+    $this->interval    = $interval;
   }
 
   function diffsInTables($tables) {
@@ -65,11 +65,10 @@ class CRM_Logging_Differ {
       2 => array($this->log_date, 'String'),
     );
 
-    //NYSS 7049
     $logging = new CRM_Logging_Schema;
     $addressCustomTables = $logging->entityCustomDataLogTables('Address');
 
-    $contactIdClause = $join = '';//NYSS
+    $contactIdClause = $join = '';
     if ( $contactID ) {
       $params[3] = array($contactID, 'Integer');
       switch ($table) {
@@ -77,8 +76,7 @@ class CRM_Logging_Differ {
         $contactIdClause = "AND id = %3";
         break;
       case 'civicrm_note':
-        //NYSS 5751
-        $contactIdClause = "AND ( entity_id = %3 AND entity_table = 'civicrm_contact' ) OR (entity_id IN (SELECT note.id FROM {$this->db}.log_civicrm_note note WHERE note.entity_id = %3 AND note.entity_table = 'civicrm_contact') AND entity_table = 'civicrm_note')";
+        $contactIdClause = "AND ( entity_id = %3 AND entity_table = 'civicrm_contact' ) OR (entity_id IN (SELECT note.id FROM `{$this->db}`.log_civicrm_note note WHERE note.entity_id = %3 AND note.entity_table = 'civicrm_contact') AND entity_table = 'civicrm_note')";
         break;
       case 'civicrm_entity_tag':
         $contactIdClause = "AND entity_id = %3 AND entity_table = 'civicrm_contact'";
@@ -86,24 +84,30 @@ class CRM_Logging_Differ {
       case 'civicrm_relationship':
         $contactIdClause = "AND (contact_id_a = %3 OR contact_id_b = %3)";
         break;
-      //NYSS 6275
       case 'civicrm_activity':
+        $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
+        $sourceID = CRM_Utils_Array::key('Activity Source', $activityContacts);
+        $assigneeID = CRM_Utils_Array::key('Activity Assignees', $activityContacts);
+        $targetID = CRM_Utils_Array::key('Activity Targets', $activityContacts);
+
         $join  = "
-LEFT JOIN civicrm_activity_target at ON at.activity_id = lt.id     AND at.target_contact_id = %3
-LEFT JOIN civicrm_activity_assignment aa ON aa.activity_id = lt.id AND aa.assignee_contact_id = %3
-LEFT JOIN civicrm_activity source ON source.id = lt.id             AND source.source_contact_id = %3";
+LEFT JOIN civicrm_activity_contact at ON at.activity_id = lt.id AND at.contact_id = %3 AND at.record_type_id = {$targetID}
+LEFT JOIN civicrm_activity_contact aa ON aa.activity_id = lt.id AND aa.contact_id = %3 AND aa.record_type_id = {$assigneeID}
+LEFT JOIN civicrm_activity_contact source ON source.activity_id = lt.id AND source.contact_id = %3 AND source.record_type_id = {$sourceID} ";
         $contactIdClause = "AND (at.id IS NOT NULL OR aa.id IS NOT NULL OR source.id IS NOT NULL)";
         break;
       case 'civicrm_case':
         $contactIdClause = "AND id = (select case_id FROM civicrm_case_contact WHERE contact_id = %3 LIMIT 1)";
         break;
-      //NYSS 7049
       default:
         if (array_key_exists($table, $addressCustomTables)) {
           $join  = "INNER JOIN `{$this->db}`.`log_civicrm_address` et ON et.id = lt.entity_id";
           $contactIdClause = "AND contact_id = %3";
           break;
         }
+
+        // allow tables to be extended by report hook query objects
+        list($contactIdClause, $join) = CRM_Report_BAO_Hook::singleton()->logDiffClause($this, $table);
 
         if (empty($contactIdClause)) {
           $contactIdClause = "AND contact_id = %3";
@@ -115,7 +119,6 @@ LEFT JOIN civicrm_activity source ON source.id = lt.id             AND source.so
     }
 
     // find ids in this table that were affected in the given connection (based on connection id and a ±10 s time period around the date)
-    //NYSS 7049
     $sql = "
 SELECT DISTINCT lt.id FROM `{$this->db}`.`log_$table` lt
 {$join}
@@ -139,8 +142,8 @@ WHERE lt.log_conn_id = %1 AND
       3 => array($id, 'Integer'),
     );
 
-    // look for all the changes in the given connection that happended less than 10 seconds later than log_date to the given id to catch multi-query changes
-    $changedSQL = "SELECT * FROM `{$this->db}`.`log_$table` WHERE log_conn_id = %1 AND log_date < DATE_ADD(%2, INTERVAL 10 SECOND) AND id = %3 ORDER BY log_date DESC LIMIT 1";
+    // look for all the changes in the given connection that happended less than {$this->interval} s later than log_date to the given id to catch multi-query changes
+    $changedSQL = "SELECT * FROM `{$this->db}`.`log_$table` WHERE log_conn_id = %1 AND log_date >= %2 AND log_date < DATE_ADD(%2, INTERVAL {$this->interval}) AND id = %3 ORDER BY log_date DESC LIMIT 1";
 
     $changedDAO = CRM_Core_DAO::executeQuery($changedSQL, $params);
     while ($changedDAO->fetch( )) {
@@ -168,6 +171,12 @@ WHERE lt.log_conn_id = %1 AND
           // look for the previous state (different log_conn_id) of the given id
           $originalSQL = "SELECT * FROM `{$this->db}`.`log_$table` WHERE log_conn_id != %1 AND log_date < %2 AND id = %3 ORDER BY log_date DESC LIMIT 1";
           $original = $this->sqlToArray($originalSQL, $params);
+          if (empty($original)) {
+            // A blank original array is not possible for Update action, otherwise we 'll end up displaying all information
+            // in $changed variable as updated-info
+            $original = $changed;
+          }
+
           break;
       }
 
@@ -186,7 +195,6 @@ WHERE lt.log_conn_id = %1 AND
           continue;
         }
 
-        //NYSS 6275
         // hack: case_type_id column is a varchar with separator. For proper mapping to type labels,
         // we need to make sure separators are trimmed
         if ($diff == 'case_type_id') {
@@ -229,8 +237,8 @@ WHERE lt.log_conn_id = %1 AND
       'civicrm_contribution' => 'CRM_Contribute_DAO_Contribution',
       'civicrm_note' => 'CRM_Core_DAO_Note',
       'civicrm_relationship' => 'CRM_Contact_DAO_Relationship',
-      'civicrm_activity' => 'CRM_Activity_DAO_Activity',//NYSS 6275
-      'civicrm_case' => 'CRM_Case_DAO_Case',//NYSS 6275
+      'civicrm_activity' => 'CRM_Activity_DAO_Activity',
+      'civicrm_case' => 'CRM_Case_DAO_Case',
     );
 
     if (!isset($titles[$table]) or !isset($values[$table])) {
@@ -238,28 +246,28 @@ WHERE lt.log_conn_id = %1 AND
       if (in_array($table, array_keys($daos))) {
         // FIXME: these should be populated with pseudo constants as they
         // were at the time of logging rather than their current values
+        // FIXME: Use *_BAO:buildOptions() method rather than pseudoconstants & fetch programmatically
         $values[$table] = array(
           'contribution_page_id' => CRM_Contribute_PseudoConstant::contributionPage(),
           'contribution_status_id' => CRM_Contribute_PseudoConstant::contributionStatus(),
-          'contribution_type_id' => CRM_Contribute_PseudoConstant::contributionType(),
+          'financial_type_id'              => CRM_Contribute_PseudoConstant::financialType(),
           'country_id' => CRM_Core_PseudoConstant::country(),
-          'gender_id' => CRM_Core_PseudoConstant::gender(),
-          'location_type_id' => CRM_Core_PseudoConstant::locationType(),
+          'gender_id' => CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'gender_id'),
+          'location_type_id' => CRM_Core_PseudoConstant::get('CRM_Core_DAO_Address', 'location_type_id'),
           'payment_instrument_id' => CRM_Contribute_PseudoConstant::paymentInstrument(),
-          'phone_type_id' => CRM_Core_PseudoConstant::phoneType(),
-          'preferred_communication_method' => CRM_Core_PseudoConstant::pcm(),
-          'preferred_language' => CRM_Core_PseudoConstant::languages(),
-          'prefix_id' => CRM_Core_PseudoConstant::individualPrefix(),
-          'provider_id' => CRM_Core_PseudoConstant::IMProvider(),
+          'phone_type_id' => CRM_Core_PseudoConstant::get('CRM_Core_DAO_Phone', 'phone_type_id'),
+          'preferred_communication_method' => CRM_Contact_BAO_Contact::buildOptions('preferred_communication_method'),
+          'preferred_language' => CRM_Contact_BAO_Contact::buildOptions('preferred_language'),
+          'prefix_id' => CRM_Contact_BAO_Contact::buildOptions('prefix_id'),
+          'provider_id' => CRM_Core_PseudoConstant::get('CRM_Core_DAO_IM', 'provider_id'),
           'state_province_id' => CRM_Core_PseudoConstant::stateProvince(),
-          'suffix_id' => CRM_Core_PseudoConstant::individualSuffix(),
-          'website_type_id' => CRM_Core_PseudoConstant::websiteType(),
-          'activity_type_id' => CRM_Core_PseudoConstant::activityType(TRUE, TRUE, FALSE, 'label', TRUE),//NYSS 6275
-          'case_type_id' => CRM_Case_PseudoConstant::caseType('label', FALSE),//NYSS 6275
-          'priority_id' => CRM_Core_PseudoConstant::priority(),//NYSS 6275
+          'suffix_id' => CRM_Contact_BAO_Contact::buildOptions('suffix_id'),
+          'website_type_id' => CRM_Core_PseudoConstant::get('CRM_Core_DAO_Website', 'website_type_id'),
+          'activity_type_id' => CRM_Core_PseudoConstant::activityType(TRUE, TRUE, FALSE, 'label', TRUE),
+          'case_type_id' => CRM_Case_PseudoConstant::caseType('label', FALSE),
+          'priority_id'  => CRM_Core_PseudoConstant::get('CRM_Activity_DAO_Activity', 'priority_id'),
         );
 
-        //NYSS 6275
         // for columns that appear in more than 1 table
         switch ($table) {
           case 'civicrm_case':
@@ -270,8 +278,7 @@ WHERE lt.log_conn_id = %1 AND
             break;
         }
 
-        require_once str_replace('_', DIRECTORY_SEPARATOR, $daos[$table]) . '.php';
-        eval("\$dao = new $daos[$table];");
+        $dao = new $daos[$table];
         foreach ($dao->fields() as $field) {
           $titles[$table][$field['name']] = CRM_Utils_Array::value('title', $field);
 
@@ -282,6 +289,8 @@ WHERE lt.log_conn_id = %1 AND
       }
       elseif (substr($table, 0, 14) == 'civicrm_value_') {
         list($titles[$table], $values[$table]) = $this->titlesAndValuesForCustomDataTable($table);
+      } else {
+        $titles[$table] = $values[$table] = array();
       }
     }
 

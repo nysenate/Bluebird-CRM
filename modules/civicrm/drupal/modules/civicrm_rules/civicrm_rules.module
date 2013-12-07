@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,10 +28,17 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
+
+/*
+ * Implemenation of hook_enable()
+ */
+function civicrm_rules_enable() {
+  db_query("UPDATE {system} SET weight = 110 WHERE name = 'civicrm_rules'");
+}
 
 /**
  * Implement the post hook and fire the corresponding rules event
@@ -185,11 +192,16 @@ FROM   civicrm_mailing
     }
   }
 }
-/*
- * Implementation of hook_perm().
+/**
+ * Implementation of hook_permission().
  */
-function civicrm_rules_perm() {
-  return array('access civicrm rules settings');
+function civicrm_rules_permission() {
+  return array(
+    'access civicrm rules settings' =>
+    array('title' => t('Access CiviCRM Rules Settings'),
+      'description' => t('Access CiviCRM Rules Settings.'),
+    ),
+  );
 }
 
 function civicrm_rules_menu() {

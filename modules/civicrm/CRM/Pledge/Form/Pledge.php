@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -116,8 +116,9 @@ class CRM_Pledge_Form_Pledge extends CRM_Core_Form {
 
       // set title to "Pledge - "+Contact Name
       $displayName = $this->userDisplayName;
-      $pageTitle = 'Pledge - ' . $displayName;
+      $pageTitle = ts('Pledge by'). ' ' . $displayName;
       $this->assign('pageTitle', $pageTitle);
+      CRM_Utils_System::setTitle($pageTitle);
     }
 
     //build custom data
@@ -233,7 +234,7 @@ class CRM_Pledge_Form_Pledge extends CRM_Core_Form {
       $defaults['max_reminders'] = 1;
       $defaults['additional_reminder_day'] = 5;
       $defaults['frequency_unit'] = array_search('month', $this->_freqUnits);
-      $defaults['contribution_type_id'] = array_search('Donation', CRM_Contribute_PseudoConstant::contributionType());
+            $defaults['financial_type_id']    = array_search( 'Donation', CRM_Contribute_PseudoConstant::financialType() );
     }
 
     $pledgeStatus = CRM_Contribute_PseudoConstant::contributionStatus();
@@ -256,7 +257,7 @@ class CRM_Pledge_Form_Pledge extends CRM_Core_Form {
       $honorDefault = array();
       $idParams = array('contact_id' => $this->_honorID);
       CRM_Contact_BAO_Contact::retrieve($idParams, $honorDefault);
-      $honorType = CRM_Core_PseudoConstant::honor();
+      $honorType = CRM_Core_PseudoConstant::get('CRM_Pledge_DAO_Pledge', 'honor_type_id');
       $defaults['honor_prefix_id'] = $honorDefault['prefix_id'];
       $defaults['honor_first_name'] = CRM_Utils_Array::value('first_name', $honorDefault);
       $defaults['honor_last_name'] = CRM_Utils_Array::value('last_name', $honorDefault);
@@ -329,7 +330,8 @@ class CRM_Pledge_Form_Pledge extends CRM_Core_Form {
         $showAdditionalInfo = TRUE;
         $allPanes[$name]['open'] = 'true';
       }
-      eval('CRM_Contribute_Form_AdditionalInfo::build' . $type . '( $this );');
+      $fnName = "build{$type}";
+      CRM_Contribute_Form_AdditionalInfo::$fnName($this);
     }
 
     $this->assign('allPanes', $allPanes);
@@ -446,9 +448,9 @@ class CRM_Pledge_Form_Pledge extends CRM_Core_Form {
 
     $this->addDate('acknowledge_date', ts('Acknowledgment Date'));
 
-    $this->add('select', 'contribution_type_id',
-      ts('Contribution Type'),
-      array('' => ts('- select -')) + CRM_Contribute_PseudoConstant::contributionType(),
+        $this->add('select', 'financial_type_id',
+                   ts( 'Financial Type' ),
+                   array(''=>ts( '- select -' )) + CRM_Contribute_PseudoConstant::financialType( ),
       TRUE
     );
 
@@ -517,8 +519,7 @@ class CRM_Pledge_Form_Pledge extends CRM_Core_Form {
    * @access public
    * @static
    */
-  static
-  function formRule($fields, $files, $self) {
+  static function formRule($fields, $files, $self) {
     $errors = array();
 
     //check if contact is selected in standalone mode
@@ -587,7 +588,7 @@ class CRM_Pledge_Form_Pledge extends CRM_Core_Form {
       'frequency_interval',
       'frequency_day',
       'installments',
-      'contribution_type_id',
+                         'financial_type_id',
       'initial_reminder_day',
       'max_reminders',
       'additional_reminder_day',
@@ -735,7 +736,7 @@ class CRM_Pledge_Form_Pledge extends CRM_Core_Form {
         }
       }
     }
-    CRM_Core_Session::setStatus($statusMsg);
+    CRM_Core_Session::setStatus($statusMsg, ts('Payment Due'), 'info');
 
     $buttonName = $this->controller->getButtonName();
     if ($this->_context == 'standalone') {

@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -216,7 +216,7 @@ class CRM_Upgrade_TwoOne_Form_Step1 extends CRM_Upgrade_Form {
       // table(s) found in the db which are no longer required
       // for v2.x, though would not do any harm it's recommended
       // to remove them.
-      CRM_Core_Session::setStatus(ts("Table(s) found in your db which are no longer required for v2.x, though would not do any harm it's recommended to remove them"));
+      CRM_Core_Session::setStatus(ts("Table(s) found in your db which are no longer required for v2.x, though would not do any harm it's recommended to remove them"), ts('Redundant Tables'), 'info');
     }
 
     // show error if any of the tables, use 'MyISAM' storage engine.
@@ -277,7 +277,7 @@ class CRM_Upgrade_TwoOne_Form_Step1 extends CRM_Upgrade_Form {
 
       $query = "
 ALTER TABLE {$dao->table_name}
-ADD UNIQUE unique_entity_id (entity_id), 
+ADD UNIQUE unique_entity_id (entity_id),
 DROP domain_id;";
       CRM_Core_DAO::executeQuery($query, CRM_Core_DAO::$_nullArray);
     }

@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,14 +28,13 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
 class CRM_Utils_PDF_Utils {
 
-  //NYSS
-  // use a 4MiB chunk size
+  //NYSS use a 4MiB chunk size
   const CHUNK_SIZE = 4194304;
   // No need to strip extra whitespace from the HTML, since the incoming
   // HTML should now be optimized.  Set this to TRUE to force this potentially
@@ -71,22 +70,37 @@ class CRM_Utils_PDF_Utils {
     $r           = CRM_Core_BAO_PdfFormat::getValue('margin_right', $format);
     $b           = CRM_Core_BAO_PdfFormat::getValue('margin_bottom', $format);
     $l           = CRM_Core_BAO_PdfFormat::getValue('margin_left', $format);
+    $margins     = array($metric,$t,$r,$b,$l);
 
     $config = CRM_Core_Config::singleton();
+    $html = "
+<html>
+  <head>
+    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/>
+    <style>@page { margin: {$t}{$metric} {$r}{$metric} {$b}{$metric} {$l}{$metric}; }</style>
+    <style type=\"text/css\">@import url({$config->userFrameworkResourceURL}css/print.css);</style>
+  </head>
+  <body>\n";
 
     $html_tmpfile = sys_get_temp_dir().DIRECTORY_SEPARATOR.uniqid('bbreport-', true).'.html';
 
     $fp = fopen($html_tmpfile, "w");
-    
-    fwrite($fp, "<html>\n<head>\n<style>body { margin: {$t}{$metric} {$r}{$metric} {$b}{$metric} {$l}{$metric}; }</style>\n<style type=\"text/css\">@import url({$config->userFrameworkResourceURL}css/print.css);</style>\n</head>\n<body>\n<div id=\"crm-container\">\n");
+    fwrite($fp, $html);
 
     // Strip <html>, <header>, and <body> tags from each page
-    $headerElems = array('@<!DOCTYPE[^>]*>@siu',
-                         '@<html[^>]*>@siu',
-                         '@<head[^>]*>.*?</head>@siu',
-                         '@<body>@siu');
+    //NYSS split into head/tail to account for chunk processing; add script tag
+    $headerElems = array(
+      '@<head[^>]*?>.*?</head>@siu',
+      '@<body>@siu',
+      '@<html[^>]*?>@siu',
+      '@<!DOCTYPE[^>]*?>@siu',
+      '@<script[^>]*?>.*?</script>@siu',
+    );
 
-    $tailElems = array('#</body>#siu', '#</html>#siu');
+    $tailElems = array(
+      '@</body>@siu',
+      '@</html>@siu',
+    );
 
     for ($i = 0; $i < count($pages); $i++) {
       if ($i > 0) {
@@ -119,28 +133,31 @@ class CRM_Utils_PDF_Utils {
       }
     }
 
-    fwrite($fp, "\n</div>\n</body>\n</html>");
+    $html = "
+  </body>
+</html>
+";
+    fwrite($fp, $html);
     fclose($fp);
-    $pages = null;  // force garbage collection on the original HTML? Try it.
+    $pages = NULL; //force garbage collection on the original HTML? Try it.
 
-    //NYSS 5097 - force use of wkhtmltopdf
-    $rc = true;
-    if ($config->wkhtmltopdfPath || 1) {
-      $rc = self::_html2pdf_wkhtmltopdf( $paper_size, $orientation, $html_tmpfile, $output, $fileName );
-    } else { 
-      $rc = self::_html2pdf_dompdf( $paper_size, $orientation, $html_tmpfile, $output, $fileName );
+    if ($config->wkhtmltopdfPath) {
+      $rc = self::_html2pdf_wkhtmltopdf($paper_size, $orientation, $margins, $html_tmpfile, $output, $fileName, TRUE);
+    }
+    else {
+      $rc = self::_html2pdf_dompdf($paper_size, $orientation, $html, $output, $fileName);
     }
 
     unlink($html_tmpfile);
     return $rc;
   }
 
-  static function _html2pdf_dompdf( $paper_size, $orientation, $html_infile, $output, $filename ) {
+  static function _html2pdf_dompdf($paper_size, $orientation, $html, $output, $fileName) {
     require_once 'packages/dompdf/dompdf_config.inc.php';
     spl_autoload_register('DOMPDF_autoload');
     $dompdf = new DOMPDF();
     $dompdf->set_paper($paper_size, $orientation);
-    $dompdf->load_html_file($html_infile);
+    $dompdf->load_html($html);
     $dompdf->render();
 
     if ($output) {
@@ -151,42 +168,28 @@ class CRM_Utils_PDF_Utils {
     }
   }
 
-
-  //NYSS 5097 - implement snappy/wkhtmltopdf
-  //restructure code so that we don't use the autoloader and namespaces until we implement PHP 5.3
-  static function _html2pdf_wkhtmltopdf( $paper_size, $orientation, $html_infile, $output , $filename )
-  {
-    //require_once 'packages/snappy/src/autoload.php';
-    require_once 'packages/snappy/src/Knp/Snappy/GeneratorInterface.php';
-    require_once 'packages/snappy/src/Knp/Snappy/AbstractGenerator.php';
-    require_once 'packages/snappy/src/Knp/Snappy/Image.php';
-    require_once 'packages/snappy/src/Knp/Snappy/Pdf.php';
+  //NYSS support passing filename
+  static function _html2pdf_wkhtmltopdf($paper_size, $orientation, $margins, $html, $output, $fileName, $fileInput = FALSE) {
+    require_once 'packages/snappy/src/autoload.php';
     $config = CRM_Core_Config::singleton();
+    $snappy = new Knp\Snappy\Pdf($config->wkhtmltopdfPath);
+    $snappy->setOption("page-width", $paper_size[2] . "pt");
+    $snappy->setOption("page-height", $paper_size[3] . "pt");
+    $snappy->setOption("orientation", $orientation);
+    $snappy->setOption("margin-top", $margins[1] . $margins[0]);
+    $snappy->setOption("margin-right", $margins[2] . $margins[0]);
+    $snappy->setOption("margin-bottom", $margins[3] . $margins[0]);
+    $snappy->setOption("margin-left", $margins[4] . $margins[0]);
 
-    //NYSS - set default path to /usr/local/bin/ for now.
-    $wkhtmltopdfPath = '/usr/local/bin/wkhtmltopdf';
-
-    //NYSS 5270 make sure binary exists
-    if ( !file_exists($wkhtmltopdfPath) ) {
-      header('Content-Type: text/plain');
-      header('Content-Disposition: attachment; filename="pdfError.txt"');
-      echo "The HTML-to-PDF converter is not properly installed.  Please contact your system administrator.\n";
-      return null;
+    //NYSS support passing filename instead of HTML
+    if ( $fileInput ) {
+      $pdf = $snappy->getOutput($html);
+    }
+    else {
+      $pdf = $snappy->getOutputFromHtml($html);
     }
 
-    //$snappy = new Knp_Snappy_Pdf($config->wkhtmltopdfPath);
-    // kz - Snappy is now using PHP namespaces
-    $snappy = new \Knp\Snappy\Pdf($wkhtmltopdfPath);
-    $snappy->setOption( "page-width", $paper_size[2]."pt" );
-    $snappy->setOption( "page-height", $paper_size[3]."pt" );
-    $snappy->setOption( "orientation", $orientation );
-
-    if ( empty($filename) ) {
-      $filename = 'BluebirdPDF.pdf';
-    }
-
-    $pdf = $snappy->getOutput($html_infile);
-    if ( $output ) {
+    if ($output) {
       return $pdf;
     }
     else {
@@ -197,9 +200,8 @@ class CRM_Utils_PDF_Utils {
   }
 
   /*
-     * function to convert value from one metric to another
-     */
-
+   * function to convert value from one metric to another
+   */
   static function convertMetric($value, $from, $to, $precision = NULL) {
     switch ($from . $to) {
       case 'incm':

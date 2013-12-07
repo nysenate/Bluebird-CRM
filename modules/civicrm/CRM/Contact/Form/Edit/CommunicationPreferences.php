@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -54,8 +54,7 @@ class CRM_Contact_Form_Edit_CommunicationPreferences {
    * @access public
    * @static
    */
-  static
-  function buildQuickForm(&$form) {
+  static function buildQuickForm(&$form) {
     // since the pcm - preferred comminication method is logically
     // grouped hence we'll use groups of HTML_QuickForm
 
@@ -74,7 +73,7 @@ class CRM_Contact_Form_Edit_CommunicationPreferences {
     $form->addGroup($privacy, 'privacy', ts('Privacy'), '&nbsp;');
 
     // preferred communication method
-    $comm = CRM_Core_PseudoConstant::pcm(TRUE);
+    $comm = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'preferred_communication_method', array('loclize' => TRUE));
     foreach ($comm as $value => $title) {
       $commPreff[] = $form->createElement('advcheckbox', $value, NULL, $title);
     }
@@ -84,7 +83,7 @@ class CRM_Contact_Form_Edit_CommunicationPreferences {
       ts('Preferred Language'),
       array(
         '' => ts('- select -')) +
-      CRM_Core_PseudoConstant::languages()
+      CRM_Contact_BAO_Contact::buildOptions('preferred_language')
     );
 
     if (!empty($privacyOptions)) {
@@ -135,8 +134,7 @@ class CRM_Contact_Form_Edit_CommunicationPreferences {
    * @access public
    * @static
    */
-  static
-  function formRule($fields, $files, $self) {
+  static function formRule($fields, $files, $self) {
     //CRM-4575
 
     $greetings = self::getGreetingFields($self->_contactType);
@@ -161,11 +159,10 @@ class CRM_Contact_Form_Edit_CommunicationPreferences {
    *
    * @return None
    */
-  function setDefaultValues(&$form, &$defaults) {
+  static function setDefaultValues(&$form, &$defaults) {
 
     if (!empty($defaults['preferred_language'])) {
-      $languages = array_flip(CRM_Core_PseudoConstant::languages());
-      $defaults['preferred_language'] = $languages[$defaults['preferred_language']];
+      $defaults['preferred_language'] = CRM_Core_PseudoConstant::getKey('CRM_Contact_DAO_Contact', 'preferred_language', $defaults['preferred_language']);
     }
 
     // CRM-7119: set preferred_language to default if unset
@@ -200,8 +197,7 @@ class CRM_Contact_Form_Edit_CommunicationPreferences {
    * @return None
    * @access public
    */
-  static
-  function getGreetingFields($contactType) {
+  static function getGreetingFields($contactType) {
     if (empty(self::$greetings[$contactType])) {
       self::$greetings[$contactType] = array();
 

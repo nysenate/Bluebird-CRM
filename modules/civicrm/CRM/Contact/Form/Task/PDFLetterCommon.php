@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -48,7 +48,7 @@ class CRM_Contact_Form_Task_PDFLetterCommon {
   static function preProcess(&$form) {
     $messageText    = array();
     $messageSubject = array();
-    $dao            = new CRM_Core_BAO_MessageTemplates();
+    $dao            = new CRM_Core_BAO_MessageTemplate();
     $dao->is_active = 1;
     $dao->find();
     while ($dao->fetch()) {
@@ -74,39 +74,77 @@ class CRM_Contact_Form_Task_PDFLetterCommon {
    * @return void
    */
   static function buildQuickForm(&$form) {
-    $form->add('static', 'pdf_format_header', NULL, ts('Page Format'));
-    $form->add('select', 'format_id', ts('Select Format'),
-      array(
-        0 => ts('- default -')) + CRM_Core_BAO_PdfFormat::getList(TRUE), FALSE,
-      array('onChange' => "selectFormat( this.value, false );")
+    //Added for CRM-12682: Add activity subject and campaign fields
+    CRM_Campaign_BAO_Campaign::addCampaign($form);
+    $form->add(
+      'text',
+      'subject',
+      ts('Activity Subject'),
+      array('size' => 45, 'maxlength' => 255),
+      FALSE
     );
-    $form->add('select', 'paper_size', ts('Paper Size'),
-      array(
-        0 => ts('- default -')) + CRM_Core_BAO_PaperSize::getList(TRUE), FALSE,
+
+    $form->add('static', 'pdf_format_header', NULL, ts('Page Format'));
+    $form->add(
+      'select',
+      'format_id',
+      ts('Select Format'),
+      array(0 => ts('- default -')) + CRM_Core_BAO_PdfFormat::getList(TRUE),
+      FALSE,
+      array('onChange' => "selectFormat( this.value, false );")
+    );;
+    $form->add(
+      'select',
+      'paper_size',
+      ts('Paper Size'),
+      array(0 => ts('- default -')) + CRM_Core_BAO_PaperSize::getList(TRUE),
+      FALSE,
       array('onChange' => "selectPaper( this.value ); showUpdateFormatChkBox();")
     );
     $form->add('static', 'paper_dimensions', NULL, ts('Width x Height'));
-    $form->add('select', 'orientation', ts('Orientation'), CRM_Core_BAO_PdfFormat::getPageOrientations(), FALSE,
+    $form->add(
+      'select',
+      'orientation',
+      ts('Orientation'),
+      CRM_Core_BAO_PdfFormat::getPageOrientations(),
+      FALSE,
       array('onChange' => "updatePaperDimensions(); showUpdateFormatChkBox();")
     );
-    $form->add('select', 'metric', ts('Unit of Measure'), CRM_Core_BAO_PdfFormat::getUnits(), FALSE,
+    $form->add(
+      'select',
+      'metric',
+      ts('Unit of Measure'),
+      CRM_Core_BAO_PdfFormat::getUnits(),
+      FALSE,
       array('onChange' => "selectMetric( this.value );")
     );
-    $form->add('text', 'margin_left', ts('Left Margin'),
-      array(
-        'size' => 8, 'maxlength' => 8, 'onkeyup' => "showUpdateFormatChkBox();"), TRUE
+    $form->add(
+      'text',
+      'margin_left',
+      ts('Left Margin'),
+      array('size' => 8, 'maxlength' => 8, 'onkeyup' => "showUpdateFormatChkBox();"),
+      TRUE
     );
-    $form->add('text', 'margin_right', ts('Right Margin'),
-      array(
-        'size' => 8, 'maxlength' => 8, 'onkeyup' => "showUpdateFormatChkBox();"), TRUE
+    $form->add(
+      'text',
+      'margin_right',
+      ts('Right Margin'),
+      array('size' => 8, 'maxlength' => 8, 'onkeyup' => "showUpdateFormatChkBox();"),
+      TRUE
     );
-    $form->add('text', 'margin_top', ts('Top Margin'),
-      array(
-        'size' => 8, 'maxlength' => 8, 'onkeyup' => "showUpdateFormatChkBox();"), TRUE
+    $form->add(
+      'text',
+      'margin_top',
+      ts('Top Margin'),
+      array('size' => 8, 'maxlength' => 8, 'onkeyup' => "showUpdateFormatChkBox();"),
+      TRUE
     );
-    $form->add('text', 'margin_bottom', ts('Bottom Margin'),
-      array(
-        'size' => 8, 'maxlength' => 8, 'onkeyup' => "showUpdateFormatChkBox();"), TRUE
+    $form->add(
+      'text',
+      'margin_bottom',
+      ts('Bottom Margin'),
+      array('size' => 8, 'maxlength' => 8, 'onkeyup' => "showUpdateFormatChkBox();"),
+      TRUE
     );
     $form->add('checkbox', 'bind_format', ts('Always use this Page Format with the selected Template'));
     $form->add('checkbox', 'update_format', ts('Update Page Format (this will affect all templates that use this format)'));
@@ -118,9 +156,12 @@ class CRM_Contact_Form_Task_PDFLetterCommon {
     CRM_Mailing_BAO_Mailing::commonLetterCompose($form);
 
     if ($form->_single) {
-      $cancelURL = CRM_Utils_System::url('civicrm/contact/view',
+      $cancelURL = CRM_Utils_System::url(
+        'civicrm/contact/view',
         "reset=1&cid={$form->_cid}&selectedChild=activity",
-        FALSE, NULL, FALSE
+        FALSE,
+        NULL,
+        FALSE
       );
       if ($form->get('action') == CRM_Core_Action::VIEW) {
         $form->addButtons(array(
@@ -149,7 +190,17 @@ class CRM_Contact_Form_Task_PDFLetterCommon {
       }
     }
     else {
-      $form->addDefaultButtons(ts('Make PDF Letters'));
+      $form->addButtons(array(
+        array(
+          'type' => 'submit',
+          'name' => ts('Make PDF Letters'),
+          'isDefault' => TRUE,
+        ),
+        array(
+          'type' => 'cancel',
+          'name' => ts('Done'),
+        ),
+      ));
     }
 
     $form->addFormRule(array('CRM_Contact_Form_Task_PDFLetterCommon', 'formRule'), $form);
@@ -223,14 +274,14 @@ class CRM_Contact_Form_Task_PDFLetterCommon {
       }
       if (CRM_Utils_Array::value('saveTemplate', $formValues) && $formValues['saveTemplate']) {
         $messageTemplate['msg_title'] = $formValues['saveTemplateName'];
-        CRM_Core_BAO_MessageTemplates::add($messageTemplate);
+        CRM_Core_BAO_MessageTemplate::add($messageTemplate);
       }
 
       if (CRM_Utils_Array::value('updateTemplate', $formValues) && $formValues['template'] && $formValues['updateTemplate']) {
         $messageTemplate['id'] = $formValues['template'];
 
         unset($messageTemplate['msg_title']);
-        CRM_Core_BAO_MessageTemplates::add($messageTemplate);
+        CRM_Core_BAO_MessageTemplate::add($messageTemplate);
       }
     }
     elseif (CRM_Utils_Array::value('template', $formValues) > 0) {
@@ -303,9 +354,7 @@ class CRM_Contact_Form_Task_PDFLetterCommon {
       $tokenHtml = CRM_Utils_Token::replaceContactTokens($html_message, $contact[$contactId], TRUE, $messageToken);
       $tokenHtml = CRM_Utils_Token::replaceHookTokens($tokenHtml, $contact[$contactId], $categories, TRUE);
 
-      if (defined('CIVICRM_MAIL_SMARTY') &&
-        CIVICRM_MAIL_SMARTY
-      ) {
+      if (defined('CIVICRM_MAIL_SMARTY') && CIVICRM_MAIL_SMARTY) {
         $smarty = CRM_Core_Smarty::singleton();
         // also add the contact tokens to the template
         $smarty->assign_by_ref('contact', $contact);
@@ -325,20 +374,25 @@ class CRM_Contact_Form_Task_PDFLetterCommon {
   }
 
   function createActivities($form, $html_message, $contactIds) {
+    //Added for CRM-12682: Add activity subject and campaign fields
+    $formValues     = $form->controller->exportValues($form->getName());
 
     $session        = CRM_Core_Session::singleton();
     $userID         = $session->get('userID');
-    $activityTypeID = CRM_Core_OptionGroup::getValue('activity_type',
+    $activityTypeID = CRM_Core_OptionGroup::getValue(
+      'activity_type',
       'Print PDF Letter',
       'name'
     );
     $activityParams = array(
+      'subject' => $formValues['subject'],
+      'campaign_id' => CRM_Utils_Array::value('campaign_id', $formValues),
       'source_contact_id' => $userID,
       'activity_type_id' => $activityTypeID,
       'activity_date_time' => date('YmdHis'),
       'details' => $html_message,
     );
-    if ($form->_activityId) {
+    if (!empty($form->_activityId)) {
       $activityParams += array('id' => $form->_activityId);
     }
     if ($form->_cid) {
@@ -353,18 +407,23 @@ class CRM_Contact_Form_Task_PDFLetterCommon {
       }
     }
 
+    $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
+    $targetID = CRM_Utils_Array::key('Activity Targets', $activityContacts);
+
     foreach ($form->_contactIds as $contactId) {
       $activityTargetParams = array(
         'activity_id' => empty($activity->id) ? $activityIds[$contactId] : $activity->id,
-        'target_contact_id' => $contactId,
+        'contact_id' => $contactId,
+        'record_type_id' => $targetID
       );
-      CRM_Activity_BAO_Activity::createActivityTarget($activityTargetParams);
+      CRM_Activity_BAO_ActivityContact::create($activityTargetParams);
     }
   }
 
   function formatMessage(&$message) {
     $newLineOperators = array(
-      'p' => array('oper' => '<p>',
+      'p' => array(
+        'oper' => '<p>',
         'pattern' => '/<(\s+)?p(\s+)?>/m',
       ),
       'br' => array(

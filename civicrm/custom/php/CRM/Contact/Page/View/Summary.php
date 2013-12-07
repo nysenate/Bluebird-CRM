@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -132,6 +132,13 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
    * @access public
    */
   function view() {
+    // Add js for in-place editing and jstree for tags
+    CRM_Core_Resources::singleton()
+      ->addScriptFile('civicrm', 'templates/CRM/Contact/Page/View/Summary.js')
+      ->addScriptFile('civicrm', 'packages/jquery/plugins/jstree/jquery.jstree.js', 0, 'html-header', FALSE)
+      ->addStyleFile('civicrm', 'packages/jquery/plugins/jstree/themes/default/style.css', 0, 'html-header')
+      ->addSetting(array('summaryPrint' => array('mode' => $this->_print)));
+    $this->assign('summaryPrint', $this->_print);
     $session = CRM_Core_Session::singleton();
     $url = CRM_Utils_System::url('civicrm/contact/view', 'reset=1&cid=' . $this->_contactId);
     $session->pushUserContext($url);
@@ -165,14 +172,20 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
       'phone' => array(
         'type' => 'phoneType',
         'id' => 'phone_type',
+        'daoName' => 'CRM_Core_DAO_Phone',
+        'fieldName' => 'phone_type_id',
       ),
       'im' => array(
         'type' => 'IMProvider',
         'id' => 'provider',
+        'daoName' => 'CRM_Core_DAO_IM',
+        'fieldName' => 'provider_id',
       ),
       'website' => array(
         'type' => 'websiteType',
         'id' => 'website_type',
+        'daoName' => 'CRM_Core_DAO_Website',
+        'fieldName' => 'website_type_id',
       ),
       'address' => array('skip' => TRUE, 'customData' => 1),
       'email' => array('skip' => TRUE),
@@ -182,9 +195,10 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
     foreach ($communicationType as $key => $value) {
       if (CRM_Utils_Array::value($key, $defaults)) {
         foreach ($defaults[$key] as & $val) {
-          CRM_Utils_Array::lookupValue($val, 'location_type', CRM_Core_PseudoConstant::locationDisplayName(), FALSE);
+          CRM_Utils_Array::lookupValue($val, 'location_type', CRM_Core_PseudoConstant::get('CRM_Core_DAO_Address', 'location_type_id', array('labelColumn' => 'display_name')), FALSE);
           if (!CRM_Utils_Array::value('skip', $value)) {
-            eval('$pseudoConst = CRM_Core_PseudoConstant::' . $value['type'] . '();');
+            $daoName = $value['daoName'];
+            $pseudoConst = $daoName::buildOptions($value['fieldName'], 'get');
             CRM_Utils_Array::lookupValue($val, $value['id'], $pseudoConst, FALSE);
           }
         }
@@ -210,7 +224,7 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
     }
 
     if (CRM_Utils_Array::value('gender_id', $defaults)) {
-      $gender = CRM_Core_PseudoConstant::gender(TRUE);
+      $gender = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'gender_id', array('localize' => TRUE));
       $defaults['gender_display'] = $gender[CRM_Utils_Array::value('gender_id', $defaults)];
     }
 
@@ -228,7 +242,8 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
     $defaults['privacy_values'] = CRM_Core_SelectValues::privacy();
 
     //Show blocks only if they are visible in edit form
-    $this->_editOptions = CRM_Core_BAO_Setting::valueOptions(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
+    $this->_editOptions = CRM_Core_BAO_Setting::valueOptions(
+      CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
       'contact_edit_options'
     );
 
@@ -266,6 +281,7 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
 
     $this->assign($defaults);
 
+    // FIXME: when we sort out TZ isssues with DATETIME/TIMESTAMP, we can skip next query
     // also assign the last modifed details
     $lastModified = CRM_Core_BAO_Log::lastModified($this->_contactId, 'civicrm_contact');
     $this->assign_by_ref('lastModified', $lastModified);
@@ -273,9 +289,15 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
     $allTabs = array();
     $weight = 10;
 
-    $this->_viewOptions = CRM_Core_BAO_Setting::valueOptions(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
-      'contact_view_options', TRUE
+    $this->_viewOptions = CRM_Core_BAO_Setting::valueOptions(
+      CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
+      'contact_view_options',
+      TRUE
     );
+
+    // show the tabs only if user has generic access to CiviCRM
+    $accessCiviCRM = CRM_Core_Permission::check('access CiviCRM');
+
     $changeLog = $this->_viewOptions['log'];
     $this->assign_by_ref('changeLog', $changeLog);
     $components = CRM_Core_Component::getEnabledComponents();
@@ -330,8 +352,8 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
       'log' => ts('Change Log'),
     );
 
-    foreach ( $rest as $k => $v ) {
-      if ( CRM_Utils_Array::value($k, $this->_viewOptions) ) {
+    foreach ($rest as $k => $v) {
+      if ($accessCiviCRM && CRM_Utils_Array::value($k, $this->_viewOptions)) {
         //NYSS 5184/5185
         $crmPID = '';
         if ( CRM_Utils_Request::retrieve('crmPID', 'Integer') &&
@@ -366,7 +388,8 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
 
     // now add all the custom tabs
     $entityType = $this->get('contactType');
-    $activeGroups = CRM_Core_BAO_CustomGroup::getActiveGroups($entityType,
+    $activeGroups = CRM_Core_BAO_CustomGroup::getActiveGroups(
+      $entityType,
       'civicrm/contact/view/cd',
       $this->_contactId
     );
@@ -406,12 +429,16 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
 
   function getTemplateFileName() {
     if ($this->_contactId) {
-      $csType = $this->get('contactSubtype');
-      if ($csType) {
-        $templateFile = "CRM/Contact/Page/View/SubType/{$csType}.tpl";
-        $template = CRM_Core_Page::getTemplate();
-        if ($template->template_exists($templateFile)) {
-          return $templateFile;
+      $contactSubtypes = $this->get('contactSubtype') ? 
+        explode(CRM_Core_DAO::VALUE_SEPARATOR, $this->get('contactSubtype')) : array();
+      // there could be multiple subtypes. We check templates for each of the subtype, and return the first one found.
+      foreach ($contactSubtypes as $csType) {
+        if ($csType) {
+          $templateFile = "CRM/Contact/Page/View/SubType/{$csType}.tpl";
+          $template = CRM_Core_Page::getTemplate();
+          if ($template->template_exists($templateFile)) {
+            return $templateFile;
+          }
         }
       }
     }

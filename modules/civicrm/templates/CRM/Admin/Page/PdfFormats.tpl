@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
  | Copyright (C) 2011 Marty Wright                                    |
  | Licensed to CiviCRM under the Academic Free License version 3.0.   |
@@ -53,20 +53,20 @@
             <td class="crm-pdfFormat-name">{$row.name}</td>
             <td class="crm-pdfFormat-description">{$row.description}</td>
             <td class="crm-pdfFormat-is_default">{if $row.is_default eq 1}<img src="{$config->resourceBase}i/check.gif" alt="{ts}Default{/ts}" />{/if}&nbsp;</td>
-	        <td class="crm-pdfFormat-order nowrap">{$row.order}</td>
-	        <td class="order hiddenElement">{$row.weight}</td>
-	        <td>{$row.action|replace:'xx':$row.id}</td>
+          <td class="crm-pdfFormat-order nowrap">{$row.order}</td>
+          <td class="order hiddenElement">{$row.weight}</td>
+          <td>{$row.action|replace:'xx':$row.id}</td>
         </tr>
         {/foreach}
         </table>
         {/strip}
     </div>
 {else}
-    <div class="messages status">
+    <div class="messages status no-popup">
       <div class="icon inform-icon"></div>
         {capture assign=crmURL}{crmURL p='civicrm/admin/pdfFormats' q="action=add&reset=1"}{/capture}
         {ts 1=$crmURL}There are no PDF Page Formats configured. You can <a href='%1'>add one</a>.{/ts}
-    </div>    
+    </div>
 {/if}
     <div class="spacer"></div>
     <div class="action-link">

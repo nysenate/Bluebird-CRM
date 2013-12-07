@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -75,6 +75,11 @@ class CRM_Contact_Page_View_Note extends CRM_Core_Page {
     if (!empty($comments)) {
       $this->assign('comments', $comments);
     }
+
+    // add attachments part
+    $currentAttachmentInfo = CRM_Core_BAO_File::getEntityFile('civicrm_note', $this->_id);
+    $this->assign('currentAttachmentInfo', $currentAttachmentInfo);
+
   }
 
   /**
@@ -190,6 +195,9 @@ class CRM_Contact_Page_View_Note extends CRM_Core_Page {
     // set page title
     CRM_Contact_Page_View::setTitle($this->_contactId);
 
+    $displayName = CRM_Contact_BAO_Contact::displayName($this->_contactId);
+    CRM_Utils_System::setTitle(ts('Notes for') . ' ' . $displayName);
+
     $this->_action = CRM_Utils_Request::retrieve('action', 'String', $this, FALSE, 'browse');
     $this->assign('action', $this->_action);
   }
@@ -235,8 +243,7 @@ class CRM_Contact_Page_View_Note extends CRM_Core_Page {
    * @return array (reference) of action links
    * @static
    */
-  static
-  function &links() {
+  static function &links() {
     if (!(self::$_links)) {
       $deleteExtra = ts('Are you sure you want to delete this note?');
 
@@ -277,8 +284,7 @@ class CRM_Contact_Page_View_Note extends CRM_Core_Page {
    * @return array (reference) of action links
    * @static
    */
-  static
-  function &commentLinks() {
+  static function &commentLinks() {
     if (!(self::$_commentLinks)) {
       $deleteExtra = ts('Are you sure you want to delete this comment?');
       self::$_commentLinks = array(

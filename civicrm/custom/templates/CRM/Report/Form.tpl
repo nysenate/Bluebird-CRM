@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,13 +28,10 @@
 <link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/Bluebird/css/reportsCivicrm.css" />
 {/literal}
 
-{include file="CRM/common/crmeditable.tpl"}
-{* this div is being used to apply special css *}
-{*NYSS include js files in print mode; allows sorting and removes IE erorrs*}
-{if $printOnly}
-  {include file="CRM/common/jquery.tpl"}
+{if $outputMode neq 'print'}
+  {include file="CRM/common/crmeditable.tpl"}
 {/if}
-
+{* this div is being used to apply special css *}
 {if $section eq 1}
   <div class="crm-block crm-content-block crm-report-layoutGraph-form-block">
     {*include the graph*}
@@ -46,6 +43,7 @@
     {include file="CRM/Report/Form/Layout/Table.tpl"}
 	</div>
 {else}
+  {*NYSS*}
   {*include actions*}
   {include file="CRM/Report/Form/Actions.tpl"}
 
@@ -71,7 +69,6 @@
     {include file="CRM/Report/Form/ErrorMessage.tpl"}
   </div>
 {/if}
-
 {if $outputMode == 'print'}
   <script type="text/javascript">
     window.print();

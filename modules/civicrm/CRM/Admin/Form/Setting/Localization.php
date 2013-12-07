@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -55,7 +55,7 @@ class CRM_Admin_Form_Setting_Localization extends CRM_Admin_Form_Setting {
     CRM_Utils_System::setTitle(ts('Settings - Localization'));
 
     $locales = CRM_Core_I18n::languages();
-
+    $warningTitle = json_encode(ts("Warning"));
     $domain = new CRM_Core_DAO_Domain();
     $domain->find(TRUE);
     if ($domain->locales) {
@@ -73,26 +73,27 @@ class CRM_Admin_Form_Setting_Localization extends CRM_Admin_Form_Setting {
       $this->addElement('select', 'addLanguage', ts('Add Language'), array_merge(array('' => ts('- select -')), array_diff($locales, $lcMessages)));
 
       // add the ability to return to single language
-      $warning = ts('WARNING: This will make your CiviCRM installation a single-language one again. THIS WILL DELETE ALL DATA RELATED TO LANGUAGES OTHER THAN THE DEFAULT ONE SELECTED ABOVE (and only that language will be preserved).');
+      $warning = ts('This will make your CiviCRM installation a single-language one again. THIS WILL DELETE ALL DATA RELATED TO LANGUAGES OTHER THAN THE DEFAULT ONE SELECTED ABOVE (and only that language will be preserved).');
       $this->assign('warning', $warning);
+      $warning = json_encode($warning);
       $this->addElement('checkbox', 'makeSinglelingual', ts('Return to Single Language'),
-        NULL, array('onChange' => "if (this.checked) alert('$warning')")
+        NULL, array('onChange' => "if (this.checked) CRM.alert($warning, $warningTitle)")
       );
     }
     else {
       // for single-lingual sites, populate default language drop-down with all languages
       $this->addElement('select', 'lcMessages', ts('Default Language'), $locales);
 
-      $warning = ts('WARNING: Enabling multiple languages changes the schema of your database, so make sure you know what you are doing when enabling this function; making a database backup is strongly recommended.');
+      $warning = ts('Enabling multiple languages changes the schema of your database, so make sure you know what you are doing when enabling this function; making a database backup is strongly recommended.');
       $this->assign('warning', $warning);
-
+      $warning = json_encode($warning);
       $validTriggerPermission = CRM_Core_DAO::checkTriggerViewPermission(TRUE);
 
       if ($validTriggerPermission &&
         !$config->logging
       ) {
         $this->addElement('checkbox', 'makeMultilingual', ts('Enable Multiple Languages'),
-          NULL, array('onChange' => "if (this.checked) alert('$warning')")
+          NULL, array('onChange' => "if (this.checked) CRM.alert($warning, $warningTitle)")
         );
       }
     }
@@ -134,6 +135,33 @@ class CRM_Admin_Form_Setting_Localization extends CRM_Admin_Form_Setting {
 
     $this->addElement('select', 'defaultContactCountry', ts('Default Country'), array('' => ts('- select -')) + $country);
 
+    /***Default State/Province***/
+    $stateCountryMap = array();
+    $stateCountryMap[] = array(
+      'state_province' => 'defaultContactStateProvince',
+      'country' => 'defaultContactCountry',
+    );
+
+    $countryDefault = isset($this->_submitValues['defaultContactCountry']) ? $this->_submitValues['defaultContactCountry'] : $config->defaultContactCountry;
+
+    if ($countryDefault) {
+      $selectStateProvinceOptions = array('' => ts('- select -')) + CRM_Core_PseudoConstant::stateProvinceForCountry($countryDefault);
+    }
+    else {
+      $selectStateProvinceOptions = array('' => ts('- select a country -'));
+    }
+
+    $i18n->localizeArray($selectStateProvinceOptions, array('context' => 'state_province'));
+    asort($selectStateProvinceOptions);
+
+    $this->addElement('select', 'defaultContactStateProvince', ts('Default State/Province'), $selectStateProvinceOptions);
+
+    // state country js
+    CRM_Core_BAO_Address::addStateCountryMap($stateCountryMap);
+
+    $defaults = array();
+    CRM_Core_BAO_Address::fixAllStateSelects($form, $defaults);
+
     // we do this only to initialize currencySymbols, kinda hackish but works!
     $config->defaultCurrencySymbol();
 
@@ -167,8 +195,7 @@ class CRM_Admin_Form_Setting_Localization extends CRM_Admin_Form_Setting {
     parent::buildQuickForm();
   }
 
-  static
-  function formRule($fields) {
+  static function formRule($fields) {
     $errors = array();
     if (CRM_Utils_Array::value('monetaryThousandSeparator', $fields) ==
       CRM_Utils_Array::value('monetaryDecimalPoint', $fields)

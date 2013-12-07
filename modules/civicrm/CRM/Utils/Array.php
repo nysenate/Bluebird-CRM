@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -39,13 +39,12 @@ class CRM_Utils_Array {
    *
    * @access public
    *
-   * @param array  $list  the array to be searched
    * @param string $key   the key value
+   * @param array $list  the array to be searched
+   * @param mixed $default
    *
-   * @return value if exists else null
+   * @return mixed value if exists else $default
    * @static
-   * @access public
-   *
    */
   static function value($key, $list, $default = NULL) {
     if (is_array($list)) {
@@ -141,6 +140,14 @@ class CRM_Utils_Array {
     return str_replace($src, $dst, $value);
   }
 
+  /**
+   * Convert an array-tree to a flat array
+   *
+   * @param array $list the original, tree-shaped list
+   * @param array $flat the flat list to which items will be copied
+   * @param string $prefix
+   * @param string $seperator
+   */
   static function flatten(&$list, &$flat, $prefix = '', $seperator = ".") {
     foreach ($list as $name => $value) {
       $newPrefix = ($prefix) ? $prefix . $seperator . $name : $name;
@@ -261,6 +268,18 @@ class CRM_Utils_Array {
   }
 
   /**
+   * In some cases, functions return an array by reference, but we really don't
+   * want to receive a reference.
+   *
+   * @param $array
+   * @return mixed
+   */
+  static function breakReference($array) {
+    $copy = $array;
+    return $copy;
+  }
+
+  /**
    * Array splice function that preserves associative keys
    * defauly php array_splice function doesnot preserve keys
    * So specify start and end of the array that you want to remove
@@ -358,13 +377,12 @@ class CRM_Utils_Array {
 
   /**
    *  Function to check if give array is empty
-   *  @param array $array array that needs to be check for empty condition
+   *  @param array $array array to check for empty condition
    *
    *  @return boolean true is array is empty else false
    *  @static
    */
-  static function crmIsEmptyArray($array = array(
-    )) {
+  static function crmIsEmptyArray($array = array()) {
     if (!is_array($array)) {
       return TRUE;
     }
@@ -448,8 +466,7 @@ class CRM_Utils_Array {
    *  @return  array  Sorted array
    *  @static
    */
-  static function asort($array = array(
-    )) {
+  static function asort($array = array()) {
     $lcMessages = CRM_Utils_System::getUFLocale();
 
     if ($lcMessages && $lcMessages != 'en_US' && class_exists('Collator')) {
@@ -463,17 +480,160 @@ class CRM_Utils_Array {
     return $array;
   }
 
-  static function urlEncode($values) {
-    $uri = '';
-    foreach ($values as $key => $value) {
-      $value = urlencode($value);
-      $uri .= "&{$key}={$value}";
+  /**
+   * Convenient way to unset a bunch of items from an array
+   *
+   * @param array $items (reference)
+   * @param string/int/array $itemN: other params to this function will be treated as keys
+   * (or arrays of keys) to unset
+   */
+   static function remove(&$items) {
+     foreach (func_get_args() as $n => $key) {
+       if ($n && is_array($key)) {
+         foreach($key as $k) {
+           unset($items[$k]);
+         }
+       }
+       elseif ($n) {
+         unset($items[$key]);
+       }
+     }
+   }
+
+  /**
+   * Build an array-tree which indexes the records in an array
+   *
+   * @param $keys array of string (properties by which to index)
+   * @param $records array of records (objects or assoc-arrays)
+   * @return array; multi-dimensional, with one layer for each key
+   */
+  static function index($keys, $records) {
+    $final_key = array_pop($keys);
+
+    $result = array();
+    foreach ($records as $record) {
+      $node = &$result;
+      foreach ($keys as $key) {
+        if (is_array($record)) {
+          $keyvalue = $record[$key];
+        } else {
+          $keyvalue = $record->{$key};
+        }
+        if (!is_array($node[$keyvalue])) {
+          $node[$keyvalue] = array();
+        }
+        $node = &$node[$keyvalue];
+      }
+      if (is_array($record)) {
+        $node[ $record[$final_key] ] = $record;
+      } else {
+        $node[ $record->{$final_key} ] = $record;
+      }
     }
-    if (!empty($uri)) {
-      $uri = substr($uri, 1);
-    }
-    return $uri;
+    return $result;
   }
 
+  /**
+   * Iterate through a list of records and grab the value of some property
+   *
+   * @param string $prop
+   * @param array $records a list of records (object|array)
+   * @return array keys are the original keys of $records; values are the $prop values
+   */
+  static function collect($prop, $records) {
+    $result = array();
+    foreach ($records as $key => $record) {
+      if (is_object($record)) {
+        $result[$key] = $record->{$prop};
+      } else {
+        $result[$key] = $record[$prop];
+      }
+    }
+    return $result;
+  }
+
+  /**
+   * Given a list of key-value pairs, combine thme into a single string
+   * @param array $pairs e.g. array('a' => '1', 'b' => '2')
+   * @param string $l1Delim e.g. ','
+   * @param string $l2Delim e.g. '='
+   * @return string e.g. 'a=1,b=2'
+   */
+  static function implodeKeyValue($l1Delim, $l2Delim, $pairs) {
+    $exprs = array();
+    foreach ($pairs as $key => $value) {
+      $exprs[] = $key . $l2Delim . $value;
+    }
+    return implode($l1Delim, $exprs);
+  }
+
+  /**
+   * Like explode() but assumes that the $value is padded with $delim on left and right
+   *
+   * @param mixed $values
+   * @param string $delim
+   * @return array|NULL
+   */
+  static function explodePadded($values, $delim = CRM_Core_DAO::VALUE_SEPARATOR) {
+    if ($values === NULL) {
+      return NULL;
+    }
+    // If we already have an array, no need to continue
+    if (is_array($values)) {
+      return $values;
+    }
+    return explode($delim, trim((string) $values, $delim));
+  }
+
+  /**
+   * Like implode() but creates a string that is padded with $delim on left and right
+   *
+   * @param mixed $values
+   * @param string $delim
+   * @return string|NULL
+   */
+  static function implodePadded($values, $delim = CRM_Core_DAO::VALUE_SEPARATOR) {
+    if ($values === NULL) {
+      return NULL;
+    }
+    // If we already have a string, strip $delim off the ends so it doesn't get added twice
+    if (is_string($values)) {
+      $values = trim($values, $delim);
+    }
+    return $delim . implode($delim, (array) $values) . $delim;
+  }
+
+  /**
+   * Function to modify the key in an array without actually changing the order
+   * By default when you add an element it is added at the end
+   *
+   * @param array  $elementArray associated array element
+   * @param string $oldKey       old key
+   * @param string $newKey       new key
+   *
+   * @return array
+   */
+  static function crmReplaceKey(&$elementArray, $oldKey, $newKey) {
+    $keys = array_keys($elementArray);
+    if (FALSE === $index = array_search($oldKey, $keys)) {
+      throw new Exception(sprintf('key "%s" does not exit', $oldKey));
+    }
+    $keys[$index] = $newKey;
+    $elementArray = array_combine($keys, array_values($elementArray));
+    return $elementArray;
+  }
+
+  /*
+   * function to get value of first matched
+   * regex key element of an array
+   */
+  static function valueByRegexKey($regexKey, $list, $default = NULL) {
+    if (is_array($list) && $regexKey) {
+      $matches = preg_grep($regexKey, array_keys($list));
+      $key = reset($matches);
+      return ($key && array_key_exists($key, $list)) ? $list[$key] : $default;
+    }
+    return $default;
+  }
 }
 

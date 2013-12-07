@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -68,10 +68,11 @@ class CRM_Activity_Form_Task_PickOption extends CRM_Activity_Form_Task {
    *
    * @return void
    * @access public
-   */ function preProcess() {
+   */
+  function preProcess() {
     /*
-         * initialize the task and row fields
-         */
+     * initialize the task and row fields
+     */
 
     parent::preProcess();
     $session = CRM_Core_Session::singleton();
@@ -82,7 +83,7 @@ class CRM_Activity_Form_Task_PickOption extends CRM_Activity_Form_Task {
     $validate = FALSE;
     //validations
     if (count($this->_activityHolderIds) > $this->_maxActivities) {
-      CRM_Core_Session::setStatus("The maximum number of Activities you can select to send an email is {$this->_maxActivities}. You have selected " . count($this->_activityHolderIds) . ". Please select fewer Activities from your search results and try again.");
+      CRM_Core_Session::setStatus(ts("The maximum number of Activities you can select to send an email is %1. You have selected %2. Please select fewer Activities from your search results and try again.", array(1 => $this->_maxActivities, 2 => count($this->_activityHolderIds))), ts("Maximum Exceeded"), "error");
       $validate = TRUE;
     }
     // then redirect
@@ -126,8 +127,7 @@ class CRM_Activity_Form_Task_PickOption extends CRM_Activity_Form_Task {
    * @static
    * @access public
    */
-  static
-  function formRule($fields) {
+  static function formRule($fields) {
     if ( !isset($fields['with_contact']) &&
       !isset($fields['assigned_to']) &&
       !isset($fields['created_by'])
@@ -146,27 +146,32 @@ class CRM_Activity_Form_Task_PickOption extends CRM_Activity_Form_Task {
    */
 
   public function postProcess() {
+    // Clear any formRule errors from Email form in case they came back here via Cancel button
+    $this->controller->resetPage('Email');
     $params = $this->exportValues();
     $this->_contacts = $this->_pickOptionVal = array(); //NYSS 5831
 
+    $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
+    $assigneeID = CRM_Utils_Array::key('Activity Assignees', $activityContacts);
+    $targetID = CRM_Utils_Array::key('Activity Targets', $activityContacts);
     //get assignee contacts
-    if ($params['assigned_to']) {
+    if (!empty($params['assigned_to'])) {
       foreach ($this->_activityHolderIds as $key => $id) {
-        $ids = array_keys(CRM_Activity_BAO_ActivityAssignment::getAssigneeNames($id));
+        $ids = array_keys(CRM_Activity_BAO_ActivityContact::getNames($id, $assigneeID));
         $this->_contacts = array_merge($this->_contacts, $ids);
       }
       $this->_pickOptionVal[] = 'assigned_to'; //NYSS 5831
     }
     //get target contacts
-    if ($params['with_contact']) {
+    if (!empty($params['with_contact'])) {
       foreach ($this->_activityHolderIds as $key => $id) {
-        $ids = array_keys(CRM_Activity_BAO_ActivityTarget::getTargetNames($id));
+        $ids = array_keys(CRM_Activity_BAO_ActivityContact::getNames($id, $targetID));
         $this->_contacts = array_merge($this->_contacts, $ids);
       }
       $this->_pickOptionVal[] = 'with_contact'; //NYSS 5831
     }
     //get 'Added by' contacts
-    if ($params['created_by']) {
+    if (!empty($params['created_by'])) {
       parent::setContactIDs();
       if (!empty($this->_contactIds)) {
         $this->_contacts = array_merge($this->_contacts, $this->_contactIds);
@@ -175,7 +180,7 @@ class CRM_Activity_Form_Task_PickOption extends CRM_Activity_Form_Task {
     }
     $this->_contacts = array_unique($this->_contacts);
 
-    //NYSS 5620
+    //bounce to pick option if no contacts to send to
     if ( empty($this->_contacts) ) {
       $urlParams = "_qf_PickOption_display=true&qfKey={$params['qfKey']}";
       $urlRedirect = CRM_Utils_System::url('civicrm/activity/search', $urlParams);

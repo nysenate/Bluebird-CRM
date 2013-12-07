@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -43,10 +43,8 @@
 </table>
 <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl"}</div>
 
-{*NYSS 5885 default open*}
-<div class="crm-accordion-wrapper crm-plain_text_email-accordion crm-accordion-open">
+<div class="crm-accordion-wrapper crm-plain_text_email-accordion collapsed">
     <div class="crm-accordion-header">
-        <div class="icon crm-accordion-pointer"></div> 
         {ts}Preview Mailing{/ts}
     </div><!-- /.crm-accordion-header -->
     <div class="crm-accordion-body">
@@ -60,15 +58,18 @@
           {/if}
         </table>
     </div><!-- /.crm-accordion-body -->
-</div><!-- /.crm-accordion-wrapper -->    
+</div><!-- /.crm-accordion-wrapper -->
 
 </div>
 
 {literal}
 <script type="text/javascript">
 cj(function() {
-   cj().crmaccordions(); 
-   $('iframe').iframeAutoHeight({heightOffset: 20});//NYSS
+  cj().crmAccordions();
+  $('iframe').iframeAutoHeight({heightOffset: 20});//NYSS
+
+  //NYSS 5885 default open
+  cj('div.crm-plain_text_email-accordion').removeClass('collapsed');
 });
 </script>
 {/literal}

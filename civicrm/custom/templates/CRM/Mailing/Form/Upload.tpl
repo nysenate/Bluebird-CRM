@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -53,7 +53,7 @@
 	<td>{$form.template.html}</td>
     </tr>
     <tr class="crm-mailing-upload-form-block-subject"><td class="label">{$form.subject.label}</td>
-        <td colspan="2">{$form.subject.html|crmReplace:class:huge}
+        <td colspan="2">{$form.subject.html|crmAddClass:huge}
                         <a href="#" onClick="return showToken('Subject', 3);">{$form.token3.label}</a>
                         {help id="id-token-subject" file="CRM/Contact/Form/Task/Email.hlp"}
                         <div id='tokenSubject' style="display:none">
@@ -67,7 +67,7 @@
     <tr class="crm-mailing-upload-form-block-upload_type" style="visibility:hidden; height:0;"><td></td><td colspan="2">{$form.upload_type.label} {$form.upload_type.html} {help id="upload-compose"}</td></tr>
 </table>
 
-<fieldset id="compose_id"><legend>{ts}Compose On-screen{/ts}{help id="id-message-text" file="CRM/Contact/Form/Task/Email.hlp"}</legend>
+<fieldset id="compose_id"><legend>{ts}Compose On-screen{/ts}</legend>
 {include file="CRM/Contact/Form/Task/EmailCommon.tpl" upload=1 noAttach=1}
 </fieldset>
 
@@ -119,13 +119,13 @@
     function showHideUpload()
     { 
 	if (document.getElementsByName("upload_type")[0].checked) {
-            hide('compose_id');
+            cj('#compose_id').hide();
 	    cj('.crm-mailing-upload-form-block-template').hide();
-	    show('upload_id');	
+      cj('#upload_id').show();
         } else {
-            show('compose_id');
+            cj('#compose_id').show();
 	    cj('.crm-mailing-upload-form-block-template').show();
-	    hide('upload_id');
+      cj('#upload_id').hide();
             verify( );
         }
     }

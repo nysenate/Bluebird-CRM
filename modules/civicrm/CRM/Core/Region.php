@@ -4,7 +4,7 @@
  * Maintain a set of markup/templates to inject inside various regions
  */
 class CRM_Core_Region {
-  static private $_instances = null;
+  static private $_instances = NULL;
 
   /**
    * Obtain the content for a given region
@@ -102,7 +102,7 @@ class CRM_Core_Region {
       'weight' => 1,
       'disabled' => FALSE,
     );
-    $snippet = array_merge($defaults, $snippet);
+    $snippet += $defaults;
     if (!isset($snippet['type'])) {
       foreach ($types as $type) {
         // auto-detect
@@ -133,13 +133,16 @@ class CRM_Core_Region {
    * Render all the snippets in a region
    *
    * @param string $default HTML, the initial content of the region
+   * @param bool $allowCmsOverride allow CMS to override rendering of region
    * @return string, HTML
    */
-  public function render($default) {
+  public function render($default, $allowCmsOverride = TRUE) {
     // $default is just another part of the region
     if (is_array($this->_snippets['default'])) {
       $this->_snippets['default']['markup'] = $default;
     }
+    // We hand as much of the work off to the CMS as possible
+    $cms = CRM_Core_Config::singleton()->userSystem;
 
     if (!$this->_isSorted) {
       uasort($this->_snippets, array('CRM_Core_Region', '_cmpSnippet'));
@@ -149,42 +152,51 @@ class CRM_Core_Region {
     $smarty = CRM_Core_Smarty::singleton();
     $html = '';
     foreach ($this->_snippets as $snippet) {
-      if ($snippet['disabled']) { continue; }
+      if ($snippet['disabled']) {
+        continue;
+      }
       switch($snippet['type']) {
         case 'markup':
-          $append = $snippet['markup'];
+          $html .= $snippet['markup'];
           break;
         case 'template':
           $tmp = $smarty->get_template_vars('snippet');
           $smarty->assign('snippet', $snippet);
-          $append = $smarty->fetch($snippet['template']);
+          $html .= $smarty->fetch($snippet['template']);
           $smarty->assign('snippet', $tmp);
           break;
         case 'callback':
-          $args = is_array($snippet['arguments']) ? $snippet['arguments'] : array(&$snippet, &$html);
-          $append = call_user_func_array($snippet['callback'], $args);
+          $args = isset($snippet['arguments']) ? $snippet['arguments'] : array(&$snippet, &$html);
+          $html .= call_user_func_array($snippet['callback'], $args);
           break;
         case 'scriptUrl':
-          $append = sprintf("<script type=\"text/javascript\" src=\"%s\">\n</script>\n", $snippet['scriptUrl']);
-          break;
-        case 'script':
-          $append = sprintf("<script type=\"text/javascript\">\n%s\n</script>\n", $snippet['script']);
+          if (!$allowCmsOverride || !$cms->addScriptUrl($snippet['scriptUrl'], $this->_name)) {
+            $html .= sprintf("<script type=\"text/javascript\" src=\"%s\">\n</script>\n", $snippet['scriptUrl']);
+          }
           break;
         case 'jquery':
-          $append = sprintf("<script type=\"text/javascript\">\ncj(function(\$){%s});\n</script>\n", $snippet['jquery']);
+          $snippet['script'] = sprintf("cj(function(\$){\n%s\n});", $snippet['jquery']);
+          // no break - continue processing as script
+        case 'script':
+          if (!$allowCmsOverride || !$cms->addScript($snippet['script'], $this->_name)) {
+            $html .= sprintf("<script type=\"text/javascript\">\n%s\n</script>\n", $snippet['script']);
+          }
           break;
         case 'styleUrl':
-          $append = sprintf("<link href=\"%s\" rel=\"stylesheet\" type=\"text/css\"/>\n", $snippet['styleUrl']);
+          if (!$allowCmsOverride || !$cms->addStyleUrl($snippet['styleUrl'], $this->_name)) {
+            $html .= sprintf("<link href=\"%s\" rel=\"stylesheet\" type=\"text/css\"/>\n", $snippet['styleUrl']);
+          }
           break;
         case 'style':
-          $append = sprintf("<style type=\"text/css\">\n%s\n</style>\n", $snippet['style']);
+          if (!$allowCmsOverride || !$cms->addStyle($snippet['style'], $this->_name)) {
+            $html .= sprintf("<style type=\"text/css\">\n%s\n</style>\n", $snippet['style']);
+          }
           break;
         default:
           require_once 'CRM/Core/Error.php';
           CRM_Core_Error::fatal( ts( 'Snippet type %1 is unrecognized',
                      array( 1 => $snippet['type'] ) ) );
       }
-      $html .= $append;
     }
     return $html;
   }

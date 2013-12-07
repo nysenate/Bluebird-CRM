@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,15 +23,17 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
+{capture assign=infoTitle}{ts}Preview Mode{/ts}{/capture}
+{assign var="infoType" value="info"}
 {if $preview_type eq 'group'}
-    {capture assign=infoMessage}{ts}Preview of the custom data group (fieldset) as it will be displayed within an edit form.{/ts}{/capture}
+    {capture assign=infoMessage}{ts}Showing the custom data group (fieldset) as it will be displayed within an edit form.{/ts}{/capture}
     {capture name=legend}
         {foreach from=$groupTree item=fieldName}
           {$fieldName.title}
         {/foreach}
     {/capture}
 {else}
-    {capture assign=infoMessage}{ts}Preview of this field as it will be displayed in an edit form.{/ts}{/capture}
+    {capture assign=infoMessage}{ts}Showing this field as it will be displayed in an edit form.{/ts}{/capture}
 {/if}
 {include file="CRM/common/info.tpl"}
 <div class="crm-block crm-form-block crm-custom-preview-form-block">
@@ -47,11 +49,11 @@
         {if $element.help_pre}
             <tr><td class="label"></td><td class="description">{$element.help_pre}</td></tr>
         {/if}
-	{if $element.options_per_line }
+  {if $element.options_per_line }
         {*assign var="element_name" value=$element.custom_group_id|cat:_|cat:$field_id|cat:_|cat:$element.name*}
-        {assign var="element_name" value=$element.element_name}     
-        <tr> 
-         <td class="label">{$form.$element_name.label}{if $element.help_post}{help id=$element_name text=$element.help_post}{/if}</td>
+        {assign var="element_name" value=$element.element_name}
+        <tr>
+         <td class="label">{$form.$element_name.label}{if $element.help_post}{help id=$element.id file="CRM/Custom/Form/CustomField.hlp" title=$form.$element_name.label}{/if}</td>
          <td>
             {assign var="count" value="1"}
                 <table class="form-layout-compressed">
@@ -70,38 +72,38 @@
                                 {assign var="count" value=`$count+1`}
                             {/if}
                          {/if}
-                    {/foreach}  
-		    {if $element.html_type eq 'Radio'}
+                    {/foreach}
+        {if $element.html_type eq 'Radio'}
                  <tr>
-	               <td><span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$element_name}', '{$form.formName}'); return false;" >{ts}clear{/ts}</a>)</span></td> 
-	             {/if}
-                 </tr>                  
+                 <td><span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$element_name}', '{$form.formName}'); return false;" >{ts}clear{/ts}</a>)</span></td>
+               {/if}
+                 </tr>
                 </table>
          </td>
         </tr>
-	{else}
-        {assign var="name" value=`$element.name`} 
+  {else}
+        {assign var="name" value=`$element.name`}
         {*assign var="element_name" value=$group_id|cat:_|cat:$field_id|cat:_|cat:$element.name*}
-        {assign var="element_name" value=$element.element_name}  
+        {assign var="element_name" value=$element.element_name}
         <tr>
-          <td class="label">{$form.$element_name.label}{if $element.help_post}{help id=$element_name text=$element.help_post}{/if}</td>
-	      <td>
-	    {if $element.data_type neq 'Date'}
+          <td class="label">{$form.$element_name.label}{if $element.help_post}{help id=$element.id file="CRM/Custom/Form/CustomField.hlp" title=$form.$element_name.label}{/if}</td>
+        <td>
+      {if $element.data_type neq 'Date'}
             {$form.$element_name.html}&nbsp;
         {elseif $element.skip_calendar NEQ true }
             {include file="CRM/common/jcalendar.tpl" elementName=$element_name}
         {/if}
-	    {if $element.html_type eq 'Radio'}
-	    	<span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$element_name}', '{$form.formName}'); return false;" >{ts}clear{/ts}</a>)</span>
-	    {elseif $element.html_type eq 'Autocomplete-Select'}
-	        {if $element.data_type eq 'ContactReference'}
+      {if $element.html_type eq 'Radio'}
+        <span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$element_name}', '{$form.formName}'); return false;" >{ts}clear{/ts}</a>)</span>
+      {elseif $element.html_type eq 'Autocomplete-Select'}
+          {if $element.data_type eq 'ContactReference'}
                   {include file="CRM/Custom/Form/ContactReference.tpl"}
                 {else}
-	          {include file="CRM/Custom/Form/AutoComplete.tpl"}
+            {include file="CRM/Custom/Form/AutoComplete.tpl"}
                 {/if}
         {/if}
           </td>
-	{/if}
+  {/if}
      {/if}
     {/foreach}
     </table>

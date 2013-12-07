@@ -1,11 +1,9 @@
 <?php
-// $Id$
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -41,8 +39,7 @@
 class CRM_ACL_BAO_EntityRole extends CRM_ACL_DAO_EntityRole {
   static $_entityTable = NULL;
 
-  static
-  function entityTable() {
+  static function entityTable() {
     if (!self::$_entityTable) {
       self::$_entityTable = array(
         'civicrm_contact' => ts('Contact'),
@@ -52,16 +49,14 @@ class CRM_ACL_BAO_EntityRole extends CRM_ACL_DAO_EntityRole {
     return self::$_entityTable;
   }
 
-  static
-  function create(&$params) {
+  static function create(&$params) {
     $dao = new CRM_ACL_DAO_EntityRole();
     $dao->copyValues($params);
 
     $dao->save();
   }
 
-  static
-  function retrieve(&$params, &$defaults) {
+  static function retrieve(&$params, &$defaults) {
     CRM_Core_DAO::commonRetrieve('CRM_ACL_DAO_EntityRole', $params, $defaults);
   }
 
@@ -74,8 +69,7 @@ class CRM_ACL_BAO_EntityRole extends CRM_ACL_DAO_EntityRole {
    * @return Object             DAO object on sucess, null otherwise
    * @static
    */
-  static
-  function setIsActive($id, $is_active) {
+  static function setIsActive($id, $is_active) {
     return CRM_Core_DAO::setFieldValue('CRM_ACL_DAO_EntityRole', $id, 'is_active', $is_active);
   }
 
@@ -87,8 +81,7 @@ class CRM_ACL_BAO_EntityRole extends CRM_ACL_DAO_EntityRole {
    * @access public
    * @static
    */
-  static
-  function del($entityRoleId) {
+  static function del($entityRoleId) {
     $entityDAO = new CRM_ACL_DAO_EntityRole();
     $entityDAO->id = $entityRoleId;
     $entityDAO->find(TRUE);

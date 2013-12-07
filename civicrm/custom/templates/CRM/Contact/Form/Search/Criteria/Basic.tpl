@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,87 +23,87 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-  <table class="form-layout">
-    <tr>
-            <td><label>{ts}Complete OR Partial Name{/ts}</label>&nbsp;{help id='id-advanced-intro'}<br />
-                {$form.sort_name.html|crmReplace:class:big}
-            </td>
-            <td>
-                <label>{ts}Complete OR Partial Email{/ts}</label><br />
-                {$form.email.html|crmReplace:class:big}<br />
-                {$form.email_primary.html} {$form.email_primary.label}
-            </td>
-            <td>
-                {if $form.component_mode}  
-                    {$form.component_mode.label} {help id="id-display-results"}
-                    <br />
-                    {$form.component_mode.html}
-{if $form.display_relationship_type}
-            <span id="crm-display_relationship_type">{$form.display_relationship_type.html}</span>
-{/if}
-                {else}
-                    &nbsp;
-                {/if}
-            </td>
-            {*NYSS suppress profile results option
-            <td class="advsearch_profile">
-                {$form.uf_group_id.label} {help id="id-search-views"}<br />{$form.uf_group_id.html}
-            </td>
-            *}
-            <td>
-                {$form.operator.label} {help id="id-search-operator"}<br />{$form.operator.html}
-            </td>
-            
-            <td class="advsearch_buttons_top">
-              {*NYSS width*}
-              <div class="crm-submit-buttons">
-                {include file="CRM/common/formButtons.tpl" location="top" buttonStyle="width:92px; text-align:center;"}
-              </div>
-              <div class="crm-submit-buttons reset-advanced-search">
-                <a href="{crmURL p='civicrm/contact/search/advanced' q='reset=1'}" id="resetAdvancedSearch" class="button" style="width:80px; text-align:center;"><span>{ts}Reset Form{/ts}</span></a>
-              </div>
-    
-            </td>       
-        </tr>
-    <tr>
-{if $form.contact_type || $form.group}
-            <td id="advSearchContactTypesGroups" colspan="2">
-              <div class="crm-section tag-section contact-types">
-                <div class="label">
-                <label>{ts}Contact Type(s){/ts}</label>
-                </div>
-                <div class="content">
-                {$form.contact_type.html}
-                 {literal}
+<table class="form-layout">
+  <tr>
+    <td><label>{ts}Complete OR Partial Name{/ts}</label><br />
+      {$form.sort_name.html}
+    </td>
+    <td>
+      <label>{ts}Complete OR Partial Email{/ts}</label><br />
+      {*NYSS*}
+      {$form.email.html|crmReplace:class:big}<br />
+      {$form.email_primary.html} {$form.email_primary.label}
+    </td>
+    <td>
+      {if $form.component_mode}
+        {$form.component_mode.label} {help id="id-display-results"}
+        <br />
+        {$form.component_mode.html}
+        {if $form.display_relationship_type}
+          <span id="crm-display_relationship_type">{$form.display_relationship_type.html}</span>
+        {/if}
+      {else}
+          &nbsp;
+      {/if}
+    </td>
+    {*NYSS suppress profile results option
+    <td class="advsearch_profile">
+      {$form.uf_group_id.label} {help id="id-search-views"}<br />{$form.uf_group_id.html}
+    </td>
+    *}
+    <td>
+      {$form.operator.label} {help id="id-search-operator"}<br />{$form.operator.html}
+    </td>
+    <td class="advsearch_buttons_top">
+      {*NYSS width*}
+      <div class="crm-submit-buttons">
+        {include file="CRM/common/formButtons.tpl" location="top" buttonStyle="width:80px; text-align:center;"}
+      </div>
+      <div class="crm-submit-buttons reset-advanced-search">
+        <a href="{crmURL p='civicrm/contact/search/advanced' q='reset=1'}" id="resetAdvancedSearch" class="button" style="width:70px; text-align:center;"><span>{ts}Reset Form{/ts}</span></a>
+      </div>
+    </td>
+  </tr>
+  <tr>
+  {if $form.contact_type || $form.group}
+    <td id="advSearchContactTypesGroups" colspan="2">
+      <div class="crm-section tag-section contact-types">
+        <div class="label">
+          <label>{ts}Contact Type(s){/ts}</label>
+        </div>
+        <div class="content">
+          {$form.contact_type.html}
+          {literal}
           <script type="text/javascript">
 
-                cj("select#contact_type").crmasmSelect({
-                  addItemTarget: 'bottom',
-                  animate: false,
-                  highlight: true,
-                  sortable: true,
-                  respectParents: true
-                });
+            cj("select#contact_type").crmasmSelect({
+              addItemTarget: 'bottom',
+              animate: false,
+              highlight: true,
+              sortable: true,
+              respectParents: true
+            });
 
-            </script>
+          </script>
           {/literal}
-                </div>
-              </div>
-              <div class="crm-section tag-section contact-groups">
-                <div class="label">
-                <label>{ts}Group(s){/ts}</label>
-                </div>
-                <div class="content">
-                {$form.group.html}
-                {literal}
-                <script type="text/javascript">
-                cj("select#group").crmasmSelect({
-                    addItemTarget: 'bottom',
-                    animate: false,
-                    highlight: true,
-                    sortable: true,
-                    respectParents: true
-                });
+        </div>
+      </div>
+      <div class="crm-section tag-section contact-groups">
+        <div class="label">
+          <label>{ts}Group(s){/ts}</label>
+        </div>
+        <div class="content">
+          {$form.group.html}
+          {literal}
+          <script type="text/javascript">
+            cj("select#group").crmasmSelect({
+              addItemTarget: 'bottom',
+              animate: false,
+              highlight: true,
+              sortable: true,
+              respectParents: true
+            });
+
 
                 </script>
                 {/literal}
@@ -150,8 +150,7 @@
             <td>&nbsp;</td>
 {/if}
       </tr>
-        
-        <tr>
+      <tr>
             <td colspan="2">
                 {*NYSS 4407*}
                 <table class="form-layout-compressed search-privacy-options">
@@ -202,19 +201,29 @@
             </td>
             <td>
               Bluebird ID<br />
-              {$form.id.html|crmReplace:class:medium}
+              {$form.contact_id.html|crmReplace:class:medium}
             </td>
             <td colspan="2">
               {$form.external_identifier.label}<br />
               {$form.external_identifier.html|crmReplace:class:medium}
             </td>
         </tr>
-        {if $form.deleted_contacts}
         <tr>
-          <td colspan="5">
-            {$form.deleted_contacts.html} {$form.deleted_contacts.label|replace:'<br />':' '}
+          <td colspan="2">
+            {if $form.deleted_contacts}
+              {$form.deleted_contacts.html} {$form.deleted_contacts.label|replace:'<br />':' '}
+            {/if}
           </td>
+          <td>
+            <div>
+              {$form.phone_numeric.label}<br />{$form.phone_numeric.html}
+            </div>
+            <div class="description font-italic">
+              {ts}Punctuation and spaces are ignored.{/ts}
+            </div>
+          </td>
+          <td>{$form.phone_location_type_id.label}<br />{$form.phone_location_type_id.html}</td>
+          <td>{$form.phone_phone_type_id.label}<br />{$form.phone_phone_type_id.html}</td>
         </tr>
-        {/if}
         
     </table>

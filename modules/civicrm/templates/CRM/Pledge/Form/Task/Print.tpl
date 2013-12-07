@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,7 +25,7 @@
 *}
 <p>
 
-{if $rows } 
+{if $rows }
 <div class="form-item">
      <span class="element-right">{$form.buttons.html}</span>
 </div>
@@ -44,11 +44,11 @@
 {foreach from=$rows item=row}
     <tr class="{cycle values="odd-row,even-row"}">
         <td class="crm-pledge-sort_name" >{$row.sort_name}</td>
-        <td class="crm-pledge-pledge_amount">{$row.pledge_amount|crmMoney}</td>	
+        <td class="crm-pledge-pledge_amount">{$row.pledge_amount|crmMoney}</td>
         <td class="crm-pledge-pledge_create_date">{$row.pledge_create_date|truncate:10:''|crmDate}</td>
-        <td class="crm-pledge-pledge_frequency_interval">{$row.pledge_frequency_interval} {$row.pledge_frequency_unit|capitalize:true}(s) </td>	
+        <td class="crm-pledge-pledge_frequency_interval">{$row.pledge_frequency_interval} {$row.pledge_frequency_unit|capitalize:true}(s) </td>
         <td class="crm-pledge-.pledge_start_date">{$row.pledge_start_date|truncate:10:''|crmDate}</td>
-        <td class="crm-pledge-pledge_status">{$row.pledge_status_id}</td>	
+        <td class="crm-pledge-pledge_status">{$row.pledge_status_id}</td>
     </tr>
 {/foreach}
 </table>
@@ -58,7 +58,7 @@
 </div>
 
 {else}
-   <div class="messages status">
+   <div class="messages status no-popup">
     <div class="icon inform-icon"></div>
         {ts}There are no records selected for Print.{/ts}
    </div>

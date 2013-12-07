@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,21 +29,21 @@
 
 {if !$addBlock}
     <tr>
-	<td>{ts}Phone{/ts}</td>
-	<td>{ts}Phone Location{/ts}</td>
-	{if $className eq 'CRM_Contact_Form_Contact'}
-	    <td colspan="2">{ts}Phone Type{/ts}</td>
-	    <td id="Phone-Primary" class="hiddenElement">{ts}Primary?{/ts}</td>
-	{/if}
+  <td>{ts}Phone{/ts}</td>
+  <td>{ts}Phone Location{/ts}</td>
+  {if $className eq 'CRM_Contact_Form_Contact'}
+      <td colspan="2">{ts}Phone Type{/ts}</td>
+      <td id="Phone-Primary" class="hiddenElement">{ts}Primary?{/ts}</td>
+  {/if}
     </tr>
 {/if}
 <tr id="Phone_Block_{$blockId}">
-    <td>{$form.phone.$blockId.phone.html}&nbsp;&nbsp;{ts}ext.{/ts}&nbsp;{$form.phone.$blockId.phone_ext.html|crmReplace:class:four}&nbsp;</td>
+    <td>{$form.phone.$blockId.phone.html}&nbsp;&nbsp;{ts}ext.{/ts}&nbsp;{$form.phone.$blockId.phone_ext.html|crmAddClass:four}&nbsp;</td>
     <td>{$form.phone.$blockId.location_type_id.html}</td>
     <td colspan="2">{$form.phone.$blockId.phone_type_id.html}</td>
     <td align="center" id="Phone-Primary-html" {if $blockId eq 1}class="hiddenElement"{/if}>{$form.phone.$blockId.is_primary.1.html}</td>
     {if $blockId gt 1}
-	<td><a href="#" title="{ts}Delete Phone Block{/ts}" onClick="removeBlock('Phone','{$blockId}'); return false;">{ts}delete{/ts}</a></td>
+  <td><a href="#" title="{ts}Delete Phone Block{/ts}" onClick="removeBlock('Phone','{$blockId}'); return false;">{ts}delete{/ts}</a></td>
     {/if}
 </tr>
 {if !$addBlock}

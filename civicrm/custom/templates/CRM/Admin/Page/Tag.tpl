@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -56,16 +56,17 @@
 BBTree.startInstance({pullSets: [291, 296], buttonType: 'edit'}, 1); 
 </script>
 {/literal}
-{capture assign=docLink}{docURL page="Tags Admin"}{/capture}
+{capture assign=docLink}{docURL page="user/organising-your-data/groups-and-tags"}{/capture}
+
 {if $action eq 1 or $action eq 2 or $action eq 8}
-    {include file="CRM/Admin/Form/Tag.tpl"}	
+    {include file="CRM/Admin/Form/Tag.tpl"}
 {else}
 <div class="crm-content-block">
     <div id="help">
         {ts 1=$docLink}Tags can be assigned to any contact record, and are a convenient way to find contacts. You can create as many tags as needed to organize and segment your records.{/ts} {*$docLink*}{*NYSS 6163*}
     </div>
-    <div id="dialog">
-    </div>
+  <div id="dialog">
+  </div>
     <div class="crm-tagLegend">
     	<table>
     		<tr>
@@ -102,13 +103,13 @@ BBTree.startInstance({pullSets: [291, 296], buttonType: 'edit'}, 1);
         <!-- goes here -->
         <div class="crm-tagTreeDisplay">
             <div class="BBInit"></div>
-            {literal}
-            <script>
+  {literal}
+  <script>
                 BBTree.initContainer('', {pullSets: [291,296], buttonType: 'edit',tabLocation: 'crm-tagTabHeader'});
                 //BBTree.initContainer('two', {pullSets: [296], buttonType: 'tagging'}, {entity_id: 216352, entity_type: 'civicrm_activity'});
-            </script>
-            {/literal}
-        </div>
+  </script>
+  {/literal}
+</div>
     </div>
 </div>
 {/if}

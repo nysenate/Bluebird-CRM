@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -43,7 +43,7 @@ abstract class CRM_SMS_Provider {
    * @static
    */
   static private $_singleton = array();
-  CONST MAX_SMS_CHAR = 160;
+  CONST MAX_SMS_CHAR = 460;
 
   /**
    * singleton function used to manage this object
@@ -56,9 +56,7 @@ abstract class CRM_SMS_Provider {
     ), $force = FALSE) {
     $mailingID    = CRM_Utils_Array::value('mailing_id', $providerParams);
     $providerID   = CRM_Utils_Array::value('provider_id', $providerParams);
-    
-    // make clickatell default provider for now
-    $providerName = CRM_Utils_Array::value('provider', $providerParams, 'clickatell');
+    $providerName = CRM_Utils_Array::value('provider', $providerParams);
 
     if (!$providerID && $mailingID) {
       $providerID = CRM_Core_DAO::getFieldValue('CRM_Mailing_DAO_Mailing', $mailingID, 'sms_provider_id', 'id');
@@ -73,11 +71,18 @@ abstract class CRM_SMS_Provider {
     }
 
     $providerName = CRM_Utils_Type::escape($providerName, 'String');
-    $providerName = ucfirst($providerName);
     $cacheKey     = "{$providerName}_" . (int) $providerID . "_" . (int) $mailingID;
 
     if (!isset(self::$_singleton[$cacheKey]) || $force) {
-      self::$_singleton[$cacheKey] = eval('return ' . "CRM_SMS_Provider_{$providerName}" . '::singleton( $providerParams, $force );');
+      $ext = CRM_Extension_System::singleton()->getMapper();
+      if ($ext->isExtensionKey($providerName)) {
+        $paymentClass = $ext->keyToClass($providerName);
+        require_once ("{$paymentClass}.php");
+      } else {
+        CRM_Core_Error::fatal("Could not locate extension for {$providerName}.");
+      }
+
+      self::$_singleton[$cacheKey] = $paymentClass::singleton($providerParams, $force);
     }
     return self::$_singleton[$cacheKey];
   }
@@ -108,26 +113,35 @@ abstract class CRM_SMS_Provider {
   }
 
   function createActivity($apiMsgID, $message, $headers = array(
-    ), $jobID = NULL) {
+    ), $jobID = NULL, $userID = NULL) {
     if ($jobID) {
       $sql = "
 SELECT scheduled_id FROM civicrm_mailing m
 INNER JOIN civicrm_mailing_job mj ON mj.mailing_id = m.id AND mj.id = %1";
       $sourceContactID = CRM_Core_DAO::singleValueQuery($sql, array(1 => array($jobID, 'Integer')));
     }
+    elseif($userID) {
+      $sourceContactID=$userID;
+    }
     else {
       $session = CRM_Core_Session::singleton();
       $sourceContactID = $session->get('userID');
     }
 
-    $activityTypeID = CRM_Core_OptionGroup::getValue('activity_type', 'SMS', 'name');
+    if (!$sourceContactID) {
+      $sourceContactID = CRM_Utils_Array::value('Contact', $headers);
+    }
+    if (!$sourceContactID) {
+      return false;
+    }
+
+    $activityTypeID = CRM_Core_OptionGroup::getValue('activity_type', 'SMS delivery', 'name');
     // note: lets not pass status here, assuming status will be updated by callback
     $activityParams = array(
       'source_contact_id' => $sourceContactID,
       'target_contact_id' => $headers['contact_id'],
       'activity_type_id' => $activityTypeID,
       'activity_date_time' => date('YmdHis'),
-      'subject' => 'SMS Sent',
       'details' => $message,
       'result' => $apiMsgID,
     );
@@ -147,12 +161,39 @@ INNER JOIN civicrm_mailing_job mj ON mj.mailing_id = m.id AND mj.id = %1";
     return $value;
   }
 
-  function inbound($from, $body, $to = NULL, $trackID = NULL) {
-    $from = CRM_Utils_Type::escape($from, 'String');
-    $fromContactID = CRM_Core_DAO::singleValueQuery('SELECT contact_id FROM civicrm_phone WHERE phone LIKE "' . $from . '"');
+  function processInbound($from, $body, $to = NULL, $trackID = NULL) {
+    $formatFrom   = $this->formatPhone($this->stripPhone($from), $like, "like");
+    $escapedFrom  = CRM_Utils_Type::escape($formatFrom, 'String');
+    $fromContactID = CRM_Core_DAO::singleValueQuery('SELECT contact_id FROM civicrm_phone JOIN civicrm_contact ON civicrm_contact.id = civicrm_phone.contact_id WHERE !civicrm_contact.is_deleted AND phone LIKE "%' . $escapedFrom . '"');
+
+    if (! $fromContactID) {
+      // unknown mobile sender -- create new contact
+      // use fake @mobile.sms email address for new contact since civi
+      // requires email or name for all contacts
+      $locationTypes = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Address', 'location_type_id');
+      $phoneTypes = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Phone', 'phone_type_id');
+      $phoneloc = array_search('Home', $locationTypes);
+      $phonetype = array_search('Mobile', $phoneTypes);
+      $stripFrom = $this->stripPhone($from);
+      $contactparams = array(
+        'contact_type' => 'Individual',
+        'email' => array(1 => array(
+          'location_type_id' => $phoneloc,
+          'email' => $stripFrom . '@mobile.sms'
+        )),
+        'phone' => array(1 => array(
+          'phone_type_id' => $phonetype,
+          'location_type_id' => $phoneloc,
+          'phone' => $stripFrom
+        )),
+      );
+      $fromContact = CRM_Contact_BAO_Contact::create($contactparams, FALSE, TRUE, FALSE);
+      $fromContactID = $fromContact->id;
+    }
+
     if ($to) {
       $to = CRM_Utils_Type::escape($to, 'String');
-      $toContactID = CRM_Core_DAO::singleValueQuery('SELECT contact_id FROM civicrm_phone WHERE phone LIKE "' . $to . '"');
+      $toContactID = CRM_Core_DAO::singleValueQuery('SELECT contact_id FROM civicrm_phone JOIN civicrm_contact ON civicrm_contact.id = civicrm_phone.contact_id WHERE !civicrm_contact.is_deleted AND phone LIKE "%' . $to . '"');
     }
     else {
       $toContactID = $fromContactID;
@@ -160,7 +201,7 @@ INNER JOIN civicrm_mailing_job mj ON mj.mailing_id = m.id AND mj.id = %1";
 
     if ($fromContactID) {
       $actStatusIDs = array_flip(CRM_Core_OptionGroup::values('activity_status'));
-      $activityTypeID = CRM_Core_OptionGroup::getValue('activity_type', 'SMS', 'name');
+      $activityTypeID = CRM_Core_OptionGroup::getValue('activity_type', 'Inbound SMS', 'name');
 
       // note: lets not pass status here, assuming status will be updated by callback
       $activityParams = array(
@@ -168,9 +209,9 @@ INNER JOIN civicrm_mailing_job mj ON mj.mailing_id = m.id AND mj.id = %1";
         'target_contact_id' => $fromContactID,
         'activity_type_id' => $activityTypeID,
         'activity_date_time' => date('YmdHis'),
-        'subject' => 'SMS Received',
         'status_id' => $actStatusIDs['Completed'],
         'details' => $body,
+        'phone_number' => $from
       );
       if ($trackID) {
         $trackID = CRM_Utils_Type::escape($trackID, 'String');
@@ -178,12 +219,8 @@ INNER JOIN civicrm_mailing_job mj ON mj.mailing_id = m.id AND mj.id = %1";
       }
 
       $result = CRM_Activity_BAO_Activity::create($activityParams);
-      CRM_Core_Error::debug_log_message("Inbound SMS recorded for cid={$contactID}.");
+      CRM_Core_Error::debug_log_message("Inbound SMS recorded for cid={$fromContactID}.");
       return $result;
-    }
-    else {
-      // FIXME: should we just create a new contact with just phone no ? civicrm doesn't allow creating contact with just phone number.
-      // probably we would need some dummy name / email ?
     }
   }
 
@@ -256,6 +293,18 @@ INNER JOIN civicrm_mailing_job mj ON mj.mailing_id = m.id AND mj.id = %1";
       default:
         return $phone;
     }
+  }
+
+  function urlEncode($values) {
+    $uri = '';
+    foreach ($values as $key => $value) {
+      $value = urlencode($value);
+      $uri .= "&{$key}={$value}";
+    }
+    if (!empty($uri)) {
+      $uri = substr($uri, 1);
+    }
+    return $uri;
   }
 }
 

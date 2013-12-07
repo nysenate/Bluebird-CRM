@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -43,8 +43,25 @@ class CRM_Activity_Form_ActivityFilter extends CRM_Core_Form {
     $activityOptions = CRM_Core_PseudoConstant::activityType(TRUE, TRUE, FALSE, 'label', TRUE);
     asort($activityOptions);
 
-    $this->add('select', 'activity_type_filter_id', ts('Activity Type'), array('' => ts('- all activity type(s) -')) + $activityOptions);
+    $this->add('select', 'activity_type_filter_id', ts('Include'), array('' => ts('- all activity type(s) -')) + $activityOptions);
+    $this->add('select', 'activity_type_exclude_filter_id', ts('Exclude'), array('' => ts('- select activity type -')) + $activityOptions);
     $this->assign('suppressForm', TRUE);
+  }
+
+  function setDefaultValues() {
+    // CRM-11761 retrieve user's activity filter preferences
+    $defaults = array();
+    $session = CRM_Core_Session::singleton();
+    $userID = $session->get('userID');
+    if ($userID) {
+      $defaults = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::PERSONAL_PREFERENCES_NAME,
+        'activity_tab_filter',
+        NULL,
+        NULL,
+        $userID
+      );
+    }
+    return $defaults;
   }
 }
 

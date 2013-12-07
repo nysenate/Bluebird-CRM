@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -45,8 +45,7 @@ class CRM_Queue_BAO_QueueItem extends CRM_Queue_DAO_QueueItem {
    *
    * @return bool TRUE if table now exists
    */
-  static
-  function findCreateTable() {
+  static function findCreateTable() {
     $checkTableSql = "show tables like 'civicrm_queue_item'";
     $foundName = CRM_Core_DAO::singleValueQuery($checkTableSql);
     if ($foundName == 'civicrm_queue_item') {

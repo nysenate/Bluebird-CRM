@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -50,8 +50,7 @@ class CRM_Utils_ICalendar {
    * @return  Escaped text
    *
    */
-  static
-  function formatText($text) {
+  static function formatText($text) {
     $text = strip_tags($text);
     $text = str_replace("\"", "DQUOTE", $text);
     $text = str_replace("\\", "\\\\", $text);
@@ -70,8 +69,7 @@ class CRM_Utils_ICalendar {
    * @return  Escaped date
    *
    */
-  static
-  function formatDate($date, $gdata = FALSE) {
+  static function formatDate($date, $gdata = FALSE) {
 
     if ($gdata) {
       return date("Y-m-d\TH:i:s.000",
@@ -108,7 +106,7 @@ class CRM_Utils_ICalendar {
    * @return void
    *
    */
-  function send($calendar, $content_type = 'text/calendar', $charset = 'us-ascii', $fileName = NULL, $disposition = NULL) {
+  static function send($calendar, $content_type = 'text/calendar', $charset = 'us-ascii', $fileName = NULL, $disposition = NULL) {
     $config = CRM_Core_Config::singleton();
     $lang = $config->lcMessages;
     header("Content-Language: $lang");

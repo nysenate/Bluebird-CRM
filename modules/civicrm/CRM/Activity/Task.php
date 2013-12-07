@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,7 +27,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -38,7 +38,13 @@
  *
  */
 class CRM_Activity_Task {
-  CONST DELETE_ACTIVITIES = 1, PRINT_ACTIVITIES = 2, EXPORT_ACTIVITIES = 3, BATCH_ACTIVITIES = 4, EMAIL_CONTACTS = 5, EMAIL_SMS = 6;
+  CONST
+    DELETE_ACTIVITIES = 1,
+    PRINT_ACTIVITIES = 2,
+    EXPORT_ACTIVITIES = 3,
+    BATCH_ACTIVITIES = 4,
+    EMAIL_CONTACTS = 5,
+    EMAIL_SMS = 6;
 
   /**
    * the task array
@@ -64,8 +70,7 @@ class CRM_Activity_Task {
    * @static
    * @access public
    */
-  static
-  function &tasks() {
+  static function &tasks() {
     if (!(self::$_tasks)) {
       self::$_tasks = array(
         1 => array('title' => ts('Delete Activities'),
@@ -105,10 +110,13 @@ class CRM_Activity_Task {
 
       $config = CRM_Core_Config::singleton();
       if (in_array('CiviCase', $config->enableComponents)) {
-        self::$_tasks[6] = array('title' => ts('File on Case'),
-          'class' => 'CRM_Activity_Form_Task_FileOnCase',
-          'result' => FALSE,
-        );
+        if ( CRM_Core_Permission::check('access all cases and activities') ||
+          CRM_Core_Permission::check('access my cases and activities') ) {
+          self::$_tasks[6] = array('title' => ts('File on Case'),
+            'class' => 'CRM_Activity_Form_Task_FileOnCase',
+            'result' => FALSE,
+          );
+        }
       }
 
       //CRM-4418, check for delete
@@ -129,8 +137,7 @@ class CRM_Activity_Task {
    * @static
    * @access public
    */
-  static
-  function &taskTitles() {
+  static function &taskTitles() {
     self::tasks();
     $titles = array();
     foreach (self::$_tasks as $id => $value) {
@@ -151,8 +158,7 @@ class CRM_Activity_Task {
    * @return array set of tasks that are valid for the user
    * @access public
    */
-  static
-  function &permissionedTaskTitles($permission) {
+  static function &permissionedTaskTitles($permission) {
     $tasks = array();
     if ($permission == CRM_Core_Permission::EDIT) {
       $tasks = self::taskTitles();
@@ -180,8 +186,7 @@ class CRM_Activity_Task {
    * @static
    * @access public
    */
-  static
-  function getTask($value) {
+  static function getTask($value) {
     self::tasks();
     if (!$value || !CRM_Utils_Array::value($value, self::$_tasks)) {
       // make the print task by default

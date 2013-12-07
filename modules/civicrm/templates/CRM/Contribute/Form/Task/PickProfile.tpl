@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,16 +24,16 @@
  +--------------------------------------------------------------------+
 *}
 <div class="form-item crm-block crm-form-block crm-contribution-form-block">
-    <table class="form-layout-compressed">		      
-      <tr class="crm-contribution-form-block-uf_group_id">
-      	<td class="label">{$form.uf_group_id.label}</td>
-  			<td class="html-adjust">{$form.uf_group_id.html}</td>
-      </tr>
-      <tr>
-        <td class="label"></td>
- 				<td> {include file="CRM/Contribute/Form/Task.tpl"}</td>
-      </tr>
-   </table>
-   <div class="crm-submit-buttons">{$form.buttons.html}</td></div>
+     <table class="form-layout-compressed">
+       <tr class="crm-contribution-form-block-uf_group_id">
+          <td class="label">{$form.uf_group_id.label}</td>
+    <td class="html-adjust">{$form.uf_group_id.html}</td>
+       </tr>
+       <tr>
+         <td class="label"></td>
+   <td> {include file="CRM/Contribute/Form/Task.tpl"}</td>
+       </tr>
+    </table>
+    <div class="crm-submit-buttons">{$form.buttons.html}</td></div>
 </div>
 

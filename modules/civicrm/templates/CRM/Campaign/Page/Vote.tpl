@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -36,7 +36,7 @@
      <ul class="crm-vote-tabs-list">
            {foreach from=$allTabs key=tabName item=tabValue}
            <li id="tab_{$tabValue.id}" class="crm-tab-button ui-corner-bottom">
-            	<a href="{$tabValue.url}" title="{$tabValue.title}"><span></span>{$tabValue.title}</a>
+              <a href="{$tabValue.url}" title="{$tabValue.title}"><span></span>{$tabValue.title}</a>
            </li>
            {/foreach}
      </ul>
@@ -48,28 +48,28 @@
 
 //explicitly stop spinner
 function stopSpinner( ) {
-  cj('li.crm-tab-button').each(function(){ cj(this).find('span').text(' ');})	 
+  cj('li.crm-tab-button').each(function(){ cj(this).find('span').text(' ');})
 }
 
 cj(document).ready( function( ) {
      {/literal}
      var spinnerImage = '<img src="{$config->resourceBase}i/loading.gif" style="width:10px;height:10px"/>';
-     {literal} 
-     
+     {literal}
+
      var selectedTabIndex = {/literal}{$selectedTabIndex}{literal};
-     cj("#mainTabContainer").tabs( { 
-                             selected: selectedTabIndex, 
-                             spinner: spinnerImage, 
-		             cache: false, 
-		             load: stopSpinner 
-		           });
+     cj("#mainTabContainer").tabs( {
+                             selected: selectedTabIndex,
+                             spinner: spinnerImage,
+                 cache: false,
+                 load: stopSpinner
+               });
 });
-           
+
 </script>
 {/literal}
 {else}
- <div class="messages status">
-     <div class="icon inform-icon"></div> 
+ <div class="messages status no-popup">
+     <div class="icon inform-icon"></div>
      {ts}You are not authorized to access this page.{/ts}
  </div>
 {/if}

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,18 +24,29 @@
  +--------------------------------------------------------------------+
 *}
 {if $context ne 'caseActivity'}
-    <tr class="crm-case-opencase-form-block-case_type_id">
-    	<td class="label">{$form.case_type_id.label}{help id="id-case_type" file="CRM/Case/Form/Case.hlp"}</td>
-    	<td>{$form.case_type_id.html}</td>
+  <tr class="crm-case-opencase-form-block-case_type_id">
+    <td class="label">{$form.case_type_id.label}{help id="id-case_type" file="CRM/Case/Form/Case.hlp" activityTypeFile=$activityTypeFile}</td>
+    <td>{$form.case_type_id.html}</td>
+  </tr>
+  <tr class="crm-case-opencase-form-block-status_id">
+    <td class="label">{$form.status_id.label}</td>
+    <td>{$form.status_id.html}</td>
+  </tr>
+  <tr class="crm-case-opencase-form-block-start_date">
+    <td class="label">{$form.start_date.label}</td>
+    <td>
+    {include file="CRM/common/jcalendar.tpl" elementName=start_date}
+    </td>
+  </tr>
+
+{* Add fields for attachments *}
+  {if $action eq 4 AND $currentAttachmentURL}
+    {include file="CRM/Form/attachment.tpl"}{* For view action the include provides the row and cells. *}
+  {elseif $action eq 1 OR $action eq 2}
+    <tr class="crm-activity-form-block-attachment">
+      <td colspan="2">
+      {include file="CRM/Form/attachment.tpl"}
+      </td>
     </tr>
-    <tr class="crm-case-opencase-form-block-status_id">
-    	<td class="label">{$form.status_id.label}</td>
-    	<td>{$form.status_id.html}</td>
-    </tr>
-    <tr class="crm-case-opencase-form-block-start_date">
-        <td class="label">{$form.start_date.label}</td>
-        <td>
-            {include file="CRM/common/jcalendar.tpl" elementName=start_date}       
-        </td>
-    </tr>
+  {/if}
 {/if}

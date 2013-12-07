@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,7 +24,7 @@
  +--------------------------------------------------------------------+
 *}
 {if $action eq 1 or $action eq 2 or $action eq 8}
-    {include file="CRM/Admin/Form/Mapping.tpl"}	
+    {include file="CRM/Admin/Form/Mapping.tpl"}
 {else}
     <div id="help">
         {ts}Saved mappings allow you to easily run the same import or export job multiple times. Mappings are created and updated as part of an Import or Export task. This screen allows you to rename or delete existing mappings.{/ts}
@@ -36,14 +36,14 @@
             {strip}
             <table cellpadding="0" cellspacing="0" border="0">
             <tr class="columnheader">
-    	        <th>{ts}Name{/ts}</th>
-    	        <th>{ts}Description{/ts}</th>
+              <th>{ts}Name{/ts}</th>
+              <th>{ts}Description{/ts}</th>
                     <th>{ts}Mapping Type{/ts}</th>
-    	        <th></th>
+              <th></th>
             </tr>
             {foreach from=$rows item=row}
             <tr class="{cycle values="odd-row,even-row"} {$row.class} crm-mapping">
-                <td class="crm-mapping-name">{$row.name}</td>	
+                <td class="crm-mapping-name">{$row.name}</td>
                 <td class="crm-mapping-description">{$row.description}</td>
                 <td class="crm-mapping-mapping_type">{$row.mapping_type}</td>
                 <td>{$row.action|replace:'xx':$row.id}</td>
@@ -54,9 +54,9 @@
         </div>
     </div>
     {else}
-        <div class="messages status">
+        <div class="messages status no-popup">
             <img src="{$config->resourceBase}i/Inform.gif" alt="{ts}status{/ts}"/>
             {ts}There are currently no saved import or export mappings. You create saved mappings as part of an Import or Export task.{/ts}
-        </div>    
+        </div>
     {/if}
 {/if}

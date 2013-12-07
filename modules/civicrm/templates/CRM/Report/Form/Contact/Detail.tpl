@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,11 +25,11 @@
 *}
 {* this div is being used to apply special css *}
     {if !$section }
-    <div class="crm-block crm-form-block crm-report-field-form-block">    
+    <div class="crm-block crm-form-block crm-report-field-form-block">
         {include file="CRM/Report/Form/Fields.tpl"}
     </div>
-    {/if}    
-	
+    {/if}
+
 <div class="crm-block crm-content-block crm-report-form-block">
 {include file="CRM/Report/Form/Actions.tpl"}
 {if !$section }
@@ -71,7 +71,7 @@
         {/capture}
 
         {foreach from=$rows item=row}
-                	<table class="report-layout crm-report_contact_civireport">
+                  <table class="report-layout crm-report_contact_civireport">
                         {eval var=$sectionHeaderTemplate}
                             <tr>
                                 {foreach from=$columnHeaders item=header key=field}
@@ -90,32 +90,32 @@
                                         {if $skipMade >= $skipCount}{assign var=skip value=false}{/if}
                                     {/if}
                                 {/foreach}
-                            </tr>               
+                            </tr>
                             <tr class="group-row crm-report">
                                 {foreach from=$columnHeaders item=header key=field}
                                     {assign var=fieldLink value=$field|cat:"_link"}
                                     {assign var=fieldHover value=$field|cat:"_hover"}
                                     <td  class="report-contents crm-report_{$field}">
                                         {if $row.$fieldLink}<a title="{$row.$fieldHover}" href="{$row.$fieldLink}">{/if}
-                        
+
                                         {if $row.$field eq 'Subtotal'}
                                             {$row.$field}
                                         {elseif $header.type eq 12}
                                             {if $header.group_by eq 'MONTH' or $header.group_by eq 'QUARTER'}
                                                 {$row.$field|crmDate:$config->dateformatPartial}
-                                            {elseif $header.group_by eq 'YEAR'}	
+                                            {elseif $header.group_by eq 'YEAR'}
                                                 {$row.$field|crmDate:$config->dateformatYear}
-                                            {else}				
+                                            {else}
                                                 {$row.$field|truncate:10:''|crmDate}
-                                            {/if}	
+                                            {/if}
                                         {elseif $header.type eq 1024}
                                             {$row.$field|crmMoney}
                                         {else}
                                             {$row.$field}
                                         {/if}
-				
+
                                         {if $row.contactID} {/if}
-                                    
+
                                         {if $row.$fieldLink}</a>{/if}
                                     </td>
                                 {/foreach}
@@ -127,52 +127,52 @@
                             {foreach from=$columnHeadersComponent item=pheader key=component}
                                 {if $componentRows.$componentContactId.$component}
                                     <h3>{$component|replace:'_civireport':''|upper}</h3>
-                        	<table class="report-layout crm-report_{$component}">
-                        	    {*add space before headers*}
-                        		<tr>
-                        		    {foreach from=$pheader item=header}
-                        			<th>{$header.title}</th>
-                        		    {/foreach}
-                        		</tr>
-                             
-                        	    {foreach from=$componentRows.$componentContactId.$component item=row key=rowid}
-                        		<tr class="{cycle values="odd-row,even-row"} crm-report" id="crm-report_{$rowid}">
-                        		    {foreach from=$columnHeadersComponent.$component item=header key=field}
-                        			{assign var=fieldLink value=$field|cat:"_link"}
+                          <table class="report-layout crm-report_{$component}">
+                              {*add space before headers*}
+                            <tr>
+                                {foreach from=$pheader item=header}
+                              <th>{$header.title}</th>
+                                {/foreach}
+                            </tr>
+
+                              {foreach from=$componentRows.$componentContactId.$component item=row key=rowid}
+                            <tr class="{cycle values="odd-row,even-row"} crm-report" id="crm-report_{$rowid}">
+                                {foreach from=$columnHeadersComponent.$component item=header key=field}
+                              {assign var=fieldLink value=$field|cat:"_link"}
                                                 {assign var=fieldHover value=$field|cat:"_hover"}
-                        			<td class="report-contents crm-report_{$field}">
-                        			    {if $row.$fieldLink}
-                        				<a title="{$row.$fieldHover} "href="{$row.$fieldLink}">
-                        			    {/if}
-                        
-                        			    {if $row.$field eq 'Sub Total'}
-                        				{$row.$field}
-                        			    {elseif $header.type & 4}
-                        			        {if $header.group_by eq 'MONTH' or $header.group_by eq 'QUARTER'}
-                        				    {$row.$field|crmDate:$config->dateformatPartial}
-                        				{elseif $header.group_by eq 'YEAR'}	
-                        				    {$row.$field|crmDate:$config->dateformatYear}
-                        				{else}				
-                        				    {$row.$field|truncate:10:''|crmDate}
-                        				{/if}	
-                        			    {elseif $header.type eq 1024}
-                        				{$row.$field|crmMoney}
-                        			    {else}
-                        				{$row.$field}
-                        			    {/if}
-                        
-                        			    {if $row.$fieldLink}</a>{/if}
-                        			</td>
-                        		    {/foreach}
-                        		</tr>
-                        	    {/foreach}
-                        	</table>
-                            {/if}	
+                              <td class="report-contents crm-report_{$field}">
+                                  {if $row.$fieldLink}
+                                <a title="{$row.$fieldHover} "href="{$row.$fieldLink}">
+                                  {/if}
+
+                                  {if $row.$field eq 'Sub Total'}
+                                {$row.$field}
+                                  {elseif $header.type & 4}
+                                      {if $header.group_by eq 'MONTH' or $header.group_by eq 'QUARTER'}
+                                    {$row.$field|crmDate:$config->dateformatPartial}
+                                {elseif $header.group_by eq 'YEAR'}
+                                    {$row.$field|crmDate:$config->dateformatYear}
+                                {else}
+                                    {$row.$field|truncate:10:''|crmDate}
+                                {/if}
+                                  {elseif $header.type eq 1024}
+                                {$row.$field|crmMoney}
+                                  {else}
+                                {$row.$field}
+                                  {/if}
+
+                                  {if $row.$fieldLink}</a>{/if}
+                              </td>
+                                {/foreach}
+                            </tr>
+                              {/foreach}
+                          </table>
+                            {/if}
                             {/foreach}
                         {/if}
         {/foreach}
 
-	<div class="report-pager">
+  <div class="report-pager">
             {include file="CRM/common/pager.tpl" noForm=0}
         </div>
         <br />
@@ -193,11 +193,11 @@
                 </tr>
             </table>
         {/if}
-        
+
         {if !$section }
             {*Statistics at the bottom of the page*}
             {include file="CRM/Report/Form/Statistics.tpl" bottom=true}
         {/if}
-    {/if} 
+    {/if}
     {include file="CRM/Report/Form/ErrorMessage.tpl"}
 </div>

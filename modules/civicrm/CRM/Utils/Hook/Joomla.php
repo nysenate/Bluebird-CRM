@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,42 +29,52 @@
 /**
  *
  * @package CiviCRM_Hook
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id: $
  *
  */
 class CRM_Utils_Hook_Joomla extends CRM_Utils_Hook {
   function invoke($numParams,
-    &$arg1, &$arg2, &$arg3, &$arg4, &$arg5,
-    $fnSuffix
+                  &$arg1, &$arg2, &$arg3, &$arg4, &$arg5,
+                  $fnSuffix
   ) {
     // ensure that we are running in a joomla context
     // we've not yet figured out how to bootstrap joomla, so we should
     // not execute hooks if joomla is not loaded
     if (defined('_JEXEC')) {
       //Invoke the Joomla plugin system to observe to civicrm events.
-           jimport( 'joomla.plugin.helper' );
+      jimport('joomla.plugin.helper');
       JPluginHelper::importPlugin('civicrm');
 
-           // get app based on cli or web
-           if ( PHP_SAPI != 'cli' ) {
-             $app = JFactory::getApplication( 'administrator' );
-           } else {
-        $app = JCli::getInstance();
+      // get app based on cli or web
+      if (PHP_SAPI != 'cli') {
+        $app = JFactory::getApplication('administrator');
+      }
+      else {
+        // condition on Joomla version
+        if (version_compare(JVERSION, '3.0', 'lt')) {
+          $app = JCli::getInstance();
+        }
+        else {
+          $app = JApplicationCli::getInstance();
+        }
       }
 
       $result = $app->triggerEvent($fnSuffix, array(&$arg1, &$arg2, &$arg3, &$arg4, &$arg5));
 
-           $moduleResult = $this->commonInvoke( $numParams,
-                                                $arg1, $arg2, $arg3, $arg4, $arg5,
-                                                $fnSuffix, 'joomla' );
-           if ( ! empty( $moduleResult ) && is_array( $moduleResult ) ) {
-             if ( empty( $result ) ) {
-               $result = $moduleResult;
-             } else if ( is_array( $moduleResult ) ) {
-               $result = array_merge( $result, $moduleResult );
-             }
-           }
+      $moduleResult = $this->commonInvoke($numParams,
+        $arg1, $arg2, $arg3, $arg4, $arg5,
+        $fnSuffix, 'joomla');
+      if (!empty($moduleResult) && is_array($moduleResult)) {
+        if (empty($result)) {
+          $result = $moduleResult;
+        }
+        else {
+          if (is_array($moduleResult)) {
+            $result = array_merge($result, $moduleResult);
+          }
+        }
+      }
 
       if (!empty($result)) {
         // collapse result returned from hooks

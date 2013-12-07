@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,21 +29,20 @@
 {else}
 
 <div class="crm-block crm-form-block crm-case-search-form-block">
-<div class="crm-accordion-wrapper crm-case_search-accordion {if $rows}crm-accordion-closed{else}crm-accordion-open{/if}">
+<div class="crm-accordion-wrapper crm-case_search-accordion {if $rows}collapsed{/if}">
  <div class="crm-accordion-header crm-master-accordion-header">
-  <div class="icon crm-accordion-pointer"></div> 
             {ts}Edit Search Criteria{/ts}
 </div><!-- /.crm-accordion-header -->
  <div class="crm-accordion-body">
-        {strip} 
+        {strip}
             <table class="form-layout">
             <tr class="crm-case-search-form-block-sort_name">
                <td class="font-size12pt" colspan="3">
-                   {$form.sort_name.label}&nbsp;&nbsp;{$form.sort_name.html|crmReplace:class:'twenty'}&nbsp;&nbsp;&nbsp;{$form.buttons.html}
-               </td>       
+                   {$form.sort_name.label}&nbsp;&nbsp;{$form.sort_name.html|crmAddClass:'twenty'}&nbsp;&nbsp;&nbsp;{$form.buttons.html}
+               </td>
             </tr>
             {include file="CRM/Case/Form/Search/Common.tpl"}
-         
+
             <tr>
                <td colspan="2" class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</td>
             </tr>
@@ -55,35 +54,35 @@
     {if $rowsEmpty || $rows}
 <div class="crm-content-block">
     {if $rowsEmpty}
-	<div class="crm-results-block crm-results-block-empty">
+  <div class="crm-results-block crm-results-block-empty">
         {include file="CRM/Case/Form/Search/EmptyResults.tpl"}
     </div>
     {/if}
 
     {if $rows}
-	<div class="crm-results-block">
-	        {* Search request has returned 1 or more matching rows. Display results and collapse the search criteria fieldset. *}
-	
-	        {* Search request has returned 1 or more matching rows. *}
-	        
-	           {* This section handles form elements for action task select and submit *}
-	           <div class="crm-search-tasks">
-	           {include file="CRM/common/searchResultTasks.tpl"}
-	           </div>
-	
-	           {* This section displays the rows along and includes the paging controls *}
-	           <div class="crm-search-results">
-	           {include file="CRM/Case/Form/Selector.tpl" context="Search"}
-	           </div>
-	        {* END Actions/Results section *}
-	</div>
+  <div class="crm-results-block">
+          {* Search request has returned 1 or more matching rows. Display results and collapse the search criteria fieldset. *}
+
+          {* Search request has returned 1 or more matching rows. *}
+
+             {* This section handles form elements for action task select and submit *}
+             <div class="crm-search-tasks">
+             {include file="CRM/common/searchResultTasks.tpl"}
+             </div>
+
+             {* This section displays the rows along and includes the paging controls *}
+             <div class="crm-search-results">
+             {include file="CRM/Case/Form/Selector.tpl" context="Search"}
+             </div>
+          {* END Actions/Results section *}
+  </div>
     {/if}
 </div>
 {/if}
 {literal}
 <script type="text/javascript">
 cj(function() {
-   cj().crmaccordions(); 
+   cj().crmAccordions();
 });
 </script>
 {/literal}

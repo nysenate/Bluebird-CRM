@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -31,7 +31,7 @@
  * abstract class.
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -53,7 +53,7 @@ class CRM_Member_Info extends CRM_Core_Component_Info {
 
 
   // docs inherited from interface
-  public function getPermissions() {
+  public function getPermissions($getAllUnconditionally = FALSE) {
     return array(
       'access CiviMember',
       'edit memberships',
@@ -94,7 +94,7 @@ class CRM_Member_Info extends CRM_Core_Component_Info {
   }
 
   // add shortcut to Create New
-  public function creatNewShortcut(&$shortCuts) {
+  public function creatNewShortcut(&$shortCuts, $newCredit) {
     if (CRM_Core_Permission::check('access CiviMember') &&
       CRM_Core_Permission::check('edit memberships')
     ) {
@@ -104,6 +104,15 @@ class CRM_Member_Info extends CRM_Core_Component_Info {
             'ref' => 'new-membership',
             'title' => ts('Membership'),
           )));
+      if ($newCredit) {
+        $title = ts('Membership') . '<br />&nbsp;&nbsp;(' . ts('credit card') . ')';
+        $shortCuts = array_merge($shortCuts, array(
+          array('path' => 'civicrm/member/add',
+              'query' => "reset=1&action=add&context=standalone&mode=live",
+              'ref' => 'new-membership-cc',
+              'title' => $title,
+            )));
+      }
     }
   }
 }

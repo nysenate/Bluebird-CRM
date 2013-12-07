@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -65,6 +65,17 @@ class CRM_Case_Page_CaseDetails extends CRM_Core_Page {
     $this->assign('rows', $caseDetails);
     $this->assign('caseId', $caseId);
     $this->assign('contactId', $this->_contactId);
+
+    // Make it easy to refresh this table
+    $params = array(
+      'caseId' => $caseId,
+      'type' => $type,
+      'context' => $this->_context,
+      'cid' => $this->_contactId,
+      'action' => $this->_action,
+      'snippet' => 4,
+    );
+    $this->assign('data_params', json_encode($params));
 
     return parent::run();
   }

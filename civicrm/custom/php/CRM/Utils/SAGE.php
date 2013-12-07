@@ -23,7 +23,12 @@ class CRM_Utils_SAGE
     $config = CRM_Core_Config::singleton();
 
     // Limit the length of the status message.
-    if (strlen($session->getStatus()) < MAX_STATUS_LEN) {
+    //NYSS 7340
+    //TODO setStatus doesn't trigger the js warning message as expected, when triggered via inline;
+    //disable for now, but investigate ways to handle that better
+    if ( CRM_Utils_Array::value('class_name', $_REQUEST, '') != 'CRM_Contact_Form_Inline_Address' &&
+      strlen($session->getStatus()) < MAX_STATUS_LEN
+    ) {
       // NYSS 5798 - Only show details in debug mode
       if ($config->debug) {
         $session->setStatus(ts("SAGE Warning: $message<br/>"));
@@ -33,7 +38,6 @@ class CRM_Utils_SAGE
       }
     }
   } // warn()
-
 
   /**
   * Performs USPS validation. If the address was validated, it will be stored in {$values}.
@@ -374,9 +378,13 @@ class CRM_Utils_SAGE
       ), '', '&');
 
     $url = SAGE_API_BASE . $url . $params;
+
+    //7414 wrap in ignoreException so we don't fatal if the lookup fails
+    CRM_Core_Error::ignoreException();
     $request = new HTTP_Request($url);
     $request->sendRequest();
     $xml = simplexml_load_string($request->getResponseBody());
+    CRM_Core_Error::setCallback();
 
     if (!self::validateResponse($xml)) {
       self::warn("Lookup for [$params] has failed.");

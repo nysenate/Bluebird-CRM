@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -32,34 +32,32 @@
     <div class="crm-block crm-content-block crm-report-layoutTable-form-block">
         {*include the table layout*}
         {include file="CRM/Report/Form/Layout/Table.tpl"}
-	</div>
+  </div>
     {else}
     <div class="crm-block crm-form-block crm-report-field-form-block">
 
     {if !$printOnly} {* NO print section starts *}
     <div {if !$criteriaForm}style="display: none;"{/if}> {* criteria section starts *}
-    <div class="crm-accordion-wrapper crm-report_criteria-accordion crm-accordion_title-accordion {if $rows}crm-accordion-closed{else}crm-accordion-open{/if}">
+    <div class="crm-accordion-wrapper crm-report_criteria-accordion {if $rows}collapsed{/if}">
     <div class="crm-accordion-header">
-    <div class="icon crm-accordion-pointer"></div> 
-  	{ts}Report Criteria{/ts}
+    {ts}Report Criteria{/ts}
     </div><!-- /.crm-accordion-header -->
-    <div class="crm-accordion-body">	
+    <div class="crm-accordion-body">
         <div id="id_{$formTpl}"> {* search section starts *}
 
     {if $colGroups}
         {if $componentName eq 'Grant'}
             <h3>{ts}Include these Statistics{/ts}</h3>
         {else}
-	    <h3>Display Columns</h3>
+      <h3>Display Columns</h3>
         {/if}
         {foreach from=$colGroups item=grpFields key=dnc}
             {assign  var="count" value="0"}
             {* Wrap custom field sets in collapsed accordion pane. *}
             {if $grpFields.group_title}
-                <div class="crm-accordion-wrapper crm-accordion crm-accordion-closed">
+                <div class="crm-accordion-wrapper crm-accordion collapsed">
                     <div class="crm-accordion-header">
-                        <div class="icon crm-accordion-pointer"></div>
-                        {$grpFields.group_title}
+                                    {$grpFields.group_title}
                     </div><!-- /.crm-accordion-header -->
                     <div class="crm-accordion-body">
             {/if}
@@ -83,15 +81,15 @@
             {/if}
         {/foreach}
 
-	<table class="criteria-group">
-	{foreach from=$caseDetailExtra key=field item=fieldDetail} 
-	    <tr class="crm-report crm-report-criteria-field crm-report-criteria-field-{$field}">
-	        <td width="25%">{$fieldDetail.title}</td><td> {$form.case_detail_extra.$field.html}</td>
-	    </tr>	 
+  <table class="criteria-group">
+  {foreach from=$caseDetailExtra key=field item=fieldDetail}
+      <tr class="crm-report crm-report-criteria-field crm-report-criteria-field-{$field}">
+          <td width="25%">{$fieldDetail.title}</td><td> {$form.case_detail_extra.$field.html}</td>
+      </tr>
         {/foreach}
-	</table>
+  </table>
     {/if}
-    
+
     {if $groupByElements}
         <h3>Group by Columns</h3>
         {assign  var="count" value="0"}
@@ -113,38 +111,37 @@
                     <td colspan="4 - ($count % 4)"></td>
                 {/if}
             </tr>
-        </table>      
+        </table>
     {/if}
 
     {if $form.options.html || $form.options.html}
         <h3>Other Options</h3>
         <table class="report-layout">
             <tr class="crm-report crm-report-criteria-groupby">
-	        <td>{$form.options.html}</td>
-	        {if $form.blank_column_end}
-	            <td>{$form.blank_column_end.label}&nbsp;&nbsp;{$form.blank_column_end.html}</td>
+          <td>{$form.options.html}</td>
+          {if $form.blank_column_end}
+              <td>{$form.blank_column_end.label}&nbsp;&nbsp;{$form.blank_column_end.html}</td>
                 {/if}
             </tr>
         </table>
     {/if}
-  
+
     {if $filters}
         <h3>Set Filters</h3>
         <table class="report-layout">
-	    {assign var="counter" value=1}	
+      {assign var="counter" value=1}
             {foreach from=$filters     item=table key=tableName}
- 	        {assign  var="filterCount" value=$table|@count}
+           {assign  var="filterCount" value=$table|@count}
             {* Wrap custom field sets in collapsed accordion pane. *}
-	        {if $colGroups.$tableName.group_title and $filterCount gte 1}
-		    {* we should close table that contains other filter elements before we start building custom group accordian  *}
-		    {if $counter eq 1} 
-	            	</table>
-			{assign var="counter" value=0}		
-		    {/if}	
-                    <div class="crm-accordion-wrapper crm-accordion crm-accordion-closed">
+          {if $colGroups.$tableName.group_title and $filterCount gte 1}
+        {* we should close table that contains other filter elements before we start building custom group accordian  *}
+        {if $counter eq 1}
+                </table>
+      {assign var="counter" value=0}
+        {/if}
+                    <div class="crm-accordion-wrapper crm-accordion collapsed">
                     <div class="crm-accordion-header">
-                        <div class="icon crm-accordion-pointer"></div>
-                        {$colGroups.$tableName.group_title}
+                                    {$colGroups.$tableName.group_title}
                     </div><!-- /.crm-accordion-header -->
                     <div class="crm-accordion-body">
                     <table class="report-layout">
@@ -182,16 +179,16 @@
             {/foreach}
             {if $closed eq 0 }</table>{/if}
     {/if}
- 
+
     {literal}
     <script type="text/javascript">
     {/literal}
         {foreach from=$filters item=table key=tableName}
             {foreach from=$table item=field key=fieldName}
-		{literal}var val = "dnc";{/literal}
-		{if !($field.operatorType == 4) && !$field.no_display} 
+    {literal}var val = "dnc";{/literal}
+    {if !($field.operatorType == 4) && !$field.no_display}
                     {literal}var val = document.getElementById("{/literal}{$fieldName}_op{literal}").value;{/literal}
-		{/if}
+    {/if}
                 {literal}showHideMaxMinVal( "{/literal}{$fieldName}{literal}", val );{/literal}
             {/foreach}
         {/foreach}
@@ -212,31 +209,30 @@
                 cj('#' + fldMinMax ).hide();
             }
         }
-	    
-	function selectGroupByFields(id) {
-	    var field = 'fields\['+ id+'\]';
-	    var group = 'group_bys\['+ id+'\]';	
-	    var groups = document.getElementById( group ).checked;
-	    if ( groups == 1 ) {
-	        document.getElementById( field ).checked = true;	
-	    } else {
-	        document.getElementById( field ).checked = false;	    
-	    }	
-	}
+
+  function selectGroupByFields(id) {
+      var field = 'fields\['+ id+'\]';
+      var group = 'group_bys\['+ id+'\]';
+      var groups = document.getElementById( group ).checked;
+      if ( groups == 1 ) {
+          document.getElementById( field ).checked = true;
+      } else {
+          document.getElementById( field ).checked = false;
+      }
+  }
     </script>
     {/literal}
 
     <div>{$form.buttons.html}</div>
     </div> {* search div section ends *}
     </div><!-- /.crm-accordion-body -->
-    </div><!-- /.crm-accordion-wrapper -->       
+    </div><!-- /.crm-accordion-wrapper -->
     </div> {* criteria section ends *}
 
     {if $instanceForm OR $instanceFormError} {* settings section starts *}
-    <div class="crm-accordion-wrapper crm-report_setting-accordion crm-accordion_title-accordion {if $rows}crm-accordion-closed{else}crm-accordion-open{/if}">
-    <div class="crm-accordion-header" {if $updateReportButton} onclick="hide('update-button'); return false;" {/if} >
-    <div class="icon crm-accordion-pointer"></div> 
-  	{if $mode eq 'template'}{ts}Create Report{/ts}{else}{ts}Report Settings{/ts}{/if}
+    <div class="crm-accordion-wrapper crm-report_setting-accordion {if $rows}collapsed{/if}">
+    <div class="crm-accordion-header" {if $updateReportButton} onclick="cj('#update-button').hide(); return false;" {/if} >
+    {if $mode eq 'template'}{ts}Create Report{/ts}{else}{ts}Report Settings{/ts}{/if}
     </div><!-- /.crm-accordion-header -->
     <div class="crm-accordion-body">
         <div id="id_{$instanceForm}">
@@ -249,7 +245,7 @@
                 </div>
         </div>
     </div><!-- /.crm-accordion-body -->
-    </div><!-- /.crm-accordion-wrapper -->  
+    </div><!-- /.crm-accordion-wrapper -->
     {if $updateReportButton}
       <div id='update-button' class="crm-submit-buttons">
     {$form.$save.html}
@@ -260,7 +256,7 @@
     {literal}
     <script type="text/javascript">
     cj(function() {
-      cj().crmaccordions(); 
+      cj().crmAccordions();
     });
     </script>
     {/literal}
@@ -269,23 +265,23 @@
 
 
     </div>
-    
+
     <div class="crm-block crm-content-block crm-report-form-block">
         {*include actions*}
         {include file="CRM/Report/Form/Actions.tpl"}
 
         {*Statistics at the Top of the page*}
         {include file="CRM/Report/Form/Statistics.tpl" top=true}
-    
+
         {*include the graph*}
         {include file="CRM/Report/Form/Layout/Graph.tpl"}
-    
+
         {*include the table layout*}
-        {include file="CRM/Report/Form/Layout/Table.tpl"}    
-    	<br />
+        {include file="CRM/Report/Form/Layout/Table.tpl"}
+      <br />
         {*Statistics at the bottom of the page*}
-        {include file="CRM/Report/Form/Statistics.tpl" bottom=true}    
-    
+        {include file="CRM/Report/Form/Statistics.tpl" bottom=true}
+
         {include file="CRM/Report/Form/ErrorMessage.tpl"}
     </div>
 {/if}
@@ -299,15 +295,15 @@ function viewCase( caseId ,contactId ) {
         modal: true,
         bgiframe: true,
         width : 700,
-	height: 400,
-        overlay: { 
-                   opacity: 0.5, 
-            	   background: "black" 
-               },  
+  height: 400,
+        overlay: {
+                   opacity: 0.5,
+                 background: "black"
+               },
         open:function() {
- 	    var dataUrl = {/literal}"{crmURL p='civicrm/case/ajax/details' h=0 q="snippet=4" }"{literal};
-	    dataUrl     = dataUrl + '&caseId=' +caseId + '&contactId=' +contactId ;
-		cj.ajax({
+       var dataUrl = {/literal}"{crmURL p='civicrm/case/ajax/details' h=0 q="snippet=4" }"{literal};
+      dataUrl     = dataUrl + '&caseId=' +caseId + '&contactId=' +contactId ;
+    cj.ajax({
                          url     : dataUrl,
                          dataType: "html",
                          timeout : 5000, //Time in milliseconds
@@ -315,7 +311,7 @@ function viewCase( caseId ,contactId ) {
                              cj( "#casedetails").html( data );
                        },
                    });
-		},
+    },
 
                buttons: { "Done": function() { cj(this).dialog("destroy"); }}
     });

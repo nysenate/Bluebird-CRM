@@ -47,16 +47,24 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
   }
 
   // NYSS 5579 - Construct the whitelisting language and add to e-mail body.
+  // NYSS 7423 - Allow location of whitelisting blurb to be configurable.
   if (isset($bbconfig['smtp.whitelist.text'])) {
     $whitelist_txt = $bbconfig['smtp.whitelist.text'];
   }
   else {
     $whitelist_txt = 'To ensure delivery of emails to your inbox, please add %SENATOR_EMAIL% to your email address book.';
   }
-
   $whitelist_txt = str_replace('%SENATOR_EMAIL%', $senator_email, $whitelist_txt);
-  $params['text'] = $whitelist_txt."\n\n".$params['text'];
-  $params['html'] = preg_replace('/(<body( [^>]*)?>(\s*<center>)?\s*)/', "$1<small>$whitelist_txt</small>\n<br/><br/>\n", $params['html'], 1);
+
+  if (isset($bbconfig['smtp.whitelist.location']) &&
+            $bbconfig['smtp.whitelist.location'] == "bottom") {
+    $params['text'] = $params['text']."\n\n".$whitelist_txt;
+    $params['html'] = preg_replace('#(\s*</body>)#', "\n<p style=\"text-align:center; font-size:10px;\">$whitelist_txt</p>$1", $params['html'], 1);
+  }
+  else {
+    $params['text'] = $whitelist_txt."\n\n".$params['text'];
+    $params['html'] = preg_replace('/(<body( [^>]*)?>\s*)/', "$1<p style=\"text-align:center; font-size:10px;\">$whitelist_txt</p>\n<br/>\n", $params['html'], 1);
+  }
 
   // Prevent Sendgrid from dropping any of our messages.
   $hdr->addFilterSetting('bypass_list_management', 'enable', 1);
@@ -98,11 +106,11 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
     //Sendgrid headers
     $hdr->setCategory("BluebirdMail: $mname (ID: $mid)");
     $hdr->setUniqueArgs(array(
-      'mailing_id'    => $mid,
-      'job_id'        => $jid,
       'instance'      => $bbconfig['shortname'],
       'install_class' => $bbconfig['install_class'],
       'servername'    => $bbconfig['servername'],
+      'mailing_id'    => $mid,
+      'job_id'        => $jid,
       'queue_id'      => $event_queue_id,
       'is_test'       => $test
       )
@@ -113,6 +121,11 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
     // Sendgrid SMTP-API
     // For non-Civimail messages, disable subscription/click/open tracking
     $hdr->setCategory("Bluebird Activity");
+    $hdr->setUniqueArgs(array(
+      'instance'      => $bbconfig['shortname'],
+      'install_class' => $bbconfig['install_class'],
+      'servername'    => $bbconfig['servername']
+    ));
     $hdr->addFilterSetting('subscriptiontrack', 'enable', 0);
     $hdr->addFilterSetting('clicktrack', 'enable', 0);
     $hdr->addFilterSetting('opentrack', 'enable', 0);
@@ -229,7 +242,7 @@ function nyss_mail_civicrm_buildForm($formName, &$form)
 function nyss_mail_civicrm_postProcess($formName, &$form)
 {
   if ($formName == 'CRM_Mailing_Form_Group') {
-    $mailingID    = $form->getVar('_mailingID');
+    $mailingID = $form->getVar('_mailingID');
     $submitValues = $form->_submitValues;
     $dedupeEmails = $submitValues['dedupe_email'];
 
@@ -302,6 +315,17 @@ function nyss_mail_civicrm_postProcess($formName, &$form)
       }
       //CRM_Core_Error::debug_var('$mailing',$mailing);
     }
+
+    //disable click through/opens/replies
+    $mailing = new CRM_Mailing_DAO_Mailing();
+    $mailing->id = $mailingID;
+    $mailing->find(TRUE);
+    $mailing->url_tracking = 0;
+    $mailing->forward_replies = 0;
+    $mailing->auto_responder = 0;
+    $mailing->open_tracking = 0;
+    $mailing->created_date = date('YmdHis', strtotime($mailing->created_date));
+    $mailing->save();
 
     //CRM_Core_Error::debug('postProcess Group form', $form); exit();
   }

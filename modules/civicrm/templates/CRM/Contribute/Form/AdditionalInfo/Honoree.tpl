@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,25 +27,25 @@
 <div id="id-honoree" class="section-shown crm-contribution-additionalinfo-honoree-form-block">
       <table class="form-layout-compressed">
          {if $form.honor_type_id.html}
-	    <tr class="crm-contribution-form-block-honor_type_id">
-	       <td colspan="3">
-		  {$form.honor_type_id.html}
-		  <span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('honor_type_id', '{$form.formName}'); enableHonorType(); return false;">{ts}clear{/ts}</a>)</span><br />
-		  <span class="description">{ts}Please include the name, and / or email address of the person you are honoring.{/ts}</span>
-	       </td>
-	    </tr>
+      <tr class="crm-contribution-form-block-honor_type_id">
+         <td colspan="3">
+      {$form.honor_type_id.html}
+      <span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('honor_type_id', '{$form.formName}'); enableHonorType(); return false;">{ts}clear{/ts}</a>)</span><br />
+      <span class="description">{ts}Select an option to reveal honoree information fields.{/ts}</span>
+         </td>
+      </tr>
          {/if}
-	 <tr id="honorType">
-	    <td>{$form.honor_prefix_id.html}<br />
-	       <span class="description">{$form.honor_prefix_id.label}</span></td>
-	    <td>{$form.honor_first_name.html}<br />
-	       <span class="description">{$form.honor_first_name.label}</span></td>
-	    <td>{$form.honor_last_name.html}<br />
-	       <span class="description">{$form.honor_last_name.label}</span></td>
-	 </tr>
-	 <tr id="honorTypeEmail">
-	    <td></td>
-	    <td colspan="2">{$form.honor_email.html}<br />
+   <tr id="honorType">
+      <td>{$form.honor_prefix_id.html}<br />
+         <span class="description">{$form.honor_prefix_id.label}</span></td>
+      <td>{$form.honor_first_name.html}<br />
+         <span class="description">{$form.honor_first_name.label}</span></td>
+      <td>{$form.honor_last_name.html}<br />
+         <span class="description">{$form.honor_last_name.label}</span></td>
+   </tr>
+   <tr id="honorTypeEmail">
+      <td></td>
+      <td colspan="2">{$form.honor_email.html}<br />
                 <span class="description">{$form.honor_email.label}</td>
          </tr>
       </table>
@@ -57,22 +57,22 @@
    function enableHonorType( ) {
       var element = document.getElementsByName("honor_type_id");
       for (var i = 0; i < element.length; i++ ) {
-	var isHonor = false;
-	if ( element[i].checked == true ) {
-	    var isHonor = true;
-	    break;
-	}
+  var isHonor = false;
+  if ( element[i].checked == true ) {
+      var isHonor = true;
+      break;
+  }
       }
       if ( isHonor ) {
-	 show('honorType', 'table-row');
-	 show('honorTypeEmail', 'table-row');
+   cj('#honorType').show();
+   cj('#honorTypeEmail').show();
       } else {
-	 cj('#honor_first_name').val('');
-	 cj('#honor_last_name').val('');
-	 cj('#honor_email').val('');
-	 cj('#honor_prefix_id').val('');
-	 hide('honorType', 'table-row');
-	 hide('honorTypeEmail', 'table-row');
+   cj('#honor_first_name').val('');
+   cj('#honor_last_name').val('');
+   cj('#honor_email').val('');
+   cj('#honor_prefix_id').val('');
+   cj('#honorType').hide();
+   cj('#honorTypeEmail').hide();
       }
    }
 </script>

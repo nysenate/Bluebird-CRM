@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -38,9 +38,8 @@
 
     {if !$printOnly} {* NO print section starts *}
     <div {if !$criteriaForm}style="display: none;"{/if}> {* criteria section starts *}
-    <div class="crm-accordion-wrapper crm-report_criteria-accordion crm-accordion_title-accordion {if $rows}crm-accordion-closed{else}crm-accordion-open{/if}">
+    <div class="crm-accordion-wrapper crm-report_criteria-accordion {if $rows}collapsed{/if}">
     <div class="crm-accordion-header">
-    <div class="icon crm-accordion-pointer"></div> 
   	{ts}Report Criteria{/ts}
     </div><!-- /.crm-accordion-header -->
     <div class="crm-accordion-body">	
@@ -56,9 +55,8 @@
             {assign  var="count" value="0"}
             {* Wrap custom field sets in collapsed accordion pane. *}
             {if $grpFields.group_title}
-                <div class="crm-accordion-wrapper crm-accordion crm-accordion-closed">
+                <div class="crm-accordion-wrapper crm-accordion collapsed">
                     <div class="crm-accordion-header">
-                        <div class="icon crm-accordion-pointer"></div>
                         {$grpFields.group_title}
                     </div><!-- /.crm-accordion-header -->
                     <div class="crm-accordion-body">
@@ -201,9 +199,8 @@
 	            	</table>
 			{assign var="counter" value=0}		
 		    {/if}	
-                    <div class="crm-accordion-wrapper crm-accordion crm-accordion-closed">
+                    <div class="crm-accordion-wrapper crm-accordion collapsed">
                     <div class="crm-accordion-header">
-                        <div class="icon crm-accordion-pointer"></div>
                         {$colGroups.$tableName.group_title}
                     </div><!-- /.crm-accordion-header -->
                     <div class="crm-accordion-body">
@@ -293,9 +290,8 @@
     </div> {* criteria section ends *}
 
     {if $instanceForm OR $instanceFormError} {* settings section starts *}
-    <div class="crm-accordion-wrapper crm-report_setting-accordion crm-accordion_title-accordion {if $rows}crm-accordion-closed{else}crm-accordion-open{/if}">
-    <div class="crm-accordion-header" {if $updateReportButton} onclick="hide('update-button'); return false;" {/if} >
-    <div class="icon crm-accordion-pointer"></div> 
+    <div class="crm-accordion-wrapper crm-report_setting-accordion {if $rows}collapsed{/if}">
+    <div class="crm-accordion-header" {if $updateReportButton} onclick="cj('#update-button').hide(); return false;" {/if} >
   	{if $mode eq 'template'}{ts}Create Report{/ts}{else}{ts}Report Settings{/ts}{/if}
     </div><!-- /.crm-accordion-header -->
     <div class="crm-accordion-body">
@@ -320,7 +316,7 @@
     {literal}
     <script type="text/javascript">
     cj(function() {
-      cj().crmaccordions(); 
+      cj().crmAccordions();
     });
     </script>
     {/literal}

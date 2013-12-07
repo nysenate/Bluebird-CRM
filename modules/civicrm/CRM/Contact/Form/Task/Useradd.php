@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -52,12 +52,10 @@ class CRM_Contact_Form_Task_Useradd extends CRM_Core_Form {
    * @var int
    * @public
    */
-  public $_email; function preProcess() {
-    $defaults = array();
+  public $_email;
 
-    $params   = array();
-    $defaults = array();
-    $ids      = array();
+  function preProcess() {
+    $params = $defaults = $ids = array();
 
     $this->_contactId   = CRM_Utils_Request::retrieve('cid', 'Positive', $this, TRUE);
     $params['id']       = $params['contact_id'] = $this->_contactId;
@@ -102,14 +100,14 @@ class CRM_Contact_Form_Task_Useradd extends CRM_Core_Form {
     $this->add('password', 'cms_confirm_pass', ts('Confirm Password'), array('class' => 'huge'));
     $this->addRule('cms_pass', 'Password is required', 'required');
     $this->addRule(array('cms_pass', 'cms_confirm_pass'), 'ERROR: Password mismatch', 'compare');
-    $element = $this->add('text', 'email', ts('Email:'), array('class' => 'huge'));
-    $element->freeze();
+    $this->add('text', 'email', ts('Email:'), array('class' => 'huge'))->freeze();
     $this->add('hidden', 'contactID');
 
     //add a rule to check username uniqueness
     $this->addFormRule(array('CRM_Contact_Form_Task_Useradd', 'usernameRule'));
 
-    $this->addButtons(array(
+    $this->addButtons(
+      array(
         array(
           'type' => 'next',
           'name' => ts('Add'),
@@ -135,16 +133,20 @@ class CRM_Contact_Form_Task_Useradd extends CRM_Core_Form {
     $params = $this->exportValues();
 
     CRM_Core_BAO_CMSUser::create($params, 'email');
-    CRM_Core_Session::setStatus(ts('User has been added.'));
+    CRM_Core_Session::setStatus('', ts('User Added'), 'success');
   }
-  //end of function
 
-  public function usernameRule($params) {
-    $config       = CRM_Core_Config::singleton();
-    $errors       = array();
+  /**
+   * Validation Rule
+   *
+   * @static
+   */
+  static function usernameRule($params) {
+    $config = CRM_Core_Config::singleton();
+    $errors = array();
     $check_params = array(
       'name' => $params['cms_name'],
-      'mail' => $params['email']
+      'mail' => $params['email'],
     );
     $config->userSystem->checkUserNameEmailExists($check_params, $errors);
 

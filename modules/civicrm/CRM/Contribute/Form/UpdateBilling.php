@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -61,10 +61,10 @@ class CRM_Contribute_Form_UpdateBilling extends CRM_Core_Form {
     $this->_mid = CRM_Utils_Request::retrieve('mid', 'Integer', $this, FALSE);
     $this->_crid = CRM_Utils_Request::retrieve('crid', 'Integer', $this, FALSE);
     if ($this->_crid) {
-      $this->_paymentProcessor = CRM_Core_BAO_PaymentProcessor::getProcessorForEntity($this->_crid, 'recur', 'info');
-      $this->_paymentProcessorObj = CRM_Core_BAO_PaymentProcessor::getProcessorForEntity($this->_crid, 'recur', 'obj');
+      $this->_paymentProcessor = CRM_Financial_BAO_PaymentProcessor::getProcessorForEntity($this->_crid, 'recur', 'info');
+      $this->_paymentProcessorObj = CRM_Financial_BAO_PaymentProcessor::getProcessorForEntity($this->_crid, 'recur', 'obj');
       $this->_subscriptionDetails = CRM_Contribute_BAO_ContributionRecur::getSubscriptionDetails($this->_crid);
-      
+
       // Are we cancelling a recurring contribution that is linked to an auto-renew membership?
       if ($this->_subscriptionDetails->membership_id) {
         $this->_mid = $this->_subscriptionDetails->membership_id;
@@ -73,14 +73,14 @@ class CRM_Contribute_Form_UpdateBilling extends CRM_Core_Form {
 
     $this->_coid = CRM_Utils_Request::retrieve('coid', 'Integer', $this, FALSE);
     if ($this->_coid) {
-      $this->_paymentProcessor = CRM_Core_BAO_PaymentProcessor::getProcessorForEntity($this->_coid, 'contribute', 'info');
-      $this->_paymentProcessorObj = CRM_Core_BAO_PaymentProcessor::getProcessorForEntity($this->_coid, 'contribute', 'obj');
+      $this->_paymentProcessor = CRM_Financial_BAO_PaymentProcessor::getProcessorForEntity($this->_coid, 'contribute', 'info');
+      $this->_paymentProcessorObj = CRM_Financial_BAO_PaymentProcessor::getProcessorForEntity($this->_coid, 'contribute', 'obj');
       $this->_subscriptionDetails = CRM_Contribute_BAO_ContributionRecur::getSubscriptionDetails($this->_coid, 'contribution');
     }
 
     if ($this->_mid) {
-      $this->_paymentProcessor = CRM_Core_BAO_PaymentProcessor::getProcessorForEntity($this->_mid, 'membership', 'info');
-      $this->_paymentProcessorObj = CRM_Core_BAO_PaymentProcessor::getProcessorForEntity($this->_mid, 'membership', 'obj');
+      $this->_paymentProcessor = CRM_Financial_BAO_PaymentProcessor::getProcessorForEntity($this->_mid, 'membership', 'info');
+      $this->_paymentProcessorObj = CRM_Financial_BAO_PaymentProcessor::getProcessorForEntity($this->_mid, 'membership', 'obj');
       $this->_subscriptionDetails = CRM_Contribute_BAO_ContributionRecur::getSubscriptionDetails($this->_mid, 'membership');
       $membershipTypes = CRM_Member_PseudoConstant::membershipType();
       $membershipTypeId = CRM_Core_DAO::getFieldValue('CRM_Member_DAO_Membership', $this->_mid, 'membership_type_id');
@@ -109,7 +109,7 @@ class CRM_Contribute_Form_UpdateBilling extends CRM_Core_Form {
     $this->assign('paymentProcessor', $this->_paymentProcessor);
 
     // get the billing location type
-    $locationTypes = CRM_Core_PseudoConstant::locationType();
+    $locationTypes = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Address', 'location_type_id', array(), 'validate');
     $this->_bltID = array_search('Billing', $locationTypes);
     $this->assign('bltID', $this->_bltID);
     if (!$this->_bltID) {
@@ -213,30 +213,13 @@ class CRM_Contribute_Form_UpdateBilling extends CRM_Core_Form {
    * @access public
    * @static
    */
-  static
-  function formRule($fields, $files, $self) {
-    foreach ($self->_fields as $name => $fld) {
-      if ($fld['is_required'] &&
-        CRM_Utils_System::isNull(CRM_Utils_Array::value($name, $fields))
-      ) {
-        $errors[$name] = ts('%1 is a required field.', array(1 => $fld['title']));
-      }
-    }
+  static function formRule($fields, $files, $self) {
+    $errors = array();
+    CRM_Core_Form::validateMandatoryFields($self->_fields, $fields, $errors);
 
     // make sure that credit card number and cvv are valid
-    if (CRM_Utils_Array::value('credit_card_type', $fields)) {
-      if (CRM_Utils_Array::value('credit_card_number', $fields) &&
-        !CRM_Utils_Rule::creditCardNumber($fields['credit_card_number'], $fields['credit_card_type'])
-      ) {
-        $errors['credit_card_number'] = ts('Please enter a valid Credit Card Number');
-      }
+    CRM_Core_Payment_Form::validateCreditCard($fields, $errors);
 
-      if (CRM_Utils_Array::value('cvv2', $fields) &&
-        !CRM_Utils_Rule::cvv($fields['cvv2'], $fields['credit_card_type'])
-      ) {
-        $errors['cvv2'] = ts('Please enter a valid Credit Card Verification Number');
-      }
-    }
     return empty($errors) ? TRUE : $errors;
   }
 
@@ -294,15 +277,20 @@ class CRM_Contribute_Form_UpdateBilling extends CRM_Core_Form {
         $status = ts('Billing details for your automatically renewed %1 membership have been updated.',
           array(1 => $tplParams['membershipType'])
         );
+        $msgTitle = ts('Details Updated');
+        $msgType = 'success';
       }
       else {
         $status = ts('Billing details for the recurring contribution of %1, every %2 %3 have been updated.',
           array(
             1 => $this->_subscriptionDetails->amount,
             2 => $this->_subscriptionDetails->frequency_interval,
-            3 => $this->_subscriptionDetails->frequency_unit,
+            3 => $this->_subscriptionDetails->frequency_unit
           )
         );
+        $msgTitle = ts('Details Updated');
+        $msgType = 'success';
+
         $tplParams = array(
           'recur_frequency_interval' => $this->_subscriptionDetails->frequency_interval,
           'recur_frequency_unit' => $this->_subscriptionDetails->frequency_unit,
@@ -412,23 +400,25 @@ class CRM_Contribute_Form_UpdateBilling extends CRM_Core_Form {
         'toName' => $donorDisplayName,
         'toEmail' => $donorEmail,
       );
-      list($sent) = CRM_Core_BAO_MessageTemplates::sendTemplate($sendTemplateParams);
+      list($sent) = CRM_Core_BAO_MessageTemplate::sendTemplate($sendTemplateParams);
     }
     else {
       $status = ts('There was some problem updating the billing details.');
+      $msgTitle = ts('Update Error');
+      $msgType = 'error';
     }
 
     $session = CRM_Core_Session::singleton();
     $userID  = $session->get('userID');
     if ( $userID && $status) {
-      CRM_Core_Session::setStatus($status);
+      $session->setStatus($status, $msgTitle, $msgType);
     } else if (!$userID) {
-      if ($status) 
+      if ($status)
         CRM_Utils_System::setUFMessage($status);
       $result = (int) ($updateSubscription && isset($ctype));
-      if (isset($tplParams)) 
+      if (isset($tplParams))
         $session->set('resultParams', $tplParams);
-      return CRM_Utils_System::redirect(CRM_Utils_System::url('civicrm/contribute/subscriptionstatus', 
+      return CRM_Utils_System::redirect(CRM_Utils_System::url('civicrm/contribute/subscriptionstatus',
                                                               "reset=1&task=billing&result={$result}"));
     }
   }

@@ -97,7 +97,6 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
                   AND entity.is_deleted = 0
                 GROUP BY tag.id", $conn);
 
-
             $entity_counts = array();
             while($row = mysql_fetch_assoc($result))
                 $entity_counts[$row['id']] = $row['entity_count'];
