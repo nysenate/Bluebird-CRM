@@ -1,24 +1,19 @@
 <?php
 
-$this_dir = dirname(__FILE__);
-$root_dir = realpath("$this_dir/../..");
-require_once realpath("$root_dir/civicrm/scripts/script_utils.php");
-require_once realpath("$root_dir/civicrm/scripts/bluebird_config.php");
+require_once dirname(__FILE__).'/../../civicrm/scripts/bluebird_config.php';
 
 
 function nyss_signupreport_menu()
 {
   $items = array();
-  $items['nyss_signupreport'] = array(
-    'title' => 'NYSS Web Signup Report',
+  $items['signupreports'] = array(
+    'title' => t('Web Signup Reports - Weekly Signups from NYSenate.gov'),
     'page callback' => 'nyss_signupreport_page',
-    'access callback' => TRUE,
-    'type' => MENU_SUGGESTED_ITEM,
+    'access arguments' => array('access CiviCRM')
   );
-  $items['nyss_signupreport_download'] = array(
+  $items['signupreports_download'] = array(
     'page callback' => 'nyss_signupreport_download_page',
-    'access callback' => TRUE,
-    'type' => MENU_CALLBACK,
+    'access arguments' => array('access CiviCRM')
   );
   return $items;
 }
@@ -35,7 +30,17 @@ function nyss_signupreport_download_page()
 {
   $instance = new Instance();
   $filename = $_GET['filename'];
+
+  if (!$filename) {
+    die("ERROR: No filename was specified");
+  }
+
   $filepath = $instance->entries[$filename];
+
+  if (!$filepath) {
+    die("ERROR: $filename: Not found in list of signup reports");
+  }
+
   $filesize = filesize($filepath);
 
   if (file_exists($filepath)) {
@@ -51,7 +56,6 @@ function nyss_signupreport_download_page()
     die(readfile($filepath));
   } 
   else {
-    error_log("ERROR: $filepath: File not found");
     die("ERROR: $filepath: File not found");
   }
 }
@@ -90,7 +94,7 @@ class Instance
 
   public function convert_path_to_link($k)
   {
-    return l(t($k), 'nyss_signupreport_download', array('query' => array('filename' => $k)));
+    return l(t($k), 'signupreports_download', array('query' => array('filename' => $k)));
   }
 
 
