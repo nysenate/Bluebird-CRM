@@ -43,6 +43,10 @@ $execSql $instance -c "$sql" -q
 echo "running civicrm db upgrade..."
 $drush $instance civicrm-upgrade-db
 
+## enable the nyss_signupreport module
+echo "enabling nyss_signupreport module"
+$drush $instance en nyss_signupreport -y
+
 ## set mailing preferences
 echo "setting mailing preferences..."
 sql="
