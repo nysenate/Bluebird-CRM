@@ -245,7 +245,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
           ),
           'activity_type_id' =>
           array('title' => ts('Activity Type'),
-            'default' => TRUE,
+            'required' => TRUE,//NYSS
             'type' => CRM_Utils_Type::T_STRING,
           ),
           'activity_subject' =>
@@ -260,7 +260,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
           ),
           'activity_date_time' =>
           array('title' => ts('Activity Date'),
-            'default' => TRUE,
+            'required' => TRUE,//NYSS
           ),
           'status_id' =>
           array('title' => ts('Activity Status'),
@@ -516,7 +516,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
     $this->addAddressFromClause();
   }
 
-  function where() {
+  function where($recordType = NULL) {//NYSS
     $this->_where = " WHERE {$this->_aliases['civicrm_activity']}.is_test = 0 AND
                                 {$this->_aliases['civicrm_activity']}.is_deleted = 0 AND
                                 {$this->_aliases['civicrm_activity']}.is_current_revision = 1";
@@ -527,6 +527,27 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
 
         foreach ($table['filters'] as $fieldName => $field) {
           $clause = NULL;
+          //NYSS
+          if ($fieldName != 'contact_' . $recordType &&
+            (strstr($fieldName, '_target') ||
+              strstr($fieldName, '_assignee') ||
+              strstr($fieldName, '_source')
+            )
+          ) {
+            if ($recordType == 'final') {
+              if (CRM_Utils_Array::value("{$fieldName}_value", $this->_params)) {
+                $field['dbAlias'] = "civicrm_contact_{$fieldName}";
+                $clauses[] = $this->whereClause($field,
+                  CRM_Utils_Array::value("{$fieldName}_op", $this->_params),
+                  CRM_Utils_Array::value("{$fieldName}_value", $this->_params), NULL, NULL
+                );
+              }
+            }
+            continue;
+          }
+          if ($recordType == 'final') {
+            continue;
+          }
           if (CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_DATE) {
             $relative = CRM_Utils_Array::value("{$fieldName}_relative", $this->_params);
             $from     = CRM_Utils_Array::value("{$fieldName}_from", $this->_params);
@@ -551,7 +572,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
               // get current user
               $session = CRM_Core_Session::singleton();
               if ($contactID = $session->get('userID')) {
-                $clause = "( civicrm_contact_source.id = " . $contactID . " OR civicrm_contact_assignee.id = " . $contactID . " OR civicrm_contact_target.id = " . $contactID . " )";
+                $clause = "civicrm_contact_{$recordType}.id = " . $contactID;//NYSS
               }
               else {
                 $clause = NULL;
@@ -569,10 +590,22 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
     }
 
     if (empty($clauses)) {
-      $this->_where .= " ";
+      //NYSS
+      if ($recordType == 'final') {
+        $this->_where = "";
+      }
+      else {
+        $this->_where .= " ";
+      }
     }
     else {
-      $this->_where .= " AND " . implode(' AND ', $clauses);
+      //NYSS
+      if ($recordType == 'final') {
+        $this->_where = "WHERE " . implode(' AND ', $clauses);
+      }
+      else {
+        $this->_where .= " AND " . implode(' AND ', $clauses);
+      }
     }
 
     if ($this->_aclWhere) {
@@ -617,7 +650,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
     // 1. fill temp table with target results
     $this->select('target');
     $this->from('target');
-    $this->where();
+    $this->where('target');//NYSS
     $insertCols = implode(',', $this->_selectAliases);
     $tempQuery  = "CREATE TEMPORARY TABLE civireport_activity_temp_target CHARACTER SET utf8 COLLATE utf8_unicode_ci AS 
 {$this->_select} {$this->_from} {$this->_where} ";
@@ -649,7 +682,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
     ) {
       $this->select('assignee');
       $this->from('assignee');
-      $this->where();
+      $this->where('assignee');//NYSS
       $insertCols = implode(',', $this->_selectAliases);
       $tempQuery  = "INSERT INTO civireport_activity_temp_target ({$insertCols})
 {$this->_select}
@@ -664,7 +697,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
     ) {
       $this->select('source');
       $this->from('source');
-      $this->where();
+      $this->where('source');//NYSS
       $insertCols = implode(',', $this->_selectAliases);
       $tempQuery  = "INSERT INTO civireport_activity_temp_target ({$insertCols}) 
 {$this->_select}
@@ -675,10 +708,12 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
     // 5. show final result set from temp table
     $rows = array();
     $this->select('final');
+    $this->where('final');//NYSS
     $this->orderBy();
     $this->limit();
-    $sql = "{$this->_select} 
-FROM civireport_activity_temp_target tar 
+    $sql = "{$this->_select}
+FROM civireport_activity_temp_target tar
+{$this->_where}
 GROUP BY civicrm_activity_id {$this->_orderBy} {$this->_limit}";
     $this->buildRows($sql, $rows);
 
