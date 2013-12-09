@@ -186,17 +186,18 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
 
     //get form values
     $params = $this->controller->exportValues( $this->_name );
+    idebug($params, 'exportPrintProd postProcess params', 2);
 
-    $avanti_job_id    = ( $params['avanti_job_id'] ) ? 'avanti-'.$params['avanti_job_id'].'_' : '';
+    $avanti_job_id = ( $params['avanti_job_id'] ) ? 'avanti-'.$params['avanti_job_id'].'_' : '';
     $merge_households = $params['merge_households'];
-    $primaryAddress   = $params['primaryAddress'];
-    $exclude_rt       = implode( ',', $params['exclude_rt'] );
-    $excludeGroups    = $params['excludeGroups'];
-    $districtExclude  = $params['district_excludes'];
-    $excludeSeeds     = $params['excludeSeeds'];
+    $primaryAddress = $params['primaryAddress'];
+    $exclude_rt = implode( ',', $params['exclude_rt'] );
+    $excludeGroups = $params['excludeGroups'];
+    $districtExclude = $params['district_excludes'];
+    $excludeSeeds = $params['excludeSeeds'];
     $restrictDistrict = $params['restrict_district'];
-    $restrictState    = $params['restrict_state'];
-    $orderByOpt       = $params['orderBy'];
+    $restrictState = $params['restrict_state'];
+    $orderByOpt = $params['orderBy'];
 
     //get instance name (strip first element from url)
     $instance = substr( $_SERVER['HTTP_HOST'], 0, strpos( $_SERVER['HTTP_HOST'], '.' ) );
@@ -235,6 +236,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     }
 
     $this->_contactIds = array_unique($this->_contactIds);
+    idebug($this->_contactIds, 'exportPrintProd postProcess $this->_contactIds', 2);
 
     $ids = implode("),(",$this->_contactIds);
     $ids = "($ids)";
@@ -243,7 +245,8 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     $sql = "
       CREATE TEMPORARY TABLE $tmpTblIds
       (id int not null primary key)
-      ENGINE = myisam;";
+      ENGINE = myisam;
+    ";
     $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
     $sql = "INSERT INTO $tmpTblIds VALUES $ids;";
@@ -433,7 +436,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     $filename = 'printExport_'.$instance.'_'.$avanti_job_id.$rnd.'.tsv';
 
     //strip /data/ and everything after environment value
-    $env   = substr( $config->uploadDir, 6, strpos( $config->uploadDir, '/', 6 )-6 );
+    $env = substr( $config->uploadDir, 6, strpos( $config->uploadDir, '/', 6 )-6 );
     $fname = $path.'/'.$filename;
 
     $fhout = fopen($fname, 'w');
@@ -442,9 +445,11 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     $issueCodes = null;
     getIssueCodesRecursive($issueCodes);
 
-    $sql = "SELECT tmp.id, t.tag_id
-            FROM civicrm_entity_tag t
-            INNER JOIN $tmpTbl tmp on t.entity_id=tmp.id";
+    $sql = "
+      SELECT tmp.id, t.tag_id
+      FROM civicrm_entity_tag t
+      INNER JOIN $tmpTbl tmp on t.entity_id=tmp.id
+    ";
     $issdao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
     $iss = array();
 
@@ -455,9 +460,9 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
       }
     }
 
-    $aHeader           = array();
-    $firstLine         = true;
-    $adjusted_count    = 0;
+    $aHeader = array();
+    $firstLine = true;
+    $adjusted_count = 0;
     $nonPrimaryMailing = array();
 
     //skip DAO fields
@@ -571,6 +576,9 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     $fnameStats = $path.'/'.$filenameStats;
     $fhoutStats = fopen($fnameStats, 'w');
 
+    idebug($filename, 'filename', 2);
+    idebug($filenameStats, 'filenameStats', 2);
+
     //write to file
     foreach ( $tag_stats as $tag_name => $tag_stat ) {
       //fputcsv2($fhoutStats, $tag_stats,"\t",'',false,false);
@@ -604,7 +612,13 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
       $status[] = "Download the stats file: <a href=\"$urlStats\" target=\"_blank\">".$filenameStats.'</a>';
     }
 
-    CRM_Core_Session::setStatus( $status );
+    $statusOutput = '<ul>';
+    foreach ( $status as $st ) {
+      $statusOutput .= "<li>{$st}</li>";
+    }
+    $statusOutput .= "</ul>";
+
+    CRM_Core_Session::setStatus( $statusOutput, 'Print Production Export Results', 'success' );
     iexit(4);
   } // postProcess()
 }//end class

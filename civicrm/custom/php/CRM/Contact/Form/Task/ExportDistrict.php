@@ -73,7 +73,7 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task
     }
 
     require_once 'CRM/Core/PseudoConstant.php';
-    $locTypes = CRM_Core_PseudoConstant::locationType();
+    $locTypes = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Address', 'location_type_id');
     $locTypes = array( 0 => 'Primary' ) + $locTypes;
     $this->add( 'select',
       'locType',
@@ -310,7 +310,13 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task
       $status[] = "Download the file: <a href=\"$url\" target=\"_blank\">".$filename.'</a>';
     }
 
-    CRM_Core_Session::setStatus( $status );
+    $statusOutput = '<ul>';
+    foreach ( $status as $st ) {
+      $statusOutput .= "<li>{$st}</li>";
+    }
+    $statusOutput .= "</ul>";
+
+    CRM_Core_Session::setStatus( $statusOutput, 'District Export Results', 'success' );
   } // postProcess()
 } //end class
 
