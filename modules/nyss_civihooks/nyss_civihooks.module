@@ -824,7 +824,7 @@ function nyss_civihooks_civicrm_navigationMenu( &$params ) {
     'attributes' => array (
       'label'      => 'Web Signup Reports',
       'name'       => 'Web Signup Reports',
-      'url'        => 'nyss_signupreport',
+      'url'        => 'signupreports',
       'permission' => 'access CiviReport',
       'operator'   => 'AND',
       'separator'  => 0,
