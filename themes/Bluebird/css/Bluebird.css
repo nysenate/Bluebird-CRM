@@ -1764,3 +1764,8 @@ body.page-civicrm-mailing-browse form#Search div.crm-content-block {
     display: none;
 }
 /* END NYSS#7095 */
+
+#crm-container div#crm-record-log .col1 {
+  margin-left: 0;
+  width: 30%;
+}
