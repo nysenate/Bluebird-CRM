@@ -330,7 +330,7 @@ function checkImapAccount($mbox, $params)
     echo "- - - - - - - - - - - - - - - - - - \n";
     echo "[INFO]    Retrieving message $msg_num / $msg_count\n";
     $msgMetaData = retrieveMetaData($mbox, $msg_num);
-    $fwder = 'crain@nysenate.gov'; //strtolower($msgMetaData->fromEmail);
+    $fwder = strtolower($msgMetaData->fromEmail);
 
     // check whether or not the forwarder is valid
     if (array_key_exists($fwder, $params['authForwarders'])) {
