@@ -661,52 +661,43 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
 				    }
 				    var searchWait = 0;
 				    var searchWaitInterval;
-				    $('#issue-code-search')
-				    .unbind('keypress keyup')
-				    .bind('keypress keyup', function(e){
-				      var item = $(this);
-				      searchWait = 0;
-				      if ($(this).val().length < 3 && e.keyCode != 13){
+				    cj('#issue-code-search')
+				      .unbind('keypress keyup')
+				      .bind('keypress keyup', function(e){
+					var item = $(this);
+					searchWait = 0;
 					cj("dt").removeClass('searched');
 					cj("dt").removeClass('search-parent');
 					cj("dt").removeClass('search-hidden');
-					return;
-				      }
-				      if(!searchWaitInterval) searchWaitInterval = setInterval(function(){
-					  if(searchWait>=3){
-					      clearInterval(searchWaitInterval);
-					      searchWaitInterval = '';
-					      searchTerm = cj("#issue-code-search").val().toLowerCase();
-					      console.log(searchTerm);
-						cj("dt").filter(function() {
-						  // if the search term exists within the tag body
-						  if(cj(this).text().toLowerCase().indexOf(searchTerm) > -1){
-						    cj(this).addClass('searched');
-						    if (cj(this).attr('tlvl')>1) {
-						      highlightParent(this);
-						    };
-						  }
-						});
-						cj("dt").not(".searched,.search-parent").addClass('search-hidden');
-						cj("dt.search-parent" ).find('.ddControl').click();
+					cj("dt").find('.ddControl.open').click();
+					if (cj("#issue-code-search").val().length < 3 && e.keyCode != 13){
+					  // console.log("length: "+cj("#issue-code-search").val().length);
+					  // console.log(e);
 
-					      searchWait = 0;
-					  }
-					  searchWait++;
+					  return;
+					}else if(!searchWaitInterval) searchWaitInterval = setInterval(function(){
+					 if(searchWait>=3 && cj("#issue-code-search").val() != ""){
+					  clearInterval(searchWaitInterval);
+					  searchWaitInterval = '';
+					  // console.log("le filtering");
+					  searchTerm = cj("#issue-code-search").val().toLowerCase();
+					  // console.log(searchTerm);
+					  cj("dt").filter(function() {
+					    // if the search term exists within the tag body
+					    if(cj(this).text().toLowerCase().indexOf(searchTerm) > -1){
+					      cj(this).addClass('searched');
+					      if (cj(this).attr('tlvl')>1) {
+						highlightParent(this);
+					      };
+					    }
+					  });
+					cj("dt").not(".searched,.search-parent").addClass('search-hidden');
+					cj("dt.search-parent" ).find('.ddControl').not( ".open" ).click();
+					searchWait = 0;
+				      }
+				      searchWait++;
 				      },200);
 				    });
-// cj("dt").filter(function() {
-//   // if the search term exists within the tag body
-//   if(cj(this).text().toLowerCase().indexOf(searchTerm) > -1){
-//     cj(this).addClass('searched');
-//     if (cj(this).attr('tlvl')>1) {
-//       highlightParent(this);
-//     };
-//   }
-// });
-// cj("dt").not( ".searched, .search-parent" ).addClass('search-hidden');
-// cj("dt.search-parent" ).find('.ddControl').click();
-
                                   });
                                 </script>
 
