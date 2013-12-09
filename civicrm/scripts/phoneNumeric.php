@@ -20,4 +20,4 @@ CRM_Core_DAO::executeQuery(CRM_Contact_BAO_Contact::DROP_STRIP_FUNCTION_43);
 CRM_Core_DAO::executeQuery(CRM_Contact_BAO_Contact::CREATE_STRIP_FUNCTION_43);
 CRM_Core_DAO::executeQuery("UPDATE civicrm_phone SET phone_numeric = civicrm_strip_non_numeric(phone)");
 
-echo 'finished creating phone_numeric UDF and updating phone records.';
+echo "Finished creating phone_numeric UDF and updating phone records.\n";
