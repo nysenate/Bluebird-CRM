@@ -91,7 +91,8 @@ function nyss_export_civicrm_export( $exportTempTable, $headerRows, $sqlColumns,
   //3665 mailing exclusions option
   if ( $_POST['postal_mailing_export']['postal_mailing_export'] == 1 &&
        in_array( 'Last Name', $headerRows ) &&
-       in_array( 'Contact Type', $headerRows ) ) {
+       in_array( 'Contact Type', $headerRows )
+  ) {
     // exclude contacts where last_name is empty
     $query = "
 DELETE FROM $exportTempTable
@@ -126,12 +127,13 @@ WHERE c.do_not_trade = 1
 
   //4426 change street suffix to long form
   if ( $_POST['street_long'] == 1 ) {
-
     //construct pattern array from address_abbreviations
     $patReplace = array();
 
-    $sql = "SELECT DISTINCT normalized, long_form
-            FROM address_abbreviations;";
+    $sql = "
+      SELECT DISTINCT normalized, long_form
+      FROM address_abbreviations;
+    ";
     $dao = CRM_Core_DAO::executeQuery($sql);
 
     while( $dao->fetch() ) {
@@ -141,10 +143,12 @@ WHERE c.do_not_trade = 1
     //CRM_Core_Error::debug('patReplace', $patReplace);exit();
 
     //get street_address for all records from the temp table
-    $sql = "SELECT id, street_address
-            FROM $exportTempTable
-            WHERE street_address IS NOT NULL
-              AND street_address != '';";
+    $sql = "
+      SELECT id, street_address
+      FROM $exportTempTable
+      WHERE street_address IS NOT NULL
+        AND street_address != '';
+    ";
     $dao = CRM_Core_DAO::executeQuery($sql);
 
     $streetSplit = array();
@@ -172,9 +176,11 @@ WHERE c.do_not_trade = 1
           $newAddr  = addslashes(preg_replace("~(?i)$chunk(?!.*?$chunk)~", "$1{$longForm}$2", $dao->street_address));
           //CRM_Core_Error::debug('newAddr',$newAddr);exit();
 
-          $sql = "UPDATE $exportTempTable
-                  SET street_address = '$newAddr'
-                  WHERE id = $id;";
+          $sql = "
+            UPDATE $exportTempTable
+            SET street_address = '$newAddr'
+            WHERE id = $id;
+          ";
           $upd = CRM_Core_DAO::executeQuery($sql);
           //CRM_Core_Error::debug('sqlupd',$sqlupd);exit();
 
@@ -216,21 +222,22 @@ WHERE c.do_not_trade = 1
   //only apply special sort if using primary export, as we know the necessary fields will exist
   if ( $_POST['exportOption'] == 1 ) {
     $query = "
-SELECT *
-FROM   $exportTempTable
-ORDER BY CASE WHEN $exportTempTable.contact_type='Individual' THEN 1 
-              WHEN $exportTempTable.contact_type='Household'  THEN 2 ELSE 3 END,
-         CASE WHEN $exportTempTable.gender='Male'   THEN 1
-              WHEN $exportTempTable.gender='Female' THEN 2
-              WHEN $exportTempTable.gender='Other'  THEN 3 ELSE 999 END,
-         IFNULL($exportTempTable.birth_date, '9999-01-01')
-";
+      SELECT *
+      FROM $exportTempTable
+      ORDER BY
+        CASE WHEN $exportTempTable.contact_type = 'Individual' THEN 1
+             WHEN $exportTempTable.contact_type = 'Household' THEN 2 ELSE 3 END,
+        CASE WHEN $exportTempTable.gender_id = 'Male' THEN 1
+             WHEN $exportTempTable.gender_id = 'Female' THEN 2
+             WHEN $exportTempTable.gender_id = 'Other' THEN 3 ELSE 999 END,
+        IFNULL($exportTempTable.birth_date, '9999-01-01')
+    ";
   }
   else {
     $query = "
-SELECT *
-FROM $exportTempTable
-";
+      SELECT *
+      FROM $exportTempTable
+    ";
   }
 
   //5703 remove some activity fields
