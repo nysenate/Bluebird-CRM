@@ -390,8 +390,8 @@ function getStates()
  */
 function createLogTable( $rnd )
 {
-  $tblIDs       = TEMP_TABLE_PREFIX."export_$rnd";
-  $tblLog       = TEMP_TABLE_PREFIX."log_$rnd";
+  $tblIDs = TEMP_TABLE_PREFIX."export_$rnd";
+  $tblLog = TEMP_TABLE_PREFIX."log_$rnd";
   $tblLogDedupe = TEMP_TABLE_PREFIX."log_dedupe_$rnd";
 
   $sql = "CREATE TABLE $tblLog ( cid int not null, mod_date date, INDEX (cid) ) ENGINE=myisam;";
@@ -413,9 +413,13 @@ function createLogTable( $rnd )
   //insert activities
   //skip source as that will only be staff
   //only concerned with target contact
-  //5838 skip bulk email activity
-  $activityTypes = civicrm_api('activity_type','get',array('version' => 3));
-  $actBulkEmail = array_search('Bulk Email', $activityTypes['values']);
+  //5838 skip bulk email activity; do direct sql as activity type is now disabled
+  $actBulkEmail = CRM_Core_DAO::singleValueQuery('
+    SELECT value
+    FROM civicrm_option_value
+    WHERE option_group_id = 2
+      AND name = "Bulk Email";
+  ');
   $sql = "
     INSERT INTO $tblLog (cid, mod_date)
     SELECT DISTINCT c.id as cid, cal.modified_date as mod_date
@@ -425,13 +429,14 @@ function createLogTable( $rnd )
       WHERE entity_table = 'civicrm_activity'
       GROUP BY entity_id
       ) as cal
-    JOIN civicrm_activity_target cat
+    JOIN civicrm_activity_contact cat
       ON cal.entity_id = cat.activity_id
+      AND cat.record_type_id = 3
     JOIN civicrm_activity act
       ON cal.entity_id = act.id
       AND act.activity_type_id != {$actBulkEmail}
     JOIN $tblIDs c
-      ON cat.target_contact_id = c.id;
+      ON cat.contact_id = c.id;
     ";
   $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
