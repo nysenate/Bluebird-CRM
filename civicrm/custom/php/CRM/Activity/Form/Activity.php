@@ -1171,7 +1171,9 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
       )
     ) {
       $mailToContacts = array();
-      $assigneeContacts = CRM_Activity_BAO_ActivityContact::getNames($activity->id, $assigneeID);
+      //NYSS 7469
+      //$assigneeContacts = CRM_Activity_BAO_ActivityContact::getNames($activity->id, $assigneeID);
+      $assigneeContacts = CRM_Activity_BAO_ActivityAssignment::getAssigneeNames($activity->id, TRUE, FALSE);
 
       //build an associative array with unique email addresses.
       foreach ($activityAssigned as $id => $dnc) {
