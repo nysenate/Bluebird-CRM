@@ -28,37 +28,17 @@ function nyss_signupreport_page($args = 'all')
 
 function nyss_signupreport_download_page()
 {
-  $instance = new Instance();
   $filename = $_GET['filename'];
 
   if (!$filename) {
     die("ERROR: No filename was specified");
   }
 
-  $filepath = $instance->entries[$filename];
-
-  if (!$filepath) {
-    die("ERROR: $filename: Not found in list of signup reports");
-  }
-
-  $filesize = filesize($filepath);
-
-  if (file_exists($filepath)) {
-    header("Pragma: public", true);
-    header("Expires: 0"); // set expiration time
-    header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-    header("Content-Type: application/octet-stream");
-    header("Content-Disposition: attachment; filename=\"$filename\"");
-    header("Content-Transfer-Encoding: binary");
-    header("Content-Length: $filesize");
-    ob_clean();
-    flush();
-    die(readfile($filepath));
-  } 
-  else {
-    die("ERROR: $filepath: File not found");
-  }
+  $instance = new Instance();
+  $instance->download_file($filename);
+  // There is no return from download_file().  The script dies there.
 }
+
 
 
 class Instance
@@ -67,24 +47,25 @@ class Instance
   {
     $bbcfg = get_bluebird_instance_config();
     $signups_path = $bbcfg['data.rootdir'].'/'.$bbcfg['data_dirname'].'/'.$bbcfg['signups.reports.dirname'];
-    $this->entries = $this->get_reports($signups_path);
+    $this->file_entries = $this->get_file_entries($signups_path);
   }
 
 
   public function generate_template()
   {
+    $entries = $this->file_entries;
     $out = "<div id='nyss-web-signup-reports'>\n"
           ."<div class='headers'><div class='filepath'>File Name</div><div class='modtime'>Last Modified</div><div class='filesize'>File Size</div></div>";
 
-    foreach ($this->entries as $k => $v) {
-      $filelink = $this->convert_path_to_link($k);
-      $filemodtime = date('F d Y H:i:s', filemtime($v));
-      $filesize = $this->filesize_formatted($v);
+    foreach ($entries as $filename => $entry) {
+      $filelink = $this->convert_path_to_link($filename);
+      $formatted_modtime = date('F d Y H:i:s', $entry['mtime']);
+      $formatted_size = $this->filesize_formatted($entry['size']);
 
       $out .= "<div class='entry'>\n"
            ."<div class='filepath'>$filelink</div>\n"
-           ."<div class='modtime'>$filemodtime</div>\n"
-           ."<div class='filesize'>$filesize</div>\n"
+           ."<div class='modtime'>$formatted_modtime</div>\n"
+           ."<div class='filesize'>$formatted_size</div>\n"
            ."</div>\n";
     }
     $out .= "</div>\n";
@@ -92,38 +73,81 @@ class Instance
   }
 
 
-  public function convert_path_to_link($k)
+  public function download_file($filename)
   {
-    return l(t($k), 'signupreports_download', array('query' => array('filename' => $k)));
+    $file_entry = $this->file_entries[$filename];
+
+    if (!$file_entry) {
+      die("ERROR: $filename: Not found in list of signup reports");
+    }
+
+    $filepath = $file_entry['path'];
+    $filesize = $file_entry['size'];
+
+    if (file_exists($filepath)) {
+      header("Pragma: public", true);
+      header("Expires: 0"); // set expiration time
+      header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+      header("Content-Type: application/octet-stream");
+      header("Content-Disposition: attachment; filename=\"$filename\"");
+      header("Content-Transfer-Encoding: binary");
+      header("Content-Length: $filesize");
+      ob_clean();
+      flush();
+      die(readfile($filepath));
+    } 
+    else {
+      die("ERROR: $filepath: File not found");
+    }
   }
 
 
-  private function get_reports($reportdir)
+  private function get_file_entries($dir)
   {
     $entries = array();
-    if (is_dir($reportdir) && is_readable($reportdir)) {
-      if ($handle = opendir($reportdir)) {
+    if (is_dir($dir) && is_readable($dir)) {
+      if ($handle = opendir($dir)) {
         while (false !== ($entry = readdir($handle))) {
-          if ($entry != "." && $entry != "..") {
-            $entries[$entry] = "$reportdir/$entry";
+          if ($entry != '.' && $entry != '..') {
+            $fpath = $dir.'/'.$entry;
+            $entries[$entry] = array('name' => $entry,
+                                     'mtime' => filemtime($fpath),
+                                     'size' => filesize($fpath),
+                                     'path' => $fpath);
           }
         }
         closedir($handle);
       }
       else {
-        echo "Unable to read directory: $reportdir\n";
+        echo "Unable to read directory: $dir\n";
       }
     }
     else {
-      echo "Non-existent or inaccessible directory: $reportdir\n";
+      echo "Non-existent or inaccessible directory: $dir\n";
     }
+
+    uasort($entries, 'Instance::compare_mtime');
     return $entries;
   }
 
 
-  private function filesize_formatted($path)
+  private static function compare_mtime($a, $b)
   {
-    $size = filesize($path);
+    if ($a['mtime'] == $b['mtime']) {
+      return 0;
+    }
+    return ($a['mtime'] > $b['mtime']) ? -1 : 1;
+  }
+
+
+  private function convert_path_to_link($k)
+  {
+    return l(t($k), 'signupreports_download', array('query' => array('filename' => $k)));
+  }
+
+
+  private function filesize_formatted($size)
+  {
     $units = array('B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB');
     $power = $size > 0 ? floor(log($size, 1024)) : 0;
     $decimals = $power == 0 ? 0 : 2;
