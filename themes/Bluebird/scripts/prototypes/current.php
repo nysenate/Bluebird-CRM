@@ -642,7 +642,7 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                 </div>
                                 <div class="clear"></div>
                             </div>
-                            <div id="BBTreeContainer" class="BB_default crm-container crm-section tag-section crm-processed-input">
+                            <div id="BBTreeContainer" class="BB_default">
 
                                  <div class="tag-label">
                                     <label>Issue Codes</label>
