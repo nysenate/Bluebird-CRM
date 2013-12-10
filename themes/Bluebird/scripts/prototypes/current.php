@@ -469,7 +469,7 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
   border: 1px solid #fff;
 
 }
-.searched, .searched.search-parent{
+.search-match, .searched.search-parent{
   background: #e1e1e1;
   border: 1px solid #ccc;
 
