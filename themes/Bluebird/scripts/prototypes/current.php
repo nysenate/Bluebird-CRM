@@ -482,6 +482,12 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
     height:100%;
     width:100%;
 }
+
+ .search-highlighted {
+  background: none repeat scroll 0 0 #3E3E3E;
+  border: 1px solid #3E3E3E;
+  color: #F5F6F1;
+}
     </style>
 
 
@@ -659,36 +665,94 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                 <script type="text/javascript">
                                   cj( document ).ready(function() {
 
+                                    // Keys "enum"
+                                    var KEY = {
+                                        BACKSPACE: 8,
+                                        TAB: 9,
+                                        ENTER: 13,
+                                        ESCAPE: 27,
+                                        SPACE: 32,
+                                        PAGE_UP: 33,
+                                        PAGE_DOWN: 34,
+                                        END: 35,
+                                        HOME: 36,
+                                        LEFT: 37,
+                                        UP: 38,
+                                        RIGHT: 39,
+                                        DOWN: 40,
+                                        NUMPAD_ENTER: 108,
+                                        COMMA: 188
+                                    };
+
                                     // Tracks the currently activated timeout function, if any
                                     var timeout_id;
-                                    cj('#issue-code-search').unbind('keyup').bind('keyup', function(event) {
+                                    var selected_tag;
+                                    var matching_tags;
+
+                                    cj('#issue-code-search').unbind('keydown').bind('keydown', function(event) {
                                       var search_bar = $(this);
                                       var tags = cj("dt");
 
                                       // Remove the previously set timeout, if any
                                       clearTimeout(timeout_id);
 
-                                      if (search_bar.val().length === 0) {
+                                      if (event.which == KEY.ESCAPE || search_bar.val().length == 0) {
                                         // Close all the tags and remove search interface classes
+                                        search_bar.val('')
                                         tags.find('.ddControl.open').click();
-                                        tags.removeClass('search-hidden searched search-parent');
+                                        tags.removeClass('search-hidden search-match search-parent search-highlighted');
                                       }
-                                      else if (search_bar.val().length >= 3 || event.which == 13) {
+                                      else if (event.which == KEY.DOWN) {
+                                        var cur_index = matching_tags.index(selected_tag);
+                                        if (cur_index == -1) {
+                                          console.log("Selected Tag not fonud in matching tags?!?!?");
+                                        }
+                                        else if (cur_index != matching_tags.length-1) {
+                                          var next_tag = cj(matching_tags[cur_index+1]);
+                                          console.log("Next tag: ");
+                                          console.log(next_tag);
+                                          selected_tag.removeClass("search-highlighted");
+                                          next_tag.addClass('search-highlighted');
+                                          selected_tag = next_tag;
+                                        }
+                                        event.preventDefault();
+                                      }
+                                      else if (event.which == KEY.UP) {
+                                        var cur_index = matching_tags.index(selected_tag);
+                                        if (cur_index == -1) {
+                                          console.log("Selected Tag not fonud in matching tags?!?!?");
+                                        }
+                                        else if (cur_index != 0) {
+                                          var prev_tag = cj(matching_tags[cur_index-1]);
+                                          console.log("Next tag: ");
+                                          console.log(prev_tag);
+                                          selected_tag.removeClass("search-highlighted");
+                                          prev_tag.addClass('search-highlighted');
+                                          selected_tag = prev_tag;
+                                        }
+                                        event.preventDefault();
+                                      }
+                                      else if (event.which == KEY.ENTER) {
+                                        // Save selected tag
+                                        selected_tag.find('input[type="checkbox"]').click();
+
+                                      }
+                                      else {
                                         // Run search on strings 3+ characters or on user enter
                                         timeout_id = setTimeout(function() {
                                           searchTerm = search_bar.val().toLowerCase();
-                                          tags.removeClass('search-hidden searched search-parent');
+                                          tags.removeClass('search-hidden search-match search-parent search-highlighted');
                                           tags.each(function() {
                                             var tag = cj(this);
                                             if(tag.text().toLowerCase().indexOf(searchTerm) > -1) {
-                                              tag.addClass('searched');
-                                              tag.parents('dl').not('.lv-0').each(function() {
-                                                var parent_list = cj(this);
-                                                cj('dt#'+parent_list.attr('id')).addClass('search-parent');
-                                              });
+                                              tag.addClass('search-match');
+                                              tag.parents('dl').not('.lv-0').prev('dt').addClass('search-parent');
                                             }
                                           });
-                                          tags.not(".searched,.search-parent").addClass('search-hidden');
+                                          matching_tags = cj(".search-match");
+                                          selected_tag = cj("dt.search-match").first();
+                                          selected_tag.addClass('search-highlighted');
+                                          tags.not(".search-match, .search-parent").addClass('search-hidden');
                                           cj("dt.search-parent .ddControl").not(".open").click();
                                         },300);
                                       }
