@@ -691,7 +691,7 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                       // Remove the previously set timeout, if any
                                       clearTimeout(timeout_id);
 
-                                      if (event.which == KEY.ESCAPE || search_bar.val().length == 0) {
+                                      if (event.which == KEY.ESCAPE) {
                                         // Close all the tags and remove search interface classes
                                         search_bar.val('')
                                         tags.find('.ddControl.open').click();
@@ -726,25 +726,32 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                       else if (event.which == KEY.ENTER || event.which == KEY.NUMPAD_ENTER) {
                                         // Toggle selected tag
                                         selected_tag.find('input[type="checkbox"]').click();
-
                                       }
                                       else {
-                                        // Run search on strings 3+ characters or on user enter
+                                        // Run a search on the text they have entered
                                         timeout_id = setTimeout(function() {
                                           searchTerm = search_bar.val().toLowerCase();
-                                          tags.removeClass('search-hidden search-match search-parent search-highlighted');
-                                          tags.each(function() {
-                                            var tag = cj(this);
-                                            if(tag.text().toLowerCase().indexOf(searchTerm) > -1) {
-                                              tag.addClass('search-match');
-                                              tag.parents('dl').not('.lv-0').prev('dt').addClass('search-parent');
-                                            }
-                                          });
-                                          matching_tags = cj(".search-match");
-                                          selected_tag = cj("dt.search-match").first();
-                                          selected_tag.addClass('search-highlighted');
-                                          tags.not(".search-match, .search-parent").addClass('search-hidden');
-                                          cj("dt.search-parent .ddControl").not(".open").click();
+                                          if (searchTerm.length == 0) {
+                                            // Close all the tags and remove search interface classes
+                                            search_bar.val('')
+                                            tags.find('.ddControl.open').click();
+                                            tags.removeClass('search-hidden search-match search-parent search-highlighted');
+                                          }
+                                          else {
+                                            tags.removeClass('search-hidden search-match search-parent search-highlighted');
+                                            tags.each(function() {
+                                              var tag = cj(this);
+                                              if(tag.text().toLowerCase().indexOf(searchTerm) > -1) {
+                                                tag.addClass('search-match');
+                                                tag.parents('dl').not('.lv-0').prev('dt').addClass('search-parent');
+                                              }
+                                            });
+                                            matching_tags = cj(".search-match");
+                                            selected_tag = cj("dt.search-match").first();
+                                            selected_tag.addClass('search-highlighted');
+                                            tags.not(".search-match, .search-parent").addClass('search-hidden');
+                                            cj("dt.search-parent .ddControl").not(".open").click();
+                                          }
                                         },300);
                                       }
                                     });
