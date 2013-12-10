@@ -686,7 +686,7 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
 
                                     cj('#issue-code-search').unbind('keyup').bind('keyup', function(event) {
                                       var search_bar = $(this);
-                                      var tags = cj("dt");
+                                      var tags = cj("dt").not('.lv-0');
 
                                       // Remove the previously set timeout, if any
                                       clearTimeout(timeout_id);
