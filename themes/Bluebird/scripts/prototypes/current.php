@@ -469,7 +469,13 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
 .search-hidden{
   display: none;
 }
-#BBTreeContainer .BBTree dt.search-parent, #BBTreeContainer .BBTree dt.subChecked{
+#BBTreeContainer .BBTree dt.search-parent{
+  background-color: #fff;
+  border-style:dotted;
+  border-width:1px;
+  border-color:#fff #ACDB85 #ACDB85 #ACDB85;
+}
+#BBTreeContainer .BBTree dt.subChecked{
   background-color: #E9FCCF;
   border-style:dotted;
   border-width:1px;
