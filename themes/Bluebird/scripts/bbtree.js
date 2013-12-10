@@ -702,15 +702,11 @@ var callTree =  {
             {
                 case true:
                     cj(BBTree.treeLoc + ' dt#'+tagLabel+' div').removeClass('open');
-                    cj(BBTree.treeLoc + ' dl#'+tagLabel).slideUp('200', function() {
-                        cj(BBTree.treeLoc + ' dl#'+tagLabel).removeClass('open');
-                    });
+                    cj(BBTree.treeLoc + ' dl#'+tagLabel).removeClass('open').toggle();
                 break;
                 case false:
                     cj(BBTree.treeLoc + ' dt#'+tagLabel+' div').addClass('open');
-                    cj(BBTree.treeLoc + ' dl#'+tagLabel).slideDown('200', function() {
-                        cj(BBTree.treeLoc + ' dl#'+tagLabel).addClass('open');
-                    });
+                    cj(BBTree.treeLoc + ' dl#'+tagLabel).addClass('open').toggle();
                 break;
             }
         });
