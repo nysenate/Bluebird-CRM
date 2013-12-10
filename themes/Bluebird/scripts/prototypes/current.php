@@ -76,12 +76,12 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
   clear: both;
   height: auto; }
 
-.crm-section .tag-label{
+.tag-label{
   font-size: 120%;
   margin-top: 20px;
 }
 #issue-code-search{
-  margin:0;
+  margin:15px 0 0 0;
   border-bottom:none;
   width: 522px;
   padding: 8px;
@@ -587,7 +587,7 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                         <h3>Tags</h3>
                         <div id="crm-tagListWrap">
                           <div class="crm-section tag-section contact-tagset-296-section">
-                            <div class="label">
+                            <div class="tag-label">
                               <label>Keywords</label>
                             </div>
                             <div class="content">
