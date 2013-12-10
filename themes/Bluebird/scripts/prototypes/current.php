@@ -253,7 +253,9 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
     margin: 0 10px; }
   .BBTree dt.lv-0, #BBTreeContainer .BBTree dt.lv-0, #BBDialog .BBTree dt.lv-0 {
     width: 485px;
-    margin: 10px 10px 0; }
+    margin: 10px 10px 0;
+    display: none;
+  }
     .BBTree dt.lv-0 .treeButton, #BBTreeContainer .BBTree dt.lv-0 .treeButton, #BBDialog .BBTree dt.lv-0 .treeButton {
       display: none; }
     .BBTree dt.lv-0 .tag, #BBTreeContainer .BBTree dt.lv-0 .tag, #BBDialog .BBTree dt.lv-0 .tag {
@@ -685,9 +687,8 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                         // console.log("length: "+cj("#issue-code-search").val().length);
                                         // console.log(e);
                                         return;
-                                      }
-
-                                      clearInterval(searchWaitInterval);
+                                      }else{
+                                        clearInterval(searchWaitInterval);
                                       searchWaitInterval = setInterval(function() {
                                         console.log("Running interval");
                                         clearInterval(searchWaitInterval);
@@ -711,6 +712,7 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                           cj("dt.search-parent" ).find('.ddControl').not( ".open" ).click();
                                         }
                                       },300);
+                                      }
                                     });
                                   });
                                 </script>
