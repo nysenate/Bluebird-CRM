@@ -664,35 +664,40 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                         highlightParent(id);
                                       };
                                     }
-                                    var searchWait = 0;
+
                                     var searchWaitInterval;
-                                    cj('#issue-code-search')
-                                      .unbind('keypress keyup')
-                                      .bind('keypress keyup', function(e){
-                                        var item = $(this);
-                                        searchWait = 0;
+                                    cj('#issue-code-search').unbind('keyup').bind('keyup', function(e) {
+                                      var item = $(this);
+
+                                      var code = e.keyCode || e.which;
+                                      // if (code == '9') {
+                                      //   console.log('Tab pressed');
+                                      //   return;
+                                      // }
+                                      if (cj("#issue-code-search").val().length === 0) {
+                                        console.log("Showing default tree view");
                                         cj("dt").find('.ddControl.open').click();
                                         cj("dt").removeClass('search-hidden');
                                         cj("dt").removeClass('searched');
                                         cj("dt").removeClass('search-parent');
-                                        cj("#tagLabel_291").prepend("<div class='search-wait'></div>");
+                                      }
+                                      else if (cj("#issue-code-search").val().length < 3 && code != 13){
+                                        // console.log("length: "+cj("#issue-code-search").val().length);
+                                        // console.log(e);
+                                        return;
+                                      }
 
-                                        var code = e.keyCode || e.which;
-                                        if (code == '9') {
-                                          console.log('Tab pressed');
-                                          return;
-                                        }
-                                        if (cj("#issue-code-search").val().length < 3 && code != 13){
-                                          // console.log("length: "+cj("#issue-code-search").val().length);
-                                          // console.log(e);
-                                          return;
-                                        }else if(!searchWaitInterval) searchWaitInterval = setInterval(function(){
-                                          if(searchWait>=3 && cj("#issue-code-search").val() != ""){
-                                            clearInterval(searchWaitInterval);
-                                            searchWaitInterval = '';
-                                            // console.log("le filtering");
+                                      clearInterval(searchWaitInterval);
+                                      searchWaitInterval = setInterval(function() {
+                                        console.log("Running interval");
+                                        clearInterval(searchWaitInterval);
+                                        if(cj("#issue-code-search").val() != "") {
+                                            // cj("dt").find('.ddControl.open').click();
+                                            cj("dt").removeClass('search-hidden');
+                                            cj("dt").removeClass('searched');
+                                            cj("dt").removeClass('search-parent');
+
                                             searchTerm = cj("#issue-code-search").val().toLowerCase();
-                                            // console.log(searchTerm);
                                             cj("dt").filter(function() {
                                               // if the search term exists within the tag body
                                               if(cj(this).text().toLowerCase().indexOf(searchTerm) > -1){
@@ -704,11 +709,8 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                             });
                                           cj("dt").not(".searched,.search-parent").addClass('search-hidden');
                                           cj("dt.search-parent" ).find('.ddControl').not( ".open" ).click();
-                                          cj("#tagLabel_291 .search-wait").remove();
-                                          searchWait = 0;
                                         }
-                                        searchWait++;
-                                      },100);
+                                      },300);
                                     });
                                   });
                                 </script>
