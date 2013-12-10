@@ -700,12 +700,10 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                       else if (event.which == KEY.DOWN) {
                                         var cur_index = matching_tags.index(selected_tag);
                                         if (cur_index == -1) {
-                                          console.log("Selected Tag not fonud in matching tags?!?!?");
+                                          console.log("Selected Tag not found in matching tags?!?!?");
                                         }
                                         else if (cur_index != matching_tags.length-1) {
                                           var next_tag = cj(matching_tags[cur_index+1]);
-                                          console.log("Next tag: ");
-                                          console.log(next_tag);
                                           selected_tag.removeClass("search-highlighted");
                                           next_tag.addClass('search-highlighted');
                                           selected_tag = next_tag;
@@ -715,12 +713,10 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                       else if (event.which == KEY.UP) {
                                         var cur_index = matching_tags.index(selected_tag);
                                         if (cur_index == -1) {
-                                          console.log("Selected Tag not fonud in matching tags?!?!?");
+                                          console.log("Selected Tag not found in matching tags?!?!?");
                                         }
                                         else if (cur_index != 0) {
                                           var prev_tag = cj(matching_tags[cur_index-1]);
-                                          console.log("Next tag: ");
-                                          console.log(prev_tag);
                                           selected_tag.removeClass("search-highlighted");
                                           prev_tag.addClass('search-highlighted');
                                           selected_tag = prev_tag;
