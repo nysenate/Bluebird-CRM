@@ -693,6 +693,30 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                     var selected_tag;
                                     var matching_tags;
 
+                                    function set_selected_tag(tag) {
+                                      if (selected_tag) {
+                                        // Remove the currently selected tag.
+                                        selected_tag.removeClass("search-highlighted");
+                                        selected_tag = null;
+                                      }
+                                      if (tag.length > 0) {
+                                        // Set the new selected tag up
+                                        tag.addClass("search-highlighted");
+                                        selected_tag = tag;
+
+                                        // Make sure that the newly selected tag is visible
+                                        var container = tag.parents('.BBTree');
+                                        var tag_rect = tag[0].getBoundingClientRect();
+                                        var container_rect = container[0].getBoundingClientRect();
+                                        if (tag_rect.top < container_rect.top) {
+                                          container.scrollTop(container.scrollTop() + tag_rect.top - container_rect.top);
+                                        }
+                                        else if (tag_rect.bottom > container_rect.bottom) {
+                                          container.scrollTop(container.scrollTop() + tag_rect.bottom - container_rect.bottom);
+                                        }
+                                      }
+                                    }
+
                                     // We don't want to move the cursor on UP or DOWN events
                                     cj('#issue-code-search').unbind('keydown').bind('keydown', function(event) {
                                       if ([38, 40].indexOf(event.which) != -1) { event.preventDefault(); }
@@ -718,10 +742,7 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                           console.log("Selected Tag not found in matching tags?!?!?");
                                         }
                                         else if (cur_index != matching_tags.length-1) {
-                                          var next_tag = cj(matching_tags[cur_index+1]);
-                                          selected_tag.removeClass("search-highlighted");
-                                          next_tag.addClass('search-highlighted');
-                                          selected_tag = next_tag;
+                                          set_selected_tag(cj(matching_tags[cur_index+1]));
                                         }
                                         event.preventDefault();
                                       }
@@ -732,10 +753,7 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                           console.log("Selected Tag not found in matching tags?!?!?");
                                         }
                                         else if (cur_index != 0) {
-                                          var prev_tag = cj(matching_tags[cur_index-1]);
-                                          selected_tag.removeClass("search-highlighted");
-                                          prev_tag.addClass('search-highlighted');
-                                          selected_tag = prev_tag;
+                                          set_selected_tag(cj(matching_tags[cur_index-1]));
                                         }
                                         event.preventDefault();
                                       }
@@ -762,11 +780,12 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                                 tag.parents('dl').not('.lv-0').prev('dt').addClass('search-parent');
                                               }
                                             });
-                                            matching_tags = cj(".search-match");
-                                            selected_tag = cj("dt.search-match").first();
-                                            selected_tag.addClass('search-highlighted');
                                             tags.not(".search-match, .search-parent").addClass('search-hidden');
                                             cj("dt.search-parent .ddControl").not(".open").click();
+
+                                            // This has to happen after the lists are opened/hidden
+                                            matching_tags = cj(".search-match");
+                                            set_selected_tag(cj("dt.search-match").first());
                                           }
                                         },300);
                                       }
