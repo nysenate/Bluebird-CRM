@@ -1616,8 +1616,9 @@ ORDER BY   civicrm_email.is_bulkmail DESC
     /**
      * 'approval_status_id' set in
      * CRM_Mailing_Form_Schedule::postProcess() or via API.
+     * //NYSS 7470 condition only on the existence of a scheduled date
      */
-    if (isset($params['approval_status_id']) && $params['approval_status_id']) {
+    if (!empty($params['scheduled_date'])) {
       //NYSS create parent job if not yet created
       $job = new CRM_Mailing_BAO_MailingJob();
       $job->mailing_id = $mailing->id;
@@ -1628,6 +1629,7 @@ ORDER BY   civicrm_email.is_bulkmail DESC
         $job->scheduled_date = $params['scheduled_date'];
         $job->save();
       }
+
       // Populate the recipients.
       $mailing->getRecipients($job->id, $mailing->id, NULL, NULL, TRUE, FALSE);
     }
