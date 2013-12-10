@@ -723,7 +723,7 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                         }
                                         event.preventDefault();
                                       }
-                                      else if (event.which == KEY.ENTER) {
+                                      else if (event.which == KEY.ENTER && event.which == NUMPAD_ENTER) {
                                         // Save selected tag
                                         selected_tag.find('input[type="checkbox"]').click();
 
