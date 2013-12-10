@@ -698,6 +698,7 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                         tags.removeClass('search-hidden search-match search-parent search-highlighted');
                                       }
                                       else if (event.which == KEY.DOWN) {
+                                        // Move selected tag down the list if possible
                                         var cur_index = matching_tags.index(selected_tag);
                                         if (cur_index == -1) {
                                           console.log("Selected Tag not found in matching tags?!?!?");
@@ -711,6 +712,7 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                         event.preventDefault();
                                       }
                                       else if (event.which == KEY.UP) {
+                                        // Move selected tag up the list if possible
                                         var cur_index = matching_tags.index(selected_tag);
                                         if (cur_index == -1) {
                                           console.log("Selected Tag not found in matching tags?!?!?");
