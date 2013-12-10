@@ -89,13 +89,16 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
 .BBMessages {
   overflow: visible;
   height: auto;
+  width: auto;
   background-color: #daf2ff;
   color: #002a41;
   border-style: solid;
   border-color: #a7e0ff;
   border-bottom-width: 1px;
   padding: 5px;
-  display: none; }
+  display: block;
+  float: left;
+  }
   .BBMessages .title {
     margin: 5px 0;
     font-weight: bold;
@@ -112,10 +115,10 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
     font-weight: bold; }
   .BBMessages.static {
     position: absolute;
-    top: 0px;
+    top: 50px;
     left: 0px;
     z-index: 1;
-    width: 495px; }
+    width: 512px; }
   .BBMessages.BBError {
     background-color: #f8512f;
     color: black;
@@ -129,11 +132,13 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
     border-color: #e4ec73;
     border-bottom-width: 1px; }
   .BBMessages.BBSuccess {
-    background-color: #b0d730;
+    background-color: #93C57E;
     color: black;
     border-style: solid;
-    border-color: #90b222;
-    border-bottom-width: 1px; }
+    border-color: #404A3C;
+    border-bottom-width: 1px;
+    border-top-width: 1px;
+    }
   .BBMessages .closeMessage {
     background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") !important;
     cursor: pointer;
@@ -469,11 +474,12 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
 .search-hidden{
   display: none;
 }
+#BBTreeContainer .BBTree dt{
+  border:solid 1px#fff;
+}
 #BBTreeContainer .BBTree dt.search-parent{
   background-color: #fff;
-  border-style:dotted;
-  border-width:1px;
-  border-color:#fff #ACDB85 #ACDB85 #ACDB85;
+  border:solid 1px#fff;
 }
 #BBTreeContainer .BBTree dt.subChecked{
   background-color: #E9FCCF;
@@ -489,10 +495,6 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
   border-color:#fff #A3C297 #A3C297 #A3C297;
 }
 
-#BBTreeContainer .BBTree dt.search-highlighted {
-  background-color: #A3C297 !important;
-  border: 1px solid #2F4A24 !important;
-}
 #BBTreeContainer .BBTree dt.checked.search-match, #BBTreeContainer .BBTree dt.checked{
   background-color: #C2E5B3 !important;
   border-style:solid;
@@ -506,6 +508,10 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
   border-style:solid;
   border-width:1px;
   border-color:#fff #9EBA92 #9EBA92 #9EBA92;
+}
+#BBTreeContainer .BBTree dt.search-highlighted,#BBTreeContainer .BBTree dt:hover{
+  background-color: #A3C297 !important;
+  border: 1px solid #2F4A24 !important;
 }
 </style>
 
