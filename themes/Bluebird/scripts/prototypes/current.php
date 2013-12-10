@@ -658,60 +658,39 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
 
                                 <script type="text/javascript">
                                   cj( document ).ready(function() {
-                                    // step up the tree to find the parent elements of a dt
-                                    function highlightParent (data) {
-                                      var id ="#tagLabel_"+cj(data).attr('parent');
-                                      cj(id).addClass('search-parent');
-                                      if (cj(data).attr('tlvl')>1) {
-                                        highlightParent(id);
-                                      };
-                                    }
 
-                                    var searchWaitInterval;
-                                    cj('#issue-code-search').unbind('keyup').bind('keyup', function(e) {
-                                      var item = $(this);
+                                    // Tracks the currently activated timeout function, if any
+                                    var timeout_id;
+                                    cj('#issue-code-search').unbind('keyup').bind('keyup', function(event) {
+                                      var search_bar = $(this);
+                                      var tags = cj("dt");
 
-                                      var code = e.keyCode || e.which;
-                                      // if (code == '9') {
-                                      //   console.log('Tab pressed');
-                                      //   return;
-                                      // }
-                                      if (cj("#issue-code-search").val().length === 0) {
-                                        // console.log("Showing default tree view");
-                                        cj("dt").find('.ddControl.open').click();
-                                        cj("dt").removeClass('search-hidden');
-                                        cj("dt").removeClass('searched');
-                                        cj("dt").removeClass('search-parent');
+                                      // Remove the previously set timeout, if any
+                                      clearTimeout(timeout_id);
+
+                                      if (search_bar.val().length === 0) {
+                                        // Close all the tags and remove search interface classes
+                                        tags.find('.ddControl.open').click();
+                                        tags.removeClass('search-hidden searched search-parent');
                                       }
-                                      else if (cj("#issue-code-search").val().length < 3 && code != 13){
-                                        // console.log("length: "+cj("#issue-code-search").val().length);
-                                        // console.log(e);
-                                        return;
-                                      }else{
-                                        clearInterval(searchWaitInterval);
-                                      searchWaitInterval = setInterval(function() {
-                                       // console.log("Running interval");
-                                        clearInterval(searchWaitInterval);
-                                        if(cj("#issue-code-search").val() != "") {
-                                            // cj("dt").find('.ddControl.open').click();
-                                            cj("dt").removeClass('search-hidden');
-                                            cj("dt").removeClass('searched');
-                                            cj("dt").removeClass('search-parent');
-                                            // console.log("searching");
-                                            searchTerm = cj("#issue-code-search").val().toLowerCase();
-                                            cj("dt").filter(function() {
-                                              // if the search term exists within the tag body
-                                              if(cj(this).text().toLowerCase().indexOf(searchTerm) > -1){
-                                                cj(this).addClass('searched');
-                                                if (cj(this).attr('tlvl')>1) {
-                                                  highlightParent(this);
-                                                };
-                                              }
-                                            });
-                                          cj("dt").not(".searched,.search-parent").addClass('search-hidden');
-                                          cj("dt.search-parent" ).find('.ddControl').not( ".open" ).click();
-                                        }
-                                      },300);
+                                      else if (search_bar.val().length >= 3 || event.which == 13) {
+                                        // Run search on strings 3+ characters or on user enter
+                                        timeout_id = setTimeout(function() {
+                                          searchTerm = search_bar.val().toLowerCase();
+                                          tags.removeClass('search-hidden searched search-parent');
+                                          tags.each(function() {
+                                            var tag = cj(this);
+                                            if(tag.text().toLowerCase().indexOf(searchTerm) > -1) {
+                                              tag.addClass('searched');
+                                              tag.parents('dl').not('.lv-0').each(function() {
+                                                var parent_list = cj(this);
+                                                cj('dt#'+parent_list.attr('id')).addClass('search-parent');
+                                              });
+                                            }
+                                          });
+                                          tags.not(".searched,.search-parent").addClass('search-hidden');
+                                          cj("dt.search-parent .ddControl").not(".open").click();
+                                        },300);
                                       }
                                     });
                                   });
