@@ -677,7 +677,7 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                       //   return;
                                       // }
                                       if (cj("#issue-code-search").val().length === 0) {
-                                        console.log("Showing default tree view");
+                                        // console.log("Showing default tree view");
                                         cj("dt").find('.ddControl.open').click();
                                         cj("dt").removeClass('search-hidden');
                                         cj("dt").removeClass('searched');
@@ -690,14 +690,14 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                       }else{
                                         clearInterval(searchWaitInterval);
                                       searchWaitInterval = setInterval(function() {
-                                        console.log("Running interval");
+                                       // console.log("Running interval");
                                         clearInterval(searchWaitInterval);
                                         if(cj("#issue-code-search").val() != "") {
                                             // cj("dt").find('.ddControl.open').click();
                                             cj("dt").removeClass('search-hidden');
                                             cj("dt").removeClass('searched');
                                             cj("dt").removeClass('search-parent');
-
+                                            // console.log("searching");
                                             searchTerm = cj("#issue-code-search").val().toLowerCase();
                                             cj("dt").filter(function() {
                                               // if the search term exists within the tag body
