@@ -681,7 +681,7 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
 
                                     // We don't want to move the cursor on UP or DOWN events
                                     cj('#issue-code-search').unbind('keydown').bind('keydown', function(event) {
-                                      if ([38, 40.indexOf(event.which) != -1) { event.preventDefault(); }
+                                      if ([38, 40].indexOf(event.which) != -1) { event.preventDefault(); }
                                     });
 
                                     cj('#issue-code-search').unbind('keyup').bind('keyup', function(event) {
@@ -723,8 +723,8 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                         }
                                         event.preventDefault();
                                       }
-                                      else if (event.which == KEY.ENTER && event.which == NUMPAD_ENTER) {
-                                        // Save selected tag
+                                      else if (event.which == KEY.ENTER || event.which == KEY.NUMPAD_ENTER) {
+                                        // Toggle selected tag
                                         selected_tag.find('input[type="checkbox"]').click();
 
                                       }
