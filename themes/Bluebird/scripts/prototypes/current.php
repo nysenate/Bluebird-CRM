@@ -464,31 +464,45 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
       background-color: transparent; }
       body.popup .BBTree dt:hover .fCB {
         display: none; } }
-.search-parent {
-  background: #f8f8f8;
-  border: 1px solid #fff;
 
-}
-.search-match, .searched.search-parent{
-  background: #e1e1e1;
-  border: 1px solid #ccc;
 
-}
 .search-hidden{
   display: none;
 }
-.search-wait{
-    background: url("/sites/default/themes/Bluebird/images/loading.gif") no-repeat scroll center white !important;
-    height:100%;
-    width:100%;
+#BBTreeContainer .BBTree dt.search-parent, #BBTreeContainer .BBTree dt.subChecked{
+  background-color: #E9FCCF;
+  border-style:dotted;
+  border-width:1px;
+  border-color:#fff #ACDB85 #ACDB85 #ACDB85;
 }
 
- .search-highlighted {
-  background: none repeat scroll 0 0 #3E3E3E;
-  border: 1px solid #3E3E3E;
-  color: #F5F6F1;
+#BBTreeContainer .BBTree dt.search-match, #BBTreeContainer .BBTree dt.search-match.search-parent{
+  background-color: #e1e1e1;
+  border-style:solid;
+  border-width:1px;
+  border-color:#fff #A3C297 #A3C297 #A3C297;
 }
-    </style>
+
+#BBTreeContainer .BBTree dt.search-highlighted {
+  background-color: #A3C297 !important;
+  border: 1px solid #2F4A24 !important;
+}
+#BBTreeContainer .BBTree dt.checked.search-match, #BBTreeContainer .BBTree dt.checked{
+  background-color: #C2E5B3 !important;
+  border-style:solid;
+  border-width:1px;
+  border-color:#fff #AABF8B #AABF8B #AABF8B;
+
+
+}
+#BBTreeContainer .BBTree dt.checked.search-match.search-highlighted{
+  background-color: #9EBA92 !important;
+  border-style:solid;
+  border-width:1px;
+  border-color:#fff #9EBA92 #9EBA92 #9EBA92;
+}
+</style>
+
 
 
 </head>
