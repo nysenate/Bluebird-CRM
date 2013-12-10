@@ -667,21 +667,11 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
 
                                     // Keys "enum"
                                     var KEY = {
-                                        BACKSPACE: 8,
-                                        TAB: 9,
                                         ENTER: 13,
                                         ESCAPE: 27,
-                                        SPACE: 32,
-                                        PAGE_UP: 33,
-                                        PAGE_DOWN: 34,
-                                        END: 35,
-                                        HOME: 36,
-                                        LEFT: 37,
                                         UP: 38,
-                                        RIGHT: 39,
                                         DOWN: 40,
                                         NUMPAD_ENTER: 108,
-                                        COMMA: 188
                                     };
 
                                     // Tracks the currently activated timeout function, if any
@@ -689,7 +679,12 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                     var selected_tag;
                                     var matching_tags;
 
+                                    // We don't want to move the cursor on UP or DOWN events
                                     cj('#issue-code-search').unbind('keydown').bind('keydown', function(event) {
+                                      if ([38, 40.indexOf(event.which) != -1) { event.preventDefault(); }
+                                    });
+
+                                    cj('#issue-code-search').unbind('keyup').bind('keyup', function(event) {
                                       var search_bar = $(this);
                                       var tags = cj("dt");
 
