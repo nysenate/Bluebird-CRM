@@ -475,6 +475,11 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
 .search-hidden{
   display: none;
 }
+.search-wait{
+    background: url("/sites/default/themes/Bluebird/images/loading.gif") no-repeat scroll center white !important;
+    height:100%;
+    width:100%;
+}
     </style>
 
 
@@ -666,10 +671,11 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                       .bind('keypress keyup', function(e){
                                         var item = $(this);
                                         searchWait = 0;
+                                        cj("dt").find('.ddControl.open').click();
+                                        cj("dt").removeClass('search-hidden');
                                         cj("dt").removeClass('searched');
                                         cj("dt").removeClass('search-parent');
-                                        cj("dt").removeClass('search-hidden');
-                                        cj("dt").find('.ddControl.open').click();
+                                        cj("#tagLabel_291").prepend("<div class='search-wait'></div>");
 
                                         var code = e.keyCode || e.which;
                                         if (code == '9') {
@@ -698,6 +704,7 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                             });
                                           cj("dt").not(".searched,.search-parent").addClass('search-hidden');
                                           cj("dt.search-parent" ).find('.ddControl').not( ".open" ).click();
+                                          cj("#tagLabel_291 .search-wait").remove();
                                           searchWait = 0;
                                         }
                                         searchWait++;
