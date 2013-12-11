@@ -2032,7 +2032,7 @@ TagTreeFilter.prototype.reset = function() {
   clearTimeout(self.search_timeout_id);
   self.search_timeout_id = null;
   self.search_bar.val('');
-  self.tag_container.find('.ddControl.open').click();
+  self.tag_container.find('.ddControl.open').removeClass('open').parent().next('dl').removeClass('open').hide();  // .click();
   self.get_tags().removeClass('search-hidden search-match search-parent search-highlighted');
 }
 
@@ -2041,11 +2041,19 @@ TagTreeFilter.prototype.reset = function() {
 TagTreeFilter.prototype.search = function() {
   var self = this;
   var searchTerm = self.search_bar.val().toLowerCase();
-  console.log("Searching on: "+searchTerm);
   if (searchTerm.length == 0) {
     self.reset();
   }
   else {
+
+    function highlightParent(tag) {
+      var parent = tag.parent();
+      if (!parent.hasClass('lv-0')) {
+        parent.prev('dt').addClass('search-parent');
+        highlightParent(parent);
+      }
+    }
+
     var has_matches = false;
     var tags = self.get_tags();
     tags.removeClass('search-hidden search-match search-parent search-highlighted');
@@ -2054,20 +2062,22 @@ TagTreeFilter.prototype.search = function() {
       if(tag.text().toLowerCase().indexOf(searchTerm) > -1) {
         has_matches = true;
         tag.addClass('search-match');
-        tag.parents('dl').not('.lv-0').prev('dt').addClass('search-parent');
+        highlightParent(tag);
       }
     });
-    tags.not(".search-match, .search-parent").addClass('search-hidden');
-    cj("dt.search-parent .ddControl").not(".open").click();
 
-    // This has to happen after the lists are opened/hidden
     if (has_matches) {
       self.matching_tags = cj(".search-match");
-      self.select_tag(cj("dt.search-match").first());
+      tags.not(self.matching_tags).not('.search-parent').addClass('search-hidden');
+      cj("dt.search-parent .ddControl").not(".open").addClass('open').parent().next('dl').addClass('open').show();  // .click();
+
+      // This has to happen after the lists are opened/hidden
+      self.select_tag(self.matching_tags.first());
     }
     else {
       self.matching_tags = null;
       self.selected_tag = null;
+      tags.addClass('search-hidden');
     }
   }
 }
