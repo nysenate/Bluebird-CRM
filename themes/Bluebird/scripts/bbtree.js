@@ -2049,8 +2049,8 @@ TagTreeFilter.prototype.reset = function() {
 // a search through the whole tag container for matching tags.
 TagTreeFilter.prototype.search = function() {
   var self = this;
-  var searchTerm = self.search_bar.val().toLowerCase();
-  if (searchTerm.length == 0) {
+  var search_term = self.search_bar.val().toLowerCase();
+  if (search_term.length == 0) {
     self.reset();
   }
   else {
@@ -2068,7 +2068,7 @@ TagTreeFilter.prototype.search = function() {
     tags.removeClass('search-hidden search-match search-parent search-highlighted');
     tags.each(function() {
       var tag = cj(this);
-      if(tag.find('span.name').text().toLowerCase().indexOf(searchTerm) > -1) {
+      if(tag.find('span.name').text().toLowerCase().indexOf(search_term) > -1) {
         has_matches = true;
         tag.addClass('search-match');
         highlightParent(tag);
