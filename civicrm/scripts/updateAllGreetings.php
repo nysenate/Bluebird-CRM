@@ -91,7 +91,7 @@ function run()
     }
   }
 
-  $dao->find(false);
+  $dao->find(FALSE);
   echo "[{$optlist['site']}] Executed query; about to update greetings for ".$dao->count()." matching contacts...\n";
   $cnt = 0;
 
