@@ -693,6 +693,7 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
 
                                     // Keys "enum"
                                     var KEY = {
+                                        BACKSPACE: 8,
                                         ENTER: 13,
                                         ESCAPE: 27,
                                         UP: 38,
@@ -700,108 +701,146 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                         NUMPAD_ENTER: 108,
                                     };
 
-                                    // Tracks the currently activated timeout function, if any
-                                    var timeout_id;
-                                    var selected_tag;
-                                    var matching_tags;
+                                    var TagTreeFilter = function(filter_input_selector, tag_container_selector) {
+                                      var self = this;
+                                      self.selected_tag = null;
+                                      self.matching_tags = null;
+                                      self.search_timeout_id = null;
+                                      self.search_bar = cj(filter_input_selector);
+                                      self.tag_container = cj(tag_container_selector);
 
-                                    function set_selected_tag(tag) {
-                                      if (selected_tag) {
-                                        // Remove the currently selected tag.
-                                        selected_tag.removeClass("search-highlighted");
-                                        selected_tag = null;
-                                      }
-                                      if (tag.length > 0) {
-                                        // Set the new selected tag up
-                                        tag.addClass("search-highlighted");
-                                        selected_tag = tag;
-
-                                        // Make sure that the newly selected tag is visible
-                                        var container = tag.parents('.BBTree');
-                                        var tag_rect = tag[0].getBoundingClientRect();
-                                        var container_rect = container[0].getBoundingClientRect();
-                                        if (tag_rect.top < container_rect.top) {
-                                          container.scrollTop(container.scrollTop() + tag_rect.top - container_rect.top);
+                                      // We bind to keydown here so that the up/down defaultBehavior
+                                      // can be prevented with event.preventDefault() and repeat key
+                                      // behavior can be created with search_bar.focus()
+                                      self.search_bar.keydown(function(event) {
+                                        if (self.selected_tag) {
+                                          var cur_index = self.matching_tags.index(self.selected_tag);
+                                          if (event.which == KEY.UP) {
+                                            event.preventDefault();
+                                            if (cur_index != 0) {
+                                              self.select_tag(cj(self.matching_tags[cur_index-1]));
+                                            }
+                                          }
+                                          else if (event.which == KEY.DOWN) {
+                                            event.preventDefault();
+                                            if (cur_index != self.matching_tags.length-1) {
+                                              self.select_tag(cj(self.matching_tags[cur_index+1]));
+                                            }
+                                          }
+                                          self.search_bar.focus();
                                         }
-                                        else if (tag_rect.bottom > container_rect.bottom) {
-                                          container.scrollTop(container.scrollTop() + tag_rect.bottom - container_rect.bottom);
+                                      });
+
+                                      // We suppport ESC for "reset", ENTER for "toggle tag", and will
+                                      // trigger a tag search when you finish using the BACKSPACE key.
+                                      // The search should start 300ms after the last action so always
+                                      // start by cancelling the current timeout function.
+                                      self.search_bar.keyup(function(event) {
+                                        if (event.which == KEY.ESCAPE) {
+                                          self.reset();
+                                        }
+                                        else if (event.which == KEY.ENTER || event.which == KEY.NUMPAD_ENTER) {
+                                          if (self.selected_tag) {
+                                            self.selected_tag.find('input[type="checkbox"]').click();
+                                          }
+                                        }
+                                        else if (event.which == KEY.BACKSPACE) {
+                                          clearTimeout(self.search_timeout_id);
+                                          self.search_timeout_id = setTimeout(self.search.bind(self), 300);
+                                        }
+                                      });
+
+                                      // Only trigger the search when printable keys are entered.
+                                      // The search should start 300ms after the last action so
+                                      // always start by cancelling the current timeout function.
+                                      self.search_bar.keypress(function(event) {
+                                        if (event.which != KEY.ENTER) {
+                                          clearTimeout(self.search_timeout_id);
+                                          self.search_timeout_id = setTimeout(self.search.bind(self), 300);
+                                        }
+                                      });
+
+                                      return self;
+                                    }
+
+                                    TagTreeFilter.prototype.get_tags = function() {
+                                      var self = this;
+                                      return self.tag_container.find('dt').not('.lv-0');
+                                    }
+
+                                    TagTreeFilter.prototype.reset = function() {
+                                      var self = this;
+                                      self.selected_tag = null;
+                                      self.matching_tags = null;
+                                      clearTimeout(self.search_timeout_id);
+                                      self.search_timeout_id = null;
+                                      self.search_bar.val('');
+                                      self.tag_container.find('.ddControl.open').click();
+                                      self.get_tags().removeClass('search-hidden search-match search-parent search-highlighted');
+                                    }
+
+                                    // An empty search bar resets the filter. Anything else triggers
+                                    // a search through the whole tag container for matching tags.
+                                    TagTreeFilter.prototype.search = function() {
+                                      var self = this;
+                                      var searchTerm = self.search_bar.val().toLowerCase();
+                                      console.log("Searching on: "+searchTerm);
+                                      if (searchTerm.length == 0) {
+                                        self.reset();
+                                      }
+                                      else {
+                                        var has_matches = false;
+                                        var tags = self.get_tags();
+                                        tags.removeClass('search-hidden search-match search-parent search-highlighted');
+                                        tags.each(function() {
+                                          var tag = cj(this);
+                                          if(tag.text().toLowerCase().indexOf(searchTerm) > -1) {
+                                            has_matches = true;
+                                            tag.addClass('search-match');
+                                            tag.parents('dl').not('.lv-0').prev('dt').addClass('search-parent');
+                                          }
+                                        });
+                                        tags.not(".search-match, .search-parent").addClass('search-hidden');
+                                        cj("dt.search-parent .ddControl").not(".open").click();
+
+                                        // This has to happen after the lists are opened/hidden
+                                        if (has_matches) {
+                                          self.matching_tags = cj(".search-match");
+                                          self.select_tag(cj("dt.search-match").first());
+                                        }
+                                        else {
+                                          self.matching_tags = null;
+                                          self.selected_tag = null;
                                         }
                                       }
                                     }
 
-                                    // We don't want to move the cursor on UP or DOWN events
-                                    cj('#issue-code-search').unbind('keydown').bind('keydown', function(event) {
-                                      if ([38, 40].indexOf(event.which) != -1) { event.preventDefault(); }
-                                    });
+                                    // Deselects the currently selected tag and selects the provided
+                                    // tag. Makes sure that the provided tag is visible if a scroll
+                                    // bar is active.
+                                    TagTreeFilter.prototype.select_tag = function(tag) {
+                                      var self = this;
+                                      if (self.selected_tag) {
+                                        self.selected_tag.removeClass("search-highlighted");
+                                        self.selected_tag = null;
+                                      }
 
-                                    cj('#issue-code-search').unbind('keyup').bind('keyup', function(event) {
-                                      var search_bar = $(this);
-                                      var tags = cj("dt").not('.lv-0');
+                                      // Set the new selected tag up
+                                      tag.addClass("search-highlighted");
+                                      self.selected_tag = tag;
 
-                                      // Remove the previously set timeout, if any
-                                      clearTimeout(timeout_id);
+                                      // Make sure that the newly selected tag is visible
+                                      var tag_rect = tag[0].getBoundingClientRect();
+                                      var container_rect = self.tag_container[0].getBoundingClientRect();
+                                      if (tag_rect.top < container_rect.top) {
+                                        self.tag_container.scrollTop(self.tag_container.scrollTop() + tag_rect.top - container_rect.top);
+                                      }
+                                      else if (tag_rect.bottom > container_rect.bottom) {
+                                        self.tag_container.scrollTop(self.tag_container.scrollTop() + tag_rect.bottom - container_rect.bottom);
+                                      }
+                                    }
 
-                                      if (event.which == KEY.ESCAPE) {
-                                        // Close all the tags and remove search interface classes
-                                        search_bar.val('')
-                                        tags.find('.ddControl.open').click();
-                                        tags.removeClass('search-hidden search-match search-parent search-highlighted');
-                                      }
-                                      else if (event.which == KEY.DOWN) {
-                                        // Move selected tag down the list if possible
-                                        var cur_index = matching_tags.index(selected_tag);
-                                        if (cur_index == -1) {
-                                          console.log("Selected Tag not found in matching tags?!?!?");
-                                        }
-                                        else if (cur_index != matching_tags.length-1) {
-                                          set_selected_tag(cj(matching_tags[cur_index+1]));
-                                        }
-                                        event.preventDefault();
-                                      }
-                                      else if (event.which == KEY.UP) {
-                                        // Move selected tag up the list if possible
-                                        var cur_index = matching_tags.index(selected_tag);
-                                        if (cur_index == -1) {
-                                          console.log("Selected Tag not found in matching tags?!?!?");
-                                        }
-                                        else if (cur_index != 0) {
-                                          set_selected_tag(cj(matching_tags[cur_index-1]));
-                                        }
-                                        event.preventDefault();
-                                      }
-                                      else if (event.which == KEY.ENTER || event.which == KEY.NUMPAD_ENTER) {
-                                        // Toggle selected tag
-                                        selected_tag.find('input[type="checkbox"]').click();
-                                      }
-                                      else {
-                                        // Run a search on the text they have entered
-                                        timeout_id = setTimeout(function() {
-                                          searchTerm = search_bar.val().toLowerCase();
-                                          if (searchTerm.length == 0) {
-                                            // Close all the tags and remove search interface classes
-                                            search_bar.val('')
-                                            tags.find('.ddControl.open').click();
-                                            tags.removeClass('search-hidden search-match search-parent search-highlighted');
-                                          }
-                                          else {
-                                            tags.removeClass('search-hidden search-match search-parent search-highlighted');
-                                            tags.each(function() {
-                                              var tag = cj(this);
-                                              if(tag.text().toLowerCase().indexOf(searchTerm) > -1) {
-                                                tag.addClass('search-match');
-                                                tag.parents('dl').not('.lv-0').prev('dt').addClass('search-parent');
-                                              }
-                                            });
-                                            tags.not(".search-match, .search-parent").addClass('search-hidden');
-                                            cj("dt.search-parent .ddControl").not(".open").click();
-
-                                            // This has to happen after the lists are opened/hidden
-                                            matching_tags = cj(".search-match");
-                                            set_selected_tag(cj("dt.search-match").first());
-                                          }
-                                        },300);
-                                      }
-                                    });
+                                    tag_tree_filter = new TagTreeFilter('#issue-code-search','.BBTree');
                                   });
                                 </script>
 
