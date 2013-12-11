@@ -1964,8 +1964,14 @@ var TagTreeFilter = function(filter_input, tag_container) {
   self.selected_tag = null;
   self.matching_tags = null;
   self.search_timeout_id = null;
-  self.search_bar = cj(filter_input_selector);
-  self.tag_container = cj(tag_container_selector);
+  self.search_bar = filter_input;
+  self.tag_container = tag_container;
+  self.clear_button = cj('<div id="issue-code-clear" >x</div>');
+  self.empty_panel = cj('<div id="issue-code-empty" >No Results Found</div>');
+  self.tag_container.prepend(self.clear_button, self.empty_panel)
+  self.clear_button.click(function() {
+    self.reset();
+  });
 
   // We bind to keydown here so that default behaviors can be prevented
   // and we have access to non-printable keystrokes. We suppport ESC for
@@ -2035,6 +2041,8 @@ TagTreeFilter.prototype.reset = function() {
   self.search_bar.val('');
   self.tag_container.find('.ddControl.open').removeClass('open').parent().next('dl').removeClass('open').hide();  // .click();
   self.get_tags().removeClass('search-hidden search-match search-parent search-highlighted');
+  self.clear_button.fadeOut("fast");
+  self.empty_panel.fadeOut("fast");
 }
 
 // An empty search bar resets the filter. Anything else triggers
@@ -2066,8 +2074,10 @@ TagTreeFilter.prototype.search = function() {
         highlightParent(tag);
       }
     });
+    self.clear_button.fadeIn( "slow" );
 
     if (has_matches) {
+      self.empty_panel.fadeOut("fast");
       self.matching_tags = cj(".search-match");
       tags.not(self.matching_tags).not('.search-parent').addClass('search-hidden');
       cj("dt.search-parent .ddControl").not(".open").addClass('open').parent().next('dl').addClass('open').show();  // .click();
@@ -2076,6 +2086,7 @@ TagTreeFilter.prototype.search = function() {
       self.select_tag(self.matching_tags.first());
     }
     else {
+      self.empty_panel.fadeIn("fast");
       self.matching_tags = null;
       self.selected_tag = null;
       tags.addClass('search-hidden');
