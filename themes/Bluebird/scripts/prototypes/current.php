@@ -86,6 +86,40 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
   width: 522px;
   padding: 8px;
  }
+#issue-code-clear {
+  background:  #DBA185;
+  float: left;
+  line-height: 1em;
+  padding: 2px 6px 4px;
+  position: absolute;
+  right: 8px;
+  top: 57px;
+  display: none;
+  border-style: solid;
+  border-color: #CD4343;
+  border-width: 1px;
+  color:#B52B36;
+  font-weight: bold;
+}
+#issue-code-clear:hover{
+  background:  #CD4343;
+  border-color: #B52B36;
+  color:#fff;
+}
+
+#issue-code-empty{
+  height:20px;
+  width:520px;
+  padding:190px 0;
+  text-align: center;
+  display: none;
+  background-color: #FFDCDC;
+  position: absolute;
+  border-style: solid;
+  border-color: #CD4343;
+  border-width: 1px;
+  color:#B52B36;
+}
 .BBMessages {
   overflow: visible;
   height: auto;
@@ -687,9 +721,13 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                     <label>Issue Codes</label>
                                 </div>
                                 <input type="text" autocomplete="off" maxlength="64" id="issue-code-search" >
+                                <div id="issue-code-clear" >x</div>
+                                <div id="issue-code-empty" >No Results Found</div>
 
                                 <script type="text/javascript">
                                   cj( document ).ready(function() {
+
+
 
                                     // Keys "enum"
                                     var KEY = {
@@ -776,6 +814,8 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                       self.search_timeout_id = null;
                                       self.search_bar.val('');
                                       self.tag_container.find('.ddControl.open').click();
+                                      cj("#issue-code-clear,#issue-code-empty").fadeOut( "fast" );
+
                                       self.get_tags().removeClass('search-hidden search-match search-parent search-highlighted');
                                     }
 
@@ -802,13 +842,16 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                         });
                                         tags.not(".search-match, .search-parent").addClass('search-hidden');
                                         cj("dt.search-parent .ddControl").not(".open").click();
+                                        cj("#issue-code-clear").fadeIn( "slow" );
 
                                         // This has to happen after the lists are opened/hidden
                                         if (has_matches) {
+                                          cj("#issue-code-empty").fadeOut("fast");
                                           self.matching_tags = cj(".search-match");
                                           self.select_tag(cj("dt.search-match").first());
                                         }
                                         else {
+                                          cj("#issue-code-empty").fadeIn("fast");
                                           self.matching_tags = null;
                                           self.selected_tag = null;
                                         }
@@ -841,6 +884,11 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
                                     }
 
                                     tag_tree_filter = new TagTreeFilter('#issue-code-search','.BBTree');
+
+                                    cj("#issue-code-clear").click(function() {
+                                      //TagTreeFilter reset
+                                      tag_tree_filter.reset();
+                                    });
                                   });
                                 </script>
 
