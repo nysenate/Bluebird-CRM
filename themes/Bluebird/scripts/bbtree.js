@@ -1968,7 +1968,10 @@ var TagTreeFilter = function(filter_input, tag_container) {
   self.tag_container = tag_container;
   self.clear_button = cj('<div id="issue-code-clear" >x</div>');
   self.empty_panel = cj('<div id="issue-code-empty" >No Results Found</div>');
-  self.tag_container.prepend(self.clear_button, self.empty_panel)
+  self.wait_panel = cj('<div id="issue-code-wait"></div>');
+  self.tag_container.prepend(self.clear_button, self.empty_panel);
+  self.wait_panel.appendTo(self.tag_container).hide();
+
   self.clear_button.click(function() {
     self.reset();
   });
@@ -2053,7 +2056,7 @@ TagTreeFilter.prototype.search = function() {
     self.reset();
   }
   else {
-    self.tag_container.append('<div id="issue-code-wait"></div>');
+    self.wait_panel.show();
 
     function highlightParent(tag) {
       var parent = cj(this).parent();
@@ -2076,7 +2079,6 @@ TagTreeFilter.prototype.search = function() {
     });
     self.clear_button.fadeIn( "slow" );
 
-
     if (has_matches) {
       self.empty_panel.fadeOut("fast");
       self.matching_tags = cj(".search-match");
@@ -2097,7 +2099,7 @@ TagTreeFilter.prototype.search = function() {
       tags.addClass('search-hidden');
     }
     // console.log("Done searching: "+(new Date().getTime()-start_time));
-    cj("#issue-code-wait").remove();
+    self.wait_panel.hide();
   }
 }
 
