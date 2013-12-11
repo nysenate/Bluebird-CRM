@@ -1982,7 +1982,6 @@ var TagTreeFilter = function(filter_input, tag_container) {
       self.reset();
     }
     else if (event.which == KEY.BACKSPACE) {
-      console.log("Got backspace")
       clearTimeout(self.search_timeout_id);
       self.search_timeout_id = setTimeout(self.search.bind(self), 300);
       self.search_bar.focus();
@@ -2018,7 +2017,6 @@ var TagTreeFilter = function(filter_input, tag_container) {
   // action so always start by cancelling the current timeout function.
   self.search_bar.keyup(function(event) {
     if (event.which > 40) {
-      console.log("got: "+String.fromCharCode(event.which));
       clearTimeout(self.search_timeout_id);
       self.search_timeout_id = setTimeout(self.search.bind(self), 300);
     }
@@ -2049,6 +2047,7 @@ TagTreeFilter.prototype.reset = function() {
 // a search through the whole tag container for matching tags.
 TagTreeFilter.prototype.search = function() {
   var self = this;
+  var start_time = new Date().getTime();
   var search_term = self.search_bar.val().toLowerCase();
   if (search_term.length == 0) {
     self.reset();
@@ -2056,13 +2055,14 @@ TagTreeFilter.prototype.search = function() {
   else {
 
     function highlightParent(tag) {
-      var parent = tag.parent();
+      var parent = cj(this).parent();
       if (!parent.hasClass('lv-0')) {
         parent.prev('dt').addClass('search-parent');
-        highlightParent(parent);
+        highlightParent.call(parent);
       }
     }
 
+    // console.log("Finding matches: "+(new Date().getTime()-start_time));
     var has_matches = false;
     var tags = self.get_tags();
     tags.removeClass('search-hidden search-match search-parent search-highlighted');
@@ -2071,15 +2071,19 @@ TagTreeFilter.prototype.search = function() {
       if(tag.find('span.name').text().toLowerCase().indexOf(search_term) > -1) {
         has_matches = true;
         tag.addClass('search-match');
-        highlightParent(tag);
       }
     });
     self.clear_button.fadeIn( "slow" );
 
+
     if (has_matches) {
       self.empty_panel.fadeOut("fast");
       self.matching_tags = cj(".search-match");
+      // console.log("Finding parents: "+(new Date().getTime()-start_time));
+      self.matching_tags.each(highlightParent);
+      // console.log("Finding others: "+(new Date().getTime()-start_time));
       tags.not(self.matching_tags).not('.search-parent').addClass('search-hidden');
+      // console.log("Opening lists: "+(new Date().getTime()-start_time));
       cj("dt.search-parent .ddControl").not(".open").addClass('open').parent().next('dl').addClass('open').show();  // .click();
 
       // This has to happen after the lists are opened/hidden
@@ -2091,6 +2095,7 @@ TagTreeFilter.prototype.search = function() {
       self.selected_tag = null;
       tags.addClass('search-hidden');
     }
+    // console.log("Done searching: "+(new Date().getTime()-start_time));
   }
 }
 
