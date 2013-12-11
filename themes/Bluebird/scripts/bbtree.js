@@ -1951,6 +1951,7 @@ function printTags()
 // Keys "enum"
 var KEY = {
     BACKSPACE: 8,
+    TAB: 9,
     ENTER: 13,
     ESCAPE: 27,
     UP: 38,
@@ -1966,52 +1967,52 @@ var TagTreeFilter = function(filter_input_selector, tag_container_selector) {
   self.search_bar = cj(filter_input_selector);
   self.tag_container = cj(tag_container_selector);
 
-  // We bind to keydown here so that the up/down defaultBehavior
-  // can be prevented with event.preventDefault() and repeat key
-  // behavior can be created with search_bar.focus()
+  // We bind to keydown here so that default behaviors can be prevented
+  // and we have access to non-printable keystrokes. We suppport ESC for
+  // "reset", ENTER/TAB for "toggle tag", UP/DOWN for tag selection, and will
+  // trigger a tag search when you use the BACKSPACE KEY.
   self.search_bar.keydown(function(event) {
-    if (self.selected_tag) {
+    if (event.which == KEY.ESCAPE) {
+      self.reset();
+    }
+    else if (event.which == KEY.BACKSPACE) {
+      console.log("Got backspace")
+      clearTimeout(self.search_timeout_id);
+      self.search_timeout_id = setTimeout(self.search.bind(self), 300);
+      self.search_bar.focus();
+    }
+    else if (self.selected_tag) {
       var cur_index = self.matching_tags.index(self.selected_tag);
       if (event.which == KEY.UP) {
         event.preventDefault();
         if (cur_index != 0) {
           self.select_tag(cj(self.matching_tags[cur_index-1]));
         }
+        self.search_bar.focus();
       }
       else if (event.which == KEY.DOWN) {
         event.preventDefault();
         if (cur_index != self.matching_tags.length-1) {
           self.select_tag(cj(self.matching_tags[cur_index+1]));
         }
+        self.search_bar.focus();
       }
-      self.search_bar.focus();
-    }
-  });
-
-  // We suppport ESC for "reset", ENTER for "toggle tag", and will
-  // trigger a tag search when you finish using the BACKSPACE key.
-  // The search should start 300ms after the last action so always
-  // start by cancelling the current timeout function.
-  self.search_bar.keyup(function(event) {
-    if (event.which == KEY.ESCAPE) {
-      self.reset();
-    }
-    else if (event.which == KEY.ENTER || event.which == KEY.NUMPAD_ENTER) {
-      if (self.selected_tag) {
+      else if (event.which == KEY.ENTER || event.which == KEY.NUMPAD_ENTER) {
+        self.selected_tag.find('input[type="checkbox"]').click();
+      }
+      else if (event.which == KEY.TAB) {
+        event.preventDefault();
         self.selected_tag.find('input[type="checkbox"]').click();
       }
     }
-    else if (event.which == KEY.BACKSPACE) {
-      clearTimeout(self.search_timeout_id);
-      self.search_timeout_id = setTimeout(self.search.bind(self), 300);
-    }
   });
 
-  // Only trigger the search when printable keys are entered.
-  // The search should start 300ms after the last action so
-  // always start by cancelling the current timeout function.
-  self.search_bar.keypress(function(event) {
-    if (event.which != KEY.ENTER) {
+  // Only trigger the search when printable keys are entered or the BACKSPACE
+  // key is used (see above). The search should start 300ms after the last
+  // action so always start by cancelling the current timeout function.
+  self.search_bar.keyup(function(event) {
+    if (event.which > 40) {
+      console.log("got: "+String.fromCharCode(event.which));
       clearTimeout(self.search_timeout_id);
       self.search_timeout_id = setTimeout(self.search.bind(self), 300);
     }
