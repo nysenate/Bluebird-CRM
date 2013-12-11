@@ -124,7 +124,7 @@
         {literal}
         <script>
             BBTree.initContainer('', {pullSets: [291]});
-            tag_tree_filter = new TagTreeFilter('#issue-code-search','.BBTree');
+            tag_tree_filter = new TagTreeFilter(cj('#issue-code-search'),cj('.BBTree'));
         </script>
         {/literal}
     {/if}

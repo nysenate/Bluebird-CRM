@@ -1959,7 +1959,7 @@ var KEY = {
     NUMPAD_ENTER: 108,
 };
 
-var TagTreeFilter = function(filter_input_selector, tag_container_selector) {
+var TagTreeFilter = function(filter_input, tag_container) {
   var self = this;
   self.selected_tag = null;
   self.matching_tags = null;
