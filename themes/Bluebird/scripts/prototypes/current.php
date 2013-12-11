@@ -115,7 +115,7 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
     font-weight: bold; }
   .BBMessages.static {
     position: absolute;
-    top: 50px;
+    top: 85px;
     left: 0px;
     z-index: 1;
     width: 512px; }
