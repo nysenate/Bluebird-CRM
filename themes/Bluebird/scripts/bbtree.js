@@ -1970,7 +1970,9 @@ var TagTreeFilter = function(filter_input, tag_container) {
   self.empty_panel = cj('<div id="issue-code-empty" >No Results Found</div>');
   self.wait_panel = cj('<div id="issue-code-wait"></div>');
   self.tag_container.prepend(self.clear_button, self.empty_panel);
-  self.wait_panel.appendTo(self.tag_container).hide();
+  self.tag_container.prepend('<div id="issue-code-wait"></div>')
+  self.wait_panel = cj('#issue-code-wait');
+  self.wait_panel.hide();
 
   self.clear_button.click(function() {
     self.reset();
@@ -1986,7 +1988,14 @@ var TagTreeFilter = function(filter_input, tag_container) {
     }
     else if (event.which == KEY.BACKSPACE) {
       clearTimeout(self.search_timeout_id);
-      self.search_timeout_id = setTimeout(self.search.bind(self), 300);
+      self.search_timeout_id = setTimeout(function() {
+        if (self.search_bar.val().length < 3) {
+            self.wait_panel.fadeIn("fast", self.search.bind(self));
+        }
+        else {
+            self.search();
+        }
+      }, 300);
       self.search_bar.focus();
     }
     else if (self.selected_tag) {
@@ -2021,7 +2030,14 @@ var TagTreeFilter = function(filter_input, tag_container) {
   self.search_bar.keyup(function(event) {
     if (event.which > 40) {
       clearTimeout(self.search_timeout_id);
-      self.search_timeout_id = setTimeout(self.search.bind(self), 300);
+      self.search_timeout_id = setTimeout(function() {
+        if (self.search_bar.val().length < 3) {
+            self.wait_panel.fadeIn("fast", self.search.bind(self));
+        }
+        else {
+            self.search();
+        }
+      }, 300);
     }
   });
 
@@ -2044,6 +2060,7 @@ TagTreeFilter.prototype.reset = function() {
   self.get_tags().removeClass('search-hidden search-match search-parent search-highlighted');
   self.clear_button.fadeOut("fast");
   self.empty_panel.fadeOut("fast");
+  self.wait_panel.hide();
 }
 
 // An empty search bar resets the filter. Anything else triggers
@@ -2056,8 +2073,6 @@ TagTreeFilter.prototype.search = function() {
     self.reset();
   }
   else {
-    self.wait_panel.show();
-
     function highlightParent(tag) {
       var parent = cj(this).parent();
       if (!parent.hasClass('lv-0')) {
