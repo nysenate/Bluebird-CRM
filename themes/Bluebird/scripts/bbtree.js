@@ -2015,6 +2015,8 @@ var TagTreeFilter = function(filter_input, tag_container) {
         self.search_bar.focus();
       }
       else if (event.which == KEY.ENTER || event.which == KEY.NUMPAD_ENTER) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
         self.selected_tag.find('input[type="checkbox"]').click();
       }
       else if (event.which == KEY.TAB) {
