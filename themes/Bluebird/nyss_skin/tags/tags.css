@@ -24,6 +24,40 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
   width: 522px;
   padding: 8px;
  }
+#issue-code-clear {
+  background:  #DBA185;
+  float: left;
+  line-height: 1em;
+  padding: 2px 6px 4px;
+  position: absolute;
+  right: 8px;
+  top: 57px;
+  display: none;
+  border-style: solid;
+  border-color: #CD4343;
+  border-width: 1px;
+  color:#B52B36;
+  font-weight: bold;
+}
+#issue-code-clear:hover{
+  background:  #CD4343;
+  border-color: #B52B36;
+  color:#fff;
+}
+
+#issue-code-empty{
+  height:20px;
+  width:520px;
+  padding:190px 0;
+  text-align: center;
+  display: none;
+  background-color: #FFDCDC;
+  position: absolute;
+  border-style: solid;
+  border-color: #CD4343;
+  border-width: 1px;
+  color:#B52B36;
+}
 .BBMessages {
   overflow: visible;
   height: auto;
