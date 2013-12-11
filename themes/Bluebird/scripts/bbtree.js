@@ -2053,6 +2053,7 @@ TagTreeFilter.prototype.search = function() {
     self.reset();
   }
   else {
+    self.tag_container.append('<div id="issue-code-wait"></div>');
 
     function highlightParent(tag) {
       var parent = cj(this).parent();
@@ -2096,6 +2097,7 @@ TagTreeFilter.prototype.search = function() {
       tags.addClass('search-hidden');
     }
     // console.log("Done searching: "+(new Date().getTime()-start_time));
+    cj("#issue-code-wait").remove();
   }
 }
 

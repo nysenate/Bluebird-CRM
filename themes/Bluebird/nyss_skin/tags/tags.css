@@ -485,3 +485,10 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
   background-color: #A3C297 !important;
   border: 1px solid #2F4A24 !important;
 }
+
+.search-wait{
+    background: url("/sites/default/themes/Bluebird/images/loading.gif") no-repeat scroll center white !important;
+    height:400px;
+    width:520px;
+    position: absolute;
+}
