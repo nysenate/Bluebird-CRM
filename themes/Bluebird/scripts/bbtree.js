@@ -2068,7 +2068,7 @@ TagTreeFilter.prototype.search = function() {
     tags.removeClass('search-hidden search-match search-parent search-highlighted');
     tags.each(function() {
       var tag = cj(this);
-      if(tag.text().toLowerCase().indexOf(searchTerm) > -1) {
+      if(tag.find('span.name').text().toLowerCase().indexOf(searchTerm) > -1) {
         has_matches = true;
         tag.addClass('search-match');
         highlightParent(tag);
