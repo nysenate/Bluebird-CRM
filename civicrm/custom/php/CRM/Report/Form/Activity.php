@@ -638,11 +638,17 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
     //Assign those recordtype to array which have filter value or operator as 'Is not empty'
     //which will be further used for where clause buildup of temp tables
     $sortnameFilters = array();
+    $nullFilters = array();
     foreach (array('target', 'source', 'assignee') as $type) {
-      if (CRM_Utils_Array::value("contact_{$type}_value", $this->_params) ||
-        CRM_Utils_Array::value("contact_{$type}_op", $this->_params) == 'nnll'
+      if (CRM_Utils_Array::value("contact_{$type}_value", $this->_params)
       ) {
         $sortnameFilters[$type] = 1;
+      }
+      else if (CRM_Utils_Array::value("contact_{$type}_op", $this->_params) == 'nnll') {
+        $nullFilters[] = " civicrm_contact_contact_{$type} IS NOT NULL ";
+      }
+      else if (CRM_Utils_Array::value("contact_{$type}_op", $this->_params) == 'nll') {
+        $nullFilters[] = " civicrm_contact_contact_{$type} IS NULL ";
       }
     }
 
@@ -652,7 +658,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
     $this->customDataFrom();
     if (!empty($sortnameFilters) && !array_key_exists('target', $sortnameFilters)
     ) {
-      $this->_where = "WHERE FALSE";
+      $this->where();
     }
     else {
       $this->where('target');
@@ -691,7 +697,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
       $this->customDataFrom();
       if (!empty($sortnameFilters) && !array_key_exists('assignee', $sortnameFilters)
       ) {
-        $this->_where = "WHERE FALSE";
+        $this->where();
       }
       else {
         $this->where('assignee');
@@ -713,7 +719,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
       $this->customDataFrom();
       if (!empty($sortnameFilters) && !array_key_exists('source', $sortnameFilters)
       ) {
-        $this->_where = "WHERE FALSE";
+        $this->where();
       }
       else {
         $this->where('source');
@@ -728,11 +734,17 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
     // 5. show final result set from temp table
     $rows = array();
     $this->select('final');
-    $this->where('final');//NYSS
+    $this->where('final');
+    //NYSS
+    $this->_where = "WHERE TRUE";
+    if (!empty($nullFilters)) {
+      $this->_where = "WHERE " . implode('AND', $nullFilters);
+    }
     $this->orderBy();
     $this->limit();
     $sql = "{$this->_select}
 FROM civireport_activity_temp_target tar
+{$this->_where}
 GROUP BY civicrm_activity_id {$this->_orderBy} {$this->_limit}";
     $this->buildRows($sql, $rows);
 
