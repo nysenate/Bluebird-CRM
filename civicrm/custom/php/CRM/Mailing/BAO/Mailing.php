@@ -1535,13 +1535,13 @@ ORDER BY   civicrm_email.is_bulkmail DESC
         'from_email'      => $domain_email,
         'from_name'       => $domain_name,
         'msg_template_id' => NULL,
-        'contact_id'      => $params['created_id'],
+        //'contact_id'      => $params['created_id'],//NYSS
         'created_id'      => $params['created_id'],
-        'approver_id'     => $params['created_id'],
+        'approver_id'     => NULL,//NYSS
         'auto_responder'  => 0,
         'created_date'    => date('YmdHis'),
-        'scheduled_date'  => date('YmdHis'),
-        'approval_date'   => date('YmdHis'),
+        'scheduled_date'  => NULL,//NYSS
+        'approval_date'   => NULL,//NYSS
       );
 
       // Get the default from email address, if not provided.
@@ -1573,7 +1573,6 @@ ORDER BY   civicrm_email.is_bulkmail DESC
       $transaction->rollback();
       return $mailing;
     }
-
 
     $groupTableName = CRM_Contact_BAO_Group::getTableName();
     $mailingTableName = CRM_Mailing_BAO_Mailing::getTableName();
@@ -1618,7 +1617,7 @@ ORDER BY   civicrm_email.is_bulkmail DESC
      * CRM_Mailing_Form_Schedule::postProcess() or via API.
      * //NYSS 7470 condition only on the existence of a scheduled date
      */
-    if (!empty($params['scheduled_date'])) {
+    if (!empty($params['scheduled_date']) && $params['scheduled_date'] != 'null') {
       //NYSS create parent job if not yet created
       $job = new CRM_Mailing_BAO_MailingJob();
       $job->mailing_id = $mailing->id;
