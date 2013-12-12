@@ -2030,7 +2030,7 @@ var TagTreeFilter = function(filter_input, tag_container) {
   // key is used (see above). The search should start 300ms after the last
   // action so always start by cancelling the current timeout function.
   self.search_bar.keyup(function(event) {
-    if (event.which > 40) {
+    if (event.which > 40 || event.which === 32) {
       clearTimeout(self.search_timeout_id);
       self.search_timeout_id = setTimeout(function() {
         if (self.search_bar.val().length < 3) {
