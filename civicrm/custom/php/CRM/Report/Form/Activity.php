@@ -247,7 +247,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
           ),
           'activity_type_id' =>
           array('title' => ts('Activity Type'),
-            'required' => TRUE,//NYSS
+            'required' => TRUE,
             'type' => CRM_Utils_Type::T_STRING,
           ),
           'activity_subject' =>
@@ -262,7 +262,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
           ),
           'activity_date_time' =>
           array('title' => ts('Activity Date'),
-            'required' => TRUE,//NYSS
+            'required' => TRUE,
           ),
           'status_id' =>
           array('title' => ts('Activity Status'),
@@ -467,9 +467,9 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
       //NYSS
       if ($this->isTableSelected('civicrm_phone')) {
         $this->_from .= "
-            LEFT JOIN civicrm_phone civicrm_phone_target
-                   ON {$this->_aliases['civicrm_activity_contact']}.contact_id = civicrm_phone_target.contact_id AND
-                      civicrm_phone_target.is_primary = 1";
+          LEFT JOIN civicrm_phone civicrm_phone_target
+            ON {$this->_aliases['civicrm_activity_contact']}.contact_id = civicrm_phone_target.contact_id
+            AND civicrm_phone_target.is_primary = 1";
       }
       $this->_aliases['civicrm_contact'] = 'civicrm_contact_target';
     }
@@ -486,9 +486,9 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
 
       if ($this->isTableSelected('civicrm_email')) {
         $this->_from .= "
-            LEFT JOIN civicrm_email civicrm_email_assignee
-                   ON {$this->_aliases['civicrm_activity_contact']}.contact_id = civicrm_email_assignee.contact_id AND
-                      civicrm_email_assignee.is_primary = 1 ";
+          LEFT JOIN civicrm_email civicrm_email_assignee
+            ON {$this->_aliases['civicrm_activity_contact']}.contact_id = civicrm_email_assignee.contact_id
+            AND civicrm_email_assignee.is_primary = 1 ";
       }
       //NYSS
       if ($this->isTableSelected('civicrm_phone')) {
@@ -528,7 +528,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
     $this->addAddressFromClause();
   }
 
-  function where($recordType = NULL) {//NYSS
+  function where($recordType = NULL) {
     $this->_where = " WHERE {$this->_aliases['civicrm_activity']}.is_test = 0 AND
                                 {$this->_aliases['civicrm_activity']}.is_deleted = 0 AND
                                 {$this->_aliases['civicrm_activity']}.is_current_revision = 1";
@@ -539,7 +539,6 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
 
         foreach ($table['filters'] as $fieldName => $field) {
           $clause = NULL;
-          //NYSS
           if ($fieldName != 'contact_' . $recordType &&
             (strstr($fieldName, '_target') ||
               strstr($fieldName, '_assignee') ||
@@ -557,7 +556,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
           }
           else {
             $op = CRM_Utils_Array::value("{$fieldName}_op", $this->_params);
-            if ($op) {
+            if ($op && ($op != 'nnll' || $op != 'nll')) {
               $clause = $this->whereClause($field,
                 $op,
                 CRM_Utils_Array::value("{$fieldName}_value", $this->_params),
@@ -572,7 +571,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
               // get current user
               $session = CRM_Core_Session::singleton();
               if ($contactID = $session->get('userID')) {
-                $clause = "civicrm_contact_{$recordType}.id = " . $contactID;//NYSS
+                $clause = "civicrm_contact_{$recordType}.id = " . $contactID;
               }
               else {
                 $clause = NULL;
@@ -635,14 +634,15 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
     $this->buildACLClause(array('civicrm_contact_source', 'civicrm_contact_target', 'civicrm_contact_assignee'));
     $this->beginPostProcess();
 
-    //Assign those recordtype to array which have filter value or operator as 'Is not empty'
-    //which will be further used for where clause buildup of temp tables
-    $sortnameFilters = array();
+    //Assign those recordtype to array which have filter operator as 'Is not empty' or 'Is empty'
+    $nullFilters = array();
     foreach (array('target', 'source', 'assignee') as $type) {
-      if (CRM_Utils_Array::value("contact_{$type}_value", $this->_params) ||
-        CRM_Utils_Array::value("contact_{$type}_op", $this->_params) == 'nnll'
-      ) {
-        $sortnameFilters[$type] = 1;
+      if (CRM_Utils_Array::value("contact_{$type}_op", $this->_params) == 'nnll' ||
+        CRM_Utils_Array::value("contact_{$type}_value", $this->_params)) {
+        $nullFilters[] = " civicrm_contact_contact_{$type} IS NOT NULL ";
+      }
+      else if (CRM_Utils_Array::value("contact_{$type}_op", $this->_params) == 'nll') {
+        $nullFilters[] = " civicrm_contact_contact_{$type} IS NULL ";
       }
     }
 
@@ -650,13 +650,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
     $this->select('target');
     $this->from('target');
     $this->customDataFrom();
-    if (!empty($sortnameFilters) && !array_key_exists('target', $sortnameFilters)
-    ) {
-      $this->_where = "WHERE FALSE";
-    }
-    else {
-      $this->where('target');
-    }
+    $this->where('target');
     $insertCols = implode(',', $this->_selectAliases);
     $tempQuery  = "CREATE TEMPORARY TABLE civireport_activity_temp_target CHARACTER SET utf8 COLLATE utf8_unicode_ci AS 
 {$this->_select} {$this->_from} {$this->_where} ";
@@ -681,59 +675,39 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
     CRM_Core_DAO::executeQuery($tempQuery);
 
     // 3. fill temp table with assignee results
-    //NYSS
-    if (CRM_Utils_Array::value("contact_assignee", $this->_params['fields']) ||
-      CRM_Utils_Array::value("contact_assignee_email", $this->_params['fields']) ||
-      CRM_Utils_Array::value("contact_assignee_phone", $this->_params['fields'])
-    ) {
-      $this->select('assignee');
-      $this->from('assignee');
-      $this->customDataFrom();
-      if (!empty($sortnameFilters) && !array_key_exists('assignee', $sortnameFilters)
-      ) {
-        $this->_where = "WHERE FALSE";
-      }
-      else {
-        $this->where('assignee');
-      }
-      $insertCols = implode(',', $this->_selectAliases);
-      $tempQuery  = "INSERT INTO civireport_activity_temp_target ({$insertCols})
+    $this->select('assignee');
+    $this->from('assignee');
+    $this->customDataFrom();
+    $this->where('assignee');
+    $insertCols = implode(',', $this->_selectAliases);
+    $tempQuery  = "INSERT INTO civireport_activity_temp_target ({$insertCols})
 {$this->_select}
 {$this->_from} {$this->_where}";
-      CRM_Core_DAO::executeQuery($tempQuery);
-    }
+    CRM_Core_DAO::executeQuery($tempQuery);
 
     // 4. fill temp table with source results
-    if (CRM_Utils_Array::value("contact_source", $this->_params['fields']) ||
-      CRM_Utils_Array::value("contact_source_email", $this->_params['fields']) ||
-      CRM_Utils_Array::value("contact_source_phone", $this->_params['fields'])
-    ) {
-      $this->select('source');
-      $this->from('source');
-      $this->customDataFrom();
-      if (!empty($sortnameFilters) && !array_key_exists('source', $sortnameFilters)
-      ) {
-        $this->_where = "WHERE FALSE";
-      }
-      else {
-        $this->where('source');
-      }
-      $insertCols = implode(',', $this->_selectAliases);
-      $tempQuery  = "INSERT INTO civireport_activity_temp_target ({$insertCols}) 
+    $this->select('source');
+    $this->from('source');
+    $this->customDataFrom();
+    $this->where('source');
+    $insertCols = implode(',', $this->_selectAliases);
+    $tempQuery  = "INSERT INTO civireport_activity_temp_target ({$insertCols})
 {$this->_select}
 {$this->_from} {$this->_where}";
-      CRM_Core_DAO::executeQuery($tempQuery);
-    }
+    CRM_Core_DAO::executeQuery($tempQuery);
 
     // 5. show final result set from temp table
     $rows = array();
     $this->select('final');
-    $this->where('final');//NYSS
+    $this->_having = "";
+    if (!empty($nullFilters)) {
+      $this->_having = "HAVING " . implode(' AND ', $nullFilters);
+    }
     $this->orderBy();
     $this->limit();
     $sql = "{$this->_select}
 FROM civireport_activity_temp_target tar
-GROUP BY civicrm_activity_id {$this->_orderBy} {$this->_limit}";
+GROUP BY civicrm_activity_id {$this->_having} {$this->_orderBy} {$this->_limit}";
     $this->buildRows($sql, $rows);
 
     // format result set.
@@ -763,7 +737,6 @@ GROUP BY civicrm_activity_id {$this->_orderBy} {$this->_limit}";
     }
 
     foreach ($rows as $rowNum => $row) {
-      //CRM_Core_Error::debug_var('row', $row);
       if (array_key_exists('civicrm_contact_contact_source', $row)) {
         if ($value = $row['civicrm_contact_contact_source_id']) {
           if ($viewLinks) {
