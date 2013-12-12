@@ -26,7 +26,7 @@
           {/literal}{/if}{literal}
           //NYSS
           var hintText = "{/literal}{ts}Begin typing a tag name.{/ts}{literal}";
-    
+
           cj( ".contact-tagset-{/literal}{$tagset.parentID}{literal}-section:not(.crm-processed-input) input")
             .addClass("contact-taglist_{/literal}{$tagset.parentID}{literal}");
           cj( ".contact-tagset-{/literal}{$tagset.parentID}{literal}-section:not(.crm-processed-input) .contact-taglist_{/literal}{$tagset.parentID}{literal}"  )
@@ -36,7 +36,7 @@
               hintText: hintText,
               onAdd: function ( item ) {
                 processContactTags_{/literal}{$tagset.parentID}{literal}( 'select', item.id );
-              
+
                 //NYSS update count of tags in summary tab
                 if ( cj( '.ui-tabs-nav #tab_tag a' ).length ) {
                   var tagCount = cj('.ui-tabs-nav #tab_tag a em').html();
@@ -66,7 +66,7 @@
             var skipTagCreate    = "{/literal}{$tagset.skipTagCreate}{literal}";
             //NYSS
             var skipEntityAction = "{/literal}{if $tagset.parentID eq '296'}0{else}{$tagset.skipEntityAction}{/if}{literal}";
-         
+
             cj.post( postUrl, { action: action, tagID: id, parentId: parentId, entityId: entityId, entityTable: entityTable,
               skipTagCreate: skipTagCreate, skipEntityAction: skipEntityAction, key: {/literal}"{crmKey name='civicrm/ajax/processTags'}"{literal} },
               function ( response ) {
@@ -115,14 +115,20 @@
   </div>
 {if $action eq 16 || $action eq 2 || $action eq 1}
     {if $tagset.parentID eq 296}
-        <div class="BBInit"></div>
+        <div class="BBInit">
+          <div class="tag-label">
+              <label>Issue Codes</label>
+          </div>
+          <input type="text" autocomplete="off" maxlength="64" id="issue-code-search" >
+        </div>
         {literal}
         <script>
             BBTree.initContainer('', {pullSets: [291]});
+            tag_tree_filter = new TagTreeFilter(cj('#issue-code-search'),cj('.BBTree'));
         </script>
         {/literal}
-    {/if}   
-{/if}  
+    {/if}
+{/if}
   {/foreach}
 
 {elseif $tagsetType eq 'activity'}
@@ -151,7 +157,7 @@
             eval( 'activityEntityTags = ' + {/literal}'{$tagset.entityTags}'{literal} );
           {/literal}{/if}{literal}
           var hintText = "{/literal}{ts}Begin typing a tag name.{/ts}{literal}"; //NYSS
-    
+
           cj( ".activity-tagset-{/literal}{$tagset.parentID}{literal}-section:not(.crm-processed-input) input")
             .addClass("activity-taglist_{/literal}{$tagset.parentID}{literal}");
 
@@ -244,7 +250,7 @@
             eval( 'caseEntityTags = ' + {/literal}'{$tagset.entityTags}'{literal} );
           {/literal}{/if}{literal}
           var hintText = "{/literal}{ts}Begin typing a tag name.{/ts}{literal}"; //NYSS
-    
+
           cj( ".case-tagset-{/literal}{$tagset.parentID}{literal}-section:not(.crm-processed-input) input")
             .addClass("case-taglist_{/literal}{$tagset.parentID}{literal}");
 

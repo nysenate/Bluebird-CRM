@@ -14,16 +14,63 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
   clear: both;
   height: auto; }
 
+.tag-label{
+  font-size: 120%;
+  margin-top: 20px;
+}
+#issue-code-search{
+  margin:15px 0 0 0;
+  border-bottom:none;
+  width: 504px;
+  padding: 8px;
+ }
+#issue-code-clear {
+  background:  #DBA185;
+  float: left;
+  line-height: 1em;
+  padding: 2px 6px 4px;
+  position: absolute;
+  right: 8px;
+  top: 57px;
+  display: none;
+  border-style: solid;
+  border-color: #CD4343;
+  border-width: 1px;
+  color:#B52B36;
+  font-weight: bold;
+}
+#issue-code-clear:hover{
+  background:  #CD4343;
+  border-color: #B52B36;
+  color:#fff;
+}
+
+#issue-code-empty{
+  height:20px;
+  width:520px;
+  padding:190px 0;
+  text-align: center;
+  display: none;
+  background-color: #FFDCDC;
+  position: absolute;
+  border-style: solid;
+  border-color: #CD4343;
+  border-width: 1px;
+  color:#B52B36;
+}
 .BBMessages {
   overflow: visible;
   height: auto;
+  width: auto;
   background-color: #daf2ff;
   color: #002a41;
   border-style: solid;
   border-color: #a7e0ff;
   border-bottom-width: 1px;
   padding: 5px;
-  display: none; }
+  display: block;
+  float: left;
+  }
   .BBMessages .title {
     margin: 5px 0;
     font-weight: bold;
@@ -40,10 +87,10 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
     font-weight: bold; }
   .BBMessages.static {
     position: absolute;
-    top: 0px;
+    top: 85px;
     left: 0px;
     z-index: 1;
-    width: 495px; }
+    width: 512px; }
   .BBMessages.BBError {
     background-color: #f8512f;
     color: black;
@@ -57,11 +104,13 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
     border-color: #e4ec73;
     border-bottom-width: 1px; }
   .BBMessages.BBSuccess {
-    background-color: #b0d730;
+    background-color: #93C57E;
     color: black;
     border-style: solid;
-    border-color: #90b222;
-    border-bottom-width: 1px; }
+    border-color: #404A3C;
+    border-bottom-width: 1px;
+    border-top-width: 1px;
+    }
   .BBMessages .closeMessage {
     background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") !important;
     cursor: pointer;
@@ -90,6 +139,7 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
   background-color: #fff;
   border: 1px solid #ccc;
   cursor: default;
+  margin-top: 0px;
   /* for tag hirarchy structure */ }
   .BBTree dt, #BBTreeContainer .BBTree dt, #BBDialog .BBTree dt {
     float: left;
@@ -180,12 +230,16 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
     margin: 0 10px; }
   .BBTree dt.lv-0, #BBTreeContainer .BBTree dt.lv-0, #BBDialog .BBTree dt.lv-0 {
     width: 485px;
-    margin: 10px 10px 0; }
+    margin: 10px 10px 0;
+    display: none;
+  }
     .BBTree dt.lv-0 .treeButton, #BBTreeContainer .BBTree dt.lv-0 .treeButton, #BBDialog .BBTree dt.lv-0 .treeButton {
       display: none; }
     .BBTree dt.lv-0 .tag, #BBTreeContainer .BBTree dt.lv-0 .tag, #BBDialog .BBTree dt.lv-0 .tag {
       font-size: 14px;
-      font-weight: bold; }
+      font-weight: bold;
+      display: none;
+    }
   .BBTree dl.lv-1, #BBTreeContainer .BBTree dl.lv-1, #BBDialog .BBTree dl.lv-1 {
     width: 475px;
     margin-left: 10px;
@@ -387,3 +441,56 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
       background-color: transparent; }
       body.popup .BBTree dt:hover .fCB {
         display: none; } }
+
+
+.search-hidden{
+  display: none;
+}
+#BBTreeContainer .BBTree dt{
+  border:solid 1px#fff;
+}
+#BBTreeContainer .BBTree dt.search-parent{
+  background-color: #fff;
+  border:solid 1px#fff;
+}
+#BBTreeContainer .BBTree dt.subChecked{
+  background-color: #E9FCCF;
+  border-style:dotted;
+  border-width:1px;
+  border-color:#fff #ACDB85 #ACDB85 #ACDB85;
+}
+
+#BBTreeContainer .BBTree dt.search-match, #BBTreeContainer .BBTree dt.search-match.search-parent{
+  background-color: #e1e1e1;
+  border-style:solid;
+  border-width:1px;
+  border-color:#fff #A3C297 #A3C297 #A3C297;
+}
+
+#BBTreeContainer .BBTree dt.checked.search-match, #BBTreeContainer .BBTree dt.checked{
+  background-color: #C2E5B3 !important;
+  border-style:solid;
+  border-width:1px;
+  border-color:#fff #AABF8B #AABF8B #AABF8B;
+
+
+}
+#BBTreeContainer .BBTree dt.checked.search-match.search-highlighted{
+  background-color: #9EBA92 !important;
+  border-style:solid;
+  border-width:1px;
+  border-color:#fff #9EBA92 #9EBA92 #9EBA92;
+}
+#BBTreeContainer .BBTree dt.search-highlighted,#BBTreeContainer .BBTree dt:hover{
+  background-color: #A3C297 !important;
+  border: 1px solid #2F4A24 !important;
+}
+
+#issue-code-wait {
+    background: url("/sites/default/themes/Bluebird/images/loading.gif") no-repeat scroll center white !important;
+    height:400px;
+    width:520px;
+    position: absolute;
+    float:left;
+    z-index:99;
+}
