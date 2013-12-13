@@ -2,7 +2,7 @@
   {foreach from=$tagsetInfo_contact item=tagset}
   <div class="crm-section tag-section contact-tagset-{$tagset.parentID}-section">
     {*NYSS*}
-    <div class="label">
+    <div class="tag-label">
       <label>{$tagset.parentName}</label>
     </div>
     <div class="content"{if $context EQ "contactTab"} style="margin-top:-15px;"{/if}>
@@ -34,6 +34,7 @@
               prePopulate: contactEntityTags,
               theme: 'facebook',
               hintText: hintText,
+              {/literal}{if $tagset.skipEntityAction eq false}{literal}
               onAdd: function ( item ) {
                 processContactTags_{/literal}{$tagset.parentID}{literal}( 'select', item.id );
 
@@ -53,6 +54,7 @@
                   cj( '.ui-tabs-nav #tab_tag a em' ).html(tagCount);
                 }
               }
+              {/literal}{/if}{literal}
             }
           );
 
@@ -119,7 +121,7 @@
           <div class="tag-label">
               <label>Issue Codes</label>
           </div>
-          <input type="text" autocomplete="off" maxlength="64" id="issue-code-search" >
+          <input type="text" autocomplete="off" placeholder="Search For Issues Codes" maxlength="64" id="issue-code-search" >
         </div>
         {literal}
         <script>
@@ -134,7 +136,7 @@
 {elseif $tagsetType eq 'activity'}
   {foreach from=$tagsetInfo_activity item=tagset}
   <div class="crm-section tag-section activity-tagset-{$tagset.parentID}-section">
-    <div class="label">
+    <div class="tag-label">
       <label>{$tagset.parentName}</label>
     </div>
     <div class="content">
@@ -227,7 +229,7 @@
 {elseif $tagsetType eq 'case'}
   {foreach from=$tagsetInfo_case item=tagset}
   <div class="crm-section tag-section case-tagset-{$tagset.parentID}-section">
-    <div class="label">
+    <div class="tag-label">
       <label>{$tagset.parentName}</label>
     </div>
     <div class="content">

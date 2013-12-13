@@ -204,9 +204,9 @@ var BBTree = {
         }
         switch(message[1])
         {
-            case 0: actionData.name += 'Error'; actionData['errorClass'] = 'BBError'; passes = false; break;
-            case 2: actionData.name += 'Warning'; actionData['errorClass'] = 'BBWarning'; break;
-            case 1: actionData.name += 'Success'; actionData['errorClass'] = 'BBSuccess'; break;
+            case 0: actionData.name += 'Error'; actionData['errorClass'] = 'error'; passes = false; break;
+            case 2: actionData.name += 'Warning'; actionData['errorClass'] = 'alert'; break;
+            case 1: actionData.name += 'Success'; actionData['errorClass'] = 'success'; break;
             default: actionData.name += 'Notice';
         }
 
@@ -246,7 +246,7 @@ var BBTree = {
                 actionData.name += ' - Get All Tags';
                 if(passes)
                 {
-                    actionData.description += 'Keywords and Issue Codes were loaded successfully.';
+                    // actionData.description += 'Keywords and Issue Codes were loaded successfully.';
                 }
                 else {
                     actionData.description += 'Keywords and Issue Codes were unable to be loaded. Will attempt to reload again.';
@@ -258,7 +258,7 @@ var BBTree = {
                 actionData.name += ' - Retrieve Contact Tags';
                 if(passes)
                 {
-                    actionData.description += 'Contact tags for <span>'+message[2]+'</span> were loaded successfully.';
+                    // actionData.description += 'Contact tags for <span>'+message[2]+'</span> were loaded successfully.';
                 }
                 else { //would LOVE to be able to get contact name here...
                     actionData.description += 'Contact tags for <span>'+message[2]+'</span> were unable to be loaded.';
@@ -415,8 +415,11 @@ var BBTree = {
             default: actionData.description    += 'No defined message.';
         }
         //giving actionData.more a length of 0 will shut off the 'more' link, because it triggers w/lenght of 2
-        BBTree.setLastAction(actionData);
-        BBTree.addIndicator(actionData);
+        // BBTree.setLastAction(actionData);
+        // BBTree.addIndicator(actionData);
+        if (actionData.description != "") {
+            CRM.alert(ts(actionData.description), ts(actionData.name), actionData['errorClass']);
+        };
     }
 };
 //
@@ -762,7 +765,7 @@ var BBTreeEdit = {
         },
         function() {
             cj('.crm-tagListInfo .tagInfoBody .tagName span').html('');
-            cj('.crm-tagListInfo .tagInfoBody .tagID span').html('');
+            cj('.crm-tagListInfo .tagInfoBody .tagId span').html('');
             cj('.crm-tagListInfo .tagInfoBody .tagDescription span').html('');
             cj('.crm-tagListInfo .tagInfoBody .tagReserved span').html('');
             cj('.crm-tagListInfo .tagInfoBody .tagCount span').html('');
@@ -1969,34 +1972,32 @@ var TagTreeFilter = function(filter_input, tag_container) {
   self.clear_button = cj('<div id="issue-code-clear" >x</div>');
   self.empty_panel = cj('<div id="issue-code-empty" >No Results Found</div>');
   self.wait_panel = cj('<div id="issue-code-wait"></div>');
-  self.tag_container.prepend(self.clear_button, self.empty_panel);
-  self.tag_container.prepend('<div id="issue-code-wait"></div>')
-  self.wait_panel = cj('#issue-code-wait');
+  self.tag_container.prepend(self.clear_button, self.empty_panel, self.wait_panel);
   self.wait_panel.hide();
 
   self.clear_button.click(function() {
     self.reset();
   });
 
+  // Shim IE9 to provide placeholder support
+  self.search_bar.focus(function() {
+    if (self.search_bar.val() == self.search_bar.attr("placeholder")) {
+      self.search_bar.val("");
+      self.search_bar.removeClass("placeholder");
+    }
+  }).blur(function() {
+    if (self.search_bar.val() == "" || self.search_bar.val() == self.search_bar.attr("placeholder")) {
+      self.search_bar.addClass("placeholder");
+      self.search_bar.val(self.search_bar.attr("placeholder"));
+    }
+  }).blur();
+
   // We bind to keydown here so that default behaviors can be prevented
   // and we have access to non-printable keystrokes. We suppport ESC for
-  // "reset", ENTER/TAB for "toggle tag", UP/DOWN for tag selection, and will
-  // trigger a tag search when you use the BACKSPACE KEY.
+  // "reset", ENTER/TAB for "toggle tag", and UP/DOWN for tag selection.
   self.search_bar.keydown(function(event) {
     if (event.which == KEY.ESCAPE) {
       self.reset();
-    }
-    else if (event.which == KEY.BACKSPACE) {
-      clearTimeout(self.search_timeout_id);
-      self.search_timeout_id = setTimeout(function() {
-        if (self.search_bar.val().length < 3) {
-            self.wait_panel.fadeIn("fast", self.search.bind(self));
-        }
-        else {
-            self.search();
-        }
-      }, 300);
-      self.search_bar.focus();
     }
     else if (self.selected_tag) {
       var cur_index = self.matching_tags.index(self.selected_tag);
@@ -2014,33 +2015,26 @@ var TagTreeFilter = function(filter_input, tag_container) {
         }
         self.search_bar.focus();
       }
-      else if (event.which == KEY.ENTER || event.which == KEY.NUMPAD_ENTER) {
+      else if (event.which == KEY.ENTER || event.which == KEY.NUMPAD_ENTER || event.which == KEY.TAB) {
         event.preventDefault();
         event.stopImmediatePropagation();
-        self.selected_tag.find('input[type="checkbox"]').click();
-      }
-      else if (event.which == KEY.TAB) {
-        event.preventDefault();
         self.selected_tag.find('input[type="checkbox"]').click();
       }
     }
   });
 
-  // Only trigger the search when printable keys are entered or the BACKSPACE
-  // key is used (see above). The search should start 300ms after the last
-  // action so always start by cancelling the current timeout function.
-  self.search_bar.keyup(function(event) {
-    if (event.which > 40 || event.which === 32) {
-      clearTimeout(self.search_timeout_id);
-      self.search_timeout_id = setTimeout(function() {
-        if (self.search_bar.val().length < 3) {
-            self.wait_panel.fadeIn("fast", self.search.bind(self));
-        }
-        else {
-            self.search();
-        }
-      }, 300);
-    }
+  // The search should start 300ms after the last action so always start by
+  // cancelling the current timeout function.
+  self.search_bar.on('input', function(event) {
+    clearTimeout(self.search_timeout_id);
+    self.search_timeout_id = setTimeout(function() {
+      if (self.search_bar.val().length < 3) {
+          self.wait_panel.fadeIn("fast", self.search.bind(self));
+      }
+      else {
+          self.search();
+      }
+    }, 300);
   });
 
   return self;
