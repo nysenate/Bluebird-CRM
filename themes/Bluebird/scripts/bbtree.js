@@ -216,14 +216,14 @@ var BBTree = {
                 actionData.name += ' - Add Tag';
                 if(passes)
                 {
-                    actionData.description += '<span>'+message[2] + '</span> was added to this entity.';
+                    actionData.description += '<span>'+message[2] + '</span> was added to this contact.';
                 }
                 else {
                     if( message[4] == 'WARNING: Bad user level.' )
                     {
                         actionData.description += 'You do not have the required permissions to add tags to this record.';
                     } else {
-                        actionData.description += '<span>'+message[2] + '</span> was unable to be added to this entity.';
+                        actionData.description += '<span>'+message[2] + '</span> was unable to be added to this contact.';
                     }
                 }
                 break;
@@ -231,14 +231,14 @@ var BBTree = {
                 actionData.name += ' - Remove Tag';
                 if(passes)
                 {
-                    actionData.description += '<span>'+ message[2] + '</span> was removed from this entity.';
+                    actionData.description += '<span>'+ message[2] + '</span> was removed from this contact.';
                 }
                 else {
                     if( message[4] == 'WARNING: Bad user level.' )
                     {
                         actionData.description += 'You do not have the required permissions to remove tags from this record.';
                     } else {
-                        actionData.description += '<span>'+message[2] + '</span> was unable to be removed from this entity.';
+                        actionData.description += '<span>'+message[2] + '</span> was unable to be removed from this contact.';
                     }
                 }
                 break;
