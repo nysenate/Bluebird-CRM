@@ -1970,9 +1970,7 @@ var TagTreeFilter = function(filter_input, tag_container) {
   self.clear_button = cj('<div id="issue-code-clear" >x</div>');
   self.empty_panel = cj('<div id="issue-code-empty" >No Results Found</div>');
   self.wait_panel = cj('<div id="issue-code-wait"></div>');
-  self.tag_container.prepend(self.clear_button, self.empty_panel);
-  self.tag_container.prepend('<div id="issue-code-wait"></div>')
-  self.wait_panel = cj('#issue-code-wait');
+  self.tag_container.prepend(self.clear_button, self.empty_panel, self.wait_panel);
   self.wait_panel.hide();
 
   self.clear_button.click(function() {
