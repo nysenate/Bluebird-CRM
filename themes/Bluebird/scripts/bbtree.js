@@ -216,14 +216,14 @@ var BBTree = {
                 actionData.name += ' - Add Tag';
                 if(passes)
                 {
-                    actionData.description += '<span>'+message[2] + '</span> was added to this entity.';
+                    actionData.description += '<span>'+message[2] + '</span> was added to this contact.';
                 }
                 else {
                     if( message[4] == 'WARNING: Bad user level.' )
                     {
                         actionData.description += 'You do not have the required permissions to add tags to this record.';
                     } else {
-                        actionData.description += '<span>'+message[2] + '</span> was unable to be added to this entity.';
+                        actionData.description += '<span>'+message[2] + '</span> was unable to be added to this contact.';
                     }
                 }
                 break;
@@ -231,14 +231,14 @@ var BBTree = {
                 actionData.name += ' - Remove Tag';
                 if(passes)
                 {
-                    actionData.description += '<span>'+ message[2] + '</span> was removed from this entity.';
+                    actionData.description += '<span>'+ message[2] + '</span> was removed from this contact.';
                 }
                 else {
                     if( message[4] == 'WARNING: Bad user level.' )
                     {
                         actionData.description += 'You do not have the required permissions to remove tags from this record.';
                     } else {
-                        actionData.description += '<span>'+message[2] + '</span> was unable to be removed from this entity.';
+                        actionData.description += '<span>'+message[2] + '</span> was unable to be removed from this contact.';
                     }
                 }
                 break;
@@ -1229,7 +1229,7 @@ var BBTreeModal = {
         runFunction: function(){
             cj("#BBDialog").dialog( "option", "buttons", [
             {
-                text: "Done",
+                text: "Convert",
                 click: function() {
                     modalLoadingGif('add');
                     tagMove = new Object();
@@ -1313,7 +1313,7 @@ var BBTreeModal = {
         runFunction: function(){
             cj("#BBDialog").dialog( "option", "buttons", [
                 {
-                    text: "Merge ",
+                    text: "Merge",
                     click: function() {
                         tagMerge = new Object();
                         modalLoadingGif('add');
@@ -1369,7 +1369,7 @@ var BBTreeModal = {
         runFunction: function(){
             cj("#BBDialog").dialog( "option", "buttons", [
             {
-                text: "Done",
+                text: "Update",
                 click: function () {
                     modalLoadingGif('add');
                     tagUpdate = new Object();
@@ -1447,7 +1447,7 @@ var BBTreeModal = {
         runFunction: function(){
             cj("#BBDialog").dialog( "option", "buttons", [
             {
-                text: "Done",
+                text: "Move",
                 click: function() {
                     modalLoadingGif('add');
                     tagMove = new Object();
@@ -1506,7 +1506,7 @@ var BBTreeModal = {
             }
             cj("#BBDialog").dialog( "option", "buttons", [
             {
-                text: "Done",
+                text: "Remove",
                 click: function() {
                     tagRemove = new Object();
                     tagRemove.parentId = removeTagLabel(BBTreeModal.taggedID);
@@ -1566,15 +1566,15 @@ var BBTreeModal = {
             cj("#BBDialog").dialog( "option", "buttons",
             [
                 {
-                    text: "Done",
+                    text: "Add",
                     click: function() {
                         tagCreate = new Object();
                         tagCreate.tagDescription = '';
                         modalLoadingGif('add');
                         // NYSS-#6708
                         // tagCreate.tagName = checkForHTMLinModalField(cj('#BBDialog .modalInputs input[name=tagName]').val());
+                        // NYSS-6558 trim to prevent empty tags
                         tagCreate.tagName = cj.trim(cj('#BBDialog .modalInputs input[name=tagName]').val());
-
                         tagCreate.treeParent = BBTreeModal.treeParent;
                         // tagCreate.tagDescription = checkForHTMLinModalField(cj('#BBDialog .modalInputs input[name=tagDescription]').val());
                         tagCreate.tagDescription = cj('#BBDialog .modalInputs input[name=tagDescription]').val();
@@ -1981,8 +1981,8 @@ var TagTreeFilter = function(filter_input, tag_container) {
   // Shim IE9 to provide placeholder support
   self.search_bar.focus(function() {
     if (self.search_bar.val() == self.search_bar.attr("placeholder")) {
-      self.search_bar.val("");
       self.search_bar.removeClass("placeholder");
+      self.search_bar.val("");
     }
   }).blur(function() {
     if (self.search_bar.val() == "" || self.search_bar.val() == self.search_bar.attr("placeholder")) {
@@ -2029,6 +2029,13 @@ var TagTreeFilter = function(filter_input, tag_container) {
     self.search_timeout_id = setTimeout(function() {
       if (self.search_bar.val().length < 3) {
           self.wait_panel.fadeIn("fast", self.search.bind(self));
+      }
+      else if(self.search_bar.val() === "Search for Issue Codes"){
+        self.tag_container.find('.ddControl.open').removeClass('open').parent().next('dl').removeClass('open').hide();
+        self.get_tags().removeClass('search-hidden search-match search-parent search-highlighted');
+        self.clear_button.fadeOut("fast");
+        self.empty_panel.fadeOut("fast");
+        self.wait_panel.hide();
       }
       else {
           self.search();

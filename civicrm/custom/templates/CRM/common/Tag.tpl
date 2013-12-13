@@ -36,14 +36,22 @@
               hintText: hintText,
               {/literal}{if $tagset.skipEntityAction eq false}{literal}
               onAdd: function ( item ) {
-                processContactTags_{/literal}{$tagset.parentID}{literal}( 'select', item.id );
+                // NYSS-6558 trim and check to prevent submitting empty tags
+                console.log(cj.trim(item.id).length);
 
-                //NYSS update count of tags in summary tab
-                if ( cj( '.ui-tabs-nav #tab_tag a' ).length ) {
-                  var tagCount = cj('.ui-tabs-nav #tab_tag a em').html();
-                  tagCount++;
-                  cj( '.ui-tabs-nav #tab_tag a em' ).html(tagCount);
+                if(cj.trim(item.id).length > 8){
+                  processContactTags_{/literal}{$tagset.parentID}{literal}( 'select', cj.trim(item.id ));
+                  //NYSS update count of tags in summary tab
+                  if ( cj( '.ui-tabs-nav #tab_tag a' ).length ) {
+                    var tagCount = cj('.ui-tabs-nav #tab_tag a em').html();
+                    tagCount++;
+                    cj( '.ui-tabs-nav #tab_tag a em' ).html(tagCount);
+                  }
+                }else{
+                  CRM.alert(ts('Keywords must contain content, blank spaces are not accepted'), ts('Warning'), 'warning');
+                  cj('.contact-tagset-296-section li.token-input-token-facebook').last().remove();
                 }
+
               },
               onDelete: function ( item ) {
                 processContactTags_{/literal}{$tagset.parentID}{literal}( 'delete', item.id );
