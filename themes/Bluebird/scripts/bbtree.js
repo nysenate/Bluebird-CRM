@@ -348,7 +348,6 @@ var BBTree = {
                         actionData.description += 'not ';
                     }
                     actionData.description += 'reserved</span>.';
-                    console.log(actionData.description);
                 }
                 else { //would LOVE to be able to get contact name here...
                     if(message[3] == 'DB Error: already exists')
@@ -1028,7 +1027,7 @@ var BBTreeModal = {
 
         // //make this into a subfunction to find proper greeting name if not reserved
 
-        // cj('#dialog input:[name=tagName]').focus();
+        // cj('#dialog input[name=tagName]').focus();
 
     },
     setTreeType: function() // sets previous tree
@@ -1205,9 +1204,8 @@ var BBTreeModal = {
     },
     makeModalBox: function(){
         cj("#BBDialog").show();
-        cj("#BBDialog").dialog("open");
+        cj("#BBDialog").dialog(this.currentSettings).dialog("open");
         cj("#BBDialog").removeClass('loadingGif');
-        cj("#BBDialog").dialog(this.currentSettings);
         if(this.taggedReserved && this.taggedMethod != 'update')
         {
             return true;//if it's reserved, there should be no ability to edit it, unless you're updating it.
@@ -1377,10 +1375,10 @@ var BBTreeModal = {
                     tagUpdate = new Object();
                     tagUpdate.prevName = BBTreeModal.taggedName;
                     // NYSS-#6708
-                    // tagUpdate.tagName = checkForHTMLinModalField(cj('#BBDialog .modalInputs input:[name=tagName]').val());
-                    // tagUpdate.tagDescription = checkForHTMLinModalField(cj('#BBDialog .modalInputs input:[name=tagDescription]').val());
-                    tagUpdate.tagName = cj('#BBDialog .modalInputs input:[name=tagName]').val();
-                    tagUpdate.tagDescription = cj('#BBDialog .modalInputs input:[name=tagDescription]').val();
+                    // tagUpdate.tagName = checkForHTMLinModalField(cj('#BBDialog .modalInputs input[name=tagName]').val());
+                    // tagUpdate.tagDescription = checkForHTMLinModalField(cj('#BBDialog .modalInputs input[name=tagDescription]').val());
+                    tagUpdate.tagName = cj('#BBDialog .modalInputs input[name=tagName]').val();
+                    tagUpdate.tagDescription = cj('#BBDialog .modalInputs input[name=tagDescription]').val();
                     tagUpdate.parentId = removeTagLabel(BBTreeModal.taggedID);
                     tagUpdate.isReserved = cj('#BBDialog .modalInputs input:checked[name=isReserved]').length;
                     if(tagUpdate.tagName.length > 0)
@@ -1564,7 +1562,7 @@ var BBTreeModal = {
             {
                 return true;
             }
-            cj('#BBDialog input:[name=tagName]').focus();
+            cj('#BBDialog input[name=tagName]').focus();
             cj("#BBDialog").dialog( "option", "buttons",
             [
                 {
@@ -1574,11 +1572,11 @@ var BBTreeModal = {
                         tagCreate.tagDescription = '';
                         modalLoadingGif('add');
                         // NYSS-#6708
-                        // tagCreate.tagName = checkForHTMLinModalField(cj('#BBDialog .modalInputs input:[name=tagName]').val());
-                        tagCreate.tagName = cj('#BBDialog .modalInputs input:[name=tagName]').val();
+                        // tagCreate.tagName = checkForHTMLinModalField(cj('#BBDialog .modalInputs input[name=tagName]').val());
+                        tagCreate.tagName = cj('#BBDialog .modalInputs input[name=tagName]').val();
                         tagCreate.treeParent = BBTreeModal.treeParent;
-                        // tagCreate.tagDescription = checkForHTMLinModalField(cj('#BBDialog .modalInputs input:[name=tagDescription]').val());
-                        tagCreate.tagDescription = cj('#BBDialog .modalInputs input:[name=tagDescription]').val();
+                        // tagCreate.tagDescription = checkForHTMLinModalField(cj('#BBDialog .modalInputs input[name=tagDescription]').val());
+                        tagCreate.tagDescription = cj('#BBDialog .modalInputs input[name=tagDescription]').val();
                         tagCreate.parentId = removeTagLabel(BBTreeModal.taggedID);
                         tagCreate.isReserved = cj('#BBDialog .modalInputs input:checked[name=isReserved]').length;
                         if(tagCreate.tagName.length > 0 )
