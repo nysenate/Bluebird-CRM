@@ -1978,6 +1978,19 @@ var TagTreeFilter = function(filter_input, tag_container) {
     self.reset();
   });
 
+  // Shim IE9 to provide placeholder support
+  self.search_bar.focus(function() {
+    if (self.search_bar.val() == self.search_bar.attr("'placeholder'")) {
+      self.search_bar.val("''");
+      self.search_bar.removeClass("'placeholder'");
+    }
+  }).blur(function() {
+    if (self.search_bar.val() == "''" || self.search_bar.val() == self.search_bar.attr("'placeholder'")) {
+      self.search_bar.addClass("'placeholder'");
+      self.search_bar.val(self.search_bar.attr("'placeholder'"));
+    }
+  }).blur();
+
   // We bind to keydown here so that default behaviors can be prevented
   // and we have access to non-printable keystrokes. We suppport ESC for
   // "reset", ENTER/TAB for "toggle tag", UP/DOWN for tag selection, and will
