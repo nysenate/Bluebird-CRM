@@ -1573,7 +1573,8 @@ var BBTreeModal = {
                         modalLoadingGif('add');
                         // NYSS-#6708
                         // tagCreate.tagName = checkForHTMLinModalField(cj('#BBDialog .modalInputs input[name=tagName]').val());
-                        tagCreate.tagName = cj('#BBDialog .modalInputs input[name=tagName]').val();
+                        tagCreate.tagName = cj.trim(cj('#BBDialog .modalInputs input[name=tagName]').val());
+
                         tagCreate.treeParent = BBTreeModal.treeParent;
                         // tagCreate.tagDescription = checkForHTMLinModalField(cj('#BBDialog .modalInputs input[name=tagDescription]').val());
                         tagCreate.tagDescription = cj('#BBDialog .modalInputs input[name=tagDescription]').val();
