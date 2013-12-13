@@ -98,14 +98,14 @@ function nyss_ioimport_form() {
   );
 
   $rules = CRM_Core_DAO::executeQuery("
-    SELECT name, id
+    SELECT title, id
     FROM civicrm_dedupe_rule_group
     WHERE contact_type = 'Individual'
-    ORDER BY name;");
+    ORDER BY title;");
 
   $dedupeoptions = array( );
   while ($rules->fetch()) {
-    $dedupeoptions[$rules->id] = $rules->name;
+    $dedupeoptions[$rules->id] = $rules->title;
   }
    
   $form['dedupeset']['deduperule'] = array(
@@ -314,7 +314,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
   //if processing as an email import, set other required options
   if ($form_state['values']['emailimport']==1) {
     $form_state['values']['dedupe'] = 1;
-    $form_state['values']['deduperule'] = 11;
+    $form_state['values']['deduperule'] = 1;
   }
 
   //initialize arrays to be populated with contact id's during import
@@ -413,7 +413,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
     //if dedupe selected and no contact id, lookup contact in db
     if ( $form_state['values']['dedupe'] && empty($l['id']) ) {
-      _findContact($l, $nyss_conn);
+      _findContact($l, $nyss_conn, $form_state['values']['deduperule']);
       //nyss_out('debug', $l, TRUE); exit();
     }
 
@@ -1299,7 +1299,7 @@ function _fixStreetNumber(&$l) {
   }
 }//_fixStreetNumber
 
-function _findContact(&$l, $nyss_conn) {
+function _findContact(&$l, $nyss_conn, $ruleID = 1) {
   require_once 'CRM/Dedupe/Finder.php';
 
   //format params to pass to dedupe tool
@@ -1327,20 +1327,27 @@ function _findContact(&$l, $nyss_conn) {
   $params = CRM_Dedupe_Finder::formatParams($params, 'Individual');
   $params['check_permission'] = 0;
 
+  $ruleTitle = CRM_Core_DAO::singleValueQuery("
+    SELECT title
+    FROM civicrm_dedupe_rule_group
+    WHERE id = {$ruleID}
+  ");
+
   $o = new stdClass();
-  $o->name = 'Individual Strict (first + last + (street + zip | email))';
+  $o->title = $ruleTitle;
   $o->params = $params;
-  $o->noRules = false;
+  $o->noRules = FALSE;
   $tableQueries = array();
   nyss_dedupe_civicrm_dupeQuery($o, 'table', $tableQueries);
   $sql = $tableQueries['civicrm.custom.5'];
   $sql = "
     SELECT contact.id
     FROM civicrm_contact as contact JOIN ($sql) as dupes
-    WHERE dupes.id1=contact.id AND contact.is_deleted=0
+    WHERE dupes.id1 = contact.id AND contact.is_deleted = 0
   ";
 
   if (!$result = mysql_query($sql, $nyss_conn) ) {
+    CRM_Core_Error::debug('sql', $sql);
     var_dump(mysql_error($nyss_conn)); exit();
   }
 
