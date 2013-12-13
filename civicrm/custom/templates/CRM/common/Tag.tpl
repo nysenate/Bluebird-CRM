@@ -121,7 +121,7 @@
           <div class="tag-label">
               <label>Issue Codes</label>
           </div>
-          <input type="text" autocomplete="off" placeholder="Search For Issues Codes" maxlength="64" id="issue-code-search" >
+          <input type="text" autocomplete="off" placeholder="Search for Issue Codes" maxlength="64" id="issue-code-search" >
         </div>
         {literal}
         <script>
