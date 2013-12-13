@@ -534,3 +534,4 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
     float:left;
     z-index:99;
 }
+.page-civicrm-contact-view dt#tagLabel_291{ display:none; }
