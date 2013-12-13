@@ -1229,7 +1229,7 @@ var BBTreeModal = {
         runFunction: function(){
             cj("#BBDialog").dialog( "option", "buttons", [
             {
-                text: "Done",
+                text: "Convert",
                 click: function() {
                     modalLoadingGif('add');
                     tagMove = new Object();
@@ -1313,7 +1313,7 @@ var BBTreeModal = {
         runFunction: function(){
             cj("#BBDialog").dialog( "option", "buttons", [
                 {
-                    text: "Merge ",
+                    text: "Merge",
                     click: function() {
                         tagMerge = new Object();
                         modalLoadingGif('add');
@@ -1369,7 +1369,7 @@ var BBTreeModal = {
         runFunction: function(){
             cj("#BBDialog").dialog( "option", "buttons", [
             {
-                text: "Done",
+                text: "Update",
                 click: function () {
                     modalLoadingGif('add');
                     tagUpdate = new Object();
@@ -1447,7 +1447,7 @@ var BBTreeModal = {
         runFunction: function(){
             cj("#BBDialog").dialog( "option", "buttons", [
             {
-                text: "Done",
+                text: "Move",
                 click: function() {
                     modalLoadingGif('add');
                     tagMove = new Object();
@@ -1506,7 +1506,7 @@ var BBTreeModal = {
             }
             cj("#BBDialog").dialog( "option", "buttons", [
             {
-                text: "Done",
+                text: "Remove",
                 click: function() {
                     tagRemove = new Object();
                     tagRemove.parentId = removeTagLabel(BBTreeModal.taggedID);
@@ -1566,7 +1566,7 @@ var BBTreeModal = {
             cj("#BBDialog").dialog( "option", "buttons",
             [
                 {
-                    text: "Done",
+                    text: "Add",
                     click: function() {
                         tagCreate = new Object();
                         tagCreate.tagDescription = '';
