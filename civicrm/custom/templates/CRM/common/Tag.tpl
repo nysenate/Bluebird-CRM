@@ -48,6 +48,7 @@
                     cj( '.ui-tabs-nav #tab_tag a em' ).html(tagCount);
                   }
                 }else{
+                  CRM.alert(ts('Keywords must contain content, blank spaces are not accepted'), ts('Warning'), 'warning');
                   cj('.contact-tagset-296-section li.token-input-token-facebook').last().remove();
                 }
 
