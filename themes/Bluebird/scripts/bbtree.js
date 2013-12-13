@@ -246,7 +246,7 @@ var BBTree = {
                 actionData.name += ' - Get All Tags';
                 if(passes)
                 {
-                    actionData.description += 'Keywords and Issue Codes were loaded successfully.';
+                    // actionData.description += 'Keywords and Issue Codes were loaded successfully.';
                 }
                 else {
                     actionData.description += 'Keywords and Issue Codes were unable to be loaded. Will attempt to reload again.';
@@ -258,7 +258,7 @@ var BBTree = {
                 actionData.name += ' - Retrieve Contact Tags';
                 if(passes)
                 {
-                    actionData.description += 'Contact tags for <span>'+message[2]+'</span> were loaded successfully.';
+                    // actionData.description += 'Contact tags for <span>'+message[2]+'</span> were loaded successfully.';
                 }
                 else { //would LOVE to be able to get contact name here...
                     actionData.description += 'Contact tags for <span>'+message[2]+'</span> were unable to be loaded.';
@@ -417,7 +417,9 @@ var BBTree = {
         //giving actionData.more a length of 0 will shut off the 'more' link, because it triggers w/lenght of 2
         // BBTree.setLastAction(actionData);
         // BBTree.addIndicator(actionData);
-        CRM.alert(ts(actionData.description), ts(actionData.name), actionData['errorClass']);
+        if (actionData.description != "") {
+            CRM.alert(ts(actionData.description), ts(actionData.name), actionData['errorClass']);
+        };
     }
 };
 //
