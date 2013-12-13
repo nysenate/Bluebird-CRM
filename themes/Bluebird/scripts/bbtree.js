@@ -204,9 +204,9 @@ var BBTree = {
         }
         switch(message[1])
         {
-            case 0: actionData.name += 'Error'; actionData['errorClass'] = 'BBError'; passes = false; break;
-            case 2: actionData.name += 'Warning'; actionData['errorClass'] = 'BBWarning'; break;
-            case 1: actionData.name += 'Success'; actionData['errorClass'] = 'BBSuccess'; break;
+            case 0: actionData.name += 'Error'; actionData['errorClass'] = 'error'; passes = false; break;
+            case 2: actionData.name += 'Warning'; actionData['errorClass'] = 'alert'; break;
+            case 1: actionData.name += 'Success'; actionData['errorClass'] = 'success'; break;
             default: actionData.name += 'Notice';
         }
 
@@ -415,8 +415,9 @@ var BBTree = {
             default: actionData.description    += 'No defined message.';
         }
         //giving actionData.more a length of 0 will shut off the 'more' link, because it triggers w/lenght of 2
-        BBTree.setLastAction(actionData);
-        BBTree.addIndicator(actionData);
+        // BBTree.setLastAction(actionData);
+        // BBTree.addIndicator(actionData);
+        CRM.alert(ts(actionData.description), ts(actionData.name), actionData['errorClass']);
     }
 };
 //
