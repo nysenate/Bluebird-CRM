@@ -1981,8 +1981,8 @@ var TagTreeFilter = function(filter_input, tag_container) {
   // Shim IE9 to provide placeholder support
   self.search_bar.focus(function() {
     if (self.search_bar.val() == self.search_bar.attr("placeholder")) {
-      self.search_bar.val("");
       self.search_bar.removeClass("placeholder");
+      self.search_bar.val("");
     }
   }).blur(function() {
     if (self.search_bar.val() == "" || self.search_bar.val() == self.search_bar.attr("placeholder")) {
