@@ -765,7 +765,7 @@ var BBTreeEdit = {
         },
         function() {
             cj('.crm-tagListInfo .tagInfoBody .tagName span').html('');
-            cj('.crm-tagListInfo .tagInfoBody .tagID span').html('');
+            cj('.crm-tagListInfo .tagInfoBody .tagId span').html('');
             cj('.crm-tagListInfo .tagInfoBody .tagDescription span').html('');
             cj('.crm-tagListInfo .tagInfoBody .tagReserved span').html('');
             cj('.crm-tagListInfo .tagInfoBody .tagCount span').html('');
