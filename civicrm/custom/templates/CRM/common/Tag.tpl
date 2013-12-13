@@ -34,6 +34,7 @@
               prePopulate: contactEntityTags,
               theme: 'facebook',
               hintText: hintText,
+              {/literal}{if $tagset.skipEntityAction eq false}{literal}
               onAdd: function ( item ) {
                 processContactTags_{/literal}{$tagset.parentID}{literal}( 'select', item.id );
 
@@ -53,6 +54,7 @@
                   cj( '.ui-tabs-nav #tab_tag a em' ).html(tagCount);
                 }
               }
+              {/literal}{/if}{literal}
             }
           );
 
