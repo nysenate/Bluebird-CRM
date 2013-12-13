@@ -1992,23 +1992,10 @@ var TagTreeFilter = function(filter_input, tag_container) {
 
   // We bind to keydown here so that default behaviors can be prevented
   // and we have access to non-printable keystrokes. We suppport ESC for
-  // "reset", ENTER/TAB for "toggle tag", UP/DOWN for tag selection, and will
-  // trigger a tag search when you use the BACKSPACE KEY.
+  // "reset", ENTER/TAB for "toggle tag", and UP/DOWN for tag selection.
   self.search_bar.keydown(function(event) {
     if (event.which == KEY.ESCAPE) {
       self.reset();
-    }
-    else if (event.which == KEY.BACKSPACE) {
-      clearTimeout(self.search_timeout_id);
-      self.search_timeout_id = setTimeout(function() {
-        if (self.search_bar.val().length < 3) {
-            self.wait_panel.fadeIn("fast", self.search.bind(self));
-        }
-        else {
-            self.search();
-        }
-      }, 300);
-      self.search_bar.focus();
     }
     else if (self.selected_tag) {
       var cur_index = self.matching_tags.index(self.selected_tag);
@@ -2026,33 +2013,26 @@ var TagTreeFilter = function(filter_input, tag_container) {
         }
         self.search_bar.focus();
       }
-      else if (event.which == KEY.ENTER || event.which == KEY.NUMPAD_ENTER) {
+      else if (event.which == KEY.ENTER || event.which == KEY.NUMPAD_ENTER || event.which == KEY.TAB) {
         event.preventDefault();
         event.stopImmediatePropagation();
-        self.selected_tag.find('input[type="checkbox"]').click();
-      }
-      else if (event.which == KEY.TAB) {
-        event.preventDefault();
         self.selected_tag.find('input[type="checkbox"]').click();
       }
     }
   });
 
-  // Only trigger the search when printable keys are entered or the BACKSPACE
-  // key is used (see above). The search should start 300ms after the last
-  // action so always start by cancelling the current timeout function.
-  self.search_bar.keyup(function(event) {
-    if (event.which > 40 || event.which === 32) {
-      clearTimeout(self.search_timeout_id);
-      self.search_timeout_id = setTimeout(function() {
-        if (self.search_bar.val().length < 3) {
-            self.wait_panel.fadeIn("fast", self.search.bind(self));
-        }
-        else {
-            self.search();
-        }
-      }, 300);
-    }
+  // The search should start 300ms after the last action so always start by
+  // cancelling the current timeout function.
+  self.search_bar.on('input', function(event) {
+    clearTimeout(self.search_timeout_id);
+    self.search_timeout_id = setTimeout(function() {
+      if (self.search_bar.val().length < 3) {
+          self.wait_panel.fadeIn("fast", self.search.bind(self));
+      }
+      else {
+          self.search();
+      }
+    }, 300);
   });
 
   return self;
