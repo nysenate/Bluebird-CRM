@@ -164,7 +164,7 @@ class CRM_Contact_Form_Edit_TagsAndGroups {
       $parentNames = CRM_Core_BAO_Tag::getTagSet('civicrm_contact');
             
       //NYSS #3726 - accommodate additional params
-      CRM_Core_Form_Tag::buildQuickForm($form, $parentNames, 'civicrm_contact', $contactId, TRUE, TRUE, FALSE, FALSE);
+      CRM_Core_Form_Tag::buildQuickForm($form, $parentNames, 'civicrm_contact', $contactId, FALSE, TRUE, FALSE, FALSE);
     }
     $form->assign('tagGroup', $form->_tagGroup);
   }
