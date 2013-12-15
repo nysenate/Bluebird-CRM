@@ -537,7 +537,8 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
       );
     }
 
-    if (!$selectAll && $componentTable) {
+    //NYSS 7494
+    if ($componentTable) {
       $from .= " INNER JOIN $componentTable ctTable ON ctTable.contact_id = contact_a.id ";
     }
     elseif ($componentClause) {
