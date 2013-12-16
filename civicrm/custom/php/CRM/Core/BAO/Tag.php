@@ -292,9 +292,7 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
 
     if ($tag->delete()) {
       CRM_Utils_Hook::post('delete', 'Tag', $id, $tag);
-      // NYSS 6594 - This can be called by ajax, don't set status for next page.
-      // Calling functions should set the appropriate status themselves.
-      // CRM_Core_Session::setStatus(ts('Selected tag has been deleted successfuly.'), ts('Tag Deleted'), 'success');
+      CRM_Core_Session::setStatus(ts('Selected tag has been deleted successfuly.'), ts('Tag Deleted'), 'success');
 
       //NYSS
       //Overkill for now. Need a way to have targetted invalidation.

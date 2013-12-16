@@ -172,8 +172,6 @@ class CRM_Admin_Form_Tag extends CRM_Admin_Form {
     if ($this->_action == CRM_Core_Action::DELETE) {
       if ($this->_id > 0) {
         CRM_Core_BAO_Tag::del($this->_id);
-        // NYSS 6594 - Set the appropriate status flash message for the next page load.
-        CRM_Core_Session::setStatus(ts('The tag \'%1\' has been deleted.', array(1 => $tag->name)), ts('Deleted'), 'success');
       }
     }
     else {
