@@ -857,9 +857,14 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
                 $fldValue = "{$relationField}_display";
                 $fieldValue = $relDAO->$fldValue;
               }
+              //NYSS 7496
+              elseif ( is_object($relDAO) && $relationField == 'state_province' ) {
+                $fieldValue = CRM_Core_PseudoConstant::stateProvince($relDAO->state_province_id);
+              }
               else {
                 $fieldValue = '';
               }
+
               $field = $field . '_';
               if (is_object($relDAO) && $relationField == 'id') {
                 $row[$field . $relationField] = $relDAO->contact_id;
