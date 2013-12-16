@@ -2,7 +2,7 @@
   {foreach from=$tagsetInfo_contact item=tagset}
   <div class="crm-section tag-section contact-tagset-{$tagset.parentID}-section">
     {*NYSS*}
-    <div class="label">
+    <div class="tag-label">
       <label>{$tagset.parentName}</label>
     </div>
     <div class="content"{if $context EQ "contactTab"} style="margin-top:-15px;"{/if}>
@@ -35,14 +35,22 @@
               theme: 'facebook',
               hintText: hintText,
               onAdd: function ( item ) {
-                processContactTags_{/literal}{$tagset.parentID}{literal}( 'select', item.id );
+                // NYSS-6558 trim and check to prevent submitting empty tags
+                console.log(cj.trim(item.id).length);
 
-                //NYSS update count of tags in summary tab
-                if ( cj( '.ui-tabs-nav #tab_tag a' ).length ) {
-                  var tagCount = cj('.ui-tabs-nav #tab_tag a em').html();
-                  tagCount++;
-                  cj( '.ui-tabs-nav #tab_tag a em' ).html(tagCount);
+                if(cj.trim(item.id).length > 8){
+                  processContactTags_{/literal}{$tagset.parentID}{literal}( 'select', cj.trim(item.id ));
+                  //NYSS update count of tags in summary tab
+                  if ( cj( '.ui-tabs-nav #tab_tag a' ).length ) {
+                    var tagCount = cj('.ui-tabs-nav #tab_tag a em').html();
+                    tagCount++;
+                    cj( '.ui-tabs-nav #tab_tag a em' ).html(tagCount);
+                  }
+                }else{
+                  CRM.alert(ts('Keywords must contain content, blank spaces are not accepted'), ts('Warning'), 'warning');
+                  cj('.contact-tagset-296-section li.token-input-token-facebook').last().remove();
                 }
+
               },
               onDelete: function ( item ) {
                 processContactTags_{/literal}{$tagset.parentID}{literal}( 'delete', item.id );
@@ -64,8 +72,7 @@
             var entityId         = "{/literal}{$tagset.entityId}{literal}";
             var entityTable      = "{/literal}{$tagset.entityTable}{literal}";
             var skipTagCreate    = "{/literal}{$tagset.skipTagCreate}{literal}";
-            //NYSS
-            var skipEntityAction = "{/literal}{if $tagset.parentID eq '296'}0{else}{$tagset.skipEntityAction}{/if}{literal}";
+            var skipEntityAction = "{/literal}{$tagset.skipEntityAction}{literal}";
 
             cj.post( postUrl, { action: action, tagID: id, parentId: parentId, entityId: entityId, entityTable: entityTable,
               skipTagCreate: skipTagCreate, skipEntityAction: skipEntityAction, key: {/literal}"{crmKey name='civicrm/ajax/processTags'}"{literal} },
@@ -81,10 +88,14 @@
                         setVal[x] = valArray[x];
                       }
                     }
-                    CRM.alert('', '{/literal}{ts escape='js'}Removed{/ts}{literal}', 'success');
+                    if (!skipEntityAction) {
+                      CRM.alert('', '{/literal}{ts escape='js'}Removed{/ts}{literal}', 'success');
+                    }
                   }
                   else {
-                    CRM.alert('', '{/literal}{ts escape='js'}Saved{/ts}{literal}', 'success');
+                    if (!skipEntityAction) {
+                      CRM.alert('', '{/literal}{ts escape='js'}Saved{/ts}{literal}', 'success');
+                    }
                   }
                   if ( response.action == 'select' ) {
                     setVal    = valArray;
@@ -119,7 +130,7 @@
           <div class="tag-label">
               <label>Issue Codes</label>
           </div>
-          <input type="text" autocomplete="off" maxlength="64" id="issue-code-search" >
+          <input type="text" autocomplete="off" placeholder="Search for Issue Codes" maxlength="64" id="issue-code-search" >
         </div>
         {literal}
         <script>
@@ -134,7 +145,7 @@
 {elseif $tagsetType eq 'activity'}
   {foreach from=$tagsetInfo_activity item=tagset}
   <div class="crm-section tag-section activity-tagset-{$tagset.parentID}-section">
-    <div class="label">
+    <div class="tag-label">
       <label>{$tagset.parentName}</label>
     </div>
     <div class="content">
@@ -227,7 +238,7 @@
 {elseif $tagsetType eq 'case'}
   {foreach from=$tagsetInfo_case item=tagset}
   <div class="crm-section tag-section case-tagset-{$tagset.parentID}-section">
-    <div class="label">
+    <div class="tag-label">
       <label>{$tagset.parentName}</label>
     </div>
     <div class="content">

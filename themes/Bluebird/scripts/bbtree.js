@@ -204,9 +204,9 @@ var BBTree = {
         }
         switch(message[1])
         {
-            case 0: actionData.name += 'Error'; actionData['errorClass'] = 'BBError'; passes = false; break;
-            case 2: actionData.name += 'Warning'; actionData['errorClass'] = 'BBWarning'; break;
-            case 1: actionData.name += 'Success'; actionData['errorClass'] = 'BBSuccess'; break;
+            case 0: actionData.name += 'Error'; actionData['errorClass'] = 'error'; passes = false; break;
+            case 2: actionData.name += 'Warning'; actionData['errorClass'] = 'alert'; break;
+            case 1: actionData.name += 'Success'; actionData['errorClass'] = 'success'; break;
             default: actionData.name += 'Notice';
         }
 
@@ -216,14 +216,14 @@ var BBTree = {
                 actionData.name += ' - Add Tag';
                 if(passes)
                 {
-                    actionData.description += '<span>'+message[2] + '</span> was added to this entity.';
+                    actionData.description += '<span>'+message[2] + '</span> was added to this contact.';
                 }
                 else {
                     if( message[4] == 'WARNING: Bad user level.' )
                     {
                         actionData.description += 'You do not have the required permissions to add tags to this record.';
                     } else {
-                        actionData.description += '<span>'+message[2] + '</span> was unable to be added to this entity.';
+                        actionData.description += '<span>'+message[2] + '</span> was unable to be added to this contact.';
                     }
                 }
                 break;
@@ -231,14 +231,14 @@ var BBTree = {
                 actionData.name += ' - Remove Tag';
                 if(passes)
                 {
-                    actionData.description += '<span>'+ message[2] + '</span> was removed from this entity.';
+                    actionData.description += '<span>'+ message[2] + '</span> was removed from this contact.';
                 }
                 else {
                     if( message[4] == 'WARNING: Bad user level.' )
                     {
                         actionData.description += 'You do not have the required permissions to remove tags from this record.';
                     } else {
-                        actionData.description += '<span>'+message[2] + '</span> was unable to be removed from this entity.';
+                        actionData.description += '<span>'+message[2] + '</span> was unable to be removed from this contact.';
                     }
                 }
                 break;
@@ -246,7 +246,7 @@ var BBTree = {
                 actionData.name += ' - Get All Tags';
                 if(passes)
                 {
-                    actionData.description += 'Keywords and Issue Codes were loaded successfully.';
+                    // actionData.description += 'Keywords and Issue Codes were loaded successfully.';
                 }
                 else {
                     actionData.description += 'Keywords and Issue Codes were unable to be loaded. Will attempt to reload again.';
@@ -258,7 +258,7 @@ var BBTree = {
                 actionData.name += ' - Retrieve Contact Tags';
                 if(passes)
                 {
-                    actionData.description += 'Contact tags for <span>'+message[2]+'</span> were loaded successfully.';
+                    // actionData.description += 'Contact tags for <span>'+message[2]+'</span> were loaded successfully.';
                 }
                 else { //would LOVE to be able to get contact name here...
                     actionData.description += 'Contact tags for <span>'+message[2]+'</span> were unable to be loaded.';
@@ -348,7 +348,6 @@ var BBTree = {
                         actionData.description += 'not ';
                     }
                     actionData.description += 'reserved</span>.';
-                    console.log(actionData.description);
                 }
                 else { //would LOVE to be able to get contact name here...
                     if(message[3] == 'DB Error: already exists')
@@ -415,8 +414,11 @@ var BBTree = {
             default: actionData.description    += 'No defined message.';
         }
         //giving actionData.more a length of 0 will shut off the 'more' link, because it triggers w/lenght of 2
-        BBTree.setLastAction(actionData);
-        BBTree.addIndicator(actionData);
+        // BBTree.setLastAction(actionData);
+        // BBTree.addIndicator(actionData);
+        if (actionData.description != "") {
+            CRM.alert(ts(actionData.description), ts(actionData.name), actionData['errorClass']);
+        };
     }
 };
 //
@@ -762,7 +764,7 @@ var BBTreeEdit = {
         },
         function() {
             cj('.crm-tagListInfo .tagInfoBody .tagName span').html('');
-            cj('.crm-tagListInfo .tagInfoBody .tagID span').html('');
+            cj('.crm-tagListInfo .tagInfoBody .tagId span').html('');
             cj('.crm-tagListInfo .tagInfoBody .tagDescription span').html('');
             cj('.crm-tagListInfo .tagInfoBody .tagReserved span').html('');
             cj('.crm-tagListInfo .tagInfoBody .tagCount span').html('');
@@ -1025,7 +1027,7 @@ var BBTreeModal = {
 
         // //make this into a subfunction to find proper greeting name if not reserved
 
-        // cj('#dialog input:[name=tagName]').focus();
+        // cj('#dialog input[name=tagName]').focus();
 
     },
     setTreeType: function() // sets previous tree
@@ -1202,9 +1204,8 @@ var BBTreeModal = {
     },
     makeModalBox: function(){
         cj("#BBDialog").show();
-        cj("#BBDialog").dialog("open");
+        cj("#BBDialog").dialog(this.currentSettings).dialog("open");
         cj("#BBDialog").removeClass('loadingGif');
-        cj("#BBDialog").dialog(this.currentSettings);
         if(this.taggedReserved && this.taggedMethod != 'update')
         {
             return true;//if it's reserved, there should be no ability to edit it, unless you're updating it.
@@ -1228,7 +1229,7 @@ var BBTreeModal = {
         runFunction: function(){
             cj("#BBDialog").dialog( "option", "buttons", [
             {
-                text: "Done",
+                text: "Convert",
                 click: function() {
                     modalLoadingGif('add');
                     tagMove = new Object();
@@ -1312,7 +1313,7 @@ var BBTreeModal = {
         runFunction: function(){
             cj("#BBDialog").dialog( "option", "buttons", [
                 {
-                    text: "Merge ",
+                    text: "Merge",
                     click: function() {
                         tagMerge = new Object();
                         modalLoadingGif('add');
@@ -1368,16 +1369,16 @@ var BBTreeModal = {
         runFunction: function(){
             cj("#BBDialog").dialog( "option", "buttons", [
             {
-                text: "Done",
+                text: "Update",
                 click: function () {
                     modalLoadingGif('add');
                     tagUpdate = new Object();
                     tagUpdate.prevName = BBTreeModal.taggedName;
                     // NYSS-#6708
-                    // tagUpdate.tagName = checkForHTMLinModalField(cj('#BBDialog .modalInputs input:[name=tagName]').val());
-                    // tagUpdate.tagDescription = checkForHTMLinModalField(cj('#BBDialog .modalInputs input:[name=tagDescription]').val());
-                    tagUpdate.tagName = cj('#BBDialog .modalInputs input:[name=tagName]').val();
-                    tagUpdate.tagDescription = cj('#BBDialog .modalInputs input:[name=tagDescription]').val();
+                    // tagUpdate.tagName = checkForHTMLinModalField(cj('#BBDialog .modalInputs input[name=tagName]').val());
+                    // tagUpdate.tagDescription = checkForHTMLinModalField(cj('#BBDialog .modalInputs input[name=tagDescription]').val());
+                    tagUpdate.tagName = cj('#BBDialog .modalInputs input[name=tagName]').val();
+                    tagUpdate.tagDescription = cj('#BBDialog .modalInputs input[name=tagDescription]').val();
                     tagUpdate.parentId = removeTagLabel(BBTreeModal.taggedID);
                     tagUpdate.isReserved = cj('#BBDialog .modalInputs input:checked[name=isReserved]').length;
                     if(tagUpdate.tagName.length > 0)
@@ -1446,7 +1447,7 @@ var BBTreeModal = {
         runFunction: function(){
             cj("#BBDialog").dialog( "option", "buttons", [
             {
-                text: "Done",
+                text: "Move",
                 click: function() {
                     modalLoadingGif('add');
                     tagMove = new Object();
@@ -1505,7 +1506,7 @@ var BBTreeModal = {
             }
             cj("#BBDialog").dialog( "option", "buttons", [
             {
-                text: "Done",
+                text: "Remove",
                 click: function() {
                     tagRemove = new Object();
                     tagRemove.parentId = removeTagLabel(BBTreeModal.taggedID);
@@ -1561,21 +1562,22 @@ var BBTreeModal = {
             {
                 return true;
             }
-            cj('#BBDialog input:[name=tagName]').focus();
+            cj('#BBDialog input[name=tagName]').focus();
             cj("#BBDialog").dialog( "option", "buttons",
             [
                 {
-                    text: "Done",
+                    text: "Add",
                     click: function() {
                         tagCreate = new Object();
                         tagCreate.tagDescription = '';
                         modalLoadingGif('add');
                         // NYSS-#6708
-                        // tagCreate.tagName = checkForHTMLinModalField(cj('#BBDialog .modalInputs input:[name=tagName]').val());
-                        tagCreate.tagName = cj('#BBDialog .modalInputs input:[name=tagName]').val();
+                        // tagCreate.tagName = checkForHTMLinModalField(cj('#BBDialog .modalInputs input[name=tagName]').val());
+                        // NYSS-6558 trim to prevent empty tags
+                        tagCreate.tagName = cj.trim(cj('#BBDialog .modalInputs input[name=tagName]').val());
                         tagCreate.treeParent = BBTreeModal.treeParent;
-                        // tagCreate.tagDescription = checkForHTMLinModalField(cj('#BBDialog .modalInputs input:[name=tagDescription]').val());
-                        tagCreate.tagDescription = cj('#BBDialog .modalInputs input:[name=tagDescription]').val();
+                        // tagCreate.tagDescription = checkForHTMLinModalField(cj('#BBDialog .modalInputs input[name=tagDescription]').val());
+                        tagCreate.tagDescription = cj('#BBDialog .modalInputs input[name=tagDescription]').val();
                         tagCreate.parentId = removeTagLabel(BBTreeModal.taggedID);
                         tagCreate.isReserved = cj('#BBDialog .modalInputs input:checked[name=isReserved]').length;
                         if(tagCreate.tagName.length > 0 )
@@ -1969,34 +1971,32 @@ var TagTreeFilter = function(filter_input, tag_container) {
   self.clear_button = cj('<div id="issue-code-clear" >x</div>');
   self.empty_panel = cj('<div id="issue-code-empty" >No Results Found</div>');
   self.wait_panel = cj('<div id="issue-code-wait"></div>');
-  self.tag_container.prepend(self.clear_button, self.empty_panel);
-  self.tag_container.prepend('<div id="issue-code-wait"></div>')
-  self.wait_panel = cj('#issue-code-wait');
+  self.tag_container.prepend(self.clear_button, self.empty_panel, self.wait_panel);
   self.wait_panel.hide();
 
   self.clear_button.click(function() {
     self.reset();
   });
 
+  // Shim IE9 to provide placeholder support
+  self.search_bar.focus(function() {
+    if (self.search_bar.val() == self.search_bar.attr("placeholder")) {
+      self.search_bar.removeClass("placeholder");
+      self.search_bar.val("");
+    }
+  }).blur(function() {
+    if (self.search_bar.val() == "" || self.search_bar.val() == self.search_bar.attr("placeholder")) {
+      self.search_bar.addClass("placeholder");
+      self.search_bar.val(self.search_bar.attr("placeholder"));
+    }
+  }).blur();
+
   // We bind to keydown here so that default behaviors can be prevented
   // and we have access to non-printable keystrokes. We suppport ESC for
-  // "reset", ENTER/TAB for "toggle tag", UP/DOWN for tag selection, and will
-  // trigger a tag search when you use the BACKSPACE KEY.
+  // "reset", ENTER/TAB for "toggle tag", and UP/DOWN for tag selection.
   self.search_bar.keydown(function(event) {
     if (event.which == KEY.ESCAPE) {
       self.reset();
-    }
-    else if (event.which == KEY.BACKSPACE) {
-      clearTimeout(self.search_timeout_id);
-      self.search_timeout_id = setTimeout(function() {
-        if (self.search_bar.val().length < 3) {
-            self.wait_panel.fadeIn("fast", self.search.bind(self));
-        }
-        else {
-            self.search();
-        }
-      }, 300);
-      self.search_bar.focus();
     }
     else if (self.selected_tag) {
       var cur_index = self.matching_tags.index(self.selected_tag);
@@ -2014,33 +2014,33 @@ var TagTreeFilter = function(filter_input, tag_container) {
         }
         self.search_bar.focus();
       }
-      else if (event.which == KEY.ENTER || event.which == KEY.NUMPAD_ENTER) {
+      else if (event.which == KEY.ENTER || event.which == KEY.NUMPAD_ENTER || event.which == KEY.TAB) {
         event.preventDefault();
         event.stopImmediatePropagation();
-        self.selected_tag.find('input[type="checkbox"]').click();
-      }
-      else if (event.which == KEY.TAB) {
-        event.preventDefault();
         self.selected_tag.find('input[type="checkbox"]').click();
       }
     }
   });
 
-  // Only trigger the search when printable keys are entered or the BACKSPACE
-  // key is used (see above). The search should start 300ms after the last
-  // action so always start by cancelling the current timeout function.
-  self.search_bar.keyup(function(event) {
-    if (event.which > 40 || event.which === 32) {
-      clearTimeout(self.search_timeout_id);
-      self.search_timeout_id = setTimeout(function() {
-        if (self.search_bar.val().length < 3) {
-            self.wait_panel.fadeIn("fast", self.search.bind(self));
-        }
-        else {
-            self.search();
-        }
-      }, 300);
-    }
+  // The search should start 300ms after the last action so always start by
+  // cancelling the current timeout function.
+  self.search_bar.on('input', function(event) {
+    clearTimeout(self.search_timeout_id);
+    self.search_timeout_id = setTimeout(function() {
+      if (self.search_bar.val().length < 3) {
+          self.wait_panel.fadeIn("fast", self.search.bind(self));
+      }
+      else if(self.search_bar.val() === "Search for Issue Codes"){
+        self.tag_container.find('.ddControl.open').removeClass('open').parent().next('dl').removeClass('open').hide();
+        self.get_tags().removeClass('search-hidden search-match search-parent search-highlighted');
+        self.clear_button.fadeOut("fast");
+        self.empty_panel.fadeOut("fast");
+        self.wait_panel.hide();
+      }
+      else {
+          self.search();
+      }
+    }, 300);
   });
 
   return self;

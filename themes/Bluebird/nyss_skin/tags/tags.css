@@ -18,9 +18,15 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
   font-size: 120%;
   margin-top: 20px;
 }
+#crm-tagListWrap .groupTagsKeywords .crm-section .tag-label label{
+  float: left;
+  margin:20px 0 15px;
+}
+#crm-tagListWrap .groupTagsKeywords .crm-section:first-child .tag-label label{
+  margin-top:0;
+}
 #issue-code-search{
   margin:15px 0 0 0;
-  border-bottom:none;
   width: 512px;
   -webkit-transition: all 0.30s ease-in-out;
   -moz-transition: all 0.30s ease-in-out;
@@ -28,9 +34,22 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
   -o-transition: all 0.30s ease-in-out;
   outline: none;
   padding: 8px 0px 8px 8px;
-  border: 1px solid #DDDDDD;
+  border: 1px solid #8F8F8F;
+  border-bottom:none;
+  font-family:Verdana,​Arial,​sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  font-style : normal;
+  color: #4D4D4D;
+  line-height: 16px;
+  vertical-align:  middle;
 }
-
+#issue-code-search::-ms-clear {
+    display: none;
+}
+#issue-code-search.placeholder{
+  color: #aaa;
+}
 #issue-code-search:focus{
   box-shadow: 0 0 5px rgba(81, 203, 238, 1);
   border: 1px solid #5ee3ff;
@@ -244,15 +263,13 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
   .BBTree dt.lv-0, #BBTreeContainer .BBTree dt.lv-0, #BBDialog .BBTree dt.lv-0 {
     width: 485px;
     margin: 10px 10px 0;
-    display: none;
-  }
+   }
     .BBTree dt.lv-0 .treeButton, #BBTreeContainer .BBTree dt.lv-0 .treeButton, #BBDialog .BBTree dt.lv-0 .treeButton {
       display: none; }
     .BBTree dt.lv-0 .tag, #BBTreeContainer .BBTree dt.lv-0 .tag, #BBDialog .BBTree dt.lv-0 .tag {
       font-size: 14px;
       font-weight: bold;
-      display: none;
-    }
+     }
   .BBTree dl.lv-1, #BBTreeContainer .BBTree dl.lv-1, #BBDialog .BBTree dl.lv-1 {
     width: 475px;
     margin-left: 10px;
@@ -345,21 +362,37 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
   .crm-tagTabHeader li, .BBTree-Tags li {
     float: left;
     margin-right: 15px;
-    background: transparent url(/sites/default/themes/Bluebird/nyss_skin/images/button.png) no-repeat scroll right -30px !important;
+    background: #D8E0E6;
+    border: 1px solid #fff;
+    border-bottom: none;
+    color: #444;
     list-style: none;
     width: 135px;
-    color: #fff;
     text-align: center;
     cursor: pointer;
+    padding: 8px 0;
+         margin-top: 2px;
+
     font-size: 12px; }
     .crm-tagTabHeader li:hover, .BBTree-Tags li:hover {
-      color: #ccc;
-      border-top: #457AA4 3px solid;
-      margin-top: -3px; }
+      color: #333;
+      background: #ccc;
+          border: 1px solid #ccc;
+    border-bottom: none;
+         margin-top: 2px;
+
+    }
     .crm-tagTabHeader li.active, .BBTree-Tags li.active {
-      border-top: #457AA4 3px solid;
-      margin-top: -3px;
-      font-size: 14px; }
+      background: #fff;
+    padding: 9px 0;
+      font-size: 15px;
+          border: 1px solid #ccc;
+    margin-bottom: -1px;
+         margin-top: 0px;
+    border-bottom: 1px solid #fff;
+
+    }
+
 
 /* legend */
 #crm-container .crm-tagLegend td div {
@@ -507,3 +540,6 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
     float:left;
     z-index:99;
 }
+.page-civicrm-contact-view dt#tagLabel_291,
+.page-civicrm-contact-add dt#tagLabel_291
+{ display:none; }

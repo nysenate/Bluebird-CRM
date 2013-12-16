@@ -248,16 +248,19 @@ class CRM_Core_Form_Tag {
    *
    */
   static function postProcess(&$params, $entityId, $entityTable = 'civicrm_contact', &$form) {
-    foreach ($params as $value) {
+    // NYSS 4613 - Delete tags from each tree that are no longer present.
+    foreach ($params as $treeId => $value) {
       if (!$value) {
         continue;
       }
       $tagsIDs      = explode(',', $value);
       $insertValues = array();
+      $numeric_ids = array();
       $insertSQL    = NULL;
       if (!empty($tagsIDs)) {
         foreach ($tagsIDs as $tagId) {
           if (is_numeric($tagId)) {
+            $numeric_ids[] = $tagId;
             if ($form && $form->_action != CRM_Core_Action::UPDATE) {
               $insertValues[] = "( {$tagId}, {$entityId}, '{$entityTable}' ) ";
             }
@@ -266,6 +269,8 @@ class CRM_Core_Form_Tag {
             }
           }
         }
+
+        CRM_Core_DAO::executeQuery("DELETE FROM civicrm_entity_tag USING civicrm_entity_tag, civicrm_tag WHERE civicrm_tag.id=civicrm_entity_tag.tag_id AND entity_id=$entityId AND parent_id=$treeId AND tag_id NOT IN (".implode(', ', $numeric_ids).");");
         if (!empty($insertValues)) {
           $insertSQL = 'INSERT INTO civicrm_entity_tag ( tag_id, entity_id, entity_table ) VALUES ' . implode(', ', $insertValues) . ';';
           CRM_Core_DAO::executeQuery($insertSQL);
