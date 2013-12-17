@@ -36,8 +36,7 @@
               hintText: hintText,
               onAdd: function ( item ) {
                 // NYSS-6558 trim and check to prevent submitting empty tags
-                console.log(cj.trim(item.id).length);
-
+                // by default and empty tag is ':::value' or 8 chars
                 if(cj.trim(item.id).length > 8){
                   processContactTags_{/literal}{$tagset.parentID}{literal}( 'select', cj.trim(item.id ));
                   //NYSS update count of tags in summary tab
