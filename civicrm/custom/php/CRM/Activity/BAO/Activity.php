@@ -192,6 +192,10 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
 
         // CRM-8708
         $activity->case_id = CRM_Case_BAO_Case::getCaseIdByActivityId($activity->id);
+
+        //NYSS 7198 delete activity tags
+        $query = "DELETE FROM civicrm_entity_tag WHERE entity_table = 'civicrm_activity' AND entity_id = {$activity->id}";
+        $dao = CRM_Core_DAO::executeQuery($query);
       }
     }
     else {

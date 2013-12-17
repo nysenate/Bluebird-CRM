@@ -137,10 +137,11 @@ $bluebird_db_info = array(
   ),
   "activitytarget" => array(
       "abbrev" => "act",
-      "table" => "civicrm_activity_target",
+      "table" => "civicrm_activity_contact",
       "cols" => array(
           'activity_id',
-          'target_contact_id'
+          'contact_id',
+          'recordt_type_id'
       )
   ),
   "address" => array(

@@ -23,9 +23,10 @@ ALTER TABLE `log_civicrm_activity_assignment`
     ADD INDEX `log_action` (`log_action` ASC),
     ADD INDEX `log_job_id` (`log_job_id` ASC);
 
-ALTER TABLE `log_civicrm_activity_target`
+ALTER TABLE `log_civicrm_activity_contact`
     ADD INDEX `activity_id` (`activity_id` ASC),
-    ADD INDEX `target_contact_id` (`target_contact_id` ASC),
+    ADD INDEX `contact_id` (`contact_id` ASC),
+    ADD INDEX `record_type_id` (`record_type_id` ASC),
     ADD INDEX `log_date` (`log_date` ASC),
     ADD INDEX `log_conn_id` (`log_conn_id` ASC),
     ADD INDEX `log_user_id` (`log_user_id` ASC),

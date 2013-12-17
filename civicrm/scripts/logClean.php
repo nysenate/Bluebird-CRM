@@ -45,8 +45,7 @@ class CRM_cleanLogs {
     $tbls = $allowedTbls = array(
       'log_civicrm_address',
       'log_civicrm_activity',
-      'log_civicrm_activity_assignment',
-      'log_civicrm_activity_target',
+      'log_civicrm_activity_contact',
       'log_civicrm_contact',
       'log_civicrm_dashboard_contact',
       'log_civicrm_email',
