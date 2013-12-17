@@ -595,10 +595,11 @@ function _checkActivities($cid)
   //exclude bulk email activities
   $sql = "
     SELECT CASE WHEN count(at.id) > 0 THEN 0 ELSE 1 END
-    FROM civicrm_activity_target at
+    FROM civicrm_activity_contact at
     JOIN civicrm_activity a
       ON at.activity_id = a.id
-    WHERE at.target_contact_id = $cid
+      AND at.record_type_id = 3
+    WHERE at.contact_id = $cid
       AND a.activity_type_id != 19
       AND a.is_deleted = 0
   ";

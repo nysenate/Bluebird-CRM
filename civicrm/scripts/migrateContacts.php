@@ -859,9 +859,10 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
     //get all activities (non bulk email = 19) for contacts
     $sql = "
       SELECT at.activity_id, a.*, ad.*, GROUP_CONCAT(mt.external_id SEPARATOR '|') targetIDs
-      FROM civicrm_activity_target at
+      FROM civicrm_activity_contact at
       JOIN {$migrateTbl} mt
-        ON at.target_contact_id = mt.contact_id
+        ON at.contact_id = mt.contact_id
+        AND at.record_type_id = 3
       JOIN civicrm_activity a
         ON at.activity_id = a.id
       LEFT JOIN {$actCustTbl} ad
