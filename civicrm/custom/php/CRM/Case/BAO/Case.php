@@ -2079,7 +2079,7 @@ SELECT civicrm_contact.id as casemanager_id,
       static $accessibleCaseIds;
       if (!is_array($accessibleCaseIds)) {
         $session = CRM_Core_Session::singleton();
-        $accessibleCaseIds = array_keys(self::getCases(FALSE, $session->get('userID')));
+        $accessibleCaseIds = array_keys(self::getCases(FALSE, $session->get('userID'), 'all'));//NYSS
       }
       //no need of further processing.
       if (empty($accessibleCaseIds)) {
