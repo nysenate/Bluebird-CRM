@@ -2017,7 +2017,7 @@ var TagTreeFilter = function(filter_input, tag_container) {
       if (self.search_bar.val().length < 3) {
           self.wait_panel.fadeIn("fast", self.search.bind(self));
       }
-      else if(self.search_bar.val() === "Search for Issue Codes"){
+      else if(self.search_bar.val() === self.search_bar.attr("placeholder")){
         self.tag_container.find('.ddControl.open').removeClass('open').parent().next('dl').removeClass('open').hide();
         self.get_tags().removeClass('search-hidden search-match search-parent search-highlighted');
         self.clear_button.fadeOut("fast");
