@@ -73,7 +73,7 @@ SELECT @optgrp:=id FROM civicrm_option_group WHERE name='individual_suffix';
 SELECT @maxval:=max(cast(value as unsigned)) FROM civicrm_option_value WHERE option_group_id = @optgrp;
 SELECT @wght:=max(cast(weight as unsigned)) FROM civicrm_option_value WHERE option_group_id = @optgrp;
 INSERT INTO civicrm_option_value (option_group_id, label, value, name, weight, is_active)
-VALUES (@optgrp, 'Ret.', @maxval+1, 'Chief', @wght+1, 1);
+VALUES (@optgrp, 'Ret.', @maxval+1, 'Ret.', @wght+1, 1);
 "
   $execSql $instance -c "$sql" -q
 elif [ $cnt -eq 1 ]; then
