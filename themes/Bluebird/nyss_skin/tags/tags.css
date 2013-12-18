@@ -56,22 +56,35 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
   border: 1px solid rgba(81, 203, 238, 1);
 }
 
-#issue-code-clear {
-  background:  #DBA185;
+#issue-code-button {
+  background:  url("/sites/default/themes/Bluebird/nyss_skin/images/header-search-bg.gif") top right no-repeat;
   float: left;
   line-height: 1em;
-  padding: 2px 6px 4px;
+  padding: 4px 6px;
   position: absolute;
-  right: 8px;
-  top: 57px;
-  display: none;
+  right: 4px;
+  top: 54px;
   border-style: solid;
-  border-color: #CD4343;
+  border-color: #fff;
   border-width: 1px;
   color:#B52B36;
   font-weight: bold;
+  text-indent: -9999em;
+  width: 14px;
+  height: 18px;
+  text-align: center;
 }
-#issue-code-clear:hover{
+#issue-code-button.clear {
+  background:  #DBA185;
+  border-style: solid;
+  border-color: #CD4343;
+  border-width: 1px;
+  font-weight: bold;
+  text-indent: 0;
+}
+
+
+#issue-code-button.clear:hover{
   background:  #CD4343;
   border-color: #B52B36;
   color:#fff;
@@ -371,9 +384,9 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
     text-align: center;
     cursor: pointer;
     padding: 8px 0;
-         margin-top: 2px;
+     margin-top: 2px;
 
-    font-size: 12px; }
+    font-size: 12px !important; }
     .crm-tagTabHeader li:hover, .BBTree-Tags li:hover {
       color: #333;
       background: #ccc;
@@ -385,7 +398,7 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
     .crm-tagTabHeader li.active, .BBTree-Tags li.active {
       background: #fff;
     padding: 9px 0;
-      font-size: 15px;
+      font-size: 15px !important;
           border: 1px solid #ccc;
     margin-bottom: -1px;
          margin-top: 0px;
