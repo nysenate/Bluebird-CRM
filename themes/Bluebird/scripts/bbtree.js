@@ -1955,13 +1955,13 @@ var TagTreeFilter = function(filter_input, tag_container) {
   self.search_timeout_id = null;
   self.search_bar = filter_input;
   self.tag_container = tag_container;
-  self.clear_button = cj('<div id="issue-code-clear" >x</div>');
+  self.button = cj('<div id="issue-code-button" >x</div>');
   self.empty_panel = cj('<div id="issue-code-empty" >No Results Found</div>');
   self.wait_panel = cj('<div id="issue-code-wait"></div>');
-  self.tag_container.prepend(self.clear_button, self.empty_panel, self.wait_panel);
+  self.tag_container.prepend(self.button, self.empty_panel, self.wait_panel);
   self.wait_panel.hide();
 
-  self.clear_button.click(function() {
+  self.button.click(function() {
     self.reset();
   });
 
@@ -2020,7 +2020,7 @@ var TagTreeFilter = function(filter_input, tag_container) {
       else if(self.search_bar.val() === self.search_bar.attr("placeholder")){
         self.tag_container.find('.ddControl.open').removeClass('open').parent().next('dl').removeClass('open').hide();
         self.get_tags().removeClass('search-hidden search-match search-parent search-highlighted');
-        self.clear_button.fadeOut("fast");
+        self.button.removeClass('clear');
         self.empty_panel.fadeOut("fast");
         self.wait_panel.hide();
       }
@@ -2047,7 +2047,7 @@ TagTreeFilter.prototype.reset = function() {
   self.search_bar.val('');
   self.tag_container.find('.ddControl.open').removeClass('open').parent().next('dl').removeClass('open').hide();  // .click();
   self.get_tags().removeClass('search-hidden search-match search-parent search-highlighted');
-  self.clear_button.fadeOut("fast");
+  self.button.removeClass('clear');
   self.empty_panel.fadeOut("fast");
   self.wait_panel.hide();
 }
@@ -2081,7 +2081,7 @@ TagTreeFilter.prototype.search = function() {
         tag.addClass('search-match');
       }
     });
-    self.clear_button.fadeIn( "slow" );
+    self.button.addClass('clear');
 
     if (has_matches) {
       self.empty_panel.fadeOut("fast");
