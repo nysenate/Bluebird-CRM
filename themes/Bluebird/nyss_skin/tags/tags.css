@@ -57,7 +57,6 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
 }
 
 #issue-code-button {
-  /*"/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png" */
   background:  url("/sites/default/themes/Bluebird/nyss_skin/images/header-search-bg.gif") top right no-repeat;
   float: left;
   line-height: 1em;
@@ -385,9 +384,9 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
     text-align: center;
     cursor: pointer;
     padding: 8px 0;
-         margin-top: 2px;
+     margin-top: 2px;
 
-    font-size: 12px; }
+    font-size: 12px !important; }
     .crm-tagTabHeader li:hover, .BBTree-Tags li:hover {
       color: #333;
       background: #ccc;
@@ -399,7 +398,7 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
     .crm-tagTabHeader li.active, .BBTree-Tags li.active {
       background: #fff;
     padding: 9px 0;
-      font-size: 15px;
+      font-size: 15px !important;
           border: 1px solid #ccc;
     margin-bottom: -1px;
          margin-top: 0px;
