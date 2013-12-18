@@ -1965,18 +1965,7 @@ var TagTreeFilter = function(filter_input, tag_container) {
     self.reset();
   });
 
-  // Shim IE9 to provide placeholder support
-  self.search_bar.focus(function() {
-    if (self.search_bar.val() == self.search_bar.attr("placeholder")) {
-      self.search_bar.removeClass("placeholder");
-      self.search_bar.val("");
-    }
-  }).blur(function() {
-    if (self.search_bar.val() == "" || self.search_bar.val() == self.search_bar.attr("placeholder")) {
-      self.search_bar.addClass("placeholder");
-      self.search_bar.val(self.search_bar.attr("placeholder"));
-    }
-  }).blur();
+
 
   // We bind to keydown here so that default behaviors can be prevented
   // and we have access to non-printable keystrokes. We suppport ESC for
@@ -2050,6 +2039,7 @@ TagTreeFilter.prototype.reset = function() {
   self.button.removeClass('clear');
   self.empty_panel.fadeOut("fast");
   self.wait_panel.hide();
+  self.search_bar.focus();
 }
 
 // An empty search bar resets the filter. Anything else triggers
