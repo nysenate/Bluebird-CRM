@@ -1153,7 +1153,7 @@ var BBTreeModal = {
             addDialogText = this.taggedName + ' cannot be ' + this.currentSettings.actionName + '. <br /> <br /> Make sure any child tags are ' + this.currentSettings.actionName + ' first.';
             this.currentSettings.ysnp = true;
         }
-        if(this.taggedReserved && this.taggedMethod != 'update' && this.taggedMethod != 'action'){
+        if(this.taggedReserved && this.taggedMethod != 'add' && this.taggedMethod != 'update'){
             addDialogText = this.taggedName + ' is reserved and cannot be ' + this.currentSettings.actionName + '. <br /> <br /> Try updating tag first.';
             this.currentSettings.ysnp = true;
         }
@@ -1191,7 +1191,7 @@ var BBTreeModal = {
         cj("#BBDialog").show();
         cj("#BBDialog").dialog(this.currentSettings).dialog("open");
         cj("#BBDialog").removeClass('loadingGif');
-        if(this.taggedReserved && this.taggedMethod != 'update')
+        if(this.taggedReserved && this.taggedMethod != 'add' && this.taggedMethod != 'update')
         {
             return true;//if it's reserved, there should be no ability to edit it, unless you're updating it.
         }
