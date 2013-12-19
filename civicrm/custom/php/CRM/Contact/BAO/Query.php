@@ -2663,8 +2663,6 @@ class CRM_Contact_BAO_Query {
 
     if (!$skipGroup) {
       $gcTable = "`civicrm_group_contact-{$groupIds}`";
-      //NYSS 4903
-      //$this->_tables[$gcTable] = $this->_whereTables[$gcTable] = " LEFT JOIN civicrm_group_contact {$gcTable} ON contact_a.id = {$gcTable}.contact_id ";
       $this->_tables[$gcTable] = $this->_whereTables[$gcTable] = " LEFT JOIN civicrm_group_contact {$gcTable} ON ( contact_a.id = {$gcTable}.contact_id AND {$gcTable}.group_id $op ( $groupIds ) )";
     }
 
@@ -3214,18 +3212,15 @@ WHERE  id IN ( $groupIDs )
    */
   function phone_numeric(&$values) {
     list($name, $op, $value, $grouping, $wildcard) = $values;
-
-    //NYSS 5804 determine wildcard is explicit or we should imply
-    // Strip non-numeric characters
+    // Strip non-numeric characters; allow wildcards
     $number = preg_replace('/[^\d%]/', '', $value);
     if ($number) {
-      //NYSS
       if ( strpos($number, '%') === FALSE ) {
         $number = "%$number%";
       }
 
       $this->_qill[$grouping][] = ts('Phone number contains') . " $number";
-      $this->_where[$grouping][] = self::buildClause('civicrm_phone.phone_numeric', 'LIKE', "$number", 'String');//NYSS
+      $this->_where[$grouping][] = self::buildClause('civicrm_phone.phone_numeric', 'LIKE', "$number", 'String');
       $this->_tables['civicrm_phone'] = $this->_whereTables['civicrm_phone'] = 1;
     }
   }
@@ -3850,6 +3845,7 @@ WHERE  id IN ( $groupIDs )
     // for relatinship search we always do wildcard
     $targetName = $this->getWhereValues('relation_target_name', $grouping);
     $relStatus = $this->getWhereValues('relation_status', $grouping);
+    $relPermission = $this->getWhereValues('relation_permission', $grouping);
     $targetGroup = $this->getWhereValues('relation_target_group', $grouping);
 
     $nameClause = $name = NULL;
@@ -3871,7 +3867,6 @@ WHERE  id IN ( $groupIDs )
     $rel = explode('_', $value);
 
     self::$_relType = $rel[1];
-
     $params = array('id' => $rel[0]);
     $rTypeValues = array();
     $rType = CRM_Contact_BAO_RelationshipType::retrieve($params, $rTypeValues);
@@ -3881,9 +3876,12 @@ WHERE  id IN ( $groupIDs )
       self::$_relType = 'reciprocal';
     }
     // if we are creating a temp table we build our own where for the relationship table
+    $relationshipTempTable = NULL;
     if(self::$_relType == 'reciprocal' && empty($targetGroup)) {
       $where = array();
-      self::$_relationshipTempTable = $relationshipTempTable = 'civicrm_temp_rel' . rand(0,99999);
+      self::$_relationshipTempTable =
+        $relationshipTempTable =
+        CRM_Core_DAO::createTempTableName( 'civicrm_rel');
       if($nameClause) {
         $where[$grouping][] = " sort_name $nameClause ";
       }
@@ -3913,8 +3911,10 @@ WHERE  id IN ( $groupIDs )
       //add contacts from static groups
       $this->_tables['civicrm_relationship_group_contact'] =
         $this->_whereTables['civicrm_relationship_group_contact'] =
-        " LEFT JOIN civicrm_group_contact civicrm_relationship_group_contact ON civicrm_relationship_group_contact.contact_id = contact_b.id";
-      $groupWhere[] = "( civicrm_relationship_group_contact.group_id IN  (" . implode(",", $targetGroup[2]) . ") )";
+        " LEFT JOIN civicrm_group_contact civicrm_relationship_group_contact ON civicrm_relationship_group_contact.contact_id = contact_b.id AND civicrm_relationship_group_contact.status = 'Added'";
+      $groupWhere[] =
+        "( civicrm_relationship_group_contact.group_id IN  (" .
+        implode(",", $targetGroup[2]) .  ") ) ";
 
       //add contacts from saved searches
       $ssWhere = $this->addGroupContactCache($targetGroup[2], "civicrm_relationship_group_contact_cache", "contact_b");
@@ -3926,7 +3926,7 @@ WHERE  id IN ( $groupIDs )
       $this->_where[$grouping][] = "( " . implode(" OR ", $groupWhere) . " )";
 
       //Get the names of the target groups for the qill
-      $groupNames = &CRM_Core_PseudoConstant::group();
+      $groupNames = CRM_Core_PseudoConstant::group();
       $qillNames = array();
       foreach ($targetGroup[2] as $groupId) {
         if (array_key_exists($groupId, $groupNames)) {
@@ -3954,6 +3954,20 @@ civicrm_relationship.end_date < {$today} OR
 civicrm_relationship.start_date > {$today}
 )";
       $this->_qill[$grouping][] = ts('Relationship - Inactive or not Current');
+    }
+
+    //check for permissioned, non-permissioned and all permissioned relations
+    if ($relPermission[2] == 1) {
+      $this->_where[$grouping][] = "(
+civicrm_relationship.is_permission_a_b = 1
+)";
+      $this->_qill[$grouping][] = ts('Relationship - Permissioned');
+    } elseif ($relPermission[2] == 2) {
+      //non-allowed permission relationship.
+      $this->_where[$grouping][] = "(
+civicrm_relationship.is_permission_a_b = 0
+)";
+      $this->_qill[$grouping][] = ts('Relationship - Non-permissioned');
     }
 
     $this->addRelationshipDateClauses($grouping, $where);
@@ -4216,7 +4230,7 @@ civicrm_relationship.start_date > {$today}
       $convertedVals = $query->convertToPseudoNames($dao, TRUE);
 
       if (!empty($convertedVals)) {
-        $val = array_merge_recursive($val, $convertedVals);
+        $val = array_replace_recursive($val, $convertedVals);
       }
       $values[$dao->contact_id] = $val;
     }
@@ -4926,7 +4940,6 @@ SELECT COUNT( civicrm_contribution.total_amount ) as cancel_count,
               $dataType = str_replace('nyss_', '', $dataType); //return to expected format
             }
           }
-
           // supporting multiple values in IN clause
           $val = array();
           foreach ($values as $v) {
@@ -4941,6 +4954,7 @@ SELECT COUNT( civicrm_contribution.total_amount ) as cancel_count,
         if (empty($dataType)) {
           $dataType = 'String';
         }
+
         $value = CRM_Utils_Type::escape($value, $dataType);
 
         // if we dont have a dataType we should assume

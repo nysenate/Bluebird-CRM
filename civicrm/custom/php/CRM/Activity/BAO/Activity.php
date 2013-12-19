@@ -681,10 +681,10 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
     $tableFields = array(
       'activity_id' => 'int unsigned',
       'activity_date_time' => 'datetime',
-      'source_record_id' => 'int unsigned',//NYSS 7354
+      'source_record_id' => 'int unsigned',
       'status_id' => 'int unsigned',
       'subject' => 'varchar(255)',
-      'source_contact_name' => 'varchar(255)',//NYSS 7354
+      'source_contact_name' => 'varchar(255)',
       'activity_type_id' => 'int unsigned',
       'activity_type' => 'varchar(128)',
       'case_id' => 'int unsigned',
@@ -716,7 +716,7 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
     $insertSQL = "INSERT INTO {$activityTempTable} (" . implode(',', $insertValueSQL) . " ) ";
 
     $order = $limit = $groupBy = '';
-    $groupBy = " GROUP BY tbl.activity_id"; //NYSS 7354
+    $groupBy = " GROUP BY tbl.activity_id ";
 
     if (!empty($input['sort'])) {
       if (is_a($input['sort'], 'CRM_Utils_Sort')) {
@@ -764,7 +764,6 @@ LEFT JOIN  civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.ac
     // step 2: Get target and assignee contacts for above activities
     // create temp table for target contacts
     $activityContactTempTable = "civicrm_temp_activity_contact_{$randomNum}";
-    //NYSS account for is_deleted
     $query = "CREATE TEMPORARY TABLE {$activityContactTempTable} (
                 activity_id int unsigned, contact_id int unsigned, record_type_id varchar(16), contact_name varchar(255), is_deleted int unsigned )
                 ENGINE=MYISAM DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci";
@@ -772,7 +771,6 @@ LEFT JOIN  civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.ac
     CRM_Core_DAO::executeQuery($query);
 
     // note that we ignore bulk email for targets, since we don't show it in selector
-    //NYSS don't limit by is_deleted, but rather include in SELECT
     $query = "
 INSERT INTO {$activityContactTempTable} ( activity_id, contact_id, record_type_id, contact_name, is_deleted )
 SELECT     ac.activity_id,
@@ -788,7 +786,6 @@ INNER JOIN civicrm_contact c ON c.id = ac.contact_id
 
     // step 3: Combine all temp tables to get final query for activity selector
     // sort by the original sort order, stored in fixed_sort_order
-    //NYSS account for is_deleted
     $query = "
 SELECT     {$activityTempTable}.*,
            {$activityContactTempTable}.contact_id,
@@ -844,7 +841,7 @@ ORDER BY    fixed_sort_order
         $values[$activityID]['target_contact_name'] = array();
       }
 
-      //NYSS if deleted, wrap in <del>
+      // if deleted, wrap in <del>
       if ( $dao->is_deleted ) {
         $dao->contact_name = "<del>{$dao->contact_name}</dao>";
       }
@@ -852,7 +849,6 @@ ORDER BY    fixed_sort_order
       if ($dao->record_type_id == $sourceID  && $dao->contact_id) {
         $values[$activityID]['source_contact_id'] = $dao->contact_id;
         $values[$activityID]['source_contact_name'] = $dao->contact_name;
-        $values[$activityID]['source_is_deleted'] = $dao->is_deleted;//NYSS
       }
 
       if (!$bulkActivityTypeID || ($bulkActivityTypeID != $dao->activity_type_id)) {
@@ -1084,7 +1080,6 @@ LEFT JOIN   civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.a
     // build main activity table select clause
     $sourceSelect = '';
 
-    //NYSS 7354
     $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
     $sourceID = CRM_Utils_Array::key('Activity Source', $activityContacts);
     $sourceJoin = "
@@ -1093,7 +1088,6 @@ INNER JOIN civicrm_contact contact ON ac.contact_id = contact.id
 ";
 
     if (!$input['count']) {
-      //NYSS 7354
       $sourceSelect = ',
                 civicrm_activity.activity_date_time,
                 civicrm_activity.source_record_id,
@@ -1132,7 +1126,6 @@ LEFT JOIN civicrm_activity_contact src ON (src.activity_id = ac.activity_id AND 
     if ($includeCaseActivities) {
       $caseSelect = '';
       if (!$input['count']) {
-        //NYSS 7354
         $caseSelect = ',
                 civicrm_activity.activity_date_time,
                 civicrm_activity.source_record_id,
@@ -2237,7 +2230,7 @@ AND cl.modified_id  = c.id
   }
 
   /**
-   * This function delete activity record related to contact record,
+   * This function deletes the activity record related to contact record,
    * when there are no target and assignee record w/ other contact.
    *
    * @param  int $contactId contactId
@@ -2255,9 +2248,8 @@ AND cl.modified_id  = c.id
 
     $transaction = new CRM_Core_Transaction();
 
-    //NYSS fixes to ensure activity is not deleted if other linked contacts exist
-
-    // delete activity if there is no record in civicrm_activity_contact pointing to any other contact record
+    // delete activity if there is no record in civicrm_activity_contact
+    // pointing to any other contact record
     $activityContact = new CRM_Activity_DAO_ActivityContact();
     $activityContact->contact_id = $contactId;
     $activityContact->record_type_id = $sourceID;
@@ -2392,7 +2384,7 @@ INNER JOIN  civicrm_option_group grp ON ( grp.id = val.option_group_id AND grp.n
     //check for source contact.
     if (!$componentId || $allow) {
       $sourceContactId = self::getActivityContact($activity->id, $sourceID);
-      //NYSS account for possibility of activity not having a source contact (as it may have been deleted)
+      //account for possibility of activity not having a source contact (as it may have been deleted)
       if ( $sourceContactId ) {
         $allow = CRM_Contact_BAO_Contact_Permission::allow($sourceContactId, $permission);
       }

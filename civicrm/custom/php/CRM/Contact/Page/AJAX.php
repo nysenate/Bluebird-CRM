@@ -51,7 +51,8 @@ class CRM_Contact_Page_AJAX {
       'fieldName' => 'field_name',
       'tableName' => 'table_name',
       'context' => 'context',
-      'rel' => 'rel'
+      'rel' => 'rel',
+      'contact_sub_type' => 'contact_sub_type'
     );
     foreach ($whitelist as $key => $param) {
       if (!empty($_GET[$key])) {
@@ -1050,9 +1051,7 @@ LIMIT {$offset}, {$rowCount}
     $oid  = CRM_Utils_Type::escape($_REQUEST['oid'], 'Positive');
 
     if (!$oper || !$cid || !$oid) {
-
       return;
-
     }
 
     $exception = new CRM_Dedupe_DAO_Exception();
