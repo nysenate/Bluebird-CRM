@@ -91,7 +91,6 @@
 {literal}
 <script type="text/javascript">
 cj( function() {
-  //NYSS 4906
   // for CRM-11310 and CRM-10635 : processing just parent groups on initial display
   // passing '1' for parentsOnlyArg to show parent child heirarchy structure display
   // on initial load of manage group page and
@@ -102,7 +101,7 @@ cj( function() {
   });
 });
 
-function buildGroupSelector( filterSearch, parentsOnlyArg ) {//NYSS
+function buildGroupSelector( filterSearch, parentsOnlyArg ) {
     if ( filterSearch ) {
         if (typeof crmGroupSelector !== 'undefined') {
           crmGroupSelector.fnDestroy();
