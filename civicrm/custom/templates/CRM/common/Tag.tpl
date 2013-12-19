@@ -35,10 +35,10 @@
               theme: 'facebook',
               hintText: hintText,
               onAdd: function ( item ) {
-                // NYSS-6558 trim and check to prevent submitting empty tags
-                console.log(cj.trim(item.id).length);
-
-                if(cj.trim(item.id).length > 8){
+                // NYSS-6558 Check to prevent submitting empty tags
+                // An empty tag is submitted as ':::value'
+                // we check for a tag starting with ::: and ignore it
+                if(cj.trim(item.id).substring(0,3) != ":::"){
                   processContactTags_{/literal}{$tagset.parentID}{literal}( 'select', cj.trim(item.id ));
                   //NYSS update count of tags in summary tab
                   if ( cj( '.ui-tabs-nav #tab_tag a' ).length ) {
@@ -130,7 +130,7 @@
           <div class="tag-label">
               <label>Issue Codes</label>
           </div>
-          <input type="text" autocomplete="off" placeholder="Search for Issue Codes" maxlength="64" id="issue-code-search" >
+          <input type="text" autocomplete="off" placeholder="Type here to search issue codes" maxlength="64" id="issue-code-search" >
         </div>
         {literal}
         <script>

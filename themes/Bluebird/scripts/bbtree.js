@@ -322,38 +322,24 @@ var BBTree = {
                 //BBTree.reportAction(['updat',0,tagUpdate, data.message]);
                 var parentTagName = cj(aIDSel(addTagLabel(obj.parentId)) + ' .tag .name').html();
                 actionData.name += ' - Update Tag';
-                if(passes)
-                {
-
+                if(passes) {
                     actionData.description += 'Tag <span>'+obj.prevName+'</span> was updated. ';
-                    if(obj.tagName != null || obj.prevName != obj.tagName)
-                    {
-                        actionData.description += 'It\'s new name is <span>'+obj.tagName+'</span>. ';
+                    if (obj.name != obj.prevName) {
+                        actionData.description += 'Its new name is <span>'+obj.tagName+'</span>. ';
                     }
-                    if(obj.description != null && obj.description != '' && obj.description != 'null')
-                    {
-                        if(obj.description.match(/a href.*http.*/gi))
-                        {
-                            escapedDescription = obj.description;
-                            escapedDescription = escapedDescription.replace(/</g,"&lt;");
-                            escapedDescription = escapedDescription.replace(/>/g,"&gt;");
-                            actionData.description += 'It\'s new description is <span>'+escapedDescription+'</span>. ';
-                        } else {
-                            actionData.description += 'It\'s new description is <span>'+obj.description+'</span>. ';
-                        }
+                    if (obj.tagDescription != obj.prevDescription) {
+                        var escapedDescription = obj.description.replace(/</g,"&lt;").replace(/>/g,"&gt;");
+                        actionData.description += 'Its new description is <span>'+escapedDescription+'</span>. ';
                     }
-                    actionData.description += 'It is <span>';
-                    if(obj.isReserved == 0)
-                    {
-                        actionData.description += 'not ';
+                    if (obj.isReserved != obj.prevIsReserved) {
+                        actionData.description += 'It is now <span>'+(obj.isReserved ? 'reserved' : 'unreserved ')+'</span>.';
                     }
-                    actionData.description += 'reserved</span>.';
                 }
                 else { //would LOVE to be able to get contact name here...
-                    if(message[3] == 'DB Error: already exists')
-                    {
+                    if(message[3] == 'DB Error: already exists') {
                         actionData.description += 'Tag <span>'+obj.tagName+'</span> already exists';
-                    } else {
+                    }
+                    else {
                         actionData.description += 'Tag <span>'+obj.tagName+'</span> was unable to be updated';
                     }
                     actionData.description += '.';
@@ -1004,6 +990,7 @@ var BBTreeModal = {
         cj.extend(this.currentSettings, this.defaultSettings);
     },
     tagInfo: function(obj, tagLabel){
+
         var jq_tagLabelDT = cj(BBTree.treeLoc + ' dt#' + tagLabel);
         var jq_tagLabelDL = cj(BBTree.treeLoc + ' dl#' + tagLabel);
         this.taggedObject = obj;
@@ -1111,7 +1098,6 @@ var BBTreeModal = {
                 addDialogText += '<div><span>Description:</span ><input type="text" name="tagDescription" /></div>';
                 addDialogText += '<div><span>Reserved:</span><input type="checkbox" name="isReserved"/></div>';
                 addDialogText += '</div>';
-                this.taggedReserved = false;
                 this.currentSettings['actionName'] = 'added';
                 this.currentSettings['title'] = 'Add New Tag';
                 break;
@@ -1146,7 +1132,6 @@ var BBTreeModal = {
                 if(this.taggedReserved){addDialogText += "checked";}
                 addDialogText +='/></div>';
                 addDialogText += '</div>';
-                this.taggedReserved = false;
                 this.currentSettings['title'] = 'Update Tag';
                 break;
             case 'convert':
@@ -1168,7 +1153,7 @@ var BBTreeModal = {
             addDialogText = this.taggedName + ' cannot be ' + this.currentSettings.actionName + '. <br /> <br /> Make sure any child tags are ' + this.currentSettings.actionName + ' first.';
             this.currentSettings.ysnp = true;
         }
-        if(this.taggedReserved){
+        if(this.taggedReserved && this.taggedMethod != 'add' && this.taggedMethod != 'update'){
             addDialogText = this.taggedName + ' is reserved and cannot be ' + this.currentSettings.actionName + '. <br /> <br /> Try updating tag first.';
             this.currentSettings.ysnp = true;
         }
@@ -1206,7 +1191,7 @@ var BBTreeModal = {
         cj("#BBDialog").show();
         cj("#BBDialog").dialog(this.currentSettings).dialog("open");
         cj("#BBDialog").removeClass('loadingGif');
-        if(this.taggedReserved && this.taggedMethod != 'update')
+        if(this.taggedReserved && this.taggedMethod != 'add' && this.taggedMethod != 'update')
         {
             return true;//if it's reserved, there should be no ability to edit it, unless you're updating it.
         }
@@ -1374,6 +1359,8 @@ var BBTreeModal = {
                     modalLoadingGif('add');
                     tagUpdate = new Object();
                     tagUpdate.prevName = BBTreeModal.taggedName;
+                    tagUpdate.prevDescription = BBTreeModal.taggedDescription;
+                    tagUpdate.prevIsReserved = BBTreeModal.taggedReserved;
                     // NYSS-#6708
                     // tagUpdate.tagName = checkForHTMLinModalField(cj('#BBDialog .modalInputs input[name=tagName]').val());
                     // tagUpdate.tagDescription = checkForHTMLinModalField(cj('#BBDialog .modalInputs input[name=tagDescription]').val());
@@ -1968,28 +1955,17 @@ var TagTreeFilter = function(filter_input, tag_container) {
   self.search_timeout_id = null;
   self.search_bar = filter_input;
   self.tag_container = tag_container;
-  self.clear_button = cj('<div id="issue-code-clear" >x</div>');
+  self.button = cj('<div id="issue-code-button" >x</div>');
   self.empty_panel = cj('<div id="issue-code-empty" >No Results Found</div>');
   self.wait_panel = cj('<div id="issue-code-wait"></div>');
-  self.tag_container.prepend(self.clear_button, self.empty_panel, self.wait_panel);
+  self.tag_container.prepend(self.button, self.empty_panel, self.wait_panel);
   self.wait_panel.hide();
 
-  self.clear_button.click(function() {
+  self.button.click(function() {
     self.reset();
   });
 
-  // Shim IE9 to provide placeholder support
-  self.search_bar.focus(function() {
-    if (self.search_bar.val() == self.search_bar.attr("placeholder")) {
-      self.search_bar.removeClass("placeholder");
-      self.search_bar.val("");
-    }
-  }).blur(function() {
-    if (self.search_bar.val() == "" || self.search_bar.val() == self.search_bar.attr("placeholder")) {
-      self.search_bar.addClass("placeholder");
-      self.search_bar.val(self.search_bar.attr("placeholder"));
-    }
-  }).blur();
+
 
   // We bind to keydown here so that default behaviors can be prevented
   // and we have access to non-printable keystrokes. We suppport ESC for
@@ -2030,10 +2006,10 @@ var TagTreeFilter = function(filter_input, tag_container) {
       if (self.search_bar.val().length < 3) {
           self.wait_panel.fadeIn("fast", self.search.bind(self));
       }
-      else if(self.search_bar.val() === "Search for Issue Codes"){
+      else if(self.search_bar.val() === self.search_bar.attr("placeholder")){
         self.tag_container.find('.ddControl.open').removeClass('open').parent().next('dl').removeClass('open').hide();
         self.get_tags().removeClass('search-hidden search-match search-parent search-highlighted');
-        self.clear_button.fadeOut("fast");
+        self.button.removeClass('clear');
         self.empty_panel.fadeOut("fast");
         self.wait_panel.hide();
       }
@@ -2060,9 +2036,10 @@ TagTreeFilter.prototype.reset = function() {
   self.search_bar.val('');
   self.tag_container.find('.ddControl.open').removeClass('open').parent().next('dl').removeClass('open').hide();  // .click();
   self.get_tags().removeClass('search-hidden search-match search-parent search-highlighted');
-  self.clear_button.fadeOut("fast");
+  self.button.removeClass('clear');
   self.empty_panel.fadeOut("fast");
   self.wait_panel.hide();
+  self.search_bar.focus();
 }
 
 // An empty search bar resets the filter. Anything else triggers
@@ -2094,7 +2071,7 @@ TagTreeFilter.prototype.search = function() {
         tag.addClass('search-match');
       }
     });
-    self.clear_button.fadeIn( "slow" );
+    self.button.addClass('clear');
 
     if (has_matches) {
       self.empty_panel.fadeOut("fast");
