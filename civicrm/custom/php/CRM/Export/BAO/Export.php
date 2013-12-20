@@ -537,8 +537,7 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
       );
     }
 
-    //NYSS 7494
-    if ($componentTable) {
+    if (!$selectAll && $componentTable) {
       $from .= " INNER JOIN $componentTable ctTable ON ctTable.contact_id = contact_a.id ";
     }
     elseif ($componentClause) {
@@ -549,6 +548,21 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
         $where .= " AND $componentClause";
       }
     }
+
+    //NYSS 7494/7517 - check if is deleted
+    $excludeTrashed = TRUE;
+    foreach ( $params as $params ) {
+      if ( $param[0] == 'contact_is_deleted' ) {
+        $excludeTrashed = FALSE;
+      }
+    }
+    if( empty($where) && $excludeTrashed ) {
+      $where = "WHERE contact_a.is_deleted != 1";
+    }
+    elseif ( $excludeTrashed ) {
+      $where .= " AND contact_a.is_deleted != 1";
+    }
+
 
     $queryString = "$select $from $where $having";
 
