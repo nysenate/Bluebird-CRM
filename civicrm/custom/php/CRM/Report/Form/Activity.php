@@ -638,8 +638,9 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
     //Assign those recordtype to array which have filter operator as 'Is not empty' or 'Is empty'
     $nullFilters = array();
     foreach (array('target', 'source', 'assignee') as $type) {
-      if (CRM_Utils_Array::value("contact_{$type}_op", $this->_params) == 'nnll' ||
-        CRM_Utils_Array::value("contact_{$type}_value", $this->_params)) {
+      //NYSS 7509 revisit this; it doesn't throw error in core, but does when we filter by source but don't include column
+      if (CRM_Utils_Array::value("contact_{$type}_op", $this->_params) == 'nnll' /*||
+        CRM_Utils_Array::value("contact_{$type}_value", $this->_params)*/) {
         $nullFilters[] = " civicrm_contact_contact_{$type} IS NOT NULL ";
       }
       else if (CRM_Utils_Array::value("contact_{$type}_op", $this->_params) == 'nll') {
