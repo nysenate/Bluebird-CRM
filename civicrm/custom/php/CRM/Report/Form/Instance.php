@@ -240,7 +240,7 @@ class CRM_Report_Form_Instance {
   }
 
   static function postProcess(&$form, $redirect = TRUE) {
-    $params              = $form->getVar('_params');
+    $params = $form->getVar('_params');
     $instanceID = $form->getVar('_id');
 
     if ($isNew = $form->getVar('_createNew')) {
@@ -252,7 +252,16 @@ class CRM_Report_Form_Instance {
     $params['instance_id'] = $instanceID;
     if (CRM_Utils_Array::value('is_navigation', $params)) {
       $params['navigation'] = $form->_navigation;
+    }
+    //NYSS 7519 if is_navigation absent from params, we may need to forcibly remove from nav table
+    else {
+      //delete navigation if exists
+      $navId = CRM_Core_DAO::getFieldValue('CRM_Report_DAO_ReportInstance', $instanceID, 'navigation_id', 'id');
+      if ($navId) {
+        CRM_Core_BAO_Navigation::processDelete($navId);
+        CRM_Core_BAO_Navigation::resetNavigation();
       }
+    }
 
     // make a copy of params
     $formValues = $params;
