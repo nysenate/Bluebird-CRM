@@ -34,7 +34,6 @@
               prePopulate: contactEntityTags,
               theme: 'facebook',
               hintText: hintText,
-              {/literal}{if $tagset.skipEntityAction eq false}{literal}
               onAdd: function ( item ) {
                 // NYSS-6558 Check to prevent submitting empty tags
                 // An empty tag is submitted as ':::value'
@@ -62,7 +61,6 @@
                   cj( '.ui-tabs-nav #tab_tag a em' ).html(tagCount);
                 }
               }
-              {/literal}{/if}{literal}
             }
           );
 
