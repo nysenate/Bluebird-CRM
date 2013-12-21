@@ -34,6 +34,7 @@
               prePopulate: contactEntityTags,
               theme: 'facebook',
               hintText: hintText,
+              {/literal}{if $tagset.skipEntityAction eq false}{literal}
               onAdd: function ( item ) {
                 // NYSS-6558 Check to prevent submitting empty tags
                 // An empty tag is submitted as ':::value'
@@ -61,6 +62,7 @@
                   cj( '.ui-tabs-nav #tab_tag a em' ).html(tagCount);
                 }
               }
+              {/literal}{/if}{literal}
             }
           );
 
@@ -72,7 +74,8 @@
             var entityId         = "{/literal}{$tagset.entityId}{literal}";
             var entityTable      = "{/literal}{$tagset.entityTable}{literal}";
             var skipTagCreate    = "{/literal}{$tagset.skipTagCreate}{literal}";
-            var skipEntityAction = "{/literal}{$tagset.skipEntityAction}{literal}";
+            //NYSS
+            var skipEntityAction = "{/literal}{if $tagset.parentID eq '296'}0{else}{$tagset.skipEntityAction}{/if}{literal}";
 
             cj.post( postUrl, { action: action, tagID: id, parentId: parentId, entityId: entityId, entityTable: entityTable,
               skipTagCreate: skipTagCreate, skipEntityAction: skipEntityAction, key: {/literal}"{crmKey name='civicrm/ajax/processTags'}"{literal} },
@@ -88,14 +91,10 @@
                         setVal[x] = valArray[x];
                       }
                     }
-                    if (!skipEntityAction) {
-                      CRM.alert('', '{/literal}{ts escape='js'}Removed{/ts}{literal}', 'success');
-                    }
+                    CRM.alert('', '{/literal}{ts escape='js'}Removed{/ts}{literal}', 'success');
                   }
                   else {
-                    if (!skipEntityAction) {
-                      CRM.alert('', '{/literal}{ts escape='js'}Saved{/ts}{literal}', 'success');
-                    }
+                    CRM.alert('', '{/literal}{ts escape='js'}Saved{/ts}{literal}', 'success');
                   }
                   if ( response.action == 'select' ) {
                     setVal    = valArray;
