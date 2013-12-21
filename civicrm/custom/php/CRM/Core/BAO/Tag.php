@@ -373,11 +373,8 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
    * @static
    */
   static function dataExists(&$params) {
-    if (!empty($params['name'])) {
-      return TRUE;
-    }
-
-    return FALSE;
+    $s = isset($params['name']) ? trim($params['name']) : '';
+    return ($s !== '');
   }
 
   /**

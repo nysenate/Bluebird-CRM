@@ -502,8 +502,7 @@ LIMIT $limit";
       if (!is_numeric($tagID)) {
         $tagID = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_Tag', $tagID, 'id', 'name');
       }
-      // NYSS 4613- Don't delete the tag if we are skipping entity actions
-      if (!$skipEntityAction && $entityId) {
+      if ($entityId) {
         // delete this tag entry for the entity
         $params = array(
           'entity_table' => $entityTable,

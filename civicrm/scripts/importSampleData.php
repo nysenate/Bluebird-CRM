@@ -22,6 +22,8 @@ set_time_limit(0);
 
 define('DEFAULT_LOG_LEVEL', 'TRACE');
 define('LOC_TYPE_BOE', 6);
+define('TEST_IMPORT', 0);
+define('TEST_IMPORT_COUNT', 50);
 
 class CRM_ImportSampleData {
 
@@ -207,15 +209,12 @@ class CRM_ImportSampleData {
       'civicrm_persistent',
       'civicrm_phone',
       'civicrm_prevnext_cache',
-      'civicrm_project',
       'civicrm_queue_item',
       'civicrm_relationship',
       'civicrm_saved_search',
       'civicrm_sms_provider',
       'civicrm_subscription_history',
       'civicrm_survey',
-      'civicrm_task',
-      'civicrm_task_status',
       'civicrm_tell_friend',
       'civicrm_uf_match',
       'civicrm_website',
@@ -242,7 +241,14 @@ class CRM_ImportSampleData {
     bbscript_log('trace', 'Tables with select row/field deletion: civicrm_dashboard, civicrm_setting');
     if ( !$optDry ) {
       $dashRetain = array(
+        'Activities',
+        'All Activities, Last 7 Days',
         'All Cases',
+        'Bluebird News',
+        'Case Dashboard Dashlet',
+        'Matched Inbound Emails, Last 7 Days',
+        'My Cases',
+        'Twitter',
       );
       $dashRetainList = implode(',', $dashRetain);
       $sql = "
@@ -306,6 +312,8 @@ class CRM_ImportSampleData {
     global $fkMap;
 
     $type = str_replace('.yml', '', $file);
+    bbscript_log("trace", "raw type: $type");
+
     $errors = array();
     $i = 0;
 
@@ -317,6 +325,7 @@ class CRM_ImportSampleData {
         break;
       default:
     }
+    bbscript_log("trace", "api type: $type");
 
     if ( !$data ) {
       $filename = $scriptPath.'/sampleData/'.$file;
@@ -351,6 +360,13 @@ class CRM_ImportSampleData {
         $params['entity_id'] = $fkMap['contact'][$params['entity_id']];
       }
 
+      //in v1.5.0 we have problems passing address custom fields via nested api
+      if ( isset($params['api.address.create']['api.custom_value.create']) ) {
+        $distInfo = $params['api.address.create']['api.custom_value.create'];
+        $params['api.address.create'] = array_merge($params['api.address.create'], $distInfo);
+        unset($params['api.address.create']['api.custom_value.create']);
+      }
+
       //bbscript_log("trace", "params before iAPI", $params);
       $r = self::iAPI($type, 'create', $params);
       //bbscript_log("trace", "r", $r);
@@ -372,6 +388,10 @@ class CRM_ImportSampleData {
       $i++;
       if ( $i % 500 == 0 ) {
         bbscript_log('info', "{$i} {$type} records imported... ");
+      }
+
+      if ( TEST_IMPORT && $i > TEST_IMPORT_COUNT ) {
+        break;
       }
     }
 
