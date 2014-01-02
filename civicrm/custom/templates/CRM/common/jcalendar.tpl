@@ -104,14 +104,12 @@
           yearRange  += currentYear + parseInt( cj( alt_field ).attr('endOffset'  ) );
       {literal}
 
-      //NYSS
       var startRangeYr = currentYear - parseInt( cj( alt_field ).attr('startOffset') );
       var endRangeYr = currentYear + parseInt( cj( alt_field ).attr('endOffset'  ) );
 
       var lcMessage = {/literal}"{$config->lcMessages}"{literal};
       var localisation = lcMessage.split('_');
       var dateValue = cj(alt_field).val( );
-      //NYSS min/max Date
       cj(element_date).datepicker({
                                     closeAtTop        : true,
                                     dateFormat        : date_format,

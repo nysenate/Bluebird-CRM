@@ -2324,6 +2324,8 @@ LEFT JOIN civicrm_mailing_group g ON g.mailing_id   = m.id
       CRM_Core_Error::fatal();
     }
 
+    CRM_Utils_Hook::pre('delete', 'Mailing', $id, CRM_Core_DAO::$_nullArray);
+
     // delete all file attachments
     CRM_Core_BAO_File::deleteEntityFile('civicrm_mailing',
       $id
@@ -2334,6 +2336,8 @@ LEFT JOIN civicrm_mailing_group g ON g.mailing_id   = m.id
     $dao->delete();
 
     CRM_Core_Session::setStatus(ts('Selected mailing has been deleted.'), ts('Deleted'), 'success');
+
+    CRM_Utils_Hook::post('delete', 'Mailing', $id, $dao);
   }
 
   /**
@@ -2795,7 +2799,7 @@ WHERE  civicrm_mailing_job.id = %1
     return TRUE;
   }
   //NYSS 4717
-  private function addMultipleEmails($mailingID, $dedupeEmail = FALSE) {
+  private static function addMultipleEmails($mailingID, $dedupeEmail = FALSE) {
     $sql = "
 INSERT INTO civicrm_mailing_recipients
     (mailing_id, email_id, contact_id)

@@ -137,7 +137,6 @@
       {elseif $action neq 4}
       <td class="label">{ts}With Contact{/ts}</td>
       <td class="view-value">
-        {*NYSS 5007 add showNewSelect var; handled in future core*}
         {include file="CRM/Contact/Form/NewContact.tpl" noLabel=true skipBreak=true multiClient=true parent="activity" showNewSelect=true}
         {if $action eq 1}
         <br/>

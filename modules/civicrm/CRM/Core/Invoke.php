@@ -457,8 +457,13 @@ class CRM_Core_Invoke {
       }
     }
 
+    if ($secondArg == 'view' || empty($secondArg)) {
     $page = new CRM_Profile_Page_Listings();
     return $page->run();
+  }
+
+    CRM_Utils_System::permissionDenied();
+    return;
   }
 
   /**
@@ -490,7 +495,7 @@ class CRM_Core_Invoke {
     // also cleanup module permissions
     $config->cleanupPermissions();
 
-    //NYSS also rebuild word replacement cache
+    // also rebuild word replacement cache
     CRM_Core_BAO_WordReplacement::rebuild();
 
     CRM_Core_BAO_Setting::updateSettingsFromMetaData();

@@ -138,7 +138,7 @@ WHERE  cacheKey     = %3 AND
     CRM_Core_DAO::executeQuery($sql, $params);
   }
 
-  function retrieve($cacheKey, $join = NULL, $where = NULL, $offset = 0, $rowCount = 0) {
+  static function retrieve($cacheKey, $join = NULL, $where = NULL, $offset = 0, $rowCount = 0) {
     $query = "
 SELECT data 
 FROM   civicrm_prevnext_cache pn
@@ -148,7 +148,6 @@ WHERE  cacheKey = %1
     $params = array(1 => array($cacheKey, 'String'));
 
     if ($where) {
-
       $query .= " AND {$where}";
     }
 
