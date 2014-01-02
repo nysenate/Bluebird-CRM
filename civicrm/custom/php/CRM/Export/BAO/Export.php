@@ -551,8 +551,8 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
 
     //NYSS 7494/7517 - check if is deleted
     $excludeTrashed = TRUE;
-    foreach ( $params as $params ) {
-      if ( $param[0] == 'contact_is_deleted' ) {
+    foreach ( $params as $value ) {
+      if ( $value[0] == 'contact_is_deleted' ) {
         $excludeTrashed = FALSE;
       }
     }
