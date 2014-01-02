@@ -198,10 +198,11 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         // Extract the new tag parameters
         $tag = array('version'=>3);
         foreach(self::$TAG_FIELDS as $field) {
-            $value = CRM_Utils_Array::value($field, $_GET);
-            if($value) {
-                $tag[$field] = $value;
-            }
+          $value = CRM_Utils_Array::value($field, $_GET);
+          //NYSS 6558
+          if ( isset($value) ) {
+            $tag[$field] = $value;
+          }
         }
         $result = civicrm_api('tag', 'create', $tag);
         if($result['is_error'])

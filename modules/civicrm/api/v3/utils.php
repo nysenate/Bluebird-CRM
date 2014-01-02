@@ -116,7 +116,8 @@ function civicrm_api3_verify_mandatory($params, $daoName = NULL, $keys = array(
       }
     }
     else {
-      if (!array_key_exists($key, $params) || empty($params[$key])) {
+      //NYSS 6558
+      if (!array_key_exists($key, $params) || (empty($params[$key]) && $params[$key] != 0) ) {
         $unmatched[] = $key;
       }
     }
