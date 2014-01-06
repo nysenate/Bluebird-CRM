@@ -136,7 +136,7 @@ if [ $dump_db -eq 1 ]; then
       ignore_tabs_arg="$ignore_tabs_arg --ignore-table $dbname.$tab"
     done
   fi
-  mysqldump $common_args $ignore_tabs_arg --routines $dbname $dump_tabs
+  mysqldump $common_args $ignore_tabs_arg --routines --single-transaction --quick $dbname $dump_tabs
 elif [ $create_db -eq 1 ]; then
   if [ ! "$dbname" ]; then
     echo "$prog: Cannot create a database without specifying its name or instance." >&2
