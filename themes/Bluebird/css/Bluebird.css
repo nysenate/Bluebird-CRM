@@ -1769,3 +1769,8 @@ body.page-civicrm-mailing-browse form#Search div.crm-content-block {
   margin-left: 0;
   width: 30%;
 }
+
+/*7523*/
+.crm-printproductionexportresult-form-block .crm-section {
+  margin-left: 15px;
+}

@@ -620,7 +620,10 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     }
     $statusOutput .= "</ul>";
 
-    CRM_Core_Session::setStatus( $statusOutput, 'Print Production Export Results', 'success' );
+    $this->set('status', $status);
+    $this->set('statusOutput', $statusOutput);
+
+    //CRM_Core_Session::setStatus( $statusOutput, 'Print Production Export Results', 'no-popup' );
     iexit(4);
   } // postProcess()
 }//end class
