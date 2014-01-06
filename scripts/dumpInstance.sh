@@ -87,6 +87,8 @@ fi
 
 errcode=0
 
+time_start=$(date +%s)
+
 if [ "$archive_dump" ]; then
   mkdir -p "$tmpdir"
   pushd "$tmpdir"
@@ -145,5 +147,9 @@ if [ "$archive_dump" ]; then
 
   rm -rf "$tmpdir"
 fi
+
+time_end=$(date +%s)
+
+echo "It took $(($time_end - $time_start)) seconds to complete the backup."
 
 exit $errcode
