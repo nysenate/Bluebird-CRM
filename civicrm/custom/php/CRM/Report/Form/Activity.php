@@ -487,8 +487,8 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
       if ($this->isTableSelected('civicrm_email')) {
         $this->_from .= "
           LEFT JOIN civicrm_email civicrm_email_assignee
-            ON {$this->_aliases['civicrm_activity_contact']}.contact_id = civicrm_email_assignee.contact_id
-            AND civicrm_email_assignee.is_primary = 1 ";
+                   ON {$this->_aliases['civicrm_activity_contact']}.contact_id = civicrm_email_assignee.contact_id AND
+                      civicrm_email_assignee.is_primary = 1";
       }
       //NYSS
       if ($this->isTableSelected('civicrm_phone')) {
