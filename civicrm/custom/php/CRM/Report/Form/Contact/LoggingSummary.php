@@ -172,9 +172,10 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
   }
 
   function alterDisplay(&$rows) {
+    //CRM_Core_Error::debug_var('rows', $rows);
     // cache for id → is_deleted mapping
     $isDeleted = array();
-    $newRows   = array();
+    $newRows = array();
 
     foreach ($rows as $key => &$row) {
       if (!isset($isDeleted[$row['log_civicrm_entity_altered_contact_id']])) {
@@ -221,6 +222,17 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
 
         //NYSS append instance id so we return properly
         $q .= '&instanceID='.$this->_id;
+
+        //NYSS 7543 append altered contact and altered by name
+        $q .= (!empty($row['log_civicrm_entity_altered_contact'])) ?
+          '&alteredName='.$row['log_civicrm_entity_altered_contact'] :
+          '';
+        $q .= (!empty($row['altered_by_contact_display_name'])) ?
+          '&alteredBy='.$row['altered_by_contact_display_name'] :
+          '';
+        $q .= (!empty($row['log_civicrm_entity_log_user_id'])) ?
+          '&alteredById='.$row['log_civicrm_entity_log_user_id'] :
+          '';
 
         $url1 = CRM_Report_Utils_Report::getNextUrl('logging/contact/detail', "{$q}&snippet=4&section=2&layout=overlay", FALSE, TRUE);
         $url2 = CRM_Report_Utils_Report::getNextUrl('logging/contact/detail', "{$q}&section=2", FALSE, TRUE);
