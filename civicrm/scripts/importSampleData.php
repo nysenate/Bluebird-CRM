@@ -250,7 +250,7 @@ class CRM_ImportSampleData {
         'My Cases',
         'Twitter',
       );
-      $dashRetainList = implode(',', $dashRetain);
+      $dashRetainList = implode("','", $dashRetain);
       $sql = "
         DELETE FROM civicrm_dashboard
         WHERE label NOT IN ('{$dashRetainList}');
@@ -272,6 +272,13 @@ class CRM_ImportSampleData {
       'api.email.create' => array(
         'email' => 'bluebird.admin@nysenate.gov',
         'location_type_id' => 1,
+        'is_primary' => 1,
+      ),
+      'api.phone.create' => array(
+        'phone' => '800-BlueBird',
+        'location_type_id' => 1,
+        'phone_type_id' => 1,
+        'is_primary' => 1,
       ),
     );
     $c = self::iAPI('contact', 'create', $params);
