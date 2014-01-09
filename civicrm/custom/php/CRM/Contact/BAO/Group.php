@@ -381,7 +381,10 @@ class CRM_Contact_BAO_Group extends CRM_Contact_DAO_Group {
     $group = new CRM_Contact_BAO_Group();
     $group->copyValues($params);
 
-    if (!CRM_Utils_Array::value('id', $params)) {
+    //NYSS
+    if (!CRM_Utils_Array::value('id', $params) &&
+      !CRM_Utils_Array::value('name', $params)
+    ) {
       $group->name .= "_tmp";
     }
     $group->save();
@@ -390,7 +393,10 @@ class CRM_Contact_BAO_Group extends CRM_Contact_DAO_Group {
       return NULL;
     }
 
-    if (!CRM_Utils_Array::value('id', $params)) {
+    //NYSS
+    if (!CRM_Utils_Array::value('id', $params) &&
+      !CRM_Utils_Array::value('name', $params)
+    ) {
       $group->name = substr($group->name, 0, -4) . "_{$group->id}";
     }
 
