@@ -354,7 +354,8 @@ class CRM_Contact_BAO_Group extends CRM_Contact_DAO_Group {
     }
 
     // form the name only if missing: CRM-627
-    if (!CRM_Utils_Array::value('name', $params) &&
+    $nameParam = CRM_Utils_Array::value('name', $params, NULL);
+    if (!$nameParam &&
       !CRM_Utils_Array::value('id', $params)
     ) {
       $params['name'] = CRM_Utils_String::titleToVar($params['title']);
@@ -383,7 +384,7 @@ class CRM_Contact_BAO_Group extends CRM_Contact_DAO_Group {
 
     //NYSS
     if (!CRM_Utils_Array::value('id', $params) &&
-      !CRM_Utils_Array::value('name', $params)
+      !$nameParam
     ) {
       $group->name .= "_tmp";
     }
@@ -395,7 +396,7 @@ class CRM_Contact_BAO_Group extends CRM_Contact_DAO_Group {
 
     //NYSS
     if (!CRM_Utils_Array::value('id', $params) &&
-      !CRM_Utils_Array::value('name', $params)
+      !$nameParam
     ) {
       $group->name = substr($group->name, 0, -4) . "_{$group->id}";
     }
