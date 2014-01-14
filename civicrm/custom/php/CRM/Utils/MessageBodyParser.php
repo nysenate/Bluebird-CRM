@@ -120,7 +120,8 @@ class MessageBodyParser
             $m[$id]['From'] = $parseEmail;
             break;
           case 'to':
-            $m[$id]['To'] = trim($value);
+            $parseEmail = self::parseFromHeader(trim($value));
+            $m[$id]['To'] = $parseEmail;
             break;
           case 'sent': case 'date':
             // Remove errors caused by "at" or ","
@@ -129,10 +130,13 @@ class MessageBodyParser
             $m[$id]['Date'] = $parseDate;
             break;
           case 'cc':
-            $m[$id]['Cc'] = trim($value);
+            $parseEmail = self::parseFromHeader(trim($value));
+            $m[$id]['Cc'] = $parseEmail;
             break;
           case 'bcc':
-            $m[$id]['Bcc'] = trim($value);
+            $parseEmail = self::parseFromHeader(trim($value));
+
+            $m[$id]['Bcc'] = $parseEmail;
             break;
           default:
             break;
