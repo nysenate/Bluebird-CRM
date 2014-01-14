@@ -231,7 +231,6 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 
   //Construct some arrays and values to be passed to the tag tab
   if ( $formName == 'CRM_Tag_Form_Tag' ) {
-
     $contactId = $form->getVar( '_entityID' );
 
     //Construct list of tags, comma-separated
@@ -381,7 +380,6 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 
   //add js popup msg to report pdf button
   if ( $form->getVar('_instanceForm') && $pdfVar = $form->getVar('_pdfButtonName') ) {
-
     //if the user has selected more than 6 fields for display, warn and proceed
     $form->removeElement($pdfVar);
     $pdfButton =& $form->getElement($pdfVar);
@@ -397,11 +395,12 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
     $submitVals = $form->_submitValues;
     $paramsVals = $form->getVar('_params');
     $printVar   = $form->getVar('_printButtonName');
-    if ( ( isset($submitVals['charts']) &&
-           ($submitVals['charts'] == 'pieChart' || $submitVals['charts'] == 'barChart') ) ||
-         ( isset($paramsVals['charts']) &&
-           ($paramsVals['charts'] == 'pieChart' || $paramsVals['charts'] == 'barChart') )
-       ) {
+    if (
+      ( isset($submitVals['charts']) &&
+        ($submitVals['charts'] == 'pieChart' || $submitVals['charts'] == 'barChart') ) ||
+      ( isset($paramsVals['charts']) &&
+        ($paramsVals['charts'] == 'pieChart' || $paramsVals['charts'] == 'barChart') )
+    ) {
       $form->removeElement($pdfVar);
       $form->removeElement($printVar);
       $form->removeElement($printVar); //intentionally duplicated
@@ -410,7 +409,6 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 
   //2539 require content in activity email
   if ( $formName == 'CRM_Contact_Form_Task_Email' ) {
-
     if ( empty($form->_submitValues['html_message']) && empty($form->_submitValues['text_message']) ) {
       $form->addRule('html_message', ts('Please enter content in either the html or text message fields.'), 'required');
     }
@@ -418,7 +416,6 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 
   //4203 disallow setting report nav to root and home parent navigation items
   if ( $form->getVar('_instanceForm') && $form->elementExists('parent_id') ) {
-
     $removeList = array(
       '-- select --',
       'Home',
@@ -487,6 +484,20 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
       unset($go->_elements[1]);
 
       $form->removeElement('title');
+    }
+  }
+
+  //5444
+  if ( $form->getVar('_instanceForm') ) {
+    $instVals = $form->getVar('_instanceValues');
+    if ( $instVals['report_id'] == 'logging/contact/detail' ) {
+      $instAttrib = $form->getVar('_attributes');
+      $instPath = trim(CRM_Utils_Array::value('action', $instAttrib), '/');
+      $printerFriendly = CRM_Utils_System::makeURL(
+          'snippet', TRUE, FALSE,
+          $instPath
+        ) . '2';
+      $form->assign('printerFriendly', $printerFriendly);
     }
   }
 
