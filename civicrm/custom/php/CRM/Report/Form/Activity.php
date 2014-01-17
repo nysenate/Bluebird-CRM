@@ -33,13 +33,13 @@
  *
  */
 class CRM_Report_Form_Activity extends CRM_Report_Form {
-  protected $_selectAliasesTotal = array();
+  protected $_selectAliasesTotal = array( );
 
   protected $_customGroupExtends = array(
     'Activity'
   );
 
-  protected $_nonDisplayFields = array();
+  protected $_nonDisplayFields = array( );
 
   function __construct() {
     // There could be multiple contacts. We not clear on which contact id to display. 
@@ -369,6 +369,14 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
       $this->_nonDisplayFields[] = "civicrm_contact_contact_{$recordType}";
       $this->_params['fields']["contact_{$recordType}"] = 1;
     }
+
+    //NYSS 7564 check if order bys are present in field list; if not, add
+    foreach ( $this->_params['order_bys'] as $orderBy ) {
+      if (!array_key_exists($orderBy['column'], $this->_params['fields'])) {
+        $this->_params['fields'][$orderBy['column']] = 1;
+      }
+    }
+
     parent::select();
 
     if ($recordType == 'final' && !empty($this->_nonDisplayFields)) {
