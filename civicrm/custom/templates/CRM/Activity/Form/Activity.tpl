@@ -281,7 +281,7 @@
 
   {if $action eq 4 AND $currentAttachmentInfo}
     {include file="CRM/Form/attachment.tpl"}{* For view action the include provides the row and cells. *}
-  {elseif $action eq 1 OR $action eq 2}
+  {else}{*NYSS 7565 attachment panel logic*}
     <tr class="crm-activity-form-block-attachment">
       <td colspan="2">
       {include file="CRM/Form/attachment.tpl"}
