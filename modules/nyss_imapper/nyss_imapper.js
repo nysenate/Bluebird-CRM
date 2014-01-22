@@ -1150,7 +1150,7 @@ cj.extend( cj.fn.dataTableExt.oSort, {
 });
 
 function makeListSortable(){
-  cj("#sortable_results").dataTable({
+ var oTable = cj("#sortable_results").dataTable({
     "sDom":'<"controlls"lif><"clear">rt <p>',//add i here this is the number of records
     // "iDisplayLength": 1,
     "sPaginationType": "full_numbers",
@@ -1160,14 +1160,22 @@ function makeListSortable(){
     { 'bSortable': false, 'aTargets': [ 6 ] },
     { "sType": "title-string", "aTargets": [ 3,5 ] }
     ],
+    "oColVis": { "activate": "mouseover" },
     'aTargets': [ 1 ],
     "iDisplayLength": 50,
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
     "bAutoWidth": false
   });
+  var oHeader = new FixedHeader( oTable );
+  oHeader.fnUpdate();
   checks();
 }
 
+cj(".FixedHeader_Cloned th").live('click', function() {
+  var clickclass = cj(this).attr('class').split(' ')[0];
+  console.log(clickclass);
+  cj('.'+clickclass).click();
+});
 
 
 
@@ -1269,7 +1277,7 @@ function buildMessageList() {
 }
 
 function makeReportSortable(){
-  cj("#sortable_results").dataTable({
+  var oTable = cj("#sortable_results").dataTable({
     "sDom":'<"controlls"lif><"clear">rt <p>',//add i here this is the number of records
     // "iDisplayLength": 1,
     "sPaginationType": "full_numbers",
@@ -1278,9 +1286,10 @@ function makeReportSortable(){
     'aTargets': [ 1 ],
     "iDisplayLength": 50,
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
-    "bAutoWidth": false
+    "bAutoWidth": false,
   });
-  // var oTable = cj('#sortable_results').dataTable();
+
+  new FixedHeader( oTable );
   // rows = oTable.fnGetVisibleData();
 }
 
@@ -1365,8 +1374,8 @@ function buildReports() {
         // messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
     });
     };
-    cj('#imapper-messages-list').html(messagesHtml);
-    makeReportSortable();
+  cj('#imapper-messages-list').html(messagesHtml);
+  makeReportSortable();
   cj('#total').html(unMatched+Matched+Cleared+Errors+Deleted);
   cj('#total_unMatched').html(unMatched);
   // console.log(unMatched);
