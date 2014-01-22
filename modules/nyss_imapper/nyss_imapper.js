@@ -35,8 +35,7 @@ cj(document).ready(function(){
     modal: true,
     width: 600,
     autoOpen: false,
-    resizable: false,
-    draggable: false
+    resizable: false
   });
 
   // After we've already matched something
@@ -45,8 +44,7 @@ cj(document).ready(function(){
     dialogClass: 'no_find_match',
     width: 370,
     autoOpen: false,
-    resizable: false,
-    draggable: false
+    resizable: false
   });
 
   // add a delete conform popup thats alarmingly red
@@ -55,8 +53,7 @@ cj(document).ready(function(){
     dialogClass: 'delete_popup_class',
     width: 370,
     autoOpen: false,
-    resizable: false,
-    draggable: false
+    resizable: false
   });
 
   // add a clear conform popup
@@ -64,8 +61,7 @@ cj(document).ready(function(){
     modal: true,
     width: 370,
     autoOpen: false,
-    resizable: false,
-    draggable: false
+    resizable: false
   });
 
 
@@ -78,7 +74,6 @@ cj(document).ready(function(){
     autoOpen: false,
     resizable: false,
     title: 'Loading Data',
-    draggable: false,
     buttons: {
       Cancel: function() {
         cj( this ).dialog( "close" );
@@ -92,8 +87,7 @@ cj(document).ready(function(){
     width: 200,
     autoOpen: false,
     resizable: false,
-    title: 'Please Wait',
-    draggable: false
+    title: 'Please Wait'
   });
 
   // add a reloading icon popup
@@ -102,8 +96,7 @@ cj(document).ready(function(){
     width: 200,
     autoOpen: false,
     resizable: false,
-    title: 'Please Wait',
-    draggable: false
+    title: 'Please Wait'
   });
 
   // add a tagging popup
@@ -113,16 +106,13 @@ cj(document).ready(function(){
     width: 960,
     autoOpen: false,
     resizable: false,
-    title: 'Loading Data',
-    draggable: false
-  });
+    title: 'Loading Data',  });
 
   cj( "#matchCheck-popup" ).dialog({
     modal: true,
     width: 400,
     autoOpen: false,
-    resizable: false,
-    draggable: false
+    resizable: false
   });
 
 
@@ -130,8 +120,7 @@ cj(document).ready(function(){
     modal: true,
     width: 500,
     autoOpen: false,
-    resizable: false,
-    draggable: false
+    resizable: false
   });
 
 
@@ -140,7 +129,6 @@ cj(document).ready(function(){
     width: 500,
     autoOpen: false,
     resizable: false,
-    draggable: false,
     open:function () {
       cj(this).closest(".ui-dialog").find(".ui-button:first").addClass("primary_button");
     },
