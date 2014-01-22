@@ -1187,6 +1187,11 @@ function checks(){
   });
 }
 
+// add highlight to selected rows in table view
+cj(".checkbox").live('click', function() {
+    cj(this).parent().parent().toggleClass( "highlight" );
+});
+
 function buildMessageList() {
   if(messages.stats.overview.Unprocessed == '0' || messages == null){
     cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty">No records found</td>');
