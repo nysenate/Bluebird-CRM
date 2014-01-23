@@ -1560,6 +1560,7 @@ LIMIT 0 , 100000";
           $phoneParams = array(
             'contact_id' => $contact['id'],
             'phone' => $phone,
+            'location_type_id' => $locationResults[0], // Other
             'version' => 3,
           );
           $phone = civicrm_api( 'phone','create',$phoneParams );
