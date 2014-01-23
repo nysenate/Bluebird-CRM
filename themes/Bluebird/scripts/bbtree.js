@@ -367,7 +367,7 @@ var BBTree = {
                     actionData.description += 'Tag <span>'+obj.tagName+'</span> was added successfully under <span>'+parentTagName+'</span>. ';
                     if(obj.tagName != null)
                     {
-                        actionData.description += 'It\'s name is <span>'+obj.tagName+'</span>. ';
+                        actionData.description += 'Its name is <span>'+obj.tagName+'</span>. ';
                     }
                     if(obj.description != null && obj.description != '' && obj.description != 'null')
                     {
@@ -376,9 +376,9 @@ var BBTree = {
                             escapedDescription = obj.description;
                             escapedDescription = escapedDescription.replace(/</g,"&lt;");
                             escapedDescription = escapedDescription.replace(/>/g,"&gt;");
-                            actionData.description += 'It\'s new description is <span>'+escapedDescription+'</span>. ';
+                            actionData.description += 'Its new description is <span>'+escapedDescription+'</span>. ';
                         } else {
-                            actionData.description += 'It\'s description is <span>'+obj.description+'</span>. ';
+                            actionData.description += 'Its description is <span>'+obj.description+'</span>. ';
                         }
                     }
                     actionData.description += 'It is <span>';
