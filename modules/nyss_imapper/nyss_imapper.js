@@ -1435,8 +1435,10 @@ cj.fn.dataTableExt.afnFiltering.push(
         return false;
     }
 );
-
-
+cj(".stats_overview").live('click', function() {
+    cj(".stats_overview").removeClass('active');
+    cj(this).addClass('active');
+});
 
 cj(".Total").live('click', function() {
     var oTable = cj('#sortable_results').dataTable();
