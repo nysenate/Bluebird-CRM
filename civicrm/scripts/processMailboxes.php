@@ -9,7 +9,7 @@
 //
 
 // Version number, used for debugging
-define('VERSION_NUMBER', 0.05);
+define('VERSION_NUMBER', 0.06);
 
 // Mailbox settings common to all CRM instances
 define('DEFAULT_IMAP_SERVER', 'webmail.senate.state.ny.us');
@@ -46,6 +46,10 @@ define('INVALID_EMAIL_TEXT', "You do not have permission to forward e-mails to t
 define('AUTH_FORWARDERS_GROUP_NAME', 'Authorized_Forwarders');
 
 error_reporting(E_ERROR | E_PARSE | E_WARNING);
+
+if( ! ini_get('date.timezone') ){
+  date_default_timezone_set('America/New_York');
+}
 
 //no limit
 set_time_limit(0);
