@@ -196,6 +196,7 @@ class MessageBodyParser
     $body = preg_replace($patterns, '<br/><br/>', $body);
     $body = self::stripBodyTags($body);
     $body = preg_replace('~<\s*\bscript\b[^>]*>(.*?)<\s*\/\s*script\s*>~is', '', $body);
+
     $body = addslashes($body);
 
     if (trim($body) == '') {

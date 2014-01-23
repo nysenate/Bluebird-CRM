@@ -1142,7 +1142,7 @@ var BBTreeModal = {
                 else{
                     callTree.currentSettings.displaySettings.currentTree = 296;
                 }
-                addDialogText += '<div class="modalHeader">Convert <span id="modalNameTid" tID="'+this.taggedID+'">' + this.taggedName + '</span> into a Issue Code under...</div>';
+                addDialogText += '<div class="modalHeader">Convert <span id="modalNameTid" tID="'+this.taggedID+'">' + this.taggedName + '</span> into an Issue Code under...</div>';
                 addDialogText += this.addModalTagTree();
                 this.currentSettings['actionName'] = 'converted';
                 this.currentSettings['title'] = 'Convert Keyword to Tag';
