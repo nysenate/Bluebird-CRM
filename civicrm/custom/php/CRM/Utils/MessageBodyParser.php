@@ -60,8 +60,16 @@ class MessageBodyParser
     $headerCheck = html_entity_decode($headerCheck);
     $headerCheck = self::stripTagsForHeader($headerCheck);
     $headerCheck = preg_replace('/#####---/', "\r\n", $headerCheck);
-    $bodyArray = explode("\r\n", $headerCheck);
-
+    $bodyArrayRaw = explode("\r\n", $headerCheck);
+    foreach ($bodyArrayRaw as $line => $value) {
+      $str = htmlspecialchars_decode($value);
+      $str = preg_replace('/CN=|O=|OU=/i', '', $str);
+      $str = preg_replace('/mailto|\(|\)/i', '', $str);
+      $str = preg_replace('/"|\'/i', '', $str);
+      $str = preg_replace('/\[|\]/i', '', $str);
+      $str = preg_replace('/&lt;|&gt;|&quot;|&amp;/i', ' ', $str);
+      $bodyArray[$line] = $str;
+    }
     $possibleHeaders = "subject|from|to|sent|date|cc|bcc|sent by";
 
     $Line = array();
@@ -176,9 +184,9 @@ class MessageBodyParser
     $body = preg_replace( '/class=(["\'])[^\1]*?\1/i', '', $body);
     $body = preg_replace( '/onclick=(["\'])[^\1]*?\1/i', '', $body);
     $body = preg_replace( '/title=(["\'])[^\1]*?\1/i', '', $body);
+    $body = preg_replace( '/href=(["\'])[^\1]*?\1/i', '', $body);
 
     // final cleanup
-    $body = html_entity_decode($body);
     $body = ltrim($body);
     // remove random tags that appear in the beginning of the body
     $body = preg_replace('/^.*?>(?=[A-Za-z0-9-.,])/', '', $body);
@@ -188,6 +196,7 @@ class MessageBodyParser
     $body = preg_replace($patterns, '<br/><br/>', $body);
     $body = self::stripBodyTags($body);
     $body = preg_replace('~<\s*\bscript\b[^>]*>(.*?)<\s*\/\s*script\s*>~is', '', $body);
+
     $body = addslashes($body);
 
     if (trim($body) == '') {
@@ -250,8 +259,8 @@ class MessageBodyParser
     }
     else {
       // clean out any anything that wouldn't be a name or email, html or plain-text
-      $str = preg_replace('/&lt;|&gt;|&quot;|&amp;/i', '', $str);
-      $str = preg_replace('/<|>|"|\'/i', '', $str);
+      $str = preg_replace('/&lt;|&gt;|&quot;|&amp;/i', ' ', $str);
+      $str = preg_replace('/<|>|"|\'/i', ' ', $str);
       foreach (preg_split('/ /', $str) as $token) {
         $name .= $token." ";
         $email = filter_var(filter_var($token, FILTER_SANITIZE_EMAIL), FILTER_VALIDATE_EMAIL);

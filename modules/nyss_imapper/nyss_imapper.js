@@ -35,8 +35,7 @@ cj(document).ready(function(){
     modal: true,
     width: 600,
     autoOpen: false,
-    resizable: false,
-    draggable: false
+    resizable: false
   });
 
   // After we've already matched something
@@ -45,8 +44,7 @@ cj(document).ready(function(){
     dialogClass: 'no_find_match',
     width: 370,
     autoOpen: false,
-    resizable: false,
-    draggable: false
+    resizable: false
   });
 
   // add a delete conform popup thats alarmingly red
@@ -55,8 +53,7 @@ cj(document).ready(function(){
     dialogClass: 'delete_popup_class',
     width: 370,
     autoOpen: false,
-    resizable: false,
-    draggable: false
+    resizable: false
   });
 
   // add a clear conform popup
@@ -64,8 +61,7 @@ cj(document).ready(function(){
     modal: true,
     width: 370,
     autoOpen: false,
-    resizable: false,
-    draggable: false
+    resizable: false
   });
 
 
@@ -78,7 +74,6 @@ cj(document).ready(function(){
     autoOpen: false,
     resizable: false,
     title: 'Loading Data',
-    draggable: false,
     buttons: {
       Cancel: function() {
         cj( this ).dialog( "close" );
@@ -92,8 +87,7 @@ cj(document).ready(function(){
     width: 200,
     autoOpen: false,
     resizable: false,
-    title: 'Please Wait',
-    draggable: false
+    title: 'Please Wait'
   });
 
   // add a reloading icon popup
@@ -102,8 +96,7 @@ cj(document).ready(function(){
     width: 200,
     autoOpen: false,
     resizable: false,
-    title: 'Please Wait',
-    draggable: false
+    title: 'Please Wait'
   });
 
   // add a tagging popup
@@ -113,16 +106,13 @@ cj(document).ready(function(){
     width: 960,
     autoOpen: false,
     resizable: false,
-    title: 'Loading Data',
-    draggable: false
-  });
+    title: 'Loading Data',  });
 
   cj( "#matchCheck-popup" ).dialog({
     modal: true,
     width: 400,
     autoOpen: false,
-    resizable: false,
-    draggable: false
+    resizable: false
   });
 
 
@@ -130,8 +120,7 @@ cj(document).ready(function(){
     modal: true,
     width: 500,
     autoOpen: false,
-    resizable: false,
-    draggable: false
+    resizable: false
   });
 
 
@@ -140,7 +129,6 @@ cj(document).ready(function(){
     width: 500,
     autoOpen: false,
     resizable: false,
-    draggable: false,
     open:function () {
       cj(this).closest(".ui-dialog").find(".ui-button:first").addClass("primary_button");
     },
@@ -1162,7 +1150,7 @@ cj.extend( cj.fn.dataTableExt.oSort, {
 });
 
 function makeListSortable(){
-  cj("#sortable_results").dataTable({
+ var oTable = cj("#sortable_results").dataTable({
     "sDom":'<"controlls"lif><"clear">rt <p>',//add i here this is the number of records
     // "iDisplayLength": 1,
     "sPaginationType": "full_numbers",
@@ -1172,14 +1160,22 @@ function makeListSortable(){
     { 'bSortable': false, 'aTargets': [ 6 ] },
     { "sType": "title-string", "aTargets": [ 3,5 ] }
     ],
+    "oColVis": { "activate": "mouseover" },
     'aTargets': [ 1 ],
     "iDisplayLength": 50,
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
     "bAutoWidth": false
   });
+  var oHeader = new FixedHeader( oTable );
+  oHeader.fnUpdate();
   checks();
 }
 
+cj(".FixedHeader_Cloned th").live('click', function() {
+  var clickclass = cj(this).attr('class').split(' ')[0];
+  console.log(clickclass);
+  cj('.'+clickclass).click();
+});
 
 
 
@@ -1198,6 +1194,11 @@ function checks(){
     }
   });
 }
+
+// add highlight to selected rows in table view
+cj(".checkbox").live('click', function() {
+    cj(this).parent().parent().toggleClass( "highlight" );
+});
 
 function buildMessageList() {
   if(messages.stats.overview.Unprocessed == '0' || messages == null){
@@ -1276,7 +1277,7 @@ function buildMessageList() {
 }
 
 function makeReportSortable(){
-  cj("#sortable_results").dataTable({
+  var oTable = cj("#sortable_results").dataTable({
     "sDom":'<"controlls"lif><"clear">rt <p>',//add i here this is the number of records
     // "iDisplayLength": 1,
     "sPaginationType": "full_numbers",
@@ -1285,9 +1286,10 @@ function makeReportSortable(){
     'aTargets': [ 1 ],
     "iDisplayLength": 50,
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
-    "bAutoWidth": false
+    "bAutoWidth": false,
   });
-  // var oTable = cj('#sortable_results').dataTable();
+
+  new FixedHeader( oTable );
   // rows = oTable.fnGetVisibleData();
 }
 
@@ -1372,8 +1374,8 @@ function buildReports() {
         // messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
     });
     };
-    cj('#imapper-messages-list').html(messagesHtml);
-    makeReportSortable();
+  cj('#imapper-messages-list').html(messagesHtml);
+  makeReportSortable();
   cj('#total').html(unMatched+Matched+Cleared+Errors+Deleted);
   cj('#total_unMatched').html(unMatched);
   // console.log(unMatched);
@@ -1433,8 +1435,10 @@ cj.fn.dataTableExt.afnFiltering.push(
         return false;
     }
 );
-
-
+cj(".stats_overview").live('click', function() {
+    cj(".stats_overview").removeClass('active');
+    cj(this).addClass('active');
+});
 
 cj(".Total").live('click', function() {
     var oTable = cj('#sortable_results').dataTable();

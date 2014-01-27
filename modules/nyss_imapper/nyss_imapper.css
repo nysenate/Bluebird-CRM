@@ -61,6 +61,11 @@ thead .sorting:hover{background-color:#f8f8f8!important;}
 thead .sorting_desc,
 thead .sorting_asc{background-color:#f1f1f1!important;}
 
+.imapperbox tr.odd.highlight{ background-color: #DBE8EA !important; }
+.imapperbox tr.even.highlight{ background-color: #CCE5E9 !important; }
+.imapperbox tr.highlight:hover{ background-color: #C8DEE1 !important; }
+
+
 /* IMAP - Table View - Row */
 .imapperbox .imap_checkbox_column{width: 15px !important; }
 .imapperbox .imap_name_column{width: 190px !important; }
@@ -204,6 +209,9 @@ a.stats_overview{
 }
 a.stats_overview:hover{
     background: #f2f2f2;
+}
+a.stats_overview.active{
+    background: #C8DEE1;
 }
 .stats_overview span {
     padding: 0 10px;
