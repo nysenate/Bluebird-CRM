@@ -647,8 +647,10 @@ ORDER BY gc.contact_id ASC";
           $activity = civicrm_api('activity', 'create', $params);
 
           if ($debug){
+            echo "<h1>Prams</h1>";
+            print_r($params);
             echo "<h1>Activity Created ?</h1>";
-            var_dump($activity);
+            print_r($activity);
           }
 
           // if its an error or doesnt return we need errors
@@ -1140,9 +1142,9 @@ ORDER BY gc.contact_id ASC";
 
       $query = <<<EOQ
 SELECT COUNT(id)
-FROM `civicrm_activity_target`
+FROM `civicrm_activity_contact`
 WHERE `activity_id` = $activityId
-AND `target_contact_id` = $contact
+AND `contact_id` = $contact
 EOQ;
       $check_result = mysql_query($query, self::db());
       if($row = mysql_fetch_assoc($check_result)) {
@@ -1150,6 +1152,7 @@ EOQ;
       }
       if ($debug){
         echo "<h1>check</h1>";
+        var_dump($query);
         var_dump($check);
       }
       if($check != '1'){
@@ -1159,8 +1162,8 @@ EOQ;
       }
       // change the contact
       $Update = <<<EOQ
-UPDATE `civicrm_activity_target`
-SET  `target_contact_id`= $change
+UPDATE `civicrm_activity_contact`
+SET  `contact_id`= $change
 WHERE `activity_id` =  $activityId
 EOQ;
 
