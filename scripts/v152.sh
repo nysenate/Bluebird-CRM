@@ -39,3 +39,11 @@ sql="
   DELETE FROM civicrm_website WHERE contact_id IS NULL;
 "
 $execSql $instance -c "$sql" -q
+
+echo "disabling changelog panel in advanced search..."
+sql="
+  UPDATE civicrm_setting
+  SET value = 's:29:"12345101316171819";'
+  WHERE name = 'advanced_search_options'
+"
+$execSql $instance -c "$sql" -q
