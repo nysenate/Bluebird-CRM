@@ -59,7 +59,8 @@
 <script type="text/javascript" src="{$config->resourceBase}NYSS/jquery.toolTip.js"></script>
 
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/DataTables/media/js/jquery.dataTables.min.js"></script>
-<style type="text/css">@import url("{$config->resourceBase}packages/jquery/plugins/DataTables/media/css/demo_table_jui.css");</style>
+{*NYSS 7460*}
+{*<style type="text/css">@import url("{$config->resourceBase}packages/jquery/plugins/DataTables/media/css/demo_table_jui.css");</style>*}
 
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.dashboard.js"></script>
 <style type="text/css">@import url("{$config->resourceBase}packages/jquery/css/dashboard.css");</style>
