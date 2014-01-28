@@ -7,8 +7,6 @@
  * Author:  Brian Shaughnessy
  */
 
-require_once 'CRM/Core/Form.php';
-
 /**
  * This class generates form components
  * 
@@ -22,12 +20,11 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
    * @access public
    */
   function preProcess( ) {
-
     //handle breadcrumbs
     $url = CRM_Utils_System::url( 'civicrm/logging/proofingreport', 'reset=1' );
     $breadCrumb = array(
       array(
-        'url'   => $url,
+        'url' => $url,
         'title' => ts('Log Proofing Report')
       )
     );
@@ -44,7 +41,6 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
    * @return void
    */
   public function buildQuickForm() {
-
     $this->addElement( 'text', 'jobID', ts('Job ID') );
 
     $this->addElement( 'text', 'alteredBy', ts('Altered By') );
@@ -52,28 +48,35 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
     $this->addDate( 'start_date', ts('Date from'), false, array( 'formatType' => 'custom') );
     $this->addDate( 'end_date', ts('...to'), false, array( 'formatType' => 'custom') );
 
-    require_once 'CRM/Core/BAO/PdfFormat.php';
     $this->add( 'select', 'pdf_format_id', ts( 'Page Format' ),
-                 array( 0 => ts( '- default -' ) ) + CRM_Core_BAO_PdfFormat::getList( true ) );
+      array( 0 => ts( '- default -' ) ) + CRM_Core_BAO_PdfFormat::getList( true ) );
+
+    //7582 add issue codes
+    $contactTags = CRM_Core_BAO_Tag::getTags();
+    if ($contactTags) {
+      $this->add('select', 'contact_tags', ts('Tags'), $contactTags, FALSE,
+        array('id' => 'contact_tags', 'multiple' => 'multiple', 'title' => ts('- select -'))
+      );
+    }
 
     $this->addButtons(
       array(
         array(
-          'type'      => 'next',
-          'name'      => ts('Generate PDF Report'),
+          'type' => 'next',
+          'name' => ts('Generate PDF Report'),
         ),
         array(
-          'type'      => 'upload',
-          'name'      => ts('Generate Print Report'),
+          'type' => 'upload',
+          'name' => ts('Generate Print Report'),
           'isDefault' => TRUE
         ),
         array(
-          'type'      => 'submit',
-          'name'      => ts('Generate CSV'),
+          'type' => 'submit',
+          'name' => ts('Generate CSV'),
         ),
         array(
-          'type'      => 'back',
-          'name'      => ts('Cancel')
+          'type' => 'back',
+          'name' => ts('Cancel')
         ),
       )
     );
@@ -226,7 +229,7 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
       //CRM_Core_Error::debug_var('dao',$dao);
       $params = array(
         'version' => 3,
-        'id'      => $dao->id,
+        'id' => $dao->id,
       );
       $cDetails = civicrm_api('contact','getsingle',$params);
       //CRM_Core_Error::debug('cDetails',$cDetails);
@@ -277,11 +280,14 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
       $rows[$dao->id] = array(
         'id' => $dao->id,
         'sort_name' => CRM_Utils_Array::value('sort_name', $cDetails, ''),
+        'display_name' => CRM_Utils_Array::value('display_name', $cDetails, ''),
         'first_name' => CRM_Utils_Array::value('first_name', $cDetails, ''),
         'middle_name' => CRM_Utils_Array::value('middle_name', $cDetails, ''),
         'last_name' => CRM_Utils_Array::value('last_name', $cDetails, ''),
+        'individual_suffix' => CRM_Utils_Array::value('individual_suffix', $cDetails, ''),
         'street_address' => CRM_Utils_Array::value('street_address', $cDetails, ''),
         'supplemental_address_1' => CRM_Utils_Array::value('supplemental_address_1', $cDetails, ''),
+        'supplemental_address_2' => CRM_Utils_Array::value('supplemental_address_2', $cDetails, ''),
         'city' => CRM_Utils_Array::value('city', $cDetails, ''),
         'state_province' => CRM_Utils_Array::value('state_province', $cDetails, ''),
         'postal_code' => CRM_Utils_Array::value('postal_code', $cDetails, ''),
