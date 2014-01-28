@@ -156,8 +156,8 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
     $sqlWhere = implode(' ) AND ( ', $sqlParams);
 
     $bbconfig = get_bluebird_instance_config();
-    $logDB    = $bbconfig['db.log.prefix'].$bbconfig['db.basename'];
-    $civiDB   = $bbconfig['db.civicrm.prefix'].$bbconfig['db.basename'];
+    $logDB = $bbconfig['db.log.prefix'].$bbconfig['db.basename'];
+    $civiDB = $bbconfig['db.civicrm.prefix'].$bbconfig['db.basename'];
 
     $dateNow  = date('F jS Y h:i a');
 
@@ -242,8 +242,8 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
       if ( !empty($cDetails['city']) || !empty($cDetails['postal_code']) ) {
         $postSuffix = ( $cDetails['postal_code_suffix'] ) ? '-'.$cDetails['postal_code_suffix'] : '';
         $address[] = $cDetails['city'].', '
-                    .$cDetails['state_province'].' '
-                    .$cDetails['postal_code'].$postSuffix;
+          .$cDetails['state_province'].' '
+          .$cDetails['postal_code'].$postSuffix;
       }
       $addressHTML = implode('<br />', $address);
 
@@ -277,9 +277,9 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
       $rows[$dao->id] = array(
         'id' => $dao->id,
         'sort_name' => CRM_Utils_Array::value('sort_name', $cDetails, ''),
-        'first_name' => CRM_Utils_Array::value('last_name', $cDetails, ''),
+        'first_name' => CRM_Utils_Array::value('first_name', $cDetails, ''),
         'middle_name' => CRM_Utils_Array::value('middle_name', $cDetails, ''),
-        'last_name' => CRM_Utils_Array::value('middle_name', $cDetails, ''),
+        'last_name' => CRM_Utils_Array::value('last_name', $cDetails, ''),
         'street_address' => CRM_Utils_Array::value('street_address', $cDetails, ''),
         'supplemental_address_1' => CRM_Utils_Array::value('supplemental_address_1', $cDetails, ''),
         'city' => CRM_Utils_Array::value('city', $cDetails, ''),
