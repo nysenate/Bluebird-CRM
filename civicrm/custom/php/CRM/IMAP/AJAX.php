@@ -1139,12 +1139,13 @@ ORDER BY gc.contact_id ASC";
 
       // we need to check to see if the activity is still assigned to the same contact
       // if not, kill it
-
+      // 1 = assignee, 2 = source, 3 = target
       $query = <<<EOQ
 SELECT COUNT(id)
 FROM `civicrm_activity_contact`
 WHERE `activity_id` = $activityId
 AND `contact_id` = $contact
+AND `record_type_id` = 3
 EOQ;
       $check_result = mysql_query($query, self::db());
       if($row = mysql_fetch_assoc($check_result)) {
@@ -1165,6 +1166,7 @@ EOQ;
 UPDATE `civicrm_activity_contact`
 SET  `contact_id`= $change
 WHERE `activity_id` =  $activityId
+AND `record_type_id` = 3
 EOQ;
 
       // change the row
