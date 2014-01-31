@@ -199,6 +199,7 @@ class CRM_ImportSampleData {
       'civicrm_mailing_event_subscribe',
       'civicrm_mailing_event_trackable_url_open',
       'civicrm_mailing_event_unsubscribe',
+      'civicrm_mailing_event_sendgrid_delivered',
       'civicrm_mailing_group',
       'civicrm_mailing_job',
       'civicrm_mailing_recipients',
