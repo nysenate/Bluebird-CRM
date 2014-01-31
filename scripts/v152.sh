@@ -30,6 +30,9 @@ fi
 
 app_rootdir=`$readConfig --ig $instance app.rootdir` || app_rootdir="$DEFAULT_APP_ROOTDIR"
 
+echo "upgrade CiviCRM core to v4.4.3..."
+$drush $instance civicrm-upgrade-db
+
 echo "cleaning up contact subrecords..."
 sql="
   DELETE FROM civicrm_email WHERE contact_id IS NULL AND id != 1;
@@ -43,7 +46,7 @@ $execSql $instance -c "$sql" -q
 echo "disabling changelog panel in advanced search..."
 sql="
   UPDATE civicrm_setting
-  SET value = 's:29:"12345101316171819";'
+  SET value = 's:29:\"12345101316171819\";'
   WHERE name = 'advanced_search_options'
 "
 $execSql $instance -c "$sql" -q
