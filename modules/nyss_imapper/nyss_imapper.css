@@ -89,12 +89,11 @@ thead .sorting_asc{background-color:#f1f1f1!important;}
 .page_actions_label{ float:right; margin:5px 10px 0 0}
 
 /* IMAP - Pagination */
-.imapperbox .controlls{border-bottom:1px solid #ccc; float: left; width:100%;}
-.imapperbox .dataTables_length {display: inline; float: left !important; width: 30%;padding: 4px 10px;}
-.imapperbox .dataTables_info {display: inline;float: left; width: auto; padding: 10px; font-weight: bold;}
-.imapperbox .dataTables_filter {display: inline;float: right; width: auto; padding: 4px 10px;}
-
-.imapperbox .dataTables_paginate{ text-align: none; width: 100%; padding:20px 0;}
+ .crm-container .imapperbox .controlls{border-bottom:1px solid #ccc; float: left; width:100%;}
+ .crm-container .imapperbox .dataTables_length {display: inline; float: left !important; width: 30%;padding: 4px 10px;}
+ .crm-container .imapperbox .dataTables_info {display: inline;float: left; width: auto; padding: 10px; font-weight: bold;}
+ .crm-container .imapperbox .dataTables_filter {display: inline;float: right; width: auto; padding: 4px 10px;}
+ .crm-container .imapperbox .dataTables_paginate{ text-align: none; width: 100%; padding:20px 0;}
 
 /* IMAP - Autocomplete */
 .imapperbox #tagging-popup.ac_input,

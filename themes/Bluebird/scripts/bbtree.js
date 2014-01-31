@@ -1145,7 +1145,7 @@ var BBTreeModal = {
                 addDialogText += '<div class="modalHeader">Convert <span id="modalNameTid" tID="'+this.taggedID+'">' + this.taggedName + '</span> into an Issue Code under...</div>';
                 addDialogText += this.addModalTagTree();
                 this.currentSettings['actionName'] = 'converted';
-                this.currentSettings['title'] = 'Convert Keyword to Tag';
+                this.currentSettings['title'] = 'Convert Keyword to Issue Code';
                 break;
         }
         if(BBTreeModal.taggedChildren > 0  && this.taggedMethod != 'add' && this.taggedMethod != 'update') //if there's children, you might get an early warning.
