@@ -134,25 +134,33 @@ cj(document).ready(function(){
     },
     buttons: {
       "Yes": function() {
-        var add_email = cj('#add_email').val();
-        var contacts = cj('#contacts').val();
-        cj.ajax({
-          url: '/civicrm/imap/ajax/addEmail',
-          data: {
-            email: add_email,
-            contacts: contacts
-          },
-          success: function(data,status) {
-            if(data != null || data != ''){
-              helpMessage('Email Added.');
+        var add_emails = [];
+        cj('#add_email input:checked').each(function() {
+          add_emails.push(cj(this).attr('value'));
+        });
+        if (cj('#add_email #cb_static').val()) {
+          add_emails.push(cj('#add_email #cb_static').val());
+        };
+        console.log(add_emails);
+        cj.each(add_emails, function( index, value ) {
+          var contacts = cj('#contacts').val();
+          cj.ajax({
+            url: '/civicrm/imap/ajax/addEmail',
+            data: {
+              email: value,
+              contacts: contacts
+            },
+            success: function(data,status) {
+              if(data != null || data != ''){
+                helpMessage('Email Added.');
+              }
             }
-          }
+          });
         });
         cj('#assign').click();
-
       },
       No: function() {
-        cj('#add_email').val('');
+        cj('#add_email').html('');
         cj('#assign').click();
       }
     }
@@ -402,7 +410,7 @@ cj(document).ready(function(){
     var messageId = cj('#id').val();
     var contactRadios = cj('input[name=contact_id]');
     var contactIds = '';
-    var add_email = cj('#add_email').val();
+    var add_email = cj('#add_email').html('');
     cj("#AdditionalEmail-popup").dialog( "close" );
 
     cj.each(contactRadios, function(idx, val) {
@@ -644,14 +652,26 @@ cj(document).ready(function(){
           if(message.sender_email) cj('#filter').click();
           cj('.first_name').val(firstName);
           cj('.last_name').val(lastName);
-          cj('#AdditionalEmail-popup #add_email').val('');
-          cj('#AdditionalEmail-popup #add_email').val(message.sender_email);
+          cj('#AdditionalEmail-popup #add_email').html('');
+          cj.each(message.found_emails, function(idx, val) {
+            // console.log(idx);
+            cj('#add_email').append('<fieldset id="fs_'+idx+'"></fieldset>');
+            cj('<input />', { type: 'checkbox', id: 'cb_'+idx, value: val }).appendTo('#fs_'+idx);
+            cj('<label />', { 'for': 'cb_'+idx, text: val }).appendTo('#fs_'+idx);
+            cj('#cb'+idx).click();
+          });
+          cj('#add_email').append('<fieldset id="fs_static"></fieldset>');
+          // cj('<label />', { 'for': 'cb_static', text: 'add another email' }).appendTo('#fs_static');
+          cj('<input />', { type: 'input', id: 'cb_static',placeholder: 'Enter a email we missed' }).appendTo('#fs_static');
+          // cj('#AdditionalEmail-popup #add_email').val(message.found_emails);
+
         }
       },
       error: function(){
         alert('Unable to load Message');
       }
     });
+
     return false;
   });
 
