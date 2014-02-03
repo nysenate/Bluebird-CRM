@@ -46,7 +46,13 @@ div.notice, .notice  {
   border-color:#fbca54;
 }
 div.success, .success,
-.messages-container .help,.messages-container #help  {background:#E6EFC2;color:#264409;border-color:#C6D880;}
+.messages-container .help,
+.messages-container #help {
+  background:#E6EFC2;
+  color:#264409;
+  border-color:#C6D880;
+}
+
 div.error, .error, div.crm-error {background:#f5c4c4;color:#8d2c27;border-color:#8d2c27;}
 .warning a,
 .message a,
