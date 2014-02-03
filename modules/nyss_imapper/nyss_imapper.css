@@ -15,7 +15,8 @@
 
 .page-civicrm-imap .ui-tabs .ui-tabs-nav {background-color: #f8f8f8!important;}
 .page-civicrm-imap .ui-tabs .ui-state-hover a{background-color: #bbcbdf!important;}
-.page-civicrm-imap .ui-tabs .ui-state-active a{background-color: #d1deef!important;}
+.page-civicrm-imap .ui-tabs .ui-state-default a{background-color: #ccc!important;}
+.page-civicrm-imap .ui-tabs .ui-state-active a{background-color: #ffffff!important;}
 
 
 /* Popup - Delete Has red for warning */
