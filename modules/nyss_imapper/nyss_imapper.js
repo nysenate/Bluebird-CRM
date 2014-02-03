@@ -1208,64 +1208,57 @@ function buildMessageList() {
     var total_results = messages.stats.overview.Unprocessed;
     cj.each(messages.Unprocessed, function(key, value) {
       var icon ='';
+      // wrap the row
+	    messagesHtml += '<tr id="'+value.id+'" data-key="'+value.sender_email+'" class="imapper-message-box"> <td class="imap_checkbox_column" ><input class="checkbox" type="checkbox" name="'+value.id+'"  data-id="'+value.id+'"/></td>';
 
-        // wrap the row
-	messagesHtml += '<tr id="'+value.id+'" data-key="'+value.key+'" class="imapper-message-box"> <td class="imap_checkbox_column" ><input class="checkbox" type="checkbox" name="'+value.id+'"  data-id="'+value.id+'"/></td>';
+      // build a match count bubble
+      countWarn = (value.email_count == 1) ? 'warn' :  '';
+      countMessage = (value.email_count == 1) ? 'This address should have matched automatically' : 'This email address matches '+value.email_count+' records in bluebird';
+      countStatus = (value.email_count == 0) ? 'empty' :  'multi';
+      countIcon = '<span class="matchbubble marginL5 '+countWarn+' '+countStatus+'" title="'+countMessage+'">'+value.email_count+'</span></td>';
 
-        // build a match count bubble
-        countWarn = (value.matches_count == 1) ? 'warn' :  '';
-        countMessage = (value.matches_count == 1) ? 'This address should have matched automatically' : 'This email address matches '+value.matches_count+' records in bluebird';
-        countStatus = (value.matches_count == 0) ? 'empty' :  'multi';
-        countIcon = '<span class="matchbubble marginL5 '+countWarn+' '+countStatus+'" title="'+countMessage+'">'+value.matches_count+'</span></td>';
-
-
-        // build the name box
-        if( value.sender_name != ''  && value.sender_name != null){
-	  messagesHtml += '<td class="imap_name_column unmatched" data-firstName="'+firstName(value.sender_name)+'" data-lastName="'+lastName(value.sender_name)+'">'+shortenString(value.sender_name,20);
-
-          if( value.sender_email != '' && value.sender_email != null){
-            messagesHtml += '<span class="emailbubble marginL5">'+shortenString(value.sender_email,15)+'</span>';
-            messagesHtml +=  countIcon;
-          }else{
-            messagesHtml += '<span class="emailbubble warn marginL5" title="We could not find the email address of this record">No email found!</span>';
-          }
-          messagesHtml +='</td>';
-
-        }else if( value.sender_email != '' && value.sender_email != null ){
-	  messagesHtml += '<td class="imap_name_column unmatched"><span class="emailbubble">'+shortenString(value.sender_email,25)+'</span>';
+      // build the name box
+      if( value.sender_name != ''  && value.sender_name != null){
+        messagesHtml += '<td class="imap_name_column unmatched" data-firstName="'+firstName(value.sender_name)+'" data-lastName="'+lastName(value.sender_name)+'">'+shortenString(value.sender_name,20);
+        if( value.sender_email != '' && value.sender_email != null){
+          messagesHtml += '<span class="emailbubble marginL5">'+shortenString(value.sender_email,15)+'</span>';
           messagesHtml +=  countIcon;
-        }else {
-	  messagesHtml += '<td class="imap_name_column unmatched"><span class="matchbubble warn" title="There was no info found in regard to the source of this message">No source info found</span></td>';
-          messagesHtml +=  countIcon;
-        }
-
-        // dealing with attachments
-        if(value.attachments){
-          cj.each(value.attachments, function(key, attachment) {
-            icon = '<div class="icon attachment-icon attachment" title="'+value.attachments.length+' Attachments" ></div>'
-          });
-        }
-	messagesHtml += '<td class="imap_subject_column unmatched">'+shortenString(value.subject,40) +' '+icon+'</td>';
-	messagesHtml += '<td class="imap_date_column unmatched"><span data-sort="'+value.date_u+'" title="'+value.date_long+'">'+value.date_short +'</span></td>';
-
-        // hidden column to sort by
-        if(value.match_count != 1){
-          var match_short = (value.match_count == 0) ? "NoMatch" : "MultiMatch" ;
-	  messagesHtml += '<td class="imap_match_column hidden"><span data="'+match_short+'">'+match_short +'</span></td>';
         }else{
-	  messagesHtml += '<td class="imap_match_column hidden"><span data="Error">ProcessError</span></td>';
+          messagesHtml += '<span class="emailbubble warn marginL5" title="We could not find the email address of this record">No email found!</span>';
         }
+        messagesHtml +='</td>';
+      }else if( value.sender_email != '' && value.sender_email != null ){
+        messagesHtml += '<td class="imap_name_column unmatched"><span class="emailbubble">'+shortenString(value.sender_email,25)+'</span>';
+        messagesHtml +=  countIcon;
+      }else {
+        messagesHtml += '<td class="imap_name_column unmatched"><span class="matchbubble warn" title="There was no info found in regard to the source of this message">No source info found</span></td>';
+        messagesHtml +=  countIcon;
+      }
 
-        // check for direct messages & not empty forwarded messages
-  if(value.forwarder === value.sender_email){
-    messagesHtml += '<td class="imap_forwarder_column"><span data-sort="'+value.forwarder.replace("@","_")+'">Direct '+shortenString(value.forwarder,10)+'</span></td>';
-  }else if(value.forwarder != ''){
-	  messagesHtml += '<td class="imap_forwarder_column"><span data-sort="'+value.forwarder.replace("@","_")+'">'+shortenString(value.forwarder,14)+'</span></td>';
-        }else{
-	  messagesHtml += '<td class="imap_forwarder_column"> N/A </td>';
-        }
+      // dealing with attachments
+      if(value.attachments){
+        icon = '<div class="icon attachment-icon attachment" title="'+value.attachments+' Attachments" ></div>'
+      }
+      messagesHtml += '<td class="imap_subject_column unmatched">'+shortenString(value.subject,40) +' '+icon+'</td>';
+      messagesHtml += '<td class="imap_date_column unmatched"><span data-sort="'+value.date_u+'" title="'+value.date_long+'">'+value.date_short +'</span></td>';
 
-	messagesHtml += '<td class="imap_actions_column "><span class="find_match"><a href="#">Find match</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
+      // hidden column to sort by
+      if(value.match_count != 1){
+        var match_short = (value.match_count == 0) ? "NoMatch" : "MultiMatch" ;
+        messagesHtml += '<td class="imap_match_column hidden"><span data="'+match_short+'">'+match_short +'</span></td>';
+      }else{
+        messagesHtml += '<td class="imap_match_column hidden"><span data="Error">ProcessError</span></td>';
+      }
+
+      // check for direct messages & not empty forwarded messages
+      if(value.forwarder === value.sender_email){
+        messagesHtml += '<td class="imap_forwarder_column"><span data-sort="'+value.forwarder.replace("@","_")+'">Direct '+shortenString(value.forwarder,10)+'</span></td>';
+      }else if(value.forwarder != ''){
+        messagesHtml += '<td class="imap_forwarder_column"><span data-sort="'+value.forwarder.replace("@","_")+'">'+shortenString(value.forwarder,14)+'</span></td>';
+      }else{
+        messagesHtml += '<td class="imap_forwarder_column"> N/A </td>';
+      }
+      messagesHtml += '<td class="imap_actions_column "><span class="find_match"><a href="#">Find match</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
 
     });
     cj('#imapper-messages-list').html(messagesHtml);

@@ -158,63 +158,19 @@ class CRM_IMAP_AJAX {
       $debug = self::get('debug');
       $start = microtime(true);
 
-      $UnprocessedQuery = " SELECT
-      nyss_inbox_messages.id,nyss_inbox_messages.updated_date,nyss_inbox_messages.matched_to,nyss_inbox_messages.sender_email,nyss_inbox_messages.subject,nyss_inbox_messages.forwarder,nyss_inbox_messages.activity_id,nyss_inbox_messages.sender_name,
-      nyss_inbox_attachments.file_name,nyss_inbox_attachments.rejection,nyss_inbox_attachments.size
-      FROM `nyss_inbox_messages`
-      LEFT JOIN nyss_inbox_attachments ON (nyss_inbox_messages.id = nyss_inbox_attachments.email_id)
-      WHERE `status` = 0 LIMIT 0 , 100000";
-
-      // echo $UnprocessedQuery;
+      $UnprocessedQuery = "SELECT t1.id, UNIX_TIMESTAMP(t1.updated_date) as date_u, DATE_FORMAT(t1.updated_date, '%b %D, %Y %h:%i %p') as date_long,  DATE_FORMAT(t1.updated_date, '%m-%d-%Y %h:%i %p') as date_short, t1.matched_to, t1.sender_email, t1.subject, t1.forwarder, t1.activity_id, t1.sender_name, count(t1.id)-1 AS email_count,
+       IFNULL( count(t3.file_name), '0') as attachments
+      FROM `nyss_inbox_messages` AS t1
+      LEFT JOIN civicrm_email as t2 ON t2.email = t1.sender_email
+      LEFT JOIN nyss_inbox_attachments AS t3 ON ( t1.id = t3.email_id )
+      WHERE t1.status = 0
+      GROUP BY t1.id";
 
       $UnprocessedResult = mysql_query($UnprocessedQuery, self::db());
       $UnprocessedOutput = array();
       while($row = mysql_fetch_assoc($UnprocessedResult)) {
         // var_dump($row);
-        // exit();
-        $UnprocessedOutput = $row;
-        $message_id = $row['id'];
-        // $returnMessage['successes'][$message_id] = $UnprocessedOutput;
-        $returnMessage['Unprocessed'][$message_id]['id'] = $message_id;
-        $returnMessage['Unprocessed'][$message_id]['message_id'] = $row['message_id'];
-        $returnMessage['Unprocessed'][$message_id]['imap_id'] = $row['imap_id'];
-        $returnMessage['Unprocessed'][$message_id]['sender_name'] = $row['sender_name'];
-        $returnMessage['Unprocessed'][$message_id]['sender_email'] = $row['sender_email'];
-        $returnMessage['Unprocessed'][$message_id]['subject'] = $row['subject'];
-        // $returnMessage['successes'][$message_id]['body'] = $row['body'];
-        $returnMessage['Unprocessed'][$message_id]['forwarder'] = $row['forwarder'];
-
-
-        $cleanDate = self::cleanDate($row['updated_date']);
-        $returnMessage['Unprocessed'][$message_id]['date_short'] = $cleanDate['short'];
-        $returnMessage['Unprocessed'][$message_id]['date_u'] = $cleanDate['u'];
-        $returnMessage['Unprocessed'][$message_id]['date_long'] = $cleanDate['long'];
-        $returnMessage['Unprocessed'][$message_id]['key'] = $row['sender_email'];
-
-
-        if($row['file_name']){
-          $returnMessage['Unprocessed'][$message_id]['attachments'][] =  array('fileName'=>$row['file_name'],'size'=>$row['size'],'rejection'=>$row['rejection'] );
-        }else{
-          $returnMessage['Unprocessed'][$message_id]['attachments'] ='';
-        }
-
-
-        // get matched_to info
-        $Query="SELECT  contact.id,  email.email FROM civicrm_contact contact
-        LEFT JOIN civicrm_email email ON (contact.id = email.contact_id)
-        WHERE contact.is_deleted=0
-        AND email.email LIKE '".$row['sender_email']."'
-        GROUP BY contact.id
-        ORDER BY contact.id ASC, email.is_primary DESC";
-        $matches = array();
-        $result = mysql_query($Query, self::db());
-        while($row = mysql_fetch_assoc($result)) {
-          $matches[] = $row;
-        }
-        // var_dump($matches);
-        $returnMessage['Unprocessed'][$message_id]['matches_count'] = count($matches);
-
-
+        $returnMessage['Unprocessed'][$row['id']] = $row;
       }
       mysql_close(self::$db);
       // $returnMessage = array('code' => 'ERROR','message'=>$header->uid." on {$name}");
