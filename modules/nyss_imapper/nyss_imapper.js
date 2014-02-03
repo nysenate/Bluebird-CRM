@@ -1201,11 +1201,11 @@ cj(".checkbox").live('click', function() {
 });
 
 function buildMessageList() {
-  if(messages.stats.overview.Unprocessed == '0' || messages == null){
+  if(messages.stats.overview.successes == '0' || messages == null){
     cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty">No records found</td>');
   }else{
     var messagesHtml = '';
-    var total_results = messages.stats.overview.Unprocessed;
+    var total_results = messages.stats.overview.successes;
     cj.each(messages.Unprocessed, function(key, value) {
       var icon ='';
       // wrap the row
@@ -1236,7 +1236,7 @@ function buildMessageList() {
       }
 
       // dealing with attachments
-      if(value.attachments){
+      if(value.attachments != 0 ){
         icon = '<div class="icon attachment-icon attachment" title="'+value.attachments+' Attachments" ></div>'
       }
       messagesHtml += '<td class="imap_subject_column unmatched">'+shortenString(value.subject,40) +' '+icon+'</td>';
@@ -1623,19 +1623,19 @@ function buildActivitiesList() {
     var messagesHtml = '';
     var total_results = messages.stats.overview.successes;
     // console.log(messages);
-    cj.each(messages.successes, function(key, value) {
+    cj.each(messages.Processed, function(key, value) {
       if(value.date_short != null){
-	messagesHtml += '<tr id="'+value.id+'" data-id="'+value.activity_id+'" data-contact_id="'+value.matched_to+'" class="imapper-message-box"> <td class="imap_checkbox_column matched" ><input class="checkbox" type="checkbox" name="'+value.id+'" data-id="'+value.matched_to+'"/></td>';
+      messagesHtml += '<tr id="'+value.id+'" data-id="'+value.activity_id+'" data-contact_id="'+value.matched_to+'" class="imapper-message-box"> <td class="imap_checkbox_column matched" ><input class="checkbox" type="checkbox" name="'+value.id+'" data-id="'+value.matched_to+'"/></td>';
 
         if( value.contactType != ''){
-	  messagesHtml += '<td class="imap_name_column matched" data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'">';
+          messagesHtml += '<td class="imap_name_column matched" data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'">';
           messagesHtml += '<a class="crm-summary-link" href="/civicrm/profile/view?reset=1&gid=13&id='+value.matched_to+'&snippet=4">';
           messagesHtml += '<div class="icon crm-icon '+value.contactType+'-icon"></div>';
           messagesHtml += '</a>';
           messagesHtml += '<a href="/civicrm/contact/view?reset=1&cid='+value.matched_to+'" title="'+value.fromName+'">'+shortenString(value.fromName,19)+'</a>';
           messagesHtml += ' ';
         }else {
-	  messagesHtml += '<td class="imap_name_column matched">';
+          messagesHtml += '<td class="imap_name_column matched">';
         }
 
         // messagesHtml += '<span class="emailbubble marginL5">'+shortenString(value.sender_email,13)+'</span>';
@@ -1648,17 +1648,16 @@ function buildActivitiesList() {
           messagesHtml += '<span class="matchbubble marginL5 '+match_short+'" title="This email was '+match_string+'">'+match_short+'</span>';
         }
         messagesHtml +='</td>';
-	messagesHtml += '<td class="imap_subject_column matched">'+shortenString(value.subject,40);
-        if(value.attachments.length > 0){
-          messagesHtml += '<div class="icon attachment-icon attachment" title="'+value.attachments.length+' Attachments" ></div>';
+        messagesHtml += '<td class="imap_subject_column matched">'+shortenString(value.subject,40);
+        if(value.attachments != 0){
+          messagesHtml += '<div class="icon attachment-icon attachment" title="'+value.attachments+' Attachments" ></div>';
         }
         messagesHtml +='</td>';
-	messagesHtml += '<td class="imap_date_column matched"><span data-sort="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
-	messagesHtml += '<td class="imap_match_column matched  hidden">'+match_sort +'</td>';
+        messagesHtml += '<td class="imap_date_column matched"><span data-sort="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
+        messagesHtml += '<td class="imap_match_column matched  hidden">'+match_sort +'</td>';
 
-	messagesHtml += '<td class="imap_forwarder_column matched">'+shortenString(value.forwarder,14)+'</td>';
+        messagesHtml += '<td class="imap_forwarder_column matched">'+shortenString(value.forwarder,14)+'</td>';
         messagesHtml += '<td class="imap_actions_column matched"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
-	// messagesHtml += '<td class="imap_actions_column matched "><span class="edit_match"><a href="#">Edit</a></span><span class="disabled"><a href="#">Tag</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
 
       }
     });

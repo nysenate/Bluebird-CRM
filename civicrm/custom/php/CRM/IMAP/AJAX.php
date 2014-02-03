@@ -169,13 +169,10 @@ class CRM_IMAP_AJAX {
       $UnprocessedResult = mysql_query($UnprocessedQuery, self::db());
       $UnprocessedOutput = array();
       while($row = mysql_fetch_assoc($UnprocessedResult)) {
-        // var_dump($row);
         $returnMessage['Unprocessed'][$row['id']] = $row;
       }
       mysql_close(self::$db);
-      // $returnMessage = array('code' => 'ERROR','message'=>$header->uid." on {$name}");
-      $returnMessage['stats']['overview']['Unprocessed'] = count($returnMessage['Unprocessed']);
-      $returnMessage['stats']['overview']['total'] =  count($ids);
+      $returnMessage['stats']['overview']['successes'] = count($returnMessage['Unprocessed']);
       $end = microtime(true);
       $returnMessage['stats']['overview']['time'] = $end-$start;
 
@@ -837,87 +834,37 @@ ORDER BY gc.contact_id ASC";
     public static function getMatchedMessages() {
         require_once 'api/api.php';
         $debug = self::get('debug');
+        $start = microtime(true);
 
         $UnprocessedQuery = " SELECT
-        nyss_inbox_messages.id,nyss_inbox_messages.updated_date,nyss_inbox_messages.matched_to,nyss_inbox_messages.sender_email,nyss_inbox_messages.subject,nyss_inbox_messages.forwarder,nyss_inbox_messages.activity_id,nyss_inbox_messages.matcher,
-        nyss_inbox_attachments.file_name,nyss_inbox_attachments.rejection,nyss_inbox_attachments.size,
-        civicrm_contact.display_name
-        FROM `nyss_inbox_messages`
-        LEFT JOIN nyss_inbox_attachments ON (nyss_inbox_messages.id = nyss_inbox_attachments.email_id)
-        LEFT JOIN civicrm_contact ON (nyss_inbox_messages.matcher = civicrm_contact.id)
-        WHERE `status` = 1 LIMIT 0 , 100000";
+        t1.id,
+        UNIX_TIMESTAMP(t1.updated_date) as date_u, DATE_FORMAT(t1.updated_date, '%b %D, %Y %h:%i %p') as date_long,  DATE_FORMAT(t1.updated_date, '%m-%d-%Y %h:%i %p') as date_short,
+        t1.matched_to, t1.sender_email, t1.subject, t1.forwarder, t1.activity_id, t1.matcher,
+        IFNULL( count(t4.file_name), '0') as attachments,
+        matcher.display_name as matcher_name,
+        matched_to.display_name as fromName, matched_to.first_name as firstName, matched_to.last_name as lastName, matched_to.contact_type as contactType
+        FROM nyss_inbox_messages as t1
+        LEFT JOIN civicrm_contact as matcher ON (t1.matcher = matcher.id)
+        LEFT JOIN civicrm_contact as matched_to ON (t1.matched_to = matched_to.id)
+        LEFT JOIN nyss_inbox_attachments t4 ON (t1.id = t4.email_id)
+        WHERE t1.status = 1
+        GROUP BY t1.id";
+
 
         // echo $UnprocessedQuery;
 
         $UnprocessedResult = mysql_query($UnprocessedQuery, self::db());
-        $UnprocessedOutput = array();
         while($row = mysql_fetch_assoc($UnprocessedResult)) {
-            // var_dump($row);
-            // exit();
-            $UnprocessedOutput = $row;
-            $message_id = $row['id'];
-            // $returnMessage['successes'][$message_id] = $UnprocessedOutput;
-            $returnMessage['successes'][$message_id]['activity_id'] = $row['activity_id'];
-            $returnMessage['successes'][$message_id]['id'] = $message_id;
-
-            $cleanDate = self::cleanDate($row['updated_date']);
-
-            $returnMessage['successes'][$message_id]['date_short'] = $cleanDate['short'];
-            $returnMessage['successes'][$message_id]['date_u'] = $cleanDate['u'];
-            $returnMessage['successes'][$message_id]['date_long'] = $cleanDate['long'];
-            $returnMessage['successes'][$message_id]['sender_email'] = $row['sender_email'];
-            $returnMessage['successes'][$message_id]['forwarder'] = $row['forwarder'];
-
-            if($row['sender_name']){
-              $returnMessage['successes'][$message_id]['sender_name'] = $row['sender_name'];
-            }else{
-              $returnMessage['successes'][$message_id]['sender_name'] = '';
-            }
-
-
-            $returnMessage['successes'][$message_id]['subject'] = $row['subject'];
-            $returnMessage['successes'][$message_id]['matcher'] =  $row['matcher'];
-
-            if(!$row['display_name']){
-              $returnMessage['successes'][$message_id]['matcher_name'] =  'Automatically Matched';
-            }else{
-              $returnMessage['successes'][$message_id]['matcher_name'] =  $row['display_name'];
-            }
-
-            if($row['file_name']){
-              $returnMessage['successes'][$message_id]['attachments'][] =  array('fileName'=>$row['file_name'],'size'=>$row['size'],'rejection'=>$row['rejection'] );
-            }else{
-              $returnMessage['successes'][$message_id]['attachments'] ='';
-            }
-
-            // get matched_to info
-            $returnMessage['successes'][$message_id]['matched_to'] = $row['matched_to'];
-            $MatchedToQuery = " SELECT contact_type,first_name,last_name,display_name
-            FROM `civicrm_contact`
-            WHERE `id` = ".$row['matched_to']." LIMIT 1";
-
-            $MatchedToResult = mysql_query($MatchedToQuery, self::db());
-            $MatchedToOutput = array();
-
-            while($row = mysql_fetch_assoc($MatchedToResult)) {
-              $returnMessage['successes'][$message_id]['contactType'] = $row['contact_type'];
-              $returnMessage['successes'][$message_id]['firstName'] = $row['first_name'];
-              $returnMessage['successes'][$message_id]['lastName'] = $row['last_name'];
-              $returnMessage['successes'][$message_id]['fromName'] = $row['display_name'];
-            }
-            // exit();
-
-
-
-
-
+          // var_dump($row);
+          $returnMessage['Processed'][$row['id']] = $row;
         }
+
         mysql_close(self::$db);
 
-        $returnMessage['stats']['overview']['successes'] = count($returnMessage['successes']);
-        $returnMessage['stats']['overview']['errors'] =   count($errors);
-        $returnMessage['stats']['overview']['total'] =  count($returnMessage['successes']) + count($errors);
-        // $returnMessage['stats']['overview']['time'] = $end-$start;
+        $returnMessage['stats']['overview']['successes'] = count($returnMessage['Processed']);
+        $end = microtime(true);
+        $returnMessage['stats']['overview']['time'] = $end-$start;
+
         // $returnMessage['errors'] = $errors;
 
         if ($debug) echo "<pre>";
