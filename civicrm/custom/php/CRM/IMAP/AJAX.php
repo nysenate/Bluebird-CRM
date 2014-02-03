@@ -162,7 +162,7 @@ class CRM_IMAP_AJAX {
         CASE
           WHEN DATE_FORMAT(updated_date, '%j') = DATE_FORMAT(NOW(), '%j') THEN DATE_FORMAT(updated_date, 'Today %l:%i %p')
           ELSE CASE
-            WHEN DATE_FORMAT(updated_date, '%Y') = DATE_FORMAT(NOW(), '%Y') THEN DATE_FORMAT(updated_date, '%b %e %h:%i %p')
+            WHEN DATE_FORMAT(updated_date, '%Y') = DATE_FORMAT(NOW(), '%Y') THEN DATE_FORMAT(updated_date, '%b %e %l:%i %p')
             ELSE  DATE_FORMAT(updated_date, '%b %e, %Y')
           END
         END AS date_short,
@@ -850,7 +850,7 @@ ORDER BY gc.contact_id ASC";
         CASE
           WHEN DATE_FORMAT(updated_date, '%j') = DATE_FORMAT(NOW(), '%j') THEN DATE_FORMAT(updated_date, 'Today %l:%i %p')
           ELSE CASE
-            WHEN DATE_FORMAT(updated_date, '%Y') = DATE_FORMAT(NOW(), '%Y') THEN DATE_FORMAT(updated_date, '%b %e %h:%i %p')
+            WHEN DATE_FORMAT(updated_date, '%Y') = DATE_FORMAT(NOW(), '%Y') THEN DATE_FORMAT(updated_date, '%b %e %l:%i %p')
             ELSE  DATE_FORMAT(updated_date, '%b %e, %Y')
           END
         END AS date_short,
