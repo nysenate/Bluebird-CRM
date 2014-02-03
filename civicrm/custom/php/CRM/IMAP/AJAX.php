@@ -158,7 +158,15 @@ class CRM_IMAP_AJAX {
       $debug = self::get('debug');
       $start = microtime(true);
 
-      $UnprocessedQuery = "SELECT t1.id, UNIX_TIMESTAMP(t1.updated_date) as date_u, DATE_FORMAT(t1.updated_date, '%b %D, %Y %h:%i %p') as date_long,  DATE_FORMAT(t1.updated_date, '%m-%d-%Y %h:%i %p') as date_short, t1.matched_to, t1.sender_email, t1.subject, t1.forwarder, t1.activity_id, t1.sender_name, count(t1.id)-1 AS email_count,
+      $UnprocessedQuery = "SELECT t1.id, UNIX_TIMESTAMP(t1.updated_date) as date_u, DATE_FORMAT(t1.updated_date, '%b %e, %Y %h:%i %p') as date_long,
+        CASE
+          WHEN DATE_FORMAT(updated_date, '%j') = DATE_FORMAT(NOW(), '%j') THEN DATE_FORMAT(updated_date, 'Today %l:%i %p')
+          ELSE CASE
+            WHEN DATE_FORMAT(updated_date, '%Y') = DATE_FORMAT(NOW(), '%Y') THEN DATE_FORMAT(updated_date, '%b %e %h:%i %p')
+            ELSE  DATE_FORMAT(updated_date, '%b %e, %Y')
+          END
+        END AS date_short,
+        t1.matched_to, t1.sender_email, t1.subject, t1.forwarder, t1.activity_id, t1.sender_name, count(t1.id)-1 AS email_count,
        IFNULL( count(t3.file_name), '0') as attachments
       FROM `nyss_inbox_messages` AS t1
       LEFT JOIN civicrm_email as t2 ON t2.email = t1.sender_email
@@ -838,7 +846,14 @@ ORDER BY gc.contact_id ASC";
 
         $UnprocessedQuery = " SELECT
         t1.id,
-        UNIX_TIMESTAMP(t1.updated_date) as date_u, DATE_FORMAT(t1.updated_date, '%b %D, %Y %h:%i %p') as date_long,  DATE_FORMAT(t1.updated_date, '%m-%d-%Y %h:%i %p') as date_short,
+        UNIX_TIMESTAMP(t1.updated_date) as date_u, DATE_FORMAT(t1.updated_date, '%b %e, %Y %h:%i %p') as date_long,
+        CASE
+          WHEN DATE_FORMAT(updated_date, '%j') = DATE_FORMAT(NOW(), '%j') THEN DATE_FORMAT(updated_date, 'Today %l:%i %p')
+          ELSE CASE
+            WHEN DATE_FORMAT(updated_date, '%Y') = DATE_FORMAT(NOW(), '%Y') THEN DATE_FORMAT(updated_date, '%b %e %h:%i %p')
+            ELSE  DATE_FORMAT(updated_date, '%b %e, %Y')
+          END
+        END AS date_short,
         t1.matched_to, t1.sender_email, t1.subject, t1.forwarder, t1.activity_id, t1.matcher,
         IFNULL( count(t4.file_name), '0') as attachments,
         matcher.display_name as matcher_name,
