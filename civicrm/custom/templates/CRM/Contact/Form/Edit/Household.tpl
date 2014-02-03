@@ -26,16 +26,19 @@
 {* tpl for building Household related fields *}
 <table class="form-layout-compressed">
     <tr>
-       <td>{$form.household_name.label}<br/>
+       <td>
+         {$form.household_name.label}<br/>
          {$form.household_name.html}
        </td>
 
-       <td>{$form.nick_name.label}<br/>
-       {$form.nick_name.html}</td>
+       <td>
+         {$form.nick_name.label}<br/>
+         {$form.nick_name.html}
+       </td>
 
        <td>
        		{$form.contact_source.label}<br />
-            {$form.contact_source.html|crmReplace:class:big}
+          {$form.contact_source.html|crmReplace:class:big}
        </td>
        <td>
         	{$form.external_identifier.label}<br />
@@ -43,7 +46,14 @@
        </td>
        <td>
         	<label for="internal_identifier">{ts}Internal Id{/ts}</label><br />
-            {$contactId}
+          {$contactId}
        </td>
 	</tr>
 </table>
+
+{literal}
+<script type="text/javascript">
+  //7306
+  cj('label[for=household_name]').append(' <span class="crm-marker" title="This field is required.">*</span>');
+</script>
+{/literal}
