@@ -501,6 +501,15 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
     }
   }
 
+  //4999
+  if ( $formName == 'CRM_Contact_Form_Task_PickProfile' ) {
+    foreach ( $form->_elements[2]->_options as $k => $opt ) {
+      if ( $k != 0 && strpos($opt['text'], 'Batch') === FALSE ) {
+        unset($form->_elements[2]->_options[$k]);
+      }
+    }
+  }
+
   _setDBVars();
 
   //CRM_Core_Error::debug($formName);
