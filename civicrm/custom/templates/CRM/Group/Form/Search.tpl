@@ -75,7 +75,7 @@
       <th class='crm-group-created_by'>{ts}Created By{/ts}</th>
       <th class='crm-group-description'>{ts}Description{/ts}</th>
       <th class='crm-group-group_type'>{ts}Group Type{/ts}</th>
-      <th class='crm-group-visibility'>{ts}Visibility{/ts}</th>
+      {*<th class='crm-group-visibility'>{ts}Visibility{/ts}</th>*}{*NYSS 5991*}
       {if $showOrgInfo}
       <th class='crm-group-org_info'>{ts}Organization{/ts}</th>
       {/if}
@@ -132,7 +132,7 @@ function buildGroupSelector( filterSearch, parentsOnlyArg ) {
                         {sClass:'crm-group-created_by'},
                         {sClass:'crm-group-description', bSortable:false},
                         {sClass:'crm-group-group_type'},
-                        {sClass:'crm-group-visibility'},
+                        //{sClass:'crm-group-visibility'},//NYSS 5991
                         {sClass:'crm-group-group_links', bSortable:false},
                         {/literal}{if $showOrgInfo}{literal}
                         {sClass:'crm-group-org_info', bSortable:false},
