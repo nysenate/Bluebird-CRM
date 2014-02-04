@@ -338,14 +338,19 @@ WHERE      a.id = %1
             }
           }
 
-          //NYSS 3083/7080 append phone/email; do before redaction
-          $tPhEm = array();
-          $tPh = next(array_values(CRM_Contact_BAO_Contact_Location::getPhoneDetails($targetID)));
-          $tEm = next(array_values(CRM_Contact_BAO_Contact_Location::getEmailDetails($targetID)));
-          if ( $tPh ) { $tPhEm[] = $tPh; }
-          if ( $tEm ) { $tPhEm[] = $tEm; }
-          if ( !empty($tPhEm) ) {
-            $target .= ' ('.implode(' | ', $tPhEm).')';
+          //NYSS 3083/7080/4350 append phone/email/address; do before redaction
+          $contact = civicrm_api('contact', 'getsingle', array(
+            'version' => 3,
+            'id' => $targetID,
+          ));
+          $tPhEmAd = array();
+          if ( $contact['phone'] ) { $tPhEmAd[] = $contact['phone']; }
+          if ( $contact['email'] ) { $tPhEmAd[] = $contact['email']; }
+          if ( $contact['street_address'] || $contact['city'] ) {
+            $tPhEmAd[] = $contact['street_address'].', '.$contact['city'].', '.$contact['state_province'].' '.$contact['postal_code'];
+          }
+          if ( !empty($tPhEmAd) ) {
+            $target .= ' ['.implode(' | ', $tPhEmAd).']';
           }
 
           $targetRedacted[] = $this->redact($target);
