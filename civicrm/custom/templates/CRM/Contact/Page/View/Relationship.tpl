@@ -102,11 +102,12 @@
         {/strip}
         </div>
 
-        {if $relationshipTabContext}
+    {*NYSS 7192*}
+        {*{if $relationshipTabContext}
         <div id="permission-legend" class="crm-content-block">
 	     <span class="crm-marker">* </span>{ts}Indicates a permissioned relationship. This contact can be viewed and updated by the other.{/ts}
         </div>
-        {/if}
+        {/if}*}
 {/if}
 {* end of code to show current relationships *}
 
@@ -140,17 +141,18 @@
         <table id="inactive_relationship" class="display">
         <thead>
         <tr>
-            <th>{ts}Relationship{/ts}</th>
-            <th></th>
-            <th id="dis-start_date">{ts}Start{/ts}</th>
-            <th id="dis-end_date">{ts}End{/ts}</th>
-            <th>{ts}City{/ts}</th>
-            <th>{ts}State/Prov{/ts}</th>
-            <th>{ts}Email{/ts}</th>
-            <th>{ts}Phone{/ts}</th>
-            <th></th>
-            <th class="hiddenElement"></th>
-            <th class="hiddenElement"></th>
+          <th>{ts}Relationship{/ts}</th>
+          <th></th>
+          {*NYSS remove some columns*}
+          {*<th id="dis-start_date">{ts}Start{/ts}</th>*}
+          {*<th id="dis-end_date">{ts}End{/ts}</th>*}
+          <th>{ts}City{/ts}</th>
+          {*<th>{ts}State/Prov{/ts}</th>*}
+          <th>{ts}Email{/ts}</th>
+          <th>{ts}Phone{/ts}</th>
+          <th></th>
+          <th class="hiddenElement"></th>
+          <th class="hiddenElement"></th>
         </tr>
         </thead>
         {foreach from=$inactiveRelationships item=rel}
@@ -166,10 +168,11 @@
               {if $rel.description}<p class='description'>{$rel.description}</p>{/if}
             </td>
             <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$rel.cid`"}">{$rel.name}</a></td>
-            <td class="dis-crm-rel-start_date">{$rel.start_date}</td>
-            <td class="dis-crm-rel-end_date">{$rel.end_date}</td>
+            {*NYSS remove some columns*}
+            {*<td class="dis-crm-rel-start_date">{$rel.start_date}</td>*}
+            {*<td class="dis-crm-rel-end_date">{$rel.end_date}</td>*}
             <td>{$rel.city}</td>
-            <td>{$rel.state}</td>
+            {*<td>{$rel.state}</td>*}
             <td>{$rel.email}</td>
     	    <td>{$rel.phone}</td>
             <td class="nowrap">{$rel.action|replace:'xx':$rel.id}</td>
