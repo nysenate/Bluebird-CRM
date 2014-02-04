@@ -693,10 +693,13 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
       // FIXME: for now we skipping bounce handling for sms
       if (is_a($result, 'PEAR_Error') && !$mailing->sms_provider_id) {
         // CRM-9191
+        //NYSS also track for other socket-type errors
         $message = $result->getMessage();
-        if (strpos($message,
-            'Failed to write to socket'
-          ) !== FALSE) {
+        if ( strpos($message, 'Failed to write to socket') !== FALSE ||
+          strpos($message, 'Failed to add recipient') !== FALSE ||
+          strpos($message, 'Failed to set sender') !== FALSE ||
+          strpos($message, 'Failed to send data') !== FALSE
+        ) {
           // lets log this message and code
           $code = $result->getCode();
           CRM_Core_Error::debug_log_message("SMTP Socket Error. Message: $message, Code: $code");
