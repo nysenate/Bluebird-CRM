@@ -331,6 +331,17 @@ class Net_SMTP
             return true;
         }
 
+      //NYSS increase socket timeout temporarily
+      //http://pear.php.net/bugs/bug.php?id=18197
+      /* Save existing timeout value and restore it after we're done */
+      $timeout = $this->_socket->timeout;
+
+      /* Now set the timeout to a minute when reading the reply code */
+      $this->_socket->timeout = 60;
+
+      //NYSS collect more for logs
+      $logs = array();
+
         for ($i = 0; $i <= $this->_pipelined_commands; $i++) {
             while ($line = $this->_socket->readLine()) {
                 $this->_debug("Recv: $line");
@@ -341,6 +352,9 @@ class Net_SMTP
                     return PEAR::raiseError('Connection was closed',
                                             null, PEAR_ERROR_RETURN);
                 }
+
+              //NYSS
+              $logs[] = $line;
 
                 /* Read the code and store the rest in the arguments array. */
                 $code = substr($line, 0, 3);
@@ -363,6 +377,9 @@ class Net_SMTP
 
         $this->_pipelined_commands = 0;
 
+      /* Restore the saved timeout */
+      $this->_socket->timeout = $timeout;
+
         /* Compare the server's response code with the valid code/codes. */
         if (is_int($valid) && ($this->_code === $valid)) {
             return true;
@@ -371,7 +388,8 @@ class Net_SMTP
         }
 
         // CRM-8744
-        $errorMessage = 'Invalid response code received from SMTP server while sending email.  This is often caused by a misconfiguration in Outbound Email settings. Please verify the settings at Administer CiviCRM >> Global Settings >> Outbound Email (SMTP).';
+      //NYSS append full response
+        $errorMessage = 'Invalid response code received from SMTP server while sending email.  This is often caused by a misconfiguration in Outbound Email settings. Please verify the settings at Administer CiviCRM >> Global Settings >> Outbound Email (SMTP). Response: '.implode('; ', $logs);
         return PEAR::raiseError($errorMessage,
                                 $this->_code, PEAR_ERROR_RETURN);
     }
