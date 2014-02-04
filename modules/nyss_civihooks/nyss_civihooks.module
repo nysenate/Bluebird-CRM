@@ -501,6 +501,15 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
     }
   }
 
+  //4999
+  if ( $formName == 'CRM_Contact_Form_Task_PickProfile' ) {
+    foreach ( $form->_elements[2]->_options as $k => $opt ) {
+      if ( $k != 0 && strpos($opt['text'], 'Batch') === FALSE ) {
+        unset($form->_elements[2]->_options[$k]);
+      }
+    }
+  }
+
   _setDBVars();
 
   //CRM_Core_Error::debug($formName);
@@ -677,7 +686,7 @@ function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) 
     $objectName == 'Profile' &&
     $objectRef['uf_group_id'] == 8
   ) {
-    $objectRef['updateBlankLocInfo'] = true;
+    $objectRef['updateBlankLocInfo'] = TRUE;
   }
 
   //only create a new address if we have key fields
@@ -694,6 +703,16 @@ function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) 
         $objectRef[$f] = '';
       }
     }
+  }
+
+  //7499 trim space before save
+  if ( $op == 'edit' || $op == 'create' ) {
+    foreach ( $objectRef as  $f => $v ) {
+      if ( !is_array($v) ) {
+        $objectRef[$f] = trim($v, ' ');
+      }
+    }
+    //CRM_Core_Error::debug_var('objectRef',$objectRef);
   }
 
   _setDBVars();

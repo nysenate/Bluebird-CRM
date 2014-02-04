@@ -23,37 +23,19 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-{* tpl for building Household related fields *}
-<table class="form-layout-compressed">
-    <tr>
-       <td>
-         {$form.household_name.label}<br/>
-         {$form.household_name.html}
-       </td>
-
-       <td>
-         {$form.nick_name.label}<br/>
-         {$form.nick_name.html}
-       </td>
-
-       <td>
-       		{$form.contact_source.label}<br />
-          {$form.contact_source.html|crmReplace:class:big}
-       </td>
-       <td>
-        	{$form.external_identifier.label}<br />
-            {$form.external_identifier.value}
-       </td>
-       <td>
-        	<label for="internal_identifier">{ts}Internal Id{/ts}</label><br />
-          {$contactId}
-       </td>
-	</tr>
-</table>
-
-{literal}
-<script type="text/javascript">
-  //7306
-  cj('label[for=household_name]').append(' <span class="crm-marker" title="This field is required.">*</span>');
-</script>
-{/literal}
+{* Display contact-related footer. *}
+{strip}
+<div class="crm-footer" id="crm-record-log">
+  <span class="col1">
+    {if !empty($external_identifier)}{ts}External ID{/ts}:&nbsp;{$external_identifier}{/if}
+    {if $action NEQ 2}&nbsp; &nbsp;{ts}CiviCRM ID{/ts}:&nbsp;{$contactId}{/if}
+  </span>
+  {*NYSS 5697*}
+  {*{if !empty($lastModified)}
+    {ts}Last Change by{/ts} <a href="{crmURL p='civicrm/contact/view' q="action=view&reset=1&cid=`$lastModified.id`"}">{$lastModified.name}</a> ({$lastModified.date|crmDate}) &nbsp;
+    {if !empty($changeLog)}
+      <a href="{crmURL p='civicrm/contact/view' q="reset=1&action=browse&selectedChild=log&cid=`$contactId`"}" class="crm-log-view">&raquo; {ts}View Change Log{/ts}</a>
+    {/if}
+  {/if}*}
+</div>
+{/strip}

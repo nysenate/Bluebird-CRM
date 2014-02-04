@@ -53,7 +53,8 @@
           <tr><td class="label">{ts}Note{/ts}</td><td>{$rec}</td></tr>
            {/if}
             {/foreach}
-            {if $row.is_permission_a_b}
+        {*NYSS 7192*}
+            {*{if $row.is_permission_a_b}
                 {if $row.rtype EQ 'a_b' AND $is_contact_id_a}
                      <tr><td class="label">&nbsp;</td><td><strong>'{$displayName}'</strong> can view and update information for <strong>'{$row.display_name}'</strong></td></tr>
                 {else}
@@ -66,7 +67,7 @@
                  {else}
                      <tr><td class="label">&nbsp;</td><td><strong>'{$displayName}'</strong> can view and update information for <strong>'{$row.display_name}'</strong></td></tr>
                  {/if}
-            {/if}
+            {/if}*}
 
             <tr><td class="label">{ts}Status{/ts}</td><td>{if $row.is_active}{ts}Enabled{/ts} {else} {ts}Disabled{/ts}{/if}</td></tr>
         {/foreach}
@@ -316,7 +317,8 @@
                         <td class="label">{$form.note.label}</td>
                         <td>{$form.note.html}</td>
                     </tr>
-                    <tr class="crm-relationship-form-block-is_permission_a_b">
+                  {*NYSS 7192*}
+                    {*<tr class="crm-relationship-form-block-is_permission_a_b">
                         <td class="label"></td><td>{$form.is_permission_a_b.html}
                         <span id='permision_a_b-a_b' class="hiddenElement">
                             {if $action eq 1}
@@ -351,7 +353,7 @@
                             {/if}
                         </span>
                         </td>
-                    </tr>
+                    </tr>*}
                     <tr class="crm-relationship-form-block-is_active">
                         <td class="label">{$form.is_active.label}</td>
                         <td>{$form.is_active.html}</td>

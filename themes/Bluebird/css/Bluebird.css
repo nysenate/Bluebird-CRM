@@ -319,10 +319,11 @@ div.messages {
   padding: 0.68em;
   font-weight: normal;
 }
-
-
 div.messages ul {
   margin-bottom: 0;
+}
+.crm-container div.ui-notify-message ul {
+  margin: 0 1.5em 1.5em 1.5em;
 }
 
 #status-handle {
@@ -347,7 +348,7 @@ div.messages ul {
  * (cause they might get pulled by ajax and are context-sensitive 
  */
 .messages {
-  display: none;
+  /*display: none;*/
 }
 
 #status .messages,
