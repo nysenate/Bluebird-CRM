@@ -338,10 +338,14 @@ WHERE      a.id = %1
             }
           }
 
-          //NYSS 3083 append phone number; do before redaction
-          $targetPhone = CRM_Contact_BAO_Contact_Location::getPhoneDetails($targetID);
-          if ( $targetPhone[1] ) {
-            $target .= ' (ph: '.$targetPhone[1].')';
+          //NYSS 3083/7080 append phone/email; do before redaction
+          $tPhEm = array();
+          $tPh = next(array_values(CRM_Contact_BAO_Contact_Location::getPhoneDetails($targetID)));
+          $tEm = next(array_values(CRM_Contact_BAO_Contact_Location::getEmailDetails($targetID)));
+          if ( $tPh ) { $tPhEm[] = $tPh; }
+          if ( $tEm ) { $tPhEm[] = $tEm; }
+          if ( !empty($tPhEm) ) {
+            $target .= ' ('.implode(' | ', $tPhEm).')';
           }
 
           $targetRedacted[] = $this->redact($target);

@@ -3012,7 +3012,7 @@ div.ui-dialog {
   margin: 0;
   cursor: pointer;
   * cursor: hand;
-  color: white !important;
+  /*color: white !important;*/
 }
 
 .crm-container .dataTables_paginate .ui-button {
