@@ -288,7 +288,9 @@
 	</div>
 	<div id="AdditionalEmail-popup" title="Add email address to contact?"  style="display:none;">
 		<p>We found the following email address. Do you want to add it to the contact's records? (You can also edit this email if needed)</p>
-		<input type="text" class="add_email"  id="add_email" name="add_email">
+		<div class="add_email"  id="add_email">
+
+		</div>
 		<input type="hidden" class="hidden" id="contacts" name="contacts">
 		<input type="hidden" class="hidden" id="id" name="id">
 	</div>

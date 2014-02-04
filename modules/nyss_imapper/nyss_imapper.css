@@ -19,21 +19,28 @@
 
 
 /* Popup - Delete Has red for warning */
-#ui-dialog-title-delete-confirm{color: red;}
-.delete_popup_class .primary_button span{background: red; color: #fff; font-weight: bold;}
-.delete_popup_class .primary_button span:hover{background: #ffc6c6; color: #000; font-weight: bold;}
-.delete_popup_class .ui-widget-content,
-.delete_popup_class #delete-confirm,
-.ui-widget-content.delete_popup_class{background: #ffe8e8;}
-.delete_popup_class #delete-confirm{margin-bottom: 0;}
-.delete_popup_class .ui-dialog-titlebar {background: red; }
-.delete_popup_class #ui-dialog-title-delete-confirm{color: #fff; font-weight: bold;}
+.page-civicrm-imap #ui-dialog-title-delete-confirm{color: red;}
+.page-civicrm-imap .delete_popup_class .primary_button span{background: red; color: #fff; font-weight: bold;}
+.page-civicrm-imap .delete_popup_class .primary_button span:hover{background: #ffc6c6; color: #000; font-weight: bold;}
+.page-civicrm-imap .delete_popup_class .ui-widget-content,
+.page-civicrm-imap .delete_popup_class #delete-confirm,
+.page-civicrm-imap .ui-widget-content.delete_popup_class{background: #ffe8e8;}
+.page-civicrm-imap .delete_popup_class #delete-confirm{margin-bottom: 0;}
+.page-civicrm-imap .delete_popup_class .ui-dialog-titlebar {background: red;color:#fff; }
+.page-civicrm-imap .delete_popup_class #ui-dialog-title-delete-confirm{color: #fff; font-weight: bold;}
+.page-civicrm-imap .ui-dialog  .ui-dialog-title { color:#fff;}
 
 /* Popup -  tagging specific  */
 .page-civicrm-imap .ui-dialog-buttonpane{background: #ccc !important;}
 
 /* Popup -  margin reset  */
 .page-civicrm-imap .ui-dialog .ui-dialog-content{padding: 0; margin: 0;}
+
+
+
+.page-civicrm-imap .ui-dialog .ui-dialog-content fieldset { margin: 0 0 8px;padding: 0;}
+/*.page-civicrm-imap .ui-dialog .ui-dialog-content input { margin: 4px 8px;padding: 0;}*/
+.page-civicrm-imap .ui-dialog .ui-dialog-content p {margin: 10px; }
 
 /* IMAP General styles */
 pre{white-space: pre-wrap;  white-space: -moz-pre-wrap; white-space: -pre-wrap;  white-space: -o-pre-wrap; word-wrap: break-word;}

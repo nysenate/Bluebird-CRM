@@ -162,7 +162,7 @@ class CRM_IMAP_AJAX {
         CASE
           WHEN DATE_FORMAT(updated_date, '%j') = DATE_FORMAT(NOW(), '%j') THEN DATE_FORMAT(updated_date, 'Today %l:%i %p')
           ELSE CASE
-            WHEN DATE_FORMAT(updated_date, '%Y') = DATE_FORMAT(NOW(), '%Y') THEN DATE_FORMAT(updated_date, '%b %e %h:%i %p')
+            WHEN DATE_FORMAT(updated_date, '%Y') = DATE_FORMAT(NOW(), '%Y') THEN DATE_FORMAT(updated_date, '%b %e %l:%i %p')
             ELSE  DATE_FORMAT(updated_date, '%b %e, %Y')
           END
         END AS date_short,
@@ -206,6 +206,16 @@ class CRM_IMAP_AJAX {
       if($status != ''){
         switch ($status) {
           case '0':
+            preg_match_all(
+              '/[a-z0-9_\-\+\\.\\\"]+@[a-z0-9\-]+\.([a-z]{2,})(?:\.[a-z0-9]{2,})?/i',
+              // "/[a-z0-9]+([_\\.-][a-z0-9]+)*@([a-z0-9]+([\.-][a-z0-9]+)*)+\\.[a-z]{2,}/i",
+              $output['body'],
+              $emails
+            );
+            // if (in_array($output['forwarder'], $emails[0])){
+            //   unset($emails[0][array_search($output['forwarder'],$emails[0])]);
+            // }
+            $output['found_emails'] = array_unique($emails[0], SORT_REGULAR);
             echo json_encode($output);
             break;
           case '1':
@@ -850,7 +860,7 @@ ORDER BY gc.contact_id ASC";
         CASE
           WHEN DATE_FORMAT(updated_date, '%j') = DATE_FORMAT(NOW(), '%j') THEN DATE_FORMAT(updated_date, 'Today %l:%i %p')
           ELSE CASE
-            WHEN DATE_FORMAT(updated_date, '%Y') = DATE_FORMAT(NOW(), '%Y') THEN DATE_FORMAT(updated_date, '%b %e %h:%i %p')
+            WHEN DATE_FORMAT(updated_date, '%Y') = DATE_FORMAT(NOW(), '%Y') THEN DATE_FORMAT(updated_date, '%b %e %l:%i %p')
             ELSE  DATE_FORMAT(updated_date, '%b %e, %Y')
           END
         END AS date_short,

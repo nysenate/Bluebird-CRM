@@ -134,25 +134,33 @@ cj(document).ready(function(){
     },
     buttons: {
       "Yes": function() {
-        var add_email = cj('#add_email').val();
-        var contacts = cj('#contacts').val();
-        cj.ajax({
-          url: '/civicrm/imap/ajax/addEmail',
-          data: {
-            email: add_email,
-            contacts: contacts
-          },
-          success: function(data,status) {
-            if(data != null || data != ''){
-              helpMessage('Email Added.');
+        var add_emails = [];
+        cj('#add_email input:checked').each(function() {
+          add_emails.push(cj(this).attr('value'));
+        });
+        if (cj('#add_email #cb_static').val()) {
+          add_emails.push(cj('#add_email #cb_static').val());
+        };
+        console.log(add_emails);
+        cj.each(add_emails, function( index, value ) {
+          var contacts = cj('#contacts').val();
+          cj.ajax({
+            url: '/civicrm/imap/ajax/addEmail',
+            data: {
+              email: value,
+              contacts: contacts
+            },
+            success: function(data,status) {
+              if(data != null || data != ''){
+                CRM.alert(('Email Added'), '', 'success');
+              }
             }
-          }
+          });
         });
         cj('#assign').click();
-
       },
       No: function() {
-        cj('#add_email').val('');
+        cj('#add_email').html('');
         cj('#assign').click();
       }
     }
@@ -194,7 +202,7 @@ cj(document).ready(function(){
           },
           success: function(data,status) {
             if(data != null || data != ''){
-              helpMessage('Report Filed.');
+              CRM.alert(('Report Filed'), '', 'success');
             }
           }
         });
@@ -248,7 +256,7 @@ cj(document).ready(function(){
         }
       });
     }else{
-      alert('enter a search query');
+      CRM.alert('enter a search query', '', 'error');
     }
     return false;
   });
@@ -306,7 +314,7 @@ cj(document).ready(function(){
     });
     if(!rows.length){
       cj("#loading-popup").dialog('close');
-      alert('Use the checkbox to select one or more messages to delete');
+      CRM.alert('Use the checkbox to select one or more messages to delete', '', 'error');
       return false;
     }
 
@@ -402,7 +410,7 @@ cj(document).ready(function(){
     var messageId = cj('#id').val();
     var contactRadios = cj('input[name=contact_id]');
     var contactIds = '';
-    var add_email = cj('#add_email').val();
+    var add_email = cj('#add_email').html('');
     cj("#AdditionalEmail-popup").dialog( "close" );
 
     cj.each(contactRadios, function(idx, val) {
@@ -422,11 +430,11 @@ cj(document).ready(function(){
         success: function(data, status) {
           data = cj.parseJSON(data);
           if (data.code == 'ERROR'){
-            alert('Could Not Assign message : '+data.message);
+            CRM.alert('Could Not Assign message : '+data.message, '', 'error');
           }else{
             cj.each(data.assigned, function(key, value) {
               removeRow(messageId);
-              helpMessage(value.message);
+              CRM.alert(value.message, '', 'success');
               checkForMatch(add_email,contactIds);
             });
             cj("#find-match-popup").dialog('close');
@@ -472,7 +480,7 @@ cj(document).ready(function(){
         success: function(data, status) {
           contactData = cj.parseJSON(data);
           if (contactData.code == 'ERROR' || contactData.code == '' || contactData == null ){
-            alert('Could Not Create Contact : '+contactData.message);
+            CRM.alert('Could Not Create Contact : '+contactData.message, '', 'error');
             return false;
           }else{
             cj.ajax({
@@ -484,12 +492,13 @@ cj(document).ready(function(){
               success: function(data, status) {
                 assign = cj.parseJSON(data);
                 if (assign.code == 'ERROR' || assign.code == '' || assign == null ){
-                  alert('Could Not Assign Message : '+assign.message);
+                  CRM.alert('Could Not Assign Message : '+assign.message, '', 'error');
+
                   return false;
                 }else{
                   cj.each(assign.assigned, function(key, value) {
                     removeRow(create_messageId);
-                    helpMessage('Contact created and '+value.message);
+                    CRM.alert('Contact created and '+value.message, '', 'success');
                     if(create_email_address.length > 0){
                       checkForMatch(create_email_address,contactData.contact);
                     }
@@ -498,7 +507,7 @@ cj(document).ready(function(){
                 }
               },
               error: function(){
-                alert('failure');
+                CRM.alert('Failure', '', 'error');
               }
             });
           }
@@ -543,40 +552,41 @@ cj(document).ready(function(){
 	success: function(data, status) {
 	  contactData = cj.parseJSON(data);
 	  if (contactData.code == 'ERROR' || contactData.code === '' || contactData === null ){
-	    alert('Could Not Create Contact : '+contactData.message);
+      CRM.alert('Could Not Create Contact : '+contactData.message, '', 'error');
 	    return false;
 	  }else{
 	    cj.ajax({
-		url: '/civicrm/imap/ajax/reassignActivity',
-		data: {
-		  id: create_messageId,
-		  change: contactData.contact
-		},
-		success: function(data, status) {
-		  var data = cj.parseJSON(data);
-		  if (data.code =='ERROR'){
-		    alert('Could not reassign Message : '+data.message);
-		  }else{
-		    cj("#find-match-popup").dialog('close');
-		    // reset activity to new data
-		    cj('#'+create_messageId).attr("data-contact_id",data.contact_id); // contact_id
-		    cj('#'+create_messageId+" .name").attr("data-firstname",data.first_name); // first_name
-		    cj('#'+create_messageId+" .name").attr("data-lastname",data.last_name); // last_name
-		    cj('#'+create_messageId+" .match").html("ManuallyMatched");
-		    contact = '<a href="/civicrm/profile/view?reset=1&amp;gid=13&amp;id='+data.contact_id+'&amp;snippet=4" class="crm-summary-link"><div class="icon crm-icon '+data.contact_type+'-icon" title="'+data.contact_type+'"></div></a><a title="'+data.display_name+'" href="/civicrm/contact/view?reset=1&amp;cid='+data.contact_id+'">'+data.display_name+'</a><span class="emailbubble marginL5">'+shortenString(data.email,13)+'</span> <span class="matchbubble marginL5  M" title="This email was Manually matched">M</span>';
+        url: '/civicrm/imap/ajax/reassignActivity',
+        data: {
+          id: create_messageId,
+          change: contactData.contact
+        },
+        success: function(data, status) {
+          var data = cj.parseJSON(data);
+          if (data.code =='ERROR'){
+            CRM.alert('Could not reassign Message : '+data.message, '', 'error');
+          }else{
+            cj("#find-match-popup").dialog('close');
+            // reset activity to new data
+            cj('#'+create_messageId).attr("data-contact_id",data.contact_id); // contact_id
+            cj('#'+create_messageId+" .name").attr("data-firstname",data.first_name); // first_name
+            cj('#'+create_messageId+" .name").attr("data-lastname",data.last_name); // last_name
+            cj('#'+create_messageId+" .match").html("ManuallyMatched");
+            contact = '<a href="/civicrm/profile/view?reset=1&amp;gid=13&amp;id='+data.contact_id+'&amp;snippet=4" class="crm-summary-link"><div class="icon crm-icon '+data.contact_type+'-icon" title="'+data.contact_type+'"></div></a><a title="'+data.display_name+'" href="/civicrm/contact/view?reset=1&amp;cid='+data.contact_id+'">'+data.display_name+'</a><span class="emailbubble marginL5">'+shortenString(data.email,13)+'</span> <span class="matchbubble marginL5  M" title="This email was Manually matched">M</span>';
 
-		    helpMessage(data.message);
-		    // redraw the table
-		    var oTable = cj('#sortable_results').dataTable();
-		    var row_index = oTable.fnGetPosition(document.getElementById(create_messageId));
-		    oTable.fnUpdate('ManuallyMatched', row_index, 4 );
-		    oTable.fnUpdate(contact, row_index, 1 );
-		    oTable.fnDraw();
-		  }
-		},
-		error: function(){
-		  alert('failure');
-		}
+            CRM.alert(data.message, '', 'success');
+
+            // redraw the table
+            var oTable = cj('#sortable_results').dataTable();
+            var row_index = oTable.fnGetPosition(document.getElementById(create_messageId));
+            oTable.fnUpdate('ManuallyMatched', row_index, 4 );
+            oTable.fnUpdate(contact, row_index, 1 );
+            oTable.fnDraw();
+          }
+        },
+        error: function(){
+          CRM.alert('Failure', '', 'error');
+        }
 	    });
 	  }
       return false;
@@ -598,6 +608,10 @@ cj(document).ready(function(){
 
 
     cj('#imapper-contacts-list').html('');
+    cj('#message_left_email').html('');
+    cj("#message_left_email").animate({
+      scrollTop: 0
+    }, 'fast');
     cj.ajax({
       url: '/civicrm/imap/ajax/getMessageDetails',
       data: {id: messageId },
@@ -606,52 +620,66 @@ cj(document).ready(function(){
         cj("#loading-popup").dialog('close');
         if(message.code == 'ERROR'){
           if(message.clear =='true')  removeRow(messageId);
-          alert('Unable to load Message : '+ message.message);
-        }else{
-          var icon ='';
-          if( message.attachmentfilename ||  message.attachmentname ||  message.attachment){
-            if(message.attachmentname ){var name = message.attachmentname}else{var name = message.attachmentfilename};
-            icon = '<div class="ui-icon ui-icon-link attachment" title="'+name+'"></div>'
-          }
-          cj('#message_left_header').html('');
-          cj('#message_left_header').append("<span class='popup_def'>From: </span>");
-          if(message.sender_name) cj('#message_left_header').append(shortenString(message.sender_name,50));
-          if(message.sender_email) cj('#message_left_header').append("<span class='emailbubble marginL5'>"+shortenString(message.sender_email)+"</span>");
+            CRM.alert('Unable to load Message : '+ message.message, '', 'error');
 
-          cj('#message_left_header').append("<br/><span class='popup_def'>Subject: </span>"+shortenString(message.subject,55)+" "+ icon+"<br/><span class='popup_def'>Date Forwarded: </span>"+message.date_long+"<br/>");
-
-          if ((message.forwarder != message.sender_email)){
-            cj('#message_left_header').append("<span class='popup_def'>Forwarded by: </span><span class='emailbubble'>"+ message.forwarder+"</span> @ "+ message.updated_long+ "<br/>");
           }else{
-            cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span>No forwarded content found<br/>");
-          }
-          cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span><a class='fileBug'>Report Bug</a><br/>");
-          cj('#message_left_email').html(message.body+"<hr/>");
-          cj.each(message.attachments, function(key, value) {
-            if((!value.rejection) || (value.rejection == '')){
-              cj('#message_left_email').append(value.fileName+" ("+((value.size / 1024) / 1024).toFixed(2)+" MB)<br/>");
-            }else{
-              cj('#message_left_email').append("<span class='rejected'>"+value.fileName+" was rejected ("+value.rejection+")</span><br/>");
+            var icon ='';
+            if( message.attachmentfilename ||  message.attachmentname ||  message.attachment){
+              if(message.attachmentname ){var name = message.attachmentname}else{var name = message.attachmentfilename};
+              icon = '<div class="ui-icon ui-icon-link attachment" title="'+name+'"></div>'
             }
-          });
-          cj('.first_name, .last_name, .phone, .street_address, .street_address_2, .city, .email_address').val('');
-          cj('#id').val(messageId);
-          cj("#find-match-popup").dialog({ title:  "Reading: "+shortenString(message.subject,100) });
-          cj("#find-match-popup").dialog('open');
-          cj("#tabs").tabs();
-          cj('#tabs').tabs({ selected: 0 });
-          cj('.email_address').val(message.sender_email);
-          if(message.sender_email) cj('#filter').click();
-          cj('.first_name').val(firstName);
-          cj('.last_name').val(lastName);
-          cj('#AdditionalEmail-popup #add_email').val('');
-          cj('#AdditionalEmail-popup #add_email').val(message.sender_email);
-        }
+            cj('#message_left_header').html('');
+            cj('#message_left_header').append("<span class='popup_def'>From: </span>");
+            if(message.sender_name) cj('#message_left_header').append(shortenString(message.sender_name,50));
+            if(message.sender_email) cj('#message_left_header').append("<span class='emailbubble marginL5'>"+shortenString(message.sender_email)+"</span>");
+
+            cj('#message_left_header').append("<br/><span class='popup_def'>Subject: </span>"+shortenString(message.subject,55)+" "+ icon+"<br/><span class='popup_def'>Date Forwarded: </span>"+message.date_long+"<br/>");
+
+            if ((message.forwarder != message.sender_email)){
+              cj('#message_left_header').append("<span class='popup_def'>Forwarded by: </span><span class='emailbubble'>"+ message.forwarder+"</span> @ "+ message.updated_long+ "<br/>");
+            }else{
+              cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span>No forwarded content found<br/>");
+            }
+            cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span><a class='fileBug'>Report Bug</a><br/>");
+            cj('#message_left_email').html(message.body+"<hr/>");
+            cj.each(message.attachments, function(key, value) {
+              if((!value.rejection) || (value.rejection == '')){
+                cj('#message_left_email').append(value.fileName+" ("+((value.size / 1024) / 1024).toFixed(2)+" MB)<br/>");
+              }else{
+                cj('#message_left_email').append("<span class='rejected'>"+value.fileName+" was rejected ("+value.rejection+")</span><br/>");
+              }
+            });
+
+            cj('.first_name, .last_name, .phone, .street_address, .street_address_2, .city, .email_address').val('');
+            cj('#id').val(messageId);
+            cj("#find-match-popup").dialog({ title:  "Reading: "+shortenString(message.subject,100) });
+            cj("#find-match-popup").dialog('open');
+            cj("#tabs").tabs();
+            cj('#tabs').tabs({ selected: 0 });
+            cj('.email_address').val(message.sender_email);
+            if(message.sender_email) cj('#filter').click();
+            cj('.first_name').val(firstName);
+            cj('.last_name').val(lastName);
+            cj('#AdditionalEmail-popup #add_email').html('');
+            cj.each(message.found_emails, function(idx, val) {
+              // console.log(idx);
+              cj('#add_email').append('<fieldset id="fs_'+idx+'"></fieldset>');
+              cj('<input />', { type: 'checkbox', id: 'cb_'+idx, value: val }).appendTo('#fs_'+idx);
+              cj('<label />', { 'for': 'cb_'+idx, text: val }).appendTo('#fs_'+idx);
+              cj('#cb'+idx).click();
+            });
+            cj('#add_email').append('<fieldset id="fs_static"></fieldset>');
+            // cj('<label />', { 'for': 'cb_static', text: 'add another email' }).appendTo('#fs_static');
+            cj('<input />', { type: 'input', id: 'cb_static',placeholder: 'Enter a email we missed' }).appendTo('#fs_static');
+            // cj('#AdditionalEmail-popup #add_email').val(message.found_emails);
+
+          }
       },
       error: function(){
-        alert('Unable to load Message');
+        CRM.alert('Unable to load Message', '', 'error');
       }
     });
+
     return false;
   });
 
@@ -687,7 +715,7 @@ cj(document).ready(function(){
       success: function(data, status) {
         var data = cj.parseJSON(data);
         if (data.code =='ERROR'){
-          alert('Could not reassign Message : '+data.message);
+          CRM.alert('Could not reassign Message : '+data.message, '', 'error');
         }else{
           cj("#find-match-popup").dialog('close');
           // reset activity to new data
@@ -697,7 +725,8 @@ cj(document).ready(function(){
           cj('#'+activityId+" .match").html("ManuallyMatched");
           contact = '<a href="/civicrm/profile/view?reset=1&amp;gid=13&amp;id='+data.contact_id+'&amp;snippet=4" class="crm-summary-link"><div class="icon crm-icon '+data.contact_type+'-icon" title="'+data.contact_type+'"></div></a><a title="'+data.display_name+'" href="/civicrm/contact/view?reset=1&amp;cid='+data.contact_id+'">'+data.display_name+'</a><span class="emailbubble marginL5">'+shortenString(data.email,13)+'</span> <span class="matchbubble marginL5  M" title="This email was Manually matched">M</span>';
 
-          helpMessage(data.message);
+          CRM.alert(data.message, '', 'success');
+
           // redraw the table
           var oTable = cj('#sortable_results').dataTable();
           var row_index = oTable.fnGetPosition(document.getElementById(activityId));
@@ -707,7 +736,7 @@ cj(document).ready(function(){
         }
       },
       error: function(){
-        alert('failure');
+        CRM.alert('failure', '', 'error');
       }
     });
     };
@@ -746,14 +775,16 @@ cj(document).ready(function(){
     cj("#tabs :input[type='text']").val("");
 
     cj('#imapper-contacts-list').html('');
-
+    cj("#message_left_email").animate({
+      scrollTop: 0
+    }, 'fast');
     cj.ajax({
       url: '/civicrm/imap/ajax/getActivityDetails',
       data: {id: activityId, contact: contactId },
       success: function(data,status) {
         message = cj.parseJSON(data);
         if (message.code == 'ERROR'){
-          alert('Could not load message Details: '+message.message);
+          CRM.alert('Could not load message Details: '+message.message, '', 'error');
           cj("#loading-popup").dialog('close');
           if(message.clear =='true')   removeRow(activityId);
         }else{
@@ -792,7 +823,7 @@ cj(document).ready(function(){
         }
       },
       error: function(){
-        alert('unable to Load Message');
+        CRM.alert('unable to Load Message', '', 'error');
       }
     });
     return false;
@@ -824,7 +855,7 @@ cj(document).ready(function(){
 
         if(messages.code == 'ERROR'){
           if(messages.clear =='true') removeRow(activityId);
-          alert('Unable to load Message : '+ messages.message);
+          CRM.alert('Unable to load Message : '+ messages.message, '', 'error');
           return false;
         }else{
 
@@ -900,7 +931,7 @@ cj(document).ready(function(){
         }
       },
       error: function(){
-        alert('Unable to load Message');
+        CRM.alert('Unable to load Message ', '', 'error');
         cj('.token-input-dropdown-facebook').html('').remove();
         cj('.token-input-list-facebook').html('').remove();
 
@@ -925,7 +956,7 @@ cj(document).ready(function(){
 
     if(!activityIds.length){
       cj("#loading-popup").dialog('close');
-      alert('Use the checkbox to select one or more messages to tag');
+      CRM.alert('Use the checkbox to select one or more messages to tag', '', 'error');
       return false;
     }
     // render the multi message view
@@ -985,24 +1016,20 @@ cj(document).ready(function(){
 
           if(message.code == 'ERROR'){
             if(message.clear =='true') removeRow(activityId);
-            alert('Unable to load Message : '+ message.message);
-            return false;
-          }else{
-
-            cj('#message_left_tag').append("<div id='header_"+activityId+"' data-id='"+activityId+"' class='message_left_header_tags'><span class='popup_def'>From: </span>"+message.sender_name +"  <span class='emailbubble'>"+ message.sender_email+"</span><br/><span class='popup_def'>Subject: </span>"+shortenString(message.subject,55)+"<br/><span class='popup_def'>Date Forwarded: </span>"+message.date_long+"<br/></div><div id='email_"+activityId+"' class='hidden_email' data-id='"+activityId+"'></div>");
-
-            if ((message.forwarder != message.sender_email)){
-              cj('#message_left_header').append("<span class='popup_def'>Forwarded by: </span><span class='emailbubble'>"+ message.forwarder+"</span> @"+ message.updated_long+ "<br/>");
+              CRM.alert('Unable to load Message : '+ message.message, '', 'error');
+              return false;
             }else{
-              cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span>No forwarded content found<br/>");
+              cj('#message_left_tag').append("<div id='header_"+activityId+"' data-id='"+activityId+"' class='message_left_header_tags'><span class='popup_def'>From: </span>"+message.sender_name +"  <span class='emailbubble'>"+ message.sender_email+"</span><br/><span class='popup_def'>Subject: </span>"+shortenString(message.subject,55)+"<br/><span class='popup_def'>Date Forwarded: </span>"+message.date_long+"<br/></div><div id='email_"+activityId+"' class='hidden_email' data-id='"+activityId+"'></div>");
+              if ((message.forwarder != message.sender_email)){
+                cj('#message_left_header').append("<span class='popup_def'>Forwarded by: </span><span class='emailbubble'>"+ message.forwarder+"</span> @"+ message.updated_long+ "<br/>");
+              }else{
+                cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span>No forwarded content found<br/>");
+              }
+              cj('#email_'+activityId).html("<span class='info hidden_email_info' data-id='"+activityId+"'>Show Email</span><br/><span class='email'>"+message.body+"</span>");
             }
-
-            cj('#email_'+activityId).html("<span class='info hidden_email_info' data-id='"+activityId+"'>Show Email</span><br/><span class='email'>"+message.body+"</span>");
-
-          }
         },
         error: function(){
-          alert('Unable to load Message');
+          CRM.alert('Unable to load Message ', '', 'error');
         }
       });
     });
@@ -1040,7 +1067,7 @@ cj(document).ready(function(){
     });
     if(!delete_ids.length){
       cj("#loading-popup").dialog('close');
-      alert('Use the checkbox to select one or more messages to clear');
+      CRM.alert('Use the checkbox to select one or more messages to clear', '', 'error');
       return false;
     }
     cj( "#clear-confirm" ).dialog({
@@ -1106,7 +1133,7 @@ function getUnmatchedMessages() {
       buildMessageList();
     },
     error: function(){
-      alert('unable to Load Messages');
+      CRM.alert('unable to Load Messages', '', 'error');
     }
   });
 }
@@ -1119,7 +1146,7 @@ function getMatchedMessages() {
       buildActivitiesList();
     },
     error: function(){
-      alert('unable to Load Messages');
+      CRM.alert('unable to Load Messages', '', 'error');
     }
   });
 }
@@ -1131,7 +1158,7 @@ function getReports() {
       buildReports();
     },
     error: function(){
-      alert('unable to Load Messages');
+      CRM.alert('unable to Load Messages', '', 'error');
     }
   });
 }
@@ -1468,14 +1495,14 @@ function DeleteMessage(id,imapid){
       deleted = cj.parseJSON(data);
       if(deleted.code == 'ERROR' || deleted.code == '' || deleted.code == null){
         if(deleted.clear =='true')  removeRow(id);
-        alert('Unable to Delete Message : '+deleted.message);
+        CRM.alert('Unable to Delete Message : '+deleted.message, '', 'error');
       }else{
         removeRow(id); ;
-        helpMessage('Message Deleted');
+        CRM.alert('Message Deleted', '', 'success');
       }
     },
     error: function(){
-      alert('Unable to delete Message');
+      CRM.alert('Unable to Delete Message', '', 'error');
       }
   });
 }
@@ -1491,16 +1518,16 @@ function ClearActivity(value){
     success: function(data,status) {
       data = cj.parseJSON(data);
       if (data.code =='ERROR'){
-        alert('Unable to Clear Activity : '+data.message);
+        CRM.alert('Unable to Clear Activity : '+data.message, '', 'error');
         if(deleted.clear =='true')  removeRow(value);
       }else{
-        helpMessage('Activity Cleared');
+        CRM.alert('Activity Cleared', '', 'success');
       }
       removeRow(value);
       cj("#clear-confirm").dialog('close');
     },
     error: function(){
-      alert('Unable to Clear Activity');
+      CRM.alert('Unable to Clear Activity', '', 'error');
     }
   });
 }
@@ -1518,14 +1545,14 @@ function DeleteActivity(value){
       deleted = cj.parseJSON(data);
       if(deleted.code == 'ERROR' || deleted.code == '' || deleted.code == null){
         if(deleted.clear =='true')  removeRow(value);
-        alert('Unable to Delete Activity : '+deleted.message);
+        CRM.alert('Unable to Delete Activity : '+deleted.message, '', 'error');
       }else{
         removeRow(value);
-        helpMessage('Activity Deleted');
+        CRM.alert('Activity Deleted', '', 'success');
       }
     },
     error: function(){
-      alert('Unable to Delete Activity ');
+      CRM.alert('Unable to Delete Activity', '', 'error');
     }
   });
 }
@@ -1565,7 +1592,8 @@ function pushtag(clear){
   if(contact_tag_ids){
     var contact_ids_array = contact_ids.split(',');
     cj.each(contact_ids_array, function(key, id) {
-      helpMessage('Contact Tagged');
+      CRM.alert('Contact Tagged', '', 'success');
+
     });
 
     cj.ajax({
@@ -1574,14 +1602,14 @@ function pushtag(clear){
       data: { contactId: contact_ids, tags: contact_tag_ids},
       success: function(data,status) {
       },error: function(){
-        alert('failure');
+        CRM.alert('failure', '', 'error');
       }
     });
   }
   if(activity_tag_ids){
     var activity_ids_array = activity_ids.split(',');
     cj.each(activity_ids_array, function(key, id) {
-      helpMessage('Message Tagged');
+      CRM.alert('Message Tagged', '', 'success');
     });
 
     cj.ajax({
@@ -1590,7 +1618,7 @@ function pushtag(clear){
       data: { activityId: activity_ids, tags: activity_tag_ids},
       success: function(data,status) {
       },error: function(){
-        alert('failure');
+        CRM.alert('failure', '', 'error');
       }
     });
   }
@@ -1704,39 +1732,6 @@ function buildContactList(loop) {
 }
 
 
-// displays a help window + current date time
-// if same message and hasn't disappared yet, update
-function helpMessage(message){
-  // parse date
-  var d = new Date();
-  var h = d.getHours();
-  var m = d.getMinutes();
-  if(m < 10){ m = '0'+m;}
-  var s = d.getSeconds();
-  if(s < 10){ s = '0'+s;}
-
-  // keep track of unique messages with a class based on the message
-  // replace to eliminate things that would break a class
-  var messageclass = message.replace(/[^a-z0-9]/gi,'');
-
-  // check to see if it exists
-  var updateCheck = cj("#top").find("."+messageclass).html();
-  if(updateCheck){
-    // update old count
-    var oldCount = cj("#top ."+messageclass).find(".count").html();
-    count = parseInt(oldCount,10)+1;
-    cj("#top ."+messageclass).html("<p><span class='count'>"+count+"</span> <span class='message'>"+message+"</span> <small>"+h+":"+m+":"+s+"</small></p>");
-  }else{
-    cj("#top").append("<div class='"+h+"_"+m+" "+messageclass+"' id='help' ><p><span class='count'>1</span> <span class='message "+messageclass+"'>"+message+"</span> <small>"+h+":"+m+":"+s+"</small></p></div>");
-  }
-  // fade out and remove after 60 seconds
-  setTimeout(function(){
-    cj("."+messageclass).fadeOut(1000, function(){
-      cj(this).remove();
-    });
-  }, 60000);
-}
-
 // Create shortended String with title tag for hover
 // If subject is null return N/A
 function shortenString(subject, length){
@@ -1775,10 +1770,11 @@ function checkForMatch(key,contactIds){
             if(data != null || data != ''){
               var assign = cj.parseJSON(data);
               if(assign.code == 'ERROR'){
-                // helpMessage('Other Records not Matched');
+                // CRM.alert(('Other Records not Matched'), ts(actionData.name), actionData['errorClass']);
               }else{
                 removeRow(messageId);
-                helpMessage('Other Records Automatically Matched');
+                CRM.alert(('Other Records Automatically Matched'), '', 'success');
+
               }
             }
           }
@@ -1797,7 +1793,7 @@ function removeRow(id){
     var row_index = oTable.fnGetPosition( document.getElementById(id));
     oTable.fnDeleteRow(row_index);
   }else{
-    // alert('could not delete row');
+    // CRM.alert('could not delete row', '', 'error');
   }
 }
 
