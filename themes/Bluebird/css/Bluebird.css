@@ -1775,3 +1775,12 @@ body.page-civicrm-mailing-browse form#Search div.crm-content-block {
 .crm-printproductionexportresult-form-block .crm-section {
   margin-left: 15px;
 }
+
+/*5991*/
+.DataTables_sort_wrapper {
+  white-space: nowrap;
+  padding-right: 18px;
+}
+.DataTables_sort_wrapper span.DataTables_sort_icon {
+  margin-right: -18px;
+}
