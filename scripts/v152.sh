@@ -50,3 +50,24 @@ sql="
   WHERE name = 'advanced_search_options'
 "
 $execSql $instance -c "$sql" -q
+
+echo "7614: add new activity types..."
+sql="
+  SELECT @optgrp:=id FROM civicrm_option_group WHERE name = 'activity_type';
+  SELECT @maxval:=max(cast(value as unsigned)) FROM civicrm_option_value WHERE option_group_id = @optgrp;
+  DELETE FROM civicrm_option_value WHERE option_group_id = @optgrp AND (name = 'Certificate (outgoing)' OR name = 'Proclamation (outgoing)');
+  INSERT INTO civicrm_option_value
+    (option_group_id, label, value, name, grouping, filter, is_default, weight, is_optgroup, is_reserved, is_active, component_id, domain_id, visibility_id)
+  VALUES
+    (@optgrp, 'Certificate (outgoing)', @maxval + 1, 'Certificate (outgoing)', NULL, 0, NULL, @maxval + 1, 0, 1, 1, NULL, NULL, NULL),
+    (@optgrp, 'Proclamation (outgoing)', @maxval + 2, 'Proclamation (outgoing)', NULL, 0, NULL, @maxval + 2, 0, 1, 1, NULL, NULL, NULL);
+"
+$execSql $instance -c "$sql" -q
+
+echo "increase threshold for syntax bounce type..."
+sql="
+  UPDATE civicrm_mailing_bounce_type
+  SET hold_threshold = 25
+  WHERE name = 'Syntax';
+"
+$execSql $instance -c "$sql" -q

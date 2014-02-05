@@ -49,9 +49,10 @@ class CRM_Group_Page_AJAX {
       CRM_Utils_System::civiExit();
     }
     else {
+      //NYSS 5991
       $sortMapper = array(
         0 => 'groups.title', 1 => 'groups.id', 2 => 'createdBy.sort_name', 3 => '',
-        4 => 'groups.group_type', 5 => 'groups.visibility',
+        4 => 'groups.group_type', /*5 => 'groups.visibility',*/
       );
 
       $sEcho     = CRM_Utils_Type::escape($_REQUEST['sEcho'], 'Integer');
@@ -83,6 +84,7 @@ class CRM_Group_Page_AJAX {
       }
 
       $iFilteredTotal = $iTotal = $params['total'];
+
       $selectorElements = array(
         'group_name', 'group_id', 'created_by', 'group_description',
         'group_type', 'visibility', 'org_info', 'links', 'class',
@@ -91,6 +93,9 @@ class CRM_Group_Page_AJAX {
       if (!CRM_Utils_Array::value('showOrgInfo', $params)) {
         unset($selectorElements[6]);
       }
+
+      //NYSS 5991 remove visibility
+      unset($selectorElements[5]);
 
       //NYSS 5259 convert line breaks to html
       foreach ( $groups as &$group ) {
