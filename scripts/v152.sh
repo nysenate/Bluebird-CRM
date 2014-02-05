@@ -63,3 +63,11 @@ sql="
     (@optgrp, 'Proclamation (outgoing)', @maxval + 2, 'Proclamation (outgoing)', NULL, 0, NULL, @maxval + 2, 0, 1, 1, NULL, NULL, NULL);
 "
 $execSql $instance -c "$sql" -q
+
+echo "increase threshold for syntax bounce type..."
+sql="
+  UPDATE civicrm_mailing_bounce_type
+  SET hold_threshold = 25
+  WHERE name = 'Syntax';
+"
+$execSql $instance -c "$sql" -q
