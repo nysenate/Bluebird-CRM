@@ -2229,28 +2229,30 @@ LEFT JOIN civicrm_mailing_group g ON g.mailing_id   = m.id
 
     // we only care about parent jobs, since that holds all the info on
     // the mailing
+    //NYSS 6007 include subject
     $query = "
-            SELECT      $mailing.id,
-                        $mailing.name,
-                        $job.status,
-                        $mailing.approval_status_id,
-                        MIN($job.scheduled_date) as scheduled_date,
-                        MIN($job.start_date) as start_date,
-                        MAX($job.end_date) as end_date,
-                        createdContact.sort_name as created_by,
-                        scheduledContact.sort_name as scheduled_by,
-                        $mailing.created_id as created_id,
-                        $mailing.scheduled_id as scheduled_id,
-                        $mailing.is_archived as archived,
-                        $mailing.created_date as created_date,
-                        campaign_id,
-                        $mailing.sms_provider_id as sms_provider_id
-            FROM        $mailing
-            LEFT JOIN   $job ON ( $job.mailing_id = $mailing.id AND $job.is_test = 0 AND $job.parent_id IS NULL )
-            LEFT JOIN   civicrm_contact createdContact ON ( civicrm_mailing.created_id = createdContact.id )
-            LEFT JOIN   civicrm_contact scheduledContact ON ( civicrm_mailing.scheduled_id = scheduledContact.id )
-            WHERE       $mailingACL $additionalClause
-            GROUP BY    $mailing.id ";
+      SELECT      $mailing.id,
+                  $mailing.name,
+                  $mailing.subject,
+                  $job.status,
+                  $mailing.approval_status_id,
+                  MIN($job.scheduled_date) as scheduled_date,
+                  MIN($job.start_date) as start_date,
+                  MAX($job.end_date) as end_date,
+                  createdContact.sort_name as created_by,
+                  scheduledContact.sort_name as scheduled_by,
+                  $mailing.created_id as created_id,
+                  $mailing.scheduled_id as scheduled_id,
+                  $mailing.is_archived as archived,
+                  $mailing.created_date as created_date,
+                  campaign_id,
+                  $mailing.sms_provider_id as sms_provider_id
+      FROM        $mailing
+      LEFT JOIN   $job ON ( $job.mailing_id = $mailing.id AND $job.is_test = 0 AND $job.parent_id IS NULL )
+      LEFT JOIN   civicrm_contact createdContact ON ( civicrm_mailing.created_id = createdContact.id )
+      LEFT JOIN   civicrm_contact scheduledContact ON ( civicrm_mailing.scheduled_id = scheduledContact.id )
+      WHERE       $mailingACL $additionalClause
+      GROUP BY    $mailing.id ";
 
     if ($sort) {
       $orderBy = trim($sort->orderBy());
@@ -2274,15 +2276,17 @@ LEFT JOIN civicrm_mailing_group g ON g.mailing_id   = m.id
 
     $rows = array();
     while ($dao->fetch()) {
+      //NYSS 6007 alter date format
       $rows[] = array(
         'id' => $dao->id,
         'name' => $dao->name,
+        'subject' => $dao->subject,//NYSS 6007
         'status' => $dao->status ? $dao->status : 'Not scheduled',
-        'created_date' => CRM_Utils_Date::customFormat($dao->created_date),
-        'scheduled' => CRM_Utils_Date::customFormat($dao->scheduled_date),
+        'created_date' => CRM_Utils_Date::customFormat($dao->created_date, '%m/%d/%Y %l:%M %P'),
+        'scheduled' => CRM_Utils_Date::customFormat($dao->scheduled_date, '%m/%d/%Y %l:%M %P'),
         'scheduled_iso' => $dao->scheduled_date,
-        'start' => CRM_Utils_Date::customFormat($dao->start_date),
-        'end' => CRM_Utils_Date::customFormat($dao->end_date),
+        'start' => CRM_Utils_Date::customFormat($dao->start_date, '%m/%d/%Y %l:%M %P'),
+        'end' => CRM_Utils_Date::customFormat($dao->end_date, '%m/%d/%Y %l:%M %P'),
         'created_by' => $dao->created_by,
         'scheduled_by' => $dao->scheduled_by,
         'created_id' => $dao->created_id,

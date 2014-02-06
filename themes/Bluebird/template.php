@@ -331,7 +331,7 @@ function Bluebird_form_element($variables) {
  */
 function Bluebird_status_messages($variables) {
   // NYSS Changed in Drupal 7, see includes/theme.inc:1574
-  $display = $variables['display'];
+  /*$display = $variables['display'];
   $output = '';
   foreach (drupal_get_messages($display) as $type => $messages) {
     // Bluebird can either call this success or notice
@@ -351,7 +351,7 @@ function Bluebird_status_messages($variables) {
     }
     $output .= "</div>\n";
   }
-  return $output;
+  return $output;*/
 }
 
 /**

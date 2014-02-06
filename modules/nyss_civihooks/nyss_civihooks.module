@@ -339,7 +339,8 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
       '_qf_Search_refresh',
       '_qf_ProofingReport_next',
       '_qf_ProofingReport_submit',
-      '_qf_Label_next',
+      '_qf_Label_cancel',
+      '_qf_Label_submit',
       '_qf_ExportPermissions_next',
       '_qf_ExportPermissions_submit',
       '_qf_ExportPermissions_cancel',
@@ -501,6 +502,15 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
     }
   }
 
+  //4999
+  if ( $formName == 'CRM_Contact_Form_Task_PickProfile' ) {
+    foreach ( $form->_elements[2]->_options as $k => $opt ) {
+      if ( $k != 0 && strpos($opt['text'], 'Batch') === FALSE ) {
+        unset($form->_elements[2]->_options[$k]);
+      }
+    }
+  }
+
   _setDBVars();
 
   //CRM_Core_Error::debug($formName);
@@ -641,15 +651,6 @@ function nyss_civihooks_civicrm_searchTasks( $objectType, &$tasks ) {
   unset($tasks[19]); //remove pdf letter creation task, #2284
   //unset($tasks[20]); //remove mass email task, #5498
   unset($tasks[7]); //remove send SMS task, #5665
-
-  //5370
-  if ( $objectType == 'contact' &&
-       ( CRM_Core_Permission::check('administer CiviCRM') || CRM_Core_Permission::check('administer district') ) ) {
-    $tasks[30] = array(
-      'title' => ts('Alter Communication Preferences'),
-      'class' => 'CRM_Contact_Form_Task_AlterDoNot',
-    );
-  }
 }
 
 function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) {
@@ -677,7 +678,7 @@ function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) 
     $objectName == 'Profile' &&
     $objectRef['uf_group_id'] == 8
   ) {
-    $objectRef['updateBlankLocInfo'] = true;
+    $objectRef['updateBlankLocInfo'] = TRUE;
   }
 
   //only create a new address if we have key fields
@@ -694,6 +695,16 @@ function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) 
         $objectRef[$f] = '';
       }
     }
+  }
+
+  //7499 trim space before save
+  if ( $op == 'edit' || $op == 'create' ) {
+    foreach ( $objectRef as  $f => $v ) {
+      if ( !is_array($v) ) {
+        $objectRef[$f] = trim($v, ' ');
+      }
+    }
+    //CRM_Core_Error::debug_var('objectRef',$objectRef);
   }
 
   _setDBVars();

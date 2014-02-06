@@ -38,15 +38,15 @@ if ( isset($_POST['set_JobID']) && $_POST['set_JobID'] ) $_SESSION['CiviCRM']['j
 <?php } ?>
 
 <div class="container">
-  <div id="status">
-   	<div class="messages-container">
-      <?php	if ($messages != '') {?>
-   		  <div id="messages">
-   		    <?php print $messages; ?>
-   		  </div>
-      <?php } ?>
+  <?php if ($messages) { ?>
+    <div id="status">
+      <div class="messages-container">
+        <div id="messages">
+          <?php print $messages; ?>
+        </div>
+      </div>
     </div>
-  </div>
+  <?php } ?>
 
   <div id="header">
    <!-- <h1 id="logo">
@@ -155,7 +155,7 @@ $now = time() + (60 * 60 * $offset);
     ?>
     <script>
     if(typeof cj == 'function') {
-      cj('.messages br').remove();
+      /*cj('.messages br').remove();
       cj('.messages').each(function(index){
         if(cj(this).html() == '') { cj(this).remove(); }
       });
@@ -167,7 +167,7 @@ $now = time() + (60 * 60 * $offset);
         cj('.messages-container').slideToggle('fast');
         cj('#status-handle .ui-icon').toggleClass('ui-icon-arrowthickstop-1-n');
         cj('#status-handle .ui-icon').toggleClass('ui-icon-arrowthickstop-1-s');
-      });
+      });*/
     }
     </script>
 

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.1                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,25 +23,19 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-<div class="crm-form-block crm-block crm-contact-task-addtodonot-form-block">
-<h3>
-{ts}Alter 'Do Not...' Contact(s) Preferences{/ts}
-</h3>
-<table class="form-layout-compressed">
-    <tr><td>{$form.actionTypeOption.html}</td></tr>
-    <tr class="crm-contact-task-addtodonot-form-block-pref">
-        <td>
-            <div class="listing-box">
-            {foreach from=$form.pref item="pref_val"}
-                <div class="{cycle values="odd-row,even-row"}">
-                {$pref_val.html}
-                </div>
-            {/foreach}
-            </div>
-        </td>
-    </tr>
-
-    <tr><td>{include file="CRM/Contact/Form/Task.tpl"}</td></tr>
-</table>
-    <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
-</div> 
+{* Display contact-related footer. *}
+{strip}
+<div class="crm-footer" id="crm-record-log">
+  <span class="col1">
+    {if !empty($external_identifier)}{ts}External ID{/ts}:&nbsp;{$external_identifier}{/if}
+    {if $action NEQ 2}&nbsp; &nbsp;{ts}CiviCRM ID{/ts}:&nbsp;{$contactId}{/if}
+  </span>
+  {*NYSS 5697*}
+  {*{if !empty($lastModified)}
+    {ts}Last Change by{/ts} <a href="{crmURL p='civicrm/contact/view' q="action=view&reset=1&cid=`$lastModified.id`"}">{$lastModified.name}</a> ({$lastModified.date|crmDate}) &nbsp;
+    {if !empty($changeLog)}
+      <a href="{crmURL p='civicrm/contact/view' q="reset=1&action=browse&selectedChild=log&cid=`$contactId`"}" class="crm-log-view">&raquo; {ts}View Change Log{/ts}</a>
+    {/if}
+  {/if}*}
+</div>
+{/strip}

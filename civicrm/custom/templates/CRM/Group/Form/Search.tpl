@@ -70,12 +70,13 @@
 <table id="crm-group-selector">
   <thead>
     <tr>
+      {*NYSS 5991 add nowrap class*}
       <th class='crm-group-name'>{ts}Name{/ts}</th>
       <th class='crm-group-group_id'>{ts}ID{/ts}</th>
       <th class='crm-group-created_by'>{ts}Created By{/ts}</th>
       <th class='crm-group-description'>{ts}Description{/ts}</th>
       <th class='crm-group-group_type'>{ts}Group Type{/ts}</th>
-      <th class='crm-group-visibility'>{ts}Visibility{/ts}</th>
+      {*<th class='crm-group-visibility'>{ts}Visibility{/ts}</th>*}{*NYSS 5991*}
       {if $showOrgInfo}
       <th class='crm-group-org_info'>{ts}Organization{/ts}</th>
       {/if}
@@ -132,7 +133,7 @@ function buildGroupSelector( filterSearch, parentsOnlyArg ) {
                         {sClass:'crm-group-created_by'},
                         {sClass:'crm-group-description', bSortable:false},
                         {sClass:'crm-group-group_type'},
-                        {sClass:'crm-group-visibility'},
+                        //{sClass:'crm-group-visibility'},//NYSS 5991
                         {sClass:'crm-group-group_links', bSortable:false},
                         {/literal}{if $showOrgInfo}{literal}
                         {sClass:'crm-group-org_info', bSortable:false},
@@ -196,7 +197,7 @@ function buildGroupSelector( filterSearch, parentsOnlyArg ) {
                     {name:'title', value: cj('.crm-group-search-form-block #title').val()},
                     {name:'created_by', value: cj('.crm-group-search-form-block #created_by').val()},
                     {name:'group_type', value: groupTypes },
-                    {name:'visibility', value: cj('.crm-group-search-form-block #visibility').val()},
+                    //{name:'visibility', value: cj('.crm-group-search-form-block #visibility').val()},
                     {name:'status', value: groupStatus }
                 );
             }
@@ -288,7 +289,7 @@ function showChildren( parent_id, showOrgInfo, group_id, levelClass) {
               appendHTML += "<td>&nbsp;</td>";
             }
             appendHTML += "<td>" + val.group_type + "</td>";
-            appendHTML += "<td>" + val.visibility + "</td>";
+            //appendHTML += "<td>" + val.visibility + "</td>";
             appendHTML += "<td>" + val.links + "</td>";
             appendHTML += "</tr>";
           });
