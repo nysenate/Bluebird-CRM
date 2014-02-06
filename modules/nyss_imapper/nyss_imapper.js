@@ -214,16 +214,25 @@ cj(document).ready(function(){
   });
 
   // smart date picker
-  cj( ".dob .month,.dob .day,.dob .year" ).change(function() {
-    if ( cj.isNumeric(cj(".dob .month").val()) && cj.isNumeric(cj(".dob .day").val())  && cj.isNumeric(cj(".dob .year").val()) ) {
-      var date_string = cj(".dob .month").val()+"/"+cj(".dob .day").val()+"/"+cj(".dob .year").val();
-      cj('input.form-text.dob').val(date_string);
+  cj( "#tab1 .dob .month,#tab1 .dob .day,#tab1 .dob .year" ).change(function() {
+    if ( cj.isNumeric(cj("#tab1 .dob .month").val()) && cj.isNumeric(cj("#tab1 .dob .day").val())  && cj.isNumeric(cj("#tab1 .dob .year").val()) ) {
+      var date_string = cj("#tab1 .dob .month").val()+"/"+cj("#tab1 .dob .day").val()+"/"+cj("#tab1 .dob .year").val();
+      cj('#tab1 input.form-text.dob').val(date_string);
     }else{
-      cj('input.form-text.dob').val('');
+      cj('#tab1 input.form-text.dob').val('');
       return false;
     }
   });
 
+  cj( "#tab2 .dob .month,#tab2 .dob .day,#tab2 .dob .year" ).change(function() {
+    if ( cj.isNumeric(cj("#tab2 .dob .month").val()) && cj.isNumeric(cj("#tab2 .dob .day").val())  && cj.isNumeric(cj("#tab2 .dob .year").val()) ) {
+      var date_string = cj("#tab2 .dob .month").val()+"/"+cj("#tab2 .dob .day").val()+"/"+cj("#tab2 .dob .year").val();
+      cj('#tab2 input.form-text.dob').val(date_string);
+    }else{
+      cj('#tab2 input.form-text.dob').val('');
+      return false;
+    }
+  });
 
   // search function in find_match and edit_match
   filter.live('click', function() {
