@@ -221,6 +221,7 @@ cj(document).ready(function(){
       console.log("date : "+ date_string );
       cj('input.form-text.dob').val(date_string);
     }else{
+      cj('input.form-text.dob').val('');
       return false;
     }
   });
