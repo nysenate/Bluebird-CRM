@@ -312,19 +312,36 @@
 							<option value="1049">Wyoming</option>
 						</select>
 					</label>
-					<input type="button" class="imapper-submit" id="filter" value="Search" name="filter">
+					<label for="Search">
+						<input type="button" class="imapper-submit" id="filter" value="Search" name="filter">
+					</label>
 					<div id="imapper-contacts-list" class="contacts-list"> </div>
 					<input type="button" class="imapper-submit" id="preAssign" value="Assign" name="Assign">
 					<input type="button" class="hidden" id="assign" value="Assign" name="Assign">
 				</div>
 				<div id="tab2">
-						<label for="first_name">
+					<label for="prefix">
+						<span class="label_def">Prefix: </span>
+							<select class="form-select prefix" id="prefix" name="prefix">
+							</select>
+						</label>
+					</label>
+					<label for="first_name">
 						<span class="label_def">First Name: </span>
 						<input type="text" placeholder="First Name" class="form-text first_name" name="first_name">
+					</label>
+					<label for="middle_name">
+						<span class="label_def">Middle Name: </span>
+						<input type="text" placeholder="Middle Name" class="form-text middle_name" name="middle_name">
 					</label>
 					<label for="last_name">
 						<span class="label_def">Last Name: </span>
 						<input type="text" placeholder="Last Name"  class="form-text last_name" name="last_name">
+					</label>
+					<label for="suffix">
+						<span class="label_def">Suffix: </span>
+						<select class="form-select suffix" id="suffix" name="suffix">
+						</select>
 					</label>
 					<label for="email_address">
 						<span class="label_def">Email: </span>

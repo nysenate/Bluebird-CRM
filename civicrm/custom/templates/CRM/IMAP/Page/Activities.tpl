@@ -66,6 +66,7 @@
 						<input type="text" placeholder="Email Address" class="email-address email_address" name="email_address">
 					</label>
 					<label for="dob" class="dob">
+						<span class="label_def">DOB: </span>
 						<select name="DateOfBirth_Month" class="month" >
 							<option>-</option>
 							<option value="1">Jan</option>
@@ -313,18 +314,37 @@
 							<option value="1049">Wyoming</option>
 						</select>
 					</label>
-					<input type="button" class="imapper-submit" id="filter" value="Search" name="filter">
+					<div class='search'>
+						<input type="button" class="imapper-submit" id="filter" value="Search" name="filter">
+					</div>
 					<div id="imapper-contacts-list" class="contacts-list"></div>
-					<input type="button" class="imapper-submit" id="reassign" value="Reassign" name="reassign">
+					<div class='search'>
+						<input type="button" class="imapper-submit" id="reassign" value="Reassign" name="reassign">
+					</div>
 				</div>
 								<div id="tab2">
-						<label for="first_name">
+						<label for="prefix">
+						<span class="label_def">Prefix: </span>
+							<select class="form-select prefix" id="prefix" name="prefix">
+							</select>
+						</label>
+					</label>
+					<label for="first_name">
 						<span class="label_def">First Name: </span>
 						<input type="text" placeholder="First Name" class="form-text first_name" name="first_name">
+					</label>
+					<label for="middle_name">
+						<span class="label_def">Middle Name: </span>
+						<input type="text" placeholder="Middle Name" class="form-text middle_name" name="middle_name">
 					</label>
 					<label for="last_name">
 						<span class="label_def">Last Name: </span>
 						<input type="text" placeholder="Last Name"  class="form-text last_name" name="last_name">
+					</label>
+					<label for="suffix">
+						<span class="label_def">Suffix: </span>
+						<select class="form-select suffix" id="suffix" name="suffix">
+						</select>
 					</label>
 					<label for="email_address">
 						<span class="label_def">Email: </span>

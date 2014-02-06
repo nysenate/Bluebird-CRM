@@ -216,6 +216,8 @@ class CRM_IMAP_AJAX {
             //   unset($emails[0][array_search($output['forwarder'],$emails[0])]);
             // }
             $output['found_emails'] = array_unique($emails[0], SORT_REGULAR);
+            $output['prefix'] = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'prefix_id');
+            $output['suffix'] = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'suffix_id');
             echo json_encode($output);
             break;
           case '1':
@@ -920,6 +922,8 @@ ORDER BY gc.contact_id ASC";
         if($status != ''){
            switch ($status) {
             case '1':
+              $output['prefix'] = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'prefix_id');
+              $output['suffix'] = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'suffix_id');
               echo json_encode($output);
               break;
             case '7':
@@ -1395,6 +1399,9 @@ LIMIT 0 , 100000";
 
         $debug = self::get('debug');
         // testing url
+        $prefix = (strtolower(self::get('prefix')) == 'first name' || trim(self::get('prefix')) =='') ? NULL : self::get('prefix');
+        $middle_name = (strtolower(self::get('middle_name')) == 'first name' || trim(self::get('middle_name')) =='') ? NULL : self::get('middle_name');
+        $suffix = (strtolower(self::get('suffix')) == 'first name' || trim(self::get('suffix')) =='') ? NULL : self::get('suffix');
 
         $first_name = (strtolower(self::get('first_name')) == 'first name' || trim(self::get('first_name')) =='') ? NULL : self::get('first_name');
         $last_name = (strtolower(self::get('last_name')) == 'last name'|| trim(self::get('last_name')) =='') ? NULL : self::get('last_name');
@@ -1451,7 +1458,10 @@ LIMIT 0 , 100000";
         //First, you make the contact
         $params = array(
           'first_name' => $first_name,
+          'middle_name'=> $middle_name,
           'last_name' => $last_name,
+          'prefix_id' => $prefix,
+          'suffix_id' => $suffix,
           'sort_name' => $display_name,
           'display_name' => $display_name,
           'contact_type' => 'Individual',

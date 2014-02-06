@@ -141,7 +141,6 @@ cj(document).ready(function(){
         if (cj('#add_email #cb_static').val()) {
           add_emails.push(cj('#add_email #cb_static').val());
         };
-        console.log(add_emails);
         cj.each(add_emails, function( index, value ) {
           var contacts = cj('#contacts').val();
           cj.ajax({
@@ -669,6 +668,15 @@ cj(document).ready(function(){
             cj('.first_name').val(firstName);
             cj('.last_name').val(lastName);
             cj('#AdditionalEmail-popup #add_email').html('');
+
+            cj('#prefix .del,#suffix .del').remove();
+            cj.each(message.prefix, function(idx, val) {
+              cj('#prefix').append('<option class="del" value="'+idx+'">'+val+'</option>');
+            });
+            cj.each(message.suffix, function(idx, val) {
+              cj('#suffix').append('<option class="del" value="'+idx+'">'+val+'</option>');
+            });
+
             cj.each(message.found_emails, function(idx, val) {
               cj('#add_email').append('<fieldset id="fs_'+idx+'"></fieldset>');
               cj('<input />', { type: 'checkbox', id: 'cb_'+idx, value: val }).appendTo('#fs_'+idx);

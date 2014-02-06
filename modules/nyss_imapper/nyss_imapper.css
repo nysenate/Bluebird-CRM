@@ -29,13 +29,12 @@
 .page-civicrm-imap .delete_popup_class #delete-confirm{margin-bottom: 0;}
 .page-civicrm-imap .delete_popup_class .ui-dialog-titlebar {background: red;color:#fff; }
 .page-civicrm-imap .delete_popup_class #ui-dialog-title-delete-confirm{color: #fff; font-weight: bold;}
-.page-civicrm-imap .ui-dialog  .ui-dialog-title { color:#fff;}
 
 /* Popup -  tagging specific  */
 .page-civicrm-imap .ui-dialog-buttonpane{background: #ccc !important;}
 
 /* Popup -  margin reset  */
-.page-civicrm-imap .ui-dialog .ui-dialog-content{padding: 0; margin: 0;}
+.page-civicrm-imap .ui-dialog .ui-dialog-content{padding: 0; margin: 0; float: left;}
 
 
 
@@ -135,8 +134,14 @@ thead .sorting_asc{background-color:#f1f1f1!important;}
 .page-civicrm-imap #message_left_email_tag{padding:10px ; width:640px; height:320px; overflow:auto; }
 
 /* IMAP - Popup Right*/
-.page-civicrm-imap #message_right{width:285px; float:left; border-left: 1px solid #ccc; padding:0 0 0 5px; height:470px; overflow: hidden;}
-.page-civicrm-imap #message_right .ui-tabs .ui-tabs-panel,
+.page-civicrm-imap #tabs{margin-top: -37px; z-index: 2000; }
+.page-civicrm-imap .ui-dialog-titlebar-close{ z-index: 3000; }
+
+.page-civicrm-imap .ui-dialog .ui-dialog-content { background: #FFFFFF;overflow: visible;}
+.page-civicrm-imap .ui-tabs .ui-tabs-nav { background: transparent !important }
+.page-civicrm-imap #tabs.ui-tabs.ui-widget-content,.page-civicrm-imap #tabs.ui-tabs.ui-tabs-nav,.page-civicrm-imap #tabs.ui-tabs.ui-widget-header { background: transparent !important }
+.page-civicrm-imap #message_right{width:285px; float:left; border-left: 1px solid #ccc; padding:0 0 0 5px; height:470px; }
+.page-civicrm-imap #message_right #tabs .ui-tabs-panel,
 .page-civicrm-imap #message_right_tag.ui-tabs .ui-tabs-panel,
 .page-civicrm-imap #message_right_tag #tab1_tag,
 .page-civicrm-imap #message_right_tag #tab2_tag{padding:0 !important; margin:0 !important; }
@@ -148,6 +153,8 @@ thead .sorting_asc{background-color:#f1f1f1!important;}
 .page-civicrm-imap #message_right label.dob select.year { width: 57px; }
 .page-civicrm-imap #message_right label.dob select.day { width: 42px; }
 
+/* search button */
+.page-civicrm-imap #message_right .search { background: #E1E1E1;float: left; padding: 2px;width: 273px; }
 
 /* IMAP - Debug area */
 .page-civicrm-imap .debug_sumit{border:1px solid #e5e5e5; background: #f1f1f1; padding: 4px; margin: 10px 0;}
@@ -162,7 +169,7 @@ thead .sorting_asc{background-color:#f1f1f1!important;}
 
 /* IMAP - Contact Search */
 .page-civicrm-imap .label_def{width: 110px; font-weight: bold; float: left; margin: 0.4em 0 0.02em;}
-.page-civicrm-imap #message_right label{float: left; display: block;}
+.page-civicrm-imap #message_right label{float: left; display: block;  margin: 0 0 -2px;}
 .page-civicrm-imap #message_right label input {width: 160px; }
 .page-civicrm-imap #message_right label select {width: 167px; }
 
