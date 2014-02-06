@@ -213,6 +213,18 @@ cj(document).ready(function(){
     }
   });
 
+  // smart date picker
+  cj( ".dob .month,.dob .day,.dob .year" ).change(function() {
+    console.log( cj(this).val() );
+    if ( cj.isNumeric(cj(".dob .month").val()) && cj.isNumeric(cj(".dob .day").val())  && cj.isNumeric(cj(".dob .year").val()) ) {
+      var date_string = cj(".dob .month").val()+"/"+cj(".dob .day").val()+"/"+cj(".dob .year").val();
+      console.log("date : "+ date_string );
+      cj('input.form-text.dob').val(date_string);
+    }else{
+      return false;
+    }
+  });
+
 
   // search function in find_match and edit_match
   filter.live('click', function() {
@@ -597,6 +609,8 @@ cj(document).ready(function(){
     var firstName = cj(this).parent().parent().children('.name').attr('data-firstName');
     var lastName = cj(this).parent().parent().children('.name').attr('data-lastName');
     cj("#tabs :input[type='text']").val("");
+
+    cj(".dob .month,.dob .day,.dob .year").val([]);
     cj('#imapper-contacts-list').html('');
     cj('#message_left_email').html('');
     cj("#message_left_email").animate({

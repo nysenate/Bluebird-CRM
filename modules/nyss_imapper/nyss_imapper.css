@@ -137,8 +137,14 @@ thead .sorting_asc{background-color:#f1f1f1!important;}
 .page-civicrm-imap #message_right_tag.ui-tabs .ui-tabs-panel,
 .page-civicrm-imap #message_right_tag #tab1_tag,
 .page-civicrm-imap #message_right_tag #tab2_tag{padding:0 !important; margin:0 !important; }
-
 .page-civicrm-imap #message_right_tag{width:255px; float:left; border-left: 1px solid #ccc; padding:0 0 0 5px; height:465px;}
+
+
+/* DOB select*/
+.page-civicrm-imap #message_right label.dob select.month { width: 57px; }
+.page-civicrm-imap #message_right label.dob select.year { width: 57px; }
+.page-civicrm-imap #message_right label.dob select.day { width: 42px; }
+
 
 /* IMAP - Debug area */
 .page-civicrm-imap .debug_sumit{border:1px solid #e5e5e5; background: #f1f1f1; padding: 4px; margin: 10px 0;}
