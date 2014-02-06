@@ -670,6 +670,8 @@ cj(document).ready(function(){
             cj('#AdditionalEmail-popup #add_email').html('');
 
             cj('#prefix .del,#suffix .del').remove();
+            cj('#prefix').append('<option class="del" value=""> </option>');
+            cj('#suffix').append('<option class="del" value=""> </option>');
             cj.each(message.prefix, function(idx, val) {
               cj('#prefix').append('<option class="del" value="'+idx+'">'+val+'</option>');
             });
