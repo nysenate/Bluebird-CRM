@@ -215,10 +215,8 @@ cj(document).ready(function(){
 
   // smart date picker
   cj( ".dob .month,.dob .day,.dob .year" ).change(function() {
-    console.log( cj(this).val() );
     if ( cj.isNumeric(cj(".dob .month").val()) && cj.isNumeric(cj(".dob .day").val())  && cj.isNumeric(cj(".dob .year").val()) ) {
       var date_string = cj(".dob .month").val()+"/"+cj(".dob .day").val()+"/"+cj(".dob .year").val();
-      console.log("date : "+ date_string );
       cj('input.form-text.dob').val(date_string);
     }else{
       cj('input.form-text.dob').val('');
@@ -237,7 +235,7 @@ cj(document).ready(function(){
     if(cj('#tab1 .phone').val() != "Phone Number"){var phone = cj('#tab1 .phone').val();}
     if(cj('#tab1 .street_address').val() != "Street Address"){var street_address = cj('#tab1 .street_address').val();}
     if(cj('#tab1 .email_address').val() != "Email Address"){var email_address = cj('#tab1 .email_address').val();}
-    if(cj('#tab1 .dob').val() != "yyyy-mm-dd"){var dob = cj('#tab1 .dob').val();}
+    if(cj('#tab1 .form-text.dob').val() != "yyyy-mm-dd"){var dob = cj('#tab1 .form-text.dob').val();}
     if(cj('#tab1 .state').val() != ""){var state = cj('#tab1 .state').val();}
     if((first_name) || (last_name) || (city) || (phone) || (street_address) || (email_address) || (dob)){
       cj.ajax({
@@ -467,7 +465,7 @@ cj(document).ready(function(){
     var create_street_address_2 = cj("#tab2 .street_address_2").val();
     var create_zip = cj("#tab2 .zip").val();
     var create_city = cj("#tab2 .city").val();
-    var create_dob = cj("#tab2 .dob").val();
+    var create_dob = cj("#tab2 .form-text.dob").val();
     var create_state = cj("#tab2 .state").val();
 
     if((create_first_name)||(create_last_name)||(create_email_address)){
@@ -539,7 +537,7 @@ cj(document).ready(function(){
     var create_street_address_2 = cj("#tab2 .street_address_2").val();
     var create_zip = cj("#tab2 .zip").val();
     var create_city = cj("#tab2 .city").val();
-    var create_dob = cj("#tab2 .dob").val();
+    var create_dob = cj("#tab2 .form-text.dob").val();
     var create_state = cj("#tab2 .state").val();
     if((create_first_name)||(create_last_name)||(create_email_address)){
       cj.ajax({
