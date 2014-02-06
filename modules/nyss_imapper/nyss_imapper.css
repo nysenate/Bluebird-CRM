@@ -73,6 +73,9 @@ thead .sorting_asc{background-color:#f1f1f1!important;}
 .imapperbox tr.even.highlight{ background-color: #CCE5E9 !important; }
 .imapperbox tr.highlight:hover{ background-color: #C8DEE1 !important; }
 
+.imapperbox tr.odd.highlight .sorting_1{ background-color: #D7E4E6 !important; }
+.imapperbox tr.even.highlight .sorting_1{ background-color: #BEDCE1 !important; }
+
 
 /* IMAP - Table View - Row */
 .imapperbox .imap_checkbox_column{width: 15px !important; }
