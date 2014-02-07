@@ -1214,26 +1214,14 @@ function makeListSortable(){
 
 cj(".FixedHeader_Cloned th").live('click', function() {
   var clickclass = cj(this).attr('class').split(' ')[0];
-  console.log(clickclass);
-  cj('.'+clickclass).click();
+  // console.log(clickclass);
+  // console.log(cj('.imapperbox th.'+clickclass));
+  cj('.imapperbox th.'+clickclass).click();
 });
 
 
 
-// a complicated checkbox method,
 function checks(){
-  cj('.checkbox_switch').click(function() {
-    cj('th.checkbox').click();
-  });
-  cj('th.checkbox').click(function() {
-    if(cj('.checkbox_switch').is(':checked')){
-      cj('input.checkbox_switch').removeAttr('checked');
-      cj('#imapper-messages-list input:checkbox').removeAttr('checked');
-    }else{
-      cj('#imapper-messages-list input:checkbox').attr('checked', true);
-      cj('.checkbox_switch').attr("checked", true);
-    }
-  });
 }
 
 // add highlight to selected rows in table view
@@ -1422,6 +1410,10 @@ function buildReports() {
 cj( ".range" ).live('change', function() {
     var oTable = cj('#sortable_results').dataTable();
     oTable.fnDraw();
+});
+
+cj( ".checkbox_switch" ).live('click', function(e) {
+  cj('.checkbox').prop('checked', this.checked);
 });
 
 cj.fn.dataTableExt.afnFiltering.push(

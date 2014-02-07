@@ -19,7 +19,7 @@
 		<table id="sortable_results" class="">
 			<thead>
 				<tr class='list_header'>
-					<th class='imap_checkbox_header checkbox' ><input class='checkbox_switch'  type="checkbox" name="" value="" /></th>
+					<th class='imap_checkbox_header' ><input class='checkbox_switch'  type="checkbox" name="" value="" /></th>
 					<th class='imap_name_header'>Sender’s Info</th>
 					<th class='imap_subject_header'>Subject</th>
 					<th class='imap_date_header'>Date Forwarded</th>
