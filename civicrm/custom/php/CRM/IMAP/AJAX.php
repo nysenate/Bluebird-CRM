@@ -162,7 +162,7 @@ class CRM_IMAP_AJAX {
         CASE
           WHEN DATE_FORMAT(updated_date, '%j') = DATE_FORMAT(NOW(), '%j') THEN DATE_FORMAT(updated_date, 'Today %l:%i %p')
           ELSE CASE
-            WHEN DATE_FORMAT(updated_date, '%Y') = DATE_FORMAT(NOW(), '%Y') THEN DATE_FORMAT(updated_date, '%b %e %l:%i %p')
+            WHEN DATE_FORMAT(updated_date, '%Y') = DATE_FORMAT(NOW(), '%Y') THEN DATE_FORMAT(updated_date, '%b %e, %l:%i %p')
             ELSE  DATE_FORMAT(updated_date, '%b %e, %Y')
           END
         END AS date_short,
@@ -216,6 +216,8 @@ class CRM_IMAP_AJAX {
             //   unset($emails[0][array_search($output['forwarder'],$emails[0])]);
             // }
             $output['found_emails'] = array_unique($emails[0], SORT_REGULAR);
+            $output['prefix'] = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'prefix_id');
+            $output['suffix'] = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'suffix_id');
             echo json_encode($output);
             break;
           case '1':
@@ -860,7 +862,7 @@ ORDER BY gc.contact_id ASC";
         CASE
           WHEN DATE_FORMAT(updated_date, '%j') = DATE_FORMAT(NOW(), '%j') THEN DATE_FORMAT(updated_date, 'Today %l:%i %p')
           ELSE CASE
-            WHEN DATE_FORMAT(updated_date, '%Y') = DATE_FORMAT(NOW(), '%Y') THEN DATE_FORMAT(updated_date, '%b %e %l:%i %p')
+            WHEN DATE_FORMAT(updated_date, '%Y') = DATE_FORMAT(NOW(), '%Y') THEN DATE_FORMAT(updated_date, '%b %e, %l:%i %p')
             ELSE  DATE_FORMAT(updated_date, '%b %e, %Y')
           END
         END AS date_short,
@@ -920,6 +922,8 @@ ORDER BY gc.contact_id ASC";
         if($status != ''){
            switch ($status) {
             case '1':
+              $output['prefix'] = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'prefix_id');
+              $output['suffix'] = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'suffix_id');
               echo json_encode($output);
               break;
             case '7':
@@ -1395,6 +1399,9 @@ LIMIT 0 , 100000";
 
         $debug = self::get('debug');
         // testing url
+        $prefix = (strtolower(self::get('prefix')) == 'first name' || trim(self::get('prefix')) =='') ? NULL : self::get('prefix');
+        $middle_name = (strtolower(self::get('middle_name')) == 'first name' || trim(self::get('middle_name')) =='') ? NULL : self::get('middle_name');
+        $suffix = (strtolower(self::get('suffix')) == 'first name' || trim(self::get('suffix')) =='') ? NULL : self::get('suffix');
 
         $first_name = (strtolower(self::get('first_name')) == 'first name' || trim(self::get('first_name')) =='') ? NULL : self::get('first_name');
         $last_name = (strtolower(self::get('last_name')) == 'last name'|| trim(self::get('last_name')) =='') ? NULL : self::get('last_name');
@@ -1412,12 +1419,20 @@ LIMIT 0 , 100000";
       $display_name = $email;
     }
 
-          if ($debug){
-            echo "<h1>inputs</h1>";
+    if ($debug){
+      echo "<h1>inputs</h1>";
+      echo "</pre> prefix: <pre>";
+      var_dump($prefix);
+
       echo "</pre> first_name: <pre>";
       var_dump($first_name);
+      echo "</pre> middle_name: <pre>";
+      var_dump($middle_name);
       echo "</pre> last_name: <pre>";
       var_dump($last_name);
+      echo "</pre> suffix: <pre>";
+      var_dump($suffix);
+
       echo "</pre> email: <pre>";
       var_dump($email);
       echo "</pre> phone: <pre>";
@@ -1436,114 +1451,117 @@ LIMIT 0 , 100000";
       var_dump($state);
       echo "</pre> display name: <pre>";
       var_dump($display_name);
-          }
+    }
 
-        if((isset($first_name))||(isset($last_name))||(isset($email))){
-          // echo "one set";
-        }else{
-            $returnCode = array('code'      =>  'ERROR',
-                                'status'    =>  '1',
-                                'message'   =>  'Required: First Name or Last Name or Email');
-            echo json_encode($returnCode);
-            CRM_Utils_System::civiExit();
-        }
-
-        //First, you make the contact
-        $params = array(
-          'first_name' => $first_name,
-          'last_name' => $last_name,
-          'sort_name' => $display_name,
-          'display_name' => $display_name,
-          'contact_type' => 'Individual',
-          'birth_date' => $dob,
-          'version' => 3,
-        );
-
-        $contact = civicrm_api('contact','create', $params);
-
-        if ($debug){
-          echo "<h1>Contact Creation</h1>";
-          echo "Sent Params<br/>";
-          var_dump($params);
-          echo "Response <br/>";
-          if($contact['id']) echo "<a href='/civicrm/contact/view?reset=1&cid=".$contact['id']."'>View Contact </a><br/>";
-
-          var_dump($contact);
-        }
-
-        // add the email
-        if($email && $contact['id']){
-          $locationQuery = "SELECT  id FROM `civicrm_location_type` WHERE `name` = 'Other'";
-          $locationResult = mysql_query($locationQuery, self::db());
-          $locationResults = array();
-          while($row = mysql_fetch_assoc($locationResult)) {
-            $locationResults[] = $row['id'];
-          }
-          // Prams to add email to user
-          $emailParams = array(
-            'contact_id' => $contact['id'],
-            'email' => $email,
-            'location_type_id' => $locationResults[0],   // Other
-            'version' => 3,
-          );
-          $email = civicrm_api( 'email','create',$emailParams );
-        }
-        // add the phone number
-        if($phone && $contact['id']){
-          $phoneParams = array(
-            'contact_id' => $contact['id'],
-            'phone' => $phone,
-            'location_type_id' => $locationResults[0], // Other
-            'version' => 3,
-          );
-          $phone = civicrm_api( 'phone','create',$phoneParams );
-        }
-
-        if(($street_address || $street_address_2 || $city || $postal_code || $state ) && $contact['id']){
-          //And then you attach the contact to the Address! which is at $contact['id']
-          $address_params = array(
-            'contact_id' => $contact['id'],
-            'street_address' => $street_address,
-            'supplemental_address_1' => $street_address_2,
-            'city' => $city,
-            'postal_code' => $postal_code,
-            'is_primary' => 1,
-            'state_province_id' => $state,
-            'country_id' => 1228,
-            'location_type_id' => 1,
-            'version' => 3,
-            'debug' => 1
-          );
-
-          $address = civicrm_api('address', 'create', $address_params);
-        }
-
-
-        if ($debug){
-          echo "<h1>Add address to Contact</h1>";
-          echo "Sent Params<br/>";
-          var_dump($address_params);
-          echo "Response <br/><pre>";
-          print_r($address);
-        }
-
-
-
-        if(($contact['is_error'] == 1) || (!empty($address) && ($address['is_error'] == 1))){
-          $returnCode = array('code'      =>  'ERROR',
-                                'status'    =>  '1',
-                                'message'   =>  'Error adding Contact or Address Details'
-                                );
-        } else {
-          $returnCode = array('code'      =>  'SUCCESS',
-                                'status'    =>  '0',
-                                'contact' => $contact['id']
-                                );
-        }
+    if((isset($first_name))||(isset($last_name))||(isset($email))){
+      // echo "one set";
+    }else{
+        $returnCode = array('code'      =>  'ERROR',
+                            'status'    =>  '1',
+                            'message'   =>  'Required: First Name or Last Name or Email');
         echo json_encode($returnCode);
         CRM_Utils_System::civiExit();
-
     }
+
+    //First, you make the contact
+    $params = array(
+      'first_name' => $first_name,
+      'middle_name'=> $middle_name,
+      'last_name' => $last_name,
+      'prefix_id' => $prefix,
+      'suffix_id' => $suffix,
+      'sort_name' => $display_name,
+      'display_name' => $display_name,
+      'contact_type' => 'Individual',
+      'birth_date' => $dob,
+      'version' => 3,
+    );
+
+    $contact = civicrm_api('contact','create', $params);
+
+    if ($debug){
+      echo "<h1>Contact Creation</h1>";
+      echo "Sent Params<br/>";
+      var_dump($params);
+      echo "Response <br/>";
+      if($contact['id']) echo "<a href='/civicrm/contact/view?reset=1&cid=".$contact['id']."'>View Contact </a><br/>";
+
+      var_dump($contact);
+    }
+
+    // add the email
+    if($email && $contact['id']){
+      $locationQuery = "SELECT  id FROM `civicrm_location_type` WHERE `name` = 'Other'";
+      $locationResult = mysql_query($locationQuery, self::db());
+      $locationResults = array();
+      while($row = mysql_fetch_assoc($locationResult)) {
+        $locationResults[] = $row['id'];
+      }
+      // Prams to add email to user
+      $emailParams = array(
+        'contact_id' => $contact['id'],
+        'email' => $email,
+        'location_type_id' => $locationResults[0],   // Other
+        'version' => 3,
+      );
+      $email = civicrm_api( 'email','create',$emailParams );
+    }
+    // add the phone number
+    if($phone && $contact['id']){
+      $phoneParams = array(
+        'contact_id' => $contact['id'],
+        'phone' => $phone,
+        'location_type_id' => $locationResults[0], // Other
+        'version' => 3,
+      );
+      $phone = civicrm_api( 'phone','create',$phoneParams );
+    }
+
+    if(($street_address || $street_address_2 || $city || $postal_code || $state ) && $contact['id']){
+      //And then you attach the contact to the Address! which is at $contact['id']
+      $address_params = array(
+        'contact_id' => $contact['id'],
+        'street_address' => $street_address,
+        'supplemental_address_1' => $street_address_2,
+        'city' => $city,
+        'postal_code' => $postal_code,
+        'is_primary' => 1,
+        'state_province_id' => $state,
+        'country_id' => 1228,
+        'location_type_id' => 1,
+        'version' => 3,
+        'debug' => 1
+      );
+
+      $address = civicrm_api('address', 'create', $address_params);
+    }
+
+
+    if ($debug){
+      echo "<h1>Add address to Contact</h1>";
+      echo "Sent Params<br/>";
+      var_dump($address_params);
+      echo "Response <br/><pre>";
+      print_r($address);
+    }
+
+
+
+    if(($contact['is_error'] == 1) || (!empty($address) && ($address['is_error'] == 1))){
+      $returnCode = array('code'      =>  'ERROR',
+                            'status'    =>  '1',
+                            'message'   =>  'Error adding Contact or Address Details'
+                            );
+    } else {
+      $returnCode = array('code'      =>  'SUCCESS',
+                            'status'    =>  '0',
+                            'contact' => $contact['id']
+                            );
+    }
+    echo json_encode($returnCode);
+    CRM_Utils_System::civiExit();
+
+  }
 
 }
 

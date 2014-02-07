@@ -15,7 +15,9 @@
 
 .page-civicrm-imap .ui-tabs .ui-tabs-nav {background-color: #f8f8f8!important;}
 .page-civicrm-imap .ui-tabs .ui-state-hover a{background-color: #bbcbdf!important;}
-.page-civicrm-imap .ui-tabs .ui-state-active a{background-color: #d1deef!important;}
+.page-civicrm-imap .ui-tabs .ui-state-default a{background-color: #ccc!important;}
+.page-civicrm-imap .ui-tabs .ui-state-active a{background-color: #ffffff!important;}
+.page-civicrm-imap .ui-tabs .ui-state-active a:active{ border:none;}
 
 
 /* Popup - Delete Has red for warning */
@@ -28,13 +30,12 @@
 .page-civicrm-imap .delete_popup_class #delete-confirm{margin-bottom: 0;}
 .page-civicrm-imap .delete_popup_class .ui-dialog-titlebar {background: red;color:#fff; }
 .page-civicrm-imap .delete_popup_class #ui-dialog-title-delete-confirm{color: #fff; font-weight: bold;}
-.page-civicrm-imap .ui-dialog  .ui-dialog-title { color:#fff;}
 
 /* Popup -  tagging specific  */
 .page-civicrm-imap .ui-dialog-buttonpane{background: #ccc !important;}
 
 /* Popup -  margin reset  */
-.page-civicrm-imap .ui-dialog .ui-dialog-content{padding: 0; margin: 0;}
+.page-civicrm-imap .ui-dialog .ui-dialog-content{padding: 0; margin: 0; float: left;}
 
 
 
@@ -62,16 +63,29 @@ pre{white-space: pre-wrap;  white-space: -moz-pre-wrap; white-space: -pre-wrap; 
 .imapperbox .imap_match_type_header,
 .imapperbox .imap_forwarded_header,
 .imapperbox .imap_action_headers{font-weight: bold!important; color:#999!important; }
-tr.odd td.sorting_1 {background-color:#f1f1f1!important;}
+tr.odd td.sorting_1 {background-color:#DBDBDB!important;}
 thead .sorting{cursor:pointer; cursor:hand }
 thead .sorting:hover{background-color:#f8f8f8!important;}
 thead .sorting_desc,
 thead .sorting_asc{background-color:#f1f1f1!important;}
 
-.imapperbox tr.odd.highlight{ background-color: #DBE8EA !important; }
-.imapperbox tr.even.highlight{ background-color: #CCE5E9 !important; }
-.imapperbox tr.highlight:hover{ background-color: #C8DEE1 !important; }
+.imapperbox tr.odd.highlight{ background-color: #BADCE0 !important; } /* dark row */
+.imapperbox tr.even.highlight{ background-color: #D4E3EA !important; } /* light row */
+.imapperbox tr.odd.highlight:hover{ background-color: #AFD3D7 !important; }
+.imapperbox tr.even.highlight:hover{ background-color: #C4DCE7 !important; }
 
+.imapperbox tr.odd.highlight .sorting_1{ background-color: #B4CFD3 !important; }
+.imapperbox tr.even.highlight .sorting_1{ background-color: #CEDEE9 !important; }
+.imapperbox tr.odd.highlight:hover .sorting_1{ background-color: #A5CED5 !important; }
+.imapperbox tr.even.highlight:hover .sorting_1{ background-color: #B2D7DD !important; }
+
+.imapperbox tr.odd:hover{ background-color: #D8DAF5 !important; } /* dark row */
+.imapperbox tr.even:hover{ background-color: #E8EEF1 !important; } /* light row */
+.imapperbox tr.odd:hover .sorting_1{ background-color: #CDCFE9 !important; }
+.imapperbox tr.even:hover .sorting_1{ background-color: #D5DFE4 !important; }
+
+.imapperbox .FixedHeader_Cloned { z-index: 20 !important;}
+.imapperbox .crm-summary-link{ z-index: 10 !important;}
 
 /* IMAP - Table View - Row */
 .imapperbox .imap_checkbox_column{width: 15px !important; }
@@ -101,7 +115,7 @@ thead .sorting_asc{background-color:#f1f1f1!important;}
  .crm-container .imapperbox .dataTables_info {display: inline;float: left; width: auto; padding: 10px; font-weight: bold;}
  .crm-container .imapperbox .dataTables_filter {display: inline;float: right; width: auto; padding: 4px 10px;}
  .crm-container .imapperbox .dataTables_paginate{ text-align: none; width: 100%; padding:20px 0;}
-
+-
 /* IMAP - Autocomplete */
 .imapperbox #tagging-popup.ac_input,
 .imapperbox .autocomplete-tags-bank{width: 258px; padding: 0px;  min-height: 20px; margin-top:10px; max-height: 170px; overflow-y:scroll; overflow-x: hidden; margin-bottom:10px; float:left; }
@@ -128,16 +142,36 @@ thead .sorting_asc{background-color:#f1f1f1!important;}
 .page-civicrm-imap #message_left_header,
 .page-civicrm-imap #message_left_header_tag{padding:10px ; background: #f1f1f1; border-bottom: 1px solid #e5e5e5; height: 110px; line-height: 23px; width: 640px; overflow: hidden;}
 .page-civicrm-imap #message_left_email,
-.page-civicrm-imap #message_left_email_tag{padding:10px ; width:640px; height:320px; overflow:auto; }
-
+.page-civicrm-imap #message_left_email_tag{padding:10px ; width:640px; height:328px; overflow:auto; }
+.page-civicrm-imap #message_left_email_tag{ height:313px;}
 /* IMAP - Popup Right*/
-.page-civicrm-imap #message_right{width:285px; float:left; border-left: 1px solid #ccc; padding:0 0 0 5px; height:470px; overflow: hidden;}
-.page-civicrm-imap #message_right .ui-tabs .ui-tabs-panel,
+.page-civicrm-imap #tabs{margin-top: -37px; z-index: 2000; }
+.page-civicrm-imap #tabs_tag{margin-top: -37px; z-index: 2000; }
+.page-civicrm-imap #TagContact,.page-civicrm-imap #TagActivity{margin-top: 10px;  }
+
+.page-civicrm-imap .ui-dialog-titlebar-close{ z-index: 3000; }
+
+.page-civicrm-imap .ui-dialog .ui-dialog-content { background: #FFFFFF;overflow: visible;}
+.page-civicrm-imap .ui-tabs .ui-tabs-nav { background: transparent !important }
+.page-civicrm-imap #tabs.ui-tabs.ui-widget-content,.page-civicrm-imap #tabs.ui-tabs.ui-tabs-nav,.page-civicrm-imap #tabs.ui-tabs.ui-widget-header { background: transparent !important }
+.page-civicrm-imap #tabs_tag.ui-tabs.ui-widget-content,.page-civicrm-imap #tabs_tag.ui-tabs.ui-tabs-nav,.page-civicrm-imap #tabs_tag.ui-tabs.ui-widget-header { background: transparent !important }
+
+
+.page-civicrm-imap #message_right{width:285px; float:left; border-left: 1px solid #ccc; padding:0 0 0 5px; height:480px; }
+.page-civicrm-imap #message_right #tabs .ui-tabs-panel,
 .page-civicrm-imap #message_right_tag.ui-tabs .ui-tabs-panel,
 .page-civicrm-imap #message_right_tag #tab1_tag,
 .page-civicrm-imap #message_right_tag #tab2_tag{padding:0 !important; margin:0 !important; }
+.page-civicrm-imap #message_right_tag{width:294px; float:left; border-left: 1px solid #ccc; padding:0 0 0 5px; height:465px;}
 
-.page-civicrm-imap #message_right_tag{width:255px; float:left; border-left: 1px solid #ccc; padding:0 0 0 5px; height:465px;}
+
+/* DOB select*/
+.page-civicrm-imap #message_right label.dob select.month { width: 57px; }
+.page-civicrm-imap #message_right label.dob select.year { width: 57px; }
+.page-civicrm-imap #message_right label.dob select.day { width: 42px; }
+
+/* search button */
+.page-civicrm-imap #message_right .search { background: #E1E1E1;float: left; padding: 2px;width: 273px; }
 
 /* IMAP - Debug area */
 .page-civicrm-imap .debug_sumit{border:1px solid #e5e5e5; background: #f1f1f1; padding: 4px; margin: 10px 0;}
@@ -152,7 +186,7 @@ thead .sorting_asc{background-color:#f1f1f1!important;}
 
 /* IMAP - Contact Search */
 .page-civicrm-imap .label_def{width: 110px; font-weight: bold; float: left; margin: 0.4em 0 0.02em;}
-.page-civicrm-imap #message_right label{float: left; display: block;}
+.page-civicrm-imap #message_right label{float: left; display: block;  margin: 0 0 -2px;}
 .page-civicrm-imap #message_right label input {width: 160px; }
 .page-civicrm-imap #message_right label select {width: 167px; }
 
@@ -161,7 +195,7 @@ thead .sorting_asc{background-color:#f1f1f1!important;}
 .page-civicrm-imap .imapper-contact-box {background-color: #f8f8f8; margin-bottom: 4px; padding: 4px 0; float:left;}
 .page-civicrm-imap .imapper-contact-box:hover {background-color: #eeeeee;}
 .page-civicrm-imap .imapper-address-select-box {height: 16px; width: 20px; float: left; padding: 15px 0;}
-.page-civicrm-imap .imapper-address-box {float: left; width: 240px; padding-left: 5px;}
+.page-civicrm-imap .imapper-address-box {float: left; width: 193px; padding-left: 5px;}
 .page-civicrm-imap .imapper-message-box td {vertical-align: middle!important; }
 .page-civicrm-imap .seeMore{height: 20px; background: #e1e1e1; float: left; padding: 5px 10px; width:220px; margin: 5px 0px 10px;}
 
