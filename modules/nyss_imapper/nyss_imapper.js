@@ -1399,7 +1399,7 @@ function buildReports() {
   messagesHtml += '<td class="imap_date_column">'+message_status +'</td>';
 
 
-      messagesHtml += '<td class="imap_forwarder_column matched">'+shortenString(value.forwarder,14)+'</td>';
+      messagesHtml += '<td class="imap_forwarder_column matched"><span data-sort="'+value.forwarder.replace("@","_")+'">'+shortenString(value.forwarder,14)+'</span></td>';
         // messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
     });
     };
@@ -1697,7 +1697,7 @@ function buildActivitiesList() {
         messagesHtml += '<td class="imap_date_column matched"><span data-sort="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
         messagesHtml += '<td class="imap_match_column matched  hidden">'+match_sort +'</td>';
 
-        messagesHtml += '<td class="imap_forwarder_column matched">'+shortenString(value.forwarder,14)+'</td>';
+        messagesHtml += '<td class="imap_forwarder_column matched"><span data-sort="'+value.forwarder.replace("@","_")+'">'+shortenString(value.forwarder,14)+'</span> </td>';
         messagesHtml += '<td class="imap_actions_column matched"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
 
       }
