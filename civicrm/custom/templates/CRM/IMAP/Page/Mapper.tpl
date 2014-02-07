@@ -66,7 +66,7 @@
 					<label for="dob" class="dob">
 						<span class="label_def">DOB: </span>
 						<select name="DateOfBirth_Month" class="month" >
-							<option>-</option>
+							<option> </option>
 							<option value="1">Jan</option>
 							<option value="2">Feb</option>
 							<option value="3">Mar</option>
@@ -81,7 +81,7 @@
 							<option value="12">Dec</option>
 						</select>
 						<select name="DateOfBirth_Day" class="day">
-							<option>-</option>
+							<option> </option>
 							<option value="1">1</option>
 							<option value="2">2</option>
 							<option value="3">3</option>
@@ -115,7 +115,7 @@
 							<option value="31">31</option>
 						</select>
 						<select name="DateOfBirth_Year" class="year">
-							<option>-</option>
+							<option> </option>
 							<option value="2014">2014</option>
 							<option value="2013">2013</option>
 							<option value="2012">2012</option>
@@ -249,7 +249,7 @@
 					<label for="state">
 						<span class="label_def">State: </span>
 						<select class="form-select state" id="state" name="state">
-							<option value="">- select -</option>
+							<option value=""> </option>
 							<option value="1000">Alabama</option>
 							<option value="1001">Alaska</option>
 							<option value="1052">American Samoa</option>
@@ -312,12 +312,14 @@
 							<option value="1049">Wyoming</option>
 						</select>
 					</label>
-					<label for="Search">
+					<div class='search'>
 						<input type="button" class="imapper-submit" id="filter" value="Search" name="filter">
-					</label>
+					</div>
 					<div id="imapper-contacts-list" class="contacts-list"> </div>
-					<input type="button" class="imapper-submit" id="preAssign" value="Assign" name="Assign">
-					<input type="button" class="hidden" id="assign" value="Assign" name="Assign">
+					<div class='search'>
+						<input type="button" class="imapper-submit" id="preAssign" value="Assign" name="Assign">
+						<input type="button" class="hidden" id="assign" value="Assign" name="Assign">
+					</div>
 				</div>
 				<div id="tab2">
 					<label for="prefix">
@@ -350,7 +352,7 @@
 					<label for="dob" class="dob">
 						<span class="label_def">DOB: </span>
 						<select name="DateOfBirth_Month" class="month" >
-							<option>-</option>
+							<option> </option>
 							<option value="1">Jan</option>
 							<option value="2">Feb</option>
 							<option value="3">Mar</option>
@@ -365,7 +367,7 @@
 							<option value="12">Dec</option>
 						</select>
 						<select name="DateOfBirth_Day" class="day">
-							<option>-</option>
+							<option> </option>
 							<option value="1">1</option>
 							<option value="2">2</option>
 							<option value="3">3</option>
@@ -399,7 +401,7 @@
 							<option value="31">31</option>
 						</select>
 						<select name="DateOfBirth_Year" class="year">
-							<option>-</option>
+							<option> </option>
 							<option value="2014">2014</option>
 							<option value="2013">2013</option>
 							<option value="2012">2012</option>
@@ -536,7 +538,7 @@
 					<label for="state">
 						<span class="label_def">State: </span>
 						<select class="form-select state" id="state" name="state">
-							<option value="">- select -</option>
+							<option value=""> </option>
 							<option value="1000">Alabama</option>
 							<option value="1001">Alaska</option>
 							<option value="1052">American Samoa</option>
@@ -603,7 +605,9 @@
 						<span class="label_def">Zip Code: </span>
 						<input type="text" placeholder="Zip Code"  class="form-text zip" name="zip">
 					</label>
-					<input type="button" class="imapper-submit" id="add-contact" value="Add Contact" name="add-contact">
+					<div class='search'>
+						<input type="button" class="imapper-submit" id="add-contact" value="Add Contact" name="add-contact">
+					</div>
 				</div>
 			</div>
 		</div>
