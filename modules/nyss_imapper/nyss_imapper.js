@@ -465,8 +465,12 @@ cj(document).ready(function(){
   // create a new contact unmatched page
   create.click(function() {
     var create_messageId = cj('#id').val();
+    var create_prefix = cj("#tab2 .prefix").val();
     var create_first_name = cj("#tab2 .first_name").val();
+    var create_middle_name = cj("#tab2 .middle_name").val();
     var create_last_name = cj("#tab2 .last_name").val();
+    var create_suffix = cj("#tab2 .suffix").val();
+
     var create_email_address = cj("#tab2 .email_address").val();
     var create_phone = cj("#tab2 .phone").val();
     var create_street_address = cj("#tab2 .street_address").val();
@@ -481,8 +485,11 @@ cj(document).ready(function(){
         url: '/civicrm/imap/ajax/createNewContact',
         data: {
           messageId: create_messageId,
+          prefix: create_prefix,
           first_name: create_first_name,
+          middle_name: create_middle_name,
           last_name: create_last_name,
+          suffix: create_suffix,
           email_address: create_email_address,
           phone: create_phone,
           street_address: create_street_address,

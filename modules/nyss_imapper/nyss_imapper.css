@@ -84,7 +84,8 @@ thead .sorting_asc{background-color:#f1f1f1!important;}
 .imapperbox tr.odd:hover .sorting_1{ background-color: #CDCFE9 !important; }
 .imapperbox tr.even:hover .sorting_1{ background-color: #D5DFE4 !important; }
 
-
+.imapperbox .FixedHeader_Cloned { z-index: 20 !important;}
+.imapperbox .crm-summary-link{ z-index: 10 !important;}
 
 /* IMAP - Table View - Row */
 .imapperbox .imap_checkbox_column{width: 15px !important; }
