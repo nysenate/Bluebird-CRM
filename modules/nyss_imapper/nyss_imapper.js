@@ -834,7 +834,15 @@ cj(document).ready(function(){
               cj('#message_left_email').append("<span class='rejected'>"+value.fileName+" was rejected ("+value.rejection+")</span><br/>");
             }
           });
-
+          cj('#prefix .del,#suffix .del').remove();
+          cj('#prefix').append('<option class="del" value=""> </option>');
+          cj('#suffix').append('<option class="del" value=""> </option>');
+          cj.each(message.prefix, function(idx, val) {
+            cj('#prefix').append('<option class="del" value="'+idx+'">'+val+'</option>');
+          });
+          cj.each(message.suffix, function(idx, val) {
+            cj('#suffix').append('<option class="del" value="'+idx+'">'+val+'</option>');
+          });
           cj('#id').val(activityId);
           cj("#loading-popup").dialog('close');
           cj("#find-match-popup").dialog({ title:  "Reading: "+shortenString(message.subject,100)  });
