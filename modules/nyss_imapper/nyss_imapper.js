@@ -616,8 +616,8 @@ cj(document).ready(function(){
     var firstName = cj(this).parent().parent().children('.name').attr('data-firstName');
     var lastName = cj(this).parent().parent().children('.name').attr('data-lastName');
     cj("#tabs :input[type='text']").val("");
+    cj(".dob .month,.dob .day,.dob .year,.state").val([]);
 
-    cj(".dob .month,.dob .day,.dob .year").val([]);
     cj('#imapper-contacts-list').html('');
     cj('#message_left_email').html('');
     cj("#message_left_email").animate({
@@ -786,6 +786,7 @@ cj(document).ready(function(){
     var activityId = cj(this).parent().parent().attr('id');
     var contactId = cj(this).parent().parent().attr('data-contact_id');
     cj("#tabs :input[type='text']").val("");
+    cj(".dob .month,.dob .day,.dob .year,.state").val([]);
 
     cj('#imapper-contacts-list').html('');
     cj("#message_left_email").animate({
