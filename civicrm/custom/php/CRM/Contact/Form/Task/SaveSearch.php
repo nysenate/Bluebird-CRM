@@ -125,7 +125,6 @@ class CRM_Contact_Form_Task_SaveSearch extends CRM_Contact_Form_Task {
 
     //NYSS 7405
     $groupNames = CRM_Core_PseudoConstant::group();
-    CRM_Core_Error::debug_var('$groupNames', $groupNames);
 
     $parentGroups = $parentGroupElements = array();
     if (isset($this->_id) &&
@@ -152,7 +151,7 @@ class CRM_Contact_Form_Task_SaveSearch extends CRM_Contact_Form_Task {
     else {
       $potentialParentGroupIds = array_keys($groupNames);
     }
-CRM_Core_Error::debug_var('$potentialParentGroupIds', $potentialParentGroupIds);
+
     $parentGroupSelectValues = array('' => '- ' . ts('select') . ' -');
     foreach ($potentialParentGroupIds as $potentialParentGroupId) {
       if (array_key_exists($potentialParentGroupId, $groupNames)) {
