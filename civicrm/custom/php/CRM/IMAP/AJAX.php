@@ -1225,92 +1225,90 @@ EOQ;
      * @return [JSON Object]    JSON encoded response, OR error codes
      */
     public static function getReports() {
-      $Query = " SELECT
-nyss_inbox_messages.id,nyss_inbox_messages.updated_date,nyss_inbox_messages.email_date,nyss_inbox_messages.matched_to,nyss_inbox_messages.sender_email,nyss_inbox_messages.subject,nyss_inbox_messages.forwarder,nyss_inbox_messages.activity_id,nyss_inbox_messages.sender_name,nyss_inbox_messages.status,nyss_inbox_messages.matcher,
-nyss_inbox_attachments.file_name,nyss_inbox_attachments.rejection,nyss_inbox_attachments.size,
-civicrm_contact.display_name
-FROM `nyss_inbox_messages`
-LEFT JOIN nyss_inbox_attachments ON (nyss_inbox_messages.id = nyss_inbox_attachments.email_id)
-LEFT JOIN civicrm_contact ON (nyss_inbox_messages.matcher = civicrm_contact.id)
-WHERE `status` != 99
+      $debug = self::get('debug');
+
+      $Query = "SELECT
+t1.id,
+UNIX_TIMESTAMP(t1.updated_date) as date_u, DATE_FORMAT(t1.updated_date, '%b %e, %Y %h:%i %p') as date_long,
+CASE
+  WHEN DATE_FORMAT(updated_date, '%j') = DATE_FORMAT(NOW(), '%j') THEN DATE_FORMAT(updated_date, 'Today %l:%i %p')
+  ELSE CASE
+    WHEN DATE_FORMAT(updated_date, '%Y') = DATE_FORMAT(NOW(), '%Y') THEN DATE_FORMAT(updated_date, '%b %e, %l:%i %p')
+    ELSE  DATE_FORMAT(updated_date, '%b %e, %Y')
+  END
+END AS date_short,
+
+UNIX_TIMESTAMP(t1.updated_date) as email_date_u, DATE_FORMAT(t1.updated_date, '%b %e, %Y %h:%i %p') as email_date_long,
+CASE
+  WHEN DATE_FORMAT(updated_date, '%j') = DATE_FORMAT(NOW(), '%j') THEN DATE_FORMAT(updated_date, 'Today %l:%i %p')
+  ELSE CASE
+    WHEN DATE_FORMAT(updated_date, '%Y') = DATE_FORMAT(NOW(), '%Y') THEN DATE_FORMAT(updated_date, '%b %e, %l:%i %p')
+    ELSE  DATE_FORMAT(updated_date, '%b %e, %Y')
+  END
+END AS email_date_short,
+
+CASE
+    WHEN t1.status = '0' then 'Unmatched'
+    WHEN t1.status = '1' then CONCAT( 'Matched by ', matcher.display_name)
+    WHEN t1.status = '7' then 'Cleared'
+    WHEN t1.status = '8' then 'Deleted'
+    WHEN t1.status = '9' then 'Deleted'
+    ELSE -1
+END as status_string,
+
+t1.matched_to, t1.sender_email, t1.subject, t1.forwarder, t1.activity_id, t1.matcher, t1.status,
+IFNULL( count(t4.file_name), '0') as attachments,
+matcher.display_name as matcher_name,
+
+CASE
+    WHEN matched_to.display_name IS NULL then t1.sender_email
+    WHEN matched_to.display_name IS NOT NULL then matched_to.display_name
+    ELSE -1
+END as fromName,
+
+matched_to.first_name as firstName, matched_to.last_name as lastName, matched_to.contact_type as contactType
+FROM nyss_inbox_messages as t1
+LEFT JOIN civicrm_contact as matcher ON (t1.matcher = matcher.id)
+LEFT JOIN civicrm_contact as matched_to ON (t1.matched_to = matched_to.id)
+LEFT JOIN nyss_inbox_attachments t4 ON (t1.id = t4.email_id)
+WHERE t1.status != 99
+GROUP BY t1.id
 LIMIT 0 , 100000";
-
       $QueryResult = mysql_query($Query, self::db());
-      $Output = array();
-      $unMatched= 0;
-      $Matched =0;
-      $Cleared =0;
-      $Deleted =0;
-      $Errors =0;
-
+      $total = $unMatched = $Matched = $Cleared = $Errors = $Deleted = 0;
       while($row = mysql_fetch_assoc($QueryResult)) {
+       $Output[] = $row;
+       $total ++;
+       switch ($row['status']) {
+         case '0':
+           $unMatched ++;
+           break;
+         case '1':
+           $Matched ++;
+           break;
+         case '7':
+           $Cleared ++;
+           break;
+         case '8':
+         case '9':
+           $Deleted ++;
+           break;
+         default:
+            $Errors ++;
+           break;
+       }
 
-        $message_id = $row['id'];
-        $Output['successes'][$message_id]['id'] = $message_id;
-        $Output['successes'][$message_id]['sender_name'] = $row['sender_name'];
-        $Output['successes'][$message_id]['sender_email'] = $row['sender_email'];
-        $Output['successes'][$message_id]['subject'] = $row['subject'];
-        $Output['successes'][$message_id]['forwarder'] = $row['forwarder'];
-        $cleanDate = self::cleanDate($row['updated_date']);
-        $Output['successes'][$message_id]['date_short'] = $cleanDate['short'];
-        $Output['successes'][$message_id]['date_u'] = $cleanDate['u'];
-        $Output['successes'][$message_id]['date_long'] = $cleanDate['long'];
-        $Output['successes'][$message_id]['message_status'] = $row['status'];
-        $Output['successes'][$message_id]['matcher'] = $row['matcher'];
-
-        $emailDate = self::cleanDate($row['email_date']);
-        $Output['successes'][$message_id]['email_date_short'] = $emailDate['short'];
-        $Output['successes'][$message_id]['email_date_u'] = $emailDate['u'];
-        $Output['successes'][$message_id]['email_date_long'] = $emailDate['long'];
-
-        $Output['successes'][$message_id]['matched_to'] = $row['matched_to'];
-
-        if(!$row['display_name'] || $row['display_name'] != 0){
-          $Output['successes'][$message_id]['matcher_name'] =  'Automatically Matched';
-        }else{
-          $Output['successes'][$message_id]['matcher_name'] =  $row['display_name'];
-        }
-        $MatchedToQuery = " SELECT contact_type,first_name,last_name,display_name
-          FROM `civicrm_contact`
-          WHERE `id` = ".$row['matched_to']." LIMIT 1";
-
-        $MatchedToResult = mysql_query($MatchedToQuery, self::db());
-        $MatchedToOutput = array();
-
-        while($row = mysql_fetch_assoc($MatchedToResult)) {
-          $Output['successes'][$message_id]['contactType'] = $row['contact_type'];
-          $Output['successes'][$message_id]['firstName'] = $row['first_name'];
-          $Output['successes'][$message_id]['lastName'] = $row['last_name'];
-          $Output['successes'][$message_id]['fromName'] = $row['display_name'];
-        }
-
-        if ( $Output['successes'][$message_id]['contactType'] == '') {
-          $Output['successes'][$message_id]['contactType'] = "Unknown";
-          $Output['successes'][$message_id]['fromName'] = $Output['successes'][$message_id]['sender_name'];
-        }
-
-        if($row['file_name']){
-          $Output['successes'][$message_id]['attachments'][] =  array('fileName'=>$row['file_name'],'size'=>$row['size'],'rejection'=>$row['rejection'] );
-        }else{
-          $Output['successes'][$message_id]['attachments'] ='';
-        }
-
-        // get matched_to info
-        $Query="SELECT  contact.id,  email.email FROM civicrm_contact contact
-        LEFT JOIN civicrm_email email ON (contact.id = email.contact_id)
-        WHERE contact.is_deleted=0
-        AND email.email LIKE '".$row['sender_email']."'
-        GROUP BY contact.id
-        ORDER BY contact.id ASC, email.is_primary DESC";
-        $matches = array();
-        $result = mysql_query($Query, self::db());
-        while($row = mysql_fetch_assoc($result)) {
-          $matches[] = $row;
-        }
-        $Output['successes'][$message_id]['matches_count'] = count($matches);
       }
+
+      if ($debug){
+        echo "<h1>Building Reports</h1>";
+        var_dump($Query);
+        echo "Response <br/>";
+        var_dump($Output);
+      }
+
       $returnCode = array('code'      =>  'SUCCESS',
-      'total' =>  $unMatched+$Matched+$Cleared+$Errors+$Deleted,
+      'total' =>  $total,
       'unMatched' =>  $unMatched,
       'Matched' =>  $Matched,
       'Cleared' =>  $Cleared,
@@ -1318,7 +1316,7 @@ LIMIT 0 , 100000";
       'Deleted' =>  $Deleted,
       'Messages'=> $Output
       );
-          echo json_encode($returnCode);
+      echo json_encode($returnCode);
       CRM_Utils_System::civiExit();
     }
 

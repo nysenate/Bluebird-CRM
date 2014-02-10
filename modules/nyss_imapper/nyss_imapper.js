@@ -1332,94 +1332,37 @@ function makeReportSortable(){
 
 function buildReports() {
   var messagesHtml = '';
-  var unMatched= 0;
-  var Matched= 0;
-  var Cleared= 0;
-  var Errors= 0;
-  var Deleted = 0;
-
-  if(!reports.Messages.successes){
+  if(!reports.Messages){
     cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty">No records found</td>');
   }else{
-    cj.each(reports.Messages.successes, function(key, value) {
-    messagesHtml += '<tr id="'+value.id+'" data-id="'+value.activity_id+'" data-contact_id="'+value.matched_to+'" class="imapper-message-box"> ';
-      messagesHtml += '<td class="imap_column matched">'+shortenString(value.fromName,40);
+    cj.each(reports.Messages, function(key, value) {
 
-        if( value.contactType != 'Unknown'){
-      messagesHtml += '<td class="imap_name_column matched" data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'">';
-          messagesHtml += '<a class="crm-summary-link" href="/civicrm/profile/view?reset=1&gid=13&id='+value.matched_to+'&snippet=4">';
-          messagesHtml += '<div class="icon crm-icon '+value.contactType+'-icon"></div>';
-          messagesHtml += '</a>';
-          messagesHtml += '<a href="/civicrm/contact/view?reset=1&cid='+value.matched_to+'" title="'+value.fromName+'">'+shortenString(value.fromName,19)+'</a>';
-          messagesHtml += ' ';
-        }else {
-          messagesHtml += '<td class="imap_name_column unmatched">';
-          messagesHtml += " ";
+      messagesHtml += '<tr id="'+value.id+'" data-id="'+value.activity_id+'" data-contact_id="'+value.matched_to+'" class="imapper-message-box"> ';
 
-        }
+      messagesHtml += '<td class="imap_column">'+shortenString(value.fromName,40)+'</td>';
 
-        // messagesHtml += '<span class="emailbubble marginL5">'+shortenString(value.sender_email,13)+'</span>';
+      if (!value.contactType) {
+        messagesHtml += '<td class="imap_name_column u"> </td>';
+      } else{
+        messagesHtml += '<td class="imap_name_column" data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'"> <a class="crm-summary-link" href="/civicrm/profile/view?reset=1&gid=13&id='+value.matched_to+'&snippet=4"> <div class="icon crm-icon '+value.contactType+'-icon"></div> </a> <a href="/civicrm/contact/view?reset=1&cid='+value.matched_to+'" title="'+value.fromName+'">'+shortenString(value.fromName,19)+'</a> </td>';
+      }
 
-        // match_sort = 'ProcessError';
-        // if(value.matcher){
-        //   var match_string = (value.matcher != 0) ? "Manually matched by "+value.matcher_name : "Automatically Matched" ;
-        //   var match_short = (value.matcher != 0) ? "M" : "A" ;
-        //   match_sort = (value.matcher != 0) ? "ManuallyMatched" : "AutomaticallyMatched" ;
-        //   messagesHtml += '<span class="matchbubble marginL5 '+match_short+'" title="This email was '+match_string+'">'+match_short+'</span>';
-        // }
-        // messagesHtml +='</td>';
+      messagesHtml += '<td class="imap_subject_column">'+shortenString(value.subject,40)+'</td>';
+      messagesHtml += '<td class="imap_date_column"><span data-sort="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
+      messagesHtml += '<td class="imap_date_column"><span data-sort="'+value.email_date_u+'"  title="'+value.email_date_long+'">'+value.email_date_short +'</span></td>';
 
-      messagesHtml += '<td class="imap_subject_column matched">'+shortenString(value.subject,40);
-        // if(value.attachments.length > 0){
-        //   messagesHtml += '<div class="icon attachment-icon attachment" title="'+value.attachments.length+' Attachments" ></div>';
-        // }
-        messagesHtml +='</td>';
-        var message_status = '';
-      // console.log(value.message_status);
-     if(value.message_status === "0"){
-      message_status="Unmatched";
-      unMatched++;
-     }else if(value.message_status === "1"){
-      Matched++;
-      if(value.matcher){
-          if (value.matcher != 0){
-            matcherHtml = 'Matched by <a href="/civicrm/contact/view?reset=1&cid='+value.matcher+'" title="'+value.matcher_name+'">'+value.matcher_name+'</a>';
-
-          }else{
-            matcherHtml = "Matched by Bluebird" ;
-          }
-
-          message_status = matcherHtml;
-         }
-     }else if(value.message_status === "7"){
-      Cleared++;
-      message_status="Cleared";
-     }else if(value.message_status === "8"){
-      message_status="Deleted";
-      Deleted++;
-     }else if(value.message_status === "9"){
-      message_status="Deleted";
-      Deleted++;
-     }
-  messagesHtml += '<td class="imap_date_column matched"><span data-sort="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
-    messagesHtml += '<td class="imap_date_column matched"><span data-sort="'+value.email_date_u+'"  title="'+value.email_date_long+'">'+value.email_date_short +'</span></td>';
-
-  messagesHtml += '<td class="imap_date_column">'+message_status +'</td>';
-
-
-      messagesHtml += '<td class="imap_forwarder_column matched"><span data-sort="'+value.forwarder.replace("@","_")+'">'+shortenString(value.forwarder,14)+'</span></td>';
-        // messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
+      messagesHtml += '<td class="imap_date_column">' +value.status_string+'</td>';
+      messagesHtml += '<td class="imap_forwarder_column"><span data-sort="'+value.forwarder.replace("@","_")+'">'+shortenString(value.forwarder,14)+'</span></td></tr>';
     });
-    };
+  };
   cj('#imapper-messages-list').html(messagesHtml);
   makeReportSortable();
-  cj('#total').html(unMatched+Matched+Cleared+Errors+Deleted);
-  cj('#total_unMatched').html(unMatched);
-  // console.log(unMatched);
-  cj('#total_Matched').html(Matched);
-  cj('#total_Cleared').html(Cleared);
-  cj('#total_Errors').html(Errors);
-  cj('#total_Deleted').html(Deleted);
+  cj('#total').html(reports.total);
+  cj('#total_unMatched').html(reports.unMatched);
+  cj('#total_Matched').html(reports.Matched);
+  cj('#total_Cleared').html(reports.Cleared);
+  cj('#total_Errors').html(reports.Errors);
+  cj('#total_Deleted').html(reports.Deleted);
 }
 
 cj( ".range" ).live('change', function() {
