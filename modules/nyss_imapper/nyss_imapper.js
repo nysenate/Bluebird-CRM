@@ -1705,6 +1705,7 @@ function buildContactList(loop) {
 // Create shortended String with title tag for hover
 // If subject is null return N/A
 function shortenString(subject, length){
+  var subject = subject.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
   if(subject){
     if (subject.length > length ){
     var safe_subject = '<span title="'+subject+'">'+subject.substring(0,length)+"...</span>";
