@@ -1428,7 +1428,13 @@ cj( ".range" ).live('change', function() {
 });
 
 cj( ".checkbox_switch" ).live('click', function(e) {
-  cj('.checkbox').prop('checked', this.checked);
+  if (this.checked) {
+    cj('.checkbox').prop('checked', this.checked)
+    cj('.checkbox').parent().parent().addClass('highlight');
+  }else{
+    cj('.checkbox').prop('checked', this.checked)
+    cj('tr').removeClass('highlight');
+  }
 });
 
 cj.fn.dataTableExt.afnFiltering.push(
