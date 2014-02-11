@@ -908,6 +908,35 @@ cj(document).ready(function(){
               cj('#contact_tag_ids').val(result);
             }
           });
+
+          var tree = new TagTreeTag({
+            tree_container: cj('#contact-issue-codes'),
+            filter_bar: cj('#contact-issue-codes-search'),
+
+            tag_trees: [291],
+            default_tree: 291,
+
+            auto_save: false,
+            entity_id: cj('#contact_tag_ids').val(),
+            entity_counts: false,
+            entity_type: 'civicrm_contact',
+          });
+          tree.load();
+
+          var tree = new TagTreeTag({
+            tree_container: cj('#activity-issue-codes'),
+            filter_bar: cj('#activity-issue-codes-search'),
+
+            tag_trees: [291],
+            default_tree: 291,
+
+            auto_save: false,
+            entity_id: cj('#contact_tag_ids').val(),
+            entity_counts: false,
+            entity_type: 'civicrm_contact',
+          });
+          tree.load();
+
           cj('#activity_tag_name')
             .tokenInput( '/civicrm/imap/ajax/searchTags', {
             theme: 'facebook',

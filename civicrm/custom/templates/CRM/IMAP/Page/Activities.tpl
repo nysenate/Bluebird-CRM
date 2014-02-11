@@ -655,12 +655,18 @@
 				<input type="hidden" class="hidden" id="activity_ids" name="activity_ids">
 				<div id="tab1_tag">
 					<div id='TagContact'>
-						<input type="text" id="contact_tag_name"/>
+						<input type="text" id="contact_tag_name" placeholder="Type here to search Keywords" autocomplete="off">
+						<input type="text" id="contact-issue-codes-search" maxlength="64" placeholder="Type here to search issue codes" autocomplete="off">
+						<div id="contact-issue-codes">
+						</div>
 					</div>
 				</div>
 				<div id="tab2_tag">
 					<div id='TagActivity'>
-						<input type="text" id="activity_tag_name"/>
+						<input type="text" id="activity_tag_name" placeholder="Type here to search Keywords" autocomplete="off">
+						<input type="text" id="activity-issue-codes-search" maxlength="64" placeholder="Type here to search issue codes" autocomplete="off">
+						<div id="activity-issue-codes">
+						</div>
 					</div>
 				</div>
 			</div>
