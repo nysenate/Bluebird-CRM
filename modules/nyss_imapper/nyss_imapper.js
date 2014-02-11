@@ -616,6 +616,7 @@ cj(document).ready(function(){
   });
 
   // opening find match window Unmatched
+  // findMatch
   cj(".find_match").live('click', function() {
     cj("#loading-popup").dialog('open');
     var messageId = cj(this).parent().parent().attr('id');
@@ -786,6 +787,7 @@ cj(document).ready(function(){
   });
 
   // Edit a match allready assigned to an Activity Matched Screen
+  // editMatch
   cj(".edit_match").live('click', function() {
     cj("#loading-popup").dialog('open');
     cj("#reassign").hide();
@@ -859,6 +861,7 @@ cj(document).ready(function(){
   });
 
   // add tag modal Matched screen
+  // tag
   cj(".add_tag").live('click', function(){
     cj("#loading-popup").dialog('open');
 
@@ -923,7 +926,6 @@ cj(document).ready(function(){
           });
           cj('#message_left_header_tag').html('').append("<span class='popup_def'>From: </span>"+messages.sender_name +"  <span class='emailbubble'>"+ messages.sender_email+"</span><br/><span class='popup_def'>Subject: </span>"+shortenString(messages.subject,55)+"<br/><span class='popup_def'>Date Forwarded: </span>"+messages.date_long+"<br/>");
           cj('#message_left_header_tag').append("<input class='hidden' type='hidden' id='activityId' value='"+activityId+"'><input class='hidden' type='hidden' id='contactId' value='"+contactId+"'>");
-
           if ((messages.forwarder != messages.sender_email)){
             cj('#message_left_header').append("<span class='popup_def'>Forwarded by: </span><span class='emailbubble'>"+ messages.forwarder+"</span> @"+ messages.updated_long+ "<br/>");
           }else{
@@ -1336,21 +1338,16 @@ function buildReports() {
     cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty">No records found</td>');
   }else{
     cj.each(reports.Messages, function(key, value) {
-
-      messagesHtml += '<tr id="'+value.id+'" data-id="'+value.activity_id+'" data-contact_id="'+value.matched_to+'" class="imapper-message-box"> ';
-
+      messagesHtml += '<tr id="'+value.id+'" data-id="'+value.activity_id+'" data-contact_id="'+value.matched_to+'" class="imapper-message-box '+value.status_string+'"> ';
       messagesHtml += '<td class="imap_column">'+shortenString(value.fromName,40)+'</td>';
-
       if (!value.contactType) {
         messagesHtml += '<td class="imap_name_column u"> </td>';
       } else{
         messagesHtml += '<td class="imap_name_column" data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'"> <a class="crm-summary-link" href="/civicrm/profile/view?reset=1&gid=13&id='+value.matched_to+'&snippet=4"> <div class="icon crm-icon '+value.contactType+'-icon"></div> </a> <a href="/civicrm/contact/view?reset=1&cid='+value.matched_to+'" title="'+value.fromName+'">'+shortenString(value.fromName,19)+'</a> </td>';
       }
-
       messagesHtml += '<td class="imap_subject_column">'+shortenString(value.subject,40)+'</td>';
       messagesHtml += '<td class="imap_date_column"><span data-sort="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
       messagesHtml += '<td class="imap_date_column"><span data-sort="'+value.email_date_u+'"  title="'+value.email_date_long+'">'+value.email_date_short +'</span></td>';
-
       messagesHtml += '<td class="imap_date_column">' +value.status_string+'</td>';
       messagesHtml += '<td class="imap_forwarder_column"><span data-sort="'+value.forwarder.replace("@","_")+'">'+shortenString(value.forwarder,14)+'</span></td></tr>';
     });
