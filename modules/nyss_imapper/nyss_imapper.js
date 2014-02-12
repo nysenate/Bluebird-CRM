@@ -1251,24 +1251,16 @@ function makeListSortable(){
     'aTargets': [ 1 ],
     "iDisplayLength": 50,
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
-    "bAutoWidth": false
   });
   var oHeader = new FixedHeader( oTable );
   oHeader.fnUpdate();
-  checks();
 }
 
 cj(".FixedHeader_Cloned th").live('click', function() {
   var clickclass = cj(this).attr('class').split(' ')[0];
-  // console.log(clickclass);
-  // console.log(cj('.imapperbox th.'+clickclass));
   cj('.imapperbox th.'+clickclass).click();
 });
 
-
-
-function checks(){
-}
 
 // add highlight to selected rows in table view
 cj(".checkbox").live('click', function() {
@@ -1334,12 +1326,9 @@ function buildMessageList() {
         messagesHtml += '<td class="imap_forwarder_column"> N/A </td>';
       }
       messagesHtml += '<td class="imap_actions_column "><span class="find_match"><a href="#">Find match</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
-
     });
     cj('#imapper-messages-list').html(messagesHtml);
     makeListSortable();
-    cj('.checkbox').removeClass('sorting');
-    cj('.Actions').removeClass('sorting');
 
   }
 }
@@ -1356,9 +1345,7 @@ function makeReportSortable(){
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
     "bAutoWidth": false,
   });
-
   new FixedHeader( oTable );
-  // rows = oTable.fnGetVisibleData();
 }
 
 function buildReports() {
@@ -1419,7 +1406,6 @@ cj.fn.dataTableExt.afnFiltering.push(
         var past = new Date();
         past.setDate(past.getDate() - dateRange);
 
-
         // parse the range from a single field into min and max, remove " - "
         start = cj.datepicker.formatDate('@', past);
         stop = cj.datepicker.formatDate('@', today);
@@ -1428,13 +1414,8 @@ cj.fn.dataTableExt.afnFiltering.push(
         var date = aData[3];
         // convert to unix time
         date = date.match(/data-sort="(.*?)"/)[1].toLowerCase()*1000;
-        // console.log(start +"<="+date+"<="+stop);
-        // console.log(start <= date && date <= stop );
-        // console.log(start <= date);
-        // console.log(date <= stop);
-        // console.log( " - " );
 
-         // run through cases
+        // run through cases
         if ( start == "" && date <= stop){
             return true;
         }
@@ -1731,7 +1712,6 @@ function buildContactList(loop) {
 // Create shortended String with title tag for hover
 // If subject is null return N/A
 function shortenString(subject, length){
-  var subject = subject.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
   if(subject){
     if (subject.length > length ){
     var safe_subject = '<span title="'+subject+'">'+subject.substring(0,length)+"...</span>";
@@ -1740,7 +1720,7 @@ function shortenString(subject, length){
       return '<span>'+subject+'</span>';
     }
   }else{
-    return "N/A";
+    return '<span> N/A </span>';
   }
  }
 
@@ -1797,6 +1777,3 @@ function removeRow(id){
 function string_replace(haystack, find, sub) {
     return haystack.split(find).join(sub);
 }
-// unbind the sort on the checkbox and actions
-cj("th.checkbox").removeClass('sorting').unbind('click');
-cj("th.Actions").removeClass('sorting').unbind('click');

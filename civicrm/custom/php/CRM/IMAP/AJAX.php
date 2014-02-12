@@ -177,7 +177,12 @@ class CRM_IMAP_AJAX {
       $UnprocessedResult = mysql_query($UnprocessedQuery, self::db());
       $UnprocessedOutput = array();
       while($row = mysql_fetch_assoc($UnprocessedResult)) {
-        $returnMessage['Unprocessed'][$row['id']] = $row;
+        $id = $row['id'];
+        foreach ($row as $key => $value) {
+          $output = str_replace( chr( 194 ) . chr( 160 ), ' ', $value);
+          $output = preg_replace('/[^a-zA-Z0-9\s\p{P}]/', '', trim($output));
+          $returnMessage['Unprocessed'][$id][$key] = $output;
+        }
       }
       mysql_close(self::$db);
       $returnMessage['stats']['overview']['successes'] = count($returnMessage['Unprocessed']);
@@ -877,13 +882,14 @@ ORDER BY gc.contact_id ASC";
         WHERE t1.status = 1
         GROUP BY t1.id";
 
-
-        // echo $UnprocessedQuery;
-
         $UnprocessedResult = mysql_query($UnprocessedQuery, self::db());
         while($row = mysql_fetch_assoc($UnprocessedResult)) {
-          // var_dump($row);
-          $returnMessage['Processed'][$row['id']] = $row;
+          $id = $row['id'];
+          foreach ($row as $key => $value) {
+            $output = str_replace( chr( 194 ) . chr( 160 ), ' ', $value);
+            $output = preg_replace('/[^a-zA-Z0-9\s\p{P}]/', '', trim($output));
+            $returnMessage['Processed'][$id][$key] = $output;
+          }
         }
 
         mysql_close(self::$db);
