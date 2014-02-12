@@ -13,10 +13,9 @@ form#Contact .groupTagsKeywords ul.token-input-list-facebook {
     width: 522px;
 }
 
-.TreeWrap dt.lv-0,
-#BBTreeContainer .TreeWrap dt.lv-0,
-#BBDialog .TreeWrap dt.lv-0 {
-    display: none;
+.TreeWrap dt.lv-0{
+  margin: 10px 10px 0;
+  display: none;
 }
 
 .TreeWrap{

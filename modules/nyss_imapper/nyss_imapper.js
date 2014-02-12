@@ -1204,6 +1204,7 @@ function makeTable(){
     'aTargets': [ 1 ],
     "iDisplayLength": 50,
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
+    "bAutoWidth": false
   });
   var oHeader = new FixedHeader( oTable );
   oHeader.fnUpdate();
@@ -1215,12 +1216,11 @@ function buildUnmatchedList() {
   if(messages.stats.overview.successes == '0' || messages == null){
     cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty">No records found</td>');
   }else{
-    var messagesHtml = '';
+    var html = '';
     var total_results = messages.stats.overview.successes;
     cj.each(messages.Unprocessed, function(key, value) {
       var icon ='';
-      // wrap the row
-	    messagesHtml += '<tr id="'+value.id+'" data-key="'+value.sender_email+'" class="imapper-message-box"> <td class="imap_checkbox_column" ><input class="checkbox" type="checkbox" name="'+value.id+'"  data-id="'+value.id+'"/></td>';
+	    html += '<tr id="'+value.id+'" data-key="'+value.sender_email+'" class="imapper-message-box"> <td class="imap_checkbox_column" ><input class="checkbox" type="checkbox" name="'+value.id+'"  data-id="'+value.id+'"/></td>';
 
       // build a match count bubble
       countWarn = (value.email_count == 1) ? 'warn' :  '';
@@ -1230,48 +1230,48 @@ function buildUnmatchedList() {
 
       // build the name box
       if( value.sender_name != ''  && value.sender_name != null){
-        messagesHtml += '<td class="imap_name_column unmatched" data-firstName="'+firstName(value.sender_name)+'" data-lastName="'+lastName(value.sender_name)+'">'+shortenString(value.sender_name,20);
+        html += '<td class="imap_name_column unmatched" data-firstName="'+firstName(value.sender_name)+'" data-lastName="'+lastName(value.sender_name)+'">'+shortenString(value.sender_name,20);
         if( value.sender_email != '' && value.sender_email != null){
-          messagesHtml += '<span class="emailbubble marginL5">'+shortenString(value.sender_email,15)+'</span>';
-          messagesHtml +=  countIcon;
+          html += '<span class="emailbubble marginL5">'+shortenString(value.sender_email,15)+'</span>';
+          html +=  countIcon;
         }else{
-          messagesHtml += '<span class="emailbubble warn marginL5" title="We could not find the email address of this record">No email found!</span>';
+          html += '<span class="emailbubble warn marginL5" title="We could not find the email address of this record">No email found!</span>';
         }
-        messagesHtml +='</td>';
+        html +='</td>';
       }else if( value.sender_email != '' && value.sender_email != null ){
-        messagesHtml += '<td class="imap_name_column unmatched"><span class="emailbubble">'+shortenString(value.sender_email,25)+'</span>';
-        messagesHtml +=  countIcon;
+        html += '<td class="imap_name_column unmatched"><span class="emailbubble">'+shortenString(value.sender_email,25)+'</span>';
+        html +=  countIcon;
       }else {
-        messagesHtml += '<td class="imap_name_column unmatched"><span class="matchbubble warn" title="There was no info found in regard to the source of this message">No source info found</span></td>';
-        messagesHtml +=  countIcon;
+        html += '<td class="imap_name_column unmatched"><span class="matchbubble warn" title="There was no info found in regard to the source of this message">No source info found</span></td>';
+        html +=  countIcon;
       }
 
       // dealing with attachments
       if(value.attachments != 0 ){
         icon = '<div class="icon attachment-icon attachment" title="'+value.attachments+' Attachments" ></div>'
       }
-      messagesHtml += '<td class="imap_subject_column unmatched">'+shortenString(value.subject,40) +' '+icon+'</td>';
-      messagesHtml += '<td class="imap_date_column unmatched"><span data-sort="'+value.date_u+'" title="'+value.date_long+'">'+value.date_short +'</span></td>';
+      html += '<td class="imap_subject_column unmatched">'+shortenString(value.subject,40) +' '+icon+'</td>';
+      html += '<td class="imap_date_column unmatched"><span data-sort="'+value.date_u+'" title="'+value.date_long+'">'+value.date_short +'</span></td>';
 
       // hidden column to sort by
       if(value.match_count != 1){
         var match_short = (value.match_count == 0) ? "NoMatch" : "MultiMatch" ;
-        messagesHtml += '<td class="imap_match_column hidden"><span data="'+match_short+'">'+match_short +'</span></td>';
+        html += '<td class="imap_match_column hidden"><span data="'+match_short+'">'+match_short +'</span></td>';
       }else{
-        messagesHtml += '<td class="imap_match_column hidden"><span data="Error">ProcessError</span></td>';
+        html += '<td class="imap_match_column hidden"><span data="Error">ProcessError</span></td>';
       }
 
       // check for direct messages & not empty forwarded messages
       if(value.forwarder === value.sender_email){
-        messagesHtml += '<td class="imap_forwarder_column"><span data-sort="'+value.forwarder.replace("@","_")+'">Direct '+shortenString(value.forwarder,10)+'</span></td>';
+        html += '<td class="imap_forwarder_column"><span data-sort="'+value.forwarder.replace("@","_")+'">Direct '+shortenString(value.forwarder,10)+'</span></td>';
       }else if(value.forwarder != ''){
-        messagesHtml += '<td class="imap_forwarder_column"><span data-sort="'+value.forwarder.replace("@","_")+'">'+shortenString(value.forwarder,14)+'</span></td>';
+        html += '<td class="imap_forwarder_column"><span data-sort="'+value.forwarder.replace("@","_")+'">'+shortenString(value.forwarder,14)+'</span></td>';
       }else{
-        messagesHtml += '<td class="imap_forwarder_column"> N/A </td>';
+        html += '<td class="imap_forwarder_column"> N/A </td>';
       }
-      messagesHtml += '<td class="imap_actions_column "><span class="find_match"><a href="#">Find match</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
+      html += '<td class="imap_actions_column "><span class="find_match"><a href="#">Find match</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
     });
-    cj('#imapper-messages-list').html(messagesHtml);
+    cj('#imapper-messages-list').html(html);
     makeTable();
 
   }
@@ -1293,26 +1293,26 @@ function makeReportSortable(){
 }
 
 function buildReports() {
-  var messagesHtml = '';
+  var html = '';
   if(!reports.Messages){
     cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty">No records found</td>');
   }else{
     cj.each(reports.Messages, function(key, value) {
-      messagesHtml += '<tr id="'+value.id+'" data-id="'+value.activity_id+'" data-contact_id="'+value.matched_to+'" class="imapper-message-box '+value.status_string+'"> ';
-      messagesHtml += '<td class="imap_column">'+shortenString(value.fromName,40)+'</td>';
+      html += '<tr id="'+value.id+'" data-id="'+value.activity_id+'" data-contact_id="'+value.matched_to+'" class="imapper-message-box '+value.status_string+'"> ';
+      html += '<td class="imap_column">'+shortenString(value.fromName,40)+'</td>';
       if (!value.contactType) {
-        messagesHtml += '<td class="imap_name_column u"> </td>';
+        html += '<td class="imap_name_column"> </td>';
       } else{
-        messagesHtml += '<td class="imap_name_column" data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'"> <a class="crm-summary-link" href="/civicrm/profile/view?reset=1&gid=13&id='+value.matched_to+'&snippet=4"> <div class="icon crm-icon '+value.contactType+'-icon"></div> </a> <a href="/civicrm/contact/view?reset=1&cid='+value.matched_to+'" title="'+value.fromName+'">'+shortenString(value.fromName,19)+'</a> </td>';
+        html += '<td class="imap_name_column" data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'"> <a class="crm-summary-link" href="/civicrm/profile/view?reset=1&gid=13&id='+value.matched_to+'&snippet=4"> <div class="icon crm-icon '+value.contactType+'-icon"></div> </a> <a href="/civicrm/contact/view?reset=1&cid='+value.matched_to+'" title="'+value.fromName+'">'+shortenString(value.fromName,19)+'</a> </td>';
       }
-      messagesHtml += '<td class="imap_subject_column">'+shortenString(value.subject,40)+'</td>';
-      messagesHtml += '<td class="imap_date_column"><span data-sort="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
-      messagesHtml += '<td class="imap_date_column"><span data-sort="'+value.email_date_u+'"  title="'+value.email_date_long+'">'+value.email_date_short +'</span></td>';
-      messagesHtml += '<td class="imap_date_column">' +value.status_string+'</td>';
-      messagesHtml += '<td class="imap_forwarder_column"><span data-sort="'+value.forwarder.replace("@","_")+'">'+shortenString(value.forwarder,14)+'</span></td></tr>';
+      html += '<td class="imap_subject_column">'+shortenString(value.subject,40)+'</td>';
+      html += '<td class="imap_date_column"><span data-sort="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
+      html += '<td class="imap_date_column"><span data-sort="'+value.email_date_u+'"  title="'+value.email_date_long+'">'+value.email_date_short +'</span></td>';
+      html += '<td class="imap_date_column">' +value.status_string+'</td>';
+      html += '<td class="imap_forwarder_column"><span data-sort="'+value.forwarder.replace("@","_")+'">'+shortenString(value.forwarder,14)+'</span></td></tr>';
     });
   };
-  cj('#imapper-messages-list').html(messagesHtml);
+  cj('#imapper-messages-list').html(html);
   makeReportSortable();
   cj('#total').html(reports.total);
   cj('#total_unMatched').html(reports.unMatched);
@@ -1569,47 +1569,47 @@ function buildMatchedList() {
   if(messages.stats.overview.successes == '0' || messages == null){
     cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty">No records found</td>');
   }else{
-    var messagesHtml = '';
+    var html = '';
     var total_results = messages.stats.overview.successes;
     // console.log(messages);
     cj.each(messages.Processed, function(key, value) {
       if(value.date_short != null){
-      messagesHtml += '<tr id="'+value.id+'" data-id="'+value.activity_id+'" data-contact_id="'+value.matched_to+'" class="imapper-message-box"> <td class="imap_checkbox_column" ><input class="checkbox" type="checkbox" name="'+value.id+'" data-id="'+value.matched_to+'"/></td>';
+      html += '<tr id="'+value.id+'" data-id="'+value.activity_id+'" data-contact_id="'+value.matched_to+'" class="imapper-message-box"> <td class="imap_checkbox_column" ><input class="checkbox" type="checkbox" name="'+value.id+'" data-id="'+value.matched_to+'"/></td>';
 
         if( value.contactType != ''){
-          messagesHtml += '<td class="imap_name_column" data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'">';
-          messagesHtml += '<a class="crm-summary-link" href="/civicrm/profile/view?reset=1&gid=13&id='+value.matched_to+'&snippet=4">';
-          messagesHtml += '<div class="icon crm-icon '+value.contactType+'-icon"></div>';
-          messagesHtml += '</a>';
-          messagesHtml += '<a href="/civicrm/contact/view?reset=1&cid='+value.matched_to+'" title="'+value.fromName+'">'+shortenString(value.fromName,19)+'</a>';
-          messagesHtml += ' ';
+          html += '<td class="imap_name_column" data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'">';
+          html += '<a class="crm-summary-link" href="/civicrm/profile/view?reset=1&gid=13&id='+value.matched_to+'&snippet=4">';
+          html += '<div class="icon crm-icon '+value.contactType+'-icon"></div>';
+          html += '</a>';
+          html += '<a href="/civicrm/contact/view?reset=1&cid='+value.matched_to+'" title="'+value.fromName+'">'+shortenString(value.fromName,19)+'</a>';
+          html += ' ';
         }else {
-          messagesHtml += '<td class="imap_name_column">';
+          html += '<td class="imap_name_column">';
         }
 
         if(value.matcher){
           var match_string = (value.matcher != 0) ? "Manually matched by "+value.matcher_name : "Automatically Matched" ;
           var match_short = (value.matcher != 0) ? "M" : "A" ;
           match_sort = (value.matcher != 0) ? "ManuallyMatched" : "AutomaticallyMatched" ;
-          messagesHtml += '<span class="matchbubble marginL5 '+match_short+'" title="This email was '+match_string+'">'+match_short+'</span>';
+          html += '<span class="matchbubble marginL5 '+match_short+'" title="This email was '+match_string+'">'+match_short+'</span>';
         }else{
           match_sort = 'ProcessError';
         }
-        messagesHtml +='</td>';
-        messagesHtml += '<td class="imap_subject_column">'+shortenString(value.subject,40);
+        html +='</td>';
+        html += '<td class="imap_subject_column">'+shortenString(value.subject,40);
         if(value.attachments != 0){
-          messagesHtml += '<div class="icon attachment-icon attachment" title="'+value.attachments+' Attachments" ></div>';
+          html += '<div class="icon attachment-icon attachment" title="'+value.attachments+' Attachments" ></div>';
         }
-        messagesHtml +='</td>';
-        messagesHtml += '<td class="imap_date_column"><span data-sort="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
-        messagesHtml += '<td class="imap_match_column  hidden">'+match_sort +'</td>';
+        html +='</td>';
+        html += '<td class="imap_date_column"><span data-sort="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
+        html += '<td class="imap_match_column  hidden">'+match_sort +'</td>';
 
-        messagesHtml += '<td class="imap_forwarder_column"><span data-sort="'+value.forwarder.replace("@","_")+'">'+shortenString(value.forwarder,14)+'</span> </td>';
-        messagesHtml += '<td class="imap_actions_column"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
+        html += '<td class="imap_forwarder_column"><span data-sort="'+value.forwarder.replace("@","_")+'">'+shortenString(value.forwarder,14)+'</span> </td>';
+        html += '<td class="imap_actions_column"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
 
       }
     });
-    cj('#imapper-messages-list').html(messagesHtml);
+    cj('#imapper-messages-list').html(html);
     makeTable();
   }
 }
