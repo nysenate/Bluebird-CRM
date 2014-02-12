@@ -45,7 +45,6 @@ TagTreeBase.prototype.load = function() {
         url: '/civicrm/ajax/tag/tree',
         data: {
             call_uri: window.location.href,
-            entity_id: self.options.entity_id,
             entity_type: self.options.entity_type,
             entity_counts: self.options.entity_counts,
             // TODO: This isn't actually supported yet!
@@ -430,7 +429,7 @@ TagTreeTag.prototype.add_control_box = function(tag) {
     }
     else {
         //NOTE: name="tag[###]" allows save on submit functionality to work
-        return '<span class="fCB"><ul><li><input type="checkbox" tID="'+tag.id+'" name="tag['+tag.id+']" class="checkbox '+markChecked(tag)+'" '+markChecked(tag)+'></input></li></ul></span>';
+        return '<span class="fCB"><ul><li><input type="checkbox" tID="'+tag.id+'" name="tag['+tag.id+']" class="checkbox"></input></li></ul></span>';
     }
 }
 
@@ -448,7 +447,7 @@ TagTreeTag.prototype.animate_tree = function(tree) {
         if (checkbox.is(":checked")) {
             console.log("Adding checkmark!");
             self.addTagCheck(tag_id);
-            if(self.options.auto_save) {
+            if(self.options.auto_save && self.options.entity_id) {
                 cj.ajax({
                 url: '/civicrm/ajax/entity_tag/create',
                     data: {
@@ -480,7 +479,7 @@ TagTreeTag.prototype.animate_tree = function(tree) {
         else {
             console.log("Removing checkmark!");
             self.removeTagCheck(tag_id);
-            if(self.options.auto_save) {
+            if(self.options.auto_save && self.options.entity_id) {
                 cj.ajax({
                     url: '/civicrm/ajax/entity_tag/delete',
                     data: {
@@ -591,28 +590,30 @@ TagTreeTag.prototype.addTagCheck = function(tag_id) {
 
 TagTreeTag.prototype.customize_tree = function() {
     var self = this;
-    cj.ajax({
-        url: '/civicrm/ajax/entity_tag/get',
-        data: {
-            entity_type: self.options.entity_type,
-            entity_id: self.options.entity_id,
-            call_uri: window.location.href,
-        },
-        dataType: 'json',
-        success: function(data, status, XMLHttpRequest) {
-            if(data.code != 1 ) {
-                console.log(data.message);
+    if (self.options.entity_id) {
+        cj.ajax({
+            url: '/civicrm/ajax/entity_tag/get',
+            data: {
+                entity_type: self.options.entity_type,
+                entity_id: self.options.entity_id,
+                call_uri: window.location.href,
+            },
+            dataType: 'json',
+            success: function(data, status, XMLHttpRequest) {
+                if(data.code != 1 ) {
+                    console.log(data.message);
+                }
+                else {
+                    cj.each(data.message, function(i, tag_id){
+                        var tagNode = self.container.find(' dt#'+tagLabel(tag_id));
+                        tagNode.find('.checkbox').attr('checked','true').addClass('checked');
+                        tagNode.addClass('checked');
+                        tagNode.parents('dl').not('.lv-0').prev('dt').addClass('subChecked');
+                    });
+                }
             }
-            else {
-                cj.each(data.message, function(i, tag_id){
-                    var tagNode = self.container.find(' dt#'+tagLabel(tag_id));
-                    tagNode.find('.checkbox').attr('checked','true').addClass('checked');
-                    tagNode.addClass('checked');
-                    tagNode.parents('dl').not('.lv-0').prev('dt').addClass('subChecked');
-                });
-            }
-        }
-    });
+        });
+    }
 }
 
 
