@@ -1,109 +1,104 @@
 <?xml version="1.0" encoding="iso-8859-1" ?>
 <menu>
+  <!-- messages that don't match a singular contact, unmatched  -->
   <item>
      <path>civicrm/imap/unmatched</path>
      <title>Inbox Unmatched Messages</title>
      <page_callback>CRM_IMAP_Page_Mapper</page_callback>
      <access_arguments>access CiviCRM</access_arguments>
   </item>
-    <item>
-     <path>civicrm/imap/matched</path>
-     <title>Inbox Matched Messages</title>
-     <page_callback>CRM_IMAP_Page_Activities</page_callback>
+  <item>
+    <path>civicrm/imap/ajax/unmatched/list</path>
+    <page_callback>CRM_IMAP_AJAX::UnmatchedList</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/imap/ajax/unmatched/details</path>
+    <page_callback>CRM_IMAP_AJAX::UnmatchedDetails</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <item>
+     <path>civicrm/imap/ajax/unmatched/delete</path>
+     <page_callback>CRM_IMAP_AJAX::UnmatchedDelete</page_callback>
      <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
-     <path>civicrm/imap/reports</path>
-     <title>Inbox Reports</title>
-     <page_callback>CRM_IMAP_Page_Reports</page_callback>
-     <access_arguments>access CiviCRM</access_arguments>
-  </item>
-  <item>
-    <path>civicrm/imap/ajax/listUnmatchedMessages</path>
-    <page_callback>CRM_IMAP_AJAX::getUnmatchedMessages</page_callback>
-    <access_arguments>access CiviCRM</access_arguments>
-  </item>
-  <item>
-    <path>civicrm/imap/ajax/listMatchedMessages</path>
-    <page_callback>CRM_IMAP_AJAX::getMatchedMessages</page_callback>
+    <path>civicrm/imap/ajax/unmatched/assign</path>
+    <page_callback>CRM_IMAP_AJAX::UnmatchedAssign</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
 
+  <!-- messages that have been assigned to a contact, matched  -->
   <item>
-     <path>civicrm/imap/ajax/getMessageDetails</path>
-     <page_callback>CRM_IMAP_AJAX::getMessageDetails</page_callback>
-     <access_arguments>access CiviCRM</access_arguments>
+    <path>civicrm/imap/matched</path>
+    <title>Inbox Matched Messages</title>
+    <page_callback>CRM_IMAP_Page_Activities</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
   </item>
-
   <item>
-    <path>civicrm/imap/ajax/getActivityDetails</path>
-    <page_callback>CRM_IMAP_AJAX::getActivityDetails</page_callback>
+    <path>civicrm/imap/ajax/matched/list</path>
+    <page_callback>CRM_IMAP_AJAX::MatchedList</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/imap/ajax/matched/details</path>
+    <page_callback>CRM_IMAP_AJAX::MatchedDetails</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/imap/ajax/matched/delete</path>
+    <page_callback>CRM_IMAP_AJAX::MatchedDelete</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/imap/ajax/matched/untag</path>
+    <page_callback>CRM_IMAP_AJAX::MatchedUntag</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/imap/ajax/matched/reassign</path>
+    <page_callback>CRM_IMAP_AJAX::MatchedReassign</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
 
+  <!-- adding tags to contacts, matched  -->
   <item>
-    <path>civicrm/imap/ajax/createNewContact</path>
-    <page_callback>CRM_IMAP_AJAX::createNewContact</page_callback>
+    <path>civicrm/imap/ajax/tag/search</path>
+    <page_callback>CRM_IMAP_AJAX::TagSearch</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/imap/ajax/tag/add</path>
+    <page_callback>CRM_IMAP_AJAX::TagAdd</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
 
+  <!-- Used in both screens, matched  -->
   <item>
-    <path>civicrm/imap/ajax/assignMessage</path>
-    <page_callback>CRM_IMAP_AJAX::assignMessage</page_callback>
+    <path>civicrm/imap/ajax/contact/add</path>
+    <page_callback>CRM_IMAP_AJAX::ContactAdd</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
-    <path>civicrm/imap/ajax/reassignActivity</path>
-    <page_callback>CRM_IMAP_AJAX::reassignActivity</page_callback>
+    <path>civicrm/imap/ajax/contact/search</path>
+    <page_callback>CRM_IMAP_AJAX::ContactSearch</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
-
   <item>
-     <path>civicrm/imap/ajax/deleteMessage</path>
-     <page_callback>CRM_IMAP_AJAX::deleteMessage</page_callback>
-     <access_arguments>access CiviCRM</access_arguments>
-  </item>
-  <item>
-    <path>civicrm/imap/ajax/deleteActivity</path>
-    <page_callback>CRM_IMAP_AJAX::deleteActivity</page_callback>
+    <path>civicrm/imap/ajax/contact/addEmail</path>
+    <page_callback>CRM_IMAP_AJAX::ContactAddEmail</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
 
+  <!-- Reports  -->
   <item>
-    <path>civicrm/imap/ajax/untagActivity</path>
-    <page_callback>CRM_IMAP_AJAX::untagActivity</page_callback>
-    <access_arguments>access CiviCRM</access_arguments>
-  </item>
-
-
-  <item>
-    <path>civicrm/imap/ajax/searchTags</path>
-    <page_callback>CRM_IMAP_AJAX::searchTags</page_callback>
+    <path>civicrm/imap/reports</path>
+    <title>Inbox Reports</title>
+    <page_callback>CRM_IMAP_Page_Reports</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
-    <path>civicrm/imap/ajax/searchContacts</path>
-    <page_callback>CRM_IMAP_AJAX::searchContacts</page_callback>
-    <access_arguments>access CiviCRM</access_arguments>
-  </item>
-
-  <item>
-    <path>civicrm/imap/ajax/addTags</path>
-    <page_callback>CRM_IMAP_AJAX::addTags</page_callback>
-    <access_arguments>access CiviCRM</access_arguments>
-  </item>
-  <item>
-    <path>civicrm/imap/ajax/addEmail</path>
-    <page_callback>CRM_IMAP_AJAX::addEmail</page_callback>
-    <access_arguments>access CiviCRM</access_arguments>
-  </item>
-  <item>
-    <path>civicrm/imap/ajax/fileBug</path>
-    <page_callback>CRM_IMAP_AJAX::fileBug</page_callback>
-    <access_arguments>access CiviCRM</access_arguments>
-  </item>
-   <item>
-    <path>civicrm/imap/ajax/getReports</path>
+    <path>civicrm/imap/ajax/reports/list</path>
     <page_callback>CRM_IMAP_AJAX::getReports</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>

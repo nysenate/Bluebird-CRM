@@ -115,15 +115,6 @@ cj(document).ready(function(){
     resizable: false
   });
 
-
-  cj( "#fileBug-popup" ).dialog({
-    modal: true,
-    width: 500,
-    autoOpen: false,
-    resizable: false
-  });
-
-
   cj( "#AdditionalEmail-popup" ).dialog({
     modal: true,
     width: 500,
@@ -144,7 +135,7 @@ cj(document).ready(function(){
         cj.each(add_emails, function( index, value ) {
           var contacts = cj('#contacts').val();
           cj.ajax({
-            url: '/civicrm/imap/ajax/addEmail',
+            url: '/civicrm/imap/ajax/contact/addEmail',
             data: {
               email: value,
               contacts: contacts
@@ -165,73 +156,6 @@ cj(document).ready(function(){
     }
   });
   // BOTH MATCHED & UNMATCHED
-  // file a bug
-  cj(".fileBug").live('click', function() {
-    cj("#fileBug-popup").dialog('open');
-    cj('#description').val('');
-  });
-
-  cj( "#fileBug-popup" ).dialog({
-    open:function () {
-      cj(this).closest(".ui-dialog").find(".ui-button:first").addClass("primary_button");
-    },
-    buttons: {
-      "Report Problem": function() {
-        cj.each(jQuery.browser, function(i, val) {
-          if(cj.browser.msie){
-            browsertype = "IE";
-          }else if(cj.browser.webkit){
-            browsertype = "Webkit";
-          }else if(cj.browser.opera){
-            browsertype = "Opera";
-          }else if(cj.browser.mozilla){
-            browsertype = "Mozilla";
-          }
-        });
-        var description = cj('#description').val();
-        var browser =  browsertype+" v."+(parseInt(cj.browser.version, 10) );
-        var id = cj('#id').val();
-        cj( this ).dialog( "close" );
-        cj.ajax({
-          url: '/civicrm/imap/ajax/fileBug',
-          data: {
-            browser: browser,
-            id: id,
-            description: description
-          },
-          success: function(data,status) {
-            if(data != null || data != ''){
-              CRM.alert(('Report Filed'), '', 'success');
-            }
-          }
-        });
-      },
-      Cancel: function() {
-        cj( this ).dialog( "close" );
-      }
-    }
-  });
-
-  // smart date picker
-  cj( "#tab1 .dob .month,#tab1 .dob .day,#tab1 .dob .year" ).change(function() {
-    if ( cj.isNumeric(cj("#tab1 .dob .month").val()) && cj.isNumeric(cj("#tab1 .dob .day").val())  && cj.isNumeric(cj("#tab1 .dob .year").val()) ) {
-      var date_string = cj("#tab1 .dob .month").val()+"/"+cj("#tab1 .dob .day").val()+"/"+cj("#tab1 .dob .year").val();
-      cj('#tab1 input.form-text.dob').val(date_string);
-    }else{
-      cj('#tab1 input.form-text.dob').val('');
-      return false;
-    }
-  });
-
-  cj( "#tab2 .dob .month,#tab2 .dob .day,#tab2 .dob .year" ).change(function() {
-    if ( cj.isNumeric(cj("#tab2 .dob .month").val()) && cj.isNumeric(cj("#tab2 .dob .day").val())  && cj.isNumeric(cj("#tab2 .dob .year").val()) ) {
-      var date_string = cj("#tab2 .dob .month").val()+"/"+cj("#tab2 .dob .day").val()+"/"+cj("#tab2 .dob .year").val();
-      cj('#tab2 input.form-text.dob').val(date_string);
-    }else{
-      cj('#tab2 input.form-text.dob').val('');
-      return false;
-    }
-  });
 
   // search function in find_match and edit_match
   filter.live('click', function() {
@@ -247,7 +171,7 @@ cj(document).ready(function(){
     if(cj('#tab1 .state').val() != ""){var state = cj('#tab1 .state').val();}
     if((first_name) || (last_name) || (city) || (phone) || (street_address) || (email_address) || (dob)){
       cj.ajax({
-        url: '/civicrm/imap/ajax/searchContacts',
+        url: '/civicrm/imap/ajax/contact/search',
         async:false,
         data: {
           state: state,
@@ -273,7 +197,7 @@ cj(document).ready(function(){
         }
       });
     }else{
-      CRM.alert('enter a search query', '', 'error');
+      CRM.alert('Please Enter a search query', '', 'warn');
     }
     return false;
   });
@@ -373,31 +297,7 @@ cj(document).ready(function(){
     return false;
   });
 
-  // dirty toggles
-  // toggle hidden email info in multi_tag popup
-  cj(".hidden_email_info").live('click', function(){
-    var id = cj(this).data('id');
-    cj("#email_"+id+" .info").removeClass('hidden_email_info').addClass('shown_email_info').html('Hide Email');
-    cj("#email_"+id).removeClass('hidden_email').addClass('shown_email');
-  });
 
-  cj(".shown_email_info").live('click', function(){
-    var id = cj(this).data('id');
-    cj("#email_"+id+" .info").removeClass('shown_email_info').addClass('hidden_email_info').html('Show Email');
-    cj("#email_"+id).removeClass('shown_email').addClass('hidden_email');
-  });
-
-  // toggle Debug info for find match message popup
-  cj(".debug_on").live('click', function() {
-    var debug_info = cj(".debug_info").html();
-    cj("#message_left_email").prepend(debug_info);
-    cj(this).removeClass('debug_on').addClass('debug_off').html('Hide Debug info');
-  });
-
-  cj(".debug_off").live('click', function() {
-    cj("#message_left_email .debug_remove").remove();
-    cj(this).removeClass('debug_off').addClass('debug_on').html('Show Debug info');
-  });
 
   // UNMATCHED
   // assign a message to a contact Unmatched page
@@ -416,7 +316,7 @@ cj(document).ready(function(){
       cj('#AdditionalEmail-popup #contacts').val(contactIds);
       cj("#find-match-popup").dialog('close');
     }else{
-      CRM.alert('Please Choose a contact', '', 'error');
+      CRM.alert('Please Choose a contact', '', 'warn');
     };
   });
 
@@ -437,7 +337,7 @@ cj(document).ready(function(){
     });
     if(contactIds !='' ){
       cj.ajax({
-        url: '/civicrm/imap/ajax/assignMessage',
+        url: '/civicrm/imap/ajax/unmatched/assign',
         data: {
           messageId: messageId,
           contactId: contactIds
@@ -458,7 +358,7 @@ cj(document).ready(function(){
       });
       return false;
     }else{
-      CRM.alert('Please Choose a contact', '', 'error');
+      CRM.alert('Please Choose a contact', '', 'warn');
     };
   });
 
@@ -482,7 +382,7 @@ cj(document).ready(function(){
 
     if((create_first_name)||(create_last_name)||(create_email_address)){
       cj.ajax({
-        url: '/civicrm/imap/ajax/createNewContact',
+        url: '/civicrm/imap/ajax/contact/add',
         data: {
           messageId: create_messageId,
           prefix: create_prefix,
@@ -506,7 +406,7 @@ cj(document).ready(function(){
             return false;
           }else{
             cj.ajax({
-              url: '/civicrm/imap/ajax/assignMessage',
+              url: '/civicrm/imap/ajax/unmatched/assign',
               data: {
                 messageId: create_messageId,
                 contactId: contactData.contact
@@ -556,7 +456,7 @@ cj(document).ready(function(){
     var create_state = cj("#tab2 .state").val();
     if((create_first_name)||(create_last_name)||(create_email_address)){
       cj.ajax({
-        url: '/civicrm/imap/ajax/createNewContact',
+        url: '/civicrm/imap/ajax/contact/add',
         data: {
           messageId: create_messageId,
           first_name: create_first_name,
@@ -577,7 +477,7 @@ cj(document).ready(function(){
       	    return false;
       	  }else{
       	    cj.ajax({
-              url: '/civicrm/imap/ajax/reassignActivity',
+              url: '/civicrm/imap/ajax/matched/reassign',
               data: {
                 id: create_messageId,
                 change: contactData.contact
@@ -632,7 +532,7 @@ cj(document).ready(function(){
       scrollTop: 0
     }, 'fast');
     cj.ajax({
-      url: '/civicrm/imap/ajax/getMessageDetails',
+      url: '/civicrm/imap/ajax/unmatched/details',
       data: {id: messageId },
       success: function(data,status) {
         message = cj.parseJSON(data);
@@ -656,7 +556,6 @@ cj(document).ready(function(){
             }else{
               cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span>No forwarded content found<br/>");
             }
-            cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span><a class='fileBug'>Report Bug</a><br/>");
             cj('#message_left_email').html(message.body+"<hr/>");
             cj.each(message.attachments, function(key, value) {
               if((!value.rejection) || (value.rejection == '')){
@@ -723,12 +622,12 @@ cj(document).ready(function(){
     });
 
     if (contactIds =='' ){
-      CRM.alert('Please select a contact', '', 'error');
+      CRM.alert('Please select a contact', '', 'warn');
       return false;
     }else{
 
     cj.ajax({
-      url: '/civicrm/imap/ajax/reassignActivity',
+      url: '/civicrm/imap/ajax/matched/reassign',
       data: {
         id: activityId,
         change: contactIds
@@ -802,7 +701,7 @@ cj(document).ready(function(){
       scrollTop: 0
     }, 'fast');
     cj.ajax({
-      url: '/civicrm/imap/ajax/getActivityDetails',
+      url: '/civicrm/imap/ajax/matched/details',
       data: {id: activityId, contact: contactId },
       success: function(data,status) {
         message = cj.parseJSON(data);
@@ -824,8 +723,6 @@ cj(document).ready(function(){
           }else{
             cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span>No forwarded content found<br/>");
           }
-          // if we are on crmdev or crmtest show a debug window
-          cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span><a class='fileBug'>Report Bug</a><br/>");
 
           cj('#message_left_email').html(message.body+"<hr/>");
 
@@ -878,7 +775,7 @@ cj(document).ready(function(){
     cj('.token-input-list-facebook').html('').remove();
 
     cj.ajax({
-      url: '/civicrm/imap/ajax/getActivityDetails',
+      url: '/civicrm/imap/ajax/matched/details',
       data: {id: activityId, contact: contactId },
       success: function(data,status) {
 
@@ -893,7 +790,7 @@ cj(document).ready(function(){
 
           // autocomplete
           cj('#contact_tag_name')
-            .tokenInput( '/civicrm/imap/ajax/searchTags', {
+            .tokenInput( '/civicrm/imap/ajax/tag/search', {
             theme: 'facebook',
             zindex: 9999,
             onAdd: function ( item ) {
@@ -938,7 +835,7 @@ cj(document).ready(function(){
           tree.load();
 
           cj('#activity_tag_name')
-            .tokenInput( '/civicrm/imap/ajax/searchTags', {
+            .tokenInput( '/civicrm/imap/ajax/tag/search', {
             theme: 'facebook',
             zindex: 9999,
             onAdd: function ( item ) {
@@ -1032,7 +929,7 @@ cj(document).ready(function(){
 
     // autocomplete
     cj('#contact_tag_name')
-      .tokenInput( '/civicrm/imap/ajax/searchTags', {
+      .tokenInput( '/civicrm/imap/ajax/tag/search', {
       theme: 'facebook',
       zindex: 9999,
       onAdd: function ( item ) {
@@ -1048,7 +945,7 @@ cj(document).ready(function(){
       }
     });
     cj('#activity_tag_name')
-      .tokenInput( '/civicrm/imap/ajax/searchTags', {
+      .tokenInput( '/civicrm/imap/ajax/tag/search', {
       theme: 'facebook',
       zindex: 9999,
       onAdd: function ( item ) {
@@ -1067,7 +964,7 @@ cj(document).ready(function(){
     cj.each(activityIds, function(key, activityId) {
       // console.log('activity :'+activityId+" - key : "+key+" - Contact : "+contactIds[key]);
       cj.ajax({
-        url: '/civicrm/imap/ajax/getActivityDetails',
+        url: '/civicrm/imap/ajax/matched/details',
         data: {id: activityId, contact: contactIds[key] },
         success: function(data,status) {
 
@@ -1150,6 +1047,8 @@ cj(document).ready(function(){
     cj( "#clear-confirm" ).dialog('open');
     return false;
   });
+
+// general functions
   // paginated contact search
   cj(".seeMore").live('click', function() {
     var position = cj(this).attr('id');
@@ -1158,6 +1057,62 @@ cj(document).ready(function(){
     cj(this).remove();
   });
 
+  cj(".FixedHeader_Cloned th").live('click', function() {
+    var clickclass = cj(this).attr('class').split(' ')[0];
+    cj('.imapperbox th.'+clickclass).click();
+  });
+
+  // add highlight to selected rows in table view
+  cj(".checkbox").live('click', function() {
+      cj(this).parent().parent().toggleClass( "highlight" );
+  });
+
+
+  // smart date picker
+  cj( "#tab1 .dob .month,#tab1 .dob .day,#tab1 .dob .year" ).change(function() {
+    if ( cj.isNumeric(cj("#tab1 .dob .month").val()) && cj.isNumeric(cj("#tab1 .dob .day").val())  && cj.isNumeric(cj("#tab1 .dob .year").val()) ) {
+      var date_string = cj("#tab1 .dob .month").val()+"/"+cj("#tab1 .dob .day").val()+"/"+cj("#tab1 .dob .year").val();
+      cj('#tab1 input.form-text.dob').val(date_string);
+    }else{
+      cj('#tab1 input.form-text.dob').val('');
+      return false;
+    }
+  });
+
+  cj( "#tab2 .dob .month,#tab2 .dob .day,#tab2 .dob .year" ).change(function() {
+    if ( cj.isNumeric(cj("#tab2 .dob .month").val()) && cj.isNumeric(cj("#tab2 .dob .day").val())  && cj.isNumeric(cj("#tab2 .dob .year").val()) ) {
+      var date_string = cj("#tab2 .dob .month").val()+"/"+cj("#tab2 .dob .day").val()+"/"+cj("#tab2 .dob .year").val();
+      cj('#tab2 input.form-text.dob').val(date_string);
+    }else{
+      cj('#tab2 input.form-text.dob').val('');
+      return false;
+    }
+  });
+  // dirty toggles
+  // toggle hidden email info in multi_tag popup
+  cj(".hidden_email_info").live('click', function(){
+    var id = cj(this).data('id');
+    cj("#email_"+id+" .info").removeClass('hidden_email_info').addClass('shown_email_info').html('Hide Email');
+    cj("#email_"+id).removeClass('hidden_email').addClass('shown_email');
+  });
+
+  cj(".shown_email_info").live('click', function(){
+    var id = cj(this).data('id');
+    cj("#email_"+id+" .info").removeClass('shown_email_info').addClass('hidden_email_info').html('Show Email');
+    cj("#email_"+id).removeClass('shown_email').addClass('hidden_email');
+  });
+
+  // toggle Debug info for find match message popup
+  cj(".debug_on").live('click', function() {
+    var debug_info = cj(".debug_info").html();
+    cj("#message_left_email").prepend(debug_info);
+    cj(this).removeClass('debug_on').addClass('debug_off').html('Hide Debug info');
+  });
+
+  cj(".debug_off").live('click', function() {
+    cj("#message_left_email .debug_remove").remove();
+    cj(this).removeClass('debug_off').addClass('debug_on').html('Show Debug info');
+  });
 });
 
 function firstName(nameVal){
@@ -1181,16 +1136,14 @@ function lastName(nameVal){
   }else{
     return 'N/A';
   }
-
 }
-
 
 function getUnmatchedMessages() {
   cj.ajax({
-    url: '/civicrm/imap/ajax/listUnmatchedMessages',
+    url: '/civicrm/imap/ajax/unmatched/list',
     success: function(data,status) {
       messages = cj.parseJSON(data);
-      buildMessageList();
+      buildUnmatchedList();
     },
     error: function(){
       CRM.alert('unable to Load Messages', '', 'error');
@@ -1200,10 +1153,10 @@ function getUnmatchedMessages() {
 
 function getMatchedMessages() {
   cj.ajax({
-    url: '/civicrm/imap/ajax/listMatchedMessages',
+    url: '/civicrm/imap/ajax/matched/list',
     success: function(data,status) {
       messages = cj.parseJSON(data);
-      buildActivitiesList();
+      buildMatchedList();
     },
     error: function(){
       CRM.alert('unable to Load Messages', '', 'error');
@@ -1212,7 +1165,7 @@ function getMatchedMessages() {
 }
 function getReports() {
   cj.ajax({
-    url: '/civicrm/imap/ajax/getReports',
+    url: '/civicrm/imap/ajax/repots/list',
     success: function(data,status) {
       reports = cj.parseJSON(data);
       buildReports();
@@ -1236,7 +1189,7 @@ cj.extend( cj.fn.dataTableExt.oSort, {
   }
 });
 
-function makeListSortable(){
+function makeTable(){
  var oTable = cj("#sortable_results").dataTable({
     "sDom":'<"controlls"lif><"clear">rt <p>',//add i here this is the number of records
     // "iDisplayLength": 1,
@@ -1256,18 +1209,9 @@ function makeListSortable(){
   oHeader.fnUpdate();
 }
 
-cj(".FixedHeader_Cloned th").live('click', function() {
-  var clickclass = cj(this).attr('class').split(' ')[0];
-  cj('.imapperbox th.'+clickclass).click();
-});
 
 
-// add highlight to selected rows in table view
-cj(".checkbox").live('click', function() {
-    cj(this).parent().parent().toggleClass( "highlight" );
-});
-
-function buildMessageList() {
+function buildUnmatchedList() {
   if(messages.stats.overview.successes == '0' || messages == null){
     cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty">No records found</td>');
   }else{
@@ -1328,7 +1272,7 @@ function buildMessageList() {
       messagesHtml += '<td class="imap_actions_column "><span class="find_match"><a href="#">Find match</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
     });
     cj('#imapper-messages-list').html(messagesHtml);
-    makeListSortable();
+    makeTable();
 
   }
 }
@@ -1465,7 +1409,7 @@ cj(".Deleted").live('click', function() {
 
 function DeleteMessage(id,imapid){
   cj.ajax({
-    url: '/civicrm/imap/ajax/deleteMessage',
+    url: '/civicrm/imap/ajax/unmatched/delete',
     async:false,
     data: {id: id },
     success: function(data,status) {
@@ -1489,7 +1433,7 @@ function DeleteMessage(id,imapid){
 // Result : A few things
 function ClearActivity(value){
   cj.ajax({
-    url: '/civicrm/imap/ajax/untagActivity',
+    url: '/civicrm/imap/ajax/matched/untag',
     data: {id: value},
     async:false,
     success: function(data,status) {
@@ -1516,7 +1460,7 @@ function DeleteActivity(value){
     // setTimeout(this.resolve, (1500));
   // console.log(value);
   cj.ajax({
-    url: '/civicrm/imap/ajax/deleteActivity',
+    url: '/civicrm/imap/ajax/matched/delete',
     data: {id: value},
     success: function(data,status) {
       deleted = cj.parseJSON(data);
@@ -1556,7 +1500,7 @@ function pushtag(clear){
   }
 
   if (activity_tag_ids =='' && contact_tag_ids == ''){
-    CRM.alert('please select a tag', '', 'error');
+    CRM.alert('please select a tag', '', 'warn');
     return false;
   }else{
     cj("#tagging-popup").dialog('close');
@@ -1574,7 +1518,7 @@ function pushtag(clear){
     });
 
     cj.ajax({
-      url: '/civicrm/imap/ajax/addTags',
+      url: '/civicrm/imap/ajax/tag/add',
       async:false,
       data: { contactId: contact_ids, tags: contact_tag_ids},
       success: function(data,status) {
@@ -1590,7 +1534,7 @@ function pushtag(clear){
     });
 
     cj.ajax({
-      url: '/civicrm/imap/ajax/addTags',
+      url: '/civicrm/imap/ajax/tag/add',
       async:false,
       data: { activityId: activity_ids, tags: activity_tag_ids},
       success: function(data,status) {
@@ -1621,7 +1565,7 @@ function pushtag(clear){
 };
 
 // matched messages screen
-function buildActivitiesList() {
+function buildMatchedList() {
   if(messages.stats.overview.successes == '0' || messages == null){
     cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty">No records found</td>');
   }else{
@@ -1630,44 +1574,43 @@ function buildActivitiesList() {
     // console.log(messages);
     cj.each(messages.Processed, function(key, value) {
       if(value.date_short != null){
-      messagesHtml += '<tr id="'+value.id+'" data-id="'+value.activity_id+'" data-contact_id="'+value.matched_to+'" class="imapper-message-box"> <td class="imap_checkbox_column matched" ><input class="checkbox" type="checkbox" name="'+value.id+'" data-id="'+value.matched_to+'"/></td>';
+      messagesHtml += '<tr id="'+value.id+'" data-id="'+value.activity_id+'" data-contact_id="'+value.matched_to+'" class="imapper-message-box"> <td class="imap_checkbox_column" ><input class="checkbox" type="checkbox" name="'+value.id+'" data-id="'+value.matched_to+'"/></td>';
 
         if( value.contactType != ''){
-          messagesHtml += '<td class="imap_name_column matched" data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'">';
+          messagesHtml += '<td class="imap_name_column" data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'">';
           messagesHtml += '<a class="crm-summary-link" href="/civicrm/profile/view?reset=1&gid=13&id='+value.matched_to+'&snippet=4">';
           messagesHtml += '<div class="icon crm-icon '+value.contactType+'-icon"></div>';
           messagesHtml += '</a>';
           messagesHtml += '<a href="/civicrm/contact/view?reset=1&cid='+value.matched_to+'" title="'+value.fromName+'">'+shortenString(value.fromName,19)+'</a>';
           messagesHtml += ' ';
         }else {
-          messagesHtml += '<td class="imap_name_column matched">';
+          messagesHtml += '<td class="imap_name_column">';
         }
 
-        // messagesHtml += '<span class="emailbubble marginL5">'+shortenString(value.sender_email,13)+'</span>';
-
-        match_sort = 'ProcessError';
         if(value.matcher){
           var match_string = (value.matcher != 0) ? "Manually matched by "+value.matcher_name : "Automatically Matched" ;
           var match_short = (value.matcher != 0) ? "M" : "A" ;
           match_sort = (value.matcher != 0) ? "ManuallyMatched" : "AutomaticallyMatched" ;
           messagesHtml += '<span class="matchbubble marginL5 '+match_short+'" title="This email was '+match_string+'">'+match_short+'</span>';
+        }else{
+          match_sort = 'ProcessError';
         }
         messagesHtml +='</td>';
-        messagesHtml += '<td class="imap_subject_column matched">'+shortenString(value.subject,40);
+        messagesHtml += '<td class="imap_subject_column">'+shortenString(value.subject,40);
         if(value.attachments != 0){
           messagesHtml += '<div class="icon attachment-icon attachment" title="'+value.attachments+' Attachments" ></div>';
         }
         messagesHtml +='</td>';
-        messagesHtml += '<td class="imap_date_column matched"><span data-sort="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
-        messagesHtml += '<td class="imap_match_column matched  hidden">'+match_sort +'</td>';
+        messagesHtml += '<td class="imap_date_column"><span data-sort="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
+        messagesHtml += '<td class="imap_match_column  hidden">'+match_sort +'</td>';
 
-        messagesHtml += '<td class="imap_forwarder_column matched"><span data-sort="'+value.forwarder.replace("@","_")+'">'+shortenString(value.forwarder,14)+'</span> </td>';
-        messagesHtml += '<td class="imap_actions_column matched"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
+        messagesHtml += '<td class="imap_forwarder_column"><span data-sort="'+value.forwarder.replace("@","_")+'">'+shortenString(value.forwarder,14)+'</span> </td>';
+        messagesHtml += '<td class="imap_actions_column"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
 
       }
     });
     cj('#imapper-messages-list').html(messagesHtml);
-    makeListSortable();
+    makeTable();
   }
 }
 
@@ -1737,7 +1680,7 @@ function checkForMatch(key,contactIds){
     if (key == check) {
       if (cj('.matchbubble.empty',this).length){
         cj.ajax({
-          url: '/civicrm/imap/ajax/assignMessage',
+          url: '/civicrm/imap/ajax/unmatched/assign',
           async:false,
           data: {
             messageId: messageId,

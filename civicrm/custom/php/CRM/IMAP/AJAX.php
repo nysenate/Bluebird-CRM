@@ -100,6 +100,7 @@ class CRM_IMAP_AJAX {
         $senderEmail = $row['sender_email'];
         $rowId = $row['id'];
 
+
         $Query="SELECT  contact.id,  email.email FROM civicrm_contact contact
         LEFT JOIN civicrm_email email ON (contact.id = email.contact_id)
         WHERE contact.is_deleted=0
@@ -126,7 +127,8 @@ class CRM_IMAP_AJAX {
 
         if ($debug){
           echo "<h1>Full Email OUTPUT</h1>";
-          var_dump($returnMessage);
+          echo "<pre>";
+          json_decode($returnMessage);
         }
       }
       if(!is_array($returnMessage)){
@@ -154,7 +156,7 @@ class CRM_IMAP_AJAX {
      * For Unmatched screen Overview
      * @return [JSON Object]    Messages that have have not been matched
      */
-    public static function getUnmatchedMessages() {
+    public static function UnmatchedList() {
       $debug = self::get('debug');
       $start = microtime(true);
 
@@ -202,7 +204,7 @@ class CRM_IMAP_AJAX {
      * returns an error if the message is no longer unassigned
      * @return  [JSON Object]    Messages that have have not been matched
      */
-    public static function getMessageDetails() {
+    public static function UnmatchedDetails() {
       $messageId = self::get('id');
       $output = self::unifiedMessageInfo($messageId);
       $admin = CRM_Core_Permission::check('administer CiviCRM');
@@ -276,7 +278,7 @@ class CRM_IMAP_AJAX {
      * For Unmatched & Matched screen Delete
      * @return [JSON Object]    Status message
      */
-    public static function deleteMessage() {
+    public static function UnmatchedDelete() {
       // Set up IMAP variables
       self::setupImap();
       $id = self::get('id');
@@ -304,7 +306,7 @@ class CRM_IMAP_AJAX {
      * For Unmatched & Matched screen Search
      * @return [JSON Object]    List of matching contacts
      */
-    public static function searchContacts() {
+    public static function ContactSearch() {
       $start = microtime(true);
       $s = self::get('s');
       $debug = self::get('debug');
@@ -415,7 +417,7 @@ class CRM_IMAP_AJAX {
      * Adds an email address to the contacts
      * @return [JSON Object]    Status message
      */
-    public static function addEmail() {
+    public static function ContactAddEmail() {
       require_once 'api/api.php';
       require_once 'CRM/Utils/File.php';
       require_once 'CRM/Utils/IMAP.php';
@@ -487,7 +489,7 @@ class CRM_IMAP_AJAX {
      * For Unmatched screen Match
      * @return [JSON Object]    Status message
      */
-    public static function assignMessage() {
+    public static function UnmatchedAssign() {
       require_once 'api/api.php';
       require_once 'CRM/Utils/File.php';
       require_once 'CRM/Utils/IMAP.php';
@@ -856,7 +858,7 @@ ORDER BY gc.contact_id ASC";
      * For Matched screen overview
      * @return [JSON Object]    List overview of messages
      */
-    public static function getMatchedMessages() {
+    public static function MatchedList() {
         require_once 'api/api.php';
         $debug = self::get('debug');
         $start = microtime(true);
@@ -912,7 +914,7 @@ ORDER BY gc.contact_id ASC";
      * For Matched screen EDIT or TAG
      * @return [JSON Object]    Encoded message output, OR error codes
      */
-    public static function getActivityDetails() {
+    public static function MatchedDetails() {
       $id = self::get('id');
       $output = self::unifiedMessageInfo($id);
       // overwrite incorrect details
@@ -952,7 +954,7 @@ ORDER BY gc.contact_id ASC";
      * For Matched screen DELETE
      * @return [JSON Object]    JSON encoded response, OR error codes
      */
-    public static function deleteActivity() {
+    public static function MatchedDelete() {
       require_once 'api/api.php';
       $messageId = self::get('id');
       $session = CRM_Core_Session::singleton();
@@ -999,7 +1001,7 @@ ORDER BY gc.contact_id ASC";
      * For Matched screen CLEAR
      * @return [JSON Object]    JSON encoded response, OR error codes
      */
-    public static function untagActivity() {
+    public static function MatchedUntag() {
       require_once 'api/api.php';
       $messageId = self::get('id');
       $session = CRM_Core_Session::singleton();
@@ -1041,7 +1043,7 @@ ORDER BY gc.contact_id ASC";
      * For Matched screen EDIT
      * @return [JSON Object]    JSON encoded response, OR error codes
      */
-    public static function reassignActivity() {
+    public static function MatchedReassign() {
       require_once 'api/api.php';
       $id = self::get('id');
       $debug = self::get('debug');
@@ -1139,7 +1141,7 @@ EOQ;
      * For Matched screen TAG
      * @return [JSON Object]    JSON encoded response, OR error codes
      */
-    public static function searchTags() {
+    public static function TagSearch() {
         require_once 'api/api.php';
         $name = self::get('name');
         $start = self::get('timestamp');
@@ -1185,7 +1187,7 @@ EOQ;
      * For Matched screen TAG
      * @return [JSON Object]    JSON encoded response, OR error codes
      */
-    public static function addTags() {
+    public static function TagAdd() {
       require_once 'api/api.php';
       $tag_ids = self::get('tags');
       $activityId = self::get('activityId');
@@ -1398,7 +1400,7 @@ LIMIT 0 , 100000";
      * For Matched edit & Unmatched find
      * @return [JSON Object]    JSON encoded response, OR error codes
      */
-    public static function createNewContact() {
+    public static function ContactAdd() {
         require_once 'api/api.php';
 
         $debug = self::get('debug');
