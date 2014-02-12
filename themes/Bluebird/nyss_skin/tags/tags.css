@@ -13,7 +13,7 @@ form#Contact .groupTagsKeywords ul.token-input-list-facebook {
     width: 522px;
 }
 
-.TreeWrap dt.lv-0{
+.TreeWrap dt .lv-0{
   margin: 10px 10px 0;
   display: none;
 }
