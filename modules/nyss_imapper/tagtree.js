@@ -21,9 +21,9 @@ TagTreeBase = function(instance_options) {
         tag_trees: [291],
         default_tree: 291,
 
-        auto_save: true,
+        auto_save: false,
         entity_id: 0,
-        entity_counts: true,
+        entity_counts: false,
         entity_type: 'civicrm_contact',
     }
     cj.extend(true, self.options, instance_options);
