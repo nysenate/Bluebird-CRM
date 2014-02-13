@@ -26,7 +26,7 @@ class CRM_purgeOldData {
 
     if ($optlist === null) {
       $stdusage = civicrm_script_usage();
-      $usage = '[--dryrun] [--types AC] [--date YYYYMMDD]';
+      $usage = '[--dryrun] [--types ACN] [--date YYYYMMDD]';
       error_log("Usage: ".basename(__FILE__)."  $stdusage  $usage\n");
       exit(1);
     }
@@ -51,6 +51,7 @@ class CRM_purgeOldData {
     $types = array(
       'A' => 'activity',
       'C' => 'case',
+      'N' => 'note',
     );
     if ( $optlist['types'] ) {
       $optTypes = str_split($optlist['types']);
@@ -87,6 +88,10 @@ class CRM_purgeOldData {
       'case' => array(
         'dateField' => 'start_date',
       ),
+      'note' => array(
+        'dateField' => 'modified_date',
+        'additionalWhere' => ' OR modified_date IS NULL ',
+      ),
     );
 
     $optDate = date('Y-m-d', strtotime($optDate));
@@ -96,10 +101,12 @@ class CRM_purgeOldData {
       bbscript_log("info", "processing records: $type");
 
       //get records of each type earlier than date
+      $additionalWhere = CRM_Utils_Array::value('additionalWhere', $typeMap[$type], '');
       $sql = "
         SELECT id
         FROM civicrm_{$type}
         WHERE {$typeMap[$type]['dateField']} < '{$optDate}'
+          $additionalWhere
       ";
       $r = CRM_Core_DAO::executeQuery($sql);
 
