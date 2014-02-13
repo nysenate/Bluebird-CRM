@@ -28,7 +28,7 @@
 				    <th class='Name'>Matched To</th>
  				    <th class='Subject'>Subject</th>
 				    <th class='Date'>Last Edited</th>
-				    <th class='Date'>Date Sent</th>
+				    <th class='Date_Sent'>Date Sent</th>
 				    <th class='Status'>Status</th>
 				    <th class='Forwarded'>Forwarded By</th>
 				</tr>

@@ -635,11 +635,7 @@
 	<div id="matchCheck-popup" title="Checking Other Emails"  style="display:none;">
 		<p> Currently Checking for other emails that match <span class="this_address">this address</span>.</p>
 	</div>
-	<div id="fileBug-popup" title="We're here to help"  style="display:none;">
-		<p>Step #1. Please explain your problem in the text box and click "Report Problem".</p>
-		<p>Step #2. Please contact the support line at x2011 </p>
-		<textarea rows="4" name="description" id="description"></textarea>
-	</div>
+
 	<div id="AdditionalEmail-popup" title="Add email address to contact?"  style="display:none;">
 		<p>We found the following email address. Do you want to add it to the contact's records? (You can also edit this email if needed)</p>
 		<div class="add_email"  id="add_email">

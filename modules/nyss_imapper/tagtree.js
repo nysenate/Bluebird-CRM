@@ -1,44 +1,40 @@
 // Keys "enum"
 var KEY = {
-    BACKSPACE: 8,
-    ENTER: 13,
-    ESCAPE: 27,
-    UP: 38,
-    DOWN: 40,
-    NUMPAD_ENTER: 108,
+  BACKSPACE: 8,
+  ENTER: 13,
+  ESCAPE: 27,
+  UP: 38,
+  DOWN: 40,
+  NUMPAD_ENTER: 108,
 };
 
 TagTreeBase = function(instance_options) {
-    var self = this;
+  var self = this;
 
-    // Override defaults with instance options.
-    self.options = {
-        tree_container: null,
-        tree_container_width: '450px',
-        tree_container_height: '450px',
-        info_container: null,
-        tab_container: null,
-        filter_bar: null,
+  // Override defaults with instance options.
+  self.options = {
+    tree_container: null,
+    info_container: null,
+    tab_container: null,
+    filter_bar: null,
 
-        tag_trees: [291],
-        default_tree: 291,
+    tag_trees: [291],
+    default_tree: 291,
 
-        auto_save: true,
-        entity_id: 0,
-        entity_counts: true,
-        entity_type: 'civicrm_contact',
-    }
-    cj.extend(true, self.options, instance_options);
+    auto_save: false,
+    entity_id: 0,
+    entity_counts: false,
+    entity_type: 'civicrm_contact',
+  }
+  cj.extend(true, self.options, instance_options);
 
-    // Setup instance attributes
-    self.current_tree = null;
-    self.container = self.options.tree_container
-    self.container_width = self.options.tree_container_width
-    self.container_height = self.options.tree_container_height
-    self.info_container = self.options.info_container
-    self.tab_container = self.options.tab_container
-    self.filter_bar = self.options.filter_bar
-    return self;
+  // Setup instance attributes
+  self.current_tree = null;
+  self.container = self.options.tree_container
+  self.info_container = self.options.info_container
+  self.tab_container = self.options.tab_container
+  self.filter_bar = self.options.filter_bar
+  return self;
 }
 
 TagTreeBase.prototype.load = function() {
@@ -49,7 +45,6 @@ TagTreeBase.prototype.load = function() {
         url: '/civicrm/ajax/tag/tree',
         data: {
             call_uri: window.location.href,
-            entity_id: self.options.entity_id,
             entity_type: self.options.entity_type,
             entity_counts: self.options.entity_counts,
             // TODO: This isn't actually supported yet!
@@ -64,13 +59,13 @@ TagTreeBase.prototype.load = function() {
             else {
                 self.setup_trees(data.message);
                 if (self.tab_container) {
-                    self.setup_tab_panel();
+                  self.setup_tab_panel();
                 }
                 if (self.info_container) {
-                    self.setup_info_panel();
+                  self.setup_info_panel();
                 }
                 if (self.filter_bar) {
-                    self.setup_tag_filter();
+                  self.setup_tag_filter();
                 }
             }
         }
@@ -92,18 +87,17 @@ TagTreeBase.prototype.setup_trees = function(tree_data) {
         // overriding the `add_control_box` method.
         function build_node(tag, parent, depth) {
             var html = '<dt class="lv-'+depth+' '+markReserved(tag)+'" id="'+tagLabel(tag.id)+'" description=\''+tag.description+'\' tLvl="'+depth+'" tid="'+tag.id+'" parent="'+parent.id+'">'+
-                            '<div class="tag-row"><div class="ddControl '+markChildren(tag)+'"></div>'+
-                            self.add_control_box(tag, tree_id) +
-                            '<div class="tag"><span class="name">'+tag.name+'</span></div>'+
-                            '<span class="entityCount" style="display:none">('+tag.entity_count+')</span>' +
-                        '</div></dt>';
+            '<div class="tag-row"><div class="ddControl '+markChildren(tag)+'"></div>'+
+            self.add_control_box(tag, tree_id) +
+            '<div class="tag"><span class="name">'+tag.name+'</span></div>'+
+            '<span class="entityCount" style="display:none">('+tag.entity_count+')</span>' +
+            '</div></dt>';
 
             html += '<dl class="lv-'+depth+'" id="'+tagLabel(tag.id)+'" tLvl="'+depth+'" >';
             cj.each(tag.children, function(i, child) {
                 html += build_node(child, tag, depth+1);
             });
             html += "</dl>";
-
             return html;
         }
 
@@ -117,16 +111,15 @@ TagTreeBase.prototype.setup_trees = function(tree_data) {
         }
         console.log("Finished with tree_id: "+tree_id);
         self.container.append(tree);
-        self.container.addClass('TreeWrap');
+        120   - self.container.addClass('TreeWrap');
         self.animate_tree(tree);
     });
-
     // Hook for customization by child classes
     self.customize_tree();
 }
 
 TagTreeBase.prototype.add_control_box = function(tag, tree_id) {
-  return '';  // Default implementation with no controls
+    return ''; // Default implementation with no controls
 }
 
 TagTreeBase.prototype.animate_tree = function(tree) {
@@ -148,7 +141,7 @@ TagTreeBase.prototype.animate_tree = function(tree) {
 }
 
 TagTreeBase.prototype.customize_tree = function() {
-  return;  // Default implementation with no customization
+    return; // Default implementation with no customization
 }
 
 TagTreeBase.prototype.setup_tab_panel = function() {
@@ -169,7 +162,7 @@ TagTreeBase.prototype.setup_tab_panel = function() {
                 self.tab_container.find('li').removeClass('active');
                 button.addTag('active');
             });
-            tab_list.append(tab_item);
+        tab_list.append(tab_item);
         });
         self.tab_container.html(tab_list);
     }
@@ -179,28 +172,28 @@ TagTreeBase.prototype.setup_info_panel = function() {
     var self = this;
     if (self.info_container) {
         self.container.delegate('dt', 'hover',
-            function() {
-                var dt_id = cj(this).attr('id');
-                if(dt_id != 'tagLabel_291' && dt_id != 'tagLabel_296' ) {
-                    var tagCount = ' ';
-                    tagCount += cj('span.entityCount', this).html().match(/[0-9]+/);
-                    if(tagCount == ' ' +null) {
-                        tagCount = cj('span.entityCount', this).html();
-                    }
+        function() {
+            var dt_id = cj(this).attr('id');
+            if(dt_id != 'tagLabel_291' && dt_id != 'tagLabel_296' ) {
+                var tagCount = ' ';
+                tagCount += cj('span.entityCount', this).html().match(/[0-9]+/);
+                if(tagCount == ' ' +null) {
+                    tagCount = cj('span.entityCount', this).html();
                 }
-                var tagName = cj('div.tag span', this).html();
-                var tagId = cj(this).attr('tid');
-                var isReserved = cj(this).hasClass('isReserved') == true ? 'True' : 'False';
-                var tagDescription = cj(this).attr('description');
-                if(tagDescription == 'null') {
-                    tagDescription = '';
-                }
-                self.info_container.find('.tagName span')
-                self.info_container.find('.tagName span').html(tagName);
-                self.info_container.find('.tagId span').html(tagId);
-                self.info_container.find('.tagDescription span').html(tagDescription);
-                self.info_container.find('.tagReserved span').html(isReserved);
-                self.info_container.find('.tagCount span').html(tagCount);
+            }
+            var tagName = cj('div.tag span', this).html();
+            var tagId = cj(this).attr('tid');
+            var isReserved = cj(this).hasClass('isReserved') == true ? 'True' : 'False';
+            var tagDescription = cj(this).attr('description');
+            if(tagDescription == 'null') {
+                tagDescription = '';
+            }
+            self.info_container.find('.tagName span')
+            self.info_container.find('.tagName span').html(tagName);
+            self.info_container.find('.tagId span').html(tagId);
+            self.info_container.find('.tagDescription span').html(tagDescription);
+            self.info_container.find('.tagReserved span').html(isReserved);
+            self.info_container.find('.tagCount span').html(tagCount);
             },
             function() {
                 self.info_container.find('.tagName span').html('');
@@ -294,7 +287,7 @@ TagTreeBase.prototype.setup_tag_filter = function() {
             }, 300);
         }
     });
-}
+ }
 
 TagTreeBase.prototype.get_tags = function() {
     var self = this;
@@ -325,7 +318,7 @@ TagTreeBase.prototype.filter_tags = function() {
     }
     else {
         function highlightParent() {
-            var parent = cj(this).parent();
+        var parent = cj(this).parent();
             if (!parent.hasClass('lv-0')) {
                 parent.prev('dt').addClass('search-parent');
                 highlightParent.call(parent);
@@ -349,7 +342,7 @@ TagTreeBase.prototype.filter_tags = function() {
             self.matched_tags = cj(".search-match");
             self.matched_tags.each(highlightParent);
             tags.not(self.matched_tags).not('.search-parent').addClass('search-hidden');
-            self.current_tree.find("dt.search-parent .ddControl").not(".open").addClass('open').parent().parent().next('dl').addClass('open').show();  // .click();
+            self.current_tree.find("dt.search-parent .ddControl").not(".open").addClass('open').parent().parent().next('dl').addClass('open').show(); // .click();
 
             // This has to happen after the lists are opened/hidden
             self.select_tag(self.matched_tags.first());
@@ -437,7 +430,7 @@ TagTreeTag.prototype.add_control_box = function(tag) {
     else {
         //NOTE: name="tag[###]" allows save on submit functionality to work
         return '<span class="fCB"><ul><li><input type="checkbox" tID="'+tag.id+'" name="tag['+tag.id+']" class="checkbox '+markChecked(tag)+'" '+markChecked(tag)+'></input></li></ul></span>';
-    }
+     }
 }
 
 TagTreeTag.prototype.animate_tree = function(tree) {
@@ -454,9 +447,9 @@ TagTreeTag.prototype.animate_tree = function(tree) {
         if (checkbox.is(":checked")) {
             console.log("Adding checkmark!");
             self.addTagCheck(tag_id);
-            if(self.options.auto_save) {
+            if(self.options.auto_save && self.options.entity_id) {
                 cj.ajax({
-                url: '/civicrm/ajax/entity_tag/create',
+                    url: '/civicrm/ajax/entity_tag/create',
                     data: {
                         entity_type: self.options.entity_type,
                         entity_id: self.options.entity_id,
@@ -486,7 +479,7 @@ TagTreeTag.prototype.animate_tree = function(tree) {
         else {
             console.log("Removing checkmark!");
             self.removeTagCheck(tag_id);
-            if(self.options.auto_save) {
+            if(self.options.auto_save && self.options.entity_id) {
                 cj.ajax({
                     url: '/civicrm/ajax/entity_tag/delete',
                     data: {
@@ -593,32 +586,35 @@ TagTreeTag.prototype.addTagCheck = function(tag_id) {
     if (tab_counter.length) {
         tab_counter.html(parseFloat(tab_counter.html())+1);
     }
-}
+ }
 
 TagTreeTag.prototype.customize_tree = function() {
     var self = this;
-    cj.ajax({
-        url: '/civicrm/ajax/entity_tag/get',
-        data: {
-            entity_type: self.options.entity_type,
-            entity_id: self.options.entity_id,
-            call_uri: window.location.href,
-        },
-        dataType: 'json',
-        success: function(data, status, XMLHttpRequest) {
-            if(data.code != 1 ) {
-                console.log(data.message);
+    if (self.options.entity_id) {
+        cj.ajax({
+            url: '/civicrm/ajax/entity_tag/get',
+            data: {
+                entity_type: self.options.entity_type,
+                entity_id: self.options.entity_id,
+                call_uri: window.location.href,
+            },
+            dataType: 'json',
+            success: function(data, status, XMLHttpRequest) {
+                if(data.code != 1 ) {
+                    console.log(data.message);
+                }
+                else {
+                    cj.each(data.message, function(i, tag_id){
+                        var tagNode = self.container.find(' dt#'+tagLabel(tag_id));
+                        tagNode.find('.checkbox').attr('checked','true').addClass('checked');
+                        tagNode.addClass('checked');
+                        tagNode.parents('dl').not('.lv-0').prev('dt').addClass('subChecked');
+                    });
+                }
             }
-            else {
-                cj.each(data.message, function(i, tag_id){
-                    var tagNode = self.container.find(' dt#'+tagLabel(tag_id));
-                    tagNode.find('.checkbox').attr('checked','true').addClass('checked');
-                    tagNode.addClass('checked');
-                    tagNode.parents('dl').not('.lv-0').prev('dt').addClass('subChecked');
-                });
-            }
-        }
-    });
+
+        });
+    }
 }
 
 
@@ -655,26 +651,26 @@ TagTreeManage.prototype = new TagTreeBase();
 TagTreeManage.prototype.add_control_box = function(tag, tree_id) {
     if((tag.id == 291 || tag.id == 296) && this.type != 'modal') {
         return '<span class="fCB"><ul>'+
-                 '<li class="printTag"></li>'+
-                 '<li class="addTag" title="Add New Tag" do="add"></li>'+
-               '</ul></span>';
+        '<li class="printTag"></li>'+
+        '<li class="addTag" title="Add New Tag" do="add"></li>'+
+        '</ul></span>';
     }
     else if (tree_id == 291) {
         return '<span class="fCB"><ul>'+
-                 '<li class="addTag" title="Add New Tag" do="add"></li>'+
-                 '<li class="removeTag" title="Remove Tag" do="remove"></li>'+
-                 '<li class="moveTag" title="Move Tag" do="move"></li>'+
-                 '<li class="updateTag" title="Update Tag" do="update"></li>'+
-                 '<li class="mergeTag" title="Merge Tag" do="merge"></li>'+
-               '</ul></span>'
+        '<li class="addTag" title="Add New Tag" do="add"></li>'+
+        '<li class="removeTag" title="Remove Tag" do="remove"></li>'+
+        '<li class="moveTag" title="Move Tag" do="move"></li>'+
+        '<li class="updateTag" title="Update Tag" do="update"></li>'+
+        '<li class="mergeTag" title="Merge Tag" do="merge"></li>'+
+        '</ul></span>'
     }
     else if (tree_id == 296) {
         return '<span class="fCB"><ul>'+
-                 '<li class="removeTag" title="Remove Keyword" do="remove"></li>'+
-                 '<li class="updateTag" title="Update Keyword" do="update"></li>'+
-                 '<li class="mergeTag" title="Merge Keyword" do="mergeKW"></li>'+
-                 '<li class="convertTag" title="Convert Keyword" do="convert"></li>'+
-               '</ul></span>';
+        '<li class="removeTag" title="Remove Keyword" do="remove"></li>'+
+        '<li class="updateTag" title="Update Keyword" do="update"></li>'+
+        '<li class="mergeTag" title="Merge Keyword" do="mergeKW"></li>'+
+        '<li class="convertTag" title="Convert Keyword" do="convert"></li>'+
+        '</ul></span>';
     }
 }
 
@@ -769,10 +765,10 @@ TagTreeManage.prototype.addTagModal = function(parent) {
     self.dialog.html(
         '<div class="modalHeader">Add new tag under ' + parent_name + '</div>' +
         '<div class="modalInputs">' +
-            '<div><span>Tag Name:</span ><input type="text" name="tagName" /></div>' +
-            '<div><span>Description:</span><input type="text" name="tagDescription" /></div>' +
-            '<div><span>Reserved:</span><input type="checkbox" name="isReserved"/></div>' +
-       '</div>'
+        '<div><span>Tag Name:</span ><input type="text" name="tagName" /></div>' +
+        '<div><span>Description:</span><input type="text" name="tagDescription" /></div>' +
+        '<div><span>Reserved:</span><input type="checkbox" name="isReserved"/></div>' +
+        '</div>'
     );
 
     var settings = cj.extend(self.dialog_defaults, {
@@ -817,10 +813,10 @@ TagTreeManage.prototype.addTagModal = function(parent) {
                             depth = parseFloat(parent.attr('tLvl'))+1;
                             parent.next('dl').prepend(
                                 '<dt class="lv-'+depth+' '+markReserved(tag)+'" id="'+tagLabel(tag.id)+'" description=\''+tag.description+'\' tLvl="'+depth+'" tid="'+tag.id+'" parent="'+parent_id+'">'+
-                                    '<div class="tag-row"><div class="ddControl"></div>'+
-                                    self.add_control_box(tag, self.current_tree.attr('data-tree-id')) +
-                                    '<div class="tag"><span class="name">'+tag.name+'</span></div>'+
-                                    '<span class="entityCount" style="display:none">(0)</span>' +
+                                '<div class="tag-row"><div class="ddControl"></div>'+
+                                self.add_control_box(tag, self.current_tree.attr('data-tree-id')) +
+                                '<div class="tag"><span class="name">'+tag.name+'</span></div>'+
+                                '<span class="entityCount" style="display:none">(0)</span>' +
                                 '</div></dt>' +
                                 '<dl class="lv-'+depth+'" id="'+tagLabel(tag.id)+'" tLvl="'+depth+'" ></dl>'
                             );
@@ -908,22 +904,22 @@ TagTreeManage.prototype.removeTagModal = function(tag) {
     self.dialog.dialog(settings).dialog("open");
 }
 
-TagTreeManage.prototype.updateTagModal = function(tag) {
-    var self = this;
-    var tag_id = tag.attr('tid');
-    var tag_name = tag.find('.name').html();
-    var tag_desc = tag.attr('description').replace('/"/', '\"'); // Wy?
-    var tag_resv = tag.hasClass('isReserved');
+ TagTreeManage.prototype.updateTagModal = function(tag) {
+     var self = this;
+     var tag_id = tag.attr('tid');
+     var tag_name = tag.find('.name').html();
+     var tag_desc = tag.attr('description').replace('/"/', '\"'); // Wy?
+     var tag_resv = tag.hasClass('isReserved');
 
-    console.log(self.dialog);
-    self.dialog.html(
-        '<div class="modalHeader">Update Tag <span>' + tag_name + '</span></div>' +
-        '<div class="modalInputs">' +
-            '<div><span>Tag Name:</span><input type="text" name="tagName" value="'+tag_name+'" /></div>' +
-            '<div><span>Description:</span ><input type="text" name="tagDescription" value="'+tag_desc+'"/></div>' +
-            '<div><span>Reserved:</span><input type="checkbox" name="isReserved" '+(tag_resv ? 'checked' : '')+"/></div>" +
-        '</div>'
-    );
+     console.log(self.dialog);
+     self.dialog.html(
+         '<div class="modalHeader">Update Tag <span>' + tag_name + '</span></div>' +
+         '<div class="modalInputs">' +
+         '<div><span>Tag Name:</span><input type="text" name="tagName" value="'+tag_name+'" /></div>' +
+         '<div><span>Description:</span ><input type="text" name="tagDescription" value="'+tag_desc+'"/></div>' +
+         '<div><span>Reserved:</span><input type="checkbox" name="isReserved" '+(tag_resv ? 'checked' : '')+"/></div>" +
+         '</div>'
+     );
 
     var settings = cj.extend(self.dialog_defaults, {
         title: 'Update Tag',
@@ -986,9 +982,9 @@ TagTreeManage.prototype.updateTagModal = function(tag) {
                     });
                 }
             }
-        }, {
-            text: "Cancel",
-            click: function() {
+            }, {
+                text: "Cancel",
+                click: function() {
                 cj(this).dialog("close");
             }
         }]
@@ -1028,7 +1024,7 @@ TagTreeManage.prototype.moveTagModal = function(tag) {
                     success: function() {
                         if (data.code != 1) {
                             self.notify('Error', 'Move Tag', 'Tag <span>'+tag_name+'</span> was unable to be moved under <span>'+dest_name+'</span>.');
-                            return;
+                        return;
                         }
                         else {
 
@@ -1080,8 +1076,6 @@ TagTreeManage.prototype.mergeTagModal = function(tag) {
                             return;
                         }
                         else {
-
-
                             self.notify('Success', 'Merge Tag', 'Tag <span>'+tag_name+'</span> was merged into <span>'+dest_name+'</span>.');
                         }
                     }
@@ -1109,7 +1103,7 @@ TagTreeManage.prototype.convertKeywordModal = function(tag) {
         self.container.find('#tagtree_291').html() +
         '</div>'
     );
-        self.dialog.find('#'+tagLabel(tag_id)).hide();
+    self.dialog.find('#'+tagLabel(tag_id)).hide();
     self.dialog.find('span.fCB').empty().html('<input type="radio" class="selectRadio" name="selectTag"/>');
 
     var settings = cj.extend(self.dialog_defaults, {
@@ -1135,14 +1129,12 @@ TagTreeManage.prototype.convertKeywordModal = function(tag) {
                             return;
                         }
                         else {
-
-
                             self.notify('Success', 'Convert Keyword', 'Keyword <span>'+tag_name+'</span> was converted into an Issue Code under <span>'+dest_name+'</span>.');
                         }
                     }
                 })
             }
-        }, {
+            }, {
             text: "Cancel",
             click: function() {
                 cj(this).dialog("close");
