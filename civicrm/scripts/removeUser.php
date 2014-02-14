@@ -77,9 +77,38 @@ class CRM_removeUser {
         'return' => 'contact_id'
       )
     );
-    bbscript_log("debug", "contactID", $contactID);
 
-    bbscript_log('info', "user [{$username} ({$userID})] has been removed.");
+    if ( $contactID ) {
+      //delete contact
+      civicrm_api('contact', 'delete',
+        array(
+          'version' => 3,
+          'id' => $contactID,
+          'skip_undelete' => TRUE,
+        )
+      );
+    }
+
+    //delete user, role map, authmap
+    $sql = "
+      DELETE FROM {$bbcfg['db.drupal.prefix']}{$bbcfg['db.basename']}.users
+      WHERE name = '{$username}';
+    ";
+    CRM_Core_DAO::executeQuery($sql);
+
+    $sql = "
+      DELETE FROM {$bbcfg['db.drupal.prefix']}{$bbcfg['db.basename']}.users_roles
+      WHERE uid = {$userID};
+    ";
+    CRM_Core_DAO::executeQuery($sql);
+
+    $sql = "
+      DELETE FROM {$bbcfg['db.drupal.prefix']}{$bbcfg['db.basename']}.authmap
+      WHERE uid = {$userID};
+    ";
+    CRM_Core_DAO::executeQuery($sql);
+
+    bbscript_log('info', "user [{$username} ({$userID}/{$contactID})] has been removed.");
   }//removeUser
 
 }//end class
