@@ -698,13 +698,15 @@ function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) 
   }
 
   //7499 trim space before save
-  if ( $op == 'edit' || $op == 'create' ) {
+  if ( ($op == 'edit' || $op == 'create') && $objectName != 'UFMatch' ) {
+    CRM_Core_Error::debug_var('$objectName',$objectName);
+    CRM_Core_Error::debug_var('objectRef',$objectRef);
     foreach ( $objectRef as  $f => $v ) {
       if ( !is_array($v) ) {
         $objectRef[$f] = trim($v, ' ');
       }
     }
-    //CRM_Core_Error::debug_var('objectRef',$objectRef);
+    CRM_Core_Error::debug_var('objectRef after',$objectRef);
   }
 
   _setDBVars();
