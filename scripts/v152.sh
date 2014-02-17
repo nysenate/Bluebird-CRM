@@ -71,3 +71,6 @@ sql="
   WHERE name = 'Syntax';
 "
 $execSql $instance -c "$sql" -q
+
+echo "resetting rolesa and permissions..."
+$script_dir/resetRolePerms.sh $instance
