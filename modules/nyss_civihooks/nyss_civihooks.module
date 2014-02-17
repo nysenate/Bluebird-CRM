@@ -66,6 +66,12 @@ function nyss_civihooks_page_alter(&$page) {
   if ( $curPage == 'admin/people' ) {
     $title = "Manage Users";
     drupal_set_title($title);
+
+    //6709 only show permission filter if admin
+    global $user;
+    if (!in_array('Administrator', $user->roles) && !in_array('Superuser', $user->roles)) {
+      unset($page['content']['system_main']['user_filter_form']['filters']['status']['filters']['permission']);
+    }
   }
   elseif ( strpos($curPage, 'user/') !== FALSE ) {
     $title = "Edit User";
