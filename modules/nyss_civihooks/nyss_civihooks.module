@@ -59,6 +59,15 @@ function nyss_civihooks_form_alter(&$form, &$form_state, $form_id) {
 
 function nyss_civihooks_page_alter(&$page) {
   //dpm($page);
+  $curPage = current_path();
+  if ( $curPage == 'admin/people' ) {
+    $title = "Manage Users";
+    drupal_set_title($title);
+  }
+  elseif ( strpos($curPage, 'user/') !== FALSE ) {
+    $title = "Edit User";
+    drupal_set_title($title);
+  }
 }
 
 function nyss_civihooks_permission() {
