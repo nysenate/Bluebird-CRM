@@ -14,6 +14,9 @@ function nyss_civihooks_menu() {
 function nyss_civihooks_menu_alter( &$items ) {
   //5253
   $items['admin/user/user/create']['access arguments'] = array('create users');
+
+  //7264 remove view tab
+  $items['user/%']['type'] = MENU_CALLBACK;
 }//menu_alter
 
 function nyss_civihooks_form_alter(&$form, &$form_state, $form_id) {
