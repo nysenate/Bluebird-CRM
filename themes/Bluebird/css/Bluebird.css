@@ -1786,9 +1786,6 @@ body.page-civicrm-mailing-browse form#Search div.crm-content-block {
 }
 
 /*report tasks*/
-div.crm-tasks {
-  display: inline-block;
-}
 div.crm-tasks div.crm-buttons-actions span {
   display: block;
   margin-top: 4px;
