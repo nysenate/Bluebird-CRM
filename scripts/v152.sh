@@ -30,7 +30,7 @@ fi
 
 app_rootdir=`$readConfig --ig $instance app.rootdir` || app_rootdir="$DEFAULT_APP_ROOTDIR"
 
-echo "upgrade CiviCRM core to v4.4.3..."
+echo "upgrade CiviCRM core to v4.4.4..."
 $drush $instance civicrm-upgrade-db
 
 echo "cleaning up contact subrecords..."
