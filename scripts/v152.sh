@@ -75,9 +75,17 @@ $execSql $instance -c "$sql" -q
 echo "resetting roles and permissions..."
 $script_dir/resetRolePerms.sh $instance
 
-echo "altering new contact profile field parameters..."
+echo "5725: altering new contact profile field parameters..."
 sql="
   SELECT @newIndiv:=id FROM civicrm_uf_group WHERE name = 'New_Individual';
   UPDATE civicrm_uf_field SET is_required = 0 WHERE uf_group_id = @newIndiv;
+"
+$execSql $instance -c "$sql" -q
+
+echo "7454: reset mailing report permissions..."
+sql="
+  UPDATE civicrm_report_instance
+  SET permission = 'access CiviReport'
+  WHERE report_id LIKE 'mailing%';
 "
 $execSql $instance -c "$sql" -q
