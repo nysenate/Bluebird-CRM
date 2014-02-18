@@ -768,6 +768,7 @@ function nyss_civihooks_civicrm_pageRun( &$page ) {
 }
 
 function nyss_civihooks_civicrm_validateForm( $formName, &$fields, &$files, &$form, &$errors ) {
+  //CRM_Core_Error::debug_var('$formName', $formName);
   //CRM_Core_Error::debug_var('fields', $fields);
 
   //4272 ensure that target/with contact is set when activity created from contact record
@@ -812,6 +813,25 @@ function nyss_civihooks_civicrm_validateForm( $formName, &$fields, &$files, &$fo
       CRM_Core_Error::statusBounce('You must select a group.', $urlBounce);
     }
   }
+
+  //5725
+  if ( $formName == 'CRM_Profile_Form_Edit' ) {
+    $contactProfiles = CRM_Core_BAO_UFGroup::getReservedProfiles('Contact', $extraProfiles);
+
+    switch ( $contactProfiles[$fields['gid']] ) {
+      case 'New Individual':
+        if ( empty($fields['first_name']) && empty($fields['last_name']) && empty($fields['email-Primary']) ) {
+          $errors['first_name'] = 'You must enter a first name, last name, or email address, in order to create a contact.';
+        }
+        break;
+      case 'New Organization':
+        break;
+      case 'New Household':
+        break;
+    }
+  }
+
+  //CRM_Core_Error::debug_var('$errors', $errors);
 }
 
 function nyss_civihooks_civicrm_navigationMenu( &$params ) {
