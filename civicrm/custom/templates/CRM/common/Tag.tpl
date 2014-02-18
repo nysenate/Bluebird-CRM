@@ -89,7 +89,9 @@
                         setVal[x] = valArray[x];
                       }
                     }
+                    if (!skipEntityAction) {
                     CRM.alert('', '{/literal}{ts escape='js'}Removed{/ts}{literal}', 'success');
+                  }
                   }
                   else {
                     CRM.alert('', '{/literal}{ts escape='js'}Saved{/ts}{literal}', 'success');
