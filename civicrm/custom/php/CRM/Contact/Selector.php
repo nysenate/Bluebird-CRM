@@ -341,6 +341,19 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
    */
   function &getColumnHeaders($action = NULL, $output = NULL) {
     $headers = NULL;
+
+    // unset return property elements that we don't care
+    if (!empty($this->_returnProperties)) {
+      $doNotCareElements = array(
+        'contact_type',
+        'contact_sub_type',
+        'sort_name',
+      );
+      foreach ( $doNotCareElements as $value) {
+        unset($this->_returnProperties[$value]);
+      }
+    }
+
     if ($output == CRM_Core_Selector_Controller::EXPORT) {
       $csvHeaders = array(ts('Contact Id'), ts('Contact Type'));
       foreach ($this->getColHeads($action, $output) as $column) {
@@ -444,10 +457,6 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
       $properties = self::makeProperties($this->_returnProperties);
 
       foreach ($properties as $prop) {
-        if ($prop == 'contact_type' || $prop == 'contact_sub_type' || $prop == 'sort_name') {
-          continue;
-        }
-
         if (strpos($prop, '-')) {
           list($loc, $fld, $phoneType) = CRM_Utils_System::explode('-', $prop, 3);
           $title = $this->_query->_fields[$fld]['title'];
@@ -458,7 +467,8 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
         }
         elseif (isset($this->_query->_fields[$prop]) && isset($this->_query->_fields[$prop]['title'])) {
           $title = $this->_query->_fields[$prop]['title'];
-        } else {
+        }
+        else {
           $title = '';
         }
 
@@ -533,6 +543,11 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
     if ($rowCount) {
       $cacheKey = $this->buildPrevNextCache($sort);
       $result = $this->_query->getCachedContacts($cacheKey, $offset, $rowCount, $includeContactIds);
+
+      // CRM-13996: result is empty when selector columns are sorted. hence we need to run the query again
+      if ( $result->N == 0) {
+        $result = $this->_query->searchQuery($offset, $rowCount, $sort, FALSE, $includeContactIds);
+      }
     }
     else {
       $result = $this->_query->searchQuery($offset, $rowCount, $sort, FALSE, $includeContactIds);
@@ -894,8 +909,6 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
         $row['contact_type'] = CRM_Contact_BAO_Contact_Utils::getImage($row['contact_type_orig'],
           FALSE, $row['contact_id']);
       }
-      //NYSS 5055/4899 - this is used for temporary purposes and should now be removed
-      unset($row['contact_type_orig']);
     }
   }
 

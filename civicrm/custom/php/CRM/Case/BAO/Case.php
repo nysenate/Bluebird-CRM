@@ -577,8 +577,7 @@ t_act.id as case_recent_activity_id,
 t_act.act_type_name as case_recent_activity_type_name,
 t_act.act_type AS case_recent_activity_type ";
     }
-    //NYSS 2173
-    else if ( $type == 'all' ) {
+    elseif ( $type == 'any' ) {
       $query .=  " 
 t_act.desired_date as case_activity_date,
 t_act.id as case_activity_id,
@@ -630,8 +629,7 @@ LEFT JOIN civicrm_option_group aog ON aog.name='activity_type'
   LEFT JOIN civicrm_option_value aov ON ( aov.option_group_id = aog.id AND aov.value = act.activity_type_id )
 ) AS t_act ";
     }
-    //NYSS 2173
-    elseif ( $type == 'all' ) {
+    elseif ( $type == 'any' ) {
       $query .= " LEFT JOIN
 (
   SELECT ca4.case_id, act4.id AS id, act4.activity_date_time AS desired_date, act4.activity_type_id, act4.status_id, aov.name AS act_type_name, aov.label AS act_type
@@ -683,11 +681,10 @@ LEFT JOIN civicrm_option_group aog ON aog.name='activity_type'
     }
     elseif ($type == 'recent') {
       $query .= " ORDER BY case_recent_activity_date ASC ";
-    //NYSS 2173
-    } elseif ( $type == 'all' ) {
+    }
+    elseif ( $type == 'any' ) {
       $query .= " ORDER BY case_activity_date ASC ";
     }
-    //CRM_Core_Error::debug_var('case all query',$query);
 
     return $query;
   }
@@ -732,8 +729,7 @@ LEFT JOIN civicrm_option_group aog ON aog.name='activity_type'
     if (!$allCases) {
       $condition .= " AND case_relationship.contact_id_b = {$userID} ";
     }
-    //NYSS 2173
-    if ( $type == 'upcoming' || $type == 'all' ) {
+    if ( $type == 'upcoming' || $type == 'any' ) {
       $closedId = CRM_Core_OptionGroup::getValue('case_status', 'Closed', 'name');
       $condition .= "
 AND civicrm_case.status_id != $closedId";
@@ -777,8 +773,7 @@ AND civicrm_case.status_id != $closedId";
       $resultFields[] = 'case_recent_activity_type';
       $resultFields[] = 'case_recent_activity_id';
     }
-    //NYSS 2173
-    elseif ( $type == 'all' ) { 
+    elseif ( $type == 'any' ) {
       $resultFields[] = 'case_activity_date';
       $resultFields[] = 'case_activity_type_name';
       $resultFields[] = 'case_activity_type';
@@ -2079,7 +2074,7 @@ SELECT civicrm_contact.id as casemanager_id,
       static $accessibleCaseIds;
       if (!is_array($accessibleCaseIds)) {
         $session = CRM_Core_Session::singleton();
-        $accessibleCaseIds = array_keys(self::getCases(FALSE, $session->get('userID'), 'all'));//NYSS
+        $accessibleCaseIds = array_keys(self::getCases(FALSE, $session->get('userID'), 'any'));
       }
       //no need of further processing.
       if (empty($accessibleCaseIds)) {

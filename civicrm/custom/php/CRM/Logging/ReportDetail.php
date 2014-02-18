@@ -41,7 +41,6 @@ class CRM_Logging_ReportDetail extends CRM_Report_Form {
   protected $tables = array();
   protected $interval = '10 SECOND';
 
-  //NYSS 7543
   protected $altered_name;
   protected $altered_by;
   protected $altered_by_id;
@@ -62,10 +61,9 @@ class CRM_Logging_ReportDetail extends CRM_Report_Form {
     $this->cid = CRM_Utils_Request::retrieve('cid', 'Integer', CRM_Core_DAO::$_nullObject);
     $this->raw = CRM_Utils_Request::retrieve('raw', 'Boolean', CRM_Core_DAO::$_nullObject);
 
-    //NYSS 7543 retrieve altered name and altered by
     $this->altered_name = CRM_Utils_Request::retrieve('alteredName', 'String', CRM_Core_DAO::$_nullObject);
     $this->altered_by = CRM_Utils_Request::retrieve('alteredBy', 'String', CRM_Core_DAO::$_nullObject);
-    $this->altered_by_id = CRM_Utils_Request::retrieve('alteredById', 'String', CRM_Core_DAO::$_nullObject);
+    $this->altered_by_id = CRM_Utils_Request::retrieve('alteredById', 'Integer', CRM_Core_DAO::$_nullObject);
 
     parent::__construct();
 
@@ -212,15 +210,6 @@ class CRM_Logging_ReportDetail extends CRM_Report_Form {
       2 => array($this->log_date, 'String'),
     );
 
-    //NYSS 7543 we can retrieve directly from the form object
-    // let the template know who updated whom when
-    /*$dao = CRM_Core_DAO::executeQuery($this->whoWhomWhenSql(), $params);
-    if ($dao->fetch()) {
-      $this->assign('who_url', CRM_Utils_System::url('civicrm/contact/view', "reset=1&cid={$dao->who_id}"));
-      $this->assign('whom_url', CRM_Utils_System::url('civicrm/contact/view', "reset=1&cid={$dao->whom_id}"));
-      $this->assign('who_name', $dao->who_name);
-      $this->assign('whom_name', $dao->whom_name);
-    }*/
     $this->assign('whom_url', CRM_Utils_System::url('civicrm/contact/view', "reset=1&cid={$this->cid}"));
     $this->assign('who_url', CRM_Utils_System::url('civicrm/contact/view', "reset=1&cid={$this->altered_by_id}"));
     $this->assign('whom_name', $this->altered_name);

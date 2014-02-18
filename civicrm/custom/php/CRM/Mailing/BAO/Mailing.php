@@ -1535,13 +1535,12 @@ ORDER BY   civicrm_email.is_bulkmail DESC
         'from_email'      => $domain_email,
         'from_name'       => $domain_name,
         'msg_template_id' => NULL,
-        //'contact_id'      => $params['created_id'],//NYSS
         'created_id'      => $params['created_id'],
-        'approver_id'     => NULL,//NYSS
+        'approver_id'     => NULL,
         'auto_responder'  => 0,
         'created_date'    => date('YmdHis'),
-        'scheduled_date'  => NULL,//NYSS
-        'approval_date'   => NULL,//NYSS
+        'scheduled_date'  => NULL,
+        'approval_date'   => NULL,
       );
 
       // Get the default from email address, if not provided.
@@ -1613,12 +1612,10 @@ ORDER BY   civicrm_email.is_bulkmail DESC
     $transaction->commit();
 
     /**
-     * 'approval_status_id' set in
-     * CRM_Mailing_Form_Schedule::postProcess() or via API.
-     * //NYSS 7470 condition only on the existence of a scheduled date
+     * create parent job if not yet created
+     * condition on the existence of a scheduled date
      */
     if (!empty($params['scheduled_date']) && $params['scheduled_date'] != 'null') {
-      //NYSS create parent job if not yet created
       $job = new CRM_Mailing_BAO_MailingJob();
       $job->mailing_id = $mailing->id;
       $job->status = 'Scheduled';
@@ -2762,8 +2759,8 @@ WHERE  civicrm_mailing_job.id = %1
     // check if we are enforcing number of parallel cron jobs
     // CRM-8460
     $gotCronLock = FALSE;
-    if ($config->mailerJobsMax && $config->mailerJobsMax > 1) {
 
+    if (property_exists($config, 'mailerJobsMax') && $config->mailerJobsMax && $config->mailerJobsMax > 1) {
       $lockArray = range(1, $config->mailerJobsMax);
       shuffle($lockArray);
 
@@ -2790,7 +2787,8 @@ WHERE  civicrm_mailing_job.id = %1
     // load bootstrap to call hooks
 
     // Split up the parent jobs into multiple child jobs
-    CRM_Mailing_BAO_MailingJob::runJobs_pre($config->mailerJobSize, $mode);
+    $mailerJobSize = (property_exists($config, 'mailerJobSize')) ? $config->mailerJobSize : NULL;
+    CRM_Mailing_BAO_MailingJob::runJobs_pre($mailerJobSize, $mode);
     CRM_Mailing_BAO_MailingJob::runJobs(NULL, $mode);
     CRM_Mailing_BAO_MailingJob::runJobs_post($mode);
 

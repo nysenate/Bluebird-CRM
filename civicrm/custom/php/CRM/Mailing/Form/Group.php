@@ -239,12 +239,19 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task {
       );
     }
 
+    if (count($groups) <= 10) {
+      // setting minimum height to 2 since widget looks strange when size (height) is 1
+      $groupSize = max(count($groups), 2);
+    }
+    else {
+      $groupSize = 10;
+    }
     $inG = &$this->addElement('advmultiselect', 'includeGroups',
       ts('Include Group(s)') . ' ',
       $groups,
       array(
-        'size' => 5,
-        'style' => 'width:240px',
+        'size' => $groupSize,
+        'style' => 'width:auto; min-width:240px;',
         'class' => 'advmultiselect',
       )
     );
@@ -258,8 +265,8 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task {
       ts('Exclude Group(s)') . ' ',
       $groups,
       array(
-        'size' => 5,
-        'style' => 'width:240px',
+        'size' => $groupSize,
+        'style' => 'width:auto; min-width:240px;',
         'class' => 'advmultiselect',
       )
     );
@@ -269,12 +276,19 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task {
     $inG->setButtonAttributes('remove', array('value' => ts('<< Remove')));
     $outG->setButtonAttributes('remove', array('value' => ts('<< Remove')));
 
+    if (count($mailings) <= 10) {
+      // setting minimum height to 2 since widget looks strange when size (height) is 1
+      $mailingSize = max(count($mailings), 2);
+    }
+    else {
+      $mailingSize = 10;
+    }
     $inM = &$this->addElement('advmultiselect', 'includeMailings',
       ts('INCLUDE Recipients of These Mailing(s)') . ' ',
       $mailings,
       array(
-        'size' => 5,
-        'style' => 'width:240px',
+        'size' => $mailingSize,
+        'style' => 'width:auto; min-width:240px;',
         'class' => 'advmultiselect',
       )
     );
@@ -282,8 +296,8 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task {
       ts('EXCLUDE Recipients of These Mailing(s)') . ' ',
       $mailings,
       array(
-        'size' => 5,
-        'style' => 'width:240px',
+        'size' => $mailingSize,
+        'style' => 'width:auto; min-width:240px;',
         'class' => 'advmultiselect',
       )
     );
@@ -490,7 +504,7 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task {
     );
     CRM_Core_DAO::executeQuery( "UPDATE civicrm_mailing SET all_emails = %2 WHERE id = %1;", $sqlParams );
 
-    //NYSS 4628 mailing id should be added to the form object
+    // mailing id should be added to the form object
     $this->_mailingID = $mailing->id;
 
     // also compute the recipients and store them in the mailing recipients table

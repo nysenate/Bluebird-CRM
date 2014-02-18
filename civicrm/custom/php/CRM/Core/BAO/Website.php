@@ -75,7 +75,6 @@ class CRM_Core_BAO_Website extends CRM_Core_DAO_Website {
     }
 
     $ids = self::allWebsites($contactID);
-
     foreach ($params as $key => $values) {
       //NYSS don't create website block if no url present; fixed with 7111
       if ( empty($values['url']) ) {
@@ -97,7 +96,7 @@ class CRM_Core_BAO_Website extends CRM_Core_DAO_Website {
       ) {
         foreach ($ids as $id => $value) {
           if (($value['website_type_id'] == $values['website_type_id'])
-            && CRM_Utils_Array::value('url', $value)) {
+            && CRM_Utils_Array::value('url', $values)) {
             $values['id'] = $id;
             unset($ids[$id]);
             break;

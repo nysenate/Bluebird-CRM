@@ -76,7 +76,7 @@ class CRM_Mailing_Page_View extends CRM_Core_Page {
    *
    * @return void
    */
-  function run($id = NULL, $contact_id = NULL, $print = TRUE) {
+  function run($id = NULL, $contactID = NULL, $print = TRUE) {
     if (is_numeric($id)) {
       $this->_mailingID = $id;
     }
@@ -115,7 +115,6 @@ class CRM_Mailing_Page_View extends CRM_Core_Page {
     );
 
     // get contact detail and compose if contact id exists
-    //NYSS 7527 allow on-hold email when retrieving details; also pass contactId if set
     if (isset($this->_contactID)) {
       //get details of contact with token value including Custom Field Token Values.CRM-3734
       $returnProperties = $this->_mailing->getReturnProperties();
@@ -131,6 +130,16 @@ class CRM_Mailing_Page_View extends CRM_Core_Page {
     }
     else {
       $details = array('test');
+      //get tokens that are not contact specific resolved
+      $params  = array('contact_id' => 0);
+      $details = CRM_Utils_Token::getAnonymousTokenDetails($params,
+        $returnProperties,
+        TRUE, TRUE, NULL,
+        $this->_mailing->getFlattenedTokens(),
+        get_class($this)
+      );
+
+      $details = $details[0][0];
       $contactId = 0;
     }
     $mime = &$this->_mailing->compose(NULL, NULL, NULL, $contactId,

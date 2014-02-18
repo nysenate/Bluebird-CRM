@@ -81,7 +81,6 @@ class CRM_Export_BAO_Export {
     $queryMode  = $relationField = NULL;
 
     $allCampaigns = array();
-    $exportCampaign = FALSE;
 
     $phoneTypes = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Phone', 'phone_type_id');
     $imProviders = CRM_Core_PseudoConstant::get('CRM_Core_DAO_IM', 'provider_id');
@@ -95,6 +94,7 @@ class CRM_Export_BAO_Export {
       FALSE
     );
     $queryMode = CRM_Contact_BAO_Query::MODE_CONTACTS;
+
     switch ($exportMode) {
       case CRM_Export_Form_Select::CONTRIBUTE_EXPORT:
         $queryMode = CRM_Contact_BAO_Query::MODE_CONTRIBUTE;
@@ -155,9 +155,6 @@ class CRM_Export_BAO_Export {
         }
         elseif ($fieldName == 'im') {
           $imProviderId = CRM_Utils_Array::value(3, $value);
-        }
-        elseif (substr($fieldName, -8) == 'campaign') {
-          $exportCampaign = TRUE;
         }
 
         if (array_key_exists($relationshipTypes, $contactRelationshipTypes)) {
@@ -235,12 +232,6 @@ class CRM_Export_BAO_Export {
           }
           else {
             $returnProperties[$fieldName] = 1;
-
-            //campaign field export.
-            if (substr($fieldName, -8) == 'campaign') {
-              $fldNames = explode('_', $fieldName);
-              $returnProperties["{$fldNames[0]}_campaign_id"] = 1;
-            }
           }
         }
       }
@@ -317,17 +308,6 @@ class CRM_Export_BAO_Export {
 
       if ($queryMode != CRM_Contact_BAO_Query::MODE_CONTACTS) {
         $componentReturnProperties = CRM_Contact_BAO_Query::defaultReturnProperties($queryMode);
-
-        $campaignReturnProperties = array();;
-        foreach ($componentReturnProperties as $fld => $true) {
-          $campaignReturnProperties[$fld] = $true;
-          if (substr($fld, -11) == 'campaign_id') {
-            $exportCampaign = TRUE;
-            $campaignReturnProperties[substr($fld, 0, -3)] = 1;
-          }
-        }
-        $componentReturnProperties = $campaignReturnProperties;
-
         $returnProperties = array_merge($returnProperties, $componentReturnProperties);
 
         if (!empty($extraReturnProperties)) {
@@ -549,7 +529,7 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
       }
     }
 
-    //NYSS 7494/7517 - check if is deleted
+    // CRM-13982 - check if is deleted
     $excludeTrashed = TRUE;
     foreach ( $params as $value ) {
       if ( $value[0] == 'contact_is_deleted' ) {
@@ -563,7 +543,6 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
       $where .= " AND contact_a.is_deleted != 1";
     }
 
-
     $queryString = "$select $from $where $having";
 
     $groupBy = "";
@@ -574,6 +553,20 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
       ($queryMode & CRM_Contact_BAO_Query::MODE_CONTACTS && $query->_useGroupBy)
     ) {
       $groupBy = " GROUP BY contact_a.id";
+    }
+
+    switch ($exportMode) {
+      case CRM_Export_Form_Select::CONTRIBUTE_EXPORT:
+        $groupBy = 'GROUP BY civicrm_contribution.id';
+        break;
+
+      case CRM_Export_Form_Select::EVENT_EXPORT:
+        $groupBy = 'GROUP BY civicrm_participant.id';
+        break;
+
+      case CRM_Export_Form_Select::MEMBER_EXPORT:
+        $groupBy = " GROUP BY civicrm_membership.id";
+        break;
     }
 
     if ($queryMode & CRM_Contact_BAO_Query::MODE_ACTIVITY) {
@@ -615,8 +608,18 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
       $nullContributionDetails = array_fill_keys(array_keys($paymentHeaders), NULL);
     }
 
+    // Split campaign into 2 fields for id and title
+    $campaignReturnProperties = array();
+    foreach ($returnProperties as $fld => $true) {
+      $campaignReturnProperties[$fld] = $true;
+      if (substr($fld, -11) == 'campaign_id') {
+        $exportCampaign = TRUE;
+        $campaignReturnProperties[substr($fld, 0, -3)] = 1;
+      }
+    }
+    $returnProperties = $campaignReturnProperties;
     //get all campaigns.
-    if ($exportCampaign) {
+    if (isset($exportCampaign)) {
       $allCampaigns = CRM_Campaign_BAO_Campaign::getCampaigns(NULL, NULL, FALSE, FALSE, FALSE, TRUE);
     }
 
@@ -653,7 +656,14 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
           //we should set header only once
           if ($setHeader) {
             $sqlDone = FALSE;
-            if (isset($query->_fields[$field]['title'])) {
+            // Split campaign into 2 fields for id and title
+            if (substr($field, -8) == 'campaign') {
+              $headerRows[] = ts('Campaign Title');
+            }
+            elseif (substr($field, -11) == 'campaign_id') {
+              $headerRows[] = ts('Campaign ID');
+            }
+            elseif (isset($query->_fields[$field]['title'])) {
               $headerRows[] = $query->_fields[$field]['title'];
             }
             elseif ($field == 'phone_type_id') {
@@ -821,6 +831,9 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
               foreach (array_keys($val) as $fld) {
                 $type = explode('-', $fld);
                 $fldValue = "{$ltype}-" . $type[0];
+                // CRM-14076 - fix label to work as the query object expects
+                // FIXME: We should not be using labels as keys!
+                $daoField = CRM_Utils_String::munge($ltype) . '-' . $type[0];
 
                 if (CRM_Utils_Array::value(1, $type)) {
                   $fldValue .= "-" . $type[1];
@@ -830,27 +843,26 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
                 switch ($fld) {
                   case 'country':
                   case 'world_region':
-                    $row[$fldValue] = $i18n->crm_translate($dao->$fldValue, array('context' => 'country'));
+                    $row[$fldValue] = $i18n->crm_translate($dao->$daoField, array('context' => 'country'));
                     break;
 
                   case 'state_province':
-                    $row[$fldValue] = $i18n->crm_translate($dao->$fldValue, array('context' => 'province'));
+                    $row[$fldValue] = $i18n->crm_translate($dao->$daoField, array('context' => 'province'));
                     break;
 
                   case 'im_provider':
-                    $imFieldvalue = $fldValue . "-provider_id";
+                    $imFieldvalue = $daoField . "-provider_id";
                     $row[$fldValue] = CRM_Utils_Array::value($dao->$imFieldvalue, $imProviders);
                     break;
 
                   default:
-                    $row[$fldValue] = $dao->$fldValue;
+                    $row[$fldValue] = $dao->$daoField;
                     break;
                 }
               }
             }
           }
           elseif (array_key_exists($field, $contactRelationshipTypes)) {
-
             $relDAO = CRM_Utils_Array::value($dao->contact_id, $allRelContactArray[$field]);
             foreach ($value as $relationField => $relationValue) {
               if (is_object($relDAO) && property_exists($relDAO, $relationField)) {
@@ -862,22 +874,24 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
                   $fieldValue = CRM_Utils_Array::value($relationValue, $imProviders);
                 }
               }
-              //NYSS 7471
-              elseif (in_array($relationField, array(
+              // CRM-13995
+              elseif (is_object($relDAO) && in_array($relationField, array(
                 'email_greeting', 'postal_greeting', 'addressee'))) {
                 //special case for greeting replacement
                 $fldValue = "{$relationField}_display";
                 $fieldValue = $relDAO->$fldValue;
               }
-              //NYSS 7496
               elseif ( is_object($relDAO) && $relationField == 'state_province' ) {
                 $fieldValue = CRM_Core_PseudoConstant::stateProvince($relDAO->state_province_id);
+              }
+              elseif ( is_object($relDAO) && $relationField == 'country' ) {
+                $fieldValue = CRM_Core_PseudoConstant::country($relDAO->country_id);
               }
               else {
                 $fieldValue = '';
               }
-
               $field = $field . '_';
+
               if (is_object($relDAO) && $relationField == 'id') {
                 $row[$field . $relationField] = $relDAO->contact_id;
               }
@@ -923,13 +937,6 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
                     $relationQuery[$field]->_options
                   );
                 }
-                //NYSS 7471
-                /*elseif (in_array($relationField, array(
-                  'email_greeting', 'postal_greeting', 'addressee'))) {
-                  //special case for greeting replacement
-                  $fldValue = "{$relationField}_display";
-                  $row[$field . $relationField] = $relDAO->$fldValue;
-                }*/
                 else {
                   //normal relationship fields
                   // CRM-3157: localise country, region (both have ‘country’ context) and state_province (‘province’ context)
