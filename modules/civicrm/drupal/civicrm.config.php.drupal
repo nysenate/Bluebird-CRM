@@ -52,14 +52,14 @@ function civicrm_conf_init() {
     }
 
     if ( defined( 'CIVICRM_CONFDIR' ) && ! isset( $confdir ) ) {
-      	$confdir = CIVICRM_CONFDIR;
+        $confdir = CIVICRM_CONFDIR;
     } else {
         // make it relative to civicrm.config.php, else php makes it relative
         // to the script that invokes it
         $moduleDir  = 'sites' . DIRECTORY_SEPARATOR . 'all' . DIRECTORY_SEPARATOR . 'modules';
         $contribDir = $moduleDir . DIRECTORY_SEPARATOR . 'contrib';
-        // check to see if this is under sites/all/modules/contrib
-        if ( strpos( $currentDir, $contribDir ) !== false ) {
+        // check to see if this is under sites/all/modules/contrib or subdir civicrm-core
+        if ( strpos( $currentDir, $contribDir ) !== false || strpos( $currentDir, 'civicrm-core' ) !== false) {
             $confdir = $currentDir . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..';
         // check to see if this is under sites/all/modules
         } else if ( strpos( $currentDir, $moduleDir ) !== false ) {

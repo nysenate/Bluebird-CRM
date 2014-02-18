@@ -629,7 +629,6 @@ function drush_civicrm_cacheclear() {
   // also cleanup the templates_c directory
   $config->cleanup(1, FALSE);
 
-  //NYSS 7443
   CRM_Core_BAO_WordReplacement::rebuild();
 
   // also cleanup the session object

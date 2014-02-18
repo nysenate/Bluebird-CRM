@@ -87,7 +87,7 @@ function civicrm_api($entity, $action, $params, $extra = NULL) {
       $result = isset($extra) ? $function($apiRequest['params'], $extra) : $function($apiRequest['params']);
     }
     else {
-      return civicrm_api3_create_error("API (" . $apiRequest['entity'] . "," . $apiRequest['action'] . ") does not exist (join the API team and implement it!)");
+      return civicrm_api3_create_error("API (" . $apiRequest['entity'] . ", " . $apiRequest['action'] . ") does not exist (join the API team and implement it!)");
     }
 
     // For output filtering, process $apiWrappers in reverse order
@@ -445,8 +445,8 @@ function _civicrm_api_get_camel_name($entity, $version = NULL) {
 function _civicrm_api_call_nested_api(&$params, &$result, $action, $entity, $version) {
   $entity = _civicrm_api_get_entity_name_from_camel($entity);
 
-  //NYSS 7535 we don't need to worry about nested api in the getfields action, so just return immediately
-  if (strtolower($action) == 'getfields') {
+  //we don't need to worry about nested api in the getfields/getoptions actions, so just return immediately
+  if (in_array(strtolower($action), array('getfields', 'getoptions'))) {
     return;
   }
 
@@ -459,6 +459,7 @@ function _civicrm_api_call_nested_api(&$params, &$result, $action, $entity, $ver
   }
   foreach ($params as $field => $newparams) {
     if ((is_array($newparams) || $newparams === 1) && $field <> 'api.has_parent' && substr($field, 0, 3) == 'api') {
+
       // 'api.participant.delete' => 1 is a valid options - handle 1 instead of an array
       if ($newparams === 1) {
         $newparams = array('version' => $version);
@@ -477,6 +478,7 @@ function _civicrm_api_call_nested_api(&$params, &$result, $action, $entity, $ver
       $subEntity = $subAPI[1];
 
       foreach ($result['values'] as $idIndex => $parentAPIValues) {
+
         if (strtolower($subEntity) != 'contact') {
           //contact spits the dummy at activity_id so what else won't it like?
           //set entity_id & entity table based on the parent's id & entity. e.g for something like
@@ -523,6 +525,7 @@ function _civicrm_api_call_nested_api(&$params, &$result, $action, $entity, $ver
           }
         }
         else {
+
           $subParams = array_merge($subParams, $newparams);
           _civicrm_api_replace_variables($subAPI[1], $subaction, $subParams, $result['values'][$idIndex], $separator);
           $result['values'][$idIndex][$field] = civicrm_api($subEntity, $subaction, $subParams);
