@@ -167,7 +167,8 @@ function nyss_civihooks_civicrm_contactListQuery( &$query, $name, $context, $id 
 
   //limit activity assignees to office staff group
   if ( ( $context == 'activity_assignee' || $context == 'case_activity_assignee' ) &&
-       $groupID ) {
+    $groupID
+  ) {
     //echo $query;
     $query = "
       SELECT CONCAT_WS( ' :: ', sort_name, city ) as name, cc.id
@@ -177,7 +178,9 @@ function nyss_civihooks_civicrm_contactListQuery( &$query, $name, $context, $id 
       LEFT JOIN civicrm_address a
         ON cc.id = a.contact_id
         AND a.is_primary = 1
-      WHERE cc.is_deceased = 0 AND cc.sort_name LIKE '%$name%' AND cc.is_deleted = 0
+      WHERE ( cc.is_deceased != 1 OR cc.is_deceased IS NULL )
+        AND cc.sort_name LIKE '%$name%'
+        AND cc.is_deleted != 1
         AND cgc.group_id IN ($groupID) AND cgc.status = 'Added'";
   }
   elseif ( $context == 'caseview' && $groupID ) { //case roles
@@ -193,7 +196,7 @@ function nyss_civihooks_civicrm_contactListQuery( &$query, $name, $context, $id 
         INNER JOIN civicrm_group_contact cgc
           ON cgc.contact_id = cc.id
         WHERE sort_name LIKE '%$name%'
-          AND cc.is_deleted = 0
+          AND cc.is_deleted != 1
           AND cgc.group_id IN ($groupID)
           AND cgc.status = 'Added'
         LIMIT 0, 10
@@ -209,7 +212,7 @@ function nyss_civihooks_civicrm_contactListQuery( &$query, $name, $context, $id 
       LEFT JOIN civicrm_address sts
         ON ( cc.id = sts.contact_id AND sts.is_primary = 1 )
       WHERE ( sort_name LIKE '{$name}%' )
-        AND cc.is_deleted = 0
+        AND cc.is_deleted != 1
       LIMIT 0, 10
     ";
   }
