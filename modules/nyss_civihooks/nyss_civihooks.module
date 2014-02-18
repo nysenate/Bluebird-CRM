@@ -217,7 +217,7 @@ function nyss_civihooks_civicrm_contactListQuery( &$query, $name, $context, $id 
     ";
   }
 
-  CRM_Core_Error::debug_var('$query',$query);
+  //CRM_Core_Error::debug_var('$query',$query);
   //CRM_Core_Error::debug_var('$name',$name);
   //CRM_Core_Error::debug_var('$context',$context);
 }
