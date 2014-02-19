@@ -624,8 +624,8 @@ function nyss_civihooks_civicrm_postProcess( $formName, &$form ) {
             //now process the household
             if ( $flagDNM ) {
               $params = array(
-                'version'     => 3,
-                'id'          => $houseID,
+                'version' => 3,
+                'id' => $houseID,
                 'do_not_mail' => 1,
               );
               $dnm = civicrm_api( 'Contact', 'Update', $params );
@@ -633,8 +633,8 @@ function nyss_civihooks_civicrm_postProcess( $formName, &$form ) {
             }
             if ( $flagDNE ) {
               $params = array(
-                'version'      => 3,
-                'id'           => $houseID,
+                'version' => 3,
+                'id' => $houseID,
                 'do_not_email' => 1,
               );
               $dne = civicrm_api( 'Contact', 'Update', $params );
@@ -718,10 +718,10 @@ function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) 
     }
   }
 
-  //7499 trim space before save
+  //7499/7639 trim space before save
   if ( ($op == 'edit' || $op == 'create') && $objectName != 'UFMatch' ) {
     foreach ( $objectRef as  $f => $v ) {
-      if ( !is_array($v) ) {
+      if ( !is_array($v) && is_string($v) ) {
         $objectRef[$f] = trim($v, ' ');
       }
     }
