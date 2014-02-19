@@ -2530,10 +2530,26 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
       $this->_resultSet = $rows;
     }
 
+    //NYSS 4619
+    $maxCountAllowed = 10000;
+
     if ($this->_outputMode == 'print' ||
       $this->_outputMode == 'pdf' ||
       $this->_sendmail
     ) {
+
+      //NYSS 4619
+      $rowCount = CRM_Core_DAO::singleValueQuery("SELECT FOUND_ROWS();");
+      if ( $rowCount > $maxCountAllowed ) {
+        if ( $this->_id ) {
+          $url = CRM_Utils_System::url("civicrm/report/instance/{$this->_id}", "reset=1", TRUE);
+        }
+        else {
+          $rptUrl = trim($this->_attributes['action'], '/');
+          $url = CRM_Utils_System::url($rptUrl);
+        }
+        CRM_Core_Error::statusBounce('You cannot print or generate a PDF for reports with more than 10,000 records. Please adjust your criteria to reduce the report size and try again.', $url);
+      }
 
       $content = $this->compileContent();
       $url = CRM_Utils_System::url("civicrm/report/instance/{$this->_id}",
