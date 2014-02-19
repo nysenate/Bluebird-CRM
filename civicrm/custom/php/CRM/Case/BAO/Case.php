@@ -352,6 +352,12 @@ class CRM_Case_BAO_Case extends CRM_Case_DAO_Case {
       $case->save();
     }
 
+    //NYSS 7621 delete case tag entities
+    if (!$moveToTrash) {
+      $query = "DELETE FROM civicrm_entity_tag WHERE entity_table = 'civicrm_case' AND entity_id = {$caseId}";
+      CRM_Core_DAO::executeQuery($query);
+    }
+
     if ($result) {
       // CRM-7364, disable relationships
       self::enableDisableCaseRelationships($caseId, FALSE);
