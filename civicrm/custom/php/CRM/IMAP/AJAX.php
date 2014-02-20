@@ -82,9 +82,14 @@ class CRM_IMAP_AJAX {
 
       $UnprocessedResult = mysql_query($UnprocessedQuery, self::db());
       $UnprocessedOutput = array();
-      while($row = mysql_fetch_assoc($UnprocessedResult)) {
-
+      while($row_raw = mysql_fetch_assoc($UnprocessedResult)) {
+        foreach ($row_raw as $key => $value) {
+          $output = str_replace( chr( 194 ) . chr( 160 ), ' ', $value);
+          $output = preg_replace('/[^a-zA-Z0-9\s\p{P}<>]/', '', trim($output));
+          $row[$key] = $output;
+        }
         $returnMessage = $row;
+
         // clean up dates
         $cleanDate = self::cleanDate($row['updated_date']);
         $returnMessage['date_short'] = $cleanDate['short'];
@@ -182,7 +187,7 @@ class CRM_IMAP_AJAX {
         $id = $row['id'];
         foreach ($row as $key => $value) {
           $output = str_replace( chr( 194 ) . chr( 160 ), ' ', $value);
-          $output = preg_replace('/[^a-zA-Z0-9\s\p{P}]/', '', trim($output));
+          $output = preg_replace('/[^a-zA-Z0-9\s\p{P}<>]/', '', trim($output));
           $returnMessage['Unprocessed'][$id][$key] = $output;
         }
       }
@@ -521,7 +526,7 @@ class CRM_IMAP_AJAX {
       $forwarder = substr(mysql_real_escape_string($output['forwarder']),0,255);
       $date = mysql_real_escape_string($output['updated_date']);
       $FWDdate = mysql_real_escape_string($output['email_date']);
-      $subject =substr(strip_tags(htmlspecialchars_decode(mysql_real_escape_string($output['subject'])) ) ,0,249);
+      $subject =substr(strip_tags(htmlspecialchars_decode(mysql_real_escape_string($output['subject'])) ) ,0,255);
       $body = mysql_real_escape_string($output['body']);
       $status = mysql_real_escape_string($output['status']);
       $key = mysql_real_escape_string($output['sender_email']);
@@ -889,7 +894,7 @@ ORDER BY gc.contact_id ASC";
           $id = $row['id'];
           foreach ($row as $key => $value) {
             $output = str_replace( chr( 194 ) . chr( 160 ), ' ', $value);
-            $output = preg_replace('/[^a-zA-Z0-9\s\p{P}]/', '', trim($output));
+            $output = preg_replace('/[^a-zA-Z0-9\s\p{P}<>]/', '', trim($output));
             $returnMessage['Processed'][$id][$key] = $output;
           }
         }
