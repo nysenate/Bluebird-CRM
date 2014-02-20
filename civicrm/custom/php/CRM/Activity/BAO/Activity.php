@@ -772,6 +772,7 @@ LEFT JOIN  civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.ac
     CRM_Core_DAO::executeQuery($query);
 
     // note that we ignore bulk email for targets, since we don't show it in selector
+    //NYSS handle bulk activity below
     $query = "
 INSERT INTO {$activityContactTempTable} ( activity_id, contact_id, record_type_id, contact_name, is_deleted )
 SELECT     ac.activity_id,
@@ -780,10 +781,15 @@ SELECT     ac.activity_id,
            c.sort_name,
            c.is_deleted
 FROM       {$activityTempTable}
-INNER JOIN civicrm_activity a ON ( a.id = {$activityTempTable}.activity_id AND a.activity_type_id != {$bulkActivityTypeID} )
 INNER JOIN civicrm_activity_contact ac ON ( ac.activity_id = {$activityTempTable}.activity_id )
 INNER JOIN civicrm_contact c ON c.id = ac.contact_id
 ";
+    //NYSS move bulk activity type clause to a condition
+    if ( $bulkActivityTypeID ) {
+      $query .= "
+INNER JOIN civicrm_activity a ON ( a.id = {$activityTempTable}.activity_id AND a.activity_type_id != {$bulkActivityTypeID} )";
+    }
+
     CRM_Core_DAO::executeQuery($query);
 
     // step 3: Combine all temp tables to get final query for activity selector
