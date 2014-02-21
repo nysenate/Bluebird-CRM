@@ -305,7 +305,6 @@ class CRM_Contact_BAO_Group extends CRM_Contact_DAO_Group {
    * @static
    */
   static function checkPermission($id) {
-
     $allGroups = CRM_Core_PseudoConstant::allGroup();
 
     $permissions = NULL;
@@ -381,8 +380,16 @@ class CRM_Contact_BAO_Group extends CRM_Contact_DAO_Group {
 
     $group = new CRM_Contact_BAO_Group();
     $group->copyValues($params);
-
-    //NYSS
+    //@todo very hacky fix for the fact this function wants to receive 'parents' as an array further down but
+    // needs it as a separated string for the DB. Preferred approaches are having the copyParams or save fn
+    // use metadata to translate the array to the appropriate DB type or altering the param in the api layer,
+    // or at least altering the param in same section as 'group_type' rather than repeating here. However, further down
+    // we need the $params one to be in it's original form & we are not sure what test coverage we have on that
+    if(isset($group->parents) && is_array($group->parents)) {
+      $group->parents = CRM_Core_DAO::VALUE_SEPARATOR . implode(CRM_Core_DAO::VALUE_SEPARATOR,
+        array_keys($group->parents)
+      ) . CRM_Core_DAO::VALUE_SEPARATOR;
+    }
     if (!CRM_Utils_Array::value('id', $params) &&
       !$nameParam
     ) {
@@ -394,7 +401,6 @@ class CRM_Contact_BAO_Group extends CRM_Contact_DAO_Group {
       return NULL;
     }
 
-    //NYSS
     if (!CRM_Utils_Array::value('id', $params) &&
       !$nameParam
     ) {
@@ -670,7 +676,7 @@ class CRM_Contact_BAO_Group extends CRM_Contact_DAO_Group {
    * @return array   $groupList associated array of group list
    * @access public
    */
-  public function getGroupListSelector(&$params) {
+  static public function getGroupListSelector(&$params) {
     // format the params
     $params['offset']   = ($params['page'] - 1) * $params['rp'];
     $params['rowCount'] = $params['rp'];
@@ -825,7 +831,6 @@ class CRM_Contact_BAO_Group extends CRM_Contact_DAO_Group {
         }
 
         $action = array_sum(array_keys($newLinks));
-
 
         // CRM-9936
         if (array_key_exists('is_reserved', $object)) {
@@ -1039,7 +1044,7 @@ WHERE {$whereClause}";
     return CRM_Core_DAO::singleValueQuery($query, $params);
   }
 
-  function whereClause(&$params, $sortBy = TRUE, $excludeHidden = TRUE) {
+  static function whereClause(&$params, $sortBy = TRUE, $excludeHidden = TRUE) {
     $values = array();
     $clauses = array();
 

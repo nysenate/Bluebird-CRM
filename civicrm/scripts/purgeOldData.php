@@ -5,35 +5,33 @@
 // Organization: New York State Senate
 // Date: 2014-02-07
 
-// ./purgeOldData.php -S skelos --dryrun
+// ./purgeOldData.php -S skelos --dryrun --date 20140101
 error_reporting(E_ERROR | E_PARSE | E_WARNING);
 set_time_limit(0);
 
-define('DEFAULT_LOG_LEVEL', 'TRACE');
-
-class CRM_purgeOldData {
-
-  function run() {
-
+class CRM_purgeOldData
+{
+  function run()
+  {
     global $_SERVER;
 
     require_once 'script_utils.php';
 
     // Parse the options
-    $shortopts = "d:t:p";
+    $shortopts = "nt:d:";
     $longopts = array("dryrun", "types=", "date=");
     $optlist = civicrm_script_init($shortopts, $longopts, TRUE);
 
     if ($optlist === null) {
       $stdusage = civicrm_script_usage();
-      $usage = '[--dryrun] [--types AC] [--date YYYYMMDD]';
+      $usage = '[--dryrun] [--types ACN] --date YYYYMMDD';
       error_log("Usage: ".basename(__FILE__)."  $stdusage  $usage\n");
       exit(1);
     }
 
-    if ( empty($optlist['date']) ) {
+    if (empty($optlist['date'])) {
       bbscript_log("fatal", "The date option must be defined. Use format: YYYYMMDD");
-      exit();
+      exit(1);
     }
     else {
       //make sure date in acceptable format
@@ -51,14 +49,16 @@ class CRM_purgeOldData {
     $types = array(
       'A' => 'activity',
       'C' => 'case',
+      'N' => 'note',
     );
-    if ( $optlist['types'] ) {
-      $optTypes = str_split($optlist['types']);
+
+    if ($optlist['types']) {
+      $optTypes = str_split(strtoupper($optlist['types']));
       $selectedTypes = array();
-      foreach ( $optTypes as $type ) {
-        if ( !in_array(strtoupper($type), array_keys($types)) ) {
-          bbscript_log("fatal", "You selected invalid options for the record type parameter. Please enter any combination of A, C (activities, cases), with no spaces between the characters.");
-          exit();
+      foreach ($optTypes as $type) {
+        if (!in_array($type, array_keys($types))) {
+          bbscript_log("fatal", "You selected invalid options for the record type parameter. Please enter any combination of {A,C,N} (activities, cases, notes), with no spaces between the characters.");
+          exit(1);
         }
         else {
           $selectedTypes[$type] = $types[$type];
@@ -78,7 +78,9 @@ class CRM_purgeOldData {
     self::purgeData($bbcfg, $optlist['dryrun'], $types, $optDate);
   }//run
 
-  function purgeData($bbcfg, $dryrun, $types, $optDate) {
+
+  function purgeData($bbcfg, $dryrun, $types, $optDate)
+  {
     //field map
     $typeMap = array(
       'activity' => array(
@@ -87,23 +89,29 @@ class CRM_purgeOldData {
       'case' => array(
         'dateField' => 'start_date',
       ),
+      'note' => array(
+        'dateField' => 'modified_date',
+        'additionalWhere' => ' OR modified_date IS NULL ',
+      ),
     );
 
     $optDate = date('Y-m-d', strtotime($optDate));
     $count = array();
 
-    foreach ( $types as $type ) {
+    foreach ($types as $type) {
       bbscript_log("info", "processing records: $type");
 
       //get records of each type earlier than date
+      $additionalWhere = CRM_Utils_Array::value('additionalWhere', $typeMap[$type], '');
       $sql = "
         SELECT id
         FROM civicrm_{$type}
         WHERE {$typeMap[$type]['dateField']} < '{$optDate}'
+          $additionalWhere
       ";
       $r = CRM_Core_DAO::executeQuery($sql);
 
-      while ( $r->fetch() ) {
+      while ($r->fetch()) {
         $count[$type] ++;
 
         $params = array(
@@ -111,7 +119,7 @@ class CRM_purgeOldData {
           'id' => $r->id,
         );
 
-        if ( $dryrun ) {
+        if ($dryrun) {
           bbscript_log('info', "{$type} record ID to be deleted: {$r->id}");
         }
         else {
@@ -119,7 +127,7 @@ class CRM_purgeOldData {
           //bbscript_log('debug', 'record delete: ', $del);
         }
 
-        if ( $count[$type] % 1000 === 0 ) {
+        if ($count[$type] % 1000 === 0) {
           bbscript_log('info', "{$count[$type]} {$type} records have been deleted...");
         }
       }

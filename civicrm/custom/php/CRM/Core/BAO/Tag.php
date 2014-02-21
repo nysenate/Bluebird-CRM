@@ -194,6 +194,9 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
       return $var;
     }
 
+    if (!is_array($tags)) {
+      $tags = array();
+    }
     // We need to build a list of tags ordered by hierarchy and sorted by
     // name. The heirarchy will be communicated by an accumulation of
     // separators in front of the name to give it a visual offset.
@@ -373,9 +376,13 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
    * @static
    */
   static function dataExists(&$params) {
-    //NYSS 6558
-    $s = isset($params['name']) ? trim($params['name']) : '';
-    return ($s !== '');
+    // Disallow empty values except for the number zero.
+    // TODO: create a utility for this since it's needed in many places
+    if (!empty($params['name']) || (string) $params['name'] === '0') {
+      return TRUE;
+    }
+
+    return FALSE;
   }
 
   /**

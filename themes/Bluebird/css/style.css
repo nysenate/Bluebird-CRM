@@ -413,3 +413,15 @@ h1.title .crm-tooltip-wrapper {display:none!important;}
 a.setJob {
   color:#EDEDED;
 }
+
+.non-civicrm-page-title {
+  margin-top: 10px;
+}
+.non-civicrm-page-title a {
+  float: right;
+  font-size: 1.4em;
+  font-style: italic;
+}
+.non-civicrm-page-title h2 {
+  font-size: 2.5em;
+}

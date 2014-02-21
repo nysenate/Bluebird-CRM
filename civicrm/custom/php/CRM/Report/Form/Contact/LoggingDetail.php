@@ -82,28 +82,5 @@ class CRM_Report_Form_Contact_LoggingDetail extends CRM_Logging_ReportDetail {
       $this->assign('backURL', $backURL);
     }
   }
-
-  protected function whoWhomWhenSql() {
-    //NYSS 5457/7543
-    $cidSql = '';
-    if ( $this->cid ) $cidSql = "AND l.id = {$this->cid}";
-
-    $sql = "
-      SELECT who.id who_id, who.display_name who_name, whom.id whom_id, whom.display_name whom_name, l.is_deleted
-      FROM `{$this->db}`.log_civicrm_contact l
-      JOIN civicrm_contact who
-        ON (l.log_user_id = who.id)
-      JOIN civicrm_contact whom
-        ON (l.id = whom.id)
-      WHERE log_action = 'Update'
-        AND log_conn_id = %1
-        AND log_date = %2
-        $cidSql
-      ORDER BY log_date DESC
-      LIMIT 1
-    ";
-    //CRM_Core_Error::debug_var('sql', $sql);
-    return $sql;
-  }
 }
 

@@ -58,7 +58,7 @@ class CRM_Dashlet_Page_MyCases extends CRM_Core_Page {
     $session  = CRM_Core_Session::singleton();
     $userID   = $session->get('userID');
     //NYSS 2173
-    $upcoming = CRM_Case_BAO_Case::getCases(FALSE, $userID, 'all', $context);
+    $upcoming = CRM_Case_BAO_Case::getCases(FALSE, $userID, 'any', $context);
 
     if (!empty($upcoming)) {
       $this->assign('upcomingCases', $upcoming);

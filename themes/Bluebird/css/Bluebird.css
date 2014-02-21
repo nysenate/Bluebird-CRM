@@ -1784,3 +1784,9 @@ body.page-civicrm-mailing-browse form#Search div.crm-content-block {
 .DataTables_sort_wrapper span.DataTables_sort_icon {
   margin-right: -18px;
 }
+
+/*report tasks*/
+div.crm-tasks div.crm-buttons-actions span {
+  display: block;
+  margin-top: 4px;
+}

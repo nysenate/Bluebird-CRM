@@ -70,7 +70,6 @@
 <table id="crm-group-selector">
   <thead>
     <tr>
-      {*NYSS 5991 add nowrap class*}
       <th class='crm-group-name'>{ts}Name{/ts}</th>
       <th class='crm-group-group_id'>{ts}ID{/ts}</th>
       <th class='crm-group-created_by'>{ts}Created By{/ts}</th>
@@ -290,6 +289,9 @@ function showChildren( parent_id, showOrgInfo, group_id, levelClass) {
             }
             appendHTML += "<td>" + val.group_type + "</td>";
             //appendHTML += "<td>" + val.visibility + "</td>";
+						if (showOrgInfo) {
+							appendHTML += "<td>" + val.org_info + "</td>";
+						}
             appendHTML += "<td>" + val.links + "</td>";
             appendHTML += "</tr>";
           });

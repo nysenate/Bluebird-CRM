@@ -14,6 +14,9 @@ function nyss_civihooks_menu() {
 function nyss_civihooks_menu_alter( &$items ) {
   //5253
   $items['admin/user/user/create']['access arguments'] = array('create users');
+
+  //7264 remove view tab
+  $items['user/%']['type'] = MENU_CALLBACK;
 }//menu_alter
 
 function nyss_civihooks_form_alter(&$form, &$form_state, $form_id) {
@@ -59,6 +62,21 @@ function nyss_civihooks_form_alter(&$form, &$form_state, $form_id) {
 
 function nyss_civihooks_page_alter(&$page) {
   //dpm($page);
+  $curPage = current_path();
+  if ( $curPage == 'admin/people' ) {
+    $title = "Manage Users";
+    drupal_set_title($title);
+
+    //6709 only show permission filter if admin
+    global $user;
+    if (!in_array('Administrator', $user->roles) && !in_array('Superuser', $user->roles)) {
+      unset($page['content']['system_main']['user_filter_form']['filters']['status']['filters']['permission']);
+    }
+  }
+  elseif ( strpos($curPage, 'user/') !== FALSE ) {
+    $title = "Edit User";
+    drupal_set_title($title);
+  }
 }
 
 function nyss_civihooks_permission() {
@@ -149,7 +167,8 @@ function nyss_civihooks_civicrm_contactListQuery( &$query, $name, $context, $id 
 
   //limit activity assignees to office staff group
   if ( ( $context == 'activity_assignee' || $context == 'case_activity_assignee' ) &&
-       $groupID ) {
+    $groupID
+  ) {
     //echo $query;
     $query = "
       SELECT CONCAT_WS( ' :: ', sort_name, city ) as name, cc.id
@@ -159,7 +178,9 @@ function nyss_civihooks_civicrm_contactListQuery( &$query, $name, $context, $id 
       LEFT JOIN civicrm_address a
         ON cc.id = a.contact_id
         AND a.is_primary = 1
-      WHERE cc.is_deceased = 0 AND cc.sort_name LIKE '%$name%' AND cc.is_deleted = 0
+      WHERE ( cc.is_deceased != 1 OR cc.is_deceased IS NULL )
+        AND cc.sort_name LIKE '%$name%'
+        AND cc.is_deleted != 1
         AND cgc.group_id IN ($groupID) AND cgc.status = 'Added'";
   }
   elseif ( $context == 'caseview' && $groupID ) { //case roles
@@ -175,7 +196,7 @@ function nyss_civihooks_civicrm_contactListQuery( &$query, $name, $context, $id 
         INNER JOIN civicrm_group_contact cgc
           ON cgc.contact_id = cc.id
         WHERE sort_name LIKE '%$name%'
-          AND cc.is_deleted = 0
+          AND cc.is_deleted != 1
           AND cgc.group_id IN ($groupID)
           AND cgc.status = 'Added'
         LIMIT 0, 10
@@ -191,7 +212,7 @@ function nyss_civihooks_civicrm_contactListQuery( &$query, $name, $context, $id 
       LEFT JOIN civicrm_address sts
         ON ( cc.id = sts.contact_id AND sts.is_primary = 1 )
       WHERE ( sort_name LIKE '{$name}%' )
-        AND cc.is_deleted = 0
+        AND cc.is_deleted != 1
       LIMIT 0, 10
     ";
   }
@@ -603,8 +624,8 @@ function nyss_civihooks_civicrm_postProcess( $formName, &$form ) {
             //now process the household
             if ( $flagDNM ) {
               $params = array(
-                'version'     => 3,
-                'id'          => $houseID,
+                'version' => 3,
+                'id' => $houseID,
                 'do_not_mail' => 1,
               );
               $dnm = civicrm_api( 'Contact', 'Update', $params );
@@ -612,8 +633,8 @@ function nyss_civihooks_civicrm_postProcess( $formName, &$form ) {
             }
             if ( $flagDNE ) {
               $params = array(
-                'version'      => 3,
-                'id'           => $houseID,
+                'version' => 3,
+                'id' => $houseID,
                 'do_not_email' => 1,
               );
               $dne = civicrm_api( 'Contact', 'Update', $params );
@@ -697,14 +718,14 @@ function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) 
     }
   }
 
-  //7499 trim space before save
-  if ( $op == 'edit' || $op == 'create' ) {
+  //7499/7639 trim space before save
+  if ( ($op == 'edit' || $op == 'create') && $objectName != 'UFMatch' ) {
     foreach ( $objectRef as  $f => $v ) {
-      if ( !is_array($v) ) {
+      if ( !is_array($v) && is_string($v) ) {
         $objectRef[$f] = trim($v, ' ');
       }
     }
-    //CRM_Core_Error::debug_var('objectRef',$objectRef);
+    //CRM_Core_Error::debug_var('objectRef after',$objectRef);
   }
 
   _setDBVars();
@@ -747,6 +768,7 @@ function nyss_civihooks_civicrm_pageRun( &$page ) {
 }
 
 function nyss_civihooks_civicrm_validateForm( $formName, &$fields, &$files, &$form, &$errors ) {
+  //CRM_Core_Error::debug_var('$formName', $formName);
   //CRM_Core_Error::debug_var('fields', $fields);
 
   //4272 ensure that target/with contact is set when activity created from contact record
@@ -791,6 +813,25 @@ function nyss_civihooks_civicrm_validateForm( $formName, &$fields, &$files, &$fo
       CRM_Core_Error::statusBounce('You must select a group.', $urlBounce);
     }
   }
+
+  //5725
+  if ( $formName == 'CRM_Profile_Form_Edit' ) {
+    $contactProfiles = CRM_Core_BAO_UFGroup::getReservedProfiles('Contact', $extraProfiles);
+
+    switch ( $contactProfiles[$fields['gid']] ) {
+      case 'New Individual':
+        if ( empty($fields['first_name']) && empty($fields['last_name']) && empty($fields['email-Primary']) ) {
+          $errors['first_name'] = 'You must enter a first name, last name, or email address, in order to create a contact.';
+        }
+        break;
+      case 'New Organization':
+        break;
+      case 'New Household':
+        break;
+    }
+  }
+
+  //CRM_Core_Error::debug_var('$errors', $errors);
 }
 
 function nyss_civihooks_civicrm_navigationMenu( &$params ) {

@@ -1,5 +1,4 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
  | CiviCRM version 4.4                                                |
@@ -77,8 +76,7 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
    * @access public
    * @static
    */
-  function add(&$params) {
-
+  static function add(&$params) {
     $dataExists = self::dataExists($params);
     if (!$dataExists) {
       return NULL;
@@ -102,7 +100,6 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
       //invoke post hook on entityTag
       CRM_Utils_Hook::post('create', 'EntityTag', $params['tag_id'], $object);
     }
-
     return $entityTag;
   }
 
@@ -132,14 +129,12 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
   static function del(&$params) {
     $entityTag = new CRM_Core_BAO_EntityTag();
     $entityTag->copyValues($params);
-    if ($entityTag->find(TRUE)) {
       $entityTag->delete();
 
       //invoke post hook on entityTag
       $object = array(0 => array(0 => $params['entity_id']), 1 => $params['entity_table']);
       CRM_Utils_Hook::post('delete', 'EntityTag', $params['tag_id'], $object);
     }
-  }
 
   /**
    * Given an array of entity ids and entity table, add all the entity to the tags

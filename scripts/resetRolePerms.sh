@@ -303,15 +303,21 @@ sql="
     (9, 'edit groups', 'civicrm'),
     (9, 'edit users with no custom roles', 'administerusersbyrole'),
     (9, 'edit users with role DataEntry', 'administerusersbyrole'),
+    (9, 'edit users with role DataEntry and other roles', 'administerusersbyrole'),
     (9, 'edit users with role MailingApprover', 'administerusersbyrole'),
     (9, 'edit users with role MailingCreator', 'administerusersbyrole'),
     (9, 'edit users with role MailingScheduler', 'administerusersbyrole'),
     (9, 'edit users with role MailingViewer', 'administerusersbyrole'),
     (9, 'edit users with role ManageBluebirdInbox', 'administerusersbyrole'),
     (9, 'edit users with role OfficeManager', 'administerusersbyrole'),
+    (9, 'edit users with role OfficeManager and other roles', 'administerusersbyrole'),
+    (9, 'edit users with role OfficeAdministrator', 'administerusersbyrole'),
+    (9, 'edit users with role OfficeAdministrator and other roles', 'administerusersbyrole'),
     (9, 'edit users with role SOS', 'administerusersbyrole'),
     (9, 'edit users with role Staff', 'administerusersbyrole'),
+    (9, 'edit users with role Staff and other roles', 'administerusersbyrole'),
     (9, 'edit users with role Volunteer', 'administerusersbyrole'),
+    (9, 'edit users with role Volunteer and other roles', 'administerusersbyrole'),
     (9, 'merge duplicate contacts', 'civicrm'),
     (9, 'profile listings', 'civicrm'),
     (9, 'profile listings and forms', 'civicrm'),
@@ -444,3 +450,5 @@ sql="
   SET weight = 0;
 "
 $execSql -q $instance -c "$sql" --drupal
+
+echo "finished resetting roles and permissions.";

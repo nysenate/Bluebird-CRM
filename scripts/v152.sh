@@ -30,7 +30,7 @@ fi
 
 app_rootdir=`$readConfig --ig $instance app.rootdir` || app_rootdir="$DEFAULT_APP_ROOTDIR"
 
-echo "upgrade CiviCRM core to v4.4.3..."
+echo "upgrade CiviCRM core to v4.4.4..."
 $drush $instance civicrm-upgrade-db
 
 echo "cleaning up contact subrecords..."
@@ -69,5 +69,23 @@ sql="
   UPDATE civicrm_mailing_bounce_type
   SET hold_threshold = 25
   WHERE name = 'Syntax';
+"
+$execSql $instance -c "$sql" -q
+
+echo "resetting roles and permissions..."
+$script_dir/resetRolePerms.sh $instance
+
+echo "5725: altering new contact profile field parameters..."
+sql="
+  SELECT @newIndiv:=id FROM civicrm_uf_group WHERE name = 'New_Individual';
+  UPDATE civicrm_uf_field SET is_required = 0 WHERE uf_group_id = @newIndiv;
+"
+$execSql $instance -c "$sql" -q
+
+echo "7454: reset mailing report permissions..."
+sql="
+  UPDATE civicrm_report_instance
+  SET permission = 'access CiviReport'
+  WHERE report_id LIKE 'mailing%';
 "
 $execSql $instance -c "$sql" -q
