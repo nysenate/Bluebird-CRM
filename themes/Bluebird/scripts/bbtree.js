@@ -14,8 +14,6 @@ TagTreeBase = function(instance_options) {
     // Override defaults with instance options.
     self.options = {
         tree_container: null,
-        tree_container_width: '450px',
-        tree_container_height: '450px',
         info_container: null,
         tab_container: null,
         filter_bar: null,
@@ -33,8 +31,6 @@ TagTreeBase = function(instance_options) {
     // Setup instance attributes
     self.current_tree = null;
     self.container = self.options.tree_container
-    self.container_width = self.options.tree_container_width
-    self.container_height = self.options.tree_container_height
     self.info_container = self.options.info_container
     self.tab_container = self.options.tab_container
     self.filter_bar = self.options.filter_bar
@@ -115,7 +111,7 @@ TagTreeBase.prototype.setup_trees = function(tree_data) {
         else {
             self.current_tree = tree;
         }
-        console.log("Finished with tree_id: "+tree_id);
+        // console.log("Finished with tree_id: "+tree_id);
         self.container.append(tree);
         self.container.addClass('TreeWrap');
         self.animate_tree(tree);
@@ -167,7 +163,9 @@ TagTreeBase.prototype.setup_tab_panel = function() {
                 cj('#'+tree_id).show();
 
                 self.tab_container.find('li').removeClass('active');
-                button.addTag('active');
+                button.addClass('active');
+                self.current_tree = cj('#'+tree_id);
+
             });
             tab_list.append(tab_item);
         });
@@ -175,39 +173,44 @@ TagTreeBase.prototype.setup_tab_panel = function() {
     }
 }
 
+
+
 TagTreeBase.prototype.setup_info_panel = function() {
     var self = this;
     if (self.info_container) {
-        self.container.delegate('dt', 'hover',
-            function() {
-                var dt_id = cj(this).attr('id');
-                if(dt_id != 'tagLabel_291' && dt_id != 'tagLabel_296' ) {
-                    var tagCount = ' ';
-                    tagCount += cj('span.entityCount', this).html().match(/[0-9]+/);
-                    if(tagCount == ' ' +null) {
-                        tagCount = cj('span.entityCount', this).html();
+        self.container.delegate('dt', 'mouseover mouseout',
+            function(e) {
+                if(e.type=='mouseover') {
+                    var dt_id = cj(this).attr('id');
+                    if(dt_id != 'tagLabel_291' && dt_id != 'tagLabel_296' ) {
+                        var tagCount = ' ';
+                        tagCount += cj('span.entityCount', this).html().match(/[0-9]+/);
+                        if(tagCount == ' ' +null) {
+                            tagCount = cj('span.entityCount', this).html();
+                        }
                     }
+                    var tagName = cj('div.tag span', this).html();
+                    var tagId = cj(this).attr('tid');
+                    var isReserved = cj(this).hasClass('isReserved') == true ? 'True' : 'False';
+                    var tagDescription = cj(this).attr('description');
+                    if(tagDescription == 'null') {
+                        tagDescription = '';
+                    }
+                    self.info_container.find('.tagName span')
+                    self.info_container.find('.tagName span').html(tagName);
+                    self.info_container.find('.tagId span').html(tagId);
+                    self.info_container.find('.tagDescription span').html(tagDescription);
+                    self.info_container.find('.tagReserved span').html(isReserved);
+                    self.info_container.find('.tagCount span').html(tagCount);
+                } else if(e.type=='mouseout') {
+                    self.info_container.find('.tagName span')
+                    self.info_container.find('.tagName span').html('');
+                    self.info_container.find('.tagId span').html('');
+                    self.info_container.find('.tagDescription span').html('');
+                    self.info_container.find('.tagReserved span').html('');
+                    self.info_container.find('.tagCount span').html('');
                 }
-                var tagName = cj('div.tag span', this).html();
-                var tagId = cj(this).attr('tid');
-                var isReserved = cj(this).hasClass('isReserved') == true ? 'True' : 'False';
-                var tagDescription = cj(this).attr('description');
-                if(tagDescription == 'null') {
-                    tagDescription = '';
-                }
-                self.info_container.find('.tagName span')
-                self.info_container.find('.tagName span').html(tagName);
-                self.info_container.find('.tagId span').html(tagId);
-                self.info_container.find('.tagDescription span').html(tagDescription);
-                self.info_container.find('.tagReserved span').html(isReserved);
-                self.info_container.find('.tagCount span').html(tagCount);
-            },
-            function() {
-                self.info_container.find('.tagName span').html('');
-                self.info_container.find('.tagID span').html('');
-                self.info_container.find('.tagDescription span').html('');
-                self.info_container.find('.tagReserved span').html('');
-                self.info_container.find('.tagCount span').html('');
+
             }
         );
     }

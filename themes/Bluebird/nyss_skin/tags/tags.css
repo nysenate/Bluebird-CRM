@@ -72,8 +72,144 @@ div#tagGroup div.groupTagsKeywords div.label{
   padding: 10px;
   font-weight: normal;
 }
+.page-civicrm-contact .TreeWrap,
 .page-civicrm-imap .TreeWrap{
-  max-height: 230px;
+  height: 230px;
+}
+
+
+/* Admin page */
+.page-civicrm-admin-tag .TreeWrap{
+  width: 500px;
+  height: 580px;
+  min-height: 580px;
+  border: none;
+  border-left: 1px solid #CCCCCC;
+}
+.page-civicrm-admin-tag .TreeWrap .hidden{
+  display: none;
+}
+.page-civicrm-admin-tag #crm-tagListWrap{
+  width: 100%;
+}
+/* tabs */
+.crm-tagTabHeader, .BBTree-Tags {
+  height: 15px;
+  clear: both;
+}
+.crm-tagTabHeader li, .BBTree-Tags li {
+  float: left;
+  margin-right: 15px;
+  background: #D8E0E6;
+  border: 1px solid #fff;
+  border-bottom: none;
+  color: #444;
+  list-style: none;
+  width: 135px;
+  text-align: center;
+  cursor: pointer;
+  padding: 8px 0;
+  margin-top: 2px;
+
+  font-size: 12px !important;
+}
+.crm-tagTabHeader li:hover, .BBTree-Tags li:hover {
+  color: #333;
+  background: #ccc;
+  border: 1px solid #ccc;
+  border-bottom: none;
+  margin-top: 2px;
+
+}
+.crm-tagTabHeader li.active, .BBTree-Tags li.active {
+  background: #fff;
+  padding: 9px 0;
+  font-size: 15px !important;
+  border: 1px solid #ccc;
+  margin-bottom: -1px;
+  margin-top: 0px;
+  border-bottom: 1px solid #fff;
+
+}
+
+/* legend */
+#crm-container .crm-tagLegend td div {
+  height: 16px;
+  width: 16px;
+  float: left;
+  margin-right: 5px; }
+#crm-container .crm-tagLegend td.addTag div {
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
+  background-position: 0; }
+#crm-container .crm-tagLegend td.removeTag div {
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
+  background-position: -17px 0px; }
+#crm-container .crm-tagLegend td.moveTag div {
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
+  background-position: -34px 0px; }
+#crm-container .crm-tagLegend td.updateTag div {
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
+  background-position: -50px 0px; }
+#crm-container .crm-tagLegend td.mergeTag div {
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
+  background-position: -66px 0px; }
+#crm-container .crm-tagLegend td.convertTag div {
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
+  background-position: -107px 0px; }
+#crm-container .crm-tagLegend td.printTag div {
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") !important;
+  cursor: pointer;
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") !important;
+  cursor: pointer;
+  background-position: -160px -96px; }
+#crm-container .crm-tagLegend th {
+  border: 0px; }
+#crm-container .crm-tagLegend * {
+  border: 0px; }
+#crm-container .crm-tagLegend table {
+  width: 380px;
+  float: right;
+  margin-bottom: -10px; }
+
+.crm-tagListInfo {
+    padding:15px;
+    float:left;
+    width:370px;
+}
+.tagInfoBody {
+    margin-top:15px;
+}
+.tagInfoBody div {
+    margin-top:2px;
+    line-height:24px;
+}
+.crm-tagTreeDisplay {
+    float:right;
+}
+#BBTreeContainer .BBTree {
+    border:0;
+    border-left:1px solid #ccc;
+}
+.container #status {
+    display:none;
 }
 
 .tag_filter_bar  {
