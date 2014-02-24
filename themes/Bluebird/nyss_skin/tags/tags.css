@@ -59,7 +59,6 @@ div#tagGroup div.groupTagsKeywords div.label{
   margin: 10px 10px 0;
   display: none;
 }
-
 .TreeWrap{
   min-width: 200px;
   max-width: 530px;
@@ -203,58 +202,43 @@ div#tagGroup div.groupTagsKeywords div.label{
 #BBDialog .BBTree dt .fCB ul {
   margin: 0;
 }
-.BBTree dt .fCB ul li,
-#BBTreeContainer .BBTree dt .fCB ul li,
-#BBDialog .BBTree dt .fCB ul li {
+.BBTree dt .fCB ul li{
   height: 16px;
   width: 16px;
   float: left;
   margin: 1px 2px 0 0;
   list-style-image: none !important;
   list-style-type: none !important;
-}
-.BBTree dt .fCB ul li.addTag,
-#BBDialog .BBTree dt .fCB ul li.addTag {
-  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
   cursor: pointer;
+}
+.BBTree dt .fCB ul li.addTag{
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
   background-position: 0;
 }
 
-.BBTree dt .fCB ul li.removeTag,
-#BBDialog .BBTree dt .fCB ul li.removeTag {
+.BBTree dt .fCB ul li.removeTag{
   background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
-  cursor: pointer;
   background-position: -17px 0px;
 }
 
-.BBTree dt .fCB ul li.moveTag,
-#BBDialog .BBTree dt .fCB ul li.moveTag {
+.BBTree dt .fCB ul li.moveTag{
   background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
-  cursor: pointer;
   background-position: -34px 0px;
 }
-.BBTree dt .fCB ul li.updateTag,
-#BBDialog .BBTree dt .fCB ul li.updateTag {
+.BBTree dt .fCB ul li.updateTag {
   background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
-  cursor: pointer;
   background-position: -50px 0px;
 }
-.BBTree dt .fCB ul li.mergeTag,
-#BBDialog .BBTree dt .fCB ul li.mergeTag {
+.BBTree dt .fCB ul li.mergeTag {
   background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
-  cursor: pointer;
   background-position: -66px 0px;
 }
-.BBTree dt .fCB ul li.convertTag,
-#BBDialog .BBTree dt .fCB ul li.convertTag {
+.BBTree dt .fCB ul li.convertTag {
   background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
-  cursor: pointer;
   background-position: -107px 0px;
 }
-.BBTree dt .fCB ul li.printTag,
-#BBDialog .BBTree dt .fCB ul li.printTag {
+.BBTree dt .fCB ul li.printTag {
   background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") !important;
-  cursor: pointer;
   background-position: -160px -96px;
 }
 
