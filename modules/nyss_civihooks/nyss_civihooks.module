@@ -814,13 +814,16 @@ function nyss_civihooks_civicrm_validateForm( $formName, &$fields, &$files, &$fo
     }
   }
 
-  //5725
+  //5725/7653
   if ( $formName == 'CRM_Profile_Form_Edit' ) {
     $contactProfiles = CRM_Core_BAO_UFGroup::getReservedProfiles('Contact', $extraProfiles);
 
     switch ( $contactProfiles[$fields['gid']] ) {
       case 'New Individual':
-        if ( empty($fields['first_name']) && empty($fields['last_name']) && empty($fields['email-Primary']) ) {
+        $fName = (isset($fields['first_name'])) ? trim($fields['first_name']) : NULL;
+        $lName = (isset($fields['last_name'])) ? trim($fields['last_name']) : NULL;
+        $email = (isset($fields['email-Primary'])) ? trim($fields['email-Primary']) : NULL;
+        if ( empty($fName) && empty($lName) && empty($email) ) {
           $errors['first_name'] = 'You must enter a first name, last name, or email address, in order to create a contact.';
         }
         break;
