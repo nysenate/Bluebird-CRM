@@ -92,7 +92,7 @@ $execSql $instance -c "$sql" -q
 echo "7654: correct administer parent menu permission..."
 sql="
   UPDATE civicrm_navigation
-  SET permission = 'administer CiviCRM'
+  SET permission = 'view debug output'
   WHERE name = 'Administer';
 "
 $execSql $instance -c "$sql" -q
