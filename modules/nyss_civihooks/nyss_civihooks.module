@@ -828,8 +828,16 @@ function nyss_civihooks_civicrm_validateForm( $formName, &$fields, &$files, &$fo
         }
         break;
       case 'New Organization':
+        $org = (isset($fields['organization_name'])) ? trim($fields['organization_name']) : NULL;
+        if ( empty($org) ) {
+          $errors['organization_name'] = 'You must enter an organization name in order to create a contact.';
+        }
         break;
       case 'New Household':
+        $house = (isset($fields['household_name'])) ? trim($fields['household_name']) : NULL;
+        if ( empty($house) ) {
+          $errors['household_name'] = 'You must enter a household name in order to create a contact.';
+        }
         break;
     }
   }
