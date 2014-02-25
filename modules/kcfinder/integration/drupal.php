@@ -4,9 +4,9 @@
   *
   *      @desc CMS integration code: Drupal
   *   @package KCFinder
-  *   @version 2.51
+  *   @version 2.53
   *    @author Dany Alejandro Cabrera <otello2040@gmail.com>
-  * @copyright 2010, 2011 KCFinder Project
+  * @copyright 2010-2014 KCFinder Project
   *   @license http://www.opensource.org/licenses/gpl-2.0.php GPLv2
   *   @license http://www.opensource.org/licenses/lgpl-2.1.php LGPLv2
   *      @link http://kcfinder.sunhater.com

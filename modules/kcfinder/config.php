@@ -4,9 +4,9 @@
   *
   *      @desc Base configuration file
   *   @package KCFinder
-  *   @version 2.32
-  *    @author Pavel Tzonkov <pavelc@users.sourceforge.net>
-  * @copyright 2010, 2011 KCFinder Project
+  *   @version 2.53
+  *    @author Pavel Tzonkov <sunhater@sunhater.com>
+  * @copyright 2010-2014 KCFinder Project
   *   @license http://www.opensource.org/licenses/gpl-2.0.php GPLv2
   *   @license http://www.opensource.org/licenses/lgpl-2.1.php LGPLv2
   *      @link http://kcfinder.sunhater.com
@@ -30,15 +30,51 @@ $authenticated = user_access('access CiviCRM');
 
 $_CONFIG = array(
 
+
+// GENERAL SETTINGS
+
     'disabled' => !$authenticated,
+    'theme' => "oxygen",
+    'uploadURL' => 'http://'.$bbconfig['servername'].$pubpath,
+    'uploadDir' => $drupal_dir.$pubpath,
+
+    'types' => array(
+
+    // (F)CKEditor types
+        'files'   =>  "",
+        'flash'   =>  "swf",
+        'images'  =>  "*img",
+
+    // TinyMCE types
+        'file'    =>  "",
+        'media'   =>  "swf flv avi mpg mpeg qt mov wmv asf rm",
+        'image'   =>  "*img",
+    ),
+
+
+// IMAGE SETTINGS
+
+    'imageDriversPriority' => "gd imagick gmagick",
+    'jpegQuality' => 90,
+    'thumbsDir' => ".thumbs",
+
+    'maxImageWidth' => 640,
+    'maxImageHeight' => 480,
+
+    'thumbWidth' => 100,
+    'thumbHeight' => 100,
+
+    'watermark' => "",
+
+
+// DISABLE / ENABLE SETTINGS
+
     'denyZipDownload' => false,
     'denyUpdateCheck' => true,
     'denyExtensionRename' => false,
 
-    'theme' => "oxygen",
 
-    'uploadURL' => 'http://'.$bbconfig['servername'].$pubpath,
-    'uploadDir' => $drupal_dir.$pubpath,
+// PERMISSION SETTINGS
 
     'dirPerms' => 0755,
     'filePerms' => 0644,
@@ -48,8 +84,8 @@ $_CONFIG = array(
         'files' => array(
             'upload' => true,
             'delete' => true,
-            'copy' => true,
-            'move' => true,
+            'copy'   => true,
+            'move'   => true,
             'rename' => true
         ),
 
@@ -62,18 +98,8 @@ $_CONFIG = array(
 
     'deniedExts' => "exe com msi bat php phps phtml php3 php4 cgi pl",
 
-    'types' => array(
 
-        // CKEditor & FCKEditor types
-        'files'   =>  "",
-        'flash'   =>  "swf",
-        'images'  =>  "*img",
-
-        // TinyMCE types
-        'file'    =>  "",
-        'media'   =>  "swf flv avi mpg mpeg qt mov wmv asf rm",
-        'image'   =>  "*img",
-    ),
+// MISC SETTINGS
 
     'filenameChangeChars' => array(
         ' ' => '_'
@@ -85,21 +111,12 @@ $_CONFIG = array(
 
     'mime_magic' => "",
 
-    'maxImageWidth' => 640,
-    'maxImageHeight' => 480,
-
-    'thumbWidth' => 100,
-    'thumbHeight' => 100,
-
-    'thumbsDir' => ".thumbs",
-
-    'jpegQuality' => 90,
-
     'cookieDomain' => "",
     'cookiePath' => "",
     'cookiePrefix' => 'KCFINDER_',
 
-    // THE FOLLOWING SETTINGS CANNOT BE OVERRIDED WITH SESSION CONFIGURATION
+
+// THE FOLLOWING SETTINGS CANNOT BE OVERRIDED WITH SESSION SETTINGS
 
     '_check4htaccess' => true,
     //'_tinyMCEPath' => "/tiny_mce",
