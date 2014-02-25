@@ -96,3 +96,6 @@ sql="
   WHERE name = 'Administer';
 "
 $execSql $instance -c "$sql" -q
+
+echo "rebuilding word replacement list..."
+$execSql $instance -f $app_rootdir/scripts/sql/wordReplacement.sql -q

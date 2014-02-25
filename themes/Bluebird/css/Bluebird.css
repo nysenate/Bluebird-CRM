@@ -1790,3 +1790,11 @@ div.crm-tasks div.crm-buttons-actions span {
   display: block;
   margin-top: 4px;
 }
+
+/*contact edit tags and groups*/
+div#tagGroup table.form-layout-compressed {
+  width: 98%;
+}
+div#tagGroup table.form-layout-compressed td {
+  width: 45%;
+}
