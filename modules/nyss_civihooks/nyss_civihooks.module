@@ -1199,6 +1199,20 @@ function _buildManageMenu($manageID) {
         ),
         'child' => array(),
       ),
+      $manageID+16 => array(
+        'attributes' => Array(
+          'label' => 'Manage Images',
+          'name' => 'Manage Images',
+          'url' => 'sites/all/modules/kcfinder/browse.php?type=images&CKEditor=html_message&CKEditorFuncNum=2&langCode=en',
+          'permission' => 'create mailings, schedule mailings, administer CiviCRM',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $manageID,
+          'navID' => $manageID+16,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
     ),
   );
 
