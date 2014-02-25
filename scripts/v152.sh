@@ -82,10 +82,9 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
-echo "7454: reset mailing report permissions..."
+echo "7454: reset report permissions..."
 sql="
   UPDATE civicrm_report_instance
-  SET permission = 'access CiviReport'
-  WHERE report_id LIKE 'mailing%';
+  SET permission = 'access CiviReport';
 "
 $execSql $instance -c "$sql" -q
