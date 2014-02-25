@@ -5,7 +5,7 @@
  * Provides fine-grained permissions for creating, editing, and deleting users.
  *
  * This module allows site builders to set up fine-grained permissions for
- * allowing users to edit and cancel other users Ñ more specific than
+ * allowing users to edit and cancel other users ï¿½ more specific than
  * Drupal Core's all-or-nothing 'administer users' permission.  It also
  * provides and enforces a 'create users' permission.
  */
@@ -94,6 +94,14 @@ function _administerusersbyrole_can_edit_user($account) {
 
   $allow = TRUE;
   foreach ($account->roles as $rid => $role) {
+
+    //NYSS 7656
+    //https://drupal.org/node/1670954
+    if (is_numeric($role)) {
+      $roles = user_role_load($role);
+      $role = $roles->name;
+    }
+
     if ($rid === DRUPAL_AUTHENTICATED_RID) {
       continue;
     }
@@ -157,7 +165,9 @@ function administerusersbyrole_form_user_multiple_cancel_confirm_alter(&$form, &
 /**
  * Implements hook_user_update().
  */
-function administerusersbyrole_user_update(&$edit, $account, $category) {
+//NYSS 7656
+//https://drupal.org/node/1894578
+function administerusersbyrole_user_presave(&$edit, $account, $category) {
   if ($category === 'account') {
     if (!_administerusersbyrole_can_edit_user($account)) {
       if (isset($edit['status'])) {
@@ -165,6 +175,18 @@ function administerusersbyrole_user_update(&$edit, $account, $category) {
         drupal_set_message(t('You do not have permission to !action %user.', array('!action' => $action, '%user' => $account->name)), 'error');
         unset($edit['status']);
       }
+    }
+  }
+}
+
+//NYSS 7656
+//https://drupal.org/node/1670954
+function administerusersbyrole_form_user_admin_account_alter(&$form, &$form_state, $form_id) {
+  // Remove rows if I don't have access to them.
+  foreach ($form['accounts']['#options'] as $uid => $fields) {
+    $account = user_load($uid);
+    if (!_administerusersbyrole_can_edit_user($account)) {
+      unset($form['accounts']['#options'][$uid]);
     }
   }
 }
