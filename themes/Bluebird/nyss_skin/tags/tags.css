@@ -60,23 +60,26 @@ div#tagGroup div.groupTagsKeywords div.label{
   display: none;
 }
 .TreeWrap{
-  min-width: 200px;
-  max-width: 530px;
-  border: 1px solid #CCCCCC;
-  float: left;
   min-height: 200px;
   max-height: 330px;
+  border: 1px solid #CCCCCC;
+  float: left;
   overflow-y:scroll;
   font-size: 1em;
-  padding: 10px;
+  padding: 0 10px 10px;
   font-weight: normal;
+  width: 100%;
+  -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+  -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+  box-sizing: border-box;         /* Opera/IE 8+ */
 }
 .page-civicrm-contact .TreeWrap,
 .page-civicrm-imap .TreeWrap{
   height: 230px;
 }
-
-
+.page-civicrm-imap .TreeWrap{
+  width: 289px;
+}
 /* Admin page */
 .page-civicrm-admin-tag .TreeWrap{
   width: 500px;
@@ -189,14 +192,14 @@ div#tagGroup div.groupTagsKeywords div.label{
   margin-bottom: -10px;
 }
 
-.BBTree dt .fCB,
-#BBTreeContainer .BBTree dt .fCB,
-#BBDialog .BBTree dt .fCB {
-  display: none;
+
+.BBTree dt .fCB .checkbox{
+  display: auto;
   padding: 1px 0;
-  float: right;
+  float: left;
   width: auto;
 }
+
 .BBTree dt .fCB ul,
 #BBTreeContainer .BBTree dt .fCB ul,
 #BBDialog .BBTree dt .fCB ul {
@@ -285,6 +288,8 @@ div#tagGroup div.groupTagsKeywords div.label{
     padding:15px;
     float:left;
     width:370px;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
 }
 .tagInfoBody {
     margin-top:15px;
@@ -315,38 +320,41 @@ div#tagGroup div.groupTagsKeywords div.label{
 }
 
 /* For search */
-#issue-code-clear {
-  background:  #DBA185;
-  float: left;
-  line-height: 1em;
-  padding: 2px 6px 4px;
-  position: absolute;
-  right: 8px;
-  top: 57px;
-  display: none;
-  border-style: solid;
-  border-color: #CD4343;
-  border-width: 1px;
-  color:#B52B36;
-  font-weight: bold;
-}
-#issue-code-clear:hover{
-  background:  #CD4343;
-  border-color: #B52B36;
-  color:#fff;
-}
 #issue-code-empty{
-  height:20px;
-  width:520px;
-  padding:190px 0;
+  max-height: 310px;
+  min-height: 180px;
+  padding: 10px;
+  margin: 10px 0;
   text-align: center;
   display: none;
-  background-color: #FFDCDC;
   position: absolute;
+  background-color: #FFDCDC;
   border-style: solid;
   border-color: #CD4343;
   border-width: 1px;
   color:#B52B36;
+  width: 490px;
+  -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+  -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+  box-sizing: border-box;
+}
+.page-civicrm-imap #issue-code-empty{
+  width: 255px;
+}
+
+
+#clear {
+  background-image: url("http://p.yusukekamiyamane.com/icons/search/fugue/icons/cross.png");
+  background-repeat: no-repeat;
+  float: right;
+  height: 16px;
+  margin: -24px 5px 0 0;
+  position: relative;
+  text-indent: -1000em;
+  top: 0;
+  width: 16px;
+  display: none;
+  z-index: 100000;
 }
 
 .TreeWrap dt{
@@ -390,10 +398,13 @@ width: 20px;
   float: left;
   background: blue;
 }
+
+
 .tag-row .fCB{
   float: left;
-  display: inline;
-  width: 25px;
+}
+.page-civicrm-admin-tag .tag-row .fCB{
+  float: right;
 }
 .tag-row .fCB ul,.tag-row .fCB ul li{
   margin: 0;
@@ -401,6 +412,25 @@ width: 20px;
   list-style: none;
 }
 
+.fCB .printTag,
+.fCB .addTag,
+.fCB .removeTag,
+.fCB .moveTag,
+.fCB .updateTag,
+.fCB .convertTag,
+.fCB .mergeTag{
+  display: none;
+}
+
+.TreeWrap dt:hover .printTag,
+.TreeWrap dt:hover .addTag,
+.TreeWrap dt:hover .removeTag,
+.TreeWrap dt:hover .moveTag,
+.TreeWrap dt:hover .updateTag,
+.TreeWrap dt:hover .convertTag,
+.TreeWrap dt:hover .mergeTag{
+  display: inline;
+}
 
 /* Search and Hover styles*/
 .TreeWrap .search-hidden{

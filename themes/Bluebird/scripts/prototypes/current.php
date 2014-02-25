@@ -236,8 +236,8 @@
                                     <label>Issue Codes</label>
                                 </div>
                                 <div class="content">
-                                  <input type="text" autocomplete="off" maxlength="64" id="issue-code-search" >
-                                  <div id="issue-code-results" ></div>
+                                  <input type="text" autocomplete="off" maxlength="64" id="issue-code-search" />
+                                  <div id="issue-code-results"></div>
 
 
                                   <script type="text/javascript">

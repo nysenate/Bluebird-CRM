@@ -221,11 +221,12 @@ TagTreeBase.prototype.setup_tag_filter = function() {
     self.selected_tag = null;
     self.matched_tags = null;
     self.filter_timeout_id = null;
-    self.clear_button = cj('<div id="issue-code-clear" >x</div>');
+    self.clear_button = cj('<a id="clear">Clear results</a>');
     self.empty_panel = cj('<div id="issue-code-empty" >No Results Found</div>');
     self.wait_panel = cj('<div id="issue-code-wait"></div>');
     self.filter_bar.addClass('tag_filter_bar');
-    self.container.prepend(self.clear_button, self.empty_panel);
+    self.filter_bar.after(self.clear_button);
+    self.container.prepend(self.empty_panel);
     self.container.prepend(self.wait_panel)
     self.wait_panel.hide();
 
@@ -345,6 +346,7 @@ TagTreeBase.prototype.filter_tags = function() {
                 tag.addClass('search-match');
             }
         });
+        console.log(self.clear_button);
         self.clear_button.fadeIn( "slow" );
 
         if (has_matches) {
