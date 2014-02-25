@@ -2538,8 +2538,9 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
       $this->_sendmail
     ) {
 
-      //NYSS 4619
-      $rowCount = CRM_Core_DAO::singleValueQuery("SELECT FOUND_ROWS();");
+      //NYSS 4619 need to look for row count in two ways
+      $rowCount = (!empty($this->_contactSelected)) ? count($this->_contactSelected) : count($rows);
+      //CRM_Core_Error::debug_var('$rowCount', $rowCount);
       if ( $rowCount > $maxCountAllowed ) {
         if ( $this->_id ) {
           $url = CRM_Utils_System::url("civicrm/report/instance/{$this->_id}", "reset=1", TRUE);
