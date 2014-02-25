@@ -84,9 +84,18 @@ class CRM_IMAP_AJAX {
       $UnprocessedOutput = array();
       while($row_raw = mysql_fetch_assoc($UnprocessedResult)) {
         foreach ($row_raw as $key => $value) {
-          $output = str_replace( chr( 194 ) . chr( 160 ), ' ', $value);
-          $output = preg_replace('/[^a-zA-Z0-9\s\p{P}<>]/', '', trim($output));
-          $row[$key] = $output;
+          switch ($key) {
+            case 'body':
+              $row[$key] = mysql_real_escape_string($output);
+              break;
+
+            default:
+              $output = str_replace( chr( 194 ) . chr( 160 ), ' ', $value);
+              $output = htmlspecialchars_decode($output);
+              $output = preg_replace('/[^a-zA-Z0-9\s\p{P}<>]/', '', trim($output));
+              $row[$key] = substr(mysql_real_escape_string($output),0,255);
+              break;
+          }
         }
         $returnMessage = $row;
 
@@ -520,18 +529,18 @@ class CRM_IMAP_AJAX {
       }
 
       $output = self::unifiedMessageInfo($messageUid);
-      $oldActivityId =  mysql_real_escape_string($output['activity_id']);
-      $senderEmail = substr(mysql_real_escape_string($output['sender_email']),0,255);
-      $senderName = substr(mysql_real_escape_string($output['sender_name']),0,255);
-      $forwarder = substr(mysql_real_escape_string($output['forwarder']),0,255);
-      $date = mysql_real_escape_string($output['updated_date']);
-      $FWDdate = mysql_real_escape_string($output['email_date']);
-      $subject =substr(strip_tags(htmlspecialchars_decode(mysql_real_escape_string($output['subject'])) ) ,0,255);
-      $body = mysql_real_escape_string($output['body']);
-      $status = mysql_real_escape_string($output['status']);
-      $key = mysql_real_escape_string($output['sender_email']);
-      $messageId = mysql_real_escape_string($output['message_id']);
-      $imapId = mysql_real_escape_string($output['imap_id']);
+      $oldActivityId =  $output['activity_id'];
+      $senderEmail = $output['sender_email'];
+      $senderName = $output['sender_name'];
+      $forwarder = $output['forwarder'];
+      $date = $output['updated_date'];
+      $FWDdate = $output['email_date'];
+      $subject = $output['subject'];
+      $body = $output['body'];
+      $status = $output['status'];
+      $key = $output['sender_email'];
+      $messageId = $output['message_id'];
+      $imapId = $output['imap_id'];
 
       if($status != 1){
         $attachments = $output['attachments'];
@@ -1054,9 +1063,9 @@ ORDER BY gc.contact_id ASC";
       $debug = self::get('debug');
 
       $output = self::unifiedMessageInfo($id);
-      $contact = mysql_real_escape_string($output['matched_to']);
-      $activityId = mysql_real_escape_string($output['activity_id']);
-      $date = mysql_real_escape_string($output['updated_date']);
+      $contact = $output['matched_to'];
+      $activityId =  $output['activity_id'];
+      $date =  $output['updated_date'];
 
       $change = self::get('change');
       $results = array();
