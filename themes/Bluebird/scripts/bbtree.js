@@ -89,6 +89,7 @@ TagTreeBase.prototype.setup_trees = function(tree_data) {
         // All tree types use this basic template, tab controls can be customized by
         // overriding the `add_control_box` method.
         function build_node(tag, parent, depth) {
+            tag.description = tag.description == null ? "" : tag.description;
             var html = '<dt class="lv-'+depth+' '+markReserved(tag)+'" id="'+tagLabel(tag.id)+'" description=\''+tag.description+'\' tLvl="'+depth+'" tid="'+tag.id+'" parent="'+parent.id+'">'+
                             '<div class="tag-row"><div class="ddControl '+markChildren(tag)+'"></div>'+
                             self.add_control_box(tag, tree_id) +
@@ -839,7 +840,7 @@ TagTreeManage.prototype.addTagModal = function(parent) {
                             tag = data.message;
                             depth = parseFloat(parent.attr('tLvl'))+1;
                             parent.next('dl').prepend(
-                                '<dt class="lv-'+depth+' '+markReserved(tag)+'" id="'+tagLabel(tag.id)+'" description=\''+tag.description+'\' tLvl="'+depth+'" tid="'+tag.id+'" parent="'+parent_id+'">'+
+                                '<dt class="lv-'+depth+' '+markReserved(tag)+'" id="'+tagLabel(tag.id)+'" description=\''+tag_desc+'\' tLvl="'+depth+'" tid="'+tag.id+'" parent="'+parent_id+'">'+
                                     '<div class="tag-row"><div class="ddControl"></div>'+
                                     self.add_control_box(tag, self.current_tree.attr('data-tree-id')) +
                                     '<div class="tag"><span class="name">'+tag.name+'</span></div>'+
@@ -851,7 +852,7 @@ TagTreeManage.prototype.addTagModal = function(parent) {
 
                             self.notify('Success', 'Add Tag',
                                 'Tag <span>'+tag_name+'</span> was added successfully under <span>'+parent_name+'</span>. '+
-                                'It\'s new description is <span>'+tag_desc.replace(/</g,"&lt;").replace(/>/g,"&gt;")+'</span>. '+
+                                'It\'s new description is <span>"'+tag_desc.replace(/</g,"&lt;").replace(/>/g,"&gt;")+'"</span>. '+
                                 'It is <span> '+(tag_resv ? '' : 'not ')+' reserved</span>'
                             );
                         }
@@ -990,14 +991,14 @@ TagTreeManage.prototype.updateTagModal = function(tag) {
                                     tag.addClass('isReserved');
                                 }
                                 tag.find('.name').html(tag_data.name);
-                                tag.attr('description', tag_data.description);
+                                tag.attr('description', new_desc);
 
                                 var msg = 'Tag <span>'+tag_name+'</span> was updated.';
                                 if (tag_name != new_name) {
                                     msg += ' Its new name is <span>'+new_name+'</span>.';
                                 }
                                 if (tag_desc != new_desc) {
-                                    msg += ' Its new description is <span>'+new_desc+'</span>. ';
+                                    msg += ' Its new description is <span>"'+new_desc+'"</span>. ';
                                 }
                                 if (tag_resv != new_resv) {
                                     msg += ' It is now '+(new_resv ? 'reserved.' : 'unreserved.')
