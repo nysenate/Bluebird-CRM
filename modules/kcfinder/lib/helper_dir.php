@@ -97,49 +97,53 @@ class dir {
             'followLinks' => true
         );
 
-        if (!is_dir($dir) || !is_readable($dir))
+        if (!is_dir($dir) || !is_readable($dir)) {
             return false;
+        }
 
-        if (strtoupper(substr(PHP_OS, 0, 3)) == "WIN")
+        if (strtoupper(substr(PHP_OS, 0, 3)) == "WIN") {
             $dir = str_replace("\\", "/", $dir);
+        }
         $dir = rtrim($dir, "/");
 
         $dh = @opendir($dir);
-        if ($dh === false)
+        if ($dh === false) {
             return false;
+        }
 
-        if ($options === null)
+        if ($options === null) {
             $options = $defaultOptions;
+        }
 
-        foreach ($defaultOptions as $key => $val)
-            if (!isset($options[$key]))
+        foreach ($defaultOptions as $key => $val) {
+            if (!isset($options[$key])) {
                 $options[$key] = $val;
+            }
+        }
 
         $files = array();
         while (($file = @readdir($dh)) !== false) {
-            $type = filetype("$dir/$file");
-
-            if ($options['followLinks'] && ($type === "link")) {
-                $lfile = "$dir/$file";
-                do {
-                    $ldir = dirname($lfile);
-                    $lfile = @readlink($lfile);
-                    if (substr($lfile, 0, 1) != "/")
-                        $lfile = "$ldir/$lfile";
-                    $type = filetype($lfile);
-                } while ($type == "link");
+            // Immediately skip '.', '..', and anything that doesn't match
+            // the specified pattern.
+            if ($file == '.' || $file == '..'
+                || !preg_match($options['pattern'], $file)) {
+                continue;
             }
 
-            if ((($type === "dir") && (($file == ".") || ($file == ".."))) ||
-                !preg_match($options['pattern'], $file)
-            )
-                continue;
+            $fullpath = "$dir/$file";
+            $type = filetype($fullpath);
 
-            if (($options['types'] === "all") || ($type === $options['types']) ||
-                ((is_array($options['types'])) && in_array($type, $options['types']))
-            )
-                $files[] = $options['addPath'] ? "$dir/$file" : $file;
+            // If file is a symlink, get the true type of its destination.
+            if ($options['followLinks'] && $type == "link") {
+                $type = filetype(realpath($fullpath));
+            }
+
+            if ($options['types'] === "all" || $type === $options['types'] ||
+                (is_array($options['types']) && in_array($type, $options['types']))) {
+                $files[] = $options['addPath'] ? $fullpath : $file;
+            }
         }
+
         closedir($dh);
         usort($files, array("dir", "fileSort"));
         return $files;
