@@ -7,6 +7,7 @@
 # Organization: New York State Senate
 # Date: 2010-09-13
 # Revised: 2011-12-09
+# Revised: 2014-02-26 - enforce read-only group access on template/ directory
 #
 
 prog=`basename $0`
@@ -46,6 +47,7 @@ set -x
 # Senators cannot delete their own header and footer images.  I am chowning
 # the directory to "root" so that only root can modify images there.
 chown -R root "$datdir"/*/pubfiles/images/template
+chmod -R go-w "$datdir"/*/pubfiles/images/template
 
 [ "$impowner" ] && chown -R "$impowner" "$impdir/"
 [ "$impperms" ] && chmod -R "$impperms" "$impdir/"

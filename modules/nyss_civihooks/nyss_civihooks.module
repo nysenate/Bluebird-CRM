@@ -1215,6 +1215,7 @@ function _buildManageMenu($manageID) {
           'parentID' => $manageID,
           'navID' => $manageID+16,
           'active' => 1,
+          'target' => '_blank',
         ),
         'child' => array(),
       ),
