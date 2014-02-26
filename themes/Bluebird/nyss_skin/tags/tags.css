@@ -69,6 +69,7 @@ div#tagGroup div.groupTagsKeywords div.label{
   padding: 0 10px 10px;
   font-weight: normal;
   width: 100%;
+  background: #fff;
   -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
   -moz-box-sizing: border-box;    /* Firefox, other Gecko */
   box-sizing: border-box;         /* Opera/IE 8+ */
@@ -362,6 +363,7 @@ div#tagGroup div.groupTagsKeywords div.label{
   float: left;
   padding: 0;
   margin:0;
+  background: #fff;
   -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
   -moz-box-sizing: border-box;    /* Firefox, other Gecko */
   box-sizing: border-box;         /* Opera/IE 8+ */
@@ -371,7 +373,8 @@ div#tagGroup div.groupTagsKeywords div.label{
 }
 
 /* Toggling arrow */
-.TreeWrap dt .ddControl.treeButton {
+
+.ddControl.treeButton {
 float: left;
 height: 20px;
 margin: 0;
@@ -380,9 +383,10 @@ width: 20px;
   background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") no-repeat -32px -15px;
   cursor: pointer;
 }
-.TreeWrap dt .ddControl.treeButton.open {
+.ddControl.treeButton.open {
   background-position: -64px -15px;
 }
+
 
 
 .tag-row .tag{
@@ -522,3 +526,66 @@ width: 20px;
 .TreeWrap dt.lv-20{
   padding-left:110px;
 }
+.crm-form-block .TreeWrap dt{
+  width: 100%;
+}
+
+/* modals */
+.page-civicrm-admin-tag .modal dt{
+  float: left;
+  width: 100%;
+  -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+  -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+  box-sizing: border-box;         /* Opera/IE 8+ */
+}
+.page-civicrm-admin-tag .modal dt .fCB{
+  float: left;
+}
+
+/* Dirty indent */
+.page-civicrm-admin-tag .modal dt.lv-0{
+  padding-left:0;
+}
+.page-civicrm-admin-tag .modal dt.lv-1{
+  padding-left:0;
+}
+.page-civicrm-admin-tag .modal dt.lv-2{
+  padding-left:20px;
+}
+.page-civicrm-admin-tag .modal dt.lv-3{
+  padding-left:30px;
+}
+.page-civicrm-admin-tag .modal dt.lv-4{
+  padding-left:40px;
+}
+.page-civicrm-admin-tag .modal dt.lv-5{
+  padding-left:50px;
+}
+.page-civicrm-admin-tag .modal dt.lv-6{
+  padding-left:60px;
+}
+.page-civicrm-admin-tag .modal dt.lv-7{
+  padding-left:70px;
+}
+.page-civicrm-admin-tag .modal dt.lv-8{
+  padding-left:80px;
+}
+.page-civicrm-admin-tag .modal dt.lv-9{
+  padding-left:90px;
+}
+.page-civicrm-admin-tag .modal dt.lv-10{
+  padding-left:100px;
+}
+.page-civicrm-admin-tag .modal dt.lv-11,
+.page-civicrm-admin-tag .modal dt.lv-12,
+.page-civicrm-admin-tag .modal dt.lv-13,
+.page-civicrm-admin-tag .modal dt.lv-14,
+.page-civicrm-admin-tag .modal dt.lv-15,
+.page-civicrm-admin-tag .modal dt.lv-16,
+.page-civicrm-admin-tag .modal dt.lv-17,
+.page-civicrm-admin-tag .modal dt.lv-18,
+.page-civicrm-admin-tag .modal dt.lv-19,
+.page-civicrm-admin-tag .modal dt.lv-20{
+  padding-left:110px;
+}
+
