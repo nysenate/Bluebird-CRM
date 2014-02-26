@@ -985,10 +985,10 @@ TagTreeManage.prototype.updateTagModal = function(tag) {
                             else {
                                 var tag_data = data.message;
                                 if(parseFloat(tag_data.is_reserved)) {
-                                    tag.removeClass('isReserved');
+                                    tag.addClass('isReserved');
                                 }
                                 else{
-                                    tag.addClass('isReserved');
+                                    tag.removeClass('isReserved');
                                 }
                                 tag.find('.name').html(tag_data.name);
                                 tag.attr('description', new_desc);
