@@ -42,6 +42,9 @@
     {if $contactIssueCode_list}
     	<div class="contactTagsList help"><strong>Issue Codes: </strong><span>{$contactIssueCode_list}</span></div>
     	<div class="clear"></div>
+    {else}
+      <div class="contactTagsList help" style="display:none"><strong>Issue Codes: </strong><span></span></div>
+      <div class="clear"></div>
     {/if}
     <div id="crm-tagListWrap">
 

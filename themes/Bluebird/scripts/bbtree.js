@@ -15,9 +15,9 @@ TagTreeBase = function(instance_options) {
     self.options = {
         tree_container: null,
         info_container: null,
+        list_container: null,
         tab_container: null,
         filter_bar: null,
-        tags_list: null,
 
         tag_trees: [291],
         default_tree: 291,
@@ -33,9 +33,9 @@ TagTreeBase = function(instance_options) {
     self.current_tree = null;
     self.container = self.options.tree_container;
     self.info_container = self.options.info_container;
+    self.list_container = self.options.list_container;
     self.tab_container = self.options.tab_container;
     self.filter_bar = self.options.filter_bar;
-    self.tags_list = self.options.tags_list;
     return self;
 }
 
@@ -522,6 +522,18 @@ TagTreeTag.prototype.animate_tree = function(tree) {
     })
 }
 
+TagTreeTag.prototype.toggleTagList = function() {
+    var self = this;
+    if (self.list_container != null) {
+        if (self.list_container.find('span').html().length == 0) {
+            self.list_container.hide();
+        }
+        else {
+            self.list_container.show();
+        }
+    }
+}
+
 TagTreeTag.prototype.removeTagCheck = function(tag_id) {
     var self = this;
     var tag = self.container.find('dt#'+tagLabel(tag_id));
@@ -556,23 +568,17 @@ TagTreeTag.prototype.removeTagCheck = function(tag_id) {
     }
 
     // Remove the name from the tag list at the top (if it exists)
-    if (self.tags_list != null) {
-
+    if (self.list_container != null) {
         var tag_name = tag.find('.name').html();
-        var tag_list_items = self.tags_list.html().split(" • ");
+        var tag_list_items = self.list_container.find('span').html().split(" • ");
         // This is done in a crappy way to make all browsers happy
         cj.each(tag_list_items, function(i, item) {
             if (tag_name == item) {
                 tag_list_items.splice(i, 1);
             }
         });
-        self.tags_list.html(tag_list_items.join(" • "));
-
-        if (tag_list_items.length == 0) {
-            self.tags_list.hide();
-        }else{
-            self.tags_list.show();
-        }
+        self.list_container.find('span').html(tag_list_items.join(" • "));
+        self.toggleTagList();
     }
 
     // Decrement the number in the tagging tab
@@ -592,17 +598,17 @@ TagTreeTag.prototype.addTagCheck = function(tag_id) {
     tag.parents('dl').not('.lv-0').prev('dt').addClass('subChecked');
 
     // Add the name to the tag list at the top (if it exists)
-    if (self.tags_list != null) {
+    if (self.list_container != null) {
         var tag_name = tag.find('.name').html();
-        var tag_list_items = self.tags_list.html().split(" • ");
+
+        var tag_list_items = []
+        if (self.list_container.find('span').html()) {
+            tag_list_items = self.list_container.find('span').html().split(" • ");
+        }
         tag_list_items.push(tag_name);
         tag_list_items.sort();
-        self.tags_list.html(tag_list_items.join(" • "));
-        if (tag_list_items.length == 0) {
-            self.tags_list.hide();
-        }else{
-            self.tags_list.show();
-        }
+        self.list_container.find('span').html(tag_list_items.join(" • "));
+        self.toggleTagList();
     }
 
     // Increment the number in the tagging tab (if it exists)

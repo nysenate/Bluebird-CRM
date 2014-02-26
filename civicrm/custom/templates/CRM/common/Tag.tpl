@@ -136,8 +136,8 @@
         <script>
             var tree = new TagTreeTag({
               tree_container: cj('#issue-code-results'),
+              list_container: cj('.contactTagsList'),
               filter_bar: cj('#issue-code-search'),
-              tags_list: cj('.contactTagsList'),
               tag_trees: [291],
               default_tree: 291,
               auto_save: true,
