@@ -25,18 +25,19 @@
 *}
 {capture assign=expandIconURL}<img src="{$config->resourceBase}i/TreePlus.gif" alt="{ts}open section{/ts}"/>{/capture}
 {strip}
-<table class="caseSelector">
+  {debug}
+{*NYSS 5340*}
+<table id="clientRelationships-selector-{$context}" class="report-layout">
   <tr class="columnheader">
-    <th></th>
+    <th class="control"></th>
     <th>{ts}Contact{/ts}</th>
     <th>{ts}Subject{/ts}</th>
     <th>{ts}Status{/ts}</th>
     <th>{ts}Type{/ts}</th>
     <th>{ts}My Role{/ts}</th>
     <th>{ts}Manager{/ts}</th>
-    <th>{if $context eq 'dashboard' && $list eq 'upcoming'}Next/Recent{elseif $list eq 'upcoming'}{ts}Next Sched.{/ts}{elseif $list EQ 'recent'}{ts}Most Recent{/ts}{/if}</th>{*NYSS*}
-
-    <th></th>
+    <th class="nosort">{if $context eq 'dashboard' && $list eq 'upcoming'}Next/Recent{elseif $list eq 'upcoming'}{ts}Next Sched.{/ts}{elseif $list EQ 'recent'}{ts}Most Recent{/ts}{/if}</th>{*NYSS*}
+    <th class="nosort"></th>
   </tr>
 
   {counter start=0 skip=1 print=false}
@@ -150,5 +151,103 @@ function hideCaseActivities( caseId , type, context ) {
     cj('#minus'+context+type+caseId+'_hide').hide();
 }
 
+
+//NYSS 5340
+cj( function ( ) {
+   buildCaseClientRelationships( false );
+});
+
+function buildCaseClientRelationships( filterSearch ) {
+  if( filterSearch ) {
+    oTable.fnDestroy();
+  }
+  var count   = 0;
+  var anOpen = [];
+  var columns = '';
+  var context = {/literal}"{$context}"{literal};
+  var sourceUrl = {/literal}"{crmURL p='civicrm/ajax/getallcases' h=0 q='snippet=4'}"{literal};
+  var sImageUrl = {/literal}"{$config->resourceBase}i/TreePlus.gif"{literal};
+
+  cj('#clientRelationships-selector-'+ context +' th').each( function( ) {
+    if ( cj(this).attr('id') != 'nosort' ) {
+      columns += '{"sClass": "' + cj(this).attr('class') +'"},';
+    }
+    else {
+      columns += '{ "bSortable": false },';
+    }
+    count++;
+  });
+
+  columns    = columns.substring(0, columns.length - 1 );
+  eval('columns =[' + columns + ']');
+
+  oTable = cj('#clientRelationships-selector-'+ context).dataTable({
+    "bFilter"    : false,
+    "bAutoWidth" : false,
+    "aaSorting"  : [],
+    "aoColumns"  : columns,
+    "bProcessing": true,
+    "bJQueryUI": true,
+    "asStripClasses" : [ "odd-row", "even-row" ],
+    "sPaginationType": "full_numbers",
+    "sDom"       : '<"crm-datatable-pager-top"lfp>rt<"crm-datatable-pager-bottom"ip>',
+    "bServerSide": true,
+    "sAjaxSource": sourceUrl,
+    "bRetrieve": true,
+    "iDisplayLength": 10,
+    "fnDrawCallback": function() { setClientRelationshipsSelectorClass{/literal}{$context}{literal}( context ); },
+    "fnServerData": function ( sSource, aoData, fnCallback ) {
+      cj.ajax( {
+        "dataType": 'json',
+        "type": "POST",
+        "url": sSource,
+        "data": aoData,
+        "success": fnCallback
+      } );
+    }
+  });
+
+  cj('#clientRelationships-selector-'+ context +' td.control').live( 'click', function () {
+    var nTr = this.parentNode;
+    var i = cj.inArray( nTr, anOpen );
+    var oData = oTable.fnGetData( nTr );
+
+    if ( i === -1 ) {
+      var nDetailsRow = oTable.fnOpen( nTr, fnFormatDetails(oTable, nTr), 'details' );
+      cj('div.innerDetails', nDetailsRow).slideDown();
+      cj('#treeIcon-' + oData[9]).html('<a><img src="{/literal}{$config->resourceBase}{literal}i/TreeMinus.gif" alt="close section"/><a/>');
+      anOpen.push( nTr );
+    }
+    else {
+      cj('div.innerDetails', cj(nTr).next()[0]).slideUp( function () {
+        oTable.fnClose( nTr );
+        anOpen.splice( i, 1 );
+        cj('#treeIcon-' + oData[9]).html('<a><img src="{/literal}{$config->resourceBase}{literal}i/TreePlus.gif" alt="open section"/><a/>');
+      } );
+    }
+  } );
+}
+
+function setClientRelationshipsSelectorClass{/literal}{$context}{literal}( context ) {
+  cj('#clientRelationships-selector-' + context + ' td:last-child').each( function( ) {
+    cj(this).parent().addClass(cj(this).text() );
+  });
+}
+
+function fnFormatDetails( oTable, nTr ) {
+  var oData = oTable.fnGetData( nTr );
+  var list = '{/literal}{$list}{literal}';
+  var context = '{/literal}{$context}{literal}';
+  var case_id = oData[9];
+  var contact_id = oData[10];
+
+  // initiate innerDetails div
+  var sOut = '<div class="innerDetails"></div>';
+
+  // fill innerDetails div with data from AJAX call
+  CaseDetails(case_id, contact_id, list, context);
+
+  return sOut;
+}
 </script>
 {/literal}
