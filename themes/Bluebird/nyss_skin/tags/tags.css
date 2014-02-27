@@ -194,9 +194,10 @@ div#tagGroup div.groupTagsKeywords div.label{
 }
 
 
-.BBTree dt .fCB .checkbox{
+.BBTree dt .fCB .checkbox,
+.fCB .selectRadio{
   display: auto;
-  padding: 1px 0;
+  padding: 1px 3px;
   float: left;
   width: auto;
 }
@@ -387,7 +388,9 @@ width: 20px;
   background-position: -64px -15px;
 }
 
-
+dt.lv-0 .treeButton{
+  display: none;
+}
 
 .tag-row .tag{
   float: left;
@@ -397,6 +400,10 @@ width: 20px;
   font-weight: normal;
   font-size: 1em;
   display: inline;
+}
+dt.lv-0 .tag-row .name{
+  font-weight: bold;
+  margin: 0 0 0 -15px;
 }
 .tag-row .entityCount{
   float: left;
@@ -540,6 +547,9 @@ width: 20px;
 }
 .page-civicrm-admin-tag .modal dt .fCB{
   float: left;
+  float: left;
+  height: 17px;
+  width: 25px;
 }
 
 /* Dirty indent */

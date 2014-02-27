@@ -637,7 +637,7 @@ TagTreeTag.prototype.customize_tree = function() {
                 cj.each(data.message, function(i, tag_id){
                     var tagNode = self.container.find(' dt#'+tagLabel(tag_id));
                     tagNode.find('.checkbox').attr('checked','true').addClass('checked');
-                    tagNode.addClass('checked');
+                    tagNode.addClass('checked existing');
                     tagNode.parents('dl').not('.lv-0').prev('dt').addClass('subChecked');
                 });
             }

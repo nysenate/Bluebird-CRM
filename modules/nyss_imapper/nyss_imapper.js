@@ -813,25 +813,12 @@ cj(document).ready(function(){
             default_tree: 291,
 
             auto_save: false,
-            entity_id: cj('#contact_tag_ids').val(),
+            entity_id: cj('#contact_ids').val(),
             entity_counts: false,
             entity_type: 'civicrm_contact',
           });
           tree.load();
 
-
-          var tree = new TagTreeTag({
-            tree_container: cj('#activity-issue-codes'),
-            filter_bar: cj('#activity-issue-codes-search'),
-            tag_trees: [291],
-            default_tree: 291,
-
-            auto_save: false,
-            entity_id: cj('#contact_tag_ids').val(),
-            entity_counts: false,
-            entity_type: 'civicrm_contact',
-          });
-          tree.load();
 
 
           cj('#activity_tag_name')
@@ -866,14 +853,23 @@ cj(document).ready(function(){
             }
           });
 
+
           cj("#tagging-popup").dialog({ title:  "Tagging: "+ shortenString(messages.subject,50) });
           cj( "#tagging-popup" ).dialog({
             buttons: {
               "Tag": function() {
-                pushtag();
+                var existingTags = new Array();
+                cj.each(cj('#contact-issue-codes dt.existing'), function(key, id) {
+                  existingTags.push(cj(this).attr('tid'));
+                });
+                pushtag(existingTags,'');
               },
               "Tag and Clear": function() {
-                pushtag('clear');
+                var existingTags = new Array();
+                cj.each(cj('#contact-issue-codes dt.existing'), function(key, id) {
+                  existingTags.push(cj(this).attr('tid'));
+                });
+                pushtag(existingTags,'clear');
               },
               Cancel: function() {
                 cj("#tagging-popup").dialog('close');
@@ -1481,7 +1477,7 @@ function DeleteActivity(value){
 // adding (single / multiple) tags to (single / multiple) contacts,
 // function works for multi contact tagging and single
 // cj(".push_tag").live('click', function(){
-function pushtag(clear){
+function pushtag(existingTags,clear){
 
   var contact_ids = cj("#contact_ids").attr('value');
   var activity_ids = cj("#activity_ids").attr('value');
@@ -1499,6 +1495,16 @@ function pushtag(clear){
     activity_tag_ids = activity_input;
   }
 
+  var sentTags = new Array();
+  cj.each(cj('#contact-issue-codes dt.checked'), function(key, id) {
+    sentTags.push(cj(this).attr('tid'));
+  });
+
+  var removedTags = $(existingTags).not(sentTags).get();
+  var addedTags = $(sentTags).not(existingTags).get();
+  console.log('addedTags',addedTags);
+  console.log('removedTags',removedTags);
+
   if (activity_tag_ids =='' && contact_tag_ids == ''){
     CRM.alert('please select a tag', '', 'warn');
     return false;
@@ -1507,6 +1513,7 @@ function pushtag(clear){
     cj('.token-input-list-facebook .token-input-token-facebook').remove();
     cj('.token-input-dropdown-facebook').html('');
     cj('.token-input-dropdown-facebook').html('').remove();
+    cj('#contact-issue-codes').html('');
 
   }
 
