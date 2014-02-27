@@ -790,7 +790,7 @@ cj(document).ready(function(){
 
           // autocomplete
           cj('#contact_tag_name')
-            .tokenInput( '/civicrm/imap/ajax/tag/search', {
+            .tokenInput( '/civicrm/imap/ajax/keyword/search', {
             theme: 'facebook',
             zindex: 9999,
             onAdd: function ( item ) {
@@ -822,7 +822,7 @@ cj(document).ready(function(){
 
 
           cj('#activity_tag_name')
-            .tokenInput( '/civicrm/imap/ajax/tag/search', {
+            .tokenInput( '/civicrm/imap/ajax/keyword/search', {
             theme: 'facebook',
             zindex: 9999,
             onAdd: function ( item ) {
@@ -925,7 +925,7 @@ cj(document).ready(function(){
 
     // autocomplete
     cj('#contact_tag_name')
-      .tokenInput( '/civicrm/imap/ajax/tag/search', {
+      .tokenInput( '/civicrm/imap/ajax/keyword/search', {
       theme: 'facebook',
       zindex: 9999,
       onAdd: function ( item ) {
@@ -941,7 +941,7 @@ cj(document).ready(function(){
       }
     });
     cj('#activity_tag_name')
-      .tokenInput( '/civicrm/imap/ajax/tag/search', {
+      .tokenInput( '/civicrm/imap/ajax/keyword/search', {
       theme: 'facebook',
       zindex: 9999,
       onAdd: function ( item ) {
@@ -956,6 +956,18 @@ cj(document).ready(function(){
         cj('#activity_tag_ids').val(result);
       }
     });
+    var tree = new TagTreeTag({
+      tree_container: cj('#contact-issue-codes'),
+      filter_bar: cj('#contact-issue-codes-search'),
+      tag_trees: [291],
+      default_tree: 291,
+
+      auto_save: false,
+      entity_id: false,
+      entity_counts: false,
+      entity_type: 'civicrm_contact',
+    });
+    tree.load();
 
     cj.each(activityIds, function(key, activityId) {
       // console.log('activity :'+activityId+" - key : "+key+" - Contact : "+contactIds[key]);
@@ -989,10 +1001,18 @@ cj(document).ready(function(){
     cj( "#tagging-popup" ).dialog({
       buttons: {
         "Tag": function() {
-          pushtag();
+          var existingTags = new Array();
+          cj.each(cj('#contact-issue-codes dt.existing'), function(key, id) {
+            existingTags.push(cj(this).attr('tid'));
+          });
+          pushtag(existingTags);
         },
         "Tag and Clear": function() {
-          pushtag('clear');
+          var existingTags = new Array();
+          cj.each(cj('#contact-issue-codes dt.existing'), function(key, id) {
+            existingTags.push(cj(this).attr('tid'));
+          });
+          pushtag(existingTags,'clear');
         },
         Cancel: function() {
           cj("#tagging-popup").dialog('close');
@@ -1429,7 +1449,7 @@ function DeleteMessage(id,imapid){
 // Result : A few things
 function ClearActivity(value){
   cj.ajax({
-    url: '/civicrm/imap/ajax/matched/untag',
+    url: '/civicrm/imap/ajax/matched/clear',
     data: {id: value},
     async:false,
     success: function(data,status) {
@@ -1500,30 +1520,57 @@ function pushtag(existingTags,clear){
     sentTags.push(cj(this).attr('tid'));
   });
 
-  var removedTags = $(existingTags).not(sentTags).get();
-  var addedTags = $(sentTags).not(existingTags).get();
-  console.log('addedTags',addedTags);
-  console.log('removedTags',removedTags);
+  var removedTags = cj(existingTags).not(sentTags).get();
+  var addedTags = cj(sentTags).not(existingTags).get();
+  console.log('added Issue Codes',addedTags);
+  console.log('removed Issue Codes',removedTags);
 
-  if (activity_tag_ids =='' && contact_tag_ids == ''){
-    CRM.alert('please select a tag', '', 'warn');
-    return false;
-  }else{
+  if (activity_tag_ids.length || contact_tag_ids.length  || removedTags.length || addedTags.length){
     cj("#tagging-popup").dialog('close');
     cj('.token-input-list-facebook .token-input-token-facebook').remove();
     cj('.token-input-dropdown-facebook').html('');
     cj('.token-input-dropdown-facebook').html('').remove();
     cj('#contact-issue-codes').html('');
-
+  }else{
+    CRM.alert('Please select a tag', 'Warning', 'warn');
+    return false;
   }
+
+  if(addedTags.length){
+    cj.ajax({
+      url: '/civicrm/imap/ajax/issuecode',
+      async:false,
+      data: { contacts: contact_ids, issuecodes: addedTags.toString(), action:'create'},
+      success: function(data,status) {
+        var output = cj.parseJSON(data);
+        CRM.alert(output.message, 'Success', 'success');
+      },error: function(){
+        var output = cj.parseJSON(data);
+        CRM.alert(output.message, 'Error', 'error');
+      }
+    });
+  }
+  if(removedTags.length){
+    cj.ajax({
+      url: '/civicrm/imap/ajax/issuecode',
+      async:false,
+      data: { contacts: contact_ids, issuecodes: removedTags.toString(), action:'delete'},
+      success: function(data,status) {
+        var output = cj.parseJSON(data);
+        CRM.alert(output.message, 'Success', 'success');
+      },error: function(){
+        var output = cj.parseJSON(data);
+        CRM.alert(output.message, 'Error', 'error');
+      }
+    });
+  }
+
 
   if(contact_tag_ids){
     var contact_ids_array = contact_ids.split(',');
     cj.each(contact_ids_array, function(key, id) {
       CRM.alert('Contact Tagged', '', 'success');
-
     });
-
     cj.ajax({
       url: '/civicrm/imap/ajax/tag/add',
       async:false,

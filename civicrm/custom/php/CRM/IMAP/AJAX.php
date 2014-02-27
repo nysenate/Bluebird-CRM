@@ -657,12 +657,12 @@ ORDER BY gc.contact_id ASC";
 
             // Now we need to assign the tag to the activity
             $tagid= self::getInboxPollingTagId();
-            $assignTag = self::assignTag($activity['id'], 0, $tagid, "quiet");
+            $assignKeyword = self::assignKeyword($activity['id'], 0, $tagid, "quiet");
 
-            if($assignTag['code'] == "ERROR"){
-              // var_dump($assignTag);
+            if($assignKeyword['code'] == "ERROR"){
+              // var_dump($assignKeyword);
               $returnCode = array('code'      =>  'ERROR',
-              'message'   =>  $assignTag['message']);
+              'message'   =>  $assignKeyword['message']);
               echo json_encode($returnCode);
               CRM_Utils_System::civiExit();
             }else{
@@ -758,7 +758,7 @@ ORDER BY gc.contact_id ASC";
      * For Matched screen TAG
      * @return  [JSON Object]    Status message
      */
-    public static function assignTag($inActivityIds = null, $inContactIds = null, $inTagIds = null, $response = null) {
+    public static function assignKeyword($inActivityIds = null, $inContactIds = null, $inTagIds = null, $response = null) {
         $activityIds    =   ($inActivityIds) ? $inActivityIds : self::get('activityIds');
         $contactIds     =   ($inContactIds) ? $inContactIds : self::get('contactIds');
         $tagIds         =   ($inTagIds) ? $inTagIds : self::get('tagIds');
@@ -1015,7 +1015,7 @@ ORDER BY gc.contact_id ASC";
      * For Matched screen CLEAR
      * @return [JSON Object]    JSON encoded response, OR error codes
      */
-    public static function MatchedUntag() {
+    public static function Clear() {
       require_once 'api/api.php';
       $messageId = self::get('id');
       $session = CRM_Core_Session::singleton();
@@ -1155,7 +1155,7 @@ EOQ;
      * For Matched screen TAG
      * @return [JSON Object]    JSON encoded response, OR error codes
      */
-    public static function TagSearch() {
+    public static function KeywordSearch() {
         require_once 'api/api.php';
         $name = self::get('name');
         $start = self::get('timestamp');
@@ -1201,14 +1201,71 @@ EOQ;
      * For Matched screen TAG
      * @return [JSON Object]    JSON encoded response, OR error codes
      */
-    public static function TagAdd() {
+    public static function KeywordAdd() {
       require_once 'api/api.php';
       $tag_ids = self::get('tags');
       $activityId = self::get('activityId');
       $contactId = self::get('contactId');
-      // self::assignTag($activityId, $contactId, $tag_ids );
-      self::assignTag($activityId, $contactId, $tag_ids,'quiet');
+      self::assignKeyword($activityId, $contactId, $tag_ids,'quiet');
     }
+
+    /**
+     * Assign tags to a Contact or a Activity
+     * For Matched screen TAG
+     * @return [JSON Object]    JSON encoded response, OR error codes
+     */
+    public static function Issuecode() {
+      require_once 'api/api.php';
+      $tags = self::get('issuecodes');
+      $tags = split(',', $tags);
+      $contacts = self::get('contacts');
+      $contacts = split(',', $contacts);
+      $action = self::get('action');
+      $prettyAction = ($action === 'create') ? "added to" : "deleted from" ;
+      $plural = (count($tags) > 1) ? "s" : "" ;
+      $plural2 = (count($tags) > 1) ? "were" : "was";
+      $errorMessage ='';
+      if(is_null($tags) || $tags == 0) {
+        $returnCode = array('code'      =>  'ERROR',
+                            'message'   =>  'No valid tags.');
+        echo json_encode($returnCode);
+        CRM_Utils_System::civiExit();
+      }
+      $tagString ='';
+      $names = array();
+      foreach($tags as $tagId) {
+        $tag = self::civiRaw('tag',$tagId);
+        $tagName = $tag['values'][$tagId]['name'];
+        $tagstring .= "'".$tagName."',";
+        foreach($contacts as $contactId) {
+          if($contactId == 0)  break;
+          $params = array(
+            'entity_table'  =>  'civicrm_contact',
+            'entity_id'     =>  $contactId,
+            'tag_id'        =>  $tagId,
+            'version'       =>  3,
+          );
+          $result = civicrm_api('entity_tag', $action, $params );
+          $contact = self::civiRaw('contact',$contactId);
+          $names[$contactId] = "'".$contact['values'][$contactId]['display_name']."',";
+          if($result['is_error']==1){
+            $errorMessage = $result['error_message'];
+          }
+        }
+      }
+      $tagstring = rtrim($tagstring, ',');
+      $nameString = rtrim(implode(",", $names), ',');
+      if (!empty($errorMessage)) {
+        $returnCode = array('code' => 'ERROR','message'=> $errorMessage." ".$prettyAction." {$tagstring} to {$nameString}");
+      }else{
+        $returnCode = array('code' =>'SUCCESS','message'=> "Issue code{$plural} {$tagstring} {$plural2} {$prettyAction} {$nameString}");
+      }
+      echo json_encode($returnCode);
+      CRM_Utils_System::civiExit();
+    }
+
+
+
 
     /**
      * Get the tag id used to keep track of inbound emails
