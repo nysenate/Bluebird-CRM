@@ -715,7 +715,7 @@ LEFT JOIN civicrm_option_group aog ON aog.name='activity_type'
     }
 
     $dao = CRM_Core_DAO::executeQuery($query);
-    CRM_Core_Error::debug_var('dao', $dao);
+    //CRM_Core_Error::debug_var('dao', $dao);
 
     $params['total'] = $dao->N;
 
@@ -779,7 +779,7 @@ AND civicrm_case.status_id != $closedId";
 
     //NYSS 5340
     $query = self::getCaseActivityQuery($type, $userID, $condition, NULL, $params);
-    CRM_Core_Error::debug_var('query', $query);
+    //CRM_Core_Error::debug_var('query', $query);
 
     $queryParams = array();
     $result = CRM_Core_DAO::executeQuery($query,

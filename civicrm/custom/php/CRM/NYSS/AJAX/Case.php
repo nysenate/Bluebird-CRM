@@ -13,7 +13,7 @@ class CRM_NYSS_AJAX_Case
       4 => 'case_type',
       5 => 'case_role',
       6 => 'casemanager',
-      7 => NULL,
+      //7 => NULL,//in the dashboard context we don't need next/upcoming
       8 => 'actions',
       9 => 'case_id',
       10 => 'contact_id',
@@ -26,7 +26,7 @@ class CRM_NYSS_AJAX_Case
     $sortOrder = isset($_REQUEST['sSortDir_0']) ? CRM_Utils_Type::escape($_REQUEST['sSortDir_0'], 'String') : 'asc';
 
     $params = $_POST;
-    CRM_Core_Error::debug_var('params $_POST', $params);
+
     $sortSQL = NULL;
     if ($sort && $sortOrder) {
       $params['sortname'] = $sort;
@@ -38,9 +38,9 @@ class CRM_NYSS_AJAX_Case
     $session = CRM_Core_Session::singleton();
     $userID = $session->get('userID');
     $cases = CRM_Case_BAO_Case::getCases(TRUE, $userID, 'any', 'dashboard', $params);
-    //CRM_Core_Error::debug_var('upcoming', $cases);
-    CRM_Core_Error::debug_var('params', $params);
-    CRM_Core_Error::debug_var('count $cases', count($cases));
+    //CRM_Core_Error::debug_var('$cases', $cases);
+    //CRM_Core_Error::debug_var('params', $params);
+    //CRM_Core_Error::debug_var('count $cases', count($cases));
 
     $config = CRM_Core_Config::singleton();
 
@@ -61,7 +61,7 @@ class CRM_NYSS_AJAX_Case
       'case_type',
       'case_role',
       'casemanager',
-      NULL,
+      //NULL, //in the dashboard context we don't need this (upcoming/recent activities)
       'actions',
       'case_id',
       'contact_id'
