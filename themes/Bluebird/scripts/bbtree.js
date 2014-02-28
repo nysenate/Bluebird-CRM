@@ -116,7 +116,7 @@ TagTreeBase.prototype.setup_trees = function(tree_data) {
         }
         // console.log("Finished with tree_id: "+tree_id);
         self.container.append(tree);
-        self.container.addClass('TreeWrap');
+        self.container.addClass('TreeWrap loaded');
         self.animate_tree(tree);
     });
 
@@ -317,7 +317,7 @@ TagTreeBase.prototype.reset_filter = function() {
     self.filter_bar.val('');
     self.current_tree.find('.ddControl.open').click();
     self.get_tags().removeClass('search-hidden search-match search-parent search-highlighted');
-    self.clear_button.fadeOut("fast");
+    self.clear_button.removeClass("close");
     self.empty_panel.fadeOut("fast");
     self.wait_panel.hide();
 }
@@ -349,8 +349,7 @@ TagTreeBase.prototype.filter_tags = function() {
                 tag.addClass('search-match');
             }
         });
-        console.log(self.clear_button);
-        self.clear_button.fadeIn( "slow" );
+        self.clear_button.addClass( "close" );
 
         if (has_matches) {
             self.empty_panel.fadeOut("fast");

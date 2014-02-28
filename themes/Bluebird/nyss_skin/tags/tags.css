@@ -55,32 +55,50 @@ div#tagGroup div.groupTagsKeywords div.label{
   border: 1px solid rgba(81, 203, 238, 1);
 
 }
+form#Contact .groupTagsKeywords ul.token-input-list-facebook {
+    width: 517px;
+}
+
 .TreeWrap dt .lv-0{
   margin: 10px 10px 0;
   display: none;
 }
 .TreeWrap{
   min-height: 200px;
-  max-height: 330px;
+  max-height: 310px;
   border: 1px solid #CCCCCC;
   float: left;
   overflow-y:scroll;
   font-size: 1em;
-  padding: 0 10px 10px;
+  padding: 10px;
   font-weight: normal;
   width: 100%;
-  background: #fff;
+  background:url("/sites/default/themes/Bluebird/images/loading.gif") no-repeat scroll center center #FFFFFF !important;
+  font: normal 14px/21px sans-serif;
   -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
   -moz-box-sizing: border-box;    /* Firefox, other Gecko */
   box-sizing: border-box;         /* Opera/IE 8+ */
 }
-.page-civicrm-contact .TreeWrap,
+.TreeWrap.loaded{
+  background: #fff;
+}
+
+.page-civicrm-contact .TreeWrap{
+  height: 230px;
+  margin-bottom: 30px;
+}
+
+.page-civicrm-contact .TreeWrap dt.lv-0{display: none !important;}
+
 .page-civicrm-imap .TreeWrap{
   height: 230px;
 }
 .page-civicrm-imap .TreeWrap{
   width: 289px;
 }
+
+
+
 /* Admin page */
 .page-civicrm-admin-tag .TreeWrap{
   width: 500px;
@@ -89,12 +107,15 @@ div#tagGroup div.groupTagsKeywords div.label{
   border: none;
   border-left: 1px solid #CCCCCC;
 }
+
 .page-civicrm-admin-tag .TreeWrap .hidden{
   display: none;
 }
+
 .page-civicrm-admin-tag #crm-tagListWrap{
   width: 100%;
 }
+
 /* tabs */
 .crm-tagTabHeader, .BBTree-Tags {
   height: 15px;
@@ -193,13 +214,17 @@ div#tagGroup div.groupTagsKeywords div.label{
   margin-bottom: -10px;
 }
 
-
+.tag-label{
+  margin: 20px 0 0 0;
+  font: bold 16px/21px sans-serif;
+}
 .BBTree dt .fCB .checkbox,
 .fCB .selectRadio{
   display: auto;
   padding: 1px 3px;
   float: left;
   width: auto;
+  cursor:pointer;
 }
 
 .BBTree dt .fCB ul,
@@ -326,7 +351,7 @@ div#tagGroup div.groupTagsKeywords div.label{
   max-height: 310px;
   min-height: 180px;
   padding: 10px;
-  margin: 10px 0;
+  margin: 0;
   text-align: center;
   display: none;
   position: absolute;
@@ -345,20 +370,31 @@ div#tagGroup div.groupTagsKeywords div.label{
 }
 
 
-#clear {
-  background-image: url("http://p.yusukekamiyamane.com/icons/search/fugue/icons/cross.png");
-  background-repeat: no-repeat;
-  float: right;
-  height: 16px;
-  margin: -24px 5px 0 0;
-  position: relative;
-  text-indent: -1000em;
-  top: 0;
-  width: 16px;
-  display: none;
-  z-index: 100000;
-}
 
+#clear {
+  background: url("/sites/default/themes/Bluebird/nyss_skin/images/header-search-bg.gif") no-repeat scroll right top rgba(0, 0, 0, 0);
+  float: right;
+  height: 18px;
+  line-height: 1em;
+  margin: -30px 3px 0 0;
+  padding: 4px 6px;
+  position: relative;
+  text-indent: -9999em;
+  border: 1px solid #ccc;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+  top: 0;
+  width: 14px;
+  z-index: 10000;
+}
+#clear.close {
+  background-image:url("/sites/default/themes/Bluebird/nyss_skin/images/close.png");
+  background-position: 7px 7px;
+  background-color: #FFDCDC;
+  cursor:pointer;
+  border-color: #CD4343;
+}
 .TreeWrap dt{
   width:100%;
   float: left;
@@ -376,10 +412,10 @@ div#tagGroup div.groupTagsKeywords div.label{
 /* Toggling arrow */
 
 .ddControl.treeButton {
-float: left;
-height: 20px;
-margin: 0;
-width: 20px;
+  float: left;
+  height: 20px;
+  margin: 0;
+  width: 20px;
   margin-left: -20px;
   background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") no-repeat -32px -15px;
   cursor: pointer;
@@ -395,6 +431,7 @@ dt.lv-0 .treeButton{
 .tag-row .tag{
   float: left;
   display: inline;
+  padding-left: 5px;
 }
 .tag-row .name{
   font-weight: normal;
@@ -485,6 +522,8 @@ dt.lv-0 .tag-row .name{
   background-color: #A3C297 !important;
   border: 1px solid #2F4A24 !important;
 }
+
+.TreeWrap dl.lv-0 {margin: 0 !important;}
 
 
 /* Dirty indent */

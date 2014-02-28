@@ -129,7 +129,7 @@
                 <label>Issue Codes</label>
             </div>
             <input type="text" autocomplete="off" placeholder="Type here to search issue codes" maxlength="64" id="issue-code-search" />
-            <div id="issue-code-results" data-contact="{$contactId}"></div>
+            <div id="issue-code-results" class="TreeWrap" data-contact="{$contactId}"></div>
            </div>
           </div>
         {literal}

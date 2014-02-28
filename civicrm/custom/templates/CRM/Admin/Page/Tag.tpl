@@ -74,7 +74,7 @@
 			</div>
         </div>
         <!-- goes here -->
-        <div class="crm-tagTreeDisplay">
+        <div class="crm-tagTreeDisplay TreeWrap">
   {literal}
   <script>
     var tree = new TagTreeManage({

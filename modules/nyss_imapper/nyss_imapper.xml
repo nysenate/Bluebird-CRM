@@ -63,12 +63,12 @@
 
   <!-- adding tags to contacts, matched  -->
   <item>
-    <path>civicrm/imap/ajax/keyword/search</path>
+    <path>civicrm/imap/ajax/tag/search</path>
     <page_callback>CRM_IMAP_AJAX::KeywordSearch</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
-    <path>civicrm/imap/ajax/keyword/add</path>
+    <path>civicrm/imap/ajax/tag/add</path>
     <page_callback>CRM_IMAP_AJAX::KeywordAdd</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>

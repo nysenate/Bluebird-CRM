@@ -237,7 +237,7 @@
                                 </div>
                                 <div class="content">
                                   <input type="text" autocomplete="off" maxlength="64" id="issue-code-search" />
-                                  <div id="issue-code-results"></div>
+                                  <div id="issue-code-results" class="TreeWrap"></div>
 
 
                                   <script type="text/javascript">
