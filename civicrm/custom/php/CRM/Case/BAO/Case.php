@@ -543,7 +543,8 @@ WHERE cc.contact_id = %1
     return $caseArray;
   }
 
-  static function getCaseActivityQuery($type = 'upcoming', $userID = NULL, $condition = NULL, $isDeleted = 0) {
+  //NYSS 5340 add params
+  static function getCaseActivityQuery($type = 'upcoming', $userID = NULL, $condition = NULL, $isDeleted = 0, &$params = array()) {
     if (!$userID) {
       $session = CRM_Core_Session::singleton();
       $userID = $session->get('userID');
@@ -682,14 +683,49 @@ LEFT JOIN civicrm_option_group aog ON aog.name='activity_type'
       $query .= " WHERE (1) $condition ";
     }
 
-    if ($type == 'upcoming') {
-      $query .= " ORDER BY case_scheduled_activity_date ASC ";
+    if ( $type == 'any' ) {
+      $query .= " GROUP BY case_id ";
     }
-    elseif ($type == 'recent') {
-      $query .= " ORDER BY case_recent_activity_date ASC ";
+
+    //NYSS 5340 set default sort order and allow dynamic sorting via datatables
+    if (CRM_Utils_Array::value('sortname', $params) == 'undefined') {
+      $params['sortname'] = NULL;
     }
-    elseif ( $type == 'any' ) {
-      $query .= " ORDER BY case_activity_date ASC ";
+
+    if (CRM_Utils_Array::value('sortorder', $params) == 'undefined') {
+      $params['sortorder'] = NULL;
+    }
+
+    $sortname = CRM_Utils_Array::value('sortname', $params);
+    $sortorder = CRM_Utils_Array::value('sortorder', $params);
+
+    if (!$sortname AND !$sortorder) {
+      if ($type == 'upcoming') {
+        $query .= " ORDER BY case_scheduled_activity_date ASC ";
+      }
+      elseif ($type == 'recent') {
+        $query .= " ORDER BY case_recent_activity_date ASC ";
+      }
+      elseif ( $type == 'any' ) {
+        $query .= " ORDER BY case_activity_date ASC ";
+      }
+    }
+    else {
+      $query .= " ORDER BY {$sortname} {$sortorder} ";
+    }
+
+    $dao = CRM_Core_DAO::executeQuery($query);
+    //CRM_Core_Error::debug_var('dao', $dao);
+
+    $params['total'] = $dao->N;
+
+    $page = CRM_Utils_Array::value('page', $params);
+    $rp = CRM_Utils_Array::value('rp', $params);
+
+    if ($page && $rp) {
+      $start = (($page - 1) * $rp);
+      $limit = " LIMIT $start, $rp";
+      $query .= $limit;
     }
 
     return $query;
@@ -710,7 +746,8 @@ LEFT JOIN civicrm_option_group aog ON aog.name='activity_type'
    * @access public
    *
    */
-  static function getCases($allCases = TRUE, $userID = NULL, $type = 'upcoming', $context = 'dashboard') {
+  //NYSS 5340 include params
+  static function getCases($allCases = TRUE, $userID = NULL, $type = 'upcoming', $context = 'dashboard', &$params = array()) {
     $condition = NULL;
     $casesList = array();
 
@@ -729,7 +766,6 @@ LEFT JOIN civicrm_option_group aog ON aog.name='activity_type'
       $allCases = FALSE;
     }
 
-
     $condition = " AND civicrm_case.is_deleted = 0 ";
 
     if (!$allCases) {
@@ -741,7 +777,9 @@ LEFT JOIN civicrm_option_group aog ON aog.name='activity_type'
 AND civicrm_case.status_id != $closedId";
     }
 
-    $query = self::getCaseActivityQuery($type, $userID, $condition);
+    //NYSS 5340
+    $query = self::getCaseActivityQuery($type, $userID, $condition, NULL, $params);
+    //CRM_Core_Error::debug_var('query', $query);
 
     $queryParams = array();
     $result = CRM_Core_DAO::executeQuery($query,
@@ -788,7 +826,6 @@ AND civicrm_case.status_id != $closedId";
 
     // we're going to use the usual actions, so doesn't make sense to duplicate definitions
     $actions = CRM_Case_Selector_Search::links();
-
 
     // check is the user has view/edit signer permission
     $permissions = array(CRM_Core_Permission::VIEW);
