@@ -56,7 +56,7 @@ function nyss_civihooks_form_alter(&$form, &$form_state, $form_id) {
     unset($urlQueryParams['destination']);
     $urlQuery = drupal_http_build_query($urlQueryParams);
     $urlBase['destination'] = $urlBase['destination'].'?'.$urlQuery;
-    $form['#action'] = url(current_path(), array('query' => $urlBase, 'external' => FALSE));
+    $form['#action'] = url(current_path(), array('query' => $urlBase, 'external' => false));
   }
 }
 
@@ -73,7 +73,7 @@ function nyss_civihooks_page_alter(&$page) {
       unset($page['content']['system_main']['user_filter_form']['filters']['status']['filters']['permission']);
     }
   }
-  elseif ( strpos($curPage, 'user/') !== FALSE ) {
+  elseif ( strpos($curPage, 'user/') !== false ) {
     $title = "Edit User";
     drupal_set_title($title);
   }
@@ -389,7 +389,7 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
         }
         elseif ( in_array($btnName, $btnHandleValid) ) {
           $jsValid = $jsCancel = '';
-          if ( strpos($btnName, '_cancel') === FALSE ) {
+          if ( strpos($btnName, '_cancel') === false ) {
             $jsValid = '&& cj("#Contact").valid()';
           }
           $js = 'if(this.value!="Processing..." '.$jsValid.' ){this.value="Processing...";cj("#" + this.id).click();return true;}else{return false;}';
@@ -516,7 +516,7 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
       $instAttrib = $form->getVar('_attributes');
       $instPath = trim(CRM_Utils_Array::value('action', $instAttrib), '/');
       $printerFriendly = CRM_Utils_System::makeURL(
-          'snippet', TRUE, FALSE,
+          'snippet', true, false,
           $instPath
         ) . '2';
       $form->assign('printerFriendly', $printerFriendly);
@@ -526,7 +526,7 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
   //4999
   if ( $formName == 'CRM_Contact_Form_Task_PickProfile' ) {
     foreach ( $form->_elements[2]->_options as $k => $opt ) {
-      if ( $k != 0 && strpos($opt['text'], 'Batch') === FALSE ) {
+      if ( $k != 0 && strpos($opt['text'], 'Batch') === false ) {
         unset($form->_elements[2]->_options[$k]);
       }
     }
@@ -679,7 +679,7 @@ function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) 
 //CRM_Core_Error::debug_var('objectName',$objectName);
 //CRM_Core_Error::debug_var('objectId',$objectId);
 //CRM_Core_Error::debug_var('objectRef',$objectRef);
-//CRM_Core_Error::backtrace('backTrace', TRUE);
+//CRM_Core_Error::backtrace('backTrace', true);
 
   //NYSS #2729 strip line break
   if ( ( $op == 'edit' || $op == 'create' ) &&
@@ -688,7 +688,7 @@ function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) 
     if ( $objectRef['email'] ) {
       foreach ( $objectRef['email'] as $key => $block ) {
         if ( $block['signature_html'] == '<br />' ) {
-          $objectRef['email'][$key]['signature_html'] = NULL;
+          $objectRef['email'][$key]['signature_html'] = null;
         }
       }
     }
@@ -699,16 +699,16 @@ function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) 
     $objectName == 'Profile' &&
     $objectRef['uf_group_id'] == 8
   ) {
-    $objectRef['updateBlankLocInfo'] = TRUE;
+    $objectRef['updateBlankLocInfo'] = true;
   }
 
   //only create a new address if we have key fields
   if ( $op == 'create' && $objectName == 'Address' ) {
     $skipFields = array('location_type_id', 'is_primary', 'state_province_id', 'country_id', 'contact_id');
-    $skipRecord = TRUE;
+    $skipRecord = true;
     foreach( $objectRef as $f => $v ) {
       if ( !in_array($f, $skipFields) && !empty($v) && $v != 'null' ) {
-        $skipRecord = FALSE;
+        $skipRecord = false;
       }
     }
     if ( $skipRecord ) {
@@ -790,7 +790,7 @@ function nyss_civihooks_civicrm_validateForm( $formName, &$fields, &$files, &$fo
   if ( $formName == 'CRM_Contact_Form_Search_Advanced' ) {
     $distFlds = array(46, 47, 48, 49, 50, 51, 53, 54, 55);
     foreach ( $distFlds as $fld ) {
-      $form->setElementError("custom_$fld", NULL);
+      $form->setElementError("custom_$fld", null);
     }
   }
 
@@ -825,21 +825,21 @@ function nyss_civihooks_civicrm_validateForm( $formName, &$fields, &$files, &$fo
 
     switch ( $contactProfiles[$fields['gid']] ) {
       case 'New Individual':
-        $fName = (isset($fields['first_name'])) ? trim($fields['first_name']) : NULL;
-        $lName = (isset($fields['last_name'])) ? trim($fields['last_name']) : NULL;
-        $email = (isset($fields['email-Primary'])) ? trim($fields['email-Primary']) : NULL;
+        $fName = (isset($fields['first_name'])) ? trim($fields['first_name']) : null;
+        $lName = (isset($fields['last_name'])) ? trim($fields['last_name']) : null;
+        $email = (isset($fields['email-Primary'])) ? trim($fields['email-Primary']) : null;
         if ( empty($fName) && empty($lName) && empty($email) ) {
           $errors['first_name'] = 'You must enter a first name, last name, or email address, in order to create a contact.';
         }
         break;
       case 'New Organization':
-        $org = (isset($fields['organization_name'])) ? trim($fields['organization_name']) : NULL;
+        $org = (isset($fields['organization_name'])) ? trim($fields['organization_name']) : null;
         if ( empty($org) ) {
           $errors['organization_name'] = 'You must enter an organization name in order to create a contact.';
         }
         break;
       case 'New Household':
-        $house = (isset($fields['household_name'])) ? trim($fields['household_name']) : NULL;
+        $house = (isset($fields['household_name'])) ? trim($fields['household_name']) : null;
         if ( empty($house) ) {
           $errors['household_name'] = 'You must enter a household name in order to create a contact.';
         }
@@ -885,7 +885,7 @@ function nyss_civihooks_civicrm_navigationMenu( &$params ) {
       'permission' => 'access CiviCRM',
       'operator'   => 'AND',
       'separator'  => 0,
-      'parentID'   => NULL,
+      'parentID'   => null,
       'navID'      => 1,
       'active'     => 1
     ),
@@ -982,11 +982,11 @@ function _buildManageMenu($manageID) {
     'attributes' => array(
       'label'      => 'Manage',
       'name'       => 'Manage',
-      'url'        => NULL,
-      'permission' => NULL,
+      'url'        => null,
+      'permission' => null,
       'operator'   => 'AND',
       'separator'  => 0,
-      'parentID'   => NULL,
+      'parentID'   => null,
       'navID'      => $manageID,
       'active'     => 1
     ),
@@ -1248,11 +1248,11 @@ function _buildEmailMenu($emailID) {
     'attributes' => array(
       'label'      => 'Mass Email',
       'name'       => 'Mass Email',
-      'url'        => NULL,
+      'url'        => null,
       'permission' => 'access CiviCRM',
       'operator'   => 'AND',
       'separator'  => 0,
-      'parentID'   => NULL,
+      'parentID'   => null,
       'navID'      => $emailID,
       'active'     => 1
     ),
@@ -1412,11 +1412,11 @@ function _buildInboxMenu($inboxNavID) {
     'attributes' => array (
       'label'      => 'Inbox',
       'name'       => 'Inbox',
-      'url'        => NULL,
+      'url'        => null,
       'permission' => 'administer inbox polling',
       'operator'   => 'AND',
       'separator'  => 0,
-      'parentID'   => NULL,
+      'parentID'   => null,
       'navID'      => $inboxNavID,
       'active'     => 1
     ),
@@ -1474,11 +1474,11 @@ function _buildSearchMenu($searchNavID) {
     'attributes' => array (
       'label'      => 'Custom Search',
       'name'       => 'Custom Search',
-      'url'        => NULL,
+      'url'        => null,
       'permission' => 'access CiviCRM',
       'operator'   => 'AND',
       'separator'  => 0,
-      'parentID'   => NULL,
+      'parentID'   => null,
       'navID'      => $searchNavID,
       'active'     => 1
     ),
@@ -1600,7 +1600,7 @@ function _fixTitles() {
   );
 
   foreach ( $stringReplacement as $search => $replace ) {
-    if (  strpos($currentTitle, $search) !== FALSE ) {
+    if (  strpos($currentTitle, $search) !== false ) {
       CRM_Utils_System::setTitle( str_replace($search, $replace, $currentTitle) );
     }
   }
