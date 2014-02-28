@@ -354,34 +354,31 @@
   });
 
   //NYSS 3527 - set comm preferences
+  var storeExisting = {};
   function processDeceased( ) {
     if ( cj("#is_deceased").is(':checked') ) {
-      cj('#privacy_do_not_phone').attr('checked', 'checked').attr('onclick', 'return false');
-      cj('#privacy_do_not_email').attr('checked', 'checked').attr('onclick', 'return false');
-      cj('#privacy_do_not_mail').attr('checked', 'checked').attr('onclick', 'return false');
-      cj('#privacy_do_not_sms').attr('checked', 'checked').attr('onclick', 'return false');
-      cj('#privacy_do_not_trade').attr('checked', 'checked').attr('onclick', 'return false');
-      cj('#is_opt_out').attr('checked', 'checked').attr('onclick', 'return false');
 
-      cj('#preferred_communication_method_1').removeAttr('checked').attr('onclick', 'return false');
-      cj('#preferred_communication_method_2').removeAttr('checked').attr('onclick', 'return false');
-      cj('#preferred_communication_method_3').removeAttr('checked').attr('onclick', 'return false');
-      cj('#preferred_communication_method_4').removeAttr('checked').attr('onclick', 'return false');
-      cj('#preferred_communication_method_5').removeAttr('checked').attr('onclick', 'return false');
+      //privacy fields
+      cj('input[id^=privacy]').each(function(){
+        storeExisting[cj(this).prop('id')] = cj(this).prop('checked');
+        cj(this).prop('checked', 'checked').prop('onclick', 'return false');
+      });
+
+      //opt out
+      storeExisting['is_opt_out'] = cj('#is_opt_out').prop('checked')
+      cj('#is_opt_out').prop('checked', 'checked').prop('onclick', 'return false');
+
+      //preferred fields
+      cj('input[id^=preferred]').each(function(){
+        storeExisting[cj(this).prop('id')] = cj(this).prop('checked');
+        cj(this).removeAttr('checked').prop('onclick', 'return false');
+      });
     }
     else {
-      cj('#privacy_do_not_phone').removeAttr('onclick');
-      cj('#privacy_do_not_email').removeAttr('onclick');
-      cj('#privacy_do_not_mail').removeAttr('onclick');
-      cj('#privacy_do_not_sms').removeAttr('onclick');
-      cj('#privacy_do_not_trade').removeAttr('onclick');
-      cj('#is_opt_out').removeAttr('onclick');
-
-      cj('#preferred_communication_method_1').removeAttr('onclick');
-      cj('#preferred_communication_method_2').removeAttr('onclick');
-      cj('#preferred_communication_method_3').removeAttr('onclick');
-      cj('#preferred_communication_method_4').removeAttr('onclick');
-      cj('#preferred_communication_method_5').removeAttr('onclick');
+      //cycle through stored array when unchecking and restore to previous values
+      cj.each(storeExisting, function(id, setting) {
+        cj('#' + id).prop('checked', setting).removeAttr('onclick');
+      });
     }
   }
   processDeceased();
