@@ -26,7 +26,8 @@
 {capture assign=expandIconURL}<img src="{$config->resourceBase}i/TreePlus.gif" alt="{ts}open section{/ts}"/>{/capture}
 {strip}
 
-{*NYSS 5340*}
+{*NYSS 5340 use when on main dashboard *}
+{if $list eq 'allcases'}
 <table id="clientRelationships-selector-{$context}" class="report-layout">
   <thead>
   <tr class="columnheader">
@@ -37,16 +38,15 @@
     <th>{ts}Type{/ts}</th>
     <th>{ts}My Role{/ts}</th>
     <th class="nosort">{ts}Manager{/ts}</th>
-    {*NYSS*}
-    {if $list neq 'allcases'}
-      <th class="nosort">{if $context eq 'dashboard' && $list eq 'upcoming'}Next/Recent{elseif $list eq 'upcoming'}{ts}Next Sched.{/ts}{elseif $list EQ 'recent'}{ts}Most Recent{/ts}{/if}</th>
-    {/if}
     <th class="nosort"></th>
   </tr>
   </thead>
 </table>
+{/if}
 
-<table class="caseSelector" style="display:none">
+{*NYSS*}
+{if $list neq 'allcases'}
+<table class="caseSelector">
   <tr class="columnheader">
     <th></th>
     <th>{ts}Contact{/ts}</th>
@@ -55,10 +55,7 @@
     <th>{ts}Type{/ts}</th>
     <th>{ts}My Role{/ts}</th>
     <th>{ts}Manager{/ts}</th>
-    {*NYSS*}
-    {if $list neq 'allcases'}
-      <th>{if $list EQ 'upcoming'}{ts}Next Sched.{/ts}{elseif $list EQ 'recent'}{ts}Most Recent{/ts}{/if}</th>
-    {/if}
+    <th>{if $list EQ 'upcoming'}{ts}Next Sched.{/ts}{elseif $list EQ 'recent'}{ts}Most Recent{/ts}{/if}</th>
     <th></th>
   </tr>
 
@@ -69,7 +66,7 @@
     <td>
       {* &nbsp;{$row.contact_type_icon}<br /> *}
       <span id="{$context}{$list}{$row.case_id}_show">
-      <a href="#" onclick="{$context}{$list}CaseDetails('{$row.case_id}','{$row.contact_id}', '{$list}', '{$context}');
+      <a href="#" onclick="CaseDetails('{$row.case_id}','{$row.contact_id}', '{$list}', '{$context}');
         showCaseActivities('{$row.case_id}','{$list}', '{$context}'); return false;">
         <img src="{$config->resourceBase}i/TreePlus.gif" class="action-icon" alt="{ts}open section{/ts}"/>
       </a>
@@ -140,6 +137,7 @@
   {/if}
 
 </table>
+{/if}
 
 {*include activity view js file*}
 {include file="CRM/common/activityView.tpl" list=$list}
@@ -180,9 +178,11 @@ function hideCaseActivities( caseId , type, context ) {
 }
 
 //NYSS 5340
-cj(function(){
-  buildCaseClientRelationships( false );
-});
+if ( {/literal}'{$list}'{literal} == 'allcases' ) {
+  cj(function(){
+    buildCaseClientRelationships( false );
+  });
+}
 
 function buildCaseClientRelationships( filterSearch ) {
   if( filterSearch ) {
