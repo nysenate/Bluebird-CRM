@@ -31,23 +31,20 @@
 </script>
 <script src="/sites/default/themes/Bluebird/scripts/bbtree.js" type="text/javascript"></script>
 <link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/Bluebird/nyss_skin/tags/tags.css" />
-<script type="text/javascript">
-BBTree.startInstance({pullSets: [291], buttonType: 'tagging'}); 
-</script>
-<style>
-#crm-tagListWrap {padding:10px; height:auto;}
-</style>
 {/literal}
 {*NYSS*}
 <div id="TagGroups" class="view-content">
 <h3>{if !$hideContext}{ts}Tags{/ts}{/if}</h3>
     <div id="dialog">
-    
+
     </div>
     {*NYSS add list of Issue Codes*}
     {if $contactIssueCode_list}
     	<div class="contactTagsList help"><strong>Issue Codes: </strong><span>{$contactIssueCode_list}</span></div>
     	<div class="clear"></div>
+    {else}
+      <div class="contactTagsList help" style="display:none"><strong>Issue Codes: </strong><span></span></div>
+      <div class="clear"></div>
     {/if}
     <div id="crm-tagListWrap">
 
@@ -74,9 +71,9 @@ BBTree.startInstance({pullSets: [291], buttonType: 'tagging'});
        <div class="form-item unobstructive">{$form.buttons.html}</div>
        <!--</fieldset>-->
     {/if}
-  
 
-    
+
+
 </div>
 
 <script type="text/javascript">
@@ -97,7 +94,7 @@ if ( !cj('.tag-section').hasClass('crm-processed-input') ) {
 {if $action eq 1 or $action eq 2 }
  <script type="text/javascript">
  {* this function is called to change the color of selected row(s) *}
-    var fname = "{$form.formName}";	
+    var fname = "{$form.formName}";
     on_load_init_check(fname);
  </script>
 {/if}

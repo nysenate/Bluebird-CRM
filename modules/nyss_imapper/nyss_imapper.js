@@ -77,7 +77,8 @@ cj(document).ready(function(){
     buttons: {
       Cancel: function() {
         cj( this ).dialog( "close" );
-      }
+      },
+
     }
   });
 
@@ -380,6 +381,15 @@ cj(document).ready(function(){
     var create_dob = cj("#tab2 .form-text.dob").val();
     var create_state = cj("#tab2 .state").val();
 
+    if ((cj.isNumeric(cj("#tab2 .dob .month").val()) || cj.isNumeric(cj("#tab2 .dob .day").val()) || cj.isNumeric(cj("#tab2 .dob .year").val())) && ( !cj.isNumeric(cj("#tab2 .dob .month").val()) || !cj.isNumeric(cj("#tab2 .dob .day").val()) || !cj.isNumeric(cj("#tab2 .dob .year").val()))) {
+      CRM.alert('Please Enter a full date of birth', 'Warning', 'warn');
+      return false;
+    };
+
+
+
+
+
     if((create_first_name)||(create_last_name)||(create_email_address)){
       cj.ajax({
         url: '/civicrm/imap/ajax/contact/add',
@@ -454,6 +464,11 @@ cj(document).ready(function(){
     var create_city = cj("#tab2 .city").val();
     var create_dob = cj("#tab2 .form-text.dob").val();
     var create_state = cj("#tab2 .state").val();
+    if (!cj.isNumeric(cj("#tab2 .dob .month").val()) || !cj.isNumeric(cj("#tab2 .dob .day").val()) || !cj.isNumeric(cj("#tab2 .dob .year").val()) ) {
+      CRM.alert('Please Enter a full date of birth', 'Warning', 'warn');
+      return false;
+    };
+
     if((create_first_name)||(create_last_name)||(create_email_address)){
       cj.ajax({
         url: '/civicrm/imap/ajax/contact/add',
@@ -566,10 +581,23 @@ cj(document).ready(function(){
             });
             cj('.first_name, .last_name, .phone, .street_address, .street_address_2, .city, .email_address').val('');
             cj('#id').val(messageId);
-            cj("#find-match-popup").dialog({ title:  "Reading: "+shortenString(message.subject,100) });
+
+            cj("#find-match-popup").dialog({
+              title:  "Reading: "+shortenString(message.subject,100),
+              buttons: {
+                Cancel: function() {
+                  cj( this ).dialog( "close" );
+                }
+              }
+            });
+            cj('#tabs').tabs({
+              selected: 0,
+              activate: function( event, ui ){
+                // console.log('loaded',cj(event.currentTarget).attr('href'));
+              }
+            });
             cj("#find-match-popup").dialog('open');
-            cj("#tabs").tabs();
-            cj('#tabs').tabs({ selected: 0 });
+
             cj('.email_address').val(message.sender_email);
             if(message.sender_email) cj('#filter').click();
             cj('.first_name').val(firstName);
@@ -744,7 +772,18 @@ cj(document).ready(function(){
           });
           cj('#id').val(activityId);
           cj("#loading-popup").dialog('close');
-          cj("#find-match-popup").dialog({ title:  "Reading: "+shortenString(message.subject,100)  });
+          cj("#find-match-popup").dialog({
+            title:  "Reading: "+shortenString(message.subject,100),
+            buttons: {
+              "Clear": function() {
+                ClearActivity(activityId);
+                cj("#find-match-popup").dialog('close');
+              },
+              Cancel: function() {
+                cj( this ).dialog( "close" );
+              }
+            }
+          });
           cj("#find-match-popup").dialog('open');
           cj("#tabs").tabs();
           cj('#imapper-contacts-list').html('').append("<strong>currently matched to : </strong><br/>           "+'<a href="/civicrm/contact/view?reset=1&cid='+message.matched_to+'" title="'+message.sender_name+'">'+shortenString(message.sender_name,35)+'</a>'+" <br/><i>&lt;"+ message.sender_email+"&gt;</i> <br/>"+ cj('.dob').val()+"<br/> "+ cj('.phone').val()+"<br/> "+  cj('.street_address').val()+"<br/> "+  cj('.city').val()+"<br/>");
@@ -770,9 +809,13 @@ cj(document).ready(function(){
     cj('#contact_ids').val('').val(contactId);
     cj('#activity_ids').val('').val(activityId);
     cj('#contact_tag_ids').val('');
+    cj('#contact_position_ids').val('');
     cj('#activity_tag_ids').val('');
+    cj('#contact_position_name').val('');
+
     cj('.token-input-dropdown-facebook').html('').remove();
     cj('.token-input-list-facebook').html('').remove();
+    cj('#contact-issue-codes').html('');
 
     cj.ajax({
       url: '/civicrm/imap/ajax/matched/details',
@@ -790,7 +833,7 @@ cj(document).ready(function(){
 
           // autocomplete
           cj('#contact_tag_name')
-            .tokenInput( '/civicrm/imap/ajax/tag/search', {
+            .tokenInput( '/civicrm/imap/ajax/keyword/search', {
             theme: 'facebook',
             zindex: 9999,
             onAdd: function ( item ) {
@@ -809,33 +852,20 @@ cj(document).ready(function(){
           var tree = new TagTreeTag({
             tree_container: cj('#contact-issue-codes'),
             filter_bar: cj('#contact-issue-codes-search'),
-
             tag_trees: [291],
             default_tree: 291,
 
             auto_save: false,
-            entity_id: cj('#contact_tag_ids').val(),
+            entity_id: cj('#contact_ids').val(),
             entity_counts: false,
             entity_type: 'civicrm_contact',
           });
           tree.load();
 
-          var tree = new TagTreeTag({
-            tree_container: cj('#activity-issue-codes'),
-            filter_bar: cj('#activity-issue-codes-search'),
 
-            tag_trees: [291],
-            default_tree: 291,
-
-            auto_save: false,
-            entity_id: cj('#contact_tag_ids').val(),
-            entity_counts: false,
-            entity_type: 'civicrm_contact',
-          });
-          tree.load();
 
           cj('#activity_tag_name')
-            .tokenInput( '/civicrm/imap/ajax/tag/search', {
+            .tokenInput( '/civicrm/imap/ajax/keyword/search', {
             theme: 'facebook',
             zindex: 9999,
             onAdd: function ( item ) {
@@ -850,6 +880,25 @@ cj(document).ready(function(){
               cj('#activity_tag_ids').val(result);
             }
           });
+
+          // autocomplete
+          cj('#contact_position_name')
+            .tokenInput( '/civicrm/ajax/taglist?parentId=292', {
+            theme: 'facebook',
+            zindex: 9999,
+            onAdd: function ( item ) {
+              current_contact_positions = cj('#contact_position_ids').val();
+              current_contact_positions = current_contact_positions.replace(/,,/g, ",");
+              cj('#contact_position_ids').val(current_contact_positions+','+item.id);
+            },
+            onDelete: function ( item ) {
+              current_contact_positions = cj('#contact_position_ids').val();
+              result = string_replace(current_contact_positions, ','+item.id,',');
+              result = result.replace(/,,/g, ",");
+              cj('#contact_position_ids').val(result);
+            }
+          });
+
           cj('#message_left_header_tag').html('').append("<span class='popup_def'>From: </span>"+messages.sender_name +"  <span class='emailbubble'>"+ messages.sender_email+"</span><br/><span class='popup_def'>Subject: </span>"+shortenString(messages.subject,55)+"<br/><span class='popup_def'>Date Forwarded: </span>"+messages.date_long+"<br/>");
           cj('#message_left_header_tag').append("<input class='hidden' type='hidden' id='activityId' value='"+activityId+"'><input class='hidden' type='hidden' id='contactId' value='"+contactId+"'>");
           if ((messages.forwarder != messages.sender_email)){
@@ -866,14 +915,23 @@ cj(document).ready(function(){
             }
           });
 
+
           cj("#tagging-popup").dialog({ title:  "Tagging: "+ shortenString(messages.subject,50) });
           cj( "#tagging-popup" ).dialog({
             buttons: {
               "Tag": function() {
-                pushtag();
+                var existingTags = new Array();
+                cj.each(cj('#contact-issue-codes dt.existing'), function(key, id) {
+                  existingTags.push(cj(this).attr('tid'));
+                });
+                pushtag(existingTags,'');
               },
               "Tag and Clear": function() {
-                pushtag('clear');
+                var existingTags = new Array();
+                cj.each(cj('#contact-issue-codes dt.existing'), function(key, id) {
+                  existingTags.push(cj(this).attr('tid'));
+                });
+                pushtag(existingTags,'clear');
               },
               Cancel: function() {
                 cj("#tagging-popup").dialog('close');
@@ -921,6 +979,8 @@ cj(document).ready(function(){
     cj('#activity_ids').val('').val(activityIds);
     cj('#contact_tag_ids').val('');
     cj('#activity_tag_ids').val('');
+    cj('#contact_position_ids').val('');
+    cj('#contact_position_name').val('');
     cj('.token-input-dropdown-facebook').html('').remove();
     cj('.token-input-list-facebook').html('').remove();
 
@@ -929,7 +989,7 @@ cj(document).ready(function(){
 
     // autocomplete
     cj('#contact_tag_name')
-      .tokenInput( '/civicrm/imap/ajax/tag/search', {
+      .tokenInput( '/civicrm/imap/ajax/keyword/search', {
       theme: 'facebook',
       zindex: 9999,
       onAdd: function ( item ) {
@@ -945,7 +1005,7 @@ cj(document).ready(function(){
       }
     });
     cj('#activity_tag_name')
-      .tokenInput( '/civicrm/imap/ajax/tag/search', {
+      .tokenInput( '/civicrm/imap/ajax/keyword/search', {
       theme: 'facebook',
       zindex: 9999,
       onAdd: function ( item ) {
@@ -960,7 +1020,35 @@ cj(document).ready(function(){
         cj('#activity_tag_ids').val(result);
       }
     });
+    var tree = new TagTreeTag({
+      tree_container: cj('#contact-issue-codes'),
+      filter_bar: cj('#contact-issue-codes-search'),
+      tag_trees: [291],
+      default_tree: 291,
 
+      auto_save: false,
+      entity_id: false,
+      entity_counts: false,
+      entity_type: 'civicrm_contact',
+    });
+    tree.load();
+
+    cj('#contact_position_name')
+      .tokenInput( '/civicrm/ajax/taglist?parentId=292', {
+      theme: 'facebook',
+      zindex: 9999,
+      onAdd: function ( item ) {
+        current_contact_positions = cj('#contact_position_ids').val();
+        current_contact_positions = current_contact_positions.replace(/,,/g, ",");
+        cj('#contact_position_ids').val(current_contact_positions+','+item.id);
+      },
+      onDelete: function ( item ) {
+        current_contact_positions = cj('#contact_position_ids').val();
+        result = string_replace(current_contact_positions, ','+item.id,',');
+        result = result.replace(/,,/g, ",");
+        cj('#contact_position_ids').val(result);
+      }
+    });
     cj.each(activityIds, function(key, activityId) {
       // console.log('activity :'+activityId+" - key : "+key+" - Contact : "+contactIds[key]);
       cj.ajax({
@@ -993,10 +1081,18 @@ cj(document).ready(function(){
     cj( "#tagging-popup" ).dialog({
       buttons: {
         "Tag": function() {
-          pushtag();
+          var existingTags = new Array();
+          cj.each(cj('#contact-issue-codes dt.existing'), function(key, id) {
+            existingTags.push(cj(this).attr('tid'));
+          });
+          pushtag(existingTags);
         },
         "Tag and Clear": function() {
-          pushtag('clear');
+          var existingTags = new Array();
+          cj.each(cj('#contact-issue-codes dt.existing'), function(key, id) {
+            existingTags.push(cj(this).attr('tid'));
+          });
+          pushtag(existingTags,'clear');
         },
         Cancel: function() {
           cj("#tagging-popup").dialog('close');
@@ -1433,7 +1529,7 @@ function DeleteMessage(id,imapid){
 // Result : A few things
 function ClearActivity(value){
   cj.ajax({
-    url: '/civicrm/imap/ajax/matched/untag',
+    url: '/civicrm/imap/ajax/matched/clear',
     data: {id: value},
     async:false,
     success: function(data,status) {
@@ -1481,17 +1577,37 @@ function DeleteActivity(value){
 // adding (single / multiple) tags to (single / multiple) contacts,
 // function works for multi contact tagging and single
 // cj(".push_tag").live('click', function(){
-function pushtag(clear){
+function pushtag(existingTags,clear){
 
   var contact_ids = cj("#contact_ids").attr('value');
   var activity_ids = cj("#activity_ids").attr('value');
 
   var contact_tag_ids ='';
+  var contact_position_ids ='';
+
   var activity_tag_ids ='';
 
   var contact_input = cj("#contact_tag_ids").val().replace(/,,/g, ",").replace(/^,/g, "");
   if(contact_input.length){
     contact_tag_ids = contact_input;
+  }
+  var contact_position_input = cj("#contact_position_ids").val().replace(/,,/g, ",").replace(/^,/g, "");
+  if(contact_position_input.length){
+    contact_position_ids = contact_position_input;
+  }
+  if(contact_position_ids){
+    var contact_ids_array = contact_ids.split(',');
+    cj.ajax({
+      url: '/civicrm/imap/ajax/tag/add',
+      async:false,
+      data: { contactId: contact_ids, tags: contact_position_ids},
+      success: function(data,status) {
+        CRM.alert('Added Position', 'Success', 'success');
+      },error: function(){
+        var output = cj.parseJSON(data);
+        CRM.alert('Failed to add Position', 'Error', 'error');
+      }
+    });
   }
 
   var activity_input = cj("#activity_tag_ids").val().replace(/,,/g, ",").replace(/^,/g, "");
@@ -1499,24 +1615,61 @@ function pushtag(clear){
     activity_tag_ids = activity_input;
   }
 
-  if (activity_tag_ids =='' && contact_tag_ids == ''){
-    CRM.alert('please select a tag', '', 'warn');
-    return false;
-  }else{
+  var sentTags = new Array();
+  cj.each(cj('#contact-issue-codes dt.checked'), function(key, id) {
+    sentTags.push(cj(this).attr('tid'));
+  });
+
+  var removedTags = cj(existingTags).not(sentTags).get();
+  var addedTags = cj(sentTags).not(existingTags).get();
+
+  if (activity_tag_ids.length || contact_tag_ids.length  || removedTags.length || addedTags.length){
     cj("#tagging-popup").dialog('close');
     cj('.token-input-list-facebook .token-input-token-facebook').remove();
     cj('.token-input-dropdown-facebook').html('');
     cj('.token-input-dropdown-facebook').html('').remove();
-
+    cj('#contact-issue-codes').html('');
+  }else{
+    CRM.alert('Please select a tag', 'Warning', 'warn');
+    return false;
   }
+
+  if(addedTags.length){
+    cj.ajax({
+      url: '/civicrm/imap/ajax/issuecode',
+      async:false,
+      data: { contacts: contact_ids, issuecodes: addedTags.toString(), action:'create'},
+      success: function(data,status) {
+        var output = cj.parseJSON(data);
+        CRM.alert(output.message, 'Success', 'success');
+      },error: function(){
+        var output = cj.parseJSON(data);
+        CRM.alert(output.message, 'Error', 'error');
+      }
+    });
+  }
+  if(removedTags.length){
+    cj.ajax({
+      url: '/civicrm/imap/ajax/issuecode',
+      async:false,
+      data: { contacts: contact_ids, issuecodes: removedTags.toString(), action:'delete'},
+      success: function(data,status) {
+        var output = cj.parseJSON(data);
+        CRM.alert(output.message, 'Success', 'success');
+      },error: function(){
+        var output = cj.parseJSON(data);
+        CRM.alert(output.message, 'Error', 'error');
+      }
+    });
+  }
+
+
 
   if(contact_tag_ids){
     var contact_ids_array = contact_ids.split(',');
     cj.each(contact_ids_array, function(key, id) {
       CRM.alert('Contact Tagged', '', 'success');
-
     });
-
     cj.ajax({
       url: '/civicrm/imap/ajax/tag/add',
       async:false,
