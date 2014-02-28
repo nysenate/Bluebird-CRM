@@ -1798,3 +1798,8 @@ div#tagGroup table.form-layout-compressed {
 div#tagGroup table.form-layout-compressed td {
   width: 45%;
 }
+
+/*1074*/
+#crm-container #civicrm-dashboard .widget-wrapper {
+  overflow-x: visible;
+}

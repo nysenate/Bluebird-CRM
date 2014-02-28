@@ -25,7 +25,7 @@
 *}
 {capture assign=expandIconURL}<img src="{$config->resourceBase}i/TreePlus.gif" alt="{ts}open section{/ts}"/>{/capture}
 {strip}
-
+list: {$list}
 {*NYSS 5340*}
 <table id="clientRelationships-selector-{$context}" class="report-layout">
   <thead>
