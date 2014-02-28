@@ -65,6 +65,14 @@
     <div class="clear"></div>
   </div>
 
+  <div id="mergeHouse" class="crm-section">
+    <div class="label"><label>{$form.merge_house.label}</label></div>
+    <div class="content">
+      {$form.merge_house.html}
+    </div>
+    <div class="clear"></div>
+  </div>
+
   <div class="crm-section">
     <div class="label"></div>
     <div class="content">
