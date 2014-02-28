@@ -13,17 +13,20 @@ form#Contact .groupTagsKeywords ul.token-input-list-facebook {
     width: 522px;
 }
 
-div#tagGroup div.groupTagsKeywords div.label{
+.page-civicrm-admin-tag .tag-section .label,
+.page-civicrm-contact .tag-section .label{
   font-size: 120%;
   margin-top: 20px;
 }
-#crm-tagListWrap .groupTagsKeywords .crm-section .label label{
+.tag-label label{
   float: left;
+  text-align: left !important;
   margin:20px 0 15px;
+  width: 100%;
 }
-#crm-tagListWrap .groupTagsKeywords .crm-section:first-child .label label{
-  margin-top:0;
-}
+
+
+
 #issue-code-search{
   margin:15px 0 0 0;
   width: 512px;

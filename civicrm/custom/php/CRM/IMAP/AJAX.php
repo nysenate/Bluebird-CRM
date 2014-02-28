@@ -83,19 +83,23 @@ class CRM_IMAP_AJAX {
       $UnprocessedResult = mysql_query($UnprocessedQuery, self::db());
       $UnprocessedOutput = array();
       while($row_raw = mysql_fetch_assoc($UnprocessedResult)) {
+        var_dump($row_raw);
         foreach ($row_raw as $key => $value) {
           switch ($key) {
             case 'body':
-              $row[$key] = mysql_real_escape_string($output);
+              $row[$key] = mysql_real_escape_string($value);
               break;
 
             default:
               $output = str_replace( chr( 194 ) . chr( 160 ), ' ', $value);
               $output = htmlspecialchars_decode($output);
               $output = preg_replace('/[^a-zA-Z0-9\s\p{P}<>]/', '', trim($output));
-              $row[$key] = substr(mysql_real_escape_string($output),0,255);
+              $row[$key] = substr(mysql_real_escape_string($output),0,240);
               break;
           }
+          var_dump($key);
+          var_dump($row[$key]);
+
         }
         $returnMessage = $row;
 

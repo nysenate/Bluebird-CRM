@@ -125,7 +125,7 @@
     {if $tagset.parentID eq 296}
         <div class="BBInit">
           <div class="crm-section tag-section contact-tagset-291-section crm-processed-input">
-            <div class="label">
+            <div class="tag-label">
                 <label>Issue Codes</label>
             </div>
             <input type="text" autocomplete="off" placeholder="Type here to search issue codes" maxlength="64" id="issue-code-search" />
@@ -155,7 +155,7 @@
 {elseif $tagsetType eq 'activity'}
   {foreach from=$tagsetInfo_activity item=tagset}
   <div class="crm-section tag-section activity-tagset-{$tagset.parentID}-section">
-    <div class="label">
+    <div class="tag-label">
       <label>{$tagset.parentName}</label>
     </div>
     <div class="content">
