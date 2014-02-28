@@ -87,15 +87,14 @@ class CRM_IMAP_AJAX {
           switch ($key) {
             case 'body':
               $output = preg_replace('/[^a-zA-Z0-9\s\p{P}<>]/', '', trim($value));
-              $output = htmlspecialchars_decode($output);
-              $row[$key] = mysql_real_escape_string($output);
+              $row[$key] = htmlspecialchars_decode(stripslashes($output));
               break;
 
             default:
               $output = str_replace( chr( 194 ) . chr( 160 ), ' ', $value);
-              $output = htmlspecialchars_decode($output);
+              $output = htmlspecialchars_decode(stripslashes($output));
               $output = preg_replace('/[^a-zA-Z0-9\s\p{P}]/', '', trim($output));
-              $row[$key] = substr(mysql_real_escape_string($output),0,240);
+              $row[$key] = substr($output,0,240);
               break;
           }
 
@@ -532,18 +531,18 @@ class CRM_IMAP_AJAX {
       }
 
       $output = self::unifiedMessageInfo($messageUid);
-      $oldActivityId =  $output['activity_id'];
-      $senderEmail = $output['sender_email'];
-      $senderName = $output['sender_name'];
-      $forwarder = $output['forwarder'];
-      $date = $output['updated_date'];
-      $FWDdate = $output['email_date'];
-      $subject = $output['subject'];
-      $body = $output['body'];
-      $status = $output['status'];
-      $key = $output['sender_email'];
-      $messageId = $output['message_id'];
-      $imapId = $output['imap_id'];
+      $oldActivityId = mysql_real_escape_string($output['activity_id']);
+      $senderEmail = mysql_real_escape_string($output['sender_email']);
+      $senderName = mysql_real_escape_string($output['sender_name']);
+      $forwarder = mysql_real_escape_string($output['forwarder']);
+      $date = mysql_real_escape_string($output['updated_date']);
+      $FWDdate = mysql_real_escape_string($output['email_date']);
+      $subject = mysql_real_escape_string($output['subject']);
+      $body = mysql_real_escape_string($output['body']);
+      $status = mysql_real_escape_string($output['status']);
+      $key = mysql_real_escape_string($output['sender_email']);
+      $messageId = mysql_real_escape_string($output['message_id']);
+      $imapId = mysql_real_escape_string($output['imap_id']);
 
       if($status != 1){
         $attachments = $output['attachments'];
