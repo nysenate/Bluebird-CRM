@@ -25,7 +25,7 @@
 *}
 {if $upcomingCases}
    <div class="form-item">
-       {include file="CRM/Case/Page/DashboardSelector.tpl" context="$context" list="upcoming" rows=$upcomingCases}
+       {include file="CRM/Case/Page/DashboardSelector.tpl" context="$context" list="allcases" rows=$upcomingCases}
    </div>
 {else}
     <div class="messages status no-popup">
