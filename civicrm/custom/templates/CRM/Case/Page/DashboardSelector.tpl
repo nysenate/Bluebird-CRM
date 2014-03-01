@@ -82,7 +82,7 @@
     <td class="{$row.class} crm-case-case_status">{$row.case_status}</td>
     <td class="crm-case-case_type">{$row.case_type}</td>
     <td class="crm-case-case_role">{if $row.case_role}{$row.case_role}{else}---{/if}</td>
-    <td class="crm-case-casemanager">xyz{if $row.casemanager_id}<a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.casemanager_id`"}">{$row.casemanager}</a>{else}---{/if}</td>
+    <td class="crm-case-casemanager">{if $row.casemanager_id}<a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.casemanager_id`"}">{$row.casemanager}</a>{else}---{/if}</td>
 
     {*NYSS*}
     {if $list neq 'allcases'}
