@@ -647,22 +647,28 @@
 				</ul>
 				<input type="hidden" class="hidden" id="contact_tag_ids" name="contact_tag_ids">
 				<input type="hidden" class="hidden" id="contact_ids" name="contact_ids">
+				<input type="hidden" class="hidden" id="contact_position_ids" name="contact_position_ids">
 				<input type="hidden" class="hidden" id="activity_tag_ids" name="activity_tag_ids">
 				<input type="hidden" class="hidden" id="activity_ids" name="activity_ids">
 				<div id="tab1_tag">
 					<div id='TagContact'>
-						<input type="text" id="contact_tag_name" placeholder="Type here to search Keywords" autocomplete="off">
+						<span class="label_def">Keywords: </span>
+						<input type="text" id="contact_tag_name" maxlength="64" placeholder="Type here to search Keywords" autocomplete="off">
+
+						<span class="label_def">Issue Codes: </span>
 						<input type="text" id="contact-issue-codes-search" maxlength="64" placeholder="Type here to search issue codes" autocomplete="off">
-						<div id="contact-issue-codes">
+						<div id="contact-issue-codes" class="TreeWrap">
 						</div>
+
+						<span class="label_def">Positions: </span>
+						<input type="text" id="contact_position_name" maxlength="64" placeholder="Type here to search Keywords" autocomplete="off">
+
 					</div>
 				</div>
 				<div id="tab2_tag">
 					<div id='TagActivity'>
+						<span class="label_def">Keywords: </span>
 						<input type="text" id="activity_tag_name" placeholder="Type here to search Keywords" autocomplete="off">
-						<input type="text" id="activity-issue-codes-search" maxlength="64" placeholder="Type here to search issue codes" autocomplete="off">
-						<div id="activity-issue-codes">
-						</div>
 					</div>
 				</div>
 			</div>

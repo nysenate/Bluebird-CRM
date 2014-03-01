@@ -86,16 +86,18 @@ class CRM_IMAP_AJAX {
         foreach ($row_raw as $key => $value) {
           switch ($key) {
             case 'body':
-              $row[$key] = mysql_real_escape_string($output);
+              $output = preg_replace('/[^a-zA-Z0-9\s\p{P}<>]/', '', trim($value));
+              $row[$key] = htmlspecialchars_decode(stripslashes($output));
               break;
 
             default:
               $output = str_replace( chr( 194 ) . chr( 160 ), ' ', $value);
-              $output = htmlspecialchars_decode($output);
-              $output = preg_replace('/[^a-zA-Z0-9\s\p{P}<>]/', '', trim($output));
-              $row[$key] = substr(mysql_real_escape_string($output),0,255);
+              $output = htmlspecialchars_decode(stripslashes($output));
+              $output = preg_replace('/[^a-zA-Z0-9\s\p{P}]/', '', trim($output));
+              $row[$key] = substr($output,0,240);
               break;
           }
+
         }
         $returnMessage = $row;
 
@@ -529,18 +531,18 @@ class CRM_IMAP_AJAX {
       }
 
       $output = self::unifiedMessageInfo($messageUid);
-      $oldActivityId =  $output['activity_id'];
-      $senderEmail = $output['sender_email'];
-      $senderName = $output['sender_name'];
-      $forwarder = $output['forwarder'];
-      $date = $output['updated_date'];
-      $FWDdate = $output['email_date'];
-      $subject = $output['subject'];
-      $body = $output['body'];
-      $status = $output['status'];
-      $key = $output['sender_email'];
-      $messageId = $output['message_id'];
-      $imapId = $output['imap_id'];
+      $oldActivityId = mysql_real_escape_string($output['activity_id']);
+      $senderEmail = mysql_real_escape_string($output['sender_email']);
+      $senderName = mysql_real_escape_string($output['sender_name']);
+      $forwarder = mysql_real_escape_string($output['forwarder']);
+      $date = mysql_real_escape_string($output['updated_date']);
+      $FWDdate = mysql_real_escape_string($output['email_date']);
+      $subject = mysql_real_escape_string($output['subject']);
+      $body = mysql_real_escape_string($output['body']);
+      $status = mysql_real_escape_string($output['status']);
+      $key = mysql_real_escape_string($output['sender_email']);
+      $messageId = mysql_real_escape_string($output['message_id']);
+      $imapId = mysql_real_escape_string($output['imap_id']);
 
       if($status != 1){
         $attachments = $output['attachments'];
@@ -657,12 +659,12 @@ ORDER BY gc.contact_id ASC";
 
             // Now we need to assign the tag to the activity
             $tagid= self::getInboxPollingTagId();
-            $assignTag = self::assignTag($activity['id'], 0, $tagid, "quiet");
+            $assignKeyword = self::assignKeyword($activity['id'], 0, $tagid, "quiet");
 
-            if($assignTag['code'] == "ERROR"){
-              // var_dump($assignTag);
+            if($assignKeyword['code'] == "ERROR"){
+              // var_dump($assignKeyword);
               $returnCode = array('code'      =>  'ERROR',
-              'message'   =>  $assignTag['message']);
+              'message'   =>  $assignKeyword['message']);
               echo json_encode($returnCode);
               CRM_Utils_System::civiExit();
             }else{
@@ -758,7 +760,7 @@ ORDER BY gc.contact_id ASC";
      * For Matched screen TAG
      * @return  [JSON Object]    Status message
      */
-    public static function assignTag($inActivityIds = null, $inContactIds = null, $inTagIds = null, $response = null) {
+    public static function assignKeyword($inActivityIds = null, $inContactIds = null, $inTagIds = null, $response = null) {
         $activityIds    =   ($inActivityIds) ? $inActivityIds : self::get('activityIds');
         $contactIds     =   ($inContactIds) ? $inContactIds : self::get('contactIds');
         $tagIds         =   ($inTagIds) ? $inTagIds : self::get('tagIds');
@@ -1015,7 +1017,7 @@ ORDER BY gc.contact_id ASC";
      * For Matched screen CLEAR
      * @return [JSON Object]    JSON encoded response, OR error codes
      */
-    public static function MatchedUntag() {
+    public static function Clear() {
       require_once 'api/api.php';
       $messageId = self::get('id');
       $session = CRM_Core_Session::singleton();
@@ -1155,7 +1157,7 @@ EOQ;
      * For Matched screen TAG
      * @return [JSON Object]    JSON encoded response, OR error codes
      */
-    public static function TagSearch() {
+    public static function KeywordSearch() {
         require_once 'api/api.php';
         $name = self::get('name');
         $start = self::get('timestamp');
@@ -1201,14 +1203,71 @@ EOQ;
      * For Matched screen TAG
      * @return [JSON Object]    JSON encoded response, OR error codes
      */
-    public static function TagAdd() {
+    public static function KeywordAdd() {
       require_once 'api/api.php';
       $tag_ids = self::get('tags');
       $activityId = self::get('activityId');
       $contactId = self::get('contactId');
-      // self::assignTag($activityId, $contactId, $tag_ids );
-      self::assignTag($activityId, $contactId, $tag_ids,'quiet');
+      self::assignKeyword($activityId, $contactId, $tag_ids,'quiet');
     }
+
+    /**
+     * Assign tags to a Contact or a Activity
+     * For Matched screen TAG
+     * @return [JSON Object]    JSON encoded response, OR error codes
+     */
+    public static function Issuecode() {
+      require_once 'api/api.php';
+      $tags = self::get('issuecodes');
+      $tags = split(',', $tags);
+      $contacts = self::get('contacts');
+      $contacts = split(',', $contacts);
+      $action = self::get('action');
+      $prettyAction = ($action === 'create') ? "added to" : "deleted from" ;
+      $plural = (count($tags) > 1) ? "s" : "" ;
+      $plural2 = (count($tags) > 1) ? "were" : "was";
+      $errorMessage ='';
+      if(is_null($tags) || $tags == 0) {
+        $returnCode = array('code'      =>  'ERROR',
+                            'message'   =>  'No valid tags.');
+        echo json_encode($returnCode);
+        CRM_Utils_System::civiExit();
+      }
+      $tagString ='';
+      $names = array();
+      foreach($tags as $tagId) {
+        $tag = self::civiRaw('tag',$tagId);
+        $tagName = $tag['values'][$tagId]['name'];
+        $tagstring .= "'".$tagName."',";
+        foreach($contacts as $contactId) {
+          if($contactId == 0)  break;
+          $params = array(
+            'entity_table'  =>  'civicrm_contact',
+            'entity_id'     =>  $contactId,
+            'tag_id'        =>  $tagId,
+            'version'       =>  3,
+          );
+          $result = civicrm_api('entity_tag', $action, $params );
+          $contact = self::civiRaw('contact',$contactId);
+          $names[$contactId] = "'".$contact['values'][$contactId]['display_name']."',";
+          if($result['is_error']==1){
+            $errorMessage = $result['error_message'];
+          }
+        }
+      }
+      $tagstring = rtrim($tagstring, ',');
+      $nameString = rtrim(implode(",", $names), ',');
+      if (!empty($errorMessage)) {
+        $returnCode = array('code' => 'ERROR','message'=> $errorMessage." ".$prettyAction." {$tagstring} to {$nameString}");
+      }else{
+        $returnCode = array('code' =>'SUCCESS','message'=> "Issue code{$plural} {$tagstring} {$plural2} {$prettyAction} {$nameString}");
+      }
+      echo json_encode($returnCode);
+      CRM_Utils_System::civiExit();
+    }
+
+
+
 
     /**
      * Get the tag id used to keep track of inbound emails

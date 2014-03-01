@@ -127,7 +127,10 @@ thead .sorting_asc{background-color:#f1f1f1!important;}
 .imapperbox a.tag-selected:hover {color: #fff !important; background-color: red; }
 .imapperbox .attachment{float:right !important;}
 .token-input-dropdown-facebook {z-index: 999999!important; float: left;}
-
+.page-civicrm-imap-matched #contact-issue-codes{margin:0 0 10px;}
+.page-civicrm-imap-matched .tag_filter_bar{ margin-top: 0px !important;}
+.page-civicrm-imap-matched ul.token-input-list-facebook{width: 288px;}
+.page-civicrm-imap-matched dt.lv-0{display: none}
 /* IMAP - Popup Left */
 .page-civicrm-imap #message_left,
 .page-civicrm-imap #message_left_tag{float:left; }

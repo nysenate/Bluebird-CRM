@@ -26,36 +26,9 @@
 {literal}
 <script src="/sites/default/themes/Bluebird/scripts/bbtree.js" type="text/javascript"></script>
 <link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/Bluebird/nyss_skin/tags/tags.css" />
-<style>
-.crm-tagListInfo {
-    padding:15px;
-    float:left;
-    width:370px;
-}
-.tagInfoBody {
-    margin-top:15px;
-}
-.tagInfoBody div {
-    margin-top:2px;
-    line-height:24px;
-}
-.crm-tagTreeDisplay {
-    float:right;
-}
-#BBTreeContainer .BBTree {
-    border:0;
-    border-left:1px solid #ccc;
-}
-.container #status {
-    display:none;
-}
-</style>
+
 {/literal}
-{literal}
-<script type="text/javascript">
-BBTree.startInstance({pullSets: [291, 296], buttonType: 'edit'}, 1); 
-</script>
-{/literal}
+
 {capture assign=docLink}{docURL page="user/organising-your-data/groups-and-tags"}{/capture}
 
 {if $action eq 1 or $action eq 2 or $action eq 8}
@@ -88,7 +61,7 @@ BBTree.startInstance({pullSets: [291, 296], buttonType: 'edit'}, 1);
 	<div class="crm-tagTabHeader">
 		<ul>
 		</ul>
-	</div>	
+	</div>
 	<div id="crm-tagListWrap">
 	    <div class="crm-tagListInfo">
 			<h1 class="header title">Tag Info</h1>
@@ -101,12 +74,24 @@ BBTree.startInstance({pullSets: [291, 296], buttonType: 'edit'}, 1);
 			</div>
         </div>
         <!-- goes here -->
-        <div class="crm-tagTreeDisplay">
-            <div class="BBInit"></div>
+        <div class="crm-tagTreeDisplay TreeWrap">
   {literal}
   <script>
-                BBTree.initContainer('', {pullSets: [291,296], buttonType: 'edit',tabLocation: 'crm-tagTabHeader'});
-                //BBTree.initContainer('two', {pullSets: [296], buttonType: 'tagging'}, {entity_id: 216352, entity_type: 'civicrm_activity'});
+    var tree = new TagTreeManage({
+        tree_container: cj('.crm-tagTreeDisplay'),
+        info_container: cj('.tagInfoBody'),
+        tab_container: cj('.crm-tagTabHeader'),
+
+        filter_bar: false,
+        tag_trees: [291,296],
+        default_tree: 291,
+
+        auto_save: true,
+        entity_id: false,
+        entity_counts: true,
+        entity_type: 'civicrm_contact',
+    });
+    tree.load();
   </script>
   {/literal}
 </div>

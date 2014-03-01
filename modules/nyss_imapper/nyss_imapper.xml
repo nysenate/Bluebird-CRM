@@ -51,8 +51,8 @@
     <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
-    <path>civicrm/imap/ajax/matched/untag</path>
-    <page_callback>CRM_IMAP_AJAX::MatchedUntag</page_callback>
+    <path>civicrm/imap/ajax/matched/clear</path>
+    <page_callback>CRM_IMAP_AJAX::Clear</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
@@ -64,14 +64,25 @@
   <!-- adding tags to contacts, matched  -->
   <item>
     <path>civicrm/imap/ajax/tag/search</path>
-    <page_callback>CRM_IMAP_AJAX::TagSearch</page_callback>
+    <page_callback>CRM_IMAP_AJAX::KeywordSearch</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
     <path>civicrm/imap/ajax/tag/add</path>
-    <page_callback>CRM_IMAP_AJAX::TagAdd</page_callback>
+    <page_callback>CRM_IMAP_AJAX::KeywordAdd</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
+  <item>
+    <path>civicrm/imap/ajax/issuecode/add</path>
+    <page_callback>CRM_IMAP_AJAX::IssuecodeAdd</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/imap/ajax/issuecode</path>
+    <page_callback>CRM_IMAP_AJAX::Issuecode</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+
 
   <!-- Used in both screens, matched  -->
   <item>
