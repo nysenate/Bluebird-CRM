@@ -5288,6 +5288,8 @@ AND   displayRelType.is_active = 1
           $dao->$value['pseudoField'] = $dao->$key = CRM_Core_PseudoConstant::getLabel($baoName, $value['pseudoField'], $val);
         }
         elseif ($value['pseudoField'] == 'state_province_abbreviation') {
+          //NYSS 7582 / http://issues.civicrm.org/jira/browse/CRM-14303
+          $val = $dao->state_province_name_id;
           $dao->$key = CRM_Core_PseudoConstant::stateProvinceAbbreviation($val);
         }
         else {
