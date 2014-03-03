@@ -24,11 +24,11 @@
  +--------------------------------------------------------------------+
 *}
 {* Relationship tab within View Contact - browse, and view relationships for a contact *}
-{if !empty($cdType) }
+{*{if !empty($cdType) }
   {include file="CRM/Custom/Form/CustomData.tpl"}
 {else}
  <div class="view-content">
-   {if $action eq 1 or $action eq 2 or $action eq 4 or $action eq 8} {* add, update or view *}
+   {if $action eq 1 or $action eq 2 or $action eq 4 or $action eq 8} *}{* add, update or view *}{*
     {include file="CRM/Contact/Form/Relationship.tpl"}
   {/if}
 <div class="crm-block crm-content-block">
@@ -38,11 +38,11 @@
         </div>
   {/if}
   {include file="CRM/common/jsortable.tpl" useAjax=0}   
-  {* start of code to show current relationships *}
+  *}{* start of code to show current relationships *}{*
   {if $currentRelationships}
-    {* show browse table for any action *}
+    *}{* show browse table for any action *}{*
       <div id="current-relationships">
-        {if $relationshipTabContext} {*to show the title and links only when viewed from relationship tab, not from dashboard*}
+        {if $relationshipTabContext} *}{*to show the title and links only when viewed from relationship tab, not from dashboard*}{*
          <h3>{ts}Current Relationships{/ts}</h3>
         {/if}
         {strip}
@@ -51,11 +51,11 @@
         <tr>
             <th>{ts}Relationship{/ts}</th>
             <th></th>
-            {*NYSS remove some columns*}
-            {*<th id="start_date">{ts}Start{/ts}</th>*}
-            {*<th id="end_date">{ts}End{/ts}</th>*}
+            *}{*NYSS remove some columns*}{*
+            *}{*<th id="start_date">{ts}Start{/ts}</th>*}{*
+            *}{*<th id="end_date">{ts}End{/ts}</th>*}{*
             <th>{ts}City{/ts}</th>
-            {*<th>{ts}State/Prov{/ts}</th>*}
+            *}{*<th>{ts}State/Prov{/ts}</th>*}{*
             <th>{ts}Email{/ts}</th>
             <th>{ts}Phone{/ts}</th>
             <th></th>
@@ -86,11 +86,11 @@
                 <td class="bold">{$rel.relation}</strong></td>
                 <td>{$rel.name}</td>
             {/if}
-                {*NYSS remove some columns*}
-                {*<td class="crm-rel-start_date">{$rel.start_date}</td>*}
-                {*<td class="crm-rel-end_date">{$rel.end_date}</td>*}
+                *}{*NYSS remove some columns*}{*
+                *}{*<td class="crm-rel-start_date">{$rel.start_date}</td>*}{*
+                *}{*<td class="crm-rel-end_date">{$rel.end_date}</td>*}{*
                 <td>{$rel.city}</td>
-                {*<td>{$rel.state}</td>*}
+                *}{*<td>{$rel.state}</td>*}{*
                 <td>{$rel.email}</td>
                 <td>{$rel.phone}</td> 
                 <td class="nowrap">{$rel.action|replace:'xx':$rel.id}</td>
@@ -102,18 +102,18 @@
         {/strip}
         </div>
 
-    {*NYSS 7192*}
-        {*{if $relationshipTabContext}
+    *}{*NYSS 7192*}{*
+        *}{*{if $relationshipTabContext}
         <div id="permission-legend" class="crm-content-block">
 	     <span class="crm-marker">* </span>{ts}Indicates a permissioned relationship. This contact can be viewed and updated by the other.{/ts}
         </div>
-        {/if}*}
+        {/if}*}{*
 {/if}
-{* end of code to show current relationships *}
+*}{* end of code to show current relationships *}{*
 
 {if NOT ($currentRelationships or $inactiveRelationships) }
 
-  {if $action NEQ 1} {* show 'no relationships' message - unless already in 'add' mode. *}
+  {if $action NEQ 1} *}{* show 'no relationships' message - unless already in 'add' mode. *}{*
        <div class="messages status no-popup">
             <div class="icon inform-icon"></div>
            {capture assign=crmURL}{crmURL p='civicrm/contact/view/rel' q="cid=`$contactId`&action=add&reset=1"}{/capture}
@@ -130,9 +130,9 @@
 </div>
 <div class="spacer"></div>
 
-{* start of code to show inactive relationships *}
+*}{* start of code to show inactive relationships *}{*
 {if $inactiveRelationships}
-    {* show browse table for any action *}
+    *}{* show browse table for any action *}{*
       <div id="inactive-relationships">
         <p></p>
         <div class="label font-red">{ts}Inactive Relationships{/ts}</div>
@@ -143,11 +143,11 @@
         <tr>
           <th>{ts}Relationship{/ts}</th>
           <th></th>
-          {*NYSS remove some columns*}
-          {*<th id="dis-start_date">{ts}Start{/ts}</th>*}
-          {*<th id="dis-end_date">{ts}End{/ts}</th>*}
+          *}{*NYSS remove some columns*}{*
+          *}{*<th id="dis-start_date">{ts}Start{/ts}</th>*}{*
+          *}{*<th id="dis-end_date">{ts}End{/ts}</th>*}{*
           <th>{ts}City{/ts}</th>
-          {*<th>{ts}State/Prov{/ts}</th>*}
+          *}{*<th>{ts}State/Prov{/ts}</th>*}{*
           <th>{ts}Email{/ts}</th>
           <th>{ts}Phone{/ts}</th>
           <th></th>
@@ -168,11 +168,11 @@
               {if $rel.description}<p class='description'>{$rel.description}</p>{/if}
             </td>
             <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$rel.cid`"}">{$rel.name}</a></td>
-            {*NYSS remove some columns*}
-            {*<td class="dis-crm-rel-start_date">{$rel.start_date}</td>*}
-            {*<td class="dis-crm-rel-end_date">{$rel.end_date}</td>*}
+            *}{*NYSS remove some columns*}{*
+            *}{*<td class="dis-crm-rel-start_date">{$rel.start_date}</td>*}{*
+            *}{*<td class="dis-crm-rel-end_date">{$rel.end_date}</td>*}{*
             <td>{$rel.city}</td>
-            {*<td>{$rel.state}</td>*}
+            *}{*<td>{$rel.state}</td>*}{*
             <td>{$rel.email}</td>
     	    <td>{$rel.phone}</td>
             <td class="nowrap">{$rel.action|replace:'xx':$rel.id}</td>
@@ -185,13 +185,51 @@
         </div>    
 {/if}
 
-{* end of code to show inactive relationships *}
+*}{* end of code to show inactive relationships *}{*
 
 
 </div>
+{/if} *}{* close of custom data else*}{*
+
+{if !empty($searchRows) }
+ *}{*include custom data js file*}{*
+ {include file="CRM/common/customData.tpl"}
+{/if}*}
+
+{*NYSS 5786*}
+{if !empty($cdType) }
+  {include file="CRM/Custom/Form/CustomData.tpl"}
+{elseif $action neq 16} {* add, update or view *}
+  {include file="CRM/Contact/Form/Relationship.tpl"}
+{else}
+  <div class="view-content">
+    {if $permission EQ 'edit'}
+      <div class="action-link">
+        <a accesskey="N" href="{crmURL p='civicrm/contact/view/rel' q="cid=`$contactId`&action=add&reset=1"}"
+           class="button"><span><div class="icon add-icon"></div>{ts}Add Relationship{/ts}</span></a>
+      </div>
+    {/if}
+
+    {* display current relationships *}
+    <h3>{ts}Current Relationships{/ts}</h3>
+    {include file="CRM/Contact/Page/View/RelationshipSelector.tpl" context="current"}
+   {* <div id="permission-legend" class="crm-content-block">
+      <span class="crm-marker">* </span>
+      {ts}Indicates a permissioned relationship. This contact can be viewed and updated by the other.{/ts}
+    </div>*}
+
+    <div class="spacer"></div>
+    <p></p>
+    {* display past relationships *}
+    <div class="label font-red">{ts}Inactive Relationships{/ts}</div>
+    <div class="description">{ts}These relationships are Disabled OR have a past End Date.{/ts}</div>
+    {include file="CRM/Contact/Page/View/RelationshipSelector.tpl" context="past"}
+  </div>
+
+  {include file="CRM/common/enableDisableApi.tpl"}
 {/if} {* close of custom data else*}
 
 {if !empty($searchRows) }
- {*include custom data js file*}
- {include file="CRM/common/customData.tpl"}
+  {*include custom data js file*}
+  {include file="CRM/common/customData.tpl"}
 {/if}
