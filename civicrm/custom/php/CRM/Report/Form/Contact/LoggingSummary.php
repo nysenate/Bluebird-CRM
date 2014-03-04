@@ -351,7 +351,7 @@ LEFT  JOIN civicrm_contact altered_by_contact_civireport
     $left = $middle = $right = array();
     $leftList = $middleList = $addressList = '';
 
-    $IMProvider = CRM_Core_PseudoConstant::IMProvider();
+    $IMProvider = CRM_Core_PseudoConstant::get('CRM_Core_DAO_IM', 'provider_id');
 
     $params = array(
       'version' => 3,

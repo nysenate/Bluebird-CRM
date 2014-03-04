@@ -99,3 +99,16 @@ $execSql $instance -c "$sql" -q
 
 echo "rebuilding word replacement list..."
 $execSql $instance -f $app_rootdir/scripts/sql/wordReplacement.sql -q
+
+echo "adding new case types..."
+sql="
+  SELECT @caseType:=id FROM civicrm_option_group WHERE name = 'case_type';
+  DELETE FROM civicrm_option_value WHERE option_group_id = @caseType AND (name = 'Letter of Support' OR name = 'Other');
+  SELECT @maxval:=max(cast(value as unsigned)) FROM civicrm_option_value WHERE option_group_id = @caseType;
+  INSERT INTO civicrm_option_value
+    (option_group_id, label, value, name, weight, is_active)
+  VALUES
+    (@caseType, 'Letter of Support', @maxval+1, 'Letter of Support', @maxval+1, 1),
+    (@caseType, 'Other', @maxval+2, 'Other', @maxval+2, 1)
+"
+$execSql $instance -c "$sql" -q
