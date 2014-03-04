@@ -100,7 +100,7 @@ $execSql $instance -c "$sql" -q
 echo "rebuilding word replacement list..."
 $execSql $instance -f $app_rootdir/scripts/sql/wordReplacement.sql -q
 
-echo "adding new case types..."
+echo "7636: adding new case types and alpha ordering..."
 sql="
   SELECT @caseType:=id FROM civicrm_option_group WHERE name = 'case_type';
   DELETE FROM civicrm_option_value WHERE option_group_id = @caseType AND (name = 'Letter of Support' OR name = 'Other');
@@ -108,7 +108,13 @@ sql="
   INSERT INTO civicrm_option_value
     (option_group_id, label, value, name, weight, is_active)
   VALUES
-    (@caseType, 'Letter of Support', @maxval+1, 'Letter of Support', @maxval+1, 1),
-    (@caseType, 'Other', @maxval+2, 'Other', @maxval+2, 1)
+    (@caseType, 'Letter of Support', @maxval+1, 'Letter of Support', 5, 1),
+    (@caseType, 'Other', @maxval+2, 'Other', 6, 1);
+  UPDATE civicrm_option_value SET weight = 1 WHERE option_group_id = @caseType AND name = 'Event Invitation';
+  UPDATE civicrm_option_value SET weight = 2 WHERE option_group_id = @caseType AND name = 'General Complaint';
+  UPDATE civicrm_option_value SET weight = 3 WHERE option_group_id = @caseType AND name = 'Government Service Problem - Local';
+  UPDATE civicrm_option_value SET weight = 4 WHERE option_group_id = @caseType AND name = 'Government Service Problem - State';
+  UPDATE civicrm_option_value SET weight = 7 WHERE option_group_id = @caseType AND name = 'Request for Assistance';
+  UPDATE civicrm_option_value SET weight = 8 WHERE option_group_id = @caseType AND name = 'Request for Information';
 "
 $execSql $instance -c "$sql" -q
