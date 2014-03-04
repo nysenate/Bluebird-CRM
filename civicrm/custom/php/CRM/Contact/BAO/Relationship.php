@@ -877,7 +877,9 @@ LEFT JOIN  civicrm_country ON (civicrm_address.country_id = civicrm_country.id)
         $where .= ' AND civicrm_relationship.contact_id_b = ' . CRM_Utils_Type::escape($contactId, 'Positive');
       }
       else {
-        $where .= ' AND civicrm_relationship.contact_id_a = ' . CRM_Utils_Type::escape($contactId, 'Positive');
+        //NYSS 5786
+        $where .= ' AND civicrm_relationship.contact_id_a = ' . CRM_Utils_Type::escape($contactId, 'Positive') . '
+                    AND civicrm_relationship.contact_id_a != civicrm_relationship.contact_id_b ';
       }
     }
     if ($relationshipId) {
@@ -983,29 +985,6 @@ LEFT JOIN  civicrm_country ON (civicrm_address.country_id = civicrm_country.id)
         //$limit = " LIMIT 0, $numRelationship";
         $limit = " LIMIT {$offset}, $numRelationship";
       }
-    }
-
-    //NYSS 5786
-    if ( $count ) {
-      $sql = "
-        SELECT count(id)
-        FROM (
-          SELECT r.id
-          FROM civicrm_relationship r
-          JOIN civicrm_contact c_a
-            ON r.contact_id_a = c_a.id
-            AND c_a.is_deleted = 0
-          JOIN civicrm_contact c_b
-            ON r.contact_id_b = c_b.id
-            AND c_b.is_deleted = 0
-          WHERE r.is_active = 1
-            AND (r.end_date >= NOW() OR r.end_date IS NULL)
-            AND (r.contact_id_a = {$contactId} OR r.contact_id_b = {$contactId})
-        ) rels
-      ";
-      //CRM_Core_Error::debug_var('sql', $sql);
-      $relationshipCount = CRM_Core_DAO::singleValueQuery($sql);
-      return $relationshipCount;
     }
 
     // building the query string
