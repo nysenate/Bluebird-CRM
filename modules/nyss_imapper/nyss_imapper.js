@@ -833,7 +833,7 @@ cj(document).ready(function(){
 
           // autocomplete
           cj('#contact_tag_name')
-            .tokenInput( '/civicrm/imap/ajax/keyword/search', {
+            .tokenInput( '/civicrm/imap/ajax/tag/search', {
             theme: 'facebook',
             zindex: 9999,
             onAdd: function ( item ) {
@@ -865,7 +865,7 @@ cj(document).ready(function(){
 
 
           cj('#activity_tag_name')
-            .tokenInput( '/civicrm/imap/ajax/keyword/search', {
+            .tokenInput( '/civicrm/imap/ajax/tag/search', {
             theme: 'facebook',
             zindex: 9999,
             onAdd: function ( item ) {
@@ -989,7 +989,7 @@ cj(document).ready(function(){
 
     // autocomplete
     cj('#contact_tag_name')
-      .tokenInput( '/civicrm/imap/ajax/keyword/search', {
+      .tokenInput( '/civicrm/imap/ajax/tag/search', {
       theme: 'facebook',
       zindex: 9999,
       onAdd: function ( item ) {
@@ -1005,7 +1005,7 @@ cj(document).ready(function(){
       }
     });
     cj('#activity_tag_name')
-      .tokenInput( '/civicrm/imap/ajax/keyword/search', {
+      .tokenInput( '/civicrm/imap/ajax/tag/search', {
       theme: 'facebook',
       zindex: 9999,
       onAdd: function ( item ) {
