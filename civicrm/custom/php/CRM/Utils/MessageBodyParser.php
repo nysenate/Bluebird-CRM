@@ -67,15 +67,13 @@ class MessageBodyParser
       $str = preg_replace('/mailto|\(|\)/i', '', $str);
       $str = preg_replace('/"|\'/i', '', $str);
       $str = preg_replace('/\[|\]/i', '', $str);
-      $str = preg_replace('/&lt;|&gt;|&quot;|&amp;/i', ' ', $str);
+      $str = preg_replace('/&lt;|&gt;|&quot;|&amp;|\*/i', ' ', $str);
       $bodyArray[$line] = $str;
     }
     $possibleHeaders = "subject|from|to|sent|date|cc|bcc|sent by";
 
-    $Line = array();
-    $BlockLines = array();
+    $Line = $BlockLines = $HeaderBlocks = array();
     $currentHeader=0;
-    $HeaderBlocks = array();
 
     // search body line by line for headers
     foreach ($bodyArray as $key => $line) {
@@ -85,7 +83,7 @@ class MessageBodyParser
           $BlockLines[$currentHeader]['start']=$key;
         }
       }else{
-	if (strip_tags(trim($line) == '')){
+	      if (strip_tags(trim($line) == '')){
           // if there is an open header, and we have an empty line, thats the end of a deader
           if ((!isset($BlockLines[$currentHeader]['stop'])) && (isset($BlockLines[$currentHeader]['start']))) {
             $BlockLines[$currentHeader]['stop']=$key;
