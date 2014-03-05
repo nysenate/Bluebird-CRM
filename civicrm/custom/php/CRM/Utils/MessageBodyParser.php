@@ -67,11 +67,10 @@ class MessageBodyParser
       $str = preg_replace('/mailto|\(|\)/i', '', $str);
       $str = preg_replace('/"|\'/i', '', $str);
       $str = preg_replace('/\[|\]/i', '', $str);
-      $str = preg_replace('/&lt;|&gt;|&quot;|&amp;|\*/i', ' ', $str);
+      $str = preg_replace('/&lt;|&gt;|&quot;|&amp;|^>|\*/i', ' ', $str);
       $bodyArray[$line] = $str;
     }
     $possibleHeaders = "subject|from|to|sent|date|cc|bcc|sent by";
-
     $Line = $BlockLines = $HeaderBlocks = array();
     $currentHeader=0;
 
@@ -93,7 +92,7 @@ class MessageBodyParser
       }
     }
     $LastHeader = '';
-
+    // var_dump($BlockLines);
     // loop through header blocks, combine multi line headers
     foreach ($BlockLines as $id => $payload) {
       foreach ($bodyArray as $key => $line) {
@@ -103,7 +102,9 @@ class MessageBodyParser
             $value = trim($matches[2]);
             $HeaderBlocks[$id][$LastHeader] = $value;
           }else{
-            $HeaderBlocks[$id][$LastHeader] = $HeaderBlocks[$id][$LastHeader]." ".$line;
+            if (strlen($HeaderBlocks[$id][$LastHeader]) > 60) {
+              $HeaderBlocks[$id][$LastHeader] = $HeaderBlocks[$id][$LastHeader]." ".$line;
+            }
           }
 
         }
