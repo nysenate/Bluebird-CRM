@@ -119,9 +119,6 @@ class MessageBodyParser
     $m=array();
     foreach ($HeaderBlocks as $id => $block) {
       foreach ($block as $header => $value) {
-        // remove \u00a0
-        $value = str_replace( chr( 194 ) . chr( 160 ), ' ', $value);
-        $value = preg_replace('/[^a-zA-Z0-9\s\p{P}]/', '', trim($value));
         switch ($header) {
           case 'subject':
             $m[$id]['Subject'] = trim($value);
