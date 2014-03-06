@@ -28,7 +28,7 @@
 
 {*NYSS 5340 use when on main dashboard *}
 {if $list eq 'allcases' || $list eq 'mycases'}
-<table id="clientRelationships-selector-{$context}" class="report-layout">
+<table id="clientRelationships-selector-{$context}-{$list}" class="report-layout">
   <thead>
   <tr class="columnheader">
     <th class="control"></th>
@@ -179,6 +179,7 @@ function hideCaseActivities( caseId , type, context ) {
 
 //NYSS 5340
 var list = {/literal}'{$list}'{literal};
+
 if ( list == 'allcases' || list == 'mycases' ) {
   cj(function(){
     buildCaseClientRelationships( false, list );
@@ -196,7 +197,7 @@ function buildCaseClientRelationships( filterSearch, list ) {
   var sourceUrl = {/literal}"{crmURL p='civicrm/ajax/getallcases' h=0 q='snippet=4&list='}"{literal} + list;
   var sImageUrl = {/literal}"{$config->resourceBase}i/TreePlus.gif"{literal};
 
-  cj('#clientRelationships-selector-'+ context +' th').each( function( ) {
+  cj('#clientRelationships-selector-'+ context + '-' + list + ' th').each( function( ) {
     //the detail expand column should not be sortable, but does need to be added to sClass
     if ( !cj(this).hasClass('nosort') ) {
       columns += '{"sClass": "' + cj(this).attr('class') +'"},';
@@ -210,7 +211,7 @@ function buildCaseClientRelationships( filterSearch, list ) {
   columns = columns.substring(0, columns.length - 1 );
   eval('columns =[' + columns + ']');
 
-  oTable = cj('#clientRelationships-selector-'+ context).dataTable({
+  oTable = cj('#clientRelationships-selector-'+ context + '-' + list).dataTable({
     "bFilter"    : false,
     "bAutoWidth" : false,
     "aaSorting"  : [],
@@ -236,7 +237,7 @@ function buildCaseClientRelationships( filterSearch, list ) {
     }
   });
 
-  cj('#clientRelationships-selector-'+ context +' td.control').live( 'click', function () {
+  cj('#clientRelationships-selector-'+ context + '-' + list +' td.control').live( 'click', function () {
     var nTr = this.parentNode;
     var i = cj.inArray( nTr, anOpen );
     var oData = oTable.fnGetData( nTr );
@@ -258,7 +259,7 @@ function buildCaseClientRelationships( filterSearch, list ) {
 }
 
 function setClientRelationshipsSelectorClass{/literal}{$context}{literal}( context ) {
-  cj('#clientRelationships-selector-' + context + ' td:last-child').each( function( ) {
+  cj('#clientRelationships-selector-' + context + '-' + list + ' td:last-child').each( function( ) {
     cj(this).parent().addClass(cj(this).text() );
   });
 }
