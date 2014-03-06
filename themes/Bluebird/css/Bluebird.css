@@ -1803,3 +1803,11 @@ div#tagGroup table.form-layout-compressed td {
 #crm-container #civicrm-dashboard .widget-wrapper {
   overflow-x: visible;
 }
+
+/*5340 datatables on dashlet*/
+.crm-container #civicrm-dashboard .dataTables_info {
+  width: auto;
+}
+#crm-container.crm-container #civicrm-dashboard li.widget {
+  margin-bottom: 20px;
+}

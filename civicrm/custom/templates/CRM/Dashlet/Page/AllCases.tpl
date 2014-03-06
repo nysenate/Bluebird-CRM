@@ -23,7 +23,7 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-{*NYSS 5340 altered for datatables implementation*}
- <div class="form-item">
-   {include file="CRM/Case/Page/DashboardSelector.tpl" context="$context" list="mycases" rows=$myCases}
- </div>
+{*NYSS 5340 updated for datatables implementation*}
+<div class="form-item">
+  {include file="CRM/Case/Page/DashboardSelector.tpl" context="$context" list="allcases" rows=$AllCases}
+</div>
