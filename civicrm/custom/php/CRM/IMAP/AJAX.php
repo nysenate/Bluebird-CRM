@@ -770,7 +770,7 @@ ORDER BY gc.contact_id ASC";
         $tagsIDs         =   split(',', $tagIds);
         require_once 'api/api.php';
 
-        if (!empty($contactIds)) {
+        if (count($contactIds) != 0) {
           foreach($contactIds as $contactId)
           {
             $entityTable = 'civicrm_contact';
@@ -801,29 +801,27 @@ ORDER BY gc.contact_id ASC";
               }
               $realTagIds[] = $tagId;
               if (!array_key_exists($tagId, $existingTags)) {
-                $newTagIds[] = $tagId;
+                $contactTagIds[] = $tagId;
               }
             }
-            if (!empty($newTagIds)) {
+            if (!empty($contactTagIds)) {
               // New tag ids can be inserted directly into the db table.
               $insertValues = array();
-              foreach ($newTagIds as $tagId) {
+              foreach ($contactTagIds as $tagId) {
                 $insertValues[] = "( {$tagId}, {$contactId}, '{$entityTable}' ) ";
               }
               $insertSQL = 'INSERT INTO civicrm_entity_tag ( tag_id, entity_id, entity_table ) VALUES ' . implode(', ', $insertValues) . ';';
               $result = mysql_query($insertSQL, self::db());
-
             }
           }
         }
+        if (count($activityIds) != 0) {
 
-         if (!empty($activityIds)) {
           foreach($activityIds as $activityId)
           {
             $entityTable = 'civicrm_activity';
             $parentId = '296';
             $existingTags = CRM_Core_BAO_EntityTag::getTag($activityId, $entityTable);
-
             foreach ($tagsIDs as $tagId) {
               if (!is_numeric($tagId)) {
                 // check if user has selected existing tag or is creating new tag
@@ -848,18 +846,17 @@ ORDER BY gc.contact_id ASC";
               }
               $realTagIds[] = $tagId;
               if (!array_key_exists($tagId, $existingTags)) {
-                $newTagIds[] = $tagId;
+                $activityTagIds[] = $tagId;
               }
             }
-            if (!empty($newTagIds)) {
+            if (!empty($activityTagIds)) {
               // New tag ids can be inserted directly into the db table.
               $insertValues = array();
-              foreach ($newTagIds as $tagId) {
+              foreach ($activityTagIds as $tagId) {
                 $insertValues[] = "( {$tagId}, {$activityId}, '{$entityTable}' ) ";
               }
               $insertSQL = 'INSERT INTO civicrm_entity_tag ( tag_id, entity_id, entity_table ) VALUES ' . implode(', ', $insertValues) . ';';
               $result = mysql_query($insertSQL, self::db());
-
             }
           }
         }
