@@ -23,13 +23,7 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-{if $upcomingCases}
-   <div class="form-item">
-       {include file="CRM/Case/Page/DashboardSelector.tpl" context="$context" list="allcases" rows=$upcomingCases}
-   </div>
-{else}
-    <div class="messages status no-popup">
-     {capture assign="findCasesURL"}{crmURL p='civicrm/case/search' q='reset=1'}{/capture}
-     {ts 1=$findCasesURL}There are no open cases with activities scheduled in the next two weeks. Use <a href="%1">Find Cases</a> to expand your search.{/ts}
-    </div>
-{/if}
+{*NYSS 5340 altered for datatables implementation*}
+ <div class="form-item">
+   {include file="CRM/Case/Page/DashboardSelector.tpl" context="$context" list="mycases" rows=$myCases}
+ </div>

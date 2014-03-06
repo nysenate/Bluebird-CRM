@@ -27,7 +27,7 @@
 {strip}
 
 {*NYSS 5340 use when on main dashboard *}
-{if $list eq 'allcases'}
+{if $list eq 'allcases' || $list eq 'mycases'}
 <table id="clientRelationships-selector-{$context}" class="report-layout">
   <thead>
   <tr class="columnheader">
@@ -45,7 +45,7 @@
 {/if}
 
 {*NYSS*}
-{if $list neq 'allcases'}
+{if $list neq 'allcases' && $list neq 'mycases'}
 <table class="caseSelector">
   <tr class="columnheader">
     <th></th>
@@ -85,7 +85,7 @@
     <td class="crm-case-casemanager">{if $row.casemanager_id}<a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.casemanager_id`"}">{$row.casemanager}</a>{else}---{/if}</td>
 
     {*NYSS*}
-    {if $list neq 'allcases'}
+    {if $list neq 'allcases' && $list neq 'mycases'}
       {if $list eq 'upcoming'}
         <td class="crm-case-case_scheduled_activity">
           {if $row.case_upcoming_activity_viewable}
@@ -178,13 +178,14 @@ function hideCaseActivities( caseId , type, context ) {
 }
 
 //NYSS 5340
-if ( {/literal}'{$list}'{literal} == 'allcases' ) {
+var list = {/literal}'{$list}'{literal};
+if ( list == 'allcases' || list == 'mycases' ) {
   cj(function(){
-    buildCaseClientRelationships( false );
+    buildCaseClientRelationships( false, list );
   });
 }
 
-function buildCaseClientRelationships( filterSearch ) {
+function buildCaseClientRelationships( filterSearch, list ) {
   if( filterSearch ) {
     oTable.fnDestroy();
   }
@@ -192,7 +193,7 @@ function buildCaseClientRelationships( filterSearch ) {
   var anOpen = [];
   var columns = '';
   var context = {/literal}"{$context}"{literal};
-  var sourceUrl = {/literal}"{crmURL p='civicrm/ajax/getallcases' h=0 q='snippet=4'}"{literal};
+  var sourceUrl = {/literal}"{crmURL p='civicrm/ajax/getallcases' h=0 q='snippet=4&list='}"{literal} + list;
   var sImageUrl = {/literal}"{$config->resourceBase}i/TreePlus.gif"{literal};
 
   cj('#clientRelationships-selector-'+ context +' th').each( function( ) {

@@ -24,6 +24,8 @@ class CRM_NYSS_AJAX_Case
     $rowCount = isset($_REQUEST['iDisplayLength']) ? CRM_Utils_Type::escape($_REQUEST['iDisplayLength'], 'Integer') : 10;
     $sort = isset($_REQUEST['iSortCol_0']) ? CRM_Utils_Array::value(CRM_Utils_Type::escape($_REQUEST['iSortCol_0'], 'Integer'), $sortMapper) : NULL;
     $sortOrder = isset($_REQUEST['sSortDir_0']) ? CRM_Utils_Type::escape($_REQUEST['sSortDir_0'], 'String') : 'asc';
+    $list = CRM_Utils_Type::escape($_REQUEST['list'], 'String');
+    $allCases = ($list == 'mycases') ? FALSE : TRUE;
 
     $params = $_POST;
 
@@ -37,7 +39,8 @@ class CRM_NYSS_AJAX_Case
 
     $session = CRM_Core_Session::singleton();
     $userID = $session->get('userID');
-    $cases = CRM_Case_BAO_Case::getCases(TRUE, $userID, 'any', 'dashboard', $params);
+    $cases = CRM_Case_BAO_Case::getCases($allCases, $userID, 'any', 'dashboard', $params);
+    //CRM_Core_Error::debug_var('$list', $list);
     //CRM_Core_Error::debug_var('$cases', $cases);
     //CRM_Core_Error::debug_var('params', $params);
     //CRM_Core_Error::debug_var('count $cases', count($cases));
