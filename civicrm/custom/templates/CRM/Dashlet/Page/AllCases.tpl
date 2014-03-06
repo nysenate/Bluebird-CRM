@@ -1,5 +1,4 @@
-<?php
-/*
+{*
  +--------------------------------------------------------------------+
  | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
@@ -23,48 +22,8 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
-
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2013
- * $Id$
- *
- */
-
-/**
- * Main page for Cases dashlet
- *
- */
-class CRM_Dashlet_Page_AllCases extends CRM_Core_Page {
-
-  /**
-   * List activities as dashlet
-   *
-   * @return none
-   *
-   * @access public
-   */
-  function run() {
-    $context = CRM_Utils_Request::retrieve('context', 'String', $this, FALSE, 'dashlet');
-    $this->assign('context', $context);
-
-    //check for civicase access.
-    if (!CRM_Case_BAO_Case::accessCiviCase()) {
-      CRM_Core_Error::fatal(ts('You are not authorized to access this page.'));
-    }
-
-    $session  = CRM_Core_Session::singleton();
-    $userID   = $session->get('userID');
-
-    //NYSS 2173/5340 - no longer needed as we retrieve via AJAX
-    /*$upcoming = CRM_Case_BAO_Case::getCases(TRUE, $userID, 'any', $context);
-
-    if (!empty($upcoming)) {
-      $this->assign('AllCases', $upcoming);
-    }*/
-    return parent::run();
-  }
-}
-
+*}
+{*NYSS 5340 updated for datatables implementation*}
+<div class="form-item">
+  {include file="CRM/Case/Page/DashboardSelector.tpl" context="$context" list="allcases" rows=$AllCases}
+</div>
