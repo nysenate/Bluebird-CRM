@@ -327,7 +327,7 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
     //CRM_Core_Error::debug_var('$this->_params', $this->_params);
     if ( empty($this->_params['order_bys']) ||
       $this->_params['order_bys'][1]['column'] == '-' ||
-      $this->_params['order_bys'][1]['column'] == 'log_date'
+      ($this->_params['order_bys'][1]['column'] == 'log_date' && $this->_params['order_bys'][1]['order'] == 'DESC')
     ) {
       //NYSS hack log_action order by
       $logOrderBy = 'ORDER BY log_civicrm_entity_log_date DESC, log_civicrm_entity_log_type ASC';

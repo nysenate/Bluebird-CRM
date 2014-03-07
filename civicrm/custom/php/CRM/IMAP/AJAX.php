@@ -764,109 +764,102 @@ ORDER BY gc.contact_id ASC";
         $activityIds    =   ($inActivityIds) ? $inActivityIds : self::get('activityIds');
         $contactIds     =   ($inContactIds) ? $inContactIds : self::get('contactIds');
         $tagIds         =   ($inTagIds) ? $inTagIds : self::get('tagIds');
+
         $activityIds    =   split(',', $activityIds);
         $contactIds     =   split(',', $contactIds);
-        $tagIds         =   split(',', $tagIds);
-
-        // If there are no tagIds or it's zero, return an error message
-        // via JSON so we can display it to the user.
-        if(is_null($tagIds) || $tagIds == 0) {
-            $returnCode = array('code'      =>  'ERROR',
-                                'message'   =>  'No valid tags.');
-            echo json_encode($returnCode);
-            CRM_Utils_System::civiExit();
-        }
+        $tagsIDs         =   split(',', $tagIds);
         require_once 'api/api.php';
 
-        require_once 'CRM/Core/DAO.php';
-        $nyss_conn = new CRM_Core_DAO();
-        $nyss_conn = $nyss_conn->getDatabaseConnection();
-        $conn = $nyss_conn->connection;
+        if (count($contactIds) != 0) {
+          foreach($contactIds as $contactId)
+          {
+            $entityTable = 'civicrm_contact';
+            $parentId = '296';
+            $existingTags = CRM_Core_BAO_EntityTag::getTag($contactId, $entityTable);
 
-        $returnCode = array();
-
-        foreach($tagIds as $tagId) {
-          // check to see if it is a new tag
-          preg_match('/\:\:\:/',$tagId,$matches,PREG_OFFSET_CAPTURE);
-
-          if(count($matches) > 0){
-            $newtag = substr($tagId, 0, $matches[0][1]);
-            // If there's no tag, create it.
-            $params = array(
-                'name' => $newtag,
-                'version' => 3,
-                'parent_id' => 296
-            );
-            $result = civicrm_api('tag', 'create', $params);
-            $tagId = $result['id'];
-          }
-
-          //get data about tag
-          $data = self::civiRaw('tag',$tagId);
-          $tagName = $data['values'][$tagId]['name'];
-
-            foreach($contactIds as $contactId) {
-                if($contactId == 0)  break;
-                $params = array(
-                                'entity_table'  =>  'civicrm_contact',
-                                'entity_id'     =>  $contactId,
-                                'tag_id'        =>  $tagId,
-                                'version'       =>  3,
-                                );
-
-                $result = civicrm_api('entity_tag', 'create', $params );
-                //get data about contact
-                $data = self::civiRaw('contact',$contactId);
-                $name = $data['values'][$contactId]['display_name'];
-                // exit();
-                if($result['is_error']==1){
-                    $returnCode = array('code' => 'ERROR','message'=>$result['error_message']." on {$name}");
-                }elseif ($result['not_added']==1 ) {
-                    $returnCode = array('code' => 'ERROR','message'=>"Tag '{$tagName}' Already exists on {$name}");
-                }else{
-                    $returnCode = array('code' =>'SUCCESS','message'=> "Tag '{$tagName}' Added to {$name}");
+            foreach ($tagsIDs as $tagId) {
+              if (!is_numeric($tagId)) {
+                // check if user has selected existing tag or is creating new tag
+                // this is done to allow numeric tags etc.
+                $tagValue = explode(':::', $tagId);
+                if (isset($tagValue[1]) && $tagValue[1] == 'value') {
+                  // does tag already exist ?
+                  $params = array('version'   =>  3, 'activity'  =>  'get', 'name' => $tagValue[0] );
+                  $check = civicrm_api('tag', 'get', $params);
+                  if ($check['count'] != 0) {
+                    $tagId =  strval($check['id']);
+                  }else{
+                    $tagParams = array(
+                      'name' => $tagValue[0],
+                      'parent_id' => $parentId,
+                      'used_for' => 'civicrm_contact,civicrm_activity,civicrm_case',
+                    );
+                    $tagObject = CRM_Core_BAO_Tag::add($tagParams, CRM_Core_DAO::$_nullArray);
+                    $tagId = strval($tagObject->id);
+                  }
                 }
-
+              }
+              $realTagIds[] = $tagId;
+              if (!array_key_exists($tagId, $existingTags)) {
+                $contactTagIds[] = $tagId;
+              }
             }
-            foreach($activityIds as $id) {
-                $output = self::unifiedMessageInfo($id);
-                $activityId = $output['activity_id'];
-                if($activityId == 0) break;
-                //get data about tag
-                $data = self::civiRaw('activity',$activityId);
-                $subject = $data['values'][$activityId]['subject'];
-                // exit();
-
-                $query = "SELECT * FROM civicrm_entity_tag
-                            WHERE entity_table='civicrm_activity'
-                            AND entity_id={$activityId}
-                            AND tag_id={$tagId};";
-                $result = mysql_query($query, $conn);
-
-                if(mysql_num_rows($result) == 0) {
-                    $query = "INSERT INTO civicrm_entity_tag(entity_table,entity_id,tag_id)
-                              VALUES('civicrm_activity',{$activityId},{$tagId});";
-                    $result = mysql_query($query, $conn);
-
-                    if($result == null) {
-                        $returnCode = array('code'=>'ERROR','message'=> "'$subject' on  '{$tagName}'");
-                    }else{
-                         $returnCode = array('code'=>'SUCCESS','status'=> '1','message'=>"Tag '{$tagName}' Added to {$subject}",'clear'=>'true');
-                    }
-                }else{
-                    $returnCode = array('code'=>'ERROR','message'=> "'$subject' on  '{$tagName}'");
-                }
+            if (!empty($contactTagIds)) {
+              // New tag ids can be inserted directly into the db table.
+              $insertValues = array();
+              foreach ($contactTagIds as $tagId) {
+                $insertValues[] = "( {$tagId}, {$contactId}, '{$entityTable}' ) ";
+              }
+              $insertSQL = 'INSERT INTO civicrm_entity_tag ( tag_id, entity_id, entity_table ) VALUES ' . implode(', ', $insertValues) . ';';
+              $result = mysql_query($insertSQL, self::db());
+            }
           }
         }
-        if($response){
-          return $returnCode;
-        }else{
-          echo json_encode($returnCode);
-        }
+        if (count($activityIds) != 0) {
 
-        //the following causes exit before the loop in assignMessage can complete. commenting it allows multi-match
-        //but without it the script returns a full page, a new addition in 1.4
-        // CRM_Utils_System::civiExit();
+          foreach($activityIds as $activityId)
+          {
+            $entityTable = 'civicrm_activity';
+            $parentId = '296';
+            $existingTags = CRM_Core_BAO_EntityTag::getTag($activityId, $entityTable);
+            foreach ($tagsIDs as $tagId) {
+              if (!is_numeric($tagId)) {
+                // check if user has selected existing tag or is creating new tag
+                // this is done to allow numeric tags etc.
+                $tagValue = explode(':::', $tagId);
+                if (isset($tagValue[1]) && $tagValue[1] == 'value') {
+                  // does tag already exist ?
+                  $params = array('version'   =>  3, 'activity'  =>  'get', 'name' => $tagValue[0] );
+                  $check = civicrm_api('tag', 'get', $params);
+                  if ($check['count'] != 0) {
+                    $tagId =  strval($check['id']);
+                  }else{
+                    $tagParams = array(
+                      'name' => $tagValue[0],
+                      'parent_id' => $parentId,
+                      'used_for' => 'civicrm_contact,civicrm_activity,civicrm_case',
+                    );
+                    $tagObject = CRM_Core_BAO_Tag::add($tagParams, CRM_Core_DAO::$_nullArray);
+                    $tagId = strval($tagObject->id);
+                  }
+                }
+              }
+              $realTagIds[] = $tagId;
+              if (!array_key_exists($tagId, $existingTags)) {
+                $activityTagIds[] = $tagId;
+              }
+            }
+            if (!empty($activityTagIds)) {
+              // New tag ids can be inserted directly into the db table.
+              $insertValues = array();
+              foreach ($activityTagIds as $tagId) {
+                $insertValues[] = "( {$tagId}, {$activityId}, '{$entityTable}' ) ";
+              }
+              $insertSQL = 'INSERT INTO civicrm_entity_tag ( tag_id, entity_id, entity_table ) VALUES ' . implode(', ', $insertValues) . ';';
+              $result = mysql_query($insertSQL, self::db());
+            }
+          }
+        }
     }
 
     /**
@@ -1398,73 +1391,6 @@ LIMIT 0 , 100000";
       'Messages'=> $Output
       );
       echo json_encode($returnCode);
-      CRM_Utils_System::civiExit();
-    }
-
-    /**
-     * Create bug in redmine with info about the offending message
-     * For sd99 only
-     * @return [JSON Object]    JSON encoded response, OR error codes
-     */
-    public static function fileBug() {
-      require_once 'api/api.php';
-      require_once 'CRM/Utils/Redmine.php';
-      // load from config
-      $bbconfig = get_bluebird_instance_config();
-      $apiKey = $bbconfig['redmine.api.key'];
-      $imapAccounts = explode(',', $bbconfig['imap.accounts']);
-      // get session stuff
-      $session = CRM_Core_Session::singleton();
-      $userId =  $session->get('userID');
-      $ContactInfo = self::civiRaw('contact',$userId);
-      $ContactName = $ContactInfo['values'][$userId]['display_name'];
-      $url = $_SERVER["SERVER_NAME"].":".$_SERVER["REQUEST_URI"];
-      // _Get vars
-      $messageId =  self::get('id');
-      $browser =  self::get('browser');
-      $description =  self::get('description');
-
-      // var_dump($apiKey);
-      // var_dump($messageId);
-      // var_dump($imapAccounts);
-      // var_dump($url);
-      // var_dump($browser);
-      // var_dump($userId);
-      // var_dump($ContactName);
-
-      $debugQuery = " SELECT *
-      FROM `nyss_inbox_messages`
-      WHERE `id` = $messageId
-      LIMIT 1";
-
-      $debugResult = mysql_query($debugQuery, self::db());
-      $debugOutput = array();
-      while($row = mysql_fetch_assoc($debugResult)) {
-        $debugOutput = $row;
-      }
-      $debugFormatted ='';
-      foreach ($debugOutput as $key => $value) {
-        $debugFormatted .= $key.": ".$value.";\n";
-      }
-      // var_dump($debugFormatted);
-      $debugFinal = "Full message:\n".$debugFormatted."\n\nBrowser: ".$browser.";\nContactName: ".$ContactName.";\n url: ".$url."\n\nUser Submitted Description:\n".$description;
-
-
-      $config['url'] = "http://dev.nysenate.gov/";
-      $config['apikey'] = $apiKey;
-      $_redmine = new redmine($config);
-
-      $project_id = 62; // blue bird project id
-      $category_id = 40; // inbox polling 40
-      $assignmentUsernames = 184; // me 184 // dean 14 // jason 22 // scott 29
-      $subject = "Automated API: Problem with message #".$messageId;
-
-      $addedIssueDetails = $_redmine->addIssue($subject, $debugFinal, $project_id, $category_id, $assignmentUsernames);
-      // var_dump($addedIssueDetails);
-      // var_dump($addedIssueDetails);
-      $addIssueID = (int)$addedIssueDetails->id;
-      // var_dump($addIssueID);
-
       CRM_Utils_System::civiExit();
     }
 
