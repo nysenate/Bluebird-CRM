@@ -45,6 +45,9 @@ class CRM_Core_BAO_Phone extends CRM_Core_DAO_Phone {
    * @param array $params input parameters
    */
   static function create($params) {
+    // Ensure mysql phone function exists
+    CRM_Core_DAO::checkSqlFunctionsExist();
+
     if (is_numeric(CRM_Utils_Array::value('is_primary', $params)) ||
       // if id is set & is_primary isn't we can assume no change
       empty($params['id'])
@@ -66,6 +69,9 @@ class CRM_Core_BAO_Phone extends CRM_Core_DAO_Phone {
    * @static
    */
   static function add(&$params) {
+    // Ensure mysql phone function exists
+    CRM_Core_DAO::checkSqlFunctionsExist();
+
     $hook = empty($params['id']) ? 'create' : 'edit';
     CRM_Utils_Hook::pre($hook, 'Phone', CRM_Utils_Array::value('id', $params), $params);
 
@@ -231,6 +237,9 @@ ORDER BY ph.is_primary DESC, phone_id ASC ";
     if (!$optionId) {
       return;
     }
+    // Ensure mysql phone function exists
+    CRM_Core_DAO::checkSqlFunctionsExist();
+
     $tables = array(
       'civicrm_phone',
       'civicrm_mapping_field',
@@ -253,6 +262,8 @@ ORDER BY ph.is_primary DESC, phone_id ASC ";
    * Call common delete function
    */
   static function del($id) {
+    // Ensure mysql phone function exists
+    CRM_Core_DAO::checkSqlFunctionsExist();
     return CRM_Contact_BAO_Contact::deleteObjectWithPrimary('Phone', $id);
   }
 }

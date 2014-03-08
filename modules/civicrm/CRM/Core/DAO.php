@@ -70,6 +70,8 @@ class CRM_Core_DAO extends DB_DataObject {
    */
   static $_factory = NULL;
 
+  static $_checkedSqlFunctionsExist = FALSE;
+
   /**
    * Class constructor
    *
@@ -1285,11 +1287,16 @@ SELECT contact_id
         if (CRM_Utils_Array::value($dbName, $params) !== NULL && !is_array($params[$dbName])) {
           $object->$dbName = $params[$dbName];
         }
+
         elseif ($dbName != 'id') {
           if ($FKClassName != NULL) {
             //skip the FK if it is not required
             // if it's contact id we should create even if not required
             // we'll have a go @ fetching first though
+            // we WILL create campaigns though for so tests with a campaign pseudoconstant will complete
+            if($FKClassName === 'CRM_Campaign_DAO_Campaign' && $daoName != $FKClassName) {
+              $required = TRUE;
+            }
             if (!$required && $dbName != 'contact_id') {
               $fkDAO = new $FKClassName;
               if($fkDAO->find(TRUE)){
@@ -1342,7 +1349,12 @@ SELECT contact_id
 
             case CRM_Utils_Type::T_DATE:
             case CRM_Utils_Type::T_TIMESTAMP:
+            case CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME:
               $object->$dbName = '19700101';
+              if($dbName == 'end_date') {
+                // put this in the future
+                $object->$dbName = '20200101';
+              }
               break;
 
             case CRM_Utils_Type::T_TIME:
@@ -1538,6 +1550,23 @@ SELECT contact_id
 
     // now create the set of new triggers
     self::createTriggers($info);
+  }
+
+  /**
+   * Because sql functions are sometimes lost, esp during db migration, we check here to avoid numerous support requests
+   * @see http://issues.civicrm.org/jira/browse/CRM-13822
+   * TODO: Alternative solutions might be
+   *  * Stop using functions and find another way to strip numeric characters from phones
+   *  * Give better error messages (currently a missing fn fatals with "unknown error")
+   */
+  static function checkSqlFunctionsExist() {
+    if (!self::$_checkedSqlFunctionsExist) {
+      self::$_checkedSqlFunctionsExist = TRUE;
+      $dao = CRM_Core_DAO::executeQuery("SHOW function status WHERE db = database() AND name = 'civicrm_strip_non_numeric'");
+      if (!$dao->fetch()) {
+        self::triggerRebuild();
+      }
+    }
   }
 
   /**
@@ -1780,7 +1809,7 @@ EOS;
   public function getOptionLabels() {
     $fields = $this->fields();
     if ($fields === NULL) {
-      throw new exception ('Cannot call getOptionLabels on CRM_Core_DAO');
+      throw new Exception ('Cannot call getOptionLabels on CRM_Core_DAO');
     }
     foreach ($fields as $field) {
       $name = CRM_Utils_Array::value('name', $field);
@@ -1809,7 +1838,7 @@ EOS;
     );
     // Validation: enforce uniformity of this param
     if ($context !== NULL && !isset($contexts[$context])) {
-      throw new exception("'$context' is not a valid context for buildOptions.");
+      throw new Exception("'$context' is not a valid context for buildOptions.");
     }
     return $contexts;
   }
@@ -1859,7 +1888,7 @@ EOS;
           case 'BETWEEN':
           case 'NOT BETWEEN':
             if (empty($criteria[0]) || empty($criteria[1])) {
-              throw new exception("invalid criteria for $operator");
+              throw new Exception("invalid criteria for $operator");
             }
             if(!$returnSanitisedArray) {
               return (sprintf('%s ' . $operator . ' "%s" AND "%s"', $fieldName, CRM_Core_DAO::escapeString($criteria[0]), CRM_Core_DAO::escapeString($criteria[1])));
@@ -1873,7 +1902,7 @@ EOS;
           case 'IN':
           case 'NOT IN':
             if (empty($criteria)) {
-              throw new exception("invalid criteria for $operator");
+              throw new Exception("invalid criteria for $operator");
             }
             $escapedCriteria = array_map(array(
               'CRM_Core_DAO',
@@ -1928,5 +1957,7 @@ EOS;
     $md5string = substr(md5($string), 0, 8);
     return substr($string, 0, $length - 8) . "_{$md5string}";
   }
+
+  function setApiFilter(&$params) {}
 
 }

@@ -40,7 +40,7 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
   protected $loggingDB;
 
   function __construct() {
-    // don’t display the ‘Add these Contacts to Group’ button
+    // donï¿½t display the ï¿½Add these Contacts to Groupï¿½ button
     $this->_add2groupSupported = FALSE;
 
     $dsn = defined('CIVICRM_LOGGING_DSN') ? DB::parseDSN(CIVICRM_LOGGING_DSN) : DB::parseDSN(CIVICRM_DSN);
@@ -145,13 +145,13 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
       'log_civicrm_activity_for_source' =>
       array( 
           'fk' => 'contact_id',
-          'table_name' => 'log_civicrm_activity_contact',
+          'table_name' => 'log_civicrm_activity',//NYSS 3461
           'joins' => array(
             'table' => 'log_civicrm_activity_contact',
             'join' => "entity_log_civireport.id = fk_table.activity_id AND fk_table.record_type_id = {$sourceID}"
           ),
         'bracket_info'  => array(
-          'entity_column' => 'activity_type_id', 
+          'entity_column' => 'activity_type_id',
           'options' => CRM_Core_PseudoConstant::activityType(TRUE, TRUE, FALSE, 'label', TRUE)
         ),
         'log_type'      => 'Activity',
@@ -238,6 +238,9 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
     if (CRM_Utils_Array::value('altered_contact', $this->_params['fields'])) {
       $tempColumns .= ", altered_contact varchar(128)";
     }
+    //NYSS 3461 include sort name
+    $tempColumns .= ", altered_contact_sort_name varchar(128)";
+
     $tempColumns .= ", altered_contact_id int(10), log_conn_id int(11), is_deleted tinyint(4)";
     if (CRM_Utils_Array::value('display_name', $this->_params['fields'])) {
       $tempColumns .= ", display_name varchar(128)";
@@ -248,16 +251,17 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
     }
 
     // temp table to hold all altered contact-ids
+    //CRM_Core_DAO::executeQuery("DROP TABLE IF EXISTS civicrm_temp_civireport_logsummary");
     $sql = "CREATE TEMPORARY TABLE civicrm_temp_civireport_logsummary ( {$tempColumns} ) ENGINE=HEAP";
     CRM_Core_DAO::executeQuery($sql);
 
     $logDateClause = $this->dateClause('log_date',
-                                       CRM_Utils_Array::value("log_date_relative",  $this->_params),
-                                       CRM_Utils_Array::value("log_date_from",      $this->_params),
-                                       CRM_Utils_Array::value("log_date_to",        $this->_params),
-                                       CRM_Utils_Type::T_DATE,
-                                       CRM_Utils_Array::value("log_date_from_time", $this->_params),
-                                       CRM_Utils_Array::value("log_date_to_time",   $this->_params));
+      CRM_Utils_Array::value("log_date_relative", $this->_params),
+      CRM_Utils_Array::value("log_date_from", $this->_params),
+      CRM_Utils_Array::value("log_date_to", $this->_params),
+      CRM_Utils_Type::T_DATE,
+      CRM_Utils_Array::value("log_date_from_time", $this->_params),
+      CRM_Utils_Array::value("log_date_to_time", $this->_params));
     $logDateClause = $logDateClause ? "AND {$logDateClause}" : NULL;
 
     $logTypes = CRM_Utils_Array::value('log_type_value', $this->_params);
@@ -286,6 +290,7 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
         $sql = $this->buildQuery(FALSE);
         $sql = str_replace("entity_log_civireport.log_type as", "'{$entity}' as", $sql);
         $sql = "INSERT IGNORE INTO civicrm_temp_civireport_logsummary {$sql}";
+        //CRM_Core_Error::debug_var('sql insert', $sql);
         CRM_Core_DAO::executeQuery($sql);
       }
     }
@@ -317,10 +322,27 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
 
     // note the group by columns are same as that used in alterDisplay as $newRows - $key
     $this->limit();
-    //NYSS hack log_action order by
-    $logActionOrderBy = '';
-    if ( isset($params['fields']['log_action']) ) {
-      $logActionOrderBy = ', log_civicrm_entity_log_action ASC';
+
+    //NYSS 3461 set default order_by unless handled in form config (or log date, which is same as default)
+    //CRM_Core_Error::debug_var('$this->_params', $this->_params);
+    if ( empty($this->_params['order_bys']) ||
+      $this->_params['order_bys'][1]['column'] == '-' ||
+      ($this->_params['order_bys'][1]['column'] == 'log_date' && $this->_params['order_bys'][1]['order'] == 'DESC')
+    ) {
+      //NYSS hack log_action order by
+      $logOrderBy = 'ORDER BY log_civicrm_entity_log_date DESC, log_civicrm_entity_log_type ASC';
+      if ( isset($this->_params['fields']['log_action']) ) {
+        $logOrderBy .= ', log_civicrm_entity_log_action ASC';
+      }
+    }
+    else {
+      //handle form order by values here since we don't run through standard sql build
+      $logOrderClauses = array();
+      foreach ( $this->_params['order_bys'] as $ob ) {
+        $logOrderClauses[] = "{$ob['column']} {$ob['order']}";
+      }
+      $logOrderBy = 'ORDER BY '.implode(', ', $logOrderClauses);
+      $this->_formOrderBy = 1;
     }
 
     //NYSS
@@ -328,14 +350,13 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
 FROM civicrm_temp_civireport_logsummary entity_log_civireport
 WHERE {$logTypeTableClause}
 GROUP BY EXTRACT(DAY_HOUR FROM log_civicrm_entity_log_date), log_civicrm_entity_log_type_label, log_civicrm_entity_log_conn_id, log_civicrm_entity_log_user_id, log_civicrm_entity_altered_contact_id
-ORDER BY log_civicrm_entity_log_date DESC, log_civicrm_entity_log_type ASC {$logActionOrderBy}
+{$logOrderBy}
 {$this->_limit}";
     $sql = str_replace('modified_contact_civireport.display_name', 'entity_log_civireport.altered_contact', $sql);
     $sql = str_replace('modified_contact_civireport.id', 'entity_log_civireport.altered_contact_id', $sql);
-    $sql = str_replace(array(
-      'modified_contact_civireport.',
-      'altered_by_contact_civireport.'
-    ), 'entity_log_civireport.', $sql);
+    //NYSS 7452
+    $sql = str_replace('modified_contact_civireport.sort_name', 'entity_log_civireport.altered_contact_sort_name', $sql);
+    $sql = str_replace(array('modified_contact_civireport.', 'altered_by_contact_civireport.'), 'entity_log_civireport.', $sql);
     //CRM_Core_Error::debug_var('sql',$sql);
 
     $this->buildRows($sql, $rows);
@@ -355,6 +376,7 @@ ORDER BY log_civicrm_entity_log_date DESC, log_civicrm_entity_log_type ASC {$log
 
     // do print / pdf / instance stuff if needed
     $this->endPostProcess($rows);
+    //CRM_Core_Error::debug_var('$rows after',$rows);
   }
 
   function getLogType( $entity ) {

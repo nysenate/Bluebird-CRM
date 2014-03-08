@@ -834,7 +834,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
     if (!in_array($this->_activityTypeName, $specialActivities)) {
       // build tag widget
       $parentNames = CRM_Core_BAO_Tag::getTagSet('civicrm_activity');
-      CRM_Core_Form_Tag::buildQuickForm($this, $parentNames, 'civicrm_activity', $this->_activityId, FALSE, TRUE);
+      CRM_Core_Form_Tag::buildQuickForm($this, $parentNames, 'civicrm_activity', $this->_activityId, TRUE, TRUE);
     }
 
     // if we're viewing, we're assigning different buttons than for adding/editing
@@ -1147,7 +1147,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
       )
     ) {
       $mailToContacts = array();
-      $assigneeContacts = CRM_Activity_BAO_ActivityContact::getNames($activity->id, $assigneeID);
+      $assigneeContacts = CRM_Activity_BAO_ActivityAssignment::getAssigneeNames($activity->id, TRUE, FALSE);
 
       //build an associative array with unique email addresses.
       foreach ($activityAssigned as $id => $dnc) {

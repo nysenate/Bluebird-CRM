@@ -352,6 +352,12 @@ class CRM_Case_BAO_Case extends CRM_Case_DAO_Case {
       $case->save();
     }
 
+    //NYSS 7621 delete case tag entities
+    if (!$moveToTrash) {
+      $query = "DELETE FROM civicrm_entity_tag WHERE entity_table = 'civicrm_case' AND entity_id = {$caseId}";
+      CRM_Core_DAO::executeQuery($query);
+    }
+
     if ($result) {
       // CRM-7364, disable relationships
       self::enableDisableCaseRelationships($caseId, FALSE);
@@ -537,7 +543,8 @@ WHERE cc.contact_id = %1
     return $caseArray;
   }
 
-  static function getCaseActivityQuery($type = 'upcoming', $userID = NULL, $condition = NULL, $isDeleted = 0) {
+  //NYSS 5340 add params
+  static function getCaseActivityQuery($type = 'upcoming', $userID = NULL, $condition = NULL, $isDeleted = 0, &$params = array()) {
     if (!$userID) {
       $session = CRM_Core_Session::singleton();
       $userID = $session->get('userID');
@@ -577,8 +584,7 @@ t_act.id as case_recent_activity_id,
 t_act.act_type_name as case_recent_activity_type_name,
 t_act.act_type AS case_recent_activity_type ";
     }
-    //NYSS 2173
-    else if ( $type == 'all' ) {
+    elseif ( $type == 'any' ) {
       $query .=  " 
 t_act.desired_date as case_activity_date,
 t_act.id as case_activity_id,
@@ -630,8 +636,7 @@ LEFT JOIN civicrm_option_group aog ON aog.name='activity_type'
   LEFT JOIN civicrm_option_value aov ON ( aov.option_group_id = aog.id AND aov.value = act.activity_type_id )
 ) AS t_act ";
     }
-    //NYSS 2173
-    elseif ( $type == 'all' ) {
+    elseif ( $type == 'any' ) {
       $query .= " LEFT JOIN
 (
   SELECT ca4.case_id, act4.id AS id, act4.activity_date_time AS desired_date, act4.activity_type_id, act4.status_id, aov.name AS act_type_name, aov.label AS act_type
@@ -678,16 +683,50 @@ LEFT JOIN civicrm_option_group aog ON aog.name='activity_type'
       $query .= " WHERE (1) $condition ";
     }
 
-    if ($type == 'upcoming') {
-      $query .= " ORDER BY case_scheduled_activity_date ASC ";
+    if ( $type == 'any' ) {
+      $query .= " GROUP BY case_id ";
     }
-    elseif ($type == 'recent') {
-      $query .= " ORDER BY case_recent_activity_date ASC ";
-    //NYSS 2173
-    } elseif ( $type == 'all' ) {
-      $query .= " ORDER BY case_activity_date ASC ";
+
+    //NYSS 5340 set default sort order and allow dynamic sorting via datatables
+    if (CRM_Utils_Array::value('sortname', $params) == 'undefined') {
+      $params['sortname'] = NULL;
     }
-    //CRM_Core_Error::debug_var('case all query',$query);
+
+    if (CRM_Utils_Array::value('sortorder', $params) == 'undefined') {
+      $params['sortorder'] = NULL;
+    }
+
+    $sortname = CRM_Utils_Array::value('sortname', $params);
+    $sortorder = CRM_Utils_Array::value('sortorder', $params);
+
+    if (!$sortname AND !$sortorder) {
+      if ($type == 'upcoming') {
+        $query .= " ORDER BY case_scheduled_activity_date ASC ";
+      }
+      elseif ($type == 'recent') {
+        $query .= " ORDER BY case_recent_activity_date ASC ";
+      }
+      elseif ( $type == 'any' ) {
+        $query .= " ORDER BY case_activity_date ASC ";
+      }
+    }
+    else {
+      $query .= " ORDER BY {$sortname} {$sortorder} ";
+    }
+
+    $dao = CRM_Core_DAO::executeQuery($query);
+    //CRM_Core_Error::debug_var('dao', $dao);
+
+    $params['total'] = $dao->N;
+
+    $page = CRM_Utils_Array::value('page', $params);
+    $rp = CRM_Utils_Array::value('rp', $params);
+
+    if ($page && $rp) {
+      $start = (($page - 1) * $rp);
+      $limit = " LIMIT $start, $rp";
+      $query .= $limit;
+    }
 
     return $query;
   }
@@ -707,7 +746,8 @@ LEFT JOIN civicrm_option_group aog ON aog.name='activity_type'
    * @access public
    *
    */
-  static function getCases($allCases = TRUE, $userID = NULL, $type = 'upcoming', $context = 'dashboard') {
+  //NYSS 5340 include params
+  static function getCases($allCases = TRUE, $userID = NULL, $type = 'upcoming', $context = 'dashboard', &$params = array()) {
     $condition = NULL;
     $casesList = array();
 
@@ -726,20 +766,20 @@ LEFT JOIN civicrm_option_group aog ON aog.name='activity_type'
       $allCases = FALSE;
     }
 
-
     $condition = " AND civicrm_case.is_deleted = 0 ";
 
     if (!$allCases) {
       $condition .= " AND case_relationship.contact_id_b = {$userID} ";
     }
-    //NYSS 2173
-    if ( $type == 'upcoming' || $type == 'all' ) {
+    if ( $type == 'upcoming' || $type == 'any' ) {
       $closedId = CRM_Core_OptionGroup::getValue('case_status', 'Closed', 'name');
       $condition .= "
 AND civicrm_case.status_id != $closedId";
     }
 
-    $query = self::getCaseActivityQuery($type, $userID, $condition);
+    //NYSS 5340
+    $query = self::getCaseActivityQuery($type, $userID, $condition, NULL, $params);
+    //CRM_Core_Error::debug_var('query', $query);
 
     $queryParams = array();
     $result = CRM_Core_DAO::executeQuery($query,
@@ -777,8 +817,7 @@ AND civicrm_case.status_id != $closedId";
       $resultFields[] = 'case_recent_activity_type';
       $resultFields[] = 'case_recent_activity_id';
     }
-    //NYSS 2173
-    elseif ( $type == 'all' ) { 
+    elseif ( $type == 'any' ) {
       $resultFields[] = 'case_activity_date';
       $resultFields[] = 'case_activity_type_name';
       $resultFields[] = 'case_activity_type';
@@ -787,7 +826,6 @@ AND civicrm_case.status_id != $closedId";
 
     // we're going to use the usual actions, so doesn't make sense to duplicate definitions
     $actions = CRM_Case_Selector_Search::links();
-
 
     // check is the user has view/edit signer permission
     $permissions = array(CRM_Core_Permission::VIEW);
@@ -2079,7 +2117,7 @@ SELECT civicrm_contact.id as casemanager_id,
       static $accessibleCaseIds;
       if (!is_array($accessibleCaseIds)) {
         $session = CRM_Core_Session::singleton();
-        $accessibleCaseIds = array_keys(self::getCases(FALSE, $session->get('userID'), 'all'));//NYSS
+        $accessibleCaseIds = array_keys(self::getCases(FALSE, $session->get('userID'), 'any'));
       }
       //no need of further processing.
       if (empty($accessibleCaseIds)) {

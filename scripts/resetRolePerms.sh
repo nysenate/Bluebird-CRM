@@ -100,6 +100,7 @@ sql="
     (3, 'use text format 1', 'filter'),
     (3, 'view all activities', 'civicrm'),
     (3, 'view all contacts', 'civicrm'),
+    (3, 'view debug output', 'civicrm'),
     (3, 'view the administration theme', 'system'),
 
     (4, 'access administration pages', 'system'),
@@ -309,6 +310,7 @@ sql="
     (9, 'edit users with role MailingViewer', 'administerusersbyrole'),
     (9, 'edit users with role ManageBluebirdInbox', 'administerusersbyrole'),
     (9, 'edit users with role OfficeManager', 'administerusersbyrole'),
+    (9, 'edit users with role OfficeAdministrator', 'administerusersbyrole'),
     (9, 'edit users with role SOS', 'administerusersbyrole'),
     (9, 'edit users with role Staff', 'administerusersbyrole'),
     (9, 'edit users with role Volunteer', 'administerusersbyrole'),
@@ -398,7 +400,6 @@ sql="
     (13, 'add contacts', 'civicrm'),
     (13, 'profile listings', 'civicrm'),
     (13, 'profile view', 'civicrm'),
-    (13, 'profile create', 'civicrm'),
     (13, 'use text format 1', 'filter'),
     (13, 'view all activities', 'civicrm'),
     (13, 'view all contacts', 'civicrm'),
@@ -444,3 +445,5 @@ sql="
   SET weight = 0;
 "
 $execSql -q $instance -c "$sql" --drupal
+
+echo "finished resetting roles and permissions.";

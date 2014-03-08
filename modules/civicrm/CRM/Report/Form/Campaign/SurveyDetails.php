@@ -84,6 +84,7 @@ class CRM_Report_Form_Campaign_SurveyDetails extends CRM_Report_Form {
         'fields' => array('contact_id' => array('title' => ts('Interviewer Name'))),
         'filters' => array(
           'contact_id' => array('name' => 'contact_id',
+            'alias' => 'civicrm_activity_assignment',
             'title' => ts('Interviewer Name'),
             'type' => CRM_Utils_Type::T_INT,
             'operatorType' =>
@@ -414,6 +415,7 @@ class CRM_Report_Form_Campaign_SurveyDetails extends CRM_Report_Form {
 
     // build array of result based on column headers. This method also allows
     // modifying column headers before using it to build result set i.e $rows.
+    $rows = array();
     $this->buildRows($sql, $rows);
 
     // format result set.
@@ -813,7 +815,7 @@ INNER JOIN  civicrm_custom_group cg ON ( cg.id = cf.custom_group_id )
 
     $responseFields = array();
     foreach ($surveyIds as $surveyId) {
-      $responseFields += CRM_Campaign_BAO_survey::getSurveyResponseFields($surveyId);
+      $responseFields += CRM_Campaign_BAO_Survey::getSurveyResponseFields($surveyId);
       $this->_surveyResponseFields = $responseFields;
     }
     foreach($responseFields as $key => $value){

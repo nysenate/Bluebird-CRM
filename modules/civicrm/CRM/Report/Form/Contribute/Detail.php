@@ -43,6 +43,8 @@ class CRM_Report_Form_Contribute_Detail extends CRM_Report_Form {
   protected $_summary = NULL;
   protected $_allBatches = NULL;
 
+  protected $_softFrom = NULL;
+
   protected $_customGroupExtends = array( 'Contribution');
 
   function __construct() {
@@ -419,7 +421,7 @@ class CRM_Report_Form_Contribute_Detail extends CRM_Report_Form {
     }
   }
 
-  function from($softcredit = false) {
+  function from($softcredit = FALSE) {
     $this->_from = "
         FROM  civicrm_contact      {$this->_aliases['civicrm_contact']} {$this->_aclFrom}
               INNER JOIN civicrm_contribution {$this->_aliases['civicrm_contribution']}
@@ -496,6 +498,7 @@ class CRM_Report_Form_Contribute_Detail extends CRM_Report_Form {
                  LEFT JOIN civicrm_batch {$this->_aliases['civicrm_batch']}
                         ON {$this->_aliases['civicrm_batch']}.id = {$this->_aliases['civicrm_entity_batch']}.batch_id";
     }
+
   }
 
   function groupBy() {
@@ -539,7 +542,7 @@ class CRM_Report_Form_Contribute_Detail extends CRM_Report_Form {
     );
 
     // Stats for soft credits
-    if (CRM_Utils_Array::value('contribution_or_soft_value', $this->_params) != 'contributions_only') {
+    if ($this->_softFrom && CRM_Utils_Array::value('contribution_or_soft_value', $this->_params) != 'contributions_only') {
       $totalAmount = $average = array();
       $count  = 0;
       $select = "
@@ -590,6 +593,10 @@ GROUP BY {$this->_aliases['civicrm_contribution']}.currency";
 
     // 2. customize main contribution query for soft credit, and build temp table 2 with soft credit contributions only
     $this->from(TRUE);
+    // also include custom group from if included
+    // since this might be included in select
+    $this->customDataFrom();
+
     $select = str_ireplace('contribution_civireport.total_amount', 'contribution_soft_civireport.amount', $this->_select);
     $select = str_ireplace("'Contribution' as", "'Soft Credit' as", $select);
     // we inner join with temp1 to restrict soft contributions to those in temp1 table
@@ -606,6 +613,9 @@ GROUP BY {$this->_aliases['civicrm_contribution']}.currency";
 
     // simple reset of ->_from
     $this->from();
+
+    // also include custom group from if included
+    // since this might be included in select
     $this->customDataFrom();
 
     // 3. Decide where to populate temp3 table from

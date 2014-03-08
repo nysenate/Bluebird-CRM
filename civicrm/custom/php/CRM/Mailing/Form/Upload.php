@@ -141,8 +141,10 @@ class CRM_Mailing_Form_Upload extends CRM_Core_Form {
           }
         }
         $replyToEmailAddress = explode('<', $replyToEmailAddress);
+        if (count($replyToEmailAddress) > 1) {
         $replyToEmailAddress = $replyToEmailAddress[0] . '<' . $replyToEmailAddress[1];
-        $this->replytoAddress = $defaults['reply_to_address'] = array_search($replyToEmailAddress, $replyToEmail);
+        }
+        $defaults['reply_to_address'] = array_search($replyToEmailAddress, $replyToEmail);
       }
     }
 
@@ -257,11 +259,13 @@ class CRM_Mailing_Form_Upload extends CRM_Core_Form {
     CRM_Mailing_BAO_Mailing::commonCompose($this);
 
     $this->addElement('file', 'textFile', ts('Upload TEXT Message'), 'size=30 maxlength=60');
+    $this->addUploadElement('textFile');
     $this->setMaxFileSize(1024 * 1024);
     $this->addRule('textFile', ts('File size should be less than 1 MByte'), 'maxfilesize', 1024 * 1024);
     $this->addRule('textFile', ts('File must be in UTF-8 encoding'), 'utf8File');
 
     $this->addElement('file', 'htmlFile', ts('Upload HTML Message'), 'size=30 maxlength=60');
+    $this->addUploadElement('htmlFile');
     $this->setMaxFileSize(1024 * 1024);
     $this->addRule('htmlFile',
       ts('File size should be less than %1 MByte(s)',
@@ -448,6 +452,7 @@ class CRM_Mailing_Form_Upload extends CRM_Core_Form {
     }
 
     /* Build the mailing object */
+
     CRM_Mailing_BAO_Mailing::create($params, $ids);
 
     //NYSS 6337 need to account for our submit button alteration

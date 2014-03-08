@@ -6,7 +6,7 @@
  * flush the theme cache when you load the page. That way it will
  * always look for new tpl files.
  */
-// drupal_flush_all_caches();
+//drupal_flush_all_caches();
 
 /**
  * Intercept page template variables
@@ -22,7 +22,7 @@ function Bluebird_preprocess_page(&$vars) {
   //Play nicely with the page_title module if it is there.
   if (!module_exists('page_title')) {
     // Fixup the $head_title and $title vars to display better.
-    $title   = drupal_get_title();
+    $title = drupal_get_title();
     $headers = implode(',', drupal_get_http_header()); //NYSS
     
     // wrap taxonomy listing pages in quotes and prefix with topic
@@ -30,7 +30,7 @@ function Bluebird_preprocess_page(&$vars) {
       $title = t('Topic') .' &#8220;'. $title .'&#8221;';
     }
     // if this is a 403 and they aren't logged in, tell them they need to log in
-    else if (strpos($headers, 'HTTP/1.1 403 Forbidden') && !$user->uid) {
+    elseif (strpos($headers, 'HTTP/1.1 403 Forbidden') && !$user->uid) {
       $title = t('Please login to continue');
     }
     $vars['title'] = $title;
@@ -54,14 +54,14 @@ function Bluebird_preprocess_page(&$vars) {
     $vars['body_classes'] .= ' col-3 ';
   }
   // 2 columns
-  else if ($vars['layout'] != 'none') {
+  elseif ($vars['layout'] != 'none') {
     // left column & center
     if ($vars['layout'] == 'left') {
       $vars['left_classes'] = 'col-left span-6';
       $vars['center_classes'] = 'col-center span-18 last';
     }
     // right column & center
-    else if ($vars['layout'] == 'right') {
+    elseif ($vars['layout'] == 'right') {
       $vars['right_classes'] = 'col-right span-6 last';
       $vars['center_classes'] = 'col-center span-18';
     }
@@ -69,7 +69,6 @@ function Bluebird_preprocess_page(&$vars) {
   }
   // 1 column
   else {
-
     $vars['center_classes'] = 'col-center span-24';
     $vars['body_classes'] .= ' col-1 ';
   }
@@ -80,10 +79,10 @@ function Bluebird_preprocess_page(&$vars) {
   if ($vars['is_front'] && isset($vars['mission']) && $vars['mission'] != '') {
     $vars['meta'] .= '<meta name="description" content="'. Bluebird_trim_text($vars['mission']) .'" />'."\n";
   }
-  else if (isset($vars['node']->teaser) && $vars['node']->teaser != '') {
+  elseif (isset($vars['node']->teaser) && $vars['node']->teaser != '') {
     $vars['meta'] .= '<meta name="description" content="'. Bluebird_trim_text($vars['node']->teaser) .'" />'."\n";
   }
-  else if (isset($vars['node']->body) && $vars['node']->body != '') {
+  elseif (isset($vars['node']->body) && $vars['node']->body != '') {
     // NYSS - New node format, see http://drupal.org/node/889058#comment-3355752
     $vars['meta'] .= '<meta name="description" content="'. Bluebird_trim_text($vars['node']->body['und'][0]['value']) .'" />'."\n";
   }
@@ -331,7 +330,7 @@ function Bluebird_form_element($variables) {
  */
 function Bluebird_status_messages($variables) {
   // NYSS Changed in Drupal 7, see includes/theme.inc:1574
-  $display = $variables['display'];
+  /*$display = $variables['display'];
   $output = '';
   foreach (drupal_get_messages($display) as $type => $messages) {
     // Bluebird can either call this success or notice
@@ -351,7 +350,7 @@ function Bluebird_status_messages($variables) {
     }
     $output .= "</div>\n";
   }
-  return $output;
+  return $output;*/
 }
 
 /**

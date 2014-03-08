@@ -501,6 +501,8 @@ class CRM_Core_BAO_Mapping extends CRM_Core_DAO_Mapping {
     unset($subTypes);
 
     foreach ($fields as $key => $value) {
+      //NYSS 5848
+      self::_removeFields($key, $value);
 
       //NYSS 2694 sort field column
       require_once 'CRM/Utils/Sort.php';
@@ -564,6 +566,11 @@ class CRM_Core_BAO_Mapping extends CRM_Core_DAO_Mapping {
 
     foreach ($sel1 as $key => $sel) {
       if ($key) {
+        // sort everything BUT the contactType which is sorted seperately by
+        // an initial commit of CRM-13278 (check ksort above)
+        if (!in_array($key, $contactType)) {
+          asort($mapperFields[$key]);
+        }
         $sel2[$key] = array('' => ts('- select field -')) + $mapperFields[$key];
       }
     }
@@ -1235,5 +1242,27 @@ class CRM_Core_BAO_Mapping extends CRM_Core_DAO_Mapping {
       }
     }
   }
+
+  //NYSS 5848
+  function _removeFields($key, &$value) {
+    //CRM_Core_Error::debug_var('key', $key);
+    //CRM_Core_Error::debug_var('value', $value);
+
+    $flds = array(
+      'Activity' => array(
+        'activity_campaign_id',
+        'activity_is_test',
+        'activity_engagement_level',
+        'activity_campaign',
+        'is_current_revision',
+      ),
+    );
+
+    if ( array_key_exists($key, $flds) ) {
+      foreach ( $flds[$key] as $fld ) {
+        unset($value[$fld]);
+      }
+    }
+  }//_removeFields
 }
 

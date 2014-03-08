@@ -397,6 +397,9 @@ class CRM_Contribute_DAO_ContributionRecur extends CRM_Core_DAO
           'dataPattern' => '',
           'export' => true,
           'default' => '1',
+          'pseudoconstant' => array(
+            'optionGroupName' => 'contribution_status',
+          )
         ) ,
         'is_test' => array(
           'name' => 'is_test',
@@ -451,6 +454,11 @@ class CRM_Contribute_DAO_ContributionRecur extends CRM_Core_DAO
           'headerPattern' => '',
           'dataPattern' => '',
           'FKClassName' => 'CRM_Financial_DAO_FinancialType',
+          'pseudoconstant' => array(
+            'table' => 'civicrm_financial_type',
+            'keyColumn' => 'id',
+            'labelColumn' => 'name',
+          )
         ) ,
         'payment_instrument_id' => array(
           'name' => 'payment_instrument_id',
@@ -463,13 +471,18 @@ class CRM_Contribute_DAO_ContributionRecur extends CRM_Core_DAO
         'contribution_campaign_id' => array(
           'name' => 'campaign_id',
           'type' => CRM_Utils_Type::T_INT,
-          'title' => ts('Campaign ID') ,
+          'title' => ts('Campaign') ,
           'import' => true,
           'where' => 'civicrm_contribution_recur.campaign_id',
           'headerPattern' => '',
           'dataPattern' => '',
           'export' => true,
           'FKClassName' => 'CRM_Campaign_DAO_Campaign',
+          'pseudoconstant' => array(
+            'table' => 'civicrm_campaign',
+            'keyColumn' => 'id',
+            'labelColumn' => 'title',
+          )
         ) ,
         'is_email_receipt' => array(
           'name' => 'is_email_receipt',

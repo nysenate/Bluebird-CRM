@@ -41,6 +41,10 @@ class CRM_Logging_ReportDetail extends CRM_Report_Form {
   protected $tables = array();
   protected $interval = '10 SECOND';
 
+  protected $altered_name;
+  protected $altered_by;
+  protected $altered_by_id;
+
   // detail/summary report ids
   protected $detail;
   protected $summary;
@@ -53,9 +57,13 @@ class CRM_Logging_ReportDetail extends CRM_Report_Form {
     $this->db = $dsn['database'];
 
     $this->log_conn_id = CRM_Utils_Request::retrieve('log_conn_id', 'Integer', CRM_Core_DAO::$_nullObject);
-    $this->log_date    = CRM_Utils_Request::retrieve('log_date', 'String', CRM_Core_DAO::$_nullObject);
-    $this->cid         = CRM_Utils_Request::retrieve('cid', 'Integer', CRM_Core_DAO::$_nullObject);
-    $this->raw         = CRM_Utils_Request::retrieve('raw', 'Boolean', CRM_Core_DAO::$_nullObject);
+    $this->log_date = CRM_Utils_Request::retrieve('log_date', 'String', CRM_Core_DAO::$_nullObject);
+    $this->cid = CRM_Utils_Request::retrieve('cid', 'Integer', CRM_Core_DAO::$_nullObject);
+    $this->raw = CRM_Utils_Request::retrieve('raw', 'Boolean', CRM_Core_DAO::$_nullObject);
+
+    $this->altered_name = CRM_Utils_Request::retrieve('alteredName', 'String', CRM_Core_DAO::$_nullObject);
+    $this->altered_by = CRM_Utils_Request::retrieve('alteredBy', 'String', CRM_Core_DAO::$_nullObject);
+    $this->altered_by_id = CRM_Utils_Request::retrieve('alteredById', 'Integer', CRM_Core_DAO::$_nullObject);
 
     parent::__construct();
 
@@ -202,14 +210,11 @@ class CRM_Logging_ReportDetail extends CRM_Report_Form {
       2 => array($this->log_date, 'String'),
     );
 
-    // let the template know who updated whom when
-    $dao = CRM_Core_DAO::executeQuery($this->whoWhomWhenSql(), $params);
-    if ($dao->fetch()) {
-      $this->assign('who_url', CRM_Utils_System::url('civicrm/contact/view', "reset=1&cid={$dao->who_id}"));
-      $this->assign('whom_url', CRM_Utils_System::url('civicrm/contact/view', "reset=1&cid={$dao->whom_id}"));
-      $this->assign('who_name', $dao->who_name);
-      $this->assign('whom_name', $dao->whom_name);
-    }
+    $this->assign('whom_url', CRM_Utils_System::url('civicrm/contact/view', "reset=1&cid={$this->cid}"));
+    $this->assign('who_url', CRM_Utils_System::url('civicrm/contact/view', "reset=1&cid={$this->altered_by_id}"));
+    $this->assign('whom_name', $this->altered_name);
+    $this->assign('who_name', $this->altered_by);
+
     $this->assign('log_date', CRM_Utils_Date::mysqlToIso($this->log_date));
 
     $q = "reset=1&log_conn_id={$this->log_conn_id}&log_date={$this->log_date}";

@@ -32,7 +32,9 @@
  * $Id$
  *
  */
-class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custom_Base implements CRM_Contact_Form_Search_Interface {
+class CRM_Contact_Form_Search_Custom_Group
+  extends CRM_Contact_Form_Search_Custom_Base
+  implements CRM_Contact_Form_Search_Interface {
 
   protected $_formValues;
 
@@ -283,7 +285,7 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
         $xGroups = 0;
       }
 
-      $sql = "CREATE TEMPORARY TABLE Xg_{$this->_tableName} ( contact_id int primary key) ENGINE=HEAP";
+      $sql = "CREATE TEMPORARY TABLE Xg_{$this->_tableName} ( contact_id int primary key) ENGINE=MyISAM";
       CRM_Core_DAO::executeQuery($sql);
 
       //used only when exclude group is selected
@@ -301,16 +303,19 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
         //search for smart group contacts
         foreach ($this->_excludeGroups as $keys => $values) {
           if (in_array($values, $smartGroup)) {
-            $ssId = CRM_Utils_Array::key($values, $smartGroup);
+            $ssGroup = new CRM_Contact_DAO_Group();
+            $ssGroup->id = $values;
+            if (!$ssGroup->find(TRUE)) {
+              CRM_Core_Error::fatal();
+            }
+            CRM_Contact_BAO_GroupContactCache::load($ssGroup);
 
-            $smartSql = CRM_Contact_BAO_SavedSearch::contactIDsSQL($ssId);
-
-            $smartSql = $smartSql . " AND contact_a.id NOT IN (
-                              SELECT contact_id FROM civicrm_group_contact
-                              WHERE civicrm_group_contact.group_id = {$values} AND civicrm_group_contact.status = 'Removed')";
-
+            $smartSql = "
+SELECT gcc.contact_id
+FROM   civicrm_group_contact_cache gcc
+WHERE  gcc.group_id = {$ssGroup->id}
+";
             $smartGroupQuery = " INSERT IGNORE INTO Xg_{$this->_tableName}(contact_id) $smartSql";
-
             CRM_Core_DAO::executeQuery($smartGroupQuery);
           }
         }
@@ -318,7 +323,7 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
 
       $sql = "CREATE TEMPORARY TABLE Ig_{$this->_tableName} ( id int PRIMARY KEY AUTO_INCREMENT,
                                                                    contact_id int,
-                                                                   group_names varchar(64)) ENGINE=HEAP";
+                                                                   group_names varchar(64)) ENGINE=MyISAM";
 
       CRM_Core_DAO::executeQuery($sql);
 
@@ -364,18 +369,22 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
 
       foreach ($this->_includeGroups as $keys => $values) {
         if (in_array($values, $smartGroup)) {
+          $ssGroup = new CRM_Contact_DAO_Group();
+          $ssGroup->id = $values;
+          if (!$ssGroup->find(TRUE)) {
+            CRM_Core_Error::fatal();
+          }
+          CRM_Contact_BAO_GroupContactCache::load($ssGroup);
 
-          $ssId = CRM_Utils_Array::key($values, $smartGroup);
-
-          $smartSql = CRM_Contact_BAO_SavedSearch::contactIDsSQL($ssId);
-
-          $smartSql .= " AND contact_a.id NOT IN (
-                              SELECT contact_id FROM civicrm_group_contact
-                              WHERE civicrm_group_contact.group_id = {$values} AND civicrm_group_contact.status = 'Removed')";
+          $smartSql = "
+SELECT gcc.contact_id
+FROM   civicrm_group_contact_cache gcc
+WHERE  gcc.group_id = {$ssGroup->id}
+";
 
           //used only when exclude group is selected
           if ($xGroups != 0) {
-            $smartSql .= " AND contact_a.id NOT IN (SELECT contact_id FROM  Xg_{$this->_tableName})";
+            $smartSql .= " AND gcc.contact_id NOT IN (SELECT contact_id FROM  Xg_{$this->_tableName})";
           }
 
           $smartGroupQuery = " INSERT IGNORE INTO Ig_{$this->_tableName}(contact_id)
@@ -418,7 +427,7 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
         $xTags = 0;
       }
 
-      $sql = "CREATE TEMPORARY TABLE Xt_{$this->_tableName} ( contact_id int primary key) ENGINE=HEAP";
+      $sql = "CREATE TEMPORARY TABLE Xt_{$this->_tableName} ( contact_id int primary key) ENGINE=MyISAM";
       CRM_Core_DAO::executeQuery($sql);
 
       //used only when exclude tag is selected
@@ -436,7 +445,7 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
 
       $sql = "CREATE TEMPORARY TABLE It_{$this->_tableName} ( id int PRIMARY KEY AUTO_INCREMENT,
                                                                contact_id int,
-                                                               tag_names varchar(64)) ENGINE=HEAP";
+                                                               tag_names varchar(64)) ENGINE=MyISAM";
 
       CRM_Core_DAO::executeQuery($sql);
 

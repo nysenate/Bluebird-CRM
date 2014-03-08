@@ -57,12 +57,13 @@ class CRM_Dashlet_Page_AllCases extends CRM_Core_Page {
 
     $session  = CRM_Core_Session::singleton();
     $userID   = $session->get('userID');
-    //NYSS 2173
-    $upcoming = CRM_Case_BAO_Case::getCases(TRUE, $userID, 'all', $context);
+
+    //NYSS 2173/5340 - no longer needed as we retrieve via AJAX
+    /*$upcoming = CRM_Case_BAO_Case::getCases(TRUE, $userID, 'any', $context);
 
     if (!empty($upcoming)) {
       $this->assign('AllCases', $upcoming);
-    }
+    }*/
     return parent::run();
   }
 }

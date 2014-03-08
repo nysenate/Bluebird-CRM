@@ -358,9 +358,12 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
     ) {
       $this->addElement('hidden', 'qfKey', $this->controller->_key);
       $this->assign('qfKey', $this->controller->_key);
+
     }
 
-    if ($this->controller->_entryURL) {
+    // _generateQFKey suppresses the qfKey generation on form snippets that
+    // are part of other forms, hence we use that to avoid adding entryURL
+    if ($this->controller->_generateQFKey && $this->controller->_entryURL) {
       $this->addElement('hidden', 'entryURL', $this->controller->_entryURL);
     }
 
@@ -1350,8 +1353,14 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
       // event form stores as an indexed array, contribution form not so much...
       $tempID = $this->_params[0]['select_contact_id'];
     }
+
     // force to ignore the authenticated user
-    if ($tempID === '0') {
+    if ($tempID === '0' || $tempID === 0) {
+      // we set the cid on the form so that this will be retained for the Confirm page
+      // in the multi-page form & prevent us returning the $userID when this is called
+      // from that page
+      // we don't really need to set it when $tempID is set because the params have that stored
+      $this->set('cid', 0);
       return $tempID;
     }
 

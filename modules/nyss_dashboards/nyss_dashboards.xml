@@ -233,4 +233,18 @@
     <page_callback>CRM_Mailing_Page_AJAX::getContactMailings</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
+
+  <!--5340-->
+  <item>
+    <path>civicrm/ajax/getallcases</path>
+    <page_callback>CRM_NYSS_AJAX_Case::getAllCases</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+
+  <!--5786-->
+  <item>
+    <path>civicrm/ajax/contactrelationships</path>
+    <page_callback>CRM_Contact_Page_AJAX::getContactRelationships</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
 </menu>

@@ -174,6 +174,7 @@ function _civicrm_api3_contact_get_spec(&$params) {
   $params['street_address']['title'] = 'Primary Address Street Address';
   $params['supplemental_address_1']['title'] = 'Primary Address Supplemental Address 1';
   $params['supplemental_address_2']['title'] = 'Primary Address Supplemental Address 2';
+  $params['current_employer']['title'] = 'Current Employer';
   $params['city']['title'] = 'Primary Address City';
   $params['postal_code_suffix']['title'] = 'Primary Address Post Code Suffix';
   $params['postal_code']['title'] = 'Primary Address Post Code';
@@ -182,7 +183,7 @@ function _civicrm_api3_contact_get_spec(&$params) {
   $params['state_province_id']['title'] = 'Primary Address State Province ID';
   $params['state_province_name']['title'] = 'Primary Address State Province Name';
   $params['state_province']['title'] = 'Primary Address State Province';
-  $params['country_id']['title'] = 'Primary Address State Province ID';
+  $params['country_id']['title'] = 'Primary Address Country ID';
   $params['country']['title'] = 'Primary Address country';
   $params['worldregion_id']['title'] = 'Primary Address World Region ID';
   $params['worldregion']['title'] = 'Primary Address World Region';
@@ -647,6 +648,11 @@ function civicrm_api3_contact_getquick($params) {
         }
       }
     }
+  }
+
+  if (CRM_Utils_Array::value('contact_sub_type', $params)) {
+    $contactSubType = CRM_Utils_Type::escape($params['contact_sub_type'], 'String');
+    $where .= " AND cc.contact_sub_type = '{$contactSubType}'";
   }
 
   //set default for current_employer or return contact with particular id

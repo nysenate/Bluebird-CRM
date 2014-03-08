@@ -27,16 +27,24 @@
    <table class="form-layout">
      <tr>
         <td>
-          {$form.changed_by.label}<br />
+        <span class="modifiedBy"><label>{ts}Modified By{/ts}</label></span>
+        <span class="hiddenElement addedBy"><label>{ts}Added By{/ts}</label></span>
+        <br/>
           {$form.changed_by.html}
         </td>
 	<td width="100%">
-	  {$form.log_date.html}<span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('log_date', '{$form.formName}'); return false;" >{ts}clear{/ts}</a>)</span><br />
+        {$form.log_date.html}
+        <span class="crm-clear-link">(<a href="#" title="unselect"
+                                         onclick="unselectRadio('log_date', '{$form.formName}');
+                                           return false;">{ts}clear{/ts}</a>)
+        </span>
+        <br/>
         </td>
      </tr>
      <tr>
 	<td>
-	   <label>{ts}Modified Between{/ts}</label>
+        <span class="modifiedBy"><label>{ts}Modified Between{/ts}</label></span>
+        <span class="hiddenElement addedBy"><label>{ts}Added Between{/ts}</label></span>
         </td>
      </tr>
      <tr>
@@ -50,3 +58,29 @@
      </tr>
     </table>
  </div>
+
+{literal}
+  <script type="text/javascript">
+    cj(function () {
+      updateChangeLogLabels();
+    });
+
+    cj('[name=log_date]:input').change(function () {
+      updateChangeLogLabels();
+    });
+
+    function updateChangeLogLabels() {
+      var changeType = cj('input[name=log_date]:checked').val();
+      if (changeType == 2) {
+        cj('.addedBy').hide();
+        cj('.modifiedBy').show();
+      }
+      else {
+        if (changeType == 1) {
+          cj('.addedBy').show();
+          cj('.modifiedBy').hide();
+        }
+      }
+    }
+  </script>
+{/literal}

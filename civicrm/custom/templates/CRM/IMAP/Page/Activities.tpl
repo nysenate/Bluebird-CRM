@@ -19,7 +19,7 @@
 		<table id="sortable_results" class="">
 			<thead>
 				<tr class='list_header'>
-					<th class='imap_checkbox_header checkbox' ><input class='checkbox_switch'  type="checkbox" name="" value="" /></th>
+					<th class='imap_checkbox_header' ><input class='checkbox_switch'  type="checkbox" name="" value="" /></th>
 					<th class='imap_name_header'>Sender’s Info</th>
 					<th class='imap_subject_header'>Subject</th>
 					<th class='imap_date_header'>Date Forwarded</th>
@@ -65,9 +65,176 @@
 						<span class="label_def">Email: </span>
 						<input type="text" placeholder="Email Address" class="email-address email_address" name="email_address">
 					</label>
-					<label for="dob">
+					<label for="dob" class="dob">
 						<span class="label_def">DOB: </span>
-						<input type="text" placeholder="yyyy-mm-dd" class="form-text dob" name="dob">
+						<select name="DateOfBirth_Month" class="month" >
+							<option> </option>
+							<option value="1">Jan</option>
+							<option value="2">Feb</option>
+							<option value="3">Mar</option>
+							<option value="4">Apr</option>
+							<option value="5">May</option>
+							<option value="6">June</option>
+							<option value="7">July</option>
+							<option value="8">Aug</option>
+							<option value="9">Sept</option>
+							<option value="10">Oct</option>
+							<option value="11">Nov</option>
+							<option value="12">Dec</option>
+						</select>
+						<select name="DateOfBirth_Day" class="day">
+							<option> </option>
+							<option value="1">1</option>
+							<option value="2">2</option>
+							<option value="3">3</option>
+							<option value="4">4</option>
+							<option value="5">5</option>
+							<option value="6">6</option>
+							<option value="7">7</option>
+							<option value="8">8</option>
+							<option value="9">9</option>
+							<option value="10">10</option>
+							<option value="11">11</option>
+							<option value="12">12</option>
+							<option value="13">13</option>
+							<option value="14">14</option>
+							<option value="15">15</option>
+							<option value="16">16</option>
+							<option value="17">17</option>
+							<option value="18">18</option>
+							<option value="19">19</option>
+							<option value="20">20</option>
+							<option value="21">21</option>
+							<option value="22">22</option>
+							<option value="23">23</option>
+							<option value="24">24</option>
+							<option value="25">25</option>
+							<option value="26">26</option>
+							<option value="27">27</option>
+							<option value="28">28</option>
+							<option value="29">29</option>
+							<option value="30">30</option>
+							<option value="31">31</option>
+						</select>
+						<select name="DateOfBirth_Year" class="year">
+							<option> </option>
+							<option value="2014">2014</option>
+							<option value="2013">2013</option>
+							<option value="2012">2012</option>
+							<option value="2011">2011</option>
+							<option value="2010">2010</option>
+							<option value="2009">2009</option>
+							<option value="2008">2008</option>
+							<option value="2007">2007</option>
+							<option value="2006">2006</option>
+							<option value="2005">2005</option>
+							<option value="2004">2004</option>
+							<option value="2003">2003</option>
+							<option value="2002">2002</option>
+							<option value="2001">2001</option>
+							<option value="2000">2000</option>
+							<option value="1999">1999</option>
+							<option value="1998">1998</option>
+							<option value="1997">1997</option>
+							<option value="1996">1996</option>
+							<option value="1995">1995</option>
+							<option value="1994">1994</option>
+							<option value="1993">1993</option>
+							<option value="1992">1992</option>
+							<option value="1991">1991</option>
+							<option value="1990">1990</option>
+							<option value="1989">1989</option>
+							<option value="1988">1988</option>
+							<option value="1987">1987</option>
+							<option value="1986">1986</option>
+							<option value="1985">1985</option>
+							<option value="1984">1984</option>
+							<option value="1983">1983</option>
+							<option value="1982">1982</option>
+							<option value="1981">1981</option>
+							<option value="1980">1980</option>
+							<option value="1979">1979</option>
+							<option value="1978">1978</option>
+							<option value="1977">1977</option>
+							<option value="1976">1976</option>
+							<option value="1975">1975</option>
+							<option value="1974">1974</option>
+							<option value="1973">1973</option>
+							<option value="1972">1972</option>
+							<option value="1971">1971</option>
+							<option value="1970">1970</option>
+							<option value="1969">1969</option>
+							<option value="1968">1968</option>
+							<option value="1967">1967</option>
+							<option value="1966">1966</option>
+							<option value="1965">1965</option>
+							<option value="1964">1964</option>
+							<option value="1963">1963</option>
+							<option value="1962">1962</option>
+							<option value="1961">1961</option>
+							<option value="1960">1960</option>
+							<option value="1959">1959</option>
+							<option value="1958">1958</option>
+							<option value="1957">1957</option>
+							<option value="1956">1956</option>
+							<option value="1955">1955</option>
+							<option value="1954">1954</option>
+							<option value="1953">1953</option>
+							<option value="1952">1952</option>
+							<option value="1951">1951</option>
+							<option value="1950">1950</option>
+							<option value="1949">1949</option>
+							<option value="1948">1948</option>
+							<option value="1947">1947</option>
+							<option value="1946">1946</option>
+							<option value="1945">1945</option>
+							<option value="1944">1944</option>
+							<option value="1943">1943</option>
+							<option value="1942">1942</option>
+							<option value="1941">1941</option>
+							<option value="1940">1940</option>
+							<option value="1939">1939</option>
+							<option value="1938">1938</option>
+							<option value="1937">1937</option>
+							<option value="1936">1936</option>
+							<option value="1935">1935</option>
+							<option value="1934">1934</option>
+							<option value="1933">1933</option>
+							<option value="1932">1932</option>
+							<option value="1931">1931</option>
+							<option value="1930">1930</option>
+							<option value="1929">1929</option>
+							<option value="1928">1928</option>
+							<option value="1927">1927</option>
+							<option value="1926">1926</option>
+							<option value="1925">1925</option>
+							<option value="1924">1924</option>
+							<option value="1923">1923</option>
+							<option value="1922">1922</option>
+							<option value="1921">1921</option>
+							<option value="1920">1920</option>
+							<option value="1919">1919</option>
+							<option value="1918">1918</option>
+							<option value="1917">1917</option>
+							<option value="1916">1916</option>
+							<option value="1915">1915</option>
+							<option value="1914">1914</option>
+							<option value="1913">1913</option>
+							<option value="1912">1912</option>
+							<option value="1911">1911</option>
+							<option value="1910">1910</option>
+							<option value="1909">1909</option>
+							<option value="1908">1908</option>
+							<option value="1907">1907</option>
+							<option value="1906">1906</option>
+							<option value="1905">1905</option>
+							<option value="1904">1904</option>
+							<option value="1903">1903</option>
+							<option value="1902">1902</option>
+							<option value="1901">1901</option>
+							<option value="1900">1900</option>
+						</select>
+						<input type="text" placeholder="yyyy-mm-dd" class="form-text dob hidden" name="dob">
 					</label>
 					<label for="phone">
 						<span class="label_def">Phone #: </span>
@@ -84,7 +251,7 @@
 					<label for="state">
 						<span class="label_def">State: </span>
 						<select class="form-select state" id="state" name="state">
-							<option value="">- select -</option>
+							<option value=""> </option>
 							<option value="1000">Alabama</option>
 							<option value="1001">Alaska</option>
 							<option value="1052">American Samoa</option>
@@ -147,26 +314,212 @@
 							<option value="1049">Wyoming</option>
 						</select>
 					</label>
-					<input type="button" class="imapper-submit" id="filter" value="Search" name="filter">
+					<div class='search'>
+						<input type="button" class="imapper-submit" id="filter" value="Search" name="filter">
+					</div>
 					<div id="imapper-contacts-list" class="contacts-list"></div>
-					<input type="button" class="imapper-submit" id="reassign" value="Reassign" name="reassign">
+					<div class='search'>
+						<input type="button" class="imapper-submit" id="reassign" value="Reassign" name="reassign">
+					</div>
 				</div>
 								<div id="tab2">
-						<label for="first_name">
+						<label for="prefix">
+						<span class="label_def">Prefix: </span>
+							<select class="form-select prefix" id="prefix" name="prefix">
+							</select>
+						</label>
+					</label>
+					<label for="first_name">
 						<span class="label_def">First Name: </span>
 						<input type="text" placeholder="First Name" class="form-text first_name" name="first_name">
+					</label>
+					<label for="middle_name">
+						<span class="label_def">Middle Name: </span>
+						<input type="text" placeholder="Middle Name" class="form-text middle_name" name="middle_name">
 					</label>
 					<label for="last_name">
 						<span class="label_def">Last Name: </span>
 						<input type="text" placeholder="Last Name"  class="form-text last_name" name="last_name">
 					</label>
+					<label for="suffix">
+						<span class="label_def">Suffix: </span>
+						<select class="form-select suffix" id="suffix" name="suffix">
+						</select>
+					</label>
 					<label for="email_address">
 						<span class="label_def">Email: </span>
 						<input type="text" placeholder="Email Address" class="email-address email_address" name="email_address">
 					</label>
-					<label for="dob">
+					<label for="dob" class="dob">
 						<span class="label_def">DOB: </span>
-						<input type="text" placeholder="yyyy-mm-dd" class="form-text dob" name="dob">
+						<select name="DateOfBirth_Month" class="month" >
+							<option> </option>
+							<option value="1">Jan</option>
+							<option value="2">Feb</option>
+							<option value="3">Mar</option>
+							<option value="4">Apr</option>
+							<option value="5">May</option>
+							<option value="6">June</option>
+							<option value="7">July</option>
+							<option value="8">Aug</option>
+							<option value="9">Sept</option>
+							<option value="10">Oct</option>
+							<option value="11">Nov</option>
+							<option value="12">Dec</option>
+						</select>
+						<select name="DateOfBirth_Day" class="day">
+							<option> </option>
+							<option value="1">1</option>
+							<option value="2">2</option>
+							<option value="3">3</option>
+							<option value="4">4</option>
+							<option value="5">5</option>
+							<option value="6">6</option>
+							<option value="7">7</option>
+							<option value="8">8</option>
+							<option value="9">9</option>
+							<option value="10">10</option>
+							<option value="11">11</option>
+							<option value="12">12</option>
+							<option value="13">13</option>
+							<option value="14">14</option>
+							<option value="15">15</option>
+							<option value="16">16</option>
+							<option value="17">17</option>
+							<option value="18">18</option>
+							<option value="19">19</option>
+							<option value="20">20</option>
+							<option value="21">21</option>
+							<option value="22">22</option>
+							<option value="23">23</option>
+							<option value="24">24</option>
+							<option value="25">25</option>
+							<option value="26">26</option>
+							<option value="27">27</option>
+							<option value="28">28</option>
+							<option value="29">29</option>
+							<option value="30">30</option>
+							<option value="31">31</option>
+						</select>
+						<select name="DateOfBirth_Year" class="year">
+							<option> </option>
+							<option value="2014">2014</option>
+							<option value="2013">2013</option>
+							<option value="2012">2012</option>
+							<option value="2011">2011</option>
+							<option value="2010">2010</option>
+							<option value="2009">2009</option>
+							<option value="2008">2008</option>
+							<option value="2007">2007</option>
+							<option value="2006">2006</option>
+							<option value="2005">2005</option>
+							<option value="2004">2004</option>
+							<option value="2003">2003</option>
+							<option value="2002">2002</option>
+							<option value="2001">2001</option>
+							<option value="2000">2000</option>
+							<option value="1999">1999</option>
+							<option value="1998">1998</option>
+							<option value="1997">1997</option>
+							<option value="1996">1996</option>
+							<option value="1995">1995</option>
+							<option value="1994">1994</option>
+							<option value="1993">1993</option>
+							<option value="1992">1992</option>
+							<option value="1991">1991</option>
+							<option value="1990">1990</option>
+							<option value="1989">1989</option>
+							<option value="1988">1988</option>
+							<option value="1987">1987</option>
+							<option value="1986">1986</option>
+							<option value="1985">1985</option>
+							<option value="1984">1984</option>
+							<option value="1983">1983</option>
+							<option value="1982">1982</option>
+							<option value="1981">1981</option>
+							<option value="1980">1980</option>
+							<option value="1979">1979</option>
+							<option value="1978">1978</option>
+							<option value="1977">1977</option>
+							<option value="1976">1976</option>
+							<option value="1975">1975</option>
+							<option value="1974">1974</option>
+							<option value="1973">1973</option>
+							<option value="1972">1972</option>
+							<option value="1971">1971</option>
+							<option value="1970">1970</option>
+							<option value="1969">1969</option>
+							<option value="1968">1968</option>
+							<option value="1967">1967</option>
+							<option value="1966">1966</option>
+							<option value="1965">1965</option>
+							<option value="1964">1964</option>
+							<option value="1963">1963</option>
+							<option value="1962">1962</option>
+							<option value="1961">1961</option>
+							<option value="1960">1960</option>
+							<option value="1959">1959</option>
+							<option value="1958">1958</option>
+							<option value="1957">1957</option>
+							<option value="1956">1956</option>
+							<option value="1955">1955</option>
+							<option value="1954">1954</option>
+							<option value="1953">1953</option>
+							<option value="1952">1952</option>
+							<option value="1951">1951</option>
+							<option value="1950">1950</option>
+							<option value="1949">1949</option>
+							<option value="1948">1948</option>
+							<option value="1947">1947</option>
+							<option value="1946">1946</option>
+							<option value="1945">1945</option>
+							<option value="1944">1944</option>
+							<option value="1943">1943</option>
+							<option value="1942">1942</option>
+							<option value="1941">1941</option>
+							<option value="1940">1940</option>
+							<option value="1939">1939</option>
+							<option value="1938">1938</option>
+							<option value="1937">1937</option>
+							<option value="1936">1936</option>
+							<option value="1935">1935</option>
+							<option value="1934">1934</option>
+							<option value="1933">1933</option>
+							<option value="1932">1932</option>
+							<option value="1931">1931</option>
+							<option value="1930">1930</option>
+							<option value="1929">1929</option>
+							<option value="1928">1928</option>
+							<option value="1927">1927</option>
+							<option value="1926">1926</option>
+							<option value="1925">1925</option>
+							<option value="1924">1924</option>
+							<option value="1923">1923</option>
+							<option value="1922">1922</option>
+							<option value="1921">1921</option>
+							<option value="1920">1920</option>
+							<option value="1919">1919</option>
+							<option value="1918">1918</option>
+							<option value="1917">1917</option>
+							<option value="1916">1916</option>
+							<option value="1915">1915</option>
+							<option value="1914">1914</option>
+							<option value="1913">1913</option>
+							<option value="1912">1912</option>
+							<option value="1911">1911</option>
+							<option value="1910">1910</option>
+							<option value="1909">1909</option>
+							<option value="1908">1908</option>
+							<option value="1907">1907</option>
+							<option value="1906">1906</option>
+							<option value="1905">1905</option>
+							<option value="1904">1904</option>
+							<option value="1903">1903</option>
+							<option value="1902">1902</option>
+							<option value="1901">1901</option>
+							<option value="1900">1900</option>
+						</select>
+						<input type="text" placeholder="yyyy-mm-dd" class="form-text dob hidden" name="dob">
 					</label>
 					<label for="phone">
 						<span class="label_def">Phone #: </span>
@@ -187,7 +540,7 @@
 					<label for="state">
 						<span class="label_def">State: </span>
 						<select class="form-select state" id="state" name="state">
-							<option value="">- select -</option>
+							<option value=""> </option>
 							<option value="1000">Alabama</option>
 							<option value="1001">Alaska</option>
 							<option value="1052">American Samoa</option>
@@ -278,11 +631,7 @@
 	<div id="reloading-popup" title="please wait" style="display:none;">
 		<p> <img src="/sites/default/themes/Bluebird/nyss_skin/images/header-search-active.gif"/>  ReLoading messages.</p>
 	</div>
-	<div id="fileBug-popup" title="We're here to help"  style="display:none;">
-		<p>Step #1. Please explain your problem in the text box and click "Report Problem".</p>
-		<p>Step #2. Please contact the support line at x2011</p>
-		<textarea rows="4" name="description" id="description"></textarea>
-	</div>
+
 	<div id="tagging-popup" title="Tagging" style="display:none;">
 		<div id="message_left_tag">
 			<div id="message_left_header_tag"> over
@@ -298,16 +647,28 @@
 				</ul>
 				<input type="hidden" class="hidden" id="contact_tag_ids" name="contact_tag_ids">
 				<input type="hidden" class="hidden" id="contact_ids" name="contact_ids">
+				<input type="hidden" class="hidden" id="contact_position_ids" name="contact_position_ids">
 				<input type="hidden" class="hidden" id="activity_tag_ids" name="activity_tag_ids">
 				<input type="hidden" class="hidden" id="activity_ids" name="activity_ids">
 				<div id="tab1_tag">
 					<div id='TagContact'>
-						<input type="text" id="contact_tag_name"/>
+						<span class="label_def">Keywords: </span>
+						<input type="text" id="contact_tag_name" maxlength="64" placeholder="Type here to search Keywords" autocomplete="off">
+
+						<span class="label_def">Issue Codes: </span>
+						<input type="text" id="contact-issue-codes-search" maxlength="64" placeholder="Type here to search issue codes" autocomplete="off">
+						<div id="contact-issue-codes" class="TreeWrap">
+						</div>
+
+						<span class="label_def">Positions: </span>
+						<input type="text" id="contact_position_name" maxlength="64" placeholder="Type here to search Keywords" autocomplete="off">
+
 					</div>
 				</div>
 				<div id="tab2_tag">
 					<div id='TagActivity'>
-						<input type="text" id="activity_tag_name"/>
+						<span class="label_def">Keywords: </span>
+						<input type="text" id="activity_tag_name" placeholder="Type here to search Keywords" autocomplete="off">
 					</div>
 				</div>
 			</div>

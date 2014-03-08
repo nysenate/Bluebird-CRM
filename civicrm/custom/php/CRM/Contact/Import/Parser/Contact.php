@@ -1041,6 +1041,18 @@ class CRM_Contact_Import_Parser_Contact extends CRM_Contact_Import_Parser {
         }
 
         if (civicrm_error($newContact)) {
+          if (!CRM_Utils_Array::value('params', $newContact['error_message'])) {
+            // different kind of error other than DUPLICATE
+            $errorMessage = $newContact['error_message'];
+            array_unshift($values, $errorMessage);
+            $importRecordParams = array(
+              $statusFieldName => 'ERROR',
+              "${statusFieldName}Msg" => $errorMessage,
+            );
+            $this->updateImportRecord($values[count($values) - 1], $importRecordParams);
+            return CRM_Import_Parser::ERROR;
+          }
+
           $contactID = $newContact['error_message']['params'][0];
           if (!in_array($contactID, $this->_newContacts)) {
             $this->_newContacts[] = $contactID;
@@ -1674,7 +1686,7 @@ class CRM_Contact_Import_Parser_Contact extends CRM_Contact_Import_Parser {
     }
 
     //get the id of the contact whose street address is not parsable, CRM-5886
-    if ($this->_parseStreetAddress && $newContact->address) {
+    if ($this->_parseStreetAddress && is_object($newContact) && property_exists($newContact, 'address') && $newContact->address) {
       foreach ($newContact->address as $address) {
         if (!empty($address['street_address']) && (!CRM_Utils_Array::value('street_number', $address) || !CRM_Utils_Array::value('street_name', $address))) {
           $this->_unparsedStreetAddressContacts[] = array(

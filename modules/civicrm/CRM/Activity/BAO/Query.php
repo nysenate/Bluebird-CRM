@@ -139,9 +139,15 @@ class CRM_Activity_BAO_Query {
     }
 
     if (CRM_Utils_Array::value('source_contact', $query->_returnProperties)) {
-      $query->_select['source_contact'] = 'source_contact.display_name as source_contact';
+      $query->_select['source_contact'] = 'source_contact.sort_name as source_contact';
       $query->_element['source_contact'] = 1;
       $query->_tables['source_contact'] = $query->_whereTables['source_contact'] = 1;
+    }
+
+    if (CRM_Utils_Array::value('activity_result', $query->_returnProperties)) {
+      $query->_select['activity_result'] = 'civicrm_activity.result as activity_result';
+      $query->_element['result'] = 1;
+      $query->_tables['civicrm_activity'] = $query->_whereTables['civicrm_activity'] = 1;
     }
   }
 
@@ -364,7 +370,17 @@ class CRM_Activity_BAO_Query {
           'tableName' => 'civicrm_activity',
         );
         CRM_Campaign_BAO_Query::componentSearchClause($campParams, $query);
-        return;
+        break;
+      case 'activity_result':
+        if(is_array($value)) {
+          $safe = NULL;
+          while(list(,$k) = each($value)) {
+            $safe[] = "'" . CRM_Utils_Type::escape($k, 'String') . "'";
+          }
+          $query->_where[$grouping][] = "civicrm_activity.result IN (" . implode(',', $safe) . ")";
+          $query->_qill[$grouping][] = ts("Activity Result - %1", array(1 => implode(' or ', $safe)));
+        }
+        break;
     }
   }
 
@@ -402,7 +418,12 @@ class CRM_Activity_BAO_Query {
         break;
 
       case 'source_contact':
-        $from = " $side JOIN civicrm_contact source_contact ON source_contact.id = civicrm_activity_contact.contact_id";
+        $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
+        $sourceID = CRM_Utils_Array::key('Activity Source', $activityContacts);
+        $from = "
+        LEFT JOIN civicrm_activity_contact ac
+                      ON ( ac.activity_id = civicrm_activity_contact.activity_id AND ac.record_type_id = {$sourceID})
+        INNER JOIN civicrm_contact source_contact ON (ac.contact_id = source_contact.id)";
         break;
     }
 
@@ -493,6 +514,7 @@ class CRM_Activity_BAO_Query {
 
     //add engagement level CRM-7775
     $buildEngagementLevel = FALSE;
+    $buildSurveyResult = FALSE;
     if (CRM_Campaign_BAO_Campaign::isCampaignEnable() &&
       CRM_Campaign_BAO_Campaign::accessCampaign()
     ) {
@@ -501,9 +523,35 @@ class CRM_Activity_BAO_Query {
         ts('Engagement Index'),
         array('' => ts('- any -')) + CRM_Campaign_PseudoConstant::engagementLevel()
       );
-    }
 
+      // Add survey result field.
+      $optionGroups  = CRM_Campaign_BAO_Survey::getResultSets( 'name' );
+      $resultOptions = array();
+      foreach ( $optionGroups as $gid => $name ) {
+        if ( $name ) {
+          $value = array();
+          $value = CRM_Core_OptionGroup::values($name);
+          if (!empty($value)) {
+            while(list($k,$v) = each($value)) {
+              $resultOptions[$v] = $v;
+            }
+          }
+        }
+      }
+      // If no survey result options have been created, don't build
+      // the field to avoid clutter.
+      if(count($resultOptions) > 0) {
+        $buildSurveyResult = TRUE;
+        asort($resultOptions);
+        $form->add('select', 'activity_result', ts("Survey Result"),
+          $resultOptions, FALSE,
+          array('id' => 'activity_result', 'multiple' => 'multiple', 'title' => ts('- select -'))
+        );
+      }
+    }
+     
     $form->assign('buildEngagementLevel', $buildEngagementLevel);
+    $form->assign('buildSurveyResult', $buildSurveyResult);
     $form->setDefaults(array('activity_test' => 0));
   }
 
@@ -528,10 +576,11 @@ class CRM_Activity_BAO_Query {
         'activity_location' => 1,
         'activity_details' => 1,
         'activity_status' => 1,
-        'source_contact_id' => 1,
+        'source_contact' => 1,
         'source_record_id' => 1,
         'activity_is_test' => 1,
         'activity_campaign_id' => 1,
+        'result' => 1,
         'activity_engagement_level' => 1,
       );
 

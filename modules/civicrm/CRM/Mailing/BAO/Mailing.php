@@ -1520,13 +1520,12 @@ ORDER BY   civicrm_email.is_bulkmail DESC
         'from_email'      => $domain_email,
         'from_name'       => $domain_name,
         'msg_template_id' => NULL,
-        'contact_id'      => $params['created_id'],
         'created_id'      => $params['created_id'],
-        'approver_id'     => $params['created_id'],
+        'approver_id'     => NULL,
         'auto_responder'  => 0,
         'created_date'    => date('YmdHis'),
-        'scheduled_date'  => date('YmdHis'),
-        'approval_date'   => date('YmdHis'),
+        'scheduled_date'  => NULL,
+        'approval_date'   => NULL,
       );
 
       // Get the default from email address, if not provided.
@@ -1598,16 +1597,20 @@ ORDER BY   civicrm_email.is_bulkmail DESC
     $transaction->commit();
 
     /**
-     * 'approval_status_id' set in
-     * CRM_Mailing_Form_Schedule::postProcess() or via API.
+     * create parent job if not yet created
+     * condition on the existence of a scheduled date
      */
-    if (isset($params['approval_status_id']) && $params['approval_status_id']) {
+    if (!empty($params['scheduled_date']) && $params['scheduled_date'] != 'null') {
       $job = new CRM_Mailing_BAO_MailingJob();
       $job->mailing_id = $mailing->id;
       $job->status = 'Scheduled';
       $job->is_test = 0;
-      $job->scheduled_date = $params['scheduled_date'];
-      $job->save();
+
+      if ( !$job->find(TRUE) ) {
+        $job->scheduled_date = $params['scheduled_date'];
+        $job->save();
+      }
+
       // Populate the recipients.
       $mailing->getRecipients($job->id, $mailing->id, NULL, NULL, TRUE, FALSE);
     }
@@ -2298,6 +2301,8 @@ LEFT JOIN civicrm_mailing_group g ON g.mailing_id   = m.id
       CRM_Core_Error::fatal();
     }
 
+    CRM_Utils_Hook::pre('delete', 'Mailing', $id, CRM_Core_DAO::$_nullArray);
+
     // delete all file attachments
     CRM_Core_BAO_File::deleteEntityFile('civicrm_mailing',
       $id
@@ -2308,6 +2313,8 @@ LEFT JOIN civicrm_mailing_group g ON g.mailing_id   = m.id
     $dao->delete();
 
     CRM_Core_Session::setStatus(ts('Selected mailing has been deleted.'), ts('Deleted'), 'success');
+
+    CRM_Utils_Hook::post('delete', 'Mailing', $id, $dao);
   }
 
   /**
@@ -2639,7 +2646,7 @@ WHERE  civicrm_mailing_job.id = %1
 
   static function processQueue($mode = NULL) {
     $config = &CRM_Core_Config::singleton();
- //   CRM_Core_Error::debug_log_message("Beginning processQueue run: {$config->mailerJobsMax}, {$config->mailerJobSize}");
+    //   CRM_Core_Error::debug_log_message("Beginning processQueue run: {$config->mailerJobsMax}, {$config->mailerJobSize}");
 
     if ($mode == NULL && CRM_Core_BAO_MailSettings::defaultDomain() == "EXAMPLE.ORG") {
       CRM_Core_Error::fatal(ts('The <a href="%1">default mailbox</a> has not been configured. You will find <a href="%2">more info in the online user and administrator guide</a>', array(1 => CRM_Utils_System::url('civicrm/admin/mailSettings', 'reset=1'), 2 => "http://book.civicrm.org/user/advanced-configuration/email-system-configuration/")));
@@ -2648,8 +2655,8 @@ WHERE  civicrm_mailing_job.id = %1
     // check if we are enforcing number of parallel cron jobs
     // CRM-8460
     $gotCronLock = FALSE;
-    if ($config->mailerJobsMax && $config->mailerJobsMax > 1) {
 
+    if (property_exists($config, 'mailerJobsMax') && $config->mailerJobsMax && $config->mailerJobsMax > 1) {
       $lockArray = range(1, $config->mailerJobsMax);
       shuffle($lockArray);
 
@@ -2676,7 +2683,8 @@ WHERE  civicrm_mailing_job.id = %1
     // load bootstrap to call hooks
 
     // Split up the parent jobs into multiple child jobs
-    CRM_Mailing_BAO_MailingJob::runJobs_pre($config->mailerJobSize, $mode);
+    $mailerJobSize = (property_exists($config, 'mailerJobSize')) ? $config->mailerJobSize : NULL;
+    CRM_Mailing_BAO_MailingJob::runJobs_pre($mailerJobSize, $mode);
     CRM_Mailing_BAO_MailingJob::runJobs(NULL, $mode);
     CRM_Mailing_BAO_MailingJob::runJobs_post($mode);
 

@@ -319,10 +319,11 @@ div.messages {
   padding: 0.68em;
   font-weight: normal;
 }
-
-
 div.messages ul {
   margin-bottom: 0;
+}
+.crm-container div.ui-notify-message ul {
+  margin: 0 1.5em 1.5em 1.5em;
 }
 
 #status-handle {
@@ -347,7 +348,7 @@ div.messages ul {
  * (cause they might get pulled by ajax and are context-sensitive 
  */
 .messages {
-  display: none;
+  /*display: none;*/
 }
 
 #status .messages,
@@ -1773,4 +1774,44 @@ body.page-civicrm-mailing-browse form#Search div.crm-content-block {
 /*7523*/
 .crm-printproductionexportresult-form-block .crm-section {
   margin-left: 15px;
+}
+
+/*5991*/
+.DataTables_sort_wrapper {
+  white-space: nowrap;
+  padding-right: 18px;
+}
+.DataTables_sort_wrapper span.DataTables_sort_icon {
+  margin-right: -18px;
+}
+
+/*report tasks*/
+div.crm-tasks div.crm-buttons-actions span {
+  display: block;
+  margin-top: 4px;
+}
+
+/*contact edit tags and groups*/
+div#tagGroup table.form-layout-compressed {
+  width: 98%;
+}
+div#tagGroup table.form-layout-compressed td {
+  width: 45%;
+}
+
+/*1074*/
+#crm-container #civicrm-dashboard .widget-wrapper {
+  overflow-x: visible;
+}
+
+/*5340 datatables on dashlet*/
+.crm-container #civicrm-dashboard .dataTables_info {
+  width: auto;
+}
+#crm-container.crm-container #civicrm-dashboard li.widget {
+  margin-bottom: 20px;
+}
+.crm-container #civicrm-dashboard .dataTables_wrapper {
+  overflow-x: auto;
+  overflow-y: hidden;
 }

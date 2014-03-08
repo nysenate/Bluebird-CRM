@@ -2,10 +2,10 @@
   {foreach from=$tagsetInfo_contact item=tagset}
   <div class="crm-section tag-section contact-tagset-{$tagset.parentID}-section">
     {*NYSS*}
-    <div class="tag-label">
+    <div class="label">
       <label>{$tagset.parentName}</label>
     </div>
-    <div class="content"{if $context EQ "contactTab"} style="margin-top:-15px;"{/if}>
+    <div{if $context EQ "contactTab"} style="margin-top:-15px;"{/if}>
       {assign var=elemName  value = $tagset.tagsetElementName}
       {assign var=parID     value = $tagset.parentID}
       {assign var=editTagSet value=false}
@@ -24,8 +24,7 @@
           {/literal}{if $tagset.entityTags}{literal}
             eval( 'contactEntityTags = ' + {/literal}'{$tagset.entityTags}'{literal} );
           {/literal}{/if}{literal}
-          //NYSS
-          var hintText = "{/literal}{ts}Begin typing a tag name.{/ts}{literal}";
+          var hintText = "{/literal}{ts escape='js'}Type in a partial or complete name of an existing tag.{/ts}{literal}";
 
           cj( ".contact-tagset-{/literal}{$tagset.parentID}{literal}-section:not(.crm-processed-input) input")
             .addClass("contact-taglist_{/literal}{$tagset.parentID}{literal}");
@@ -72,8 +71,7 @@
             var entityId         = "{/literal}{$tagset.entityId}{literal}";
             var entityTable      = "{/literal}{$tagset.entityTable}{literal}";
             var skipTagCreate    = "{/literal}{$tagset.skipTagCreate}{literal}";
-            //NYSS
-            var skipEntityAction = "{/literal}{if $tagset.parentID eq '296'}0{else}{$tagset.skipEntityAction}{/if}{literal}";
+            var skipEntityAction = "{/literal}{$tagset.skipEntityAction}{literal}";
 
             cj.post( postUrl, { action: action, tagID: id, parentId: parentId, entityId: entityId, entityTable: entityTable,
               skipTagCreate: skipTagCreate, skipEntityAction: skipEntityAction, key: {/literal}"{crmKey name='civicrm/ajax/processTags'}"{literal} },
@@ -89,7 +87,9 @@
                         setVal[x] = valArray[x];
                       }
                     }
+                    if (!skipEntityAction) {
                     CRM.alert('', '{/literal}{ts escape='js'}Removed{/ts}{literal}', 'success');
+                  }
                   }
                   else {
                     CRM.alert('', '{/literal}{ts escape='js'}Saved{/ts}{literal}', 'success');
@@ -124,15 +124,28 @@
 {if $action eq 16 || $action eq 2 || $action eq 1}
     {if $tagset.parentID eq 296}
         <div class="BBInit">
-          <div class="tag-label">
-              <label>Issue Codes</label>
+          <div class="crm-section tag-section contact-tagset-291-section crm-processed-input">
+            <div class="tag-label">
+                <label>Issue Codes</label>
+            </div>
+            <input type="text" autocomplete="off" placeholder="Type here to search issue codes" maxlength="64" id="issue-code-search" />
+            <div id="issue-code-results" class="TreeWrap" data-contact="{$contactId}"></div>
+           </div>
           </div>
-          <input type="text" autocomplete="off" placeholder="Type here to search issue codes" maxlength="64" id="issue-code-search" >
-        </div>
         {literal}
         <script>
-            BBTree.initContainer('', {pullSets: [291]});
-            tag_tree_filter = new TagTreeFilter(cj('#issue-code-search'),cj('.BBTree'));
+            var tree = new TagTreeTag({
+              tree_container: cj('#issue-code-results'),
+              list_container: cj('.contactTagsList'),
+              filter_bar: cj('#issue-code-search'),
+              tag_trees: [291],
+              default_tree: 291,
+              auto_save: true,
+              entity_id: cj('#issue-code-results').data('contact'),
+              entity_counts: false,
+              entity_type: 'civicrm_contact',
+            });
+            tree.load();
         </script>
         {/literal}
     {/if}
@@ -164,7 +177,7 @@
           {/literal}{if $tagset.entityTags}{literal}
             eval( 'activityEntityTags = ' + {/literal}'{$tagset.entityTags}'{literal} );
           {/literal}{/if}{literal}
-          var hintText = "{/literal}{ts}Begin typing a tag name.{/ts}{literal}"; //NYSS
+          var hintText = "{/literal}{ts escape='js'}Type in a partial or complete name of an existing tag.{/ts}{literal}";
 
           cj( ".activity-tagset-{/literal}{$tagset.parentID}{literal}-section:not(.crm-processed-input) input")
             .addClass("activity-taglist_{/literal}{$tagset.parentID}{literal}");
@@ -235,7 +248,7 @@
 {elseif $tagsetType eq 'case'}
   {foreach from=$tagsetInfo_case item=tagset}
   <div class="crm-section tag-section case-tagset-{$tagset.parentID}-section">
-    <div class="tag-label">
+    <div class="label">
       <label>{$tagset.parentName}</label>
     </div>
     <div class="content">
@@ -257,7 +270,7 @@
           {/literal}{if $tagset.entityTags}{literal}
             eval( 'caseEntityTags = ' + {/literal}'{$tagset.entityTags}'{literal} );
           {/literal}{/if}{literal}
-          var hintText = "{/literal}{ts}Begin typing a tag name.{/ts}{literal}"; //NYSS
+          var hintText = "{/literal}{ts escape='js'}Type in a partial or complete name of an existing tag.{/ts}{literal}";
 
           cj( ".case-tagset-{/literal}{$tagset.parentID}{literal}-section:not(.crm-processed-input) input")
             .addClass("case-taglist_{/literal}{$tagset.parentID}{literal}");

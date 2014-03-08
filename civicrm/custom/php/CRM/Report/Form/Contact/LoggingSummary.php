@@ -79,6 +79,13 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
             'title' => ts('Altered Contact'),
             'alias' => 'modified_contact_civireport',
           ),
+          //NYSS 3461
+          'altered_contact_sort_name' => array(
+            'required' => TRUE,
+            'name' => 'sort_name',
+            'no_display' => TRUE,
+            'alias' => 'modified_contact_civireport',
+          ),
           'altered_contact_id' => array(
             'name' => 'id',
             'no_display' => TRUE,
@@ -141,17 +148,31 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
           ),
           //NYSS add job ID
           'log_job_id' => array(
-            'title'        => ts('Job ID'),
-            'type'         => CRM_Utils_Type::T_STRING,
+            'title' => ts('Job ID'),
+            'type' => CRM_Utils_Type::T_STRING,
           ),
           'id' => array(
             'no_display' => TRUE,
             'type' => CRM_Utils_Type::T_INT,
           ),
         ),
+        //NYSS 3461
+        'order_bys'  =>
+        array(
+          'altered_contact_sort_name' =>
+          array(
+            'title' => ts('Altered Contact'),
+            'name' => 'sort_name',
+            'alias' => 'modified_contact_civireport',
+          ),
+          'log_date' =>
+          array(
+            'title' => ts('Log Date'),
+          ),
+        ),
       ),
       'altered_by_contact' => array(
-        'dao'   => 'CRM_Contact_DAO_Contact',
+        'dao' => 'CRM_Contact_DAO_Contact',
         'alias' => 'altered_by_contact',
         'fields' => array(
           'display_name' => array(
@@ -172,9 +193,10 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
   }
 
   function alterDisplay(&$rows) {
+    //CRM_Core_Error::debug_var('rows', $rows);
     // cache for id → is_deleted mapping
     $isDeleted = array();
-    $newRows   = array();
+    $newRows = array();
 
     foreach ($rows as $key => &$row) {
       if (!isset($isDeleted[$row['log_civicrm_entity_altered_contact_id']])) {
@@ -222,6 +244,17 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
         //NYSS append instance id so we return properly
         $q .= '&instanceID='.$this->_id;
 
+        //NYSS 7543 append altered contact and altered by name
+        $q .= (!empty($row['log_civicrm_entity_altered_contact'])) ?
+          '&alteredName='.$row['log_civicrm_entity_altered_contact'] :
+          '';
+        $q .= (!empty($row['altered_by_contact_display_name'])) ?
+          '&alteredBy='.$row['altered_by_contact_display_name'] :
+          '';
+        $q .= (!empty($row['log_civicrm_entity_log_user_id'])) ?
+          '&alteredById='.$row['log_civicrm_entity_log_user_id'] :
+          '';
+
         $url1 = CRM_Report_Utils_Report::getNextUrl('logging/contact/detail', "{$q}&snippet=4&section=2&layout=overlay", FALSE, TRUE);
         $url2 = CRM_Report_Utils_Report::getNextUrl('logging/contact/detail', "{$q}&section=2", FALSE, TRUE);
         $row['log_civicrm_entity_log_action'] = "<a href='{$url1}' class='crm-summary-link'><div class='icon details-icon'></div></a>&nbsp;<a title='View details for this update' href='{$url2}'>" . ts('Update') . '</a>';
@@ -245,7 +278,10 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
       unset($row['log_civicrm_entity_log_conn_id']);
     }
 
-    krsort($newRows);
+    //NYSS 7452 reorder unless flagged not to
+    if ( !$this->_formOrderBy ) {
+      krsort($newRows);
+    }
     $rows = $newRows;
   }
 
@@ -272,7 +308,7 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
       $entity = $logTable;
     }
 
-    $detail    = $this->_logTables[$entity];
+    $detail = $this->_logTables[$entity];
     $tableName = CRM_Utils_Array::value('table_name', $detail, $entity);
     $clause = CRM_Utils_Array::value('entity_table', $detail);
     $clause = $clause ? "AND entity_log_civireport.entity_table = 'civicrm_contact'" : null;
@@ -312,34 +348,33 @@ LEFT  JOIN civicrm_contact altered_by_contact_civireport
   }
 
   function getContactDetails( $cid ) {
-
     $left = $middle = $right = array();
     $leftList = $middleList = $addressList = '';
 
-    $IMProvider = CRM_Core_PseudoConstant::IMProvider();
+    $IMProvider = CRM_Core_PseudoConstant::get('CRM_Core_DAO_IM', 'provider_id');
 
     $params = array(
       'version' => 3,
-      'id'      => $cid,
+      'id' => $cid,
     );
     $contact = civicrm_api( 'contact', 'getsingle', $params );
     //CRM_Core_Error::debug('contact',$contact);
 
-    $left['nick_name']  = "{$contact['nick_name']} (nickname)";
-    $left['gender']     = "{$contact['gender']} (gender)";
-    $left['job_title']  = "{$contact['job_title']} (job title)";
+    $left['nick_name'] = "{$contact['nick_name']} (nickname)";
+    $left['gender'] = "{$contact['gender']} (gender)";
+    $left['job_title'] = "{$contact['job_title']} (job title)";
     $left['birth_date'] = "{$contact['birth_date']} (birthday)";
 
-    $middle['phone']    = "{$contact['phone']} (phone)";
-    $middle['email']    = "{$contact['email']} (email)";
-    $middle['im']       = "{$contact['im']} ({$IMProvider[$contact['provider_id']]})";
+    $middle['phone'] = "{$contact['phone']} (phone)";
+    $middle['email'] = "{$contact['email']} (email)";
+    $middle['im'] = "{$contact['im']} ({$IMProvider[$contact['provider_id']]})";
 
     $address['street1'] = $contact['street_address'];
     $address['street2'] = $contact['supplemental_address_1'];
     $address['street3'] = $contact['supplemental_address_2'];
-    $address['city']    = $contact['city'];
-    $address['state']   = $contact['state_province'];
-    $address['zip']     = $contact['postal_code'];
+    $address['city'] = $contact['city'];
+    $address['state'] = $contact['state_province'];
+    $address['zip'] = $contact['postal_code'];
 
     //check against contact and remove if empty
     foreach ( $left as $f => $v ) {

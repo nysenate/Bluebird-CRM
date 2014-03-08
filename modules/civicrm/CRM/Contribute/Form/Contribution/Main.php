@@ -69,9 +69,6 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
     parent::preProcess();
 
     self::preProcessPaymentOptions($this);
-    if ($this->_snippet) {
-      return;
-    }
 
     // Make the contributionPageID avilable to the template
     $this->assign('contributionPageID', $this->_id);
@@ -113,6 +110,11 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
       }
     }
     $this->assign('onBehalfRequired', $this->_onBehalfRequired);
+
+    if ($this->_snippet) {
+      $this->assign('isOnBehalfCallback', CRM_Utils_Array::value('onbehalf', $_GET, FALSE));
+      return;
+    }
 
     if (!empty($this->_pcpInfo['id']) && !empty($this->_pcpInfo['intro_text'])) {
       $this->assign('intro_text', $this->_pcpInfo['intro_text']);
@@ -337,16 +339,16 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
     $this->buildCustom($this->_values['custom_pre_id'], 'customPre');
     $this->buildCustom($this->_values['custom_post_id'], 'customPost');
 
-    if (!empty($this->_fields)) {
+    if (!empty($this->_fields) && !empty($this->_values['custom_pre_id'])) {
       $profileAddressFields = array();
       foreach ($this->_fields as $key => $value) {
-        CRM_Core_BAO_UFField::assignAddressField($key, $profileAddressFields);
+        CRM_Core_BAO_UFField::assignAddressField($key, $profileAddressFields, array('uf_group_id' => $this->_values['custom_pre_id']));
       }
       $this->set('profileAddressFields', $profileAddressFields);
     }
 
     // Build payment processor form
-    if ($this->_ppType) {
+    if ($this->_ppType && empty($_GET['onbehalf'])) {
       CRM_Core_Payment_ProcessorForm::buildQuickForm($this);
       // Return if we are in an ajax callback
       if ($this->_snippet) {
@@ -358,6 +360,10 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
 
     if ($this->_onbehalf) {
       CRM_Contribute_Form_Contribution_OnBehalfOf::buildQuickForm($this);
+      // Return if we are in an ajax callback
+      if ($this->_snippet) {
+        return;
+      }
     }
 
     $this->applyFilter('__ALL__', 'trim');
@@ -508,21 +514,32 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
     }
     if ($this->_pcpId) {
       if ($pcpSupporter = CRM_PCP_BAO_PCP::displayName($this->_pcpId)) {
-        $this->assign('pcpSupporterText', ts('This contribution is being made thanks to effort of <strong>%1</strong>, who supports our campaign. You can support it as well - once you complete the donation, you will be able to create your own Personal Campaign Page!', array(1 => $pcpSupporter)));
+        $pcp_supporter_text = ts('This contribution is being made thanks to effort of <strong>%1</strong>, who supports our campaign. ', array(1 => $pcpSupporter));
+        // Only tell people that can also create a PCP if the contribution page has a non-empty value in the "Create Personal Campaign Page link" field.
+        $text = CRM_PCP_BAO_PCP::getPcpBlockStatus($this->_id, 'contribute');
+        if(!empty($text)) {
+          $pcp_supporter_text .= "You can support it as well - once you complete the donation, you will be able to create your own Personal Campaign Page!";
+        }
+        $this->assign('pcpSupporterText', $pcp_supporter_text);
       }
-      $this->assign('pcp', TRUE);
-      $this->add('checkbox', 'pcp_display_in_roll', ts('Show my contribution in the public honor roll'), NULL, NULL,
-        array('onclick' => "showHideByValue('pcp_display_in_roll','','nameID|nickID|personalNoteID','block','radio',false); pcpAnonymous( );")
-      );
-      $extraOption = array('onclick' => "return pcpAnonymous( );");
-      $elements    = array();
-      $elements[]  = &$this->createElement('radio', NULL, '', ts('Include my name and message'), 0, $extraOption);
-      $elements[]  = &$this->createElement('radio', NULL, '', ts('List my contribution anonymously'), 1, $extraOption);
-      $this->addGroup($elements, 'pcp_is_anonymous', NULL, '&nbsp;&nbsp;&nbsp;');
-      $this->_defaults['pcp_is_anonymous'] = 0;
+      $prms = array('id' => $this->_pcpId);
+      CRM_Core_DAO::commonRetrieve('CRM_PCP_DAO_PCP', $prms, $pcpInfo);
+      if ($pcpInfo['is_honor_roll']) {
+        $this->assign('isHonor', TRUE);
+        $this->add('checkbox', 'pcp_display_in_roll', ts('Show my contribution in the public honor roll'), NULL, NULL,
+          array('onclick' => "showHideByValue('pcp_display_in_roll','','nameID|nickID|personalNoteID','block','radio',false); pcpAnonymous( );")
+        );
+        $extraOption = array('onclick' => "return pcpAnonymous( );");
+        $elements    = array();
+        $elements[]  = &$this->createElement('radio', NULL, '', ts('Include my name and message'), 0, $extraOption);
+        $elements[]  = &$this->createElement('radio', NULL, '', ts('List my contribution anonymously'), 1, $extraOption);
+        $this->addGroup($elements, 'pcp_is_anonymous', NULL, '&nbsp;&nbsp;&nbsp;');
+        $this->setDefaults(array('pcp_display_in_roll' => 1));
+        $this->setDefaults(array('pcp_is_anonymous' => 1));
 
-      $this->add('text', 'pcp_roll_nickname', ts('Name'), array('maxlength' => 30));
-      $this->add('textarea', 'pcp_personal_note', ts('Personal Note'), array('style' => 'height: 3em; width: 40em;'));
+        $this->add('text', 'pcp_roll_nickname', ts('Name'), array('maxlength' => 30));
+        $this->add('textarea', 'pcp_personal_note', ts('Personal Note'), array('style' => 'height: 3em; width: 40em;'));
+      }
     }
 
     //we have to load confirm contribution button in template
@@ -546,7 +563,7 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
     if (!($allAreBillingModeProcessors && !$this->_values['is_pay_later'])) {
       $submitButton = array(
         'type' => 'upload',
-        'name' => ts('Contribute'),
+        'name' => CRM_Utils_Array::value('is_confirm_enabled', $this->_values) ? ts('Confirm Contribution') : ts('Contribute'),
         'spacing' => '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
         'isDefault' => TRUE,
       );
@@ -966,7 +983,7 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
       }
       elseif (CRM_Utils_Array::value('is_pledge', $fields)) {
         if (CRM_Utils_Rule::positiveInteger(CRM_Utils_Array::value('pledge_installments', $fields)) == FALSE) {
-          $errors['pledge_installments'] = ts('Please enter a valid pledge installment.');
+          $errors['pledge_installments'] = ts('Please enter a valid number of pledge installments.');
         }
         else {
           if (CRM_Utils_Array::value('pledge_installments', $fields) == NULL) {

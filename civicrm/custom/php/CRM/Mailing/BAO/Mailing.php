@@ -1535,13 +1535,12 @@ ORDER BY   civicrm_email.is_bulkmail DESC
         'from_email'      => $domain_email,
         'from_name'       => $domain_name,
         'msg_template_id' => NULL,
-        //'contact_id'      => $params['created_id'],//NYSS
         'created_id'      => $params['created_id'],
-        'approver_id'     => NULL,//NYSS
+        'approver_id'     => NULL,
         'auto_responder'  => 0,
         'created_date'    => date('YmdHis'),
-        'scheduled_date'  => NULL,//NYSS
-        'approval_date'   => NULL,//NYSS
+        'scheduled_date'  => NULL,
+        'approval_date'   => NULL,
       );
 
       // Get the default from email address, if not provided.
@@ -1613,12 +1612,10 @@ ORDER BY   civicrm_email.is_bulkmail DESC
     $transaction->commit();
 
     /**
-     * 'approval_status_id' set in
-     * CRM_Mailing_Form_Schedule::postProcess() or via API.
-     * //NYSS 7470 condition only on the existence of a scheduled date
+     * create parent job if not yet created
+     * condition on the existence of a scheduled date
      */
     if (!empty($params['scheduled_date']) && $params['scheduled_date'] != 'null') {
-      //NYSS create parent job if not yet created
       $job = new CRM_Mailing_BAO_MailingJob();
       $job->mailing_id = $mailing->id;
       $job->status = 'Scheduled';
@@ -2229,28 +2226,30 @@ LEFT JOIN civicrm_mailing_group g ON g.mailing_id   = m.id
 
     // we only care about parent jobs, since that holds all the info on
     // the mailing
+    //NYSS 6007 include subject
     $query = "
-            SELECT      $mailing.id,
-                        $mailing.name,
-                        $job.status,
-                        $mailing.approval_status_id,
-                        MIN($job.scheduled_date) as scheduled_date,
-                        MIN($job.start_date) as start_date,
-                        MAX($job.end_date) as end_date,
-                        createdContact.sort_name as created_by,
-                        scheduledContact.sort_name as scheduled_by,
-                        $mailing.created_id as created_id,
-                        $mailing.scheduled_id as scheduled_id,
-                        $mailing.is_archived as archived,
-                        $mailing.created_date as created_date,
-                        campaign_id,
-                        $mailing.sms_provider_id as sms_provider_id
-            FROM        $mailing
-            LEFT JOIN   $job ON ( $job.mailing_id = $mailing.id AND $job.is_test = 0 AND $job.parent_id IS NULL )
-            LEFT JOIN   civicrm_contact createdContact ON ( civicrm_mailing.created_id = createdContact.id )
-            LEFT JOIN   civicrm_contact scheduledContact ON ( civicrm_mailing.scheduled_id = scheduledContact.id )
-            WHERE       $mailingACL $additionalClause
-            GROUP BY    $mailing.id ";
+      SELECT      $mailing.id,
+                  $mailing.name,
+                  $mailing.subject,
+                  $job.status,
+                  $mailing.approval_status_id,
+                  MIN($job.scheduled_date) as scheduled_date,
+                  MIN($job.start_date) as start_date,
+                  MAX($job.end_date) as end_date,
+                  createdContact.sort_name as created_by,
+                  scheduledContact.sort_name as scheduled_by,
+                  $mailing.created_id as created_id,
+                  $mailing.scheduled_id as scheduled_id,
+                  $mailing.is_archived as archived,
+                  $mailing.created_date as created_date,
+                  campaign_id,
+                  $mailing.sms_provider_id as sms_provider_id
+      FROM        $mailing
+      LEFT JOIN   $job ON ( $job.mailing_id = $mailing.id AND $job.is_test = 0 AND $job.parent_id IS NULL )
+      LEFT JOIN   civicrm_contact createdContact ON ( civicrm_mailing.created_id = createdContact.id )
+      LEFT JOIN   civicrm_contact scheduledContact ON ( civicrm_mailing.scheduled_id = scheduledContact.id )
+      WHERE       $mailingACL $additionalClause
+      GROUP BY    $mailing.id ";
 
     if ($sort) {
       $orderBy = trim($sort->orderBy());
@@ -2274,15 +2273,17 @@ LEFT JOIN civicrm_mailing_group g ON g.mailing_id   = m.id
 
     $rows = array();
     while ($dao->fetch()) {
+      //NYSS 6007 alter date format
       $rows[] = array(
         'id' => $dao->id,
         'name' => $dao->name,
+        'subject' => $dao->subject,//NYSS 6007
         'status' => $dao->status ? $dao->status : 'Not scheduled',
-        'created_date' => CRM_Utils_Date::customFormat($dao->created_date),
-        'scheduled' => CRM_Utils_Date::customFormat($dao->scheduled_date),
+        'created_date' => CRM_Utils_Date::customFormat($dao->created_date, '%m/%d/%Y %l:%M %P'),
+        'scheduled' => CRM_Utils_Date::customFormat($dao->scheduled_date, '%m/%d/%Y %l:%M %P'),
         'scheduled_iso' => $dao->scheduled_date,
-        'start' => CRM_Utils_Date::customFormat($dao->start_date),
-        'end' => CRM_Utils_Date::customFormat($dao->end_date),
+        'start' => CRM_Utils_Date::customFormat($dao->start_date, '%m/%d/%Y %l:%M %P'),
+        'end' => CRM_Utils_Date::customFormat($dao->end_date, '%m/%d/%Y %l:%M %P'),
         'created_by' => $dao->created_by,
         'scheduled_by' => $dao->scheduled_by,
         'created_id' => $dao->created_id,
@@ -2324,6 +2325,8 @@ LEFT JOIN civicrm_mailing_group g ON g.mailing_id   = m.id
       CRM_Core_Error::fatal();
     }
 
+    CRM_Utils_Hook::pre('delete', 'Mailing', $id, CRM_Core_DAO::$_nullArray);
+
     // delete all file attachments
     CRM_Core_BAO_File::deleteEntityFile('civicrm_mailing',
       $id
@@ -2334,6 +2337,8 @@ LEFT JOIN civicrm_mailing_group g ON g.mailing_id   = m.id
     $dao->delete();
 
     CRM_Core_Session::setStatus(ts('Selected mailing has been deleted.'), ts('Deleted'), 'success');
+
+    CRM_Utils_Hook::post('delete', 'Mailing', $id, $dao);
   }
 
   /**
@@ -2754,8 +2759,8 @@ WHERE  civicrm_mailing_job.id = %1
     // check if we are enforcing number of parallel cron jobs
     // CRM-8460
     $gotCronLock = FALSE;
-    if ($config->mailerJobsMax && $config->mailerJobsMax > 1) {
 
+    if (property_exists($config, 'mailerJobsMax') && $config->mailerJobsMax && $config->mailerJobsMax > 1) {
       $lockArray = range(1, $config->mailerJobsMax);
       shuffle($lockArray);
 
@@ -2782,7 +2787,8 @@ WHERE  civicrm_mailing_job.id = %1
     // load bootstrap to call hooks
 
     // Split up the parent jobs into multiple child jobs
-    CRM_Mailing_BAO_MailingJob::runJobs_pre($config->mailerJobSize, $mode);
+    $mailerJobSize = (property_exists($config, 'mailerJobSize')) ? $config->mailerJobSize : NULL;
+    CRM_Mailing_BAO_MailingJob::runJobs_pre($mailerJobSize, $mode);
     CRM_Mailing_BAO_MailingJob::runJobs(NULL, $mode);
     CRM_Mailing_BAO_MailingJob::runJobs_post($mode);
 
@@ -2795,7 +2801,7 @@ WHERE  civicrm_mailing_job.id = %1
     return TRUE;
   }
   //NYSS 4717
-  private function addMultipleEmails($mailingID, $dedupeEmail = FALSE) {
+  private static function addMultipleEmails($mailingID, $dedupeEmail = FALSE) {
     $sql = "
 INSERT INTO civicrm_mailing_recipients
     (mailing_id, email_id, contact_id)

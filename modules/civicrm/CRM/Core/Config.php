@@ -185,8 +185,6 @@ class CRM_Core_Config extends CRM_Core_Config_Variables {
       // first, attempt to get configuration object from cache
       $cache = CRM_Utils_Cache::singleton();
       self::$_singleton = $cache->get('CRM_Core_Config' . CRM_Core_Config::domainID());
-
-
       // if not in cache, fire off config construction
       if (!self::$_singleton) {
         self::$_singleton = new CRM_Core_Config;
@@ -197,6 +195,7 @@ class CRM_Core_Config extends CRM_Core_Config_Variables {
         if ($loadFromDB) {
           // initialize stuff from the settings file
           self::$_singleton->setCoreVariables();
+
           self::$_singleton->_initVariables();
 
           // I dont think we need to do this twice
@@ -336,6 +335,7 @@ class CRM_Core_Config extends CRM_Core_Config_Variables {
         CRM_Utils_File::baseFilePath($this->templateCompileDir) .
         'ConfigAndLog' . DIRECTORY_SEPARATOR;
       CRM_Utils_File::createDir($this->configAndLogDir);
+      CRM_Utils_File::restrictAccess($this->configAndLogDir);
 
       // we're automatically prefixing compiled templates directories with country/language code
       global $tsLocale;
@@ -347,6 +347,7 @@ class CRM_Core_Config extends CRM_Core_Config_Variables {
       }
 
       CRM_Utils_File::createDir($this->templateCompileDir);
+      CRM_Utils_File::restrictAccess($this->templateCompileDir);
     }
     elseif ($loadFromDB) {
       echo 'You need to define CIVICRM_TEMPLATE_COMPILEDIR in civicrm.settings.php';
@@ -467,6 +468,7 @@ class CRM_Core_Config extends CRM_Core_Config_Variables {
         if (substr($this->templateCompileDir, -1 * strlen($value) - 1, -1) != $value) {
           $this->templateCompileDir .= CRM_Utils_File::addTrailingSlash($value);
           CRM_Utils_File::createDir($this->templateCompileDir);
+          CRM_Utils_File::restrictAccess($this->templateCompileDir);
         }
       }
 
@@ -536,7 +538,7 @@ class CRM_Core_Config extends CRM_Core_Config_Variables {
         if ($mailingInfo['smtpAuth']) {
           $params['username'] = $mailingInfo['smtpUsername'];
           $params['password'] = CRM_Utils_Crypt::decrypt($mailingInfo['smtpPassword']);
-          $params['auth']     = TRUE;
+          $params['auth'] = TRUE;
         }
         else {
           $params['auth'] = FALSE;
@@ -624,7 +626,14 @@ class CRM_Core_Config extends CRM_Core_Config_Variables {
       // clean upload dir
       CRM_Utils_File::cleanDir($this->uploadDir);
       CRM_Utils_File::createDir($this->uploadDir);
-      CRM_Utils_File::restrictAccess($this->uploadDir);
+    }
+
+    // Whether we delete/create or simply preserve directories, we should
+    // certainly make sure the restrictions are enforced.
+    foreach (array($this->templateCompileDir, $this->uploadDir, $this->configAndLogDir) as $dir) {
+      if ($dir && is_dir($dir)) {
+        CRM_Utils_File::restrictAccess($dir);
+      }
     }
   }
 
@@ -677,7 +686,7 @@ class CRM_Core_Config extends CRM_Core_Config_Variables {
     }
     if ($reset || empty($domain)) {
       $domain = defined('CIVICRM_DOMAIN_ID') ? CIVICRM_DOMAIN_ID : 1;
-  }
+    }
 
     return $domain;
   }
@@ -774,15 +783,15 @@ FROM   INFORMATION_SCHEMA.TABLES
 WHERE  TABLE_SCHEMA = %1
 AND
   ( TABLE_NAME LIKE 'civicrm_import_job_%'
-OR       TABLE_NAME LIKE 'civicrm_export_temp%'
+  OR       TABLE_NAME LIKE 'civicrm_export_temp%'
   OR       TABLE_NAME LIKE 'civicrm_task_action_temp%'
   OR       TABLE_NAME LIKE 'civicrm_report_temp%'
   )
 ";
 
-    $params   = array(1 => array($dao->database(), 'String'));
+    $params = array(1 => array($dao->database(), 'String'));
     $tableDAO = CRM_Core_DAO::executeQuery($query, $params);
-    $tables   = array();
+    $tables = array();
     while ($tableDAO->fetch()) {
       $tables[] = $tableDAO->tableName;
     }

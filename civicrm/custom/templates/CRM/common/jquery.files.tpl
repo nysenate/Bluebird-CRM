@@ -54,7 +54,11 @@ packages/jquery/plugins/jquery.mousewheel.pack.js
 {*packages/jquery/plugins/jquery.toolTip.js*}
 NYSS/jquery.toolTip.js
 
-packages/jquery/plugins/DataTables/media/css/demo_table_jui.css
+{*NYSS 7150*}
+NYSS/FixedHeader.min.js
+
+{*NYSS 7460*}
+{*packages/jquery/plugins/DataTables/media/css/demo_table_jui.css*}
 packages/jquery/plugins/DataTables/media/js/jquery.dataTables.min.js
 
 packages/jquery/plugins/jquery.FormNavigate.js

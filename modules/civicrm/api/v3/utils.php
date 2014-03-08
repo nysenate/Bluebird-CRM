@@ -48,7 +48,7 @@ function _civicrm_api3_initialize() {
 /**
  * Wrapper Function for civicrm_verify_mandatory to make it simple to pass either / or fields for checking
  *
- * @param array $params array of fields to check
+ * @param array $params array of fields to checkl
  * @param array $daoName string DAO to check for required fields (create functions only)
  * @param array $keyoptions
  *
@@ -116,8 +116,9 @@ function civicrm_api3_verify_mandatory($params, $daoName = NULL, $keys = array(
       }
     }
     else {
-      //NYSS 6558
-      if (!array_key_exists($key, $params) || (empty($params[$key]) && $params[$key] != 0) ) {
+      // Disallow empty values except for the number zero.
+      // TODO: create a utility for this since it's needed in many places
+      if (!array_key_exists($key, $params) || (empty($params[$key]) && $params[$key] !== 0 && $params[$key] !== '0')) {
         $unmatched[] = $key;
       }
     }
@@ -252,7 +253,13 @@ function civicrm_api3_create_success($values = 1, $params = array(
   else {
     $result['values'] = $values;
   }
-
+  if(!empty($params['options']['metadata'])) {
+    // we've made metadata an array but only supporting 'fields' atm
+    if(in_array('fields', $params['options']['metadata'])) {
+      $fields = civicrm_api3($entity, 'getfields', array('action' => $action));
+      $result['metadata']['fields'] = $fields['values'];
+    }
+  }
   return array_merge($result, $extraReturnValues);
 }
 
@@ -308,8 +315,13 @@ function _civicrm_api3_get_DAO($name) {
  */
 function _civicrm_api3_get_BAO($name) {
   $dao = _civicrm_api3_get_DAO($name);
-  $dao = str_replace("DAO", "BAO", $dao);
-  return $dao;
+  if (!$dao) {
+    return NULL;
+  }
+  $bao = str_replace("DAO", "BAO", $dao);
+  $file = strtr($bao, '_', '/') . '.php';
+  // Check if this entity actually has a BAO. Fall back on the DAO if not.
+  return stream_resolve_include_path($file) ? $bao : $dao;
 }
 
 /**
@@ -553,6 +565,7 @@ function _civicrm_api3_dao_set_filter(&$dao, $params, $unique = TRUE, $entity) {
       $dao->selectAdd($allfields[$uniqueVal]);
     }
   }
+  $dao->setApiFilter($params);
 }
 
 /**
@@ -911,7 +924,7 @@ function _civicrm_api3_check_required_fields($params, $daoName, $return = FALSE)
  * @param $entity string API entity being accessed
  * @param $action string API action being performed
  * @param $params array  params of the API call
- * @param $throw bool    whether to throw exception instead of returning false
+ * @param $throw deprecated bool    whether to throw exception instead of returning false
  *
  * @throws Exception
  * @return bool whether the current API user has the permission to make the call
@@ -930,16 +943,20 @@ function _civicrm_api3_api_check_permission($entity, $action, &$params, $throw =
     return TRUE;
   }
 
-  foreach ($permissions as $perm) {
-    if (!CRM_Core_Permission::check($perm)) {
-      if ($throw) {
-        throw new Exception("API permission check failed for $entity/$action call; missing permission: $perm.");
+  if (!CRM_Core_Permission::check($permissions)) {
+    if ($throw) {
+      if(is_array($permissions)) {
+        $permissions = implode(' and ', $permissions);
       }
-      else {
-        return FALSE;
-      }
+      throw new Exception("API permission check failed for $entity/$action call; insufficient permission: require $permissions");
+    }
+    else {
+      //@todo remove this - this is an internal api function called with $throw set to TRUE. It is only called with false
+      // in tests & that should be tidied up
+      return FALSE;
     }
   }
+
   return TRUE;
 }
 
@@ -955,9 +972,9 @@ function _civicrm_api3_api_check_permission($entity, $action, &$params, $throw =
  */
 function _civicrm_api3_basic_get($bao_name, &$params, $returnAsSuccess = TRUE, $entity = "") {
   $bao = new $bao_name();
-  _civicrm_api3_dao_set_filter($bao, $params, TRUE,$entity);
+  _civicrm_api3_dao_set_filter($bao, $params, TRUE, $entity);
   if ($returnAsSuccess) {
-      return civicrm_api3_create_success(_civicrm_api3_dao_to_array($bao, $params, FALSE, $entity), $params, $entity);
+      return civicrm_api3_create_success(_civicrm_api3_dao_to_array($bao, $params, FALSE, $entity), $params, $entity, 'get');
   }
   else {
     return _civicrm_api3_dao_to_array($bao, $params, FALSE, $entity);
@@ -996,6 +1013,16 @@ function _civicrm_api3_basic_create($bao_name, &$params, $entity = NULL) {
 
   if (is_null($bao)) {
     return civicrm_api3_create_error('Entity not created (' . $fct_name . ')');
+  }
+  elseif (is_a($bao, 'CRM_Core_Error')) {
+    //some wierd circular thing means the error takes itself as an argument
+    $msg = $bao->getMessages($bao);
+    // the api deals with entities on a one-by-one basis. However, the contribution bao pushes entities
+    // onto the error object - presumably because the contribution import is not handling multiple errors correctly
+    // so we need to reset the error object here to avoid getting concatenated errors
+    //@todo - the mulitple error handling should be moved out of the contribution object to the import / multiple entity processes
+    CRM_Core_Error::singleton()->reset();
+    throw new API_Exception($msg);
   }
   else {
     $values = array();

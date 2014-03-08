@@ -116,7 +116,9 @@ class CRM_Mailing_Event_BAO_Reply extends CRM_Mailing_Event_DAO_Reply {
 
     $eq = new CRM_Core_DAO();
     $eq->query("SELECT     $contacts.display_name as display_name,
-                               $emails.email as email
+                           $emails.email as email,
+                           $queue.job_id as job_id,
+                           $queue.hash as hash
                    FROM        $queue
                    INNER JOIN  $contacts
                            ON  $queue.contact_id = $contacts.id
@@ -144,7 +146,9 @@ class CRM_Mailing_Event_BAO_Reply extends CRM_Mailing_Event_DAO_Reply {
       $b = $parsed->generateBody();
 
       // strip Return-Path of possible bounding brackets, CRM-4502
-      $h['Return-Path'] = trim($h['Return-Path'], '<>');
+      if (!empty($h['Return-Path'])) {
+        $h['Return-Path'] = trim($h['Return-Path'], '<>');
+      }
 
       // FIXME: ugly hack - find the first MIME boundary in
       // the body and make the boundary in the header match it
@@ -187,10 +191,8 @@ class CRM_Mailing_Event_BAO_Reply extends CRM_Mailing_Event_DAO_Reply {
     $config = CRM_Core_Config::singleton();
     $mailer = $config->getMailer();
 
-    PEAR::setErrorHandling(PEAR_ERROR_CALLBACK,
-      array('CRM_Core_Error', 'nullHandler')
-    );
     if (is_object($mailer)) {
+      CRM_Core_Error::ignoreException();
       $mailer->send($mailing->replyto_email, $h, $b);
       CRM_Core_Error::setCallback();
     }
@@ -217,9 +219,9 @@ class CRM_Mailing_Event_BAO_Reply extends CRM_Mailing_Event_DAO_Reply {
     $eq = new CRM_Core_DAO();
     $eq->query(
       "SELECT     $contacts.preferred_mail_format as format,
-                    $email.email as email
-                    $queue.job_id as job_id
-                    $queue.hash as hash
+                  $email.email as email,
+                  $queue.job_id as job_id,
+                  $queue.hash as hash
         FROM        $contacts
         INNER JOIN  $queue ON $queue.contact_id = $contacts.id
         INNER JOIN  $email ON $queue.email_id = $email.id
@@ -279,10 +281,8 @@ class CRM_Mailing_Event_BAO_Reply extends CRM_Mailing_Event_DAO_Reply {
     CRM_Mailing_BAO_Mailing::addMessageIdHeader($h, 'a', $eq->job_id, queue_id, $eq->hash);
 
     $mailer = $config->getMailer();
-    PEAR::setErrorHandling(PEAR_ERROR_CALLBACK,
-      array('CRM_Core_Error', 'nullHandler')
-    );
     if (is_object($mailer)) {
+      CRM_Core_Error::ignoreException();
       $mailer->send($to, $h, $b);
       CRM_Core_Error::setCallback();
     }

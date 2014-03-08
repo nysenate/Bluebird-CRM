@@ -4,7 +4,7 @@ if ( isset($_POST['set_JobID']) && $_POST['set_JobID'] ) $_SESSION['CiviCRM']['j
 
 <?php
 	$rolesList = implode(', ',$user->roles);
-	$role      = str_replace('authenticated user, ','', $rolesList).'&nbsp;';
+	$role = str_replace('authenticated user, ','', $rolesList).'&nbsp;';
 
 	if ( strpos($_SERVER['HTTP_HOST'], 'crmtest') ) {
 		$env = 'env-crmtest';
@@ -38,15 +38,15 @@ if ( isset($_POST['set_JobID']) && $_POST['set_JobID'] ) $_SESSION['CiviCRM']['j
 <?php } ?>
 
 <div class="container">
-  <div id="status">
-   	<div class="messages-container">
-      <?php	if ($messages != '') {?>
-   		  <div id="messages">
-   		    <?php print $messages; ?>
-   		  </div>
-      <?php } ?>
+  <?php if ($messages) { ?>
+    <div id="status">
+      <div class="messages-container">
+        <div id="messages">
+          <?php print $messages; ?>
+        </div>
+      </div>
     </div>
-  </div>
+  <?php } ?>
 
   <div id="header">
    <!-- <h1 id="logo">
@@ -66,10 +66,15 @@ if ( isset($_POST['set_JobID']) && $_POST['set_JobID'] ) $_SESSION['CiviCRM']['j
   <?php endif ?>
   <?php
   if ($head_title != '' && arg(0) != 'civicrm' && $user->uid) {
-  		$quickTitle = explode("|", $head_title);
-        print '<a href="/" style="float:right;"> &raquo; back to Bluebird</a><h2><a href="/">'. $quickTitle[0] .'</a></h2> ';
-      }
- ?>
+    //NYSS 7589
+    $quickTitle = explode("|", $head_title);
+    print '<div class="non-civicrm-page-title">
+      <a href="/" class="bluebird-back-link">Back to Bluebird &raquo;</a>
+      <h2>'.$quickTitle[0].'</h2>
+      </div>
+    ';
+  }
+  ?>
   <div class="clear span-24 main-container <?php 
     if ( arg(0) != 'civicrm' ) { echo 'standard-container '; }
 	if ( arg(0) == 'admin' && arg(2) == 'user' ) { echo 'user-admin'; } //NYSS 5253
@@ -155,7 +160,7 @@ $now = time() + (60 * 60 * $offset);
     ?>
     <script>
     if(typeof cj == 'function') {
-      cj('.messages br').remove();
+      /*cj('.messages br').remove();
       cj('.messages').each(function(index){
         if(cj(this).html() == '') { cj(this).remove(); }
       });
@@ -167,7 +172,7 @@ $now = time() + (60 * 60 * $offset);
         cj('.messages-container').slideToggle('fast');
         cj('#status-handle .ui-icon').toggleClass('ui-icon-arrowthickstop-1-n');
         cj('#status-handle .ui-icon').toggleClass('ui-icon-arrowthickstop-1-s');
-      });
+      });*/
     }
     </script>
 

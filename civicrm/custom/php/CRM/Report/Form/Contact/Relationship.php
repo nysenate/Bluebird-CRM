@@ -194,15 +194,20 @@ class CRM_Report_Form_Contact_Relationship extends CRM_Report_Form {
             'type' => CRM_Utils_Type::T_STRING,
           ),
         ),
-             //NYSS 4936
-             'order_bys'  =>
-                         array( 'label_a_b' =>
-                                array( 'title' => ts( 'Relationship A-B'),
-                       'name'  => 'label_a_b' ),
-                  'label_b_A' =>
-                                array( 'title' => ts( 'Relationship B-A'),
-                       'name'  => 'label_b_a' ),
-                                ), 
+        //NYSS 4936
+        'order_bys'  =>
+        array(
+          'label_a_b' =>
+          array(
+            'title' => ts( 'Relationship A-B'),
+            'name'  => 'label_a_b'
+          ),
+          'label_b_A' =>
+          array(
+            'title' => ts( 'Relationship B-A'),
+            'name'  => 'label_b_a'
+          ),
+        ),
         'grouping' => 'relation-fields',
       ),
       'civicrm_relationship' =>
@@ -526,10 +531,10 @@ class CRM_Report_Form_Contact_Relationship extends CRM_Report_Form {
     }
   }
 
-    //NYSS 4936 - handle with criteria
-    /*function orderBy( ) {
-        $this->_orderBy = " ORDER BY {$this->_aliases['civicrm_contact']}.sort_name, {$this->_aliases['civicrm_contact_b']}.sort_name ";
-    }*/
+  //NYSS 4936 - handle with criteria
+  /*function orderBy( ) {
+    $this->_orderBy = " ORDER BY {$this->_aliases['civicrm_contact']}.sort_name, {$this->_aliases['civicrm_contact_b']}.sort_name ";
+  }*/
 
   function postProcess() {
     $this->beginPostProcess();

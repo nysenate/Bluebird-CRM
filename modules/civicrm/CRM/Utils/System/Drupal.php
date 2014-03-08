@@ -50,7 +50,8 @@ class CRM_Utils_System_Drupal extends CRM_Utils_System_DrupalBase {
    *
    */
   function createUser(&$params, $mail) {
-    $form_state = array();
+    $form_state = form_state_defaults();
+    
     $form_state['input'] = array(
       'name' => $params['cms_name'],
       'mail' => $params[$mail],
@@ -331,7 +332,7 @@ class CRM_Utils_System_Drupal extends CRM_Utils_System_DrupalBase {
         return FALSE;
     }
     // If the path is within the drupal directory we can use the more efficient 'file' setting
-    $params['type'] = self::formatResourceUrl($url) ? 'file' : 'external';
+    $params['type'] = $this->formatResourceUrl($url) ? 'file' : 'external';
     drupal_add_js($url, $params);
     return TRUE;
   }
@@ -380,7 +381,7 @@ class CRM_Utils_System_Drupal extends CRM_Utils_System_DrupalBase {
     }
     $params = array();
     // If the path is within the drupal directory we can use the more efficient 'file' setting
-    $params['type'] = self::formatResourceUrl($url) ? 'file' : 'external';
+    $params['type'] = $this->formatResourceUrl($url) ? 'file' : 'external';
     drupal_add_css($url, $params);
     return TRUE;
   }
@@ -404,35 +405,6 @@ class CRM_Utils_System_Drupal extends CRM_Utils_System_DrupalBase {
     $params = array('type' => 'inline');
     drupal_add_css($code, $params);
     return TRUE;
-  }
-
-  /**
-   * Check if a resource url is within the drupal directory and format appropriately
-   *
-   * @param url (reference)
-   *
-   * @return bool: TRUE for internal paths, FALSE for external
-   */
-  static function formatResourceUrl(&$url) {
-    $internal = FALSE;
-    $base = CRM_Core_Config::singleton()->resourceBase;
-    global $base_url;
-    // Handle absolute urls
-    if (strpos($url, $base_url) === 0) {
-      $internal = TRUE;
-      $url = trim(str_replace($base_url, '', $url), '/');
-    }
-    // Handle relative urls
-    elseif (strpos($url, $base) === 0) {
-      $internal = TRUE;
-      $url = substr(drupal_get_path('module', 'civicrm'), 0, -6) . trim(substr($url, strlen($base)), '/');
-    }
-    // Strip query string
-    $q = strpos($url, '?');
-    if ($q && $internal) {
-      $url = substr($url, 0, $q);
-    }
-    return $internal;
   }
 
   /**
@@ -464,80 +436,6 @@ class CRM_Utils_System_Drupal extends CRM_Utils_System_DrupalBase {
     return $this->url($_GET['q']);
   }
 
-  /**
-   * Generate an internal CiviCRM URL (copied from DRUPAL/includes/common.inc#url)
-   *
-   * @param $path     string   The path being linked to, such as "civicrm/add"
-   * @param $query    string   A query string to append to the link.
-   * @param $absolute boolean  Whether to force the output to be an absolute link (beginning with http:).
-   *                           Useful for links that will be displayed outside the site, such as in an
-   *                           RSS feed.
-   * @param $fragment string   A fragment identifier (named anchor) to append to the link.
-   * @param $htmlize  boolean  whether to convert to html eqivalant
-   * @param $frontend boolean  a gross joomla hack
-   *
-   * @return string            an HTML string containing a link to the given path.
-   * @access public
-   *
-   */
-  function url($path = NULL, $query = NULL, $absolute = FALSE,
-    $fragment = NULL, $htmlize = TRUE,
-    $frontend = FALSE, $forceBackend = FALSE
-  ) {
-    $config = CRM_Core_Config::singleton();
-    $script = 'index.php';
-
-    $path = CRM_Utils_String::stripPathChars($path);
-
-    if (isset($fragment)) {
-      $fragment = '#' . $fragment;
-    }
-
-    if (!isset($config->useFrameworkRelativeBase)) {
-      $base = parse_url($config->userFrameworkBaseURL);
-      $config->useFrameworkRelativeBase = $base['path'];
-    }
-    $base = $absolute ? $config->userFrameworkBaseURL : $config->useFrameworkRelativeBase;
-
-    $separator = $htmlize ? '&amp;' : '&';
-
-    if (!$config->cleanURL) {
-      if (isset($path)) {
-        if (isset($query)) {
-          return $base . $script . '?q=' . $path . $separator . $query . $fragment;
-        }
-        else {
-          return $base . $script . '?q=' . $path . $fragment;
-        }
-      }
-      else {
-        if (isset($query)) {
-          return $base . $script . '?' . $query . $fragment;
-        }
-        else {
-          return $base . $fragment;
-        }
-      }
-    }
-    else {
-      if (isset($path)) {
-        if (isset($query)) {
-          return $base . $path . '?' . $query . $fragment;
-        }
-        else {
-          return $base . $path . $fragment;
-        }
-      }
-      else {
-        if (isset($query)) {
-          return $base . $script . '?' . $query . $fragment;
-        }
-        else {
-          return $base . $fragment;
-        }
-      }
-    }
-  }
 
   /**
    * Authenticate the user against the drupal db
@@ -958,7 +856,7 @@ AND    u.status = 1
         if ($urlType == LOCALE_LANGUAGE_NEGOTIATION_URL_PREFIX) {
           if (isset($language->prefix) && $language->prefix) {
             if ($addLanguagePart) {
-              $url = (CRM_Utils_System::isSSL() ? 'https' : 'http') . '://' . $language->domain . base_path();
+              $url .= $language->prefix . '/';
             }
             if ($removeLanguagePart) {
               $url = str_replace("/{$language->prefix}/", '/', $url);
@@ -969,7 +867,7 @@ AND    u.status = 1
         if ($urlType == LOCALE_LANGUAGE_NEGOTIATION_URL_DOMAIN) {
           if (isset($language->domain) && $language->domain) {
             if ($addLanguagePart) {
-              $url = CRM_Utils_File::addTrailingSlash($language->domain, '/');
+              $url = (CRM_Utils_System::isSSL() ? 'https' : 'http') . '://' . $language->domain . base_path();
             }
             if ($removeLanguagePart && defined('CIVICRM_UF_BASEURL')) {
               $url = str_replace('\\', '/', $url);

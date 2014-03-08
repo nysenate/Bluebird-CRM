@@ -73,6 +73,7 @@
         {/if}
         </div>
       </div>
+      <div class="clear"></div>
     </div>
   {else}
     <div class="crm-tasks">

@@ -4,9 +4,9 @@
   *
   *      @desc This file is included first, before each other
   *   @package KCFinder
-  *   @version 2.51
-  *    @author Pavel Tzonkov <pavelc@users.sourceforge.net>
-  * @copyright 2010, 2011 KCFinder Project
+  *   @version 2.53
+  *    @author Pavel Tzonkov <sunhater@sunhater.com>
+  * @copyright 2010-2014 KCFinder Project
   *   @license http://www.opensource.org/licenses/gpl-2.0.php GPLv2
   *   @license http://www.opensource.org/licenses/lgpl-2.1.php LGPLv2
   *      @link http://kcfinder.sunhater.com
@@ -26,11 +26,6 @@ if (substr(PHP_VERSION, 0, strpos(PHP_VERSION, '.')) < 5)
     die("You are using PHP " . PHP_VERSION . " when KCFinder require at least version 5! Some systems has an option to change the active PHP version. Please refer to your hosting provider or upgrade your PHP distribution.");
 
 
-// GD EXTENSION CHECK
-if (!function_exists("imagecopyresampled"))
-    die("The GD PHP extension is not available! It's required to run KCFinder.");
-
-
 // SAFE MODE CHECK
 if (ini_get("safe_mode"))
     die("The \"safe_mode\" PHP ini setting is turned on! You cannot run KCFinder in safe mode.");
@@ -42,8 +37,6 @@ if (isset($_GET['cms'])) {
         case "drupal": require "integration/drupal.php";
     }
 }
-
-spl_autoload_register('kcfinder_autoloader');
 
 
 // MAGIC AUTOLOAD CLASSES FUNCTION
@@ -59,6 +52,8 @@ function kcfinder_autoloader($class) {
     elseif (file_exists("lib/helper_$class.php"))
         require "lib/helper_$class.php";
 }
+
+spl_autoload_register('kcfinder_autoloader');
 
 
 // json_encode() IMPLEMENTATION IF JSON EXTENSION IS MISSING
