@@ -36,9 +36,6 @@ var BBActionConst = {/literal}{$action}{literal};
 </script>
 <link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/Bluebird/nyss_skin/tags/tags.css" />
 <script src="/sites/default/themes/Bluebird/scripts/bbtree.js" type="text/javascript"></script>
-<script>
-BBTree.startInstance({pullSets: [291, 296], buttonType: 'tagging', onSave: true});
-</script>
 {/literal}
 {if $title}
 <div id="dialog"></div>{*NYSS*}

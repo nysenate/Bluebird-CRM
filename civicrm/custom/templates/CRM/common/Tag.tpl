@@ -2,7 +2,7 @@
   {foreach from=$tagsetInfo_contact item=tagset}
   <div class="crm-section tag-section contact-tagset-{$tagset.parentID}-section">
     {*NYSS*}
-    <div class="label">
+    <div class="tag-label">
       <label>{$tagset.parentName}</label>
     </div>
     <div{if $context EQ "contactTab"} style="margin-top:-15px;"{/if}>
