@@ -34,7 +34,7 @@ form#Contact .groupTagsKeywords ul.token-input-list-facebook {
 
 
 #issue-code-search{
-  margin:15px 0 0 0;
+  margin:0;
   width: 524px;
   -webkit-transition: all 0.30s ease-in-out;
   -moz-transition: all 0.30s ease-in-out;
@@ -64,6 +64,10 @@ form#Contact .groupTagsKeywords ul.token-input-list-facebook {
   border: 1px solid rgba(81, 203, 238, 1);
 
 }
+.page-civicrm-contact-view #issue-code-search{
+  margin:15px 0 0 0;
+}
+
 form#Contact .groupTagsKeywords ul.token-input-list-facebook {
     width: 517px;
 }
@@ -344,7 +348,6 @@ form#Contact .groupTagsKeywords ul.token-input-list-facebook {
 
 .tag_filter_bar  {
   border-bottom: medium none !important;
-  margin: 15px 0 0 !important;
   padding: 8px !important;
   width: 100%;
   -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
