@@ -18,10 +18,16 @@ form#Contact .groupTagsKeywords ul.token-input-list-facebook {
   font-size: 120%;
   margin-top: 20px;
 }
+
+
+.tag-label{
+  margin: 10px 0 0 0;
+  font: bold 16px/21px sans-serif;
+}
 .tag-label label{
   float: left;
   text-align: left !important;
-  margin:20px 0 15px;
+  margin:10px 0 0;
   width: 100%;
 }
 
@@ -29,7 +35,7 @@ form#Contact .groupTagsKeywords ul.token-input-list-facebook {
 
 #issue-code-search{
   margin:15px 0 0 0;
-  width: 512px;
+  width: 524px;
   -webkit-transition: all 0.30s ease-in-out;
   -moz-transition: all 0.30s ease-in-out;
   -ms-transition: all 0.30s ease-in-out;
@@ -217,10 +223,7 @@ form#Contact .groupTagsKeywords ul.token-input-list-facebook {
   margin-bottom: -10px;
 }
 
-.tag-label{
-  margin: 20px 0 0 0;
-  font: bold 16px/21px sans-serif;
-}
+
 .BBTree dt .fCB .checkbox,
 .fCB .selectRadio{
   display: auto;
