@@ -57,7 +57,7 @@ TagTreeBase.prototype.load = function() {
         success: function(data, status, XMLHttpRequest) {
             if(data.code != 1) {
                 // TODO: Render error message..
-                console.log(data.message);
+                // console.log(data.message);
             }
             else {
                 self.setup_trees(data.message);
@@ -415,7 +415,7 @@ TagTreeBase.prototype.notify = function(type, title, message) {
             title = 'Info - '+title;
             timeout = 5000; break;
     }
-    console.log('['+title+'] '+message);
+    // console.log('['+title+'] '+message);
     CRM.alert(message, title, type_class, {expires:timeout});
 }
 
@@ -459,7 +459,7 @@ TagTreeTag.prototype.animate_tree = function(tree) {
 
         // If we are currently checked then delete, otherwise create a new entity_tag.
         if (checkbox.is(":checked")) {
-            console.log("Adding checkmark!");
+            // console.log("Adding checkmark!");
             self.addTagCheck(tag_id);
             if(self.options.auto_save) {
                 cj.ajax({
@@ -473,17 +473,17 @@ TagTreeTag.prototype.animate_tree = function(tree) {
                     dataType: 'json',
                     success: function(data, status, XMLHttpRequest) {
                         if(data.code == 0) {
-                            console.log("Failed to create entity_tag: ["+self.options.entity_id+"#"+tag_id+"]");
+                            // console.log("Failed to create entity_tag: ["+self.options.entity_id+"#"+tag_id+"]");
                             self.notify('Error', 'Add Tag', '<span>'+tag_name+'</span> was unable to be add to this entity.');
                             self.removeTagCheck(tag_id);
                         }
                         else if (data.code == 2) {
-                            console.log("You do not have the required permissions to add ["+self.options.entity_id+"#"+tag_id+"]");
+                            //console.log("You do not have the required permissions to add ["+self.options.entity_id+"#"+tag_id+"]");
                             self.notify('Error', 'Add Tag', 'You do not have the required permissions to add tags to this record.');
                             self.removeTagCheck(tag_id);
                         }
                         else {
-                            console.log("Successfully created entity_tag: ["+self.options.entity_id+"#"+tag_id+"]");
+                            // console.log("Successfully created entity_tag: ["+self.options.entity_id+"#"+tag_id+"]");
                             self.notify('Success', 'Add Tag', '<span>'+tag_name+'</span> was added to this entity.');
                         }
                     }
@@ -491,7 +491,7 @@ TagTreeTag.prototype.animate_tree = function(tree) {
             }
         }
         else {
-            console.log("Removing checkmark!");
+            // console.log("Removing checkmark!");
             self.removeTagCheck(tag_id);
             if(self.options.auto_save) {
                 cj.ajax({
@@ -539,8 +539,8 @@ TagTreeTag.prototype.removeTagCheck = function(tag_id) {
     var tag = self.container.find('dt#'+tagLabel(tag_id));
 
     // Uncheck the box and remove class associations for the tag and its parents
-    console.log("Removing check from");
-    console.log(tag.find('input[type="checkbox"]'));
+    // console.log("Removing check from");
+    // console.log(tag.find('input[type="checkbox"]'));
     tag.removeClass('checked subChecked');
     tag.find('input[type="checkbox"]').attr('checked', false);
     if(self.container.find('dl#'+tagLabel(tag_id)+' dt.checked').length > 0) {
@@ -630,7 +630,7 @@ TagTreeTag.prototype.customize_tree = function() {
         dataType: 'json',
         success: function(data, status, XMLHttpRequest) {
             if(data.code != 1 ) {
-                console.log(data.message);
+                // console.log(data.message);
             }
             else {
                 cj.each(data.message, function(i, tag_id){
@@ -826,7 +826,7 @@ TagTreeManage.prototype.addTagModal = function(parent) {
                     },
                     dataType: 'json',
                     success: function(data, status, xhr) {
-                        console.log(data);
+                        // console.log(data);
                         if (data.code != 1) {
                             if (data.message == 'DB Error: already exists') {
                                 self.notify('Error', 'Add Tag', 'Tag <span>'+tag_name+'</span> already exists.')
@@ -938,7 +938,7 @@ TagTreeManage.prototype.updateTagModal = function(tag) {
     var tag_desc = tag.attr('description').replace('/"/', '\"'); // Wy?
     var tag_resv = tag.hasClass('isReserved');
 
-    console.log(self.dialog);
+    // console.log(self.dialog);
     self.dialog.html(
         '<div class="modalHeader">Update Tag <span>' + tag_name + '</span></div>' +
         '<div class="modalInputs">' +
