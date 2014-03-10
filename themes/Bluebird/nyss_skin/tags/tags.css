@@ -18,18 +18,24 @@ form#Contact .groupTagsKeywords ul.token-input-list-facebook {
   font-size: 120%;
   margin-top: 20px;
 }
+
+
+.tag-label{
+  margin: 10px 0 0 0;
+  font: bold 16px/21px sans-serif;
+}
 .tag-label label{
   float: left;
   text-align: left !important;
-  margin:20px 0 15px;
+  margin:10px 0 0;
   width: 100%;
 }
 
 
 
 #issue-code-search{
-  margin:15px 0 0 0;
-  width: 512px;
+  margin:0;
+  width: 524px;
   -webkit-transition: all 0.30s ease-in-out;
   -moz-transition: all 0.30s ease-in-out;
   -ms-transition: all 0.30s ease-in-out;
@@ -58,6 +64,10 @@ form#Contact .groupTagsKeywords ul.token-input-list-facebook {
   border: 1px solid rgba(81, 203, 238, 1);
 
 }
+.page-civicrm-contact-view #issue-code-search{
+  margin:15px 0 0 0;
+}
+
 form#Contact .groupTagsKeywords ul.token-input-list-facebook {
     width: 517px;
 }
@@ -217,10 +227,7 @@ form#Contact .groupTagsKeywords ul.token-input-list-facebook {
   margin-bottom: -10px;
 }
 
-.tag-label{
-  margin: 20px 0 0 0;
-  font: bold 16px/21px sans-serif;
-}
+
 .BBTree dt .fCB .checkbox,
 .fCB .selectRadio{
   display: auto;
@@ -341,7 +348,6 @@ form#Contact .groupTagsKeywords ul.token-input-list-facebook {
 
 .tag_filter_bar  {
   border-bottom: medium none !important;
-  margin: 15px 0 0 !important;
   padding: 8px !important;
   width: 100%;
   -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
