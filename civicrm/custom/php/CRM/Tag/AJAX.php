@@ -78,7 +78,8 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
 
         //If they request entity counts, build that into the tree as well.
         $ec_start = microtime(TRUE);
-        if(CRM_Utils_Array::value('entity_counts', $_GET)) {
+        $do_entity_counts = CRM_Utils_Array::value('entity_counts', $_GET);
+        if($do_entity_counts && strtolower($do_entity_counts) != "false") {
 
             // There is definitely nothing like this in the civicrm_api. Using
             // the DAO layer is way too slow when we get to hundreds of results.
