@@ -86,14 +86,15 @@ form#Contact .groupTagsKeywords ul.token-input-list-facebook {
   padding: 10px;
   font-weight: normal;
   width: 100%;
-  background:url("/sites/default/themes/Bluebird/images/loading.gif") no-repeat scroll center center #FFFFFF !important;
+  background:url("/sites/default/themes/Bluebird/images/loading.gif") no-repeat scroll center center #FFFFFF;
   font: normal 14px/21px sans-serif;
   -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
   -moz-box-sizing: border-box;    /* Firefox, other Gecko */
   box-sizing: border-box;         /* Opera/IE 8+ */
 }
+
 .TreeWrap.loaded{
-  background: #fff;
+  background: none repeat scroll 0 0 #FFFFFF !important;
 }
 
 .page-civicrm-contact .TreeWrap{
