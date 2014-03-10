@@ -69,8 +69,8 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
 
     static function tag_tree() {
         $stop = self::check_user_level('true');
-        if($stop['code'] == false){ 
-            echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level.")); 
+        if($stop['code'] == false){
+            echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level."));
             CRM_Utils_System::civiExit();
         }
         $start = microtime(TRUE);
@@ -167,8 +167,8 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
     }
     static function get_entity_tag(){
         $stop = self::check_user_level('true');
-        if($stop['code'] == false){ 
-            echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level.")); 
+        if($stop['code'] == false){
+            echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level."));
             CRM_Utils_System::civiExit();
         }
         if(array_key_exists('entity_id', $_GET)) {
@@ -192,8 +192,8 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
 
     static function tag_create() {
         $stop = self::check_user_level('true');
-        if($stop['code'] == false){ 
-            echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level.")); 
+        if($stop['code'] == false){
+            echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level."));
             CRM_Utils_System::civiExit();
         }
         // Extract the new tag parameters
@@ -215,8 +215,8 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
 
     static function tag_update() {
         $stop = self::check_user_level('true');
-        if($stop['code'] == false){ 
-            echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level.")); 
+        if($stop['code'] == false){
+            echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level."));
             CRM_Utils_System::civiExit();
         }
         // Get the existing tag for manipulation
@@ -247,8 +247,8 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
 
     static function tag_delete() {
         $stop = self::check_user_level('true');
-        if($stop['code'] == false){ 
-            echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level.")); 
+        if($stop['code'] == false){
+            echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level."));
             CRM_Utils_System::civiExit();
         }
         $id = self::_require('id', $_GET, '`id` of the tag to be deleted is required.');
@@ -267,8 +267,8 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
 
     static function entity_tag_create() {
         $stop = self::check_user_level('true');
-        if($stop['code'] == false || $stop['view_only'] == true){ 
-            echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level.")); 
+        if($stop['code'] == false || $stop['view_only'] == true){
+            echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level."));
             CRM_Utils_System::civiExit();
         }
         $tag_id = self::_require('tag_id', $_GET, '`tag_id` parameter is required to identify the tag to apply.');
@@ -312,8 +312,8 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
 
     static function entity_tag_delete() {
         $stop = self::check_user_level('true');
-        if($stop['code'] == false || $stop['view_only'] == true){ 
-            echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level.")); 
+        if($stop['code'] == false || $stop['view_only'] == true){
+            echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level."));
             CRM_Utils_System::civiExit();
         }
         $tag_id = self::_require('tag_id', $_GET, '`tag_id` parameter is required to identify the tag to apply.');
@@ -355,13 +355,10 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         }
         CRM_Utils_System::civiExit();
     }
-    
-
-
 
     // Checking User levels,
     // Avaiable thought api call, or locally
-    // args = return true / false toggles return / echo 
+    // args = return true / false toggles return / echo
     static function check_user_level($return) {
         $start = microtime(TRUE);
         $call = self::_require('call_uri', $_GET, '`call_uri` parameter is required to identify the tag to apply.');
@@ -373,7 +370,7 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         $session = CRM_Core_Session::singleton();
         $userid = $session->get('userID');
 
-        // different functionality for different areas of the UI. 
+        // different functionality for different areas of the UI.
         switch ($call_uri['path']) {
             case '/civicrm/contact/add':
                 // if can add contact then user can add tag.
@@ -395,12 +392,12 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
                 break;
         }
 
-        $message = ($role == true )? 'SUCCESS' : "WARNING: Bad user level"; 
+        $message = ($role == true )? 'SUCCESS' : "WARNING: Bad user level";
         $output = array(
             "code"=>$role,
             "view_only"=>$view_only,
             "userId"=>$userid,
-            "message"=> $message, 
+            "message"=> $message,
             'build_time'=>(microtime(TRUE)-$start),
             'bt_time'=>$bt_time
         );
@@ -409,7 +406,7 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
             return $output;
         }else{
             echo json_encode($output);
-        } 
+        }
         CRM_Utils_System::civiExit();
     }
 }
