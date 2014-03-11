@@ -45,14 +45,29 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
 
     $this->addElement( 'text', 'alteredBy', ts('Altered By') );
 
-    $this->addDate( 'start_date', ts('Date from'), false, array( 'formatType' => 'custom') );
-    $this->addDate( 'end_date', ts('...to'), false, array( 'formatType' => 'custom') );
+    $this->addDate( 'start_date', ts('Date from'), FALSE, array( 'formatType' => 'custom') );
+    $this->addDate( 'end_date', ts('...to'), FALSE, array( 'formatType' => 'custom') );
 
     $this->add( 'select', 'pdf_format_id', ts( 'Page Format' ),
       array( 0 => ts( '- default -' ) ) + CRM_Core_BAO_PdfFormat::getList( true ) );
 
-    //7582 add issue codes
+    //7582/7685 add tags
     $contactTags = CRM_Core_BAO_Tag::getTags();
+    $tagsKW = CRM_Core_BAO_Tag::getTagsUsedFor(array( 'civicrm_contact' ), TRUE, FALSE, 296);
+    if ( $tagsKW ) {
+      foreach ( $tagsKW as $key => $keyword ) {
+        $tagsKW[$key] = '&nbsp;&nbsp;'.$keyword;
+      }
+      $contactTags = $contactTags + array ('296' => 'Keywords') + $tagsKW;
+    }
+    $tagsLP = CRM_Core_BAO_Tag::getTagsUsedFor(array( 'civicrm_contact' ), TRUE, FALSE, 292);
+    if ( $tagsLP ) {
+      foreach ( $tagsLP as $key => $lp ) {
+        $tagsLP[$key] = '&nbsp;&nbsp;'.$lp;
+      }
+      $contactTags = $contactTags + array ('292' => 'Legislative Positions') + $tagsLP;
+    }
+
     if ($contactTags) {
       $this->add('select', 'contact_tags', ts('Tags'), $contactTags, FALSE,
         array('id' => 'contact_tags', 'multiple' => 'multiple', 'title' => ts('- select -'))
