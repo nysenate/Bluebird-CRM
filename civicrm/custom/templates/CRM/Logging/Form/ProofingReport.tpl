@@ -24,7 +24,7 @@
 
   <div class="crm-section tag-section contact-issue-codes">
     <div class="label">
-      <label>{ts}Issue Code(s){/ts}</label>
+      <label>{$form.contact_tags.label}</label>
     </div>
     <div class="content">
       {$form.contact_tags.html}
