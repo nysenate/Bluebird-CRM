@@ -1049,7 +1049,6 @@ TagTreeManage.prototype.moveTagModal = function(tag) {
                 var parent = self.dialog.find('.selectRadio:checked').closest('dt');
                 var dest_name = parent.find('.name').html();
                 var dest_id = parent.attr('tid');
-                console.log(parent_list);
                 cj.ajax({
                     url : "/civicrm/ajax/tag/update",
                     type: 'GET',
