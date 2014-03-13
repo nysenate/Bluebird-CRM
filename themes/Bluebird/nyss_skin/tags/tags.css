@@ -600,6 +600,9 @@ dt.lv-0 .tag-row .name{
   height: 17px;
   width: 25px;
 }
+.page-civicrm-admin-tag .modal dt.lv-0 .tag-row .name {
+  padding-left: 15px;
+}
 
 /* Dirty indent */
 .page-civicrm-admin-tag .modal dt.lv-0{

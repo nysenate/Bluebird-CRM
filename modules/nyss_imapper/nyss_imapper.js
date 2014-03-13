@@ -464,7 +464,7 @@ cj(document).ready(function(){
     var create_city = cj("#tab2 .city").val();
     var create_dob = cj("#tab2 .form-text.dob").val();
     var create_state = cj("#tab2 .state").val();
-    if (!cj.isNumeric(cj("#tab2 .dob .month").val()) || !cj.isNumeric(cj("#tab2 .dob .day").val()) || !cj.isNumeric(cj("#tab2 .dob .year").val()) ) {
+    if ((cj.isNumeric(cj("#tab2 .dob .month").val()) || cj.isNumeric(cj("#tab2 .dob .day").val()) || cj.isNumeric(cj("#tab2 .dob .year").val())) && ( !cj.isNumeric(cj("#tab2 .dob .month").val()) || !cj.isNumeric(cj("#tab2 .dob .day").val()) || !cj.isNumeric(cj("#tab2 .dob .year").val()))) {
       CRM.alert('Please Enter a full date of birth', 'Warning', 'warn');
       return false;
     };
@@ -1261,7 +1261,7 @@ function getMatchedMessages() {
 }
 function getReports() {
   cj.ajax({
-    url: '/civicrm/imap/ajax/repots/list',
+    url: '/civicrm/imap/ajax/reports/list',
     success: function(data,status) {
       reports = cj.parseJSON(data);
       buildReports();
