@@ -872,7 +872,7 @@ TagTreeManage.prototype.addTagModal = function(parent) {
 
 TagTreeManage.prototype.removeTag = function(tag) {
     var parent_list = tag.parent();
-    var parent_tag = parent_listprev('dt');
+    var parent_tag = parent_list.prev('dt');
     tag.next('dl').remove();
     if (tag.siblings().length == 0) {
         parent_list.removeClass('open');
@@ -1035,7 +1035,6 @@ TagTreeManage.prototype.moveTagModal = function(tag) {
     self.dialog.find('#'+tagLabel(tag_id)).hide();
     self.dialog.find('span.fCB').empty().html('<input type="radio" class="selectRadio" name="selectTag"/>');
 
-
     var settings = cj.extend(self.dialog_defaults, {
         title: 'Move Tag',
         height: 500,
@@ -1047,16 +1046,34 @@ TagTreeManage.prototype.moveTagModal = function(tag) {
         buttons: [{
             text: "Move",
             click: function() {
+                var parent = self.dialog.find('.selectRadio:checked').closest('dt');
+                var dest_name = parent.find('.name').html();
+                var dest_id = parent.attr('tid');
+                console.log(parent_list);
                 cj.ajax({
-                    success: function() {
+                    url : "/civicrm/ajax/tag/update",
+                    type: 'GET',
+                    data : {
+                        parent_id : dest_id,
+                        id : tag_id,
+                        call_uri: window.location.href
+                    },
+                    dataType : 'JSON',
+                    success: function(data,success) {
                         if (data.code != 1) {
                             self.notify('Error', 'Move Tag', 'Tag <span>'+tag_name+'</span> was unable to be moved under <span>'+dest_name+'</span>.');
                             return;
                         }
                         else {
-
                             self.notify('Success', 'Move Tag', 'Tag <span>'+tag_name+'</span> was moved under <span>'+dest_name+'</span>.');
+
+                            // find current tag, move it to new location
+                            parent_list = self.current_tree.find('dl#tagLabel_'+dest_id);
+                            parent_list.prepend(self.current_tree.find("dl#tagLabel_"+tag_id));
+                            parent_list.prepend(self.current_tree.find("dt#tagLabel_"+tag_id));
+                            // self.current_tree.find("dt#tagLabel_"+tag_id).click();
                         }
+                        self.dialog.dialog("close");
                     }
                 })
             }
@@ -1067,7 +1084,6 @@ TagTreeManage.prototype.moveTagModal = function(tag) {
             }
         }]
     });
-
     self.dialog.dialog(settings).dialog("open");
 }
 
@@ -1096,17 +1112,29 @@ TagTreeManage.prototype.mergeTagModal = function(tag) {
         buttons: [{
             text: "Merge",
             click: function() {
+                var dest = self.dialog.find('.selectRadio:checked').closest('dt');
+                var dest_name = dest.find('.name').html();
+                var dest_id = dest.attr('tid');
+
                 cj.ajax({
-                    success: function() {
-                        if (data.code != 1) {
+                    url : "/civicrm/ajax/mergeTags",
+                    type: 'POST',
+                    data : {
+                        fromId : tag_id,
+                        toId : dest_id
+                    },
+                    dataType : 'JSON',
+                    success: function(data,status) {
+                        if (data.status != 1) {
                             self.notify('Error', 'Merge Tag', 'Tag <span>'+tag_name+'</span> was unable to be merged into <span>'+dest_name+'</span>');
                             return;
                         }
                         else {
-
-
                             self.notify('Success', 'Merge Tag', 'Tag <span>'+tag_name+'</span> was merged into <span>'+dest_name+'</span>.');
+                            self.current_tree.find("dl#tagLabel_"+tag_id).remove();
+                            self.current_tree.find("dt#tagLabel_"+tag_id).remove();
                         }
+                        self.dialog.dialog("close");
                     }
                 })
             }
@@ -1126,13 +1154,14 @@ TagTreeManage.prototype.convertKeywordModal = function(tag) {
     var tag_id = tag.attr('tid');
     var tag_name = tag.find('.name').html();
 
+    var issue_code_tree = self.container.find("#tagtree_291");
     self.dialog.html(
         '<div class="modalHeader">Convert <span>' + tag_name + '</span> into a Issue Code under...</div>' +
         '<div class="BBTree modal">' +
-        self.container.find('#tagtree_291').html() +
+        issue_code_tree.html() +
         '</div>'
     );
-        self.dialog.find('#'+tagLabel(tag_id)).hide();
+    self.dialog.find('#'+tagLabel(tag_id)).hide();
     self.dialog.find('span.fCB').empty().html('<input type="radio" class="selectRadio" name="selectTag"/>');
 
     var settings = cj.extend(self.dialog_defaults, {
@@ -1146,22 +1175,44 @@ TagTreeManage.prototype.convertKeywordModal = function(tag) {
         buttons: [{
             text: "Convert",
             click: function() {
+                var parent = self.dialog.find('.selectRadio:checked').closest('dt');
+                var dest_name = parent.find('.name').html();
+                var dest_id = parent.attr('tid');
                 cj.ajax({
-                    success: function() {
+                    url : "/civicrm/ajax/tag/update",
+                    type: 'GET',
+                    data : {
+                        parent_id : dest_id,
+                        id : tag_id,
+                        call_uri: window.location.href
+                    },
+                    dataType : 'JSON',
+                    success: function(data,success) {
                         if (data.code != 1) {
                             if (data.message == 'DB Error: already exists') {
                                 self.notify('Error', 'Convert Keyword', 'Keyword <span>'+tagname+'</span> was unable to be converted because Issue Code <span>'+dest_name+'</span> already exists');
                             }
-                            else {
+                             else {
                                 self.notify('Error', 'Convert Keyword', 'Keyword <span>'+tag_name+'</span> was unable to be converted to an Issue Code under <span>'+dest_name+'</span>');
                             }
-                            return;
                         }
                         else {
-
-
                             self.notify('Success', 'Convert Keyword', 'Keyword <span>'+tag_name+'</span> was converted into an Issue Code under <span>'+dest_name+'</span>.');
+
+                            // Swap out the set of controls.
+                            faketag = {id:tag_id}
+                            tag.find(".fCB").remove();
+                            cj(self.add_control_box(faketag, 291)).insertAfter(tag.find('.ddControl'));
+
+                            // Relocate the tag to the new parent
+                            parent_list = issue_code_tree.find('dl#tagLabel_'+dest_id);
+                            parent_list.prepend(tag.next());
+                            parent_list.prepend(tag);
+
+                            // Swap the active tab so they can see the move was successful
+                            cj('.crm-tagTabHeader li:first-child').click();
                         }
+                        self.dialog.dialog("close");
                     }
                 })
             }
