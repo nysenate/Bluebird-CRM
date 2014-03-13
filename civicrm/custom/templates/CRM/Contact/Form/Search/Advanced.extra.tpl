@@ -11,7 +11,7 @@
   cj('table.search-privacy-options tbody').append(pon);
 
   //5556
-  cj('#all_tag_types').appendTo(cj('.contact-tagset-296-section .content'));
+  cj('#all_tag_types').appendTo(cj('.contact-tagset-296-section div:nth-child(2)'));
 
   //6383 repeat reset form button
   var rfb = cj('div.reset-advanced-search').clone();
