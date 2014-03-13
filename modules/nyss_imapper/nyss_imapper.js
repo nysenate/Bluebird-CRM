@@ -1261,7 +1261,7 @@ function getMatchedMessages() {
 }
 function getReports() {
   cj.ajax({
-    url: '/civicrm/imap/ajax/repots/list',
+    url: '/civicrm/imap/ajax/reports/list',
     success: function(data,status) {
       reports = cj.parseJSON(data);
       buildReports();

@@ -11,8 +11,8 @@
   };
 
   function crmFormInline(o) {
-    var data = o.data('edit-params');
     //NYSS 7688
+    var data = $.extend({}, o.data('edit-params'));
     if (o.is('.crm-edit-ready .crm-inline-edit') && data && data.class_name.length) {
       o.animate({height: '+=50px'}, 200);
       data.snippet = 6;
@@ -20,7 +20,7 @@
       o.addClass('form');
       $('.crm-edit-ready').removeClass('crm-edit-ready');
       addCiviOverlay(o);
-      $.getJSON(CRM.url('civicrm/ajax/inline', data))
+      $.getJSON(CRM.url('civicrm/ajax/inline'), data)//NYSS 7688
         .fail(errorHandler)
         .done(function(response) {
           removeCiviOverlay(o);
@@ -44,6 +44,7 @@
 
   function requestHandler(response) {
     var o = $('div.crm-inline-edit.form');
+    $('form', o).ajaxFormUnbind();//NYSS 7688
 
     if (response.status == 'save' || response.status == 'cancel') {
       o.trigger('crmFormSuccess', [response]);
@@ -100,7 +101,7 @@
     }
     else {
       // Handle formRule error
-      $('form', o).ajaxForm('destroy');
+      //$('form', o).ajaxForm('destroy');//NYSS 7688
       $('.crm-container-snippet', o).replaceWith(response.content);
       $('form', o).validate(CRM.validate.params);
       $('form', o).ajaxForm(ajaxFormParams);
@@ -212,6 +213,7 @@
       // Inline edit form cancel button
       .on('click', '.crm-inline-edit :submit[name$=cancel]', function() {
         var container = $(this).closest('.crm-inline-edit.form');
+        $('form', container).ajaxFormUnbind();//NYSS 7688
         $('.inline-edit-hidden-content', container).nextAll().remove();
         $('.inline-edit-hidden-content > *:first-child', container).unwrap();
         container.removeClass('form');

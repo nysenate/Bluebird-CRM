@@ -887,7 +887,8 @@ GROUP BY civicrm_activity_id {$this->_having} {$this->_orderBy} {$this->_limit}"
         }
       }
 
-      if (array_key_exists('civicrm_activity_details', $row)) {
+      //NYSS 7707
+      /*if (array_key_exists('civicrm_activity_details', $row)) {
         if ($value = $row['civicrm_activity_details']) {
           $fullDetails = $rows[$rowNum]['civicrm_activity_details'];
           $rows[$rowNum]['civicrm_activity_details'] = substr($fullDetails, 0, strrpos(substr($fullDetails, 0, 80), ' '));
@@ -896,7 +897,7 @@ GROUP BY civicrm_activity_id {$this->_having} {$this->_orderBy} {$this->_limit}"
           }
           $entryFound = TRUE;
         }
-      }
+      }*/
 
       if (array_key_exists('civicrm_activity_campaign_id', $row)) {
         if ($value = $row['civicrm_activity_campaign_id']) {
