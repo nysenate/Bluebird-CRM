@@ -16,6 +16,7 @@
 #                     - using MYSQL_TEST_LOGIN_PATH to set mylogin.cnf location
 # Revised: 2013-11-15 - Added db.insecure_cli_login to revert to old behavior
 # Revised: 2013-11-21 - Make sure login-path is not used if insecure login
+# Revised: 2014-03-14 - Added option --schemas-only to inhibit dumping row data
 #
 
 prog=`basename $0`
@@ -27,7 +28,7 @@ export MYSQL_TEST_LOGIN_FILE=/etc/mysql/bluebird_mylogin.cnf
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog [--help] [-f {sqlFile|-} | -c sqlCommand] [--dump|-d] [--dump-table|-t table] [--skip-table|-e table] [-l login-path] [-h host] [-u user] [-p password] [--column-names] [--force] [--quiet|-q] [--create] [--drupal|-D] [--log|-L] [--db-name|-n dbName] [instance]" >&2
+  echo "Usage: $prog [--help] [-f {sqlFile|-} | -c sqlCommand] [--dump|-d] [--dump-table|-t table] [--skip-table|-e table] [--schemas-only|-s] [-l login-path] [-h host] [-u user] [-p password] [--column-names] [--force] [--quiet|-q] [--create] [[--civicrm|-C] | [--drupal|-D] | [--log|-L]] [--db-name|-n dbName] [instance]" >&2
 }
 
 if [ $# -lt 1 ]; then
@@ -40,6 +41,7 @@ sqlcmd=
 dump_db=0
 dump_tabs=
 skip_tabs=
+nodata_arg=
 instance=
 dbloginpath=
 dbhost=
@@ -60,16 +62,18 @@ while [ $# -gt 0 ]; do
     -d|--dump) dump_db=1 ;;
     -e|--skip-table) shift; skip_tabs="$skip_tabs $1" ;;
     -t|--dump-table) shift; dump_tabs="$dump_tabs $1"; dump_db=1 ;;
+    -s|--schema*) nodata_arg="--no-data" ;;
     -l|--login-path) shift; dbloginpath="$1" ;;
     -h|--host) shift; dbhost="$1" ;;
+    -n|--db*) shift; dbname="$1" ;;
     -u|--user) shift; dbuser="$1" ;;
     -p|--pass*) shift; dbpass="$1" ;;
-    -n|--db*) shift; dbname="$1" ;;
     -q|--quiet) be_quiet=1 ;;
     --col*) colname_arg="--column-names" ;;
     --create) create_db=1 ;;
     --force) force_arg="--force" ;;
-    -D|--drupal) db_prefix_keyname=db.drupal.prefix; default_db_prefix="$DEFAULT_DB_DRUPAL_PREFIX" ;;
+    -C|--civi*) db_prefix_keyname=db.civicrm.prefix; default_db_prefix="$DEFAULT_DB_CIVICRM_PREFIX" ;;
+    -D|--drup*) db_prefix_keyname=db.drupal.prefix; default_db_prefix="$DEFAULT_DB_DRUPAL_PREFIX" ;;
     -L|--log) db_prefix_keyname=db.log.prefix; default_db_prefix="$DEFAULT_DB_LOG_PREFIX" ;;
     -*) echo "$prog: $1: Invalid option" >&2; exit 1 ;;
     *) instance="$1" ;;
@@ -136,7 +140,7 @@ if [ $dump_db -eq 1 ]; then
       ignore_tabs_arg="$ignore_tabs_arg --ignore-table $dbname.$tab"
     done
   fi
-  mysqldump $common_args $ignore_tabs_arg --routines --single-transaction --quick $dbname $dump_tabs
+  mysqldump $common_args $nodata_arg $ignore_tabs_arg --routines --single-transaction --quick $dbname $dump_tabs
 elif [ $create_db -eq 1 ]; then
   if [ ! "$dbname" ]; then
     echo "$prog: Cannot create a database without specifying its name or instance." >&2

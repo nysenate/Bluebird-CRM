@@ -10,6 +10,8 @@
 # Revised: 2013-02-05 - changed temp dir to be within /data
 # Revised: 2013-05-14 - added ability to dump only one of the 3 databases
 # Revised: 2013-07-12 - remove temp tables prior to dump; option to inhibit
+# Revised: 2013-10-18 - skip the Drupal sessions table
+# Revised: 2014-03-14 - append the Drupal sessions table schema to Drupal dump
 #
 
 prog=`basename $0`
@@ -105,21 +107,22 @@ fi
 if [ $no_civi -eq 0 ]; then
   echo "Dumping CiviCRM database for instance [$instance]"
   ( set -x
-    $execSql --dump --db-name $db_civi_prefix$db_basename > "$civi_file"
+    $execSql $instance -C --dump > "$civi_file"
   ) || errcode=$(($errcode | 1))
 fi
 
 if [ $no_drup -eq 0 ]; then
   echo "Dumping Drupal database for instance [$instance]"
   ( set -x
-    $execSql --dump -e sessions --db-name $db_drup_prefix$db_basename > "$drup_file"
+    $execSql $instance -D --dump -e sessions > "$drup_file"
+    $execSql $instance -D --dump-table sessions --schemas-only >> "$drup_file"
   ) || errcode=$(($errcode | 2))
 fi
 
 if [ $no_log -eq 0 ]; then
   echo "Dumping Logging database for instance [$instance]"
   ( set -x
-    $execSql --dump --db-name $db_log_prefix$db_basename > "$log_file"
+    $execSql $instance -L --dump > "$log_file"
   ) || errcode=$(($errcode | 4))
 fi
 
@@ -150,6 +153,12 @@ fi
 
 time_end=$(date +%s)
 
-echo "It took $(($time_end - $time_start)) seconds to complete the backup."
+if [ $errcode -eq 0 ]; then
+  echo "Database dumps completed with no errors"
+else
+  echo "$prog: [error code=$errcode] One or more errors encountered" >&2
+fi
+
+echo "$prog: Execution time = $(($time_end - $time_start)) seconds"
 
 exit $errcode
