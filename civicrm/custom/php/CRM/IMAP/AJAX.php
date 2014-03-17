@@ -766,10 +766,17 @@ ORDER BY gc.contact_id ASC";
         $activityIds    =   ($inActivityIds) ? $inActivityIds : self::get('activityIds');
         $contactIds     =   ($inContactIds) ? $inContactIds : self::get('contactIds');
         $tagIds         =   ($inTagIds) ? $inTagIds : self::get('tagIds');
+        $debug = self::get('debug');
 
         $activityIds    =   split(',', $activityIds);
         $contactIds     =   split(',', $contactIds);
         $tagsIDs         =   split(',', $tagIds);
+        if ($debug){
+          echo "<h1>Prams</h1>";
+          var_dump("activityIds",$activityIds);
+          var_dump("contactIds",$contactIds);
+          var_dump("tagsIDs",$tagsIDs);
+        }
         require_once 'api/api.php';
 
         if (count($contactIds) != 0) {
@@ -778,8 +785,9 @@ ORDER BY gc.contact_id ASC";
             $entityTable = 'civicrm_contact';
             $parentId = '296';
             $existingTags = CRM_Core_BAO_EntityTag::getTag($contactId, $entityTable);
-
+            $contactTagIds = array();
             foreach ($tagsIDs as $tagId) {
+
               if (!is_numeric($tagId)) {
                 // check if user has selected existing tag or is creating new tag
                 // this is done to allow numeric tags etc.
