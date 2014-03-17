@@ -19,11 +19,11 @@ cj(document).ready(function(){
 
   // onpageload
   if(cj("#Activities").length){
-    getMatchedMessages();
+    getMatchedMessages(30);
   }else if(cj("#Unmatched").length){
-    getUnmatchedMessages();
+    getUnmatchedMessages(30);
   }else if(cj("#Reports").length){
-    getReports();
+    getReports(30);
     // console.log('reports');
   }
   cj('#search_help').live('click', function() {
@@ -510,7 +510,6 @@ cj(document).ready(function(){
                   contact = '<a href="/civicrm/profile/view?reset=1&amp;gid=13&amp;id='+data.contact_id+'&amp;snippet=4" class="crm-summary-link"><div class="icon crm-icon '+data.contact_type+'-icon" title="'+data.contact_type+'"></div></a><a title="'+data.display_name+'" href="/civicrm/contact/view?reset=1&amp;cid='+data.contact_id+'">'+data.display_name+'</a><span class="emailbubble marginL5">'+shortenString(data.email,13)+'</span> <span class="matchbubble marginL5  M" title="This email was Manually matched">M</span>';
                   CRM.alert(data.message, '', 'success');
                   // redraw the table
-                  var oTable = cj('#sortable_results').dataTable();
                   var row_index = oTable.fnGetPosition(document.getElementById(create_messageId));
                   oTable.fnUpdate('ManuallyMatched', row_index, 4 );
                   oTable.fnUpdate(contact, row_index, 1 );
@@ -676,7 +675,6 @@ cj(document).ready(function(){
           CRM.alert(data.message, '', 'success');
 
           // redraw the table
-          var oTable = cj('#sortable_results').dataTable();
           var row_index = oTable.fnGetPosition(document.getElementById(activityId));
           oTable.fnUpdate('ManuallyMatched', row_index, 4 );
           oTable.fnUpdate(contact, row_index, 1 );
@@ -1234,9 +1232,10 @@ function lastName(nameVal){
   }
 }
 
-function getUnmatchedMessages() {
+function getUnmatchedMessages(range) {
+  if (typeof oTable != "undefined")oTable.fnDestroy();
   cj.ajax({
-    url: '/civicrm/imap/ajax/unmatched/list',
+    url: '/civicrm/imap/ajax/unmatched/list?range='+range,
     success: function(data,status) {
       messages = cj.parseJSON(data);
       buildUnmatchedList();
@@ -1247,9 +1246,10 @@ function getUnmatchedMessages() {
   });
 }
 
-function getMatchedMessages() {
+function getMatchedMessages(range) {
+  if (typeof oTable != "undefined")oTable.fnDestroy();
   cj.ajax({
-    url: '/civicrm/imap/ajax/matched/list',
+    url: '/civicrm/imap/ajax/matched/list?range='+range,
     success: function(data,status) {
       messages = cj.parseJSON(data);
       buildMatchedList();
@@ -1259,9 +1259,10 @@ function getMatchedMessages() {
     }
   });
 }
-function getReports() {
+function getReports(range) {
+  if (typeof oTable != "undefined")oTable.fnDestroy();
   cj.ajax({
-    url: '/civicrm/imap/ajax/reports/list',
+    url: '/civicrm/imap/ajax/reports/list?range='+range,
     success: function(data,status) {
       reports = cj.parseJSON(data);
       buildReports();
@@ -1286,7 +1287,7 @@ cj.extend( cj.fn.dataTableExt.oSort, {
 });
 
 function makeTable(){
- var oTable = cj("#sortable_results").dataTable({
+  oTable = cj("#sortable_results").dataTable({
     "sDom":'<"controlls"lif><"clear">rt <p>',//add i here this is the number of records
     // "iDisplayLength": 1,
     "sPaginationType": "full_numbers",
@@ -1374,7 +1375,7 @@ function buildUnmatchedList() {
 }
 
 function makeReportSortable(){
-  var oTable = cj("#sortable_results").dataTable({
+  oTable = cj("#sortable_results").dataTable({
     "sDom":'<"controlls"lif><"clear">rt <p>',//add i here this is the number of records
     // "iDisplayLength": 1,
     "sPaginationType": "full_numbers",
@@ -1419,8 +1420,13 @@ function buildReports() {
 }
 
 cj( ".range" ).live('change', function() {
-    var oTable = cj('#sortable_results').dataTable();
-    oTable.fnDraw();
+  if(cj("#Activities").length){
+    getMatchedMessages(cj('#range').attr("value"));
+  }else if(cj("#Unmatched").length){
+    getUnmatchedMessages(cj('#range').attr("value"));
+  }else if(cj("#Reports").length){
+    getReports(cj('#range').attr("value"));
+  }
 });
 
 cj( ".checkbox_switch" ).live('click', function(e) {
@@ -1433,72 +1439,27 @@ cj( ".checkbox_switch" ).live('click', function(e) {
   }
 });
 
-cj.fn.dataTableExt.afnFiltering.push(
-    function( oSettings, aData, iDataIndex ) {
-        // "date-range" is the id for my input
-        var dateRange = cj('#range').attr("value");
-        if(dateRange <1){
-          dateRange = 1000000;
-        }
-        // expecting 2010-03-01 - 2010-03-31
-        var today = new Date();
-        today.setDate(today.getDate() +1);
-        var past = new Date();
-        past.setDate(past.getDate() - dateRange);
-
-        // parse the range from a single field into min and max, remove " - "
-        start = cj.datepicker.formatDate('@', past);
-        stop = cj.datepicker.formatDate('@', today);
-
-        // 4 here is the column where my dates are.
-        var date = aData[3];
-        // convert to unix time
-        date = date.match(/data-sort="(.*?)"/)[1].toLowerCase()*1000;
-
-        // run through cases
-        if ( start == "" && date <= stop){
-            return true;
-        }
-        else if ( start =="" && date <= stop ){
-            return true;
-        }
-        else if ( start <= date && "" == stop ){
-            return true;
-        }
-        else if ( start <= date && date <= stop ){
-            return true;
-        }
-        // all failed
-        return false;
-    }
-);
 cj(".stats_overview").live('click', function() {
     cj(".stats_overview").removeClass('active');
     cj(this).addClass('active');
 });
 
 cj(".Total").live('click', function() {
-    var oTable = cj('#sortable_results').dataTable();
     oTable.fnFilter( "", 5, false,false);
 });
 cj(".UnMatched").live('click', function() {
-    var oTable = cj('#sortable_results').dataTable();
     oTable.fnFilter( 'UnMatched',5 );
 });
 cj(".Matched").live('click', function() {
-    var oTable = cj('#sortable_results').dataTable();
     oTable.fnFilter( 'Matched by', 5 );
 });
 cj(".Cleared").live('click', function() {
-    var oTable = cj('#sortable_results').dataTable();
     oTable.fnFilter( 'Cleared', 5 );
 });
 cj(".Errors").live('click', function() {
-    var oTable = cj('#sortable_results').dataTable();
     oTable.fnFilter( 'error', 5 );
 });
 cj(".Deleted").live('click', function() {
-    var oTable = cj('#sortable_results').dataTable();
     oTable.fnFilter( 'Deleted', 5);
 });
 
@@ -1591,6 +1552,7 @@ function pushtag(existingTags,clear){
   if(contact_input.length){
     contact_tag_ids = contact_input;
   }
+
   var contact_position_input = cj("#contact_position_ids").val().replace(/,,/g, ",").replace(/^,/g, "");
   if(contact_position_input.length){
     contact_position_ids = contact_position_input;
@@ -1862,7 +1824,6 @@ function checkForMatch(key,contactIds){
 // removes row from the UI, forces table reload
 function removeRow(id){
   if(cj("#"+id).length){
-    var oTable = cj('#sortable_results').dataTable();
     var row_index = oTable.fnGetPosition( document.getElementById(id));
     oTable.fnDeleteRow(row_index);
   }else{

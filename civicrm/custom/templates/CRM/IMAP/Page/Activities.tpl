@@ -4,7 +4,7 @@
 				<option value="0">All Time</option>
 				<option value="1">Last 24 hours</option>
 				<option value="7">Last 7 days</option>
-				<option value="30">Last 30 days</option>
+				<option value="30" selected>Last 30 days</option>
 				<option value="90">Last 90 days</option>
 				<option value="365">Last Year</option>
 			</select></h1>
