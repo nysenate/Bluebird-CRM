@@ -174,6 +174,8 @@ class CRM_IMAP_AJAX {
      */
     public static function UnmatchedList() {
       $debug = self::get('debug');
+      $range = self::get('range');
+      $rangeVal = (is_numeric($range) && $range >= 1) ? "AND (updated_date BETWEEN '".date('Y-m-d', strtotime('-'.$range.' days'))."' AND '".date('Y-m-d')."') " : '';
       $start = microtime(true);
 
       $UnprocessedQuery = "SELECT t1.id, UNIX_TIMESTAMP(t1.updated_date) as date_u, DATE_FORMAT(t1.updated_date, '%b %e, %Y %h:%i %p') as date_long,
@@ -189,7 +191,7 @@ class CRM_IMAP_AJAX {
       FROM `nyss_inbox_messages` AS t1
       LEFT JOIN civicrm_email as t2 ON t2.email = t1.sender_email
       LEFT JOIN nyss_inbox_attachments AS t3 ON ( t1.id = t3.email_id )
-      WHERE t1.status = 0
+      WHERE t1.status = 0 {$rangeVal}
       GROUP BY t1.id";
 
       $UnprocessedResult = mysql_query($UnprocessedQuery, self::db());
@@ -871,7 +873,8 @@ ORDER BY gc.contact_id ASC";
         require_once 'api/api.php';
         $debug = self::get('debug');
         $start = microtime(true);
-
+        $range = self::get('range');
+        $rangeVal = (is_numeric($range) && $range >= 1) ? "AND (updated_date BETWEEN '".date('Y-m-d', strtotime('-'.$range.' days'))."' AND '".date('Y-m-d')."') " : '';
         $UnprocessedQuery = " SELECT
         t1.id,
         UNIX_TIMESTAMP(t1.updated_date) as date_u, DATE_FORMAT(t1.updated_date, '%b %e, %Y %h:%i %p') as date_long,
@@ -890,7 +893,7 @@ ORDER BY gc.contact_id ASC";
         LEFT JOIN civicrm_contact as matcher ON (t1.matcher = matcher.id)
         LEFT JOIN civicrm_contact as matched_to ON (t1.matched_to = matched_to.id)
         LEFT JOIN nyss_inbox_attachments t4 ON (t1.id = t4.email_id)
-        WHERE t1.status = 1
+        WHERE t1.status = 1 {$rangeVal}
         GROUP BY t1.id";
 
         $UnprocessedResult = mysql_query($UnprocessedQuery, self::db());
@@ -1300,7 +1303,8 @@ EOQ;
      */
     public static function getReports() {
       $debug = self::get('debug');
-
+      $range = self::get('range');
+      $rangeVal = (is_numeric($range) && $range >= 1) ? "AND (updated_date BETWEEN '".date('Y-m-d', strtotime('-'.$range.' days'))."' AND '".date('Y-m-d')."') " : '';
       $Query = "SELECT
 t1.id,
 UNIX_TIMESTAMP(t1.updated_date) as date_u, DATE_FORMAT(t1.updated_date, '%b %e, %Y %h:%i %p') as date_long,
@@ -1345,10 +1349,13 @@ FROM nyss_inbox_messages as t1
 LEFT JOIN civicrm_contact as matcher ON (t1.matcher = matcher.id)
 LEFT JOIN civicrm_contact as matched_to ON (t1.matched_to = matched_to.id)
 LEFT JOIN nyss_inbox_attachments t4 ON (t1.id = t4.email_id)
-WHERE t1.status != 99
+WHERE t1.status != 99 {$rangeVal}
 GROUP BY t1.id
 LIMIT 0 , 100000";
       $QueryResult = mysql_query($Query, self::db());
+
+
+
       $total = $unMatched = $Matched = $Cleared = $Errors = $Deleted = 0;
       while($row = mysql_fetch_assoc($QueryResult)) {
        $Output[] = $row;
