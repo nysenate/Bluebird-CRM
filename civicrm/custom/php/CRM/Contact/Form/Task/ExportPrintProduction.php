@@ -99,15 +99,10 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
       )
     );
 
-    //5142
+    //5142, 7719
     $bbconfig = get_bluebird_instance_config();
-    $allowedInstances = array( '3rdparty', '3rdpartystatewide' );
-
-    if ( ( CRM_Core_Permission::check( 'export print production files' ) &&
-           in_array($bbconfig['db.basename'], $allowedInstances) ) ||
-         $bbconfig['servername'] == 'sd99.crmdev.nysenate.gov' ||
-         $bbconfig['servername'] == 'sd99.crmtest.nysenate.gov' ) {
-
+    if (!empty($bbconfig['export.use_district_excludes'])
+        && CRM_Core_Permission::check('export print production files')) {
       $this->addElement('text', 'district_excludes', ts('District # to Process Exclusions and Add Seeds') );
       $this->addRule( 'district_excludes',
         ts('Please enter the district exclusion as a number (integer only). This will also add the district seeds to the export.'),
