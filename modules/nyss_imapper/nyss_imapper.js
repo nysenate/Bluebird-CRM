@@ -17,6 +17,8 @@ cj(document).ready(function(){
   var create = cj('#add-contact');
   var createReassign = cj('#add-contact-reassign');
 
+  cj(".range option[value='30']").attr('selected', 'selected');
+
   // onpageload
   if(cj("#Activities").length){
     getMatchedMessages(30);
@@ -1233,7 +1235,11 @@ function lastName(nameVal){
 }
 
 function getUnmatchedMessages(range) {
-  if (typeof oTable != "undefined")oTable.fnDestroy();
+  if (typeof oTable != "undefined"){
+    oTable.fnDestroy();
+    cj('.FixedHeader_Cloned.fixedHeader.FixedHeader_Header').remove();
+  }
+  cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty"><span class="loading_row"><span class="loading_message">Loading Message data <img src="/sites/default/themes/Bluebird/images/loading.gif"/></span></span></td>');
   cj.ajax({
     url: '/civicrm/imap/ajax/unmatched/list?range='+range,
     success: function(data,status) {
@@ -1247,7 +1253,11 @@ function getUnmatchedMessages(range) {
 }
 
 function getMatchedMessages(range) {
-  if (typeof oTable != "undefined")oTable.fnDestroy();
+  if (typeof oTable != "undefined"){
+    oTable.fnDestroy();
+    cj('.FixedHeader_Cloned.fixedHeader.FixedHeader_Header').remove();
+  }
+  cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty"><span class="loading_row"><span class="loading_message">Loading Message data <img src="/sites/default/themes/Bluebird/images/loading.gif"/></span></span></td>');
   cj.ajax({
     url: '/civicrm/imap/ajax/matched/list?range='+range,
     success: function(data,status) {
@@ -1260,7 +1270,11 @@ function getMatchedMessages(range) {
   });
 }
 function getReports(range) {
-  if (typeof oTable != "undefined")oTable.fnDestroy();
+  if (typeof oTable != "undefined"){
+    oTable.fnDestroy();
+    cj('.FixedHeader_Cloned.fixedHeader.FixedHeader_Header').remove();
+  }
+  cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty"><span class="loading_row"><span class="loading_message">Loading Message data <img src="/sites/default/themes/Bluebird/images/loading.gif"/></span></span></td>');
   cj.ajax({
     url: '/civicrm/imap/ajax/reports/list?range='+range,
     success: function(data,status) {
@@ -1301,9 +1315,12 @@ function makeTable(){
     'aTargets': [ 1 ],
     "iDisplayLength": 50,
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
-    "bAutoWidth": false
+    "bAutoWidth": false,
+    "oLanguage": {
+      "sEmptyTable": "No records found"
+    }
   });
-  var oHeader = new FixedHeader( oTable );
+  oHeader = new FixedHeader( oTable );
   oHeader.fnUpdate();
 }
 
@@ -1311,7 +1328,7 @@ function makeTable(){
 
 function buildUnmatchedList() {
   if(messages.stats.overview.successes == '0' || messages == null){
-    cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty">No records found</td>');
+    makeTable();
   }else{
     var html = '';
     var total_results = messages.stats.overview.successes;
@@ -1374,7 +1391,7 @@ function buildUnmatchedList() {
   }
 }
 
-function makeReportSortable(){
+function MakeReportTable(){
   oTable = cj("#sortable_results").dataTable({
     "sDom":'<"controlls"lif><"clear">rt <p>',//add i here this is the number of records
     // "iDisplayLength": 1,
@@ -1385,14 +1402,17 @@ function makeReportSortable(){
     "iDisplayLength": 50,
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
     "bAutoWidth": false,
+    "oLanguage": {
+      "sEmptyTable": "No records found"
+    },
   });
   new FixedHeader( oTable );
 }
 
 function buildReports() {
   var html = '';
-  if(!reports.Messages){
-    cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty">No records found</td>');
+  if(reports.total == '0' || reports.Messages == null){
+    MakeReportTable();
   }else{
     cj.each(reports.Messages, function(key, value) {
       html += '<tr id="'+value.id+'" data-id="'+value.activity_id+'" data-contact_id="'+value.matched_to+'" class="imapper-message-box '+value.status_string+'"> ';
@@ -1408,17 +1428,19 @@ function buildReports() {
       html += '<td class="imap_date_column">' +value.status_string+'</td>';
       html += '<td class="imap_forwarder_column"><span data-sort="'+value.forwarder.replace("@","_")+'">'+shortenString(value.forwarder,14)+'</span></td></tr>';
     });
-  };
-  cj('#imapper-messages-list').html(html);
-  makeReportSortable();
-  cj('#total').html(reports.total);
-  cj('#total_unMatched').html(reports.unMatched);
-  cj('#total_Matched').html(reports.Matched);
-  cj('#total_Cleared').html(reports.Cleared);
-  cj('#total_Errors').html(reports.Errors);
-  cj('#total_Deleted').html(reports.Deleted);
-}
 
+    cj('#imapper-messages-list').html(html);
+    MakeReportTable();
+    cj('#total').html(reports.total);
+    cj('#total_unMatched').html(reports.unMatched);
+    cj('#total_Matched').html(reports.Matched);
+    cj('#total_Cleared').html(reports.Cleared);
+    cj('#total_Errors').html(reports.Errors);
+    cj('#total_Deleted').html(reports.Deleted);
+
+  };
+
+}
 cj( ".range" ).live('change', function() {
   if(cj("#Activities").length){
     getMatchedMessages(cj('#range').attr("value"));
@@ -1683,6 +1705,8 @@ function pushtag(existingTags,clear){
 function buildMatchedList() {
   if(messages.stats.overview.successes == '0' || messages == null){
     cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty">No records found</td>');
+    makeTable();
+
   }else{
     var html = '';
     var total_results = messages.stats.overview.successes;

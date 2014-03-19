@@ -175,7 +175,7 @@ class CRM_IMAP_AJAX {
     public static function UnmatchedList() {
       $debug = self::get('debug');
       $range = self::get('range');
-      $rangeVal = (is_numeric($range) && $range >= 1) ? "AND (updated_date BETWEEN '".date('Y-m-d', strtotime('-'.$range.' days'))."' AND '".date('Y-m-d')."') " : '';
+      $rangeVal = (is_numeric($range) && $range >= 1) ? "AND (updated_date BETWEEN '".date('Y-m-d H:i:s', strtotime('-'.$range.' days'))."' AND '".date('Y-m-d H:i:s')."') " : '';
       $start = microtime(true);
 
       $UnprocessedQuery = "SELECT t1.id, UNIX_TIMESTAMP(t1.updated_date) as date_u, DATE_FORMAT(t1.updated_date, '%b %e, %Y %h:%i %p') as date_long,
@@ -882,7 +882,7 @@ ORDER BY gc.contact_id ASC";
         $debug = self::get('debug');
         $start = microtime(true);
         $range = self::get('range');
-        $rangeVal = (is_numeric($range) && $range >= 1) ? "AND (updated_date BETWEEN '".date('Y-m-d', strtotime('-'.$range.' days'))."' AND '".date('Y-m-d')."') " : '';
+        $rangeVal = (is_numeric($range) && $range >= 1) ? "AND (updated_date BETWEEN '".date('Y-m-d H:i:s', strtotime('-'.$range.' days'))."' AND '".date('Y-m-d H:i:s')."') " : '';
         $UnprocessedQuery = " SELECT
         t1.id,
         UNIX_TIMESTAMP(t1.updated_date) as date_u, DATE_FORMAT(t1.updated_date, '%b %e, %Y %h:%i %p') as date_long,
@@ -1312,7 +1312,7 @@ EOQ;
     public static function getReports() {
       $debug = self::get('debug');
       $range = self::get('range');
-      $rangeVal = (is_numeric($range) && $range >= 1) ? "AND (updated_date BETWEEN '".date('Y-m-d', strtotime('-'.$range.' days'))."' AND '".date('Y-m-d')."') " : '';
+      $rangeVal = (is_numeric($range) && $range >= 1) ? "AND (updated_date BETWEEN '".date('Y-m-d H:i:s', strtotime('-'.$range.' days'))."' AND '".date('Y-m-d H:i:s')."') " : '';
       $Query = "SELECT
 t1.id,
 UNIX_TIMESTAMP(t1.updated_date) as date_u, DATE_FORMAT(t1.updated_date, '%b %e, %Y %h:%i %p') as date_long,
