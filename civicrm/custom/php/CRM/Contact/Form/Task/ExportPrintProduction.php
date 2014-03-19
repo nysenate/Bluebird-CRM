@@ -40,6 +40,7 @@ require_once 'CRM/Core/BAO/EntityTag.php';
 define( 'PPDEBUG', 0 ); //set debug mode status
 define( 'EXITLOC', 0 ); //define exit location in script
 define( 'TRACKTIME', 0 ); //track time at points in the script
+define( 'BATCH', 5000); //when processing in batches, amount we do at a time
 
 /**
  * This class provides the functionality to export large data sets for print production.
@@ -215,7 +216,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
         FROM civicrm_group_contact
         WHERE group_id = (SELECT id FROM civicrm_group WHERE name LIKE 'Mailing_Seeds')
         AND status = 'Added';";
-      $dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+      $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
       while ( $dao->fetch() ) {
         $this->_contactIds[] = $dao->contact_id;
         $localSeeds[] = $dao->contact_id;
@@ -521,7 +522,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
         }
       }
 
-      idebug($aOut, 'aOut', 2);
+      idebug($aOut, 'aOut', 1);
       iexit(2);
 
       //handle empty prefix values and special prefixes that need reinterpreting
@@ -662,8 +663,11 @@ function fputcsv2 (
   }
 
   if ( $batch ) {
-    $batchOutput .= implode($delimiter, $output) . "\n";
-    if ( $batchCount == 5000 || $batchCleanup ) {
+    if ( !$batchCleanup ) {
+      $batchOutput .= implode($delimiter, $output) . "\n";
+    }
+
+    if ( $batchCount == BATCH || $batchCleanup ) {
       fwrite($fh, $batchOutput);
       $batchOutput = '';
       $batchCount = 0;
@@ -1255,7 +1259,7 @@ function idebug( $var, $varName = '', $level = 1 ) {
 
   //if second param is an int we assume its the level
   if ( is_int($varName) ) {
-    $level   = $varName;
+    $level = $varName;
     $varName = '';
   }
 
