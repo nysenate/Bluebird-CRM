@@ -329,9 +329,6 @@ cj(document).ready(function(){
     var contactRadios = cj('input[name=contact_id]');
     var contactIds = '';
     var add_emails = [];
-    cj('#add_email input:checked').each(function() {
-      add_emails.push(cj(this).attr('value'));
-    });
     cj("#AdditionalEmail-popup").dialog( "close" );
 
     cj.each(contactRadios, function(idx, val) {
@@ -353,10 +350,10 @@ cj(document).ready(function(){
           if (data.code == 'ERROR'){
             CRM.alert('Could Not Assign message : '+data.message, '', 'error');
           }else{
-            cj.each(data.assigned, function(key, value) {
+            cj.each(data.messages, function(id, value) {
               removeRow(messageId);
               CRM.alert(value.message, '', 'success');
-              checkForMatch(add_emails,contactIds);
+              checkForMatch(value.key,contactIds);
             });
             cj("#find-match-popup").dialog('close');
           }

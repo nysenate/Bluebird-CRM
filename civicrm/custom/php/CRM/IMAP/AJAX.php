@@ -512,7 +512,6 @@ class CRM_IMAP_AJAX {
       require_once 'CRM/Utils/File.php';
       require_once 'CRM/Utils/IMAP.php';
       $bbconfig = get_bluebird_instance_config();
-      $debug = false;
       $debug = self::get('debug');
       $messageUid = self::get('messageId');
       $contactIds = self::get('contactId');
@@ -572,21 +571,20 @@ class CRM_IMAP_AJAX {
             CRM_Utils_System::civiExit();
         }
 
-$query = "
-SELECT e.contact_id
-FROM civicrm_group_contact gc, civicrm_group g, civicrm_email e
-WHERE g.name='Authorized_Forwarders'
-  AND e.email='".$forwarder."'
-  AND g.id=gc.group_id
-  AND gc.status='Added'
-  AND gc.contact_id=e.contact_id
-ORDER BY gc.contact_id ASC";
-
-            $result = mysql_query($query, self::db());
-            $results = array();
-            while($row = mysql_fetch_assoc($result)) {
-                $results[] = $row;
-            }
+        $query = "
+        SELECT e.contact_id
+        FROM civicrm_group_contact gc, civicrm_group g, civicrm_email e
+        WHERE g.name='Authorized_Forwarders'
+          AND e.email='".$forwarder."'
+          AND g.id=gc.group_id
+          AND gc.status='Added'
+          AND gc.contact_id=e.contact_id
+        ORDER BY gc.contact_id ASC";
+        $result = mysql_query($query, self::db());
+        $results = array();
+        while($row = mysql_fetch_assoc($result)) {
+            $results[] = $row;
+        }
 
         if ($debug){
           echo "<h1>Get forwarder Contact Record for {$forwarder}</h1>";
@@ -672,12 +670,12 @@ ORDER BY gc.contact_id ASC";
             }else{
               $activity_id =$activity['id'];
               $returnCode['code'] = 'SUCCESS';
-              $returnCode['assigned'][] = array('code' =>'SUCCESS','message'=> "Message Assigned to ".$ContactName,'key'=>$key,'contact'=>$contactId);
+              $returnCode['messages'][] = array('code' =>'SUCCESS','message'=> "Message Assigned to ".$ContactName,'key'=>$key,'contact'=>$contactId);
 
               // if this is not the first contact, add a new row to the table
               if($ContactCount > 0){
-                $debug= 'Added on assignment to #'.$ContactCount;
-                $UPDATEquery = "INSERT INTO `nyss_inbox_messages` (`message_id`, `imap_id`, `sender_name`, `sender_email`, `subject`, `body`, `forwarder`, `status`, `debug`, `updated_date`, `email_date`,`activity_id`,`matched_to`,`matcher`) VALUES ('{$messageId}', '{$imapId}', '{$senderName}', '{$senderEmail}', '{$subject}', '{$body}', '{$forwarder}', '1', '$debug', '$date', '{$FWDdate}','{$activity_id}','{$contactId}','{$userId}');";
+                $debug_line = 'Added on assignment to #'.$ContactCount;
+                $UPDATEquery = "INSERT INTO `nyss_inbox_messages` (`message_id`, `imap_id`, `sender_name`, `sender_email`, `subject`, `body`, `forwarder`, `status`, `debug`, `updated_date`, `email_date`,`activity_id`,`matched_to`,`matcher`) VALUES ('{$messageId}', '{$imapId}', '{$senderName}', '{$senderEmail}', '{$subject}', '{$body}', '{$forwarder}', '1', '$debug_line', '$date', '{$FWDdate}','{$activity_id}','{$contactId}','{$userId}');";
 
 
               }else{
