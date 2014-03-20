@@ -153,7 +153,7 @@ cj(document).ready(function(){
         cj('#assign').click();
       },
       No: function() {
-        cj('#add_email').html('');
+        cj('#add_email').empty();
         cj('#assign').click();
       }
     }
@@ -328,7 +328,7 @@ cj(document).ready(function(){
     var messageId = cj('#id').val();
     var contactRadios = cj('input[name=contact_id]');
     var contactIds = '';
-    var add_email = cj('#add_email').html('');
+    var add_emails = [];
     cj("#AdditionalEmail-popup").dialog( "close" );
 
     cj.each(contactRadios, function(idx, val) {
@@ -350,10 +350,10 @@ cj(document).ready(function(){
           if (data.code == 'ERROR'){
             CRM.alert('Could Not Assign message : '+data.message, '', 'error');
           }else{
-            cj.each(data.assigned, function(key, value) {
+            cj.each(data.messages, function(id, value) {
               removeRow(messageId);
               CRM.alert(value.message, '', 'success');
-              checkForMatch(add_email,contactIds);
+              checkForMatch(value.key,contactIds);
             });
             cj("#find-match-popup").dialog('close');
           }
@@ -603,7 +603,6 @@ cj(document).ready(function(){
             if(message.sender_email) cj('#filter').click();
             cj('.first_name').val(firstName);
             cj('.last_name').val(lastName);
-            cj('#AdditionalEmail-popup #add_email').html('');
 
             cj('#prefix .del,#suffix .del').remove();
             cj('#prefix').append('<option class="del" value=""> </option>');
@@ -615,13 +614,14 @@ cj(document).ready(function(){
               cj('#suffix').append('<option class="del" value="'+idx+'">'+val+'</option>');
             });
 
+            cj('#AdditionalEmail-popup #add_email').empty();
             cj.each(message.found_emails, function(idx, val) {
-              cj('#add_email').append('<fieldset id="fs_'+idx+'"></fieldset>');
+              cj('#AdditionalEmail-popup #add_email').append('<fieldset id="fs_'+idx+'"></fieldset>');
               cj('<input />', { type: 'checkbox', id: 'cb_'+idx, value: val }).appendTo('#fs_'+idx);
               cj('<label />', { 'for': 'cb_'+idx, text: val }).appendTo('#fs_'+idx);
               cj('#cb'+idx).click();
             });
-            cj('#add_email').append('<fieldset id="fs_static"></fieldset>');
+            cj('#AdditionalEmail-popup  #add_email').append('<fieldset id="fs_static"></fieldset>');
             cj('<input />', { type: 'input', id: 'cb_static',placeholder: 'Enter a email we missed' }).appendTo('#fs_static');
         }
       },
