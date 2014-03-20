@@ -186,10 +186,10 @@ class CRM_IMAP_AJAX {
             ELSE  DATE_FORMAT(updated_date, '%b %e, %Y')
           END
         END AS date_short,
-        t1.matched_to, t1.sender_email, t1.subject, t1.forwarder, t1.activity_id, t1.sender_name, count(t1.id)-1 AS email_count,
+        t1.matched_to, t1.sender_email, t1.subject, t1.forwarder, t1.activity_id, t1.sender_name, count(t2.id) AS email_count,
        IFNULL( count(t3.file_name), '0') as attachments
       FROM `nyss_inbox_messages` AS t1
-      LEFT JOIN civicrm_email as t2 ON t2.email = t1.sender_email
+      LEFT JOIN civicrm_email as t2 ON  t1.sender_email = t2.email
       LEFT JOIN nyss_inbox_attachments AS t3 ON ( t1.id = t3.email_id )
       WHERE t1.status = 0 {$rangeVal}
       GROUP BY t1.id";
