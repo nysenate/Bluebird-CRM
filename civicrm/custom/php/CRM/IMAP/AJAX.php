@@ -175,7 +175,7 @@ class CRM_IMAP_AJAX {
     public static function UnmatchedList() {
       $debug = self::get('debug');
       $range = self::get('range');
-      $rangeVal = (is_numeric($range) && $range >= 1) ? "AND (updated_date BETWEEN '".date('Y-m-d', strtotime('-'.$range.' days'))."' AND '".date('Y-m-d')."') " : '';
+      $rangeVal = (is_numeric($range) && $range >= 1) ? "AND (updated_date BETWEEN '".date('Y-m-d H:i:s', strtotime('-'.$range.' days'))."' AND '".date('Y-m-d H:i:s')."') " : '';
       $start = microtime(true);
 
       $UnprocessedQuery = "SELECT t1.id, UNIX_TIMESTAMP(t1.updated_date) as date_u, DATE_FORMAT(t1.updated_date, '%b %e, %Y %h:%i %p') as date_long,
@@ -186,10 +186,10 @@ class CRM_IMAP_AJAX {
             ELSE  DATE_FORMAT(updated_date, '%b %e, %Y')
           END
         END AS date_short,
-        t1.matched_to, t1.sender_email, t1.subject, t1.forwarder, t1.activity_id, t1.sender_name, count(t1.id)-1 AS email_count,
+        t1.matched_to, t1.sender_email, t1.subject, t1.forwarder, t1.activity_id, t1.sender_name, count(t2.id) AS email_count,
        IFNULL( count(t3.file_name), '0') as attachments
       FROM `nyss_inbox_messages` AS t1
-      LEFT JOIN civicrm_email as t2 ON t2.email = t1.sender_email
+      LEFT JOIN civicrm_email as t2 ON  t1.sender_email = t2.email
       LEFT JOIN nyss_inbox_attachments AS t3 ON ( t1.id = t3.email_id )
       WHERE t1.status = 0 {$rangeVal}
       GROUP BY t1.id";
@@ -512,7 +512,6 @@ class CRM_IMAP_AJAX {
       require_once 'CRM/Utils/File.php';
       require_once 'CRM/Utils/IMAP.php';
       $bbconfig = get_bluebird_instance_config();
-      $debug = false;
       $debug = self::get('debug');
       $messageUid = self::get('messageId');
       $contactIds = self::get('contactId');
@@ -572,21 +571,20 @@ class CRM_IMAP_AJAX {
             CRM_Utils_System::civiExit();
         }
 
-$query = "
-SELECT e.contact_id
-FROM civicrm_group_contact gc, civicrm_group g, civicrm_email e
-WHERE g.name='Authorized_Forwarders'
-  AND e.email='".$forwarder."'
-  AND g.id=gc.group_id
-  AND gc.status='Added'
-  AND gc.contact_id=e.contact_id
-ORDER BY gc.contact_id ASC";
-
-            $result = mysql_query($query, self::db());
-            $results = array();
-            while($row = mysql_fetch_assoc($result)) {
-                $results[] = $row;
-            }
+        $query = "
+        SELECT e.contact_id
+        FROM civicrm_group_contact gc, civicrm_group g, civicrm_email e
+        WHERE g.name='Authorized_Forwarders'
+          AND e.email='".$forwarder."'
+          AND g.id=gc.group_id
+          AND gc.status='Added'
+          AND gc.contact_id=e.contact_id
+        ORDER BY gc.contact_id ASC";
+        $result = mysql_query($query, self::db());
+        $results = array();
+        while($row = mysql_fetch_assoc($result)) {
+            $results[] = $row;
+        }
 
         if ($debug){
           echo "<h1>Get forwarder Contact Record for {$forwarder}</h1>";
@@ -672,12 +670,12 @@ ORDER BY gc.contact_id ASC";
             }else{
               $activity_id =$activity['id'];
               $returnCode['code'] = 'SUCCESS';
-              $returnCode['assigned'][] = array('code' =>'SUCCESS','message'=> "Message Assigned to ".$ContactName,'key'=>$key,'contact'=>$contactId);
+              $returnCode['messages'][] = array('code' =>'SUCCESS','message'=> "Message Assigned to ".$ContactName,'key'=>$key,'contact'=>$contactId);
 
               // if this is not the first contact, add a new row to the table
               if($ContactCount > 0){
-                $debug= 'Added on assignment to #'.$ContactCount;
-                $UPDATEquery = "INSERT INTO `nyss_inbox_messages` (`message_id`, `imap_id`, `sender_name`, `sender_email`, `subject`, `body`, `forwarder`, `status`, `debug`, `updated_date`, `email_date`,`activity_id`,`matched_to`,`matcher`) VALUES ('{$messageId}', '{$imapId}', '{$senderName}', '{$senderEmail}', '{$subject}', '{$body}', '{$forwarder}', '1', '$debug', '$date', '{$FWDdate}','{$activity_id}','{$contactId}','{$userId}');";
+                $debug_line = 'Added on assignment to #'.$ContactCount;
+                $UPDATEquery = "INSERT INTO `nyss_inbox_messages` (`message_id`, `imap_id`, `sender_name`, `sender_email`, `subject`, `body`, `forwarder`, `status`, `debug`, `updated_date`, `email_date`,`activity_id`,`matched_to`,`matcher`) VALUES ('{$messageId}', '{$imapId}', '{$senderName}', '{$senderEmail}', '{$subject}', '{$body}', '{$forwarder}', '1', '$debug_line', '$date', '{$FWDdate}','{$activity_id}','{$contactId}','{$userId}');";
 
 
               }else{
@@ -882,7 +880,7 @@ ORDER BY gc.contact_id ASC";
         $debug = self::get('debug');
         $start = microtime(true);
         $range = self::get('range');
-        $rangeVal = (is_numeric($range) && $range >= 1) ? "AND (updated_date BETWEEN '".date('Y-m-d', strtotime('-'.$range.' days'))."' AND '".date('Y-m-d')."') " : '';
+        $rangeVal = (is_numeric($range) && $range >= 1) ? "AND (updated_date BETWEEN '".date('Y-m-d H:i:s', strtotime('-'.$range.' days'))."' AND '".date('Y-m-d H:i:s')."') " : '';
         $UnprocessedQuery = " SELECT
         t1.id,
         UNIX_TIMESTAMP(t1.updated_date) as date_u, DATE_FORMAT(t1.updated_date, '%b %e, %Y %h:%i %p') as date_long,
@@ -1312,7 +1310,7 @@ EOQ;
     public static function getReports() {
       $debug = self::get('debug');
       $range = self::get('range');
-      $rangeVal = (is_numeric($range) && $range >= 1) ? "AND (updated_date BETWEEN '".date('Y-m-d', strtotime('-'.$range.' days'))."' AND '".date('Y-m-d')."') " : '';
+      $rangeVal = (is_numeric($range) && $range >= 1) ? "AND (updated_date BETWEEN '".date('Y-m-d H:i:s', strtotime('-'.$range.' days'))."' AND '".date('Y-m-d H:i:s')."') " : '';
       $Query = "SELECT
 t1.id,
 UNIX_TIMESTAMP(t1.updated_date) as date_u, DATE_FORMAT(t1.updated_date, '%b %e, %Y %h:%i %p') as date_long,
