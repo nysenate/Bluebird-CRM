@@ -1425,7 +1425,13 @@ function buildReports() {
       html += '<td class="imap_subject_column">'+shortenString(value.subject,40)+'</td>';
       html += '<td class="imap_date_column"><span data-sort="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
       html += '<td class="imap_date_column"><span data-sort="'+value.email_date_u+'"  title="'+value.email_date_long+'">'+value.email_date_short +'</span></td>';
-      html += '<td class="imap_date_column">' +value.status_string+'</td>';
+      if (value.status_string != null) {
+        html += '<td class="imap_date_column">' +value.status_string+'</td>';
+      }else{
+        html += '<td class="imap_date_column"> Automatically Matched</td>';
+
+      }
+
       html += '<td class="imap_forwarder_column"><span data-sort="'+value.forwarder.replace("@","_")+'">'+shortenString(value.forwarder,14)+'</span></td></tr>';
     });
 
