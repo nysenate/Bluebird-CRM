@@ -28,6 +28,7 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
 
   //universal settings
   $bbconfig = get_bluebird_instance_config();
+  CRM_Core_Error::debug_var('bbconfig', $bbconfig);
 
   if (isset($bbconfig['senator.email'])) {
     $senator_email = $bbconfig['senator.email'];
@@ -57,7 +58,8 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
   $whitelist_txt = str_replace('%SENATOR_EMAIL%', $senator_email, $whitelist_txt);
 
   if (isset($bbconfig['smtp.whitelist.location']) &&
-            $bbconfig['smtp.whitelist.location'] == "bottom") {
+    $bbconfig['smtp.whitelist.location'] == "bottom"
+  ) {
     $params['text'] = $params['text']."\n\n".$whitelist_txt;
     $params['html'] = preg_replace('#(\s*</body>)#', "\n<p style=\"text-align:center; font-size:10px;\">$whitelist_txt</p>$1", $params['html'], 1);
   }
@@ -85,9 +87,13 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
     $test = $event_queue_id = $jid = $mid = $mname = 0;
     if (isset($params['job_id'])) {
       $jid = $params['job_id'];
-      $mid = CRM_Core_DAO::singleValueQuery("SELECT mailing_id FROM civicrm_mailing_job WHERE id = $jid;");
+      $mJob = CRM_Core_DAO::executeQuery("SELECT mailing_id, is_test FROM civicrm_mailing_job WHERE id = {$jid};");
+      while ( $mJob->fetch() ) {
+        $mid = $mJob->mailing_id;
+        $test = $mJob->is_test;
+      }
+      $mJob->free();
       $mname = CRM_Core_DAO::singleValueQuery("SELECT name FROM civicrm_mailing WHERE id = $mid;");
-      $test = CRM_Core_DAO::singleValueQuery("SELECT is_test FROM civicrm_mailing_job WHERE id = $jid;");
       unset($params['job_id']);
     }
 
@@ -103,16 +109,25 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
       $params['X-clientid'] = $contactID;
     }
 
+    //7701 - append link to hosted email
+    if ( !empty($mid) ) {
+      $env = explode('.', $bbconfig['base.domain']);
+      $url = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/view/{$mid}";
+      //$url = CRM_Utils_System::url('civicrm/mailing/view', 'reset=1&id='.$mid, TRUE);
+      $params['text'] .= "\n\nClick here to view this email in your browser: {$url}";
+      $params['html'] = preg_replace('#(\s*</body>)#', "\n<p style=\"text-align:center; font-size:10px;\"><a href='{$url}' target=_blank>Click here</a> to view this email in your browser.</p>$1", $params['html'], 1);
+    }
+
     //Sendgrid headers
     $hdr->setCategory("BluebirdMail: $mname (ID: $mid)");
     $hdr->setUniqueArgs(array(
-      'instance'      => $bbconfig['shortname'],
+      'instance' => $bbconfig['shortname'],
       'install_class' => $bbconfig['install_class'],
-      'servername'    => $bbconfig['servername'],
-      'mailing_id'    => $mid,
-      'job_id'        => $jid,
-      'queue_id'      => $event_queue_id,
-      'is_test'       => $test
+      'servername' => $bbconfig['servername'],
+      'mailing_id' => $mid,
+      'job_id' => $jid,
+      'queue_id' => $event_queue_id,
+      'is_test' => $test
       )
     );
   }
@@ -122,9 +137,9 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
     // For non-Civimail messages, disable subscription/click/open tracking
     $hdr->setCategory("Bluebird Activity");
     $hdr->setUniqueArgs(array(
-      'instance'      => $bbconfig['shortname'],
+      'instance' => $bbconfig['shortname'],
       'install_class' => $bbconfig['install_class'],
-      'servername'    => $bbconfig['servername']
+      'servername' => $bbconfig['servername']
     ));
     $hdr->addFilterSetting('subscriptiontrack', 'enable', 0);
     $hdr->addFilterSetting('clicktrack', 'enable', 0);
@@ -137,7 +152,7 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
   //CRM_Core_Error::debug_var('params', $params);
   //CRM_Core_Error::debug_var('mname', $mname);
   //exit();
-} // nyss_mail_civicrm_alterMailParams()
+}//nyss_mail_civicrm_alterMailParams()
 
 
 function nyss_mail_civicrm_buildForm($formName, &$form)
