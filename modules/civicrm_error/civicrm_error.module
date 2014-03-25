@@ -108,16 +108,11 @@ function civicrm_error_send_mail($to, $subject, $output) {
   // Retrieve the responsible implementation for this message.
   $system = drupal_mail_system($module, $key);
 
-  // Format the message body.
+  // Format the message body using Drupal's email format methods
   $message = $system->format($message);
 
-  // Send e-mail.
-  $message['result'] = $system->mail($message);
-
-  //NYSS if the mail was unsuccessful, attempt via civicrm
-  if ( $message['result'] !== TRUE ) {
-    _send_mail_civicrm($message, $output);
-  }
+  // Send e-mail via CiviCRM
+  _send_mail_civicrm($message, $output);
 }
 
 /*

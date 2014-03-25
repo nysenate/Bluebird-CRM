@@ -32,6 +32,27 @@ fi
 sql="TRUNCATE TABLE role_permission;"
 $execSql -q $instance -c "$sql" --drupal
 
+## roles:
+## 1: anonymous user
+## 2: authenticated user
+## 3: Superuser
+## 4: Administrator
+## 5: Conference Services
+## 6: SOS
+## 7: Print Production
+## 8: Analytics User
+## 9: Office Administrator
+## 10: Office Manager
+## 11: Staff
+## 12: Data Entry
+## 13: Volunteer
+## 14: Mailing Creator
+## 15: Mailing Scheduler
+## 16: Mailing Approver
+## 17: Mailing Viewer
+## 18: Print Production Staff
+## 19: Manage Inbox Polling
+
 ## reset all role perms
 sql="
   INSERT IGNORE INTO role_permission (rid, permission, module)
@@ -404,6 +425,7 @@ sql="
     (13, 'view all activities', 'civicrm'),
     (13, 'view all contacts', 'civicrm'),
     (13, 'view my contact', 'civicrm'),
+    (13, 'edit my contact', 'civicrm'),
 
     (14, 'create mailings', 'civicrm'),
     (14, 'delete in CiviMail', 'civicrm'),
