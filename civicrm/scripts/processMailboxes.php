@@ -775,7 +775,7 @@ function searchForMatches($db, $params)
         echo "[INFO]    CREATED e-mail activity id=$activityId for contact id=$contactID\n";
         $status = STATUS_MATCHED;
         $q = "UPDATE nyss_inbox_messages
-              SET status=$status, matcher=0, matched_to=$contactID,
+              SET status=$status, matcher=1, matched_to=$contactID,
                   activity_id=$activityId
               WHERE id=$msg_row_id";
         if (mysql_query($q, $db) == false) {
