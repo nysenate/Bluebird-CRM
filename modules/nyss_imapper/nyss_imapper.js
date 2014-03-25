@@ -430,7 +430,7 @@ cj(document).ready(function(){
 
                   return false;
                 }else{
-                  cj.each(assign.assigned, function(key, value) {
+                  cj.each(assign.messages, function(id, value) {
                     removeRow(create_messageId);
                     CRM.alert('Contact created and '+value.message, '', 'success');
                     if(create_email_address.length > 0){
