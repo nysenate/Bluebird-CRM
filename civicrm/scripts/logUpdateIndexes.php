@@ -127,7 +127,6 @@ class CRM_updateIndexes {
     $indexes = array(
       'log_civicrm_activity' => array(
         'id' => '',
-        'source_contact_id' => '',
         'source_record_id' => '',
         'activity_type_id' => '',
         'log_date' => '',
