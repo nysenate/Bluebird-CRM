@@ -20,25 +20,12 @@ $config = CRM_Core_Config::singleton();
 echo "updating logging table schemas...\n";
 require_once 'CRM/Logging/Schema.php';
 $logging = new CRM_Logging_Schema;
+//CRM_Core_Error::debug_var('logging', $logging);
 
-echo "cycling through core schema differences...\n";
-$schemaDiff = $logging->schemaDifferences();
+echo "fixing schema differences... \n";
+$logging->fixSchemaDifferencesForAll();
 
-if ( $optList['debug'] ) {
-  echo "core schema differences: \n";
-  if ( !empty($schemaDiff) ) {
-    print_r($schemaDiff);
-  }
-  else {
-    echo "no schema differences to process. \n";
-  }
-}
-
-foreach ($schemaDiff as $table => $cols) {
-  $logging->fixSchemaDifferencesFor($table, $cols);
-}
-
-echo "checking for existence of log_job_id...";
+echo "checking for existence of log_job_id... \n";
 $logDB = $bbcfg['db.log.prefix'].$bbcfg['db.basename'];
 $dao = CRM_Core_DAO::executeQuery("
   SELECT TABLE_NAME
@@ -63,6 +50,7 @@ while ($dao->fetch()) {
     if ( $optList['debug'] ) {
       echo "log_job_id column not found for: $table \n";
     }
+
     $sql = "ALTER TABLE {$logDB}.{$table} ADD log_job_id VARCHAR(64)";
     CRM_Core_DAO::executeQuery($sql);
   }
