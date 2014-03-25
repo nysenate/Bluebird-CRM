@@ -353,7 +353,7 @@ cj(document).ready(function(){
             cj.each(data.messages, function(id, value) {
               removeRow(messageId);
               CRM.alert(value.message, '', 'success');
-              checkForMatch(value.key,contactIds);
+              // checkForMatch(value.key,contactIds);
             });
             cj("#find-match-popup").dialog('close');
           }
