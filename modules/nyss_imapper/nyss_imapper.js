@@ -1805,10 +1805,10 @@ function shortenString(subject, length){
     var safe_subject = '<span title="'+subject+'">'+subject.substring(0,length)+"...</span>";
     return safe_subject;
     }else{
-      return '<span>'+subject+'</span>';
+      return '<span title="'+subject+'">'+subject+'</span>';
     }
   }else{
-    return '<span> N/A </span>';
+    return '<span title="Not Available"> N/A </span>';
   }
  }
 
