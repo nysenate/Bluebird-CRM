@@ -353,7 +353,7 @@ cj(document).ready(function(){
             cj.each(data.messages, function(id, value) {
               removeRow(messageId);
               CRM.alert(value.message, '', 'success');
-              checkForMatch(value.key,contactIds);
+              // checkForMatch(value.key,contactIds);
             });
             cj("#find-match-popup").dialog('close');
           }
@@ -430,7 +430,7 @@ cj(document).ready(function(){
 
                   return false;
                 }else{
-                  cj.each(assign.assigned, function(key, value) {
+                  cj.each(assign.messages, function(id, value) {
                     removeRow(create_messageId);
                     CRM.alert('Contact created and '+value.message, '', 'success');
                     if(create_email_address.length > 0){
@@ -1425,7 +1425,13 @@ function buildReports() {
       html += '<td class="imap_subject_column">'+shortenString(value.subject,40)+'</td>';
       html += '<td class="imap_date_column"><span data-sort="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
       html += '<td class="imap_date_column"><span data-sort="'+value.email_date_u+'"  title="'+value.email_date_long+'">'+value.email_date_short +'</span></td>';
-      html += '<td class="imap_date_column">' +value.status_string+'</td>';
+      if (value.status_string != null) {
+        html += '<td class="imap_date_column">' +value.status_string+'</td>';
+      }else{
+        html += '<td class="imap_date_column"> Automatically Matched</td>';
+
+      }
+
       html += '<td class="imap_forwarder_column"><span data-sort="'+value.forwarder.replace("@","_")+'">'+shortenString(value.forwarder,14)+'</span></td></tr>';
     });
 
