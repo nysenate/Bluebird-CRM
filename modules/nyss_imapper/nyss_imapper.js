@@ -1309,7 +1309,7 @@ function makeTable(){
     "aoColumnDefs": [
     { 'bSortable': false, 'aTargets': [ 0 ] },
     { 'bSortable': false, 'aTargets': [ 6 ] },
-    { "sType": "title-string", "aTargets": [ 3,5 ] }
+    { "sType": "title-string", "aTargets": [ 2,3,5 ] }
     ],
     "oColVis": { "activate": "mouseover" },
     'aTargets': [ 1 ],
@@ -1802,13 +1802,13 @@ function buildContactList(loop) {
 function shortenString(subject, length){
   if(subject){
     if (subject.length > length ){
-    var safe_subject = '<span title="'+subject+'">'+subject.substring(0,length)+"...</span>";
-    return safe_subject;
+      var safe_subject = '<span title="'+subject+'" data-sort="'+subject+'">'+subject.substring(0,length)+"...</span>";
+      return safe_subject;
     }else{
-      return '<span title="'+subject+'">'+subject+'</span>';
+      return '<span data-sort="'+subject+'">'+subject+'</span>';
     }
   }else{
-    return '<span title="Not Available"> N/A </span>';
+    return '<span title="Not Available" data-sort="Not Available"> N/A </span>';
   }
  }
 
