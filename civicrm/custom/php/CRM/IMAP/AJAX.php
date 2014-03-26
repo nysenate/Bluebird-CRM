@@ -231,16 +231,13 @@ class CRM_IMAP_AJAX {
       if($status != ''){
         switch ($status) {
           case '0':
-            preg_match_all(
-              '/[a-z0-9_\-\+\\.\\\"]+@[a-z0-9\-]+\.([a-z]{2,})(?:\.[a-z0-9]{2,})?/i',
-              // "/[a-z0-9]+([_\\.-][a-z0-9]+)*@([a-z0-9]+([\.-][a-z0-9]+)*)+\\.[a-z]{2,}/i",
-              $output['body'],
-              $emails
-            );
-            // if (in_array($output['forwarder'], $emails[0])){
-            //   unset($emails[0][array_search($output['forwarder'],$emails[0])]);
-            // }
-            $output['found_emails'] = array_unique($emails[0], SORT_REGULAR);
+           foreach(preg_split('/[, ;]/', $output['body']) as $token) {
+              $email = filter_var(filter_var($token, FILTER_SANITIZE_EMAIL), FILTER_VALIDATE_EMAIL);
+              if ($email !== false) {
+                  $emails[] = $email;
+              }
+            }
+            $output['found_emails'] = array_unique($emails, SORT_REGULAR);
             $output['prefix'] = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'prefix_id');
             $output['suffix'] = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'suffix_id');
             echo json_encode($output);
