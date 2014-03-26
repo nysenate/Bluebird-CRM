@@ -88,49 +88,23 @@ function civicrm_error_handler($vars) {
   }
 }
 
+
 /**
- * Send the e-mail using drupal_mail()
+ * Send the e-mail using CiviCRM
  */
-function civicrm_error_send_mail($to, $subject, $output) {
-  // c.f. http://api.drupal.org/api/drupal/includes!mail.inc/function/drupal_mail/7
-  $module = 'civicrm_error';
-  $key = 'stderr';
-  $language = language_default();
-  $params = array();
-  $from = variable_get("site_mail", ini_get("sendmail_from"));
-  $send = FALSE;
-
-  $message = drupal_mail($module, $key, $to, $language, $params, $from, $send);
-
-  $message['subject'] = $subject;
-  $message['body'] = array($output);
-
-  // Retrieve the responsible implementation for this message.
-  $system = drupal_mail_system($module, $key);
-
-  // Format the message body using Drupal's email format methods
-  $message = $system->format($message);
-
-  // Send e-mail via CiviCRM
-  _send_mail_civicrm($message, $output);
-}
-
-/*
- * NYSS send the email using civicrm email
- */
-function _send_mail_civicrm($message, $output){
-
-  //set some array elements
-  unset($message['headers']);
+function civicrm_error_send_mail($to, $subject, $output)
+{
+  $message['from'] = variable_get("site_mail", ini_get("sendmail_from"));
   $message['toName'] = 'CiviCRM Admin';
-  $message['toEmail'] = $message['to'];
+  $message['toEmail'] = $to;
+  $message['subject'] = $subject;
   $message['text'] = $output;
   $message['html'] = '<pre>'.$output.'</pre>';
   $message['Content-Transfer-Encoding'] = 'Quoted-Printable';
-  //CRM_Core_Error::debug_var('message body',$message['body']);
-
   CRM_Utils_Mail::send($message);
+  error_log("Bluebird Error e-mail sent to $to; subject=[$subject]");
 }
+
 
 /**
  *  Helper function to return a pretty print of the given array
