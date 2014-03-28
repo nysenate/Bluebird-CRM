@@ -231,10 +231,11 @@ class CRM_IMAP_AJAX {
       if($status != ''){
         switch ($status) {
           case '0':
-           foreach(preg_split('/[, ;]/', $output['body']) as $token) {
+            foreach(preg_split('/[, ;]/', $output['body']) as $token) {
+
               $email = filter_var(filter_var($token, FILTER_SANITIZE_EMAIL), FILTER_VALIDATE_EMAIL);
               if ($email !== false) {
-                  $emails[] = $email;
+                  $emails[] = preg_replace('/(br)+$/', '', $email);
               }
             }
             $output['found_emails'] = array_unique($emails, SORT_REGULAR);
