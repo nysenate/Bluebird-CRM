@@ -3,6 +3,7 @@
 
   var ajaxFormParams = {
     dataType:'json',
+    async:false,//NYSS 7688
     beforeSubmit: function(arr, $form, options) {
       addCiviOverlay($form);
     },
