@@ -74,6 +74,20 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
       );
     }
 
+    //7352
+    /*$groups = CRM_Core_PseudoConstant::group( );
+    $this->add( 'select',
+      'groups',
+      ts( 'Groups' ),
+      $groups,
+      false,
+      array(
+        'id' => 'groups',
+        'multiple' => 'multiple',
+        'title' => ts('- select -')
+      )
+    );*/
+
     $this->add('checkbox', 'merge_house', 'Merge Households? (CSV export only)');
 
     $this->addButtons(
@@ -201,9 +215,11 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
       $dateRange = '';
       if ( $startDate && !$endDate ) {
         $dateRange = "$startDate &#8211; Now";
-      } elseif ( !$startDate && $endDate ) {
+      }
+      elseif ( !$startDate && $endDate ) {
         $dateRange = "Before $endDate";
-      } else {
+      }
+      else {
         $dateRange = "$startDate &#8211; $endDate";
       }
       $html .= "<h3>Date Range: $dateRange</h3>";
@@ -225,6 +241,7 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
           <th>Gender/DOB/Phone</th>
           <th>Contact Email</th>
           <th>Tag(s)</th>
+          <th>Group(s)</th>
         </tr>";
 
     //get contacts with changes to either the contact object or tag
@@ -302,6 +319,16 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
       $tagList = str_replace(' (Insert)', '', $dao->tagList);
       $tagList = str_replace(' (Delete)', ' (removed)', $tagList);
 
+      //7352 groups
+      $sql = "
+        SELECT GROUP_CONCAT(g.title SEPARATOR ', ')
+        FROM civicrm_group_contact gc
+        JOIN civicrm_group g
+          ON gc.group_id = g.id
+        WHERE contact_id = {$dao->id}
+      ";
+      $groupList = CRM_Core_DAO::singleValueQuery($sql);
+
       $html .= "
         <tr>
           <td>{$dao->logDate}</td>
@@ -310,6 +337,7 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
           <td>{$gdpHTML}&nbsp;</td>
           <td>{$cDetails['email']}&nbsp;</td>
           <td>{$tagList}&nbsp;</td>
+          <td>{$groupList}&nbsp;</td>
         </tr>";
 
       $rows[$dao->id] = array(
@@ -365,7 +393,7 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
     $html .= "
       <tr class='tableSummary'>
         <td>Contacts Changed:</td>
-        <td colspan='5'>{$dao->N}</td>
+        <td colspan='6'>{$dao->N}</td>
       </tr>";
 
     //close table
