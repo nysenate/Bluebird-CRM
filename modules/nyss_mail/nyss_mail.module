@@ -50,7 +50,7 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
 
   //universal settings
   $bbconfig = get_bluebird_instance_config();
-  CRM_Core_Error::debug_var('bbconfig', $bbconfig);
+  //CRM_Core_Error::debug_var('bbconfig', $bbconfig);
 
   if (isset($bbconfig['senator.email'])) {
     $senator_email = $bbconfig['senator.email'];
