@@ -425,15 +425,17 @@ SELECT label, value
                 }
                             
                 //NYSS build district id fields using IN to allow multiple values
-                $distinfo = array(52, 56);
-                if (in_array($id, $distinfo)) {
-                  $op  = 'IN';
-                  $field['data_type'] = 'nyss_String'; //flag for processing
+                if ( $op == '=' ) {
+                  $distinfo = array(52, 56);
+                  if (in_array($id, $distinfo)) {
+                    $op = 'IN';
+                    $field['data_type'] = 'nyss_String'; //flag for processing
+                  }
                 }
                 if ($wildcard) {
                   $val = $strtolower(CRM_Core_DAO::escapeString($val));
                   $val = "%$val%";
-                  $op  = 'LIKE';
+                  $op = 'LIKE';
                 }
 
                 //FIX for custom data query fired against no value(NULL/NOT NULL)
@@ -458,14 +460,17 @@ SELECT label, value
           case 'Int':
             //NYSS build district id fields using IN to allow multiple values
             $field['data_type'] = 'Integer';
-            $distinfo = array(46, 47, 48, 49, 50, 51, 53, 54, 55);
-            if (in_array($id, $distinfo)) {
-              $op  = 'IN';
-              $field['data_type'] = 'nyss_Integer'; //flag for processing
 
-              //check for value existence
-              if ( empty($value) ) {
-                continue;
+            if ( $op == '=' ) {
+              $distinfo = array(46, 47, 48, 49, 50, 51, 53, 54, 55);
+              if (in_array($id, $distinfo)) {
+                $op = 'IN';
+                $field['data_type'] = 'nyss_Integer'; //flag for processing
+
+                //check for value existence
+                if ( empty($value) ) {
+                  continue;
+                }
               }
             }
 
