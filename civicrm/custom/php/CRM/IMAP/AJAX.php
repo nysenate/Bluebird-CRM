@@ -86,7 +86,7 @@ class CRM_IMAP_AJAX {
         foreach ($row_raw as $key => $value) {
           switch ($key) {
             case 'body':
-              $output = preg_replace('/[^a-zA-Z0-9\s\p{P}<>]/', '', trim($value));
+              $output = preg_replace('/[^a-zA-Z0-9\s\p{P}<>+]/', '', trim($value));
               $row[$key] = htmlspecialchars_decode(stripslashes($output));
               break;
 
