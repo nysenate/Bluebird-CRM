@@ -5,6 +5,26 @@ define('FILTER_ALL', 0);
 define('FILTER_IN_SD_ONLY', 1);
 define('FILTER_IN_SD_OR_NO_SD', 2);
 
+function nyss_mail_custom_theme() {
+  civicrm_initialize( );
+  $profileID = CRM_Core_DAO::singleValueQuery("
+    SELECT id
+    FROM civicrm_uf_group
+    WHERE name = 'Mass_Email_Subscriptions';
+  ");
+
+  if ( $profileID ) {
+    if ($_GET['q'] == 'civicrm/profile/edit' &&
+      $_GET['gid'] == $profileID
+    ) {
+      return 'BluebirdPublic';
+    }
+  }
+  else {
+    //TODO bounce to public site with message?
+  }
+}
+
 function nyss_mail_civicrm_config( &$config ) {
   //establish session and ensure userID based construction if in backend
   $session = CRM_Core_Session::singleton();
@@ -299,7 +319,7 @@ function nyss_mail_civicrm_buildForm($formName, &$form)
     }
     //CRM_Core_Error::debug_var('$lt', $lt);
 
-    $holdOptions = array(0 => ts('- select -'),
+    $holdOptions = array(
       1 => ts('On Hold Bounce'),
       2 => ts('On Hold Opt Out'),
     );
@@ -307,23 +327,25 @@ function nyss_mail_civicrm_buildForm($formName, &$form)
 
     while ( $email->fetch() ) {
       $blockId ++;
-      $contactEmails[] = array(
+
+      $contactEmails[$blockId] = array(
         'location_type_id' => $lt[$email->location_type_id],
         'email' => $email->email,
         'is_primary' => $email->is_primary,
-        'on_hold' => $holdOptions[$email->on_hold],
+        'on_hold' => CRM_Utils_Array::value($email->on_hold, $holdOptions, ''),
         'hold_date' => $email->hold_date,
         'mailing_categories' => $email->categories,
       );
 
-      $form->addElement('text', "email[$blockId][email]", ts('Email'),
+      /*$form->addElement('text', "email[$blockId][email]", ts('Email'),
         CRM_Core_DAO::getAttribute('CRM_Core_DAO_Email', 'email'));
       $form->addElement('select', "email[$blockId][location_type_id]", '',
         CRM_Core_PseudoConstant::get('CRM_Core_DAO_Address', 'location_type_id'));
-      $form->addElement('select', "email[$blockId][on_hold]", '', $holdOptions);
+      $form->addElement('select', "email[$blockId][on_hold]", '', $holdOptions);*/
 
     }
     //CRM_Core_Error::debug_var('$contactEmails', $contactEmails);
+    $form->assign('emails', $contactEmails);
   }
 
   //CRM_Core_Error::debug_var('formName', $formName);
