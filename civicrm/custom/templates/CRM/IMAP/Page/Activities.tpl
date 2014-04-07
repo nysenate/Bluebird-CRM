@@ -645,11 +645,18 @@
 					<li><a href="#tab1_tag">Tag Contact</a></li>
 					<li><a href="#tab2_tag">Tag Activity</a></li>
 				</ul>
-				<input type="hidden" class="hidden" id="contact_tag_ids" name="contact_tag_ids">
-				<input type="hidden" class="hidden" id="contact_ids" name="contact_ids">
-				<input type="hidden" class="hidden" id="contact_position_ids" name="contact_position_ids">
-				<input type="hidden" class="hidden" id="activity_tag_ids" name="activity_tag_ids">
-				<input type="hidden" class="hidden" id="activity_ids" name="activity_ids">
+				<!-- Object Id's -->
+				<input type="hidden" class="hidden" id="message">
+				<input type="hidden" class="hidden" id="activity">
+ 				<input type="hidden" class="hidden" id="contact">
+ 				<!-- End objects -->
+
+				<!-- New id's -->
+ 				<input type="hidden" class="hidden" id="contact_tag">
+				<input type="hidden" class="hidden" id="contact_position">
+				<input type="hidden" class="hidden" id="activity_tag">
+ 				<!-- End new -->
+
 				<div id="tab1_tag">
 					<div id='TagContact'>
 						<span class="label_def">Keywords: </span>

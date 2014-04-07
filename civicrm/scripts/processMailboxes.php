@@ -159,9 +159,6 @@ $activityDefaults = array('priority' => $activityPriority,
                           'status' => $activityStatus,
                           'type' => $activityType);
 
-// This doesn't seem to be used anywhere
-$inboxPollingTagId = getInboxPollingTagId();
-
 // Set the session ID for who created the activity
 $session->set('userID', 1);
 
@@ -849,38 +846,6 @@ function deleteArchiveBox($mbox, $params)
 
 
 
-function getInboxPollingTagId()
-{
-  require_once 'api/api.php';
-
-  // Check if the tag exists
-  $apiParams = array(
-    'name' => 'Inbox Polling Unprocessed',
-    'version' => 3,
-  );
-  $result = civicrm_api('tag', 'get', $apiParams);
-
-  if ($result && isset($result['id'])) {
-    return $result['id'];
-  }
-
-  // If there's no tag, create it.
-  $apiParams = array(
-    'name' => 'Inbox Polling Unprocessed',
-    'description' => 'Tag noting that this activity has been created by Inbox Polling and is still Unprocessed.',
-    'parent_id' => 296,
-    'used_for' => 'civicrm_contact,civicrm_activity,civicrm_case',
-    'created_id' => 1,
-    'version' => 3
-  );
-  $result = civicrm_api('tag', 'create', $apiParams);
-  if ($result && isset($result['id'])) {
-    return $result['id'];
-  }
-  else {
-    return null;
-  }
-} // getInboxPollingTagId()
 
 
 
