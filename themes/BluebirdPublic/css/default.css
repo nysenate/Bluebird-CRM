@@ -1,0 +1,75 @@
+* {
+  margin: 0;
+  padding: 0; }
+
+.clearfix {
+  display: inline-block; }
+  .clearfix:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden; }
+
+* html .clearfix {
+  height: 1%; }
+
+.clearfix {
+  display: block; }
+
+.clearleft, .clearl, .cleft {
+  clear: left; }
+
+.clearright, .clearr, .cright {
+  clear: right; }
+
+.clear, .clearboth, .clearall {
+  clear: both; }
+
+.floatleft, .fleft, .floatl {
+  float: left;
+  margin: 0 10px 5px 0; }
+
+.floatright, .fright, .floatr {
+  float: right;
+  margin: 0 0 5px 10px; }
+
+#skip a:link, #skip a:hover, #skip a:visited {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden; }
+#skip a:active, #skip a:focus {
+  position: static;
+  width: auto;
+  height: auto; }
+
+div.view div.views-admin-links {
+  width: auto; }
+
+div.block {
+  position: relative; }
+  div.block .edit {
+    display: none;
+    position: absolute;
+    right: -20px;
+    top: -5px;
+    z-index: 40;
+    padding: 3px 8px 0;
+    font-size: 10px;
+    line-height: 16px;
+    background-color: white;
+    border: 1px solid #cccccc;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    -moz-box-shadow: 0 1px 3px #888888;
+    -webkit-box-shadow: -1px 1px 2px #666666; }
+    div.block .edit a {
+      display: block;
+      border: 0;
+      padding: 0;
+      margin: 0; }
+  div.block:hover .edit {
+    display: block; }
