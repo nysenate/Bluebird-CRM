@@ -658,81 +658,70 @@ class CRM_IMAP_AJAX {
             CRM_Utils_System::civiExit();
           } else{
 
-            // Now we need to assign the tag to the activity
-            $tagid= self::getInboxPollingTagId();
-            $assignKeyword = self::assignKeyword($activity['id'], 0, $tagid, "quiet");
+            $activity_id =$activity['id'];
+            $returnCode['code'] = 'SUCCESS';
+            $returnCode['messages'][] = array('code' =>'SUCCESS','message'=> "Message Assigned to ".$ContactName,'key'=>$key,'contact'=>$contactId);
 
-            if($assignKeyword['code'] == "ERROR"){
-              // var_dump($assignKeyword);
-              $returnCode = array('code'      =>  'ERROR',
-              'message'   =>  $assignKeyword['message']);
-              echo json_encode($returnCode);
-              CRM_Utils_System::civiExit();
+            // if this is not the first contact, add a new row to the table
+            if($ContactCount > 0){
+              $debug_line = 'Added on assignment to #'.$ContactCount;
+              $UPDATEquery = "INSERT INTO `nyss_inbox_messages` (`message_id`, `imap_id`, `sender_name`, `sender_email`, `subject`, `body`, `forwarder`, `status`, `debug`, `updated_date`, `email_date`,`activity_id`,`matched_to`,`matcher`) VALUES ('{$messageId}', '{$imapId}', '{$senderName}', '{$senderEmail}', '{$subject}', '{$body}', '{$forwarder}', '1', '$debug_line', '$date', '{$FWDdate}','{$activity_id}','{$contactId}','{$userId}');";
+
+
             }else{
-              $activity_id =$activity['id'];
-              $returnCode['code'] = 'SUCCESS';
-              $returnCode['messages'][] = array('code' =>'SUCCESS','message'=> "Message Assigned to ".$ContactName,'key'=>$key,'contact'=>$contactId);
-
-              // if this is not the first contact, add a new row to the table
-              if($ContactCount > 0){
-                $debug_line = 'Added on assignment to #'.$ContactCount;
-                $UPDATEquery = "INSERT INTO `nyss_inbox_messages` (`message_id`, `imap_id`, `sender_name`, `sender_email`, `subject`, `body`, `forwarder`, `status`, `debug`, `updated_date`, `email_date`,`activity_id`,`matched_to`,`matcher`) VALUES ('{$messageId}', '{$imapId}', '{$senderName}', '{$senderEmail}', '{$subject}', '{$body}', '{$forwarder}', '1', '$debug_line', '$date', '{$FWDdate}','{$activity_id}','{$contactId}','{$userId}');";
+              $UPDATEquery = "UPDATE `nyss_inbox_messages`
+              SET  `status`= 1, `matcher` = $userId, `activity_id` = $activity_id, `matched_to` = $contactId, `updated_date` = '$date'
+              WHERE `id` =  {$messageUid}";
+            }
+            $ContactCount++;
 
 
-              }else{
-                $UPDATEquery = "UPDATE `nyss_inbox_messages`
-                SET  `status`= 1, `matcher` = $userId, `activity_id` = $activity_id, `matched_to` = $contactId, `updated_date` = '$date'
-                WHERE `id` =  {$messageUid}";
-              }
-              $ContactCount++;
+            $UPDATEresult = mysql_query($UPDATEquery, self::db());
+            // var_dump($attachments);
+            // var_dump(is_array($attachments[0]));
+
+            // exit();
+            if(isset($attachments[0])){
+              foreach ($attachments as $key => $attachment) {
+                $fileName = $attachment['fileName'];
+                $fileFull = $attachment['fileFull'];
+                // var_dump("Origin File Full : ". $fileFull);
+                // var_dump("Origin File NAME : ". $fileName);
+                if (file_exists($fileFull)){
 
 
-              $UPDATEresult = mysql_query($UPDATEquery, self::db());
-              // var_dump($attachments);
-              // var_dump(is_array($attachments[0]));
+                  $newName = CRM_Utils_File::makeFileName( $fileName );
+                  $file = $uploadDir. $newName;
+                  // var_dump("Final File Full : ". $file);
 
-              // exit();
-              if(isset($attachments[0])){
-                foreach ($attachments as $key => $attachment) {
-                  $fileName = $attachment['fileName'];
-                  $fileFull = $attachment['fileFull'];
-                  // var_dump("Origin File Full : ". $fileFull);
-                  // var_dump("Origin File NAME : ". $fileName);
-                  if (file_exists($fileFull)){
+                  // move file to the civicrm upload directory
+                  rename( $fileFull, $file );
 
+                  $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                  $mime = finfo_file($finfo, $file);
+                  finfo_close($finfo);
+                  // var_dump("Mime Type : ". $mime);
 
-                    $newName = CRM_Utils_File::makeFileName( $fileName );
-                    $file = $uploadDir. $newName;
-                    // var_dump("Final File Full : ". $file);
+                  // // mimeType, uri, orgin date -> return id
+                  $insertFIleQuery = "INSERT INTO `civicrm_file` (`mime_type`, `uri`,`upload_date`) VALUES ( '{$mime}', '{$newName}','{$output['updated_date']}');";
+                  $rowUpdated = "SELECT id FROM civicrm_file WHERE uri = '{$newName}';";
 
-                    // move file to the civicrm upload directory
-                    rename( $fileFull, $file );
+                  $insertFileResult = mysql_query($insertFIleQuery, self::db());
+                  $rowUpdatedResult = mysql_query($rowUpdated, self::db());
 
-                    $finfo = finfo_open(FILEINFO_MIME_TYPE);
-                    $mime = finfo_file($finfo, $file);
-                    finfo_close($finfo);
-                    // var_dump("Mime Type : ". $mime);
-
-                    // // mimeType, uri, orgin date -> return id
-                    $insertFIleQuery = "INSERT INTO `civicrm_file` (`mime_type`, `uri`,`upload_date`) VALUES ( '{$mime}', '{$newName}','{$output['updated_date']}');";
-                    $rowUpdated = "SELECT id FROM civicrm_file WHERE uri = '{$newName}';";
-
-                    $insertFileResult = mysql_query($insertFIleQuery, self::db());
-                    $rowUpdatedResult = mysql_query($rowUpdated, self::db());
-
-                    $insertFileOutput = array();
-                    while($row = mysql_fetch_assoc($rowUpdatedResult)) {
-                      $fileId = $row['id'];
-                    }
-
-                    $insertEntityQuery = "INSERT INTO `civicrm_entity_file` (`entity_table`, `entity_id`, `file_id`) VALUES ('civicrm_activity','{$activity['id']}', '{$fileId}');";
-                    $insertEntity = mysql_query($insertEntityQuery, self::db());
-                  }else{
-                    // echo "File Exists";
+                  $insertFileOutput = array();
+                  while($row = mysql_fetch_assoc($rowUpdatedResult)) {
+                    $fileId = $row['id'];
                   }
+
+                  $insertEntityQuery = "INSERT INTO `civicrm_entity_file` (`entity_table`, `entity_id`, `file_id`) VALUES ('civicrm_activity','{$activity['id']}', '{$fileId}');";
+                  $insertEntity = mysql_query($insertEntityQuery, self::db());
+                }else{
+                  // echo "File Exists";
                 }
               }
             }
+
           }
         }
       echo json_encode($returnCode);
@@ -756,120 +745,6 @@ class CRM_IMAP_AJAX {
     }
 
 
-    /**
-     * Assign tags to a Contact or a Activity
-     * For Matched screen TAG
-     * @return  [JSON Object]    Status message
-     */
-    public static function assignKeyword($inActivityIds = null, $inContactIds = null, $inTagIds = null, $response = null) {
-        $activityIds    =   ($inActivityIds) ? $inActivityIds : self::get('activityIds');
-        $contactIds     =   ($inContactIds) ? $inContactIds : self::get('contactIds');
-        $tagIds         =   ($inTagIds) ? $inTagIds : self::get('tagIds');
-        $debug = self::get('debug');
-
-        $activityIds    =   split(',', $activityIds);
-        $contactIds     =   split(',', $contactIds);
-        $tagsIDs         =   split(',', $tagIds);
-        if ($debug){
-          echo "<h1>Prams</h1>";
-          var_dump("activityIds",$activityIds);
-          var_dump("contactIds",$contactIds);
-          var_dump("tagsIDs",$tagsIDs);
-        }
-        require_once 'api/api.php';
-
-        if (count($contactIds) != 0) {
-          foreach($contactIds as $contactId)
-          {
-            $entityTable = 'civicrm_contact';
-            $parentId = '296';
-            $existingTags = CRM_Core_BAO_EntityTag::getTag($contactId, $entityTable);
-            $contactTagIds = array();
-            foreach ($tagsIDs as $tagId) {
-
-              if (!is_numeric($tagId)) {
-                // check if user has selected existing tag or is creating new tag
-                // this is done to allow numeric tags etc.
-                $tagValue = explode(':::', $tagId);
-                if (isset($tagValue[1]) && $tagValue[1] == 'value') {
-                  // does tag already exist ?
-                  $params = array('version'   =>  3, 'activity'  =>  'get', 'name' => $tagValue[0] );
-                  $check = civicrm_api('tag', 'get', $params);
-                  if ($check['count'] != 0) {
-                    $tagId =  strval($check['id']);
-                  }else{
-                    $tagParams = array(
-                      'name' => $tagValue[0],
-                      'parent_id' => $parentId,
-                      'used_for' => 'civicrm_contact,civicrm_activity,civicrm_case',
-                    );
-                    $tagObject = CRM_Core_BAO_Tag::add($tagParams, CRM_Core_DAO::$_nullArray);
-                    $tagId = strval($tagObject->id);
-                  }
-                }
-              }
-              $realTagIds[] = $tagId;
-              if (!array_key_exists($tagId, $existingTags)) {
-                $contactTagIds[] = $tagId;
-              }
-            }
-            if (!empty($contactTagIds)) {
-              // New tag ids can be inserted directly into the db table.
-              $insertValues = array();
-              foreach ($contactTagIds as $tagId) {
-                $insertValues[] = "( {$tagId}, {$contactId}, '{$entityTable}' ) ";
-              }
-              $insertSQL = 'INSERT INTO civicrm_entity_tag ( tag_id, entity_id, entity_table ) VALUES ' . implode(', ', $insertValues) . ';';
-              $result = mysql_query($insertSQL, self::db());
-            }
-          }
-        }
-        if (count($activityIds) != 0) {
-
-          foreach($activityIds as $activityId)
-          {
-            $entityTable = 'civicrm_activity';
-            $parentId = '296';
-            $existingTags = CRM_Core_BAO_EntityTag::getTag($activityId, $entityTable);
-            foreach ($tagsIDs as $tagId) {
-              if (!is_numeric($tagId)) {
-                // check if user has selected existing tag or is creating new tag
-                // this is done to allow numeric tags etc.
-                $tagValue = explode(':::', $tagId);
-                if (isset($tagValue[1]) && $tagValue[1] == 'value') {
-                  // does tag already exist ?
-                  $params = array('version'   =>  3, 'activity'  =>  'get', 'name' => $tagValue[0] );
-                  $check = civicrm_api('tag', 'get', $params);
-                  if ($check['count'] != 0) {
-                    $tagId =  strval($check['id']);
-                  }else{
-                    $tagParams = array(
-                      'name' => $tagValue[0],
-                      'parent_id' => $parentId,
-                      'used_for' => 'civicrm_contact,civicrm_activity,civicrm_case',
-                    );
-                    $tagObject = CRM_Core_BAO_Tag::add($tagParams, CRM_Core_DAO::$_nullArray);
-                    $tagId = strval($tagObject->id);
-                  }
-                }
-              }
-              $realTagIds[] = $tagId;
-              if (!array_key_exists($tagId, $existingTags)) {
-                $activityTagIds[] = $tagId;
-              }
-            }
-            if (!empty($activityTagIds)) {
-              // New tag ids can be inserted directly into the db table.
-              $insertValues = array();
-              foreach ($activityTagIds as $tagId) {
-                $insertValues[] = "( {$tagId}, {$activityId}, '{$entityTable}' ) ";
-              }
-              $insertSQL = 'INSERT INTO civicrm_entity_tag ( tag_id, entity_id, entity_table ) VALUES ' . implode(', ', $insertValues) . ';';
-              $result = mysql_query($insertSQL, self::db());
-            }
-          }
-        }
-    }
 
     /**
      * Retrieves a list of Matched messages that have not been cleared,
@@ -940,8 +815,6 @@ class CRM_IMAP_AJAX {
       $changeData = self::civiRaw('contact',$output['matched_to']);
       $output['sender_name'] = $changeData['values'][$output['matched_to']]['display_name'];
       $output['sender_email'] = $changeData['values'][$output['matched_to']]['email'];
-      $admin = CRM_Core_Permission::check('administer CiviCRM');
-      $output['filebug'] = $admin;
       if(!$output){
         $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity not found');#,'clear'=>'true');
       }else{
@@ -981,7 +854,6 @@ class CRM_IMAP_AJAX {
 
       $output = self::unifiedMessageInfo($messageId);
       $activity_id = $output['activity_id'];
-      $tagid = self::getInboxPollingTagId();
       $error = false;
       $debug = self::get('debug');
 
@@ -1080,7 +952,6 @@ class CRM_IMAP_AJAX {
       $LastName = $changeData['values'][$change]['last_name'];
       $contactType = $changeData['values'][$change]['contact_type'];
       $email = $changeData['values'][$change]['email'];
-      $tagid = self::getInboxPollingTagId();
 
       if ($debug){
         echo "<h1>inputs</h1>";
@@ -1093,7 +964,6 @@ class CRM_IMAP_AJAX {
         var_dump($LastName);
         var_dump($contactType);
         var_dump($email);
-        var_dump($tagid);
       }
 
       // we need to check to see if the activity is still assigned to the same contact
@@ -1202,16 +1072,147 @@ EOQ;
 
 
     /**
-     * Assign tags to a Contact or a Activity
+     * Assign Keywords or Positions to a Contact or a Activity
      * For Matched screen TAG
-     * @return [JSON Object]    JSON encoded response, OR error codes
+     * @return [JSON Object]   JSON encoded response, OR error codes
      */
-    public static function KeywordAdd() {
-      require_once 'api/api.php';
-      $tag_ids = self::get('tags');
-      $activityId = self::get('activityId');
-      $contactId = self::get('contactId');
-      self::assignKeyword($activityId, $contactId, $tag_ids,'quiet');
+    public static function TagAdd() {
+        $activityIds = self::get('activityId');
+        $contactIds = self::get('contactId');
+        $tagIds = self::get('tags');
+        $debug = self::get('debug');
+
+        // add new positions to the 292 (positions) table
+        $parentId = (self::get('parentId')) ? self::get('parentId') :'296';
+        $type = (self::get('parentId') == 292) ? "Position" : "Keyword";
+
+        $tagsIDs = split(',', $tagIds);
+        $result = array();
+
+        if ($debug){
+          echo "<h1>Prams</h1>";
+          var_dump("activityIds",$activityIds);
+          var_dump("contactIds",$contactIds);
+          var_dump("tagsIDs",$tagsIDs);
+          var_dump("parentId",$parentId);
+        }
+        require_once 'api/api.php';
+
+        if (!empty($contactIds)) {
+          $contactIds = split(',', $contactIds);
+          $realTagIds = array();
+          foreach($contactIds as $contactId)
+          {
+            $entityTable = 'civicrm_contact';
+            $existingTags = CRM_Core_BAO_EntityTag::getTag($contactId, $entityTable);
+            $contactTagIds = array();
+            foreach ($tagsIDs as $tagId) {
+
+              if (!is_numeric($tagId)) {
+                // check if user has selected existing tag or is creating new tag
+                // this is done to allow numeric tags etc.
+                $tagValue = explode(':::', $tagId);
+                if (isset($tagValue[1]) && $tagValue[1] == 'value') {
+                  // does tag already exist ?
+                  $params = array('version'   =>  3, 'activity'  =>  'get', 'name' => $tagValue[0], 'parent_id' => $parentId  );
+                  $check = civicrm_api('tag', 'get', $params);
+                  if ($check['count'] != 0) {
+                    $tagId =  strval($check['id']);
+                  }else{
+                    $tagParams = array(
+                      'name' => $tagValue[0],
+                      'parent_id' => $parentId,
+                      'used_for' => 'civicrm_contact,civicrm_activity,civicrm_case',
+                    );
+                    $tagObject = CRM_Core_BAO_Tag::add($tagParams, CRM_Core_DAO::$_nullArray);
+                    $tagId = strval($tagObject->id);
+                  }
+                }
+              }
+              $realTagIds[] = $tagId;
+              if (!array_key_exists($tagId, $existingTags)) {
+                $contactTagIds[] = $tagId;
+              }
+            }
+            if (!empty($contactTagIds)) {
+              // New tag ids can be inserted directly into the db table.
+              $insertValues = array();
+              foreach ($contactTagIds as $tagId) {
+                $insertValues[] = "( {$tagId}, {$contactId}, '{$entityTable}' ) ";
+              }
+              $insertSQL = 'INSERT INTO civicrm_entity_tag ( tag_id, entity_id, entity_table ) VALUES ' . implode(', ', $insertValues) . ';';
+              $result = mysql_query($insertSQL, self::db());
+              // result = 1 when successful
+              $output[$result][] = $insertSQL;
+            }else{
+              $output[0][] = 'NO NEW TAGS FOUND';
+            }
+          }
+        }
+        if (!empty($activityIds)) {
+          $activityIds = split(',', $activityIds);
+          $realTagIds = array();
+          foreach($activityIds as $activityId)
+          {
+            $entityTable = 'civicrm_activity';
+            $existingTags = CRM_Core_BAO_EntityTag::getTag($activityId, $entityTable);
+            $activityTagIds = array();
+            foreach ($tagsIDs as $tagId) {
+              if (!is_numeric($tagId)) {
+                // check if user has selected existing tag or is creating new tag
+                // this is done to allow numeric tags etc.
+                $tagValue = explode(':::', $tagId);
+                if (isset($tagValue[1]) && $tagValue[1] == 'value') {
+                  // does tag already exist ?
+                  $params = array('version'   =>  3, 'activity'  =>  'get', 'name' => $tagValue[0], 'parent_id' => $parentId  );
+                  $check = civicrm_api('tag', 'get', $params);
+                  if ($check['count'] != 0) {
+                    $tagId =  strval($check['id']);
+                  }else{
+                    $tagParams = array(
+                      'name' => $tagValue[0],
+                      'parent_id' => $parentId,
+                      'used_for' => 'civicrm_contact,civicrm_activity,civicrm_case',
+                    );
+                    $tagObject = CRM_Core_BAO_Tag::add($tagParams, CRM_Core_DAO::$_nullArray);
+                    $tagId = strval($tagObject->id);
+                  }
+                }
+              }
+              $realTagIds[] = $tagId;
+              if (!array_key_exists($tagId, $existingTags)) {
+                $activityTagIds[] = $tagId;
+              }
+            }
+            if (!empty($activityTagIds)) {
+              // New tag ids can be inserted directly into the db table.
+              $insertValues = array();
+              foreach ($activityTagIds as $tagId) {
+                $insertValues[] = "( {$tagId}, {$activityId}, '{$entityTable}' ) ";
+              }
+              $insertSQL = 'INSERT INTO civicrm_entity_tag ( tag_id, entity_id, entity_table ) VALUES ' . implode(', ', $insertValues) . ';';
+              $result = mysql_query($insertSQL, self::db());
+              // result = 1 when successful
+              $output[$result][] = $insertSQL;
+            }else{
+              $output[0][] = 'NO NEW TAGS FOUND';
+            }
+          }
+        }
+        if ($debug){
+          echo "<h1>result</h1>";
+          var_dump($output);
+        }
+
+        if(!$output[1]){
+          $returnCode = array('code' => 'ERROR','message'=> "Could not assign {$type}{$plural}");
+        }else{
+          $plural = (count($output[1]) > 1) ? "s" : "" ;
+          $plural2 = (count($output[1]) > 1) ? "were" : "was";
+          $returnCode = array('code' =>'SUCCESS','message'=> "{$type}{$plural} {$plural2} successfully assigned");
+        }
+        echo json_encode($returnCode);
+        CRM_Utils_System::civiExit();
     }
 
     /**
@@ -1272,34 +1273,6 @@ EOQ;
 
 
 
-    /**
-     * Get the tag id used to keep track of inbound emails
-     * @return [int]    tag id
-     */
-    function getInboxPollingTagId() {
-      require_once 'api/api.php';
-
-      // Check if the tag exists
-      $params = array(
-        'name' => 'Inbox Polling Unprocessed',
-        'version' => 3,
-      );
-      $result = civicrm_api('tag', 'get', $params);
-      if($result && isset($result['id'])) {
-        return $result['id'];
-      }
-
-      // If there's no tag, create it.
-      $params = array(
-          'name' => 'Inbox Polling Unprocessed',
-          'description' => 'Tag noting that this activity has been created by Inbox Polling and is still Unprocessed.',
-          'version' => 3,
-      );
-      $result = civicrm_api('tag', 'create', $params);
-        if($result && isset($result['id'])) {
-        return $result['id'];
-      }
-    }
 
 
     /**

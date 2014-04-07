@@ -69,7 +69,7 @@
   </item>
   <item>
     <path>civicrm/imap/ajax/tag/add</path>
-    <page_callback>CRM_IMAP_AJAX::KeywordAdd</page_callback>
+    <page_callback>CRM_IMAP_AJAX::TagAdd</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
