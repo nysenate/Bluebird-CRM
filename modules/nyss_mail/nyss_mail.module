@@ -156,13 +156,31 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
       $params['X-clientid'] = $contactID;
     }
 
-    //7701 - append link to hosted email
+    //7701 - append link for hosted email
     if ( !empty($mid) ) {
       $env = explode('.', $bbconfig['base.domain']);
       $url = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/view/{$mid}";
       //$url = CRM_Utils_System::url('civicrm/mailing/view', 'reset=1&id='.$mid, TRUE);
+
       $params['text'] .= "\n\nClick here to view this email in your browser: {$url}";
       $params['html'] = preg_replace('#(\s*</body>)#', "\n<p style=\"text-align:center; font-size:10px;\"><a href='{$url}' target=_blank>Click here</a> to view this email in your browser.</p>$1", $params['html'], 1);
+    }
+
+    //5581
+    //TODO condition on bbconfig value
+    if ( !empty($contactID) ) {
+      $gid = CRM_Core_DAO::singleValueQuery("
+        SELECT id
+        FROM civicrm_uf_group
+        WHERE name = 'Mass_Email_Subscriptions'
+      ");
+      $cs = CRM_Contact_BAO_Contact_Utils::generateChecksum($contactID);
+      $env = explode('.', $bbconfig['base.domain']);
+      //$url = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/subscription/edit/{$contactID}/{$cs}";
+      $url = CRM_Utils_System::url('civicrm/profile/edit', "reset=1&gid={$gid}&id={$contactID}&cs={$cs}", TRUE);
+
+      $params['text'] .= "\n\nClick here to manage your email subscription settings: {$url}";
+      $params['html'] = preg_replace('#(\s*</body>)#', "\n<p style=\"text-align:center; font-size:10px;\"><a href='{$url}' target=_blank>Click here</a> to manage your email subscription settings.</p>$1", $params['html'], 1);
     }
 
     //Sendgrid headers
@@ -523,14 +541,24 @@ function nyss_mail_civicrm_postProcess($formName, &$form)
     $form->getVar('_ufGroupName') == 'Mass_Email_Subscriptions'
   ) {
     $vals = $form->_submitValues;
+    $cid = $form->getVar('_id');
     //CRM_Core_Error::debug_var('vals', $vals);
 
-    foreach ( $vals['email'] as $emailID => $mCats ) {
-      $mCatsList = implode(',', $mCats['mailing_categories']);
+    $allEmails = CRM_Core_DAO::executeQuery("
+      SELECT id
+      FROM civicrm_email
+      WHERE contact_id = {$cid}
+    ");
+
+    while ( $allEmails->fetch() ) {
+      $mCatsList = '';
+      if ( isset($vals['email'][$allEmails->id]) ) {
+        $mCatsList = implode(',', $vals['email'][$allEmails->id]['mailing_categories']);
+      }
       CRM_Core_DAO::executeQuery("
         UPDATE civicrm_email
         SET mailing_categories = '{$mCatsList}'
-        WHERE id = {$emailID}
+        WHERE id = {$allEmails->id}
       ");
     }
 

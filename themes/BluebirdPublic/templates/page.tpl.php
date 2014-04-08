@@ -23,14 +23,6 @@
 
   </div> <!-- /main -->
 
-  <!-- ______________________ FOOTER _______________________ -->
-
-  <?php if ($page['footer']): ?>
-    <footer id="footer">
-      <?php print render($page['footer']); ?>
-    </footer> <!-- /footer -->
-  <?php endif; ?>
-
 </div> <!-- /page -->
 
 <script type="text/javascript">
