@@ -49,6 +49,12 @@
         <td class="label">{$form.all_emails.label}</td>
         <td>{$form.all_emails.html} {help id="all-emails"}</td>
     </tr>
+
+    {*NYSS 5581*}
+    <tr class="crm-mailing-group-form-block-category">
+      <td class="label">{$form.category.label}</td>
+      <td>{$form.category.html} {help id="category"}</td>
+    </tr>
     
     {*<tr class="crm-mailing-group-form-block-excludeood">
         <td class="label">{$form.exclude_ood.label}</td>
