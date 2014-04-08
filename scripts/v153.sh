@@ -66,7 +66,7 @@ sql="
   INSERT INTO civicrm_uf_group
     (is_active, group_type, title, description, help_pre, help_post, limit_listings_group_id, post_URL, add_to_group_id, add_captcha, is_map, is_edit_link, is_uf_link, is_update_dupe, cancel_URL, is_cms_user, notify, is_reserved, name, created_id, created_date, is_proximity_search)
     VALUES
-    (1, 'Individual,Contact', 'Mass Email Subscriptions', NULL, '<p>Please review your mailing subscription options below. Note that your selections are specific to each email address on file. If you would like to leave a note with additional communication preference requests, please do so below.</p>', NULL, NULL, NULL, @grp, 0, 0, 0, 0, 1, NULL, 0, NULL, 1, 'Mass_Email_Subscriptions', 1, NOW(), 0);
+    (1, 'Individual,Contact', 'Mass Email Subscriptions', NULL, '<p>Please review your mailing subscription options below. Note that your selections are specific to each email address on file. If you would like to leave a note with additional communication preference requests, please do so below.</p>', NULL, NULL, NULL, @grp, 0, 0, 0, 0, 1, 'http://www.nysenate.gov', 0, NULL, 1, 'Mass_Email_Subscriptions', 1, NOW(), 0);
   SELECT @ufgrp:=id FROM civicrm_uf_group WHERE name = 'Mass_Email_Subscriptions';
   INSERT INTO civicrm_uf_field
     (uf_group_id, field_name, is_active, is_view, is_required, weight, help_post, help_pre, visibility, in_selector, is_searchable, location_type_id, phone_type_id, label, field_type, is_reserved, is_multi_summary)

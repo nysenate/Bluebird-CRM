@@ -143,7 +143,19 @@ div.status {
 #sidebar-first,
 #sidebar-second,
 #navigation {
-  background: rgba(170, 170, 170, 0.2); }
+  background: url(/sites/default/themes/BluebirdPublic/images/nyss_bg.png) repeat-x top left;
+  border-bottom: 2px solid white;
+  -moz-box-shadow: 0px 2px 2px 3px #666;
+  -webkit-box-shadow: 0px 2px 2px 3px #666;
+  box-shadow: 0px 2px 2px 3px #666;
+  margin-bottom: 10px;
+}
+
+div.nyss-logo {
+  max-width: 960px;
+  padding: 10px 0;
+  margin: 0 auto;
+}
 
 * {
   -webkit-box-sizing: border-box;
@@ -188,3 +200,89 @@ body:before {
   }
   @media screen and (max-width: 768px) {
   }
+
+#crm-container div.crm-title {
+  margin-bottom: 0;
+}
+div.crm-title h1.title {
+  font-size: 1.5em;
+  color: #333;
+  font-weight: bold;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+div.nyss-senator {
+  font-size: 2.5em;
+  color: #FFFFFF;
+  line-height: 150%;
+  text-shadow: 1px 1px 3px #666;
+  margin-bottom: 15px;
+}
+div.nyss-intro {
+  padding: 15px;
+  background: rgba(255,255,255,.3);
+  font-size: 1.3em;
+  line-height: 150%;
+  -moz-box-shadow: 0px 0px 4px 1px #999;
+  -webkit-box-shadow: 0px 0px 4px 1px #999;
+  box-shadow: 0px 0px 4px 1px #999;
+  margin-bottom: 25px;
+}
+div.display_name {
+  color: #036;
+  font-size: 2em;
+  margin: 20px 0;
+}
+div.emails {
+  background: rgba(255,255,255,.3);
+  padding: 10px;
+  -moz-box-shadow: 0px 0px 4px 1px #999;
+  -webkit-box-shadow: 0px 0px 4px 1px #999;
+  box-shadow: 0px 0px 4px 1px #999;
+}
+div.nyss-email-label {
+  float: left;
+  width: 20%;
+  color: #036;
+  text-transform: uppercase;
+  font-size: .8em;
+  font-weight: bold;
+  padding: 0 0 5px;
+}
+div.nyss-email-label.wide {
+  width: 30%;
+}
+div.nyss-email-row {
+  clear: both;
+  padding-top: 5px;
+  border-top: 1px solid #eee;
+}
+div.nyss-email-fld {
+  float: left;
+  width: 20%;
+  font-size: 1.1em;
+}
+div.nyss-email-fld.wide {
+  width: 30%;
+}
+div.nyss-key {
+  font-size: 0.8em;
+  font-style: italic;
+  padding-top: 5px;
+  line-height: 130%;
+}
+div.notes {
+  margin-top: 20px;
+}
+div.notes span.label {
+  display: block;
+  color: #036;
+  font-size: 1.5em;
+  margin-bottom: 10px;
+}
+div.nyss-buttons {
+  margin: 20px 0;
+}
+.crm-container div.nyss-buttons input.form-submit {
+  font-size: 1.4em;
+}

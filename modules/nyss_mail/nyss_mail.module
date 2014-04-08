@@ -5,6 +5,7 @@ define('FILTER_ALL', 0);
 define('FILTER_IN_SD_ONLY', 1);
 define('FILTER_IN_SD_OR_NO_SD', 2);
 
+//5581
 function nyss_mail_custom_theme() {
   civicrm_initialize( );
   $profileID = CRM_Core_DAO::singleValueQuery("
@@ -13,8 +14,12 @@ function nyss_mail_custom_theme() {
     WHERE name = 'Mass_Email_Subscriptions';
   ");
 
+  $allowedPaths = array(
+    'civicrm/profile/edit',
+    'civicrm/profile/view'
+  );
   if ( $profileID ) {
-    if ($_GET['q'] == 'civicrm/profile/edit' &&
+    if (in_array($_GET['q'], $allowedPaths) &&
       $_GET['gid'] == $profileID
     ) {
       return 'BluebirdPublic';
@@ -197,8 +202,8 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
 }//nyss_mail_civicrm_alterMailParams()
 
 
-function nyss_mail_civicrm_buildForm($formName, &$form)
-{
+function nyss_mail_civicrm_buildForm($formName, &$form) {
+
   if ($formName == 'CRM_Mailing_Form_Group' && $form->_searchBasedMailing) {
     //get base mailing group, add to option list, set as default, freeze field
     $params = array ('name' => BASE_SUBSCRIPTION_GROUP);
@@ -293,13 +298,19 @@ function nyss_mail_civicrm_buildForm($formName, &$form)
     //CRM_Core_Error::debug($parent);
   }
 
+  //5581 - optimized opt out
   if ( $formName == 'CRM_Profile_Form_Edit' &&
     $form->getVar('_ufGroupName') == 'Mass_Email_Subscriptions'
   ) {
     $cid = $form->getVar('_id');
 
+    //get contact display name
     $displayName = civicrm_api('contact', 'getvalue', array('version'=>3, 'id'=>$cid, 'return'=>'display_name'));
     $form->assign('display_name', $displayName);
+
+    //get senator name
+    $bbconfig = get_bluebird_instance_config();
+    $form->assign('senatorFormal', $bbconfig['senator.name.formal']);
 
     $contactEmails = array();
     $sql = "
@@ -325,16 +336,29 @@ function nyss_mail_civicrm_buildForm($formName, &$form)
     );
     $blockId = 0;
 
-    while ( $email->fetch() ) {
-      $blockId ++;
+    //get category options
+    $mCats = array();
+    $opts = CRM_Core_DAO::executeQuery("
+      SELECT ov.label, ov.value
+      FROM civicrm_option_value ov
+      JOIN civicrm_option_group og
+        ON ov.option_group_id = og.id
+        AND og.name = 'mailing_categories'
+      ORDER BY ov.label
+    ");
+    while ( $opts->fetch() ) {
+      $mCats[$opts->value] = $opts->label;
+    }
 
-      $contactEmails[$blockId] = array(
+    $defaults = array();
+    while ( $email->fetch() ) {
+      $contactEmails[$email->id] = array(
         'location_type_id' => $lt[$email->location_type_id],
         'email' => $email->email,
         'is_primary' => $email->is_primary,
         'on_hold' => CRM_Utils_Array::value($email->on_hold, $holdOptions, ''),
         'hold_date' => $email->hold_date,
-        'mailing_categories' => $email->categories,
+        'mailing_categories' => $email->mailing_categories,
       );
 
       /*$form->addElement('text', "email[$blockId][email]", ts('Email'),
@@ -343,9 +367,24 @@ function nyss_mail_civicrm_buildForm($formName, &$form)
         CRM_Core_PseudoConstant::get('CRM_Core_DAO_Address', 'location_type_id'));
       $form->addElement('select', "email[$blockId][on_hold]", '', $holdOptions);*/
 
+      $form->add( 'select',
+        "email[{$email->id}][mailing_categories]",
+        ts( 'Subscription Opt-Outs' ),
+        $mCats,
+        FALSE,
+        array(
+          'id' => 'subscription-optout-'.$email->id,
+          'multiple' => 'multiple',
+          'title' => ts('- select -')
+        )
+      );
+
+      //set defaults
+      $defaults["email[{$email->id}][mailing_categories]"] = str_replace('|', ',', $email->mailing_categories);
     }
     //CRM_Core_Error::debug_var('$contactEmails', $contactEmails);
     $form->assign('emails', $contactEmails);
+    $form->setDefaults($defaults);
   }
 
   //CRM_Core_Error::debug_var('formName', $formName);
@@ -443,13 +482,33 @@ function nyss_mail_civicrm_postProcess($formName, &$form)
 
     //CRM_Core_Error::debug('postProcess Group form', $form); exit();
   }
+
+  //5581
+  if ( $formName == 'CRM_Profile_Form_Edit' &&
+    $form->getVar('_ufGroupName') == 'Mass_Email_Subscriptions'
+  ) {
+    $vals = $form->_submitValues;
+    //CRM_Core_Error::debug_var('vals', $vals);
+
+    foreach ( $vals['email'] as $emailID => $mCats ) {
+      $mCatsList = implode('|', $mCats['mailing_categories']);
+      CRM_Core_DAO::executeQuery("
+        UPDATE civicrm_email
+        SET mailing_categories = '{$mCatsList}'
+        WHERE id = {$emailID}
+      ");
+    }
+
+    if ( !empty($vals['note']) ) {
+      $form->assign('noteText', $vals['note']);
+    }
+  }
   //CRM_Core_Error::debug($form); exit();
 } //nyss_mail_civicrm_postProcess()
 
 
-function nyss_mail_civicrm_pageRun(&$page)
-{
-  //CRM_Core_Error::debug('page', $page);
+function nyss_mail_civicrm_pageRun(&$page) {
+  //CRM_Core_Error::debug_var('page', $page);
 
   //expose url/open tracking to mailing report
   //need to do manually since we are not using native tracking tools
@@ -471,7 +530,85 @@ function nyss_mail_civicrm_pageRun(&$page)
       CRM_Utils_System::setTitle( ts('Opt-out Requests') );
     }
   }
-} // nyss_mail_civicrm_pageRun()
+
+  //5581
+  if ( $page->getVar('_name') == 'CRM_Profile_Page_View' ) {
+    $gid = CRM_Core_DAO::singleValueQuery("
+      SELECT id
+      FROM civicrm_uf_group
+      WHERE name = 'Mass_Email_Subscriptions'
+    ");
+
+    if ( $page->getVar('_gid') == $gid ) {
+      CRM_Utils_System::setTitle('Mass Email Subscriptions');
+
+      //get all emails
+      $cid = $page->getVar('_id');
+
+      //get contact display name
+      $displayName = civicrm_api('contact', 'getvalue', array('version'=>3, 'id'=>$cid, 'return'=>'display_name'));
+      $page->assign('display_name', $displayName);
+
+      //get senator name
+      $bbconfig = get_bluebird_instance_config();
+      $page->assign('senatorFormal', $bbconfig['senator.name.formal']);
+
+      $contactEmails = array();
+      $sql = "
+        SELECT *
+        FROM civicrm_email
+        WHERE contact_id = {$cid}
+      ";
+      $email = CRM_Core_DAO::executeQuery($sql);
+
+      $locTypes = civicrm_api('location_type', 'get', array('version' => 3));
+      //CRM_Core_Error::debug_var('$locTypes', $locTypes);
+      $lt = array();
+      foreach ( $locTypes['values'] as $lt_id => $lt_val ) {
+        if ( $lt_val['is_active'] ) {
+          $lt[$lt_id] = $lt_val['display_name'];
+        }
+      }
+      //CRM_Core_Error::debug_var('$lt', $lt);
+
+      $holdOptions = array(
+        1 => ts('On Hold Bounce'),
+        2 => ts('On Hold Opt Out'),
+      );
+
+      //get category options
+      $mCats = array();
+      $opts = CRM_Core_DAO::executeQuery("
+        SELECT ov.label, ov.value
+        FROM civicrm_option_value ov
+        JOIN civicrm_option_group og
+          ON ov.option_group_id = og.id
+          AND og.name = 'mailing_categories'
+        ORDER BY ov.label
+      ");
+      while ( $opts->fetch() ) {
+        $mCats[$opts->value] = $opts->label;
+      }
+
+      while ( $email->fetch() ) {
+        $contactEmails[$email->id] = array(
+          'location_type_id' => $lt[$email->location_type_id],
+          'email' => $email->email,
+          'is_primary' => $email->is_primary,
+          'on_hold' => CRM_Utils_Array::value($email->on_hold, $holdOptions, ''),
+          'hold_date' => $email->hold_date,
+        );
+        $cats = explode('|', $email->mailing_categories);
+        $catsLabel = array();
+        foreach ( $cats as $cat ) {
+          $catsLabel[] = $mCats[$cat];
+        }
+        $contactEmails[$email->id]['mailing_categories'] = implode(', ', $catsLabel);
+      }
+      $page->assign('emails', $contactEmails);
+    }
+  }//5581
+}//nyss_mail_civicrm_pageRun()
 
 function nyss_mail_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) {
   //CRM_Core_Error::debug_var('$formName',$formName);
@@ -483,6 +620,19 @@ function nyss_mail_civicrm_alterTemplateFile($formName, &$form, $context, &$tplN
     $form->getVar('_ufGroupName') == 'Mass_Email_Subscriptions'
   ) {
     $tplName = 'CRM/NYSS/Subscription.tpl';
+  }
+
+  //5581
+  if ( $formName == 'CRM_Profile_Page_View' ) {
+    $gid = CRM_Core_DAO::singleValueQuery("
+      SELECT id
+      FROM civicrm_uf_group
+      WHERE name = 'Mass_Email_Subscriptions'
+    ");
+
+    if ( $form->getVar('_gid') == $gid ) {
+      $tplName = 'CRM/NYSS/SubscriptionView.tpl';
+    }
   }
 }//alterTemplateFile
 
