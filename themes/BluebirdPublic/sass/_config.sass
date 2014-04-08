@@ -1,0 +1,51 @@
+// Config
+// ---------
+// Use the same color all over the place? Need to do
+// some math with height and width and text size?
+// Sass supports variables as well as basic math
+// operations and many useful functions.
+//
+// For complete documentation:
+// http://sass-lang.com/docs/yardoc/file.SASS_REFERENCE.html#variables_
+//
+// Available functions:
+// http://sass-lang.com/docs/yardoc/Sass/Script/Functions.html
+
+// Available functions:
+// SASS:				http://sass-lang.com/docs/yardoc/Sass/Script/Functions.html
+// Bourbon:				http://bourbon.io/docs/
+// Boubon Neat (grid):	https://github.com/thoughtbot/neat#using-the-grid
+
+// Import variables and mixins to be used (Bourbon)
+@import "components/bourbon/bourbon"
+@import "components/neat/neat-helpers"
+
+// Bourbon grid display. Comment out to remove display.
+$visual-grid: true
+$visual-grid-color: #EEEEEE
+
+// Set to false if you'd like to remove the responsiveness.
+$responsive: true
+
+// Setup the column, grid, and gutter amounts.
+$column: 90px
+$gutter: 30px
+$grid-columns: 12
+// We set the max width of the page using the px to em function in Bourbon.
+// the first value is the pixel value of the width and the second is the base font size of your theme.
+// In this instance we want the max width to be 1088px and on Line 6 of style.sass we have reset the base
+// font size to 13px so the first value would be 1088 and the second 13
+// ex. em(1088, 13)
+$max-width: em(1088, 13)
+
+// Define your breakpoints.
+$mobile: new-breakpoint(max-width 480px 4)
+$tablet: new-breakpoint(max-width 768px 8)
+
+// Import grid to be used (Bourbon Neat).
+// We load this after we provide our overrides: https://github.com/thoughtbot/neat#changing-the-defaults
+@import "components/neat/neat"
+
+// Import local files
+@import "_variables.sass"
+@import "_mixins.sass"

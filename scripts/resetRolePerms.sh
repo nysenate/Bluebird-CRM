@@ -59,6 +59,9 @@ sql="
   VALUES
     (1, 'access content', 'node'),
     (1, 'use text format 1', 'filter'),
+    (1, 'profile edit', 'civicrm'),
+    (1, 'profile view', 'civicrm'),
+    (1, 'view public CiviMail content', 'civicrm'),
 
     (2, 'access content', 'node'),
     (2, 'change own e-mail', 'userprotect'),
