@@ -1579,6 +1579,10 @@ ORDER BY   civicrm_email.is_bulkmail DESC
       return $mailing;
     }
 
+    //NYSS 7723
+    // update mailings with hash values
+    CRM_Contact_BAO_Contact_Utils::generateChecksum($mailing->id, NULL, NULL, NULL, 'mailing', 16);
+
     $groupTableName = CRM_Contact_BAO_Group::getTableName();
     $mailingTableName = CRM_Mailing_BAO_Mailing::getTableName();
 
@@ -1637,6 +1641,20 @@ ORDER BY   civicrm_email.is_bulkmail DESC
     }
 
     return $mailing;
+  }
+
+  //NYSS 7723
+  /**
+   * get hash value of the mailing
+   *
+   */
+  public static function getMailingHash($id) {
+    $mailerHash = CRM_Core_Config::singleton()->mailerHash;
+    $hash = NULL;
+    if (!empty($mailerHash)) {
+      $hash = CRM_Core_DAO::getFieldValue('CRM_Mailing_BAO_Mailing', $id, 'hash', 'id');
+    }
+    return $hash;
   }
 
   /**
