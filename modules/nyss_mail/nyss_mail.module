@@ -474,11 +474,13 @@ function nyss_mail_civicrm_postProcess($formName, &$form)
     CRM_Core_DAO::executeQuery("UPDATE civicrm_mailing SET exclude_ood = %2 WHERE id = %1;", $sqlParams);
 
     //5581
-    $sqlParams  = array(
-      1 => array($mailingID, 'Integer'),
-      2 => array($mailingCat, 'Integer'),
-    );
-    CRM_Core_DAO::executeQuery("UPDATE civicrm_mailing SET category = %2 WHERE id = %1;", $sqlParams);
+    if ( $mailingCat ) {
+      $sqlParams  = array(
+        1 => array($mailingID, 'Integer'),
+        2 => array($mailingCat, 'Integer'),
+      );
+      CRM_Core_DAO::executeQuery("UPDATE civicrm_mailing SET category = %2 WHERE id = %1;", $sqlParams);
+    }
 
     //4628, 4879
     if ($form->_submitValues['all_emails']) {
