@@ -103,7 +103,8 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     //5142, 7719
     $bbconfig = get_bluebird_instance_config();
     if (!empty($bbconfig['export.use_district_excludes'])
-        && CRM_Core_Permission::check('export print production files')) {
+      && CRM_Core_Permission::check('export print production files')
+    ) {
       $this->addElement('text', 'district_excludes', ts('District # to Process Exclusions and Add Seeds') );
       $this->addRule( 'district_excludes',
         ts('Please enter the district exclusion as a number (integer only). This will also add the district seeds to the export.'),
@@ -1092,7 +1093,7 @@ function processDistrictExclude( $districtID, $tbl, $localSeedsList ) {
     if ( strpos($group, 'instance:') !== false ) {
       if ( $details['district'] == $districtID ) {
         $instance = substr($group, 9);
-        $dbBase   = $details['db.basename'];
+        $dbBase = $details['db.basename'];
         break;
       }
     }
@@ -1101,7 +1102,7 @@ function processDistrictExclude( $districtID, $tbl, $localSeedsList ) {
   $localSeedsList = ( $localSeedsList ) ? $localSeedsList : 0;
 
   //retrieve values using db basename and create temp table
-  $db   = $bbFullConfig['globals']['db.civicrm.prefix'].$dbBase;
+  $db = $bbFullConfig['globals']['db.civicrm.prefix'].$dbBase;
   $dTbl = "{$tbl}_d{$districtID}";
 
   //need to list sa columns to avoid naming conflicts
