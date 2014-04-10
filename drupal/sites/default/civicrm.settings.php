@@ -64,6 +64,20 @@ define('CIVICRM_MEMCACHE_PREFIX', $bbconfig['servername']);
 define('SAGE_API_KEY', $bbconfig['sage.api.key']);
 define('SAGE_API_BASE', $bbconfig['sage.api.base']);
 
+// Set some CiviCRM settings
+global $civicrm_setting;
+
+$civicrm_setting['Mailing Preferences']['profile_double_optin'] = FALSE;
+$civicrm_setting['Mailing Preferences']['profile_add_to_group_double_optin'] = FALSE;
+$civicrm_setting['Mailing Preferences']['track_civimail_replies'] = FALSE;
+$civicrm_setting['Mailing Preferences']['civimail_workflow'] = TRUE;
+$civicrm_setting['Mailing Preferences']['civimail_server_wide_lock'] = TRUE;
+$civicrm_setting['Mailing Preferences']['civimail_multiple_bulk_emails'] = TRUE;
+$civicrm_setting['Mailing Preferences']['include_message_id'] = TRUE;
+$civicrm_setting['Mailing Preferences']['write_activity_record'] = FALSE;
+$civicrm_setting['Mailing Preferences']['disable_mandatory_tokens_check'] = TRUE;
+$civicrm_setting['Mailing Preferences']['hash_mailing_url'] = TRUE;
+
 if (isset($bbconfig['xhprof.profile']) && $bbconfig['xhprof.profile']) {
   function xhprof_shutdown_func($source, $run_id=NULL) {
     // Hopefully we don't throw an exception; there's no way to catch it now...

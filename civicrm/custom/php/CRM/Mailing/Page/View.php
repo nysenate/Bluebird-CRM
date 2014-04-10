@@ -102,8 +102,7 @@ class CRM_Mailing_Page_View extends CRM_Core_Page {
     //$this->_mailing = new CRM_Mailing_BAO_Mailing();
     //$this->_mailing->id = $this->_mailingID;
     // mailing key check
-    $config = CRM_Core_Config::singleton();
-    if (!empty($config->mailerHash)) {
+    if (CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::MAILING_PREFERENCES_NAME, 'hash_mailing_url')) {
       $this->_mailing = new CRM_Mailing_BAO_Mailing();
 
       if (!is_numeric($this->_mailingID)) {
