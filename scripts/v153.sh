@@ -94,7 +94,5 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
-#TODO set hashURL setting
-
 echo "resetting roles and permissions..."
 $script_dir/resetRolePerms.sh $instance
