@@ -133,6 +133,18 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
       )
     );
 
+    //7777 - restrict by all district info fields
+    $this->addElement('text', 'di_congressional_district_46', ts('Restrict by Congressional District') );
+    $this->addElement('text', 'di_ny_assembly_district_48', ts('Restrict by Assembly District') );
+    $this->addElement('text', 'di_election_district_49', ts('Restrict by Election District') );
+    $this->addElement('text', 'di_county_50', ts('Restrict by County') );
+    $this->addElement('text', 'di_county_legislative_district_51', ts('Restrict by County Legislative District') );
+    $this->addElement('text', 'di_town_52', ts('Restrict by Town') );
+    $this->addElement('text', 'di_ward_53', ts('Restrict by Ward') );
+    $this->addElement('text', 'di_school_district_54', ts('Restrict by School District') );
+    $this->addElement('text', 'di_new_york_city_council_55', ts('Restrict by NYC Council') );
+    $this->addElement('text', 'di_neighborhood_56', ts('Restrict by Neighborhood') );
+
     //6397
     $orderBy = array(
       'male_eldest' => 'Eldest Male',
@@ -358,6 +370,36 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
         a.state_province_id = $restrictState OR
         (a.state_province_id != $restrictState AND t.id IN ($localSeedsList))
       )";
+    }
+
+    //7777 cycle through and look for any district info fields
+    foreach ( $params as $f => $v ) {
+      if ( strpos($f, 'di_') === 0 && !empty($v) ) {
+        $dbFld = substr($f, 3);
+        if ( strpos($v, ',') !== FALSE ) {
+          $allVals = explode(',', $v);
+          foreach ( $allVals as &$v ) {
+            if ( !is_numeric($v) ) {
+              $v = trim($v);
+              $v = "'{$v}'";
+            }
+          }
+          $valList = implode(',', $allVals);
+          $sql .= " AND (
+            di.{$dbFld} IN ({$valList}) OR
+            (di.{$dbFld} NOT IN ({$valList}) AND t.id IN ($localSeedsList))
+          )";
+        }
+        else {
+          if ( !is_numeric($v) ) {
+            $v = "'{$v}'";
+          }
+          $sql .= " AND (
+            di.{$dbFld} = {$v} OR
+            (di.{$dbFld} != {$v} AND t.id IN ($localSeedsList))
+          )";
+        }
+      }
     }
 
     //group by contact ID in case any joins with multiple records cause dupe primary in our temp table
