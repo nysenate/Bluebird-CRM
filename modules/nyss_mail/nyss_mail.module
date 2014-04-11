@@ -137,7 +137,13 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
         $test = $mJob->is_test;
       }
       $mJob->free();
-      $mname = CRM_Core_DAO::singleValueQuery("SELECT name FROM civicrm_mailing WHERE id = $mid;");
+
+      $m = CRM_Core_DAO::executeQuery("SELECT name, hash FROM civicrm_mailing WHERE id = {$mid};");
+      while ( $m->fetch() ) {
+        $mname = $m->name;
+        $hash = $m->hash;
+      }
+
       unset($params['job_id']);
     }
 
@@ -156,8 +162,9 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
     //7701 - append link for hosted email
     if ( !empty($mid) ) {
       $env = explode('.', $bbconfig['base.domain']);
-      $url = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/view/{$mid}";
-      //$url = CRM_Utils_System::url('civicrm/mailing/view', 'reset=1&id='.$mid, TRUE);
+      $viewID = ( $hash ) ? $hash : $mid;
+      $url = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/view/{$viewID}";
+      //$url = CRM_Utils_System::url('civicrm/mailing/view', 'reset=1&id='.$viewID, TRUE);
 
       //4864
       $fblink = '';
@@ -474,11 +481,13 @@ function nyss_mail_civicrm_postProcess($formName, &$form)
     CRM_Core_DAO::executeQuery("UPDATE civicrm_mailing SET exclude_ood = %2 WHERE id = %1;", $sqlParams);
 
     //5581
-    $sqlParams  = array(
-      1 => array($mailingID, 'Integer'),
-      2 => array($mailingCat, 'Integer'),
-    );
-    CRM_Core_DAO::executeQuery("UPDATE civicrm_mailing SET category = %2 WHERE id = %1;", $sqlParams);
+    if ( $mailingCat ) {
+      $sqlParams  = array(
+        1 => array($mailingID, 'Integer'),
+        2 => array($mailingCat, 'Integer'),
+      );
+      CRM_Core_DAO::executeQuery("UPDATE civicrm_mailing SET category = %2 WHERE id = %1;", $sqlParams);
+    }
 
     //4628, 4879
     if ($form->_submitValues['all_emails']) {

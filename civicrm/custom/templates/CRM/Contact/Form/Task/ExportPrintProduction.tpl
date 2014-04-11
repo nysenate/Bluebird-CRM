@@ -43,7 +43,7 @@
 
 <dt>{$form.primaryAddress.label}</dt>
   <dd>{$form.primaryAddress.html}
-      <span class="description">By default, we export BOE mailing addresses if they exist and the BOE physical address is flagged as primary. This option overrides that behavior and exports the primary address regardless of what BOE addresses exist.</span>
+      <span class="description">By default, we export BOE mailing addresses if they exist and the BOE physical address if flagged as primary. This option overrides that behavior and exports the primary address regardless of what BOE addresses exist.</span>
       </dd>
 
 <dt>{$form.exclude_rt.label}<dt>

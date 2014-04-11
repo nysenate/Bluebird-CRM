@@ -295,6 +295,10 @@ class CRM_Mailing_DAO_Mailing extends CRM_Core_DAO
    * @var int unsigned
    */
   public $sms_provider_id;
+
+  //NYSS 7723
+  public $hash;
+
   /**
    * class constructor
    *
@@ -535,6 +539,13 @@ class CRM_Mailing_DAO_Mailing extends CRM_Core_DAO
           'type' => CRM_Utils_Type::T_INT,
           'FKClassName' => 'CRM_SMS_DAO_Provider',
         ) ,
+        //NYSS 7723
+        'hash' => array(
+          'name' => 'hash',
+          'type' => CRM_Utils_Type::T_STRING,
+          'title' => ts('Mailing Hash'),
+          'maxlength' => 16,
+        ) ,
       );
     }
     return self::$_fields;
@@ -585,6 +596,7 @@ class CRM_Mailing_DAO_Mailing extends CRM_Core_DAO
         'campaign_id' => 'campaign_id',
         'dedupe_email' => 'dedupe_email',
         'sms_provider_id' => 'sms_provider_id',
+        'hash' => 'hash',//NYSS 7723
       );
     }
     return self::$_fieldKeys;

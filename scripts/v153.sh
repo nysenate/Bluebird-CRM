@@ -86,5 +86,13 @@ echo "5581: set all existing mailings to public visibility..."
 sql="UPDATE civicrm_mailing SET visibility = 'Public Pages'"
 $execSql $instance -c "$sql" -q
 
+echo "7723: create hash column in mailing table..."
+sql="
+  ALTER TABLE `civicrm_mailing`
+  ADD COLUMN `hash` varchar(16) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Key for validating requests related to this mailing.',
+  ADD INDEX `index_hash` (`hash`);
+"
+$execSql $instance -c "$sql" -q
+
 echo "resetting roles and permissions..."
 $script_dir/resetRolePerms.sh $instance
