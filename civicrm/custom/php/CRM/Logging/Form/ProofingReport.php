@@ -147,7 +147,23 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
       empty($fields['start_date']) &&
       empty($fields['end_date'])
     ) {
-      $errors['jobID'] = ts('You must select a Job ID, Altered By value, or date field to run this report.');
+      $errors['jobID'] = ts('You must select a Job ID or Altered By value, and date field to run this report.');
+    }
+
+    if ( empty($fields['start_date']) ) {
+      $errors['start_date'] = 'You must select a start date to run this report.';
+    }
+
+    //7776 check if date range is > 1 month
+    $dateStart = new DateTime(CRM_Utils_Array::value('start_date', $fields));
+    $dateEnd = new DateTime(CRM_Utils_Array::value('end_date', $fields, date('Y-m-d')));
+
+    $interval = $dateStart->diff($dateEnd);
+    $days = $interval->format('%a');
+    //CRM_Core_Error::debug_var('days', $days);
+
+    if ( $days > 30 ) {
+      $errors['end_date'] = 'The date range cannot exceed 30 days. Please adjust your start and end dates to a smaller interval in order to run this report.';
     }
 
     return $errors;
