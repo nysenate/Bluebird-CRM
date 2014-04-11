@@ -2957,21 +2957,27 @@ AND        m.id = %1
       $contactMailings[$mailingId]['openstats'] = ts('Opens') . ': ' . $openCounts[$values['mailing_id']] .
         '<br />' . ts('Clicks') . ': ' . $clickCounts[$values['mailing_id']];
 
-        $actionLinks = array(
-          CRM_Core_Action::VIEW => array(
-            'name'  => ts('View'),
-            'url'   => 'civicrm/mailing/view',
-            'qs'    => "reset=1&id={$values['mailing_id']}",
-            'title' => ts('View Mailing'),
-            'class' => 'crm-mailing-view',
-          ),
-          CRM_Core_Action::BROWSE => array(
-            'name' => ts('Mailing Report'),
-            'url' => 'civicrm/mailing/report',
-            'qs' => "mid={$values['mailing_id']}&reset=1&cid={$params['contact_id']}&context=mailing",
-            'title' => ts('View Mailing Report'),
-          )
-        );
+      //NYSS 7723/7789
+      $mailingKey = $values['mailing_id'];
+      if ($hash = CRM_Mailing_BAO_Mailing::getMailingHash($mailingKey)) {
+        $mailingKey = $hash;
+      }
+
+      $actionLinks = array(
+        CRM_Core_Action::VIEW => array(
+          'name'  => ts('View'),
+          'url'   => 'civicrm/mailing/view',
+          'qs'    => "reset=1&id={$mailingKey}",//NYSS 7723/7789
+          'title' => ts('View Mailing'),
+          'class' => 'crm-mailing-view',
+        ),
+        CRM_Core_Action::BROWSE => array(
+          'name' => ts('Mailing Report'),
+          'url' => 'civicrm/mailing/report',
+          'qs' => "mid={$values['mailing_id']}&reset=1&cid={$params['contact_id']}&context=mailing",
+          'title' => ts('View Mailing Report'),
+        )
+      );
 
       //NYSS 6698/6890
       $contactMailings[$mailingId]['openstats'] = "Opens: ".
