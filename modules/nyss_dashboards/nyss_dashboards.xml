@@ -247,4 +247,11 @@
     <page_callback>CRM_Contact_Page_AJAX::getContactRelationships</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
+
+  <!--7748-->
+  <item>
+    <path>civicrm/ajax/getsubjectlist</path>
+    <page_callback>CRM_NYSS_AJAX_Activity::getSubjectList</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
 </menu>
