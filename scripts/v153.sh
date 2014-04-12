@@ -96,3 +96,6 @@ $execSql $instance -c "$sql" -q
 
 echo "resetting roles and permissions..."
 $script_dir/resetRolePerms.sh $instance
+
+echo "7761: rebuilding word replacement list..."
+$execSql $instance -f $app_rootdir/scripts/sql/wordReplacement.sql -q
