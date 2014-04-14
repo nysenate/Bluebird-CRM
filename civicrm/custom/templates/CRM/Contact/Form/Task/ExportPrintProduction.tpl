@@ -91,6 +91,37 @@
 <dt>{$form.restrict_state.label}</dt>
   <dd>{$form.restrict_state.html}</dd>
 
+  {*7777*}
+  <dt>{$form.di_congressional_district_46.label}</dt>
+  <dd>{$form.di_congressional_district_46.html}</dd>
+
+  <dt>{$form.di_ny_assembly_district_48.label}</dt>
+  <dd>{$form.di_ny_assembly_district_48.html}</dd>
+
+  <dt>{$form.di_election_district_49.label}</dt>
+  <dd>{$form.di_election_district_49.html}</dd>
+
+  <dt>{$form.di_county_50.label}</dt>
+  <dd>{$form.di_county_50.html}</dd>
+
+  <dt>{$form.di_county_legislative_district_51.label}</dt>
+  <dd>{$form.di_county_legislative_district_51.html}</dd>
+
+  <dt>{$form.di_town_52.label}</dt>
+  <dd>{$form.di_town_52.html}</dd>
+
+  <dt>{$form.di_ward_53.label}</dt>
+  <dd>{$form.di_ward_53.html}</dd>
+
+  <dt>{$form.di_school_district_54.label}</dt>
+  <dd>{$form.di_school_district_54.html}</dd>
+
+  <dt>{$form.di_new_york_city_council_55.label}</dt>
+  <dd>{$form.di_new_york_city_council_55.html}</dd>
+
+  <dt>{$form.di_neighborhood_56.label}</dt>
+  <dd>{$form.di_neighborhood_56.html}</dd>
+
 <dt>{$form.orderBy.label}</dt>
   <dd>{$form.orderBy.html}</dd>
 

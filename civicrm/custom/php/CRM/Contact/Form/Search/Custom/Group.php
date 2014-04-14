@@ -190,11 +190,40 @@ class CRM_Contact_Form_Search_Custom_Group
     $int->setButtonAttributes('remove', array('value' => ts('<< Remove')));;
     $outt->setButtonAttributes('remove', array('value' => ts('<< Remove')));;
 
+    //NYSS 7748
+    $actAction = array(
+      'act_include' => 'Include Activities',
+      'act_exclude' => 'Exclude Activities',
+    );
+    $form->add( 'select',
+      'act_action',
+      ts( 'Activity Action' ),
+      $actAction,
+      FALSE
+    );
+
+    $activityOptions = CRM_Core_PseudoConstant::activityType(TRUE, TRUE, FALSE, 'label', TRUE);
+    asort($activityOptions);
+    $form->add('select', 'activity_type_id', ts('Activity Type'),
+      array('' => '- select -') + $activityOptions,
+      FALSE, array()
+    );
+
+    $form->add('text', 'act_subject', ts('Activity Subject'));
+    $form->add('hidden', 'act_subjectq', "", array('id' => 'act_subjectq'));
+    $dataUrl = CRM_Utils_System::url("civicrm/ajax/getsubjectlist",
+      "json=1&reset=1",
+      FALSE, NULL, FALSE
+    );
+    $form->assign('dataUrl', $dataUrl);
+
+    $form->assign('searchName', 'IncludeExclude');
+
     /**
      * if you are using the standard template, this array tells the template what elements
      * are part of the search criteria
      */
-    $form->assign('elements', array('includeGroups', 'excludeGroups', 'andOr', 'includeTags', 'excludeTags'));
+    $form->assign('elements', array('includeGroups', 'excludeGroups', 'andOr', 'includeTags', 'excludeTags', 'act_action', 'activity_type_id', 'act_subject', 'act_subjectq'));
   }
 
   /*
@@ -648,6 +677,12 @@ WHERE  gcc.group_id = {$ssGroup->id}
     //$exclDiff = $exclEnd - $exclStart;
     //CRM_Core_Error::debug_log_message("time to remove exclusions: {$exclDiff}");
 
+    //NYSS 7748
+    //CRM_Core_Error::debug_var('this->_formValues', $this->_formValues);
+    if ( !empty($this->_formValues['activity_type_id']) || !empty($this->_formValues['act_subject']) ) {
+      self::_processActivities("result_{$this->_tableName}", $this->_formValues['act_action'], $this->_formValues['activity_type_id'], $this->_formValues['act_subjectq']);
+    }
+
     //now construct from
     $from .= "
       JOIN result_{$this->_tableName} temptableResult
@@ -686,6 +721,9 @@ WHERE  gcc.group_id = {$ssGroup->id}
   }
 
   function where($includeContactIDs = FALSE) {
+    //CRM_Core_Error::debug_var('$this->_formValues', $this->_formValues);
+    //CRM_Core_Error::debug_var('$this->_where', $this->_where);
+
     if ($includeContactIDs) {
       $contactIDs = array();
 
@@ -756,5 +794,58 @@ WHERE  gcc.group_id = {$ssGroup->id}
         false,
         $row['contact_id'] );
   }
+
+  //NYSS 7748
+  function _processActivities($table, $action, $actType = NULL, $actSubject = '') {
+    //CRM_Core_Error::debug_var('_processActivities $table', $table);
+    //CRM_Core_Error::debug_var('_processActivities $action', $action);
+    //CRM_Core_Error::debug_var('_processActivities $actType', $actType);
+    //CRM_Core_Error::debug_var('_processActivities $actSubject', $actSubject);
+
+    //construct where clauses
+    $whereAT = ($actType) ? "a.activity_type_id = {$actType}" : "(1)";
+    $whereAS = ($actSubject) ? "a.id = {$actSubject}" : "(1)";
+
+    $existingIDs = CRM_Core_DAO::singleValueQuery("
+      SELECT GROUP_CONCAT(contact_id) FROM {$table}
+    ");
+    $existingIDs = ($existingIDs) ? $existingIDs : "(0)";
+
+    switch ($action) {
+      case 'act_include':
+        $sql = "
+          INSERT INTO {$table} (contact_id)
+          SELECT ac.contact_id
+          FROM civicrm_activity_contact ac
+          JOIN civicrm_activity a
+            ON ac.activity_id = a.id
+            AND ac.record_type_id = 3
+          WHERE $whereAT
+            AND $whereAS
+            AND ac.contact_id NOT IN ({$existingIDs})
+          GROUP BY ac.contact_id
+        ";
+        CRM_Core_DAO::executeQuery($sql);
+        break;
+      case 'act_exclude':
+        $sql = "
+          DELETE {$table}
+          FROM {$table}
+          WHERE contact_id IN (
+            SELECT ac.contact_id
+            FROM civicrm_activity_contact ac
+            JOIN civicrm_activity a
+              ON ac.activity_id = a.id
+              AND ac.record_type_id = 3
+            WHERE $whereAT
+              AND $whereAS
+            GROUP BY ac.contact_id
+          )
+        ";
+        //CRM_Core_Error::debug_var('_processActivities exclude $sql', $sql);
+        CRM_Core_DAO::executeQuery($sql);
+        break;
+    }
+  }//_processActivities
 }
 

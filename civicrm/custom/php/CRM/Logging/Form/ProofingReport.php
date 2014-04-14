@@ -147,7 +147,23 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
       empty($fields['start_date']) &&
       empty($fields['end_date'])
     ) {
-      $errors['jobID'] = ts('You must select a Job ID, Altered By value, or date field to run this report.');
+      $errors['jobID'] = ts('You must select a Job ID or Altered By value, and date field to run this report.');
+    }
+
+    if ( empty($fields['start_date']) ) {
+      $errors['start_date'] = 'You must select a start date to run this report.';
+    }
+
+    //7776 check if date range is > 1 month
+    $dateStart = new DateTime(CRM_Utils_Array::value('start_date', $fields));
+    $dateEnd = new DateTime(CRM_Utils_Array::value('end_date', $fields, date('Y-m-d')));
+
+    $interval = $dateStart->diff($dateEnd);
+    $days = $interval->format('%a');
+    //CRM_Core_Error::debug_var('days', $days);
+
+    if ( $days > 30 ) {
+      $errors['end_date'] = 'The date range cannot exceed 30 days. Please adjust your start and end dates to a smaller interval in order to run this report.';
     }
 
     return $errors;
@@ -173,24 +189,24 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
     $sqlWhere  = 1;
     $startDate = $endDate = $alteredByFrom = '';
     if ( $formParams['jobID'] ) {
-      $sqlParams[] = "main.log_job_id = '{$formParams['jobID']}'";
+      $sqlParams['job'] = "main.log_job_id = '{$formParams['jobID']}'";
     }
     if ( $formParams['alteredBy'] ) {
-      $sqlParams[] = "ab.sort_name LIKE '%{$formParams['alteredBy']}%'";
+      $sqlParams['alteredby'] = "ab.sort_name LIKE '%{$formParams['alteredBy']}%'";
       $alteredByFrom = "LEFT JOIN $civiDB.civicrm_contact ab ON main.log_user_id = ab.id ";
     }
     if ( $formParams['start_date'] ) {
       $startDate = date( 'Y-m-d', strtotime($formParams['start_date']) );
-      $sqlParams[] = "main.log_date >= '{$startDate} 00:00:00'";
+      $sqlParams['startdate'] = "main.log_date >= '{$startDate} 00:00:00'";
     }
     if ( $formParams['end_date'] ) {
       $endDate = date( 'Y-m-d', strtotime($formParams['end_date']) );
-      $sqlParams[] = "main.log_date <= '{$endDate} 23:59:59'";
+      $sqlParams['enddate'] = "main.log_date <= '{$endDate} 23:59:59'";
     }
 
     if ( !empty($formParams['contact_tags']) ) {
       $tagsSelected = implode(',', $formParams['contact_tags']);
-      $sqlParams[] = "tag_id IN ({$tagsSelected})";
+      $sqlParams['tag'] = "tag_id IN ({$tagsSelected})";
     }
 
     //compile WHERE clauses
@@ -199,11 +215,6 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
     $bbconfig = get_bluebird_instance_config();
     $logDB = $bbconfig['db.log.prefix'].$bbconfig['db.basename'];
     $civiDB = $bbconfig['db.civicrm.prefix'].$bbconfig['db.basename'];
-
-    $tagFrom = (!empty($formParams['contact_tags'])) ? "
-      JOIN {$logDB}.log_civicrm_entity_tag
-        ON entity_id = main.id
-        AND entity_table = 'civicrm_contact' " : '';
 
     $dateNow  = date('F jS Y h:i a');
 
@@ -244,38 +255,108 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
           <th>Group(s)</th>
         </tr>";
 
-    //get contacts with changes to either the contact object or tag
     CRM_Core_DAO::executeQuery("SET SESSION group_concat_max_len = 100000;");
-    $query = "
-      SELECT *
-      FROM (
-        SELECT main.entity_id as id, DATE_FORMAT(log_date, '%m/%d/%Y %h:%i %p') as logDate, log_date as logDateLong, GROUP_CONCAT(CONCAT(t.name, ' (', main.log_action, ')') ORDER BY t.name SEPARATOR ', ') as tagList
-        FROM {$logDB}.log_civicrm_entity_tag main
-        JOIN {$civiDB}.civicrm_tag t
-          ON main.tag_id = t.id
-        $alteredByFrom
-        WHERE ( $sqlWhere )
-          AND entity_table = 'civicrm_contact'
-          AND main.log_action != 'Initialization'
-        GROUP BY main.entity_id
-    ";
 
+    //create temp table
+    $rnd = mt_rand(1,9999999999999999);
+    $tmpChgProof = "nyss_temp_changeproof_$rnd";
+    $sql = "
+      CREATE TABLE {$tmpChgProof} (id int not null primary key, logDate varchar(100), logDateLong timestamp, tagList varchar(1020), groupList varchar(1020)) ENGINE=myisam;
+    ";
+    CRM_Core_DAO::executeQuery($sql);
+
+    //insert contacts with tag changes
+    $query = "
+      INSERT INTO {$tmpChgProof}
+      SELECT main.entity_id as id, DATE_FORMAT(log_date, '%m/%d/%Y %h:%i %p') as logDate, log_date as logDateLong, GROUP_CONCAT(CONCAT(t.name, ' (', main.log_action, ')') ORDER BY t.name SEPARATOR ', ') as tagList, null as groupList
+      FROM {$logDB}.log_civicrm_entity_tag main
+      JOIN {$civiDB}.civicrm_tag t
+        ON main.tag_id = t.id
+      $alteredByFrom
+      WHERE ( $sqlWhere )
+        AND entity_table = 'civicrm_contact'
+        AND main.log_action != 'Initialization'
+      GROUP BY main.entity_id
+    ";
+    //CRM_Core_Error::debug_var('tags query',$query);
+    CRM_Core_DAO::executeQuery($query);
+
+    //if no tag option, look for changes to contacts
     if (empty($formParams['contact_tags'])) {
-      $query .= "UNION
-        SELECT main.id, DATE_FORMAT(main.log_date, '%m/%d/%Y %h:%i %p') as logDate, main.log_date as logDateLong, null as tagList
+      //contacts
+      $query = "
+        INSERT IGNORE INTO {$tmpChgProof}
+        SELECT main.id, DATE_FORMAT(main.log_date, '%m/%d/%Y %h:%i %p') as logDate, main.log_date as logDateLong, null as tagList, null as groupList
         FROM {$logDB}.log_civicrm_contact main
         $alteredByFrom
         WHERE ( $sqlWhere )
           AND main.log_action != 'Initialization'
         GROUP BY main.id
       ";
+      //CRM_Core_Error::debug_var('contact query', $query);
+      CRM_Core_DAO::executeQuery($query);
     }
 
-    $query .= " ) contactsChanged
-      GROUP BY id
-      ORDER BY logDateLong;";
-    //CRM_Core_Error::debug_var('query',$query);
-    $dao = CRM_Core_DAO::executeQuery($query);
+    //insert contacts with group changes
+    //remove the tag param first to avoid sql errors
+    $sqlParams2 = $sqlParams;
+    unset($sqlParams2['tag']);
+    $sqlWhere2 = implode(' ) AND ( ', $sqlParams2);
+
+    if (empty($formParams['contact_tags'])) {
+      $query = "
+        INSERT INTO {$tmpChgProof}
+        SELECT main.contact_id as id, DATE_FORMAT(main.log_date, '%m/%d/%Y %h:%i %p') as logDate, log_date as logDateLong, null as tagList, GROUP_CONCAT(CONCAT(g.title, ' (', main.log_action, ')') ORDER BY g.title SEPARATOR ', ') as groupList
+        FROM {$logDB}.log_civicrm_group_contact main
+        JOIN {$civiDB}.civicrm_group g
+          ON main.group_id = g.id
+        $alteredByFrom
+        WHERE ( $sqlWhere2 )
+          AND main.log_action != 'Initialization'
+        GROUP BY main.contact_id
+
+        ON DUPLICATE KEY UPDATE groupList = (
+          SELECT GROUP_CONCAT(CONCAT(g.title, ' (', main.log_action, ')') ORDER BY g.title SEPARATOR ', ')
+          FROM {$logDB}.log_civicrm_group_contact main
+          JOIN {$civiDB}.civicrm_group g
+            ON main.group_id = g.id
+          $alteredByFrom
+          WHERE ( $sqlWhere2 )
+            AND main.log_action != 'Initialization'
+            AND main.contact_id = {$tmpChgProof}.id
+          GROUP BY main.contact_id
+        )
+      ";
+      //CRM_Core_Error::debug_var('groups query',$query);
+      CRM_Core_DAO::executeQuery($query);
+    }
+    else {
+      //if we are filtering by tag, only update existing records with groupList
+      $query = "
+        UPDATE {$tmpChgProof}
+        SET groupList = (
+          SELECT GROUP_CONCAT(CONCAT(g.title, ' (', main.log_action, ')') ORDER BY g.title SEPARATOR ', ')
+          FROM {$logDB}.log_civicrm_group_contact main
+          JOIN {$civiDB}.civicrm_group g
+            ON main.group_id = g.id
+          $alteredByFrom
+          WHERE ( $sqlWhere2 )
+            AND main.log_action != 'Initialization'
+            AND main.contact_id = {$tmpChgProof}.id
+          GROUP BY main.contact_id
+        )
+      ";
+      //CRM_Core_Error::debug_var('groups update query',$query);
+      CRM_Core_DAO::executeQuery($query);
+    }
+
+    //get records from temp table
+    $sql = "
+      SELECT *
+      FROM {$tmpChgProof}
+      ORDER BY logDateLong
+    ";
+    $dao = CRM_Core_DAO::executeQuery($sql);
 
     while ( $dao->fetch() ) {
       //CRM_Core_Error::debug_var('dao',$dao);
@@ -320,14 +401,18 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
       $tagList = str_replace(' (Delete)', ' (removed)', $tagList);
 
       //7352 groups
-      $sql = "
+      /*$sql = "
         SELECT GROUP_CONCAT(g.title SEPARATOR ', ')
         FROM civicrm_group_contact gc
         JOIN civicrm_group g
           ON gc.group_id = g.id
         WHERE contact_id = {$dao->id}
       ";
-      $groupList = CRM_Core_DAO::singleValueQuery($sql);
+      $groupList = CRM_Core_DAO::singleValueQuery($sql);*/
+
+      //cleanup group list
+      $groupList = str_replace(' (Insert)', '', $dao->groupList);
+      $groupList = str_replace(' (Delete)', ' (removed)', $groupList);
 
       $html .= "
         <tr>
@@ -364,6 +449,7 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
         'email' => CRM_Utils_Array::value('email', $cDetails, ''),
         'postal_greeting' => CRM_Core_DAO::singleValueQuery("SELECT postal_greeting_display FROM civicrm_contact WHERE id = {$dao->id}"),
         'taglist' => stripslashes(iconv('UTF-8', 'Windows-1252', $tagList)),
+        'grouplist' => stripslashes(iconv('UTF-8', 'Windows-1252', $groupList)),
         'when' => $dao->logDate,
       );
 

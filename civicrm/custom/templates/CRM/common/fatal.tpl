@@ -110,8 +110,8 @@
     <p>This may happen for a number of reasons:
       <ul>
         <li>Did you leave your computer for some time with the browser left open, then attempt to conduct a search? If so, your user session (the software's short term memory) may have expired. Please return to the Bluebird homepage and try your search again.</li>
-        <li>Did you try conducting a search and then save it as a bookmark in your browser? Sorry &mdash; browsers are more like fish than elephants &mdash; they have short memories. Try running your search and saving it as a smart group, which works as a saved search.</li>
-        <li>Were you working with contact records or performing an action that you are confident should not have caused a problem? Don't worry, detailed information about the issue has been already sent to the development team. Please call the STS Helpline, at 518-455-2011 and provide as much detail about what steps you took when the problem appeared. We will investigate and follow-up as required.</li>
+        <li>Did you try conducting a search and then save it as a bookmark in your browser? When you perform a search, a temporary URL is built which cannot be referenced at a later time. Try running your search and saving it as a smart group, which works as a saved search.</li>
+        <li>Were you working with contact records or performing an action that you are confident should not have caused a problem? Don't worry, detailed information about the issue has been sent to the development team. Please call the STS Helpline, at 518-455-2011 and provide as much detail about what steps you took when the problem appeared. We will investigate and follow-up as required.</li>
       </ul>
     </p>
     <p class="large"><a href="{$config->userFrameworkBaseURL}" title="Bluebird Home">Click here</a> to return to Bluebird.</p>

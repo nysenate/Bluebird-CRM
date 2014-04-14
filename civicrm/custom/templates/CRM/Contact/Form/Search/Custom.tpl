@@ -184,3 +184,18 @@ function toggleContactSelection( name, qfKey, selection ){
 }
 </script>
 {/literal}
+
+{*NYSS 7748*}
+{if $dataUrl && $searchName eq 'IncludeExclude'}
+  {literal}
+  <script type="text/javascript">
+    cj(function( ) {
+      var sourceDataUrl = "{/literal}{$dataUrl}{literal}";
+      var hintText = "{/literal}{ts escape='js'}Start typing a subject line.{/ts}{literal}";
+      cj('#act_subject').autocomplete( sourceDataUrl, { width : 180, selectFirst : false, hintText: hintText, matchContains: true, minChars: 1, max: 15
+      }).result( function(event, data, formatted) { cj( "#act_subjectq" ).val( data[1] );
+      }).bind( 'click', function( ) { if (!cj("#act_subject").val()) { cj( "#act_subjectq" ).val(''); } });
+    });
+  </script>
+  {/literal}
+{/if}
