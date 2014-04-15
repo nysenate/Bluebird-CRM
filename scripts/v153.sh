@@ -106,7 +106,7 @@ $drush $instance pm-enable BluebirdPublic -y
 echo "7799: set geocode through interface to Google..."
 sql="
   UPDATE civicrm_domain
-  SET config_backend = REPLACE(config_backend, 's:4:\"SAGE\";', 's:6:\"Google\";')
+  SET config_backend = REPLACE(config_backend, 's:4:\"SAGE\";', 's:0:\"\";')
   WHERE id = 1;
 "
 $execSql -i $instance -c "$sql" -q
