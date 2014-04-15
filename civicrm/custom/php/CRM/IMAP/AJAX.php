@@ -5,7 +5,6 @@
 // Organization: New York State Senate
 // Revised: 2013-12-16
 
-
 require_once 'CRM/Core/Error.php';
 require_once 'CRM/Utils/IMAP.php';
 require_once 'CRM/Core/DAO.php';
@@ -144,7 +143,7 @@ class CRM_IMAP_AJAX {
         if ($debug){
           echo "<h1>Full Email OUTPUT</h1>";
           echo "<pre>";
-          json_decode($returnMessage);
+          var_dump($returnMessage);
         }
       }
       if(!is_array($returnMessage)){
@@ -222,29 +221,185 @@ class CRM_IMAP_AJAX {
      * returns an error if the message is no longer unassigned
      * @return  [JSON Object]    Messages that have have not been matched
      */
+
+    # http://codefool.tumblr.com/post/15288874550/list-of-valid-and-invalid-email-addresses
+
+  // UPDATE `nyss_inbox_messages` SET body = ' email@example.com<br/>firstname.lastname@example.com<br/>email@subdomain.example.com<br/>firstname+lastname@example.com<br/>email@123.123.123.123<br/>email@[123.123.123.123]<br/>"email"@example.com<br/>1234567890@example.com<br/>email@example-one.com<br/>_______@example.com<br/>email@example.name<br/>email@example.museum<br/>email@example.co.jp<br/>firstname-lastname@example.com<br/>much.”more\ unusual”@example.com<br/>very.unusual.”@”.unusual.com@example.com<br/>very.”(),:;<>[]”.VERY.”very@\\ "very”.unusual@strange.example.com<br/>plainaddress<br/>#@%^%#$@#$@#.com<br/>@example.com<br/>Joe Smith <email@example.com><br/>email.example.com<br/>email@example@example.com<br/>.email@example.com<br/>email.@example.com<br/>email..email@example.com<br/>あいうえお@example.com<br/>email@example.com (Joe Smith)<br/>email@example<br/>email@-example.com<br/>email@example.web<br/>email@111.222.333.44444<br/>email@example..com<br/>Abc..123@example.com<br/><br/> 5085551234 <br/> 508.555.1234 or 508-555-1234 <br/> (508)-555-1234<br/>5000001234 or 501.111.1111 or 502-222-2222 and (503)-333-3333 123+52(55)55555555<br/>0052 (55) 55555555<br/>(55) 55555555<br/>55555555<br/>55-555-555<br/>01-800-765-8786<br/>55555555 x23<br/>5555-5555 Ext 23<br/>55555555 ext23<br/>5555-5555x43<br/>55555555ext26<br/> 051123456<br/>041-765-432<br/>(031) 246-357<br/>040/456-123<br/>064.111-222<br/>(051)121212<br/>+386 041 100-200<br/>00 386 (0)70 555 555<br/>(051) 951-159<br/>041234567<br/>040 555-999<br/>+386 (0)70 111 222<br/>040/555999<br/>031 98 76 54<br/>((111) 222-3333<br/>1112223333<br/>111 222-3333<br/>111-222-3333<br/>(111)2223333<br/>+11234567890<br/>    1-8002353551<br/>    123-456-7890   -Hello!<br/>+1 - 1234567890<br/> This part of the expression validates the ‘username’ section of the email address. The hat sign (^) at the beginning of the expression represents the start of the string. If we didn’t include this, then someone could key in anything they wanted before the email address and it would still validate. <br/><br/>Contained in the square brackets are the characters we want to allow in this part of the address. Here, we are allowing the letters a-z, A-Z, the numbers 0-9, and the symbols underscore (_), period (.), and dash (-). As you’ve probably noticed, I’ve included letters both in capitals and lower case. In this instance, this isn’t strictly necessary, as we’re using the eregi (case insensitive) function. But I’ve included them here for completeness, and to show you how the functions work. The order of the character pairs within the brackets doesn’t matter.<br/><br/>The plus (+) sign after the square brackets indicates ‘one or more of the contents of the previous brackets’. So, in this case, we require one or more of any of the characters in the square brackets to be included in the address in order for it to validate. Finally, there is the ‘@‘ sign, which means that we require the presence of one @ sign immediately following the username. Dr. Steven V.R. Crain and<br/>Dr. Joe Sam Smith and Dr. Joe S. Smith and Joe S. Smith and Joe Smith and<br/>Joe-bob O\'Smith and Joe-bob Smith and aa a Mary-Ann I Stupid and<br/>Lisa E. Booth Crain and.Janna H. Belser-Ehrlich and Bjorn O\'Malleydd and<br/>Bin Lindd and Linda Jonesdd and Jason H. Priemdd <br/>Bjorn O\'Malley-Munozdd and Bjorn C. O\'Malleydd and Bjorn "Bill" O\'Malleydd and Bjorn ("Bill") O\'Malleydd and<br/>Bjorn ("Wild Bill") O\'Malleydd and Bjorn (Bill) O\'Malleydd and Bjorn \'Bill\' O\'Malleydd and Bjorn C O\'Malleydd and Bjorn C. R. O\'Malleydd and Bjorn Charles O\'Malleydd and Bjorn Charles R. O\'Malleydd and Bjorn van O\'Malleydd and Bjorn Charles van der O\'Malleydd and Bjorn Charles O\'Malley y Muñozdd and Bjorn O\'Malley, Jr.dd and<br/>Bjorn O\'Malley Jrdd and B O\'Malleydd and William Carlos Williamsdd and<br/>C. Bjorn Roger O\'Malley and B. C. O\'Malleydd and B C O\'Malleydd and B.J. Thomasdd and O\'Malley, Bjorndd and O\'Malley, Bjorn Jrdd and O\'Malley, C. Bjorn dd and O\'Malley, C. Bjorn III dd and O\'Malley y Muñoz, C. Bjorn Roger III and<br/>Doe, John. A. Kenneth III andVelasquez y Garcia, Dr. Juan, Jr. and Dr. Juan Q. Xavier de la Vega, Jr. an Smith and Smith Contractors and 12901,<br/> 5285 KEYES DR  KALAMAZOO MI 49004 2613 .. <br/> PO BOX 35  COLFAX LA 71417 35 .. <br/> 64938 MAGNOLIA LN APT B PINEVILLE LA 71360-9781 486 S SOANGETAHA RD APT 9 GALESBURG IL .. <br/> 450 N CHERRY ST GALESBURG IL 61401.. <br/> 950 REDWOOD SHORES PKWY UNIT K102 REDWOOD CITY CA.. <br/>  123 MAIN ST.. <br/> 123 MAIN ST SAN FRANCISCO.. <br/> MAIN ST & KELLOGG ST.. <br/>  EMBARCADERO ST & MARKET ST SAN FRANCISCO.. <br/> ' where id = 406;
+
+
+
     public static function UnmatchedDetails() {
       $messageId = self::get('id');
       $output = self::unifiedMessageInfo($messageId);
-      $admin = CRM_Core_Permission::check('administer CiviCRM');
-      $output['filebug'] = $admin;
       $status = $output['status'];
+      $debug = self::get('debug');
+
       if($status != ''){
         switch ($status) {
           case '0':
-            $search = preg_replace('/&lt;|&gt;|&quot;|&amp;|<|>/i', ' ', $output['body']);
+            $time_start = microtime(true);
+            $patterns = array('/\r\n|\r|\n/i', '/\<p(\s*)?\/?\>/i', '/\<br(\s*)?\/?\>/i', '/<div[^>]*>/','/<\/div>/' ,'/\//');
+            $search = preg_replace('/&lt;|&gt;|&quot;|&amp;/i', '###', $search );
+            $search = preg_replace($patterns, "\n ",  $output['body']);
+
+            // Find Possible Email Addresses
             foreach(preg_split('/[, ;]/', $search) as $token) {
               $email = filter_var(filter_var($token, FILTER_SANITIZE_EMAIL), FILTER_VALIDATE_EMAIL);
               if ($email !== false) {
                   $emails[] = $email;
               }
             }
-
             $output['found_emails'] = array_unique($emails, SORT_REGULAR);
 
+            // Find Possible city/states from zipcode with usps-ams service
+            // docs here : http://geo.nysenate.gov:8080/usps-ams/docs/
+            preg_match_all('/(?<=[\s])\d{5}(-\d{4})?\b/', $search, $zipcodes);
+            $url = 'http://geo.nysenate.gov:8080/usps-ams/api/citystate?batch=true';
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($zipcodes[0]));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                'Content-Type: application/json',
+                'Content-Length: ' . strlen(json_encode($zipcodes[0]))
+            ));
+            $addresses = json_decode(curl_exec($ch));
+            // turn object into array, the easy way
+            $addresses = json_decode(json_encode($addresses), true);
+            $output['found_addresses'] = array_unique($addresses['results'], SORT_REGULAR);
 
-            $output['prefix'] = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'prefix_id');
-            $output['suffix'] = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'suffix_id');
-            echo json_encode($output);
+            // Find Possible Phone numbers
+            preg_match_all('/(?:\(?([0-9]{3})\)?[-. ]?)?([0-9]{3})[-. ]?([0-9]{4})/s',$search,$phonenumbers);
+            $output['found_phones'] = array_unique($phonenumbers[0], SORT_REGULAR);
+
+            // Find Possible Names
+            preg_match_all( "/([A-Z][\'][A-Z][a-z]*[-][A-Z][a-z]*\s|[A-Z][\'][A-Z][a-z]*\s|[A-Z][a-z]*[-][A-Z][a-z]*\s|[A-Z][a-z]{0,3}[\.]\s|[A-Z][a-z]{0,3}[\.][A-Z][a-z]{0,3}[\.]\s|[A-Z][a-z]*\s|(PHD|MD|3RD|2ND|RN|JR|II|SR|III)){2,}(?=[a-z]|)/",$search,$names);
+            foreach ($names[0] as $id => $name) {
+              $name = trim($name);
+
+              // separate the prefix and suffix's from the name
+              preg_match( "/^((Mr|MR|Ms|Miss|Mrs|Dr|Sir)[.])/",$name, $prefix );
+              preg_match( "/(PHD|MD|3RD|2ND|RN|JR|III|II|SR)/",$name, $suffix );
+              if (!empty($prefix[0])) {
+                $nameOutput[$id]['prefix'] = $prefix[0];
+                $name = str_replace($prefix[0],"",$name);
+              }
+              if (!empty($suffix[0])) {
+                $name = str_replace($suffix[0],"",$name);
+              }
+
+              // now that we have a name, break it into parts
+              $nameArray = explode(' ', trim($name));
+              $nameLenght = count($nameArray);
+              $nodes = array('first','second','third','fourth','fifth');
+              foreach ($nameArray as $key => $value) {
+                // is this the last name?
+                $count = ($nameLenght != $key+1) ?  $nodes[$key] : 'last';
+                $nameOutput[$id][$count] = $value;
+              }
+              if (!empty($suffix[0])) {
+                $nameOutput[$id]['suffix'] = $suffix[0];
+              }
+            }
+            $output['found_names'] = array_unique($nameOutput, SORT_REGULAR);
+            $time_end = microtime(true);
+            $time = $time_end - $time_start;
+
+            // preg_replace("/\w*?$keyword\w*/i", "<b>$0</b>", $str);
+            $time_start = microtime(true);
+
+            // colorizing the output
+            if (!empty($output['found_emails'])) {
+              $email = preg_quote(implode(' #### ', $output['found_emails']));
+              $email = preg_replace("/^ #### /i", "", $email);
+              $email = preg_replace("/ #### $/i", "", $email);
+              $email = preg_replace("/ #### /i", "|", $email);
+              $body = preg_replace("/(${email})/i", "<span class='found email_address' data-search='$1' title='\"$1\" is likely an email address'>$1</span>", $output['body']);
+            }
+            if (!empty($zipcodes[0])) {
+              $zipcode = preg_quote(implode(' #### ', $zipcodes[0]));
+              $zipcode = preg_replace("/^ #### /i", "", $zipcode);
+              $zipcode = preg_replace("/ #### $/i", "", $zipcode);
+              $zipcode = preg_replace("/ #### /i", "|", $zipcode);
+              $body = preg_replace("/(${zipcode})/i", "<span class='found zip' data-search='$1'  title='\"$1\" is likely a zipcode'>$1</span>", $body);
+            }
+            if (!empty($output['found_phones'])) {
+              $phone = preg_quote(implode(' #### ', $output['found_phones']));
+              $phone = preg_replace("/^ #### /i", "", $phone);
+              $phone = preg_replace("/ #### $/i", "", $phone);
+              $phone = preg_replace("/ #### /i", "|", $phone);
+              $body = preg_replace("/(${phone})/i", "<span class='found phone' data-search='$1'  title='\"$1\" is likely a phone number'>$1</span>", $body);
+            }
+            if (!empty($output['found_names'])) {
+              $names = '';
+              foreach ($output['found_names'] as $key => $name) {
+                $names .= " &&& ".preg_quote(implode(' ', $name));
+              }
+              $names = preg_replace("/^ &&& /i", "", $names);
+              $names = preg_replace("/ &&& $/i", "", $names);
+              $names = preg_replace("/ &&& /i", "|", $names);
+              $body = preg_replace("/(${names})/i", "<span class='found name' title='\"$1\" is likely a Formal Name'>$1</span>", $body);
+            }
+
+            $output['body'] = $body;
+            $time_end = microtime(true);
+            $time2 = $time_end - $time_start;
+
+            // $output['prefix'] = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'prefix_id');
+            // $output['suffix'] = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'suffix_id');
+
+              if ($debug){
+                // var_dump($search);
+                echo "<style>
+.found{
+    background: rgba(255, 230, 0, 0.5);
+    padding: 1px 2px;
+    border: 1px solid #C1C1C1;
+    margin: -1px 2px;
+    padding: 1px 4px;
+    border-radius: 3px;
+    display:inline-block;
+}
+.found:hover{
+    background: rgba(255, 230, 0, 0.8);
+    border: 1px solid #A0A0A0;
+
+}
+
+.found.name{
+    /* red ffb7b7 */
+    background: rgba(255,183,183, 0.5);
+}
+/*.found.name:hover{
+    background: rgba(255,183,183, 0.8);
+}*/
+.found.zip{
+    /* blue a8d1ff*/
+    background: rgba(168,209,255, 0.5);
+}
+.found.zip:hover{
+    background: rgba(168,209,255, 0.8);
+}
+.found.phone{
+    /* green a8d1ff*/
+    background: rgba(196,255,143, 0.5);
+}
+.found.phone:hover{
+    background: rgba(196,255,143, 0.8);
+}</style>
+                <br/>".$body."<br/><br/><br/>";
+                var_dump($email);
+                var_dump($zipcode);
+
+                var_dump($phone);
+                var_dump($names);
+
+                echo $time . " seconds ( Time to Find )\n";
+                echo $time2 . " seconds ( Time to colorize )\n";
+
+              }else{
+                echo json_encode($output);
+              }
             break;
           case '1':
             $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message is already Assigned','clear'=>'true');
@@ -300,21 +455,20 @@ class CRM_IMAP_AJAX {
     public static function UnmatchedDelete() {
       // Set up IMAP variables
       self::setupImap();
-      $id = self::get('id');
-      $output = self::unifiedMessageInfo($id);
-      $imap_id = $output['imap_id'];
-      $message_id = $output['message_id'];
-
-      $session = CRM_Core_Session::singleton();
-      $userId =  $session->get('userID');
-
-      // Delete the message with the specified UID
-      $returnCode = array('code'=>'SUCCESS','status'=> '0','message'=>'Message Deleted');
-      $UPDATEquery = "UPDATE `nyss_inbox_messages`
-      SET  `status`= 9, `matcher` = $userId
-      WHERE `id` =  {$id}";
-      $UPDATEresult = mysql_query($UPDATEquery, self::db());
-
+      $ids = explode(',', self::get('id'));
+      foreach ($ids as $key => $id) {
+        $output = self::unifiedMessageInfo($id);
+        $imap_id = $output['imap_id'];
+        $message_id = $output['message_id'];
+        $session = CRM_Core_Session::singleton();
+        $userId =  $session->get('userID');
+        // Delete the message with the specified UID
+        $UPDATEquery = "UPDATE `nyss_inbox_messages`
+        SET  `status`= 9, `matcher` = $userId
+        WHERE `id` =  {$id}";
+        $UPDATEresult = mysql_query($UPDATEquery, self::db());
+      }
+      $returnCode = array('code'=>'SUCCESS','status'=> '0','id'=>$ids, 'message'=>'Message Deleted');
       echo json_encode($returnCode);
       CRM_Utils_System::civiExit();
     }
@@ -822,8 +976,112 @@ class CRM_IMAP_AJAX {
         if($status != ''){
            switch ($status) {
             case '1':
-              $output['prefix'] = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'prefix_id');
-              $output['suffix'] = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'suffix_id');
+              $time_start = microtime(true);
+              $patterns = array('/\r\n|\r|\n/i', '/\<p(\s*)?\/?\>/i', '/\<br(\s*)?\/?\>/i', '/<div[^>]*>/','/<\/div>/' ,'/\//');
+              $search = preg_replace('/&lt;|&gt;|&quot;|&amp;/i', '###', $search );
+              $search = preg_replace($patterns, "\n ",  $output['body']);
+
+              // Find Possible Email Addresses
+              foreach(preg_split('/[, ;]/', $search) as $token) {
+                $email = filter_var(filter_var($token, FILTER_SANITIZE_EMAIL), FILTER_VALIDATE_EMAIL);
+                if ($email !== false) {
+                    $emails[] = $email;
+                }
+              }
+              $output['found_emails'] = array_unique($emails, SORT_REGULAR);
+
+              // Find Possible city/states from zipcode with usps-ams service
+              // docs here : http://geo.nysenate.gov:8080/usps-ams/docs/
+              preg_match_all('/(?<=[\s])\d{5}(-\d{4})?\b/', $search, $zipcodes);
+              $url = 'http://geo.nysenate.gov:8080/usps-ams/api/citystate?batch=true';
+              $ch = curl_init($url);
+              curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+              curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($zipcodes[0]));
+              curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+              curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                  'Content-Type: application/json',
+                  'Content-Length: ' . strlen(json_encode($zipcodes[0]))
+              ));
+              $addresses = json_decode(curl_exec($ch));
+              // turn object into array, the easy way
+              $addresses = json_decode(json_encode($addresses), true);
+              $output['found_addresses'] = array_unique($addresses['results'], SORT_REGULAR);
+
+              // Find Possible Phone numbers
+              preg_match_all('/(?:\(?([0-9]{3})\)?[-. ]?)?([0-9]{3})[-. ]?([0-9]{4})/s',$search,$phonenumbers);
+              $output['found_phones'] = array_unique($phonenumbers[0], SORT_REGULAR);
+
+              // Find Possible Names
+              preg_match_all( "/([A-Z][\'][A-Z][a-z]*[-][A-Z][a-z]*\s|[A-Z][\'][A-Z][a-z]*\s|[A-Z][a-z]*[-][A-Z][a-z]*\s|[A-Z][a-z]{0,3}[\.]\s|[A-Z][a-z]{0,3}[\.][A-Z][a-z]{0,3}[\.]\s|[A-Z][a-z]*\s|(PHD|MD|3RD|2ND|RN|JR|II|SR|III)){2,}(?=[a-z]|)/",$search,$names);
+              foreach ($names[0] as $id => $name) {
+                $name = trim($name);
+
+                // separate the prefix and suffix's from the name
+                preg_match( "/^((Mr|MR|Ms|Miss|Mrs|Dr|Sir)[.])/",$name, $prefix );
+                preg_match( "/(PHD|MD|3RD|2ND|RN|JR|III|II|SR)/",$name, $suffix );
+                if (!empty($prefix[0])) {
+                  $nameOutput[$id]['prefix'] = $prefix[0];
+                  $name = str_replace($prefix[0],"",$name);
+                }
+                if (!empty($suffix[0])) {
+                  $name = str_replace($suffix[0],"",$name);
+                }
+
+                // now that we have a name, break it into parts
+                $nameArray = explode(' ', trim($name));
+                $nameLenght = count($nameArray);
+                $nodes = array('first','second','third','fourth','fifth');
+                foreach ($nameArray as $key => $value) {
+                  // is this the last name?
+                  $count = ($nameLenght != $key+1) ?  $nodes[$key] : 'last';
+                  $nameOutput[$id][$count] = $value;
+                }
+                if (!empty($suffix[0])) {
+                  $nameOutput[$id]['suffix'] = $suffix[0];
+                }
+              }
+              $output['found_names'] = array_unique($nameOutput, SORT_REGULAR);
+              $time_end = microtime(true);
+              $time = $time_end - $time_start;
+
+              // preg_replace("/\w*?$keyword\w*/i", "<b>$0</b>", $str);
+              $time_start = microtime(true);
+
+              // colorizing the output
+              if (!empty($output['found_emails'])) {
+                $email = preg_quote(implode(' #### ', $output['found_emails']));
+                $email = preg_replace("/^ #### /i", "", $email);
+                $email = preg_replace("/ #### $/i", "", $email);
+                $email = preg_replace("/ #### /i", "|", $email);
+                $body = preg_replace("/(${email})/i", "<span class='found email_address' data-search='$1' title='\"$1\" is likely an email address'>$1</span>", $output['body']);
+              }
+              if (!empty($zipcodes[0])) {
+                $zipcode = preg_quote(implode(' #### ', $zipcodes[0]));
+                $zipcode = preg_replace("/^ #### /i", "", $zipcode);
+                $zipcode = preg_replace("/ #### $/i", "", $zipcode);
+                $zipcode = preg_replace("/ #### /i", "|", $zipcode);
+                $body = preg_replace("/(${zipcode})/i", "<span class='found zip' data-search='$1'  title='\"$1\" is likely a zipcode'>$1</span>", $body);
+              }
+              if (!empty($output['found_phones'])) {
+                $phone = preg_quote(implode(' #### ', $output['found_phones']));
+                $phone = preg_replace("/^ #### /i", "", $phone);
+                $phone = preg_replace("/ #### $/i", "", $phone);
+                $phone = preg_replace("/ #### /i", "|", $phone);
+                $body = preg_replace("/(${phone})/i", "<span class='found phone' data-search='$1'  title='\"$1\" is likely a phone number'>$1</span>", $body);
+              }
+              if (!empty($output['found_names'])) {
+                $names = '';
+                foreach ($output['found_names'] as $key => $name) {
+                  $names .= " &&& ".preg_quote(implode(' ', $name));
+                }
+                $names = preg_replace("/^ &&& /i", "", $names);
+                $names = preg_replace("/ &&& $/i", "", $names);
+                $names = preg_replace("/ &&& /i", "|", $names);
+                $body = preg_replace("/(${names})/i", "<span class='found name' title='\"$1\" is likely a Formal Name'>$1</span>", $body);
+              }
+
+              $output['body'] = $body;
+              $time_end = microtime(true);
               echo json_encode($output);
               break;
             case '7':
@@ -848,38 +1106,40 @@ class CRM_IMAP_AJAX {
      */
     public static function MatchedDelete() {
       require_once 'api/api.php';
-      $messageId = self::get('id');
-      $session = CRM_Core_Session::singleton();
-      $userId =  $session->get('userID');
+      $ids = explode(',', self::get('id'));
+      foreach ($ids as $key => $messageId) {
+        $session = CRM_Core_Session::singleton();
+        $userId =  $session->get('userID');
 
-      $output = self::unifiedMessageInfo($messageId);
-      $activity_id = $output['activity_id'];
-      $error = false;
-      $debug = self::get('debug');
+        $output = self::unifiedMessageInfo($messageId);
+        $activity_id = $output['activity_id'];
+        $error = false;
+        $debug = self::get('debug');
 
-      // deleteing a activity
-      $params = array(
-          'id' => $activity_id,
-          'activity_type_id' => 1,
-          'version' => 3,
-      );
+        // deleteing a activity
+        $params = array(
+            'id' => $activity_id,
+            'activity_type_id' => 1,
+            'version' => 3,
+        );
 
-      $deleteActivity = civicrm_api('activity','delete',$params );
+        $deleteActivity = civicrm_api('activity','delete',$params );
 
-      // need to add to function to delete entity tags as they are not cleaned up
+        // need to add to function to delete entity tags as they are not cleaned up
 
-      if($deleteActivity['is_error'] == 1){
-        $error = true;
-      }
+        if($deleteActivity['is_error'] == 1){
+          $error = true;
+        }
 
-      if(!$error){
-        $UPDATEquery = "UPDATE `nyss_inbox_messages`
-        SET  `status`= 9, `matcher` = $userId
-        WHERE `id` =  {$messageId}";
-        $UPDATEresult = mysql_query($UPDATEquery, self::db());
-        $returnCode = array('code'=>'SUCCESS','id'=>$messageId, 'message'=>'Activity Deleted');
-      }else{
-        $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity not found','clear'=>'true');
+        if(!$error){
+          $UPDATEquery = "UPDATE `nyss_inbox_messages`
+          SET  `status`= 9, `matcher` = $userId
+          WHERE `id` =  {$messageId}";
+          $UPDATEresult = mysql_query($UPDATEquery, self::db());
+          $returnCode = array('code'=>'SUCCESS','id'=>$ids, 'message'=>'Activity Deleted');
+        }else{
+          $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity not found','clear'=>'true');
+        }
       }
       echo json_encode($returnCode);
 
@@ -936,7 +1196,7 @@ class CRM_IMAP_AJAX {
      */
     public static function MatchedReassign() {
       require_once 'api/api.php';
-      $id = self::get('id');
+      $id = self::get('messageId');
       $debug = self::get('debug');
 
       $output = self::unifiedMessageInfo($id);
@@ -944,14 +1204,12 @@ class CRM_IMAP_AJAX {
       $activityId =  $output['activity_id'];
       $date =  $output['updated_date'];
 
-      $change = self::get('change');
+      $contactIds = self::get('contactId');
+      $contactIds = explode(',', $contactIds);
+      $ContactCount = 0;
+
       $results = array();
-      $changeData = self::civiRaw('contact',$change);
-      $changeName = $changeData['values'][$change]['display_name'];
-      $firstName = $changeData['values'][$change]['first_name'];
-      $LastName = $changeData['values'][$change]['last_name'];
-      $contactType = $changeData['values'][$change]['contact_type'];
-      $email = $changeData['values'][$change]['email'];
+
 
       if ($debug){
         echo "<h1>inputs</h1>";
@@ -990,41 +1248,91 @@ EOQ;
         echo json_encode($returnCode);
         CRM_Utils_System::civiExit();
       }
-      // change the contact
-      $Update = <<<EOQ
+
+      foreach($contactIds as $contactId) {
+        $changeData = self::civiRaw('contact',$contactId);
+        $changeName = trim($changeData['values'][$contactId]['display_name']);
+        $firstName = trim($changeData['values'][$contactId]['first_name']);
+        $LastName = trim($changeData['values'][$contactId]['last_name']);
+        $contactType = trim($changeData['values'][$contactId]['contact_type']);
+        $email = trim($changeData['values'][$contactId]['email']);
+
+        // change the contact
+        $Update = <<<EOQ
 UPDATE `civicrm_activity_contact`
-SET  `contact_id`= $change
+SET  `contact_id`= $contactId
 WHERE `activity_id` =  $activityId
 AND `record_type_id` = 3
 EOQ;
+         // change the row
+        $Updated_results = mysql_query($Update, self::db());
+        while($row = mysql_fetch_assoc($Updated_results)) {
+             $results[] = $row;
+        }
 
-      // change the row
-      $Updated_results = mysql_query($Update, self::db());
-      while($row = mysql_fetch_assoc($Updated_results)) {
-           $results[] = $row;
-      }
-
-      $Source_update = <<<EOQ
+        $Source_update = <<<EOQ
 UPDATE `civicrm_activity`
 SET  `is_auto`= 0
 WHERE `id` =  $activityId
 EOQ;
-      $Source_results = mysql_query($Source_update, self::db());
+        $Source_results = mysql_query($Source_update, self::db());
 
-      $session = CRM_Core_Session::singleton();
-      $userId =  $session->get('userID');
-      $UPDATEquery = "UPDATE `nyss_inbox_messages`
-      SET  `matcher` = $userId,  `matched_to` = $change, `sender_name` = '$changeName',`sender_email` = '$email', `updated_date` = '$date'
-      WHERE `id` =  {$id}";
-      $UPDATEresult = mysql_query($UPDATEquery, self::db());
-
-      $returnCode = array('code'=>'SUCCESS','id'=>$id,'contact_id'=>$change,'contact_type'=>$contactType,'first_name'=>$firstName,'last_name'=>$LastName,'display_name'=>$changeName,'email'=>$email,'activity_id'=>$id,'message'=>'Activity Reassigned to '.$changeName);
+        $session = CRM_Core_Session::singleton();
+        $userId =  $session->get('userID');
+        $UPDATEquery = "UPDATE `nyss_inbox_messages`
+        SET  `matcher` = $userId,  `matched_to` = $contactId, `sender_name` = '$changeName',`sender_email` = '$email', `updated_date` = '$date'
+        WHERE `id` =  {$id}";
+        $UPDATEresult = mysql_query($UPDATEquery, self::db());
+        $returnCode = array('code'=>'SUCCESS','id'=>$id,'contact_id'=>$contactId,'contact_type'=>$contactType,'first_name'=>$firstName,'last_name'=>$LastName,'display_name'=>$changeName,'email'=>$email,'activity_id'=>$id,'message'=>'Activity Reassigned to '.$changeName);
+      }
 
       echo json_encode($returnCode);
       mysql_close(self::$db);
       CRM_Utils_System::civiExit();
     }
 
+    /**
+     * Edit the Assignee for a inbound email activity to a different office worker
+     * For Matched screen EDIT
+     * @return [JSON Object]    JSON encoded response, OR error codes
+     */
+    public static function MatchedEdit() {
+      require_once 'api/api.php';
+      $activity_id = self::get('activity_id');
+      $activty_contact = self::get('activty_contact');
+      $activty_status_id = self::get('activty_status_id');
+      $activity_date = self::get('activity_date');
+      $results = array();
+      if (!empty($activty_status_id)) {
+        $query_activiy1 = "UPDATE civicrm_activity SET status_id  = ${activty_status_id}  WHERE civicrm_activity.id  = ${activity_id}";
+        // var_dump($query_activiy1);
+        $Updated_results = mysql_query($query_activiy1, self::db());
+        while($row = mysql_fetch_assoc($Updated_results)) {
+          $results[] = $row;
+        }
+      }
+
+      if (!empty($activity_date)) {
+        $query_activiy2 = "UPDATE civicrm_activity SET activity_date_time = \"${activity_date}\" WHERE civicrm_activity.id  = ${activity_id}";
+        // var_dump($query_activiy2);
+        $Updated_results = mysql_query($query_activiy2, self::db());
+        while($row = mysql_fetch_assoc($Updated_results)) {
+          $results[] = $row;
+        }
+      }
+      // change the contact
+      if (!empty($activty_contact)) {
+        $query_activiy3 = "INSERT INTO civicrm_activity_contact (activity_id, contact_id, record_type_id) VALUES ('${activity_id}', '${activty_contact}', '1');";
+        // var_dump($query_activiy3);
+        $Updated_results = mysql_query($query_activiy3, self::db());
+        while($row = mysql_fetch_assoc($Updated_results)) {
+          $results[] = $row;
+        }
+      }
+      // echo json_encode($results);
+      mysql_close(self::$db);
+      CRM_Utils_System::civiExit();
+    }
     /**
      * Autocomplete Keyword search for tags
      * For Matched screen TAG
