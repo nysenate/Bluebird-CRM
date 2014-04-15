@@ -102,3 +102,12 @@ $execSql $instance -f $app_rootdir/scripts/sql/wordReplacement.sql -q
 
 echo "5581: enable public theme..."
 $drush $instance pm-enable BluebirdPublic -y
+
+echo "7799: set geocode through interface to Google..."
+sql="
+  UPDATE civicrm_domain
+  SET config_backend = REPLACE(config_backend, 's:4:\"SAGE\";', 's:6:\"Google\";')
+  WHERE id = 1;
+"
+$execSql -i $instance -c "$sql" -q
+
