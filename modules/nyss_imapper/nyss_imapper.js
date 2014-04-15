@@ -895,12 +895,14 @@ cj(document).ready(function(){
       console.log('Reassigning to: ',contactIds);
       cj.ajax({
         url: '/civicrm/imap/ajax/matched/reassign',
+        async: false,
         data: {
-          id: messageId,
+          messageId: messageId,
           contactId: contactIds.toString()
         },
         success: function(data, status) {
           var data = cj.parseJSON(data);
+          console.log(data);
           if (data.code =='ERROR'){
             CRM.alert('Could not reassign Message : '+data.message, '', 'error');
           }else{
@@ -934,6 +936,7 @@ cj(document).ready(function(){
       };
       cj.ajax({
         url: '/civicrm/imap/ajax/contact/add',
+        async: false,
         data: {
           messageId: messageId,
           prefix: prefix,

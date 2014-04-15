@@ -132,7 +132,7 @@ thead .sorting_asc{background-color:#f1f1f1!important;}
 .token-input-dropdown-facebook {z-index: 999999!important; float: left;}
 .page-civicrm-imap-matched #contact-issue-codes{margin:0 0 10px;}
 .page-civicrm-imap-matched .tag_filter_bar{ margin: 0px !important;}
-.page-civicrm-imap-matched ul.token-input-list-facebook{width: 328px;}
+.page-civicrm-imap-matched ul.token-input-list-facebook{width: 318px;}
 .page-civicrm-imap-matched dt.lv-0{display: none}
 /* IMAP - Popup Left */
 .page-civicrm-imap #message_left,
@@ -161,7 +161,7 @@ thead .sorting_asc{background-color:#f1f1f1!important;}
 .page-civicrm-imap #tabs.ui-tabs.ui-widget-content,.page-civicrm-imap #tabs.ui-tabs.ui-tabs-nav,.page-civicrm-imap #tabs.ui-tabs.ui-widget-header { background: transparent !important }
 .page-civicrm-imap #tabs_tag.ui-tabs.ui-widget-content,.page-civicrm-imap #tabs_tag.ui-tabs.ui-tabs-nav,.page-civicrm-imap #tabs_tag.ui-tabs.ui-widget-header { background: transparent !important }
 
-
+.page-civicrm-imap #tabs_tag #TagContact{ width:335px; height:430px; overflow-y: scroll; }
 .page-civicrm-imap #message_right{width:339px; float:left; border-left: 1px solid #ccc; height:466px;  border-bottom: 1px solid #e5e5e5; }
 .page-civicrm-imap #message_right #tabs .ui-tabs-panel,
 .page-civicrm-imap #message_right_tag.ui-tabs .ui-tabs-panel,

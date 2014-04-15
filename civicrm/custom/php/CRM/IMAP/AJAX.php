@@ -300,6 +300,15 @@ class CRM_IMAP_AJAX {
               if (!empty($suffix[0])) {
                 $nameOutput[$id]['suffix'] = $suffix[0];
               }
+
+              // use dedupe rules to eliminate names not found in the system
+              $query = "SELECT COUNT(id) from fn_group where given LIKE '".strtolower($nameOutput[$id]['first'])."';";
+              $check_result = mysql_query($query, self::db());
+              if($row = mysql_fetch_assoc($check_result)) {
+                if($row['COUNT(id)'] < 1){
+                  unset($nameOutput[$id]);
+                }
+              }
             }
             $output['found_names'] = array_unique($nameOutput, SORT_REGULAR);
             $time_end = microtime(true);
@@ -345,49 +354,10 @@ class CRM_IMAP_AJAX {
             $time_end = microtime(true);
             $time2 = $time_end - $time_start;
 
-            // $output['prefix'] = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'prefix_id');
-            // $output['suffix'] = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'suffix_id');
 
               if ($debug){
                 // var_dump($search);
-                echo "<style>
-.found{
-    background: rgba(255, 230, 0, 0.5);
-    padding: 1px 2px;
-    border: 1px solid #C1C1C1;
-    margin: -1px 2px;
-    padding: 1px 4px;
-    border-radius: 3px;
-    display:inline-block;
-}
-.found:hover{
-    background: rgba(255, 230, 0, 0.8);
-    border: 1px solid #A0A0A0;
-
-}
-
-.found.name{
-    /* red ffb7b7 */
-    background: rgba(255,183,183, 0.5);
-}
-/*.found.name:hover{
-    background: rgba(255,183,183, 0.8);
-}*/
-.found.zip{
-    /* blue a8d1ff*/
-    background: rgba(168,209,255, 0.5);
-}
-.found.zip:hover{
-    background: rgba(168,209,255, 0.8);
-}
-.found.phone{
-    /* green a8d1ff*/
-    background: rgba(196,255,143, 0.5);
-}
-.found.phone:hover{
-    background: rgba(196,255,143, 0.8);
-}</style>
-                <br/>".$body."<br/><br/><br/>";
+                echo $body."<br/><br/><br/>";
                 var_dump($email);
                 var_dump($zipcode);
 
@@ -1039,8 +1009,17 @@ class CRM_IMAP_AJAX {
                 if (!empty($suffix[0])) {
                   $nameOutput[$id]['suffix'] = $suffix[0];
                 }
+
+                // use dedupe rules to eliminate names not found in the system
+                $query = "SELECT COUNT(id) from fn_group where given LIKE '".strtolower($nameOutput[$id]['first'])."';";
+                $check_result = mysql_query($query, self::db());
+                if($row = mysql_fetch_assoc($check_result)) {
+                  if($row['COUNT(id)'] < 1){
+                    unset($nameOutput[$id]);
+                  }
+                }
               }
-              $output['found_names'] = array_unique($nameOutput, SORT_REGULAR);
+              $output['found_names'] =  array_unique($nameOutput, SORT_REGULAR);
               $time_end = microtime(true);
               $time = $time_end - $time_start;
 
@@ -1198,15 +1177,15 @@ class CRM_IMAP_AJAX {
       require_once 'api/api.php';
       $id = self::get('messageId');
       $debug = self::get('debug');
+      $contactIds = self::get('contactId');
+      $contactIds = explode(',', $contactIds);
+      $ContactCount = 0;
 
       $output = self::unifiedMessageInfo($id);
       $contact = $output['matched_to'];
       $activityId =  $output['activity_id'];
       $date =  $output['updated_date'];
 
-      $contactIds = self::get('contactId');
-      $contactIds = explode(',', $contactIds);
-      $ContactCount = 0;
 
       $results = array();
 

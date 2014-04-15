@@ -184,6 +184,13 @@
           <label for="prefix">
             <span class="label_def">Prefix: </span>
               <select class="form-select prefix" id="prefix" name="prefix">
+                <option> </option>
+                {php}
+                  $prefixes = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'prefix_id');
+                  foreach ($prefixes as $key => $value) {
+                    echo '<option value="'.$key.'">'.$value.'</option>';
+                  }
+                {/php}
               </select>
             </label>
           </label>
@@ -202,6 +209,13 @@
           <label for="suffix">
             <span class="label_def">Suffix: </span>
             <select class="form-select suffix" id="suffix" name="suffix">
+                <option> </option>
+                {php}
+                  $prefixes = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'suffix_id');
+                  foreach ($prefixes as $key => $value) {
+                    echo '<option value="'.$key.'">'.$value.'</option>';
+                  }
+                {/php}
             </select>
           </label>
           <label for="email_address">
