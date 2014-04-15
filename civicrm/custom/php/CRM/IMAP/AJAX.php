@@ -306,6 +306,7 @@ class CRM_IMAP_AJAX {
               $check_result = mysql_query($query, self::db());
               if($row = mysql_fetch_assoc($check_result)) {
                 if($row['COUNT(id)'] < 1){
+                  // var_dump($nameOutput[$id]);
                   unset($nameOutput[$id]);
                 }
               }
@@ -320,13 +321,13 @@ class CRM_IMAP_AJAX {
               switch ($type) {
                 case 'name':
                   $re = '~\\b(' . implode(' ', $search) . ')\\b~';
-                  return preg_replace($re, "<span class='found $type' data-prefix='".$search['prefix']."' data-first='".$search['first']."' data-second='".$search['second']."' data-last='".$search['last']."' data-suffix='".$search['suffix']."' data-search='$0' title='\"$0\" is likely an email address'>$0</span>", $text);
+                  return preg_replace($re, "<span class='found $type' data-json='".json_encode($search)."' title='\"$0\" is likely an email address'>$0</span>", $text);
+
                   break;
                 case 'addresses':
                   // var_dump($search);
                   $re = '~\\b(' . implode(' ', $search). ')\\b~';
-
-                  return preg_replace($re, "<span class='found $type' data-search='$0' title='\"$0\" is likely an email address'>$0</span>", $text);
+                  return preg_replace($re, "<span class='found $type' data-json='".json_encode($search)."' title='\"$0\" is likely an email address'>$0</span>", $text);
                   break;
                 default:
                   $re = '~\\b(' . implode('|', $search). ')\\b~';
@@ -1053,40 +1054,40 @@ class CRM_IMAP_AJAX {
               $time_end = microtime(true);
               $time = $time_end - $time_start;
 
-              // preg_replace("/\w*?$keyword\w*/i", "<b>$0</b>", $str);
-              $time_start = microtime(true);
-
               // colorizing the output
-              if (!empty($output['found_emails'])) {
-                $email = preg_quote(implode(' #### ', $output['found_emails']));
-                $email = preg_replace("/^ #### /i", "", $email);
-                $email = preg_replace("/ #### $/i", "", $email);
-                $email = preg_replace("/ #### /i", "|", $email);
-                $body = preg_replace("/(${email})/i", "<span class='found email_address' data-search='$1' title='\"$1\" is likely an email address'>$1</span>", $output['body']);
+              $time_start = microtime(true);
+              function highlight($text, $search, $type) {
+                switch ($type) {
+                  case 'name':
+                    $re = '~\\b(' . implode(' ', $search) . ')\\b~';
+                    return preg_replace($re, "<span class='found $type' data-json='".json_encode($search)."' title='\"$0\" is likely an email address'>$0</span>", $text);
+
+                    break;
+                  case 'addresses':
+                    // var_dump($search);
+                    $re = '~\\b(' . implode(' ', $search). ')\\b~';
+                    return preg_replace($re, "<span class='found $type' data-json='".json_encode($search)."' title='\"$0\" is likely an email address'>$0</span>", $text);
+                    break;
+                  default:
+                    $re = '~\\b(' . implode('|', $search). ')\\b~';
+                    return preg_replace($re, "<span class='found $type' data-search='$0' title='\"$0\" is likely an email address'>$0</span>", $text);
+                    break;
+                }
               }
-              if (!empty($zipcodes[0])) {
-                $zipcode = preg_quote(implode(' #### ', $zipcodes[0]));
-                $zipcode = preg_replace("/^ #### /i", "", $zipcode);
-                $zipcode = preg_replace("/ #### $/i", "", $zipcode);
-                $zipcode = preg_replace("/ #### /i", "|", $zipcode);
-                $body = preg_replace("/(${zipcode})/i", "<span class='found zip' data-search='$1'  title='\"$1\" is likely a zipcode'>$1</span>", $body);
+              $body = $output['body'];
+              if (!empty($output['found_emails'])) {
+                $body =  highlight($body, $output['found_emails'] ,'email_address');
+              }
+              if (!empty($output['found_addresses'])) {
+                $body =  highlight($body, $output['found_addresses'],'addresses');
               }
               if (!empty($output['found_phones'])) {
-                $phone = preg_quote(implode(' #### ', $output['found_phones']));
-                $phone = preg_replace("/^ #### /i", "", $phone);
-                $phone = preg_replace("/ #### $/i", "", $phone);
-                $phone = preg_replace("/ #### /i", "|", $phone);
-                $body = preg_replace("/(${phone})/i", "<span class='found phone' data-search='$1'  title='\"$1\" is likely a phone number'>$1</span>", $body);
+                $body =  highlight($body, $output['found_phones'],'phone');
               }
               if (!empty($output['found_names'])) {
-                $names = '';
                 foreach ($output['found_names'] as $key => $name) {
-                  $names .= " &&& ".preg_quote(implode(' ', $name));
+                  $body =  highlight($body, $name,'name');
                 }
-                $names = preg_replace("/^ &&& /i", "", $names);
-                $names = preg_replace("/ &&& $/i", "", $names);
-                $names = preg_replace("/ &&& /i", "|", $names);
-                $body = preg_replace("/(${names})/i", "<span class='found name' title='\"$1\" is likely a Formal Name'>$1</span>", $body);
               }
 
               $output['body'] = $body;

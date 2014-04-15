@@ -17,11 +17,12 @@ cj(document).ready(function(){
   });
 
   cj(".found.name").live('click', function() {
-    cj('.ui-tabs-panel:visible .prefix').val(cj(this).data('prefix'));
-    cj('.ui-tabs-panel:visible .first_name').val(cj(this).data('first'));
-    cj('.ui-tabs-panel:visible .middle_name').val(cj(this).data('second'));
-    cj('.ui-tabs-panel:visible .last_name').val(cj(this).data('last'));
-    cj('.ui-tabs-panel:visible .suffix').val(cj(this).data('suffix'));
+    var data = cj(this).data('json');
+    cj('.ui-tabs-panel:visible .prefix').val(data.prefix);
+    cj('.ui-tabs-panel:visible .first_name').val(data.first);
+    cj('.ui-tabs-panel:visible .middle_name').val(data.second);
+    cj('.ui-tabs-panel:visible .last_name').val(data.last);
+    cj('.ui-tabs-panel:visible .suffix').val(data.suffix);
   });
 
   // prevent the scroll to top issue
