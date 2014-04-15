@@ -99,3 +99,6 @@ $script_dir/resetRolePerms.sh $instance
 
 echo "7761: rebuilding word replacement list..."
 $execSql $instance -f $app_rootdir/scripts/sql/wordReplacement.sql -q
+
+echo "5581: enable public theme..."
+$drush $instance pm-enable BluebirdPublic
