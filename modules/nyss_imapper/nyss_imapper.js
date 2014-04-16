@@ -576,7 +576,7 @@ cj(document).ready(function(){
       cj('#contact_tag, #contact_position, #activity_tag, #contact_name, #activity_date, #contact_position_name').val('');
       cj('.token-input-dropdown-facebook').html('').remove();
       cj('.token-input-list-facebook').html('').remove();
-      cj('#contact-issue-codes').html('');
+      cj('#contact-issue-codes,#message_left_header,#message_left_email,#imapper-contacts-list').html('');
 
       // load the message
       // build one list of singular processing
@@ -584,8 +584,9 @@ cj(document).ready(function(){
       activityIds = activityId.split(',');
       contactIds = contactId.split(',');
       if(activityIds.length == 1){
-        cj('#message_left_header').show();
+        cj('#message_left_header,#tab1').show();
         cj('#message_left_email').removeClass('multi');
+        cj('#ui-id-1').click();
         cj.ajax({
           url: '/civicrm/imap/ajax/matched/details',
           data: {id: messageId, contact: contactId },
@@ -596,8 +597,6 @@ cj(document).ready(function(){
               cj("#loading-popup").dialog('close');
               if(message.clear =='true')   removeRow(messageId);
             }else{
-              cj('#message_left_header').html('');
-
               if(message.sender_name || message.sender_email) cj('#message_left_header').html('').append("<span class='popup_def'>From: </span>");
               if(message.sender_name) cj('#message_left_header').append(message.sender_name +"  ");
               if(message.sender_email) cj('#message_left_header').append("<span class='emailbubble'>"+ message.sender_email+"</span>");
@@ -609,9 +608,7 @@ cj(document).ready(function(){
               }else{
                 cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span>No forwarded content found<br/>");
               }
-
               cj('#message_left_email').html(message.body+"<hr/>");
-
               cj.each(message.attachments, function(key, value) {
                 if((!value.rejection) || (value.rejection == '')){
                   cj('#message_left_email').append(value.fileName+" ("+((value.size / 1024) / 1024).toFixed(2)+" MB)<br/>");
@@ -619,12 +616,10 @@ cj(document).ready(function(){
                   cj('#message_left_email').append("<span class='rejected'>"+value.fileName+" was rejected ("+value.rejection+")</span><br/>");
                 }
               });
-
               cj("#loading-popup").dialog('close');
               cj("#assign-popup").dialog({
                 title:  "Processing "+shortenString(message.subject,55),
               });
-
               cj('#imapper-contacts-list').html('').append("<strong>currently matched to : </strong><br/>           "+'<a href="/civicrm/contact/view?reset=1&cid='+message.matched_to+'" title="'+message.sender_name+'">'+shortenString(message.sender_name,35)+'</a>'+" <br/><i>&lt;"+ message.sender_email+"&gt;</i> <br/>"+ cj('.dob').val()+"<br/> "+ cj('.phone').val()+"<br/> "+  cj('.street_address').val()+"<br/> "+  cj('.city').val()+"<br/>");
             }
           },
@@ -636,24 +631,21 @@ cj(document).ready(function(){
       }else if (activityIds.length > 1){
         // here is the view for multiple messages
         cj('#message_left_email').addClass('multi');
-        cj('#message_left_header').hide();
-
+        cj('#message_left_header,#tab1').hide();
+        cj('#ui-id-2').click();
         cj.each(messageIds, function(key, messageId) {
-          console.log("messageId : "+messageId+' - activityId :'+activityIds[key]+" - key : "+key+" - Contact : "+contactIds[key]);
+          // console.log("messageId : "+messageId+' - activityId :'+activityIds[key]+" - key : "+key+" - Contact : "+contactIds[key]);
           cj.ajax({
             url: '/civicrm/imap/ajax/matched/details',
             data: {id: messageId, contact: contactIds[key] },
             success: function(data,status) {
-
               cj("#loading-popup").dialog('close');
               message = cj.parseJSON(data);
-              console.log(message);
               if(message.code == 'ERROR'){
                 if(message.clear =='true') removeRow(messageId);
                 CRM.alert('Unable to load Message : '+ message.message, '', 'error');
                 return false;
               }else{
-                console.log('working');
                 cj('#message_left_email').append("<div id='header_"+messageId+"' data-id='"+messageId+"' class='message_left_header_tags'><span class='popup_def'>From: </span>"+message.sender_name +"  <span class='emailbubble'>"+ message.sender_email+"</span><br/><span class='popup_def'>Subject: </span>"+shortenString(message.subject,55)+"<br/><span class='popup_def'>Date Forwarded: </span>"+message.date_long+"<br/></div><div id='email_"+messageId+"' class='hidden_email' data-id='"+messageId+"'></div>");
                 if ((message.forwarder != message.sender_email)){
                   cj('#header_'+messageId).append("<span class='popup_def'>Forwarded by: </span><span class='emailbubble'>"+ message.forwarder+"</span> @"+ message.updated_long+ "<br/>");
