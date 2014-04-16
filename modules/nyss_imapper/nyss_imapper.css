@@ -207,8 +207,8 @@ thead .sorting_asc{background-color:#f1f1f1!important;}
 /* Email toggle for multi tag */
 .hidden_email{margin:0 0 10px 0; height:30px; overflow: hidden; width: 580px; cursor:pointer; cursor:hand}
 .shown_email{margin: 0 0 10px 0; height: auto; background: #fff; border-bottom:1px solid #ccc; width: 580px;}
-.info.hidden_email_info{height: 20px; background: #e1e1e1; float: left; padding: 5px 10px; width: 580px;}
-.info.shown_email_info{height: 20px; background: #e1e1e1; float: left; padding: 5px 10px; width: 580px;}
+.info.hidden_email_info{height: 20px; background: #e1e1e1; float: left; padding: 5px 10px; width: 570px;}
+.info.shown_email_info{height: 20px; background: #e1e1e1; float: left; padding: 5px 10px; width: 570px;}
 .info:hover{background: #ccc; }
 .add_email{width:450px !important; padding: 5px 10px;}
 

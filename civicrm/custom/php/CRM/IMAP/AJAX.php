@@ -241,8 +241,7 @@ class CRM_IMAP_AJAX {
             $patterns = array('/\r\n|\r|\n/i', '/\<p(\s*)?\/?\>/i', '/\<br(\s*)?\/?\>/i', '/<div[^>]*>/','/<\/div>/' ,'/\//');
             $search = preg_replace('/&lt;|&gt;|&quot;|&amp;/i', '###', $search );
             $search = preg_replace($patterns, "\n ",  $output['body']);
-
-            // Find Possible Email Addresses
+             // Find Possible Email Addresses
             foreach(preg_split('/[, ;]/', $search) as $token) {
               $email = filter_var(filter_var($token, FILTER_SANITIZE_EMAIL), FILTER_VALIDATE_EMAIL);
               if ($email !== false) {
