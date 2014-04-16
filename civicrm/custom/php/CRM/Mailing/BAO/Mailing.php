@@ -2734,6 +2734,14 @@ SELECT  $mailing.id as mailing_id
       }
     }
 
+    //7723
+    $mailingKey = $form->_mailing_id;
+    if (!$isSMS) {
+      if ($hash = CRM_Mailing_BAO_Mailing::getMailingHash($mailingKey)) {
+        $mailingKey = $hash;
+      }
+    }
+
     if (!empty($report['mailing']['body_text'])) {
       $url = CRM_Utils_System::url('civicrm/mailing/report', 'reset=1&text=1&mid=' . $form->_mailing_id);
       $popup = "javascript:popUp(\"$url\");";

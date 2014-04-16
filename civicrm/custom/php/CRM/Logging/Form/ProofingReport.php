@@ -162,7 +162,7 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
     $days = $interval->format('%a');
     //CRM_Core_Error::debug_var('days', $days);
 
-    if ( $days > 30 ) {
+    if ( $days > 180 ) {
       $errors['end_date'] = 'The date range cannot exceed 30 days. Please adjust your start and end dates to a smaller interval in order to run this report.';
     }
 
