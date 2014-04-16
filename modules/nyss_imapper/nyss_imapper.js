@@ -16,6 +16,15 @@ cj(document).ready(function(){
     cj('.ui-tabs-panel:visible .zip').val(cj(this).data('search'));
   });
 
+  cj(".found.name").live('click', function() {
+    var data = cj(this).data('json');
+    cj('.ui-tabs-panel:visible .prefix').val(data.prefix);
+    cj('.ui-tabs-panel:visible .first_name').val(data.first);
+    cj('.ui-tabs-panel:visible .middle_name').val(data.second);
+    cj('.ui-tabs-panel:visible .last_name').val(data.last);
+    cj('.ui-tabs-panel:visible .suffix').val(data.suffix);
+  });
+
   // prevent the scroll to top issue
   cj(".imap_actions_column a").live('click', function( event ) {
     event.preventDefault();
@@ -895,12 +904,14 @@ cj(document).ready(function(){
       console.log('Reassigning to: ',contactIds);
       cj.ajax({
         url: '/civicrm/imap/ajax/matched/reassign',
+        async: false,
         data: {
-          id: messageId,
+          messageId: messageId,
           contactId: contactIds.toString()
         },
         success: function(data, status) {
           var data = cj.parseJSON(data);
+          console.log(data);
           if (data.code =='ERROR'){
             CRM.alert('Could not reassign Message : '+data.message, '', 'error');
           }else{
@@ -934,6 +945,7 @@ cj(document).ready(function(){
       };
       cj.ajax({
         url: '/civicrm/imap/ajax/contact/add',
+        async: false,
         data: {
           messageId: messageId,
           prefix: prefix,
