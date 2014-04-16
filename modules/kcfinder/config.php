@@ -19,6 +19,11 @@
 // Bootstrap Drupal in order to obtain paths and config.
 $drupal_dir = preg_replace('#/drupal/sites/.*#', '/drupal', $_SERVER['SCRIPT_FILENAME']);
 define('DRUPAL_ROOT', $drupal_dir);
+// NYSS 7796: Set MAINTENANCE_MODE to true, which forces the Drupal bootstrap
+// process to skip the menu_set_custom_theme() function.  This function
+// was generating an error ever since nyss_mail_custom_theme() was added
+// as a hook in the nyss_mail module.
+define('MAINTENANCE_MODE', true);
 require_once DRUPAL_ROOT.'/includes/bootstrap.inc';
 drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
 
