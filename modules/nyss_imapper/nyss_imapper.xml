@@ -60,6 +60,11 @@
     <page_callback>CRM_IMAP_AJAX::MatchedReassign</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
+  <item>
+    <path>civicrm/imap/ajax/matched/edit</path>
+    <page_callback>CRM_IMAP_AJAX::MatchedEdit</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
 
   <!-- adding tags to contacts, matched  -->
   <item>

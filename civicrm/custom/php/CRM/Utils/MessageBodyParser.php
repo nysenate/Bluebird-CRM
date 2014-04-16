@@ -150,6 +150,8 @@ class MessageBodyParser
         }
       }
     }
+
+
     // only grab the details from the first header in the message
     $fwdDate = $m[0]['Date'];
     $fwdName = trim(strip_tags($m[0]['From']['name']));
