@@ -14,7 +14,7 @@
     <div class='page_actions'>
       <input type="button" class="multi_delete" value="Delete" name="multi_delete">
       <input type="button" class="multi_clear" value="Clear" name="multi_clear">
-      <!-- <input type="button" class="multi_process" value="Process" name="multi_process"> -->
+      <input type="button" class="multi_process" value="Process" name="multi_process">
       <span class="page_actions_label">With selected :</span>
     </div>
     <table id="sortable_results" class="">
@@ -36,7 +36,7 @@
     <div class='page_actions'>
       <input type="button" class="multi_delete" value="Delete" name="multi_delete">
       <input type="button" class="multi_clear" value="Clear" name="multi_clear">
-      <!-- <input type="button" class="multi_process" value="Process" name="multi_process"> -->
+      <input type="button" class="multi_process" value="Process" name="multi_process">
       <span class="page_actions_label">With selected :</span>
     </div>
   </div>
@@ -65,7 +65,7 @@
     <div id="message_right">
       <div id="tabs">
         <ul>
-          <li><a href="#tab1">Edit Match </a></li>
+          <li><a href="#tab1">ReAssign </a></li>
           <li><a href="#tab2">Tag</a></li>
           <li><a href="#tab3">Edit Activity</a></li>
         </ul>
@@ -207,6 +207,13 @@
 	            <label for="prefix">
 	              <span class="label_def">Prefix: </span>
 	                <select class="form-select prefix" id="prefix" name="prefix">
+		                <option> </option>
+		                {php}
+								      $prefixes = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'prefix_id');
+								      foreach ($prefixes as $key => $value) {
+								        echo '<option value="'.$key.'">'.$value.'</option>';
+								      }
+		                {/php}
 	                </select>
 	              </label>
 	            </label>
@@ -225,6 +232,13 @@
 	            <label for="suffix">
 	              <span class="label_def">Suffix: </span>
 	              <select class="form-select suffix" id="suffix" name="suffix">
+              		<option> </option>
+		                {php}
+								      $prefixes = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'suffix_id');
+								      foreach ($prefixes as $key => $value) {
+								        echo '<option value="'.$key.'">'.$value.'</option>';
+								      }
+		                {/php}
 	              </select>
 	            </label>
 	            <label for="email_address">
