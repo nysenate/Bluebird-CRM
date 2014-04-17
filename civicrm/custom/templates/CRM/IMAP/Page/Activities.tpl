@@ -65,7 +65,7 @@
     <div id="message_right">
       <div id="tabs">
         <ul>
-          <li><a href="#tab1">ReAssign </a></li>
+          <li id="tab1"><a href="#tab1">ReAssign </a></li>
           <li><a href="#tab2">Tag</a></li>
           <li><a href="#tab3">Edit Activity</a></li>
         </ul>
