@@ -34,18 +34,27 @@ app_rootdir=`$readConfig --ig $instance app.rootdir` || app_rootdir="$DEFAULT_AP
 #$drush $instance civicrm-upgrade-db
 
 echo "5581: create fields for mailing subscription..."
+sql="ALTER TABLE civicrm_email ADD mailing_categories VARCHAR(765) NULL DEFAULT NULL, ADD INDEX (mailing_categories);"
+$execSql $instance -c "$sql" -q
+
+sql="ALTER TABLE civicrm_mailing ADD category VARCHAR(255) NULL DEFAULT NULL, ADD INDEX (category);"
+$execSql $instance -c "$sql" -q
+
 sql="
-  ALTER TABLE civicrm_email ADD mailing_categories VARCHAR(765) NULL DEFAULT NULL, ADD INDEX (mailing_categories);
-  ALTER TABLE civicrm_mailing ADD category VARCHAR(255) NULL DEFAULT NULL, ADD INDEX (category);
-  DELETE FROM civicrm_option_group WHERE name = 'Mailing Categories';
+  DELETE FROM civicrm_option_group WHERE name = 'mailing_categories';
   INSERT INTO civicrm_option_group (name, title, description, is_reserved, is_active)
     VALUES ('mailing_categories', 'Mailing Categories', 'Mailing Categories', '1', '1');
   SELECT @optGrp:=id FROM civicrm_option_group WHERE name = 'mailing_categories';
   INSERT INTO civicrm_option_value
     (option_group_id, label, value, name, grouping, filter, is_default, weight, description, is_optgroup, is_reserved, is_active, component_id, domain_id, visibility_id)
-    VALUES (@optGrp, 'Newsletter', '1', 'Newsletter', NULL, '0', NULL, '1', '', '0', '1', '1', NULL, NULL, NULL),
-      (@optGrp, 'Legislative Alert', '2', 'Legislative Alert', NULL, '0', NULL, '2', '', '0', '1', '1', NULL, NULL, NULL),
-      (@optGrp, 'Local News', '3', 'Local News', NULL, '0', NULL, '3', '', '0', '1', '1', NULL, NULL, NULL);
+    VALUES
+      (@optGrp, 'Budget Updates', '1', 'Budget Updates', NULL, '0', NULL, '1', '', '0', '0', '1', NULL, NULL, NULL),
+      (@optGrp, 'Community and Special Event Notices', '2', 'Community and Special Event Notices', NULL, '0', NULL, '2', '', '0', '0', '1', NULL, NULL, NULL),
+      (@optGrp, 'Emergency and Public Safety Alerts', '3', 'Emergency and Public Safety Alerts', NULL, '0', NULL, '3', '', '0', '0', '1', NULL, NULL, NULL),
+      (@optGrp, 'Issue/Bill Updates', '4', 'Issue/Bill Updates', NULL, '0', NULL, '4', '', '0', '0', '1', NULL, NULL, NULL),
+      (@optGrp, 'Newsletters', '5', 'Newsletters', NULL, '0', NULL, '5', '', '0', '0', '1', NULL, NULL, NULL),
+      (@optGrp, 'Press Releases', '6', 'Press Releases', NULL, '0', NULL, '6', '', '0', '0', '1', NULL, NULL, NULL),
+      (@optGrp, 'All Other Messages', '7', 'All Other Messages', NULL, '0', NULL, '7', '', '0', '0', '1', NULL, NULL, NULL);
 "
 $execSql $instance -c "$sql" -q
 
@@ -109,5 +118,5 @@ sql="
   SET config_backend = REPLACE(config_backend, 's:4:\"SAGE\";', 's:0:\"\";')
   WHERE id = 1;
 "
-$execSql -i $instance -c "$sql" -q
+$execSql $instance -c "$sql" -q
 

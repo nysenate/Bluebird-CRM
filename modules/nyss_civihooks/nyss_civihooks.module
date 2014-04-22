@@ -939,6 +939,7 @@ function nyss_civihooks_civicrm_navigationMenu( &$params ) {
   $params[3000] = _buildInboxMenu(3000);
 
   //move Administer menu
+  _extendAdminMenu($adminNav, 4000);
   $params[$adminNavID] = $adminNav;
 
   //CRM_Core_Error::debug_var('navigationMenu params (after)',$params);
@@ -1586,6 +1587,43 @@ function _buildSearchMenu($searchNavID) {
 
   return $search;
 }//_buildSearchMenu
+
+//unlike other submenus, we retain the existing admin menu and extend it with some options
+function _extendAdminMenu(&$adminNav, $nyssBaseID) {
+  $adminID = $adminNav['attributes']['navID'];
+  $mailingCatID = CRM_Core_DAO::singleValueQuery("SELECT id FROM civicrm_option_group WHERE name = 'mailing_categories'");
+  $adminNav['child'][$nyssBaseID] = array(
+    'attributes' => array (
+      'label'      => 'NYSS Admin',
+      'name'       => 'NYSS Admin',
+      'url'        => '',
+      'permission' => 'administer CiviCRM',
+      'operator'   => 'AND',
+      'separator'  => 0,
+      'parentID'   => $adminID,
+      'navID'      => $nyssBaseID,
+      'active'     => 1
+    ),
+    'child' => array(
+      $nyssBaseID+1 => array(
+        'attributes' => array (
+          'label'      => 'Manage Mailing Categories',
+          'name'       => 'Manage Mailing Categories',
+          'url'        => "civicrm/admin/optionValue?gid={$mailingCatID}&reset=1",
+          'permission' => 'administer CiviCRM',
+          'operator'   => 'AND',
+          'separator'  => 0,
+          'parentID'   => $nyssBaseID,
+          'navID'      => $nyssBaseID+1,
+          'active'     => 1
+        ),
+        'child' => array(),
+      ),
+    ),
+  );
+
+  //CRM_Core_Error::debug_var('adminNav', $adminNav);
+}//_extendAdminMenu
 
 //4808/2960 word replacement for titles
 function _fixTitles() {
