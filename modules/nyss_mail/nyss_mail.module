@@ -68,6 +68,8 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
     }
   }
 
+  //TODO check to see if body element is present and add if not, else text replacement will fail throughout
+
   $hdr = new SmtpApiHeader();
 
   //universal settings
@@ -163,8 +165,8 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
     }
 
     //7701 - append link for hosted email
+    $env = explode('.', $bbconfig['base.domain']);
     if ( !empty($mid) ) {
-      $env = explode('.', $bbconfig['base.domain']);
       $viewID = ( $hash ) ? $hash : $mid;
       $url = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/view/{$viewID}";
       //$url = CRM_Utils_System::url('civicrm/mailing/view', 'reset=1&id='.$viewID, TRUE);
@@ -183,18 +185,36 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
 
     //5581 subscription management link
     if ( !empty($contactID) && !empty($mid) && $bbconfig['smtp.subscriptions'] ) {
-      $gid = CRM_Core_DAO::singleValueQuery("
+      /*$gid = CRM_Core_DAO::singleValueQuery("
         SELECT id
         FROM civicrm_uf_group
         WHERE name = 'Mass_Email_Subscriptions'
-      ");
+      ");*/
       $cs = CRM_Contact_BAO_Contact_Utils::generateChecksum($contactID);
-      $env = explode('.', $bbconfig['base.domain']);
       $url = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/subscription/edit/{$contactID}/{$cs}";
       //$url = CRM_Utils_System::url('civicrm/profile/edit', "reset=1&gid={$gid}&id={$contactID}&cs={$cs}", TRUE);
 
       $params['text'] .= "\n\nClick here to manage your email subscription settings: {$url}";
       $params['html'] = preg_replace('#(\s*</body>)#', "\n<p style=\"text-align:center; font-size:10px;\"><a href='{$url}' target=_blank>Click here</a> to manage your email subscription settings.</p>$1", $params['html'], 1);
+    }
+
+    //7803 if viewing html, insert FB share image
+    if ( empty($params['contact_id']) ) {
+      $imgRoot = $bbconfig['data.rootdir'].'/'.$bbconfig['data_dirname'].'/pubfiles/images/';
+      $fbShareThumbFolder = 'template';
+
+      if ( !file_exists($imgRoot.$fbShareThumbFolder.'/fb_share_thumb.png') ) {
+        $fbShareThumbFolder = 'common';
+      }
+      $fbShareThumb = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/images/{$fbShareThumbFolder}/fb_share_thumb.png";
+
+      //append to the head block as meta tag
+      $params['html'] = preg_replace('#(\s*</head>)#', "
+        \n<meta property='og:image' content={$fbShareThumb} />
+        \n<meta property='og:title' content='{$params['Subject']}' />
+        \n<link rel='image_src' type='image/png' href='{$fbShareThumb}' />
+      $1", $params['html'], 1);
+      $params['html'] = preg_replace('#(\s*</head>)#', "$1", $params['html'], 1);
     }
 
     //Sendgrid headers
