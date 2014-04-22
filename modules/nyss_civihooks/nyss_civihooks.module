@@ -317,8 +317,8 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 
   //set NY as default for state field in proximity search
   if ( $formName == 'CRM_Contact_Form_Search_Custom' &&
-       $form->getVar('_customSearchClass') == 'CRM_Contact_Form_Search_Custom_Proximity' ) {
-
+    $form->getVar('_customSearchClass') == 'CRM_Contact_Form_Search_Custom_Proximity'
+  ) {
     $defaults['state_province_id'] = 1031;
     $form->setDefaults( $defaults );
   }
@@ -342,9 +342,9 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 
   //3674 add limit submit js to all submit buttons
   if ( isset( $form->_elementIndex['buttons'] ) ) {
-    $buttons    =& $form->getElement( 'buttons' );
-    $formID     =  $form->_attributes['id'];
-    $formAction =  $form->_attributes['action'];
+    $buttons =& $form->getElement( 'buttons' );
+    $formID =  $form->_attributes['id'];
+    $formAction = $form->_attributes['action'];
 
     //list of exclusions by name or value
     $btnExcludeName  = array(
@@ -365,6 +365,9 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
       '_qf_ExportPermissions_next',
       '_qf_ExportPermissions_submit',
       '_qf_ExportPermissions_cancel',
+      '_qf_Website_upload', //7800
+      '_qf_Demographics_upload', //7800
+      '_qf_CustomData_upload', //7800
     );
     $btnExcludeValue = array(
       'PDF',
@@ -380,10 +383,11 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
     foreach ( $buttons->_elements as $key=>$button ) {
       $btnType = $buttons->_elements[$key]->_attributes['type'];
       if ( $btnType == 'submit' ) {
-        $btnName  = $buttons->_elements[$key]->_attributes['name'];
+        $btnName = $buttons->_elements[$key]->_attributes['name'];
         $btnValue = $buttons->_elements[$key]->_attributes['value'];
         if ( !in_array($btnName, $btnExcludeName) &&
-             !in_array($btnValue, $btnExcludeValue) ) {
+          !in_array($btnValue, $btnExcludeValue)
+        ) {
           $js = "if(this.value!='Processing...'){this.value='Processing...';cj('#' + this.id).click();return true;}else{return false;}";
           $buttons->_elements[$key]->_attributes['onclick'] = $js;
         }
