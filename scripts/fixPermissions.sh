@@ -8,6 +8,7 @@
 # Date: 2010-09-13
 # Revised: 2011-12-09
 # Revised: 2014-02-26 - enforce read-only group access on template/ directory
+# Revised: 2014-04-22 - enforce read-only group access on common/ directory
 #
 
 prog=`basename $0`
@@ -46,8 +47,11 @@ set -x
 # kz: Kludge Alert: The images/template directory must be read-only so that
 # Senators cannot delete their own header and footer images.  I am chowning
 # the directory to "root" so that only root can modify images there.
-chown -R root "$datdir"/*/pubfiles/images/template
-chmod -R go-w "$datdir"/*/pubfiles/images/template
+# In addition, the common/ directory must be locked down.
+chown -R root "$datdir"/*.*/pubfiles/images/template
+chmod -R go-w "$datdir"/*.*/pubfiles/images/template
+chown -R root "$datdir"/common/
+chmod -R go-w "$datdir"/common/
 
 [ "$impowner" ] && chown -R "$impowner" "$impdir/"
 [ "$impperms" ] && chmod -R "$impperms" "$impdir/"
