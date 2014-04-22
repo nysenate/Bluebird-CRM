@@ -57,9 +57,9 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
   //CRM_Core_Error::debug_var('context', $context);
 
   /* Re-write any URLs in the message body of the form:
-  **   senator.crm*.nysenate.gov/sites/senator.crm*.nysenate.gov/pubfiles
-  ** into:
-  **   pubfiles.nysenate.gov/crm(dev|test)?/senator/
+   *   senator.crm*.nysenate.gov/sites/senator.crm*.nysenate.gov/pubfiles
+   * into:
+   *   pubfiles.nysenate.gov/crm(dev|test)?/senator/
   */
   $bodyvalues = array('text', 'html');
   foreach ($bodyvalues as $bodyvalue) {
@@ -93,23 +93,26 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
 
   // NYSS 5579 - Construct the whitelisting language and add to e-mail body.
   // NYSS 7423 - Allow location of whitelisting blurb to be configurable.
-  if (isset($bbconfig['smtp.whitelist.text'])) {
-    $whitelist_txt = $bbconfig['smtp.whitelist.text'];
-  }
-  else {
-    $whitelist_txt = 'To ensure delivery of emails to your inbox, please add %SENATOR_EMAIL% to your email address book.';
-  }
-  $whitelist_txt = str_replace('%SENATOR_EMAIL%', $senator_email, $whitelist_txt);
+  // 7804 suppress if viewing html
+  if ( $context == 'civimail' && !empty($params['contact_id']) ) {
+    if (isset($bbconfig['smtp.whitelist.text'])) {
+      $whitelist_txt = $bbconfig['smtp.whitelist.text'];
+    }
+    else {
+      $whitelist_txt = 'To ensure delivery of emails to your inbox, please add %SENATOR_EMAIL% to your email address book.';
+    }
+    $whitelist_txt = str_replace('%SENATOR_EMAIL%', $senator_email, $whitelist_txt);
 
-  if (isset($bbconfig['smtp.whitelist.location']) &&
-    $bbconfig['smtp.whitelist.location'] == "bottom"
-  ) {
-    $params['text'] = $params['text']."\n\n".$whitelist_txt;
-    $params['html'] = preg_replace('#(\s*</body>)#', "\n<p style=\"text-align:center; font-size:10px;\">$whitelist_txt</p>$1", $params['html'], 1);
-  }
-  else {
-    $params['text'] = $whitelist_txt."\n\n".$params['text'];
-    $params['html'] = preg_replace('/(<body( [^>]*)?>\s*)/', "$1<p style=\"text-align:center; font-size:10px;\">$whitelist_txt</p>\n<br/>\n", $params['html'], 1);
+    if (isset($bbconfig['smtp.whitelist.location']) &&
+      $bbconfig['smtp.whitelist.location'] == "bottom"
+    ) {
+      $params['text'] = $params['text']."\n\n".$whitelist_txt;
+      $params['html'] = preg_replace('#(\s*</body>)#', "\n<p style=\"text-align:center; font-size:10px;\">$whitelist_txt</p>$1", $params['html'], 1);
+    }
+    else {
+      $params['text'] = $whitelist_txt."\n\n".$params['text'];
+      $params['html'] = preg_replace('/(<body( [^>]*)?>\s*)/', "$1<p style=\"text-align:center; font-size:10px;\">$whitelist_txt</p>\n<br/>\n", $params['html'], 1);
+    }
   }
 
   // Prevent Sendgrid from dropping any of our messages.
