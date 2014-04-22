@@ -338,6 +338,13 @@ class CRM_Contact_BAO_Query {
    */
   public static $_openedPanes = array();
 
+  //NYSS 7772
+  /**
+   * For search builder - which custom fields are location-dependent
+   * @var array
+   */
+  public $_locationSpecificCustomFields = array();
+
   /**
    * The tables which have a dependency on location and/or address
    *
@@ -878,7 +885,8 @@ class CRM_Contact_BAO_Query {
     CRM_Contact_BAO_Query_Hook::singleton()->alterSearchQuery($this, 'select');
 
     if (!empty($this->_cfIDs)) {
-      $this->_customQuery = new CRM_Core_BAO_CustomQuery($this->_cfIDs, TRUE);
+      //NYSS 7772
+      $this->_customQuery = new CRM_Core_BAO_CustomQuery($this->_cfIDs, TRUE, $this->_locationSpecificCustomFields);
       $this->_customQuery->query();
       $this->_select = array_merge($this->_select, $this->_customQuery->_select);
       $this->_element = array_merge($this->_element, $this->_customQuery->_element);
@@ -1188,10 +1196,11 @@ class CRM_Contact_BAO_Query {
     }
 
     if (!empty($addressCustomFieldIds)) {
-      $cfIDs = $addressCustomFieldIds;
-      $customQuery = new CRM_Core_BAO_CustomQuery($cfIDs);
+      //NYSS 7772
+      $customQuery = new CRM_Core_BAO_CustomQuery($addressCustomFieldIds);
       foreach ($addressCustomFieldIds as $cfID => $locTypeName) {
         foreach ($locTypeName as $name => $dnc) {
+          $this->_locationSpecificCustomFields[$cfID] = array($name, array_search($name, $locationTypes));
           $fieldName = "$name-custom_{$cfID}";
           $tName = "$name-address-custom-{$cfID}";
           $aName = "`$name-address-custom-{$cfID}`";
