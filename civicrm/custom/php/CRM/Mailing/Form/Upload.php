@@ -289,12 +289,12 @@ class CRM_Mailing_Form_Upload extends CRM_Core_Form {
     );*/
 
     $this->add( 'select', 'header_id', ts( 'Mailing Header' ), 
-      /*array('' => ts('- none -')) +*/ CRM_Mailing_PseudoConstant::component( 'Header' ) 
-    );//NYSS 2812 enforce default value
+      array('' => ts('- none -')) + CRM_Mailing_PseudoConstant::component( 'Header' )
+    );
        
     $this->add( 'select', 'footer_id', ts( 'Mailing Footer' ), 
-      /*array('' => ts('- none -')) +*/ CRM_Mailing_PseudoConstant::component( 'Footer' ) 
-    );//NYSS
+      array('' => ts('- none -')) + CRM_Mailing_PseudoConstant::component( 'Footer' )
+    );
 
     $this->addFormRule(array('CRM_Mailing_Form_Upload', 'formRule'), $this);
 

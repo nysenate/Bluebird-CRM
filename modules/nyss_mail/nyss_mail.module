@@ -178,7 +178,7 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
       $params['html'] = preg_replace('#(\s*</body>)#', "\n<p style=\"text-align:center; font-size:10px;\"><a href='{$url}' target=_blank>Click here</a> to view this email in your browser. {$fblink}</p>$1", $params['html'], 1);
     }
 
-    //5581
+    //5581 subscription management link
     if ( !empty($contactID) && !empty($mid) && $bbconfig['smtp.subscriptions'] ) {
       $gid = CRM_Core_DAO::singleValueQuery("
         SELECT id
@@ -187,8 +187,8 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
       ");
       $cs = CRM_Contact_BAO_Contact_Utils::generateChecksum($contactID);
       $env = explode('.', $bbconfig['base.domain']);
-      //$url = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/subscription/edit/{$contactID}/{$cs}";
-      $url = CRM_Utils_System::url('civicrm/profile/edit', "reset=1&gid={$gid}&id={$contactID}&cs={$cs}", TRUE);
+      $url = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/subscription/edit/{$contactID}/{$cs}";
+      //$url = CRM_Utils_System::url('civicrm/profile/edit', "reset=1&gid={$gid}&id={$contactID}&cs={$cs}", TRUE);
 
       $params['text'] .= "\n\nClick here to manage your email subscription settings: {$url}";
       $params['html'] = preg_replace('#(\s*</body>)#', "\n<p style=\"text-align:center; font-size:10px;\"><a href='{$url}' target=_blank>Click here</a> to manage your email subscription settings.</p>$1", $params['html'], 1);
