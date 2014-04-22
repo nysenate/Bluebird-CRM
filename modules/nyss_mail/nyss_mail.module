@@ -57,9 +57,9 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
   //CRM_Core_Error::debug_var('context', $context);
 
   /* Re-write any URLs in the message body of the form:
-  **   senator.crm*.nysenate.gov/sites/senator.crm*.nysenate.gov/pubfiles
-  ** into:
-  **   pubfiles.nysenate.gov/crm(dev|test)?/senator/
+   *   senator.crm*.nysenate.gov/sites/senator.crm*.nysenate.gov/pubfiles
+   * into:
+   *   pubfiles.nysenate.gov/crm(dev|test)?/senator/
   */
   $bodyvalues = array('text', 'html');
   foreach ($bodyvalues as $bodyvalue) {
@@ -67,6 +67,8 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
       $params[$bodyvalue] = preg_replace('#[a-z0-9_-]+\.crm(dev|test)?\.nysenate\.gov/sites/([a-z0-9_-]+)\.(crm(dev|test)?)\.nysenate\.gov/pubfiles/#i', 'pubfiles.nysenate.gov/$3/$2/', $params[$bodyvalue]);
     }
   }
+
+  //TODO check to see if body element is present and add if not, else text replacement will fail throughout
 
   $hdr = new SmtpApiHeader();
 
@@ -93,23 +95,26 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
 
   // NYSS 5579 - Construct the whitelisting language and add to e-mail body.
   // NYSS 7423 - Allow location of whitelisting blurb to be configurable.
-  if (isset($bbconfig['smtp.whitelist.text'])) {
-    $whitelist_txt = $bbconfig['smtp.whitelist.text'];
-  }
-  else {
-    $whitelist_txt = 'To ensure delivery of emails to your inbox, please add %SENATOR_EMAIL% to your email address book.';
-  }
-  $whitelist_txt = str_replace('%SENATOR_EMAIL%', $senator_email, $whitelist_txt);
+  // 7804 suppress if viewing html
+  if ( $context == 'civimail' && !empty($params['contact_id']) ) {
+    if (isset($bbconfig['smtp.whitelist.text'])) {
+      $whitelist_txt = $bbconfig['smtp.whitelist.text'];
+    }
+    else {
+      $whitelist_txt = 'To ensure delivery of emails to your inbox, please add %SENATOR_EMAIL% to your email address book.';
+    }
+    $whitelist_txt = str_replace('%SENATOR_EMAIL%', $senator_email, $whitelist_txt);
 
-  if (isset($bbconfig['smtp.whitelist.location']) &&
-    $bbconfig['smtp.whitelist.location'] == "bottom"
-  ) {
-    $params['text'] = $params['text']."\n\n".$whitelist_txt;
-    $params['html'] = preg_replace('#(\s*</body>)#', "\n<p style=\"text-align:center; font-size:10px;\">$whitelist_txt</p>$1", $params['html'], 1);
-  }
-  else {
-    $params['text'] = $whitelist_txt."\n\n".$params['text'];
-    $params['html'] = preg_replace('/(<body( [^>]*)?>\s*)/', "$1<p style=\"text-align:center; font-size:10px;\">$whitelist_txt</p>\n<br/>\n", $params['html'], 1);
+    if (isset($bbconfig['smtp.whitelist.location']) &&
+      $bbconfig['smtp.whitelist.location'] == "bottom"
+    ) {
+      $params['text'] = $params['text']."\n\n".$whitelist_txt;
+      $params['html'] = preg_replace('#(\s*</body>)#', "\n<p style=\"text-align:center; font-size:10px;\">$whitelist_txt</p>$1", $params['html'], 1);
+    }
+    else {
+      $params['text'] = $whitelist_txt."\n\n".$params['text'];
+      $params['html'] = preg_replace('/(<body( [^>]*)?>\s*)/', "$1<p style=\"text-align:center; font-size:10px;\">$whitelist_txt</p>\n<br/>\n", $params['html'], 1);
+    }
   }
 
   // Prevent Sendgrid from dropping any of our messages.
@@ -160,8 +165,8 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
     }
 
     //7701 - append link for hosted email
+    $env = explode('.', $bbconfig['base.domain']);
     if ( !empty($mid) ) {
-      $env = explode('.', $bbconfig['base.domain']);
       $viewID = ( $hash ) ? $hash : $mid;
       $url = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/view/{$viewID}";
       //$url = CRM_Utils_System::url('civicrm/mailing/view', 'reset=1&id='.$viewID, TRUE);
@@ -180,18 +185,36 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
 
     //5581 subscription management link
     if ( !empty($contactID) && !empty($mid) && $bbconfig['smtp.subscriptions'] ) {
-      $gid = CRM_Core_DAO::singleValueQuery("
+      /*$gid = CRM_Core_DAO::singleValueQuery("
         SELECT id
         FROM civicrm_uf_group
         WHERE name = 'Mass_Email_Subscriptions'
-      ");
+      ");*/
       $cs = CRM_Contact_BAO_Contact_Utils::generateChecksum($contactID);
-      $env = explode('.', $bbconfig['base.domain']);
       $url = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/subscription/edit/{$contactID}/{$cs}";
       //$url = CRM_Utils_System::url('civicrm/profile/edit', "reset=1&gid={$gid}&id={$contactID}&cs={$cs}", TRUE);
 
       $params['text'] .= "\n\nClick here to manage your email subscription settings: {$url}";
       $params['html'] = preg_replace('#(\s*</body>)#', "\n<p style=\"text-align:center; font-size:10px;\"><a href='{$url}' target=_blank>Click here</a> to manage your email subscription settings.</p>$1", $params['html'], 1);
+    }
+
+    //7803 if viewing html, insert FB share image
+    if ( empty($params['contact_id']) ) {
+      $imgRoot = $bbconfig['data.rootdir'].'/'.$bbconfig['data_dirname'].'/pubfiles/images/';
+      $fbShareThumbFolder = 'template';
+
+      if ( !file_exists($imgRoot.$fbShareThumbFolder.'/fb_share_thumb.png') ) {
+        $fbShareThumbFolder = 'common';
+      }
+      $fbShareThumb = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/images/{$fbShareThumbFolder}/fb_share_thumb.png";
+
+      //append to the head block as meta tag
+      $params['html'] = preg_replace('#(\s*</head>)#', "
+        \n<meta property='og:image' content={$fbShareThumb} />
+        \n<meta property='og:title' content='{$params['Subject']}' />
+        \n<link rel='image_src' type='image/png' href='{$fbShareThumb}' />
+      $1", $params['html'], 1);
+      $params['html'] = preg_replace('#(\s*</head>)#', "$1", $params['html'], 1);
     }
 
     //Sendgrid headers
