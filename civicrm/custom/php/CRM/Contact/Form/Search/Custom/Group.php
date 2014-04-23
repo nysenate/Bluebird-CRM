@@ -804,7 +804,7 @@ WHERE  gcc.group_id = {$ssGroup->id}
 
     //construct where clauses
     $whereAT = ($actType) ? "a.activity_type_id = {$actType}" : "(1)";
-    $whereAS = ($actSubject) ? "a.id = {$actSubject}" : "(1)";
+    $whereAS = ($actSubject) ? "a.id IN {$actSubject}" : "(1)";
 
     $existingIDs = CRM_Core_DAO::singleValueQuery("
       SELECT GROUP_CONCAT(contact_id) FROM {$table}

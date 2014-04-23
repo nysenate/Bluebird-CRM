@@ -189,12 +189,31 @@ function toggleContactSelection( name, qfKey, selection ){
 {if $dataUrl && $searchName eq 'IncludeExclude'}
   {literal}
   <script type="text/javascript">
-    cj(function( ) {
-      var sourceDataUrl = "{/literal}{$dataUrl}{literal}";
-      var hintText = "{/literal}{ts escape='js'}Start typing a subject line.{/ts}{literal}";
+    var sourceDataUrl = "{/literal}{$dataUrl}{literal}";
+    var activityType = '';
+    var hintText = "{/literal}{ts escape='js'}Start typing a subject line.{/ts}{literal}";
+
+    //set autocomplete initial value
+    cj(function() {
       cj('#act_subject').autocomplete( sourceDataUrl, { width : 180, selectFirst : false, hintText: hintText, matchContains: true, minChars: 1, max: 15
       }).result( function(event, data, formatted) { cj( "#act_subjectq" ).val( data[1] );
       }).bind( 'click', function( ) { if (!cj("#act_subject").val()) { cj( "#act_subjectq" ).val(''); } });
+    });
+
+    //if activity type selected, update autocomplete url to reflect value
+    cj('#activity_type_id').change(function(){
+      activityType = cj('#activity_type_id').val();
+
+      if ( activityType ) {
+        sourceDataUrl = "{/literal}{$dataUrl}{literal}" + '&activity_type_id=' + activityType;
+
+        cj('#act_subject').autocomplete( sourceDataUrl, { width : 180, selectFirst : false, hintText: hintText, matchContains: true, minChars: 1, max: 15
+        }).result( function(event, data, formatted) { cj( "#act_subjectq" ).val( data[1] );
+        }).bind( 'click', function( ) { if (!cj("#act_subject").val()) { cj( "#act_subjectq" ).val(''); } });
+      }
+      else {
+        sourceDataUrl = "{/literal}{$dataUrl}{literal}";
+      }
     });
   </script>
   {/literal}
