@@ -76,7 +76,8 @@ class CRM_Mailing_Page_View extends CRM_Core_Page {
    *
    * @return void
    */
-  function run($id = NULL, $contactID = NULL, $print = TRUE) {
+  //NYSS 7806
+  function run($id = NULL, $contactID = NULL, $print = TRUE, $allowID = FALSE) {
     if (is_numeric($id)) {
       $this->_mailingID = $id;
     }
@@ -112,7 +113,11 @@ class CRM_Mailing_Page_View extends CRM_Core_Page {
         $this->_mailing->id = $this->_mailingID;
         // if mailing is present and associated hash is present
         // while 'hash' is not been used for mailing view : throw 'permissionDenied'
-        if ($this->_mailing->find() && CRM_Core_DAO::getFieldValue('CRM_Mailing_BAO_Mailing', $this->_mailingID, 'hash', 'id')) {
+        //NYSS 7806
+        if ($this->_mailing->find() &&
+          CRM_Core_DAO::getFieldValue('CRM_Mailing_BAO_Mailing', $this->_mailingID, 'hash', 'id') &&
+          !$allowID
+        ) {
           CRM_Utils_System::permissionDenied();
           return;
         }
