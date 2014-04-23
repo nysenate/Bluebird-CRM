@@ -63,7 +63,7 @@ $db = new PDO('mysql:host='.$bbcfg['db.host'].';dbname='.$bbcfg['db.civicrm.pref
 $db->beginTransaction();
 
 // parse a txt document
-$filename = "../../modules/nyss_dedupe/source/firstNames_DMV_SS_BLUEBIRD.txt";
+$filename = $bbcfg['app.rootdir']."/modules/nyss_dedupe/source/firstNames_DMV_SS_BLUEBIRD.txt";
 $fp = @fopen($filename, 'r');
 if ($fp) {
    $names = explode("\n", fread($fp, filesize($filename)));
