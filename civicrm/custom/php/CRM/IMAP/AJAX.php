@@ -271,8 +271,8 @@ class CRM_IMAP_AJAX {
             preg_match_all('/(?:\(?([0-9]{3})\)?[-. ]?)?([0-9]{3})[-. ]?([0-9]{4})/s',$search,$phonenumbers);
             $output['found_phones'] = array_unique($phonenumbers[0], SORT_REGULAR);
 
+              preg_match_all( "/(?<FirstName>[A-Z]\.?\w*\-?[A-Z]?\w*)\s?(?<MiddleName>[A-Z]\w+|[A-Z]?\.?)\s(?<LastName>(?:[A-Z]\w{1,3}|St\.\s)?[A-Z]\w+\-?[A-Z]?\w*)(?:,\s|)(?<Suffix>Jr\.|Sr\.|PHD\.|MD\.|3RD|2ND|RN\.|III|II|)/",$search,$names);
             // Find Possible Names
-            preg_match_all( "/([A-Z][\'][A-Z][a-z]*[-][A-Z][a-z]*\s|[A-Z][\'][A-Z][a-z]*\s|[A-Z][a-z]*[-][A-Z][a-z]*\s|[A-Z][a-z]{0,3}[\.]\s|[A-Z][a-z]{0,3}[\.][A-Z][a-z]{0,3}[\.]\s|[A-Z][a-z]*\s|(PHD|MD|3RD|2ND|RN|JR|II|SR|III)){2,}(?=[a-z]|)/",$search,$names);
             foreach ($names[0] as $id => $name) {
               $name = trim($name);
 
@@ -310,7 +310,7 @@ class CRM_IMAP_AJAX {
                 }
               }
             }
-            $output['found_names'] = array_unique($nameOutput, SORT_REGULAR);
+            $output['found_names'] = array_map("unserialize", array_unique(array_map("serialize", $nameOutput)));
             $time_end = microtime(true);
             $time = $time_end - $time_start;
 
@@ -319,18 +319,18 @@ class CRM_IMAP_AJAX {
             function highlight($text, $search, $type) {
               switch ($type) {
                 case 'name':
-                  $re = '~\\b(' . implode(' ', $search) . ')\\b~';
-                  return preg_replace($re, "<span class='found $type' data-json='".json_encode($search)."' title='\"$0\" is likely an email address'>$0</span>", $text);
-
+                  $re = '(' . implode(' ', $search). ')';
+                  return preg_replace($re, "<span class='found $type' data-json='".json_encode($search)."' title='Click to use this Name'>".'${0}'."</span>", $text);
                   break;
                 case 'addresses':
                   // var_dump($search);
-                  $re = '~\\b(' . implode(' ', $search). ')\\b~';
-                  return preg_replace($re, "<span class='found $type' data-json='".json_encode($search)."' title='\"$0\" is likely an email address'>$0</span>", $text);
+                  $re = '(' . implode(' ', $search). ')';
+                  return preg_replace($re, "<span class='found $type' data-json='".json_encode($search)."' title='Click to use this Address'>".'${0}'."</span>", $text);
+
                   break;
                 default:
-                  $re = '~\\b(' . implode('|', $search). ')\\b~';
-                  return preg_replace($re, "<span class='found $type' data-search='$0' title='\"$0\" is likely an email address'>$0</span>", $text);
+                  $re = '(' . implode('|', $search). ')';
+                  return preg_replace($re, "<span class='found $type' data-search='$0' title='Click to use this $type'>".'${0}'."</span>", $text);
                   break;
               }
             }
@@ -964,6 +964,7 @@ class CRM_IMAP_AJAX {
      */
     public static function MatchedDetails() {
       $id = self::get('id');
+      $debug = self::get('debug');
       $output = self::unifiedMessageInfo($id);
       // overwrite incorrect details
       $changeData = self::civiRaw('contact',$output['matched_to']);
@@ -1012,7 +1013,7 @@ class CRM_IMAP_AJAX {
               $output['found_phones'] = array_unique($phonenumbers[0], SORT_REGULAR);
 
               // Find Possible Names
-              preg_match_all( "/([A-Z][\'][A-Z][a-z]*[-][A-Z][a-z]*\s|[A-Z][\'][A-Z][a-z]*\s|[A-Z][a-z]*[-][A-Z][a-z]*\s|[A-Z][a-z]{0,3}[\.]\s|[A-Z][a-z]{0,3}[\.][A-Z][a-z]{0,3}[\.]\s|[A-Z][a-z]*\s|(PHD|MD|3RD|2ND|RN|JR|II|SR|III)){2,}(?=[a-z]|)/",$search,$names);
+              preg_match_all( "/(?<FirstName>[A-Z]\.?\w*\-?[A-Z]?\w*)\s?(?<MiddleName>[A-Z]\w+|[A-Z]?\.?)\s(?<LastName>(?:[A-Z]\w{1,3}|St\.\s)?[A-Z]\w+\-?[A-Z]?\w*)(?:,\s|)(?<Suffix>Jr\.|Sr\.|PHD\.|MD\.|3RD|2ND|RN\.|III|II|)/",$search,$names);
               foreach ($names[0] as $id => $name) {
                 $name = trim($name);
 
@@ -1049,7 +1050,8 @@ class CRM_IMAP_AJAX {
                   }
                 }
               }
-              $output['found_names'] =  array_unique($nameOutput, SORT_REGULAR);
+              $output['found_names'] =  array_map("unserialize", array_unique(array_map("serialize", $nameOutput)));
+
               $time_end = microtime(true);
               $time = $time_end - $time_start;
 
@@ -1058,18 +1060,18 @@ class CRM_IMAP_AJAX {
               function highlight($text, $search, $type) {
                 switch ($type) {
                   case 'name':
-                    $re = '~\\b(' . implode(' ', $search) . ')\\b~';
-                    return preg_replace($re, "<span class='found $type' data-json='".json_encode($search)."' title='\"$0\" is likely an email address'>$0</span>", $text);
-
+                    $re = '(' . implode(' ', $search). ')';
+                    return preg_replace($re, "<span class='found $type' data-json='".json_encode($search)."' title='Click to use this Name'>".'${0}'."</span>", $text);
                     break;
                   case 'addresses':
                     // var_dump($search);
-                    $re = '~\\b(' . implode(' ', $search). ')\\b~';
-                    return preg_replace($re, "<span class='found $type' data-json='".json_encode($search)."' title='\"$0\" is likely an email address'>$0</span>", $text);
+                    $re = '(' . implode(' ', $search). ')';
+                    return preg_replace($re, "<span class='found $type' data-json='".json_encode($search)."' title='Click to use this Address'>".'${0}'."</span>", $text);
+
                     break;
                   default:
-                    $re = '~\\b(' . implode('|', $search). ')\\b~';
-                    return preg_replace($re, "<span class='found $type' data-search='$0' title='\"$0\" is likely an email address'>$0</span>", $text);
+                    $re = '(' . implode('|', $search). ')';
+                    return preg_replace($re, "<span class='found $type' data-search='$0' title='Click to use this $type'>".'${0}'."</span>", $text);
                     break;
                 }
               }
@@ -1090,8 +1092,54 @@ class CRM_IMAP_AJAX {
               }
 
               $output['body'] = $body;
-              $time_end = microtime(true);
-              echo json_encode($output);
+              if ($debug){
+                echo "
+              <style>
+                .found{
+                    background: rgba(255, 230, 0, 0.5);
+                    padding: 1px 2px;
+                    border: 1px solid #C1C1C1;
+                    margin: -1px 2px;
+                    padding: 1px 4px;
+                    border-radius: 3px;
+                    display:inline-block;
+                }
+                .found:hover{
+                    background: rgba(255, 230, 0, 0.8);
+                    border: 1px solid #A0A0A0;
+
+                }
+
+                .found.name{
+                    /* red ffb7b7 */
+                    background: rgba(255,183,183, 0.5);
+                }
+                /*.found.name:hover{
+                    background: rgba(255,183,183, 0.8);
+                }*/
+                .found.zip{
+                    /* blue a8d1ff*/
+                    background: rgba(168,209,255, 0.5);
+                }
+                .found.zip:hover{
+                    background: rgba(168,209,255, 0.8);
+                }
+                .found.phone{
+                    /* green a8d1ff*/
+                    background: rgba(196,255,143, 0.5);
+                }
+                .found.phone:hover{
+                    background: rgba(196,255,143, 0.8);
+                }
+              </style>";
+                // var_dump($search);
+                echo $body."<br/><br/><br/>";
+                echo $time . " seconds ( Time to Find )\n";
+                echo $time2 . " seconds ( Time to colorize )\n";
+
+              }else{
+                echo json_encode($output);
+              }
               break;
             case '7':
               $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message has been cleared from inbox','clear'=>'true');
