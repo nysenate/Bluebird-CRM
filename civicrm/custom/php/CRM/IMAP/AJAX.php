@@ -1355,35 +1355,39 @@ EOQ;
      */
     public static function MatchedEdit() {
       require_once 'api/api.php';
-      $activity_id = self::get('activity_id');
+      $activityid = self::get('activity_id');
+      $activityIds = explode(',', $activityid);
       $activty_contact = self::get('activty_contact');
       $activty_status_id = self::get('activty_status_id');
       $activity_date = self::get('activity_date');
       $results = array();
-      if (!empty($activty_status_id)) {
-        $query_activiy1 = "UPDATE civicrm_activity SET status_id  = ${activty_status_id}  WHERE civicrm_activity.id  = ${activity_id}";
-        // var_dump($query_activiy1);
-        $Updated_results = mysql_query($query_activiy1, self::db());
-        while($row = mysql_fetch_assoc($Updated_results)) {
-          $results[] = $row;
-        }
-      }
+      foreach($activityIds as $activity_id) {
 
-      if (!empty($activity_date)) {
-        $query_activiy2 = "UPDATE civicrm_activity SET activity_date_time = \"${activity_date}\" WHERE civicrm_activity.id  = ${activity_id}";
-        // var_dump($query_activiy2);
-        $Updated_results = mysql_query($query_activiy2, self::db());
-        while($row = mysql_fetch_assoc($Updated_results)) {
-          $results[] = $row;
+        if (!empty($activty_status_id)) {
+          $query_activiy1 = "UPDATE civicrm_activity SET status_id  = ${activty_status_id}  WHERE civicrm_activity.id  = ${activity_id}";
+          // var_dump($query_activiy1);
+          $Updated_results = mysql_query($query_activiy1, self::db());
+          while($row = mysql_fetch_assoc($Updated_results)) {
+            $results[] = $row;
+          }
         }
-      }
-      // change the contact
-      if (!empty($activty_contact)) {
-        $query_activiy3 = "INSERT INTO civicrm_activity_contact (activity_id, contact_id, record_type_id) VALUES ('${activity_id}', '${activty_contact}', '1');";
-        // var_dump($query_activiy3);
-        $Updated_results = mysql_query($query_activiy3, self::db());
-        while($row = mysql_fetch_assoc($Updated_results)) {
-          $results[] = $row;
+
+        if (!empty($activity_date)) {
+          $query_activiy2 = "UPDATE civicrm_activity SET activity_date_time = \"${activity_date}\" WHERE civicrm_activity.id  = ${activity_id}";
+          // var_dump($query_activiy2);
+          $Updated_results = mysql_query($query_activiy2, self::db());
+          while($row = mysql_fetch_assoc($Updated_results)) {
+            $results[] = $row;
+          }
+        }
+        // change the contact
+        if (!empty($activty_contact)) {
+          $query_activiy3 = "INSERT INTO civicrm_activity_contact (activity_id, contact_id, record_type_id) VALUES ('${activity_id}', '${activty_contact}', '1');";
+          // var_dump($query_activiy3);
+          $Updated_results = mysql_query($query_activiy3, self::db());
+          while($row = mysql_fetch_assoc($Updated_results)) {
+            $results[] = $row;
+          }
         }
       }
       // echo json_encode($results);
