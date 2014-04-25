@@ -2,7 +2,7 @@
 
 <header id="header">
   <div class="nyss-logo">
-    <img src="/sites/default/themes/BluebirdPublic/images/nyss_logo.png" alt="NYS Senate Logo">
+    <img src="http://pubfiles.nysenate.gov/crmdev/sd99/common/images/nyss_logo.png" alt="NYS Senate Logo">
   </div>
 </header> <!-- /header -->
 
