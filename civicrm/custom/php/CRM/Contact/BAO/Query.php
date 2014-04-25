@@ -2821,15 +2821,19 @@ WHERE  id IN ( $groupIDs )
     if ($useAllTagTypes[2]) {
       $this->_tables[$etTable] =
         $this->_whereTables[$etTable] =
-        " LEFT JOIN civicrm_entity_tag {$etTable} ON ( {$etTable}.entity_id = contact_a.id)
-          LEFT JOIN civicrm_tag {$tTable} ON ( {$etTable}.tag_id = {$tTable}.id  )";
+        " LEFT JOIN civicrm_entity_tag {$etTable}
+            ON {$etTable}.entity_id = contact_a.id
+            AND {$etTable}.entity_table = 'civicrm_contact'
+          LEFT JOIN civicrm_tag {$tTable}
+            ON {$etTable}.tag_id = {$tTable}.id ";
 
       // search tag in cases
       $etCaseTable = "`civicrm_entity_case_tag-" . $value . "`";
       $tCaseTable = "`civicrm_case_tag-" . $value . "`";
       $this->_tables[$etCaseTable] =
         $this->_whereTables[$etCaseTable] =
-        " LEFT JOIN civicrm_case_contact ON civicrm_case_contact.contact_id = contact_a.id
+        " LEFT JOIN civicrm_case_contact
+            ON civicrm_case_contact.contact_id = contact_a.id
           LEFT JOIN civicrm_case
             ON civicrm_case_contact.case_id = civicrm_case.id
             AND civicrm_case.is_deleted = 0
@@ -2838,6 +2842,7 @@ WHERE  id IN ( $groupIDs )
             AND {$etCaseTable}.entity_id = civicrm_case.id
           LEFT JOIN civicrm_tag {$tCaseTable}
             ON {$etCaseTable}.tag_id = {$tCaseTable}.id";
+
       // search tag in activities
       $etActTable = "`civicrm_entity_act_tag-" . $value . "`";
       $tActTable = "`civicrm_act_tag-" . $value . "`";
@@ -2858,11 +2863,12 @@ WHERE  id IN ( $groupIDs )
             ON {$etActTable}.entity_table = 'civicrm_activity'
             AND {$etActTable}.entity_id = all_tag_types_act.id
           LEFT JOIN civicrm_tag {$tActTable}
-            ON ( {$etActTable}.tag_id = {$tActTable}.id";
+            ON {$etActTable}.tag_id = {$tActTable}.id ";
 
       $this->_where[$grouping][] = "({$tTable}.name $op '". $value . "' OR {$tCaseTable}.name $op '". $value . "' OR {$tActTable}.name $op '". $value . "')";
       $this->_qill[$grouping][] = ts('Tag %1 %2 ', array(1 => $tagTypesText[2], 2 => $op)) . ' ' . $value;
-    } else {
+    }
+    else {
       $etTable = "`civicrm_entity_tag-" . $value . "`";
       $tTable = "`civicrm_tag-" . $value . "`";
       $this->_tables[$etTable] = $this->_whereTables[$etTable] = " LEFT JOIN civicrm_entity_tag {$etTable} ON ( {$etTable}.entity_id = contact_a.id  AND
@@ -2906,7 +2912,9 @@ WHERE  id IN ( $groupIDs )
     if ($useAllTagTypes[2]) {
       $this->_tables[$etTable] =
         $this->_whereTables[$etTable] =
-        " LEFT JOIN civicrm_entity_tag {$etTable} ON ( {$etTable}.entity_id = contact_a.id  AND {$etTable}.entity_table = 'civicrm_contact') ";
+        " LEFT JOIN civicrm_entity_tag {$etTable}
+            ON ( {$etTable}.entity_id = contact_a.id
+            AND {$etTable}.entity_table = 'civicrm_contact' ) ";
 
       // search tag in cases
       $etCaseTable = "`civicrm_entity_case_tag-" . $value . "`";
