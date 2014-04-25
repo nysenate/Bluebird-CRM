@@ -584,7 +584,7 @@ cj(document).ready(function(){
       activityIds = activityId.split(',');
       contactIds = contactId.split(',');
       if(activityIds.length == 1){
-        cj('#message_left_header,#tab1').show();
+        cj('#message_left_header,.ReAssignTab').show();
         cj('#message_left_email').removeClass('multi');
         cj('#ui-id-1').click();
         cj.ajax({
@@ -631,7 +631,7 @@ cj(document).ready(function(){
       }else if (activityIds.length > 1){
         // here is the view for multiple messages
         cj('#message_left_email').addClass('multi');
-        cj('#message_left_header,#tab1').hide();
+        cj('#message_left_header,.ReAssignTab').hide();
         cj('#ui-id-2').click();
         cj.each(messageIds, function(key, messageId) {
           // console.log("messageId : "+messageId+' - activityId :'+activityIds[key]+" - key : "+key+" - Contact : "+contactIds[key]);
