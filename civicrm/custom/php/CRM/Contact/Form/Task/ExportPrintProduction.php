@@ -360,7 +360,8 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     if ( $restrictDistrict != null ) {
       $sql .= " AND (
         di.ny_senate_district_47 = $restrictDistrict OR
-        (di.ny_senate_district_47 != $restrictDistrict AND t.id IN ($localSeedsList))
+        (di.ny_senate_district_47 != $restrictDistrict AND t.id IN ($localSeedsList)) OR
+        (di.ny_senate_district_47 IS NULL AND t.id IN ($localSeedsList))
       )";
     }
 
@@ -368,7 +369,8 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     if ( !empty($restrictState) ) {
       $sql .= " AND (
         a.state_province_id = $restrictState OR
-        (a.state_province_id != $restrictState AND t.id IN ($localSeedsList))
+        (a.state_province_id != $restrictState AND t.id IN ($localSeedsList)) OR
+        (a.state_province_id IS NULL AND t.id IN ($localSeedsList))
       )";
     }
 
@@ -387,7 +389,8 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
           $valList = implode(',', $allVals);
           $sql .= " AND (
             di.{$dbFld} IN ({$valList}) OR
-            (di.{$dbFld} NOT IN ({$valList}) AND t.id IN ($localSeedsList))
+            (di.{$dbFld} NOT IN ({$valList}) AND t.id IN ($localSeedsList)) OR
+            (di.{$dbFld} IS NULL AND t.id IN ($localSeedsList))
           )";
         }
         else {
@@ -396,7 +399,8 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
           }
           $sql .= " AND (
             di.{$dbFld} = {$v} OR
-            (di.{$dbFld} != {$v} AND t.id IN ($localSeedsList))
+            (di.{$dbFld} != {$v} AND t.id IN ($localSeedsList)) OR
+            (di.{$dbFld} IS NULL AND t.id IN ($localSeedsList))
           )";
         }
       }

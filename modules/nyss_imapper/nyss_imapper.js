@@ -242,7 +242,7 @@ cj(document).ready(function(){
 
   // Clear Single
   cj(".imap_actions_column .clear").live('click', function() {
-    console.log('clear');
+    // console.log('clear');
     cj("#loading-popup").dialog('open');
     var messageId = cj(this).parent().parent().find('.checkbox').data('delete');
     cj("#clear-confirm #message").val(messageId);
@@ -254,7 +254,7 @@ cj(document).ready(function(){
 
   // Clear multiple ( from checkbox )
   cj(".page_actions .multi_clear").live('click', function() {
-    console.log('multi_clear');
+    // console.log('multi_clear');
     var clear_ids = $("#imapper-messages-list input:checkbox:checked").map(function(){
       return $(this).data('delete');
     }).get();
@@ -294,7 +294,7 @@ cj(document).ready(function(){
 
   // Clear activities
   function ClearActivity(activityId){
-    console.log('ClearActivity',activityId);
+    // console.log('ClearActivity',activityId);
     // cj.ajax({
     //   url: '/civicrm/imap/ajax/matched/clear',
     //   data: {id: activityId},
@@ -745,7 +745,7 @@ cj(document).ready(function(){
           current_contact_name = cj('#contact_name').val();
           current_contact_name = current_contact_name.replace(/,,/g, ",");
           cj('#contact_name').val(current_contact_name+','+item.id);
-          console.log(item.id);
+          //console.log(item.id);
         },
         onDelete: function ( item ) {
           current_contact_name = cj('#contact_name').val();
@@ -816,9 +816,9 @@ cj(document).ready(function(){
     cj('#message').val('').val(messageIds);
     cj('#activity').val('').val(activityIds);
 
-    console.log('contactIds',contactIds)
-    console.log('messageIds',messageIds)
-    console.log('activityIds',activityIds)
+    // console.log('contactIds',contactIds)
+    // console.log('messageIds',messageIds)
+    // console.log('activityIds',activityIds)
 
     if(!activityIds.length){
       cj("#loading-popup").dialog('close');
@@ -831,7 +831,7 @@ cj(document).ready(function(){
 
   // Step through the process, erm, process
   function Process (clear) {
-    console.log('Process',messageId);
+    //console.log('Process',messageId);
 
     // assume we have errors
     var error = true;
@@ -893,7 +893,7 @@ cj(document).ready(function(){
     // did we reassign ?
     // if they've selected 1 or more contact, reassign the message
     if(contactIds !='' ){
-      console.log('Reassigning to: ',contactIds);
+      // console.log('Reassigning to: ',contactIds);
       cj.ajax({
         url: '/civicrm/imap/ajax/matched/reassign',
         async: false,
@@ -903,7 +903,7 @@ cj(document).ready(function(){
         },
         success: function(data, status) {
           var data = cj.parseJSON(data);
-          console.log(data);
+          // console.log(data);
           if (data.code =='ERROR'){
             CRM.alert('Could not reassign Message : '+data.message, '', 'error');
           }else{
@@ -930,7 +930,7 @@ cj(document).ready(function(){
       });
       error = false;
     }else if((first_name)||(last_name)||(email_address)){
-      console.log('Assigning Message to new contact');
+      // console.log('Assigning Message to new contact');
       if ((cj.isNumeric(cj("#tab2 .dob .month").val()) || cj.isNumeric(cj("#tab2 .dob .day").val()) || cj.isNumeric(cj("#tab2 .dob .year").val())) && ( !cj.isNumeric(cj("#tab2 .dob .month").val()) || !cj.isNumeric(cj("#tab2 .dob .day").val()) || !cj.isNumeric(cj("#tab2 .dob .year").val()))) {
         CRM.alert('Please Enter a full date of birth', 'Warning', 'warn');
         return false;
@@ -968,7 +968,7 @@ cj(document).ready(function(){
               },
               success: function(data, status) {
                 assign = cj.parseJSON(data);
-                console.log(assign);
+                // console.log(assign);
                 if (assign.code == 'ERROR' || assign.code == '' || assign == null ){
                   CRM.alert('Could Not Assign Message : '+assign.message, '', 'error');
                   return false;
@@ -996,7 +996,7 @@ cj(document).ready(function(){
 
     // did we add any tags ?
     if ((activity_tag.length != 0) || (contact_tag.length  != 0) || (removedIssueCodes.length != 0) || (addedIssueCodes.length != 0) || (contact_position.length != 0)){
-      console.log('activity_tags: ',activity_tag.length,'contact_tags: ',contact_tag.length,'removedIssueCodes: ',removedIssueCodes.length,'addedIssueCodes: ',addedIssueCodes.length,'contact_positions: ',contact_position.length);
+      // console.log('activity_tags: ',activity_tag.length,'contact_tags: ',contact_tag.length,'removedIssueCodes: ',removedIssueCodes.length,'addedIssueCodes: ',addedIssueCodes.length,'contact_positions: ',contact_position.length);
 
       // CONTACT POSITIONS
       if(contact_position.length){
@@ -1098,7 +1098,7 @@ cj(document).ready(function(){
 
     // did we edit the activity ?
     if ((activty_contact.length != 0) || (activty_status_id != 2) || (activity_date.length != 0)){
-      console.log('activty_contact: ',activty_contact, 'activty_status_id: ',activty_status_id,'activity_date: ',activity_date);
+      // console.log('activty_contact: ',activty_contact, 'activty_status_id: ',activty_status_id,'activity_date: ',activity_date);
       cj.ajax({
         url: '/civicrm/imap/ajax/matched/edit',
         async:false,
