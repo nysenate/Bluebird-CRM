@@ -49,6 +49,9 @@ class CRM_NYSS_Subscription_Page_View extends CRM_Core_Page {
   function run() {
     CRM_Utils_System::setTitle('Mass Email Subscriptions');
 
+    //disable BB header
+    $this->assign('disableBBheader', 1);
+
     //get senator name
     $bbconfig = get_bluebird_instance_config();
     $this->assign('senatorFormal', $bbconfig['senator.name.formal']);

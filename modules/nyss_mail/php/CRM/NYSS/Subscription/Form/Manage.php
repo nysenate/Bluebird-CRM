@@ -97,6 +97,9 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
   public function buildQuickForm() {
     //CRM_Core_Error::debug_var('_contact', $this->_contact);
 
+    //disable BB header
+    $this->assign('disableBBheader', 1);
+
     //get senator name
     $bbconfig = get_bluebird_instance_config();
     $this->assign('senatorFormal', $bbconfig['senator.name.formal']);

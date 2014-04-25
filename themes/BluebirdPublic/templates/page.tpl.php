@@ -24,13 +24,3 @@
   </div> <!-- /main -->
 
 </div> <!-- /page -->
-
-<script type="text/javascript">
-  (function ($) {
-    $('div.civi-search-section').remove();
-    $('div#bluebirds').remove();
-    $('div.content div.clear:first').remove();
-    $('div.civi-navigation-section').remove();
-    $('div#crm-seal').remove();
-  })(jQuery);
-</script>
