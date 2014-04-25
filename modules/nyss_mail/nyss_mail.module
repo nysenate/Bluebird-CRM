@@ -201,18 +201,20 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
     //7803 if viewing html, insert FB share image
     if ( empty($params['contact_id']) ) {
       $imgRoot = $bbconfig['data.rootdir'].'/'.$bbconfig['data_dirname'].'/pubfiles/images/';
-      $fbShareThumbFolder = 'template';
+      $fbShareFolder = 'images/template';
+      $fbShareImage = 'fb_share_thumb.png';
 
-      if ( !file_exists($imgRoot.$fbShareThumbFolder.'/fb_share_thumb.png') ) {
-        $fbShareThumbFolder = 'common';
+      if ( !file_exists($imgRoot.$fbShareFolder.'/'.$fbShareImage) ) {
+        $fbShareFolder = 'common/images';
+        $fbShareImage = 'nysenate_logo_200.png';
       }
-      $fbShareThumb = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/images/{$fbShareThumbFolder}/fb_share_thumb.png";
+      $fbShare = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/{$fbShareFolder}/{$fbShareImage}";
 
       //append to the head block as meta tag
       $params['html'] = preg_replace('#(\s*</head>)#', "
-        \n<meta property='og:image' content={$fbShareThumb} />
+        \n<meta property='og:image' content={$fbShare} />
         \n<meta property='og:title' content='{$params['Subject']}' />
-        \n<link rel='image_src' type='image/png' href='{$fbShareThumb}' />
+        \n<link rel='image_src' type='image/png' href='{$fbShare}' />
       $1", $params['html'], 1);
       $params['html'] = preg_replace('#(\s*</head>)#', "$1", $params['html'], 1);
     }
