@@ -10,16 +10,22 @@
 # firstNames_DMV_SS_BLUEBIRD.txt compiled from:
 
 # Bluebird contact dump on 4-15-2014
-#    - Filtered by: names appearing in more then two instances
-#    - result = 88,417
+#    - Filtered by: names appearing in more then four instances
+#    - result = 74,360
+# cat *.tsv | while read -r n d ; do printf '%s\n' "$d" ; done | tr '[:upper:]' '[:lower:]' | sed -e 's/[^a-zA-Z]//g' | awk 'length>=4' | sort | uniq --count | sort -nr | while read -r n d ; do [ $n -gt 4 ] && printf '%s\n' "$d" ; done | sort > bb_output.txt
 
 # US Social security issued names - 1890 to 2013 - http://www.ssa.gov/oact/babynames/names.zip
 #    - Filtered by: names appearing in more then one year
 #    - result = 87,928
+# cat *.txt | tr '[:upper:]' '[:lower:]' | sed -e 's/[^a-zA-Z]//g' | awk 'length>=4' | sort | uniq --count | sort -nr | while read -r n d ; do [ $n -gt 9 ] && printf '%s\n' "$d" ; done | sort > ss_output.txt
 
 # NYS DMV First-Name dump
-#    - Filtered by: names appearing in more then once
+#    - Filtered by: names appearing in more then 9 times
 #    - result = 450,398
+# cat DMV_fn.txt | tr '[:upper:]' '[:lower:]' | sed -e 's/[^a-zA-Z]//g' | awk 'length>=4' | sort | uniq --count | sort -nr | while read -r n d ; do [ $n -gt 9 ] && printf '%s\n' "$d" ; done | sort > dmv_output.txt
+
+# merge the 3 -
+# cat *_output.txt | sed 's|\r$||' | sort -u | uniq > firstNames_DMV_SS_BLUEBIRD.txt
 
 # Hopefully the filtering eliminates some data entry typos
 
