@@ -86,6 +86,15 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
 
     //set page title
     CRM_Utils_System::setTitle( ts('Mass Email Subscriptions') );
+
+    //alter form action to use pubfiles version
+    $bbconfig = get_bluebird_instance_config();
+    $env = explode('.', $bbconfig['base.domain']);
+    $action = "/{$env[0]}/{$bbconfig['shortname']}/subscription/manage/{$queueID}/{$cs}";
+    $this->_attributes['action'] = $action;
+
+    //CRM_Core_Error::debug_var('action', $action);
+    //CRM_Core_Error::debug_var('this', $this);
   }
 
   /**
@@ -95,6 +104,7 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
    * @return void
    */
   public function buildQuickForm() {
+    //CRM_Core_Error::debug_var('this', $this);
     //CRM_Core_Error::debug_var('_contact', $this->_contact);
 
     //disable BB header
@@ -137,10 +147,10 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
           'type' => 'submit',
           'name' => ts('Save Subscription Options'),
         ),
-        array(
+        /*array(
           'type' => 'back',
           'name' => ts('Cancel')
-        ),
+        ),*/
       )
     );
 
@@ -195,6 +205,8 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
     ");
 
     //now redirect
+    $bbconfig = get_bluebird_instance_config();
+    $env = explode('.', $bbconfig['base.domain']);
     //$url = CRM_Utils_System::url('civicrm/nyss/subscription/view', "eq={$formParams['queueID']}&cs={$formParams['cs']}");
     $url = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/subscription/view/{$formParams['queueID']}/{$formParams['cs']}";
     CRM_Utils_System::redirect($url);
