@@ -617,7 +617,7 @@ cj(document).ready(function(){
                 }
               });
               cj("#loading-popup").dialog('close');
-              cj("#assign-popup").dialog({
+              cj("#process-popup").dialog({
                 title:  "Processing "+shortenString(message.subject,55),
               });
               cj('#imapper-contacts-list').html('').append("<strong>currently matched to : </strong><br/>           "+'<a href="/civicrm/contact/view?reset=1&cid='+message.matched_to+'" title="'+message.sender_name+'">'+shortenString(message.sender_name,35)+'</a>'+" <br/><i>&lt;"+ message.sender_email+"&gt;</i> <br/>"+ cj('.dob').val()+"<br/> "+ cj('.phone').val()+"<br/> "+  cj('.street_address').val()+"<br/> "+  cj('.city').val()+"<br/>");
@@ -738,7 +738,7 @@ cj(document).ready(function(){
       // Activity Editing,
       // Assignee Contact Names
       cj('#contact_name_input')
-        .tokenInput( 'http://sd99_dev/civicrm/ajax/checkemail?id=1&noemail=1', {
+        .tokenInput( '/civicrm/ajax/checkemail?id=1&noemail=1', {
         theme: 'facebook',
         zindex: 9999,
         onAdd: function ( item ) {
