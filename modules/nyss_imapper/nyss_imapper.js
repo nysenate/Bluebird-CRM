@@ -751,7 +751,7 @@ cj(document).ready(function(){
       // Activity Editing,
       // Assignee Contact Names
       cj('#contact_name_input')
-        .tokenInput( '/civicrm/ajax/checkemail?id=1&noemail=1', {
+         .tokenInput( '/civicrm/ajax/checkemail?noemail=1&context=activity_assignee', {
         theme: 'facebook',
         zindex: 9999,
         onAdd: function ( item ) {
