@@ -10,7 +10,7 @@
   <?php
     //first pull the BB url and rewrite it
     $urlEle = explode('.', $_SERVER['HTTP_HOST']);
-    $urlBase = "http://pubfiles.nysenate.gov/{$urlEle[1]}/{$urlEle[0]}/css";
+    $urlBase = "http://pubfiles.nysenate.gov/{$urlEle[1]}/{$urlEle[0]}/theme/css";
 
     echo "
       <style type='text/css' media='all'>
