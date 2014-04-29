@@ -16,12 +16,12 @@ function nyss_mail_custom_theme() {
 
   $allowedPaths = array(
     'civicrm/profile/edit',
-    'civicrm/profile/view'
+    'civicrm/profile/view',
+    'civicrm/nyss/subscription/manage',
+    'civicrm/nyss/subscription/view',
   );
   if ( $profileID ) {
-    if (in_array($_GET['q'], $allowedPaths) &&
-      $_GET['gid'] == $profileID
-    ) {
+    if (in_array($_GET['q'], $allowedPaths)) {
       return 'BluebirdPublic';
     }
   }
@@ -185,17 +185,14 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
 
     //5581 subscription management link
     if ( !empty($contactID) && !empty($mid) && $bbconfig['smtp.subscriptions'] ) {
-      /*$gid = CRM_Core_DAO::singleValueQuery("
-        SELECT id
-        FROM civicrm_uf_group
-        WHERE name = 'Mass_Email_Subscriptions'
-      ");*/
       $cs = CRM_Contact_BAO_Contact_Utils::generateChecksum($contactID);
-      $url = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/subscription/edit/{$contactID}/{$cs}";
-      //$url = CRM_Utils_System::url('civicrm/profile/edit', "reset=1&gid={$gid}&id={$contactID}&cs={$cs}", TRUE);
+      $url = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/subscription/manage/{$event_queue_id}/{$cs}";
 
       $params['text'] .= "\n\nClick here to manage your email subscription settings: {$url}";
       $params['html'] = preg_replace('#(\s*</body>)#', "\n<p style=\"text-align:center; font-size:10px;\"><a href='{$url}' target=_blank>Click here</a> to manage your email subscription settings.</p>$1", $params['html'], 1);
+
+      //disable optout via sendgrid as we are handling through the subscription page
+      $hdr->addFilterSetting('subscriptiontrack', 'enable', 0);
     }
 
     //7803 if viewing html, insert FB share image

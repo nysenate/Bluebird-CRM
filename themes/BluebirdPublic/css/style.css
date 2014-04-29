@@ -259,16 +259,21 @@ div.nyss-email-row {
 }
 div.nyss-email-fld {
   float: left;
-  width: 20%;
+  width: 70%;
   font-size: 1.1em;
 }
 div.nyss-email-fld.wide {
   width: 30%;
 }
+div.nyss-email-fld input.form-checkbox {
+  margin-right: 8px;
+  margin-bottom: 8px;
+}
 div.nyss-key {
-  font-size: 0.8em;
+  font-size: 0.9em;
   font-style: italic;
   padding-top: 5px;
+  padding-bottom: 8px;
   line-height: 130%;
 }
 div.notes {
@@ -285,4 +290,8 @@ div.nyss-buttons {
 }
 .crm-container div.nyss-buttons input.form-submit {
   font-size: 1.4em;
+}
+div.nyss-mailing-subscriptions,
+div.crm-title {
+  padding: 0 6px;
 }

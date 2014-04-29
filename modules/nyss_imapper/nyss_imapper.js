@@ -295,25 +295,25 @@ cj(document).ready(function(){
   // Clear activities
   function ClearActivity(activityId){
     // console.log('ClearActivity',activityId);
-    // cj.ajax({
-    //   url: '/civicrm/imap/ajax/matched/clear',
-    //   data: {id: activityId},
-    //   async:false,
-    //   success: function(data,status) {
-    //     data = cj.parseJSON(data);
-    //     if (data.code =='ERROR'){
-    //       CRM.alert('Unable to Clear Activity : '+data.message, '', 'error');
-    //       if(deleted.clear =='true')  removeRow(activityId);
-    //     }else{
-    //       CRM.alert('Activity Cleared', '', 'success');
-    //     }
-    //     removeRow(activityId);
-    //     cj("#clear-confirm").dialog('close');
-    //   },
-    //   error: function(){
-    //     CRM.alert('Unable to Clear Activity', '', 'error');
-    //   }
-    // });
+    cj.ajax({
+      url: '/civicrm/imap/ajax/matched/clear',
+      data: {id: activityId},
+      async:false,
+      success: function(data,status) {
+        data = cj.parseJSON(data);
+        if (data.code =='ERROR'){
+          CRM.alert('Unable to Clear Activity : '+data.message, '', 'error');
+          if(deleted.clear =='true')  removeRow(activityId);
+        }else{
+          CRM.alert('Activity Cleared', '', 'success');
+        }
+        removeRow(activityId);
+        cj("#clear-confirm").dialog('close');
+      },
+      error: function(){
+        CRM.alert('Unable to Clear Activity', '', 'error');
+      }
+    });
   }
 
 
@@ -433,7 +433,7 @@ cj(document).ready(function(){
 
   // assign a message to a contact Unmatched page
   function Assign (messageId) {
-    console.log('Assign # : '+messageId);
+    // console.log('Assign # : '+messageId);
 
     // get array of checked ids
     var contactIds = $(".imapper-contact-box input:checkbox:checked").map(function(){
@@ -457,7 +457,7 @@ cj(document).ready(function(){
 
     // if they've selected 1 or more contact, assign the message
     if(contactIds !='' ){
-      console.log('Assigning Message to existing contact');
+      // console.log('Assigning Message to existing contact');
       cj.ajax({
         url: '/civicrm/imap/ajax/unmatched/assign',
         data: {
@@ -482,7 +482,7 @@ cj(document).ready(function(){
         }
       });
     }else if((first_name)||(last_name)||(email_address)){
-      console.log('Assigning Message to new contact');
+      // console.log('Assigning Message to new contact');
       if ((cj.isNumeric(cj("#tab2 .dob .month").val()) || cj.isNumeric(cj("#tab2 .dob .day").val()) || cj.isNumeric(cj("#tab2 .dob .year").val())) && ( !cj.isNumeric(cj("#tab2 .dob .month").val()) || !cj.isNumeric(cj("#tab2 .dob .day").val()) || !cj.isNumeric(cj("#tab2 .dob .year").val()))) {
         CRM.alert('Please Enter a full date of birth', 'Warning', 'warn');
         return false;
@@ -545,7 +545,7 @@ cj(document).ready(function(){
       });
       return false;
     }else{
-      console.log('Please Choose a contact');
+      // console.log('Please Choose a contact');
       CRM.alert('Select a contact to assign message to,<br/> OR create a contact with First Name, Last Name, or Email', '', 'warn');
     }
   };
@@ -584,7 +584,7 @@ cj(document).ready(function(){
       activityIds = activityId.split(',');
       contactIds = contactId.split(',');
       if(activityIds.length == 1){
-        cj('#message_left_header,#tab1').show();
+        cj('#message_left_header,.ReAssignTab').show();
         cj('#message_left_email').removeClass('multi');
         cj('#ui-id-1').click();
         cj.ajax({
@@ -631,7 +631,7 @@ cj(document).ready(function(){
       }else if (activityIds.length > 1){
         // here is the view for multiple messages
         cj('#message_left_email').addClass('multi');
-        cj('#message_left_header,#tab1').hide();
+        cj('#message_left_header,.ReAssignTab').hide();
         cj('#ui-id-2').click();
         cj.each(messageIds, function(key, messageId) {
           // console.log("messageId : "+messageId+' - activityId :'+activityIds[key]+" - key : "+key+" - Contact : "+contactIds[key]);
