@@ -209,13 +209,23 @@ class CRM_Contact_Form_Search_Custom_Group
       FALSE, array()
     );
 
-    $form->add('text', 'act_subject', ts('Activity Subject'));
-    $form->add('hidden', 'act_subjectq', "", array('id' => 'act_subjectq'));
     $dataUrl = CRM_Utils_System::url("civicrm/ajax/getsubjectlist",
       "json=1&reset=1",
       FALSE, NULL, FALSE
     );
     $form->assign('dataUrl', $dataUrl);
+
+    $allSubjects = CRM_NYSS_AJAX_Activity::getSubjectList(FALSE);
+    $subj = &$form->addElement('advmultiselect', 'act_subject',
+      ts('Activity Subject'), $allSubjects,
+      array(
+        'size' => 5,
+        'style' => 'width:240px; height: 200px;',
+        'class' => 'advmultiselect',
+      )
+    );
+    $subj->setButtonAttributes('add', array('value' => ts('Add >>')));
+    $subj->setButtonAttributes('remove', array('value' => ts('<< Remove')));
 
     $form->assign('searchName', 'IncludeExclude');
 
@@ -223,7 +233,7 @@ class CRM_Contact_Form_Search_Custom_Group
      * if you are using the standard template, this array tells the template what elements
      * are part of the search criteria
      */
-    $form->assign('elements', array('includeGroups', 'excludeGroups', 'andOr', 'includeTags', 'excludeTags', 'act_action', 'activity_type_id', 'act_subject', 'act_subjectq'));
+    $form->assign('elements', array('includeGroups', 'excludeGroups', 'andOr', 'includeTags', 'excludeTags', 'act_action', 'activity_type_id', 'act_subject'));
   }
 
   /*
@@ -680,7 +690,7 @@ WHERE  gcc.group_id = {$ssGroup->id}
     //NYSS 7748
     //CRM_Core_Error::debug_var('this->_formValues', $this->_formValues);
     if ( !empty($this->_formValues['activity_type_id']) || !empty($this->_formValues['act_subject']) ) {
-      self::_processActivities("result_{$this->_tableName}", $this->_formValues['act_action'], $this->_formValues['activity_type_id'], $this->_formValues['act_subjectq']);
+      self::_processActivities("result_{$this->_tableName}", $this->_formValues['act_action'], $this->_formValues['activity_type_id'], $this->_formValues['act_subject']);
     }
 
     //now construct from
@@ -802,9 +812,19 @@ WHERE  gcc.group_id = {$ssGroup->id}
     //CRM_Core_Error::debug_var('_processActivities $actType', $actType);
     //CRM_Core_Error::debug_var('_processActivities $actSubject', $actSubject);
 
+    $actSubjects = array();
+    foreach ( $actSubject as $actIDs ) {
+      foreach ( explode(',', $actIDs) as $actID ) {
+        $actSubjects[] = $actID;
+      }
+    }
+    $actSubjectList = implode(',', $actSubject);
+    //CRM_Core_Error::debug_var('_processActivities $actSubjects', $actSubjects);
+    //CRM_Core_Error::debug_var('_processActivities $actSubjectList', $actSubjectList);
+
     //construct where clauses
     $whereAT = ($actType) ? "a.activity_type_id = {$actType}" : "(1)";
-    $whereAS = ($actSubject) ? "a.id IN {$actSubject}" : "(1)";
+    $whereAS = ($actSubjectList) ? "a.id IN ({$actSubjectList})" : "(1)";
 
     $existingIDs = CRM_Core_DAO::singleValueQuery("
       SELECT GROUP_CONCAT(contact_id) FROM {$table}
