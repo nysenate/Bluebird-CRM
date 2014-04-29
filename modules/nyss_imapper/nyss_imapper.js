@@ -31,7 +31,12 @@ cj(document).ready(function(){
   });
 
   // create the multi-tab interface
-  cj("#tabs, #tabs_tag, #tabs_edit").tabs();
+  cj("#tabs, #tabs_tag, #tabs_edit").tabs({
+    activate: function( event, ui ){
+      cj('.token-input-dropdown-facebook').hide();
+      // cj('.token-input-list-facebook').hide();
+    }
+  });
 
   // Date range hack - a little debug trick
   if (location.hash.replace("#","").length) {
