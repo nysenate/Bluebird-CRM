@@ -330,6 +330,10 @@ cj(document).ready(function(){
     autoOpen: false,
     resizable: false,
     title: 'Loading Data',
+    close: function(){
+      cj('.token-input-dropdown-facebook').remove();
+      cj('.token-input-list-facebook').remove();
+    },
     open: function() {
       cj(this).siblings('.ui-dialog-buttonpane').find('button:eq(0)').focus();
       cj(this).siblings('.ui-dialog-buttonpane').find('button:eq(0)').addClass('primary_button');
@@ -564,6 +568,10 @@ cj(document).ready(function(){
     autoOpen: false,
     resizable: false,
     title: 'Loading Data',
+    close: function(){
+      cj('.token-input-dropdown-facebook').remove();
+      cj('.token-input-list-facebook').remove();
+    },
     open: function() {
       cj(this).siblings('.ui-dialog-buttonpane').find('button:eq(0)').focus();
       cj(this).siblings('.ui-dialog-buttonpane').find('button:eq(0)').addClass('primary_button');
@@ -574,8 +582,8 @@ cj(document).ready(function(){
 
       // Reset inputs
       cj('#contact_tag, #contact_position, #activity_tag, #contact_name, #activity_date, #contact_position_name').val('');
-      cj('.token-input-dropdown-facebook').html('').remove();
-      cj('.token-input-list-facebook').html('').remove();
+      cj('.token-input-dropdown-facebook').remove();
+      cj('.token-input-list-facebook').remove();
       cj('#contact-issue-codes,#message_left_header,#message_left_email,#imapper-contacts-list').html('');
 
       // load the message
@@ -625,7 +633,7 @@ cj(document).ready(function(){
           },
           error: function(){
             CRM.alert('unable to Load Message', '', 'error');
-            cj("#assign-popup").dialog('close');
+            cj("#process-popup").dialog('close');
           }
         });
       }else if (activityIds.length > 1){
@@ -661,7 +669,7 @@ cj(document).ready(function(){
           });
         });
         cj("#loading-popup").dialog('close');
-        cj("#assign-popup").dialog({
+        cj("#process-popup").dialog({
           title:  "Processing "+activityIds.length+" Messages",
         });
       }
@@ -760,15 +768,15 @@ cj(document).ready(function(){
     buttons: {
       "Update & Clear": function() {
         Process('clear');
-        cj("#assign-popup").dialog('close');
+        cj("#process-popup").dialog('close');
       },
       "Update": function() {
         Process();
-        cj("#assign-popup").dialog('close');
+        cj("#process-popup").dialog('close');
       },
       "Clear": function() {
         ClearActivity(cj('#activity').val());
-        cj("#assign-popup").dialog('close');
+        cj("#process-popup").dialog('close');
       },
       Cancel: function() {
         cj( this ).dialog( "close" );
@@ -907,7 +915,7 @@ cj(document).ready(function(){
           if (data.code =='ERROR'){
             CRM.alert('Could not reassign Message : '+data.message, '', 'error');
           }else{
-            cj("#assign-popup").dialog('close');
+            cj("#process-popup").dialog('close');
             // reset activity to new data
             cj('#'+messageId).attr("data-contact_id",data.contact_id); // contact_id
             cj('#'+messageId+" .name").attr("data-firstname",data.first_name); // first_name
