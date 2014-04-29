@@ -224,7 +224,7 @@ class CRM_IMAP_AJAX {
 
     # http://codefool.tumblr.com/post/15288874550/list-of-valid-and-invalid-email-addresses
 
-  // UPDATE `nyss_inbox_messages` SET body = ' email@example.com<br/>firstname.lastname@example.com<br/>email@subdomain.example.com<br/>firstname+lastname@example.com<br/>email@123.123.123.123<br/>email@[123.123.123.123]<br/>"email"@example.com<br/>1234567890@example.com<br/>email@example-one.com<br/>_______@example.com<br/>email@example.name<br/>email@example.museum<br/>email@example.co.jp<br/>firstname-lastname@example.com<br/>much.”more\ unusual”@example.com<br/>very.unusual.”@”.unusual.com@example.com<br/>very.”(),:;<>[]”.VERY.”very@\\ "very”.unusual@strange.example.com<br/>plainaddress<br/>#@%^%#$@#$@#.com<br/>@example.com<br/>Joe Smith <email@example.com><br/>email.example.com<br/>email@example@example.com<br/>.email@example.com<br/>email.@example.com<br/>email..email@example.com<br/>あいうえお@example.com<br/>email@example.com (Joe Smith)<br/>email@example<br/>email@-example.com<br/>email@example.web<br/>email@111.222.333.44444<br/>email@example..com<br/>Abc..123@example.com<br/><br/> 5085551234 <br/> 508.555.1234 or 508-555-1234 <br/> (508)-555-1234<br/>5000001234 or 501.111.1111 or 502-222-2222 and (503)-333-3333 123+52(55)55555555<br/>0052 (55) 55555555<br/>(55) 55555555<br/>55555555<br/>55-555-555<br/>01-800-765-8786<br/>55555555 x23<br/>5555-5555 Ext 23<br/>55555555 ext23<br/>5555-5555x43<br/>55555555ext26<br/> 051123456<br/>041-765-432<br/>(031) 246-357<br/>040/456-123<br/>064.111-222<br/>(051)121212<br/>+386 041 100-200<br/>00 386 (0)70 555 555<br/>(051) 951-159<br/>041234567<br/>040 555-999<br/>+386 (0)70 111 222<br/>040/555999<br/>031 98 76 54<br/>((111) 222-3333<br/>1112223333<br/>111 222-3333<br/>111-222-3333<br/>(111)2223333<br/>+11234567890<br/>    1-8002353551<br/>    123-456-7890   -Hello!<br/>+1 - 1234567890<br/> This part of the expression validates the ‘username’ section of the email address. The hat sign (^) at the beginning of the expression represents the start of the string. If we didn’t include this, then someone could key in anything they wanted before the email address and it would still validate. <br/><br/>Contained in the square brackets are the characters we want to allow in this part of the address. Here, we are allowing the letters a-z, A-Z, the numbers 0-9, and the symbols underscore (_), period (.), and dash (-). As you’ve probably noticed, I’ve included letters both in capitals and lower case. In this instance, this isn’t strictly necessary, as we’re using the eregi (case insensitive) function. But I’ve included them here for completeness, and to show you how the functions work. The order of the character pairs within the brackets doesn’t matter.<br/><br/>The plus (+) sign after the square brackets indicates ‘one or more of the contents of the previous brackets’. So, in this case, we require one or more of any of the characters in the square brackets to be included in the address in order for it to validate. Finally, there is the ‘@‘ sign, which means that we require the presence of one @ sign immediately following the username. Dr. Steven V.R. Crain and<br/>Dr. Joe Sam Smith and Dr. Joe S. Smith and Joe S. Smith and Joe Smith and<br/>Joe-bob O\'Smith and Joe-bob Smith and aa a Mary-Ann I Stupid and<br/>Lisa E. Booth Crain and.Janna H. Belser-Ehrlich and Bjorn O\'Malleydd and<br/>Bin Lindd and Linda Jonesdd and Jason H. Priemdd <br/>Bjorn O\'Malley-Munozdd and Bjorn C. O\'Malleydd and Bjorn "Bill" O\'Malleydd and Bjorn ("Bill") O\'Malleydd and<br/>Bjorn ("Wild Bill") O\'Malleydd and Bjorn (Bill) O\'Malleydd and Bjorn \'Bill\' O\'Malleydd and Bjorn C O\'Malleydd and Bjorn C. R. O\'Malleydd and Bjorn Charles O\'Malleydd and Bjorn Charles R. O\'Malleydd and Bjorn van O\'Malleydd and Bjorn Charles van der O\'Malleydd and Bjorn Charles O\'Malley y Muñozdd and Bjorn O\'Malley, Jr.dd and<br/>Bjorn O\'Malley Jrdd and B O\'Malleydd and William Carlos Williamsdd and<br/>C. Bjorn Roger O\'Malley and B. C. O\'Malleydd and B C O\'Malleydd and B.J. Thomasdd and O\'Malley, Bjorndd and O\'Malley, Bjorn Jrdd and O\'Malley, C. Bjorn dd and O\'Malley, C. Bjorn III dd and O\'Malley y Muñoz, C. Bjorn Roger III and<br/>Doe, John. A. Kenneth III andVelasquez y Garcia, Dr. Juan, Jr. and Dr. Juan Q. Xavier de la Vega, Jr. an Smith and Smith Contractors and 12901,<br/> 5285 KEYES DR  KALAMAZOO MI 49004 2613 .. <br/> PO BOX 35  COLFAX LA 71417 35 .. <br/> 64938 MAGNOLIA LN APT B PINEVILLE LA 71360-9781 486 S SOANGETAHA RD APT 9 GALESBURG IL .. <br/> 450 N CHERRY ST GALESBURG IL 61401.. <br/> 950 REDWOOD SHORES PKWY UNIT K102 REDWOOD CITY CA.. <br/>  123 MAIN ST.. <br/> 123 MAIN ST SAN FRANCISCO.. <br/> MAIN ST & KELLOGG ST.. <br/>  EMBARCADERO ST & MARKET ST SAN FRANCISCO.. <br/> ' where id = 406;
+  // UPDATE `nyss_inbox_messages` SET body = 'should work<br/>+1 (518) 555-0138 x23<br/>(518) 555-0138 x23<br/>518-555-0138 x23<br/>518.555.0138 x23<br/>518 555 0138 x23<br/>555 0138 x23<br/>555-0138 x23<br/><br/>+1(518)-555-0138<br/>+1-518-555-0138<br/>+1 518-555-0138<br/>+1 518 555-0138<br/>+1.518.555.0138<br/>+1 518.555.0138<br/>+1 518 555.0138<br/>+1 518 555 0138<br/>+1 5185550138<br/>+15185550138<br/><br/>(518)-555-0138<br/>(518).555.0138<br/>(518)-555.0138<br/>(518) 555-0138<br/>(518) 555.0138<br/>(518) 5550138<br/>(518)5550138<br/>(5185550138<br/><br/>518-555-0138<br/>518 555-0138<br/>518.555.0138<br/>518 555.0138<br/>518.555-0138<br/>518 555 0138<br/>518 5550138<br/>518-5550138<br/>5185550138<br/><br/>555-0138<br/>555.0138<br/>555 0138<br/>5550138<br/><br/>should fail<br/>2001-2003<br/>1111042 Wallaby Way, Sydney<br/> email@example.com<br/>firstname.lastname@example.com<br/>email@subdomain.example.com<br/>firstname+lastname@example.com<br/>email@123.123.123.123<br/>email@[123.123.123.123]<br/>"email"@example.com<br/>1234567890@example.com<br/>email@example-one.com<br/>_______@example.com<br/>email@example.name<br/>email@example.museum<br/>email@example.co.jp<br/>firstname-lastname@example.com<br/>much.”more\ unusual”@example.com<br/>very.unusual.”@”.unusual.com@example.com<br/>very.”(),:;<>[]”.VERY.”very@\\ "very”.unusual@strange.example.com<br/>plainaddress<br/>#@%^%#$@#$@#.com<br/>@example.com<br/>Joe Smith <email@example.com><br/>email.example.com<br/>email@example@example.com<br/>.email@example.com<br/>email.@example.com<br/>email..email@example.com<br/>あいうえお@example.com<br/>email@example.com (Joe Smith)<br/>email@example<br/>email@-example.com<br/>email@example.web<br/>email@111.222.333.44444<br/>email@example..com<br/>Abc..123@example.com<br/> This part of the expression validates the ‘username’ section of the email address. The hat sign (^) at the beginning of the expression represents the start of the string. If we didn’t include this, then someone could key in anything they wanted before the email address and it would still validate. <br/><br/>Contained in the square brackets are the characters we want to allow in this part of the address. Here, we are allowing the letters a-z, A-Z, the numbers 0-9, and the symbols underscore (_), period (.), and dash (-). As you’ve probably noticed, I’ve included letters both in capitals and lower case. In this instance, this isn’t strictly necessary, as we’re using the eregi (case insensitive) function. But I’ve included them here for completeness, and to show you how the functions work. The order of the character pairs within the brackets doesn’t matter.<br/><br/>The plus (+) sign after the square brackets indicates ‘one or more of the contents of the previous brackets’. So, in this case, we require one or more of any of the characters in the square brackets to be included in the address in order for it to validate. Finally, there is the ‘@‘ sign, which means that we require the presence of one @ sign immediately following the username. Dr. Steven V.R. Crain and<br/>Dr. Joe Sam Smith and Dr. Joe S. Smith and Joe S. Smith and Joe Smith and<br/>Joe-bob O\'Smith and Joe-bob Smith and aa a Mary-Ann I Stupid and<br/>Lisa E. Booth Crain and.Janna H. Belser-Ehrlich and Bjorn O\'Malleydd and<br/>Bin Lindd and Linda Jonesdd and Jason H. Priemdd <br/>Bjorn O\'Malley-Munozdd and Bjorn C. O\'Malleydd and Bjorn "Bill" O\'Malleydd and Bjorn ("Bill") O\'Malleydd and<br/>Bjorn ("Wild Bill") O\'Malleydd and Bjorn (Bill) O\'Malleydd and Bjorn \'Bill\' O\'Malleydd and Bjorn C O\'Malleydd and Bjorn C. R. O\'Malleydd and Bjorn Charles O\'Malleydd and Bjorn Charles R. O\'Malleydd and Bjorn van O\'Malleydd and Bjorn Charles van der O\'Malleydd and Bjorn Charles O\'Malley y Muñozdd and Bjorn O\'Malley, Jr.dd and<br/>Bjorn O\'Malley Jrdd and B O\'Malleydd and William Carlos Williamsdd and<br/>C. Bjorn Roger O\'Malley and B. C. O\'Malleydd and B C O\'Malleydd and B.J. Thomasdd and O\'Malley, Bjorndd and O\'Malley, Bjorn Jrdd and O\'Malley, C. Bjorn dd and O\'Malley, C. Bjorn III dd and O\'Malley y Muñoz, C. Bjorn Roger III and<br/>Doe, John. A. Kenneth III andVelasquez y Garcia, Dr. Juan, Jr. and Dr. Juan Q. Xavier de la Vega, Jr. an Smith and Smith Contractors and 12901,<br/> 5285 KEYES DR  KALAMAZOO MI 49004 2613 .. <br/> PO BOX 35  COLFAX LA 71417 35 .. <br/> 64938 MAGNOLIA LN APT B PINEVILLE LA 71360-9781 486 S SOANGETAHA RD APT 9 GALESBURG IL .. <br/> 450 N CHERRY ST GALESBURG IL 61401.. <br/> 950 REDWOOD SHORES PKWY UNIT K102 REDWOOD CITY CA.. <br/>  123 MAIN ST.. <br/> 123 MAIN ST SAN FRANCISCO.. <br/> MAIN ST & KELLOGG ST.. <br/>  EMBARCADERO ST & MARKET ST SAN FRANCISCO.. <br/> ' where id = 406;
 
 
 
@@ -239,9 +239,10 @@ class CRM_IMAP_AJAX {
           case '0':
             $time_start = microtime(true);
             $patterns = array('/\r\n|\r|\n/i', '/\<p(\s*)?\/?\>/i', '/\<br(\s*)?\/?\>/i', '/<div[^>]*>/','/<\/div>/' ,'/\//');
-            $search = preg_replace('/&lt;|&gt;|&quot;|&amp;/i', '###', $search );
-            $search = preg_replace($patterns, "\n ",  $output['body']);
-             // Find Possible Email Addresses
+            $search = preg_replace('/&lt;|&gt;|&quot;|&amp;/i', '###',   $output['body']);
+            $search = preg_replace($patterns, "\n ", $search);
+
+            // Find Possible Email Addresses
             foreach(preg_split('/[, ;]/', $search) as $token) {
               $email = filter_var(filter_var($token, FILTER_SANITIZE_EMAIL), FILTER_VALIDATE_EMAIL);
               if ($email !== false) {
@@ -268,11 +269,19 @@ class CRM_IMAP_AJAX {
             $output['found_addresses'] = array_unique($addresses['results'], SORT_REGULAR);
 
             // Find Possible Phone numbers
-            preg_match_all('/(?:\(?([0-9]{3})\)?[-. ]?)?([0-9]{3})[-. ]?([0-9]{4})/s',$search,$phonenumbers);
-            $output['found_phones'] = array_unique($phonenumbers[0], SORT_REGULAR);
+            preg_match_all('/([\(]{1}[0-9]{3}[\)]{1}[\.| |\-]{0,1}|^[0-9]{3}[\.|\-| ]?)?[0-9]{3}(\.|\-| )?[0-9]{4}/s',$search,$phonecheck1);
+            preg_match_all('/(?:\([2-9]\d{2}\)\ ?|(?:[2-9]\d{2}\-))[2-9]\d{2}\-\d{4}/s',$search,$phonecheck2);
+            preg_match_all('/1?[-\. ]?(\(\d{3}\)?[-\. ]?|\d{3}?[-\. ]?)?\d{3}?[-\. ]?\d{4}/s',$search,$phonecheck3);
 
-              preg_match_all( "/(?<FirstName>[A-Z]\.?\w*\-?[A-Z]?\w*)\s?(?<MiddleName>[A-Z]\w+|[A-Z]?\.?)\s(?<LastName>(?:[A-Z]\w{1,3}|St\.\s)?[A-Z]\w+\-?[A-Z]?\w*)(?:,\s|)(?<Suffix>Jr\.|Sr\.|PHD\.|MD\.|3RD|2ND|RN\.|III|II|)/",$search,$names);
+            // preg_match_all('/((((\(\d{3}\))|(\d{3}-))\d{3}-\d{4})|(\+?\d{2}((-| )\d{1,8}){1,5}))(( x| ext)\d{1,5}){0,1}/s',$search,$phonecheck4);
+            preg_match_all('/(1?)(-| ?)(\()?([0-9]{3})(\)|-| |\)-|\) )?([0-9]{3})(-| )?([0-9]{4}|[0-9]{4})/s',$search,$phonecheck5);
+            preg_match_all('/(1?(?: |\-|\.)?(?:\(\d{3}\)|\d{3})(?: |\-|\.)?\d{3}(?: |\-|\.)?\d{4})/s',$search,$phonecheck6);
+
+            $phonenumbers = array_merge($phonecheck1[0], $phonecheck2[0], $phonecheck3[0], $phonecheck5[0], $phonecheck6[0]);
+            $phonenumbers = array_filter(array_map('trim', $phonenumbers));
+            $output['found_phones'] = array_unique($phonenumbers, SORT_REGULAR);
             // Find Possible Names
+            preg_match_all( "/(?<FirstName>[A-Z]\.?\w*\-?[A-Z]?\w*)\s?(?<MiddleName>[A-Z]\w+|[A-Z]?\.?)\s(?<LastName>(?:[A-Z]\w{1,3}|St\.\s)?[A-Z]\w+\-?[A-Z]?\w*)(?:,\s|)(?<Suffix>Jr\.|Sr\.|PHD\.|MD\.|3RD|2ND|RN\.|III|II|)/",$search,$names);
             foreach ($names[0] as $id => $name) {
               $name = trim($name);
 
@@ -305,17 +314,17 @@ class CRM_IMAP_AJAX {
               $check_result = mysql_query($query, self::db());
               if($row = mysql_fetch_assoc($check_result)) {
                 if($row['COUNT(id)'] < 1){
-                  // var_dump($nameOutput[$id]);
                   unset($nameOutput[$id]);
                 }
               }
             }
-            $output['found_names'] = array_map("unserialize", array_unique(array_map("serialize", $nameOutput)));
+            $output['found_names'] =  array_map("unserialize", array_unique(array_map("serialize", $nameOutput)));
+
             $time_end = microtime(true);
             $time = $time_end - $time_start;
 
             // colorizing the output
-            $time_start = microtime(true);
+            $time2_start = microtime(true);
             function highlight($text, $search, $type) {
               switch ($type) {
                 case 'name':
@@ -329,7 +338,10 @@ class CRM_IMAP_AJAX {
 
                   break;
                 default:
-                  $re = '(' . implode('|', $search). ')';
+                  $re = implode('###', $search);
+                  $re = preg_quote($re);
+                  $re = '(' .preg_replace('/###/', '|', $re). ')';
+                  // var_dump($text);
                   return preg_replace($re, "<span class='found $type' data-search='$0' title='Click to use this $type'>".'${0}'."</span>", $text);
                   break;
               }
@@ -341,79 +353,80 @@ class CRM_IMAP_AJAX {
             if (!empty($output['found_addresses'])) {
               $body =  highlight($body, $output['found_addresses'],'addresses');
             }
-            if (!empty($output['found_phones'])) {
-              $body =  highlight($body, $output['found_phones'],'phone');
-            }
+
             if (!empty($output['found_names'])) {
               foreach ($output['found_names'] as $key => $name) {
                 $body =  highlight($body, $name,'name');
               }
             }
-
+            if (!empty($output['found_phones'])) {
+              $body =  highlight($body, $output['found_phones'],'phone');
+            }
             $output['body'] = $body;
-            $time_end = microtime(true);
-            $time2 = $time_end - $time_start;
-
-              if ($debug){
-                echo "<style>
-                .found{
-                    background: rgba(255, 230, 0, 0.5);
-                    padding: 1px 2px;
-                    border: 1px solid #C1C1C1;
-                    margin: -1px 2px;
-                    padding: 1px 4px;
-                    border-radius: 3px;
-                    display:inline-block;
-                }
-                .found:hover{
-                    background: rgba(255, 230, 0, 0.8);
-                    border: 1px solid #A0A0A0;
-
-                }
-
-                .found.name{
-                    /* red ffb7b7 */
-                    background: rgba(255,183,183, 0.5);
-                }
-                /*.found.name:hover{
-                    background: rgba(255,183,183, 0.8);
-                }*/
-                .found.zip{
-                    /* blue a8d1ff*/
-                    background: rgba(168,209,255, 0.5);
-                }
-                .found.zip:hover{
-                    background: rgba(168,209,255, 0.8);
-                }
-                .found.phone{
-                    /* green a8d1ff*/
-                    background: rgba(196,255,143, 0.5);
-                }
-                .found.phone:hover{
-                    background: rgba(196,255,143, 0.8);
-                }</style>";
-                // var_dump($search);
-                echo $body."<br/><br/><br/>";
-                echo $time . " seconds ( Time to Find )\n";
-                echo $time2 . " seconds ( Time to colorize )\n";
-
-              }else{
-                echo json_encode($output);
+            $time2_end = microtime(true);
+            $time2 = $time2_end - $time2_start;
+            if ($debug){
+              echo "
+            <style>
+              .found{
+                  background: rgba(255, 230, 0, 0.5);
+                  padding: 1px 2px;
+                  border: 1px solid #C1C1C1;
+                  margin: -1px 2px;
+                  padding: 1px 4px;
+                  border-radius: 3px;
+                  display:inline-block;
               }
-            break;
-          case '1':
-            $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message is already Assigned','clear'=>'true');
-            echo json_encode($returnCode);
-            break;
-          case '7':
-            $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message has been cleared from inbox','clear'=>'true');
-            echo json_encode($returnCode);
-            break;
-          case '8':
-          case '9':
-            $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message has been deleted','clear'=>'true');
-            echo json_encode($returnCode);
-            break;
+              .found:hover{
+                  background: rgba(255, 230, 0, 0.8);
+                  border: 1px solid #A0A0A0;
+
+              }
+
+              .found.name{
+                  /* red ffb7b7 */
+                  background: rgba(255,183,183, 0.5);
+              }
+              /*.found.name:hover{
+                  background: rgba(255,183,183, 0.8);
+              }*/
+              .found.zip{
+                  /* blue a8d1ff*/
+                  background: rgba(168,209,255, 0.5);
+              }
+              .found.zip:hover{
+                  background: rgba(168,209,255, 0.8);
+              }
+              .found.phone{
+                  /* green a8d1ff*/
+                  background: rgba(196,255,143, 0.5);
+              }
+              .found.phone:hover{
+                  background: rgba(196,255,143, 0.8);
+              }
+            </style>";
+              // var_dump($search);
+              echo $body."<br/><br/><br/>";
+              echo $time . " seconds ( Time to Find )\n";
+              echo $time2 . " seconds ( Time to colorize )\n";
+
+            }else{
+              echo json_encode($output);
+            }
+          break;
+        case '1':
+          $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message is already Assigned','clear'=>'true');
+          echo json_encode($returnCode);
+          break;
+        case '7':
+          $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message has been cleared from inbox','clear'=>'true');
+          echo json_encode($returnCode);
+          break;
+        case '8':
+        case '9':
+          $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message has been deleted','clear'=>'true');
+          echo json_encode($returnCode);
+          break;
         }
       }else{
         $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message not found','clear'=>'true');
@@ -979,8 +992,8 @@ class CRM_IMAP_AJAX {
             case '1':
               $time_start = microtime(true);
               $patterns = array('/\r\n|\r|\n/i', '/\<p(\s*)?\/?\>/i', '/\<br(\s*)?\/?\>/i', '/<div[^>]*>/','/<\/div>/' ,'/\//');
-              $search = preg_replace('/&lt;|&gt;|&quot;|&amp;/i', '###', $search );
-              $search = preg_replace($patterns, "\n ",  $output['body']);
+              $search = preg_replace('/&lt;|&gt;|&quot;|&amp;/i', '###',   $output['body']);
+              $search = preg_replace($patterns, "\n ", $search);
 
               // Find Possible Email Addresses
               foreach(preg_split('/[, ;]/', $search) as $token) {
@@ -1009,9 +1022,17 @@ class CRM_IMAP_AJAX {
               $output['found_addresses'] = array_unique($addresses['results'], SORT_REGULAR);
 
               // Find Possible Phone numbers
-              preg_match_all('/(?:\(?([0-9]{3})\)?[-. ]?)?([0-9]{3})[-. ]?([0-9]{4})/s',$search,$phonenumbers);
-              $output['found_phones'] = array_unique($phonenumbers[0], SORT_REGULAR);
+              preg_match_all('/([\(]{1}[0-9]{3}[\)]{1}[\.| |\-]{0,1}|^[0-9]{3}[\.|\-| ]?)?[0-9]{3}(\.|\-| )?[0-9]{4}/s',$search,$phonecheck1);
+              preg_match_all('/(?:\([2-9]\d{2}\)\ ?|(?:[2-9]\d{2}\-))[2-9]\d{2}\-\d{4}/s',$search,$phonecheck2);
+              preg_match_all('/1?[-\. ]?(\(\d{3}\)?[-\. ]?|\d{3}?[-\. ]?)?\d{3}?[-\. ]?\d{4}/s',$search,$phonecheck3);
 
+              // preg_match_all('/((((\(\d{3}\))|(\d{3}-))\d{3}-\d{4})|(\+?\d{2}((-| )\d{1,8}){1,5}))(( x| ext)\d{1,5}){0,1}/s',$search,$phonecheck4);
+              preg_match_all('/(1?)(-| ?)(\()?([0-9]{3})(\)|-| |\)-|\) )?([0-9]{3})(-| )?([0-9]{4}|[0-9]{4})/s',$search,$phonecheck5);
+              preg_match_all('/(1?(?: |\-|\.)?(?:\(\d{3}\)|\d{3})(?: |\-|\.)?\d{3}(?: |\-|\.)?\d{4})/s',$search,$phonecheck6);
+
+              $phonenumbers = array_merge($phonecheck1[0], $phonecheck2[0], $phonecheck3[0], $phonecheck5[0], $phonecheck6[0]);
+              $phonenumbers = array_filter(array_map('trim', $phonenumbers));
+              $output['found_phones'] = array_unique($phonenumbers, SORT_REGULAR);
               // Find Possible Names
               preg_match_all( "/(?<FirstName>[A-Z]\.?\w*\-?[A-Z]?\w*)\s?(?<MiddleName>[A-Z]\w+|[A-Z]?\.?)\s(?<LastName>(?:[A-Z]\w{1,3}|St\.\s)?[A-Z]\w+\-?[A-Z]?\w*)(?:,\s|)(?<Suffix>Jr\.|Sr\.|PHD\.|MD\.|3RD|2ND|RN\.|III|II|)/",$search,$names);
               foreach ($names[0] as $id => $name) {
@@ -1056,7 +1077,7 @@ class CRM_IMAP_AJAX {
               $time = $time_end - $time_start;
 
               // colorizing the output
-              $time_start = microtime(true);
+              $time2_start = microtime(true);
               function highlight($text, $search, $type) {
                 switch ($type) {
                   case 'name':
@@ -1070,7 +1091,10 @@ class CRM_IMAP_AJAX {
 
                     break;
                   default:
-                    $re = '(' . implode('|', $search). ')';
+                    $re = implode('###', $search);
+                    $re = preg_quote($re);
+                    $re = '(' .preg_replace('/###/', '|', $re). ')';
+                    // var_dump($text);
                     return preg_replace($re, "<span class='found $type' data-search='$0' title='Click to use this $type'>".'${0}'."</span>", $text);
                     break;
                 }
@@ -1082,16 +1106,18 @@ class CRM_IMAP_AJAX {
               if (!empty($output['found_addresses'])) {
                 $body =  highlight($body, $output['found_addresses'],'addresses');
               }
-              if (!empty($output['found_phones'])) {
-                $body =  highlight($body, $output['found_phones'],'phone');
-              }
+
               if (!empty($output['found_names'])) {
                 foreach ($output['found_names'] as $key => $name) {
                   $body =  highlight($body, $name,'name');
                 }
               }
-
+              if (!empty($output['found_phones'])) {
+                $body =  highlight($body, $output['found_phones'],'phone');
+              }
               $output['body'] = $body;
+              $time2_end = microtime(true);
+              $time2 = $time2_end - $time2_start;
               if ($debug){
                 echo "
               <style>
