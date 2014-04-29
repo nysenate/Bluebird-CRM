@@ -20,28 +20,30 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
    * @access public
    */
   function preProcess( ) {
+    //CRM_Core_Error::debug_var('REQUEST', $_REQUEST);
     //CRM_Core_Error::debug_var('this', $this);
+    //CRM_Core_Error::debug_log_message('CRM_NYSS_Subscription_Form_Manage::preProcess');
 
     //get form params
-    $queueID = CRM_Utils_Request::retrieve('eq', 'Positive', CRM_Core_DAO::$_nullObject, FALSE, NULL, $_REQUEST);
+    $eq = CRM_Utils_Request::retrieve('eq', 'Positive', CRM_Core_DAO::$_nullObject, FALSE, NULL, $_REQUEST);
     $cs = CRM_Utils_Request::retrieve('cs', 'String', CRM_Core_DAO::$_nullObject, FALSE, NULL, $_REQUEST);
 
-    if ( !$queueID || !$cs ) {
+    if ( !$eq || !$cs ) {
       //check to see if set to submitValues
-      if ( !empty($this->_submitValues['queueID']) ) {
-        $queueID = $this->_submitValues['queueID'];
+      if ( !empty($this->_submitValues['eq']) ) {
+        $eq = $this->_submitValues['eq'];
       }
       if ( !empty($this->_submitValues['cs']) ) {
         $cs = $this->_submitValues['cs'];
       }
 
-      if ( !$queueID || !$cs ) {
+      if ( !$eq || !$cs ) {
         CRM_Core_Error::debug_log_message("No event queue ID or checksum set.");
         CRM_Utils_System::redirect('http://www.nysenate.gov');
       }
     }
     else {
-      $this->_queueID = $queueID;
+      $this->_eq = $eq;
       $this->_cs = $cs;
     }
 
@@ -54,7 +56,7 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
         ON eq.contact_id = c.id
       JOIN civicrm_email e
         ON eq.email_id = e.id
-      WHERE eq.id = {$queueID}
+      WHERE eq.id = {$eq}
     ");
     if ( $dao->N ) {
       while ( $dao->fetch() ) {
@@ -71,7 +73,7 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
 
     //if contact could not be retrieved from queue ID, exit
     if ( empty($contact) ) {
-      CRM_Core_Error::debug_log_message("Unable to locate contact for subscription management tool using event queue: {$queueID}");
+      CRM_Core_Error::debug_log_message("Unable to locate contact for subscription management tool using event queue: {$eq}");
       CRM_Utils_System::redirect('http://www.nysenate.gov');
     }
     else {
@@ -90,9 +92,11 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
     //alter form action to use pubfiles version
     $bbconfig = get_bluebird_instance_config();
     $env = explode('.', $bbconfig['base.domain']);
-    $action = "/{$env[0]}/{$bbconfig['shortname']}/subscription/manage/{$queueID}/{$cs}";
+    $action = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/subscription/manage";
     $this->_attributes['action'] = $action;
+    $this->_attributes['method'] = 'get';
 
+    //CRM_Core_Error::debug_var('$this->_attributes', $this->_attributes);
     //CRM_Core_Error::debug_var('action', $action);
     //CRM_Core_Error::debug_var('this', $this);
   }
@@ -119,7 +123,7 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
 
     //build form elements
     $this->add('hidden', 'cs', $this->_cs, array('id' => 'cs'));
-    $this->add('hidden', 'queueID', $this->_queueID, array('id' => 'queueID'));
+    $this->add('hidden', 'eq', $this->_eq, array('id' => 'eq'));
     $this->add('hidden', 'cid', $this->_contact['contact_id'], array('id' => 'cid'));
     $this->add('hidden', 'emailID', $this->_contact['email_id'], array('id' => 'emailID'));
 
@@ -141,16 +145,15 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
 
     $this->addElement('checkbox', 'opt_out', ts('Opt-Out'));
 
+    //don't use qfKey
+    $this->removeElement('qfKey');
+
     $this->addButtons(
       array(
         array(
           'type' => 'submit',
           'name' => ts('Save Subscription Options'),
         ),
-        /*array(
-          'type' => 'back',
-          'name' => ts('Cancel')
-        ),*/
       )
     );
 
@@ -172,9 +175,11 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
    */
   public function postProcess() {
     //CRM_Core_Error::debug_var('this', $this);
+    //CRM_Core_Error::debug_var('postProcess $_REQUEST', $_REQUEST);
 
     //get form parameters and create sql criteria
-    $formParams = $this->controller->exportValues( $this->_name );
+    //$formParams = $this->controller->exportValues( $this->_name );
+    $formParams = $_REQUEST;
     //CRM_Core_Error::debug_var('formParams', $formParams);
 
     //validate checksum again
@@ -198,19 +203,21 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
     }
 
     //set values
-    CRM_Core_DAO::executeQuery("
+    $sql = "
       UPDATE civicrm_email
       SET mailing_categories = {$mc}, on_hold = {$opt}, hold_date = {$hold_date}
       WHERE id = {$formParams['emailID']}
-    ");
+    ";
+    //CRM_Core_Error::debug_var('sql', $sql);
+    CRM_Core_DAO::executeQuery($sql);
 
     //now redirect
     $bbconfig = get_bluebird_instance_config();
     $env = explode('.', $bbconfig['base.domain']);
-    //$url = CRM_Utils_System::url('civicrm/nyss/subscription/view', "eq={$formParams['queueID']}&cs={$formParams['cs']}");
-    $url = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/subscription/view/{$formParams['queueID']}/{$formParams['cs']}";
+    //$url = CRM_Utils_System::url('civicrm/nyss/subscription/view', "eq={$formParams['eq']}&cs={$formParams['cs']}");
+    $url = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/subscription/view/{$formParams['eq']}/{$formParams['cs']}";
+    //CRM_Core_Error::debug_var('$url', $url);
     CRM_Utils_System::redirect($url);
-
   }//postProcess
 
 }//end class
