@@ -31,7 +31,12 @@ cj(document).ready(function(){
   });
 
   // create the multi-tab interface
-  cj("#tabs, #tabs_tag, #tabs_edit").tabs();
+  cj("#tabs, #tabs_tag, #tabs_edit").tabs({
+    activate: function( event, ui ){
+      cj('.token-input-dropdown-facebook').hide();
+      // cj('.token-input-list-facebook').hide();
+    }
+  });
 
   // Date range hack - a little debug trick
   if (location.hash.replace("#","").length) {
@@ -746,7 +751,7 @@ cj(document).ready(function(){
       // Activity Editing,
       // Assignee Contact Names
       cj('#contact_name_input')
-        .tokenInput( '/civicrm/ajax/checkemail?id=1&noemail=1', {
+         .tokenInput( '/civicrm/ajax/checkemail?noemail=1&context=activity_assignee', {
         theme: 'facebook',
         zindex: 9999,
         onAdd: function ( item ) {
