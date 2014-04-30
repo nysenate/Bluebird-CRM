@@ -83,20 +83,33 @@ class CRM_NYSS_Subscription_Page_View extends CRM_Core_Page {
       }
     }
 
-    //convert mailing categories to labels
-    $mCats = '';
-    if ( !empty($contact['mailing_categories']) ) {
-      $mCats = CRM_Core_DAO::singleValueQuery("
-        SELECT GROUP_CONCAT(ov.label)
-        FROM civicrm_option_value ov
-        JOIN civicrm_option_group og
-          ON ov.option_group_id = og.id
-          AND og.name = 'mailing_categories'
-        WHERE ov.value IN ({$contact['mailing_categories']})
-        ORDER BY ov.label
-      ");
+    //convert mailing categories; display categories IN and OUT
+    $mCats = array();
+    $opts = CRM_Core_DAO::executeQuery("
+      SELECT ov.label, ov.value
+      FROM civicrm_option_value ov
+      JOIN civicrm_option_group og
+        ON ov.option_group_id = og.id
+        AND og.name = 'mailing_categories'
+      ORDER BY ov.weight
+    ");
+    while ( $opts->fetch() ) {
+      $mCats[$opts->value] = $opts->label;
     }
-    $contact['mailing_categories_list'] = str_replace(',', ', ', $mCats);
+
+    $unselectedOpts = explode(',', $contact['mailing_categories']);
+
+    foreach ( $mCats as $mCatID => $mCatLabel ) {
+      if ( in_array($mCatID, $unselectedOpts) ) {
+        $contact['opt_unselected'][] = $mCatLabel;
+      }
+      else {
+        $contact['opt_selected'][] = $mCatLabel;
+      }
+    }
+
+    $contact['opt_unselected_list'] = implode(', ', $contact['opt_unselected']);
+    $contact['opt_selected_list'] = implode(', ', $contact['opt_selected']);
 
     //convert on_hold
     $contact['opt_out'] = (!empty($contact['on_hold'])) ? 'Yes' : 'No';

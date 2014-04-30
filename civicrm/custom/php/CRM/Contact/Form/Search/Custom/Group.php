@@ -192,6 +192,7 @@ class CRM_Contact_Form_Search_Custom_Group
 
     //NYSS 7748
     $actAction = array(
+      '' => '- select -',
       'act_include' => 'Include Activities',
       'act_exclude' => 'Exclude Activities',
     );
@@ -806,11 +807,16 @@ WHERE  gcc.group_id = {$ssGroup->id}
   }
 
   //NYSS 7748
-  function _processActivities($table, $action, $actType = NULL, $actSubject = '') {
+  function _processActivities($table, $action = NULL, $actType = NULL, $actSubject = '') {
     //CRM_Core_Error::debug_var('_processActivities $table', $table);
     //CRM_Core_Error::debug_var('_processActivities $action', $action);
     //CRM_Core_Error::debug_var('_processActivities $actType', $actType);
     //CRM_Core_Error::debug_var('_processActivities $actSubject', $actSubject);
+
+    //return if no action is selected
+    if ( empty($action) ) {
+      return;
+    }
 
     $actSubjects = array();
     foreach ( $actSubject as $actIDs ) {
@@ -847,6 +853,7 @@ WHERE  gcc.group_id = {$ssGroup->id}
         ";
         CRM_Core_DAO::executeQuery($sql);
         break;
+
       case 'act_exclude':
         $sql = "
           DELETE {$table}
@@ -865,6 +872,9 @@ WHERE  gcc.group_id = {$ssGroup->id}
         //CRM_Core_Error::debug_var('_processActivities exclude $sql', $sql);
         CRM_Core_DAO::executeQuery($sql);
         break;
+
+      default:
+        return;
     }
   }//_processActivities
 }
