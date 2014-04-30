@@ -195,7 +195,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
             'dbAlias' => 'civicrm_email_contact_source_email',
           ),
           //NYSS
-          'source_target_email' =>
+          'target_contact_email' =>
           array(
             'name' => 'email',
             'title' => ts('Target Contact Email'),
@@ -715,10 +715,13 @@ GROUP BY civicrm_activity_id {$this->_having} {$this->_orderBy}";
   ADD COLUMN civicrm_contact_contact_source_id VARCHAR(128),
   ADD COLUMN civicrm_email_contact_assignee_email VARCHAR(128),
   ADD COLUMN civicrm_email_contact_source_email VARCHAR(128),
-  ADD COLUMN civicrm_email_contact_target_email VARCHAR(128),
   ADD COLUMN civicrm_phone_contact_assignee_phone VARCHAR(128),
   ADD COLUMN civicrm_phone_contact_source_phone VARCHAR(128)
   ";
+    //NYSS 7827
+    if ( !in_array('civicrm_email_target.email as civicrm_email_contact_target_email', $this->_selectClauses) ) {
+      $tempQuery .= ', ADD COLUMN civicrm_email_contact_target_email VARCHAR(128)';
+    }
     CRM_Core_DAO::executeQuery($tempQuery);
 
     // 3. fill temp table with assignee results
