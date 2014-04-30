@@ -32,9 +32,9 @@ cj(document).ready(function(){
 
   // create the multi-tab interface
   cj("#tabs, #tabs_tag, #tabs_edit").tabs({
+    // hide open autocomplete messages when switching
     activate: function( event, ui ){
       cj('.token-input-dropdown-facebook').hide();
-      // cj('.token-input-list-facebook').hide();
     }
   });
 
@@ -44,6 +44,7 @@ cj(document).ready(function(){
   } else{
     var range = 30;
   };
+
   // onpageload
   if(cj("#Activities").length){
     getMatched(range);
@@ -1139,7 +1140,7 @@ cj(document).ready(function(){
 
     // do we clear it
     if(clear){
-      ClearActivity(activityId);
+      ClearActivity(messageId);
     }
   };
 
