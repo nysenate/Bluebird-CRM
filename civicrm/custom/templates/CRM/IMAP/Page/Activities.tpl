@@ -418,10 +418,10 @@
 							</select>
             </label>
 
-            <label for="date">
+            <!-- <label for="date">
               <span class="label_def">Date: </span>
-              <input type="text" placeholder="Date" class="form-text date" id="activity_date" name="activity_date">
-            </label>
+              <input type="text" placeholder="Date" class="form-text date dateplugin dpDate hasDatepicker" id="activity_date" name="activity_date">
+            </label> -->
           </div>
         </div>
 
