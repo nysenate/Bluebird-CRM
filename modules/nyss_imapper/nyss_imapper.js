@@ -100,6 +100,7 @@ cj(document).ready(function(){
             }
           });
         });
+        cj('#add_email').empty();
         cj( this ).dialog( "close" );
       },
       No: function() {
@@ -497,6 +498,7 @@ cj(document).ready(function(){
         CRM.alert('Please Enter a full date of birth', 'Warning', 'warn');
         return false;
       };
+
       cj.ajax({
         url: '/civicrm/imap/ajax/contact/add',
         data: {
@@ -533,6 +535,9 @@ cj(document).ready(function(){
                   CRM.alert('Could Not Assign Message : '+assign.message, '', 'error');
                   return false;
                 }else{
+                  AdditionalEmail.dialog('open');
+                  cj('#AdditionalEmail-popup #contacts').val(contactIds.toString());
+                  cj("#assign-popup").dialog('close');
                   cj.each(assign.messages, function(id, value) {
                     removeRow(messageId);
                     CRM.alert('Contact created and '+value.message, '', 'success');
@@ -540,14 +545,7 @@ cj(document).ready(function(){
                       checkForMatch(email_address,contactData.contact);
                     }
                   });
-                  cj("#assign-popup").dialog('close');
-                  AdditionalEmail.dialog('open');
-                  cj('#AdditionalEmail-popup #contacts').val(contactIds.toString());
-                  cj("#assign-popup").dialog('close');
                 }
-              },
-              error: function(){
-                CRM.alert('Failure', '', 'error');
               }
             });
           }
@@ -1544,7 +1542,6 @@ function shortenString(subject, length){
 // Remove them from the view so the user doesn't re-add / create duplicates
 // key = user_email
 function checkForMatch(key,contactIds){
-  cj("#matchCheck-popup").dialog('open');
   // console.log('checking',key,contactIds);
   cj(".this_address").html(key);
   cj('.imapper-message-box').each(function(i, item) {
@@ -1575,8 +1572,6 @@ function checkForMatch(key,contactIds){
       }
     };
   });
-  cj("#matchCheck-popup").dialog( "close" );
-
 }
 
 // removes row from the UI, forces table reload
