@@ -32,9 +32,9 @@ cj(document).ready(function(){
 
   // create the multi-tab interface
   cj("#tabs, #tabs_tag, #tabs_edit").tabs({
+    // hide open autocomplete messages when switching
     activate: function( event, ui ){
       cj('.token-input-dropdown-facebook').hide();
-      // cj('.token-input-list-facebook').hide();
     }
   });
 
@@ -44,6 +44,7 @@ cj(document).ready(function(){
   } else{
     var range = 30;
   };
+
   // onpageload
   if(cj("#Activities").length){
     getMatched(range);
@@ -63,12 +64,15 @@ cj(document).ready(function(){
   });
 
   // assign additional emails to new contacts
-  cj( "#AdditionalEmail-popup" ).dialog({
+  var AdditionalEmail = cj( "#AdditionalEmail-popup" ).dialog({
     modal: true,
     width: 500,
     autoOpen: false,
     resizable: false,
     open:function () {
+      if (cj('#add_email').text().length < 10) {
+        cj( this ).dialog( "close" );
+      };
       cj(this).siblings('.ui-dialog-buttonpane').find('button:eq(0)').focus();
       cj(this).siblings('.ui-dialog-buttonpane').find('button:eq(0)').addClass('primary_button');
     },
@@ -96,9 +100,12 @@ cj(document).ready(function(){
             }
           });
         });
+        cj('#add_email').empty();
+        cj( this ).dialog( "close" );
       },
       No: function() {
         cj('#add_email').empty();
+        cj( this ).dialog( "close" );
       }
     }
   });
@@ -280,13 +287,7 @@ cj(document).ready(function(){
     width: 370,
     buttons: {
       "Clear": function() {
-        // split the message ids back into array
-        var messages = cj("#clear-confirm #message").val();
-        messages = messages.split(',');
-        // the quickest way to iterate over them
-        cj.each(messages, function(key, message) {
-          ClearActivity(message);
-        });
+        ClearActivity(cj("#clear-confirm #message").val());
         cj( this ).dialog( "close" );
       },
       Cancel: function() {
@@ -299,20 +300,19 @@ cj(document).ready(function(){
 
   // Clear activities
   function ClearActivity(activityId){
-    // console.log('ClearActivity',activityId);
     cj.ajax({
       url: '/civicrm/imap/ajax/matched/clear',
       data: {id: activityId},
       async:false,
       success: function(data,status) {
         data = cj.parseJSON(data);
-        if (data.code =='ERROR'){
+        if (data.code == 'ERROR'){
           CRM.alert('Unable to Clear Activity : '+data.message, '', 'error');
-          if(deleted.clear =='true')  removeRow(activityId);
         }else{
           CRM.alert('Activity Cleared', '', 'success');
         }
-        removeRow(activityId);
+        activityIds = activityId.split(',');
+        removeRow(activityIds);
         cj("#clear-confirm").dialog('close');
       },
       error: function(){
@@ -381,6 +381,17 @@ cj(document).ready(function(){
             });
             cj('.first_name, .last_name, .phone, .street_address, .street_address_2, .city, .email_address').val('');
 
+            // add found emails to additional email popup
+            cj('#AdditionalEmail-popup #add_email').empty();
+            cj.each(message.found_emails, function(idx, val) {
+              cj('#AdditionalEmail-popup #add_email').append('<fieldset id="fs_'+idx+'"></fieldset>');
+              cj('<input />', { type: 'checkbox', id: 'cb_'+idx, value: val }).appendTo('#fs_'+idx);
+              cj('<label />', { 'for': 'cb_'+idx, text: val }).appendTo('#fs_'+idx);
+              cj('#cb'+idx).click();
+            });
+            cj('#AdditionalEmail-popup  #add_email').append('<fieldset id="fs_static"></fieldset>');
+            cj('<input />', { type: 'input', id: 'cb_static',placeholder: 'Enter any email we missed' }).appendTo('#fs_static');
+
             cj("#assign-popup").dialog({
               title:  "Assigning: "+shortenString(message.subject,55),
             });
@@ -395,16 +406,7 @@ cj(document).ready(function(){
             cj("#loading-popup").dialog('close');
             if(message.sender_email) cj('#search').click();
 
-            // add found emails to additional email popup
-            cj('#AdditionalEmail-popup #add_email').empty();
-            cj.each(message.found_emails, function(idx, val) {
-              cj('#AdditionalEmail-popup #add_email').append('<fieldset id="fs_'+idx+'"></fieldset>');
-              cj('<input />', { type: 'checkbox', id: 'cb_'+idx, value: val }).appendTo('#fs_'+idx);
-              cj('<label />', { 'for': 'cb_'+idx, text: val }).appendTo('#fs_'+idx);
-              cj('#cb'+idx).click();
-            });
-            cj('#AdditionalEmail-popup  #add_email').append('<fieldset id="fs_static"></fieldset>');
-            cj('<input />', { type: 'input', id: 'cb_static',placeholder: 'Enter any email we missed' }).appendTo('#fs_static');
+
           }
         },
         error: function(){
@@ -483,7 +485,7 @@ cj(document).ready(function(){
               removeRow(messageId);
               CRM.alert(value.message, '', 'success');
             });
-            cj("#AdditionalEmail-popup").dialog('open');
+            AdditionalEmail.dialog('open');
             cj('#AdditionalEmail-popup #contacts').val(contactIds.toString());
             cj("#assign-popup").dialog('close');
             // additional email popup
@@ -496,6 +498,7 @@ cj(document).ready(function(){
         CRM.alert('Please Enter a full date of birth', 'Warning', 'warn');
         return false;
       };
+
       cj.ajax({
         url: '/civicrm/imap/ajax/contact/add',
         data: {
@@ -532,6 +535,9 @@ cj(document).ready(function(){
                   CRM.alert('Could Not Assign Message : '+assign.message, '', 'error');
                   return false;
                 }else{
+                  AdditionalEmail.dialog('open');
+                  cj('#AdditionalEmail-popup #contacts').val(contactIds.toString());
+                  cj("#assign-popup").dialog('close');
                   cj.each(assign.messages, function(id, value) {
                     removeRow(messageId);
                     CRM.alert('Contact created and '+value.message, '', 'success');
@@ -539,14 +545,7 @@ cj(document).ready(function(){
                       checkForMatch(email_address,contactData.contact);
                     }
                   });
-                  cj("#assign-popup").dialog('close');
-                  cj("#AdditionalEmail-popup").dialog('open');
-                  cj('#AdditionalEmail-popup #contacts').val(contactIds.toString());
-                  cj("#assign-popup").dialog('close');
                 }
-              },
-              error: function(){
-                CRM.alert('Failure', '', 'error');
               }
             });
           }
@@ -992,8 +991,8 @@ cj(document).ready(function(){
                   if(email_address.length > 0){
                     checkForMatch(email_address,contactData.contact);
                   }
-                  cj("#AdditionalEmail-popup").dialog('open');
-                  cj('#AdditionalEmail-popup #contacts').val(contactIds.toString());
+                  // AdditionalEmail.dialog('open');
+                  // cj('#AdditionalEmail-popup #contacts').val(contactIds.toString());
                   cj("#process-popup").dialog('close');
                 }
               },
@@ -1139,7 +1138,7 @@ cj(document).ready(function(){
 
     // do we clear it
     if(clear){
-      ClearActivity(activityId);
+      ClearActivity(messageId);
     }
   };
 
@@ -1543,7 +1542,6 @@ function shortenString(subject, length){
 // Remove them from the view so the user doesn't re-add / create duplicates
 // key = user_email
 function checkForMatch(key,contactIds){
-  cj("#matchCheck-popup").dialog('open');
   // console.log('checking',key,contactIds);
   cj(".this_address").html(key);
   cj('.imapper-message-box').each(function(i, item) {
@@ -1574,8 +1572,6 @@ function checkForMatch(key,contactIds){
       }
     };
   });
-  cj("#matchCheck-popup").dialog( "close" );
-
 }
 
 // removes row from the UI, forces table reload
