@@ -314,6 +314,7 @@ cj(document).ready(function(){
         }else{
           CRM.alert('Activity Cleared', '', 'success');
         }
+        activityId = activityId.split(',');
         removeRow(activityId);
         cj("#clear-confirm").dialog('close');
       },
