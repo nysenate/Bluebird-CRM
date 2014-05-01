@@ -175,7 +175,7 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
       $fblink = '';
       if ( $bbconfig['smtp.facebook'] ) {
         $fburl = "https://www.facebook.com/sharer/sharer.php?u={$url}";
-        $fbimg = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/images/template/facebook_share_68x25.png";
+        $fbimg = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/common/images/social_media/facebook_share_68x25.png";
         $fblink = "<a href='{$fburl}' target=_blank>Share on Facebook.</a>&nbsp;&nbsp;<a href='{$fburl}' target=_blank><img src='{$fbimg}' height='20' align='middle'></a>";
       }
 
@@ -197,7 +197,7 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
 
     //7803 if viewing html, insert FB share image
     if ( empty($params['contact_id']) ) {
-      $imgRoot = $bbconfig['data.rootdir'].'/'.$bbconfig['data_dirname'].'/pubfiles/images/';
+      $imgRoot = $bbconfig['data.rootdir'].'/'.$bbconfig['data_dirname'].'/pubfiles/';
       $fbShareFolder = 'images/template';
       $fbShareImage = 'fb_share_thumb.png';
 

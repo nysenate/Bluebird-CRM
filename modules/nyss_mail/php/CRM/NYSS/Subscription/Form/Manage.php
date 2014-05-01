@@ -135,7 +135,7 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
       JOIN civicrm_option_group og
         ON ov.option_group_id = og.id
         AND og.name = 'mailing_categories'
-      ORDER BY ov.label
+      ORDER BY ov.weight
     ");
     while ( $opts->fetch() ) {
       $mCats[$opts->value] = $opts->label;
@@ -157,10 +157,13 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
       )
     );
 
-    //set defaults
+    //set defaults; translate opt-outs to present as opt-ins
     $defaults = array();
-    foreach ( explode(',', $this->_contact['mailing_categories']) as $mCatID ) {
-      $defaults['mailing_categories['.$mCatID.']'] = 1;
+    $existingOptOuts = explode(',', $this->_contact['mailing_categories']);
+    foreach ( $mCats as $mCatID => $mCatLabel ) {
+      if ( !in_array($mCatID, $existingOptOuts) ) {
+        $defaults['mailing_categories['.$mCatID.']'] = 1;
+      }
     }
     $defaults['opt_out'] = $this->_contact['on_hold'];
     //CRM_Core_Error::debug_var('$defaults', $defaults);
@@ -189,9 +192,29 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
     }
 
     //mailing categories
+    $mCats = array();
     $mc = 'null';
-    if ( !empty($formParams['mailing_categories']) ) {
-      $mc = "'".implode(',', array_keys($formParams['mailing_categories']))."'";
+    $opts = CRM_Core_DAO::executeQuery("
+      SELECT ov.label, ov.value
+      FROM civicrm_option_value ov
+      JOIN civicrm_option_group og
+        ON ov.option_group_id = og.id
+        AND og.name = 'mailing_categories'
+      ORDER BY ov.weight
+    ");
+    while ( $opts->fetch() ) {
+      $mCats[$opts->value] = $opts->label;
+    }
+
+    //translate opt-outs to present as opt-ins
+    $unselectedOpts = array();
+    foreach ( $mCats as $mCatID => $mCatLabel ) {
+      if ( !array_key_exists($mCatID, $formParams['mailing_categories']) ) {
+        $unselectedOpts[] = $mCatID;
+      }
+    }
+    if ( !empty($unselectedOpts) ) {
+      $mc = "'".implode(',', $unselectedOpts)."'";
     }
 
     //opt out

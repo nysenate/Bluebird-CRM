@@ -1574,8 +1574,8 @@ function _buildSearchMenu($searchNavID) {
       ),
       $searchNavID+7 => array(
         'attributes' => array (
-          'label'      => 'Include/Exclude Group/Tag',
-          'name'       => 'Include/Exclude Group/Tag',
+          'label'      => 'Include/Exclude Search',
+          'name'       => 'Include/Exclude Search',
           'url'        => 'civicrm/contact/search/custom?csid=4&reset=1',
           'permission' => 'access CiviCRM,view all contacts',
           'operator'   => 'AND',

@@ -34,8 +34,6 @@
 /* Popup -  tagging specific  */
 .page-civicrm-imap .process_popup_class .primary_button span,
 .page-civicrm-imap .match_popup_class .primary_button span{background: #4483B8; color: #fff; font-weight: bold;}
-.page-civicrm-imap .process_popup_class .primary_button span:hover,
-.page-civicrm-imap .match_popup_class .primary_button span:hover{background: #ffc6c6; color: #000; font-weight: bold;}
 
 /* Popup -  margin reset  */
 .page-civicrm-imap .ui-dialog .ui-dialog-content{padding: 0; margin: 0; float: left;}

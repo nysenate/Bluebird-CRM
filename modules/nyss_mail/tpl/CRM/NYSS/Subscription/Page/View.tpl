@@ -20,12 +20,17 @@
       <div class="clear"></div>
     </div>
     <div class="nyss-email-row">
-      <div class="nyss-email-label">Subscription Removal</div>
-      <div class="nyss-email-fld">{$contact.mailing_categories_list}</div>
+      <div class="nyss-email-label">Subscribed Categories</div>
+      <div class="nyss-email-fld">{$contact.opt_selected_list}</div>
       <div class="clear"></div>
     </div>
     <div class="nyss-email-row">
-      <div class="nyss-email-label">Opt-Out</div>
+      <div class="nyss-email-label">Unsubscribed Categories</div>
+      <div class="nyss-email-fld">{$contact.opt_unselected_list}</div>
+      <div class="clear"></div>
+    </div>
+    <div class="nyss-email-row">
+      <div class="nyss-email-label">Opt-Out of All Mailings</div>
       <div class="nyss-email-fld">{$contact.opt_out}</div>
       <div class="clear"></div>
     </div>

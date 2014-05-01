@@ -1231,44 +1231,39 @@ class CRM_IMAP_AJAX {
     }
 
     /**
-     * Clears from inbound email Matched screen by removing inbound email tag
+     * Clears from inbound email Matched screen by setting status to 7
      * For Matched screen CLEAR
      * @return [JSON Object]    JSON encoded response, OR error codes
      */
     public static function Clear() {
       require_once 'api/api.php';
-      $messageId = self::get('id');
       $session = CRM_Core_Session::singleton();
       $userId =  $session->get('userID');
-      $output = self::unifiedMessageInfo($messageId);
-      if(!$output){
-        $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message not found');#,'clear'=>'true');
-      }else{
-        $status = $output['status'];
-        if($status != ''){
-           switch ($status) {
-            case '1':
-              $activity_id = $output['activity_id'];
-              $UPDATEquery = "UPDATE `nyss_inbox_messages`
-              SET  `status`= 7, `matcher` = $userId
-              WHERE `id` =  {$messageId}";
-              $UPDATEresult = mysql_query($UPDATEquery, self::db());
-              $returnCode = array('code'=>'SUCCESS','id'=>$messageId, 'message'=>'Activity Cleared');
-              echo json_encode($returnCode);
-              mysql_close(self::$db);
-              break;
-            case '7':
-              $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message has been cleared from inbox','clear'=>'true');
-              echo json_encode($returnCode);
-              break;
-            case '8':
-            case '9':
-              $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message has been deleted','clear'=>'true');
-              echo json_encode($returnCode);
-              break;
-          }
-       }
+      $ids = explode(',', self::get('id'));
+      $debug = self::get('debug');
+      $Error = false;
+      foreach ($ids as $key => $messageId) {
+        $output = self::unifiedMessageInfo($messageId);
+        if(!$output){
+          $Error = true;
+        }else if($output['status'] != ''){
+          $UPDATEquery = "UPDATE `nyss_inbox_messages`
+          SET  `status`= 7, `matcher` = $userId
+          WHERE `id` =  {$messageId}";
+          $UPDATEresult = mysql_query($UPDATEquery, self::db());
+        }else{
+          $Error = true;
+        }
       }
+      $count = count($ids);
+      $plural = (count($ids) > 1) ? "ies" : "y";
+      if($Error){
+        $returnCode = array('code' => 'ERROR','message'=> "Could not Clear {$count} Activit{$plural}");
+      }else{
+        $returnCode = array('code' =>'SUCCESS','message'=> "{$count} Activit{$plural} successfully Cleared",'clear'=>'true');
+      }
+      mysql_close(self::$db);
+      echo json_encode($returnCode);
       CRM_Utils_System::civiExit();
     }
 
