@@ -433,7 +433,7 @@ cj(document).ready(function(){
     cj('#message').val(messageId);
     cj("#tabs :input[type='text']").val("");
     cj(".dob .month,.dob .day,.dob .year,.state").val([]);
-    cj("#status_id option[value='2']").attr('selected', 'selected');
+    cj("#status_id option[value='']").attr('selected', 'selected');
 
     cj('#imapper-contacts-list, #message_left_email').html('');
     cj("#message_left_email").animate({
@@ -802,7 +802,7 @@ cj(document).ready(function(){
     cj("#tabs :input[type='text']").val("");
     cj(".dob .month,.dob .day,.dob .year,.state").val([]);
     cj('#imapper-contacts-list, #message_left_email').html('');
-    cj("#status_id option[value='2']").attr('selected', 'selected');
+    cj("#status_id option[value='']").attr('selected', 'selected');
     cj("#message_left_email").animate({
       scrollTop: 0
     }, 'fast');
@@ -1109,13 +1109,13 @@ cj(document).ready(function(){
 
     // console.log((activty_contact.length > 0) && (activty_status_id.length === 0));
     if((activty_contact.length > 0) && (activty_status_id.length === 0)){
-      CRM.alert('You\'ve picked a contact, but also need to select a status to continue', '', 'warn');
+      CRM.alert('You\'ve picked a contact to Assign this message to, but also need to select a status to continue', 'Edit Activity Warning', 'warn');
       return false;
     }
 
     // did we edit the activity ?
-    if ((activty_contact.length != 0) || ((activty_contact.length != 0) && (activty_status_id.length != 0))){
-      cj.ajax({
+    if ((activty_contact.length != 0) || (activty_status_id.length != 0)){
+     cj.ajax({
         url: '/civicrm/imap/ajax/matched/edit',
         async:false,
         data: {
