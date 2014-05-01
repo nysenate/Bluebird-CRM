@@ -120,3 +120,16 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
+echo "7830: add open status for activities..."
+sql="
+  SELECT @actStatus:=id FROM civicrm_option_group WHERE name = 'activity_status';
+  SELECT @maxval:=max(cast(value as unsigned)) FROM civicrm_option_value WHERE option_group_id = @actStatus;
+  UPDATE civicrm_option_value
+    SET weight = weight + 1, is_default = 0
+    WHERE option_group_id = @actStatus;
+  INSERT INTO civicrm_option_value
+    (option_group_id, label, value, name, is_default, weight, is_active)
+  VALUES
+    (@actStatus, 'Open', @maxval + 1, 'Open', 1, 1, 1);
+"
+$execSql $instance -c "$sql" -q
