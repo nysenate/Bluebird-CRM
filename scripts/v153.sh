@@ -128,8 +128,8 @@ sql="
     SET weight = weight + 1, is_default = 0
     WHERE option_group_id = @actStatus;
   INSERT INTO civicrm_option_value
-    (option_group_id, label, value, name, is_default, weight, is_active)
+    (option_group_id, label, value, name, filter, is_default, weight, is_active)
   VALUES
-    (@actStatus, 'Open', @maxval + 1, 'Open', 1, 1, 1);
+    (@actStatus, 'Open', @maxval + 1, 'Open', 0, 1, 1, 1);
 "
 $execSql $instance -c "$sql" -q
