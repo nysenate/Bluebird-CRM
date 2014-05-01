@@ -4,16 +4,15 @@
   </div>
 
   <div class="nyss-intro">
+    <div class="nyss-section display_name">
+      {$contact.display_name}
+    </div>
     <div class="nyss-intro-text">
-      <p>Thank you! Below find your mailing subscriptions summary.</strong></p>
+      <p>Your email subscription settings have been updated. Thank you!</p>
     </div>
   </div>
 
-  <div class="nyss-section display_name">
-    {$contact.display_name}
-  </div>
-
-  <div class="nyss-section emails">
+  {*<div class="nyss-section emails">
     <div class="nyss-email-row">
       <div class="nyss-email-label">Email</div>
       <div class="nyss-email-fld">{$contact.email}</div>
@@ -34,5 +33,5 @@
       <div class="nyss-email-fld">{$contact.opt_out}</div>
       <div class="clear"></div>
     </div>
-  </div>
+  </div>*}
 </div>

@@ -87,7 +87,7 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
     }
 
     //set page title
-    CRM_Utils_System::setTitle( ts('Mass Email Subscriptions') );
+    CRM_Utils_System::setTitle( ts('Manage Email Subscriptions') );
 
     //alter form action to use pubfiles version
     $bbconfig = get_bluebird_instance_config();

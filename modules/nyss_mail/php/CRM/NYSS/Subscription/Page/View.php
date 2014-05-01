@@ -47,7 +47,7 @@ class CRM_NYSS_Subscription_Page_View extends CRM_Core_Page {
    * @access public
    */
   function run() {
-    CRM_Utils_System::setTitle('Mass Email Subscriptions');
+    CRM_Utils_System::setTitle('Email Subscriptions');
 
     //disable BB header
     $this->assign('disableBBheader', 1);
