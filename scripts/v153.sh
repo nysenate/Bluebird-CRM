@@ -127,6 +127,7 @@ sql="
   UPDATE civicrm_option_value
     SET weight = weight + 1, is_default = 0
     WHERE option_group_id = @actStatus;
+  DELETE FROM civicrm_option_value WHERE option_group_id = @actStatus AND name = 'Open';
   INSERT INTO civicrm_option_value
     (option_group_id, label, value, name, filter, is_default, weight, is_active)
   VALUES
