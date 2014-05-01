@@ -97,7 +97,7 @@ thead .sorting_asc{background-color:#f1f1f1!important;}
 .imapperbox .imap_match_column{width: 0px !important; }
 .imapperbox .imap_forwarder_column{width: 85px !important; }
 .page-civicrm-imap-matched .imapperbox .imap_actions_column{width: 135px !important; }
-.page-civicrm-imap-unmatched .imapperbox .imap_actions_column{width: 75px !important; }
+.page-civicrm-imap-unmatched .imapperbox .imap_actions_column{width: 105px !important; }
 .imapperbox .imap_actions_column span a{float: left; margin: 8px 1px 8px 0; padding: 2px 4px; border-radius: 3px;}
 .imapperbox .imap_actions_column a:hover{background: #fff; }
 .imapperbox .imap_actions_column .delete a{color:red !important;}

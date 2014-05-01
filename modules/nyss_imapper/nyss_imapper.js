@@ -300,6 +300,9 @@ cj(document).ready(function(){
 
   // Clear activities
   function ClearActivity(activityId){
+    if (cj.isArray(activityId)) {
+      activityId = activityId.toString();
+    }
     cj.ajax({
       url: '/civicrm/imap/ajax/matched/clear',
       data: {id: activityId},
@@ -311,8 +314,8 @@ cj(document).ready(function(){
         }else{
           CRM.alert('Activity Cleared', '', 'success');
         }
-        activityIds = activityId.split(',');
-        removeRow(activityIds);
+        activityId = activityId.split(',');
+        removeRow(activityId);
         cj("#clear-confirm").dialog('close');
       },
       error: function(){
@@ -342,6 +345,7 @@ cj(document).ready(function(){
     open: function() {
       cj(this).siblings('.ui-dialog-buttonpane').find('button:eq(0)').focus();
       cj(this).siblings('.ui-dialog-buttonpane').find('button:eq(0)').addClass('primary_button');
+      cj("#loading-popup").dialog('close');
 
       // here's the render
       var messageId = cj('#message').val();
@@ -403,7 +407,6 @@ cj(document).ready(function(){
               }
             });
             cj('#tab1 .email_address').val(message.sender_email);
-            cj("#loading-popup").dialog('close');
             if(message.sender_email) cj('#search').click();
 
 
@@ -431,7 +434,7 @@ cj(document).ready(function(){
     cj('#message').val(messageId);
     cj("#tabs :input[type='text']").val("");
     cj(".dob .month,.dob .day,.dob .year,.state").val([]);
-    cj("#status_id option[value='2']").attr('selected', 'selected');
+    cj("#status_id option[value='']").attr('selected', 'selected');
 
     cj('#imapper-contacts-list, #message_left_email').html('');
     cj("#message_left_email").animate({
@@ -772,14 +775,12 @@ cj(document).ready(function(){
     buttons: {
       "Update & Clear": function() {
         Process('clear');
-        cj("#process-popup").dialog('close');
       },
       "Update": function() {
         Process();
-        cj("#process-popup").dialog('close');
       },
       "Clear": function() {
-        ClearActivity(cj('#activity').val());
+        ClearActivity(messageIds);
         cj("#process-popup").dialog('close');
       },
       Cancel: function() {
@@ -802,7 +803,7 @@ cj(document).ready(function(){
     cj("#tabs :input[type='text']").val("");
     cj(".dob .month,.dob .day,.dob .year,.state").val([]);
     cj('#imapper-contacts-list, #message_left_email').html('');
-    cj("#status_id option[value='2']").attr('selected', 'selected');
+    cj("#status_id option[value='']").attr('selected', 'selected');
     cj("#message_left_email").animate({
       scrollTop: 0
     }, 'fast');
@@ -898,7 +899,7 @@ cj(document).ready(function(){
 
     var activty_contact = cj("#process-popup #contact_name").val().replace(/,,/g, ",").replace(/^,/g, "");
     var activty_status_id = cj("#tab3 #status_id").val();
-    var activity_date = cj("#tab3 #activity_date").val();
+    // var activity_date = cj("#tab3 #activity_date").val();
 
     // ----
     // Logic ( or as close as I get to it )
@@ -993,7 +994,6 @@ cj(document).ready(function(){
                   }
                   // AdditionalEmail.dialog('open');
                   // cj('#AdditionalEmail-popup #contacts').val(contactIds.toString());
-                  cj("#process-popup").dialog('close');
                 }
               },
               error: function(){
@@ -1108,34 +1108,40 @@ cj(document).ready(function(){
       error = false;
     }
 
+    // console.log((activty_contact.length > 0) && (activty_status_id.length === 0));
+    if((activty_contact.length > 0) && (activty_status_id.length === 0)){
+      CRM.alert('You\'ve picked a contact to Assign this message to, but also need to select a status to continue', 'Edit Activity Warning', 'warn');
+      return false;
+    }
+
     // did we edit the activity ?
-    if ((activty_contact.length != 0) || (activty_status_id != 2) || (activity_date.length != 0)){
-      // console.log('activty_contact: ',activty_contact, 'activty_status_id: ',activty_status_id,'activity_date: ',activity_date);
-      cj.ajax({
+    if ((activty_contact.length != 0) || (activty_status_id.length != 0)){
+     cj.ajax({
         url: '/civicrm/imap/ajax/matched/edit',
         async:false,
         data: {
           activity_id: activityId,
           activty_contact: activty_contact,
           activty_status_id: activty_status_id,
-          activity_date: activity_date
         },
         success: function(data,status) {
           CRM.alert('Edited Activity', 'Success', 'success');
-        },error: function(){
-          // var output = cj.parseJSON(data);
+        },
+        error: function(){
           CRM.alert('Failed to Edit Activity', 'Error', 'error');
           return false;
         }
       });
       error = false;
     }
+
     // we didn't do anything... why did you click the thing?
     if(error){
       CRM.alert('In order to update please done one or more of the following:<br/> Search for and select a contact to re-assign a message to<br/> OR create a contact with First Name, Last Name, or Email<br/> OR add a Keyword / Issue Code / Position to a Contact or Activity<br/> OR edit an Activity', '', 'warn');
       return false;
+    }else{
+      cj("#process-popup").dialog('close');
     }
-
     // do we clear it
     if(clear){
       ClearActivity(messageId);
@@ -1263,7 +1269,7 @@ function getUnmatched(range) {
           }else{
             html += '<td class="imap_forwarder_column"> N/A </td>';
           }
-          html += '<td class="imap_actions_column "><span class="assign"><a href="#">Assign</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
+          html += '<td class="imap_actions_column "><span class="assign"><a href="#">Assign Contact</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
         });
         cj('#imapper-messages-list').html(html);
         Table();
