@@ -65,7 +65,7 @@
     <div id="message_right">
       <div id="tabs">
         <ul>
-          <li class="ReAssignTab"><a href="#tab1">ReAssign </a></li>
+          <li class="ReAssignTab"><a href="#tab1">Reassign Contact</a></li>
           <li><a href="#tab2">Tag</a></li>
           <li><a href="#tab3">Edit Activity</a></li>
         </ul>
@@ -406,8 +406,9 @@
             <label for="status_id">
 	            <span class="label_def">Status: </span>
 							<select class="form-select required" id="status_id" name="status_id">
+                <option value="" selected="selected"></option>
 								<option value="1">Scheduled</option>
-								<option selected="selected" value="2">Completed</option>
+								<option value="2">Completed</option>
 								<option value="3">Cancelled</option>
 								<option value="4">Left Message</option>
 								<option value="5">Unreachable</option>
