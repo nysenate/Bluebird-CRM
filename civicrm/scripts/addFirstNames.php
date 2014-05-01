@@ -69,16 +69,18 @@ $block = (count($names) / 10);
 $count = 0;
 
 foreach ($names as $id => $name) {
-    if (!$dryrun) {
-        $result = $db->exec("INSERT INTO `fn_group` (given,new) VALUES ('$name',2);");
+  if (!$dryrun) {
+    $fn_group_result = $db->exec("INSERT INTO `fn_group` (given,new) VALUES ('$name',2);");
+    if($fn_group_result){
+      $fn_group_name_result = $db->exec("INSERT INTO `fn_group_name` (fn_group_id,name) VALUES (LAST_INSERT_ID(),'$name');");
     }
-    if ($id > 0 && $id % $block == 0) {
-        $count = $count + 10;
-        echo $count."%\n";
-    }
+  }
+  if ($id > 0 && $id % $block == 0) {
+    $count = $count + 10;
+    echo $count."%\n";
+  }
 }
 $db->commit();
-echo "100%\n";
 
 // do some reporting
 $end = microtime(true);
