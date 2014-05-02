@@ -20,7 +20,7 @@
       <div class="clear"></div>
     </div>
     <div class="nyss-email-row">
-      <div class="nyss-email-label">Subscription Removal</div>
+      <div class="nyss-email-label">Subscription Preferences</div>
       <div class="nyss-email-fld">
         <div class="nyss-key">If you feel you are receiving too much email, you can UNCHECK any topics below you aren’t interested in and still get critical news that matters to you.</div>
         {$form.mailing_categories.html}
