@@ -365,7 +365,7 @@
 		<div class="add_email"  id="add_email">
 
 		</div>
-		<input type="hidden" class="hidden" id="contacts" name="contacts">
+		<input type="hidden" class="hidden" id="contact" name="contact">
 		<input type="hidden" class="hidden" id="id" name="id">
 	</div>
 </div>
