@@ -405,17 +405,15 @@
 
             <label for="status_id">
 	            <span class="label_def">Status: </span>
+
 							<select class="form-select required" id="status_id" name="status_id">
                 <option value="" selected="selected"></option>
-								<option value="1">Scheduled</option>
-								<option value="2">Completed</option>
-								<option value="3">Cancelled</option>
-								<option value="4">Left Message</option>
-								<option value="5">Unreachable</option>
-								<option value="6">Not Required</option>
-								<option value="7">Draft</option>
-								<option value="8">Available</option>
-								<option value="9">No-show</option>
+		                {php}
+								      $status = CRM_Core_PseudoConstant::activityStatus();
+								      foreach ($status as $key => $value) {
+								        echo '<option value="'.$key.'">'.$value.'</option>';
+								      }
+		                {/php}
 							</select>
             </label>
 
