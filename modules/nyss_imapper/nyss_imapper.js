@@ -86,7 +86,7 @@ cj(document).ready(function(){
           add_emails.push(cj('#add_email #cb_static').val());
         };
         cj.each(add_emails, function( index, value ) {
-          var contacts = cj('#contacts').val();
+          var contacts = cj('#contact').val();
           cj.ajax({
             url: '/civicrm/imap/ajax/contact/addEmail',
             data: {
@@ -489,7 +489,7 @@ cj(document).ready(function(){
               CRM.alert(value.message, '', 'success');
             });
             AdditionalEmail.dialog('open');
-            cj('#AdditionalEmail-popup #contacts').val(contactIds.toString());
+            cj('#AdditionalEmail-popup #contact').val(contactIds.toString());
             cj("#assign-popup").dialog('close');
             // additional email popup
           }
@@ -539,7 +539,7 @@ cj(document).ready(function(){
                   return false;
                 }else{
                   AdditionalEmail.dialog('open');
-                  cj('#AdditionalEmail-popup #contacts').val(contactIds.toString());
+                  cj('#AdditionalEmail-popup #contact').val(contactData.contact);
                   cj("#assign-popup").dialog('close');
                   cj.each(assign.messages, function(id, value) {
                     removeRow(messageId);
