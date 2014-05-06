@@ -1137,7 +1137,7 @@ cj(document).ready(function(){
 
     // we didn't do anything... why did you click the thing?
     if(error){
-      CRM.alert('In order to update please done one or more of the following:<br/> Search for and select a contact to re-assign a message to<br/> OR create a contact with First Name, Last Name, or Email<br/> OR add a Keyword / Issue Code / Position to a Contact or Activity<br/> OR edit an Activity', '', 'warn');
+      CRM.alert('You have not chosen anything to update', '', 'warn');
       return false;
     }else{
       cj("#process-popup").dialog('close');
