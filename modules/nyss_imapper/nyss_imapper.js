@@ -7,22 +7,22 @@ cj(document).ready(function(){
 
   // use highlighted text to populate search areas
   cj(".found.email_address").live('click', function() {
-    cj('.ui-tabs-panel:visible .email_address').val(cj(this).data('search'));
+    cj('.highlightTarget:visible .email_address').val(cj(this).data('search'));
   });
   cj(".found.phone").live('click', function() {
-    cj('.ui-tabs-panel:visible .phone').val(cj(this).data('search'));
+    cj('.highlightTarget:visible .phone').val(cj(this).data('search'));
   });
   cj(".found.zip").live('click', function() {
-    cj('.ui-tabs-panel:visible .zip').val(cj(this).data('search'));
+    cj('.highlightTarget:visible .zip').val(cj(this).data('search'));
   });
 
   cj(".found.name").live('click', function() {
     var data = cj(this).data('json');
-    cj('.ui-tabs-panel:visible .prefix').val(data.prefix);
-    cj('.ui-tabs-panel:visible .first_name').val(data.first);
-    cj('.ui-tabs-panel:visible .middle_name').val(data.second);
-    cj('.ui-tabs-panel:visible .last_name').val(data.last);
-    cj('.ui-tabs-panel:visible .suffix').val(data.suffix);
+    cj('.highlightTarget:visible .prefix').val(data.prefix);
+    cj('.highlightTarget:visible .first_name').val(data.first);
+    cj('.highlightTarget:visible .middle_name').val(data.second);
+    cj('.highlightTarget:visible .last_name').val(data.last);
+    cj('.highlightTarget:visible .suffix').val(data.suffix);
   });
 
   // prevent the scroll to top issue
