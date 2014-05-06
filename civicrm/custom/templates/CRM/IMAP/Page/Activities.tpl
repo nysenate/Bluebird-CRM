@@ -76,7 +76,7 @@
 							<li><a href="#tab2_edit" data-button="Create &amp; Assign">Add Contact</a></li>
             </ul>
 
-            <div id="tab1_edit">
+            <div id="tab1_edit" class="highlightTarget">
 	            <input type="hidden" class="hidden" id="id" name="id">
 	            <label for="first_name">
 	              <span class="label_def">First Name: </span>
@@ -203,7 +203,7 @@
 	            </div>
 	            <div id="imapper-contacts-list" class="contacts-list"></div>
 	          </div>
-	          <div id="tab2_edit">
+	          <div id="tab2_edit" class="highlightTarget">
 	            <label for="prefix">
 	              <span class="label_def">Prefix: </span>
 	                <select class="form-select prefix" id="prefix" name="prefix">

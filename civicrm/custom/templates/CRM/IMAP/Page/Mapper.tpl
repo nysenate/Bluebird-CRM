@@ -53,7 +53,7 @@
 				<input type="hidden" class="hidden" id="message">
 				<!-- End objects -->
 
-				<div id="tab1">
+				<div id="tab1" class="highlightTarget">
           <input type="hidden" class="hidden" id="id" name="id">
           <label for="first_name">
             <span class="label_def">First Name: </span>
@@ -180,7 +180,7 @@
             </div>
           <div id="imapper-contacts-list" class="contacts-list"></div>
         </div>
-        <div id="tab2">
+        <div id="tab2" class="highlightTarget">
           <label for="prefix">
             <span class="label_def">Prefix: </span>
               <select class="form-select prefix" id="prefix" name="prefix">
@@ -365,7 +365,7 @@
 		<div class="add_email"  id="add_email">
 
 		</div>
-		<input type="hidden" class="hidden" id="contacts" name="contacts">
+		<input type="hidden" class="hidden" id="contact" name="contact">
 		<input type="hidden" class="hidden" id="id" name="id">
 	</div>
 </div>
