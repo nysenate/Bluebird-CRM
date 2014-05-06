@@ -89,6 +89,7 @@ cj(document).ready(function(){
           var contacts = cj('#contact').val();
           cj.ajax({
             url: '/civicrm/imap/ajax/contact/addEmail',
+            async:false,
             data: {
               email: value,
               contacts: contacts
