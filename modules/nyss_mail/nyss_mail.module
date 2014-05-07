@@ -529,8 +529,7 @@ function nyss_mail_civicrm_postProcess($formName, &$form)
     _addEmailSeeds($mailingID);
 
     //recalculate the total recipients
-    if ($form->_submitValues['all_emails'] || $excludeOOD != FILTER_ALL) {
-      require_once 'CRM/Mailing/BAO/Mailing.php';
+    if ($form->_submitValues['all_emails'] || $excludeOOD != FILTER_ALL || $mailingCat) {
       $count = CRM_Mailing_BAO_Recipients::mailingSize($mailingID);
       $form->set('count', $count);
       $form->assign('count', $count);
@@ -876,7 +875,7 @@ function _excludeCategoryOptOut($mailingID, $mailingCat) {
     USING civicrm_mailing_recipients
     JOIN civicrm_email
       ON civicrm_mailing_recipients.email_id = civicrm_email.id
-    WHERE $mailingCat IN (civicrm_email.mailing_categories)
+    WHERE FIND_IN_SET({$mailingCat}, civicrm_email.mailing_categories)
       AND civicrm_mailing_recipients.mailing_id = $mailingID
   ";
   //CRM_Core_Error::debug_var('sql', $sql);
