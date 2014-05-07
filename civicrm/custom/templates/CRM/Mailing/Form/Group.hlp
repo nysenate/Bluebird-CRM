@@ -91,3 +91,11 @@
 {htxt id="exclude-mailings"}
 <p>{ts}If you have sent other mailings - you can additionally Include (or Exclude) contacts who received those mailings. CiviCRM will eliminate any duplications so that contacts who are in an Included Group AND were recipients of an Included Mailing will only be sent one copy of this mailing.{/ts}</p>
 {/htxt}
+
+{*NYSS 7852*}
+{htxt id="category-title"}
+{ts}Categorize Mailings{/ts}
+{/htxt}
+{htxt id="category"}
+  <p>When creating a new mailing, you may categorize it by selecting an option from the list. Doing so will provide recipients control over their subscription preferences. Using the manage subscription tool, recipients may subscribe to or unsubscribe from specific categories.</p>
+{/htxt}
