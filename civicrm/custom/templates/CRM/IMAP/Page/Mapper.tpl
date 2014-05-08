@@ -361,7 +361,7 @@
 	</div>
 
 	<div id="AdditionalEmail-popup" title="Add email address to contact?"  style="display:none;">
-		<p>We found the following email address in the message. Select the emails you'd like to assign to the contact's records. (You can also enter an email address we missed if needed)</p>
+		<p>We found the following email address(es) in the message. Select or type any email address you'd like to assign to the contact record. </p>
 		<div class="add_email"  id="add_email">
 
 		</div>
