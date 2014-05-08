@@ -97,16 +97,16 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
   // NYSS 7423 - Allow location of whitelisting blurb to be configurable.
   // 7804 suppress if viewing html
   if ( $context == 'civimail' && !empty($params['contact_id']) ) {
-    if (isset($bbconfig['smtp.whitelist.text'])) {
-      $whitelist_txt = $bbconfig['smtp.whitelist.text'];
+    if (isset($bbconfig['email.whitelist.text'])) {
+      $whitelist_txt = $bbconfig['email.whitelist.text'];
     }
     else {
       $whitelist_txt = 'To ensure delivery of emails to your inbox, please add %SENATOR_EMAIL% to your email address book.';
     }
     $whitelist_txt = str_replace('%SENATOR_EMAIL%', $senator_email, $whitelist_txt);
 
-    if (isset($bbconfig['smtp.whitelist.location']) &&
-      $bbconfig['smtp.whitelist.location'] == "bottom"
+    if (isset($bbconfig['email.whitelist.location']) &&
+      $bbconfig['email.whitelist.location'] == "bottom"
     ) {
       $params['text'] = $params['text']."\n\n".$whitelist_txt;
       $params['html'] = preg_replace('#(\s*</body>)#', "\n<p style=\"text-align:center; font-size:10px;\">$whitelist_txt</p>$1", $params['html'], 1);
@@ -173,7 +173,7 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
 
       //4864
       $fblink = '';
-      if ( $bbconfig['smtp.facebook'] ) {
+      if ($bbconfig['email.include_facebook']) {
         $fburl = "https://www.facebook.com/sharer/sharer.php?u={$url}";
         $fbimg = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/common/images/social_media/facebook_share_68x25.png";
         $fblink = "<a href='{$fburl}' target=_blank>Share on Facebook.</a>&nbsp;&nbsp;<a href='{$fburl}' target=_blank><img src='{$fbimg}' height='20' align='middle'></a>";
@@ -184,7 +184,7 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
     }
 
     //5581 subscription management link
-    if ( !empty($contactID) && !empty($mid) && $bbconfig['smtp.subscriptions'] ) {
+    if (!empty($contactID) && !empty($mid) && $bbconfig['email.include_subscriptions']) {
       $cs = CRM_Contact_BAO_Contact_Utils::generateChecksum($contactID);
       $url = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/subscription/manage/{$event_queue_id}/{$cs}";
 
@@ -529,8 +529,7 @@ function nyss_mail_civicrm_postProcess($formName, &$form)
     _addEmailSeeds($mailingID);
 
     //recalculate the total recipients
-    if ($form->_submitValues['all_emails'] || $excludeOOD != FILTER_ALL) {
-      require_once 'CRM/Mailing/BAO/Mailing.php';
+    if ($form->_submitValues['all_emails'] || $excludeOOD != FILTER_ALL || $mailingCat) {
       $count = CRM_Mailing_BAO_Recipients::mailingSize($mailingID);
       $form->set('count', $count);
       $form->assign('count', $count);
@@ -876,7 +875,7 @@ function _excludeCategoryOptOut($mailingID, $mailingCat) {
     USING civicrm_mailing_recipients
     JOIN civicrm_email
       ON civicrm_mailing_recipients.email_id = civicrm_email.id
-    WHERE $mailingCat IN (civicrm_email.mailing_categories)
+    WHERE FIND_IN_SET({$mailingCat}, civicrm_email.mailing_categories)
       AND civicrm_mailing_recipients.mailing_id = $mailingID
   ";
   //CRM_Core_Error::debug_var('sql', $sql);
