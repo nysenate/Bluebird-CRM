@@ -7,22 +7,22 @@ cj(document).ready(function(){
 
   // use highlighted text to populate search areas
   cj(".found.email_address").live('click', function() {
-    cj('.ui-tabs-panel:visible .email_address').val(cj(this).data('search'));
+    cj('.highlightTarget:visible .email_address').val(cj(this).data('search'));
   });
   cj(".found.phone").live('click', function() {
-    cj('.ui-tabs-panel:visible .phone').val(cj(this).data('search'));
+    cj('.highlightTarget:visible .phone').val(cj(this).data('search'));
   });
   cj(".found.zip").live('click', function() {
-    cj('.ui-tabs-panel:visible .zip').val(cj(this).data('search'));
+    cj('.highlightTarget:visible .zip').val(cj(this).data('search'));
   });
 
   cj(".found.name").live('click', function() {
     var data = cj(this).data('json');
-    cj('.ui-tabs-panel:visible .prefix').val(data.prefix);
-    cj('.ui-tabs-panel:visible .first_name').val(data.first);
-    cj('.ui-tabs-panel:visible .middle_name').val(data.second);
-    cj('.ui-tabs-panel:visible .last_name').val(data.last);
-    cj('.ui-tabs-panel:visible .suffix').val(data.suffix);
+    cj('.highlightTarget:visible .prefix').val(data.prefix);
+    cj('.highlightTarget:visible .first_name').val(data.first);
+    cj('.highlightTarget:visible .middle_name').val(data.second);
+    cj('.highlightTarget:visible .last_name').val(data.last);
+    cj('.highlightTarget:visible .suffix').val(data.suffix);
   });
 
   // prevent the scroll to top issue
@@ -1137,7 +1137,7 @@ cj(document).ready(function(){
 
     // we didn't do anything... why did you click the thing?
     if(error){
-      CRM.alert('In order to update please done one or more of the following:<br/> Search for and select a contact to re-assign a message to<br/> OR create a contact with First Name, Last Name, or Email<br/> OR add a Keyword / Issue Code / Position to a Contact or Activity<br/> OR edit an Activity', '', 'warn');
+      CRM.alert('You have not chosen anything to update', '', 'warn');
       return false;
     }else{
       cj("#process-popup").dialog('close');

@@ -125,12 +125,16 @@ sql="
   SELECT @actStatus:=id FROM civicrm_option_group WHERE name = 'activity_status';
   SELECT @maxval:=max(cast(value as unsigned)) FROM civicrm_option_value WHERE option_group_id = @actStatus;
   UPDATE civicrm_option_value
-    SET weight = weight + 1, is_default = 0
+    SET weight = weight + 1
     WHERE option_group_id = @actStatus;
+  UPDATE civicrm_option_value
+    SET is_default = 1
+    WHERE option_group_id = @actStatus
+      AND name = 'Scheduled';
   DELETE FROM civicrm_option_value WHERE option_group_id = @actStatus AND name = 'Open';
   INSERT INTO civicrm_option_value
     (option_group_id, label, value, name, filter, is_default, weight, is_active)
   VALUES
-    (@actStatus, 'Open', @maxval + 1, 'Open', 0, 1, 1, 1);
+    (@actStatus, 'Open', @maxval + 1, 'Open', 0, 0, 1, 1);
 "
 $execSql $instance -c "$sql" -q

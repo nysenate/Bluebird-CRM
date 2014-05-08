@@ -221,7 +221,7 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
     $opt = 0;
     $hold_date = 'null';
     if (!empty($formParams['opt_out'])) {
-      $opt = 1;
+      $opt = 2;
       $hold_date = "'".date('Y-m-d h:i:s')."'";
     }
 
