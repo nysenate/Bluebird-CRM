@@ -89,6 +89,7 @@ cj(document).ready(function(){
           var contacts = cj('#contact').val();
           cj.ajax({
             url: '/civicrm/imap/ajax/contact/addEmail',
+            async:false,
             data: {
               email: value,
               contacts: contacts
@@ -394,7 +395,7 @@ cj(document).ready(function(){
               cj('#cb'+idx).click();
             });
             cj('#AdditionalEmail-popup  #add_email').append('<fieldset id="fs_static"></fieldset>');
-            cj('<input />', { type: 'input', id: 'cb_static',placeholder: 'Enter any email we missed' }).appendTo('#fs_static');
+            cj('<input />', { type: 'input', id: 'cb_static',placeholder: 'Additional Email Address' }).appendTo('#fs_static');
 
             cj("#assign-popup").dialog({
               title:  "Assigning: "+shortenString(message.subject,55),
