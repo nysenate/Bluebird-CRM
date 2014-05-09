@@ -18,3 +18,8 @@ cd %app_root%\drupal\sites\default
 if exist themes\ rmdir themes
 if exist themes del themes
 mklink /D themes ..\..\..\themes
+
+cd %app_root%
+git update-index --assume-unchanged .\civicrm\core
+git update-index --assume-unchanged .\drupal\sites\all\modules
+git update-index --assume-unchanged .\drupal\sites\default\themes
