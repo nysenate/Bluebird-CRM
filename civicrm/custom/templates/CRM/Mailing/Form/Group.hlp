@@ -97,5 +97,5 @@
 {ts}Categorize Mailings{/ts}
 {/htxt}
 {htxt id="category"}
-  <p>When creating a new mailing, you may categorize it by selecting an option from the list. Doing so will provide recipients control over their subscription preferences. Using the manage subscription tool, recipients may subscribe to or unsubscribe from specific categories.</p>
+  <p>Mailing categories allow mail recipients to subscribe to/unsubscribe from specific mailing categories.</p>
 {/htxt}
