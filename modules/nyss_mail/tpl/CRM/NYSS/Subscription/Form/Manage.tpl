@@ -45,6 +45,8 @@
 {*7865*}
 {literal}
 <script type="text/javascript">
+  //using standard dom js as we do not load jquery on this page (and want to continue keeping it lean)
+
   var form = document.Manage;
   var optout = document.getElementById('opt_out');
   var unsubOptsIds = [];
@@ -78,5 +80,21 @@
       }
     }
   };
+
+  //uncheck optout if any subscription options checked
+  var chkbx = document.getElementsByClassName('form-checkbox');
+  for (var i = 0; i < chkbx.length; i++ ) {
+    if ( chkbx[i].name.indexOf('mailing_categories') == 0 ) {
+      chkbx[i].onclick = function(e){
+        //console.log(e);
+        if (e.srcElement.checked && optout.checked) {
+          optout.checked = false;
+        }
+      }
+    }
+
+    //document.getElementById(selectedOpts[i]).checked = true;
+  }
+  //console.log(chkbx);
 </script>
 {/literal}
