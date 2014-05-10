@@ -27,21 +27,26 @@
 {include file="CRM/common/debug.tpl"}
 {/if}
 
-{*NYSS*}
-{include file="Custom/header.tpl"}
-<div class="clear"></div>
+{*NYSS 5581 include unless explicity disabled*}
+{if !$disableBBheader}
+  {include file="Custom/header.tpl"}
+  <div class="clear"></div>
+{/if}
 
 <div id="crm-container" class="crm-container{if $urlIsPublic} crm-public{/if}" lang="{$config->lcMessages|truncate:2:"":true}" xml:lang="{$config->lcMessages|truncate:2:"":true}">
 
-{include file="CRM/common/action.tpl"}
-{*NYSS remove nav*}
+{*NYSS*}
+{if !$disableBBheader}
+  {include file="CRM/common/action.tpl"}
+  {*NYSS remove nav*}
 
-{* temporary hack to fix wysiysg editor failure if js compression is on *}
-{if $defaultWysiwygEditor eq 1}
-  <script type="text/javascript" src="{$config->resourceBase}packages/tinymce/jscripts/tiny_mce/jquery.tinymce.js"></script>
-  <script type="text/javascript" src="{$config->resourceBase}packages/tinymce/jscripts/tiny_mce/tiny_mce.js"></script>
-{elseif $defaultWysiwygEditor eq 2}
-  <script type="text/javascript" src="{$config->resourceBase}packages/ckeditor/ckeditor.js"></script>
+  {* temporary hack to fix wysiysg editor failure if js compression is on *}
+  {if $defaultWysiwygEditor eq 1}
+    <script type="text/javascript" src="{$config->resourceBase}packages/tinymce/jscripts/tiny_mce/jquery.tinymce.js"></script>
+    <script type="text/javascript" src="{$config->resourceBase}packages/tinymce/jscripts/tiny_mce/tiny_mce.js"></script>
+  {elseif $defaultWysiwygEditor eq 2}
+    <script type="text/javascript" src="{$config->resourceBase}packages/ckeditor/ckeditor.js"></script>
+  {/if}
 {/if}
 
 <div class="crm-title">
@@ -78,7 +83,7 @@
 
 
 {if isset($localTasks) and $localTasks}
-    {include file="CRM/common/localNav.tpl"}
+  {include file="CRM/common/localNav.tpl"}
 {/if}
 
 {include file="CRM/common/status.tpl"}
@@ -100,13 +105,14 @@
 {/if}
 {/crmRegion}
 
-
-{literal}
-<script type="text/javascript">
-cj(function() {
-  cj().crmtooltip();
-  cj().crmAccordions();
-});
-</script>
-{/literal}
+{if !$disableBBheader}
+  {literal}
+  <script type="text/javascript">
+  cj(function() {
+    cj().crmtooltip();
+    cj().crmAccordions();
+  });
+  </script>
+  {/literal}
+{/if}
 </div> {* end crm-container div *}

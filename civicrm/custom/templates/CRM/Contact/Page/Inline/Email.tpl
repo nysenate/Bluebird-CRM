@@ -50,15 +50,16 @@
       </div>
       <div class="crm-content crm-contact_email {if $item.is_primary eq 1}primary{/if}">
         <a href="mailto:{$item.email}">{$item.email}</a>{if $item.on_hold == 2}&nbsp;({ts}On Hold - Opt Out{/ts}){elseif $item.on_hold}&nbsp;({ts}On Hold{/ts}){/if}{if $item.is_bulkmail}&nbsp;({ts}Bulk{/ts}){/if}
-         {if $emailMailing.$blockId.mailingID}
+          {if $emailMailing.$blockId.mailingID && $item.on_hold}
             {assign var=mid value=$emailMailing.$blockId.mailingID}
             <a href="{crmURL p='civicrm/mailing/report/event' q="reset=1&event=bounce&mid=$mid"}" title="{ts}view bounce report{/ts}" target="_blank">{$item.hold_date|crmDate:"%m/%d/%Y"}</a>
-          {else}{$item.hold_date|crmDate:"%m/%d/%Y"}
+          {elseif $item.on_hold}
+            {$item.hold_date|crmDate:"%m/%d/%Y"}
           {/if}
         {if $item.signature_text OR $item.signature_html}
-        <span class="signature-link description">
+          <span class="signature-link description">
             <a href="#" title="{ts}Signature{/ts}" onClick="showHideSignature( '{$blockId}' ); return false;">{ts}(signature){/ts}</a>
-        </span>
+          </span>
         {/if}
         <div id="Email_Block_{$blockId}_signature" class="hiddenElement">
           <strong>{ts}Signature HTML{/ts}</strong><br />{$item.signature_html}<br /><br />

@@ -247,4 +247,25 @@
     <page_callback>CRM_Contact_Page_AJAX::getContactRelationships</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
+
+  <!--7748-->
+  <item>
+    <path>civicrm/ajax/getsubjectlist</path>
+    <page_callback>CRM_NYSS_AJAX_Activity::getSubjectList</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+
+  <!--5581-->
+  <item>
+    <path>civicrm/nyss/subscription/manage</path>
+    <page_callback>CRM_NYSS_Subscription_Form_Manage</page_callback>
+    <access_arguments>view public CiviMail content</access_arguments>
+    <is_public>true</is_public>
+  </item>
+  <item>
+    <path>civicrm/nyss/subscription/view</path>
+    <page_callback>CRM_NYSS_Subscription_Page_View</page_callback>
+    <access_arguments>view public CiviMail content</access_arguments>
+    <is_public>true</is_public>
+  </item>
 </menu>

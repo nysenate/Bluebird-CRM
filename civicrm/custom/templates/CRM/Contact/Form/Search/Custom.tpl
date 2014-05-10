@@ -184,3 +184,34 @@ function toggleContactSelection( name, qfKey, selection ){
 }
 </script>
 {/literal}
+
+{*NYSS 7748*}
+{if $searchName eq 'IncludeExclude'}
+  {literal}
+  <script type="text/javascript">
+    var sourceDataUrl = "{/literal}{$dataUrl}{literal}";
+    var activityType = '';
+    aoData = new Array();
+
+    //if activity type selected, update autocomplete url to reflect value
+    cj('#activity_type_id').change(function(){
+      activityType = cj('#activity_type_id').val();
+
+      aoData.push(
+        {name:'activity_type_id', value: activityType},
+        {name:'getrows', value: true}
+      );
+
+      var getSubjectRows = cj.ajax({
+        "type": "GET",
+        "url": sourceDataUrl,
+        "data": aoData,
+        "success": function(html){
+          cj('select#act_subject-f').html(html);
+        }
+      });
+      //console.log('getSubjectRows', getSubjectRows);
+    });
+  </script>
+  {/literal}
+{/if}

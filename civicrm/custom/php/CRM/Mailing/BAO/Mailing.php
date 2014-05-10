@@ -1119,6 +1119,12 @@ ORDER BY   civicrm_email.is_bulkmail DESC
     if ($contactDetails) {
       $contact = $contactDetails;
     }
+    //NYSS 7701
+    elseif ($contactId === 0) {
+      //anonymous user
+      $contact = array();
+      CRM_Utils_Hook::tokenValues($contact, $contactId, $job_id);
+    }
     else {
       $params = array(array('contact_id', '=', $contactId, 0, 0));
       list($contact, $_) = CRM_Contact_BAO_Query::apiQuery($params);
@@ -1573,6 +1579,10 @@ ORDER BY   civicrm_email.is_bulkmail DESC
       return $mailing;
     }
 
+    //NYSS 7723
+    // update mailings with hash values
+    CRM_Contact_BAO_Contact_Utils::generateChecksum($mailing->id, NULL, NULL, NULL, 'mailing', 16);
+
     $groupTableName = CRM_Contact_BAO_Group::getTableName();
     $mailingTableName = CRM_Mailing_BAO_Mailing::getTableName();
 
@@ -1631,6 +1641,19 @@ ORDER BY   civicrm_email.is_bulkmail DESC
     }
 
     return $mailing;
+  }
+
+  //NYSS 7723
+  /**
+   * get hash value of the mailing
+   *
+   */
+  public static function getMailingHash($id) {
+    $hash = NULL;
+    if (CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::MAILING_PREFERENCES_NAME, 'hash_mailing_url')) {
+      $hash = CRM_Core_DAO::getFieldValue('CRM_Mailing_BAO_Mailing', $id, 'hash', 'id');
+    }
+    return $hash;
   }
 
   /**
@@ -2711,6 +2734,14 @@ SELECT  $mailing.id as mailing_id
       }
     }
 
+    //7723
+    $mailingKey = $form->_mailing_id;
+    if (!$isSMS) {
+      if ($hash = CRM_Mailing_BAO_Mailing::getMailingHash($mailingKey)) {
+        $mailingKey = $hash;
+      }
+    }
+
     if (!empty($report['mailing']['body_text'])) {
       $url = CRM_Utils_System::url('civicrm/mailing/report', 'reset=1&text=1&mid=' . $form->_mailing_id);
       $popup = "javascript:popUp(\"$url\");";
@@ -2934,21 +2965,27 @@ AND        m.id = %1
       $contactMailings[$mailingId]['openstats'] = ts('Opens') . ': ' . $openCounts[$values['mailing_id']] .
         '<br />' . ts('Clicks') . ': ' . $clickCounts[$values['mailing_id']];
 
-        $actionLinks = array(
-          CRM_Core_Action::VIEW => array(
-            'name'  => ts('View'),
-            'url'   => 'civicrm/mailing/view',
-            'qs'    => "reset=1&id={$values['mailing_id']}",
-            'title' => ts('View Mailing'),
-            'class' => 'crm-mailing-view',
-          ),
-          CRM_Core_Action::BROWSE => array(
-            'name' => ts('Mailing Report'),
-            'url' => 'civicrm/mailing/report',
-            'qs' => "mid={$values['mailing_id']}&reset=1&cid={$params['contact_id']}&context=mailing",
-            'title' => ts('View Mailing Report'),
-          )
-        );
+      //NYSS 7723/7789
+      $mailingKey = $values['mailing_id'];
+      if ($hash = CRM_Mailing_BAO_Mailing::getMailingHash($mailingKey)) {
+        $mailingKey = $hash;
+      }
+
+      $actionLinks = array(
+        CRM_Core_Action::VIEW => array(
+          'name'  => ts('View'),
+          'url'   => 'civicrm/mailing/view',
+          'qs'    => "reset=1&id={$mailingKey}",//NYSS 7723/7789
+          'title' => ts('View Mailing'),
+          'class' => 'crm-mailing-view',
+        ),
+        CRM_Core_Action::BROWSE => array(
+          'name' => ts('Mailing Report'),
+          'url' => 'civicrm/mailing/report',
+          'qs' => "mid={$values['mailing_id']}&reset=1&cid={$params['contact_id']}&context=mailing",
+          'title' => ts('View Mailing Report'),
+        )
+      );
 
       //NYSS 6698/6890
       $contactMailings[$mailingId]['openstats'] = "Opens: ".

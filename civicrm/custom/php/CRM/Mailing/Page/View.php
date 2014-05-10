@@ -76,13 +76,15 @@ class CRM_Mailing_Page_View extends CRM_Core_Page {
    *
    * @return void
    */
-  function run($id = NULL, $contactID = NULL, $print = TRUE) {
+  //NYSS 7806
+  function run($id = NULL, $contactID = NULL, $print = TRUE, $allowID = FALSE) {
     if (is_numeric($id)) {
       $this->_mailingID = $id;
     }
     else {
       $print = TRUE;
-      $this->_mailingID = CRM_Utils_Request::retrieve('id', 'Integer', CRM_Core_DAO::$_nullObject, TRUE);
+      //NYSS 7723
+      $this->_mailingID = CRM_Utils_Request::retrieve('id', 'String', CRM_Core_DAO::$_nullObject, TRUE);
     }
 
     // # CRM-7651
@@ -97,8 +99,34 @@ class CRM_Mailing_Page_View extends CRM_Core_Page {
       $this->_contactID = $session->get('userID');
     }
 
-    $this->_mailing = new CRM_Mailing_BAO_Mailing();
-    $this->_mailing->id = $this->_mailingID;
+    //NYSS 7723
+    //$this->_mailing = new CRM_Mailing_BAO_Mailing();
+    //$this->_mailing->id = $this->_mailingID;
+    // mailing key check
+    if (CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::MAILING_PREFERENCES_NAME, 'hash_mailing_url')) {
+      $this->_mailing = new CRM_Mailing_BAO_Mailing();
+
+      if (!is_numeric($this->_mailingID)) {
+        $this->_mailing->hash = $this->_mailingID;
+      }
+      elseif (is_numeric($this->_mailingID)) {
+        $this->_mailing->id = $this->_mailingID;
+        // if mailing is present and associated hash is present
+        // while 'hash' is not been used for mailing view : throw 'permissionDenied'
+        //NYSS 7806
+        if ($this->_mailing->find() &&
+          CRM_Core_DAO::getFieldValue('CRM_Mailing_BAO_Mailing', $this->_mailingID, 'hash', 'id') &&
+          !$allowID
+        ) {
+          CRM_Utils_System::permissionDenied();
+          return;
+        }
+      }
+    }
+    else {
+      $this->_mailing = new CRM_Mailing_BAO_Mailing();
+      $this->_mailing->id = $this->_mailingID;
+    }
 
     if (!$this->_mailing->find(TRUE) ||
       !$this->checkPermission()

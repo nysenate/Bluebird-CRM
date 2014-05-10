@@ -434,8 +434,13 @@ class CRM_Utils_Token {
         break;
 
       case 'viewUrl':
+        //NYSS 7723
+        $mailingKey = $mailing->id;
+        if ($hash = CRM_Mailing_BAO_Mailing::getMailingHash($mailingKey)) {
+          $mailingKey = $hash;
+        }
         $value = CRM_Utils_System::url('civicrm/mailing/view',
-          "reset=1&id={$mailing->id}",
+          "reset=1&id={$mailingKey}",
           TRUE, NULL, FALSE, TRUE
         );
         break;
@@ -456,7 +461,8 @@ class CRM_Utils_Token {
 
       case 'html':
         $page = new CRM_Mailing_Page_View();
-        $value = $page->run($mailing->id, NULL, FALSE);
+        //NYSS 7806
+        $value = $page->run($mailing->id, NULL, FALSE, TRUE);
         break;
 
       case 'approvalStatus':

@@ -5,7 +5,6 @@
 // Organization: New York State Senate
 // Revised: 2013-12-16
 
-
 require_once 'CRM/Core/Error.php';
 require_once 'CRM/Utils/IMAP.php';
 require_once 'CRM/Core/DAO.php';
@@ -86,7 +85,7 @@ class CRM_IMAP_AJAX {
         foreach ($row_raw as $key => $value) {
           switch ($key) {
             case 'body':
-              $output = preg_replace('/[^a-zA-Z0-9\s\p{P}<>]/', '', trim($value));
+              $output = preg_replace('/[^a-zA-Z0-9\s\p{P}<>+]/', '', trim($value));
               $row[$key] = htmlspecialchars_decode(stripslashes($output));
               break;
 
@@ -144,7 +143,7 @@ class CRM_IMAP_AJAX {
         if ($debug){
           echo "<h1>Full Email OUTPUT</h1>";
           echo "<pre>";
-          json_decode($returnMessage);
+          var_dump($returnMessage);
         }
       }
       if(!is_array($returnMessage)){
@@ -222,43 +221,212 @@ class CRM_IMAP_AJAX {
      * returns an error if the message is no longer unassigned
      * @return  [JSON Object]    Messages that have have not been matched
      */
+
+    # http://codefool.tumblr.com/post/15288874550/list-of-valid-and-invalid-email-addresses
+
+  // UPDATE `nyss_inbox_messages` SET body = 'should work<br/>+1 (518) 555-0138 x23<br/>(518) 555-0138 x23<br/>518-555-0138 x23<br/>518.555.0138 x23<br/>518 555 0138 x23<br/>555 0138 x23<br/>555-0138 x23<br/><br/>+1(518)-555-0138<br/>+1-518-555-0138<br/>+1 518-555-0138<br/>+1 518 555-0138<br/>+1.518.555.0138<br/>+1 518.555.0138<br/>+1 518 555.0138<br/>+1 518 555 0138<br/>+1 5185550138<br/>+15185550138<br/><br/>(518)-555-0138<br/>(518).555.0138<br/>(518)-555.0138<br/>(518) 555-0138<br/>(518) 555.0138<br/>(518) 5550138<br/>(518)5550138<br/>(5185550138<br/><br/>518-555-0138<br/>518 555-0138<br/>518.555.0138<br/>518 555.0138<br/>518.555-0138<br/>518 555 0138<br/>518 5550138<br/>518-5550138<br/>5185550138<br/><br/>555-0138<br/>555.0138<br/>555 0138<br/>5550138<br/><br/>should fail<br/>2001-2003<br/>1111042 Wallaby Way, Sydney<br/> email@example.com<br/>firstname.lastname@example.com<br/>email@subdomain.example.com<br/>firstname+lastname@example.com<br/>email@123.123.123.123<br/>email@[123.123.123.123]<br/>"email"@example.com<br/>1234567890@example.com<br/>email@example-one.com<br/>_______@example.com<br/>email@example.name<br/>email@example.museum<br/>email@example.co.jp<br/>firstname-lastname@example.com<br/>much.”more\ unusual”@example.com<br/>very.unusual.”@”.unusual.com@example.com<br/>very.”(),:;<>[]”.VERY.”very@\\ "very”.unusual@strange.example.com<br/>plainaddress<br/>#@%^%#$@#$@#.com<br/>@example.com<br/>Joe Smith <email@example.com><br/>email.example.com<br/>email@example@example.com<br/>.email@example.com<br/>email.@example.com<br/>email..email@example.com<br/>あいうえお@example.com<br/>email@example.com (Joe Smith)<br/>email@example<br/>email@-example.com<br/>email@example.web<br/>email@111.222.333.44444<br/>email@example..com<br/>Abc..123@example.com<br/> This part of the expression validates the ‘username’ section of the email address. The hat sign (^) at the beginning of the expression represents the start of the string. If we didn’t include this, then someone could key in anything they wanted before the email address and it would still validate. <br/><br/>Contained in the square brackets are the characters we want to allow in this part of the address. Here, we are allowing the letters a-z, A-Z, the numbers 0-9, and the symbols underscore (_), period (.), and dash (-). As you’ve probably noticed, I’ve included letters both in capitals and lower case. In this instance, this isn’t strictly necessary, as we’re using the eregi (case insensitive) function. But I’ve included them here for completeness, and to show you how the functions work. The order of the character pairs within the brackets doesn’t matter.<br/><br/>The plus (+) sign after the square brackets indicates ‘one or more of the contents of the previous brackets’. So, in this case, we require one or more of any of the characters in the square brackets to be included in the address in order for it to validate. Finally, there is the ‘@‘ sign, which means that we require the presence of one @ sign immediately following the username. Dr. Steven V.R. Crain and<br/>Dr. Joe Sam Smith and Dr. Joe S. Smith and Joe S. Smith and Joe Smith and<br/>Joe-bob O\'Smith and Joe-bob Smith and aa a Mary-Ann I Stupid and<br/>Lisa E. Booth Crain and.Janna H. Belser-Ehrlich and Bjorn O\'Malleydd and<br/>Bin Lindd and Linda Jonesdd and Jason H. Priemdd <br/>Bjorn O\'Malley-Munozdd and Bjorn C. O\'Malleydd and Bjorn "Bill" O\'Malleydd and Bjorn ("Bill") O\'Malleydd and<br/>Bjorn ("Wild Bill") O\'Malleydd and Bjorn (Bill) O\'Malleydd and Bjorn \'Bill\' O\'Malleydd and Bjorn C O\'Malleydd and Bjorn C. R. O\'Malleydd and Bjorn Charles O\'Malleydd and Bjorn Charles R. O\'Malleydd and Bjorn van O\'Malleydd and Bjorn Charles van der O\'Malleydd and Bjorn Charles O\'Malley y Muñozdd and Bjorn O\'Malley, Jr.dd and<br/>Bjorn O\'Malley Jrdd and B O\'Malleydd and William Carlos Williamsdd and<br/>C. Bjorn Roger O\'Malley and B. C. O\'Malleydd and B C O\'Malleydd and B.J. Thomasdd and O\'Malley, Bjorndd and O\'Malley, Bjorn Jrdd and O\'Malley, C. Bjorn dd and O\'Malley, C. Bjorn III dd and O\'Malley y Muñoz, C. Bjorn Roger III and<br/>Doe, John. A. Kenneth III andVelasquez y Garcia, Dr. Juan, Jr. and Dr. Juan Q. Xavier de la Vega, Jr. an Smith and Smith Contractors and 12901,<br/> 5285 KEYES DR  KALAMAZOO MI 49004 2613 .. <br/> PO BOX 35  COLFAX LA 71417 35 .. <br/> 64938 MAGNOLIA LN APT B PINEVILLE LA 71360-9781 486 S SOANGETAHA RD APT 9 GALESBURG IL .. <br/> 450 N CHERRY ST GALESBURG IL 61401.. <br/> 950 REDWOOD SHORES PKWY UNIT K102 REDWOOD CITY CA.. <br/>  123 MAIN ST.. <br/> 123 MAIN ST SAN FRANCISCO.. <br/> MAIN ST & KELLOGG ST.. <br/>  EMBARCADERO ST & MARKET ST SAN FRANCISCO.. <br/> ' where id = 406;
+
+
+
     public static function UnmatchedDetails() {
       $messageId = self::get('id');
       $output = self::unifiedMessageInfo($messageId);
-      $admin = CRM_Core_Permission::check('administer CiviCRM');
-      $output['filebug'] = $admin;
       $status = $output['status'];
+      $debug = self::get('debug');
+
       if($status != ''){
         switch ($status) {
           case '0':
-            $search = preg_replace('/&lt;|&gt;|&quot;|&amp;|<|>/i', ' ', $output['body']);
+            $time_start = microtime(true);
+            $patterns = array('/\r\n|\r|\n/i', '/\<p(\s*)?\/?\>/i', '/\<br(\s*)?\/?\>/i', '/<div[^>]*>/','/<\/div>/' ,'/\//');
+            $search = preg_replace('/&lt;|&gt;|&quot;|&amp;/i', '###',   $output['body']);
+            $search = preg_replace($patterns, "\n ", $search);
+
+            // Find Possible Email Addresses
             foreach(preg_split('/[, ;]/', $search) as $token) {
               $email = filter_var(filter_var($token, FILTER_SANITIZE_EMAIL), FILTER_VALIDATE_EMAIL);
               if ($email !== false) {
                   $emails[] = $email;
               }
             }
-
             $output['found_emails'] = array_unique($emails, SORT_REGULAR);
 
+            // Find Possible city/states from zipcode with usps-ams service
+            // docs here : http://geo.nysenate.gov:8080/usps-ams/docs/
+            preg_match_all('/(?<=[\s])\d{5}(-\d{4})?\b/', $search, $zipcodes);
+            $url = 'http://geo.nysenate.gov:8080/usps-ams/api/citystate?batch=true';
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($zipcodes[0]));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                'Content-Type: application/json',
+                'Content-Length: ' . strlen(json_encode($zipcodes[0]))
+            ));
+            $addresses = json_decode(curl_exec($ch));
+            // turn object into array, the easy way
+            $addresses = json_decode(json_encode($addresses), true);
+            $output['found_addresses'] = array_unique($addresses['results'], SORT_REGULAR);
 
-            $output['prefix'] = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'prefix_id');
-            $output['suffix'] = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'suffix_id');
-            echo json_encode($output);
-            break;
-          case '1':
-            $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message is already Assigned','clear'=>'true');
-            echo json_encode($returnCode);
-            break;
-          case '7':
-            $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message has been cleared from inbox','clear'=>'true');
-            echo json_encode($returnCode);
-            break;
-          case '8':
-          case '9':
-            $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message has been deleted','clear'=>'true');
-            echo json_encode($returnCode);
-            break;
+            // Find Possible Phone numbers
+            preg_match_all('/([\(]{1}[0-9]{3}[\)]{1}[\.| |\-]{0,1}|^[0-9]{3}[\.|\-| ]?)?[0-9]{3}(\.|\-| )?[0-9]{4}/s',$search,$phonecheck1);
+            preg_match_all('/(?:\([2-9]\d{2}\)\ ?|(?:[2-9]\d{2}\-))[2-9]\d{2}\-\d{4}/s',$search,$phonecheck2);
+            preg_match_all('/1?[-\. ]?(\(\d{3}\)?[-\. ]?|\d{3}?[-\. ]?)?\d{3}?[-\. ]?\d{4}/s',$search,$phonecheck3);
+
+            // preg_match_all('/((((\(\d{3}\))|(\d{3}-))\d{3}-\d{4})|(\+?\d{2}((-| )\d{1,8}){1,5}))(( x| ext)\d{1,5}){0,1}/s',$search,$phonecheck4);
+            preg_match_all('/(1?)(-| ?)(\()?([0-9]{3})(\)|-| |\)-|\) )?([0-9]{3})(-| )?([0-9]{4}|[0-9]{4})/s',$search,$phonecheck5);
+            preg_match_all('/(1?(?: |\-|\.)?(?:\(\d{3}\)|\d{3})(?: |\-|\.)?\d{3}(?: |\-|\.)?\d{4})/s',$search,$phonecheck6);
+
+            $phonenumbers = array_merge($phonecheck1[0], $phonecheck2[0], $phonecheck3[0], $phonecheck5[0], $phonecheck6[0]);
+            $phonenumbers = array_filter(array_map('trim', $phonenumbers));
+            $output['found_phones'] = array_unique($phonenumbers, SORT_REGULAR);
+            // Find Possible Names
+            preg_match_all( "/(?<FirstName>[A-Z]\.?\w*\-?[A-Z]?\w*)\s?(?<MiddleName>[A-Z]\w+|[A-Z]?\.?)\s(?<LastName>(?:[A-Z]\w{1,3}|St\.\s)?[A-Z]\w+\-?[A-Z]?\w*)(?:,\s|)(?<Suffix>Jr\.|Sr\.|PHD\.|MD\.|3RD|2ND|RN\.|III|II|)/",$search,$names);
+            foreach ($names[0] as $id => $name) {
+              $name = trim($name);
+
+              // separate the prefix and suffix's from the name
+              preg_match( "/^((Mr|MR|Ms|Miss|Mrs|Dr|Sir)[.])/",$name, $prefix );
+              preg_match( "/(PHD|MD|3RD|2ND|RN|JR|III|II|SR)/",$name, $suffix );
+              if (!empty($prefix[0])) {
+                $nameOutput[$id]['prefix'] = $prefix[0];
+                $name = str_replace($prefix[0],"",$name);
+              }
+              if (!empty($suffix[0])) {
+                $name = str_replace($suffix[0],"",$name);
+              }
+
+              // now that we have a name, break it into parts
+              $nameArray = explode(' ', trim($name));
+              $nameLenght = count($nameArray);
+              $nodes = array('first','second','third','fourth','fifth');
+              foreach ($nameArray as $key => $value) {
+                // is this the last name?
+                $count = ($nameLenght != $key+1) ?  $nodes[$key] : 'last';
+                $nameOutput[$id][$count] = $value;
+              }
+              if (!empty($suffix[0])) {
+                $nameOutput[$id]['suffix'] = $suffix[0];
+              }
+
+              // use dedupe rules to eliminate names not found in the system
+              $query = "SELECT COUNT(id) from fn_group where given LIKE '".strtolower($nameOutput[$id]['first'])."';";
+              $check_result = mysql_query($query, self::db());
+              if($row = mysql_fetch_assoc($check_result)) {
+                if($row['COUNT(id)'] < 1){
+                  unset($nameOutput[$id]);
+                }
+              }
+            }
+            $output['found_names'] =  array_map("unserialize", array_unique(array_map("serialize", $nameOutput)));
+
+            $time_end = microtime(true);
+            $time = $time_end - $time_start;
+
+            // colorizing the output
+            $time2_start = microtime(true);
+            function highlight($text, $search, $type) {
+              switch ($type) {
+                case 'name':
+                  $re = '(' . implode(' ', $search). ')';
+                  return preg_replace($re, "<span class='found $type' data-json='".json_encode($search)."' title='Click to use this Name'>".'${0}'."</span>", $text);
+                  break;
+                case 'addresses':
+                  // var_dump($search);
+                  $re = '(' . implode(' ', $search). ')';
+                  return preg_replace($re, "<span class='found $type' data-json='".json_encode($search)."' title='Click to use this Address'>".'${0}'."</span>", $text);
+
+                  break;
+                default:
+                  $re = implode('###', $search);
+                  $re = preg_quote($re);
+                  $re = '(' .preg_replace('/###/', '|', $re). ')';
+                  // var_dump($text);
+                  return preg_replace($re, "<span class='found $type' data-search='$0' title='Click to use this $type'>".'${0}'."</span>", $text);
+                  break;
+              }
+            }
+            $body = $output['body'];
+            if (!empty($output['found_emails'])) {
+              $body =  highlight($body, $output['found_emails'] ,'email_address');
+            }
+            if (!empty($output['found_addresses'])) {
+              $body =  highlight($body, $output['found_addresses'],'addresses');
+            }
+
+            if (!empty($output['found_names'])) {
+              foreach ($output['found_names'] as $key => $name) {
+                $body =  highlight($body, $name,'name');
+              }
+            }
+            if (!empty($output['found_phones'])) {
+              $body =  highlight($body, $output['found_phones'],'phone');
+            }
+            $output['body'] = $body;
+            $time2_end = microtime(true);
+            $time2 = $time2_end - $time2_start;
+            if ($debug){
+              echo "
+            <style>
+              .found{
+                  background: rgba(255, 230, 0, 0.5);
+                  padding: 1px 2px;
+                  border: 1px solid #C1C1C1;
+                  margin: -1px 2px;
+                  padding: 1px 4px;
+                  border-radius: 3px;
+                  display:inline-block;
+              }
+              .found:hover{
+                  background: rgba(255, 230, 0, 0.8);
+                  border: 1px solid #A0A0A0;
+
+              }
+
+              .found.name{
+                  /* red ffb7b7 */
+                  background: rgba(255,183,183, 0.5);
+              }
+              /*.found.name:hover{
+                  background: rgba(255,183,183, 0.8);
+              }*/
+              .found.zip{
+                  /* blue a8d1ff*/
+                  background: rgba(168,209,255, 0.5);
+              }
+              .found.zip:hover{
+                  background: rgba(168,209,255, 0.8);
+              }
+              .found.phone{
+                  /* green a8d1ff*/
+                  background: rgba(196,255,143, 0.5);
+              }
+              .found.phone:hover{
+                  background: rgba(196,255,143, 0.8);
+              }
+            </style>";
+              // var_dump($search);
+              echo $body."<br/><br/><br/>";
+              echo $time . " seconds ( Time to Find )\n";
+              echo $time2 . " seconds ( Time to colorize )\n";
+
+            }else{
+              echo json_encode($output);
+            }
+          break;
+        case '1':
+          $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message is already Assigned','clear'=>'true');
+          echo json_encode($returnCode);
+          break;
+        case '7':
+          $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message has been cleared from inbox','clear'=>'true');
+          echo json_encode($returnCode);
+          break;
+        case '8':
+        case '9':
+          $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message has been deleted','clear'=>'true');
+          echo json_encode($returnCode);
+          break;
         }
       }else{
         $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message not found','clear'=>'true');
@@ -300,21 +468,20 @@ class CRM_IMAP_AJAX {
     public static function UnmatchedDelete() {
       // Set up IMAP variables
       self::setupImap();
-      $id = self::get('id');
-      $output = self::unifiedMessageInfo($id);
-      $imap_id = $output['imap_id'];
-      $message_id = $output['message_id'];
-
-      $session = CRM_Core_Session::singleton();
-      $userId =  $session->get('userID');
-
-      // Delete the message with the specified UID
-      $returnCode = array('code'=>'SUCCESS','status'=> '0','message'=>'Message Deleted');
-      $UPDATEquery = "UPDATE `nyss_inbox_messages`
-      SET  `status`= 9, `matcher` = $userId
-      WHERE `id` =  {$id}";
-      $UPDATEresult = mysql_query($UPDATEquery, self::db());
-
+      $ids = explode(',', self::get('id'));
+      foreach ($ids as $key => $id) {
+        $output = self::unifiedMessageInfo($id);
+        $imap_id = $output['imap_id'];
+        $message_id = $output['message_id'];
+        $session = CRM_Core_Session::singleton();
+        $userId =  $session->get('userID');
+        // Delete the message with the specified UID
+        $UPDATEquery = "UPDATE `nyss_inbox_messages`
+        SET  `status`= 9, `matcher` = $userId
+        WHERE `id` =  {$id}";
+        $UPDATEresult = mysql_query($UPDATEquery, self::db());
+      }
+      $returnCode = array('code'=>'SUCCESS','status'=> '0','id'=>$ids, 'message'=>'Message Deleted');
       echo json_encode($returnCode);
       CRM_Utils_System::civiExit();
     }
@@ -658,81 +825,70 @@ class CRM_IMAP_AJAX {
             CRM_Utils_System::civiExit();
           } else{
 
-            // Now we need to assign the tag to the activity
-            $tagid= self::getInboxPollingTagId();
-            $assignKeyword = self::assignKeyword($activity['id'], 0, $tagid, "quiet");
+            $activity_id =$activity['id'];
+            $returnCode['code'] = 'SUCCESS';
+            $returnCode['messages'][] = array('code' =>'SUCCESS','message'=> "Message Assigned to ".$ContactName,'key'=>$key,'contact'=>$contactId);
 
-            if($assignKeyword['code'] == "ERROR"){
-              // var_dump($assignKeyword);
-              $returnCode = array('code'      =>  'ERROR',
-              'message'   =>  $assignKeyword['message']);
-              echo json_encode($returnCode);
-              CRM_Utils_System::civiExit();
+            // if this is not the first contact, add a new row to the table
+            if($ContactCount > 0){
+              $debug_line = 'Added on assignment to #'.$ContactCount;
+              $UPDATEquery = "INSERT INTO `nyss_inbox_messages` (`message_id`, `imap_id`, `sender_name`, `sender_email`, `subject`, `body`, `forwarder`, `status`, `debug`, `updated_date`, `email_date`,`activity_id`,`matched_to`,`matcher`) VALUES ('{$messageId}', '{$imapId}', '{$senderName}', '{$senderEmail}', '{$subject}', '{$body}', '{$forwarder}', '1', '$debug_line', '$date', '{$FWDdate}','{$activity_id}','{$contactId}','{$userId}');";
+
+
             }else{
-              $activity_id =$activity['id'];
-              $returnCode['code'] = 'SUCCESS';
-              $returnCode['messages'][] = array('code' =>'SUCCESS','message'=> "Message Assigned to ".$ContactName,'key'=>$key,'contact'=>$contactId);
-
-              // if this is not the first contact, add a new row to the table
-              if($ContactCount > 0){
-                $debug_line = 'Added on assignment to #'.$ContactCount;
-                $UPDATEquery = "INSERT INTO `nyss_inbox_messages` (`message_id`, `imap_id`, `sender_name`, `sender_email`, `subject`, `body`, `forwarder`, `status`, `debug`, `updated_date`, `email_date`,`activity_id`,`matched_to`,`matcher`) VALUES ('{$messageId}', '{$imapId}', '{$senderName}', '{$senderEmail}', '{$subject}', '{$body}', '{$forwarder}', '1', '$debug_line', '$date', '{$FWDdate}','{$activity_id}','{$contactId}','{$userId}');";
+              $UPDATEquery = "UPDATE `nyss_inbox_messages`
+              SET  `status`= 1, `matcher` = $userId, `activity_id` = $activity_id, `matched_to` = $contactId, `updated_date` = '$date'
+              WHERE `id` =  {$messageUid}";
+            }
+            $ContactCount++;
 
 
-              }else{
-                $UPDATEquery = "UPDATE `nyss_inbox_messages`
-                SET  `status`= 1, `matcher` = $userId, `activity_id` = $activity_id, `matched_to` = $contactId, `updated_date` = '$date'
-                WHERE `id` =  {$messageUid}";
-              }
-              $ContactCount++;
+            $UPDATEresult = mysql_query($UPDATEquery, self::db());
+            // var_dump($attachments);
+            // var_dump(is_array($attachments[0]));
+
+            // exit();
+            if(isset($attachments[0])){
+              foreach ($attachments as $key => $attachment) {
+                $fileName = $attachment['fileName'];
+                $fileFull = $attachment['fileFull'];
+                // var_dump("Origin File Full : ". $fileFull);
+                // var_dump("Origin File NAME : ". $fileName);
+                if (file_exists($fileFull)){
 
 
-              $UPDATEresult = mysql_query($UPDATEquery, self::db());
-              // var_dump($attachments);
-              // var_dump(is_array($attachments[0]));
+                  $newName = CRM_Utils_File::makeFileName( $fileName );
+                  $file = $uploadDir. $newName;
+                  // var_dump("Final File Full : ". $file);
 
-              // exit();
-              if(isset($attachments[0])){
-                foreach ($attachments as $key => $attachment) {
-                  $fileName = $attachment['fileName'];
-                  $fileFull = $attachment['fileFull'];
-                  // var_dump("Origin File Full : ". $fileFull);
-                  // var_dump("Origin File NAME : ". $fileName);
-                  if (file_exists($fileFull)){
+                  // move file to the civicrm upload directory
+                  rename( $fileFull, $file );
 
+                  $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                  $mime = finfo_file($finfo, $file);
+                  finfo_close($finfo);
+                  // var_dump("Mime Type : ". $mime);
 
-                    $newName = CRM_Utils_File::makeFileName( $fileName );
-                    $file = $uploadDir. $newName;
-                    // var_dump("Final File Full : ". $file);
+                  // // mimeType, uri, orgin date -> return id
+                  $insertFIleQuery = "INSERT INTO `civicrm_file` (`mime_type`, `uri`,`upload_date`) VALUES ( '{$mime}', '{$newName}','{$output['updated_date']}');";
+                  $rowUpdated = "SELECT id FROM civicrm_file WHERE uri = '{$newName}';";
 
-                    // move file to the civicrm upload directory
-                    rename( $fileFull, $file );
+                  $insertFileResult = mysql_query($insertFIleQuery, self::db());
+                  $rowUpdatedResult = mysql_query($rowUpdated, self::db());
 
-                    $finfo = finfo_open(FILEINFO_MIME_TYPE);
-                    $mime = finfo_file($finfo, $file);
-                    finfo_close($finfo);
-                    // var_dump("Mime Type : ". $mime);
-
-                    // // mimeType, uri, orgin date -> return id
-                    $insertFIleQuery = "INSERT INTO `civicrm_file` (`mime_type`, `uri`,`upload_date`) VALUES ( '{$mime}', '{$newName}','{$output['updated_date']}');";
-                    $rowUpdated = "SELECT id FROM civicrm_file WHERE uri = '{$newName}';";
-
-                    $insertFileResult = mysql_query($insertFIleQuery, self::db());
-                    $rowUpdatedResult = mysql_query($rowUpdated, self::db());
-
-                    $insertFileOutput = array();
-                    while($row = mysql_fetch_assoc($rowUpdatedResult)) {
-                      $fileId = $row['id'];
-                    }
-
-                    $insertEntityQuery = "INSERT INTO `civicrm_entity_file` (`entity_table`, `entity_id`, `file_id`) VALUES ('civicrm_activity','{$activity['id']}', '{$fileId}');";
-                    $insertEntity = mysql_query($insertEntityQuery, self::db());
-                  }else{
-                    // echo "File Exists";
+                  $insertFileOutput = array();
+                  while($row = mysql_fetch_assoc($rowUpdatedResult)) {
+                    $fileId = $row['id'];
                   }
+
+                  $insertEntityQuery = "INSERT INTO `civicrm_entity_file` (`entity_table`, `entity_id`, `file_id`) VALUES ('civicrm_activity','{$activity['id']}', '{$fileId}');";
+                  $insertEntity = mysql_query($insertEntityQuery, self::db());
+                }else{
+                  // echo "File Exists";
                 }
               }
             }
+
           }
         }
       echo json_encode($returnCode);
@@ -756,120 +912,6 @@ class CRM_IMAP_AJAX {
     }
 
 
-    /**
-     * Assign tags to a Contact or a Activity
-     * For Matched screen TAG
-     * @return  [JSON Object]    Status message
-     */
-    public static function assignKeyword($inActivityIds = null, $inContactIds = null, $inTagIds = null, $response = null) {
-        $activityIds    =   ($inActivityIds) ? $inActivityIds : self::get('activityIds');
-        $contactIds     =   ($inContactIds) ? $inContactIds : self::get('contactIds');
-        $tagIds         =   ($inTagIds) ? $inTagIds : self::get('tagIds');
-        $debug = self::get('debug');
-
-        $activityIds    =   split(',', $activityIds);
-        $contactIds     =   split(',', $contactIds);
-        $tagsIDs         =   split(',', $tagIds);
-        if ($debug){
-          echo "<h1>Prams</h1>";
-          var_dump("activityIds",$activityIds);
-          var_dump("contactIds",$contactIds);
-          var_dump("tagsIDs",$tagsIDs);
-        }
-        require_once 'api/api.php';
-
-        if (count($contactIds) != 0) {
-          foreach($contactIds as $contactId)
-          {
-            $entityTable = 'civicrm_contact';
-            $parentId = '296';
-            $existingTags = CRM_Core_BAO_EntityTag::getTag($contactId, $entityTable);
-            $contactTagIds = array();
-            foreach ($tagsIDs as $tagId) {
-
-              if (!is_numeric($tagId)) {
-                // check if user has selected existing tag or is creating new tag
-                // this is done to allow numeric tags etc.
-                $tagValue = explode(':::', $tagId);
-                if (isset($tagValue[1]) && $tagValue[1] == 'value') {
-                  // does tag already exist ?
-                  $params = array('version'   =>  3, 'activity'  =>  'get', 'name' => $tagValue[0] );
-                  $check = civicrm_api('tag', 'get', $params);
-                  if ($check['count'] != 0) {
-                    $tagId =  strval($check['id']);
-                  }else{
-                    $tagParams = array(
-                      'name' => $tagValue[0],
-                      'parent_id' => $parentId,
-                      'used_for' => 'civicrm_contact,civicrm_activity,civicrm_case',
-                    );
-                    $tagObject = CRM_Core_BAO_Tag::add($tagParams, CRM_Core_DAO::$_nullArray);
-                    $tagId = strval($tagObject->id);
-                  }
-                }
-              }
-              $realTagIds[] = $tagId;
-              if (!array_key_exists($tagId, $existingTags)) {
-                $contactTagIds[] = $tagId;
-              }
-            }
-            if (!empty($contactTagIds)) {
-              // New tag ids can be inserted directly into the db table.
-              $insertValues = array();
-              foreach ($contactTagIds as $tagId) {
-                $insertValues[] = "( {$tagId}, {$contactId}, '{$entityTable}' ) ";
-              }
-              $insertSQL = 'INSERT INTO civicrm_entity_tag ( tag_id, entity_id, entity_table ) VALUES ' . implode(', ', $insertValues) . ';';
-              $result = mysql_query($insertSQL, self::db());
-            }
-          }
-        }
-        if (count($activityIds) != 0) {
-
-          foreach($activityIds as $activityId)
-          {
-            $entityTable = 'civicrm_activity';
-            $parentId = '296';
-            $existingTags = CRM_Core_BAO_EntityTag::getTag($activityId, $entityTable);
-            foreach ($tagsIDs as $tagId) {
-              if (!is_numeric($tagId)) {
-                // check if user has selected existing tag or is creating new tag
-                // this is done to allow numeric tags etc.
-                $tagValue = explode(':::', $tagId);
-                if (isset($tagValue[1]) && $tagValue[1] == 'value') {
-                  // does tag already exist ?
-                  $params = array('version'   =>  3, 'activity'  =>  'get', 'name' => $tagValue[0] );
-                  $check = civicrm_api('tag', 'get', $params);
-                  if ($check['count'] != 0) {
-                    $tagId =  strval($check['id']);
-                  }else{
-                    $tagParams = array(
-                      'name' => $tagValue[0],
-                      'parent_id' => $parentId,
-                      'used_for' => 'civicrm_contact,civicrm_activity,civicrm_case',
-                    );
-                    $tagObject = CRM_Core_BAO_Tag::add($tagParams, CRM_Core_DAO::$_nullArray);
-                    $tagId = strval($tagObject->id);
-                  }
-                }
-              }
-              $realTagIds[] = $tagId;
-              if (!array_key_exists($tagId, $existingTags)) {
-                $activityTagIds[] = $tagId;
-              }
-            }
-            if (!empty($activityTagIds)) {
-              // New tag ids can be inserted directly into the db table.
-              $insertValues = array();
-              foreach ($activityTagIds as $tagId) {
-                $insertValues[] = "( {$tagId}, {$activityId}, '{$entityTable}' ) ";
-              }
-              $insertSQL = 'INSERT INTO civicrm_entity_tag ( tag_id, entity_id, entity_table ) VALUES ' . implode(', ', $insertValues) . ';';
-              $result = mysql_query($insertSQL, self::db());
-            }
-          }
-        }
-    }
 
     /**
      * Retrieves a list of Matched messages that have not been cleared,
@@ -935,13 +977,12 @@ class CRM_IMAP_AJAX {
      */
     public static function MatchedDetails() {
       $id = self::get('id');
+      $debug = self::get('debug');
       $output = self::unifiedMessageInfo($id);
       // overwrite incorrect details
       $changeData = self::civiRaw('contact',$output['matched_to']);
       $output['sender_name'] = $changeData['values'][$output['matched_to']]['display_name'];
       $output['sender_email'] = $changeData['values'][$output['matched_to']]['email'];
-      $admin = CRM_Core_Permission::check('administer CiviCRM');
-      $output['filebug'] = $admin;
       if(!$output){
         $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity not found');#,'clear'=>'true');
       }else{
@@ -949,9 +990,182 @@ class CRM_IMAP_AJAX {
         if($status != ''){
            switch ($status) {
             case '1':
-              $output['prefix'] = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'prefix_id');
-              $output['suffix'] = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'suffix_id');
-              echo json_encode($output);
+              $time_start = microtime(true);
+              $patterns = array('/\r\n|\r|\n/i', '/\<p(\s*)?\/?\>/i', '/\<br(\s*)?\/?\>/i', '/<div[^>]*>/','/<\/div>/' ,'/\//');
+              $search = preg_replace('/&lt;|&gt;|&quot;|&amp;/i', '###',   $output['body']);
+              $search = preg_replace($patterns, "\n ", $search);
+
+              // Find Possible Email Addresses
+              foreach(preg_split('/[, ;]/', $search) as $token) {
+                $email = filter_var(filter_var($token, FILTER_SANITIZE_EMAIL), FILTER_VALIDATE_EMAIL);
+                if ($email !== false) {
+                    $emails[] = $email;
+                }
+              }
+              $output['found_emails'] = array_unique($emails, SORT_REGULAR);
+
+              // Find Possible city/states from zipcode with usps-ams service
+              // docs here : http://geo.nysenate.gov:8080/usps-ams/docs/
+              preg_match_all('/(?<=[\s])\d{5}(-\d{4})?\b/', $search, $zipcodes);
+              $url = 'http://geo.nysenate.gov:8080/usps-ams/api/citystate?batch=true';
+              $ch = curl_init($url);
+              curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+              curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($zipcodes[0]));
+              curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+              curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                  'Content-Type: application/json',
+                  'Content-Length: ' . strlen(json_encode($zipcodes[0]))
+              ));
+              $addresses = json_decode(curl_exec($ch));
+              // turn object into array, the easy way
+              $addresses = json_decode(json_encode($addresses), true);
+              $output['found_addresses'] = array_unique($addresses['results'], SORT_REGULAR);
+
+              // Find Possible Phone numbers
+              preg_match_all('/([\(]{1}[0-9]{3}[\)]{1}[\.| |\-]{0,1}|^[0-9]{3}[\.|\-| ]?)?[0-9]{3}(\.|\-| )?[0-9]{4}/s',$search,$phonecheck1);
+              preg_match_all('/(?:\([2-9]\d{2}\)\ ?|(?:[2-9]\d{2}\-))[2-9]\d{2}\-\d{4}/s',$search,$phonecheck2);
+              preg_match_all('/1?[-\. ]?(\(\d{3}\)?[-\. ]?|\d{3}?[-\. ]?)?\d{3}?[-\. ]?\d{4}/s',$search,$phonecheck3);
+
+              // preg_match_all('/((((\(\d{3}\))|(\d{3}-))\d{3}-\d{4})|(\+?\d{2}((-| )\d{1,8}){1,5}))(( x| ext)\d{1,5}){0,1}/s',$search,$phonecheck4);
+              preg_match_all('/(1?)(-| ?)(\()?([0-9]{3})(\)|-| |\)-|\) )?([0-9]{3})(-| )?([0-9]{4}|[0-9]{4})/s',$search,$phonecheck5);
+              preg_match_all('/(1?(?: |\-|\.)?(?:\(\d{3}\)|\d{3})(?: |\-|\.)?\d{3}(?: |\-|\.)?\d{4})/s',$search,$phonecheck6);
+
+              $phonenumbers = array_merge($phonecheck1[0], $phonecheck2[0], $phonecheck3[0], $phonecheck5[0], $phonecheck6[0]);
+              $phonenumbers = array_filter(array_map('trim', $phonenumbers));
+              $output['found_phones'] = array_unique($phonenumbers, SORT_REGULAR);
+              // Find Possible Names
+              preg_match_all( "/(?<FirstName>[A-Z]\.?\w*\-?[A-Z]?\w*)\s?(?<MiddleName>[A-Z]\w+|[A-Z]?\.?)\s(?<LastName>(?:[A-Z]\w{1,3}|St\.\s)?[A-Z]\w+\-?[A-Z]?\w*)(?:,\s|)(?<Suffix>Jr\.|Sr\.|PHD\.|MD\.|3RD|2ND|RN\.|III|II|)/",$search,$names);
+              foreach ($names[0] as $id => $name) {
+                $name = trim($name);
+
+                // separate the prefix and suffix's from the name
+                preg_match( "/^((Mr|MR|Ms|Miss|Mrs|Dr|Sir)[.])/",$name, $prefix );
+                preg_match( "/(PHD|MD|3RD|2ND|RN|JR|III|II|SR)/",$name, $suffix );
+                if (!empty($prefix[0])) {
+                  $nameOutput[$id]['prefix'] = $prefix[0];
+                  $name = str_replace($prefix[0],"",$name);
+                }
+                if (!empty($suffix[0])) {
+                  $name = str_replace($suffix[0],"",$name);
+                }
+
+                // now that we have a name, break it into parts
+                $nameArray = explode(' ', trim($name));
+                $nameLenght = count($nameArray);
+                $nodes = array('first','second','third','fourth','fifth');
+                foreach ($nameArray as $key => $value) {
+                  // is this the last name?
+                  $count = ($nameLenght != $key+1) ?  $nodes[$key] : 'last';
+                  $nameOutput[$id][$count] = $value;
+                }
+                if (!empty($suffix[0])) {
+                  $nameOutput[$id]['suffix'] = $suffix[0];
+                }
+
+                // use dedupe rules to eliminate names not found in the system
+                $query = "SELECT COUNT(id) from fn_group where given LIKE '".strtolower($nameOutput[$id]['first'])."';";
+                $check_result = mysql_query($query, self::db());
+                if($row = mysql_fetch_assoc($check_result)) {
+                  if($row['COUNT(id)'] < 1){
+                    unset($nameOutput[$id]);
+                  }
+                }
+              }
+              $output['found_names'] =  array_map("unserialize", array_unique(array_map("serialize", $nameOutput)));
+
+              $time_end = microtime(true);
+              $time = $time_end - $time_start;
+
+              // colorizing the output
+              $time2_start = microtime(true);
+              function highlight($text, $search, $type) {
+                switch ($type) {
+                  case 'name':
+                    $re = '(' . implode(' ', $search). ')';
+                    return preg_replace($re, "<span class='found $type' data-json='".json_encode($search)."' title='Click to use this Name'>".'${0}'."</span>", $text);
+                    break;
+                  case 'addresses':
+                    // var_dump($search);
+                    $re = '(' . implode(' ', $search). ')';
+                    return preg_replace($re, "<span class='found $type' data-json='".json_encode($search)."' title='Click to use this Address'>".'${0}'."</span>", $text);
+
+                    break;
+                  default:
+                    $re = implode('###', $search);
+                    $re = preg_quote($re);
+                    $re = '(' .preg_replace('/###/', '|', $re). ')';
+                    // var_dump($text);
+                    return preg_replace($re, "<span class='found $type' data-search='$0' title='Click to use this $type'>".'${0}'."</span>", $text);
+                    break;
+                }
+              }
+              $body = $output['body'];
+              if (!empty($output['found_emails'])) {
+                $body =  highlight($body, $output['found_emails'] ,'email_address');
+              }
+              if (!empty($output['found_addresses'])) {
+                $body =  highlight($body, $output['found_addresses'],'addresses');
+              }
+
+              if (!empty($output['found_names'])) {
+                foreach ($output['found_names'] as $key => $name) {
+                  $body =  highlight($body, $name,'name');
+                }
+              }
+              if (!empty($output['found_phones'])) {
+                $body =  highlight($body, $output['found_phones'],'phone');
+              }
+              $output['body'] = $body;
+              $time2_end = microtime(true);
+              $time2 = $time2_end - $time2_start;
+              if ($debug){
+                echo "
+              <style>
+                .found{
+                    background: rgba(255, 230, 0, 0.5);
+                    padding: 1px 2px;
+                    border: 1px solid #C1C1C1;
+                    margin: -1px 2px;
+                    padding: 1px 4px;
+                    border-radius: 3px;
+                    display:inline-block;
+                }
+                .found:hover{
+                    background: rgba(255, 230, 0, 0.8);
+                    border: 1px solid #A0A0A0;
+
+                }
+
+                .found.name{
+                    /* red ffb7b7 */
+                    background: rgba(255,183,183, 0.5);
+                }
+                /*.found.name:hover{
+                    background: rgba(255,183,183, 0.8);
+                }*/
+                .found.zip{
+                    /* blue a8d1ff*/
+                    background: rgba(168,209,255, 0.5);
+                }
+                .found.zip:hover{
+                    background: rgba(168,209,255, 0.8);
+                }
+                .found.phone{
+                    /* green a8d1ff*/
+                    background: rgba(196,255,143, 0.5);
+                }
+                .found.phone:hover{
+                    background: rgba(196,255,143, 0.8);
+                }
+              </style>";
+                // var_dump($search);
+                echo $body."<br/><br/><br/>";
+                echo $time . " seconds ( Time to Find )\n";
+                echo $time2 . " seconds ( Time to colorize )\n";
+
+              }else{
+                echo json_encode($output);
+              }
               break;
             case '7':
               $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message has been cleared from inbox','clear'=>'true');
@@ -975,39 +1189,40 @@ class CRM_IMAP_AJAX {
      */
     public static function MatchedDelete() {
       require_once 'api/api.php';
-      $messageId = self::get('id');
-      $session = CRM_Core_Session::singleton();
-      $userId =  $session->get('userID');
+      $ids = explode(',', self::get('id'));
+      foreach ($ids as $key => $messageId) {
+        $session = CRM_Core_Session::singleton();
+        $userId =  $session->get('userID');
 
-      $output = self::unifiedMessageInfo($messageId);
-      $activity_id = $output['activity_id'];
-      $tagid = self::getInboxPollingTagId();
-      $error = false;
-      $debug = self::get('debug');
+        $output = self::unifiedMessageInfo($messageId);
+        $activity_id = $output['activity_id'];
+        $error = false;
+        $debug = self::get('debug');
 
-      // deleteing a activity
-      $params = array(
-          'id' => $activity_id,
-          'activity_type_id' => 1,
-          'version' => 3,
-      );
+        // deleteing a activity
+        $params = array(
+            'id' => $activity_id,
+            'activity_type_id' => 1,
+            'version' => 3,
+        );
 
-      $deleteActivity = civicrm_api('activity','delete',$params );
+        $deleteActivity = civicrm_api('activity','delete',$params );
 
-      // need to add to function to delete entity tags as they are not cleaned up
+        // need to add to function to delete entity tags as they are not cleaned up
 
-      if($deleteActivity['is_error'] == 1){
-        $error = true;
-      }
+        if($deleteActivity['is_error'] == 1){
+          $error = true;
+        }
 
-      if(!$error){
-        $UPDATEquery = "UPDATE `nyss_inbox_messages`
-        SET  `status`= 9, `matcher` = $userId
-        WHERE `id` =  {$messageId}";
-        $UPDATEresult = mysql_query($UPDATEquery, self::db());
-        $returnCode = array('code'=>'SUCCESS','id'=>$messageId, 'message'=>'Activity Deleted');
-      }else{
-        $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity not found','clear'=>'true');
+        if(!$error){
+          $UPDATEquery = "UPDATE `nyss_inbox_messages`
+          SET  `status`= 9, `matcher` = $userId
+          WHERE `id` =  {$messageId}";
+          $UPDATEresult = mysql_query($UPDATEquery, self::db());
+          $returnCode = array('code'=>'SUCCESS','id'=>$ids, 'message'=>'Activity Deleted');
+        }else{
+          $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity not found','clear'=>'true');
+        }
       }
       echo json_encode($returnCode);
 
@@ -1016,44 +1231,39 @@ class CRM_IMAP_AJAX {
     }
 
     /**
-     * Clears from inbound email Matched screen by removing inbound email tag
+     * Clears from inbound email Matched screen by setting status to 7
      * For Matched screen CLEAR
      * @return [JSON Object]    JSON encoded response, OR error codes
      */
     public static function Clear() {
       require_once 'api/api.php';
-      $messageId = self::get('id');
       $session = CRM_Core_Session::singleton();
       $userId =  $session->get('userID');
-      $output = self::unifiedMessageInfo($messageId);
-      if(!$output){
-        $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message not found');#,'clear'=>'true');
-      }else{
-        $status = $output['status'];
-        if($status != ''){
-           switch ($status) {
-            case '1':
-              $activity_id = $output['activity_id'];
-              $UPDATEquery = "UPDATE `nyss_inbox_messages`
-              SET  `status`= 7, `matcher` = $userId
-              WHERE `id` =  {$messageId}";
-              $UPDATEresult = mysql_query($UPDATEquery, self::db());
-              $returnCode = array('code'=>'SUCCESS','id'=>$messageId, 'message'=>'Activity Cleared');
-              echo json_encode($returnCode);
-              mysql_close(self::$db);
-              break;
-            case '7':
-              $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message has been cleared from inbox','clear'=>'true');
-              echo json_encode($returnCode);
-              break;
-            case '8':
-            case '9':
-              $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message has been deleted','clear'=>'true');
-              echo json_encode($returnCode);
-              break;
-          }
-       }
+      $ids = explode(',', self::get('id'));
+      $debug = self::get('debug');
+      $Error = false;
+      foreach ($ids as $key => $messageId) {
+        $output = self::unifiedMessageInfo($messageId);
+        if(!$output){
+          $Error = true;
+        }else if($output['status'] != ''){
+          $UPDATEquery = "UPDATE `nyss_inbox_messages`
+          SET  `status`= 7, `matcher` = $userId
+          WHERE `id` =  {$messageId}";
+          $UPDATEresult = mysql_query($UPDATEquery, self::db());
+        }else{
+          $Error = true;
+        }
       }
+      $count = count($ids);
+      $plural = (count($ids) > 1) ? "ies" : "y";
+      if($Error){
+        $returnCode = array('code' => 'ERROR','message'=> "Could not Clear {$count} Activit{$plural}");
+      }else{
+        $returnCode = array('code' =>'SUCCESS','message'=> "{$count} Activit{$plural} successfully Cleared",'clear'=>'true');
+      }
+      mysql_close(self::$db);
+      echo json_encode($returnCode);
       CRM_Utils_System::civiExit();
     }
 
@@ -1064,23 +1274,20 @@ class CRM_IMAP_AJAX {
      */
     public static function MatchedReassign() {
       require_once 'api/api.php';
-      $id = self::get('id');
+      $id = self::get('messageId');
       $debug = self::get('debug');
+      $contactIds = self::get('contactId');
+      $contactIds = explode(',', $contactIds);
+      $ContactCount = 0;
 
       $output = self::unifiedMessageInfo($id);
       $contact = $output['matched_to'];
       $activityId =  $output['activity_id'];
       $date =  $output['updated_date'];
 
-      $change = self::get('change');
+
       $results = array();
-      $changeData = self::civiRaw('contact',$change);
-      $changeName = $changeData['values'][$change]['display_name'];
-      $firstName = $changeData['values'][$change]['first_name'];
-      $LastName = $changeData['values'][$change]['last_name'];
-      $contactType = $changeData['values'][$change]['contact_type'];
-      $email = $changeData['values'][$change]['email'];
-      $tagid = self::getInboxPollingTagId();
+
 
       if ($debug){
         echo "<h1>inputs</h1>";
@@ -1093,7 +1300,6 @@ class CRM_IMAP_AJAX {
         var_dump($LastName);
         var_dump($contactType);
         var_dump($email);
-        var_dump($tagid);
       }
 
       // we need to check to see if the activity is still assigned to the same contact
@@ -1120,41 +1326,95 @@ EOQ;
         echo json_encode($returnCode);
         CRM_Utils_System::civiExit();
       }
-      // change the contact
-      $Update = <<<EOQ
+
+      foreach($contactIds as $contactId) {
+        $changeData = self::civiRaw('contact',$contactId);
+        $changeName = trim($changeData['values'][$contactId]['display_name']);
+        $firstName = trim($changeData['values'][$contactId]['first_name']);
+        $LastName = trim($changeData['values'][$contactId]['last_name']);
+        $contactType = trim($changeData['values'][$contactId]['contact_type']);
+        $email = trim($changeData['values'][$contactId]['email']);
+
+        // change the contact
+        $Update = <<<EOQ
 UPDATE `civicrm_activity_contact`
-SET  `contact_id`= $change
+SET  `contact_id`= $contactId
 WHERE `activity_id` =  $activityId
 AND `record_type_id` = 3
 EOQ;
+         // change the row
+        $Updated_results = mysql_query($Update, self::db());
+        while($row = mysql_fetch_assoc($Updated_results)) {
+             $results[] = $row;
+        }
 
-      // change the row
-      $Updated_results = mysql_query($Update, self::db());
-      while($row = mysql_fetch_assoc($Updated_results)) {
-           $results[] = $row;
-      }
-
-      $Source_update = <<<EOQ
+        $Source_update = <<<EOQ
 UPDATE `civicrm_activity`
 SET  `is_auto`= 0
 WHERE `id` =  $activityId
 EOQ;
-      $Source_results = mysql_query($Source_update, self::db());
+        $Source_results = mysql_query($Source_update, self::db());
 
-      $session = CRM_Core_Session::singleton();
-      $userId =  $session->get('userID');
-      $UPDATEquery = "UPDATE `nyss_inbox_messages`
-      SET  `matcher` = $userId,  `matched_to` = $change, `sender_name` = '$changeName',`sender_email` = '$email', `updated_date` = '$date'
-      WHERE `id` =  {$id}";
-      $UPDATEresult = mysql_query($UPDATEquery, self::db());
-
-      $returnCode = array('code'=>'SUCCESS','id'=>$id,'contact_id'=>$change,'contact_type'=>$contactType,'first_name'=>$firstName,'last_name'=>$LastName,'display_name'=>$changeName,'email'=>$email,'activity_id'=>$id,'message'=>'Activity Reassigned to '.$changeName);
+        $session = CRM_Core_Session::singleton();
+        $userId =  $session->get('userID');
+        $UPDATEquery = "UPDATE `nyss_inbox_messages`
+        SET  `matcher` = $userId,  `matched_to` = $contactId, `sender_name` = '$changeName',`sender_email` = '$email', `updated_date` = '$date'
+        WHERE `id` =  {$id}";
+        $UPDATEresult = mysql_query($UPDATEquery, self::db());
+        $returnCode = array('code'=>'SUCCESS','id'=>$id,'contact_id'=>$contactId,'contact_type'=>$contactType,'first_name'=>$firstName,'last_name'=>$LastName,'display_name'=>$changeName,'email'=>$email,'activity_id'=>$id,'message'=>'Activity Reassigned to '.$changeName);
+      }
 
       echo json_encode($returnCode);
       mysql_close(self::$db);
       CRM_Utils_System::civiExit();
     }
 
+    /**
+     * Edit the Assignee for a inbound email activity to a different office worker
+     * For Matched screen EDIT
+     * @return [JSON Object]    JSON encoded response, OR error codes
+     */
+    public static function MatchedEdit() {
+      require_once 'api/api.php';
+      $activityid = self::get('activity_id');
+      $activityIds = explode(',', $activityid);
+      $activty_contact = self::get('activty_contact');
+      $activty_status_id = self::get('activty_status_id');
+      $activity_date = self::get('activity_date');
+      $results = array();
+      foreach($activityIds as $activity_id) {
+
+        if (!empty($activty_status_id)) {
+          $query_activiy1 = "UPDATE civicrm_activity SET status_id  = ${activty_status_id}  WHERE civicrm_activity.id  = ${activity_id}";
+          // var_dump($query_activiy1);
+          $Updated_results = mysql_query($query_activiy1, self::db());
+          while($row = mysql_fetch_assoc($Updated_results)) {
+            $results[] = $row;
+          }
+        }
+
+        if (!empty($activity_date)) {
+          $query_activiy2 = "UPDATE civicrm_activity SET activity_date_time = \"${activity_date}\" WHERE civicrm_activity.id  = ${activity_id}";
+          // var_dump($query_activiy2);
+          $Updated_results = mysql_query($query_activiy2, self::db());
+          while($row = mysql_fetch_assoc($Updated_results)) {
+            $results[] = $row;
+          }
+        }
+        // change the contact
+        if (!empty($activty_contact)) {
+          $query_activiy3 = "INSERT INTO civicrm_activity_contact (activity_id, contact_id, record_type_id) VALUES ('${activity_id}', '${activty_contact}', '1');";
+          // var_dump($query_activiy3);
+          $Updated_results = mysql_query($query_activiy3, self::db());
+          while($row = mysql_fetch_assoc($Updated_results)) {
+            $results[] = $row;
+          }
+        }
+      }
+      // echo json_encode($results);
+      mysql_close(self::$db);
+      CRM_Utils_System::civiExit();
+    }
     /**
      * Autocomplete Keyword search for tags
      * For Matched screen TAG
@@ -1202,16 +1462,147 @@ EOQ;
 
 
     /**
-     * Assign tags to a Contact or a Activity
+     * Assign Keywords or Positions to a Contact or a Activity
      * For Matched screen TAG
-     * @return [JSON Object]    JSON encoded response, OR error codes
+     * @return [JSON Object]   JSON encoded response, OR error codes
      */
-    public static function KeywordAdd() {
-      require_once 'api/api.php';
-      $tag_ids = self::get('tags');
-      $activityId = self::get('activityId');
-      $contactId = self::get('contactId');
-      self::assignKeyword($activityId, $contactId, $tag_ids,'quiet');
+    public static function TagAdd() {
+        $activityIds = self::get('activityId');
+        $contactIds = self::get('contactId');
+        $tagIds = self::get('tags');
+        $debug = self::get('debug');
+
+        // add new positions to the 292 (positions) table
+        $parentId = (self::get('parentId')) ? self::get('parentId') :'296';
+        $type = (self::get('parentId') == 292) ? "Position" : "Keyword";
+
+        $tagsIDs = split(',', $tagIds);
+        $result = array();
+
+        if ($debug){
+          echo "<h1>Prams</h1>";
+          var_dump("activityIds",$activityIds);
+          var_dump("contactIds",$contactIds);
+          var_dump("tagsIDs",$tagsIDs);
+          var_dump("parentId",$parentId);
+        }
+        require_once 'api/api.php';
+
+        if (!empty($contactIds)) {
+          $contactIds = split(',', $contactIds);
+          $realTagIds = array();
+          foreach($contactIds as $contactId)
+          {
+            $entityTable = 'civicrm_contact';
+            $existingTags = CRM_Core_BAO_EntityTag::getTag($contactId, $entityTable);
+            $contactTagIds = array();
+            foreach ($tagsIDs as $tagId) {
+
+              if (!is_numeric($tagId)) {
+                // check if user has selected existing tag or is creating new tag
+                // this is done to allow numeric tags etc.
+                $tagValue = explode(':::', $tagId);
+                if (isset($tagValue[1]) && $tagValue[1] == 'value') {
+                  // does tag already exist ?
+                  $params = array('version'   =>  3, 'activity'  =>  'get', 'name' => $tagValue[0], 'parent_id' => $parentId  );
+                  $check = civicrm_api('tag', 'get', $params);
+                  if ($check['count'] != 0) {
+                    $tagId =  strval($check['id']);
+                  }else{
+                    $tagParams = array(
+                      'name' => $tagValue[0],
+                      'parent_id' => $parentId,
+                      'used_for' => 'civicrm_contact,civicrm_activity,civicrm_case',
+                    );
+                    $tagObject = CRM_Core_BAO_Tag::add($tagParams, CRM_Core_DAO::$_nullArray);
+                    $tagId = strval($tagObject->id);
+                  }
+                }
+              }
+              $realTagIds[] = $tagId;
+              if (!array_key_exists($tagId, $existingTags)) {
+                $contactTagIds[] = $tagId;
+              }
+            }
+            if (!empty($contactTagIds)) {
+              // New tag ids can be inserted directly into the db table.
+              $insertValues = array();
+              foreach ($contactTagIds as $tagId) {
+                $insertValues[] = "( {$tagId}, {$contactId}, '{$entityTable}' ) ";
+              }
+              $insertSQL = 'INSERT INTO civicrm_entity_tag ( tag_id, entity_id, entity_table ) VALUES ' . implode(', ', $insertValues) . ';';
+              $result = mysql_query($insertSQL, self::db());
+              // result = 1 when successful
+              $output[$result][] = $insertSQL;
+            }else{
+              $output[0][] = 'NO NEW TAGS FOUND';
+            }
+          }
+        }
+        if (!empty($activityIds)) {
+          $activityIds = split(',', $activityIds);
+          $realTagIds = array();
+          foreach($activityIds as $activityId)
+          {
+            $entityTable = 'civicrm_activity';
+            $existingTags = CRM_Core_BAO_EntityTag::getTag($activityId, $entityTable);
+            $activityTagIds = array();
+            foreach ($tagsIDs as $tagId) {
+              if (!is_numeric($tagId)) {
+                // check if user has selected existing tag or is creating new tag
+                // this is done to allow numeric tags etc.
+                $tagValue = explode(':::', $tagId);
+                if (isset($tagValue[1]) && $tagValue[1] == 'value') {
+                  // does tag already exist ?
+                  $params = array('version'   =>  3, 'activity'  =>  'get', 'name' => $tagValue[0], 'parent_id' => $parentId  );
+                  $check = civicrm_api('tag', 'get', $params);
+                  if ($check['count'] != 0) {
+                    $tagId =  strval($check['id']);
+                  }else{
+                    $tagParams = array(
+                      'name' => $tagValue[0],
+                      'parent_id' => $parentId,
+                      'used_for' => 'civicrm_contact,civicrm_activity,civicrm_case',
+                    );
+                    $tagObject = CRM_Core_BAO_Tag::add($tagParams, CRM_Core_DAO::$_nullArray);
+                    $tagId = strval($tagObject->id);
+                  }
+                }
+              }
+              $realTagIds[] = $tagId;
+              if (!array_key_exists($tagId, $existingTags)) {
+                $activityTagIds[] = $tagId;
+              }
+            }
+            if (!empty($activityTagIds)) {
+              // New tag ids can be inserted directly into the db table.
+              $insertValues = array();
+              foreach ($activityTagIds as $tagId) {
+                $insertValues[] = "( {$tagId}, {$activityId}, '{$entityTable}' ) ";
+              }
+              $insertSQL = 'INSERT INTO civicrm_entity_tag ( tag_id, entity_id, entity_table ) VALUES ' . implode(', ', $insertValues) . ';';
+              $result = mysql_query($insertSQL, self::db());
+              // result = 1 when successful
+              $output[$result][] = $insertSQL;
+            }else{
+              $output[0][] = 'NO NEW TAGS FOUND';
+            }
+          }
+        }
+        if ($debug){
+          echo "<h1>result</h1>";
+          var_dump($output);
+        }
+
+        if(!$output[1]){
+          $returnCode = array('code' => 'ERROR','message'=> "Could not assign {$type}{$plural}");
+        }else{
+          $plural = (count($output[1]) > 1) ? "s" : "" ;
+          $plural2 = (count($output[1]) > 1) ? "were" : "was";
+          $returnCode = array('code' =>'SUCCESS','message'=> "{$type}{$plural} {$plural2} successfully assigned");
+        }
+        echo json_encode($returnCode);
+        CRM_Utils_System::civiExit();
     }
 
     /**
@@ -1272,34 +1663,6 @@ EOQ;
 
 
 
-    /**
-     * Get the tag id used to keep track of inbound emails
-     * @return [int]    tag id
-     */
-    function getInboxPollingTagId() {
-      require_once 'api/api.php';
-
-      // Check if the tag exists
-      $params = array(
-        'name' => 'Inbox Polling Unprocessed',
-        'version' => 3,
-      );
-      $result = civicrm_api('tag', 'get', $params);
-      if($result && isset($result['id'])) {
-        return $result['id'];
-      }
-
-      // If there's no tag, create it.
-      $params = array(
-          'name' => 'Inbox Polling Unprocessed',
-          'description' => 'Tag noting that this activity has been created by Inbox Polling and is still Unprocessed.',
-          'version' => 3,
-      );
-      $result = civicrm_api('tag', 'create', $params);
-        if($result && isset($result['id'])) {
-        return $result['id'];
-      }
-    }
 
 
     /**
