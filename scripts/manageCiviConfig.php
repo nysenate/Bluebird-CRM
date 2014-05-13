@@ -294,51 +294,16 @@ function updateMailingBackend($dbcon, $bknd)
 
 function updateEmailTemplate($dbcon, $bbcfg)
 {
-  // Read in the four e-mail templates (header HTML and text, footer HTML
-  // and text), and replace the following macros:
-  //   %INSTANCE%  %SERVER_NAME%  %SENATOR_FORMAL%
-  //   %ALBANY_OFFICE_INFO% %DISTRICT_OFFICE_INFO%
-
-  $appdir = $bbcfg['app.rootdir'];
-  $tpldir = "$appdir/templates";
-  $server_name = $bbcfg['servername'];
-  $instance = $bbcfg['shortname'];
-  $senator_formal = "New York State Senator";
-  $albany_office = "Legislative Office Bldg|Albany, NY 12247";
-  $district_office = "ADDRESS OF DISTRICT OFFICE";
-
-  if (isset($bbcfg['senator.name.formal'])) {
-    $senator_formal = $bbcfg['senator.name.formal'];
-  }
-  if (isset($bbcfg['senator.address.albany'])) {
-    $albany_office = $bbcfg['senator.address.albany'];
-  }
-  if (isset($bbcfg['senator.address.district'])) {
-    $district_office = $bbcfg['senator.address.district'];
-  }
-
-  $albany_office_html = str_replace("|", "\n<br/>", $albany_office);
-  $albany_office_txt = str_replace("|", "\n", $albany_office);
-  $district_office_html = str_replace("|", "\n<br/>", $district_office);
-  $district_office_txt = str_replace("|", "\n", $district_office);
-
   $rc = true;
   $comp_id = 1;
-  $search = array('%INSTANCE%', '%SERVER_NAME%', '%SENATOR_FORMAL%',
-                  '%ALBANY_OFFICE_INFO%', '%DISTRICT_OFFICE_INFO%');
-  $replace['html'] = array($instance, $server_name, $senator_formal,
-                           $albany_office_html, $district_office_html);
-  $replace['txt'] = array($instance, $server_name, $senator_formal,
-                          $albany_office_txt, $district_office_txt);
 
   foreach (array('header', 'footer') as $comp_type) {
     $comp_type_uc = ucfirst($comp_type);
     $comp_name = "NYSS Mailing $comp_type_uc";
     $body = array();
+
     foreach (array('html', 'txt') as $cont_type) {
-      $filename = $tpldir."/email_$comp_type.$cont_type";
-      $comp_tpl = file_get_contents($filename);
-      $comp_tpl = str_replace($search, $replace[$cont_type], $comp_tpl);
+      $comp_tpl = generateComponent($comp_type, $cont_type, $bbcfg);
       $body[$cont_type] = mysql_real_escape_string($comp_tpl, $dbcon);
     }
 
@@ -355,6 +320,179 @@ function updateEmailTemplate($dbcon, $bbcfg)
   }
   return $rc;
 } // updateEmailTemplate()
+
+
+
+function setEmailDefaults(&$cfg)
+{
+  if (empty($cfg['email.font.family'])) {
+    $cfg['email.font.family'] = 'arial';
+  }
+  if (empty($cfg['email.font.size'])) {
+    $cfg['email.font.size'] = 14;
+  }
+  if (empty($cfg['email.font.color'])) {
+    $cfg['email.font.color'] = '#505050';
+  }
+  if (empty($cfg['email.background.color'])) {
+    $cfg['email.background.color'] = '#ffffff';
+  }
+  if (!isset($cfg['email.header.include_banner'])) {
+    $cfg['email.header.include_banner'] = true;
+  }
+  if (!isset($cfg['email.footer.include_banner'])) {
+    $cfg['email.footer.include_banner'] = true;
+  }
+  if (!isset($cfg['email.footer.include_addresses'])) {
+    $cfg['email.footer.include_addresses'] = true;
+  }
+  if (!isset($cfg['senator.name.formal'])) {
+    $cfg['senator.name.formal'] = 'New York State Senator';
+  }
+  if (!isset($cfg['senator.address.albany'])) {
+    $cfg['senator.address.albany'] = 'Legislative Office Bldg|Albany, NY 12247';
+  }
+  if (!isset($cfg['senator.address.district'])) {
+    $cfg['senator.address.district'] = 'ADDRESS OF DISTRICT OFFICE';
+  }
+} // setEmailDefaults()
+
+
+
+/*
+** @param $comp_type - the component type (HEADER or FOOTER)
+** @param $cont_type - the content type (HTML or TEXT)
+** @param $cfg - array of config params that control template construction
+*/
+function generateComponent($comp_type, $cont_type, $cfg)
+{
+  $s = null;
+
+  // Set default values for all e-mail template config.
+  setEmailDefaults($cfg);
+
+  // *** Header Template ***
+  if ($comp_type == 'header') {
+    if ($cont_type == 'html') {
+      if ($cfg['email.header.include_banner']) {
+        $banner = <<<HTML
+    <tr>
+    <td><a href="http://{$cfg['shortname']}.nysenate.gov/" target="_blank"><img src="http://{$cfg['servername']}/sites/{$cfg['servername']}/pubfiles/images/template/header.png" alt="{$cfg['senator.name.formal']}"/></a></td>
+    </tr>
+HTML;
+      }
+      else {
+        $banner = '';
+      }
+
+      $s = <<<HTML
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<title>{mailing.name}</title>
+</head>
+<body style="font-family:{$cfg['email.font.family']}; font-size:{$cfg['email.font.size']}px; color:{$cfg['email.font.color']}; background-color:{$cfg['email.background.color']};" leftmargin="0" topmargin="0" marginheight="0" marginwidth="0" offset="0">
+<center>
+<table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%">
+  <tr>
+  <td align="center" valign="top">
+  <table style="border:1px solid #DDDDDD;" cellpadding="0" cellspacing="0" width="600px">
+$banner
+    <tr>
+    <td valign="top">
+    <div style="padding:20px; text-align:left; line-height:150%;">
+HTML;
+    }
+    else if ($cont_type == 'txt') {
+      $s = <<<TEXT
+
+New York State Senate
+http://{$cfg['shortname']}.nysenate.gov/
+TEXT;
+    }
+  }
+  // *** Footer Template ***
+  else if ($comp_type == 'footer') {
+    if ($cont_type == 'html') {
+      if ($cfg['email.footer.include_addresses']) {
+        $albany_office = str_replace("|", "\n<br/>", $cfg['senator.address.albany']);
+        $district_office = str_replace("|", "\n<br/>", $cfg['senator.address.district']);
+        $addresses = <<<HTML
+    <tr>
+    <td align="center" valign="top">	
+    <table style="color:#707070; font-size:12px; line-height:125%;" border="0" cellpadding="20px" cellspacing="0" width="100%">
+      <tr>
+      <td valign="top" width="50%"><strong>Albany Office:</strong>
+      <br/>$albany_office
+      </td>
+      <td valign="top" width="50%"><strong>District Office:</strong>
+      <br/>$district_office
+      </td>
+      </tr>
+    </table>
+    </td>
+    </tr>
+HTML;
+      }
+      else {
+        $addresses = '';
+      }
+
+      if ($cfg['email.footer.include_banner']) {
+        $banner = <<<HTML
+    <tr style="background-color:#D8E2EA;">
+    <td><a href="http://www.nysenate.gov/" target="_blank"><img src="http://{$cfg['servername']}/sites/{$cfg['servername']}/pubfiles/images/template/footer.png" alt="New York State Senate seal"/></a></td>
+    </tr>
+HTML;
+      }
+      else {
+        $banner = '';
+      }
+
+      $s = <<<HTML
+    </div>
+    </td>
+    </tr>
+$addresses
+$banner
+  </table>
+  </td>
+  </tr>
+</table>
+</center>
+</body>
+</html>
+HTML;
+    }
+    else if ($cont_type == 'txt') {
+      if ($cfg['email.footer.include_addresses']) {
+        $albany_office = str_replace("|", "\n", $cfg['senator.address.albany']);
+        $district_office = str_replace("|", "\n", $cfg['senator.address.district']);
+        $addresses = <<<TEXT
+Albany Office:
+$albany_office
+
+District Office:
+$district_office
+TEXT;
+      }
+      else {
+        $addresses = '';
+      }
+
+      $s = <<<TEXT
+
+---
+http://www.nysenate.gov
+
+$addresses
+TEXT;
+    }
+  }
+
+  return $s;
+} // generateComponent()
 
 
 
@@ -441,7 +579,7 @@ $prog = basename($argv[0]);
 
 if ($argc != 4) {
   echo "Usage: $prog instance cmd scope\n";
-  echo "   cmd can be: list, update, or nullify\n";
+  echo "   cmd can be: list, update, preview, or nullify\n";
   echo " scope can be: default, cb, mb, tpl, or all\n";
   exit(1);
 }
@@ -467,13 +605,22 @@ else {
     $rc = 1;
   }
   else if (is_array($civiConfig)) {
-    if ($cmd == "update") {
+    if ($cmd == 'update') {
       echo "Updating the CiviCRM configuration.\n";
       if (updateCiviConfig($dbcon, $civiConfig, $bbconfig) === false) {
         $rc = 1;
       }
     }
-    else if ($cmd == "nullify") {
+    else if ($cmd == 'preview') {
+      echo "Previewing e-mail template components.\n";
+      foreach (array('header','footer') as $comp_type) {
+        foreach (array('html','txt') as $cont_type) {
+          $s = generateComponent($comp_type, $cont_type, $bbconfig);
+          echo "Template preview for [$comp_type/$cont_type]:\n$s\n\n";
+        }
+      }
+    }
+    else if ($cmd == 'nullify') {
       echo "Nullifying the CiviCRM configuration.\n";
       if (nullifyCiviConfig($dbcon, $civiConfig) === false) {
         $rc = 1;
