@@ -7,23 +7,13 @@ define('FILTER_IN_SD_OR_NO_SD', 2);
 
 //5581
 function nyss_mail_custom_theme() {
-  civicrm_initialize( );
-  $profileID = CRM_Core_DAO::singleValueQuery("
-    SELECT id
-    FROM civicrm_uf_group
-    WHERE name = 'Mass_Email_Subscriptions';
-  ");
-
   $allowedPaths = array(
-    'civicrm/profile/edit',
-    'civicrm/profile/view',
     'civicrm/nyss/subscription/manage',
     'civicrm/nyss/subscription/view',
   );
-  if ( $profileID ) {
-    if (in_array($_GET['q'], $allowedPaths)) {
-      return 'BluebirdPublic';
-    }
+
+  if (in_array($_GET['q'], $allowedPaths)) {
+    return 'BluebirdPublic';
   }
 }
 
