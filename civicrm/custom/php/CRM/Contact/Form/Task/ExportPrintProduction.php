@@ -1253,7 +1253,7 @@ function addExternalSeeds($tbl, $db) {
         LIMIT 1)) ";
   $sql .= "
     LEFT JOIN $db.civicrm_value_district_information_7 di
-      ON di.entity_id=a.id ";
+      ON di.entity_id = a.id ";
 
   //household joins
   $sql .= "
