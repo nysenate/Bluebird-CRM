@@ -271,31 +271,32 @@ class CRM_Admin_Page_AJAX {
 
     //NYSS treat issue codes and keywords using normal method
     if ( $parentId != 292 || $isSearch ) {
-    // always add current search term as possible tag
-    // here we append :::value to determine if existing / new tag should be created
-    if (!$isSearch) {
-      $tags[] = array(
-        'name' => $name,
-        'id' => $name . ":::value",
-      );
-    }
-
-    $query = "SELECT id, name FROM civicrm_tag WHERE parent_id = {$parentId} and name LIKE '%{$name}%'";
-    $dao = CRM_Core_DAO::executeQuery($query);
-
-    while ($dao->fetch()) {
-      // make sure we return tag name entered by user only if it does not exists in db
-      if ($name == $dao->name) {
-        $tags = array();
+      // always add current search term as possible tag
+      // here we append :::value to determine if existing / new tag should be created
+      if (!$isSearch) {
+        $tags[] = array(
+          'name' => stripslashes($name),//NYSS 7882 strip slashes for display
+          'id' => $name . ":::value",
+        );
       }
-      // escape double quotes, which break results js
-      $tags[] = array('name' => addcslashes($dao->name, '"'),
-        'id' => $dao->id,
-      );
-    }
 
-    echo json_encode($tags);
-    CRM_Utils_System::civiExit();
+      $query = "SELECT id, name FROM civicrm_tag WHERE parent_id = {$parentId} and name LIKE '%{$name}%'";
+      $dao = CRM_Core_DAO::executeQuery($query);
+
+      while ($dao->fetch()) {
+        // make sure we return tag name entered by user only if it does not exists in db
+        if ($name == $dao->name) {
+          $tags = array();
+        }
+        // escape double quotes, which break results js
+        //NYSS 7882 strip slashes
+        $tags[] = array('name' => stripslashes(addcslashes($dao->name, '"')),
+          'id' => $dao->id,
+        );
+      }
+
+      echo json_encode($tags);
+      CRM_Utils_System::civiExit();
     }
     elseif ( $parentId == 292 ) {
       /* NYSS leg positions should retrieve list from OpenLegislation
