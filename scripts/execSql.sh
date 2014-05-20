@@ -17,18 +17,22 @@
 # Revised: 2013-11-15 - Added db.insecure_cli_login to revert to old behavior
 # Revised: 2013-11-21 - Make sure login-path is not used if insecure login
 # Revised: 2014-03-14 - Added option --schemas-only to inhibit dumping row data
+# Revised: 2014-05-20 - Added --insecure-login command line switch.
 #
 
 prog=`basename $0`
 script_dir=`dirname $0`
 readConfig=$script_dir/readConfig.sh
 DEFAULT_MYSQL_ARGS="--batch --raw"
-export MYSQL_TEST_LOGIN_FILE=/etc/mysql/bluebird_mylogin.cnf
+
+if [ ! -r $HOME/.mylogin.cnf ]; then
+  export MYSQL_TEST_LOGIN_FILE=/etc/mysql/bluebird_mylogin.cnf
+fi
 
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog [--help] [-f {sqlFile|-} | -c sqlCommand] [--dump|-d] [--dump-table|-t table] [--skip-table|-e table] [--schemas-only|-s] [-l login-path] [-h host] [-u user] [-p password] [--column-names] [--force] [--quiet|-q] [--create] [[--civicrm|-C] | [--drupal|-D] | [--log|-L]] [--db-name|-n dbName] [instance]" >&2
+  echo "Usage: $prog [--help] [-f {sqlFile|-} | -c sqlCommand] [--dump|-d] [--dump-table|-t table] [--skip-table|-e table] [--schemas-only|-s] [-l login-path] [-h host] [-u user] [-p password] [--insecure-login|-i] [--column-names] [--force] [--quiet|-q] [--create] [[--civicrm|-C] | [--drupal|-D] | [--log|-L]] [--db-name|-n dbName] [instance]" >&2
 }
 
 if [ $# -lt 1 ]; then
@@ -48,6 +52,7 @@ dbhost=
 dbuser=
 dbpass=
 dbname=
+insecure_login=0
 create_db=0
 be_quiet=0
 colname_arg="--skip-column_names"
@@ -68,6 +73,7 @@ while [ $# -gt 0 ]; do
     -n|--db*) shift; dbname="$1" ;;
     -u|--user) shift; dbuser="$1" ;;
     -p|--pass*) shift; dbpass="$1" ;;
+    -i|--insec*) insecure_login=1 ;;
     -q|--quiet) be_quiet=1 ;;
     --col*) colname_arg="--column-names" ;;
     --create) create_db=1 ;;
@@ -117,7 +123,7 @@ fi
 
 insecure_cli_login=`$readConfig $ig_opt db.insecure_cli_login`
 
-if [ $? -eq 0 -a "$insecure_cli_login" = "1" ]; then
+if [ $? -eq 0 -a "$insecure_cli_login" = "1" -o $insecure_login -eq 1 ]; then
   [ "$dbhost" ] || dbhost=`$readConfig $ig_opt db.host`
   [ "$dbuser" ] || dbuser=`$readConfig $ig_opt db.user`
   [ "$dbpass" ] || dbpass=`$readConfig $ig_opt db.pass`
