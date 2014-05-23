@@ -5,8 +5,10 @@ define('FILTER_ALL', 0);
 define('FILTER_IN_SD_ONLY', 1);
 define('FILTER_IN_SD_OR_NO_SD', 2);
 
+
 //5581
-function nyss_mail_custom_theme() {
+function nyss_mail_custom_theme()
+{
   $allowedPaths = array(
     'civicrm/nyss/subscription/manage',
     'civicrm/nyss/subscription/view',
@@ -15,30 +17,37 @@ function nyss_mail_custom_theme() {
   if (in_array($_GET['q'], $allowedPaths)) {
     return 'BluebirdPublic';
   }
-}
+  else {
+    return null;
+  }
+} // nyss_mail_custom_theme()
 
-function nyss_mail_civicrm_config( &$config ) {
+
+function nyss_mail_civicrm_config(&$config)
+{
   //establish session and ensure userID based construction if in backend
   $session = CRM_Core_Session::singleton();
   $contactID = $session->get('userID');
-  $isAdmin = ( $config-> userFramework == 'Joomla' &&
-    strpos($config->userFrameworkBaseURL, 'administrator') ) ? TRUE : FALSE;
+  $isAdmin = ($config->userFramework == 'Joomla' &&
+              strpos($config->userFrameworkBaseURL, 'administrator'));
 
-  if ( $isAdmin && !$contactID ) {
+  if ($isAdmin && !$contactID) {
     return;
   }
 
-  $dirRoot = dirname( __FILE__ ) . DIRECTORY_SEPARATOR;
+  $dirRoot = dirname(__FILE__).DIRECTORY_SEPARATOR;
 
   //prepend extension php include path
-  $include_path = $dirRoot .'php'. PATH_SEPARATOR . get_include_path( );
-  set_include_path( $include_path );
+  $include_path = $dirRoot .'php'. PATH_SEPARATOR . get_include_path();
+  set_include_path($include_path);
 
   //prepend extension template path
-  $template =& CRM_Core_Smarty::singleton( );
+  $template =& CRM_Core_Smarty::singleton();
   $templateDir = $dirRoot .'tpl'.DIRECTORY_SEPARATOR;
-  array_unshift( $template->template_dir, $templateDir );
-}//config
+  array_unshift($template->template_dir, $templateDir);
+  return;
+} // nyss_mail_civicrm_config()
+
 
 function nyss_mail_civicrm_alterMailParams(&$params, $context)
 {
@@ -47,7 +56,8 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
   //CRM_Core_Error::debug_var('context', $context);
 
   /* Re-write any URLs in the message body of the form:
-   *   senator.crm*.nysenate.gov/sites/senator.crm*.nysenate.gov/pubfiles
+   *   <sitename>/sites/<sitename>/pubfiles
+   *   where <sitename> is <senatorShortname>.crm(dev|test)?.nysenate.gov
    * into:
    *   pubfiles.nysenate.gov/crm(dev|test)?/senator/
   */
@@ -58,7 +68,9 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
     }
   }
 
-  //TODO check to see if body element is present and add if not, else text replacement will fail throughout
+  // Confirm that <html>, <head>, <body> elements are present, and add them
+  // if necessary.
+  $params['html'] = fixup_html_message($params['html']);
 
   $hdr = new SmtpApiHeader();
 
@@ -86,7 +98,7 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
   // NYSS 5579 - Construct the whitelisting language and add to e-mail body.
   // NYSS 7423 - Allow location of whitelisting blurb to be configurable.
   // 7804 suppress if viewing html
-  if ( $context == 'civimail' && !empty($params['contact_id']) ) {
+  if ($context == 'civimail' && !empty($params['contact_id'])) {
     if (isset($bbconfig['email.whitelist.text'])) {
       $whitelist_txt = $bbconfig['email.whitelist.text'];
     }
@@ -127,14 +139,14 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
     if (isset($params['job_id'])) {
       $jid = $params['job_id'];
       $mJob = CRM_Core_DAO::executeQuery("SELECT mailing_id, is_test FROM civicrm_mailing_job WHERE id = {$jid};");
-      while ( $mJob->fetch() ) {
+      while ($mJob->fetch()) {
         $mid = $mJob->mailing_id;
         $test = $mJob->is_test;
       }
       $mJob->free();
 
       $m = CRM_Core_DAO::executeQuery("SELECT name, hash FROM civicrm_mailing WHERE id = {$mid};");
-      while ( $m->fetch() ) {
+      while ($m->fetch()) {
         $mname = $m->name;
         $hash = $m->hash;
       }
@@ -156,10 +168,10 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
 
     //7701 - append link for hosted email
     $env = explode('.', $bbconfig['base.domain']);
-    if ( !empty($mid) ) {
-      $viewID = ( $hash ) ? $hash : $mid;
+    if (!empty($mid)) {
+      $viewID = ($hash) ? $hash : $mid;
       $url = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/view/{$viewID}";
-      //$url = CRM_Utils_System::url('civicrm/mailing/view', 'reset=1&id='.$viewID, TRUE);
+      //$url = CRM_Utils_System::url('civicrm/mailing/view', 'reset=1&id='.$viewID, true);
 
       //4864
       $fblink = '';
@@ -186,12 +198,12 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
     }
 
     //7803 if viewing html, insert FB share image
-    if ( empty($params['contact_id']) ) {
+    if (empty($params['contact_id'])) {
       $imgRoot = $bbconfig['data.rootdir'].'/'.$bbconfig['data_dirname'].'/pubfiles/';
       $fbShareFolder = 'images/template';
       $fbShareImage = 'fb_share_thumb.png';
 
-      if ( !file_exists($imgRoot.$fbShareFolder.'/'.$fbShareImage) ) {
+      if (!file_exists($imgRoot.$fbShareFolder.'/'.$fbShareImage)) {
         $fbShareFolder = 'common/images';
         $fbShareImage = 'nysenate_logo_200.png';
       }
@@ -203,7 +215,6 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
         \n<meta property='og:title' content='{$params['Subject']}' />
         \n<link rel='image_src' type='image/png' href='{$fbShare}' />
       $1", $params['html'], 1);
-      $params['html'] = preg_replace('#(\s*</head>)#', "$1", $params['html'], 1);
     }
 
     //Sendgrid headers
@@ -223,7 +234,7 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
     //$params['replyTo'] = $replyto;
     // Sendgrid SMTP-API
     // For non-Civimail messages, disable subscription/click/open tracking
-    $hdr->setCategory("Bluebird Activity");
+    $hdr->setCategory('Bluebird Activity');
     $hdr->setUniqueArgs(array(
       'instance' => $bbconfig['shortname'],
       'install_class' => $bbconfig['install_class'],
@@ -239,12 +250,13 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
   //CRM_Core_Error::debug('session', $_SESSION);
   //CRM_Core_Error::debug_var('params', $params);
   //CRM_Core_Error::debug_var('mname', $mname);
-  //exit();
-}//nyss_mail_civicrm_alterMailParams()
+
+  return;
+} //nyss_mail_civicrm_alterMailParams()
 
 
-function nyss_mail_civicrm_buildForm($formName, &$form) {
-
+function nyss_mail_civicrm_buildForm($formName, &$form)
+{
   if ($formName == 'CRM_Mailing_Form_Group' && $form->_searchBasedMailing) {
     //get base mailing group, add to option list, set as default, freeze field
     $params = array ('name' => BASE_SUBSCRIPTION_GROUP);
@@ -282,14 +294,14 @@ function nyss_mail_civicrm_buildForm($formName, &$form) {
         AND og.name = 'mailing_categories'
       ORDER BY ov.label
     ");
-    while ( $opts->fetch() ) {
+    while ($opts->fetch()) {
       $mCats[$opts->value] = $opts->label;
     }
-    $form->add('select', 'category', 'Mailing Category', $mCats, FALSE);
+    $form->add('select', 'category', 'Mailing Category', $mCats, false);
 
     if ($mailingID) {
       $m = CRM_Core_DAO::executeQuery("SELECT * FROM civicrm_mailing WHERE id = {$mailingID}");
-      while ( $m->fetch() ) {
+      while ($m->fetch()) {
         $defaults = array(
           'all_emails' => $m->all_emails,
           'dedupe_email' => $m->dedupe_email,
@@ -299,11 +311,11 @@ function nyss_mail_civicrm_buildForm($formName, &$form) {
       }
     }
     else {
-      $defaults['dedupe_email'] = TRUE;
+      $defaults['dedupe_email'] = true;
     }
 
     //CRM_Core_Error::debug_var('defaults', $defaults);
-    $form->setDefaults( $defaults );
+    $form->setDefaults($defaults);
   }
 
   if ($formName == 'CRM_Mailing_Form_Test') {
@@ -331,10 +343,10 @@ function nyss_mail_civicrm_buildForm($formName, &$form) {
     $formName == 'CRM_Mailing_Form_Test' ||
     $formName == 'CRM_Mailing_Form_Schedule'
   ) {
-    CRM_Utils_System::setTitle( 'New Mass Email' );
+    CRM_Utils_System::setTitle('New Mass Email');
 
     //NYSS 4557
-    //CRM_Core_Error::debug_var('form',$form);
+    //CRM_Core_Error::debug_var('form', $form);
     $session =& CRM_Core_Session::singleton();
     if (!empty($form->_finalValues['name'])) {
       $form->assign('mailingName', $form->_finalValues['name']);
@@ -362,9 +374,8 @@ function nyss_mail_civicrm_buildForm($formName, &$form) {
   }
 
   //5581 - optimized opt out
-  if ( $formName == 'CRM_Profile_Form_Edit' &&
-    $form->getVar('_ufGroupName') == 'Mass_Email_Subscriptions'
-  ) {
+  if ($formName == 'CRM_Profile_Form_Edit' &&
+      $form->getVar('_ufGroupName') == 'Mass_Email_Subscriptions') {
     $cid = $form->getVar('_id');
 
     //get contact display name
@@ -386,8 +397,8 @@ function nyss_mail_civicrm_buildForm($formName, &$form) {
     $locTypes = civicrm_api('location_type', 'get', array('version' => 3));
     //CRM_Core_Error::debug_var('$locTypes', $locTypes);
     $lt = array();
-    foreach ( $locTypes['values'] as $lt_id => $lt_val ) {
-      if ( $lt_val['is_active'] ) {
+    foreach ($locTypes['values'] as $lt_id => $lt_val) {
+      if ($lt_val['is_active']) {
         $lt[$lt_id] = $lt_val['display_name'];
       }
     }
@@ -409,12 +420,12 @@ function nyss_mail_civicrm_buildForm($formName, &$form) {
         AND og.name = 'mailing_categories'
       ORDER BY ov.label
     ");
-    while ( $opts->fetch() ) {
+    while ($opts->fetch()) {
       $mCats[$opts->value] = $opts->label;
     }
 
     $defaults = array();
-    while ( $email->fetch() ) {
+    while ($email->fetch()) {
       $contactEmails[$email->id] = array(
         'location_type_id' => $lt[$email->location_type_id],
         'email' => $email->email,
@@ -430,16 +441,16 @@ function nyss_mail_civicrm_buildForm($formName, &$form) {
         CRM_Core_PseudoConstant::get('CRM_Core_DAO_Address', 'location_type_id'));
       $form->addElement('select', "email[$blockId][on_hold]", '', $holdOptions);*/
 
-      $form->add( 'select',
-        "email[{$email->id}][mailing_categories]",
-        ts( 'Subscription Opt-Outs' ),
-        $mCats,
-        FALSE,
-        array(
-          'id' => 'subscription-optout-'.$email->id,
-          'multiple' => 'multiple',
-          'title' => ts('- select -')
-        )
+      $form->add('select',
+                 "email[{$email->id}][mailing_categories]",
+                 ts('Subscription Opt-Outs'),
+                 $mCats,
+                 false,
+                 array(
+                   'id' => 'subscription-optout-'.$email->id,
+                   'multiple' => 'multiple',
+                   'title' => ts('- select -')
+                 )
       );
 
       //set defaults
@@ -463,7 +474,7 @@ function nyss_mail_civicrm_postProcess($formName, &$form)
     //CRM_Core_Error::debug_var('submitValues', $submitValues);
 
     $dedupeEmails = $submitValues['dedupe_email'];
-    $mailingCat = CRM_Utils_Array::value('category', $submitValues, NULL);
+    $mailingCat = CRM_Utils_Array::value('category', $submitValues, null);
 
     //add exclude_ood to mailing record
     $excludeOOD = (!empty($submitValues['exclude_ood'])) ? $submitValues['exclude_ood'] : FILTER_ALL;
@@ -493,7 +504,7 @@ function nyss_mail_civicrm_postProcess($formName, &$form)
     CRM_Core_DAO::executeQuery("UPDATE civicrm_mailing SET exclude_ood = %2 WHERE id = %1;", $sqlParams);
 
     //5581
-    if ( $mailingCat ) {
+    if ($mailingCat) {
       $sqlParams  = array(
         1 => array($mailingID, 'Integer'),
         2 => array($mailingCat, 'Integer'),
@@ -511,7 +522,7 @@ function nyss_mail_civicrm_postProcess($formName, &$form)
     }
 
     //5581
-    if ( $mailingCat ) {
+    if ($mailingCat) {
       _excludeCategoryOptOut($mailingID, $mailingCat);
     }
 
@@ -530,7 +541,7 @@ function nyss_mail_civicrm_postProcess($formName, &$form)
     if ($buttonName == '_qf_Group_submit') {
       $mailing = new CRM_Mailing_DAO_Mailing();
       $mailing->id = $mailingID;
-      $mailing->find(TRUE);
+      $mailing->find(true);
       if (empty($mailing->header_id) || empty($mailing->footer_id)) {
         //get default header/footer
         $componentFields = array(
@@ -543,13 +554,13 @@ function nyss_mail_civicrm_postProcess($formName, &$form)
         $mailing->created_date = date('YmdHis', strtotime($mailing->created_date));
         $mailing->save();
       }
-      //CRM_Core_Error::debug_var('$mailing',$mailing);
+      //CRM_Core_Error::debug_var('$mailing', $mailing);
     }
 
     //disable click through/opens/replies
     $mailing = new CRM_Mailing_DAO_Mailing();
     $mailing->id = $mailingID;
-    $mailing->find(TRUE);
+    $mailing->find(true);
     $mailing->url_tracking = 0;
     $mailing->forward_replies = 0;
     $mailing->auto_responder = 0;
@@ -562,9 +573,8 @@ function nyss_mail_civicrm_postProcess($formName, &$form)
   }
 
   //5581
-  if ( $formName == 'CRM_Profile_Form_Edit' &&
-    $form->getVar('_ufGroupName') == 'Mass_Email_Subscriptions'
-  ) {
+  if ($formName == 'CRM_Profile_Form_Edit' &&
+      $form->getVar('_ufGroupName') == 'Mass_Email_Subscriptions') {
     $vals = $form->_submitValues;
     $cid = $form->getVar('_id');
     //CRM_Core_Error::debug_var('vals', $vals);
@@ -575,9 +585,9 @@ function nyss_mail_civicrm_postProcess($formName, &$form)
       WHERE contact_id = {$cid}
     ");
 
-    while ( $allEmails->fetch() ) {
+    while ($allEmails->fetch()) {
       $mCatsList = '';
-      if ( isset($vals['email'][$allEmails->id]) ) {
+      if (isset($vals['email'][$allEmails->id])) {
         $mCatsList = implode(',', $vals['email'][$allEmails->id]['mailing_categories']);
       }
       CRM_Core_DAO::executeQuery("
@@ -587,7 +597,7 @@ function nyss_mail_civicrm_postProcess($formName, &$form)
       ");
     }
 
-    if ( !empty($vals['note']) ) {
+    if (!empty($vals['note'])) {
       $form->assign('noteText', $vals['note']);
     }
   }
@@ -595,39 +605,40 @@ function nyss_mail_civicrm_postProcess($formName, &$form)
 } //nyss_mail_civicrm_postProcess()
 
 
-function nyss_mail_civicrm_pageRun(&$page) {
+function nyss_mail_civicrm_pageRun(&$page)
+{
   //CRM_Core_Error::debug_var('page', $page);
 
   //expose url/open tracking to mailing report
   //need to do manually since we are not using native tracking tools
-  if ( $page->getVar('_name') == 'CRM_Mailing_Page_Report' ) {
-    $smarty =& CRM_Core_Smarty::singleton( );
-    $rpt =& $smarty->get_template_vars( 'report' );
+  if ($page->getVar('_name') == 'CRM_Mailing_Page_Report') {
+    $smarty =& CRM_Core_Smarty::singleton();
+    $rpt =& $smarty->get_template_vars('report');
     //CRM_Core_Error::debug('rpt', $rpt);
 
     $rpt['mailing']['url_tracking']  = 1;
     $rpt['mailing']['open_tracking'] = 1;
 
-    $smarty->assign_by_ref( 'report', $rpt );
+    $smarty->assign_by_ref('report', $rpt);
   }
 
   //5567 fix title
-  if ( $page->getVar('_name') == 'CRM_Mailing_Page_Event' ) {
+  if ($page->getVar('_name') == 'CRM_Mailing_Page_Event') {
     $event = CRM_Utils_Array::value('event', $_GET);
-    if ( $event == 'unsubscribe' ) {
-      CRM_Utils_System::setTitle( ts('Opt-out Requests') );
+    if ($event == 'unsubscribe') {
+      CRM_Utils_System::setTitle(ts('Opt-out Requests'));
     }
   }
 
   //5581
-  if ( $page->getVar('_name') == 'CRM_Profile_Page_View' ) {
+  if ($page->getVar('_name') == 'CRM_Profile_Page_View') {
     $gid = CRM_Core_DAO::singleValueQuery("
       SELECT id
       FROM civicrm_uf_group
       WHERE name = 'Mass_Email_Subscriptions'
     ");
 
-    if ( $page->getVar('_gid') == $gid ) {
+    if ($page->getVar('_gid') == $gid) {
       CRM_Utils_System::setTitle('Mass Email Subscriptions');
 
       //get all emails
@@ -652,8 +663,8 @@ function nyss_mail_civicrm_pageRun(&$page) {
       $locTypes = civicrm_api('location_type', 'get', array('version' => 3));
       //CRM_Core_Error::debug_var('$locTypes', $locTypes);
       $lt = array();
-      foreach ( $locTypes['values'] as $lt_id => $lt_val ) {
-        if ( $lt_val['is_active'] ) {
+      foreach ($locTypes['values'] as $lt_id => $lt_val) {
+        if ($lt_val['is_active']) {
           $lt[$lt_id] = $lt_val['display_name'];
         }
       }
@@ -674,11 +685,11 @@ function nyss_mail_civicrm_pageRun(&$page) {
           AND og.name = 'mailing_categories'
         ORDER BY ov.label
       ");
-      while ( $opts->fetch() ) {
+      while ($opts->fetch()) {
         $mCats[$opts->value] = $opts->label;
       }
 
-      while ( $email->fetch() ) {
+      while ($email->fetch()) {
         $contactEmails[$email->id] = array(
           'location_type_id' => $lt[$email->location_type_id],
           'email' => $email->email,
@@ -688,7 +699,7 @@ function nyss_mail_civicrm_pageRun(&$page) {
         );
         $cats = explode(',', $email->mailing_categories);
         $catsLabel = array();
-        foreach ( $cats as $cat ) {
+        foreach ($cats as $cat) {
           $catsLabel[] = $mCats[$cat];
         }
         $contactEmails[$email->id]['mailing_categories'] = implode(', ', $catsLabel);
@@ -698,31 +709,33 @@ function nyss_mail_civicrm_pageRun(&$page) {
   }//5581
 }//nyss_mail_civicrm_pageRun()
 
-function nyss_mail_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) {
-  //CRM_Core_Error::debug_var('$formName',$formName);
-  //CRM_Core_Error::debug_var('$form',$form);
-  //CRM_Core_Error::debug_var('$context',$context);
-  //CRM_Core_Error::debug_var('$tplName',$tplName);
 
-  if ( $formName == 'CRM_Profile_Form_Edit' &&
-    $form->getVar('_ufGroupName') == 'Mass_Email_Subscriptions'
-  ) {
+function nyss_mail_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName)
+{
+  //CRM_Core_Error::debug_var('$formName', $formName);
+  //CRM_Core_Error::debug_var('$form', $form);
+  //CRM_Core_Error::debug_var('$context', $context);
+  //CRM_Core_Error::debug_var('$tplName', $tplName);
+
+  if ($formName == 'CRM_Profile_Form_Edit' &&
+      $form->getVar('_ufGroupName') == 'Mass_Email_Subscriptions') {
     $tplName = 'CRM/NYSS/Subscription.tpl';
   }
 
   //5581
-  if ( $formName == 'CRM_Profile_Page_View' ) {
+  if ($formName == 'CRM_Profile_Page_View') {
     $gid = CRM_Core_DAO::singleValueQuery("
       SELECT id
       FROM civicrm_uf_group
       WHERE name = 'Mass_Email_Subscriptions'
     ");
 
-    if ( $form->getVar('_gid') == $gid ) {
+    if ($form->getVar('_gid') == $gid) {
       $tplName = 'CRM/NYSS/SubscriptionView.tpl';
     }
   }
 }//alterTemplateFile
+
 
 //4628
 function _addAllEmails($mailingID, $dedupeEmails = false, $excludeOOD = FILTER_ALL)
@@ -767,7 +780,7 @@ WHERE e.id NOT IN (
 
 
 //4879
-function _excludeOOD($mailingID, $dedupeEmails = FALSE, $excludeOOD)
+function _excludeOOD($mailingID, $dedupeEmails = false, $excludeOOD)
 {
   //determine what SD we are in
   $bbconfig = get_bluebird_instance_config();
@@ -859,7 +872,8 @@ function _excludeOOD($mailingID, $dedupeEmails = FALSE, $excludeOOD)
 } // _excludeOOD()
 
 //5581
-function _excludeCategoryOptOut($mailingID, $mailingCat) {
+function _excludeCategoryOptOut($mailingID, $mailingCat)
+{
   $sql = "
     DELETE FROM civicrm_mailing_recipients
     USING civicrm_mailing_recipients
@@ -871,6 +885,7 @@ function _excludeCategoryOptOut($mailingID, $mailingCat) {
   //CRM_Core_Error::debug_var('sql', $sql);
   CRM_Core_DAO::executeQuery($sql);
 }//_excludeCategoryOptOut
+
 
 function _addEmailSeeds($mailingID)
 {
@@ -900,3 +915,46 @@ function _addEmailSeeds($mailingID)
   //CRM_Core_Error::debug($sql);exit();
   CRM_Core_DAO::executeQuery($sql);
 } // _addEmailSeeds()
+
+
+function fixup_html_message($m)
+{
+  $added_tags = '';
+
+  // The <body> tag is typically in the header template, while the </body>
+  // tag is in the footer template.  So check for both separately.
+  if (stripos($m, '<body') === false) {
+    $m = '<body style="font-family:arial; font-size:14px; color:#505050; background-color:#ffffff;" leftmargin="0" topmargin="0" marginheight="0" marginwidth="0" offset="0">'."\n$m";
+    $added_tags .= ' BODY';
+  }
+  if (stripos($m, '</body>') === false) {
+    $m .= "\n</body>";
+    $added_tags .= ' /BODY';
+  }
+
+  // The <head> and </head> tags are typically both in the header template.
+  if (stripos($m, '<head') === false) {
+    $m = "<head>\n<title>New York State Senate</title>\n</head>\n$m";
+    $added_tags .= ' HEAD TITLE /TITLE /HEAD';
+  }
+  else if (stripos($m, '</head>') === false) {
+    $m = str_ireplace('<body', "</head>\n<body", $m);
+    $added_tags .= ' /HEAD';
+  }
+
+  // The <html> and </html> tags are separated in the header & footer templates.
+  if (stripos($m, '<html>') === false) {
+    $m = "<html>\n$m";
+    $added_tags .= ' HTML';
+  }
+  if (stripos($m, '</html>') === false) {
+    $m .= "\n</html>";
+    $added_tags .= ' /HTML';
+  }
+
+  if (!empty($added_tags)) {
+    $m .= "\n<!-- AutoInserted Tags: $added_tags -->";
+  }
+  return $m;
+} // fixup_html_message()
+
