@@ -390,6 +390,8 @@ function _civicrm_api3_store_values(&$fields, &$params, &$values) {
  *  others that use the query object. Note that this function passes permission information in.
  *  The others don't
  *
+ * * Ideally this would be merged with _civicrm_get_query_object but we need to resolve differences in what the
+ * 2 variants call
  * @param $entity
  * @param array $params as passed into api get or getcount function
  * @param array $additional_options
@@ -461,7 +463,6 @@ function _civicrm_api3_get_using_query_object($entity, $params, $additional_opti
 
   }
   $skipPermissions = CRM_Utils_Array::value('check_permissions', $params)? 0 :1;
-
   list($entities, $options) = CRM_Contact_BAO_Query::apiQuery(
     $newParams,
     $returnProperties,
@@ -478,6 +479,45 @@ function _civicrm_api3_get_using_query_object($entity, $params, $additional_opti
   }
 
   return $entities;
+}
+
+/**
+ * get dao query object based on input params
+ * Ideally this would be merged with _civicrm_get_using_query_object but we need to resolve differences in what the
+ * 2 variants call
+ *
+ * @param array $params
+ * @param string $mode
+ * @param string $entity
+ * @return CRM_Core_DAO query object
+ */
+function _civicrm_api3_get_query_object($params, $mode, $entity) {
+  $options          = _civicrm_api3_get_options_from_params($params, TRUE, $entity, 'get');
+  $sort             = CRM_Utils_Array::value('sort', $options, NULL);
+  $offset           = CRM_Utils_Array::value('offset', $options);
+  $rowCount         = CRM_Utils_Array::value('limit', $options);
+  $inputParams      = CRM_Utils_Array::value('input_params', $options, array());
+  $returnProperties = CRM_Utils_Array::value('return', $options, NULL);
+  if (empty($returnProperties)) {
+    $returnProperties = CRM_Contribute_BAO_Query::defaultReturnProperties($mode);
+  }
+
+  $newParams = CRM_Contact_BAO_Query::convertFormValues($inputParams);
+  $query = new CRM_Contact_BAO_Query($newParams, $returnProperties, NULL,
+    FALSE, FALSE, $mode
+  );
+  list($select, $from, $where, $having) = $query->query();
+
+  $sql = "$select $from $where $having";
+
+  if (!empty($sort)) {
+    $sql .= " ORDER BY $sort ";
+  }
+  if(!empty($rowCount)) {
+    $sql .= " LIMIT $offset, $rowCount ";
+  }
+  $dao = CRM_Core_DAO::executeQuery($sql);
+  return array($dao, $query);
 }
 
 /**
@@ -706,7 +746,9 @@ function _civicrm_api3_apply_options_to_dao(&$params, &$dao, $entity) {
 
   $options = _civicrm_api3_get_options_from_params($params,FALSE,$entity);
   if(!$options['is_count']) {
-    $dao->limit((int)$options['offset'], (int)$options['limit']);
+    if(!empty($options['limit'])) {
+      $dao->limit((int)$options['offset'], (int)$options['limit']);
+    }
     if (!empty($options['sort'])) {
       $dao->orderBy($options['sort']);
     }
@@ -761,12 +803,15 @@ function _civicrm_api3_get_unique_name_array(&$bao) {
  * @static void
  * @access public
  */
-function _civicrm_api3_dao_to_array($dao, $params = NULL, $uniqueFields = TRUE, $entity = "") {
+function _civicrm_api3_dao_to_array($dao, $params = NULL, $uniqueFields = TRUE, $entity = "", $autoFind = TRUE) {
   $result = array();
   if(isset($params['options']) && CRM_Utils_Array::value('is_count', $params['options'])) {
     return $dao->count();
   }
-  if (empty($dao) || !$dao->find()) {
+  if (empty($dao)) {
+    return array();
+  }
+  if ($autoFind && !$dao->find()) {
     return array();
   }
 
@@ -1216,7 +1261,8 @@ function _civicrm_api3_validate_date(&$params, &$fieldName, &$fieldInfo) {
     if (strtotime($params[$fieldInfo['name']]) === FALSE) {
       throw new Exception($fieldInfo['name'] . " is not a valid date: " . $params[$fieldInfo['name']]);
     }
-    $params[$fieldInfo['name']] = CRM_Utils_Date::processDate($params[$fieldInfo['name']]);
+    $format = ($fieldInfo['type'] == CRM_Utils_Type::T_DATE) ? 'Ymd000000' : 'YmdHis';
+    $params[$fieldInfo['name']] = CRM_Utils_Date::processDate($params[$fieldInfo['name']], NULL, FALSE, $format);
   }
   if ((CRM_Utils_Array::value('name', $fieldInfo) != $fieldName) && CRM_Utils_Array::value($fieldName, $params)) {
     //If the unique field name differs from the db name & is set handle it here

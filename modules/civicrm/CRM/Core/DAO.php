@@ -196,6 +196,7 @@ class CRM_Core_DAO extends DB_DataObject {
    */
   function initialize() {
     $this->_connect();
+    $this->query("SET NAMES utf8");
   }
 
   /**
@@ -1262,6 +1263,11 @@ SELECT contact_id
     $numObjects = 1,
     $createOnly = FALSE
   ) {
+    //this is a test function  also backtrace is set for the test suite it sometimes unsets itself
+    // so we re-set here in case
+    $config = CRM_Core_Config::singleton();
+    $config->backtrace = TRUE;
+
     static $counter = 0;
     CRM_Core_DAO::$_testEntitiesToSkip = array(
       'CRM_Core_DAO_Worldregion',
@@ -1424,6 +1430,10 @@ SELECT contact_id
 
   static function deleteTestObjects($daoName, $params = array(
     )) {
+    //this is a test function  also backtrace is set for the test suite it sometimes unsets itself
+    // so we re-set here in case
+    $config = CRM_Core_Config::singleton();
+    $config->backtrace = TRUE;
 
     $object = new $daoName ( );
     $object->id = CRM_Utils_Array::value('id', $params);
