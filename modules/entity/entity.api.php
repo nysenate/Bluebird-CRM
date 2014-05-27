@@ -74,6 +74,11 @@
  *   - status: (optional) The name of the entity property used by the entity
  *     CRUD API to save the exportable entity status using defined bit flags.
  *     Defaults to 'status'. See entity_has_status().
+ *   - default revision: (optional) The name of the entity property used by
+ *     the entity CRUD API to determine if a newly-created revision should be
+ *     set as the default revision. Defaults to 'default_revision'.
+ *     Note that on entity insert the created revision will be always default
+ *     regardless of the value of this entity property.
  * - export: (optional) An array of information used for exporting. For ctools
  *   exportables compatibility any export-keys supported by ctools may be added
  *   to this array too.
@@ -90,9 +95,12 @@
  *   - path: A path where the UI should show up as expected by hook_menu().
  *   - controller class: (optional) A controller class name for providing the
  *     UI. Defaults to EntityDefaultUIController, which implements an admin UI
- *     suiting for managing configuration entities.
- *     For customizing the UI inherit from the default class and overide methods
- *     as suiting and specify your class as controller class.
+ *     suiting for managing configuration entities. Other provided controllers
+ *     suiting for content entities are EntityContentUIController or
+ *     EntityBundleableUIController (which work fine despite the poorly named
+ *     'admin ui' key).
+ *     For customizing the UI inherit from the default class and override
+ *     methods as suiting and specify your class as controller class.
  *   - file: (optional) The name of the file in which the entity form resides
  *     as it is required by hook_menu().
  *   - file path: (optional) The path to the file as required by hook_menu. If
@@ -114,6 +122,13 @@
  *   Override the controller class to adapt the defaults and to improve and
  *   complete the generated metadata. Set it to FALSE to disable this feature.
  *   Defaults to the EntityDefaultMetadataController class.
+ * - extra fields controller class: (optional) A controller class for providing
+ *   field API extra fields. Defaults to none.
+ *   The class must implement the EntityExtraFieldsControllerInterface. Display
+ *   extra fields that are exposed that way are rendered by default by the
+ *   EntityAPIController. The EntityDefaultExtraFieldsController class may be
+ *   used to generate extra fields based upon property metadata, which in turn
+ *   get rendered by default by the EntityAPIController.
  * - features controller class: (optional) A controller class for providing
  *   Features module integration for exportable entities. The given class has to
  *   inherit from the default class being EntityDefaultFeaturesController. Set
@@ -140,10 +155,11 @@
  *   edit form for your entity type. See entity_form().
  *   In case the 'admin ui' is used, no callback needs to be specified.
  * - entity cache: (optional) Whether entities should be cached using the cache
- *   system. Requires the entitycache module to be installed and enabled. As
- *   cached entities are only retrieved by id key, the cache would not apply to
- *   exportable entities retrieved by name key. If enabled, 'field cache' is
- *   obsolete and should be disabled. Defaults to FALSE.
+ *   system. Requires the entitycache module to be installed and enabled and the
+ *   module key to be specified. As cached entities are only retrieved by id key,
+ *   the cache would not apply to exportable entities retrieved by name key.
+ *   If enabled and the entitycache module is active, 'field cache' is obsolete
+ *   and is automatically disabled. Defaults to FALSE.
  *
  * @see hook_entity_info()
  * @see entity_metadata_hook_entity_info()
@@ -198,6 +214,8 @@ function entity_crud_hook_entity_info() {
  *   this type.
  * - deletion callback: (optional) A callback that permanently deletes an
  *   entity of this type.
+ * - revision deletion callback: (optional) A callback that deletes a revision
+ *   of the entity.
  * - view callback: (optional) A callback to render a list of entities.
  *   See entity_metadata_view_node() as example.
  * - form callback: (optional) A callback that returns a fully built edit form
@@ -318,7 +336,7 @@ function entity_metadata_hook_entity_info() {
  *       entity_property_values_create_entity().
  *     - field: (optional) A boolean indicating whether a property is stemming
  *       from a field.
- *     - computed: (optional) A boolean indiciating whether a property is
+ *     - computed: (optional) A boolean indicating whether a property is
  *       computed, i.e. the property value is not stored or loaded by the
  *       entity's controller but determined on the fly by the getter callback.
  *       Defaults to FALSE.
@@ -363,7 +381,7 @@ function entity_metadata_hook_entity_info() {
  *     the same way as the entity properties array.
  *
  *  @see hook_entity_property_info_alter()
- *  @see entity_metadata_get_info()
+ *  @see entity_get_property_info()
  *  @see entity_metadata_wrapper()
  */
 function hook_entity_property_info() {
