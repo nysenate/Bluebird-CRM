@@ -102,7 +102,6 @@ class CRM_Core_BAO_CustomQuery {
    */
   protected $_contactSearch;
 
-  //NYSS 7772
   protected $_locationSpecifiCustomFields;
 
   /**
@@ -139,7 +138,6 @@ class CRM_Core_BAO_CustomQuery {
    *
    * @access public
    */
-  //NYSS 7772
   function __construct($ids, $contactSearch = FALSE, $locationSpecificFields = array()) {
     $this->_ids = &$ids;
     $this->_locationSpecifiCustomFields = $locationSpecificFields;
@@ -306,7 +304,6 @@ SELECT label, value
       }
 
       if ($joinTable) {
-        //NYSS 7772
         $joinClause = 1;
         $joinTableAlias = $joinTable;
         // Set location-specific query
@@ -340,9 +337,6 @@ SELECT label, value
    * @access public
    */
   function where() {
-    //CRM_Core_Error::debug( 'fld', $this->_fields );
-    //CRM_Core_Error::debug( 'ids', $this->_ids );
-
     foreach ($this->_ids as $id => $values) {
 
       // Fixed for Isuue CRM 607

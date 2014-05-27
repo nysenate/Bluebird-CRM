@@ -1106,6 +1106,7 @@ ORDER BY   civicrm_email.is_bulkmail DESC
       $email,
       $isForward
     );
+
     //set from email who is forwarding it and not original one.
     if ($fromEmail) {
       unset($headers['From']);
@@ -1119,7 +1120,6 @@ ORDER BY   civicrm_email.is_bulkmail DESC
     if ($contactDetails) {
       $contact = $contactDetails;
     }
-    //NYSS 7701
     elseif ($contactId === 0) {
       //anonymous user
       $contact = array();
@@ -2734,7 +2734,7 @@ SELECT  $mailing.id as mailing_id
       }
     }
 
-    //7723
+    //NYSS 7723
     $mailingKey = $form->_mailing_id;
     if (!$isSMS) {
       if ($hash = CRM_Mailing_BAO_Mailing::getMailingHash($mailingKey)) {
@@ -2782,7 +2782,7 @@ WHERE  civicrm_mailing_job.id = %1
     $config = &CRM_Core_Config::singleton();
  //   CRM_Core_Error::debug_log_message("Beginning processQueue run: {$config->mailerJobsMax}, {$config->mailerJobSize}");
 
-    //NYSS 6703 we don't need this check as we set the default domain programattically
+    //NYSS 6703 we don't need this check as we set the default domain programatically
     /*if ($mode == NULL && CRM_Core_BAO_MailSettings::defaultDomain() == "FIXME.ORG") {
       CRM_Core_Error::fatal(ts('The <a href="%1">default mailbox</a> has not been configured. You will find <a href="%2">more info in the online user and administrator guide</a>', array(1 => CRM_Utils_System::url('civicrm/admin/mailSettings', 'reset=1'), 2 => "http://book.civicrm.org/user/initial-set-up/email-system-configuration")));
     }*/
