@@ -936,7 +936,7 @@ function field_ui_display_overview_form($form, &$form_state, $entity_type, $bund
   $field_label_options = array(
     'above' => t('Above'),
     'inline' => t('Inline'),
-    'hidden' => t('<Hidden>'),
+    'hidden' => '<' . t('Hidden') . '>',
   );
   $extra_visibility_options = array(
     'visible' => t('Visible'),
@@ -992,7 +992,7 @@ function field_ui_display_overview_form($form, &$form_state, $entity_type, $bund
     );
 
     $formatter_options = field_ui_formatter_options($field['type']);
-    $formatter_options['hidden'] = t('<Hidden>');
+    $formatter_options['hidden'] = '<' . t('Hidden') . '>';
     $table[$name]['format'] = array(
       'type' => array(
         '#type' => 'select',
@@ -1534,7 +1534,7 @@ function field_ui_existing_field_options($entity_type, $bundle) {
           // - locked fields,
           // - fields already in the current bundle,
           // - fields that cannot be added to the entity type,
-          // - fields that that shoud not be added via user interface.
+          // - fields that should not be added via user interface.
 
           if (empty($field['locked'])
             && !field_info_instance($entity_type, $field['field_name'], $bundle)
@@ -1544,7 +1544,7 @@ function field_ui_existing_field_options($entity_type, $bundle) {
               'type' => $field['type'],
               'type_label' => $field_types[$field['type']]['label'],
               'field' => $field['field_name'],
-              'label' => t($instance['label']),
+              'label' => $instance['label'],
               'widget_type' => $instance['widget']['type'],
             );
           }
@@ -1558,8 +1558,8 @@ function field_ui_existing_field_options($entity_type, $bundle) {
 /**
  * Form constructor for the field settings edit page.
  *
- * @see field_ui_settings_form_submit()
- * @ingroups forms
+ * @see field_ui_field_settings_form_submit()
+ * @ingroup forms
  */
 function field_ui_field_settings_form($form, &$form_state, $instance) {
   $bundle = $instance['bundle'];

@@ -38,7 +38,7 @@ class MailTestCase extends DrupalWebTestCase implements MailSystemInterface {
     $message = drupal_mail('simpletest', 'mail_test', 'testing@example.com', $language);
 
     // Assert whether the message was sent through the send function.
-    $this->assertEqual(self::$sent_message['to'], 'testing@example.com', t('Pluggable mail system is extendable.'));
+    $this->assertEqual(self::$sent_message['to'], 'testing@example.com', 'Pluggable mail system is extendable.');
   }
 
   /**
@@ -150,7 +150,7 @@ class DrupalHtmlToTextTestCase extends DrupalWebTestCase {
     $tests = array(
       // @todo Trailing linefeeds should be trimmed.
       '<a href = "http://drupal.org">Drupal.org</a>' => "Drupal.org [1]\n\n[1] http://drupal.org\n",
-      // @todo Footer urls should be absolute.
+      // @todo Footer URLs should be absolute.
       "<a href = \"$base_path\">Homepage</a>" => "Homepage [1]\n\n[1] $base_url/\n",
       '<address>Drupal</address>' => "Drupal\n",
       // @todo The <address> tag is currently not supported.
@@ -268,6 +268,31 @@ class DrupalHtmlToTextTestCase extends DrupalWebTestCase {
   }
 
   /**
+   * Tests that drupal_wrap_mail() removes trailing whitespace before newlines.
+   */
+  function testDrupalHtmltoTextRemoveTrailingWhitespace() {
+    $text = "Hi there! \nHerp Derp";
+    $mail_lines = explode("\n", drupal_wrap_mail($text));
+    $this->assertNotEqual(" ", substr($mail_lines[0], -1), 'Trailing whitespace removed.');
+  }
+
+  /**
+   * Tests drupal_wrap_mail() retains whitespace from Usenet style signatures.
+   *
+   * RFC 3676 says, "This is a special case; an (optionally quoted or quoted and
+   * stuffed) line consisting of DASH DASH SP is neither fixed nor flowed."
+   */
+  function testDrupalHtmltoTextUsenetSignature() {
+    $text = "Hi there!\n-- \nHerp Derp";
+    $mail_lines = explode("\n", drupal_wrap_mail($text));
+    $this->assertEqual("-- ", $mail_lines[1], 'Trailing whitespace not removed for dash-dash-space signatures.');
+
+    $text = "Hi there!\n--  \nHerp Derp";
+    $mail_lines = explode("\n", drupal_wrap_mail($text));
+    $this->assertEqual("--", $mail_lines[1], 'Trailing whitespace removed for incorrect dash-dash-space signatures.');
+  }
+
+  /**
    * Test that whitespace is collapsed.
    */
   function testDrupalHtmltoTextCollapsesWhitespace() {
@@ -367,7 +392,7 @@ class DrupalHtmlToTextTestCase extends DrupalWebTestCase {
       . '<br /><a href="http://www.example.com">Host, no path</a>'
       . '<br /><a href="' . $base_path . 'node/1">Path, no host</a>'
       . '<br /><a href="node/1">Relative path</a>';
-    // @todo Footnote urls should be absolute.
+    // @todo Footnote URLs should be absolute.
     $tt = "Host and path [1]"
       . "\nHost, no path [2]"
       // @todo The following two references should be combined.
