@@ -34,5 +34,5 @@ app_rootdir=`$readConfig --ig $instance app.rootdir` || app_rootdir="$DEFAULT_AP
 echo "7887: run drupal db upgrade..."
 $drush $instance updb -y -q
 
-#echo "upgrade CiviCRM core to v4.4.4..."
-#$drush $instance civicrm-upgrade-db
+echo "7888: upgrade CiviCRM core to v4.4.5..."
+$drush $instance civicrm-upgrade-db -y -q
