@@ -48,5 +48,12 @@
       }
     });
   }
+
+  //NYSS 7892
+  cj(document).ready(function(){
+    if ( cj('div.crm-results-block-empty').length ) {
+      CRM.alert('No results found. Please revise your search criteria.', 'No Results', 'warning' );
+    }
+  });
 </script>
 {/literal}
