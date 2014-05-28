@@ -145,7 +145,7 @@ class CRM_Contact_Form_Search_Custom_Group
       ts('Include Group(s)') . ' ', $groups,
       array(
         'size' => 5,
-        'style' => 'width:240px',
+        'style' => 'width:270px',
         'class' => 'advmultiselect',
       )
     );
@@ -154,7 +154,7 @@ class CRM_Contact_Form_Search_Custom_Group
       ts('Exclude Group(s)') . ' ', $groups,
       array(
         'size' => 5,
-        'style' => 'width:240px',
+        'style' => 'width:270px',
         'class' => 'advmultiselect',
       )
     );
@@ -169,7 +169,7 @@ class CRM_Contact_Form_Search_Custom_Group
       ts('Include Tag(s)') . ' ', $tags,
       array(
         'size' => 5,
-        'style' => 'width:240px',
+        'style' => 'width:270px',
         'class' => 'advmultiselect',
       )
     );
@@ -178,7 +178,7 @@ class CRM_Contact_Form_Search_Custom_Group
       ts('Exclude Tag(s)') . ' ', $tags,
       array(
         'size' => 5,
-        'style' => 'width:240px',
+        'style' => 'width:270px',
         'class' => 'advmultiselect',
       )
     );
@@ -226,7 +226,7 @@ class CRM_Contact_Form_Search_Custom_Group
       ts('Activity Subject'), $allSubjects,
       array(
         'size' => 5,
-        'style' => 'width:240px; height: 200px;',
+        'style' => 'width:270px; height: 200px;',
         'class' => 'advmultiselect',
       )
     );

@@ -212,6 +212,12 @@ function toggleContactSelection( name, qfKey, selection ){
       });
       //console.log('getSubjectRows', getSubjectRows);
     });
+
+    //NYSS 7647
+    cj('select option').each(function(){
+      var label = cj(this).text().trim();
+      cj(this).prop('title', label);
+    });
   </script>
   {/literal}
 {/if}
