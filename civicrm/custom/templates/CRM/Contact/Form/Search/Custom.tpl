@@ -212,6 +212,23 @@ function toggleContactSelection( name, qfKey, selection ){
       });
       //console.log('getSubjectRows', getSubjectRows);
     });
+
+    //NYSS 7647
+    cj('select option').each(function(){
+      var label = cj(this).text().trim();
+      cj(this).prop('title', label);
+    });
   </script>
   {/literal}
 {/if}
+
+{literal}
+<script type="text/javascript">
+  //NYSS 7892
+  cj(document).ready(function(){
+    if ( cj('div.messages.status.no-popup').length ) {
+      CRM.alert('No results found. Please revise your search criteria.', 'No Results', 'warning' );
+    }
+  });
+</script>
+{/literal}

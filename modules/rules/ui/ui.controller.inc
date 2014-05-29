@@ -52,7 +52,7 @@ class RulesUIController {
       'title callback' => 'rules_get_title',
       'title arguments' => array('Adding event to !plugin "!label"', $base_count + 1),
       'page callback' => 'drupal_get_form',
-      'page arguments' => array('rules_ui_add_event', $base_count + 1, $base_path),
+      'page arguments' => array('rules_ui_add_event_page', $base_count + 1, $base_path),
       'access callback' => 'rules_config_access',
       'access arguments' => array('update', $base_count + 1),
       'load arguments' => array($base_count + 1),
@@ -192,6 +192,10 @@ class RulesUIController {
       'show events' => isset($conditions['plugin']) && $conditions['plugin'] == 'reaction rule',
       'show execution op' => !(isset($conditions['plugin']) && $conditions['plugin'] == 'reaction rule'),
     );
+    // By default show only configurations owned by rules.
+    $conditions += array(
+      'owner' => 'rules',
+    );
     if (!empty($options['base path'])) {
       RulesPluginUI::$basePath = $options['base path'];
     }
@@ -257,8 +261,8 @@ class RulesUIController {
       $events = array();
       if ($config instanceof RulesTriggerableInterface) {
         foreach ($config->events() as $event_name) {
-          $this->event_info += array($event_name => array('label' => t('Unknown event "!event_name"', array('!event_name' => $event_name))));
-          $events[] = check_plain($this->event_info[$event_name]['label']);
+          $event_handler = rules_get_event_handler($event_name, $config->getEventSettings($event_name));
+          $events[] = $event_handler->summary();
         }
       }
       $row[] = implode(", ", $events);
@@ -275,41 +279,46 @@ class RulesUIController {
 
     // Add operations depending on the options and the exportable status.
     if (!$config->hasStatus(ENTITY_FIXED)) {
-      $row[] =  l(t('edit'), RulesPluginUI::path($name));
-      $row[] =  l(t('translate'), RulesPluginUI::path($name, 'translate'));
+      $row[] =  l(t('edit'), RulesPluginUI::path($name), array('attributes' => array('class' => array('edit', 'action'))));
+      if (module_exists('rules_i18n')) {
+        $row[] =  l(t('translate'), RulesPluginUI::path($name, 'translate'), array('attributes' => array('class' => array('translate', 'action'))));
+      }
     }
     else {
       $row[] = '';
-      $row[] = '';
+      if (module_exists('rules_i18n')) {
+        $row[] = '';
+      }
     }
 
     if (!$options['hide status op']) {
       // Add either an enable or disable link.
       $text = $config->active ? t('disable') : t('enable');
-      $link_path = RulesPluginUI::path($name, $config->active ? 'disable' : 'enable');
-      $row[] = $config->hasStatus(ENTITY_FIXED) ? '' : l($text, $link_path, array('query' => drupal_get_destination()));
+      $active_class = $config->active ? 'disable' : 'enable';
+      $link_path = RulesPluginUI::path($name, $active_class);
+      $row[] = $config->hasStatus(ENTITY_FIXED) ? '' : l($text, $link_path, array('attributes' => array('class' => array($active_class, 'action')), 'query' => drupal_get_destination()));
     }
-    $row[] = l(t('clone'), RulesPluginUI::path($name, 'clone'));
+    $row[] = l(t('clone'), RulesPluginUI::path($name, 'clone'), array('attributes' => array('class' => array('clone', 'action'))));
 
     // Add execute link for for components.
     if ($options['show execution op']) {
-      $row[] = ($config instanceof RulesTriggerableInterface) ? '' : l(t('execute'), RulesPluginUI::path($name, 'execute'), array('query' => drupal_get_destination()));
+      $row[] = ($config instanceof RulesTriggerableInterface) ? '' : l(t('execute'), RulesPluginUI::path($name, 'execute'), array('attributes' => array('class' => array('execute', 'action')), 'query' => drupal_get_destination()));
       if (module_exists('rules_scheduler')) {
         // Add schedule link for action components only.
-        $row[] = $config instanceof RulesActionInterface ? l(t('schedule'), RulesPluginUI::path($name, 'schedule'), array('query' => drupal_get_destination())) : '';
+        $row[] = $config instanceof RulesActionInterface ? l(t('schedule'), RulesPluginUI::path($name, 'schedule'), array('attributes' => array('class' => array('schedule', 'action')), 'query' => drupal_get_destination())) : '';
       }
     }
 
     if (!$config->hasStatus(ENTITY_IN_CODE) && !$config->hasStatus(ENTITY_FIXED)) {
-      $row[] = l(t('delete'), RulesPluginUI::path($name, 'delete'), array('query' => drupal_get_destination()));
+      $row[] = l(t('delete'), RulesPluginUI::path($name, 'delete'), array('attributes' => array('class' => array('delete', 'action')), 'query' => drupal_get_destination()));
     }
     elseif ($config->hasStatus(ENTITY_OVERRIDDEN) && !$config->hasStatus(ENTITY_FIXED)) {
-      $row[] = l(t('revert'), RulesPluginUI::path($name, 'revert'), array('query' => drupal_get_destination()));
+      $row[] = l(t('revert'), RulesPluginUI::path($name, 'revert'), array('attributes' => array('class' => array('revert', 'action')), 'query' => drupal_get_destination()));
     }
     else {
       $row[] = '';
     }
-    $row[] = l(t('export'), RulesPluginUI::path($name, 'export'));
+    $row[] = l(t('export'), RulesPluginUI::path($name, 'export'), array('attributes' => array('class' => array('export', 'action'))));
     return $row;
   }
 }

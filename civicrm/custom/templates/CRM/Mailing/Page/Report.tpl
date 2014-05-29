@@ -25,6 +25,20 @@
 *}
 {*NYSS*}
 <div class="crm-block crm-content-block">
+
+{*NYSS 7860*}
+{if $mailing_category}
+  <fieldset>
+    <legend>Mailing Category</legend>
+    <table class="crm-info-panel">
+      <tr>
+        <td class="label">Category</td>
+        <td>{$mailing_category}</td>
+      </tr>
+    </table>
+  </fieldset>
+{/if}
+
 <fieldset>
 <legend>{ts}Delivery Summary{/ts}</legend>
 {if $report.jobs.0.start_date}

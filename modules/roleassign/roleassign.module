@@ -80,12 +80,23 @@ function roleassign_form_alter(array &$form, array &$form_state, $form_id) {
     _roleassign_module_load_include('admin.inc');
     _roleassign_form_alter($form, $form_state, $form_id);
   }
-  elseif ($form_id == 'system_modules') {
+  elseif ($form_id == 'system_modules' && !user_access('administer roles')) {
     // Keep the (restricted) user from disabling this module.
     $form['modules']['roleassign']['enable']['#disabled'] = TRUE;
-    $form['modules']['roleassign']['name']['#markup'] .= '<br /><span class="warning" title="' . t('You are not allowed to disable this module.') .
-                                                          '">' . t('(protected)') . '</span>';
+    $form['modules']['roleassign']['description']['#markup'] .= '<br /><span class="warning" title="' . t('You are not allowed to disable this module.') . '">' . t('(protected)') . '</span>';
   }
+}
+
+  /**
+   * Implements hook_user_presave().
+   *
+   * @param array $edit
+   * @param object $account
+   * @param string $category
+   */
+function roleassign_user_presave(array &$edit, $account, $category) {
+  _roleassign_module_load_include('admin.inc');
+  return _roleassign_user_presave($edit, $account, $category);
 }
 
 /**

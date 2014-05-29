@@ -114,6 +114,7 @@ function node_schema() {
       'uid'                 => array('uid'),
       'tnid'                => array('tnid'),
       'translate'           => array('translate'),
+      'language'            => array('language'),
     ),
     'unique keys' => array(
       'vid' => array('vid'),
@@ -474,7 +475,7 @@ function node_update_dependencies() {
  *
  * This function is valid for a database schema version 7000.
  *
- * @ingroup update-api-6.x-to-7.x
+ * @ingroup update_api
  */
 function _update_7000_node_get_types() {
   $node_types = db_query('SELECT * FROM {node_type}')->fetchAllAssoc('type', PDO::FETCH_OBJ);
@@ -914,6 +915,7 @@ function node_update_7012() {
  * Change {node}.vid default value from 0 to NULL to avoid deadlock issues on MySQL.
  */
 function node_update_7013() {
+  db_drop_unique_key('node', 'vid');
   db_change_field('node', 'vid', 'vid', array(
     'description' => 'The current {node_revision}.vid version identifier.',
     'type' => 'int',
@@ -921,6 +923,14 @@ function node_update_7013() {
     'not null' => FALSE,
     'default' => NULL,
   ));
+  db_add_unique_key('node', 'vid', array('vid'));
+}
+
+/**
+ * Add an index on {node}.language.
+ */
+function node_update_7014() {
+  db_add_index('node', 'language', array('language'));
 }
 
 /**

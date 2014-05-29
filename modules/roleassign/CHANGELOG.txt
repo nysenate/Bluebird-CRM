@@ -5,9 +5,16 @@ CHANGELOG for RoleAssign for Drupal 7
 roleassign 7.x-1.x-dev:
 
 
+roleassign 7.x-1.0 (2012-11-04):
+
+roleassign 7.x-1.0-rc2 (2012-10-17):
+  #1402408: Ensure that hook_user_presave() is always registered.
+  #1431338: Clarify the configuration instructions.
+  #1386064: Fix a notice in the bulk user administration hook.
+  Tune the module-uninstall protection.
+
 roleassign 7.x-1.0-rc1 (2011-11-26):
   Clean up type hints, docblocks, comments and some minor code issues.
-
 
 roleassign 7.x-1.0-beta2 (2011-09-05):
   Protect more-privileged users as well as RoleAssign itself.

@@ -386,7 +386,7 @@ function drupal_path_alias_whitelist_rebuild($source = NULL) {
 }
 
 /**
- * Fetch a specific URL alias from the database.
+ * Fetches a specific URL alias from the database.
  *
  * @param $conditions
  *   A string representing the source, a number representing the pid, or an
@@ -475,11 +475,11 @@ function path_delete($criteria) {
 }
 
 /**
- * Determine whether a path is in the administrative section of the site.
+ * Determines whether a path is in the administrative section of the site.
  *
- * By default, paths are considered to be non-administrative. If a path does not
- * match any of the patterns in path_get_admin_paths(), or if it matches both
- * administrative and non-administrative patterns, it is considered
+ * By default, paths are considered to be non-administrative. If a path does
+ * not match any of the patterns in path_get_admin_paths(), or if it matches
+ * both administrative and non-administrative patterns, it is considered
  * non-administrative.
  *
  * @param $path
@@ -503,7 +503,7 @@ function path_is_admin($path) {
 }
 
 /**
- * Get a list of administrative and non-administrative paths.
+ * Gets a list of administrative and non-administrative paths.
  *
  * @return array
  *   An associative array containing the following keys:
@@ -560,8 +560,8 @@ function drupal_valid_path($path, $dynamic_allowed = FALSE) {
   elseif ($dynamic_allowed && preg_match('/\/\%/', $path)) {
     // Path is dynamic (ie 'user/%'), so check directly against menu_router table.
     if ($item = db_query("SELECT * FROM {menu_router} where path = :path", array(':path' => $path))->fetchAssoc()) {
-      $item['link_path']  = $form_item['link_path'];
-      $item['link_title'] = $form_item['link_title'];
+      $item['link_path']  = $item['path'];
+      $item['link_title'] = $item['title'];
       $item['external']   = FALSE;
       $item['options'] = '';
       _menu_link_translate($item);

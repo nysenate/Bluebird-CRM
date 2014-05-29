@@ -28,18 +28,21 @@
  * Most Drupal database SELECT queries are performed by a call to db_query() or
  * db_query_range(). Module authors should also consider using the PagerDefault
  * Extender for queries that return results that need to be presented on
- * multiple pages, and the Tablesort Extender for generating appropriate queries
- * for sortable tables.
+ * multiple pages (see https://drupal.org/node/508796), and the TableSort
+ * Extender for generating appropriate queries for sortable tables
+ * (see https://drupal.org/node/1848372).
  *
  * For example, one might wish to return a list of the most recent 10 nodes
  * authored by a given user. Instead of directly issuing the SQL query
  * @code
- * SELECT n.nid, n.title, n.created FROM node n WHERE n.uid = $uid LIMIT 0, 10;
+ * SELECT n.nid, n.title, n.created FROM node n WHERE n.uid = $uid
+ *   ORDER BY n.created DESC LIMIT 0, 10;
  * @endcode
  * one would instead call the Drupal functions:
  * @code
  * $result = db_query_range('SELECT n.nid, n.title, n.created
- *   FROM {node} n WHERE n.uid = :uid', 0, 10, array(':uid' => $uid));
+ *   FROM {node} n WHERE n.uid = :uid
+ *   ORDER BY n.created DESC', 0, 10, array(':uid' => $uid));
  * foreach ($result as $record) {
  *   // Perform operations on $record->title, etc. here.
  * }
@@ -167,7 +170,7 @@
  * }
  * @endcode
  *
- * @link http://drupal.org/developing/api/database
+ * @see http://drupal.org/developing/api/database
  */
 
 
@@ -179,7 +182,7 @@
  * concrete implementation of it to support special handling required by that
  * database.
  *
- * @see http://php.net/manual/en/book.pdo.php
+ * @see http://php.net/manual/book.pdo.php
  */
 abstract class DatabaseConnection extends PDO {
 
@@ -194,7 +197,7 @@ abstract class DatabaseConnection extends PDO {
 
   /**
    * The key representing this connection.
-   * 
+   *
    * The key is a unique string which identifies a database connection. A
    * connection can be a single server or a cluster of master and slaves (use
    * target to pick between master and slave).
@@ -303,10 +306,26 @@ abstract class DatabaseConnection extends PDO {
     // Call PDO::__construct and PDO::setAttribute.
     parent::__construct($dsn, $username, $password, $driver_options);
 
-    // Set a specific PDOStatement class if the driver requires that.
+    // Set a Statement class, unless the driver opted out.
     if (!empty($this->statementClass)) {
       $this->setAttribute(PDO::ATTR_STATEMENT_CLASS, array($this->statementClass, array($this)));
     }
+  }
+
+  /**
+   * Destroys this Connection object.
+   *
+   * PHP does not destruct an object if it is still referenced in other
+   * variables. In case of PDO database connection objects, PHP only closes the
+   * connection when the PDO object is destructed, so any references to this
+   * object may cause the number of maximum allowed connections to be exceeded.
+   */
+  public function destroy() {
+    // Destroy all references to this connection by setting them to NULL.
+    // The Statement class attribute only accepts a new value that presents a
+    // proper callable, so we reset it to PDOStatement.
+    $this->setAttribute(PDO::ATTR_STATEMENT_CLASS, array('PDOStatement', array()));
+    $this->schema = NULL;
   }
 
   /**
@@ -1627,8 +1646,8 @@ abstract class Database {
    */
   final public static function removeConnection($key) {
     if (isset(self::$databaseInfo[$key])) {
+      self::closeConnection(NULL, $key);
       unset(self::$databaseInfo[$key]);
-      unset(self::$connections[$key]);
       return TRUE;
     }
     else {
@@ -1694,11 +1713,24 @@ abstract class Database {
     if (!isset($key)) {
       $key = self::$activeKey;
     }
-    // To close the connection, we need to unset the static variable.
+    // To close a connection, it needs to be set to NULL and removed from the
+    // static variable. In all cases, closeConnection() might be called for a
+    // connection that was not opened yet, in which case the key is not defined
+    // yet and we just ensure that the connection key is undefined.
     if (isset($target)) {
+      if (isset(self::$connections[$key][$target])) {
+        self::$connections[$key][$target]->destroy();
+        self::$connections[$key][$target] = NULL;
+      }
       unset(self::$connections[$key][$target]);
     }
     else {
+      if (isset(self::$connections[$key])) {
+        foreach (self::$connections[$key] as $target => $connection) {
+          self::$connections[$key][$target]->destroy();
+          self::$connections[$key][$target] = NULL;
+        }
+      }
       unset(self::$connections[$key]);
     }
   }
@@ -1852,8 +1884,8 @@ class DatabaseTransaction {
    */
   protected $name;
 
-  public function __construct(DatabaseConnection &$connection, $name = NULL) {
-    $this->connection = &$connection;
+  public function __construct(DatabaseConnection $connection, $name = NULL) {
+    $this->connection = $connection;
     // If there is no transaction depth, then no transaction has started. Name
     // the transaction 'drupal_transaction'.
     if (!$depth = $connection->transactionDepth()) {
@@ -1957,7 +1989,7 @@ interface DatabaseStatementInterface extends Traversable {
   /**
    * Sets the default fetch mode for this statement.
    *
-   * See http://php.net/manual/en/pdo.constants.php for the definition of the
+   * See http://php.net/manual/pdo.constants.php for the definition of the
    * constants used.
    *
    * @param $mode
@@ -1976,7 +2008,7 @@ interface DatabaseStatementInterface extends Traversable {
   /**
    * Fetches the next row from a result set.
    *
-   * See http://php.net/manual/en/pdo.constants.php for the definition of the
+   * See http://php.net/manual/pdo.constants.php for the definition of the
    * constants used.
    *
    * @param $mode
@@ -2351,14 +2383,14 @@ function db_query_range($query, $from, $count, array $args = array(), array $opt
 }
 
 /**
- * Executes a query string and saves the result set to a temporary table.
+ * Executes a SELECT query string and saves the result set to a temporary table.
  *
  * The execution of the query string happens against the active database.
  *
  * @param $query
- *   The prepared statement query to run. Although it will accept both named and
- *   unnamed placeholders, named placeholders are strongly preferred as they are
- *   more self-documenting.
+ *   The prepared SELECT statement query to run. Although it will accept both
+ *   named and unnamed placeholders, named placeholders are strongly preferred
+ *   as they are more self-documenting.
  * @param $args
  *   An array of values to substitute into the query. If the query uses named
  *   placeholders, this is an associative array in any order. If the query uses
@@ -2769,7 +2801,7 @@ function _db_create_keys_sql($spec) {
  * Renames a table.
  *
  * @param $table
- *   The table to be renamed.
+ *   The current name of the table to be renamed.
  * @param $new_name
  *   The new name for the table.
  */

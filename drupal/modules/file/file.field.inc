@@ -186,7 +186,7 @@ function file_field_load($entity_type, $entities, $field, $instances, $langcode,
         $items[$id][$delta] = NULL;
       }
       else {
-        $items[$id][$delta] = array_merge($item, (array) $files[$item['fid']]);
+        $items[$id][$delta] = array_merge((array) $files[$item['fid']], $item);
       }
     }
   }
@@ -215,8 +215,16 @@ function file_field_presave($entity_type, $entity, $field, $instance, $langcode,
   // Make sure that each file which will be saved with this object has a
   // permanent status, so that it will not be removed when temporary files are
   // cleaned up.
-  foreach ($items as $item) {
+  foreach ($items as $delta => $item) {
+    if (empty($item['fid'])) {
+      unset($items[$delta]);
+      continue;
+    }
     $file = file_load($item['fid']);
+    if (empty($file)) {
+      unset($items[$delta]);
+      continue;
+    }
     if (!$file->status) {
       $file->status = FILE_STATUS_PERMANENT;
       file_save($file);
@@ -261,8 +269,16 @@ function file_field_update($entity_type, $entity, $field, $instance, $langcode, 
     $current_fids[] = $item['fid'];
   }
 
-  // Compare the original field values with the ones that are being saved.
-  $original = $entity->original;
+  // Compare the original field values with the ones that are being saved. Use
+  // $entity->original to check this when possible, but if it isn't available,
+  // create a bare-bones entity and load its previous values instead.
+  if (isset($entity->original)) {
+    $original = $entity->original;
+  }
+  else {
+    $original = entity_create_stub_entity($entity_type, array($id, $vid, $bundle));
+    field_attach_load($entity_type, array($id => $original), FIELD_LOAD_CURRENT, array('field_id' => $field['id']));
+  }
   $original_fids = array();
   if (!empty($original->{$field['field_name']}[$langcode])) {
     foreach ($original->{$field['field_name']}[$langcode] as $original_item) {
@@ -752,7 +768,7 @@ function file_field_widget_submit($form, &$form_state) {
   $langcode = $element['#language'];
   $parents = $element['#field_parents'];
 
-  $submitted_values = drupal_array_get_nested_value($form_state['values'], array_slice($button['#array_parents'], 0, -2));
+  $submitted_values = drupal_array_get_nested_value($form_state['values'], array_slice($button['#parents'], 0, -2));
   foreach ($submitted_values as $delta => $submitted_value) {
     if (!$submitted_value['fid']) {
       unset($submitted_values[$delta]);
@@ -763,7 +779,7 @@ function file_field_widget_submit($form, &$form_state) {
   $submitted_values = array_values($submitted_values);
 
   // Update form_state values.
-  drupal_array_set_nested_value($form_state['values'], array_slice($button['#array_parents'], 0, -2), $submitted_values);
+  drupal_array_set_nested_value($form_state['values'], array_slice($button['#parents'], 0, -2), $submitted_values);
 
   // Update items.
   $field_state = field_form_get_state($parents, $field_name, $langcode, $form_state);

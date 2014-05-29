@@ -233,6 +233,8 @@ function forum_entity_info_alter(&$info) {
 }
 
 /**
+ * Implements callback_entity_info_uri().
+ *
  * Entity URI callback used in forum_entity_info_alter().
  */
 function forum_uri($forum) {
@@ -330,10 +332,12 @@ function forum_node_presave($node) {
     $langcode = key($node->taxonomy_forums);
     if (!empty($node->taxonomy_forums[$langcode])) {
       $node->forum_tid = $node->taxonomy_forums[$langcode][0]['tid'];
-      $old_tid = db_query_range("SELECT f.tid FROM {forum} f INNER JOIN {node} n ON f.vid = n.vid WHERE n.nid = :nid ORDER BY f.vid DESC", 0, 1, array(':nid' => $node->nid))->fetchField();
-      if ($old_tid && isset($node->forum_tid) && ($node->forum_tid != $old_tid) && !empty($node->shadow)) {
-        // A shadow copy needs to be created. Retain new term and add old term.
-        $node->taxonomy_forums[$langcode][] = array('tid' => $old_tid);
+      if (isset($node->nid)) {
+        $old_tid = db_query_range("SELECT f.tid FROM {forum} f INNER JOIN {node} n ON f.vid = n.vid WHERE n.nid = :nid ORDER BY f.vid DESC", 0, 1, array(':nid' => $node->nid))->fetchField();
+        if ($old_tid && isset($node->forum_tid) && ($node->forum_tid != $old_tid) && !empty($node->shadow)) {
+          // A shadow copy needs to be created. Retain new term and add old term.
+          $node->taxonomy_forums[$langcode][] = array('tid' => $old_tid);
+        }
       }
     }
   }
@@ -656,7 +660,12 @@ function forum_block_info() {
  * Implements hook_block_configure().
  */
 function forum_block_configure($delta = '') {
-  $form['forum_block_num_' . $delta] = array('#type' => 'select', '#title' => t('Number of topics'), '#default_value' => variable_get('forum_block_num_' . $delta, '5'), '#options' => drupal_map_assoc(array(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)));
+  $form['forum_block_num_' . $delta] = array(
+    '#type' => 'select',
+    '#title' => t('Number of topics'),
+    '#default_value' => variable_get('forum_block_num_' . $delta, '5'),
+    '#options' => drupal_map_assoc(range(2, 20))
+  );
   return $form;
 }
 
@@ -1328,7 +1337,7 @@ function _forum_get_topic_order($sortby) {
  *   The ID of the node to update.
  */
 function _forum_update_forum_index($nid) {
-  $count = db_query('SELECT COUNT(cid) FROM {comment} WHERE nid = :nid AND status = :status', array(
+  $count = db_query('SELECT COUNT(cid) FROM {comment} c INNER JOIN {forum_index} i ON c.nid = i.nid WHERE c.nid = :nid AND c.status = :status', array(
     ':nid' => $nid,
     ':status' => COMMENT_PUBLISHED,
   ))->fetchField();

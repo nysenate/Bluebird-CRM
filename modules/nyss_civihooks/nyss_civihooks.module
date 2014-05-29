@@ -774,7 +774,7 @@ function nyss_civihooks_civicrm_pageRun( &$page ) {
   }
 
   _setDBVars();
-}
+}//pageRun
 
 function nyss_civihooks_civicrm_validateForm( $formName, &$fields, &$files, &$form, &$errors ) {
   //CRM_Core_Error::debug_var('$formName', $formName);

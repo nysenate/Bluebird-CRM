@@ -95,13 +95,18 @@ class CRM_Contact_Form_Search_Custom_Group
 
     $groups = CRM_Core_PseudoConstant::group();
 
-    //NYSS - LCD #2247 exclude positions when constructing list of tags
+    //NYSS 2247 exclude positions when constructing list of tags
     //$tags = CRM_Core_PseudoConstant::tag( );
     $issue_codes = CRM_Core_BAO_Tag::getTags( );
-    $keywords    = CRM_Core_BAO_Tag::getTagsUsedFor( $usedFor = array( 'civicrm_contact' ),
+    $keywords = CRM_Core_BAO_Tag::getTagsUsedFor( $usedFor = array( 'civicrm_contact' ),
       $buildSelect = true,
       $all = false,
-      $parentId = 296 );
+      $parentId = 296
+    );
+
+    //NYSS 7646
+    asort($keywords);
+
     if ( $keywords ) {
       //lets indent keywords
       foreach ( $keywords as $key => $keyword ) {
@@ -140,7 +145,7 @@ class CRM_Contact_Form_Search_Custom_Group
       ts('Include Group(s)') . ' ', $groups,
       array(
         'size' => 5,
-        'style' => 'width:240px',
+        'style' => 'width:270px',
         'class' => 'advmultiselect',
       )
     );
@@ -149,7 +154,7 @@ class CRM_Contact_Form_Search_Custom_Group
       ts('Exclude Group(s)') . ' ', $groups,
       array(
         'size' => 5,
-        'style' => 'width:240px',
+        'style' => 'width:270px',
         'class' => 'advmultiselect',
       )
     );
@@ -164,7 +169,7 @@ class CRM_Contact_Form_Search_Custom_Group
       ts('Include Tag(s)') . ' ', $tags,
       array(
         'size' => 5,
-        'style' => 'width:240px',
+        'style' => 'width:270px',
         'class' => 'advmultiselect',
       )
     );
@@ -173,7 +178,7 @@ class CRM_Contact_Form_Search_Custom_Group
       ts('Exclude Tag(s)') . ' ', $tags,
       array(
         'size' => 5,
-        'style' => 'width:240px',
+        'style' => 'width:270px',
         'class' => 'advmultiselect',
       )
     );
@@ -221,7 +226,7 @@ class CRM_Contact_Form_Search_Custom_Group
       ts('Activity Subject'), $allSubjects,
       array(
         'size' => 5,
-        'style' => 'width:240px; height: 200px;',
+        'style' => 'width:270px; height: 200px;',
         'class' => 'advmultiselect',
       )
     );
