@@ -432,7 +432,9 @@ WHERE  id = %1
         // hence customClass is defined above at top of function
         $customClass =
           CRM_Contact_BAO_SearchCustom::customClass($ssParams['customSearchID'], $savedSearchID);
+        //NYSS 4536
         $searchSQL = $customClass->contactIDs();
+        $searchSQL = str_replace('ORDER BY contact_a.id ASC', '', $searchSQL);
         $idName = 'contact_id';
       }
       else {

@@ -745,7 +745,10 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
     $input['count'] = FALSE;
 
     // skip bulk activities in activity tab
-    $input['activity_type_exclude_id'][$bulkActivityTypeID] = $bulkActivityTypeID;
+    //NYSS
+    if ( $bulkActivityTypeID ) {
+      $input['activity_type_exclude_id'][$bulkActivityTypeID] = $bulkActivityTypeID;
+    }
     list($sqlClause, $params) = self::getActivitySQLClause($input);
 
     $query = "{$insertSQL}
@@ -972,7 +975,10 @@ ORDER BY    fixed_sort_order
       'Bulk Email',
       'name'
     );
-    $input['activity_type_exclude_id'][$bulkActivityTypeID] = $bulkActivityTypeID;
+    //NYSS
+    if ( $bulkActivityTypeID ) {
+      $input['activity_type_exclude_id'][$bulkActivityTypeID] = $bulkActivityTypeID;
+    }
 
     $input['count'] = TRUE;
     list($sqlClause, $params) = self::getActivitySQLClause($input);

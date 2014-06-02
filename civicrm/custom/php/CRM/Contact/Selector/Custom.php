@@ -166,13 +166,16 @@ class CRM_Contact_Selector_Custom extends CRM_Contact_Selector {
    *
    */
   static function &links() {
+    //NYSS 4536
+    list($key) = func_get_args();
+    $extraParams = ($key) ? "&key={$key}" : NULL;
 
     if (!(self::$_links)) {
       self::$_links = array(
         CRM_Core_Action::VIEW => array(
           'name' => ts('View'),
           'url' => 'civicrm/contact/view',
-          'qs' => 'reset=1&cid=%%id%%',
+          'qs' => "reset=1&cid=%%id%%{$extraParams}",//NYSS 4536
           'title' => ts('View Contact Details'),
         ),
         CRM_Core_Action::UPDATE => array(
@@ -292,7 +295,7 @@ class CRM_Contact_Selector_Custom extends CRM_Contact_Selector {
 
     $columns     = $this->_search->columns();
     $columnNames = array_values($columns);
-    $links       = self::links();
+    $links       = self::links($this->_key); //NYSS 4536
 
     $permissions = array(CRM_Core_Permission::getPermission());
     if (CRM_Core_Permission::check('delete contacts')) {
@@ -398,7 +401,7 @@ class CRM_Contact_Selector_Custom extends CRM_Contact_Selector {
   }
 
   function addActions(&$rows) {
-    $links = self::links();
+    $links = self::links($this->_key); //NYSS 4536
 
     $permissions = array(CRM_Core_Permission::getPermission());
     if (CRM_Core_Permission::check('delete contacts')) {
