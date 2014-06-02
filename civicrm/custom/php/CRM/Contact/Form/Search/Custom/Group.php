@@ -325,6 +325,10 @@ class CRM_Contact_Form_Search_Custom_Group
         $sql .= " ORDER BY contact_id ASC";
       }
     }
+    //NYSS 4536
+    else {
+      $sql .= " ORDER BY contact_a.id ASC";
+    }
 
     if ($offset >= 0 && $rowcount > 0) {
       $sql .= " LIMIT $offset, $rowcount ";
