@@ -300,6 +300,27 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
     //4575 search by all emails
     $form->addElement('checkbox', 'email_primary', ts('Search only primary emails'));
 
+    //3815 add privacy option note
+    $form->addElement('text', 'custom_64', ts('Privacy Option Notes'), array('id'=>'custom_64'), 'size="30"');
+
+    //7906 search birth date by month only
+    $months = array(
+      ''  => '- select month -',
+      '1' => 'January',
+      '2' => 'February',
+      '3' => 'March',
+      '4' => 'April',
+      '5' => 'May' ,
+      '6' => 'June',
+      '7' => 'July',
+      '8' => 'August',
+      '9' => 'September',
+      '10' => 'October',
+      '11' => 'November',
+      '12' => 'December',
+    );
+    $form->add('select', 'birth_date_month',  ts( 'Birth Date Month' ), array( '' => ts( '- select month -' ) ) + $months );
+
     //don't set US as default country in advanced search or contacts with no address are excluded
     $defaults['country'] = '';
 
@@ -308,9 +329,6 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 
     //4332 clear activity creator/assigned
     $defaults['activity_role'] = 0;
-
-    //3815 add privacy option note
-    $form->addElement('text', 'custom_64', ts('Privacy Option Notes'), array('id'=>'custom_64'), 'size="30"');
 
     $form->setDefaults( $defaults );
   }
