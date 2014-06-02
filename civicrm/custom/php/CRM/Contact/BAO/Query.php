@@ -1663,6 +1663,7 @@ class CRM_Contact_BAO_Query {
       case 'birth_date_high':
       case 'deceased_date_low':
       case 'deceased_date_high':
+      case 'birth_date_month': //NYSS 7906
         $this->demographics($values);
         return;
 
@@ -3766,6 +3767,26 @@ WHERE  id IN ( $groupIDs )
       $this->dateQueryBuilder($values,
         'contact_a', 'deceased_date', 'deceased_date', ts('Deceased Date')
       );
+    }
+
+    //NYSS 7906
+    if (($name == 'birth_date_month')) {
+      $months = array(
+        '1' => 'January',
+        '2' => 'February',
+        '3' => 'March',
+        '4' => 'April',
+        '5' => 'May' ,
+        '6' => 'June',
+        '7' => 'July',
+        '8' => 'August',
+        '9' => 'September',
+        '10' => 'October',
+        '11' => 'November',
+        '12' => 'December',
+      );
+      $this->_where[$grouping][] = " MONTH( contact_a.birth_date ) = {$value} ";
+      $this->_qill[$grouping][] = "Birth date month $op {$months[$value]}";
     }
 
     self::$_openedPanes[ts('Demographics')] = TRUE;
