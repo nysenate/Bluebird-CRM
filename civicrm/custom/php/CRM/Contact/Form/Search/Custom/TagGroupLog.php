@@ -180,12 +180,12 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
     }
     else {
       $selectClause = "
-        DISTINCT(contact_a.id) as contact_id,
-          contact_a.sort_name as sort_name,
-          contact_a.contact_type as contact_type,
-          log_et.log_date,
-          {$log_details} as log_details,
-          ab.display_name as altered_by
+        contact_a.id as contact_id,
+        contact_a.sort_name as sort_name,
+        contact_a.contact_type as contact_type,
+        log_et.log_date,
+        {$log_details} as log_details,
+        ab.display_name as altered_by
       ";
     }
     
@@ -275,6 +275,12 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
     //CRM_Core_Error::debug_var('whereClause', $whereClause);
     
     return $this->whereClause( $whereClause, $params );
+  }
+
+  function count() {
+    $sql = $this->all();
+    $dao = CRM_Core_DAO::executeQuery($sql, CRM_Core_DAO::$_nullArray);
+    return $dao->N;
   }
 
   function templateFile( ) {

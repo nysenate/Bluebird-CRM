@@ -27,6 +27,8 @@
    custom search .php file. If you want a different layout, clone and customize this file and point to new file using
    templateFile() function.*}
 
+<div class="help">Use this tool to search for contacts that have been tagged or added/removed from a group based on a date range. The search will return log records indicating when the action took place.</div>
+
 <div class="crm-block crm-form-block crm-contact-custom-search-form-block">
   <div class="crm-accordion-wrapper crm-custom_search_form-accordion {if $rows}collapsed{/if}">
     <div class="crm-accordion-header crm-master-accordion-header">
