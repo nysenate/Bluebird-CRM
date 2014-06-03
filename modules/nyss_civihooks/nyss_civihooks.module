@@ -1623,6 +1623,20 @@ function _buildSearchMenu($searchNavID) {
         ),
         'child' => array(),
       ),
+      $searchNavID+8 => array(
+        'attributes' => array (
+          'label'      => 'Tag/Group Changelog Search',
+          'name'       => 'Tag/Group Changelog Search',
+          'url'        => 'civicrm/contact/search/custom?csid=17&reset=1',
+          'permission' => 'access CiviCRM,view all contacts',
+          'operator'   => 'AND',
+          'separator'  => 0,
+          'parentID'   => $searchNavID,
+          'navID'      => $searchNavID+8,
+          'active'     => 1
+        ),
+        'child' => array(),
+      ),
     ),
   );
 
