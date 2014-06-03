@@ -42,12 +42,12 @@
           <td>{$form.search_type.html}</td>
         </tr>
         <tr class="crm-contact-custom-search-form-row-tags">
-          <td class="label"><label for="tags">{$form.tags.label}</label></td>
-          <td>{$form.tags.html}</td>
+          <td class="label"><label for="tags">{$form.tag.label}</label></td>
+          <td>{$form.tag.html}</td>
         </tr>
         <tr class="crm-contact-custom-search-form-row-groups">
-          <td class="label"><label for="groups">{$form.groups.label}</label></td>
-          <td>{$form.groups.html}</td>
+          <td class="label"><label for="groups">{$form.group.label}</label></td>
+          <td>{$form.group.html}</td>
         </tr>
         <tr class="crm-contact-custom-search-form-row-start_date">
           <td class="label"><label for="start_date">{$form.start_date.label}</label></td>
@@ -140,7 +140,7 @@
           </p>
         {* END Actions/Results section *}
         </div>
-        </div>
+      </div>
     {/if}
   </div>
 {/if}

@@ -100,7 +100,7 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
       $tags = $tags + array ('292' => 'Legislative Positions') + $legpos;
     }
 
-    $fTags = &$form->addElement('advmultiselect', 'tags',
+    $fTags = &$form->addElement('advmultiselect', 'tag',
       ts('Tag(s)'), $tags,
       array(
         'size' => 5,
@@ -109,7 +109,7 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
       )
     );
 
-    $fGroups = &$form->addElement('advmultiselect', 'groups',
+    $fGroups = &$form->addElement('advmultiselect', 'group',
       ts('Group(s)'), $groups,
       array(
         'size' => 5,
@@ -125,8 +125,8 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
       'start_date',
       'end_date',
       'search_type',
-      'tags',
-      'groups',
+      'tag',
+      'group',
     );
     $form->assign( 'elements', $formfields );
     
@@ -140,10 +140,10 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
     $errors = array( );
     //CRM_Core_Error::debug_var('formRule fields', $fields);
 
-    if ( $fields['search_type'] == 1 && empty($fields['tags']) ) {
+    if ( $fields['search_type'] == 1 && empty($fields['tag']) ) {
       $errors['form_message'] = ts( 'Please select at least one tag.' );
     }
-    elseif ( $fields['search_type'] == 2 && empty($fields['groups']) ) {
+    elseif ( $fields['search_type'] == 2 && empty($fields['group']) ) {
       $errors['form_message'] = ts( 'Please select at least one group.' );
     }
         
@@ -166,11 +166,11 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
     $log_details = '';
     switch($this->_formValues['search_type']) {
       case 1:
-        $log_details = "CONCAT(tag.name, ' (', log_et.log_action, ')')";
+        $log_details = "CONCAT(tag.name, ' (', CASE WHEN log_et.log_action = 'Insert' THEN 'Added' WHEN log_et.log_action = 'Delete' THEN 'Removed' ELSE log_et.log_action END, ')')";
         break;
 
       case 2:
-        $log_details = "CONCAT(grp.title, ' (', log_et.log_action, ')')";
+        $log_details = "CONCAT(grp.title, ' (', CASE WHEN log_et.log_action = 'Insert' THEN 'Added' WHEN log_et.log_action = 'Delete' THEN 'Removed' ELSE log_et.log_action END, ')')";
         break;
     }
 
@@ -244,20 +244,20 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
     
     //add filters by start/end date
     if ( $start_date ) {
-      $where[] = "contact_a.log_date >= '$start_date' ";
+      $where[] = "log_et.log_date >= '$start_date' ";
     }
     if ( $end_date ) {
-      $where[] = "contact_a.log_date <= '$end_date' ";
+      $where[] = "log_et.log_date <= '$end_date' ";
     }
 
     switch($this->_formValues['search_type']) {
       case 1:
-        $tags = implode(',', $this->_formValues['tags']);
+        $tags = implode(',', $this->_formValues['tag']);
         $where[] = "log_et.tag_id IN ({$tags}) ";
         break;
 
       case 2:
-        $groups = implode(',', $this->_formValues['groups']);
+        $groups = implode(',', $this->_formValues['group']);
         $where[] = "log_et.group_id IN ({$groups}) ";
         break;
     }
