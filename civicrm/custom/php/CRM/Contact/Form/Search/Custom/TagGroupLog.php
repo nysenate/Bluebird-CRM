@@ -60,7 +60,7 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
   }
 
   function buildForm( &$form ) {
-    $this->setTitle('Tag/Group Log Search');
+    $this->setTitle('Tag/Group Changelog Search');
 
     $searchType = array(
       '1' => ts('Tags'),

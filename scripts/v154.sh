@@ -36,3 +36,16 @@ $drush $instance updb -y -q
 
 echo "7888: upgrade CiviCRM core to v4.4.5..."
 $drush $instance civicrm-upgrade-db -y -q
+
+echo "7747/7746: register custom search..."
+sql="
+  SELECT @optGrp:=id FROM civicrm_option_group WHERE name = 'custom_search';
+  DELETE FROM civicrm_option_value
+    WHERE option_group_id = @optGrp
+    AND name = 'CRM_Contact_Form_Search_Custom_TagGroupLog';
+  INSERT INTO civicrm_option_value
+    (option_group_id, label, value, name, grouping, filter, is_default, weight, description, is_optgroup, is_reserved, is_active, component_id, domain_id, visibility_id)
+    VALUES
+    (@optGrp, 'CRM_Contact_Form_Search_Custom_TagGroupLog', '17', 'CRM_Contact_Form_Search_Custom_TagGroupLog', NULL, 0, 0, 17, 'Tag/Group Log Search', 0, 0, 1, NULL, NULL, NULL);
+"
+$execSql $instance -c "$sql" -q
