@@ -925,8 +925,8 @@ FROM   {$this->_tableName} contact_a
         //NYSS 4536
         $sql = "
 INSERT INTO {$this->_tableName}
-( contact_id, sort_name, display_name, table_name )
-SELECT     c.id, c.sort_name, c.display_name, 'Contact'
+( id, contact_id, sort_name, display_name, table_name )
+SELECT     c.id, ct.entity_id, c.sort_name, c.display_name, 'Contact'
   FROM     {$this->_entityIDTableName} ct
 INNER JOIN civicrm_contact c ON ct.entity_id = c.id
 {$this->_limitDetailClause}

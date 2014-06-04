@@ -941,17 +941,9 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
     // the other alternative of running the FULL query will just be incredibly inefficient
     // and slow things down way too much on large data sets / complex queries
 
-    //NYSS 4536 - full text stores the contact id in contact_id
-    $contactID = 'contact_a.id';
-    if ( isset($this->_customSearchClass) &&
-      $this->_customSearchClass == 'CRM_Contact_Form_Search_Custom_FullText'
-    ) {
-      $contactID = 'contact_a.contact_id';
-    }
-
     $insertSQL = "
 INSERT INTO civicrm_prevnext_cache ( entity_table, entity_id1, entity_id2, cacheKey, data )
-SELECT 'civicrm_contact', {$contactID}, {$contactID}, '$cacheKey', contact_a.display_name
+SELECT 'civicrm_contact', contact_a.id, contact_a.id, '$cacheKey', contact_a.display_name
 ";
 
     $sql = str_replace($replaceSQL, $insertSQL, $sql);
