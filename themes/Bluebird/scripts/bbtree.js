@@ -788,7 +788,6 @@ TagTreeManage.prototype.animate_tree = function(tree) {
 TagTreeManage.prototype.addTagModal = function(parent) {
     var self = this;
     var parent_name = parent.find('.name').html();
-
     self.dialog.html(
         '<div class="modalHeader">Add new tag under ' + parent_name + '</div>' +
         '<div class="modalInputs">' +
@@ -845,7 +844,7 @@ TagTreeManage.prototype.addTagModal = function(parent) {
                                     '<div class="tag"><span class="name">'+tag.name+'</span></div>'+
                                     '<span class="entityCount" style="display:none">(0)</span>' +
                                 '</div></dt>' +
-                                '<dl class="lv-'+depth+'" id="'+tagLabel(tag.id)+'" tLvl="'+depth+'" ></dl>'
+                                '<dl class="lv-'+depth+'" id="'+tagLabel(tag.id)+'" tLvl="'+depth+'" style="display:none" ></dl>'
                             );
                             parent.find('.ddControl').addClass('treeButton').click();
 
@@ -854,6 +853,7 @@ TagTreeManage.prototype.addTagModal = function(parent) {
                                 'It\'s new description is <span>"'+tag_desc.replace(/</g,"&lt;").replace(/>/g,"&gt;")+'"</span>. '+
                                 'It is <span> '+(tag_resv ? '' : 'not ')+' reserved</span>'
                             );
+                            parent.next('dl').show();
                         }
                         self.dialog.dialog("close");
                     }
