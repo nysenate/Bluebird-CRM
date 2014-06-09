@@ -168,6 +168,7 @@ class CRM_Contact_Selector_Custom extends CRM_Contact_Selector {
   static function &links() {
     //NYSS 4536
     list($key) = func_get_args();
+    $searchContext = "&context=custom";//NYSS 7928
     $extraParams = ($key) ? "&key={$key}" : NULL;
 
     if (!(self::$_links)) {
@@ -175,13 +176,13 @@ class CRM_Contact_Selector_Custom extends CRM_Contact_Selector {
         CRM_Core_Action::VIEW => array(
           'name' => ts('View'),
           'url' => 'civicrm/contact/view',
-          'qs' => "reset=1&cid=%%id%%{$extraParams}",//NYSS 4536
+          'qs' => "reset=1&cid=%%id%%{$extraParams}{$searchContext}",//NYSS 4536/7928
           'title' => ts('View Contact Details'),
         ),
         CRM_Core_Action::UPDATE => array(
           'name' => ts('Edit'),
           'url' => 'civicrm/contact/add',
-          'qs' => 'reset=1&action=update&cid=%%id%%',
+          'qs' => "reset=1&action=update&cid=%%id%%{$extraParams}{$searchContext}",//NYSS 4536/7928
           'title' => ts('Edit Contact Details'),
         ),
       );
