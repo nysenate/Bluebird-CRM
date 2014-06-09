@@ -684,4 +684,25 @@ When enabled, statistics about your CiviCRM installation are reported anonymousl
     'description' => 'Prevent the stylesheet "civicrm.css" from being loaded.',
     'help_text' => NULL,
   ),
+
+  //NYSS 6721
+  'enable_innodb_fts' => array(
+    'group_name' => 'CiviCRM Preferences',
+    'group' => 'core',
+    'name' => 'enable_innodb_fts',
+    'prefetch' => 0,
+    'config_only'=> 0,
+    'type' => 'Boolean',
+    'quick_form_type' => 'YesNo',
+    'default' => 0,
+    'add' => '4.4',
+    'title' => 'InnoDB Full Text Search',
+    'is_domain' => 1,
+    'is_contact' => 0,
+    'description' => "Enable InnoDB full-text search optimizations. (Requires MySQL 5.6+)",
+    'help_text' => null,
+    'on_change' => array(
+      array('CRM_Core_InnoDBIndexer', 'onToggleFts'),
+    ),
+  ),
 );
