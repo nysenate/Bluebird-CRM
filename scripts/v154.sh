@@ -49,3 +49,6 @@ sql="
     (@optGrp, 'CRM_Contact_Form_Search_Custom_TagGroupLog', '17', 'CRM_Contact_Form_Search_Custom_TagGroupLog', NULL, 0, 0, 17, 'Tag/Group Log Search', 0, 0, 1, NULL, NULL, NULL);
 "
 $execSql $instance -c "$sql" -q
+
+## 6721 create FTS indices
+php $app_rootdir/civicrm/scripts/ftsIndexUpdate.php -S $instance

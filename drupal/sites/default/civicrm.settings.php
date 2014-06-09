@@ -79,6 +79,7 @@ $civicrm_setting['Mailing Preferences']['disable_mandatory_tokens_check'] = TRUE
 $civicrm_setting['Mailing Preferences']['hash_mailing_url'] = TRUE;
 
 $civicrm_setting['CiviCRM Preferences']['securityAlert'] = FALSE;
+//$civicrm_setting['CiviCRM Preferences']['enable_innodb_fts'] = TRUE;
 
 if (isset($bbconfig['xhprof.profile']) && $bbconfig['xhprof.profile']) {
   function xhprof_shutdown_func($source, $run_id=NULL) {
