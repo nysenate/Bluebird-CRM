@@ -63,6 +63,10 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
             'required' => TRUE,
             'title' => ts('Log Type'),
           ),
+          'log_type_label' => array(
+            'no_display' => TRUE,
+            'required' => TRUE,
+          ),
           'log_user_id' => array(
             'no_display' => TRUE,
             'required' => TRUE,
@@ -87,12 +91,14 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
             'alias' => 'modified_contact_civireport',
           ),
           'altered_contact_id' => array(
-            'name' => 'id',
             'no_display' => TRUE,
             'required' => TRUE,
-            'alias'    => 'modified_contact_civireport',
           ),
           'log_conn_id' => array(
+            'no_display' => TRUE,
+            'required' => TRUE,
+          ),
+          'log_change_seq' => array(
             'no_display' => TRUE,
             'required' => TRUE,
           ),
@@ -302,35 +308,13 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
     parent::select();
   }
 
-  function from( $logTable = null ) {
-    static $entity = null;
-    if ( $logTable ) {
-      $entity = $logTable;
-    }
-
-    $detail = $this->_logTables[$entity];
-    $tableName = CRM_Utils_Array::value('table_name', $detail, $entity);
-    $clause = CRM_Utils_Array::value('entity_table', $detail);
-    $clause = $clause ? "AND entity_log_civireport.entity_table = 'civicrm_contact'" : null;
-
-    $joinClause = "
-INNER JOIN civicrm_contact modified_contact_civireport
-        ON (entity_log_civireport.{$detail['fk']} = modified_contact_civireport.id {$clause})";
-
-    if (CRM_Utils_Array::value('joins', $detail)) {
-      $clause = CRM_Utils_Array::value('entity_table', $detail);
-      $clause = $clause ? "AND fk_table.entity_table = 'civicrm_contact'" : null;
-      $joinClause = "
-INNER JOIN `{$this->loggingDB}`.{$detail['joins']['table']} fk_table ON {$detail['joins']['join']}
-INNER JOIN civicrm_contact modified_contact_civireport
-        ON (fk_table.{$detail['fk']} = modified_contact_civireport.id {$clause})";
-    }
-
-    $this->_from = "
-FROM `{$this->loggingDB}`.$tableName entity_log_civireport
-{$joinClause}
-LEFT  JOIN civicrm_contact altered_by_contact_civireport
-        ON (entity_log_civireport.log_user_id = altered_by_contact_civireport.id)";
+  function from() {
+    $ret = "FROM civicrm_changelog_summary entity_log_civireport " .
+           "INNER JOIN civicrm_contact as modified_contact_civireport ON " .
+           "entity_log_civireport.altered_contact_id = modified_contact_civireport.id " .
+           "INNER JOIN civicrm_contact as altered_by_contact_civireport " .
+           "ON entity_log_civireport.log_user_id = altered_by_contact_civireport.id ";
+    return $ret;
   }
     
   //NYSS 4198 calculate distinct contacts
@@ -345,6 +329,11 @@ LEFT  JOIN civicrm_contact altered_by_contact_civireport
       'value' => count($distinctContacts),
     );
     return $statistics;
+  }
+
+  function groupBy() {
+    //NYSS 5751
+    $this->_groupBy = 'GROUP BY entity_log_civireport.log_change_seq, log_civicrm_entity_id, entity_log_civireport.log_conn_id, entity_log_civireport.log_user_id, EXTRACT(DAY_HOUR FROM entity_log_civireport.log_date), entity_log_civireport.id';
   }
 
   function getContactDetails( $cid ) {
@@ -413,5 +402,37 @@ LEFT  JOIN civicrm_contact altered_by_contact_civireport
     //CRM_Core_Error::debug_var('html',$html);
 
     return $html;
+  }
+
+  function postProcess() {
+    $this->beginPostProcess();
+    $rows = array();
+
+    // note the group by columns are same as that used in alterDisplay as $newRows - $key
+    $this->select();
+    $this->where();
+    $this->limit();
+    $sql = "{$this->_select} " .
+           "FROM civicrm_changelog_summary entity_log_civireport " .
+           "INNER JOIN civicrm_contact as modified_contact_civireport ON " .
+           "entity_log_civireport.altered_contact_id = modified_contact_civireport.id " .
+           "INNER JOIN civicrm_contact as altered_by_contact_civireport " .
+           "ON entity_log_civireport.log_user_id = altered_by_contact_civireport.id " .
+           "{$this->_where} " .
+           "GROUP BY log_civicrm_entity_log_change_seq, log_civicrm_entity_log_date, " .
+           "log_civicrm_entity_log_type_label, log_civicrm_entity_log_conn_id, " .
+           "log_civicrm_entity_log_user_id, log_civicrm_entity_altered_contact_id " .
+           "ORDER BY log_civicrm_entity_log_date DESC {$this->_limit}";
+
+    $this->buildRows($sql, $rows);
+
+    // format result set.
+    $this->formatDisplay($rows);
+
+    // assign variables to templates
+    $this->doTemplateAssignment($rows);
+
+    // do print / pdf / instance stuff if needed
+    $this->endPostProcess($rows);
   }
 }

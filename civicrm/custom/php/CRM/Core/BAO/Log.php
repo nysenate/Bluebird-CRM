@@ -205,6 +205,7 @@ UPDATE civicrm_log
     // first check if logging is enabled
     $config = CRM_Core_Config::singleton();
     if (!$config->logging) {
+      error_log('no log');
       return FALSE;
     }
 

@@ -1,0 +1,192 @@
+<?php
+
+function nyss_deltalog_civicrm_triggerInfo(&$triggers, $tableName=NULL) {
+  // add the changelog trigger
+  // the changelog trigger automatically populates the log_type_label and log_change_seq
+  $triggers[] = array(
+    'table' => 'civicrm_changelog_summary',
+    'event' => 'insert',
+    'when'  => 'before',
+    'sql' => "CASE NEW.`log_type` " .
+             "WHEN 'group_contact' THEN SET NEW.`log_type_label`='Group'; " .
+             "WHEN 'entity_tag' THEN SET NEW.`log_type_label`='Tag'; " .
+             "ELSE SET NEW.`log_type_label`=''; " .
+             "END CASE;" . 
+             "SET NEW.`log_change_seq`=fnGetChangelogSequence();"
+  );
+  
+  // every table will need three triggers - one for each type of event
+  $actions = array('Insert','Update','Delete');
+  
+  // begin standard tables
+  // the "standard" tables are those that relate directly to civicrm_contact
+  // i.e., no need for further joins in order to discover the altered contact_id
+  // a table list in the form of array ('table_name' => 'contact_id_field')
+  $table_list = array(
+                      'contact'       => 'id',
+                      'email'         => 'contact_id',
+                      'phone'         => 'contact_id',
+                      'address'       => 'contact_id',
+                      'group_contact' => 'contact_id',
+                      'relationship'  => 'contact_id_a',
+                      );
+
+  // add any "direct relation" custom tables to the standard tables list
+  $sql = "SELECT table_name FROM civicrm_custom_group WHERE extends IN " .
+         "('Individual','Household','Organization','Contact');";
+  $dao = CRM_Core_DAO::executeQuery($sql);
+  while ($dao->fetch()) {
+    // remove the beginning 'civicrm_' for easier reference
+    $tname = preg_replace('/^civicrm_/', '', $dao->table_name, 1);
+    // each of these custom tables uses entity_id to relate back to civicrm_contact
+    $table_list[$tname] = 'entity_id';
+  }
+  // construct the "standard table" triggers
+  $sql = "INSERT INTO civicrm_changelog_summary ( " .
+         "log_action, log_type, log_user_id, log_conn_id, altered_contact_id " .
+         " ) VALUES ( " .
+         "'{{log_action}}', '{{table_name}}', @civicrm_user_id, CONNECTION_ID(), NEW.{{contact_id}} " .
+         ");";
+  foreach ($table_list as $k=>$v) {
+    foreach ($actions as $one_action) {
+      $search = array('{{log_action}}','{{table_name}}','{{contact_id}}');
+      $replace = array($one_action,$k,$v);
+      if ($one_action == 'Delete') {
+        $search[] = "NEW.";
+        $replace[] = "OLD.";
+      }
+      $onesql = str_replace($search,$replace,$sql);
+      $triggers[] = array(
+        'table' => "civicrm_{$k}",
+        'event' => strtolower($one_action),
+        'when'  => 'after',
+        'sql'   => $onesql,
+      );
+    }
+  }
+  // end standard tables
+  
+  // begin special table triggers
+  // these tables need intermediary joins to find the altered contact_id
+  // also, other manipulations may be necessary (e.g., log_type)
+  // this section includes tables created for custom data points (civicrm_custom_group)
+  // $special_tables array('table_name' => 'trigger_sql') 
+  $special_tables = array();
+
+  // begin civicrm_note
+  $special_tables['note'] = 
+         "SET @trigger_contact_id = 0; " .
+         "SET @trigger_tname = 'note'; " .
+         "IF NEW.entity_table = 'civicrm_contact' THEN " .
+            "SET @trigger_contact_id = NEW.entity_id; " .
+         "ELSEIF NEW.entity_table = 'civicrm_note' THEN " .
+            "BEGIN " .
+              "SELECT a.contact_id INTO @trigger_contact_id FROM civicrm_note a " .
+              "WHERE a.entity_table='civicrm_contact' AND a.id=NEW.entity_id; " .
+              "SET @trigger_tname = 'note_comment'; " .
+            "END; " .
+         "ELSE SET @trigger_contact_id = 0; " .
+         "END IF; " .
+         "IF @trigger_contact_id > 0 THEN " .
+            "INSERT INTO civicrm_changelog_summary ( " .
+            "log_action, log_type, log_user_id, log_conn_id, altered_contact_id " .
+            " ) VALUES ( " .
+            "'{{log_action}}', @trigger_tname, @civicrm_user_id, CONNECTION_ID(), @trigger_contact_id " .
+            ");" . 
+         "END IF; ";
+  // end civicrm_note
+
+  // begin civicrm_entity_tag
+  $special_tables['entity_tag'] = 
+         "SET @trigger_contact_id = 0; " .
+         "IF NEW.entity_table = 'civicrm_contact' THEN " .
+            "SET @trigger_contact_id = NEW.entity_id; " .
+         "ELSE SET @trigger_contact_id = 0; " .
+         "END IF; " .
+         "IF @trigger_contact_id > 0 THEN " .
+            "INSERT INTO civicrm_changelog_summary ( " .
+            "log_action, log_type, log_user_id, log_conn_id, altered_contact_id " .
+            " ) VALUES ( " .
+            "'{{log_action}}', '{{table_name}}', @civicrm_user_id, CONNECTION_ID(), @trigger_contact_id " .
+            ");" . 
+         "END IF; ";
+  // end civicrm_entity_tag
+
+  // begin civicrm_case
+  $special_tables['case'] = 
+         "INSERT INTO civicrm_changelog_summary " .
+            "( log_action, log_type, log_user_id, log_conn_id, altered_contact_id )  " .
+         "SELECT '{{log_action}}', '{{table_name}}', @civicrm_user_id, CONNECTION_ID(), b.contact_id " .
+         "FROM civicrm_case_contact b WHERE b.case_id = NEW.id;";
+  // end civicrm_case
+
+  // begin civicrm_activity and tables related to "Activity"
+  // list of tables dependent on activity entities
+  $add_table_list = array('activity');
+  $sql = "SELECT table_name FROM civicrm_custom_group WHERE extends = 'Activity';";
+  $dao = CRM_Core_DAO::executeQuery($sql);
+  while ($dao->fetch()) {
+    // remove the beginning 'civicrm_' for easier reference
+    $add_table_list[] = preg_replace('/^civicrm_/', '', $dao->table_name, 1);
+  }
+  // the special SQL for activity-based triggers
+  $sql = "INSERT INTO civicrm_changelog_summary " .
+            "( log_action, log_type, log_user_id, log_conn_id, altered_contact_id )" .
+         "SELECT '{{log_action}}', " .
+            "CONCAT( " .
+              "'{{table_name}}_for_', " .
+              "CASE b.record_type_id " .
+                "WHEN 1 THEN 'target' " .
+                "WHEN 2 THEN 'source' " .
+                "WHEN 3 THEN 'assigned' " .
+                "ELSE 'unknown' " .
+              "END " .
+            "), " .
+            "@civicrm_user_id, " .
+            "CONNECTION_ID(), " .
+            "b.contact_id " .
+         "FROM civicrm_activity_contact b " .
+         "WHERE b.activity_id = NEW.{{contact_field}}; ";
+  // add each table to the special tables array
+  foreach ($add_table_list as $k) {
+    // civicrm_activity is keyed on `id`.  All the others are on `entity_id`
+    $onesql = str_replace('{{contact_field}}', $k=='activity' ? 'id' : 'entity_id', $sql);
+    $special_tables[$k] = $onesql;
+  }
+  // end civicrm_activity and tables related to "Activity"
+
+  // begin tables related to "Address"
+  $sql = "SELECT table_name FROM civicrm_custom_group WHERE extends = 'Address';";
+  $dao = CRM_Core_DAO::executeQuery($sql);
+  // the special trigger SQL for each address-based triggers
+  $sql = "INSERT INTO civicrm_changelog_summary " .
+           "( log_action, log_type, log_user_id, log_conn_id, altered_contact_id ) " .
+         "SELECT '{{log_action}}', '{{table_name}}', @civicrm_user_id, CONNECTION_ID(), b.contact_id " .
+         "FROM civicrm_address b WHERE b.id = NEW.entity_id;";
+  while ($dao->fetch()) {
+    // remove the beginning 'civicrm_' for easier reference
+    $tname = preg_replace('/^civicrm_/', '', $dao->table_name, 1);
+    $special_tables[$tname] = $sql;
+  }
+  // end tables related to "Address"
+  
+  // construct the "special table" triggers
+  foreach ($special_tables as $k=>$v) {
+    foreach ($actions as $one_action) {
+      $search = array('{{log_action}}','{{table_name}}');
+      $replace = array($one_action,$k);
+      if ($one_action == 'Delete') {
+        $search[] = "NEW.";
+        $replace[] = "OLD.";
+      }
+      $onesql = str_replace($search,$replace,$v);
+      $triggers[] = array(
+        'table' => "civicrm_$k",
+        'event' => strtolower($one_action),
+        'when'  => 'after',
+        'sql' => $onesql,
+      );
+    }
+  }
+  // end special table triggers
+}
