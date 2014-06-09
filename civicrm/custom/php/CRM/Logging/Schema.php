@@ -68,6 +68,7 @@ class CRM_Logging_Schema {
                                   array('/^civicrm_menu/',PREG_GREP_INVERT),
                                   // do not log civicrm_changelog_summary (delta logging) #7893
                                   array('/^civicrm_changelog_summary/',PREG_GREP_INVERT),
+                                  // do not log new sequence tables #7893
                                   array('/_sequence$/',PREG_GREP_INVERT),
                                   );
 
