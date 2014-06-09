@@ -1,7 +1,5 @@
 {literal}
 <script type="text/javascript">
-  cj('#searchForm').addClass('activitySearch');
-
   //NYSS 7892
   cj(document).ready(function(){
     if ( cj('div.messages.status.no-popup').length ) {
