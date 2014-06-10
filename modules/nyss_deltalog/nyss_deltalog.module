@@ -1,6 +1,16 @@
 <?php
-
+/**
+ * NYSS #7893
+ *
+ * Add delta log facilities.  In generic logging summary report, the log is drawn
+ * real-time from a series of queries dumping into a temporary table.  The delta
+ * log makes this a permanent table, with additional triggers on all potential
+ * source tables to populate it in real time.
+ */
 function nyss_deltalog_civicrm_triggerInfo(&$triggers, $tableName=NULL) {
+  // just for easy reference
+  $log_prefix = "log_civicrm_";
+
   // add the changelog trigger
   // the changelog trigger automatically populates the log_type_label and log_change_seq
   $triggers[] = array(
@@ -8,16 +18,20 @@ function nyss_deltalog_civicrm_triggerInfo(&$triggers, $tableName=NULL) {
     'event' => 'insert',
     'when'  => 'before',
     'sql' => "CASE NEW.`log_type` " .
-             "WHEN 'group_contact' THEN SET NEW.`log_type_label`='Group'; " .
-             "WHEN 'entity_tag' THEN SET NEW.`log_type_label`='Tag'; " .
+						 "WHEN 'log_civicrm_email' THEN SET NEW.`log_type_label`='Contact'; " .
+						 "WHEN 'log_civicrm_address' THEN SET NEW.`log_type_label`='Contact'; " .
+						 "WHEN 'log_civicrm_value_constituent_information_1' THEN SET NEW.`log_type_label`='Contact'; " .
+						 "WHEN 'log_civicrm_value_district_information_7' THEN SET NEW.`log_type_label`='Contact'; " .
+						 "WHEN 'log_civicrm_group_contact' THEN SET NEW.`log_type_label`='Group'; " .
+						 "WHEN 'log_civicrm_entity_tag' THEN SET NEW.`log_type_label`='Tag'; " .
              "ELSE SET NEW.`log_type_label`=''; " .
-             "END CASE;" . 
+             "END CASE;" .
              "SET NEW.`log_change_seq`=fnGetChangelogSequence();"
   );
-  
+
   // every table will need three triggers - one for each type of event
   $actions = array('Insert','Update','Delete');
-  
+
   // begin standard tables
   // the "standard" tables are those that relate directly to civicrm_contact
   // i.e., no need for further joins in order to discover the altered contact_id
@@ -43,9 +57,9 @@ function nyss_deltalog_civicrm_triggerInfo(&$triggers, $tableName=NULL) {
   }
   // construct the "standard table" triggers
   $sql = "INSERT INTO civicrm_changelog_summary ( " .
-         "log_action, log_type, log_user_id, log_conn_id, altered_contact_id " .
+         "log_id, log_action, log_type, log_user_id, log_conn_id, altered_contact_id " .
          " ) VALUES ( " .
-         "'{{log_action}}', '{{table_name}}', @civicrm_user_id, CONNECTION_ID(), NEW.{{contact_id}} " .
+         "NEW.id, '{{log_action}}', '$log_prefix{{table_name}}', @civicrm_user_id, CONNECTION_ID(), NEW.{{contact_id}} " .
          ");";
   foreach ($table_list as $k=>$v) {
     foreach ($actions as $one_action) {
@@ -65,16 +79,16 @@ function nyss_deltalog_civicrm_triggerInfo(&$triggers, $tableName=NULL) {
     }
   }
   // end standard tables
-  
+
   // begin special table triggers
   // these tables need intermediary joins to find the altered contact_id
   // also, other manipulations may be necessary (e.g., log_type)
   // this section includes tables created for custom data points (civicrm_custom_group)
-  // $special_tables array('table_name' => 'trigger_sql') 
+  // $special_tables array('table_name' => 'trigger_sql')
   $special_tables = array();
 
   // begin civicrm_note
-  $special_tables['note'] = 
+  $special_tables['note'] =
          "SET @trigger_contact_id = 0; " .
          "SET @trigger_tname = 'note'; " .
          "IF NEW.entity_table = 'civicrm_contact' THEN " .
@@ -89,15 +103,15 @@ function nyss_deltalog_civicrm_triggerInfo(&$triggers, $tableName=NULL) {
          "END IF; " .
          "IF @trigger_contact_id > 0 THEN " .
             "INSERT INTO civicrm_changelog_summary ( " .
-            "log_action, log_type, log_user_id, log_conn_id, altered_contact_id " .
+            "log_id, log_action, log_type, log_user_id, log_conn_id, altered_contact_id " .
             " ) VALUES ( " .
-            "'{{log_action}}', @trigger_tname, @civicrm_user_id, CONNECTION_ID(), @trigger_contact_id " .
-            ");" . 
+            "NEW.id, '{{log_action}}', CONCAT('$log_prefix',@trigger_tname), @civicrm_user_id, CONNECTION_ID(), @trigger_contact_id " .
+            ");" .
          "END IF; ";
   // end civicrm_note
 
   // begin civicrm_entity_tag
-  $special_tables['entity_tag'] = 
+  $special_tables['entity_tag'] =
          "SET @trigger_contact_id = 0; " .
          "IF NEW.entity_table = 'civicrm_contact' THEN " .
             "SET @trigger_contact_id = NEW.entity_id; " .
@@ -105,18 +119,18 @@ function nyss_deltalog_civicrm_triggerInfo(&$triggers, $tableName=NULL) {
          "END IF; " .
          "IF @trigger_contact_id > 0 THEN " .
             "INSERT INTO civicrm_changelog_summary ( " .
-            "log_action, log_type, log_user_id, log_conn_id, altered_contact_id " .
+            "log_id, log_action, log_type, log_user_id, log_conn_id, altered_contact_id " .
             " ) VALUES ( " .
-            "'{{log_action}}', '{{table_name}}', @civicrm_user_id, CONNECTION_ID(), @trigger_contact_id " .
-            ");" . 
+            "NEW.id, '{{log_action}}', '$log_prefix{{table_name}}', @civicrm_user_id, CONNECTION_ID(), @trigger_contact_id " .
+            ");" .
          "END IF; ";
   // end civicrm_entity_tag
 
   // begin civicrm_case
-  $special_tables['case'] = 
+  $special_tables['case'] =
          "INSERT INTO civicrm_changelog_summary " .
-            "( log_action, log_type, log_user_id, log_conn_id, altered_contact_id )  " .
-         "SELECT '{{log_action}}', '{{table_name}}', @civicrm_user_id, CONNECTION_ID(), b.contact_id " .
+            "( log_id, log_action, log_type, log_user_id, log_conn_id, altered_contact_id )  " .
+         "SELECT NEW.id, '{{log_action}}', CONCAT('$log_prefix','{{table_name}}'), @civicrm_user_id, CONNECTION_ID(), b.contact_id " .
          "FROM civicrm_case_contact b WHERE b.case_id = NEW.id;";
   // end civicrm_case
 
@@ -131,10 +145,10 @@ function nyss_deltalog_civicrm_triggerInfo(&$triggers, $tableName=NULL) {
   }
   // the special SQL for activity-based triggers
   $sql = "INSERT INTO civicrm_changelog_summary " .
-            "( log_action, log_type, log_user_id, log_conn_id, altered_contact_id )" .
-         "SELECT '{{log_action}}', " .
+            "( log_id, log_action, log_type, log_user_id, log_conn_id, altered_contact_id )" .
+         "SELECT NEW.id, '{{log_action}}', " .
             "CONCAT( " .
-              "'{{table_name}}_for_', " .
+              "'$log_prefix{{table_name}}_for_', " .
               "CASE b.record_type_id " .
                 "WHEN 1 THEN 'target' " .
                 "WHEN 2 THEN 'source' " .
@@ -160,8 +174,8 @@ function nyss_deltalog_civicrm_triggerInfo(&$triggers, $tableName=NULL) {
   $dao = CRM_Core_DAO::executeQuery($sql);
   // the special trigger SQL for each address-based triggers
   $sql = "INSERT INTO civicrm_changelog_summary " .
-           "( log_action, log_type, log_user_id, log_conn_id, altered_contact_id ) " .
-         "SELECT '{{log_action}}', '{{table_name}}', @civicrm_user_id, CONNECTION_ID(), b.contact_id " .
+           "( log_id, log_action, log_type, log_user_id, log_conn_id, altered_contact_id ) " .
+         "SELECT NEW.id, '{{log_action}}', '$log_prefix{{table_name}}', @civicrm_user_id, CONNECTION_ID(), b.contact_id " .
          "FROM civicrm_address b WHERE b.id = NEW.entity_id;";
   while ($dao->fetch()) {
     // remove the beginning 'civicrm_' for easier reference
@@ -169,7 +183,7 @@ function nyss_deltalog_civicrm_triggerInfo(&$triggers, $tableName=NULL) {
     $special_tables[$tname] = $sql;
   }
   // end tables related to "Address"
-  
+
   // construct the "special table" triggers
   foreach ($special_tables as $k=>$v) {
     foreach ($actions as $one_action) {

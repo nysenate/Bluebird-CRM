@@ -39,6 +39,10 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
   function __construct() {
     parent::__construct();
 
+    // reproduce fix from NYSS #3461
+    // ported from previous ReportSummary override, which was dropped with #7893
+    $this->logTables['log_civicrm_activity_for_source']['table_name'] = 'log_civicrm_activity';
+
     $logTypes = array();
     foreach ( array_keys($this->_logTables) as  $table ) {
       $type = $this->getLogType($table);
@@ -52,6 +56,10 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
         'alias' => 'entity_log',
         'fields' => array(
           'id' => array(
+            'no_display' => TRUE,
+            'required' => TRUE,
+          ),
+          'log_id' => array(
             'no_display' => TRUE,
             'required' => TRUE,
           ),
@@ -165,13 +173,13 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
         //NYSS 3461
         'order_bys'  =>
         array(
-          'altered_contact_sort_name' =>
+          'log_civicrm_entity_altered_contact_sort_name' =>
           array(
             'title' => ts('Altered Contact'),
             'name' => 'sort_name',
             'alias' => 'modified_contact_civireport',
           ),
-          'log_date' =>
+          'log_civicrm_entity_log_date' =>
           array(
             'title' => ts('Log Date'),
           ),
@@ -231,7 +239,7 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
         $row['log_civicrm_entity_log_action'] = ts('Update');
       }
 
-      if ($newAction = $this->getEntityAction($row['log_civicrm_entity_id'],
+      if ($newAction = $this->getEntityAction($row['log_civicrm_entity_log_id'],
                        $row['log_civicrm_entity_log_conn_id'],
                        $row['log_civicrm_entity_log_type'],
                        CRM_Utils_Array::value('log_civicrm_entity_log_action', $row)))
@@ -309,14 +317,14 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
   }
 
   function from() {
-    $ret = "FROM civicrm_changelog_summary entity_log_civireport " .
-           "INNER JOIN civicrm_contact as modified_contact_civireport ON " .
-           "entity_log_civireport.altered_contact_id = modified_contact_civireport.id " .
-           "INNER JOIN civicrm_contact as altered_by_contact_civireport " .
-           "ON entity_log_civireport.log_user_id = altered_by_contact_civireport.id ";
-    return $ret;
+    // NYSS 7893 changed to reflect new single-select table with JOINs for contact names
+    $this->_from = "FROM civicrm_changelog_summary entity_log_civireport " .
+                   "INNER JOIN civicrm_contact as modified_contact_civireport ON " .
+                   "entity_log_civireport.altered_contact_id = modified_contact_civireport.id " .
+                   "INNER JOIN civicrm_contact as altered_by_contact_civireport " .
+                   "ON entity_log_civireport.log_user_id = altered_by_contact_civireport.id ";
   }
-    
+
   //NYSS 4198 calculate distinct contacts
   function statistics( &$rows ) {
     $distinctContacts = array();
@@ -333,7 +341,11 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
 
   function groupBy() {
     //NYSS 5751
-    $this->_groupBy = 'GROUP BY entity_log_civireport.log_change_seq, log_civicrm_entity_id, entity_log_civireport.log_conn_id, entity_log_civireport.log_user_id, EXTRACT(DAY_HOUR FROM entity_log_civireport.log_date), entity_log_civireport.id';
+    // ported from previous ReportSummary override, which was dropped with #7893
+    //NYSS 7893 grouping changed to reflect new single-select table and new sequence generator
+    $this->_groupBy = "GROUP BY log_civicrm_entity_log_change_seq, log_civicrm_entity_log_date, " .
+                      "log_civicrm_entity_log_type_label, log_civicrm_entity_log_conn_id, " .
+                      "log_civicrm_entity_log_user_id, log_civicrm_entity_altered_contact_id ";
   }
 
   function getContactDetails( $cid ) {
@@ -405,24 +417,24 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
   }
 
   function postProcess() {
+    // NYSS #7893 changes in this method supercede previous override for CRM_Logging_ReportSummary
+    // override CRM_Logging_ReportSummary was dropped with NYSS #7893
+
     $this->beginPostProcess();
     $rows = array();
 
     // note the group by columns are same as that used in alterDisplay as $newRows - $key
     $this->select();
+    $this->from();
     $this->where();
+    $this->groupBy();
     $this->limit();
     $sql = "{$this->_select} " .
-           "FROM civicrm_changelog_summary entity_log_civireport " .
-           "INNER JOIN civicrm_contact as modified_contact_civireport ON " .
-           "entity_log_civireport.altered_contact_id = modified_contact_civireport.id " .
-           "INNER JOIN civicrm_contact as altered_by_contact_civireport " .
-           "ON entity_log_civireport.log_user_id = altered_by_contact_civireport.id " .
+           "{$this->_from} " .
            "{$this->_where} " .
-           "GROUP BY log_civicrm_entity_log_change_seq, log_civicrm_entity_log_date, " .
-           "log_civicrm_entity_log_type_label, log_civicrm_entity_log_conn_id, " .
-           "log_civicrm_entity_log_user_id, log_civicrm_entity_altered_contact_id " .
-           "ORDER BY log_civicrm_entity_log_date DESC {$this->_limit}";
+           "{$this->_groupBy} " .
+           "ORDER BY log_civicrm_entity_log_date DESC " .
+           "{$this->_limit}";
 
     $this->buildRows($sql, $rows);
 

@@ -42,9 +42,12 @@ $sql = str_replace(array('{{CIVIDB}}', '{{LOGDB}}'),
 if (!($dbcon->multi_query($sql))) {
   $rc = $dbcon->errno;
 } else {
-  while ($dbcon->more_results()) {
-    $dbcon->next_result();
-  }
+  do {
+    $res = $dbcon->store_result();
+    if ($dbcon->errno) {
+      $rc = $dbcon->errno;
+    }
+  } while ($dbcon->more_results() && $dbcon->next_result());
   $rc = $dbcon->errno;
 }
 
