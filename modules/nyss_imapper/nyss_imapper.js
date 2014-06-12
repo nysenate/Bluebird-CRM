@@ -451,7 +451,7 @@ cj(document).ready(function(){
     // console.log('Assign # : '+messageId);
 
     // get array of checked ids
-    var contactIds = $(".imapper-contact-box input:checkbox:checked").map(function(){
+    var newContacts = $(".imapper-contact-box input:checkbox:checked").map(function(){
       return $(this).val();
     }).get();
 
@@ -471,13 +471,13 @@ cj(document).ready(function(){
     var state = cj("#tab2 .state").val();
 
     // if they've selected 1 or more contact, assign the message
-    if(contactIds !='' ){
+    if(newContacts !='' ){
       // console.log('Assigning Message to existing contact');
       cj.ajax({
         url: '/civicrm/imap/ajax/unmatched/assign',
         data: {
           messageId: messageId,
-          contactId: contactIds.toString()
+          contactId: newContacts.toString()
         },
         success: function(data, status) {
           data = cj.parseJSON(data);
@@ -490,7 +490,7 @@ cj(document).ready(function(){
               CRM.alert(value.message, '', 'success');
             });
             AdditionalEmail.dialog('open');
-            cj('#AdditionalEmail-popup #contact').val(contactIds.toString());
+            cj('#AdditionalEmail-popup #contact').val(newContacts.toString());
             cj("#assign-popup").dialog('close');
             // additional email popup
           }
@@ -598,7 +598,7 @@ cj(document).ready(function(){
       // build one list of singular processing
       messageIds = messageId.split(',');
       activityIds = activityId.split(',');
-      contactIds = contactId.split(',');
+      newContacts = contactId.split(',');
       if(activityIds.length == 1){
         cj('#message_left_header,.ReAssignTab').show();
         cj('#message_left_email').removeClass('multi');
@@ -650,10 +650,10 @@ cj(document).ready(function(){
         cj('#message_left_header,.ReAssignTab').hide();
         cj('#ui-id-2').click();
         cj.each(messageIds, function(key, messageId) {
-          // console.log("messageId : "+messageId+' - activityId :'+activityIds[key]+" - key : "+key+" - Contact : "+contactIds[key]);
+          // console.log("messageId : "+messageId+' - activityId :'+activityIds[key]+" - key : "+key+" - Contact : "+newContacts[key]);
           cj.ajax({
             url: '/civicrm/imap/ajax/matched/details',
-            data: {id: messageId, contact: contactIds[key] },
+            data: {id: messageId, contact: newContacts[key] },
             success: function(data,status) {
               cj("#loading-popup").dialog('close');
               message = cj.parseJSON(data);
@@ -816,21 +816,21 @@ cj(document).ready(function(){
   cj(".page_actions .multi_process").live('click', function() {
 
     cj("#loading-popup").dialog('open');
-    var contactIds = new Array();
+    var newContacts = new Array();
     var activityIds = new Array();
     var messageIds = new Array();
 
     cj('#imapper-messages-list input:checked').each(function() {
       messageIds.push(cj(this).attr('data-imap-id'));
       activityIds.push(cj(this).attr('data-activity-id'));
-      contactIds.push(cj(this).attr('data-contact-id'));
+      newContacts.push(cj(this).attr('data-contact-id'));
     });
 
-    cj('#contact').val('').val(contactIds);
+    cj('#contact').val('').val(newContacts);
     cj('#message').val('').val(messageIds);
     cj('#activity').val('').val(activityIds);
 
-    // console.log('contactIds',contactIds)
+    // console.log('newContacts',newContacts)
     // console.log('messageIds',messageIds)
     // console.log('activityIds',activityIds)
 
@@ -857,9 +857,12 @@ cj(document).ready(function(){
     var contactId = cj('#contact').val();
 
     // get array of checked ids for contact reassign
-    var contactIds = $(".imapper-contact-box input:checkbox:checked").map(function(){
+    var newContacts = new Array();
+    var newContacts = $(".imapper-contact-box input:checkbox:checked").map(function(){
       return $(this).val();
     }).get();
+    // console.log("contactId",contactId);
+    // console.log("newContacts",newContacts);
 
     // create new contact info
     var prefix = cj("#tab2_edit .prefix").val();
@@ -901,19 +904,21 @@ cj(document).ready(function(){
     var activty_contact = cj("#process-popup #contact_name").val().replace(/,,/g, ",").replace(/^,/g, "");
     var activty_status_id = cj("#tab3 #status_id").val();
     // var activity_date = cj("#tab3 #activity_date").val();
+    //
+
 
     // ----
     // Logic ( or as close as I get to it )
     // did we reassign ?
     // if they've selected 1 or more contact, reassign the message
-    if(contactIds !='' ){
-      // console.log('Reassigning to: ',contactIds);
+    if(newContacts !='' ){
+      // console.log('Reassigning to: ',newContacts);
       cj.ajax({
         url: '/civicrm/imap/ajax/matched/reassign',
         async: false,
         data: {
           messageId: messageId,
-          contactId: contactIds.toString()
+          contactId: newContacts.toString()
         },
         success: function(data, status) {
           var data = cj.parseJSON(data);
@@ -970,6 +975,12 @@ cj(document).ready(function(){
         },
         success: function(data, status) {
           contactData = cj.parseJSON(data);
+          // console.log("contact/add success",contactData.contact);
+          newContacts=[];
+          newContacts.push(contactData.contact);
+          // console.log("newContacts",newContacts);
+
+          // update the contact id
           if (contactData.code == 'ERROR' || contactData.code == '' || contactData == null ){
             CRM.alert('Could Not Create Contact : '+contactData.message, '', 'error');
             return false;
@@ -994,7 +1005,7 @@ cj(document).ready(function(){
                     checkForMatch(email_address,contactData.contact);
                   }
                   // AdditionalEmail.dialog('open');
-                  // cj('#AdditionalEmail-popup #contacts').val(contactIds.toString());
+                  // cj('#AdditionalEmail-popup #contacts').val(newContacts.toString());
                 }
               },
               error: function(){
@@ -1007,19 +1018,26 @@ cj(document).ready(function(){
       error = false;
     }
 
+    if(newContacts.length != 0) {
+      // console.log("Add to New Contact",newContacts);
+    }else{
+      // console.log("Add to Old Contact",contactId);
+      newContacts.push(contactId);
+    };
+    // console.log("newContacts",newContacts);
+
     // did we add any tags ?
     if ((activity_tag.length != 0) || (contact_tag.length  != 0) || (removedIssueCodes.length != 0) || (addedIssueCodes.length != 0) || (contact_position.length != 0)){
       // console.log('activity_tags: ',activity_tag.length,'contact_tags: ',contact_tag.length,'removedIssueCodes: ',removedIssueCodes.length,'addedIssueCodes: ',addedIssueCodes.length,'contact_positions: ',contact_position.length);
 
       // CONTACT POSITIONS
       if(contact_position.length){
-        var contact_ids_array = contact_position.split(',');
         cj.ajax({
           url: '/civicrm/imap/ajax/tag/add',
           async:false,
           data: {
             parentId: '292',
-            contactId: contact_ids,
+            contactId: newContacts.toString(),
             tags: contact_position
           },
           success: function(data,status) {
@@ -1038,7 +1056,7 @@ cj(document).ready(function(){
           url: '/civicrm/imap/ajax/issuecode',
           async:false,
           data: {
-            contacts: contactId.toString(),
+            contacts: newContacts.toString(),
             issuecodes: addedIssueCodes.toString(),
             action:'create'
           },
@@ -1056,7 +1074,7 @@ cj(document).ready(function(){
           url: '/civicrm/imap/ajax/issuecode',
           async:false,
           data: {
-            contacts: contactId.toString(),
+            contacts: newContacts.toString(),
             issuecodes: removedIssueCodes.toString(),
             action:'delete'
           },
@@ -1075,7 +1093,7 @@ cj(document).ready(function(){
           url: '/civicrm/imap/ajax/tag/add',
           async:false,
           data: {
-            contactId: contactId.toString(),
+            contactId: newContacts.toString(),
             tags: contact_tag
           },
           success: function(data,status) {
@@ -1548,8 +1566,8 @@ function shortenString(subject, length){
 // Look for empty rows that match the KEY of a matched row
 // Remove them from the view so the user doesn't re-add / create duplicates
 // key = user_email
-function checkForMatch(key,contactIds){
-  // console.log('checking',key,contactIds);
+function checkForMatch(key,newContacts){
+  // console.log('checking',key,newContacts);
   cj(".this_address").html(key);
   cj('.imapper-message-box').each(function(i, item) {
     var check = cj(this).data('key');
@@ -1561,7 +1579,7 @@ function checkForMatch(key,contactIds){
           async:false,
           data: {
             messageId: messageId,
-            contactId: contactIds
+            contactId: newContacts
           },
           success: function(data,status) {
             if(data != null || data != ''){
