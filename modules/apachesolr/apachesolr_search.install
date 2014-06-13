@@ -78,17 +78,22 @@ function apachesolr_search_schema() {
   $schema['apachesolr_search_page'] = array(
     'description' => 'Apache Solr Search search page settings.',
     'export' => array(
+      // Environment machine name.
       'key' => 'page_id',
+      // Description of key.
+      'key name' => 'search page machine name',
+      // Variable name to use in exported code.
       'identifier' => 'searcher',
+      // Use the same hook as the API name below.
       'default hook' => 'apachesolr_search_default_searchers',
       'status' => 'apachesolr_search_page_status',
+      // CTools API implementation.
       'api' => array(
         'owner' => 'apachesolr_search',
         'api' => 'apachesolr_search_defaults',
         'minimum_version' => 3,
         'current_version' => 3,
       ),
-      'export callback' => 'apachesolr_search_page_settings_export',
     ),
     'fields' => array(
       'page_id' => array(
@@ -212,7 +217,6 @@ function apachesolr_search_update_7002() {
         'minimum_version' => 3,
         'current_version' => 3,
       ),
-      'export callback' => 'apachesolr_search_page_settings_export',
     ),
     'fields' => array(
       'page_id' => array(
@@ -363,4 +367,18 @@ function apachesolr_search_update_7005(&$sandbox) {
         )
       )
     );
+}
+
+/**
+ * Remove all apachesolr_search env variables for show_facets if it is zero
+ */
+function apachesolr_search_update_7006() {
+  module_load_include('module', 'apachesolr');
+  $environments = apachesolr_load_all_environments();
+  foreach ($environments as $environment) {
+    $show_facets = apachesolr_environment_variable_get($environment['env_id'], 'apachesolr_search_show_facets', 0);
+    if ($show_facets === 0) {
+      apachesolr_environment_variable_del($environment['env_id'], 'apachesolr_search_show_facets');
+    }
+  }
 }
