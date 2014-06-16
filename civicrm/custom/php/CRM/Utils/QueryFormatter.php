@@ -196,6 +196,10 @@ class CRM_Utils_QueryFormatter {
       // if user supplies their own wildcards, then don't do any sophisticated changes
       $result = $this->mapWords($text, '+word');
     }
+    elseif (preg_match('/^(["\']).*\1$/m', $text)) {
+      //if surrounded by quotes, use term as is
+      $result = $text;
+    }
     else {
       switch ($mode) {
         case self::MODE_NONE:
