@@ -192,6 +192,10 @@ class CRM_Utils_QueryFormatter {
     if (empty($text)) {
       $result = '*';
     }
+    elseif (strpos($text, '+') !== FALSE || strpos($text, '-') !== FALSE) {
+      // if user supplies their own include/exclude operators, use text as is (with trailing wildcard)
+      $result = $this->mapWords($text, 'word*');
+    }
     elseif (strpos($text, '*') !== FALSE) {
       // if user supplies their own wildcards, then don't do any sophisticated changes
       $result = $this->mapWords($text, '+word');
