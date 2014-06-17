@@ -79,7 +79,7 @@ $civicrm_setting['Mailing Preferences']['disable_mandatory_tokens_check'] = TRUE
 $civicrm_setting['Mailing Preferences']['hash_mailing_url'] = TRUE;
 
 $civicrm_setting['CiviCRM Preferences']['securityAlert'] = FALSE;
-$civicrm_setting['CiviCRM Preferences']['enable_innodb_fts'] = TRUE;
+$civicrm_setting['Search Preferences']['enable_innodb_fts'] = TRUE;
 $civicrm_setting['Search Preferences']['fts_query_mode'] = 'wildwords-suffix';
 
 if (isset($bbconfig['xhprof.profile']) && $bbconfig['xhprof.profile']) {
