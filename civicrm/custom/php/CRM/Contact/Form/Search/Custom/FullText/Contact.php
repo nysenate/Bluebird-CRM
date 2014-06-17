@@ -80,6 +80,18 @@ GROUP BY   et.entity_id
     $final = array();
     $final[] = "DELETE FROM {$entityIDTableName} WHERE entity_id IN (SELECT id FROM civicrm_contact WHERE is_deleted = 1)";
 
+    //NYSS 7757 setup queries to order by sort name after all IDs inserted
+    $entityIDTableNameSort = "{$entityIDTableName}_s";
+    $final[] = "CREATE TABLE {$entityIDTableNameSort} LIKE {$entityIDTableName}";
+    $final[] = "INSERT INTO {$entityIDTableNameSort}
+      SELECT t1.*
+      FROM {$entityIDTableName} t1
+      JOIN civicrm_contact c
+        ON t1.entity_id = c.id
+      ORDER BY c.sort_name";
+    $final[] = "DROP TABLE {$entityIDTableName}";
+    $final[] = "RENAME TABLE {$entityIDTableNameSort} TO {$entityIDTableName}";
+
     $tables = array(
       'civicrm_contact' => array(
         'id' => 'id',

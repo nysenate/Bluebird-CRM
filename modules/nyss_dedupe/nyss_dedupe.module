@@ -49,7 +49,7 @@ function nyss_dedupe_civicrm_triggerInfo(&$triggers, $tableName=NULL) {
       SET norm_supplemental_address_2 = BB_NORMALIZE_ADDR(NEW.supplemental_address_2);
       SET norm_street_address = BB_NORMALIZE_ADDR(NEW.street_address);
       SET norm_postal_code = IFNULL(NEW.postal_code,'');
-      SET norm_city = IFNULL(NEW.city,'');
+      SET norm_city = IFNULL(BB_NORMALIZE_ADDR(NEW.city),'');
 
       INSERT INTO shadow_address
         (address_id, contact_id, street_address, postal_code, city, country_id, state_province_id, supplemental_address_1, supplemental_address_2)

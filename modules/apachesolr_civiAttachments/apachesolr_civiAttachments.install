@@ -1,0 +1,124 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the apachesolr_civiAttachments module.
+ */
+
+/**
+ * Implements hook_enable().
+ */
+function apachesolr_civiAttachments_enable() {
+  db_query("UPDATE {system} SET weight = 100 WHERE name = 'apachesolr_civicrmAttachments'");
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function apachesolr_civiAttachments_uninstall() {
+  variable_del('apachesolr_civiAttachments_tika_path');
+  variable_del('apachesolr_civiAttachments_tika_jar');
+  variable_del('apachesolr_civiAttachments_excluded_extensions');
+  variable_del('apachesolr_civiAttachments_extract_using');
+  variable_del('apachesolr_civiAttachments_excluded_mime');
+}
+
+/**
+ * Implements hook_requirements().
+ */
+function apachesolr_civiAttachments_requirements($phase) {
+  $requirements = array();
+  // Ensure translations don't break at install time.
+  $t = get_t();
+  if ($phase == 'runtime') {
+    if (variable_get('apachesolr_civiAttachments_extract_using', 'tika') == 'tika') {
+      $tmp = tempnam(file_directory_temp(), 'apachesolr_civiAttachments');
+      exec(variable_get('apachesolr_civiAttachments_java', 'java') . ' -version > ' . $tmp . ' 2>&1');
+      if (!preg_match('/Runtime Environment/', file_get_contents($tmp))) {
+        $requirements['apachesolr_civiAttachments_java']  = array(
+          'title' => $t('Apache Solr Attachments'),
+          'value' => $t('Java executable not found'),
+          'description' => $t("Could not execute a java command. You may need to set the path of the correct java executable as the variable 'apachesolr_civiAttachments_java' in settings.php."),
+          'severity' => REQUIREMENT_ERROR,
+        );
+      }
+    }
+  }
+  return $requirements;
+}
+
+/**
+ * Implements hook_schema().
+ */
+function apachesolr_civiAttachments_schema() {
+  $types = array(
+    'file' => 'apachesolr_index_entities_civiFile',
+  );
+  foreach ($types as $type => $table) {
+    $schema[$table] = array(
+      'description' => t('Stores a record of when an entity changed to determine if it needs indexing by Solr.'),
+      'fields' => array(
+        'entity_type' => array(
+          'description' => t('The type of entity.'),
+          'type' => 'varchar',
+          'length' => 128,
+          'not null' => TRUE,
+        ),
+        'entity_id' => array(
+          'description' => t('The primary identifier for an entity.'),
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ),
+        'bundle' => array(
+          'description' => t('The bundle to which this entity belongs.'),
+          'type' => 'varchar',
+          'length' => 128,
+          'not null' => TRUE,
+        ),
+        'status' => array(
+          'description' => t('Boolean indicating whether the entity is visible to non-administrators (eg, published for nodes).'),
+          'type' => 'int',
+          'not null' => TRUE,
+          'default' => 1,
+        ),
+        'changed' => array(
+          'description' => t('The Unix timestamp when an entity was changed.'),
+          'type' => 'int',
+          'not null' => TRUE,
+          'default' => 0,
+        ),
+        'parent_entity_type' => array(
+          'description' => t('The type of entity.'),
+          'type' => 'varchar',
+          'length' => 128,
+          'not null' => FALSE,
+        ),
+        'parent_entity_id' => array(
+          'description' => t('The type of the parent entity.'),
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => FALSE,
+        ),
+        'hash' => array(
+          'description' => "A hash of the file's body, to check for changes.",
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+          'default' => '',
+        ),
+        'body' => array(
+          'description' => 'The cached body (extracted text) of the file, unless it is a text file.',
+          'type' => 'text',
+          'not null' => FALSE,
+          'size' => 'big',
+        ),
+      ),
+      'indexes' => array(
+        'changed' => array('changed', 'status'),
+      ),
+      'primary key' => array('entity_id', 'parent_entity_id', 'parent_entity_type'),
+    );
+  }
+  return $schema;
+}

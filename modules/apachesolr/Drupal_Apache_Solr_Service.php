@@ -39,7 +39,8 @@
 
 /**
  * Additional code Copyright (c) 2008-2011 by Robert Douglass, James McKinney,
- * Jacob Singh, Alejandro Garza, Peter Wolanin, and additional contributors.
+ * Jacob Singh, Alejandro Garza, Peter Wolanin, Nick Veenhof and additional
+ * contributors.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,7 +63,7 @@
  * methods for pinging, adding, deleting, committing, optimizing and searching.
  */
 
-class DrupalApacheSolrService {
+class DrupalApacheSolrService implements DrupalApacheSolrServiceInterface {
   /**
    * How NamedLists should be formatted in the output.  This specifically effects facet counts. Valid values
    * are 'map' (default) or 'flat'.
@@ -79,6 +80,7 @@ class DrupalApacheSolrService {
   const LUKE_SERVLET = 'admin/luke';
   const SYSTEM_SERVLET = 'admin/system';
   const STATS_SERVLET = 'admin/stats.jsp';
+  const STATS_SERVLET_4 = 'admin/mbeans?wt=xml&stats=true';
 
   /**
    * Server url
@@ -105,6 +107,12 @@ class DrupalApacheSolrService {
   protected $stats;
   protected $system_info;
 
+  /**
+   * Flag that denotes whether to use soft commits for Solr 4.x, defaults to FALSE.
+   *
+   * @var bool
+   */
+  protected $soft_commit = FALSE;
 
   /**
    * Call the /admin/ping servlet, to test the connection to the server.
@@ -138,12 +146,32 @@ class DrupalApacheSolrService {
   }
 
   /**
+   * Flags whether to use soft commits for Solr 4.x.
+   *
+   * @param bool $soft_commit
+   *   Whether or not to use soft commits for Solr 4.x.
+   */
+  public function setSoftCommit($soft_commit) {
+    $this->soft_commit = (bool) $soft_commit;
+  }
+
+  /**
+   * Returns the flag that denotes whether to use soft commits for Solr 4.x.
+   *
+   * @return bool
+   *   Whether to use soft commits for Solr 4.x.
+   */
+  public function getSoftCommit() {
+    return $this->soft_commit;
+  }
+
+  /**
    * Call the /admin/system servlet
    *
    * @return
    *   (array) With all the system info
    */
-  public function setSystemInfo() {
+  protected function setSystemInfo() {
     $url = $this->_constructUrl(self::SYSTEM_SERVLET, array('wt' => 'json'));
     if ($this->env_id) {
       $this->system_info_cid = $this->env_id . ":system:" . drupal_hash_base64($url);
@@ -221,13 +249,35 @@ class DrupalApacheSolrService {
   }
 
   /**
-   * Sets $this->stats with the information about the Solr Core form /admin/stats.jsp
+   * Get the current solr version. This could be 1, 3 or 4
+   *
+   * @return int
+   *   1, 3 or 4. Does not give a more details version, for that you need
+   *   to get the system info.
+   */
+  public function getSolrVersion() {
+    $system_info = $this->getSystemInfo();
+    // Get our solr version number
+    if (isset($system_info->lucene->{'solr-spec-version'})) {
+      return $system_info->lucene->{'solr-spec-version'}[0];
+    }
+    return 0;
+  }
+
+  /**
+   * Sets $this->stats with the information about the Solr Core form
    */
   protected function setStats() {
     $data = $this->getLuke();
+    $solr_version = $this->getSolrVersion();
     // Only try to get stats if we have connected to the index.
     if (empty($this->stats) && isset($data->index->numDocs)) {
-      $url = $this->_constructUrl(self::STATS_SERVLET);
+      if ($solr_version >= 4) {
+        $url = $this->_constructUrl(self::STATS_SERVLET_4);
+      }
+      else {
+        $url = $this->_constructUrl(self::STATS_SERVLET);
+      }
       if ($this->env_id) {
         $this->stats_cid = $this->env_id . ":stats:" . drupal_hash_base64($url);
         $cache = cache_get($this->stats_cid, 'cache_apachesolr');
@@ -263,6 +313,8 @@ class DrupalApacheSolrService {
    */
   public function getStatsSummary() {
     $stats = $this->getStats();
+    $solr_version = $this->getSolrVersion();
+
     $summary = array(
      '@pending_docs' => '',
      '@autocommit_time_seconds' => '',
@@ -276,24 +328,47 @@ class DrupalApacheSolrService {
     );
 
     if (!empty($stats)) {
-      $docs_pending_xpath = $stats->xpath('//stat[@name="docsPending"]');
-      $summary['@pending_docs'] = (int) trim(current($docs_pending_xpath));
-      $max_time_xpath = $stats->xpath('//stat[@name="autocommit maxTime"]');
-      $max_time = (int) trim(current($max_time_xpath));
-      // Convert to seconds.
-      $summary['@autocommit_time_seconds'] = $max_time / 1000;
-      $summary['@autocommit_time'] = format_interval($max_time / 1000);
-      $deletes_id_xpath = $stats->xpath('//stat[@name="deletesById"]');
-      $summary['@deletes_by_id'] = (int) trim(current($deletes_id_xpath));
-      $deletes_query_xpath = $stats->xpath('//stat[@name="deletesByQuery"]');
-      $summary['@deletes_by_query'] = (int) trim(current($deletes_query_xpath));
-      $summary['@deletes_total'] = $summary['@deletes_by_id'] + $summary['@deletes_by_query'];
-      $schema = $stats->xpath('/solr/schema[1]');
-      $summary['@schema_version'] = trim($schema[0]);;
-      $core = $stats->xpath('/solr/core[1]');
-      $summary['@core_name'] = trim($core[0]);
-      $size_xpath = $stats->xpath('//stat[@name="indexSize"]');
-      $summary['@index_size'] = trim(current($size_xpath));
+      if ($solr_version <= 3) {
+        $docs_pending_xpath = $stats->xpath('//stat[@name="docsPending"]');
+        $summary['@pending_docs'] = (int) trim(current($docs_pending_xpath));
+        $max_time_xpath = $stats->xpath('//stat[@name="autocommit maxTime"]');
+        $max_time = (int) trim(current($max_time_xpath));
+        // Convert to seconds.
+        $summary['@autocommit_time_seconds'] = $max_time / 1000;
+        $summary['@autocommit_time'] = format_interval($max_time / 1000);
+        $deletes_id_xpath = $stats->xpath('//stat[@name="deletesById"]');
+        $summary['@deletes_by_id'] = (int) trim(current($deletes_id_xpath));
+        $deletes_query_xpath = $stats->xpath('//stat[@name="deletesByQuery"]');
+        $summary['@deletes_by_query'] = (int) trim(current($deletes_query_xpath));
+        $summary['@deletes_total'] = $summary['@deletes_by_id'] + $summary['@deletes_by_query'];
+        $schema = $stats->xpath('/solr/schema[1]');
+        $summary['@schema_version'] = trim($schema[0]);
+        $core = $stats->xpath('/solr/core[1]');
+        $summary['@core_name'] = trim($core[0]);
+        $size_xpath = $stats->xpath('//stat[@name="indexSize"]');
+        $summary['@index_size'] = trim(current($size_xpath));
+      }
+      else {
+        $system_info = $this->getSystemInfo();
+        $docs_pending_xpath = $stats->xpath('//lst["stats"]/long[@name="docsPending"]');
+        $summary['@pending_docs'] = (int) trim(current($docs_pending_xpath));
+        $max_time_xpath = $stats->xpath('//lst["stats"]/str[@name="autocommit maxTime"]');
+        $max_time = (int) trim(current($max_time_xpath));
+        // Convert to seconds.
+        $summary['@autocommit_time_seconds'] = $max_time / 1000;
+        $summary['@autocommit_time'] = format_interval($max_time / 1000);
+        $deletes_id_xpath = $stats->xpath('//lst["stats"]/long[@name="deletesById"]');
+        $summary['@deletes_by_id'] = (int) trim(current($deletes_id_xpath));
+        $deletes_query_xpath = $stats->xpath('//lst["stats"]/long[@name="deletesByQuery"]');
+        $summary['@deletes_by_query'] = (int) trim(current($deletes_query_xpath));
+        $summary['@deletes_total'] = $summary['@deletes_by_id'] + $summary['@deletes_by_query'];
+        $schema = $system_info->core->schema;
+        $summary['@schema_version'] = $schema;
+        $core = $stats->xpath('//lst["core"]/str[@name="coreName"]');
+        $summary['@core_name'] = trim(current($core));
+        $size_xpath = $stats->xpath('//lst["core"]/str[@name="indexSize"]');
+        $summary['@index_size'] = trim(current($size_xpath));
+      }
     }
 
     return $summary;
@@ -361,13 +436,59 @@ class DrupalApacheSolrService {
   protected function checkResponse($response) {
     $code = (int) $response->code;
     if ($code != 200) {
-      if ($code >= 400 && $code != 403 && $code != 404) {
-        // Add details, like Solr's exception message.
-        $response->status_message .= $response->data;
-      }
-      throw new Exception('"' . $code . '" Status: ' . $response->status_message);
+      // Report where the user's code called the apachesolr code
+      $caller = $this->findCaller();
+      watchdog(
+        'Apache Solr',
+        t('HTTP Status: %http_status; <br>Message: %status_message; <br>Response: %response; <br>Request: %request; <br>Caller: %function (line %line of %file)'),
+        array(
+          '%http_status' => $code,
+          '%status_message' => $response->status_message,
+          '%response' => $response->data,
+          '%request' => empty($response->request) ? t('Unknown') : $response->request,
+          '%function' => isset($caller['class']) ? $caller['class'].'->'.$caller['function'].'()' : $caller['function'].'()',
+          '%line' => $caller['line'],
+          '%file' => $caller['file'],
+        ),
+        WATCHDOG_ERROR
+      );
+      throw new Exception('HTTP ' . $code . '; ' . $response->status_message);
     }
     return $response;
+  }
+
+  /**
+   * Determine the routine that called this query.
+   *
+   * We define "the routine that called this query" as the first entry in
+   * the call stack that is not inside /apachesolr/. That makes the climbing
+   * logic very simple, and handles variable stack depth and hook functions.
+   *
+   * Copied from includes/database/log.inc
+   *
+   * @link http://www.php.net/debug_backtrace
+   * @return
+   *   This method returns a stack trace entry similar to that generated by
+   *   debug_backtrace(). However, it flattens the trace entry and the trace
+   *   entry before it so that we get the function and args of the function that
+   *   called into the apachesolr module, not the function and args of the
+   *   Solr call itself.
+   */
+  public function findCaller() {
+    $stack = debug_backtrace();
+    $stack_count = count($stack);
+    for ($i = 0; $i < $stack_count; ++$i) {
+      if (!isset($stack[$i]['file']) || strpos($stack[$i]['file'], DIRECTORY_SEPARATOR . 'apachesolr' . DIRECTORY_SEPARATOR) === FALSE) {
+        return array(
+          'file' => isset($stack[$i]['file']) ? $stack[$i]['file'] : t('Unknown'),
+          'line' => isset($stack[$i]['line']) ? $stack[$i]['line'] : t('Unknown'),
+          'function' => $stack[$i + 1]['function'],
+          'class' => isset($stack[$i + 1]['class']) ? $stack[$i + 1]['class'] : NULL,
+          'type' => isset($stack[$i + 1]['type']) ? $stack[$i + 1]['type'] : NULL,
+          'args' => $stack[$i + 1]['args'],
+        );
+      }
+    }
   }
 
   /**
@@ -425,7 +546,7 @@ class DrupalApacheSolrService {
    *
    * This is just a wrapper around drupal_http_request().
    */
-  protected function _makeHttpRequest($url, $options = array()) {
+  protected function _makeHttpRequest($url, array $options = array()) {
     if (!isset($options['method']) || $options['method'] == 'GET' || $options['method'] == 'HEAD') {
       // Make sure we are not sending a request body.
       $options['data'] = NULL;
@@ -640,20 +761,31 @@ class DrupalApacheSolrService {
    * Send a commit command.  Will be synchronous unless both wait parameters are set to false.
    *
    * @param boolean $optimize Defaults to true
-   * @param boolean $waitFlush Defaults to true
-   * @param boolean $waitSearcher Defaults to true
-   * @param float $timeout Maximum expected duration (in seconds) of the commit operation on the server (otherwise, will throw a communication exception). Defaults to 1 hour
+   *   optimizes the index files. Only valid for solr versions <= 3
+   * @param boolean $waitFlush
+   *   block until index changes are flushed to disk. Only valid for solr versions <= 3
+   * @param boolean $waitSearcher
+   *   block until a new searcher is opened and registered as the main query searcher, making the changes visible.
+   * @param float $timeout
+   *   Maximum expected duration of the commit operation on the server (otherwise, will throw a communication exception)
    *
    * @return response object
    *
    * @throws Exception If an error occurs during the service call
    */
-  public function commit($optimize = true, $waitFlush = true, $waitSearcher = true, $timeout = 3600) {
+  public function commit($optimize = TRUE, $waitFlush = TRUE, $waitSearcher = TRUE, $timeout = 3600) {
     $optimizeValue = $optimize ? 'true' : 'false';
     $flushValue = $waitFlush ? 'true' : 'false';
     $searcherValue = $waitSearcher ? 'true' : 'false';
+    $softCommit = $this->soft_commit ? 'true' : 'false';
 
-    $rawPost = '<commit optimize="' . $optimizeValue . '" waitFlush="' . $flushValue . '" waitSearcher="' . $searcherValue . '" />';
+    $solr_version = $this->getSolrVersion();
+    if ($solr_version <= 3) {
+      $rawPost = '<commit waitSearcher="' . $searcherValue . '" waitFlush="' . $flushValue . '" optimize="' . $optimizeValue . '" />';
+    }
+    else {
+      $rawPost = '<commit waitSearcher="' . $searcherValue . '" softCommit="' . $softCommit . '" />';
+    }
 
     $response = $this->update($rawPost, $timeout);
     $this->_clearCache();
@@ -715,18 +847,28 @@ class DrupalApacheSolrService {
    * to false.
    *
    * @param boolean $waitFlush
+   *   block until index changes are flushed to disk  Removed in Solr 4.0
    * @param boolean $waitSearcher
-   * @param float $timeout Maximum expected duration of the commit operation on the server (otherwise, will throw a communication exception)
+   *   block until a new searcher is opened and registered as the main query searcher, making the changes visible.
+   * @param float $timeout
+   *   Maximum expected duration of the commit operation on the server (otherwise, will throw a communication exception)
    *
    * @return response object
    *
    * @throws Exception If an error occurs during the service call
    */
-  public function optimize($waitFlush = true, $waitSearcher = true, $timeout = 3600) {
+  public function optimize($waitFlush = TRUE, $waitSearcher = TRUE, $timeout = 3600) {
     $flushValue = $waitFlush ? 'true' : 'false';
     $searcherValue = $waitSearcher ? 'true' : 'false';
+    $softCommit = $this->soft_commit ? 'true' : 'false';
 
-    $rawPost = '<optimize waitFlush="' . $flushValue . '" waitSearcher="' . $searcherValue . '" />';
+    $solr_version = $this->getSolrVersion();
+    if ($solr_version <= 3) {
+      $rawPost = '<optimize waitSearcher="' . $searcherValue . '" waitFlush="' . $flushValue . '" />';
+    }
+    else {
+      $rawPost = '<optimize waitSearcher="' . $searcherValue . '" softCommit="' . $softCommit . '" />';
+    }
 
     return $this->update($rawPost, $timeout);
   }
@@ -734,7 +876,7 @@ class DrupalApacheSolrService {
   /**
    * Like PHP's built in http_build_query(), but uses rawurlencode() and no [] for repeated params.
    */
-  public function httpBuildQuery(array $query, $parent = '') {
+  protected function httpBuildQuery(array $query, $parent = '') {
     $params = array();
 
     foreach ($query as $key => $value) {
@@ -766,10 +908,7 @@ class DrupalApacheSolrService {
    *
    * @throws Exception If an error occurs during the service call
    */
-  public function search($query = '', $params = array(), $method = 'GET') {
-    if (!is_array($params)) {
-      $params = array();
-    }
+  public function search($query = '', array $params = array(), $method = 'GET') {
     // Always use JSON. See http://code.google.com/p/solr-php-client/issues/detail?id=6#c1 for reasoning
     $params['wt'] = 'json';
     // Additional default params.
@@ -782,9 +921,15 @@ class DrupalApacheSolrService {
     // PHP's built in http_build_query() doesn't give us the format Solr wants.
     $queryString = $this->httpBuildQuery($params);
     // Check string length of the query string, change method to POST
-    // if longer than 4000 characters (typical server handles 4096 max).
-    // @todo - make this a per-server setting.
-    if (strlen($queryString) > variable_get('apachesolr_search_post_threshold', 4000)) {
+    $len = strlen($queryString);
+    // Fetch our threshold to find out when to flip to POST
+    $max_len = apachesolr_environment_variable_get($this->env_id, 'apachesolr_search_post_threshold', 3600);
+
+    // if longer than $max_len (default 3600) characters
+    // we should switch to POST (a typical server handles 4096 max).
+    // If this class is used independently (without environments), we switch automatically to POST at an
+    // limit of 1800 chars.
+    if (($len > 1800) && (empty($this->env_id) || ($len > $max_len))) {
       $method = 'POST';
     }
 

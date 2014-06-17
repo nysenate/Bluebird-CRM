@@ -1,0 +1,9 @@
+name = Apache Solr search CiviCRM attachments
+description = Search CiviCRM file attachments with Solr
+dependencies[] = apachesolr
+package = CiviCRM
+core = 7.x
+
+files[] = apachesolr_civiAttachments.admin.inc
+files[] = apachesolr_civiAttachments.install
+files[] = apachesolr_civiAttachments.module
