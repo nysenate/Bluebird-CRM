@@ -1,7 +1,6 @@
 {*7889*}
 {foreach from=$email key="blockId" item=item}
   <span class="subscription-link description" id="subscription-row-{$item.id}">
-    <br />
     <a href="#" title="{ts}Subscriptions{/ts}" onClick="showHideSubscriptions('{$item.id}', '{$blockId}'); return false;">{ts}(subscriptions){/ts}</a>
     <div id="subscription-form-{$item.id}" class="hiddenElement"></div>
   </span>
