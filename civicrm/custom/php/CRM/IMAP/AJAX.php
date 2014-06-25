@@ -1409,8 +1409,17 @@ EOQ;
           while($row = mysql_fetch_assoc($Updated_results)) {
             $results[] = $row;
           }
+          // NYSS - 7929
+          $attachments = CRM_Core_BAO_File::getEntityFile('civicrm_activity', $activity_id );
+          $assigneeContacts = CRM_Activity_BAO_ActivityAssignment::getAssigneeNames($activity_id, TRUE, FALSE);
+          //build an associative array with unique email addresses.
+          foreach ($assigneeContacts as $id => $value) {
+            $mailToContacts[$assigneeContacts[$id]['email']] = $assigneeContacts[$id];
+          }
+          CRM_Case_BAO_Case::sendActivityCopy(NULL, $activity_id, $mailToContacts, $attachments, NULL);
         }
       }
+
       // echo json_encode($results);
       mysql_close(self::$db);
       CRM_Utils_System::civiExit();
