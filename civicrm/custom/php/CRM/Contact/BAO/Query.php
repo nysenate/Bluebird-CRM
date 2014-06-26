@@ -1737,6 +1737,12 @@ class CRM_Contact_BAO_Query {
         // handled by the proximity_distance clause
         return;
 
+      //NYSS 7946
+      case 'log_start_date':
+      case 'log_end_date':
+        $this->nysslog($values);
+        return;
+
       default:
         $this->restWhere($values);
         return;
@@ -2494,6 +2500,14 @@ class CRM_Contact_BAO_Query {
 
         case 'civicrm_website':
           $from .= " $side JOIN civicrm_website ON contact_a.id = civicrm_website.contact_id ";
+          continue;
+
+        //NYSS 7946
+        case 'civicrm_changelog_summary':
+          $from .= "
+            INNER JOIN civicrm_changelog_summary
+              ON civicrm_changelog_summary.altered_contact_id = contact_a.id
+          ";
           continue;
 
         default:
@@ -5412,5 +5426,27 @@ AND   displayRelType.is_active = 1
 
     return array($presentClause, $presentSimpleFromClause);
   }
+
+  //NYSS 7946
+  function nysslog($values) {
+    //CRM_Core_Error::debug_var('values', $values);
+
+    list( $name, $op, $value, $grouping, $wildcard ) = $values;
+    $value = date('Y-m-d', strtotime($value));
+
+    if ($name == 'log_start_date') {
+      $this->_where[$grouping][] = "civicrm_changelog_summary.log_date >= '{$value} 00:00:00'";
+      $quill = 'Change Log Start Date';
+    }
+    elseif ($name == 'log_end_date') {
+      $this->_where[$grouping][] = "civicrm_changelog_summary.log_date <= '{$value} 23:59:59'";
+      $quill = 'Change Log End Date';
+    }
+
+    $this->_tables['civicrm_changelog_summary'] = 1;
+    $this->_whereTables['civicrm_changelog_summary'] = 1;
+
+    $this->_qill[$grouping][] = ts('Modified Date') . ": $quill";
+  }//nysslog
 }
 
