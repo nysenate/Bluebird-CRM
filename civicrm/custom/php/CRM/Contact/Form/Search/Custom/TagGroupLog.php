@@ -120,6 +120,15 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
     
     $form->addDate( 'start_date', ts( 'Date from' ), false, array('formatType' => 'birth') );
     $form->addDate( 'end_date', ts( 'Date to' ), false, array('formatType' => 'birth') );
+
+    $actionType = array(
+      '1' => ts('Added'),
+      '2' => ts('Removed/Deleted'),
+      '3' => ts('Both'),
+    );
+    $form->addRadio('action_type', ts('Action Type'), $actionType, NULL, '&nbsp;', TRUE);
+
+    $form->add('text', 'altered_by', ts('Altered By'), array());
     
     $formfields = array(
       'start_date',
@@ -127,10 +136,15 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
       'search_type',
       'tag',
       'group',
+      'action_type',
+      'altered_by',
     );
     $form->assign( 'elements', $formfields );
     
     $form->add('hidden', 'form_message' );
+
+    $resetUrl = CRM_Utils_System::url('civicrm/contact/search/custom', 'csid=17&reset=1');
+    $form->assign('resetUrl', $resetUrl);
 
     $form->setDefaults( $this->setDefaultValues() );
     $form->addFormRule( array( 'CRM_Contact_Form_Search_Custom_TagGroupLog', 'formRule' ), $this );
@@ -141,10 +155,10 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
     //CRM_Core_Error::debug_var('formRule fields', $fields);
 
     if ( $fields['search_type'] == 1 && empty($fields['tag']) ) {
-      $errors['form_message'] = ts( 'Please select at least one tag.' );
+      //$errors['form_message'] = ts( 'Please select at least one tag.' );
     }
     elseif ( $fields['search_type'] == 2 && empty($fields['group']) ) {
-      $errors['form_message'] = ts( 'Please select at least one group.' );
+      //$errors['form_message'] = ts( 'Please select at least one group.' );
     }
         
     return empty($errors) ? true : $errors;
@@ -166,11 +180,19 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
     $log_details = '';
     switch($this->_formValues['search_type']) {
       case 1:
-        $log_details = "CONCAT(tag.name, ' (', CASE WHEN log_et.log_action = 'Insert' THEN 'Added' WHEN log_et.log_action = 'Delete' THEN 'Removed' ELSE log_et.log_action END, ')')";
+        $log_details = "CONCAT(tag.name, ' (',
+          CASE WHEN log_et.log_action = 'Insert' THEN 'Added'
+          WHEN log_et.log_action = 'Delete' THEN 'Removed'
+          ELSE log_et.log_action END,
+        ')')";
         break;
 
       case 2:
-        $log_details = "CONCAT(grp.title, ' (', CASE WHEN log_et.log_action = 'Insert' THEN 'Added' WHEN log_et.log_action = 'Delete' THEN 'Removed' ELSE log_et.log_action END, ')')";
+        $log_details = "CONCAT(grp.title, ' (',
+          CASE WHEN log_et.log_action = 'Insert' THEN 'Added'
+          WHEN log_et.log_action = 'Delete' THEN 'Deleted'
+          WHEN log_et.log_action = 'Update' THEN log_et.status
+          ELSE log_et.log_action END, ')')";
         break;
     }
 
@@ -190,10 +212,12 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
     }
     
     //CRM_Core_Error::debug('select',$selectClause); exit();
-    return $this->sql( $selectClause,
+    $sql = $this->sql( $selectClause,
       $offset, $rowcount, $sort,
       $includeContactIDs, null
     );
+    //CRM_Core_Error::debug('$sql',$sql); exit();
+    return $sql;
   }
     
   function from( ) {
@@ -237,6 +261,7 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
   }//from
 
   function where( $includeContactIDs = false ) {
+    //CRM_Core_Error::debug('formVals', $this->_formValues);exit();
     $params = array( );
 
     $start_date = CRM_Utils_Date::mysqlToIso( CRM_Utils_Date::processDate( $this->_formValues['start_date'] ) );
@@ -253,13 +278,44 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
     switch($this->_formValues['search_type']) {
       case 1:
         $tags = implode(',', $this->_formValues['tag']);
-        $where[] = "log_et.tag_id IN ({$tags}) ";
+        if ( !empty($tags) ) {
+          $where[] = "log_et.tag_id IN ({$tags}) ";
+        }
+        else {
+          $where[] = "log_et.tag_id IS NOT NULL ";
+        }
         break;
 
       case 2:
         $groups = implode(',', $this->_formValues['group']);
-        $where[] = "log_et.group_id IN ({$groups}) ";
+        if ( !empty($groups) ) {
+          $where[] = "log_et.group_id IN ({$groups}) ";
+        }
+        else {
+          $where[] = "log_et.group_id IS NOT NULL ";
+        }
         break;
+    }
+
+    switch($this->_formValues['action_type']) {
+      case 1:
+        $where[] = "(log_et.log_action = 'Insert' OR (log_et.log_action = 'Update' AND log_et.status = 'Added')) ";
+        break;
+      case 2:
+        $where[] = "(log_et.log_action = 'Delete' OR (log_et.log_action = 'Update' AND log_et.status = 'Removed')) ";
+        break;
+      case 3:
+        //both - add no clause
+        break;
+    }
+
+    if ( !empty($this->_formValues['altered_by']) ) {
+      if ( is_numeric($this->_formValues['altered_by']) ) {
+        $where[] = "ab.id = {$this->_formValues['altered_by']} ";
+      }
+      else {
+        $where[] = "ab.sort_name LIKE '%{$this->_formValues['altered_by']}%' ";
+      }
     }
     
     //standard clauses
@@ -288,6 +344,10 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
   }
 
   function setDefaultValues( ) {
+    $defaults = array(
+      'action_type' => 3,
+    );
+    return $defaults;
   }
 
   function alterRow( &$row ) {
