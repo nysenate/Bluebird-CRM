@@ -300,7 +300,7 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
     $this->_from = "FROM nyss_changelog_summary entity_log_civireport " .
                    "INNER JOIN civicrm_contact as modified_contact_civireport ON " .
                    "entity_log_civireport.altered_contact_id = modified_contact_civireport.id " .
-                   "INNER JOIN civicrm_contact as altered_by_contact_civireport " .
+                   "LEFT JOIN civicrm_contact as altered_by_contact_civireport " .
                    "ON entity_log_civireport.log_user_id = altered_by_contact_civireport.id ";
   }
 
