@@ -3,7 +3,7 @@ CREATE TABLE {{CIVIDB}}.civicrm_changelog_sequence (
   `seq` BIGINT UNSIGNED NOT NULL
 ) ENGINE=InnoDB;
 
-INSERT INTO {{CIVIDB}}.civicrm_changelog_sequence (`seq`) VALUES (0);
+INSERT INTO {{CIVIDB}}.civicrm_changelog_sequence (`seq`) VALUES (1);
 
 DROP FUNCTION IF EXISTS {{CIVIDB}}.fnGetChangelogSequence;
 CREATE DEFINER=CURRENT_USER FUNCTION {{CIVIDB}}.`fnGetChangelogSequence`()

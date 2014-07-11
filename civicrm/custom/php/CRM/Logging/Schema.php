@@ -53,6 +53,9 @@ class CRM_Logging_Schema {
     'civicrm_group' => array('cache_date'),
   );
   
+  // to cache results of fetchTableList
+  static $_fetch_cache = array();
+  
   // default trigger filters
   static $_trigger_filters = array(
                                   // do not log temp import, cache and log tables
@@ -67,7 +70,7 @@ class CRM_Logging_Schema {
                                   //NYSS 6560 add other tables to exclusion list
                                   array('/^civicrm_menu/',PREG_GREP_INVERT),
                                   // do not log civicrm_changelog_summary (delta logging) #7893
-                                  array('/^civicrm_changelog_summary/',PREG_GREP_INVERT),
+                                  array('/_changelog_/',PREG_GREP_INVERT),
                                   // do not log new sequence tables #7893
                                   array('/_sequence$/',PREG_GREP_INVERT),
                                   );
@@ -123,28 +126,35 @@ class CRM_Logging_Schema {
    * Retrieve a list of tables from the database
    */
   public static function fetchTableList($schema='', $filter='civicrm_%') {
-    // should $schema and $filter be safed here?
-    
-    // initialize the return
-    $ret = array();
-    
-    // generate the base SQL
-    $sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{$schema}' " .
-           "AND TABLE_TYPE = 'BASE TABLE'";
 
-    // add the filter, if present
-    if ($filter) { $sql .= " AND TABLE_NAME LIKE '$filter'"; }
-
-    // fetch the table names
-    $sql .= ";";
-    $dao = CRM_Core_DAO::executeQuery($sql);
-    
-    // add each table name to the array
-    while ($dao->fetch()) {
-      $ret[] = $dao->TABLE_NAME;
+    if (!self::$_fetch_cache) {
+      
+      // initialize 
+      self::$_fetch_cache = array();
+      
+      // generate the base SQL
+      $sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = %1 " .
+             "AND TABLE_TYPE = 'BASE TABLE'";
+             
+      // create the parameter array
+      $params = array(1 => array($schema,'String'));
+  
+      // add the filter, if present
+      if ($filter) { 
+        $sql .= " AND TABLE_NAME LIKE %2"; 
+        $params[2] = array($filter,'String');
+      }
+  
+      // fetch the table names
+      $dao = CRM_Core_DAO::executeQuery("{$sql};", $params);
+      
+      // add each table name to the array
+      while ($dao->fetch()) {
+        self::$_fetch_cache[] = $dao->TABLE_NAME;
+      }
     }
-    
-    return $ret;
+      
+    return self::$_fetch_cache;
   }
   
   /**

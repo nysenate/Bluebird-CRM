@@ -29,10 +29,9 @@ class CRM_NYSS_BAO_Log {
     $ret = 0;
     $contactId = CRM_Utils_Type::escape((int)$contactId, 'Integer');
     if ( $contactId ) {
-      $sql = "SELECT * FROM `civicrm_changelog_summary` " .
+      $sql = "SELECT * FROM `nyss_changelog_summary` " .
              "WHERE `altered_contact_id` = $contactId " .
-             "GROUP BY log_change_seq, EXTRACT(DAY_HOUR FROM log_date), log_type_label, " .
-             "log_conn_id, log_user_id, altered_contact_id;";
+             "GROUP BY log_change_seq;";
       $ret = CRM_Core_DAO::executeQuery($sql)->N;
     }
     return $ret;
