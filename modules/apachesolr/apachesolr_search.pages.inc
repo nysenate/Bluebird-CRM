@@ -16,10 +16,10 @@ function apachesolr_search_custom_page($page_id, $keys = '', $path_replacer = NU
   }
   // Add our replacement value in the conditions array
   if (!empty($path_replacer)) {
-    $search_page->settings['apachesolr_search_path_replacer'] = $path_replacer;
+    $search_page['settings']['apachesolr_search_path_replacer'] = $path_replacer;
   }
   // Replace dynamic path with current path
-  $search_page->search_path = str_replace('%', $path_replacer, $search_page->search_path);
+  $search_page['search_path'] = str_replace('%', $path_replacer, $search_page['search_path']);
   // Retrieve the conditions that apply to this page
   $conditions = apachesolr_search_conditions_default($search_page);
   // Process our keys so they are clean
@@ -29,7 +29,7 @@ function apachesolr_search_custom_page($page_id, $keys = '', $path_replacer = NU
   // Initiate our build array
   $build = array();
   // Add a custom search form if required
-  if (!empty($search_page->settings['apachesolr_search_search_box'])) {
+  if (!empty($search_page['settings']['apachesolr_search_search_box'])) {
     // Adds the search form to the page.
     $build['search_form'] = drupal_get_form('apachesolr_search_custom_page_search_form', $search_page, $keys);
   }
@@ -72,8 +72,8 @@ function apachesolr_search_custom_page_search_form($form, &$form_state, $search_
 
   $fq = NULL;
 
-  if (apachesolr_has_searched($search_page->env_id)) {
-    $query = apachesolr_current_query($search_page->env_id);
+  if (apachesolr_has_searched($search_page['env_id'])) {
+    $query = apachesolr_current_query($search_page['env_id']);
     // We use the presence of filter query params as a flag for the retain filters checkbox.
     $fq = $query->getParam('fq');
   }
@@ -94,7 +94,7 @@ function apachesolr_search_custom_page_search_form($form, &$form_state, $search_
  */
 function apachesolr_search_custom_page_search_form_submit(&$form, &$form_state) {
   $search_page = $form['#search_page'];
-  $redirect = $search_page->search_path;
+  $redirect = $search_page['search_path'];
 
   // Also encode slashes so we don't get akward situations when obtaining the
   // search key. We can't use drupal_encode_path because for "aestetic" reasons
@@ -104,6 +104,8 @@ function apachesolr_search_custom_page_search_form_submit(&$form, &$form_state) 
   if (strlen($form_state['values']['keys'])) {
     $redirect .= '/' . $redirect_value;
   }
+
+  $get = array();
   if (isset($form_state['values']['get'])) {
     $get = json_decode($form_state['values']['get'], TRUE);
   }
@@ -112,8 +114,15 @@ function apachesolr_search_custom_page_search_form_submit(&$form, &$form_state) 
     $get['retain-filters'] = '1';
   }
   else {
-    $get = array();
+    // Remove all filters
+    if (!empty($search_page['settings']['apachesolr_search_allow_user_input'])) {
+      unset($get['fq']);
+    }
+    if (module_exists('facetapi')) {
+      unset($get['f']);
+    }
   }
+
   // Add the query values into the redirect.
   $form_state['redirect'] = array($redirect, array('query' => $get));
 }

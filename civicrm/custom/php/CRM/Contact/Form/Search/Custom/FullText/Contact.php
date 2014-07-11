@@ -46,16 +46,21 @@ class CRM_Contact_Form_Search_Custom_FullText_Contact extends CRM_Contact_Form_S
    * {@inheritdoc}
    */
   public function fillTempTable($queryText, $entityIDTableName, $toTable, $queryLimit, $detailLimit) {
-    $count = $this->fillContactIDs($queryText, $entityIDTableName, $queryLimit);
-    $this->moveContactIDs($entityIDTableName, $toTable, $detailLimit);
-    return $count;
+    $queries = $this->prepareQueries($queryText, $entityIDTableName);
+    $result = $this->runQueries($queryText, $queries, $entityIDTableName, $queryLimit);
+    $this->moveIDs($entityIDTableName, $toTable, $detailLimit);
+    if (!empty($result['files'])) {
+      $this->moveFileIDs($toTable, 'contact_id', $result['files']);
+    }
+    return $result;
   }
 
   /**
    * @param string $queryText
-   * @return int the total number of matches
+   * @param string $entityIDTableName
+   * @return array list tables/queries (for runQueries)
    */
-  function fillContactIDs($queryText, $entityIDTableName, $limit) {
+  function prepareQueries($queryText, $entityIDTableName) {
     // Note: For available full-text indices, see CRM_Core_InnoDBIndexer
 
     $contactSQL = array();
@@ -74,6 +79,18 @@ GROUP BY   et.entity_id
     // when we have acl contacts, the situation gets even more murky
     $final = array();
     $final[] = "DELETE FROM {$entityIDTableName} WHERE entity_id IN (SELECT id FROM civicrm_contact WHERE is_deleted = 1)";
+
+    //NYSS 7757 setup queries to order by sort name after all IDs inserted
+    $entityIDTableNameSort = "{$entityIDTableName}_s";
+    $final[] = "CREATE TABLE {$entityIDTableNameSort} LIKE {$entityIDTableName}";
+    $final[] = "INSERT INTO {$entityIDTableNameSort}
+      SELECT t1.*
+      FROM {$entityIDTableName} t1
+      JOIN civicrm_contact c
+        ON t1.entity_id = c.id
+      ORDER BY c.sort_name";
+    $final[] = "DROP TABLE {$entityIDTableName}";
+    $final[] = "RENAME TABLE {$entityIDTableNameSort} TO {$entityIDTableName}";
 
     $tables = array(
       'civicrm_contact' => array(
@@ -108,6 +125,9 @@ GROUP BY   et.entity_id
           'note' => NULL,
         ),
       ),
+      'file' => array(
+        'xparent_table' => 'civicrm_contact',
+      ),
       'sql' => $contactSQL,
       'final' => $final,
     );
@@ -117,10 +137,10 @@ GROUP BY   et.entity_id
       "( 'Contact', 'Individual', 'Organization', 'Household' )"
     );
 
-    return $this->runQueries($queryText, $tables, $entityIDTableName, $limit);
+    return $tables;
   }
 
-  public function moveContactIDs($fromTable, $toTable, $limit) {
+  public function moveIDs($fromTable, $toTable, $limit) {
     $sql = "
 INSERT INTO {$toTable}
 ( id, contact_id, sort_name, display_name, table_name )

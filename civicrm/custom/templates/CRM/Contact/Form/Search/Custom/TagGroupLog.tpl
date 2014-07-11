@@ -35,7 +35,12 @@
       {ts}Edit Search Criteria{/ts}
     </div><!-- /.crm-accordion-header -->
     <div class="crm-accordion-body" id="BirthdayByMonth">
-      <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
+      <div class="crm-submit-buttons">
+        {include file="CRM/common/formButtons.tpl" location="top"}
+        <div class="crm-submit-buttons reset-advanced-search">
+          <a href="{$resetUrl}" class="button" style="text-align:center;"><span>Reset</span></a>
+        </div>
+      </div>
       <table class="form-layout-compressed">
         <tr class="crm-contact-custom-search-form-row-search-type">
           <td class="label"><label for="search_type">{$form.search_type.label}</label></td>
@@ -57,8 +62,21 @@
           <td class="label"><label for="end_date">{$form.end_date.label}</label></td>
           <td>{include file="CRM/common/jcalendar.tpl" elementName=end_date}</td>
         </tr>
+        <tr class="crm-contact-custom-search-form-row-action-type">
+          <td class="label"><label for="action_type">{$form.action_type.label}</label></td>
+          <td>{$form.action_type.html}</td>
+        </tr>
+        <tr class="crm-contact-custom-search-form-row-altered_by">
+          <td class="label"><label for="altered_by">{$form.altered_by.label}</label></td>
+          <td>{$form.altered_by.html} <span class="description">Enter the user's name (lastname, firstname) or contact ID. Partial names are permitted.</span> </td>
+        </tr>
       </table>
-        <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
+        <div class="crm-submit-buttons">
+          {include file="CRM/common/formButtons.tpl" location="bottom"}
+          <div class="crm-submit-buttons reset-advanced-search">
+            <a href="{$resetUrl}" class="button" style="text-align:center;"><span>Reset</span></a>
+          </div>
+        </div>
     </div><!-- /.crm-accordion-body -->
 </div><!-- /.crm-accordion-wrapper -->
 </div><!-- /.crm-form-block -->
@@ -117,8 +135,8 @@
                   {foreach from=$columnHeaders item=header}
                     {assign var=fName value=$header.sort}
                     {if $fName eq 'sort_name'}
-                      {*NYSS 4536*}
-                      <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&key=`$qfKey`"}">{$row.sort_name}</a></td>
+                      {*NYSS 4536/7928*}
+                      <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&key=`$qfKey`&context=custom"}">{$row.sort_name}</a></td>
                     {else}
                       <td>{$row.$fName}</td>
                     {/if}

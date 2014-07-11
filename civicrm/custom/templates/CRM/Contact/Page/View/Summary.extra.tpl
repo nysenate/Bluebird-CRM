@@ -92,3 +92,6 @@
 {/if}
 
 {include file="CRM/Contact/Page/nyssInlineCommon.tpl"}
+
+{*7889*}
+{include file="CRM/Contact/Page/nyssSubscriptions.tpl"}

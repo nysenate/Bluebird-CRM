@@ -52,10 +52,10 @@ class ApacheSolrFacetapiTerm extends FacetapiQueryType implements FacetapiQueryT
     if (FACETAPI_OPERATOR_OR != $operator) {
       foreach ($active as $value => $item) {
         // Handle facet missing:
-        if ($value == '_empty_' && !empty($settings->settings['facet_missing'])) {
+        if ($value === '_empty_' && !empty($settings->settings['facet_missing'])) {
           $query->addFilter($this->facet['field'], '[* TO *]', TRUE);
         }
-        else {
+        elseif (strlen($value)) {
           $query->addFilter($this->facet['field'], $value);
         }
       }
@@ -65,9 +65,9 @@ class ApacheSolrFacetapiTerm extends FacetapiQueryType implements FacetapiQueryT
       $local = "tag={$this->facet['field']}";
       $values = array_keys($active);
       if ($values) {
-        // Quote any values that have white space.
+        // Quote any values that have white space or colons.
         foreach ($values as &$v) {
-          if (preg_match('/\s/', $v)) {
+          if (preg_match('/[:\s]/', $v) || strlen($v) == 0) {
             $v = '"' . $v . '"';
           }
         }

@@ -1,0 +1,33 @@
+Index: solrconfig.xml
+===================================================================
+RCS file: /cvs/drupal-contrib/contributions/modules/apachesolr/solrconfig.xml,v
+retrieving revision 1.1.2.20
+diff -u -p -r1.1.2.20 solrconfig.xml
+--- solrconfig.xml	14 Oct 2009 13:28:40 -0000	1.1.2.20
++++ solrconfig.xml	26 Oct 2009 00:12:24 -0000
+@@ -357,7 +357,7 @@
+     -->
+   <requestDispatcher handleSelect="true" >
+     <!--Make sure your system has some authentication before enabling remote streaming!  -->
+-    <requestParsers enableRemoteStreaming="false" multipartUploadLimitInKB="2048" />
++    <requestParsers enableRemoteStreaming="false" multipartUploadLimitInKB="8192" />
+
+     <!-- Set HTTP caching related parameters (for proxy caches and clients).
+
+@@ -515,6 +515,16 @@
+     </lst>
+   </requestHandler>
+
++  <!-- An extract-only path for accessing the tika utility -->
++  <requestHandler name="/extract/tika" class="org.apache.solr.handler.extraction.ExtractingRequestHandler" startup="lazy">
++
++    <lst name="defaults">
++    </lst>
++    <!-- This path only extracts - never updates -->
++    <lst name="invariants">
++      <bool name="extractOnly">true</bool>
++    </lst>
++  </requestHandler>
+
+   <!--
+    Search components are registered to SolrCore and used by Search Handlers

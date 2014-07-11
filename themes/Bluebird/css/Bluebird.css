@@ -1815,3 +1815,23 @@ div#tagGroup table.form-layout-compressed td {
   overflow-x: auto;
   overflow-y: hidden;
 }
+
+/*7889 admin mailing subscription modal form*/
+div.nyss-mailing-subscriptions-admin div.nyss-email-row div.nyss-email-label {
+  float: left;
+  width: 20%;
+  font-weight: bold;
+}
+div.nyss-mailing-subscriptions-admin div.nyss-email-row div.nyss-email-fld {
+  float: left;
+}
+div.nyss-mailing-subscriptions-admin div.nyss-email-row div.nyss-email-fld input {
+  margin-left: 0;
+}
+div.nyss-mailing-subscriptions-admin div.nyss-email-row {
+  margin-bottom: 15px;
+}
+.crm-container span.subscription-link {
+  display: block;
+  padding-top: 4px;
+}
