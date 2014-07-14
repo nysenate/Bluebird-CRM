@@ -37,6 +37,7 @@ class CRM_Logging_Schema {
   private $tables = array();
 
   private $db;
+  private $primary_db;
   private $useDBPrefix = TRUE;
 
   private $reports = array(
@@ -51,59 +52,130 @@ class CRM_Logging_Schema {
     'civicrm_job'   => array('last_run'),
     'civicrm_group' => array('cache_date'),
   );
+  
+  // to cache results of fetchTableList
+  static $_fetch_cache = array();
+  
+  // default trigger filters
+  static $_trigger_filters = array(
+                                  // do not log temp import, cache and log tables
+                                  array('/^civicrm_import_job_/',PREG_GREP_INVERT),
+                                  array('/_cache$/',PREG_GREP_INVERT),
+                                  array('/_log/',PREG_GREP_INVERT),
+                                  array('/^civicrm_task_action_temp_/',PREG_GREP_INVERT),
+                                  array('/^civicrm_export_temp_/',PREG_GREP_INVERT),
+                                  array('/^civicrm_queue_/',PREG_GREP_INVERT),
+                                  // do not log civicrm_mailing_event* tables, CRM-12300
+                                  array('/^civicrm_mailing_event_/',PREG_GREP_INVERT),
+                                  //NYSS 6560 add other tables to exclusion list
+                                  array('/^civicrm_menu/',PREG_GREP_INVERT),
+                                  // do not log civicrm_changelog_summary (delta logging) #7893
+                                  array('/_changelog_/',PREG_GREP_INVERT),
+                                  // do not log new sequence tables #7893
+                                  array('/_sequence$/',PREG_GREP_INVERT),
+                                  );
 
   /**
    * Populate $this->tables and $this->logs with current db state.
    */
   function __construct() {
-    $dao = new CRM_Contact_DAO_Contact();
-    $civiDBName = $dao->_database;
+    // does a distinct logging DSN exist?
+    $this->setUsePrefix();
 
-    $dao = CRM_Core_DAO::executeQuery("
-SELECT TABLE_NAME
-FROM   INFORMATION_SCHEMA.TABLES
-WHERE  TABLE_SCHEMA = '{$civiDBName}'
-AND    TABLE_TYPE = 'BASE TABLE'
-AND    TABLE_NAME LIKE 'civicrm_%'
-");
-    while ($dao->fetch()) {
-      $this->tables[] = $dao->TABLE_NAME;
+    // get the primary civi database
+    $this->primary_db = self::getDatabaseName(false);
+
+    // fetch the list of tables
+    $this->tables = self::fetchTableList($this->primary_db);
+    
+    // filter the tables
+    $this->tables = self::filterTriggerTables($this->tables);
+
+    // get the logging database name
+    $this->db = self::getDatabaseName();
+    
+    // fetch the list of logging tables and "correct" it
+    $all_logs = self::fetchTableList($this->db, 'log_civicrm_%');
+    foreach ($all_logs as $v) {
+      $this->logs[substr($v, 4)] = $v;
     }
-
-    // do not log temp import, cache and log tables
-    $this->tables = preg_grep('/^civicrm_import_job_/', $this->tables, PREG_GREP_INVERT);
-    $this->tables = preg_grep('/_cache$/', $this->tables, PREG_GREP_INVERT);
-    $this->tables = preg_grep('/_log/', $this->tables, PREG_GREP_INVERT);
-    $this->tables = preg_grep('/^civicrm_task_action_temp_/', $this->tables, PREG_GREP_INVERT);
-    $this->tables = preg_grep('/^civicrm_export_temp_/', $this->tables, PREG_GREP_INVERT);
-    $this->tables = preg_grep('/^civicrm_queue_/', $this->tables, PREG_GREP_INVERT);
-
-    // do not log civicrm_mailing_event* tables, CRM-12300
-    $this->tables = preg_grep('/^civicrm_mailing_event_/', $this->tables, PREG_GREP_INVERT);
-    //NYSS 6560 add other tables to exclusion list
-    $this->tables = preg_grep('/^civicrm_menu/', $this->tables, PREG_GREP_INVERT);
-
-    if (defined('CIVICRM_LOGGING_DSN')) {
-      $dsn = DB::parseDSN(CIVICRM_LOGGING_DSN);
-      $this->useDBPrefix = (CIVICRM_LOGGING_DSN != CIVICRM_DSN);
+  }
+  
+  public function setUsePrefix() {
+    if ((defined('CIVICRM_LOGGING_DSN')) && (CIVICRM_LOGGING_DSN != CIVICRM_DSN)) {
+      $this->useDBPrefix = true;
+    } else {
+      $this->useDBPrefix = false;
     }
-    else {
-      $dsn = DB::parseDSN(CIVICRM_DSN);
-      $this->useDBPrefix = FALSE;
-    }
-    $this->db = $dsn['database'];
+  }
 
-    $dao = CRM_Core_DAO::executeQuery("
-SELECT TABLE_NAME
-FROM   INFORMATION_SCHEMA.TABLES
-WHERE  TABLE_SCHEMA = '{$this->db}'
-AND    TABLE_TYPE = 'BASE TABLE'
-AND    TABLE_NAME LIKE 'log_civicrm_%'
-");
-    while ($dao->fetch()) {
-      $log = $dao->TABLE_NAME;
-      $this->logs[substr($log, 4)] = $log;
+  /**
+   * Get the name of the primary civi database
+   */
+  public static function getDatabaseName($logdb = true) {
+    if ($logdb && defined('CIVICRM_LOGGING_DSN')) {
+      $dsn = CIVICRM_LOGGING_DSN;
+    } else {
+      $dsn = CIVICRM_DSN;
     }
+    $ret = DB::parseDSN($dsn);
+    return $ret['database'];
+  }
+  
+  /**
+   * Retrieve a list of tables from the database
+   */
+  public static function fetchTableList($schema='', $filter='civicrm_%') {
+
+    if (!self::$_fetch_cache) {
+      
+      // initialize 
+      self::$_fetch_cache = array();
+      
+      // generate the base SQL
+      $sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = %1 " .
+             "AND TABLE_TYPE = 'BASE TABLE'";
+             
+      // create the parameter array
+      $params = array(1 => array($schema,'String'));
+  
+      // add the filter, if present
+      if ($filter) { 
+        $sql .= " AND TABLE_NAME LIKE %2"; 
+        $params[2] = array($filter,'String');
+      }
+  
+      // fetch the table names
+      $dao = CRM_Core_DAO::executeQuery("{$sql};", $params);
+      
+      // add each table name to the array
+      while ($dao->fetch()) {
+        self::$_fetch_cache[] = $dao->TABLE_NAME;
+      }
+    }
+      
+    return self::$_fetch_cache;
+  }
+  
+  /**
+   * Remove all non-trigger tables
+   * $tables should be a one-dimensional array of table names
+   */
+  public static function filterTriggerTables($tables = array(), $filters = array()) {
+    // if no filters were passed, use the default filters
+    if (!(is_array($filters) && count($filters))) {
+      $filters = self::$_trigger_filters;
+    }
+    
+    // standardize the input
+    if (!is_array($tables)) { $tables = array((string)$tables); }
+    
+    // run the filters
+    foreach ($filters as $one_filter) {
+      $tables = preg_grep($one_filter[0], $tables, $one_filter[1]);
+    }
+    
+    return $tables;
   }
 
   /**

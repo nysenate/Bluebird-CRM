@@ -1,0 +1,6 @@
+name = NYSS CiviCRM delta log module
+description = Contains new trigger definitions for CiviCRM tables to support delta logging (#7893)
+dependencies[] = civicrm
+package = CiviCRM
+core = 7.x
+version = 4.2
