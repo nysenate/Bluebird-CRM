@@ -2503,10 +2503,10 @@ class CRM_Contact_BAO_Query {
           continue;
 
         //NYSS 7946
-        case 'civicrm_changelog_summary':
+        case 'nyss_changelog_summary':
           $from .= "
-            INNER JOIN civicrm_changelog_summary
-              ON civicrm_changelog_summary.altered_contact_id = contact_a.id
+            INNER JOIN nyss_changelog_summary
+              ON nyss_changelog_summary.altered_contact_id = contact_a.id
           ";
           continue;
 
@@ -5435,16 +5435,16 @@ AND   displayRelType.is_active = 1
     $value = date('Y-m-d', strtotime($value));
 
     if ($name == 'log_start_date') {
-      $this->_where[$grouping][] = "civicrm_changelog_summary.log_date >= '{$value} 00:00:00'";
+      $this->_where[$grouping][] = "nyss_changelog_summary.log_date >= '{$value} 00:00:00'";
       $quill = 'Change Log Start Date';
     }
     elseif ($name == 'log_end_date') {
-      $this->_where[$grouping][] = "civicrm_changelog_summary.log_date <= '{$value} 23:59:59'";
+      $this->_where[$grouping][] = "nyss_changelog_summary.log_date <= '{$value} 23:59:59'";
       $quill = 'Change Log End Date';
     }
 
-    $this->_tables['civicrm_changelog_summary'] = 1;
-    $this->_whereTables['civicrm_changelog_summary'] = 1;
+    $this->_tables['nyss_changelog_summary'] = 1;
+    $this->_whereTables['nyss_changelog_summary'] = 1;
 
     $this->_qill[$grouping][] = ts('Modified Date') . ": $quill";
   }//nysslog
