@@ -238,21 +238,22 @@ INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
 INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
   (`log_id`,`log_action`,`action_column`,`log_table_name`,`log_type`,
    `log_user_id`, `log_date`,`altered_contact_id`, `log_conn_id`)
-   SELECT
-     a.`id`, a.`log_action`, a.`log_action`, 'log_civicrm_activity',
-      CONCAT('log_civicrm_activity_for_',
-         case b.`record_type_id`
-            when 1 then 'target'
-            when 2 then 'source'
-            when 3 then 'assignee'
-            else 'unknown'
-            end
-         ),
-      a.`log_user_id`, a.`log_date`, b.`contact_id`, a.`log_conn_id`
-   FROM
-      {{LOGDB}}.`log_civicrm_activity` a INNER JOIN {{LOGDB}}.`log_civicrm_activity_contact` b
-         ON a.`id`=b.`activity_id` AND b.`record_type_id` IN (1,2,3)
-   WHERE (a.`log_action` != 'Initialization');
+  SELECT
+       a.`id`, a.`log_action`, a.`log_action`, 'log_civicrm_activity',
+        CONCAT('log_civicrm_activity_for_',
+           CASE b.`record_type_id`
+              WHEN 1 THEN 'target'
+              WHEN 2 THEN 'source'
+              WHEN 3 THEN 'assignee'
+              ELSE 'unknown'
+              END
+           ) as group_field,
+        a.`log_user_id`, a.`log_date`, b.`contact_id`, a.`log_conn_id`
+     FROM
+        senate_l_martinlog.`log_civicrm_activity` a INNER JOIN senate_l_martinlog.`log_civicrm_activity_contact` b
+           ON a.`id`=b.`activity_id` AND b.`record_type_id` IN (1,2,3) AND a.log_conn_id=b.log_conn_id
+     WHERE (a.`log_action` != 'Initialization')
+  GROUP BY a.log_date, group_field;
 
 
 INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
@@ -339,25 +340,22 @@ INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
 INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
   (`log_id`,`log_action`,`action_column`,`log_table_name`,`log_type`,
    `log_user_id`, `log_date`,`altered_contact_id`, `log_conn_id`)
-   SELECT
-     a.`id`,
-      a.`log_action`, a.`log_action`,
-      'log_civicrm_value_activity_details_6',
-      CONCAT('log_civicrm_value_activity_details_6_for_',
-         case b.`record_type_id`
-            when 1 then 'target'
-            when 2 then 'source'
-            when 3 then 'assignee'
-            else 'unknown'
-            end
-         ),
-      a.`log_user_id`,
-      a.`log_date`,
-      b.`contact_id` , a.`log_conn_id`
-   FROM
-      {{LOGDB}}.`log_civicrm_value_activity_details_6` a INNER JOIN {{LOGDB}}.`log_civicrm_activity_contact` b
-         ON a.`entity_id`=b.`activity_id` AND b.`record_type_id` IN (1,2,3)
-   WHERE (a.`log_action` != 'Initialization');
+  SELECT
+       a.`id`, a.`log_action`, a.`log_action`, 'log_civicrm_value_activity_details_6',
+        CONCAT('log_civicrm_value_activity_details_6_for_',
+           CASE b.`record_type_id`
+              WHEN 1 THEN 'target'
+              WHEN 2 THEN 'source'
+              WHEN 3 THEN 'assignee'
+              ELSE 'unknown'
+              END
+           ) as group_field,
+        a.`log_user_id`, a.`log_date`, b.`contact_id`, a.`log_conn_id`
+     FROM
+        senate_l_martinlog.`log_civicrm_value_activity_details_6` a INNER JOIN senate_l_martinlog.`log_civicrm_activity_contact` b
+           ON a.`id`=b.`activity_id` AND b.`record_type_id` IN (1,2,3) AND a.log_conn_id=b.log_conn_id
+     WHERE (a.`log_action` != 'Initialization')
+  GROUP BY a.log_date, group_field;
 
 /* ---------------------------- end prepopulation queries ---------------------------- */
 
