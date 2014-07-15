@@ -1005,7 +1005,7 @@ COLS;
       $dao = CRM_Core_DAO::executeQuery($sql);
       while ($dao->fetch()) {
         // remove the beginning 'civicrm_' for easier reference
-        $ret[] = preg_replace('/^civicrm_/', '', $dao->table_name, 1);
+        $ret[] = $dao->table_name;
       }
     }
     
