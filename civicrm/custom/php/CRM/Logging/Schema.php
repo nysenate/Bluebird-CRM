@@ -775,6 +775,7 @@ COLS;
                     'civicrm_value_district_information_7'             => 'Contact',
                     'civicrm_value_contact_details_8'                  => 'Contact',
                     'civicrm_activity_contact'                         => 'Activity',
+                    'civicrm_activity'                                 => 'Activity',
                     'civicrm_value_activity_details_6'                 => 'Activity',
                     );
   
@@ -931,7 +932,7 @@ COLS;
   
     // begin civicrm_activity and tables related to "Activity"
     // list of tables dependent on activity entities
-    $add_table_list = array_merge(array('activity'), self::nyssFetchExtendedTables('Activity'));
+    $add_table_list = array_merge(array('civicrm_activity'), self::nyssFetchExtendedTables('Activity'));
     // the special SQL for activity-based triggers
     $sql = "INSERT INTO nyss_changelog_detail (" .
               "`log_id`, `log_action`, `log_table_name`, " .
@@ -954,7 +955,7 @@ COLS;
     // add each table to the special tables array
     foreach ($add_table_list as $k) {
       // civicrm_activity is keyed on `id`.  All the others are on `entity_id`
-      $onesql = str_replace('{{contact_field}}', $k=='activity' ? 'id' : 'entity_id', $sql);
+      $onesql = str_replace('{{contact_field}}', $k=='civicrm_activity' ? 'id' : 'entity_id', $sql);
       $special_tables[$k] = $onesql;
     }
     // end civicrm_activity and tables related to "Activity"
