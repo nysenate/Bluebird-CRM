@@ -802,7 +802,7 @@ COLS;
                         "END; " .
                       "ELSE " .
                         "BEGIN " .
-                          "SET @rev_type = REVERSE(NEW.`log_type`); " .
+                          "SET @rev_type = REVERSE(NEW.`log_table_name`); " .
                           "SET @this_log_type_label=REVERSE(SUBSTR(@rev_type,1,LOCATE('_',@rev_type)-1)); " .
                         "END; " .
                     "END CASE; ";

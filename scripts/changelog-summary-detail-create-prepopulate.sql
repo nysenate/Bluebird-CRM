@@ -72,9 +72,8 @@ CREATE
          WHEN 'log_civicrm_value_constituent_information_1' THEN SET NEW.`log_type_label`='Contact';
          WHEN 'log_civicrm_value_district_information_7' THEN SET NEW.`log_type_label`='Contact';
          WHEN 'log_civicrm_value_contact_details_8' THEN SET NEW.`log_type_label`='Contact';
-         WHEN 'log_civicrm_activity_for_target' THEN SET NEW.`log_type_label`='Activity';
-         WHEN 'log_civicrm_activity_for_assignee' THEN SET NEW.`log_type_label`='Activity';
-         WHEN 'log_civicrm_activity_for_source' THEN SET NEW.`log_type_label`='Activity';
+         WHEN 'log_civicrm_activity' THEN SET NEW.`log_type_label`='Activity';
+         WHEN 'log_civicrm_activity_contact' THEN SET NEW.`log_type_label`='Activity';
          WHEN 'log_civicrm_value_activity_details_6' THEN SET NEW.`log_type_label`='Activity';
          WHEN 'log_civicrm_group_contact' THEN
             BEGIN
@@ -461,7 +460,7 @@ CREATE
       SET @this_log_type_label='';
       /* Calculate the log_type_label, used for grouping purposes */
       /* Also, calculate the log_action field if looking at a group_contact record */
-      CASE NEW.`log_type`
+      CASE NEW.`log_table_name`
          WHEN 'log_civicrm_email' THEN SET @this_log_type_label='Contact';
          WHEN 'log_civicrm_phone' THEN SET @this_log_type_label='Contact';
          WHEN 'log_civicrm_address' THEN SET @this_log_type_label='Contact';
@@ -469,10 +468,13 @@ CREATE
          WHEN 'log_civicrm_im' THEN SET @this_log_type_label='Contact';
          WHEN 'log_civicrm_website' THEN SET @this_log_type_label='Contact';
          WHEN 'log_civicrm_value_constituent_information_1' THEN SET @this_log_type_label='Contact';
+         WHEN 'log_civicrm_value_organization_constituent_informa_3' THEN SET @this_log_type_label='Contact';
+         WHEN 'log_civicrm_value_attachments_5' THEN SET @this_log_type_label='Contact';
          WHEN 'log_civicrm_value_district_information_7' THEN SET @this_log_type_label='Contact';
-         WHEN 'log_civicrm_activity_for_target' THEN SET @this_log_type_label='Activity';
-         WHEN 'log_civicrm_activity_for_assignee' THEN SET @this_log_type_label='Activity';
-         WHEN 'log_civicrm_activity_for_source' THEN SET @this_log_type_label='Activity';
+         WHEN 'log_civicrm_value_contact_details_8' THEN SET @this_log_type_label='Contact';
+         WHEN 'log_civicrm_activity' THEN SET @this_log_type_label='Activity';
+         WHEN 'log_civicrm_activity_contact' THEN SET @this_log_type_label='Activity';
+         WHEN 'log_civicrm_value_activity_details_6' THEN SET @this_log_type_label='Activity';
          WHEN 'log_civicrm_group_contact' THEN
             BEGIN
                SET @this_log_type_label='Group';
@@ -485,7 +487,7 @@ CREATE
             END;
          ELSE
             BEGIN
-               SET @rev_type = REVERSE(NEW.`log_type`);
+               SET @rev_type = REVERSE(NEW.`log_table_name`);
                SET @this_log_type_label=REVERSE(SUBSTR(@rev_type,1,LOCATE('_',@rev_type)-1));
             END;
       END CASE;
