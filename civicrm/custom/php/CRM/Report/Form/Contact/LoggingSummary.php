@@ -181,7 +181,6 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
     $newRows = array();
 
     foreach ($rows as $key => &$row) {
-      error_log(var_export($row,1));
       /* is_deleted should be passed in the row info.  If not, look it up */
       $this_alt_id = $row['log_civicrm_entity_altered_contact_id'];
       if (!array_key_exists('log_civicrm_entity_is_deleted',$row)) {
