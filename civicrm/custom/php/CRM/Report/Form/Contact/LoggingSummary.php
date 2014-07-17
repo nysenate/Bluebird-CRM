@@ -215,15 +215,6 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
         $row['log_civicrm_entity_log_action_label'] = ts('Update');
       }
 
-      /* NYSS 7893 action customization and log_type mapping are now done in SQL triggers */
-      /*if ($newAction = $this->getEntityAction($row['log_civicrm_entity_log_id'],
-                       $row['log_civicrm_entity_log_conn_id'],
-                       $row['log_civicrm_entity_log_type'],
-                       CRM_Utils_Array::value('log_civicrm_entity_log_action', $row)))
-        $row['log_civicrm_entity_log_action'] = $newAction;
-
-      $row['log_civicrm_entity_log_type'] = $this->getLogType($row['log_civicrm_entity_log_type']);*/
-
       /* format the date for proper display */
       $date = CRM_Utils_Date::isoToMysql($row['log_civicrm_entity_log_date']);
 
@@ -259,11 +250,6 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
       }
 
       /* NYSS 7893 we can now identify a unique by change_seq alone.  date left in for ordering */
-      /*$key  = $date . '_' .
-        $row['log_civicrm_entity_log_type'] . '_' .
-        $row['log_civicrm_entity_log_conn_id'] . '_' .
-        $row['log_civicrm_entity_log_user_id'] . '_' .
-        $row['log_civicrm_entity_altered_contact_id'];*/
       $key = $row['log_civicrm_entity_log_date'] . '_' . 
              $row['log_civicrm_entity_log_change_seq'];
       $newRows[$key] = $row;
@@ -321,11 +307,8 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
 
   function groupBy() {
     //NYSS 5751
-    // ported from previous ReportSummary override, which was dropped with #7893
+    // ported from previous ReportSummary override, 
     //NYSS 7893 grouping changed to reflect new single-select table and new sequence generator
-    /*$this->_groupBy = "GROUP BY log_civicrm_entity_log_change_seq, log_civicrm_entity_log_date, " .
-                      "log_civicrm_entity_log_type_label, log_civicrm_entity_log_conn_id, " .
-                      "log_civicrm_entity_log_user_id, log_civicrm_entity_altered_contact_id ";*/
     $this->_groupBy = "";
   }
 

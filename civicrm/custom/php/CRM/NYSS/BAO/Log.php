@@ -15,8 +15,6 @@ class CRM_NYSS_BAO_Log {
     if ( $contactId && CRM_Core_BAO_Log::useLoggingReport() ) {
       //NYSS 6719 call count function directly
       //CRM_Core_Error::debug_var('getTabCount $_POST', $_POST, TRUE, TRUE, 'logCount');
-      /* DEPRECATED IN FAVOR OF getSuperQuickContactLogCount() */
-      //echo self::getEnhancedContactLogCountReport( $contactId );
       echo self::getSuperQuickContactLogCount( $contactId );
     }
     CRM_Utils_System::civiExit( );

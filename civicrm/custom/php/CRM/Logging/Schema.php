@@ -758,7 +758,6 @@ COLS;
         the other hand, the summary table needs the altered_contact_id, but
         the detail has no where to store it.  The log_change_seq field is used
         as a temporary delivery mechanism.  Sloppy, but it works. */
-    // see /scripts/delta-log-triggers.sql for commented version
   
     // set up mapping for log_table_name -> log_type_label
     // note that this does not include civicrm_group_contact
@@ -1048,39 +1047,5 @@ COLS;
     }
     return $customGroupTables;
   }
-
-  /* previous version of above function...above was edited to use built-in functionality */
-  /*static function nyssFetchExtendedTables($table_groups) {
-    // initialize return
-    $ret = array();
-    
-    // standardize input to an array
-    if (!is_array($table_groups)) { 
-      $table_groups = array($table_groups);
-    }
-    
-    // build the match set for the WHERE..IN clause
-    $in_clause=array();
-    foreach ($table_groups as $v) {
-      // remove empty strings
-      if ($v) {
-        $in_clause[] = "'".CRM_Core_DAO::escapeString($v)."'";
-      }
-    }
-    
-    // if a set exists, query for matches
-    if (count($in_clause)) {
-      $sql = "SELECT table_name FROM civicrm_custom_group WHERE extends IN (" . implode(',',$in_clause) . ");";
-      $dao = CRM_Core_DAO::executeQuery($sql);
-      while ($dao->fetch()) {
-        // remove the beginning 'civicrm_' for easier reference
-        $ret[] = $dao->table_name;
-      }
-    }
-    
-    // return the list of matching extended tables
-    return $ret;
-  } */
-
 }
 
