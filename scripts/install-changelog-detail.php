@@ -37,6 +37,9 @@ $sql = str_replace(array('{{CIVIDB}}', '{{LOGDB}}'),
                    array($civi_db, $log_db),
                    $sql);
 
+echo "Executing data conversion using CIVIDB={$civi_db}, LOGDB={$log_db}";
+echo "Please be patient . . . this process could take up to 30 minutes to complete.";
+
 // execute the SQL
 //file_put_contents('sql-test.sql',$sql);
 if (!($dbcon->multi_query($sql))) {
@@ -54,6 +57,9 @@ if (!($dbcon->multi_query($sql))) {
 if ($rc) {
   echo "MySQL Error {$rc}: {$dbcon->error}\n";
   echo "Update failed!\n";
+} else {
+  echo "Conversion success.  MySQL reported no errors.";
+  echo "REBUILD ALL TRIGGERS NOW!";
 }
 
 // clean up

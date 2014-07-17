@@ -32,7 +32,7 @@ DROP TRIGGER IF EXISTS {{CIVIDB}}.`nyss_changelog_detail_before_insert`;
 DROP TABLE IF EXISTS {{CIVIDB}}.`nyss_changelog_detail`;
 CREATE
   TABLE {{CIVIDB}}.`nyss_changelog_detail` (
-   `log_id` INT(10) UNSIGNED NOT NULL COMMENT 'original entity_id being changed',
+   `log_id` INT(10) UNSIGNED NOT NULL COMMENT 'original log table id being changed',
    `log_action` ENUM('Initialization','Insert','Update','Delete') COLLATE utf8_unicode_ci DEFAULT NULL,
    `action_column` ENUM('Insert','Update','Delete','Added','Removed') COLLATE utf8_unicode_ci DEFAULT NULL,
    `log_table_name` VARCHAR(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'the original log table name',
@@ -470,9 +470,13 @@ CREATE
          WHEN 'log_civicrm_value_attachments_5' THEN SET @this_log_type_label='Contact';
          WHEN 'log_civicrm_value_district_information_7' THEN SET @this_log_type_label='Contact';
          WHEN 'log_civicrm_value_contact_details_8' THEN SET @this_log_type_label='Contact';
-         WHEN 'log_civicrm_activity' THEN SET @this_log_type_label='Activity';
          WHEN 'log_civicrm_activity_contact' THEN SET @this_log_type_label='Activity';
          WHEN 'log_civicrm_value_activity_details_6' THEN SET @this_log_type_label='Activity';
+         WHEN 'log_civicrm_case_contact' THEN SET @this_log_type_label='Case'; 
+         WHEN 'log_civicrm_note' THEN
+           BEGIN
+             IF NEW.log_type='Comment' THEN SET @this_log_type_label='Comment'; END IF;
+           END;
          WHEN 'log_civicrm_group_contact' THEN
             BEGIN
                SET @this_log_type_label='Group';
@@ -493,6 +497,24 @@ CREATE
       SET @this_log_type_label = CONCAT(UCASE(LEFT(@this_log_type_label,1)),
                                         SUBSTR(@this_log_type_label,2));
       /* check if this grouping already has a change sequence */
+      IF @this_log_type_label = 'Activity' THEN 
+        BEGIN 
+          SET @nyss_changelog_sequence = NULL; 
+          SELECT `log_change_seq` 
+            INTO @nyss_changelog_sequence 
+            FROM `nyss_changelog_summary` 
+            WHERE 
+              altered_contact_id=@this_altered_contact_id  
+              AND log_conn_id = CONNECTION_ID() 
+              AND log_type_label = 'Activity' 
+            ORDER BY log_change_seq DESC LIMIT 1; 
+        END; 
+      ELSEIF @this_log_type_label <> 'Contact' THEN  
+        BEGIN  
+          SET @nyss_changelog_sequence = NULL;  
+        END;  
+      END IF; 
+      
       IF @nyss_changelog_sequence IS NULL THEN
          /* If it doesn't, insert a new summary row and set the change sequence */
          BEGIN
