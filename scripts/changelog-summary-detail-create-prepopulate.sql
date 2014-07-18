@@ -250,7 +250,7 @@ INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
            ) as group_field,
         a.`log_user_id`, a.`log_date`, b.`contact_id`, a.`log_conn_id`
      FROM
-        senate_l_martinlog.`log_civicrm_activity` a INNER JOIN senate_l_martinlog.`log_civicrm_activity_contact` b
+        {{LOGDB}}.`log_civicrm_activity` a INNER JOIN {{LOGDB}}.`log_civicrm_activity_contact` b
            ON a.`id`=b.`activity_id` AND b.`record_type_id` IN (1,2,3) AND a.log_conn_id=b.log_conn_id
      WHERE (a.`log_action` != 'Initialization')
   GROUP BY a.log_date, group_field;
@@ -352,7 +352,7 @@ INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
            ) as group_field,
         a.`log_user_id`, a.`log_date`, b.`contact_id`, a.`log_conn_id`
      FROM
-        senate_l_martinlog.`log_civicrm_value_activity_details_6` a INNER JOIN senate_l_martinlog.`log_civicrm_activity_contact` b
+        {{LOGDB}}.`log_civicrm_value_activity_details_6` a INNER JOIN {{LOGDB}}.`log_civicrm_activity_contact` b
            ON a.`id`=b.`activity_id` AND b.`record_type_id` IN (1,2,3) AND a.log_conn_id=b.log_conn_id
      WHERE (a.`log_action` != 'Initialization')
   GROUP BY a.log_date, group_field;
