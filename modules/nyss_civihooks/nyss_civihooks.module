@@ -707,6 +707,8 @@ function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) 
   }
 
   //only create a new address if we have key fields
+  //8005 - modified CRM_Core_BAO_Address::dataExists so the below is not really necessary.
+  //leaving in place as it would be better if we could handle here...
   if ( $op == 'create' && $objectName == 'Address' ) {
     $skipFields = array('location_type_id', 'is_primary', 'state_province_id', 'country_id', 'contact_id');
     $skipRecord = true;
