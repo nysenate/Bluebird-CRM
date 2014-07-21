@@ -96,6 +96,7 @@ class CRM_Logging_Schema {
     
     // fetch the list of logging tables and "correct" it
     $all_logs = self::fetchTableList($this->db, 'log_civicrm_%');
+
     foreach ($all_logs as $v) {
       $this->logs[substr($v, 4)] = $v;
     }
@@ -127,10 +128,13 @@ class CRM_Logging_Schema {
    */
   public static function fetchTableList($schema='', $filter='civicrm_%') {
 
-    if (!self::$_fetch_cache) {
-      
-      // initialize 
+    if (!isset(self::$_fetch_cache)) {
       self::$_fetch_cache = array();
+    }
+    
+    if (!isset(self::$_fetch_cache[$filter])) {
+      // initialize 
+      $target = array();
       
       // generate the base SQL
       $sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = %1 " .
@@ -150,11 +154,12 @@ class CRM_Logging_Schema {
       
       // add each table name to the array
       while ($dao->fetch()) {
-        self::$_fetch_cache[] = $dao->TABLE_NAME;
+        $target[] = $dao->TABLE_NAME;
       }
+      self::$_fetch_cache[$filter] = $target;
     }
       
-    return self::$_fetch_cache;
+    return self::$_fetch_cache[$filter];
   }
   
   /**

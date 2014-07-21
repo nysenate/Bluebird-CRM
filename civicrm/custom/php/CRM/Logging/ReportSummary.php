@@ -479,7 +479,6 @@ ORDER BY log_civicrm_entity_log_date DESC {$this->_limit}";
         if ($logTable == 'log_civicrm_case' || $logTable == 'log_civicrm_case_contact') {
           $bracketValue = explode(CRM_Case_BAO_Case::VALUE_SEPARATOR, $bracketValue);
           $bracketValue = CRM_Utils_Array::value(1, $bracketValue);
-          error_log("correcting for case, id=$bracketValue");
         }
       }
       
