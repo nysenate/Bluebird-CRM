@@ -154,7 +154,7 @@ elif [ $create_db -eq 1 ]; then
     exit 1
   fi
   [ $be_quiet -eq 0 ] && set -x
-  mysql $mysql_args -e "create database `$dbname`"
+  mysql $mysql_args -e "create database \`$dbname\`"
 elif [ "$sqlfile" ]; then
   [ $be_quiet -eq 0 ] && set -x
   cat $sqlfile | mysql $mysql_args $dbname
