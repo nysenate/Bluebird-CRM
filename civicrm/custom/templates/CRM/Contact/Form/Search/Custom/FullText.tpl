@@ -70,9 +70,9 @@
         </thead>
         {foreach from=$summary.Contact item=row}
           <tr class="{cycle values="odd-row,even-row"}">
-            <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&context=fulltext&key=`$qfKey`&text=`$text`"}" title="{ts}View contact details{/ts}">{$row.sort_name}</a></td>
+            <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&context=fulltext&key=`$qfKey`&text=`$text`&context=custom"}" title="{ts}View contact details{/ts}">{$row.sort_name}</a></td>
             {if $allowFileSearch}<td>{$row.fileHtml}</td>{/if}{*NYSS 6721*}
-            <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&context=fulltext&key=`$qfKey`&text=`$text`"}">{ts}View{/ts}</a>
+            <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&context=fulltext&key=`$qfKey`&text=`$text`&context=custom"}">{ts}View{/ts}</a>
             </td>
           </tr>
         {/foreach}

@@ -56,3 +56,10 @@ php $app_rootdir/civicrm/scripts/ftsIndexUpdate.php -S $instance
 echo "7949: rebuild shadow tables..."
 dedupe_dir=$script_dir/../modules/nyss_dedupe
 $execSql $instance -f $dedupe_dir/shadow_sync.sql
+
+echo "8005: cleanup addresses with null contact_id..."
+sql="
+  DELETE FROM civicrm_address
+  WHERE contact_id IS NULL
+"
+$execSql $instance -c "$sql" -q

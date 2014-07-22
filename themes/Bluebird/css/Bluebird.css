@@ -1831,3 +1831,7 @@ div.nyss-mailing-subscriptions-admin div.nyss-email-row div.nyss-email-fld input
 div.nyss-mailing-subscriptions-admin div.nyss-email-row {
   margin-bottom: 15px;
 }
+.crm-container span.subscription-link {
+  display: block;
+  padding-top: 4px;
+}

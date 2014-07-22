@@ -15,13 +15,30 @@ class CRM_NYSS_BAO_Log {
     if ( $contactId && CRM_Core_BAO_Log::useLoggingReport() ) {
       //NYSS 6719 call count function directly
       //CRM_Core_Error::debug_var('getTabCount $_POST', $_POST, TRUE, TRUE, 'logCount');
-      echo self::getEnhancedContactLogCountReport( $contactId );
+      echo self::getSuperQuickContactLogCount( $contactId );
     }
     CRM_Utils_System::civiExit( );
+  }
+  
+  /*
+   * new "Super Quick" log count queries new civicrm_changelog_summary table
+   */
+  static function getSuperQuickContactLogCount( $contactId ) {
+    $ret = 0;
+    $contactId = CRM_Utils_Type::escape((int)$contactId, 'Integer');
+    if ( $contactId ) {
+      $sql = "SELECT * FROM `nyss_changelog_summary` " .
+             "WHERE `altered_contact_id` = $contactId " .
+             "GROUP BY log_change_seq;";
+      $ret = CRM_Core_DAO::executeQuery($sql)->N;
+    }
+    return $ret;
   }
 
   /*
    * NYSS 5173 calculate log records using enhanced logging
+   *
+   * DEPRECATED IN FAVOR OF getSuperQuickContactLogCount
    */
   static function getEnhancedContactLogCount( $contactID ) {
     $rptSummary = new CRM_Report_Form_Contact_LoggingSummary();
@@ -110,6 +127,8 @@ class CRM_NYSS_BAO_Log {
    * alternate method for retrieving contact log report count by silently running the report
    * based on unit test from:
    * https://github.com/civicrm/civicrm-core/blob/master/tests/phpunit/CiviTest/CiviReportTestCase.php#L79
+   *
+   * DEPRECATED IN FAVOR OF getSuperQuickContactLogCount
    */
   function getEnhancedContactLogCountReport($contactID) {
     $reportClass = 'CRM_Report_Form_Contact_LoggingSummary';
