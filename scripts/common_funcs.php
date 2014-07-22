@@ -59,4 +59,11 @@ function bootstrapScript($prog, $instance, $dbtype)
   return array('bbconfig'=>$bbconfig, 'dbcon'=>$dbcon);
 } // bootstrapScript()
 
+
+
+function array_value($array, $key, $default_value = null)
+{
+  return (is_array($array) && isset($array[$key])) ? $array[$key] : $default_value;
+}
+
 ?>
