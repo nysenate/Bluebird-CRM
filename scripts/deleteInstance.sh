@@ -7,6 +7,7 @@
 # Organization: New York State Senate
 # Date: 2010-09-14
 # Revised: 2011-03-21
+# Revised: 2014-07-22 - allow hyphens in database names by backquoting names
 #
 
 prog=`basename $0`
@@ -98,19 +99,19 @@ fi
 if [ $files_only -ne 1 ]; then
   echo "Deleting Drupal database for instance [$instance]"
   ( set -x
-    $execSql -c "drop database $db_drup_prefix$db_basename"
+    $execSql -c "drop database `$db_drup_prefix$db_basename`"
   ) || errcode=$(($errcode | 2))
   set +x
 
   echo "Deleting CiviCRM database for instance [$instance]"
   ( set -x
-    $execSql -c "drop database $db_civi_prefix$db_basename"
+    $execSql -c "drop database `$db_civi_prefix$db_basename`"
   ) || errcode=$(($errcode | 4))
   set +x
 
   echo "Deleting Log database for instance [$instance]"
   ( set -x
-    $execSql -c "drop database $db_log_prefix$db_basename"
+    $execSql -c "drop database `$db_log_prefix$db_basename`"
   ) || errcode=$(($errcode | 4))
   set +x
 fi
