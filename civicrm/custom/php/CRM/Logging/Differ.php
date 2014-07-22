@@ -100,6 +100,10 @@ LEFT JOIN civicrm_activity_contact source ON source.activity_id = lt.id AND sour
       case 'civicrm_case':
         $contactIdClause = "AND id = (select case_id FROM civicrm_case_contact WHERE contact_id = %3 LIMIT 1)";
         break;
+      case 'civicrm_group_contact':
+        $join = "LEFT JOIN civicrm_group gp on lt.group_id=gp.id";
+        $contactIdClase = "AND lt.contact_id = %3";
+        break;
       default:
         if (array_key_exists($table, $addressCustomTables)) {
           $join  = "INNER JOIN `{$this->db}`.`log_civicrm_address` et ON et.id = lt.entity_id";

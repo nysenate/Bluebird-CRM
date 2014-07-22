@@ -831,7 +831,6 @@ COLS;
           					"AND log_conn_id = CONNECTION_ID() \n" .
           					"AND log_type_label = 'Activity' \n" .
           			"ORDER BY log_change_seq DESC LIMIT 1; \n" .
-          			"INSERT into stuff (tt) VALUES (concat('setting sequence=',@nyss_changelog_sequence)); \n" .
           		"END; \n" .
           	"ELSEIF @this_log_type_label <> 'Contact' THEN  \n" .
           		"BEGIN  \n" .
