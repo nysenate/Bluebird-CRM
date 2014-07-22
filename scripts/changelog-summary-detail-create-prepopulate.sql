@@ -362,7 +362,7 @@ INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
 
 /* Get the current maximum seed */
 SELECT MAX(`log_change_seq`) INTO @max_stage_seed FROM {{CIVIDB}}.`nyss_changelog_summary`;
-
+IF @max_stage_seed IS NULL OR @max_stage_seed < 0 THEN SET @max_stage_seed=0;
 
 /* Create the sequence table and seed it */
 DROP TABLE IF EXISTS {{CIVIDB}}.`nyss_changelog_sequence`;
