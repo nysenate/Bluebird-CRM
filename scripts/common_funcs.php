@@ -12,6 +12,39 @@ define('DB_TYPE_DRUPAL', 'drupal');
 define('DB_TYPE_LOG', 'log');
 
 
+/**
+ * Implements Python's dict.get() and CiviCRM's CRM_Utils_Array::value()
+ * Check an array for a key.  If the key exists, return its value.
+ * Otherwise, return a default value.
+ */
+function array_value($array, $key, $default_value = null)
+{
+  return (is_array($array) && isset($array[$key])) ? $array[$key] : $default_value;
+} // array_value()
+
+
+
+function getDatabaseName($bbcfg, $dbtype)
+{
+  $valid_dbtypes = array(DB_TYPE_CIVICRM, DB_TYPE_DRUPAL, DB_TYPE_LOG);
+
+  if (in_array($dbtype, $valid_dbtypes)) {
+    $dbname = array_value($bbcfg, 'db.basename');
+    if (!$dbname) {
+      $dbname = array_value($bbcfg, 'shortname', '');
+    }
+    $prefix_param = "db.$dbtype.prefix";
+    $dbname = array_value($bbcfg, $prefix_param, '').$dbname;
+    return $dbname;
+  }
+  else {
+    echo "Invalid database type [$dbtype] specified\n";
+    return null;
+  }
+} // getDatabaseName()
+
+
+
 function getDatabaseConnection($bbcfg, $dbtype)
 {
   // $dbtype should be "civicrm", "drupal", or "log".  The DB_TYPE_CIVICRM,
@@ -23,10 +56,14 @@ function getDatabaseConnection($bbcfg, $dbtype)
     return null;
   }
 
-  $dbname = (isset($bbcfg['db.basename'])) ? $bbcfg['db.basename'] : $bbcfg['shortname'];
+  $dbname = getDatabaseName($bbcfg, $dbtype);
 
-  $prefix_index = "db.$dbtype.prefix";
-  $dbname = $bbcfg[$prefix_index].$dbname;
+  if (!$dbname) {
+    echo "Unable to formulate database name\n";
+    mysql_close($dbcon);
+    return null;
+  }
+
   if (!mysql_select_db($dbname, $dbcon)) {
     echo mysql_error($dbcon)."\n";
     mysql_close($dbcon);
@@ -58,12 +95,5 @@ function bootstrapScript($prog, $instance, $dbtype)
 
   return array('bbconfig'=>$bbconfig, 'dbcon'=>$dbcon);
 } // bootstrapScript()
-
-
-
-function array_value($array, $key, $default_value = null)
-{
-  return (is_array($array) && isset($array[$key])) ? $array[$key] : $default_value;
-}
 
 ?>
