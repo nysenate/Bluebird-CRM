@@ -23,7 +23,6 @@ CREATE
    )
 ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
-
 /* create the detail table and trigger (staging version)
    NOTE this table stages all 17 log tables into a single location
    As each row is inserted, the summary table is built using this data
@@ -361,8 +360,8 @@ INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
 
 
 /* Get the current maximum seed */
-SELECT MAX(`log_change_seq`) INTO @max_stage_seed FROM {{CIVIDB}}.`nyss_changelog_summary`;
-IF @max_stage_seed IS NULL OR @max_stage_seed < 0 THEN SET @max_stage_seed=0;
+SELECT IFNULL(MAX(`log_change_seq`),0) INTO @max_stage_seed FROM {{CIVIDB}}.`nyss_changelog_summary`;
+insert into stuff (tt) values (concat('found seed=',@max_stage_seed));
 
 /* Create the sequence table and seed it */
 DROP TABLE IF EXISTS {{CIVIDB}}.`nyss_changelog_sequence`;
@@ -420,6 +419,7 @@ CREATE
    END;
 /* //
 DELIMITER ; */
+
 
 
 /* Alter the detail table to reflect the proper structure, not staging 
