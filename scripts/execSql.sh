@@ -18,6 +18,7 @@
 # Revised: 2013-11-21 - Make sure login-path is not used if insecure login
 # Revised: 2014-03-14 - Added option --schemas-only to inhibit dumping row data
 # Revised: 2014-05-20 - Added --insecure-login command line switch.
+# Revised: 2014-07-22 - Allow hyphens in instance names by backquoting db name
 #
 
 prog=`basename $0`
@@ -153,7 +154,7 @@ elif [ $create_db -eq 1 ]; then
     exit 1
   fi
   [ $be_quiet -eq 0 ] && set -x
-  mysql $mysql_args -e "create database $dbname"
+  mysql $mysql_args -e "create database \`$dbname\`"
 elif [ "$sqlfile" ]; then
   [ $be_quiet -eq 0 ] && set -x
   cat $sqlfile | mysql $mysql_args $dbname

@@ -1,5 +1,7 @@
 <?php
+
 require_once 'common_funcs.php';
+
 
 // initialize some variables
 // this script
@@ -16,52 +18,40 @@ if (!$instance) {
   exit(1);
 }
 
-$bootstrap = bootstrapScript($prog, $instance, DB_TYPE_CIVICRM);
+$bootstrap = bootstrap_script($prog, $instance, DB_TYPE_CIVICRM);
 if ($bootstrap == null) {
   echo "$prog: Unable to bootstrap this script; exiting\n";
   exit(1);
 }
 
 $bbconfig = $bootstrap['bbconfig'];
-$dbcon = $bootstrap['dbcon'];
+$dbh = $bootstrap['dbh'];
 
 $rc = 0;
 
 // load the SQL file
 $sql = file_get_contents("{$thispath}/changelog-summary-detail-create-prepopulate.sql");
-$civi_db = "`" . getDatabaseName($bbconfig, DB_TYPE_CIVICRM) . "`";
-$log_db = "`" . getDatabaseName($bbconfig, DB_TYPE_LOG) . "`";
+$civi_db = "`" . get_database_name($bbconfig, DB_TYPE_CIVICRM) . "`";
+$log_db = "`" . get_database_name($bbconfig, DB_TYPE_LOG) . "`";
 
 // replace database identifiers
 $sql = str_replace(array('{{CIVIDB}}', '{{LOGDB}}'),
                    array($civi_db, $log_db),
                    $sql);
 
-echo "Executing data conversion using CIVIDB={$civi_db}, LOGDB={$log_db}\n";
-echo "Please be patient . . . this process could take up to 30 minutes to complete.\n";
+echo "Executing data conversion using CIVIDB=$civi_db, LOGDB=$log_db\n";
+echo "Please be patient... this process could take up to 30 minutes to complete.\n";
 
 // execute the SQL
-//file_put_contents('sql-test.sql',$sql);
-if (!($dbcon->multi_query($sql))) {
-  $rc = $dbcon->errno;
-} else {
-  do {
-    $res = $dbcon->store_result();
-    if ($dbcon->errno) {
-      $rc = $dbcon->errno;
-    }
-  } while ($dbcon->more_results() && $dbcon->next_result());
-  $rc = $dbcon->errno;
-}
-
-if ($rc) {
-  echo "MySQL Error {$rc}: {$dbcon->error}\n";
+if ($dbh->exec($sql) === false) {
+  echo "Database Error: ".print_r($dbh->errorInfo());
   echo "Update failed!\n";
-} else {
+}
+else {
   echo "Conversion success.  MySQL reported no errors.\n";
   echo "REBUILD ALL TRIGGERS NOW!\n";
 }
 
 // clean up
-$dbcon->close();
+$dbh = null;
 exit($rc);
