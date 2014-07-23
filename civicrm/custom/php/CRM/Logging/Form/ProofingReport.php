@@ -485,6 +485,11 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
     //close table
     $html .= "</table>";
 
+    //remove temp table
+    CRM_Core_DAO::executeQuery("
+      DROP TABLE IF EXISTS {$tmpChgProof}
+    ");
+
     //now generate pdf
     $actionName = $this->controller->getButtonName( );
     //PDF
