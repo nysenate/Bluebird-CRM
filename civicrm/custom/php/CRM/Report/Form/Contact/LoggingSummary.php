@@ -80,6 +80,10 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
             'type' => CRM_Utils_Type::T_TIME,
             'title' => ts('When'),
           ),
+          'log_entity_info' => array(
+            'no_display' => TRUE,
+            'required' => TRUE,
+          ),
           'altered_contact_id' => array(
             'no_display' => TRUE,
             'required' => TRUE,
@@ -194,8 +198,9 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
         $row['log_civicrm_entity_altered_contact_link'] =
           CRM_Utils_System::url('civicrm/contact/view', 'reset=1&cid=' . $this_alt_id);
         $row['log_civicrm_entity_altered_contact_hover'] = ts("Go to contact summary");
-        /* NYSS 7893 changed getEntityValue to key off log_change_seq */
-        $entity = $this->getEntityValue($row['log_civicrm_entity_log_change_seq'], $row['log_civicrm_entity_log_date']);
+        /* NYSS 7893 changed getEntityValue to use pre-populated log_entity_info */
+        //$entity = $this->getEntityValue($row['log_civicrm_entity_log_change_seq'], $row['log_civicrm_entity_log_date']);
+        $entity = CRM_Utils_Array::value('log_civicrm_entity_log_entity_info', $row, '');
         if ($entity) {
           $row['log_civicrm_entity_altered_contact'] .= " [{$entity}]";
         }
@@ -398,9 +403,7 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
            "{$this->_groupBy} " .
            "ORDER BY log_civicrm_entity_log_date DESC " .
            "{$this->_limit}";
-
     $this->buildRows($sql, $rows);
-
     // format result set.
     $this->formatDisplay($rows);
 

@@ -1,3 +1,46 @@
+DROP PROCEDURE IF EXISTS {{CIVIDB}}.`nyss_debug_log`;
+/* don't need the delimiters when running through multi_query */
+/* DELIMITER // */
+CREATE DEFINER=CURRENT_USER() PROCEDURE {{CIVIDB}}.`nyss_debug_log`(IN `msg` TEXT)
+	LANGUAGE SQL
+	NOT DETERMINISTIC
+	CONTAINS SQL
+	SQL SECURITY DEFINER
+	COMMENT ''
+BEGIN
+	IF @nyss_debug_flag IS NOT NULL THEN
+		BEGIN
+			SET @nyss_debug_function_thismsg = msg;
+			IF IFNULL(@nyss_debug_function_thismsg,'') = '' THEN 
+				SET @nyss_debug_function_thismsg='No Message Provided';
+			END IF;
+			SELECT COUNT(*) INTO @nyss_debug_function_table_count
+				FROM information_schema.tables 
+				WHERE table_schema = DATABASE() AND table_name = 'nyss_debug';
+			IF IFNULL(@nyss_debug_function_table_count,0) < 1 THEN
+				BEGIN
+					DROP TABLE IF EXISTS nyss_debug;
+				   CREATE TABLE nyss_debug (
+						id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
+						msg TEXT,
+						ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+					);
+				END;
+			END IF;
+			INSERT INTO nyss_debug (`msg`) VALUES (@nyss_debug_function_thismsg);
+			SET @nyss_debug_function_thismsg = NULL;
+			SET @nyss_debug_function_table_count = NULL;
+		END;
+	END IF;
+END;
+/* don't need the delimiters when running through multi_query */
+/* //
+DELIMITER ; */
+
+
+CALL {{CIVIDB}}.nyss_debug_log('Begin install script');
+
+
 /* create the summary table
    NOTE this table is created as a staging table initially to speed up the prepopulation routines
    This table will be altered at the end to drop any irrelevant columns */
@@ -17,11 +60,14 @@ CREATE
       /* the contrived action label, allows for special processing of group_contact (et al..?) */
       `log_action_label` ENUM('Insert','Update','Delete','Added','Removed') NOT NULL DEFAULT 'Update' COLLATE 'utf8_unicode_ci',
       /* points to the id of the entity being changed for this contact, i.e., log_id in detail */
+      `log_entity_info` VARCHAR(255) NULL DEFAULT NULL,
       PRIMARY KEY (`log_change_seq`),
       /* actual index used for prepopulation */
       INDEX idx__changelog_summary__stage_index (`log_date_extract`,`log_conn_id`,`log_user_id`,`altered_contact_id`,`log_type_label`)
    )
 ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CALL {{CIVIDB}}.nyss_debug_log('Dropped/created nyss_changelog_summary');
 
 /* create the detail table and trigger (staging version)
    NOTE this table stages all 17 log tables into a single location
@@ -43,13 +89,14 @@ CREATE
    `log_conn_id` INT(11) NULL DEFAULT NULL COMMENT 'This field is obsolete, and will be removed after staging',
    `log_change_seq` BIGINT(20) NOT NULL DEFAULT 0 COMMENT 'unique-per-session value generated for each record',
    `altered_contact_id` INT(10) UNSIGNED NOT NULL COMMENT 'contact id for record being changed',
+   `log_entity_info` VARCHAR(255) NULL DEFAULT NULL,
    /* staging index */
    INDEX `idx__changelog_staging__search_help` (`log_date_extract`,`log_conn_id`,`log_user_id`,`altered_contact_id`)
   )
 ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 /* don't need the delimiters when running through multi_query */
-/* DELIMITER //*/
+/* DELIMITER // */
 CREATE
    DEFINER = CURRENT_USER
    TRIGGER {{CIVIDB}}.`nyss_changelog_detail_before_insert`
@@ -74,6 +121,11 @@ CREATE
          WHEN 'log_civicrm_activity' THEN SET NEW.`log_type_label`='Activity';
          WHEN 'log_civicrm_activity_contact' THEN SET NEW.`log_type_label`='Activity';
          WHEN 'log_civicrm_value_activity_details_6' THEN SET NEW.`log_type_label`='Activity';
+         WHEN 'log_civicrm_note' THEN
+           BEGIN
+             IF NEW.log_type='Comment' THEN SET @this_log_type_label='Comment'; 
+             ELSE SET @this_log_type_label='Note'; END IF;
+           END;
          WHEN 'log_civicrm_group_contact' THEN
             BEGIN
                SET NEW.`log_type_label`='Group';
@@ -116,11 +168,11 @@ CREATE
          /* If it doesn't, insert a new summary row and set the change sequence */
          BEGIN
             INSERT INTO {{CIVIDB}}.`nyss_changelog_summary`
-               (`log_date_extract`, `log_conn_id`, `log_user_id`,     `altered_contact_id`,
-					 `log_type_label`,   `log_date`,    `log_action_label`)
+               (`log_date_extract`, `log_conn_id`, `log_user_id`, `altered_contact_id`,
+                `log_type_label`, `log_date`, `log_action_label`, `log_entity_info`)
                VALUES
                (NEW.`log_date_extract`, NEW.`log_conn_id`, NEW.`log_user_id`, NEW.`altered_contact_id`,
-					 NEW.`log_type_label`,   NEW.`log_date`,    @this_log_action);
+                NEW.`log_type_label`, NEW.`log_date`, @this_log_action, NEW.`log_entity_info`);
             SET @this_change_seq = LAST_INSERT_ID();
          END;
       ELSE
@@ -135,8 +187,116 @@ CREATE
       SET NEW.`log_change_seq` = @this_change_seq;
    END;
 /* //
-DELIMITER ; */
+DELIMITER ;  */
 
+CALL {{CIVIDB}}.nyss_debug_log('Dropped/created nyss_changelog_detail and staging trigger');
+/* create the dated lookup table for entity information */
+
+/* for group */
+DROP TEMPORARY TABLE IF EXISTS {{LOGDB}}.nyss_temp_staging_group;
+CREATE TEMPORARY TABLE {{LOGDB}}.nyss_temp_staging_group (
+  	id INT(10) UNSIGNED NOT NULL,
+  	title VARCHAR(64) NULL DEFAULT NULL,
+  	log_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  	log_end_date TIMESTAMP NULL DEFAULT NULL,
+  	INDEX `idx__staging_date` (`log_date`,`log_end_date`),
+  	INDEX `idx__staging_id` (`id`)
+	)
+	SELECT 
+	  a.id,a.title,a.log_date,
+	  (SELECT DATE_SUB(b.log_date,INTERVAL 1 SECOND) from {{LOGDB}}.log_civicrm_group b
+	  WHERE b.log_date > a.log_date and a.id=b.id
+	  ORDER BY b.log_date LIMIT 1) as log_end_date
+	FROM {{LOGDB}}.log_civicrm_group a;
+
+CALL {{CIVIDB}}.nyss_debug_log('Created nyss_temp_staging_group');
+
+
+/* for tag */
+DROP TEMPORARY TABLE IF EXISTS {{LOGDB}}.nyss_temp_staging_tag;
+CREATE TEMPORARY TABLE {{LOGDB}}.nyss_temp_staging_tag (
+	id INT(10) UNSIGNED NOT NULL,
+	name VARCHAR(64) NULL DEFAULT NULL,
+	log_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	log_end_date TIMESTAMP NULL DEFAULT NULL,
+	INDEX `idx__staging_date` (`log_date`,`log_end_date`),
+	INDEX `idx__staging_id` (`id`)
+	)
+	SELECT a.id,a.name,a.log_date,
+	IFNULL((SELECT DATE_SUB(b.log_date,INTERVAL 1 SECOND) from {{LOGDB}}.log_civicrm_tag b
+	WHERE b.log_date > a.log_date and a.id=b.id
+	ORDER BY b.log_date LIMIT 1),NOW()) as log_end_date
+	FROM {{LOGDB}}.log_civicrm_tag a;
+
+CALL {{CIVIDB}}.nyss_debug_log('Created nyss_temp_staging_tag');
+
+
+/* for relationship type */
+DROP TEMPORARY TABLE IF EXISTS {{LOGDB}}.nyss_temp_staging_relationship;
+CREATE TEMPORARY TABLE {{LOGDB}}.nyss_temp_staging_relationship (
+	id INT(10) UNSIGNED NOT NULL,
+	label_a_b VARCHAR(64) NULL DEFAULT NULL,
+	log_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	log_end_date TIMESTAMP NULL DEFAULT NULL,
+	INDEX `idx__staging_date` (`log_date`,`log_end_date`),
+	INDEX `idx__staging_id` (`id`)
+	)
+	SELECT a.id,a.label_a_b,a.log_date,
+	IFNULL((SELECT DATE_SUB(b.log_date,INTERVAL 1 SECOND) from {{LOGDB}}.log_civicrm_relationship_type b
+	WHERE b.log_date > a.log_date and a.id=b.id
+	ORDER BY b.log_date LIMIT 1),NOW()) as log_end_date
+	FROM {{LOGDB}}.log_civicrm_relationship_type a;
+
+CALL {{CIVIDB}}.nyss_debug_log('Created nyss_temp_staging_relationship');
+
+
+/* for activity */
+DROP TEMPORARY TABLE IF EXISTS {{LOGDB}}.nyss_temp_staging_activity;
+CREATE TEMPORARY TABLE {{LOGDB}}.nyss_temp_staging_activity (
+	id INT(10) UNSIGNED NOT NULL,
+	label VARCHAR(255) NOT NULL,
+	log_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	log_end_date TIMESTAMP NULL DEFAULT NULL,
+	INDEX `idx__staging_date` (`log_date`,`log_end_date`),
+	INDEX `idx__staging_id` (`id`)
+	)
+	SELECT a.id, IFNULL(d.label,'NO LABEL'), a.log_date,
+	IFNULL((SELECT DATE_SUB(b.log_date,INTERVAL 1 SECOND) from {{LOGDB}}.log_civicrm_activity b
+	WHERE b.log_date > a.log_date and a.id=b.id
+	ORDER BY b.log_date LIMIT 1),NOW()) as log_end_date
+	FROM {{LOGDB}}.log_civicrm_activity a
+		inner join 
+		({{CIVIDB}}.civicrm_option_group c INNER JOIN
+		 {{CIVIDB}}.civicrm_option_value d ON c.name='activity_type' AND c.id=d.option_group_id)
+		ON a.activity_type_id=d.value;
+		
+CALL {{CIVIDB}}.nyss_debug_log('Created nyss_temp_staging_activity');
+
+
+/* for case */
+DROP TEMPORARY TABLE IF EXISTS {{LOGDB}}.nyss_temp_staging_case;
+CREATE TEMPORARY TABLE {{LOGDB}}.nyss_temp_staging_case (
+	id INT(10) UNSIGNED NOT NULL,
+	label VARCHAR(255) NOT NULL,
+	log_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	log_end_date TIMESTAMP NULL DEFAULT NULL,
+	INDEX `idx__staging_date` (`log_date`,`log_end_date`),
+	INDEX `idx__staging_id` (`id`)
+	)
+	SELECT a.id, d.label, a.log_date,
+	IFNULL((SELECT DATE_SUB(b.log_date,INTERVAL 1 SECOND) from {{LOGDB}}.log_civicrm_case b
+	WHERE b.log_date > a.log_date and a.id=b.id
+	ORDER BY b.log_date LIMIT 1),NOW()) as log_end_date
+	FROM {{LOGDB}}.log_civicrm_case a
+		inner join 
+		({{CIVIDB}}.civicrm_option_group c INNER JOIN
+		 {{CIVIDB}}.civicrm_option_value d ON c.name='case_type' AND c.id=d.option_group_id)
+		ON a.case_type_id=d.value;
+
+CALL {{CIVIDB}}.nyss_debug_log('Created nyss_temp_staging_case');
+
+
+CALL {{CIVIDB}}.nyss_debug_log('Done with temp staging.  Begin detail population');
 
 /* prepopulate the staging table with existing records (17 queries) */
 /* ---------------------------- begin prepopulation queries ---------------------------- */
@@ -149,6 +309,7 @@ INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
    FROM {{LOGDB}}.`log_civicrm_contact`
    WHERE (`log_action` != 'Initialization');
 
+CALL {{CIVIDB}}.nyss_debug_log('Populated contact');
 
 INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
   (`log_id`,`log_action`,`action_column`,`log_table_name`,`log_type`,
@@ -159,6 +320,7 @@ INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
    FROM {{LOGDB}}.`log_civicrm_email`
    WHERE (`log_action` != 'Initialization');
 
+CALL {{CIVIDB}}.nyss_debug_log('Populated email');
 
 INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
   (`log_id`,`log_action`,`action_column`,`log_table_name`,`log_type`,
@@ -169,6 +331,7 @@ INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
    FROM {{LOGDB}}.`log_civicrm_phone`
    WHERE (`log_action` != 'Initialization');
 
+CALL {{CIVIDB}}.nyss_debug_log('Populated phone');
 
 INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
   (`log_id`,`log_action`,`action_column`,`log_table_name`,`log_type`,
@@ -179,64 +342,76 @@ INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
    FROM {{LOGDB}}.`log_civicrm_address`
    WHERE (`log_action` != 'Initialization');
 
+CALL {{CIVIDB}}.nyss_debug_log('Populated address');
 
 INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
   (`log_id`,`log_action`,`action_column`,`log_table_name`,`log_type`,
-   `log_user_id`, `log_date`,`altered_contact_id`, `log_conn_id`)
+   `log_user_id`, `log_date`,`altered_contact_id`, `log_conn_id`, `log_entity_info`)
    SELECT
      `id`, `log_action`, `log_action`, 'log_civicrm_note', 'log_civicrm_note',
-     `log_user_id`, `log_date`, `entity_id`, `log_conn_id`
+     `log_user_id`, `log_date`, `entity_id`, `log_conn_id`, `subject`
    FROM {{LOGDB}}.`log_civicrm_note`
-   WHERE (`log_action` != 'Initialization') AND entity_table = 'civicrm_contact';
+   WHERE (`log_action` != 'Initialization') AND `entity_table` = 'civicrm_contact';
 
+CALL {{CIVIDB}}.nyss_debug_log('Populated note');
 
 INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
   (`log_id`,`log_action`,`action_column`,`log_table_name`,`log_type`,
-   `log_user_id`, `log_date`,`altered_contact_id`, `log_conn_id`)
+   `log_user_id`, `log_date`,`altered_contact_id`, `log_conn_id`,`log_entity_info`)
    SELECT
      a.`id`, a.`log_action`, a.`log_action`, 'log_civicrm_note', 'log_civicrm_note_comment',
-     a.`log_user_id`, a.`log_date`, b_alias.`entity_id`, a.`log_conn_id`
+     a.`log_user_id`, a.`log_date`, b_alias.`entity_id`, a.`log_conn_id`, a.`subject`
    FROM {{LOGDB}}.`log_civicrm_note` a
      INNER JOIN
      (SELECT DISTINCT b.`id`, b.`entity_id` FROM {{CIVIDB}}.`civicrm_note` b
       WHERE b.`entity_table`='civicrm_contact') b_alias
-     ON a.`entity_id` = b_alias.`id`
+      ON a.`entity_id` = b_alias.`id` 
    WHERE (a.`log_action` != 'Initialization') AND a.`entity_table` = 'civicrm_note';
 
+CALL {{CIVIDB}}.nyss_debug_log('Populated comment');
 
 INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
   (`log_id`,`log_action`,`action_column`,`log_table_name`,`log_type`,
-   `log_user_id`, `log_date`,`altered_contact_id`, `log_conn_id`)
+   `log_user_id`, `log_date`,`altered_contact_id`, `log_conn_id`,`log_entity_info`)
    SELECT
-   `id`, `log_action`, `status`, 'log_civicrm_group_contact', 'log_civicrm_group_contact',
-   `log_user_id`, `log_date`, `contact_id`, `log_conn_id`
-   FROM {{LOGDB}}.`log_civicrm_group_contact`
-   WHERE (`log_action` != 'Initialization');
+   a.`id`, a.`log_action`, a.`status`, 'log_civicrm_group_contact', 'log_civicrm_group_contact',
+   a.`log_user_id`, a.`log_date`, a.`contact_id`, a.`log_conn_id`, b.`title`
+   FROM {{LOGDB}}.`log_civicrm_group_contact` a LEFT JOIN
+        {{LOGDB}}.`nyss_temp_staging_group` b
+         ON a.`group_id`=b.`id` AND a.`log_date` BETWEEN b.`log_date` AND b.`log_end_date`
+   WHERE (a.`log_action` != 'Initialization');
 
+CALL {{CIVIDB}}.nyss_debug_log('Populated group_contact');
 
 INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
   (`log_id`,`log_action`,`action_column`,`log_table_name`,`log_type`,
-   `log_user_id`, `log_date`,`altered_contact_id`, `log_conn_id`)
+   `log_user_id`, `log_date`,`altered_contact_id`, `log_conn_id`, `log_entity_info`)
    SELECT
-   `id`, `log_action`, `log_action`, 'log_civicrm_entity_tag', 'log_civicrm_entity_tag',
-   `log_user_id`, `log_date`, `entity_id`, `log_conn_id`
-   FROM {{LOGDB}}.`log_civicrm_entity_tag`
-   WHERE (`log_action` != 'Initialization') AND (entity_table = 'civicrm_contact');
+   a.`id`, a.`log_action`, a.`log_action`, 'log_civicrm_entity_tag', 'log_civicrm_entity_tag',
+   a.`log_user_id`, a.`log_date`, a.`entity_id`, a.`log_conn_id`, b.`name`
+   FROM {{LOGDB}}.`log_civicrm_entity_tag` a
+        LEFT JOIN {{LOGDB}}.`nyss_temp_staging_tag` b
+        ON a.`tag_id`=b.`id` AND a.`log_date` BETWEEN b.`log_date` AND b.`log_end_date`
+   WHERE (a.`log_action` != 'Initialization') AND (a.`entity_table` = 'civicrm_contact');
 
+CALL {{CIVIDB}}.nyss_debug_log('Populated tag');
 
 INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
   (`log_id`,`log_action`,`action_column`,`log_table_name`,`log_type`,
-   `log_user_id`, `log_date`,`altered_contact_id`, `log_conn_id`)
+   `log_user_id`, `log_date`,`altered_contact_id`, `log_conn_id`, `log_entity_info`)
    SELECT
-   `id`, `log_action`, `log_action`, 'log_civicrm_relationship', 'log_civicrm_relationship',
-   `log_user_id`, `log_date`, `contact_id_a`, `log_conn_id`
-   FROM {{LOGDB}}.`log_civicrm_relationship`
-   WHERE (`log_action` != 'Initialization');
+   a.`id`, a.`log_action`, a.`log_action`, 'log_civicrm_relationship', 'log_civicrm_relationship',
+   a.`log_user_id`, a.`log_date`, a.`contact_id_a`, a.`log_conn_id`, b.`label_a_b`
+   FROM {{LOGDB}}.`log_civicrm_relationship` a
+        LEFT JOIN {{LOGDB}}.`nyss_temp_staging_relationship` b
+        ON a.`relationship_type_id`=b.`id` AND a.`log_date` BETWEEN b.`log_date` AND b.`log_end_date`
+   WHERE (a.`log_action` != 'Initialization');
 
+CALL {{CIVIDB}}.nyss_debug_log('Populated relationship');
 
 INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
   (`log_id`,`log_action`,`action_column`,`log_table_name`,`log_type`,
-   `log_user_id`, `log_date`,`altered_contact_id`, `log_conn_id`)
+   `log_user_id`, `log_date`,`altered_contact_id`, `log_conn_id`, `log_entity_info`)
   SELECT
        a.`id`, a.`log_action`, a.`log_action`, 'log_civicrm_activity',
         CONCAT('log_civicrm_activity_for_',
@@ -247,25 +422,31 @@ INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
               ELSE 'unknown'
               END
            ) as group_field,
-        a.`log_user_id`, a.`log_date`, b.`contact_id`, a.`log_conn_id`
+        a.`log_user_id`, a.`log_date`, b.`contact_id`, a.`log_conn_id`, c.`label`
      FROM
         {{LOGDB}}.`log_civicrm_activity` a INNER JOIN {{LOGDB}}.`log_civicrm_activity_contact` b
            ON a.`id`=b.`activity_id` AND b.`record_type_id` IN (1,2,3) AND a.log_conn_id=b.log_conn_id
+         LEFT JOIN {{LOGDB}}.`nyss_temp_staging_activity` c
+         ON a.`id`=c.`id` AND a.`log_date` BETWEEN c.`log_date` AND c.`log_end_date`
      WHERE (a.`log_action` != 'Initialization')
   GROUP BY a.log_date, group_field;
 
+CALL {{CIVIDB}}.nyss_debug_log('Populated activity');
 
 INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
   (`log_id`,`log_action`,`action_column`,`log_table_name`,`log_type`,
-   `log_user_id`, `log_date`,`altered_contact_id`, `log_conn_id`)
+   `log_user_id`, `log_date`,`altered_contact_id`, `log_conn_id`, `log_entity_info`)
    SELECT a.`id`, a.`log_action`, a.`log_action`, 'log_civicrm_case', 'log_civicrm_case',
-   a.`log_user_id`, a.`log_date`, b.`contact_id`, a.`log_conn_id`
+   a.`log_user_id`, a.`log_date`, b.`contact_id`, a.`log_conn_id`, c.`label`
    FROM
       {{LOGDB}}.`log_civicrm_case` a
          INNER JOIN {{LOGDB}}.`log_civicrm_case_contact` b
             ON a.`id`=b.`case_id`
+         LEFT JOIN {{LOGDB}}.`nyss_temp_staging_case` c
+            ON a.`id`=b.`id` AND a.`log_date` BETWEEN c.`log_date` AND c.`log_end_date`
    WHERE (a.`log_action` != 'Initialization');
 
+CALL {{CIVIDB}}.nyss_debug_log('Populated case');
 
 INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
   (`log_id`,`log_action`,`action_column`,`log_table_name`,`log_type`,
@@ -279,6 +460,7 @@ INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
    FROM {{LOGDB}}.`log_civicrm_value_constituent_information_1`
    WHERE (`log_action` != 'Initialization');
 
+CALL {{CIVIDB}}.nyss_debug_log('Populated constituent_information');
 
 INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
   (`log_id`,`log_action`,`action_column`,`log_table_name`,`log_type`,
@@ -292,6 +474,7 @@ INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
    FROM {{LOGDB}}.`log_civicrm_value_organization_constituent_informa_3`
    WHERE (`log_action` != 'Initialization');
 
+CALL {{CIVIDB}}.nyss_debug_log('Populated organization_constituent_information');
 
 INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
   (`log_id`,`log_action`,`action_column`,`log_table_name`,`log_type`,
@@ -305,6 +488,7 @@ INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
    FROM {{LOGDB}}.`log_civicrm_value_attachments_5`
    WHERE (`log_action` != 'Initialization');
 
+CALL {{CIVIDB}}.nyss_debug_log('Populated attachments');
 
 INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
   (`log_id`,`log_action`,`action_column`,`log_table_name`,`log_type`,
@@ -318,6 +502,7 @@ INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
    FROM {{LOGDB}}.`log_civicrm_value_contact_details_8`
    WHERE (`log_action` != 'Initialization');
 
+CALL {{CIVIDB}}.nyss_debug_log('Populated contact_details');
 
 INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
   (`log_id`,`log_action`,`action_column`,`log_table_name`,`log_type`,
@@ -335,6 +520,7 @@ INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
             ON a.`entity_id`=b.`id`
    WHERE (a.`log_action` != 'Initialization');
 
+CALL {{CIVIDB}}.nyss_debug_log('Populated district_information');
 
 INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
   (`log_id`,`log_action`,`action_column`,`log_table_name`,`log_type`,
@@ -353,11 +539,15 @@ INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
      FROM
         {{LOGDB}}.`log_civicrm_value_activity_details_6` a INNER JOIN {{LOGDB}}.`log_civicrm_activity_contact` b
            ON a.`id`=b.`activity_id` AND b.`record_type_id` IN (1,2,3) AND a.log_conn_id=b.log_conn_id
+         LEFT JOIN {{LOGDB}}.`nyss_temp_staging_activity` c
+         ON a.`id`=c.`id` AND a.`log_date` BETWEEN c.`log_date` AND c.`log_end_date`
      WHERE (a.`log_action` != 'Initialization')
   GROUP BY a.log_date, group_field;
 
+CALL {{CIVIDB}}.nyss_debug_log('Populated activity_details');
 /* ---------------------------- end prepopulation queries ---------------------------- */
 
+CALL {{CIVIDB}}.nyss_debug_log('Done with prepopulation, begin clean-up');
 
 /* Get the current maximum seed */
 SELECT IFNULL(MAX(`log_change_seq`),0) INTO @max_stage_seed FROM {{CIVIDB}}.`nyss_changelog_summary`;
@@ -369,10 +559,11 @@ CREATE TABLE {{CIVIDB}}.`nyss_changelog_sequence` (
 ) ENGINE=InnoDB;
 INSERT INTO {{CIVIDB}}.`nyss_changelog_sequence` (`seq`) VALUES (@max_stage_seed + 1);
 
+CALL {{CIVIDB}}.nyss_debug_log('nyss_changelog_sequence initialized');
 
 /* Create the sequence generator function */
 DROP FUNCTION IF EXISTS {{CIVIDB}}.`nyss_fnGetChangelogSequence`;
-/* DELIMITER // */
+/* DELIMITER //  */
 CREATE DEFINER=CURRENT_USER FUNCTION {{CIVIDB}}.`nyss_fnGetChangelogSequence`()
    RETURNS bigint(20)
    LANGUAGE SQL
@@ -390,8 +581,9 @@ CREATE DEFINER=CURRENT_USER FUNCTION {{CIVIDB}}.`nyss_fnGetChangelogSequence`()
       RETURN @nyss_changelog_sequence;
    END;
 /* //
-DELIMITER ; */
+DELIMITER ;  */
 
+CALL {{CIVIDB}}.nyss_debug_log('Sequence function created');
 
 /* Alter the summary table to reflect the proper structure, not staging */
 ALTER TABLE {{CIVIDB}}.`nyss_changelog_summary`
@@ -404,7 +596,7 @@ ALTER TABLE {{CIVIDB}}.`nyss_changelog_summary`
    
 DROP TRIGGER IF EXISTS {{CIVIDB}}.`nyss_changelog_summary_before_insert`;
 
-/* DELIMITER // */
+/* DELIMITER //  */
 CREATE
    DEFINER = CURRENT_USER
    TRIGGER {{CIVIDB}}.`nyss_changelog_summary_before_insert`
@@ -417,8 +609,9 @@ CREATE
     SET NEW.`log_change_seq`=nyss_fnGetChangelogSequence();
    END;
 /* //
-DELIMITER ; */
+DELIMITER ;  */
 
+CALL {{CIVIDB}}.nyss_debug_log('Altered changelog_summary and trigger');
 
 
 /* Alter the detail table to reflect the proper structure, not staging 
@@ -429,7 +622,6 @@ ALTER TABLE {{CIVIDB}}.`nyss_changelog_detail`
    DROP `log_user_id`,
    DROP `log_date`,
    DROP `log_date_extract`,
-   /* DROP `log_conn_id`, */
    DROP `altered_contact_id`,
    DROP INDEX `idx__changelog_staging__search_help`,
    ADD INDEX `idx__changelog_detail__change_seq` (`log_change_seq`);
@@ -437,7 +629,7 @@ ALTER TABLE {{CIVIDB}}.`nyss_changelog_detail`
    
 /* Recreate the detail table trigger */
 DROP TRIGGER IF EXISTS {{CIVIDB}}.`nyss_changelog_detail_before_insert`;
-/* DELIMITER // */
+/* DELIMITER //  */
 CREATE
    DEFINER = CURRENT_USER
    TRIGGER {{CIVIDB}}.`nyss_changelog_detail_before_insert`
@@ -474,7 +666,8 @@ CREATE
          WHEN 'log_civicrm_case_contact' THEN SET @this_log_type_label='Case'; 
          WHEN 'log_civicrm_note' THEN
            BEGIN
-             IF NEW.log_type='Comment' THEN SET @this_log_type_label='Comment'; END IF;
+             IF NEW.log_type='Comment' THEN SET @this_log_type_label='Comment'; 
+             ELSE SET @this_log_type_label='Note'; END IF;
            END;
          WHEN 'log_civicrm_group_contact' THEN
             BEGIN
@@ -518,9 +711,9 @@ CREATE
          /* If it doesn't, insert a new summary row and set the change sequence */
          BEGIN
             INSERT INTO {{CIVIDB}}.`nyss_changelog_summary`
-               (`log_action_label`,`log_type_label`,`altered_contact_id`,`log_conn_id`)
+               (`log_action_label`,`log_type_label`,`altered_contact_id`,`log_conn_id`,`log_entity_info`)
                VALUES
-               (@this_log_action, @this_log_type_label, @this_altered_contact_id, CONNECTION_ID());
+               (@this_log_action, @this_log_type_label, @this_altered_contact_id, CONNECTION_ID(),NEW.`log_entity_info`);
          END;
       ELSE
          /* if it does, this changeset includes multiple changes...the label should be 'Update' */
@@ -534,4 +727,14 @@ CREATE
       SET NEW.`log_change_seq` = @nyss_changelog_sequence;
    END;
 /* //
-DELIMITER ; */
+DELIMITER ;  */
+
+CALL {{CIVIDB}}.nyss_debug_log('Altered changelog_detail and trigger');
+DROP TEMPORARY TABLE IF EXISTS {{LOGDB}}.nyss_temp_staging_group;
+DROP TEMPORARY TABLE IF EXISTS {{LOGDB}}.nyss_temp_staging_tag;
+DROP TEMPORARY TABLE IF EXISTS {{LOGDB}}.nyss_temp_staging_relationship;
+DROP TEMPORARY TABLE IF EXISTS {{LOGDB}}.nyss_temp_staging_activity;
+DROP TEMPORARY TABLE IF EXISTS {{LOGDB}}.nyss_temp_staging_case;
+
+CALL {{CIVIDB}}.nyss_debug_log('Dropped all temporary staging tables');
+CALL {{CIVIDB}}.nyss_debug_log('Completed Install Script');
