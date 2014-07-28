@@ -799,7 +799,8 @@ COLS;
     // write the label map for note comment (special SQL)
     $trigger_sql   .= "WHEN 'log_civicrm_note' THEN \n" .
                         "BEGIN \n" .
-                          "IF NEW.log_type='Comment' THEN SET @this_log_type_label='Comment'; END IF; \n " .
+                          "IF NEW.log_type='Comment' THEN SET @this_log_type_label='Comment'; \n " .
+                          "ELSE SET @this_log_type_label='Note'; END IF; \n " .
                         "END; \n";
                         
     // write the label map for group contact (special SQL)
@@ -840,9 +841,10 @@ COLS;
             "IF @nyss_changelog_sequence IS NULL THEN \n" .
               "BEGIN \n" .
                 "INSERT INTO `nyss_changelog_summary` \n" .
-                "(`log_action_label`,`log_type_label`,`altered_contact_id`, `log_conn_id`) \n" .
+                "(`log_action_label`,`log_type_label`,`altered_contact_id`, `log_conn_id`, `log_entity_info`) \n" .
                 "VALUES \n" .
-                "(@this_log_action, @this_log_type_label, @this_altered_contact_id, CONNECTION_ID()); \n" .
+                "(@this_log_action, @this_log_type_label, @this_altered_contact_id, " .
+                "CONNECTION_ID(), NEW.`log_entity_info`); \n" .
               "END; \n" .
             "ELSE \n" .
               "BEGIN \n" .
@@ -874,34 +876,62 @@ COLS;
     // begin standard tables
     // the "standard" tables are those that relate directly to civicrm_contact
     // i.e., no need for further joins in order to discover the altered contact_id
-    // a table list in the form of array ('table_name' => array ('contact_id_field', 'log_type') )
+    // a table list in the form of array :
+    //    contact_id    => field with the altered_contact_id
+    //    log_type      => the log type to populate in summary
+    //    entity_field  => the field used to look up the bracket info (opt)
+    //    entity_table  => the table to search for the bracket info (opt)
+    //    bracket_field => the field holding the bracket info (opt)
     $standard_tables = array(
-                            'civicrm_contact'       => array('id','Contact'),
-                            'civicrm_email'         => array('contact_id','Contact'),
-                            'civicrm_phone'         => array('contact_id','Contact'),
-                            'civicrm_address'       => array('contact_id','Contact'),
-                            'civicrm_group_contact' => array('contact_id','Group'),
-                            'civicrm_relationship'  => array('contact_id_a','Relationship'),
+                            'civicrm_contact'       => array('contact_id'=>'id',
+                                                             'log_type'=>'Contact',
+                                                            ),
+                            'civicrm_email'         => array('contact_id'=>'contact_id',
+                                                             'log_type'=>'Contact',
+                                                            ),
+                            'civicrm_phone'         => array('contact_id'=>'contact_id',
+                                                             'log_type'=>'Contact',
+                                                            ),
+                            'civicrm_address'       => array('contact_id'=>'contact_id',
+                                                             'log_type'=>'Contact',
+                                                            ),
+                            'civicrm_group_contact' => array('contact_id'=>'contact_id',
+                                                             'log_type'=>'Group',
+                                                             'entity_field'=>'group_id',
+                                                             'entity_table'=>'civicrm_group',
+                                                             'bracket_field'=>'title'
+                                                            ),
+                            'civicrm_relationship'  => array('contact_id'=>'contact_id_a',
+                                                             'log_type'=>'Relationship',
+                                                             'entity_field'=>'relationship_type_id',
+                                                             'entity_table'=>'civicrm_relationship_type',
+                                                             'bracket_field'=>'label_a_b'
+                                                            ),
                             );
   
     // add the extended tables for all contact types.  all should be keyed on entity_id
     foreach (self::nyssFetchExtendedTables('Contact') as $v) {
-      $standard_tables[$v] = array('entity_id','Contact');
+      $standard_tables[$v] = array('contact_id'=>'entity_id', 'log_type'=>'Contact');
     }
-    
+
     // sql for the "standard table" triggers
-    $sql = "INSERT IGNORE INTO `nyss_changelog_detail` (" .
-              "`log_id`, `log_action`, `log_table_name`, " .
-              "`log_type`, `log_conn_id`, `log_change_seq`" .
-            ") VALUES (" .
-              "NEW.`id`, '{eventName}', '{{table_name}}', " .
-              "'{{log_type}}', CONNECTION_ID(), NEW.`{{contact_id}}`" .
-            ");";
+    $insert_fields = "`log_id`,`log_action`,`log_table_name`,`log_type`,`log_conn_id`,`log_change_seq`";
+    $insert_values = "NEW.`id`,'{eventName}','{{table_name}}','{{log_type}}',CONNECTION_ID(),NEW.`{{contact_id}}`";
+    $sql = "INSERT IGNORE INTO `nyss_changelog_detail` ({{fields}}) VALUES ({{values}});";
   
     // construct the "standard table" triggers, replacing the tokens during iteration
   	foreach ($standard_tables as $k=>$v) {
-      $search = array('{{table_name}}','{{log_type}}','{{contact_id}}');
-      $replace = array("log_{$k}",$v[1],$v[0]);
+  	  $entity_field  = CRM_Utils_Array::value('entity_field',$v,'');
+ 	    $entity_table  = CRM_Utils_Array::value('entity_table',$v,'');
+ 	    $bracket_field = CRM_Utils_Array::value('bracket_field',$v,'');
+ 	    $this_fields = $insert_fields . (($entity_field && $entity_table && $bracket_field) ? ",`log_entity_info`" : '');
+ 	    $this_values = $insert_values . 
+ 	                      (($entity_field && $entity_table && $bracket_field) ?
+ 	                      ",(SELECT `{$bracket_field}` FROM `{$entity_table}` et WHERE et.`id`=NEW.`{$entity_field}`)" :
+ 	                      '');
+  	    
+      $search = array('{{fields}}','{{values}}','{{table_name}}','{{log_type}}','{{contact_id}}');
+      $replace = array($this_fields,$this_values,"log_{$k}",$v['log_type'],$v['contact_id']);
       $this->delta_triggers[$k] = str_replace($search, $replace, $sql);
     }
     // end standard tables
@@ -914,36 +944,46 @@ COLS;
 
     // begin civicrm_case
     $special_tables['civicrm_case_contact'] = 
+            "SELECT d.`label` INTO @trigger_info FROM \n" .
+              "civicrm_case a INNER JOIN ( \n" .
+              "civicrm_option_group c INNER JOIN civicrm_option_value d " .
+                "ON c.`name`='case_type' AND c.`id`=d.`option_group_id`) \n" .
+              "ON a.`case_type_id`=d.`value` WHERE a.`id`=NEW.`case_id`; \n " .
             "INSERT IGNORE INTO `nyss_changelog_detail` (" .
               "`log_id`, `log_action`, `log_table_name`, " .
-              "`log_type`, `log_conn_id`, `log_change_seq`" .
+              "`log_type`, `log_conn_id`, `log_change_seq`, " .
+              "`log_entity_info` \n" .
             ") VALUES (" .
               "NEW.`id`, '{eventName}', '{{table_name}}', " .
-              "'Case', CONNECTION_ID(), NEW.`contact_id`" .
-            ");";
+              "'Case', CONNECTION_ID(), NEW.`contact_id`, @trigger_info" .
+            "); \n";
     // end civicrm_case
   
     // begin civicrm_note
     $special_tables['civicrm_note'] =
            "SET @trigger_contact_id = 0; \n" .
            "SET @trigger_tname = 'Note'; \n" .
+           "SET @trigger_info = ''; \n" .
            "IF NEW.`entity_table` = 'civicrm_contact' THEN \n" .
-              "SET @trigger_contact_id = NEW.`entity_id`; \n" .
+              "BEGIN \n" .
+                "SET @trigger_contact_id = NEW.`entity_id`; \n" .
+                "SET @trigger_info = NEW.`subject`; \n" .
+              "END; \n" .              
            "ELSEIF NEW.`entity_table` = 'civicrm_note' THEN \n" .
               "BEGIN \n" .
-                "SELECT a.`entity_id` INTO @trigger_contact_id FROM civicrm_note a \n" .
+                "SELECT a.`entity_id`,a.`subject`,'Comment' \n" .
+                "INTO @trigger_contact_id, @trigger_info, @trigger_tname FROM civicrm_note a \n" .
                 "WHERE a.`entity_table`='civicrm_contact' AND a.`id`=NEW.`entity_id`; \n" .
-                "SET @trigger_tname = 'Comment'; \n" .
               "END; \n" .
            "ELSE SET @trigger_contact_id = 0; \n" .
            "END IF; \n" .
            "IF @trigger_contact_id > 0 THEN \n" .
               "INSERT INTO nyss_changelog_detail ( \n" .
                 "`log_id`, `log_action`, `log_table_name`, \n" .
-                "`log_type`, `log_conn_id`, `log_change_seq` \n" .
+                "`log_type`, `log_conn_id`, `log_change_seq`, `log_entity_info` \n" .
               " ) VALUES ( \n" .
                 "NEW.id, '{eventName}', '{{table_name}}', \n" .
-                "@trigger_tname, CONNECTION_ID(), @trigger_contact_id \n" .
+                "@trigger_tname, CONNECTION_ID(), @trigger_contact_id, @trigger_info \n" .
               ");\n" .
            "END IF; ";
     // end civicrm_note
@@ -956,21 +996,27 @@ COLS;
            "ELSE SET @trigger_contact_id = 0; \n" .
            "END IF; \n" .
            "IF @trigger_contact_id > 0 THEN \n" .
+              "SELECT `name` INTO @trigger_info FROM civicrm_tag WHERE `id` = NEW.`tag_id`; \n" .
               "INSERT INTO nyss_changelog_detail ( \n" .
                 "`log_id`, `log_action`, `log_table_name`, \n" .
-                "`log_type`, `log_conn_id`, `log_change_seq` \n" .
+                "`log_type`, `log_conn_id`, `log_change_seq`, `log_entity_info` \n" .
               " ) VALUES ( \n" .
                 "NEW.id, '{eventName}', '{{table_name}}', \n" .
-                "'Tag', CONNECTION_ID(), @trigger_contact_id \n" .
+                "'Tag', CONNECTION_ID(), @trigger_contact_id, @trigger_info \n" .
               ");\n" .
            "END IF; ";
     // end civicrm_entity_tag
 
     // begin civicrm_activity_contact
     $special_tables['civicrm_activity_contact'] =
+           "SELECT d.`label` INTO @trigger_info FROM " .
+            "civicrm_activity a INNER JOIN ( \n " .
+              "civicrm_option_group c INNER JOIN civicrm_option_value d " .
+              "ON c.`name`='activity_type' AND c.`id`=d.`option_group_id`) \n" .
+            "ON a.`activity_type_id`=d.`value` WHERE a.`id`=NEW.`activity_id`; \n" .
            "INSERT INTO nyss_changelog_detail (" .
               "`log_id`, `log_action`, `log_table_name`, \n" .
-              "`log_type`, `log_conn_id`, `log_change_seq` \n" .
+              "`log_type`, `log_conn_id`, `log_change_seq`, `log_entity_info` \n" .
            ") VALUES (" .
               "NEW.id, '{eventName}', '{{table_name}}', \n" .
               "CONCAT( \n" .
@@ -982,7 +1028,7 @@ COLS;
                   "ELSE 'Unknown' \n" .
                 "END \n" .
               "), \n" .
-              "CONNECTION_ID(), NEW.contact_id \n" .
+              "CONNECTION_ID(), NEW.contact_id, @trigger_info \n" .
             ");";
     // end civicrm_activity_contact
     
@@ -990,9 +1036,9 @@ COLS;
     // list of tables dependent on activity entities
     $add_table_list = array_merge(array('civicrm_activity'), self::nyssFetchExtendedTables('Activity'));
     // the special SQL for activity-based triggers
-    $sql = "INSERT INTO nyss_changelog_detail (" .
+    $sql =  "INSERT INTO nyss_changelog_detail (" .
               "`log_id`, `log_action`, `log_table_name`, \n" .
-              "`log_type`, `log_conn_id`, `log_change_seq` \n" .
+              "`log_type`, `log_conn_id`, `log_change_seq`, `log_entity_info` \n" .
            ") SELECT \n" .
               "NEW.id, '{eventName}', '{{table_name}}', \n" .
               "CONCAT( \n" .
@@ -1005,13 +1051,25 @@ COLS;
                 "END \n" .
               "), \n" .
               "CONNECTION_ID(), \n" .
-              "b.contact_id \n" .
+              "b.contact_id, @trigger_info \n" .
               "FROM civicrm_activity_contact b \n" .
               "WHERE b.activity_id = NEW.{{contact_field}};";
     // add each table to the special tables array
     foreach ($add_table_list as $k) {
+      if ($k=='civicrm_activity') {
+        $added_sql = "SELECT d.`label` INTO @trigger_info FROM \n" .
+                        "civicrm_option_group c INNER JOIN civicrm_option_value d " .
+                        "ON c.`id`=d.`option_group_id` \n" .
+                        "WHERE c.`name`='activity_type' AND d.`value`=NEW.`activity_type_id`; \n";
+      } else {
+        $added_sql = "SELECT d.`label` INTO @trigger_info FROM " .
+                      "civicrm_activity a INNER JOIN ( \n " .
+                        "civicrm_option_group c INNER JOIN civicrm_option_value d " .
+                        "ON c.`name`='activity_type' AND c.`id`=d.`option_group_id`) \n" .
+                      "ON a.`activity_type_id`=d.`value` WHERE a.`id`=NEW.`entity_id`; \n";
+      }
       // civicrm_activity is keyed on `id`.  All the others are on `entity_id`
-      $onesql = str_replace('{{contact_field}}', $k=='civicrm_activity' ? 'id' : 'entity_id', $sql);
+      $onesql = $added_sql . str_replace('{{contact_field}}', $k=='civicrm_activity' ? 'id' : 'entity_id', $sql);
       $special_tables[$k] = $onesql;
     }
     // end civicrm_activity and tables related to "Activity"
