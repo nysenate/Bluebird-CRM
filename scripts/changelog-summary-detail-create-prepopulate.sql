@@ -123,8 +123,8 @@ CREATE
          WHEN 'log_civicrm_value_activity_details_6' THEN SET NEW.`log_type_label`='Activity';
          WHEN 'log_civicrm_note' THEN
            BEGIN
-             IF NEW.log_type='Comment' THEN SET @this_log_type_label='Comment'; 
-             ELSE SET @this_log_type_label='Note'; END IF;
+             IF NEW.log_type='Comment' THEN SET NEW.`log_type_label`='Comment'; 
+             ELSE SET NEW.`log_type_label`='Note'; END IF;
            END;
          WHEN 'log_civicrm_group_contact' THEN
             BEGIN
