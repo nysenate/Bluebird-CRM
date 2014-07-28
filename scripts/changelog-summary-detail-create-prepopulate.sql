@@ -443,7 +443,7 @@ INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
          INNER JOIN {{LOGDB}}.`log_civicrm_case_contact` b
             ON a.`id`=b.`case_id`
          LEFT JOIN {{LOGDB}}.`nyss_temp_staging_case` c
-            ON a.`id`=b.`id` AND a.`log_date` BETWEEN c.`log_date` AND c.`log_end_date`
+            ON a.`id`=c.`id` AND a.`log_date` BETWEEN c.`log_date` AND c.`log_end_date`
    WHERE (a.`log_action` != 'Initialization');
 
 CALL {{CIVIDB}}.nyss_debug_log('Populated case');
