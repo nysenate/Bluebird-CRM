@@ -228,8 +228,10 @@ class CRM_Contact_BAO_Contact extends CRM_Contact_DAO_Contact {
       isset($params['employer_id'])
     )
     ) {
+      //NYSS 8009
       // create current employer
-      if (isset($params['employer_id'])) {
+      if (isset($params['employer_id']) || isset($params['current_employer_id'])) {
+        $params['employer_id'] = (!empty($params['employer_id'])) ? $params['employer_id'] : $params['current_employer_id'];
         CRM_Contact_BAO_Contact_Utils::createCurrentEmployerRelationship($contact->id,
           $params['employer_id'], $employerId
         );
