@@ -207,7 +207,8 @@ CREATE TEMPORARY TABLE {{LOGDB}}.nyss_temp_staging_group (
 	  IFNULL((SELECT DATE_SUB(b.log_date,INTERVAL 1 SECOND) from {{LOGDB}}.log_civicrm_group b
 	WHERE b.log_date > a.log_date and a.id=b.id
 	ORDER BY b.log_date LIMIT 1),NOW()) as log_end_date
-	FROM {{LOGDB}}.log_civicrm_group a;
+	FROM {{LOGDB}}.log_civicrm_group a
+	GROUP BY a.id,a.log_date,a.log_conn_id,a.log_user_id;
 
 CALL {{CIVIDB}}.nyss_debug_log('Created nyss_temp_staging_group');
 
