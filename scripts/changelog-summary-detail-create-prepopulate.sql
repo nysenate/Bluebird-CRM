@@ -123,8 +123,8 @@ CREATE
          WHEN 'log_civicrm_value_activity_details_6' THEN SET NEW.`log_type_label`='Activity';
          WHEN 'log_civicrm_note' THEN
            BEGIN
-             IF NEW.log_type='Comment' THEN SET @this_log_type_label='Comment'; 
-             ELSE SET @this_log_type_label='Note'; END IF;
+             IF NEW.log_type='Comment' THEN SET NEW.`log_type_label`='Comment'; 
+             ELSE SET NEW.`log_type_label`='Note'; END IF;
            END;
          WHEN 'log_civicrm_group_contact' THEN
             BEGIN
@@ -443,7 +443,7 @@ INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
          INNER JOIN {{LOGDB}}.`log_civicrm_case_contact` b
             ON a.`id`=b.`case_id`
          LEFT JOIN {{LOGDB}}.`nyss_temp_staging_case` c
-            ON a.`id`=b.`id` AND a.`log_date` BETWEEN c.`log_date` AND c.`log_end_date`
+            ON a.`id`=c.`id` AND a.`log_date` BETWEEN c.`log_date` AND c.`log_end_date`
    WHERE (a.`log_action` != 'Initialization');
 
 CALL {{CIVIDB}}.nyss_debug_log('Populated case');
