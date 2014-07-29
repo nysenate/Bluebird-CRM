@@ -158,7 +158,7 @@ CREATE
              WHERE
                 `log_date_extract`=NEW.`log_date_extract`
                 AND `log_conn_id`=NEW.`log_conn_id`
-                AND `log_user_id`=NEW.`log_user_id`
+                AND IFNULL(`log_user_id`,-1)=IFNULL(NEW.`log_user_id`-1)
                 AND `altered_contact_id`=NEW.`altered_contact_id`
                 AND `log_type_label`=NEW.`log_type_label`;
          END;
@@ -204,9 +204,9 @@ CREATE TEMPORARY TABLE {{LOGDB}}.nyss_temp_staging_group (
 	)
 	SELECT 
 	  a.id,a.title,a.log_date,
-	  (SELECT DATE_SUB(b.log_date,INTERVAL 1 SECOND) from {{LOGDB}}.log_civicrm_group b
-	  WHERE b.log_date > a.log_date and a.id=b.id
-	  ORDER BY b.log_date LIMIT 1) as log_end_date
+	  IFNULL((SELECT DATE_SUB(b.log_date,INTERVAL 1 SECOND) from {{LOGDB}}.log_civicrm_group b
+	WHERE b.log_date > a.log_date and a.id=b.id
+	ORDER BY b.log_date LIMIT 1),NOW()) as log_end_date
 	FROM {{LOGDB}}.log_civicrm_group a;
 
 CALL {{CIVIDB}}.nyss_debug_log('Created nyss_temp_staging_group');
