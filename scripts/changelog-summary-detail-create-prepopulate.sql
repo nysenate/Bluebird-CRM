@@ -158,7 +158,7 @@ CREATE
              WHERE
                 `log_date_extract`=NEW.`log_date_extract`
                 AND `log_conn_id`=NEW.`log_conn_id`
-                AND `log_user_id`=NEW.`log_user_id`
+                AND IFNULL(`log_user_id`,-1)=IFNULL(NEW.`log_user_id`-1)
                 AND `altered_contact_id`=NEW.`altered_contact_id`
                 AND `log_type_label`=NEW.`log_type_label`;
          END;
@@ -204,10 +204,11 @@ CREATE TEMPORARY TABLE {{LOGDB}}.nyss_temp_staging_group (
 	)
 	SELECT 
 	  a.id,a.title,a.log_date,
-	  (SELECT DATE_SUB(b.log_date,INTERVAL 1 SECOND) from {{LOGDB}}.log_civicrm_group b
-	  WHERE b.log_date > a.log_date and a.id=b.id
-	  ORDER BY b.log_date LIMIT 1) as log_end_date
-	FROM {{LOGDB}}.log_civicrm_group a;
+	  IFNULL((SELECT DATE_SUB(b.log_date,INTERVAL 1 SECOND) from {{LOGDB}}.log_civicrm_group b
+	WHERE b.log_date > a.log_date and a.id=b.id
+	ORDER BY b.log_date LIMIT 1),NOW()) as log_end_date
+	FROM {{LOGDB}}.log_civicrm_group a
+	GROUP BY a.id,a.log_date,a.log_conn_id,a.log_user_id;
 
 CALL {{CIVIDB}}.nyss_debug_log('Created nyss_temp_staging_group');
 
@@ -255,12 +256,15 @@ DROP TEMPORARY TABLE IF EXISTS {{LOGDB}}.nyss_temp_staging_activity;
 CREATE TEMPORARY TABLE {{LOGDB}}.nyss_temp_staging_activity (
 	id INT(10) UNSIGNED NOT NULL,
 	label VARCHAR(255) NOT NULL,
+	log_action ENUM('Initialization','Insert','Update','Delete'),
+	log_user_id INT(11) NULL DEFAULT NULL,
+	log_conn_id INT(11) NULL DEFAULT NULL,
 	log_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	log_end_date TIMESTAMP NULL DEFAULT NULL,
 	INDEX `idx__staging_date` (`log_date`,`log_end_date`),
 	INDEX `idx__staging_id` (`id`)
 	)
-	SELECT a.id, IFNULL(d.label,'NO LABEL'), a.log_date,
+	SELECT a.id, IFNULL(d.label,'NO LABEL'), a.log_action, a.log_user_id, a.log_conn_id, a.log_date,
 	IFNULL((SELECT DATE_SUB(b.log_date,INTERVAL 1 SECOND) from {{LOGDB}}.log_civicrm_activity b
 	WHERE b.log_date > a.log_date and a.id=b.id
 	ORDER BY b.log_date LIMIT 1),NOW()) as log_end_date
@@ -268,7 +272,8 @@ CREATE TEMPORARY TABLE {{LOGDB}}.nyss_temp_staging_activity (
 		inner join 
 		({{CIVIDB}}.civicrm_option_group c INNER JOIN
 		 {{CIVIDB}}.civicrm_option_value d ON c.name='activity_type' AND c.id=d.option_group_id)
-		ON a.activity_type_id=d.value;
+		ON a.activity_type_id=d.value
+	WHERE a.log_action != 'Initialization';
 		
 CALL {{CIVIDB}}.nyss_debug_log('Created nyss_temp_staging_activity');
 
@@ -412,25 +417,24 @@ CALL {{CIVIDB}}.nyss_debug_log('Populated relationship');
 INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
   (`log_id`,`log_action`,`action_column`,`log_table_name`,`log_type`,
    `log_user_id`, `log_date`,`altered_contact_id`, `log_conn_id`, `log_entity_info`)
-  SELECT
-       a.`id`, a.`log_action`, a.`log_action`, 'log_civicrm_activity',
-        CONCAT('log_civicrm_activity_for_',
-           CASE b.`record_type_id`
-              WHEN 1 THEN 'target'
-              WHEN 2 THEN 'source'
-              WHEN 3 THEN 'assignee'
-              ELSE 'unknown'
-              END
-           ) as group_field,
-        a.`log_user_id`, a.`log_date`, b.`contact_id`, a.`log_conn_id`, c.`label`
-     FROM
-        {{LOGDB}}.`log_civicrm_activity` a INNER JOIN {{LOGDB}}.`log_civicrm_activity_contact` b
-           ON a.`id`=b.`activity_id` AND b.`record_type_id` IN (1,2,3) AND a.log_conn_id=b.log_conn_id
-         LEFT JOIN {{LOGDB}}.`nyss_temp_staging_activity` c
-         ON a.`id`=c.`id` AND a.`log_date` BETWEEN c.`log_date` AND c.`log_end_date`
-     WHERE (a.`log_action` != 'Initialization')
-  GROUP BY a.log_date, group_field;
-
+  SELECT 
+  	a.`id`, a.`log_action`, a.`log_action`, 'log_civicrm_activity',
+  	CONCAT('log_civicrm_activity_for_',
+  			CASE b.`record_type_id` 
+  			  WHEN 1 THEN 'target' 
+  			  WHEN 2 THEN 'source' 
+  			  WHEN 3 THEN 'assignee' 
+  			  ELSE 'unknown' 
+  			END
+  	  ) as group_field,
+  	a.`log_user_id`, a.`log_date`, b.`contact_id`, a.`log_conn_id`, a.`label`
+  FROM
+  	{{LOGDB}}.`nyss_temp_staging_activity` a INNER JOIN {{LOGDB}}.`log_civicrm_activity_contact` b 
+  		ON a.`id`=b.`activity_id`
+  WHERE
+  	a.`log_action` != 'Initialization' AND 
+  	b.`log_date` BETWEEN a.`log_date` AND a.`log_end_date`;
+	
 CALL {{CIVIDB}}.nyss_debug_log('Populated activity');
 
 INSERT IGNORE INTO {{CIVIDB}}.`nyss_changelog_detail`
