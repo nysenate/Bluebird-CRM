@@ -363,7 +363,9 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
   }
 
   //3674 add limit submit js to all submit buttons
-  if ( isset( $form->_elementIndex['buttons'] ) ) {
+  if ( isset($form->_elementIndex['buttons']) &&
+    strpos($formName, 'Inline') === FALSE
+  ) {
     $buttons =& $form->getElement( 'buttons' );
     $formID =  $form->_attributes['id'];
     $formAction = $form->_attributes['action'];
