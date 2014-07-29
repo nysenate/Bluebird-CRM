@@ -158,7 +158,7 @@ CREATE
              WHERE
                 `log_date_extract`=NEW.`log_date_extract`
                 AND `log_conn_id`=NEW.`log_conn_id`
-                AND IFNULL(`log_user_id`,-1)=IFNULL(NEW.`log_user_id`-1)
+                AND IFNULL(`log_user_id`,-1)=IFNULL(NEW.`log_user_id`,-1)
                 AND `altered_contact_id`=NEW.`altered_contact_id`
                 AND `log_type_label`=NEW.`log_type_label`;
          END;
