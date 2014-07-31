@@ -205,7 +205,8 @@ CREATE TEMPORARY TABLE {{LOGDB}}.nyss_temp_staging_group (
 	)
 	SELECT 
 	  a.id,a.title,a.log_date,
-	  IFNULL((SELECT DATE_SUB(b.log_date,INTERVAL 1 SECOND) from {{LOGDB}}.log_civicrm_group b
+	  IFNULL((SELECT DATE_SUB(b.log_date,INTERVAL 1 SECOND) as log_end_date 
+	FROM {{LOGDB}}.log_civicrm_group b
 	WHERE b.log_date > a.log_date and a.id=b.id
 	ORDER BY b.log_date LIMIT 1),NOW()) as log_end_date
 	FROM {{LOGDB}}.log_civicrm_group a
@@ -225,7 +226,8 @@ CREATE TEMPORARY TABLE {{LOGDB}}.nyss_temp_staging_tag (
 	INDEX `idx__staging_id` (`id`)
 	)
 	SELECT a.id,a.name,a.log_date,
-	IFNULL((SELECT DATE_SUB(b.log_date,INTERVAL 1 SECOND) from {{LOGDB}}.log_civicrm_tag b
+	IFNULL((SELECT DATE_SUB(b.log_date,INTERVAL 1 SECOND) as log_end_date
+	FROM {{LOGDB}}.log_civicrm_tag b
 	WHERE b.log_date > a.log_date and a.id=b.id
 	ORDER BY b.log_date LIMIT 1),NOW()) as log_end_date
 	FROM {{LOGDB}}.log_civicrm_tag a;
@@ -244,7 +246,8 @@ CREATE TEMPORARY TABLE {{LOGDB}}.nyss_temp_staging_relationship (
 	INDEX `idx__staging_id` (`id`)
 	)
 	SELECT a.id,a.label_a_b,a.log_date,
-	IFNULL((SELECT DATE_SUB(b.log_date,INTERVAL 1 SECOND) from {{LOGDB}}.log_civicrm_relationship_type b
+	IFNULL((SELECT DATE_SUB(b.log_date,INTERVAL 1 SECOND) as log_end_date
+	FROM {{LOGDB}}.log_civicrm_relationship_type b
 	WHERE b.log_date > a.log_date and a.id=b.id
 	ORDER BY b.log_date LIMIT 1),NOW()) as log_end_date
 	FROM {{LOGDB}}.log_civicrm_relationship_type a;
@@ -265,8 +268,9 @@ CREATE TEMPORARY TABLE {{LOGDB}}.nyss_temp_staging_activity (
 	INDEX `idx__staging_date` (`log_date`,`log_end_date`),
 	INDEX `idx__staging_id` (`id`)
 	)
-	SELECT a.id, IFNULL(d.label,'NO LABEL'), a.log_action, a.log_user_id, a.log_conn_id, a.log_date,
-	IFNULL((SELECT DATE_SUB(b.log_date,INTERVAL 1 SECOND) from {{LOGDB}}.log_civicrm_activity b
+	SELECT a.id, IFNULL(d.label,'NO LABEL') as label, a.log_action, a.log_user_id, a.log_conn_id, a.log_date,
+	IFNULL((SELECT DATE_SUB(b.log_date,INTERVAL 1 SECOND) as log_end_date
+	FROM {{LOGDB}}.log_civicrm_activity b
 	WHERE b.log_date > a.log_date and a.id=b.id
 	ORDER BY b.log_date LIMIT 1),NOW()) as log_end_date
 	FROM {{LOGDB}}.log_civicrm_activity a
@@ -290,7 +294,8 @@ CREATE TEMPORARY TABLE {{LOGDB}}.nyss_temp_staging_case (
 	INDEX `idx__staging_id` (`id`)
 	)
 	SELECT a.id, d.label, a.log_date,
-	IFNULL((SELECT DATE_SUB(b.log_date,INTERVAL 1 SECOND) from {{LOGDB}}.log_civicrm_case b
+	IFNULL((SELECT DATE_SUB(b.log_date,INTERVAL 1 SECOND) as log_end_date
+	FROM {{LOGDB}}.log_civicrm_case b
 	WHERE b.log_date > a.log_date and a.id=b.id
 	ORDER BY b.log_date LIMIT 1),NOW()) as log_end_date
 	FROM {{LOGDB}}.log_civicrm_case a
