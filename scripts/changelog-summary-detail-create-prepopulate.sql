@@ -63,7 +63,7 @@ CREATE
       `log_entity_info` VARCHAR(255) NULL DEFAULT NULL,
       PRIMARY KEY (`log_change_seq`),
       /* actual index used for prepopulation */
-      INDEX idx__changelog_summary__stage_index (`log_date_extract`,`log_conn_id`,`log_user_id`,`altered_contact_id`,`log_type_label`)
+      INDEX idx__changelog_summary__stage_index (`log_date_extract`,`log_conn_id`,`altered_contact_id`,`log_type_label`)
    )
 ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
@@ -158,9 +158,10 @@ CREATE
              WHERE
                 `log_date_extract`=NEW.`log_date_extract`
                 AND `log_conn_id`=NEW.`log_conn_id`
-                AND IFNULL(`log_user_id`,-1)=IFNULL(NEW.`log_user_id`,-1)
+                AND (`log_user_id`=NEW.`log_user_id` OR (`log_user_id` IS NULL AND NEW.`log_user_id` IS NULL))
                 AND `altered_contact_id`=NEW.`altered_contact_id`
-                AND `log_type_label`=NEW.`log_type_label`;
+                AND `log_type_label`=NEW.`log_type_label`
+             LIMIT 1;
          END;
       END IF;
       /* check if this grouping already has a change sequence */
