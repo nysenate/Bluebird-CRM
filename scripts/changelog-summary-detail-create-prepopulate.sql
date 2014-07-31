@@ -150,7 +150,7 @@ CREATE
       /* Initialize the change_seq identifier */
       SET @this_change_seq=NULL;
       /* Check to see if a change_seq exists for this unique grouping */
-      IF NEW.`log_type_label`='Contact' THEN
+      IF NEW.`log_type_label` IN ('Contact','Activity') THEN
         BEGIN
           SELECT `log_change_seq`
              INTO @this_change_seq
