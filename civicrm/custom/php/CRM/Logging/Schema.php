@@ -823,20 +823,16 @@ COLS;
     // done with label mapping, write the rest of the trigger
     $trigger_sql .= 
             "SET @this_log_type_label = CONCAT(UCASE(LEFT(@this_log_type_label,1)),SUBSTR(@this_log_type_label,2)); \n" .
-          	"IF @this_log_type_label = 'Activity' THEN \n" .
+       			"SET @nyss_changelog_sequence = NULL; \n" .
+          	"IF @this_log_type_label IN ('Contact','Activity') THEN \n" .
           		"BEGIN \n" .
-          			"SET @nyss_changelog_sequence = NULL; \n" .
           			"SELECT `log_change_seq` INTO @nyss_changelog_sequence \n" .
           			"FROM `nyss_changelog_summary` \n" .
           			"WHERE altered_contact_id=@this_altered_contact_id  \n" .
           					"AND log_conn_id = CONNECTION_ID() \n" .
-          					"AND log_type_label = 'Activity' \n" .
+          					"AND log_type_label = @this_log_type_label \n" .
           			"ORDER BY log_change_seq DESC LIMIT 1; \n" .
           		"END; \n" .
-          	"ELSEIF @this_log_type_label <> 'Contact' THEN  \n" .
-          		"BEGIN  \n" .
-          			"SET @nyss_changelog_sequence = NULL;  \n" .
-          		"END;  \n" .
           	"END IF;  \n" .
             "IF @nyss_changelog_sequence IS NULL THEN \n" .
               "BEGIN \n" .

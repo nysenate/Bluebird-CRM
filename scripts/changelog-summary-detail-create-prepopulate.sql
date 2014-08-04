@@ -161,6 +161,7 @@ CREATE
                 AND (`log_user_id`=NEW.`log_user_id` OR (`log_user_id` IS NULL AND NEW.`log_user_id` IS NULL))
                 AND `altered_contact_id`=NEW.`altered_contact_id`
                 AND `log_type_label`=NEW.`log_type_label`
+             ORDER BY log_change_seq DESC
              LIMIT 1;
          END;
       END IF;
@@ -699,9 +700,9 @@ CREATE
       SET @this_log_type_label = CONCAT(UCASE(LEFT(@this_log_type_label,1)),
                                         SUBSTR(@this_log_type_label,2));
       /* check if this grouping already has a change sequence */
-      IF @this_log_type_label = 'Activity' THEN 
+      SET @nyss_changelog_sequence = NULL; 
+      IF @this_log_type_label IN ('Activity','Contact') THEN 
         BEGIN 
-          SET @nyss_changelog_sequence = NULL; 
           SELECT `log_change_seq` 
             INTO @nyss_changelog_sequence 
             FROM `nyss_changelog_summary` 
@@ -711,10 +712,6 @@ CREATE
               AND log_type_label = 'Activity' 
             ORDER BY log_change_seq DESC LIMIT 1; 
         END; 
-      ELSEIF @this_log_type_label <> 'Contact' THEN  
-        BEGIN  
-          SET @nyss_changelog_sequence = NULL;  
-        END;  
       END IF; 
       
       IF @nyss_changelog_sequence IS NULL THEN
