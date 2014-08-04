@@ -792,25 +792,25 @@ COLS;
     // write the labeling map.  includes everything but group_contact and note_comment
     foreach ($labels as $k=>$v) {
       if ($k != 'civicrm_group_contact') {
-        $trigger_sql .= "WHEN 'log_{$k}' THEN SET @this_log_type_label='$v'; \n";
+        $trigger_sql .= "WHEN 'log_{$k}' THEN SET @this_log_type_label='$v' COLLATE utf8_unicode_ci; \n";
       }
     }
 
     // write the label map for note comment (special SQL)
     $trigger_sql   .= "WHEN 'log_civicrm_note' THEN \n" .
                         "BEGIN \n" .
-                          "IF NEW.log_type='Comment' THEN SET @this_log_type_label='Comment'; \n " .
-                          "ELSE SET @this_log_type_label='Note'; END IF; \n " .
+                          "IF NEW.log_type='Comment' COLLATE utf8_unicode_ci THEN SET @this_log_type_label='Comment' COLLATE utf8_unicode_ci; \n " .
+                          "ELSE SET @this_log_type_label='Note' COLLATE utf8_unicode_ci; END IF; \n " .
                         "END; \n";
                         
     // write the label map for group contact (special SQL)
     $trigger_sql   .= "WHEN 'log_civicrm_group_contact' THEN \n" .
                         "BEGIN \n" .
-                          "SET @this_log_type_label='Group'; \n" .
-                          "IF NEW.`log_action` = 'Update' THEN \n" .
-                            "SET @this_log_action = 'Update'; \n" .
-                          "ELSEIF NEW.`log_action` = 'Insert' THEN \n" .
-                            "SET @this_log_action = 'Added'; \n" .
+                          "SET @this_log_type_label='Group' COLLATE utf8_unicode_ci; \n" .
+                          "IF NEW.`log_action` = 'Update' COLLATE utf8_unicode_ci THEN \n" .
+                            "SET @this_log_action = 'Update' COLLATE utf8_unicode_ci; \n" .
+                          "ELSEIF NEW.`log_action` = 'Insert' COLLATE utf8_unicode_ci THEN \n" .
+                            "SET @this_log_action = 'Added' COLLATE utf8_unicode_ci; \n" .
                           "END IF; \n" .
                         "END; \n" .
                       "ELSE \n" .
@@ -824,9 +824,10 @@ COLS;
     $trigger_sql .= 
             "SET @this_log_type_label = CONCAT(UCASE(LEFT(@this_log_type_label,1)),SUBSTR(@this_log_type_label,2)); \n" .
        			"SET @nyss_changelog_sequence = NULL; \n" .
-          	"IF @this_log_type_label IN ('Contact','Activity') THEN \n" .
+       			"SET @this_check_label = NULL; \n" .
+          	"IF @this_log_type_label IN ('Contact' COLLATE utf8_unicode_ci,'Activity' COLLATE utf8_unicode_ci) THEN \n" .
           		"BEGIN \n" .
-          			"SELECT `log_change_seq` INTO @nyss_changelog_sequence \n" .
+          			"SELECT `log_change_seq`, `log_action_label` INTO @nyss_changelog_sequence,@this_check_label \n" .
           			"FROM `nyss_changelog_summary` \n" .
           			"WHERE altered_contact_id=@this_altered_contact_id  \n" .
           					"AND log_conn_id = CONNECTION_ID() \n" .
@@ -842,7 +843,8 @@ COLS;
                 "(@this_log_action, @this_log_type_label, @this_altered_contact_id, " .
                 "CONNECTION_ID(), NEW.`log_entity_info`); \n" .
               "END; \n" .
-            "ELSE \n" .
+            "ELSEIF @this_log_type_label != 'Contact' COLLATE utf8_unicode_ci OR " .
+                    "@this_check_label != 'Insert' COLLATE utf8_unicode_ci THEN \n" .
               "BEGIN \n" .
                 "UPDATE `nyss_changelog_summary` \n" .
                   "SET `log_action_label`='Update' \n" .

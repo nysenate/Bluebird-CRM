@@ -149,11 +149,12 @@ CREATE
       SET NEW.`log_date_extract`=DATE_FORMAT(NEW.`log_date`, '%Y%m%d%H');
       /* Initialize the change_seq identifier */
       SET @this_change_seq=NULL;
+      SET @this_check_label=NULL;
       /* Check to see if a change_seq exists for this unique grouping */
-      IF NEW.`log_type_label` IN ('Contact','Activity') THEN
+      IF NEW.`log_type_label` IN ('Contact' COLLATE utf8_unicode_ci,'Activity' COLLATE utf8_unicode_ci) THEN
         BEGIN
-          SELECT `log_change_seq`
-             INTO @this_change_seq
+          SELECT `log_change_seq`, `log_action_label`
+             INTO @this_change_seq, @this_check_label
              FROM {{CIVIDB}}.`nyss_changelog_summary`
              WHERE
                 `log_date_extract`=NEW.`log_date_extract`
@@ -177,7 +178,8 @@ CREATE
                 NEW.`log_type_label`, NEW.`log_date`, @this_log_action, NEW.`log_entity_info`);
             SET @this_change_seq = LAST_INSERT_ID();
          END;
-      ELSE
+      ELSEIF @this_log_type_label != 'Contact' COLLATE utf8_unicode_ci OR 
+             @this_check_label != 'Insert' COLLATE utf8_unicode_ci THEN
          /* if it does, this changeset includes multiple changes...the label should be 'Update' */
          BEGIN
             UPDATE {{CIVIDB}}.`nyss_changelog_summary`
@@ -603,6 +605,7 @@ ALTER TABLE {{CIVIDB}}.`nyss_changelog_summary`
    CHANGE `log_date` `log_date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
    DROP `log_date_extract`,
    ADD INDEX idx__changelog_summary__user_id (`log_user_id`),
+   ADD INDEX idx__changelog_summary__log_date (`log_date`),
    ADD INDEX idx__changelog_summary__altered_id (`altered_contact_id`);
    
 DROP TRIGGER IF EXISTS {{CIVIDB}}.`nyss_changelog_summary_before_insert`;
@@ -638,105 +641,11 @@ ALTER TABLE {{CIVIDB}}.`nyss_changelog_detail`
    ADD INDEX `idx__changelog_detail__change_seq` (`log_change_seq`);
    
    
-/* Recreate the detail table trigger */
+/* Drop the detail table conversion trigger */
 DROP TRIGGER IF EXISTS {{CIVIDB}}.`nyss_changelog_detail_before_insert`;
-/* DELIMITER //  */
-CREATE
-   DEFINER = CURRENT_USER
-   TRIGGER {{CIVIDB}}.`nyss_changelog_detail_before_insert`
-   BEFORE INSERT
-   ON {{CIVIDB}}.`nyss_changelog_detail` FOR EACH ROW
-   BEGIN
-      /* **** IMPORTANT
-       This trigger expects to receive the altered_contact_id in place of
-       the log_change_seq field.  The change_seq is generated from a session
-       variable, and does not need to be passed in the original insert.  On
-       the other hand, the summary table needs the altered_contact_id, but
-       the detail has no where to store it.  The log_change_seq field is used
-       as a temporary delivery mechanism.  Sloppy, but it works. */
-      /* retrieve the altered_contact_id from the changeset field */
-      SET @this_altered_contact_id=NEW.`log_change_seq`;
-      SET @this_log_action=NEW.`log_action`;
-      SET @this_log_type_label='';
-      /* Calculate the log_type_label, used for grouping purposes */
-      /* Also, calculate the log_action field if looking at a group_contact record */
-      CASE NEW.`log_table_name`
-         WHEN 'log_civicrm_email' THEN SET @this_log_type_label='Contact';
-         WHEN 'log_civicrm_phone' THEN SET @this_log_type_label='Contact';
-         WHEN 'log_civicrm_address' THEN SET @this_log_type_label='Contact';
-         WHEN 'log_civicrm_openid' THEN SET @this_log_type_label='Contact';
-         WHEN 'log_civicrm_im' THEN SET @this_log_type_label='Contact';
-         WHEN 'log_civicrm_website' THEN SET @this_log_type_label='Contact';
-         WHEN 'log_civicrm_value_constituent_information_1' THEN SET @this_log_type_label='Contact';
-         WHEN 'log_civicrm_value_organization_constituent_informa_3' THEN SET @this_log_type_label='Contact';
-         WHEN 'log_civicrm_value_attachments_5' THEN SET @this_log_type_label='Contact';
-         WHEN 'log_civicrm_value_district_information_7' THEN SET @this_log_type_label='Contact';
-         WHEN 'log_civicrm_value_contact_details_8' THEN SET @this_log_type_label='Contact';
-         WHEN 'log_civicrm_activity_contact' THEN SET @this_log_type_label='Activity';
-         WHEN 'log_civicrm_value_activity_details_6' THEN SET @this_log_type_label='Activity';
-         WHEN 'log_civicrm_case_contact' THEN SET @this_log_type_label='Case'; 
-         WHEN 'log_civicrm_note' THEN
-           BEGIN
-             IF NEW.log_type='Comment' THEN SET @this_log_type_label='Comment'; 
-             ELSE SET @this_log_type_label='Note'; END IF;
-           END;
-         WHEN 'log_civicrm_group_contact' THEN
-            BEGIN
-               SET @this_log_type_label='Group';
-               /* "delete"=old action (no change), "update"=status column, "insert"="Added" */
-               IF NEW.`log_action` = 'Update' THEN
-                  SET @this_log_action = 'Update';
-               ELSEIF NEW.`log_action` = 'Insert' THEN
-                  SET @this_log_action = 'Added';
-               END IF;
-            END;
-         ELSE
-            BEGIN
-               SET @rev_type = REVERSE(NEW.`log_table_name`);
-               SET @this_log_type_label=REVERSE(SUBSTR(@rev_type,1,LOCATE('_',@rev_type)-1));
-            END;
-      END CASE;
-      /* Capitalize first letter of the type label for consistency */
-      SET @this_log_type_label = CONCAT(UCASE(LEFT(@this_log_type_label,1)),
-                                        SUBSTR(@this_log_type_label,2));
-      /* check if this grouping already has a change sequence */
-      SET @nyss_changelog_sequence = NULL; 
-      IF @this_log_type_label IN ('Activity','Contact') THEN 
-        BEGIN 
-          SELECT `log_change_seq` 
-            INTO @nyss_changelog_sequence 
-            FROM `nyss_changelog_summary` 
-            WHERE 
-              altered_contact_id=@this_altered_contact_id  
-              AND log_conn_id = CONNECTION_ID() 
-              AND log_type_label = 'Activity' 
-            ORDER BY log_change_seq DESC LIMIT 1; 
-        END; 
-      END IF; 
-      
-      IF @nyss_changelog_sequence IS NULL THEN
-         /* If it doesn't, insert a new summary row and set the change sequence */
-         BEGIN
-            INSERT INTO {{CIVIDB}}.`nyss_changelog_summary`
-               (`log_action_label`,`log_type_label`,`altered_contact_id`,`log_conn_id`,`log_entity_info`)
-               VALUES
-               (@this_log_action, @this_log_type_label, @this_altered_contact_id, CONNECTION_ID(),NEW.`log_entity_info`);
-         END;
-      ELSE
-         /* if it does, this changeset includes multiple changes...the label should be 'Update' */
-         BEGIN
-            UPDATE {{CIVIDB}}.`nyss_changelog_summary`
-               SET `log_action_label`='Update'
-               WHERE `log_change_seq`=@nyss_changelog_sequence;
-         END;
-      END IF;
-      /* set the change sequence for this detail row */
-      SET NEW.`log_change_seq` = @nyss_changelog_sequence;
-   END;
-/* //
-DELIMITER ;  */
 
 CALL {{CIVIDB}}.nyss_debug_log('Altered changelog_detail and trigger');
+
 DROP TEMPORARY TABLE IF EXISTS {{LOGDB}}.nyss_temp_staging_group;
 DROP TEMPORARY TABLE IF EXISTS {{LOGDB}}.nyss_temp_staging_tag;
 DROP TEMPORARY TABLE IF EXISTS {{LOGDB}}.nyss_temp_staging_relationship;

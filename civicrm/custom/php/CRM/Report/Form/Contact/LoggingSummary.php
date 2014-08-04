@@ -215,10 +215,12 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
       }
 
       /* If the row is in the "Contact" group, and is an insert, make it say "Update" instead */
-      if ('Contact' == $row['log_civicrm_entity_log_type_label'] &&
+      /* commented out so that inserting a new contact appears as an insert
+          leave this here for now...this may have been important for other types of contact updates */
+      /*if ('Contact' == $row['log_civicrm_entity_log_type_label'] &&
           CRM_Utils_Array::value('log_civicrm_entity_log_action', $row) == 'Insert' ) {
         $row['log_civicrm_entity_log_action'] = ts('Update');
-      }
+      }*/
 
       /* format the date for proper display */
       $date = CRM_Utils_Date::isoToMysql($row['log_civicrm_entity_log_date']);
