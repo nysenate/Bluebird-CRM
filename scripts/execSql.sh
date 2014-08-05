@@ -36,7 +36,7 @@ fi
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog [--help] [-f {sqlFile|-} | -c sqlCommand] [--dump|-d] [--dump-table|-t table] [--skip-table|-e table] [--schemas-only|-s] [-l login-path] [-h host] [-u user] [-p password] [--insecure-login|-i] [--column-names] [--force] [--quiet|-q] [--create] [[--civicrm|-C] | [--drupal|-D] | [--log|-L]] [--db-name|-n dbName] [instance]" >&2
+  echo "Usage: $prog [--help] [-f {sqlFile|-} | -c sqlCommand] [--dump|-d] [--dump-table|-t table] [--skip-table|-e table] [--schemas-only|-s] [-l login-path] [-h host] [-u user] [-p password] [--insecure-login|-i] [--replace-macros|-r] [--column-names] [--force] [--quiet|-q] [--create] [[--civicrm|-C] | [--drupal|-D] | [--log|-L]] [--db-name|-n dbName] [instance]" >&2
 }
 
 filter_replace_macros() {
