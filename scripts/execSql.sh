@@ -19,6 +19,9 @@
 # Revised: 2014-03-14 - Added option --schemas-only to inhibit dumping row data
 # Revised: 2014-05-20 - Added --insecure-login command line switch.
 # Revised: 2014-07-22 - Allow hyphens in instance names by backquoting db name
+# Revised: 2014-08-05 - Added --replace-macros option, which replaces the
+#                       macros @CIVIDB@, @DRUPDB@, and @LOGDB@ with the
+#                       corresponding database names.
 #
 
 prog=`basename $0`
@@ -35,6 +38,13 @@ fi
 usage() {
   echo "Usage: $prog [--help] [-f {sqlFile|-} | -c sqlCommand] [--dump|-d] [--dump-table|-t table] [--skip-table|-e table] [--schemas-only|-s] [-l login-path] [-h host] [-u user] [-p password] [--insecure-login|-i] [--column-names] [--force] [--quiet|-q] [--create] [[--civicrm|-C] | [--drupal|-D] | [--log|-L]] [--db-name|-n dbName] [instance]" >&2
 }
+
+filter_replace_macros() {
+  sed -e "s;@CIVIDB@;$civi_dbname;g" \
+      -e "s;@DRUPDB@;$drup_dbname;g" \
+      -e "s;@LOGDB@;$log_dbname;g" $@
+}
+
 
 if [ $# -lt 1 ]; then
   usage
@@ -54,11 +64,11 @@ dbuser=
 dbpass=
 dbname=
 insecure_login=0
+replace_macros=0
+db_type=civi
 create_db=0
 be_quiet=0
 colname_arg="--skip-column_names"
-db_prefix_keyname=db.civicrm.prefix
-default_db_prefix="$DEFAULT_DB_CIVICRM_PREFIX"
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -75,13 +85,14 @@ while [ $# -gt 0 ]; do
     -u|--user) shift; dbuser="$1" ;;
     -p|--pass*) shift; dbpass="$1" ;;
     -i|--insec*) insecure_login=1 ;;
+    -r|--replace*) replace_macros=1 ;;
     -q|--quiet) be_quiet=1 ;;
     --col*) colname_arg="--column-names" ;;
     --create) create_db=1 ;;
     --force) force_arg="--force" ;;
-    -C|--civi*) db_prefix_keyname=db.civicrm.prefix; default_db_prefix="$DEFAULT_DB_CIVICRM_PREFIX" ;;
-    -D|--drup*) db_prefix_keyname=db.drupal.prefix; default_db_prefix="$DEFAULT_DB_DRUPAL_PREFIX" ;;
-    -L|--log) db_prefix_keyname=db.log.prefix; default_db_prefix="$DEFAULT_DB_LOG_PREFIX" ;;
+    -C|--civi*) db_type=civi ;;
+    -D|--drup*) db_type=drup ;;
+    -L|--log) db_type=log ;;
     -*) echo "$prog: $1: Invalid option" >&2; exit 1 ;;
     *) instance="$1" ;;
   esac
@@ -90,6 +101,12 @@ done
 
 if [ "$instance" -a "$dbname" ]; then
   echo "$prog: Please specify either an instance or a dbname, but not both" >&2
+  exit 1
+elif [ ! "$instance" -a ! "$dbname" ]; then
+  echo "$prog: Must specify either an instance or a dbname" >&2
+  exit 1
+elif [ $replace_macros -eq 1 -a ! "$instance" ]; then
+  echo "$prog: An instance must be specified when using --replace-macros" >&2
   exit 1
 fi
 
@@ -102,16 +119,33 @@ ig_opt="--global"
 # This script defaults to the CiviCRM database.
 # Use the --drupal (or -D) option to execute SQL on the Drupal DB instead.
 # Use the --log (or -L) option to execute SQL on the Log DB instead.
+#
+# Furthermore, the macros @CIVIDB@, @DRUPDB@, and @LOGDB@ will get
+# replaced in SQL (both command line and from a file) if the --replace-macros
+# option is used.
 
 if [ "$instance" ]; then
   if ! $readConfig --instance $instance --quiet; then
     echo "$prog: $instance: Instance not found" >&2
     exit 1
   fi
+
   ig_opt="--ig $instance"
+
+  civi_prefix=`$readConfig $ig_opt db.civicrm.prefix` || civi_prefix="$DEFAULT_DB_CIVICRM_PREFIX"
+  drup_prefix=`$readConfig $ig_opt db.drupal.prefix` || drup_prefix="$DEFAULT_DB_DRUPAL_PREFIX"
+  log_prefix=`$readConfig $ig_opt db.log.prefix` || log_prefix="$DEFAULT_DB_LOG_PREFIX"
+
   db_basename=`$readConfig --instance $instance db.basename` || db_basename="$instance"
-  db_prefix=`$readConfig $ig_opt $db_prefix_keyname` || db_prefix=$default_db_prefix
-  dbname="$db_prefix$db_basename"
+
+  # Formulate all three db names, since macro expansion might be used.
+  # Typically, only one of these three dbs will actually be used.
+  civi_dbname="$civi_prefix$db_basename"
+  drup_dbname="$drup_prefix$db_basename"
+  log_dbname="$log_prefix$db_basename"
+
+  dbname_var=${db_type}_dbname
+  dbname=${!dbname_var}
 fi
  
 # MySQL (as of 5.6.6) no longer supports passing login credentials on the
@@ -156,9 +190,17 @@ elif [ $create_db -eq 1 ]; then
   [ $be_quiet -eq 0 ] && set -x
   mysql $mysql_args -e "create database \`$dbname\`"
 elif [ "$sqlfile" ]; then
+  if [ $replace_macros -eq 1 ]; then
+    sql_filter=filter_replace_macros
+  else
+    sql_filter=cat
+  fi
   [ $be_quiet -eq 0 ] && set -x
-  cat $sqlfile | mysql $mysql_args $dbname
+  $sql_filter "$sqlfile" | mysql $mysql_args $dbname
 else
+  if [ $replace_macros -eq 1 ]; then
+    sqlcmd=`echo $sqlcmd | filter_replace_macros`
+  fi
   [ $be_quiet -eq 0 ] && set -x
   mysql $mysql_args -e "$sqlcmd" $dbname
 fi
