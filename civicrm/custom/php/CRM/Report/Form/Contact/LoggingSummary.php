@@ -62,7 +62,8 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
             'no_display' => TRUE,
             'required' => TRUE,
           ),
-          'log_action_label' => array(
+          'log_action' => array(
+            'dbAlias' => 'log_action_label',
             'default' => TRUE,
             'title' => ts('Action'),
           ),
@@ -209,21 +210,23 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
       $row['altered_by_contact_display_name_hover'] = ts("Go to contact summary");
 
       /* if the contact is marked as "Trashed", update the action label to reflect that status */
-      if ($row['log_civicrm_entity_is_deleted'] and 'Update' == CRM_Utils_Array::value('log_civicrm_entity_log_action_label', $row)) {
-        $row['log_civicrm_entity_log_action_label'] = ts('Delete (to trash)');
+      if ($row['log_civicrm_entity_is_deleted'] and 'Update' == CRM_Utils_Array::value('log_civicrm_entity_log_action', $row)) {
+        $row['log_civicrm_entity_log_action'] = ts('Delete (to trash)');
       }
 
       /* If the row is in the "Contact" group, and is an insert, make it say "Update" instead */
-      if ('Contact' == $row['log_civicrm_entity_log_type_label'] &&
-          CRM_Utils_Array::value('log_civicrm_entity_log_action_label', $row) == 'Insert' ) {
-        $row['log_civicrm_entity_log_action_label'] = ts('Update');
-      }
+      /* commented out so that inserting a new contact appears as an insert
+          leave this here for now...this may have been important for other types of contact updates */
+      /*if ('Contact' == $row['log_civicrm_entity_log_type_label'] &&
+          CRM_Utils_Array::value('log_civicrm_entity_log_action', $row) == 'Insert' ) {
+        $row['log_civicrm_entity_log_action'] = ts('Update');
+      }*/
 
       /* format the date for proper display */
       $date = CRM_Utils_Date::isoToMysql($row['log_civicrm_entity_log_date']);
 
       /* if this row is an "Update" action, inject the links and hover functionality */
-      if ('Update' == CRM_Utils_Array::value('log_civicrm_entity_log_action_label', $row)) {
+      if ('Update' == CRM_Utils_Array::value('log_civicrm_entity_log_action', $row)) {
         $q = "reset=1&log_conn_id={$row['log_civicrm_entity_log_conn_id']}&log_date=". $date;
         if ($this->cid) {
           $q .= '&cid=' . $this->cid;
@@ -245,7 +248,7 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
 
         $url1 = CRM_Report_Utils_Report::getNextUrl('logging/contact/detail', "{$q}&snippet=4&section=2&layout=overlay", FALSE, TRUE);
         $url2 = CRM_Report_Utils_Report::getNextUrl('logging/contact/detail', "{$q}&section=2", FALSE, TRUE);
-        $row['log_civicrm_entity_log_action_label'] = "<a href='{$url1}' class='crm-summary-link'><div class='icon details-icon'></div></a>&nbsp;<a title='View details for this update' href='{$url2}'>" . ts('Update') . '</a>';
+        $row['log_civicrm_entity_log_action'] = "<a href='{$url1}' class='crm-summary-link'><div class='icon details-icon'></div></a>&nbsp;<a title='View details for this update' href='{$url2}'>" . ts('Update') . '</a>';
       }
 
       if ( $this->_showDetails ) {
