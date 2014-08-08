@@ -56,7 +56,7 @@ BEGIN
     BEGIN 
       SELECT id INTO @summary_id
       FROM nyss_changelog_summary 
-      WHERE user_id = NEW.tmp_user_id 
+      WHERE (user_id = NEW.tmp_user_id or (user_id IS NULL AND NEW.tmp_user_id IS NULL))
         AND conn_id = NEW.tmp_conn_id
         AND entity_type = @entity_type 
         AND tmp_date_extract = @date_extract
