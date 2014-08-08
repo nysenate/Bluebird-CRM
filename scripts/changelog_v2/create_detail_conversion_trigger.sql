@@ -68,10 +68,10 @@ BEGIN
     BEGIN 
       INSERT INTO nyss_changelog_summary
         (conn_id, user_id, contact_id, entity_type,
-         user_action, entity_info, tmp_date_extract)
+         change_ts, user_action, entity_info, tmp_date_extract)
       VALUES
         (NEW.tmp_conn_id, NEW.tmp_user_id, NEW.tmp_contact_id, @entity_type,
-        @user_action, @entity_info, @date_extract);
+         NEW.tmp_change_ts, @user_action, @entity_info, @date_extract);
       SET NEW.summary_id = LAST_INSERT_ID();
     END; 
   ELSEIF @entity_type != 'Contact' OR NEW.db_op != 'Insert' THEN 
