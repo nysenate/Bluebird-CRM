@@ -22,12 +22,12 @@ ON nyss_changelog_detail FOR EACH ROW
 BEGIN
   SET @entity_type = SUBSTRING_INDEX(@nyss_entity_info, CHAR(1), 1);
   IF @entity_type != 'Contact' THEN
-    SET @entity_info = SUBSTRING_INDEX(@nyss_entity_info, CHAR(1), 2);
+    SET @entity_info = SUBSTRING_INDEX(SUBSTRING_INDEX(@nyss_entity_info, CHAR(1), 2), CHAR(1), -1);
   ELSE
     SET @entity_info = NULL;
   END IF;
   IF @entity_type = 'Group' THEN
-    SET @group_action = SUBSTRING_INDEX(@nyss_entity_info, CHAR(1), 3);
+    SET @group_action = SUBSTRING_INDEX(@nyss_entity_info, CHAR(1), -1);
   ELSE
     SET @group_action = NULL;
   END IF;

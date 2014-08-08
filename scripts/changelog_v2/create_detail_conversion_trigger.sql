@@ -23,12 +23,12 @@ ON nyss_changelog_detail FOR EACH ROW
 BEGIN
   SET @entity_type = SUBSTRING_INDEX(NEW.tmp_entity_info, CHAR(1), 1);
   IF @entity_type != 'Contact' THEN
-    SET @entity_info = SUBSTRING_INDEX(NEW.tmp_entity_info, CHAR(1), 2);
+    SET @entity_info = SUBSTRING_INDEX(SUBSTRING_INDEX(NEW.tmp_entity_info, CHAR(1), 2), CHAR(1), -1);
   ELSE
     SET @entity_info = NULL;
   END IF;
   IF @entity_type = 'Group' THEN
-    SET @group_action = SUBSTRING_INDEX(NEW.tmp_entity_info, CHAR(1), 3);
+    SET @group_action = SUBSTRING_INDEX(NEW.tmp_entity_info, CHAR(1), -1);
   ELSE
     SET @group_action = NULL;
   END IF;
@@ -56,7 +56,7 @@ BEGIN
     BEGIN 
       SELECT id INTO @summary_id
       FROM nyss_changelog_summary 
-      WHERE (user_id = NEW.tmp_user_id or (user_id IS NULL AND NEW.tmp_user_id IS NULL))
+      WHERE (user_id = NEW.tmp_user_id OR (user_id IS NULL AND NEW.tmp_user_id IS NULL))
         AND conn_id = NEW.tmp_conn_id
         AND entity_type = @entity_type 
         AND tmp_date_extract = @date_extract
