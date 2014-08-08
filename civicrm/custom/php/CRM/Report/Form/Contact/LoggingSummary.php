@@ -191,7 +191,6 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
     // cache for id → is_deleted mapping
     $isDeleted = array();
     $newRows = array();
-
     foreach ($rows as $key => &$row) {
       /* is_deleted should be passed in the row info.  If not, look it up */
       $this_alt_id = $row['log_civicrm_entity_altered_contact_id'];
@@ -265,7 +264,7 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
 
       /* NYSS 7893 we can now identify a unique by change_seq alone.  date left in for ordering */
       $key = $row['log_civicrm_entity_log_date'] . '_' . 
-             $row['log_civicrm_entity_log_change_seq'];
+             $row['log_civicrm_entity_log_id'];
       $newRows[$key] = $row;
 
       //unset($row['log_civicrm_entity_log_user_id']);
