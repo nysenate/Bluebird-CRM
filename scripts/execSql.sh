@@ -22,6 +22,7 @@
 # Revised: 2014-08-05 - Added --replace-macros option, which replaces the
 #                       macros @CIVIDB@, @DRUPDB@, and @LOGDB@ with the
 #                       corresponding database names.
+# Revised: 2014-08-07 - Allow no database to be specified using --no-db
 #
 
 prog=`basename $0`
@@ -36,7 +37,7 @@ fi
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog [--help] [-f {sqlFile|-} | -c sqlCommand] [--dump|-d] [--dump-table|-t table] [--skip-table|-e table] [--schemas-only|-s] [-l login-path] [-h host] [-u user] [-p password] [--insecure-login|-i] [--replace-macros|-r] [--column-names] [--force] [--quiet|-q] [--create] [[--civicrm|-C] | [--drupal|-D] | [--log|-L]] [--db-name|-n dbName] [instance]" >&2
+  echo "Usage: $prog [--help] [-f {sqlFile|-} | -c sqlCommand] [--dump|-d] [--dump-table|-t table] [--skip-table|-e table] [--schemas-only|-s] [-l login-path] [-h host] [-u user] [-p password] [--insecure-login|-i] [--replace-macros|-r] [--column-names] [--force] [--quiet|-q] [--create] [[--civicrm|-C] | [--drupal|-D] | [--log|-L]] [--no-db] [--db-name|-n dbName] [instance]" >&2
 }
 
 filter_replace_macros() {
@@ -66,9 +67,11 @@ dbname=
 insecure_login=0
 replace_macros=0
 db_type=civi
-create_db=0
 be_quiet=0
 colname_arg="--skip-column_names"
+create_db=0
+force_arg=
+no_db=0
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -90,6 +93,7 @@ while [ $# -gt 0 ]; do
     --col*) colname_arg="--column-names" ;;
     --create) create_db=1 ;;
     --force) force_arg="--force" ;;
+    --no-db) no_db=1 ;;
     -C|--civi*) db_type=civi ;;
     -D|--drup*) db_type=drup ;;
     -L|--log) db_type=log ;;
@@ -102,7 +106,7 @@ done
 if [ "$instance" -a "$dbname" ]; then
   echo "$prog: Please specify either an instance or a dbname, but not both" >&2
   exit 1
-elif [ ! "$instance" -a ! "$dbname" ]; then
+elif [ ! "$instance" -a ! "$dbname" -a $no_db -eq 0 ]; then
   echo "$prog: Must specify either an instance or a dbname" >&2
   exit 1
 elif [ $replace_macros -eq 1 -a ! "$instance" ]; then
