@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2014-08-05
-# Revised: 2014-08-07
+# Revised: 2014-08-08 - Added --skip-XXXX options to control conversion.
 #
 
 prog=`basename $0`
@@ -19,7 +19,12 @@ usage() {
   echo "Usage: $prog [--skip-STAGE [--skip-STAGE ...]] instance" >&2
   echo "  where STAGE is one of:" >&2
   echo "create-tables, create-detail-conversion-trigger," >&2
-  echo "create-temp-staging-tables, 
+  echo "create-temp-staging-tables, import-data, drop-temp-tables," >&2
+  echo "alter-tables, create-detail-runtime-trigger, create-summary-trigger" >&2
+  echo
+  echo "Use --skip-post-import as shorthand for --skip-drop-temp-tables," >&2
+  echo "--skip-alter-tables, --skip-create-detail-runtime-trigger, and" >&2
+  echo "--skip-create-summary-trigger" >&2
 }
 
 log() {
@@ -31,10 +36,31 @@ if [ $# -lt 1 ]; then
   exit 1
 fi
 
+skip_create_tables=0
+skip_create_detail_conversion_trigger=0
+skip_create_temp_staging_tables=0
+skip_import_data=0
+skip_drop_temp_tables=0
+skip_alter_tables=0
+skip_create_detail_runtime_trigger=0
+skip_create_summary_trigger=0
+skip_post_import=0
+
 while [ $# -gt 0 ]; do
   case "$1" in
     --help) usage; exit 0 ;;
-    --skip-create-tables) skip_create_tables=1 ;;
+    --skip-create-tab*) skip_create_tables=1 ;;
+    --skip-create-detail-conv*) skip_create_detail_conversion_trigger=1 ;;
+    --skip-create-temp*) skip_create_temp_staging_tables=1 ;;
+    --skip-import*) skip_import_data=1 ;;
+    --skip-drop*) skip_drop_temp_tables=1 ;;
+    --skip-alter*) skip_alter_tables=1 ;;
+    --skip-create-detail-run*) skip_create_detail_runtime_trigger=1 ;;
+    --skip-create-sum*) skip_create_summary_trigger=1 ;;
+    --skip-post-import) skip_drop_temp_tables=1
+                        skip_alter_tables=1
+                        skip_create_detail_runtime_trigger=1
+                        skip_create_summary_trigger=1 ;;
     -*) echo "$prog: $1: Invalid option" >&2; exit 1 ;;
     *) instance="$1" ;;
   esac
