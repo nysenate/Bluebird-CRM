@@ -27,7 +27,7 @@ class CRM_NYSS_BAO_Log {
     $ret = 0;
     $contactId = CRM_Utils_Type::escape((int)$contactId, 'Integer');
     if ( $contactId ) {
-      $sql = "SELECT * FROM `nyss_changelog_summary` WHERE `altered_contact_id` = %1;";
+      $sql = "SELECT * FROM `nyss_changelog_summary` WHERE `contact_id` = %1;";
       $ret = CRM_Core_DAO::executeQuery($sql, array(1=>array($contactId,'Integer')))->N;
     }
     return $ret;

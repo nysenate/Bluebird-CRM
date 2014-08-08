@@ -54,40 +54,47 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
         'dao' => 'CRM_Contact_DAO_Contact',
         'alias' => 'entity_log',
         'fields' => array(
-          'log_change_seq' => array(
+          'log_id' => array(
+            'no_display' => TRUE,
+            'required' => TRUE,
+            'name' => 'id',
+          ),
+          'log_conn_id' => array(
+            'name' => 'conn_id',
+            'no_display' => TRUE,
+            'required' => TRUE,            
+          ),
+          'log_user_id' => array(
+            'name' => 'user_id',
+            'required' => TRUE,
+            'no_display' => TRUE,
+          ),
+          'altered_contact_id' => array(
+            'name' => 'contact_id',
             'no_display' => TRUE,
             'required' => TRUE,
           ),
-          'log_conn_id' => array(
+          'log_entity_info' => array(
+            'name' => 'entity_info',
             'no_display' => TRUE,
             'required' => TRUE,
           ),
           'log_action' => array(
-            'dbAlias' => 'log_action_label',
+            'name' => 'user_action',
             'default' => TRUE,
             'title' => ts('Action'),
           ),
           'log_type_label' => array(
+            'name' => 'entity_type',
             'required' => TRUE,
             'title' => ts('Log Type'),
           ),
-          'log_user_id' => array(
-            'no_display' => TRUE,
-            'required' => TRUE,
-          ),
           'log_date' => array(
+            'name' => 'change_ts',
             'default' => TRUE,
             'required' => TRUE,
             'type' => CRM_Utils_Type::T_TIME,
             'title' => ts('When'),
-          ),
-          'log_entity_info' => array(
-            'no_display' => TRUE,
-            'required' => TRUE,
-          ),
-          'altered_contact_id' => array(
-            'no_display' => TRUE,
-            'required' => TRUE,
           ),
           'altered_contact' => array(
             'default' => TRUE,
@@ -210,8 +217,8 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
       $row['altered_by_contact_display_name_hover'] = ts("Go to contact summary");
 
       /* if the contact is marked as "Trashed", update the action label to reflect that status */
-      if ($row['log_civicrm_entity_is_deleted'] and 'Update' == CRM_Utils_Array::value('log_civicrm_entity_log_action', $row)) {
-        $row['log_civicrm_entity_log_action'] = ts('Delete (to trash)');
+      if ($row['log_civicrm_entity_is_deleted'] and 'Updated' == CRM_Utils_Array::value('log_civicrm_entity_log_action', $row)) {
+        $row['log_civicrm_entity_log_action'] = ts('Trashed');
       }
 
       /* If the row is in the "Contact" group, and is an insert, make it say "Update" instead */
@@ -226,7 +233,7 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
       $date = CRM_Utils_Date::isoToMysql($row['log_civicrm_entity_log_date']);
 
       /* if this row is an "Update" action, inject the links and hover functionality */
-      if ('Update' == CRM_Utils_Array::value('log_civicrm_entity_log_action', $row)) {
+      if ('Updated' == CRM_Utils_Array::value('log_civicrm_entity_log_action', $row)) {
         $q = "reset=1&log_conn_id={$row['log_civicrm_entity_log_conn_id']}&log_date=". $date;
         if ($this->cid) {
           $q .= '&cid=' . $this->cid;
@@ -293,9 +300,9 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
     // NYSS 7893 changed to reflect new single-select table with JOINs for contact names
     $this->_from = "FROM nyss_changelog_summary entity_log_civireport " .
                    "INNER JOIN civicrm_contact as modified_contact_civireport ON " .
-                   "entity_log_civireport.altered_contact_id = modified_contact_civireport.id " .
+                   "entity_log_civireport.contact_id = modified_contact_civireport.id " .
                    "LEFT JOIN civicrm_contact as altered_by_contact_civireport " .
-                   "ON entity_log_civireport.log_user_id = altered_by_contact_civireport.id ";
+                   "ON entity_log_civireport.user_id = altered_by_contact_civireport.id ";
   }
 
   //NYSS 4198 calculate distinct contacts
