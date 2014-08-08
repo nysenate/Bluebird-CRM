@@ -196,7 +196,8 @@ class CRM_Core_DAO extends DB_DataObject {
    */
   function initialize() {
     $this->_connect();
-    $this->query("SET NAMES utf8");
+    // setting proper collation to avoid issues with comparing literal strings
+    $this->query("SET NAMES utf8 COLLATE utf8_unicode_ci");
   }
 
   /**

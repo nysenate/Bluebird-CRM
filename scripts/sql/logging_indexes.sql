@@ -14,15 +14,6 @@ ALTER TABLE `log_civicrm_activity`
     ADD INDEX `log_action` (`log_action` ASC),
     ADD INDEX `log_job_id` (`log_job_id` ASC);
 
-ALTER TABLE `log_civicrm_activity_assignment`
-    ADD INDEX `activity_id` (`activity_id` ASC),
-    ADD INDEX `assignee_contact_id` (`assignee_contact_id` ASC),
-    ADD INDEX `log_date` (`log_date` ASC),
-    ADD INDEX `log_conn_id` (`log_conn_id` ASC),
-    ADD INDEX `log_user_id` (`log_user_id` ASC),
-    ADD INDEX `log_action` (`log_action` ASC),
-    ADD INDEX `log_job_id` (`log_job_id` ASC);
-
 ALTER TABLE `log_civicrm_activity_contact`
     ADD INDEX `activity_id` (`activity_id` ASC),
     ADD INDEX `contact_id` (`contact_id` ASC),
@@ -115,6 +106,14 @@ ALTER TABLE `log_civicrm_relationship`
     ADD INDEX `contact_id_a` (`contact_id_a` ASC),
     ADD INDEX `contact_id_b` (`contact_id_b` ASC),
     ADD INDEX `relationship_type_id` (`relationship_type_id` ASC),
+    ADD INDEX `log_date` (`log_date` ASC),
+    ADD INDEX `log_conn_id` (`log_conn_id` ASC),
+    ADD INDEX `log_user_id` (`log_user_id` ASC),
+    ADD INDEX `log_action` (`log_action` ASC),
+    ADD INDEX `log_job_id` (`log_job_id` ASC);
+
+ALTER TABLE `log_civicrm_tag`
+    ADD INDEX `id` (`id` ASC),
     ADD INDEX `log_date` (`log_date` ASC),
     ADD INDEX `log_conn_id` (`log_conn_id` ASC),
     ADD INDEX `log_user_id` (`log_user_id` ASC),
