@@ -35,9 +35,9 @@ SELECT
   ) as group_field
 FROM @LOGDB@.log_civicrm_value_activity_details_6 a
 INNER JOIN @LOGDB@.log_civicrm_activity_contact b
-ON a.id=b.activity_id AND b.record_type_id IN (1,2,3) AND a.log_conn_id=b.log_conn_id
+ON a.entity_id=b.activity_id AND b.record_type_id IN (1,2,3) AND a.log_conn_id=b.log_conn_id
 LEFT JOIN @LOGDB@.nyss_temp_staging_activity c
-ON a.id=c.id AND a.log_date BETWEEN c.log_date AND c.log_end_date
+ON a.entity_id=c.id AND a.log_date BETWEEN c.log_date AND c.log_end_date
 WHERE a.log_action != 'Initialization'
 GROUP BY a.log_date, group_field;
 
