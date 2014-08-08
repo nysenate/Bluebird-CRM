@@ -13,6 +13,5 @@ DROP tmp_user_id,
 DROP tmp_contact_id,
 DROP tmp_entity_info,
 DROP tmp_change_ts,
-DROP INDEX tmp_idx__changelog_detail,
 ADD INDEX idx__changelog_detail__summary_id (summary_id);
  
