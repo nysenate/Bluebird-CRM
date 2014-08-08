@@ -97,7 +97,7 @@ if [ $no_dbdump -eq 0 ]; then
   db_pattern="$db_civicrm_prefix|$db_drupal_prefix"
   [ $skip_log_dbs -eq 0 ] && db_pattern="$db_pattern|$db_log_prefix"
     
-  dbs=`$execSql -c "show databases" | egrep "^($db_pattern)"`
+  dbs=`$execSql --no-db -c "show databases" | egrep "^($db_pattern)"`
   echo "Databases to be dumped: " $dbs
 
   if [ $dry_run -eq 0 ]; then
