@@ -71,6 +71,10 @@ BEGIN
     SET @nyss_session_contact_added = 1;
   END IF;
 
+  IF NEW.table_name!='contact' AND @entity_type='Contact' THEN
+    SET @user_action='Updated';
+  END IF;
+
   IF @summary_id IS NULL THEN 
     BEGIN 
       INSERT INTO nyss_changelog_summary

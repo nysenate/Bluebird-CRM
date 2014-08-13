@@ -784,6 +784,7 @@ COLS;
 
 		$this->delta_triggers['civicrm_email']=
 				"SET @nyss_altered_contact_id = NEW.`contact_id`;\n" .
+		    "SET @nyss_entity_info = 'Contact'; \n" .
 				"INSERT INTO `nyss_changelog_detail` \n" .
 				"(`db_op`,`table_name`,`entity_id`) VALUES\n" .
 				"('{eventName}','email',NEW.`id`);";
