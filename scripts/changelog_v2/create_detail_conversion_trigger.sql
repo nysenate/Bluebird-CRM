@@ -61,8 +61,15 @@ BEGIN
         AND entity_type = @entity_type 
         AND tmp_date_extract = @date_extract
       ORDER BY id DESC LIMIT 1; 
+      IF @entity_type='Contact' AND @summary_id IS NULL THEN
+        SET @nyss_session_contact_added = NULL;
+      END IF;
     END; 
   END IF;  
+
+  IF NEW.table_name='contact' AND NEW.db_op='INSERT' THEN
+    SET @nyss_session_contact_added = 1;
+  END IF;
 
   IF @summary_id IS NULL THEN 
     BEGIN 
@@ -74,12 +81,14 @@ BEGIN
          NEW.tmp_change_ts, @user_action, @entity_info, @date_extract);
       SET NEW.summary_id = LAST_INSERT_ID();
     END; 
-  ELSEIF @entity_type != 'Contact' OR NEW.db_op != 'Insert' THEN 
+  ELSE
     BEGIN 
-      UPDATE nyss_changelog_summary 
-      SET user_action = 'Updated' 
-      WHERE id = @summary_id; 
       SET NEW.summary_id = @summary_id;
+  		IF @entity_type != 'Contact' OR IFNULL(@nyss_session_contact_added,0)!= 1 THEN 
+  			BEGIN
+          UPDATE nyss_changelog_summary SET user_action = 'Updated' WHERE id = @summary_id; 
+        END;
+  		END IF;
     END; 
   END IF;
 END;

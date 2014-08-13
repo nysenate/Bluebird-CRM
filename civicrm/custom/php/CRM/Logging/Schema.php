@@ -882,9 +882,9 @@ COLS;
 
 		$this->delta_triggers['civicrm_activity_contact']=
 				"SET @tmp_trigger_ctype = CASE NEW.`record_type_id`\n" .
-        "                   WHEN 1 THEN 'Target'\n" .
+        "                   WHEN 3 THEN 'Target'\n" .
         "                   WHEN 2 THEN 'Source'\n" .
-        "                   WHEN 3 THEN 'Assignee'\n" .
+        "                   WHEN 1 THEN 'Assignee'\n" .
         "                   ELSE 'Unknown'\n" .
         "                 END;\n" .
 				"SELECT CONCAT('(',@tmp_trigger_ctype,') ',d.`label`) INTO @tmp_trigger_entinfo \n" .
