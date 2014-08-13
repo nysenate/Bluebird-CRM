@@ -821,6 +821,12 @@ COLS;
 				"FROM `civicrm_relationship_type` WHERE `id`=NEW.`relationship_type_id`;\n" .
 				"INSERT INTO `nyss_changelog_detail` \n" .
 				"(`db_op`,`table_name`,`entity_id`) VALUES\n" .
+				"('{eventName}','relationship',NEW.`id`);\n" .
+				"SET @nyss_altered_contact_id = NEW.`contact_id_b`;\n" .
+				"SELECT CONCAT_WS(CHAR(1),'Relationship',`label_b_a`) INTO @nyss_entity_info " .
+				"FROM `civicrm_relationship_type` WHERE `id`=NEW.`relationship_type_id`;\n" .
+				"INSERT INTO `nyss_changelog_detail` \n" .
+				"(`db_op`,`table_name`,`entity_id`) VALUES\n" .
 				"('{eventName}','relationship',NEW.`id`);";
 
 
