@@ -8,7 +8,7 @@ CREATE TABLE nyss_temp_staging_relationship (
   INDEX idx__staging_date (log_date,log_end_date),
   INDEX idx__staging_id (id)
 )
-SELECT a.id,a.label_a_b,a.log_date,
+SELECT a.id,a.label_a_b,a.label_b_a,a.log_date,
   IFNULL((
     SELECT DATE_SUB(b.log_date,INTERVAL 1 SECOND) as log_end_date
     FROM log_civicrm_relationship_type b
