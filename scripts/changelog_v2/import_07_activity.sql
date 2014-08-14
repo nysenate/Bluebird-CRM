@@ -31,7 +31,7 @@ SELECT
            WHEN 2 THEN 'Source'
            WHEN 3 THEN 'Target'
            ELSE 'Unknown'
-         END, ') ', c.label
+         END, ') ', IFNULL(c.label,CONCAT('*Unknown Activity (id=',a.entity_id,')*'))
   ) as group_field
 FROM @LOGDB@.log_civicrm_value_activity_details_6 a
 INNER JOIN @LOGDB@.log_civicrm_activity_contact b
