@@ -7,9 +7,9 @@ SELECT
   b.contact_id, a.log_date,
   CONCAT('Activity', CHAR(1), '(',
          CASE b.record_type_id 
-           WHEN 3 THEN 'Target' 
-           WHEN 2 THEN 'Source' 
-           WHEN 1 THEN 'Assignee' 
+           WHEN 1 THEN 'Assignee'
+           WHEN 2 THEN 'Source'
+           WHEN 3 THEN 'Target'
            ELSE 'Unknown' 
          END, ') ', a.label
   )
@@ -27,9 +27,9 @@ SELECT
   b.contact_id, a.log_date,
   CONCAT('Activity', CHAR(1), '(',
          CASE b.record_type_id
-           WHEN 3 THEN 'Target'
-           WHEN 2 THEN 'Source'
            WHEN 1 THEN 'Assignee'
+           WHEN 2 THEN 'Source'
+           WHEN 3 THEN 'Target'
            ELSE 'Unknown'
          END, ') ', c.label
   ) as group_field
