@@ -59,7 +59,7 @@
     SET @nyss_session_contact_added = 1;
   END IF;
 
-  IF NEW.table_name!='contact' AND @entity_type='Contact' THEN
+  IF NEW.table_name!='contact' AND @entity_type='Contact'  AND @summary_id IS NOT NULL THEN
     SET @tmp_user_action='Updated';
   END IF;
 
