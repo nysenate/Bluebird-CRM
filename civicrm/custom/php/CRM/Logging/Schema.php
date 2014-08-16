@@ -776,14 +776,14 @@ COLS;
     $this->delta_triggers = array();
   
 		$this->delta_triggers['civicrm_contact'] = 
-		    "SET @nyss_altered_contact_id = NEW.`id`; \n" .
+		    "SET @nyss_contact_id = NEW.`id`; \n" .
 		    "SET @nyss_entity_info = 'Contact'; \n" .
 		    "INSERT INTO `nyss_changelog_detail` \n" .
 		    "  (`db_op`,`table_name`,`entity_id`) VALUES\n" .
 		    "  ('{eventName}','contact',NEW.`id`);";
 
 		$this->delta_triggers['civicrm_email']=
-				"SET @nyss_altered_contact_id = NEW.`contact_id`;\n" .
+				"SET @nyss_contact_id = NEW.`contact_id`;\n" .
 		    "SET @nyss_entity_info = 'Contact'; \n" .
 				"INSERT INTO `nyss_changelog_detail` \n" .
 				"(`db_op`,`table_name`,`entity_id`) VALUES\n" .
@@ -791,7 +791,7 @@ COLS;
 
 
 		$this->delta_triggers['civicrm_phone']=
-				"SET @nyss_altered_contact_id = NEW.`contact_id`;\n" .
+				"SET @nyss_contact_id = NEW.`contact_id`;\n" .
 		    "SET @nyss_entity_info = 'Contact'; \n" .
 				"INSERT INTO `nyss_changelog_detail` \n" .
 				"(`db_op`,`table_name`,`entity_id`) VALUES\n" .
@@ -799,7 +799,7 @@ COLS;
 
 
 		$this->delta_triggers['civicrm_address']=
-				"SET @nyss_altered_contact_id = NEW.`contact_id`;\n" .
+				"SET @nyss_contact_id = NEW.`contact_id`;\n" .
 		    "SET @nyss_entity_info = 'Contact'; \n" .
 				"INSERT INTO `nyss_changelog_detail` \n" .
 				"(`db_op`,`table_name`,`entity_id`) VALUES\n" .
@@ -807,7 +807,7 @@ COLS;
 
 
 		$this->delta_triggers['civicrm_group_contact']=
-				"SET @nyss_altered_contact_id = NEW.`contact_id`;\n" .
+				"SET @nyss_contact_id = NEW.`contact_id`;\n" .
 				"SELECT CONCAT_WS(CHAR(1),'Group',`title`,NEW.`status`) " .
 				"INTO @nyss_entity_info FROM `civicrm_group` WHERE `id`=NEW.`group_id`;\n" .
 				"INSERT INTO `nyss_changelog_detail` \n" .
@@ -816,13 +816,13 @@ COLS;
 
 
 		$this->delta_triggers['civicrm_relationship']=
-				"SET @nyss_altered_contact_id = NEW.`contact_id_a`;\n" .
+				"SET @nyss_contact_id = NEW.`contact_id_a`;\n" .
 				"SELECT CONCAT_WS(CHAR(1),'Relationship',`label_a_b`) INTO @nyss_entity_info " .
 				"FROM `civicrm_relationship_type` WHERE `id`=NEW.`relationship_type_id`;\n" .
 				"INSERT INTO `nyss_changelog_detail` \n" .
 				"(`db_op`,`table_name`,`entity_id`) VALUES\n" .
 				"('{eventName}','relationship',NEW.`id`);\n" .
-				"SET @nyss_altered_contact_id = NEW.`contact_id_b`;\n" .
+				"SET @nyss_contact_id = NEW.`contact_id_b`;\n" .
 				"SELECT CONCAT_WS(CHAR(1),'Relationship',`label_b_a`) INTO @nyss_entity_info " .
 				"FROM `civicrm_relationship_type` WHERE `id`=NEW.`relationship_type_id`;\n" .
 				"INSERT INTO `nyss_changelog_detail` \n" .
@@ -831,7 +831,7 @@ COLS;
 
 
 		$this->delta_triggers['civicrm_case_contact']=
-				"SET @nyss_altered_contact_id = NEW.`contact_id`;\n" .
+				"SET @nyss_contact_id = NEW.`contact_id`;\n" .
 				"SELECT CONCAT_WS(CHAR(1), 'Case', d.`label`) INTO @nyss_entity_info FROM \n" .
 				"    `civicrm_case` a INNER JOIN ( \n" .
 				"        `civicrm_option_group` c INNER JOIN `civicrm_option_value` d \n" .
@@ -863,7 +863,7 @@ COLS;
 				"END IF; \n" .
 				"IF @tmp_trigger_cid > 0 THEN \n" .
 				"  BEGIN\n" .
-				"    SET @nyss_altered_contact_id = @tmp_trigger_cid;\n" .
+				"    SET @nyss_contact_id = @tmp_trigger_cid;\n" .
 		    "    SET @nyss_entity_info = CONCAT_WS(CHAR(1), @tmp_trigger_typename, @tmp_trigger_entinfo); \n" .
 				"    INSERT INTO nyss_changelog_detail\n" .
 				"    (`db_op`,`table_name`,`entity_id`) VALUES\n" .
@@ -878,7 +878,7 @@ COLS;
 				"END IF; \n" .
 				"IF @tmp_trigger_cid > 0 THEN \n" .
 				"  BEGIN\n" .
-				"    SET @nyss_altered_contact_id = @tmp_trigger_cid;\n" .
+				"    SET @nyss_contact_id = @tmp_trigger_cid;\n" .
 				"    SELECT CONCAT_WS(CHAR(1),'Tag',`name`) INTO @nyss_entity_info \n" .
 				"      FROM civicrm_tag WHERE `id` = NEW.`tag_id`; \n" .
 				"    INSERT INTO nyss_changelog_detail \n" .
@@ -901,7 +901,7 @@ COLS;
 				"        ON c.`name`='activity_type' AND c.`id`=d.`option_group_id`\n" .
 				"    ) ON a.`activity_type_id`=d.`value` \n" .
 				"WHERE a.`id`=NEW.`activity_id`; \n" .
-				"SET @nyss_altered_contact_id = NEW.`contact_id`;\n" .
+				"SET @nyss_contact_id = NEW.`contact_id`;\n" .
 		    "SET @nyss_entity_info = CONCAT_WS(CHAR(1),'Activity',@tmp_trigger_entinfo); \n" .
 				"INSERT INTO nyss_changelog_detail \n" .
 				"(`db_op`,`table_name`,`entity_id`) VALUES\n" .
@@ -913,7 +913,7 @@ COLS;
     foreach ($add_table_list as $t) {
       $sqlname = CRM_Core_DAO::escapeString(str_replace(array('civicrm_','log_'),array('',''),$t));
       $this->delta_triggers[$t] = 
-  				"SET @nyss_altered_contact_id = NEW.`entity_id`;\n" .
+  				"SET @nyss_contact_id = NEW.`entity_id`;\n" .
 		      "SET @nyss_entity_info = 'Contact'; \n" .
   				"INSERT INTO `nyss_changelog_detail` \n" .
   				"(`db_op`,`table_name`,`entity_id`) VALUES\n" .
@@ -925,7 +925,7 @@ COLS;
     foreach ($add_table_list as $t) {
       $sqlname = CRM_Core_DAO::escapeString(str_replace(array('civicrm_','log_'),array('',''),$t));
       $this->delta_triggers[$t] = 
-  				"SELECT `contact_id` INTO @nyss_altered_contact_id\n" .
+  				"SELECT `contact_id` INTO @nyss_contact_id\n" .
   				"FROM `civicrm_address` WHERE `id`=NEW.`entity_id`;\n" .
 		      "SET @nyss_entity_info = 'Contact'; \n" .
   				"INSERT INTO nyss_changelog_detail \n" .
