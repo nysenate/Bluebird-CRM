@@ -12,7 +12,6 @@
 ** types), plus optional Group status info (for Group entity type).
 */
 
-/*
 DROP TRIGGER IF EXISTS nyss_changelog_detail_before_insert;
 
 DELIMITER //
@@ -21,7 +20,6 @@ TRIGGER nyss_changelog_detail_before_insert
 BEFORE INSERT
 ON nyss_changelog_detail FOR EACH ROW
 BEGIN
-*/
   CASE NEW.db_op
     WHEN 'Insert' THEN SET @user_action = 'Added';
     WHEN 'Delete' THEN SET @user_action = 'Removed';
@@ -69,8 +67,6 @@ BEGIN
   ELSE
     SET NEW.summary_id = @summary_id;
   END IF;
-/*
 END;
 //
 DELIMITER ;
-*/
