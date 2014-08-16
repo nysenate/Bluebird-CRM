@@ -12,6 +12,7 @@
 prog=`basename $0`
 this_dir=`dirname $0`
 script_dir=`cd $this_dir/..; echo $PWD`
+logging_dir=`cd $this_dir/../../civicrm/custom/php/CRM/Logging; echo $PWD`
 readConfig=$script_dir/readConfig.sh
 execSql=$script_dir/execSql.sh
 
@@ -133,14 +134,14 @@ if [ $skip_create_detail_runtime_trigger -eq 1 ]; then
   log "Skipping the creation of the detail runtime trigger"
 else
   log "Replacing detail conversion trigger with runtime trigger"
-  $execSql -q $instance -f create_detail_runtime_trigger.sql || exit 1
+  $execSql -q $instance -f $logging_dir/create_detail_runtime_trigger.sql || exit 1
 fi
 
 if [ $skip_create_summary_trigger -eq 1 ]; then
   log "Skipping the creation of the summary trigger"
 else
   log "Creating the summary trigger"
-  $execSql -q $instance -f create_summary_trigger.sql || exit 1
+  $execSql -q $instance -f $logging_dir/create_summary_trigger.sql || exit 1
 fi
 
 log "Conversion of instance [$instance] is complete"
