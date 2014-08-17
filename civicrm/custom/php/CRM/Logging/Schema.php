@@ -550,10 +550,17 @@ COLS;
     // - drop non-column rows of the query (keys, constraints, etc.)
     // - set the ENGINE to ARCHIVE
     // - add log-specific columns (at the end of the table)
-    $query = preg_replace("/^CREATE TABLE `$table`/i", "CREATE TABLE `{$this->db}`.log_$table", $query);
-    $query = preg_replace("/ AUTO_INCREMENT/i", '', $query);
-    $query = preg_replace("/^  [^`].*$/m", '', $query);
-    $query = preg_replace("/^\) ENGINE=[^ ]+ /im", ') ENGINE=InnoDB ', $query);//NYSS
+    $patterns = array(
+        "/^CREATE TABLE `$table`/i",
+        '/ AUTO_INCREMENT/i',
+        '/^  [^`].*$/m',
+        "/^\) ENGINE=[^ ]+ /im");
+    $replacements = array(
+        "CREATE TABLE `{$this->db}`.log_$table",
+        '',
+        '',
+        ') ENGINE=InnoDB ');
+    $query = preg_replace($patterns, $replacements, $query);
 
     // log_civicrm_contact.modified_date for example would always be copied from civicrm_contact.modified_date,
     // so there's no need for a default timestamp and therefore we remove such default timestamps
@@ -740,6 +747,7 @@ COLS;
     if (is_array($triggers)) {
       $sql = file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . "create_summary_trigger.sql");
       if ($sql) {
+        $sql = self::stripTriggerBeginEnd($sql);
         $triggers[] = array(
           'table' => array('nyss_changelog_summary'),
           'event' => array('INSERT'),
@@ -757,6 +765,7 @@ COLS;
     if (is_array($triggers)) {
       $sql = file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . "create_detail_runtime_trigger.sql");
       if ($sql) {
+        $sql = self::stripTriggerBeginEnd($sql);
         // set the trigger
         $triggers[] = array(
           'table' => array('nyss_changelog_detail'),
@@ -941,4 +950,19 @@ COLS;
     }
     return $customGroupTables;
   }
+
+
+  /**
+   * This function is used to strip the leading and trailing portions of
+   * a CREATE TRIGGER statement, leaving only the core trigger code itself.
+   * The trigger code is read from a SQL file, and must have an opening
+   * BEGIN token on a line by itself, as well as a terminating END; token
+   * on a line by itself followed by the "//" delimiter on a line by itself.
+   */
+  static function stripTriggerBeginEnd($sql)
+  {
+    $a = explode("BEGIN\n", $sql, 2);
+    $b = explode("END;\n//", $a[1]);
+    return $b[0];
+  } // stripTriggerBeginEnd()
 }
