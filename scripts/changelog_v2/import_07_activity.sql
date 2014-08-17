@@ -5,13 +5,13 @@ INSERT IGNORE INTO nyss_changelog_detail
 SELECT 
   a.log_action, 'activity', a.id, a.log_conn_id, a.log_user_id,
   b.contact_id, a.log_date,
-  CONCAT('Activity', CHAR(1), '(',
-         CASE b.record_type_id 
-           WHEN 1 THEN 'Assignee'
-           WHEN 2 THEN 'Source'
-           WHEN 3 THEN 'Target'
-           ELSE 'Unknown' 
-         END, ') ', a.label
+  CONCAT('Activity', CHAR(1),
+         CASE b.record_type_id
+           WHEN 1 THEN '<= ' /* Assignee */
+           WHEN 2 THEN '=> ' /* Source */
+           WHEN 3 THEN ''    /* Target */
+           ELSE '?'
+         END, a.label
   )
 FROM @LOGDB@.nyss_temp_staging_activity a
 INNER JOIN @LOGDB@.log_civicrm_activity_contact b 
@@ -25,13 +25,13 @@ INSERT IGNORE INTO nyss_changelog_detail
 SELECT
   a.log_action, 'value_activity_details_6', a.id, a.log_conn_id, a.log_user_id,
   b.contact_id, a.log_date,
-  CONCAT('Activity', CHAR(1), '(',
+  CONCAT('Activity', CHAR(1),
          CASE b.record_type_id
-           WHEN 1 THEN 'Assignee'
-           WHEN 2 THEN 'Source'
-           WHEN 3 THEN 'Target'
-           ELSE 'Unknown'
-         END, ') ', IFNULL(c.label,CONCAT('*Unknown Activity (id=',a.entity_id,')*'))
+           WHEN 1 THEN '<= ' /* Assignee */
+           WHEN 2 THEN '=> ' /* Source */
+           WHEN 3 THEN ''    /* Target */
+           ELSE '?'
+         END, IFNULL(c.label, CONCAT('*Unknown Activity (id=',a.entity_id,')*'))
   ) as group_field
 FROM @LOGDB@.log_civicrm_value_activity_details_6 a
 INNER JOIN @LOGDB@.log_civicrm_activity_contact b
