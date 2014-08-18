@@ -22,7 +22,7 @@ CREATE TABLE nyss_changelog_summary (
   contact_id INT(10) UNSIGNED NOT NULL,
   entity_type ENUM('Contact', 'Group', 'Tag', 'Activity', 'Relationship', 'Case', 'Note', 'Comment') NOT NULL,
   change_ts TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  user_action ENUM('Added', 'Updated', 'Removed', 'Unjoined', 'Rejoined') NOT NULL DEFAULT 'Updated',
+  user_action ENUM('Added', 'Updated', 'Removed', 'Unjoined', 'Rejoined', 'Trashed') NOT NULL DEFAULT 'Updated',
   entity_info VARCHAR(255) NULL DEFAULT NULL,
   tmp_date_extract INT(10) NOT NULL,
   INDEX tmp_idx__changelog_summary (conn_id, contact_id, entity_type, tmp_date_extract)
