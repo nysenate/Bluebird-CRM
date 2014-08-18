@@ -3,6 +3,7 @@ DROP TABLE IF EXISTS nyss_temp_staging_relationship;
 CREATE TABLE nyss_temp_staging_relationship (
   id INT(10) UNSIGNED NOT NULL,
   label_a_b VARCHAR(64) NULL DEFAULT NULL,
+  label_b_a VARCHAR(64) NULL DEFAULT NULL,
   log_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   log_end_date TIMESTAMP NULL DEFAULT NULL,
   INDEX idx__staging_date (log_date,log_end_date),
