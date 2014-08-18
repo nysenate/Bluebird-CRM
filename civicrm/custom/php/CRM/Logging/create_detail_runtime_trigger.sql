@@ -57,6 +57,9 @@ BEGIN
 
   IF @summary_id IS NULL THEN
     BEGIN
+      IF @entity_type = 'Contact' AND NEW.table_name != 'contact' THEN
+        SET @user_action = 'Updated';
+      END IF;
       INSERT INTO nyss_changelog_summary
         (conn_id, user_id, contact_id, entity_type, user_action, entity_info)
       VALUES
