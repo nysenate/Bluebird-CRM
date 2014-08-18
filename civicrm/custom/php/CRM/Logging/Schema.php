@@ -782,11 +782,12 @@ COLS;
    * $this->delta_triggers = array ( 'table_name' => 'SQL', )
    * NYSS #7893
    */
-  function nyssPrepareDeltaTriggers() {
+  function nyssPrepareDeltaTriggers()
+  {
     // an array of tables and the SQL to be added
     $this->delta_triggers = array();
   
-    $this->delta_triggers['civicrm_contact'] = 
+    $this->delta_triggers['civicrm_contact'] =
       "SET @nyss_contact_id = NEW.id;".
       "SET @nyss_entity_info = 'Contact';".
       "INSERT INTO nyss_changelog_detail (db_op, table_name, entity_id)".
@@ -877,14 +878,10 @@ COLS;
       "END IF;";
 
     $this->delta_triggers['civicrm_entity_tag']=
-      "SET @tmp_trigger_cid = 0;".
       "IF NEW.entity_table = 'civicrm_contact' THEN".
-      "  SET @tmp_trigger_cid = NEW.entity_id;".
-      "END IF;".
-      "IF @tmp_trigger_cid > 0 THEN".
       "  BEGIN".
-      "    SET @nyss_contact_id = @tmp_trigger_cid;".
-      "    SELECT CONCAT_WS(CHAR(1),'Tag',name) INTO @nyss_entity_info".
+      "    SET @nyss_contact_id = NEW.entity_id;".
+      "    SELECT CONCAT_WS(CHAR(1), 'Tag', name) INTO @nyss_entity_info".
       "     FROM civicrm_tag WHERE id = NEW.tag_id;".
       "    INSERT INTO nyss_changelog_detail (db_op, table_name, entity_id)".
       "     VALUES ('{eventName}', 'entity_tag', NEW.id);".
@@ -914,7 +911,7 @@ COLS;
     // add extended tables for contacts
     $add_table_list = self::nyssFetchExtendedTables('Contact');
     foreach ($add_table_list as $t) {
-      $sqlname = CRM_Core_DAO::escapeString(str_replace(array('civicrm_','log_'),array('',''),$t));
+      $sqlname = CRM_Core_DAO::escapeString(str_replace('civicrm_', '', $t));
       $this->delta_triggers[$t] = 
         "SET @nyss_contact_id = NEW.entity_id;".
         "SET @nyss_entity_info = 'Contact';".
@@ -925,7 +922,7 @@ COLS;
     // add extended tables for addresses
     $add_table_list = self::nyssFetchExtendedTables('Address');
     foreach ($add_table_list as $t) {
-      $sqlname = CRM_Core_DAO::escapeString(str_replace(array('civicrm_','log_'),array('',''),$t));
+      $sqlname = CRM_Core_DAO::escapeString(str_replace('civicrm_', '', $t));
       $this->delta_triggers[$t] = 
         "SELECT contact_id INTO @nyss_contact_id".
         " FROM civicrm_address".
@@ -934,14 +931,15 @@ COLS;
         "INSERT INTO nyss_changelog_detail (db_op, table_name, entity_id)".
         " VALUES ('{eventName}', '$sqlname', NEW.id);";
     }
+  } // nyssPrepareDeltaTriggers()
 
-  }
 
   /**
    * Return custom data tables for specified entity / extends. 
    * THIS RETURNS ACTUAL TABLES, NOT LOG TABLES
    */
-  static function nyssFetchExtendedTables($table_groups) {
+  static function nyssFetchExtendedTables($table_groups)
+  {
     $customGroupTables = array();
     $customGroupDAO = CRM_Core_BAO_CustomGroup::getAllCustomGroupsByBaseEntity($table_groups);
     $customGroupDAO->find();
@@ -949,7 +947,7 @@ COLS;
       $customGroupTables[] = $customGroupDAO->table_name;
     }
     return $customGroupTables;
-  }
+  } // nyssFetchExtendedTables()
 
 
   /**
