@@ -27,20 +27,26 @@ BEGIN
   END CASE;
 
   SET @entity_type = SUBSTRING_INDEX(@nyss_entity_info, CHAR(1), 1);
+  SET @entity_info = SUBSTRING_INDEX(SUBSTRING_INDEX(@nyss_entity_info, CHAR(1), 2), CHAR(1), -1);
 
-  IF @entity_type != 'Contact' THEN
-    SET @entity_info = SUBSTRING_INDEX(SUBSTRING_INDEX(@nyss_entity_info, CHAR(1), 2), CHAR(1), -1);
-  ELSE
-    SET @entity_info = NULL;
-  END IF;
-
-  IF @entity_type = 'Group' THEN
-    SET @group_action = SUBSTRING_INDEX(@nyss_entity_info, CHAR(1), -1);
-    IF @group_action = 'Removed' THEN
-      SET @user_action = 'Unjoined';
-    ELSEIF @group_action = 'Added' THEN
-      SET @user_action = 'Rejoined';
-    END IF;
+  IF @entity_type = 'Group' AND @user_action = 'Updated' THEN
+    BEGIN
+      /* special labeling for joining/leaving groups */
+      SET @group_action = SUBSTRING_INDEX(@nyss_entity_info, CHAR(1), -1);
+      IF @group_action = 'Removed' THEN
+        SET @user_action = 'Unjoined';
+      ELSEIF @group_action = 'Added' THEN
+        SET @user_action = 'Rejoined';
+      END IF;
+    END;
+  ELSEIF NEW.table_name = 'contact' AND @entity_info = 1 THEN
+    BEGIN
+      /* special labeling for deleting/restoring contacts */
+      SET @tmp_action = SUBSTRING_INDEX(@nyss_entity_info, CHAR(1), -1);
+      IF @tmp_action IN ('Trashed','Restored') THEN
+        SET @user_action = @tmp_action;
+      END IF;
+    END;
   END IF;
 
   SET @summary_id = NULL;

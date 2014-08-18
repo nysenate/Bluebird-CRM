@@ -52,10 +52,10 @@ class CRM_Logging_Schema {
     'civicrm_job'   => array('last_run'),
     'civicrm_group' => array('cache_date'),
   );
-  
+
   // to cache results of fetchTableList
   static $_fetch_cache = array();
-  
+
   // default trigger filters
   static $_trigger_filters = array(
                  // do not log temp import, cache and log tables
@@ -85,13 +85,13 @@ class CRM_Logging_Schema {
 
     // fetch the list of tables
     $this->tables = self::fetchTableList($this->primary_db);
-    
+
     // filter the tables
     $this->tables = self::filterTriggerTables($this->tables);
 
     // get the logging database name
     $this->db = self::getDatabaseName();
-    
+
     // fetch the list of logging tables and "correct" it
     $all_logs = self::fetchTableList($this->db, 'log_civicrm_%');
 
@@ -99,7 +99,7 @@ class CRM_Logging_Schema {
       $this->logs[substr($v, 4)] = $v;
     }
   }
-  
+
   public function setUsePrefix() {
     if (defined('CIVICRM_LOGGING_DSN') && CIVICRM_LOGGING_DSN != CIVICRM_DSN) {
       $this->useDBPrefix = true;
@@ -122,7 +122,7 @@ class CRM_Logging_Schema {
     $ret = DB::parseDSN($dsn);
     return $ret['database'];
   }
-  
+
   /**
    * Retrieve a list of tables from the database
    */
@@ -131,37 +131,37 @@ class CRM_Logging_Schema {
     if (!isset(self::$_fetch_cache)) {
       self::$_fetch_cache = array();
     }
-    
+
     if (!isset(self::$_fetch_cache[$filter])) {
-      // initialize 
+      // initialize
       $target = array();
-      
+
       // generate the base SQL
       $sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = %1 " .
              "AND TABLE_TYPE = 'BASE TABLE'";
-             
+
       // create the parameter array
       $params = array(1 => array($schema,'String'));
-  
+
       // add the filter, if present
-      if ($filter) { 
-        $sql .= " AND TABLE_NAME LIKE %2"; 
+      if ($filter) {
+        $sql .= " AND TABLE_NAME LIKE %2";
         $params[2] = array($filter,'String');
       }
-  
+
       // fetch the table names
       $dao = CRM_Core_DAO::executeQuery("{$sql};", $params);
-      
+
       // add each table name to the array
       while ($dao->fetch()) {
         $target[] = $dao->TABLE_NAME;
       }
       self::$_fetch_cache[$filter] = $target;
     }
-      
+
     return self::$_fetch_cache[$filter];
   }
-  
+
   /**
    * Remove all non-trigger tables
    * $tables should be a one-dimensional array of table names
@@ -171,15 +171,15 @@ class CRM_Logging_Schema {
     if (!(is_array($filters) && count($filters))) {
       $filters = self::$_trigger_filters;
     }
-    
+
     // standardize the input
     if (!is_array($tables)) { $tables = array((string)$tables); }
-    
+
     // run the filters
     foreach ($filters as $one_filter) {
       $tables = preg_grep($one_filter[0], $tables, $one_filter[1]);
     }
-    
+
     return $tables;
   }
 
@@ -624,17 +624,17 @@ COLS;
   }
 
   function triggerInfo(&$info, $tableName = NULL, $force = false) {
-    
+
     // check if we have logging enabled
     $config = &CRM_Core_Config::singleton();
     if (!$config->logging) {
       return;
     }
-    
+
     // build the triggers for the delta log summary and detail tables #NYSS 7893
     self::nyssBuildSummaryTableTrigger($info);
     self::nyssBuildDetailTableTrigger($info);
-    
+
     // prepare the trigger SQL for tables included in the delta log
     $this->nyssPrepareDeltaTriggers();
 
@@ -722,6 +722,8 @@ COLS;
         'sql' => $deleteSQL,
       );
     }
+
+    self::nyssAddCustomTriggers($info);
   }
 
   /**
@@ -757,7 +759,7 @@ COLS;
       }
     }
   }
-  
+
   /**
    * Builds and installs the trigger for the delta log's detail table NYSS #7893
    */
@@ -778,7 +780,7 @@ COLS;
   }
 
   /**
-   * Prepares all SQL for new delta log triggers.  Resulting SQL is stored in 
+   * Prepares all SQL for new delta log triggers.  Resulting SQL is stored in
    * $this->delta_triggers = array ( 'table_name' => 'SQL', )
    * NYSS #7893
    */
@@ -786,12 +788,6 @@ COLS;
   {
     // an array of tables and the SQL to be added
     $this->delta_triggers = array();
-  
-    $this->delta_triggers['civicrm_contact'] =
-      "SET @nyss_contact_id = NEW.id;".
-      "SET @nyss_entity_info = 'Contact';".
-      "INSERT INTO nyss_changelog_detail (db_op, table_name, entity_id)".
-      " VALUES ('{eventName}', 'contact', NEW.id);";
 
     $this->delta_triggers['civicrm_email']=
       "SET @nyss_contact_id = NEW.contact_id;".
@@ -912,7 +908,7 @@ COLS;
     $add_table_list = self::nyssFetchExtendedTables('Contact');
     foreach ($add_table_list as $t) {
       $sqlname = CRM_Core_DAO::escapeString(str_replace('civicrm_', '', $t));
-      $this->delta_triggers[$t] = 
+      $this->delta_triggers[$t] =
         "SET @nyss_contact_id = NEW.entity_id;".
         "SET @nyss_entity_info = 'Contact';".
         "INSERT INTO nyss_changelog_detail (db_op, table_name, entity_id)".
@@ -923,7 +919,7 @@ COLS;
     $add_table_list = self::nyssFetchExtendedTables('Address');
     foreach ($add_table_list as $t) {
       $sqlname = CRM_Core_DAO::escapeString(str_replace('civicrm_', '', $t));
-      $this->delta_triggers[$t] = 
+      $this->delta_triggers[$t] =
         "SELECT contact_id INTO @nyss_contact_id".
         " FROM civicrm_address".
         " WHERE id=NEW.entity_id;".
@@ -935,7 +931,52 @@ COLS;
 
 
   /**
-   * Return custom data tables for specified entity / extends. 
+   * Adds custom triggers individually for INSERT, DELETE, UPDATE
+   * Allowing triggerInfo() to act on these would fail because of references to NEW/OLD
+   */
+  static function nyssAddCustomTriggers(&$info) {
+    $sql =
+      "SET @nyss_contact_id = NEW.id;".
+      "SET @nyss_entity_info = CONCAT_WS(CHAR(1), 'Contact', '', '');".
+      "INSERT INTO nyss_changelog_detail (db_op, table_name, entity_id)".
+      " VALUES ('{eventName}', 'contact', NEW.id);";
+    $info[] = array(
+      'table' => array('civicrm_contact'),
+      'when' => 'AFTER',
+      'event' => array('INSERT'),
+      'sql' => $sql,
+    );
+
+    $sql =
+      "SET @nyss_contact_id = NEW.id;".
+      "SET @nyss_entity_info = CONCAT_WS(".
+      " CHAR(1), 'Contact',".
+      " IF(NEW.is_deleted=OLD.is_deleted,0,1), IF(NEW.is_deleted,'Trashed','Restored')".
+      ");".
+      "INSERT INTO nyss_changelog_detail (db_op, table_name, entity_id)".
+      " VALUES ('{eventName}', 'contact', NEW.id);";
+    $info[] = array(
+      'table' => array('civicrm_contact'),
+      'when' => 'AFTER',
+      'event' => array('UPDATE'),
+      'sql' => $sql,
+    );
+
+    $sql =
+      "SET @nyss_contact_id = OLD.id;".
+      "SET @nyss_entity_info = CONCAT_WS(CHAR(1), 'Contact', '', '');".
+      "INSERT INTO nyss_changelog_detail (db_op, table_name, entity_id)".
+      " VALUES ('{eventName}', 'contact', OLD.id);";
+    $info[] = array(
+      'table' => array('civicrm_contact'),
+      'when' => 'AFTER',
+      'event' => array('DELETE'),
+      'sql' => $sql,
+    );
+  }
+
+  /**
+   * Return custom data tables for specified entity / extends.
    * THIS RETURNS ACTUAL TABLES, NOT LOG TABLES
    */
   static function nyssFetchExtendedTables($table_groups)

@@ -13,9 +13,11 @@ INSERT IGNORE INTO nyss_changelog_detail
   (db_op, table_name, entity_id, tmp_conn_id, tmp_user_id,
    tmp_contact_id, tmp_change_ts, tmp_entity_info)
 SELECT
-  log_action, 'contact', id, log_conn_id, log_user_id,
-  id, log_date, 'Contact'
-FROM @LOGDB@.log_civicrm_contact
+  a.log_action, 'contact', a.id, a.log_conn_id, a.log_user_id,
+  a.id, a.log_date, CONCAT_WS(CHAR(1), 'Contact', b.is_deleted_changed, IF(a.is_deleted,'Trashed','Restored'))
+FROM @LOGDB@.log_civicrm_contact a
+INNER JOIN @LOGDB@.nyss_temp_staging_contact b
+ON a.id=b.id AND a.log_date BETWEEN b.log_date AND b.log_end_date
 WHERE log_action != 'Initialization';
 
 
