@@ -336,16 +336,16 @@ div.messages ul {
 	}
 
 #status-handle {
-	-moz-border-radius: 	0px 0px 4px 4px; 
-	-webkit-border-radius: 	0px 0px 4px 4px;   
-	-khtml-border-radius: 	0px 0px 4px 4px; 
-	border-radius:			0px 0px 4px 4px; 
+	-moz-border-radius: 	0px 0px 4px 4px;
+	-webkit-border-radius: 	0px 0px 4px 4px;
+	-khtml-border-radius: 	0px 0px 4px 4px;
+	border-radius:			0px 0px 4px 4px;
 	}
 
 
 /* hide messages before they are moved into our status div
- * unless they are inside a tab panel 
- * (cause they might get pulled by ajax and are context-sensitive 
+ * unless they are inside a tab panel
+ * (cause they might get pulled by ajax and are context-sensitive
  */
 .messages {
   /*display: none;*/
@@ -499,15 +499,15 @@ ul.menu li ul {
 }
 
 ul li, ul.menu li, .item-list ul li, li.leaf {
-  
+
 }
 
 ul li.expanded {
-  
+
 }
 
 ul li.collapsed {
-  
+
 }
 
 div.tabs {
@@ -776,13 +776,13 @@ ul.pager span.pager-ellipsis {
   padding: 0 0.5em;
 }
 
-.item-list .pager li { 
+.item-list .pager li {
   padding:0em;
 }
 
 /* @end */
 
-#user-login-form li.openid-link, 
+#user-login-form li.openid-link,
 #user-login li.openid-link {
   background-position: 0 0;
   padding-left:18px;
@@ -839,7 +839,7 @@ textarea, input {
 	background: none;
 	border: 1px solid transparent;
 }
-#crm-container #Tag .tree .expandable .hit { 
+#crm-container #Tag .tree .expandable .hit {
     background-image: none!important;
     padding:0px 2px;
     }
@@ -882,7 +882,7 @@ textarea, input {
     height: auto;
     display:none;
     }
-    #tag-refresh-button span {color: #FFF;}	
+    #tag-refresh-button span {color: #FFF;}
 
 ul.token-input-list-facebook { width:265px;}
 
@@ -1039,8 +1039,8 @@ ul.token-input-list-facebook { width:265px;}
 }
 #Advanced .advsearch_buttons_top a.resetbutton span {
 	margin:auto;
-	display: block; 
-	width: 86px; 
+	display: block;
+	width: 86px;
 	text-align: center;
 }
 #Advanced #District_Information td {
@@ -1309,9 +1309,9 @@ div.crm-summary-display_name div.crm-icon {
   float: left;
 }
 .block-civicrm div#crm-recently-viewed ul li.crm-recently-viewed div {
-	-moz-border-radius: 0px 4px 4px 4px; 
- 	-webkit-border-radius: 0px 4px 4px 4px;   
- 	-khtml-border-radius: 0px 4px 4px 4px; 
+	-moz-border-radius: 0px 4px 4px 4px;
+ 	-webkit-border-radius: 0px 4px 4px 4px;
+ 	-khtml-border-radius: 0px 4px 4px 4px;
  	border-radius:0px 4px 4px 4px;
  	padding: 2px 8px;
 }
@@ -1412,7 +1412,7 @@ div#crm-toolTip {
 	width: 205px;
 }
 /*4215 menu font*/
-#civicrm-menu li a, 
+#civicrm-menu li a,
 #root-menu-div li a {
 	font-family: "Helvetica Neue",Arial,Helvetica,sans-serif;
 	font-size: 13px;
@@ -1724,6 +1724,13 @@ div#contact-summary div#contactTopBar {
 /*ensure log popup is wide enough*/
 .crm-report-log_civicrm_entity_log_action .crm-tooltip-wrapper {
   min-width: 500px;
+}
+
+.crm-report-log_civicrm_entity_log_action {
+  white-space:nowrap;
+}
+.crm-report-log_civicrm_entity_log_action > *:last-child:after {
+	content:'\00a0\00a0\00a0';
 }
 
 .dataTables_processing {
