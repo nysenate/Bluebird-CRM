@@ -3,6 +3,8 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
+ | Copyright CiviCRM LLC (c) 2004-2014                                |
+ +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
  | CiviCRM is free software; you can copy, modify, and distribute it  |
@@ -24,46 +26,42 @@
 */
 
 /**
- * Field handler to provide simple renderer that allows linking to a user.
  *
- * @ingroup civicrm_field_handlers
+ * @package CRM
+ * @copyright CiviCRM LLC (c) 2004-2014
+ * $Id$
+ *
  */
-class civicrm_handler_field extends views_handler_field {
+class CRM_Contact_Page_ImageFile extends CRM_Core_Page {
+  function run() {
+    if (!preg_match('/^[^\/]+\.(jpg|jpeg|png|gif)$/i', $_GET['photo'])) {
+      CRM_Core_Error::fatal('Malformed photo name');
+    }
 
-  /**
-   * Override init function to provide generic option to link to user.
-   */
-  function init(&$view, &$data) {
-    parent::init($view, $data);
-  }
-
-  /**
-   * Provide link to node option
-   */
-  function options_form(&$form, &$form_state) {
-    parent::options_form($form, $form_state);
-    $form['link_to_civicrm'] = array(
-      '#title' => t('Link this field to its user'),
-      '#type' => 'checkbox',
-      '#default_value' => isset($this->options['link_to_civicrm']) ? $this->options['link_to_civicrm'] : '',
+    // FIXME Optimize performance of image_url query
+    $sql = "SELECT id FROM civicrm_contact WHERE image_url like %1;";
+    $params = array(
+      1 => array("%" . $_GET['photo'], 'String')
     );
-  }
-
-  function render_link($data, $values) {
-    $data = str_replace('', ', ', trim($data, ''));
-    if (!empty($this->options['link_to_civicrm']) && user_access('access CiviCRM') && $values->id) {
-      return civicrm_views_href($data,
-        'civicrm/contact/view',
-        "reset=1&cid={$values->id}"
+    $dao = CRM_Core_DAO::executeQuery($sql, $params);
+    while ($dao->fetch()) {
+      $cid = $dao->id;
+    }
+    if ($cid) {
+      $config = CRM_Core_Config::singleton();
+      $buffer = file_get_contents($config->customFileUploadDir . $_GET['photo']);
+      $mimeType = 'image/' . pathinfo($_GET['photo'], PATHINFO_EXTENSION);
+      CRM_Utils_System::download($_GET['photo'], $mimeType, $buffer,
+        NULL,
+        TRUE,
+        'inline'
       );
+      CRM_Utils_System::civiExit();
     }
     else {
-      return $data;
+      CRM_Core_Error::fatal('Photo does not exist');
     }
   }
-
-  function render($values) {
-    return $this->render_link(check_plain($values->{$this->field_alias}), $values);
-  }
 }
+
 
