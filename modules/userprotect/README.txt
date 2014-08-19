@@ -1,4 +1,3 @@
-$Id: README.txt,v 1.9 2011/01/05 06:45:53 thehunmonkgroup Exp $
 
 ****************************************************
 User protect module -- README

@@ -1,0 +1,166 @@
+<?php
+
+/**
+ * @file
+ * Contains UserProtectProtectionWebTest.
+ */
+
+/**
+ * Tests creating, editing and deleting protection rules through the UI.
+ *
+ * @todo Assert protection messages.
+ * @todo Test OpenID.
+ */
+class UserProtectProtectionWebTest extends UserProtectWebTestBase {
+
+  /**
+   * The operating account.
+   *
+   * @var object
+   */
+  protected $account;
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'Protection tests',
+      'description' => 'Tests each type of protection in action.',
+      'group' => 'User protect',
+      'dependencies' => array('user'),
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setUp($modules = array()) {
+    parent::setUp($modules);
+
+    // Set administrator bypass defaults to no bypassing at all.
+    variable_set('userprotect_administrator_bypass_defaults', array(
+      'up_name' => 0,
+      'up_mail' => 0,
+      'up_pass' => 0,
+      'up_status' => 0,
+      'up_roles' => 0,
+      'up_openid' => 0,
+      'up_cancel' => 0,
+      'up_edit' => 0,
+    ));
+
+    $this->account = $this->drupalCreateUser(array('administer users', 'administer permissions'));
+    $this->drupalLogin($this->account);
+  }
+
+  /**
+   * Tests if the user's name field has the expected protection.
+   */
+  protected function testNameProtection() {
+    $protected_account = $this->createProtectedUser(array('up_name' => 1));
+
+    // Remember the user's name.
+    $expected_name = $protected_account->name;
+
+    $edit = array(
+      'name' => $this->randomName(),
+    );
+    $this->userprotectPostForm('user/' . $protected_account->uid . '/edit', $edit, t('Save'));
+
+    // Re-load the user and check the user name didn't change.
+    $protected_account = user_load($protected_account->uid, TRUE);
+    $this->assertEqual($expected_name, $protected_account->name);
+  }
+
+  /**
+   * Tests if the user's mail address field has the expected protection.
+   */
+  protected function testMailProtection() {
+    $protected_account = $this->createProtectedUser(array('up_mail' => 1));
+
+    // Remember the user's mail address.
+    $expected_mail = $protected_account->mail;
+
+    $edit = array(
+      'mail' => $this->randomName() . '@example.com',
+    );
+    $this->userprotectPostForm('user/' . $protected_account->uid . '/edit', $edit, t('Save'));
+
+    // Re-load the user and check the user mail address didn't change.
+    $protected_account = user_load($protected_account->uid, TRUE);
+    $this->assertEqual($expected_mail, $protected_account->mail);
+  }
+
+  /**
+   * Tests if the user's password field has the expected protection.
+   */
+  protected function testPassProtection() {
+    $protected_account = $this->createProtectedUser(array('up_pass' => 1));
+
+    // Remember the user's pass.
+    $expected_pass = $protected_account->pass_raw;
+
+    $new_pass = $this->randomName();
+    $edit = array(
+      'pass[pass1]' => $new_pass,
+      'pass[pass2]' => $new_pass,
+    );
+    $this->userprotectPostForm('user/' . $protected_account->uid . '/edit', $edit, t('Save'));
+
+    // Try to login as this user with the expected password.
+    $protected_account = user_load($protected_account->uid, TRUE);
+    $protected_account->pass_raw = $expected_pass;
+    $this->drupalLogout();
+    $this->drupalLogin($protected_account);
+  }
+
+  /**
+   * Tests if the user's status field has the expected protection.
+   */
+  protected function testStatusProtection() {
+    $protected_account = $this->createProtectedUser(array('up_status' => 1));
+
+    // Try to deactivate user's status.
+    $edit = array(
+      'status' => '0',
+    );
+    $this->userprotectPostForm('user/' . $protected_account->uid . '/edit', $edit, t('Save'));
+
+    // Re-load the user and check the user is still active.
+    $protected_account = user_load($protected_account->uid, TRUE);
+    $this->assertTrue($protected_account->status);
+  }
+
+  /**
+   * Tests if the user's roles field has the expected protection.
+   */
+  protected function testRolesProtection() {
+    $protected_account = $this->createProtectedUser(array('up_roles' => 1));
+
+    // Add a role to the protected account.
+    $rid1 = $this->drupalCreateRole(array());
+    $protected_account->roles[$rid1] = $rid1;
+    user_save($protected_account);
+
+    // Add another role. We try to add this role to the user form later.
+    $rid2 = $this->drupalCreateRole(array());
+
+    // Re-load the user and check its roles.
+    $protected_account = user_load($protected_account->uid, TRUE);
+    // Assert the protected account's roles.
+    $this->assertTrue(isset($protected_account->roles[$rid1]));
+    $this->assertFalse(isset($protected_account->roles[$rid2]));
+
+    // Try to add the second role to this user.
+    $edit = array(
+      'roles[' . $rid2 . ']' => $rid2,
+    );
+    $this->userprotectPostForm('user/' . $protected_account->uid . '/edit', $edit, t('Save'));
+
+    // Re-load the user and assert the roles it has are still the same.
+    $protected_account = user_load($protected_account->uid, TRUE);
+    $this->assertTrue(isset($protected_account->roles[$rid1]));
+    $this->assertFalse(isset($protected_account->roles[$rid2]));
+  }
+}

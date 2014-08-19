@@ -1,0 +1,26 @@
+<?php
+
+/**
+ * @file
+ * Testing module for User protect.
+ */
+
+/**
+ * Implements hook_init().
+ *
+ * Conditionally turns off error reporting.
+ */
+function userprotect_test_init() {
+  if (variable_get('error_reporting', NULL) === 0) {
+    error_reporting(0);
+  }
+}
+
+/**
+ * Implements hook_views_api().
+ */
+function userprotect_test_views_api() {
+  return array(
+    'api' => 3,
+  );
+}

@@ -1,6 +1,5 @@
 <?php
 
-// $Id: userprotect.install,v 1.18 2010/12/30 06:03:47 thehunmonkgroup Exp $
 
 /**
  * @file
@@ -8,14 +7,14 @@
  */
 
 /**
- * Implement hook_update_last_removed().
+ * Implements hook_update_last_removed().
  */
 function userprotect_update_last_removed() {
   return 6001;
 }
 
 /**
- * Implement hook_install().
+ * Implements hook_install().
  */
 function userprotect_install() {
 
@@ -42,9 +41,9 @@ function userprotect_install() {
       'up_status' => 0,
       'up_roles' => 0,
       'up_cancel' => 1,
-      'up_edit' => 1,
+      'up_edit' => 0,
       'up_type' => 'user',
-      'up_openid' => 1,
+      'up_openid' => 0,
     ))->execute();
 
   // Default administrator bypass.
@@ -62,17 +61,18 @@ function userprotect_install() {
       'up_openid' => 1,
     ))->execute();
 
-  //Default permissions for authenticated users.
+  // Default permissions for authenticated users.
   $permissions = array(
     'change own e-mail',
     'change own password',
     'change own openid',
+    'edit own account',
   );
   user_role_grant_permissions(DRUPAL_AUTHENTICATED_RID, $permissions);
 }
 
 /**
- * Implement hook_schema().
+ * Implements hook_schema().
  */
 function userprotect_schema() {
   $schema['userprotect'] = array(
@@ -158,7 +158,7 @@ function userprotect_schema() {
 }
 
 /**
- * Change up_delete to up_cancel, in line with core's change from user delete
+ * Changes up_delete to up_cancel, in line with core's change from user delete
  * to user cancel.
  */
 function userprotect_update_7000() {
@@ -171,8 +171,19 @@ function userprotect_update_7000() {
   );
   db_change_field('userprotect', 'up_delete', 'up_cancel', $spec);
 }
+
 /**
- * Implement hook_uninstall().
+ * Grants the 'edit own account' permission to all roles.
+ */
+function userprotect_update_7001() {
+  $rids = array_keys(user_roles(TRUE));
+  foreach ($rids as $rid) {
+    user_role_grant_permissions($rid, array('edit own account'));
+  }
+}
+
+/**
+ * Implements hook_uninstall().
  */
 function userprotect_uninstall() {
 
