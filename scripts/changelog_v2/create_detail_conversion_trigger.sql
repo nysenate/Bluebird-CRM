@@ -30,22 +30,22 @@ BEGIN
   SET @entity_type = SUBSTRING_INDEX(NEW.tmp_entity_info, CHAR(1), 1);
   SET @entity_info = SUBSTRING_INDEX(SUBSTRING_INDEX(NEW.tmp_entity_info, CHAR(1), 2), CHAR(1), -1);
 
+  /* Special logic to detect group unjoin/rejoin and contact trash/restore. */
   IF @entity_type = 'Group' AND @user_action = 'Updated' THEN
     BEGIN
-      /* special labeling for joining/leaving groups */
-      SET @tmp_action = SUBSTRING_INDEX(NEW.tmp_entity_info, CHAR(1), -1);
-      IF @tmp_action = 'Removed' THEN
+      SET @group_action = SUBSTRING_INDEX(NEW.tmp_entity_info, CHAR(1), -1);
+      IF @group_action = 'Removed' THEN
         SET @user_action = 'Unjoined';
-      ELSEIF @tmp_action = 'Added' THEN
+      ELSEIF @group_action = 'Added' THEN
         SET @user_action = 'Rejoined';
       END IF;
     END;
   ELSEIF NEW.table_name = 'contact' AND @entity_info = 1 THEN
     BEGIN
-      /* special labeling for deleting/restoring contacts */
-      SET @tmp_action = SUBSTRING_INDEX(NEW.tmp_entity_info, CHAR(1), -1);
-      IF @tmp_action IN ('Trashed','Restored') THEN
-        SET @user_action = @tmp_action;
+      SET @contact_action = SUBSTRING_INDEX(NEW.tmp_entity_info, CHAR(1), -1);
+      IF @contact_action IN ('Trashed', 'Restored') THEN
+        SET @user_action = @contact_action;
+        SET @entity_info = NULL;
       END IF;
     END;
   END IF;
