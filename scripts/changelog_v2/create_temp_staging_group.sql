@@ -1,18 +1,18 @@
-INSERT INTO @LOGDB@.`log_civicrm_group` (
-  `id`, `name`, `title`, `description`, `source`, `saved_search_id`,
-  `is_active`, `visibility`, `where_clause`, `select_tables`,
-  `where_tables`, `group_type`, `cache_date`, `parents`, `children`,
-  `is_hidden`, `is_reserved`, `log_date`, `log_conn_id`, `log_user_id`,
-  `log_action`, `log_job_id`, `refresh_date`, `created_id`
+INSERT INTO log_civicrm_group (
+  id, name, title, description, source, saved_search_id,
+  is_active, visibility, where_clause, select_tables,
+  where_tables, group_type, cache_date, parents, children,
+  is_hidden, is_reserved, log_date, log_conn_id, log_user_id,
+  log_action, log_job_id, refresh_date, created_id
 )
 SELECT
-  `id`, `name`, `title`, `description`, `source`, `saved_search_id`,
-  `is_active`, `visibility`, `where_clause`, `select_tables`,
-  `where_tables`, `group_type`, `cache_date`, `parents`, `children`,
-  `is_hidden`, `is_reserved`, '2012-05-31 17:55:40', CONNECTION_ID(), 1,
-  'Initialization', NULL, `refresh_date`, `created_id`
+  id, name, title, description, source, saved_search_id,
+  is_active, visibility, where_clause, select_tables,
+  where_tables, group_type, cache_date, parents, children,
+  is_hidden, is_reserved, '2012-05-31 17:55:40', CONNECTION_ID(), 1,
+  'Initialization', NULL, refresh_date, created_id
 FROM @CIVIDB@.civicrm_group a
-  WHERE NOT EXISTS (SELECT b.id FROM @LOGDB@.log_civicrm_group b WHERE b.id=a.id);
+  WHERE NOT EXISTS (SELECT b.id FROM log_civicrm_group b WHERE b.id=a.id);
 
 DROP TABLE IF EXISTS nyss_temp_staging_group;
 CREATE TABLE nyss_temp_staging_group (
