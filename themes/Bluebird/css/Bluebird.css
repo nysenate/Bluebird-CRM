@@ -1845,3 +1845,7 @@ div.nyss-mailing-subscriptions-admin div.nyss-email-row {
   display: block;
   padding-top: 4px;
 }
+
+.crm-container .crm-tooltip-down .crm-tooltip-wrapper {
+  top:15px;
+}
