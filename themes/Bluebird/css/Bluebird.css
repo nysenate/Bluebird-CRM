@@ -1732,6 +1732,9 @@ div#contact-summary div#contactTopBar {
 .crm-report-log_civicrm_entity_log_action > *:last-child:after {
 	content:'\00a0\00a0\00a0';
 }
+.crm-report-log_civicrm_entity_log_action .crm-tooltip-wrapper .messages {
+  white-space:normal;
+}
 
 .dataTables_processing {
   background-color: #B5EAAA;
