@@ -2506,7 +2506,7 @@ class CRM_Contact_BAO_Query {
         case 'nyss_changelog_summary':
           $from .= "
             INNER JOIN nyss_changelog_summary
-              ON nyss_changelog_summary.altered_contact_id = contact_a.id
+              ON nyss_changelog_summary.contact_id = contact_a.id
           ";
           continue;
 
@@ -5435,11 +5435,11 @@ AND   displayRelType.is_active = 1
     $value = date('Y-m-d', strtotime($value));
 
     if ($name == 'log_start_date') {
-      $this->_where[$grouping][] = "nyss_changelog_summary.log_date >= '{$value} 00:00:00'";
+      $this->_where[$grouping][] = "nyss_changelog_summary.change_ts >= '{$value} 00:00:00'";
       $quill = 'Change Log Start Date';
     }
     elseif ($name == 'log_end_date') {
-      $this->_where[$grouping][] = "nyss_changelog_summary.log_date <= '{$value} 23:59:59'";
+      $this->_where[$grouping][] = "nyss_changelog_summary.change_ts <= '{$value} 23:59:59'";
       $quill = 'Change Log End Date';
     }
 
