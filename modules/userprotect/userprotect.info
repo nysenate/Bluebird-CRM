@@ -1,14 +1,11 @@
-; $Id: userprotect.info,v 1.8 2011/01/05 06:47:10 thehunmonkgroup Exp $
-
 name = "User protect"
 description = "Allows admins to protect users from being edited or cancelled, on a per-user basis."
 core = "7.x"
 configure = admin/config/people/userprotect
 
-
-; Information added by drupal.org packaging script on 2011-01-05
-version = "7.x-1.0"
+; Information added by Drupal.org packaging script on 2014-08-16
+version = "7.x-1.1"
 core = "7.x"
 project = "userprotect"
-datestamp = "1294210272"
+datestamp = "1408174131"
 

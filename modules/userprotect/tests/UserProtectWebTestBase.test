@@ -1,0 +1,456 @@
+<?php
+
+/**
+ * @file
+ * Contains \UserProtectWebTestBase.
+ */
+
+/**
+ * Base class for User protect web tests.
+ */
+abstract class UserProtectWebTestBase extends DrupalWebTestCase {
+
+  /**
+   * Overrides DrupalWebTestCase::setUp().
+   */
+  public function setUp($modules = array()) {
+    $modules = array_merge(array(
+      'user',
+      'userprotect',
+    ), $modules);
+    parent::setUp($modules);
+  }
+
+  /**
+   * Creates a protected role.
+   *
+   * @param array $protections
+   *   (optional) The active protections.
+   *   Defaults to an empty array.
+   *
+   * @return string
+   *   The ID of the created role.
+   */
+  protected function createProtectedRole(array $protections = array()) {
+    // Create a role.
+    $rid = $this->drupalCreateRole(array());
+
+    // Protect this role.
+    $this->createProtectionRule($rid, $protections);
+
+    return $rid;
+  }
+
+  /**
+   * Creates a protected user.
+   *
+   * @param array $protections
+   *   (optional) The active protections.
+   *   Defaults to an empty array.
+   *
+   * @return object
+   *   The created user.
+   */
+  protected function createProtectedUser(array $protections = array()) {
+    // Create a user.
+    $account = $this->drupalCreateUser();
+
+    // Protect this user.
+    $this->createProtectionRule($account->uid, $protections, 'user');
+
+    return $account;
+  }
+
+  /**
+   * Creates an user with a protected role.
+   *
+   * @param array $protections
+   *   (optional) The active protections.
+   *   Defaults to an empty array.
+   *
+   * @return object
+   *   The created user.
+   */
+  protected function createUserWithProtectedRole(array $protections = array()) {
+    // Create a protected role.
+    $rid = $this->createProtectedRole($protections);
+
+    // Create an account with this protected role.
+    $protected_account = $this->drupalCreateUser();
+    $protected_account->roles[$rid] = $rid;
+    user_save($protected_account);
+
+    return $protected_account;
+  }
+
+  /**
+   * Creates protection rule.
+   *
+   * @param int|string $id
+   *   The id of the user or role to protect.
+   * @param array $protections
+   *   (optional) The active protections.
+   *   Defaults to an empty array.
+   * @param $type
+   *   (optional) The protected type.
+   *   Defaults to "user_role".
+   */
+  protected function createProtectionRule($id, array $protections = array(), $type = 'user_role') {
+    // Add default values.
+    $protections += array(
+      'up_name' => 0,
+      'up_mail' => 0,
+      'up_pass' => 0,
+      'up_status' => 0,
+      'up_roles' => 0,
+      'up_openid' => 0,
+      'up_cancel' => 0,
+      'up_edit' => 0,
+    );
+
+    if ($type == 'user_role') {
+      $role_protections = variable_get('userprotect_role_protections', array());
+      $role_protections[$id] = $protections;
+      variable_set('userprotect_role_protections', $role_protections);
+    }
+    elseif ($type == 'user') {
+      $protections['uid'] = $id;
+      $protections['up_type'] = 'user';
+
+      // Check for existing protection rule.
+      $saved_uid = db_select('userprotect')
+        ->fields('userprotect', array('uid'))
+        ->condition('uid', $id)
+        ->execute()
+        ->fetchField();
+      if ($id == $saved_uid) {
+        // Overwrite record.
+        drupal_write_record('userprotect', $protections, array('uid'));
+      }
+      else {
+        // New record.
+        drupal_write_record('userprotect', $protections);
+      }
+    }
+  }
+
+  /**
+   * Creates a bypass rule.
+   *
+   * @param int $uid
+   *   The ID of the user for which the bypass counts.
+   * @param array $protections
+   *   The protections that the user my bypass.
+   */
+  protected function createBypassRule($uid, array $protections = array()) {
+    // Add default values.
+    $protections += array(
+      'up_name' => 0,
+      'up_mail' => 0,
+      'up_pass' => 0,
+      'up_status' => 0,
+      'up_roles' => 0,
+      'up_openid' => 0,
+      'up_cancel' => 0,
+      'up_edit' => 0,
+    );
+
+    $protections['uid'] = $uid;
+    $protections['up_type'] = 'admin';
+
+    // Create bypass rule.
+    drupal_write_record('userprotect', $protections);
+  }
+
+  /**
+   * Executes a form submission, but does not require all fields to be present.
+   *
+   * @param NULL|string $path
+   *   Location of the post form.
+   * @param array $edit
+   *   Field data in an associative array.
+   * @param string $submit
+   *   Value of the submit button whose click is to be emulated.
+   * @param array $options
+   *   (optional) Options to be forwarded to the url generator.
+   * @param array $headers
+   *   (optional) An array containing additional HTTP request headers.
+   * @param string $form_html_id
+   *   (optional) HTML ID of the form to be submitted.
+   *
+   * @return NULL|string
+   *   Result of CURL in case form could be posted.
+   *   NULL otherwise.
+   *
+   * @todo Update for 7.x-1.x.
+   */
+  protected function userprotectPostForm($path, $edit, $submit, array $options = array(), array $headers = array(), $form_html_id = NULL) {
+    if (isset($path)) {
+      $this->drupalGet($path, $options);
+    }
+    if ($this->parse()) {
+      $edit_save = $edit;
+      // Let's iterate over all the forms.
+      $xpath = "//form";
+      if (!empty($form_html_id)) {
+        $xpath .= "[@id='" . $form_html_id . "']";
+      }
+      $forms = $this->xpath($xpath);
+      foreach ($forms as $form) {
+        // We try to set the fields of this form as specified in $edit.
+        $edit = $edit_save;
+        $post = array();
+        $upload = array();
+        $submit_matches = $this->handleForm($post, $edit, $upload, $submit, $form);
+        $action = isset($form['action']) ? $this->getAbsoluteUrl((string) $form['action']) : $this->getUrl();
+
+        if ($submit_matches) {
+          $post = array_merge($post, $edit);
+          $out = $this->curlExec(array(
+            CURLOPT_URL => $action,
+            CURLOPT_POST => TRUE,
+            CURLOPT_POSTFIELDS => $post,
+            CURLOPT_HTTPHEADER => $headers,
+          ));
+
+          $verbose = 'POST request to: ' . $path;
+          $verbose .= '<hr />Ending URL: ' . $this->getUrl();
+          $verbose .= '<hr />Fields: ' . highlight_string('<?php ' . var_export($post, TRUE), TRUE);
+          $verbose .= '<hr />' . $out;
+
+          $this->verbose($verbose);
+          return $out;
+        }
+      }
+      $this->fail(format_string('Found the requested form fields at @path', array('@path' => $path)));
+    }
+  }
+
+  /**
+   * Asserts that a account's name can be changed.
+   *
+   * @param object $account
+   *   The account to change the username for.
+   * @param string $message
+   *   (optional) The message to assert.
+   */
+  protected function assertUserCanChangeName($account, $message = NULL) {
+    if (!is_null($message)) {
+      $message = "The user's name can be changed.";
+    }
+
+    $edit = array(
+      'name' => $this->randomName(),
+    );
+    $this->drupalPost('user/' . $account->uid . '/edit', $edit, t('Save'));
+
+    // Re-load the user and assert the user name address changed.
+    $account = user_load($account->uid, TRUE);
+    $this->assertEqual($edit['name'], $account->name, $message);
+  }
+
+  /**
+   * Asserts that a account's name can NOT be changed.
+   *
+   * @param object $account
+   *   The account to change the username for.
+   * @param string $message
+   *   (optional) The message to assert.
+   */
+  protected function assertUserNoCanChangeName($account, $message = NULL) {
+    if (!is_null($message)) {
+      $message = "The user's name can NOT be changed.";
+    }
+
+    // Remember the user's name.
+    $expected_name = $account->name;
+
+    $edit = array(
+      'name' => $this->randomName(),
+    );
+    $this->userprotectPostForm('user/' . $account->uid . '/edit', $edit, t('Save'));
+
+    // Re-load the user and check the user name didn't change.
+    $account = user_load($account->uid, TRUE);
+    $this->assertEqual($expected_name, $account->name, $message);
+  }
+
+  /**
+   * Asserts that a account's mail address can be changed.
+   *
+   * @param object $account
+   *   The account to change the mail address for.
+   * @param string $message
+   *   (optional) The message to assert.
+   */
+  protected function assertUserCanChangeMail($account, $message = NULL) {
+    if (!is_null($message)) {
+      $message = "The user's mail address can be changed.";
+    }
+
+    $edit = array(
+      'mail' => $this->randomName() . '@example.com',
+    );
+    $this->drupalPost('user/' . $account->uid . '/edit', $edit, t('Save'));
+
+    // Re-load the user and assert the user name address changed.
+    $account = user_load($account->uid, TRUE);
+    $this->assertEqual($edit['mail'], $account->mail, $message);
+  }
+
+  /**
+   * Asserts that a account's mail address can NOT be changed.
+   *
+   * @param object $account
+   *   The account to change the mail address for.
+   * @param string $message
+   *   (optional) The message to assert.
+   */
+  protected function assertUserNoCanChangeMail($account, $message = NULL) {
+    if (!is_null($message)) {
+      $message = "The user's mail address can NOT be changed.";
+    }
+
+    // Remember the user's name.
+    $expected_mail = $account->mail;
+
+    $edit = array(
+      'mail' => $this->randomName() . '@example.com',
+    );
+    $this->userprotectPostForm('user/' . $account->uid . '/edit', $edit, t('Save'));
+
+    // Re-load the user and check the user name didn't change.
+    $account = user_load($account->uid, TRUE);
+    $this->assertEqual($expected_mail, $account->mail, $message);
+  }
+
+  /**
+   * Asserts that a account's password can be changed.
+   *
+   * @param object $account
+   *   The account to change the password for.
+   * @param string $message
+   *   (optional) The message to assert.
+   */
+  protected function assertUserCanChangePass($account, $message = NULL) {
+    if (!is_null($message)) {
+      $message = "The user's password can be changed.";
+    }
+
+    $new_pass = $this->randomName();
+    $edit = array(
+      'current_pass' => $account->pass_raw,
+      'pass[pass1]' => $new_pass,
+      'pass[pass2]' => $new_pass,
+    );
+    $this->drupalPost('user/' . $account->uid . '/edit', $edit, t('Save'));
+
+    // Assert the password changed.
+    $account = user_load($account->uid, TRUE);
+    $account->pass_raw = $new_pass;
+    $this->drupalLogout();
+    $this->drupalLogin($account);
+  }
+
+  /**
+   * Asserts that a account's password can NOT be changed.
+   *
+   * @param object $account
+   *   The account to change the password for.
+   * @param string $message
+   *   (optional) The message to assert.
+   */
+  protected function assertUserNoCanChangePass($account, $message = NULL) {
+    if (!is_null($message)) {
+      $message = "The user's password can NOT be changed.";
+    }
+
+    $expected_pass = $account->pass_raw;
+
+    $new_pass = $this->randomName();
+    $edit = array(
+      'current_pass' => $account->pass_raw,
+      'pass[pass1]' => $new_pass,
+      'pass[pass2]' => $new_pass,
+    );
+    $this->userprotectPostForm('user/' . $account->uid . '/edit', $edit, t('Save'));
+
+    // Assert the password did not change.
+    $account = user_load($account->uid, TRUE);
+    $account->pass_raw = $expected_pass;
+    $this->drupalLogout();
+    $this->drupalLogin($account);
+  }
+
+  /**
+   * Asserts that an account's edit page can be accessed.
+   *
+   * @param object $account
+   *   The account to edit.
+   * @param string $message
+   *   (optional) The message to assert.
+   */
+  protected function assertUserCanEdit($account, $message = NULL) {
+    if (!is_null($message)) {
+      $message = "The user can be edited.";
+    }
+
+    // Access edit page of protected user.
+    $this->drupalGet('user/' . $account->uid . '/edit');
+    $this->assertResponse(200, $message);
+  }
+
+  /**
+   * Asserts that an account's edit page can NOT be accessed.
+   *
+   * @param object $account
+   *   The account to edit.
+   * @param string $message
+   *   (optional) The message to assert.
+   */
+  protected function assertUserNoCanEdit($account, $message = NULL) {
+    if (!is_null($message)) {
+      $message = "The user can NOT be edited.";
+    }
+
+    // Access edit page of protected user.
+    $this->drupalGet('user/' . $account->uid . '/edit');
+    $this->assertResponse(403, $message);
+  }
+
+  /**
+   * Asserts that an account's cancel page can be accessed.
+   *
+   * @param object $account
+   *   The account to cancel.
+   * @param string $message
+   *   (optional) The message to assert.
+   */
+  protected function assertUserCanCancel($account, $message = NULL) {
+    if (!is_null($message)) {
+      $message = "The user can be canceled.";
+    }
+
+    // Access edit page of protected user.
+    $this->drupalGet('user/' . $account->uid . '/cancel');
+    $this->assertResponse(200, $message);
+  }
+
+  /**
+   * Asserts that an account's cancel page can NOT be accessed.
+   *
+   * @param object $account
+   *   The account to cancel.
+   * @param string $message
+   *   (optional) The message to assert.
+   */
+  protected function assertUserNoCanCancel($account, $message = NULL) {
+    if (!is_null($message)) {
+      $message = "The user can NOT be canceled.";
+    }
+
+    // Access edit page of protected user.
+    $this->drupalGet('user/' . $account->uid . '/cancel');
+    $this->assertResponse(403, $message);
+  }
+}

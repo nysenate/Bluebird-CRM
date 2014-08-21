@@ -1,0 +1,197 @@
+<?php
+
+/**
+ * @file
+ * Contains UserProtectPermissionsWebTest.
+ */
+
+/**
+ * Tests permissions.
+ *
+ * @todo Test OpenID.
+ */
+class UserProtectPermissionsWebTest extends UserProtectWebTestBase {
+
+  /**
+   * The operating account.
+   *
+   * @var object
+   */
+  protected $account;
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'User protect permissions',
+      'description' => 'Tests if permissions "Change own e-mail", "Change own password" and "Change own account" are respected.',
+      'group' => 'User protect',
+      'dependencies' => array('user'),
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setUp($modules = array()) {
+    parent::setUp($modules);
+
+    // Revoke default permissions on the authenticated user role that are
+    // installed by the userprotect module.
+    // @see userprotect_install().
+    $permissions = array(
+      'change own e-mail',
+      'change own password',
+      'change own openid',
+      'edit own account',
+    );
+    user_role_revoke_permissions(DRUPAL_AUTHENTICATED_RID, $permissions);
+    drupal_static_reset('checkPermissions');
+  }
+
+  /**
+   * Temporary test function.
+   */
+  public function _testTemp() {
+    $this->createProtectedUser(array(
+      'up_name' => 1,
+    ));
+    $this->createProtectedRole(array(
+      'up_pass' => 1,
+    ));
+
+    $account = $this->drupalCreateUser(array('administer userprotect'));
+    $this->drupalLogin($account);
+    $this->drupalGet('admin/config/people/userprotect/protected_users');
+    $this->drupalGet('admin/config/people/userprotect/protected_roles');
+  }
+
+  /**
+   * Tests edit mail with permission "change own e-mail".
+   *
+   * Tests if an user with the permission "change own e-mail" can edit its
+   * own mail.
+   */
+  protected function testEditOwnMail() {
+    // Create account that may edit its own mail address.
+    $account = $this->drupalCreateUser(array('change own e-mail', 'edit own account'));
+    $this->drupalLogin($account);
+
+    $edit = array(
+      'mail' => $this->randomName() . '@example.com',
+    );
+    $this->drupalPost('user/' . $account->uid . '/edit', $edit, t('Save'));
+
+    // Assert the mail address changed.
+    $account = user_load($account->uid, TRUE);
+    $this->assertEqual($edit['mail'], $account->mail, "The user has changed its own mail address.");
+  }
+
+  /**
+   * Tests edit mail without permission "change own e-mail".
+   *
+   * Tests if an user without the permission "change own e-mail" can not
+   * edit its own mail address.
+   */
+  protected function testNoEditOwnMail() {
+    // Create account that may NOT edit its own mail address.
+    $account = $this->drupalCreateUser(array('edit own account'));
+    $expected_mail = $account->mail;
+    $this->drupalLogin($account);
+
+    $edit = array(
+      'mail' => $this->randomName() . '@example.com',
+    );
+    $this->userprotectPostForm('user/' . $account->uid . '/edit', $edit, t('Save'));
+
+    // Assert the mail address changed.
+    $account = user_load($account->uid, TRUE);
+    $this->assertEqual($expected_mail, $account->mail, "The user's mail address was NOT changed.");
+  }
+
+  /**
+   * Tests edit password with permission "change own password".
+   *
+   * Tests if an user with the permission "change own password" can edit its
+   * own password.
+   */
+  protected function testEditOwnPass() {
+    // Create account that may edit its own password.
+    $account = $this->drupalCreateUser(array('change own password', 'edit own account'));
+    $this->drupalLogin($account);
+
+    $new_pass = $this->randomName();
+    $edit = array(
+      'current_pass' => $account->pass_raw,
+      'pass[pass1]' => $new_pass,
+      'pass[pass2]' => $new_pass,
+    );
+    $this->drupalPost('user/' . $account->uid . '/edit', $edit, t('Save'));
+
+    // Assert the password changed.
+    $account = user_load($account->uid, TRUE);
+    $account->pass_raw = $new_pass;
+    $this->drupalLogout();
+    $this->drupalLogin($account);
+  }
+
+  /**
+   * Tests edit password without permission "change own password".
+   *
+   * Tests if an user without the permission "change own password" can not
+   * edit its own password.
+   */
+  protected function testNoEditOwnPass() {
+    // Create account that may NOT edit its own password.
+    $account = $this->drupalCreateUser(array('edit own account'));
+    $expected_pass = $account->pass_raw;
+    $this->drupalLogin($account);
+
+    $new_pass = $this->randomName();
+    $edit = array(
+      'current_pass' => $account->pass_raw,
+      'pass[pass1]' => $new_pass,
+      'pass[pass2]' => $new_pass,
+    );
+    $this->userprotectPostForm('user/' . $account->uid . '/edit', $edit, t('Save'));
+
+    // Assert the password did not change.
+    $account = user_load($account->uid, TRUE);
+    $account->pass_raw = $expected_pass;
+    $this->drupalLogout();
+    $this->drupalLogin($account);
+  }
+
+  /**
+   * Tests edit account with permission "edit own account".
+   *
+   * Tests if an user with the permission "edit own account" can edit
+   * its own account.
+   */
+  protected function testEditOwnAccount() {
+    // Create an account that may edit its own account.
+    $account = $this->drupalCreateUser(array('edit own account'));
+    $this->drupalLogin($account);
+
+    // Assert the user can edit its own account.
+    $this->drupalGet('user/' . $account->uid . '/edit');
+    $this->assertResponse(200, "The user may edit its own account.");
+  }
+
+  /**
+   * Tests edit account without permission "edit own account".
+   *
+   * Tests if an user without the permission "edit own account" can
+   * not edit its own account.
+   */
+  protected function testNoEditOwnAccount() {
+    // Create an account that may NOT edit its own account.
+    $account = $this->drupalCreateUser();
+    $this->drupalLogin($account);
+
+    // Assert the user can edit its own account.
+    $this->drupalGet('user/' . $account->uid . '/edit');
+    $this->assertResponse(403, "The user may NOT edit its own account.");
+  }
+}

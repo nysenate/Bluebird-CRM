@@ -1,0 +1,242 @@
+<?php
+
+/**
+ * @file
+ * Contains UserProtectViewsBulkOperationsWebTest.
+ */
+
+/**
+ * Tests if user bulk operations provided by Views Bulk Operations are protected.
+ */
+class UserProtectViewsBulkOperationsWebTest extends UserProtectWebTestBase {
+
+  /**
+   * The operating account.
+   *
+   * @var object
+   */
+  protected $account;
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'Views bulk operations protection',
+      'description' => 'Tests if user bulk operations provided by Views Bulk Operations are protected.',
+      'group' => 'User protect',
+      'dependencies' => array('user', 'entity', 'views', 'views_bulk_operations'),
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setUp($modules = array()) {
+    $modules = array_merge(array(
+      'views_bulk_operations',
+      'userprotect_test',
+    ), $modules);
+    parent::setUp($modules);
+
+    // Set administrator bypass defaults to no bypassing at all.
+    variable_set('userprotect_administrator_bypass_defaults', array(
+      'up_name' => 0,
+      'up_mail' => 0,
+      'up_pass' => 0,
+      'up_status' => 0,
+      'up_roles' => 0,
+      'up_openid' => 0,
+      'up_cancel' => 0,
+      'up_edit' => 0,
+    ));
+
+    $this->account = $this->drupalCreateUser(array('administer users', 'administer permissions'));
+    $this->drupalLogin($this->account);
+  }
+
+  /**
+   * Tests if users that are status protected can not be blocked in bulk.
+   */
+  public function testStatusProtection() {
+    // Create an user with status protection.
+    $protected_account = $this->createProtectedUser(array('up_status' => 1));
+    // Ensure this account is not blocked.
+    $this->assertEqual(1, $protected_account->status, 'The protected user is not blocked.');
+
+    // Try to block the account.
+    $edit = array(
+      'views_bulk_operations[' . ($protected_account->uid -1) . ']' => TRUE,
+      'operation' => 'action::user_block_user_action',
+    );
+    $this->drupalPost('test-user-bulk-form', $edit, t('Execute'));
+
+    // Re-load the protected account and ensure it is still not blocked.
+    $protected_account = user_load($protected_account->uid, TRUE);
+    $this->assertEqual(1, $protected_account->status, 'The protected user is not blocked.');
+  }
+
+  /**
+   * Tests if roles of users that are role protected can not be changed in bulk.
+   */
+  protected function testRolesProtection() {
+    // Create an user with role protection and an user without protection.
+    $protected_account = $this->createProtectedUser(array('up_roles' => 1));
+    $account2 = $this->drupalCreateUser(array());
+
+    // Add a role to the accounts. We try to remove this role in the bulk
+    // operation later.
+    $rid1 = $this->drupalCreateRole(array());
+    $protected_account->roles[$rid1] = $rid1;
+    user_save($protected_account);
+    $account2->roles[$rid1] = $rid1;
+    user_save($account2);
+
+    // Add another role. We try to add this role in the bulk operation later.
+    $rid2 = $this->drupalCreateRole(array());
+
+    // Re-load the accounts and check their roles.
+    // Assert the protected account's roles.
+    $protected_account = user_load($protected_account->uid, TRUE);
+    $this->assertTrue(isset($protected_account->roles[$rid1]));
+    $this->assertFalse(isset($protected_account->roles[$rid2]));
+    // Assert the other account's roles.
+    $account2 = user_load($account2->uid, TRUE);
+    $this->assertTrue(isset($account2->roles[$rid1]));
+    $this->assertFalse(isset($account2->roles[$rid2]));
+
+    // Try to change the roles of the accounts.
+    $edit = array(
+      'views_bulk_operations[' . ($protected_account->uid -1) . ']' => TRUE,
+      'views_bulk_operations[' . ($account2->uid -1) . ']' => TRUE,
+      'operation' => 'action::views_bulk_operations_user_roles_action',
+    );
+    $this->drupalPost('test-user-bulk-form', $edit, t('Execute'));
+    $edit = array(
+      'add_roles[]' => array($rid2),
+      'remove_roles[]' => array($rid1),
+    );
+    $this->drupalPost(NULL, $edit, t('Next'));
+
+    // Re-load the protected account and assert the roles it has are still the same.
+    $protected_account = user_load($protected_account->uid, TRUE);
+    $this->assertTrue(isset($protected_account->roles[$rid1]));
+    $this->assertFalse(isset($protected_account->roles[$rid2]));
+    // Re-load the other account and assert the roles are changed.
+    $account2 = user_load($account2->uid, TRUE);
+    $this->assertFalse(isset($account2->roles[$rid1]));
+    $this->assertTrue(isset($account2->roles[$rid2]));
+  }
+
+  /**
+   * Tests if users that may not be canceled, can not be canceled in bulk.
+   */
+  public function testCancelProtection() {
+    // Create an user with cancel protection and an user without protection.
+    $protected_account = $this->createProtectedUser(array('up_cancel' => 1));
+    $account2 = $this->drupalCreateUser(array());
+
+    // Try to cancel the accounts.
+    $edit = array(
+      'views_bulk_operations[' . ($protected_account->uid -1) . ']' => TRUE,
+      'views_bulk_operations[' . ($account2->uid -1) . ']' => TRUE,
+      'operation' => 'action::views_bulk_operations_user_cancel_action',
+    );
+    $this->drupalPost('test-user-bulk-form', $edit, t('Execute'));
+    $edit = array(
+      'user_cancel_method' => 'user_cancel_delete',
+    );
+    $this->drupalPost(NULL, $edit, t('Next'));
+
+    // Ensure the protected account still exists.
+    $protected_account = user_load($protected_account->uid, TRUE);
+    $this->assertTrue(!empty($protected_account->uid), 'The protected user is not deleted.');
+    // Ensure the other account no longer exists.
+    $account2 = user_load($account2->uid, TRUE);
+    $this->assertFalse(!empty($account2->uid), 'The non-protected user is deleted.');
+  }
+
+  /**
+   * Tests if users that may not be deleted, can not be deleted in bulk.
+   */
+  public function testDeleteProtection() {
+    // Create an user with delete protection.
+    $protected_account = $this->createProtectedUser(array('up_cancel' => 1));
+
+    // Try to delete the account.
+    $edit = array(
+      'views_bulk_operations[' . ($protected_account->uid -1) . ']' => TRUE,
+      'operation' => 'action::views_bulk_operations_delete_item',
+    );
+    $this->drupalPost('test-user-bulk-form', $edit, t('Execute'));
+
+    // Ensure the protected account still exists.
+    $protected_account = user_load($protected_account->uid, TRUE);
+    $this->assertTrue(!empty($protected_account->uid), 'The protected user is not deleted.');
+  }
+
+  /**
+   * Tests if users that may not be edited, can not be edited in bulk.
+   *
+   * Furthermore, test if all protections are respected for each property
+   * that can be edited with the "Modify entity values" action.
+   */
+  public function testEditProtection() {
+    // Turn off error reporting as VBO 7.x-3.2 contains a bug in the
+    // "Modify entity values" action causing a mb_strlen() warning to
+    // display. Without supressing that warning, this test would never pass.
+    // See also https://www.drupal.org/node/2305227.
+    error_reporting(0);
+    variable_set('error_reporting', 0);
+
+    // Create two protected accounts. One with that is protected for all
+    // edits, and one that has some properties protected.
+    $account1 = $this->createProtectedUser(array('up_edit' => 1));
+    $account2 = $this->createProtectedUser(array('up_name' => 1, 'up_mail' => 1, 'up_status' => 1, 'up_roles' => 1));
+
+    // Create a role. We try to add this role in the bulk operation later.
+    $rid = $this->drupalCreateRole(array());
+
+    // Remember current values of accounts.
+    $account1_expected_name = $account1->name;
+    $account1_expected_mail = $account1->mail;
+    $account2_expected_name = $account2->name;
+    $account2_expected_mail = $account2->mail;
+
+    // Ensure that the accounts are not blocked.
+    $this->assertEqual(1, $account1->status, 'Account 1 is not blocked.');
+    $this->assertEqual(1, $account2->status, 'Account 2 is not blocked.');
+
+    // Try to modify values of these accounts.
+    $edit = array(
+      'views_bulk_operations[' . ($account1->uid -1) . ']' => TRUE,
+      'views_bulk_operations[' . ($account2->uid -1) . ']' => TRUE,
+      'operation' => 'action::views_bulk_operations_modify_action',
+    );
+    $this->drupalPost('test-user-bulk-form', $edit, t('Execute'));
+
+    $edit = array(
+      'properties[show_value][name]' => 1,
+      'properties[show_value][mail]' => 1,
+      'properties[show_value][roles]' => 1,
+      'properties[show_value][status]' => 1,
+      'properties[name]' => self::randomName(),
+      'properties[mail]' => self::randomName() . '@example.com',
+      'properties[roles][' . $rid . ']' => $rid,
+      'properties[status]' => 0,
+    );
+    $this->drupalPost(NULL, $edit, t('Next'));
+
+    // Reload accounts and assert that they did not change.
+    $account1 = user_load($account1->uid, TRUE);
+    $this->assertEqual($account1_expected_name, $account1->name);
+    $this->assertEqual($account1_expected_mail, $account1->mail);
+    $this->assertFalse(isset($account1->roles[$rid]));
+    $this->assertEqual(1, $account1->status, 'Account 1 is not blocked.');
+    $account2 = user_load($account2->uid, TRUE);
+    $this->assertEqual($account2_expected_name, $account2->name);
+    $this->assertEqual($account2_expected_mail, $account2->mail);
+    $this->assertFalse(isset($account2->roles[$rid]));
+    $this->assertEqual(1, $account2->status, 'Account 2 is not blocked.');
+  }
+}

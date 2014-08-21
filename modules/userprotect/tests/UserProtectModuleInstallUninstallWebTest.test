@@ -1,0 +1,59 @@
+<?php
+
+/**
+ * @file
+ * Contains ModuleInstallUninstallWebTest.
+ */
+
+/**
+ * Tests module installation and uninstallation.
+ */
+class UserProtectModuleInstallUninstallWebTest extends DrupalWebTestCase {
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'Module installation and uninstallation',
+      'description' => '',
+      'group' => 'User protect',
+      'dependencies' => array('user'),
+    );
+  }
+
+  /**
+   * Overrides DrupalWebTestCase::setUp().
+   */
+  public function setUp($modules = array()) {
+    $modules = array_merge(array(
+      'user',
+      'userprotect',
+    ), $modules);
+    parent::setUp($modules);
+  }
+
+  /**
+   * Test installation and uninstallation.
+   */
+  protected function testInstallationAndUninstallation() {
+    $this->assertTrue(module_exists('userprotect'));
+
+    // Test default configuration.
+    $account = $this->drupalCreateUser();
+    $this->assertTrue(user_access('change own e-mail', $account), 'Authenticated user can edit own mail address.');
+    $this->assertTrue(user_access('change own password', $account), 'Authenticated user can edit own password.');
+    $this->assertTrue(user_access('change own openid', $account), 'Authenticated user can edit own OpenID identity.');
+    //$this->assertTrue(user_access('edit own account', $account), 'Authenticated user can edit own account.');
+
+    // Ensure an authenticated user can edit its own account.
+    $this->drupalLogin($account);
+    $this->drupalGet('user/' . $account->uid . '/edit');
+    $this->assertResponse(200, 'Authenticated user has access to edit page of own account.');
+
+    // Uninstall module.
+    module_disable(array('userprotect'));
+    drupal_uninstall_modules(array('userprotect'));
+    $this->assertFalse(module_exists('userprotect'));
+  }
+}
