@@ -40,12 +40,6 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
     parent::__construct();
 
     /* NYSS 7893 log type translations from table names are not necessary anymore */
-    /*$logTypes = array();
-    foreach ( array_keys($this->_logTables) as  $table ) {
-      $type = $this->getLogType($table);
-      $logTypes[$type] = $type;
-    }
-    asort($logTypes);*/
     $logTypes = array('Contact','Group','Activity','Relationship','Tag','Case','Note','Comment');
 
     /* NYSS 7893 column definitions changed to match new summary table nyss_changelog_summary */
@@ -188,7 +182,7 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
   }
 
   function alterDisplay(&$rows) {
-    // cache for id → is_deleted mapping
+    // cache for id -> is_deleted mapping
     $isDeleted = array();
     $newRows = array();
     foreach ($rows as $key => &$row) {
@@ -244,7 +238,6 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
       }
 
       if ( $this->_showDetails ) {
-        //$cid = $row['log_civicrm_entity_altered_contact_id'];
         $row['show_details'] = self::getContactDetails($this_alt_id);
       }
 

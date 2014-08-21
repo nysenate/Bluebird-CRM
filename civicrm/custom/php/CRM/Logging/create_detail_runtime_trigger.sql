@@ -31,22 +31,17 @@ BEGIN
 
   /* Special logic to detect group unjoin/rejoin and contact trash/restore. */
   IF @entity_type = 'Group' AND @user_action = 'Updated' THEN
-    BEGIN
-      SET @group_action = SUBSTRING_INDEX(@nyss_entity_info, CHAR(1), -1);
-      IF @group_action = 'Removed' THEN
-        SET @user_action = 'Unjoined';
-      ELSEIF @group_action = 'Added' THEN
-        SET @user_action = 'Rejoined';
-      END IF;
-    END;
+    SET @group_action = SUBSTRING_INDEX(@nyss_entity_info, CHAR(1), -1);
+    IF @group_action = 'Removed' THEN
+      SET @user_action = 'Unjoined';
+    ELSEIF @group_action = 'Added' THEN
+      SET @user_action = 'Rejoined';
+    END IF;
   ELSEIF NEW.table_name = 'contact' AND @entity_info = 1 THEN
-    BEGIN
-      SET @contact_action = SUBSTRING_INDEX(@nyss_entity_info, CHAR(1), -1);
-      IF @contact_action IN ('Trashed', 'Restored') THEN
-        SET @user_action = @contact_action;
-        SET @entity_info = NULL;
-      END IF;
-    END;
+    SET @contact_action = SUBSTRING_INDEX(@nyss_entity_info, CHAR(1), -1);
+    IF @contact_action IN ('Trashed', 'Restored') THEN
+      SET @user_action = @contact_action;
+    END IF;
   END IF;
 
   SET @summary_id = NULL;
@@ -62,17 +57,18 @@ BEGIN
   END IF;
 
   IF @summary_id IS NULL THEN
-    BEGIN
-      IF @entity_type = 'Contact' AND NEW.table_name != 'contact' THEN
+    IF @entity_type = 'Contact' THEN
+      SET @entity_info = NULL;
+      IF NEW.table_name != 'contact' THEN
         SET @user_action = 'Updated';
       END IF;
-      INSERT INTO nyss_changelog_summary
-        (conn_id, user_id, contact_id, entity_type, user_action, entity_info)
-      VALUES
-        (CONNECTION_ID(), @civicrm_user_id, @nyss_contact_id,
-         @entity_type, @user_action, @entity_info);
-      SET NEW.summary_id = LAST_INSERT_ID();
-    END;
+    END IF;
+    INSERT INTO nyss_changelog_summary
+      (conn_id, user_id, contact_id, entity_type, user_action, entity_info)
+    VALUES
+      (CONNECTION_ID(), @civicrm_user_id, @nyss_contact_id,
+       @entity_type, @user_action, @entity_info);
+    SET NEW.summary_id = LAST_INSERT_ID();
   ELSE
     SET NEW.summary_id = @summary_id;
   END IF;
