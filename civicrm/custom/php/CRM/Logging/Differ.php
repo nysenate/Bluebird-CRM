@@ -67,6 +67,7 @@ class CRM_Logging_Differ {
 
     $logging = new CRM_Logging_Schema;
     $addressCustomTables = $logging->entityCustomDataLogTables('Address');
+    //NYSS
     $activityCustomTables = $logging->entityCustomDataLogTables('Activity');
 
     $contactIdClause = $join = '';
@@ -77,7 +78,7 @@ class CRM_Logging_Differ {
         $contactIdClause = "AND id = %3";
         break;
       case 'civicrm_note':
-        $contactIdClause = "AND ( entity_id = %3 AND entity_table = 'civicrm_contact' ) OR (entity_id IN (SELECT note.id FROM `{$this->db}`.log_civicrm_note note WHERE note.entity_id = %3 AND note.entity_table = 'civicrm_contact') AND entity_table = 'civicrm_note')";
+        $contactIdClause = "AND (( entity_id = %3 AND entity_table = 'civicrm_contact' ) OR (entity_id IN (SELECT note.id FROM `{$this->db}`.log_civicrm_note note WHERE note.entity_id = %3 AND note.entity_table = 'civicrm_contact') AND entity_table = 'civicrm_note'))";
         break;
       case 'civicrm_entity_tag':
         $contactIdClause = "AND entity_id = %3 AND entity_table = 'civicrm_contact'";
@@ -100,6 +101,7 @@ LEFT JOIN civicrm_activity_contact source ON source.activity_id = lt.id AND sour
       case 'civicrm_case':
         $contactIdClause = "AND id = (select case_id FROM civicrm_case_contact WHERE contact_id = %3 LIMIT 1)";
         break;
+      //NYSS
       case 'civicrm_group_contact':
         $join = "LEFT JOIN civicrm_group gp on lt.group_id=gp.id";
         $contactIdClase = "AND lt.contact_id = %3";
@@ -110,7 +112,7 @@ LEFT JOIN civicrm_activity_contact source ON source.activity_id = lt.id AND sour
           $contactIdClause = "AND contact_id = %3";
           break;
         }
-        
+        //NYSS
         if (array_key_exists($table, $activityCustomTables)) {
           $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
           $sourceID = CRM_Utils_Array::key('Activity Source', $activityContacts);
