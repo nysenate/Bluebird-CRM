@@ -71,6 +71,8 @@ class CRM_Logging_Schema {
                  array('/^civicrm_menu/',PREG_GREP_INVERT),
                  // do not log civicrm_changelog_summary (delta logging) #7893
                  array('/_changelog_/',PREG_GREP_INVERT),
+                 // do not log temp tables
+                 array('/^civicrm_temp/',PREG_GREP_INVERT),
                  );
 
   /**
