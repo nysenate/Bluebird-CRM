@@ -1507,6 +1507,10 @@ class CRM_Contact_BAO_Query {
       }
       $result = array($id, 'IN', $values, 0, 0);
     }
+    //NYSS 8091
+    elseif ($id == 'contact_type') {
+      $result = array($id, 'IN', $values, 0, $wildcard);
+    }
     else {
       $result = array($id, '=', $values, 0, $wildcard);
     }
@@ -2583,11 +2587,13 @@ class CRM_Contact_BAO_Query {
 
     // fix for CRM-771
     if (!empty($clause)) {
+      //NYSS 8091
+      $quill = $clause;
       if ($op == 'IN' || $op == 'NOT IN') {
         $this->_where[$grouping][] = "contact_a.contact_type $op (" . implode(',', $clause) . ')';
       }
       else {
-        $quill = $clause;
+        /*$quill = $clause;*/
         $type = array_pop($clause);
         $this->_where[$grouping][] = "contact_a.contact_type $op $type";
       }
