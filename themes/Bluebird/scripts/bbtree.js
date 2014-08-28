@@ -568,7 +568,7 @@ TagTreeTag.prototype.removeTagCheck = function(tag_id) {
     }
 
     // Remove the name from the tag list at the top (if it exists)
-    if (self.list_container != null) {
+    if (self.list_container.find('span').html() != null) {
         var tag_name = tag.find('.name').html();
         var tag_list_items = self.list_container.find('span').html().split(" • ");
         // This is done in a crappy way to make all browsers happy
@@ -598,7 +598,7 @@ TagTreeTag.prototype.addTagCheck = function(tag_id) {
     tag.parents('dl').not('.lv-0').prev('dt').addClass('subChecked');
 
     // Add the name to the tag list at the top (if it exists)
-    if (self.list_container != null) {
+    if (self.list_container.find('span').html() != null) {
         var tag_name = tag.find('.name').html();
 
         var tag_list_items = []

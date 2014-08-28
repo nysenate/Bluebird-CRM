@@ -71,6 +71,8 @@ class CRM_Logging_Schema {
                  array('/^civicrm_menu/',PREG_GREP_INVERT),
                  // do not log civicrm_changelog_summary (delta logging) #7893
                  array('/_changelog_/',PREG_GREP_INVERT),
+                 // do not log temp tables
+                 array('/^civicrm_temp/',PREG_GREP_INVERT),
                  );
 
   /**
@@ -637,6 +639,7 @@ COLS;
 
     // prepare the trigger SQL for tables included in the delta log
     $this->nyssPrepareDeltaTriggers();
+    $this->nyssPrepareCustomTriggers();
 
     $insert = array('INSERT');
     $update = array('UPDATE');
@@ -695,11 +698,18 @@ COLS;
         $deleteSQL .= "\n" . str_replace('NEW.','OLD.',$delta_trigger) . "\n";
       }
 
-      $sqlStmt   .= "\nEND; \nEND IF;";
-      $deleteSQL .= "\nEND; \nEND IF;";
-
       $insertSQL .= $sqlStmt;
       $updateSQL .= $sqlStmt;
+
+      foreach(array('insert','update','delete') as $event_type) {
+        $search_table = str_replace('civicrm_','',$table);
+        $custom_trigger = CRM_Utils_Array::value("{$search_table}_{$event_type}", $this->custom_triggers, '');
+        $varname = "{$event_type}SQL";
+        if ($custom_trigger) {
+          ${$varname} .= "\n{$custom_trigger}\n";
+        }
+        ${$varname} .= "\nEND; \nEND IF;";
+      }
 
       $info[] = array(
         'table' => array($table),
@@ -722,8 +732,6 @@ COLS;
         'sql' => $deleteSQL,
       );
     }
-
-    self::nyssAddCustomTriggers($info);
   }
 
   /**
@@ -931,23 +939,20 @@ COLS;
 
 
   /**
-   * Adds custom triggers individually for INSERT, DELETE, UPDATE
+   * Prepares custom triggers individually for INSERT, DELETE, UPDATE
    * Allowing triggerInfo() to act on these would fail because of references to NEW/OLD
    */
-  static function nyssAddCustomTriggers(&$info) {
-    $sql =
+  function nyssPrepareCustomTriggers() {
+    // array('{table_name}_{event_name}' => 'custom_sql', ...)
+    $this->custom_triggers = array();
+
+    $this->custom_triggers['contact_insert'] =
       "SET @nyss_contact_id = NEW.id;".
       "SET @nyss_entity_info = CONCAT_WS(CHAR(1), 'Contact', '', '');".
       "INSERT INTO nyss_changelog_detail (db_op, table_name, entity_id)".
       " VALUES ('{eventName}', 'contact', NEW.id);";
-    $info[] = array(
-      'table' => array('civicrm_contact'),
-      'when' => 'AFTER',
-      'event' => array('INSERT'),
-      'sql' => $sql,
-    );
 
-    $sql =
+    $this->custom_triggers['contact_update'] =
       "SET @nyss_contact_id = NEW.id;".
       "SET @nyss_entity_info = CONCAT_WS(".
       " CHAR(1), 'Contact',".
@@ -955,24 +960,12 @@ COLS;
       ");".
       "INSERT INTO nyss_changelog_detail (db_op, table_name, entity_id)".
       " VALUES ('{eventName}', 'contact', NEW.id);";
-    $info[] = array(
-      'table' => array('civicrm_contact'),
-      'when' => 'AFTER',
-      'event' => array('UPDATE'),
-      'sql' => $sql,
-    );
 
-    $sql =
+    $this->custom_triggers['contact_delete'] =
       "SET @nyss_contact_id = OLD.id;".
       "SET @nyss_entity_info = CONCAT_WS(CHAR(1), 'Contact', '', '');".
       "INSERT INTO nyss_changelog_detail (db_op, table_name, entity_id)".
       " VALUES ('{eventName}', 'contact', OLD.id);";
-    $info[] = array(
-      'table' => array('civicrm_contact'),
-      'when' => 'AFTER',
-      'event' => array('DELETE'),
-      'sql' => $sql,
-    );
   }
 
   /**
