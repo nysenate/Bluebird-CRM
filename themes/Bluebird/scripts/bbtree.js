@@ -41,8 +41,7 @@ TagTreeBase = function(instance_options) {
 
 TagTreeBase.prototype.load = function() {
     var self = this;
-    if ($('.crm-button_qf_Contact_upload_view').length !== 0) {
-      $('.crm-button_qf_Contact_upload_view,.crm-button_qf_Contact_upload_new').hide();
+    if ($('.crm-submit-buttons').length !== 0) {
       $('.crm-submit-buttons').prepend('<span class="crm-button loading default" style="display: block; padding: 4px;"> Loading</span>');
     }
     // Request the data
@@ -123,10 +122,9 @@ TagTreeBase.prototype.setup_trees = function(tree_data) {
         self.container.addClass('TreeWrap loaded');
         self.animate_tree(tree);
     });
-    if ($('.crm-button_qf_Contact_upload_view').length !== 0) {
-      $('.crm-button_qf_Contact_upload_view,.crm-button_qf_Contact_upload_new').show();
+    if ($('.crm-submit-buttons .hidden').length !== 0) {
+      $('.crm-submit-buttons .hidden').removeClass('hidden');
       $('.crm-submit-buttons .loading').remove();
-
     }
     // Hook for customization by child classes
     self.customize_tree();
