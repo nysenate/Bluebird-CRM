@@ -54,7 +54,9 @@
     <span class="crm-button crm-button_qf_Contact_upload_duplicate">
       {$form._qf_Contact_upload_duplicate.html}
     </span>
-    {include file="CRM/common/formButtons.tpl" location="top"}
+    <div class='hidden'>
+      {include file="CRM/common/formButtons.tpl" location="top"}
+    </div>
     {literal}
     <script style="text/javascript">
       //cj('span.crm-button crm-button_qf_Contact_upload_duplicate').insertBefore(cj('span.crm-button_qf_Contact_upload_view'));
@@ -63,7 +65,9 @@
     </script>
     {/literal}
   {else}
-    {include file="CRM/common/formButtons.tpl" location="top"}
+    <div class='hidden'>
+      {include file="CRM/common/formButtons.tpl" location="top"}
+    </div>
   {/if}
 </div>
 
@@ -199,14 +203,16 @@
 </div>
 {/if}
 
-<div id='customData'></div>  
+<div id='customData'></div>
     {foreach from = $editOptions item = "title" key="name"}
         {if $name neq "Address" }
 		{include file="CRM/Contact/Form/Edit/$name.tpl"}
 	    {/if}
     {/foreach}
     <div class="crm-submit-buttons">
-    {include file="CRM/common/formButtons.tpl" location="bottom"}
+      <div class='hidden'>
+        {include file="CRM/common/formButtons.tpl" location="bottom"}
+      </div>
     </div>
   </div>
   {literal}
