@@ -41,7 +41,10 @@ TagTreeBase = function(instance_options) {
 
 TagTreeBase.prototype.load = function() {
     var self = this;
-
+    if ($('.crm-button_qf_Contact_upload_view').length !== 0) {
+      $('.crm-button_qf_Contact_upload_view,.crm-button_qf_Contact_upload_new').hide();
+      $('.crm-submit-buttons').prepend('<span class="crm-button loading default" style="display: block; padding: 4px;"> Loading</span>');
+    }
     // Request the data
     cj.ajax({
         url: '/civicrm/ajax/tag/tree',
@@ -115,11 +118,16 @@ TagTreeBase.prototype.setup_trees = function(tree_data) {
             self.current_tree = tree;
         }
         // console.log("Finished with tree_id: "+tree_id);
+
         self.container.append(tree);
         self.container.addClass('TreeWrap loaded');
         self.animate_tree(tree);
     });
+    if ($('.crm-button_qf_Contact_upload_view').length !== 0) {
+      $('.crm-button_qf_Contact_upload_view,.crm-button_qf_Contact_upload_new').show();
+      $('.crm-submit-buttons .loading').remove();
 
+    }
     // Hook for customization by child classes
     self.customize_tree();
 }
