@@ -19,7 +19,7 @@ function front_page_help($section) {
   switch ($section) {
     case 'admin/config/front/settings':
       return t('<p>Setup custom front pages for your site.</p>');
-    case 'admin/config/front/settings/arrange':
+    case 'admin/config/front/arrange':
       return t('<p>Arrange the order in which roles will be checked for custom front page settings. Roles will be processed from top to bottom. To enable other roles you must first enable them in the !link.</p>', array('!link' => l(t('Settings tab'), 'admin/config/front/settings')));
     case 'admin/config/front/home-links':
       return t('<p>If a HOME link is set, the &lt;front&gt; placeholder will be replaced with this value instead of the standard front page.</p>');
@@ -49,7 +49,7 @@ function front_page_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('front_page_admin'),
     'access arguments' => array('administer front page'),
-    'type' => MENU_LOCAL_TASK,
+    'type' => MENU_LOCAL_TASK | MENU_NORMAL_ITEM,
     'file' => 'front_page.admin.inc',
   );
   $items['admin/config/front/arrange'] = array(
@@ -58,7 +58,7 @@ function front_page_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('front_page_admin_arrange_form'),
     'access arguments' => array('administer front page'),
-    'type' => MENU_LOCAL_TASK,
+    'type' => MENU_LOCAL_TASK | MENU_NORMAL_ITEM,
     'file' => 'front_page.admin.inc',
     'weight' => 1,
   );
@@ -68,7 +68,7 @@ function front_page_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('front_page_admin_home_links'),
     'access arguments' => array('administer front page'),
-    'type' => MENU_LOCAL_TASK,
+    'type' => MENU_LOCAL_TASK | MENU_NORMAL_ITEM,
     'file' => 'front_page.admin.inc',
     'weight' => 2,
   );
@@ -98,7 +98,16 @@ function front_page_permission() {
  */
 function front_page_init() {
   // Make sure front page module is not run when using cli (drush).
-  if (drupal_is_cli()) {
+  // Make sur front page module does not run when installing Drupal either.
+  if (drupal_is_cli() || drupal_installation_attempted()) {
+    return;
+  }
+  // Don't run when site is in maintenance mode
+  if (variable_get('maintenance_mode', 0)) {
+    return;
+  }
+  // Ignore non index.php requests (like cron)
+  if (!empty($_SERVER['SCRIPT_FILENAME']) && realpath(DRUPAL_ROOT . '/index.php') != realpath($_SERVER['SCRIPT_FILENAME'])) {
     return;
   }
 
@@ -261,4 +270,14 @@ function front_page_theme() {
       'render element' => 'form',
     ),
   );
+}
+
+/**
+ * Implements hook_user_role_delete().
+ */
+function front_page_user_role_delete($role) {
+  // Delete Front configuration for the role being deleted.
+  db_delete('front_page')
+    ->condition('rid', $role->rid)
+    ->execute();
 }

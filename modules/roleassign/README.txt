@@ -52,31 +52,31 @@ CONFIGURATION
 
 1. Log in as site administrator.
 
-2. Go to the administration page for access control and grant 'assign
-roles' permission to those roles that should be able to assign roles to
-other users. Notice that besides the 'assign roles' permission, these
-roles also must have the 'administer users' permission.
+2. Go to the Permissions page (people/permissions) and grant the 'assign roles'
+permission to those roles that should be able to assign roles to other users.
+Notice that besides the 'assign roles' permission, these roles also must have
+the 'administer users' permission.
 
-3. Go to the administration page for role assign and select those roles
-that should be available for assignment by users with 'assign roles'
-permission.
+3. Go to the administration page for RoleAssign (people/permissions/roleassign)
+and select those roles that should be available for assignment by users with
+'assign roles' permission.
 
-4. For each user that should be able to assign roles, go to the user's
-account and select a role with both the 'assign roles' and the
-'administer users' permissions.
+4. For each user that should be able to assign roles, go to the user's account
+and select a role with both the 'assign roles' and the 'administer users'
+permissions.
 
-Beware: granting 'administer users' permission to users will allow them
-to modify admin passwords or email addresses or even delete the site
-administrator account. The User Protect module can prevent this.
+Beware: Granting the 'administer users' permission to users will allow them to
+modify admin passwords or email addresses or even delete the site administrator
+account. The User Protect module can prevent this.
 
 
 USAGE
 -----
 
-1. Log in as a user with both the 'assign roles' and the 'administer
-users' permissions.
+1. Log in as a user with both the 'assign roles' and the 'administer users'
+permissions.
 
-2. To change the roles of a user, go to the user's account and review
-the assignable roles and change them as necessary.
+2. To change the roles of a user, go to the user's account and review the
+assignable roles and change them as necessary.
 
 

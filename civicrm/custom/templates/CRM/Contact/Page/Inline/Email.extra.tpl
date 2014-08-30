@@ -4,3 +4,6 @@
   _checkEmailLink();
 </script>
 {/literal}
+
+{*7889*}
+{include file="CRM/Contact/Page/nyssSubscriptions.tpl"}

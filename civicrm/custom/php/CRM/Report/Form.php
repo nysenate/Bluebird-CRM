@@ -551,7 +551,7 @@ class CRM_Report_Form extends CRM_Core_Form {
             }
 
             // a few auto fills for filters
-            if ($fieldGrp == 'filters') { 
+            if ($fieldGrp == 'filters') {
               // fill operator types
               if (!array_key_exists('operatorType', $this->_columns[$tableName][$fieldGrp][$fieldName])) {
                 switch (CRM_Utils_Array::value('type', $this->_columns[$tableName][$fieldGrp][$fieldName])) {
@@ -563,18 +563,18 @@ class CRM_Report_Form extends CRM_Core_Form {
                     $this->_columns[$tableName][$fieldGrp][$fieldName]['operatorType'] = CRM_Report_Form::OP_INT;
                     break;
                   case CRM_Utils_Type::T_DATE:
-                    $this->_columns[$tableName][$fieldGrp][$fieldName]['operatorType'] = CRM_Report_Form::OP_DATE;  
+                    $this->_columns[$tableName][$fieldGrp][$fieldName]['operatorType'] = CRM_Report_Form::OP_DATE;
                     break;
                   case CRM_Utils_Type::T_BOOLEAN:
                     $this->_columns[$tableName][$fieldGrp][$fieldName]['operatorType'] = CRM_Report_Form::OP_SELECT;
                     if (!array_key_exists('options', $this->_columns[$tableName][$fieldGrp][$fieldName])) {
-                      $this->_columns[$tableName][$fieldGrp][$fieldName]['options'] = 
+                      $this->_columns[$tableName][$fieldGrp][$fieldName]['options'] =
                         array('' => ts('Any'), '0' => ts('No'), '1' => ts('Yes'));
                     }
                     break;
                   default:
-                    if ($daoOrBaoName && 
-                      (array_key_exists('pseudoconstant', $this->_columns[$tableName][$fieldGrp][$fieldName]) 
+                    if ($daoOrBaoName &&
+                      (array_key_exists('pseudoconstant', $this->_columns[$tableName][$fieldGrp][$fieldName])
                         || array_key_exists('enumValues', $this->_columns[$tableName][$fieldGrp][$fieldName]))
                     ) {
                       // with multiple options operator-type is generally multi-select
@@ -1050,9 +1050,9 @@ class CRM_Report_Form extends CRM_Core_Form {
   function buildInstanceAndButtons() {
     CRM_Report_Form_Instance::buildForm($this);
 
-	//NYSS 4618	
+	//NYSS 4618
     $label = $this->_id ? ts('Update Existing Report') : ts('Create Report');
-        
+
     $this->addElement('submit', $this->_instanceButtonName, $label);
     $this->addElement('submit', $this->_printButtonName, ts('Print Report'));
     $this->addElement('submit', $this->_pdfButtonName, ts('PDF'));
@@ -3263,17 +3263,17 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
           ),
           //NYSS 4289
 		  /*'county_id'  =>
-          array('title' => ts( 'County' ),  
-            'default' => CRM_Utils_Array::value('county_id', $defaults, FALSE) 
+          array('title' => ts( 'County' ),
+            'default' => CRM_Utils_Array::value('county_id', $defaults, FALSE)
           ),*/
           'state_province_id' =>
           array('title' => ts('State/Province'),
             'default' => CRM_Utils_Array::value('state_province_id', $defaults, FALSE),
           ),
           /*'country_id' => //NYSS 4939
-          array('title' => ts( 'Country' ),  
-            'default' => CRM_Utils_Array::value('country_id', $defaults, FALSE) 
-          ),*/ 
+          array('title' => ts( 'Country' ),
+            'default' => CRM_Utils_Array::value('country_id', $defaults, FALSE)
+          ),*/
         ),
         'grouping' => 'location-fields',
       ),
@@ -3314,7 +3314,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
           'options' =>
           CRM_Core_PseudoConstant::stateProvince(),
         ),
-        /*'country_id' => array( 
+        /*'country_id' => array(
           'name' => 'country_id',
           'title' => ts('Country'),
           'type' => CRM_Utils_Type::T_INT,
@@ -3322,7 +3322,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
           CRM_Report_Form::OP_MULTISELECT,
           'options' =>
           CRM_Core_PseudoConstant::country(),
-        )*/ 
+        )*/
       );
     }
 
@@ -3333,7 +3333,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
         'city' => NULL,
         'postal_code' => NULL,
 		'street_unit' => NULL, //NYSS 5059
-		'state_province' => NULL, //NYSS			  
+		'state_province' => NULL, //NYSS
       );
     }
 
@@ -3344,9 +3344,9 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
         'postal_code' => NULL,
         'state_province_id' =>
         array( 'title'   => ts( 'State/Province' ), ),
-        /*'country_id'        => 
+        /*'country_id'        =>
         array( 'title'   => ts( 'Country' ), ),*/
-        /*'county_id'        => 
+        /*'county_id'        =>
         array( 'title'      => ts( 'County' ), ),*/
       );
     }

@@ -64,13 +64,15 @@
         <thead>
         <tr>
           <th class='link'>{ts}Name{/ts}</th>
+          {if $allowFileSearch}<th>{ts}File{/ts}</th>{/if}{*NYSS 6721*}
           <th></th>
         </tr>
         </thead>
         {foreach from=$summary.Contact item=row}
           <tr class="{cycle values="odd-row,even-row"}">
-            <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&context=fulltext&key=`$qfKey`&text=`$text`"}" title="{ts}View contact details{/ts}">{$row.sort_name}</a></td>
-            <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&context=fulltext&key=`$qfKey`&text=`$text`"}">{ts}View{/ts}</a>
+            <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&context=fulltext&key=`$qfKey`&text=`$text`&context=custom"}" title="{ts}View contact details{/ts}">{$row.sort_name}</a></td>
+            {if $allowFileSearch}<td>{$row.fileHtml}</td>{/if}{*NYSS 6721*}
+            <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&context=fulltext&key=`$qfKey`&text=`$text`&context=custom"}">{ts}View{/ts}</a>
             </td>
           </tr>
         {/foreach}
@@ -103,6 +105,7 @@
           <th class='link'>{ts}Added By{/ts}</th>
           <th class='link'>{ts}With{/ts}</th>
           <th class='link'>{ts}Assignee{/ts}</th>
+          {if $allowFileSearch}<th>{ts}File{/ts}</th>{/if}{*NYSS 6721*}
           <th></th>
         </tr>
         </thead>
@@ -120,6 +123,7 @@
             <td>
               <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.assignee_contact_id`&context=fulltext&key=`$qfKey`&text=`$text`"}" title="{ts}View contact details{/ts}">{$row.assignee_sort_name}</a>
             </td>
+            {if $allowFileSearch}<td>{$row.fileHtml}</td>{/if}{*NYSS 6721*}
             <td>
               {if $row.case_id }
                 <a href="{crmURL p='civicrm/case/activity/view' q="reset=1&aid=`$row.activity_id`&cid=`$row.client_id`&caseID=`$row.case_id`&context=fulltext&key=`$qfKey`&text=`$text`"}">
@@ -156,6 +160,7 @@
           <th class="start_date">{ts}Start Date{/ts}</th>
           <th class="end_date">{ts}End Date{/ts}</th>
           <th>{ts}Case ID{/ts}</th>
+          {if $allowFileSearch}<th>{ts}File{/ts}</th>{/if}{*NYSS 6721*}
           <th></th>
           <th class="hiddenElement"></th>
           <th class="hiddenElement"></th>
@@ -169,6 +174,7 @@
             <td>{$row.case_start_date|crmDate:"%b %d, %Y %l:%M %P"}</td>
             <td>{$row.case_end_date|crmDate:"%b %d, %Y %l:%M %P"}</td>
             <td>{$row.case_id}</td>
+            {if $allowFileSearch}<td>{$row.fileHtml}</td>{/if}{*NYSS 6721*}
             {if $row.case_is_deleted}
 			  <td>
                 <a href="{crmURL p='civicrm/contact/view/case' q="reset=1&id=`$row.case_id`&cid=`$row.contact_id`&action=renew&context=fulltext&key=`$qfKey`&text=`$text`"}">{ts}Restore Case{/ts}</a></td>
@@ -209,6 +215,7 @@
           <th>{ts}Source{/ts}</th>
           <th class="received_date">{ts}Received{/ts}</th>
           <th>{ts}Status{/ts}</th>
+          {if $allowFileSearch}<th>{ts}File{/ts}</th>{/if}{*NYSS 6721*}
           <th></th>
           <th class="hiddenElement"></th>
         </tr>
@@ -223,6 +230,7 @@
             <td>{$row.contribution_source}</td>
             <td>{$row.contribution_receive_date|crmDate:"%b %d, %Y %l:%M %P"}</td>
             <td>{$row.contribution_status}</td>
+            {if $allowFileSearch}<td>{$row.fileHtml}</td>{/if}{*NYSS 6721*}
             <td>
               <a href="{crmURL p='civicrm/contact/view/contribution' q="reset=1&id=`$row.contribution_id`&cid=`$row.contact_id`&action=view&context=fulltext&key=`$qfKey`&text=`$text`"}">{ts}View{/ts}</a>
             </td>
@@ -260,6 +268,7 @@
           <th>{ts}Source{/ts}</th>
           <th>{ts}Status{/ts}</th>
           <th>{ts}Role{/ts}</th>
+          {if $allowFileSearch}<th>{ts}File{/ts}</th>{/if}{*NYSS 6721*}
           <th></th>
           <th class="hiddenElement"></th>
         </tr>
@@ -276,6 +285,7 @@
             <td>{$row.participant_source}</td>
             <td>{$row.participant_status}</td>
             <td>{$row.participant_role}</td>
+            {if $allowFileSearch}<td>{$row.fileHtml}</td>{/if}{*NYSS 6721*}
             <td>
               <a href="{crmURL p='civicrm/contact/view/participant' q="reset=1&id=`$row.participant_id`&cid=`$row.contact_id`&action=view&context=fulltext&key=`$qfKey`&text=`$text`"}">{ts}View{/ts}</a>
             </td>
@@ -311,6 +321,7 @@
           <th class="end_date">{ts}Membership End Date{/ts}</th>
           <th>{ts}Source{/ts}</th>
           <th>{ts}Status{/ts}</th>
+          {if $allowFileSearch}<th>{ts}File{/ts}</th>{/if}{*NYSS 6721*}
           <th></th>
           <th class="hiddenElement"></th>
           <th class="hiddenElement"></th>
@@ -327,6 +338,7 @@
             <td>{$row.membership_end_date|crmDate:"%b %d, %Y %l:%M %P"}</td>
             <td>{$row.membership_source}</td>
             <td>{$row.membership_status}</td>
+            {if $allowFileSearch}<td>{$row.fileHtml}</td>{/if}{*NYSS 6721*}
             <td>
               <a href="{crmURL p='civicrm/contact/view/membership' q="reset=1&id=`$row.membership_id`&cid=`$row.contact_id`&action=view&context=fulltext&key=`$qfKey`&text=`$text`"}">{ts}View{/ts}</a>
             </td>

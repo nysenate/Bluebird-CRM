@@ -117,7 +117,7 @@ if [ $use_all -eq 1 -o $use_live -eq 1 ]; then
         # reside on the same database server.  The only connection made to
         # the database server is to make a single "show databases" call.
         db_civi_prefix=`$readConfig --global db.civicrm.prefix` || db_civi_prefix=$DEFAULT_DB_CIVICRM_PREFIX
-        dbs=`$execSql -q -c "show databases" | sed -n "s;^$db_civi_prefix;;p"`
+        dbs=`$execSql -q --no-db -c "show databases" | sed -n "s;^$db_civi_prefix;;p"`
         for instance in $instances; do
           dbbasename=`$readConfig --instance $instance db.basename` || dbbasename="$instance"
           if echo "$dbs" | grep -x -q "$dbbasename"; then

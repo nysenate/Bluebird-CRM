@@ -62,6 +62,7 @@ class CRM_NYSS_Form_LoadSampleData extends CRM_Core_Form
       'training2',
       'training3',
       'training4',
+      'brian',
     );
 
     if ( !in_array($bbcfg['shortname'], $allowedInstances) ) {

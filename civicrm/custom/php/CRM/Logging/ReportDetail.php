@@ -188,11 +188,11 @@ class CRM_Logging_ReportDetail extends CRM_Report_Form {
         if (isset($titles[$field])) {
           $field = $titles[$field];
         }
-        if ($diff['action'] == 'Insert') {
-          $from = '';
+        if ($diff['action'] == 'Insert' || !$from) {
+          $from = '*Added*';
         }
-        if ($diff['action'] == 'Delete') {
-          $to = '';
+        if ($diff['action'] == 'Delete' || !$to) {
+          $to = '*Removed*';
         }
       }
 

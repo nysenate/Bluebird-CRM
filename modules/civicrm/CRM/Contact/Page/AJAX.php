@@ -102,14 +102,14 @@ class CRM_Contact_Page_AJAX {
     // check that this is a valid, active custom field of Contact Reference type
     $params           = array('id' => $cfID);
     $returnProperties = array('filter', 'data_type', 'is_active');
-    $fldValues        = array();
+    $fldValues = $cf = array();
     CRM_Core_DAO::commonRetrieve('CRM_Core_DAO_CustomField', $params, $cf, $returnProperties);
     if (!$cf['id'] || !$cf['is_active'] || $cf['data_type'] = !'ContactReference') {
       echo "$name|error\n";
       CRM_Utils_System::civiExit();
     }
 
-    if ($cf['filter']) {
+    if (!empty($cf['filter'])) {
       $filterParams = array();
       parse_str($cf['filter'], $filterParams);
 
@@ -339,25 +339,6 @@ class CRM_Contact_Page_AJAX {
     echo json_encode($values);
     CRM_Utils_System::civiExit();
   }
-
-  /**
-   * Function to obtain list of permissioned employer for the given contact-id.
-   */
-  static function getPermissionedEmployer() {
-    $cid  = CRM_Utils_Type::escape($_GET['cid'], 'Integer');
-    $name = trim(CRM_Utils_Type::escape($_GET['s'], 'String'));
-    $name = str_replace('*', '%', $name);
-
-    $elements = CRM_Contact_BAO_Relationship::getPermissionedEmployer($cid, $name);
-
-    if (!empty($elements)) {
-      foreach ($elements as $cid => $name) {
-        echo $element = $name['name'] . "|$cid\n";
-      }
-    }
-    CRM_Utils_System::civiExit();
-  }
-
 
   static function groupTree() {
     $gids = CRM_Utils_Type::escape($_GET['gids'], 'String');
@@ -1074,7 +1055,7 @@ LIMIT {$offset}, {$rowCount}
     $sEcho     = CRM_Utils_Type::escape($_REQUEST['sEcho'], 'Integer');
     $offset    = isset($_REQUEST['iDisplayStart']) ? CRM_Utils_Type::escape($_REQUEST['iDisplayStart'], 'Integer') : 0;
     $rowCount  = isset($_REQUEST['iDisplayLength']) ? CRM_Utils_Type::escape($_REQUEST['iDisplayLength'], 'Integer') : 25;
-    $sort      = isset($_REQUEST['iSortCol_0']) ? $sortMapper[CRM_Utils_Type::escape($_REQUEST['iSortCol_0'], 'Integer')] : 'sort_name';
+    $sort      = 'sort_name';
     $sortOrder = isset($_REQUEST['sSortDir_0']) ? CRM_Utils_Type::escape($_REQUEST['sSortDir_0'], 'String') : 'asc';
 
     $gid         = isset($_REQUEST['gid']) ? CRM_Utils_Type::escape($_REQUEST['gid'], 'Integer') : 0;
@@ -1135,7 +1116,7 @@ LIMIT {$offset}, {$rowCount}
   /**
    * Function to retrieve Paper Size dimensions
    */
-  function paperSize() {
+  static function paperSize() {
     $paperSizeName = CRM_Utils_Type::escape($_REQUEST['paperSizeName'], 'String');
 
     $paperSize = CRM_Core_BAO_PaperSize::getByName($paperSizeName);

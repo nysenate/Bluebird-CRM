@@ -1,7 +1,5 @@
 <?php
 
-// $Id: userprotect.admin.inc,v 1.1 2011/01/05 06:45:18 thehunmonkgroup Exp $
-
 /**
  * @file
  * Administration functions for userprotect module.
@@ -10,7 +8,8 @@
 /**
  * Builds a table of protected users, and their protections.
  *
- * @return A form array representing the table.
+ * @return array
+ *   A form array representing the table.
  */
 function userprotect_protected_users() {
   return userprotect_protections_bypass('user');
@@ -19,16 +18,18 @@ function userprotect_protected_users() {
 /**
  * Builds a table of user admin bypass values.
  *
- * @return A form array representing the table.
+ * @return array
+ *   A form array representing the table.
  */
 function userprotect_administrator_bypass() {
   return userprotect_protections_bypass('admin');
 }
 
 /**
- * Helper funtion.  Builds tables for protected users and admin bypass.
+ * Helper function. Builds tables for protected users and admin bypass.
  *
- * @return A form array representing the table.
+ * @return array
+ *   A form array representing the table.
  */
 function userprotect_protections_bypass($type) {
 
@@ -37,7 +38,7 @@ function userprotect_protections_bypass($type) {
 
   $protect_columns = userprotect_get_protection_display();
   foreach ($protect_columns as $field => $data) {
-  	$header[] = array('data' => $data, 'field' => $field);
+    $header[] = array('data' => $data, 'field' => $field);
   }
   $header[] = array('data' => t('Operations'));
 
@@ -69,8 +70,8 @@ function userprotect_protections_bypass($type) {
   // These are all available protections.
   $protections = array_keys(userprotect_user_protection_defaults());
 
-  // Pass in the header and list of protections to the form so they'll be available
-  // to the theming function.
+  // Pass in the header and list of protections to the form so they'll be
+  // available to the theming function.
   $form = array();
   $form['protection']['#tree'] = TRUE;
   $form['#header'] = $header;
@@ -80,7 +81,7 @@ function userprotect_protections_bypass($type) {
 
   // Build the checkboxes options.
   foreach ($protections as $protection) {
-  	$options[$protection] = '';
+    $options[$protection] = '';
   }
 
   // For each protected user, build their table row.
@@ -91,7 +92,7 @@ function userprotect_protections_bypass($type) {
 
     $form['user'][$user->uid]['uid'] = array(
       '#type' => 'value',
-      '#value' => $user->uid
+      '#value' => $user->uid,
     );
     $form[$user->uid]['name'] = array(
       '#theme' => 'username',
@@ -100,17 +101,17 @@ function userprotect_protections_bypass($type) {
     $form[$user->uid]['operations'] = array('#markup' => $user->uid ? l($delete, "userprotect/delete/$user->uid/$type") : '');
     // Build the protections for the user row.
     foreach ($protections as $protection) {
-    	if ($protected_user->$protection) {
-    	  $defaults[] = $protection;
-    	}
+      if ($protected_user->$protection) {
+        $defaults[] = $protection;
+      }
     }
 
     // The checkboxes for this user.
     $form['protection'][$user->uid] = array(
       '#type' => 'checkboxes',
-  	  '#options' => $options,
-  	  '#default_value' => $defaults,
-  	);
+      '#options' => $options,
+      '#default_value' => $defaults,
+    );
   }
 
   // An autocomplete field to add new users for protection.
@@ -123,7 +124,9 @@ function userprotect_protections_bypass($type) {
     '#element_validate' => array('userprotect_up_add_validate'),
     '#userprotect_type' => $type,
   );
-  $form['up_add_text'] = array('#markup' => t('Add user'),);
+  $form['up_add_text'] = array(
+    '#markup' => t('Add user'),
+  );
   $form['userprotect_type'] = array(
     '#type' => 'value',
     '#value' => $type,
@@ -136,7 +139,7 @@ function userprotect_protections_bypass($type) {
 
   $form['actions']['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Save')
+    '#value' => t('Save'),
   );
   return $form;
 }
@@ -144,28 +147,32 @@ function userprotect_protections_bypass($type) {
 /**
  * Themes the protected users table.
  *
- * @param $form The form to theme.
- * @return An HTML string representing the constructed form.
+ * @param array $variables
+ *   Contains the form to theme.
+ *
+ * @return string
+ *   An HTML string representing the constructed form.
  */
 function theme_userprotect_protections_bypass($variables) {
   $form = $variables['form'];
   $rows = array();
-  // Buikd the row for each user.
-  foreach (element_children($form['user']) as $uid) {
-  	$row = array();
-  	$row[] = drupal_render($form[$uid]['name']);
-  	// Build the protections for the user row.
-  	foreach ($form['#protections'] as $protection) {
-  		$row[] = drupal_render($form['protection'][$uid][$protection]);
-  	}
-  	$row[] = drupal_render($form[$uid]['operations']);
-  	$rows[] = $row;
+  // Build the row for each user.
+  if (isset($form['user'])) {
+    foreach (element_children($form['user']) as $uid) {
+      $row = array();
+      $row[] = drupal_render($form[$uid]['name']);
+      // Build the protections for the user row.
+      foreach ($form['#protections'] as $protection) {
+        $row[] = drupal_render($form['protection'][$uid][$protection]);
+      }
+      $row[] = drupal_render($form[$uid]['operations']);
+      $rows[] = $row;
+    }
   }
-
   // Add the last row with the add textfield.
   $rows[] = array(
     array('data' => drupal_render($form['up_add']), 'colspan' => strval(count($form['#header']) - 1)),
-    array('data' => drupal_render($form['up_add_text']), 'colspan' => '1')
+    array('data' => drupal_render($form['up_add_text']), 'colspan' => '1'),
   );
 
   // Theme the table.
@@ -179,7 +186,7 @@ function theme_userprotect_protections_bypass($variables) {
  * Custom validation function for adding a user for protection.
  */
 function userprotect_up_add_validate($form, &$form_state) {
-  // If a user has been submitted
+  // If a user has been submitted.
   if ($username = $form['#value']) {
     $type = $form['#userprotect_type'];
     // If the user is valid, and they are not already being protected...
@@ -201,7 +208,7 @@ function userprotect_up_add_validate($form, &$form_state) {
           form_set_value($form, $uid, $form_state);
         }
       }
-      // Can't add a user twice
+      // Can't add a user twice.
       else {
         form_set_error('up_add', t('%user is already on this list.', array('%user' => $username)));
       }
@@ -232,7 +239,7 @@ function userprotect_protections_bypass_submit($form, &$form_state) {
       drupal_set_message(t('%user now has bypass capabilities matching the default protections for newly protected users.', array('%user' => $username)));
     }
   }
-  if (is_array($form_state['values']['protection'])) {
+  if (isset($form_state['values']['protection'])) {
     // Load the defaults as a reference to all protections.
     $protections_values = userprotect_user_protection_defaults();
     // Loop through each user.
@@ -241,11 +248,11 @@ function userprotect_protections_bypass_submit($form, &$form_state) {
       // Loop through the submitted user's protections, setting them enabled or
       // disabled as appropriate for the update query. Note: $protection is
       // a module generated string, so it's safe.
-    	foreach ($protections_values as $protection => $value) {
+      foreach ($protections_values as $protection => $value) {
         $fields[$protection] = $protections[$protection] ? 1 : 0;
-    	}
+      }
 
-    	// Update the user's protections.
+      // Update the user's protections.
       db_update('userprotect')
         ->fields($fields)
         ->condition('uid', $uid)
@@ -306,7 +313,8 @@ function userprotect_protected_users_delete_form_submit($form, &$form_state) {
 /**
  * Builds a form for the role protection settings.
  *
- * @return An array representing the form.
+ * @return array
+ *   An array representing the form.
  */
 function userprotect_protected_roles() {
 
@@ -318,18 +326,20 @@ function userprotect_protected_roles() {
   // Build the header.
   $header = array(t('Role'));
   foreach ($options as $field => $data) {
-  	$header[] = $data;
+    $header[] = $data;
   }
 
-  // Grab all roles but the anonymous role, and grab the current default settings.
+  // Grab all roles but the anonymous role, and grab the current default
+  // settings.
   $roles = user_roles(TRUE);
   $protected_roles = variable_get('userprotect_role_protections', array());
 
   // This is a complete list of protections for reference.
   $protections = array_keys(userprotect_user_protection_defaults());
 
-  // Pass in the header and protections so they're available for the theme function.
-  // Also, we want this as one big array to save in the variables table, so tree it.
+  // Pass in the header and protections so they're available for the theme
+  // function. Also, we want this as one big array to save in the variables
+  // table, so tree it.
   $form['role_table']['#header'] = $header;
   $form['role_table']['#theme'] = 'userprotect_admin_role_table';
   $form['role_table']['#protections'] = $protections;
@@ -355,7 +365,8 @@ function userprotect_protected_roles() {
 /**
  * Builds a form for the userprotect default settings.
  *
- * @return An array representing the form.
+ * @return array
+ *   An array representing the form.
  */
 function userprotect_protection_defaults() {
 
@@ -396,21 +407,24 @@ function userprotect_protection_defaults() {
 /**
  * Themes the role protections table.
  *
- * @param $form The form for the table.
- * @return An HTML string representing the table.
+ * @param array $variables
+ *   Contains the form for the table.
+ *
+ * @return string
+ *   An HTML string representing the table.
  */
 function theme_userprotect_admin_role_table($variables) {
   $form = $variables['form'];
   $rows = array();
-  // Build a row for each role
+  // Build a row for each role.
   foreach (element_children($form['userprotect_role_protections']) as $rid) {
-  	$row = array();
-  	$row[] = drupal_render($form['userprotect_role_protections'][$rid]['name']);
-  	// Build the protections for each row.
-  	foreach ($form['#protections'] as $protection) {
-  		$row[] = drupal_render($form['userprotect_role_protections'][$rid][$protection]);
-  	}
-  	$rows[] = $row;
+    $row = array();
+    $row[] = drupal_render($form['userprotect_role_protections'][$rid]['name']);
+    // Build the protections for each row.
+    foreach ($form['#protections'] as $protection) {
+      $row[] = drupal_render($form['userprotect_role_protections'][$rid][$protection]);
+    }
+    $rows[] = $row;
   }
 
   // Theme the table.
@@ -421,4 +435,3 @@ function theme_userprotect_admin_role_table($variables) {
 
   return $output;
 }
-

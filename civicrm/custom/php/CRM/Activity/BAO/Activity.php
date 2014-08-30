@@ -743,6 +743,12 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
     }
 
     $input['count'] = FALSE;
+
+    // skip bulk activities in activity tab
+    //NYSS
+    if ( $bulkActivityTypeID ) {
+      $input['activity_type_exclude_id'][$bulkActivityTypeID] = $bulkActivityTypeID;
+    }
     list($sqlClause, $params) = self::getActivitySQLClause($input);
 
     $query = "{$insertSQL}
@@ -963,6 +969,17 @@ ORDER BY    fixed_sort_order
    * @static
    */
   static function &getActivitiesCount($input) {
+    // skip bulk activities in activity tab
+    $bulkActivityTypeID = CRM_Core_OptionGroup::getValue(
+      'activity_type',
+      'Bulk Email',
+      'name'
+    );
+    //NYSS
+    if ( $bulkActivityTypeID ) {
+      $input['activity_type_exclude_id'][$bulkActivityTypeID] = $bulkActivityTypeID;
+    }
+
     $input['count'] = TRUE;
     list($sqlClause, $params) = self::getActivitySQLClause($input);
 

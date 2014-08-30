@@ -500,6 +500,43 @@ WHERE     civicrm_contact.id = " . CRM_Utils_Type::escape($id, 'Integer');
     return NULL;
   }
 
+  //NYSS 1337
+  /**
+   * @param array $crudLinkSpec with keys:
+   *  - action: int, CRM_Core_Action::UPDATE or CRM_Core_Action::VIEW [default: VIEW]
+   *  - entity_table: string, eg "civicrm_contact"
+   *  - entity_id: int
+   * @return array|NULL NULL if unavailable, or an array. array has keys:
+   *  - path: string
+   *  - query: string
+   *  - title: string
+   * @see CRM_Utils_System::createDefaultCrudLink
+   */
+  public function createDefaultCrudLink($crudLinkSpec) {
+    switch ($crudLinkSpec['action']) {
+      case CRM_Core_Action::VIEW:
+        return array(
+          'title' => $this->display_name,
+          'path' => 'civicrm/contact/view',
+          'query' => array(
+            'reset' => 1,
+            'cid' => $this->id,
+          ),
+        );
+      case CRM_Core_Action::UPDATE:
+        return array(
+          'title' => $this->display_name,
+          'path' => 'civicrm/contact/add',
+          'query' => array(
+            'reset' => 1,
+            'action' => 'update',
+            'cid' => $this->id,
+          ),
+        );
+    }
+    return NULL;
+  }
+
   /**
    *
    * Get the values for pseudoconstants for name->value and reverse.
@@ -945,7 +982,8 @@ WHERE id={$id}; ";
     );
 
     if (in_array($params[$imageIndex]['type'], $mimeType)) {
-      $params[$imageIndex] = CRM_Contact_BAO_Contact::getRelativePath($params[$imageIndex]['name']);
+      $photo = basename($params[$imageIndex]['name']);
+      $params[$imageIndex] =  CRM_Utils_System::url('civicrm/contact/imagefile', 'photo='.$photo, TRUE);
       return TRUE;
     }
     else {
@@ -1300,6 +1338,10 @@ WHERE id={$id}; ";
     $cacheKeyString .= $export ? '_1' : '_0';
     $cacheKeyString .= $status ? '_1' : '_0';
     $cacheKeyString .= $search ? '_1' : '_0';
+    //CRM-14501 it turns out that the impact of permissioning here is sometimes inconsistent. The field that
+    //calculates custom fields takes into account the logged in user & caches that for all users
+    //as an interim fix we will cache the fields by contact
+    $cacheKeyString .= '_' . CRM_Core_Session::getLoggedInContactID();
 
     if (!self::$_exportableFields || !CRM_Utils_Array::value($cacheKeyString, self::$_exportableFields)) {
       if (!self::$_exportableFields) {

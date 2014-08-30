@@ -7,6 +7,7 @@
 // Revised: 2013-07-29 - added list_all and update_all options, along with
 //                       getMailingComponent() and updateEmailTemplate()
 // Revised: 2013-07-30 - added "scope" parameter
+// Revised: 2014-07-23 - migrated from PHP mysql interface to PDO
 //
 
 require_once 'common_funcs.php';
@@ -24,38 +25,37 @@ function sqlPrepareValue($val)
 
 
 
-function getSettings($dbcon, $group_name)
+function getSettings($dbh, $group_name)
 {
   $settings = array();
   $sql = "SELECT name, value FROM civicrm_setting ".
          "WHERE group_name = '$group_name'";
-  $result = mysql_query($sql, $dbcon);
-  if (!$result) {
-    echo mysql_error($dbcon)."\n";
+  $stmt = $dbh->query($sql);
+  if (!$stmt) {
+    print_r($dbh->errorInfo());
     return null;
   }
 
-  while (($row = mysql_fetch_assoc($result))) {
+  while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $settings[$row['name']] = unserialize($row['value']);
   }
-  mysql_free_result($result);
+  $stmt = null;
   return $settings;
 } // getSettings()
 
 
 
-function getSetting($dbcon, $group_name, $name)
+function getSetting($dbh, $group_name, $name)
 {
   $sql = "SELECT value FROM civicrm_setting ".
          "WHERE group_name = '$group_name' and name = '$name'";
-  $result = mysql_query($sql, $dbcon);
-  if (!$result) {
-    echo mysql_error($dbcon)."\n";
+  $stmt = $dbh->query($sql);
+  if (!$stmt) {
+    print_r($dbh->errorInfo());
     return null;
   }
 
-  $row = mysql_fetch_assoc($result);
-  mysql_free_result($result);
+  $row = $stmt->fetch(PDO::FETCH_ASSOC);
   if ($row) {
     return unserialize($row['value']);
   }
@@ -66,41 +66,40 @@ function getSetting($dbcon, $group_name, $name)
 
 
 
-function getOptionValues($dbcon, $group_name)
+function getOptionValues($dbh, $group_name)
 {
   $optValues = array();
   $sql = "SELECT name, value FROM civicrm_option_value ".
          "WHERE option_group_id IN ".
          "  ( SELECT id FROM civicrm_option_group ".
          "    WHERE name='$group_name' )";
-  $result = mysql_query($sql, $dbcon);
-  if (!$result) {
-    echo mysql_error($dbcon)."\n";
+  $stmt = $dbh->query($sql);
+  if (!$stmt) {
+    print_r($dbh->errorInfo());
     return null;
   }
 
   //get all rows
-  while (($row = mysql_fetch_assoc($result))) {
+  while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $optValues[$row['name']] = $row['value'];
   }
-  mysql_free_result($result);
+  $stmt = null;
   return $optValues;
 } // getOptionValues()
 
 
 
-function getConfigBackend($dbcon)
+function getConfigBackend($dbh)
 {
   $sql = "SELECT id, config_backend FROM civicrm_domain WHERE id=1";
-  $result = mysql_query($sql, $dbcon);
-  if (!$result) {
-    echo mysql_error($dbcon)."\n";
+  $stmt = $dbh->query($sql);
+  if (!$stmt) {
+    print_r($dbh->error_info());
     return false;
   }
 
   //get the only row
-  $row = mysql_fetch_assoc($result);
-  mysql_free_result($result);
+  $row = $stmt->fetch(PDO::FETCH_ASSOC);
   if ($row['config_backend']) {
     return unserialize($row['config_backend']);
   }
@@ -111,45 +110,44 @@ function getConfigBackend($dbcon)
 
 
 
-function getMailingComponent($dbcon, $id)
+function getMailingComponent($dbh, $id)
 {
   $sql = "SELECT name, body_html, body_text ".
          "FROM civicrm_mailing_component WHERE id=$id";
-  $result = mysql_query($sql, $dbcon);
-  if (!$result) {
-    echo mysql_error($dbcon)."\n";
+  $stmt = $dbh->query($sql);
+  if (!$stmt) {
+    print_r($dbh->errorInfo());
     return false;
   }
 
   //get the only row
-  $row = mysql_fetch_assoc($result);
-  mysql_free_result($result);
+  $row = $stmt->fetch(PDO::FETCH_ASSOC);
   return $row;
 } // getMailingComponent()
 
 
 
-function getCiviConfig($dbcon, $scope)
+function getCiviConfig($dbh, $scope)
 {
   $civiConfig = array();
 
   if ($scope == 'default' || $scope == 'cb' || $scope == 'all') {
-    $civiConfig['config_backend'] = getConfigBackend($dbcon);
+    $civiConfig['config_backend'] = getConfigBackend($dbh);
   }
 
   if ($scope == 'default' || $scope == 'mb' || $scope == 'all') {
-    $civiConfig['mailing_backend'] = getSetting($dbcon, 'Mailing Preferences', 'mailing_backend');
-    $civiConfig['from_name'] = getOptionValues($dbcon, 'from_email_address');
+    $civiConfig['mailing_backend'] = getSetting($dbh, 'Mailing Preferences', 'mailing_backend');
+    $civiConfig['from_name'] = getOptionValues($dbh, 'from_email_address');
   }
 
   if ($scope == 'default' || $scope == 'prefs' || $scope == 'all') {
-    $civiConfig['dirprefs'] = getSettings($dbcon, 'Directory Preferences');
-    $civiConfig['urlprefs'] = getSettings($dbcon, 'URL Preferences');
+    $civiConfig['dirprefs'] = getSettings($dbh, 'Directory Preferences');
+    $civiConfig['urlprefs'] = getSettings($dbh, 'URL Preferences');
   }
 
   if ($scope == 'tpl' || $scope == 'all') {
-    $civiConfig['template_header'] = getMailingComponent($dbcon, 1);
-    $civiConfig['template_footer'] = getMailingComponent($dbcon, 2);
+    $civiConfig['template_header'] = getMailingComponent($dbh, 1);
+    $civiConfig['template_footer'] = getMailingComponent($dbh, 2);
   }
 
   return $civiConfig;
@@ -179,12 +177,12 @@ function listCiviConfig($civicfg)
 
 
 
-function updateSetting($dbcon, $groupname, $optname, $optval)
+function updateSetting($dbh, $groupname, $optname, $optval)
 {
   $sql = "UPDATE civicrm_setting SET value=".sqlPrepareValue($optval)." ".
          "WHERE name='$optname' AND group_name='$groupname'";
-  if (!mysql_query($sql, $dbcon)) {
-    echo mysql_error($dbcon)."\n";
+  if ($dbh->exec($sql) === false) {
+    print_r($dbh->errorInfo());
     return false;
   }
   return true;
@@ -192,14 +190,14 @@ function updateSetting($dbcon, $groupname, $optname, $optval)
 
 
 
-function updateOptionValue($dbcon, $groupname, $optname, $optval)
+function updateOptionValue($dbh, $groupname, $optname, $optval)
 {
   $sql = "UPDATE civicrm_option_value SET value='$optval' ".
          "WHERE name='$optname' AND option_group_id=( ".
          "   SELECT id FROM civicrm_option_group ".
          "   WHERE name='$groupname' )";
-  if (!mysql_query($sql, $dbcon)) {
-    echo mysql_error($dbcon)."\n";
+  if ($dbh->exec($sql) === false) {
+    print_r($dbh->errorInfo());
     return false;
   }
   return true;
@@ -207,34 +205,35 @@ function updateOptionValue($dbcon, $groupname, $optname, $optval)
 
 
 
-function updateDirPref($dbcon, $optname, $optval)
+function updateDirPref($dbh, $optname, $optval)
 {
-  return updateSetting($dbcon, 'Directory Preferences', $optname, $optval);
+  return updateSetting($dbh, 'Directory Preferences', $optname, $optval);
 } // updateDirPref()
 
 
 
-function updateUrlPref($dbcon, $optname, $optval)
+function updateUrlPref($dbh, $optname, $optval)
 {
-  return updateSetting($dbcon, 'URL Preferences', $optname, $optval);
+  return updateSetting($dbh, 'URL Preferences', $optname, $optval);
 } // updateUrlPref()
 
 
 
 // Confirm that all Mass Email menu items are active.
-function updateEmailMenu($dbcon)
+function updateEmailMenu($dbh)
 {
   // Must perform two queries here, since a sub-select cannot be used
   // on the same table when performing an UPDATE.
 
   $sql = "SELECT id FROM civicrm_navigation WHERE name='Mass Email'";
-  $result = mysql_query($sql, $dbcon);
-  $row = mysql_fetch_assoc($result);
+  $stmt = $dbh->query($sql);
+  $row = $stmt->fetch(PDO::FETCH_ASSOC);
   $pid = $row['id'];
+  $stmt = null;
 
   $sql = "UPDATE civicrm_navigation SET is_active=1 WHERE parent_id=$pid";
-  if (!mysql_query($sql, $dbcon)) {
-    echo mysql_error($dbcon)."\n";
+  if ($dbh->exec($sql) === false) {
+    print_r($dbh->errorInfo());
     return false;
   }
   else {
@@ -244,7 +243,7 @@ function updateEmailMenu($dbcon)
 
 
 
-function updateFromEmail($dbcon, $bbcfg)
+function updateFromEmail($dbh, $bbcfg)
 {
   //update the FROM email address
   $fromName = $bbcfg['senator.name.formal'];
@@ -261,8 +260,8 @@ function updateFromEmail($dbcon, $bbcfg)
          "WHERE option_group_id=(".
                   "SELECT id FROM civicrm_option_group ".
                   "WHERE name='from_email_address')";
-  if (!mysql_query($sql , $dbcon)) {
-    echo mysql_error($dbcon)."\n";
+  if ($dbh->exec($sql) === false) {
+    print_r($dbh->errorInfo());
     return false;
   }
   else {
@@ -272,12 +271,12 @@ function updateFromEmail($dbcon, $bbcfg)
 
 
 
-function updateConfigBackend($dbcon, $bkend)
+function updateConfigBackend($dbh, $bkend)
 {
   $sql = "UPDATE civicrm_domain ".
          "SET config_backend=".sqlPrepareValue($bkend)." WHERE id=1";
-  if (!mysql_query($sql, $dbcon)) {
-    echo mysql_error($dbcon)."\n";
+  if ($dbh->exec($sql) === false) {
+    print_r($dbh->errorInfo());
     return false;
   }
   return true;
@@ -285,14 +284,14 @@ function updateConfigBackend($dbcon, $bkend)
 
 
 
-function updateMailingBackend($dbcon, $bknd)
+function updateMailingBackend($dbh, $bknd)
 {
-  return updateSetting($dbcon, 'Mailing Preferences', 'mailing_backend', $bknd);
+  return updateSetting($dbh, 'Mailing Preferences', 'mailing_backend', $bknd);
 } // updateMailingBackend()
 
 
 
-function updateEmailTemplate($dbcon, $bbcfg)
+function updateEmailTemplate($dbh, $bbcfg)
 {
   $rc = true;
   $comp_id = 1;
@@ -304,16 +303,16 @@ function updateEmailTemplate($dbcon, $bbcfg)
 
     foreach (array('html', 'txt') as $cont_type) {
       $comp_tpl = generateComponent($comp_type, $cont_type, $bbcfg);
-      $body[$cont_type] = mysql_real_escape_string($comp_tpl, $dbcon);
+      $body[$cont_type] = $dbh->quote($comp_tpl);
     }
 
     $sql = "UPDATE civicrm_mailing_component ".
            "SET name='$comp_name', component_type='$comp_type_uc', ".
                "subject='$comp_name', is_active=1, ".
-               "body_html='{$body['html']}', body_text='{$body['txt']}' ".
+               "body_html={$body['html']}, body_text={$body['txt']} ".
            "WHERE id = $comp_id";
-    if (!mysql_query($sql , $dbcon)) {
-      echo mysql_error($dbcon)."\n";
+    if ($dbh->exec($sql) === false) {
+      print_r($dbh->errorInfo());
       $rc = false;
     }
     $comp_id++;
@@ -496,7 +495,7 @@ TEXT;
 
 
 
-function updateCiviConfig($dbcon, $civicfg, $bbcfg)
+function updateCiviConfig($dbh, $civicfg, $bbcfg)
 {
   $server_name = $bbcfg['servername'];
   $appdir = $bbcfg['app.rootdir'];
@@ -521,7 +520,7 @@ function updateCiviConfig($dbcon, $civicfg, $bbcfg)
     $cb['geoAPIKey'] = '';
     $cb['mapAPIKey'] = '';
     $cb['wkhtmltopdfPath'] = '/usr/local/bin/wkhtmltopdf';
-    $rc &= updateConfigBackend($dbcon, $cb);
+    $rc &= updateConfigBackend($dbh, $cb);
   }
 
   if (isset($civicfg['mailing_backend'])) {
@@ -532,29 +531,29 @@ function updateCiviConfig($dbcon, $civicfg, $bbcfg)
     $mb['smtpUsername'] = (!empty($bbcfg['smtp.subuser'])) ? $bbcfg['smtp.subuser'] : '';
     require_once $appdir.'/modules/civicrm/CRM/Utils/Crypt.php';
     $mb['smtpPassword'] = CRM_Utils_Crypt::encrypt($bbcfg['smtp.subpass']);
-    $rc &= updateMailingBackend($dbcon, $mb);
-    $rc &= updateEmailMenu($dbcon);
+    $rc &= updateMailingBackend($dbh, $mb);
+    $rc &= updateEmailMenu($dbh);
   }
 
   if (isset($civicfg['from_name'])) {
-    $rc &= updateFromEmail($dbcon, $bbcfg);
+    $rc &= updateFromEmail($dbh, $bbcfg);
   }
 
   if (isset($civicfg['dirprefs'])) {
-    $rc &= updateDirPref($dbcon, 'uploadDir', "upload/");
-    $rc &= updateDirPref($dbcon, 'imageUploadDir', "images/");
-    $rc &= updateDirPref($dbcon, 'customFileUploadDir', "custom/");
-    $rc &= updateDirPref($dbcon, 'customTemplateDir', "$appdir/civicrm/custom/templates");
-    $rc &= updateDirPref($dbcon, 'customPHPPathDir', "$appdir/civicrm/custom/php");
+    $rc &= updateDirPref($dbh, 'uploadDir', "upload/");
+    $rc &= updateDirPref($dbh, 'imageUploadDir', "images/");
+    $rc &= updateDirPref($dbh, 'customFileUploadDir', "custom/");
+    $rc &= updateDirPref($dbh, 'customTemplateDir', "$appdir/civicrm/custom/templates");
+    $rc &= updateDirPref($dbh, 'customPHPPathDir', "$appdir/civicrm/custom/php");
   }
 
   if (isset($civicfg['urlprefs'])) {
-    $rc &= updateUrlPref($dbcon, 'userFrameworkResourceURL', "sites/all/modules/civicrm/");
-    $rc &= updateUrlPref($dbcon, 'imageUploadURL', "sites/default/files/civicrm/images/");
+    $rc &= updateUrlPref($dbh, 'userFrameworkResourceURL', "sites/all/modules/civicrm/");
+    $rc &= updateUrlPref($dbh, 'imageUploadURL', "sites/default/files/civicrm/images/");
   }
 
   if (isset($civicfg['template_header']) || isset($civicfg['template_footer'])) {
-    $rc &= updateEmailTemplate($dbcon, $bbcfg);
+    $rc &= updateEmailTemplate($dbh, $bbcfg);
   }
 
   return $rc;
@@ -562,13 +561,13 @@ function updateCiviConfig($dbcon, $civicfg, $bbcfg)
 
 
 
-function nullifyCiviConfig($dbcon, $civicfg)
+function nullifyCiviConfig($dbh, $civicfg)
 {
   if (isset($civicfg['config_backend'])) {
-    $rc = updateConfigBackend($dbcon, null);
+    $rc = updateConfigBackend($dbh, null);
   }
   if (isset($civicfg['mailing_backend'])) {
-    $rc = updateMailingBackend($dbcon, null);
+    $rc = updateMailingBackend($dbh, null);
   }
   return true;
 } // nullifyCiviConfig()
@@ -588,17 +587,17 @@ else {
   $cmd = $argv[2];
   $scope = $argv[3];
 
-  $bootstrap = bootstrapScript($prog, $instance, DB_TYPE_CIVICRM);
+  $bootstrap = bootstrap_script($prog, $instance, DB_TYPE_CIVICRM);
   if ($bootstrap == null) {
     echo "$prog: Unable to bootstrap this script; exiting\n";
     exit(1);
   }
 
   $bbconfig = $bootstrap['bbconfig'];
-  $dbcon = $bootstrap['dbcon'];
+  $dbh = $bootstrap['dbh'];
 
   $rc = 0;
-  $civiConfig = getCiviConfig($dbcon, $scope);
+  $civiConfig = getCiviConfig($dbh, $scope);
 
   if ($civiConfig === false) {
     echo "$prog: Unable to get CiviCRM configuration.\n";
@@ -607,7 +606,7 @@ else {
   else if (is_array($civiConfig)) {
     if ($cmd == 'update') {
       echo "Updating the CiviCRM configuration.\n";
-      if (updateCiviConfig($dbcon, $civiConfig, $bbconfig) === false) {
+      if (updateCiviConfig($dbh, $civiConfig, $bbconfig) === false) {
         $rc = 1;
       }
     }
@@ -622,7 +621,7 @@ else {
     }
     else if ($cmd == 'nullify') {
       echo "Nullifying the CiviCRM configuration.\n";
-      if (nullifyCiviConfig($dbcon, $civiConfig) === false) {
+      if (nullifyCiviConfig($dbh, $civiConfig) === false) {
         $rc = 1;
       }
     }
@@ -634,6 +633,6 @@ else {
     echo "$prog: CiviCRM configuration is empty.\n";
   }
 
-  mysql_close($dbcon);
+  $dbh = null;
   exit($rc);
 }

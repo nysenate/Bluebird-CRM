@@ -39,35 +39,52 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
   function __construct() {
     parent::__construct();
 
-    $logTypes = array();
-    foreach ( array_keys($this->_logTables) as  $table ) {
-      $type = $this->getLogType($table);
-      $logTypes[$type] = $type;
-    }
-    asort($logTypes);
+    /* NYSS 7893 log type translations from table names are not necessary anymore */
+    $logTypes = array('Contact','Group','Activity','Relationship','Tag','Case','Note','Comment');
 
+    /* NYSS 7893 column definitions changed to match new summary table nyss_changelog_summary */
     $this->_columns = array(
       'log_civicrm_entity' => array(
         'dao' => 'CRM_Contact_DAO_Contact',
         'alias' => 'entity_log',
         'fields' => array(
-          'id' => array(
+          'log_id' => array(
+            'no_display' => TRUE,
+            'required' => TRUE,
+            'name' => 'id',
+          ),
+          'log_conn_id' => array(
+            'name' => 'conn_id',
+            'no_display' => TRUE,
+            'required' => TRUE,
+          ),
+          'log_user_id' => array(
+            'name' => 'user_id',
+            'required' => TRUE,
+            'no_display' => TRUE,
+          ),
+          'altered_contact_id' => array(
+            'name' => 'contact_id',
+            'no_display' => TRUE,
+            'required' => TRUE,
+          ),
+          'log_entity_info' => array(
+            'name' => 'entity_info',
             'no_display' => TRUE,
             'required' => TRUE,
           ),
           'log_action' => array(
+            'name' => 'user_action',
             'default' => TRUE,
             'title' => ts('Action'),
           ),
-          'log_type' => array(
+          'log_type_label' => array(
+            'name' => 'entity_type',
             'required' => TRUE,
             'title' => ts('Log Type'),
           ),
-          'log_user_id' => array(
-            'no_display' => TRUE,
-            'required' => TRUE,
-          ),
           'log_date' => array(
+            'name' => 'change_ts',
             'default' => TRUE,
             'required' => TRUE,
             'type' => CRM_Utils_Type::T_TIME,
@@ -85,25 +102,6 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
             'name' => 'sort_name',
             'no_display' => TRUE,
             'alias' => 'modified_contact_civireport',
-          ),
-          'altered_contact_id' => array(
-            'name' => 'id',
-            'no_display' => TRUE,
-            'required' => TRUE,
-            'alias'    => 'modified_contact_civireport',
-          ),
-          'log_conn_id' => array(
-            'no_display' => TRUE,
-            'required' => TRUE,
-          ),
-          //NYSS add job ID
-          'log_job_id' => array(
-            'title'   => ts('Job ID'),
-          ),
-          //NYSS show details
-          'log_details' => array(
-            'title'   => ts('Show Details'),
-            'name'    => 'id',
           ),
           'is_deleted' => array(
             'no_display' => TRUE,
@@ -129,43 +127,34 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
             'alias' => 'modified_contact_civireport',
             'no_display' => TRUE,
           ),
-          'log_type' => array(
+          'log_type_label' => array(
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => $logTypes,
             'title' => ts('Log Type'),
             'type' => CRM_Utils_Type::T_STRING,
           ),
-          'log_type_table' => array(
-            'name'  => 'log_type',
-            'title' => ts('Log Type Table'),
-            'type' => CRM_Utils_Type::T_STRING,
-          ),
-          'log_action' => array(
+          'log_action_label' => array(
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => array('Insert' => ts('Insert'), 'Update' => ts('Update'), 'Delete' => ts('Delete')),
+            'options' => array(
+                                'Insert'  => ts('Insert'),
+                                'Update'  => ts('Update'),
+                                'Delete'  => ts('Delete'),
+                                'Added'   => ts('Added'),
+                                'Removed' => ts('Removed')),
             'title' => ts('Action'),
             'type' => CRM_Utils_Type::T_STRING,
-          ),
-          //NYSS add job ID
-          'log_job_id' => array(
-            'title' => ts('Job ID'),
-            'type' => CRM_Utils_Type::T_STRING,
-          ),
-          'id' => array(
-            'no_display' => TRUE,
-            'type' => CRM_Utils_Type::T_INT,
           ),
         ),
         //NYSS 3461
         'order_bys'  =>
         array(
-          'altered_contact_sort_name' =>
+          'log_civicrm_entity_altered_contact_sort_name' =>
           array(
             'title' => ts('Altered Contact'),
             'name' => 'sort_name',
             'alias' => 'modified_contact_civireport',
           ),
-          'log_date' =>
+          'log_civicrm_entity_log_date' =>
           array(
             'title' => ts('Log Date'),
           ),
@@ -193,49 +182,37 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
   }
 
   function alterDisplay(&$rows) {
-    //CRM_Core_Error::debug_var('rows', $rows);
-    // cache for id → is_deleted mapping
+    // cache for id -> is_deleted mapping
     $isDeleted = array();
     $newRows = array();
-
     foreach ($rows as $key => &$row) {
-      if (!isset($isDeleted[$row['log_civicrm_entity_altered_contact_id']])) {
-        $isDeleted[$row['log_civicrm_entity_altered_contact_id']] =
-          CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $row['log_civicrm_entity_altered_contact_id'], 'is_deleted') !== '0';
+      /* is_deleted should be passed in the row info.  If not, look it up */
+      $this_alt_id = $row['log_civicrm_entity_altered_contact_id'];
+      if (!array_key_exists('log_civicrm_entity_is_deleted',$row)) {
+        $row['log_civicrm_entity_is_deleted'] =
+            CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $this_alt_id, 'is_deleted') !== '0';
       }
+      $isDeleted[$this_alt_id] = $row['log_civicrm_entity_is_deleted'];
 
-      if (CRM_Utils_Array::value('log_civicrm_entity_altered_contact', $row) &&
-        !$isDeleted[$row['log_civicrm_entity_altered_contact_id']]) {
+      /* if the contact is not deleted, and is populated, set links for the altered contact and check for bracket info */
+      if (CRM_Utils_Array::value('log_civicrm_entity_altered_contact', $row) && !$isDeleted[$this_alt_id]) {
         $row['log_civicrm_entity_altered_contact_link'] =
-          CRM_Utils_System::url('civicrm/contact/view', 'reset=1&cid=' . $row['log_civicrm_entity_altered_contact_id']);
+          CRM_Utils_System::url('civicrm/contact/view', 'reset=1&cid=' . $this_alt_id);
         $row['log_civicrm_entity_altered_contact_hover'] = ts("Go to contact summary");
-        $entity = $this->getEntityValue($row['log_civicrm_entity_id'], $row['log_civicrm_entity_log_type'], $row['log_civicrm_entity_log_date']);
-        if ($entity)
-          $row['log_civicrm_entity_altered_contact'] = $row['log_civicrm_entity_altered_contact'] . " [{$entity}]";
+        /* NYSS 7893 changed getEntityValue to use pre-populated log_entity_info */
+        $entity = CRM_Utils_Array::value('log_civicrm_entity_log_entity_info', $row, '');
+        if ($entity) {
+          $row['log_civicrm_entity_altered_contact'] .= " [{$entity}]";
+        }
       }
       $row['altered_by_contact_display_name_link'] = CRM_Utils_System::url('civicrm/contact/view', 'reset=1&cid=' . $row['log_civicrm_entity_log_user_id']);
       $row['altered_by_contact_display_name_hover'] = ts("Go to contact summary");
 
-      if ($row['log_civicrm_entity_is_deleted'] and 'Update' == CRM_Utils_Array::value('log_civicrm_entity_log_action', $row)) {
-        $row['log_civicrm_entity_log_action'] = ts('Delete (to trash)');
-      }
-
-      if ('Contact' == CRM_Utils_Array::value('log_type', $this->_logTables[$row['log_civicrm_entity_log_type']]) &&
-          CRM_Utils_Array::value('log_civicrm_entity_log_action', $row) == 'Insert' ) {
-        $row['log_civicrm_entity_log_action'] = ts('Update');
-      }
-
-      if ($newAction = $this->getEntityAction($row['log_civicrm_entity_id'],
-                       $row['log_civicrm_entity_log_conn_id'],
-                       $row['log_civicrm_entity_log_type'],
-                       CRM_Utils_Array::value('log_civicrm_entity_log_action', $row)))
-        $row['log_civicrm_entity_log_action'] = $newAction;
-
-      $row['log_civicrm_entity_log_type'] = $this->getLogType($row['log_civicrm_entity_log_type']);
-
+      /* format the date for proper display */
       $date = CRM_Utils_Date::isoToMysql($row['log_civicrm_entity_log_date']);
 
-      if ('Update' == CRM_Utils_Array::value('log_civicrm_entity_log_action', $row)) {
+      /* if this row is an "Update" action, inject the links and hover functionality */
+      if ('Updated' == CRM_Utils_Array::value('log_civicrm_entity_log_action', $row)) {
         $q = "reset=1&log_conn_id={$row['log_civicrm_entity_log_conn_id']}&log_date=". $date;
         if ($this->cid) {
           $q .= '&cid=' . $this->cid;
@@ -254,28 +231,24 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
         $q .= (!empty($row['log_civicrm_entity_log_user_id'])) ?
           '&alteredById='.$row['log_civicrm_entity_log_user_id'] :
           '';
+        $q = str_replace(' ','%20',$q);
 
         $url1 = CRM_Report_Utils_Report::getNextUrl('logging/contact/detail', "{$q}&snippet=4&section=2&layout=overlay", FALSE, TRUE);
         $url2 = CRM_Report_Utils_Report::getNextUrl('logging/contact/detail', "{$q}&section=2", FALSE, TRUE);
-        $row['log_civicrm_entity_log_action'] = "<a href='{$url1}' class='crm-summary-link'><div class='icon details-icon'></div></a>&nbsp;<a title='View details for this update' href='{$url2}'>" . ts('Update') . '</a>';
+        $row['log_civicrm_entity_log_action'] = "<a href='{$url1}' class='crm-summary-link'><div class='icon details-icon'></div></a>&nbsp;<a title='View details for this update' href='{$url2}'>" . ts('Updated') . '</a>';
       }
 
-      //CRM_Core_Error::debug_var('row',$row);
-      //CRM_Core_Error::debug_var('this',$this);
       if ( $this->_showDetails ) {
-        $cid = $row['log_civicrm_entity_altered_contact_id'];
-        $row['show_details'] = self::getContactDetails($cid);
+        $row['show_details'] = self::getContactDetails($this_alt_id);
       }
 
-      $key  = $date . '_' .
-        $row['log_civicrm_entity_log_type'] . '_' .
-        $row['log_civicrm_entity_log_conn_id'] . '_' .
-        $row['log_civicrm_entity_log_user_id'] . '_' .
-        $row['log_civicrm_entity_altered_contact_id'];
+      /* NYSS 7893 we can now identify a unique by change_seq alone.  date left in for ordering */
+      $key = $row['log_civicrm_entity_log_date'] . '_' .
+             $row['log_civicrm_entity_log_id'];
       $newRows[$key] = $row;
 
-      unset($row['log_civicrm_entity_log_user_id']);
-      unset($row['log_civicrm_entity_log_conn_id']);
+      //unset($row['log_civicrm_entity_log_user_id']);
+      //unset($row['log_civicrm_entity_log_conn_id']);
     }
 
     //NYSS 7452 reorder unless flagged not to
@@ -302,37 +275,15 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
     parent::select();
   }
 
-  function from( $logTable = null ) {
-    static $entity = null;
-    if ( $logTable ) {
-      $entity = $logTable;
-    }
-
-    $detail = $this->_logTables[$entity];
-    $tableName = CRM_Utils_Array::value('table_name', $detail, $entity);
-    $clause = CRM_Utils_Array::value('entity_table', $detail);
-    $clause = $clause ? "AND entity_log_civireport.entity_table = 'civicrm_contact'" : null;
-
-    $joinClause = "
-INNER JOIN civicrm_contact modified_contact_civireport
-        ON (entity_log_civireport.{$detail['fk']} = modified_contact_civireport.id {$clause})";
-
-    if (CRM_Utils_Array::value('joins', $detail)) {
-      $clause = CRM_Utils_Array::value('entity_table', $detail);
-      $clause = $clause ? "AND fk_table.entity_table = 'civicrm_contact'" : null;
-      $joinClause = "
-INNER JOIN `{$this->loggingDB}`.{$detail['joins']['table']} fk_table ON {$detail['joins']['join']}
-INNER JOIN civicrm_contact modified_contact_civireport
-        ON (fk_table.{$detail['fk']} = modified_contact_civireport.id {$clause})";
-    }
-
-    $this->_from = "
-FROM `{$this->loggingDB}`.$tableName entity_log_civireport
-{$joinClause}
-LEFT  JOIN civicrm_contact altered_by_contact_civireport
-        ON (entity_log_civireport.log_user_id = altered_by_contact_civireport.id)";
+  function from() {
+    // NYSS 7893 changed to reflect new single-select table with JOINs for contact names
+    $this->_from = "FROM nyss_changelog_summary entity_log_civireport " .
+                   "INNER JOIN civicrm_contact as modified_contact_civireport ON " .
+                   "entity_log_civireport.contact_id = modified_contact_civireport.id " .
+                   "LEFT JOIN civicrm_contact as altered_by_contact_civireport " .
+                   "ON entity_log_civireport.user_id = altered_by_contact_civireport.id ";
   }
-    
+
   //NYSS 4198 calculate distinct contacts
   function statistics( &$rows ) {
     $distinctContacts = array();
@@ -345,6 +296,13 @@ LEFT  JOIN civicrm_contact altered_by_contact_civireport
       'value' => count($distinctContacts),
     );
     return $statistics;
+  }
+
+  function groupBy() {
+    //NYSS 5751
+    // ported from previous ReportSummary override,
+    //NYSS 7893 grouping changed to reflect new single-select table and new sequence generator
+    $this->_groupBy = "";
   }
 
   function getContactDetails( $cid ) {
@@ -413,5 +371,35 @@ LEFT  JOIN civicrm_contact altered_by_contact_civireport
     //CRM_Core_Error::debug_var('html',$html);
 
     return $html;
+  }
+
+  function postProcess() {
+    // NYSS #7893 changes in this method supercede previous override for CRM_Logging_ReportSummary
+    // override CRM_Logging_ReportSummary was dropped with NYSS #7893
+
+    $this->beginPostProcess();
+    $rows = array();
+
+    // note the group by columns are same as that used in alterDisplay as $newRows - $key
+    $this->select();
+    $this->from();
+    $this->where();
+    $this->groupBy();
+    $this->limit();
+    $sql = "{$this->_select} " .
+           "{$this->_from} " .
+           "{$this->_where} " .
+           "{$this->_groupBy} " .
+           "ORDER BY log_civicrm_entity_log_date DESC " .
+           "{$this->_limit}";
+    $this->buildRows($sql, $rows);
+    // format result set.
+    $this->formatDisplay($rows);
+
+    // assign variables to templates
+    $this->doTemplateAssignment($rows);
+
+    // do print / pdf / instance stuff if needed
+    $this->endPostProcess($rows);
   }
 }

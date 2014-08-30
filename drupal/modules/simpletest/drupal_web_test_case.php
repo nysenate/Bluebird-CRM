@@ -447,7 +447,8 @@ abstract class DrupalTestCase {
    */
   protected function verbose($message) {
     if ($id = simpletest_verbose($message)) {
-      $url = file_create_url($this->originalFileDirectory . '/simpletest/verbose/' . get_class($this) . '-' . $id . '.html');
+      $class_safe = str_replace('\\', '_', get_class($this));
+      $url = file_create_url($this->originalFileDirectory . '/simpletest/verbose/' . $class_safe . '-' . $id . '.html');
       $this->error(l(t('Verbose message'), $url, array('attributes' => array('target' => '_blank'))), 'User notice');
     }
   }
@@ -466,7 +467,8 @@ abstract class DrupalTestCase {
    */
   public function run(array $methods = array()) {
     // Initialize verbose debugging.
-    simpletest_verbose(NULL, variable_get('file_public_path', conf_path() . '/files'), get_class($this));
+    $class = get_class($this);
+    simpletest_verbose(NULL, variable_get('file_public_path', conf_path() . '/files'), str_replace('\\', '_', $class));
 
     // HTTP auth settings (<username>:<password>) for the simpletest browser
     // when sending requests to the test site.
@@ -478,7 +480,6 @@ abstract class DrupalTestCase {
     }
 
     set_error_handler(array($this, 'errorHandler'));
-    $class = get_class($this);
     // Iterate through all the methods in this class, unless a specific list of
     // methods to run was passed.
     $class_methods = get_class_methods($class);
@@ -539,6 +540,15 @@ abstract class DrupalTestCase {
         E_USER_NOTICE => 'User notice',
         E_RECOVERABLE_ERROR => 'Recoverable error',
       );
+
+      // PHP 5.3 adds new error logging constants. Add these conditionally for
+      // backwards compatibility with PHP 5.2.
+      if (defined('E_DEPRECATED')) {
+        $error_map += array(
+          E_DEPRECATED => 'Deprecated',
+          E_USER_DEPRECATED => 'User deprecated',
+        );
+      }
 
       $backtrace = debug_backtrace();
       $this->error($message, $error_map[$severity], _drupal_get_last_caller($backtrace));
@@ -632,7 +642,7 @@ abstract class DrupalTestCase {
    *   'one' => array(0, 1),
    *   'two' => array(2, 3),
    * );
-   * $permutations = $this->permute($parameters);
+   * $permutations = DrupalTestCase::generatePermutations($parameters)
    * // Result:
    * $permutations == array(
    *   array('one' => 0, 'two' => 2),
@@ -729,6 +739,10 @@ class DrupalUnitTestCase extends DrupalTestCase {
     // subsequently will fail as the database is not accessible.
     $module_list = module_list();
     if (isset($module_list['locale'])) {
+      // Transform the list into the format expected as input to module_list().
+      foreach ($module_list as &$module) {
+        $module = array('filename' => drupal_get_filename('module', $module));
+      }
       $this->originalModuleList = $module_list;
       unset($module_list['locale']);
       module_list(TRUE, FALSE, FALSE, $module_list);
@@ -1131,7 +1145,7 @@ class DrupalWebTestCase extends DrupalTestCase {
   }
 
   /**
-   * Internal helper function; Create a role with specified permissions.
+   * Creates a role with specified permissions.
    *
    * @param $permissions
    *   Array of permission names to assign to role.
@@ -1217,28 +1231,28 @@ class DrupalWebTestCase extends DrupalTestCase {
    *   $account->pass_raw = $pass_raw;
    * @endcode
    *
-   * @param $user
+   * @param $account
    *   User object representing the user to log in.
    *
    * @see drupalCreateUser()
    */
-  protected function drupalLogin(stdClass $user) {
+  protected function drupalLogin(stdClass $account) {
     if ($this->loggedInUser) {
       $this->drupalLogout();
     }
 
     $edit = array(
-      'name' => $user->name,
-      'pass' => $user->pass_raw
+      'name' => $account->name,
+      'pass' => $account->pass_raw
     );
     $this->drupalPost('user', $edit, t('Log in'));
 
     // If a "log out" link appears on the page, it is almost certainly because
     // the login was successful.
-    $pass = $this->assertLink(t('Log out'), 0, t('User %name successfully logged in.', array('%name' => $user->name)), t('User login'));
+    $pass = $this->assertLink(t('Log out'), 0, t('User %name successfully logged in.', array('%name' => $account->name)), t('User login'));
 
     if ($pass) {
-      $this->loggedInUser = $user;
+      $this->loggedInUser = $account;
     }
   }
 
@@ -1685,13 +1699,20 @@ class DrupalWebTestCase extends DrupalTestCase {
 
     if (!isset($this->curlHandle)) {
       $this->curlHandle = curl_init();
+
+      // Some versions/configurations of cURL break on a NULL cookie jar, so
+      // supply a real file.
+      if (empty($this->cookieFile)) {
+        $this->cookieFile = $this->public_files_directory . '/cookie.jar';
+      }
+
       $curl_options = array(
         CURLOPT_COOKIEJAR => $this->cookieFile,
         CURLOPT_URL => $base_url,
         CURLOPT_FOLLOWLOCATION => FALSE,
         CURLOPT_RETURNTRANSFER => TRUE,
-        CURLOPT_SSL_VERIFYPEER => FALSE, // Required to make the tests run on https.
-        CURLOPT_SSL_VERIFYHOST => FALSE, // Required to make the tests run on https.
+        CURLOPT_SSL_VERIFYPEER => FALSE, // Required to make the tests run on HTTPS.
+        CURLOPT_SSL_VERIFYHOST => FALSE, // Required to make the tests run on HTTPS.
         CURLOPT_HEADERFUNCTION => array(&$this, 'curlHeaderCallback'),
         CURLOPT_USERAGENT => $this->databasePrefix,
       );
@@ -1699,7 +1720,12 @@ class DrupalWebTestCase extends DrupalTestCase {
         $curl_options[CURLOPT_HTTPAUTH] = $this->httpauth_method;
         $curl_options[CURLOPT_USERPWD] = $this->httpauth_credentials;
       }
-      curl_setopt_array($this->curlHandle, $this->additionalCurlOptions + $curl_options);
+      // curl_setopt_array() returns FALSE if any of the specified options
+      // cannot be set, and stops processing any further options.
+      $result = curl_setopt_array($this->curlHandle, $this->additionalCurlOptions + $curl_options);
+      if (!$result) {
+        throw new Exception('One or more cURL options could not be set.');
+      }
 
       // By default, the child session name should be the same as the parent.
       $this->session_name = session_name();
@@ -2029,7 +2055,14 @@ class DrupalWebTestCase extends DrupalTestCase {
             foreach ($upload as $key => $file) {
               $file = drupal_realpath($file);
               if ($file && is_file($file)) {
-                $post[$key] = '@' . $file;
+                // Use the new CurlFile class for file uploads when using PHP
+                // 5.5 or higher.
+                if (class_exists('CurlFile')) {
+                  $post[$key] = curl_file_create($file);
+                }
+                else {
+                  $post[$key] = '@' . $file;
+                }
               }
             }
           }
@@ -2236,6 +2269,13 @@ class DrupalWebTestCase extends DrupalTestCase {
             }
             break;
 
+          case 'updateBuildId':
+            $buildId = $xpath->query('//input[@name="form_build_id" and @value="' . $command['old'] . '"]')->item(0);
+            if ($buildId) {
+              $buildId->setAttribute('value', $command['new']);
+            }
+            break;
+
           // @todo Add suitable implementations for these commands in order to
           //   have full test coverage of what ajax.js can do.
           case 'remove':
@@ -2254,6 +2294,14 @@ class DrupalWebTestCase extends DrupalTestCase {
     }
     $this->drupalSetContent($content);
     $this->drupalSetSettings($drupal_settings);
+
+    $verbose = 'AJAX POST request to: ' . $path;
+    $verbose .= '<br />AJAX callback path: ' . $ajax_path;
+    $verbose .= '<hr />Ending URL: ' . $this->getUrl();
+    $verbose .= '<hr />' . $this->content;
+
+    $this->verbose($verbose);
+
     return $return;
   }
 
@@ -2337,9 +2385,16 @@ class DrupalWebTestCase extends DrupalTestCase {
       if (isset($edit[$name])) {
         switch ($type) {
           case 'text':
+          case 'tel':
           case 'textarea':
+          case 'url':
+          case 'number':
+          case 'range':
+          case 'color':
           case 'hidden':
           case 'password':
+          case 'email':
+          case 'search':
             $post[$name] = $edit[$name];
             unset($edit[$name]);
             break;
@@ -2569,8 +2624,6 @@ class DrupalWebTestCase extends DrupalTestCase {
    *
    * @param $label
    *   Text between the anchor tags.
-   * @param $index
-   *   Link position counting from zero.
    * @param $message
    *   Message to display.
    * @param $group
@@ -2627,10 +2680,9 @@ class DrupalWebTestCase extends DrupalTestCase {
   /**
    * Follows a link by name.
    *
-   * Will click the first link found with this link text by default, or a
-   * later one if an index is given. Match is case insensitive with
-   * normalized space. The label is translated label. There is an assert
-   * for successful click.
+   * Will click the first link found with this link text by default, or a later
+   * one if an index is given. Match is case sensitive with normalized space.
+   * The label is translated label. There is an assert for successful click.
    *
    * @param $label
    *   Text between the anchor tags.
@@ -2686,10 +2738,10 @@ class DrupalWebTestCase extends DrupalTestCase {
   }
 
   /**
-   * Get the current url from the cURL handler.
+   * Get the current URL from the cURL handler.
    *
    * @return
-   *   The current url.
+   *   The current URL.
    */
   protected function getUrl() {
     return $this->url;
@@ -3130,12 +3182,50 @@ class DrupalWebTestCase extends DrupalTestCase {
   }
 
   /**
+   * Asserts themed output.
+   *
+   * @param $callback
+   *   The name of the theme function to invoke; e.g. 'links' for theme_links().
+   * @param $variables
+   *   (optional) An array of variables to pass to the theme function.
+   * @param $expected
+   *   The expected themed output string.
+   * @param $message
+   *   (optional) A message to display with the assertion. Do not translate
+   *   messages: use format_string() to embed variables in the message text, not
+   *   t(). If left blank, a default message will be displayed.
+   * @param $group
+   *   (optional) The group this message is in, which is displayed in a column
+   *   in test output. Use 'Debug' to indicate this is debugging output. Do not
+   *   translate this string. Defaults to 'Other'; most tests do not override
+   *   this default.
+   *
+   * @return
+   *   TRUE on pass, FALSE on fail.
+   */
+  protected function assertThemeOutput($callback, array $variables = array(), $expected, $message = '', $group = 'Other') {
+    $output = theme($callback, $variables);
+    $this->verbose('Variables:' . '<pre>' .  check_plain(var_export($variables, TRUE)) . '</pre>'
+      . '<hr />' . 'Result:' . '<pre>' .  check_plain(var_export($output, TRUE)) . '</pre>'
+      . '<hr />' . 'Expected:' . '<pre>' .  check_plain(var_export($expected, TRUE)) . '</pre>'
+      . '<hr />' . $output
+    );
+    if (!$message) {
+      $message = '%callback rendered correctly.';
+    }
+    $message = format_string($message, array('%callback' => 'theme_' . $callback . '()'));
+    return $this->assertIdentical($output, $expected, $message, $group);
+  }
+
+  /**
    * Asserts that a field exists in the current page by the given XPath.
    *
    * @param $xpath
    *   XPath used to find the field.
    * @param $value
-   *   (optional) Value of the field to assert.
+   *   (optional) Value of the field to assert. You may pass in NULL (default)
+   *   to skip checking the actual value, while still checking that the field
+   *   exists.
    * @param $message
    *   (optional) Message to display.
    * @param $group
@@ -3203,12 +3293,14 @@ class DrupalWebTestCase extends DrupalTestCase {
   }
 
   /**
-   * Asserts that a field does not exist in the current page by the given XPath.
+   * Asserts that a field doesn't exist or its value doesn't match, by XPath.
    *
    * @param $xpath
    *   XPath used to find the field.
    * @param $value
-   *   (optional) Value of the field to assert.
+   *   (optional) Value for the field, to assert that the field's value on the
+   *   page doesn't match it. You may pass in NULL to skip checking the
+   *   value, while still checking that the field doesn't exist.
    * @param $message
    *   (optional) Message to display.
    * @param $group
@@ -3241,7 +3333,9 @@ class DrupalWebTestCase extends DrupalTestCase {
    * @param $name
    *   Name of field to assert.
    * @param $value
-   *   Value of the field to assert.
+   *   (optional) Value of the field to assert. You may pass in NULL (default)
+   *   to skip checking the actual value, while still checking that the field
+   *   exists.
    * @param $message
    *   Message to display.
    * @param $group
@@ -3272,9 +3366,12 @@ class DrupalWebTestCase extends DrupalTestCase {
    * @param $name
    *   Name of field to assert.
    * @param $value
-   *   Value of the field to assert.
+   *   (optional) Value for the field, to assert that the field's value on the
+   *   page doesn't match it. You may pass in NULL to skip checking the
+   *   value, while still checking that the field doesn't exist. However, the
+   *   default value ('') asserts that the field value is not an empty string.
    * @param $message
-   *   Message to display.
+   *   (optional) Message to display.
    * @param $group
    *   The group this message belongs to.
    * @return
@@ -3285,14 +3382,17 @@ class DrupalWebTestCase extends DrupalTestCase {
   }
 
   /**
-   * Asserts that a field exists in the current page with the given id and value.
+   * Asserts that a field exists in the current page with the given ID and value.
    *
    * @param $id
-   *   Id of field to assert.
+   *   ID of field to assert.
    * @param $value
-   *   Value of the field to assert.
+   *   (optional) Value for the field to assert. You may pass in NULL to skip
+   *   checking the value, while still checking that the field exists.
+   *   However, the default value ('') asserts that the field value is an empty
+   *   string.
    * @param $message
-   *   Message to display.
+   *   (optional) Message to display.
    * @param $group
    *   The group this message belongs to.
    * @return
@@ -3303,14 +3403,17 @@ class DrupalWebTestCase extends DrupalTestCase {
   }
 
   /**
-   * Asserts that a field does not exist with the given id and value.
+   * Asserts that a field does not exist with the given ID and value.
    *
    * @param $id
-   *   Id of field to assert.
+   *   ID of field to assert.
    * @param $value
-   *   Value of the field to assert.
+   *   (optional) Value for the field, to assert that the field's value on the
+   *   page doesn't match it. You may pass in NULL to skip checking the value,
+   *   while still checking that the field doesn't exist. However, the default
+   *   value ('') asserts that the field value is not an empty string.
    * @param $message
-   *   Message to display.
+   *   (optional) Message to display.
    * @param $group
    *   The group this message belongs to.
    * @return
@@ -3324,9 +3427,9 @@ class DrupalWebTestCase extends DrupalTestCase {
    * Asserts that a checkbox field in the current page is checked.
    *
    * @param $id
-   *   Id of field to assert.
+   *   ID of field to assert.
    * @param $message
-   *   Message to display.
+   *   (optional) Message to display.
    * @return
    *   TRUE on pass, FALSE on fail.
    */
@@ -3339,9 +3442,9 @@ class DrupalWebTestCase extends DrupalTestCase {
    * Asserts that a checkbox field in the current page is not checked.
    *
    * @param $id
-   *   Id of field to assert.
+   *   ID of field to assert.
    * @param $message
-   *   Message to display.
+   *   (optional) Message to display.
    * @return
    *   TRUE on pass, FALSE on fail.
    */
@@ -3354,11 +3457,11 @@ class DrupalWebTestCase extends DrupalTestCase {
    * Asserts that a select option in the current page is checked.
    *
    * @param $id
-   *   Id of select field to assert.
+   *   ID of select field to assert.
    * @param $option
    *   Option to assert.
    * @param $message
-   *   Message to display.
+   *   (optional) Message to display.
    * @return
    *   TRUE on pass, FALSE on fail.
    *
@@ -3373,11 +3476,11 @@ class DrupalWebTestCase extends DrupalTestCase {
    * Asserts that a select option in the current page is not checked.
    *
    * @param $id
-   *   Id of select field to assert.
+   *   ID of select field to assert.
    * @param $option
    *   Option to assert.
    * @param $message
-   *   Message to display.
+   *   (optional) Message to display.
    * @return
    *   TRUE on pass, FALSE on fail.
    */
@@ -3387,12 +3490,12 @@ class DrupalWebTestCase extends DrupalTestCase {
   }
 
   /**
-   * Asserts that a field exists with the given name or id.
+   * Asserts that a field exists with the given name or ID.
    *
    * @param $field
-   *   Name or id of field to assert.
+   *   Name or ID of field to assert.
    * @param $message
-   *   Message to display.
+   *   (optional) Message to display.
    * @param $group
    *   The group this message belongs to.
    * @return
@@ -3403,12 +3506,12 @@ class DrupalWebTestCase extends DrupalTestCase {
   }
 
   /**
-   * Asserts that a field does not exist with the given name or id.
+   * Asserts that a field does not exist with the given name or ID.
    *
    * @param $field
-   *   Name or id of field to assert.
+   *   Name or ID of field to assert.
    * @param $message
-   *   Message to display.
+   *   (optional) Message to display.
    * @param $group
    *   The group this message belongs to.
    * @return

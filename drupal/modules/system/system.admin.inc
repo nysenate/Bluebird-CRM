@@ -309,7 +309,7 @@ function system_theme_enable() {
     }
     drupal_goto('admin/appearance');
   }
-  return drupal_access_denied();
+  return MENU_ACCESS_DENIED;
 }
 
 /**
@@ -337,7 +337,7 @@ function system_theme_disable() {
     }
     drupal_goto('admin/appearance');
   }
-  return drupal_access_denied();
+  return MENU_ACCESS_DENIED;
 }
 
 /**
@@ -383,7 +383,7 @@ function system_theme_default() {
     }
     drupal_goto('admin/appearance');
   }
-  return drupal_access_denied();
+  return MENU_ACCESS_DENIED;
 }
 
 /**
@@ -691,7 +691,15 @@ function _system_theme_settings_validate_path($path) {
  * Process system_theme_settings form submissions.
  */
 function system_theme_settings_submit($form, &$form_state) {
+  // Exclude unnecessary elements before saving.
+  form_state_values_clean($form_state);
+
   $values = $form_state['values'];
+
+  // Extract the name of the theme from the submitted form values, then remove
+  // it from the array so that it is not saved as part of the variable.
+  $key = $values['var'];
+  unset($values['var']);
 
   // If the user uploaded a new logo or favicon, save it to a permanent location
   // and use it in place of the default theme-provided file.
@@ -722,10 +730,7 @@ function system_theme_settings_submit($form, &$form_state) {
   if (empty($values['default_favicon']) && !empty($values['favicon_path'])) {
     $values['favicon_mimetype'] = file_get_mimetype($values['favicon_path']);
   }
-  $key = $values['var'];
 
-  // Exclude unnecessary elements before saving.
-  unset($values['var'], $values['submit'], $values['reset'], $values['form_id'], $values['op'], $values['form_build_id'], $values['form_token']);
   variable_set($key, $values);
   drupal_set_message(t('The configuration options have been saved.'));
 
@@ -808,7 +813,7 @@ function system_modules($form, $form_state = array()) {
   // Used when checking if module implements a help page.
   $help_arg = module_exists('help') ? drupal_help_arg() : FALSE;
 
-  // Used when displaying modules that are required by the install profile.
+  // Used when displaying modules that are required by the installation profile.
   require_once DRUPAL_ROOT . '/includes/install.inc';
   $distribution_name = check_plain(drupal_install_profile_distribution_name());
 
@@ -945,7 +950,11 @@ function system_sort_modules_by_info_name($a, $b) {
 }
 
 /**
- * Array sorting callback; sorts modules or themes by their name.
+ * Sorts themes by their names, with the default theme listed first.
+ *
+ * Callback for uasort() within system_themes_page().
+ *
+ * @see system_sort_modules_by_info_name().
  */
 function system_sort_themes($a, $b) {
   if ($a->is_default) {
@@ -990,22 +999,28 @@ function _system_modules_build_row($info, $extra) {
   $status_short = '';
   $status_long = '';
 
+  // Initialize empty arrays of long and short reasons explaining why the
+  // module is incompatible.
+  // Add each reason as a separate element in both the arrays.
+  $reasons_short = array();
+  $reasons_long = array();
+
   // Check the core compatibility.
   if (!isset($info['core']) || $info['core'] != DRUPAL_CORE_COMPATIBILITY) {
     $compatible = FALSE;
-    $status_short .= t('Incompatible with this version of Drupal core.');
-    $status_long .= t('This version is not compatible with Drupal !core_version and should be replaced.', array('!core_version' => DRUPAL_CORE_COMPATIBILITY));
+    $reasons_short[] = t('Incompatible with this version of Drupal core.');
+    $reasons_long[] = t('This version is not compatible with Drupal !core_version and should be replaced.', array('!core_version' => DRUPAL_CORE_COMPATIBILITY));
   }
 
   // Ensure this module is compatible with the currently installed version of PHP.
   if (version_compare(phpversion(), $info['php']) < 0) {
     $compatible = FALSE;
-    $status_short .= t('Incompatible with this version of PHP');
+    $reasons_short[] = t('Incompatible with this version of PHP');
     $php_required = $info['php'];
     if (substr_count($info['php'], '.') < 2) {
       $php_required .= '.*';
     }
-    $status_long .= t('This module requires PHP version @php_required and is incompatible with PHP version !php_version.', array('@php_required' => $php_required, '!php_version' => phpversion()));
+    $reasons_long[] = t('This module requires PHP version @php_required and is incompatible with PHP version !php_version.', array('@php_required' => $php_required, '!php_version' => phpversion()));
   }
 
   // If this module is compatible, present a checkbox indicating
@@ -1021,6 +1036,8 @@ function _system_modules_build_row($info, $extra) {
     }
   }
   else {
+    $status_short = implode(' ', $reasons_short);
+    $status_long = implode(' ', $reasons_long);
     $form['enable'] = array(
       '#markup' =>  theme('image', array('path' => 'misc/watchdog-error.png', 'alt' => $status_short, 'title' => $status_short)),
     );
@@ -1269,8 +1286,8 @@ function system_modules_uninstall($form, $form_state = NULL) {
         '#title_display' => 'invisible',
       );
       // All modules which depend on this one must be uninstalled first, before
-      // we can allow this module to be uninstalled. (The install profile is
-      // excluded from this list.)
+      // we can allow this module to be uninstalled. (The installation profile
+      // is excluded from this list.)
       foreach (array_keys($module->required_by) as $dependent) {
         if ($dependent != $profile && drupal_get_installed_schema_version($dependent) != SCHEMA_UNINSTALLED) {
           $dependent_name = isset($all_modules[$dependent]->info['name']) ? $all_modules[$dependent]->info['name'] : $dependent;
@@ -1589,6 +1606,7 @@ function system_site_information_settings_validate($form, &$form_state) {
  * @ingroup forms
  */
 function system_cron_settings() {
+  global $base_url;
   $form['description'] = array(
     '#markup' => '<p>' . t('Cron takes care of running periodic tasks like checking for updates and indexing content for search.') . '</p>',
   );
@@ -1601,12 +1619,18 @@ function system_cron_settings() {
   $form['status'] = array(
     '#markup' => $status,
   );
+
+  $form['cron_url'] = array(
+    '#markup' => '<p>' . t('To run cron from outside the site, go to <a href="!cron">!cron</a>', array('!cron' => url($base_url . '/cron.php', array('external' => TRUE, 'query' => array('cron_key' => variable_get('cron_key', 'drupal')))))) . '</p>',
+  );
+
   $form['cron'] = array(
     '#type' => 'fieldset',
   );
   $form['cron']['cron_safe_threshold'] = array(
     '#type' => 'select',
     '#title' => t('Run cron every'),
+    '#description' => t('More information about setting up scheduled tasks can be found by <a href="@url">reading the cron tutorial on drupal.org</a>.', array('@url' => url('http://drupal.org/cron'))),
     '#default_value' => variable_get('cron_safe_threshold', DRUPAL_CRON_DEFAULT_THRESHOLD),
     '#options' => array(0 => t('Never')) + drupal_map_assoc(array(3600, 10800, 21600, 43200, 86400, 604800), 'format_interval'),
   );
@@ -2564,7 +2588,7 @@ function theme_status_report($variables) {
 
   foreach ($requirements as $requirement) {
     if (empty($requirement['#type'])) {
-      $severity = $severities[isset($requirement['severity']) ? (int) $requirement['severity'] : 0];
+      $severity = $severities[isset($requirement['severity']) ? (int) $requirement['severity'] : REQUIREMENT_OK];
       $severity['icon'] = '<div title="' . $severity['title'] . '"><span class="element-invisible">' . $severity['title'] . '</span></div>';
 
       // Output table row(s)

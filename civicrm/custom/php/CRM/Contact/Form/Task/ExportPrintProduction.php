@@ -1198,7 +1198,7 @@ function processDistrictExclude( $districtID, $tbl, $localSeedsList ) {
         -- AND all of the address checks pass
         AND source.postal_code=district.postal_code
         AND BB_NORMALIZE_ADDR(source.street_address) = district.street_address
-        AND (source.city IS NULL OR district.city IS NULL OR source.city = district.city)
+        AND (source.city IS NULL OR district.city IS NULL OR BB_NORMALIZE_ADDR(source.city) = district.city)
         AND (source.state_province_id IS NULL OR district.state_province_id IS NULL OR source.state_province_id = district.state_province_id)
         ) AS tmpMatch
       )

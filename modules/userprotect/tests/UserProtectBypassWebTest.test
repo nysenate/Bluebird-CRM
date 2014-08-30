@@ -1,0 +1,164 @@
+<?php
+
+/**
+ * @file
+ * Contains UserProtectBypassWebTest.
+ */
+
+/**
+ * Tests bypassing protection rules.
+ */
+class UserProtectBypassWebTest extends UserProtectWebTestBase {
+
+  /**
+   * The operating account.
+   *
+   * @var object
+   */
+  protected $account;
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'Bypass protection API test',
+      'description' => 'Tests if bypass rules are respected.',
+      'group' => 'User protect',
+      'dependencies' => array('user'),
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setUp($modules = array()) {
+    parent::setUp($modules);
+
+    // Set administrator bypass defaults to no bypassing at all.
+    variable_set('userprotect_administrator_bypass_defaults', array(
+      'up_name' => 0,
+      'up_mail' => 0,
+      'up_pass' => 0,
+      'up_status' => 0,
+      'up_roles' => 0,
+      'up_openid' => 0,
+      'up_cancel' => 0,
+      'up_edit' => 0,
+    ));
+
+    // Create the operating account.
+    $this->account = $this->drupalCreateUser(array('administer users', 'administer permissions'));
+  }
+
+  /**
+   * Tests bypassing name protection.
+   */
+  protected function testNameProtectionBypass() {
+    $this->doCheckBypass('up_name');
+  }
+
+  /**
+   * Tests bypassing mail protection.
+   */
+  protected function testMailProtectionBypass() {
+    $this->doCheckBypass('up_mail');
+  }
+
+  /**
+   * Tests bypassing pass protection.
+   */
+  protected function testPassProtectionBypass() {
+    $this->doCheckBypass('up_pass');
+  }
+
+  /**
+   * Tests bypassing status protection.
+   */
+  protected function testStatusProtectionBypass() {
+    $this->doCheckBypass('up_status');
+  }
+
+  /**
+   * Tests bypassing roles protection.
+   */
+  protected function testRolesProtectionBypass() {
+    $this->doCheckBypass('up_roles');
+  }
+
+  /**
+   * Tests bypassing openid protection.
+   */
+  protected function testOpenIdProtectionBypass() {
+    $this->doCheckBypass('up_openid');
+  }
+
+  /**
+   * Tests bypassing cancel protection.
+   */
+  protected function testCancelProtectionBypass() {
+    $this->doCheckBypass('up_cancel');
+  }
+
+  /**
+   * Tests bypassing edit protection.
+   */
+  protected function testEditProtectionBypass() {
+    $this->doCheckBypass('up_edit');
+  }
+
+  /**
+   * Tests if bypassing a certain protection is respected.
+   *
+   * @param string $protection
+   *   The type of protection to test bypassing for.
+   */
+  protected function doCheckBypass($protection) {
+    // Assert that the operating account may not bypass.
+    $this->assertFalse(userprotect_check_bypass($protection, $this->account));
+
+    // Clear static cache for userprotect_check_bypass() function.
+    drupal_static_reset('userprotect_check_bypass');
+    drupal_static_reset('userprotect_check_bypass_defaults');
+
+    // Now, create the bypass rule.
+    $this->createBypassRule($this->account->uid, array($protection => 1));
+    // Assert that the operating account may bypass now.
+    $this->assertTrue(userprotect_check_bypass($protection, $this->account));
+
+    // Remove bypass rule.
+    db_delete('userprotect')
+      ->condition('uid', $this->account->uid)
+      ->condition('up_type', 'admin')
+      ->execute();
+
+    // Clear static cache for userprotect_check_bypass() function again.
+    drupal_static_reset('userprotect_check_bypass');
+    drupal_static_reset('userprotect_check_bypass_defaults');
+
+    // Assert that the operating account may not bypass anymore.
+    $this->assertFalse(userprotect_check_bypass($protection, $this->account));
+
+    // Set the global bypass rule.
+    $protections = array(
+      $protection => 1
+    ) + array(
+      'up_name' => 0,
+      'up_mail' => 0,
+      'up_pass' => 0,
+      'up_status' => 0,
+      'up_roles' => 0,
+      'up_openid' => 0,
+      'up_cancel' => 0,
+      'up_edit' => 0,
+    );
+    variable_set('userprotect_administrator_bypass_defaults', $protections);
+
+    // Clear static cache for userprotect_check_bypass() function again.
+    drupal_static_reset('userprotect_check_bypass');
+    drupal_static_reset('userprotect_check_bypass_defaults');
+
+    // Assert that the operating account may bypass again.
+    $this->assertTrue(userprotect_check_bypass($protection, $this->account));
+  }
+}

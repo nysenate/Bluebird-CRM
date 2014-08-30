@@ -300,6 +300,31 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
     //4575 search by all emails
     $form->addElement('checkbox', 'email_primary', ts('Search only primary emails'));
 
+    //3815 add privacy option note
+    $form->addElement('text', 'custom_64', ts('Privacy Option Notes'), array('id'=>'custom_64'), 'size="30"');
+
+    //7906 search birth date by month only
+    $months = array(
+      ''  => '- select month -',
+      '1' => 'January',
+      '2' => 'February',
+      '3' => 'March',
+      '4' => 'April',
+      '5' => 'May' ,
+      '6' => 'June',
+      '7' => 'July',
+      '8' => 'August',
+      '9' => 'September',
+      '10' => 'October',
+      '11' => 'November',
+      '12' => 'December',
+    );
+    $form->add('select', 'birth_date_month',  ts( 'Birth Date Month' ), array( '' => ts( '- select month -' ) ) + $months );
+
+    //7946
+    $form->addDate( 'log_start_date', ts( 'Change Log Start' ), false, array('formatType' => 'birth') );
+    $form->addDate( 'log_end_date', ts( 'Change Log End' ), false, array('formatType' => 'birth') );
+
     //don't set US as default country in advanced search or contacts with no address are excluded
     $defaults['country'] = '';
 
@@ -308,9 +333,6 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 
     //4332 clear activity creator/assigned
     $defaults['activity_role'] = 0;
-
-    //3815 add privacy option note
-    $form->addElement('text', 'custom_64', ts('Privacy Option Notes'), array('id'=>'custom_64'), 'size="30"');
 
     $form->setDefaults( $defaults );
   }
@@ -341,7 +363,9 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
   }
 
   //3674 add limit submit js to all submit buttons
-  if ( isset( $form->_elementIndex['buttons'] ) ) {
+  if ( isset($form->_elementIndex['buttons']) &&
+    strpos($formName, 'Inline') === FALSE
+  ) {
     $buttons =& $form->getElement( 'buttons' );
     $formID =  $form->_attributes['id'];
     $formAction = $form->_attributes['action'];
@@ -673,9 +697,28 @@ function nyss_civihooks_civicrm_postProcess( $formName, &$form ) {
 } //postProcess
 
 function nyss_civihooks_civicrm_searchTasks( $objectType, &$tasks ) {
-  unset($tasks[19]); //remove pdf letter creation task, #2284
-  //unset($tasks[20]); //remove mass email task, #5498
-  unset($tasks[7]); //remove send SMS task, #5665
+  //CRM_Core_Error::debug_var('$objectType', $objectType);
+  //CRM_Core_Error::debug_var('$tasks', $tasks);
+
+  if ( $objectType == 'contact' ) {
+    unset($tasks[19]); //remove pdf letter creation task, #2284
+    //unset($tasks[20]); //remove mass email task, #5498
+    unset($tasks[7]); //remove send SMS task, #5665
+  }
+
+  //7891
+  if ( $objectType == 'activity' ) {
+    $tasks[100] = array(
+      'title' => 'Update Activity Status',
+      'class' => 'CRM_Activity_Form_Task_UpdateStatus',
+      'result' => '',
+    );
+    $tasks[101] = array(
+      'title' => 'Tag Activities (assign keywords)',
+      'class' => 'CRM_Activity_Form_Task_AddToTag',
+      'result' => '',
+    );
+  }
 }
 
 function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) {
@@ -776,7 +819,7 @@ function nyss_civihooks_civicrm_pageRun( &$page ) {
   }
 
   _setDBVars();
-}
+}//pageRun
 
 function nyss_civihooks_civicrm_validateForm( $formName, &$fields, &$files, &$form, &$errors ) {
   //CRM_Core_Error::debug_var('$formName', $formName);
@@ -1584,6 +1627,20 @@ function _buildSearchMenu($searchNavID) {
           'separator'  => 0,
           'parentID'   => $searchNavID,
           'navID'      => $searchNavID+7,
+          'active'     => 1
+        ),
+        'child' => array(),
+      ),
+      $searchNavID+8 => array(
+        'attributes' => array (
+          'label'      => 'Tag/Group Changelog Search',
+          'name'       => 'Tag/Group Changelog Search',
+          'url'        => 'civicrm/contact/search/custom?csid=17&reset=1',
+          'permission' => 'access CiviCRM,view all contacts',
+          'operator'   => 'AND',
+          'separator'  => 0,
+          'parentID'   => $searchNavID,
+          'navID'      => $searchNavID+8,
           'active'     => 1
         ),
         'child' => array(),

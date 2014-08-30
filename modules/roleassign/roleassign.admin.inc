@@ -117,13 +117,13 @@ function _roleassign_form_alter(array &$form, array &$form_state, $form_id) {
 }
 
 /**
- * Implements hook_user_presave().
+ * Really implements hook_user_presave().
  *
  * @param array $edit
  * @param object $account
  * @param string $category
  */
-function roleassign_user_presave(array &$edit, $account, $category) {
+function _roleassign_user_presave(array &$edit, $account, $category) {
   // If this isn't the account category, or there is no roleassign_roles
   // field, there isn't much to do.
   if ($category != 'account' || !isset($edit['roleassign_roles'])) {
@@ -180,7 +180,7 @@ function _roleassign_user_operations() {
   if (isset($_POST['operation']) && $operation = $_POST['operation']) {
     // Get operation and role id.
     $op = explode('-', $operation);
-    $rid = intval($op[1]);
+    $rid = (isset($op[1]) ? intval($op[1]) : NULL);
     $op = $op[0];
 
     // If not a RoleAssign operation, there is not much to do.

@@ -102,8 +102,7 @@ class CRM_Core_BAO_CustomQuery {
    */
   protected $_contactSearch;
 
-  //NYSS 7772
-  protected $_locationSpecifiCustomFields;
+  protected $_locationSpecificCustomFields;
 
   /**
    * This stores custom data group types and tables that it extends
@@ -139,10 +138,9 @@ class CRM_Core_BAO_CustomQuery {
    *
    * @access public
    */
-  //NYSS 7772
   function __construct($ids, $contactSearch = FALSE, $locationSpecificFields = array()) {
     $this->_ids = &$ids;
-    $this->_locationSpecifiCustomFields = $locationSpecificFields;
+    $this->_locationSpecificCustomFields = $locationSpecificFields;
 
     $this->_select      = array();
     $this->_element     = array();
@@ -306,12 +304,11 @@ SELECT label, value
       }
 
       if ($joinTable) {
-        //NYSS 7772
         $joinClause = 1;
         $joinTableAlias = $joinTable;
         // Set location-specific query
-        if (isset($this->_locationSpecifiCustomFields[$id])) {
-          list($locationType, $locationTypeId) = $this->_locationSpecifiCustomFields[$id];
+        if (isset($this->_locationSpecificCustomFields[$id])) {
+          list($locationType, $locationTypeId) = $this->_locationSpecificCustomFields[$id];
           $joinTableAlias = "$locationType-address";
           $joinClause = "\nLEFT JOIN $joinTable `$locationType-address` ON (`$locationType-address`.contact_id = contact_a.id AND `$locationType-address`.location_type_id = $locationTypeId)";
         }
@@ -340,9 +337,6 @@ SELECT label, value
    * @access public
    */
   function where() {
-    //CRM_Core_Error::debug( 'fld', $this->_fields );
-    //CRM_Core_Error::debug( 'ids', $this->_ids );
-
     foreach ($this->_ids as $id => $values) {
 
       // Fixed for Isuue CRM 607

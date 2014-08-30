@@ -67,6 +67,8 @@ class CRM_Logging_Differ {
 
     $logging = new CRM_Logging_Schema;
     $addressCustomTables = $logging->entityCustomDataLogTables('Address');
+    //NYSS
+    $activityCustomTables = $logging->entityCustomDataLogTables('Activity');
 
     $contactIdClause = $join = '';
     if ( $contactID ) {
@@ -76,7 +78,7 @@ class CRM_Logging_Differ {
         $contactIdClause = "AND id = %3";
         break;
       case 'civicrm_note':
-        $contactIdClause = "AND ( entity_id = %3 AND entity_table = 'civicrm_contact' ) OR (entity_id IN (SELECT note.id FROM `{$this->db}`.log_civicrm_note note WHERE note.entity_id = %3 AND note.entity_table = 'civicrm_contact') AND entity_table = 'civicrm_note')";
+        $contactIdClause = "AND (( entity_id = %3 AND entity_table = 'civicrm_contact' ) OR (entity_id IN (SELECT note.id FROM `{$this->db}`.log_civicrm_note note WHERE note.entity_id = %3 AND note.entity_table = 'civicrm_contact') AND entity_table = 'civicrm_note'))";
         break;
       case 'civicrm_entity_tag':
         $contactIdClause = "AND entity_id = %3 AND entity_table = 'civicrm_contact'";
@@ -99,10 +101,28 @@ LEFT JOIN civicrm_activity_contact source ON source.activity_id = lt.id AND sour
       case 'civicrm_case':
         $contactIdClause = "AND id = (select case_id FROM civicrm_case_contact WHERE contact_id = %3 LIMIT 1)";
         break;
+      //NYSS
+      case 'civicrm_group_contact':
+        $join = "LEFT JOIN civicrm_group gp on lt.group_id=gp.id";
+        $contactIdClase = "AND lt.contact_id = %3";
+        break;
       default:
         if (array_key_exists($table, $addressCustomTables)) {
           $join  = "INNER JOIN `{$this->db}`.`log_civicrm_address` et ON et.id = lt.entity_id";
           $contactIdClause = "AND contact_id = %3";
+          break;
+        }
+        //NYSS
+        if (array_key_exists($table, $activityCustomTables)) {
+          $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
+          $sourceID = CRM_Utils_Array::key('Activity Source', $activityContacts);
+          $assigneeID = CRM_Utils_Array::key('Activity Assignees', $activityContacts);
+          $targetID = CRM_Utils_Array::key('Activity Targets', $activityContacts);
+          $join = "LEFT JOIN civicrm_activity act ON lt.entity_id=act.id " .
+                  "LEFT JOIN civicrm_activity_contact at ON at.activity_id = act.id AND at.contact_id = %3 AND at.record_type_id = {$targetID} " .
+                  "LEFT JOIN civicrm_activity_contact aa ON aa.activity_id = act.id AND aa.contact_id = %3 AND aa.record_type_id = {$assigneeID} " .
+                  "LEFT JOIN civicrm_activity_contact source ON source.activity_id = act.id AND source.contact_id = %3 AND source.record_type_id = {$sourceID} ";
+          $contactIdClause = "AND (at.id IS NOT NULL OR aa.id IS NOT NULL OR source.id IS NOT NULL)";
           break;
         }
 

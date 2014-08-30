@@ -338,7 +338,6 @@ class CRM_Contact_BAO_Query {
    */
   public static $_openedPanes = array();
 
-  //NYSS 7772
   /**
    * For search builder - which custom fields are location-dependent
    * @var array
@@ -730,15 +729,19 @@ class CRM_Contact_BAO_Query {
               // also get the id of the tableName
               $tName = substr($tableName, 8);
               if (in_array($tName, array('country', 'state_province', 'county'))) {
-                $pf = ($tName == 'state_province') ? 'state_province_name' : $name;
-                $this->_pseudoConstantsSelect[$pf] =
-                  array('pseudoField' => "{$tName}_id", 'idCol' => "{$tName}_id", 'bao' => 'CRM_Core_BAO_Address',
+                if ($tName == 'state_province') {
+                  $this->_pseudoConstantsSelect['state_province_name'] =
+                    array('pseudoField' => "{$tName}", 'idCol' => "{$tName}_id", 'bao' => 'CRM_Core_BAO_Address',
                     'table' => "civicrm_{$tName}", 'join' => " LEFT JOIN civicrm_{$tName} ON civicrm_address.{$tName}_id = civicrm_{$tName}.id ");
 
-                if ($tName == 'state_province') {
                   $this->_pseudoConstantsSelect[$tName] =
                     array('pseudoField' => 'state_province_abbreviation', 'idCol' => "{$tName}_id",
                       'table' => "civicrm_{$tName}", 'join' => " LEFT JOIN civicrm_{$tName} ON civicrm_address.{$tName}_id = civicrm_{$tName}.id ");
+                }
+                else {
+                  $this->_pseudoConstantsSelect[$name] =
+                  array('pseudoField' => "{$tName}_id", 'idCol' => "{$tName}_id", 'bao' => 'CRM_Core_BAO_Address',
+                  'table' => "civicrm_{$tName}", 'join' => " LEFT JOIN civicrm_{$tName} ON civicrm_address.{$tName}_id = civicrm_{$tName}.id ");
                 }
 
                 $this->_select["{$tName}_id"] = "civicrm_address.{$tName}_id as {$tName}_id";
@@ -780,14 +783,14 @@ class CRM_Contact_BAO_Query {
                   $this->_select[$name] = "contact_a.{$fieldName}  as `$name`";
                 }
               }
-              elseif (in_array($tName, array('state_province', 'country', 'county'))) {
-                $this->_pseudoConstantsSelect[$pf]['select'] = "{$field['where']} as `$name`";
-                $this->_pseudoConstantsSelect[$pf]['element'] = $name;
-                if ($tName == 'state_province') {
+              elseif (in_array($tName, array('country', 'county'))) {
+                $this->_pseudoConstantsSelect[$name]['select'] = "{$field['where']} as `$name`";
+                $this->_pseudoConstantsSelect[$name]['element'] = $name;
+              }
+              elseif ($tName == 'state_province') {
                   $this->_pseudoConstantsSelect[$tName]['select'] = "{$field['where']} as `$name`";
                   $this->_pseudoConstantsSelect[$tName]['element'] = $name;
                 }
-              }
               else {
                 $this->_select[$name] = "{$field['where']} as `$name`";
               }
@@ -885,7 +888,6 @@ class CRM_Contact_BAO_Query {
     CRM_Contact_BAO_Query_Hook::singleton()->alterSearchQuery($this, 'select');
 
     if (!empty($this->_cfIDs)) {
-      //NYSS 7772
       $this->_customQuery = new CRM_Core_BAO_CustomQuery($this->_cfIDs, TRUE, $this->_locationSpecificCustomFields);
       $this->_customQuery->query();
       $this->_select = array_merge($this->_select, $this->_customQuery->_select);
@@ -1196,7 +1198,6 @@ class CRM_Contact_BAO_Query {
     }
 
     if (!empty($addressCustomFieldIds)) {
-      //NYSS 7772
       $customQuery = new CRM_Core_BAO_CustomQuery($addressCustomFieldIds);
       foreach ($addressCustomFieldIds as $cfID => $locTypeName) {
         foreach ($locTypeName as $name => $dnc) {
@@ -1506,6 +1507,10 @@ class CRM_Contact_BAO_Query {
       }
       $result = array($id, 'IN', $values, 0, 0);
     }
+    //NYSS 8091
+    elseif ($id == 'contact_type') {
+      $result = array($id, 'IN', $values, 0, $wildcard);
+    }
     else {
       $result = array($id, '=', $values, 0, $wildcard);
     }
@@ -1645,6 +1650,7 @@ class CRM_Contact_BAO_Query {
       case 'activity_subject':
       case 'test_activities':
       case 'activity_type_id':
+      case 'activity_type':
       case 'activity_survey_id':
       case 'activity_tags':
       case 'activity_taglist':
@@ -1661,6 +1667,7 @@ class CRM_Contact_BAO_Query {
       case 'birth_date_high':
       case 'deceased_date_low':
       case 'deceased_date_high':
+      case 'birth_date_month': //NYSS 7906
         $this->demographics($values);
         return;
 
@@ -1732,6 +1739,12 @@ class CRM_Contact_BAO_Query {
       case 'prox_state_province_id':
       case 'prox_country_id':
         // handled by the proximity_distance clause
+        return;
+
+      //NYSS 7946
+      case 'log_start_date':
+      case 'log_end_date':
+        $this->nysslog($values);
         return;
 
       default:
@@ -2493,6 +2506,14 @@ class CRM_Contact_BAO_Query {
           $from .= " $side JOIN civicrm_website ON contact_a.id = civicrm_website.contact_id ";
           continue;
 
+        //NYSS 7946
+        case 'nyss_changelog_summary':
+          $from .= "
+            INNER JOIN nyss_changelog_summary
+              ON nyss_changelog_summary.contact_id = contact_a.id
+          ";
+          continue;
+
         default:
           $from .= CRM_Core_Component::from($name, $mode, $side);
           $from .= CRM_Contact_BAO_Query_Hook::singleton()->buildSearchfrom($name, $mode, $side);
@@ -2566,11 +2587,13 @@ class CRM_Contact_BAO_Query {
 
     // fix for CRM-771
     if (!empty($clause)) {
+      //NYSS 8091
+      $quill = $clause;
       if ($op == 'IN' || $op == 'NOT IN') {
         $this->_where[$grouping][] = "contact_a.contact_type $op (" . implode(',', $clause) . ')';
       }
       else {
-        $quill = $clause;
+        /*$quill = $clause;*/
         $type = array_pop($clause);
         $this->_where[$grouping][] = "contact_a.contact_type $op $type";
       }
@@ -2832,17 +2855,12 @@ WHERE  id IN ( $groupIDs )
       $tCaseTable = "`civicrm_case_tag-" . $value . "`";
       $this->_tables[$etCaseTable] =
         $this->_whereTables[$etCaseTable] =
-        " LEFT JOIN civicrm_case_contact
-            ON civicrm_case_contact.contact_id = contact_a.id
+        " LEFT JOIN civicrm_case_contact ON civicrm_case_contact.contact_id = contact_a.id
           LEFT JOIN civicrm_case
-            ON civicrm_case_contact.case_id = civicrm_case.id
-            AND civicrm_case.is_deleted = 0
-          LEFT JOIN civicrm_entity_tag {$etCaseTable}
-            ON {$etCaseTable}.entity_table = 'civicrm_case'
-            AND {$etCaseTable}.entity_id = civicrm_case.id
-          LEFT JOIN civicrm_tag {$tCaseTable}
-            ON {$etCaseTable}.tag_id = {$tCaseTable}.id";
-
+            ON (civicrm_case_contact.case_id = civicrm_case.id
+                AND civicrm_case.is_deleted = 0 )
+          LEFT JOIN civicrm_entity_tag {$etCaseTable} ON ( {$etCaseTable}.entity_table = 'civicrm_case' AND {$etCaseTable}.entity_id = civicrm_case.id )
+          LEFT JOIN civicrm_tag {$tCaseTable} ON ( {$etCaseTable}.tag_id = {$tCaseTable}.id  )";
       // search tag in activities
       $etActTable = "`civicrm_entity_act_tag-" . $value . "`";
       $tActTable = "`civicrm_act_tag-" . $value . "`";
@@ -2867,8 +2885,7 @@ WHERE  id IN ( $groupIDs )
 
       $this->_where[$grouping][] = "({$tTable}.name $op '". $value . "' OR {$tCaseTable}.name $op '". $value . "' OR {$tActTable}.name $op '". $value . "')";
       $this->_qill[$grouping][] = ts('Tag %1 %2 ', array(1 => $tagTypesText[2], 2 => $op)) . ' ' . $value;
-    }
-    else {
+    } else {
       $etTable = "`civicrm_entity_tag-" . $value . "`";
       $tTable = "`civicrm_tag-" . $value . "`";
       $this->_tables[$etTable] = $this->_whereTables[$etTable] = " LEFT JOIN civicrm_entity_tag {$etTable} ON ( {$etTable}.entity_id = contact_a.id  AND
@@ -2912,9 +2929,7 @@ WHERE  id IN ( $groupIDs )
     if ($useAllTagTypes[2]) {
       $this->_tables[$etTable] =
         $this->_whereTables[$etTable] =
-        " LEFT JOIN civicrm_entity_tag {$etTable}
-            ON ( {$etTable}.entity_id = contact_a.id
-            AND {$etTable}.entity_table = 'civicrm_contact' ) ";
+        " LEFT JOIN civicrm_entity_tag {$etTable} ON ( {$etTable}.entity_id = contact_a.id  AND {$etTable}.entity_table = 'civicrm_contact') ";
 
       // search tag in cases
       $etCaseTable = "`civicrm_entity_case_tag-" . $value . "`";
@@ -2922,15 +2937,12 @@ WHERE  id IN ( $groupIDs )
       $targetID = CRM_Utils_Array::key('Activity Targets', $activityContacts);
 
       $this->_tables[$etCaseTable] =
-        $this->_whereTables[$etCaseTable] = "
-          LEFT JOIN civicrm_case_contact
-            ON civicrm_case_contact.contact_id = contact_a.id
+        $this->_whereTables[$etCaseTable] =
+        " LEFT JOIN civicrm_case_contact ON civicrm_case_contact.contact_id = contact_a.id
           LEFT JOIN civicrm_case
-            ON civicrm_case_contact.case_id = civicrm_case.id
-            AND civicrm_case.is_deleted = 0
-          LEFT JOIN civicrm_entity_tag {$etCaseTable}
-            ON {$etCaseTable}.entity_table = 'civicrm_case'
-            AND {$etCaseTable}.entity_id = civicrm_case.id ";
+            ON (civicrm_case_contact.case_id = civicrm_case.id
+                AND civicrm_case.is_deleted = 0 )
+          LEFT JOIN civicrm_entity_tag {$etCaseTable} ON ( {$etCaseTable}.entity_table = 'civicrm_case' AND {$etCaseTable}.entity_id = civicrm_case.id ) ";
       // search tag in activities
       $etActTable = "`civicrm_entity_act_tag-" . $value . "`";
       //NYSS 7770
@@ -2955,8 +2967,7 @@ WHERE  id IN ( $groupIDs )
         $this->_where[$grouping][] = "({$etTable}.tag_id $op (". $value . ") OR {$etCaseTable}.tag_id $op (". $value . ") OR {$etActTable}.tag_id $op (". $value . "))";
       }
       $this->_qill[$grouping][] = ts('Tag %1 %2', array(1 => $op, 2 => $tagTypesText[2])) . ' ' . $names;
-    }
-    else {
+    } else {
       $this->_tables[$etTable] =
         $this->_whereTables[$etTable] =
         " LEFT JOIN civicrm_entity_tag {$etTable} ON ( {$etTable}.entity_id = contact_a.id  AND {$etTable}.entity_table = 'civicrm_contact') ";
@@ -2972,6 +2983,7 @@ WHERE  id IN ( $groupIDs )
       }
       $this->_qill[$grouping][] = ts('Tagged %1', array( 1 => $op)) . ' ' . $names;
     }
+
   }
 
   /**
@@ -3210,7 +3222,6 @@ WHERE  id IN ( $groupIDs )
     list($name, $op, $value, $grouping, $wildcard) = $values;
 
     $n = trim($value);
-
     if ($n) {
       $config = CRM_Core_Config::singleton();
 
@@ -3721,7 +3732,7 @@ WHERE  id IN ( $groupIDs )
     $name = $targetName[4] ? "%$name%" : $name;
     $this->_where[$grouping][] = "contact_b_log.sort_name LIKE '%$name%'";
     $this->_tables['civicrm_log'] = $this->_whereTables['civicrm_log'] = 1;
-    $this->_qill[$grouping][] = ts('Changed by') . ": $name";
+    $this->_qill[$grouping][] = ts('Modified by') . ": $name";
   }
 	
   //NYSS 3355
@@ -3776,6 +3787,26 @@ WHERE  id IN ( $groupIDs )
       $this->dateQueryBuilder($values,
         'contact_a', 'deceased_date', 'deceased_date', ts('Deceased Date')
       );
+    }
+
+    //NYSS 7906
+    if (($name == 'birth_date_month')) {
+      $months = array(
+        '1' => 'January',
+        '2' => 'February',
+        '3' => 'March',
+        '4' => 'April',
+        '5' => 'May' ,
+        '6' => 'June',
+        '7' => 'July',
+        '8' => 'August',
+        '9' => 'September',
+        '10' => 'October',
+        '11' => 'November',
+        '12' => 'December',
+      );
+      $this->_where[$grouping][] = " MONTH( contact_a.birth_date ) = {$value} ";
+      $this->_qill[$grouping][] = "Birth date month $op {$months[$value]}";
     }
 
     self::$_openedPanes[ts('Demographics')] = TRUE;
@@ -5401,5 +5432,27 @@ AND   displayRelType.is_active = 1
 
     return array($presentClause, $presentSimpleFromClause);
   }
+
+  //NYSS 7946
+  function nysslog($values) {
+    //CRM_Core_Error::debug_var('values', $values);
+
+    list( $name, $op, $value, $grouping, $wildcard ) = $values;
+    $value = date('Y-m-d', strtotime($value));
+
+    if ($name == 'log_start_date') {
+      $this->_where[$grouping][] = "nyss_changelog_summary.change_ts >= '{$value} 00:00:00'";
+      $quill = 'Change Log Start Date';
+    }
+    elseif ($name == 'log_end_date') {
+      $this->_where[$grouping][] = "nyss_changelog_summary.change_ts <= '{$value} 23:59:59'";
+      $quill = 'Change Log End Date';
+    }
+
+    $this->_tables['nyss_changelog_summary'] = 1;
+    $this->_whereTables['nyss_changelog_summary'] = 1;
+
+    $this->_qill[$grouping][] = ts('Modified Date') . ": $quill";
+  }//nysslog
 }
 

@@ -34,6 +34,8 @@
 class CRM_Upgrade_Incremental_php_FourFour {
   const BATCH_SIZE = 5000;
 
+  const MAX_WORD_REPLACEMENT_SIZE = 255;
+
   function verifyPreDBstate(&$errors) {
     return TRUE;
   }
@@ -49,6 +51,20 @@ class CRM_Upgrade_Incremental_php_FourFour {
    * @return void
    */
   function setPreUpgradeMessage(&$preUpgradeMessage, $rev, $currentVer = NULL) {
+    if ($rev == '4.4.beta1') {
+      $apiCalls = self::getConfigArraysAsAPIParams(FALSE);
+      $oversizedEntries = 0;
+      foreach ($apiCalls as $params) {
+        if (!self::isValidWordReplacement($params)) {
+          $oversizedEntries++;
+        }
+      }
+      if ($oversizedEntries > 0) {
+        $preUpgradeMessage .= '<br/>' . ts("WARNING: There are %1 word-replacement entries which will not be valid in v4.4+ (eg with over 255 characters). They will be dropped during upgrade. For details, consult the CiviCRM log.", array(
+          1 => $oversizedEntries
+        ));
+      }
+    }
   }
 
   /**
@@ -78,6 +94,9 @@ WHERE ceft.entity_table = 'civicrm_contribution' AND cft.payment_instrument_id I
       if ($dao->N) {
         $postUpgradeMessage .= '<br /><br /><strong>' . ts('Your database contains %1 financial transaction records with no payment instrument (Paid By is empty). If you use the Accounting Batches feature this may result in unbalanced transactions. If you do not use this feature, you can ignore the condition (although you will be required to select a Paid By value for new transactions). <a href="%2" target="_blank">You can review steps to correct transactions with missing payment instruments on the wiki.</a>', array(1 => $dao->N, 2 => 'http://wiki.civicrm.org/confluence/display/CRMDOC/Fixing+Transactions+Missing+a+Payment+Instrument+-+4.4.3+Upgrades')) . '</strong>';
       }
+    }
+    if ($rev == '4.4.6'){
+     $postUpgradeMessage .= '<br /><br /><strong>'. ts('Your contact image urls have been upgraded. If your contact image urls did not follow the standard format for image Urls they have not been upgraded. Please check the log to see image urls that were not upgraded.'); 
     }
   }
 
@@ -285,6 +304,67 @@ ALTER TABLE civicrm_dashboard
     $this->addTask(ts('Confirm civicrm_report_instance sql table for upgrades'), 'updateReportInstanceTable');
 
 
+    return TRUE;
+  }
+
+  function upgrade_4_4_6($rev){
+    $sql = "SELECT count(*) AS count FROM INFORMATION_SCHEMA.STATISTICS where ".
+      "INDEX_NAME = 'index_image_url' AND TABLE_NAME = 'civicrm_contact';";
+    $dao = CRM_Core_DAO::executeQuery($sql);
+    $dao->fetch();
+    if($dao->count < 1) {
+      $sql = "CREATE INDEX index_image_url ON civicrm_contact (image_url);";
+      $dao = CRM_Core_DAO::executeQuery($sql);
+    }
+    $minId = CRM_Core_DAO::singleValueQuery('SELECT coalesce(min(id),0) FROM civicrm_contact WHERE image_URL IS NOT NULL');
+    $maxId = CRM_Core_DAO::singleValueQuery('SELECT coalesce(max(id),0) FROM civicrm_contact WHERE image_URL IS NOT NULL');
+    for ($startId = $minId; $startId <= $maxId; $startId += self::BATCH_SIZE) {
+      $endId = $startId + self::BATCH_SIZE - 1;
+      $title = ts('Upgrade image_urls (%1 => %2)', array(1 => $startId, 2 => $endId));
+      $this->addTask($title, 'upgradeImageUrls', $startId, $endId);
+    }
+  }
+
+  static function upgradeImageUrls(CRM_Queue_TaskContext $ctx, $startId, $endId){
+    $sql = "
+SELECT id, image_url
+FROM civicrm_contact
+WHERE 1
+AND id BETWEEN %1 AND %2
+AND image_URL IS NOT NULL
+";
+    $params = array(
+      1 => array($startId, 'Integer'),
+      2 => array($endId, 'Integer'),
+    );
+    $dao = CRM_Core_DAO::executeQuery($sql, $params, TRUE, NULL, FALSE, FALSE);
+    $failures = array();
+    while ($dao->fetch()){
+      $imageURL = $dao->image_url;
+      $baseurl = CIVICRM_UF_BASEURL;
+      $baselen = strlen($baseurl);
+      if (substr($imageURL, 0, $baselen)==$baseurl){
+        $photo = basename($dao->image_url);
+        $config = CRM_Core_Config::singleton();
+        $fullpath = $config->customFileUploadDir.$photo;
+          if (file_exists($fullpath)){
+            $newimageurl =  CRM_Utils_System::url('civicrm/contact/imagefile', 'photo='.$photo, TRUE);
+            $sql = 'UPDATE civicrm_contact SET image_url=%1 WHERE id=%2';
+            $params = array(
+              1 => array($newimageurl, 'String'),
+              2 => array($dao->id, 'Integer'),
+            );
+            $updatedao = CRM_Core_DAO::executeQuery($sql, $params);
+          }
+          else{
+            $failures[$dao->id] = $dao->image_url;
+          }
+        }
+        else{     
+            $failures[$dao->id] = $dao->image_url;
+        }
+      }
+    CRM_Core_Error::debug_var('imageUrlsNotUpgraded', $failures);
     return TRUE;
   }
 
@@ -503,7 +583,10 @@ CREATE TABLE IF NOT EXISTS `civicrm_word_replacement` (
         $params["domain_id"] = $value["id"];
         $params["options"] = array('wp-rebuild' => $rebuildEach);
         // unserialize word match string
-        $localeCustomArray = unserialize($value["locale_custom_strings"]);
+        $localeCustomArray = array();
+        if (!empty($value["locale_custom_strings"])) {
+          $localeCustomArray = unserialize($value["locale_custom_strings"]);
+        }
         if (!empty($localeCustomArray)) {
           $wordMatchArray = array();
           // Traverse Language array
@@ -541,7 +624,7 @@ CREATE TABLE IF NOT EXISTS `civicrm_word_replacement` (
   public static function rebuildWordReplacementTable() {
     civicrm_api3('word_replacement', 'replace', array(
       'options' => array('match' => array('domain_id', 'find_word')),
-      'values' => self::getConfigArraysAsAPIParams(FALSE),
+      'values' => array_filter(self::getConfigArraysAsAPIParams(FALSE), array(__CLASS__, 'isValidWordReplacement')),
     ));
     CRM_Core_BAO_WordReplacement::rebuild();
   }
@@ -577,5 +660,17 @@ CREATE TABLE IF NOT EXISTS `civicrm_word_replacement` (
     }
 
     return TRUE;
+  }
+
+  /**
+   * @param array $params
+   * @return bool TRUE if $params is valid
+   */
+  static function isValidWordReplacement($params) {
+    $result = strlen($params['find_word']) <= self::MAX_WORD_REPLACEMENT_SIZE && strlen($params['replace_word']) > self::MAX_WORD_REPLACEMENT_SIZE;
+    if (!$result) {
+      CRM_Core_Error::debug_var('invalidWordReplacement', $params);
+    }
+    return $result;
   }
 }

@@ -616,10 +616,28 @@ function nyss_mail_civicrm_pageRun(&$page)
     $rpt =& $smarty->get_template_vars('report');
     //CRM_Core_Error::debug('rpt', $rpt);
 
-    $rpt['mailing']['url_tracking']  = 1;
+    $rpt['mailing']['url_tracking'] = 1;
     $rpt['mailing']['open_tracking'] = 1;
 
     $smarty->assign_by_ref('report', $rpt);
+
+    //7860 include mailing category on report page
+    $mailingID = $page->_mailing_id;
+    if ( $mailingID ) {
+      $category = CRM_Core_DAO::singleValueQuery("
+        SELECT ov.label
+        FROM civicrm_mailing m
+        JOIN civicrm_option_value ov
+          ON m.category = ov.value
+          AND ov.option_group_id = (SELECT id FROM civicrm_option_group WHERE name = 'mailing_categories')
+        WHERE m.id = {$mailingID}
+      ");
+
+      if ( $category ) {
+        $page->assign('mailing_category', $category);
+      }
+    }
+
   }
 
   //5567 fix title

@@ -893,7 +893,7 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
         }
         $rows["move_$field"][$moniker] = $label;
         if ($moniker == 'other') {
-          //NYSS CRM-14334
+          //CRM-14334
           if ($value === NULL || $value == '') {
             $value = 'null';
           }
