@@ -41,7 +41,9 @@ TagTreeBase = function(instance_options) {
 
 TagTreeBase.prototype.load = function() {
     var self = this;
-
+    if ($('.crm-submit-buttons').length !== 0) {
+      $('.crm-submit-buttons').prepend('<span class="crm-button loading default" style="display: block; padding: 4px;"> Loading</span>');
+    }
     // Request the data
     cj.ajax({
         url: '/civicrm/ajax/tag/tree',
@@ -115,11 +117,15 @@ TagTreeBase.prototype.setup_trees = function(tree_data) {
             self.current_tree = tree;
         }
         // console.log("Finished with tree_id: "+tree_id);
+
         self.container.append(tree);
         self.container.addClass('TreeWrap loaded');
         self.animate_tree(tree);
     });
-
+    if ($('.crm-submit-buttons .hidden').length !== 0) {
+      $('.crm-submit-buttons .hidden').removeClass('hidden');
+      $('.crm-submit-buttons .loading').remove();
+    }
     // Hook for customization by child classes
     self.customize_tree();
 }
@@ -568,19 +574,20 @@ TagTreeTag.prototype.removeTagCheck = function(tag_id) {
     }
 
     // Remove the name from the tag list at the top (if it exists)
-    if (self.list_container.find('span').html() != null) {
-        var tag_name = tag.find('.name').html();
-        var tag_list_items = self.list_container.find('span').html().split(" • ");
-        // This is done in a crappy way to make all browsers happy
-        cj.each(tag_list_items, function(i, item) {
-            if (tag_name == item) {
-                tag_list_items.splice(i, 1);
-            }
-        });
-        self.list_container.find('span').html(tag_list_items.join(" • "));
-        self.toggleTagList();
+    if (self.list_container != null) {
+        if (self.list_container.find('span').html().length == 0) {
+            var tag_name = tag.find('.name').html();
+            var tag_list_items = self.list_container.find('span').html().split(" • ");
+            // This is done in a crappy way to make all browsers happy
+            cj.each(tag_list_items, function(i, item) {
+                if (tag_name == item) {
+                    tag_list_items.splice(i, 1);
+                }
+            });
+            self.list_container.find('span').html(tag_list_items.join(" • "));
+            self.toggleTagList();
+        }
     }
-
     // Decrement the number in the tagging tab
     var tab_counter = cj('li#tab_tag em');
     if (tab_counter.length) {
@@ -598,19 +605,21 @@ TagTreeTag.prototype.addTagCheck = function(tag_id) {
     tag.parents('dl').not('.lv-0').prev('dt').addClass('subChecked');
 
     // Add the name to the tag list at the top (if it exists)
-    if (self.list_container.find('span').html() != null) {
-        var tag_name = tag.find('.name').html();
+    if (self.list_container != null) {
+        if (self.list_container.find('span').html().length == 0) {
 
-        var tag_list_items = []
-        if (self.list_container.find('span').html()) {
-            tag_list_items = self.list_container.find('span').html().split(" • ");
+            var tag_name = tag.find('.name').html();
+
+            var tag_list_items = []
+            if (self.list_container.find('span').html()) {
+                tag_list_items = self.list_container.find('span').html().split(" • ");
+            }
+            tag_list_items.push(tag_name);
+            tag_list_items.sort();
+            self.list_container.find('span').html(tag_list_items.join(" • "));
+            self.toggleTagList();
         }
-        tag_list_items.push(tag_name);
-        tag_list_items.sort();
-        self.list_container.find('span').html(tag_list_items.join(" • "));
-        self.toggleTagList();
     }
-
     // Increment the number in the tagging tab (if it exists)
     var tab_counter = cj('li#tab_tag em');
     if (tab_counter.length) {
