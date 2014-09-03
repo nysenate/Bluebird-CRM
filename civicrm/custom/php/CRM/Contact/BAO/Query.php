@@ -2103,6 +2103,18 @@ class CRM_Contact_BAO_Query {
         ) {
           $setTables = FALSE;
 
+          //NYSS 5494/8104 support multiple values
+          if ( strpos($value, ',') !== FALSE && $locType[0] == 'postal_code' ) {
+            if ( $op == '=' ) {
+              $op = 'IN';
+            }
+            elseif ( $op == '!=' ) {
+              $op = 'NOT IN';
+            }
+            $value = str_replace(array('(',')'), '', $value);
+            $value = '('.trim($value).')';
+          }
+
           //get the location name
           list($tName, $fldName) = self::getLocationTableName($field['where'], $locType);
 
