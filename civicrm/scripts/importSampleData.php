@@ -225,6 +225,8 @@ class CRM_ImportSampleData {
       'civicrm_value_contact_details_8',
       'civicrm_value_district_information_7',
       'civicrm_value_organization_constituent_informa_3',
+      'nyss_changelog_detail',
+      'nyss_changelog_summary',
     );
     if ( $optDry ) {
       bbscript_log('trace', 'The following tables would be truncated: ', $tblTruncate);

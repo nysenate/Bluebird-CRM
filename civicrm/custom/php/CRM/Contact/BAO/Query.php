@@ -3411,9 +3411,14 @@ WHERE  id IN ( $groupIDs )
 
     list($name, $op, $value, $grouping, $wildcard) = $values;
 
-    //NYSS 5494 support multiple values
+    //NYSS 5494/8104 support multiple values
     if ( strpos($value, ',') !== FALSE && $name == 'postal_code' ) {
-      $op = 'IN';
+      if ( $op == '=' ) {
+        $op = 'IN';
+      }
+      elseif ( $op == '!=' ) {
+        $op = 'NOT IN';
+      }
       $value = str_replace(array('(',')'), '', $value);
       $value = '('.trim($value).')';
     }
