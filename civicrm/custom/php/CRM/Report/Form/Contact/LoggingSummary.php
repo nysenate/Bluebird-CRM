@@ -219,7 +219,7 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
         }
 
         //NYSS append instance id so we return properly
-        $q .= '&instanceID='.$this->_id;
+        $q .= "&instanceID={$this->_id}&summary_id={$row['log_civicrm_entity_log_id']}";
 
         //NYSS 7543 append altered contact and altered by name
         $q .= (!empty($row['log_civicrm_entity_altered_contact'])) ?
