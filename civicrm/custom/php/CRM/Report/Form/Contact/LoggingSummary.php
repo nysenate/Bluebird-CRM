@@ -138,9 +138,9 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
           'log_action_label' => array(
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => array(
-                                'Insert'   => ts('Inserted'),
-                                'Update'   => ts('Updated'),
-                                'Delete'   => ts('Deleted'),
+                                'Inserted' => ts('Inserted'),
+                                'Updated'  => ts('Updated'),
+                                'Deleted'  => ts('Deleted'),
                                 'Trashed'  => ts('Trashed'),
                                 'Restored' => ts('Restored'),
                                 'Added'    => ts('Added'),
