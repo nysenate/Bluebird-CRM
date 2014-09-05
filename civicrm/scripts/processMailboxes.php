@@ -341,9 +341,9 @@ function checkImapAccount($mbox, $params)
         // //mark as read
         imap_setflag_full($mbox, $msgMetaData->uid, '\\Seen', ST_UID);
         // move to folder if necessary
-      	if ($params['archivemail'] == true) {
-      	  imap_mail_move($mbox, $msg_num, $params['archivebox']);
-      	}
+        if ($params['archivemail'] == true) {
+          imap_mail_move($mbox, $msg_num, $params['archivebox']);
+        }
       }
     }
     else {
