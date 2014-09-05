@@ -40,7 +40,15 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
     parent::__construct();
 
     /* NYSS 7893 log type translations from table names are not necessary anymore */
-    $logTypes = array('Contact','Group','Activity','Relationship','Tag','Case','Note','Comment');
+    $logTypes = array( 'Contact'=>'Contact',
+                       'Group'=>'Group',
+                       'Activity'=>'Activity',
+                       'Relationship'=>'Relationship',
+                       'Tag'=>'Tag',
+                       'Case'=>'Case',
+                       'Note'=>'Note',
+                       'Comment'=>'Comment'
+                     );
 
     /* NYSS 7893 column definitions changed to match new summary table nyss_changelog_summary */
     $this->_columns = array(
@@ -114,6 +122,7 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
             'title' => ts('When'),
             'operatorType' => CRM_Report_Form::OP_DATE,
             'type' => CRM_Utils_Type::T_DATE,
+            'name' => 'change_ts'
           ),
           'altered_contact' => array(
             'name' => 'display_name',
@@ -132,17 +141,21 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
             'options' => $logTypes,
             'title' => ts('Log Type'),
             'type' => CRM_Utils_Type::T_STRING,
+            'name' => 'entity_type',
           ),
           'log_action_label' => array(
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => array(
-                                'Insert'  => ts('Insert'),
-                                'Update'  => ts('Update'),
-                                'Delete'  => ts('Delete'),
-                                'Added'   => ts('Added'),
-                                'Removed' => ts('Removed')),
+                                'Inserted' => ts('Inserted'),
+                                'Updated'  => ts('Updated'),
+                                'Deleted'  => ts('Deleted'),
+                                'Trashed'  => ts('Trashed'),
+                                'Restored' => ts('Restored'),
+                                'Added'    => ts('Added'),
+                                'Removed'  => ts('Removed')),
             'title' => ts('Action'),
             'type' => CRM_Utils_Type::T_STRING,
+            'name' => 'user_action',
           ),
         ),
         //NYSS 3461
@@ -157,6 +170,7 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
           'log_civicrm_entity_log_date' =>
           array(
             'title' => ts('Log Date'),
+            'name' => 'change_ts',
           ),
         ),
       ),
