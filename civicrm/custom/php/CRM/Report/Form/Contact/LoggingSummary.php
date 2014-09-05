@@ -114,6 +114,7 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
             'title' => ts('When'),
             'operatorType' => CRM_Report_Form::OP_DATE,
             'type' => CRM_Utils_Type::T_DATE,
+            'name' => 'change_ts'
           ),
           'altered_contact' => array(
             'name' => 'display_name',
@@ -132,17 +133,21 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
             'options' => $logTypes,
             'title' => ts('Log Type'),
             'type' => CRM_Utils_Type::T_STRING,
+            'name' => 'entity_type',
           ),
           'log_action_label' => array(
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => array(
-                                'Insert'  => ts('Insert'),
-                                'Update'  => ts('Update'),
-                                'Delete'  => ts('Delete'),
-                                'Added'   => ts('Added'),
-                                'Removed' => ts('Removed')),
+                                'Insert'   => ts('Inserted'),
+                                'Update'   => ts('Updated'),
+                                'Delete'   => ts('Deleted'),
+                                'Trashed'  => ts('Trashed'),
+                                'Restored' => ts('Restored'),
+                                'Added'    => ts('Added'),
+                                'Removed'  => ts('Removed')),
             'title' => ts('Action'),
             'type' => CRM_Utils_Type::T_STRING,
+            'name' => 'user_action',
           ),
         ),
         //NYSS 3461
@@ -157,6 +162,7 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
           'log_civicrm_entity_log_date' =>
           array(
             'title' => ts('Log Date'),
+            'name' => 'change_ts',
           ),
         ),
       ),
