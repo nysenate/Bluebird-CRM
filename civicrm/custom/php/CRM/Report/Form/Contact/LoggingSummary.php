@@ -40,7 +40,15 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
     parent::__construct();
 
     /* NYSS 7893 log type translations from table names are not necessary anymore */
-    $logTypes = array('Contact','Group','Activity','Relationship','Tag','Case','Note','Comment');
+    $logTypes = array( 'Contact'=>'Contact',
+                       'Group'=>'Group',
+                       'Activity'=>'Activity',
+                       'Relationship'=>'Relationship',
+                       'Tag'=>'Tag',
+                       'Case'=>'Case',
+                       'Note'=>'Note',
+                       'Comment'=>'Comment'
+                     );
 
     /* NYSS 7893 column definitions changed to match new summary table nyss_changelog_summary */
     $this->_columns = array(
