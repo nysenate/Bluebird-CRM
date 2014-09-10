@@ -1852,3 +1852,8 @@ div.nyss-mailing-subscriptions-admin div.nyss-email-row {
 .crm-container .crm-tooltip-down .crm-tooltip-wrapper {
   top:15px;
 }
+
+/*8123*/
+.crm-container .crm-search-results {
+  overflow-x: scroll;
+}
