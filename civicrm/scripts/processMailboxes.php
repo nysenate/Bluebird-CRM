@@ -6,6 +6,7 @@
 // Organization: New York State Senate
 // Date: 2011-03-22
 // Revised: 2013-04-27
+// Revised: 2014-09-15 - simplified contact matching logic
 //
 
 // Version number, used for debugging
@@ -679,20 +680,22 @@ function searchForMatches($db, $params)
   $uploadDir = $params['uploadDir'];
 
   // Check the items we have yet to match (unmatched=0, unprocessed=99)
-  $q = "SELECT * FROM nyss_inbox_messages
+  $q = "SELECT id, message_id, imap_id, sender_email,
+               subject, body, forwarder, updated_date
+        FROM nyss_inbox_messages
         WHERE status=".STATUS_UNPROCESSED." OR status=".STATUS_UNMATCHED.";";
   $mres = mysql_query($q, $db);
   echo "[DEBUG]   Unprocessed/Unmatched records: ".mysql_num_rows($mres)."\n";
 
   while ($row = mysql_fetch_assoc($mres)) {
     $msg_row_id = $row['id'];
-    $forwarder = $row['forwarder'];
-    $sender_email = $row['sender_email'];
     $message_id = $row['message_id'];
     $imap_id = $row['imap_id'];
-    $body = $row['body'];
-    $email_date = $row['updated_date'];
+    $sender_email = $row['sender_email'];
     $subject = $row['subject'];
+    $body = $row['body'];
+    $forwarder = $row['forwarder'];
+    $email_date = $row['updated_date'];
     echo "- - - - - - - - - - - - - - - - - - \n";
 
     echo "[DEBUG]   Processing Record ID: $msg_row_id\n";
@@ -700,25 +703,26 @@ function searchForMatches($db, $params)
     // Use the e-mail from the body of the message (or header if direct) to
     // find target contact
     echo "[INFO]    Looking for the original sender ($sender_email) in Civi\n";
-    $q="SELECT  contact.id,  email.email FROM civicrm_contact contact
-    LEFT JOIN civicrm_email email ON (contact.id = email.contact_id)
-    WHERE contact.is_deleted=0
-    AND email.email LIKE '$sender_email'
-    GROUP BY contact.id
-    ORDER BY contact.id ASC, email.is_primary DESC";
-    $contact = array();
+
+    $q = "SELECT c.id, e.email
+          FROM civicrm_contact c
+          LEFT JOIN civicrm_email e ON (c.id = e.contact_id)
+          WHERE c.is_deleted=0 AND e.email LIKE '$sender_email'
+          GROUP BY c.id
+          ORDER BY c.id ASC, e.is_primary DESC";
+
+    $contactID = 0;
+    $matched_count = 0;
     $result = mysql_query($q, $db);
 
-    while($row = mysql_fetch_assoc($result)) {
-      $contact['values'][] = array('id'=>$row['id'],'email'=> $row['email']);
-      $contact['id'] = $row['id'];
+    while ($row = mysql_fetch_assoc($result)) {
+      $contactID = $row['id'];
+      $matched_count++;
     }
 
-    $contact['count'] = count($contact['values']);
-
     // No matches, or more than one match, marks message as UNMATCHED.
-    if ($contact['count'] != 1) {
-      echo "[DEBUG]   Original sender $sender_email matches [".$contact['count']."] records in this instance; leaving for manual addition\n";
+    if ($matched_count != 1) {
+      echo "[DEBUG]   Original sender $sender_email matches [$matched_count] records in this instance; leaving for manual addition\n";
       // mark it to show up on unmatched screen
       $status = STATUS_UNMATCHED;
       $q = "UPDATE nyss_inbox_messages SET status=$status WHERE id=$msg_row_id";
@@ -728,8 +732,7 @@ function searchForMatches($db, $params)
     }
     else {
       // Matched on a single contact.  Success!
-      $contactID = $contact['id'];
-      echo "[INFO]    Original sender [$sender_email] had a direct match.\n";
+      echo "[INFO]    Original sender [$sender_email] had a direct match (cid=$contactID)\n";
 
       // Set the activity creator ID to the contact ID of the forwarder.
       if (isset($authForwarders[$forwarder])) {
@@ -843,9 +846,6 @@ function deleteArchiveBox($mbox, $params)
   echo "[INFO]    Deleting archive mailbox: $crm_archivebox\n";
   return imap_deletemailbox($mbox, $crm_archivebox);
 } // deleteArchiveBox()
-
-
-
 
 
 

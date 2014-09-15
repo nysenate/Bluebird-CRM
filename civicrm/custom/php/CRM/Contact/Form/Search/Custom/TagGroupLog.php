@@ -299,10 +299,30 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
 
     switch($this->_formValues['action_type']) {
       case 1:
-        $where[] = "(log_et.log_action = 'Insert' OR (log_et.log_action = 'Update' AND log_et.status = 'Added')) ";
+        //condition on tag/group
+        switch($this->_formValues['search_type']) {
+          case 1:
+            $where[] = "(log_et.log_action = 'Insert') ";
+            break;
+
+          case 2:
+            $where[] = "(log_et.log_action = 'Insert' OR (log_et.log_action = 'Update' AND log_et.status = 'Added')) ";
+            break;
+        }
+
         break;
       case 2:
-        $where[] = "(log_et.log_action = 'Delete' OR (log_et.log_action = 'Update' AND log_et.status = 'Removed')) ";
+        //condition on tag/group
+        switch($this->_formValues['search_type']) {
+          case 1:
+            $where[] = "(log_et.log_action = 'Delete') ";
+            break;
+
+          case 2:
+            $where[] = "(log_et.log_action = 'Delete' OR (log_et.log_action = 'Update' AND log_et.status = 'Removed')) ";
+            break;
+        }
+
         break;
       case 3:
         //both - add no clause
