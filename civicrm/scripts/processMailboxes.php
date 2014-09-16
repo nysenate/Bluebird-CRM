@@ -588,7 +588,7 @@ function storeMessage($mbox, $db, $msgMeta, $params)
   $messageId = $msgMeta->uid;
   $oldDate = $msgMeta->date;
   $imapId = 0;
-  $fromEmail =substr(mysql_real_escape_string($msgMeta->fromEmail),0,255);
+  $fromEmail = substr(mysql_real_escape_string($msgMeta->fromEmail),0,255);
   $fromName = substr(mysql_real_escape_string($msgMeta->fromName),0,255);
   $subject = substr(mysql_real_escape_string($msgMeta->subject),0,255);
   $date = substr(mysql_real_escape_string($msgMeta->date),0,255);
@@ -785,11 +785,7 @@ function searchForMatches($db, $params)
       $activityResult = civicrm_api('activity', 'create', $activityParams);
 
       if ($activityResult['is_error']) {
-        logmsg(PM_ERROR, "Could not save activity");
-        var_dump($ActivityResult);
-        if ($fromEmail == '') {
-          logmsg(PM_ERROR, "Forwarding e-mail address not found");
-        }
+        logmsg(PM_ERROR, "Could not save activity\n".print_r($activityResult, true));
       }
       else {
         $activityId = $activityResult['id'];
@@ -803,7 +799,9 @@ function searchForMatches($db, $params)
           logmsg(PM_ERROR, "Unable to update info for message id=$msg_row_id");
         }
 
-        $q = "SELECT * FROM nyss_inbox_attachments WHERE email_id=$msg_row_id";
+        $q = "SELECT file_name, file_full, rejection, mime_type
+              FROM nyss_inbox_attachments
+              WHERE email_id=$msg_row_id";
         $ares = mysql_query($q, $db);
 
         while ($row = mysql_fetch_assoc($ares)) {
