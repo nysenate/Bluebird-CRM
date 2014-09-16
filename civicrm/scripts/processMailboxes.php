@@ -577,21 +577,20 @@ function storeMessage($mbox, $db, $msgMeta, $params)
   logmsg(PM_DEBUG, "Body download time: ".($timeEnd-$timeStart));
 
   // formatting headers
-  $fwdEmail = substr($parsedBody['fwd_headers']['fwd_email'],0,255);
-  $fwdName = substr($parsedBody['fwd_headers']['fwd_name'],0,255);
+  $fwdEmail = substr($parsedBody['fwd_headers']['fwd_email'], 0, 255);
+  $fwdName = substr($parsedBody['fwd_headers']['fwd_name'], 0, 255);
   $fwdLookup = $parsedBody['fwd_headers']['fwd_lookup'];
-  $fwdSubject = substr( $parsedBody['fwd_headers']['fwd_subject'],0,255);
+  $fwdSubject = substr($parsedBody['fwd_headers']['fwd_subject'], 0, 255);
   $fwdDate = $parsedBody['fwd_headers']['fwd_date'];
   $fwdFormat = $parsedBody['format'];
   $messageAction = $parsedBody['message_action'];
   $fwdBody = $parsedBody['body'];
   $messageId = $msgMeta->uid;
-  $oldDate = $msgMeta->date;
   $imapId = 0;
-  $fromEmail = substr(mysql_real_escape_string($msgMeta->fromEmail),0,255);
-  $fromName = substr(mysql_real_escape_string($msgMeta->fromName),0,255);
-  $subject = substr(mysql_real_escape_string($msgMeta->subject),0,255);
-  $date = substr(mysql_real_escape_string($msgMeta->date),0,255);
+  $fromEmail = substr(mysql_real_escape_string($msgMeta->fromEmail), 0, 255);
+  $fromName = substr(mysql_real_escape_string($msgMeta->fromName), 0, 255);
+  $subject = substr(mysql_real_escape_string($msgMeta->subject), 0, 255);
+  $date = mysql_real_escape_string($msgMeta->date);
 
   if ($messageAction == 'direct' && !$parsedBody['fwd_headers']['fwd_email']) {
     $fwdEmail = $fromEmail;
@@ -785,7 +784,7 @@ function searchForMatches($db, $params)
       $activityResult = civicrm_api('activity', 'create', $activityParams);
 
       if ($activityResult['is_error']) {
-        logmsg(PM_ERROR, "Could not save activity\n".print_r($activityResult, true));
+        logmsg(PM_ERROR, "Could not save activity; {$activityResult['error_message']}");
       }
       else {
         $activityId = $activityResult['id'];
