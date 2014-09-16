@@ -30,7 +30,7 @@ define('DEFAULT_IMAP_MAILBOX', 'Inbox');
 define('DEFAULT_IMAP_ARCHIVEBOX', 'Archive');
 define('DEFAULT_IMAP_PROCESS_UNREAD_ONLY', false);
 define('DEFAULT_IMAP_ARCHIVE_MAIL', true);
-define('DEFAULT_LOG_LEVEL', PM_INFO);
+define('DEFAULT_LOG_LEVEL', PM_WARN);
 
 define('IMAP_CMD_POLL', 1);
 define('IMAP_CMD_LIST', 2);
@@ -120,6 +120,7 @@ $imap_archivebox = DEFAULT_IMAP_ARCHIVEBOX;
 $imap_process_unread_only = DEFAULT_IMAP_PROCESS_UNREAD_ONLY;
 $imap_archive_mail = DEFAULT_IMAP_ARCHIVE_MAIL;
 $g_log_level = DEFAULT_LOG_LEVEL;
+$g_crm_instance = $site;
 
 if (!empty($optlist['server'])) {
   $imap_server = $optlist['server'];
@@ -238,8 +239,7 @@ foreach (explode(',', $imap_accounts) as $imap_account) {
 
   $rc = processMailboxCommand($cmd, $imap_params);
   if ($rc == false) {
-    logmsg(PM_ERROR, "Failed to process IMAP account $imapUser@$imap_server");
-    print_r(imap_errors());
+    logmsg(PM_ERROR, "Failed to process IMAP account $imapUser@$imap_server\n".print_r(imap_errors(), true));
   }
 }
 
@@ -896,12 +896,14 @@ function sendDenialEmail($site, $email)
 
 function logmsg($log_level, $msg)
 {
+  global $g_crm_instance;
   global $g_log_level;
   global $g_log_levels;
 
   if ($g_log_level >= $log_level) {
+    $date_str = date('YmdHis');
     $level_text = $g_log_levels[$log_level];
-    echo "[$level_text] $msg\n";
+    echo "$g_crm_instance $date_str $level_text $msg\n";
   }
 } /* logmsg() */
 
