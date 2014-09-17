@@ -580,7 +580,9 @@ function storeMessage($mbox, $db, $msgMeta, $params)
   $fwdEmail = substr($parsedBody['fwd_headers']['fwd_email'], 0, 255);
   $fwdName = substr($parsedBody['fwd_headers']['fwd_name'], 0, 255);
   $fwdLookup = $parsedBody['fwd_headers']['fwd_lookup'];
-  $fwdSubject = substr($parsedBody['fwd_headers']['fwd_subject'], 0, 255);
+  // the subject could be utf-8
+  // civicrm will force '<' and '>' to htmlentities...handle it here to be consistent
+  $fwdSubject = mb_strcut(htmlspecialchars($parsedBody['fwd_headers']['fwd_subject'],ENT_QUOTES),0,255);
   $fwdDate = $parsedBody['fwd_headers']['fwd_date'];
   $fwdFormat = $parsedBody['format'];
   $messageAction = $parsedBody['message_action'];
