@@ -186,7 +186,7 @@ function process_cli_args($shopts, $longopts)
 
 
 
-function process_url_args($longopts)
+function process_url_args($longopts,$keepnulls=true)
 {
   $optlist = array();
   foreach ($longopts as $longopt) {
@@ -199,6 +199,7 @@ function process_url_args($longopts)
     if (isset($_REQUEST[$longopt])) {
       $optlist[$longopt] = ($has_arg) ? $_REQUEST[$longopt] : true;
     }
+    if ($optlist[$longopt] === NULL && !$keepnulls) { unset($optlist[$longopt]); }
   }
   return $optlist;
 } // process_url_args()
