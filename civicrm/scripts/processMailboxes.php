@@ -6,10 +6,22 @@
 // Organization: New York State Senate
 // Date: 2011-03-22
 // Revised: 2013-04-27
+// Revised: 2014-09-15 - simplified contact matching logic; added debug control
 //
 
 // Version number, used for debugging
-define('VERSION_NUMBER', 0.06);
+define('VERSION_NUMBER', 0.07);
+
+// Log levels
+define('PM_ERROR', 0);
+define('PM_WARN', 1);
+define('PM_INFO', 2);
+define('PM_DEBUG', 3);
+
+$g_log_levels = array(PM_ERROR => 'ERROR',
+                      PM_WARN => 'WARN',
+                      PM_INFO => 'INFO',
+                      PM_DEBUG => 'DEBUG');
 
 // Mailbox settings common to all CRM instances
 define('DEFAULT_IMAP_SERVER', 'webmail.senate.state.ny.us');
@@ -18,6 +30,7 @@ define('DEFAULT_IMAP_MAILBOX', 'Inbox');
 define('DEFAULT_IMAP_ARCHIVEBOX', 'Archive');
 define('DEFAULT_IMAP_PROCESS_UNREAD_ONLY', false);
 define('DEFAULT_IMAP_ARCHIVE_MAIL', true);
+define('DEFAULT_LOG_LEVEL', PM_WARN);
 
 define('IMAP_CMD_POLL', 1);
 define('IMAP_CMD_LIST', 2);
@@ -47,7 +60,7 @@ define('AUTH_FORWARDERS_GROUP_NAME', 'Authorized_Forwarders');
 
 error_reporting(E_ERROR | E_PARSE | E_WARNING);
 
-if( ! ini_get('date.timezone') ){
+if (!ini_get('date.timezone')) {
   date_default_timezone_set('America/New_York');
 }
 
@@ -58,10 +71,12 @@ $prog = basename(__FILE__);
 
 require_once 'script_utils.php';
 $stdusage = civicrm_script_usage();
-$usage = "[--server|-s imap_server]  [--imap-user|-u username]  [--imap-pass|-p password]  [--imap-opts|-o imap_options]  [--cmd|-c <poll|list|delarchive>]  [--mailbox|-m name]  [--archivebox|-a name]  [--unread-only|-r]  [--archive-mail|-t]";
-$shortopts = "s:u:p:o:c:m:a:rt";
-$longopts = array("server=", "imap-user=", "imap-pass=", "imap-opts=", "cmd=", "mailbox=", "archivebox=", "unread-only", "archive-mail");
+$usage = "[--server|-s imap_server]  [--imap-user|-u username]  [--imap-pass|-p password]  [--imap-opts|-o imap_options]  [--cmd|-c <poll|list|delarchive>]  [--mailbox|-m name]  [--archivebox|-a name]  [--log {ERROR|WARN|INFO|DEBUG}] [--unread-only|-r]  [--archive-mail|-t]";
+$shortopts = "s:u:p:o:c:m:a:l:rt";
+$longopts = array("server=", "imap-user=", "imap-pass=", "imap-opts=", "cmd=", "mailbox=", "archivebox=", "log=", "unread-only", "archive-mail");
+
 $optlist = civicrm_script_init($shortopts, $longopts);
+
 if ($optlist === null) {
   error_log("Usage: $prog  $stdusage  $usage\n");
   exit(1);
@@ -104,6 +119,8 @@ $imap_mailbox = DEFAULT_IMAP_MAILBOX;
 $imap_archivebox = DEFAULT_IMAP_ARCHIVEBOX;
 $imap_process_unread_only = DEFAULT_IMAP_PROCESS_UNREAD_ONLY;
 $imap_archive_mail = DEFAULT_IMAP_ARCHIVE_MAIL;
+$g_log_level = DEFAULT_LOG_LEVEL;
+$g_crm_instance = $site;
 
 if (!empty($optlist['server'])) {
   $imap_server = $optlist['server'];
@@ -125,6 +142,15 @@ if ($optlist['unread-only'] == true) {
 }
 if ($optlist['archive-mail'] == true) {
   $imap_archive_mail = true;
+}
+if (!empty($optlist['log'])) {
+  $level = strtoupper($optlist['log']);
+  $key = array_search($level, $g_log_levels);
+  if ($key === false) {
+    error_log("$prog: $level: Invalid log level");
+    exit(1);
+  }
+  $g_log_level = $key;
 }
 if ($cmd == 'list') {
   $cmd = IMAP_CMD_LIST;
@@ -183,7 +209,7 @@ if ($imap_validsenders) {
   $validSenders = preg_split('/[\s,]+/', $imap_validsenders, null, PREG_SPLIT_NO_EMPTY);
   foreach ($validSenders as $validSender) {
     if ($validSender && isset($authForwarders[$validSender])) {
-      echo "[INFO]    Valid sender [$validSender] from config is already in the auth forwarders list\n";
+      logmsg(PM_INFO, "Valid sender [$validSender] from config is already in the auth forwarders list");
     }
     else {
       $authForwarders[$validSender] = 1;
@@ -213,12 +239,11 @@ foreach (explode(',', $imap_accounts) as $imap_account) {
 
   $rc = processMailboxCommand($cmd, $imap_params);
   if ($rc == false) {
-    echo "[ERROR]   Failed to process IMAP account $imapUser@$imap_server\n";
-    print_r(imap_errors());
+    logmsg(PM_ERROR, "Failed to process IMAP account $imapUser@$imap_server\n".print_r(imap_errors(), true));
   }
 }
 
-echo "[INFO]    Finished processing all mailboxes for CRM instance [$site]\n";
+logmsg(PM_INFO, "Finished processing all mailboxes for CRM instance [$site]");
 exit(0);
 
 
@@ -252,7 +277,7 @@ function getAuthorizedForwarders()
     $email = strtolower($dao->email);
     $cid = $dao->contact_id;
     if (isset($res[$email]) && $res[$email] != $cid) {
-      echo "[WARN]    '".AUTH_FORWARDERS_GROUP_NAME."' group already has e-mail address [$email] (cid={$res[$email]}); ignoring cid=$cid\n";
+      logmsg(PM_WARN, "'".AUTH_FORWARDERS_GROUP_NAME."' group already has e-mail address [$email] (cid={$res[$email]}); ignoring cid=$cid");
     }
     else {
       $res[$email] = $cid;
@@ -267,11 +292,11 @@ function getAuthorizedForwarders()
 function processMailboxCommand($cmd, $params)
 {
   $serverspec = '{'.$params['server'].$params['opts'].'}'.$params['mailbox'];
-  echo "[INFO]    Opening IMAP connection to {$params['user']}@$serverspec\n";
+  logmsg(PM_INFO, "Opening IMAP connection to {$params['user']}@$serverspec");
   $imap_conn = imap_open($serverspec, $params['user'], $params['pass']);
 
   if ($imap_conn === false) {
-    echo "[ERROR]   Unable to open IMAP connection to $serverspec\n";
+    logmsg(PM_ERROR, "Unable to open IMAP connection to $serverspec");
     return false;
   }
 
@@ -285,7 +310,7 @@ function processMailboxCommand($cmd, $params)
     $rc = deleteArchiveBox($imap_conn, $params);
   }
   else {
-    echo "[ERROR]  Invalid command [$cmd], params=".print_r($params, true)."\n";
+    logmsg(PM_ERROR, "Invalid command [$cmd], params=".print_r($params, true));
     $rc = false;
   }
 
@@ -301,8 +326,8 @@ function processMailboxCommand($cmd, $params)
 
 function checkImapAccount($mbox, $params)
 {
-  echo "[INFO]    Polling CRM [".$params['site']."] using IMAP account ".
-       $params['user'].'@'.$params['server'].$params['opts']."\n";
+  logmsg(PM_INFO, "Polling CRM [".$params['site']."] using IMAP account ".
+       $params['user'].'@'.$params['server'].$params['opts']);
 
   $crm_archivebox = '{'.$params['server'].'}'.$params['archivebox'];
 
@@ -311,10 +336,10 @@ function checkImapAccount($mbox, $params)
   if ($params['archivemail'] == true) {
     $rc = imap_createmailbox($mbox, imap_utf7_encode($crm_archivebox));
     if ($rc) {
-      echo "[DEBUG]   Created new mailbox: $crm_archivebox\n";
+      logmsg(PM_DEBUG, "Created new mailbox: $crm_archivebox");
     }
     else {
-      echo "[DEBUG]   Archive mailbox $crm_archivebox already exists.\n";
+      logmsg(PM_DEBUG, "Archive mailbox $crm_archivebox already exists");
     }
   }
 
@@ -325,17 +350,16 @@ function checkImapAccount($mbox, $params)
 
   $msg_count = imap_num_msg($mbox);
   $invalid_fwders = array();
-  echo "[INFO]    Number of messages: $msg_count\n";
+  logmsg(PM_INFO, "Number of messages: $msg_count");
 
   for ($msg_num = 1; $msg_num <= $msg_count; $msg_num++) {
-    echo "- - - - - - - - - - - - - - - - - - \n";
-    echo "[INFO]    Retrieving message $msg_num / $msg_count\n";
+    logmsg(PM_INFO, "Retrieving message $msg_num / $msg_count");
     $msgMetaData = retrieveMetaData($mbox, $msg_num);
     $fwder = strtolower($msgMetaData->fromEmail);
 
     // check whether or not the forwarder is valid
     if (array_key_exists($fwder, $params['authForwarders'])) {
-      echo "[DEBUG]   Forwarder [$fwder] is allowed to send to this mailbox\n";
+      logmsg(PM_DEBUG, "Forwarder [$fwder] is allowed to send to this mailbox");
       // retrieved msg, now store to Civi and if successful move to archive
       if (storeMessage($mbox, $dbconn, $msgMetaData, $params) == true) {
         // //mark as read
@@ -347,28 +371,28 @@ function checkImapAccount($mbox, $params)
       }
     }
     else {
-      echo "[WARN]    Forwarder [$fwder] is not allowed to forward/send messages to this CRM; deleting message\n";
+      logmsg(PM_WARN, "Forwarder [$fwder] is not allowed to forward/send messages to this CRM; deleting message");
       $invalid_fwders[$fwder] = true;
       if (imap_delete($mbox, $msg_num) === true) {
-        echo "[DEBUG]   Message $msg_num has been deleted\n";
+        logmsg(PM_DEBUG, "Message $msg_num has been deleted");
       }
       else {
-        echo "[WARN]    Unable to delete message $msg_num from mailbox\n";
+        logmsg(PM_WARN, "Unable to delete message $msg_num from mailbox");
       }
     }
   }
 
   $invalid_fwder_count = count($invalid_fwders);
   if ($invalid_fwder_count > 0) {
-    echo "[INFO]    Sending denial e-mails to $invalid_fwder_count e-mail address(es)\n";
+    logmsg(PM_INFO, "Sending denial e-mails to $invalid_fwder_count e-mail address(es)");
     foreach ($invalid_fwders as $invalid_fwder => $dummy) {
       sendDenialEmail($params['site'], $invalid_fwder);
     }
   }
 
-  echo "[INFO]    Finished checking IMAP account ".$params['user'].'@'.$params['server'].$params['opts']."\n";
+  logmsg(PM_INFO, "Finished checking IMAP account ".$params['user'].'@'.$params['server'].$params['opts']);
 
-  echo "[INFO]    Searching for matches on unmatched records\n";
+  logmsg(PM_INFO, "Searching for matches on unmatched records");
   searchForMatches($dbconn, $params);
 
   return true;
@@ -488,7 +512,7 @@ function retrieveMetaData($mbox, $msgid)
   $metaData->msgid = $msgid;
   $metaData->date = date("Y-m-d H:i:s", strtotime($header->date));
   $timeEnd = microtime(true);
-  echo "[DEBUG]   Fetch header time: ".($timeEnd-$timeStart)."\n";
+  logmsg(PM_DEBUG, "Fetch header time: ".($timeEnd-$timeStart));
   return $metaData;
 } // retrieveMetaData()
 
@@ -528,11 +552,11 @@ function storeMessage($mbox, $db, $msgMeta, $params)
   $parsedBody = MessageBodyParser::unifiedMessageInfo($rawBody);
 
   if ($parsedBody['fwd_headers']['fwd_lookup'] == 'LDAP FAILURE') {
-    echo "[WARN]    Parse problem: LDAP lookup failure\n";
+    logmsg(PM_WARN, "Parse problem: LDAP lookup failure");
   }
 
   if ($parsedBody['message_action'] == "direct") {
-    echo "[DEBUG]   Message was sent directly to inbox\n";
+    logmsg(PM_DEBUG, "Message was sent directly to inbox");
 
     // double check to make sure if was directly sent
     // this message format isn't ideal, it includes message info that is gross looking.
@@ -544,30 +568,31 @@ function storeMessage($mbox, $db, $msgMeta, $params)
     if ($parsedBody['message_action'] == "forwarded" || $parsedBody_alt['message_action'] == "forwarded") {
       $headerCheck = array_diff($parsedBody['fwd_headers'], $parsedBody_alt['fwd_headers']);
       if ($headerCheck[0] != NULL) {
-        echo "[WARN]    Parse problem: Header difference found\n";
+        logmsg(PM_WARN, "Parse problem: Header difference found");
       }
     }
   }
 
   $timeEnd = microtime(true);
-  echo "[DEBUG]   Body download time: ".($timeEnd-$timeStart)."\n";
+  logmsg(PM_DEBUG, "Body download time: ".($timeEnd-$timeStart));
 
   // formatting headers
-  $fwdEmail = substr($parsedBody['fwd_headers']['fwd_email'],0,255);
-  $fwdName = substr($parsedBody['fwd_headers']['fwd_name'],0,255);
+  $fwdEmail = substr($parsedBody['fwd_headers']['fwd_email'], 0, 255);
+  $fwdName = substr($parsedBody['fwd_headers']['fwd_name'], 0, 255);
   $fwdLookup = $parsedBody['fwd_headers']['fwd_lookup'];
-  $fwdSubject = substr( $parsedBody['fwd_headers']['fwd_subject'],0,255);
+  // the subject could be utf-8
+  // civicrm will force '<' and '>' to htmlentities...handle it here to be consistent
+  $fwdSubject = mb_strcut(htmlspecialchars($parsedBody['fwd_headers']['fwd_subject'],ENT_QUOTES),0,255);
   $fwdDate = $parsedBody['fwd_headers']['fwd_date'];
   $fwdFormat = $parsedBody['format'];
   $messageAction = $parsedBody['message_action'];
   $fwdBody = $parsedBody['body'];
   $messageId = $msgMeta->uid;
-  $oldDate = $msgMeta->date;
   $imapId = 0;
-  $fromEmail =substr(mysql_real_escape_string($msgMeta->fromEmail),0,255);
-  $fromName = substr(mysql_real_escape_string($msgMeta->fromName),0,255);
-  $subject = substr(mysql_real_escape_string($msgMeta->subject),0,255);
-  $date = substr(mysql_real_escape_string($msgMeta->date),0,255);
+  $fromEmail = substr(mysql_real_escape_string($msgMeta->fromEmail), 0, 255);
+  $fromName = substr(mysql_real_escape_string($msgMeta->fromName), 0, 255);
+  $subject = substr(mysql_real_escape_string($msgMeta->subject), 0, 255);
+  $date = mysql_real_escape_string($msgMeta->date);
 
   if ($messageAction == 'direct' && !$parsedBody['fwd_headers']['fwd_email']) {
     $fwdEmail = $fromEmail;
@@ -591,7 +616,7 @@ function storeMessage($mbox, $db, $msgMeta, $params)
                 CURRENT_TIMESTAMP, '$fwdDate');";
 
   if (mysql_query($q, $db) == false) {
-    echo "[ERROR]   Unable to insert msgid=$messageId, imapid=$imapId\n";
+    logmsg(PM_ERROR, "Unable to insert msgid=$messageId, imapid=$imapId");
   }
 
   $q = "SELECT id FROM nyss_inbox_messages
@@ -604,15 +629,14 @@ function storeMessage($mbox, $db, $msgMeta, $params)
   }
   mysql_free_result($res);
 
-  echo "[DEBUG]   Inserted $rowCount message\n";
+  logmsg(PM_DEBUG, "Inserted $rowCount message");
   if ($rowCount != 1) {
-    echo "[WARN]    Problem inserting message; debug info:\n";
-    print_r($fwdBody);
-    echo "$q\n";
+    logmsg(PM_WARN, "Problem inserting message; debug info:\n".print_r($fwdBody, true));
+    logmsg(PM_DEBUG, "Query: $q");
     $bSuccess = false;
   }
 
-  echo "[INFO]    Fetching attachments\n";
+  logmsg(PM_INFO, "Fetching attachments");
   $timeStart = microtime(true);
 
   // if there is more then one part to the message
@@ -646,13 +670,13 @@ function storeMessage($mbox, $db, $msgMeta, $params)
             (email_id, file_name, file_full, size, mime_type, ext, rejection)
             VALUES ($rowId, '$filename', '$fileFull', $size, '$mime', '$ext', '$rejection');";
       if (mysql_query($q, $db) == false) {
-        echo "[ERROR]   Unable to insert attachment [$fileFull] for msgid=$rowId\n";
+        logmsg(PM_ERROR, "Unable to insert attachment [$fileFull] for msgid=$rowId");
       }
     }
   }
 
   $timeEnd = microtime(true);
-  echo "[DEBUG]   Attachments download time: ".($timeEnd-$timeStart)."\n";
+  logmsg(PM_DEBUG, "Attachments download time: ".($timeEnd-$timeStart));
 
   $q = "SELECT id FROM nyss_inbox_attachments WHERE email_id=$rowId";
   $res = mysql_query($q, $db);
@@ -660,7 +684,7 @@ function storeMessage($mbox, $db, $msgMeta, $params)
   mysql_free_result($res);
 
   if ($dbAttachmentCount > 0) {
-    echo "[DEBUG]   Inserted $dbAttachmentCount attachments\n";
+    logmsg(PM_DEBUG, "Inserted $dbAttachmentCount attachments");
   }
 
   return $bSuccess;
@@ -679,66 +703,67 @@ function searchForMatches($db, $params)
   $uploadDir = $params['uploadDir'];
 
   // Check the items we have yet to match (unmatched=0, unprocessed=99)
-  $q = "SELECT * FROM nyss_inbox_messages
+  $q = "SELECT id, message_id, imap_id, sender_email,
+               subject, body, forwarder, updated_date
+        FROM nyss_inbox_messages
         WHERE status=".STATUS_UNPROCESSED." OR status=".STATUS_UNMATCHED.";";
   $mres = mysql_query($q, $db);
-  echo "[DEBUG]   Unprocessed/Unmatched records: ".mysql_num_rows($mres)."\n";
+  logmsg(PM_DEBUG, "Unprocessed/Unmatched records: ".mysql_num_rows($mres));
 
   while ($row = mysql_fetch_assoc($mres)) {
     $msg_row_id = $row['id'];
-    $forwarder = $row['forwarder'];
-    $sender_email = $row['sender_email'];
     $message_id = $row['message_id'];
     $imap_id = $row['imap_id'];
-    $body = $row['body'];
-    $email_date = $row['updated_date'];
+    $sender_email = $row['sender_email'];
     $subject = $row['subject'];
-    echo "- - - - - - - - - - - - - - - - - - \n";
+    $body = $row['body'];
+    $forwarder = $row['forwarder'];
+    $email_date = $row['updated_date'];
 
-    echo "[DEBUG]   Processing Record ID: $msg_row_id\n";
+    logmsg(PM_DEBUG, "Processing Record ID: $msg_row_id");
 
     // Use the e-mail from the body of the message (or header if direct) to
     // find target contact
-    echo "[INFO]    Looking for the original sender ($sender_email) in Civi\n";
-    $q="SELECT  contact.id,  email.email FROM civicrm_contact contact
-    LEFT JOIN civicrm_email email ON (contact.id = email.contact_id)
-    WHERE contact.is_deleted=0
-    AND email.email LIKE '$sender_email'
-    GROUP BY contact.id
-    ORDER BY contact.id ASC, email.is_primary DESC";
-    $contact = array();
+    logmsg(PM_INFO, "Looking for the original sender ($sender_email) in Civi");
+
+    $q = "SELECT c.id, e.email
+          FROM civicrm_contact c
+          LEFT JOIN civicrm_email e ON (c.id = e.contact_id)
+          WHERE c.is_deleted=0 AND e.email LIKE '$sender_email'
+          GROUP BY c.id
+          ORDER BY c.id ASC, e.is_primary DESC";
+
+    $contactID = 0;
+    $matched_count = 0;
     $result = mysql_query($q, $db);
 
-    while($row = mysql_fetch_assoc($result)) {
-      $contact['values'][] = array('id'=>$row['id'],'email'=> $row['email']);
-      $contact['id'] = $row['id'];
+    while ($row = mysql_fetch_assoc($result)) {
+      $contactID = $row['id'];
+      $matched_count++;
     }
 
-    $contact['count'] = count($contact['values']);
-
     // No matches, or more than one match, marks message as UNMATCHED.
-    if ($contact['count'] != 1) {
-      echo "[DEBUG]   Original sender $sender_email matches [".$contact['count']."] records in this instance; leaving for manual addition\n";
+    if ($matched_count != 1) {
+      logmsg(PM_DEBUG, "Original sender $sender_email matches [$matched_count] records in this instance; leaving for manual addition");
       // mark it to show up on unmatched screen
       $status = STATUS_UNMATCHED;
       $q = "UPDATE nyss_inbox_messages SET status=$status WHERE id=$msg_row_id";
       if (mysql_query($q, $db) == false) {
-        echo "[ERROR]   Unable to update status of message id=$msg_row_id\n";
+        logmsg(PM_ERROR, "Unable to update status of message id=$msg_row_id");
       }
     }
     else {
       // Matched on a single contact.  Success!
-      $contactID = $contact['id'];
-      echo "[INFO]    Original sender [$sender_email] had a direct match.\n";
+      logmsg(PM_INFO, "Original sender [$sender_email] had a direct match (cid=$contactID)");
 
       // Set the activity creator ID to the contact ID of the forwarder.
       if (isset($authForwarders[$forwarder])) {
         $forwarderId = $authForwarders[$forwarder];
-        echo "[INFO]    Forwarder [$forwarder] mapped to cid=$forwarderId\n";
+        logmsg(PM_INFO, "Forwarder [$forwarder] mapped to cid=$forwarderId");
       }
       else {
         $forwarderId = 1;
-        echo "[WARN]    Unable to locate [$forwarder] in the auth forwarder mapping table; using Bluebird Admin\n";
+        logmsg(PM_WARN, "Unable to locate [$forwarder] in the auth forwarder mapping table; using Bluebird Admin");
       }
 
       // create the activity
@@ -761,31 +786,29 @@ function searchForMatches($db, $params)
       $activityResult = civicrm_api('activity', 'create', $activityParams);
 
       if ($activityResult['is_error']) {
-        echo "[ERROR]   Could not save activity\n";
-        var_dump($ActivityResult);
-        if ($fromEmail == '') {
-          echo "[ERROR]    Forwarding e-mail address not found\n";
-        }
+        logmsg(PM_ERROR, "Could not save activity; {$activityResult['error_message']}");
       }
       else {
         $activityId = $activityResult['id'];
-        echo "[INFO]    CREATED e-mail activity id=$activityId for contact id=$contactID\n";
+        logmsg(PM_INFO, "CREATED e-mail activity id=$activityId for contact id=$contactID");
         $status = STATUS_MATCHED;
         $q = "UPDATE nyss_inbox_messages
               SET status=$status, matcher=1, matched_to=$contactID,
                   activity_id=$activityId
               WHERE id=$msg_row_id";
         if (mysql_query($q, $db) == false) {
-          echo "[ERROR]   Unable to update info for message id=$msg_row_id\n";
+          logmsg(PM_ERROR, "Unable to update info for message id=$msg_row_id");
         }
 
-        $q = "SELECT * FROM nyss_inbox_attachments WHERE email_id=$msg_row_id";
+        $q = "SELECT file_name, file_full, rejection, mime_type
+              FROM nyss_inbox_attachments
+              WHERE email_id=$msg_row_id";
         $ares = mysql_query($q, $db);
 
         while ($row = mysql_fetch_assoc($ares)) {
           if ((!isset($row['rejection']) || $row['rejection'] == '')
               && file_exists($row['file_full'])) {
-            echo "[INFO]    Adding attachment ".$row['file_full']." to activity id=$activityId\n";
+            logmsg(PM_INFO, "Adding attachment ".$row['file_full']." to activity id=$activityId");
             $date = date("Y-m-d H:i:s");
             $newName = CRM_Utils_File::makeFileName($row['file_name']);
             $file = "$uploadDir/$newName";
@@ -796,7 +819,7 @@ function searchForMatches($db, $params)
                   (mime_type, uri, upload_date)
                   VALUES ('{$row['mime_type']}', '$newName', '$date');";
             if (mysql_query($q, $db) == false) {
-              echo "[ERROR]   Unable to insert attachment file info for [$newName]\n";
+              logmsg(PM_ERROR, "Unable to insert attachment file info for [$newName]");
             }
 
             $q = "SELECT id FROM civicrm_file WHERE uri='{$newName}';";
@@ -810,7 +833,7 @@ function searchForMatches($db, $params)
                   (entity_table, entity_id, file_id)
                   VALUES ('civicrm_activity', $activityId, $fileId);";
             if (mysql_query($q, $db) == false) {
-              echo "[ERROR]   Unable to insert attachment mapping from activity id=$activityId to file id=$fileId\n";
+              logmsg(PM_ERROR, "Unable to insert attachment mapping from activity id=$activityId to file id=$fileId");
             }
           }
         } // while rows in nyss_inbox_attachments
@@ -820,7 +843,7 @@ function searchForMatches($db, $params)
   } // while rows in nyss_inbox_messages
 
   mysql_free_result($mres);
-  echo "[DEBUG]   Finished processing unprocessed/unmatched messages\n";
+  logmsg(PM_DEBUG, "Finished processing unprocessed/unmatched messages");
   return;
 } // searchForMatches()
 
@@ -840,12 +863,9 @@ function listMailboxes($mbox, $params)
 function deleteArchiveBox($mbox, $params)
 {
   $crm_archivebox = '{'.$params['server'].'}'.$params['archivebox'];
-  echo "[INFO]    Deleting archive mailbox: $crm_archivebox\n";
+  logmsg(PM_INFO, "Deleting archive mailbox: $crm_archivebox");
   return imap_deletemailbox($mbox, $crm_archivebox);
 } // deleteArchiveBox()
-
-
-
 
 
 
@@ -863,12 +883,27 @@ function sendDenialEmail($site, $email)
 
   $rc = CRM_Utils_Mail::send($mailParams);
   if ($rc == true) {
-    echo "[INFO] Denial e-mail has been sent to $email\n";
+    logmsg(PM_INFO, "Denial e-mail has been sent to $email");
   }
   else {
-    echo "[WARN] Unable to send a denial e-mail to $email\n";
+    logmsg(PM_WARN, "Unable to send a denial e-mail to $email");
   }
   return $rc;
 } // sendDenialEmail()
+
+
+
+function logmsg($log_level, $msg)
+{
+  global $g_crm_instance;
+  global $g_log_level;
+  global $g_log_levels;
+
+  if ($g_log_level >= $log_level) {
+    $date_str = date('YmdHis');
+    $level_text = $g_log_levels[$log_level];
+    echo "$g_crm_instance $date_str $level_text $msg\n";
+  }
+} /* logmsg() */
 
 ?>

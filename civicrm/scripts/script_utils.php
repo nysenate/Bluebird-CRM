@@ -129,6 +129,17 @@ function add_packages_to_include_path($session = true)
 
 
 
+function add_scripts_to_include_path($session = true)
+{
+  $old_incpath = set_include_path(dirname(__FILE__).PATH_SEPARATOR.get_include_path());
+  if ($session) {
+    session_start();
+  }
+  return $old_incpath;
+} // add_scripts_to_include_path()
+
+
+
 function process_cli_args($shopts, $longopts)
 {
   $shoptlets = str_replace(":", "", $shopts);
@@ -175,7 +186,7 @@ function process_cli_args($shopts, $longopts)
 
 
 
-function process_url_args($longopts)
+function process_url_args($longopts,$keepnulls=true)
 {
   $optlist = array();
   foreach ($longopts as $longopt) {
@@ -188,6 +199,7 @@ function process_url_args($longopts)
     if (isset($_REQUEST[$longopt])) {
       $optlist[$longopt] = ($has_arg) ? $_REQUEST[$longopt] : true;
     }
+    if ($optlist[$longopt] === NULL && !$keepnulls) { unset($optlist[$longopt]); }
   }
   return $optlist;
 } // process_url_args()
