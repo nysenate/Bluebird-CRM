@@ -1,6 +1,22 @@
 Apache Solr integration 7.x-1.x, xxxx-xx-xx
 -----------------------------
 
+Apache Solr integration 7.x-1.7, 2014-08-29
+-----------------------------
+#2151325 by JulienD: Remove useless files[] directive from .info files.
+#2187689 by siliconmeadow: Fixed the misspelling of 'successfully'.
+#1984502 by blazindrop, bforchhammer: Fixed Don't include time dependent configuration and state in ctools exports.
+#2237145 by Dave Reid: Fixed The default Solr search should have it's tab appear first on the search page.
+#2288867 by larowlan: Fixed Search results built twice when using search pages with a search box.
+#1439564 by recidive, Nick_vh, bforchhammer, neochief, jhedstrom, dawehner: Added Index bundles Export/Import.
+#2287599 by BarisW: Added Provide Context integration.
+#1314664 by stefan.r, pwolanin, Nick_vh, mindbat, brunogoossens | brianV: Fixed Search pages custom pages title setting does nothing.
+#2287599 by BarisW: Added Provide Context integration.
+#2023349 by juampy, theapi: Fixed addParam('mm', '100%') does not work as expected because it should be considered a single_value_params.
+#2237113 by cilefen: Fix for wrong per-field array key in apachesolr_get_field_mappings()
+#2157849 by pwolanin: copy the final 4.2 Solr Config files from the common schema project
+#2157849 | Copy over the new Solr Config files from the common schema project
+
 Apache Solr integration 7.x-1.6, 2013-11-14
 -----------------------------
 #2008832 by Nick_vh, j0rd: Re-apply added Allow turning off 'successful" actions in watchdog.
