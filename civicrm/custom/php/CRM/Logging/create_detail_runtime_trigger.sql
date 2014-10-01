@@ -54,6 +54,9 @@ BEGIN
       AND entity_type = @entity_type
       AND contact_id = @nyss_contact_id
     ORDER BY id DESC LIMIT 1;
+    IF @entity_type='Activity' AND @user_action='Added' AND @summary_id>0 THEN
+      UPDATE nyss_changelog_summary SET user_action='Updated' WHERE id=@summary_id AND user_action='Removed';
+    END IF;
   END IF;
 
   IF @summary_id IS NULL THEN
