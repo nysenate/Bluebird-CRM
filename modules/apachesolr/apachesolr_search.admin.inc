@@ -283,7 +283,7 @@ function apachesolr_search_page_settings_form($form, &$form_state, $search_page 
     '#type' => 'textfield',
     '#required' => TRUE,
     '#maxlength' => 255,
-    '#description' => 'You can use %value to place the search term in the title',
+    '#description' => t('You can use %value to put the value of % in the path into the title and %terms to put the search terms into the title. Please note if you have several active search modules, this refers to the title of the tab instead of that of the page.'),
     '#default_value' => !empty($search_page['page_title']) ? $search_page['page_title'] : '',
   );
 

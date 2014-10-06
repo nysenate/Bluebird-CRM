@@ -28,7 +28,11 @@ CKEDITOR.editorConfig = function( config ) {
   config.pasteFromWordRemoveFontStyles = false;
   config.pasteFromWordNumberedHeadingToList = true;
 
+  //NYSS additional plugins
   config.extraPlugins = 'font,aspell,justify';
+
+  //NYSS support anchors
+  config.extraAllowedContent = 'a[name]';
 
   // The toolbar groups arrangement, optimized for two toolbar rows.
   config.toolbarGroups = [

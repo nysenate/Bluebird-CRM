@@ -10,7 +10,7 @@
  http://wiki.apache.org/solr/SchemaXml
 -->
 
-<schema name="drupal-4.1-solr-4.x" version="1.3">
+<schema name="drupal-4.3-solr-4.x" version="1.3">
     <!-- attribute "name" is the name of this schema and is only used for display purposes.
          Applications should change this to reflect the nature of the search collection.
          version="1.2" is Solr's version number for the schema syntax and semantics.  It should
@@ -181,7 +181,7 @@
                 catenateWords="1"
                 catenateNumbers="1"
                 catenateAll="0"
-                splitOnCaseChange="1"
+                splitOnCaseChange="0"
                 preserveOriginal="1"/>
         <filter class="solr.LengthFilterFactory" min="2" max="100" />
         <filter class="solr.LowerCaseFilterFactory"/>
@@ -204,7 +204,7 @@
                 catenateWords="0"
                 catenateNumbers="0"
                 catenateAll="0"
-                splitOnCaseChange="1"
+                splitOnCaseChange="0"
                 preserveOriginal="1"/>
         <filter class="solr.LengthFilterFactory" min="2" max="100" />
         <filter class="solr.LowerCaseFilterFactory"/>
@@ -362,6 +362,11 @@
         The format used is $document->id = $site_hash . '/' . $entity_type . '/' . $entity->id;
     -->
     <field name="id" type="string" indexed="true" stored="true" required="true" />
+
+    <!-- Add Solr Cloud version field as mentioned in
+         http://wiki.apache.org/solr/SolrCloud#Required_Config
+    -->
+    <field name="_version_" type="long" indexed="true" stored="true" multiValued="false"/>
 
     <!-- Search Api specific fields -->
     <!-- item_id contains the entity ID, e.g. a node's nid. -->
