@@ -777,10 +777,9 @@ function apachesolr_config_files_overview(array $environment = array()) {
     foreach ($items as $item_id => $item) {
       // Do not list directories. Always a bool
       if (isset($item->bool)) {
-        break;
+        continue;
       }
       // Get data from the files.
-      $name =  $item->attributes();
       $name = ((string)$item->attributes()) ? (string)$item->attributes() : t('No name found');
       $files[$item_id]['name'] = l($name, 'admin/reports/apachesolr/' . $env_id . '/conf/' . $name);
 
@@ -985,7 +984,7 @@ function apachesolr_index_action_form_cron_submit(array $form, array &$form_stat
     $form_state['redirect'] = 'admin/config/search/apachesolr';
   }
   apachesolr_cron($env_id);
-  drupal_set_message(t('Apachesolr cron succesfully executed'));
+  drupal_set_message(t('Apachesolr cron successfully executed'));
 }
 
 /**

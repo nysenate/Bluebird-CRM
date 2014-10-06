@@ -1357,6 +1357,14 @@ function apachesolr_environment_save($environment) {
   module_load_include('inc', 'apachesolr', 'apachesolr.index');
   $default = array('env_id' => '', 'name' => '', 'url' => '', 'service_class' => '');
 
+  // If the environment has been saved to the database before, we need to make
+  // sure we don't loose anything when saving it; therefore, load the existing
+  // environment and merge its' data with the new one.
+  $old_environment = apachesolr_environment_load($environment['env_id']);
+  if (!empty($old_environment['in_code_only']) && $environment != $old_environment) {
+    $environment = drupal_array_merge_deep($old_environment, $environment);
+  }
+
   $conf = isset($environment['conf']) ? $environment['conf'] : array();
   $index_bundles = isset($environment['index_bundles']) ? $environment['index_bundles'] : array();
   // Remove any unexpected fields.
@@ -1412,6 +1420,7 @@ function apachesolr_environment_variable_get($env_id, $name, $default = NULL) {
  * @see variable_set()
  */
 function apachesolr_environment_variable_set($env_id, $name, $value) {
+  apachesolr_environment_save_to_database($env_id);
   db_merge('apachesolr_environment_variable')
     ->key(array('env_id' => $env_id, 'name' => $name))
     ->fields(array('value' => serialize($value)))
@@ -1425,11 +1434,31 @@ function apachesolr_environment_variable_set($env_id, $name, $value) {
  * @see variable_del()
  */
 function apachesolr_environment_variable_del($env_id, $name) {
+  apachesolr_environment_save_to_database($env_id);
   db_delete('apachesolr_environment_variable')
     ->condition('env_id', $env_id)
     ->condition('name', $name)
     ->execute();
   apachesolr_environments_clear_cache();
+}
+
+/**
+ * Makes sure that the given environment has been saved to the database.
+ *
+ * This is a required step before any environment-related data is modified or
+ * deleted. It ensures that ctools exportables can properly determine whether
+ * something has been overridden.
+ *
+ * @param string $env_id
+ *   The environment ID.
+ *
+ * @see https://www.drupal.org/node/1439564#comment-8727467
+ */
+function apachesolr_environment_save_to_database($env_id) {
+  $environment = apachesolr_environment_load($env_id);
+  if (!empty($environment['in_code_only'])) {
+    apachesolr_environment_save($environment);
+  }
 }
 
 /**
@@ -2190,7 +2219,7 @@ function apachesolr_get_field_mappings($entity_type) {
         $mappings[$key] += $defaults;
       }
       else {
-        foreach (array_keys($field_mappings[$key]) as $field_key) {
+        foreach (array_keys($field_mappings[$entity_type][$key]) as $field_key) {
           $mappings[$key][$field_key] += $defaults;
         }
       }
@@ -2871,7 +2900,7 @@ function apachesolr_environment_load_subrecords(&$environments) {
         unset($environment['in_code_only']);
         $environment['type'] = 'Overridden';
       }
-      if (!empty($environment['conf']) && !empty($conf) && $environment['conf'] !== $conf) {
+      if (!empty($environment['conf']) && !empty($conf) && !apachesolr_environment_conf_equals($environment['conf'], $conf)) {
         unset($environment['in_code_only']);
         $environment['type'] = 'Overridden';
       }
@@ -2884,7 +2913,7 @@ function apachesolr_environment_load_subrecords(&$environments) {
         unset($environment->in_code_only);
         $environment->type = 'Overridden';
       }
-      if ($environment->conf !== $conf && !empty($conf)) {
+      if (!apachesolr_environment_conf_equals($environment->conf, $conf) && !empty($conf)) {
         unset($environment->in_code_only);
         $environment->type = 'Overridden';
       }
@@ -2892,6 +2921,55 @@ function apachesolr_environment_load_subrecords(&$environments) {
       $environment->conf = (empty($environment->conf) || !empty($conf)) ? $conf : $environment->conf;
     }
   }
+}
+
+/**
+ * Determines whether two configuration arrays contain the same keys and
+ * values.
+ *
+ * This is used to compare in-code and in-database configuration of ctools
+ * exportables.
+ *
+ * @see apachesolr_environment_load_subrecords()
+ *
+ * @param array $conf1
+ *   First configuration array.
+ * @param array $conf2
+ *   Second configuration array.
+ * @param bool  $ignore_state
+ *   Whether to ignore state variables, such as `apachesolr_index_last`,
+ *   `apachesolr_index_updated`, and `apachesolr_last_optimize`.
+ *
+ * @return TRUE if both arrays are considered equal, FALSE otherwise.
+ */
+function apachesolr_environment_conf_equals(array $conf1, array $conf2, $ignore_state = TRUE) {
+  if ($ignore_state === TRUE) {
+    // Strip out state variables before comparing both arrays.
+    $state_variables = apachesolr_environment_conf_state_variables();
+    $conf1 = array_diff_key($conf1, $state_variables);
+    $conf2 = array_diff_key($conf2, $state_variables);
+  }
+  return $conf1 === $conf2;
+}
+
+/**
+ * Returns a list of key names for environment variables indicating state
+ * instead of configuration, e.g. `apachesolr_index_last`,
+ * `apachesolr_index_updated`, and `apachesolr_last_optimize`.
+ */
+function apachesolr_environment_conf_state_variables() {
+  $keys = &drupal_static(__FUNCTION__);
+  if (!isset($keys)) {
+    $_keys = array(
+      'apachesolr_index_last',
+      'apachesolr_index_updated',
+      'apachesolr_last_optimize',
+    );
+    // Use array_combine() to make it easier to use in array_diff_key().
+    // @see apachesolr_environment_conf_equals()
+    $keys = array_combine($_keys, $_keys);
+  }
+  return $keys;
 }
 
 /**
@@ -2944,6 +3022,13 @@ function apachesolr_ctools_environment_export($environment, $indent) {
       $index_bundles[$type] = $bundles;
     }
   }
+
+  // Remove variable values related to state from code.
+  $state_variables = apachesolr_environment_conf_state_variables();
+  foreach ($state_variables as $key) {
+    unset($environment->conf[$key]);
+  }
+
   $additions_top = array();
   $additions_bottom = array('conf' => $environment->conf, 'index_bundles' => $index_bundles);
   return ctools_export_object('apachesolr_environment', $environment, $indent, NULL, $additions_top, $additions_bottom);
