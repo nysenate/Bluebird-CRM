@@ -1715,10 +1715,11 @@ AND cc.sort_name LIKE '%$name%'";
 
       // format params
       foreach ($relationships as $relationshipId => $values) {
+        $relid = $params['contact_id']==$values['contact_id_a'] ? $values['contact_id_b'] : $values['contact_id_a'];
         $contactRelationships[$relationshipId]['name'] = CRM_Utils_System::href(
           $values['name'],
           'civicrm/contact/view',
-          "reset=1&cid={$values['contact_id_b']}");
+          "reset=1&cid={$relid}");
 
         $contactRelationships[$relationshipId]['relation'] = CRM_Utils_System::href(
           $values['relation'],
