@@ -144,4 +144,5 @@ var checkSimilar =  {$checkSimilar};
   </tr>
 </table>
 
-{include file="CRM/Contact/Form/CurrentEmployer.tpl"}
+{*NYSS 8251 - include on contact tpl form*}
+{*include file="CRM/Contact/Form/CurrentEmployer.tpl"*}
