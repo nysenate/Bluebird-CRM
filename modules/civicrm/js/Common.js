@@ -774,27 +774,70 @@ CRM.validate = CRM.validate || {
     });
   }
 
+  //NYSS 8247 - will revert in future core
   $(function () {
+    $.blockUI.defaults.message = null;
+    $.blockUI.defaults.ignoreIfBlocked = true;
+
+    if ($('#crm-container').hasClass('crm-public')) {
+      $.fn.select2.defaults.dropdownCssClass = $.ui.dialog.prototype.options.dialogClass = 'crm-container crm-public';
+    }
+
+    // Trigger crmLoad on initial content for consistency. It will also be triggered for ajax-loaded content.
+    $('.crm-container').trigger('crmLoad');
+
     if ($('#crm-notification-container').length) {
       // Initialize notifications
       $('#crm-notification-container').notify();
       messagesFromMarkup.call($('#crm-container'));
-      $('#crm-container').on('crmFormLoad', '*', messagesFromMarkup);
     }
 
-    // bind the event for image popup
-    $('body').on('click', 'a.crm-image-popup', function() {
-      var o = $('<div class="crm-container crm-custom-image-popup"><img src=' + $(this).attr('href') + '></div>');
-
-      CRM.confirm('',
-        {
+    $('body')
+      // bind the event for image popup
+      .on('click', 'a.crm-image-popup', function(e) {
+        CRM.confirm({
           title: ts('Preview'),
-          message: o
-        },
-        ts('Done')
-      );
-      return false;
-    });
+          resizable: true,
+          message: '<div class="crm-custom-image-popup"><img style="max-width: 100%" src="' + $(this).attr('href') + '"></div>',
+          options: null
+        });
+        e.preventDefault();
+      })
+
+      .on('click', function (event) {
+        $('.btn-slide-active').removeClass('btn-slide-active').find('.panel').hide();
+        if ($(event.target).is('.btn-slide')) {
+          $(event.target).addClass('btn-slide-active').find('.panel').show();
+        }
+      })
+
+      // Handle clear button for form elements
+      .on('click', 'a.crm-clear-link', function() {
+        $(this).css({visibility: 'hidden'}).siblings('.crm-form-radio:checked').prop('checked', false).change();
+        $(this).siblings('input:text').val('').change();
+        return false;
+      })
+      .on('change', 'input.crm-form-radio:checked', function() {
+        $(this).siblings('.crm-clear-link').css({visibility: ''});
+      })
+
+      // Allow normal clicking of links within accordions
+      .on('click.crmAccordions', 'div.crm-accordion-header a', function (e) {
+        e.stopPropagation();
+      })
+      // Handle accordions
+      .on('click.crmAccordions', '.crm-accordion-header, .crm-collapsible .collapsible-title', function (e) {
+        if ($(this).parent().hasClass('collapsed')) {
+          $(this).next().css('display', 'none').slideDown(200);
+        }
+        else {
+          $(this).next().css('display', 'block').slideUp(200);
+        }
+        $(this).parent().toggleClass('collapsed');
+        e.preventDefault();
+      });
+
+    $().crmtooltip();
   });
 
   $.fn.crmAccordions = function (speed) {
