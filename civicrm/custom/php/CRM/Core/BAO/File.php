@@ -586,6 +586,11 @@
     $fileSearches = array();
     CRM_Utils_Hook::fileSearches($fileSearches);
 
+    //NYSS hack
+    require_once drupal_get_path('module', 'apachesolr_civiAttachments').'/DrupalSolrCiviAttachmentSearch.php';
+    $fileSearches[] = new DrupalSolrCiviAttachmentSearch();
+    //CRM_Core_Error::debug_var('filesearches', $fileSearches);
+
     // use the first available search
     foreach ($fileSearches as $fileSearch) {
       /** @var $fileSearch CRM_Core_FileSearchInterface */
