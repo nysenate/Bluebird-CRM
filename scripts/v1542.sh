@@ -1,11 +1,12 @@
 #!/bin/sh
 #
-# v1541.sh
+# v1542.sh
 #
 # Project: BluebirdCRM
 # Authors: Brian Shaughnessy and Ken Zalewski
 # Organization: New York State Senate
 # Date: 2014-12-02
+# Revised: 2014-12-05 - Use correct variable to test for dashlet existence
 #
 
 prog=`basename $0`
@@ -34,7 +35,7 @@ echo "8246: ensure Matched Inbound Email report exists..."
 sql="SELECT id FROM civicrm_report_instance WHERE title = 'Matched Inbound Emails, Last 7 Days'"
 rptid=`$execSql $instance -c "$sql" -q`
 
-if [ $rptid -eq 0 ]; then
+if [ ! "$rptid" ]; then
   echo "The Inbound Email report could not be found."
   exit 1
 fi
@@ -42,9 +43,9 @@ fi
 sql="SELECT id FROM civicrm_dashboard WHERE label = 'Matched Inbound Emails, Last 7 Days'"
 dashid=`$execSql $instance -c "$sql" -q`
 
-if [ $rptid -ne 0 ]; then
+if [ "$dashid" ]; then
   echo "The Inbound Email dashlet already exists."
-  exit 1
+  exit 0
 fi
 
 sql="

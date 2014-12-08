@@ -790,6 +790,7 @@ CRM.validate = CRM.validate || {
       // Initialize notifications
       $('#crm-notification-container').notify();
       messagesFromMarkup.call($('#crm-container'));
+      $('#crm-container').on('crmFormLoad', '*', messagesFromMarkup);
     }
 
     $('body')
