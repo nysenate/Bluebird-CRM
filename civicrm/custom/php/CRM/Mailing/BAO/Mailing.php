@@ -2729,7 +2729,8 @@ SELECT  $mailing.id as mailing_id
       $html = CRM_Utils_Request::retrieve('html', 'Boolean', $form);
       if ($html) {
         $output = $htmlHeader . $report['mailing']['body_html'] . $htmlFooter ;
-        echo str_replace( "\n", '<br />', $output );
+        //NYSS 8258
+        echo str_replace( "\n", '', $output );
         CRM_Utils_System::civiExit();
       }
     }
