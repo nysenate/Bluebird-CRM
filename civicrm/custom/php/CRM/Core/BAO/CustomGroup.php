@@ -1028,7 +1028,7 @@ ORDER BY civicrm_custom_group.weight,
    * @see _apachesolr_civiAttachments_dereference_file_parent
    */
   //NYSS 6721
-  private static function getTableNameByEntityName($entityType) {
+  public static function getTableNameByEntityName($entityType) {
     $tableName = '';
     switch ($entityType) {
       case 'Contact':
