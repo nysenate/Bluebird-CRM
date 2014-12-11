@@ -128,7 +128,7 @@ class DrupalApacheSolrService implements DrupalApacheSolrServiceInterface {
     if ($timeout <= 0.0) {
       $timeout = -1;
     }
-    $pingUrl = $this->_constructUrl('');//NYSS
+    $pingUrl = $this->_constructUrl(self::PING_SERVLET);
     // Attempt a HEAD request to the solr ping url.
     $options = array(
       'method' => 'HEAD',
