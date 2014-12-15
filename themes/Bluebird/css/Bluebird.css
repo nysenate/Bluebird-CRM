@@ -1867,3 +1867,9 @@ div.nyss-mailing-subscriptions-admin div.nyss-email-row {
 #crm-container .update_oplock_ts {
   display: inline-block;
 }
+
+/*1337 - will revert*/
+.crm-container .paper-icon {
+  background-position: -101px -222px;
+  background-image: url("../nyss_skin/images/jquery-ui-3E3E3E.gif");
+}
