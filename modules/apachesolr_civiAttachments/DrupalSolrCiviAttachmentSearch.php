@@ -29,7 +29,7 @@ class DrupalSolrCiviAttachmentSearch implements CRM_Core_FileSearchInterface {
       $params['start'] = $offset;
     }
 
-    $q = "entity_type:civiFile AND content:({$query['text']})";
+    $q = "entity_type:civiFile AND text:({$query['text']})";//NYSS - should revert in core CRM-15727
     foreach (array('parent_table', 'parent_id', 'xparent_table', 'xparent_id') as $field) {
       if (isset($query[$field])) {
         $values = is_array($query[$field]) ? $query[$field] : array($query[$field]);
