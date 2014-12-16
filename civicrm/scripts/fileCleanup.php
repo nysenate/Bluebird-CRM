@@ -123,4 +123,4 @@ function deleteRecord($file, $fileID) {
 
 echo "finished cleaning up files.\n";
 
-exit(1);
+exit(0);
