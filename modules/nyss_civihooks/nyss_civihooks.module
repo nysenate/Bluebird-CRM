@@ -412,7 +412,7 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
         if ( !in_array($btnName, $btnExcludeName) &&
           !in_array($btnValue, $btnExcludeValue)
         ) {
-          $js = "if(this.value!='Processing...'){this.value='Processing...';cj('#' + this.id).click();return true;}else{return false;}";
+          $js = "if(this.value!='Processing...'){this._nyss_oldvalue=this.value;this.value='Processing...';cj('#' + this.id).click();this.value=this._nyss_oldvalue;return true;}else{return false;}";
           $buttons->_elements[$key]->_attributes['onclick'] = $js;
         }
         elseif ( in_array($btnName, $btnHandleValid) ) {
@@ -420,7 +420,7 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
           if ( strpos($btnName, '_cancel') === false ) {
             $jsValid = '&& cj("#Contact").valid()';
           }
-          $js = 'if(this.value!="Processing..." '.$jsValid.' ){this.value="Processing...";cj("#" + this.id).click();return true;}else{return false;}';
+          $js = 'if(this.value!="Processing..." '.$jsValid.' ){this._nyss_oldvalue=this.value;this.value="Processing...";cj("#" + this.id).click();this.value=this._nyss_oldvalue;return true;}else{return false;}';
           $buttons->_elements[$key]->_attributes['onclick'] = $js;
         }
       }
