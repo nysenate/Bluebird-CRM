@@ -40,7 +40,7 @@ class DrupalSolrCiviAttachmentSearch implements CRM_Core_FileSearchInterface {
 
     //NYSS restrict by site var
     $url_options = array('absolute' => TRUE);
-    $siteVar = str_replace('http://', '', url(NULL, $url_options));
+    $siteVar = str_replace('http:', '', url(NULL, $url_options));
     $q .= " AND site:(*{$siteVar})";
 
     $query = apachesolr_get_solr()->search($q, $params);
