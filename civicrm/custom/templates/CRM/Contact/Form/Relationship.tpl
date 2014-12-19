@@ -518,7 +518,8 @@ cj('#addCurrentEmployer').hide( );
 cj('#addCurrentEmployee').hide( );
 
 cj( function() {
-  if ( cj.browser.msie ) {
+  //NYSS 8273 - was originally for IE8; no longer needed; and .browser is deprecated in jq 1.9 anyway
+  /*if ( cj.browser.msie ) {
        cj('#contact_1').keyup( function(e) {
          if( e.keyCode == 9 || e.keyCode == 13 ) {
             return false;
@@ -527,13 +528,13 @@ cj( function() {
          cj('#relationship-refresh').show( );
          cj('#relationship-refresh-save').hide( );
         });
-   } else {
+  } else {
          cj('#contact_1').focus( function() {
             cj("input[name='contact_select_id[1]']").val('');
             cj('#relationship-refresh').show( );
             cj('#relationship-refresh-save').hide( );
          });
-   }
+  }*/
 });
 
 {/literal}{if $searchRows || $callAjax}{literal}
