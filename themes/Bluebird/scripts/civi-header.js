@@ -60,6 +60,7 @@ $(document).ready(function() {
       fname != 'Select' &&
       fname != 'Map' &&
       fname != 'Label' &&
+      fname != 'Builder' &&
       global_formNavigate != false //5231
     ) {
       return false;

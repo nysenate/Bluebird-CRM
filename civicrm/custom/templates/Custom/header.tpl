@@ -166,26 +166,26 @@ cj( document ).ready( function( ) {
 <div class="clear"></div>
 <div class="civi-navigation-section crm-container">
   <div class="civi-adv-search-linkwrap">
-    {if $ssID or $rows or $savedSearch}
+    {if $ssID or $rows or $savedSearch or $form.formName eq 'Advanced'}
       <div class="civi-advanced-search-button">
-      <div class="civi-advanced-search-link-inner">
-        <span>
-        <div class="icon crm-accordion-pointer"></div>
-        {if $ssID or $rows}
-      {if $savedSearch}
-        {ts 1=$savedSearch.name}Edit %1 Smart Group Below{/ts}
-      {else}
-        {ts}Edit Search Criteria Below{/ts}
-      {/if}
-      {else}
-      {if $savedSearch}
-        {ts 1=$savedSearch.name}Edit %1 Smart Group Below{/ts}
-      {else}
-        {ts}Search Criteria Below{/ts}
-      {/if}
-      {/if}
-        </span>
-      </div>
+        <div class="civi-advanced-search-link-inner">
+          <span>
+            <div class="icon crm-accordion-pointer"></div>
+            {if $ssID or $rows or $form.formName eq 'Advanced'}
+              {if $savedSearch}
+                {ts 1=$savedSearch.name}Edit %1 Smart Group Below{/ts}
+              {else}
+                {ts}Edit Search Criteria Below{/ts}
+              {/if}
+            {else}
+              {if $savedSearch}
+                {ts 1=$savedSearch.name}Edit %1 Smart Group Below{/ts}
+              {else}
+                {ts}Search Criteria Below{/ts}
+              {/if}
+            {/if}
+          </span>
+        </div>
       </div>
     {else}
       <div class="civi-advanced-search-link">
@@ -236,7 +236,7 @@ cj( document ).ready( function( ) {
 <div class="civi-adv-search-body crm-form-block">
   <div id="advanced-search-form"></div>
   
-  {if $ssID or $rows or $savedSearch}
+  {if $ssID or $rows or $savedSearch or $form.formName eq 'Advanced'}
   {else}
     {literal}
     <script>
