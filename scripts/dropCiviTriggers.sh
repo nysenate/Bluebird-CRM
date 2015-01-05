@@ -34,7 +34,7 @@ SELECT trigger_name
 FROM information_schema.triggers
 WHERE trigger_schema = '$cdb'
 AND trigger_name LIKE 'civicrm_%';"
-triggers=`$execSql -c "$triggersql" -q`
+triggers=`$execSql --no-db -c "$triggersql" -q`
 
 echo "removing triggers..."
 for trigger in $triggers; do
