@@ -384,7 +384,7 @@ class CRM_Core_BAO_Mapping extends CRM_Core_DAO_Mapping {
                 $fields['Household'][$key],
                 $fields['Individual'][$key]);
         }
-        }
+      }
       if (array_key_exists('note', $fields['Contact'])) {
         $noteTitle = $fields['Contact']['note']['title'];
         $fields['Contact']['note']['title'] = $noteTitle . ': ' . ts('Body and Subject');
@@ -473,18 +473,18 @@ class CRM_Core_BAO_Mapping extends CRM_Core_DAO_Mapping {
           CRM_Contact_BAO_Relationship::getContactRelationshipType(NULL, NULL, NULL, $val['parent'],
                                                                    FALSE, 'label', TRUE, $subType);
 
-      foreach ($subTypeRelationshipTypes as $key => $var) {
-        if (!array_key_exists($key, $fields[$val['parent']])) {
-          list($type) = explode('_', $key);
+        foreach ($subTypeRelationshipTypes as $key => $var) {
+          if (!array_key_exists($key, $fields[$val['parent']])) {
+            list($type) = explode('_', $key);
 
-          $csRelationships[$key]['title'] = $var;
-          $csRelationships[$key]['headerPattern'] = '/' . preg_quote($var, '/') . '/';
-          $csRelationships[$key]['export'] = TRUE;
-          $csRelationships[$key]['relationship_type_id'] = $type;
-          $csRelationships[$key]['related'] = TRUE;
-          $csRelationships[$key]['hasRelationType'] = 1;
+            $csRelationships[$key]['title'] = $var;
+            $csRelationships[$key]['headerPattern'] = '/' . preg_quote($var, '/') . '/';
+            $csRelationships[$key]['export'] = TRUE;
+            $csRelationships[$key]['relationship_type_id'] = $type;
+            $csRelationships[$key]['related'] = TRUE;
+            $csRelationships[$key]['hasRelationType'] = 1;
+          }
         }
-      }
       }
 
       $fields[$subType] = $fields[$val['parent']] + $csRelationships;
@@ -859,11 +859,11 @@ class CRM_Core_BAO_Mapping extends CRM_Core_DAO_Mapping {
         if ($mappingType == 'Search Builder') {
           //CRM -2292, restricted array set
           $operatorArray = array(
-            ''             => ts('-operator-'),
-            '='            => '=',
+            '' => ts('-operator-'),
+            '=' => '=',
             '!=' => '≠',
- 	 	        '>'            => '>',
-            '<'            => '<',
+            '>' => '>',
+            '<' => '<',
             '>=' => '≥',
             '<=' => '≤',
             'IN' => ts('In'),
@@ -874,12 +874,6 @@ class CRM_Core_BAO_Mapping extends CRM_Core_DAO_Mapping {
             'IS NULL' => ts('Is Null'),
             'IS NOT NULL' => ts('Not Null'),
           );
-          //NYSS 5663 limit RLIKE, NULL to admins
-          if ( CRM_Core_Permission::check('administer CiviCRM') ) {
-            $operatorArray['RLIKE'] = 'RLIKE';
-            $operatorArray['IS NULL'] = 'IS NULL';
-            $operatorArray['IS NOT NULL'] = 'IS NOT NULL';
-          }
 
           $form->add('select', "operator[$x][$i]", '', $operatorArray);
           $form->add('text', "value[$x][$i]", '');
@@ -935,10 +929,10 @@ class CRM_Core_BAO_Mapping extends CRM_Core_DAO_Mapping {
       $js .= "]";
       $js .= "
                 for(var i=0;i<noneArray.length;i++) {
-                    if ( {$formName}['mapper['+noneArray[i][0]+']['+noneArray[i][1]+']['+noneArray[i][2]+']'] ) {  
-  {$formName}['mapper['+noneArray[i][0]+']['+noneArray[i][1]+']['+noneArray[i][2]+']'].style.display = 'none';  
+                    if ( {$formName}['mapper['+noneArray[i][0]+']['+noneArray[i][1]+']['+noneArray[i][2]+']'] ) {
+  {$formName}['mapper['+noneArray[i][0]+']['+noneArray[i][1]+']['+noneArray[i][2]+']'].style.display = 'none';
                     }
-                } 
+                }
 ";
     }
     $js .= "</script>\n";
@@ -952,10 +946,10 @@ class CRM_Core_BAO_Mapping extends CRM_Core_DAO_Mapping {
   }
 
   /* Function returns all custom fields with group title and
-     * field label
-     * @relationshipTypeId related relationship type id
-     * @return $groupTitle all custom field titles
-     */
+   * field label
+   * @relationshipTypeId related relationship type id
+   * @return $groupTitle all custom field titles
+   */
   function getRelationTypeCustomGroupData($relationshipTypeId) {
 
     $customFields = CRM_Core_BAO_CustomField::getFields('Relationship', NULL, NULL, $relationshipTypeId, NULL, NULL);
@@ -971,16 +965,12 @@ class CRM_Core_BAO_Mapping extends CRM_Core_DAO_Mapping {
    * Function returns all  Custom group Names
    *
    * @param customfieldId related custom field id
-     * @return $customGroupName all custom group names
+   * @return $customGroupName all custom group names
    * @static
-     */
+   */
   static function getCustomGroupName($customfieldId) {
-
-
     if ($customFieldId = CRM_Core_BAO_CustomField::getKeyID($customfieldId)) {
-
       $customGroupId = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_CustomField', $customFieldId, 'custom_group_id');
-
       $customGroupName = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_CustomGroup', $customGroupId, 'title');
 
       if (strlen($customGroupName) > 13) {
@@ -1195,10 +1185,10 @@ class CRM_Core_BAO_Mapping extends CRM_Core_DAO_Mapping {
           }
 
           if (CRM_Utils_Array::value('operator', $params)) {
-          $saveMappingFields->operator = CRM_Utils_Array::value($k, $params['operator'][$key]);
+            $saveMappingFields->operator = CRM_Utils_Array::value($k, $params['operator'][$key]);
           }
           if (CRM_Utils_Array::value('value', $params)) {
-          $saveMappingFields->value = CRM_Utils_Array::value($k, $params['value'][$key]);
+            $saveMappingFields->value = CRM_Utils_Array::value($k, $params['value'][$key]);
           }
           // Handle mapping for 'related contact' fields
           if (count(explode('_', CRM_Utils_Array::value('1', $v))) > 2) {
