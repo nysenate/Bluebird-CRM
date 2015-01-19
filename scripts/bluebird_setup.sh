@@ -34,7 +34,7 @@ create_instance() {
     $script_dir/copyInstance.sh --delete template $instance
     $script_dir/manageCiviConfig.sh --update $instance
     $script_dir/hitInstance.sh $instance
-	$script_dir/fixFileSystemPath.sh $instance
+    $script_dir/fixFileSystemPath.sh $instance
   )
 }
 
