@@ -8,6 +8,7 @@
 //                       getMailingComponent() and updateEmailTemplate()
 // Revised: 2013-07-30 - added "scope" parameter
 // Revised: 2014-07-23 - migrated from PHP mysql interface to PDO
+// Revised: 2015-01-20 - email footer can now have three office addresses
 //
 
 require_once 'common_funcs.php';
@@ -354,6 +355,9 @@ function setEmailDefaults(&$cfg)
   if (!isset($cfg['senator.address.district'])) {
     $cfg['senator.address.district'] = 'ADDRESS OF DISTRICT OFFICE';
   }
+  if (!isset($cfg['senator.address.satellite'])) {
+    $cfg['senator.address.satellite'] = '';
+  }
 } // setEmailDefaults()
 
 
@@ -413,21 +417,35 @@ TEXT;
   }
   // *** Footer Template ***
   else if ($comp_type == 'footer') {
+    $offices = array();
+    $offices['Albany'] = $cfg['senator.address.albany'];
+    $offices['District'] = $cfg['senator.address.district'];
+    if ($cfg['senator.address.satellite']) {
+      $offices['Satellite'] = $cfg['senator.address.satellite'];
+    }
+
     if ($cont_type == 'html') {
       if ($cfg['email.footer.include_addresses']) {
-        $albany_office = str_replace("|", "\n<br/>", $cfg['senator.address.albany']);
-        $district_office = str_replace("|", "\n<br/>", $cfg['senator.address.district']);
+        $width = round(100 / count($offices));
         $addresses = <<<HTML
     <tr>
     <td align="center" valign="top">	
     <table style="color:#707070; font-size:12px; line-height:125%;" border="0" cellpadding="20px" cellspacing="0" width="100%">
       <tr>
-      <td valign="top" width="50%"><strong>Albany Office:</strong>
-      <br/>$albany_office
+
+HTML;
+
+        foreach ($offices as $office_type => $office_address) {
+          $office_html = str_replace("|", "\n<br/>", $office_address);
+          $addresses .= <<<HTML
+      <td valign="top" width="{$width}%"><strong>$office_type Office:</strong>
+      <br/>$office_html
       </td>
-      <td valign="top" width="50%"><strong>District Office:</strong>
-      <br/>$district_office
-      </td>
+
+HTML;
+        }
+
+        $addresses .= <<<HTML
       </tr>
     </table>
     </td>
@@ -465,19 +483,12 @@ $banner
 HTML;
     }
     else if ($cont_type == 'txt') {
+      $addresses = '';
       if ($cfg['email.footer.include_addresses']) {
-        $albany_office = str_replace("|", "\n", $cfg['senator.address.albany']);
-        $district_office = str_replace("|", "\n", $cfg['senator.address.district']);
-        $addresses = <<<TEXT
-Albany Office:
-$albany_office
-
-District Office:
-$district_office
-TEXT;
-      }
-      else {
-        $addresses = '';
+        foreach ($offices as $office_type => $office_address) {
+          $office_txt = str_replace("|", "\n", $office_address);
+          $addresses .= "$office_type Office:\n$office_txt\n\n";
+        }
       }
 
       $s = <<<TEXT
