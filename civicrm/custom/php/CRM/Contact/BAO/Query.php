@@ -1595,6 +1595,13 @@ class CRM_Contact_BAO_Query {
         $this->sortName($values);
         return;
 
+      //NYSS 8314
+      case 'addressee':
+      case 'postal_greeting':
+      case 'email_greeting':
+        $this->greetings($values);
+        return;
+
       case 'email':
         $this->email($values);
         return;
@@ -3222,6 +3229,15 @@ WHERE  id IN ( $groupIDs )
     else {
       $this->_qill[$grouping][] = ts('Name like') . " - '$name'";
     }
+  }
+
+  //NYSS 8314
+  function greetings(&$values) {
+    list($name, $op, $value, $grouping, $wildcard) = $values;
+    $name .= '_display';
+
+    $this->_qill[$grouping][] = "Greeting $op $value";
+    $this->_where[$grouping][] = self::buildClause("contact_a.{$name}", 'LIKE', "$value", 'String');
   }
 
   /**
