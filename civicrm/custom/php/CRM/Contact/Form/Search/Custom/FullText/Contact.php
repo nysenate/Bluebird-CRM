@@ -128,6 +128,10 @@ GROUP BY   et.entity_id
       'file' => array(
         'xparent_table' => 'civicrm_contact',
       ),
+      //NYSS 8282
+      'filename' => array(
+        'type' => 'contact',
+      ),
       'sql' => $contactSQL,
       'final' => $final,
     );
