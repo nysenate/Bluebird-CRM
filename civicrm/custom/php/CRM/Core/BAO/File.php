@@ -608,16 +608,18 @@
          ) {
            $url = $fileValue['url'];
            $alt = $fileValue['cleanName'];
+           //NYSS 8336
            $file_url[$fileID] = "
               <a href=\"$url\" class='crm-image-popup'>
-              <div class='icon paper-icon' title=\"$alt\" alt=\"$alt\"></div>
+              <div class='icon paper-icon' title=\"$alt\" alt=\"$alt\"></div>{$alt}
               </a>";
            // for non image files
          }
          else {
            $url = $fileValue['url'];
            $alt = $fileValue['cleanName'];
-           $file_url[$fileID] = "<a href=\"$url\"><div class='icon paper-icon' title=\"$alt\" alt=\"$alt\"></div></a>";
+           //NYSS 8336
+           $file_url[$fileID] = "<a href=\"$url\"><div class='icon paper-icon' title=\"$alt\" alt=\"$alt\"></div>{$alt}</a>";
          }
        }
      }

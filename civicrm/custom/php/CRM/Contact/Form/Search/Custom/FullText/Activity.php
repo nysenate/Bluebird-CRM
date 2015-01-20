@@ -108,6 +108,10 @@ AND    (ca.is_deleted = 0 OR ca.is_deleted IS NULL)
       'file' => array(
         'xparent_table' => 'civicrm_activity',
       ),
+      //NYSS 8282
+      'filename' => array(
+        'type' => 'activity',
+      ),
       'sql' => $contactSQL,
       'final' => $final,
     );
