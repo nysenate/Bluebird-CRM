@@ -30,7 +30,17 @@ fi
 
 app_rootdir=`$readConfig --ig $instance app.rootdir` || app_rootdir="$DEFAULT_APP_ROOTDIR"
 
-echo "implementing solr attachment search...";
+#determine which solr core to use
+envHost=`$readConfig --global db.host`
+if [ $envHost == "crmdbprod" ]; then
+  echo "implementing on production environment..."
+  solrCore="BluebirdCRM_Prod"
+else
+  echo "implementing on dev/test/staging environment..."
+  solrCore="BluebirdCRM_Dev"
+fi
+
+echo "implementing solr attachment search..."
 
 $drush $instance en apachesolr -y
 $drush $instance en apachesolr_civiAttachments -y
@@ -39,7 +49,7 @@ sql="
   TRUNCATE TABLE apachesolr_environment;
   INSERT INTO apachesolr_environment (env_id, name, url, service_class)
   VALUES
-    ('solr', 'Apache Solr server', 'http://doral.nysenate.gov:8080/solr/BluebirdCRM', '');
+    ('solr', 'Apache Solr server', 'http://doral.nysenate.gov:8080/solr/$solrCore', '');
 
   TRUNCATE TABLE apachesolr_environment_variable;
   INSERT INTO apachesolr_environment_variable (env_id, name, value)
