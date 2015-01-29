@@ -92,7 +92,7 @@ if [ $op = update -o $op = bs ]; then
        VALUES ('solr', 'Apache Solr server', '$solr_url');
        TRUNCATE TABLE apachesolr_environment_variable;
        INSERT INTO apachesolr_environment_variable (env_id, name, value)
-       VALUES ('solr', 'apachesolr_read_only', 's:1:\"$solr_ro\";'),
+       VALUES ('solr', 'apachesolr_read_only', 'i:$solr_ro;'),
               ('solr', 'apachesolr_direct_commit', 'i:$solr_dc;'),
               ('solr', 'apachesolr_soft_commit', 'i:$solr_sc;');
        TRUNCATE TABLE apachesolr_index_bundles;
