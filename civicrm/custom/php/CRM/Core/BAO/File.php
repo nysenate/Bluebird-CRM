@@ -576,6 +576,62 @@
     CRM_Core_BAO_File::deleteEntityFile($params['entityTable'], $params['entityID'], NULL, $params['fileID']);
   }
 
+   //NYSS 1337
+   /**
+    * Display paper icon for a file attachment -- CRM-13624
+    *
+    * @param $entityTable string  The entityTable to which the file is attached. eg "civicrm_contact", "civicrm_note", "civicrm_activity"
+    *                             If you have the ID of a specific row in civicrm_file, use $entityTable='*'
+    * @param $entityID    int     The id of the object in the above entityTable
+    *
+    * @return array|NULL          list of HTML snippets; one HTML snippet for each attachment. If none found, then NULL
+    *
+    * @static
+    * @access public
+    */
+   static function paperIconAttachment($entityTable, $entityID) {
+     if (empty($entityTable) || !$entityID) {
+       $results = NULL;
+       return $results;
+     }
+     $currentAttachmentInfo = self::getEntityFile($entityTable, $entityID);
+     foreach ($currentAttachmentInfo as $fileKey => $fileValue) {
+       $fileID = $fileValue['fileID'];
+       $fileType = $fileValue['mime_type'];
+       $eid = $entityID;
+       if ($fileID) {
+         if ($fileType == 'image/jpeg' ||
+           $fileType == 'image/pjpeg' ||
+           $fileType == 'image/gif' ||
+           $fileType == 'image/x-png' ||
+           $fileType == 'image/png'
+         ) {
+           $url = $fileValue['url'];
+           $alt = $fileValue['cleanName'];
+           //NYSS 8336
+           $file_url[$fileID] = "
+              <a href=\"$url\" class='crm-image-popup'>
+              <div class='icon paper-icon' title=\"$alt\" alt=\"$alt\"></div>{$alt}
+              </a>";
+           // for non image files
+         }
+         else {
+           $url = $fileValue['url'];
+           $alt = $fileValue['cleanName'];
+           //NYSS 8336
+           $file_url[$fileID] = "<a href=\"$url\"><div class='icon paper-icon' title=\"$alt\" alt=\"$alt\"></div>{$alt}</a>";
+         }
+       }
+     }
+     if (empty($file_url)) {
+       $results = NULL;
+     }
+     else {
+       $results = $file_url;
+     }
+     return $results;
+   }
+
   //NYSS 6721
   /**
    * Get a reference to the file-search service (if one is available).

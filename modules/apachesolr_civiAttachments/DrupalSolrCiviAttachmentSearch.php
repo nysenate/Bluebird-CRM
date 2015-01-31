@@ -29,7 +29,7 @@ class DrupalSolrCiviAttachmentSearch implements CRM_Core_FileSearchInterface {
       $params['start'] = $offset;
     }
 
-    $q = "entity_type:civiFile AND content:({$query['text']})";
+    $q = "entity_type:civiFile AND text:({$query['text']})";//NYSS - should revert in core CRM-15727
     foreach (array('parent_table', 'parent_id', 'xparent_table', 'xparent_id') as $field) {
       if (isset($query[$field])) {
         $values = is_array($query[$field]) ? $query[$field] : array($query[$field]);
@@ -37,6 +37,11 @@ class DrupalSolrCiviAttachmentSearch implements CRM_Core_FileSearchInterface {
         $q .= " AND ss_civicrm_{$field}:({$exprs})";
       }
     }
+
+    //NYSS restrict by site var
+    $url_options = array('absolute' => TRUE);
+    $siteVar = str_replace('http:', '', url(NULL, $url_options));
+    $q .= " AND site:(*{$siteVar})";
 
     $query = apachesolr_get_solr()->search($q, $params);
     if ($query->code == 200) {

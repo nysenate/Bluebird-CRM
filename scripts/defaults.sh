@@ -32,6 +32,8 @@ DEFAULT_SENATOR_FORMAL_NAME="Senator"
 DEFAULT_INCLUDE_EMAIL_IN_NAME=0
 DEFAULT_INCLUDE_WILDCARD_IN_NAME=0
 
+DEFAULT_SOLR_URL="http://localhost:8080/solr"
+
 
 confirm_yes_no() {
   [ "$1" ] && confirm_msg="$1" || confirm_msg="Proceed with the operation"

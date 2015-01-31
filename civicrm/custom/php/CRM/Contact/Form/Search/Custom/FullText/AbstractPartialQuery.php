@@ -160,12 +160,100 @@ $sqlStatement
           );
           list($intLimit, $intOffset) = $this->parseLimitOffset($limit);
           $files = $searcher->search($query, $intLimit, $intOffset);
+          //CRM_Core_Error::debug_var('$files', $files);
           $matches = array();
           foreach ($files as $file) {
             $matches[] = array('entity_id' => $file['xparent_id']);
           }
           if ($matches) {
             $insertSql = CRM_Utils_SQL_Insert::into($entityIDTableName)->usingReplace()->rows($matches)->toSQL();
+            //CRM_Core_Error::debug_var('insertSql', $insertSql);
+            CRM_Core_DAO::executeQuery($insertSql);
+          }
+        }
+        //NYSS 8282
+        elseif ($tableName == 'filename') {
+          //the uri is stored with a unique hash in the middle of the filename in the _file table
+          //we need to handle differently depending on whether a full filename is given as the search term
+          $periodPos = strrpos($queryText, '.');
+          if ($periodPos !== FALSE) {
+            //assume full filename (with extension); place wildcard before period
+            $termStart = substr($queryText, 0, $periodPos);
+            $termEnd = substr($queryText, $periodPos);
+            $searchTerm = "{$termStart}%{$termEnd}";
+            //CRM_Core_Error::debug_var('periodPos', $periodPos);
+          }
+          else {
+            //no period; search entire string (wildcards on both sides)
+            $searchTerm = "%{$queryText}%";
+          }
+          $searchTerm = addslashes($searchTerm);
+          //CRM_Core_Error::debug_var('searchTerm', $searchTerm);
+
+          //determine valid tables
+          $extendsCore = '';
+          switch ($tableValues['type']) {
+            case 'contact':
+              $extends = "'Individual', 'Organization', 'Household', 'Contact'";
+              break;
+
+            case 'activity':
+              $extends = "'Activity'";
+              $extendsCore = 'civicrm_activity';
+              break;
+
+            case 'case':
+              $extends = "'Case'";
+              break;
+
+            default:
+              $extends = "0";
+          }
+
+          $filenameTables = CRM_Core_DAO::singleValueQuery("
+            SELECT GROUP_CONCAT(table_name SEPARATOR '\',\'')
+            FROM civicrm_custom_group
+            WHERE extends IN ({$extends})
+            GROUP BY table_name
+          ");
+
+          if (empty($filenameTables)) {
+            break;
+          }
+          elseif ($extendsCore) {
+            $filenameTables .= "','{$extendsCore}";
+          }
+          //CRM_Core_Error::debug_var('$filenameTables', $filenameTables);
+
+          //find entity_id for matching uri
+          $sql = "
+            SELECT entity_id, f.id fid
+            FROM civicrm_entity_file ef
+            JOIN civicrm_file f
+              ON ef.file_id = f.id
+            WHERE entity_table IN ('{$filenameTables}')
+              AND f.uri LIKE '{$searchTerm}'
+          ";
+          //CRM_Core_Error::debug_var('filename $sql', $sql);
+          $fileNameMatch = CRM_Core_DAO::executeQuery($sql);
+
+          $matches = $files = array();
+          while ($fileNameMatch->fetch()) {
+            //create matches array for insert into temp table
+            $matches[] = array('entity_id' => $fileNameMatch->entity_id);
+
+            $files[] = array(
+              'file_id' => $fileNameMatch->fid,
+              'parent_table' => 'civicrm_'.$tableValues['type'],
+              'parent_id' => $fileNameMatch->entity_id,
+              'xparent_table' => 'civicrm_'.$tableValues['type'],
+              'xparent_id' => $fileNameMatch->entity_id,
+            );
+          }
+          if ($matches) {
+            $insertSql = CRM_Utils_SQL_Insert::into($entityIDTableName)->usingReplace()->rows($matches)->toSQL();
+            //CRM_Core_Error::debug_var('insertSql fileNameMatches', $insertSql);
+            //CRM_Core_Error::debug_var('$files', $files);
             CRM_Core_DAO::executeQuery($insertSql);
           }
         }
