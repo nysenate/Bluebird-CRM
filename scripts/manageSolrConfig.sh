@@ -94,7 +94,8 @@ elif [ $op = disable ]; then
 elif [ $op = uninstall ]; then
   echo "Uninstalling Apache Solr modules"
   $drush $instance dis -y apachesolr_civiAttachments apachesolr
-  $drush $instance pm-uninstall -y apachesolr_civiAttachments apachesolr
+  $drush $instance pm-uninstall -y apachesolr_civiAttachments
+  $drush $instance pm-uninstall -y apachesolr
 fi
 
 if [ $op = update -o $op = bs ]; then
