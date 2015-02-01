@@ -6,6 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2015-01-28
+# Revised: 2015-01-31
 #
 
 prog=`basename $0`
@@ -17,7 +18,7 @@ drush=$script_dir/drush.sh
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog [--list] [--update | --clear] [--enable-module | --disable-module] [--reindex] [--bluebird-setup | -bs] instanceName" >&2
+  echo "Usage: $prog [--list] [--update | --clear] [--enable-module | --disable-module | --uninstall-module] [--reindex] [--bluebird-setup | -bs] instanceName" >&2
 }
 
 if [ $# -lt 1 ]; then
@@ -29,11 +30,12 @@ op=list
 
 while [ $# -gt 0 ]; do
   case "$1" in
-    --list) op=list ;;
-    --update) op=update;;
+    --list|-l) op=list ;;
+    --update|-u) op=update;;
     --clear) op=clear ;;
     --en*) op=enable ;;
     --dis*) op=disable ;;
+    --uninstall*) op=uninstall ;;
     --rein*) op=reindex ;;
     --bluebird-setup|-bs) op=bs ;;
     -*) echo "$prog: $1: Invalid option" >&2; usage; exit 1 ;;
@@ -59,22 +61,28 @@ solr_dc=`$readConfig --ig $instance solr.direct_commit` || solr_dc=1
 solr_sc=`$readConfig --ig $instance solr.soft_commit` || solr_sc=1
 
 if [ $op = list ]; then
-  sql="SELECT * FROM apachesolr_environment;"
-  solr_env=`$execSql $instance -c "$sql" --drupal -q`
-  sql="SELECT * FROM apachesolr_environment_variable;"
-  solr_env_var=`$execSql $instance -c "$sql" --drupal -q`
-  sql="SELECT * FROM apachesolr_index_bundles;"
-  solr_index_bundles=`$execSql $instance -c "$sql" --drupal -q`
-  sql="SELECT * FROM variable where name like 'apachesolr%';"
-  solr_var=`$execSql $instance -c "$sql" --drupal -q`
-  echo "Apache SOLR environment:"
-  echo "$solr_env"
-  echo "Apache SOLR environment variables:"
-  echo "$solr_env_var"
-  echo "Apache SOLR index bundles:"
-  echo "$solr_index_bundles"
-  echo "Apache SOLR settings in the Drupal variable table:"
-  echo "$solr_var"
+  sql="SHOW TABLES LIKE 'apachesolr%';"
+  tabs=`$execSql $instance -c "$sql" --drupal -q`
+  if [ "$tabs" ]; then
+    sql="SELECT * FROM apachesolr_environment;"
+    solr_env=`$execSql $instance -c "$sql" --drupal -q`
+    sql="SELECT * FROM apachesolr_environment_variable;"
+    solr_env_var=`$execSql $instance -c "$sql" --drupal -q`
+    sql="SELECT * FROM apachesolr_index_bundles;"
+    solr_index_bundles=`$execSql $instance -c "$sql" --drupal -q`
+    sql="SELECT * FROM variable where name like 'apachesolr%';"
+    solr_var=`$execSql $instance -c "$sql" --drupal -q`
+    echo "Apache SOLR environment:"
+    echo "$solr_env"
+    echo "Apache SOLR environment variables:"
+    echo "$solr_env_var"
+    echo "Apache SOLR index bundles:"
+    echo "$solr_index_bundles"
+    echo "Apache SOLR settings in the Drupal variable table:"
+    echo "$solr_var"
+  else
+    echo "Apache SOLR environment is not configured"
+  fi
 fi
 
 if [ $op = enable -o $op = bs ]; then
@@ -83,6 +91,10 @@ if [ $op = enable -o $op = bs ]; then
 elif [ $op = disable ]; then
   echo "Disabling apachesolr and apachesolr_civiAttachments modules"
   $drush $instance dis -y apachesolr apachesolr_civiAttachments
+elif [ $op = uninstall ]; then
+  echo "Uninstalling Apache Solr modules"
+  $drush $instance dis -y apachesolr_civiAttachments apachesolr
+  $drush $instance pm-uninstall -y apachesolr_civiAttachments apachesolr
 fi
 
 if [ $op = update -o $op = bs ]; then
