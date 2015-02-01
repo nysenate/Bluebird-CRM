@@ -28,6 +28,11 @@ if ! $readConfig --instance $instance --quiet; then
   exit 1
 fi
 
+app_rootdir=`$readConfig --ig $instance app.rootdir` || app_rootdir="$DEFAULT_APP_ROOTDIR"
+
+echo "$prog: Cleaning up dangling attachment files and DB records"
+php $app_rootdir/civicrm/scripts/fileCleanup.php -S$instance --file-action=archive --db-action=delete
+
 echo "$prog: Setting up SOLR"
 $script_dir/manageSolrConfig.sh $instance --bluebird-setup
 echo "$prog: Done with SOLR setup"
