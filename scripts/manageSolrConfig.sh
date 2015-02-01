@@ -122,8 +122,6 @@ elif [ $op = clear ]; then
 fi
 
 if [ $op = reindex -o $op = bs ]; then
-  echo "Archiving orphaned attachments"
-  php $app_rootdir/civicrm/scripts/fileCleanup.php -S$instance --action=archive
   echo "Marking all attachments for processing"
   $drush $instance solr-mark-all
   echo "Indexing all attachments"

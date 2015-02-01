@@ -29,8 +29,6 @@ if ! $readConfig --instance $instance --quiet; then
   exit 1
 fi
 
-app_rootdir=`$readConfig --ig $instance app.rootdir` || app_rootdir="$DEFAULT_APP_ROOTDIR"
-
 echo "8246: ensure Matched Inbound Email report exists..."
 sql="SELECT id FROM civicrm_report_instance WHERE title = 'Matched Inbound Emails, Last 7 Days'"
 rptid=`$execSql $instance -c "$sql" -q`
