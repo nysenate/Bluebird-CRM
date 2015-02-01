@@ -90,11 +90,11 @@ if [ $op = enable -o $op = bs ]; then
   $drush $instance en -y apachesolr apachesolr_civiAttachments
 elif [ $op = disable ]; then
   echo "Disabling apachesolr and apachesolr_civiAttachments modules"
-  $drush $instance dis -y apachesolr apachesolr_civiAttachments
+  $drush $instance dis -y apachesolr_civiAttachments apachesolr_search apachesolr
 elif [ $op = uninstall ]; then
   echo "Uninstalling Apache Solr modules"
-  $drush $instance dis -y apachesolr_civiAttachments apachesolr
-  $drush $instance pm-uninstall -y apachesolr_civiAttachments
+  $drush $instance dis -y apachesolr_civiAttachments apachesolr_search apachesolr
+  $drush $instance pm-uninstall -y apachesolr_civiAttachments apachesolr_search
   $drush $instance pm-uninstall -y apachesolr
 fi
 
