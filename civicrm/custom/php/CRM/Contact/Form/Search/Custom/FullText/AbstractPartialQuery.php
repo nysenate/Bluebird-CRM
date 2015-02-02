@@ -160,7 +160,7 @@ $sqlStatement
           );
           list($intLimit, $intOffset) = $this->parseLimitOffset($limit);
           $files = $searcher->search($query, $intLimit, $intOffset);
-          //CRM_Core_Error::debug_var('$files', $files);
+          //CRM_Core_Error::debug_var('runQueries $files', $files);
           $matches = array();
           foreach ($files as $file) {
             $matches[] = array('entity_id' => $file['xparent_id']);
@@ -237,7 +237,7 @@ $sqlStatement
           //CRM_Core_Error::debug_var('filename $sql', $sql);
           $fileNameMatch = CRM_Core_DAO::executeQuery($sql);
 
-          $matches = $files = array();
+          $matches = array();
           while ($fileNameMatch->fetch()) {
             //create matches array for insert into temp table
             $matches[] = array('entity_id' => $fileNameMatch->entity_id);
@@ -309,6 +309,7 @@ GROUP BY {$tableValues['id']}
       }
     }
 
+    //CRM_Core_Error::debug_var('runQueries $files end', $files);
     return array(
       'count' => CRM_Core_DAO::singleValueQuery("SELECT count(*) FROM {$entityIDTableName}"),
       'files' => $files,
