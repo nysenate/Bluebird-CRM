@@ -372,24 +372,28 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
 
         // different functionality for different areas of the UI.
         switch ($call_uri['path']) {
-            case '/civicrm/contact/add':
-                // if can add contact then user can add tag.
-                $role = CRM_Core_Permission::check('add contacts');
-                break;
-            case '/civicrm/contact/view':
-                if($userid == $entityId){ // if is viewing and is my contact record -> can edit
-                    $role = true;
-                }else{ // else -> check permissions to edit
-                    $role = CRM_Core_Permission::check('edit all contacts');
-                    if( $role == false ) {
-                        $role = CRM_Core_Permission::check('view all contacts');
-                        $view_only = true;
-                    }
-                }
-                break;
-            default:
-                $role = CRM_Core_Permission::check('edit all contacts');
-                break;
+          case '/civicrm/contact/add':
+            // if can add contact then user can add tag.
+            $perms = array(
+              array('add contacts', 'edit all contacts'),
+            );
+            $role = CRM_Core_Permission::check($perms);
+            break;
+          case '/civicrm/contact/view':
+            if($userid == $entityId){ // if is viewing and is my contact record -> can edit
+              $role = true;
+            }
+            else{ // else -> check permissions to edit
+              $role = CRM_Core_Permission::check('edit all contacts');
+              if( $role == false ) {
+                $role = CRM_Core_Permission::check('view all contacts');
+                $view_only = true;
+              }
+            }
+            break;
+          default:
+            $role = CRM_Core_Permission::check('edit all contacts');
+            break;
         }
 
         $message = ($role == true )? 'SUCCESS' : "WARNING: Bad user level";
