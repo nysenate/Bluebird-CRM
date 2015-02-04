@@ -5,7 +5,7 @@ var KEY = {
     ESCAPE: 27,
     UP: 38,
     DOWN: 40,
-    NUMPAD_ENTER: 108,
+    NUMPAD_ENTER: 108
 };
 
 TagTreeBase = function(instance_options) {
@@ -25,7 +25,7 @@ TagTreeBase = function(instance_options) {
         auto_save: true,
         entity_id: 0,
         entity_counts: true,
-        entity_type: 'civicrm_contact',
+        entity_type: 'civicrm_contact'
     }
     cj.extend(true, self.options, instance_options);
 
@@ -42,7 +42,7 @@ TagTreeBase = function(instance_options) {
 TagTreeBase.prototype.load = function() {
     var self = this;
     if ($('.crm-submit-buttons').length !== 0) {
-      $('.crm-submit-buttons').prepend('<span class="crm-button loading default" style="display: block; padding: 4px;"> Loading</span>');
+      $('.crm-submit-buttons').prepend('<span class="crm-button loading default" style="display: block; padding: 4px;"> Loading...</span>');
     }
     // Request the data
     cj.ajax({
@@ -53,13 +53,13 @@ TagTreeBase.prototype.load = function() {
             entity_type: self.options.entity_type,
             entity_counts: self.options.entity_counts,
             // TODO: This isn't actually supported yet!
-            tag_trees: self.options.tag_trees,
+            tag_trees: self.options.tag_trees
         },
         dataType: 'json',
         success: function(data, status, XMLHttpRequest) {
             if(data.code != 1) {
-                // TODO: Render error message..
-                // console.log(data.message);
+                //TODO: Render error message..
+                //console.log(data.message);
             }
             else {
                 self.setup_trees(data.message);
@@ -628,29 +628,29 @@ TagTreeTag.prototype.addTagCheck = function(tag_id) {
 }
 
 TagTreeTag.prototype.customize_tree = function() {
-    var self = this;
-    cj.ajax({
-        url: '/civicrm/ajax/entity_tag/get',
-        data: {
-            entity_type: self.options.entity_type,
-            entity_id: self.options.entity_id,
-            call_uri: window.location.href,
-        },
-        dataType: 'json',
-        success: function(data, status, XMLHttpRequest) {
-            if(data.code != 1 ) {
-                // console.log(data.message);
-            }
-            else {
-                cj.each(data.message, function(i, tag_id){
-                    var tagNode = self.container.find(' dt#'+tagLabel(tag_id));
-                    tagNode.find('.checkbox').attr('checked','true').addClass('checked');
-                    tagNode.addClass('checked existing');
-                    tagNode.parents('dl').not('.lv-0').prev('dt').addClass('subChecked');
-                });
-            }
-        }
-    });
+  var self = this;
+  cj.ajax({
+    url: '/civicrm/ajax/entity_tag/get',
+    data: {
+      entity_type: self.options.entity_type,
+      entity_id: self.options.entity_id,
+      call_uri: window.location.href
+    },
+    dataType: 'json',
+    success: function(data, status, XMLHttpRequest) {
+      if(data.code != 1 ) {
+        // console.log(data.message);
+      }
+      else {
+        cj.each(data.message, function(i, tag_id){
+          var tagNode = self.container.find(' dt#'+tagLabel(tag_id));
+          tagNode.find('.checkbox').attr('checked','true').addClass('checked');
+          tagNode.addClass('checked existing');
+          tagNode.parents('dl').not('.lv-0').prev('dt').addClass('subChecked');
+        });
+      }
+    }
+  });
 }
 
 
@@ -661,26 +661,26 @@ TagTreeTag.prototype.customize_tree = function() {
 
 
 function TagTreeManage(instance_options) {
-    var self = this;
-    self.type = "edit"
-    TagTreeBase.call(self, instance_options);
-    self.dialog = cj('<div id="BBDialog"></div>');
-    self.container.append(self.dialog);
-    self.dialog_defaults = {
-        show: false,
-        closeOnEscape: true,
-        draggable: true,
-        height: 300,
-        width: 300,
-        modal: true,
-        resizable: true,
-        bgiframe: true, // Requires bgiframe plugin...do we have that?
-        close: function() {
-            self.dialog.html('');
-            self.dialog.dialog("destroy");
-        },
+  var self = this;
+  self.type = "edit"
+  TagTreeBase.call(self, instance_options);
+  self.dialog = cj('<div id="BBDialog"></div>');
+  self.container.append(self.dialog);
+  self.dialog_defaults = {
+    show: false,
+    closeOnEscape: true,
+    draggable: true,
+    height: 300,
+    width: 300,
+    modal: true,
+    resizable: true,
+    bgiframe: true, // Requires bgiframe plugin...do we have that?
+    close: function() {
+      self.dialog.html('');
+      self.dialog.dialog("destroy");
     }
-    return self;
+  }
+  return self;
 }
 TagTreeManage.prototype = new TagTreeBase();
 

@@ -143,7 +143,7 @@
               auto_save: true,
               entity_id: cj('#issue-code-results').data('contact'),
               entity_counts: false,
-              entity_type: 'civicrm_contact',
+              entity_type: 'civicrm_contact'
             });
             tree.load();
         </script>
