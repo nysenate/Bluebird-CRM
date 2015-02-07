@@ -892,25 +892,27 @@ COLS;
       "  END;".
       "END IF;";
 
-    $this->delta_triggers['civicrm_activity_contact'] =
-      "SET @tmp_rectype = CASE NEW.record_type_id".
-      "    WHEN 1 THEN '<= '".
-      "    WHEN 2 THEN '=> '".
-      "    WHEN 3 THEN ''".
-      "    ELSE '?'".
-      "  END;".
-      "SELECT CONCAT(@tmp_rectype, d.label) INTO @tmp_entinfo".
-      " FROM civicrm_activity a".
-      " INNER JOIN (".
-      "  civicrm_option_group c".
-      "   INNER JOIN civicrm_option_value d".
-      "   ON c.name='activity_type' AND c.id=d.option_group_id)".
-      " ON a.activity_type_id=d.value".
-      " WHERE a.id=NEW.activity_id;".
-      "SET @nyss_contact_id = NEW.contact_id;".
-      "SET @nyss_entity_info = CONCAT_WS(CHAR(1), 'Activity', @tmp_entinfo);".
-      "INSERT INTO nyss_changelog_detail (db_op, table_name, entity_id)".
-      " VALUES ('{eventName}', 'activity_contact', NEW.id);";
+    $this->delta_triggers['civicrm_activity_contact'] = "
+      SET @tmp_rectype = CASE NEW.record_type_id
+          WHEN 1 THEN '<= '
+          WHEN 2 THEN '=> '
+          WHEN 3 THEN ''
+          ELSE '?'
+        END;
+      SELECT CONCAT(@tmp_rectype, d.label) INTO @tmp_entinfo
+      FROM civicrm_activity a
+      INNER JOIN (
+        civicrm_option_group c
+        INNER JOIN civicrm_option_value d
+          ON c.name='activity_type'
+          AND c.id=d.option_group_id)
+        ON a.activity_type_id=d.value
+      WHERE a.id=NEW.activity_id;
+      SET @nyss_contact_id = NEW.contact_id;
+      SET @nyss_entity_info = CONCAT_WS(CHAR(1), 'Activity', @tmp_entinfo);
+      INSERT INTO nyss_changelog_detail (db_op, table_name, entity_id)
+        VALUES ('{eventName}', 'activity_contact', NEW.id);
+    ";
 
     // add extended tables for contacts
     $add_table_list = self::nyssFetchExtendedTables('Contact');
