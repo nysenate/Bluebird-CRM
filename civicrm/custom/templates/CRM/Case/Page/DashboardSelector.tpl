@@ -66,15 +66,13 @@
     <td>
       {* &nbsp;{$row.contact_type_icon}<br /> *}
       <span id="{$context}{$list}{$row.case_id}_show">
-      <a href="#" onclick="CaseDetails('{$row.case_id}','{$row.contact_id}', '{$list}', '{$context}');
-        showCaseActivities('{$row.case_id}','{$list}', '{$context}'); return false;">
-        <img src="{$config->resourceBase}i/TreePlus.gif" class="action-icon" alt="{ts}open section{/ts}"/>
-      </a>
+      <a href="#" onclick="{$context}{$list}CaseDetails('{$row.case_id}','{$row.contact_id}', '{$list}', '{$context}');
+                showCaseActivities('{$row.case_id}','{$list}', '{$context}');
+                             return false;"><img src="{$config->resourceBase}i/TreePlus.gif" class="action-icon" alt="{ts}open section{/ts}"/></a>
       </span>
       <span id="minus{$context}{$list}{$row.case_id}_hide">
-      <a href="#" onclick="hideCaseActivities('{$row.case_id}','{$list}', '{$context}'); return false;">
-        <img src="{$config->resourceBase}i/TreeMinus.gif" class="action-icon" alt="{ts}open section{/ts}"/>
-      </a>
+      <a href="#" onclick="hideCaseActivities('{$row.case_id}','{$list}', '{$context}');
+                             return false;"><img src="{$config->resourceBase}i/TreeMinus.gif" class="action-icon" alt="{ts}open section{/ts}"/></a>
     </td>
 
     <td class="crm-case-phone"><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`"}">{$row.sort_name}</a>{if $row.phone}<br /><span class="description">{$row.phone}</span>{/if}<br /><span class="description">{ts}Case ID{/ts}: {$row.case_id}</span></td>
@@ -83,9 +81,6 @@
     <td class="crm-case-case_type">{$row.case_type}</td>
     <td class="crm-case-case_role">{if $row.case_role}{$row.case_role}{else}---{/if}</td>
     <td class="crm-case-casemanager">{if $row.casemanager_id}<a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.casemanager_id`"}">{$row.casemanager}</a>{else}---{/if}</td>
-
-    {*NYSS*}
-    {if $list neq 'allcases' && $list neq 'mycases'}
       {if $list eq 'upcoming'}
         <td class="crm-case-case_scheduled_activity">
           {if $row.case_upcoming_activity_viewable}
@@ -113,17 +108,16 @@
           {$row.case_recent_activity_date|crmDate}
         </td>
       {/if}
-    {/if}{*NYSS end allcases condition*}
 
     <td>{$row.action}{$row.moreActions}</td>
   </tr>
   <tr id="{$list}{$row.case_id}_hide" class="crm-case_{$row.case_id}">
-     <td></td>
-     <td colspan="8" width="99%" class="enclosingNested crm-case_{$row.case_id}">
-        <div id="{$context}-{$list}-casedetails-{$row.case_id}"></div>{*NYSS 4394*}
+     <td>
+     </td>
+     <td colspan="7" width="99%" class="enclosingNested crm-case_{$row.case_id}">
+        <div id="{$context}-{$list}-casedetails-{$row.case_id}"></div>
      </td>
   </tr>
-
   <script type="text/javascript">
     cj('#minus{$context}{$list}{$row.case_id}_hide').hide();
   </script>
@@ -137,7 +131,7 @@
   {/if}
 
 </table>
-{/if}
+{/if}{*NYSS*}
 
 {*include activity view js file*}
 {include file="CRM/common/activityView.tpl" list=$list}
@@ -149,7 +143,8 @@
 {* Build case details*}
 {literal}
 <script type="text/javascript">
-function CaseDetails( caseId, contactId, type, context ) {
+function {/literal}{$context}{$list}{literal}CaseDetails( caseId, contactId, type, context )
+{
   var dataUrl = {/literal}"{crmURL p='civicrm/case/details' h=0 q='snippet=4&caseId='}{literal}" + caseId +'&cid=' + contactId + '&type=' + type;
   cj.ajax({
     url     : dataUrl,
@@ -157,7 +152,7 @@ function CaseDetails( caseId, contactId, type, context ) {
     timeout : 5000, //Time in milliseconds
     success : function( data ){
       //cj( '#'+ context + '-' + type +'-casedetails-' + caseId ).html( data );
-      cj( 'div.innerDetails' ).html( data );
+      cj( 'div#caseDetails-'+caseId ).html( data );
     },
     error   : function( XMLHttpRequest, textStatus, errorThrown ) {
       console.error( 'Error: '+ textStatus );
@@ -268,14 +263,14 @@ function fnFormatDetails( oTable, nTr ) {
   var oData = oTable.fnGetData( nTr );
   var list = '{/literal}{$list}{literal}';
   var context = '{/literal}{$context}{literal}';
-  var case_id = oData[9];
-  var contact_id = oData[10];
+  var case_id = oData[8];
+  var contact_id = oData[9];
 
   // initiate innerDetails div
-  var sOut = '<div class="innerDetails"></div>';
+  var sOut = '<div class="innerDetails" id="caseDetails-'+ case_id +'"></div>';
 
   // fill innerDetails div with data from AJAX call
-  CaseDetails(case_id, contact_id, list, context);
+  {/literal}{$context}{$list}{literal}CaseDetails(case_id, contact_id, list, context);
 
   return sOut;
 }
