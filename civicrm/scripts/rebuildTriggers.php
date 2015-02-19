@@ -7,7 +7,7 @@
  */
 
 //define the expected number of triggers
-define('TRIGCOUNT', 396);
+define('TRIGCOUNT', 401);
 
 $prog = basename(__FILE__);
 
@@ -36,5 +36,5 @@ if ( $optList['check'] ) {
 }
 else {
   echo "Rebuilding triggers...\n";
-  CRM_Core_DAO::triggerRebuild( );
+  CRM_Core_DAO::triggerRebuild( NULL, true );
 }
