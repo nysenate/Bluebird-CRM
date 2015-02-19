@@ -1232,7 +1232,7 @@ function getUnmatched(range) {
     url: '/civicrm/imap/ajax/unmatched/list?range='+range,
     success: function(data,status) {
       messages = cj.parseJSON(data);
-      if(messages.stats.overview.successes == '0' || messages == null){
+      if(messages == null || messages.stats.overview.successes == '0'){
         Table();
       }else{
         var html = '';
