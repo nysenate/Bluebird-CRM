@@ -58,6 +58,10 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
     $this->activityTypes = CRM_Core_PseudoConstant::activityType(TRUE, TRUE, FALSE, 'label', TRUE);
     asort( $this->activityTypes );
 
+    //NYSS get activity keyword tags
+    $this->tags = CRM_Core_BAO_Tag::getTagsUsedFor('civicrm_activity', true, false, 296);
+    //CRM_Core_Error::debug_var('tags', $this->tags);
+
     $this->_columns = array(
       'civicrm_contact' =>
       array(
@@ -270,7 +274,13 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
           'details' => array(
             'title' => ts('Activity Details'),
             'default' => TRUE,//NYSS
-          )
+          ),
+          //NYSS 8396
+          'tag_name' =>
+          array(
+            'name' => 'id',
+            'title' => ts('Tag Name'),
+          ),
         ),
         'filters' => array(
           'activity_date_time' => array(
@@ -315,13 +325,13 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
         'alias' => 'activity',
       ),
       'civicrm_activity_contact' =>
-        array(
+      array(
         'dao' => 'CRM_Activity_DAO_ActivityContact',
         'fields' =>
         array(
           // so we have $this->_alias populated
-            ),
-          ),
+        ),
+      ),
     ) + $this->addAddressFields(FALSE, TRUE);
 
     if ($campaignEnabled) {
@@ -772,6 +782,7 @@ GROUP BY civicrm_activity_id {$this->_having} {$this->_orderBy} {$this->_limit}"
 
   function alterDisplay(&$rows) {
     // custom code to alter rows
+    CRM_Core_Error::debug_var('rows', $rows);
 
     $entryFound     = FALSE;
     $activityType   = CRM_Core_PseudoConstant::activityType(TRUE, TRUE, FALSE, 'label', TRUE);
@@ -923,6 +934,16 @@ GROUP BY civicrm_activity_id {$this->_having} {$this->_orderBy} {$this->_limit}"
           $rows[$rowNum]['class'] = "status-overdue";
           $entryFound = TRUE;
         }
+      }
+
+      //NYSS 8396
+      if (array_key_exists('civicrm_activity_tag_name', $row)) {
+        $actTags = CRM_Core_BAO_EntityTag::getTag($row['civicrm_activity_tag_name'], 'civicrm_activity');
+        foreach ($actTags as $k => &$v) {
+          $v = $this->tags[$k];
+        }
+        $rows[$rowNum]['civicrm_activity_tag_name'] = implode(', ', $actTags);
+        $entryFound = TRUE;
       }
 
       $entryFound = $this->alterDisplayAddressFields($row, $rows, $rowNum, 'activity', 'List all activities for this ') ? TRUE : $entryFound;
