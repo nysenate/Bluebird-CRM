@@ -782,7 +782,7 @@ GROUP BY civicrm_activity_id {$this->_having} {$this->_orderBy} {$this->_limit}"
 
   function alterDisplay(&$rows) {
     // custom code to alter rows
-    CRM_Core_Error::debug_var('rows', $rows);
+    //CRM_Core_Error::debug_var('rows', $rows);
 
     $entryFound     = FALSE;
     $activityType   = CRM_Core_PseudoConstant::activityType(TRUE, TRUE, FALSE, 'label', TRUE);
