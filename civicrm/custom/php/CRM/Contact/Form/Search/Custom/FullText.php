@@ -339,6 +339,11 @@ WHERE      t.table_name = 'Activity' AND
 
     $searchService = CRM_Core_BAO_File::getSearchService();
     $form->assign('allowFileSearch', !empty($searchService) && CRM_Core_Permission::check('access uploaded files'));
+
+    //NYSS 8410
+    if (!empty($form->_formValues['text'])) {
+      $form->assign('text', $form->_formValues['text']);
+    }
   }
 
   /**

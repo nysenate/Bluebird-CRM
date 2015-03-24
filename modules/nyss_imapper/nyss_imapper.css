@@ -210,8 +210,8 @@ thead .sorting_asc{background-color:#f1f1f1!important;}
 .info:hover{background: #ccc; }
 .add_email{width:450px !important; padding: 5px 10px;}
 
-.found{
-    background: rgba(255, 230, 0, 0.5);
+.found {
+    background: rgba(255,230,0, 0.5);
     padding: 1px 2px;
     border: 1px solid #C1C1C1;
     margin: -1px -4px;
@@ -219,31 +219,30 @@ thead .sorting_asc{background-color:#f1f1f1!important;}
     border-radius: 3px;
     display:inline-block;
 }
-.found:hover{
-    background: rgba(255, 230, 0, 0.8);
+.found:hover {
+    background: rgba(255,230,0, 0.8);
     border: 1px solid #A0A0A0;
-
 }
 
-.found.name{
+.found.name {
     /* red ffb7b7 */
     background: rgba(255,183,183, 0.5);
 }
-/*.found.name:hover{
+.found.name:hover {
     background: rgba(255,183,183, 0.8);
-}*/
-.found.zip{
+}
+.found.zip {
     /* blue a8d1ff*/
     background: rgba(168,209,255, 0.5);
 }
-.found.zip:hover{
+.found.zip:hover {
     background: rgba(168,209,255, 0.8);
 }
-.found.phone{
+.found.phone {
     /* green a8d1ff*/
     background: rgba(196,255,143, 0.5);
 }
-.found.phone:hover{
+.found.phone:hover {
     background: rgba(196,255,143, 0.8);
 }
 
