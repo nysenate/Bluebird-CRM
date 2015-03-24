@@ -9,18 +9,23 @@ cj(document).ready(function()
   cj(".found.email_address").live('click', function() {
     cj('.highlightTarget:visible .email_address').val(cj(this).data('search'));
   });
+
   cj(".found.phone").live('click', function() {
     cj('.highlightTarget:visible .phone').val(cj(this).data('search'));
   });
+
   cj(".found.zip").live('click', function() {
-    cj('.highlightTarget:visible .zip').val(cj(this).data('search'));
+    var data = cj(this).data('json');
+    cj('.highlightTarget:visible .city').val(data.city);
+    cj('.highlightTarget:visible .state').val(data.state);
+    cj('.highlightTarget:visible .zip').val(data.zip);
   });
 
   cj(".found.name").live('click', function() {
     var data = cj(this).data('json');
     cj('.highlightTarget:visible .prefix').val(data.prefix);
     cj('.highlightTarget:visible .first_name').val(data.first);
-    cj('.highlightTarget:visible .middle_name').val(data.second);
+    cj('.highlightTarget:visible .middle_name').val(data.middle);
     cj('.highlightTarget:visible .last_name').val(data.last);
     cj('.highlightTarget:visible .suffix').val(data.suffix);
   });
@@ -335,7 +340,7 @@ cj(document).ready(function()
 
   // ****************************************************************
   // Assign -
-  // A message comes into bluebird, but we cannot find an exact match (via email)
+  // A message is received, but we cannot find an exact match (via email)
   // It shows up on the Unmatched screen to be assigned to a contact
 
   // Assigning modal dialog
@@ -387,9 +392,9 @@ cj(document).ready(function()
             if (message.sender_email) {
               cj('#message_left_header').append("<span class='emailbubble marginL5'>"+shortenString(message.sender_email)+"</span>");
             }
-            cj('#message_left_header').append("<br/><span class='popup_def'>Subject: </span>"+shortenString(message.subject,55)+" "+ icon+"<br/><span class='popup_def'>Date Forwarded: </span>"+message.date_long+"<br/>");
+            cj('#message_left_header').append("<br/><span class='popup_def'>Subject: </span>"+shortenString(message.subject,55)+" "+ icon+"<br/><span class='popup_def'>Date Forwarded: </span>"+message.email_date_long+"<br/>");
             if (message.forwarder != message.sender_email) {
-              cj('#message_left_header').append("<span class='popup_def'>Forwarded by: </span><span class='emailbubble'>"+ message.forwarder+"</span> @ "+ message.updated_long+ "<br/>");
+              cj('#message_left_header').append("<span class='popup_def'>Forwarded by: </span><span class='emailbubble'>"+ message.forwarder+"</span> @ "+ message.updated_date_long+ "<br/>");
             }
             else {
               cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span>No forwarded content found<br/>");
@@ -589,7 +594,7 @@ cj(document).ready(function()
 
   // ****************************************************************
   // Process -
-  // A message comes into bluebird and is automatically or manually matched
+  // A message is received and is automatically or manually matched.
   // It shows up on the Matched screen to be processed
 
   // Process modal dialog
@@ -649,7 +654,7 @@ cj(document).ready(function()
               if (message.sender_email) {
                 cj('#message_left_header').append("<span class='emailbubble'>"+ message.sender_email+"</span>");
               }
-              cj('#message_left_header').append("<br/><span class='popup_def'>Subject: </span>"+shortenString(message.subject,55) +"<br/><span class='popup_def'>Date Forwarded: </span>"+message.date_long+"<br/>");
+              cj('#message_left_header').append("<br/><span class='popup_def'>Subject: </span>"+shortenString(message.subject,55) +"<br/><span class='popup_def'>Date Forwarded: </span>"+message.email_date_long+"<br/>");
               cj('.email_address').val(message.fromEmail);
 
               if (message.forwarder != message.sender_email) {
@@ -701,9 +706,9 @@ cj(document).ready(function()
                 return false;
               }
               else {
-                cj('#message_left_email').append("<div id='header_"+messageId+"' data-id='"+messageId+"' class='message_left_header_tags'><span class='popup_def'>From: </span>"+message.sender_name +"  <span class='emailbubble'>"+ message.sender_email+"</span><br/><span class='popup_def'>Subject: </span>"+shortenString(message.subject,55)+"<br/><span class='popup_def'>Date Forwarded: </span>"+message.date_long+"<br/></div><div id='email_"+messageId+"' class='hidden_email' data-id='"+messageId+"'></div>");
+                cj('#message_left_email').append("<div id='header_"+messageId+"' data-id='"+messageId+"' class='message_left_header_tags'><span class='popup_def'>From: </span>"+message.sender_name +"  <span class='emailbubble'>"+ message.sender_email+"</span><br/><span class='popup_def'>Subject: </span>"+shortenString(message.subject,55)+"<br/><span class='popup_def'>Date Forwarded: </span>"+message.email_date_long+"<br/></div><div id='email_"+messageId+"' class='hidden_email' data-id='"+messageId+"'></div>");
                 if (message.forwarder != message.sender_email) {
-                  cj('#header_'+messageId).append("<span class='popup_def'>Forwarded by: </span><span class='emailbubble'>"+ message.forwarder+"</span> @"+ message.updated_long+ "<br/>");
+                  cj('#header_'+messageId).append("<span class='popup_def'>Forwarded by: </span><span class='emailbubble'>"+ message.forwarder+"</span> @"+ message.updated_date_long+ "<br/>");
                 }
                 else {
                   cj('#header_'+messageId).append("<span class='popup_def'>&nbsp;</span>No forwarded content found<br/>");
@@ -940,8 +945,8 @@ cj(document).ready(function()
     var activity_tag = cj("#process-popup #activity_tag").val().replace(/,,/g, ",").replace(/^,/g, "");
     var contact_position = cj("#process-popup #contact_position").val().replace(/,,/g, ",").replace(/^,/g, "");
 
-    var activty_contact = cj("#process-popup #contact_name").val().replace(/,,/g, ",").replace(/^,/g, "");
-    var activty_status_id = cj("#tab3 #status_id").val();
+    var activity_contact = cj("#process-popup #contact_name").val().replace(/,,/g, ",").replace(/^,/g, "");
+    var activity_status_id = cj("#tab3 #status_id").val();
     // var activity_date = cj("#tab3 #activity_date").val();
     //
 
@@ -1175,21 +1180,21 @@ cj(document).ready(function()
       error = false;
     }
 
-    // console.log((activty_contact.length > 0) && (activty_status_id.length === 0));
-    if (activty_contact.length > 0 && activty_status_id.length === 0) {
+    // console.log((activity_contact.length > 0) && (activity_status_id.length === 0));
+    if (activity_contact.length > 0 && activity_status_id.length === 0) {
       CRM.alert('You\'ve picked a contact to Assign this message to, but also need to select a status to continue', 'Edit Activity Warning', 'warn');
       return false;
     }
 
     // did we edit the activity ?
-    if (activty_contact.length != 0 || activty_status_id.length != 0) {
+    if (activity_contact.length != 0 || activity_status_id.length != 0) {
      cj.ajax({
         url: '/civicrm/imap/ajax/matched/edit',
         async: false,
         data: {
           activity_id: activityId,
-          activty_contact: activty_contact,
-          activty_status_id: activty_status_id,
+          activity_contact: activity_contact,
+          activity_status_id: activity_status_id,
         },
         success: function(data,status) {
           CRM.alert('Edited Activity', 'Success', 'success');
@@ -1326,7 +1331,7 @@ function getUnmatched(range)
             icon = '<div class="icon attachment-icon attachment" title="'+value.attachments+' Attachments" ></div>';
           }
           html += '<td class="imap_subject_column unmatched">'+shortenString(value.subject,40) +' '+icon+'</td>';
-          html += '<td class="imap_date_column unmatched"><span data-sort="'+value.date_u+'" title="'+value.date_long+'">'+value.date_short +'</span></td>';
+          html += '<td class="imap_date_column unmatched"><span data-sort="'+value.updated_date_unix+'" title="'+value.updated_date_long+'">'+value.updated_date_short +'</span></td>';
 
           // hidden column to sort by
           if (value.match_count != 1) {
@@ -1380,7 +1385,7 @@ function getMatched(range)
         var total_results = messages.stats.overview.successes;
         // console.log(messages);
         cj.each(messages.Processed, function(key, value) {
-          if (value.date_short != null) {
+          if (value.updated_date_short != null) {
             html += '<tr id="'+value.id+'" data-imap-id="'+value.id+'" data-activity-id="'+value.activity_id+'" data-contact-id="'+value.matched_to+'" class="imapper-message-box"><td class="imap_checkbox_column" > <input class="checkbox" type="checkbox" data-imap-id="'+value.id+'" data-delete="'+value.id+'" data-activity-id="'+value.activity_id+'" data-contact-id="'+value.matched_to+'"/></td>';
             if (value.contactType != '') {
               html += '<td class="imap_name_column" data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'">';
@@ -1412,7 +1417,7 @@ function getMatched(range)
               html += '<div class="icon attachment-icon attachment" title="'+value.attachments+' Attachments" ></div>';
             }
             html += '</td>';
-            html += '<td class="imap_date_column"><span data-sort="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
+            html += '<td class="imap_date_column"><span data-sort="'+value.updated_date_unix+'"  title="'+value.updated_date_long+'">'+value.updated_date_short +'</span></td>';
             html += '<td class="imap_match_column  hidden">'+match_sort +'</td>';
             html += '<td class="imap_forwarder_column"><span data-sort="'+value.forwarder.replace("@","_")+'">'+shortenString(value.forwarder,14)+'</span> </td>';
             html += '<td class="imap_actions_column"><span class="process"><a href="#">Process</a></span><span class="clear"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
@@ -1455,8 +1460,8 @@ function getReports(range)
             html += '<td class="imap_name_column" data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'"> <a class="crm-summary-link" href="/civicrm/profile/view?reset=1&gid=13&id='+value.matched_to+'&snippet=4"> <div class="icon crm-icon '+value.contactType+'-icon"></div> </a> <a href="/civicrm/contact/view?reset=1&cid='+value.matched_to+'" title="'+value.fromName+'">'+shortenString(value.fromName,19)+'</a> </td>';
           }
           html += '<td class="imap_subject_column">'+shortenString(value.subject,40)+'</td>';
-          html += '<td class="imap_date_column"><span data-sort="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
-          html += '<td class="imap_date_column"><span data-sort="'+value.email_date_u+'"  title="'+value.email_date_long+'">'+value.email_date_short +'</span></td>';
+          html += '<td class="imap_date_column"><span data-sort="'+value.updated_date_unix+'"  title="'+value.updated_date_long+'">'+value.updated_date_short +'</span></td>';
+          html += '<td class="imap_date_column"><span data-sort="'+value.email_date_unix+'"  title="'+value.email_date_long+'">'+value.email_date_short +'</span></td>';
           if (value.status_string != null) {
             html += '<td class="imap_date_column">'+value.status_string+'</td>';
           }

@@ -26,9 +26,6 @@
 {* Template for Full-text search component. *}
 {assign var=csID value=15} {*NYSS temp hack*}
 {*NYSS 2193 - also append qfkey to all view all links*}
-{if $smarty.get.text}
-  {assign var=text value=$smarty.get.text}
-{/if}
 <div class="crm-block crm-form-block crm-search-form-block">
   <div id="searchForm">
       <div class="form-item">

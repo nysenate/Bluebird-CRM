@@ -23,7 +23,7 @@
           <th class='imap_checkbox_header' ><input class='checkbox_switch'  type="checkbox" name="" value="" /></th>
           <th class='imap_name_header'>Sender’s Info</th>
           <th class='imap_subject_header'>Subject</th>
-          <th class='imap_date_header'>Date Forwarded</th>
+          <th class='imap_date_header'>Matched Date</th>
           <th class='imap_match_type_header hidden'>Match Type</th>
           <th class='imap_forwarded_header'>Forwarded By</th>
           <th class='imap_action_headers'>Actions</th>
