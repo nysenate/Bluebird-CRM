@@ -1,59 +1,59 @@
 <div class="crm-content-block imapperbox " id="Unmatched">
-	<div class='full'>
-	<h1>Unmatched Messages <select class="form-select range" id="range" name="range">
-				<option value="0">All Time</option>
-				<option value="1">Last 24 hours</option>
-				<option value="7">Last 7 days</option>
-				<option value="30" selected>Last 30 days</option>
-				<option value="90">Last 90 days</option>
-				<option value="365">Last Year</option>
-			</select></h1>
-	</div>
-	<div id='top'></div>
-	<div class='full'>
-		<div class='page_actions'>
-			<input type="button" class="multi_delete" id="" value="Delete" name="delete">
-			<span class="page_actions_label">With selected :</span>
-		</div>
-		<table id="sortable_results" class="">
-			<thead>
-				<tr class='list_header'>
-					<th class='imap_checkbox_header' ><input class='checkbox_switch'  type="checkbox" name="" value="" /></th>
-					<th class='imap_name_header'>Sender’s Info</th>
-					<th class='imap_subject_header'>Subject</th>
-					<th class='imap_date_header'>Date Forwarded</th>
-					<th class='imap_match_type_header hidden'>Match Type</th>
-					<th class='imap_forwarded_header'>Forwarded By</th>
-					<th class='imap_action_headers'>Actions</th>
-				</tr>
-			</thead>
-			<tbody id='imapper-messages-list'>
-				<td valign="top" colspan="7" class="dataTables_empty"><span class="loading_row"><span class="loading_message">Loading Message data <img src="/sites/default/themes/Bluebird/images/loading.gif"/></span></span></td>
-			</tbody>
-		</table>
-		<div class='page_actions'>
-			<input type="button" class="multi_delete" id="" value="Delete" name="delete">
-			<span class="page_actions_label">With selected :</span>
-		</div>
-	</div>
-	<div id="assign-popup" title="Loading Data" style="display:none;">
-		<div id="message_left">
-			<div id="message_left_header">
-			</div>
-			<div id="message_left_email">
-			</div>
-		</div>
-		<div id="message_right">
-			<div id="tabs" class="subtab">
-				<ul>
-					<li><a href="#tab1" data-button="Assign" >Find Contact</a></li>
-					<li><a href="#tab2" data-button="Create &amp; Assign">Add Contact</a></li>
-				</ul>
-				<!-- Object Id's -->
-				<input type="hidden" class="hidden" id="message">
-				<!-- End objects -->
+  <div class='full'>
+  <h1>Unmatched Messages <select class="form-select range" id="range" name="range">
+        <option value="0">All Time</option>
+        <option value="1">Last 24 hours</option>
+        <option value="7">Last 7 days</option>
+        <option value="30" selected>Last 30 days</option>
+        <option value="90">Last 90 days</option>
+        <option value="365">Last Year</option>
+      </select></h1>
+  </div>
+  <div id='top'></div>
+  <div class='full'>
+    <div class='page_actions'>
+      <input type="button" class="multi_delete" id="" value="Delete" name="delete">
+      <span class="page_actions_label">With selected :</span>
+    </div>
+    <table id="sortable_results" class="">
+      <thead>
+        <tr class='list_header'>
+          <th class='imap_checkbox_header' ><input class='checkbox_switch'  type="checkbox" name="" value="" /></th>
+          <th class='imap_name_header'>Sender’s Info</th>
+          <th class='imap_subject_header'>Subject</th>
+          <th class='imap_date_header'>Date Forwarded</th>
+          <th class='imap_match_type_header hidden'>Match Type</th>
+          <th class='imap_forwarded_header'>Forwarded By</th>
+          <th class='imap_action_headers'>Actions</th>
+        </tr>
+      </thead>
+      <tbody id='imapper-messages-list'>
+        <td valign="top" colspan="7" class="dataTables_empty"><span class="loading_row"><span class="loading_message">Loading Message data <img src="/sites/default/themes/Bluebird/images/loading.gif"/></span></span></td>
+      </tbody>
+    </table>
+    <div class='page_actions'>
+      <input type="button" class="multi_delete" id="" value="Delete" name="delete">
+      <span class="page_actions_label">With selected :</span>
+    </div>
+  </div>
+  <div id="assign-popup" title="Loading Data" style="display:none;">
+    <div id="message_left">
+      <div id="message_left_header">
+      </div>
+      <div id="message_left_email">
+      </div>
+    </div>
+    <div id="message_right">
+      <div id="tabs" class="subtab">
+        <ul>
+          <li><a href="#tab1" data-button="Assign" >Find Contact</a></li>
+          <li><a href="#tab2" data-button="Create &amp; Assign">Add Contact</a></li>
+        </ul>
+        <!-- Object Id's -->
+        <input type="hidden" class="hidden" id="message">
+        <!-- End objects -->
 
-				<div id="tab1" class="highlightTarget">
+        <div id="tab1" class="highlightTarget">
           <input type="hidden" class="hidden" id="id" name="id">
           <label for="first_name">
             <span class="label_def">First Name: </span>
@@ -176,7 +176,7 @@
           </label>
             <div class='search'>
               <input type="button" class="imapper-submit" id="search" value="Search" name="search">
-	            <span class='right'></span>
+              <span class='right'></span>
             </div>
           <div id="imapper-contacts-list" class="contacts-list"></div>
         </div>
@@ -338,34 +338,34 @@
             <input type="text" placeholder="Zip Code"  class="form-text zip" name="zip">
           </label>
         </div>
- 			</div>
-		</div>
-	</div>
-	<div id="delete-confirm" title="Delete Message from Unmatched Messages?">
-		<!-- Object Id's -->
-		<input type="hidden" class="hidden" id="message">
-		<!-- End objects -->
-		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>Selected messages will be removed permanently. Are you sure?</p>
-	</div>
-	<div id="loading-popup" title="please wait">
-		<p> Loading message details.</p>
-	</div>
-	<div id="reloading-popup" title="please wait" style="display:none;">
-		<p> <img src="/sites/default/themes/Bluebird/nyss_skin/images/header-search-active.gif"/>  ReLoading messages.</p>
-	</div>
-	<div id="no_find_match" title="This Message was already matched" style="display:none;">
-		<p> We will automatically assign this message in the next 5 mins.</p>
-	</div>
-	<div id="matchCheck-popup" title="Checking Other Emails"  style="display:none;">
-		<p> Currently Checking for other emails that match <span class="this_address">this address</span>.</p>
-	</div>
+       </div>
+    </div>
+  </div>
+  <div id="delete-confirm" title="Delete Message from Unmatched Messages?">
+    <!-- Object Id's -->
+    <input type="hidden" class="hidden" id="message">
+    <!-- End objects -->
+    <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>Selected messages will be removed permanently. Are you sure?</p>
+  </div>
+  <div id="loading-popup" title="please wait">
+    <p> Loading message details.</p>
+  </div>
+  <div id="reloading-popup" title="please wait" style="display:none;">
+    <p> <img src="/sites/default/themes/Bluebird/nyss_skin/images/header-search-active.gif"/>  ReLoading messages.</p>
+  </div>
+  <div id="no_find_match" title="This Message was already matched" style="display:none;">
+    <p> We will automatically assign this message in the next 5 mins.</p>
+  </div>
+  <div id="matchCheck-popup" title="Checking Other Emails"  style="display:none;">
+    <p> Currently Checking for other emails that match <span class="this_address">this address</span>.</p>
+  </div>
 
-	<div id="AdditionalEmail-popup" title="Add email address to contact?"  style="display:none;">
-		<p>We found the following email address(es) in the message. Select or type any email address you'd like to assign to the contact record. </p>
-		<div class="add_email"  id="add_email">
+  <div id="AdditionalEmail-popup" title="Add email address to contact?"  style="display:none;">
+    <p>We found the following email address(es) in the message. Select or type any email address you'd like to assign to the contact record. </p>
+    <div class="add_email"  id="add_email">
 
-		</div>
-		<input type="hidden" class="hidden" id="contact" name="contact">
-		<input type="hidden" class="hidden" id="id" name="id">
-	</div>
+    </div>
+    <input type="hidden" class="hidden" id="contact" name="contact">
+    <input type="hidden" class="hidden" id="id" name="id">
+  </div>
 </div>
