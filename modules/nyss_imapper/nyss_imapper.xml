@@ -52,7 +52,7 @@
   </item>
   <item>
     <path>civicrm/imap/ajax/matched/clear</path>
-    <page_callback>CRM_IMAP_AJAX::Clear</page_callback>
+    <page_callback>CRM_IMAP_AJAX::MatchedClear</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>

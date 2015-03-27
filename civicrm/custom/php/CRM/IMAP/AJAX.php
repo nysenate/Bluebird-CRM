@@ -7,6 +7,7 @@
 // Revised: 2015-02-26 - fixed JSON encoding; tons of code cleanup
 // Revised: 2015-03-09 - simplified and enhanced message parser
 // Revised: 2015-03-20 - finished up Matched and Report interfaces
+// Revised: 2015-03-26 - bug fixes and better error handling
 
 class CRM_IMAP_AJAX
 {
@@ -167,7 +168,7 @@ class CRM_IMAP_AJAX
   } // getFullMessage()
 
 
-  private static function getMessageListJson($list_type)
+  private static function getMessageList($list_type)
   {
     $startTime = microtime(true);
     $debug = self::get('debug');
@@ -233,14 +234,8 @@ class CRM_IMAP_AJAX
       echo "\n</pre>\n";
     }
 
-    $jsonResult = json_encode($resultData);
-    if ($jsonResult === false) {
-      return json_encode('Error');
-    }
-    else {
-      return $jsonResult;
-    }
-  } // getMessageListJson()
+    return $resultData;
+  } // getMessageList()
 
 
   private static function postProcess($fields)
@@ -248,7 +243,7 @@ class CRM_IMAP_AJAX
     $res = array();
 
     foreach ($fields as $key => $val) {
-      /***
+      /*** the old way of cleaning fields....
       $val = str_replace(chr(194).chr(160), ' ', $val);
       $val = htmlspecialchars_decode(stripslashes($val));
       $val = preg_replace('/[^a-zA-Z0-9\s\p{P}]/', '', trim($val));
@@ -550,6 +545,38 @@ class CRM_IMAP_AJAX
   } // addEntityTags()
 
 
+  private static function exitSuccess($msg, $data = null)
+  {
+    self::exitOutputJson(false, $msg, $data);
+  } // exitSuccess()
+
+
+  private static function exitError($msg, $data = null)
+  {
+    self::exitOutputJson(true, $msg, $data);
+  } // exitError()
+
+
+  private static function exitOutputJson($isError, $msg, $data = null)
+  {
+    $res = array('is_error'=>$isError, 'message'=>$msg);
+    if ($data !== null) {
+      $res['data'] = $data;
+    }
+
+    $jsonResult = json_encode($res);
+    if ($jsonResult === false) {
+      $res = array('is_error'=>true, 'message'=>'Fatal JSON encoding error');
+      echo json_encode($res);
+    }
+    else {
+      echo $jsonResult;
+    }
+    CRM_Utils_System::civiExit();
+  } // exitOutputJson()
+
+
+
   /**
    * This function grabs all of the messages previously processed by the
    * process mailbox polling script and formats a JSON object.
@@ -558,8 +585,13 @@ class CRM_IMAP_AJAX
    */
   public static function UnmatchedList()
   {
-    echo self::getMessageListJson(self::STATUS_UNMATCHED);
-    CRM_Utils_System::civiExit();
+    $res = self::getMessageList(self::STATUS_UNMATCHED);
+    if ($res) {
+      self::exitSuccess('Retrieved unmatched message list', $res);
+    }
+    else {
+      self::exitError('Unable to retrieve unmatched message list');
+    }
   } // UnmatchedList()
 
 
@@ -574,6 +606,7 @@ class CRM_IMAP_AJAX
     $messageId = self::get('id');
     $debug = self::get('debug');
 
+    $errmsg = null;
     $msg = self::getFullMessage($messageId);
 
     if ($msg) {
@@ -590,20 +623,20 @@ class CRM_IMAP_AJAX
         $msg['stats']['overview']['time'] = $endTime - $startTime;
       }
       else if ($status == self::STATUS_MATCHED) {
-        $msg = array('code'=>'ERROR', 'status'=>1, 'message'=>'Message is already assigned', 'clear'=>'true');
+        $errmsg = 'Message is already assigned';
       }
       else if ($status == self::STATUS_CLEARED) {
-        $msg = array('code'=>'ERROR', 'status'=>1, 'message'=>'Message has been cleared from inbox', 'clear'=>'true');
+        $errmsg = 'Message has been cleared from inbox';
       }
       else if ($status == self::STATUS_DELETED) {
-        $msg = array('code'=>'ERROR', 'status'=>1, 'message'=>'Message has been deleted', 'clear'=>'true');
+        $errmsg = 'Message has been deleted';
       }
       else {
-        $msg = array('code'=>'ERROR', 'status'=>1, 'message'=>'Message has an unknown status', 'clear'=>'true');
+        $errmsg = 'Message has an unknown status';
       }
     }
     else {
-      $msg = array('code'=>'ERROR', 'status'=>1, 'message'=>'Message not found', 'clear'=>'true');
+      $errmsg = 'Message not found';
     }
 
     if ($debug) {
@@ -612,8 +645,13 @@ class CRM_IMAP_AJAX
       echo "\n</pre>\n";
     }
     //file_put_contents("/tmp/inbound_email/msg", print_r($msg, true));
-    echo json_encode($msg);
-    CRM_Utils_System::civiExit();
+
+    if ($errmsg) {
+      self::exitError($errmsg);
+    }
+    else {
+      self::exitSuccess('Retrieved message', $msg);
+    }
   } // UnmatchedDetails()
 
 
@@ -640,15 +678,14 @@ class CRM_IMAP_AJAX
       }
     }
 
+    mysql_close(self::db());
+
     if ($success) {
-      $res = array('code'=>'SUCCESS', 'status'=>0, 'id'=>$ids, 'message'=>'Message deleted');
+      self::exitSuccess('Message deleted', $ids);
     }
     else {
-      $res = array('code'=>'ERROR', 'status'=>1, 'id'=>$ids, 'message'=>'Unable to delete all messages');
+      self::exitError('Unable to delete all messages', $ids);
     }
-    echo json_encode($res);
-    mysql_close(self::db());
-    CRM_Utils_System::civiExit();
   } // UnmatchedDelete()
 
 
@@ -712,6 +749,8 @@ class CRM_IMAP_AJAX
       $where .= " AND p.phone LIKE '%$val%'";
     }
 
+    $errmsg = null;
+
     // If at least one field has a value to search on, execute query
     if (array_filter($fields)) {
       $query = "
@@ -731,19 +770,20 @@ class CRM_IMAP_AJAX
       while ($row = mysql_fetch_assoc($dbres)) {
         $res[] = $row;
       }
-
-      if (count($res) < 1) {
-        $res = array('code'=>'ERROR', 'status'=>1, 'message'=>'No Records');
-      }
     }
     else {
       // do nothing if no query
-      $res = array('code'=>'ERROR', 'status'=>1, 'message'=>'Please enter a query.');
+      $errmsg = 'Please enter a query';
     }
 
-    echo json_encode($res);
     mysql_close(self::db());
-    CRM_Utils_System::civiExit();
+
+    if ($errmsg) {
+      self::exitError($errmsg);
+    }
+    else {
+      self::exitSuccess('Search succeeded', $res);
+    }
   } // ContactSearch()
 
 
@@ -813,16 +853,26 @@ class CRM_IMAP_AJAX
     require_once 'api/api.php';
     require_once 'CRM/Utils/File.php';
 
-    $messageId = self::get('messageId');
+    $recId = self::get('id');
     $contactIds = self::get_array('contactId');
     $session = CRM_Core_Session::singleton();
     $userId = $session->get('userID');
     $debug = self::get('debug');
 
-    if (!$messageId || !$contactIds) {
-      $res = array('code'=>'ERROR', 'message'=>'Something went wrong here');
-      echo json_encode($res);
-      CRM_Utils_System::civiExit();
+    if (!$recId || !$contactIds) {
+      self::exitError('Missing message ID or contact ID');
+    }
+
+    $msg = self::getFullMessage($recId);
+
+    if ($msg == null) {
+      self::exitError('Message not found');
+    }
+
+    $status = $msg['status'];
+
+    if ($status != self::STATUS_UNMATCHED) {
+      self::exitError('Message is already matched');
     }
 
     $aActivityStatus = CRM_Core_PseudoConstant::activityStatus();
@@ -843,7 +893,6 @@ class CRM_IMAP_AJAX
     $uploadDir = $config->customFileUploadDir;
     $uploadInbox = $uploadDir.'inbox/';
 
-    $msg = self::getFullMessage($messageId);
     $oldActivityId = $msg['activity_id'];
     $senderEmail = $msg['sender_email'];
     $senderName = mysql_real_escape_string($msg['sender_name']);
@@ -852,136 +901,122 @@ class CRM_IMAP_AJAX
     $fwddate = $msg['email_date'];
     $subject = mysql_real_escape_string($msg['subject']);
     $body = mysql_real_escape_string($msg['body']);
-    $status = $msg['status'];
     $messageId = $msg['message_id'];
     $imapId = $msg['imap_id'];
 
-    if ($status == self::STATUS_UNMATCHED) {
-      // if this email has been moved / assigned already
-      if ($msg['code'] == 'ERROR') {
-        $res = array('code'=>'ERROR', 'message'=>$msg['message']);
-        echo json_encode($res);
-        CRM_Utils_System::civiExit();
-      }
+    // Search for contact in Auth Forwarders group with given e-mail.
+    $query = "
+      SELECT e.contact_id
+      FROM civicrm_group_contact gc, civicrm_group g, civicrm_email e
+      WHERE g.name='".self::DEFAULT_AUTH_GROUP."'
+        AND e.email='".$forwarder."'
+        AND g.id=gc.group_id
+        AND gc.status='Added'
+        AND gc.contact_id=e.contact_id
+      ORDER BY gc.contact_id ASC";
+    $contactRes = array();
+    $dbres = mysql_query($query, self::db());
+    while ($row = mysql_fetch_assoc($dbres)) {
+      $contactRes[] = $row;
+    }
+    mysql_free_result($dbres);
 
-      // Search for contact in Auth Forwarders group with given e-mail.
-      $query = "
-        SELECT e.contact_id
-        FROM civicrm_group_contact gc, civicrm_group g, civicrm_email e
-        WHERE g.name='".self::DEFAULT_AUTH_GROUP."'
-          AND e.email='".$forwarder."'
-          AND g.id=gc.group_id
-          AND gc.status='Added'
-          AND gc.contact_id=e.contact_id
-        ORDER BY gc.contact_id ASC";
-      $dbres = mysql_query($query, self::db());
-      $contactRes = array();
-      while ($row = mysql_fetch_assoc($dbres)) {
-        $contactRes[] = $row;
-      }
-      mysql_free_result($dbres);
-  
-      // Authorization of forwarders is done by e-mail address.
-      // The forwarder is typically a Bluebird user, but could also be
-      // a non-user.  In that case, use the Bluebird admin.
-      if (count($contactRes) > 0) {
-        $forwarderId = $contactRes[0]['contact_id'];
-      }
-      else {
-        $forwarderId = self::DEFAULT_CONTACT_ID;
-      }
-  
-      $contactCount = 0;
-      foreach ($contactIds as $contactId) {
-        // get contact info for return message
-        $contactInfo = self::getCiviObject('contact', $contactId);
-        $contactName = $contactInfo['values'][$contactId]['display_name'];
-  
-        // Submit the activity information and assign it to the right user
-        $params = array(
-          'activity_type_id' => $activityType,
-          'source_contact_id' => $forwarderId,
-          'target_contact_id' => $contactId,
-          'subject' => $subject,
-          'is_auto' => 0, // we manually add it, right ?
-          'status_id' => $activityStatus,
-          'activity_date_time' => $upddate,
-          'details' => $body,
-          'version' => 3
-        );
-        $activity = civicrm_api('activity', 'create', $params);
-  
-        // Handle activity creation error.
-        if ($activity['is_error'] == 1 || $activity['values'] == null || count($activity['values']) != 1) {
-          $res = array('code'=>'ERROR', 'message'=>$activity['error_message']);
-          echo json_encode($res);
-          CRM_Utils_System::civiExit();
-        }
-  
-        $activityId = $activity['id'];
-        $res['code'] = 'SUCCESS';
-        $res['messages'][] = array('code' =>'SUCCESS', 'message'=> "Message assigned to ".$contactName, 'key'=>$senderEmail, 'contact'=>$contactId);
-  
-        // if this is not the first contact, add a new row to the table
-        if ($contactCount > 0) {
-          $debug_line = 'Added on assignment to #'.$contactCount;
-          $query = "
-            INSERT INTO nyss_inbox_messages
-             (message_id, imap_id, sender_name, sender_email, subject,
-              body, forwarder, status, debug, updated_date, email_date,
-              activity_id, matched_to, matcher)
-            VALUES
-              ($messageId, $imapId, '$senderName', '$senderEmail', '$subject',
-               '$body', '$forwarder', 1, '$debug_line', '$upddate', '$fwddate',
-               $activityId, $contactId, $userId)";
-        }
-        else {
-          $query = "
-            UPDATE nyss_inbox_messages
-            SET status=1, matcher=$userId, activity_id=$activityId,
-                matched_to=$contactId, updated_date='$upddate'
-            WHERE id = $messageId";
-        }
-        $contactCount++;
-  
-        $dbres = mysql_query($query, self::db());
-        $attachments = $msg['attachments'];
-  
-        if (isset($attachments[0])) {
-          foreach ($attachments as $key => $attachment) {
-            $attachmentName = $attachment['fileName'];
-            $attachmentFull = $attachment['fileFull'];
-
-            if (file_exists($attachmentFull)) {
-              $fileName = CRM_Utils_File::makeFileName($attachmentName);
-              $fileFull = $uploadDir.$fileName;
-              // move file to the civicrm upload directory
-              rename($attachmentFull, $fileFull);
-  
-              $finfo = finfo_open(FILEINFO_MIME_TYPE);
-              $mime = finfo_file($finfo, $fileFull);
-              finfo_close($finfo);
-  
-              $query = "INSERT INTO civicrm_file (mime_type, uri, upload_date)
-                        VALUES ('$mime', '$fileName', 'upddate')";
-              mysql_query($query, self::db());
-              $fileId = mysql_insert_id(self::db());
-
-              $query = "
-                INSERT INTO civicrm_entity_file (entity_table, entity_id, file_id)
-                VALUES ('civicrm_activity', $activityId, $fileId)";
-              mysql_query($query, self::db());
-            }
-          }
-        } // if attachments
-      } // foreach contact
-    } // if UNMATCHED
+    // Authorization of forwarders is done by e-mail address.
+    // The forwarder is typically a Bluebird user, but could also be
+    // a non-user.  In that case, use the Bluebird admin.
+    if (count($contactRes) > 0) {
+      $forwarderId = $contactRes[0]['contact_id'];
+    }
     else {
-      $res = array('code'=>'ERROR', 'message'=>'Message is already matched');
+      $forwarderId = self::DEFAULT_CONTACT_ID;
     }
 
-    echo json_encode($res);
-    CRM_Utils_System::civiExit();
+    $contactCount = 0;
+    foreach ($contactIds as $contactId) {
+      // get contact info for return message
+      $contactInfo = self::getCiviObject('contact', $contactId);
+      $contactName = $contactInfo['values'][$contactId]['display_name'];
+
+      // Submit the activity information and assign it to the right user
+      $params = array(
+        'activity_type_id' => $activityType,
+        'source_contact_id' => $forwarderId,
+        'target_contact_id' => $contactId,
+        'subject' => $subject,
+        'is_auto' => 0, // we manually add it, right ?
+        'status_id' => $activityStatus,
+        'activity_date_time' => $upddate,
+        'details' => $body,
+        'version' => 3
+      );
+      $apires = civicrm_api('activity', 'create', $params);
+
+      // Handle activity creation error.
+      if ($apires['is_error'] == 1 || $apires['values'] == null || count($apires['values']) != 1) {
+        self::exitError($apires['error_message']);
+      }
+
+      $activityId = $apires['id'];
+      $msgs[] = array('message'=> "Message assigned to ".$contactName, 'key'=>$senderEmail, 'contact'=>$contactId);
+
+      // if this is not the first contact, add a new row to the table
+      if ($contactCount > 0) {
+        $debug_line = 'Added on assignment to #'.$contactCount;
+        $query = "
+          INSERT INTO nyss_inbox_messages
+           (message_id, imap_id, sender_name, sender_email, subject,
+            body, forwarder, status, debug, updated_date, email_date,
+            activity_id, matched_to, matcher)
+          VALUES
+            ($messageId, $imapId, '$senderName', '$senderEmail', '$subject',
+             '$body', '$forwarder', 1, '$debug_line', '$upddate', '$fwddate',
+             $activityId, $contactId, $userId)";
+      }
+      else {
+        $query = "
+          UPDATE nyss_inbox_messages
+          SET status=".self::STATUS_MATCHED.", activity_id=$activityId,
+              matcher=$userId, matched_to=$contactId, updated_date='$upddate'
+          WHERE id = $recId";
+      }
+
+      if (mysql_query($query, self::db()) === false) {
+        self::exitError('Unable to change status to MATCHED');
+      }
+
+      $attachments = $msg['attachments'];
+
+      if (isset($attachments[0])) {
+        foreach ($attachments as $key => $attachment) {
+          $attachmentName = $attachment['fileName'];
+          $attachmentFull = $attachment['fileFull'];
+
+          if (file_exists($attachmentFull)) {
+            $fileName = CRM_Utils_File::makeFileName($attachmentName);
+            $fileFull = $uploadDir.$fileName;
+            // move file to the civicrm upload directory
+            rename($attachmentFull, $fileFull);
+
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mime = finfo_file($finfo, $fileFull);
+            finfo_close($finfo);
+
+            $query = "INSERT INTO civicrm_file (mime_type, uri, upload_date)
+                      VALUES ('$mime', '$fileName', 'upddate')";
+            mysql_query($query, self::db());
+            $fileId = mysql_insert_id(self::db());
+
+            $query = "
+              INSERT INTO civicrm_entity_file (entity_table, entity_id, file_id)
+              VALUES ('civicrm_activity', $activityId, $fileId)";
+            mysql_query($query, self::db());
+          }
+        }
+      } // if attachments
+      $contactCount++;
+    } // foreach contact
+
+    self::exitSuccess('Assigned message', $msgs);
   } // UnmatchedAssign()
 
 
@@ -992,8 +1027,13 @@ class CRM_IMAP_AJAX
    */
   public static function MatchedList()
   {
-    echo self::getMessageListJson(self::STATUS_MATCHED);
-    CRM_Utils_System::civiExit();
+    $res = self::getMessageList(self::STATUS_MATCHED);
+    if ($res) {
+      self::exitSuccess('Retrieved matched message list', $res);
+    }
+    else {
+      self::exitError('Unable to retrieve matched message list');
+    }
   } // MatchedList()
 
 
@@ -1008,42 +1048,42 @@ class CRM_IMAP_AJAX
     $messageId = self::get('id');
     $debug = self::get('debug');
 
+    $errmsg = null;
     $msg = self::getFullMessage($messageId);
 
-    if ($msg) {
-      // overwrite incorrect details
-      $msg['orig_sender_name'] = $msg['sender_name'];
-      $msg['orig_sender_email'] = $msg['sender_email'];
-      $apiRes = self::getCiviObject('contact', $msg['matched_to']);
-      $msg['sender_name'] = $apiRes['values'][$msg['matched_to']]['display_name'];
-      $msg['sender_email'] = $apiRes['values'][$msg['matched_to']]['email'];
-      $status = $msg['status'];
+    if ($msg == null) {
+      self::exitError('Message not found');
+    }
 
-      if ($status == self::STATUS_MATCHED) {
-        $body = $msg['body'];
-        // Find e-mail addresses, phone numbers, addresses, and names.
-        $parsed = self::parseMessage($body);
-        // Highlight everything that was found.
-        $msg['body'] = self::highlightItems($body, $parsed);
-        $msg['found_emails'] = $parsed['emails'];
-        $endTime = microtime(true);
-        $msg['stats']['overview']['time'] = $endTime - $startTime;
-      }
-      else if ($status == self::STATUS_UNMATCHED) {
-        $msg = array('code'=>'ERROR', 'status'=>1, 'message'=>'Message has not yet been matched', 'clear'=>'true'); 
-      }
-      else if ($status == self::STATUS_CLEARED) {
-        $msg = array('code'=>'ERROR', 'status'=>1, 'message'=>'Message has been cleared from inbox', 'clear'=>'true');
-      }
-      else if ($status == self::STATUS_DELETED) {
-        $msg = array('code'=>'ERROR', 'status'=>1, 'message'=>'Message has been deleted', 'clear'=>'true');
-      }
-      else {
-        $msg = array('code'=>'ERROR', 'status'=>1, 'message'=>'Message has an unknown status', 'clear'=>'true');
-      }
+    // overwrite incorrect details
+    $msg['orig_sender_name'] = $msg['sender_name'];
+    $msg['orig_sender_email'] = $msg['sender_email'];
+    $apiRes = self::getCiviObject('contact', $msg['matched_to']);
+    $msg['sender_name'] = $apiRes['values'][$msg['matched_to']]['display_name'];
+    $msg['sender_email'] = $apiRes['values'][$msg['matched_to']]['email'];
+    $status = $msg['status'];
+
+    if ($status == self::STATUS_MATCHED) {
+      $body = $msg['body'];
+      // Find e-mail addresses, phone numbers, addresses, and names.
+      $parsed = self::parseMessage($body);
+      // Highlight everything that was found.
+      $msg['body'] = self::highlightItems($body, $parsed);
+      $msg['found_emails'] = $parsed['emails'];
+      $endTime = microtime(true);
+      $msg['stats']['overview']['time'] = $endTime - $startTime;
+    }
+    else if ($status == self::STATUS_UNMATCHED) {
+      $errmsg = 'Message has not yet been matched';
+    }
+    else if ($status == self::STATUS_CLEARED) {
+      $errmsg = 'Message has been cleared from inbox';
+    }
+    else if ($status == self::STATUS_DELETED) {
+      $errmsg = 'Message has been deleted';
     }
     else {
-      $msg = array('code'=>'ERROR', 'status'=>1, 'message'=>'Message not found', 'clear'=>'true');
+      $errmsg = 'Message has an unknown status';
     }
 
     if ($debug) {
@@ -1052,8 +1092,12 @@ class CRM_IMAP_AJAX
       echo "\n</pre>\n";
     }
     //file_put_contents("/tmp/inbound_email/msg", print_r($msg, true));
-    echo json_encode($msg);
-    CRM_Utils_System::civiExit();
+    if ($errmsg) {
+      self::exitError($errmsg);
+    }
+    else {
+      self::exitSuccess('Retrieved message', $msg);
+    }
   } // MatchedDetails()
 
 
@@ -1100,15 +1144,14 @@ class CRM_IMAP_AJAX
       }
     }
 
+    mysql_close(self::db());
+
     if ($success) {
-      $res = array('code'=>'SUCCESS', 'status'=>0, 'id'=>$ids, 'message'=>'Messages and activities deleted');
+      self::exitSuccess('Messages and activities deleted', $ids);
     }
     else {
-      $res = array('code'=>'ERROR', 'status'=>1, 'message'=>'Unable to delete all messages and activities', 'clear'=>'true');
+      self::exitError('Unable to delete all messages and activities', $ids);
     }
-    echo json_encode($res);
-    mysql_close(self::db());
-    CRM_Utils_System::civiExit();
   } // MatchedDelete()
 
 
@@ -1139,15 +1182,14 @@ class CRM_IMAP_AJAX
       }
     }
 
+    mysql_close(self::db());
+
     if ($success) {
-      $res = array('code'=>'SUCCESS', 'message'=>'Cleared messages', 'clear'=>'true');
+      self::exitSuccess('Cleared messages');
     }
     else {
-      $res = array('code'=>'ERROR', 'message'=>'Unable to clear all messages');
+      self::exitError('Unable to clear all messages');
     }
-    mysql_close(self::db());
-    echo json_encode($res);
-    CRM_Utils_System::civiExit();
   } // MatchedClear()
 
 
@@ -1158,7 +1200,7 @@ class CRM_IMAP_AJAX
    */
   public static function MatchedReassign()
   {
-    $id = self::get('messageId');
+    $id = self::get('id');
     $contactIds = self::get_array('contactId');
     $session = CRM_Core_Session::singleton();
     $userId = $session->get('userID');
@@ -1191,9 +1233,7 @@ class CRM_IMAP_AJAX
     }
 
     if ($check != '1') {
-      $res = array('code'=>'ERROR', 'status'=>1, 'message'=>'Activity is not assigned to this contact. Please reload.', 'clear'=>true);
-      echo json_encode($res);
-      CRM_Utils_System::civiExit();
+      self::exitError('Activity is not assigned to this contact. Please reload.');
     }
 
     foreach ($contactIds as $contactId) {
@@ -1226,15 +1266,15 @@ class CRM_IMAP_AJAX
       }
     }
 
+    mysql_close(self::db());
+
     if ($success) {
-      $res = array('code'=>'SUCCESS', 'id'=>$id, 'contact_id'=>$contactId, 'contact_type'=>$contactType, 'first_name'=>$firstName, 'last_name'=>$lastName, 'display_name'=>$changeName, 'email'=>$email, 'activity_id'=>$id, 'message'=>'Activity reassigned to '.$changeName);
+      $res = array('id'=>$id, 'contact_id'=>$contactId, 'contact_type'=>$contactType, 'first_name'=>$firstName, 'last_name'=>$lastName, 'display_name'=>$changeName, 'email'=>$email, 'activity_id'=>$id);
+      self::exitSuccess("Activity reassigned to $changeName", $res);
     }
     else {
-      $res = array('code'=>'ERROR', 'message'=>'Unable to reassign activity to all contacts');
+      self::exitError('Unable to reassign activity to all contacts');
     }
-    echo json_encode($res);
-    mysql_close(self::db());
-    CRM_Utils_System::civiExit();
   } // MatchedReassign()
 
 
@@ -1353,13 +1393,11 @@ class CRM_IMAP_AJAX
     }
 
     if ($ntags > 0) {
-      $res = array('code'=>'SUCCESS', 'message'=>"Successfully assigned $ntags $tagType tag(s)");
+      self::exitSuccess("Successfully assigned $ntags $tagType tag(s)");
     }
     else {
-      $res = array('code'=>'ERROR', 'message'=> "Could not assign any $tagType tags");
+      self::exitError("Could not assign any $tagType tags");
     }
-    echo json_encode($res);
-    CRM_Utils_System::civiExit();
   } // TagAdd()
 
 
@@ -1379,9 +1417,7 @@ class CRM_IMAP_AJAX
       case 'create': $actionText = 'added to'; break;
       case 'delete': $actionText = 'deleted from'; break;
       default:
-        $res = array('code'=>'ERROR', 'message'=>'Invalid action specified');
-        echo json_encode($res);
-        CRM_Utils_System::civiExit();
+        self::exitError('Invalid action specified');
     }
 
     $tagNames = array();
@@ -1412,14 +1448,11 @@ class CRM_IMAP_AJAX
     $nameString = implode(',', $contactNames);
 
     if (empty($errorMessage)) {
-      $res = array('code' =>'SUCCESS', 'message'=>"Issue codes $tagString were $actionText $nameString");
+      self::exitSuccess("Issue codes $tagString were $actionText $nameString");
     }
     else {
-      $res = array('code'=>'ERROR', 'message'=>"$errorMessage: All tags $tagString could not be $actionText $nameString");
+      self::exitError("$errorMessage: All tags $tagString could not be $actionText $nameString");
     }
-
-    echo json_encode($res);
-    CRM_Utils_System::civiExit();
   } // Issuecode()
 
 
@@ -1448,9 +1481,7 @@ class CRM_IMAP_AJAX
       $display_name = $sort_name = $fields['email_address'];
     }
     else {
-      $res = array('code'=>'ERROR', 'status'=>1, 'message'=>'Required: First Name or Last Name or Email');
-      echo json_encode($res);
-      CRM_Utils_System::civiExit();
+      self::exitError('Required: First name or last name or email');
     }
   
     // Create the contact first
@@ -1467,16 +1498,17 @@ class CRM_IMAP_AJAX
       'version' => 3,
     );
   
+    $errmsg = null;
     $apires = civicrm_api('contact', 'create', $params);
     if ($apires['is_error'] != 1) {
       $contactId = $apires['id'];
-      $otherLocationId = getOtherLocationId();
+      $otherLocationId = self::getOtherLocationId();
   
       // add the email
       if (isset($fields['email_address'])) {
         $params = array(
           'contact_id' => $contactId,
-          'email' => $fields['email'],
+          'email' => $fields['email_address'],
           'location_type_id' => $otherLocationId,
           'version' => 3
         );
@@ -1487,7 +1519,7 @@ class CRM_IMAP_AJAX
       if (isset($fields['phone'])) {
         $params = array(
           'contact_id' => $contactId,
-          'phone' => $phone,
+          'phone' => $fields['phone'],
           'location_type_id' => $otherLocationId,
           'version' => 3
         );
@@ -1515,18 +1547,19 @@ class CRM_IMAP_AJAX
 
       if ($api_email['is_error'] == 1 || $api_phone['is_error'] == 1
           || $api_address['is_error'] == 1) {
-        $res = array('code'=>'ERROR', 'status'=>1, 'message'=>'Unable to add contact details (email/phone/address)');
-      }
-      else {
-        $res = array('code'=>'SUCCESS', 'status'=>0, 'contact'=>$contactId);
+        $errmsg = 'Unable to add contact details (email/phone/address)';
       }
     }
     else {
-      $res = array('code'=>'ERROR', 'status'=>1, 'message'=>'Unable to add contact');
+      $errmsg = 'Unable to add contact';
     }
   
-    echo json_encode($res);
-    CRM_Utils_System::civiExit();
+    if ($errmsg) {
+      self::exitError($errmsg);
+    }
+    else {
+      self::exitSuccess('Contact added', $contactId);
+    }
   } // ContactAdd()
 
 
@@ -1574,7 +1607,7 @@ class CRM_IMAP_AJAX
     $dbres = mysql_query($query, self::db());
 
     $msgs = array();
-    $res = array('code'=>'SUCCESS', 'total'=>0, 'unMatched'=>0, 'Matched'=>0,
+    $res = array('total'=>0, 'unMatched'=>0, 'Matched'=>0,
                  'Cleared'=>0, 'Deleted'=>0, 'Errors'=>0, 'Messages'=>null);
 
     while ($row = mysql_fetch_assoc($dbres)) {
@@ -1611,8 +1644,7 @@ class CRM_IMAP_AJAX
     }
 
     //file_put_contents("/tmp/inbound_email/report", print_r($res, true));
-    echo json_encode($res);
-    CRM_Utils_System::civiExit();
+    self::exitSuccess('Generated report', $res);
   } // getReports()
 
 } // CRM_IMAP_AJAX
