@@ -91,19 +91,26 @@ cj(document).ready(function()
         if (cj('#add_email #cb_static').val()) {
           add_emails.push(cj('#add_email #cb_static').val());
         };
-        cj.each(add_emails, function( index, value ) {
+        cj.each(add_emails, function(index, value) {
           var contacts = cj('#contact').val();
           cj.ajax({
             url: '/civicrm/imap/ajax/contact/addEmail',
-            async:false,
+            async: false,
             data: {
               email: value,
               contacts: contacts
             },
-            success: function(data,status) {
-              if(data != null || data != ''){
-                CRM.alert(('Email Added'), '', 'success');
+            success: function(data, status) {
+              result = cj.parseJSON(data);
+              if (result.is_error) {
+                CRM.alert('Unable to add email', '', 'error');
               }
+              else {
+                CRM.alert('Email added', '', 'success');
+              }
+            },
+            error: function() {
+              CRM.alert('Unable to add email', '', 'error');
             }
           });
         });
@@ -434,7 +441,7 @@ cj(document).ready(function()
             }
           }
         },
-        error: function(){
+        error: function() {
           CRM.alert('Unable to load message', '', 'error');
         }
       });
@@ -1190,8 +1197,14 @@ cj(document).ready(function()
           activity_contact: activity_contact,
           activity_status_id: activity_status_id,
         },
-        success: function(data,status) {
-          CRM.alert('Edited Activity', 'Success', 'success');
+        success: function(data, status) {
+          result = cj.parseJSON(data);
+          if (result.is_error) {
+            CRM.alert(result.message, 'Error', 'error');
+          }
+          else {
+            CRM.alert(result.message, 'Success', 'success');
+          }
         },
         error: function() {
           CRM.alert('Failed to Edit Activity', 'Error', 'error');
