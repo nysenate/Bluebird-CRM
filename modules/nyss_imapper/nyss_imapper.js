@@ -735,19 +735,25 @@ cj(document).ready(function()
       // ----
       // Tagging
       // Contact Keywords
-      cj('#contact_keyword_input')
-        .tokenInput( '/civicrm/imap/ajax/tag/search', {
+      cj('#contact_keyword_input').tokenInput('/civicrm/imap/ajax/tag/search', {
         theme: 'facebook',
         zindex: 9999,
+        jsonContainer: 'data',
+        onResult: function(result) {
+          if (result.is_error) {
+            CRM.alert('Unable to look up tag: '+result.message, '', 'error');
+          }
+          return result;
+        },
         onAdd: function(item) {
           current_contact_tags = cj('#contact_tag').val();
-          current_contact_tags = current_contact_tags.replace(/,,/g, ",");
+          current_contact_tags = current_contact_tags.replace(/,,/g, ',');
           cj('#contact_tag').val(current_contact_tags+','+item.id);
         },
         onDelete: function(item) {
           current_contact_tags = cj('#contact_tag').val();
-          result = string_replace(current_contact_tags, ','+item.id,',');
-          result = result.replace(/,,/g, ",");
+          result = string_replace(current_contact_tags, ','+item.id, ',');
+          result = result.replace(/,,/g, ',');
           cj('#contact_tag').val(result);
         }
       });
@@ -764,36 +770,48 @@ cj(document).ready(function()
       });
       tree.load();
       // Activity Keywords
-      cj('#activity_keyword_input')
-        .tokenInput('/civicrm/imap/ajax/tag/search', {
+      cj('#activity_keyword_input').tokenInput('/civicrm/imap/ajax/tag/search', {
         theme: 'facebook',
         zindex: 9999,
+        jsonContainer: 'data',
+        onResult: function(result) {
+          if (result.is_error) {
+            CRM.alert('Unable to look up tag: '+result.message, '', 'error');
+          }
+          return result;
+        },
         onAdd: function(item) {
           current_activity_tags = cj('#activity_tag').val();
-          current_activity_tags = current_activity_tags.replace(/,,/g, ",");
+          current_activity_tags = current_activity_tags.replace(/,,/g, ',');
           cj('#activity_tag').val(current_activity_tags+','+item.id);
         },
         onDelete: function(item) {
           current_activity_tags = cj('#activity_tag').val();
-          result = string_replace(current_activity_tags, ','+item.id,',');
-          result = result.replace(/,,/g, ",");
+          result = string_replace(current_activity_tags, ','+item.id, ',');
+          result = result.replace(/,,/g, ',');
           cj('#activity_tag').val(result);
         }
       });
       // Contact Positions
-      cj('#contact_position_input')
-        .tokenInput( '/civicrm/ajax/taglist?parentId=292', {
+      cj('#contact_position_input').tokenInput('/civicrm/ajax/taglist?parentId=292', {
         theme: 'facebook',
         zindex: 9999,
+        jsonContainer: 'data',
+        onResult: function(result) {
+          if (result.is_error) {
+            CRM.alert('Unable to look up tag: '+result.message, '', 'error');
+          }
+          return result;
+        },
         onAdd: function(item) {
           current_contact_positions = cj('#contact_position').val();
-          current_contact_positions = current_contact_positions.replace(/,,/g, ",");
+          current_contact_positions = current_contact_positions.replace(/,,/g, ',');
           cj('#contact_position').val(current_contact_positions+','+item.id);
         },
         onDelete: function(item) {
           current_contact_positions = cj('#contact_position').val();
-          result = string_replace(current_contact_positions, ','+item.id,',');
-          result = result.replace(/,,/g, ",");
+          result = string_replace(current_contact_positions, ','+item.id, ',');
+          result = result.replace(/,,/g, ',');
           cj('#contact_position').val(result);
         }
       });
@@ -801,20 +819,19 @@ cj(document).ready(function()
       // ----
       // Activity Editing,
       // Assignee Contact Names
-      cj('#contact_name_input')
-         .tokenInput( '/civicrm/ajax/checkemail?noemail=1&context=activity_assignee', {
+      cj('#contact_name_input').tokenInput('/civicrm/ajax/checkemail?noemail=1&context=activity_assignee', {
         theme: 'facebook',
         zindex: 9999,
         onAdd: function(item) {
           current_contact_name = cj('#contact_name').val();
-          current_contact_name = current_contact_name.replace(/,,/g, ",");
+          current_contact_name = current_contact_name.replace(/,,/g, ',');
           cj('#contact_name').val(current_contact_name+','+item.id);
           //console.log(item.id);
         },
         onDelete: function(item) {
           current_contact_name = cj('#contact_name').val();
-          result = string_replace(current_contact_name, ','+item.id,',');
-          result = result.replace(/,,/g, ",");
+          result = string_replace(current_contact_name, ','+item.id, ',');
+          result = result.replace(/,,/g, ',');
           cj('#contact_name').val(result);
         }
       });

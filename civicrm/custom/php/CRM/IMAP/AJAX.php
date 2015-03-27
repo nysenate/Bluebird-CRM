@@ -1338,6 +1338,9 @@ class CRM_IMAP_AJAX
     $query = "SELECT id, name FROM civicrm_tag
               WHERE parent_id=296 AND name LIKE '$name%'";
     $dbres = mysql_query($query, self::db());
+    if ($dbres === false) {
+      self::exitError('Tag query failed');
+    }
 
     $res = array();
     $exactMatch = false;
@@ -1354,9 +1357,8 @@ class CRM_IMAP_AJAX
       $res = array_merge(array(array('id'=>$name.':::value', 'name'=>$name)), $res);
     }
 
-    echo json_encode($res);
     mysql_close(self::db());
-    CRM_Utils_System::civiExit();
+    self::exitSuccess('Matched tags', $res);
   } // KeywordSearch()
 
 
