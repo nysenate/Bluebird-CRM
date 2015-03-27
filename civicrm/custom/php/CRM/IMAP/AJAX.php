@@ -830,15 +830,14 @@ class CRM_IMAP_AJAX
       }
     }
 
+    mysql_close(self::db());
+
     if ($gotError) {
-      $res = array('code'=>'ERROR', 'status'=>1, 'message'=>'Unable to add email');
+      self::exitError('Unable to add email');
     }
     else {
-      $res = array('code'=>'SUCCESS', 'status'=>0, 'message'=>'Email was added');
+      self::exitSuccess('Email was added');
     }
-    echo json_encode($res);
-    mysql_close(self::db());
-    CRM_Utils_System::civiExit();
   } // ContactAddEmail()
 
 
@@ -1323,7 +1322,7 @@ class CRM_IMAP_AJAX
     }
 
     mysql_close(self::db());
-    CRM_Utils_System::civiExit();
+    self::exitSuccess('Edited activity');
   } // MatchedEdit()
 
 
