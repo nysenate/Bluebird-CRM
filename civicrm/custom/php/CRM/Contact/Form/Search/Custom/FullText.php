@@ -341,8 +341,12 @@ WHERE      t.table_name = 'Activity' AND
     $form->assign('allowFileSearch', !empty($searchService) && CRM_Core_Permission::check('access uploaded files'));
 
     //NYSS 8410
+    $getText = $form->_submitValues['text'];
     if (!empty($form->_formValues['text'])) {
       $form->assign('text', $form->_formValues['text']);
+    }
+    elseif (empty($form->_formValues['text']) && $getText) {
+      $form->assign('text', $getText);
     }
   }
 
