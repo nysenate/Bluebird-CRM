@@ -1655,6 +1655,7 @@ class CRM_Contact_BAO_Query {
       case 'activity_role':
       case 'activity_status':
       case 'activity_subject':
+      case 'activity_details'://NYSS 8440
       case 'test_activities':
       case 'activity_type_id':
       case 'activity_type':
