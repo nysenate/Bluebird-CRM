@@ -15,7 +15,7 @@
       <input type="button" class="multi_delete" value="Delete" name="multi_delete">
       <input type="button" class="multi_clear" value="Clear" name="multi_clear">
       <input type="button" class="multi_process" value="Process" name="multi_process">
-      <span class="page_actions_label">With selected :</span>
+      <span class="page_actions_label">With selected:</span>
     </div>
     <table id="sortable_results" class="">
       <thead>
@@ -37,7 +37,7 @@
       <input type="button" class="multi_delete" value="Delete" name="multi_delete">
       <input type="button" class="multi_clear" value="Clear" name="multi_clear">
       <input type="button" class="multi_process" value="Process" name="multi_process">
-      <span class="page_actions_label">With selected :</span>
+      <span class="page_actions_label">With selected:</span>
     </div>
   </div>
 
@@ -79,19 +79,19 @@
             <div id="tab1_edit" class="highlightTarget">
               <input type="hidden" class="hidden" id="id" name="id">
               <label for="first_name">
-                <span class="label_def">First Name: </span>
+                <span class="label_def">First Name:</span>
                 <input type="text" placeholder="First Name" class="form-text first_name" name="first_name">
               </label>
               <label for="last_name">
-                <span class="label_def">Last Name: </span>
+                <span class="label_def">Last Name:</span>
                 <input type="text" placeholder="Last Name" class="form-text last_name" name="last_name">
               </label>
               <label for="email_address">
-                <span class="label_def">Email: </span>
+                <span class="label_def">Email:</span>
                 <input type="text" placeholder="Email Address" class="email-address email_address" name="email_address">
               </label>
               <label for="dob" class="dob">
-                <span class="label_def">DOB: </span>
+                <span class="label_def">DOB:</span>
                 <select name="DateOfBirth_Month" class="month" >
                   <option> </option>
                   {php}
@@ -120,19 +120,19 @@
                 <input type="text" placeholder="yyyy-mm-dd" class="form-text dob hidden" name="dob">
               </label>
               <label for="phone">
-                <span class="label_def">Phone #: </span>
+                <span class="label_def">Phone #:</span>
                 <input type="text" placeholder="Phone Number" class="form-text phone" name="phone">
               </label>
               <label for="street_address">
-                <span class="label_def">St. Address: </span>
+                <span class="label_def">St. Address:</span>
                 <input type="text" placeholder="Street Address" class="form-text street_address" name="street_address">
               </label>
               <label for="city">
-                <span class="label_def">City: </span>
+                <span class="label_def">City:</span>
                 <input type="text" placeholder="City" class="form-text city" name="city">
               </label>
               <label for="state">
-                <span class="label_def">State: </span>
+                <span class="label_def">State:</span>
                 <select class="form-select state" id="state" name="state">
                   <option value=""> </option>
                   <option value="1000">Alabama</option>
@@ -205,7 +205,7 @@
             </div>
             <div id="tab2_edit" class="highlightTarget">
               <label for="prefix">
-                <span class="label_def">Prefix: </span>
+                <span class="label_def">Prefix:</span>
                   <select class="form-select prefix" id="prefix" name="prefix">
                     <option> </option>
                     {php}
@@ -218,19 +218,19 @@
                 </label>
               </label>
               <label for="first_name">
-                <span class="label_def">First Name: </span>
+                <span class="label_def">First Name:</span>
                 <input type="text" placeholder="First Name" class="form-text first_name" name="first_name">
               </label>
               <label for="middle_name">
-                <span class="label_def">Middle Name: </span>
+                <span class="label_def">Middle Name:</span>
                 <input type="text" placeholder="Middle Name" class="form-text middle_name" name="middle_name">
               </label>
               <label for="last_name">
-                <span class="label_def">Last Name: </span>
+                <span class="label_def">Last Name:</span>
                 <input type="text" placeholder="Last Name"  class="form-text last_name" name="last_name">
               </label>
               <label for="suffix">
-                <span class="label_def">Suffix: </span>
+                <span class="label_def">Suffix:</span>
                 <select class="form-select suffix" id="suffix" name="suffix">
                   <option> </option>
                     {php}
@@ -242,11 +242,11 @@
                 </select>
               </label>
               <label for="email_address">
-                <span class="label_def">Email: </span>
+                <span class="label_def">Email:</span>
                 <input type="text" placeholder="Email Address" class="email-address email_address" name="email_address">
               </label>
               <label for="dob" class="dob">
-                <span class="label_def">DOB: </span>
+                <span class="label_def">DOB:</span>
                 <select name="DateOfBirth_Month" class="month" >
                   <option> </option>
                   {php}
@@ -275,23 +275,23 @@
                 <input type="text" placeholder="yyyy-mm-dd" class="form-text dob hidden" name="dob">
               </label>
               <label for="phone">
-                <span class="label_def">Phone #: </span>
+                <span class="label_def">Phone #:</span>
                 <input type="text" placeholder="Phone Number" class="form-text phone" name="phone">
               </label>
               <label for="street_address">
-                <span class="label_def">St. Address: </span>
+                <span class="label_def">St. Address:</span>
                 <input type="text" placeholder="Street Address"  class="form-text street_address" name="street_address">
               </label>
               <label for="street_address">
-                <span class="label_def">St. Add 2: </span>
+                <span class="label_def">St. Add 2:</span>
                 <input type="text" placeholder="Street Address (2)"  class="form-text street_address_2" name="street_address_2">
               </label>
               <label for="city">
-                <span class="label_def">City: </span>
+                <span class="label_def">City:</span>
                 <input type="text" placeholder="City" class="form-text city" name="city">
               </label>
               <label for="state">
-                <span class="label_def">State: </span>
+                <span class="label_def">State:</span>
                 <select class="form-select state" id="state" name="state">
                   <option value=""> </option>
                   <option value="1000">Alabama</option>
@@ -357,7 +357,7 @@
                 </select>
               </label>
               <label for="zip">
-                <span class="label_def">Zip Code: </span>
+                <span class="label_def">Zip Code:</span>
                 <input type="text" placeholder="Zip Code"  class="form-text zip" name="zip">
               </label>
             </div>
@@ -373,22 +373,21 @@
 
             <div id="tab1_tag">
               <div id='TagContact'>
-                <span class="label_def">Keywords: </span>
+                <span class="label_def">Keywords:</span>
                 <input type="text" id="contact_keyword_input" maxlength="64" placeholder="Type here to search Keywords" autocomplete="off">
 
-                <span class="label_def">Issue Codes: </span>
-                <input type="text" id="contact-issue-codes-search" maxlength="64" placeholder="Type here to search issue codes" autocomplete="off">
+                <span class="label_def">Issue Codes:</span>
+                <input type="text" id="contact-issue-codes-search" maxlength="64" placeholder="Type here to search Issue Codes" autocomplete="off">
                 <div id="contact-issue-codes" class="TreeWrap">
                 </div>
 
-                <span class="label_def">Positions: </span>
-                <input type="text" id="contact_position_input" maxlength="64" placeholder="Type here to search Keywords" autocomplete="off">
-
+                <span class="label_def">Positions:</span>
+                <input type="text" id="contact_position_input" maxlength="64" placeholder="Type here to search Positions" autocomplete="off">
               </div>
             </div>
             <div id="tab2_tag">
               <div id='TagActivity'>
-                <span class="label_def">Keywords: </span>
+                <span class="label_def">Keywords:</span>
                 <input type="text" id="activity_keyword_input" placeholder="Type here to search Keywords" autocomplete="off">
               </div>
             </div>
@@ -399,12 +398,12 @@
           <div id='TagContact'>
 
             <label for="contact_name_input">
-              <span class="label_def">Assign to: </span>
+              <span class="label_def">Assign to:</span>
               <input type="text" id="contact_name_input" maxlength="64" placeholder="Type here to search Contacts" autocomplete="off">
             </label>
 
             <label for="status_id">
-              <span class="label_def">Status: </span>
+              <span class="label_def">Status:</span>
 
               <select class="form-select required" id="status_id" name="status_id">
                 <option value="" selected="selected"></option>
@@ -418,7 +417,7 @@
             </label>
 
             <!-- <label for="date">
-              <span class="label_def">Date: </span>
+              <span class="label_def">Date:</span>
               <input type="text" placeholder="Date" class="form-text date dateplugin dpDate hasDatepicker" id="activity_date" name="activity_date">
             </label> -->
           </div>

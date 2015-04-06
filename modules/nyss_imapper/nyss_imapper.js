@@ -796,13 +796,6 @@ cj(document).ready(function()
       cj('#contact_position_input').tokenInput('/civicrm/ajax/taglist?parentId=292', {
         theme: 'facebook',
         zindex: 9999,
-        jsonContainer: 'data',
-        onResult: function(result) {
-          if (result.is_error) {
-            CRM.alert('Unable to look up tag: '+result.message, '', 'error');
-          }
-          return result;
-        },
         onAdd: function(item) {
           current_contact_positions = cj('#contact_position').val();
           current_contact_positions = current_contact_positions.replace(/,,/g, ',');
