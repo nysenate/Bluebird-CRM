@@ -24,6 +24,9 @@ class CRM_IMAP_AJAX
   const DEFAULT_AUTH_GROUP = 'Authorized_Forwarders';
   const DEFAULT_CONTACT_ID = 1;
 
+  const POSITION_PARENT_ID = 292;
+  const KEYWORD_PARENT_ID = 296;
+
 
   /**
    * Occasionally we need the raw database connection to do
@@ -490,10 +493,10 @@ class CRM_IMAP_AJAX
   /**
    * Add a group of tags to either a contact or an activity.
    */
-  private static function addEntityTags($entityId, $entityTable, $tags)
+  private static function addEntityTags($entityId, $entityTab, $parentId, $tags)
   {
     require_once 'api/api.php';
-    $existingTags = CRM_Core_BAO_EntityTag::getTag($entityId, $entityTable);
+    $existingTags = CRM_Core_BAO_EntityTag::getTag($entityId, $entityTab);
     $entityTagIds = array();
   
     foreach ($tags as $tagId) {
@@ -512,10 +515,16 @@ class CRM_IMAP_AJAX
             $tagId = strval($apires['id']);
           }
           else {
+            if ($parentId == self::KEYWORD_PARENT_ID) {
+              $used_for = 'civicrm_contact,civicrm_activity,civicrm_case';
+            }
+            else {
+              $used_for = $entityTab;
+            }
             $params = array(
               'name' => $tagValue[0],
               'parent_id' => $parentId,
-              'used_for' => 'civicrm_contact,civicrm_activity,civicrm_case'
+              'used_for' => $used_for
             );
             $tagObj = CRM_Core_BAO_Tag::add($params, CRM_Core_DAO::$_nullArray);
             $tagId = strval($tagObj->id);
@@ -532,13 +541,14 @@ class CRM_IMAP_AJAX
       // New tag ids can be inserted directly into the db table.
       $insertValues = array();
       foreach ($entityTagIds as $tagId) {
-        $insertValues[] = "( $tagId, $entityId, '$entityTable' )";
+        $insertValues[] = "( $tagId, $entityId, '$entityTab' )";
+        $tagCount++;
       }
       $query = "INSERT INTO civicrm_entity_tag
                  ( tag_id, entity_id, entity_table )
                 VALUES ".implode(',', $insertValues);
-      if (mysql_query($query, self::db()) === true) {
-        $tagCount++;
+      if (mysql_query($query, self::db()) === false) {
+        $tagCount = 0;
       }
     }
     return $tagCount;
@@ -1336,7 +1346,8 @@ class CRM_IMAP_AJAX
     $name = self::get('name');
 
     $query = "SELECT id, name FROM civicrm_tag
-              WHERE parent_id=296 AND name LIKE '$name%'";
+              WHERE parent_id=".self::KEYWORD_PARENT_ID."
+                AND name LIKE '$name%'";
     $dbres = mysql_query($query, self::db());
     if ($dbres === false) {
       self::exitError('Tag query failed');
@@ -1376,21 +1387,21 @@ class CRM_IMAP_AJAX
     $success = true;
 
     if (!$parentId) {
-      $parentId = '296';
+      $parentId = self::KEYWORD_PARENT_ID;
     }
 
     switch ($parentId) {
-      case '292': $tagType = 'Position'; break;
-      case '296': $tagType = 'Keyword'; break;
+      case self::POSITION_PARENT_ID: $tagType = 'Position'; break;
+      case self::KEYWORD_PARENT_ID: $tagType = 'Keyword'; break;
       default: $tagType = 'Issue Code'; break;
     }
 
     foreach ($contactIds as $contactId) {
-      $ntags = self::addEntityTags($contactId, 'civicrm_contact', $tagIds);
+      $ntags = self::addEntityTags($contactId, 'civicrm_contact', $parentId, $tagIds);
     }
 
     foreach ($activityIds as $activityId) {
-      $ntags += self::addEntityTags($activityId, 'civicrm_activity', $tagIds);
+      $ntags += self::addEntityTags($activityId, 'civicrm_activity', $parentId, $tagIds);
     }
 
     if ($ntags > 0) {
