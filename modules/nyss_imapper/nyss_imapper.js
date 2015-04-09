@@ -901,14 +901,11 @@ cj(document).ready(function()
 
   });
 
-  // Step through the process, erm, process
+  // Step through the process
   function Process(clear) {
-    //console.log('Process', messageId);
-
     // assume we have errors
     var error = true;
 
-    // ----
     // Inputs
     var messageId = cj('#message').val();
     var activityId = cj('#activity').val();
@@ -1076,18 +1073,12 @@ cj(document).ready(function()
       error = false;
     }
 
-    if (newContacts.length != 0) {
-      // console.log("Add to New Contact",newContacts);
-    }
-    else {
-      // console.log("Add to Old Contact",contactId);
+    if (newContacts.length == 0) {
       newContacts.push(contactId);
     };
-    // console.log("newContacts",newContacts);
 
     // did we add any tags ?
     if (activity_tag.length != 0 || contact_tag.length != 0 || removedIssueCodes.length != 0 || addedIssueCodes.length != 0 || contact_position.length != 0) {
-      // console.log('activity_tags: ',activity_tag.length,'contact_tags: ',contact_tag.length,'removedIssueCodes: ',removedIssueCodes.length,'addedIssueCodes: ',addedIssueCodes.length,'contact_positions: ',contact_position.length);
 
       // CONTACT POSITIONS
       if (contact_position.length) {
@@ -1099,15 +1090,17 @@ cj(document).ready(function()
             contactId: newContacts.toString(),
             tags: contact_position
           },
-          success: function(data,status) {
-            CRM.alert('Added position', 'Success', 'success');
+          success: function(data, status) {
+            var result = cj.parseJSON(data);
+            CRM.alert(result.message, 'Success', 'success');
           },
           error: function() {
             var result = cj.parseJSON(data);
-            CRM.alert('Failed to add position', 'Error', 'error');
+            CRM.alert(result.message, 'Error', 'error');
           }
         });
       }
+
       // CONTACT ISSUE CODES
       // if any of the data has changed in the issue codes tree we need to
       // submit the new data to be processed on the ajax side
@@ -1149,6 +1142,7 @@ cj(document).ready(function()
           }
         });
       }
+
       // CONTACT KEYWORDS
       if (contact_tag) {
         cj.ajax({
@@ -1168,6 +1162,7 @@ cj(document).ready(function()
           }
         });
       }
+
       // ACTIVITY KEYWORDS
       if (activity_tag) {
         var activity_ids_array = activityId.split(',');
