@@ -81,6 +81,12 @@
   <td>
     {$form.activity_subject.label}<br/>
     {$form.activity_subject.html|crmAddClass:huge}{*NYSS 4595*}
+
+    {*NYSS 8440*}
+    <div class="activity_details-block">
+      {$form.activity_details.label}<br />
+      {$form.activity_details.html|crmAddClass:huge}
+    </div>
   </td>
   <td colspan="2">
     {$form.activity_status.label}<br/>

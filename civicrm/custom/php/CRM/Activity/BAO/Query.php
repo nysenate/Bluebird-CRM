@@ -296,6 +296,25 @@ class CRM_Activity_BAO_Query {
         $query->_qill[$grouping][] = ts('Subject') . " $op - '$n'";
         break;
 
+      //NYSS 8440
+      case 'activity_details':
+        $n = trim($value);
+        $value = strtolower(CRM_Core_DAO::escapeString($n));
+
+        //determine if implied wildcards
+        if (strpos($value, '%') !== FALSE) {
+          // only add wild card if not there
+          $value = "'$value'";
+        }
+        else {
+          $value = "'%$value%'";
+        }
+        $op = 'LIKE';
+        $wc = ($op != 'LIKE') ? "LOWER(civicrm_activity.details)" : "civicrm_activity.details";
+        $query->_where[$grouping][] = " $wc $op $value";
+        $query->_qill[$grouping][] = ts('Details') . " $op - '$n'";
+        break;
+
       case 'activity_test':
         // We dont want to include all tests for sql OR CRM-7827
         if (!$value || $query->getOperator() != 'OR') {
@@ -551,6 +570,9 @@ class CRM_Activity_BAO_Query {
     $form->assign('buildEngagementLevel', $buildEngagementLevel);
     $form->assign('buildSurveyResult', $buildSurveyResult);
     $form->setDefaults(array('activity_test' => 0));
+
+    //NYSS 8440
+    $form->addElement('text', 'activity_details', ts('Details'), CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Contact', 'sort_name'));
   }
 
   static function addShowHide(&$showHide) {
