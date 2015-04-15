@@ -76,6 +76,11 @@ class CRM_Integration_Process {
       }
       //CRM_Core_Error::debug_var('cid', $cid);
 
+      if ($cid['is_error']) {
+        $stats['error'][] = $cid;
+        continue;
+      }
+
       //prep params
       $params = json_decode($row->msg_info);
 
@@ -119,7 +124,7 @@ class CRM_Integration_Process {
       }
     }
 
-    //TODO report stats
+    //report stats
     $stats['counts'] = array(
       'processed' => count($stats['processed']),
       'unprocessed' => count($stats['unprocessed']),

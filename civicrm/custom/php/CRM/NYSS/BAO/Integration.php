@@ -78,13 +78,29 @@ class CRM_NYSS_BAO_Integration {
 
     //if dupe found, return id
     if ( !empty( $dupeIDs ) ) {
-      return $dupeIDs[0];
+      $cid = $dupeIDs[0];
+    }
+    else {
+      //if not found, create new contact
+      $cid = self::createContact($params);
     }
 
-    //if not found, create new contact
-    $cid = self::createContact($params);
+    //set user id
+    if (!empty($cid)) {
+      CRM_Core_DAO::executeQuery("
+        UPDATE civicrm_contact
+        SET web_user_id = {$params['web_user_id']}
+        WHERE id = {$cid}
+      ");
 
-    return $cid;
+      return $cid;
+    }
+    else {
+      return array(
+        'is_error' => 'Unable to match or create contact',
+        'params' => $params,
+      );
+    }
   }
 
   /*
@@ -93,15 +109,6 @@ class CRM_NYSS_BAO_Integration {
   static function createContact($params) {
     $contact = civicrm_api('contact', 'create', array('version' => 3, 'contact_type' => 'Individual') + $params);
     //CRM_Core_Error::debug_var('contact', $contact);
-
-    //set user id
-    if (!empty($contact['id'])) {
-      CRM_Core_DAO::executeQuery("
-        UPDATE civicrm_contact
-        SET web_user_id = {$params['web_user_id']}
-        WHERE id = {$contact['id']}
-      ");
-    }
 
     return $contact['id'];
   }//createContact
