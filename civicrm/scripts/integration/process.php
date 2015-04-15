@@ -17,8 +17,8 @@ class CRM_Integration_Process {
     require_once '../script_utils.php';
 
     // Parse the options
-    $shortopts = "d:t";
-    $longopts = array("dryrun", "tbl=");
+    $shortopts = "d:s";
+    $longopts = array("dryrun", "stats");
     $optlist = civicrm_script_init($shortopts, $longopts);
 
     if ($optlist === null) {
@@ -51,7 +51,7 @@ class CRM_Integration_Process {
       WHERE target_shortname = '{$bbcfg['db.basename']}'
     ");
 
-    $errors = $unprocessed = array();
+    $errors = $status = array();
 
     while ($row->fetch()) {
       //bbscript_log('trace', 'row', $row);
@@ -81,7 +81,7 @@ class CRM_Integration_Process {
 
       switch ($row->msg_type) {
         case 'ISSUE':
-          CRM_NYSS_BAO_Integration::processIssue($cid, $row->msg_action, $params);
+          $result = CRM_NYSS_BAO_Integration::processIssue($cid, $row->msg_action, $params);
           break;
 
         case 'COMMITTEE':
@@ -104,15 +104,37 @@ class CRM_Integration_Process {
 
         default:
           bbscript_log('error', 'Unable to process row. Message type is unknown.', $row);
-          $unprocessed[] = $row;
+          $stats['unprocessed'][] = $row;
+      }
+
+      if ($result['is_error']) {
+        //TODO error handling
+        $stats['error'][] = $result;
+
+      }
+      else {
+        //TODO archive rows by ID
+        $stats['processed'][] = $row->id;
+
       }
     }
 
-    //TODO archive rows by ID
-
     //TODO report stats
+    $stats['counts'] = array(
+      'processed' => count($stats['processed']),
+      'unprocessed' => count($stats['unprocessed']),
+      'error' => count($stats['error']),
+    );
 
-    //TODO error handling
+    echo "Processing stats:\n";
+    print_r($stats['counts']);
+
+    if ($optlist['stats']) {
+      echo "\nProcessing details:\n";
+      print_r($stats['processed']);
+      print_r($stats['unprocessed']);
+      print_r($stats['error']);
+    }
   }//run
 
 }//end class
