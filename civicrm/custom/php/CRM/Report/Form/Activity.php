@@ -58,8 +58,8 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
     $this->activityTypes = CRM_Core_PseudoConstant::activityType(TRUE, TRUE, FALSE, 'label', TRUE);
     asort( $this->activityTypes );
 
-    //NYSS get activity keyword tags
-    $this->tags = CRM_Core_BAO_Tag::getTagsUsedFor('civicrm_activity', true, false, 296);
+    //NYSS get activity and contact tags
+    $this->tags = CRM_Core_BAO_Tag::getTagsUsedFor(array('civicrm_contact', 'civicrm_activity'), true, false, 296);
     //CRM_Core_Error::debug_var('tags', $this->tags);
 
     $this->_columns = array(
@@ -118,6 +118,14 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
             'default' => TRUE,
             'required' => TRUE,
           ),
+          //NYSS 8396
+          'contact_tag_name' =>
+            array(
+              'name' => 'id',
+              'alias' => 'civicrm_contact_target',
+              'dbAlias' => "civicrm_contact_target.id",
+              'title' => ts('Contact Tags'),
+            ),
         ),
         'filters' =>
         array(
@@ -276,10 +284,10 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
             'default' => TRUE,//NYSS
           ),
           //NYSS 8396
-          'tag_name' =>
+          'activity_tag_name' =>
           array(
             'name' => 'id',
-            'title' => ts('Tag Name'),
+            'title' => ts('Activity Tags'),
           ),
         ),
         'filters' => array(
@@ -937,12 +945,26 @@ GROUP BY civicrm_activity_id {$this->_having} {$this->_orderBy} {$this->_limit}"
       }
 
       //NYSS 8396
-      if (array_key_exists('civicrm_activity_tag_name', $row)) {
-        $actTags = CRM_Core_BAO_EntityTag::getTag($row['civicrm_activity_tag_name'], 'civicrm_activity');
+      if (array_key_exists('civicrm_activity_activity_tag_name', $row)) {
+        $actTags = CRM_Core_BAO_EntityTag::getTag($row['civicrm_activity_activity_tag_name'], 'civicrm_activity');
         foreach ($actTags as $k => &$v) {
           $v = $this->tags[$k];
         }
-        $rows[$rowNum]['civicrm_activity_tag_name'] = implode(', ', $actTags);
+        $rows[$rowNum]['civicrm_activity_activity_tag_name'] = implode(', ', $actTags);
+        $entryFound = TRUE;
+      }
+      if (array_key_exists('civicrm_contact_contact_tag_name', $row)) {
+        $conTags = CRM_Core_BAO_EntityTag::getTag($row['civicrm_contact_contact_tag_name'], 'civicrm_contact');
+        foreach ($conTags as $k => &$v) {
+          //only display keywords; we retrieved entire list earlier, so if not in list, exclude
+          if (isset($this->tags[$k])) {
+            $v = $this->tags[$k];
+          }
+          else {
+            unset($conTags[$k]);
+          }
+        }
+        $rows[$rowNum]['civicrm_contact_contact_tag_name'] = implode(', ', $conTags);
         $entryFound = TRUE;
       }
 
