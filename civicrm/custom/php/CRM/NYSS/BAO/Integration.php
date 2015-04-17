@@ -144,13 +144,161 @@ class CRM_NYSS_BAO_Integration {
         'is_reserved' => 1,
         'used_for' => 'civicrm_contact',
         'created_date' => date('Y-m-d H:i:s'),
+        'description' => '',//TODO store link back to website
       ));
       //CRM_Core_Error::debug_var('$tag', $tag);
+
+      if ($tag['is_error']) {
+        return $tag;
+      }
 
       $tagId = $tag['id'];
     }
 
     $apiAction = ($action == 'follow') ? 'create' : 'delete';
+    $et = civicrm_api('entity_tag', $apiAction, array(
+      'version' => 3,
+      'entity_table' => 'civicrm_contact',
+      'entity_id' => $contactId,
+      'tag_id' => $tagId,
+    ));
+
+    if ($et['is_error']) {
+      return $et;
+    }
+
+    return true;
+
+    //TODO also store is_website flag (?)
+  }//processIssue
+
+  static function processCommittee($contactId, $action, $params) {
+    //bbscript_log('trace', '$contactId', $contactId);
+    //bbscript_log('trace', '$action', $action);
+    //bbscript_log('trace', '$params', $params);
+
+    //find out if tag exists
+    $parentId = CRM_Core_DAO::singleValueQuery("
+      SELECT id
+      FROM civicrm_tag
+      WHERE name = 'Website Committees'
+        AND is_tagset = 1
+    ");
+    $tagId = CRM_Core_DAO::singleValueQuery("
+      SELECT id
+      FROM civicrm_tag
+      WHERE name = '{$params->committee_name}'
+        AND parent_id = {$parentId}
+    ");
+    //CRM_Core_Error::debug_var('tagId', $tagId);
+
+    if (!$tagId) {
+      $tag = civicrm_api('tag', 'create', array(
+        'version' => 3,
+        'name' => $params->committee_name,
+        'parent_id' => $parentId,
+        'is_selectable' => 0,
+        'is_reserved' => 1,
+        'used_for' => 'civicrm_contact',
+        'created_date' => date('Y-m-d H:i:s'),
+        'description' => ''//TODO store link back to website
+      ));
+      //CRM_Core_Error::debug_var('$tag', $tag);
+
+      if ($tag['is_error']) {
+        return $tag;
+      }
+
+      $tagId = $tag['id'];
+    }
+
+    //TODO may need to clear tag cache; entity_tag sometimes failes because newly created tag isn't recognized by pseudoconstant
+
+    $apiAction = ($action == 'follow') ? 'create' : 'delete';
+    $et = civicrm_api('entity_tag', $apiAction, array(
+      'version' => 3,
+      'entity_table' => 'civicrm_contact',
+      'entity_id' => $contactId,
+      'tag_id' => $tagId,
+    ));
+
+    if ($et['is_error']) {
+      return $et;
+    }
+
+    return true;
+
+    //TODO also store is_website flag (?)
+  }//processCommittee
+
+  static function processBill($contactId, $action, $params) {
+    //bbscript_log('trace', '$contactId', $contactId);
+    //bbscript_log('trace', '$action', $action);
+    //bbscript_log('trace', '$params', $params);
+
+    //find out if tag exists
+    $parentId = CRM_Core_DAO::singleValueQuery("
+      SELECT id
+      FROM civicrm_tag
+      WHERE name = 'Website Bills'
+        AND is_tagset = 1
+    ");
+
+    //construct tag name and determine action
+    //TODO append sponsor name in parens
+    switch ($action) {
+      case 'follow':
+        $apiAction = 'create';
+        $tagName = "{$params->bill_number}-{$params->bill_year}";
+        break;
+      case 'unfollow':
+        $apiAction = 'delete';
+        $tagName = "{$params->bill_number}-{$params->bill_year}";
+        break;
+      case 'aye':
+        $apiAction = 'create';
+        $tagName = "{$params->bill_number}-{$params->bill_year} - FOR";
+        break;
+      case 'nay':
+        $apiAction = 'create';
+        $tagName = "{$params->bill_number}-{$params->bill_year} - AGAINST";
+        break;
+      default:
+        return array(
+          'is_error' => 1,
+          'message' => 'Unable to determine bill action',
+          'action' => $action,
+          'params' => $params,
+        );
+    }
+
+    $tagId = CRM_Core_DAO::singleValueQuery("
+      SELECT id
+      FROM civicrm_tag
+      WHERE name = '{$tagName}'
+        AND parent_id = {$parentId}
+    ");
+    //CRM_Core_Error::debug_var('tagId', $tagId);
+
+    if (!$tagId) {
+      $tag = civicrm_api('tag', 'create', array(
+        'version' => 3,
+        'name' => $tagName,
+        'parent_id' => $parentId,
+        'is_selectable' => 0,
+        'is_reserved' => 1,
+        'used_for' => 'civicrm_contact',
+        'created_date' => date('Y-m-d H:i:s'),
+        'description' => '',//TODO store link back to website
+      ));
+      //CRM_Core_Error::debug_var('$tag', $tag);
+
+      if ($tag['is_error']) {
+        return $tag;
+      }
+
+      $tagId = $tag['id'];
+    }
 
     $et = civicrm_api('entity_tag', $apiAction, array(
       'version' => 3,
@@ -159,6 +307,12 @@ class CRM_NYSS_BAO_Integration {
       'tag_id' => $tagId,
     ));
 
-    //TODO also store is_website flag
-  }//processIssue
+    if ($et['is_error']) {
+      return $et;
+    }
+
+    return true;
+
+    //TODO also store is_website flag (?)
+  }//processBill
 }//end class

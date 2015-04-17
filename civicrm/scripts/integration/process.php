@@ -63,21 +63,24 @@ class CRM_Integration_Process {
           'first_name' => $row->first_name,
           'last_name' => $row->last_name,
           'email' => $row->email_address,
-          'street_address' => $row->street_number,//TODO check
-          'street_unit' => $row->apt_no,
+          'street_address' => $row->address1,
+          'sumplemental_addresss_1' => $row->address2,
           'city' => $row->city,
           'state' => $row->state,
           'postal_code' => $row->zip,
-          'birth_date' => $row->birth_date,
-          'gender_id' => ($row->gender == 'M') ?  2 : 1,//TODO check
+          'birth_date' => date('Y-m-d', $row->dob),//dob comes as timestamp
+          'gender_id' => ($row->gender == 'male') ?  2 : 1,//TODO check
         );
 
         $cid = CRM_NYSS_BAO_Integration::matchContact($contactParams);
       }
       //CRM_Core_Error::debug_var('cid', $cid);
 
-      if ($cid['is_error']) {
-        $stats['error'][] = $cid;
+      if (!empty($cid['is_error'])) {
+        $stats['error'][] = array(
+          'msg' => 'Unable to match or create contact',
+          'cid' => $cid,
+        );
         continue;
       }
 
@@ -90,6 +93,7 @@ class CRM_Integration_Process {
           break;
 
         case 'COMMITTEE':
+          $result = CRM_NYSS_BAO_Integration::processCommittee($cid, $row->msg_action, $params);
           break;
 
         case 'PETITION':
@@ -99,6 +103,7 @@ class CRM_Integration_Process {
           break;
 
         case 'BILL':
+          $result = CRM_NYSS_BAO_Integration::processBill($cid, $row->msg_action, $params);
           break;
 
         case 'ACCOUNT':
@@ -109,7 +114,7 @@ class CRM_Integration_Process {
 
         default:
           bbscript_log('error', 'Unable to process row. Message type is unknown.', $row);
-          $stats['unprocessed'][] = $row;
+          $stats['unprocessed'][$row->msg_type][] = $row;
       }
 
       if ($result['is_error']) {
@@ -136,8 +141,11 @@ class CRM_Integration_Process {
 
     if ($optlist['stats']) {
       echo "\nProcessing details:\n";
+      echo "\nProcessed:\n";
       print_r($stats['processed']);
+      echo "\nUnprocessed\n";
       print_r($stats['unprocessed']);
+      echo "\nErrors\n";
       print_r($stats['error']);
     }
   }//run
