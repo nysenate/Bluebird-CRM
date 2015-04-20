@@ -155,6 +155,9 @@ class CRM_NYSS_BAO_Integration {
       $tagId = $tag['id'];
     }
 
+    //clear tag cache; entity_tag sometimes fails because newly created tag isn't recognized by pseudoconstant
+    civicrm_api3('Tag', 'getfields', array('cache_clear' => 1));
+
     $apiAction = ($action == 'follow') ? 'create' : 'delete';
     $et = civicrm_api('entity_tag', $apiAction, array(
       'version' => 3,
@@ -212,7 +215,8 @@ class CRM_NYSS_BAO_Integration {
       $tagId = $tag['id'];
     }
 
-    //TODO may need to clear tag cache; entity_tag sometimes failes because newly created tag isn't recognized by pseudoconstant
+    //clear tag cache; entity_tag sometimes fails because newly created tag isn't recognized by pseudoconstant
+    civicrm_api3('Tag', 'getfields', array('cache_clear' => 1));
 
     $apiAction = ($action == 'follow') ? 'create' : 'delete';
     $et = civicrm_api('entity_tag', $apiAction, array(
@@ -267,6 +271,7 @@ class CRM_NYSS_BAO_Integration {
         return array(
           'is_error' => 1,
           'message' => 'Unable to determine bill action',
+          'contactId' => $contactId,
           'action' => $action,
           'params' => $params,
         );
@@ -300,6 +305,9 @@ class CRM_NYSS_BAO_Integration {
       $tagId = $tag['id'];
     }
 
+    //clear tag cache; entity_tag sometimes fails because newly created tag isn't recognized by pseudoconstant
+    civicrm_api3('Tag', 'getfields', array('cache_clear' => 1));
+
     $et = civicrm_api('entity_tag', $apiAction, array(
       'version' => 3,
       'entity_table' => 'civicrm_contact',
@@ -315,4 +323,93 @@ class CRM_NYSS_BAO_Integration {
 
     //TODO also store is_website flag (?)
   }//processBill
+
+  static function processPetition($contactId, $action, $params) {
+    //bbscript_log('trace', '$contactId', $contactId);
+    //bbscript_log('trace', '$action', $action);
+    //bbscript_log('trace', '$params', $params);
+
+    //find out if tag exists
+    $parentId = CRM_Core_DAO::singleValueQuery("
+      SELECT id
+      FROM civicrm_tag
+      WHERE name = 'Website Petitions'
+        AND is_tagset = 1
+    ");
+    $tagId = CRM_Core_DAO::singleValueQuery("
+      SELECT id
+      FROM civicrm_tag
+      WHERE name = '{$params->petition_name}'
+        AND parent_id = {$parentId}
+    ");
+    //CRM_Core_Error::debug_var('tagId', $tagId);
+
+    if (!$tagId) {
+      $tag = civicrm_api('tag', 'create', array(
+        'version' => 3,
+        'name' => $params->petition_name,
+        'parent_id' => $parentId,
+        'is_selectable' => 0,
+        'is_reserved' => 1,
+        'used_for' => 'civicrm_contact',
+        'created_date' => date('Y-m-d H:i:s'),
+        'description' => '',//TODO store link back to website
+      ));
+      //CRM_Core_Error::debug_var('$tag', $tag);
+
+      if ($tag['is_error']) {
+        return $tag;
+      }
+
+      $tagId = $tag['id'];
+    }
+
+    //clear tag cache; entity_tag sometimes fails because newly created tag isn't recognized by pseudoconstant
+    civicrm_api3('Tag', 'getfields', array('cache_clear' => 1));
+
+    $apiAction = ($action == 'sign') ? 'create' : 'delete';
+    $et = civicrm_api('entity_tag', $apiAction, array(
+      'version' => 3,
+      'entity_table' => 'civicrm_contact',
+      'entity_id' => $contactId,
+      'tag_id' => $tagId,
+    ));
+
+    if ($et['is_error']) {
+      return $et;
+    }
+
+    return true;
+
+    //TODO also store is_website flag (?)
+  }//processPetition
+
+  static function processAccount($contactId, $action, $params) {
+    switch ($action) {
+      case 'account created':
+        break;
+
+      case 'account deleted':
+        break;
+
+      case 'login':
+        break;
+
+      case 'logout':
+        break;
+
+      default:
+        return array(
+          'is_error' => 1,
+          'message' => 'Unable to determine account action',
+          'contactId' => $contactId,
+          'action' => $action,
+          'params' => $params,
+        );
+    }
+  }//processAccount
+
+  static function processProfile($contactId, $action, $params) {
+    //only available action is account edited
+  }//processProfile
 }//end class

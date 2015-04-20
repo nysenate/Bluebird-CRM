@@ -87,7 +87,13 @@ class CRM_Integration_Process {
       //prep params
       $params = json_decode($row->msg_info);
 
+      //TODO for bill/issue/committee/petition -- handle contextual messages
+
       switch ($row->msg_type) {
+        case 'BILL':
+          $result = CRM_NYSS_BAO_Integration::processBill($cid, $row->msg_action, $params);
+          break;
+
         case 'ISSUE':
           $result = CRM_NYSS_BAO_Integration::processIssue($cid, $row->msg_action, $params);
           break;
@@ -96,20 +102,25 @@ class CRM_Integration_Process {
           $result = CRM_NYSS_BAO_Integration::processCommittee($cid, $row->msg_action, $params);
           break;
 
+        case 'COMMUNICATION':
+          break;
+
+        case 'CONTEXTMSG':
+          break;
+
         case 'PETITION':
+          $result = CRM_NYSS_BAO_Integration::processPetition($cid, $row->msg_action, $params);
           break;
 
-        case 'CONTACT':
-          break;
-
-        case 'BILL':
-          $result = CRM_NYSS_BAO_Integration::processBill($cid, $row->msg_action, $params);
+        case 'SURVEY':
           break;
 
         case 'ACCOUNT':
+          $result = CRM_NYSS_BAO_Integration::processAccount($cid, $row->msg_action, $params);
           break;
 
         case 'PROFILE':
+          $result = CRM_NYSS_BAO_Integration::processProfile($cid, $row->msg_action, $params);
           break;
 
         default:
