@@ -75,7 +75,7 @@ SELECT
   a.id, a.user_id, a.user_is_verified, a.target_shortname, a.target_district,
   a.user_shortname, a.user_district, a.msg_type, a.msg_action, a.msg_info,
   a.created_at,
-  users.mail as email_address,                            /* email address */
+  IFNULL(users.mail,'') as email_address,                 /* email address */
   IFNULL(fdf_fn.field_first_name_value,'') as first_name, /* first name */
   IFNULL(fdf_ln.field_last_name_value,'') as last_name,   /* last name */
   IFNULL(users.data,'') as contact_me,                    /* Contact Me from serialized array blob */
@@ -87,8 +87,8 @@ SELECT
   IFNULL(fdf_dob.field_dateofbirth_value,'') as dob,      /* date of birth */
   IFNULL(fdf_gu.field_gender_user_value,'') as gender,    /* gender (m/f) */
   IFNULL(taxdata.name,'') as top_issue                    /* Top Issue */
-FROM (accumulator a
-       INNER JOIN users on a.user_id=users.uid)
+FROM accumulator a
+       LEFT JOIN users on a.user_id=users.uid
        LEFT JOIN field_data_field_first_name fdf_fn ON a.user_id=fdf_fn.entity_id
        LEFT JOIN field_data_field_last_name fdf_ln ON a.user_id=fdf_ln.entity_id
        LEFT JOIN (field_data_field_address fdf_ad
@@ -100,6 +100,7 @@ FROM (accumulator a
        ON a.user_id=fdf_ti.entity_id
 WHERE a.id > :currentmax
 REMOTEQUERY;
+IL::log("Executing query:\n$query",LOG_LEVEL_INFO);
 $res = $remotedb->prepare($query);
 $res->execute(array(':currentmax'=>$current_max));
 $found_count = $res->rowCount();
@@ -129,7 +130,8 @@ while ($onemsg = $res->fetch(PDO::FETCH_ASSOC)) {
     }
     $bindparam[":{$k}"]=$v;
   }
-  IL::log("Importing message {$thisid} with bound values:\n".print_r($bindparam,1),LOG_LEVEL_DEBUG);
+  IL::log("Importing message {$thisid}");
+  IL::log("Message {$thisid} bound values:\n".print_r($bindparam,1),LOG_LEVEL_DEBUG);
   try {
     $instmt->execute($bindparam);
     $success[]=$thisid;

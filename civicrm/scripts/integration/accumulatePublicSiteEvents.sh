@@ -12,10 +12,13 @@ piddir=/var/run
 default_ssh_host=localhost
 default_ssh_user=no_user
 default_tunnel_port=7777
+default_tunnel_host=localhost
 default_socket_file=bbintegrator
 config_prefix=integration
 persistent_tunnel=0
 exit_only=0
+run_import=1
+run_process=1
 use_debug=0
 
 
@@ -39,6 +42,7 @@ usage() {
       socket-file  : path to socket file used to control SSH tunnel (bbintegrator)
       ssh-user     : username to use for SSH tunnel
       ssh-host     : hostname for SSH tunnel endpoint
+      tunnel-host  : hostname for recipient of remote port forwarding
       tunnel-port  : local port to forward through SSH tunnel for MySQL connection (7777)
                      The tunnel port must be greater than 1024
       config-group : the bluebird.cfg group to read (globals)
@@ -48,6 +52,11 @@ usage() {
       persistent   : if present, this option causes the SSH tunnel to be left open after
                      the script completes.  Does not use an option_value.
       exit-only    : attempts to kill the tunnel, then exits.  Does not use an option_value.
+      no-import    : prevents the import section from running.  Does not use an option_value.
+                     The no-import option is only recognized on the command line
+      no-process   : prevents the message processing section from running.  Does not use
+                     an option_value.  The no-process option is only recognized on the
+                     command line
       with-debug   : causes debug text to echo to console.  Does not use an option_value.
 
     " >&2
@@ -79,12 +88,15 @@ while [ $# -gt 0 ]; do
     --help|-h) usage; exit 0 ;;
     --socket-file) shift; socket_file=$1 ;;
     --tunnel-port) shift; tunnel_port=$1 ;;
+    --tunnel-host) shift; tunnel_host=$1 ;;
     --ssh-user) shift; ssh_user=$1 ;;
     --ssh-host) shift; ssh_host=$1 ;;
     --persistent) persistent_tunnel=1 ;;
     --config-group) shift; config_group=$1 ;;
     --config-prefix) shift; config_prefix=$1 ;;
     --exit-only) exit_only=1 ;;
+    --no-import) run_import=0 ;;
+    --no-process) run_process=0 ;;
     --with-debug) use_debug=1 ;;
     -*) echo "$prog: $1: Invalid option" >&2; usage; exit 1 ;;
     *) cmd="$1" ;;
@@ -100,7 +112,7 @@ readAlias=$readConfig" --group "$config_group" "$config_prefix"."
 if [[ "$use_debug" -gt 0 ]]; then echo -e "readAlias set to: "$readAlias"\n"; fi
 
 # set up the variables to use command line, OR config values, OR default values
-for i in ssh_host ssh_user tunnel_port socket_file; do
+for i in ssh_host ssh_user tunnel_host tunnel_port socket_file; do
   set_param $i
   if [[ "$use_debug" -gt 0 ]]; then echo -e "Setting "$i" = "${!i}"\n"; fi
 done
@@ -127,12 +139,20 @@ then
       exit 2
     fi
     echo "Starting Tunnel . . ."
-    ssh -M -S $socket_file -fnNT -L $tunnel_port:localhost:3306 $ssh_user"@"$ssh_host
+    if [[ "$use_debug" -gt 0 ]]; then echo -e ssh -M -S $socket_file -fnNT -L $tunnel_port:$tunnel_host:3306 $ssh_user"@"$ssh_host; fi
+    ssh -M -S $socket_file -fnNT -L $tunnel_port:$tunnel_host:3306 $ssh_user"@"$ssh_host
   else
     echo "No tunnel required for connection to "$ssh_host
   fi
 
-  echo "Doing all mah stuff"
+  if [[ "$run_import" > 0 ]]
+  then
+    echo "Doing all mah import stuff"
+  fi
+  if [[ "$run_process" > 0 ]]
+  then
+    echo "Doing all mah process stuff"
+  fi
 fi
 
 if [[ "$persistent_tunnel" -eq 0 || "$exit_only" -gt 0 ]]
