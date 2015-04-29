@@ -1459,8 +1459,9 @@ function getReports(range)
     url: '/civicrm/imap/ajax/reports/list?range='+range,
     success: function(data, status) {
       result = cj.parseJSON(data);
-      reports = result.data;
-      var html = '';
+      reports = result.data;console.log(reports);
+      var html = '',
+          status_val=null;
       if (reports.total == 0 || reports.Messages == null) {
         ReportTable();
       }
@@ -1478,7 +1479,8 @@ function getReports(range)
           html += '<td class="imap_date_column"><span data-sort="'+value.updated_date_unix+'"  title="'+value.updated_date_long+'">'+value.updated_date_short +'</span></td>';
           html += '<td class="imap_date_column"><span data-sort="'+value.email_date_unix+'"  title="'+value.email_date_long+'">'+value.email_date_short +'</span></td>';
           if (value.status_string != null) {
-            html += '<td class="imap_date_column">'+value.status_string+'</td>';
+          //if (Number(value.matcher) > 0) {
+            html += '<td class="imap_date_column"><span class="my-hidden-span">'+value.status_icon_class+'</span><a class="crm-summary-link" href="/civicrm/imap/ajax/reports/getTags?id=' + value.activity_id + '"><div class="icon mail-merge-icon mail-merge-'+value.status_icon_class+'"></div></a></td>';
           }
           else {
             html += '<td class="imap_date_column"> Automatically Matched</td>';
@@ -1596,19 +1598,19 @@ cj(".Total").live('click', function() {
   oTable.fnFilter("", 5, false, false);
 });
 cj(".UnMatched").live('click', function() {
-  oTable.fnFilter('UnMatched', 5);
+  oTable.fnFilter('unmatched', 5);
 });
 cj(".Matched").live('click', function() {
-  oTable.fnFilter('Matched by', 5);
+  oTable.fnFilter('^matched', 5, true);
 });
 cj(".Cleared").live('click', function() {
-  oTable.fnFilter('Cleared', 5);
+  oTable.fnFilter('cleared', 5);
 });
 cj(".Errors").live('click', function() {
   oTable.fnFilter('error', 5);
 });
 cj(".Deleted").live('click', function() {
-  oTable.fnFilter('Deleted', 5);
+  oTable.fnFilter('deleted', 5);
 });
 
 

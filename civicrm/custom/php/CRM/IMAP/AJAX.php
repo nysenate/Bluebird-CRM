@@ -411,11 +411,11 @@ class CRM_IMAP_AJAX
     $text = preg_replace('/<(p|br)[^>]*>|\r/', "\n", $msgBody);
     $text = strip_tags($text);
     $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML401, 'ISO-8859-1');
-  
+
     // Find email addresses within the text.
     preg_match_all('/[\w\.\-\+]+@[a-z\d\-]+(\.[a-z\d\-]+)*/i', $text, $emails);
     $res['emails'] = array_unique($emails[0]);
-  
+
     // Find possible phone numbers
     preg_match_all('/([(]\d{3}[)] *|\d{3}[\-\.\ ])?\d{3}[\-\.]\d{4}/', $text, $phones);
     $res['phones'] = array_unique($phones[0]);
@@ -427,7 +427,7 @@ class CRM_IMAP_AJAX
       $addrInfo['state'] = self::getStateName($addrInfo['stateAbbr']);
     }
     $res['addrs'] = self::reformulate_preg_array($addresses);
-  
+
     // Find possible names
     preg_match_all("/(?:(?<prefix>(?:Mr|MR|Ms|MS|Miss|MISS|Mrs|MRS|Dr|DR|Sir|Madam|Senator|(?:Assembly|Congress)(?:wo)?man)\.?)\h+)?(?<first>[A-Z](?:[a-z]+(?:\-[A-Z][a-z]+)?|\.))\h+(?<middle>[A-Z](?:[a-z]+|\.)\h+)?(?<last>(?:[A-Z][a-z]{,2}[\.\']?\ ?)?[A-Z][a-z]+(?:\-[A-Z][a-z]+)?)(?<suffix>(?:\h*,\h)?(?:Jr|JR|Sr|SR|II|III|PhD|PHD|MD|Esq))?/", $text, $names, PREG_SET_ORDER);
 
@@ -498,7 +498,7 @@ class CRM_IMAP_AJAX
     require_once 'api/api.php';
     $existingTags = CRM_Core_BAO_EntityTag::getTag($entityId, $entityTab);
     $entityTagIds = array();
-  
+
     foreach ($tags as $tagId) {
       if (!is_numeric($tagId)) {
         // check if user has selected existing tag or is creating new tag
@@ -535,7 +535,7 @@ class CRM_IMAP_AJAX
         $entityTagIds[] = $tagId;
       }
     }
-  
+
     $tagCount = 0;
     if (!empty($entityTagIds)) {
       // New tag ids can be inserted directly into the db table.
@@ -1252,19 +1252,19 @@ class CRM_IMAP_AJAX
       $lastName = trim($apires['values'][$contactId]['last_name']);
       $contactType = trim($apires['values'][$contactId]['contact_type']);
       $email = trim($apires['values'][$contactId]['email']);
-  
+
       // change the contact
       $query = "UPDATE civicrm_activity_contact
                 SET contact_id = $contactId
                 WHERE activity_id = $activityId
                   AND record_type_id = 3";
       mysql_query($query, self::db());
-  
+
       $query = "UPDATE civicrm_activity
                 SET is_auto=0
                 WHERE id = $activityId";
       mysql_query($query, self::db());
-  
+
       $query = "
         UPDATE nyss_inbox_messages
         SET matcher=$userId, matched_to=$contactId, sender_name='$changeName',
@@ -1305,7 +1305,7 @@ class CRM_IMAP_AJAX
                   WHERE id = $activityId";
         mysql_query($query, self::db());
       }
-  
+
       if (!empty($activity_date)) {
         $query = "UPDATE civicrm_activity
                   SET activity_date_time = '$activity_date'
@@ -1484,7 +1484,7 @@ class CRM_IMAP_AJAX
       echo "<h1>inputs</h1>";
       var_dump($fields);
     }
-  
+
     if (isset($fields['first_name']) || isset($fields['last_name'])) {
       $display_name = trim($fields['first_name'].' '.$fields['last_name']);
       $sort_name = trim($fields['last_name'].', '.$fields['first_name']);
@@ -1495,7 +1495,7 @@ class CRM_IMAP_AJAX
     else {
       self::exitError('Required: First name or last name or email');
     }
-  
+
     // Create the contact first
     $params = array(
       'first_name' => $fields['first_name'],
@@ -1509,13 +1509,13 @@ class CRM_IMAP_AJAX
       'birth_date' => $fields['dob'],
       'version' => 3,
     );
-  
+
     $errmsg = null;
     $apires = civicrm_api('contact', 'create', $params);
     if ($apires['is_error'] != 1) {
       $contactId = $apires['id'];
       $otherLocationId = self::getOtherLocationId();
-  
+
       // add the email
       if (isset($fields['email_address'])) {
         $params = array(
@@ -1526,7 +1526,7 @@ class CRM_IMAP_AJAX
         );
         $api_email = civicrm_api('email', 'create', $params);
       }
-  
+
       // add the phone number
       if (isset($fields['phone'])) {
         $params = array(
@@ -1537,7 +1537,7 @@ class CRM_IMAP_AJAX
         );
         $api_phone = civicrm_api('phone', 'create', $params);
       }
-  
+
       if (isset($fields['street_address']) || isset($fields['street_address_2'])
           || isset($fields['city']) || isset($fields['state'])
           || isset($fields['postal_code'])) {
@@ -1565,7 +1565,7 @@ class CRM_IMAP_AJAX
     else {
       $errmsg = 'Unable to add contact';
     }
-  
+
     if ($errmsg) {
       self::exitError($errmsg);
     }
@@ -1601,6 +1601,14 @@ class CRM_IMAP_AJAX
           WHEN im.status = ".self::STATUS_UNPROCESSED." THEN 'Unprocessed'
           ELSE 'Unknown'
         END as status_string,
+        CASE
+          WHEN im.status = ".self::STATUS_UNMATCHED." THEN 'unmatched'
+          WHEN im.status = ".self::STATUS_MATCHED." THEN 'matched'
+          WHEN im.status = ".self::STATUS_CLEARED." THEN 'cleared'
+          WHEN im.status = ".self::STATUS_DELETED." THEN 'deleted'
+          WHEN im.status = ".self::STATUS_UNPROCESSED." THEN 'unprocessed'
+          ELSE 'unknown'
+        END as status_icon_class,
         im.matched_to, im.sender_email, im.subject, im.forwarder, im.activity_id,
         im.matcher, im.status,
         IFNULL(count(ia.file_name), 0) as attachments,
@@ -1647,7 +1655,7 @@ class CRM_IMAP_AJAX
     }
 
     $res['Messages'] = $msgs;
- 
+
     if ($debug) {
       echo "<h1>Building Reports</h1>";
       var_dump($query);
@@ -1658,5 +1666,33 @@ class CRM_IMAP_AJAX
     //file_put_contents("/tmp/inbound_email/report", print_r($res, true));
     self::exitSuccess('Generated report', $res);
   } // getReports()
+
+  /**
+   * Generate Usage Report
+   * Current report shows Statistics & every message list
+   * For Report screen
+   * @return [JSON Object]  JSON encoded response, OR error codes
+   */
+  public static function getTags()
+  {
+    $id = (int)$_GET['id'];
+    $tags = array();
+    $ret = "No tags assigned";
+    if ($id) {
+      $q = "SELECT b.name FROM civicrm_entity_tag a INNER JOIN civicrm_tag b ON a.tag_id=b.id " .
+           "WHERE a.entity_table='civicrm_activity' AND a.entity_id='$id'";
+      $res = mysql_query($q, self::db());
+      while ($r = mysql_fetch_assoc($res)) {
+        $tags[] = $r['name'];
+      }
+      if (count($tags)) {
+        $ret = '<div class="mail-merge-activity-tag-list-header">Tags assigned:</div>' .
+               '<div class="mail-merge-activity-tag-list">' .
+               implode('</span>, <span class="mail-merge-activity-tag">',$tags) .
+               "</span></div>";
+      }
+    }
+    die($ret);
+  }
 
 } // CRM_IMAP_AJAX
