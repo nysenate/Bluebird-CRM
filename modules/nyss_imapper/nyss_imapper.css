@@ -320,7 +320,7 @@ a.stats_overview.active{
 
 /* hover icons for matched/matcher contacts */
 .crm-container .icon.mail-merge-icon {
-  background-image: url('/sites/default/themes/Bluebird/nyss_skin/images/mail-merge-icons.png');
+  background-image: url('/sites/default/themes/Bluebird/nyss_skin/images/inbound_email_icons.png');
 }
 .crm-container .mail-merge-icon.mail-merge-matched {
   background-position: 0px 0px;
