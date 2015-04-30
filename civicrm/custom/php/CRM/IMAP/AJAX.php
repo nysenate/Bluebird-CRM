@@ -1679,14 +1679,34 @@ class CRM_IMAP_AJAX
     $tags = array();
     $ret = "No tags assigned";
     if ($id) {
+      // generate the label text
+      $query = "SELECT
+          CASE
+            WHEN im.status = ".self::STATUS_UNMATCHED." THEN 'Unmatched'
+            WHEN im.status = ".self::STATUS_MATCHED." THEN CONCAT('Matched by ', matcher.display_name)
+            WHEN im.status = ".self::STATUS_CLEARED." THEN 'Cleared'
+            WHEN im.status = ".self::STATUS_DELETED." THEN 'Deleted'
+            WHEN im.status = ".self::STATUS_UNPROCESSED." THEN 'Unprocessed'
+            ELSE 'Unknown Status'
+          END as status_string
+        FROM nyss_inbox_messages as im
+        LEFT JOIN civicrm_contact as matcher ON (im.matcher = matcher.id)
+        WHERE im.activity_id='$id'";
+      $res = mysql_query($query, self::db());
+      $stext = ($r = mysql_fetch_assoc($res))
+               ? $r['status_string']
+               : 'Unknown Status';
+      // get the tags for this activity
       $q = "SELECT b.name FROM civicrm_entity_tag a INNER JOIN civicrm_tag b ON a.tag_id=b.id " .
            "WHERE a.entity_table='civicrm_activity' AND a.entity_id='$id'";
       $res = mysql_query($q, self::db());
       while ($r = mysql_fetch_assoc($res)) {
         $tags[] = $r['name'];
       }
+      // build the HTML
       if (count($tags)) {
-        $ret = '<div class="mail-merge-activity-tag-list-header">Tags assigned:</div>' .
+        $ret = '<div class="mail-merge-status-text">' . $stext . '</div>'.
+               '<div class="mail-merge-activity-tag-list-header">Tags assigned:</div>' .
                '<div class="mail-merge-activity-tag-list">' .
                implode('</span>, <span class="mail-merge-activity-tag">',$tags) .
                "</span></div>";

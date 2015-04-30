@@ -85,9 +85,6 @@ thead .sorting_asc{background-color:#f1f1f1!important;}
 .imapperbox tr.odd:hover .sorting_1{ background-color: #CDCFE9 !important; }
 .imapperbox tr.even:hover .sorting_1{ background-color: #D5DFE4 !important; }
 
-.imapperbox .FixedHeader_Cloned { z-index: 20 !important;}
-.imapperbox .crm-summary-link{ z-index: 1000 !important;}
-
 /* IMAP - Table View - Row */
 .imapperbox .imap_checkbox_column{width: 15px !important; }
 .imapperbox .imap_name_column{width: 190px !important; }
@@ -318,6 +315,7 @@ a.stats_overview.active{
 .imapperbox .matchbubble.H{background-color: #468847; }
 .imapperbox .matchbubble.A{background-color: #999; }
 
+
 /* hover icons for matched/matcher contacts */
 .crm-container .icon.mail-merge-icon {
   background-image: url('/sites/default/themes/Bluebird/nyss_skin/images/inbound_email_icons.png');
@@ -337,6 +335,15 @@ a.stats_overview.active{
 .crm-container .mail-merge-icon.mail-merge-unprocessed {
   background-position: 0px -64px;
 }
-. {
+.mail-merge-filter-data {
   display:none;
 }
+.crm-container .mail-merge-tag-hover .crm-tooltip {
+  min-width: 100px;
+  min-height: 40px;
+  padding: 10px;
+}
+.mail-merge-status-text {
+  margin-bottom: 10px;
+}
+.crm-container .crm-summary-link { z-index:auto !important; }
