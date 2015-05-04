@@ -1677,7 +1677,7 @@ class CRM_IMAP_AJAX
   {
     $id = (int)$_GET['id'];
     $tags = array();
-    $ret = "No tags assigned";
+    $ret = "Unmatched<br />No Activity Record Found";
     if ($id) {
       // generate the label text
       $query = "SELECT
@@ -1704,10 +1704,10 @@ class CRM_IMAP_AJAX
         $tags[] = $r['name'];
       }
       // build the HTML
+      $ret = '<div class="mail-merge-status-text">' . $stext . '</div>'.
+             '<div class="mail-merge-activity-tag-list-header">Tags assigned:</div>';
       if (count($tags)) {
-        $ret = '<div class="mail-merge-status-text">' . $stext . '</div>'.
-               '<div class="mail-merge-activity-tag-list-header">Tags assigned:</div>' .
-               '<div class="mail-merge-activity-tag-list">' .
+        $ret .='<div class="mail-merge-activity-tag-list">' .
                implode('</span>, <span class="mail-merge-activity-tag">',$tags) .
                "</span></div>";
       }
