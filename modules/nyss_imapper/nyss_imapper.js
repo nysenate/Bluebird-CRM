@@ -1479,7 +1479,8 @@ function getReports(range)
           html += '<td class="imap_date_column"><span data-sort="'+value.updated_date_unix+'"  title="'+value.updated_date_long+'">'+value.updated_date_short +'</span></td>';
           html += '<td class="imap_date_column"><span data-sort="'+value.email_date_unix+'"  title="'+value.email_date_long+'">'+value.email_date_short +'</span></td>';
           if (value.status_string != null) {
-            html += '<td class="imap_date_column"><span class="mail-merge-filter-data">'+value.status_icon_class+'</span><a class="mail-merge-tag-hover crm-summary-link" href="/civicrm/imap/ajax/reports/getTags?id=' + value.activity_id + '"><div class="icon crm-icon mail-merge-icon mail-merge-'+value.status_icon_class+'"></div></a>&nbsp;</td>';
+            html += '<td class="imap_date_column"><span class="mail-merge-filter-data">'+value.status_icon_class+'</span><a class="mail-merge-tag-hover crm-summary-link" href="/civicrm/imap/ajax/reports/getTags?id=' + value.id +
+                    '"><div class="icon crm-icon mail-merge-icon mail-merge-'+value.status_icon_class+'"></div></a>&nbsp;</td>';
           }
           else {
             html += '<td class="imap_date_column"> Automatically Matched</td>';

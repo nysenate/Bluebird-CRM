@@ -1676,8 +1676,10 @@ class CRM_IMAP_AJAX
   public static function getTags()
   {
     $id = (int)$_GET['id'];
+    $actid = 0;
     $tags = array();
-    $ret = "Unmatched<br />No Activity Record Found";
+    $stext  = "No Message ID found";
+    $tltext = '';
     if ($id) {
       // generate the label text
       $query = "SELECT
@@ -1688,30 +1690,39 @@ class CRM_IMAP_AJAX
             WHEN im.status = ".self::STATUS_DELETED." THEN 'Deleted'
             WHEN im.status = ".self::STATUS_UNPROCESSED." THEN 'Unprocessed'
             ELSE 'Unknown Status'
-          END as status_string
+          END as status_string,
+          im.activity_id
         FROM nyss_inbox_messages as im
         LEFT JOIN civicrm_contact as matcher ON (im.matcher = matcher.id)
-        WHERE im.activity_id='$id'";
+        WHERE im.id='$id'";
       $res = mysql_query($query, self::db());
-      $stext = ($r = mysql_fetch_assoc($res))
-               ? $r['status_string']
-               : 'Unknown Status';
-      // get the tags for this activity
-      $q = "SELECT b.name FROM civicrm_entity_tag a INNER JOIN civicrm_tag b ON a.tag_id=b.id " .
-           "WHERE a.entity_table='civicrm_activity' AND a.entity_id='$id'";
-      $res = mysql_query($q, self::db());
-      while ($r = mysql_fetch_assoc($res)) {
-        $tags[] = $r['name'];
+      if ($r = mysql_fetch_assoc($res)) {
+        $stext = $r['status_string'];
+        $actid = (int)$r['activity_id'];
+      } else {
+        $stext = 'Unknown Status';
       }
-      // build the HTML
-      $ret = '<div class="mail-merge-status-text">' . $stext . '</div>'.
-             '<div class="mail-merge-activity-tag-list-header">Tags assigned:</div>';
-      if (count($tags)) {
-        $ret .='<div class="mail-merge-activity-tag-list">' .
-               implode('</span>, <span class="mail-merge-activity-tag">',$tags) .
-               "</span></div>";
+      if ($actid) {
+        // get the tags for this activity
+        $q = "SELECT b.name FROM civicrm_entity_tag a INNER JOIN civicrm_tag b ON a.tag_id=b.id " .
+             "WHERE a.entity_table='civicrm_activity' AND a.entity_id='$actid'";
+        $res = mysql_query($q, self::db());
+        while ($r = mysql_fetch_assoc($res)) {
+          $new = trim($r['name']);
+          if ($new) { $tags[] = $new; }
+        }
+        // build the HTML
+        if (count($tags)) {
+          $tltext = '<div class="mail-merge-activity-tag-list-header">Tags assigned:</div>' .
+                    '<div class="mail-merge-activity-tag-list">' .
+                    implode('</span>, <span class="mail-merge-activity-tag">',$tags) .
+                    "</span></div>";
+        } else {
+          $tltext = '<div class="mail-merge-activity-tag-list-header">No tags assigned</div>';
+        }
       }
     }
+    $ret = '<div class="mail-merge-status-text">' . $stext . '</div>' . ($tltext ? $tltext : '');
     die($ret);
   }
 
