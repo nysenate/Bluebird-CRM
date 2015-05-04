@@ -1459,8 +1459,9 @@ function getReports(range)
     url: '/civicrm/imap/ajax/reports/list?range='+range,
     success: function(data, status) {
       result = cj.parseJSON(data);
-      reports = result.data;
-      var html = '';
+      reports = result.data;console.log(reports);
+      var html = '',
+          status_val=null;
       if (reports.total == 0 || reports.Messages == null) {
         ReportTable();
       }
@@ -1478,7 +1479,8 @@ function getReports(range)
           html += '<td class="imap_date_column"><span data-sort="'+value.updated_date_unix+'"  title="'+value.updated_date_long+'">'+value.updated_date_short +'</span></td>';
           html += '<td class="imap_date_column"><span data-sort="'+value.email_date_unix+'"  title="'+value.email_date_long+'">'+value.email_date_short +'</span></td>';
           if (value.status_string != null) {
-            html += '<td class="imap_date_column">'+value.status_string+'</td>';
+            html += '<td class="imap_date_column"><span class="mail-merge-filter-data">'+value.status_icon_class+'</span><a class="mail-merge-tag-hover crm-summary-link" href="/civicrm/imap/ajax/reports/getTags?id=' + value.id +
+                    '"><div class="icon crm-icon mail-merge-icon mail-merge-'+value.status_icon_class+'"></div></a>&nbsp;</td>';
           }
           else {
             html += '<td class="imap_date_column"> Automatically Matched</td>';
@@ -1528,18 +1530,18 @@ function Table()
     "aoColumnDefs": [
       { 'bSortable': false, 'aTargets': [ 0 ] },
       { 'bSortable': false, 'aTargets': [ 6 ] },
-      { "sType": "title-string", "aTargets": [ 3,5 ] }
+      { "sType": "title-string", "aTargets": [ 3,5 ] },
     ],
     "oColVis": { "activate": "mouseover" },
     'aTargets': [ 1 ],
     "iDisplayLength": 50,
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
-    "bAutoWidth": false,
+    "bAutoWidth": true,
     "oLanguage": {
       "sEmptyTable": "No records found"
     }
   });
-  oHeader = new FixedHeader(oTable);
+  oHeader = new FixedHeader(oTable, {zTop:'auto'});
   oHeader.fnUpdate();
 }
 
@@ -1551,16 +1553,17 @@ function ReportTable()
     // "iDisplayLength": 1,
     "sPaginationType": "full_numbers",
     "aaSorting": [[ 3, "desc" ]],
-    "aoColumnDefs": [ { "sType": "title-string", "aTargets": [ 3,4 ] }],
+    "aoColumnDefs": [ { "sType": "title-string", "aTargets": [ 3,4 ] },
+                    ],
     'aTargets': [ 1 ],
     "iDisplayLength": 50,
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
-    "bAutoWidth": false,
+    "bAutoWidth": true,
     "oLanguage": {
       "sEmptyTable": "No records found"
     },
   });
-  new FixedHeader(oTable);
+  new FixedHeader(oTable, {zTop:'auto'});
 }
 
 
@@ -1596,19 +1599,19 @@ cj(".Total").live('click', function() {
   oTable.fnFilter("", 5, false, false);
 });
 cj(".UnMatched").live('click', function() {
-  oTable.fnFilter('UnMatched', 5);
+  oTable.fnFilter('unmatched', 5);
 });
 cj(".Matched").live('click', function() {
-  oTable.fnFilter('Matched by', 5);
+  oTable.fnFilter('^matched', 5, true);
 });
 cj(".Cleared").live('click', function() {
-  oTable.fnFilter('Cleared', 5);
+  oTable.fnFilter('cleared', 5);
 });
 cj(".Errors").live('click', function() {
   oTable.fnFilter('error', 5);
 });
 cj(".Deleted").live('click', function() {
-  oTable.fnFilter('Deleted', 5);
+  oTable.fnFilter('deleted', 5);
 });
 
 

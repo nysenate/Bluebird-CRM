@@ -35,13 +35,19 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
-echo "$prog: create issues tagset"
+echo "$prog: create issues/committee/bill tagsets"
 sql="
+  SET FOREIGN_KEY_CHECKS=0;
   DELETE FROM civicrm_tag
-  WHERE name = 'Website Issues'
+  WHERE ( name = 'Website Issues' OR name = 'Website Committees' OR name = 'Website Bills' OR 'Website Petitions' )
     AND is_tagset = 1;
   INSERT INTO civicrm_tag (name, description, parent_id, is_selectable, is_reserved, is_tagset, used_for, created_id, created_date)
-  VALUES ('Website Issues', 'Tagset for issues generated from nysenate.gov', NULL, 1, 1, 1, 'civicrm_contact', NULL, NULL);
+  VALUES
+    ('Website Issues', 'Tagset for issues generated from nysenate.gov', NULL, 1, 1, 1, 'civicrm_contact', NULL, NULL),
+    ('Website Committees', 'Tagset for committees generated from nysenate.gov', NULL, 1, 1, 1, 'civicrm_contact', NULL, NULL),
+    ('Website Bills', 'Tagset for bills generated from nysenate.gov', NULL, 1, 1, 1, 'civicrm_contact', NULL, NULL),
+    ('Website Petitions', 'Tagset for petitions generated from nysenate.gov', NULL, 1, 1, 1, 'civicrm_contact', NULL, NULL);
+  SET FOREIGN_KEY_CHECKS=1;
 "
 $execSql $instance -c "$sql" -q
 

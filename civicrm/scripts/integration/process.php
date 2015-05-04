@@ -63,53 +63,69 @@ class CRM_Integration_Process {
           'first_name' => $row->first_name,
           'last_name' => $row->last_name,
           'email' => $row->email_address,
-          'street_address' => $row->street_number,//TODO check
-          'street_unit' => $row->apt_no,
+          'street_address' => $row->address1,
+          'sumplemental_addresss_1' => $row->address2,
           'city' => $row->city,
           'state' => $row->state,
           'postal_code' => $row->zip,
-          'birth_date' => $row->birth_date,
-          'gender_id' => ($row->gender == 'M') ?  2 : 1,//TODO check
+          'birth_date' => date('Y-m-d', $row->dob),//dob comes as timestamp
+          'gender_id' => ($row->gender == 'male') ?  2 : 1,//TODO check
         );
 
         $cid = CRM_NYSS_BAO_Integration::matchContact($contactParams);
       }
       //CRM_Core_Error::debug_var('cid', $cid);
 
-      if ($cid['is_error']) {
-        $stats['error'][] = $cid;
+      if (!empty($cid['is_error'])) {
+        $stats['error'][] = array(
+          'msg' => 'Unable to match or create contact',
+          'cid' => $cid,
+        );
         continue;
       }
 
       //prep params
       $params = json_decode($row->msg_info);
 
+      //TODO for bill/issue/committee/petition -- handle contextual messages
+
       switch ($row->msg_type) {
+        case 'BILL':
+          $result = CRM_NYSS_BAO_Integration::processBill($cid, $row->msg_action, $params);
+          break;
+
         case 'ISSUE':
           $result = CRM_NYSS_BAO_Integration::processIssue($cid, $row->msg_action, $params);
           break;
 
         case 'COMMITTEE':
+          $result = CRM_NYSS_BAO_Integration::processCommittee($cid, $row->msg_action, $params);
+          break;
+
+        case 'COMMUNICATION':
+          break;
+
+        case 'CONTEXTMSG':
           break;
 
         case 'PETITION':
+          $result = CRM_NYSS_BAO_Integration::processPetition($cid, $row->msg_action, $params);
           break;
 
-        case 'CONTACT':
-          break;
-
-        case 'BILL':
+        case 'SURVEY':
           break;
 
         case 'ACCOUNT':
+          $result = CRM_NYSS_BAO_Integration::processAccount($cid, $row->msg_action, $params);
           break;
 
         case 'PROFILE':
+          $result = CRM_NYSS_BAO_Integration::processProfile($cid, $row->msg_action, $params);
           break;
 
         default:
           bbscript_log('error', 'Unable to process row. Message type is unknown.', $row);
-          $stats['unprocessed'][] = $row;
+          $stats['unprocessed'][$row->msg_type][] = $row;
       }
 
       if ($result['is_error']) {
@@ -136,8 +152,11 @@ class CRM_Integration_Process {
 
     if ($optlist['stats']) {
       echo "\nProcessing details:\n";
+      echo "\nProcessed:\n";
       print_r($stats['processed']);
+      echo "\nUnprocessed\n";
       print_r($stats['unprocessed']);
+      echo "\nErrors\n";
       print_r($stats['error']);
     }
   }//run

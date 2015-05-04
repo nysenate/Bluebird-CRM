@@ -118,4 +118,9 @@
     <page_callback>CRM_IMAP_AJAX::getReports</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
+  <item>
+    <path>civicrm/imap/ajax/reports/getTags</path>
+    <page_callback>CRM_IMAP_AJAX::getTags</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
 </menu>
