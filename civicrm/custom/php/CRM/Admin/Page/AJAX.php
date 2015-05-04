@@ -304,7 +304,9 @@ class CRM_Admin_Page_AJAX {
        */
       $billNo = $name;
       // NYSS 6990 - ORDER BY year DESC as current bills are more relevant.
-      $target_url = self::OPENLEG_BASE_URL.'/api/1.0/json/search/?term=otype:bill+AND+oid:('.$billNo.'+OR+'.$billNo.'*)&pageSize=10&sort=year&sortOrder=true';
+      // NYSS 8819 - increase pageSize to 12 to accommodate cases where the
+      //             exact matching billno is the 11th or 12th item in the JSON
+      $target_url = self::OPENLEG_BASE_URL.'/api/1.0/json/search/?term=otype:bill+AND+oid:('.$billNo.'+OR+'.$billNo.'*)&pageSize=12&sort=year&sortOrder=true';
       $ch = curl_init();
       curl_setopt($ch, CURLOPT_URL, $target_url);
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
