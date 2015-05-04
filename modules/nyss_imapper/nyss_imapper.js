@@ -1536,7 +1536,7 @@ function Table()
     'aTargets': [ 1 ],
     "iDisplayLength": 50,
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
-    "bAutoWidth": true,
+    "bAutoWidth": false,
     "oLanguage": {
       "sEmptyTable": "No records found"
     }
@@ -1558,7 +1558,7 @@ function ReportTable()
     'aTargets': [ 1 ],
     "iDisplayLength": 50,
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
-    "bAutoWidth": true,
+    "bAutoWidth": false,
     "oLanguage": {
       "sEmptyTable": "No records found"
     },
