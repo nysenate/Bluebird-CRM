@@ -51,4 +51,23 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
-#TODO create column in entity_tag for flag from website
+echo "$prog: create nyss_account table"
+sql="
+  DROP TABLE IF EXISTS nyss_web_account;
+  CREATE TABLE IF NOT EXISTS nyss_web_account (
+    id int(10) unsigned NOT NULL,
+    contact_id int(10) unsigned NOT NULL,
+    action varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+    created_date datetime DEFAULT NULL
+  ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+  ALTER TABLE nyss_web_account
+    ADD PRIMARY KEY (id),
+    ADD KEY FK_nyss_web_account_contact_id (contact_id);
+  ALTER TABLE nyss_web_account
+    MODIFY id int(10) unsigned NOT NULL AUTO_INCREMENT;
+  ALTER TABLE nyss_web_account
+    ADD CONSTRAINT FK_nyss_web_account_contact_id FOREIGN KEY (contact_id) REFERENCES civicrm_contact (id) ON DELETE NO ACTION ON UPDATE NO ACTION;
+"
+$execSql $instance -c "$sql" -q
+
