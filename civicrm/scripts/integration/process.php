@@ -66,7 +66,7 @@ class CRM_Integration_Process {
           'last_name' => $row->last_name,
           'email' => $row->email_address,
           'street_address' => $row->address1,
-          'sumplemental_addresss_1' => $row->address2,
+          'supplemental_addresss_1' => $row->address2,
           'city' => $row->city,
           'state' => $row->state,
           'postal_code' => $row->zip,
@@ -133,7 +133,7 @@ class CRM_Integration_Process {
           break;
 
         case 'PROFILE':
-          $result = CRM_NYSS_BAO_Integration::processProfile($cid, $row->msg_action, $params);
+          $result = CRM_NYSS_BAO_Integration::processProfile($cid, $row->msg_action, $params, $row);
           break;
 
         default:

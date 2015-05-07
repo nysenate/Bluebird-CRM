@@ -408,8 +408,54 @@ class CRM_NYSS_BAO_Integration {
     return true;
   }//processAccount
 
-  static function processProfile($contactId, $action, $params) {
+  static function processProfile($contactId, $action, $params, $row) {
     //only available action is account edited
+    if ($action != 'account edited') {
+      return array(
+        'is_error' => 1,
+        'message' => 'Unknown action type for profile: '.$action,
+        'params' => $params,
+      );
+    }
+
+    $status = ($params->status) ? $params->status : 'edited';
+
+    $profileParams = array(
+      'entity_id' => $contactId,
+      'custom_65' => $row->first_name,
+      'custom_66' => $row->last_name,
+      'custom_67' => $row->address1,
+      'custom_68' => $row->address2,
+      'custom_69' => $row->city,
+      'custom_70' => $row->state,
+      'custom_71' => $row->zip,
+      'custom_72' => $row->email_address,
+      'custom_73' => ($row->dob) ? date('Ymd', $row->dob) : '',//dob comes as timestamp
+      'custom_74' => $row->gender,
+      'custom_75' => $row->contact_me,
+      'custom_76' => $row->top_issue,
+      'custom_77' => $status,
+      'custom_78' => date('YmdHis', $row->created_at),
+    );
+    //CRM_Core_Error::debug_var('profileParams', $profileParams);
+
+    try{
+      $result = civicrm_api3('custom_value', 'create', $profileParams);
+      //CRM_Core_Error::debug_var('update profile result', $result);
+    }
+    catch (CiviCRM_API3_Exception $e) {
+      // handle error here
+      $errorMessage = $e->getMessage();
+      $errorCode = $e->getErrorCode();
+      $errorData = $e->getExtraParams();
+
+      return array(
+        'is_error' => true,
+        'error' => $errorMessage,
+        'error_code' => $errorCode,
+        'error_data' => $errorData
+      );
+    }
 
     return true;
   }//processProfile

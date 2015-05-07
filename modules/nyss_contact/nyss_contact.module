@@ -254,6 +254,7 @@ function nyss_contact_civicrm_tabs( &$tabs, $contactID ) {
     'group',
     'note',
     'tag',
+    'custom_9',
     'log',
   );
 
