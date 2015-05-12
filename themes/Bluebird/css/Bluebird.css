@@ -1180,7 +1180,8 @@ div.crm-summary-display_name div.crm-icon {
 	margin-left: 5px;
 }
 
-#crm-container .tag-292-section div.token-input-dropdown-facebook {
+#crm-container .tag-292-section div.token-input-dropdown-facebook,
+div.token-input-dropdown-facebook {
 	width: 300px;
 }
 .civi-adv-search-body {
