@@ -116,10 +116,10 @@ class CRM_Integration_Process {
 
         case 'PETITION':
           if ($row->msg_action == 'questionnaire response') {
-          $result = CRM_NYSS_BAO_Integration::processPetition($cid, $row->msg_action, $params);
+            $result = CRM_NYSS_BAO_Integration::processSurvey($cid, $row->msg_action, $params);
           }
           else {
-            $result = CRM_NYSS_BAO_Integration::processSurvey($cid, $row->msg_action, $params);
+            $result = CRM_NYSS_BAO_Integration::processPetition($cid, $row->msg_action, $params);
           }
           break;
 
