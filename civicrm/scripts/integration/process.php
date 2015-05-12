@@ -9,7 +9,7 @@ error_reporting(E_ERROR | E_PARSE | E_WARNING);
 set_time_limit(0);
 
 define('DEFAULT_LOG_LEVEL', 'TRACE');
-define('DB_INTEGRATION', 'senate_integration');
+define('DB_INTEGRATION', 'senate_web_integration');
 
 class CRM_Integration_Process {
 
@@ -17,13 +17,13 @@ class CRM_Integration_Process {
     require_once '../script_utils.php';
 
     // Parse the options
-    $shortopts = "d:s";
-    $longopts = array("dryrun", "stats");
+    $shortopts = "d:s:t";
+    $longopts = array("dryrun", "stats", "type=");
     $optlist = civicrm_script_init($shortopts, $longopts);
 
     if ($optlist === null) {
       $stdusage = civicrm_script_usage();
-      $usage = '[--dryrun] [--tbl TABLENAME]';
+      $usage = '[--dryrun] [--stats] [--type TYPE]';
       error_log("Usage: ".basename(__FILE__)."  $stdusage  $usage\n");
       exit(1);
     }
@@ -43,12 +43,14 @@ class CRM_Integration_Process {
 
     //set integration DB
     $intDB = DB_INTEGRATION;
+    $typeSql = ($optlist['type']) ? "AND msg_type = '{$optlist['type']}'" : '';
 
     //get all accumulator records for instance (target)
     $row = CRM_Core_DAO::executeQuery("
       SELECT *
       FROM {$intDB}.accumulator
       WHERE target_shortname = '{$bbcfg['db.basename']}'
+        $typeSql
     ");
 
     $errors = $status = array();
@@ -64,7 +66,7 @@ class CRM_Integration_Process {
           'last_name' => $row->last_name,
           'email' => $row->email_address,
           'street_address' => $row->address1,
-          'sumplemental_addresss_1' => $row->address2,
+          'supplemental_addresss_1' => $row->address2,
           'city' => $row->city,
           'state' => $row->state,
           'postal_code' => $row->zip,
@@ -86,8 +88,7 @@ class CRM_Integration_Process {
 
       //prep params
       $params = json_decode($row->msg_info);
-
-      //TODO for bill/issue/committee/petition -- handle contextual messages
+      //bbscript_log('trace', 'params', $params);
 
       switch ($row->msg_type) {
         case 'BILL':
@@ -102,25 +103,37 @@ class CRM_Integration_Process {
           $result = CRM_NYSS_BAO_Integration::processCommittee($cid, $row->msg_action, $params);
           break;
 
-        case 'COMMUNICATION':
+        case 'DIRECTMSG':
+          $result = CRM_NYSS_BAO_Integration::processCommunication($cid, $row->msg_action, $params, $row->msg_type);
           break;
 
         case 'CONTEXTMSG':
+          //disregard if no bill number
+          if (!empty($params->bill_number)) {
+            $result = CRM_NYSS_BAO_Integration::processCommunication($cid, $row->msg_action, $params, $row->msg_type);
+          }
           break;
 
         case 'PETITION':
-          $result = CRM_NYSS_BAO_Integration::processPetition($cid, $row->msg_action, $params);
+          if ($row->msg_action == 'questionnaire response') {
+            $result = CRM_NYSS_BAO_Integration::processSurvey($cid, $row->msg_action, $params);
+          }
+          else {
+            $result = CRM_NYSS_BAO_Integration::processPetition($cid, $row->msg_action, $params);
+          }
           break;
 
-        case 'SURVEY':
-          break;
+        /*case 'SURVEY':
+          $result = CRM_NYSS_BAO_Integration::processSurvey($cid, $row->msg_action, $params);
+          break;*/
 
         case 'ACCOUNT':
-          $result = CRM_NYSS_BAO_Integration::processAccount($cid, $row->msg_action, $params);
+          $date = date('Y-m-d H:i:s', $row->created_at);
+          $result = CRM_NYSS_BAO_Integration::processAccount($cid, $row->msg_action, $params, $date);
           break;
 
         case 'PROFILE':
-          $result = CRM_NYSS_BAO_Integration::processProfile($cid, $row->msg_action, $params);
+          $result = CRM_NYSS_BAO_Integration::processProfile($cid, $row->msg_action, $params, $row);
           break;
 
         default:

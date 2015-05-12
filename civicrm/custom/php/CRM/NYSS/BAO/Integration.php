@@ -171,8 +171,6 @@ class CRM_NYSS_BAO_Integration {
     }
 
     return true;
-
-    //TODO also store is_website flag (?)
   }//processIssue
 
   static function processCommittee($contactId, $action, $params) {
@@ -231,8 +229,6 @@ class CRM_NYSS_BAO_Integration {
     }
 
     return true;
-
-    //TODO also store is_website flag (?)
   }//processCommittee
 
   static function processBill($contactId, $action, $params) {
@@ -320,8 +316,6 @@ class CRM_NYSS_BAO_Integration {
     }
 
     return true;
-
-    //TODO also store is_website flag (?)
   }//processBill
 
   static function processPetition($contactId, $action, $params) {
@@ -380,22 +374,25 @@ class CRM_NYSS_BAO_Integration {
     }
 
     return true;
-
-    //TODO also store is_website flag (?)
   }//processPetition
 
-  static function processAccount($contactId, $action, $params) {
+  /*
+   * process account records in the custom nyss_web_account table
+   */
+  static function processAccount($contactId, $action, $params, $created_date) {
     switch ($action) {
       case 'account created':
-        break;
-
       case 'account deleted':
-        break;
-
       case 'login':
-        break;
-
       case 'logout':
+        $sql = "
+          INSERT INTO nyss_web_account
+          (contact_id, action, created_date)
+          VALUES
+          ({$contactId}, '{$action}', '{$created_date}')
+        ";
+        CRM_Core_DAO::executeQuery($sql);
+
         break;
 
       default:
@@ -407,9 +404,121 @@ class CRM_NYSS_BAO_Integration {
           'params' => $params,
         );
     }
+
+    return true;
   }//processAccount
 
-  static function processProfile($contactId, $action, $params) {
+  static function processProfile($contactId, $action, $params, $row) {
     //only available action is account edited
+    if ($action != 'account edited') {
+      return array(
+        'is_error' => 1,
+        'message' => 'Unknown action type for profile: '.$action,
+        'params' => $params,
+      );
+    }
+
+    $status = ($params->status) ? $params->status : 'edited';
+
+    $profileParams = array(
+      'entity_id' => $contactId,
+      'custom_65' => $row->first_name,
+      'custom_66' => $row->last_name,
+      'custom_67' => $row->address1,
+      'custom_68' => $row->address2,
+      'custom_69' => $row->city,
+      'custom_70' => $row->state,
+      'custom_71' => $row->zip,
+      'custom_72' => $row->email_address,
+      'custom_73' => ($row->dob) ? date('Ymd', $row->dob) : '',//dob comes as timestamp
+      'custom_74' => $row->gender,
+      'custom_75' => $row->contact_me,
+      'custom_76' => $row->top_issue,
+      'custom_77' => $status,
+      'custom_78' => date('YmdHis', $row->created_at),
+    );
+    //CRM_Core_Error::debug_var('profileParams', $profileParams);
+
+    try{
+      $result = civicrm_api3('custom_value', 'create', $profileParams);
+      //CRM_Core_Error::debug_var('update profile result', $result);
+    }
+    catch (CiviCRM_API3_Exception $e) {
+      // handle error here
+      $errorMessage = $e->getMessage();
+      $errorCode = $e->getErrorCode();
+      $errorData = $e->getExtraParams();
+
+      return array(
+        'is_error' => true,
+        'error' => $errorMessage,
+        'error_code' => $errorCode,
+        'error_data' => $errorData
+      );
+    }
+
+    return true;
+  }//processProfile
+
+  /*
+   * process communication and contextual messages as notes
+   */
+  static function processCommunication($contactId, $action, $params, $type) {
+    if ($type == 'DIRECTMSG') {
+      $entity_table = 'nyss_directmsg';
+      $subject = 'Direct Message';
+      $note = $params->message;
+
+      if (empty($note)) {
+        $note = '[no message]';
+      }
+    }
+    else {
+      $entity_table = 'nyss_contextmsg';
+      $subject = 'Contextual Message';
+
+      //TODO create link to openleg?
+      $note = "{$params->message}\n\n
+        Bill Number: {$params->bill_number}\n
+        Bill Year: {$params->bill_year}
+      ";
+    }
+
+    //TODO with contextmsg, devise way to trace to source
+    //TODO adapt entity_id if there is a thread
+
+    $params = array(
+      'entity_table' => $entity_table,
+      'entity_id' => $contactId,
+      'note' => $note,
+      'contact_id' => $contactId,
+      'modified_date' => date('Y-m-d H:i:s'),
+      'subject' => "Website {$subject}",
+    );
+
+    try{
+      $result = civicrm_api3('note', 'create', $params);
+      //CRM_Core_Error::debug_var('processCommunication result', $result);
+    }
+    catch (CiviCRM_API3_Exception $e) {
+      // handle error here
+      $errorMessage = $e->getMessage();
+      $errorCode = $e->getErrorCode();
+      $errorData = $e->getExtraParams();
+
+      return array(
+        'is_error' => true,
+        'error' => $errorMessage,
+        'error_code' => $errorCode,
+        'error_data' => $errorData
+      );
+    }
+
+    return true;
+  }
+
+  static function processSurvey($contactId, $action, $params) {
+
+    return true;
   }//processProfile
 }//end class

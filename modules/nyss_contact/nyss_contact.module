@@ -254,6 +254,7 @@ function nyss_contact_civicrm_tabs( &$tabs, $contactID ) {
     'group',
     'note',
     'tag',
+    'custom_9',
     'log',
   );
 
@@ -271,6 +272,20 @@ function nyss_contact_civicrm_tabs( &$tabs, $contactID ) {
   $tabs = $newTabs;
   //CRM_Core_Error::debug_var('$newTabs', $newTabs);
 }
+
+function nyss_contact_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) {
+  //CRM_Core_Error::debug_var('alterTemplateFile $formName', $formName);
+  //CRM_Core_Error::debug_var('alterTemplateFile $context', $context);
+  //CRM_Core_Error::debug_var('alterTemplateFile $tplName', $tplName);
+  //CRM_Core_Error::debug_var('alterTemplateFile $form', $form);
+
+  //website profile tab
+  if ($formName == 'CRM_Contact_Page_View_CustomData' &&
+    $form->_groupId == 9
+  ) {
+    $tplName = 'CRM/NYSS/ContactWebsiteProfileTab.tpl';
+  }
+}//alterTemplateFile
 
 function _getContactCustom(&$obj, $return = FALSE) {
   $contactId = CRM_Utils_Request::retrieve('cid', 'Positive');
