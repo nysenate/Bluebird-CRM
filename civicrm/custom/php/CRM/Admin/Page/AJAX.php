@@ -36,9 +36,11 @@
 /**
  * This class contains all the function that are called using AJAX
  */
-class CRM_Admin_Page_AJAX {
+class CRM_Admin_Page_AJAX
+{
   //NYSS
   const OPENLEG_BASE_URL = 'http://open.nysenate.gov/legislation';
+  const POSITION_PARENT_ID = 292;
 
   /**
    * Function to build menu tree
@@ -258,25 +260,52 @@ class CRM_Admin_Page_AJAX {
     CRM_Utils_System::civiExit();
   }
 
-  static function getTagList() {
+
+  // Sort bills by year (descending), and by bill number (ascending)
+  static function compareBills($a, $b)
+  {
+    $billid1 = $a['id'];
+    $billid2 = $b['id'];
+    list($billno1, $year1) = explode('-', $billid1);
+    list($billno2, $year2) = explode('-', $billid2);
+
+    if ($year1 < $year2) {
+      return 1;
+    }
+    else if ($year1 > $year2) {
+      return -1;
+    }
+    else if ($billno1 < $billno2) {
+      return -1;
+    }
+    else if ($billno1 > $billno2) {
+      return 1;
+    }
+    else {
+      return 0;
+    }
+  } // compareBills()
+
+
+  static function getTagList()
+  {
     $name = CRM_Utils_Type::escape($_GET['name'], 'String');
     $parentId = CRM_Utils_Type::escape($_GET['parentId'], 'Integer');
+    $tags = array();
 
     $isSearch = NULL;
     if (isset($_GET['search'])) {
       $isSearch = CRM_Utils_Type::escape($_GET['search'], 'Integer');
     }
 
-    $tags = array();
-
     //NYSS treat issue codes and keywords using normal method
-    if ( $parentId != 292 || $isSearch ) {
-      // always add current search term as possible tag
-      // here we append :::value to determine if existing / new tag should be created
+    if ($parentId != self::POSITION_PARENT_ID || $isSearch) {
+      // Always add current search term as possible tag.  Here we append
+      // ':::value' to determine if existing or new tag should be created
       if (!$isSearch) {
         $tags[] = array(
-          'name' => stripslashes($name),//NYSS 7882 strip slashes for display
-          'id' => $name . ":::value",
+          'name' => stripslashes($name),  //NYSS 7882 strip slashes for display
+          'id' => $name . ':::value'
         );
       }
 
@@ -284,104 +313,86 @@ class CRM_Admin_Page_AJAX {
       $dao = CRM_Core_DAO::executeQuery($query);
 
       while ($dao->fetch()) {
-        // make sure we return tag name entered by user only if it does not exists in db
+        // Return tag name entered by user only if it does not exist in db
         if ($name == $dao->name) {
           $tags = array();
         }
         // escape double quotes, which break results js
         //NYSS 7882 strip slashes
-        $tags[] = array('name' => stripslashes(addcslashes($dao->name, '"')),
-          'id' => $dao->id,
+        $tags[] = array(
+          'name' => stripslashes(addcslashes($dao->name, '"')),
+          'id' => $dao->id
         );
       }
-
-      echo json_encode($tags);
-      CRM_Utils_System::civiExit();
     }
-    elseif ( $parentId == 292 ) {
+    elseif ($parentId == self::POSITION_PARENT_ID) {
       /* NYSS leg positions should retrieve list from OpenLegislation
        * and create value in tag table.
        */
       $billNo = $name;
       // NYSS 6990 - ORDER BY year DESC as current bills are more relevant.
-      // NYSS 8819 - increase pageSize to 12 to accommodate cases where the
-      //             exact matching billno is the 11th or 12th item in the JSON
-      $target_url = self::OPENLEG_BASE_URL.'/api/1.0/json/search/?term=otype:bill+AND+oid:('.$billNo.'+OR+'.$billNo.'*)&pageSize=12&sort=year&sortOrder=true';
+      // NYSS 8819 - increase pageSize to 100 to accommodate cases where the
+      //             exact matching billno is not in the first 10 items
+      $target_url = self::OPENLEG_BASE_URL.'/api/1.0/json/search/?term=otype:bill+AND+oid:('.$billNo.'+OR+'.$billNo.'*)&pageSize=100&sort=year&sortOrder=true';
       $ch = curl_init();
       curl_setopt($ch, CURLOPT_URL, $target_url);
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
       $content = curl_exec($ch);
       curl_close($ch);
       $json = json_decode($content, true);
+      usort($json, array('CRM_Admin_Page_AJAX', 'compareBills'));
 
-      // Sort bills by year (descending), and by bill number (ascending)
-      function cmp($a, $b) {
-        $billid1 = $a['id'];
-        $billid2 = $b['id'];
-        list($billno1, $year1) = explode('-', $billid1);
-        list($billno2, $year2) = explode('-', $billid2);
-
-        if ($year1 < $year2) {
-          return 1;
-        }
-        else if ($year1 > $year2) {
-          return -1;
-        }
-        else if ($billno1 < $billno2) {
-          return -1;
-        }
-        else if ($billno1 > $billno2) {
-          return 1;
-        }
-        else {
-          return 0;
-        }
+      // Display up to 10 bills in the drop-down.
+      $billcnt = count($json);
+      if ($billcnt > 10) {
+        $billcnt = 10;
       }
 
-      usort($json, "cmp");
+      for ($j = 0; $j < $billcnt; $j++) {
+        $billName = $json[$j]['id'];
+        $billSponsor = '';
+        if (isset($json[$j]['sponsor'])) {
+          $billSponsor = $json[$j]['sponsor'];
+          $billName .= " ($billSponsor)";
+        }
 
-      for ($j=0; $j < count($json); $j++) {
         //construct positions
-        $positiontags = array();
-        $positiontags[] = $json[$j]['id'];
-        $positiontags[] = $json[$j]['id'].' - FOR';
-        $positiontags[] = $json[$j]['id'].' - AGAINST';
+        $billTags = array($billName, "$billName: SUPPORT", "$billName: OPPOSE");
 
         //construct tags array
-        foreach ( $positiontags as $positiontag ) {
-          //add sponsor to display if exists
-          if ( $json[$j]['sponsor'] ) {
-            $positiontag_name = $positiontag.' ('.$json[$j]['sponsor'].')';
-          } else {
-            $positiontag_name = $positiontag;
-          }
-
+        foreach ($billTags as $billTag) {
           // Do lookup to see if tag exists in system already,
           // else construct using standard format
           // NYSS 4315 - escape position tag name
-          $query = "SELECT id, name FROM civicrm_tag WHERE parent_id = 292 and name = '".str_replace("'", "''", $positiontag_name)."'";
+          $query = "
+            SELECT id, name FROM civicrm_tag
+            WHERE parent_id=".self::POSITION_PARENT_ID."
+              AND name = '".str_replace("'", "''", $billTag)."'";
 
-          $dao = CRM_Core_DAO::executeQuery( $query );
-          if ( $dao->fetch() ) {
+          $dao = CRM_Core_DAO::executeQuery($query);
+          if ($dao->fetch()) {
             $tagID = $dao->id;
-          } else {
-            $tagID = $positiontag_name.':::value';
+          }
+          else {
+            $tagID = $billTag.':::value';
           }
 
           $tags[] = array(
-            'name' => $positiontag_name,
+            'name' => $billTag,
             'id' => $tagID,
-            'sponsor' => $json[$j]['sponsor'],
+            'sponsor' => $billSponsor
           );
         }//end foreach
       }
-                       
-      echo json_encode($tags);
-      CRM_Utils_System::civiExit();
     } //end leg pos condition
-  }
 
-  static function mergeTagList() {
+    echo json_encode($tags);
+    CRM_Utils_System::civiExit();
+  } // getTagList()
+
+
+  static function mergeTagList()
+  {
     $name   = CRM_Utils_Type::escape($_GET['s'], 'String');
     $fromId = CRM_Utils_Type::escape($_GET['fromId'], 'Integer');
     $limit  = CRM_Utils_Type::escape($_GET['limit'], 'Integer');
@@ -423,9 +434,11 @@ LIMIT $limit";
       echo $tag = $dao->parent ? (addcslashes($dao->parent, '"') . ' :: ' . $tag) : $tag;
     }
     CRM_Utils_System::civiExit();
-  }
+  } // mergeTagList()
 
-  static function processTags() {
+
+  static function processTags()
+  {
     $skipTagCreate = $skipEntityAction = $entityId = NULL;
     $action        = CRM_Utils_Type::escape($_POST['action'], 'String');
     $parentId      = CRM_Utils_Type::escape($_POST['parentId'], 'Integer');
@@ -456,7 +469,7 @@ LIMIT $limit";
     //NYSS - retrieve OpenLeg ID and construct URL
     $bill_url = '';
     $sponsor = CRM_Utils_Type::escape( $_POST['sponsor'], 'String' );
-    if ( $parentId == 292 ) {
+    if ($parentId == self::POSITION_PARENT_ID) {
       $ol_id = substr( $tagID, 0, strpos( $tagID, ' ' ) );
       if ( !$ol_id ) { $ol_id = $tagID; } //account for bill with no position appended
       $ol_url = self::OPENLEG_BASE_URL.'/bill/'.$ol_id;
