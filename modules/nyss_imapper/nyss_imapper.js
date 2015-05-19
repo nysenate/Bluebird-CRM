@@ -1607,9 +1607,11 @@ cj(".Matched").live('click', function() {
 cj(".Cleared").live('click', function() {
   oTable.fnFilter('cleared', 5);
 });
+/** removed per NYSS #8396
 cj(".Errors").live('click', function() {
   oTable.fnFilter('error', 5);
 });
+**/
 cj(".Deleted").live('click', function() {
   oTable.fnFilter('deleted', 5);
 });
