@@ -91,6 +91,13 @@
   {/literal}
 {/if}
 
+{*integration: remove website profile count*}
+{literal}
+<script type="text/javascript">
+  cj('li#tab_custom_9 a em').remove();
+</script>
+{/literal}
+
 {include file="CRM/Contact/Page/nyssInlineCommon.tpl"}
 
 {*7889*}
