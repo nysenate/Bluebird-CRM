@@ -545,4 +545,30 @@ class CRM_NYSS_BAO_Integration {
 
     return $rows;
   }
+
+  /*
+   * get web messages for a contact
+   */
+  static function getMessages($cid) {
+    $sql = "
+      SELECT *
+      FROM civicrm_note
+      WHERE entity_id = {$cid}
+        AND entity_table IN ('nyss_contextmsg', 'nyss_directmsg')
+      ORDER BY modified_date DESC
+      LIMIT 50
+    ";
+    $r = CRM_Core_DAO::executeQuery($sql);
+
+    $rows = array();
+    while ($r->fetch()) {
+      $rows[] = array(
+        'subject' => $r->subject,
+        'modified_date' => date('F jS, Y', strtotime($r->modified_date)),
+        'note' => $r->note,
+      );
+    }
+
+    return $rows;
+  }
 }//end class
