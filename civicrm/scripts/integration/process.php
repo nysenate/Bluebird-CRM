@@ -14,7 +14,7 @@ define('DB_INTEGRATION', 'senate_web_integration');
 class CRM_Integration_Process {
 
   function run() {
-    require_once '../script_utils.php';
+    require_once dirname(__FILE__).'/../script_utils.php';
 
     // Parse the options
     $shortopts = "d:s:t";

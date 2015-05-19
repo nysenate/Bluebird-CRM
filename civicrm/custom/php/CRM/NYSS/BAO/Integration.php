@@ -244,24 +244,37 @@ class CRM_NYSS_BAO_Integration {
         AND is_tagset = 1
     ");
 
+    //get sponsor name from open leg
+    $billNumber = "{$params->bill_number}-{$params->bill_year}";
+    $target_url = CRM_Admin_Page_AJAX::OPENLEG_BASE_URL.'/api/1.0/json/search/?term=otype:bill+AND+oid:('.$billNumber.')&pageSize=100&sort=year&sortOrder=true';
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $target_url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    $content = curl_exec($ch);
+    curl_close($ch);
+    $json = json_decode($content, true);
+    //CRM_Core_Error::debug_var('json', $json);
+
+    $sponsor = strtoupper($json[0]['sponsor']);
+    $bill = "{$billNumber} ({$sponsor})";
+
     //construct tag name and determine action
-    //TODO append sponsor name in parens
     switch ($action) {
       case 'follow':
         $apiAction = 'create';
-        $tagName = "{$params->bill_number}-{$params->bill_year}";
+        $tagName = "{$bill}";
         break;
       case 'unfollow':
         $apiAction = 'delete';
-        $tagName = "{$params->bill_number}-{$params->bill_year}";
+        $tagName = "{$bill}";
         break;
       case 'aye':
         $apiAction = 'create';
-        $tagName = "{$params->bill_number}-{$params->bill_year} - FOR";
+        $tagName = "{$bill}: FOR";
         break;
       case 'nay':
         $apiAction = 'create';
-        $tagName = "{$params->bill_number}-{$params->bill_year} - AGAINST";
+        $tagName = "{$bill}: AGAINST";
         break;
       default:
         return array(
@@ -282,6 +295,8 @@ class CRM_NYSS_BAO_Integration {
     //CRM_Core_Error::debug_var('tagId', $tagId);
 
     if (!$tagId) {
+      //$url = "http://nysenatedemo.prod.acquia-sites.com/legislation/bills/{$params->bill_year}/{$params->bill_number}";
+      $url = "http://www.nysenate.gov/legislation/bills/{$params->bill_year}/{$params->bill_number}";
       $tag = civicrm_api('tag', 'create', array(
         'version' => 3,
         'name' => $tagName,
@@ -290,7 +305,7 @@ class CRM_NYSS_BAO_Integration {
         'is_reserved' => 1,
         'used_for' => 'civicrm_contact',
         'created_date' => date('Y-m-d H:i:s'),
-        'description' => '',//TODO store link back to website
+        'description' => "{$tagName} :: <a href='$url' target=_blank>$url</a>",
       ));
       //CRM_Core_Error::debug_var('$tag', $tag);
 
