@@ -531,6 +531,7 @@ class CRM_NYSS_BAO_Integration {
       FROM nyss_web_account
       WHERE contact_id = {$cid}
       ORDER BY created_date DESC
+      LIMIT 50
     ";
     $r = CRM_Core_DAO::executeQuery($sql);
 
