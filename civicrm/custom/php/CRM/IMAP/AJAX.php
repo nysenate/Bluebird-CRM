@@ -1594,14 +1594,6 @@ class CRM_IMAP_AJAX
     $query = "
       SELECT im.id, updated_date, email_date,
         CASE
-          WHEN im.status = ".self::STATUS_UNMATCHED." THEN 'Unmatched'
-          WHEN im.status = ".self::STATUS_MATCHED." THEN CONCAT('Matched by ', matcher.display_name)
-          WHEN im.status = ".self::STATUS_CLEARED." THEN 'Cleared'
-          WHEN im.status = ".self::STATUS_DELETED." THEN 'Deleted'
-          WHEN im.status = ".self::STATUS_UNPROCESSED." THEN 'Unprocessed'
-          ELSE 'Unknown'
-        END as status_string,
-        CASE
           WHEN im.status = ".self::STATUS_UNMATCHED." THEN 'unmatched'
           WHEN im.status = ".self::STATUS_MATCHED." THEN 'matched'
           WHEN im.status = ".self::STATUS_CLEARED." THEN 'cleared'
@@ -1615,11 +1607,14 @@ class CRM_IMAP_AJAX
         matcher.display_name as matcher_name,
         IFNULL(matched_to.display_name, im.sender_email) as fromName,
         matched_to.first_name as firstName, matched_to.last_name as lastName,
-        matched_to.contact_type as contactType
+        matched_to.contact_type as contactType,
+        COUNT(civi_t.id) as tagCount
       FROM nyss_inbox_messages as im
       LEFT JOIN civicrm_contact as matcher ON (im.matcher = matcher.id)
       LEFT JOIN civicrm_contact as matched_to ON (im.matched_to = matched_to.id)
       LEFT JOIN nyss_inbox_attachments ia ON (im.id = ia.email_id)
+      LEFT JOIN civicrm_entity_tag as civi_et ON im.activity_id=civi_et.entity_id and civi_et.entity_table='civicrm_activity'
+      LEFT JOIN civicrm_tag as civi_t ON civi_et.tag_id=civi_t.id
       WHERE im.status != 99 $rangeSql
       GROUP BY im.id
       LIMIT 0 , 100000";
@@ -1627,17 +1622,17 @@ class CRM_IMAP_AJAX
     $dbres = mysql_query($query, self::db());
 
     $msgs = array();
-    $res = array('total'=>0, 'unMatched'=>0, 'Matched'=>0,
+    $res = array('Total'=>0, 'Unmatched'=>0, 'Matched'=>0,
                  'Cleared'=>0, 'Deleted'=>0, 'Errors'=>0, 'Messages'=>null);
 
     while ($row = mysql_fetch_assoc($dbres)) {
       $msg = self::postProcess($row);
       $msgs[] = $msg;
-      $res['total']++;
+      $res['Total']++;
 
       switch ($msg['status']) {
         case self::STATUS_UNMATCHED:
-          $res['unMatched']++;
+          $res['Unmatched']++;
           break;
         case self::STATUS_MATCHED:
           $res['Matched']++;

@@ -1,3 +1,15 @@
+if (!String.prototype.capitalize) {
+  Object.defineProperty(String.prototype,'capitalize',
+      {
+        writable:true,
+        value:function(first_only,undefined){
+          if (first_only===undefined) {first_only = false;}
+          r = first_only ? /(?!^\/)\b([a-z])/ : /(?!^\/)\b([a-z])/g;
+          return this.replace(r,function(m){return m.toUpperCase()});
+        }
+      });
+}
+
 var messages = [];
 var contacts = [];
 
@@ -1467,6 +1479,7 @@ function getReports(range)
       }
       else {
         cj.each(reports.Messages, function(key, value) {
+          value.status_string = value.status_icon_class.capitalize();
           html += '<tr id="'+value.id+'" data-id="'+value.activity_id+'" data-contact_id="'+value.matched_to+'" class="imapper-message-box '+value.status_string+'"> ';
           html += '<td class="imap_column">'+shortenString(value.fromName,40)+'</td>';
           if (!value.contactType) {
@@ -1478,20 +1491,29 @@ function getReports(range)
           html += '<td class="imap_subject_column">'+shortenString(value.subject,40)+'</td>';
           html += '<td class="imap_date_column"><span data-sort="'+value.updated_date_unix+'"  title="'+value.updated_date_long+'">'+value.updated_date_short +'</span></td>';
           html += '<td class="imap_date_column"><span data-sort="'+value.email_date_unix+'"  title="'+value.email_date_long+'">'+value.email_date_short +'</span></td>';
-          if (value.status_string != null) {
-            html += '<td class="imap_date_column"><span class="mail-merge-filter-data">'+value.status_icon_class+'</span><a class="mail-merge-tag-hover crm-summary-link" href="/civicrm/imap/ajax/reports/getTags?id=' + value.id +
-                    '"><div class="icon crm-icon mail-merge-icon mail-merge-'+value.status_icon_class+'"></div></a>&nbsp;</td>';
+
+          // removed SBB #8396
+          /*if (value.status_string != null) {*/
+
+          html += '<td class="imap_date_column"><div class="icon crm-icon mail-merge-icon mail-merge-'+value.status_icon_class+'"><span class="mail-merge-filter-data">'+value.status_icon_class+'</span></div></td>';
+          html += '<td class="imap_date_column">';
+          if (Number(value.tagCount) > 0) {
+            html += '<a class="mail-merge-tag-hover crm-summary-link" href="/civicrm/imap/ajax/reports/getTags?id=' + value.id + '"><div class="icon crm-icon mail-merge-icon mail-merge-tags"></div></a>&nbsp;';
           }
+          html += '</td>';
+
+          // removed SBB #8396
+          /*}
           else {
             html += '<td class="imap_date_column"> Automatically Matched</td>';
-          }
+          }*/
           html += '<td class="imap_forwarder_column"><span data-sort="'+value.forwarder.replace("@","_")+'">'+shortenString(value.forwarder,14)+'</span></td></tr>';
         });
 
         cj('#imapper-messages-list').html(html);
         ReportTable();
-        cj('#total').html(reports.total);
-        cj('#total_unMatched').html(reports.unMatched);
+        cj('#total').html(reports.Total);
+        cj('#total_unmatched').html(reports.Unmatched);
         cj('#total_Matched').html(reports.Matched);
         cj('#total_Cleared').html(reports.Cleared);
         cj('#total_Errors').html(reports.Errors);
@@ -1523,7 +1545,7 @@ cj.extend(cj.fn.dataTableExt.oSort, {
 function Table()
 {
   oTable = cj("#sortable_results").dataTable({
-    "sDom":'<"controlls"lif><"clear">rt <p>',//add i here this is the number of records
+    "sDom":'<p><"controlls"lif><"clear">rt <p>',//add i here this is the number of records
     // "iDisplayLength": 1,
     "sPaginationType": "full_numbers",
     "aaSorting": [[ 3, "desc" ]],
@@ -1536,7 +1558,7 @@ function Table()
     'aTargets': [ 1 ],
     "iDisplayLength": 50,
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
-    "bAutoWidth": false,
+    "bAutoWidth": true,
     "oLanguage": {
       "sEmptyTable": "No records found"
     }
@@ -1549,7 +1571,7 @@ function Table()
 function ReportTable()
 {
   oTable = cj("#sortable_results").dataTable({
-    "sDom":'<"controlls"lif><"clear">rt <p>',//add i here this is the number of records
+    "sDom":'<p><"controlls"lif><"clear">rt <p>',//add i here this is the number of records
     // "iDisplayLength": 1,
     "sPaginationType": "full_numbers",
     "aaSorting": [[ 3, "desc" ]],
@@ -1558,7 +1580,7 @@ function ReportTable()
     'aTargets': [ 1 ],
     "iDisplayLength": 50,
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
-    "bAutoWidth": false,
+    "bAutoWidth": true,
     "oLanguage": {
       "sEmptyTable": "No records found"
     },
@@ -1598,7 +1620,7 @@ cj(".stats_overview").live('click', function() {
 cj(".Total").live('click', function() {
   oTable.fnFilter("", 5, false, false);
 });
-cj(".UnMatched").live('click', function() {
+cj(".Unmatched").live('click', function() {
   oTable.fnFilter('unmatched', 5);
 });
 cj(".Matched").live('click', function() {
