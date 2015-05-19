@@ -279,4 +279,11 @@
     <page_callback>CRM_NYSS_Subscription_Form_Admin::_processSubscriptions</page_callback>
     <access_arguments>edit all contacts</access_arguments>
   </item>
+
+  <!-- website integration -->
+  <item>
+    <path>civicrm/nyss/web/account</path>
+    <page_callback>CRM_NYSS_Page_Integration_Account</page_callback>
+    <access_arguments>view all contacts</access_arguments>
+  </item>
 </menu>

@@ -521,4 +521,27 @@ class CRM_NYSS_BAO_Integration {
 
     return true;
   }//processProfile
+
+  /*
+   * get web account history for a contact
+   */
+  static function getAccountHistory($cid) {
+    $sql = "
+      SELECT *
+      FROM nyss_web_account
+      WHERE contact_id = {$cid}
+      ORDER BY created_date DESC
+    ";
+    $r = CRM_Core_DAO::executeQuery($sql);
+
+    $rows = array();
+    while ($r->fetch()) {
+      $rows[] = array(
+        'action' => $r->action,
+        'created' => date('F jS, Y g:i A', strtotime($r->created_date)),
+      );
+    }
+
+    return $rows;
+  }
 }//end class
