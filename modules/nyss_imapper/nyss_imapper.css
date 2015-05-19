@@ -320,6 +320,9 @@ a.stats_overview.active{
 .crm-container .icon.mail-merge-icon {
   background-image: url('/sites/default/themes/Bluebird/nyss_skin/images/inbound_email_icons.png');
 }
+.crm-container .stats .mail-merge-icon {
+  margin-right: 10px;
+}
 .crm-container .mail-merge-icon.mail-merge-matched {
   background-position: 0px 0px;
 }
@@ -343,9 +346,12 @@ a.stats_overview.active{
   min-height: 40px;
   padding: 10px;
 }
+
 .mail-merge-activity-tag-list-header {
   margin-top: 10px;
   border-top:1px solid #ffffff;
   padding-top:10px;
 }
+
 .crm-container .crm-summary-link { z-index:auto !important; }
+

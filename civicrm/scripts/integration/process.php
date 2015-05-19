@@ -49,7 +49,7 @@ class CRM_Integration_Process {
     $row = CRM_Core_DAO::executeQuery("
       SELECT *
       FROM {$intDB}.accumulator
-      WHERE target_shortname = '{$bbcfg['db.basename']}'
+      WHERE user_shortname = '{$bbcfg['db.basename']}'
         $typeSql
     ");
 
@@ -57,6 +57,13 @@ class CRM_Integration_Process {
 
     while ($row->fetch()) {
       //bbscript_log('trace', 'row', $row);
+
+      //if context/direct message and target != user, skip
+      if ($row->target_shortname != $row->user_shortname &&
+        in_array($row->msg_type, array('DIRECTMSG', 'CONTEXTMSG'))
+      ) {
+        continue;
+      }
 
       //check contact/user
       if (!$cid = CRM_NYSS_BAO_Integration::getContact($row->user_id)) {
