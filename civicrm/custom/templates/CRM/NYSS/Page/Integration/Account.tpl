@@ -7,9 +7,9 @@
       <th class="reports-header">Date</th>
     </tr>
   {foreach from=$account item=row}
-    <tr>
-      <td class="crm-report {cycle values='odd-row,even-row'}">{$row.action}</td>
-      <td class="crm-report">{$row.created}</td>
+    <tr class="crm-report {cycle values='odd-row,even-row'}">
+      <td>{$row.action}</td>
+      <td>{$row.created}</td>
     </tr>
   {/foreach}
   </table>
