@@ -1704,38 +1704,6 @@ class CRM_IMAP_AJAX
     }
     $ret = $tltext ? $tltext : '';
     die($ret);
-
-     /* // generate the label text
-      $query = "SELECT im.activity_id FROM nyss_inbox_messages as im WHERE im.id='$id'";
-      $res = mysql_query($query, self::db());
-      if ($r = mysql_fetch_assoc($res)) {
-        $stext = $r['status_string'];
-        $actid = (int)$r['activity_id'];
-      } else {
-        $stext = 'Unknown Status';
-      }
-      if ($actid) {
-        // get the tags for this activity
-        $q = "SELECT b.name FROM civicrm_entity_tag a INNER JOIN civicrm_tag b ON a.tag_id=b.id " .
-             "WHERE a.entity_table='civicrm_activity' AND a.entity_id='$actid'";
-        $res = mysql_query($q, self::db());
-        while ($r = mysql_fetch_assoc($res)) {
-          $new = trim($r['name']);
-          if ($new) { $tags[] = $new; }
-        }
-        // build the HTML
-        if (count($tags)) {
-          $tltext = '<div class="mail-merge-activity-tag-list-header">Tags assigned:</div>' .
-                    '<div class="mail-merge-activity-tag-list">' .
-                    implode('</span>, <span class="mail-merge-activity-tag">',$tags) .
-                    "</span></div>";
-        } else {
-          $tltext = '<div class="mail-merge-activity-tag-list-header">No tags assigned</div>';
-        }
-      }
-    }
-    $ret = $tltext ? $tltext : '';
-    die($ret); */
   }
 
 } // CRM_IMAP_AJAX
