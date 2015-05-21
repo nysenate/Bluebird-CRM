@@ -1479,7 +1479,6 @@ function getReports(range)
       }
       else {
         cj.each(reports.Messages, function(key, value) {
-          value.status_string = value.status_icon_class.capitalize();
           html += '<tr id="'+value.id+'" data-id="'+value.activity_id+'" data-contact_id="'+value.matched_to+'" class="imapper-message-box '+value.status_string+'"> ';
           html += '<td class="imap_column">'+shortenString(value.fromName,40)+'</td>';
           if (!value.contactType) {
@@ -1492,21 +1491,15 @@ function getReports(range)
           html += '<td class="imap_date_column"><span data-sort="'+value.updated_date_unix+'"  title="'+value.updated_date_long+'">'+value.updated_date_short +'</span></td>';
           html += '<td class="imap_date_column"><span data-sort="'+value.email_date_unix+'"  title="'+value.email_date_long+'">'+value.email_date_short +'</span></td>';
 
-          // removed SBB #8396
-          /*if (value.status_string != null) {*/
-
-          html += '<td class="imap_date_column"><div class="icon crm-icon mail-merge-icon mail-merge-'+value.status_icon_class+'"><span class="mail-merge-filter-data">'+value.status_icon_class+'</span></div></td>';
+          /* #8396 SBB duplicating Civi's hover HTML to avoid an unnecessary AJAX call */
+          html += '<td class="imap_date_column"><a class="crm-summary-link mail-merge-hover" href="#"><span class="mail-merge-filter-data">'+value.status_icon_class+'</span><div class="icon crm-icon mail-merge-icon mail-merge-'+value.status_icon_class+'"></div><div class="crm-tooltip-wrapper"><div class="crm-tooltip">'+value.status_string+'</div></div></a>&nbsp;</td>';
+          /* #8396 SBB Adding the new tag column */
           html += '<td class="imap_date_column">';
           if (Number(value.tagCount) > 0) {
-            html += '<a class="mail-merge-tag-hover crm-summary-link" href="/civicrm/imap/ajax/reports/getTags?id=' + value.id + '"><div class="icon crm-icon mail-merge-icon mail-merge-tags"></div></a>&nbsp;';
+            html += '<a class="crm-summary-link mail-merge-hover" href="/civicrm/imap/ajax/reports/getTags?id=' + value.id + '"><div class="mail-merge-tags mail-merge-icon icon crm-icon"></div></a>&nbsp;';
           }
           html += '</td>';
 
-          // removed SBB #8396
-          /*}
-          else {
-            html += '<td class="imap_date_column"> Automatically Matched</td>';
-          }*/
           html += '<td class="imap_forwarder_column"><span data-sort="'+value.forwarder.replace("@","_")+'">'+shortenString(value.forwarder,14)+'</span></td></tr>';
         });
 
@@ -1558,7 +1551,7 @@ function Table()
     'aTargets': [ 1 ],
     "iDisplayLength": 50,
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
-    "bAutoWidth": true,
+    "bAutoWidth": false,
     "oLanguage": {
       "sEmptyTable": "No records found"
     }
@@ -1577,10 +1570,19 @@ function ReportTable()
     "aaSorting": [[ 3, "desc" ]],
     "aoColumnDefs": [ { "sType": "title-string", "aTargets": [ 3,4 ] },
                     ],
+    "aoColumns": [ { "sWidth":"12%" },
+                   { "sWidth":"18%" },
+                   { "sWidth":"14%" },
+                   { "sWidth":"12%" },
+                   { "sWidth":"10%" },
+                   { "sWidth":"1%" },
+                   { "sWidth":"1%" },
+                   { "sWidth":"22%" },
+                 ],
     'aTargets': [ 1 ],
     "iDisplayLength": 50,
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
-    "bAutoWidth": true,
+    "bAutoWidth": false,
     "oLanguage": {
       "sEmptyTable": "No records found"
     },

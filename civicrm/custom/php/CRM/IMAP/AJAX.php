@@ -1601,6 +1601,14 @@ class CRM_IMAP_AJAX
           WHEN im.status = ".self::STATUS_UNPROCESSED." THEN 'unprocessed'
           ELSE 'unknown'
         END as status_icon_class,
+        CASE
+            WHEN im.status = ".self::STATUS_UNMATCHED." THEN 'Unmatched'
+            WHEN im.status = ".self::STATUS_MATCHED." THEN CONCAT('Matched by ', IFNULL(matcher.display_name,'Unknown Contact'))
+            WHEN im.status = ".self::STATUS_CLEARED." THEN 'Cleared'
+            WHEN im.status = ".self::STATUS_DELETED." THEN 'Deleted'
+            WHEN im.status = ".self::STATUS_UNPROCESSED." THEN 'Unprocessed'
+            ELSE 'Unknown Status'
+        END as status_string,
         im.matched_to, im.sender_email, im.subject, im.forwarder, im.activity_id,
         im.matcher, im.status,
         IFNULL(count(ia.file_name), 0) as attachments,
@@ -1671,25 +1679,34 @@ class CRM_IMAP_AJAX
   public static function getTags()
   {
     $id = (int)$_GET['id'];
-    $actid = 0;
     $tags = array();
-    $stext  = "No Message ID found";
     $tltext = '';
     if ($id) {
-      // generate the label text
-      $query = "SELECT
-          CASE
-            WHEN im.status = ".self::STATUS_UNMATCHED." THEN 'Unmatched'
-            WHEN im.status = ".self::STATUS_MATCHED." THEN CONCAT('Matched by ', matcher.display_name)
-            WHEN im.status = ".self::STATUS_CLEARED." THEN 'Cleared'
-            WHEN im.status = ".self::STATUS_DELETED." THEN 'Deleted'
-            WHEN im.status = ".self::STATUS_UNPROCESSED." THEN 'Unprocessed'
-            ELSE 'Unknown Status'
-          END as status_string,
-          im.activity_id
-        FROM nyss_inbox_messages as im
-        LEFT JOIN civicrm_contact as matcher ON (im.matcher = matcher.id)
-        WHERE im.id='$id'";
+      // get the tags for this activity
+      $q = "SELECT c.name FROM nyss_inbox_messages a INNER JOIN civicrm_entity_tag b " .
+           "ON b.entity_id=a.activity_id " .
+           "INNER JOIN civicrm_tag c ON b.tag_id=c.id " .
+           "WHERE a.id='$id' AND b.entity_table='civicrm_activity';";
+      $res = mysql_query($q, self::db());
+      while ($r = mysql_fetch_assoc($res)) {
+        $new = trim($r['name']);
+        if ($new) { $tags[] = $new; }
+      }
+      // build the HTML
+      if (count($tags)) {
+        $tltext = '<div class="mail-merge-activity-tag-list-header">Tags assigned:</div>' .
+                  '<div class="mail-merge-activity-tag-list">' .
+                  implode('</span>, <span class="mail-merge-activity-tag">',$tags) .
+                  "</span></div>";
+      } else {
+        $tltext = '<div class="mail-merge-activity-tag-list-header">No tags assigned</div>';
+      }
+    }
+    $ret = $tltext ? $tltext : '';
+    die($ret);
+
+     /* // generate the label text
+      $query = "SELECT im.activity_id FROM nyss_inbox_messages as im WHERE im.id='$id'";
       $res = mysql_query($query, self::db());
       if ($r = mysql_fetch_assoc($res)) {
         $stext = $r['status_string'];
@@ -1717,8 +1734,8 @@ class CRM_IMAP_AJAX
         }
       }
     }
-    $ret = '<div class="mail-merge-status-text">' . $stext . '</div>' . ($tltext ? $tltext : '');
-    die($ret);
+    $ret = $tltext ? $tltext : '';
+    die($ret); */
   }
 
 } // CRM_IMAP_AJAX

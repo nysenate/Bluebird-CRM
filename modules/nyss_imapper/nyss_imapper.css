@@ -342,19 +342,16 @@ a.stats_overview.active{
   background-position: 0px -64px;
 }
 .crm-container .mail-merge-icon.mail-merge-tags {
-  background-position: 0 -80px;
+  background-position: 0px -80px;
 }
 .mail-merge-filter-data {
   display:none;
 }
-.crm-container .mail-merge-tag-hover .crm-tooltip {
-  min-width: 100px;
+.crm-container .mail-merge-hover .crm-tooltip {
+  min-width: 150px;
   min-height: 40px;
   padding: 10px;
 }
 .mail-merge-activity-tag-list-header {
-  margin-top: 10px;
-  border-top:1px solid #ffffff;
-  padding-top:10px;
 }
 .crm-container .crm-summary-link { z-index:auto !important; }
