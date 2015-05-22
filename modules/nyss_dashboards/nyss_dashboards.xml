@@ -286,4 +286,9 @@
     <page_callback>CRM_NYSS_Page_Integration_Account</page_callback>
     <access_arguments>view all contacts</access_arguments>
   </item>
+  <item>
+    <path>civicrm/nyss/web/message</path>
+    <page_callback>CRM_NYSS_Page_Integration_Message</page_callback>
+    <access_arguments>view all contacts</access_arguments>
+  </item>
 </menu>

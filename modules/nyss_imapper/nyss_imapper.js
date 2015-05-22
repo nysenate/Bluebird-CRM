@@ -1,3 +1,15 @@
+if (!String.prototype.capitalize) {
+  Object.defineProperty(String.prototype,'capitalize',
+      {
+        writable:true,
+        value:function(first_only,undefined){
+          if (first_only===undefined) {first_only = false;}
+          r = first_only ? /(?!^\/)\b([a-z])/ : /(?!^\/)\b([a-z])/g;
+          return this.replace(r,function(m){return m.toUpperCase()});
+        }
+      });
+}
+
 var messages = [];
 var contacts = [];
 
@@ -1478,20 +1490,23 @@ function getReports(range)
           html += '<td class="imap_subject_column">'+shortenString(value.subject,40)+'</td>';
           html += '<td class="imap_date_column"><span data-sort="'+value.updated_date_unix+'"  title="'+value.updated_date_long+'">'+value.updated_date_short +'</span></td>';
           html += '<td class="imap_date_column"><span data-sort="'+value.email_date_unix+'"  title="'+value.email_date_long+'">'+value.email_date_short +'</span></td>';
-          if (value.status_string != null) {
-            html += '<td class="imap_date_column"><span class="mail-merge-filter-data">'+value.status_icon_class+'</span><a class="mail-merge-tag-hover crm-summary-link" href="/civicrm/imap/ajax/reports/getTags?id=' + value.id +
-                    '"><div class="icon crm-icon mail-merge-icon mail-merge-'+value.status_icon_class+'"></div></a>&nbsp;</td>';
+
+          /* #8396 SBB duplicating Civi's hover HTML to avoid an unnecessary AJAX call */
+          html += '<td class="imap_date_column"><a class="crm-summary-link mail-merge-hover" href="#"><span class="mail-merge-filter-data">'+value.status_icon_class+'</span><div class="icon crm-icon mail-merge-icon mail-merge-'+value.status_icon_class+'"></div><div class="crm-tooltip-wrapper"><div class="crm-tooltip">'+value.status_string+'</div></div></a>&nbsp;</td>';
+          /* #8396 SBB Adding the new tag column */
+          html += '<td class="imap_date_column">';
+          if (Number(value.tagCount) > 0) {
+            html += '<a class="crm-summary-link mail-merge-hover" href="/civicrm/imap/ajax/reports/getTags?id=' + value.id + '"><div class="mail-merge-tags mail-merge-icon icon crm-icon"></div></a>&nbsp;';
           }
-          else {
-            html += '<td class="imap_date_column"> Automatically Matched</td>';
-          }
+          html += '</td>';
+
           html += '<td class="imap_forwarder_column"><span data-sort="'+value.forwarder.replace("@","_")+'">'+shortenString(value.forwarder,14)+'</span></td></tr>';
         });
 
         cj('#imapper-messages-list').html(html);
         ReportTable();
-        cj('#total').html(reports.total);
-        cj('#total_unMatched').html(reports.unMatched);
+        cj('#total').html(reports.Total);
+        cj('#total_unmatched').html(reports.Unmatched);
         cj('#total_Matched').html(reports.Matched);
         cj('#total_Cleared').html(reports.Cleared);
         cj('#total_Errors').html(reports.Errors);
@@ -1523,7 +1538,7 @@ cj.extend(cj.fn.dataTableExt.oSort, {
 function Table()
 {
   oTable = cj("#sortable_results").dataTable({
-    "sDom":'<"controlls"lif><"clear">rt <p>',//add i here this is the number of records
+    "sDom":'<p><"controlls"lif><"clear">rt <p>',//add i here this is the number of records
     // "iDisplayLength": 1,
     "sPaginationType": "full_numbers",
     "aaSorting": [[ 3, "desc" ]],
@@ -1549,12 +1564,21 @@ function Table()
 function ReportTable()
 {
   oTable = cj("#sortable_results").dataTable({
-    "sDom":'<"controlls"lif><"clear">rt <p>',//add i here this is the number of records
+    "sDom":'<p><"controlls"lif><"clear">rt <p>',//add i here this is the number of records
     // "iDisplayLength": 1,
     "sPaginationType": "full_numbers",
     "aaSorting": [[ 3, "desc" ]],
     "aoColumnDefs": [ { "sType": "title-string", "aTargets": [ 3,4 ] },
                     ],
+    "aoColumns": [ { "sWidth":"12%" },
+                   { "sWidth":"18%" },
+                   { "sWidth":"14%" },
+                   { "sWidth":"12%" },
+                   { "sWidth":"10%" },
+                   { "sWidth":"1%" },
+                   { "sWidth":"1%" },
+                   { "sWidth":"22%" },
+                 ],
     'aTargets': [ 1 ],
     "iDisplayLength": 50,
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
@@ -1598,7 +1622,7 @@ cj(".stats_overview").live('click', function() {
 cj(".Total").live('click', function() {
   oTable.fnFilter("", 5, false, false);
 });
-cj(".UnMatched").live('click', function() {
+cj(".Unmatched").live('click', function() {
   oTable.fnFilter('unmatched', 5);
 });
 cj(".Matched").live('click', function() {

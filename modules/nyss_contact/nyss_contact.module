@@ -245,12 +245,20 @@ function nyss_contact_civicrm_tabs( &$tabs, $contactID ) {
   //create new tab for web account history; only attach to individuals
   $ctype = civicrm_api3('contact', 'getvalue', array('id' => $contactID, 'return' => 'contact_type'));
   if ($ctype == 'Individual') {
-    $url = CRM_Utils_System::url( 'civicrm/nyss/web/account',
+    $url_account = CRM_Utils_System::url( 'civicrm/nyss/web/account',
       "reset=1&snippet=1&force=1&cid=$contactID" );
     $tabs[] = array(
       'id' => 'nyss_web_account',
-      'url' => $url,
+      'url' => $url_account,
       'title' => 'Website Account',
+      'weight' => 500 );
+
+    $url_message = CRM_Utils_System::url( 'civicrm/nyss/web/message',
+      "reset=1&snippet=1&force=1&cid=$contactID" );
+    $tabs[] = array(
+      'id' => 'nyss_web_message',
+      'url' => $url_message,
+      'title' => 'Website Messages',
       'weight' => 500 );
   }
 
@@ -268,6 +276,7 @@ function nyss_contact_civicrm_tabs( &$tabs, $contactID ) {
     'tag',
     'custom_9',
     'nyss_web_account',
+    'nyss_web_message',
     'log',
   );
 
