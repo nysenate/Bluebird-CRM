@@ -1594,14 +1594,6 @@ class CRM_IMAP_AJAX
     $query = "
       SELECT im.id, updated_date, email_date,
         CASE
-          WHEN im.status = ".self::STATUS_UNMATCHED." THEN 'Unmatched'
-          WHEN im.status = ".self::STATUS_MATCHED." THEN CONCAT('Matched by ', matcher.display_name)
-          WHEN im.status = ".self::STATUS_CLEARED." THEN 'Cleared'
-          WHEN im.status = ".self::STATUS_DELETED." THEN 'Deleted'
-          WHEN im.status = ".self::STATUS_UNPROCESSED." THEN 'Unprocessed'
-          ELSE 'Unknown'
-        END as status_string,
-        CASE
           WHEN im.status = ".self::STATUS_UNMATCHED." THEN 'unmatched'
           WHEN im.status = ".self::STATUS_MATCHED." THEN 'matched'
           WHEN im.status = ".self::STATUS_CLEARED." THEN 'cleared'
@@ -1609,17 +1601,28 @@ class CRM_IMAP_AJAX
           WHEN im.status = ".self::STATUS_UNPROCESSED." THEN 'unprocessed'
           ELSE 'unknown'
         END as status_icon_class,
+        CASE
+            WHEN im.status = ".self::STATUS_UNMATCHED." THEN 'Unmatched'
+            WHEN im.status = ".self::STATUS_MATCHED." THEN CONCAT('Matched by ', IFNULL(matcher.display_name,'Unknown Contact'))
+            WHEN im.status = ".self::STATUS_CLEARED." THEN 'Cleared'
+            WHEN im.status = ".self::STATUS_DELETED." THEN 'Deleted'
+            WHEN im.status = ".self::STATUS_UNPROCESSED." THEN 'Unprocessed'
+            ELSE 'Unknown Status'
+        END as status_string,
         im.matched_to, im.sender_email, im.subject, im.forwarder, im.activity_id,
         im.matcher, im.status,
         IFNULL(count(ia.file_name), 0) as attachments,
         matcher.display_name as matcher_name,
         IFNULL(matched_to.display_name, im.sender_email) as fromName,
         matched_to.first_name as firstName, matched_to.last_name as lastName,
-        matched_to.contact_type as contactType
+        matched_to.contact_type as contactType,
+        COUNT(civi_t.id) as tagCount
       FROM nyss_inbox_messages as im
       LEFT JOIN civicrm_contact as matcher ON (im.matcher = matcher.id)
       LEFT JOIN civicrm_contact as matched_to ON (im.matched_to = matched_to.id)
       LEFT JOIN nyss_inbox_attachments ia ON (im.id = ia.email_id)
+      LEFT JOIN civicrm_entity_tag as civi_et ON im.activity_id=civi_et.entity_id and civi_et.entity_table='civicrm_activity'
+      LEFT JOIN civicrm_tag as civi_t ON civi_et.tag_id=civi_t.id
       WHERE im.status != 99 $rangeSql
       GROUP BY im.id
       LIMIT 0 , 100000";
@@ -1627,17 +1630,17 @@ class CRM_IMAP_AJAX
     $dbres = mysql_query($query, self::db());
 
     $msgs = array();
-    $res = array('total'=>0, 'unMatched'=>0, 'Matched'=>0,
+    $res = array('Total'=>0, 'Unmatched'=>0, 'Matched'=>0,
                  'Cleared'=>0, 'Deleted'=>0, 'Errors'=>0, 'Messages'=>null);
 
     while ($row = mysql_fetch_assoc($dbres)) {
       $msg = self::postProcess($row);
       $msgs[] = $msg;
-      $res['total']++;
+      $res['Total']++;
 
       switch ($msg['status']) {
         case self::STATUS_UNMATCHED:
-          $res['unMatched']++;
+          $res['Unmatched']++;
           break;
         case self::STATUS_MATCHED:
           $res['Matched']++;
@@ -1676,53 +1679,30 @@ class CRM_IMAP_AJAX
   public static function getTags()
   {
     $id = (int)$_GET['id'];
-    $actid = 0;
     $tags = array();
-    $stext  = "No Message ID found";
     $tltext = '';
     if ($id) {
-      // generate the label text
-      $query = "SELECT
-          CASE
-            WHEN im.status = ".self::STATUS_UNMATCHED." THEN 'Unmatched'
-            WHEN im.status = ".self::STATUS_MATCHED." THEN CONCAT('Matched by ', matcher.display_name)
-            WHEN im.status = ".self::STATUS_CLEARED." THEN 'Cleared'
-            WHEN im.status = ".self::STATUS_DELETED." THEN 'Deleted'
-            WHEN im.status = ".self::STATUS_UNPROCESSED." THEN 'Unprocessed'
-            ELSE 'Unknown Status'
-          END as status_string,
-          im.activity_id
-        FROM nyss_inbox_messages as im
-        LEFT JOIN civicrm_contact as matcher ON (im.matcher = matcher.id)
-        WHERE im.id='$id'";
-      $res = mysql_query($query, self::db());
-      if ($r = mysql_fetch_assoc($res)) {
-        $stext = $r['status_string'];
-        $actid = (int)$r['activity_id'];
-      } else {
-        $stext = 'Unknown Status';
+      // get the tags for this activity
+      $q = "SELECT c.name FROM nyss_inbox_messages a INNER JOIN civicrm_entity_tag b " .
+           "ON b.entity_id=a.activity_id " .
+           "INNER JOIN civicrm_tag c ON b.tag_id=c.id " .
+           "WHERE a.id='$id' AND b.entity_table='civicrm_activity';";
+      $res = mysql_query($q, self::db());
+      while ($r = mysql_fetch_assoc($res)) {
+        $new = trim($r['name']);
+        if ($new) { $tags[] = $new; }
       }
-      if ($actid) {
-        // get the tags for this activity
-        $q = "SELECT b.name FROM civicrm_entity_tag a INNER JOIN civicrm_tag b ON a.tag_id=b.id " .
-             "WHERE a.entity_table='civicrm_activity' AND a.entity_id='$actid'";
-        $res = mysql_query($q, self::db());
-        while ($r = mysql_fetch_assoc($res)) {
-          $new = trim($r['name']);
-          if ($new) { $tags[] = $new; }
-        }
-        // build the HTML
-        if (count($tags)) {
-          $tltext = '<div class="mail-merge-activity-tag-list-header">Tags assigned:</div>' .
-                    '<div class="mail-merge-activity-tag-list">' .
-                    implode('</span>, <span class="mail-merge-activity-tag">',$tags) .
-                    "</span></div>";
-        } else {
-          $tltext = '<div class="mail-merge-activity-tag-list-header">No tags assigned</div>';
-        }
+      // build the HTML
+      if (count($tags)) {
+        $tltext = '<div class="mail-merge-activity-tag-list-header">Tags assigned:</div>' .
+                  '<div class="mail-merge-activity-tag-list">' .
+                  implode('</span>, <span class="mail-merge-activity-tag">',$tags) .
+                  "</span></div>";
+      } else {
+        $tltext = '<div class="mail-merge-activity-tag-list-header">No tags assigned</div>';
       }
     }
-    $ret = '<div class="mail-merge-status-text">' . $stext . '</div>' . ($tltext ? $tltext : '');
+    $ret = $tltext ? $tltext : '';
     die($ret);
   }
 

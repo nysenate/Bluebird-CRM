@@ -110,7 +110,7 @@ thead .sorting_asc{background-color:#f1f1f1!important;}
  .crm-container .imapperbox .dataTables_length {display: inline; float: left !important; width: 30%;padding: 4px 10px;}
  .crm-container .imapperbox .dataTables_info {display: inline;float: left; width: auto; padding: 10px; font-weight: bold;}
  .crm-container .imapperbox .dataTables_filter {display: inline;float: right; width: auto; padding: 4px 10px;}
- .crm-container .imapperbox .dataTables_paginate{ text-align: none; width: 100%; padding:20px 0;}
+ .crm-container .imapperbox .dataTables_paginate{ text-align: none; width: 100%; padding:0;}
 -
 /* IMAP - Autocomplete */
 .imapperbox #tagging-popup.ac_input,
@@ -270,15 +270,15 @@ thead .sorting_asc{background-color:#f1f1f1!important;}
 }
 .stats{
     width:100%;
-
+    text-align: center;
     border-top: 1px solid #ccc;
     margin: 10px 0;
     z-index: 1;
 }
 a.stats_overview{
-    float: left;
+    display:inline-block;
     padding: 18px 0 12px 10px;
-    width: 141px;
+    width: 170px;
     color: #666666;
     font-size: 1.2em;
     border-bottom: 1px solid #ccc;
@@ -315,13 +315,16 @@ a.stats_overview.active{
 .imapperbox .matchbubble.H{background-color: #468847; }
 .imapperbox .matchbubble.A{background-color: #999; }
 
+.crm-container .stats .mail-merge-icon {
+  margin-right: 10px;
+  display: inline-block;
+  float: none;
+  vertical-align: middle;
+}
 
 /* hover icons for matched/matcher contacts */
 .crm-container .icon.mail-merge-icon {
   background-image: url('/sites/default/themes/Bluebird/nyss_skin/images/inbound_email_icons.png');
-}
-.crm-container .stats .mail-merge-icon {
-  margin-right: 10px;
 }
 .crm-container .mail-merge-icon.mail-merge-matched {
   background-position: 0px 0px;
@@ -338,20 +341,17 @@ a.stats_overview.active{
 .crm-container .mail-merge-icon.mail-merge-unprocessed {
   background-position: 0px -64px;
 }
+.crm-container .mail-merge-icon.mail-merge-tags {
+  background-position: 0px -80px;
+}
 .mail-merge-filter-data {
   display:none;
 }
-.crm-container .mail-merge-tag-hover .crm-tooltip {
-  min-width: 100px;
+.crm-container .mail-merge-hover .crm-tooltip {
+  min-width: 150px;
   min-height: 40px;
   padding: 10px;
 }
-
 .mail-merge-activity-tag-list-header {
-  margin-top: 10px;
-  border-top:1px solid #ffffff;
-  padding-top:10px;
 }
-
 .crm-container .crm-summary-link { z-index:auto !important; }
-
