@@ -1,5 +1,9 @@
 {if !$tagsetType or $tagsetType eq 'contact'}
   {foreach from=$tagsetInfo_contact item=tagset}
+    {*NYSS skip web tagsets altogether on bulk add form*}
+    {if in_array($tagset.parentID, $webViewOnly) && $action eq 256}
+      {continue}
+    {/if}
   <div class="crm-section tag-section contact-tagset-{$tagset.parentID}-section">
     {*NYSS*}
     <div class="tag-label">
@@ -13,6 +17,11 @@
       {if $action ne 4 }
         {assign var=editTagSet value=true}
         {if $action eq 16 and !($permission eq 'edit') }
+          {assign var=editTagSet value=false}
+        {/if}
+
+        {*NYSS integration*}
+        {if in_array($parID, $webViewOnly)}
           {assign var=editTagSet value=false}
         {/if}
       {/if}

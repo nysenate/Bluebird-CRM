@@ -1,19 +1,23 @@
 <?php 
+
 function nyss_tags_civicrm_merge( $type, &$sqls, $fromId, $toId, $tables ) {
 
   //insert civicrm_log record for every contact, case or activity affected by a tag merge.
   if ( $type == 'sqls' &&
-       in_array('civicrm_tag', $tables) &&
-       $_GET['q'] == 'civicrm/ajax/mergeTags' ) {
+    in_array('civicrm_tag', $tables) &&
+    $_GET['q'] == 'civicrm/ajax/mergeTags'
+  ) {
     $session = CRM_Core_Session::singleton( );
     $userID  = $session->get( 'userID' );
 
     $sql = "
-INSERT INTO civicrm_log ( entity_table, entity_id, data, modified_id, modified_date )
-SELECT et.entity_table, et.entity_id, CONCAT('Merged tag: ', tag.name, ' (', tag.id, ' with ', {$toId}, ')'), {$userID}, NOW() 
-FROM   civicrm_entity_tag et 
-INNER JOIN civicrm_tag tag ON et.tag_id = tag.id
-WHERE tag_id = %2";
+      INSERT INTO civicrm_log ( entity_table, entity_id, data, modified_id, modified_date )
+      SELECT et.entity_table, et.entity_id, CONCAT('Merged tag: ', tag.name, ' (', tag.id, ' with ', {$toId}, ')'), {$userID}, NOW()
+      FROM civicrm_entity_tag et
+      INNER JOIN civicrm_tag tag
+        ON et.tag_id = tag.id
+      WHERE tag_id = %2
+    ";
     array_unshift( $sqls, $sql );
   }
 } //merge
@@ -31,7 +35,8 @@ function nyss_tags_civicrm_validate( $formName, &$fields, &$files, &$form ) {
       ";
       if ( CRM_Core_DAO::singleValueQuery($sql) ) {
         $form->setElementError('name', ts('Name already exists in the database with the same parent tag.'));
-      } else {
+      }
+      else {
         $form->setElementError('name', null);
       }
     }
@@ -39,3 +44,40 @@ function nyss_tags_civicrm_validate( $formName, &$fields, &$files, &$form ) {
     //CRM_Core_Error::debug_var('form',$form);
   }
 } //validate
+
+function nyss_tags_civicrm_buildForm($formName, &$form) {
+  //CRM_Core_Error::debug_var('$formName', $formName);
+  //CRM_Core_Error::debug_var('$form', $form);
+  //CRM_Core_Error::debug_var('$form->_elementIndex', $form->_elementIndex);
+  //CRM_Core_Error::debug_var('$form->_tagsetInfo', $form->_tagsetInfo);
+
+  if ($formName == 'CRM_Tag_Form_Tag' ||
+    $formName == 'CRM_Contact_Form_Task_AddToTag' ||
+    $formName == 'CRM_Contact_Form_Contact'
+  ) {
+    $webSets = array(
+      'Website Bills',
+      'Website Committees',
+      'Website Issues',
+      'Website Petitions',
+    );
+    $webViewOnly = array();
+    foreach ($form->_tagsetInfo as $setId => $setDetails) {
+      if (in_array($setDetails['parentName'], $webSets)) {
+        $webViewOnly[] = $setDetails['parentID'];
+
+        //remove the form elements
+        if ($form->elementExists("contact_taglist[{$setDetails['parentID']}]")) {
+          $form->removeElement("contact_taglist[{$setDetails['parentID']}]");
+        }
+
+        //for some reason tagset ID is added twice, so we need to cycle/remove twice
+        if ($form->elementExists("contact_taglist[{$setDetails['parentID']}]")) {
+          $form->removeElement("contact_taglist[{$setDetails['parentID']}]");
+        }
+      }
+    }
+    $form->assign('webViewOnly', $webViewOnly);
+    //CRM_Core_Error::debug_var('$webViewOnly', $webViewOnly);
+  }
+}
