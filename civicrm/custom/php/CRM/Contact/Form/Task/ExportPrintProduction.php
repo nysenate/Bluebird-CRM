@@ -133,6 +133,9 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
       )
     );
 
+    //8952
+    $this->addElement('text', 'restrict_zip', ts('Restrict by Zip Code') );
+
     //7777 - restrict by all district info fields
     $this->addElement('text', 'di_congressional_district_46', ts('Restrict by Congressional District') );
     $this->addElement('text', 'di_ny_assembly_district_48', ts('Restrict by Assembly District') );
@@ -200,6 +203,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     $excludeSeeds = $params['excludeSeeds'];
     $restrictDistrict = $params['restrict_district'];
     $restrictState = $params['restrict_state'];
+    $restrictZip = $params['restrict_zip'];
     $orderByOpt = $params['orderBy'];
 
     //get instance name (strip first element from url)
@@ -371,6 +375,18 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
         a.state_province_id = $restrictState OR
         (a.state_province_id != $restrictState AND t.id IN ($localSeedsList)) OR
         (a.state_province_id IS NULL AND t.id IN ($localSeedsList))
+      )";
+    }
+
+    //8952 restrict by zip code
+    if ( !empty($restrictZip) ) {
+      $restrictZipArray = explode(',', $restrictZip);
+      $restrictZip = "'".implode("','", $restrictZipArray)."'";
+      $restrictZip = ($restrictZip == "''") ? '' : $restrictZip;
+      $sql .= " AND (
+        a.postal_code IN ($restrictZip) OR
+        (a.postal_code NOT IN ($restrictZip) AND t.id IN ($localSeedsList)) OR
+        (a.postal_code IS NULL AND t.id IN ($localSeedsList))
       )";
     }
 
