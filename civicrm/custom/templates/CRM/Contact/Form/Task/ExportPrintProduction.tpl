@@ -108,6 +108,14 @@
     <div class="crm-content">{$form.restrict_state.html}</div>
   </div>
 
+  {*8952*}
+  <div class="crm-summary-row">
+    <div class="crm-label">{$form.restrict_zip.label}</div>
+    <div class="crm-content">{$form.restrict_zip.html}
+      <br /><span class="description">Enter a comma-separated list of zip codes to filter by.</span>
+    </div>
+  </div>
+
   {*7777*}
   <div class="crm-summary-row">
     <div class="crm-label">{$form.di_congressional_district_46.label}</div>

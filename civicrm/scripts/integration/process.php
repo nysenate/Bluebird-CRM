@@ -45,12 +45,19 @@ class CRM_Integration_Process {
     $intDB = DB_INTEGRATION;
     $typeSql = ($optlist['type']) ? "AND msg_type = '{$optlist['type']}'" : '';
 
+    //handle survey in special way
+    if ($optlist['type'] == 'SURVEY') {
+      $typeSql = "AND msg_type = 'PETITION'";
+      $addSql = "AND msg_action = 'questionnaire response'";
+    }
+
     //get all accumulator records for instance (target)
     $row = CRM_Core_DAO::executeQuery("
       SELECT *
       FROM {$intDB}.accumulator
       WHERE user_shortname = '{$bbcfg['db.basename']}'
         $typeSql
+        $addSql
     ");
 
     $errors = $status = array();
@@ -149,7 +156,6 @@ class CRM_Integration_Process {
       }
 
       if ($result['is_error']) {
-        //TODO error handling
         $stats['error'][] = $result;
 
       }
