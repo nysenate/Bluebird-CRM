@@ -182,7 +182,7 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
         $fblink = "<a href='{$fburl}' target=_blank>Share on Facebook.</a>&nbsp;&nbsp;<a href='{$fburl}' target=_blank><img src='{$fbimg}' height='20' align='middle'></a>";
       }
 
-      $params['text'] .= "\n\nClick here to view this email in your browser: {$url} | Share on Facebook: {$fb}";
+      $params['text'] .= "\n\nClick here to view this email in your browser: {$url} | Share on Facebook: {$fburl}";
       $params['html'] = preg_replace('#(\s*</body>)#', "\n<p style=\"text-align:center; font-size:10px;\"><a href='{$url}' target=_blank>Click here</a> to view this email in your browser. {$fblink}</p>$1", $params['html'], 1);
     }
 
