@@ -29,10 +29,10 @@ function nyss_export_civicrm_validateForm( $formName, &$fields, &$files, &$form,
 }
 
 function nyss_export_civicrm_export( $exportTempTable, $headerRows, $sqlColumns, $exportMode ) {
-  //CRM_Core_Error::debug('POST', $_POST);
-  //CRM_Core_Error::debug($headerRows);
+  //CRM_Core_Error::debug_var('POST', $_POST);
+  //CRM_Core_Error::debug_var('headerRows', $headerRows);
   //CRM_Core_Error::debug('exportMode', $exportMode);
-  //CRM_Core_Error::debug('sqlColumns', $sqlColumns);
+  //CRM_Core_Error::debug_var('sqlColumns', $sqlColumns);
   //exit();
 
   //field exclusions; only implement for primary export option
@@ -48,7 +48,7 @@ function nyss_export_civicrm_export( $exportTempTable, $headerRows, $sqlColumns,
       'Master Address Belongs To',
       'County',
       'World Region',
-      'Im Service Provider',
+      'IM Service Provider',
       'Group(s)',
       'Tag(s)',
       'Note(s)',
@@ -242,7 +242,8 @@ WHERE c.do_not_trade = 1
 
   //5703 remove some activity fields
   if ( $exportMode == CRM_Export_Form_Select::ACTIVITY_EXPORT &&
-       $_POST['exportOption'] == 1) {
+    $_POST['exportOption'] == 1
+  ) {
     $rm = array(
       'source_record_id',
       'activity_is_test',
@@ -263,6 +264,51 @@ WHERE c.do_not_trade = 1
       unset( $sqlColumns[$rmf] );
     }
   }//end activity mods
+
+  //9018 remove html from activity details
+  if ( ($exportMode == CRM_Export_Form_Select::ACTIVITY_EXPORT &&
+    array_key_exists('activity_details', $sqlColumns)) ||
+    ($exportMode == CRM_Export_Form_Select::CASE_EXPORT &&
+      array_key_exists('case_activity_details', $sqlColumns))
+  ) {
+    if ($exportMode == CRM_Export_Form_Select::ACTIVITY_EXPORT) {
+      $sql = "
+        SELECT activity_id, activity_details
+        FROM $exportTempTable
+      ";
+      $r = CRM_Core_DAO::executeQuery($sql);
+
+      while ($r->fetch()) {
+        //CRM_Core_Error::debug_var('r', $r);
+        $ad = _cleanHTML($r->activity_details);
+        CRM_Core_DAO::executeQuery("
+          UPDATE {$exportTempTable}
+          SET activity_details = '{$ad}'
+          WHERE activity_id = {$r->activity_id}
+        ");
+      }
+    }
+    else {
+      $sql = "
+        SELECT case_id, case_recent_activity_date, case_activity_details
+        FROM $exportTempTable
+      ";
+      $r = CRM_Core_DAO::executeQuery($sql);
+
+      while ($r->fetch()) {
+        //CRM_Core_Error::debug_var('r', $r);
+        $ad = _cleanHTML($r->case_activity_details);
+        CRM_Core_DAO::executeQuery("
+          UPDATE {$exportTempTable}
+          SET case_activity_details = '{$ad}'
+          WHERE case_id = {$r->case_id}
+            AND case_recent_activity_date = '{$r->case_recent_activity_date}'
+            AND case_activity_details = '{$r->case_activity_details}'
+        ");
+      }
+    }
+
+  }
 
   require_once 'CRM/Core/Report/Excel.php';
   require_once 'CRM/Export/BAO/Export.php';
@@ -308,4 +354,20 @@ function _cleanStr( $string ) {
   $string = preg_replace( '/[\W]+/', '', $string );
   $string = strtolower( $string );
   return $string;
-} //_cleanStr
+}//_cleanStr
+
+function _cleanHTML($str) {
+  //convert <br /> to nl
+  $str = preg_replace("=<br */?>=i", "\n", $str);
+
+  //convert <p to nlnl
+  $str = str_replace('<p>', '', $str);
+  $str = str_replace('</p>', "\n\n", $str);
+
+  //strip remaining html
+  $str = str_replace('&nbsp;', '', strip_tags($str));
+  $str = html_entity_decode(htmlspecialchars_decode($str), ENT_QUOTES, 'utf-8');
+
+  //CRM_Core_Error::debug_var('$str', $str);
+  return $str;
+}//_cleanStr
