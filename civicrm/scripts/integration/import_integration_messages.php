@@ -98,7 +98,7 @@ FROM accumulator a
        LEFT JOIN (field_data_field_top_issue fdf_ti
        INNER JOIN taxonomy_term_data taxdata ON fdf_ti.field_top_issue_target_id=taxdata.tid)
        ON a.user_id=fdf_ti.entity_id
-WHERE a.id > :currentmax
+WHERE a.id > :currentmax /*AND a.user_is_verified > 0*/
 REMOTEQUERY;
 IL::log("Executing query:\n$query",LOG_LEVEL_INFO);
 $res = $remotedb->prepare($query);
