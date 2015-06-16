@@ -12,6 +12,7 @@ function nyss_mail_custom_theme()
   $allowedPaths = array(
     'civicrm/nyss/subscription/manage',
     'civicrm/nyss/subscription/view',
+    'civicrm/nyss/subscription/expired',
   );
 
   if (in_array($_GET['q'], $allowedPaths)) {
