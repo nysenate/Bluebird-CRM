@@ -3381,6 +3381,12 @@ WHERE  id IN ( $groupIDs )
     else {
       $value = strtolower($n);
 
+      //NYSS 9037
+      if (strpos($value, ',') !== false && $op == '=') {
+        $op = 'IN';
+        $value = explode(',', $value);
+      }
+
       $this->_where[$grouping][] = self::buildClause('LOWER(civicrm_address.street_number)', $op, $value, 'String');
       $this->_qill[$grouping][] = ts('Street Number') . " $op '$n'";
     }
