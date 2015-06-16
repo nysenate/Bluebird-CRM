@@ -31,7 +31,7 @@ function nyss_export_civicrm_validateForm( $formName, &$fields, &$files, &$form,
 function nyss_export_civicrm_export( $exportTempTable, $headerRows, $sqlColumns, $exportMode ) {
   //CRM_Core_Error::debug_var('POST', $_POST);
   //CRM_Core_Error::debug_var('headerRows', $headerRows);
-  //CRM_Core_Error::debug('exportMode', $exportMode);
+  //CRM_Core_Error::debug_var('exportMode', $exportMode);
   //CRM_Core_Error::debug_var('sqlColumns', $sqlColumns);
   //exit();
 
@@ -290,7 +290,7 @@ WHERE c.do_not_trade = 1
     }
     else {
       $sql = "
-        SELECT case_id, case_recent_activity_date, case_activity_details
+        SELECT case_id, case_activity_details
         FROM $exportTempTable
       ";
       $r = CRM_Core_DAO::executeQuery($sql);
@@ -302,7 +302,6 @@ WHERE c.do_not_trade = 1
           UPDATE {$exportTempTable}
           SET case_activity_details = '{$ad}'
           WHERE case_id = {$r->case_id}
-            AND case_recent_activity_date = '{$r->case_recent_activity_date}'
             AND case_activity_details = '{$r->case_activity_details}'
         ");
       }
@@ -356,6 +355,11 @@ function _cleanStr( $string ) {
   return $string;
 }//_cleanStr
 
+/*
+ * turn br/p to line breaks
+ * strip remaining html tags
+ * escape string to make mysql safe
+ */
 function _cleanHTML($str) {
   //convert <br /> to nl
   $str = preg_replace("=<br */?>=i", "\n", $str);
@@ -367,6 +371,9 @@ function _cleanHTML($str) {
   //strip remaining html
   $str = str_replace('&nbsp;', '', strip_tags($str));
   $str = html_entity_decode(htmlspecialchars_decode($str), ENT_QUOTES, 'utf-8');
+
+  //escape
+  $str = CRM_Core_DAO::escapeString($str);
 
   //CRM_Core_Error::debug_var('$str', $str);
   return $str;
