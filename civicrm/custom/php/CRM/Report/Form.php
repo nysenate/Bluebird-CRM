@@ -2719,7 +2719,8 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
 
       $pageId = CRM_Utils_Request::retrieve('crmPID', 'Integer', CRM_Core_DAO::$_nullObject);
 
-      if (!$pageId && !empty($_POST)) {
+      //NYSS 8974 - allow POST to override value passed in URL, else bottom pager lags
+      if (/*!$pageId &&*/ !empty($_POST)) {
         if (isset($_POST['PagerBottomButton']) && isset($_POST['crmPID_B'])) {
           $pageId = max((int)@$_POST['crmPID_B'], 1);
         }
