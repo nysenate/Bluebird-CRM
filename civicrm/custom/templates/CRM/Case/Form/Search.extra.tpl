@@ -8,3 +8,15 @@
   });
 </script>
 {/literal}
+
+{if $context eq 'caselist'}
+  {literal}
+  <script type="text/javascript">
+    cj(document).ready(function(){
+      cj('table.caseSelector th:first').after('<th></th>');
+      cj('div.crm-case-search-form-block').hide();
+      cj('div.crm-content-block').before('<div><h3>Cases for: {/literal}{$display_name}{literal}</h3></div>')
+    });
+  </script>
+  {/literal}
+{/if}

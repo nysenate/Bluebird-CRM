@@ -244,18 +244,25 @@ class CRM_NYSS_BAO_Integration {
         AND is_tagset = 1
     ");
 
-    //get sponsor name from open leg
+    //build bill value text
     $billNumber = "{$params->bill_number}-{$params->bill_year}";
-    $target_url = CRM_Admin_Page_AJAX::OPENLEG_BASE_URL.'/api/1.0/json/search/?term=otype:bill+AND+oid:('.$billNumber.')&pageSize=100&sort=year&sortOrder=true';
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $target_url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    $content = curl_exec($ch);
-    curl_close($ch);
-    $json = json_decode($content, true);
-    //CRM_Core_Error::debug_var('json', $json);
 
-    $sponsor = strtoupper($json[0]['sponsor']);
+    if (!empty($params->bill_sponsor)) {
+      $sponsor = strtoupper($params->bill_sponsor);
+    }
+    else {
+      $target_url = CRM_Admin_Page_AJAX::OPENLEG_BASE_URL.'/api/1.0/json/search/?term=otype:bill+AND+oid:('.$billNumber.')&pageSize=100&sort=year&sortOrder=true';
+      $ch = curl_init();
+      curl_setopt($ch, CURLOPT_URL, $target_url);
+      curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+      $content = curl_exec($ch);
+      curl_close($ch);
+      $json = json_decode($content, true);
+      //CRM_Core_Error::debug_var('json', $json);
+
+      $sponsor = strtoupper($json[0]['sponsor']);
+    }
+
     $bill = "{$billNumber} ({$sponsor})";
 
     //construct tag name and determine action
