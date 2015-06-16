@@ -77,3 +77,14 @@
 
 {*NYSS 6440*}
 {include file="CRM/Report/updateConfirm.tpl"}
+
+{literal}
+<script type="text/javascript">
+  cj('input[name=crmPID_B]').keyup(function(){
+    //console.log('PID B: ', cj(this).val());
+    //console.log('PID: ', cj('input[name=crmPID]').val());
+
+    cj('input[name=crmPID]').val(cj(this).val());
+  });
+</script>
+{/literal}
