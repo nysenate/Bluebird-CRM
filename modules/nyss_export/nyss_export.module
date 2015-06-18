@@ -298,20 +298,19 @@ WHERE c.do_not_trade = 1
       while ($r->fetch()) {
         //CRM_Core_Error::debug_var('r', $r);
         $ad = _cleanHTML($r->case_activity_details);
+        $adOrig = CRM_Core_DAO::escapeString($r->case_activity_details);
         CRM_Core_DAO::executeQuery("
           UPDATE {$exportTempTable}
           SET case_activity_details = '{$ad}'
           WHERE case_id = {$r->case_id}
-            AND case_activity_details = '{$r->case_activity_details}'
+            AND case_activity_details LIKE '{$adOrig}'
         ");
       }
     }
 
   }
 
-  require_once 'CRM/Core/Report/Excel.php';
-  require_once 'CRM/Export/BAO/Export.php';
-  while ( 1 ) {
+  while (1) {
     $limitQuery = $query . "
 LIMIT $offset, $limit
 ";
@@ -331,8 +330,10 @@ LIMIT $offset, $limit
 
       $componentDetails[] = $row;
     }
-    CRM_Core_Report_Excel::writeCSVFile( CRM_Export_BAO_Export::getExportFileName( 'csv', $exportMode ),
-                                         $headerRows, $componentDetails, null, $writeHeader );
+    CRM_Core_Report_Excel::writeCSVFile(
+      CRM_Export_BAO_Export::getExportFileName('csv', $exportMode),
+      $headerRows, $componentDetails, null, $writeHeader );
+
     $writeHeader = false;
     $offset += $limit;
   }
