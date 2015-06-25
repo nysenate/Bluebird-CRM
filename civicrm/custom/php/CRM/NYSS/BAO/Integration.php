@@ -738,4 +738,36 @@ class CRM_NYSS_BAO_Integration {
 
     return $fields;
   }//buildSurvey
+
+  /*
+   * get the four types of website tagset tags
+   * return hierarchal array by tagset
+   */
+  static function getTags($cid) {
+    $parentNames = CRM_Core_BAO_Tag::getTagSet('civicrm_contact');
+    //CRM_Core_Error::debug_var('$parentNames', $parentNames);
+
+    $tags = array(
+      'Website Bills' =>
+        CRM_Core_BAO_EntityTag::getChildEntityTagDetails(array_search('Website Bills', $parentNames), $cid),
+      'Website Committees' =>
+        CRM_Core_BAO_EntityTag::getChildEntityTagDetails(array_search('Website Committees', $parentNames), $cid),
+      'Website Issues' =>
+        CRM_Core_BAO_EntityTag::getChildEntityTagDetails(array_search('Website Issues', $parentNames), $cid),
+      'Website Petitions' =>
+        CRM_Core_BAO_EntityTag::getChildEntityTagDetails(array_search('Website Petitions', $parentNames), $cid),
+    );
+
+    //CRM_Core_Error::debug_var('$tags', $tags);
+    return $tags;
+  }//getTags
+
+  /*
+   * get activity stream for contact
+   */
+  static function getActivityStream($cid) {
+    $activity = array();
+
+    return $activity;
+  }//getActivityStream
 }//end class
