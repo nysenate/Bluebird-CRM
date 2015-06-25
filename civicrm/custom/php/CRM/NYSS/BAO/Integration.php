@@ -536,7 +536,7 @@ class CRM_NYSS_BAO_Integration {
       );
     }
 
-    return true;
+    return $result;
   }
 
   /*
@@ -770,4 +770,16 @@ class CRM_NYSS_BAO_Integration {
 
     return $activity;
   }//getActivityStream
+
+  /*
+   * store basic details about the event in the activity log
+   */
+  static function storeActivityLog($type, $date, $details) {
+    CRM_Core_DAO::executeQuery("
+      INSERT INTO nyss_web_activity
+      (type, created_date, details)
+      VALUES
+      ('{$type}', '{$date}', '{$details}')
+    ");
+  }//storeActivityLog
 }//end class
