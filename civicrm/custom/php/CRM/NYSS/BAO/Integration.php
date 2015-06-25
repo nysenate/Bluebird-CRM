@@ -431,6 +431,8 @@ class CRM_NYSS_BAO_Integration {
   }//processAccount
 
   static function processProfile($contactId, $action, $params, $row) {
+    //CRM_Core_Error::debug_var('processProfile $row', $row);
+
     //only available action is account edited
     if ($action != 'account edited') {
       return array(
@@ -457,7 +459,8 @@ class CRM_NYSS_BAO_Integration {
       'custom_75' => $row->contact_me,
       'custom_76' => $row->top_issue,
       'custom_77' => $status,
-      'custom_78' => date('YmdHis', $row->created_at),
+      'custom_78' => $row->user_is_verified,
+      'custom_79' => date('YmdHis', $row->created_at),
     );
     //CRM_Core_Error::debug_var('profileParams', $profileParams);
 
@@ -655,6 +658,10 @@ class CRM_NYSS_BAO_Integration {
    * else return false
    */
   function surveyExists($params) {
+    if (empty($params->form_id)) {
+      return false;
+    }
+
     //see if any activity records exist with the survey id
     $act = CRM_Core_DAO::singleValueQuery("
       SELECT count(id)
@@ -693,6 +700,10 @@ class CRM_NYSS_BAO_Integration {
    * create custom data set and fields for survey
    */
   function buildSurvey($data) {
+    if (empty($data->form_id)) {
+      return false;
+    }
+
     //create custom group
     $weight = CRM_Core_DAO::singleValueQuery("
       SELECT max(weight)
@@ -782,4 +793,9 @@ class CRM_NYSS_BAO_Integration {
       ('{$type}', '{$date}', '{$details}')
     ");
   }//storeActivityLog
+
+  //TODO
+  static function archiveRecord() {
+    //wrap in a transaction so we store archive and delete from accumulator together
+  }
 }//end class
