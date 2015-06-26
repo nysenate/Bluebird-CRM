@@ -262,6 +262,7 @@ class MessageBodyParser
       // clean out any anything that wouldn't be a name or email, html or plain-text
       $str = preg_replace('/&lt;|&gt;|&quot;|&amp;/i', ' ', $str);
       $str = preg_replace('/<|>|"|\'/i', ' ', $str);
+      $name='';
       foreach (preg_split('/ /', $str) as $token) {
         $name .= $token." ";
         $email = filter_var(filter_var($token, FILTER_SANITIZE_EMAIL), FILTER_VALIDATE_EMAIL);
