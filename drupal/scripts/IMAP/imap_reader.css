@@ -1,0 +1,192 @@
+body {
+  background-color: #f0ffff;
+  color: #000000;
+  font-family: sans-serif;
+}
+body, div, p, ul, ol, h1, h2, h3, h4, h5, h6 {
+  margin:0;
+  padding:0;
+}
+h3 {
+  font-size:1em;
+}
+label:hover {
+  cursor:pointer;
+}
+#account-information {
+  margin-bottom:15px;
+  position:relative;
+  width:350px;
+  display:none;
+}
+#column-left {
+  float:left;
+  width:48%;
+  position:relative;
+}
+#column-left > div {
+  margin-top:1.5em;
+}
+#column-right {
+  float:right;
+  width:48%;
+  position:relative;
+}
+#column-right .fillable {
+  display:none;
+  border:2px groove #aaaaaa;
+  margin-bottom:10px;
+}
+#column-right .fillable pre {
+  max-height:200px;
+  min-height:100px;
+  padding:5px 10px;
+  margin:0;
+  overflow:auto;
+}
+#command-selection {
+  display:none;
+}
+#custom-server-props {
+  text-align: left;
+  padding: 10px 15px;
+  border: 2px dotted #777777;
+  border-radius: .5em;
+}
+#debug-box {
+  position:absolute;
+  right:0;
+  bottom:25px;
+  font-family: Courier New, monospace;
+  display:none;
+}
+#debug-box-content {
+  width:400px;
+  height:250px;
+  border:3px dotted #ffaaaa;
+  background-color:#003080;
+  color:#ffffff;
+  border: 2px groove #ccccff;
+  border-top:none;
+  padding:5px;
+}
+#debug-box-drag-handle {
+  background-color:#8888ff;
+  cursor:move;
+  height:1em;
+  border-style: groove;
+  border: 2px groove #ccccff;
+  position:relative;
+}
+#debug-box-close-handle {
+  font-size: .6em;
+  text-align: center;
+  font-family: sans-serif;
+  font-weight: bold;
+  height: 1em;
+  width: 1em;
+  position: absolute;
+  right: 3px;
+  top: 3px;
+  border: 1px solid #000000;
+  cursor: pointer;
+}
+#debug-box-open-handle,
+#debug-box-flush {
+  position:absolute;
+  right:5px;
+  bottom:5px;
+  font-size:11px;
+  cursor:pointer;
+}
+#debug-box-open-handle {
+  position:fixed;
+}
+#debug-box-header {
+  text-align:center;
+  border-bottom:1px dashed #777777;
+  padding:.25em 0;
+  height:40;
+  position:relative;
+}
+#debug-output {
+  font-size:9pt;
+  overflow-x:hidden;
+  overflow-y:auto;
+  max-height:210px;
+  padding-top:5px;
+}
+#debug-output .debug-msg {
+  margin-bottom: .5em;
+}
+#debug-output .debug-ln {
+  background-color: #eeeeff;
+  color: #000000;
+  width: 20px;
+  display: inline-block;
+  line-height: 1.7em;
+  margin-right: 5px;
+}
+#folder-overview {
+  font-size: .75em;
+  margin-top: .5em;
+}
+#folder-overview > div {
+  display: inline-block;
+  margin-right: 3em;
+}
+#folder-selection {
+  display:none;
+}
+#page-header {
+  margin:0;
+  padding:25px 0;
+  text-align: center;
+}
+#top-container {
+  width: 1000px;
+  margin: 0 auto;
+}
+.cell-label {
+  text-align:right;
+}
+.cell-value {
+  text-align:left;
+}
+.collapsible {
+  position:relative;
+}
+.command-group {
+  display:none;
+  margin-top:1.5em;
+}
+.results-section-header {
+  padding: 5px 10px;
+  background-color: rgba(0,0,255,.2);
+  border-bottom: 2px groove #aaaaaa;
+}
+.sub {
+  font-size: .7em;
+}
+.toggle-button {
+  width:16px;
+  height:16px;
+  position:absolute;
+  top:5px;
+  right:10px;
+  border:1px solid #aaaaaa;
+  background-image:url('raw-text.png');
+}
+.ui-button {
+  cursor: pointer;
+  text-align: center;
+  border-radius: 1em;
+  color: #ffffff;
+  border: 1px solid #8888ff;
+  background-color: #333366;
+  padding:2px 1em;
+}
+.ui-button:hover {
+  background-color:#8888ff;
+  border-color:#0000ff;
+}
