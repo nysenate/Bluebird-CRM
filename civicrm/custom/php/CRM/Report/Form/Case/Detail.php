@@ -247,16 +247,30 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
             'title' => 'City',
             'type' => CRM_Utils_Type::T_TEXT,
           ),
-        ),
-        'order_bys'  =>
-        array( 'street_address' =>
-            array( 'title' => ts('Street Adddress'),
-            ),
-            'state_province_id' =>
-            array( 'title' => ts('State/Province'),
-            ),
+          'postal_code' => array(
+            'title' => 'Postal Code',
+            'type' => CRM_Utils_Type::T_TEXT,
           ),
         ),
+        'order_bys'  =>
+        array(
+          'street_address' =>
+          array(
+            'title' => ts('Street Adddress'),
+          ),
+          'state_province_id' =>
+          array(
+            'title' => ts('State/Province'),
+          ),
+          //NYSS 8735
+          'city' => array(
+            'title' => 'City',
+          ),
+          'postal_code' => array(
+            'title' => 'Postal Code',
+          ),
+        ),
+      ),
         //NYSS 4944
         /*'civicrm_worldregion' =>
         array( 'dao'       => 'CRM_Core_DAO_Worldregion',
