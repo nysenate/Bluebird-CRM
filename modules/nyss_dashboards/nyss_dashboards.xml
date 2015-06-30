@@ -298,4 +298,14 @@
     <page_callback>CRM_NYSS_Page_Integration_Message</page_callback>
     <access_arguments>view all contacts</access_arguments>
   </item>
+  <item>
+    <path>civicrm/nyss/web/tags</path>
+    <page_callback>CRM_NYSS_Page_Integration_Tags</page_callback>
+    <access_arguments>view all contacts</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/nyss/web/activitystream</path>
+    <page_callback>CRM_NYSS_Page_Integration_ActivityStream</page_callback>
+    <access_arguments>view all contacts</access_arguments>
+  </item>
 </menu>

@@ -104,36 +104,52 @@ class CRM_Integration_Process {
       $params = json_decode($row->msg_info);
       //bbscript_log('trace', 'params', $params);
 
+      $date = date('Y-m-d H:i:s', $row->created_at);
+
       switch ($row->msg_type) {
         case 'BILL':
           $result = CRM_NYSS_BAO_Integration::processBill($cid, $row->msg_action, $params);
+          $activity_type = 'Bill';
+          $activity_details = "{$row->msg_action} :: {$params->bill_number}-{$params->bill_year} ({$params->bill_sponsor})";
           break;
 
         case 'ISSUE':
           $result = CRM_NYSS_BAO_Integration::processIssue($cid, $row->msg_action, $params);
+          $activity_type = 'Issue';
+          $activity_details = "{$row->msg_action} :: {$params->issue_name}";
           break;
 
         case 'COMMITTEE':
           $result = CRM_NYSS_BAO_Integration::processCommittee($cid, $row->msg_action, $params);
+          $activity_type = 'Committee';
+          $activity_details = "{$row->msg_action} :: {$params->committee_name}";
           break;
 
         case 'DIRECTMSG':
           $result = CRM_NYSS_BAO_Integration::processCommunication($cid, $row->msg_action, $params, $row->msg_type);
+          $activity_type = 'Direct Message';
+          $activity_details = "";
           break;
 
         case 'CONTEXTMSG':
           //disregard if no bill number
           if (!empty($params->bill_number)) {
             $result = CRM_NYSS_BAO_Integration::processCommunication($cid, $row->msg_action, $params, $row->msg_type);
+            $activity_type = 'Context Message';
+            $activity_details = "";
           }
           break;
 
         case 'PETITION':
           if ($row->msg_action == 'questionnaire response') {
             $result = CRM_NYSS_BAO_Integration::processSurvey($cid, $row->msg_action, $params);
+            $activity_type = 'Survey';
+            $activity_details = "survey :: {$params->form_title}";
           }
           else {
             $result = CRM_NYSS_BAO_Integration::processPetition($cid, $row->msg_action, $params);
+            $activity_type = 'Petition';
+            $activity_details = "{$row->msg_action} :: {$params->petition_name}";
           }
           break;
 
@@ -142,27 +158,37 @@ class CRM_Integration_Process {
           break;*/
 
         case 'ACCOUNT':
-          $date = date('Y-m-d H:i:s', $row->created_at);
           $result = CRM_NYSS_BAO_Integration::processAccount($cid, $row->msg_action, $params, $date);
+          $activity_type = 'Account';
+          $activity_details = "{$row->msg_action}";
           break;
 
         case 'PROFILE':
           $result = CRM_NYSS_BAO_Integration::processProfile($cid, $row->msg_action, $params, $row);
+          $activity_type = 'Profile';
+          $activity_details = $row->msg_action;
+          $activity_details .= ($params->status) ? " :: {$params->status}" : '';
           break;
 
         default:
           bbscript_log('error', 'Unable to process row. Message type is unknown.', $row);
+          $result = array(
+            'is_error' => 1,
+            'details' => 'Unable to process row. Message type is unknown.',
+          );
           $stats['unprocessed'][$row->msg_type][] = $row;
       }
 
       if ($result['is_error']) {
         $stats['error'][] = $result;
-
       }
       else {
-        //TODO archive rows by ID
         $stats['processed'][] = $row->id;
 
+        //store activity log record
+        CRM_NYSS_BAO_Integration::storeActivityLog($activity_type, $date, $activity_details);
+
+        //TODO archive rows by ID
       }
     }
 
