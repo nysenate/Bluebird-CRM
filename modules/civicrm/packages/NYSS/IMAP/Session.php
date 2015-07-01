@@ -1,6 +1,7 @@
 <?php
 class NYSS_IMAP_Session {
   public static $force_readonly = false;
+  public static $auto_expunge = true;
   public $config = array();
   public $conn = NULL;
   public $defaults = array('server'  => 'webmail.nysenate.gov',
@@ -13,6 +14,10 @@ class NYSS_IMAP_Session {
   public function __construct($opts=array()) {
     $this->_populateOptions($opts);
     $this->_establishConnection();
+  }
+
+  public function __destruct() {
+    $this->_closeConnection();
   }
 
   protected function _buildMailboxRef($mailbox = NULL) {
@@ -31,6 +36,10 @@ class NYSS_IMAP_Session {
     }
     $ret .= '}';
     return $ret;
+  }
+
+  protected function _closeConnection() {
+    imap_close($this->conn, (static::$auto_expunge ? CL_EXPUNGE : NULL) );
   }
 
   protected function _establishConnection() {
