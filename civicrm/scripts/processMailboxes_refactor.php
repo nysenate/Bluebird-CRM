@@ -322,6 +322,8 @@ function processMailboxCommand($cmd, $params)
 
   //clean up moved/deleted messages
   // Using CL_EXPUNGE is same as calling imap_expunge().
+  $imap_session = NULL;
+
   return $rc;
 } // processMailboxCommand()
 
