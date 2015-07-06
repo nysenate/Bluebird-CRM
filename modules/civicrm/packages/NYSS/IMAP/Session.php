@@ -39,7 +39,9 @@ class NYSS_IMAP_Session {
   }
 
   protected function _closeConnection() {
-    imap_close($this->conn, (static::$auto_expunge ? CL_EXPUNGE : NULL) );
+    if ($this->conn) {
+      imap_close($this->conn, (static::$auto_expunge ? CL_EXPUNGE : NULL) );
+    }
   }
 
   protected function _establishConnection() {
