@@ -244,18 +244,25 @@ class CRM_NYSS_BAO_Integration {
         AND is_tagset = 1
     ");
 
-    //get sponsor name from open leg
+    //build bill value text
     $billNumber = "{$params->bill_number}-{$params->bill_year}";
-    $target_url = CRM_Admin_Page_AJAX::OPENLEG_BASE_URL.'/api/1.0/json/search/?term=otype:bill+AND+oid:('.$billNumber.')&pageSize=100&sort=year&sortOrder=true';
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $target_url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    $content = curl_exec($ch);
-    curl_close($ch);
-    $json = json_decode($content, true);
-    //CRM_Core_Error::debug_var('json', $json);
 
-    $sponsor = strtoupper($json[0]['sponsor']);
+    if (!empty($params->bill_sponsor)) {
+      $sponsor = strtoupper($params->bill_sponsor);
+    }
+    else {
+      $target_url = CRM_Admin_Page_AJAX::OPENLEG_BASE_URL.'/api/1.0/json/search/?term=otype:bill+AND+oid:('.$billNumber.')&pageSize=100&sort=year&sortOrder=true';
+      $ch = curl_init();
+      curl_setopt($ch, CURLOPT_URL, $target_url);
+      curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+      $content = curl_exec($ch);
+      curl_close($ch);
+      $json = json_decode($content, true);
+      //CRM_Core_Error::debug_var('json', $json);
+
+      $sponsor = strtoupper($json[0]['sponsor']);
+    }
+
     $bill = "{$billNumber} ({$sponsor})";
 
     //construct tag name and determine action
@@ -424,6 +431,8 @@ class CRM_NYSS_BAO_Integration {
   }//processAccount
 
   static function processProfile($contactId, $action, $params, $row) {
+    //CRM_Core_Error::debug_var('processProfile $row', $row);
+
     //only available action is account edited
     if ($action != 'account edited') {
       return array(
@@ -450,7 +459,8 @@ class CRM_NYSS_BAO_Integration {
       'custom_75' => $row->contact_me,
       'custom_76' => $row->top_issue,
       'custom_77' => $status,
-      'custom_78' => date('YmdHis', $row->created_at),
+      'custom_78' => $row->user_is_verified,
+      'custom_79' => date('YmdHis', $row->created_at),
     );
     //CRM_Core_Error::debug_var('profileParams', $profileParams);
 
@@ -529,7 +539,7 @@ class CRM_NYSS_BAO_Integration {
       );
     }
 
-    return true;
+    return $result;
   }
 
   /*
@@ -648,6 +658,10 @@ class CRM_NYSS_BAO_Integration {
    * else return false
    */
   function surveyExists($params) {
+    if (empty($params->form_id)) {
+      return false;
+    }
+
     //see if any activity records exist with the survey id
     $act = CRM_Core_DAO::singleValueQuery("
       SELECT count(id)
@@ -686,6 +700,10 @@ class CRM_NYSS_BAO_Integration {
    * create custom data set and fields for survey
    */
   function buildSurvey($data) {
+    if (empty($data->form_id)) {
+      return false;
+    }
+
     //create custom group
     $weight = CRM_Core_DAO::singleValueQuery("
       SELECT max(weight)
@@ -731,4 +749,53 @@ class CRM_NYSS_BAO_Integration {
 
     return $fields;
   }//buildSurvey
+
+  /*
+   * get the four types of website tagset tags
+   * return hierarchal array by tagset
+   */
+  static function getTags($cid) {
+    $parentNames = CRM_Core_BAO_Tag::getTagSet('civicrm_contact');
+    //CRM_Core_Error::debug_var('$parentNames', $parentNames);
+
+    $tags = array(
+      'Website Bills' =>
+        CRM_Core_BAO_EntityTag::getChildEntityTagDetails(array_search('Website Bills', $parentNames), $cid),
+      'Website Committees' =>
+        CRM_Core_BAO_EntityTag::getChildEntityTagDetails(array_search('Website Committees', $parentNames), $cid),
+      'Website Issues' =>
+        CRM_Core_BAO_EntityTag::getChildEntityTagDetails(array_search('Website Issues', $parentNames), $cid),
+      'Website Petitions' =>
+        CRM_Core_BAO_EntityTag::getChildEntityTagDetails(array_search('Website Petitions', $parentNames), $cid),
+    );
+
+    //CRM_Core_Error::debug_var('$tags', $tags);
+    return $tags;
+  }//getTags
+
+  /*
+   * get activity stream for contact
+   */
+  static function getActivityStream($cid) {
+    $activity = array();
+
+    return $activity;
+  }//getActivityStream
+
+  /*
+   * store basic details about the event in the activity log
+   */
+  static function storeActivityLog($type, $date, $details) {
+    CRM_Core_DAO::executeQuery("
+      INSERT INTO nyss_web_activity
+      (type, created_date, details)
+      VALUES
+      ('{$type}', '{$date}', '{$details}')
+    ");
+  }//storeActivityLog
+
+  //TODO
+  static function archiveRecord() {
+    //wrap in a transaction so we store archive and delete from accumulator together
+  }
 }//end class

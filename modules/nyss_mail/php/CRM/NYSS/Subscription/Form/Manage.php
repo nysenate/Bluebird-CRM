@@ -80,18 +80,20 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
       $this->_contact = $contact;
     }
 
+    $bbconfig = get_bluebird_instance_config();
+    $env = explode('.', $bbconfig['base.domain']);
+
     //verify checksum
     if ( !CRM_Contact_BAO_Contact_Utils::validChecksum($contact['contact_id'], $cs) ) {
       CRM_Core_Error::debug_var('Failed attempt to validate checksum in email subscription tool.', $contact);
-      CRM_Utils_System::redirect('http://www.nysenate.gov');
+      $url = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/subscription/expired";
+      CRM_Utils_System::redirect($url);
     }
 
     //set page title
     CRM_Utils_System::setTitle( ts('Manage Email Subscriptions') );
 
     //alter form action to use pubfiles version
-    $bbconfig = get_bluebird_instance_config();
-    $env = explode('.', $bbconfig['base.domain']);
     $action = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/subscription/manage";
     $this->_attributes['action'] = $action;
     $this->_attributes['method'] = 'get';

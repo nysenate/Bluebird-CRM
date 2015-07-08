@@ -242,7 +242,7 @@ function nyss_contact_civicrm_postProcess( $formName, &$form ) {
 function nyss_contact_civicrm_tabs( &$tabs, $contactID ) {
   //CRM_Core_Error::debug_var('tabs', $tabs);
 
-  //create new tab for web account history; only attach to individuals
+  //create new tab for website integration; only attach to individuals
   $ctype = civicrm_api3('contact', 'getvalue', array('id' => $contactID, 'return' => 'contact_type'));
   if ($ctype == 'Individual') {
     $url_account = CRM_Utils_System::url( 'civicrm/nyss/web/account',
@@ -259,6 +259,22 @@ function nyss_contact_civicrm_tabs( &$tabs, $contactID ) {
       'id' => 'nyss_web_message',
       'url' => $url_message,
       'title' => 'Website Messages',
+      'weight' => 500 );
+
+    $url_tags = CRM_Utils_System::url( 'civicrm/nyss/web/tags',
+      "reset=1&snippet=1&force=1&cid=$contactID" );
+    $tabs[] = array(
+      'id' => 'nyss_web_tags',
+      'url' => $url_tags,
+      'title' => 'Website Tags',
+      'weight' => 500 );
+
+    $url_activity = CRM_Utils_System::url( 'civicrm/nyss/web/activitystream',
+      "reset=1&snippet=1&force=1&cid=$contactID" );
+    $tabs[] = array(
+      'id' => 'nyss_web_activitystream',
+      'url' => $url_activity,
+      'title' => 'Website Activity',
       'weight' => 500 );
   }
 
@@ -277,6 +293,8 @@ function nyss_contact_civicrm_tabs( &$tabs, $contactID ) {
     'custom_9',
     'nyss_web_account',
     'nyss_web_message',
+    'nyss_web_tags',
+    'nyss_web_activitystream',
     'log',
   );
 

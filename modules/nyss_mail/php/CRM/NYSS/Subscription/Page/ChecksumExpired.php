@@ -1,8 +1,9 @@
-{*
+<?php
+/*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.6                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2015                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -22,5 +23,39 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*}
-{include file="CRM/Report/Form.tpl"}
+*/
+
+/**
+ *
+ * @package CRM
+ * @copyright CiviCRM LLC (c) 2004-2013
+ * $Id$
+ *
+ */
+
+/**
+ * Main page for Cases dashlet
+ *
+ */
+class CRM_NYSS_Subscription_Page_ChecksumExpired extends CRM_Core_Page {
+
+  /**
+   * View subscriptions
+   *
+   * @return none
+   *
+   * @access public
+   */
+  function run() {
+    CRM_Utils_System::setTitle('Email Subscription Management');
+
+    //disable BB header
+    $this->assign('disableBBheader', 1);
+
+    //get senator name
+    $bbconfig = get_bluebird_instance_config();
+    $this->assign('senatorFormal', $bbconfig['senator.name.formal']);
+
+    return parent::run();
+  }
+}

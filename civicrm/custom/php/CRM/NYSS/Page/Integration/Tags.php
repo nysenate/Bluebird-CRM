@@ -1,8 +1,10 @@
-{*
+<?php
+
+/*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.6                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2015                                |
+ | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -22,5 +24,33 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*}
-{include file="CRM/Report/Form.tpl"}
+*/
+
+/**
+ *
+ * @package CRM
+ * @copyright CiviCRM LLC (c) 2004-2010
+ * $Id$
+ *
+ */
+
+class CRM_NYSS_Page_Integration_Tags extends CRM_Core_Page
+{
+  /**
+   * List RSS feed as dashlet
+   *
+   * @return none
+   * @access public
+   */
+  function run( ) {
+    //CRM_Core_Error::debug_var('account page $this', $this);
+    //CRM_Core_Error::debug_var('account page $_REQUEST', $_REQUEST);
+
+    $cid = CRM_Utils_Request::retrieve('cid', 'Positive');
+    $tags = CRM_NYSS_BAO_Integration::getTags($cid);
+
+    $this->assign('tags', $tags);
+
+    return parent::run( );
+  }
+}
