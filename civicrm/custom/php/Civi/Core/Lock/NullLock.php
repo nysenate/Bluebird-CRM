@@ -25,6 +25,7 @@
  +--------------------------------------------------------------------+
  */
 namespace Civi\Core\Lock;
+
 /**
  *
  * @package CRM
@@ -33,7 +34,9 @@ namespace Civi\Core\Lock;
  *
  */
 class NullLock implements LockInterface {
+
   private $hasLock = FALSE;
+
   /**
    * @param string $name
    * @return static
@@ -41,6 +44,7 @@ class NullLock implements LockInterface {
   public static function create($name) {
     return new static();
   }
+
   /**
    * @param int|NULL $timeout
    *   The number of seconds to wait to get the lock.
@@ -51,6 +55,7 @@ class NullLock implements LockInterface {
     $this->hasLock = TRUE;
     return TRUE;
   }
+
   /**
    * @return bool|null|string
    *   Trueish/falsish.
@@ -59,6 +64,7 @@ class NullLock implements LockInterface {
     $this->hasLock = FALSE;
     return TRUE;
   }
+
   /**
    * @return bool|null|string
    *   Trueish/falsish.
@@ -69,10 +75,12 @@ class NullLock implements LockInterface {
   public function isFree() {
     return !$this->hasLock;
   }
+
   /**
    * @return bool
    */
   public function isAcquired() {
     return $this->hasLock;
   }
+
 }

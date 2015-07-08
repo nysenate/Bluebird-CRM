@@ -25,7 +25,9 @@
  +--------------------------------------------------------------------+
  */
 namespace Civi\Core\Lock;
+
 use Civi\Core\Resolver;
+
 /**
  * Class LockManager
  * @package Civi\Core\Lock
@@ -34,7 +36,9 @@ use Civi\Core\Resolver;
  * specific lock, how does one acquire the lock?
  */
 class LockManager {
+
   private $rules = array();
+
   /**
    * @param string $name
    *   Symbolic name for the lock. Names generally look like
@@ -56,6 +60,7 @@ class LockManager {
       throw new \CRM_Core_Exception("Lock \"$name\" does not match any rules. Use register() to add more rules.");
     }
   }
+
   /**
    * Create and attempt to acquire a lock.
    *
@@ -79,6 +84,7 @@ class LockManager {
     $lock->acquire($timeout);
     return $lock;
   }
+
   /**
    * @param string $name
    *   Symbolic name for the lock.
@@ -92,6 +98,7 @@ class LockManager {
     }
     return NULL;
   }
+
   /**
    * Register the lock-factory to use for specific lock-names.
    *
@@ -110,4 +117,5 @@ class LockManager {
     );
     return $this;
   }
+
 }

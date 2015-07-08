@@ -1,7 +1,9 @@
 <?php
 namespace Civi\API;
+
 use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\Process;
+
 /**
  * Class ExternalBatch
  * @package Civi\API
@@ -13,25 +15,33 @@ class ExternalBatch {
    * The time to wait when polling for process status (microseconds).
    */
   const POLL_INTERVAL = 10000;
+
   /**
    * @var array
    *   Array(int $idx => array $apiCall).
    */
   protected $apiCalls;
+
   protected $defaultParams;
+
   protected $root;
+
   protected $settingsPath;
+
   protected $env = array();
+
   /**
    * @var array
    *   Array(int $idx => Process $process).
    */
   protected $processes;
+
   /**
    * @var array
    *   Array(int $idx => array $apiResult).
    */
   protected $apiResults;
+
   /**
    * @param array $defaultParams
    *   Default values to merge into any API calls.
@@ -42,6 +52,7 @@ class ExternalBatch {
     $this->settingsPath = defined('CIVICRM_SETTINGS_PATH') ? CIVICRM_SETTINGS_PATH : NULL;
     $this->defaultParams = $defaultParams;
   }
+
   /**
    * @param string $entity
    * @param string $action
@@ -50,6 +61,7 @@ class ExternalBatch {
    */
   public function addCall($entity, $action, $params = array()) {
     $params = array_merge($this->defaultParams, $params);
+
     $this->apiCalls[] = array(
       'entity' => $entity,
       'action' => $action,
@@ -57,6 +69,7 @@ class ExternalBatch {
     );
     return $this;
   }
+
   /**
    * @param array $env
    *   List of environment variables to add.
@@ -66,6 +79,7 @@ class ExternalBatch {
     $this->env = array_merge($this->env, $env);
     return $this;
   }
+
   /**
    * Run all the API calls concurrently.
    *
@@ -80,6 +94,7 @@ class ExternalBatch {
     }
     return $this;
   }
+
   /**
    * @return int
    *   The number of running processes.
@@ -93,6 +108,7 @@ class ExternalBatch {
     }
     return $count;
   }
+
   public function wait() {
     while (!empty($this->processes)) {
       usleep(self::POLL_INTERVAL);
@@ -121,12 +137,14 @@ class ExternalBatch {
     }
     return $this;
   }
+
   /**
    * @return array
    */
   public function getResults() {
     return $this->apiResults;
   }
+
   /**
    * @param int $idx
    * @return array
@@ -134,6 +152,7 @@ class ExternalBatch {
   public function getResult($idx = 0) {
     return $this->apiResults[$idx];
   }
+
   /**
    * Determine if the local environment supports running API calls
    * externally.
@@ -150,6 +169,7 @@ class ExternalBatch {
     }
     return TRUE;
   }
+
   /**
    * @param array $apiCall
    *   Array with keys: entity, action, params.
@@ -158,12 +178,14 @@ class ExternalBatch {
    */
   public function createProcess($apiCall) {
     $parts = array();
+
     $executableFinder = new PhpExecutableFinder();
     $php = $executableFinder->find();
     if (!$php) {
       throw new \CRM_Core_Exception("Failed to locate PHP interpreter.");
     }
     $parts[] = $php;
+
     $parts[] = escapeshellarg($this->root . '/bin/cli.php');
     $parts[] = escapeshellarg("-e=" . $apiCall['entity']);
     $parts[] = escapeshellarg("-a=" . $apiCall['action']);
@@ -173,33 +195,39 @@ class ExternalBatch {
       $parts[] = escapeshellarg("--$key=$value");
     }
     $command = implode(" ", $parts);
+
     $env = array_merge($this->env, array(
       'CIVICRM_SETTINGS' => $this->settingsPath,
     ));
     return new Process($command, $this->root, $env);
   }
+
   /**
    * @return string
    */
   public function getRoot() {
     return $this->root;
   }
+
   /**
    * @param string $root
    */
   public function setRoot($root) {
     $this->root = $root;
   }
+
   /**
    * @return string
    */
   public function getSettingsPath() {
     return $this->settingsPath;
   }
+
   /**
    * @param string $settingsPath
    */
   public function setSettingsPath($settingsPath) {
     $this->settingsPath = $settingsPath;
   }
+
 }
