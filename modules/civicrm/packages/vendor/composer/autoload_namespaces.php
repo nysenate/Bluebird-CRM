@@ -6,11 +6,10 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
+    'Symfony\\Component\\Process\\' => array($vendorDir . '/symfony/process'),
     'Symfony\\Component\\Finder\\' => array($vendorDir . '/symfony/finder'),
     'Symfony\\Component\\EventDispatcher\\' => array($vendorDir . '/symfony/event-dispatcher'),
     'Symfony\\Component\\DependencyInjection\\' => array($vendorDir . '/symfony/dependency-injection'),
-    'Psr\\Log\\' => array($vendorDir . '/psr/log'),
-    'PHPUnit_' => array($baseDir . '/packages'),
-    'Civi\\' => array($baseDir . '/', $baseDir . '/tests/phpunit'),
-    'CA_Config' => array($vendorDir . '/totten/ca-config/src'),
+    'PHPUnit_' => array($baseDir . '/'),
+    'Civi\\' => array($baseDir . '/..', $baseDir . '/../tests/phpunit'),
 );

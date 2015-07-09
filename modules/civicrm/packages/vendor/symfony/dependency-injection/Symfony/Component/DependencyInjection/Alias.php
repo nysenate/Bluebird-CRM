@@ -22,8 +22,8 @@ class Alias
     /**
      * Constructor.
      *
-     * @param string $id     Alias identifier
-     * @param bool   $public If this alias is public
+     * @param string  $id     Alias identifier
+     * @param Boolean $public If this alias is public
      *
      * @api
      */
@@ -36,7 +36,7 @@ class Alias
     /**
      * Checks if this DI Alias should be public or not.
      *
-     * @return bool
+     * @return Boolean
      *
      * @api
      */
@@ -48,13 +48,13 @@ class Alias
     /**
      * Sets if this Alias is public.
      *
-     * @param bool $boolean If this Alias should be public
+     * @param Boolean $boolean If this Alias should be public
      *
      * @api
      */
     public function setPublic($boolean)
     {
-        $this->public = (bool) $boolean;
+        $this->public = (Boolean) $boolean;
     }
 
     /**

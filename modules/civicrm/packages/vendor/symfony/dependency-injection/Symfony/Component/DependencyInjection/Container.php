@@ -87,12 +87,14 @@ class Container implements IntrospectableContainerInterface
     {
         $this->parameterBag = null === $parameterBag ? new ParameterBag() : $parameterBag;
 
-        $this->services = array();
-        $this->aliases = array();
-        $this->scopes = array();
-        $this->scopeChildren = array();
+        $this->services       = array();
+        $this->aliases        = array();
+        $this->scopes         = array();
+        $this->scopeChildren  = array();
         $this->scopedServices = array();
-        $this->scopeStacks = array();
+        $this->scopeStacks    = array();
+
+        $this->set('service_container', $this);
     }
 
     /**
@@ -115,7 +117,7 @@ class Container implements IntrospectableContainerInterface
     /**
      * Returns true if the container parameter bag are frozen.
      *
-     * @return bool true if the container parameter bag are frozen, false otherwise
+     * @return Boolean true if the container parameter bag are frozen, false otherwise
      *
      * @api
      */
@@ -141,7 +143,7 @@ class Container implements IntrospectableContainerInterface
      *
      * @param string $name The parameter name
      *
-     * @return mixed The parameter value
+     * @return mixed  The parameter value
      *
      * @throws InvalidArgumentException if the parameter is not defined
      *
@@ -157,7 +159,7 @@ class Container implements IntrospectableContainerInterface
      *
      * @param string $name The parameter name
      *
-     * @return bool The presence of parameter in container
+     * @return Boolean The presence of parameter in container
      *
      * @api
      */
@@ -189,7 +191,7 @@ class Container implements IntrospectableContainerInterface
      * @param object $service The service instance
      * @param string $scope   The scope of the service
      *
-     * @throws RuntimeException         When trying to set a service in an inactive scope
+     * @throws RuntimeException When trying to set a service in an inactive scope
      * @throws InvalidArgumentException When trying to set a service in the prototype scope
      *
      * @api
@@ -202,12 +204,6 @@ class Container implements IntrospectableContainerInterface
 
         $id = strtolower($id);
 
-        if ('service_container' === $id) {
-            // BC: 'service_container' is no longer a self-reference but always
-            // $this, so ignore this call.
-            // @todo Throw InvalidArgumentException in next major release.
-            return;
-        }
         if (self::SCOPE_CONTAINER !== $scope) {
             if (!isset($this->scopedServices[$scope])) {
                 throw new RuntimeException(sprintf('You cannot set service "%s" of inactive scope.', $id));
@@ -236,17 +232,13 @@ class Container implements IntrospectableContainerInterface
      *
      * @param string $id The service identifier
      *
-     * @return bool true if the service is defined, false otherwise
+     * @return Boolean true if the service is defined, false otherwise
      *
      * @api
      */
     public function has($id)
     {
         $id = strtolower($id);
-
-        if ('service_container' === $id) {
-            return true;
-        }
 
         return isset($this->services[$id])
             || array_key_exists($id, $this->services)
@@ -261,15 +253,14 @@ class Container implements IntrospectableContainerInterface
      * If a service is defined both through a set() method and
      * with a get{$id}Service() method, the former has always precedence.
      *
-     * @param string $id              The service identifier
-     * @param int    $invalidBehavior The behavior when the service does not exist
+     * @param string  $id              The service identifier
+     * @param integer $invalidBehavior The behavior when the service does not exist
      *
      * @return object The associated service
      *
-     * @throws InvalidArgumentException          if the service is not defined
+     * @throws InvalidArgumentException if the service is not defined
      * @throws ServiceCircularReferenceException When a circular reference is detected
-     * @throws ServiceNotFoundException          When the service is not defined
-     * @throws \Exception                        if an exception has been thrown when the service has been resolved
+     * @throws ServiceNotFoundException When the service is not defined
      *
      * @see Reference
      *
@@ -284,9 +275,6 @@ class Container implements IntrospectableContainerInterface
         foreach (array(false, true) as $strtolower) {
             if ($strtolower) {
                 $id = strtolower($id);
-            }
-            if ('service_container' === $id) {
-                return $this;
             }
             if (isset($this->aliases[$id])) {
                 $id = $this->aliases[$id];
@@ -322,7 +310,7 @@ class Container implements IntrospectableContainerInterface
                 throw new ServiceNotFoundException($id, null, null, $alternatives);
             }
 
-            return;
+            return null;
         }
 
         $this->loading[$id] = true;
@@ -337,7 +325,7 @@ class Container implements IntrospectableContainerInterface
             }
 
             if ($e instanceof InactiveScopeException && self::EXCEPTION_ON_INVALID_REFERENCE !== $invalidBehavior) {
-                return;
+                return null;
             }
 
             throw $e;
@@ -353,21 +341,11 @@ class Container implements IntrospectableContainerInterface
      *
      * @param string $id The service identifier
      *
-     * @return bool true if service has already been initialized, false otherwise
+     * @return Boolean true if service has already been initialized, false otherwise
      */
     public function initialized($id)
     {
         $id = strtolower($id);
-
-        if ('service_container' === $id) {
-            // BC: 'service_container' was a synthetic service previously.
-            // @todo Change to false in next major release.
-            return true;
-        }
-
-        if (isset($this->aliases[$id])) {
-            $id = $this->aliases[$id];
-        }
 
         return isset($this->services[$id]) || array_key_exists($id, $this->services);
     }
@@ -386,7 +364,6 @@ class Container implements IntrospectableContainerInterface
                 $ids[] = self::underscore($match[1]);
             }
         }
-        $ids[] = 'service_container';
 
         return array_unique(array_merge($ids, array_keys($this->services)));
     }
@@ -521,7 +498,7 @@ class Container implements IntrospectableContainerInterface
      *
      * @param string $name The name of the scope
      *
-     * @return bool
+     * @return Boolean
      *
      * @api
      */
@@ -537,7 +514,7 @@ class Container implements IntrospectableContainerInterface
      *
      * @param string $name
      *
-     * @return bool
+     * @return Boolean
      *
      * @api
      */

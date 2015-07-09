@@ -21,7 +21,7 @@ use Symfony\Component\DependencyInjection\Definition;
 class NullDumper implements DumperInterface
 {
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function isProxyCandidate(Definition $definition)
     {
@@ -29,7 +29,7 @@ class NullDumper implements DumperInterface
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function getProxyFactoryCode(Definition $definition, $id)
     {
@@ -37,7 +37,7 @@ class NullDumper implements DumperInterface
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function getProxyCode(Definition $definition)
     {

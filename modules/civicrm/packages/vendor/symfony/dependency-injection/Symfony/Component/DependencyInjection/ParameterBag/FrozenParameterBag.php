@@ -41,7 +41,7 @@ class FrozenParameterBag extends ParameterBag
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      *
      * @api
      */
@@ -51,7 +51,7 @@ class FrozenParameterBag extends ParameterBag
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      *
      * @api
      */
@@ -61,7 +61,7 @@ class FrozenParameterBag extends ParameterBag
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      *
      * @api
      */

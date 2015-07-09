@@ -19,10 +19,11 @@ namespace Symfony\Component\Finder\Iterator;
  */
 class PathFilterIterator extends MultiplePcreFilterIterator
 {
+
     /**
      * Filters the iterator values.
      *
-     * @return bool true if the value should be kept, false otherwise
+     * @return bool    true if the value should be kept, false otherwise
      */
     public function accept()
     {
@@ -59,7 +60,7 @@ class PathFilterIterator extends MultiplePcreFilterIterator
      * PCRE patterns are left unchanged.
      *
      * Default conversion:
-     *     'lorem/ipsum/dolor' ==>  'lorem\/ipsum\/dolor/'
+     *     'lorem/ipsum/dolor'  ==>  'lorem\/ipsum\/dolor/'
      *
      * Use only / as directory separator (on Windows also).
      *

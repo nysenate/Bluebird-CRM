@@ -36,15 +36,15 @@ class AnalyzeServiceReferencesPass implements RepeatablePassInterface
     /**
      * Constructor.
      *
-     * @param bool $onlyConstructorArguments Sets this Service Reference pass to ignore method calls
+     * @param Boolean $onlyConstructorArguments Sets this Service Reference pass to ignore method calls
      */
     public function __construct($onlyConstructorArguments = false)
     {
-        $this->onlyConstructorArguments = (bool) $onlyConstructorArguments;
+        $this->onlyConstructorArguments = (Boolean) $onlyConstructorArguments;
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function setRepeatedPass(RepeatedPass $repeatedPass)
     {
@@ -59,7 +59,7 @@ class AnalyzeServiceReferencesPass implements RepeatablePassInterface
     public function process(ContainerBuilder $container)
     {
         $this->container = $container;
-        $this->graph = $container->getCompiler()->getServiceReferenceGraph();
+        $this->graph     = $container->getCompiler()->getServiceReferenceGraph();
         $this->graph->clear();
 
         foreach ($container->getDefinitions() as $id => $definition) {
@@ -69,11 +69,7 @@ class AnalyzeServiceReferencesPass implements RepeatablePassInterface
 
             $this->currentId = $id;
             $this->currentDefinition = $definition;
-
             $this->processArguments($definition->getArguments());
-            if ($definition->getFactoryService()) {
-                $this->processArguments(array(new Reference($definition->getFactoryService())));
-            }
 
             if (!$this->onlyConstructorArguments) {
                 $this->processArguments($definition->getMethodCalls());
@@ -111,10 +107,6 @@ class AnalyzeServiceReferencesPass implements RepeatablePassInterface
                 $this->processArguments($argument->getArguments());
                 $this->processArguments($argument->getMethodCalls());
                 $this->processArguments($argument->getProperties());
-
-                if ($argument->getFactoryService()) {
-                    $this->processArguments(array(new Reference($argument->getFactoryService())));
-                }
             }
         }
     }
@@ -140,7 +132,7 @@ class AnalyzeServiceReferencesPass implements RepeatablePassInterface
         }
 
         if (!$this->container->hasDefinition($id)) {
-            return;
+            return null;
         }
 
         return $id;

@@ -36,15 +36,23 @@ class ClosureLoader extends Loader
     }
 
     /**
-     * {@inheritdoc}
+     * Loads a Closure.
+     *
+     * @param \Closure $closure The resource
+     * @param string   $type    The resource type
      */
-    public function load($resource, $type = null)
+    public function load($closure, $type = null)
     {
-        call_user_func($resource, $this->container);
+        call_user_func($closure, $this->container);
     }
 
     /**
-     * {@inheritdoc}
+     * Returns true if this class supports the given resource.
+     *
+     * @param mixed  $resource A resource
+     * @param string $type     The resource type
+     *
+     * @return Boolean true if this class supports the given resource, false otherwise
      */
     public function supports($resource, $type = null)
     {

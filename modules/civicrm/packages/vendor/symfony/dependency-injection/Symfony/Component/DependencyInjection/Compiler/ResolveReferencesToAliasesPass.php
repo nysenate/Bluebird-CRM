@@ -12,7 +12,6 @@
 namespace Symfony\Component\DependencyInjection\Compiler;
 
 use Symfony\Component\DependencyInjection\Alias;
-use Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
@@ -85,12 +84,7 @@ class ResolveReferencesToAliasesPass implements CompilerPassInterface
      */
     private function getDefinitionId($id)
     {
-        $seen = array();
         while ($this->container->hasAlias($id)) {
-            if (isset($seen[$id])) {
-                throw new ServiceCircularReferenceException($id, array_keys($seen));
-            }
-            $seen[$id] = true;
             $id = (string) $this->container->getAlias($id);
         }
 

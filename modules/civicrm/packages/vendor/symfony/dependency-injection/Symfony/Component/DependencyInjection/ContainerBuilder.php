@@ -84,17 +84,17 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
      * If you are not using the loaders and therefore don't want
      * to depend on the Config component, set this flag to false.
      *
-     * @param bool $track true if you want to track resources, false otherwise
+     * @param Boolean $track true if you want to track resources, false otherwise
      */
     public function setResourceTracking($track)
     {
-        $this->trackResources = (bool) $track;
+        $this->trackResources = (Boolean) $track;
     }
 
     /**
      * Checks if resources are tracked.
      *
-     * @return bool true if resources are tracked, false otherwise
+     * @return Boolean true if resources are tracked, false otherwise
      */
     public function isTrackingResources()
     {
@@ -168,7 +168,7 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
      *
      * @param string $name The name of the extension
      *
-     * @return bool If the extension exists
+     * @return Boolean If the extension exists
      *
      * @api
      */
@@ -273,7 +273,7 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
      * @param string $extension The extension alias or namespace
      * @param array  $values    An array of values that customizes the extension
      *
-     * @return ContainerBuilder       The current instance
+     * @return ContainerBuilder The current instance
      * @throws BadMethodCallException When this ContainerBuilder is frozen
      *
      * @throws \LogicException if the container is frozen
@@ -430,7 +430,7 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
      *
      * @param string $id The service identifier
      *
-     * @return bool true if the service is defined, false otherwise
+     * @return Boolean true if the service is defined, false otherwise
      *
      * @api
      */
@@ -444,8 +444,8 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
     /**
      * Gets a service.
      *
-     * @param string $id              The service identifier
-     * @param int    $invalidBehavior The behavior when the service does not exist
+     * @param string  $id              The service identifier
+     * @param integer $invalidBehavior The behavior when the service does not exist
      *
      * @return object The associated service
      *
@@ -467,7 +467,7 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
         }
 
         if (isset($this->loading[$id])) {
-            throw new LogicException(sprintf('The service "%s" has a circular reference to itself.', $id));
+            throw new LogicException(sprintf('The service "%s" has a circular reference to itself.', $id), 0, $e);
         }
 
         if (!$this->hasDefinition($id) && isset($this->aliasDefinitions[$id])) {
@@ -478,7 +478,7 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
             $definition = $this->getDefinition($id);
         } catch (InvalidArgumentException $e) {
             if (ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE !== $invalidBehavior) {
-                return;
+                return null;
             }
 
             throw $e;
@@ -492,7 +492,7 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
             unset($this->loading[$id]);
 
             if ($e instanceof InactiveScopeException && self::EXCEPTION_ON_INVALID_REFERENCE !== $invalidBehavior) {
-                return;
+                return null;
             }
 
             throw $e;
@@ -574,8 +574,8 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
     /**
      * Prepends a config array to the configs of the given extension.
      *
-     * @param string $name   The name of the extension
-     * @param array  $config The config to set
+     * @param string $name    The name of the extension
+     * @param array  $config  The config to set
      */
     public function prependExtensionConfig($name, array $config)
     {
@@ -669,8 +669,8 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
     /**
      * Sets an alias for an existing service.
      *
-     * @param string       $alias The alias to create
-     * @param string|Alias $id    The service to alias
+     * @param string        $alias The alias to create
+     * @param string|Alias  $id    The service to alias
      *
      * @throws InvalidArgumentException if the id is not a string or an Alias
      * @throws InvalidArgumentException if the alias is for itself
@@ -713,7 +713,7 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
      *
      * @param string $id The service identifier
      *
-     * @return bool true if the alias exists, false otherwise
+     * @return Boolean true if the alias exists, false otherwise
      *
      * @api
      */
@@ -843,7 +843,7 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
      *
      * @param string $id The service identifier
      *
-     * @return bool true if the service definition exists, false otherwise
+     * @return Boolean true if the service definition exists, false otherwise
      *
      * @api
      */
@@ -901,13 +901,13 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
      *
      * @param Definition $definition A service definition instance
      * @param string     $id         The service identifier
-     * @param bool       $tryProxy   Whether to try proxying the service with a lazy proxy
+     * @param Boolean    $tryProxy   Whether to try proxying the service with a lazy proxy
      *
      * @return object The service described by the service definition
      *
-     * @throws RuntimeException         When the scope is inactive
-     * @throws RuntimeException         When the factory definition is incomplete
-     * @throws RuntimeException         When the service is a synthetic service
+     * @throws RuntimeException When the scope is inactive
+     * @throws RuntimeException When the factory definition is incomplete
+     * @throws RuntimeException When the service is a synthetic service
      * @throws InvalidArgumentException When configure callable is not callable
      *
      * @internal this method is public because of PHP 5.3 limitations, do not use it explicitly in your code

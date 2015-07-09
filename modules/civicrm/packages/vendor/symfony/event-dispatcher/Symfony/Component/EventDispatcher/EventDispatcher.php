@@ -74,7 +74,7 @@ class EventDispatcher implements EventDispatcherInterface
             }
         }
 
-        return array_filter($this->sorted);
+        return $this->sorted;
     }
 
     /**
@@ -82,7 +82,7 @@ class EventDispatcher implements EventDispatcherInterface
      */
     public function hasListeners($eventName = null)
     {
-        return (bool) count($this->getListeners($eventName));
+        return (Boolean) count($this->getListeners($eventName));
     }
 
     /**

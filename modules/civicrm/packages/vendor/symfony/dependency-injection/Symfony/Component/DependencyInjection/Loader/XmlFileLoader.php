@@ -30,11 +30,14 @@ use Symfony\Component\DependencyInjection\Exception\RuntimeException;
 class XmlFileLoader extends FileLoader
 {
     /**
-     * {@inheritdoc}
+     * Loads an XML file.
+     *
+     * @param mixed  $file The resource
+     * @param string $type The resource type
      */
-    public function load($resource, $type = null)
+    public function load($file, $type = null)
     {
-        $path = $this->locator->locate($resource);
+        $path = $this->locator->locate($file);
 
         $xml = $this->parseFile($path);
         $xml->registerXPathNamespace('container', 'http://symfony.com/schema/dic/services');
@@ -58,7 +61,12 @@ class XmlFileLoader extends FileLoader
     }
 
     /**
-     * {@inheritdoc}
+     * Returns true if this class supports the given resource.
+     *
+     * @param mixed  $resource A resource
+     * @param string $type     The resource type
+     *
+     * @return Boolean true if this class supports the given resource, false otherwise
      */
     public function supports($resource, $type = null)
     {
@@ -94,7 +102,7 @@ class XmlFileLoader extends FileLoader
 
         foreach ($imports as $import) {
             $this->setCurrentDir(dirname($file));
-            $this->import((string) $import['resource'], null, (bool) $import->getAttributeAsPhp('ignore-errors'), $file);
+            $this->import((string) $import['resource'], null, (Boolean) $import->getAttributeAsPhp('ignore-errors'), $file);
         }
     }
 
@@ -271,7 +279,7 @@ class XmlFileLoader extends FileLoader
      *
      * @param \DOMDocument $dom
      *
-     * @return bool
+     * @return Boolean
      *
      * @throws RuntimeException When extension references a non-existent XSD file
      */

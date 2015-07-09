@@ -159,7 +159,7 @@ class CheckReferenceValidityPass implements CompilerPassInterface
     private function getDefinition($id)
     {
         if (!$this->container->hasDefinition($id)) {
-            return;
+            return null;
         }
 
         return $this->container->getDefinition($id);
