@@ -25,7 +25,9 @@
  +--------------------------------------------------------------------+
  */
 namespace Civi\Core\Lock;
+
 interface LockInterface {
+
   /**
    * @param int|NULL $timeout
    *   The number of seconds to wait to get the lock.
@@ -33,11 +35,13 @@ interface LockInterface {
    * @return bool
    */
   public function acquire($timeout = NULL);
+
   /**
    * @return bool|null|string
    *   Trueish/falsish.
    */
   public function release();
+
   /**
    * @return bool|null|string
    *   Trueish/falsish.
@@ -46,8 +50,10 @@ interface LockInterface {
    *   to use acquire(0).
    */
   public function isFree();
+
   /**
    * @return bool
    */
   public function isAcquired();
+
 }
