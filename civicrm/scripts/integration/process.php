@@ -18,12 +18,12 @@ class CRM_Integration_Process {
 
     // Parse the options
     $shortopts = "d:s:t";
-    $longopts = array("dryrun", "stats", "type=");
+    $longopts = array("dryrun", "stats", "archive", "type=");
     $optlist = civicrm_script_init($shortopts, $longopts);
 
     if ($optlist === null) {
       $stdusage = civicrm_script_usage();
-      $usage = '[--dryrun] [--stats] [--type TYPE]';
+      $usage = '[--dryrun] [--stats] [--archive] [--type TYPE]';
       error_log("Usage: ".basename(__FILE__)."  $stdusage  $usage\n");
       exit(1);
     }
@@ -193,8 +193,10 @@ class CRM_Integration_Process {
         CRM_NYSS_BAO_Integration::storeActivityLog($activity_type, $date, $activity_details);
 
         //archive rows by ID
-        $archiveTable = (!empty($archiveTable)) ? $archiveTable : strtolower($row->msg_type);
-        CRM_NYSS_BAO_Integration::archiveRecord($archiveTable, $row, $params, $date);
+        if ($optlist['archive']) {
+          $archiveTable = (!empty($archiveTable)) ? $archiveTable : strtolower($row->msg_type);
+          CRM_NYSS_BAO_Integration::archiveRecord($archiveTable, $row, $params, $date);
+        }
       }
     }
 
