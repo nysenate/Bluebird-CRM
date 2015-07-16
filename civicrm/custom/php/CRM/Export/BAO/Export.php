@@ -706,6 +706,10 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
               elseif ($query->_fields['activity'][$field]['title']) {
                 $headerRows[] = $query->_fields['activity'][$field]['title'];
               }
+              //NYSS 9018
+              elseif ($field == 'case_activity_id') {
+                $headerRows[] = 'Activity ID';
+              }
             }
             elseif (array_key_exists($field, $contactRelationshipTypes)) {
               $relName = $field;

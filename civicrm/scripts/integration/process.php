@@ -18,12 +18,12 @@ class CRM_Integration_Process {
 
     // Parse the options
     $shortopts = "d:s:t";
-    $longopts = array("dryrun", "stats", "type=");
+    $longopts = array("dryrun", "stats", "archive", "type=");
     $optlist = civicrm_script_init($shortopts, $longopts);
 
     if ($optlist === null) {
       $stdusage = civicrm_script_usage();
-      $usage = '[--dryrun] [--stats] [--type TYPE]';
+      $usage = '[--dryrun] [--stats] [--archive] [--type TYPE]';
       error_log("Usage: ".basename(__FILE__)."  $stdusage  $usage\n");
       exit(1);
     }
@@ -138,6 +138,9 @@ class CRM_Integration_Process {
             $activity_type = 'Context Message';
             $activity_details = "";
           }
+          else {
+            $archiveTable = 'other';
+          }
           break;
 
         case 'PETITION':
@@ -145,6 +148,7 @@ class CRM_Integration_Process {
             $result = CRM_NYSS_BAO_Integration::processSurvey($cid, $row->msg_action, $params);
             $activity_type = 'Survey';
             $activity_details = "survey :: {$params->form_title}";
+            $archiveTable = 'survey';
           }
           else {
             $result = CRM_NYSS_BAO_Integration::processPetition($cid, $row->msg_action, $params);
@@ -188,7 +192,11 @@ class CRM_Integration_Process {
         //store activity log record
         CRM_NYSS_BAO_Integration::storeActivityLog($activity_type, $date, $activity_details);
 
-        //TODO archive rows by ID
+        //archive rows by ID
+        if ($optlist['archive']) {
+          $archiveTable = (!empty($archiveTable)) ? $archiveTable : strtolower($row->msg_type);
+          CRM_NYSS_BAO_Integration::archiveRecord($archiveTable, $row, $params, $date);
+        }
       }
     }
 
