@@ -17,7 +17,7 @@ class CRM_Integration_Process {
     require_once dirname(__FILE__).'/../script_utils.php';
 
     // Parse the options
-    $shortopts = "d:s:t";
+    $shortopts = "d:s:a:t";
     $longopts = array("dryrun", "stats", "archive", "type=");
     $optlist = civicrm_script_init($shortopts, $longopts);
 
@@ -190,7 +190,7 @@ class CRM_Integration_Process {
         $stats['processed'][] = $row->id;
 
         //store activity log record
-        CRM_NYSS_BAO_Integration::storeActivityLog($activity_type, $date, $activity_details);
+        CRM_NYSS_BAO_Integration::storeActivityLog($cid, $activity_type, $date, $activity_details);
 
         //archive rows by ID
         if ($optlist['archive']) {

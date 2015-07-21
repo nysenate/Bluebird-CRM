@@ -785,12 +785,14 @@ class CRM_NYSS_BAO_Integration {
   /*
    * store basic details about the event in the activity log
    */
-  static function storeActivityLog($type, $date, $details) {
+  static function storeActivityLog($cid, $type, $date, $details) {
+    //CRM_Core_Error::debug_var('storeActivityLog', $type);
+
     CRM_Core_DAO::executeQuery("
       INSERT INTO nyss_web_activity
-      (type, created_date, details)
+      (contact_id, type, created_date, details)
       VALUES
-      ('{$type}', '{$date}', '{$details}')
+      ({$cid}, '{$type}', '{$date}', '{$details}')
     ");
   }//storeActivityLog
 
