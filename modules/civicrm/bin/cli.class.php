@@ -104,6 +104,10 @@ class civicrm_cli {
       $this->_log($result['error_message']);
       return FALSE;
     }
+    //NYSS 8629
+    elseif ($this->_output === 'json') {
+      echo json_encode($result, defined('JSON_PRETTY_PRINT') ? JSON_PRETTY_PRINT : 0);
+    }
     elseif ($this->_output) {
       print_r($result['values']);
     }
@@ -162,6 +166,10 @@ class civicrm_cli {
       elseif ($arg == '-o' || $arg == '--output') {
         $this->_output = TRUE;
       }
+      //NYSS 8629
+      elseif ($arg == '-J' || $arg == '--json') {
+        $this->_output = 'json';
+      }
       elseif ($arg == '-j' || $arg == '--joblog') {
         $this->_joblog = TRUE;
       }
@@ -199,7 +207,14 @@ class civicrm_cli {
 
     $civicrm_root = dirname(__DIR__);
     chdir($civicrm_root);
-    require_once ('civicrm.config.php');
+    //require_once ('civicrm.config.php');
+    //NYSS 8629
+    if (getenv('CIVICRM_SETTINGS')) {
+      require_once getenv('CIVICRM_SETTINGS');
+    }
+    else {
+      require_once 'civicrm.config.php';
+    }
     // autoload
     if ( !class_exists('CRM_Core_ClassLoader') ) {
       require_once $civicrm_root . '/CRM/Core/ClassLoader.php';
