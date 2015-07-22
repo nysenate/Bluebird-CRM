@@ -37,6 +37,16 @@ require_once 'Mail.php';
 class CRM_Mailing_BAO_MailingJob extends CRM_Mailing_DAO_MailingJob {
   CONST MAX_CONTACTS_TO_PROCESS = 1000;
 
+  //NYSS 8629
+  /**
+   *(Dear God Why) Keep a global count of mails processed within the current
+   * request.
+   *
+   * @static
+   * @var int
+   */
+  static $mailsProcessed = 0;
+
   /**
    * class constructor
    */
@@ -44,7 +54,8 @@ class CRM_Mailing_BAO_MailingJob extends CRM_Mailing_DAO_MailingJob {
     parent::__construct();
   }
 
-  function create ($params){
+  //NYSS
+  public function create ($params) {
     $job = new CRM_Mailing_BAO_MailingJob();
     $job->mailing_id = $params['mailing_id'];
     $job->status = $params['status'];
@@ -112,9 +123,11 @@ class CRM_Mailing_BAO_MailingJob extends CRM_Mailing_DAO_MailingJob {
 
     while ($job->fetch()) {
       // still use job level lock for each child job
-      $lockName = "civimail.job.{$job->id}";
+      //NYSS 8629
+      //$lockName = "civimail.job.{$job->id}";
 
-      $lock = new CRM_Core_Lock($lockName);
+      //$lock = new CRM_Core_Lock($lockName);
+      $lock = Civi\Core\Container::singleton()->get('lockManager')->acquire("data.mailing.job.{$job->id}");
       if (!$lock->isAcquired()) {
         continue;
       }
@@ -317,9 +330,11 @@ class CRM_Mailing_BAO_MailingJob extends CRM_Mailing_DAO_MailingJob {
     // X Number of child jobs
     while ($job->fetch()) {
       // still use job level lock for each child job
-      $lockName = "civimail.job.{$job->id}";
+      //NYSS 8629
+      //$lockName = "civimail.job.{$job->id}";
 
-      $lock = new CRM_Core_Lock($lockName);
+      //$lock = new CRM_Core_Lock($lockName);
+      $lock = Civi\Core\Container::singleton()->get('lockManager')->acquire("data.mailing.job.{$job->id}");
       if (!$lock->isAcquired()) {
         continue;
       }
@@ -507,8 +522,10 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
     }
     $eq->query($query);
 
-    static $config = NULL;
-    static $mailsProcessed = 0;
+    //NYSS 8629
+    //static $config = NULL;
+    //static $mailsProcessed = 0;
+    $config = NULL;
 
     if ($config == NULL) {
       $config = CRM_Core_Config::singleton();
@@ -543,7 +560,7 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
 
       if (
         $config->mailerBatchLimit > 0 &&
-        $mailsProcessed >= $config->mailerBatchLimit
+        self::$mailsProcessed >= $config->mailerBatchLimit //NYSS 8629
       ) {
         if (!empty($fields)) {
           $this->deliverGroup($fields, $mailing, $mailer, $job_date, $attachments);
@@ -551,7 +568,7 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
         $eq->free();
         return FALSE;
       }
-      $mailsProcessed++;
+      self::$mailsProcessed++;//NYSS 8629
 
       $fields[] = array(
         'id' => $eq->id,

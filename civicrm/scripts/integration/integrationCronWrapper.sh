@@ -1,7 +1,9 @@
 #!/bin/bash
+#
 
 # self reference
 prog=`basename $0`
+script_dir=`dirname $0`
 
 # set all script defaults
 run_import=1
@@ -11,17 +13,13 @@ use_debug=0
 
 usage() {
   echo "
-  Usage:
-    $prog <options>
+Usage: $prog <options>
 
-    Each option must be provided in the form '--<option_name>'.
-
-      no-import   : skip running the import section
-      no-process  : skip running the message processing section
-      with-debug  : include verbose debugging information
-      help        : prints this message and exits
-
-    " >&2
+--no-import   : skip running the import section
+--no-process  : skip running the message processing section
+--debug       : include verbose debugging information
+--help        : prints this message and exits
+" >&2
 }
 
 # read in the command line config
@@ -30,29 +28,42 @@ while [ $# -gt 0 ]; do
     --help|-h) usage; exit 0 ;;
     --no-import) run_import=0 ;;
     --no-process) run_process=0 ;;
-    --with-debug) use_debug=1 ;;
+    --debug) use_debug=1 ;;
     *) echo "$prog: $1: Invalid option" >&2; usage; exit 1 ;;
   esac
   shift
 done
 
-if [[ "$use_debug" -gt 0 ]]; then echo -e "\nOption --with-debug detected\n"; fi
-
-# set the config_group, and an easy alias for reading the config
-if [[ "$run_import" > 0 ]]
-then
-  if [[ "$use_debug" -gt 0 ]]; then echo -e "Running import section"; fi
-  echo "Doing all import stuff"
-  . integrationImportMessages.sh
-else
-  if [[ "$use_debug" -gt 0 ]]; then echo -e "Option --no-import detected, skipping import section"; fi
+if [ $use_debug -eq 1 ]; then
+  echo "Option --debug detected"
 fi
-if [[ "$run_process" > 0 ]]
-then
-  if [[ "$use_debug" -gt 0 ]]; then echo -e "Running processing section"; fi
-  echo "Doing all process stuff"
+
+if [ $run_import -eq 1 ]; then
+  echo "About to transfer event messages from website to local accumulator"
+  debug_opt=
+  if [ $use_debug -eq 1 ]; then
+    echo "About to run $script_dir/integrationImportMessages.sh"
+    debug_opt="--debug"
+  fi
+  sh $script_dir/integrationImportMessages.sh $debug_opt
+  if [ $? -ne 0 ]; then
+    echo "ERROR: Message transfer failed; exiting" >&2
+    exit 1
+  fi
 else
-  if [[ "$use_debug" -gt 0 ]]; then echo -e "Option --no-process detected, skipping process section"; fi
+  if [ $use_debug -eq 1 ]; then
+    echo "Option --no-import detected; skipping import section"
+  fi
+fi
+if [ $run_process -eq 1 ]; then
+  echo "About to process messages from local accumulator into Bluebird"
+  if [ $use_debug -eq 1 ]; then
+    echo "About to run $script_dir/INSERT_SCRIPT_NAME_HERE"
+  fi
+else
+  if [ $use_debug -eq 1 ]; then
+    echo "Option --no-process detected; skipping process section"
+  fi
 fi
 
 exit 0

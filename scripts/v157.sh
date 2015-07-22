@@ -76,6 +76,7 @@ sql="
   DROP TABLE IF EXISTS nyss_web_activity;
   CREATE TABLE IF NOT EXISTS nyss_web_activity (
     id int(10) unsigned NOT NULL,
+    contact_id int(10) unsigned NOT NULL,
     type varchar(50) NOT NULL,
     created_date datetime NOT NULL,
     details varchar(510) DEFAULT NULL
@@ -83,7 +84,8 @@ sql="
 
   ALTER TABLE nyss_web_activity
     ADD PRIMARY KEY (id),
-    ADD KEY type (type);
+    ADD KEY type (type),
+    ADD KEY contact_id (contact_id);
   ALTER TABLE nyss_web_activity
     MODIFY id int(10) unsigned NOT NULL AUTO_INCREMENT;
 "
