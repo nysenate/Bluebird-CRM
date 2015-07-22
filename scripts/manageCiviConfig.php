@@ -342,7 +342,7 @@ function setEmailDefaults(&$cfg)
     $cfg['email.header.include_banner'] = true;
   }
   if (!isset($cfg['email.header.website_url'])) {
-    $cfg['email.header.website_url'] = "http://{$cfg['shortname']}.nysenate.gov";
+    $cfg['email.header.website_url'] = "http://{$cfg['shortname']}.nysenate.gov/";
   }
   if (!isset($cfg['email.footer.include_banner'])) {
     $cfg['email.footer.include_banner'] = true;
