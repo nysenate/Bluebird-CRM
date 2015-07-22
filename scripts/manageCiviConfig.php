@@ -384,7 +384,7 @@ function generateComponent($comp_type, $cont_type, $cfg)
       if ($cfg['email.header.include_banner']) {
         $banner = <<<HTML
     <tr>
-    <td><a href="{$cfg['email.header.website_url']}.nysenate.gov/" target="_blank"><img src="http://{$cfg['servername']}/sites/{$cfg['servername']}/pubfiles/images/template/header.png" alt="{$cfg['senator.name.formal']}"/></a></td>
+    <td><a href="{$cfg['email.header.website_url']}" target="_blank"><img src="http://{$cfg['servername']}/sites/{$cfg['servername']}/pubfiles/images/template/header.png" alt="{$cfg['senator.name.formal']}"/></a></td>
     </tr>
 HTML;
       }
