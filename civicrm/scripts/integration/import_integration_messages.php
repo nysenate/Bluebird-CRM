@@ -10,6 +10,9 @@ require_once 'import_integration_messages_library.inc';
 // mark the start of the script
 IL::log('Beginning import process',LOG_LEVEL_NOTICE);
 
+// set the default return code (success)
+$return_code = 0;
+
 // get config
 $cfg = IntegrationConfig::getInstance();
 IL::log('Read config complete');
@@ -31,7 +34,7 @@ try {
   $localdb = new PDO($localdsn, $cfg->config['local_user'], $cfg->config['local_pass'], $pdo_options);
 } catch (PDOException $e) {
   IL::log('Could not connect to local store: ' . $e->getMessage(), LOG_LEVEL_CRITICAL);
-  die();
+  exit(1);
 }
 IL::log('Connected to local store');
 
@@ -41,7 +44,7 @@ try {
   $res = $localdb->query($query);
 } catch (PDOException $e) {
   IL::log('Could not query local database settings: ' . $e->getMessage(), LOG_LEVEL_CRITICAL);
-  die();
+  exit(1);
 }
 $local_cfg = new stdClass();
 while ($r=$res->fetchObject()) {
@@ -64,7 +67,7 @@ try {
   $remotedb = new PDO($remotedsn, $cfg->config['source_user'], $cfg->config['source_pass'], $pdo_options);
 } catch (PDOException $e) {
   IL::log('Could not connect to remote db: ' . $e->getMessage(), LOG_LEVEL_CRITICAL);
-  die();
+  exit(1);
 }
 IL::log('Connected to remote db');
 IL::log("Searching for messages >$current_max",LOG_LEVEL_NOTICE);
@@ -101,9 +104,14 @@ FROM accumulator a
 WHERE a.id > :currentmax /*AND a.user_is_verified > 0*/
 REMOTEQUERY;
 IL::log("Executing query:\n$query",LOG_LEVEL_INFO);
-$res = $remotedb->prepare($query);
-$res->execute(array(':currentmax'=>$current_max));
-$found_count = $res->rowCount();
+try {
+  $res = $remotedb->prepare($query);
+  $res->execute(array(':currentmax'=>$current_max));
+  $found_count = $res->rowCount();
+} catch (PDOException $e) {
+  IL::log('Remote query for new messages failed: ' . $e->getMessage(), LOG_LEVEL_CRITICAL);
+  exit(1);
+}
 IL::log("Found $found_count messages to import",LOG_LEVEL_NOTICE);
 
 // set up the INSERT query
@@ -138,6 +146,7 @@ while ($onemsg = $res->fetch(PDO::FETCH_ASSOC)) {
     if ($thisid > $current_max) { $current_max = $thisid; }
   } catch (PDOException $e) {
     IL::log("Import of message {$onemsg['id']} failed: ".$e->getMessage(),LOG_LEVEL_ERROR);
+    $return_code = 1;
   }
   $instmt->closeCursor();
 }
@@ -156,6 +165,7 @@ try {
   }
 } catch (PDOException $e) {
   IL::log('COULD NOT UPDATE STATE INFORMATION! ' . $e->getMessage(),LOG_LEVEL_CRITICAL);
+  $return_code = 1;
 }
 
 // cleaning up
@@ -166,3 +176,5 @@ $logmsg = $found_count
           ? "Imported $success_count of $found_count new messages"
           : "No new messages to import";
 IL::log("Process complete: $logmsg",LOG_LEVEL_NOTICE);
+
+exit($return_code);

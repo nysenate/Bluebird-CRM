@@ -59,7 +59,7 @@ class IntegrationConfig {
             'local_port' => 'port',
             'local_db'   => 'db',
             'archive'    => true,
-            'log_level'  => 3,
+            'log_level'  => 2,
             );
 
   // for singleton pattern
@@ -141,7 +141,7 @@ class IntegrationConfig {
   }
 
   public function translate_logging_value($r) {
-    $l = array_value($r, 'log_level', $this->default_config['log_level']);
+    $l = array_value($r, 'log_level', $this->_default_config['log_level']);
     if ((string)((int)$l) != $l) {
       if (defined('LOG_LEVEL_'.(string)$l)) {
         $l = constant('LOG_LEVEL_'.(string)$l);
