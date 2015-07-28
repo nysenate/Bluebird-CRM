@@ -9,6 +9,7 @@
 // Revised: 2013-07-30 - added "scope" parameter
 // Revised: 2014-07-23 - migrated from PHP mysql interface to PDO
 // Revised: 2015-01-20 - email footer can now have three office addresses
+// Revised: 2015-07-22 - added email.header.website_url
 //
 
 require_once 'common_funcs.php';
@@ -340,6 +341,9 @@ function setEmailDefaults(&$cfg)
   if (!isset($cfg['email.header.include_banner'])) {
     $cfg['email.header.include_banner'] = true;
   }
+  if (!isset($cfg['email.header.website_url'])) {
+    $cfg['email.header.website_url'] = "http://{$cfg['shortname']}.nysenate.gov/";
+  }
   if (!isset($cfg['email.footer.include_banner'])) {
     $cfg['email.footer.include_banner'] = true;
   }
@@ -380,7 +384,7 @@ function generateComponent($comp_type, $cont_type, $cfg)
       if ($cfg['email.header.include_banner']) {
         $banner = <<<HTML
     <tr>
-    <td><a href="http://{$cfg['shortname']}.nysenate.gov/" target="_blank"><img src="http://{$cfg['servername']}/sites/{$cfg['servername']}/pubfiles/images/template/header.png" alt="{$cfg['senator.name.formal']}"/></a></td>
+    <td><a href="{$cfg['email.header.website_url']}" target="_blank"><img src="http://{$cfg['servername']}/sites/{$cfg['servername']}/pubfiles/images/template/header.png" alt="{$cfg['senator.name.formal']}"/></a></td>
     </tr>
 HTML;
       }
@@ -411,7 +415,7 @@ HTML;
       $s = <<<TEXT
 
 New York State Senate
-http://{$cfg['shortname']}.nysenate.gov/
+{$cfg['email.header.website_url']}
 TEXT;
     }
   }
