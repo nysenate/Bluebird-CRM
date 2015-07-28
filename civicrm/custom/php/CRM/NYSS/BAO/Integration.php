@@ -776,10 +776,104 @@ class CRM_NYSS_BAO_Integration {
   /*
    * get activity stream for contact
    */
-  static function getActivityStream($cid) {
-    $activity = array();
+  static function getActivityStream() {
+    //CRM_Core_Error::debug_var('getActivityStream $_REQUEST', $_REQUEST);
 
-    return $activity;
+    $contactID = CRM_Utils_Type::escape($_REQUEST['cid'], 'Integer');
+    //CRM_Core_Error::debug_var('getActivityStream $contactID', $contactID);
+
+    $type = CRM_Utils_Type::escape($_REQUEST['type'], 'String', '');
+    //CRM_Core_Error::debug_var('getActivityStream $type', $type);
+    $typeSql = ($type) ? "AND type = '{$type}'" : '';
+
+    $sortMapper = array(
+      0 => 'type',
+      1 => 'created_date',
+      2 => 'details',
+    );
+
+    $sEcho = CRM_Utils_Type::escape($_REQUEST['sEcho'], 'Integer');
+    $offset = isset($_REQUEST['iDisplayStart']) ? CRM_Utils_Type::escape($_REQUEST['iDisplayStart'], 'Integer') : 0;
+    $rowCount = isset($_REQUEST['iDisplayLength']) ? CRM_Utils_Type::escape($_REQUEST['iDisplayLength'], 'Integer') : 25;
+    $sort = isset($_REQUEST['iSortCol_0']) ? CRM_Utils_Array::value(CRM_Utils_Type::escape($_REQUEST['iSortCol_0'], 'Integer'), $sortMapper) : NULL;
+    $sortOrder = isset($_REQUEST['sSortDir_0']) ? CRM_Utils_Type::escape($_REQUEST['sSortDir_0'], 'String') : 'asc';
+
+    $params = $_REQUEST;
+    if ($sort && $sortOrder) {
+      $params['sortBy'] = $sort . ' ' . $sortOrder;
+    }
+
+    $params['page'] = ($offset / $rowCount) + 1;
+    $params['rp'] = $rowCount;
+
+    $params['contact_id'] = $contactID;
+    //CRM_Core_Error::debug_var('getActivityStream $params', $params);
+
+    $orderBy = ($params['sortBy']) ? $params['sortBy'] : 'created_date desc';
+
+    $activity = array();
+    $sql = "
+      SELECT SQL_CALC_FOUND_ROWS *
+      FROM nyss_web_activity
+      WHERE contact_id = {$contactID}
+        {$typeSql}
+      ORDER BY {$orderBy}
+      LIMIT {$rowCount} OFFSET {$offset}
+    ";
+    $dao = CRM_Core_DAO::executeQuery($sql);
+    $totalRows = CRM_Core_DAO::singleValueQuery('SELECT FOUND_ROWS()');
+    //CRM_Core_Error::debug_var('getActivityStream $totalRows', $totalRows);
+
+    while ($dao->fetch()) {
+      $activity[$dao->id] = array(
+        //'contact_id' => $dao->contact_id,
+        'type' => $dao->type,
+        'created_date' => date('m/d/Y g:i A', strtotime($dao->created_date)),
+        'details' => $dao->details,
+      );
+    }
+    //CRM_Core_Error::debug_var('getActivityStream $activity', $activity);
+
+    // store the activity filter preference CRM-11761
+    $session = CRM_Core_Session::singleton();
+    $userID = $session->get('userID');
+    if ($userID) {
+      //flush cache before setting filter to account for global cache (memcache)
+      $domainID = CRM_Core_Config::domainID();
+      $cacheKey = CRM_Core_BAO_Setting::inCache(
+        CRM_Core_BAO_Setting::PERSONAL_PREFERENCES_NAME,
+        'web_activity_filter',
+        NULL,
+        $userID,
+        TRUE,
+        $domainID,
+        TRUE
+      );
+      if ( $cacheKey ) {
+        CRM_Core_BAO_Setting::flushCache($cacheKey);
+      }
+
+      $activityFilter = array(
+        'web_activity_type_filter' => $type,
+      );
+
+      CRM_Core_BAO_Setting::setItem(
+        $activityFilter,
+        CRM_Core_BAO_Setting::PERSONAL_PREFERENCES_NAME,
+        'web_activity_type_filter',
+        NULL,
+        $userID,
+        $userID
+      );
+    }
+
+    $iFilteredTotal = $iTotal = $params['total'] = $totalRows;
+    $selectorElements = array(
+      'type', 'created_date', 'details',
+    );
+
+    echo CRM_Utils_JSON::encodeDataTableSelector($activity, $sEcho, $iTotal, $iFilteredTotal, $selectorElements);
+    CRM_Utils_System::civiExit();
   }//getActivityStream
 
   /*

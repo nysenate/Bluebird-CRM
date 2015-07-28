@@ -308,4 +308,9 @@
     <page_callback>CRM_NYSS_Page_Integration_ActivityStream</page_callback>
     <access_arguments>view all contacts</access_arguments>
   </item>
+  <item>
+    <path>civicrm/nyss/web/getactivitystream</path>
+    <page_callback>CRM_NYSS_BAO_Integration::getActivityStream</page_callback>
+    <access_arguments>view all contacts</access_arguments>
+  </item>
 </menu>

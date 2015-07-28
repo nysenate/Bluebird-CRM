@@ -36,8 +36,35 @@
 
 class CRM_NYSS_Page_Integration_ActivityStream extends CRM_Core_Page
 {
+  function browse() {
+    $this->assign('admin', FALSE);
+    $this->assign('context', 'activity');
+
+    // also create the form element for the activity filter box
+    $controller = new CRM_Core_Controller_Simple(
+      'CRM_NYSS_Form_Integration_ActivityFilter',
+      ts('Activity Filter'),
+      NULL,
+      FALSE, FALSE, TRUE
+    );
+    $controller->set('contactId', $this->_contactId);
+    $controller->setEmbedded(TRUE);
+    $controller->run();
+  }
+
+  function preProcess() {
+    $this->_contactId = CRM_Utils_Request::retrieve('cid', 'Positive', $this, TRUE);
+    $this->assign('contactId', $this->_contactId);
+    //CRM_Core_Error::debug_var('preProcess _contactId', $this->_contactId);
+
+    // set page title
+    CRM_Contact_Page_View::setTitle($this->_contactId);
+
+    $this->_action = CRM_Utils_Request::retrieve('action', 'String', $this, FALSE, 'browse');
+    $this->assign('action', $this->_action);
+  }
+
   /**
-   * List RSS feed as dashlet
    *
    * @return none
    * @access public
@@ -46,10 +73,16 @@ class CRM_NYSS_Page_Integration_ActivityStream extends CRM_Core_Page
     //CRM_Core_Error::debug_var('account page $this', $this);
     //CRM_Core_Error::debug_var('account page $_REQUEST', $_REQUEST);
 
-    $cid = CRM_Utils_Request::retrieve('cid', 'Positive');
-    $activity = CRM_NYSS_BAO_Integration::getActivityStream($cid);
+    $this->preProcess();
 
-    $this->assign('activity', $activity);
+    $contactId = CRM_Utils_Request::retrieve('cid', 'Positive', $this);
+    $action = CRM_Utils_Request::retrieve('action', 'String', $this);
+    $this->_id = CRM_Utils_Request::retrieve('id', 'Positive', $this);
+
+    //$activity = CRM_NYSS_BAO_Integration::getActivityStream($contactId);
+    //$this->assign('activity', $activity);
+
+    $this->browse();
 
     return parent::run( );
   }
