@@ -893,8 +893,8 @@ class CRM_NYSS_BAO_Integration {
   /*
    * archive the accumulator record and then delete from accumulator
    */
-  static function archiveRecord($table, $row, $params, $date) {
-    //CRM_Core_Error::debug_var('archiveRecord $table', $table);
+  static function archiveRecord($type, $row, $params, $date) {
+    //CRM_Core_Error::debug_var('archiveRecord $type', $type);
     //CRM_Core_Error::debug_var('archiveRecord $row', $row);
     //CRM_Core_Error::debug_var('archiveRecord $params', $params);
     //CRM_Core_Error::debug_var('archiveRecord $date', $date);
@@ -925,16 +925,13 @@ class CRM_NYSS_BAO_Integration {
       ),
     );
 
-    //setup fields
+    //setup fields for common archive table insert
     $fields = array_keys(get_object_vars($row));
     //remove object properties
     foreach ($fields as $k => $f) {
       if (strpos($f, '_') === 0 || $f == 'N') {
         unset($fields[$k]);
       }
-    }
-    if (array_key_exists($table, $extraFields)) {
-      $fields = array_merge($fields, $extraFields[$table]);
     }
     $fields[] = 'archive_date';
     $fieldList = implode(', ', $fields);
@@ -947,21 +944,42 @@ class CRM_NYSS_BAO_Integration {
         $data[] = CRM_Core_DAO::escapeString($v);
       }
     }
-    foreach ($extraFields[$table] as $f) {
-      $data[] = CRM_Core_DAO::escapeString($params->$f);
-    }
+
+    //add date stamp
     $data[] = $date;
+
     $dataList = implode("', '", $data);
     //CRM_Core_Error::debug_var('archiveRecord $data', $data);
 
     $sql = "
-      INSERT INTO senate_web_integration.archive_{$table}
+      INSERT INTO senate_web_integration.archive
       ({$fieldList})
       VALUES
       ('{$dataList}')
     ";
     //CRM_Core_Error::debug_var('archiveRecord $sql', $sql);
     CRM_Core_DAO::executeQuery($sql);
+
+    //setup any additional fields
+    if (array_key_exists($type, $extraFields)) {
+      $fields = array_merge(array('archive_id'), $extraFields[$type]);
+      $fieldList = implode(', ', $fields);
+
+      $data = array($row->id);
+      foreach ($extraFields[$type] as $f) {
+        $data[] = CRM_Core_DAO::escapeString($params->$f);
+      }
+      $dataList = implode("', '", $data);
+
+      $sql = "
+      INSERT INTO senate_web_integration.archive_{$type}
+      ({$fieldList})
+      VALUES
+      ('{$dataList}')
+    ";
+      //CRM_Core_Error::debug_var('archiveRecord extra $sql', $sql);
+      CRM_Core_DAO::executeQuery($sql);
+    }
 
     //now delete record from accumulator
     CRM_Core_DAO::executeQuery("

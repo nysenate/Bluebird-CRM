@@ -7,6 +7,7 @@
 // Date: 2011-03-22
 // Revised: 2013-04-27
 // Revised: 2014-09-15 - simplified contact matching logic; added debug control
+// Revised: 2015-08-03 - added ability to configure some params from BB config
 //
 
 // Version number, used for debugging
@@ -109,16 +110,43 @@ require_once 'NYSS/IMAP/Message.php';
 ** accounts from the config file.
 */
 $bbconfig = get_bluebird_instance_config();
+
+// Required Bluebird config parameters.
 $imap_accounts = $bbconfig['imap.accounts'];
 $imap_validsenders = strtolower($bbconfig['imap.validsenders']);
-$imap_activty_status = $bbconfig['imap.activity.status.default'];
+$imap_activity_status = $bbconfig['imap.activity.status.default'];
+
+// Optional Bluebird config parameters, which are overridden by cli options.
+if (isset($bbconfig['imap.server'])) {
+  $imap_server = $bbconfig['imap.server'];
+}
+else {
+  $imap_server = DEFAULT_IMAP_SERVER;
+}
+
+if (isset($bbconfig['imap.opts'])) {
+  $imap_opts = $bbconfig['imap.opts'];
+}
+else {
+  $imap_opts = DEFAULT_IMAP_OPTS;
+}
+
+if (isset($bbconfig['imap.mailbox'])) {
+  $imap_mailbox = $bbconfig['imap.mailbox'];
+}
+else {
+  $imap_mailbox = DEFAULT_IMAP_MAILBOX;
+}
+
+if (isset($bbconfig['imap.archivebox'])) {
+  $imap_archivebox = $bbconfig['imap.archivebox'];
+}
+else {
+  $imap_archivebox = DEFAULT_IMAP_ARCHIVEBOX;
+}
 
 $site = $optlist['site'];
 $cmd = $optlist['cmd'];
-$imap_server = DEFAULT_IMAP_SERVER;
-$imap_opts = DEFAULT_IMAP_OPTS;
-$imap_mailbox = DEFAULT_IMAP_MAILBOX;
-$imap_archivebox = DEFAULT_IMAP_ARCHIVEBOX;
 $imap_process_unread_only = DEFAULT_IMAP_PROCESS_UNREAD_ONLY;
 $imap_archive_mail = DEFAULT_IMAP_ARCHIVE_MAIL;
 $g_log_level = DEFAULT_LOG_LEVEL;
@@ -177,10 +205,10 @@ $aActivityStatus = CRM_Core_PseudoConstant::activityStatus();
 $activityPriority = array_search('Normal', $aActivityPriority);
 $activityType = array_search('Inbound Email', $aActivityType);
 
-if ($imap_activty_status == false || !isset($imap_activty_status)) {
+if ($imap_activity_status == false || !isset($imap_activity_status)) {
   $activityStatus = array_search('Completed', $aActivityStatus);
 }else{
-  $activityStatus = array_search($imap_activty_status, $aActivityStatus);
+  $activityStatus = array_search($imap_activity_status, $aActivityStatus);
 }
 
 

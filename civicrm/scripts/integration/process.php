@@ -41,6 +41,8 @@ class CRM_Integration_Process {
       return FALSE;
     }
 
+    //bbscript_log('trace', '$optlist', $optlist);
+
     //set integration DB
     $intDB = DB_INTEGRATION;
     $typeSql = ($optlist['type']) ? "AND msg_type = '{$optlist['type']}'" : '';
@@ -52,13 +54,16 @@ class CRM_Integration_Process {
     }
 
     //get all accumulator records for instance (target)
-    $row = CRM_Core_DAO::executeQuery("
+    $sql = "
       SELECT *
       FROM {$intDB}.accumulator
       WHERE user_shortname = '{$bbcfg['db.basename']}'
         $typeSql
         $addSql
-    ");
+    ";
+    $row = CRM_Core_DAO::executeQuery($sql);
+    //bbscript_log('trace', '$sql', $sql);
+    //bbscript_log('trace', '$row dao', $row);
 
     $errors = $status = array();
 
@@ -105,6 +110,7 @@ class CRM_Integration_Process {
       //bbscript_log('trace', 'params', $params);
 
       $date = date('Y-m-d H:i:s', $row->created_at);
+      $archiveTable = '';
 
       switch ($row->msg_type) {
         case 'BILL':
