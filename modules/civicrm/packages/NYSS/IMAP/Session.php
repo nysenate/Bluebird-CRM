@@ -35,8 +35,11 @@ class NYSS_IMAP_Session
       $this->_config['flags'] = array_filter(explode('/', $flags), 'trim');
     }
 
-    $_serverRef = $this->_buildServerRef();
+    $this->_serverRef = $this->_buildServerRef();
     $this->_openConnection();
+    if ($this->_conn === null || $this->_conn === false) {
+      throw new Exception('Unable to establish connection to IMAP server');
+    }
   } // __construct()
 
 
@@ -141,6 +144,5 @@ class NYSS_IMAP_Session
   private function _openConnection()
   {
     $this->_conn = imap_open($this->_buildMailboxRef(), $this->_config['user'], $this->_config['password']);
-    return $this->_conn;
   } // _openConnection()
 }

@@ -67,8 +67,9 @@ class NYSS_IMAP_Message
     $this->_session = $imapSession;
     $this->_msgnum = $msgnum;
     $this->_uid = $this->_fetchUID();
+    $conn = $this->getConnection();
     $this->_structure = imap_fetchstructure($conn, $this->_uid, FT_UID);
-    if ($this->uid) {
+    if ($this->_uid) {
       $this->populateHeaders();
     }
   } // __construct()
@@ -84,8 +85,8 @@ class NYSS_IMAP_Message
   {
     $this->_imap_attachments = array();
     $parts = array();
-    $this->is_multipart = isset($this->_structure->parts);
-    if ($this->is_multipart) {
+    $this->_is_multipart = isset($this->_structure->parts);
+    if ($this->_is_multipart) {
       foreach ($this->_structure->parts as $k => $v) {
         $partno = (int)$k + 1;
         if ($v->ifdisposition && $v->disposition == 'attachment') {
@@ -109,24 +110,23 @@ class NYSS_IMAP_Message
   public function fetchMetaData()
   {
     // fetch info
-    $this->_fetchUID();
     $header = $this->fetchHeaders();
 
     // build return object
     $ret = new stdClass();
     $ret->subject = $header->fetchsubject;
     $ret->fromName = $header->from[0]->personal;
-    $ret->fromEmail = $header->from[0]->mailbox.'@'.$this->_imap_headers->from[0]->host;
-    $ret->uid = $this->uid;
+    $ret->fromEmail = $header->from[0]->mailbox.'@'.$this->_headers->from[0]->host;
+    $ret->uid = $this->_uid;
     $ret->msgid = $this->_msgnum;
-    $ret->date = date("Y-m-d H:i:s",strtotime($header->date));
+    $ret->date = date("Y-m-d H:i:s", strtotime($header->date));
     return $ret;
   } // fetchMetaData()
 
 
   public function fetchPart($section = '1')
   {
-    return imap_fetchbody($this->conn, $this->uid, $section, FT_UID);
+    return imap_fetchbody($this->getConnection(), $this->_uid, $section, FT_UID);
   } // fetchPart()
 
 
@@ -140,8 +140,8 @@ class NYSS_IMAP_Message
   {
     $addr = array(
               'primary'=>array(
-                  'address'=>$this->_imap_headers->from[0]->mailbox.'@'.$this->_imap_headers->from[0]->host,
-                  'name'=>$this->_imap_headers->from[0]->personal,
+                  'address'=>$this->_headers->from[0]->mailbox.'@'.$this->_headers->from[0]->host,
+                  'name'=>$this->_headers->from[0]->personal,
                   ),
               'secondary'=>array(),
               'other'=>array(),
@@ -198,16 +198,17 @@ class NYSS_IMAP_Message
 
   public function populateHeaders()
   {
-    $this->_msgnum = imap_msgno($this->conn, $this->uid);
-    $this->_imap_headers = imap_headerinfo($this->conn, $this->_msgnum, $this->from_limit, $this->subj_limit);
+    $conn = $this->getConnection();
+    $this->_msgnum = imap_msgno($conn, $this->_uid);
+    $this->_headers = imap_headerinfo($conn, $this->_msgnum, $this->_from_limit, $this->_subj_limit);
   } // populateHeaders()
 
 
   public function populateParts($include_attach = false)
   {
     $parts = array();
-    $this->is_multipart = isset($this->_imap_structure->parts);
-    if ($this->is_multipart) {
+    $this->_is_multipart = isset($this->_imap_structure->parts);
+    if ($this->_is_multipart) {
       foreach ($this->_imap_structure->parts as $k => $v) {
         $partno = (int)$k + 1;
         $parts[$partno] = $v;
@@ -353,7 +354,7 @@ class NYSS_IMAP_Message
 
   private function _fetchUID()
   {
-    $t = imap_fetch_overview($this->_session->getConnection(), $this->_msgnum);
+    $t = imap_fetch_overview($this->getConnection(), $this->_msgnum);
     return (is_array($t) && isset($t[0]) && is_object($t[0])) ? $t[0]->uid : 0;
   } // _fetchUID()
 
