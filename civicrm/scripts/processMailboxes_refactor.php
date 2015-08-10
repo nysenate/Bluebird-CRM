@@ -25,9 +25,6 @@ $g_log_levels = array(PM_ERROR => 'ERROR',
                       PM_DEBUG => 'DEBUG');
 
 // Mailbox settings common to all CRM instances
-define('DEFAULT_IMAP_SERVER', 'webmail.senate.state.ny.us');
-define('DEFAULT_IMAP_OPTS', '/imap/ssl/notls');
-define('DEFAULT_IMAP_MAILBOX', 'INBOX');
 define('DEFAULT_IMAP_ARCHIVEBOX', 'Archive');
 define('DEFAULT_IMAP_PROCESS_UNREAD_ONLY', false);
 define('DEFAULT_IMAP_ARCHIVE_MAIL', true);
@@ -72,9 +69,9 @@ $prog = basename(__FILE__);
 
 require_once 'script_utils.php';
 $stdusage = civicrm_script_usage();
-$usage = "[--server|-s imap_server]  [--imap-user|-u username]  [--imap-pass|-p password]  [--imap-opts|-o imap_options]  [--cmd|-c <poll|list|delarchive>]  [--mailbox|-m name]  [--archivebox|-a name]  [--log {ERROR|WARN|INFO|DEBUG}] [--unread-only|-r]  [--archive-mail|-t]";
-$shortopts = "s:u:p:o:c:m:a:l:rt";
-$longopts = array("server=", "imap-user=", "imap-pass=", "imap-opts=", "cmd=", "mailbox=", "archivebox=", "log=", "unread-only", "archive-mail");
+$usage = "[--server|-s imap_server]  [--port|-p imap_port]  [--imap-user|-u username]  [--imap-pass|-P password]  [--imap-flags|-f imap_flags]  [--cmd|-c <poll|list|delarchive>]  [--mailbox|-m name]  [--archivebox|-a name]  [--log {ERROR|WARN|INFO|DEBUG}] [--unread-only|-r]  [--archive-mail|-t]";
+$shortopts = "s:p:u:P:f:c:m:a:l:rt";
+$longopts = array("server=", "port=", "imap-user=", "imap-pass=", "imap-flags=", "cmd=", "mailbox=", "archivebox=", "log=", "unread-only", "archive-mail");
 
 $optlist = civicrm_script_init($shortopts, $longopts);
 
@@ -98,7 +95,6 @@ require_once 'api/api.php';
 require_once 'CRM/Core/DAO.php';
 require_once 'CRM/Utils/File.php';
 
-require_once 'NYSS/Utils.php';
 require_once 'NYSS/IMAP/Session.php';
 require_once 'NYSS/IMAP/Message.php';
 
@@ -112,66 +108,40 @@ require_once 'NYSS/IMAP/Message.php';
 $bbconfig = get_bluebird_instance_config();
 
 // Required Bluebird config parameters.
-$imap_accounts = $bbconfig['imap.accounts'];
 $imap_validsenders = strtolower($bbconfig['imap.validsenders']);
 $imap_activity_status = $bbconfig['imap.activity.status.default'];
 
-// Optional Bluebird config parameters, which are overridden by cli options.
-if (isset($bbconfig['imap.server'])) {
-  $imap_server = $bbconfig['imap.server'];
-}
-else {
-  $imap_server = DEFAULT_IMAP_SERVER;
-}
-
-if (isset($bbconfig['imap.opts'])) {
-  $imap_opts = $bbconfig['imap.opts'];
-}
-else {
-  $imap_opts = DEFAULT_IMAP_OPTS;
-}
-
-if (isset($bbconfig['imap.mailbox'])) {
-  $imap_mailbox = $bbconfig['imap.mailbox'];
-}
-else {
-  $imap_mailbox = DEFAULT_IMAP_MAILBOX;
-}
-
-if (isset($bbconfig['imap.archivebox'])) {
-  $imap_archivebox = $bbconfig['imap.archivebox'];
-}
-else {
-  $imap_archivebox = DEFAULT_IMAP_ARCHIVEBOX;
-}
-
 $site = $optlist['site'];
 $cmd = $optlist['cmd'];
-$imap_process_unread_only = DEFAULT_IMAP_PROCESS_UNREAD_ONLY;
-$imap_archive_mail = DEFAULT_IMAP_ARCHIVE_MAIL;
 $g_log_level = DEFAULT_LOG_LEVEL;
 $g_crm_instance = $site;
 
-if (!empty($optlist['server'])) {
-  $imap_server = $optlist['server'];
+$all_params = array(
+  // Each element is: paramName, optName, bbcfgName, defaultVal
+  array('site', 'site', null, null),
+  array('server', 'server', 'imap.server', null),
+  array('port', 'port', 'imap.port', null),
+  array('flags', 'imap-flags', 'imap.flags', null),
+  array('mailbox', 'mailbox', 'imap.mailbox', null),
+  array('archivebox', 'archivebox', 'imap.archivebox', DEFAULT_IMAP_ARCHIVEBOX),
+  array('unreadonly', 'unread-only', null, DEFAULT_IMAP_PROCESS_UNREAD_ONLY),
+  array('archivemail', 'archive-mail', null, DEFAULT_IMAP_ARCHIVE_MAIL)
+);
+
+$imap_params = array();
+
+foreach ($all_params as $param) {
+  $val = getImapParam($optlist, $param[1], $bbconfig, $param[2], $param[3]);
+  if ($val !== null) {
+    $imap_params[$param[0]] = $val;
+  }
 }
+
 if (!empty($optlist['imap-user']) && !empty($optlist['imap-pass'])) {
   $imap_accounts = $optlist['imap-user'].'|'.$optlist['imap-pass'];
 }
-if (!empty($optlist['imap-opts'])) {
-  $imap_opts = $optlist['imap-opts'];
-}
-if (!empty($optlist['mailbox'])) {
-  $imap_mailbox = $optlist['mailbox'];
-}
-if (!empty($optlist['archivebox'])) {
-  $imap_archivebox = $optlist['archivebox'];
-}
-if ($optlist['unread-only'] == true) {
-  $imap_process_unread_only = true;
-}
-if ($optlist['archive-mail'] == true) {
-  $imap_archive_mail = true;
+else {
+  $imap_accounts = $bbconfig['imap.accounts'];
 }
 
 if (!empty($optlist['log'])) {
@@ -183,6 +153,7 @@ if (!empty($optlist['log'])) {
   }
   $g_log_level = $key;
 }
+
 if ($cmd == 'list') {
   $cmd = IMAP_CMD_LIST;
 }
@@ -248,25 +219,17 @@ if ($imap_validsenders) {
   }
 }
 
+$imap_params['activityDefaults'] = $activityDefaults;
+$imap_params['uploadDir'] = $uploadDir;
+$imap_params['uploadInbox'] = $uploadInbox;
+$imap_params['authForwarders'] = $authForwarders;
+
 // Iterate over all IMAP accounts associated with the current CRM instance.
 
 foreach (explode(',', $imap_accounts) as $imap_account) {
   list($imapUser, $imapPass) = explode("|", $imap_account);
-  $imap_params = array(
-    'site' => $site,
-    'server' => $imap_server,
-    'opts' => $imap_opts,
-    'user' => $imapUser,
-    'password' => $imapPass,
-    'mailbox' => $imap_mailbox,
-    'archivebox' => $imap_archivebox,
-    'unreadonly' => $imap_process_unread_only,
-    'archivemail' => $imap_archive_mail,
-    'authForwarders' => $authForwarders,
-    'activityDefaults' => $activityDefaults,
-    'uploadDir' => $uploadDir,
-    'uploadInbox' => $uploadInbox
-  );
+  $imap_params['user'] = $imapUser;
+  $imap_params['password'] = $imapPass;
   $rc = processMailboxCommand($cmd, $imap_params);
   if ($rc == false) {
     logmsg(PM_ERROR, "Failed to process IMAP account $imapUser@$imap_server\n".print_r(imap_errors(), true));
@@ -321,16 +284,10 @@ function getAuthorizedForwarders()
 
 function processMailboxCommand($cmd, $params)
 {
-  $session_params = array('server'=>$params['server'],
-                          'port'=>'993',
-                          'mailbox'=>$params['mailbox'],
-                          'flags'=>$params['opts'],
-                          'user'=>$params['user'],
-                          'password'=>$params['password']);
-  $imap_session = new NYSS_IMAP_Session($session_params);
+  $imap_session = new NYSS_IMAP_Session($params);
 
-  if ($imap_session->conn === false) {
-    logmsg(PM_ERROR, "Unable to open IMAP connection to ".$imap_session->buildServerRef());
+  if ($imap_session->getConnection() === false) {
+    logmsg(PM_ERROR, "Unable to open IMAP connection to ".$imap_session->getServerRef());
     return false;
   }
 
@@ -359,17 +316,18 @@ function processMailboxCommand($cmd, $params)
 
 // Check the given IMAP account for new messages, and process them.
 
-function checkImapAccount($mbox, $params)
+function checkImapAccount($imapSess, $params)
 {
   logmsg(PM_INFO, "Polling CRM [".$params['site']."] using IMAP account ".
-       $params['user'].'@'.$params['server'].$params['opts']);
+       $params['user'].'@'.$params['server'].$params['flags']);
 
+  $imap_conn = $imapSess->getConnection();
   $crm_archivebox = '{'.$params['server'].'}'.$params['archivebox'];
 
   //create archive box in case it doesn't exist
   //don't report errors since it will almost always fail
   if ($params['archivemail'] == true) {
-    $rc = imap_createmailbox($mbox->conn, imap_utf7_encode($crm_archivebox));
+    $rc = imap_createmailbox($imap_conn, imap_utf7_encode($crm_archivebox));
     if ($rc) {
       logmsg(PM_DEBUG, "Created new mailbox: $crm_archivebox");
     }
@@ -383,14 +341,14 @@ function checkImapAccount($mbox, $params)
   $nyss_conn = $nyss_conn->getDatabaseConnection();
   $dbconn = $nyss_conn->connection;
 
-  $msg_count = $mbox->fetchMessageCount();
+  $msg_count = $imapSess->fetchMessageCount();
   $invalid_fwders = array();
   logmsg(PM_INFO, "Number of messages: $msg_count");
 
   for ($msg_num = 1; $msg_num <= $msg_count; $msg_num++) {
     logmsg(PM_INFO, "Retrieving message $msg_num / $msg_count");
-    $this_message = new NYSS_IMAP_Message($mbox->conn, $msg_num);
-    $msgMetaData = $this_message->fetchMetaData();
+    $imap_message = new NYSS_IMAP_Message($imapSess, $msg_num);
+    $msgMetaData = $imap_message->fetchMetaData();
 
     $fwder = strtolower($msgMetaData->fromEmail);
 
@@ -398,19 +356,19 @@ function checkImapAccount($mbox, $params)
     if (array_key_exists($fwder, $params['authForwarders'])) {
       logmsg(PM_DEBUG, "Forwarder [$fwder] is allowed to send to this mailbox");
       // retrieved msg, now store to Civi and if successful move to archive
-      if (storeMessage($this_message, $dbconn, $params) == true) {
+      if (storeMessage($imap_message, $dbconn, $params) == true) {
         //mark as read
-        imap_setflag_full($mbox->conn, $msgMetaData->uid, '\\Seen', ST_UID);
+        imap_setflag_full($imap_conn, $msgMetaData->uid, '\\Seen', ST_UID);
         // move to folder if necessary
         if ($params['archivemail'] == true) {
-          imap_mail_move($mbox->conn, $msg_num, $params['archivebox']);
+          imap_mail_move($imap_conn, $msg_num, $params['archivebox']);
         }
       }
     }
     else {
       logmsg(PM_WARN, "Forwarder [$fwder] is not allowed to forward/send messages to this CRM; deleting message");
       $invalid_fwders[$fwder] = true;
-      if (imap_delete($mbox->conn, $msg_num) === true) {
+      if (imap_delete($imap_conn, $msg_num) === true) {
         logmsg(PM_DEBUG, "Message $msg_num has been deleted");
       }
       else {
@@ -427,7 +385,7 @@ function checkImapAccount($mbox, $params)
     }
   }
 
-  logmsg(PM_INFO, "Finished checking IMAP account ".$params['user'].'@'.$params['server'].$params['opts']);
+  logmsg(PM_INFO, "Finished checking IMAP account ".$params['user'].'@'.$params['server'].$params['flags']);
 
   logmsg(PM_INFO, "Searching for matches on unmatched records");
   searchForMatches($dbconn, $params);
@@ -437,12 +395,12 @@ function checkImapAccount($mbox, $params)
 
 
 
-function parseMimePart($mbox, $msgid, $p, $partno, &$attachments)
+function parseMimePart($imapSess, $msgid, $p, $partno, &$attachments)
 {
   global $uploadInbox;
 
   //fetch part
-  $part = imap_fetchbody($mbox, $msgid, $partno);
+  $part = $imapSess->fetchBody($msgid, $partno);
 
   //if type is not text
   if ($p->type != 0) {
@@ -526,7 +484,7 @@ function parseMimePart($mbox, $msgid, $p, $partno, &$attachments)
   //if subparts... recurse into function and parse them too!
   if (count($p->parts) > 0) {
     foreach ($p->parts as $pno => $parr) {
-      parseMimePart($mbox, $msgid, $parr, $partno.'.'.($pno+1), $attachments);
+      parseMimePart($imapSess, $msgid, $parr, $partno.'.'.($pno+1), $attachments);
     }
   }
   return true;
@@ -538,23 +496,23 @@ function parseMimePart($mbox, $msgid, $p, $partno, &$attachments)
 // storeMessage
 // Parses multipart message and stores in Civi database
 // Returns true/false to move the email to archive or not.
-function storeMessage($msg, $db, $params)
+function storeMessage($imapMsg, $db, $params)
 {
   global $authForwarders;
 
-  $msgMeta = $msg->fetchMetaData();
+  $msgMeta = $imapMsg->fetchMetaData();
   $msgid = $msgMeta->msgid;
   $bSuccess = true;
   $uploadInbox = $params['uploadInbox'];
-  $all_addr = $msg->findFromAddresses();
+  $all_addr = $imapMsg->findFromAddresses();
 
   // check for plain/html body text
-  $msgStruct = $msg->fetchStructure();
+  $msgStruct = $imapMsg->getStructure();
 
   if (!isset($msgStruct->parts) || !$msgStruct->parts) { // not multipart
     $rawBody[$msgStruct->subtype] = array(
         'encoding' => $msgStruct->encoding,
-        'body' => $msg->fetchPart(),
+        'body' => $imapMsg->fetchPart(),
         'debug' => $msgStruct->lines." : ".$msgStruct->encoding." : 1");
 
   }
@@ -563,7 +521,7 @@ function storeMessage($msg, $db, $params)
       $section = $partno + 1;
       $rawBody[$pstruct->subtype] = array(
         'encoding' => $pstruct->encoding,
-        'body' => $msg->fetchPart($section),
+        'body' => $imapMsg->fetchPart($section),
         'debug' => $pstruct->lines." : ".$pstruct->encoding." : $section");
     }
   }
@@ -641,7 +599,7 @@ function storeMessage($msg, $db, $params)
     $attachments = array();
     foreach ($msgStruct->parts as $partno => $pstruct) {
       //parse parts of email
-      parseMimePart($msg->getConn(), $msgid, $pstruct, $partno+1, $attachments);
+      parseMimePart($imapMsg, $msgid, $pstruct, $partno+1, $attachments);
     }
   }
 
@@ -846,9 +804,9 @@ function searchForMatches($db, $params)
 
 
 
-function listMailboxes($mbox, $params)
+function listMailboxes($imapSess, $params)
 {
-  $inboxes = imap_list($mbox->conn, '{'.$params['server'].'}', "*");
+  $inboxes = $imapSess->listFolders();
   foreach ($inboxes as $inbox) {
     echo "$inbox\n";
   }
@@ -857,11 +815,11 @@ function listMailboxes($mbox, $params)
 
 
 
-function deleteArchiveBox($mbox, $params)
+function deleteArchiveBox($imapSess, $params)
 {
   $crm_archivebox = '{'.$params['server'].'}'.$params['archivebox'];
   logmsg(PM_INFO, "Deleting archive mailbox: $crm_archivebox");
-  return imap_deletemailbox($mbox->conn, $crm_archivebox);
+  return imap_deletemailbox($imapSess->getConnection(), $crm_archivebox);
 } // deleteArchiveBox()
 
 
@@ -902,5 +860,20 @@ function logmsg($log_level, $msg)
     echo "$g_crm_instance $date_str $level_text $msg\n";
   }
 } /* logmsg() */
+
+
+
+function getImapParam($optlist, $optname, $bbcfg, $cfgname, $defval)
+{
+  if (!empty($optlist[$optname])) {
+    return $optlist[$optname];
+  }
+  else if ($cfgname && isset($bbcfg[$cfgname])) {
+    return $bbcfg[$cfgname];
+  }
+  else {
+    return $defval;
+  }
+} // getImapParam()
 
 ?>
