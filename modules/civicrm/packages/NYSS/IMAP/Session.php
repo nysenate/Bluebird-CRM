@@ -38,7 +38,7 @@ class NYSS_IMAP_Session
     $this->_serverRef = $this->_buildServerRef();
     $this->_openConnection();
     if ($this->_conn === null || $this->_conn === false) {
-      throw new Exception('Unable to establish connection to IMAP server');
+      throw new Exception('Unable to establish connection to IMAP server; serverRef='.$this->_config['user'].'@'.$this->_serverRef);
     }
   } // __construct()
 

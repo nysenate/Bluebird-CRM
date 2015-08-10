@@ -232,7 +232,7 @@ foreach (explode(',', $imap_accounts) as $imap_account) {
   $imap_params['password'] = $imapPass;
   $rc = processMailboxCommand($cmd, $imap_params);
   if ($rc == false) {
-    logmsg(PM_ERROR, "Failed to process IMAP account $imapUser@$imap_server\n".print_r(imap_errors(), true));
+    logmsg(PM_ERROR, "Failed to process IMAP account $imapUser@{$imap_params['server']}\n".print_r(imap_errors(), true));
   }
 }
 
@@ -284,10 +284,12 @@ function getAuthorizedForwarders()
 
 function processMailboxCommand($cmd, $params)
 {
-  $imap_session = new NYSS_IMAP_Session($params);
-
-  if ($imap_session->getConnection() === false) {
-    logmsg(PM_ERROR, "Unable to open IMAP connection to ".$imap_session->getServerRef());
+  try {
+    $imap_session = new NYSS_IMAP_Session($params);
+  }
+  catch (Exception $ex) {
+    logmsg(PM_ERROR, "Failed to create IMAP session: ".$ex->getMessage());
+    $imap_session = null;
     return false;
   }
 
@@ -307,7 +309,7 @@ function processMailboxCommand($cmd, $params)
 
   //clean up moved/deleted messages
   // Using CL_EXPUNGE is same as calling imap_expunge().
-  $imap_session = NULL;
+  $imap_session = null;
 
   return $rc;
 } // processMailboxCommand()
@@ -806,7 +808,7 @@ function searchForMatches($db, $params)
 
 function listMailboxes($imapSess, $params)
 {
-  $inboxes = $imapSess->listFolders();
+  $inboxes = $imapSess->listFolders('*', true);
   foreach ($inboxes as $inbox) {
     echo "$inbox\n";
   }
