@@ -18,7 +18,7 @@ require_once 'bluebird_config.php';
 
 // add local resources to include path
 set_include_path(dirname(__FILE__).PATH_SEPARATOR.get_include_path());
-require_once 'NYSS/Utils.php';
+require_once 'CRM/Utils/Array.php';
 require_once 'NYSS/AJAX/Session.php';
 require_once 'NYSS/IMAP/Session.php';
 require_once 'NYSS/IMAP/Message.php';
@@ -31,17 +31,16 @@ $ret =& $isession->response->data;
 /* set up references for application config and IMAP session */
 $this_instance = $isession->configBBInstanceCredentials();
 if ($this_instance) {
-  $this_session = new NYSS_IMAP_Session(array(
-          'user'=>$this_instance[0],
-          'password'=>$this_instance[1],
-          'mailbox'=>$isession->req('folder_request'),
-     ));
+  $imap_session = new NYSS_IMAP_Session(array(
+          'user' => $this_instance[0],
+          'password' => $this_instance[1],
+          'mailbox' => $isession->req('folder_request')));
 }
 
 // application routing goes here
-$cmd = NYSS_Utils::array_ifelse('req',$_REQUEST,'');
+$cmd = CRM_Utils_Array::value('req', $_REQUEST, '');
 
-switch($isession->req('req')) {
+switch ($isession->req('req')) {
   case 'loadInstances':
     $r = array();
     foreach ($isession->bbconfig as $k=>$v) {
@@ -52,16 +51,20 @@ switch($isession->req('req')) {
     }
     $isession->response->data=$r;
     break;
-  case 'listFolders': $ret = $this_session->listFolders(); break;
-  case 'getFolderStatus': $ret = $this_session->getFolderStatus($isession->req('folder_request')); break;
+  case 'listFolders':
+    $ret = $imap_session->listFolders();
+    break;
+  case 'getFolderStatus':
+    $ret = $imap_session->getFolderStatus($isession->req('folder_request'));
+    break;
   case 'showMsg':
-    $this_session->selectFolder($isession->req('folder_request'));
+    $imap_session->selectFolder($isession->req('folder_request'));
     $mn = $isession->req('showMsg_number');
-    $msg = new NYSS_IMAP_Message($this_session->conn, $mn);
+    $msg = new NYSS_IMAP_Message($imap_session, $mn);
     $msg->populateParts();
 
     $ret = new stdClass;
-    $ret->overview = $msg->fetchStructure();
+    $ret->overview = $msg->getStructure();
     $ret->rfc822 = $msg->fetchPart('');
     $ret->headers = $msg->fetchHeaders();
     $ret->meta = $msg->fetchMetaData();
@@ -70,16 +73,16 @@ switch($isession->req('req')) {
     $ret->senders = $msg->findFromAddresses();
     break;
   case 'searchHeader':
-    $this_session->selectFolder($isession->req('folder_request'));
+    $imap_session->selectFolder($isession->req('folder_request'));
     $mn = $isession->req('showMsg_number');
-    $r = new NYSS_IMAP_Message($this_session->conn, $mn);
+    $r = new NYSS_IMAP_Message($imap_session, $mn);
     echo "<pre>".print_r($r->searchFullHeaders(),1)."</pre>";
     echo "<pre style=\"border:2px solid black;padding:10px;\">".$r->mangleHTML()."</pre>";
     break;
   case 'searchMulti':
-    $this_session->selectFolder('Archive');
+    $imap_session->selectFolder('Archive');
     for ($i=1;$i<6000;$i++) {
-      $r = $this_session->fetchMessage($i);
+      $r = $imap_session->fetchMessage($i);
       error_log("Message $i type=".$r->type."(".NYSS_IMAP_Message::$body_type_labels[$r->type]."), subtype=".$r->subtype);
       if (isset($r->parts)) {
         foreach($r->parts as $k=>$v) {

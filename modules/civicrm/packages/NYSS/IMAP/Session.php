@@ -1,112 +1,146 @@
 <?php
-class NYSS_IMAP_Session {
+
+require_once 'CRM/Utils/Array.php';
+
+
+class NYSS_IMAP_Session
+{
   public static $force_readonly = false;
   public static $auto_expunge = true;
-  public $config = array();
-  public $conn = NULL;
-  public $defaults = array('server'  => 'webmail.nysenate.gov',
-                           'port'    => 143,
-                           'mailbox' => 'INBOX',
-                           'flags'   => array('imap','readonly'),
-                           );
+
+  private $_config = array();
+  private $_serverRef = null;
+  private $_conn = null;
+
+  private $_defaults = array(
+    'server'   => 'webmail.nysenate.gov',
+    'port'     => 143,
+    'flags'    => array('imap', 'readonly'),
+    'mailbox'  => 'INBOX',
+    'user'     => '',
+    'password' => ''
+  );
 
 
-  public function __construct($opts=array()) {
-    $this->_populateOptions($opts);
-    $this->_establishConnection();
-  }
+  public function __construct($opts = array())
+  {
+    // Compute union of provided opts and default opts, with provided opts
+    // taking precedence.
+    $this->_config = $opts + $this->_defaults;
 
-  public function __destruct() {
+    // If flags were specified as a slash-delimited string, then convert
+    // to an array of flags.
+    $flags = $this->_config['flags'];
+    if (!is_array($flags)) {
+      $this->_config['flags'] = array_filter(explode('/', $flags), 'trim');
+    }
+
+    $_serverRef = $this->_buildServerRef();
+    $this->_openConnection();
+  } // __construct()
+
+
+  public function __destruct()
+  {
     $this->_closeConnection();
-  }
+  } // __destruct()
 
-  protected function _buildMailboxRef($mailbox = NULL) {
-    if (!$mailbox) { $mailbox = $this->_getConfig('mailbox'); }
-    return $this->buildServerRef() . $mailbox;
-  }
 
-  public function buildServerRef() {
-    $ret = '{' . $this->_getConfig('server') . ':' . $this->_getConfig('port');
-    $flags = $this->_getConfig('flags');
+  public function getConnection()
+  {
+    return $this->_conn;
+  } // getConnection()
+
+
+  public function getServerRef()
+  {
+    return $this->_serverRef;
+  } // getServerRef()
+
+
+  public function fetchBody($msgnum, $section = '')
+  {
+    return imap_fetchbody($this->_conn, (int)$msgnum, $section);
+  } // fetchBody()
+
+
+  public function fetchHeaders($msgnum)
+  {
+    return imap_fetchheader($this->_conn, (int)$msgnum);
+  } // fetchHeaders()
+
+
+  public function fetchMessage($msgnum)
+  {
+    return imap_fetchstructure($this->_conn, (int)$msgnum);
+  } // fetchMessage()
+
+
+  public function fetchMessageCount()
+  {
+    return imap_num_msg($this->_conn);
+  } // fetchMessage()
+
+
+  public function getFolderStatus($folder = 'INBOX', $options = SA_ALL)
+  {
+    return imap_status($this->_conn, $this->_buildMailboxRef($folder), $options);
+  } // getFolderStatus()
+
+
+  public function listFolders($pattern = '*', $removeServerRef = false)
+  {
+    $boxes = imap_list($this->_conn, $this->_serverRef, $pattern);
+    if ($removeServerRef) {
+      return str_replace($this->_serverRef, '', $boxes);
+    }
+    else {
+      return $boxes;
+    }
+  } // listFolders()
+
+
+  public function selectFolder($folder = 'INBOX')
+  {
+    return imap_reopen($this->_conn, $this->_buildMailboxRef($folder));
+  } // selectFolder()
+
+
+  private function _buildMailboxRef($mailbox = null)
+  {
+    if (!$mailbox) {
+      $mailbox = $this->_config['mailbox'];
+    }
+    return $this->_serverRef.$mailbox;
+  } // _buildMailboxRef()
+
+
+  private function _buildServerRef()
+  {
+    $serverRef = $this->_config['server'].':'.$this->_config['port'];
+    $flags = $this->_config['flags'];
     if (self::$force_readonly && !in_array('readonly', $flags)) {
-      $flags[]='readonly';
+      $flags[] = 'readonly';
     }
     if (count($flags)) {
-      $ret .= '/' . implode('/',$flags);
+      $serverRef .= '/'.implode('/', $flags);
     }
-    $ret .= '}';
-    return $ret;
-  }
+    return '{'.$serverRef.'}';
+  } // _buildServerRef()
 
-  protected function _closeConnection() {
-    if ($this->conn) {
-      imap_close($this->conn, (static::$auto_expunge ? CL_EXPUNGE : NULL) );
+
+  private function _closeConnection()
+  {
+    if ($this->_conn) {
+      imap_close($this->_conn, (static::$auto_expunge ? CL_EXPUNGE : null));
     }
-  }
+    $this->_conn = null;
+  } // _closeConnection()
 
-  protected function _establishConnection() {
-    $this->conn = imap_open($this->_buildMailboxRef(), $this->_getConfig('user'), $this->_getConfig('password'));
-    return (bool)$this->conn;
-  }
 
-  protected function _getConfig($type) {
-    return NYSS_Utils::array_ifelse($type,
-                                    $this->config,
-                                    NYSS_Utils::array_ifelse($type, $this->defaults, NULL)
-           );
-  }
-
-  protected function _populateOptions(Array $opts = array()) {
-    foreach ($opts as $k=>$v) {
-      $this->config[$k] = $v;
-    }
-    $this->_standardizeFlags();
-  }
-
-  protected function _standardizeFlags() {
-    $f = $this->_getConfig('flags');
-    if (!is_array($f)) {
-      $newf = array();
-      $f = explode('/',(string)$f);
-      foreach ($f as $v) {
-        $tv = trim($v);
-        if ($tv) { $newf[] = $tv; }
-      }
-      $this->config['flags'] = $newf;
-    }
-  }
-
-  public function fetchBody($msgnum, $section='') {
-    return imap_fetchbody($this->conn, (int)$msgnum, $section);
-  }
-
-  public function fetchHeaders($msgnum) {
-    return imap_fetchheader($this->conn, (int)$msgnum);
-  }
-
-  public function fetchMessage($msgnum) {
-    return imap_fetchstructure($this->conn, (int)$msgnum);
-  }
-
-  public function fetchMessageCount() {
-    return imap_num_msg($this->conn);
-  }
-
-  public function getFolderStatus($folder = NULL, $options = SA_ALL) {
-    return imap_status($this->conn, $this->_buildMailboxRef($folder), $options);
-  }
-
-  public function listFolders($pattern='*') {
-    $ref = $this->buildServerRef();
-    $ret = array();
-    foreach (imap_list($this->conn, $ref, $pattern) as $k=>$v) {
-      $ret[] = str_replace($ref, '', $v);
-    }
-    return $ret;
-  }
-
-  public function selectFolder($folder) {
-    $this->config['mailbox'] = $folder ? $folder : "INBOX";
-    return imap_reopen($this->conn, $this->_buildMailboxRef());
-  }
+  private function _openConnection()
+  {
+    $this->_conn = imap_open($this->_buildMailboxRef(), $this->_config['user'], $this->_config['password']);
+    return $this->_conn;
+  } // _openConnection()
 }

@@ -4,8 +4,6 @@
   Provides a logging interface, including tee to file/stdout and severity gradiations
 */
 
-require_once 'NYSS/Utils.php';
-
 /* log level constants */
 const NYSS_LOG_LEVEL_FATAL = 0;
 const NYSS_LOG_LEVEL_ERROR = 1;
@@ -18,7 +16,9 @@ const NYSS_LOG_MODE_FILE   = 0;
 const NYSS_LOG_MODE_STDOUT = 1;
 const NYSS_LOG_MODE_TEE    = 2;
 
-class NYSS_Logger {
+
+class NYSS_Logger
+{
   private static $instance = NULL;
 
   private   $_logfile     = NULL;

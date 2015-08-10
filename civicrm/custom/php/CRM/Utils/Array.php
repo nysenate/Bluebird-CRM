@@ -681,23 +681,18 @@ class CRM_Utils_Array {
 
   //NYSS 8629
   /**
-  +   * Extract any $keys from $array and copy to a new array.
-  +   *
-  +   * Note: If a $key does not appear in $array, then it will
-  +   * not appear in the result.
-  +   *
-  +   * @param array $array
-  +   * @param array $keys
-  +   *   List of keys to copy.
-  +   * @return array
-  +   */
-  public static function subset($array, $keys) {
-    $result = array();
-    foreach ($keys as $key) {
-      if (isset($array[$key])) {
-        $result[$key] = $array[$key];
-      }
-    }
-    return $result;
+   * Extract any $keys from $array and copy to a new array.
+   *
+   * Note: If a $key does not appear in $array, then it will
+   * not appear in the result.
+   *
+   * @param array $master_array
+   * @param array $key_array
+   *   List of keys to copy.
+   * @return array
+   */
+  public static function subset($master_array, $key_array)
+  {
+    return array_key_intersect($master_array, array_flip($key_array));
   }
 }
