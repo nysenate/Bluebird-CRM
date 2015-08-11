@@ -23,7 +23,7 @@ set_include_path(dirname(__FILE__).PATH_SEPARATOR.get_include_path());
     <title>IMAP Reader (for testing and debugging only!)</title>
     <script src="//code.jquery.com/jquery-2.1.4.js" type="text/javascript"></script>
     <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js" type="text/javascript"></script>
-    <script src="/scripts/IMAP/imap_ajax_helper.js" type="text/javascript"></script>
+    <script src="/scripts/IMAP/ajax_helper.js" type="text/javascript"></script>
     <script src="/scripts/IMAP/imap_helper.js" type="text/javascript"></script>
     <link href="/scripts/IMAP/imap_reader.css" type="text/css" rel="stylesheet" />
   </head>
