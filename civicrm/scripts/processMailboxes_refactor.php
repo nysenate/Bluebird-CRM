@@ -95,8 +95,8 @@ require_once 'api/api.php';
 require_once 'CRM/Core/DAO.php';
 require_once 'CRM/Utils/File.php';
 
-require_once 'NYSS/IMAP/Session.php';
-require_once 'NYSS/IMAP/Message.php';
+require_once 'CRM/NYSS/IMAP/Session.php';
+require_once 'CRM/NYSS/IMAP/Message.php';
 
 /* More than one IMAP account can be checked per CRM instance.
 ** The username and password for each account is specified in the Bluebird
@@ -285,7 +285,7 @@ function getAuthorizedForwarders()
 function processMailboxCommand($cmd, $params)
 {
   try {
-    $imap_session = new NYSS_IMAP_Session($params);
+    $imap_session = new CRM_NYSS_IMAP_Session($params);
   }
   catch (Exception $ex) {
     logmsg(PM_ERROR, "Failed to create IMAP session: ".$ex->getMessage());
@@ -349,7 +349,7 @@ function checkImapAccount($imapSess, $params)
 
   for ($msg_num = 1; $msg_num <= $msg_count; $msg_num++) {
     logmsg(PM_INFO, "Retrieving message $msg_num / $msg_count");
-    $imap_message = new NYSS_IMAP_Message($imapSess, $msg_num);
+    $imap_message = new CRM_NYSS_IMAP_Message($imapSess, $msg_num);
     $msgMetaData = $imap_message->fetchMetaData();
 
     $fwder = strtolower($msgMetaData->fromEmail);
@@ -536,7 +536,7 @@ function storeMessage($imapMsg, $db, $params)
   $fwdSubject = mysql_real_escape_string(mb_strcut(htmlspecialchars($msgMeta->subject,ENT_QUOTES),0,255));
   $fwdDate = mysql_real_escape_string($msgMeta->date);
   $fwdFormat = 'plain';
-  $fwdBody = mysql_real_escape_string($msg->mangleHTML());
+  $fwdBody = mysql_real_escape_string($imapMsg->mangleHTML());
 
   $messageId = $msgMeta->uid;
   /* legacy data point */

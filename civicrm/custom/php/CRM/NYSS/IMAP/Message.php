@@ -1,7 +1,6 @@
 <?php
 
-
-class NYSS_IMAP_Message
+class CRM_NYSS_IMAP_Message
 {
   public static $body_type_labels = array(
     0 => 'text',
@@ -185,8 +184,8 @@ class NYSS_IMAP_Message
 
   public function hasAttachments()
   {
-    if (isset($this->_imap_structure->parts)) {
-      foreach ($this->_imap_structure->parts as $k => $v) {
+    if (isset($this->_structure->parts)) {
+      foreach ($this->_structure->parts as $k => $v) {
         if ($v->ifdisposition && $v->disposition == 'attachment') {
           return true;
         }
@@ -207,9 +206,9 @@ class NYSS_IMAP_Message
   public function populateParts($include_attach = false)
   {
     $parts = array();
-    $this->_is_multipart = isset($this->_imap_structure->parts);
+    $this->_is_multipart = isset($this->_structure->parts);
     if ($this->_is_multipart) {
-      foreach ($this->_imap_structure->parts as $k => $v) {
+      foreach ($this->_structure->parts as $k => $v) {
         $partno = (int)$k + 1;
         $parts[$partno] = $v;
         if (!$v->ifdisposition || $include_attach) {
@@ -218,7 +217,7 @@ class NYSS_IMAP_Message
       }
     }
     else {
-      $parts[1] = clone $this->_imap_structure;
+      $parts[1] = clone $this->_structure;
       $parts[1]->content = $this->fetchPart();
     }
     $this->_imap_parts = $parts;
