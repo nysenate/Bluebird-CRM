@@ -10,7 +10,8 @@ define ('NYSS_AJAX_ERR_WARN',  3);
 define ('NYSS_AJAX_ERR_INFO',  4);
 define ('NYSS_AJAX_ERR_DEBUG', 5);
 
-class NYSS_AJAX_Response {
+class CRM_NYSS_AJAX_Response
+{
   public static $default_content_type = 'application';
   public static $default_content_subtype = 'json';
   public static $default_charset = 'UTF-8';
@@ -144,8 +145,6 @@ class NYSS_AJAX_Response {
   }
 
   public function sendDBException($e) {
-    $x = NYSS_Logger::getInstance();
-    $x->log("Dumping exception:\n".var_export($e,1),NYSS_LOG_LEVEL_FATAL);
     if ($e instanceof PDOException) {
       $msg = "SQLSTATE:{$e->errorInfo[0]}, ERROR:{$e->errorInfo[1]}, MSG:{$e->errorInfo[2]}";
       $this->sendMessage($msg,NYSS_AJAX_ERR_FATAL,500);
@@ -155,8 +154,6 @@ class NYSS_AJAX_Response {
   }
 
   public function sendFatal($msg,$status=500) {
-    $x = NYSS_Logger::getInstance();
-    $x->log("Dumping\n".$x->getBackTrace(),NYSS_LOG_LEVEL_ERROR);
     $this->data = NULL;
     $this->sendMessage($msg,NYSS_AJAX_ERR_FATAL,$status);
   }

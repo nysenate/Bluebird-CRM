@@ -3,7 +3,7 @@
 require_once 'CRM/Utils/Array.php';
 
 
-class NYSS_IMAP_Session
+class CRM_NYSS_IMAP_Session
 {
   public static $force_readonly = false;
   public static $auto_expunge = true;

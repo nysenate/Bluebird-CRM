@@ -1706,4 +1706,4 @@ class CRM_NYSS_IMAP_AJAX
     die($ret);
   }
 
-} // CRM_IMAP_AJAX
+} // CRM_NYSS_IMAP_AJAX
