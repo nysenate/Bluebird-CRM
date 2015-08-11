@@ -4,7 +4,7 @@ require_once 'CRM/Core/Page.php';
 require_once 'CRM/Core/Error.php';
 require_once 'CRM/Core/Form.php';
 
-class CRM_IMAP_Page_Activities extends CRM_Core_Page
+class CRM_NYSS_IMAP_Page_Reports extends CRM_Core_Page
 {
   function run()
   {
