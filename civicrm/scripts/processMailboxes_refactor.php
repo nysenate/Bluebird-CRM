@@ -368,10 +368,10 @@ function checkImapAccount($imapSess, $params)
         if ($params['archivemail'] == true) {
           $abox = $params['archivebox'];
           if (imap_mail_move($imap_conn, $msg_num, $abox)) {
-            logmsg(PM_DEBUG, "Messsage $msg_num moved to $abox";
+            logmsg(PM_DEBUG, "Messsage $msg_num moved to $abox");
           }
           else {
-            logmsg(PM_ERROR, "Failed to move message $msg_num to $abox";
+            logmsg(PM_ERROR, "Failed to move message $msg_num to $abox");
           }
         }
       }
