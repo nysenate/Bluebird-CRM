@@ -307,8 +307,11 @@ function processMailboxCommand($cmd, $params)
     $rc = false;
   }
 
-  //clean up moved/deleted messages
-  // Using CL_EXPUNGE is same as calling imap_expunge().
+  // Changes to the IMAP mailbox do not take effect unless the CL_EXPUNGE
+  // flag is provided to the imap_close() call, or if imap_expunge() is
+  // explicitly called.  Also note that if the connection was opened with
+  // the readonly flag set, then no changes will be made to the mailbox.
+  // The destructor handles all of this.
   $imap_session = null;
 
   return $rc;
@@ -351,19 +354,25 @@ function checkImapAccount($imapSess, $params)
     logmsg(PM_INFO, "Retrieving message $msg_num / $msg_count");
     $imap_message = new CRM_NYSS_IMAP_Message($imapSess, $msg_num);
     $msgMetaData = $imap_message->fetchMetaData();
-
     $fwder = strtolower($msgMetaData->fromEmail);
 
     // check whether or not the forwarder is valid
     if (array_key_exists($fwder, $params['authForwarders'])) {
       logmsg(PM_DEBUG, "Forwarder [$fwder] is allowed to send to this mailbox");
+
       // retrieved msg, now store to Civi and if successful move to archive
       if (storeMessage($imap_message, $dbconn, $params) == true) {
         //mark as read
         imap_setflag_full($imap_conn, $msgMetaData->uid, '\\Seen', ST_UID);
         // move to folder if necessary
         if ($params['archivemail'] == true) {
-          imap_mail_move($imap_conn, $msg_num, $params['archivebox']);
+          $abox = $params['archivebox'];
+          if (imap_mail_move($imap_conn, $msg_num, $abox)) {
+            logmsg(PM_DEBUG, "Messsage $msg_num moved to $abox";
+          }
+          else {
+            logmsg(PM_ERROR, "Failed to move message $msg_num to $abox";
+          }
         }
       }
     }
@@ -397,12 +406,12 @@ function checkImapAccount($imapSess, $params)
 
 
 
-function parseMimePart($imapSess, $msgid, $p, $partno, &$attachments)
+function parseMimePart($imapMsg, $p, $partno, &$attachments)
 {
   global $uploadInbox;
 
   //fetch part
-  $part = $imapSess->fetchBody($msgid, $partno);
+  $part = $imapMsg->fetchBody($partno);
 
   //if type is not text
   if ($p->type != 0) {
@@ -486,7 +495,7 @@ function parseMimePart($imapSess, $msgid, $p, $partno, &$attachments)
   //if subparts... recurse into function and parse them too!
   if (count($p->parts) > 0) {
     foreach ($p->parts as $pno => $parr) {
-      parseMimePart($imapSess, $msgid, $parr, $partno.'.'.($pno+1), $attachments);
+      parseMimePart($imapMsg, $parr, $partno.'.'.($pno+1), $attachments);
     }
   }
   return true;
@@ -502,10 +511,9 @@ function storeMessage($imapMsg, $db, $params)
 {
   global $authForwarders;
 
-  $msgMeta = $imapMsg->fetchMetaData();
-  $msgid = $msgMeta->msgid;
   $bSuccess = true;
   $uploadInbox = $params['uploadInbox'];
+  $msgMeta = $imapMsg->fetchMetaData();
   $all_addr = $imapMsg->findFromAddresses();
 
   // check for plain/html body text
@@ -516,7 +524,6 @@ function storeMessage($imapMsg, $db, $params)
         'encoding' => $msgStruct->encoding,
         'body' => $imapMsg->fetchPart(),
         'debug' => $msgStruct->lines." : ".$msgStruct->encoding." : 1");
-
   }
   else { // multipart: iterate through each part
     foreach ($msgStruct->parts as $partno => $pstruct) {
@@ -533,28 +540,27 @@ function storeMessage($imapMsg, $db, $params)
   $fromName = mysql_real_escape_string(substr(mysql_real_escape_string($msgMeta->fromName), 0, 200));
   // the subject could be utf-8
   // civicrm will force '<' and '>' to htmlentities...handle it here to be consistent
-  $fwdSubject = mysql_real_escape_string(mb_strcut(htmlspecialchars($msgMeta->subject,ENT_QUOTES),0,255));
+  $fwdSubject = mysql_real_escape_string(mb_strcut(htmlspecialchars($msgMeta->subject, ENT_QUOTES), 0, 255));
   $fwdDate = mysql_real_escape_string($msgMeta->date);
   $fwdFormat = 'plain';
   $fwdBody = mysql_real_escape_string($imapMsg->mangleHTML());
-
-  $messageId = $msgMeta->uid;
+  $msgUid = $msgMeta->uid;
   /* legacy data point */
-  $imapId = 0;
-
 
   if (is_array($all_addr['secondary'])) {
-    foreach ($all_addr['secondary'] as $k=>$v) {
+    foreach ($all_addr['secondary'] as $k => $v) {
       if (!array_key_exists($v['address'],$authForwarders)) {
         $fwdEmail = mysql_real_escape_string($v['address']);
         $fwdName  = mysql_real_escape_string($v['name']);
         break;
       }
     }
-  } elseif (!array_key_exists($all_addr['primary']['address'],$authForwarders)) {
+  }
+  elseif (!array_key_exists($all_addr['primary']['address'],$authForwarders)) {
     $fwdEmail = mysql_real_escape_string($all_addr['primary']['address']);
     $fwdName  = mysql_real_escape_string($all_addr['primary']['name']);
-  } else {
+  }
+  else {
     $fwdEmail = '';
     $fwdName = '';
   }
@@ -565,24 +571,23 @@ function storeMessage($imapMsg, $db, $params)
   $status = STATUS_UNPROCESSED;
 
   $q = "INSERT INTO nyss_inbox_messages
-        (message_id, imap_id, sender_name, sender_email, subject, body,
+        (message_id, sender_name, sender_email, subject, body,
          forwarder, status, format, debug, updated_date, email_date)
-        VALUES ($messageId, $imapId, '$fwdName', '$fwdEmail', '$fwdSubject',
+        VALUES ($msgUid, '$fwdName', '$fwdEmail', '$fwdSubject',
                 '$fwdBody', '$fromEmail', $status, '$fwdFormat', '$debug',
                 CURRENT_TIMESTAMP, '$fwdDate');";
 
   if (mysql_query($q, $db) == false) {
-    logmsg(PM_ERROR, "Unable to insert msgid=$messageId, imapid=$imapId");
+    logmsg(PM_ERROR, "Unable to insert msgid=$msgUid");
   }
 
-  $q = "SELECT id FROM nyss_inbox_messages
-        WHERE message_id=$messageId AND imap_id=$imapId;";
+  $q = "SELECT id FROM nyss_inbox_messages WHERE message_id=$msgUid;";
   $res = mysql_query($q, $db);
   $rowCount = 0;
   while ($row = mysql_fetch_assoc($res)) {
     $rowId = $row['id'];
     $rowCount++;
-    logmsg(PM_INFO, "found rowid=$rowId");
+    logmsg(PM_DEBUG, "found rowid=$rowId");
   }
   mysql_free_result($res);
 
@@ -601,7 +606,7 @@ function storeMessage($imapMsg, $db, $params)
     $attachments = array();
     foreach ($msgStruct->parts as $partno => $pstruct) {
       //parse parts of email
-      parseMimePart($imapMsg, $msgid, $pstruct, $partno+1, $attachments);
+      parseMimePart($imapMsg, $pstruct, $partno+1, $attachments);
     }
   }
 
@@ -660,7 +665,7 @@ function searchForMatches($db, $params)
   $uploadDir = $params['uploadDir'];
 
   // Check the items we have yet to match (unmatched=0, unprocessed=99)
-  $q = "SELECT id, message_id, imap_id, sender_email,
+  $q = "SELECT id, message_id, sender_email,
                subject, body, forwarder, updated_date
         FROM nyss_inbox_messages
         WHERE status=".STATUS_UNPROCESSED." OR status=".STATUS_UNMATCHED.";";
@@ -670,7 +675,6 @@ function searchForMatches($db, $params)
   while ($row = mysql_fetch_assoc($mres)) {
     $msg_row_id = $row['id'];
     $message_id = $row['message_id'];
-    $imap_id = $row['imap_id'];
     $sender_email = $row['sender_email'];
     $subject = $row['subject'];
     $body = $row['body'];

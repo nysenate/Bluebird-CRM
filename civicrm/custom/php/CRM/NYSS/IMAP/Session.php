@@ -15,7 +15,7 @@ class CRM_NYSS_IMAP_Session
   private $_defaults = array(
     'server'   => 'webmail.nysenate.gov',
     'port'     => 143,
-    'flags'    => array('imap', 'readonly'),
+    'flags'    => array('imap'),
     'mailbox'  => 'INBOX',
     'user'     => '',
     'password' => ''
@@ -134,6 +134,8 @@ class CRM_NYSS_IMAP_Session
 
   private function _closeConnection()
   {
+    // Changes (moves and deletions) to the IMAP mailbox will not be made
+    // unless CL_EXPUNGE is used when the connection is closed.
     if ($this->_conn) {
       imap_close($this->_conn, (static::$auto_expunge ? CL_EXPUNGE : null));
     }
