@@ -678,5 +678,23 @@ class CRM_Utils_Array {
 
     return $results;
   }
-}
 
+
+  //NYSS 8629
+  /**
+   * Extract a subset of the master_array using the keys provided in key_array.
+   *
+   * Note: If a key from $key_array does not appear in $master_array, then
+   * it will not appear in the result.
+   *
+   * @param array $master_array
+   * @param array $key_array
+   *   List of keys to copy.
+   * @return array
+   */
+  public static function subset($master_array, $key_array)
+  {
+    return array_intersect_key($master_array, array_flip($key_array));
+  } // subset()
+
+}

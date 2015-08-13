@@ -83,7 +83,6 @@ if ($optlist === null) {
 require_once 'CRM/Core/Config.php';
 $config =& CRM_Core_Config::singleton();
 $session =& CRM_Core_Session::singleton();
-
 require_once 'CRM/Contact/BAO/Contact.php';
 require_once 'CRM/Contact/BAO/GroupContact.php';
 require_once 'CRM/Activity/BAO/Activity.php';
@@ -105,8 +104,8 @@ require_once 'CRM/NYSS/IMAP/Message.php';
 ** The user= and pass= command line args can be used to override the IMAP
 ** accounts from the config file.
 */
-$bbconfig = get_bluebird_instance_config();
 
+$bbconfig = get_bluebird_instance_config();
 // Required Bluebird config parameters.
 $imap_validsenders = strtolower($bbconfig['imap.validsenders']);
 $imap_activity_status = $bbconfig['imap.activity.status.default'];
@@ -545,25 +544,35 @@ function storeMessage($imapMsg, $db, $params)
   $fwdFormat = 'plain';
   $fwdBody = mysql_real_escape_string($imapMsg->mangleHTML());
   $msgUid = $msgMeta->uid;
-  /* legacy data point */
 
-  if (is_array($all_addr['secondary'])) {
+  // if there is at least one secondary address, we WILL use an address from this array
+  // if any address is not an authorized sender, use it, otherwise, use the first one
+  if (is_array($all_addr['secondary']) && count($all_addr['secondary']) > 0) {
+    $foundIndex = 0;
     foreach ($all_addr['secondary'] as $k => $v) {
-      if (!array_key_exists($v['address'],$authForwarders)) {
-        $fwdEmail = mysql_real_escape_string($v['address']);
-        $fwdName  = mysql_real_escape_string($v['name']);
+      // if this address is NOT an authorized forwarder
+      if (!array_key_exists($v['address'], $authForwarders)) {
+        $foundIndex = $k;
         break;
       }
     }
+    $fwdEmail = $all_addr['secondary'][$foundIndex]['address'];
+    $fwdName = $all_addr['secondary'][$foundIndex]['name'];
   }
-  elseif (!array_key_exists($all_addr['primary']['address'],$authForwarders)) {
-    $fwdEmail = mysql_real_escape_string($all_addr['primary']['address']);
-    $fwdName  = mysql_real_escape_string($all_addr['primary']['name']);
+  // if secondary addresses were not populated, we can use the primary if it is not an authorized forwarder
+  elseif (!array_key_exists($all_addr['primary']['address'], $authForwarders)) {
+    $fwdEmail = $all_addr['primary']['address'];
+    $fwdName  = $all_addr['primary']['name'];
   }
+  // final failure - no addresses found
   else {
     $fwdEmail = '';
     $fwdName = '';
   }
+
+  // make data safe
+  $fwdEmail = mysql_real_escape_string($fwdEmail);
+  $fwdName = mysql_real_escape_string($fwdName);
 
   // debug info for mysql
   $debug = "";
