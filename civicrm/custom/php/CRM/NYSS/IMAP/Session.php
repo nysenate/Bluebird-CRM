@@ -13,7 +13,7 @@ class CRM_NYSS_IMAP_Session
   private $_conn = null;
 
   private $_defaults = array(
-    'server'   => 'webmail.nysenate.gov',
+    'server'   => 'senmail.senate.state.ny.us',
     'port'     => 143,
     'flags'    => array('imap'),
     'mailbox'  => 'INBOX',

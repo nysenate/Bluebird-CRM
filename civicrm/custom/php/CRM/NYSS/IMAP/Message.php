@@ -8,7 +8,7 @@ class CRM_NYSS_IMAP_Message
     2 => 'message',
     3 => 'application',
     4 => 'audio',
-    5 => 'image', 
+    5 => 'image',
     6 => 'video',
     7 => 'other');
 
@@ -127,11 +127,11 @@ class CRM_NYSS_IMAP_Message
       // build return object
       $meta = new stdClass();
       $meta->subject = $headers->fetchsubject;
-      $meta->fromName = $headers->from[0]->personal;
+      $meta->fromName = isset($headers->from[0]->personal) ? $headers->from[0]->personal : '';
       $meta->fromEmail = $headers->from[0]->mailbox.'@'.$headers->from[0]->host;
       $meta->uid = $this->_uid;
       $meta->msgnum = $this->_msgnum;
-      $meta->date = date("Y-m-d H:i:s", strtotime($header->date));
+      $meta->date = date("Y-m-d H:i:s", strtotime($headers->date));
       $this->_metadata = $meta;
     }
     return $this->_metadata;
@@ -167,7 +167,7 @@ class CRM_NYSS_IMAP_Message
     $addr = array(
               'primary'=>array(
                   'address'=>$this->_headers->from[0]->mailbox.'@'.$this->_headers->from[0]->host,
-                  'name'=>$this->_headers->from[0]->personal,
+                  'name'=>isset($this->_headers->from[0]->personal) ? $this->_headers->from[0]->personal : '',
                   ),
               'secondary'=>array(),
               'other'=>array(),
@@ -183,7 +183,7 @@ class CRM_NYSS_IMAP_Message
         $tc = $this->_decodeContent($v->content, $v->encoding);
         if (preg_match_all('/From:\s*(.*)/i', $tc, $matches)) {
           foreach ($matches[1] as $kk => $vv) {
-            if (preg_match('/CN=|OU?=/', $vv)) {
+            if (preg_match('#CN=|OU?=|/senate#', $vv)) {
               $vv = $this->_resolveLDAPAddress($vv);
             }
             $ta = imap_rfc822_parse_adrlist($vv, '');
@@ -404,24 +404,33 @@ class CRM_NYSS_IMAP_Message
     // if o= is appended to the end of the email address remove it
     $patterns = array(
       '#/senate@senate#i',   /* standardize reference to senate */
-      '#/CENTER/senate#i',   /* standardize reference to senate */
+      /* SBB DEVCHANGE: This next line was in the original code, but I have found that removing
+         the /CENTER part of the name makes the search fail.  Keep as standard, or remove?
+         If we remove it, remember to remove the appropriate entry in the $replace array below */
+      '#/CENTER/senate#i',   /* standardize reference to senate  */
       '/CN=|O=|OU=/i',       /* remove LDAP-specific addressing */
       '/mailto|\(|\)|:/i',   /* remove link remnants, parenthesis */
       '/"|\'/i',             /* remove quotes */
       '/\[|\]/i',            /* remove square brackets */
     );
     $replace = array('/senate', '/senate');
-    $str = preg_replace($patterns, $replace, $addr);
+    $str = preg_replace($patterns, $replace, trim($addr));
     $ret = '';
     if (strpos($str, '/senate') !== false) {
-      // LDAP addresses have slashes, so we do an internal lookup
-      $ldapcon = ldap_connect("ldap://webmail.senate.state.ny.us", 389);
-      $retrieve = array('sn', 'givenname', 'mail');
-      $search = ldap_search($ldapcon, 'o=senate', "(displayname=$str)", $retrieve);
-      $info = ldap_get_entries($ldapcon, $search);
+      $search = false;
+      $ldapcon = ldap_connect("senmail.senate.state.ny.us", 389);
+      if ($ldapcon) {
+        $retrieve = array('sn', 'givenname', 'mail');
+        $search = ldap_search($ldapcon, 'o=senate', "(displayname=$str)", $retrieve);
+      } else {
+        error_log("Failed to create connection to LDAP server (testing msg#={$this->_msgnum}, addr=$str)");
+      }
+      $info = ($search === false) ? array('count'=>0) : ldap_get_entries($ldapcon, $search);
       if (array_key_exists(0,$info)) {
         $name = $info[0]['givenname'][0].' '.$info[0]['sn'][0];
         $ret = "$name <{$info[0]['mail'][0]}>";
+      } else {
+        error_log("LDAP search returned no results (testing msg#={$this->_msgnum}, addr=$str)");
       }
     }
     return $ret;

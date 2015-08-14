@@ -58,6 +58,9 @@ define('AUTH_FORWARDERS_GROUP_NAME', 'Authorized_Forwarders');
 
 error_reporting(E_ERROR | E_PARSE | E_WARNING);
 
+/* enable for debugging only */
+//ini_set('error_reporting',-1);
+
 if (!ini_get('date.timezone')) {
   date_default_timezone_set('America/New_York');
 }
@@ -118,10 +121,10 @@ $g_crm_instance = $site;
 $all_params = array(
   // Each element is: paramName, optName, bbcfgName, defaultVal
   array('site', 'site', null, null),
-  array('server', 'server', 'imap.server', null),
-  array('port', 'port', 'imap.port', null),
-  array('flags', 'imap-flags', 'imap.flags', null),
-  array('mailbox', 'mailbox', 'imap.mailbox', null),
+  array('server', 'server', 'imap.server', 'senmail.senate.state.ny.us'),
+  array('port', 'port', 'imap.port', 143),
+  array('flags', 'imap-flags', 'imap.flags', '/imap/notls'),
+  array('mailbox', 'mailbox', 'imap.mailbox', 'INBOX'),
   array('archivebox', 'archivebox', 'imap.archivebox', DEFAULT_IMAP_ARCHIVEBOX),
   array('unreadonly', 'unread-only', null, DEFAULT_IMAP_PROCESS_UNREAD_ONLY),
   array('archivemail', 'archive-mail', null, DEFAULT_IMAP_ARCHIVE_MAIL)
@@ -461,6 +464,7 @@ function parseMimePart($imapMsg, $p, $partno, &$attachments)
       $bodyType = $p->type;
       $pattern = '/^('.ATTACHMENT_FILE_EXTS.')$/';
 
+      $rejected_reason = "No rejection set";
       // Allow body type 3 (application) with certain file extensions,
       // and allow body types 4 (audio), 5 (image), 6 (video).
       if (($bodyType == 3 && preg_match($pattern, $fileExt))
@@ -492,7 +496,7 @@ function parseMimePart($imapMsg, $p, $partno, &$attachments)
   }
 
   //if subparts... recurse into function and parse them too!
-  if (count($p->parts) > 0) {
+  if (isset($p->parts) && count($p->parts) > 0) {
     foreach ($p->parts as $pno => $parr) {
       parseMimePart($imapMsg, $parr, $partno.'.'.($pno+1), $attachments);
     }
@@ -522,7 +526,7 @@ function storeMessage($imapMsg, $db, $params)
     $rawBody[$msgStruct->subtype] = array(
         'encoding' => $msgStruct->encoding,
         'body' => $imapMsg->fetchPart(),
-        'debug' => $msgStruct->lines." : ".$msgStruct->encoding." : 1");
+        'debug' => "Encoding:".$msgStruct->encoding." section:1");
   }
   else { // multipart: iterate through each part
     foreach ($msgStruct->parts as $partno => $pstruct) {
@@ -530,7 +534,7 @@ function storeMessage($imapMsg, $db, $params)
       $rawBody[$pstruct->subtype] = array(
         'encoding' => $pstruct->encoding,
         'body' => $imapMsg->fetchPart($section),
-        'debug' => $pstruct->lines." : ".$pstruct->encoding." : $section");
+        'debug' => "Encoding:".$pstruct->encoding." section:$section");
     }
   }
 
@@ -611,8 +615,8 @@ function storeMessage($imapMsg, $db, $params)
   $timeStart = microtime(true);
 
   // if there is more then one part to the message
-  if (count($msgStruct->parts) > 1) {
-    $attachments = array();
+  $attachments = array();
+  if (isset($msgStruct->parts) && count($msgStruct->parts) > 1) {
     foreach ($msgStruct->parts as $partno => $pstruct) {
       //parse parts of email
       parseMimePart($imapMsg, $pstruct, $partno+1, $attachments);
