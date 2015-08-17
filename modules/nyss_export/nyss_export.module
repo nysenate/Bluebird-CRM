@@ -384,22 +384,13 @@ function _cleanStr( $string ) {
  * escape string to make mysql safe
  */
 function _cleanHTML($str) {
-  //convert <br /> to nl
-  $str = preg_replace("=<br */?>=i", "\n", $str);
+  //CRM_Core_Error::debug_var('_cleanHTML $str (before)', $str);
 
-  //convert <p to nlnl
-  $str = str_replace('<p>', '', $str);
-  $str = str_replace('</p>', "\n\n", $str);
-
-  //strip remaining html and odd characters
-  $str = str_replace('&nbsp;', '', strip_tags($str));
-  $str = html_entity_decode(htmlspecialchars_decode($str), ENT_QUOTES, 'utf-8');
-  $str = str_replace('â€™', "'", $str);
-  $str = str_replace('â', "'", $str);
+  $str = CRM_Utils_String::htmlToText($str);
 
   //escape
   $str = CRM_Core_DAO::escapeString($str);
 
-  //CRM_Core_Error::debug_var('$str', $str);
+  //CRM_Core_Error::debug_var('_cleanHTML $str (after)', $str);
   return $str;
 }//_cleanStr
