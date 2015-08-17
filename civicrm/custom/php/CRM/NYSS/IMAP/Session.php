@@ -91,7 +91,7 @@ class CRM_NYSS_IMAP_Session
   } // getFolderStatus()
 
 
-  public function listFolders($pattern = '*', $removeServerRef = false)
+  public function listFolders($pattern = '*', $removeServerRef = true)
   {
     $boxes = imap_list($this->_conn, $this->_serverRef, $pattern);
     if ($removeServerRef) {
