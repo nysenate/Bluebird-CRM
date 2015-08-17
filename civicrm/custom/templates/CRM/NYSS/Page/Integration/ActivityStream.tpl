@@ -138,10 +138,6 @@
   }
 
   function setSelectorClass() {
-    //console.log('setSelectorClass');
-    cj('#contact-web-activity-selector td:last-child').each( function( ) {
-      cj(this).parent().addClass(cj(this).text() );
-    });
   }
 </script>
 {/literal}

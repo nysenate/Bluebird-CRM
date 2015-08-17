@@ -893,7 +893,7 @@ class CRM_NYSS_BAO_Integration {
   /*
    * archive the accumulator record and then delete from accumulator
    */
-  static function archiveRecord($type, $row, $params, $date) {
+  static function archiveRecord($db, $type, $row, $params, $date) {
     //CRM_Core_Error::debug_var('archiveRecord $type', $type);
     //CRM_Core_Error::debug_var('archiveRecord $row', $row);
     //CRM_Core_Error::debug_var('archiveRecord $params', $params);
@@ -952,7 +952,7 @@ class CRM_NYSS_BAO_Integration {
     //CRM_Core_Error::debug_var('archiveRecord $data', $data);
 
     $sql = "
-      INSERT INTO senate_web_integration.archive
+      INSERT INTO {$db}.archive
       ({$fieldList})
       VALUES
       ('{$dataList}')
@@ -972,7 +972,7 @@ class CRM_NYSS_BAO_Integration {
       $dataList = implode("', '", $data);
 
       $sql = "
-      INSERT INTO senate_web_integration.archive_{$type}
+      INSERT INTO {$db}.archive_{$type}
       ({$fieldList})
       VALUES
       ('{$dataList}')
@@ -983,7 +983,7 @@ class CRM_NYSS_BAO_Integration {
 
     //now delete record from accumulator
     CRM_Core_DAO::executeQuery("
-      DELETE FROM senate_web_integration.accumulator
+      DELETE FROM {$db}.accumulator
       WHERE id = {$row->id}
     ");
 
