@@ -9,7 +9,7 @@
 // Revised: 2015-03-20 - finished up Matched and Report interfaces
 // Revised: 2015-03-26 - bug fixes and better error handling
 
-class CRM_IMAP_AJAX
+class CRM_NYSS_IMAP_AJAX
 {
   const STATUS_UNMATCHED = 0;
   const STATUS_MATCHED = 1;
@@ -1706,4 +1706,4 @@ class CRM_IMAP_AJAX
     die($ret);
   }
 
-} // CRM_IMAP_AJAX
+} // CRM_NYSS_IMAP_AJAX

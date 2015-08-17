@@ -3,7 +3,7 @@
 require_once 'CRM/Utils/Array.php';
 
 
-class NYSS_IMAP_Session
+class CRM_NYSS_IMAP_Session
 {
   public static $force_readonly = false;
   public static $auto_expunge = true;
@@ -13,9 +13,9 @@ class NYSS_IMAP_Session
   private $_conn = null;
 
   private $_defaults = array(
-    'server'   => 'webmail.nysenate.gov',
+    'server'   => 'senmail.senate.state.ny.us',
     'port'     => 143,
-    'flags'    => array('imap', 'readonly'),
+    'flags'    => array('imap'),
     'mailbox'  => 'INBOX',
     'user'     => '',
     'password' => ''
@@ -134,6 +134,8 @@ class NYSS_IMAP_Session
 
   private function _closeConnection()
   {
+    // Changes (moves and deletions) to the IMAP mailbox will not be made
+    // unless CL_EXPUNGE is used when the connection is closed.
     if ($this->_conn) {
       imap_close($this->_conn, (static::$auto_expunge ? CL_EXPUNGE : null));
     }

@@ -1,7 +1,6 @@
 <?php
 
-
-class NYSS_IMAP_Message
+class CRM_NYSS_IMAP_Message
 {
   public static $body_type_labels = array(
     0 => 'text',
@@ -9,7 +8,7 @@ class NYSS_IMAP_Message
     2 => 'message',
     3 => 'application',
     4 => 'audio',
-    5 => 'image', 
+    5 => 'image',
     6 => 'video',
     7 => 'other');
 
@@ -55,6 +54,7 @@ class NYSS_IMAP_Message
   private $_uid = 0;
   private $_headers = null;
   private $_structure = null;
+  private $_metadata = null;
   private $_parts = null;
   private $_attachments = null;
   private $_from_limit = 0;
@@ -66,12 +66,10 @@ class NYSS_IMAP_Message
   {
     $this->_session = $imapSession;
     $this->_msgnum = $msgnum;
-    $this->_uid = $this->_fetchUID();
-    $conn = $this->getConnection();
-    $this->_structure = imap_fetchstructure($conn, $this->_uid, FT_UID);
-    if ($this->_uid) {
-      $this->populateHeaders();
-    }
+    $this->_uid = imap_uid($this->getConnection(), $msgnum);
+    // Pre-populate the _headers and _structure properties.
+    $this->fetchHeaders();
+    $this->fetchStructure();
   } // __construct()
 
 
@@ -81,53 +79,81 @@ class NYSS_IMAP_Message
   } // getConnection()
 
 
+  // Cache the message attachments after retrieving them on the first call.
   public function fetchAttachments()
   {
-    $this->_imap_attachments = array();
-    $parts = array();
-    $this->_is_multipart = isset($this->_structure->parts);
-    if ($this->_is_multipart) {
-      foreach ($this->_structure->parts as $k => $v) {
-        $partno = (int)$k + 1;
-        if ($v->ifdisposition && $v->disposition == 'attachment') {
-          $this->_imap_attachments[] = $this->fetchPart($partno);
+    if ($this->_attachments == null) {
+      // Make sure that _structure is populated.
+      if ($this->_structure == null) {
+        $this->fetchStructure();
+      }
+      $this->_attachments = array();
+      if ($this->_is_multipart) {
+        foreach ($this->_structure->parts as $k => $v) {
+          $partno = (int)$k + 1;
+          if ($v->ifdisposition && $v->disposition == 'attachment') {
+            $this->_attachments[] = $this->fetchPart($partno);
+          }
         }
       }
     }
-    return $this->_imap_attachments;
+    return $this->_attachments;
   } // fetchAttachments()
 
 
+  public function fetchBody($section = '')
+  {
+    return imap_fetchbody($this->getConnection(), $this->_msgnum, $section);
+  } // fetchBody()
+
+
+  // Cache the message headers after retrieving them on the first call.
   public function fetchHeaders()
   {
-    if (!$this->_headers) {
-      $this->populateHeaders();
+    if ($this->_headers == null) {
+      $this->_headers = imap_headerinfo($this->getConnection(), $this->_msgnum, $this->_from_limit, $this->_subj_limit);
     }
     return $this->_headers;
   } // fetchHeaders()
 
 
+  // Cache the message meta data after retrieving it on the first call.
   public function fetchMetaData()
   {
-    // fetch info
-    $header = $this->fetchHeaders();
+    if ($this->_metadata == null) {
+      // fetch info
+      $headers = $this->fetchHeaders();
 
-    // build return object
-    $ret = new stdClass();
-    $ret->subject = $header->fetchsubject;
-    $ret->fromName = $header->from[0]->personal;
-    $ret->fromEmail = $header->from[0]->mailbox.'@'.$this->_headers->from[0]->host;
-    $ret->uid = $this->_uid;
-    $ret->msgid = $this->_msgnum;
-    $ret->date = date("Y-m-d H:i:s", strtotime($header->date));
-    return $ret;
+      // build return object
+      $meta = new stdClass();
+      $meta->subject = $headers->fetchsubject;
+      $meta->fromName = isset($headers->from[0]->personal) ? $headers->from[0]->personal : '';
+      $meta->fromEmail = $headers->from[0]->mailbox.'@'.$headers->from[0]->host;
+      $meta->uid = $this->_uid;
+      $meta->msgnum = $this->_msgnum;
+      $meta->date = date("Y-m-d H:i:s", strtotime($headers->date));
+      $this->_metadata = $meta;
+    }
+    return $this->_metadata;
   } // fetchMetaData()
 
 
   public function fetchPart($section = '1')
   {
-    return imap_fetchbody($this->getConnection(), $this->_uid, $section, FT_UID);
+    return $this->fetchBody($section);
   } // fetchPart()
+
+
+  // Cache the message structure after retrieving it on the first call.
+  // Also sets the is_multipart flag accordingly.
+  public function fetchStructure()
+  {
+    if ($this->_structure == null) {
+      $this->_structure = imap_fetchstructure($this->getConnection(), $this->_msgnum);
+      $this->_is_multipart = isset($this->_structure->parts);
+    }
+    return $this->_structure;
+  } // fetchStructure()
 
 
   public function getStructure()
@@ -141,23 +167,23 @@ class NYSS_IMAP_Message
     $addr = array(
               'primary'=>array(
                   'address'=>$this->_headers->from[0]->mailbox.'@'.$this->_headers->from[0]->host,
-                  'name'=>$this->_headers->from[0]->personal,
+                  'name'=>isset($this->_headers->from[0]->personal) ? $this->_headers->from[0]->personal : '',
                   ),
               'secondary'=>array(),
               'other'=>array(),
             );
     $other = array();
-    if (!(is_array($this->_imap_parts) && count($this->_imap_parts))) {
+    if (!(is_array($this->_parts) && count($this->_parts))) {
       $this->populateParts();
     }
 
-    foreach ($this->_imap_parts as $k => $v) {
+    foreach ($this->_parts as $k => $v) {
       if (!$v->ifdisposition && $v->content) {
         $matches = array();
         $tc = $this->_decodeContent($v->content, $v->encoding);
         if (preg_match_all('/From:\s*(.*)/i', $tc, $matches)) {
           foreach ($matches[1] as $kk => $vv) {
-            if (preg_match('/CN=|OU?=/', $vv)) {
+            if (preg_match('#CN=|OU?=|/senate#', $vv)) {
               $vv = $this->_resolveLDAPAddress($vv);
             }
             $ta = imap_rfc822_parse_adrlist($vv, '');
@@ -185,8 +211,8 @@ class NYSS_IMAP_Message
 
   public function hasAttachments()
   {
-    if (isset($this->_imap_structure->parts)) {
-      foreach ($this->_imap_structure->parts as $k => $v) {
+    if (isset($this->_structure->parts)) {
+      foreach ($this->_structure->parts as $k => $v) {
         if ($v->ifdisposition && $v->disposition == 'attachment') {
           return true;
         }
@@ -196,20 +222,11 @@ class NYSS_IMAP_Message
   } // hasAttachments()
 
 
-  public function populateHeaders()
-  {
-    $conn = $this->getConnection();
-    $this->_msgnum = imap_msgno($conn, $this->_uid);
-    $this->_headers = imap_headerinfo($conn, $this->_msgnum, $this->_from_limit, $this->_subj_limit);
-  } // populateHeaders()
-
-
   public function populateParts($include_attach = false)
   {
     $parts = array();
-    $this->_is_multipart = isset($this->_imap_structure->parts);
     if ($this->_is_multipart) {
-      foreach ($this->_imap_structure->parts as $k => $v) {
+      foreach ($this->_structure->parts as $k => $v) {
         $partno = (int)$k + 1;
         $parts[$partno] = $v;
         if (!$v->ifdisposition || $include_attach) {
@@ -218,10 +235,10 @@ class NYSS_IMAP_Message
       }
     }
     else {
-      $parts[1] = clone $this->_imap_structure;
+      $parts[1] = clone $this->_structure;
       $parts[1]->content = $this->fetchPart();
     }
-    $this->_imap_parts = $parts;
+    $this->_parts = $parts;
   } // populateParts()
 
 
@@ -300,11 +317,11 @@ class NYSS_IMAP_Message
   */
   private function _getPrimaryContent($decoded = true)
   {
-    if (!($this->_imap_parts)) {
+    if (!($this->_parts)) {
       $this->populateParts();
     }
     $content = '';
-    foreach ($this->_imap_parts as $k => $v) {
+    foreach ($this->_parts as $k => $v) {
       if ($v->type == 0) {
         $content = $v->content;
         if ($decoded) {
@@ -352,11 +369,12 @@ class NYSS_IMAP_Message
   } // _stripHTML()
 
 
-  private function _fetchUID()
+  // kz: This seems to be the long way to get UID.  imap_uid() is much easier.
+  private function _fetchUid()
   {
     $t = imap_fetch_overview($this->getConnection(), $this->_msgnum);
     return (is_array($t) && isset($t[0]) && is_object($t[0])) ? $t[0]->uid : 0;
-  } // _fetchUID()
+  } // _fetchUid()
 
 
   private function _decodeContent($content = '', $encoding = 0)
@@ -386,24 +404,33 @@ class NYSS_IMAP_Message
     // if o= is appended to the end of the email address remove it
     $patterns = array(
       '#/senate@senate#i',   /* standardize reference to senate */
-      '#/CENTER/senate#i',   /* standardize reference to senate */
+      /* SBB DEVCHANGE: This next line was in the original code, but I have found that removing
+         the /CENTER part of the name makes the search fail.  Keep as standard, or remove?
+         If we remove it, remember to remove the appropriate entry in the $replace array below */
+      '#/CENTER/senate#i',   /* standardize reference to senate  */
       '/CN=|O=|OU=/i',       /* remove LDAP-specific addressing */
       '/mailto|\(|\)|:/i',   /* remove link remnants, parenthesis */
       '/"|\'/i',             /* remove quotes */
       '/\[|\]/i',            /* remove square brackets */
     );
     $replace = array('/senate', '/senate');
-    $str = preg_replace($patterns, $replace, $addr);
+    $str = preg_replace($patterns, $replace, trim($addr));
     $ret = '';
     if (strpos($str, '/senate') !== false) {
-      // LDAP addresses have slashes, so we do an internal lookup
-      $ldapcon = ldap_connect("ldap://webmail.senate.state.ny.us", 389);
-      $retrieve = array('sn', 'givenname', 'mail');
-      $search = ldap_search($ldapcon, 'o=senate', "(displayname=$str)", $retrieve);
-      $info = ldap_get_entries($ldapcon, $search);
+      $search = false;
+      $ldapcon = ldap_connect("senmail.senate.state.ny.us", 389);
+      if ($ldapcon) {
+        $retrieve = array('sn', 'givenname', 'mail');
+        $search = ldap_search($ldapcon, 'o=senate', "(displayname=$str)", $retrieve);
+      } else {
+        error_log("Failed to create connection to LDAP server (testing msg#={$this->_msgnum}, addr=$str)");
+      }
+      $info = ($search === false) ? array('count'=>0) : ldap_get_entries($ldapcon, $search);
       if (array_key_exists(0,$info)) {
         $name = $info[0]['givenname'][0].' '.$info[0]['sn'][0];
         $ret = "$name <{$info[0]['mail'][0]}>";
+      } else {
+        error_log("LDAP search returned no results (testing msg#={$this->_msgnum}, addr=$str)");
       }
     }
     return $ret;

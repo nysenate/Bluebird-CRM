@@ -24,8 +24,8 @@ $g_log_levels = array(PM_ERROR => 'ERROR',
                       PM_DEBUG => 'DEBUG');
 
 // Mailbox settings common to all CRM instances
-define('DEFAULT_IMAP_SERVER', 'webmail.senate.state.ny.us');
-define('DEFAULT_IMAP_OPTS', '/imap/ssl/notls');
+define('DEFAULT_IMAP_SERVER', 'senmail.senate.state.ny.us');
+define('DEFAULT_IMAP_OPTS', '/imap');
 define('DEFAULT_IMAP_MAILBOX', 'Inbox');
 define('DEFAULT_IMAP_ARCHIVEBOX', 'Archive');
 define('DEFAULT_IMAP_PROCESS_UNREAD_ONLY', false);
@@ -588,7 +588,6 @@ function storeMessage($mbox, $db, $msgMeta, $params)
   $messageAction = $parsedBody['message_action'];
   $fwdBody = $parsedBody['body'];
   $messageId = $msgMeta->uid;
-  $imapId = 0;
   $fromEmail = substr(mysql_real_escape_string($msgMeta->fromEmail), 0, 255);
   $fromName = substr(mysql_real_escape_string($msgMeta->fromName), 0, 255);
   $subject = substr(mysql_real_escape_string($msgMeta->subject), 0, 255);
@@ -609,18 +608,18 @@ function storeMessage($mbox, $db, $msgMeta, $params)
   $status = STATUS_UNPROCESSED;
 
   $q = "INSERT INTO nyss_inbox_messages
-        (message_id, imap_id, sender_name, sender_email, subject, body,
+        (message_id, sender_name, sender_email, subject, body,
          forwarder, status, format, debug, updated_date, email_date)
-        VALUES ($messageId, $imapId, '$fwdName', '$fwdEmail', '$fwdSubject',
+        VALUES ($messageId, '$fwdName', '$fwdEmail', '$fwdSubject',
                 '$fwdBody', '$fromEmail', $status, '$fwdFormat', '$debug',
                 CURRENT_TIMESTAMP, '$fwdDate');";
 
   if (mysql_query($q, $db) == false) {
-    logmsg(PM_ERROR, "Unable to insert msgid=$messageId, imapid=$imapId");
+    logmsg(PM_ERROR, "Unable to insert msgid=$messageId");
   }
 
   $q = "SELECT id FROM nyss_inbox_messages
-        WHERE message_id=$messageId AND imap_id=$imapId;";
+        WHERE message_id=$messageId;";
   $res = mysql_query($q, $db);
   $rowCount = 0;
   while ($row = mysql_fetch_assoc($res)) {
@@ -703,7 +702,7 @@ function searchForMatches($db, $params)
   $uploadDir = $params['uploadDir'];
 
   // Check the items we have yet to match (unmatched=0, unprocessed=99)
-  $q = "SELECT id, message_id, imap_id, sender_email,
+  $q = "SELECT id, message_id, sender_email,
                subject, body, forwarder, updated_date
         FROM nyss_inbox_messages
         WHERE status=".STATUS_UNPROCESSED." OR status=".STATUS_UNMATCHED.";";
@@ -713,7 +712,6 @@ function searchForMatches($db, $params)
   while ($row = mysql_fetch_assoc($mres)) {
     $msg_row_id = $row['id'];
     $message_id = $row['message_id'];
-    $imap_id = $row['imap_id'];
     $sender_email = $row['sender_email'];
     $subject = $row['subject'];
     $body = $row['body'];
