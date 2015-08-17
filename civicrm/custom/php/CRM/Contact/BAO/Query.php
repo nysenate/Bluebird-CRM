@@ -3385,10 +3385,23 @@ WHERE  id IN ( $groupIDs )
       if (strpos($value, ',') !== false && $op == '=') {
         $op = 'IN';
         $value = explode(',', $value);
-      }
 
-      $this->_where[$grouping][] = self::buildClause('LOWER(civicrm_address.street_number)', $op, $value, 'String');
-      $this->_qill[$grouping][] = ts('Street Number') . " $op '$n'";
+        $this->_where[$grouping][] = self::buildClause('LOWER(civicrm_address.street_number)', $op, $value, 'String');
+        $this->_qill[$grouping][] = ts('Street Number') . " $op '$n'";
+      }
+      //NYSS 9304
+      elseif (strpos($n, '-') !== false && $op == '=') {
+        $value = explode('-', $value);
+
+        $this->_where[$grouping][] = "
+          (civicrm_address.street_number >= '{$value[0]}' AND civicrm_address.street_number <= '{$value[1]}')";
+        $this->_qill[$grouping][] = ts('Street Number') . " between '{$value[0]}' and '{$value[1]}";
+      }
+      else {
+        //NYSS standard core handling
+        $this->_where[$grouping][] = self::buildClause('LOWER(civicrm_address.street_number)', $op, $value, 'String');
+        $this->_qill[$grouping][] = ts('Street Number') . " $op '$n'";
+      }
     }
 
     $this->_tables['civicrm_address'] = $this->_whereTables['civicrm_address'] = 1;
