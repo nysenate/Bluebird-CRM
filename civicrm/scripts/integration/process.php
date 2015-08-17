@@ -9,7 +9,6 @@ error_reporting(E_ERROR | E_PARSE | E_WARNING);
 set_time_limit(0);
 
 define('DEFAULT_LOG_LEVEL', 'TRACE');
-define('DB_INTEGRATION', 'senate_web_integration');
 
 class CRM_Integration_Process {
 
@@ -44,7 +43,7 @@ class CRM_Integration_Process {
     //bbscript_log('trace', '$optlist', $optlist);
 
     //set integration DB
-    $intDB = DB_INTEGRATION;
+    $intDB = $bbcfg['integration.local.db'];
     $typeSql = ($optlist['type']) ? "AND msg_type = '{$optlist['type']}'" : '';
 
     //handle survey in special way
@@ -102,6 +101,12 @@ class CRM_Integration_Process {
           'msg' => 'Unable to match or create contact',
           'cid' => $cid,
         );
+
+        //archive row with null date
+        if ($optlist['archive']) {
+          CRM_NYSS_BAO_Integration::archiveRecord($intDB, 'other', $row, null, null);
+        }
+
         continue;
       }
 
@@ -201,7 +206,7 @@ class CRM_Integration_Process {
         //archive rows by ID
         if ($optlist['archive']) {
           $archiveTable = (!empty($archiveTable)) ? $archiveTable : strtolower($row->msg_type);
-          CRM_NYSS_BAO_Integration::archiveRecord($archiveTable, $row, $params, $date);
+          CRM_NYSS_BAO_Integration::archiveRecord($intDB, $archiveTable, $row, $params, $date);
         }
       }
     }
