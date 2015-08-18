@@ -181,9 +181,9 @@ class CRM_NYSS_IMAP_Message
       if (!$v->ifdisposition && $v->content) {
         $matches = array();
         $tc = $this->_decodeContent($v->content, $v->encoding, $v->subtype);
-        if (preg_match_all('/From:\s*(.*)/i', $tc, $matches)) {
+        if (preg_match_all('/(From|Reply To):\s*(.*)/i', $tc, $matches)) {
           //error_log("Parsing msg#={$this->_msgnum}");
-          foreach ($matches[1] as $kk => $vv) {
+          foreach ($matches[2] as $kk => $vv) {
             if (preg_match('#CN=|OU?=|/senate#', $vv)) {
               //error_log("resolving -$vv- with LDAP");
               $vv = $this->_resolveLDAPAddress($vv);
@@ -191,9 +191,17 @@ class CRM_NYSS_IMAP_Message
             }
             $ta = imap_rfc822_parse_adrlist($vv, '');
             if (count($ta) && $ta[0]->host && $ta[0]->mailbox && $ta[0]->host != '.SYNTAX-ERROR.') {
-              $addr['secondary'][] = array(
-                'address' => $ta[0]->mailbox.'@'.$ta[0]->host,
-                'name' => isset($ta[0]->personal) ? $ta[0]->personal : null);
+              $newta = array(
+                    'address' => $ta[0]->mailbox.'@'.$ta[0]->host,
+                    'name' => isset($ta[0]->personal) ? $ta[0]->personal : null);
+              switch (strtoupper($matches[1][$kk])) {
+                case 'REPLY TO':
+                  array_unshift($addr['secondary'], $newta);
+                  break;
+                default:
+                  $addr['secondary'][] = $newta;
+                  break;
+              }
             }
           }
         }
