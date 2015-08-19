@@ -10,13 +10,15 @@ set_time_limit(0);
 
 define('DEFAULT_LOG_LEVEL', 'TRACE');
 
-class CRM_Integration_Process {
+class CRM_Integration_Process
+{
 
-  function run() {
+  function run()
+  {
     require_once dirname(__FILE__).'/../script_utils.php';
 
     // Parse the options
-    $shortopts = "d:s:a:t";
+    $shortopts = "dsat:";
     $longopts = array("dryrun", "stats", "archive", "type=");
     $optlist = civicrm_script_init($shortopts, $longopts);
 
@@ -43,7 +45,7 @@ class CRM_Integration_Process {
     //bbscript_log('trace', '$optlist', $optlist);
 
     //set integration DB
-    $intDB = $bbcfg['integration.local.db'];
+    $intDB = $bbcfg['integration.local.db.name'];
     $typeSql = ($optlist['type']) ? "AND msg_type = '{$optlist['type']}'" : '';
 
     //handle survey in special way

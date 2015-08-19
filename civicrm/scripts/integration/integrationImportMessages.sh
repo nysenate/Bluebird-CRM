@@ -1,7 +1,6 @@
 #!/bin/bash
 #
 
-# self reference and command to read bluebird.cfg
 prog=`basename $0`
 script_dir=`dirname $0`
 script_dir=`cd $script_dir; echo $PWD`
@@ -25,12 +24,14 @@ usage() {
 Usage: $prog <options>
 
 Options not provided on the command line will be read from the [globals] group
-in bluebird.cfg.  Some options may fall back to a hard-coded default if not
-present on either the command line or bluebird.cfg.  If any required option
-cannot be resolved, the script will exit with return code 1.
+in bluebird.cfg (which can be overrideen with the --config-group option).
+Some options may fall back to a hard-coded default if not present on either
+the command line or bluebird.cfg.  If any required option cannot be resolved,
+the script will exit with return code 1.
 
 Options in bluebird.cfg follow the same general naming conventions, with
 all '-' characters replaced with '.', and an added prefix of 'integration.'.
+The prefix can be overriden with the --config-prefix option.
 
 For example, the socket-file command line option corresponds to the
 integration.socket.file configuration setting.
@@ -48,11 +49,6 @@ Available options with [defaults] in brackets are:
 --exit-only         : attempts to kill the tunnel, then exits
 --debug             : causes debug text to echo to console
 --help              : prints this message and exits
-
-Additionally, config-group and config-prefix may be read from bluebird.cfg.
-The values will only be recognized when found in the globals section, and must
-be named integration.config.group and integration.config.prefix, respectively.  Command line values for these options will override any
-found in the config file.
 " >&2
 }
 
@@ -62,31 +58,28 @@ found in the config file.
 set_param() {
   # expects one parameter - the name of the variable to populate
   # if the variable is empty, try reading it from the config file
-  if [ $use_debug -eq 1 ]; then
-    echo "Inside set_param for $1"
-  fi
   if [ -z "${!1}" ]; then
-    tmpvar=${i//_/.}
-    eval "$1=`${readAlias}${tmpvar}`"
+    tmpvar=${1//_/.}
+    eval "$1=`$readAlias$tmpvar`"
     if [ $use_debug -eq 1 ]; then
-      echo "Value read from config, $tmpvar = ${!1}"
+      echo "Setting $1 using config parameter $config_prefix.$tmpvar = ${!1}"
     fi
   fi
   # if the variable is STILL empty, set to default value
   if [ -z "${!1}" ]; then
+    defvarname=default_$1
     if [ $use_debug -eq 1 ]; then
-      echo "Value still blank, using default"
+      echo "Setting $1 using $defvarname = ${!defvarname}"
     fi
-    eval "$1=\$default_$1"
+    eval "$1=${!defvarname}"
   fi
   if [ $use_debug -eq 1 ]; then
-    echo "Final value $1 = ${!1}"
+    echo "Final value: $1 = ${!1}"
   fi
 }
 
-# read any optional group config from bluebird
-config_group=`${readConfig} --group globals integration.config.group`
-config_prefix=`${readConfig} --group globals integration.config.prefix`
+config_group=$default_config_group
+config_prefix=$default_config_prefix
 
 # read in the command line config
 while [ $# -gt 0 ]; do
@@ -111,9 +104,6 @@ if [ $use_debug -eq 1 ]; then
   echo "Option --debug detected"
 fi
 
-# set the config_group, and an easy alias for reading the config
-config_group=${config_group:-$default_config_group}
-config_prefix=${config_prefix:-$default_config_prefix}
 readAlias="$readConfig --group $config_group $config_prefix."
 
 if [ $use_debug -eq 1 ]; then
@@ -139,7 +129,7 @@ if [ $exit_only -eq 0 ]; then
       exit 3
     fi
 
-    echo "Starting Tunnel . . ."
+    echo "Starting tunnel..."
     if [ $use_debug -eq 1 ]; then
       echo "ssh -M -S $socket_file -fnNT -L $tunnel_port:$tunnel_host:3306 $ssh_user@$ssh_host"
     fi
