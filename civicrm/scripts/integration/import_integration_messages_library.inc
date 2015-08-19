@@ -11,59 +11,62 @@ $old_incpath = add_packages_to_include_path(false);
 require_once 'Console/Getopt.php';
 
 // constants for log levels
-define('LOG_LEVEL_DEBUG',5);
-define('LOG_LEVEL_INFO',4);
-define('LOG_LEVEL_NOTICE',3);
-define('LOG_LEVEL_WARN',2);
-define('LOG_LEVEL_ERROR',1);
-define('LOG_LEVEL_CRITICAL',0);
+define('LOG_LEVEL_CRITICAL', 0);
+define('LOG_LEVEL_ERROR', 1);
+define('LOG_LEVEL_WARN', 2);
+define('LOG_LEVEL_NOTICE', 3);
+define('LOG_LEVEL_INFO', 4);
+define('LOG_LEVEL_DEBUG', 5);
+
+
 
 /* A class to manage configuration for integration scripts */
-class IntegrationConfig {
+class IntegrationConfig
+{
   // command-line options recognized by this script
   // there are no short options atm
   public $cli_short_options = '';
   public $cli_long_options = array(
-            'source-host=',
-            'source-user=',
-            'source-pass=',
-            'source-port=',
-            'source-db=',
-            'local-host=',
-            'local-user=',
-            'local-pass=',
-            'local-port=',
-            'local-db=',
-            'archive=',
-            'log-level=',
-            );
+    'source-db-host=',
+    'source-db-user=',
+    'source-db-pass=',
+    'source-db-port=',
+    'source-db-name=',
+    'local-db-host=',
+    'local-db-user=',
+    'local-db-pass=',
+    'local-db-port=',
+    'local-db-name=',
+    'archive=',
+    'log-level='
+  );
 
   // the config array
   public $config = array();
 
   // other config sources
-  public $bb_config = NULL;
-  public $cli_config = NULL;
+  public $bb_config = null;
+  public $cli_config = null;
 
   // set up global default values
   // these can be overridden from command line and bluebird.cfg
   protected $_default_config = array(
-            'source_host'=> 'localhost',
-            'source_user'=> 'user',
-            'source_pass'=> 'pass',
-            'source_port'=> 'port',
-            'source_db'  => 'db',
-            'local_host' => 'localhost',
-            'local_user' => 'user',
-            'local_pass' => 'pass',
-            'local_port' => 'port',
-            'local_db'   => 'db',
-            'archive'    => true,
-            'log_level'  => 2,
-            );
+    'source_db_host' => 'localhost',
+    'source_db_user' => 'user',
+    'source_db_pass' => 'pass',
+    'source_db_port' => 3306,
+    'source_db_name' => 'db',
+    'local_db_host'  => 'localhost',
+    'local_db_user'  => 'user',
+    'local_db_pass'  => 'pass',
+    'local_db_port'  => 3306,
+    'local_db_name'  => 'db',
+    'archive'        => true,
+    'log_level'      => 2
+  );
 
   // for singleton pattern
-  protected static $instance = NULL;
+  protected static $instance = null;
 
   protected function __construct() {
     $this->config = $this->resolve_options();
@@ -154,30 +157,36 @@ class IntegrationConfig {
   }
 }
 
-class IntegrationLogger {
+
+class IntegrationLogger
+{
   public static $log_labels = array(
-                                LOG_LEVEL_DEBUG    => 'DEBUG',
-                                LOG_LEVEL_INFO     => 'INFO',
-                                LOG_LEVEL_NOTICE   => 'NOTICE',
-                                LOG_LEVEL_WARN     => 'WARN',
-                                LOG_LEVEL_ERROR    => 'ERROR',
-                                LOG_LEVEL_CRITICAL => 'CRITICAL',
-                              );
+    LOG_LEVEL_DEBUG    => 'DEBUG',
+    LOG_LEVEL_INFO     => 'INFO',
+    LOG_LEVEL_NOTICE   => 'NOTICE',
+    LOG_LEVEL_WARN     => 'WARN',
+    LOG_LEVEL_ERROR    => 'ERROR',
+    LOG_LEVEL_CRITICAL => 'CRITICAL'
+  );
+
   public static $use_log_file = false;
 
-  public static function log($msg, $lvl=LOG_LEVEL_INFO) {
+  public static function log($msg, $lvl = LOG_LEVEL_INFO)
+  {
     $cfg = IntegrationConfig::getInstance();
     $lvl = array_key_exists((int)$lvl, static::$log_labels) ? (int)$lvl : LOG_LEVEL_INFO;
     if ($lvl <= $cfg->config['log_level']) {
       $lt = array_value(static::$log_labels, $lvl, static::$log_labels[LOG_LEVEL_INFO]);
       if ($use_log_file) {
         error_log("$lt: $msg");
-      } else {
+      }
+      else {
         $date_str = date('YmdHis');
         echo "[$date_str] $lt: $msg\n";
       }
     }
-  }
+  } // log()
 }
+
 // set an alias for easier reference
-class_alias('IntegrationLogger','IL');
+class_alias('IntegrationLogger', 'IL');
