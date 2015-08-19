@@ -118,6 +118,8 @@ for i in ssh_host ssh_user tunnel_host tunnel_port socket_file; do
   fi
 done
 
+rc=0
+
 if [ $exit_only -eq 0 ]; then
   if [ "$ssh_host" != "localhost" -a "$ssh_host" != "127.0.0.1" ]; then
     if [ $tunnel_port -lt 1024 ]; then
@@ -141,19 +143,18 @@ if [ $exit_only -eq 0 ]; then
   else
     echo "No tunnel required for connection to $ssh_host"
   fi
+
+  # commands to run for the import process
+  php $script_dir/import_integration_messages.php
+  if [ $? -ne 0 ]; then
+    echo "ERROR: Unable to import messages from remote" >&2
+    rc=1
+  fi
 fi
 
-# commands to run for the import process
-php $script_dir/import_integration_messages.php
-if [ $? -eq 0 ]; then
-  rc=0
-else
-  echo "ERROR: Unable to import messages from remote" >&2
-  rc=1
-fi
 
 if [ $persistent_tunnel -eq 0 -o $exit_only -eq 1 ]; then
-  echo "Closing Tunnel . . ."
+  echo "Closing Tunnel..."
   ssh -S $socket_file -O exit $ssh_user@$ssh_host
 fi
 
