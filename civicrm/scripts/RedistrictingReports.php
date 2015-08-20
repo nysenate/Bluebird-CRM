@@ -215,7 +215,7 @@ function get_redist_data($db, $filter_contacts = true, $senate_district = -1, $u
 	}
 	mysql_free_result($res);
 
-	bbscript_log("debug", "Stored " . count($district_contact_data) . " contacts in memory");
+	bbscript_log(LL::DEBUG, "Stored " . count($district_contact_data) . " contacts in memory");
 	return $district_contact_data;
 }
 
@@ -361,10 +361,10 @@ function get_detail_output($format, $senate_district, $senator_name, $contacts_p
 function get_contacts($db, $use_contact_filter = true, $filter_district = -1, $use_cache = true ){
 
     if ($use_contact_filter){
-    	bbscript_log("debug", "Fetching all 'value added' contacts that are not in District $filter_district...");
+    	bbscript_log(LL::DEBUG, "Fetching all 'value added' contacts that are not in District $filter_district...");
     }
     else {
-    	bbscript_log("debug", "Fetching all contacts not in District $filter_district...");
+    	bbscript_log(LL::DEBUG, "Fetching all contacts not in District $filter_district...");
     }
 
     // Repeated conditions! 
@@ -383,7 +383,7 @@ function get_contacts($db, $use_contact_filter = true, $filter_district = -1, $u
 			  PRIMARY KEY (`act_contact_id`)
 			) ENGINE=InnoDB;";
 		
-		bbscript_log("info", "Creating redist activities cache table");
+		bbscript_log(LL::INFO, "Creating redist activities cache table");
 		bb_mysql_query($act_query, $db, true);
 
 		$q = 	"INSERT INTO " . RD_ACTS_CACHE_TABLE . " 
@@ -419,7 +419,7 @@ function get_contacts($db, $use_contact_filter = true, $filter_district = -1, $u
 			AND contact.id != 1
 			GROUP BY contact.id
 			";
-		bbscript_log("info", "Populating redist activities cache table");
+		bbscript_log(LL::INFO, "Populating redist activities cache table");
 		bb_mysql_query($q, $db, true);	
     }      
 
@@ -508,10 +508,10 @@ function get_contacts($db, $use_contact_filter = true, $filter_district = -1, $u
     // and select the data from that table.
     if ($use_cache){
     	if (!table_exists($db, RD_CONTACT_CACHE_TABLE)){
-    		bbscript_log("info", "Creating redist contact cache table");
+    		bbscript_log(LL::INFO, "Creating redist contact cache table");
     		$contact_query = "CREATE TABLE " . RD_CONTACT_CACHE_TABLE . " AS (" . $contact_query . "); ";
 			bb_mysql_query($contact_query, $db, true);
-			bbscript_log("info", "Finished creating redist contact cache table");
+			bbscript_log(LL::INFO, "Finished creating redist contact cache table");
     	}
 
     	$contact_query = "SELECT * FROM " . RD_CONTACT_CACHE_TABLE;
@@ -519,13 +519,13 @@ function get_contacts($db, $use_contact_filter = true, $filter_district = -1, $u
 
 	$res = bb_mysql_query($contact_query, $db, true);
 	$num_rows = mysql_num_rows($res);
-	bbscript_log("debug", "Retrieved $num_rows contacts");
+	bbscript_log(LL::DEBUG, "Retrieved $num_rows contacts");
 	return $res;
 }// get_contacts
 
 function get_redist_notes($db, $filter_district = -1, $use_cache = true){
 
-	bbscript_log("debug", "Fetching redistricting notes...");
+	bbscript_log(LL::DEBUG, "Fetching redistricting notes...");
 	$note_query = "
 		SELECT contact.id AS contact_id, address.id AS address_id, ny_senate_district_47 AS district, note.note, note.subject, note.modified_date
 
@@ -543,10 +543,10 @@ function get_redist_notes($db, $filter_district = -1, $use_cache = true){
 
 	if ($use_cache){
     	if (!table_exists($db, RD_NOTE_CACHE_TABLE)){
-    		bbscript_log("info", "Creating redist note cache table");
+    		bbscript_log(LL::INFO, "Creating redist note cache table");
     		$note_query = "CREATE TABLE " . RD_NOTE_CACHE_TABLE . " AS (" . $note_query . "); ";
     		bb_mysql_query($note_query, $db, true);
-    		bbscript_log("info", "Finished creating redist note cache table");
+    		bbscript_log(LL::INFO, "Finished creating redist note cache table");
     	}
 
     	$note_query = "SELECT * FROM " . RD_NOTE_CACHE_TABLE;
@@ -555,7 +555,7 @@ function get_redist_notes($db, $filter_district = -1, $use_cache = true){
 	$res = bb_mysql_query($note_query, $db, true);
 	$num_rows = mysql_num_rows($res);
 
-	bbscript_log("debug", "Retrieved {$num_rows} notes");
+	bbscript_log(LL::DEBUG, "Retrieved {$num_rows} notes");
 	return $res;
 }// get_redist_notes
 
@@ -578,7 +578,7 @@ function get_email_counts($db){
 
 	$res = bb_mysql_query($email_query, $db, true);
 	$num_rows = mysql_num_rows($res);
-	bbscript_log("debug", "Retrieved {$num_rows} email records");
+	bbscript_log(LL::DEBUG, "Retrieved {$num_rows} email records");
 	return $res;
 }// get_email_counts
 
@@ -586,15 +586,15 @@ function get_email_counts($db){
 // Cache Functions 											    		|
 // ----------------------------------------------------------------------
 function clear_reports_cache($db){
-	bbscript_log("info", "Clearing redist report contact cache table");
+	bbscript_log(LL::INFO, "Clearing redist report contact cache table");
 	$drop = "DROP TABLE IF EXISTS " . RD_CONTACT_CACHE_TABLE .";\n";
 	bb_mysql_query($drop, $db, true);
 
-	bbscript_log("info", "Clearing redist report note cache table");
+	bbscript_log(LL::INFO, "Clearing redist report note cache table");
 	$drop = "DROP TABLE IF EXISTS " . RD_NOTE_CACHE_TABLE .";";
 	bb_mysql_query($drop, $db, true);
 
-	bbscript_log("info", "Clearing redist act cache table");
+	bbscript_log(LL::INFO, "Clearing redist act cache table");
 	$drop = "DROP TABLE IF EXISTS " . RD_ACTS_CACHE_TABLE .";";
 	bb_mysql_query($drop, $db, true);	
 }
@@ -676,7 +676,7 @@ function get_age($birth_date, $default = '-'){
 			return $diff->format("%y");
 		}
 		catch(Exception $e){
-			bbscript_log("trace", "Failed to get age from date: $birth_date");
+			bbscript_log(LL::TRACE, "Failed to get age from date: $birth_date");
 		}
 	}
 	return $default;

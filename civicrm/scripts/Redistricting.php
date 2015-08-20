@@ -57,28 +57,28 @@ $bbcfg = get_bluebird_instance_config($optlist['site']);
 $sage_base = array_key_exists('sage.api.base', $bbcfg) ? $bbcfg['sage.api.base'] : false;
 $sage_key = array_key_exists('sage.api.key', $bbcfg) ? $bbcfg['sage.api.key'] : false;
 if (!($sage_base && $sage_key)) {
-    error_log(bbscript_log("fatal", "sage.api.base and sage.api.key must be set in your bluebird.cfg file."));
+    error_log(bbscript_log(LL::FATAL, "sage.api.base and sage.api.key must be set in your bluebird.cfg file."));
     exit(1);
 }
 
 // Dump the active options when in debug mode
-bbscript_log("DEBUG", "Option: INSTANCE={$optlist['site']}");
-bbscript_log("DEBUG", "Option: BATCH_SIZE=$opt_batch_size");
-bbscript_log("DEBUG", "Option: LOG_LEVEL=$BB_LOG_LEVEL");
-bbscript_log("DEBUG", "Option: DRY_RUN=".($opt_dry_run ? "TRUE" : "FALSE"));
-bbscript_log("DEBUG", "Option: GEOCODE_ONLY=".($opt_geocode_only ? "TRUE" : "FALSE"));
-bbscript_log("DEBUG", "Option: NO_NOTES=".($opt_no_notes ? $opt_no_notes : "FALSE"));
-bbscript_log("DEBUG", "Option: SAGE_API=$sage_base");
-bbscript_log("DEBUG", "Option: SAGE_KEY=$sage_key");
-bbscript_log("DEBUG", "Option: INSTATE=".($opt_instate ? "TRUE" : "FALSE"));
-bbscript_log("DEBUG", "Option: OUTOFSTATE=".($opt_outofstate ? "TRUE" : "FALSE"));
-bbscript_log("DEBUG", "Option: ADDRESSMAP=".($opt_addressmap ? "TRUE" : "FALSE"));
-bbscript_log("DEBUG", "Option: STARTFROM=".($opt_startfrom ? $opt_startfrom : "NONE"));
-bbscript_log("DEBUG", "Option: MAX=".($opt_max ? $opt_max : "NONE"));
-bbscript_log("DEBUG", "Option: USE_SHAPEFILES=".($opt_useshapefiles ? "TRUE" : "FALSE"));
-bbscript_log("DEBUG", "Option: USE_COORDINATES=".($opt_usecoordinates ? "TRUE" : "FALSE"));
-bbscript_log("DEBUG", "Option: THREADS=$opt_threads");
-bbscript_log("DEBUG", "Option: USE_GEOCODER=".($opt_usegeocoder ? $opt_usegeocoder : "FALSE"));
+bbscript_log(LL::DEBUG, "Option: INSTANCE={$optlist['site']}");
+bbscript_log(LL::DEBUG, "Option: BATCH_SIZE=$opt_batch_size");
+bbscript_log(LL::DEBUG, "Option: LOG_LEVEL=$BB_LOG_LEVEL");
+bbscript_log(LL::DEBUG, "Option: DRY_RUN=".($opt_dry_run ? "TRUE" : "FALSE"));
+bbscript_log(LL::DEBUG, "Option: GEOCODE_ONLY=".($opt_geocode_only ? "TRUE" : "FALSE"));
+bbscript_log(LL::DEBUG, "Option: NO_NOTES=".($opt_no_notes ? $opt_no_notes : "FALSE"));
+bbscript_log(LL::DEBUG, "Option: SAGE_API=$sage_base");
+bbscript_log(LL::DEBUG, "Option: SAGE_KEY=$sage_key");
+bbscript_log(LL::DEBUG, "Option: INSTATE=".($opt_instate ? "TRUE" : "FALSE"));
+bbscript_log(LL::DEBUG, "Option: OUTOFSTATE=".($opt_outofstate ? "TRUE" : "FALSE"));
+bbscript_log(LL::DEBUG, "Option: ADDRESSMAP=".($opt_addressmap ? "TRUE" : "FALSE"));
+bbscript_log(LL::DEBUG, "Option: STARTFROM=".($opt_startfrom ? $opt_startfrom : "NONE"));
+bbscript_log(LL::DEBUG, "Option: MAX=".($opt_max ? $opt_max : "NONE"));
+bbscript_log(LL::DEBUG, "Option: USE_SHAPEFILES=".($opt_useshapefiles ? "TRUE" : "FALSE"));
+bbscript_log(LL::DEBUG, "Option: USE_COORDINATES=".($opt_usecoordinates ? "TRUE" : "FALSE"));
+bbscript_log(LL::DEBUG, "Option: THREADS=$opt_threads");
+bbscript_log(LL::DEBUG, "Option: USE_GEOCODER=".($opt_usegeocoder ? $opt_usegeocoder : "FALSE"));
 
 // District mappings for Notes, Distinfo, and SAGE
 $FIELD_MAP = array(
@@ -145,7 +145,7 @@ if ($opt_instate) {
 }
 
 $elapsed_time = round(get_elapsed_time($script_start_time), 3);
-bbscript_log("INFO", "Completed all tasks in $elapsed_time seconds.");
+bbscript_log(LL::INFO, "Completed all tasks in $elapsed_time seconds.");
 exit(0);
 
 
@@ -154,7 +154,7 @@ function purge_notes($db)
 {
   global $BB_UPDATE_FLAGS;
 
-  bbscript_log("TRACE", "==> purge_notes()");
+  bbscript_log(LL::TRACE, "==> purge_notes()");
 
   if ($BB_UPDATE_FLAGS & UPDATE_NOTES) {
     // Remove any redistricting notes that already exist
@@ -163,12 +163,12 @@ function purge_notes($db)
           AND subject LIKE '".REDIST_NOTE."%'";
     bb_mysql_query($q, $db, true);
     $row_cnt = mysql_affected_rows($db);
-    bbscript_log("INFO", "Removed all $row_cnt redistricting notes from the database.");
+    bbscript_log(LL::INFO, "Removed all $row_cnt redistricting notes from the database.");
   }
   else {
-    bbscript_log("INFO", "UPDATE_NOTES disabled - No notes were deleted");
+    bbscript_log(LL::INFO, "UPDATE_NOTES disabled - No notes were deleted");
   }
-  bbscript_log("TRACE", "<== purge_notes()");
+  bbscript_log(LL::TRACE, "<== purge_notes()");
 } // purge_notes()
 
 
@@ -177,10 +177,10 @@ function address_map($db)
 {
   global $BB_UPDATE_FLAGS;
 
-  bbscript_log("TRACE", "==> address_map()");
+  bbscript_log(LL::TRACE, "==> address_map()");
 
   $address_map_changes = 0;
-  bbscript_log("INFO", "Mapping old district numbers to new district numbers");
+  bbscript_log(LL::INFO, "Mapping old district numbers to new district numbers");
   $district_cycle = array(
     '17'=>18, '18'=>25, '25'=>26, '26'=>28, '27'=>17, '28'=>29, '29'=>27,
     '44'=>49, '46'=>44, '49'=>53, '53'=>58, '58'=>63
@@ -205,7 +205,7 @@ function address_map($db)
         bb_mysql_query($q, $db, true);
         $address_map_changes++;
         if ($address_map_changes % 1000 == 0) {
-          bbscript_log("DEBUG", "$address_map_changes mappings so far");
+          bbscript_log(LL::DEBUG, "$address_map_changes mappings so far");
         }
       }
 
@@ -219,16 +219,16 @@ function address_map($db)
 
   if ($BB_UPDATE_FLAGS & UPDATE_DISTRICTS) {
     bb_mysql_query("COMMIT", $db, true);
-    bbscript_log("INFO", "Completed district mapping with $address_map_changes changes");
+    bbscript_log(LL::INFO, "Completed district mapping with $address_map_changes changes");
   }
   else {
-    bbscript_log("INFO", "UPDATE_DISTRICTS disabled - No changes were made");
+    bbscript_log(LL::INFO, "UPDATE_DISTRICTS disabled - No changes were made");
   }
 
   foreach ($actions as $district => $fix_count) {
-    bbscript_log("INFO", " $district => {$district_cycle[$district]}: $fix_count");
+    bbscript_log(LL::INFO, " $district => {$district_cycle[$district]}: $fix_count");
   }
-  bbscript_log("TRACE", "<== address_map()");
+  bbscript_log(LL::TRACE, "<== address_map()");
 } // address_map()
 
 
@@ -237,7 +237,7 @@ function handle_out_of_state($db)
 {
   global $BB_UPDATE_FLAGS;
 
-  bbscript_log("TRACE", "==> handle_out_of_state()");
+  bbscript_log(LL::TRACE, "==> handle_out_of_state()");
 
 
   if ($BB_UPDATE_FLAGS & UPDATE_NOTES) {
@@ -247,10 +247,10 @@ function handle_out_of_state($db)
           AND subject like '".REDIST_NOTE." ".OUTOFSTATE_NOTE."%'";
     bb_mysql_query($q, $db, true);
     $row_cnt = mysql_affected_rows($db);
-    bbscript_log('TRACE', "Removed $row_cnt ".OUTOFSTATE_NOTE." notes");
+    bbscript_log(LL::TRACE, "Removed $row_cnt ".OUTOFSTATE_NOTE." notes");
   }
   else {
-    bbscript_log('TRACE', 'UPDATE_NOTES disabled - No notes were removed');
+    bbscript_log(LL::TRACE, 'UPDATE_NOTES disabled - No notes were removed');
   }
 
   // Retrieve all out-of-state addresses with distinfo
@@ -268,12 +268,12 @@ function handle_out_of_state($db)
   }
 
   if ($BB_UPDATE_FLAGS & UPDATE_DISTRICTS) {
-    bbscript_log("INFO", "Completed nullifying districts for $total_outofstate out-of-state addresses.");
+    bbscript_log(LL::INFO, "Completed nullifying districts for $total_outofstate out-of-state addresses.");
   }
   else {
-    bbscript_log("INFO", "UPDATE_DISTRICTS disabled - No updates were made to out-of-state addresses.");
+    bbscript_log(LL::INFO, "UPDATE_DISTRICTS disabled - No updates were made to out-of-state addresses.");
   }
-  bbscript_log("TRACE", "<== handle_out_of_state()");
+  bbscript_log(LL::TRACE, "<== handle_out_of_state()");
 } // handle_out_of_state()
 
 
@@ -281,7 +281,7 @@ function handle_out_of_state($db)
 function handle_in_state($db, $startfrom = 0, $batch_size, $max_addrs = 0,
                          $url, $use_coords)
 {
-  bbscript_log("TRACE", "==> handle_in_state()");
+  bbscript_log(LL::TRACE, "==> handle_in_state()");
   // Start a timer and a counter for results
   $time_start = microtime(true);
   $counters = array("TOTAL" => 0,
@@ -300,14 +300,14 @@ function handle_in_state($db, $startfrom = 0, $batch_size, $max_addrs = 0,
   $total_rec_cnt = 0;
   $batch_rec_cnt = $batch_size;  // to prime the while() loop
 
-  bbscript_log("INFO", "Beginning batch processing of address records");
+  bbscript_log(LL::INFO, "Beginning batch processing of address records");
 
   while ($batch_rec_cnt == $batch_size) {
     // If max specified, then possibly constrain the batch size
     if ($max_addrs > 0 && $max_addrs - $total_rec_cnt < $batch_size) {
       $batch_size = $max_addrs - $total_rec_cnt;
       if ($batch_size == 0) {
-        bbscript_log("DEBUG", "Max address count ($max_addrs) reached");
+        bbscript_log(LL::DEBUG, "Max address count ($max_addrs) reached");
         break;
       }
     }
@@ -319,11 +319,11 @@ function handle_in_state($db, $startfrom = 0, $batch_size, $max_addrs = 0,
     $batch_rec_cnt = mysql_num_rows($mysql_result);
 
     if ($batch_rec_cnt == 0) {
-      bbscript_log("TRACE", "No more rows to retrieve");
+      bbscript_log(LL::TRACE, "No more rows to retrieve");
       break;
     }
 
-    bbscript_log("DEBUG", "Query complete; about to fetch batch of $batch_rec_cnt records");
+    bbscript_log(LL::DEBUG, "Query complete; about to fetch batch of $batch_rec_cnt records");
 
     while ($row = mysql_fetch_assoc($mysql_result)) {
       $addr_id = $row['id'];
@@ -368,27 +368,27 @@ function handle_in_state($db, $startfrom = 0, $batch_size, $max_addrs = 0,
       }
     }
 
-    bbscript_log("DEBUG", "Done fetching record batch; sending to SAGE");
+    bbscript_log(LL::DEBUG, "Done fetching record batch; sending to SAGE");
 
     // Send formatted addresses to SAGE for geocoding & district assignment
     $batch_results = distassign($formatted_batch, $url, $counters);
 
-    bbscript_log("DEBUG", "About to process batch results from SAGE");
+    bbscript_log(LL::DEBUG, "About to process batch results from SAGE");
 
     if ($batch_results && count($batch_results) > 0) {
       process_batch_results($db, $orig_batch, $batch_results, $counters);
       report_stats($total_rec_cnt, $counters, $time_start);
     }
     else {
-      bbscript_log("ERROR", "No batch results; skipping processing for address IDs starting at $start_id.");
+      bbscript_log(LL::ERROR, "No batch results; skipping processing for address IDs starting at $start_id.");
     }
 
     $start_id = $addr_id + 1;
-    bbscript_log("INFO", "$total_rec_cnt address records fetched so far");
+    bbscript_log(LL::INFO, "$total_rec_cnt address records fetched so far");
   }
 
-  bbscript_log("INFO", "Completed assigning districts to in-state addresses.");
-  bbscript_log("TRACE", "<== handle_in_state()");
+  bbscript_log(LL::INFO, "Completed assigning districts to in-state addresses.");
+  bbscript_log(LL::TRACE, "<== handle_in_state()");
 } // handle_in_state()
 
 
@@ -397,7 +397,7 @@ function retrieve_addresses($db, $start_id = 0, $max_res = 0, $in_state = true)
 {
   global $FIELD_MAP, $DIST_FIELDS;
 
-  bbscript_log("TRACE", "==> retrieve_addresses()");
+  bbscript_log(LL::TRACE, "==> retrieve_addresses()");
 
   $limit_clause = ($max_res > 0 ? "LIMIT $max_res" : "");
   $state_compare_op = $in_state ? '=' : '!=';
@@ -425,11 +425,11 @@ function retrieve_addresses($db, $start_id = 0, $max_res = 0, $in_state = true)
      $limit_clause";
 
   // Run query to obtain a batch of addresses
-  bbscript_log("DEBUG", "Retrieving addresses starting at id $start_id with limit $max_res");
-  bbscript_log("TRACE", "SQL query:\n$q");
+  bbscript_log(LL::DEBUG, "Retrieving addresses starting at id $start_id with limit $max_res");
+  bbscript_log(LL::TRACE, "SQL query:\n$q");
   $res = bb_mysql_query($q, $db, true);
-  bbscript_log("DEBUG", "Finished retrieving addresses");
-  bbscript_log("TRACE", "<== retrieve_addresses()");
+  bbscript_log(LL::DEBUG, "Finished retrieving addresses");
+  bbscript_log(LL::TRACE, "<== retrieve_addresses()");
   return $res;
 } // retrieve_addresses()
 
@@ -437,10 +437,10 @@ function retrieve_addresses($db, $start_id = 0, $max_res = 0, $in_state = true)
 
 function distassign(&$fmt_batch, $url, &$cnts)
 {
-  bbscript_log("TRACE", "==> distassign()");
+  bbscript_log(LL::TRACE, "==> distassign()");
 
   // Attach the json data
-  bbscript_log("TRACE", "About to encode address batch in JSON");
+  bbscript_log(LL::TRACE, "About to encode address batch in JSON");
   $json_batch = json_encode($fmt_batch);
 
   // Initialize the cURL request
@@ -450,41 +450,41 @@ function distassign(&$fmt_batch, $url, &$cnts)
   curl_setopt($ch, CURLOPT_POST, true);
   curl_setopt($ch, CURLOPT_POSTFIELDS, $json_batch);
   curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/json", "Content-length: ".strlen($json_batch)));
-  bbscript_log("TRACE", "About to send API request to SAGE using cURL [url=$url]");
+  bbscript_log(LL::TRACE, "About to send API request to SAGE using cURL [url=$url]");
   $response = curl_exec($ch);
 
   // Record the timings for the request and close
   $curl_time = curl_getinfo($ch, CURLINFO_TOTAL_TIME);
 
   $cnts['CURL'] += $curl_time;
-  bbscript_log("TRACE", "CURL: fetched in ".round($curl_time, 3)." seconds");
+  bbscript_log(LL::TRACE, "CURL: fetched in ".round($curl_time, 3)." seconds");
   curl_close($ch);
 
   // Return null on any kind of response error
   if ($response === null) {
-    bbscript_log("ERROR", "Failed to receive a CURL response");
+    bbscript_log(LL::ERROR, "Failed to receive a CURL response");
     $results = null;
   }
   else {
-    bbscript_log("TRACE", "About to decode JSON response");
+    bbscript_log(LL::TRACE, "About to decode JSON response");
     $results = @json_decode($response, true);
 
     if ($results === null && json_last_error() !== JSON_ERROR_NONE) {
-      bbscript_log("ERROR", "Malformed JSON Response");
-      bbscript_log("DEBUG", "CURL DATA: $response");
+      bbscript_log(LL::ERROR, "Malformed JSON Response");
+      bbscript_log(LL::DEBUG, "CURL DATA: $response");
       $results = null;
     }
     else if (count($results) == 0) {
-      bbscript_log("ERROR", "Empty response from SAGE. SAGE server is likely offline.");
+      bbscript_log(LL::ERROR, "Empty response from SAGE. SAGE server is likely offline.");
       $results = null;
     }
     else if (isset($results['message'])) {
-      bbscript_log("ERROR", "SAGE server encountered a problem: ".$results['message']);
+      bbscript_log(LL::ERROR, "SAGE server encountered a problem: ".$results['message']);
       $results = null;
     }
   }
 
-  bbscript_log("TRACE", "<== distassign()");
+  bbscript_log(LL::TRACE, "<== distassign()");
   return $results;
 } // distassign()
 
@@ -494,7 +494,7 @@ function process_batch_results($db, &$orig_batch, &$batch_results, &$cnts)
 {
   global $BB_UPDATE_FLAGS, $DIST_FIELDS, $ADDR_FIELDS;
 
-  bbscript_log('TRACE', '==> process_batch_results()');
+  bbscript_log(LL::TRACE, '==> process_batch_results()');
 
   $batch_cntrs = array(
      'TOTAL'=>count($batch_results), 'MATCH'=>0,
@@ -512,11 +512,11 @@ function process_batch_results($db, &$orig_batch, &$batch_results, &$cnts)
     delete_batch_notes($db, $addr_lo_id, $addr_hi_id);
   }
   else {
-    bbscript_log("INFO", "UPDATE_NOTES disabled - No notes were removed and none will be added");
+    bbscript_log(LL::INFO, "UPDATE_NOTES disabled - No notes were removed and none will be added");
   }
 
   // Iterate over all batch results and update Bluebird tables accordingly.
-  bbscript_log('DEBUG', "Updating ".count($batch_results)." records");
+  bbscript_log(LL::DEBUG, "Updating ".count($batch_results)." records");
 
   bb_mysql_query('BEGIN', $db, true);
 
@@ -533,7 +533,7 @@ function process_batch_results($db, &$orig_batch, &$batch_results, &$cnts)
     case 'SHAPEFILE':
       $batch_cntrs['MATCH']++;
       $batch_cntrs[$status_code]++;
-      bbscript_log("TRACE", "[MATCH - $status_code][$message] on record #$address_id");
+      bbscript_log(LL::TRACE, "[MATCH - $status_code][$message] on record #$address_id");
 
       // Determine differences between original record and SAGE results.
       $changes = calculate_changes($DIST_FIELDS, $orig_rec, $batch_res);
@@ -551,7 +551,7 @@ function process_batch_results($db, &$orig_batch, &$batch_results, &$cnts)
           }
         }
         else {
-          bbscript_log("TRACE", "UPDATE_DISTRICTS disabled - district information for id=$address_id not updated");
+          bbscript_log(LL::TRACE, "UPDATE_DISTRICTS disabled - district information for id=$address_id not updated");
         }
       }
 
@@ -568,7 +568,7 @@ function process_batch_results($db, &$orig_batch, &$batch_results, &$cnts)
             update_geocodes($db, $address_id, $sql_updates);
           }
           else {
-            bbscript_log("TRACE", "UPDATE_GEOCODES disabled - Geocoordinates for id=$address_id not updated");
+            bbscript_log(LL::TRACE, "UPDATE_GEOCODES disabled - Geocoordinates for id=$address_id not updated");
           }
         }
       }
@@ -582,7 +582,7 @@ function process_batch_results($db, &$orig_batch, &$batch_results, &$cnts)
     case 'NOMATCH':
     case 'INVALID':
       $batch_cntrs[$status_code]++;
-      bbscript_log('WARN', "[NOMATCH][$message] on record #$address_id");
+      bbscript_log(LL::WARN, "[NOMATCH][$message] on record #$address_id");
       if ($BB_UPDATE_FLAGS & UPDATE_DISTRICTS) {
         $note_updates = nullify_district_info($db, $orig_rec, true);
         if ($BB_UPDATE_FLAGS & UPDATE_NOTES) {
@@ -591,35 +591,35 @@ function process_batch_results($db, &$orig_batch, &$batch_results, &$cnts)
         }
       }
       else {
-        bbscript_log('TRACE', "UPDATE_DISTRICTS disabled - Cannot nullify district info for id=$address_id");
+        bbscript_log(LL::TRACE, "UPDATE_DISTRICTS disabled - Cannot nullify district info for id=$address_id");
       }
       break;
 
     default:
       $batch_cntrs['ERROR']++;
-      bbscript_log('ERROR', "Unknown status [$status_code] on record #$address_id with message [$message]");
+      bbscript_log(LL::ERROR, "Unknown status [$status_code] on record #$address_id with message [$message]");
     }
   }
 
   bb_mysql_query("COMMIT", $db, true);
   $batch_cntrs['MYSQL'] = round(get_elapsed_time($batch_start_time), 4);
-  bbscript_log("TRACE", "Updated database in {$batch_cntrs['MYSQL']} secs");
+  bbscript_log(LL::TRACE, "Updated database in {$batch_cntrs['MYSQL']} secs");
 
-  bbscript_log("INFO", "Stats for current batch:");
+  bbscript_log(LL::INFO, "Stats for current batch:");
 
   foreach ($batch_cntrs as $key => $val) {
     $cnts[$key] += $val;
-    bbscript_log("INFO", "  $key = $val [total={$cnts[$key]}]");
+    bbscript_log(LL::INFO, "  $key = $val [total={$cnts[$key]}]");
   }
   
-  bbscript_log('TRACE', '<== process_batch_results()');
+  bbscript_log(LL::TRACE, '<== process_batch_results()');
 } // process_batch_results()
 
 
 
 function delete_batch_notes($db, $lo_id, $hi_id)
 {
-  bbscript_log("TRACE", "==> delete_batch_notes()");
+  bbscript_log(LL::TRACE, "==> delete_batch_notes()");
 
   // Delete only notes in the current batch
   $q = "DELETE FROM n USING civicrm_note n
@@ -630,8 +630,8 @@ function delete_batch_notes($db, $lo_id, $hi_id)
             BETWEEN $lo_id AND $hi_id";
   bb_mysql_query($q, $db, true);
   $row_cnt = mysql_affected_rows($db);
-  bbscript_log("INFO", "Removed $row_cnt notes for address IDs from $lo_id to $hi_id");
-  bbscript_log("TRACE", "<== delete_batch_notes()");
+  bbscript_log(LL::INFO, "Removed $row_cnt notes for address IDs from $lo_id to $hi_id");
+  bbscript_log(LL::TRACE, "<== delete_batch_notes()");
 } // delete_batch_notes()
 
 
@@ -753,7 +753,7 @@ function update_geocodes($db, $address_id, $sqldata)
   }
 
   $update_str = implode(', ', $sql_updates);
-  bbscript_log("TRACE", "Saving new geocoordinates: $update_str");
+  bbscript_log(LL::TRACE, "Saving new geocoordinates: $update_str");
   $q = "UPDATE civicrm_address
         SET $update_str
         WHERE id=$address_id";
@@ -771,7 +771,7 @@ function insert_redist_note($db, $note_type, $match_type, &$row,
   $contact_id = $row['contact_id'];
 
   if (!$contact_id) {
-    bbscript_log('WARN', "No contact ID for address record id=$addr_id; unable to create an $note_type [$match_type] note");
+    bbscript_log(LL::WARN, "No contact ID for address record id=$addr_id; unable to create an $note_type [$match_type] note");
     return;
   }
 
@@ -813,7 +813,7 @@ function insert_redist_note($db, $note_type, $match_type, &$row,
 
 function report_stats($total_found, $cnts, $time_start)
 {
-  bbscript_log("TRACE", "==> report_stats()");
+  bbscript_log(LL::TRACE, "==> report_stats()");
 
   // Compute percentages for certain counts
   $percent = array(
@@ -841,22 +841,22 @@ function report_stats($total_found, $cnts, $time_start)
   $seconds_left = round(($total_found - $cnts['TOTAL']) / $Records_per_sec, 0);
   $finish_at = date('Y-m-d H:i:s', (time() + $seconds_left));
 
-  bbscript_log("INFO", "-------  ------- ---- ---- ---- ---- ");
-  bbscript_log("INFO", "[DONE @]      $finish_at (in ".intval($seconds_left/60).":".($seconds_left%60).")");
-  bbscript_log("INFO", "[COUNT]      {$cnts['TOTAL']}");
-  bbscript_log("INFO", "[TIME]       ".round($time, 4));
-  bbscript_log("INFO", "[SPEED]  [TOTAL] $Records_per_sec per second (".$cnts['TOTAL']." in ".round($time, 3).")");
-  bbscript_log("TRACE","[SPEED]  [MYSQL] $Mysql_per_sec per second (".$cnts['TOTAL']." in ".round($cnts['MYSQL'], 3).")");
-  bbscript_log("TRACE","[SPEED]  [CURL] $Curl_per_sec per second (".$cnts['TOTAL']." in ".round($cnts['CURL'], 3).")");
-  bbscript_log("INFO", "[MATCH]  [TOTAL] {$cnts['MATCH']} ({$percent['MATCH']} %)");
-  bbscript_log("INFO","[MATCH]  [HOUSE] {$cnts['HOUSE']} ({$percent['HOUSE']} %)");
-  bbscript_log("INFO","[MATCH]  [STREET] {$cnts['STREET']} ({$percent['STREET']} %)");
-  bbscript_log("INFO","[MATCH]  [ZIP5]  {$cnts['ZIP5']} ({$percent['ZIP5']} %)");
-  bbscript_log("INFO","[MATCH]  [SHAPE] {$cnts['SHAPEFILE']} ({$percent['SHAPEFILE']} %)");
-  bbscript_log("INFO", "[NOMATCH] [TOTAL] {$cnts['NOMATCH']} ({$percent['NOMATCH']} %)");
-  bbscript_log("INFO", "[INVALID] [TOTAL] {$cnts['INVALID']} ({$percent['INVALID']} %)");
-  bbscript_log("INFO", "[ERROR]  [TOTAL] {$cnts['ERROR']} ({$percent['ERROR']} %)");
-  bbscript_log("TRACE", "<== report_stats()");
+  bbscript_log(LL::INFO, "-------  ------- ---- ---- ---- ---- ");
+  bbscript_log(LL::INFO, "[DONE @]      $finish_at (in ".intval($seconds_left/60).":".($seconds_left%60).")");
+  bbscript_log(LL::INFO, "[COUNT]      {$cnts['TOTAL']}");
+  bbscript_log(LL::INFO, "[TIME]       ".round($time, 4));
+  bbscript_log(LL::INFO, "[SPEED]  [TOTAL] $Records_per_sec per second (".$cnts['TOTAL']." in ".round($time, 3).")");
+  bbscript_log(LL::TRACE,"[SPEED]  [MYSQL] $Mysql_per_sec per second (".$cnts['TOTAL']." in ".round($cnts['MYSQL'], 3).")");
+  bbscript_log(LL::TRACE,"[SPEED]  [CURL] $Curl_per_sec per second (".$cnts['TOTAL']." in ".round($cnts['CURL'], 3).")");
+  bbscript_log(LL::INFO, "[MATCH]  [TOTAL] {$cnts['MATCH']} ({$percent['MATCH']} %)");
+  bbscript_log(LL::INFO,"[MATCH]  [HOUSE] {$cnts['HOUSE']} ({$percent['HOUSE']} %)");
+  bbscript_log(LL::INFO,"[MATCH]  [STREET] {$cnts['STREET']} ({$percent['STREET']} %)");
+  bbscript_log(LL::INFO,"[MATCH]  [ZIP5]  {$cnts['ZIP5']} ({$percent['ZIP5']} %)");
+  bbscript_log(LL::INFO,"[MATCH]  [SHAPE] {$cnts['SHAPEFILE']} ({$percent['SHAPEFILE']} %)");
+  bbscript_log(LL::INFO, "[NOMATCH] [TOTAL] {$cnts['NOMATCH']} ({$percent['NOMATCH']} %)");
+  bbscript_log(LL::INFO, "[INVALID] [TOTAL] {$cnts['INVALID']} ({$percent['INVALID']} %)");
+  bbscript_log(LL::INFO, "[ERROR]  [TOTAL] {$cnts['ERROR']} ({$percent['ERROR']} %)");
+  bbscript_log(LL::TRACE, "<== report_stats()");
 } // report_stats()
 
 

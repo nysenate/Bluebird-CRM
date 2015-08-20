@@ -35,13 +35,13 @@ class CRM_migrateContactsViewFile {
     }
 
     if ( empty($optlist['filename']) ) {
-      bbscript_log("fatal", "The filename must be provided.");
+      bbscript_log(LL::FATAL, "The filename must be provided.");
       exit();
     }
 
     //get instance
     $bbcfg = get_bluebird_instance_config($optlist['site']);
-    //bbscript_log("trace", "$bbcfg", $bbcfg);
+    //bbscript_log(LL::TRACE, "$bbcfg", $bbcfg);
 
     require_once 'CRM/Utils/System.php';
 
@@ -51,7 +51,7 @@ class CRM_migrateContactsViewFile {
     //set import folder based on environment
     $filename = '/data/redistricting/bluebird_'.$bbcfg['install_class'].'/migrate/'.$optlist['filename'];
     if ( !file_exists($filename) ) {
-      bbscript_log("fatal", "Filename not found: {$filename}.");
+      bbscript_log(LL::FATAL, "Filename not found: {$filename}.");
     }
 
     // Initialize CiviCRM
@@ -67,10 +67,10 @@ class CRM_migrateContactsViewFile {
    * we use the api to ensure all associated records are dealt with correctly
    */
   function viewFile($filename, $save = FALSE) {
-    bbscript_log("info", "Viewing file: $filename");
+    bbscript_log(LL::INFO, "Viewing file: $filename");
 
     $data = json_decode(file_get_contents($filename), TRUE);
-    bbscript_log("info", "File data:", $data);
+    bbscript_log(LL::INFO, "File data:", $data);
 
     if ( $save ) {
       $data = print_r($data, TRUE);

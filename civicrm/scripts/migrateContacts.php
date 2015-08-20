@@ -50,7 +50,7 @@ class CRM_migrateContacts {
 
     //get instance settings for source and destination
     $bbcfg_source = get_bluebird_instance_config($optlist['site']);
-    //bbscript_log("trace", "bbcfg_source", $bbcfg_source);
+    //bbscript_log(LL::TRACE, "bbcfg_source", $bbcfg_source);
 
     require_once 'CRM/Utils/System.php';
 
@@ -75,7 +75,7 @@ class CRM_migrateContacts {
 
       //retrieve the instance config using the district ID
       $bbFullConfig = get_bluebird_config();
-      //bbscript_log("trace", "bbFullConfig", $bbFullConfig);
+      //bbscript_log(LL::TRACE, "bbFullConfig", $bbFullConfig);
       foreach ( $bbFullConfig as $group => $details ) {
         if ( strpos($group, 'instance:') !== false ) {
           if ( $details['district'] == $optlist['dest'] ) {
@@ -99,12 +99,12 @@ class CRM_migrateContacts {
         'domain' => $optlist['dest'].'.'.$bbcfg_dest['base.domain'],
       );
     }
-    //bbscript_log("trace", "$source", $source);
-    //bbscript_log("trace", "$dest", $dest);
+    //bbscript_log(LL::TRACE, "$source", $source);
+    //bbscript_log(LL::TRACE, "$dest", $dest);
 
     //if either dest or source unset, exit
     if ( empty($dest['db']) || empty($source['db']) ) {
-      bbscript_log("fatal", "Unable to retrieve configuration for either source or destination instance.");
+      bbscript_log(LL::FATAL, "Unable to retrieve configuration for either source or destination instance.");
       exit();
     }
 
@@ -120,12 +120,12 @@ class CRM_migrateContacts {
       $types = str_split($optlist['types']);
       foreach ( $types as $type ) {
         if ( !in_array(strtoupper($type), array('I','H','O')) ) {
-          bbscript_log("fatal", "You selected invalid options for the contact type parameter. Please enter any combination of IHO (individual, household, organization), with no spaces between the characters.");
+          bbscript_log(LL::FATAL, "You selected invalid options for the contact type parameter. Please enter any combination of IHO (individual, household, organization), with no spaces between the characters.");
           exit();
         }
         else {
           $cTypesInclude[] = $cTypes[$type];
-          bbscript_log("info", "{$cTypes[$type]} contacts will be included.");
+          bbscript_log(LL::INFO, "{$cTypes[$type]} contacts will be included.");
         }
       }
     }
@@ -141,11 +141,11 @@ class CRM_migrateContacts {
       $exclusions = str_split($optlist['exclude']);
       foreach ( $exclusions as $rec ) {
         if ( !in_array(strtoupper($rec), array('N','A','C','T')) ) {
-          bbscript_log("fatal", "You selected invalid options for the exclusions parameter. Please enter any combination of NACT (notes, activities, cases, tags), with no spaces between the characters.");
+          bbscript_log(LL::FATAL, "You selected invalid options for the exclusions parameter. Please enter any combination of NACT (notes, activities, cases, tags), with no spaces between the characters.");
           exit();
         }
         else {
-          bbscript_log("info", "{$eTypes[$rec]} record types will be excluded.");
+          bbscript_log(LL::INFO, "{$eTypes[$rec]} record types will be excluded.");
         }
       }
     }
@@ -177,12 +177,12 @@ class CRM_migrateContacts {
       //check for existence of file to import
       $importFile = $fileDir.'/'.$optlist['import'];
       if ( !file_exists($importFile) ) {
-        bbscript_log("fatal", "The import file you have specified does not exist. It must reside in {$fileDir}.");
+        bbscript_log(LL::FATAL, "The import file you have specified does not exist. It must reside in {$fileDir}.");
         exit();
       }
 
       $importScript = "php {$scriptPath}/migrateContactsImport.php -S {$dest['name']} --filename={$optlist['import']} {$dryParam}";
-      //bbscript_log("trace", "importScript: $importScript");
+      //bbscript_log(LL::TRACE, "importScript: $importScript");
       system($importScript);
       exit();
     }
@@ -192,7 +192,7 @@ class CRM_migrateContacts {
 
     //if no contacts found we can exit immediately
     if ( !$migrateTbl ) {
-      bbscript_log("fatal", "No contacts can be migrated to district #{$dest['num']} ({$dest['name']}).");
+      bbscript_log(LL::FATAL, "No contacts can be migrated to district #{$dest['num']} ({$dest['name']}).");
       exit();
     }
 
@@ -241,9 +241,9 @@ class CRM_migrateContacts {
 
     //cycle through contacts, get related records, and construct data
     $mC = CRM_Core_DAO::executeQuery("SELECT * FROM {$migrateTbl};");
-    //bbscript_log("trace", "mC", $mC);
+    //bbscript_log(LL::TRACE, "mC", $mC);
 
-    bbscript_log("info", "cycling through related records for contacts...");
+    bbscript_log(LL::INFO, "cycling through related records for contacts...");
     $totalCount = $tempCount = 0;
 
     while ( $mC->fetch() ) {
@@ -259,7 +259,7 @@ class CRM_migrateContacts {
       $tempCount++;
       $totalCount++;
       if ( $tempCount == 500 ) {
-        bbscript_log("info", "contacts processed: {$totalCount}...");
+        bbscript_log(LL::INFO, "contacts processed: {$totalCount}...");
         $tempCount = 0;
       }
     }
@@ -299,7 +299,7 @@ class CRM_migrateContacts {
     //import data if not --file
     if ( !$optFile ) {
       $importScript = "php {$scriptPath}/migrateContactsImport.php -S {$dest['name']} --filename={$fileName} {$dryParam}";
-      //bbscript_log("trace", "importScript: $importScript");
+      //bbscript_log(LL::TRACE, "importScript: $importScript");
       system($importScript);
     }
 
@@ -309,19 +309,19 @@ class CRM_migrateContacts {
       $typesParam = ($optlist['types']) ? "--types={$optlist['types']}" : '';
 
       $importScript = "php {$scriptPath}/migrateContactsTrash.php -S {$source['name']} --dest={$dest['name']} --trash={$optlist['trash']} {$emplParam} {$typesParam} {$dryParam}";
-      //bbscript_log("trace", "importScript: $importScript");
+      //bbscript_log(LL::TRACE, "importScript: $importScript");
       system($importScript);
 
       $trashEmpl = ($optlist['employers']) ? "Employer organization records have also been trashed." : '';
-      bbscript_log("info", "Contacts have been trashed (option: {$optlist['trash']}). {$trashEmpl}");
+      bbscript_log(LL::INFO, "Contacts have been trashed (option: {$optlist['trash']}). {$trashEmpl}");
     }
 
     if ( $optFile ) {
-      bbscript_log("info", "File option selected. Export file has been created but not imported:");
-      bbscript_log("info", "{$filePath}");
+      bbscript_log(LL::INFO, "File option selected. Export file has been created but not imported:");
+      bbscript_log(LL::INFO, "{$filePath}");
     }
 
-    bbscript_log("info", "Completed contact migration from district {$source['num']} ({$source['name']}) to district {$dest['num']} ({$dest['name']}).");
+    bbscript_log(LL::INFO, "Completed contact migration from district {$source['num']} ({$source['name']}) to district {$dest['num']} ({$dest['name']}).");
 
     $elapsedTime = get_elapsed_time($startTime);
     if ( $elapsedTime < 60 ) {
@@ -330,7 +330,7 @@ class CRM_migrateContacts {
     else {
       $elapsedTime = ($elapsedTime/60)." mins";
     }
-    bbscript_log("info", "Time elapsed: {$elapsedTime}");
+    bbscript_log(LL::INFO, "Time elapsed: {$elapsedTime}");
   }//run
 
   /*
@@ -340,7 +340,7 @@ class CRM_migrateContacts {
    * if no contacts are found to migrate, return FALSE so we can exit immediately.
    */
   function buildContactTable($source, $dest, $cTypesInclude) {
-    bbscript_log("info", "building contact table from redistricting report records...");
+    bbscript_log(LL::INFO, "building contact table from redistricting report records...");
 
     //create table to store contact IDs with constructed external_id
     $tbl = "migrate_{$source['num']}_{$dest['num']}";
@@ -357,7 +357,7 @@ class CRM_migrateContacts {
     $redistTbl = "redist_report_contact_cache";
     $sql = "SHOW TABLES LIKE '{$redistTbl}'";
     if ( !CRM_Core_DAO::singleValueQuery($sql) ) {
-      bbscript_log("fatal",
+      bbscript_log(LL::FATAL,
         "Redistricting contact cache table for this district does not exist. Exiting migration process.");
       exit();
     }
@@ -397,7 +397,7 @@ AND c.external_identifier IS NOT NULL, c.external_identifier, '' )) external_id
       WHERE a.location_type_id = ".LOC_TYPE_BOE."
       GROUP BY a.contact_id
     ";*/
-    //bbscript_log("trace", "buildContactTable sql insertion", $sql);
+    //bbscript_log(LL::TRACE, "buildContactTable sql insertion", $sql);
     CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
     //also retrieve current employer contacts and insert in the table
@@ -439,11 +439,11 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
       GROUP BY a.contact_id
     ";*/
 
-    //bbscript_log("trace", "buildContactTable sql insertion", $sql);
+    //bbscript_log(LL::TRACE, "buildContactTable sql insertion", $sql);
     CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
     $count = CRM_Core_DAO::singleValueQuery("SELECT count(*) FROM $tbl");
-    //bbscript_log("trace", "buildContactTable $count", $count);
+    //bbscript_log(LL::TRACE, "buildContactTable $count", $count);
 
     if ( $count ) {
       return $tbl;
@@ -456,12 +456,12 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
   function exportContacts($migrateTbl, $optDry = FALSE) {
     require_once 'CRM/Contact/DAO/Contact.php';
 
-    bbscript_log("info", "assembling and exporting contacts...");
+    bbscript_log(LL::INFO, "assembling and exporting contacts...");
 
     //get field list
     $c = new CRM_Contact_DAO_Contact();
     $fields = $c->fields();
-    //bbscript_log("trace", "exportContacts fields", $fields);
+    //bbscript_log(LL::TRACE, "exportContacts fields", $fields);
 
     foreach ( $fields as $field ) {
       $fieldNames[] = $field['name'];
@@ -485,7 +485,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
     }
 
     $select = 'external_id external_identifier, '.implode(', ',$fieldNames);
-    //bbscript_log("trace", "exportContacts select", $select);
+    //bbscript_log(LL::TRACE, "exportContacts select", $select);
 
     $sql = "
       SELECT $select
@@ -494,16 +494,16 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
         ON mt.contact_id = civicrm_contact.id
     ";
     $contacts = CRM_Core_DAO::executeQuery($sql);
-    //bbscript_log("trace", 'exportContacts sql', $sql);
+    //bbscript_log(LL::TRACE, 'exportContacts sql', $sql);
 
     $contactsAttr = get_object_vars($contacts);
-    //bbscript_log("trace", 'exportContacts contactsAttr', $contactsAttr);
+    //bbscript_log(LL::TRACE, 'exportContacts contactsAttr', $contactsAttr);
 
     $data = array();
 
     //cycle through contacts and write to array
     while ( $contacts->fetch() ) {
-      //bbscript_log("trace", 'exportContacts contacts', $contacts);
+      //bbscript_log(LL::TRACE, 'exportContacts contacts', $contacts);
       foreach ( $contacts as $f => $v ) {
         if ( !array_key_exists($f, $contactsAttr) ) {
           $data['import'][$contacts->external_identifier]['contact'][$f] = addslashes($v);
@@ -584,11 +584,11 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
       //assume dao is in the core path
       $dao = 'CRM_Core_DAO_'.ucfirst($rType);
     }
-    //bbscript_log("trace", "exportStandard dao", $dao);
+    //bbscript_log(LL::TRACE, "exportStandard dao", $dao);
 
     //if field list has not already been constructed, generate now
     if ( !isset($daoFields[$dao]) ) {
-      //bbscript_log("trace", "exportStandard building field list for $dao");
+      //bbscript_log(LL::TRACE, "exportStandard building field list for $dao");
 
       //construct field list from DAO or custom set
       if ( in_array($dao, $customGroups) ) {
@@ -598,7 +598,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
         $d = new $dao;
         $fields = $d->fields();
       }
-      //bbscript_log("trace", "exportStandard fields", $fields);
+      //bbscript_log(LL::TRACE, "exportStandard fields", $fields);
 
       $daoFields[$dao] = array();
       foreach ( $fields as $field ) {
@@ -628,10 +628,10 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
         }
       }
     }
-    //bbscript_log("trace", "exportStandard $dao fields", $daoFields[$dao]);
+    //bbscript_log(LL::TRACE, "exportStandard $dao fields", $daoFields[$dao]);
 
     $select = "id, ".implode(', ',$daoFields[$dao]);
-    //bbscript_log("trace", "exportContacts select", $select);
+    //bbscript_log(LL::TRACE, "exportContacts select", $select);
 
     //set table name
     $tableName = "civicrm_{$rType}";
@@ -646,24 +646,24 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
       WHERE rt.{$fk} = {$IDs['contact_id']}
     ";
     $sql .= self::additionalWhere($rType, $exclusions);
-    //bbscript_log("trace", 'exportStandard sql', $sql);
+    //bbscript_log(LL::TRACE, 'exportStandard sql', $sql);
     $rt = CRM_Core_DAO::executeQuery($sql);
 
     $rtAttr = get_object_vars($rt);
-    //bbscript_log("trace", 'exportStandard rtAttr', $rtAttr);
+    //bbscript_log(LL::TRACE, 'exportStandard rtAttr', $rtAttr);
 
     //cycle through records and write to file
     //count records that exist to determine if we need to write
     $recordData = array();
     $recordCount = 0;
     while ( $rt->fetch() ) {
-      //bbscript_log("trace", 'exportStandard rt', $rt);
+      //bbscript_log(LL::TRACE, 'exportStandard rt', $rt);
 
       //first check for record existence
       if ( !self::checkExist($rType, $rt) ) {
         continue;
       }
-      //bbscript_log("trace", "exportStandard {$rType} record exists, proceed...");
+      //bbscript_log(LL::TRACE, "exportStandard {$rType} record exists, proceed...");
 
       $data = array();
       foreach ( $rt as $f => $v ) {
@@ -697,8 +697,8 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
       $recordData[$rType][] = $data;
       $recordCount++;
     }
-    //bbscript_log("trace", 'exportStandard $recordData', $recordData);
-    //bbscript_log("trace", 'exportStandard $addressDistInfo', $addressDistInfo);
+    //bbscript_log(LL::TRACE, 'exportStandard $recordData', $recordData);
+    //bbscript_log(LL::TRACE, 'exportStandard $addressDistInfo', $addressDistInfo);
 
     $rt->free();
 
@@ -713,7 +713,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
    * array( employeeKey => employerKey )
    */
   function exportCurrentEmployers($migrateTable, $optDry) {
-    bbscript_log("info", "exporting current employers...");
+    bbscript_log(LL::INFO, "exporting current employers...");
 
     $data = array();
     $sql = "
@@ -742,7 +742,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
    * construct arr
    */
   function exportHouseholdRels($migrateTable, $optDry) {
-    bbscript_log("info", "exporting household relationships...");
+    bbscript_log(LL::INFO, "exporting household relationships...");
 
     $data = array();
     $sql = "
@@ -755,7 +755,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
       WHERE rel.relationship_type_id IN (6,7)
         AND rel.is_active = 1
     ";
-    //bbscript_log("trace", "exportHouseholdRels sql", $sql);
+    //bbscript_log(LL::TRACE, "exportHouseholdRels sql", $sql);
     $rels = CRM_Core_DAO::executeQuery($sql);
 
     if ( $rels->N == 0 ) {
@@ -786,15 +786,15 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
    * which we can now use to retrieve the records and construct the SQL
    */
   function exportDistrictInfo($addressDistInfo, $optDry) {
-    bbscript_log("info", "exporting district information for addresses...");
+    bbscript_log(LL::INFO, "exporting district information for addresses...");
 
     $tbl = self::getCustomFields('District_Information', FALSE);
     $flds = self::getCustomFields('District_Information', TRUE);
     $addressIDs = implode(', ', array_keys($addressDistInfo));
     $addressData = array();
 
-    //bbscript_log("trace", 'exportDistrictInfo $flds', $flds);
-    //bbscript_log("trace", 'exportDistrictInfo $addressDistInfo', $addressDistInfo);
+    //bbscript_log(LL::TRACE, 'exportDistrictInfo $flds', $flds);
+    //bbscript_log(LL::TRACE, 'exportDistrictInfo $addressDistInfo', $addressDistInfo);
 
     //get fields
     $fldCol = array();
@@ -809,17 +809,17 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
       FROM $tbl
       WHERE entity_id IN ({$addressIDs});
     ";
-    //bbscript_log("trace", 'exportDistrictInfo $sql', $sql);
+    //bbscript_log(LL::TRACE, 'exportDistrictInfo $sql', $sql);
 
     $di = CRM_Core_DAO::executeQuery($sql);
     while ( $di->fetch() ) {
-      //bbscript_log("trace", 'exportDistrictInfo di', $di);
+      //bbscript_log(LL::TRACE, 'exportDistrictInfo di', $di);
 
       //first check for record existence
       if ( !self::checkExist('District_Information', $di) ) {
         continue;
       }
-      //bbscript_log("trace", "exportDistrictInfo District_Information record exists, proceed...");
+      //bbscript_log(LL::TRACE, "exportDistrictInfo District_Information record exists, proceed...");
 
       $data = array();
       foreach ( $flds as $fid => $f ) {
@@ -842,12 +842,12 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
   function exportActivities($migrateTbl, $optDry) {
     global $attachmentIDs;
 
-    bbscript_log("info", "exporting activities...");
+    bbscript_log(LL::INFO, "exporting activities...");
 
     $data = $actCustFields = array();
     $actCustTbl = self::getCustomFields('Activity_Details', FALSE);
     $actCustFld = self::getCustomFields('Activity_Details', TRUE);
-    //bbscript_log("trace", 'exportActivities $actCustFld', $actCustFld);
+    //bbscript_log(LL::TRACE, 'exportActivities $actCustFld', $actCustFld);
 
     foreach ( $actCustFld as $field ) {
       $actCustFields[$field['name']] = $field['column_name'];
@@ -872,14 +872,14 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
         AND a.activity_type_id != 19
       GROUP BY at.activity_id
     ";
-    //bbscript_log("trace", 'exportActivities $sql', $sql);
+    //bbscript_log(LL::TRACE, 'exportActivities $sql', $sql);
     $activities = CRM_Core_DAO::executeQuery($sql);
 
     //get dao attributes
     $activityAttr = get_object_vars($activities);
 
     while ( $activities->fetch() ) {
-      //bbscript_log("trace", 'exportActivities $activities', $activities);
+      //bbscript_log(LL::TRACE, 'exportActivities $activities', $activities);
 
       foreach ($activities as $f => $v) {
         if ( !array_key_exists($f, $activityAttr) ) {
@@ -913,7 +913,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
     }
     $activities->free();
 
-    //bbscript_log("trace", 'exportActivities $data', $data);
+    //bbscript_log(LL::TRACE, 'exportActivities $data', $data);
     self::prepareData($data, $optDry, 'exportActivities');
   }//exportActivities
 
@@ -925,12 +925,12 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
   function exportCases($migrateTbl, $optDry) {
     global $attachmentIDs;
 
-    bbscript_log("info", "exporting cases...");
+    bbscript_log(LL::INFO, "exporting cases...");
 
     $data = array();
     $actCustTbl = self::getCustomFields('Activity_Details', FALSE);
     $actCustFld = self::getCustomFields('Activity_Details', TRUE);
-    //bbscript_log("trace", 'exportCases $actCustFld', $actCustFld);
+    //bbscript_log(LL::TRACE, 'exportCases $actCustFld', $actCustFld);
 
     $sql = "
       SELECT mt.*, cc.case_id
@@ -948,7 +948,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
         'return' => 'activities',
       );
       $case = civicrm_api('case', 'get', $params);
-      //bbscript_log("trace", 'exportCases $case', $case);
+      //bbscript_log(LL::TRACE, 'exportCases $case', $case);
 
       //unset some values to make it easier to later import
       unset($case['values'][$contactCases->case_id]['id']);
@@ -966,7 +966,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
           'id' => $actID,
         );
         $activity = civicrm_api('activity', 'getsingle', $params);
-        //bbscript_log("trace", 'exportCases $activity', $activity);
+        //bbscript_log(LL::TRACE, 'exportCases $activity', $activity);
         unset($activity['id']);
         unset($activity['source_contact_id']);
 
@@ -1010,7 +1010,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
     $contactCases->free();
 
     $casesData = array('cases' => $data);
-    //bbscript_log("trace", 'exportCases $casesData', $casesData);
+    //bbscript_log(LL::TRACE, 'exportCases $casesData', $casesData);
 
     self::prepareData($casesData, $optDry, 'case records');
   }//exportCases
@@ -1022,7 +1022,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
     global $source;
     global $dest;
 
-    bbscript_log("info", "exporting tags...");
+    bbscript_log(LL::INFO, "exporting tags...");
 
     $keywords = $issuecodes = $positions = $tempother = array();
 
@@ -1102,7 +1102,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
     while ( $eT->fetch() ) {
       $entityTags[$eT->external_id][] = $eT->tag_id;
     }
-    //bbscript_log("trace", 'exportTags $entityTags', $entityTags);
+    //bbscript_log(LL::TRACE, 'exportTags $entityTags', $entityTags);
     $eT->free();
 
     $tags['entities'] = $entityTags;
@@ -1116,7 +1116,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
    * such that there are > 1 address block with the same location type
    */
   function _cleanLocType($migrateTbl, $optDry) {
-    bbscript_log("info", "cleaning up duplicate location type addresses in source database...");
+    bbscript_log(LL::INFO, "cleaning up duplicate location type addresses in source database...");
 
     //preferred loc type order
     $locTypes = array(
@@ -1185,7 +1185,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
 
       //now update records
       if ( $optDry ) {
-        bbscript_log("info", 'Addresses with duplicate loc type to be fixed.', $typeFixes);
+        bbscript_log(LL::INFO, 'Addresses with duplicate loc type to be fixed.', $typeFixes);
       }
       else {
         foreach ( $typeFixes as $addrID => $locType ) {
@@ -1214,7 +1214,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
       return;
     }
 
-    bbscript_log("info", "recursively building issue code tree...");
+    bbscript_log(LL::INFO, "recursively building issue code tree...");
 
     $level3 = $level4 = array();
 
@@ -1282,7 +1282,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
     if ( !empty($tempother) ) {
       $leftOver = array_keys($tempother);
       $leftOverList = implode(',', $leftOver);
-      //bbscript_log("trace", '_getIssueCodeTree $leftOver', $leftOver);
+      //bbscript_log(LL::TRACE, '_getIssueCodeTree $leftOver', $leftOver);
 
       $sql = "
         SELECT p.*
@@ -1291,7 +1291,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
           ON p.id = t.parent_id
         WHERE t.id IN ({$leftOverList})
       ";
-      //bbscript_log("trace", '_getIssueCodeTree $sql', $sql);
+      //bbscript_log(LL::TRACE, '_getIssueCodeTree $sql', $sql);
       $leftTags = CRM_Core_DAO::executeQuery($sql);
 
       //if $tempother is not empty, but $leftTags returns 0 records, it is an indication that we have
@@ -1310,12 +1310,12 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
         self::_getIssueCodeTree($issuecodes, $tempother);
       }
       else {
-        bbscript_log("info", "Unable to find a parent issue code tag -- it appears you have an orphaned issue code(s). We will cease constructing the recursive issue code tree at this point to avoid infinite recursion.", $tempother);
+        bbscript_log(LL::INFO, "Unable to find a parent issue code tag -- it appears you have an orphaned issue code(s). We will cease constructing the recursive issue code tree at this point to avoid infinite recursion.", $tempother);
       }
     }
 
-    //bbscript_log("trace", '_getIssueCodeTree $issuecodes', $issuecodes);
-    //bbscript_log("trace", '_getIssueCodeTree $tempother', $tempother);
+    //bbscript_log(LL::TRACE, '_getIssueCodeTree $issuecodes', $issuecodes);
+    //bbscript_log(LL::TRACE, '_getIssueCodeTree $tempother', $tempother);
   }//_getIssueCodeTree
 
   /*
@@ -1349,7 +1349,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
         'source_file_path' => $source['files'].'/'.$source['domain'].'/civicrm/custom/'.$attachments->uri,
       );
     }
-    //bbscript_log("trace", '_getAttachments $attachmentDetails', $attachmentDetails);
+    //bbscript_log(LL::TRACE, '_getAttachments $attachmentDetails', $attachmentDetails);
     $attachments->free();
 
     self::prepareData( array('attachments' => $attachmentDetails), $optDry, '_getAttachments' );
@@ -1386,7 +1386,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
     $group = civicrm_api('custom_group', 'getsingle', array('version' => 3, 'name' => $name ));
     if ( $flds ) {
       $fields = civicrm_api('custom_field', 'get', array('version' => 3, 'custom_group_id' => $group['id']));
-      //bbscript_log("trace", 'getCustomFields fields', $fields);
+      //bbscript_log(LL::TRACE, 'getCustomFields fields', $fields);
       return $fields['values'];
     }
     else {
@@ -1411,11 +1411,11 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
    */
   function prepareData($valArray, $optDry = FALSE, $msg = '') {
     global $exportData;
-    //bbscript_log("debug", 'global exportData when prepareData is called', $exportData);
+    //bbscript_log(LL::DEBUG, 'global exportData when prepareData is called', $exportData);
 
     if ( $optDry ) {
       //if dryrun, print passed array when DEBUG level set
-      bbscript_log("debug", $msg, $valArray);
+      bbscript_log(LL::DEBUG, $msg, $valArray);
     }
 
     //combine existing exportData array with array passed to function
@@ -1431,8 +1431,8 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
   function writeData($data, $fileResource, $optDry = FALSE, $structured = FALSE) {
 
     if ( $optDry ) {
-      //bbscript_log("info", 'Exported array:', $data);
-      bbscript_log("info", 'Dryrun is enabled... output has not been written to file.', $exportDataJSON);
+      //bbscript_log(LL::INFO, 'Exported array:', $data);
+      bbscript_log(LL::INFO, 'Dryrun is enabled... output has not been written to file.', $exportDataJSON);
     }
     else {
       if ($structured) {
