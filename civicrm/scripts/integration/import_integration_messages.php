@@ -6,13 +6,17 @@ require_once dirname(__FILE__).'/../script_utils.php';
 require_once dirname(__FILE__).'/../bluebird_config.php';
 
 // mark the start of the script
-bbscript_log(LL::INFO, 'Beginning import process');
+bbscript_log(LL::NOTICE, 'Beginning import process');
 
 // set the default return code (success)
 $return_code = 0;
 
 // get config
 $iconfig = get_integration_config_params();
+$log_level = $iconfig['log_level'];
+bbscript_log(LL::NOTICE, "Setting log level to $log_level");
+set_bbscript_log_level($log_level);
+
 bbscript_log(LL::DEBUG, "Using config:", $iconfig);
 
 // enforce character set and collation on connections
@@ -26,7 +30,7 @@ $pdo_options = array(
 $localdsn = "mysql:host={$iconfig['local_db_host']};" .
                   "port={$iconfig['local_db_port']};" .
                   "dbname={$iconfig['local_db_name']}";
-bbscript_log(LL::DEBUG, "Attempting to connect to local store with: $localdsn");
+bbscript_log(LL::INFO, "Attempting to connect to local store with: $localdsn");
 try {
   $localdb = new PDO($localdsn, $iconfig['local_db_user'], $iconfig['local_db_pass'], $pdo_options);
 }
@@ -34,7 +38,7 @@ catch (PDOException $e) {
   bbscript_log(LL::FATAL, 'Could not connect to local store: '.$e->getMessage());
   exit(1);
 }
-bbscript_log(LL::INFO, 'Connected to local store');
+bbscript_log(LL::NOTICE, 'Connected to local store at $localdsn');
 
 // pull local db settings
 try {
@@ -55,7 +59,7 @@ $res->closeCursor();
 if (!isset($local_cfg->max_pulled)) {
   $local_cfg->max_pulled = 0;
 }
-bbscript_log(LL::INFO, 'Local config retrieved');
+bbscript_log(LL::INFO, 'Retrieved max_pulled counter from local store');
 bbscript_log(LL::DEBUG, 'Using local config:', $local_cfg);
 
 // set the watch for current message id
@@ -65,7 +69,7 @@ $current_max = $local_cfg->max_pulled;
 $remotedsn = "mysql:host={$iconfig['source_db_host']};" .
                    "port={$iconfig['source_db_port']};" .
                    "dbname={$iconfig['source_db_name']}";
-bbscript_log(LL::DEBUG, "Attempting to connect to remote db with: $remotedsn");
+bbscript_log(LL::INFO, "Attempting to connect to remote db with: $remotedsn");
 try {
   $remotedb = new PDO($remotedsn, $iconfig['source_db_user'], $iconfig['source_db_pass'], $pdo_options);
 }
@@ -73,7 +77,7 @@ catch (PDOException $e) {
   bbscript_log(LL::FATAL, 'Could not connect to remote db: '.$e->getMessage());
   exit(1);
 }
-bbscript_log(LL::INFO, 'Connected to remote db');
+bbscript_log(LL::NOTICE, 'Connected to remote db at $remotedsn');
 bbscript_log(LL::INFO, "Searching for messages after #$current_max");
 
 // query for new messages
@@ -108,7 +112,7 @@ FROM accumulator a
 WHERE a.id > :currentmax /*AND a.user_is_verified > 0*/
 REMOTEQUERY;
 
-bbscript_log(LL::INFO, "Executing query:", $query);
+bbscript_log(LL::DEBUG, "Executing query:", $query);
 try {
   $res = $remotedb->prepare($query);
   $res->execute(array(':currentmax'=>$current_max));
@@ -118,7 +122,7 @@ catch (PDOException $e) {
   bbscript_log(LL::FATAL, 'Remote query for new messages failed: '.$e->getMessage());
   exit(1);
 }
-bbscript_log(LL::INFO, "Found $found_count messages to import");
+bbscript_log(LL::NOTICE, "Found $found_count messages to import");
 
 // set up the INSERT query
 $fields = array('id', 'user_id', 'user_is_verified', 'target_shortname',
@@ -144,7 +148,7 @@ while ($onemsg = $res->fetch(PDO::FETCH_ASSOC)) {
     }
     $bindparam[":{$k}"] = $v;
   }
-  bbscript_log(LL::INFO, "Importing message $thisid");
+  bbscript_log(LL::INFO, "Importing message: $thisid");
   bbscript_log(LL::DEBUG, "Message $thisid bound values:", $bindparam);
   try {
     $instmt->execute($bindparam);
@@ -161,13 +165,14 @@ while ($onemsg = $res->fetch(PDO::FETCH_ASSOC)) {
 }
 
 $success_count = count($success);
-bbscript_log(LL::INFO, "Message import complete (count:$success_count), closing remote resources");
+bbscript_log(LL::NOTICE, "Message import complete (count:$success_count), closing remote resources");
 $res->closeCursor();
 $remotedb = null;
 
 // record activity
 try {
   $query = "UPDATE settings SET option_value=NOW() WHERE option_name='last_pulled'";
+  bbscript_log(LL::DEBUG, "Executing query:", $query);
   $localdb->query($query);
   if ($current_max != $local_cfg->max_pulled) {
     $query = "UPDATE settings SET option_value='$current_max' WHERE option_name='max_pulled'";
@@ -186,7 +191,7 @@ $localdb = null;
 $logmsg = $found_count
           ? "Imported $success_count of $found_count new messages"
           : "No new messages to import";
-bbscript_log(LL::INFO, "Process complete: $logmsg");
+bbscript_log(LL::NOTICE, "Process complete: $logmsg");
 
 exit($return_code);
 
@@ -204,14 +209,15 @@ function get_integration_config_params()
     'local_db_port' => 3306,
     'local_db_user' => 'user',
     'local_db_pass' => '',
-    'local_db_name' => 'integration'
+    'local_db_name' => 'integration',
+    'log_level'     => LL::NOTICE
   );
 
   // Command line options are the same as the default value indices, with
   // '-' instead of '_', and ending with '='.
   $longopts = str_replace('_', '-', array_keys($default_vals));
   $longopts = array_map(function($val) { return $val.'='; }, $longopts);
-  $shortopts = "h:t:u:p:n:H:T:U:P:N:";
+  $shortopts = "h:t:u:p:n:H:T:U:P:N:l:";
 
   $optlist = process_cli_args($shortopts, $longopts);
   if ($optlist == null) {

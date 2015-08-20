@@ -230,12 +230,25 @@ class_alias('LogLevel', 'LL', false);
 
 $GLOBALS['bbscript_log_level'] = LL::NOTICE;
 
+
 function set_bbscript_log_level($lvl)
 {
   global $bbscript_log_level;
 
-  $bbscript_log_level = $lvl;
+  if (is_numeric($lvl)) {
+    $bbscript_log_level = (int)$lvl;
+  }
+  else {
+    $bbscript_log_level = constant('LL::'.$lvl);
+  }
 } // set_bbscript_log_level()
+
+
+function get_bbscript_log_level()
+{
+  global $bbscript_log_level;
+  return $bbscript_log_level;
+} // get_bbscript_log_level()
 
 
 function bbscript_log($lvl, $msg, $var = null)
