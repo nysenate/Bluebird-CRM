@@ -10,25 +10,25 @@ set_time_limit(0);
 
 require_once dirname(__FILE__).'/../script_utils.php';
 
-set_bbscript_log_level(LL::TRACE);
-
 
 class CRM_Integration_Process
 {
-
   function run()
   {
-
     // Parse the options
-    $shortopts = "dsat:";
-    $longopts = array("dryrun", "stats", "archive", "type=");
+    $shortopts = "dsat:l:";
+    $longopts = array("dryrun", "stats", "archive", "type=", "log-level=");
     $optlist = civicrm_script_init($shortopts, $longopts);
 
     if ($optlist === null) {
       $stdusage = civicrm_script_usage();
-      $usage = '[--dryrun] [--stats] [--archive] [--type TYPE]';
+      $usage = '[--dryrun] [--stats] [--archive] [--type TYPE] [--log-level LEVEL]';
       error_log("Usage: ".basename(__FILE__)."  $stdusage  $usage\n");
       exit(1);
+    }
+
+    if (isset($optlist['log-level'])) {
+      set_bbscript_log_level($optlist['log-level']);
     }
 
     bbscript_log(LL::INFO, 'Initiating integration processing...');
