@@ -28,11 +28,11 @@ class CRM_cleanLogs {
       exit(1);
     }
 
-    bbscript_log("info", 'Initiating log table cleanup...');
+    bbscript_log(LL::INFO, 'Initiating log table cleanup...');
 
     //get instance settings
     $bbcfg = get_bluebird_instance_config($optlist['site']);
-    //bbscript_log("trace", "bbcfg", $bbcfg);
+    //bbscript_log(LL::TRACE, "bbcfg", $bbcfg);
 
     $civicrm_root = $bbcfg['drupal.rootdir'].'/sites/all/modules/civicrm';
     $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
@@ -79,11 +79,11 @@ class CRM_cleanLogs {
           $tbl = 'log_'.$tbl;
         }
         if ( !in_array($tbl, $allowedTbls) ) {
-          bbscript_log('info', "The {$tbl} table is not available for this cleaning process.");
+          bbscript_log(LL::INFO, "The {$tbl} table is not available for this cleaning process.");
           return FALSE;
         }
       }
-      //bbscript_log('debug', 'tables to be processed:', $tbls);
+      //bbscript_log(LL::DEBUG, 'tables to be processed:', $tbls);
     }
 
     $logDB = $bbcfg['db.log.prefix'].$bbcfg['db.basename'];
@@ -102,7 +102,7 @@ class CRM_cleanLogs {
       'cache_date',
     );
     $skipCols = array_merge($logCols, $cacheCols);
-    //bbscript_log('trace', 'columns to be skipped', $skipCols);
+    //bbscript_log(LL::TRACE, 'columns to be skipped', $skipCols);
 
     //list of fields to use when applying the index for deduping
     //we exclude user_id and job_id because they may be NULL, and a unique index permits multiple rows with NULL val cols
@@ -120,10 +120,10 @@ class CRM_cleanLogs {
 
     $memUse = memory_get_usage();
     $memUseMB = round($memUse/1048576,2);
-    //bbscript_log("trace", "Memory usage before cycling through tables: {$memUseMB} M");
+    //bbscript_log(LL::TRACE, "Memory usage before cycling through tables: {$memUseMB} M");
 
     foreach ( $tbls as $tbl ) {
-      bbscript_log("info", "processing {$tbl}...");
+      bbscript_log(LL::INFO, "processing {$tbl}...");
 
       //retrieve logs for the table and order so we can meaningfully cycle through them
       //use mysql unbuffered query to try to reduce memory usage
@@ -134,7 +134,7 @@ class CRM_cleanLogs {
           OR log_action = 'Initialization'
         ORDER BY id, log_action, log_date
       ";
-      //bbscript_log("trace", "{$tbl} sql", $sql);
+      //bbscript_log(LL::TRACE, "{$tbl} sql", $sql);
       //$r = CRM_Core_DAO::executeQuery($sql);
       $rq = mysql_unbuffered_query($sql, $conn);
 
@@ -143,25 +143,25 @@ class CRM_cleanLogs {
 
       $memUse = memory_get_usage();
       $memUseMB = round($memUse/1048576,2);
-      //bbscript_log("trace", "Memory usage before processing {$tbl}: {$memUseMB} M");
+      //bbscript_log(LL::TRACE, "Memory usage before processing {$tbl}: {$memUseMB} M");
 
       $deleteRows = array();
 
       while ( $r = mysql_fetch_assoc($rq) ) {
-        //bbscript_log("trace", "r", $r);
+        //bbscript_log(LL::TRACE, "r", $r);
         $thisRecord = array();
         foreach ( $r as $f => $v ) {
           if ( !in_array($f, $skipCols) ) {
             $thisRecord[$f] = $v;
           }
         }
-        //bbscript_log("trace", "thisRecord", $thisRecord);
+        //bbscript_log(LL::TRACE, "thisRecord", $thisRecord);
 
         $i++;
         if ( $i % 50000 === 0 ) {
           $memUse = memory_get_usage();
           $memUseMB = round($memUse/1048576,2);
-          //bbscript_log("trace", "Memory usage at {$i} records: {$memUseMB} M");
+          //bbscript_log(LL::TRACE, "Memory usage at {$i} records: {$memUseMB} M");
 
           flush();
           ob_flush();
@@ -183,10 +183,10 @@ class CRM_cleanLogs {
                 'log_date' => $r['log_date'],
                 'log_action' => $r['log_action'],
               );
-              bbscript_log("info", "{$tbl}: deleting log record:", $dryLog);
+              bbscript_log(LL::INFO, "{$tbl}: deleting log record:", $dryLog);
             }
             else {
-              //bbscript_log("info", "{$tbl}: deleting: {$r['id']} | {$r['log_conn_id']} | {$r['log_date']} | {$r['log_action']}");
+              //bbscript_log(LL::INFO, "{$tbl}: deleting: {$r['id']} | {$r['log_conn_id']} | {$r['log_date']} | {$r['log_action']}");
               $deleteRows[] = "
                 DELETE FROM {$logDB}.{$tbl}
                 WHERE id = {$r['id']}
@@ -198,7 +198,7 @@ class CRM_cleanLogs {
             $stats[$tbl]++;
           }
           else {
-            //bbscript_log("trace", "diff", $diff);
+            //bbscript_log(LL::TRACE, "diff", $diff);
             //set lastRecord to current record if we didn't delete this record
             $lastRecord = $thisRecord;
           }
@@ -207,7 +207,7 @@ class CRM_cleanLogs {
         //process row deletion in batches to avoid excessive memory consumption
         if ( !empty($deleteRows) && (intval($stats[$tbl]) % 10000 === 0) ) {
           $deleteCount = count($deleteRows);
-          bbscript_log("info", "deleting {$deleteCount} log records for: {$tbl}...");
+          bbscript_log(LL::INFO, "deleting {$deleteCount} log records for: {$tbl}...");
 
           foreach ( $deleteRows as $sql ) {
             CRM_Core_DAO::executeQuery($sql);
@@ -219,7 +219,7 @@ class CRM_cleanLogs {
       //delete remaining records for this table
       if ( !empty($deleteRows) ) {
         $deleteCount = count($deleteRows);
-        bbscript_log("info", "deleting {$deleteCount} log records for: {$tbl}...");
+        bbscript_log(LL::INFO, "deleting {$deleteCount} log records for: {$tbl}...");
 
         foreach ( $deleteRows as $sql ) {
           CRM_Core_DAO::executeQuery($sql);
@@ -230,7 +230,7 @@ class CRM_cleanLogs {
       mysql_free_result($rq);
     }//end table loop
 
-    bbscript_log("info", 'final stats: ', $stats);
+    bbscript_log(LL::INFO, 'final stats: ', $stats);
   }//run
 
 }//end class

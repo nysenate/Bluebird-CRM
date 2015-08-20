@@ -30,7 +30,7 @@ class CRM_purgeOldData
     }
 
     if (empty($optlist['date'])) {
-      bbscript_log("fatal", "The date option must be defined. Use format: YYYYMMDD");
+      bbscript_log(LL::FATAL, "The date option must be defined. Use format: YYYYMMDD");
       exit(1);
     }
     else {
@@ -40,7 +40,7 @@ class CRM_purgeOldData
 
     //get instance settings for source and destination
     $bbcfg = get_bluebird_instance_config($optlist['site']);
-    bbscript_log("trace", "bbcfg_source", $bbcfg_source);
+    bbscript_log(LL::TRACE, "bbcfg_source", $bbcfg_source);
 
     $civicrm_root = $bbcfg_source['drupal.rootdir'].'/sites/all/modules/civicrm';
     $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
@@ -57,7 +57,7 @@ class CRM_purgeOldData
       $selectedTypes = array();
       foreach ($optTypes as $type) {
         if (!in_array($type, array_keys($types))) {
-          bbscript_log("fatal", "You selected invalid options for the record type parameter. Please enter any combination of {A,C,N} (activities, cases, notes), with no spaces between the characters.");
+          bbscript_log(LL::FATAL, "You selected invalid options for the record type parameter. Please enter any combination of {A,C,N} (activities, cases, notes), with no spaces between the characters.");
           exit(1);
         }
         else {
@@ -68,7 +68,7 @@ class CRM_purgeOldData
       $types = $selectedTypes;
     }
 
-    bbscript_log("info", "records to be purged: ".implode(', ', $types));
+    bbscript_log(LL::INFO, "records to be purged: ".implode(', ', $types));
 
     // Initialize CiviCRM
     require_once 'CRM/Core/Config.php';
@@ -99,7 +99,7 @@ class CRM_purgeOldData
     $count = array();
 
     foreach ($types as $type) {
-      bbscript_log("info", "processing records: $type");
+      bbscript_log(LL::INFO, "processing records: $type");
 
       //get records of each type earlier than date
       $additionalWhere = CRM_Utils_Array::value('additionalWhere', $typeMap[$type], '');
@@ -120,20 +120,20 @@ class CRM_purgeOldData
         );
 
         if ($dryrun) {
-          bbscript_log('info', "{$type} record ID to be deleted: {$r->id}");
+          bbscript_log(LL::INFO, "{$type} record ID to be deleted: {$r->id}");
         }
         else {
           $del = civicrm_api($type, 'delete', $params);
-          //bbscript_log('debug', 'record delete: ', $del);
+          //bbscript_log(LL::DEBUG, 'record delete: ', $del);
         }
 
         if ($count[$type] % 1000 === 0) {
-          bbscript_log('info', "{$count[$type]} {$type} records have been deleted...");
+          bbscript_log(LL::INFO, "{$count[$type]} {$type} records have been deleted...");
         }
       }
     }
 
-    bbscript_log('info', 'total count of records deleted: ', $count);
+    bbscript_log(LL::INFO, 'total count of records deleted: ', $count);
   }//purgeData
 
 }//end class

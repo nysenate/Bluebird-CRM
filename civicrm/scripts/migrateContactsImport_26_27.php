@@ -36,13 +36,13 @@ class CRM_migrateContactsImport {
     }
 
     if ( empty($optlist['filename']) ) {
-      bbscript_log("fatal", "No filename provided. You must provide a filename to import.");
+      bbscript_log(LL::FATAL, "No filename provided. You must provide a filename to import.");
       exit();
     }
 
     //get instance settings which represents the destination instance
     $bbcfg_dest = get_bluebird_instance_config($optlist['site']);
-    //bbscript_log("trace", '$bbcfg_dest', $bbcfg_dest);
+    //bbscript_log(LL::TRACE, '$bbcfg_dest', $bbcfg_dest);
 
     require_once 'CRM/Utils/System.php';
 
@@ -60,11 +60,11 @@ class CRM_migrateContactsImport {
       'files' => $bbcfg_dest['data.rootdir'],
       'domain' => $optlist['site'].'.'.$bbcfg_dest['base.domain'],
     );
-    //bbscript_log("trace", "$dest", $dest);
+    //bbscript_log(LL::TRACE, "$dest", $dest);
 
     //if dest unset/irretrievable, exit
     if ( empty($dest['db']) ) {
-      bbscript_log("fatal", "Unable to retrieve configuration for destination instance.");
+      bbscript_log(LL::FATAL, "Unable to retrieve configuration for destination instance.");
       exit();
     }
 
@@ -88,7 +88,7 @@ class CRM_migrateContactsImport {
     //check for existence of file to import
     $importFile = $fileDir.'/'.$optlist['filename'];
     if ( !file_exists($importFile) ) {
-      bbscript_log("fatal", "The import file you have specified does not exist. It must reside in {$fileDir}.");
+      bbscript_log(LL::FATAL, "The import file you have specified does not exist. It must reside in {$fileDir}.");
       exit();
     }
 
@@ -105,16 +105,16 @@ class CRM_migrateContactsImport {
     //set global to value passed to function
     $optDry = $optDryParam;
 
-    //bbscript_log("trace", "importData dest", $dest);
-    bbscript_log("info", "importing data using... $importFile");
+    //bbscript_log(LL::TRACE, "importData dest", $dest);
+    bbscript_log(LL::INFO, "importing data using... $importFile");
 
     //retrieve data from file and set to variable as array
     $exportData = json_decode(file_get_contents($importFile), TRUE);
-    //bbscript_log("trace", 'importData $exportData', $exportData);
+    //bbscript_log(LL::TRACE, 'importData $exportData', $exportData);
 
     //parse the import file source/dest, compare with params and return a warning message if values do not match
     if ( $exportData['dest']['name'] != $dest['name'] ) {
-      bbscript_log('fatal', 'The destination defined in the import file does not match the parameters passed to the script. Exiting the script as a mismatched destination could create significant data problems. Please investigate and then rerun the script.');
+      bbscript_log(LL::FATAL, 'The destination defined in the import file does not match the parameters passed to the script. Exiting the script as a mismatched destination could create significant data problems. Please investigate and then rerun the script.');
       //exit();
       $exportData['dest']['db'] = $dest['db'];
     }
@@ -154,9 +154,9 @@ class CRM_migrateContactsImport {
 
     $source = $exportData['source'];
 
-    bbscript_log("info", "Completed contact migration import from district {$source['num']} ({$source['name']}) to district {$dest['num']} ({$dest['name']}) using {$importFile}.");
+    bbscript_log(LL::INFO, "Completed contact migration import from district {$source['num']} ({$source['name']}) to district {$dest['num']} ({$dest['name']}) using {$importFile}.");
 
-    //bbscript_log("trace", 'importData $mergedContacts', $mergedContacts);
+    //bbscript_log(LL::TRACE, 'importData $mergedContacts', $mergedContacts);
 
     //generate report stats
     $caseList = array();
@@ -192,7 +192,7 @@ class CRM_migrateContactsImport {
         'addresses with location conflicts (new location assigned)' => $statsTemp['address_location_conflicts']['newloc'],
       ),
     );
-    bbscript_log("info", "Migration statistics:", $stats);
+    bbscript_log(LL::INFO, "Migration statistics:", $stats);
 
     //log to file
     if ( !$optDry ) {
@@ -250,7 +250,7 @@ class CRM_migrateContactsImport {
 
       $details['source_file_path'] = $filePath.$details['uri'];
       $file = self::_importAPI('file', 'create', $details);
-      //bbscript_log("trace", 'importAttachments $file', $file);
+      //bbscript_log(LL::TRACE, 'importAttachments $file', $file);
 
       //construct source->dest IDs array
       $attachmentIDs[$attachExtID] = $file['id'];
@@ -304,7 +304,7 @@ class CRM_migrateContactsImport {
         continue;
       }
 
-      //bbscript_log("trace", 'importContacts importContacts $details', $details);
+      //bbscript_log(LL::TRACE, 'importContacts importContacts $details', $details);
       $stats[$details['contact']['contact_type']] ++;
 
       //check greeting fields
@@ -351,7 +351,7 @@ class CRM_migrateContactsImport {
 
       //import the contact via api
       $contact = self::_importAPI('contact', 'create', $details['contact']);
-      //bbscript_log("trace", "importContacts _importAPI contact", $contact);
+      //bbscript_log(LL::TRACE, "importContacts _importAPI contact", $contact);
 
       //set the contact ID for use in related records; also build mapping array
       if ( $optDry && $matchedContact ) {
@@ -364,13 +364,13 @@ class CRM_migrateContactsImport {
 
       //cycle through each set of related records
       foreach ( $relatedTypes as $type ) {
-        //bbscript_log("trace", "importContacts related type: {$type}");
+        //bbscript_log(LL::TRACE, "importContacts related type: {$type}");
         $fk = ( in_array($type, $fkEId) ) ? 'entity_id' : 'contact_id';
         if ( isset($details[$type]) ) {
           foreach ( $details[$type] as $record ) {
             switch( $type ) {
               case 'Attachments':
-                //bbscript_log("trace", "importContacts attachments record", $record);
+                //bbscript_log(LL::TRACE, "importContacts attachments record", $record);
                 //handle attachments via sql rather than API
                 $attachSqlEle = array();
 
@@ -387,10 +387,10 @@ class CRM_migrateContactsImport {
                     VALUES
                     ({$contactID}, ".implode(', ', $attachSqlEle).")
                   ";
-                  //bbscript_log("trace", 'importContacts $attachSql', $attachSql);
+                  //bbscript_log(LL::TRACE, 'importContacts $attachSql', $attachSql);
 
                   if ( $optDry ) {
-                    bbscript_log("debug", "importing attachments for contact", $record);
+                    bbscript_log(LL::DEBUG, "importing attachments for contact", $record);
                   }
                   else {
                     CRM_Core_DAO::executeQuery($attachSql);
@@ -408,7 +408,7 @@ class CRM_migrateContactsImport {
                 $existingAddresses = CRM_Core_BAO_Address::allAddress( $contactID );
                 if ( !empty($existingAddresses) ) {
                   if ( array_key_exists($record['location_type_id'], $existingAddresses) ) {
-                    //bbscript_log("trace", 'importContacts $record', $record);
+                    //bbscript_log(LL::TRACE, 'importContacts $record', $record);
 
                     //we have a location conflict -- either skip importing this address, or assign new loc type
                     $action = self::_compareAddresses($record['location_type_id'], $existingAddresses, $record);
@@ -454,7 +454,7 @@ class CRM_migrateContactsImport {
 
     //squadron-hoylman
     $extInt = self::sdExtInt();
-    //bbscript_log("info", 'extInt', $extInt);exit();
+    //bbscript_log(LL::INFO, 'extInt', $extInt);exit();
   }//importContacts
 
   function importActivities($exportData, $bbAdmin) {
@@ -509,7 +509,7 @@ class CRM_migrateContactsImport {
       $params = self::_cleanArray($params);
 
       $newActivity = self::_importAPI('activity', 'create', $params);
-      //bbscript_log("trace", 'importActivities newActivity', $newActivity);
+      //bbscript_log(LL::TRACE, 'importActivities newActivity', $newActivity);
 
       //handle attachments
       if ( isset($details['attachments']) ) {
@@ -519,7 +519,7 @@ class CRM_migrateContactsImport {
       }
     }
 
-    bbscript_log("info", 'importData $actCount', $actCount);
+    bbscript_log(LL::INFO, 'importData $actCount', $actCount);
   }//importActivities
 
   function importCases($exportData, $bbAdmin) {
@@ -555,7 +555,7 @@ class CRM_migrateContactsImport {
         }
 
         $newCase = self::_importAPI('case', 'create', $case);
-        //bbscript_log("trace", "importCases newCase", $newCase);
+        //bbscript_log(LL::TRACE, "importCases newCase", $newCase);
 
         $caseID = $newCase['id'];
 
@@ -587,7 +587,7 @@ class CRM_migrateContactsImport {
         foreach ( $activities as $oldID => $activity ) {
           //squadron-hoylman
           if ( empty($activity['parent_id']) ) {
-            //bbscript_log("trace", 'importCases $activity[parent_id]', $activity['parent_id']);
+            //bbscript_log(LL::TRACE, 'importCases $activity[parent_id]', $activity['parent_id']);
             continue;
           }
           else {
@@ -604,7 +604,7 @@ class CRM_migrateContactsImport {
               $activity['original_id'] = $oldNewActID[$activity['original_id']];
             }
             elseif ( !$optDry ) {
-              bbscript_log("debug", "Unable to set the original_id for case activity.", $activity);
+              bbscript_log(LL::DEBUG, "Unable to set the original_id for case activity.", $activity);
               unset($activity['original_id']);
             }
           }
@@ -619,7 +619,7 @@ class CRM_migrateContactsImport {
           }
 
           $newActivity = self::_importAPI('activity', 'create', $activity);
-          //bbscript_log("trace", 'importCases newActivity', $newActivity);
+          //bbscript_log(LL::TRACE, 'importCases newActivity', $newActivity);
 
           $oldNewActID[$oldID] = $newActivity['id'];
 
@@ -649,7 +649,7 @@ class CRM_migrateContactsImport {
       CRM_Core_DAO::executeQuery($sql);
     }
 
-    bbscript_log("info", 'importCases $actCount', $actCount);
+    bbscript_log(LL::INFO, 'importCases $actCount', $actCount);
   }//importCases
 
   function importTags($exportData) {
@@ -671,7 +671,7 @@ class CRM_migrateContactsImport {
       CRM_Core_DAO::executeQuery($sql);
     }
 
-    //bbscript_log("trace", 'importTags tags', $exportData['tags']);
+    //bbscript_log(LL::TRACE, 'importTags tags', $exportData['tags']);
 
     //process keywords
     foreach ( $exportData['tags']['keywords'] as $keyID => $keyDetail ) {
@@ -681,7 +681,7 @@ class CRM_migrateContactsImport {
         'parent_id' => 296, //keywords constant
       );
       $newKeyword = self::_importAPI('tag', 'create', $params);
-      //bbscript_log("trace", 'importTags newKeyword', $newKeyword);
+      //bbscript_log(LL::TRACE, 'importTags newKeyword', $newKeyword);
       $tagExtInt[$keyID] = $newKeyword['id'];
     }
 
@@ -702,7 +702,7 @@ class CRM_migrateContactsImport {
           'parent_id' => 292, //positions constant
         );
         $newPos = self::_importAPI('tag', 'create', $params);
-        //bbscript_log("trace", 'importTags newPos', $newPos);
+        //bbscript_log(LL::TRACE, 'importTags newPos', $newPos);
         $intPosID = $newPos['id'];
       }
       $tagExtInt[$posID] = $intPosID;
@@ -779,10 +779,10 @@ class CRM_migrateContactsImport {
         }
       }//end level 2
     }//end level 1
-    //bbscript_log("trace", '_importTags $tagExtInt', $tagExtInt);
+    //bbscript_log(LL::TRACE, '_importTags $tagExtInt', $tagExtInt);
 
     //construct tag entity records
-    //bbscript_log("trace", '_importTags $extInt', $extInt);
+    //bbscript_log(LL::TRACE, '_importTags $extInt', $extInt);
     foreach ( $exportData['tags']['entities'] as $extID => $extTags ) {
       $params = array(
         'contact_id' => $extInt[$extID],
@@ -791,10 +791,10 @@ class CRM_migrateContactsImport {
         $params['tag_id.'.$tIndex] = $tagExtInt[$tID];
       }
       if ( empty($params['contact_id']) ) {
-        bbscript_log("trace", "_importTags extID (no contact_id): $extID");
+        bbscript_log(LL::TRACE, "_importTags extID (no contact_id): $extID");
       }
       else {
-        //bbscript_log("trace", '_importTags entityTag $params', $params);
+        //bbscript_log(LL::TRACE, '_importTags entityTag $params', $params);
         self::_importAPI('entity_tag', 'create', $params);
       }
     }
@@ -803,7 +803,7 @@ class CRM_migrateContactsImport {
   function importEmployment(&$exportData) {
     global $optDry;
 
-    bbscript_log("info", "importing employer/employee relationships...");
+    bbscript_log(LL::INFO, "importing employer/employee relationships...");
 
     if ( !isset($exportData['employment']) ) {
       $exportData['employment'] = array();
@@ -814,7 +814,7 @@ class CRM_migrateContactsImport {
 
     foreach ( $exportData['employment'] as  $employeeID => $employerID ) {
       if ( $optDry ) {
-        bbscript_log("debug", "creating employment relationship between I-{$employeeID} and O-{$employerID}");
+        bbscript_log(LL::DEBUG, "creating employment relationship between I-{$employeeID} and O-{$employerID}");
       }
       else {
         $employeeIntID = self::_getIntID($employeeID);
@@ -829,7 +829,7 @@ class CRM_migrateContactsImport {
   function importHouseholdRels(&$exportData) {
     global $optDry;
 
-    bbscript_log("info", "importing household relationships...");
+    bbscript_log(LL::INFO, "importing household relationships...");
 
     if ( !isset($exportData['houserels']) ) {
       $exportData['houserels'] = array();
@@ -877,14 +877,14 @@ class CRM_migrateContactsImport {
 
       //capture errors mapping address external ID
       if ( empty($details['entity_id']) ) {
-        bbscript_log("debug", 'importDistrictInfo: unmatched addrExtID', $addrExtID);
+        bbscript_log(LL::DEBUG, 'importDistrictInfo: unmatched addrExtID', $addrExtID);
       }
 
       //clean array: remove elements with no value
       $details = self::_cleanArray($details);
 
       $distInfo = self::_importAPI('District_Information', 'create', $details);
-      //bbscript_log("trace", 'importDistrictInfo $distInfo', $distInfo);
+      //bbscript_log(LL::TRACE, 'importDistrictInfo $distInfo', $distInfo);
     }
 
     //cleanup address name field (temp ext address ID)
@@ -925,7 +925,7 @@ class CRM_migrateContactsImport {
           $customMap[$entity][$field['column_name']] = 'custom_'.$field['id'];
         }
       }
-      //bbscript_log("trace", '_importAPI $customMap', $customMap);
+      //bbscript_log(LL::TRACE, '_importAPI $customMap', $customMap);
 
       //cycle through custom fields and convert column name to custom_## format
       foreach ( $params as $col => $v ) {
@@ -947,7 +947,7 @@ class CRM_migrateContactsImport {
     $params = self::_cleanArray($params);
 
     if ( $optDry ) {
-      bbscript_log("debug", "_importAPI entity:{$entity} action:{$action} params:", $params);
+      bbscript_log(LL::DEBUG, "_importAPI entity:{$entity} action:{$action} params:", $params);
     }
 
     if ( !$optDry || $action == 'get' ) {
@@ -958,8 +958,8 @@ class CRM_migrateContactsImport {
       $api = civicrm_api($entity, $action, $params);
 
       if ( $api['is_error'] ) {
-        bbscript_log("debug", "_importAPI error", $api);
-        bbscript_log("debug", "_importAPI entity: {$entity} // action: {$action}", $params);
+        bbscript_log(LL::DEBUG, "_importAPI error", $api);
+        bbscript_log(LL::DEBUG, "_importAPI entity: {$entity} // action: {$action}", $params);
       }
       return $api;
     }
@@ -977,8 +977,8 @@ class CRM_migrateContactsImport {
     require_once 'CRM/Dedupe/Finder.php';
     require_once 'CRM/Import/DataSource/CSV.php';
     require_once $dest['app'].'/modules/nyss_dedupe/nyss_dedupe.module';
-    //bbscript_log("trace", '_contactLookup $contact', $contact);
-    //bbscript_log("trace", '_contactLookup $dest', $dest);
+    //bbscript_log(LL::TRACE, '_contactLookup $contact', $contact);
+    //bbscript_log(LL::TRACE, '_contactLookup $dest', $dest);
 
     //set contact type
     $cType = $contact['contact']['contact_type'];
@@ -1029,7 +1029,7 @@ class CRM_migrateContactsImport {
     }
     $params = CRM_Dedupe_Finder::formatParams($params, $cType);
     $params['check_permission'] = 0;
-    //bbscript_log("trace", '_contactLookup $params', $params);
+    //bbscript_log(LL::TRACE, '_contactLookup $params', $params);
 
     //use dupeQuery hook implementation to build sql
     $o = new stdClass();
@@ -1047,7 +1047,7 @@ class CRM_migrateContactsImport {
         AND contact.is_deleted = 0
       LIMIT 1
     ";
-    //bbscript_log("trace", '_contactLookup $sql', $sql);
+    //bbscript_log(LL::TRACE, '_contactLookup $sql', $sql);
     $c = CRM_Core_DAO::executeQuery($sql);
 
     while ( $c->fetch() ) {
@@ -1066,7 +1066,7 @@ class CRM_migrateContactsImport {
       ";
       $cid = CRM_Core_DAO::singleValueQuery($sql);
     }
-    //bbscript_log("trace", '_contactLookup $cid', $cid);
+    //bbscript_log(LL::TRACE, '_contactLookup $cid', $cid);
 
     //if a contact is found which we will merge to, check to see if that contact was in our import set
     if ( $xid ) {
@@ -1161,10 +1161,10 @@ class CRM_migrateContactsImport {
         $custVal = (!empty($contact[$type.'_display'])) ? $contact[$type.'_display'] : 'Dear Friend';
         $contact[$type.'_custom'] = $custVal;
       }
-      //bbscript_log("trace", "greeting format check", $error);
-      //bbscript_log("trace", "greeting format contact", $contact);
+      //bbscript_log(LL::TRACE, "greeting format check", $error);
+      //bbscript_log(LL::TRACE, "greeting format contact", $contact);
 
-      bbscript_log("info", "fixing {$type} for contact {$contact['external_identifier']}");
+      bbscript_log(LL::INFO, "fixing {$type} for contact {$contact['external_identifier']}");
 
       //call this function again so we can iterate through each type in case of multiple errors
       self::_checkGreeting($contact);
@@ -1225,11 +1225,11 @@ class CRM_migrateContactsImport {
           'custom_group_id' => $customGroupID[$set],
         );
         $data = self::_importAPI($set, 'get', $params);
-        //bbscript_log("trace", "_fillContact data: $set", $data);
+        //bbscript_log(LL::TRACE, "_fillContact data: $set", $data);
 
         //trap the error: if get failed, we need to insert a record in the custom data table
         if ( $data['is_error'] && !$optDry ) {
-          bbscript_log("debug", "unable to retrieve {$set} custom data for ID {$matchedID}. inserting record and proceeding.");
+          bbscript_log(LL::DEBUG, "unable to retrieve {$set} custom data for ID {$matchedID}. inserting record and proceeding.");
           $tbl = self::getCustomFields($set, 'table');
           $sql = "
             INSERT IGNORE INTO {$tbl} (entity_id)
@@ -1264,8 +1264,8 @@ class CRM_migrateContactsImport {
     );
     $address = self::_importAPI('address', 'getsingle', $params);
 
-    //bbscript_log("trace", "_compareAddresses address", $address);
-    //bbscript_log("trace", "_compareAddresses record", $record);
+    //bbscript_log(LL::TRACE, "_compareAddresses address", $address);
+    //bbscript_log(LL::TRACE, "_compareAddresses record", $record);
 
     $dupe = TRUE;
     $afs = array('street_address', 'supplemental_address_1', 'city', 'postal_code');
@@ -1301,7 +1301,7 @@ class CRM_migrateContactsImport {
     }
 
     if ( $optDry ) {
-      bbscript_log("debug", "_importEntityAttachments insert file for {$entityType}");
+      bbscript_log(LL::DEBUG, "_importEntityAttachments insert file for {$entityType}");
       return;
     }
 
@@ -1313,8 +1313,8 @@ class CRM_migrateContactsImport {
         AND entity_id = {$entityID}
         AND file_id = {$attachmentIDs[$attID]}
     ";
-    //bbscript_log("trace", "_importEntityAttachments attID", $attID);
-    //bbscript_log("trace", "_importEntityAttachments search", $sql);
+    //bbscript_log(LL::TRACE, "_importEntityAttachments attID", $attID);
+    //bbscript_log(LL::TRACE, "_importEntityAttachments search", $sql);
     if ( CRM_Core_DAO::singleValueQuery($sql) ) {
       return;
     }
@@ -1326,7 +1326,7 @@ class CRM_migrateContactsImport {
       VALUES
       ( '{$entityType}', {$entityID}, {$attachmentIDs[$attID]} )
     ";
-    //bbscript_log("trace", "_importEntityAttachments insert", $sql);
+    //bbscript_log(LL::TRACE, "_importEntityAttachments insert", $sql);
     CRM_Core_DAO::executeQuery($sql);
 
     //return file ID
@@ -1347,7 +1347,7 @@ class CRM_migrateContactsImport {
 
     //now copy file and fix owner:group
     if ( $optDry ) {
-      bbscript_log("debug", "_copyAttachment: {$sourceFile}");
+      bbscript_log(LL::DEBUG, "_copyAttachment: {$sourceFile}");
     }
     else {
       //ensure source file exists
@@ -1358,7 +1358,7 @@ class CRM_migrateContactsImport {
       }
       else {
         //file couldn't be found and moved
-        bbscript_log("debug", "file could not be located and copied: {$sourceFile}");
+        bbscript_log(LL::DEBUG, "file could not be located and copied: {$sourceFile}");
       }
     }
   }//_moveAttachment
@@ -1385,7 +1385,7 @@ class CRM_migrateContactsImport {
       )
     ";
     CRM_Core_DAO::executeQuery($sql);
-    bbscript_log("info", "cleaning up log table records...");
+    bbscript_log(LL::INFO, "cleaning up log table records...");
   }//_cleanLogRecords
 
   /*
@@ -1418,8 +1418,8 @@ class CRM_migrateContactsImport {
     $contactsList = implode("','", array_keys($extInt));
 
     if ( $optDry ) {
-      bbscript_log("debug", "Imported contacts to be added to group:", $g);
-      bbscript_log("debug", "List of contacts (external ids) added:", $contactsList);
+      bbscript_log(LL::DEBUG, "Imported contacts to be added to group:", $g);
+      bbscript_log(LL::DEBUG, "List of contacts (external ids) added:", $contactsList);
       return;
     }
 
@@ -1440,7 +1440,7 @@ class CRM_migrateContactsImport {
 
     //error handling
     if ( !$groupID ) {
-      bbscript_log("fatal", "Unable to retrieve migration group ({$g['title']}) and add contacts to group.");
+      bbscript_log(LL::FATAL, "Unable to retrieve migration group ({$g['title']}) and add contacts to group.");
       return;
     }
 
@@ -1452,7 +1452,7 @@ class CRM_migrateContactsImport {
       FROM civicrm_contact
       WHERE external_identifier IN ('{$contactsList}');
     ";
-    //bbscript_log("trace", "Group insert:", $sqlInsert);
+    //bbscript_log(LL::TRACE, "Group insert:", $sqlInsert);
     CRM_Core_DAO::executeQuery($sqlInsert);
 
     $now = date('Y-m-d H:i', strtotime('+3 hours', strtotime(date('Y-m-d H:i'))));
@@ -1463,10 +1463,10 @@ class CRM_migrateContactsImport {
       FROM civicrm_contact
       WHERE external_identifier IN ('{$contactsList}');
     ";
-    //bbscript_log("trace", "Group insert:", $sqlInsert);
+    //bbscript_log(LL::TRACE, "Group insert:", $sqlInsert);
     CRM_Core_DAO::executeQuery($sqlSubInsert);
 
-    bbscript_log("info", "Imported contacts added to group: {$g['title']}");
+    bbscript_log(LL::INFO, "Imported contacts added to group: {$g['title']}");
   }//addToGroup
 
   /*
@@ -1476,7 +1476,7 @@ class CRM_migrateContactsImport {
     $group = civicrm_api('custom_group', 'getsingle', array('version' => 3, 'name' => $name ));
     if ( $return == 'fields' ) {
       $fields = civicrm_api('custom_field', 'get', array('version' => 3, 'custom_group_id' => $group['id']));
-      //bbscript_log("trace", 'getCustomFields fields', $fields);
+      //bbscript_log(LL::TRACE, 'getCustomFields fields', $fields);
       return $fields['values'];
     }
     elseif ( $return == 'table' ) {
@@ -2510,7 +2510,7 @@ class CRM_migrateContactsImport {
       $params = self::_cleanArray($params);
 
       $newActivity = self::_importAPI('activity', 'create', $params);
-      //bbscript_log("trace", 'importActivities newActivity', $newActivity);
+      //bbscript_log(LL::TRACE, 'importActivities newActivity', $newActivity);
 
       //handle attachments
       if ( $attachments ) {

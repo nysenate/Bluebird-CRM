@@ -58,7 +58,7 @@ function main()
   $parseStreetAddress = false;
   if (!$parseAddress) {
     if ($optlist['parse'] == true) {
-      bbscript_log('ERROR', ts('Error: You need to enable Street Address Parsing under Global Settings >> Address Settings.'));
+      bbscript_log(LL::ERROR, ts('Error: You need to enable Street Address Parsing under Global Settings >> Address Settings.'));
       exit(1);
     }
   } else {
@@ -71,18 +71,18 @@ function main()
 
   $force = ($optlist['force'] ? "update" : "fill");
   if ($optlist['geocode'] && $optlist['distassign']) {
-    bbscript_log('INFO', ts("Geocoding and district assigning using $force strategy."));
+    bbscript_log(LL::INFO, ts("Geocoding and district assigning using $force strategy."));
   }
   else if ($optlist['geocode']) {
-    bbscript_log('INFO', ts( "Geocoding using $force strategy." ));
+    bbscript_log(LL::INFO, ts( "Geocoding using $force strategy." ));
   }
   else if ($optlist['distassign']) {
-    bbscript_log('INFO', ts( "District assigning using $force strategy." ));
+    bbscript_log(LL::INFO, ts( "District assigning using $force strategy." ));
   }
 
   // Don't process if no operations are specified
   if (!$parseStreetAddress && !$optlist['geocode'] && !$optlist['distassign'] && !$optlist['validate']) {
-    bbscript_log('ERROR', ts("Error:USPS correction, Geocode mapping, district assignment and Street Address Parsing are disabled. At least one option must be enabled to use this script."));
+    bbscript_log(LL::ERROR, ts("Error:USPS correction, Geocode mapping, district assignment and Street Address Parsing are disabled. At least one option must be enabled to use this script."));
     exit(1);
   }
 
@@ -107,7 +107,7 @@ function processContacts($parseStreetAddress, $optlist) {
 
   $query = getQuery($optlist);
 
-  bbscript_log('TRACE', "Executing query: $query\n");
+  bbscript_log(LL::TRACE, "Executing query: $query\n");
   $dao = new CRM_Core_DAO();
   $db = $dao->getDatabaseConnection()->connection;
   $res = bb_mysql_query($query, $db, true);
@@ -115,13 +115,13 @@ function processContacts($parseStreetAddress, $optlist) {
   // Decided not to use the dao for the query because of row counting errors.
   // $dao =& CRM_Core_DAO::executeQuery($query, CRM_Core_DAO::$_nullArray);
 
-  bbscript_log('INFO', "Address Retrieval Query time = " . get_elapsed_time($startTime) . " secs");
+  bbscript_log(LL::INFO, "Address Retrieval Query time = " . get_elapsed_time($startTime) . " secs");
 
   $batchNum = $currentBatchSize = $totalAddressParsed = 0;
   $unparseableContactAddress = array();
   
   $batchSize = ($optlist['batch']) ? $optlist['batch'] : DEFAULT_ADDRESS_BATCH;
-  bbscript_log('INFO', "Using batches of $batchSize addresses.");
+  bbscript_log(LL::INFO, "Using batches of $batchSize addresses.");
 
   $DEBUG = ($optlist['debug']);
   $overwrite = ($optlist['force'] == 'update');
@@ -136,7 +136,7 @@ function processContacts($parseStreetAddress, $optlist) {
   $sleepCount = 1;
   $totalRows = mysql_num_rows($res);
 
-  bbscript_log('INFO', "Iterating over {$totalRows} addresses...");
+  bbscript_log(LL::INFO, "Iterating over {$totalRows} addresses...");
 
   while (($row = mysql_fetch_assoc($res)) != null) {
     $totalAddresses++;
@@ -179,40 +179,40 @@ function processContacts($parseStreetAddress, $optlist) {
 
     // Perform batch requests based on groups of operations requested.
     if ($performUspsValidate && $performGeocode && $performDistAssign) {
-      bbscript_log('INFO', ts("Performing batch bluebird lookup #{$batchNum}..."));
+      bbscript_log(LL::INFO, ts("Performing batch bluebird lookup #{$batchNum}..."));
       CRM_Utils_SAGE::batchLookup($addressBatch, $overwrite, $overwrite);
     }
     else if ($performGeocode && $performDistAssign) {
-      bbscript_log('INFO', ts("Performing batch district assign #{$batchNum}..."));
+      bbscript_log(LL::INFO, ts("Performing batch district assign #{$batchNum}..."));
       CRM_Utils_SAGE::batchDistAssign($addressBatch, $overwrite, $overwrite, $streetFileOnly);
     }
     else {
       if ($performUspsValidate) {
-        bbscript_log('INFO', ts("Performing batch check address #{$batchNum}..."));
+        bbscript_log(LL::INFO, ts("Performing batch check address #{$batchNum}..."));
         CRM_Utils_SAGE::batchCheckAddress($addressBatch);
       }
       if ($performGeocode && !($performDistAssign && !$useCoords)) {
-        bbscript_log('INFO', ts("Performing batch geocode #{$batchNum}..."));
+        bbscript_log(LL::INFO, ts("Performing batch geocode #{$batchNum}..."));
         CRM_Utils_SAGE::batchGeocode($addressBatch, $overwrite);
       }
       if ($performDistAssign) {
         if ($useCoords) {
-          bbscript_log('INFO', ts("Performing batch lookup using geocodes #{$batchNum}..."));
+          bbscript_log(LL::INFO, ts("Performing batch lookup using geocodes #{$batchNum}..."));
           CRM_Utils_SAGE::batchLookupFromPoint($addressBatch, $overwrite);
         }
         else if ($performGeocode) {
-          bbscript_log('INFO', ts("Performing batch geocode/district assign #{$batchNum}..."));
+          bbscript_log(LL::INFO, ts("Performing batch geocode/district assign #{$batchNum}..."));
           CRM_Utils_SAGE::batchDistAssign($addressBatch, $overwrite, $overwrite, $streetFileOnly);
         }
         else {
-          bbscript_log('INFO', ts("Performing batch district assign without overwriting geocode #{$batchNum}..."));
+          bbscript_log(LL::INFO, ts("Performing batch district assign without overwriting geocode #{$batchNum}..."));
           CRM_Utils_SAGE::batchDistAssign($addressBatch, $overwrite, false);
         }
       }
     }
 
     $sageProcessTime = get_elapsed_time($batchStartTime);
-    bbscript_log('DEBUG', ts("SAGE processing time: " . $sageProcessTime . " s."));
+    bbscript_log(LL::DEBUG, ts("SAGE processing time: " . $sageProcessTime . " s."));
 
     // Iterate through each address in the batch and save where applicable.
     for ($i = 0; $i < count($addressBatch); $i++) {
@@ -243,7 +243,7 @@ function processContacts($parseStreetAddress, $optlist) {
         $total_geocode_stats[$method] = 0;
       }
       $total_geocode_stats[$method] += $count;
-      bbscript_log('INFO', "Current usage for $method: $count | Total usage: {$total_geocode_stats[$method]}");
+      bbscript_log(LL::INFO, "Current usage for $method: $count | Total usage: {$total_geocode_stats[$method]}");
     }
 
     $geocode_stats = array();
@@ -256,11 +256,11 @@ function processContacts($parseStreetAddress, $optlist) {
     $addressBatch = array();
 
     $batchProcessTime = get_elapsed_time($batchStartTime);
-    bbscript_log('DEBUG', ts("Batch processing time: {$batchProcessTime} s"));
+    bbscript_log(LL::DEBUG, ts("Batch processing time: {$batchProcessTime} s"));
     
     if (!empty($threshold) && !empty($sleepDuration) && 
         $totalAddresses >= ($threshold * $sleepCount)) {
-      bbscript_log('WARN', ts("Reached threshold at {$totalAddresses} addresses. Pausing script for {$sleepDuration} minutes!"));  
+      bbscript_log(LL::WARN, ts("Reached threshold at {$totalAddresses} addresses. Pausing script for {$sleepDuration} minutes!"));  
       sleep($sleepDuration * 60);
       $sleepCount++;
     }
@@ -268,11 +268,11 @@ function processContacts($parseStreetAddress, $optlist) {
     $batchStartTime = microtime(true);
   }
 
-  bbscript_log('INFO', "Total addresses evaluated: $totalAddresses");
+  bbscript_log(LL::INFO, "Total addresses evaluated: $totalAddresses");
   if ($parseStreetAddress) {
-    bbscript_log('INFO', ts("Addresses parsed: $totalAddressParsed"));
+    bbscript_log(LL::INFO, ts("Addresses parsed: $totalAddressParsed"));
     if (count($unparseableContactAddress) > 0) {
-      bbscript_log('INFO', ts("Below is a list of all the unparsed contact addresses:"));
+      bbscript_log(LL::INFO, ts("Below is a list of all the unparsed contact addresses:"));
       foreach ($unparseableContactAddress as $upca) {
         echo $upca . "\n";
       }
@@ -280,14 +280,14 @@ function processContacts($parseStreetAddress, $optlist) {
   }
 
   $elapsed_time = get_elapsed_time($startTime);
-  bbscript_log('INFO', "Elapsed time = $elapsed_time secs");
+  bbscript_log(LL::INFO, "Elapsed time = $elapsed_time secs");
   // Adjust actual elapsed time to account for sleep delays. 
   if (!empty($threshold) && !empty($sleepDuration)) {
     $elapsed_time -= ($sleepDuration * 60 * ($sleepCount -1));
-    bbscript_log('INFO', "Actual processing time = {$elapsed_time} secs");
+    bbscript_log(LL::INFO, "Actual processing time = {$elapsed_time} secs");
   }
   if ($totalAddresses > 0) {
-    bbscript_log('INFO', "Average time per address = ".($elapsed_time/$totalAddresses)." secs");
+    bbscript_log(LL::INFO, "Average time per address = ".($elapsed_time/$totalAddresses)." secs");
   }
 
   if (!is_cli_script()) {
@@ -344,7 +344,7 @@ function updateAddress($address)
 
     if (!empty($address['geo_code_1'])) {
       if (!empty($address['geo_method'])) {
-        bbscript_log('TRACE', "Saved geocode for address id {$address['address_id']}:  {$address['geo_method']} [{$address['geo_code_1']}, {$address['geo_code_2']}]");        
+        bbscript_log(LL::TRACE, "Saved geocode for address id {$address['address_id']}:  {$address['geo_method']} [{$address['geo_code_1']}, {$address['geo_code_2']}]");        
         // Log geocode method stats
         if (!isset($geocode_stats[$address['geo_method']])) {
           $geocode_stats[$address['geo_method']] = 0;
@@ -352,11 +352,11 @@ function updateAddress($address)
         $geocode_stats[$address['geo_method']]++;
       }
       else {
-        bbscript_log('TRACE', "Geocode already exists for address id {$address['address_id']}: [{$address['geo_code_1']}, {$address['geo_code_2']}]");        
+        bbscript_log(LL::TRACE, "Geocode already exists for address id {$address['address_id']}: [{$address['geo_code_1']}, {$address['geo_code_2']}]");        
       }      
     }
     else {
-      bbscript_log('DEBUG', "Missing geocode for address: $addressLine");
+      bbscript_log(LL::DEBUG, "Missing geocode for address: $addressLine");
     }
   }
 } // updateAddress()
@@ -420,10 +420,10 @@ function updateDistricts($address, $db)
               WHERE di.entity_id = {$address['address_id']}";
     bb_mysql_query($query, $db, false);
     $districtLine = getAssignedDistrictsLine($distUpdates);
-    bbscript_log('TRACE', "Address id: {$address['address_id']} - $districtLine");            
+    bbscript_log(LL::TRACE, "Address id: {$address['address_id']} - $districtLine");            
   }
   else {
-    bbscript_log('TRACE', "No districts assigned for address id: {$address['address_id']}");
+    bbscript_log(LL::TRACE, "No districts assigned for address id: {$address['address_id']}");
   }
 } // updateDistricts()
 

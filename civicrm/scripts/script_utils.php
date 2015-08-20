@@ -9,16 +9,6 @@
 define('SCRIPT_UTILS_CIVIROOT', realpath(dirname(__FILE__).'/../core'));
 
 
-$LOG_LEVELS = array(
-    "TRACE" => array(0, "\33[0;35m"),
-    "DEBUG" => array(1, "\33[1;35m"),
-    "INFO"  => array(2, "\33[0;33m"),
-    "WARN"  => array(3, "\33[1;33m"),
-    "ERROR" => array(4, "\33[0;31m"),
-    "FATAL" => array(5, "\33[1;31m"),
-);
-
-
 function is_cli_script()
 {
   return php_sapi_name() == "cli";
@@ -224,39 +214,62 @@ function get_elapsed_time($start_time = 0)
 } // get_elapsed_time()
 
 
-function bbscript_log($message_level, $message, $var = null)
+abstract class LogLevel
 {
-  global $BB_LOG_LEVEL, $LOG_LEVELS;
-  $log_level = strtoupper($message_level);
-  list($log_num, $color) = $LOG_LEVELS[$log_level];
-  if ($log_num >= $BB_LOG_LEVEL) {
-    $timestamp = date('G:i:s');
-    $log_level = $color.$log_level."\33[0m";
-    // Extra large padding to account for color strings!
-    echo sprintf("[%s] %-20s %s\n",$timestamp, "[$log_level]", $message);
+  const FATAL = 0;
+  const ERROR = 1;
+  const WARN = 2;
+  const NOTICE = 3;
+  const INFO = 4;
+  const DEBUG = 5;
+  const TRACE = 6;
+}
 
-    if (!empty($var)) {
+class_alias('LogLevel', 'LL', false);
+
+
+$GLOBALS['bbscript_log_level'] = LL::NOTICE;
+
+function set_bbscript_log_level($lvl)
+{
+  global $bbscript_log_level;
+
+  $bbscript_log_level = $lvl;
+} // set_bbscript_log_level()
+
+
+function bbscript_log($lvl, $msg, $var = null)
+{
+  global $bbscript_log_level;
+
+  static $log_levels = array(
+    LL::FATAL  => array('FATAL', 35),  /* purple */
+    LL::ERROR  => array('ERROR', 31),  /* red */
+    LL::WARN   => array('WARN', 33),   /* yellow */
+    LL::NOTICE => array('NOTICE', 34), /* blue */
+    LL::INFO   => array('INFO', 32),   /* green */
+    LL::DEBUG  => array('DEBUG', 36),  /* cyan */
+    LL::TRACE  => array('TRACE', 30)   /* grey */
+  );
+
+  if ($lvl <= $bbscript_log_level) {
+    if (!isset($log_levels[$lvl])) {
+      $lvl = LL::TRACE;
+    }
+    list($lvl_text, $color) = $log_levels[$lvl];
+    $timestamp = date('G:i:s');
+    $lvl_text = "[\33[1;{$color}m".$lvl_text."\33[0m]";
+    // Extra large padding to account for color strings!
+    echo sprintf("[%s] %-20s %s\n", $timestamp, $lvl_text, $msg);
+
+    if ($var !== null) {
       if (is_array($var) || is_object($var)) {
         print_r($var);
       }
       else {
-        echo "\n{$var}\n";
+        echo "$var\n";
       }
     }
-  }
-} // bbscript_log()
-
-
-function bbscript_log_inline($message_level, $message)
-{
-  global $BB_LOG_LEVEL, $LOG_LEVELS;
-  $log_level = strtoupper($message_level);
-  list($log_num, $color) = $LOG_LEVELS[$log_level];
-  if ($log_num >= $BB_LOG_LEVEL) {
-    $timestamp = date('G:i:s');
-    $log_level = $color.$log_level."\33[0m";
-    // Extra large padding to account for color strings!
-    echo sprintf("[%s] %-20s %s\r",$timestamp, "[$log_level]", $message);
   }
 } // bbscript_log()
 
@@ -266,14 +279,14 @@ function bb_mysql_query($query, $db, $exit_on_fail = false)
   $result = mysql_query($query, $db);
   if ($result === false) {
     if ($exit_on_fail) {
-      bbscript_log("FATAL", "MySQL Fatal Error: ".mysql_error($db));
-      bbscript_log("FATAL", "Caused by:\n$query");
-      bbscript_log("FATAL", "Exiting the script immediately");
+      bbscript_log(LL::FATAL, "MySQL Fatal Error: ".mysql_error($db));
+      bbscript_log(LL::FATAL, "Caused by:\n$query");
+      bbscript_log(LL::FATAL, "Exiting the script immediately");
       exit(1);
     }
     else {
-      bbscript_log("ERROR", "MySQL Error: ".mysql_error($db));
-      bbscript_log("ERROR", "Caused by:\n$query");
+      bbscript_log(LL::ERROR, "MySQL Error: ".mysql_error($db));
+      bbscript_log(LL::ERROR, "Caused by:\n$query");
     }
   }
   return $result;

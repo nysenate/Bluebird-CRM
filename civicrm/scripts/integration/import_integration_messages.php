@@ -6,14 +6,14 @@ require_once dirname(__FILE__).'/../script_utils.php';
 require_once dirname(__FILE__).'/../bluebird_config.php';
 
 // mark the start of the script
-bbscript_log('INFO', 'Beginning import process');
+bbscript_log(LL::INFO, 'Beginning import process');
 
 // set the default return code (success)
 $return_code = 0;
 
 // get config
 $iconfig = get_integration_config_params();
-bbscript_log('DEBUG', "Using config:\n".print_r($iconfig, true));
+bbscript_log(LL::DEBUG, "Using config:", $iconfig);
 
 // enforce character set and collation on connections
 $pdo_options = array(
@@ -26,15 +26,15 @@ $pdo_options = array(
 $localdsn = "mysql:host={$iconfig['local_db_host']};" .
                   "port={$iconfig['local_db_port']};" .
                   "dbname={$iconfig['local_db_name']}";
-bbscript_log('DEBUG', "Attempting to connect to local store with: $localdsn");
+bbscript_log(LL::DEBUG, "Attempting to connect to local store with: $localdsn");
 try {
   $localdb = new PDO($localdsn, $iconfig['local_db_user'], $iconfig['local_db_pass'], $pdo_options);
 }
 catch (PDOException $e) {
-  bbscript_log('FATAL', 'Could not connect to local store: '.$e->getMessage());
+  bbscript_log(LL::FATAL, 'Could not connect to local store: '.$e->getMessage());
   exit(1);
 }
-bbscript_log('INFO', 'Connected to local store');
+bbscript_log(LL::INFO, 'Connected to local store');
 
 // pull local db settings
 try {
@@ -42,7 +42,7 @@ try {
   $res = $localdb->query($query);
 }
 catch (PDOException $e) {
-  bbscript_log('FATAL', 'Could not query local database settings: '.$e->getMessage());
+  bbscript_log(LL::FATAL, 'Could not query local database settings: '.$e->getMessage());
   exit(1);
 }
 
@@ -55,8 +55,8 @@ $res->closeCursor();
 if (!isset($local_cfg->max_pulled)) {
   $local_cfg->max_pulled = 0;
 }
-bbscript_log('INFO', 'Local config retrieved');
-bbscript_log('DEBUG', 'Using local config: '.print_r($local_cfg, true));
+bbscript_log(LL::INFO, 'Local config retrieved');
+bbscript_log(LL::DEBUG, 'Using local config:', $local_cfg);
 
 // set the watch for current message id
 $current_max = $local_cfg->max_pulled;
@@ -65,16 +65,16 @@ $current_max = $local_cfg->max_pulled;
 $remotedsn = "mysql:host={$iconfig['source_db_host']};" .
                    "port={$iconfig['source_db_port']};" .
                    "dbname={$iconfig['source_db_name']}";
-bbscript_log('DEBUG', "Attempting to connect to remote db with: $remotedsn");
+bbscript_log(LL::DEBUG, "Attempting to connect to remote db with: $remotedsn");
 try {
   $remotedb = new PDO($remotedsn, $iconfig['source_db_user'], $iconfig['source_db_pass'], $pdo_options);
 }
 catch (PDOException $e) {
-  bbscript_log('FATAL', 'Could not connect to remote db: '.$e->getMessage());
+  bbscript_log(LL::FATAL, 'Could not connect to remote db: '.$e->getMessage());
   exit(1);
 }
-bbscript_log('INFO', 'Connected to remote db');
-bbscript_log('INFO', "Searching for messages >$current_max");
+bbscript_log(LL::INFO, 'Connected to remote db');
+bbscript_log(LL::INFO, "Searching for messages after #$current_max");
 
 // query for new messages
 $query = <<<REMOTEQUERY
@@ -108,17 +108,17 @@ FROM accumulator a
 WHERE a.id > :currentmax /*AND a.user_is_verified > 0*/
 REMOTEQUERY;
 
-bbscript_log('INFO', "Executing query:\n$query");
+bbscript_log(LL::INFO, "Executing query:", $query);
 try {
   $res = $remotedb->prepare($query);
   $res->execute(array(':currentmax'=>$current_max));
   $found_count = $res->rowCount();
 }
 catch (PDOException $e) {
-  bbscript_log('FATAL', 'Remote query for new messages failed: '.$e->getMessage());
+  bbscript_log(LL::FATAL, 'Remote query for new messages failed: '.$e->getMessage());
   exit(1);
 }
-bbscript_log('INFO', "Found $found_count messages to import");
+bbscript_log(LL::INFO, "Found $found_count messages to import");
 
 // set up the INSERT query
 $fields = array('id', 'user_id', 'user_is_verified', 'target_shortname',
@@ -128,7 +128,7 @@ $fields = array('id', 'user_id', 'user_is_verified', 'target_shortname',
                 'address1', 'address2', 'city', 'state', 'zip', 'dob',
                 'gender', 'top_issue');
 $query = "INSERT INTO accumulator (`".implode('`,`',$fields)."`) VALUES (:".implode(', :',$fields).")";
-bbscript_log('DEBUG', "Using query:\n".print_r($query, true));
+bbscript_log(LL::DEBUG, "Using query:", $query);
 
 // init the success tracker
 $success = array();
@@ -144,8 +144,8 @@ while ($onemsg = $res->fetch(PDO::FETCH_ASSOC)) {
     }
     $bindparam[":{$k}"] = $v;
   }
-  bbscript_log('INFO', "Importing message $thisid");
-  bbscript_log('DEBUG', "Message $thisid bound values:\n".print_r($bindparam, true));
+  bbscript_log(LL::INFO, "Importing message $thisid");
+  bbscript_log(LL::DEBUG, "Message $thisid bound values:", $bindparam);
   try {
     $instmt->execute($bindparam);
     $success[] = $thisid;
@@ -154,14 +154,14 @@ while ($onemsg = $res->fetch(PDO::FETCH_ASSOC)) {
     }
   }
   catch (PDOException $e) {
-    bbscript_log('ERROR', "Import of message {$onemsg['id']} failed: ".$e->getMessage());
+    bbscript_log(LL::ERROR, "Import of message {$onemsg['id']} failed: ".$e->getMessage());
     $return_code = 1;
   }
   $instmt->closeCursor();
 }
 
 $success_count = count($success);
-bbscript_log('INFO', "Message import complete (count:$success_count), closing remote resources");
+bbscript_log(LL::INFO, "Message import complete (count:$success_count), closing remote resources");
 $res->closeCursor();
 $remotedb = null;
 
@@ -175,7 +175,7 @@ try {
   }
 }
 catch (PDOException $e) {
-  bbscript_log('FATAL', 'COULD NOT UPDATE STATE INFORMATION! '.$e->getMessage());
+  bbscript_log(LL::FATAL, 'COULD NOT UPDATE STATE INFORMATION! '.$e->getMessage());
   $return_code = 1;
 }
 
@@ -186,7 +186,7 @@ $localdb = null;
 $logmsg = $found_count
           ? "Imported $success_count of $found_count new messages"
           : "No new messages to import";
-bbscript_log('INFO', "Process complete: $logmsg");
+bbscript_log(LL::INFO, "Process complete: $logmsg");
 
 exit($return_code);
 

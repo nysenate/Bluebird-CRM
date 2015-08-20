@@ -7,13 +7,14 @@
  * Date: 2015-04-10
  */
 
-class CRM_NYSS_BAO_Integration {
-
+class CRM_NYSS_BAO_Integration
+{
   /*
    * given a website user Id, conduct a lookup to get the contact Id
    * if none, return empty
    */
-  static function getContact($userId) {
+  static function getContact($userId)
+  {
     $cid = CRM_Core_DAO::singleValueQuery("
       SELECT id
       FROM civicrm_contact
@@ -23,10 +24,12 @@ class CRM_NYSS_BAO_Integration {
     return $cid;
   }//getContact
 
+
   /*
    * attempt to match the record with existing contacts
    */
-  static function matchContact($params) {
+  static function matchContact($params)
+  {
     //format params to pass to dedupe tool
     $dedupeParams = array(
       'civicrm_contact' => array(
@@ -101,25 +104,25 @@ class CRM_NYSS_BAO_Integration {
         'params' => $params,
       );
     }
-  }
+  } // matchContact()
+
 
   /*
    * create a new contact
    */
-  static function createContact($params) {
+  static function createContact($params)
+  {
     $contact = civicrm_api('contact', 'create', array('version' => 3, 'contact_type' => 'Individual') + $params);
     //CRM_Core_Error::debug_var('contact', $contact);
 
     return $contact['id'];
-  }//createContact
+  } //createContact()
+
 
   //TODO when a user moves to a different district, need to reset web_user_id
 
-  static function processIssue($contactId, $action, $params) {
-    //bbscript_log('trace', '$contactId', $contactId);
-    //bbscript_log('trace', '$action', $action);
-    //bbscript_log('trace', '$params', $params);
-
+  static function processIssue($contactId, $action, $params)
+  {
     //find out if tag exists
     $parentId = CRM_Core_DAO::singleValueQuery("
       SELECT id
@@ -171,13 +174,11 @@ class CRM_NYSS_BAO_Integration {
     }
 
     return true;
-  }//processIssue
+  } //processIssue()
 
-  static function processCommittee($contactId, $action, $params) {
-    //bbscript_log('trace', '$contactId', $contactId);
-    //bbscript_log('trace', '$action', $action);
-    //bbscript_log('trace', '$params', $params);
 
+  static function processCommittee($contactId, $action, $params)
+  {
     //find out if tag exists
     $parentId = CRM_Core_DAO::singleValueQuery("
       SELECT id
@@ -229,13 +230,11 @@ class CRM_NYSS_BAO_Integration {
     }
 
     return true;
-  }//processCommittee
+  } //processCommittee()
 
-  static function processBill($contactId, $action, $params) {
-    //bbscript_log('trace', '$contactId', $contactId);
-    //bbscript_log('trace', '$action', $action);
-    //bbscript_log('trace', '$params', $params);
 
+  static function processBill($contactId, $action, $params)
+  {
     //find out if tag exists
     $parentId = CRM_Core_DAO::singleValueQuery("
       SELECT id
@@ -338,13 +337,11 @@ class CRM_NYSS_BAO_Integration {
     }
 
     return true;
-  }//processBill
+  } //processBill()
 
-  static function processPetition($contactId, $action, $params) {
-    //bbscript_log('trace', '$contactId', $contactId);
-    //bbscript_log('trace', '$action', $action);
-    //bbscript_log('trace', '$params', $params);
 
+  static function processPetition($contactId, $action, $params)
+  {
     //find out if tag exists
     $parentId = CRM_Core_DAO::singleValueQuery("
       SELECT id
@@ -396,12 +393,14 @@ class CRM_NYSS_BAO_Integration {
     }
 
     return true;
-  }//processPetition
+  } //processPetition()
+
 
   /*
    * process account records in the custom nyss_web_account table
    */
-  static function processAccount($contactId, $action, $params, $created_date) {
+  static function processAccount($contactId, $action, $params, $created_date)
+  {
     switch ($action) {
       case 'account created':
       case 'account deleted':
@@ -428,9 +427,11 @@ class CRM_NYSS_BAO_Integration {
     }
 
     return true;
-  }//processAccount
+  } //processAccount()
 
-  static function processProfile($contactId, $action, $params, $row) {
+
+  static function processProfile($contactId, $action, $params, $row)
+  {
     //CRM_Core_Error::debug_var('processProfile $row', $row);
 
     //only available action is account edited
@@ -483,12 +484,14 @@ class CRM_NYSS_BAO_Integration {
     }
 
     return true;
-  }//processProfile
+  } //processProfile()
+
 
   /*
    * process communication and contextual messages as notes
    */
-  static function processCommunication($contactId, $action, $params, $type) {
+  static function processCommunication($contactId, $action, $params, $type)
+  {
     if ($type == 'DIRECTMSG') {
       $entity_table = 'nyss_directmsg';
       $subject = 'Direct Message';
@@ -540,14 +543,14 @@ class CRM_NYSS_BAO_Integration {
     }
 
     return $result;
-  }
+  } // processCommunication()
+
 
   /*
    * handle surveys (questionnaire response) with
    */
-  static function processSurvey($contactId, $action, $params) {
-    //bbscript_log('trace', '$params', $params);
-
+  static function processSurvey($contactId, $action, $params)
+  {
     //check if survey exists; if not, construct fields
     if (!$flds = self::surveyExists($params)) {
       $flds = self::buildSurvey($params);
@@ -601,12 +604,14 @@ class CRM_NYSS_BAO_Integration {
     }
 
     return true;
-  }//processProfile
+  } //processSurvey()
+
 
   /*
    * get web account history for a contact
    */
-  static function getAccountHistory($cid) {
+  static function getAccountHistory($cid)
+  {
     $sql = "
       SELECT *
       FROM nyss_web_account
@@ -625,12 +630,14 @@ class CRM_NYSS_BAO_Integration {
     }
 
     return $rows;
-  }
+  } // getAccountHistory()
+
 
   /*
    * get web messages for a contact
    */
-  static function getMessages($cid) {
+  static function getMessages($cid)
+  {
     $sql = "
       SELECT *
       FROM civicrm_note
@@ -651,13 +658,15 @@ class CRM_NYSS_BAO_Integration {
     }
 
     return $rows;
-  }
+  } // getMessages()
+
 
   /*
    * check if survey already exists; if so, return fields by label
    * else return false
    */
-  function surveyExists($params) {
+  function surveyExists($params)
+  {
     if (empty($params->form_id)) {
       return false;
     }
@@ -694,12 +703,14 @@ class CRM_NYSS_BAO_Integration {
     //CRM_Core_Error::debug_var('surveyExists $fields', $fields);
 
     return $fields;
-  }//surveyExists
+  } //surveyExists()
+
 
   /*
    * create custom data set and fields for survey
    */
-  function buildSurvey($data) {
+  function buildSurvey($data)
+  {
     if (empty($data->form_id)) {
       return false;
     }
@@ -748,13 +759,15 @@ class CRM_NYSS_BAO_Integration {
     //CRM_Core_Error::debug_var('fields', $fields);
 
     return $fields;
-  }//buildSurvey
+  } //buildSurvey()
+
 
   /*
    * get the four types of website tagset tags
    * return hierarchal array by tagset
    */
-  static function getTags($cid) {
+  static function getTags($cid)
+  {
     $parentNames = CRM_Core_BAO_Tag::getTagSet('civicrm_contact');
     //CRM_Core_Error::debug_var('$parentNames', $parentNames);
 
@@ -771,12 +784,14 @@ class CRM_NYSS_BAO_Integration {
 
     //CRM_Core_Error::debug_var('$tags', $tags);
     return $tags;
-  }//getTags
+  } //getTags()
+
 
   /*
    * get activity stream for contact
    */
-  static function getActivityStream() {
+  static function getActivityStream()
+  {
     //CRM_Core_Error::debug_var('getActivityStream $_REQUEST', $_REQUEST);
 
     $contactID = CRM_Utils_Type::escape($_REQUEST['cid'], 'Integer');
@@ -874,12 +889,14 @@ class CRM_NYSS_BAO_Integration {
 
     echo CRM_Utils_JSON::encodeDataTableSelector($activity, $sEcho, $iTotal, $iFilteredTotal, $selectorElements);
     CRM_Utils_System::civiExit();
-  }//getActivityStream
+  } //getActivityStream()
+
 
   /*
    * store basic details about the event in the activity log
    */
-  static function storeActivityLog($cid, $type, $date, $details) {
+  static function storeActivityLog($cid, $type, $date, $details)
+  {
     //CRM_Core_Error::debug_var('storeActivityLog', $type);
 
     CRM_Core_DAO::executeQuery("
@@ -888,12 +905,14 @@ class CRM_NYSS_BAO_Integration {
       VALUES
       ({$cid}, '{$type}', '{$date}', '{$details}')
     ");
-  }//storeActivityLog
+  } //storeActivityLog()
+
 
   /*
    * archive the accumulator record and then delete from accumulator
    */
-  static function archiveRecord($db, $type, $row, $params, $date) {
+  static function archiveRecord($db, $type, $row, $params, $date)
+  {
     //CRM_Core_Error::debug_var('archiveRecord $type', $type);
     //CRM_Core_Error::debug_var('archiveRecord $row', $row);
     //CRM_Core_Error::debug_var('archiveRecord $params', $params);
@@ -988,5 +1007,5 @@ class CRM_NYSS_BAO_Integration {
     ");
 
     $transaction->commit();
-  }
+  } // archiveRecord()
 }//end class
