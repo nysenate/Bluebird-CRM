@@ -239,7 +239,13 @@ function set_bbscript_log_level($lvl)
     $bbscript_log_level = (int)$lvl;
   }
   else {
-    $bbscript_log_level = constant('LL::'.$lvl);
+    $new_level = @constant('LL::'.$lvl);
+    if ($new_level !== null) {
+      $bbscript_log_level = $new_level;
+    }
+    else {
+      bbscript_log(LL::ERROR, "Invalid log level [$lvl] specified");
+    }
   }
 } // set_bbscript_log_level()
 
