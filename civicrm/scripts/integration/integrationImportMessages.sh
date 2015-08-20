@@ -145,6 +145,10 @@ if [ $exit_only -eq 0 ]; then
   fi
 
   # commands to run for the import process
+  echo "Importing event messages from website..."
+  if [ $use_debug -eq 1 ]; then
+    echo "php $script_dir/import_integration_messages.php"
+  fi
   php $script_dir/import_integration_messages.php
   if [ $? -ne 0 ]; then
     echo "ERROR: Unable to import messages from remote" >&2
