@@ -8,30 +8,34 @@
 error_reporting(E_ERROR | E_PARSE | E_WARNING);
 set_time_limit(0);
 
-define('DEFAULT_LOG_LEVEL', 'TRACE');
+require_once dirname(__FILE__).'/../script_utils.php';
 
-class CRM_Integration_Process {
 
-  function run() {
-    require_once dirname(__FILE__).'/../script_utils.php';
-
+class CRM_Integration_Process
+{
+  function run()
+  {
     // Parse the options
-    $shortopts = "d:s:a:t";
-    $longopts = array("dryrun", "stats", "archive", "type=");
+    $shortopts = "dsat:l:";
+    $longopts = array("dryrun", "stats", "archive", "type=", "log-level=");
     $optlist = civicrm_script_init($shortopts, $longopts);
 
     if ($optlist === null) {
       $stdusage = civicrm_script_usage();
-      $usage = '[--dryrun] [--stats] [--archive] [--type TYPE]';
+      $usage = '[--dryrun] [--stats] [--archive] [--type TYPE] [--log-level LEVEL]';
       error_log("Usage: ".basename(__FILE__)."  $stdusage  $usage\n");
       exit(1);
     }
 
-    bbscript_log('info', 'Initiating integration processing...');
+    if (isset($optlist['log-level'])) {
+      set_bbscript_log_level($optlist['log-level']);
+    }
+
+    bbscript_log(LL::INFO, 'Initiating integration processing...');
 
     //get instance settings
     $bbcfg = get_bluebird_instance_config($optlist['site']);
-    //bbscript_log("trace", "bbcfg", $bbcfg);
+    bbscript_log(LL::TRACE, 'Bluebird config:', $bbcfg);
 
     $civicrm_root = $bbcfg['drupal.rootdir'].'/sites/all/modules/civicrm';
     $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
@@ -40,10 +44,10 @@ class CRM_Integration_Process {
       return FALSE;
     }
 
-    //bbscript_log('trace', '$optlist', $optlist);
+    bbscript_log(LL::TRACE, 'Command line opts:', $optlist);
 
     //set integration DB
-    $intDB = $bbcfg['integration.local.db'];
+    $intDB = $bbcfg['integration.local.db.name'];
     $typeSql = ($optlist['type']) ? "AND msg_type = '{$optlist['type']}'" : '';
 
     //handle survey in special way
@@ -61,13 +65,12 @@ class CRM_Integration_Process {
         $addSql
     ";
     $row = CRM_Core_DAO::executeQuery($sql);
-    //bbscript_log('trace', '$sql', $sql);
-    //bbscript_log('trace', '$row dao', $row);
+    bbscript_log(LL::TRACE, 'SQL query:', $sql);
 
     $errors = $status = array();
 
     while ($row->fetch()) {
-      //bbscript_log('trace', 'row', $row);
+      //bbscript_log(LL::TRACE, 'row:', $row);
 
       //if context/direct message and target != user, skip
       if ($row->target_shortname != $row->user_shortname &&
@@ -112,7 +115,7 @@ class CRM_Integration_Process {
 
       //prep params
       $params = json_decode($row->msg_info);
-      //bbscript_log('trace', 'params', $params);
+      bbscript_log(LL::TRACE, 'Params after json_decode():', $params);
 
       $date = date('Y-m-d H:i:s', $row->created_at);
       $archiveTable = '';
@@ -186,7 +189,7 @@ class CRM_Integration_Process {
           break;
 
         default:
-          bbscript_log('error', 'Unable to process row. Message type is unknown.', $row);
+          bbscript_log(LL::ERROR, 'Unable to process row. Message type is unknown.', $row);
           $result = array(
             'is_error' => 1,
             'details' => 'Unable to process row. Message type is unknown.',
@@ -218,17 +221,13 @@ class CRM_Integration_Process {
       'error' => count($stats['error']),
     );
 
-    echo "Processing stats:\n";
-    print_r($stats['counts']);
+    bbscript_log(LL::NOTICE, "Processing stats:", $stats['counts']);
 
     if ($optlist['stats']) {
-      echo "\nProcessing details:\n";
-      echo "\nProcessed:\n";
-      print_r($stats['processed']);
-      echo "\nUnprocessed\n";
-      print_r($stats['unprocessed']);
-      echo "\nErrors\n";
-      print_r($stats['error']);
+      bbscript_log(LL::NOTICE, "\nProcessing details:");
+      bbscript_log(LL::NOTICE, "Processed:", $stats['processed']);
+      bbscript_log(LL::NOTICE, "Unprocessed:", $stats['unprocessed']);
+      bbscript_log(LL::NOTICE, "Errors:", $stats['error']);
     }
   }//run
 

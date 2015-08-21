@@ -137,6 +137,10 @@ class CRM_NYSS_IMAP_Session
     // Changes (moves and deletions) to the IMAP mailbox will not be made
     // unless CL_EXPUNGE is used when the connection is closed.
     if ($this->_conn) {
+      $errors = imap_errors();
+      if ($errors) {
+        error_log("WARNING - IMAP SESSION REPORTED ERRORS:\n".print_r($errors,1));
+      }
       imap_close($this->_conn, (static::$auto_expunge ? CL_EXPUNGE : null));
     }
     $this->_conn = null;

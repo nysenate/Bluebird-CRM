@@ -66,19 +66,19 @@ $bbcfg = get_bluebird_instance_config($optlist['site']);
 $sage_base = array_key_exists('sage.api.base', $bbcfg) ? $bbcfg['sage.api.base'] : false;
 $sage_key = array_key_exists('sage.api.key', $bbcfg) ? $bbcfg['sage.api.key'] : false;
 if (!($sage_base && $sage_key)) {
-    error_log(bbscript_log("fatal", "sage.api.base and sage.api.key must be set in your bluebird.cfg file."));
+    error_log(bbscript_log(LL::FATAL, "sage.api.base and sage.api.key must be set in your bluebird.cfg file."));
     exit(1);
 }
 
 // Dump the active options when in debug mode
-bbscript_log("DEBUG", "Option: INSTANCE={$optlist['site']}");
-bbscript_log("DEBUG", "Option: BATCH_SIZE=$opt_batch_size");
-bbscript_log("DEBUG", "Option: LOG_LEVEL=$BB_LOG_LEVEL");
-bbscript_log("DEBUG", "Option: DRY_RUN=".($opt_dry_run ? "TRUE" : "FALSE"));
-bbscript_log("DEBUG", "Option: SAGE_API=$sage_base");
-bbscript_log("DEBUG", "Option: SAGE_KEY=$sage_key");
-bbscript_log("DEBUG", "Option: STARTFROM=".($opt_startfrom ? $opt_startfrom : "NONE"));
-bbscript_log("DEBUG", "Option: MAX=".($opt_max ? $opt_max : "NONE"));
+bbscript_log(LL::DEBUG, "Option: INSTANCE={$optlist['site']}");
+bbscript_log(LL::DEBUG, "Option: BATCH_SIZE=$opt_batch_size");
+bbscript_log(LL::DEBUG, "Option: LOG_LEVEL=$BB_LOG_LEVEL");
+bbscript_log(LL::DEBUG, "Option: DRY_RUN=".($opt_dry_run ? "TRUE" : "FALSE"));
+bbscript_log(LL::DEBUG, "Option: SAGE_API=$sage_base");
+bbscript_log(LL::DEBUG, "Option: SAGE_KEY=$sage_key");
+bbscript_log(LL::DEBUG, "Option: STARTFROM=".($opt_startfrom ? $opt_startfrom : "NONE"));
+bbscript_log(LL::DEBUG, "Option: MAX=".($opt_max ? $opt_max : "NONE"));
 
 // District mappings for Notes, Distinfo, and SAGE
 $FIELD_MAP = array(
@@ -107,7 +107,7 @@ if ($opt_dry_run) {
 start_process($db, $opt_startfrom, $opt_batch_size, $opt_max, $bulkdistrict_url);
 
 $elapsed_time = round(get_elapsed_time($script_start_time), 3);
-bbscript_log("INFO", "Fixed election districts in $elapsed_time seconds.");
+bbscript_log(LL::INFO, "Fixed election districts in $elapsed_time seconds.");
 exit(0);
 
 $cnts = array(
@@ -117,20 +117,20 @@ $cnts = array(
 
 function start_process($db, $startfrom = 0, $batch_size, $max_addrs = 0, $url)
 {
-  bbscript_log("TRACE", "==> fix_election_districts()");
+  bbscript_log(LL::TRACE, "==> fix_election_districts()");
   
   $start_id = $startfrom;
   $total_rec_cnt = 0;
   $batch_rec_cnt = $batch_size;  // to prime the while() loop
 
-  bbscript_log("INFO", "Beginning batch processing of address records");
+  bbscript_log(LL::INFO, "Beginning batch processing of address records");
 
   while ($batch_rec_cnt == $batch_size) {
     // If max specified, then possibly constrain the batch size
     if ($max_addrs > 0 && $max_addrs - $total_rec_cnt < $batch_size) {
       $batch_size = $max_addrs - $total_rec_cnt;
       if ($batch_size == 0) {
-        bbscript_log("DEBUG", "Max address count ($max_addrs) reached");
+        bbscript_log(LL::DEBUG, "Max address count ($max_addrs) reached");
         break;
       }
     }
@@ -142,11 +142,11 @@ function start_process($db, $startfrom = 0, $batch_size, $max_addrs = 0, $url)
     $batch_rec_cnt = mysql_num_rows($mysql_result);
 
     if ($batch_rec_cnt == 0) {
-      bbscript_log("TRACE", "No more rows to retrieve");
+      bbscript_log(LL::TRACE, "No more rows to retrieve");
       break;
     }
 
-    bbscript_log("DEBUG", "Query complete; about to fetch batch of $batch_rec_cnt records");
+    bbscript_log(LL::DEBUG, "Query complete; about to fetch batch of $batch_rec_cnt records");
 
     while ($row = mysql_fetch_assoc($mysql_result)) {
       $addr_id = $row['id'];
@@ -188,17 +188,17 @@ function start_process($db, $startfrom = 0, $batch_size, $max_addrs = 0, $url)
 
     // Send formatted addresses to SAGE for geocoding & district assignment
     $batch_results = distassign($formatted_batch, $url, $counters);
-    bbscript_log("DEBUG", "About to fix election codes using SAGE result");
+    bbscript_log(LL::DEBUG, "About to fix election codes using SAGE result");
 
     if ($batch_results && count($batch_results) > 0) {
        fix_election_districts($db, $orig_batch, $batch_results);      
     }
     else {
-      bbscript_log("ERROR", "No batch results; skipping processing for address IDs starting at $start_id.");
+      bbscript_log(LL::ERROR, "No batch results; skipping processing for address IDs starting at $start_id.");
     }
 
     $start_id = $addr_id + 1;
-    bbscript_log("INFO", "$total_rec_cnt address records fetched so far");
+    bbscript_log(LL::INFO, "$total_rec_cnt address records fetched so far");
   }
 } // handle_in_state()
 
@@ -213,7 +213,7 @@ function fix_election_districts($db, &$orig_batch, &$batch_results)
   $addr_hi_id = max($addr_ids);
 
   // Iterate over all batch results and update Bluebird tables accordingly.
-  bbscript_log('DEBUG', "Investigating ".count($batch_results)." addresses");
+  bbscript_log(LL::DEBUG, "Investigating ".count($batch_results)." addresses");
 
   bb_mysql_query('BEGIN', $db, true);
 
@@ -259,7 +259,7 @@ function fix_election_districts($db, &$orig_batch, &$batch_results)
                     if (preg_match('/UPDATED \[id=\d+\]:\s*$/', $new_subject)){
                         // Change UPDATED to VERIFIED if only the election district changed previously.
                         $new_subject = preg_replace('/UPDATED/', 'VERIFIED', $new_subject);
-                        bbscript_log("trace", "Note subject should say 'VERIFIED' now");    
+                        bbscript_log(LL::TRACE, "Note subject should say 'VERIFIED' now");    
                     }
                 }
                 else {
@@ -272,24 +272,24 @@ function fix_election_districts($db, &$orig_batch, &$batch_results)
                 
                 if ($ed_in_table == 0 || $ed_in_table == $new_ed_from_sage){
                     $cnts['FIXED_NOTES']++;
-                    bbscript_log("debug","[FIX NOTES | " . (($ed_previous == $new_ed_from_sage) ? "SAME ED" : "DIFF ED") . "] Address ID: {$address_id} - Note: $ed_note Assigned in table: $ed_in_table New ED: $new_ed_from_sage");
+                    bbscript_log(LL::DEBUG,"[FIX NOTES | " . (($ed_previous == $new_ed_from_sage) ? "SAME ED" : "DIFF ED") . "] Address ID: {$address_id} - Note: $ed_note Assigned in table: $ed_in_table New ED: $new_ed_from_sage");
                     update_note($db, $note_id, $new_note, $new_subject);   
 
                     // Only want to update instances where the district was set to zero.
                     if ($ed_in_table == 0){
                         $cnts['FIXED_DIST']++;
-                        bbscript_log("debug","[FIX DIST] Address ID: {$address_id} - Note: $ed_note Assigned in table: $ed_in_table New ED: $new_ed_from_sage");
+                        bbscript_log(LL::DEBUG,"[FIX DIST] Address ID: {$address_id} - Note: $ed_note Assigned in table: $ed_in_table New ED: $new_ed_from_sage");
                         update_election_district($db, $address_id, $new_ed_from_sage);    
                     }
                     // Somehow the district may already be set to the correct value.
                     else {
-                        bbscript_log("warn", "[ALREADY SET] Redist Note [id:$note_id] shows $ed_note, but district table is already set with the correct ED = $ed_in_table.");
+                        bbscript_log(LL::WARN, "[ALREADY SET] Redist Note [id:$note_id] shows $ed_note, but district table is already set with the correct ED = $ed_in_table.");
                     }                    
                 }
                 // Don't know how to deal with a mismatch between the new sage ed and the district stored in the table.
                 else {
                     $cnts['MISMATCH']++;
-                    bbscript_log("warn", "[MISMATCH] Redist Note [id:$note_id] shows $ed_note but in the district table ED = $ed_in_table and SAGE returned ED = $new_ed_from_sage. $message");
+                    bbscript_log(LL::WARN, "[MISMATCH] Redist Note [id:$note_id] shows $ed_note but in the district table ED = $ed_in_table and SAGE returned ED = $new_ed_from_sage. $message");
                 } 
             }
           }
@@ -299,12 +299,12 @@ function fix_election_districts($db, &$orig_batch, &$batch_results)
       
       default:
         $batch_cntrs['ERROR']++;
-        bbscript_log('ERROR', "Status [$status_code] on record #$address_id with message [$message]");
+        bbscript_log(LL::ERROR, "Status [$status_code] on record #$address_id with message [$message]");
       }      
   }
 
   bb_mysql_query("COMMIT", $db, true);
-  bbscript_log("info", sprintf("NOTES FIXED %d | DIST UPDATED %d | MISMATCHES %d", $cnts['FIXED_NOTES'], $cnts['FIXED_DIST'], $cnts['MISMATCH'] ));
+  bbscript_log(LL::INFO, sprintf("NOTES FIXED %d | DIST UPDATED %d | MISMATCHES %d", $cnts['FIXED_NOTES'], $cnts['FIXED_DIST'], $cnts['MISMATCH'] ));
 
 } // process_batch_results()
 
@@ -339,16 +339,16 @@ function retrieve_addresses($db, $start_id = 0, $max_res = 0, $in_state = true)
      $limit_clause";
 
   // Run query to obtain a batch of addresses
-  bbscript_log("DEBUG", "Retrieving addresses starting at id $start_id with limit $max_res");
+  bbscript_log(LL::DEBUG, "Retrieving addresses starting at id $start_id with limit $max_res");
   return bb_mysql_query($q, $db, true);
 } // retrieve_addresses()
 
 function distassign(&$fmt_batch, $url, &$cnts)
 {
-  bbscript_log("TRACE", "==> distassign()");
+  bbscript_log(LL::TRACE, "==> distassign()");
 
   // Attach the json data
-  bbscript_log("TRACE", "About to encode address batch in JSON");
+  bbscript_log(LL::TRACE, "About to encode address batch in JSON");
   $json_batch = json_encode($fmt_batch);
 
   // Initialize the cURL request
@@ -358,40 +358,40 @@ function distassign(&$fmt_batch, $url, &$cnts)
   curl_setopt($ch, CURLOPT_POST, true);
   curl_setopt($ch, CURLOPT_POSTFIELDS, $json_batch);
   curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/json", "Content-length: ".strlen($json_batch)));
-  bbscript_log("TRACE", "About to send API request to SAGE using cURL [url=$url]");
+  bbscript_log(LL::TRACE, "About to send API request to SAGE using cURL [url=$url]");
   $response = curl_exec($ch);
 
   // Record the timings for the request and close
   $curl_time = curl_getinfo($ch, CURLINFO_TOTAL_TIME);
 
-  bbscript_log("TRACE", "CURL: fetched in ".round($curl_time, 3)." seconds");
+  bbscript_log(LL::TRACE, "CURL: fetched in ".round($curl_time, 3)." seconds");
   curl_close($ch);
 
   // Return null on any kind of response error
   if ($response === null) {
-    bbscript_log("ERROR", "Failed to receive a CURL response");
+    bbscript_log(LL::ERROR, "Failed to receive a CURL response");
     $results = null;
   }
   else {
-    bbscript_log("TRACE", "About to decode JSON response");
+    bbscript_log(LL::TRACE, "About to decode JSON response");
     $results = @json_decode($response, true);
 
     if ($results === null && json_last_error() !== JSON_ERROR_NONE) {
-      bbscript_log("ERROR", "Malformed JSON Response");
-      bbscript_log("DEBUG", "CURL DATA: $response");
+      bbscript_log(LL::ERROR, "Malformed JSON Response");
+      bbscript_log(LL::DEBUG, "CURL DATA: $response");
       $results = null;
     }
     else if (count($results) == 0) {
-      bbscript_log("ERROR", "Empty response from SAGE. SAGE server is likely offline.");
+      bbscript_log(LL::ERROR, "Empty response from SAGE. SAGE server is likely offline.");
       $results = null;
     }
     else if (isset($results['message'])) {
-      bbscript_log("ERROR", "SAGE server encountered a problem: ".$results['message']);
+      bbscript_log(LL::ERROR, "SAGE server encountered a problem: ".$results['message']);
       $results = null;
     }
   }
 
-  bbscript_log("TRACE", "<== distassign()");
+  bbscript_log(LL::TRACE, "<== distassign()");
   return $results;
 } // distassign()
 
@@ -404,7 +404,7 @@ function update_election_district($db, $address_id, $correct_ed)
         SET di.election_district_49 = $correct_ed
         WHERE di.entity_id = $address_id";
 
-    bbscript_log("trace", "Setting Address $address_id to election district $correct_ed");
+    bbscript_log(LL::TRACE, "Setting Address $address_id to election district $correct_ed");
     bb_mysql_query($q, $db, true);  
   }  
 } // update_district_info()
@@ -418,7 +418,7 @@ function update_note($db, $note_id, $new_note, $new_subject){
         SET n.note = '$new_note', n.subject = '$new_subject', n.modified_date = '" . date("Y-m-d") . "' 
         WHERE n.id = $note_id";
 
-    bbscript_log("trace", "Updating note $note_id");
+    bbscript_log(LL::TRACE, "Updating note $note_id");
     bb_mysql_query($q, $db, true);
   }  
 }

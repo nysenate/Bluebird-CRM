@@ -4,6 +4,8 @@
 # self reference
 prog=`basename $0`
 script_dir=`dirname $0`
+base_dir=`cd $script_dir/../../..; echo $PWD`
+iterator="$base_dir/scripts/iterateInstances.sh"
 
 # set all script defaults
 run_import=1
@@ -21,6 +23,13 @@ Usage: $prog <options>
 --help        : prints this message and exits
 " >&2
 }
+
+# Check path
+if [ ! -x "$iterator" ]; then
+  echo "$prog: $iterator: Instance iterator not found; check installation" >&2
+  usage
+  exit 1
+fi
 
 # read in the command line config
 while [ $# -gt 0 ]; do
@@ -45,7 +54,7 @@ if [ $run_import -eq 1 ]; then
     echo "About to run $script_dir/integrationImportMessages.sh"
     debug_opt="--debug"
   fi
-  sh $script_dir/integrationImportMessages.sh $debug_opt
+  $script_dir/integrationImportMessages.sh $debug_opt
   if [ $? -ne 0 ]; then
     echo "ERROR: Message transfer failed; exiting" >&2
     exit 1
@@ -58,8 +67,9 @@ fi
 if [ $run_process -eq 1 ]; then
   echo "About to process messages from local accumulator into Bluebird"
   if [ $use_debug -eq 1 ]; then
-    echo "About to run $script_dir/INSERT_SCRIPT_NAME_HERE"
+    echo "About to run $script_dir/process.php for each CRM instance"
   fi
+  $iterator --live-fast "php $script_dir/process.php -S{} --archive"
 else
   if [ $use_debug -eq 1 ]; then
     echo "Option --no-process detected; skipping process section"

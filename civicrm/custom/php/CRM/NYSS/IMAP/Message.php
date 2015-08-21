@@ -180,17 +180,28 @@ class CRM_NYSS_IMAP_Message
     foreach ($this->_parts as $k => $v) {
       if (!$v->ifdisposition && $v->content) {
         $matches = array();
-        $tc = $this->_decodeContent($v->content, $v->encoding);
-        if (preg_match_all('/From:\s*(.*)/i', $tc, $matches)) {
-          foreach ($matches[1] as $kk => $vv) {
+        $tc = $this->_decodeContent($v->content, $v->encoding, $v->subtype);
+        if (preg_match_all('/(From|Reply To):\s*(.*)/i', $tc, $matches)) {
+          //error_log("Parsing msg#={$this->_msgnum}");
+          foreach ($matches[2] as $kk => $vv) {
             if (preg_match('#CN=|OU?=|/senate#', $vv)) {
+              //error_log("resolving -$vv- with LDAP");
               $vv = $this->_resolveLDAPAddress($vv);
+              //error_log("resolved to -$vv-");
             }
             $ta = imap_rfc822_parse_adrlist($vv, '');
             if (count($ta) && $ta[0]->host && $ta[0]->mailbox && $ta[0]->host != '.SYNTAX-ERROR.') {
-              $addr['secondary'][] = array(
-                'address' => $ta[0]->mailbox.'@'.$ta[0]->host,
-                'name' => isset($ta[0]->personal) ? $ta[0]->personal : null);
+              $newta = array(
+                    'address' => $ta[0]->mailbox.'@'.$ta[0]->host,
+                    'name' => isset($ta[0]->personal) ? $ta[0]->personal : null);
+              switch (strtoupper($matches[1][$kk])) {
+                case 'REPLY TO':
+                  array_unshift($addr['secondary'], $newta);
+                  break;
+                default:
+                  $addr['secondary'][] = $newta;
+                  break;
+              }
             }
           }
         }
@@ -377,7 +388,7 @@ class CRM_NYSS_IMAP_Message
   } // _fetchUid()
 
 
-  private function _decodeContent($content = '', $encoding = 0)
+  private function _decodeContent($content = '', $encoding = 0, $subtype = '')
   {
     $ret = (string)$content;
     switch ((int)$encoding) {
@@ -386,6 +397,9 @@ class CRM_NYSS_IMAP_Message
         break; /* base-64 encoding */
       case 4:
         $ret = quoted_printable_decode($content);
+        if ($subtype == 'HTML') {
+          $ret = html_entity_decode($content,ENT_QUOTES);
+        }
         break; /* quoted printable encoding */
       default:
         /* covers 7BIT/8BIT/BINARY/OTHER, but is essentially a pass-thru */

@@ -58,7 +58,7 @@ class CRM_ImportSampleData {
 
     //get instance settings
     $bbcfg = get_bluebird_instance_config($optlist['site']);
-    bbscript_log("trace", "bbcfg", $bbcfg);
+    bbscript_log(LL::TRACE, "bbcfg", $bbcfg);
 
     // Initialize CiviCRM
     require_once 'CRM/Core/Config.php';
@@ -79,12 +79,12 @@ class CRM_ImportSampleData {
     }
 
     if ( $optDry ) {
-      bbscript_log("info", "Running in dryrun mode. No data will be altered.");
+      bbscript_log(LL::INFO, "Running in dryrun mode. No data will be altered.");
     }
 
     //clean out all existing data
     if ( $optlist['purge'] || $optlist['purge-only'] ) {
-      bbscript_log('info', 'purging old data... ');
+      bbscript_log(LL::INFO, 'purging old data... ');
       self::purgeData($optlist['uid']);
     }
 
@@ -95,7 +95,7 @@ class CRM_ImportSampleData {
       exec("php $script -S {$bbcfg['shortname']}");
 
       //drop logging db
-      bbscript_log('info', 'dropping and recreating logging database... ');
+      bbscript_log(LL::INFO, 'dropping and recreating logging database... ');
       $logDB = $bbcfg['db.log.prefix'].$bbcfg['db.basename'];
       $sql = "
         DROP DATABASE IF EXISTS {$logDB}
@@ -115,7 +115,7 @@ class CRM_ImportSampleData {
       'group.yml',
     );
     if ( $optlist['system'] && !$optDry ) {
-      bbscript_log('info', 'importing system data... ');
+      bbscript_log(LL::INFO, 'importing system data... ');
       self::importSystem($sys, $scriptPath);
     }
 
@@ -130,19 +130,19 @@ class CRM_ImportSampleData {
 
       foreach ( $data as $file ) {
         $type = str_replace('.yml', '', $file);
-        bbscript_log('info', "importing {$type} data...");
+        bbscript_log(LL::INFO, "importing {$type} data...");
         self::importData($file, $scriptPath);
       }
     }
 
     //re-enable logging
     if ( $optlist['skiplogs'] == FALSE ) {
-      bbscript_log('info', "re-enabling logging...");
+      bbscript_log(LL::INFO, "re-enabling logging...");
       $script = $bbcfg['app.rootdir'].'/civicrm/scripts/logEnable.php';
       exec("php $script -S {$bbcfg['shortname']}");
     }
 
-    bbscript_log("info", "completed instance cleanup and sample data import for: {$bbcfg['shortname']}.");
+    bbscript_log(LL::INFO, "completed instance cleanup and sample data import for: {$bbcfg['shortname']}.");
 
   }//run
 
@@ -229,19 +229,19 @@ class CRM_ImportSampleData {
       'nyss_changelog_summary',
     );
     if ( $optDry ) {
-      bbscript_log('trace', 'The following tables would be truncated: ', $tblTruncate);
+      bbscript_log(LL::TRACE, 'The following tables would be truncated: ', $tblTruncate);
     }
     else {
-      bbscript_log('info', 'truncating tables... ');
+      bbscript_log(LL::INFO, 'truncating tables... ');
       foreach ( $tblTruncate as $tbl ) {
-        bbscript_log('debug', "truncating: $tbl");
+        bbscript_log(LL::DEBUG, "truncating: $tbl");
         $sql = "TRUNCATE TABLE {$tbl};";
         CRM_Core_DAO::executeQuery($sql);
       }
     }
 
     //additionally, we must implement special handling for several tables
-    bbscript_log('trace', 'Tables with select row/field deletion: civicrm_dashboard, civicrm_setting');
+    bbscript_log(LL::TRACE, 'Tables with select row/field deletion: civicrm_dashboard, civicrm_setting');
     if ( !$optDry ) {
       $dashRetain = array(
         'Activities',
@@ -267,7 +267,7 @@ class CRM_ImportSampleData {
     }
 
     //seed the senateroot contact id = 1
-    bbscript_log('info', "seeding database with bluebird admin contact...");
+    bbscript_log(LL::INFO, "seeding database with bluebird admin contact...");
     $params = array(
       'first_name' => 'Bluebird',
       'last_name' => 'Administrator',
@@ -297,7 +297,7 @@ class CRM_ImportSampleData {
     //seed the logged-in contact via drupal user object
     if ( !empty($uid) && $uid != 1 && $uid != '/' ) {
       $u = explode('/', $uid);
-      bbscript_log('info', "seeding database with logged in user contact...");
+      bbscript_log(LL::INFO, "seeding database with logged in user contact...");
       $params = array(
         'email' => $u[1],
         'contact_type' => 'Individual',
@@ -322,7 +322,7 @@ class CRM_ImportSampleData {
     global $fkMap;
 
     $type = str_replace('.yml', '', $file);
-    bbscript_log("trace", "raw type: $type");
+    bbscript_log(LL::TRACE, "raw type: $type");
 
     $errors = array();
     $i = 0;
@@ -335,11 +335,11 @@ class CRM_ImportSampleData {
         break;
       default:
     }
-    bbscript_log("trace", "api type: $type");
+    bbscript_log(LL::TRACE, "api type: $type");
 
     if ( !$data ) {
       $filename = $scriptPath.'/sampleData/'.$file;
-      bbscript_log("trace", "filename: $filename");
+      bbscript_log(LL::TRACE, "filename: $filename");
       $data = Spyc::YAMLLoad($filename);
     }
     else {
@@ -347,7 +347,7 @@ class CRM_ImportSampleData {
     }
 
     foreach ( $data as $params ) {
-      //bbscript_log("trace", "import params", $params);
+      //bbscript_log(LL::TRACE, "import params", $params);
       if ( isset($params['fk']) ) {
         $fk = $params['fk'];
         unset($params['fk']);
@@ -357,8 +357,8 @@ class CRM_ImportSampleData {
 
       if ( !empty($params['employer_id']) ) {
         $params['employer_id'] = $fkMap[$type][$params['employer_id']];
-        //bbscript_log("trace", "params after fkMap", $params);
-        //bbscript_log("trace", "fkMap", $fkMap);
+        //bbscript_log(LL::TRACE, "params after fkMap", $params);
+        //bbscript_log(LL::TRACE, "fkMap", $fkMap);
       }
 
       if ( $type == 'activity' ) {
@@ -377,18 +377,18 @@ class CRM_ImportSampleData {
         unset($params['api.address.create']['api.custom_value.create']);
       }
 
-      //bbscript_log("trace", "params before iAPI", $params);
+      //bbscript_log(LL::TRACE, "params before iAPI", $params);
       $r = self::iAPI($type, 'create', $params);
-      //bbscript_log("trace", "r", $r);
+      //bbscript_log(LL::TRACE, "r", $r);
 
       if ( $r['is_error'] ) {
         $errors[] = $params;
       }
       elseif ( $type == 'contact' ) {
-        bbscript_log("debug", "imported: {$r['values'][$r['id']]['display_name']}");
+        bbscript_log(LL::DEBUG, "imported: {$r['values'][$r['id']]['display_name']}");
       }
       else {
-        bbscript_log("debug", "imported: {$type}");
+        bbscript_log(LL::DEBUG, "imported: {$type}");
       }
 
       if ( $fk ) {
@@ -397,7 +397,7 @@ class CRM_ImportSampleData {
 
       $i++;
       if ( $i % 500 == 0 ) {
-        bbscript_log('info', "{$i} {$type} records imported... ");
+        bbscript_log(LL::INFO, "{$i} {$type} records imported... ");
       }
 
       if ( TEST_IMPORT && $i > TEST_IMPORT_COUNT ) {
@@ -414,7 +414,7 @@ class CRM_ImportSampleData {
       self::importData(NULL, NULL, $errors);
     }
     elseif ( !empty($errors) && defined('PROCESS_ERRORS') ) {
-      bbscript_log("debug", "remaining error records", $errors);
+      bbscript_log(LL::DEBUG, "remaining error records", $errors);
     }
 
   }//importData
@@ -437,7 +437,7 @@ class CRM_ImportSampleData {
               INSERT INTO civicrm_tag ({$tagCols})
               VALUES (".$tagVals.")
             ";
-            //bbscript_log("trace", "tagSQL", $tagSQL);
+            //bbscript_log(LL::TRACE, "tagSQL", $tagSQL);
             CRM_Core_DAO::executeQuery($tagSQL);
           }
           break;
@@ -673,7 +673,7 @@ class CRM_ImportSampleData {
           $customMap[$entity][$field['column_name']] = 'custom_'.$field['id'];
         }
       }
-      //bbscript_log("trace", '_importAPI $customMap', $customMap);
+      //bbscript_log(LL::TRACE, '_importAPI $customMap', $customMap);
 
       //cycle through custom fields and convert column name to custom_## format
       foreach ( $params as $col => $v ) {
@@ -696,11 +696,11 @@ class CRM_ImportSampleData {
     $params = self::_cleanArray($params);
 
     if ( $optDry ) {
-      bbscript_log("debug", "_importAPI entity:{$entity} action:{$action} params:", $params);
+      bbscript_log(LL::DEBUG, "_importAPI entity:{$entity} action:{$action} params:", $params);
     }
 
     if ( !is_array($params) ) {
-      bbscript_log("debug", "_importAPI params not array", $paramsOrig);
+      bbscript_log(LL::DEBUG, "_importAPI params not array", $paramsOrig);
       return;
     }
 
@@ -714,8 +714,8 @@ class CRM_ImportSampleData {
       $api = civicrm_api($entity, $action, $params);
 
       if ( $api['is_error'] ) {
-        bbscript_log("debug", "_importAPI error", $api);
-        bbscript_log("trace", "_importAPI entity: {$entity} // action: {$action}", $params);
+        bbscript_log(LL::DEBUG, "_importAPI error", $api);
+        bbscript_log(LL::TRACE, "_importAPI entity: {$entity} // action: {$action}", $params);
       }
       return $api;
     }
