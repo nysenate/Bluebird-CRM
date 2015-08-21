@@ -576,8 +576,8 @@ class CRM_NYSS_BAO_Integration {
 
     $custParams = array(
       'entity_id' => $act['id'],
-      'custom_79' => $params->form_title,
-      'custom_80' => $params->form_id,
+      'custom_80' => $params->form_title,
+      'custom_81' => $params->form_id,
     );
 
     foreach ($params->form_values as $k => $f) {
@@ -666,7 +666,7 @@ class CRM_NYSS_BAO_Integration {
     $act = CRM_Core_DAO::singleValueQuery("
       SELECT count(id)
       FROM civicrm_value_website_survey_10
-      WHERE survey_id_80 = {$params->form_id}
+      WHERE survey_id_81 = {$params->form_id}
     ");
 
     //see if custom set exists
