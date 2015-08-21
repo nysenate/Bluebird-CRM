@@ -35,7 +35,7 @@ class CRM_Integration_Process
 
     //get instance settings
     $bbcfg = get_bluebird_instance_config($optlist['site']);
-    bbscript_log(LL::TRACE, 'Bluebird config:', $bbcfg);
+    bbscript_log(LL::DEBUG, 'Bluebird config:', $bbcfg);
 
     $civicrm_root = $bbcfg['drupal.rootdir'].'/sites/all/modules/civicrm';
     $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
@@ -44,7 +44,7 @@ class CRM_Integration_Process
       return FALSE;
     }
 
-    bbscript_log(LL::TRACE, 'Command line opts:', $optlist);
+    bbscript_log(LL::DEBUG, 'Command line opts:', $optlist);
 
     //set integration DB
     $intDB = $bbcfg['integration.local.db.name'];
@@ -65,12 +65,12 @@ class CRM_Integration_Process
         $addSql
     ";
     $row = CRM_Core_DAO::executeQuery($sql);
-    bbscript_log(LL::TRACE, 'SQL query:', $sql);
+    bbscript_log(LL::DEBUG, 'SQL query:', $sql);
 
     $errors = $status = array();
 
     while ($row->fetch()) {
-      //bbscript_log(LL::TRACE, 'row:', $row);
+      bbscript_log(LL::TRACE, 'fetched row:', $row);
 
       //if context/direct message and target != user, skip
       if ($row->target_shortname != $row->user_shortname &&
