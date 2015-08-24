@@ -62,7 +62,7 @@ $prog = basename(__FILE__);
 
 require_once 'script_utils.php';
 $stdusage = civicrm_script_usage();
-$usage = "[--server|-s imap_server]  [--port|-p imap_port]  [--imap-user|-u username]  [--imap-pass|-P password]  [--imap-flags|-f imap_flags]  [--cmd|-c <poll|list|delarchive>]  [--mailbox|-m name]  [--archivebox|-a name]  [--log-level {ERROR|WARN|INFO|DEBUG}] [--unread-only|-r]  [--archive-mail|-t]  [--log-errors]";
+$usage = "[--server|-s imap_server]  [--port|-p imap_port]  [--imap-user|-u username]  [--imap-pass|-P password]  [--imap-flags|-f imap_flags]  [--cmd|-c <poll|list|delarchive>]  [--mailbox|-m name]  [--archivebox|-a name]  [--log-level LEVEL] [--unread-only|-r]  [--archive-mail|-t]  [--log-errors]";
 $shortopts = "s:p:u:P:f:c:m:a:l:rte";
 $longopts = array("server=", "port=", "imap-user=", "imap-pass=", "imap-flags=",
                   "cmd=", "mailbox=", "archivebox=", "log-level=",
@@ -241,7 +241,7 @@ foreach (explode(',', $imap_accounts) as $imap_account) {
   }
 }
 
-bbscript_log(LL::INFO, "Finished processing all mailboxes for CRM instance [$site]");
+bbscript_log(LL::NOTICE, "Finished processing all mailboxes for CRM instance [$site]");
 exit(0);
 
 
@@ -351,8 +351,7 @@ function processMailboxCommand($cmd, $params)
 
 function checkImapAccount($imapSess, $params)
 {
-  bbscript_log(LL::INFO, "Polling CRM [".$params['site']."] using IMAP account ".
-       $params['user'].'@'.$params['server'].$params['flags']);
+  bbscript_log(LL::NOTICE, "Polling CRM [".$params['site']."] using IMAP account ".$params['user'].'@'.$params['server'].$params['flags']);
 
   $imap_conn = $imapSess->getConnection();
   $crm_archivebox = '{'.$params['server'].'}'.$params['archivebox'];
@@ -376,7 +375,7 @@ function checkImapAccount($imapSess, $params)
 
   $msg_count = $imapSess->fetchMessageCount();
   $invalid_fwders = array();
-  bbscript_log(LL::INFO, "Number of messages: $msg_count");
+  bbscript_log(LL::NOTICE, "Number of messages: $msg_count");
 
   for ($msg_num = 1; $msg_num <= $msg_count; $msg_num++) {
     bbscript_log(LL::INFO, "Retrieving message $msg_num / $msg_count");
@@ -418,15 +417,15 @@ function checkImapAccount($imapSess, $params)
 
   $invalid_fwder_count = count($invalid_fwders);
   if ($invalid_fwder_count > 0) {
-    bbscript_log(LL::INFO, "Sending denial e-mails to $invalid_fwder_count e-mail address(es)");
+    bbscript_log(LL::NOTICE, "Sending denial e-mails to $invalid_fwder_count e-mail address(es)");
     foreach ($invalid_fwders as $invalid_fwder => $dummy) {
       sendDenialEmail($params['site'], $invalid_fwder);
     }
   }
 
-  bbscript_log(LL::INFO, "Finished checking IMAP account ".$params['user'].'@'.$params['server'].$params['flags']);
+  bbscript_log(LL::NOTICE, "Finished checking IMAP account ".$params['user'].'@'.$params['server'].$params['flags']);
 
-  bbscript_log(LL::INFO, "Searching for matches on unmatched records");
+  bbscript_log(LL::NOTICE, "Searching for matches on unmatched records");
   searchForMatches($dbconn, $params);
 
   return true;
@@ -861,7 +860,7 @@ function listMailboxes($imapSess, $params)
 function deleteArchiveBox($imapSess, $params)
 {
   $crm_archivebox = '{'.$params['server'].'}'.$params['archivebox'];
-  bbscript_log(LL::INFO, "Deleting archive mailbox: $crm_archivebox");
+  bbscript_log(LL::NOTICE, "Deleting archive mailbox: $crm_archivebox");
   return imap_deletemailbox($imapSess->getConnection(), $crm_archivebox);
 } // deleteArchiveBox()
 
@@ -881,7 +880,7 @@ function sendDenialEmail($site, $email)
 
   $rc = CRM_Utils_Mail::send($mailParams);
   if ($rc == true) {
-    bbscript_log(LL::INFO, "Denial e-mail has been sent to $email");
+    bbscript_log(LL::NOTICE, "Denial e-mail has been sent to $email");
   }
   else {
     bbscript_log(LL::WARN, "Unable to send a denial e-mail to $email");
