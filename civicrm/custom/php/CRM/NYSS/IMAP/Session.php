@@ -13,12 +13,13 @@ class CRM_NYSS_IMAP_Session
   private $_conn = null;
 
   private $_defaults = array(
-    'server'   => 'senmail.senate.state.ny.us',
-    'port'     => 143,
-    'flags'    => array('imap'),
-    'mailbox'  => 'INBOX',
-    'user'     => '',
-    'password' => ''
+    'server'     => 'senmail.senate.state.ny.us',
+    'port'       => 143,
+    'flags'      => array('imap'),
+    'mailbox'    => 'INBOX',
+    'user'       => '',
+    'password'   => '',
+    'log_errors' => false
   );
 
 
@@ -138,8 +139,8 @@ class CRM_NYSS_IMAP_Session
     // unless CL_EXPUNGE is used when the connection is closed.
     if ($this->_conn) {
       $errors = imap_errors();
-      if ($errors) {
-        error_log("WARNING - IMAP SESSION REPORTED ERRORS:\n".print_r($errors,1));
+      if ($errors && $this->_config['log_errors']) {
+        error_log("IMAP SESSION REPORTED ERRORS:\n".print_r($errors, true));
       }
       imap_close($this->_conn, (static::$auto_expunge ? CL_EXPUNGE : null));
     }
