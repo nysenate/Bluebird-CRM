@@ -17,7 +17,7 @@ define('VERSION_NUMBER', 0.20);
 // Mailbox settings common to all CRM instances
 define('DEFAULT_IMAP_ARCHIVEBOX', 'Archive');
 define('DEFAULT_IMAP_PROCESS_UNREAD_ONLY', false);
-define('DEFAULT_IMAP_ARCHIVE_MAIL', false);
+define('DEFAULT_IMAP_NO_ARCHIVE', false);
 define('DEFAULT_IMAP_LOG_ERRORS', false);
 
 define('IMAP_CMD_POLL', 1);
@@ -62,11 +62,11 @@ $prog = basename(__FILE__);
 
 require_once 'script_utils.php';
 $stdusage = civicrm_script_usage();
-$usage = "[--server|-s imap_server]  [--port|-p imap_port]  [--imap-user|-u username]  [--imap-pass|-P password]  [--imap-flags|-f imap_flags]  [--cmd|-c <poll|list|delarchive>]  [--mailbox|-m name]  [--archivebox|-a name]  [--log-level LEVEL] [--unread-only|-r]  [--archive-mail|-t]  [--log-errors]";
-$shortopts = "s:p:u:P:f:c:m:a:l:rte";
+$usage = "[--server|-s imap_server]  [--port|-p imap_port]  [--imap-user|-u username]  [--imap-pass|-P password]  [--imap-flags|-f imap_flags]  [--cmd|-c <poll|list|delarchive>]  [--mailbox|-m name]  [--archivebox|-a name]  [--log-level LEVEL] [--unread-only|-r]  [--no-archive|-n]  [--log-errors]";
+$shortopts = "s:p:u:P:f:c:m:a:l:rne";
 $longopts = array("server=", "port=", "imap-user=", "imap-pass=", "imap-flags=",
                   "cmd=", "mailbox=", "archivebox=", "log-level=",
-                  "unread-only", "archive-mail", "log-errors");
+                  "unread-only", "no-archive", "log-errors");
 
 $optlist = civicrm_script_init($shortopts, $longopts);
 
@@ -122,7 +122,7 @@ $all_params = array(
   array('mailbox', 'mailbox', 'imap.mailbox', 'INBOX'),
   array('archivebox', 'archivebox', 'imap.archivebox', DEFAULT_IMAP_ARCHIVEBOX),
   array('unreadonly', 'unread-only', null, DEFAULT_IMAP_PROCESS_UNREAD_ONLY),
-  array('archivemail', 'archive-mail', null, DEFAULT_IMAP_ARCHIVE_MAIL),
+  array('noarchive', 'no-archive', null, DEFAULT_IMAP_NO_ARCHIVE),
   array('log_errors', 'log-errors', null, DEFAULT_IMAP_LOG_ERRORS)
 );
 
@@ -358,7 +358,7 @@ function checkImapAccount($imapSess, $params)
 
   //create archive box in case it doesn't exist
   //don't report errors since it will almost always fail
-  if ($params['archivemail'] == true) {
+  if ($params['noarchive'] == false) {
     $rc = imap_createmailbox($imap_conn, imap_utf7_encode($crm_archivebox));
     if ($rc) {
       bbscript_log(LL::DEBUG, "Created new mailbox: $crm_archivebox");
@@ -392,7 +392,7 @@ function checkImapAccount($imapSess, $params)
         //mark as read
         imap_setflag_full($imap_conn, $msgMetaData->uid, '\\Seen', ST_UID);
         // move to folder if necessary
-        if ($params['archivemail'] == true) {
+        if ($params['noarchive'] == false) {
           $abox = $params['archivebox'];
           if (imap_mail_move($imap_conn, $msg_num, $abox)) {
             bbscript_log(LL::DEBUG, "Messsage $msg_num moved to $abox");
