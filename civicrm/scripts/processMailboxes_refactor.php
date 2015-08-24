@@ -291,19 +291,19 @@ function isAuthForwarder($email, $fwders)
 {
   if (isset($fwders['emails'][$email])) {
     // Exact match on email address
-    bbscript_log(LL::DEBUG, "Found exact match on forwarder address [$email]");
+    bbscript_log(LL::TRACE, "Found exact match on forwarder address [$email]");
     return true;
   }
   else {
     // If exact match fails, try a pattern match
     foreach (array_keys($fwders['patterns']) as $pattern) {
       if (fnmatch($pattern, $email, 0)) {
-        bbscript_log(LL::DEBUG, "Found pattern match for forwarder address [$email]");
+        bbscript_log(LL::TRACE, "Found pattern match for forwarder address [$email]");
         return true;
       }
     }
 
-    bbscript_log(LL::DEBUG, "Address [$email] is not an authorized forwarder");
+    bbscript_log(LL::TRACE, "Address [$email] is not an authorized forwarder");
     return false;
   }
 } // isAuthForwarder()
@@ -614,25 +614,12 @@ function storeMessage($imapMsg, $db, $params)
                 CURRENT_TIMESTAMP, '$fwdDate');";
 
   if (mysql_query($q, $db) == false) {
-    bbscript_log(LL::ERROR, "Unable to insert msgid=$msgUid");
-  }
-
-  $q = "SELECT id FROM nyss_inbox_messages WHERE message_id=$msgUid;";
-  $res = mysql_query($q, $db);
-  $rowCount = 0;
-  while ($row = mysql_fetch_assoc($res)) {
-    $rowId = $row['id'];
-    $rowCount++;
-    bbscript_log(LL::DEBUG, "found rowid=$rowId");
-  }
-  mysql_free_result($res);
-
-  bbscript_log(LL::DEBUG, "Inserted $rowCount message");
-  if ($rowCount != 1) {
-    bbscript_log(LL::WARN, "Problem inserting message; debug info:\n".print_r($fwdBody, true));
-    bbscript_log(LL::DEBUG, "Query: $q");
+    bbscript_log(LL::ERROR, "Unable to insert msgid=$msgUid; query:", $q);
     $bSuccess = false;
   }
+
+  $rowId = mysql_insert_id($db);
+  bbscript_log(LL::DEBUG, "Inserted message with id=$rowId");
 
   bbscript_log(LL::INFO, "Fetching attachments");
   $timeStart = microtime(true);
