@@ -153,5 +153,8 @@ cj(function( ) {
   cj('#postal_code_high').css('width', '100px');
   cj('#location_type_7').before('<br />');
   cj('#District_Information div.crm-accordion-body').show();
+
+  //increase max length of street number
+  cj('#street_number').prop('maxlength', '50');
 </script>
 {/literal}
