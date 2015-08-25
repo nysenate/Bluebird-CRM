@@ -7,11 +7,10 @@
 // Date: 2011-03-22
 // Revised: 2013-04-27
 // Revised: 2014-09-15 - simplified contact matching logic; added debug control
-// Revised: 2015-08-03 - added ability to configure some params from BB config
 //
 
 // Version number, used for debugging
-define('VERSION_NUMBER', 0.10);
+define('VERSION_NUMBER', 0.07);
 
 // Log levels
 define('PM_ERROR', 0);
@@ -25,6 +24,9 @@ $g_log_levels = array(PM_ERROR => 'ERROR',
                       PM_DEBUG => 'DEBUG');
 
 // Mailbox settings common to all CRM instances
+define('DEFAULT_IMAP_SERVER', 'senmail.senate.state.ny.us');
+define('DEFAULT_IMAP_OPTS', '/imap');
+define('DEFAULT_IMAP_MAILBOX', 'Inbox');
 define('DEFAULT_IMAP_ARCHIVEBOX', 'Archive');
 define('DEFAULT_IMAP_PROCESS_UNREAD_ONLY', false);
 define('DEFAULT_IMAP_ARCHIVE_MAIL', true);
@@ -58,9 +60,6 @@ define('AUTH_FORWARDERS_GROUP_NAME', 'Authorized_Forwarders');
 
 error_reporting(E_ERROR | E_PARSE | E_WARNING);
 
-/* enable for debugging only */
-//ini_set('error_reporting',-1);
-
 if (!ini_get('date.timezone')) {
   date_default_timezone_set('America/New_York');
 }
@@ -72,9 +71,9 @@ $prog = basename(__FILE__);
 
 require_once 'script_utils.php';
 $stdusage = civicrm_script_usage();
-$usage = "[--server|-s imap_server]  [--port|-p imap_port]  [--imap-user|-u username]  [--imap-pass|-P password]  [--imap-flags|-f imap_flags]  [--cmd|-c <poll|list|delarchive>]  [--mailbox|-m name]  [--archivebox|-a name]  [--log {ERROR|WARN|INFO|DEBUG}] [--unread-only|-r]  [--archive-mail|-t]";
-$shortopts = "s:p:u:P:f:c:m:a:l:rt";
-$longopts = array("server=", "port=", "imap-user=", "imap-pass=", "imap-flags=", "cmd=", "mailbox=", "archivebox=", "log=", "unread-only", "archive-mail");
+$usage = "[--server|-s imap_server]  [--imap-user|-u username]  [--imap-pass|-p password]  [--imap-opts|-o imap_options]  [--cmd|-c <poll|list|delarchive>]  [--mailbox|-m name]  [--archivebox|-a name]  [--log {ERROR|WARN|INFO|DEBUG}] [--unread-only|-r]  [--archive-mail|-t]";
+$shortopts = "s:u:p:o:c:m:a:l:rt";
+$longopts = array("server=", "imap-user=", "imap-pass=", "imap-opts=", "cmd=", "mailbox=", "archivebox=", "log=", "unread-only", "archive-mail");
 
 $optlist = civicrm_script_init($shortopts, $longopts);
 
@@ -86,6 +85,7 @@ if ($optlist === null) {
 require_once 'CRM/Core/Config.php';
 $config =& CRM_Core_Config::singleton();
 $session =& CRM_Core_Session::singleton();
+
 require_once 'CRM/Contact/BAO/Contact.php';
 require_once 'CRM/Contact/BAO/GroupContact.php';
 require_once 'CRM/Activity/BAO/Activity.php';
@@ -96,9 +96,8 @@ require_once 'CRM/Core/Error.php';
 require_once 'api/api.php';
 require_once 'CRM/Core/DAO.php';
 require_once 'CRM/Utils/File.php';
+require_once 'CRM/Utils/MessageBodyParser.php';
 
-require_once 'CRM/NYSS/IMAP/Session.php';
-require_once 'CRM/NYSS/IMAP/Message.php';
 
 /* More than one IMAP account can be checked per CRM instance.
 ** The username and password for each account is specified in the Bluebird
@@ -107,45 +106,43 @@ require_once 'CRM/NYSS/IMAP/Message.php';
 ** The user= and pass= command line args can be used to override the IMAP
 ** accounts from the config file.
 */
-
 $bbconfig = get_bluebird_instance_config();
-// Required Bluebird config parameters.
+$imap_accounts = $bbconfig['imap.accounts'];
 $imap_validsenders = strtolower($bbconfig['imap.validsenders']);
-$imap_activity_status = $bbconfig['imap.activity.status.default'];
+$imap_activty_status = $bbconfig['imap.activity.status.default'];
 
 $site = $optlist['site'];
 $cmd = $optlist['cmd'];
+$imap_server = DEFAULT_IMAP_SERVER;
+$imap_opts = DEFAULT_IMAP_OPTS;
+$imap_mailbox = DEFAULT_IMAP_MAILBOX;
+$imap_archivebox = DEFAULT_IMAP_ARCHIVEBOX;
+$imap_process_unread_only = DEFAULT_IMAP_PROCESS_UNREAD_ONLY;
+$imap_archive_mail = DEFAULT_IMAP_ARCHIVE_MAIL;
 $g_log_level = DEFAULT_LOG_LEVEL;
 $g_crm_instance = $site;
 
-$all_params = array(
-  // Each element is: paramName, optName, bbcfgName, defaultVal
-  array('site', 'site', null, null),
-  array('server', 'server', 'imap.server', 'senmail.senate.state.ny.us'),
-  array('port', 'port', 'imap.port', 143),
-  array('flags', 'imap-flags', 'imap.flags', '/imap/notls'),
-  array('mailbox', 'mailbox', 'imap.mailbox', 'INBOX'),
-  array('archivebox', 'archivebox', 'imap.archivebox', DEFAULT_IMAP_ARCHIVEBOX),
-  array('unreadonly', 'unread-only', null, DEFAULT_IMAP_PROCESS_UNREAD_ONLY),
-  array('archivemail', 'archive-mail', null, DEFAULT_IMAP_ARCHIVE_MAIL)
-);
-
-$imap_params = array();
-
-foreach ($all_params as $param) {
-  $val = getImapParam($optlist, $param[1], $bbconfig, $param[2], $param[3]);
-  if ($val !== null) {
-    $imap_params[$param[0]] = $val;
-  }
+if (!empty($optlist['server'])) {
+  $imap_server = $optlist['server'];
 }
-
 if (!empty($optlist['imap-user']) && !empty($optlist['imap-pass'])) {
   $imap_accounts = $optlist['imap-user'].'|'.$optlist['imap-pass'];
 }
-else {
-  $imap_accounts = $bbconfig['imap.accounts'];
+if (!empty($optlist['imap-opts'])) {
+  $imap_opts = $optlist['imap-opts'];
 }
-
+if (!empty($optlist['mailbox'])) {
+  $imap_mailbox = $optlist['mailbox'];
+}
+if (!empty($optlist['archivebox'])) {
+  $imap_archivebox = $optlist['archivebox'];
+}
+if ($optlist['unread-only'] == true) {
+  $imap_process_unread_only = true;
+}
+if ($optlist['archive-mail'] == true) {
+  $imap_archive_mail = true;
+}
 if (!empty($optlist['log'])) {
   $level = strtoupper($optlist['log']);
   $key = array_search($level, $g_log_levels);
@@ -155,7 +152,6 @@ if (!empty($optlist['log'])) {
   }
   $g_log_level = $key;
 }
-
 if ($cmd == 'list') {
   $cmd = IMAP_CMD_LIST;
 }
@@ -178,10 +174,10 @@ $aActivityStatus = CRM_Core_PseudoConstant::activityStatus();
 $activityPriority = array_search('Normal', $aActivityPriority);
 $activityType = array_search('Inbound Email', $aActivityType);
 
-if ($imap_activity_status == false || !isset($imap_activity_status)) {
+if ($imap_activty_status == false || !isset($imap_activty_status)) {
   $activityStatus = array_search('Completed', $aActivityStatus);
 }else{
-  $activityStatus = array_search($imap_activity_status, $aActivityStatus);
+  $activityStatus = array_search($imap_activty_status, $aActivityStatus);
 }
 
 
@@ -221,20 +217,29 @@ if ($imap_validsenders) {
   }
 }
 
-$imap_params['activityDefaults'] = $activityDefaults;
-$imap_params['uploadDir'] = $uploadDir;
-$imap_params['uploadInbox'] = $uploadInbox;
-$imap_params['authForwarders'] = $authForwarders;
-
 // Iterate over all IMAP accounts associated with the current CRM instance.
 
 foreach (explode(',', $imap_accounts) as $imap_account) {
   list($imapUser, $imapPass) = explode("|", $imap_account);
-  $imap_params['user'] = $imapUser;
-  $imap_params['password'] = $imapPass;
+  $imap_params = array(
+    'site' => $site,
+    'server' => $imap_server,
+    'opts' => $imap_opts,
+    'user' => $imapUser,
+    'pass' => $imapPass,
+    'mailbox' => $imap_mailbox,
+    'archivebox' => $imap_archivebox,
+    'unreadonly' => $imap_process_unread_only,
+    'archivemail' => $imap_archive_mail,
+    'authForwarders' => $authForwarders,
+    'activityDefaults' => $activityDefaults,
+    'uploadDir' => $uploadDir,
+    'uploadInbox' => $uploadInbox
+  );
+
   $rc = processMailboxCommand($cmd, $imap_params);
   if ($rc == false) {
-    logmsg(PM_ERROR, "Failed to process IMAP account $imapUser@{$imap_params['server']}\n".print_r(imap_errors(), true));
+    logmsg(PM_ERROR, "Failed to process IMAP account $imapUser@$imap_server\n".print_r(imap_errors(), true));
   }
 }
 
@@ -286,36 +291,32 @@ function getAuthorizedForwarders()
 
 function processMailboxCommand($cmd, $params)
 {
-  try {
-    $imap_session = new CRM_NYSS_IMAP_Session($params);
-  }
-  catch (Exception $ex) {
-    logmsg(PM_ERROR, "Failed to create IMAP session: ".$ex->getMessage());
-    $imap_session = null;
+  $serverspec = '{'.$params['server'].$params['opts'].'}'.$params['mailbox'];
+  logmsg(PM_INFO, "Opening IMAP connection to {$params['user']}@$serverspec");
+  $imap_conn = imap_open($serverspec, $params['user'], $params['pass']);
+
+  if ($imap_conn === false) {
+    logmsg(PM_ERROR, "Unable to open IMAP connection to $serverspec");
     return false;
   }
 
   if ($cmd == IMAP_CMD_POLL) {
-    $rc = checkImapAccount($imap_session, $params);
+    $rc = checkImapAccount($imap_conn, $params);
   }
   else if ($cmd == IMAP_CMD_LIST) {
-    $rc = listMailboxes($imap_session, $params);
+    $rc = listMailboxes($imap_conn, $params);
   }
   else if ($cmd == IMAP_CMD_DELETE) {
-    $rc = deleteArchiveBox($imap_session, $params);
+    $rc = deleteArchiveBox($imap_conn, $params);
   }
   else {
     logmsg(PM_ERROR, "Invalid command [$cmd], params=".print_r($params, true));
     $rc = false;
   }
 
-  // Changes to the IMAP mailbox do not take effect unless the CL_EXPUNGE
-  // flag is provided to the imap_close() call, or if imap_expunge() is
-  // explicitly called.  Also note that if the connection was opened with
-  // the readonly flag set, then no changes will be made to the mailbox.
-  // The destructor handles all of this.
-  $imap_session = null;
-
+  //clean up moved/deleted messages
+  // Using CL_EXPUNGE is same as calling imap_expunge().
+  imap_close($imap_conn, CL_EXPUNGE);
   return $rc;
 } // processMailboxCommand()
 
@@ -323,18 +324,17 @@ function processMailboxCommand($cmd, $params)
 
 // Check the given IMAP account for new messages, and process them.
 
-function checkImapAccount($imapSess, $params)
+function checkImapAccount($mbox, $params)
 {
   logmsg(PM_INFO, "Polling CRM [".$params['site']."] using IMAP account ".
-       $params['user'].'@'.$params['server'].$params['flags']);
+       $params['user'].'@'.$params['server'].$params['opts']);
 
-  $imap_conn = $imapSess->getConnection();
   $crm_archivebox = '{'.$params['server'].'}'.$params['archivebox'];
 
   //create archive box in case it doesn't exist
   //don't report errors since it will almost always fail
   if ($params['archivemail'] == true) {
-    $rc = imap_createmailbox($imap_conn, imap_utf7_encode($crm_archivebox));
+    $rc = imap_createmailbox($mbox, imap_utf7_encode($crm_archivebox));
     if ($rc) {
       logmsg(PM_DEBUG, "Created new mailbox: $crm_archivebox");
     }
@@ -348,40 +348,32 @@ function checkImapAccount($imapSess, $params)
   $nyss_conn = $nyss_conn->getDatabaseConnection();
   $dbconn = $nyss_conn->connection;
 
-  $msg_count = $imapSess->fetchMessageCount();
+  $msg_count = imap_num_msg($mbox);
   $invalid_fwders = array();
   logmsg(PM_INFO, "Number of messages: $msg_count");
 
   for ($msg_num = 1; $msg_num <= $msg_count; $msg_num++) {
     logmsg(PM_INFO, "Retrieving message $msg_num / $msg_count");
-    $imap_message = new CRM_NYSS_IMAP_Message($imapSess, $msg_num);
-    $msgMetaData = $imap_message->fetchMetaData();
+    $msgMetaData = retrieveMetaData($mbox, $msg_num);
     $fwder = strtolower($msgMetaData->fromEmail);
 
     // check whether or not the forwarder is valid
     if (array_key_exists($fwder, $params['authForwarders'])) {
       logmsg(PM_DEBUG, "Forwarder [$fwder] is allowed to send to this mailbox");
-
       // retrieved msg, now store to Civi and if successful move to archive
-      if (storeMessage($imap_message, $dbconn, $params) == true) {
-        //mark as read
-        imap_setflag_full($imap_conn, $msgMetaData->uid, '\\Seen', ST_UID);
+      if (storeMessage($mbox, $dbconn, $msgMetaData, $params) == true) {
+        // //mark as read
+        imap_setflag_full($mbox, $msgMetaData->uid, '\\Seen', ST_UID);
         // move to folder if necessary
         if ($params['archivemail'] == true) {
-          $abox = $params['archivebox'];
-          if (imap_mail_move($imap_conn, $msg_num, $abox)) {
-            logmsg(PM_DEBUG, "Messsage $msg_num moved to $abox");
-          }
-          else {
-            logmsg(PM_ERROR, "Failed to move message $msg_num to $abox");
-          }
+          imap_mail_move($mbox, $msg_num, $params['archivebox']);
         }
       }
     }
     else {
       logmsg(PM_WARN, "Forwarder [$fwder] is not allowed to forward/send messages to this CRM; deleting message");
       $invalid_fwders[$fwder] = true;
-      if (imap_delete($imap_conn, $msg_num) === true) {
+      if (imap_delete($mbox, $msg_num) === true) {
         logmsg(PM_DEBUG, "Message $msg_num has been deleted");
       }
       else {
@@ -398,7 +390,7 @@ function checkImapAccount($imapSess, $params)
     }
   }
 
-  logmsg(PM_INFO, "Finished checking IMAP account ".$params['user'].'@'.$params['server'].$params['flags']);
+  logmsg(PM_INFO, "Finished checking IMAP account ".$params['user'].'@'.$params['server'].$params['opts']);
 
   logmsg(PM_INFO, "Searching for matches on unmatched records");
   searchForMatches($dbconn, $params);
@@ -408,12 +400,12 @@ function checkImapAccount($imapSess, $params)
 
 
 
-function parseMimePart($imapMsg, $p, $partno, &$attachments)
+function parseMimePart($mbox, $msgid, $p, $partno, &$attachments)
 {
   global $uploadInbox;
 
   //fetch part
-  $part = $imapMsg->fetchBody($partno);
+  $part = imap_fetchbody($mbox, $msgid, $partno);
 
   //if type is not text
   if ($p->type != 0) {
@@ -464,7 +456,6 @@ function parseMimePart($imapMsg, $p, $partno, &$attachments)
       $bodyType = $p->type;
       $pattern = '/^('.ATTACHMENT_FILE_EXTS.')$/';
 
-      $rejected_reason = "No rejection set";
       // Allow body type 3 (application) with certain file extensions,
       // and allow body types 4 (audio), 5 (image), 6 (video).
       if (($bodyType == 3 && preg_match($pattern, $fileExt))
@@ -485,7 +476,6 @@ function parseMimePart($imapMsg, $p, $partno, &$attachments)
       }
 
       if ($allowed) {
-        logmsg(PM_INFO,"Writing attachment {$uploadInbox}/{$newName}");
         $fp = fopen("$uploadInbox/$newName", "w+");
         fwrite($fp, $part);
         fclose($fp);
@@ -496,9 +486,9 @@ function parseMimePart($imapMsg, $p, $partno, &$attachments)
   }
 
   //if subparts... recurse into function and parse them too!
-  if (isset($p->parts) && count($p->parts) > 0) {
+  if (count($p->parts) > 0) {
     foreach ($p->parts as $pno => $parr) {
-      parseMimePart($imapMsg, $parr, $partno.'.'.($pno+1), $attachments);
+      parseMimePart($mbox, $msgid, $parr, $partno.'.'.($pno+1), $attachments);
     }
   }
   return true;
@@ -506,101 +496,135 @@ function parseMimePart($imapMsg, $p, $partno, &$attachments)
 
 
 
+function retrieveMetaData($mbox, $msgid)
+{
+  // fetch info
+  $timeStart = microtime(true);
+  $header = imap_rfc822_parse_headers(imap_fetchheader($mbox, $msgid));
+  $imap_uid = imap_uid($mbox, $msgid);
+
+  // build email object
+  $metaData = new stdClass();
+  $metaData->subject = $header->subject;
+  $metaData->fromName = $header->reply_to[0]->personal;
+  $metaData->fromEmail = $header->reply_to[0]->mailbox.'@'.$header->reply_to[0]->host;
+  $metaData->uid = $imap_uid;
+  $metaData->msgid = $msgid;
+  $metaData->date = date("Y-m-d H:i:s", strtotime($header->date));
+  $timeEnd = microtime(true);
+  logmsg(PM_DEBUG, "Fetch header time: ".($timeEnd-$timeStart));
+  return $metaData;
+} // retrieveMetaData()
+
+
 
 // storeMessage
 // Parses multipart message and stores in Civi database
 // Returns true/false to move the email to archive or not.
-function storeMessage($imapMsg, $db, $params)
+function storeMessage($mbox, $db, $msgMeta, $params)
 {
-  global $authForwarders;
-
+  $msgid = $msgMeta->msgid;
   $bSuccess = true;
   $uploadInbox = $params['uploadInbox'];
-  $msgMeta = $imapMsg->fetchMetaData();
-  $all_addr = $imapMsg->findFromAddresses();
+
+  $timeStart = microtime(true);
 
   // check for plain/html body text
-  $msgStruct = $imapMsg->getStructure();
+  $msgStruct = imap_fetchstructure($mbox, $msgid);
 
   if (!isset($msgStruct->parts) || !$msgStruct->parts) { // not multipart
     $rawBody[$msgStruct->subtype] = array(
         'encoding' => $msgStruct->encoding,
-        'body' => $imapMsg->fetchPart(),
-        'debug' => "Encoding:".$msgStruct->encoding." section:1");
+        'body' => imap_fetchbody($mbox, $msgid, '1'),
+        'debug' => $msgStruct->lines." : ".$msgStruct->encoding." : 1");
+
   }
   else { // multipart: iterate through each part
     foreach ($msgStruct->parts as $partno => $pstruct) {
       $section = $partno + 1;
       $rawBody[$pstruct->subtype] = array(
         'encoding' => $pstruct->encoding,
-        'body' => $imapMsg->fetchPart($section),
-        'debug' => "Encoding:".$pstruct->encoding." section:$section");
+        'body' => imap_fetchbody($mbox, $msgid, $section),
+        'debug' => $pstruct->lines." : ".$pstruct->encoding." : $section");
     }
   }
 
-  // formatting headers
-  $fromEmail = mysql_real_escape_string(substr(mysql_real_escape_string($msgMeta->fromEmail), 0, 200));
-  $fromName = mysql_real_escape_string(substr(mysql_real_escape_string($msgMeta->fromName), 0, 200));
-  // the subject could be utf-8
-  // civicrm will force '<' and '>' to htmlentities...handle it here to be consistent
-  $fwdSubject = mysql_real_escape_string(mb_strcut(htmlspecialchars($msgMeta->subject, ENT_QUOTES), 0, 255));
-  $fwdDate = mysql_real_escape_string($msgMeta->date);
-  $fwdFormat = 'plain';
-  $fwdBody = mysql_real_escape_string($imapMsg->mangleHTML());
-  $msgUid = $msgMeta->uid;
+  $parsedBody = MessageBodyParser::unifiedMessageInfo($rawBody);
 
-  // if there is at least one secondary address, we WILL use an address from this array
-  // if any address is not an authorized sender, use it, otherwise, use the first one
-  if (is_array($all_addr['secondary']) && count($all_addr['secondary']) > 0) {
-    $foundIndex = 0;
-    foreach ($all_addr['secondary'] as $k => $v) {
-      // if this address is NOT an authorized forwarder
-      if (!array_key_exists($v['address'], $authForwarders)) {
-        $foundIndex = $k;
-        break;
+  if ($parsedBody['fwd_headers']['fwd_lookup'] == 'LDAP FAILURE') {
+    logmsg(PM_WARN, "Parse problem: LDAP lookup failure");
+  }
+
+  if ($parsedBody['message_action'] == "direct") {
+    logmsg(PM_DEBUG, "Message was sent directly to inbox");
+
+    // double check to make sure if was directly sent
+    // this message format isn't ideal, it includes message info that is gross looking.
+    $rawBody_alt['HTML'] = array(
+                 'encoding' => 0,
+                 'body' => imap_qprint(imap_body($mbox, $msgid)));
+    $parsedBody_alt = MessageBodyParser::unifiedMessageInfo($rawBody_alt);
+
+    if ($parsedBody['message_action'] == "forwarded" || $parsedBody_alt['message_action'] == "forwarded") {
+      $headerCheck = array_diff($parsedBody['fwd_headers'], $parsedBody_alt['fwd_headers']);
+      if ($headerCheck[0] != NULL) {
+        logmsg(PM_WARN, "Parse problem: Header difference found");
       }
     }
-    $fwdEmail = $all_addr['secondary'][$foundIndex]['address'];
-    $fwdName = $all_addr['secondary'][$foundIndex]['name'];
-  }
-  // if secondary addresses were not populated, we can use the primary if it is not an authorized forwarder
-  elseif (!array_key_exists($all_addr['primary']['address'], $authForwarders)) {
-    $fwdEmail = $all_addr['primary']['address'];
-    $fwdName  = $all_addr['primary']['name'];
-  }
-  // final failure - no addresses found
-  else {
-    $fwdEmail = '';
-    $fwdName = '';
   }
 
-  // make data safe
-  $fwdEmail = mysql_real_escape_string($fwdEmail);
-  $fwdName = mysql_real_escape_string($fwdName);
+  $timeEnd = microtime(true);
+  logmsg(PM_DEBUG, "Body download time: ".($timeEnd-$timeStart));
+
+  // formatting headers
+  $fwdEmail = substr($parsedBody['fwd_headers']['fwd_email'], 0, 255);
+  $fwdName = substr($parsedBody['fwd_headers']['fwd_name'], 0, 255);
+  $fwdLookup = $parsedBody['fwd_headers']['fwd_lookup'];
+  // the subject could be utf-8
+  // civicrm will force '<' and '>' to htmlentities...handle it here to be consistent
+  $fwdSubject = mb_strcut(htmlspecialchars($parsedBody['fwd_headers']['fwd_subject'],ENT_QUOTES),0,255);
+  $fwdDate = $parsedBody['fwd_headers']['fwd_date'];
+  $fwdFormat = $parsedBody['format'];
+  $messageAction = $parsedBody['message_action'];
+  $fwdBody = $parsedBody['body'];
+  $messageId = $msgMeta->uid;
+  $fromEmail = substr(mysql_real_escape_string($msgMeta->fromEmail), 0, 255);
+  $fromName = substr(mysql_real_escape_string($msgMeta->fromName), 0, 255);
+  $subject = substr(mysql_real_escape_string($msgMeta->subject), 0, 255);
+  $date = mysql_real_escape_string($msgMeta->date);
+
+  if ($messageAction == 'direct' && !$parsedBody['fwd_headers']['fwd_email']) {
+    $fwdEmail = $fromEmail;
+    $fwdName = $fromName;
+    $fwdSubject = $subject;
+    $fwdDate = $date;
+    $fwdBody = mysql_real_escape_string($fwdBody);
+    $fwdLookup = 'Headers';
+  }
 
   // debug info for mysql
-  $debug = "";
+  $debug = "Msg:$msgid; MessageID:$messageId; Action:$messageAction; bodyFormat:$fwdFormat; fwdLookup:$fwdLookup; fwdEmail:$fwdEmail; fwdName:$fwdName; fwdSubject:$fwdSubject; fwdDate:$fwdDate; FromEmail:$fromEmail; FromName:$fromName; Subject:$subject; Date:$date; Version:".VERSION_NUMBER;
 
   $status = STATUS_UNPROCESSED;
 
   $q = "INSERT INTO nyss_inbox_messages
         (message_id, sender_name, sender_email, subject, body,
          forwarder, status, format, debug, updated_date, email_date)
-        VALUES ($msgUid, '$fwdName', '$fwdEmail', '$fwdSubject',
+        VALUES ($messageId, '$fwdName', '$fwdEmail', '$fwdSubject',
                 '$fwdBody', '$fromEmail', $status, '$fwdFormat', '$debug',
                 CURRENT_TIMESTAMP, '$fwdDate');";
 
   if (mysql_query($q, $db) == false) {
-    logmsg(PM_ERROR, "Unable to insert msgid=$msgUid");
+    logmsg(PM_ERROR, "Unable to insert msgid=$messageId");
   }
 
-  $q = "SELECT id FROM nyss_inbox_messages WHERE message_id=$msgUid;";
+  $q = "SELECT id FROM nyss_inbox_messages
+        WHERE message_id=$messageId;";
   $res = mysql_query($q, $db);
   $rowCount = 0;
   while ($row = mysql_fetch_assoc($res)) {
     $rowId = $row['id'];
     $rowCount++;
-    logmsg(PM_DEBUG, "found rowid=$rowId");
   }
   mysql_free_result($res);
 
@@ -615,11 +639,11 @@ function storeMessage($imapMsg, $db, $params)
   $timeStart = microtime(true);
 
   // if there is more then one part to the message
-  $attachments = array();
-  if (isset($msgStruct->parts) && count($msgStruct->parts) > 1) {
+  if (count($msgStruct->parts) > 1) {
+    $attachments = array();
     foreach ($msgStruct->parts as $partno => $pstruct) {
       //parse parts of email
-      parseMimePart($imapMsg, $pstruct, $partno+1, $attachments);
+      parseMimePart($mbox, $msgid, $pstruct, $partno+1, $attachments);
     }
   }
 
@@ -823,9 +847,9 @@ function searchForMatches($db, $params)
 
 
 
-function listMailboxes($imapSess, $params)
+function listMailboxes($mbox, $params)
 {
-  $inboxes = $imapSess->listFolders('*', true);
+  $inboxes = imap_list($mbox, '{'.$params['server'].'}', "*");
   foreach ($inboxes as $inbox) {
     echo "$inbox\n";
   }
@@ -834,11 +858,11 @@ function listMailboxes($imapSess, $params)
 
 
 
-function deleteArchiveBox($imapSess, $params)
+function deleteArchiveBox($mbox, $params)
 {
   $crm_archivebox = '{'.$params['server'].'}'.$params['archivebox'];
   logmsg(PM_INFO, "Deleting archive mailbox: $crm_archivebox");
-  return imap_deletemailbox($imapSess->getConnection(), $crm_archivebox);
+  return imap_deletemailbox($mbox, $crm_archivebox);
 } // deleteArchiveBox()
 
 
@@ -879,20 +903,5 @@ function logmsg($log_level, $msg)
     echo "$g_crm_instance $date_str $level_text $msg\n";
   }
 } /* logmsg() */
-
-
-
-function getImapParam($optlist, $optname, $bbcfg, $cfgname, $defval)
-{
-  if (!empty($optlist[$optname])) {
-    return $optlist[$optname];
-  }
-  else if ($cfgname && isset($bbcfg[$cfgname])) {
-    return $bbcfg[$cfgname];
-  }
-  else {
-    return $defval;
-  }
-} // getImapParam()
 
 ?>
