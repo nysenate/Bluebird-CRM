@@ -611,7 +611,11 @@ class CRM_Utils_System {
     $session = CRM_Core_Session::singleton();
     $session->set( 'civicrmInitSession', TRUE );
 
+    //NYSS 8629
+    //$dbDrupal = DB::connect($config->userFrameworkDSN);
+    if ($config->userFrameworkDSN) {
     $dbDrupal = DB::connect($config->userFrameworkDSN);
+    }
     return $config->userSystem->authenticate($name, $password, $loadCMSBootstrap, $realPath);
   }
 
