@@ -242,6 +242,7 @@ function nyss_contact_civicrm_postProcess( $formName, &$form ) {
 function nyss_contact_civicrm_tabs( &$tabs, $contactID ) {
   //CRM_Core_Error::debug_var('tabs', $tabs);
 
+/****************** commented out for 1.5.6 release ************************
   //create new tab for website integration; only attach to individuals
   $ctype = civicrm_api3('contact', 'getvalue', array('id' => $contactID, 'return' => 'contact_type'));
   if ($ctype == 'Individual') {
@@ -277,6 +278,7 @@ function nyss_contact_civicrm_tabs( &$tabs, $contactID ) {
       'title' => 'Website Activity',
       'weight' => 500 );
   }
+******************* commented out for 1.5.6 release ***********************/
 
   //6698 reorder the tabs to insert mailings in a more appropriate order
   $newTabs = array();
