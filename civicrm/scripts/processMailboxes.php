@@ -742,7 +742,7 @@ function searchForMatches($db, $params)
 
       // Set the activity creator ID to the contact ID of the forwarder.
       if (isset($authForwarders['emails'][$forwarder])) {
-        $forwarderId = $authForwarders['email'][$forwarder];
+        $forwarderId = $authForwarders['emails'][$forwarder];
         bbscript_log(LL::INFO, "Forwarder [$forwarder] mapped to cid=$forwarderId");
       }
       else {
