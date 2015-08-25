@@ -4,27 +4,27 @@
   <item>
      <path>civicrm/imap/unmatched</path>
      <title>Inbox Unmatched Messages</title>
-     <page_callback>CRM_IMAP_Page_Mapper</page_callback>
+     <page_callback>CRM_NYSS_IMAP_Page_Mapper</page_callback>
      <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
     <path>civicrm/imap/ajax/unmatched/list</path>
-    <page_callback>CRM_IMAP_AJAX::UnmatchedList</page_callback>
+    <page_callback>CRM_NYSS_IMAP_AJAX::UnmatchedList</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
     <path>civicrm/imap/ajax/unmatched/details</path>
-    <page_callback>CRM_IMAP_AJAX::UnmatchedDetails</page_callback>
+    <page_callback>CRM_NYSS_IMAP_AJAX::UnmatchedDetails</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
      <path>civicrm/imap/ajax/unmatched/delete</path>
-     <page_callback>CRM_IMAP_AJAX::UnmatchedDelete</page_callback>
+     <page_callback>CRM_NYSS_IMAP_AJAX::UnmatchedDelete</page_callback>
      <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
     <path>civicrm/imap/ajax/unmatched/assign</path>
-    <page_callback>CRM_IMAP_AJAX::UnmatchedAssign</page_callback>
+    <page_callback>CRM_NYSS_IMAP_AJAX::UnmatchedAssign</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
 
@@ -32,59 +32,59 @@
   <item>
     <path>civicrm/imap/matched</path>
     <title>Inbox Matched Messages</title>
-    <page_callback>CRM_IMAP_Page_Activities</page_callback>
+    <page_callback>CRM_NYSS_IMAP_Page_Activities</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
     <path>civicrm/imap/ajax/matched/list</path>
-    <page_callback>CRM_IMAP_AJAX::MatchedList</page_callback>
+    <page_callback>CRM_NYSS_IMAP_AJAX::MatchedList</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
     <path>civicrm/imap/ajax/matched/details</path>
-    <page_callback>CRM_IMAP_AJAX::MatchedDetails</page_callback>
+    <page_callback>CRM_NYSS_IMAP_AJAX::MatchedDetails</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
     <path>civicrm/imap/ajax/matched/delete</path>
-    <page_callback>CRM_IMAP_AJAX::MatchedDelete</page_callback>
+    <page_callback>CRM_NYSS_IMAP_AJAX::MatchedDelete</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
     <path>civicrm/imap/ajax/matched/clear</path>
-    <page_callback>CRM_IMAP_AJAX::MatchedClear</page_callback>
+    <page_callback>CRM_NYSS_IMAP_AJAX::MatchedClear</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
     <path>civicrm/imap/ajax/matched/reassign</path>
-    <page_callback>CRM_IMAP_AJAX::MatchedReassign</page_callback>
+    <page_callback>CRM_NYSS_IMAP_AJAX::MatchedReassign</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
     <path>civicrm/imap/ajax/matched/edit</path>
-    <page_callback>CRM_IMAP_AJAX::MatchedEdit</page_callback>
+    <page_callback>CRM_NYSS_IMAP_AJAX::MatchedEdit</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
 
   <!-- adding tags to contacts, matched  -->
   <item>
     <path>civicrm/imap/ajax/tag/search</path>
-    <page_callback>CRM_IMAP_AJAX::KeywordSearch</page_callback>
+    <page_callback>CRM_NYSS_IMAP_AJAX::KeywordSearch</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
     <path>civicrm/imap/ajax/tag/add</path>
-    <page_callback>CRM_IMAP_AJAX::TagAdd</page_callback>
+    <page_callback>CRM_NYSS_IMAP_AJAX::TagAdd</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
     <path>civicrm/imap/ajax/issuecode/add</path>
-    <page_callback>CRM_IMAP_AJAX::IssuecodeAdd</page_callback>
+    <page_callback>CRM_NYSS_IMAP_AJAX::IssuecodeAdd</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
     <path>civicrm/imap/ajax/issuecode</path>
-    <page_callback>CRM_IMAP_AJAX::Issuecode</page_callback>
+    <page_callback>CRM_NYSS_IMAP_AJAX::Issuecode</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
 
@@ -92,17 +92,17 @@
   <!-- Used in both screens, matched  -->
   <item>
     <path>civicrm/imap/ajax/contact/add</path>
-    <page_callback>CRM_IMAP_AJAX::ContactAdd</page_callback>
+    <page_callback>CRM_NYSS_IMAP_AJAX::ContactAdd</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
     <path>civicrm/imap/ajax/contact/search</path>
-    <page_callback>CRM_IMAP_AJAX::ContactSearch</page_callback>
+    <page_callback>CRM_NYSS_IMAP_AJAX::ContactSearch</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
     <path>civicrm/imap/ajax/contact/addEmail</path>
-    <page_callback>CRM_IMAP_AJAX::ContactAddEmail</page_callback>
+    <page_callback>CRM_NYSS_IMAP_AJAX::ContactAddEmail</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
 
@@ -110,12 +110,17 @@
   <item>
     <path>civicrm/imap/reports</path>
     <title>Inbox Reports</title>
-    <page_callback>CRM_IMAP_Page_Reports</page_callback>
+    <page_callback>CRM_NYSS_IMAP_Page_Reports</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
     <path>civicrm/imap/ajax/reports/list</path>
-    <page_callback>CRM_IMAP_AJAX::getReports</page_callback>
+    <page_callback>CRM_NYSS_IMAP_AJAX::getReports</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/imap/ajax/reports/getTags</path>
+    <page_callback>CRM_NYSS_IMAP_AJAX::getTags</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
 </menu>

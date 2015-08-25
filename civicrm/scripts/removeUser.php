@@ -36,13 +36,13 @@ class CRM_removeUser {
     }
 
     if ( empty($optlist['username']) ) {
-      bbscript_log("fatal", "The LDAP username must be provided.");
+      bbscript_log(LL::FATAL, "The LDAP username must be provided.");
       exit();
     }
 
     //get instance settings
     $bbcfg = get_bluebird_instance_config($optlist['site']);
-    //bbscript_log("trace", "bbcfg", $bbcfg);
+    //bbscript_log(LL::TRACE, "bbcfg", $bbcfg);
 
     $civicrm_root = $bbcfg['drupal.rootdir'].'/sites/all/modules/civicrm';
     $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
@@ -65,7 +65,7 @@ class CRM_removeUser {
     $userID = CRM_Core_DAO::singleValueQuery($sql);
 
     if ( !$userID ) {
-      bbscript_log("fatal", "The LDAP username was not found in this instance.");
+      bbscript_log(LL::FATAL, "The LDAP username was not found in this instance.");
       exit();
     }
 
@@ -108,7 +108,7 @@ class CRM_removeUser {
     ";
     CRM_Core_DAO::executeQuery($sql);
 
-    bbscript_log('info', "user [{$username} ({$userID}/{$contactID})] has been removed.");
+    bbscript_log(LL::INFO, "user [{$username} ({$userID}/{$contactID})] has been removed.");
   }//removeUser
 
 }//end class

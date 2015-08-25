@@ -49,19 +49,28 @@
     <div id="crm-tagListWrap">
 
     {include file="CRM/common/Tag.tpl"}
-        {*NYSS add list of leg positions with descriptions*}
-        {if $legpositions}
+
+    {*NYSS add list of leg positions with descriptions*}
+    {if $legpositions}
+      <div class="legpositions_wrap">
         <div class="clear_left"></div>
         <div class="legpositions help"><span class="label">Legislative Position Descriptions</span><br />
-        	<ul>
+          <ul>
             {foreach from=$legpositions item="legposition"}
-            	{if $legposition.description && $legposition.description neq 'No description available.'}
-                	<li><strong>{$legposition.name}</strong> :: {$legposition.description}</li>
+              {if $legposition.description && $legposition.description neq 'No description available.'}
+                  <li><strong>{$legposition.name}</strong> :: {$legposition.description}</li>
                 {/if}
             {/foreach}
             </ul>
         </div>
-        {/if}
+      </div>
+      {literal}
+      <script type="text/javascript">
+        cj('.legpositions_wrap').insertAfter('.contact-tagset-292-section');
+      </script>
+      {/literal}
+    {/if}
+
     </div>
 
     {* Show Edit Tags link if in View mode *}
@@ -71,8 +80,6 @@
        <div class="form-item unobstructive">{$form.buttons.html}</div>
        <!--</fieldset>-->
     {/if}
-
-
 
 </div>
 

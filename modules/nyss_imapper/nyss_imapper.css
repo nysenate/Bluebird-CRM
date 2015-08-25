@@ -85,9 +85,6 @@ thead .sorting_asc{background-color:#f1f1f1!important;}
 .imapperbox tr.odd:hover .sorting_1{ background-color: #CDCFE9 !important; }
 .imapperbox tr.even:hover .sorting_1{ background-color: #D5DFE4 !important; }
 
-.imapperbox .FixedHeader_Cloned { z-index: 20 !important;}
-.imapperbox .crm-summary-link{ z-index: 10 !important;}
-
 /* IMAP - Table View - Row */
 .imapperbox .imap_checkbox_column{width: 15px !important; }
 .imapperbox .imap_name_column{width: 190px !important; }
@@ -113,7 +110,7 @@ thead .sorting_asc{background-color:#f1f1f1!important;}
  .crm-container .imapperbox .dataTables_length {display: inline; float: left !important; width: 30%;padding: 4px 10px;}
  .crm-container .imapperbox .dataTables_info {display: inline;float: left; width: auto; padding: 10px; font-weight: bold;}
  .crm-container .imapperbox .dataTables_filter {display: inline;float: right; width: auto; padding: 4px 10px;}
- .crm-container .imapperbox .dataTables_paginate{ text-align: none; width: 100%; padding:20px 0;}
+ .crm-container .imapperbox .dataTables_paginate{ text-align: none; width: 100%; padding:0;}
 -
 /* IMAP - Autocomplete */
 .imapperbox #tagging-popup.ac_input,
@@ -273,15 +270,15 @@ thead .sorting_asc{background-color:#f1f1f1!important;}
 }
 .stats{
     width:100%;
-
+    text-align: center;
     border-top: 1px solid #ccc;
     margin: 10px 0;
     z-index: 1;
 }
 a.stats_overview{
-    float: left;
+    display:inline-block;
     padding: 18px 0 12px 10px;
-    width: 141px;
+    width: 170px;
     color: #666666;
     font-size: 1.2em;
     border-bottom: 1px solid #ccc;
@@ -317,3 +314,44 @@ a.stats_overview.active{
 .imapperbox .warn {background-color: #FAA732; border-color: #FAA732; }
 .imapperbox .matchbubble.H{background-color: #468847; }
 .imapperbox .matchbubble.A{background-color: #999; }
+
+.crm-container .stats .mail-merge-icon {
+  margin-right: 10px;
+  display: inline-block;
+  float: none;
+  vertical-align: middle;
+}
+
+/* hover icons for matched/matcher contacts */
+.crm-container .icon.mail-merge-icon {
+  background-image: url('/sites/default/themes/Bluebird/nyss_skin/images/inbound_email_icons.png');
+}
+.crm-container .mail-merge-icon.mail-merge-matched {
+  background-position: 0px 0px;
+}
+.crm-container .mail-merge-icon.mail-merge-unmatched {
+  background-position: 0px -16px;
+}
+.crm-container .mail-merge-icon.mail-merge-cleared {
+  background-position: 0px -32px;
+}
+.crm-container .mail-merge-icon.mail-merge-deleted {
+  background-position: 0px -48px;
+}
+.crm-container .mail-merge-icon.mail-merge-unprocessed {
+  background-position: 0px -64px;
+}
+.crm-container .mail-merge-icon.mail-merge-tags {
+  background-position: 0px -80px;
+}
+.mail-merge-filter-data {
+  display:none;
+}
+.crm-container .mail-merge-hover .crm-tooltip {
+  min-width: 150px;
+  min-height: 40px;
+  padding: 10px;
+}
+.mail-merge-activity-tag-list-header {
+}
+.crm-container .crm-summary-link { z-index:auto !important; }

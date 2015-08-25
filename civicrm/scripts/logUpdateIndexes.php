@@ -28,11 +28,11 @@ class CRM_updateIndexes {
       exit(1);
     }
 
-    bbscript_log("info", 'Initiating log table cleanup...');
+    bbscript_log(LL::INFO, 'Initiating log table cleanup...');
 
     //get instance settings
     $bbcfg = get_bluebird_instance_config($optlist['site']);
-    //bbscript_log("trace", "bbcfg", $bbcfg);
+    //bbscript_log(LL::TRACE, "bbcfg", $bbcfg);
 
     $civicrm_root = $bbcfg['drupal.rootdir'].'/sites/all/modules/civicrm';
     $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
@@ -56,7 +56,7 @@ class CRM_updateIndexes {
     else {
       $indexes = self::getIndexes($logDB);
     }
-    //bbscript_log('debug', 'indexes to be processed:', $indexes);
+    //bbscript_log(LL::DEBUG, 'indexes to be processed:', $indexes);
 
     if ( empty($indexes) ) {
       echo "no indexes selected for updating. if you have passed a table as a parameter to the script, make sure it is a table for which we generate indexes.";
@@ -65,10 +65,10 @@ class CRM_updateIndexes {
 
     /*$memUse = memory_get_usage();
     $memUseMB = round($memUse/1048576,2);
-    bbscript_log("trace", "Memory usage before cycling through indexes: {$memUseMB} M");*/
+    bbscript_log(LL::TRACE, "Memory usage before cycling through indexes: {$memUseMB} M");*/
 
     foreach ( $indexes as $tbl => $indexList ) {
-      bbscript_log("info", "examining indexes for {$tbl}...");
+      bbscript_log(LL::INFO, "examining indexes for {$tbl}...");
       $existingIndexes = $indexSql = array();
 
       //get all indexes for the given table and build array
@@ -83,12 +83,12 @@ class CRM_updateIndexes {
       while ( $r->fetch() ) {
         $existingIndexes[] = $r->index_name;
       }
-      //bbscript_log('trace', 'existing indexes:', $existingIndexes);
+      //bbscript_log(LL::TRACE, 'existing indexes:', $existingIndexes);
 
       //foreach index, check to see if it already exists, and if not, create it
       foreach ($indexList as $index => $sql) {
         if ( !in_array($index, $existingIndexes) ) {
-          bbscript_log("info", "creating index {$index} on {$tbl}...");
+          bbscript_log(LL::INFO, "creating index {$index} on {$tbl}...");
 
           if ( !empty($sql) ) {
             CRM_Core_DAO::executeQuery($sql);
@@ -102,14 +102,14 @@ class CRM_updateIndexes {
       //run collected sql
       if ( !empty($indexSql) ) {
         $sql = "ALTER TABLE {$logDB}.{$tbl} ".implode(', ', $indexSql);
-        //bbscript_log("trace", "collected index creation sql:", $sql);
+        //bbscript_log(LL::TRACE, "collected index creation sql:", $sql);
 
         CRM_Core_DAO::executeQuery($sql);
       }
 
       /*$memUse = memory_get_usage();
       $memUseMB = round($memUse/1048576,2);
-      bbscript_log("trace", "Memory usage after processing {$tbl}: {$memUseMB} M");*/
+      bbscript_log(LL::TRACE, "Memory usage after processing {$tbl}: {$memUseMB} M");*/
 
       $r->free();
     }//end table loop

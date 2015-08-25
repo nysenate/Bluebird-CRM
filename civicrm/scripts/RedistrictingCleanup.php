@@ -25,8 +25,8 @@ if ($optlist === null) {
 // Parse the options and spit them out on debug
 $BB_LOG_LEVEL = $LOG_LEVELS[strtoupper(get($optlist, 'log', 'info'))][0];
 $BB_DRY_RUN = get($optlist, 'dryrun', FALSE);
-bbscript_log("debug", "Option: LOG_LEVEL=$BB_LOG_LEVEL");
-bbscript_log("debug", "Option: DRY_RUN=".($BB_DRY_RUN ? "TRUE" : "FALSE"));
+bbscript_log(LL::DEBUG, "Option: LOG_LEVEL=$BB_LOG_LEVEL");
+bbscript_log(LL::DEBUG, "Option: DRY_RUN=".($BB_DRY_RUN ? "TRUE" : "FALSE"));
 
 // Get CiviCRM database connection
 require_once 'CRM/Core/Config.php';
@@ -70,7 +70,7 @@ function do_import($db, $filename, $BB_DRY_RUN) {
     $aStates = array_flip(ioGetStates());
 
     if (($handle = fopen($filename, 'r')) === FALSE) {
-        bbscript_log('fatal',"Could not open `$filename` for reading.");
+        bbscript_log(LL::FATAL,"Could not open `$filename` for reading.");
         exit(1);
     }
 
@@ -81,7 +81,7 @@ function do_import($db, $filename, $BB_DRY_RUN) {
     bb_mysql_query("BEGIN", $db);
     $header = fgets($handle);
     while ( ($line = fgets($handle)) !== FALSE) {
-        bbscript_log('trace', $line);
+        bbscript_log(LL::TRACE, $line);
         $parts = explode("\t",$line);
 
         // Basic Info, don't use the town for fear of destroying Don's hard work
@@ -163,14 +163,14 @@ function do_import($db, $filename, $BB_DRY_RUN) {
                       street_unit = '".clean($street_unit)."'
                   WHERE id=$address_id";
 
-        bbscript_log('TRACE', $query);
+        bbscript_log(LL::TRACE, $query);
         if (!$BB_DRY_RUN) {
            bb_mysql_query($query, $db);
         }
 
         // Just to show progres while running
         if (++$count % 10000 == 0) {
-            bbscript_log("info","$count addresses imported. ".count($changed)." changed.");
+            bbscript_log(LL::INFO,"$count addresses imported. ".count($changed)." changed.");
             bb_mysql_query("COMMIT",$db);
             bb_mysql_query("BEGIN", $db);
         }

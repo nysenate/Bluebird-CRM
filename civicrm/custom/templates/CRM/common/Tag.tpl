@@ -1,5 +1,9 @@
 {if !$tagsetType or $tagsetType eq 'contact'}
   {foreach from=$tagsetInfo_contact item=tagset}
+    {*NYSS skip web tagsets except on search form*}
+    {if in_array($tagset.parentID, $webViewOnly) && $action ne 512}
+      {continue}
+    {/if}
   <div class="crm-section tag-section contact-tagset-{$tagset.parentID}-section">
     {*NYSS*}
     <div class="tag-label">
