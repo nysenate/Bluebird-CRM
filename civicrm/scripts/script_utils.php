@@ -276,10 +276,10 @@ function bbscript_log($lvl, $msg, $var = null)
       $lvl = LL::TRACE;
     }
     list($lvl_text, $color) = $log_levels[$lvl];
-    $timestamp = date('YmdHis');
+    $timestamp = date('YmdHis.').(int)(gettimeofday()['usec'] / 1000);
     $lvl_text = "[\33[1;{$color}m".$lvl_text."\33[0m]";
     // Extra large padding to account for color strings!
-    echo sprintf("[%s] %-20s %s\n", $timestamp, $lvl_text, $msg);
+    echo sprintf("%s %-20s %s\n", $timestamp, $lvl_text, $msg);
 
     if ($var !== null) {
       if (is_array($var) || is_object($var)) {
