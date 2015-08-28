@@ -284,7 +284,7 @@ class CRM_Core_Form_Tag {
       $realTagIds = array();
 
       if ($value) {
-      $tagsIDs      = explode(',', $value);
+        $tagsIDs = explode(',', $value);
         foreach ($tagsIDs as $tagId) {
           if (!is_numeric($tagId)) {
             // check if user has selected existing tag or is creating new tag
@@ -299,17 +299,38 @@ class CRM_Core_Form_Tag {
               $tagObject = CRM_Core_BAO_Tag::add($tagParams, CRM_Core_DAO::$_nullArray);
               $tagId = $tagObject->id;
             }
+            //NYSS 9220
+            else {
+              //sometimes we get values passed that are text but do not have :::
+              $tagName = CRM_Utils_Type::escape($tagId, 'String');
+              $existingTagId = CRM_Core_DAO::singleValueQuery("
+                SELECT id
+                FROM civicrm_tag
+                WHERE name = '{$tagName}'
+              ");
+              if ($existingTagId) {
+                $tagId = $existingTagId;
+              }
+              else {
+                $tagParams = array(
+                  'name' => $tagId,
+                  'parent_id' => $parentId,
+                );
+                $tagObject = CRM_Core_BAO_Tag::add($tagParams, CRM_Core_DAO::$_nullArray);
+                $tagId = $tagObject->id;
+              }
+            }
           }
 
           $realTagIds[] = $tagId;
-            if ($form && $form->_action != CRM_Core_Action::UPDATE) {
+          if ($form && $form->_action != CRM_Core_Action::UPDATE) {
             $newTagIds[] = $tagId;
-            }
+          }
           elseif (!array_key_exists($tagId, $existingTags)) {
             $newTagIds[] = $tagId;
-            }
           }
         }
+      }
 
       // Any existing entity tags from this tagset missing from the $params should be deleted
       $deleteSQL = "DELETE FROM civicrm_entity_tag
