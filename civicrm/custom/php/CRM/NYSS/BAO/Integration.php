@@ -22,7 +22,7 @@ class CRM_NYSS_BAO_Integration
     ");
 
     return $cid;
-  }//getContact
+  } //getContact
 
 
   /*
@@ -46,7 +46,7 @@ class CRM_NYSS_BAO_Integration
       ),
     );
 
-    if ( !empty($params['email']) ) {
+    if (!empty($params['email'])) {
       $dedupeParams['civicrm_email']['email'] = $params['email'];
     }
 
@@ -75,12 +75,12 @@ class CRM_NYSS_BAO_Integration
     $r = CRM_Core_DAO::executeQuery($sql);
 
     $dupeIDs = array();
-    while($r->fetch()) {
+    while ($r->fetch()) {
       $dupeIDs[] = $r->id;
     }
 
     //if dupe found, return id
-    if ( !empty( $dupeIDs ) ) {
+    if (!empty($dupeIDs)) {
       $cid = $dupeIDs[0];
     }
     else {
@@ -899,12 +899,13 @@ class CRM_NYSS_BAO_Integration
   {
     //CRM_Core_Error::debug_var('storeActivityLog', $type);
 
+    $params = array(1 => array($details, 'String'));
     CRM_Core_DAO::executeQuery("
       INSERT INTO nyss_web_activity
       (contact_id, type, created_date, details)
       VALUES
-      ({$cid}, '{$type}', '{$date}', '{$details}')
-    ");
+      ({$cid}, '{$type}', '{$date}', %1)
+    ", $params);
   } //storeActivityLog()
 
 
