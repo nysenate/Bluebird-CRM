@@ -133,9 +133,9 @@ class CRM_NYSS_BAO_Integration
     $tagId = CRM_Core_DAO::singleValueQuery("
       SELECT id
       FROM civicrm_tag
-      WHERE name = '{$params->issue_name}'
+      WHERE name = %1
         AND parent_id = {$parentId}
-    ");
+    ", array(1 => array($params->issue_name, 'String')));
     //CRM_Core_Error::debug_var('tagId', $tagId);
 
     if (!$tagId) {
@@ -189,9 +189,9 @@ class CRM_NYSS_BAO_Integration
     $tagId = CRM_Core_DAO::singleValueQuery("
       SELECT id
       FROM civicrm_tag
-      WHERE name = '{$params->committee_name}'
+      WHERE name = %1
         AND parent_id = {$parentId}
-    ");
+    ", array(1 => array($params->committee_name, 'String')));
     //CRM_Core_Error::debug_var('tagId', $tagId);
 
     if (!$tagId) {
@@ -295,9 +295,9 @@ class CRM_NYSS_BAO_Integration
     $tagId = CRM_Core_DAO::singleValueQuery("
       SELECT id
       FROM civicrm_tag
-      WHERE name = '{$tagName}'
+      WHERE name = %1
         AND parent_id = {$parentId}
-    ");
+    ", array(1 => array($tagName, 'String')));
     //CRM_Core_Error::debug_var('tagId', $tagId);
 
     if (!$tagId) {
@@ -352,9 +352,9 @@ class CRM_NYSS_BAO_Integration
     $tagId = CRM_Core_DAO::singleValueQuery("
       SELECT id
       FROM civicrm_tag
-      WHERE name = '{$params->petition_name}'
+      WHERE name = %1
         AND parent_id = {$parentId}
-    ");
+    ", array(1 => array($params->petition_name, 'String')));
     //CRM_Core_Error::debug_var('tagId', $tagId);
 
     if (!$tagId) {
