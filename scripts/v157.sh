@@ -202,8 +202,8 @@ sql="
   WHERE option_group_id = 2
     AND name = 'Website Survey';
 
-  INSERT INTO civicrm_option_value (id, option_group_id, label, value, name, grouping, filter, is_default, weight, description, is_optgroup, is_reserved, is_active, component_id, domain_id, visibility_id) VALUES
-(1363, 2, 'Website Survey', '90', 'Website Survey', NULL, 0, 0, 87, '<p>Survey/Questionnaire responses that were received through the public website.</p>', 0, 0, 1, NULL, NULL, NULL);
+  INSERT INTO civicrm_option_value (option_group_id, label, value, name, grouping, filter, is_default, weight, description, is_optgroup, is_reserved, is_active, component_id, domain_id, visibility_id) VALUES
+(2, 'Website Survey', '90', 'Website Survey', NULL, 0, 0, 87, '<p>Survey/Questionnaire responses that were received through the public website.</p>', 0, 0, 1, NULL, NULL, NULL);
 "
 $execSql $instance -c "$sql" -q
 
