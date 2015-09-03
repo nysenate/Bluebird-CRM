@@ -13,7 +13,7 @@ class CRM_NYSS_BAO_Integration
    * given a website user Id, conduct a lookup to get the contact Id
    * if none, return empty
    */
-  static function getContact($userId)
+  static function getContactId($userId)
   {
     $cid = CRM_Core_DAO::singleValueQuery("
       SELECT id
@@ -22,7 +22,7 @@ class CRM_NYSS_BAO_Integration
     ");
 
     return $cid;
-  } //getContact
+  } //getContactId()
 
 
   /*
@@ -99,10 +99,7 @@ class CRM_NYSS_BAO_Integration
       return $cid;
     }
     else {
-      return array(
-        'is_error' => 'Unable to match or create contact',
-        'params' => $params,
-      );
+      return null;
     }
   } // matchContact()
 
@@ -169,11 +166,7 @@ class CRM_NYSS_BAO_Integration
       'tag_id' => $tagId,
     ));
 
-    if ($et['is_error']) {
-      return $et;
-    }
-
-    return true;
+    return $et;
   } //processIssue()
 
 
@@ -225,11 +218,7 @@ class CRM_NYSS_BAO_Integration
       'tag_id' => $tagId,
     ));
 
-    if ($et['is_error']) {
-      return $et;
-    }
-
-    return true;
+    return $et;
   } //processCommittee()
 
 
@@ -285,7 +274,7 @@ class CRM_NYSS_BAO_Integration
       default:
         return array(
           'is_error' => 1,
-          'message' => 'Unable to determine bill action',
+          'error_message' => 'Unable to determine bill action',
           'contactId' => $contactId,
           'action' => $action,
           'params' => $params,
@@ -332,11 +321,7 @@ class CRM_NYSS_BAO_Integration
       'tag_id' => $tagId,
     ));
 
-    if ($et['is_error']) {
-      return $et;
-    }
-
-    return true;
+    return $et;
   } //processBill()
 
 
@@ -388,11 +373,7 @@ class CRM_NYSS_BAO_Integration
       'tag_id' => $tagId,
     ));
 
-    if ($et['is_error']) {
-      return $et;
-    }
-
-    return true;
+    return $et;
   } //processPetition()
 
 
@@ -413,20 +394,19 @@ class CRM_NYSS_BAO_Integration
           ({$contactId}, '{$action}', '{$created_date}')
         ";
         CRM_Core_DAO::executeQuery($sql);
-
         break;
 
       default:
         return array(
           'is_error' => 1,
-          'message' => 'Unable to determine account action',
+          'error_message' => 'Unable to determine account action',
           'contactId' => $contactId,
           'action' => $action,
           'params' => $params,
         );
     }
 
-    return true;
+    return array('is_error' => 0, 'version' => 3);
   } //processAccount()
 
 
@@ -438,7 +418,7 @@ class CRM_NYSS_BAO_Integration
     if ($action != 'account edited') {
       return array(
         'is_error' => 1,
-        'message' => 'Unknown action type for profile: '.$action,
+        'error_message' => 'Unknown action type for profile: '.$action,
         'params' => $params,
       );
     }
@@ -465,7 +445,7 @@ class CRM_NYSS_BAO_Integration
     );
     //CRM_Core_Error::debug_var('profileParams', $profileParams);
 
-    try{
+    try {
       $result = civicrm_api3('custom_value', 'create', $profileParams);
       //CRM_Core_Error::debug_var('update profile result', $result);
     }
@@ -476,14 +456,14 @@ class CRM_NYSS_BAO_Integration
       $errorData = $e->getExtraParams();
 
       return array(
-        'is_error' => true,
-        'error' => $errorMessage,
+        'is_error' => 1,
+        'error_message' => $errorMessage,
         'error_code' => $errorCode,
         'error_data' => $errorData
       );
     }
 
-    return true;
+    return $result;
   } //processProfile()
 
 
@@ -524,7 +504,7 @@ class CRM_NYSS_BAO_Integration
       'subject' => "Website {$subject}",
     );
 
-    try{
+    try {
       $result = civicrm_api3('note', 'create', $params);
       //CRM_Core_Error::debug_var('processCommunication result', $result);
     }
@@ -535,8 +515,8 @@ class CRM_NYSS_BAO_Integration
       $errorData = $e->getExtraParams();
 
       return array(
-        'is_error' => true,
-        'error' => $errorMessage,
+        'is_error' => 1,
+        'error_message' => $errorMessage,
         'error_code' => $errorCode,
         'error_data' => $errorData
       );
@@ -557,7 +537,10 @@ class CRM_NYSS_BAO_Integration
     }
 
     if (empty($flds)) {
-      return false;
+      return array(
+        'is_error' => 1,
+        'error_message' => 'Unable to build survey'
+      );
     }
 
     //build array for activity
@@ -598,12 +581,7 @@ class CRM_NYSS_BAO_Integration
     }
     //CRM_Core_Error::debug_var('actParams', $actParams);
     $cf = civicrm_api3('custom_value', 'create', $custParams);
-
-    if ($cf['is_error']) {
-      return $cf;
-    }
-
-    return true;
+    return $cf;
   } //processSurvey()
 
 
