@@ -74,13 +74,15 @@ class CRM_Integration_Process
 
       //if context/direct message and target != user, skip
       if ($row->target_shortname != $row->user_shortname &&
-        in_array($row->msg_type, array('DIRECTMSG', 'CONTEXTMSG'))
-      ) {
+          in_array($row->msg_type, array('DIRECTMSG', 'CONTEXTMSG'))) {
         continue;
       }
 
       //check contact/user
-      if (!$cid = CRM_NYSS_BAO_Integration::getContact($row->user_id)) {
+      bbscript_log(LL::TRACE, 'calling getContactId('.$row->user_id.')');
+      $cid = CRM_NYSS_BAO_Integration::getContactId($row->user_id);
+      if (!$cid) {
+        bbscript_log(LL::DEBUG, 'Contact with web_user_id='.$row->user_id.' was not found; attempting match');
         $contactParams = array(
           'web_user_id' => $row->user_id,
           'first_name' => $row->first_name,
@@ -91,22 +93,25 @@ class CRM_Integration_Process
           'city' => $row->city,
           'state' => $row->state,
           'postal_code' => $row->zip,
-          'birth_date' => date('Y-m-d', $row->dob),//dob comes as timestamp
-          'gender_id' => ($row->gender == 'male') ?  2 : 1,//TODO check
+          'birth_date' => date('Y-m-d', $row->dob),  //dob comes as timestamp
+          'gender_id' => ($row->gender == 'male') ?  2 : 1,  //TODO check
         );
 
+        bbscript_log(LL::TRACE, 'calling matchContact() with:', $contactParams);
         $cid = CRM_NYSS_BAO_Integration::matchContact($contactParams);
       }
-      //CRM_Core_Error::debug_var('cid', $cid);
 
-      if (!empty($cid['is_error'])) {
+      if (!$cid) {
+        bbscript_log(LL::DEBUG, 'Failed to match or create contact', $contactParams);
         $stats['error'][] = array(
-          'msg' => 'Unable to match or create contact',
-          'cid' => $cid,
+          'is_error' => 1,
+          'error_message' => 'Unable to match or create contact',
+          'params' => $contactParams
         );
 
         //archive row with null date
         if ($optlist['archive']) {
+          bbscript_log(LL::DEBUG, 'Archiving non-matched record to "other" table');
           CRM_NYSS_BAO_Integration::archiveRecord($intDB, 'other', $row, null, null);
         }
 
@@ -119,6 +124,8 @@ class CRM_Integration_Process
 
       $date = date('Y-m-d H:i:s', $row->created_at);
       $archiveTable = '';
+
+      bbscript_log(LL::DEBUG, "Processing message of type [{$row->msg_type}]");
 
       switch ($row->msg_type) {
         case 'BILL':
@@ -189,26 +196,28 @@ class CRM_Integration_Process
           break;
 
         default:
-          bbscript_log(LL::ERROR, 'Unable to process row. Message type is unknown.', $row);
           $result = array(
             'is_error' => 1,
-            'details' => 'Unable to process row. Message type is unknown.',
+            'error_message' => "Unable to process row; message type [{$row->msg_type}] is unknown"
           );
           $stats['unprocessed'][$row->msg_type][] = $row;
       }
 
       if ($result['is_error']) {
+        bbscript_log(LL::ERROR, 'Unable to process row', $result);
         $stats['error'][] = $result;
       }
       else {
         $stats['processed'][] = $row->id;
 
         //store activity log record
+        bbscript_log(LL::DEBUG, "Storing activity log record; cid=$cid; type=$activity_type");
         CRM_NYSS_BAO_Integration::storeActivityLog($cid, $activity_type, $date, $activity_details);
 
         //archive rows by ID
         if ($optlist['archive']) {
           $archiveTable = (!empty($archiveTable)) ? $archiveTable : strtolower($row->msg_type);
+          bbscript_log(LL::DEBUG, 'Archiving matched/created record to $archiveTable table');
           CRM_NYSS_BAO_Integration::archiveRecord($intDB, $archiveTable, $row, $params, $date);
         }
       }
