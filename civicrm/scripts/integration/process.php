@@ -124,6 +124,7 @@ class CRM_Integration_Process
 
       $date = date('Y-m-d H:i:s', $row->created_at);
       $archiveTable = '';
+      $skipActivityLog = false;
 
       bbscript_log(LL::DEBUG, "Processing message of type [{$row->msg_type}]");
 
@@ -161,6 +162,7 @@ class CRM_Integration_Process
           }
           else {
             $archiveTable = 'other';
+            $skipActivityLog = true;
           }
           break;
 
@@ -211,8 +213,10 @@ class CRM_Integration_Process
         $stats['processed'][] = $row->id;
 
         //store activity log record
-        bbscript_log(LL::DEBUG, "Storing activity log record; cid=$cid; type=$activity_type");
-        CRM_NYSS_BAO_Integration::storeActivityLog($cid, $activity_type, $date, $activity_details);
+        if (!$skipActivityLog) {
+          bbscript_log(LL::DEBUG, "Storing activity log record; cid=$cid; type=$activity_type");
+          CRM_NYSS_BAO_Integration::storeActivityLog($cid, $activity_type, $date, $activity_details);
+        }
 
         //archive rows by ID
         if ($optlist['archive']) {
