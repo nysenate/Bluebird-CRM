@@ -772,10 +772,11 @@ class CRM_NYSS_BAO_Integration
   {
     //CRM_Core_Error::debug_var('getActivityStream $_REQUEST', $_REQUEST);
 
-    $contactID = CRM_Utils_Type::escape($_REQUEST['cid'], 'Integer');
+    $contactID = CRM_Utils_Type::escape($_REQUEST['cid'], 'Integer', false);
     //CRM_Core_Error::debug_var('getActivityStream $contactID', $contactID);
+    $contactIDSql = ($contactID) ? "contact_id = {$contactID}" : '(1)';
 
-    $type = CRM_Utils_Type::escape($_REQUEST['type'], 'String', '');
+    $type = CRM_Utils_Type::escape($_REQUEST['type'], 'String', false);
     //CRM_Core_Error::debug_var('getActivityStream $type', $type);
     $typeSql = ($type) ? "AND type = '{$type}'" : '';
 
@@ -799,7 +800,10 @@ class CRM_NYSS_BAO_Integration
     $params['page'] = ($offset / $rowCount) + 1;
     $params['rp'] = $rowCount;
 
-    $params['contact_id'] = $contactID;
+    if ($contactID) {
+      $params['contact_id'] = $contactID;
+    }
+
     //CRM_Core_Error::debug_var('getActivityStream $params', $params);
 
     $orderBy = ($params['sortBy']) ? $params['sortBy'] : 'created_date desc';
@@ -808,11 +812,12 @@ class CRM_NYSS_BAO_Integration
     $sql = "
       SELECT SQL_CALC_FOUND_ROWS *
       FROM nyss_web_activity
-      WHERE contact_id = {$contactID}
+      WHERE $contactIDSql
         {$typeSql}
       ORDER BY {$orderBy}
       LIMIT {$rowCount} OFFSET {$offset}
     ";
+    //CRM_Core_Error::debug_var('getActivityStream $sql', $sql);
     $dao = CRM_Core_DAO::executeQuery($sql);
     $totalRows = CRM_Core_DAO::singleValueQuery('SELECT FOUND_ROWS()');
     //CRM_Core_Error::debug_var('getActivityStream $totalRows', $totalRows);

@@ -248,5 +248,15 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
+echo "$prog: 9395: add web activity stream dashlet"
+sql="
+  SELECT @dashid:=id FROM civicrm_dashboard WHERE name = 'websiteActivityStream';
+  DELETE FROM civicrm_dashboard_contact WHERE dashboard_id = @dashid;
+  DELETE FROM civicrm_dashboard WHERE id = @dashid;
+  INSERT INTO civicrm_dashboard (domain_id, name, label, url, permission, permission_operator, column_no, is_minimized, is_fullscreen, is_active, is_reserved, weight, fullscreen_url) VALUES
+(1, 'websiteActivityStream', 'Website Activity Stream', 'civicrm/dashlet/webactivitystream&reset=1&snippet=4', 'access CiviCRM', NULL, 0, 1, 1, 1, 1, 1, 'civicrm/dashlet/webactivitystream&reset=1&snippet=4&context=dashletFullscreen');
+"
+$execSql $instance -c "$sql" -q
+
 php $script_dir/../civicrm/scripts/logUpdateSchema.php -S $instance
 php $script_dir/../civicrm/scripts/logUpdateIndexes.php -S $instance
