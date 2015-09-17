@@ -272,6 +272,11 @@ WHERE c.do_not_trade = 1
       array_key_exists('case_activity_details', $sqlColumns))
   ) {
     if ($exportMode == CRM_Export_Form_Select::ACTIVITY_EXPORT) {
+      //first index activity_id to speed update queries
+      CRM_Core_DAO::executeQuery("
+        ALTER TABLE {$exportTempTable} ADD INDEX `index_activity_id` (`activity_id`)
+      ");
+
       $sql = "
         SELECT activity_id, activity_details
         FROM $exportTempTable
