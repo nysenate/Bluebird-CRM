@@ -254,7 +254,7 @@ height: 600px;
 #crm-container #mainTabContainer .crm-tab-button#tab_nyss_web_message,
 #crm-container #mainTabContainer .crm-tab-button#tab_nyss_web_tags,
 #crm-container #mainTabContainer .crm-tab-button#tab_nyss_web_activitystream {
-  background-color: #FF9D00;
+  background-color: #DDD;
 }
 
 #crm-container #mainTabContainer .ui-state-active { background-color: #FFF; }
