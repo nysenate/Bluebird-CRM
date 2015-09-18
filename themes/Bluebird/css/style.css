@@ -254,7 +254,14 @@ height: 600px;
 #crm-container #mainTabContainer .crm-tab-button#tab_nyss_web_message,
 #crm-container #mainTabContainer .crm-tab-button#tab_nyss_web_tags,
 #crm-container #mainTabContainer .crm-tab-button#tab_nyss_web_activitystream {
-  background-color: #DDD;
+  background-color: #dddddd;
+}
+#crm-container #mainTabContainer .crm-tab-button.ui-state-active#tab_custom_9,
+#crm-container #mainTabContainer .crm-tab-button.ui-state-active#tab_nyss_web_account,
+#crm-container #mainTabContainer .crm-tab-button.ui-state-active#tab_nyss_web_message,
+#crm-container #mainTabContainer .crm-tab-button.ui-state-active#tab_nyss_web_tags,
+#crm-container #mainTabContainer .crm-tab-button.ui-state-active#tab_nyss_web_activitystream {
+  background-color: #ffffff;
 }
 
 #crm-container #mainTabContainer .ui-state-active { background-color: #FFF; }
