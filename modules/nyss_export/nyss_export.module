@@ -265,82 +265,10 @@ WHERE c.do_not_trade = 1
     }
   }//end activity mods
 
-  //9018 remove html from activity details
-  if ( ($exportMode == CRM_Export_Form_Select::ACTIVITY_EXPORT &&
-    array_key_exists('activity_details', $sqlColumns)) ||
-    ($exportMode == CRM_Export_Form_Select::CASE_EXPORT &&
-      array_key_exists('case_activity_details', $sqlColumns))
-  ) {
-    if ($exportMode == CRM_Export_Form_Select::ACTIVITY_EXPORT) {
-      //first index activity_id to speed update queries
-      CRM_Core_DAO::executeQuery("
-        ALTER TABLE {$exportTempTable} ADD INDEX `index_activity_id` (`activity_id`)
-      ");
-
-      $sql = "
-        SELECT activity_id, activity_details
-        FROM $exportTempTable
-      ";
-      $r = CRM_Core_DAO::executeQuery($sql);
-
-      while ($r->fetch()) {
-        //CRM_Core_Error::debug_var('r', $r);
-        $ad = _cleanHTML($r->activity_details);
-        CRM_Core_DAO::executeQuery("
-          UPDATE {$exportTempTable}
-          SET activity_details = '{$ad}'
-          WHERE activity_id = {$r->activity_id}
-        ");
-      }
-    }
-    else {
-      //if we can use the activity id, do so
-      if (array_key_exists('case_activity_id', $sqlColumns)) {
-        $sql = "
-          SELECT case_id, case_activity_id, case_activity_details
-          FROM $exportTempTable
-        ";
-        $r = CRM_Core_DAO::executeQuery($sql);
-
-        while ($r->fetch()) {
-          //CRM_Core_Error::debug_var('r', $r);
-          $ad = _cleanHTML($r->case_activity_details);
-          CRM_Core_DAO::executeQuery("
-            UPDATE {$exportTempTable}
-            SET case_activity_details = '{$ad}'
-            WHERE case_id = {$r->case_id}
-              AND case_activity_id = {$r->case_activity_id}
-          ");
-        }
-      }
-      else {
-        $sql = "
-          SELECT case_id, case_activity_details
-          FROM $exportTempTable
-        ";
-        $r = CRM_Core_DAO::executeQuery($sql);
-
-        while ($r->fetch()) {
-          //CRM_Core_Error::debug_var('r', $r);
-          $ad = _cleanHTML($r->case_activity_details);
-          $adOrig = CRM_Core_DAO::escapeString($r->case_activity_details);
-          //CRM_Core_Error::debug_var('$adOrig', $adOrig);
-          CRM_Core_DAO::executeQuery("
-            UPDATE {$exportTempTable}
-            SET case_activity_details = '{$ad}'
-            WHERE case_id = {$r->case_id}
-              AND case_activity_details LIKE '{$adOrig}'
-          ");
-        }
-      }
-    }
-
-  }
-
   while (1) {
     $limitQuery = $query . "
-LIMIT $offset, $limit
-";
+      LIMIT $offset, $limit
+    ";
     $dao = CRM_Core_DAO::executeQuery( $limitQuery );
 
     if ( $dao->N <= 0 ) {
@@ -352,7 +280,13 @@ LIMIT $offset, $limit
       $row = array( );
 
       foreach ( $sqlColumns as $column => $dontCare ) {
-        $row[$column] = $dao->$column;
+        //9018 apply activity details cleanup
+        if (in_array($column, array('activity_details', 'case_activity_details'))) {
+          $row[$column] = _cleanHTML($dao->$column);
+        }
+        else {
+          $row[$column] = $dao->$column;
+        }
       }
 
       $componentDetails[] = $row;
@@ -384,17 +318,14 @@ function _cleanStr( $string ) {
 }//_cleanStr
 
 /*
- * turn br/p to line breaks
- * strip remaining html tags
- * escape string to make mysql safe
+ * convert html to text
+ * using native function but placing in wrapper as we may/may not have additional
+ * processing we want to perform
  */
 function _cleanHTML($str) {
   //CRM_Core_Error::debug_var('_cleanHTML $str (before)', $str);
 
   $str = CRM_Utils_String::htmlToText($str);
-
-  //escape
-  $str = CRM_Core_DAO::escapeString($str);
 
   //CRM_Core_Error::debug_var('_cleanHTML $str (after)', $str);
   return $str;
