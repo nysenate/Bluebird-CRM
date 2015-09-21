@@ -245,13 +245,13 @@ function nyss_contact_civicrm_tabs( &$tabs, $contactID ) {
   //create new tab for website integration; only attach to individuals
   $ctype = civicrm_api3('contact', 'getvalue', array('id' => $contactID, 'return' => 'contact_type'));
   if ($ctype == 'Individual') {
-    $url_account = CRM_Utils_System::url( 'civicrm/nyss/web/account',
+    /*$url_account = CRM_Utils_System::url( 'civicrm/nyss/web/account',
       "reset=1&snippet=1&force=1&cid=$contactID" );
     $tabs[] = array(
       'id' => 'nyss_web_account',
       'url' => $url_account,
       'title' => 'Website Account',
-      'weight' => 500 );
+      'weight' => 500 );*/
 
     $url_message = CRM_Utils_System::url( 'civicrm/nyss/web/message',
       "reset=1&snippet=1&force=1&cid=$contactID" );
