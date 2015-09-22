@@ -49,6 +49,7 @@ class CRM_Integration_Process
     //set integration DB
     $intDB = $bbcfg['integration.local.db.name'];
     $typeSql = ($optlist['type']) ? "AND msg_type = '{$optlist['type']}'" : '';
+    $addSql = '';
 
     //handle survey in special way
     if ($optlist['type'] == 'SURVEY') {
@@ -60,7 +61,8 @@ class CRM_Integration_Process
     $sql = "
       SELECT *
       FROM {$intDB}.accumulator
-      WHERE user_shortname = '{$bbcfg['db.basename']}'
+      WHERE target_shortname = '{$bbcfg['db.basename']}'
+        AND (target_shortname = user_shortname OR msg_type = 'PROFILE')
         $typeSql
         $addSql
     ";
