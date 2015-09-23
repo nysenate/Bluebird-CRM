@@ -95,9 +95,23 @@ class CRM_Integration_Process
           'city' => $row->city,
           'state' => $row->state,
           'postal_code' => $row->zip,
-          'birth_date' => date('Y-m-d', $row->dob),  //dob comes as timestamp
-          'gender_id' => ($row->gender == 'male') ?  2 : 1,  //TODO check
         );
+
+        if ($row->gender) {
+          switch ($row->gender) {
+            case 'male':
+              $contactParams['gender_id'] = 2;
+              break;
+            case 'female':
+              $contactParams['gender_id'] = 1;
+              break;
+            default:
+          }
+        }
+
+        if (!empty($row->dob)) {
+          $contactParams['birth_date'] = date('Y-m-d', $row->dob); //dob comes as timestamp
+        }
 
         bbscript_log(LL::TRACE, 'calling matchContact() with:', $contactParams);
         $cid = CRM_NYSS_BAO_Integration::matchContact($contactParams);
