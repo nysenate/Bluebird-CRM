@@ -265,11 +265,11 @@ class CRM_NYSS_BAO_Integration
         break;
       case 'aye':
         $apiAction = 'create';
-        $tagName = "{$bill}: FOR";
+        $tagName = "{$bill}: SUPPORT";
         break;
       case 'nay':
         $apiAction = 'create';
-        $tagName = "{$bill}: AGAINST";
+        $tagName = "{$bill}: OPPOSE";
         break;
       default:
         return array(

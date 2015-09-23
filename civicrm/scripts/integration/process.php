@@ -207,6 +207,11 @@ class CRM_Integration_Process
           $result = CRM_NYSS_BAO_Integration::processAccount($cid, $row->msg_action, $params, $date);
           $activity_type = 'Account';
           $activity_details = "{$row->msg_action}";
+
+          if ($row->msg_action == 'account creation') {
+            CRM_NYSS_BAO_Integration::processProfile($cid, 'account edited', $params, $row);
+          }
+
           break;
 
         case 'PROFILE':
