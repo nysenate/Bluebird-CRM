@@ -105,6 +105,9 @@ class CRM_Integration_Process
             case 'female':
               $contactParams['gender_id'] = 1;
               break;
+            case 'other':
+              $contactParams['gender_id'] = 4;
+              break;
             default:
           }
         }
