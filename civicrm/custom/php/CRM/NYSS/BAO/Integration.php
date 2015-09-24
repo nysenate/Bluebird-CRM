@@ -489,6 +489,10 @@ class CRM_NYSS_BAO_Integration
       $subject = 'Direct Message';
       $note = $params->message;
 
+      if (!empty($params->subject)) {
+        $note = "Subject: {$params->subject}\n{$note}";
+      }
+
       if (empty($note)) {
         $note = '[no message]';
       }
@@ -502,6 +506,10 @@ class CRM_NYSS_BAO_Integration
         Bill Number: {$params->bill_number}\n
         Bill Year: {$params->bill_year}
       ";
+
+      if (!empty($params->subject)) {
+        $note = "Subject: {$params->subject}\n{$note}";
+      }
     }
 
     //TODO with contextmsg, devise way to trace to source
@@ -643,7 +651,7 @@ class CRM_NYSS_BAO_Integration
       $rows[] = array(
         'subject' => $r->subject,
         'modified_date' => date('F jS, Y', strtotime($r->modified_date)),
-        'note' => $r->note,
+        'note' => nl2br($r->note),
       );
     }
 
