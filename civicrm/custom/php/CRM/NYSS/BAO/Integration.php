@@ -109,9 +109,19 @@ class CRM_NYSS_BAO_Integration
    */
   static function createContact($params)
   {
-
     $params['custom_60'] = 'Website Account';
-    $contact = civicrm_api('contact', 'create', array('version' => 3, 'contact_type' => 'Individual') + $params);
+    $params['contact_type'] = 'Individual';
+    $params['api.address.create'] = array(
+      'street_address' => $params['street_address'],
+      'supplemental_addresss_1' => $params['supplemental_addresss_1'],
+      'city' => $params['city'],
+      'state' => $params['state'],
+      'postal_code' => $params['postal_code'],
+      'location_type_id' => 1,
+    );
+    //CRM_Core_Error::debug_var('createContact params', $params);
+
+    $contact = civicrm_api3('contact', 'create', $params);
     //CRM_Core_Error::debug_var('contact', $contact);
 
     return $contact['id'];
