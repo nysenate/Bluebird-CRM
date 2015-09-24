@@ -259,29 +259,26 @@ class CRM_NYSS_BAO_Integration
       curl_close($ch);
       $json = json_decode($content, true);
       //CRM_Core_Error::debug_var('json', $json);
-
       $sponsor = strtoupper($json[0]['sponsor']);
     }
 
-    $bill = "{$billNumber} ({$sponsor})";
+    $tagName = "$billNumber ($sponsor)";
 
     //construct tag name and determine action
     switch ($action) {
       case 'follow':
         $apiAction = 'create';
-        $tagName = "{$bill}";
         break;
       case 'unfollow':
         $apiAction = 'delete';
-        $tagName = "{$bill}";
         break;
       case 'aye':
         $apiAction = 'create';
-        $tagName = "{$bill}: SUPPORT";
+        $tagName .= ': SUPPORT';
         break;
       case 'nay':
         $apiAction = 'create';
-        $tagName = "{$bill}: OPPOSE";
+        $tagName .= ': OPPOSE';
         break;
       default:
         return array(
@@ -297,12 +294,11 @@ class CRM_NYSS_BAO_Integration
       SELECT id
       FROM civicrm_tag
       WHERE name = %1
-        AND parent_id = {$parentId}
+        AND parent_id = $parentId
     ", array(1 => array($tagName, 'String')));
     //CRM_Core_Error::debug_var('tagId', $tagId);
 
     if (!$tagId) {
-      //$url = "http://nysenatedemo.prod.acquia-sites.com/legislation/bills/{$params->bill_year}/{$params->bill_number}";
       $url = "http://www.nysenate.gov/legislation/bills/{$params->bill_year}/{$params->bill_number}";
       $tag = civicrm_api('tag', 'create', array(
         'version' => 3,
@@ -312,7 +308,7 @@ class CRM_NYSS_BAO_Integration
         'is_reserved' => 1,
         'used_for' => 'civicrm_contact',
         'created_date' => date('Y-m-d H:i:s'),
-        'description' => "{$tagName} :: <a href='$url' target=_blank>$url</a>",
+        'description' => "<a href=\"$url\" target=_blank>$url</a>",
       ));
       //CRM_Core_Error::debug_var('$tag', $tag);
 
