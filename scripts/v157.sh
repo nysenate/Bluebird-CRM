@@ -258,5 +258,18 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
+echo "$prog: 9487: add Web Account contact source"
+sql="
+  SELECT @optgrp:=id FROM civicrm_option_group WHERE name = 'voter_registration_status_20100309194635';
+  DELETE FROM civicrm_option_value
+    WHERE option_group_id = @optgrp
+      AND name = 'website_account';
+  INSERT INTO civicrm_option_value
+  (option_group_id, label, value, name, grouping, filter, is_default, weight, description, is_optgroup, is_reserved, is_active, component_id, domain_id, visibility_id)
+  VALUES
+  (@optgrp, 'Website Account', 'Website Account', 'website_account', NULL, NULL, 0, 21, NULL, 0, 0, 1, NULL, NULL, NULL);
+"
+$execSql $instance -c "$sql" -q
+
 php $script_dir/../civicrm/scripts/logUpdateSchema.php -S $instance
 php $script_dir/../civicrm/scripts/logUpdateIndexes.php -S $instance

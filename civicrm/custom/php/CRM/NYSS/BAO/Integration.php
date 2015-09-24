@@ -109,6 +109,8 @@ class CRM_NYSS_BAO_Integration
    */
   static function createContact($params)
   {
+
+    $params['custom_60'] = 'Website Account';
     $contact = civicrm_api('contact', 'create', array('version' => 3, 'contact_type' => 'Individual') + $params);
     //CRM_Core_Error::debug_var('contact', $contact);
 
