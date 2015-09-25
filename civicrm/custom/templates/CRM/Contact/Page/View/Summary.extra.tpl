@@ -42,14 +42,12 @@
     data:  "contactId=" + contactID + "&key={/literal}{crmKey name='civicrm/ajax/count/changelog'}{literal}",
     url: postUrl,
     success: function(tabCount){
-      if(!isNaN(tabCount)) {
+      if(Number(tabCount) > 0) {
         var ele = cj('#tab_log a');
-        if(!isNaN(tabCount)) {
-          if (!ele.find('em').length) {
-            ele.append($('<em/>'));
-          }
-          ele.find('em').html(tabCount);
+        if (!ele.find('em').length) {
+          ele.append($('<em/>'));
         }
+        ele.find('em').html(tabCount);
       }
     }
   });
@@ -61,7 +59,7 @@
     data:  "contactId=" + contactID + "&key={/literal}{crmKey name='civicrm/ajax/count/activity'}{literal}",
     url: postUrl,
     success: function(tabCount){
-      if(!isNaN(tabCount)) {
+      if(Number(tabCount) > 0) {
         var ele = cj('#tab_activity a');
         if (!ele.find('em').length) {
           ele.append($('<em/>'));
