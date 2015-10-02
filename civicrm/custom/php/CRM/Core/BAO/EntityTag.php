@@ -301,12 +301,20 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
       $select = "SELECT count(*) as cnt";
     }
 
+    //NYSS 9472 exclude website tagsets from count
+    $exclTagsetParents = CRM_Core_DAO::singleValueQuery("
+      SELECT GROUP_CONCAT(id)
+      FROM civicrm_tag
+      WHERE name LIKE 'Website%'
+        AND is_tagset = 1
+    ");
     $query = "{$select}
         FROM civicrm_tag ct
         INNER JOIN civicrm_entity_tag et ON ( ct.id = et.tag_id AND
             et.entity_id    = {$contactID} AND
             et.entity_table = 'civicrm_contact' AND
-            ct.is_tagset = 0 )";
+            ct.is_tagset = 0 AND
+            ct.parent_id NOT IN ({$exclTagsetParents}) )";
 
     $dao = CRM_Core_DAO::executeQuery($query);
 

@@ -49,6 +49,7 @@ class CRM_Integration_Process
     //set integration DB
     $intDB = $bbcfg['integration.local.db.name'];
     $typeSql = ($optlist['type']) ? "AND msg_type = '{$optlist['type']}'" : '';
+    $addSql = '';
 
     //handle survey in special way
     if ($optlist['type'] == 'SURVEY') {
@@ -60,7 +61,8 @@ class CRM_Integration_Process
     $sql = "
       SELECT *
       FROM {$intDB}.accumulator
-      WHERE user_shortname = '{$bbcfg['db.basename']}'
+      WHERE target_shortname = '{$bbcfg['db.basename']}'
+        AND (target_shortname = user_shortname OR msg_type = 'PROFILE')
         $typeSql
         $addSql
     ";
@@ -93,9 +95,26 @@ class CRM_Integration_Process
           'city' => $row->city,
           'state' => $row->state,
           'postal_code' => $row->zip,
-          'birth_date' => date('Y-m-d', $row->dob),  //dob comes as timestamp
-          'gender_id' => ($row->gender == 'male') ?  2 : 1,  //TODO check
         );
+
+        if ($row->gender) {
+          switch ($row->gender) {
+            case 'male':
+              $contactParams['gender_id'] = 2;
+              break;
+            case 'female':
+              $contactParams['gender_id'] = 1;
+              break;
+            case 'other':
+              $contactParams['gender_id'] = 4;
+              break;
+            default:
+          }
+        }
+
+        if (!empty($row->dob)) {
+          $contactParams['birth_date'] = date('Y-m-d', $row->dob); //dob comes as timestamp
+        }
 
         bbscript_log(LL::TRACE, 'calling matchContact() with:', $contactParams);
         $cid = CRM_NYSS_BAO_Integration::matchContact($contactParams);
@@ -124,6 +143,7 @@ class CRM_Integration_Process
 
       $date = date('Y-m-d H:i:s', $row->created_at);
       $archiveTable = '';
+      $skipActivityLog = false;
 
       bbscript_log(LL::DEBUG, "Processing message of type [{$row->msg_type}]");
 
@@ -161,6 +181,7 @@ class CRM_Integration_Process
           }
           else {
             $archiveTable = 'other';
+            $skipActivityLog = true;
           }
           break;
 
@@ -186,6 +207,11 @@ class CRM_Integration_Process
           $result = CRM_NYSS_BAO_Integration::processAccount($cid, $row->msg_action, $params, $date);
           $activity_type = 'Account';
           $activity_details = "{$row->msg_action}";
+
+          if ($row->msg_action == 'account created') {
+            CRM_NYSS_BAO_Integration::processProfile($cid, 'account edited', $params, $row);
+          }
+
           break;
 
         case 'PROFILE':
@@ -211,8 +237,10 @@ class CRM_Integration_Process
         $stats['processed'][] = $row->id;
 
         //store activity log record
-        bbscript_log(LL::DEBUG, "Storing activity log record; cid=$cid; type=$activity_type");
-        CRM_NYSS_BAO_Integration::storeActivityLog($cid, $activity_type, $date, $activity_details);
+        if (!$skipActivityLog) {
+          bbscript_log(LL::DEBUG, "Storing activity log record; cid=$cid; type=$activity_type");
+          CRM_NYSS_BAO_Integration::storeActivityLog($cid, $activity_type, $date, $activity_details);
+        }
 
         //archive rows by ID
         if ($optlist['archive']) {

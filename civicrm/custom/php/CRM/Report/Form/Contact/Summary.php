@@ -78,6 +78,11 @@ class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
           array(
             'title' => ts('Contact SubType'),
           ),
+          //NYSS 9515
+          'created_date' =>
+            array(
+              'title' => ts('Created Date'),
+            ),
         ),
         'filters' =>
         array(
@@ -91,6 +96,13 @@ class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
           array('title' => ts('Contact ID'),
             'no_display' => TRUE,
           ),
+          //NYSS 9515
+          'created_date' =>
+          array('title' => ts('Created Date'),
+            'default' => 'this.month',
+            'operatorType' => CRM_Report_Form::OP_DATE,
+            'type' => CRM_Utils_Type::T_DATE,
+          ),
         ),
         'grouping' => 'contact-fields',
         'order_bys' =>
@@ -102,6 +114,10 @@ class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
             'default_weight' => '0',
             'default_is_section' => 0,
             'default_order' => 'ASC'
+          ),
+          //NYSS 9515
+          'created_date' =>
+          array( 'title' => ts('Created Date'),
           ),
         ),
       ),

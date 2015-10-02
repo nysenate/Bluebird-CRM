@@ -313,4 +313,9 @@
     <page_callback>CRM_NYSS_BAO_Integration::getActivityStream</page_callback>
     <access_arguments>view all contacts</access_arguments>
   </item>
+  <item>
+    <path>civicrm/dashlet/webactivitystream</path>
+    <title>Website Activity Stream</title>
+    <page_callback>CRM_Dashlet_Page_WebsiteActivityStream</page_callback>
+  </item>
 </menu>

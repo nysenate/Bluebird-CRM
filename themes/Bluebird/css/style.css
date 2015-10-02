@@ -248,6 +248,22 @@ height: 600px;
   color: #335370 !important;
 }
 
+/*website tabs*/
+#crm-container #mainTabContainer .crm-tab-button#tab_custom_9,
+#crm-container #mainTabContainer .crm-tab-button#tab_nyss_web_account,
+#crm-container #mainTabContainer .crm-tab-button#tab_nyss_web_message,
+#crm-container #mainTabContainer .crm-tab-button#tab_nyss_web_tags,
+#crm-container #mainTabContainer .crm-tab-button#tab_nyss_web_activitystream {
+  background-color: #dddddd;
+}
+#crm-container #mainTabContainer .crm-tab-button.ui-state-active#tab_custom_9,
+#crm-container #mainTabContainer .crm-tab-button.ui-state-active#tab_nyss_web_account,
+#crm-container #mainTabContainer .crm-tab-button.ui-state-active#tab_nyss_web_message,
+#crm-container #mainTabContainer .crm-tab-button.ui-state-active#tab_nyss_web_tags,
+#crm-container #mainTabContainer .crm-tab-button.ui-state-active#tab_nyss_web_activitystream {
+  background-color: #ffffff;
+}
+
 #crm-container #mainTabContainer .ui-state-active { background-color: #FFF; }
 #crm-container #mainTabContainer .crm-tab-button a {
   color:#335370;
@@ -257,7 +273,8 @@ height: 600px;
   display: block;
   padding-right:0px;
   width:140px;
-  background: transparent url(../images/tab-bg.jpg) repeat-y top right;
+  margin-top: 1px;
+  /*background: transparent url(../images/tab-bg.jpg) repeat-y top right;*/
 }
 
 #crm-container #mainTabContainer .ui-state-active a { background: none;}

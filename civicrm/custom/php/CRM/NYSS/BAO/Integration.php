@@ -109,7 +109,19 @@ class CRM_NYSS_BAO_Integration
    */
   static function createContact($params)
   {
-    $contact = civicrm_api('contact', 'create', array('version' => 3, 'contact_type' => 'Individual') + $params);
+    $params['custom_60'] = 'Website Account';
+    $params['contact_type'] = 'Individual';
+    $params['api.address.create'] = array(
+      'street_address' => $params['street_address'],
+      'supplemental_addresss_1' => $params['supplemental_addresss_1'],
+      'city' => $params['city'],
+      'state' => $params['state'],
+      'postal_code' => $params['postal_code'],
+      'location_type_id' => 1,
+    );
+    //CRM_Core_Error::debug_var('createContact params', $params);
+
+    $contact = civicrm_api3('contact', 'create', $params);
     //CRM_Core_Error::debug_var('contact', $contact);
 
     return $contact['id'];
@@ -247,29 +259,26 @@ class CRM_NYSS_BAO_Integration
       curl_close($ch);
       $json = json_decode($content, true);
       //CRM_Core_Error::debug_var('json', $json);
-
       $sponsor = strtoupper($json[0]['sponsor']);
     }
 
-    $bill = "{$billNumber} ({$sponsor})";
+    $tagName = "$billNumber ($sponsor)";
 
     //construct tag name and determine action
     switch ($action) {
       case 'follow':
         $apiAction = 'create';
-        $tagName = "{$bill}";
         break;
       case 'unfollow':
         $apiAction = 'delete';
-        $tagName = "{$bill}";
         break;
       case 'aye':
         $apiAction = 'create';
-        $tagName = "{$bill}: FOR";
+        $tagName .= ': SUPPORT';
         break;
       case 'nay':
         $apiAction = 'create';
-        $tagName = "{$bill}: AGAINST";
+        $tagName .= ': OPPOSE';
         break;
       default:
         return array(
@@ -285,12 +294,11 @@ class CRM_NYSS_BAO_Integration
       SELECT id
       FROM civicrm_tag
       WHERE name = %1
-        AND parent_id = {$parentId}
+        AND parent_id = $parentId
     ", array(1 => array($tagName, 'String')));
     //CRM_Core_Error::debug_var('tagId', $tagId);
 
     if (!$tagId) {
-      //$url = "http://nysenatedemo.prod.acquia-sites.com/legislation/bills/{$params->bill_year}/{$params->bill_number}";
       $url = "http://www.nysenate.gov/legislation/bills/{$params->bill_year}/{$params->bill_number}";
       $tag = civicrm_api('tag', 'create', array(
         'version' => 3,
@@ -300,7 +308,7 @@ class CRM_NYSS_BAO_Integration
         'is_reserved' => 1,
         'used_for' => 'civicrm_contact',
         'created_date' => date('Y-m-d H:i:s'),
-        'description' => "{$tagName} :: <a href='$url' target=_blank>$url</a>",
+        'description' => "<a href=\"$url\" target=_blank>$url</a>",
       ));
       //CRM_Core_Error::debug_var('$tag', $tag);
 
@@ -477,6 +485,10 @@ class CRM_NYSS_BAO_Integration
       $subject = 'Direct Message';
       $note = $params->message;
 
+      if (!empty($params->subject)) {
+        $note = "Subject: {$params->subject}\n{$note}";
+      }
+
       if (empty($note)) {
         $note = '[no message]';
       }
@@ -490,6 +502,10 @@ class CRM_NYSS_BAO_Integration
         Bill Number: {$params->bill_number}\n
         Bill Year: {$params->bill_year}
       ";
+
+      if (!empty($params->subject)) {
+        $note = "Subject: {$params->subject}\n{$note}";
+      }
     }
 
     //TODO with contextmsg, devise way to trace to source
@@ -631,7 +647,7 @@ class CRM_NYSS_BAO_Integration
       $rows[] = array(
         'subject' => $r->subject,
         'modified_date' => date('F jS, Y', strtotime($r->modified_date)),
-        'note' => $r->note,
+        'note' => nl2br($r->note),
       );
     }
 
@@ -772,10 +788,11 @@ class CRM_NYSS_BAO_Integration
   {
     //CRM_Core_Error::debug_var('getActivityStream $_REQUEST', $_REQUEST);
 
-    $contactID = CRM_Utils_Type::escape($_REQUEST['cid'], 'Integer');
+    $contactID = CRM_Utils_Type::escape($_REQUEST['cid'], 'Integer', false);
     //CRM_Core_Error::debug_var('getActivityStream $contactID', $contactID);
+    $contactIDSql = ($contactID) ? "contact_id = {$contactID}" : '(1)';
 
-    $type = CRM_Utils_Type::escape($_REQUEST['type'], 'String', '');
+    $type = CRM_Utils_Type::escape($_REQUEST['type'], 'String', false);
     //CRM_Core_Error::debug_var('getActivityStream $type', $type);
     $typeSql = ($type) ? "AND type = '{$type}'" : '';
 
@@ -799,7 +816,10 @@ class CRM_NYSS_BAO_Integration
     $params['page'] = ($offset / $rowCount) + 1;
     $params['rp'] = $rowCount;
 
-    $params['contact_id'] = $contactID;
+    if ($contactID) {
+      $params['contact_id'] = $contactID;
+    }
+
     //CRM_Core_Error::debug_var('getActivityStream $params', $params);
 
     $orderBy = ($params['sortBy']) ? $params['sortBy'] : 'created_date desc';
@@ -808,11 +828,12 @@ class CRM_NYSS_BAO_Integration
     $sql = "
       SELECT SQL_CALC_FOUND_ROWS *
       FROM nyss_web_activity
-      WHERE contact_id = {$contactID}
+      WHERE $contactIDSql
         {$typeSql}
       ORDER BY {$orderBy}
       LIMIT {$rowCount} OFFSET {$offset}
     ";
+    //CRM_Core_Error::debug_var('getActivityStream $sql', $sql);
     $dao = CRM_Core_DAO::executeQuery($sql);
     $totalRows = CRM_Core_DAO::singleValueQuery('SELECT FOUND_ROWS()');
     //CRM_Core_Error::debug_var('getActivityStream $totalRows', $totalRows);

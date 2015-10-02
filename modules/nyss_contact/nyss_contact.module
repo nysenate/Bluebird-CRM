@@ -242,17 +242,16 @@ function nyss_contact_civicrm_postProcess( $formName, &$form ) {
 function nyss_contact_civicrm_tabs( &$tabs, $contactID ) {
   //CRM_Core_Error::debug_var('tabs', $tabs);
 
-/****************** commented out for 1.5.6 release ************************
   //create new tab for website integration; only attach to individuals
   $ctype = civicrm_api3('contact', 'getvalue', array('id' => $contactID, 'return' => 'contact_type'));
   if ($ctype == 'Individual') {
-    $url_account = CRM_Utils_System::url( 'civicrm/nyss/web/account',
+    /*$url_account = CRM_Utils_System::url( 'civicrm/nyss/web/account',
       "reset=1&snippet=1&force=1&cid=$contactID" );
     $tabs[] = array(
       'id' => 'nyss_web_account',
       'url' => $url_account,
       'title' => 'Website Account',
-      'weight' => 500 );
+      'weight' => 500 );*/
 
     $url_message = CRM_Utils_System::url( 'civicrm/nyss/web/message',
       "reset=1&snippet=1&force=1&cid=$contactID" );
@@ -278,7 +277,6 @@ function nyss_contact_civicrm_tabs( &$tabs, $contactID ) {
       'title' => 'Website Activity',
       'weight' => 500 );
   }
-******************* commented out for 1.5.6 release ***********************/
 
   //6698 reorder the tabs to insert mailings in a more appropriate order
   $newTabs = array();
