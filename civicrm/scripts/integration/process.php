@@ -80,6 +80,13 @@ class CRM_Integration_Process
         continue;
       }
 
+      //if not verified, skip (archive)
+      if (!$row->user_is_verified) {
+        CRM_NYSS_BAO_Integration::archiveRecord($intDB, 'other', $row, null, null);
+        continue;
+      }
+
+
       //check contact/user
       bbscript_log(LL::TRACE, 'calling getContactId('.$row->user_id.')');
       $cid = CRM_NYSS_BAO_Integration::getContactId($row->user_id);
