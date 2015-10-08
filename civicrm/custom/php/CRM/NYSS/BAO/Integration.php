@@ -797,9 +797,10 @@ class CRM_NYSS_BAO_Integration
     $typeSql = ($type) ? "AND type = '{$type}'" : '';
 
     $sortMapper = array(
-      0 => 'type',
-      1 => 'created_date',
-      2 => 'details',
+      0 => 'contact',
+      1 => 'type',
+      2 => 'created_date',
+      3 => 'details',
     );
 
     $sEcho = CRM_Utils_Type::escape($_REQUEST['sEcho'], 'Integer');
@@ -826,8 +827,10 @@ class CRM_NYSS_BAO_Integration
 
     $activity = array();
     $sql = "
-      SELECT SQL_CALC_FOUND_ROWS *
-      FROM nyss_web_activity
+      SELECT SQL_CALC_FOUND_ROWS a.*, c.sort_name
+      FROM nyss_web_activity a
+      JOIN civicrm_contact c
+        ON a.contact_id = c.id
       WHERE $contactIDSql
         {$typeSql}
       ORDER BY {$orderBy}
@@ -840,7 +843,7 @@ class CRM_NYSS_BAO_Integration
 
     while ($dao->fetch()) {
       $activity[$dao->id] = array(
-        //'contact_id' => $dao->contact_id,
+        'sort_name' => $dao->sort_name,
         'type' => $dao->type,
         'created_date' => date('m/d/Y g:i A', strtotime($dao->created_date)),
         'details' => $dao->details,
@@ -883,7 +886,7 @@ class CRM_NYSS_BAO_Integration
 
     $iFilteredTotal = $iTotal = $params['total'] = $totalRows;
     $selectorElements = array(
-      'type', 'created_date', 'details',
+      'sort_name', 'type', 'created_date', 'details',
     );
 
     echo CRM_Utils_JSON::encodeDataTableSelector($activity, $sEcho, $iTotal, $iFilteredTotal, $selectorElements);

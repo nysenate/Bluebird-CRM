@@ -177,7 +177,7 @@ class CRM_Integration_Process
         case 'DIRECTMSG':
           $result = CRM_NYSS_BAO_Integration::processCommunication($cid, $row->msg_action, $params, $row->msg_type);
           $activity_type = 'Direct Message';
-          $activity_details = "";
+          $activity_details = ($row->subject) ? $row->subject : '';
           break;
 
         case 'CONTEXTMSG':
@@ -185,7 +185,7 @@ class CRM_Integration_Process
           if (!empty($params->bill_number)) {
             $result = CRM_NYSS_BAO_Integration::processCommunication($cid, $row->msg_action, $params, $row->msg_type);
             $activity_type = 'Context Message';
-            $activity_details = "";
+            $activity_details = ($row->subject) ? $row->subject : '';
           }
           else {
             $archiveTable = 'other';

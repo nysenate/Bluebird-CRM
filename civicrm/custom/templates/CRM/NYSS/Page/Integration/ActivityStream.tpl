@@ -42,6 +42,7 @@
   <table id="contact-web-activity-selector">
     <thead>
     <tr>
+      <th class='crm-contact-activity-activity_contact'>{ts}Contact{/ts}</th>
       <th class='crm-contact-activity-activity_type'>{ts}Type{/ts}</th>
       <th class='crm-contact-activity-activity_date'>{ts}Date{/ts}</th>
       <th class='crm-contact-activity-activity_details'>{ts}Details{/ts}</th>
@@ -86,6 +87,7 @@
       "bAutoWidth" : false,
       "aaSorting"  : [],
       "aoColumns"  : [
+        {sClass:'crm-contact-activity-activity_contact'},
         {sClass:'crm-contact-activity-activity_type'},
         {sClass:'crm-contact-activity-activity_date'},
         {sClass:'crm-contact-activity-activity_details'}
