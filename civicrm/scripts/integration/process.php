@@ -77,6 +77,7 @@ class CRM_Integration_Process
       //if context/direct message and target != user, skip
       if ($row->target_shortname != $row->user_shortname &&
           in_array($row->msg_type, array('DIRECTMSG', 'CONTEXTMSG'))) {
+        CRM_NYSS_BAO_Integration::archiveRecord($intDB, 'other', $row, null, null);
         continue;
       }
 
@@ -176,7 +177,7 @@ class CRM_Integration_Process
         case 'DIRECTMSG':
           $result = CRM_NYSS_BAO_Integration::processCommunication($cid, $row->msg_action, $params, $row->msg_type);
           $activity_type = 'Direct Message';
-          $activity_details = "";
+          $activity_details = ($row->subject) ? $row->subject : '';
           break;
 
         case 'CONTEXTMSG':
@@ -184,7 +185,7 @@ class CRM_Integration_Process
           if (!empty($params->bill_number)) {
             $result = CRM_NYSS_BAO_Integration::processCommunication($cid, $row->msg_action, $params, $row->msg_type);
             $activity_type = 'Context Message';
-            $activity_details = "";
+            $activity_details = ($row->subject) ? $row->subject : '';
           }
           else {
             $archiveTable = 'other';
