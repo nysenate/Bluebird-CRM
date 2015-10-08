@@ -115,7 +115,7 @@ class CRM_NYSS_BAO_Integration
       'street_address' => $params['street_address'],
       'supplemental_addresss_1' => $params['supplemental_addresss_1'],
       'city' => $params['city'],
-      'state' => $params['state'],
+      'state_province' => $params['state'],
       'postal_code' => $params['postal_code'],
       'location_type_id' => 1,
     );
@@ -469,6 +469,60 @@ class CRM_NYSS_BAO_Integration
         'error_code' => $errorCode,
         'error_data' => $errorData
       );
+    }
+
+    //9581 update contact record if data missing
+    $contact = civicrm_api3('contact', 'getsingle', array('id' => $contactId));
+
+    $updateParams = array(
+      'id' => $contactId,
+    );
+    $update = false;
+
+    if (empty($contact['email']) && !empty($row->email_address)) {
+      $updateParams['api.email.create'] = array(
+        'email' => $row->email_address,
+        'location_type_id' => 1,
+      );
+      $update = true;
+    }
+
+    if (empty($contact['gender']) && !empty($row->gender)) {
+      switch ($row->gender) {
+        case 'male':
+          $updateParams['gender_id'] = 2;
+          break;
+        case 'female':
+          $updateParams['gender_id'] = 1;
+          break;
+        case 'other':
+          $updateParams['gender_id'] = 4;
+          break;
+        default:
+      }
+      $update = true;
+    }
+
+    if (empty($contact['birth_date']) && !empty($row->dob)) {
+      $updateParams['birth_date'] = date('Ymd', $row->dob);
+      $update = true;
+    }
+
+    if (empty($contact['street_address']) && !empty($row->address1)) {
+      $updateParams['api.address.create'] = array(
+        'street_address' => $row->address1,
+        'supplemental_addresss_1' => $row->address2,
+        'city' => $row->city,
+        'state_province' => $row->state,
+        'postal_code' => $row->zip,
+        'location_type_id' => 1,
+      );
+      $update = true;
+    }
+
+    //CRM_Core_Error::debug_var('$updateParams', $updateParams);
+    if ($update) {
+      civicrm_api3('contact', 'create', $updateParams);
     }
 
     return $result;
