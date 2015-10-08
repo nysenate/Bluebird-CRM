@@ -77,6 +77,7 @@ class CRM_Integration_Process
       //if context/direct message and target != user, skip
       if ($row->target_shortname != $row->user_shortname &&
           in_array($row->msg_type, array('DIRECTMSG', 'CONTEXTMSG'))) {
+        CRM_NYSS_BAO_Integration::archiveRecord($intDB, 'other', $row, null, null);
         continue;
       }
 
