@@ -115,7 +115,7 @@ class CRM_NYSS_BAO_Integration
       'street_address' => $params['street_address'],
       'supplemental_addresss_1' => $params['supplemental_addresss_1'],
       'city' => $params['city'],
-      'state' => $params['state'],
+      'state_province' => $params['state'],
       'postal_code' => $params['postal_code'],
       'location_type_id' => 1,
     );
@@ -471,6 +471,60 @@ class CRM_NYSS_BAO_Integration
       );
     }
 
+    //9581 update contact record if data missing
+    $contact = civicrm_api3('contact', 'getsingle', array('id' => $contactId));
+
+    $updateParams = array(
+      'id' => $contactId,
+    );
+    $update = false;
+
+    if (empty($contact['email']) && !empty($row->email_address)) {
+      $updateParams['api.email.create'] = array(
+        'email' => $row->email_address,
+        'location_type_id' => 1,
+      );
+      $update = true;
+    }
+
+    if (empty($contact['gender']) && !empty($row->gender)) {
+      switch ($row->gender) {
+        case 'male':
+          $updateParams['gender_id'] = 2;
+          break;
+        case 'female':
+          $updateParams['gender_id'] = 1;
+          break;
+        case 'other':
+          $updateParams['gender_id'] = 4;
+          break;
+        default:
+      }
+      $update = true;
+    }
+
+    if (empty($contact['birth_date']) && !empty($row->dob)) {
+      $updateParams['birth_date'] = date('Ymd', $row->dob);
+      $update = true;
+    }
+
+    if (empty($contact['street_address']) && !empty($row->address1)) {
+      $updateParams['api.address.create'] = array(
+        'street_address' => $row->address1,
+        'supplemental_addresss_1' => $row->address2,
+        'city' => $row->city,
+        'state_province' => $row->state,
+        'postal_code' => $row->zip,
+        'location_type_id' => 1,
+      );
+      $update = true;
+    }
+
+    //CRM_Core_Error::debug_var('$updateParams', $updateParams);
+    if ($update) {
+      civicrm_api3('contact', 'create', $updateParams);
+    }
+
     return $result;
   } //processProfile()
 
@@ -797,9 +851,10 @@ class CRM_NYSS_BAO_Integration
     $typeSql = ($type) ? "AND type = '{$type}'" : '';
 
     $sortMapper = array(
-      0 => 'type',
-      1 => 'created_date',
-      2 => 'details',
+      0 => 'contact',
+      1 => 'type',
+      2 => 'created_date',
+      3 => 'details',
     );
 
     $sEcho = CRM_Utils_Type::escape($_REQUEST['sEcho'], 'Integer');
@@ -826,8 +881,10 @@ class CRM_NYSS_BAO_Integration
 
     $activity = array();
     $sql = "
-      SELECT SQL_CALC_FOUND_ROWS *
-      FROM nyss_web_activity
+      SELECT SQL_CALC_FOUND_ROWS a.*, c.sort_name
+      FROM nyss_web_activity a
+      JOIN civicrm_contact c
+        ON a.contact_id = c.id
       WHERE $contactIDSql
         {$typeSql}
       ORDER BY {$orderBy}
@@ -840,7 +897,7 @@ class CRM_NYSS_BAO_Integration
 
     while ($dao->fetch()) {
       $activity[$dao->id] = array(
-        //'contact_id' => $dao->contact_id,
+        'sort_name' => $dao->sort_name,
         'type' => $dao->type,
         'created_date' => date('m/d/Y g:i A', strtotime($dao->created_date)),
         'details' => $dao->details,
@@ -883,7 +940,7 @@ class CRM_NYSS_BAO_Integration
 
     $iFilteredTotal = $iTotal = $params['total'] = $totalRows;
     $selectorElements = array(
-      'type', 'created_date', 'details',
+      'sort_name', 'type', 'created_date', 'details',
     );
 
     echo CRM_Utils_JSON::encodeDataTableSelector($activity, $sEcho, $iTotal, $iFilteredTotal, $selectorElements);
