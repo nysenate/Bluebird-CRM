@@ -976,6 +976,56 @@ GROUP BY civicrm_activity_id {$this->_having} {$this->_orderBy} {$this->_limit}"
     }
   }
 
+  //NYSS 9596 - backported from 4.6.8
+  public function sectionTotals() {
+    // Reports using order_bys with sections must populate $this->_selectAliases in select() method.
+    if (empty($this->_selectAliases)) {
+      return;
+    }
+
+    if (!empty($this->_sections)) {
+      // pull section aliases out of $this->_sections
+      $sectionAliases = array_keys($this->_sections);
+
+      $ifnulls = array();
+      foreach (array_merge($sectionAliases, $this->_selectAliases) as $alias) {
+        $ifnulls[] = "ifnull($alias, '') as $alias";
+      }
+
+      $query = "select " . implode(", ", $ifnulls) .
+        ", count(DISTINCT civicrm_activity_id) as ct from civireport_activity_temp_target group by " .
+        implode(", ", $sectionAliases);
+
+      // initialize array of total counts
+      $totals = array();
+      $dao = CRM_Core_DAO::executeQuery($query);
+      while ($dao->fetch()) {
+        // let $this->_alterDisplay translate any integer ids to human-readable values.
+        $rows[0] = $dao->toArray();
+        $this->alterDisplay($rows);
+        $row = $rows[0];
+
+        // add totals for all permutations of section values
+        $values = array();
+        $i = 1;
+        $aliasCount = count($sectionAliases);
+        foreach ($sectionAliases as $alias) {
+          $values[] = $row[$alias];
+          $key = implode(CRM_Core_DAO::VALUE_SEPARATOR, $values);
+          if ($i == $aliasCount) {
+            // the last alias is the lowest-level section header; use count as-is
+            $totals[$key] = $dao->ct;
+          }
+          else {
+            // other aliases are higher level; roll count into their total
+            $totals[$key] += $dao->ct;
+          }
+        }
+      }
+      $this->assign('sectionTotals', $totals);
+    }
+  }
+
   //NYSS 6564 reorder columns; relabel column headers
   function formatDisplay(&$rows) {
     //CRM_Core_Error::debug_var('$this->_columnHeaders', $this->_columnHeaders);
