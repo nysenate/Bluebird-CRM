@@ -39,7 +39,6 @@
 class CRM_Admin_Page_AJAX
 {
   //NYSS
-  const OPENLEG_BASE_URL = 'http://open.nysenate.gov/legislation';
   const POSITION_PARENT_ID = 292;
 
   /**
@@ -289,6 +288,7 @@ class CRM_Admin_Page_AJAX
 
   static function getTagList()
   {
+    $bbcfg = get_bluebird_instance_config();
     $name = CRM_Utils_Type::escape($_GET['name'], 'String');
     $parentId = CRM_Utils_Type::escape($_GET['parentId'], 'Integer');
     $tags = array();
@@ -329,30 +329,56 @@ class CRM_Admin_Page_AJAX
       /* NYSS leg positions should retrieve list from OpenLegislation
        * and create value in tag table.
        */
-      $billNo = $name;
+      $apiKey = $apiBase = '';
+      if (isset($bbcfg['openleg.api.key'])) {
+        $apiKey = $bbcfg['openleg.api.key'];
+      }
+      if (isset($bbcfg['openleg.api.base'])) {
+        $apiBase = $bbcfg['openleg.api.base'];
+      }
+
+      $billIdParts = explode('-', $name);
+      $billNo = $billIdParts[0];
+      if (count($billIdParts) > 1) {
+        $billPattern = $billNo;
+        $sessYear = $billIdParts[1];
+        $sessPattern = (strlen($sessYear) == 4) ? $sessYear : '*';
+      }
+      else {
+        $billPattern = $billNo.'*';
+        $sessPattern = '*';
+      }
+
       // NYSS 6990 - ORDER BY year DESC as current bills are more relevant.
       // NYSS 8819 - increase pageSize to 100 to accommodate cases where the
       //             exact matching billno is not in the first 10 items
-      $target_url = self::OPENLEG_BASE_URL.'/api/1.0/json/search/?term=otype:bill+AND+oid:('.$billNo.'+OR+'.$billNo.'*)&pageSize=100&sort=year&sortOrder=true';
+      // NYSS 9575 - Modify API call for OpenLegislation 2.0
+      $query = urlencode("basePrintNo:$billPattern AND session:$sessPattern");
+      $target_url = "$apiBase/bills/search/?key=$apiKey&full=false&term=$query&sort=basePrintNo:asc,session:desc&limit=10";
       $ch = curl_init();
       curl_setopt($ch, CURLOPT_URL, $target_url);
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-      $content = curl_exec($ch);
+      $json = curl_exec($ch);
       curl_close($ch);
-      $json = json_decode($content, true);
-      usort($json, array('CRM_Admin_Page_AJAX', 'compareBills'));
+      $json = json_decode($json, false);
 
-      // Display up to 10 bills in the drop-down.
-      $billcnt = count($json);
-      if ($billcnt > 10) {
-        $billcnt = 10;
+      // Extract the billId (print#-year) and sponsor from each matching bill.
+      $bills = array();
+      foreach ($json->result->items as $item) {
+        $bills[] = array(
+          'id' => $item->result->printNo.'-'.$item->result->session,
+          'sponsor' => $item->result->sponsor->member->shortName
+        );
       }
+      $billcnt = count($bills);
+      // No need to use compareBills() to sort, since ElasticSearch is doing it
+      //usort($bills, array('CRM_Admin_Page_AJAX', 'compareBills'));
 
       for ($j = 0; $j < $billcnt; $j++) {
-        $billName = $json[$j]['id'];
+        $billName = $bills[$j]['id'];
         $billSponsor = '';
-        if (isset($json[$j]['sponsor'])) {
-          $billSponsor = $json[$j]['sponsor'];
+        if (isset($bills[$j]['sponsor'])) {
+          $billSponsor = $bills[$j]['sponsor'];
           $billName .= " ($billSponsor)";
         }
 
@@ -468,13 +494,23 @@ LIMIT $limit";
 
     //NYSS - retrieve OpenLeg ID and construct URL
     $bill_url = '';
-    $sponsor = CRM_Utils_Type::escape( $_POST['sponsor'], 'String' );
     if ($parentId == self::POSITION_PARENT_ID) {
-      $ol_id = substr( $tagID, 0, strpos( $tagID, ' ' ) );
-      if ( !$ol_id ) { $ol_id = $tagID; } //account for bill with no position appended
-      $ol_url = self::OPENLEG_BASE_URL.'/bill/'.$ol_id;
-      $sponsor = ( $sponsor ) ? ' ('.$sponsor.')' : '';
-      $bill_url = '<a href="'.$ol_url.'" target=_blank>'.$ol_url.'</a>'.$sponsor;
+      $bbcfg = get_bluebird_instance_config();
+      if (isset($bbcfg['openleg.url.template'])) {
+        $url_template = $bbcfg['openleg.url.template'];
+      }
+      else {
+        $url_template = 'http://legislation.nysenate.gov/bill/{year}/{billno}';
+      }
+
+      $ol_id = substr($tagID, 0, strcspn($tagID, ' :'));
+      $id_parts = explode('-', $ol_id);
+      $billno = $id_parts[0];
+      $year = $id_parts[1];
+      $search = array('{billno}', '{year}');
+      $replace = array($billno, $year);
+      $ol_url = str_replace($search, $replace, $url_template);
+      $bill_url = '<a href="'.$ol_url.'" target="_blank">'.$ol_url.'</a>';
     }
 
     $tagInfo = array();
