@@ -262,7 +262,8 @@ class CRM_NYSS_BAO_Integration
       $sponsor = strtoupper($json[0]['sponsor']);
     }
 
-    $tagName = "$billNumber ($sponsor)";
+    $tagName = $tagNameBase = "$billNumber ($sponsor)";
+    $tagNameOpposite = '';
 
     //construct tag name and determine action
     switch ($action) {
@@ -275,10 +276,12 @@ class CRM_NYSS_BAO_Integration
       case 'aye':
         $apiAction = 'create';
         $tagName .= ': SUPPORT';
+        $tagNameOpposite = $tagNameBase.': OPPOSE';
         break;
       case 'nay':
         $apiAction = 'create';
         $tagName .= ': OPPOSE';
+        $tagNameOpposite = $tagNameBase.': SUPPORT';
         break;
       default:
         return array(
@@ -328,6 +331,26 @@ class CRM_NYSS_BAO_Integration
       'entity_id' => $contactId,
       'tag_id' => $tagId,
     ));
+
+    //see if the opposite tag exists and if so, remove it
+    if (!empty($tagNameOpposite)) {
+      $tagIdOpp = CRM_Core_DAO::singleValueQuery("
+        SELECT id
+        FROM civicrm_tag
+        WHERE name = %1
+          AND parent_id = $parentId
+      ", array(1 => array($tagNameOpposite, 'String')));
+
+      //if the tag doesn't even exist, it's never been used on the site and we can skip the check
+      if ($tagIdOpp) {
+        $et = civicrm_api('entity_tag', 'delete', array(
+          'version' => 3,
+          'entity_table' => 'civicrm_contact',
+          'entity_id' => $contactId,
+          'tag_id' => $tagIdOpp,
+        ));
+      }
+    }
 
     return $et;
   } //processBill()
