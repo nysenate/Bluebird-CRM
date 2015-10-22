@@ -318,4 +318,14 @@
     <title>Website Activity Stream</title>
     <page_callback>CRM_Dashlet_Page_WebsiteActivityStream</page_callback>
   </item>
+  <item>
+    <path>civicrm/nyss/web/getnewcontacts</path>
+    <page_callback>CRM_NYSS_BAO_Integration::getNewContacts</page_callback>
+    <access_arguments>view all contacts</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/dashlet/newcontacts</path>
+    <title>Recently Created Contacts</title>
+    <page_callback>CRM_Dashlet_Page_NewContacts</page_callback>
+  </item>
 </menu>
