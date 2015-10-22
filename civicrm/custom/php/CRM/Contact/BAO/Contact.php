@@ -842,6 +842,14 @@ WHERE     civicrm_contact.id = " . CRM_Utils_Type::escape($id, 'Integer');
         }
       }
 
+      //NYSS 9574
+      // delete all tags linked to contact
+      $params = array(
+        'entity_table' => 'civicrm_contact',
+        'entity_id' => $id,
+      );
+      CRM_Core_BAO_EntityTag::del($params);
+
       $contact->delete();
     }
     else {
