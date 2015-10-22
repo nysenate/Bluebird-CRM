@@ -45,7 +45,7 @@ class CRM_Admin_Page_AJAX
    * Function to build menu tree
    */
   static function getNavigationList() {
-    echo CRM_Core_BAO_Navigation::buildNavigation(TRUE, FALSE);
+    echo CRM_Core_BAO_Navigation::buildNavigation(true, false);
     CRM_Utils_System::civiExit();
   }
 
@@ -76,7 +76,7 @@ class CRM_Admin_Page_AJAX
           require_once (str_replace('_', DIRECTORY_SEPARATOR, $recordBAO) . '.php');
           $method = 'getUFJoinRecord';
           $result = array($recordBAO, $method);
-          $ufJoin = call_user_func_array(($result), array($recordID, TRUE));
+          $ufJoin = call_user_func_array(($result), array($recordID, true));
           if (!empty($ufJoin)) {
             $status = ts('This profile is currently used for %1.', array(1 => implode(', ', $ufJoin))) . ' <br/><br/>' . ts('If you disable the profile - it will be removed from these forms and/or modules. Do you want to continue?');
           }
@@ -486,31 +486,10 @@ LIMIT $limit";
     // this is done to allow numeric tags etc.
     $tagValue = explode(':::', $_POST['tagID']);
 
-    $createNewTag = FALSE;
+    $createNewTag = false;
     $tagID = $tagValue[0];
     if (isset($tagValue[1]) && $tagValue[1] == 'value') {
-      $createNewTag = TRUE;
-    }
-
-    //NYSS - retrieve OpenLeg ID and construct URL
-    $bill_url = '';
-    if ($parentId == self::POSITION_PARENT_ID) {
-      $bbcfg = get_bluebird_instance_config();
-      if (isset($bbcfg['openleg.url.template'])) {
-        $url_template = $bbcfg['openleg.url.template'];
-      }
-      else {
-        $url_template = 'http://legislation.nysenate.gov/bill/{year}/{billno}';
-      }
-
-      $ol_id = substr($tagID, 0, strcspn($tagID, ' :'));
-      $id_parts = explode('-', $ol_id);
-      $billno = $id_parts[0];
-      $year = $id_parts[1];
-      $search = array('{billno}', '{year}');
-      $replace = array($billno, $year);
-      $ol_url = str_replace($search, $replace, $url_template);
-      $bill_url = '<a href="'.$ol_url.'" target="_blank">'.$ol_url.'</a>';
+      $createNewTag = true;
     }
 
     $tagInfo = array();
@@ -524,8 +503,7 @@ LIMIT $limit";
         $tagID = CRM_Utils_String::stripSpaces($tagID);
         $params = array(
           'name' => $tagID,
-          'parent_id' => $parentId,
-          'description' => $bill_url,
+          'parent_id' => $parentId
         );
 
         $tagObject = CRM_Core_BAO_Tag::add($params, CRM_Core_DAO::$_nullArray);
