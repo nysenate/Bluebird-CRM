@@ -24,6 +24,20 @@ class CRM_NYSS_BAO_Integration
     return $cid;
   } //getContactId()
 
+  /*
+   * given a contact ID, conduct a lookup to get the web ID
+   * if none, return empty
+   */
+  static function getWebId($contactId)
+  {
+    $cid = CRM_Core_DAO::singleValueQuery("
+      SELECT web_user_id
+      FROM civicrm_contact
+      WHERE id = {$contactId}
+    ");
+
+    return $cid;
+  } //getContactId()
 
   /*
    * attempt to match the record with existing contacts
