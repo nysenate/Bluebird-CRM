@@ -83,4 +83,8 @@
       </table>
     {/foreach}
   {/foreach}
+
+  {if $webUserURL}
+    <div id="website-user-url">&raquo; <a href="{$webUserURL}" target="_blank">Visit user's website profile</a></div>
+  {/if}
 </div>

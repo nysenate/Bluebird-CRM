@@ -24,6 +24,20 @@ class CRM_NYSS_BAO_Integration
     return $cid;
   } //getContactId()
 
+  /*
+   * given a contact ID, conduct a lookup to get the web ID
+   * if none, return empty
+   */
+  static function getWebId($contactId)
+  {
+    $cid = CRM_Core_DAO::singleValueQuery("
+      SELECT web_user_id
+      FROM civicrm_contact
+      WHERE id = {$contactId}
+    ");
+
+    return $cid;
+  } //getContactId()
 
   /*
    * attempt to match the record with existing contacts
@@ -262,7 +276,8 @@ class CRM_NYSS_BAO_Integration
       $sponsor = strtoupper($json[0]['sponsor']);
     }
 
-    $tagName = "$billNumber ($sponsor)";
+    $tagName = $tagNameBase = "$billNumber ($sponsor)";
+    $tagNameOpposite = '';
 
     //construct tag name and determine action
     switch ($action) {
@@ -275,10 +290,12 @@ class CRM_NYSS_BAO_Integration
       case 'aye':
         $apiAction = 'create';
         $tagName .= ': SUPPORT';
+        $tagNameOpposite = $tagNameBase.': OPPOSE';
         break;
       case 'nay':
         $apiAction = 'create';
         $tagName .= ': OPPOSE';
+        $tagNameOpposite = $tagNameBase.': SUPPORT';
         break;
       default:
         return array(
@@ -328,6 +345,26 @@ class CRM_NYSS_BAO_Integration
       'entity_id' => $contactId,
       'tag_id' => $tagId,
     ));
+
+    //see if the opposite tag exists and if so, remove it
+    if (!empty($tagNameOpposite)) {
+      $tagIdOpp = CRM_Core_DAO::singleValueQuery("
+        SELECT id
+        FROM civicrm_tag
+        WHERE name = %1
+          AND parent_id = $parentId
+      ", array(1 => array($tagNameOpposite, 'String')));
+
+      //if the tag doesn't even exist, it's never been used on the site and we can skip the check
+      if ($tagIdOpp) {
+        $et = civicrm_api('entity_tag', 'delete', array(
+          'version' => 3,
+          'entity_table' => 'civicrm_contact',
+          'entity_id' => $contactId,
+          'tag_id' => $tagIdOpp,
+        ));
+      }
+    }
 
     return $et;
   } //processBill()
@@ -1065,4 +1102,149 @@ class CRM_NYSS_BAO_Integration
 
     $transaction->commit();
   } // archiveRecord()
+
+  /*
+   * get recently created contacts
+   */
+  static function getNewContacts()
+  {
+    //CRM_Core_Error::debug_var('getNewContacts $_REQUEST', $_REQUEST);
+
+    $sortMapper = array(
+      0 => 'contact',
+      1 => 'date',
+      2 => 'email',
+      3 => 'address',
+      4 => 'city',
+      5 => 'source',
+    );
+
+    $sEcho = CRM_Utils_Type::escape($_REQUEST['sEcho'], 'Integer');
+    $offset = isset($_REQUEST['iDisplayStart']) ? CRM_Utils_Type::escape($_REQUEST['iDisplayStart'], 'Integer') : 0;
+    $rowCount = isset($_REQUEST['iDisplayLength']) ? CRM_Utils_Type::escape($_REQUEST['iDisplayLength'], 'Integer') : 25;
+    $sort = isset($_REQUEST['iSortCol_0']) ? CRM_Utils_Array::value(CRM_Utils_Type::escape($_REQUEST['iSortCol_0'], 'Integer'), $sortMapper) : NULL;
+    $sortOrder = isset($_REQUEST['sSortDir_0']) ? CRM_Utils_Type::escape($_REQUEST['sSortDir_0'], 'String') : 'asc';
+
+    $params = $_REQUEST;
+    if ($sort && $sortOrder) {
+      $params['sortBy'] = $sort . ' ' . $sortOrder;
+    }
+
+    $params['page'] = ($offset / $rowCount) + 1;
+    $params['rp'] = $rowCount;
+
+    //CRM_Core_Error::debug_var('getActivityStream $params', $params);
+
+    //source field sql
+    $source = CRM_Utils_Type::escape($_REQUEST['source'], 'String', false);
+    $sourceSql = '';
+    if ($source == 'Website') {
+      $sourceSql = "AND contact_source_60 = 'Website Account'";
+    }
+    elseif ($source == 'Bluebird') {
+      $sourceSql = "AND (contact_source_60 != 'Website Account' OR contact_source_60 IS NULL)";
+    }
+
+    //date fields sql
+    $dateType = CRM_Utils_Type::escape($_REQUEST['date_relative'], 'String', false);
+    //CRM_Core_Error::debug_var('getNewContacts $dateType', $dateType);
+    $dateSql = '';
+
+    if (!empty($dateType) && $dateType !== '0') {
+      //relative date
+      //CRM_Core_Error::debug_log_message('relative date processing...');
+      CRM_Contact_BAO_Query::fixDateValues($_REQUEST['date_relative'], $_REQUEST['date_low'], $_REQUEST['date_high']);
+      //CRM_Core_Error::debug_var('getNewContacts relative date $_REQUEST', $_REQUEST);
+    }
+
+    $date_low = ($_REQUEST['date_low']) ? date('Y-m-d', strtotime($_REQUEST['date_low'])) : '';
+    $date_high = ($_REQUEST['date_high']) ? date('Y-m-d', strtotime($_REQUEST['date_high'])) : '';
+    //CRM_Core_Error::debug_var('getNewContacts $date_low', $date_low);
+    //CRM_Core_Error::debug_var('getNewContacts $date_high', $date_high);
+
+    if ($date_low) {
+      $dateSql .= "AND created_date >= '{$date_low}'";
+    }
+    if ($date_high) {
+      $dateSql .= "AND created_date <= '{$date_high}'";
+    }
+
+    $orderBy = 'created_date desc';
+    if ($params['sortBy']) {
+      //CRM_Core_Error::debug_var('getNewContacts $params[sortBy]', $params['sortBy']);
+      //column values don't directly match field names so we must convert
+      switch ($params['sortBy']) {
+        case 'source asc':
+          $orderBy = 'contact_source_60 asc';
+          break;
+        case 'source desc':
+          $orderBy = 'contact_source_60 desc';
+          break;
+        case 'address asc':
+          $orderBy = 'street_address asc';
+          break;
+        case 'address desc':
+          $orderBy = 'street_address desc';
+          break;
+        case 'date asc':
+          $orderBy = 'created_date asc';
+          break;
+        case 'date desc':
+          $orderBy = 'created_date desc';
+          break;
+        case 'contact asc':
+          $orderBy = 'sort_name asc';
+          break;
+        case 'contact desc':
+          $orderBy = 'sort_name desc';
+          break;
+
+        default:
+          $orderBy = $params['sortBy'];
+      }
+    }
+
+    $newcontacts = array();
+    $sql = "
+      SELECT SQL_CALC_FOUND_ROWS c.*, ci.contact_source_60, e.email, a.street_address, a.city
+      FROM civicrm_contact c
+      LEFT JOIN civicrm_value_constituent_information_1 ci
+        ON ci.entity_id = c.id
+      LEFT JOIN civicrm_email e
+        ON e.contact_id = c.id
+        AND e.is_primary = 1
+      LEFT JOIN civicrm_address a
+        ON a.contact_id = c.id
+        AND a.is_primary = 1
+      WHERE (1)
+        {$sourceSql}
+        {$dateSql}
+      ORDER BY {$orderBy}
+      LIMIT {$rowCount} OFFSET {$offset}
+    ";
+    //CRM_Core_Error::debug_var('getNewContacts $sql', $sql);
+    $dao = CRM_Core_DAO::executeQuery($sql);
+    $totalRows = CRM_Core_DAO::singleValueQuery('SELECT FOUND_ROWS()');
+    //CRM_Core_Error::debug_var('getNewContacts $totalRows', $totalRows);
+
+    while ($dao->fetch()) {
+      $newcontacts[$dao->id] = array(
+        'sort_name' => $dao->sort_name,
+        'date' => date('m/d/Y g:i A', strtotime($dao->created_date)),
+        'email' => $dao->email,
+        'address' => $dao->street_address,
+        'city' => $dao->city,
+        'source' => ($dao->contact_source_60 == 'Website Account') ? 'Website' : 'Bluebird',
+      );
+    }
+    //CRM_Core_Error::debug_var('getActivityStream $activity', $activity);
+
+    $iFilteredTotal = $iTotal = $params['total'] = $totalRows;
+    $selectorElements = array(
+      'sort_name', 'date', 'email', 'address', 'city', 'source',
+    );
+
+    echo CRM_Utils_JSON::encodeDataTableSelector($newcontacts, $sEcho, $iTotal, $iFilteredTotal, $selectorElements);
+    CRM_Utils_System::civiExit();
+  } //getActivityStream()
 }//end class
