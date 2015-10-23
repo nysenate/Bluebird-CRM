@@ -160,7 +160,10 @@ function nyss_contact_civicrm_buildForm( $formName, &$form ) {
 }//buildForm
 
 function nyss_contact_civicrm_pageRun( &$page ) {
+  //CRM_Core_Error::debug_var('pageRun $page', $page);
+
   $pagename = $page->getVar( '_name' );
+  //CRM_Core_Error::debug_var('pageRun $pagename', $pagename);
 
   $contactPages = array(
     'CRM_Contact_Page_View_Summary',
@@ -188,6 +191,20 @@ function nyss_contact_civicrm_pageRun( &$page ) {
       }
       //CRM_Core_Error::debug_var('$privacy', $privacy);
       $page->assign('privacy', $privacy);
+    }
+  }
+
+  //8547
+  if ($pagename == 'CRM_Contact_Page_View_CustomData'
+    && $page->_groupId == 9
+  ) {
+    $cid = $page->_contactId;
+    $webId = CRM_NYSS_BAO_Integration::getWebId($cid);
+    //CRM_Core_Error::debug_var('pageRun $webId', $webId);
+
+    if ($webId) {
+      $webUserURL = 'http://www.nysenate.gov/user/' . $webId;
+      $page->assign('webUserURL', $webUserURL);
     }
   }
 }//pageRun

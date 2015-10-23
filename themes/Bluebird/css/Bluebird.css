@@ -1874,3 +1874,9 @@ div.nyss-mailing-subscriptions-admin div.nyss-email-row {
   background-position: -104px -223px;
   background-image: url("../nyss_skin/images/jquery-ui-3E3E3E.gif");
 }
+
+/*8547*/
+#crm-container #website-user-url {
+  padding: 10px 0;
+  font-weight: bold;
+}

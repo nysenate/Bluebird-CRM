@@ -97,9 +97,10 @@
   {/literal}
 {/if}
 
-{*integration: remove website profile count*}
+{*integration*}
 {literal}
 <script type="text/javascript">
+  //remove website profile count
   cj('li#tab_custom_9 a em').remove();
 </script>
 {/literal}
