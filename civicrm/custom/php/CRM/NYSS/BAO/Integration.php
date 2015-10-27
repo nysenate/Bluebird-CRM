@@ -918,7 +918,7 @@ class CRM_NYSS_BAO_Integration
 
     $activity = array();
     $sql = "
-      SELECT SQL_CALC_FOUND_ROWS a.*, c.sort_name
+      SELECT SQL_CALC_FOUND_ROWS a.*, c.sort_name, c.id as cid
       FROM nyss_web_activity a
       JOIN civicrm_contact c
         ON a.contact_id = c.id
@@ -933,8 +933,9 @@ class CRM_NYSS_BAO_Integration
     //CRM_Core_Error::debug_var('getActivityStream $totalRows', $totalRows);
 
     while ($dao->fetch()) {
+      $url = CRM_Utils_System::url('civicrm/contact/view', "reset=1&cid={$dao->cid}");
       $activity[$dao->id] = array(
-        'sort_name' => $dao->sort_name,
+        'sort_name' => "<a href='{$url}'>{$dao->sort_name}</a>",
         'type' => $dao->type,
         'created_date' => date('m/d/Y g:i A', strtotime($dao->created_date)),
         'details' => $dao->details,
@@ -1157,8 +1158,8 @@ class CRM_NYSS_BAO_Integration
       //CRM_Core_Error::debug_var('getNewContacts relative date $_REQUEST', $_REQUEST);
     }
 
-    $date_low = ($_REQUEST['date_low']) ? date('Y-m-d', strtotime($_REQUEST['date_low'])) : '';
-    $date_high = ($_REQUEST['date_high']) ? date('Y-m-d', strtotime($_REQUEST['date_high'])) : '';
+    $date_low = ($_REQUEST['date_low']) ? date('Y-m-d H:i:s', strtotime($_REQUEST['date_low'])) : '';
+    $date_high = ($_REQUEST['date_high']) ? date('Y-m-d H:i:s', strtotime($_REQUEST['date_high'])) : '';
     //CRM_Core_Error::debug_var('getNewContacts $date_low', $date_low);
     //CRM_Core_Error::debug_var('getNewContacts $date_high', $date_high);
 
@@ -1228,8 +1229,9 @@ class CRM_NYSS_BAO_Integration
     //CRM_Core_Error::debug_var('getNewContacts $totalRows', $totalRows);
 
     while ($dao->fetch()) {
+      $url = CRM_Utils_System::url('civicrm/contact/view', "reset=1&cid={$dao->id}");
       $newcontacts[$dao->id] = array(
-        'sort_name' => $dao->sort_name,
+        'sort_name' => "<a href='{$url}'>{$dao->sort_name}</a>",
         'date' => date('m/d/Y g:i A', strtotime($dao->created_date)),
         'email' => $dao->email,
         'address' => $dao->street_address,
