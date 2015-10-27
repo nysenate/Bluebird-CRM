@@ -77,20 +77,20 @@ class CRM_Integration_Process
       //if context/direct message and target != user, skip
       if ($row->target_shortname != $row->user_shortname &&
           in_array($row->msg_type, array('DIRECTMSG', 'CONTEXTMSG'))) {
-        CRM_NYSS_BAO_Integration::archiveRecord($intDB, 'other', $row, null, null);
+        CRM_NYSS_BAO_Integration_Website::archiveRecord($intDB, 'other', $row, null, null);
         continue;
       }
 
       //if not verified, skip (archive)
       if (!$row->user_is_verified) {
-        CRM_NYSS_BAO_Integration::archiveRecord($intDB, 'other', $row, null, null);
+        CRM_NYSS_BAO_Integration_Website::archiveRecord($intDB, 'other', $row, null, null);
         continue;
       }
 
 
       //check contact/user
       bbscript_log(LL::TRACE, 'calling getContactId('.$row->user_id.')');
-      $cid = CRM_NYSS_BAO_Integration::getContactId($row->user_id);
+      $cid = CRM_NYSS_BAO_Integration_Website::getContactId($row->user_id);
       if (!$cid) {
         bbscript_log(LL::DEBUG, 'Contact with web_user_id='.$row->user_id.' was not found; attempting match');
         $contactParams = array(
@@ -125,7 +125,7 @@ class CRM_Integration_Process
         }
 
         bbscript_log(LL::TRACE, 'calling matchContact() with:', $contactParams);
-        $cid = CRM_NYSS_BAO_Integration::matchContact($contactParams);
+        $cid = CRM_NYSS_BAO_Integration_Website::matchContact($contactParams);
       }
 
       if (!$cid) {
@@ -139,7 +139,7 @@ class CRM_Integration_Process
         //archive row with null date
         if ($optlist['archive']) {
           bbscript_log(LL::DEBUG, 'Archiving non-matched record to "other" table');
-          CRM_NYSS_BAO_Integration::archiveRecord($intDB, 'other', $row, null, null);
+          CRM_NYSS_BAO_Integration_Website::archiveRecord($intDB, 'other', $row, null, null);
         }
 
         continue;
@@ -157,25 +157,25 @@ class CRM_Integration_Process
 
       switch ($row->msg_type) {
         case 'BILL':
-          $result = CRM_NYSS_BAO_Integration::processBill($cid, $row->msg_action, $params);
+          $result = CRM_NYSS_BAO_Integration_Website::processBill($cid, $row->msg_action, $params);
           $activity_type = 'Bill';
           $activity_details = "{$row->msg_action} :: {$params->bill_number}-{$params->bill_year} ({$params->bill_sponsor})";
           break;
 
         case 'ISSUE':
-          $result = CRM_NYSS_BAO_Integration::processIssue($cid, $row->msg_action, $params);
+          $result = CRM_NYSS_BAO_Integration_Website::processIssue($cid, $row->msg_action, $params);
           $activity_type = 'Issue';
           $activity_details = "{$row->msg_action} :: {$params->issue_name}";
           break;
 
         case 'COMMITTEE':
-          $result = CRM_NYSS_BAO_Integration::processCommittee($cid, $row->msg_action, $params);
+          $result = CRM_NYSS_BAO_Integration_Website::processCommittee($cid, $row->msg_action, $params);
           $activity_type = 'Committee';
           $activity_details = "{$row->msg_action} :: {$params->committee_name}";
           break;
 
         case 'DIRECTMSG':
-          $result = CRM_NYSS_BAO_Integration::processCommunication($cid, $row->msg_action, $params, $row->msg_type);
+          $result = CRM_NYSS_BAO_Integration_Website::processCommunication($cid, $row->msg_action, $params, $row->msg_type);
           $activity_type = 'Direct Message';
           $activity_details = ($row->subject) ? $row->subject : '';
           break;
@@ -183,7 +183,7 @@ class CRM_Integration_Process
         case 'CONTEXTMSG':
           //disregard if no bill number
           if (!empty($params->bill_number)) {
-            $result = CRM_NYSS_BAO_Integration::processCommunication($cid, $row->msg_action, $params, $row->msg_type);
+            $result = CRM_NYSS_BAO_Integration_Website::processCommunication($cid, $row->msg_action, $params, $row->msg_type);
             $activity_type = 'Context Message';
             $activity_details = ($row->subject) ? $row->subject : '';
           }
@@ -195,35 +195,35 @@ class CRM_Integration_Process
 
         case 'PETITION':
           if ($row->msg_action == 'questionnaire response') {
-            $result = CRM_NYSS_BAO_Integration::processSurvey($cid, $row->msg_action, $params);
+            $result = CRM_NYSS_BAO_Integration_Website::processSurvey($cid, $row->msg_action, $params);
             $activity_type = 'Survey';
             $activity_details = "survey :: {$params->form_title}";
             $archiveTable = 'survey';
           }
           else {
-            $result = CRM_NYSS_BAO_Integration::processPetition($cid, $row->msg_action, $params);
+            $result = CRM_NYSS_BAO_Integration_Website::processPetition($cid, $row->msg_action, $params);
             $activity_type = 'Petition';
             $activity_details = "{$row->msg_action} :: {$params->petition_name}";
           }
           break;
 
         /*case 'SURVEY':
-          $result = CRM_NYSS_BAO_Integration::processSurvey($cid, $row->msg_action, $params);
+          $result = CRM_NYSS_BAO_Integration_Website::processSurvey($cid, $row->msg_action, $params);
           break;*/
 
         case 'ACCOUNT':
-          $result = CRM_NYSS_BAO_Integration::processAccount($cid, $row->msg_action, $params, $date);
+          $result = CRM_NYSS_BAO_Integration_Website::processAccount($cid, $row->msg_action, $params, $date);
           $activity_type = 'Account';
           $activity_details = "{$row->msg_action}";
 
           if ($row->msg_action == 'account created') {
-            CRM_NYSS_BAO_Integration::processProfile($cid, 'account edited', $params, $row);
+            CRM_NYSS_BAO_Integration_Website::processProfile($cid, 'account edited', $params, $row);
           }
 
           break;
 
         case 'PROFILE':
-          $result = CRM_NYSS_BAO_Integration::processProfile($cid, $row->msg_action, $params, $row);
+          $result = CRM_NYSS_BAO_Integration_Website::processProfile($cid, $row->msg_action, $params, $row);
           $activity_type = 'Profile';
           $activity_details = $row->msg_action;
           $activity_details .= ($params->status) ? " :: {$params->status}" : '';
@@ -247,14 +247,14 @@ class CRM_Integration_Process
         //store activity log record
         if (!$skipActivityLog) {
           bbscript_log(LL::DEBUG, "Storing activity log record; cid=$cid; type=$activity_type");
-          CRM_NYSS_BAO_Integration::storeActivityLog($cid, $activity_type, $date, $activity_details);
+          CRM_NYSS_BAO_Integration_Website::storeActivityLog($cid, $activity_type, $date, $activity_details);
         }
 
         //archive rows by ID
         if ($optlist['archive']) {
           $archiveTable = (!empty($archiveTable)) ? $archiveTable : strtolower($row->msg_type);
           bbscript_log(LL::DEBUG, 'Archiving matched/created record to $archiveTable table');
-          CRM_NYSS_BAO_Integration::archiveRecord($intDB, $archiveTable, $row, $params, $date);
+          CRM_NYSS_BAO_Integration_Website::archiveRecord($intDB, $archiveTable, $row, $params, $date);
         }
       }
     }
