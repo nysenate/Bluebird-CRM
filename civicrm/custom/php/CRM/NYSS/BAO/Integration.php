@@ -1228,8 +1228,9 @@ class CRM_NYSS_BAO_Integration
     //CRM_Core_Error::debug_var('getNewContacts $totalRows', $totalRows);
 
     while ($dao->fetch()) {
+      $url = CRM_Utils_System::url('civicrm/contact/view', "reset=1&cid={$dao->id}");
       $newcontacts[$dao->id] = array(
-        'sort_name' => $dao->sort_name,
+        'sort_name' => "<a href='{$url}'>{$dao->sort_name}</a>",
         'date' => date('m/d/Y g:i A', strtotime($dao->created_date)),
         'email' => $dao->email,
         'address' => $dao->street_address,
