@@ -26,6 +26,11 @@
 {* Custom Data view mode*}
 <div id="WebsiteProfile" class="view-content crm-block crm-content-block">
   <h3>Website Profile</h3>
+
+  {if $webUserURL}
+    <div id="website-user-url">&raquo; <a href="{$webUserURL}" target="_blank">Visit user's website profile</a></div>
+  {/if}
+
   {foreach from=$viewCustomData item=customValues key=customGroupId}
     {foreach from=$customValues item=cd_edit key=cvID}
       <table class="no-border crm-info-panel" id="{$cd_edit.name}">
@@ -83,8 +88,4 @@
       </table>
     {/foreach}
   {/foreach}
-
-  {if $webUserURL}
-    <div id="website-user-url">&raquo; <a href="{$webUserURL}" target="_blank">Visit user's website profile</a></div>
-  {/if}
 </div>
