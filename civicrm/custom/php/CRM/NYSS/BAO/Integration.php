@@ -1157,8 +1157,8 @@ class CRM_NYSS_BAO_Integration
       //CRM_Core_Error::debug_var('getNewContacts relative date $_REQUEST', $_REQUEST);
     }
 
-    $date_low = ($_REQUEST['date_low']) ? date('Y-m-d', strtotime($_REQUEST['date_low'])) : '';
-    $date_high = ($_REQUEST['date_high']) ? date('Y-m-d', strtotime($_REQUEST['date_high'])) : '';
+    $date_low = ($_REQUEST['date_low']) ? date('Y-m-d H:i:s', strtotime($_REQUEST['date_low'])) : '';
+    $date_high = ($_REQUEST['date_high']) ? date('Y-m-d H:i:s', strtotime($_REQUEST['date_high'])) : '';
     //CRM_Core_Error::debug_var('getNewContacts $date_low', $date_low);
     //CRM_Core_Error::debug_var('getNewContacts $date_high', $date_high);
 
