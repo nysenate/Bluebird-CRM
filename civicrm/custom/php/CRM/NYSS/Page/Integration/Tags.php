@@ -42,15 +42,16 @@ class CRM_NYSS_Page_Integration_Tags extends CRM_Core_Page
    * @return none
    * @access public
    */
-  function run( ) {
+  function run()
+  {
     //CRM_Core_Error::debug_var('account page $this', $this);
     //CRM_Core_Error::debug_var('account page $_REQUEST', $_REQUEST);
 
     $cid = CRM_Utils_Request::retrieve('cid', 'Positive');
-    $tags = CRM_NYSS_BAO_Integration::getTags($cid);
+    $tags = CRM_NYSS_BAO_Integration_Website::getTags($cid);
 
     $this->assign('tags', $tags);
 
-    return parent::run( );
+    return parent::run();
   }
 }

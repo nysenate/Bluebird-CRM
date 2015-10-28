@@ -42,16 +42,17 @@ class CRM_NYSS_Page_Integration_Message extends CRM_Core_Page
    * @return none
    * @access public
    */
-  function run( ) {
+  function run()
+  {
     //CRM_Core_Error::debug_var('account page $this', $this);
     //CRM_Core_Error::debug_var('account page $_REQUEST', $_REQUEST);
 
     $cid = CRM_Utils_Request::retrieve('cid', 'Positive');
-    $message = CRM_NYSS_BAO_Integration::getMessages($cid);
+    $message = CRM_NYSS_BAO_Integration_Website::getMessages($cid);
     //CRM_Core_Error::debug_var('account page $account', $account);
 
     $this->assign('message', $message);
 
-    return parent::run( );
+    return parent::run();
   }
 }
