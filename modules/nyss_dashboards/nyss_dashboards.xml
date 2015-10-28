@@ -310,7 +310,7 @@
   </item>
   <item>
     <path>civicrm/nyss/web/getactivitystream</path>
-    <page_callback>CRM_NYSS_BAO_Integration::getActivityStream</page_callback>
+    <page_callback>CRM_NYSS_BAO_Integration_Website::getActivityStream</page_callback>
     <access_arguments>view all contacts</access_arguments>
   </item>
   <item>
@@ -320,7 +320,7 @@
   </item>
   <item>
     <path>civicrm/nyss/web/getnewcontacts</path>
-    <page_callback>CRM_NYSS_BAO_Integration::getNewContacts</page_callback>
+    <page_callback>CRM_NYSS_BAO_Integration_Website::getNewContacts</page_callback>
     <access_arguments>view all contacts</access_arguments>
   </item>
   <item>
