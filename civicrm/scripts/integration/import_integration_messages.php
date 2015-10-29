@@ -209,7 +209,7 @@ function get_integration_config_params()
     'local_db_port' => 3306,
     'local_db_user' => 'user',
     'local_db_pass' => '',
-    'local_db_name' => 'integration',
+    'local_db_name' => 'web_integration',
     'log_level'     => LL::NOTICE
   );
 
@@ -233,7 +233,7 @@ function get_integration_config_params()
 
   foreach ($default_vals as $k => $v) {
     $cliopt = str_replace('_', '-', $k);
-    $bbcfgopt = 'integration.'.str_replace('_', '.', $k);
+    $bbcfgopt = 'website.'.str_replace('_', '.', $k);
     if (isset($optlist[$cliopt])) {
       $cfgopts[$k] = $optlist[$cliopt];
     }
