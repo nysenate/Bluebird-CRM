@@ -31,7 +31,7 @@ class CRM_Integration_Process
       set_bbscript_log_level($optlist['log-level']);
     }
 
-    bbscript_log(LL::INFO, 'Initiating integration processing...');
+    bbscript_log(LL::INFO, 'Initiating website integration processing...');
 
     //get instance settings
     $bbcfg = get_bluebird_instance_config($optlist['site']);
@@ -39,15 +39,15 @@ class CRM_Integration_Process
 
     $civicrm_root = $bbcfg['drupal.rootdir'].'/sites/all/modules/civicrm';
     $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
-    if (!CRM_Utils_System::loadBootstrap(array(), FALSE, FALSE, $civicrm_root)) {
+    if (!CRM_Utils_System::loadBootstrap(array(), false, false, $civicrm_root)) {
       CRM_Core_Error::debug_log_message('Failed to bootstrap CMS from cleanLogs.');
-      return FALSE;
+      return false;
     }
 
     bbscript_log(LL::DEBUG, 'Command line opts:', $optlist);
 
-    //set integration DB
-    $intDB = $bbcfg['integration.local.db.name'];
+    //set website integration DB
+    $intDB = $bbcfg['website.local.db.name'];
     $typeSql = ($optlist['type']) ? "AND msg_type = '{$optlist['type']}'" : '';
     $addSql = '';
 
@@ -61,7 +61,7 @@ class CRM_Integration_Process
     $sql = "
       SELECT *
       FROM {$intDB}.accumulator
-      WHERE target_shortname = '{$bbcfg['db.basename']}'
+      WHERE target_shortname = '{$optlist['site']}'
         AND (target_shortname = user_shortname OR msg_type = 'PROFILE')
         $typeSql
         $addSql
