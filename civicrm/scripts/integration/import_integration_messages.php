@@ -38,7 +38,7 @@ catch (PDOException $e) {
   bbscript_log(LL::FATAL, 'Could not connect to local store: '.$e->getMessage());
   exit(1);
 }
-bbscript_log(LL::NOTICE, 'Connected to local store at $localdsn');
+bbscript_log(LL::NOTICE, "Connected to local store at $localdsn");
 
 // pull local db settings
 try {
@@ -77,7 +77,7 @@ catch (PDOException $e) {
   bbscript_log(LL::FATAL, 'Could not connect to remote db: '.$e->getMessage());
   exit(1);
 }
-bbscript_log(LL::NOTICE, 'Connected to remote db at $remotedsn');
+bbscript_log(LL::NOTICE, "Connected to remote db at $remotedsn");
 bbscript_log(LL::INFO, "Searching for messages after #$current_max");
 
 // query for new messages
