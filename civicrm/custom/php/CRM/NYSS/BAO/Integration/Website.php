@@ -874,7 +874,7 @@ class CRM_NYSS_BAO_Integration_Website
     //CRM_Core_Error::debug_var('getActivityStream $contactID', $contactID);
     $contactIDSql = ($contactID) ? "contact_id = {$contactID}" : '(1)';
 
-    $type = CRM_Utils_Type::escape($_REQUEST['type'], 'String', false);
+    $type = CRM_Utils_Type::escape($_REQUEST['atype'], 'String', false);
     //CRM_Core_Error::debug_var('getActivityStream $type', $type);
     $typeSql = ($type) ? "AND type = '{$type}'" : '';
 
