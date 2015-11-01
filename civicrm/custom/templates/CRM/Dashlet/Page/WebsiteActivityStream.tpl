@@ -52,7 +52,7 @@
 
 {literal}
 <script type="text/javascript">
-  var oTable;
+  var aoTable;
 
   cj(function() {
     cj().crmAccordions();
@@ -66,8 +66,8 @@
 
   function buildWebActivities( filterSearch ) {
     //console.log('buildWebActivities');
-    if ( filterSearch && oTable ) {
-      oTable.fnDestroy();
+    if ( filterSearch && aoTable ) {
+      aoTable.fnDestroy();
     }
 
     var columns = '';
@@ -81,7 +81,7 @@
       ZeroRecordText += '.';
     }
 
-    oTable = cj('#contact-web-activity-selector').dataTable({
+    aoTable = cj('#contact-web-activity-selector').dataTable({
       "bFilter"    : false,
       "bAutoWidth" : false,
       "aaSorting"  : [],
@@ -93,7 +93,7 @@
       ],
       "bProcessing": true,
       "sPaginationType": "full_numbers",
-      "sDom"       : '<"crm-datatable-pager-top"lfp>rt<"crm-datatable-pager-bottom"ip>',
+      "sDom"       : '<"crm-datatable-a-pager-top"lfp>rt<"crm-datatable-a-pager-bottom"ip>',
       "bServerSide": true,
       "bJQueryUI": true,
       "sAjaxSource": sourceUrl,
@@ -118,9 +118,9 @@
         aoData.push( {name:'admin', value: {/literal}'{$admin}'{literal}} );
 
         if ( filterSearch ) {
-          var type = cj('select#web_activity_type_filter').val();
+          var atype = cj('select#web_activity_type_filter').val();
           //console.log('type: ', type);
-          aoData.push({name:'type', value: type});
+          aoData.push({name:'atype', value: atype});
         }
 
         cj.ajax( {
@@ -130,7 +130,7 @@
           "data": aoData,
           "success": fnCallback,
           // CRM-10244
-          "dataFilter": function(data, type) { return data.replace(/[\n\v\t]/g, " "); }
+          "dataFilter": function(data, atype) { return data.replace(/[\n\v\t]/g, " "); }
         });
       }
     });
@@ -140,3 +140,5 @@
   }
 </script>
 {/literal}
+
+{include file="CRM/common/enableDisableApi.tpl"}
