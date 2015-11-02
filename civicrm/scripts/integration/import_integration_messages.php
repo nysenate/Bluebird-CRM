@@ -38,7 +38,7 @@ catch (PDOException $e) {
   bbscript_log(LL::FATAL, 'Could not connect to local store: '.$e->getMessage());
   exit(1);
 }
-bbscript_log(LL::NOTICE, 'Connected to local store at $localdsn');
+bbscript_log(LL::NOTICE, "Connected to local store at $localdsn");
 
 // pull local db settings
 try {
@@ -77,7 +77,7 @@ catch (PDOException $e) {
   bbscript_log(LL::FATAL, 'Could not connect to remote db: '.$e->getMessage());
   exit(1);
 }
-bbscript_log(LL::NOTICE, 'Connected to remote db at $remotedsn');
+bbscript_log(LL::NOTICE, "Connected to remote db at $remotedsn");
 bbscript_log(LL::INFO, "Searching for messages after #$current_max");
 
 // query for new messages
@@ -209,7 +209,7 @@ function get_integration_config_params()
     'local_db_port' => 3306,
     'local_db_user' => 'user',
     'local_db_pass' => '',
-    'local_db_name' => 'integration',
+    'local_db_name' => 'web_integration',
     'log_level'     => LL::NOTICE
   );
 
@@ -233,7 +233,7 @@ function get_integration_config_params()
 
   foreach ($default_vals as $k => $v) {
     $cliopt = str_replace('_', '-', $k);
-    $bbcfgopt = 'integration.'.str_replace('_', '.', $k);
+    $bbcfgopt = 'website.'.str_replace('_', '.', $k);
     if (isset($optlist[$cliopt])) {
       $cfgopts[$k] = $optlist[$cliopt];
     }

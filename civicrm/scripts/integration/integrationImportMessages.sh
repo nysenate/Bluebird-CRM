@@ -8,12 +8,13 @@ readConfig=$script_dir/../../../scripts/readConfig.sh
 
 # set all script defaults
 default_config_group=globals
-default_config_prefix=integration
+default_config_prefix=website
 default_socket_file=bbintegrator
 default_ssh_host=localhost
 default_ssh_user=no_user
-default_tunnel_host=localhost
-default_tunnel_port=7777
+default_tunnel_local_port=7777
+default_tunnel_remote_host=localhost
+default_tunnel_remote_port=3306
 persistent_tunnel=0
 exit_only=0
 use_debug=0
@@ -30,11 +31,11 @@ the command line or bluebird.cfg.  If any required option cannot be resolved,
 the script will exit with return code 1.
 
 Options in bluebird.cfg follow the same general naming conventions, with
-all '-' characters replaced with '.', and an added prefix of 'integration.'.
+all '-' characters replaced with '.', and an added prefix of 'website.'.
 The prefix can be overriden with the --config-prefix option.
 
 For example, the socket-file command line option corresponds to the
-integration.socket.file configuration setting.
+website.socket.file configuration setting.
 
 Available options with [defaults] in brackets are:
 
@@ -43,8 +44,9 @@ Available options with [defaults] in brackets are:
 --socket-file PATH  : path to socket file used to control SSH tunnel [$default_socket_file]
 --ssh-host HOST     : hostname for SSH tunnel endpoint [$default_ssh_host]
 --ssh-user USER     : username to use for SSH tunnel [$default_ssh_user]
---tunnel-host HOST  : hostname for recipient of remote port forwarding [$default_tunnel_host]
---tunnel-port PORT  : local port to forward through SSH tunnel for MySQL connection [$default_tunnel_port]; must be greater than 1024
+--tunnel-local-port PORT  : local port to forward through SSH tunnel [$default_tunnel_local_port]; must be greater than 1024
+--tunnel-remote-host HOST : remote host of the SSH tunnel [$default_tunnel_remote_host]
+--tunnel-remote-port PORT : remote port of the SSH tunnel [$default_tunnel_remote_port]; must be greater than 1024
 --persistent        : keep the SSH tunnel open after script completion
 --exit-only         : attempts to kill the tunnel, then exits
 --debug             : causes debug text to echo to console
@@ -90,8 +92,9 @@ while [ $# -gt 0 ]; do
     --socket-file) shift; socket_file=$1 ;;
     --ssh-user) shift; ssh_user=$1 ;;
     --ssh-host) shift; ssh_host=$1 ;;
-    --tunnel-host) shift; tunnel_host=$1 ;;
-    --tunnel-port) shift; tunnel_port=$1 ;;
+    --tunnel-local-port) shift; tunnel_local_port=$1 ;;
+    --tunnel-remote-host) shift; tunnel_remote_host=$1 ;;
+    --tunnel-remote-port) shift; tunnel_remote_port=$1 ;;
     --persistent) persistent_tunnel=1 ;;
     --exit-only) exit_only=1 ;;
     --debug) use_debug=1 ;;
@@ -111,7 +114,7 @@ if [ $use_debug -eq 1 ]; then
 fi
 
 # set up the variables to use command line, OR config values, OR default values
-for i in ssh_host ssh_user tunnel_host tunnel_port socket_file; do
+for i in ssh_host ssh_user tunnel_local_port tunnel_remote_host tunnel_remote_port socket_file; do
   set_param $i
   if [ $use_debug -eq 1 ]; then
     echo "Setting $i = ${!i}"
@@ -122,8 +125,8 @@ rc=0
 
 if [ $exit_only -eq 0 ]; then
   if [ "$ssh_host" != "localhost" -a "$ssh_host" != "127.0.0.1" ]; then
-    if [ $tunnel_port -lt 1024 ]; then
-      echo "Cannot start a tunnel with privileged port $tunnel_port"
+    if [ $tunnel_local_port -lt 1024 ]; then
+      echo "Cannot start a tunnel with privileged port $tunnel_local_port"
       exit 2
     elif [ -z "$ssh_user" ]; then
       echo "A tunnel is required, but no user name was passed.  See --ssh_user option."
@@ -133,9 +136,9 @@ if [ $exit_only -eq 0 ]; then
 
     echo "Starting tunnel..."
     if [ $use_debug -eq 1 ]; then
-      echo "ssh -M -S $socket_file -fnNT -L $tunnel_port:$tunnel_host:3306 $ssh_user@$ssh_host"
+      echo "ssh -M -S $socket_file -fnNT -L $tunnel_local_port:$tunnel_remote_host:$tunnel_remote_port $ssh_user@$ssh_host"
     fi
-    ssh -M -S $socket_file -fnNT -L $tunnel_port:$tunnel_host:3306 $ssh_user@$ssh_host
+    ssh -M -S $socket_file -fnNT -L $tunnel_local_port:$tunnel_remote_host:$tunnel_remote_port $ssh_user@$ssh_host
     if [ $? -ne 0 ]; then
       echo "ERROR: Unable to establish SSH tunnel"
       exit 4

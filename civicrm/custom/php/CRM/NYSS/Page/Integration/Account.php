@@ -42,16 +42,17 @@ class CRM_NYSS_Page_Integration_Account extends CRM_Core_Page
    * @return none
    * @access public
    */
-  function run( ) {
+  function run()
+  {
     //CRM_Core_Error::debug_var('account page $this', $this);
     //CRM_Core_Error::debug_var('account page $_REQUEST', $_REQUEST);
 
     $cid = CRM_Utils_Request::retrieve('cid', 'Positive');
-    $account = CRM_NYSS_BAO_Integration::getAccountHistory($cid);
+    $account = CRM_NYSS_BAO_Integration_Website::getAccountHistory($cid);
     //CRM_Core_Error::debug_var('account page $account', $account);
 
     $this->assign('account', $account);
 
-    return parent::run( );
+    return parent::run();
   }
 }

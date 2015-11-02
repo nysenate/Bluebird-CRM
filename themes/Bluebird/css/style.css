@@ -169,6 +169,10 @@ li.crm-button {
   font-size: 11px;
   line-height: 15px;
 }
+/*9637*/
+#crm-container .column-1 .widget-content table {
+  color: #333333;
+}
 
 #crm-container .tweet a { color:#7FCDFE }
 

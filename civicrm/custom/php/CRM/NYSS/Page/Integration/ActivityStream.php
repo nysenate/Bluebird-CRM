@@ -36,31 +36,33 @@
 
 class CRM_NYSS_Page_Integration_ActivityStream extends CRM_Core_Page
 {
-  function browse() {
-    $this->assign('admin', FALSE);
+  function browse()
+  {
+    $this->assign('admin', false);
     $this->assign('context', 'activity');
 
     // also create the form element for the activity filter box
     $controller = new CRM_Core_Controller_Simple(
       'CRM_NYSS_Form_Integration_ActivityFilter',
       ts('Activity Filter'),
-      NULL,
-      FALSE, FALSE, TRUE
+      null,
+      false, false, true
     );
     $controller->set('contactId', $this->_contactId);
-    $controller->setEmbedded(TRUE);
+    $controller->setEmbedded(true);
     $controller->run();
   }
 
-  function preProcess() {
-    $this->_contactId = CRM_Utils_Request::retrieve('cid', 'Positive', $this, TRUE);
+  function preProcess()
+  {
+    $this->_contactId = CRM_Utils_Request::retrieve('cid', 'Positive', $this, true);
     $this->assign('contactId', $this->_contactId);
     //CRM_Core_Error::debug_var('preProcess _contactId', $this->_contactId);
 
     // set page title
     CRM_Contact_Page_View::setTitle($this->_contactId);
 
-    $this->_action = CRM_Utils_Request::retrieve('action', 'String', $this, FALSE, 'browse');
+    $this->_action = CRM_Utils_Request::retrieve('action', 'String', $this, false, 'browse');
     $this->assign('action', $this->_action);
   }
 
@@ -69,7 +71,8 @@ class CRM_NYSS_Page_Integration_ActivityStream extends CRM_Core_Page
    * @return none
    * @access public
    */
-  function run( ) {
+  function run()
+  {
     //CRM_Core_Error::debug_var('account page $this', $this);
     //CRM_Core_Error::debug_var('account page $_REQUEST', $_REQUEST);
 
@@ -79,7 +82,7 @@ class CRM_NYSS_Page_Integration_ActivityStream extends CRM_Core_Page
     $action = CRM_Utils_Request::retrieve('action', 'String', $this);
     $this->_id = CRM_Utils_Request::retrieve('id', 'Positive', $this);
 
-    //$activity = CRM_NYSS_BAO_Integration::getActivityStream($contactId);
+    //$activity = CRM_NYSS_BAO_Integration_Website::getActivityStream($contactId);
     //$this->assign('activity', $activity);
 
     $this->browse();

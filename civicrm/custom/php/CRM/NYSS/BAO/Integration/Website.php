@@ -7,7 +7,7 @@
  * Date: 2015-04-10
  */
 
-class CRM_NYSS_BAO_Integration
+class CRM_NYSS_BAO_Integration_Website
 {
   /*
    * given a website user Id, conduct a lookup to get the contact Id
@@ -259,21 +259,14 @@ class CRM_NYSS_BAO_Integration
     ");
 
     //build bill value text
-    $billNumber = "{$params->bill_number}-{$params->bill_year}";
+    $billNumber = $params->bill_number.'-'.$params->bill_year;
 
     if (!empty($params->bill_sponsor)) {
       $sponsor = strtoupper($params->bill_sponsor);
     }
     else {
-      $target_url = CRM_Admin_Page_AJAX::OPENLEG_BASE_URL.'/api/1.0/json/search/?term=otype:bill+AND+oid:('.$billNumber.')&pageSize=100&sort=year&sortOrder=true';
-      $ch = curl_init();
-      curl_setopt($ch, CURLOPT_URL, $target_url);
-      curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-      $content = curl_exec($ch);
-      curl_close($ch);
-      $json = json_decode($content, true);
-      //CRM_Core_Error::debug_var('json', $json);
-      $sponsor = strtoupper($json[0]['sponsor']);
+      require_once 'CRM/NYSS/BAO/Integration/OpenLegislation.php';
+      $sponsor = CRM_NYSS_BAO_Integration_OpenLegislation::getBillSponsor($billNumber);
     }
 
     $tagName = $tagNameBase = "$billNumber ($sponsor)";
@@ -316,7 +309,6 @@ class CRM_NYSS_BAO_Integration
     //CRM_Core_Error::debug_var('tagId', $tagId);
 
     if (!$tagId) {
-      $url = "http://www.nysenate.gov/legislation/bills/{$params->bill_year}/{$params->bill_number}";
       $tag = civicrm_api('tag', 'create', array(
         'version' => 3,
         'name' => $tagName,
@@ -324,8 +316,7 @@ class CRM_NYSS_BAO_Integration
         'is_selectable' => 0,
         'is_reserved' => 1,
         'used_for' => 'civicrm_contact',
-        'created_date' => date('Y-m-d H:i:s'),
-        'description' => "<a href=\"$url\" target=_blank>$url</a>",
+        'created_date' => date('Y-m-d H:i:s')
       ));
       //CRM_Core_Error::debug_var('$tag', $tag);
 
@@ -883,7 +874,7 @@ class CRM_NYSS_BAO_Integration
     //CRM_Core_Error::debug_var('getActivityStream $contactID', $contactID);
     $contactIDSql = ($contactID) ? "contact_id = {$contactID}" : '(1)';
 
-    $type = CRM_Utils_Type::escape($_REQUEST['type'], 'String', false);
+    $type = CRM_Utils_Type::escape($_REQUEST['atype'], 'String', false);
     //CRM_Core_Error::debug_var('getActivityStream $type', $type);
     $typeSql = ($type) ? "AND type = '{$type}'" : '';
 
@@ -918,7 +909,7 @@ class CRM_NYSS_BAO_Integration
 
     $activity = array();
     $sql = "
-      SELECT SQL_CALC_FOUND_ROWS a.*, c.sort_name
+      SELECT SQL_CALC_FOUND_ROWS a.*, c.sort_name, c.id as cid
       FROM nyss_web_activity a
       JOIN civicrm_contact c
         ON a.contact_id = c.id
@@ -933,8 +924,9 @@ class CRM_NYSS_BAO_Integration
     //CRM_Core_Error::debug_var('getActivityStream $totalRows', $totalRows);
 
     while ($dao->fetch()) {
+      $url = CRM_Utils_System::url('civicrm/contact/view', "reset=1&cid={$dao->cid}");
       $activity[$dao->id] = array(
-        'sort_name' => $dao->sort_name,
+        'sort_name' => "<a href='{$url}'>{$dao->sort_name}</a>",
         'type' => $dao->type,
         'created_date' => date('m/d/Y g:i A', strtotime($dao->created_date)),
         'details' => $dao->details,
@@ -1157,8 +1149,8 @@ class CRM_NYSS_BAO_Integration
       //CRM_Core_Error::debug_var('getNewContacts relative date $_REQUEST', $_REQUEST);
     }
 
-    $date_low = ($_REQUEST['date_low']) ? date('Y-m-d', strtotime($_REQUEST['date_low'])) : '';
-    $date_high = ($_REQUEST['date_high']) ? date('Y-m-d', strtotime($_REQUEST['date_high'])) : '';
+    $date_low = ($_REQUEST['date_low']) ? date('Y-m-d H:i:s', strtotime($_REQUEST['date_low'])) : '';
+    $date_high = ($_REQUEST['date_high']) ? date('Y-m-d H:i:s', strtotime($_REQUEST['date_high'])) : '';
     //CRM_Core_Error::debug_var('getNewContacts $date_low', $date_low);
     //CRM_Core_Error::debug_var('getNewContacts $date_high', $date_high);
 
@@ -1228,8 +1220,9 @@ class CRM_NYSS_BAO_Integration
     //CRM_Core_Error::debug_var('getNewContacts $totalRows', $totalRows);
 
     while ($dao->fetch()) {
+      $url = CRM_Utils_System::url('civicrm/contact/view', "reset=1&cid={$dao->id}");
       $newcontacts[$dao->id] = array(
-        'sort_name' => $dao->sort_name,
+        'sort_name' => "<a href='{$url}'>{$dao->sort_name}</a>",
         'date' => date('m/d/Y g:i A', strtotime($dao->created_date)),
         'email' => $dao->email,
         'address' => $dao->street_address,
