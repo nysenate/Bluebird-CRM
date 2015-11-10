@@ -80,13 +80,16 @@ class CRM_Dedupe_Form_RemoveDupeAddress extends CRM_Core_Form
   public function buildQuickForm()
   {
     $this->addButtons( array(
-                         array ( 'type'      => 'next',
-                                 'name'      => ts('Continue'),
-                                 'isDefault' => true   ),
-                         array ( 'type'      => 'submit', 
-                                 'name'      => ts('Cancel') ),
-                         )
-                       );
+      array(
+        'type' => 'next',
+        'name' => ts('Continue'),
+        'isDefault' => true
+      ),
+      array(
+        'type' => 'submit',
+        'name' => ts('Cancel')
+      ),
+    ));
   }
 
   /**
@@ -104,24 +107,27 @@ class CRM_Dedupe_Form_RemoveDupeAddress extends CRM_Core_Form
 
     //remove duplicate addresses; prefer removing address with larger id (newer)
     CRM_Core_DAO::executeQuery("DROP TABLE IF EXISTS $tmpTbl;");
-    $sql = "CREATE TABLE $tmpTbl ( id INT(10), PRIMARY KEY (id) )
-            SELECT id
-              FROM (
-                SELECT * 
-                FROM civicrm_address
-                ORDER BY id DESC ) as addr1
-              GROUP BY contact_id, location_type_id, street_address, supplemental_address_1, 
-                       supplemental_address_2, city, state_province_id, postal_code_suffix, postal_code
-              HAVING count(id) > 1;";
+    $sql = "
+      CREATE TABLE $tmpTbl ( id INT(10), PRIMARY KEY (id) )
+      SELECT id
+      FROM (
+        SELECT *
+        FROM civicrm_address
+        ORDER BY id ASC ) as addr1
+      GROUP BY contact_id, location_type_id, street_address, supplemental_address_1,
+        supplemental_address_2, city, state_province_id, postal_code_suffix, postal_code
+      HAVING count(id) > 1;";
     CRM_Core_DAO::executeQuery($sql);
 
-    $sql = "DELETE FROM civicrm_address
-            WHERE id IN ( SELECT id FROM $tmpTbl );";
+    $sql = "
+      DELETE FROM civicrm_address
+      WHERE id IN ( SELECT id FROM $tmpTbl );";
     CRM_Core_DAO::executeQuery($sql);
 
     //also cleanup any orphaned district block sets
-    $sql = "DELETE FROM civicrm_value_district_information_7
-            WHERE entity_id IN ( SELECT id FROM $tmpTbl );";
+    $sql = "
+      DELETE FROM civicrm_value_district_information_7
+      WHERE entity_id IN ( SELECT id FROM $tmpTbl );";
     CRM_Core_DAO::executeQuery($sql);
 
     CRM_Core_DAO::executeQuery("DROP TABLE $tmpTbl;");
