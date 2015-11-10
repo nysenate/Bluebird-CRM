@@ -927,8 +927,8 @@ class CRM_NYSS_BAO_Integration_Website
       $url = CRM_Utils_System::url('civicrm/contact/view', "reset=1&cid={$dao->cid}");
 
       $additionalDetails = '';
-      if (in_array($dao->type, array('Direct Message', 'Context Message')) /*&&
-        !empty($dao->data)*/
+      if (in_array($dao->type, array('Direct Message', 'Context Message')) &&
+        !empty($dao->data)
       ) {
         $data = json_decode($dao->data);
         $note = CRM_Core_DAO::singleValueQuery("
