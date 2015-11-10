@@ -141,5 +141,10 @@
 
   function setSelectorClass() {
   }
+
+  function displayNote(noteId) {
+    cj('#msg-' + noteId).dialog().dialog('open');
+    return false;
+  }
 </script>
 {/literal}

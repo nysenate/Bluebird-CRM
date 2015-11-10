@@ -150,7 +150,7 @@ class CRM_Integration_Process
       bbscript_log(LL::TRACE, 'Params after json_decode():', $params);
 
       $date = date('Y-m-d H:i:s', $row->created_at);
-      $archiveTable = '';
+      $archiveTable = $activity_data = '';
       $skipActivityLog = false;
 
       bbscript_log(LL::DEBUG, "Processing message of type [{$row->msg_type}]");
@@ -178,6 +178,7 @@ class CRM_Integration_Process
           $result = CRM_NYSS_BAO_Integration_Website::processCommunication($cid, $row->msg_action, $params, $row->msg_type);
           $activity_type = 'Direct Message';
           $activity_details = ($row->subject) ? $row->subject : '';
+          $activity_data = json_encode(array('note_id' => $result->id));
           break;
 
         case 'CONTEXTMSG':
@@ -247,7 +248,7 @@ class CRM_Integration_Process
         //store activity log record
         if (!$skipActivityLog) {
           bbscript_log(LL::DEBUG, "Storing activity log record; cid=$cid; type=$activity_type");
-          CRM_NYSS_BAO_Integration_Website::storeActivityLog($cid, $activity_type, $date, $activity_details);
+          CRM_NYSS_BAO_Integration_Website::storeActivityLog($cid, $activity_type, $date, $activity_details, $activity_data);
         }
 
         //archive rows by ID
