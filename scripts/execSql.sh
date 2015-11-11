@@ -17,12 +17,13 @@
 # Revised: 2013-11-15 - Added db.insecure_cli_login to revert to old behavior
 # Revised: 2013-11-21 - Make sure login-path is not used if insecure login
 # Revised: 2014-03-14 - Added option --schemas-only to inhibit dumping row data
-# Revised: 2014-05-20 - Added --insecure-login command line switch.
+# Revised: 2014-05-20 - Added --insecure-login command line switch
 # Revised: 2014-07-22 - Allow hyphens in instance names by backquoting db name
 # Revised: 2014-08-05 - Added --replace-macros option, which replaces the
 #                       macros @CIVIDB@, @DRUPDB@, and @LOGDB@ with the
-#                       corresponding database names.
+#                       corresponding database names
 # Revised: 2014-08-07 - Allow no database to be specified using --no-db
+# Revised: 2015-11-11 - Added --get-db-name command line switch
 #
 
 prog=`basename $0`
@@ -37,7 +38,7 @@ fi
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog [--help] [-f {sqlFile|-} | -c sqlCommand] [--dump|-d] [--dump-table|-t table] [--skip-table|-e table] [--schemas-only|-s] [-l login-path] [-h host] [-u user] [-p password] [--insecure-login|-i] [--replace-macros|-r] [--column-names] [--force] [--quiet|-q] [--create] [[--civicrm|-C] | [--drupal|-D] | [--log|-L]] [--no-db] [--db-name|-n dbName] [instance]" >&2
+  echo "Usage: $prog [--help] [-f {sqlFile|-} | -c sqlCommand] [--dump|-d] [--dump-table|-t table] [--skip-table|-e table] [--schemas-only|-s] [-l login-path] [-h host] [-u user] [-p password] [--insecure-login|-i] [--replace-macros|-r] [--column-names] [--force] [--quiet|-q] [--create] [[--civicrm|-C] | [--drupal|-D] | [--log|-L]] [--no-db] [--get-db-name|-g] [--db-name|-n dbName] [instance]" >&2
 }
 
 filter_replace_macros() {
@@ -64,6 +65,7 @@ dbhost=
 dbuser=
 dbpass=
 dbname=
+get_dbname=0
 insecure_login=0
 replace_macros=0
 db_type=civi
@@ -87,6 +89,7 @@ while [ $# -gt 0 ]; do
     -n|--db*) shift; dbname="$1" ;;
     -u|--user) shift; dbuser="$1" ;;
     -p|--pass*) shift; dbpass="$1" ;;
+    -g|--get-db*) get_dbname=1 ;;
     -i|--insec*) insecure_login=1 ;;
     -r|--replace*) replace_macros=1 ;;
     -q|--quiet) be_quiet=1 ;;
@@ -177,7 +180,9 @@ common_args=
 [ "$dbpass" ] && common_args="$common_args --password=$dbpass"
 mysql_args="$common_args $DEFAULT_MYSQL_ARGS $colname_arg $force_arg"
 
-if [ $dump_db -eq 1 ]; then
+if [ $get_dbname -eq 1 ]; then
+  echo $dbname
+elif [ $dump_db -eq 1 ]; then
   # Do not use 'set -x' here, since mysqldump writes to stdout
   ignore_tabs_arg=
   if [ "$skip_tabs" ]; then
