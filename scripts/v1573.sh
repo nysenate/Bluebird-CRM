@@ -32,3 +32,7 @@ app_rootdir=`$readConfig --ig $instance app.rootdir` || app_rootdir="$DEFAULT_AP
 echo "$prog: 9656: increase length of tag name column"
 sql="ALTER TABLE civicrm_tag CHANGE name name VARCHAR(128);"
 $execSql $instance -c "$sql" -q
+
+echo "$prog: 9651: add data column to activity stream table"
+sql="ALTER TABLE nyss_web_activity ADD data TEXT NULL COMMENT 'Additional details to reference the stored record.' AFTER details;"
+$execSql $instance -c "$sql" -q

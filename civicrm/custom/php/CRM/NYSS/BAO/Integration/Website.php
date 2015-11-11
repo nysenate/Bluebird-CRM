@@ -925,11 +925,25 @@ class CRM_NYSS_BAO_Integration_Website
 
     while ($dao->fetch()) {
       $url = CRM_Utils_System::url('civicrm/contact/view', "reset=1&cid={$dao->cid}");
+
+      $additionalDetails = '';
+      if (in_array($dao->type, array('Direct Message', 'Context Message')) &&
+        !empty($dao->data)
+      ) {
+        $data = json_decode($dao->data);
+        $note = CRM_Core_DAO::singleValueQuery("
+          SELECT note
+          FROM civicrm_note
+          WHERE id = {$data['note_id']}
+        ");
+        $additionalDetails = " <a href='#' onclick='displayNote({$data['note_id']});'>[view message]</a><div title='Message Text' style='display:none;' id='msg-{$data['note_id']}'>{$note}</div>";
+      }
+
       $activity[$dao->id] = array(
         'sort_name' => "<a href='{$url}'>{$dao->sort_name}</a>",
         'type' => $dao->type,
         'created_date' => date('m/d/Y g:i A', strtotime($dao->created_date)),
-        'details' => $dao->details,
+        'details' => $dao->details.$additionalDetails,
       );
     }
     //CRM_Core_Error::debug_var('getActivityStream $activity', $activity);
@@ -980,16 +994,16 @@ class CRM_NYSS_BAO_Integration_Website
   /*
    * store basic details about the event in the activity log
    */
-  static function storeActivityLog($cid, $type, $date, $details)
+  static function storeActivityLog($cid, $type, $date, $details, $data)
   {
     //CRM_Core_Error::debug_var('storeActivityLog', $type);
 
     $params = array(1 => array($details, 'String'));
     CRM_Core_DAO::executeQuery("
       INSERT INTO nyss_web_activity
-      (contact_id, type, created_date, details)
+      (contact_id, type, created_date, details, data)
       VALUES
-      ({$cid}, '{$type}', '{$date}', %1)
+      ({$cid}, '{$type}', '{$date}', %1, '{$data}')
     ", $params);
   } //storeActivityLog()
 

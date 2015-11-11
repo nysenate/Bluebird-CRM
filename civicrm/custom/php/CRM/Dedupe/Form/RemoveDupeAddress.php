@@ -113,8 +113,8 @@ class CRM_Dedupe_Form_RemoveDupeAddress extends CRM_Core_Form
       FROM (
         SELECT *
         FROM civicrm_address
-        ORDER BY id ASC ) as addr1
-      GROUP BY contact_id, location_type_id, street_address, supplemental_address_1,
+        ORDER BY id DESC ) as addr1
+      GROUP BY contact_id, street_address, supplemental_address_1,
         supplemental_address_2, city, state_province_id, postal_code_suffix, postal_code
       HAVING count(id) > 1;";
     CRM_Core_DAO::executeQuery($sql);
