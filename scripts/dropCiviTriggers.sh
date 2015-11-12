@@ -5,15 +5,15 @@
 # drop CiviCRM triggers
 
 # Project: BluebirdCRM
-# Author: Brian Shaughnessy
+# Author: Brian Shaughnessy and Ken Zalewski
 # Organization: New York State Senate
 # Date: 2012-09-01
+# Revised: 2015-11-12 - handle changelog summary/detail and shadow contact tabs
 #
 
 prog=`basename $0`
 script_dir=`dirname $0`
 execSql=$script_dir/execSql.sh
-readConfig=$script_dir/readConfig.sh
 
 if [ $# -ne 1 ]; then
   echo "Usage: $prog instance" >&2
@@ -24,19 +24,18 @@ instance="$1"
 
 . $script_dir/defaults.sh
 
-db_basename=`$readConfig --ig $instance db.basename` || db_basename="$instance"
-log_db_prefix=`$readConfig --ig $instance db.log.prefix` || log_db_prefix="$DEFAULT_BASE_DOMAIN"
-civi_db_prefix=`$readConfig --ig $instance db.civicrm.prefix` || civi_db_prefix="$DEFAULT_BASE_DOMAIN"
-cdb="$civi_db_prefix$db_basename"
+dbname=`$execSql $instance --civicrm --get-db-name`
 
-triggersql="
+sql="
 SELECT trigger_name
 FROM information_schema.triggers
-WHERE trigger_schema = '$cdb'
-AND trigger_name LIKE 'civicrm_%';"
-triggers=`$execSql --no-db -c "$triggersql" -q`
+WHERE trigger_schema = '$dbname';"
 
-echo "removing triggers..."
+triggers=`$execSql --no-db -c "$sql" -q`
+
+echo "Removing all triggers from $dbname"
 for trigger in $triggers; do
   $execSql $instance -c "DROP TRIGGER IF EXISTS $trigger" -q
 done
+
+exit $?
