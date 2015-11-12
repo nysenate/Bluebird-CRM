@@ -24,6 +24,7 @@
 #                       corresponding database names
 # Revised: 2014-08-07 - Allow no database to be specified using --no-db
 # Revised: 2015-11-11 - Added --get-db-name command line switch
+# Revised: 2015-11-12 - Don't dump routines when dumping specific tables
 #
 
 prog=`basename $0`
@@ -183,14 +184,19 @@ mysql_args="$common_args $DEFAULT_MYSQL_ARGS $colname_arg $force_arg"
 if [ $get_dbname -eq 1 ]; then
   echo $dbname
 elif [ $dump_db -eq 1 ]; then
-  # Do not use 'set -x' here, since mysqldump writes to stdout
-  ignore_tabs_arg=
+  dump_args="--single-transaction --quick"
   if [ "$skip_tabs" ]; then
     for tab in $skip_tabs; do
-      ignore_tabs_arg="$ignore_tabs_arg --ignore-table $dbname.$tab"
+      dump_args="$dump_args --ignore-table $dbname.$tab"
     done
   fi
-  mysqldump $common_args $nodata_arg $ignore_tabs_arg --routines --single-transaction --quick $dbname $dump_tabs
+  if [ ! "$dump_tabs" ]; then
+    # Dump routines (functions & procedures) if the entire db is being dumped
+    dump_args="$dump_args --routines"
+  fi
+
+  # Do not use 'set -x' here, since mysqldump writes to stdout
+  mysqldump $common_args $nodata_arg $dump_args $dbname $dump_tabs
 elif [ $create_db -eq 1 ]; then
   if [ ! "$dbname" ]; then
     echo "$prog: Cannot create a database without specifying its name or instance." >&2
