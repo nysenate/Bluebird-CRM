@@ -56,7 +56,7 @@ class CRM_Dedupe_Form_RemoveDupeAddress extends CRM_Core_Form
       FROM (
         SELECT id
         FROM civicrm_address
-        GROUP BY contact_id, location_type_id, street_address, supplemental_address_1,
+        GROUP BY contact_id, street_address, supplemental_address_1,
           supplemental_address_2, city, state_province_id, postal_code_suffix, postal_code
         HAVING count(*) > 1
         ) as dupes";
