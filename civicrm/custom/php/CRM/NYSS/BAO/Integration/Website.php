@@ -930,13 +930,15 @@ class CRM_NYSS_BAO_Integration_Website
       if (in_array($dao->type, array('Direct Message', 'Context Message')) &&
         !empty($dao->data)
       ) {
-        $data = json_decode($dao->data);
-        $note = CRM_Core_DAO::singleValueQuery("
-          SELECT note
-          FROM civicrm_note
-          WHERE id = {$data['note_id']}
-        ");
-        $additionalDetails = " <a href='#' onclick='displayNote({$data['note_id']});'>[view message]</a><div title='Message Text' style='display:none;' id='msg-{$data['note_id']}'>{$note}</div>";
+        $data = json_decode($dao->data, true);
+        if (!empty($data['note_id'])) {
+          $note = CRM_Core_DAO::singleValueQuery("
+            SELECT note
+            FROM civicrm_note
+            WHERE id = {$data['note_id']}
+          ");
+          $additionalDetails = " <a href='#' onclick='displayNote({$data['note_id']});'>[view message]</a><div title='Message Text' style='display:none;' id='msg-{$data['note_id']}'>{$note}</div>";
+        }
       }
 
       $activity[$dao->id] = array(
