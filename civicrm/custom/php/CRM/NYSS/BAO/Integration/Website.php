@@ -879,7 +879,7 @@ class CRM_NYSS_BAO_Integration_Website
     $typeSql = ($type) ? "AND type = '{$type}'" : '';
 
     $sortMapper = array(
-      0 => 'contact',
+      0 => 'sort_name',
       1 => 'type',
       2 => 'created_date',
       3 => 'details',
