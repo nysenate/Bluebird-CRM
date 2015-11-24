@@ -178,7 +178,7 @@ class CRM_Integration_Process
           $result = CRM_NYSS_BAO_Integration_Website::processCommunication($cid, $row->msg_action, $params, $row->msg_type);
           $activity_type = 'Direct Message';
           $activity_details = ($row->subject) ? $row->subject : '';
-          $activity_data = json_encode(array('note_id' => $result->id));
+          $activity_data = json_encode(array('note_id' => $result['id']));
           break;
 
         case 'CONTEXTMSG':
@@ -187,6 +187,7 @@ class CRM_Integration_Process
             $result = CRM_NYSS_BAO_Integration_Website::processCommunication($cid, $row->msg_action, $params, $row->msg_type);
             $activity_type = 'Context Message';
             $activity_details = ($row->subject) ? $row->subject : '';
+            $activity_data = json_encode(array('note_id' => $result['id']));
           }
           else {
             $archiveTable = 'other';
