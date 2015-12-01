@@ -134,6 +134,9 @@ AND        cf.html_type IN ( 'Text', 'TextArea', 'RichTextEditor' )
     $files = NULL;
 
     foreach ($tables as $tableName => $tableValues) {
+      //CRM_Core_Error::debug_var('$queryText', $queryText);
+      //CRM_Core_Error::debug_var('$tableName', $tableName);
+
       if ($tableName == 'final') {
         continue;
       }
@@ -266,6 +269,10 @@ $sqlStatement
               if (is_numeric($queryText)) {
                 $clauses[] = "$fieldName = {$queryText}";
               }
+            }
+            //NYSS 9692 special handling if just wildcard
+            elseif ($queryText == '*' || $queryText == '%' || empty($queryText)) {
+              //do nothing
             }
             else {
               $fullTextFields[] = $fieldName;
