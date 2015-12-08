@@ -182,17 +182,10 @@ class CRM_Integration_Process
           break;
 
         case 'CONTEXTMSG':
-          //disregard if no bill number
-          if (!empty($params->bill_number)) {
-            $result = CRM_NYSS_BAO_Integration_Website::processCommunication($cid, $row->msg_action, $params, $row->msg_type);
-            $activity_type = 'Context Message';
-            $activity_details = ($row->subject) ? $row->subject : '';
-            $activity_data = json_encode(array('note_id' => $result['id']));
-          }
-          else {
-            $archiveTable = 'other';
-            $skipActivityLog = true;
-          }
+          $result = CRM_NYSS_BAO_Integration_Website::processCommunication($cid, $row->msg_action, $params, $row->msg_type);
+          $activity_type = 'Context Message';
+          $activity_details = ($row->subject) ? $row->subject : '';
+          $activity_data = json_encode(array('note_id' => $result['id']));
           break;
 
         case 'PETITION':

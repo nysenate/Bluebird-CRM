@@ -579,19 +579,19 @@ class CRM_NYSS_BAO_Integration_Website
       $entity_table = 'nyss_contextmsg';
       $subject = 'Contextual Message';
 
-      //TODO create link to openleg?
-      $note = "{$params->message}\n\n
-        Bill Number: {$params->bill_number}\n
-        Bill Year: {$params->bill_year}
-      ";
+      $note = $params->message;
+      if (!empty($params->bill_number)) {
+        //TODO create link to openleg?
+        $note = "{$params->message}\n\n
+          Bill Number: {$params->bill_number}\n
+          Bill Year: {$params->bill_year}
+        ";
+      }
 
       if (!empty($params->subject)) {
         $note = "Subject: {$params->subject}\n{$note}";
       }
     }
-
-    //TODO with contextmsg, devise way to trace to source
-    //TODO adapt entity_id if there is a thread
 
     $params = array(
       'entity_table' => $entity_table,
