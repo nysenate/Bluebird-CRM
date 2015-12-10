@@ -68,12 +68,16 @@ class CRM_Contact_Form_Search_Custom_FullText_Contribution extends CRM_Contact_F
     // Note: For available full-text indices, see CRM_Core_InnoDBIndexer
 
     $contactSQL = array();
-    $contactSQL[] = "
+
+    //NYSS 9692 special handling for wildcard only
+    if ($queryText != '*' && $queryText != '%' && !empty($queryText)) {
+      $contactSQL[] = "
 SELECT     distinct cc.id
 FROM       civicrm_contribution cc
 INNER JOIN civicrm_contact c ON cc.contact_id = c.id
 WHERE      ({$this->matchText('civicrm_contact c', array('sort_name', 'display_name', 'nick_name'), $queryText)})
 ";
+    }
     $tables = array(
       'civicrm_contribution' => array(
         'id' => 'id',

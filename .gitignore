@@ -1,8 +1,5 @@
-_notes
-_compareTemp
-
 #ignore all drupal installation sites and uploads
-drupal/upload/*
+drupal/data
 drupal/sites/*
 !drupal/sites/all
 !drupal/sites/default
@@ -11,20 +8,18 @@ drupal/sites/*
 *.sublime-project
 *.sublime-workspace
 
-#eclipse project files
+# Eclipse and IntelliJ project files
 .buildpath
 .project
 .settings
+.idea
 
 #bluebird.cfg at root is installation specific
 bluebird.cfg*
 
 #user custom
-scripts/test.sh
-.idea
 local/*
-.sass-cache
+*.bak
 modules/nyss_LCD
 civicrm/scripts/lcd.php
 scripts/lcd.sh
-*.bak
