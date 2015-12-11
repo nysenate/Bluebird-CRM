@@ -228,6 +228,10 @@ CREATE TEMPORARY TABLE {$this->_entityIDTableName} (
   }
 
   function fillTable() {
+    //NYSS 9692
+    //CRM_Core_Error::debug_var('fillTable this->_text', $this->_text);
+    $this->_text = (trim($this->_text) == '@') ? '%' : $this->_text;
+
     foreach ($this->_partialQueries as $partialQuery) {
       /** @var $partialQuery CRM_Contact_Form_Search_Custom_FullText_AbstractPartialQuery */
       if (!$this->_table || $this->_table == $partialQuery->getName()) {
