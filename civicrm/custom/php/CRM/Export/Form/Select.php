@@ -253,7 +253,8 @@ FROM   {$this->_componentTable}
     $this->set('componentTable', $this->_componentTable);
 
     //NYSS 3832 prevent export for volume in excess of NNN records
-    if ( $totalSelectedRecords > self::EXPORT_LIMIT ) {
+    $totalCount = ($rowCount) ? $rowCount : $totalSelectedRecords;
+    if ( $totalCount > self::EXPORT_LIMIT ) {
       CRM_Core_Error::statusBounce( ts('You may not export more than '.self::EXPORT_LIMIT.' records at a time. Please revise your search criteria to reduce the number of contacts for exporting.') );
     }
   }
