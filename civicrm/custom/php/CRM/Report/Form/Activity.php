@@ -384,7 +384,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
   function select($recordType = NULL) {
     if (!array_key_exists("contact_{$recordType}", $this->_params['fields']) && $recordType != 'final') {
       $this->_nonDisplayFields[] = "civicrm_contact_contact_{$recordType}";
-      $this->_params['fields']["contact_{$recordType}"] = 1;
+      //$this->_params['fields']["contact_{$recordType}"] = 1; //NYSS 9751 backport
     }
 
     //NYSS 7564 check if order bys are present in field list; if not, add
