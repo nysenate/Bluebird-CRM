@@ -185,7 +185,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
    */
   public function postProcess() {
     ini_set('max_execution_time', 1800);
-    ini_set('memory_limit', '1G');
+    ini_set('memory_limit', '2G');
 
     //set start time
     itime('start');
