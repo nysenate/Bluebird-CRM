@@ -65,7 +65,9 @@ class CRM_Contact_Form_Search_Custom_FullText_Activity extends CRM_Contact_Form_
 
     $contactSQL = array();
 
-    $contactSQL[] = "
+    //NYSS 9692 special handling for wildcard only
+    if ($queryText != '*' && $queryText != '%' && !empty($queryText)) {
+      $contactSQL[] = "
 SELECT     distinct ca.id
 FROM       civicrm_activity ca
 INNER JOIN civicrm_activity_contact cat ON cat.activity_id = ca.id
@@ -82,7 +84,7 @@ AND        (ca.is_deleted = 0 OR ca.is_deleted IS NULL)
 AND        (c.is_deleted = 0 OR c.is_deleted IS NULL)
 ";
 
-    $contactSQL[] = "
+      $contactSQL[] = "
 SELECT     et.entity_id
 FROM       civicrm_entity_tag et
 INNER JOIN civicrm_tag t ON et.tag_id = t.id
@@ -94,12 +96,13 @@ AND        (ca.is_deleted = 0 OR ca.is_deleted IS NULL)
 GROUP BY   et.entity_id
 ";
 
-    $contactSQL[] = "
+      $contactSQL[] = "
 SELECT distinct ca.id
 FROM   civicrm_activity ca
 WHERE  ({$this->matchText('civicrm_activity ca', array('subject', 'details'), $queryText)})
 AND    (ca.is_deleted = 0 OR ca.is_deleted IS NULL)
 ";
+    }
 
     $final = array();
 

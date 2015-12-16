@@ -68,12 +68,16 @@ class CRM_Contact_Form_Search_Custom_FullText_Participant extends CRM_Contact_Fo
     // Note: For available full-text indices, see CRM_Core_InnoDBIndexer
 
     $contactSQL = array();
-    $contactSQL[] = "
+
+    //NYSS 9692 special handling for wildcard only
+    if ($queryText != '*' && $queryText != '%' && !empty($queryText)) {
+      $contactSQL[] = "
 SELECT     distinct cp.id
 FROM       civicrm_participant cp
 INNER JOIN civicrm_contact c ON cp.contact_id = c.id
 WHERE      ({$this->matchText('civicrm_contact c', array('sort_name', 'display_name', 'nick_name'), $queryText)})
 ";
+    }
     $tables = array(
       'civicrm_participant' => array(
         'id' => 'id',

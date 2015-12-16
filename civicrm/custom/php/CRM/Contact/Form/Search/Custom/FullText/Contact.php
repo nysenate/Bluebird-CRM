@@ -64,7 +64,10 @@ class CRM_Contact_Form_Search_Custom_FullText_Contact extends CRM_Contact_Form_S
     // Note: For available full-text indices, see CRM_Core_InnoDBIndexer
 
     $contactSQL = array();
-    $contactSQL[] = "
+
+    //NYSS 9692 special handling for wildcard only
+    if ($queryText != '*' && $queryText != '%' && !empty($queryText)) {
+      $contactSQL[] = "
 SELECT     et.entity_id
 FROM       civicrm_entity_tag et
 INNER JOIN civicrm_tag t ON et.tag_id = t.id
@@ -73,6 +76,7 @@ AND        et.tag_id       = t.id
 AND        ({$this->matchText('civicrm_tag t', 'name', $queryText)})
 GROUP BY   et.entity_id
 ";
+    }
 
     // lets delete all the deceased contacts from the entityID box
     // this allows us to keep numbers in sync

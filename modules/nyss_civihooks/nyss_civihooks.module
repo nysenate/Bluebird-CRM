@@ -1673,6 +1673,20 @@ function _buildSearchMenu($searchNavID) {
         ),
         'child' => array(),
       ),
+      $searchNavID+9 => array(
+        'attributes' => array(
+          'label'      => 'Web Activity Search',
+          'name'       => 'Web Activity Search',
+          'url'        => 'civicrm/contact/search/custom?csid=18&reset=1',
+          'permission' => 'access CiviCRM,view all contacts',
+          'operator'   => 'AND',
+          'separator'  => 0,
+          'parentID'   => $searchNavID,
+          'navID'      => $searchNavID+9,
+          'active'     => 1
+        ),
+        'child' => array(),
+      ),
     ),
   );
 

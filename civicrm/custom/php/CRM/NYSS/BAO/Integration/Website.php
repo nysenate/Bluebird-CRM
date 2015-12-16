@@ -579,19 +579,19 @@ class CRM_NYSS_BAO_Integration_Website
       $entity_table = 'nyss_contextmsg';
       $subject = 'Contextual Message';
 
-      //TODO create link to openleg?
-      $note = "{$params->message}\n\n
-        Bill Number: {$params->bill_number}\n
-        Bill Year: {$params->bill_year}
-      ";
+      $note = $params->message;
+      if (!empty($params->bill_number)) {
+        //TODO create link to openleg?
+        $note = "{$params->message}\n\n
+          Bill Number: {$params->bill_number}\n
+          Bill Year: {$params->bill_year}
+        ";
+      }
 
       if (!empty($params->subject)) {
         $note = "Subject: {$params->subject}\n{$note}";
       }
     }
-
-    //TODO with contextmsg, devise way to trace to source
-    //TODO adapt entity_id if there is a thread
 
     $params = array(
       'entity_table' => $entity_table,
@@ -879,7 +879,7 @@ class CRM_NYSS_BAO_Integration_Website
     $typeSql = ($type) ? "AND type = '{$type}'" : '';
 
     $sortMapper = array(
-      0 => 'contact',
+      0 => 'sort_name',
       1 => 'type',
       2 => 'created_date',
       3 => 'details',
@@ -937,7 +937,7 @@ class CRM_NYSS_BAO_Integration_Website
             FROM civicrm_note
             WHERE id = {$data['note_id']}
           ");
-          $additionalDetails = " <a href='#' onclick='displayNote({$data['note_id']});'>[view message]</a><div title='Message Text' style='display:none;' id='msg-{$data['note_id']}'>{$note}</div>";
+          $additionalDetails = " <a href='#' onclick='displayNote({$data['note_id']}); return false;'>[view message]</a><div title='Message Text' style='display:none;' id='msg-{$data['note_id']}'>{$note}</div>";
         }
       }
 

@@ -66,7 +66,9 @@ class CRM_Contact_Form_Search_Custom_FullText_Case extends CRM_Contact_Form_Sear
 
     $contactSQL = array();
 
-    $contactSQL[] = "
+    //NYSS 9692 special handling for wildcard only
+    if ($queryText != '*' && $queryText != '%' && !empty($queryText)) {
+      $contactSQL[] = "
 SELECT    distinct cc.id
 FROM      civicrm_case cc
 LEFT JOIN civicrm_case_contact ccc ON cc.id = ccc.case_id
@@ -75,8 +77,8 @@ WHERE     ({$this->matchText('civicrm_contact c', array('sort_name', 'display_na
           AND (cc.is_deleted = 0 OR cc.is_deleted IS NULL)
 ";
 
-    if (is_numeric($queryText)) {
-      $contactSQL[] = "
+      if (is_numeric($queryText)) {
+        $contactSQL[] = "
 SELECT    distinct cc.id
 FROM      civicrm_case cc
 LEFT JOIN civicrm_case_contact ccc ON cc.id = ccc.case_id
@@ -84,9 +86,9 @@ LEFT JOIN civicrm_contact c ON ccc.contact_id = c.id
 WHERE     cc.id = {$queryText}
           AND (cc.is_deleted = 0 OR cc.is_deleted IS NULL)
 ";
-    }
+      }
 
-    $contactSQL[] = "
+      $contactSQL[] = "
 SELECT     et.entity_id
 FROM       civicrm_entity_tag et
 INNER JOIN civicrm_tag t ON et.tag_id = t.id
@@ -95,6 +97,7 @@ AND        et.tag_id       = t.id
 AND        ({$this->matchText('civicrm_tag t', 'name', $queryText)})
 GROUP BY   et.entity_id
 ";
+    }
 
     $tables = array(
       'civicrm_case' => array('fields' => array()),
