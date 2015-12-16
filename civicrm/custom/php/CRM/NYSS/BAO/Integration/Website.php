@@ -937,7 +937,7 @@ class CRM_NYSS_BAO_Integration_Website
             FROM civicrm_note
             WHERE id = {$data['note_id']}
           ");
-          $additionalDetails = " <a href='#' onclick='displayNote({$data['note_id']});'>[view message]</a><div title='Message Text' style='display:none;' id='msg-{$data['note_id']}'>{$note}</div>";
+          $additionalDetails = " <a href='#' onclick='displayNote({$data['note_id']}); return false;'>[view message]</a><div title='Message Text' style='display:none;' id='msg-{$data['note_id']}'>{$note}</div>";
         }
       }
 
