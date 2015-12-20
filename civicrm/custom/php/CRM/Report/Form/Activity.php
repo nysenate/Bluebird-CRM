@@ -705,10 +705,10 @@ GROUP BY civicrm_activity_id {$this->_having} {$this->_orderBy}";
     foreach (array('target', 'source', 'assignee') as $type) {
       if (CRM_Utils_Array::value("contact_{$type}_op", $this->_params) == 'nnll' ||
         CRM_Utils_Array::value("contact_{$type}_value", $this->_params)) {
-        $nullFilters[] = " civicrm_contact_contact_{$type} IS NOT NULL ";
+        $nullFilters[] = " civicrm_contact_contact_{$type}_id IS NOT NULL ";//NYSS 9762
       }
       else if (CRM_Utils_Array::value("contact_{$type}_op", $this->_params) == 'nll') {
-        $nullFilters[] = " civicrm_contact_contact_{$type} IS NULL ";
+        $nullFilters[] = " civicrm_contact_contact_{$type}_id IS NULL ";//NYSS 9762
       }
     }
 
