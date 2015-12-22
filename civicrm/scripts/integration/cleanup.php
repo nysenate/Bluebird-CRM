@@ -97,13 +97,14 @@ class CRM_Integration_Cleanup
   }//run
 
   function archiveUnassigned($params) {
-    //get accumulator records with no target_shortname
+    //get accumulator records with no target_shortname; exclude surveys
     $sql = "
       SELECT *
       FROM {$params['intDB']}.accumulator
       WHERE (target_shortname IS NULL OR target_shortname = '')
         {$params['typeSql']}
         {$params['addSql']}
+        AND msg_action != 'questionnaire response'
     ";
     bbscript_log(LL::DEBUG, 'SQL query:', $sql);
     $row = CRM_Core_DAO::executeQuery($sql);
