@@ -36,7 +36,7 @@ class CRM_Integration_Cleanup
       set_bbscript_log_level($optlist['log-level']);
     }
 
-    bbscript_log(LL::INFO, 'Initiating website integration cleanup...');
+    bbscript_log(LL::INFO, 'Initiating unmatched survey processing...');
 
     $params = array(
       'optlist' => $optlist,
@@ -97,14 +97,13 @@ class CRM_Integration_Cleanup
   }//run
 
   function archiveUnassigned($params) {
-    //get accumulator records with no target_shortname; exclude surveys
+    //get accumulator records with no target_shortname
     $sql = "
       SELECT *
       FROM {$params['intDB']}.accumulator
       WHERE (target_shortname IS NULL OR target_shortname = '')
         {$params['typeSql']}
         {$params['addSql']}
-        AND msg_action != 'questionnaire response'
     ";
     bbscript_log(LL::DEBUG, 'SQL query:', $sql);
     $row = CRM_Core_DAO::executeQuery($sql);
