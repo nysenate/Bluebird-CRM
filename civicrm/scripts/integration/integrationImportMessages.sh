@@ -15,6 +15,7 @@ default_ssh_user=no_user
 default_tunnel_local_port=7777
 default_tunnel_remote_host=localhost
 default_tunnel_remote_port=3306
+default_use_tunnel=0
 persistent_tunnel=0
 exit_only=0
 use_debug=0
@@ -41,6 +42,7 @@ Available options with [defaults] in brackets are:
 
 --config-group NAME : the group in bluebird.cfg containing all other options [$default_config_group]
 --config-prefix VAL : the prefix to use when reading from bluebird.cfg [$default_config_prefix]
+--use-tunnel        : use an SSH tunnel to connect to the database
 --socket-file PATH  : path to socket file used to control SSH tunnel [$default_socket_file]
 --ssh-host HOST     : hostname for SSH tunnel endpoint [$default_ssh_host]
 --ssh-user USER     : username to use for SSH tunnel [$default_ssh_user]
@@ -61,10 +63,15 @@ set_param() {
   # expects one parameter - the name of the variable to populate
   # if the variable is empty, try reading it from the config file
   if [ -z "${!1}" ]; then
-    tmpvar=${1//_/.}
-    eval "$1=`$readAlias$tmpvar`"
+    if $readAlias$1 --quiet; then
+      # Try both website.my_nice_param and website.my.nice.param
+      cfgparam="$1"
+    else
+      cfgparam=${1//_/.}
+    fi
+    eval "$1=`$readAlias$cfgparam`"
     if [ $use_debug -eq 1 ]; then
-      echo "Setting $1 using config parameter $config_prefix.$tmpvar = ${!1}"
+      echo "Setting $1 using config parameter $config_prefix.$cfgparam = ${!1}"
     fi
   fi
   # if the variable is STILL empty, set to default value
@@ -89,6 +96,7 @@ while [ $# -gt 0 ]; do
     --help|-h) usage; exit 0 ;;
     --config-group) shift; config_group=$1 ;;
     --config-prefix) shift; config_prefix=$1 ;;
+    --use-tunnel) use_tunnel=1 ;;
     --socket-file) shift; socket_file=$1 ;;
     --ssh-user) shift; ssh_user=$1 ;;
     --ssh-host) shift; ssh_host=$1 ;;
@@ -114,7 +122,7 @@ if [ $use_debug -eq 1 ]; then
 fi
 
 # set up the variables to use command line, OR config values, OR default values
-for i in ssh_host ssh_user tunnel_local_port tunnel_remote_host tunnel_remote_port socket_file; do
+for i in use_tunnel ssh_host ssh_user tunnel_local_port tunnel_remote_host tunnel_remote_port socket_file; do
   set_param $i
   if [ $use_debug -eq 1 ]; then
     echo "Setting $i = ${!i}"
@@ -124,12 +132,16 @@ done
 rc=0
 
 if [ $exit_only -eq 0 ]; then
-  if [ "$ssh_host" != "localhost" -a "$ssh_host" != "127.0.0.1" ]; then
+  if [ $use_tunnel -eq 1 ]; then
     if [ $tunnel_local_port -lt 1024 ]; then
       echo "Cannot start a tunnel with privileged port $tunnel_local_port"
       exit 2
+    elif [ -z "$ssh_host" ]; then
+      echo "A tunnel is required, but no SSH hostname was provided.  See --ssh_host option."
+      usage
+      exit 3
     elif [ -z "$ssh_user" ]; then
-      echo "A tunnel is required, but no user name was passed.  See --ssh_user option."
+      echo "A tunnel is required, but no SSH username was provided.  See --ssh_user option."
       usage
       exit 3
     fi
@@ -144,7 +156,7 @@ if [ $exit_only -eq 0 ]; then
       exit 4
     fi
   else
-    echo "No tunnel required for connection to $ssh_host"
+    echo "No tunnel required for database connection"
   fi
 
   # commands to run for the import process
@@ -160,9 +172,11 @@ if [ $exit_only -eq 0 ]; then
 fi
 
 
-if [ $persistent_tunnel -eq 0 -o $exit_only -eq 1 ]; then
-  echo "Closing Tunnel..."
-  ssh -S $socket_file -O exit $ssh_user@$ssh_host
+if [ $use_tunnel -eq 1 ]; then
+  if [ $persistent_tunnel -eq 0 -o $exit_only -eq 1 ]; then
+    echo "Closing Tunnel..."
+    ssh -S $socket_file -O exit $ssh_user@$ssh_host
+  fi
 fi
 
 exit $rc
