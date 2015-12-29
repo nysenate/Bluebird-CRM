@@ -791,23 +791,32 @@ class CRM_NYSS_BAO_Integration_Website
       return false;
     }
 
-    //create custom group
-    $weight = CRM_Core_DAO::singleValueQuery("
-      SELECT max(weight)
+    //create custom group if it doesn't exist
+    $csID = CRM_Core_DAO::singleValueQuery("
+      SELECT id
       FROM civicrm_custom_group
+      WHERE name LIKE 'Survey_{$data->form_id}'
     ");
-    $params = array(
-      'name' => "Survey_{$data->form_id}",
-      'title' => "Survey: {$data->form_title} [{$data->form_id}]",
-      'extends' => array('0' => 'Activity'),
-      'extends_entity_column_value' => CRM_Core_OptionGroup::getValue('activity_type', 'Website Survey', 'name'),
-      'collapse_display' => 1,
-      'collapse_adv_display' => 1,
-      'style' => 'Inline',
-      'is_active' => 1,
-      'weight' => $weight++,
-    );
-    $cg = civicrm_api3('custom_group', 'create', $params);
+
+    if (!$csID) {
+      $weight = CRM_Core_DAO::singleValueQuery("
+        SELECT max(weight)
+        FROM civicrm_custom_group
+      ");
+      $params = array(
+        'name' => "Survey_{$data->form_id}",
+        'title' => "Survey: {$data->form_title} [{$data->form_id}]",
+        'extends' => array('0' => 'Activity'),
+        'extends_entity_column_value' => CRM_Core_OptionGroup::getValue('activity_type', 'Website Survey', 'name'),
+        'collapse_display' => 1,
+        'collapse_adv_display' => 1,
+        'style' => 'Inline',
+        'is_active' => 1,
+        'weight' => $weight++,
+      );
+      $cg = civicrm_api3('custom_group', 'create', $params);
+      $csID = $cg['id'];
+    }
 
     $fields = array();
     $weight = 0;
@@ -818,7 +827,7 @@ class CRM_NYSS_BAO_Integration_Website
         $label = "{$f->field} ({$k})";
       }
       $params = array(
-        'custom_group_id' => $cg['id'],
+        'custom_group_id' => $csID,
         'label' => $label,
         'data_type' => 'String',
         'html_type' => 'Text',
