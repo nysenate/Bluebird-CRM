@@ -806,7 +806,7 @@ class CRM_NYSS_BAO_Integration_Website
       $params = array(
         'name' => "Survey_{$data->form_id}",
         'title' => "Survey: {$data->form_title} [{$data->form_id}]",
-        'table_name' => "survey_{$data->form_id}",
+        'table_name' => "civicrm_value_surveydata_{$data->form_id}",
         'extends' => array('0' => 'Activity'),
         'extends_entity_column_value' => CRM_Core_OptionGroup::getValue('activity_type', 'Website Survey', 'name'),
         'collapse_display' => 1,
