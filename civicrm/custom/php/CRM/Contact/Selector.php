@@ -1110,17 +1110,22 @@ SELECT 'civicrm_contact', contact_a.id, contact_a.id, '$cacheKey', contact_a.dis
       CRM_Contact_BAO_ProximityQuery::fixInputParams($params);
     }
 
+    /*
+     * NYSS #9748
+     * use new NO_RETURN_PROPERTIES constant to force minimal fields in return
+     */
     if (!$displayRelationshipType) {
       $query = new CRM_Contact_BAO_Query($params,
-        $this->_returnProperties,
-        NULL, FALSE, FALSE, 1,
+        CRM_Contact_BAO_Query::NO_RETURN_PROPERTIES,
+        array('contact_id'), FALSE, FALSE, 1,
         FALSE, TRUE, TRUE, NULL,
         $queryOperator
       );
     }
     else {
-      $query = new CRM_Contact_BAO_Query($params, $this->_returnProperties,
-        NULL, FALSE, FALSE, 1,
+      $query = new CRM_Contact_BAO_Query($params, 
+        CRM_Contact_BAO_Query::NO_RETURN_PROPERTIES,
+        array('contact_id'), FALSE, FALSE, 1,
         FALSE, TRUE, TRUE, $displayRelationshipType,
         $queryOperator
       );

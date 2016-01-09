@@ -185,7 +185,6 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
    */
   public function postProcess() {
     ini_set('max_execution_time', 1800);
-    ini_set('memory_limit', '2G');
 
     //set start time
     itime('start');
@@ -535,7 +534,14 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
 
     //retrieve records from temp table
     $sql = "SELECT * FROM $tmpTbl";
-    $dao = CRM_Core_DAO::executeQuery($sql, CRM_Core_DAO::$_nullArray);
+    /**
+     * NYSS #9748
+     * force an unbuffered query
+     */
+    $dao = new CRM_Core_DAO();
+    $dao->setOptions( array('result_buffering'=>0) );
+    $sql = CRM_Core_DAO::composeQuery( $sql, CRM_Core_DAO::$_nullArray );
+    $dao->query($sql);
 
     //fetch records
     itime('before fetching records from temp table');
