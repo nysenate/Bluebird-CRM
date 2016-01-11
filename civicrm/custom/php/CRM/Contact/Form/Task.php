@@ -313,9 +313,6 @@ class CRM_Contact_Form_Task extends CRM_Core_Form {
       $queryOperator
     );
 
-    //NYSS 7715 bump memory temporarily
-    ini_set('memory_limit', '2G');
-
     $contactIds = array();
     while ($dao->fetch()) {
       $contactIds[$dao->contact_id] = $dao->contact_id;
