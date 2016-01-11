@@ -72,6 +72,12 @@ class CRM_Core_DAO extends DB_DataObject {
 
   static $_checkedSqlFunctionsExist = FALSE;
 
+  /*
+   * NYSS #9748
+   * internal variable for DAO to hold per-query settings
+   */
+  protected $_options = array();
+
   /**
    * Class constructor
    *
@@ -151,13 +157,25 @@ class CRM_Core_DAO extends DB_DataObject {
    * @return object              the current DAO object after the query execution
    */
   function query($query, $i18nRewrite = TRUE) {
+    /**
+     * NYSS #9748
+     * implementing per-query options at DAO level
+     */
     // rewrite queries that should use $dbLocale-based views for multi-language installs
-    global $dbLocale;
+    global $dbLocale, $_DB_DATAOBJECT;
+
+    $conn = &$_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
+    $orig_options = $conn->options;
+    $this->_setDBOptions($this->_options);
+
     if ($i18nRewrite and $dbLocale) {
       $query = CRM_Core_I18n_Schema::rewriteQuery($query);
     }
+    $ret = parent::query($query);
 
-    return parent::query($query);
+    $this->_setDBOptions($orig_options);
+
+    return $ret;
   }
 
   /**
@@ -1967,6 +1985,37 @@ EOS;
     // we'll append 8 characters to the end of the tableName
     $md5string = substr(md5($string), 0, 8);
     return substr($string, 0, $length - 8) . "_{$md5string}";
+  }
+
+  /**
+   * NYSS #9748
+   * Sets the internal options to be used on a query
+   *
+   * @param array $options
+   *
+   */
+  function setOptions($options) {
+    if (is_array($options)) {
+      $this->_options = $options;
+    }
+  }
+
+  /**
+   * NYSS #9748
+   * wrapper to pass internal DAO options down to DB_mysql/DB_Common level
+   *
+   * @param array $options
+   *
+   */
+  protected function _setDBOptions($options) {
+    global $_DB_DATAOBJECT;
+
+    if (is_array($options) && count($options)) {
+      $conn = &$_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
+      foreach ($options as $option_name => $option_value) {
+        $conn->setOption($option_name, $option_value);
+      }
+    }
   }
 
   function setApiFilter(&$params) {}

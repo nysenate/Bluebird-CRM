@@ -43,7 +43,12 @@ class CRM_Contact_BAO_Query {
    *
    * @var int
    */
+  /*
+   * NYSS #9748
+   * add NO_RETURN_PROPERTIES constant
+   */
   CONST
+    NO_RETURN_PROPERTIES = 'CRM_Contact_BAO_Query::NO_RETURN_PROPERTIES',
     MODE_CONTACTS = 1,
     MODE_CONTRIBUTE = 2,
     MODE_MEMBER = 8,
@@ -426,7 +431,14 @@ class CRM_Contact_BAO_Query {
       $this->_params = array();
     }
 
-    if (empty($returnProperties)) {
+    /*
+     * NYSS #9748
+     * add check for new constant to allow for *no* special fields in return
+     */
+    if ($returnProperties === self::NO_RETURN_PROPERTIES) {
+      $this->_returnProperties = array();
+    }
+    elseif (empty($returnProperties)) {
       $this->_returnProperties = self::defaultReturnProperties($mode);
     }
     else {
