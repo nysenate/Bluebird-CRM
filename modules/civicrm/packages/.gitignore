@@ -1,7 +1,2 @@
 *~
 *.bak
-vendor/symfony/event-dispatcher/Symfony/Component/EventDispatcher/Tests
-vendor/symfony/dependency-injection/Symfony/Component/DependencyInjection/Tests
-vendor/symfony/finder/Symfony/Component/Finder/Tests/
-vendor/symfony/process/Symfony/Component/Process/Tests/
-

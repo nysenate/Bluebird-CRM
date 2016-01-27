@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2015                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,12 +23,12 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2013
+ * @copyright CiviCRM LLC (c) 2004-2015
  * $Id$
  *
  */
@@ -37,14 +37,21 @@ class CRM_Logging_Reverter {
   private $log_conn_id;
   private $log_date;
 
-  function __construct($log_conn_id, $log_date) {
-    $dsn               = defined('CIVICRM_LOGGING_DSN') ? DB::parseDSN(CIVICRM_LOGGING_DSN) : DB::parseDSN(CIVICRM_DSN);
-    $this->db          = $dsn['database'];
+  /**
+   * @param int $log_conn_id
+   * @param $log_date
+   */
+  public function __construct($log_conn_id, $log_date) {
+    $dsn = defined('CIVICRM_LOGGING_DSN') ? DB::parseDSN(CIVICRM_LOGGING_DSN) : DB::parseDSN(CIVICRM_DSN);
+    $this->db = $dsn['database'];
     $this->log_conn_id = $log_conn_id;
-    $this->log_date    = $log_date;
+    $this->log_date = $log_date;
   }
 
-  function revert($tables) {
+  /**
+   * @param $tables
+   */
+  public function revert($tables) {
     // FIXME: split off the table → DAO mapping to a GenCode-generated class
     $daos = array(
       'civicrm_address' => 'CRM_Core_DAO_Address',
@@ -109,7 +116,7 @@ class CRM_Logging_Reverter {
         // DAO-based tables
 
         case in_array($table, array_keys($daos)):
-          $dao = new $daos[$table];
+          $dao = new $daos[$table]();
           foreach ($row as $id => $changes) {
             $dao->id = $id;
             foreach ($changes as $field => $value) {
@@ -125,19 +132,21 @@ class CRM_Logging_Reverter {
             $dao->reset();
           }
           break;
+
         // custom data tables
 
         case in_array($table, array_keys($ctypes)):
           foreach ($row as $id => $changes) {
             $inserts = array('id' => '%1');
             $updates = array();
-            $params  = array(1 => array($id, 'Integer'));
+            $params = array(1 => array($id, 'Integer'));
             $counter = 2;
             foreach ($changes as $field => $value) {
               // don’t try reverting a field that’s no longer there
               if (!isset($ctypes[$table][$field])) {
                 continue;
               }
+              $fldVal = "%{$counter}";
               switch ($ctypes[$table][$field]) {
                 case 'Date':
                   $value = substr(CRM_Utils_Date::isoToMysql($value), 0, 8);
@@ -146,10 +155,17 @@ class CRM_Logging_Reverter {
                 case 'Timestamp':
                   $value = CRM_Utils_Date::isoToMysql($value);
                   break;
+
+                case 'Boolean':
+                  if ($value === '') {
+                    $fldVal = 'DEFAULT';
+                  }
               }
-              $inserts[$field]  = "%$counter";
-              $updates[]        = "$field = %$counter";
-              $params[$counter] = array($value, $ctypes[$table][$field]);
+              $inserts[$field] = "%$counter";
+              $updates[] = "{$field} = {$fldVal}";
+              if ($fldVal != 'DEFAULT') {
+                $params[$counter] = array($value, $ctypes[$table][$field]);
+              }
               $counter++;
             }
             if ($changes['log_action'] == 'Delete') {
@@ -181,7 +197,7 @@ class CRM_Logging_Reverter {
         return;
       }
 
-      $dao = new CRM_Contact_DAO_Contact;
+      $dao = new CRM_Contact_DAO_Contact();
       $dao->id = $cid;
       if ($dao->find(TRUE)) {
         // CRM-8102: MySQL can’t parse its own dates
@@ -191,5 +207,5 @@ class CRM_Logging_Reverter {
       }
     }
   }
-}
 
+}

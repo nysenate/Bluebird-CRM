@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2015                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,19 +23,16 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2013
- * $Id$
- *
+ * @copyright CiviCRM LLC (c) 2004-2015
  */
 
 /**
  * Main page for viewing Recurring Contributions.
- *
  */
 class CRM_Contribute_Page_ContributionRecur extends CRM_Core_Page {
 
@@ -44,45 +41,45 @@ class CRM_Contribute_Page_ContributionRecur extends CRM_Core_Page {
   public $_contactId = NULL;
 
   /**
-   * View details of a recurring contribution
-   *
-   * @return void
-   * @access public
-   */ function view() {
+   * View details of a recurring contribution.
+   */
+  public function view() {
     $recur = new CRM_Contribute_DAO_ContributionRecur();
     $recur->id = $this->_id;
     if ($recur->find(TRUE)) {
       $values = array();
       CRM_Core_DAO::storeValues($recur, $values);
       // if there is a payment processor ID, get the name of the payment processor
-      if (CRM_Utils_Array::value('payment_processor_id', $values)) {
+      if (!empty($values['payment_processor_id'])) {
         $values['payment_processor'] = CRM_Core_DAO::getFieldValue(
           'CRM_Financial_DAO_PaymentProcessor',
           $values['payment_processor_id'],
           'name'
         );
       }
-      // get contribution status label
-      if (CRM_Utils_Array::value('contribution_status_id', $values)) {
-        $values['contribution_status'] = CRM_Core_OptionGroup::getLabel('contribution_status', $values['contribution_status_id']);
+      $idFields = array('contribution_status_id', 'campaign_id');
+      if (CRM_Contribute_BAO_ContributionRecur::supportsFinancialTypeChange($values['id'])) {
+        $idFields[] = 'financial_type_id';
+      }
+      foreach ($idFields as $idField) {
+        if (!empty($values[$idField])) {
+          $values[substr($idField, 0, -3)] = CRM_Core_PseudoConstant::getLabel('CRM_Contribute_BAO_ContributionRecur', $idField, $values[$idField]);
+        }
       }
 
       $this->assign('recur', $values);
     }
   }
 
-  function preProcess() {
-    $context          = CRM_Utils_Request::retrieve('context', 'String', $this);
-    $this->_action    = CRM_Utils_Request::retrieve('action', 'String', $this, FALSE, 'view');
-    $this->_id        = CRM_Utils_Request::retrieve('id', 'Positive', $this);
+  public function preProcess() {
+    $context = CRM_Utils_Request::retrieve('context', 'String', $this);
+    $this->_action = CRM_Utils_Request::retrieve('action', 'String', $this, FALSE, 'view');
+    $this->_id = CRM_Utils_Request::retrieve('id', 'Positive', $this);
     $this->_contactId = CRM_Utils_Request::retrieve('cid', 'Positive', $this, TRUE);
     $this->assign('contactId', $this->_contactId);
 
     // check logged in url permission
     CRM_Contact_Page_View::checkUserPermission($this);
-
-    // set page title
-    CRM_Contact_Page_View::setTitle($this->_contactId);
 
     $this->assign('action', $this->_action);
 
@@ -94,13 +91,12 @@ class CRM_Contribute_Page_ContributionRecur extends CRM_Core_Page {
   }
 
   /**
-   * This function is the main function that is called when the page loads,
+   * the main function that is called when the page loads,
    * it decides the which action has to be taken for the page.
    *
-   * return null
-   * @access public
+   * @return null
    */
-  function run() {
+  public function run() {
     $this->preProcess();
 
     if ($this->_action & CRM_Core_Action::VIEW) {
@@ -109,5 +105,5 @@ class CRM_Contribute_Page_ContributionRecur extends CRM_Core_Page {
 
     return parent::run();
   }
-}
 
+}

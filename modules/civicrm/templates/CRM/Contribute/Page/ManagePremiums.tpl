@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2015                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +30,7 @@
 
 {if $action ne 2}
 {if $action ne 1 or $action ne 8}
-<div id="help">
+<div class="help">
 {capture assign=contribURL}{crmURL p='civicrm/admin/contribute' q="reset=1"}{/capture}
 <p>{ts}CiviContribute allows you to configure any number of <strong>Premiums</strong> which can be offered to contributors as incentives / thank-you gifts. Premiums may be tangible items (i.e. a coffee mug or t-shirt), or they may be a membership or subscription with a pre-determined duration.{/ts}</p>
 <p>{ts 1=$contribURL}Use this section to enter and update all premiums that you want to offer on any of your Online Contribution pages. Then you can assign one or more premiums to a specific Contribution page from <a href='%1'>Configure Online Contribution Pages</a> <strong>&raquo; Configure &raquo; Premiums</strong>.{/ts}</p>
@@ -42,7 +42,7 @@
 <p></p>
     {strip}
   {* handle enable/disable actions*}
-   {include file="CRM/common/enableDisable.tpl"}
+   {include file="CRM/common/enableDisableApi.tpl"}
   {include file="CRM/common/jsortable.tpl"}
         <table id="options" class="display">
           <thead>
@@ -57,9 +57,9 @@
            </tr>
           </thead>
         {foreach from=$rows item=row}
-        <tr id="row_{$row.id}"class="{cycle values="odd-row,even-row"} {$row.class}{if NOT $row.is_active} disabled{/if}">
-          <td class="crm-contribution-form-block-name">{$row.name}</td>
-          <td class="crm-contribution-form-block-sku">{$row.sku}</td>
+        <tr id="product-{$row.id}" class="crm-entity {cycle values="odd-row,even-row"} {$row.class}{if NOT $row.is_active} disabled{/if}">
+          <td class="crm-contribution-form-block-name crm-editable" data-field="name">{$row.name}</td>
+          <td class="crm-contribution-form-block-sku crm-editable" data-field="sku">{$row.sku}</td>
                 <td class="crm-contribution-form-block-price">{$row.price }</td>
     <td class="crm-contribution-form-block-financial_type">{$row.financial_type_id}</td>
           <td class="crm-contribution-form-block-min_contribution">{$row.min_contribution}</td>
@@ -71,7 +71,7 @@
     {/strip}
     {if $action ne 1 and $action ne 2}
       <div class="action-link">
-      <a href="{crmURL q="action=add&reset=1"}" id="newManagePremium" class="button"><span><div class="icon add-icon"></div>{ts}Add Premium{/ts}</span></a>
+      {crmButton q="action=add&reset=1" id="newManagePremium"  icon="plus-circle"}{ts}Add Premium{/ts}{/crmButton}
         </div>
     {/if}
 </div>

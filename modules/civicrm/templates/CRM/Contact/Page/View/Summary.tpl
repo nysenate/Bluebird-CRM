@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2015                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,11 +28,6 @@
   {include file="CRM/Contact/Form/Contact.tpl"}
 {else}
 
-  {include file="CRM/common/wysiwyg.tpl" includeWysiwygEditor=true}
-
-  {* include overlay js *}
-  {include file="CRM/common/overlay.tpl"}
-
   <div class="crm-summary-contactname-block crm-inline-edit-container">
     <div class="crm-summary-block" id="contactname-block">
       {include file="CRM/Contact/Page/Inline/ContactName.tpl"}
@@ -57,40 +52,37 @@
               {include file="CRM/Contact/Page/Inline/Actions.tpl"}
             </li>
           {/if}
-          {* Include Edit button if contact has 'edit contacts' permission OR user is viewing their own contact AND has 'edit my contact' permission. *}
-          {if $permission EQ 'edit' || call_user_func(array('CRM_Core_Permission','check'), 'edit my contact')}
+          {* Include Edit button if contact has 'edit contacts' permission OR user is viewing their own contact AND has 'edit my contact' permission. CRM_Contact_Page_View::checkUserPermission handles this and assigns $permission true as needed. *}
+          {if $permission EQ 'edit'}
             <li>
-              {assign var='editParams' value=$urlParams|cat:"&action=update&cid=$contactId"}
-              <a href="{crmURL p='civicrm/contact/add' q=$editParams}" class="edit button" title="{ts}Edit{/ts}">
-              <span><div class="icon edit-icon"></div>{ts}Edit{/ts}</span>
-              </a>
+              {crmButton p='civicrm/contact/add' q="$urlParams&action=update&cid=$contactId" class="edit"}
+                {ts}Edit{/ts}
+              {/crmButton}
             </li>
           {/if}
         {/if}
 
         {* Check for permissions to provide Restore and Delete Permanently buttons for contacts that are in the trash. *}
-        {if (call_user_func(array('CRM_Core_Permission','check'), 'access deleted contacts') and
-          $is_deleted)}
+        {if call_user_func(array('CRM_Core_Permission','check'), 'access deleted contacts') and $is_deleted}
           <li class="crm-contact-restore">
-            <a href="{crmURL p='civicrm/contact/view/delete' q="reset=1&cid=$contactId&restore=1"}" class="delete button" title="{ts}Restore{/ts}">
-              <span><div class="icon restore-icon"></div>{ts}Restore from Trash{/ts}</span>
-            </a>
+            {crmButton p='civicrm/contact/view/delete' q="reset=1&cid=$contactId&restore=1" class="delete" icon="undo"}
+              {ts}Restore from Trash{/ts}
+            {/crmButton}
           </li>
 
           {if call_user_func(array('CRM_Core_Permission','check'), 'delete contacts')}
             <li class="crm-contact-permanently-delete">
-              <a href="{crmURL p='civicrm/contact/view/delete' q="reset=1&delete=1&cid=$contactId&skip_undelete=1"}" class="delete button" title="{ts}Delete Permanently{/ts}">
-                <span><div class="icon delete-icon"></div>{ts}Delete Permanently{/ts}</span>
-              </a>
+              {crmButton p='civicrm/contact/view/delete' q="reset=1&delete=1&cid=$contactId&skip_undelete=1" class="delete" icon="trash"}
+                {ts}Delete Permanently{/ts}
+              {/crmButton}
             </li>
           {/if}
 
         {elseif call_user_func(array('CRM_Core_Permission','check'), 'delete contacts')}
-          {assign var='deleteParams' value="&reset=1&delete=1&cid=$contactId"}
           <li class="crm-delete-action crm-contact-delete">
-            <a href="{crmURL p='civicrm/contact/view/delete' q=$deleteParams}" class="delete button" title="{ts}Delete{/ts}">
-              <span><div class="icon delete-icon"></div>{ts}Delete Contact{/ts}</span>
-            </a>
+            {crmButton p='civicrm/contact/view/delete' q="&reset=1&delete=1&cid=$contactId" class="delete" icon="trash"}
+              {ts}Delete Contact{/ts}
+            {/crmButton}
           </li>
         {/if}
 
@@ -101,28 +93,26 @@
           </li>
         {else}
           {if $nextContactID}
-            {assign var='viewParams' value=$urlParams|cat:"&cid=$nextContactID"}
             <li class="crm-next-action">
-              <a href="{crmURL p='civicrm/contact/view' q=$viewParams}" class="view button" title="{$nextContactName}">
-                <span title="{$nextContactName}"><div class="icon next-icon"></div>{ts}Next{/ts}</span>
-              </a>
+              {crmButton p='civicrm/contact/view' q="$urlParams&cid=$nextContactID" class="view" title=$nextContactName icon="chevron-right"}
+                {ts}Next{/ts}
+              {/crmButton}
             </li>
           {/if}
           {if $prevContactID}
-            {assign var='viewParams' value=$urlParams|cat:"&cid=$prevContactID"}
             <li class="crm-previous-action">
-              <a href="{crmURL p='civicrm/contact/view' q=$viewParams}" class="view button" title="{$prevContactName}">
-                <span title="{$prevContactName}"><div class="icon previous-icon"></div>{ts}Previous{/ts}</span>
-              </a>
+              {crmButton p='civicrm/contact/view' q="$urlParams&cid=$prevContactID" class="view" title=$prevContactName icon="chevron-left"}
+                {ts}Previous{/ts}
+              {/crmButton}
             </li>
           {/if}
         {/if}
 
         {if !empty($groupOrganizationUrl)}
           <li class="crm-contact-associated-groups">
-            <a href="{$groupOrganizationUrl}" class="associated-groups button" title="{ts}Associated Multi-Org Group{/ts}">
-              <span><div class="icon associated-groups-icon"></div>{ts}Associated Multi-Org Group{/ts}</span>
-            </a>
+            {crmButton href=$groupOrganizationUrl class="associated-groups" icon="cubes"}
+              {ts}Associated Multi-Org Group{/ts}
+            {/crmButton}
           </li>
         {/if}
       </ul>
@@ -131,19 +121,19 @@
   {/if}
 
   <div class="crm-block crm-content-block crm-contact-page crm-inline-edit-container">
-    <div id="mainTabContainer" class="ui-tabs ui-widget ui-widget-content ui-corner-all">
+    <div id="mainTabContainer">
       <ul class="crm-contact-tabs-list">
-        <li id="tab_summary" class="crm-tab-button">
+        <li id="tab_summary" class="crm-tab-button ui-corner-all">
           <a href="#contact-summary" title="{ts}Summary{/ts}">
             <span> </span> {ts}Summary{/ts}
-            <em>&nbsp;</em>
+            <em></em>
           </a>
         </li>
         {foreach from=$allTabs key=tabName item=tabValue}
-          <li id="tab_{$tabValue.id}" class="crm-tab-button crm-count-{$tabValue.count}">
+          <li id="tab_{$tabValue.id}" class="crm-tab-button ui-corner-all crm-count-{$tabValue.count}{if isset($tabValue.class)} {$tabValue.class}{/if}">
             <a href="{$tabValue.url}" title="{$tabValue.title}">
-              <span> </span> {$tabValue.title}
-              <em>{$tabValue.count}</em>
+              {$tabValue.title}
+              {if empty($tabValue.hideCount)}<em>{$tabValue.count}</em>{/if}
             </a>
           </li>
         {/foreach}
@@ -168,16 +158,17 @@
             </div> <!-- end of left side -->
             <div class="contactCardRight">
               {crmRegion name="contact-basic-info-right"}
-                {if !empty($imageURL)}
-                  <div id="crm-contact-thumbnail">
-                    {include file="CRM/Contact/Page/ContactImage.tpl"}
-                  </div>
-                {/if}
+              {if !empty($imageURL)}
+                <div id="crm-contact-thumbnail">
+                  {include file="CRM/Contact/Page/ContactImage.tpl"}
+                </div>
+              {/if}
                 <div class="{if !empty($imageURL)} float-left{/if}">
                   <div class="crm-clear crm-summary-block">
                     <div class="crm-summary-row">
                       <div class="crm-label" id="tagLink">
-                        <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=$contactId&selectedChild=tag"}" title="{ts}Edit Tags{/ts}">{ts}Tags{/ts}</a>
+                        <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=$contactId&selectedChild=tag"}"
+                           title="{ts}Edit Tags{/ts}">{ts}Tags{/ts}</a>
                       </div>
                       <div class="crm-content" id="tags">{$contactTag}</div>
                     </div>
@@ -188,22 +179,30 @@
                       </div>
                     </div>
                     <div class="crm-summary-row">
-                    <div class="crm-label">
-                      {ts}CiviCRM ID{/ts}{if !empty($userRecordUrl)} / {ts}User ID{/ts}{/if}
+                      <div class="crm-label">
+                        {ts}Contact ID{/ts}{if !empty($userRecordUrl)} / {ts}User ID{/ts}{/if}
+                      </div>
+                      <div class="crm-content">
+                        <span class="crm-contact-contact_id">{$contactId}</span>
+                        {if !empty($userRecordUrl)}
+                          <span class="crm-contact-user_record_id">
+                            &nbsp;/&nbsp;<a title="View user record" class="user-record-link"
+                                            href="{$userRecordUrl}">{$userRecordId}</a>
+                          </span>
+                        {/if}
+                      </div>
                     </div>
-                    <div class="crm-content">
-                      <span class="crm-contact-contact_id">{$contactId}</span>
-                      {if !empty($userRecordUrl)}
-                        <span class="crm-contact-user_record_id">
-                          &nbsp;/&nbsp;<a title="View user record" class="user-record-link" href="{$userRecordUrl}">{$userRecordId}</a>
-                        </span>
-                      {/if}
+                    <div class="crm-summary-row">
+                      <div class="crm-label">{ts}External ID{/ts}</div>
+                      <div class="crm-content crm-contact_external_identifier_label">
+                        {if isset($external_identifier)}{$external_identifier}{/if}
+                      </div>
                     </div>
                   </div>
                 </div>
               {/crmRegion}
             </div>
-          </div> <!-- end of right side -->
+            <!-- end of right side -->
         </div>
         <div class="contact_details">
           <div class="contact_panel">
@@ -319,49 +318,17 @@
     </div>
     <div class="clear"></div>
   </div><!-- /.crm-content-block -->
-
-  <script type="text/javascript">
-    {literal}
-    cj(function($) {
-      //explicitly stop spinner
-      function stopSpinner( ) {
-        $('li.crm-tab-button span').text(' ');
-      }
-      {/literal}
-      var selectedTab = '{if !empty($selectedChild)}{$selectedChild}{else}summary{/if}';
-      var tabIndex = $('#tab_' + selectedTab).prevAll().length;
-      var spinnerImage = '<img src="{$config->resourceBase}i/loading.gif" style="width:10px;height:10px"/>';
-      {literal}
-      $("#mainTabContainer").tabs({ selected: tabIndex, spinner: spinnerImage, cache: true, load: stopSpinner});
-      $(".crm-tab-button").addClass("ui-corner-bottom");
-      $().crmAccordions();
-
-      $('body').click(function() {
-        cj('#crm-contact-actions-list').hide();
-      });
-    });
-    {/literal}
-  </script>
 {/if}
 
 {* CRM-10560 *}
 {literal}
 <script type="text/javascript">
-cj(document).ready(function($) {
+CRM.$(function($) {
   $('.crm-inline-edit-container').crmFormContactLock({
     ignoreLabel: "{/literal}{ts escape='js'}Ignore{/ts}{literal}",
     saveAnywayLabel: "{/literal}{ts escape='js'}Save Anyway{/ts}{literal}",
     reloadLabel: "{/literal}{ts escape='js'}Reload Page{/ts}{literal}"
   });
-	//Enhance styling of "View Contact" tabs to indicate empty/non-empty tags
-  $('div#mainTabContainer ul').find('li').each(function(n){
-    if($(this).find('em').html()==0){
-      $(this).addClass("disabled");
-    }
-  });
 });
 </script>
 {/literal}
-
-{* jQuery validate *}
-{include file="CRM/Form/validate.tpl" form=0}

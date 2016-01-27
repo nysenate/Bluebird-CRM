@@ -26,4 +26,3 @@ header('Content-Disposition: inline; filename=tracker.gif');
 readfile($filename);
 
 exit();
-

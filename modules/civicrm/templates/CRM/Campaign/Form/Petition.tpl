@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2015                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -38,7 +38,7 @@
     </table>
   {else}
     {if $action  eq 1}
-      <div id="help">
+      <div class="help">
         {ts}Use this form to Add new Survey. You can create a new Activity type, specific to this Survey or select an existing activity type for this Survey.{/ts}
       </div>
     {/if}
@@ -127,15 +127,15 @@
 {literal}
   <script type="text/javascript">
     //show edit profile field links
-    cj(function () {
+    CRM.$(function($) {
       // show edit for both contact and activity profile
-      cj('select[id$="profile_id"]').change(function () {
-        buildLinks(cj(this), cj(this).val());
+      $('select[id$="profile_id"]').change(function () {
+        buildLinks($(this), $(this).val());
       });
 
       // make sure we set edit links for both profiles when form loads
-      cj('select[id$="profile_id"]').each(function (e) {
-        buildLinks(cj(this), cj(this).val());
+      $('select[id$="profile_id"]').each(function (e) {
+        buildLinks($(this), $(this).val());
       });
     });
   </script>
