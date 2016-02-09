@@ -1100,7 +1100,7 @@ SELECT 'civicrm_contact', contact_a.id, contact_a.id, '$cacheKey', contact_a.dis
     return $this->_query->searchQuery(NULL, NULL, NULL, FALSE, FALSE, TRUE);
   }
 
-  function contactIDQuery($params, $action, $sortID, $displayRelationshipType = NULL, $queryOperator = 'AND') {
+  function contactIDQuery($params, $action, $sortID, $displayRelationshipType = null, $queryOperator = 'AND') {
     $sortOrder = &$this->getSortOrder($this->_action);
     $sort = new CRM_Utils_Sort($sortOrder, $sortID);
 
@@ -1110,30 +1110,23 @@ SELECT 'civicrm_contact', contact_a.id, contact_a.id, '$cacheKey', contact_a.dis
       CRM_Contact_BAO_ProximityQuery::fixInputParams($params);
     }
 
+    if (!$displayRelationshipType) {
+      $displayRelationshipType = null;
+    }
+
     /*
      * NYSS #9748
      * use new NO_RETURN_PROPERTIES constant to force minimal fields in return
      */
-    if (!$displayRelationshipType) {
-      $query = new CRM_Contact_BAO_Query($params,
-        CRM_Contact_BAO_Query::NO_RETURN_PROPERTIES,
-        array('contact_id'), FALSE, FALSE, 1,
-        FALSE, TRUE, TRUE, NULL,
-        $queryOperator
-      );
-    }
-    else {
-      $query = new CRM_Contact_BAO_Query($params, 
-        CRM_Contact_BAO_Query::NO_RETURN_PROPERTIES,
-        array('contact_id'), FALSE, FALSE, 1,
-        FALSE, TRUE, TRUE, $displayRelationshipType,
-        $queryOperator
-      );
-    }
-    $value = $query->searchQuery(0, 0, $sort,
-      FALSE, FALSE, FALSE,
-      FALSE, FALSE
+    $query = new CRM_Contact_BAO_Query($params,
+      CRM_Contact_BAO_Query::NO_RETURN_PROPERTIES,
+      null, false, false, CRM_Contact_BAO_Query::MODE_CONTACTS,
+      false, true, true, $displayRelationshipType,
+      $queryOperator
     );
+
+    $value = $query->searchQuery(0, 0, $sort,
+                                 false, false, false, false, false);
     return $value;
   }
 
