@@ -983,6 +983,10 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
           ) {
             $params['group'][$key['group_id']] = -1;
           }
+          //NYSS 9857 if already part of group unset
+          elseif (array_key_exists($key['group_id'], $params['group'])) {
+            unset($params['group'][$key['group_id']]);
+          }
         }
       }
     }

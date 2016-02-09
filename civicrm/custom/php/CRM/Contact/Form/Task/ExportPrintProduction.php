@@ -538,10 +538,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
      * NYSS #9748
      * force an unbuffered query
      */
-    $dao = new CRM_Core_DAO();
-    $dao->setOptions( array('result_buffering'=>0) );
-    $sql = CRM_Core_DAO::composeQuery( $sql, CRM_Core_DAO::$_nullArray );
-    $dao->query($sql);
+    $dao = CRM_Core_DAO::executeUnbufferedQuery($sql);
 
     //fetch records
     itime('before fetching records from temp table');
