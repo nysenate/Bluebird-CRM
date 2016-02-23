@@ -993,24 +993,36 @@ LIMIT {$offset}, {$rowCount}
     CRM_Utils_JSON::output($paperSize);
   }
 
-  static function relationshipContactTypeList() {
-    $relType = CRM_Utils_Array::value('relType', $_REQUEST);
-
-    $types = CRM_Contact_BAO_Relationship::getValidContactTypeList($relType);
-
-    $elements = array();
-    foreach ($types as $key => $label) {
-      $elements[] = array(
-        'name' => $label,
-        'value' => $key,
-      );
+  /**
+   * Swap contacts in a dupe pair i.e main with duplicate contact.
+   *
+   * @param int $prevNextId
+   */
+  public static function flipDupePairs($prevNextId = NULL) {
+    if (!$prevNextId) {
+      $prevNextId = $_REQUEST['pnid'];
     }
-
-    echo json_encode($elements);
-    CRM_Utils_System::civiExit();
+    $query = "
+      UPDATE civicrm_prevnext_cache cpc
+      INNER JOIN civicrm_prevnext_cache old on cpc.id = old.id
+      SET cpc.entity_id1 = cpc.entity_id2, cpc.entity_id2 = old.entity_id1 ";
+    if (is_array($prevNextId) && !CRM_Utils_Array::crmIsEmptyArray($prevNextId)) {
+      $prevNextId = implode(', ', $prevNextId);
+      $prevNextId = CRM_Utils_Type::escape($prevNextId, 'String');
+      $query     .= "WHERE cpc.id IN ({$prevNextId}) AND cpc.is_selected = 1";
+    }
+    else {
+      $prevNextId = CRM_Utils_Type::escape($prevNextId, 'Positive');
+      $query     .= "WHERE cpc.id = $prevNextId";
+    }
+    CRM_Core_DAO::executeQuery($query);
+    CRM_Utils_JSON::output();
   }
 
-  static function selectUnselectContacts() {
+  /**
+   * Used to store selected contacts across multiple pages in advanced search.
+   */
+  public static function selectUnselectContacts() {
     $name         = CRM_Utils_Array::value('name', $_REQUEST);
     $cacheKey     = CRM_Utils_Array::value('qfKey', $_REQUEST);
     $state        = CRM_Utils_Array::value('state', $_REQUEST, 'checked');

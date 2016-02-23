@@ -858,6 +858,9 @@ class CRM_Contact_DAO_Contact extends CRM_Core_DAO
           'headerPattern' => '/^title/i',
           'dataPattern' => '',
           'export' => true,
+          'html' => array(
+            'type' => 'Text',
+          ) ,
         ) ,
         'communication_style_id' => array(
           'name' => 'communication_style_id',

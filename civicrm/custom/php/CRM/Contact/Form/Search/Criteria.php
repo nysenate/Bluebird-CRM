@@ -327,31 +327,6 @@ class CRM_Contact_Form_Search_Criteria {
       if ($select) {
         if ($select == 'stateProvince' || $select == 'county') {
           $element = $form->addChainSelect($name);
-          'country' => 'country',
-          'county' => 'county',
-        );
-        if ($select == 'stateProvince') {
-          if (CRM_Utils_Array::value('country', $formValues)) {
-            $selectElements = array('' => ts('- select -')) + CRM_Core_PseudoConstant::stateProvinceForCountry($formValues['country']);
-          }
-          else {
-            //if not setdefault any country
-            $selectElements = array('' => ts('- any -')) + CRM_Core_PseudoConstant::$select();
-          }
-          $element = $form->addElement('select', $name, $title, $selectElements);
-        }
-        elseif ($select == 'country') {
-          $selectElements = array('' => ts('- any -')) + CRM_Core_PseudoConstant::$select();
-          $element = $form->addElement('select', $name, $title, $selectElements);
-        }
-        elseif ($select == 'county') {
-          if ( array_key_exists('state_province', $formValues) && !CRM_Utils_System::isNull($formValues['state_province'])) {
-            $selectElements = array('' => ts('- select -')) + CRM_Core_PseudoConstant::countyForState($formValues['state_province']);
-          }
-          else {
-            $selectElements = array('' => ts('- any -'));
-          }
-          $element = $form->addElement('select', $name, $title, $selectElements);
         }
         else {
           $selectElements = array('' => ts('- any -')) + CRM_Core_PseudoConstant::$select();
