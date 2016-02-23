@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2015                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,12 +23,12 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2013
+ * @copyright CiviCRM LLC (c) 2004-2015
  *
  */
 
@@ -36,17 +36,21 @@
  * This class contains the functions that are called using AJAX (jQuery)
  */
 class CRM_Group_Page_AJAX {
-  static function getGroupList() {
-    $params = $_REQUEST;
+  /**
+   * Get list of groups.
+   *
+   * @return array
+   */
+  public static function getGroupList() {
+    $params = $_GET;
 
-    if ( isset($params['parent_id']) ) {
+    if (isset($params['parent_id'])) {
       // requesting child groups for a given parent
       $params['page'] = 1;
-      $params['rp']   = 25;
+      $params['rp'] = 0;
       $groups = CRM_Contact_BAO_Group::getGroupListSelector($params);
 
-      echo json_encode($groups);
-      CRM_Utils_System::civiExit();
+      CRM_Utils_JSON::output($groups);
     }
     else {
       //NYSS 5991
@@ -55,11 +59,10 @@ class CRM_Group_Page_AJAX {
         4 => 'groups.group_type', /*5 => 'groups.visibility',*/
       );
 
-      $sEcho     = CRM_Utils_Type::escape($_REQUEST['sEcho'], 'Integer');
-      $offset    = isset($_REQUEST['iDisplayStart']) ? CRM_Utils_Type::escape($_REQUEST['iDisplayStart'], 'Integer') : 0;
-      $rowCount  = isset($_REQUEST['iDisplayLength']) ? CRM_Utils_Type::escape($_REQUEST['iDisplayLength'], 'Integer') : 25;
-      $sort      = isset($_REQUEST['iSortCol_0']) ? CRM_Utils_Array::value(CRM_Utils_Type::escape($_REQUEST['iSortCol_0'], 'Integer'), $sortMapper) : NULL;
-      $sortOrder = isset($_REQUEST['sSortDir_0']) ? CRM_Utils_Type::escape($_REQUEST['sSortDir_0'], 'String') : 'asc';
+      $offset = isset($_GET['start']) ? CRM_Utils_Type::escape($_GET['start'], 'Integer') : 0;
+      $rowCount = isset($_GET['length']) ? CRM_Utils_Type::escape($_GET['length'], 'Integer') : 25;
+      $sort = isset($_GET['order'][0]['column']) ? CRM_Utils_Array::value(CRM_Utils_Type::escape($_GET['order'][0]['column'], 'Integer'), $sortMapper) : NULL;
+      $sortOrder = isset($_GET['order'][0]['dir']) ? CRM_Utils_Type::escape($_GET['order'][0]['dir'], 'String') : 'asc';
 
       if ($sort && $sortOrder) {
         $params['sortBy'] = $sort . ' ' . $sortOrder;
@@ -75,7 +78,7 @@ class CRM_Group_Page_AJAX {
       // go ahead with flat hierarchy, CRM-12225
       if (empty($groups)) {
         $groupsAccessible = CRM_Core_PseudoConstant::group();
-        $parentsOnly      = CRM_Utils_Array::value('parentsOnly', $params);
+        $parentsOnly = CRM_Utils_Array::value('parentsOnly', $params);
         if (!empty($groupsAccessible) && $parentsOnly) {
           // recompute group list with flat hierarchy
           $params['parentsOnly'] = 0;
@@ -83,15 +86,11 @@ class CRM_Group_Page_AJAX {
         }
       }
 
-      $iFilteredTotal = $iTotal = $params['total'];
-
-      $selectorElements = array(
-        'group_name', 'group_id', 'created_by', 'group_description',
-        'group_type', 'visibility', 'org_info', 'links', 'class',
-      );
-
-      if (!CRM_Utils_Array::value('showOrgInfo', $params)) {
-        unset($selectorElements[6]);
+      //add setting so this can be tested by unit test
+      //@todo - ideally the portion of this that retrieves the groups should be extracted into a function separate
+      // from the one which deals with web inputs & outputs so we have a properly testable & re-usable function
+      if (!empty($params['is_unit_test'])) {
+        return array($groups, $iFilteredTotal);
       }
 
       //NYSS 5991 remove visibility
@@ -104,9 +103,8 @@ class CRM_Group_Page_AJAX {
         $group['group_description'] = str_replace("\n",   "<br />", $group['group_description']);
       }
 
-      echo CRM_Utils_JSON::encodeDataTableSelector($groups, $sEcho, $iTotal, $iFilteredTotal, $selectorElements);
-      CRM_Utils_System::civiExit();
+      CRM_Utils_JSON::output($groups);
     }
   }
-}
 
+}
