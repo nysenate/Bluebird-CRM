@@ -1,9 +1,9 @@
 <?php
 /*
   +--------------------------------------------------------------------+
-  | CiviCRM version 4.4                                                |
+  | CiviCRM version 4.7                                                |
   +--------------------------------------------------------------------+
-  | Copyright CiviCRM LLC (c) 2004-2013                                |
+  | Copyright CiviCRM LLC (c) 2004-2015                                |
   +--------------------------------------------------------------------+
   | This file is a part of CiviCRM.                                    |
   |                                                                    |
@@ -23,14 +23,12 @@
   | GNU Affero General Public License or the licensing of CiviCRM,     |
   | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
   +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2013
- * $Id$
- *
+ * @copyright CiviCRM LLC (c) 2004-2015
  */
 
 /**
@@ -39,34 +37,33 @@
 class CRM_Utils_Geocode_Google {
 
   /**
-   * server to retrieve the lat/long
+   * Server to retrieve the lat/long
    *
    * @var string
-   * @static
    */
   static protected $_server = 'maps.googleapis.com';
 
   /**
-   * uri of service
+   * Uri of service.
    *
    * @var string
-   * @static
    */
   static protected $_uri = '/maps/api/geocode/xml?sensor=false&address=';
 
   /**
-   * function that takes an address object and gets the latitude / longitude for this
+   * Function that takes an address object and gets the latitude / longitude for this
    * address. Note that at a later stage, we could make this function also clean up
    * the address into a more valid format
    *
-   * @param object $address
+   * @param array $values
+   * @param bool $stateName
    *
-   * @return boolean true if we modified the address, false otherwise
-   * @static
+   * @return bool
+   *   true if we modified the address, false otherwise
    */
-  static function format(&$values, $stateName = FALSE) {
+  public static function format(&$values, $stateName = FALSE) {
     // we need a valid country, else we ignore
-    if (!CRM_Utils_Array::value('country', $values)) {
+    if (empty($values['country'])) {
       return FALSE;
     }
 
@@ -78,7 +75,7 @@ class CRM_Utils_Geocode_Google {
 
     $add = '';
 
-    if (CRM_Utils_Array::value('street_address', $values)) {
+    if (!empty($values['street_address'])) {
       $add = urlencode(str_replace('', '+', $values['street_address']));
       $add .= ',+';
     }
@@ -89,8 +86,8 @@ class CRM_Utils_Geocode_Google {
       $add .= ',+';
     }
 
-    if (CRM_Utils_Array::value('state_province', $values)) {
-      if (CRM_Utils_Array::value('state_province_id', $values)) {
+    if (!empty($values['state_province'])) {
+      if (!empty($values['state_province_id'])) {
         $stateProvince = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_StateProvince', $values['state_province_id']);
       }
       else {
@@ -113,12 +110,12 @@ class CRM_Utils_Geocode_Google {
       }
     }
 
-    if (CRM_Utils_Array::value('postal_code', $values)) {
+    if (!empty($values['postal_code'])) {
       $add .= '+' . urlencode(str_replace('', '+', $values['postal_code']));
       $add .= ',+';
     }
 
-    if (CRM_Utils_Array::value('country', $values)) {
+    if (!empty($values['country'])) {
       $add .= '+' . urlencode(str_replace('', '+', $values['country']));
     }
 
@@ -146,8 +143,8 @@ class CRM_Utils_Geocode_Google {
       ) {
         $ret = $xml->result->geometry->location->children();
         if ($ret->lat && $ret->lng) {
-          $values['geo_code_1'] = (float)$ret->lat;
-          $values['geo_code_2'] = (float)$ret->lng;
+          $values['geo_code_1'] = (float) $ret->lat;
+          $values['geo_code_2'] = (float) $ret->lng;
           return TRUE;
         }
       }
@@ -163,5 +160,5 @@ class CRM_Utils_Geocode_Google {
     $values['geo_code_1'] = $values['geo_code_2'] = 'null';
     return FALSE;
   }
-}
 
+}
