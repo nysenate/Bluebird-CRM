@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2015                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,14 +23,12 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2013
- * $Id$
- *
+ * @copyright CiviCRM LLC (c) 2004-2015
  */
 
 /**
@@ -39,73 +37,66 @@
 class CRM_Mailing_Selector_Browse extends CRM_Core_Selector_Base implements CRM_Core_Selector_API {
 
   /**
-   * array of supported links, currenly null
+   * Array of supported links, currently null
    *
    * @var array
-   * @static
    */
   static $_links = NULL;
 
   /**
-   * we use desc to remind us what that column is, name is used in the tpl
+   * We use desc to remind us what that column is, name is used in the tpl
    *
    * @var array
-   * @static
    */
   static $_columnHeaders;
 
   protected $_parent;
 
   /**
-   * Class constructor
+   * Class constructor.
    *
-   * @param
    *
-   * @return CRM_Contact_Selector_Profile
-   * @access public
+   * @return \CRM_Mailing_Selector_Browse
    */
-  function __construct() {
+  public function __construct() {
   }
-  //end of constructor
 
   /**
    * This method returns the links that are given for each search row.
    *
    * @return array
-   * @access public
-   *
    */
-  static function &links() {
+  public static function &links() {
     return self::$_links;
   }
-  //end of function
 
   /**
-   * getter for array of the parameters required for creating pager.
+   * Getter for array of the parameters required for creating pager.
    *
-   * @param
-   * @access public
+   * @param $action
+   * @param array $params
    */
-  function getPagerParams($action, &$params) {
+  public function getPagerParams($action, &$params) {
     $params['csvString'] = NULL;
     $params['rowCount'] = CRM_Utils_Pager::ROWCOUNT;
     $params['status'] = ts('Mailings %%StatusMessage%%');
     $params['buttonTop'] = 'PagerTopButton';
     $params['buttonBottom'] = 'PagerBottomButton';
   }
-  //end of function
 
   /**
-   * returns the column headers as an array of tuples:
+   * Returns the column headers as an array of tuples:
    * (name, sortName (key to the sort array))
    *
-   * @param string $action the action being performed
-   * @param enum   $output what should the result set include (web/email/csv)
+   * @param string $action
+   *   The action being performed.
+   * @param string $output
+   *   What should the result set include (web/email/csv).
    *
-   * @return array the column headers that need to be displayed
-   * @access public
+   * @return array
+   *   the column headers that need to be displayed
    */
-  function &getColumnHeaders($action = NULL, $output = NULL) {
+  public function &getColumnHeaders($action = NULL, $output = NULL) {
     $mailing = CRM_Mailing_BAO_Mailing::getTableName();
     $job = CRM_Mailing_BAO_MailingJob::getTableName();
     if (!isset(self::$_columnHeaders)) {
@@ -175,7 +166,8 @@ class CRM_Mailing_Selector_Browse extends CRM_Core_Selector_Base implements CRM_
       );
 
       if (CRM_Campaign_BAO_Campaign::isCampaignEnable()) {
-        self::$_columnHeaders[] = array('name' => ts('Campaign'),
+        self::$_columnHeaders[] = array(
+          'name' => ts('Campaign'),
           'sort' => 'campaign_id',
           'direction' => CRM_Utils_Sort::DONTCARE,
         );
@@ -191,17 +183,17 @@ class CRM_Mailing_Selector_Browse extends CRM_Core_Selector_Base implements CRM_
   /**
    * Returns total number of rows for the query.
    *
-   * @param
+   * @param string $action
    *
-   * @return int Total number of rows
-   * @access public
+   * @return int
+   *   Total number of rows
    */
-  function getTotalCount($action) {
-    $job        = CRM_Mailing_BAO_MailingJob::getTableName();
-    $mailing    = CRM_Mailing_BAO_Mailing::getTableName();
+  public function getTotalCount($action) {
+    $job = CRM_Mailing_BAO_MailingJob::getTableName();
+    $mailing = CRM_Mailing_BAO_Mailing::getTableName();
     $mailingACL = CRM_Mailing_BAO_Mailing::mailingACL();
 
-    //get the where clause.
+    // get the where clause.
     $params = array();
     $whereClause = "$mailingACL AND " . $this->whereClause($params);
 
@@ -211,28 +203,34 @@ class CRM_Mailing_Selector_Browse extends CRM_Core_Selector_Base implements CRM_
      FROM  $mailing
 LEFT JOIN  $job ON ( $mailing.id = $job.mailing_id AND civicrm_mailing_job.is_test = 0 AND civicrm_mailing_job.parent_id IS NULL )
 LEFT JOIN  civicrm_contact createdContact   ON ( $mailing.created_id   = createdContact.id )
-LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = scheduledContact.id ) 
+LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = scheduledContact.id )
     WHERE  $whereClause";
 
     return CRM_Core_DAO::singleValueQuery($query, $params);
   }
 
   /**
-   * returns all the rows in the given offset and rowCount
+   * Returns all the rows in the given offset and rowCount.
    *
-   * @param enum   $action   the action being performed
-   * @param int    $offset   the row number to start from
-   * @param int    $rowCount the number of rows to return
-   * @param string $sort     the sql string that describes the sort order
-   * @param enum   $output   what should the result set include (web/email/csv)
+   * @param string $action
+   *   The action being performed.
+   * @param int $offset
+   *   The row number to start from.
+   * @param int $rowCount
+   *   The number of rows to return.
+   * @param string $sort
+   *   The sql string that describes the sort order.
+   * @param string $output
+   *   What should the result set include (web/email/csv).
    *
-   * @return int   the total number of rows for this action
+   * @return int
+   *   the total number of rows for this action
    */
-  function &getRows($action, $offset, $rowCount, $sort, $output = NULL) {
+  public function &getRows($action, $offset, $rowCount, $sort, $output = NULL) {
     static $actionLinks = NULL;
     if (empty($actionLinks)) {
-      $cancelExtra  = ts('Are you sure you want to cancel this mailing?');
-      $deleteExtra  = ts('Are you sure you want to delete this mailing?');
+      $cancelExtra = ts('Are you sure you want to cancel this mailing?');
+      $deleteExtra = ts('Are you sure you want to delete this mailing?');
       $archiveExtra = ts('Are you sure you want to archive this mailing?');
 
       $actionLinks = array(
@@ -289,7 +287,7 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
     if (CRM_Mailing_Info::workflowEnabled()) {
       $allAccess = FALSE;
       $workFlow = TRUE;
-      //supercedes all permission
+      // supercedes all permission
       if (CRM_Core_Permission::check('access CiviMail')) {
         $allAccess = TRUE;
       }
@@ -320,15 +318,15 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
     }
     $rows = &$mailing->getRows($offset, $rowCount, $sort, $whereClause, $params);
 
-    //get the search base mailing Ids, CRM-3711.
+    // get the search base mailing Ids, CRM-3711.
     $searchMailings = $mailing->searchMailingIDs();
 
-    //check for delete CRM-4418
+    // check for delete CRM-4418
     $allowToDelete = CRM_Core_Permission::check('delete in CiviMail');
 
     if ($output != CRM_Core_Selector_Controller::EXPORT) {
 
-      //create the appropriate $op to use for hook_civicrm_links
+      // create the appropriate $op to use for hook_civicrm_links
       $pageTypes = array('view', 'mailing', 'browse');
       if ($this->_parent->_unscheduled) {
         $pageTypes[] = 'unscheduled';
@@ -359,12 +357,15 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
           }
         }
         else {
-            if ($allAccess || ($showCreateLinks || $showScheduleLinks)) {
-              $actionMask = CRM_Core_Action::PREVIEW;
-            }
+          if ($allAccess || ($showCreateLinks || $showScheduleLinks)) {
+            $actionMask = CRM_Core_Action::PREVIEW;
+          }
         }
         if (in_array($row['status'], array(
-          'Scheduled', 'Running', 'Paused'))) {
+          'Scheduled',
+          'Running',
+          'Paused',
+        ))) {
           if ($allAccess ||
             ($showApprovalLinks && $showCreateLinks && $showScheduleLinks)
           ) {
@@ -380,14 +381,15 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
           }
         }
 
-        if (in_array($row['status'], array('Complete', 'Canceled')) && 
-          !$row['archived']) {
+        if (in_array($row['status'], array('Complete', 'Canceled')) &&
+          !$row['archived']
+        ) {
           if ($allAccess || $showCreateLinks) {
             $actionMask |= CRM_Core_Action::RENEW;
           }
         }
 
-        //check for delete permission.
+        // check for delete permission.
         if ($allowToDelete) {
           $actionMask |= CRM_Core_Action::DELETE;
         }
@@ -395,7 +397,7 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
         if ($actionMask == NULL) {
           $actionMask = CRM_Core_Action::ADD;
         }
-        //get status strings as per locale settings CRM-4411.
+        // get status strings as per locale settings CRM-4411.
         $rows[$key]['status'] = CRM_Mailing_BAO_MailingJob::status($row['status']);
 
         $rows[$key]['action'] = CRM_Core_Action::formLink($actionLinks,
@@ -408,7 +410,7 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
           $row['id']
         );
 
-        //unset($rows[$key]['id']);
+        // unset($rows[$key]['id']);
         // if the scheduled date is 0, replace it with an empty string
         if ($rows[$key]['scheduled_iso'] == '0000-00-00 00:00:00') {
           $rows[$key]['scheduled'] = '';
@@ -423,26 +425,36 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
   }
 
   /**
-   * name of export file.
+   * Name of export file.
    *
-   * @param string $output type of output
+   * @param string $output
+   *   Type of output.
    *
-   * @return string name of the file
+   * @return string
+   *   name of the file
    */
-  function getExportFileName($output = 'csv') {
+  public function getExportFileName($output = 'csv') {
     return ts('CiviMail Mailings');
   }
 
-  function setParent($parent) {
+  /**
+   * @param $parent
+   */
+  public function setParent($parent) {
     $this->_parent = $parent;
   }
 
-  function whereClause(&$params, $sortBy = TRUE) {
+  /**
+   * @param array $params
+   * @param bool $sortBy
+   *
+   * @return int|string
+   */
+  public function whereClause(&$params, $sortBy = TRUE) {
     $values = $clauses = array();
-    $isFormSubmitted   = $this->_parent->get('hidden_find_mailings');
+    $isFormSubmitted = $this->_parent->get('hidden_find_mailings');
 
     $title = $this->_parent->get('mailing_name');
-
     if ($title) {
       $clauses[] = 'name LIKE %1';
       if (strpos($title, '%') !== FALSE) {
@@ -472,10 +484,10 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
         $dateClause1[] = 'civicrm_mailing.created_date >= %2';
       }
       else {
-      $dateClause1[] = 'civicrm_mailing_job.start_date >= %2';
-      $dateClause2[] = 'civicrm_mailing_job.scheduled_date >= %2';
+        $dateClause1[] = 'civicrm_mailing_job.start_date >= %2';
+        $dateClause2[] = 'civicrm_mailing_job.scheduled_date >= %2';
       }
-      $params[2]     = array($from, 'String');
+      $params[2] = array($from, 'String');
     }
 
     $to = $this->_parent->get('mailing_to');
@@ -484,10 +496,10 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
         $dateClause1[] = ' civicrm_mailing.created_date <= %3 ';
       }
       else {
-      $dateClause1[] = 'civicrm_mailing_job.start_date <= %3';
-      $dateClause2[] = 'civicrm_mailing_job.scheduled_date <= %3';
+        $dateClause1[] = 'civicrm_mailing_job.start_date <= %3';
+        $dateClause2[] = 'civicrm_mailing_job.scheduled_date <= %3';
       }
-      $params[3]     = array($to, 'String');
+      $params[3] = array($to, 'String');
     }
 
     $dateClauses = array();
@@ -510,8 +522,8 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
     }
 
     // get values submitted by form
-    $isDraft       = $this->_parent->get('status_unscheduled');
-    $isArchived    = $this->_parent->get('is_archived');
+    $isDraft = $this->_parent->get('status_unscheduled');
+    $isArchived = $this->_parent->get('is_archived');
     $mailingStatus = $this->_parent->get('mailing_status');
 
     if (!$isFormSubmitted && $this->_parent->get('scheduled')) {
@@ -542,8 +554,9 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
     if (isset($isArchived)) {
       if ($isArchived) {
         $clauses[] = "civicrm_mailing.is_archived = 1";
-      } else {
-      $clauses[] = "( civicrm_mailing.is_archived IS NULL OR civicrm_mailing.is_archived = 0 )";
+      }
+      else {
+        $clauses[] = "(civicrm_mailing.is_archived IS NULL OR civicrm_mailing.is_archived = 0)";
       }
     }
 
@@ -591,7 +604,7 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
     return implode(' AND ', $clauses);
   }
 
-  function pagerAtoZ() {
+  public function pagerAtoZ() {
 
     $params = array();
     $whereClause = $this->whereClause($params, FALSE);
@@ -601,7 +614,7 @@ SELECT DISTINCT UPPER(LEFT(name, 1)) as sort_name
 FROM civicrm_mailing
 LEFT JOIN civicrm_mailing_job ON (civicrm_mailing_job.mailing_id = civicrm_mailing.id)
 LEFT JOIN civicrm_contact createdContact ON ( civicrm_mailing.created_id = createdContact.id )
-LEFT JOIN civicrm_contact scheduledContact ON ( civicrm_mailing.scheduled_id = scheduledContact.id ) 
+LEFT JOIN civicrm_contact scheduledContact ON ( civicrm_mailing.scheduled_id = scheduledContact.id )
 WHERE $whereClause
 ORDER BY LEFT(name, 1)
 ";
@@ -611,6 +624,5 @@ ORDER BY LEFT(name, 1)
     $aToZBar = CRM_Utils_PagerAToZ::getAToZBar($dao, $this->_parent->_sortByCharacter, TRUE);
     $this->_parent->assign('aToZ', $aToZBar);
   }
-}
-//end of class
 
+}
