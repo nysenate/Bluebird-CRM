@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2015                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,14 +23,13 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-
 <div class="crm-activity-selector-{$context}">
   <div class="crm-accordion-wrapper crm-search_filters-accordion">
     <div class="crm-accordion-header">
     {ts}Filter by Activity Type{/ts}</a>
     </div><!-- /.crm-accordion-header -->
     <div class="crm-accordion-body">
-      <div class="no-border form-layout-compressed" id="searchOptions">
+      <div class="no-border form-layout-compressed activity-search-options">
           <div class="crm-contact-form-block-activity_type_filter_id crm-inline-edit-field">
             {$form.activity_type_filter_id.label} {$form.activity_type_filter_id.html|crmAddClass:big}
           </div>

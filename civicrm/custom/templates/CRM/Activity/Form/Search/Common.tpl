@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2015                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,25 +26,14 @@
 <tr>
   <td colspan="2">
     {$form.activity_role.html}
-    <span class="crm-clear-link">
-      (<a href="#" title="unselect"
-          onclick="unselectRadio('activity_role', '{$form.formName}');
-            return false;">
-        {ts}clear{/ts}
-      </a>)
     </span>
   </td>
 </tr>
 <tr>
   {if $form.activity_type_id}
-    <td><label>{ts}Activity Type(s){/ts}</label>
-      <div id="Activity" class="listing-box">
-        {foreach from=$form.activity_type_id item="activity_type_val"}
-          <div class="{cycle values='odd-row,even-row'}">
-            {$activity_type_val.html}
-          </div>
-        {/foreach}
-      </div>
+    <td><label>{$form.activity_type_id.label}</label>
+       <br />
+       {$form.activity_type_id.html}
     </td>
   {else}
     <td>&nbsp;</td>
@@ -89,20 +78,18 @@
     </div>
   </td>
   <td colspan="2">
-    {$form.activity_status.label}<br/>
-    {$form.activity_status.html}
+    {$form.status_id.label}<br/>
+    {$form.status_id.html}
   </td>
 </tr>
 {*NYSS 4595*}
 {*
 <tr>
+  {* td intentionally left blank to align the 'is test' widget on the right *}
   <td></td>
   <td colspan="2">
     {$form.activity_test.label} {help id="is-test" file="CRM/Contact/Form/Search/Advanced"}
     &nbsp; {$form.activity_test.html}
-    <span class="crm-clear-link">
-      (<a href="#" onclick="unselectRadio('activity_test','{$form.formName}'); return false;">{ts}clear{/ts}</a>)
-    </span>
   </td>
 </tr>
 *}
@@ -124,6 +111,20 @@
   </td>
 </tr>
 
+{if $buildSurveyResult }
+  <tr>
+    <td id="activityResult">
+      <label>{$form.activity_result.label}</label><br />
+      {$form.activity_result.html}
+    </td>
+    <td colspan="2">{include file="CRM/common/Tagset.tpl" tagsetType='activity'}</td>
+  </tr>
+{else}
+  <tr>
+    <td colspan="3">{include file="CRM/common/Tagset.tpl" tagsetType='activity'}</td>
+  </tr>
+{/if}
+
 {* campaign in activity search *}
 {include file="CRM/Campaign/Form/addCampaignToComponent.tpl"
 campaignContext="componentSearch" campaignTrClass='' campaignTdClass=''}
@@ -138,20 +139,20 @@ campaignContext="componentSearch" campaignTrClass='' campaignTdClass=''}
 
 {literal}
 <script type="text/javascript">
-  cj(function() {
+  CRM.$(function($) {
     //Searchable activity custom fields which extend ALL activity types are always displayed in the form
     //hence hide remaining activity custom data
-    cj('#activityCustom').children( ).each( function( ) {
-      cj('#'+cj(this).attr('id')+' div').each( function( ) {
-        if (cj(this).children( ).attr('id')) {
-          var activityCustomdataGroup = cj(this).attr('id');  //div id
-          var fieldsetId = cj(this).children( ).attr('id');  // fieldset id
+    $('#activityCustom').children( ).each( function( ) {
+      $('#'+$(this).attr('id')+' div').each( function( ) {
+        if ($(this).children( ).attr('id')) {
+          var activityCustomdataGroup = $(this).attr('id');  //div id
+          var fieldsetId = $(this).children( ).attr('id');  // fieldset id
           var splitFieldsetId = fieldsetId.split("");
           var splitFieldsetLength = splitFieldsetId.length;  //length of fieldset
           var show = 0;
           //setdefault activity custom data group if corresponding activity type is checked
-          cj('#Activity div').each(function( ) {
-            var checkboxId = cj(this).children().attr('id');  //activity type element name
+          $('#Activity div').each(function( ) {
+            var checkboxId = $(this).children().attr('id');  //activity type element name
             if (document.getElementById( checkboxId ).checked ) {
               var element = checkboxId.split('[');
               var splitElement = element[1].split(']');  // get activity type id
@@ -166,16 +167,13 @@ campaignContext="componentSearch" campaignTrClass='' campaignTdClass=''}
             }
           });
           if (show < 1) {
-            cj('#'+activityCustomdataGroup).hide( );
+            $('#'+activityCustomdataGroup).hide( );
           }
         }
       });
     });
   });
-</script>
 
-
-<script type="text/javascript">
   function showCustomData(chkbox) {
   if (document.getElementById(chkbox).checked) {
     //inject Searchable activity custom fields according to activity type selected
