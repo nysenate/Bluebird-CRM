@@ -23,7 +23,7 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
@@ -99,7 +99,7 @@ class CRM_Contact_Page_View extends CRM_Core_Page {
     }
 
     // ensure that the id does exist
-    if ( CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_Contact', $this->_contactId, 'id' ) != $this->_contactId ) {
+    if (CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $this->_contactId, 'id') != $this->_contactId) {
       CRM_Core_Error::statusBounce(
         ts('A Contact with that ID does not exist: %1', array(1 => $this->_contactId)),
         CRM_Utils_System::url('civicrm/dashboard', 'reset=1')
@@ -268,10 +268,10 @@ class CRM_Contact_Page_View extends CRM_Core_Page {
       $contactType,
       $contactSubtype,
       $contactImageUrl
-    ) = CRM_Contact_BAO_Contact::getDisplayAndImage($contactId,
+      ) = CRM_Contact_BAO_Contact::getDisplayAndImage($contactId,
       TRUE,
       TRUE
-    );
+      );
   }
 
   /**

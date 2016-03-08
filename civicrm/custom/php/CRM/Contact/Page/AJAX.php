@@ -23,7 +23,7 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
@@ -56,7 +56,7 @@ class CRM_Contact_Page_AJAX {
     $cfID = CRM_Utils_Type::escape($_GET['id'], 'Positive');
 
     // check that this is a valid, active custom field of Contact Reference type
-    $params           = array('id' => $cfID);
+    $params = array('id' => $cfID);
     $returnProperties = array('filter', 'data_type', 'is_active');
     $cf = array();
     CRM_Core_DAO::commonRetrieve('CRM_Core_DAO_CustomField', $params, $cf, $returnProperties);
@@ -78,8 +78,8 @@ class CRM_Contact_Page_AJAX {
     }
 
     $list = array_keys(CRM_Core_BAO_Setting::valueOptions(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
-        'contact_reference_options'
-      ), '1');
+      'contact_reference_options'
+    ), '1');
 
     $return = array_unique(array_merge(array('sort_name'), $list));
 
@@ -157,7 +157,7 @@ class CRM_Contact_Page_AJAX {
    */
   public static function getPCPList() {
     $name = CRM_Utils_Array::value('term', $_GET);
-    $name  = CRM_Utils_Type::escape($name, 'String');
+    $name = CRM_Utils_Type::escape($name, 'String');
     $limit = $max = Civi::settings()->get('search_autocomplete_count');
 
     $where = ' AND pcp.page_id = cp.id AND pcp.contact_id = cc.id';
@@ -214,7 +214,7 @@ class CRM_Contact_Page_AJAX {
       }
       else {
         $output['results'][] = array('id' => $dao->id, 'text' => $dao->data);
-    }
+      }
     }
     CRM_Utils_JSON::output($output);
   }
@@ -231,7 +231,7 @@ class CRM_Contact_Page_AJAX {
 
     if (!CRM_Case_BAO_Case::accessCase($caseID)) {
       CRM_Utils_System::permissionDenied();
-      }
+    }
 
     $ret = array('is_error' => 0);
 
@@ -239,7 +239,7 @@ class CRM_Contact_Page_AJAX {
 
     if ($relationshipID && $originalCid) {
       CRM_Case_BAO_Case::endCaseRole($caseID, $a, $originalCid, $relTypeId);
-        }
+    }
 
     $clientList = CRM_Case_BAO_Case::getCaseClients($caseID);
 
@@ -265,10 +265,10 @@ class CRM_Contact_Page_AJAX {
    * Fetch the custom field help.
    */
   public static function customField() {
-    $fieldId          = CRM_Utils_Type::escape($_REQUEST['id'], 'Integer');
-    $params           = array('id' => $fieldId);
+    $fieldId = CRM_Utils_Type::escape($_REQUEST['id'], 'Integer');
+    $params = array('id' => $fieldId);
     $returnProperties = array('help_pre', 'help_post');
-    $values           = array();
+    $values = array();
 
     CRM_Core_DAO::commonRetrieve('CRM_Core_DAO_CustomField', $params, $values, $returnProperties);
     CRM_Utils_JSON::output($values);
@@ -349,7 +349,7 @@ class CRM_Contact_Page_AJAX {
       }
       list($displayName,
         $userEmail
-      ) = CRM_Contact_BAO_Contact_Location::getEmailDetails($contactID);
+        ) = CRM_Contact_BAO_Contact_Location::getEmailDetails($contactID);
 
       CRM_Utils_System::setHttpHeader('Content-Type', 'text/plain');
       if ($userEmail) {
@@ -373,12 +373,12 @@ class CRM_Contact_Page_AJAX {
         $cid = CRM_Utils_Array::value('cid', $_GET);
         if ($cid) {
           //check cid for integer
-        $contIDS = explode(',', $cid);
-        foreach ($contIDS as $contID) {
-          CRM_Utils_Type::escape($contID, 'Integer');
+          $contIDS = explode(',', $cid);
+          foreach ($contIDS as $contID) {
+            CRM_Utils_Type::escape($contID, 'Integer');
+          }
+          $queryString = " cc.id IN ( $cid )";
         }
-        $queryString = " cc.id IN ( $cid )";
-      }
       }
 
       if ($queryString) {
@@ -468,12 +468,12 @@ LIMIT {$offset}, {$rowCount}
       $cid = CRM_Utils_Array::value('cid', $_GET);
       if ($cid) {
         //check cid for integer
-      $contIDS = explode(',', $cid);
-      foreach ($contIDS as $contID) {
-        CRM_Utils_Type::escape($contID, 'Integer');
+        $contIDS = explode(',', $cid);
+        foreach ($contIDS as $contID) {
+          CRM_Utils_Type::escape($contID, 'Integer');
+        }
+        $queryString = " cc.id IN ( $cid )";
       }
-      $queryString = " cc.id IN ( $cid )";
-    }
     }
 
     if ($queryString) {
@@ -603,8 +603,8 @@ LIMIT {$offset}, {$rowCount}
    */
   public static function getSignature() {
     $emailID = CRM_Utils_Type::escape($_REQUEST['emailID'], 'Positive');
-    $query   = "SELECT signature_text, signature_html FROM civicrm_email WHERE id = {$emailID}";
-    $dao     = CRM_Core_DAO::executeQuery($query);
+    $query = "SELECT signature_text, signature_html FROM civicrm_email WHERE id = {$emailID}";
+    $dao = CRM_Core_DAO::executeQuery($query);
 
     $signatures = array();
     while ($dao->fetch()) {
@@ -737,8 +737,8 @@ LIMIT {$offset}, {$rowCount}
    */
   public static function processDupes() {
     $oper = CRM_Utils_Type::escape($_REQUEST['op'], 'String');
-    $cid  = CRM_Utils_Type::escape($_REQUEST['cid'], 'Positive');
-    $oid  = CRM_Utils_Type::escape($_REQUEST['oid'], 'Positive');
+    $cid = CRM_Utils_Type::escape($_REQUEST['cid'], 'Positive');
+    $oid = CRM_Utils_Type::escape($_REQUEST['oid'], 'Positive');
 
     if (!$oper || !$cid || !$oid) {
       return;
@@ -1023,9 +1023,9 @@ LIMIT {$offset}, {$rowCount}
    * Used to store selected contacts across multiple pages in advanced search.
    */
   public static function selectUnselectContacts() {
-    $name         = CRM_Utils_Array::value('name', $_REQUEST);
-    $cacheKey     = CRM_Utils_Array::value('qfKey', $_REQUEST);
-    $state        = CRM_Utils_Array::value('state', $_REQUEST, 'checked');
+    $name = CRM_Utils_Array::value('name', $_REQUEST);
+    $cacheKey = CRM_Utils_Array::value('qfKey', $_REQUEST);
+    $state = CRM_Utils_Array::value('state', $_REQUEST, 'checked');
     $variableType = CRM_Utils_Array::value('variableType', $_REQUEST, 'single');
 
     $actionToPerform = CRM_Utils_Array::value('action', $_REQUEST, 'select');
@@ -1075,9 +1075,9 @@ LIMIT {$offset}, {$rowCount}
     }
     else {
       $entityBlock = array(
-          'contact_id' => $contactId,
-          'entity_id' => $contactId,
-        );
+        'contact_id' => $contactId,
+        'entity_id' => $contactId,
+      );
       $addressVal = CRM_Core_BAO_Address::getValues($entityBlock);
     }
 

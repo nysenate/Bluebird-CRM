@@ -415,9 +415,6 @@ ORDER BY log_civicrm_entity_log_date DESC {$this->_limit}";
     $this->endPostProcess($rows);
   }
 
-  /* NYSS #7893
-  RE:CRM_Report_Form_Contact_LoggingSummary, log types now generated in the triggers 
-  Left this in for any other classes that may extend ReportSummary */
   /**
    * Get log type.
    *

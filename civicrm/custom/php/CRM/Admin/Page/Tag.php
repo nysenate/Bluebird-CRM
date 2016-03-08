@@ -23,7 +23,7 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
@@ -170,7 +170,7 @@ WHERE t2.id IS NULL {$reservedClause}";
                  FROM civicrm_tag t1 LEFT JOIN civicrm_tag t2 ON t1.parent_id = t2.id
 			     WHERE t1.parent_id <> 292
                  GROUP BY t1.parent_id, t1.id";
-                 
+
     $tag = CRM_Core_DAO::executeQuery($query);
     $values = array();
 

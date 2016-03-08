@@ -23,7 +23,7 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
@@ -131,9 +131,9 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
     $url = CRM_Utils_System::url('civicrm/contact/view', 'reset=1&cid=' . $this->_contactId);
     $session->pushUserContext($url);
 
-    $params   = array();
+    $params = array();
     $defaults = array();
-    $ids      = array();
+    $ids = array();
 
     $params['id'] = $params['contact_id'] = $this->_contactId;
     $params['noRelationships'] = $params['noNotes'] = $params['noGroups'] = TRUE;
@@ -196,7 +196,7 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
         if (isset($value['customData'])) {
           foreach ($defaults[$key] as $blockId => $blockVal) {
             $idValue = $blockVal['id'];
-            if ( $key == 'address' ) {
+            if ($key == 'address') {
               if (!empty($blockVal['master_id'])) {
                 $idValue = $blockVal['master_id'];
               }
@@ -222,7 +222,7 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
     if (!empty($communicationStyle)) {
       if (!empty($defaults['communication_style_id'])) {
         $defaults['communication_style_display'] = $communicationStyle[CRM_Utils_Array::value('communication_style_id', $defaults)];
-    }
+      }
       else {
         // Make sure the field is displayed as long as it is active, even if it is unset for this contact.
         $defaults['communication_style_display'] = '';

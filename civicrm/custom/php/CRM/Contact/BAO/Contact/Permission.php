@@ -23,7 +23,7 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
@@ -253,7 +253,7 @@ AND    $operationClause LIMIT 1";
    *
    * @return bool
    *   true if logged in user has permission to view
-   * selected contact record else false
+   *   selected contact record else false
    */
   public static function relationship($selectedContactID, $contactID = NULL) {
     $session = CRM_Core_Session::singleton();
@@ -349,7 +349,7 @@ WHERE  (( contact_id_a = %1 AND contact_id_b = %2 AND is_permission_a_b = 1 ) OR
   public static function validateOnlyChecksum($contactID, &$form, $redirect = TRUE) {
     // check if this is of the format cs=XXX
     if (!CRM_Contact_BAO_Contact_Utils::validChecksum($contactID,
-        CRM_Utils_Request::retrieve('cs', 'String', $form, FALSE)
+      CRM_Utils_Request::retrieve('cs', 'String', $form, FALSE)
     )
     ) {
       if ($redirect) {
@@ -374,7 +374,7 @@ WHERE  (( contact_id_a = %1 AND contact_id_b = %2 AND is_permission_a_b = 1 ) OR
     CRM_Core_DAO::executeQuery('SET @civicrm_user_id = %1',
       array(1 => array($contactID, 'Integer'))
     );
-    
+
     return TRUE;
   }
 
@@ -389,7 +389,7 @@ WHERE  (( contact_id_a = %1 AND contact_id_b = %2 AND is_permission_a_b = 1 ) OR
       $session->set('authSrc', CRM_Core_Permission::AUTH_SRC_CHECKSUM);
     }
     elseif (($session->get('authSrc') & CRM_Core_Permission::AUTH_SRC_CHECKSUM) == CRM_Core_Permission::AUTH_SRC_CHECKSUM) {
-      // if checksum wasn't present in REQUEST OR checksum result validated as FALSE, 
+      // if checksum wasn't present in REQUEST OR checksum result validated as FALSE,
       // and flag was already set exactly as AUTH_SRC_CHECKSUM, unset it.
       $session->set('authSrc', CRM_Core_Permission::AUTH_SRC_UNKNOWN);
     }

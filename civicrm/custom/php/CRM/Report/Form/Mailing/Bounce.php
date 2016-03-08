@@ -147,7 +147,6 @@ class CRM_Report_Form_Mailing_Bounce extends CRM_Report_Form {
         'bounce_reason' => array(
           'title' => ts('Bounce Reason'),
         ),
-        //NYSS 4583
         'time_stamp' => array(
           'title' => ts('Bounce Date'),
         ),

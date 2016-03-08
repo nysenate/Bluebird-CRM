@@ -23,7 +23,7 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
@@ -38,7 +38,7 @@ class CRM_Core_BAO_Phone extends CRM_Core_DAO_Phone {
 
   /**
    * Create phone object - note that the create function calls 'add' but
-   * has more business logic 
+   * has more business logic
    *
    * @param array $params
    *
@@ -79,7 +79,7 @@ class CRM_Core_BAO_Phone extends CRM_Core_DAO_Phone {
     $phone = new CRM_Core_DAO_Phone();
     $phone->copyValues($params);
     $phone->save();
-    
+
     CRM_Utils_Hook::post($hook, 'Phone', $phone->id, $phone);
     return $phone;
   }
@@ -140,7 +140,6 @@ LEFT JOIN civicrm_location_type ON ( civicrm_phone.location_type_id = civicrm_lo
 WHERE     civicrm_contact.id = %1 $cond
 ORDER BY civicrm_phone.is_primary DESC,  phone_id ASC ";
 
-
     $params = array(
       1 => array(
         $id,
@@ -149,8 +148,8 @@ ORDER BY civicrm_phone.is_primary DESC,  phone_id ASC ";
     );
 
     $numbers = $values = array();
-    $dao     = CRM_Core_DAO::executeQuery($query, $params);
-    $count   = 1;
+    $dao = CRM_Core_DAO::executeQuery($query, $params);
+    $count = 1;
     while ($dao->fetch()) {
       $values = array(
         'locationType' => $dao->locationType,
@@ -177,7 +176,7 @@ ORDER BY civicrm_phone.is_primary DESC,  phone_id ASC ";
    *
    * @param array $entityElements
    *   The array containing entity_id and.
-   * entity_table name
+   *   entity_table name
    *
    * @param null $type
    *

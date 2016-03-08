@@ -23,7 +23,7 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
@@ -44,7 +44,7 @@ class CRM_Case_BAO_Query {
 
     // add activity related fields
     if (!$excludeActivityFields) {
-    $fields = array_merge($fields, CRM_Activity_BAO_Activity::exportableFields('Case'));
+      $fields = array_merge($fields, CRM_Activity_BAO_Activity::exportableFields('Case'));
     }
 
     return $fields;
@@ -282,7 +282,7 @@ class CRM_Case_BAO_Query {
         if (strpos($name, 'type')) {
           $name = 'case_type_id';
           $label = 'Case Type(s)';
-          }
+        }
         elseif (strpos($name, 'status')) {
           $name = 'status_id';
           $label = 'Case Status(s)';
@@ -557,8 +557,8 @@ class CRM_Case_BAO_Query {
 
       case 'case_relationship':
         $session = CRM_Core_Session::singleton();
-        $userID  = $session->get('userID');
-        $from   .= " $side JOIN civicrm_relationship case_relationship ON ( case_relationship.contact_id_a = civicrm_case_contact.contact_id AND case_relationship.contact_id_b = {$userID} AND case_relationship.case_id = civicrm_case.id )";
+        $userID = $session->get('userID');
+        $from .= " $side JOIN civicrm_relationship case_relationship ON ( case_relationship.contact_id_a = civicrm_case_contact.contact_id AND case_relationship.contact_id_b = {$userID} AND case_relationship.case_id = civicrm_case.id )";
         break;
 
       case 'case_relation_type':
@@ -697,7 +697,7 @@ case_relation_type.id = case_relationship.relationship_type_id )";
     $form->addField('case_status_id', array('context' => 'search', 'entity' => 'Case'));
 
     CRM_Core_Form_Date::buildDateRange($form, 'case_from', 1, '_start_date_low', '_start_date_high', ts('From'), FALSE);
-    CRM_Core_Form_Date::buildDateRange($form, 'case_to',   1, '_end_date_low',   '_end_date_high',   ts('From'), FALSE);
+    CRM_Core_Form_Date::buildDateRange($form, 'case_to', 1, '_end_date_low', '_end_date_high', ts('From'), FALSE);
 
     $form->assign('validCiviCase', TRUE);
 

@@ -23,7 +23,7 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
@@ -50,7 +50,7 @@ class CRM_Contact_Form_Edit_Individual {
   public static function buildQuickForm(&$form, $inlineEditMode = NULL) {
     $form->applyFilter('__ALL__', 'trim');
 
-    if ( !$inlineEditMode || $inlineEditMode == 1 ) {
+    if (!$inlineEditMode || $inlineEditMode == 1) {
       $nameFields = CRM_Core_BAO_Setting::valueOptions(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
         'contact_edit_options', TRUE, NULL,
         FALSE, 'name', TRUE, 'AND v.filter = 2'
@@ -78,7 +78,7 @@ class CRM_Contact_Form_Edit_Individual {
       }
     }
 
-    if ( !$inlineEditMode || $inlineEditMode == 2 ) {
+    if (!$inlineEditMode || $inlineEditMode == 2) {
       // nick_name
       $form->addField('nick_name');
 
@@ -95,7 +95,7 @@ class CRM_Contact_Form_Edit_Individual {
       $form->addField('contact_source', array('class' => 'big'));
     }
 
-    if ( !$inlineEditMode ) {
+    if (!$inlineEditMode) {
       $checkSimilar = Civi::settings()->get('contact_ajax_check_similar');
 
       if ($checkSimilar == NULL) {

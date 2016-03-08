@@ -1156,7 +1156,7 @@ class CRM_Contact_DAO_Contact extends CRM_Core_DAO
           'dataPattern' => '',
           'html' => array(
             'type' => 'CheckBox',
-        ) ,
+          ) ,
         ) ,
         'created_date' => array(
           'name' => 'created_date',

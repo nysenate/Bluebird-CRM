@@ -23,7 +23,7 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
@@ -82,10 +82,10 @@ class CRM_Core_BAO_Address extends CRM_Core_DAO_Address {
 
       $addressExists = self::dataExists($value);
       if (empty($value['id'])) {
-          if (!empty($addresses) && array_key_exists(CRM_Utils_Array::value('location_type_id', $value), $addresses)) {
-            $value['id'] = $addresses[CRM_Utils_Array::value('location_type_id', $value)];
-          }
+        if (!empty($addresses) && array_key_exists(CRM_Utils_Array::value('location_type_id', $value), $addresses)) {
+          $value['id'] = $addresses[CRM_Utils_Array::value('location_type_id', $value)];
         }
+      }
 
       // Note there could be cases when address info already exist ($value[id] is set) for a contact/entity
       // BUT info is not present at this time, and therefore we should be really careful when deleting the block.
@@ -355,13 +355,13 @@ class CRM_Core_BAO_Address extends CRM_Core_DAO_Address {
 
       // do street parsing again if enabled, since street address might have changed
       $parseStreetAddress = CRM_Utils_Array::value(
-          'street_address_parsing',
-          CRM_Core_BAO_Setting::valueOptions(
-            CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
-            'address_options'
-          ),
-          FALSE
-        );
+        'street_address_parsing',
+        CRM_Core_BAO_Setting::valueOptions(
+          CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
+          'address_options'
+        ),
+        FALSE
+      );
 
       if ($parseStreetAddress && !empty($params['street_address'])) {
         foreach (array(
@@ -634,7 +634,7 @@ ORDER BY civicrm_address.is_primary DESC, address_id ASC";
    *
    * @param array $entityElements
    *   The array containing entity_id and.
-   * entity_table name
+   *   entity_table name
    *
    * @return array
    *   the array of adrress data
@@ -694,7 +694,7 @@ ORDER BY civicrm_address.is_primary DESC, civicrm_address.location_type_id DESC,
         $addressSequence[$key] = 'city_postal_code';
       }
       elseif (
-        in_array($field, array('country', 'state_province', 'city', 'postal_code'))
+      in_array($field, array('country', 'state_province', 'city', 'postal_code'))
       ) {
         unset($addressSequence[$key]);
       }
@@ -874,7 +874,7 @@ ORDER BY civicrm_address.is_primary DESC, civicrm_address.location_type_id DESC,
     // the DB to fatal
     $fields = CRM_Core_BAO_Address::fields();
     foreach ($fields as $fieldname => $field) {
-      if(!empty($field['maxlength']) && strlen(CRM_Utils_Array::value($fieldname, $parseFields)) > $field['maxlength']) {
+      if (!empty($field['maxlength']) && strlen(CRM_Utils_Array::value($fieldname, $parseFields)) > $field['maxlength']) {
         return $emptyParseFields;
       }
     }
@@ -896,9 +896,9 @@ ORDER BY civicrm_address.is_primary DESC, civicrm_address.location_type_id DESC,
     static $addressOptions = NULL;
     if (!$addressOptions) {
       $addressOptions = CRM_Core_BAO_Setting::valueOptions(
-          CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
-          'address_options'
-        );
+        CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
+        'address_options'
+      );
     }
 	//NYSS add geocode fields manually so available to import/export
 	$addressOptions['geo_code_1'] = 1;
@@ -1144,7 +1144,7 @@ SELECT is_primary,
       return CRM_Contact_BAO_Contact_Utils::createCurrentEmployerRelationship($currentContactId, $sharedContactId);
     }
 
-      // get the relationship type id of "Household Member of"
+    // get the relationship type id of "Household Member of"
     $relTypeId = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_RelationshipType', 'Household Member of', 'id', 'name_a_b');
 
     if (!$relTypeId) {

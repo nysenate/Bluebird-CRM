@@ -23,7 +23,7 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
@@ -76,14 +76,14 @@ class CRM_Core_IDS {
     require_once 'IDS/Init.php';
     try {
       $init = IDS_Init::init($configFile);
-      $ids  = new IDS_Monitor($_REQUEST, $init);
+      $ids = new IDS_Monitor($_REQUEST, $init);
     }
     catch (Exception $e) {
       // might be an old stale copy of Config.IDS.ini
       // lets try to rebuild it again and see if it works
       $configFile = self::createConfigFile(TRUE);
       $init = IDS_Init::init($configFile);
-      $ids  = new IDS_Monitor($_REQUEST, $init);
+      $ids = new IDS_Monitor($_REQUEST, $init);
     }
 
     $result = $ids->run();
@@ -183,7 +183,7 @@ class CRM_Core_IDS {
    *
    * @return bool
    */
-  private function react(IDS_Report$result) {
+  private function react(IDS_Report $result) {
 
     $impact = $result->getImpact();
     if ($impact >= $this->threshold['kick']) {
@@ -217,7 +217,7 @@ class CRM_Core_IDS {
     $ip = (isset($_SERVER['SERVER_ADDR']) &&
       $_SERVER['SERVER_ADDR'] != '127.0.0.1') ? $_SERVER['SERVER_ADDR'] : (
       isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR'] : '127.0.0.1'
-    );
+      );
 
     $data = array();
     $session = CRM_Core_Session::singleton();
@@ -264,9 +264,9 @@ class CRM_Core_IDS {
 
     $path = implode('/', $args);
     if (in_array(
-        $path,
-        array("civicrm/ajax/rest", "civicrm/api/json")
-      )) {
+      $path,
+      array("civicrm/ajax/rest", "civicrm/api/json")
+    )) {
       require_once "api/v3/utils.php";
       $error = civicrm_api3_create_error(
         $msg,

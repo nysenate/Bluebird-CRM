@@ -23,7 +23,7 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
@@ -42,9 +42,9 @@ class CRM_Contact_Form_Task_PDFLetterCommon {
    * @param CRM_Core_Form $form
    */
   public static function preProcess(&$form) {
-    $messageText    = array();
+    $messageText = array();
     $messageSubject = array();
-    $dao            = new CRM_Core_BAO_MessageTemplate();
+    $dao = new CRM_Core_BAO_MessageTemplate();
     $dao->is_active = 1;
     $dao->find();
     while ($dao->fetch()) {
@@ -182,12 +182,12 @@ class CRM_Contact_Form_Task_PDFLetterCommon {
         'subName' => 'preview',
         'icon' => 'fa-search',
         'isDefault' => FALSE,
-        );
-      }
+      );
+    }
     $buttons[] = array(
-              'type' => 'cancel',
+      'type' => 'cancel',
       'name' => $form->get('action') == CRM_Core_Action::VIEW ? ts('Done') : ts('Cancel'),
-        );
+    );
     $form->addButtons($buttons);
 
     $form->addFormRule(array('CRM_Contact_Form_Task_PDFLetterCommon', 'formRule'), $form);
@@ -357,7 +357,7 @@ class CRM_Contact_Form_Task_PDFLetterCommon {
 
     // CRM-16725 Skip creation of activities if user is previewing their PDF letter(s)
     if ($buttonName == '_qf_PDF_submit') {
-    self::createActivities($form, $html_message, $form->_contactIds);
+      self::createActivities($form, $html_message, $form->_contactIds);
     }
 
     //NYSS 4241
@@ -377,10 +377,10 @@ class CRM_Contact_Form_Task_PDFLetterCommon {
    */
   public static function createActivities($form, $html_message, $contactIds) {
     //Added for CRM-12682: Add activity subject and campaign fields
-    $formValues     = $form->controller->exportValues($form->getName());
+    $formValues = $form->controller->exportValues($form->getName());
 
-    $session        = CRM_Core_Session::singleton();
-    $userID         = $session->get('userID');
+    $session = CRM_Core_Session::singleton();
+    $userID = $session->get('userID');
     $activityTypeID = CRM_Core_OptionGroup::getValue(
       'activity_type',
       'Print PDF Letter',
@@ -450,8 +450,8 @@ class CRM_Contact_Form_Task_PDFLetterCommon {
         $matches = array();
         if (preg_match('/^(&nbsp;)+/', $msg, $matches)) {
           $spaceLen = strlen($matches[0]) / 6;
-          $trimMsg  = ltrim($msg, '&nbsp; ');
-          $charLen  = strlen($trimMsg);
+          $trimMsg = ltrim($msg, '&nbsp; ');
+          $charLen = strlen($trimMsg);
           $totalLen = $charLen + $spaceLen;
           if ($totalLen > 100) {
             $spacesCount = 10;
@@ -469,5 +469,5 @@ class CRM_Contact_Form_Task_PDFLetterCommon {
     }
     $message = implode($newLineOperators['p']['oper'], $htmlMsg);
   }
-}
 
+}

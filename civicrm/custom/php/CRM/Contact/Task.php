@@ -23,7 +23,7 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
@@ -180,7 +180,7 @@ class CRM_Contact_Task {
           'result' => FALSE,
         ),
       );
-            
+
       //CRM-16329, if SMS provider is configured show sms action.
       $providersCount = CRM_SMS_BAO_Provider::activeProviderCount();
       if ($providersCount) {
@@ -198,7 +198,6 @@ class CRM_Contact_Task {
           'result' => true
         );
       }
-
       if (CRM_Contact_BAO_ContactType::isActive('Household')) {
         $label = CRM_Contact_BAO_ContactType::getLabel('household');
         self::$_tasks[self::HOUSEHOLD_CONTACTS] = array(

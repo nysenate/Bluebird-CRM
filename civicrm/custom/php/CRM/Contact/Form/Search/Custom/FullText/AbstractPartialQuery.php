@@ -23,7 +23,7 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
@@ -169,7 +169,7 @@ $sqlStatement
             CRM_Core_DAO::executeQuery($sql);
           }
         }
-        else if ($tableName == 'file') {
+        elseif ($tableName == 'file') {
           $searcher = CRM_Core_BAO_File::getSearchService();
           if (!($searcher && CRM_Core_Permission::check('access uploaded files'))) {
             continue;
@@ -177,7 +177,7 @@ $sqlStatement
 
           $query = $tableValues + array(
             'text' => CRM_Utils_QueryFormatter::singleton()
-              ->format($queryText, CRM_Utils_QueryFormatter::LANG_SOLR),
+            ->format($queryText, CRM_Utils_QueryFormatter::LANG_SOLR),
           );
           list($intLimit, $intOffset) = $this->parseLimitOffset($limit);
           $files = $searcher->search($query, $intLimit, $intOffset);

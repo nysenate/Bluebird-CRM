@@ -23,7 +23,7 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
@@ -201,10 +201,10 @@ class CRM_Activity_BAO_Query {
         if (in_array($name, array('activity_status_id', 'activity_subject'))) {
           $name = str_replace('activity_', '', $name);
           $qillName = str_replace('_id', '', $qillName);
-              }
+        }
         if ($name == 'activity_campaign_id') {
           $name  = 'campaign_id';
-            }
+        }
 
         $dataType = !empty($fields[$qillName]['type']) ? CRM_Utils_Type::typeToString($fields[$qillName]['type']) : 'String';
 
@@ -243,11 +243,11 @@ class CRM_Activity_BAO_Query {
             $query->_where[$grouping][] = " civicrm_activity_contact.record_type_id = $sourceID";
             $query->_qill[$grouping][] = ts('Activity created by');
           }
-          else if ($values[2] == 2) {
+          elseif ($values[2] == 2) {
             $query->_where[$grouping][] = " civicrm_activity_contact.record_type_id = $assigneeID";
             $query->_qill[$grouping][] = ts('Activity assigned to');
           }
-          else if ($values[2] == 3) {
+          elseif ($values[2] == 3) {
             $query->_where[$grouping][] = " civicrm_activity_contact.record_type_id = $targetID";
             $query->_qill[$grouping][] = ts('Activity targeted to');
           }
@@ -300,7 +300,7 @@ class CRM_Activity_BAO_Query {
       case 'activity_test':
         // We don't want to include all tests for sql OR CRM-7827
         if (!$value || $query->getOperator() != 'OR') {
-            $query->_where[$grouping][] = CRM_Contact_BAO_Query::buildClause("civicrm_activity.is_test", $op, $value, "Boolean");
+          $query->_where[$grouping][] = CRM_Contact_BAO_Query::buildClause("civicrm_activity.is_test", $op, $value, "Boolean");
           if ($value) {
             $query->_qill[$grouping][] = ts('Activity is a Test');
           }
@@ -345,9 +345,9 @@ class CRM_Activity_BAO_Query {
         break;
 
       case 'activity_result':
-        if(is_array($value)) {
+        if (is_array($value)) {
           $safe = NULL;
-          while(list(,$k) = each($value)) {
+          while (list(, $k) = each($value)) {
             $safe[] = "'" . CRM_Utils_Type::escape($k, 'String') . "'";
           }
           $query->_where[$grouping][] = "civicrm_activity.result IN (" . implode(',', $safe) . ")";
@@ -455,7 +455,7 @@ class CRM_Activity_BAO_Query {
     $activityOptions = CRM_Core_PseudoConstant::activityType(TRUE, TRUE, FALSE, 'label', TRUE);
     $form->addSelect('activity_type_id',
       array('entity' => 'activity', 'label' => ts('Activity Type(s)'), 'multiple' => 'multiple', 'option_url' => NULL, 'placeholder' => ts('- any -'))
-        );
+    );
 
     CRM_Core_Form_Date::buildDateRange($form, 'activity_date', 1, '_low', '_high', ts('From'), FALSE, FALSE);
     $followUpActivity = array(
@@ -495,7 +495,7 @@ class CRM_Activity_BAO_Query {
       $form->add('select', 'activity_survey_id', ts('Survey / Petition'),
                  array('' => ts('- none -')) + $surveys, FALSE,
                  array('class' => 'crm-select2')
-    );
+                 );
     }
     $extends = array('Activity');
     $groupDetails = CRM_Core_BAO_CustomGroup::getGroupDetail(NULL, TRUE, $extends);
@@ -522,22 +522,22 @@ class CRM_Activity_BAO_Query {
       $form->addSelect('activity_engagement_level', array('entity' => 'activity', 'context' => 'search'));
 
       // Add survey result field.
-      $optionGroups  = CRM_Campaign_BAO_Survey::getResultSets( 'name' );
+      $optionGroups = CRM_Campaign_BAO_Survey::getResultSets('name');
       $resultOptions = array();
-      foreach ( $optionGroups as $gid => $name ) {
-        if ( $name ) {
+      foreach ($optionGroups as $gid => $name) {
+        if ($name) {
           $value = array();
           $value = CRM_Core_OptionGroup::values($name);
           if (!empty($value)) {
-            while(list($k,$v) = each($value)) {
+            while (list($k, $v) = each($value)) {
               $resultOptions[$v] = $v;
             }
           }
         }
-    }
+      }
       // If no survey result options have been created, don't build
       // the field to avoid clutter.
-      if(count($resultOptions) > 0) {
+      if (count($resultOptions) > 0) {
         $buildSurveyResult = TRUE;
         asort($resultOptions);
         $form->add('select', 'activity_result', ts("Survey Result"),
@@ -546,7 +546,7 @@ class CRM_Activity_BAO_Query {
         );
       }
     }
-     
+
     $form->assign('buildEngagementLevel', $buildEngagementLevel);
     $form->assign('buildSurveyResult', $buildSurveyResult);
     $form->setDefaults(array('activity_test' => 0));
@@ -600,5 +600,5 @@ class CRM_Activity_BAO_Query {
 
     return $properties;
   }
-  
-    }
+
+}

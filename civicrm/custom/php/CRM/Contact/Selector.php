@@ -23,7 +23,7 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
@@ -335,9 +335,9 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
    * @param array $params
    */
   public function getPagerParams($action, &$params) {
-    $params['status']    = ts('Contact %%StatusMessage%%');
+    $params['status'] = ts('Contact %%StatusMessage%%');
     $params['csvString'] = NULL;
-    $params['rowCount']  = CRM_Utils_Pager::ROWCOUNT;
+    $params['rowCount'] = CRM_Utils_Pager::ROWCOUNT;
 
     $params['buttonTop'] = 'PagerTopButton';
     $params['buttonBottom'] = 'PagerBottomButton';
@@ -377,7 +377,7 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
         'contact_sub_type',
         'sort_name',
       );
-      foreach ( $doNotCareElements as $value) {
+      foreach ($doNotCareElements as $value) {
         unset($this->_returnProperties[$value]);
       }
     }
@@ -705,9 +705,9 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
         elseif (strpos($property, '-im')) {
           $row[$property] = $result->$property;
           if (!empty($result->$property)) {
-            $imProviders    = CRM_Core_PseudoConstant::get('CRM_Core_DAO_IM', 'provider_id');
-            $providerId     = $property . "-provider_id";
-            $providerName   = $imProviders[$result->$providerId];
+            $imProviders = CRM_Core_PseudoConstant::get('CRM_Core_DAO_IM', 'provider_id');
+            $providerId = $property . "-provider_id";
+            $providerName = $imProviders[$result->$providerId];
             $row[$property] = $result->$property . " ({$providerName})";
           }
         }
@@ -732,9 +732,9 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
           $websiteFld = $websiteKey . '-' . array_pop($propertyArray);
           if (!empty($result->$websiteFld)) {
             $websiteTypes = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Website', 'website_type_id');
-            $websiteType  = $websiteTypes[$result->{"$websiteKey-website_type_id"}];
+            $websiteType = $websiteTypes[$result->{"$websiteKey-website_type_id"}];
             $websiteValue = $result->$websiteFld;
-            $websiteUrl   = "<a href=\"{$websiteValue}\">{$websiteValue}  ({$websiteType})</a>";
+            $websiteUrl = "<a href=\"{$websiteValue}\">{$websiteValue}  ({$websiteType})</a>";
           }
           $row[$property] = $websiteUrl;
         }
@@ -903,9 +903,9 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
     if (!$pageNum || (!empty($currentSortID) && $currentSortID != $previousSortID)) {
       CRM_Core_BAO_PrevNextCache::deleteItem(NULL, $cacheKey, 'civicrm_contact');
       // this means it's fresh search, so set pageNum=1
-    if (!$pageNum) {
-      $pageNum = 1;
-    }
+      if (!$pageNum) {
+        $pageNum = 1;
+      }
     }
 
     // set the current sort as previous sort
@@ -1088,8 +1088,8 @@ SELECT DISTINCT 'civicrm_contact', contact_a.id, contact_a.id, '$cacheKey', cont
       }
       else {
         // return if above query fails
-      return;
-    }
+        return;
+      }
     }
 
     // also record an entry in the cache key table, so we can delete it periodically
@@ -1116,14 +1116,14 @@ SELECT DISTINCT 'civicrm_contact', contact_a.id, contact_a.id, '$cacheKey', cont
 
     // build insert query, note that currently we build cache for 500 contact records at a time, hence below approach
     $insertValues = array();
-    while($dao->fetch()) {
+    while ($dao->fetch()) {
       $insertValues[] = "('civicrm_contact', {$dao->contact_id}, {$dao->contact_id}, '{$cacheKey}', '" . CRM_Core_DAO::escapeString($dao->sort_name) . "')";
     }
 
     //update pre/next cache using single insert query
     if (!empty($insertValues)) {
       $sql = 'INSERT INTO civicrm_prevnext_cache ( entity_table, entity_id1, entity_id2, cacheKey, data ) VALUES
-'.implode(',', $insertValues);
+' . implode(',', $insertValues);
 
       $result = CRM_Core_DAO::executeQuery($sql);
     }
@@ -1252,12 +1252,12 @@ SELECT DISTINCT 'civicrm_contact', contact_a.id, contact_a.id, '$cacheKey', cont
       );
     }
     else {
-    $query = new CRM_Contact_BAO_Query($params,
-      CRM_Contact_BAO_Query::NO_RETURN_PROPERTIES,
+      $query = new CRM_Contact_BAO_Query($params,
+        CRM_Contact_BAO_Query::NO_RETURN_PROPERTIES,
         NULL, FALSE, FALSE, 1,
         FALSE, TRUE, TRUE, $displayRelationshipType,
-      $queryOperator
-    );
+        $queryOperator
+      );
     }
     $value = $query->searchQuery(0, 0, $sort,
       FALSE, FALSE, FALSE,

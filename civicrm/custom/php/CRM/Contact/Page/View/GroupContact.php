@@ -23,7 +23,7 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
@@ -39,9 +39,9 @@ class CRM_Contact_Page_View_GroupContact extends CRM_Core_Page {
 
     $count = CRM_Contact_BAO_GroupContact::getContactGroup($this->_contactId, NULL, NULL, TRUE);
 
-    $in      = CRM_Contact_BAO_GroupContact::getContactGroup($this->_contactId, 'Added');
+    $in = CRM_Contact_BAO_GroupContact::getContactGroup($this->_contactId, 'Added');
     $pending = CRM_Contact_BAO_GroupContact::getContactGroup($this->_contactId, 'Pending');
-    $out     = CRM_Contact_BAO_GroupContact::getContactGroup($this->_contactId, 'Removed');
+    $out = CRM_Contact_BAO_GroupContact::getContactGroup($this->_contactId, 'Removed');
 
     // keep track of all 'added' contact groups so we can remove them from the smart group
     // section

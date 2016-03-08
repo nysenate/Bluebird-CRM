@@ -1,29 +1,29 @@
 <?php
 /*
- +--------------------------------------------------------------------+
+  +--------------------------------------------------------------------+
   | CiviCRM version 4.7                                                |
- +--------------------------------------------------------------------+
+  +--------------------------------------------------------------------+
   | Copyright CiviCRM LLC (c) 2004-2015                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
- |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
- +--------------------------------------------------------------------+
-*/
+  +--------------------------------------------------------------------+
+  | This file is a part of CiviCRM.                                    |
+  |                                                                    |
+  | CiviCRM is free software; you can copy, modify, and distribute it  |
+  | under the terms of the GNU Affero General Public License           |
+  | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
+  |                                                                    |
+  | CiviCRM is distributed in the hope that it will be useful, but     |
+  | WITHOUT ANY WARRANTY; without even the implied warranty of         |
+  | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
+  | See the GNU Affero General Public License for more details.        |
+  |                                                                    |
+  | You should have received a copy of the GNU Affero General Public   |
+  | License and the CiviCRM Licensing Exception along                  |
+  | with this program; if not, contact CiviCRM LLC                     |
+  | at info[AT]civicrm[DOT]org. If you have questions about the        |
+  | GNU Affero General Public License or the licensing of CiviCRM,     |
+  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+  +--------------------------------------------------------------------+
+ */
 
 /**
  *
@@ -56,7 +56,7 @@ class CRM_Core_BAO_PrevNextCache extends CRM_Core_DAO_PrevNextCache {
 
     if ($mergeId == NULL) {
       $query = "
-SELECT id 
+SELECT id
 FROM   civicrm_prevnext_cache
 WHERE  cacheKey     = %3 AND
        entity_id1 = %1 AND
@@ -86,10 +86,9 @@ WHERE  cacheKey     = %3 AND
         1 => array($mergeId, 'Integer'),
         2 => array($cacheKey, 'String'),
       );
-      $sql       = "SELECT pn.id, pn.entity_id1, pn.entity_id2, pn.data FROM civicrm_prevnext_cache pn {$join} ";
+      $sql = "SELECT pn.id, pn.entity_id1, pn.entity_id2, pn.data FROM civicrm_prevnext_cache pn {$join} ";
       $wherePrev = " WHERE pn.id < %1 AND pn.cacheKey = %2 {$where} ORDER BY ID DESC LIMIT 1";
-      $sqlPrev   = $sql . $wherePrev;
-
+      $sqlPrev = $sql . $wherePrev;
 
       $dao = CRM_Core_DAO::executeQuery($sqlPrev, $p);
       if ($dao->fetch()) {
@@ -221,7 +220,7 @@ WHERE  cacheKey     = %3 AND
     $query = "
 SELECT SQL_CALC_FOUND_ROWS {$selectString}
 FROM   civicrm_prevnext_cache pn
-{$join}
+       {$join}
 WHERE  (pn.cacheKey = %1 OR pn.cacheKey = %2)
 ";
     $params = array(
@@ -242,15 +241,15 @@ WHERE  (pn.cacheKey = %1 OR pn.cacheKey = %2)
 
     $dao = CRM_Core_DAO::executeQuery($query, $params);
 
-    $main = array();
+    $main  = array();
     $count = 0;
     while ($dao->fetch()) {
       if (self::is_serialized($dao->data)) {
         $main[$count] = unserialize($dao->data);
-        }
+      }
       else {
         $main[$count] = $dao->data;
-            }
+      }
 
       if (!empty($select)) {
         $extraData = array();
@@ -268,10 +267,10 @@ WHERE  (pn.cacheKey = %1 OR pn.cacheKey = %2)
       }
       $count++;
     }
-    
+
     return $main;
   }
-  
+
   /**
    * @param $string
    *
@@ -280,7 +279,7 @@ WHERE  (pn.cacheKey = %1 OR pn.cacheKey = %2)
   public static function is_serialized($string) {
     return (@unserialize($string) !== FALSE);
   }
-  
+
   /**
    * @param $values
    */
@@ -302,8 +301,8 @@ WHERE  (pn.cacheKey = %1 OR pn.cacheKey = %2)
    */
   public static function getCount($cacheKey, $join = NULL, $where = NULL, $op = "=") {
     $query = "
-SELECT COUNT(*) FROM civicrm_prevnext_cache pn 
-{$join}
+SELECT COUNT(*) FROM civicrm_prevnext_cache pn
+       {$join}
 WHERE (pn.cacheKey $op %1 OR pn.cacheKey $op %2)
 ";
     if ($where) {
@@ -359,8 +358,8 @@ WHERE (pn.cacheKey $op %1 OR pn.cacheKey $op %2)
         $cids[$dupe[1]] = 1;
       }
       $cidString = implode(', ', array_keys($cids));
-      $sql       = "SELECT id, display_name FROM civicrm_contact WHERE id IN ($cidString) ORDER BY sort_name";
-      $dao       = new CRM_Core_DAO();
+      $sql = "SELECT id, display_name FROM civicrm_contact WHERE id IN ($cidString) ORDER BY sort_name";
+      $dao = new CRM_Core_DAO();
       $dao->query($sql);
       while ($dao->fetch()) {
         $displayNames[$dao->id] = $dao->display_name;
@@ -419,7 +418,7 @@ AND        c.created_date < date_sub( NOW( ), INTERVAL %2 day )
    * @param string $action
    * @param array $cIds
    * @param string $entity_table
-    */
+   */
   public static function markSelection($cacheKey, $action = 'unselect', $cIds = NULL, $entity_table = 'civicrm_contact') {
     if (!$cacheKey) {
       return;
@@ -431,13 +430,13 @@ AND        c.created_date < date_sub( NOW( ), INTERVAL %2 day )
       if (is_array($cIds)) {
         $cIdFilter = "(" . implode(',', $cIds) . ")";
         $whereClause = "
-WHERE cacheKey LIKE %1 
+WHERE cacheKey LIKE %1
 AND (entity_id1 IN {$cIdFilter} OR entity_id2 IN {$cIdFilter})
 ";
       }
       else {
         $whereClause = "
-WHERE cacheKey LIKE %1 
+WHERE cacheKey LIKE %1
 AND (entity_id1 = %2 OR entity_id2 = %2)
 ";
         $params[2] = array("{$cIds}", 'Integer');
@@ -458,7 +457,7 @@ AND (entity_id1 = %2 OR entity_id2 = %2)
       $sql = "
 UPDATE civicrm_prevnext_cache
 SET    is_selected = 0
-WHERE cacheKey LIKE %1 AND is_selected = 1
+WHERE  cacheKey LIKE %1 AND is_selected = 1
        {$entity_whereClause}
 ";
       $params[1] = array("{$cacheKey}%", 'String');
@@ -468,18 +467,18 @@ WHERE cacheKey LIKE %1 AND is_selected = 1
 
   /**
    * Get the selections.
-   * 
+   *
    * @param string $cacheKey
    *   Cache key.
    * @param string $action
    *   Action.
- *  $action : get - get only selection records 
+   *  $action : get - get only selection records
    *            getall - get all the records of the specified cache key
    * @param string $entity_table
    *   Entity table.
    *
    * @return array|NULL
- */
+   */
   public static function getSelection($cacheKey, $action = 'get', $entity_table = 'civicrm_contact') {
     if (!$cacheKey) {
       return NULL;
@@ -490,7 +489,7 @@ WHERE cacheKey LIKE %1 AND is_selected = 1
     if ($cacheKey && ($action == 'get' || $action == 'getall')) {
       $actionGet = ($action == "get") ? " AND is_selected = 1 " : "";
       $sql = "
-SELECT entity_id1, entity_id2 FROM civicrm_prevnext_cache 
+SELECT entity_id1, entity_id2 FROM civicrm_prevnext_cache
 WHERE cacheKey LIKE %1
       $actionGet
       $entity_whereClause
@@ -515,9 +514,9 @@ ORDER BY id
   public static function getSelectedContacts() {
     $qfKey = CRM_Utils_Request::retrieve('qfKey', 'String');
     $cacheKey = "civicrm search {$qfKey}";
-      $query = "
+    $query = "
 SELECT *
-FROM civicrm_prevnext_cache
+FROM   civicrm_prevnext_cache
 WHERE  cacheKey LIKE %1
   AND  is_selected=1
   AND  cacheKey NOT LIKE %2
@@ -526,9 +525,9 @@ WHERE  cacheKey LIKE %1
     $params1[2] = array("{$cacheKey}_alphabet%", 'String');
     $dao = CRM_Core_DAO::executeQuery($query, $params1);
 
-    $val = array( );
+    $val = array();
     while ($dao->fetch()) {
-        $val[] = $dao->data;
+      $val[] = $dao->data;
     }
     return $val;
   }
@@ -545,24 +544,24 @@ WHERE  cacheKey LIKE %1
     $params['buttonTop'] = 'PagerTopButton';
     $params['buttonBottom'] = 'PagerBottomButton';
     $params['rowCount'] = $form->get(CRM_Utils_Pager::PAGE_ROWCOUNT);
-    
+
     if (!$params['rowCount']) {
       $params['rowCount'] = CRM_Utils_Pager::ROWCOUNT;
     }
-  
+
     $qfKey = CRM_Utils_Request::retrieve('qfKey', 'String', $form);
     $cacheKey = "civicrm search {$qfKey}";
-    
+
     $query = "
 SELECT count(id)
-FROM civicrm_prevnext_cache
+FROM   civicrm_prevnext_cache
 WHERE  cacheKey LIKE %1
   AND  is_selected = 1
   AND  cacheKey NOT LIKE %2
 ";
     $params1[1] = array("{$cacheKey}%", 'String');
     $params1[2] = array("{$cacheKey}_alphabet%", 'String');
-    $paramsTotal     = CRM_Core_DAO::singleValueQuery($query, $params1);
+    $paramsTotal = CRM_Core_DAO::singleValueQuery($query, $params1);
     $params['total'] = $paramsTotal;
     $form->_pager = new CRM_Utils_Pager($params);
     $form->assign_by_ref('pager', $form->_pager);
@@ -584,4 +583,3 @@ WHERE  cacheKey LIKE %1
     }
   }
 }
-

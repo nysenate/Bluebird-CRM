@@ -23,7 +23,7 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
@@ -154,19 +154,19 @@ class CRM_Activity_Selector_Search extends CRM_Core_Selector_Base implements CRM
    */
   public function __construct(
     &$queryParams,
-    $action         = CRM_Core_Action::NONE,
+    $action = CRM_Core_Action::NONE,
     $activityClause = NULL,
-    $single         = FALSE,
-    $limit          = NULL,
-    $context        = 'search',
-    $compContext    = NULL
+    $single = FALSE,
+    $limit = NULL,
+    $context = 'search',
+    $compContext = NULL
   ) {
     // submitted form values
     $this->_queryParams = &$queryParams;
 
-    $this->_single      = $single;
-    $this->_limit       = $limit;
-    $this->_context     = $context;
+    $this->_single = $single;
+    $this->_limit = $limit;
+    $this->_context = $context;
     $this->_compContext = $compContext;
 
     $this->_activityClause = $activityClause;
@@ -259,8 +259,8 @@ class CRM_Activity_Selector_Search extends CRM_Core_Selector_Base implements CRM
       FALSE,
       $this->_activityClause
     );
-    $rows           = array();
-    $mailingIDs     = CRM_Mailing_BAO_Mailing::mailingACLIDs();
+    $rows = array();
+    $mailingIDs = CRM_Mailing_BAO_Mailing::mailingACLIDs();
     //NYSS
     if ( CRM_Core_Permission::check('access CiviMail') || CRM_Core_Permission::check('create mailings') ) {
 	    $accessCiviMail = 1;
@@ -297,7 +297,7 @@ class CRM_Activity_Selector_Search extends CRM_Core_Selector_Base implements CRM
         $contactId = CRM_Utils_Array::value('source_contact_id', $row);
       }
 
-      $row['target_contact_name']   = CRM_Activity_BAO_ActivityContact::getNames($row['activity_id'], $targetID);
+      $row['target_contact_name'] = CRM_Activity_BAO_ActivityContact::getNames($row['activity_id'], $targetID);
       $row['assignee_contact_name'] = CRM_Activity_BAO_ActivityContact::getNames($row['activity_id'], $assigneeID);
       list($row['source_contact_name'], $row['source_contact_id']) = CRM_Activity_BAO_ActivityContact::getNames($row['activity_id'], $sourceID, TRUE);
       $row['source_contact_name'] = implode(',', array_values($row['source_contact_name']));

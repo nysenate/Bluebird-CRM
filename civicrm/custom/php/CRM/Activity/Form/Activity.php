@@ -23,7 +23,7 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
@@ -110,9 +110,9 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
 
   /**
    * Survey activity.
-     *
-     * @var boolean
-     */
+   *
+   * @var boolean
+   */
   protected $_isSurveyActivity;
 
   protected $_values = array();
@@ -268,7 +268,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
       }
     }
 
-    //CRM-6957
+    // CRM-6957
     // When we come from contact search, activity id never comes.
     // So don't try to get from object, it might gives you wrong one.
 
@@ -603,7 +603,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
 
       list($defaults['activity_date_time'], $defaults['activity_date_time_time'])
         = CRM_Utils_Date::setDateDefaults(NULL, 'activityDateTime');
-      }
+    }
 
     if ($this->_activityTypeId) {
       $defaults['activity_type_id'] = $this->_activityTypeId;
@@ -618,7 +618,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
       $count = count(is_array($defaults['target_contact_id']) ? $defaults['target_contact_id'] : explode(',', $defaults['target_contact_id']));
       if ($count > 50) {
         $this->freeze(array('target_contact_id'));
-    }
+      }
     }
 
     if ($this->_action & (CRM_Core_Action::DELETE | CRM_Core_Action::RENEW)) {
@@ -690,8 +690,8 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
       //NYSS 3153 allow modification
       //NYSS 6567 if inbound email, freeze
       if ( $this->_activityTypeName == 'Inbound Email' ) {
-        $element->freeze( );
-      }
+      $element->freeze();
+    }
 
     // Call to RecurringEntity buildQuickForm for add/update mode.
     if ($this->_action & (CRM_Core_Action::UPDATE | CRM_Core_Action::ADD)) {
@@ -715,7 +715,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
       }
     }
 
-    //CRM-7362 --add campaigns.
+    // CRM-7362 --add campaigns.
     CRM_Campaign_BAO_Campaign::addCampaign($this, CRM_Utils_Array::value('campaign_id', $this->_values));
 
     // Add engagement level CRM-7775
@@ -823,18 +823,17 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
       );
       $js = array('onclick' => "return activityStatus(" . json_encode($message) . ");");
       $this->addButtons(array(
-          array(
-            'type' => 'upload',
-            'name' => ts('Save'),
-            'js' => $js,
-            'isDefault' => TRUE,
-          ),
-          array(
-            'type' => 'cancel',
-            'name' => ts('Cancel'),
-          ),
-        )
-      );
+        array(
+          'type' => 'upload',
+          'name' => ts('Save'),
+          'js' => $js,
+          'isDefault' => TRUE,
+        ),
+        array(
+          'type' => 'cancel',
+          'name' => ts('Cancel'),
+        ),
+      ));
     }
 
     if ($this->_activityTypeFile) {
@@ -956,10 +955,10 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
     foreach (array('target', 'assignee', 'followup_assignee') as $name) {
       if (!empty($params["{$name}_contact_id"])) {
         $params["{$name}_contact_id"] = explode(',', $params["{$name}_contact_id"]);
-    }
-    else {
+      }
+      else {
         $params["{$name}_contact_id"] = array();
-    }
+      }
     }
 
     // get ids for associated contacts
@@ -1114,14 +1113,14 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
       $assigneeContacts = CRM_Activity_BAO_ActivityAssignment::getAssigneeNames($activityIDs, TRUE, FALSE);
 
       if (!CRM_Utils_Array::crmIsEmptyArray($params['assignee_contact_id'])) {
-      $mailToContacts = array();
+        $mailToContacts = array();
 
         // Build an associative array with unique email addresses.
-      foreach ($activityAssigned as $id => $dnc) {
-        if (isset($id) && array_key_exists($id, $assigneeContacts)) {
-          $mailToContacts[$assigneeContacts[$id]['email']] = $assigneeContacts[$id];
+        foreach ($activityAssigned as $id => $dnc) {
+          if (isset($id) && array_key_exists($id, $assigneeContacts)) {
+            $mailToContacts[$assigneeContacts[$id]['email']] = $assigneeContacts[$id];
+          }
         }
-      }
 
         $sent = CRM_Activity_BAO_Activity::sendToAssignee($activity, $mailToContacts);
         if ($sent) {
@@ -1211,7 +1210,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
   public function endPostProcess(&$params, &$activity) {
     if ($this->_activityTypeFile) {
       $className = "CRM_{$this->_crmDir}_Form_Activity_{$this->_activityTypeFile}";
-      $className::endPostProcess($this, $params, $activity );
+      $className::endPostProcess($this, $params, $activity);
     }
   }
 

@@ -23,7 +23,7 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
@@ -126,9 +126,9 @@ class CRM_Case_XMLProcessor_Report extends CRM_Case_XMLProcessor {
     $dao = new CRM_Case_DAO_Case();
     $dao->id = $caseID;
     if ($dao->find(TRUE)) {
-      $case['subject']    = $dao->subject;
+      $case['subject'] = $dao->subject;
       $case['start_date'] = $dao->start_date;
-      $case['end_date']   = $dao->end_date;
+      $case['end_date'] = $dao->end_date;
       // FIXME: when we resolve if case_type_is single or multi-select
       if (strpos($dao->case_type_id, CRM_Core_DAO::VALUE_SEPARATOR) !== FALSE) {
         $caseTypeID = substr($dao->case_type_id, 1, -1);
@@ -361,9 +361,9 @@ WHERE      a.id = %1
     if (!empty($activityDAO->targetID)) {
       // Re-lookup the target ID since the DAO only has the first recipient if there are multiple.
       // Maybe not the best solution.
-      $targetNames   = CRM_Activity_BAO_ActivityContact::getNames($activityDAO->id, $targetID);
+      $targetNames = CRM_Activity_BAO_ActivityContact::getNames($activityDAO->id, $targetID);
       $processTarget = FALSE;
-      $label         = ts('With Contact(s)');
+      $label = ts('With Contact(s)');
       if (in_array($activityTypeInfo['name'], array('Email', 'Inbound Email'))) {
         $processTarget = TRUE;
         $label = ts('Recipient');
@@ -459,7 +459,7 @@ WHERE      a.id = %1
       );
 
       $reporterSortName = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact',
-       $source_contact_id,
+        $source_contact_id,
         'sort_name'
       );
       if (!array_key_exists($reporterSortName, $this->_redactionStringRules)) {
@@ -829,13 +829,13 @@ LIMIT  1
   }
 
   public static function printCaseReport() {
-    $caseID            = CRM_Utils_Request::retrieve('caseID', 'Positive', CRM_Core_DAO::$_nullObject);
-    $clientID          = CRM_Utils_Request::retrieve('cid', 'Positive', CRM_Core_DAO::$_nullObject);
-    $activitySetName   = CRM_Utils_Request::retrieve('asn', 'String', CRM_Core_DAO::$_nullObject);
-    $isRedact          = CRM_Utils_Request::retrieve('redact', 'Boolean', CRM_Core_DAO::$_nullObject);
+    $caseID = CRM_Utils_Request::retrieve('caseID', 'Positive', CRM_Core_DAO::$_nullObject);
+    $clientID = CRM_Utils_Request::retrieve('cid', 'Positive', CRM_Core_DAO::$_nullObject);
+    $activitySetName = CRM_Utils_Request::retrieve('asn', 'String', CRM_Core_DAO::$_nullObject);
+    $isRedact = CRM_Utils_Request::retrieve('redact', 'Boolean', CRM_Core_DAO::$_nullObject);
     $includeActivities = CRM_Utils_Request::retrieve('all', 'Positive', CRM_Core_DAO::$_nullObject);
-    $params            = $otherRelationships = $globalGroupInfo = array();
-    $report            = new CRM_Case_XMLProcessor_Report($isRedact);
+    $params = $otherRelationships = $globalGroupInfo = array();
+    $report = new CRM_Case_XMLProcessor_Report($isRedact);
     if ($includeActivities) {
       $params['include_activities'] = 1;
     }

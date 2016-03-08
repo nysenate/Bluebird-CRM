@@ -23,7 +23,7 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
@@ -65,9 +65,9 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
 
     //define variables
     $this->_allSearch = FALSE;
-    $this->_groups    = FALSE;
-    $this->_tags      = FALSE;
-    $this->_andOr     = CRM_Utils_Array::value('andOr', $this->_formValues);
+    $this->_groups = FALSE;
+    $this->_tags = FALSE;
+    $this->_andOr = CRM_Utils_Array::value('andOr', $this->_formValues);
     //make easy to check conditions for groups and tags are
     //selected or it is empty search
     if (empty($this->_includeGroups) && empty($this->_excludeGroups) &&
@@ -583,8 +583,8 @@ WHERE  gcc.group_id = {$ssGroup->id}
      */
 
     /*
-         * check the situation and set booleans
-         */
+     * check the situation and set booleans
+     */
     $Ig = ($iGroups != 0);
     $It = ($iTags != 0);
     $Xg = ($xGroups != 0);
@@ -596,8 +596,8 @@ WHERE  gcc.group_id = {$ssGroup->id}
     }
 
     /*
-         * Set from statement depending on array sel
-         */
+     * Set from statement depending on array sel
+     */
     $whereitems = array();
 
     //NYSS try creating/modifying single temp table rather than having large joins
@@ -756,8 +756,8 @@ WHERE  gcc.group_id = {$ssGroup->id}
   }
 
   /*
-     * Functions below generally don't need to be modified
-     */
+   * Functions below generally don't need to be modified
+   */
 
   /**
    * @inheritDoc

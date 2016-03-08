@@ -23,7 +23,7 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
@@ -47,7 +47,7 @@ class CRM_Contact_Form_Search_Custom_FullText_Contribution extends CRM_Contact_F
   public function isActive() {
     $config = CRM_Core_Config::singleton();
     return in_array('CiviContribute', $config->enableComponents) &&
-      CRM_Core_Permission::check('access CiviContribute');
+    CRM_Core_Permission::check('access CiviContribute');
   }
 
   /**

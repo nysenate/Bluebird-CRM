@@ -23,7 +23,7 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
@@ -166,11 +166,11 @@ class CRM_Contact_Import_ImportJob {
    * @param int $timeout
    */
   public function runImport(&$form, $timeout = 55) {
-    $mapper        = $this->_mapper;
-    $mapperFields  = array();
-    $phoneTypes    = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Phone', 'phone_type_id');
-    $imProviders   = CRM_Core_PseudoConstant::get('CRM_Core_DAO_IM', 'provider_id');
-    $websiteTypes  = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Website', 'website_type_id');
+    $mapper = $this->_mapper;
+    $mapperFields = array();
+    $phoneTypes = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Phone', 'phone_type_id');
+    $imProviders = CRM_Core_PseudoConstant::get('CRM_Core_DAO_IM', 'provider_id');
+    $websiteTypes = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Website', 'website_type_id');
     $locationTypes = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Address', 'location_type_id');
 
     //initialize mapper perperty value.
@@ -224,9 +224,9 @@ class CRM_Contact_Import_ImportJob {
       }
 
       $fldNameParts = explode('_', $fldName, 3);
-      $id           = $fldNameParts[0];
-      $first        = isset($fldNameParts[1]) ? $fldNameParts[1] : NULL;
-      $second       = isset($fldNameParts[2]) ? $fldNameParts[2] : NULL;
+      $id = $fldNameParts[0];
+      $first = isset($fldNameParts[1]) ? $fldNameParts[1] : NULL;
+      $second = isset($fldNameParts[2]) ? $fldNameParts[2] : NULL;
       if (($first == 'a' && $second == 'b') ||
         ($first == 'b' && $second == 'a')
       ) {
@@ -473,9 +473,9 @@ class CRM_Contact_Import_ImportJob {
    * @return array
    */
   public static function getIncompleteImportTables() {
-    $dao      = new CRM_Core_DAO();
+    $dao = new CRM_Core_DAO();
     $database = $dao->database();
-    $query    = "SELECT   TABLE_NAME FROM INFORMATION_SCHEMA
+    $query = "SELECT   TABLE_NAME FROM INFORMATION_SCHEMA
                   WHERE    TABLE_SCHEMA = ? AND
                            TABLE_NAME LIKE 'civicrm_import_job_%'
                   ORDER BY TABLE_NAME";

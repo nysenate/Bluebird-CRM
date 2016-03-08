@@ -23,7 +23,7 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
@@ -114,9 +114,9 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
       }
       else {
         $refs[$dao->parent_id]['children'][$dao->id] = &$thisref;
-          }
-        }
-        }
+      }
+    }
+  }
 
   /**
    * @param array $usedFor
@@ -129,8 +129,8 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
   public static function getTagsUsedFor(
     $usedFor = array('civicrm_contact'),
     $buildSelect = TRUE,
-    $all         = FALSE,
-    $parentId    = NULL
+    $all = FALSE,
+    $parentId = NULL
   ) {
     $tags = array();
 
@@ -200,7 +200,7 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
   public static function getTags(
     $usedFor = 'civicrm_contact',
     &$tags = array(),
-    $parentId  = NULL,
+    $parentId = NULL,
     $separator = '&nbsp;&nbsp;',
     $formatSelectable = FALSE
   ) {
@@ -221,7 +221,7 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
     // query and build the hierarchy with the algorithm below.
     $args = array(1 => array('%' . $usedFor . '%', 'String'));
     $query = "SELECT id, name, parent_id, is_tagset, is_selectable
-                  FROM civicrm_tag 
+                  FROM civicrm_tag
               WHERE used_for LIKE %1";
     if ($parentId) {
       $query .= " AND parent_id = %2";
@@ -273,9 +273,9 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
     // iterate through because we must modify the unplaced nodes list
     // during the loop.
     while (count($roots)) {
-      $new_roots         = array();
-      $current_rows      = $rows;
-      $root              = array_shift($roots);
+      $new_roots = array();
+      $current_rows = $rows;
+      $root = array_shift($roots);
       $tags[$root['id']] = array(
         $root['prefix'],
         $root['name'],
@@ -312,7 +312,7 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
     foreach ($tags as $key => $tag) {
       if (!empty($tag[2])) {
         $key = $tag[2] . "-" . $key;
-    }
+      }
       $formattedTags[$key] = $tag[0] . $tag[1];
     }
 
@@ -339,7 +339,7 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
     // delete all crm_entity_tag records with the selected tag id
     $entityTag = new CRM_Core_DAO_EntityTag();
     $entityTag->tag_id = $id;
-        $entityTag->delete();
+    $entityTag->delete();
 
     // delete from tag table
     $tag = new CRM_Core_DAO_Tag();
@@ -397,8 +397,8 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
 
     // save creator id and time
     if (!$tag->id) {
-      $session           = CRM_Core_Session::singleton();
-      $tag->created_id   = $session->get('userID');
+      $session = CRM_Core_Session::singleton();
+      $tag->created_id = $session->get('userID');
       $tag->created_date = date('YmdHis');
     }
 

@@ -23,7 +23,7 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
@@ -438,13 +438,13 @@ t_act.id as case_recent_activity_id,
 t_act.act_type_name as case_recent_activity_type_name,
 t_act.act_type AS case_recent_activity_type ";
     }
-    elseif ( $type == 'any' ) {
-      $query .=  " 
+    elseif ($type == 'any') {
+      $query .= "
 t_act.desired_date as case_activity_date,
 t_act.id as case_activity_id,
 t_act.act_type_name as case_activity_type_name,
 t_act.act_type AS case_activity_type ";
-    } 
+    }
 
     $query .= " FROM civicrm_case
                   INNER JOIN civicrm_case_contact ON civicrm_case.id = civicrm_case_contact.case_id
@@ -491,7 +491,7 @@ LEFT JOIN civicrm_option_group aog ON aog.name='activity_type'
   LEFT JOIN civicrm_option_value aov ON ( aov.option_group_id = aog.id AND aov.value = act.activity_type_id )
 ) AS t_act ";
     }
-    elseif ( $type == 'any' ) {
+    elseif ($type == 'any') {
       $query .= " LEFT JOIN
 (
   SELECT ca4.case_id, act4.id AS id, act4.activity_date_time AS desired_date, act4.activity_type_id, act4.status_id, aov.name AS act_type_name, aov.label AS act_type
@@ -506,7 +506,7 @@ LEFT JOIN civicrm_option_group aog ON aog.name='activity_type'
     AND aov.value = act4.activity_type_id
 ) AS t_act";
     }
-               
+
     $query .= "
         ON t_act.case_id = civicrm_case.id
  LEFT JOIN civicrm_phone ON (civicrm_phone.contact_id = civicrm_contact.id AND civicrm_phone.is_primary=1)
@@ -618,7 +618,7 @@ LEFT JOIN civicrm_option_group aog ON aog.name='activity_type'
     if (!$allCases) {
       $condition .= " AND case_relationship.contact_id_b = {$userID} ";
     }
-    if ( $type == 'upcoming' || $type == 'any' ) {
+    if ($type == 'upcoming' || $type == 'any') {
       $closedId = CRM_Core_OptionGroup::getValue('case_status', 'Closed', 'name');
       $condition .= "
 AND civicrm_case.status_id != $closedId";
@@ -664,7 +664,7 @@ AND civicrm_case.status_id != $closedId";
       $resultFields[] = 'case_recent_activity_type';
       $resultFields[] = 'case_recent_activity_id';
     }
-    elseif ( $type == 'any' ) {
+    elseif ($type == 'any') {
       $resultFields[] = 'case_activity_date';
       $resultFields[] = 'case_activity_type_name';
       $resultFields[] = 'case_activity_type';
@@ -937,8 +937,8 @@ SELECT case_status.label AS case_status, status_id, civicrm_case_type.title AS c
                   acc.id AS assignee_contact_id,
                   DATE_FORMAT(
                     IF(ca.activity_date_time < NOW() AND ca.status_id=ov.value,
-                            ca.activity_date_time,
-                            DATE_ADD(NOW(), INTERVAL 1 YEAR)
+                      ca.activity_date_time,
+                      DATE_ADD(NOW(), INTERVAL 1 YEAR)
                     ), '%Y%m%d%H%i00') AS overdue_date,
                   DATE_FORMAT(ca.activity_date_time, '%Y%m%d%H%i00') AS display_date,
                   ca.status_id AS status,
@@ -949,7 +949,7 @@ SELECT case_status.label AS case_status, status_id, civicrm_case_type.title AS c
                   GROUP_CONCAT(ef.file_id) AS attachment_ids ";
 
     $from = "
-      FROM civicrm_case_activity cca
+             FROM civicrm_case_activity cca
        INNER JOIN civicrm_activity ca
                ON ca.id = cca.activity_id
        INNER JOIN civicrm_activity_contact cas
@@ -957,7 +957,7 @@ SELECT case_status.label AS case_status, status_id, civicrm_case_type.title AS c
               AND cas.record_type_id = {$sourceID}
        INNER JOIN civicrm_contact scc
                ON scc.id = cas.contact_id
-                  LEFT JOIN civicrm_activity_contact caa
+        LEFT JOIN civicrm_activity_contact caa
                ON caa.activity_id = ca.id
               AND caa.record_type_id = {$assigneeID}
         LEFT JOIN civicrm_contact acc
@@ -984,7 +984,7 @@ SELECT case_status.label AS case_status, status_id, civicrm_case_type.title AS c
 
     $where = '
             WHERE cca.case_id= %1
-                    AND ca.is_current_revision = 1';
+              AND ca.is_current_revision = 1';
 
     if (!empty($params['source_contact_id'])) {
       $where .= "
@@ -1152,7 +1152,7 @@ SELECT case_status.label AS case_status, status_id, civicrm_case_type.title AS c
       if (!empty($dao->priority)) {
         if ($dao->priority == CRM_Core_OptionGroup::getValue('priority', 'Urgent', 'name')) {
           $caseActivity['DT_RowClass'] .= " priority-urgent ";
-      }
+        }
         elseif ($dao->priority == CRM_Core_OptionGroup::getValue('priority', 'Low', 'name')) {
           $caseActivity['DT_RowClass'] .= " priority-low ";
         }
@@ -1195,14 +1195,14 @@ SELECT case_status.label AS case_status, status_id, civicrm_case_type.title AS c
         $values[$dao->id]['subject'] .= '<span class="icon attachment-icon"></span>';
       }
 
-      //Activity Assignee. CRM-4485.            
+      //Activity Assignee. CRM-4485.
       $assigneeContact = '';
       if (isset($dao->assignee_contact_id)) {
         $assigneeContact = $dao->assignee_contact_name;
         if ($hasViewContact) {
           $assigneeContact = '<a href="' . $contactViewUrl . $dao->assignee_contact_id . '">' . $dao->assignee_contact_name . '</a>';
-          }
         }
+      }
       $caseActivity['assignee_contact_name'] = $assigneeContact;
 
       //Activity Status
@@ -1260,7 +1260,7 @@ SELECT case_status.label AS case_status, status_id, civicrm_case_type.title AS c
       $caseActivity['links'] = $url;
 
       array_push($caseActivities, $caseActivity);
-      }
+    }
     $dao->free();
 
     $caseActivitiesDT = array();
@@ -1287,7 +1287,7 @@ SELECT case_status.label AS case_status, status_id, civicrm_case_type.title AS c
     $values = array();
     $query = '
       SELECT cc.display_name as name, cc.sort_name as sort_name, cc.id, crt.label_b_a as role, ce.email
- FROM civicrm_relationship cr
+      FROM civicrm_relationship cr
       LEFT JOIN civicrm_relationship_type crt
         ON crt.id = cr.relationship_type_id
       LEFT JOIN civicrm_contact cc
@@ -1296,7 +1296,7 @@ SELECT case_status.label AS case_status, status_id, civicrm_case_type.title AS c
         ON ce.contact_id = cc.id
         AND ce.is_primary= 1
       WHERE cr.case_id =  %1
- GROUP BY cc.id';
+      GROUP BY cc.id';
 
     $params = array(1 => array($caseID, 'Integer'));
     $dao = CRM_Core_DAO::executeQuery($query, $params);
@@ -1962,7 +1962,7 @@ SELECT civicrm_contact.id as casemanager_id,
       $params['contact_id'] = $contactId;
     }
     return civicrm_api3('Case', 'getcount', $params);
-    }
+  }
 
   /**
    * Retrieve related cases for give case.
@@ -2110,7 +2110,7 @@ SELECT civicrm_contact.id as casemanager_id,
    */
   public static function mergeCases(
     $mainContactId, $mainCaseId = NULL, $otherContactId = NULL,
-                             $otherCaseId = NULL, $changeClient = FALSE) {
+    $otherCaseId = NULL, $changeClient = FALSE) {
     $moveToTrash = TRUE;
 
     $duplicateContacts = FALSE;
@@ -2579,8 +2579,8 @@ WHERE id IN (' . implode(',', $copiedActivityIds) . ')';
 
     //do check for civicase component enabled.
     if ($checkComponent && !self::enabled()) {
-        return $allow;
-      }
+      return $allow;
+    }
 
     //do check for cases.
     $caseActOperations = array(

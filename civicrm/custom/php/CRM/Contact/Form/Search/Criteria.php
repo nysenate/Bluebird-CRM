@@ -23,7 +23,7 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
@@ -60,7 +60,7 @@ class CRM_Contact_Form_Search_Criteria {
         $form->add('select', 'group_type', ts('Group Types'), $groupOptions, FALSE,
           array('id' => 'group_type', 'multiple' => 'multiple', 'class' => 'crm-select2')
         );
-        $form->add('hidden','group_search_selected','group');
+        $form->add('hidden', 'group_search_selected', 'group');
       }
     }
 
@@ -94,7 +94,7 @@ class CRM_Contact_Form_Search_Criteria {
       $tagTypesText = implode(" or ", $tagsTypes);
       if ($showAllTagTypes) {
         $form->add('checkbox', 'all_tag_types', ts('Include tags used for %1', array(1 => $tagTypesText)));
-        $form->add('hidden','tag_types_text', $tagTypesText);
+        $form->add('hidden', 'tag_types_text', $tagTypesText);
       }
     }
 
@@ -310,8 +310,8 @@ class CRM_Contact_Form_Search_Criteria {
       list($title, $attributes, $select, $multiSelect) = $v;
 
       if (in_array($name,
-          array('street_number', 'street_name', 'street_unit')
-        )) {
+        array('street_number', 'street_name', 'street_unit')
+      )) {
         if (!$parseStreetAddress) {
           continue;
         }
@@ -354,7 +354,7 @@ class CRM_Contact_Form_Search_Criteria {
         'miles' => ts('Miles'),
         'kilos' => ts('Kilometers'),
       ));
-    $form->addRule('prox_distance', ts('Please enter positive number as a distance'), 'numeric');
+      $form->addRule('prox_distance', ts('Please enter positive number as a distance'), 'numeric');
     }
 
     $form->addSelect('world_region', array('entity' => 'address', 'context' => 'search'));
@@ -425,11 +425,11 @@ class CRM_Contact_Form_Search_Criteria {
     $form->add('select', 'relation_type_id', ts('Relationship Type'), array('' => ts('- select -')) + $allRelationshipType, FALSE, array('class' => 'crm-select2'));
     $form->addElement('text', 'relation_target_name', ts('Target Contact'), CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Contact', 'sort_name'));
     // relation status
-    $relStatusOption = array(ts('Active '), ts('Inactive '), ts('All'));
+    $relStatusOption = array(ts('Active'), ts('Inactive'), ts('All'));
     $form->addRadio('relation_status', ts('Relationship Status'), $relStatusOption);
     $form->setDefaults(array('relation_status' => 0));
     // relation permission
-    $relPermissionOption = array(ts('Any'), ts('Yes '), ts('No ') );
+    $relPermissionOption = array(ts('Any'), ts('Yes'), ts('No'));
     $form->addRadio('relation_permission', ts('Permissioned Relationship?'), $relPermissionOption);
     $form->setDefaults(array('relation_permission' => 0));
 

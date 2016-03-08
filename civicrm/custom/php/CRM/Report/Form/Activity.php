@@ -307,7 +307,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
           'activity_type_id' => array(
             'title' => ts('Activity Type'),
             'default_weight' => '2',
-            'dbAlias' => 'field(civicrm_activity_activity_type_id, ' . implode(', ', array_keys($this->activityTypes)) . ')'
+            'dbAlias' => 'field(civicrm_activity_activity_type_id, ' . implode(', ', array_keys($this->activityTypes)) . ')',
           ),
           //NYSS
           'activity_subject' =>

@@ -23,7 +23,7 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
@@ -117,14 +117,14 @@ class CRM_Contact_Selector_Custom extends CRM_Contact_Selector {
    */
   public function __construct(
     $customSearchClass,
-    $formValues        = NULL,
-    $params            = NULL,
-    $returnProperties  = NULL,
-    $action            = CRM_Core_Action::NONE,
+    $formValues = NULL,
+    $params = NULL,
+    $returnProperties = NULL,
+    $action = CRM_Core_Action::NONE,
     $includeContactIds = FALSE,
     $searchChildGroups = TRUE,
-    $searchContext     = 'search',
-    $contextMenu       = NULL
+    $searchContext = 'search',
+    $contextMenu = NULL
   ) {
     $this->_customSearchClass = $customSearchClass;
     $this->_formValues = $formValues;
@@ -140,7 +140,7 @@ class CRM_Contact_Selector_Custom extends CRM_Contact_Selector {
       else {
         require_once str_replace('_', DIRECTORY_SEPARATOR, $customSearchClass) . '.php';
       }
-      $this->_search = new $customSearchClass( $formValues );
+      $this->_search = new $customSearchClass($formValues);
     }
     else {
       $fnName = $ext->keyToPath;
@@ -204,9 +204,9 @@ class CRM_Contact_Selector_Custom extends CRM_Contact_Selector {
    * @param array $params
    */
   public function getPagerParams($action, &$params) {
-    $params['status']    = ts('Contact %%StatusMessage%%');
+    $params['status'] = ts('Contact %%StatusMessage%%');
     $params['csvString'] = NULL;
-    $params['rowCount']  = CRM_Utils_Pager::ROWCOUNT;
+    $params['rowCount'] = CRM_Utils_Pager::ROWCOUNT;
 
     $params['buttonTop'] = 'PagerTopButton';
     $params['buttonBottom'] = 'PagerBottomButton';
@@ -299,7 +299,7 @@ class CRM_Contact_Selector_Custom extends CRM_Contact_Selector {
 
     $dao = CRM_Core_DAO::executeQuery($sql, CRM_Core_DAO::$_nullArray);
 
-    $columns     = $this->_search->columns();
+    $columns = $this->_search->columns();
     $columnNames = array_values($columns);
     $links = self::links($this->_key);
 
@@ -311,8 +311,8 @@ class CRM_Contact_Selector_Custom extends CRM_Contact_Selector {
 
     $alterRow = FALSE;
     if (method_exists($this->_customSearchClass,
-        'alterRow'
-      )) {
+      'alterRow'
+    )) {
       $alterRow = TRUE;
     }
     $image = FALSE;

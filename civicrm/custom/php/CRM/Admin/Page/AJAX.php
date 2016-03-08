@@ -23,7 +23,7 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
@@ -115,7 +115,7 @@ class CRM_Admin_Page_AJAX {
             $template->assign('contexts', $contexts);
 
             $ret['illegal'] = TRUE;
-            $table  = $template->fetch('CRM/Price/Page/table.tpl');
+            $table = $template->fetch('CRM/Price/Page/table.tpl');
             $ret['content'] = ts('Unable to disable the \'%1\' price set - it is currently in use by one or more active events, contribution pages or contributions.', array(
                 1 => $priceSet,
               )) . "<br/> $table";
@@ -386,7 +386,7 @@ LIMIT $limit";
       $result[] = $row;
     }
     CRM_Utils_JSON::output($result);
-    }
+  }
 
   /**
    * Get a list of mappings.
@@ -407,17 +407,17 @@ LIMIT $limit";
     $noThanksJustKidding = !$_GET['isLimit'];
     if ($mapping instanceof CRM_Activity_ActionMapping || !$noThanksJustKidding) {
       $entityRecipientLabels = $mapping ? ($mapping->getRecipientTypes() + CRM_Core_BAO_ActionSchedule::getAdditionalRecipients()) : array();
-      }
+    }
     else {
       $entityRecipientLabels = CRM_Core_BAO_ActionSchedule::getAdditionalRecipients();
-      }
+    }
     $recipientMapping = array_combine(array_keys($entityRecipientLabels), array_keys($entityRecipientLabels));
 
     $output = array(
       'sel4' => CRM_Utils_Array::toKeyValueRows($dateFieldLabels),
       'sel5' => CRM_Utils_Array::toKeyValueRows($entityRecipientLabels),
       'recipientMapping' => $recipientMapping,
-      );
+    );
 
     CRM_Utils_JSON::output($output);
   }
@@ -442,7 +442,7 @@ LIMIT $limit";
     CRM_Utils_JSON::output(array(
       'recipients' => CRM_Utils_Array::toKeyValueRows(CRM_Core_BAO_ActionSchedule::getRecipientListing($mappingID, $recipientType)),
     ));
-    }
+  }
 
   public static function mergeTags() {
     $tagAId = CRM_Utils_Type::escape($_POST['fromId'], 'Integer');

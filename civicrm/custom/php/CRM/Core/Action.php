@@ -23,7 +23,7 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  * The core concept of the system is an action performed on an object. Typically this will be a "data model" object
@@ -63,9 +63,9 @@ class CRM_Core_Action {
     RENEW = 32768,
     DETACH = 65536,
     REVERT = 131072,
-    CLOSE        =  262144,
-    REOPEN       =  524288,
-    MAX_ACTION   = 1048575;
+    CLOSE = 262144,
+    REOPEN = 524288,
+    MAX_ACTION = 1048575;
 
   //make sure MAX_ACTION = 2^n - 1 ( n = total number of actions )
 
@@ -93,8 +93,8 @@ class CRM_Core_Action {
     'renew' => self::RENEW,
     'detach' => self::DETACH,
     'revert' => self::REVERT,
-                           'close'         => self::CLOSE,
-                           'reopen'        => self::REOPEN,
+    'close' => self::CLOSE,
+    'reopen' => self::REOPEN,
   );
 
   /**
@@ -257,19 +257,19 @@ class CRM_Core_Action {
 
         if ($urlPath !== '#' && $frontend) {
           $extra .= ' target="_blank"';
-          }
+        }
         // Hack to make delete dialogs smaller
         if (strpos($urlPath, '/delete') || strpos($urlPath, 'action=delete')) {
           $classes .= " small-popup";
         }
         $url[] = sprintf('<a href="%s" class="%s" %s' . $extra . '>%s</a>',
-            $urlPath,
+          $urlPath,
           $classes,
           !empty($link['title']) ? "title='{$link['title']}' " : '',
-            $link['name']
-          );
-        }
+          $link['name']
+        );
       }
+    }
 
     $mainLinks = $url;
     if ($enclosedAllInSingleUL) {

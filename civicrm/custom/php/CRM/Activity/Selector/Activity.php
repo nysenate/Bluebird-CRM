@@ -23,7 +23,7 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
@@ -121,7 +121,7 @@ class CRM_Activity_Selector_Activity extends CRM_Core_Selector_Base implements C
       $extraParams .= "&compContext={$compContext}";
     }
 
-    $showView   = TRUE;
+    $showView = TRUE;
     $showUpdate = $showDelete = FALSE;
     $qsUpdate = NULL;
 
@@ -130,7 +130,7 @@ class CRM_Activity_Selector_Activity extends CRM_Core_Selector_Base implements C
     }
     $activityTypeName = CRM_Utils_Array::value($activityTypeId, $activeActTypes);
 
-    //CRM-7607
+    // CRM-7607
     // Lets allow to have normal operation for only activity types.
     // When activity type is disabled or no more exists give only delete.
     switch ($activityTypeName) {
@@ -170,7 +170,7 @@ class CRM_Activity_Selector_Activity extends CRM_Core_Selector_Base implements C
 
       case 'Email':
       case 'Bulk Email':
-        $url    = 'civicrm/activity/view';
+        $url = 'civicrm/activity/view';
         $delUrl = 'civicrm/activity';
         $qsView = "atype={$activityTypeId}&action=view&reset=1&id=%%id%%&cid=%%cid%%&context=%%cxt%%{$extraParams}";
         if ($activityTypeName == 'Email') {
@@ -189,15 +189,15 @@ class CRM_Activity_Selector_Activity extends CRM_Core_Selector_Base implements C
       case 'Change Case Status':
       case 'Change Case Start Date':
         $showUpdate = $showDelete = FALSE;
-        $url        = 'civicrm/activity';
-        $qsView     = "atype={$activityTypeId}&action=view&reset=1&id=%%id%%&cid=%%cid%%&context=%%cxt%%{$extraParams}";
-        $qsUpdate   = "atype={$activityTypeId}&action=update&reset=1&id=%%id%%&cid=%%cid%%&context=%%cxt%%{$extraParams}";
+        $url = 'civicrm/activity';
+        $qsView = "atype={$activityTypeId}&action=view&reset=1&id=%%id%%&cid=%%cid%%&context=%%cxt%%{$extraParams}";
+        $qsUpdate = "atype={$activityTypeId}&action=update&reset=1&id=%%id%%&cid=%%cid%%&context=%%cxt%%{$extraParams}";
         break;
 
       default:
-        $url      = 'civicrm/activity';
+        $url = 'civicrm/activity';
         $showView = $showDelete = $showUpdate = TRUE;
-        $qsView   = "atype={$activityTypeId}&action=view&reset=1&id=%%id%%&cid=%%cid%%&context=%%cxt%%{$extraParams}";
+        $qsView = "atype={$activityTypeId}&action=view&reset=1&id=%%id%%&cid=%%cid%%&context=%%cxt%%{$extraParams}";
         $qsUpdate = "atype={$activityTypeId}&action=update&reset=1&id=%%id%%&cid=%%cid%%&context=%%cxt%%{$extraParams}";
 
         // When type is not available lets hide view and update.
@@ -216,9 +216,9 @@ class CRM_Activity_Selector_Activity extends CRM_Core_Selector_Base implements C
         CRM_Core_Action::
         VIEW => array(
           'name' => ts('View'),
-        'url' => $url,
-        'qs' => $qsView,
-        'title' => ts('View Activity'),
+          'url' => $url,
+          'qs' => $qsView,
+          'title' => ts('View Activity'),
         ),
       );
     }
@@ -231,14 +231,14 @@ class CRM_Activity_Selector_Activity extends CRM_Core_Selector_Base implements C
       elseif ($activityTypeName == 'Print PDF Letter') {
         $updateUrl = 'civicrm/activity/pdf/add';
       }
-      if ( CRM_Activity_BAO_Activity::checkPermission($activityId, CRM_Core_Action::UPDATE) ) {
+      if (CRM_Activity_BAO_Activity::checkPermission($activityId, CRM_Core_Action::UPDATE)) {
         $actionLinks += array(
           CRM_Core_Action::
           UPDATE => array(
             'name' => ts('Edit'),
-          'url' => $updateUrl,
-          'qs' => $qsUpdate,
-          'title' => ts('Update Activity'),
+            'url' => $updateUrl,
+            'qs' => $qsUpdate,
+            'title' => ts('Update Activity'),
           ),
         );
       }
@@ -252,7 +252,7 @@ class CRM_Activity_Selector_Activity extends CRM_Core_Selector_Base implements C
         CRM_Core_Action::
         ADD => array(
           'name' => ts('File on Case'),
-        'url' => '#',
+          'url' => '#',
           'extra' => 'onclick="javascript:fileOnCase( \'file\', \'%%id%%\', null, this ); return false;"',
           'title' => ts('File on Case'),
         ),
@@ -267,9 +267,9 @@ class CRM_Activity_Selector_Activity extends CRM_Core_Selector_Base implements C
         CRM_Core_Action::
         DELETE => array(
           'name' => ts('Delete'),
-        'url' => $delUrl,
-        'qs' => $qsDelete,
-        'title' => ts('Delete Activity'),
+          'url' => $delUrl,
+          'qs' => $qsDelete,
+          'title' => ts('Delete Activity'),
         ),
       );
     }
@@ -279,9 +279,9 @@ class CRM_Activity_Selector_Activity extends CRM_Core_Selector_Base implements C
         CRM_Core_Action::
         BROWSE => array(
           'name' => ts('Mailing Report'),
-        'url' => 'civicrm/mailing/report',
-        'qs' => "mid={$sourceRecordId}&reset=1&cid=%%cid%%&context=activitySelector",
-        'title' => ts('View Mailing Report'),
+          'url' => 'civicrm/mailing/report',
+          'qs' => "mid={$sourceRecordId}&reset=1&cid=%%cid%%&context=activitySelector",
+          'title' => ts('View Mailing Report'),
         ),
       );
     }
@@ -296,9 +296,9 @@ class CRM_Activity_Selector_Activity extends CRM_Core_Selector_Base implements C
    * @param array $params
    */
   public function getPagerParams($action, &$params) {
-    $params['status']    = ts('Activities %%StatusMessage%%');
+    $params['status'] = ts('Activities %%StatusMessage%%');
     $params['csvString'] = NULL;
-    $params['rowCount']  = CRM_Utils_Pager::ROWCOUNT;
+    $params['rowCount'] = CRM_Utils_Pager::ROWCOUNT;
 
     $params['buttonTop'] = 'PagerTopButton';
     $params['buttonBottom'] = 'PagerBottomButton';
@@ -397,7 +397,7 @@ class CRM_Activity_Selector_Activity extends CRM_Core_Selector_Base implements C
 
     $engagementLevels = CRM_Campaign_PseudoConstant::engagementLevel();
 
-    //CRM-4418
+    // CRM-4418
     $permissions = array($this->_permission);
     if (CRM_Core_Permission::check('delete activities')) {
       $permissions[] = CRM_Core_Permission::DELETE;
@@ -450,7 +450,7 @@ class CRM_Activity_Selector_Activity extends CRM_Core_Selector_Base implements C
         $row['engagement_level'] = CRM_Utils_Array::value($engagementLevel, $engagementLevels, $engagementLevel);
       }
 
-      //CRM-3553
+      // CRM-3553
       $accessMailingReport = FALSE;
       if (!empty($row['mailingId'])) {
         $accessMailingReport = TRUE;
