@@ -142,11 +142,13 @@ class CRM_Report_Form_Pledge_Summary extends CRM_Report_Form {
           'sid' => array(
             'name' => 'status_id',
             'title' => ts('Pledge Status'),
+            'type' => CRM_Utils_Type::T_INT,
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Core_OptionGroup::values('contribution_status'),
           ),
           'financial_type_id' => array(
             'title' => ts('Financial Type'),
+            'type' => CRM_Utils_Type::T_INT,
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Contribute_PseudoConstant::financialType(),
           ),
@@ -162,6 +164,9 @@ class CRM_Report_Form_Pledge_Summary extends CRM_Report_Form {
           ),
           'status_id' => array(
             'title' => ts('Pledge Status'),
+          ),
+          'financial_type_id' => array(
+            'title' => ts('Financial Type'),
           ),
         ),
       ),

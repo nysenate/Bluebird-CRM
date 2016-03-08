@@ -1259,18 +1259,15 @@ CREATE TABLE `civicrm_financial_item` (
 ,
     PRIMARY KEY ( `id` )
  
-    ,     UNIQUE INDEX `UI_id`(
-        id
-  )
-  ,     INDEX `IX_created_date`(
+    ,     INDEX `IX_created_date`(
         created_date
   )
   ,     INDEX `IX_transaction_date`(
         transaction_date
   )
-  ,     INDEX `IX_entity`(
-        entity_table
-      , entity_id
+  ,     INDEX `index_entity_id_entity_table`(
+        entity_id
+      , entity_table
   )
   
 ,          CONSTRAINT FK_civicrm_financial_item_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE,          CONSTRAINT FK_civicrm_financial_item_financial_account_id FOREIGN KEY (`financial_account_id`) REFERENCES `civicrm_financial_account`(`id`)   
@@ -4118,7 +4115,7 @@ CREATE TABLE `civicrm_financial_trxn` (
      `is_payment` tinyint   DEFAULT 0 COMMENT 'Is this entry either a payment or a reversal of a payment?',
      `trxn_id` varchar(255)    COMMENT 'Transaction id supplied by external processor. This may not be unique.',
      `trxn_result_code` varchar(255)    COMMENT 'processor result code',
-     `status_id` int unsigned    COMMENT 'pseudo FK to civicrm_option_value of financial_item status option_group',
+     `status_id` int unsigned    COMMENT 'pseudo FK to civicrm_option_value of contribution_status_id option_group',
      `payment_processor_id` int unsigned    COMMENT 'Payment Processor for this financial transaction',
      `payment_instrument_id` int unsigned    COMMENT 'FK to payment_instrument option group values',
      `check_number` varchar(255)    COMMENT 'Check number' 
@@ -4560,6 +4557,9 @@ CREATE TABLE `civicrm_contribution` (
     ,     INDEX `UI_contrib_payment_instrument_id`(
         payment_instrument_id
   )
+  ,     INDEX `index_source`(
+        source
+  )
   ,     UNIQUE INDEX `UI_contrib_trxn_id`(
         trxn_id
   )
@@ -4574,6 +4574,9 @@ CREATE TABLE `civicrm_contribution` (
   )
   ,     INDEX `check_number`(
         check_number
+  )
+  ,     INDEX `index_creditnote_id`(
+        creditnote_id
   )
   
 ,          CONSTRAINT FK_civicrm_contribution_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE,          CONSTRAINT FK_civicrm_contribution_financial_type_id FOREIGN KEY (`financial_type_id`) REFERENCES `civicrm_financial_type`(`id`) ,          CONSTRAINT FK_civicrm_contribution_contribution_page_id FOREIGN KEY (`contribution_page_id`) REFERENCES `civicrm_contribution_page`(`id`) ON DELETE SET NULL,          CONSTRAINT FK_civicrm_contribution_contribution_recur_id FOREIGN KEY (`contribution_recur_id`) REFERENCES `civicrm_contribution_recur`(`id`) ON DELETE SET NULL,          CONSTRAINT FK_civicrm_contribution_address_id FOREIGN KEY (`address_id`) REFERENCES `civicrm_address`(`id`) ON DELETE SET NULL,          CONSTRAINT FK_civicrm_contribution_campaign_id FOREIGN KEY (`campaign_id`) REFERENCES `civicrm_campaign`(`id`) ON DELETE SET NULL  

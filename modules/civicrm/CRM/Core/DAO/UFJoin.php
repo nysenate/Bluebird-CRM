@@ -192,6 +192,9 @@ class CRM_Core_DAO_UFJoin extends CRM_Core_DAO
           'description' => 'Name of table where item being referenced is stored. Modules which only need a single collection of uf_join instances may choose not to populate entity_table and entity_id.',
           'maxlength' => 64,
           'size' => CRM_Utils_Type::BIG,
+          'pseudoconstant' => array(
+            'callback' => 'CRM_Core_BAO_UFJoin::entityTables',
+          )
         ) ,
         'entity_id' => array(
           'name' => 'entity_id',

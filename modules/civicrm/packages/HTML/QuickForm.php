@@ -1943,6 +1943,8 @@ class HTML_QuickForm extends HTML_Common
                     !in_array($this->_elements[$key]->_type, array('text', 'textarea'))
                     // …or should be skipped…
                     or CRM_Core_HTMLInputCoder::isSkippedField($fldName)
+                    //CRM-17962 - do not encode if element is a wysiwyg editor
+                    or $this->_elements[$key]->_attributes['class'] = 'crm-form-wysiwyg'
                 ) {
                     // …don’t filter, otherwise filter (else clause below)
                 } else {

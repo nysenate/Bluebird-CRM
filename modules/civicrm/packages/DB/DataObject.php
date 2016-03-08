@@ -2370,6 +2370,7 @@ class DB_DataObject extends DB_DataObject_Overload
         global $_DB_DATAOBJECT, $queries, $user;
         $this->_connect();
 
+        // Logging the query first makes sure it gets logged even if it fails.
         CRM_Core_Error::debug_query($string);
         $DB = &$_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
 
@@ -2431,8 +2432,11 @@ class DB_DataObject extends DB_DataObject_Overload
         for ($tries = 0;$tries < 3;$tries++) {
 
             if ($_DB_driver == 'DB') {
-
+                if ($tries) {
+                  CRM_Core_Error::debug_log_message('Attempt: ' . $tries + 1 . ' at query : ' . $string);
+                }
                 $result = $DB->query($string);
+
             } else {
                 switch (strtolower(substr(trim($string),0,6))) {
 
@@ -2482,12 +2486,34 @@ class DB_DataObject extends DB_DataObject_Overload
             $queries[] = array($query, $diff);
         }
 
-        if (!empty($_DB_DATAOBJECT['CONFIG']['debug'])) {
-            $t= explode(' ',microtime());
-            $_DB_DATAOBJECT['QUERYENDTIME'] = $t[0]+$t[1];
-            $this->debug('QUERY DONE IN  '.($t[0]+$t[1]-$time)." seconds", 'query',1);
+        $action = strtolower(substr(trim($string),0,6));
+
+        if (!empty($_DB_DATAOBJECT['CONFIG']['debug']) || defined('CIVICRM_DEBUG_LOG_QUERY')) {
+          $timeTaken = sprintf("%0.6f", microtime(TRUE) - $time);
+          $alertLevel = $this->getAlertLevel($timeTaken);
+
+          $message = "$alertLevel QUERY DONE IN $timeTaken  seconds.";
+          if (in_array($action, array('insert', 'update', 'delete')) && $_DB_driver == 'DB') {
+            $message .= " " . $DB->affectedRows() . " row(s)s subject to $action action";
+          }
+          elseif (is_a($result, 'DB_result') && method_exists($result, 'numrows')) {
+            $message .= " Result is {$result->numRows()} rows by {$result->numCols()} columns. ";
+          }
+          elseif ($result === 1) {
+            $message .= " No further information is available for this type of query";
+          }
+          else {
+            echo $message .= " not quite sure why this query does not have more info";
+          }
+          if (defined('CIVICRM_DEBUG_LOG_QUERY')) {
+            CRM_Core_Error::debug_log_message($message, FALSE, 'sql_log');
+          }
+          else {
+            $this->debug($message, 'query', 1);
+          }
         }
-        switch (strtolower(substr(trim($string),0,6))) {
+
+        switch ($action) {
             case 'insert':
             case 'update':
             case 'delete':
@@ -4294,7 +4320,30 @@ class DB_DataObject extends DB_DataObject_Overload
     function _get_table() { return $this->table(); }
     function _get_keys()  { return $this->keys();  }
 
-
+  /**
+   * Get a string to append to the query log depending on time taken.
+   *
+   * This is to allow easier grepping for slow queries.
+   *
+   * @param float $timeTaken
+   *
+   * @return string
+   */
+  public function getAlertLevel($timeTaken) {
+    if ($timeTaken >= 20) {
+      return '(very-very-very-slow)';
+    }
+    if ($timeTaken > 10) {
+      return '(very-very-slow)';
+    }
+    if ($timeTaken > 5) {
+      return '(very-slow)';
+    }
+    if ($timeTaken > 1) {
+      return '(slow)';
+    }
+    return '';
+  }
 
 
 }

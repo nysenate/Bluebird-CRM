@@ -146,7 +146,7 @@ class CRM_Financial_DAO_FinancialTrxn extends CRM_Core_DAO
    */
   public $trxn_result_code;
   /**
-   * pseudo FK to civicrm_option_value of financial_item status option_group
+   * pseudo FK to civicrm_option_value of contribution_status_id option_group
    *
    * @var int unsigned
    */
@@ -332,12 +332,16 @@ class CRM_Financial_DAO_FinancialTrxn extends CRM_Core_DAO
           'name' => 'status_id',
           'type' => CRM_Utils_Type::T_INT,
           'title' => ts('Financial Transaction Status Id') ,
-          'description' => 'pseudo FK to civicrm_option_value of financial_item status option_group',
+          'description' => 'pseudo FK to civicrm_option_value of contribution_status_id option_group',
           'import' => true,
           'where' => 'civicrm_financial_trxn.status_id',
           'headerPattern' => '/status/i',
           'dataPattern' => '',
           'export' => true,
+          'pseudoconstant' => array(
+            'optionGroupName' => 'contribution_status',
+            'optionEditPath' => 'civicrm/admin/options/contribution_status',
+          )
         ) ,
         'payment_processor_id' => array(
           'name' => 'payment_processor_id',

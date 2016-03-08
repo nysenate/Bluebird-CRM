@@ -152,6 +152,10 @@ class CRM_Core_DAO_EntityTag extends CRM_Core_DAO
           'description' => 'physical tablename for entity being joined to file, e.g. civicrm_contact',
           'maxlength' => 64,
           'size' => CRM_Utils_Type::BIG,
+          'pseudoconstant' => array(
+            'optionGroupName' => 'tag_used_for',
+            'optionEditPath' => 'civicrm/admin/options/tag_used_for',
+          )
         ) ,
         'entity_id' => array(
           'name' => 'entity_id',

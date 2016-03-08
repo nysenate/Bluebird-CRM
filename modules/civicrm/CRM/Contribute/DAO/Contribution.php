@@ -311,7 +311,7 @@ class CRM_Contribute_DAO_Contribution extends CRM_Core_DAO
         'financial_type_id' => array(
           'name' => 'financial_type_id',
           'type' => CRM_Utils_Type::T_INT,
-          'title' => ts('Financial Type ID') ,
+          'title' => ts('Financial Type') ,
           'description' => 'FK to Financial Type for (total_amount - non_deductible_amount).',
           'export' => false,
           'where' => 'civicrm_contribution.financial_type_id',

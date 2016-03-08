@@ -191,6 +191,9 @@ class CRM_Mailing_DAO_MailingGroup extends CRM_Core_DAO
           'required' => true,
           'maxlength' => 64,
           'size' => CRM_Utils_Type::BIG,
+          'pseudoconstant' => array(
+            'callback' => 'CRM_Mailing_BAO_Mailing::mailingGroupEntityTables',
+          )
         ) ,
         'entity_id' => array(
           'name' => 'entity_id',

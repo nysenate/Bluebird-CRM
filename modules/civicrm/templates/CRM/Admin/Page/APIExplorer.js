@@ -20,6 +20,10 @@
     docCodeTpl = _.template($('#doc-code-tpl').html()),
     joinTpl = _.template($('#join-tpl').html()),
 
+    // The following apis do not support the syntax for joins
+    // FIXME: the solution is to convert these apis to use _civicrm_api3_basic_get
+    NO_JOINS = ['Contact', 'Contribution', 'Pledge', 'Participant'],
+
     // These types of entityRef don't require any input to open
     // FIXME: ought to be in getfields metadata
     OPEN_IMMEDIATELY = ['RelationshipType', 'Event', 'Group', 'Tag'],
@@ -78,7 +82,7 @@
         description: field.description || '',
         required: !(!field['api.required'] || field['api.required'] === '0')
       });
-      if (joins[name]) {
+      if (typeof joins[name] === 'string') {
         fields[pos].children = [];
         populateFields(fields[pos].children, joins[name], 'get', name + '.');
       }
@@ -824,7 +828,7 @@
    */
   function renderJoinSelector() {
     $('#api-join').hide();
-    if (!_.includes(['Contact', 'Contribution', 'Pledge'], entity) && _.includes(['get', 'getsingle'], action)) {
+    if (!_.includes(NO_JOINS, entity) && _.includes(['get', 'getsingle'], action)) {
       var joinable = {};
       (function recurse(fields, joinable, prefix, depth, entities) {
         _.each(fields, function(field) {

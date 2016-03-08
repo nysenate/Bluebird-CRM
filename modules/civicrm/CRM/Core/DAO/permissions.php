@@ -27,7 +27,6 @@
 
 /**
  * Decide what permissions to check for an api call
- * The contact must have all of the returned permissions for the api call to be allowed
  *
  * @param $entity : (str) api entity
  * @param $action : (str) api action
@@ -54,6 +53,9 @@ function _civicrm_api3_permissions($entity, $action, &$params) {
    *  * default: catch-all for anything not declared
    *
    *  Note: some APIs declare other actions as well
+   *
+   * Permissions should use arrays for AND and arrays of arrays for OR
+   * @see CRM_Core_Permission::check for more documentation
    */
   $permissions = array();
 
@@ -122,6 +124,17 @@ function _civicrm_api3_permissions($entity, $action, &$params) {
   // @todo - ditto
   $permissions['note'] = $permissions['entity_tag'];
 
+  // CRM-17350 - entity_tag ACL permissions are checked at the BAO level
+  $permissions['entity_tag'] = array(
+    'get' => array(
+      'access CiviCRM',
+      'view all contacts',
+    ),
+    'default' => array(
+      'access CiviCRM',
+    ),
+  );
+
   // Allow non-admins to get and create tags to support tagset widget
   // Delete is still reserved for admins
   $permissions['tag'] = array(
@@ -177,18 +190,27 @@ function _civicrm_api3_permissions($entity, $action, &$params) {
       'delete in CiviCase',
     ),
     'default' => array(
-      // This is the minimum permission needed. Finer-grained access is controlled by CRM_Case_BAO_Case::addSelectWhereClause
-      'access my cases and activities',
+      // At minimum the user needs one of the following. Finer-grained access is controlled by CRM_Case_BAO_Case::addSelectWhereClause
+      array('access my cases and activities', 'access all cases and activities'),
     ),
   );
   $permissions['case_contact'] = $permissions['case'];
 
+  $permissions['case_type'] = array(
+    'default' => array('administer CiviCase'),
+    'get' => array(
+      // nested array = OR
+      array('access my cases and activities', 'access all cases and activities'),
+    ),
+  );
+
   // Campaign permissions
   $permissions['campaign'] = array(
     'get' => array('access CiviCRM'),
-    'create' => array(array('administer CiviCampaign', 'manage campaign')),
-    'update' => array(array('administer CiviCampaign', 'manage campaign')),
-    'delete' => array(array('administer CiviCampaign', 'manage campaign')),
+    'default' => array(
+      // nested array = OR
+      array('administer CiviCampaign', 'manage campaign')
+    ),
   );
   $permissions['survey'] = $permissions['campaign'];
 
@@ -213,6 +235,34 @@ function _civicrm_api3_permissions($entity, $action, &$params) {
     ),
   );
   $permissions['line_item'] = $permissions['contribution'];
+
+  // Payment permissions
+  $permissions['payment'] = array(
+    'get' => array(
+      'access CiviCRM',
+      'access CiviContribute',
+    ),
+    'delete' => array(
+      'access CiviCRM',
+      'access CiviContribute',
+      'delete in CiviContribute',
+    ),
+    'cancel' => array(
+      'access CiviCRM',
+      'access CiviContribute',
+      'edit contributions',
+    ),
+    'create' => array(
+      'access CiviCRM',
+      'access CiviContribute',
+      'edit contributions',
+    ),
+    'default' => array(
+      'access CiviCRM',
+      'access CiviContribute',
+      'edit contributions',
+    ),
+  );
 
   // Custom field permissions
   $permissions['custom_field'] = array(
@@ -560,7 +610,7 @@ function _civicrm_api3_permissions($entity, $action, &$params) {
   if ($action == 'replace' || $snippet == 'del') {
     // 'Replace' is a combination of get+create+update+delete; however, the permissions
     // on each of those will be tested separately at runtime. This is just a sniff-test
-    // based on the heuristic that 'delete' tends to be the most closesly guarded
+    // based on the heuristic that 'delete' tends to be the most closely guarded
     // of the necessary permissions.
     $action = 'delete';
   }

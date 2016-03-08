@@ -177,6 +177,9 @@ class CRM_Core_DAO_Note extends CRM_Core_DAO
           'required' => true,
           'maxlength' => 64,
           'size' => CRM_Utils_Type::BIG,
+          'pseudoconstant' => array(
+            'callback' => 'CRM_Core_BAO_Note::entityTables',
+          )
         ) ,
         'entity_id' => array(
           'name' => 'entity_id',

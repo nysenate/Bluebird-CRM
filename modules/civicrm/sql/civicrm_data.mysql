@@ -1305,21 +1305,21 @@ INSERT INTO civicrm_state_province (id, country_id, abbreviation, name) VALUES
 (2373, 1064, "U", "Sucumbios"),
 (2374, 1064, "T", "Tungurahua"),
 (2375, 1064, "Z", "Zamora-Chinchipe"),
-(2376, 1069, "37", "Harjumsa"),
-(2377, 1069, "39", "Hitumea"),
-(2378, 1069, "44", "Ida-Virumsa"),
-(2379, 1069, "49", "Jogevamsa"),
-(2380, 1069, "51", "Jarvamsa"),
-(2381, 1069, "57", "Lasnemsa"),
-(2382, 1069, "59", "Laane-Virumaa"),
-(2383, 1069, "65", "Polvamea"),
-(2384, 1069, "67", "Parnumsa"),
-(2385, 1069, "70", "Raplamsa"),
-(2386, 1069, "74", "Saaremsa"),
-(2387, 1069, "7B", "Tartumsa"),
+(2376, 1069, "37", "Harjumaa"),
+(2377, 1069, "39", "Hiiumaa"),
+(2378, 1069, "44", "Ida-Virumaa"),
+(2379, 1069, "49", "Jõgevamaa"),
+(2380, 1069, "51", "Järvamaa"),
+(2381, 1069, "57", "Läänemaa"),
+(2382, 1069, "59", "Lääne-Virumaa"),
+(2383, 1069, "65", "Põlvamaa"),
+(2384, 1069, "67", "Pärnumaa"),
+(2385, 1069, "70", "Raplamaa"),
+(2386, 1069, "74", "Saaremaa"),
+(2387, 1069, "7B", "Tartumaa"),
 (2388, 1069, "82", "Valgamaa"),
-(2389, 1069, "84", "Viljandimsa"),
-(2390, 1069, "86", "Vorumaa"),
+(2389, 1069, "84", "Viljandimaa"),
+(2390, 1069, "86", "Võrumaa"),
 (2391, 1065, "DK", "Ad Daqahllyah"),
 (2392, 1065, "BA", "Al Bahr al Ahmar"),
 (2393, 1065, "BH", "Al Buhayrah"),
@@ -2292,12 +2292,12 @@ INSERT INTO civicrm_state_province (id, country_id, abbreviation, name) VALUES
 (3511, 1121, "K", "Thaba-Tseka"),
 (3512, 1125, "AL", "Alytaus Apskritis"),
 (3513, 1125, "KU", "Kauno Apskritis"),
-(3514, 1125, "KL", "Klaipedos Apskritis"),
-(3515, 1125, "MR", "Marijampoles Apskritis"),
-(3516, 1125, "PN", "Panevezio Apskritis"),
-(3517, 1125, "SA", "Sisuliu Apskritis"),
-(3518, 1125, "TA", "Taurages Apskritis"),
-(3519, 1125, "TE", "Telsiu Apskritis"),
+(3514, 1125, "KL", "Klaipėdos Apskritis"),
+(3515, 1125, "MR", "Marijampolės Apskritis"),
+(3516, 1125, "PN", "Panevėžio Apskritis"),
+(3517, 1125, "SA", "Šiaulių Apskritis"),
+(3518, 1125, "TA", "Tauragės Apskritis"),
+(3519, 1125, "TE", "Telšių Apskritis"),
 (3520, 1125, "UT", "Utenos Apskritis"),
 (3521, 1125, "VL", "Vilniaus Apskritis"),
 (3522, 1126, "D", "Diekirch"),
@@ -3105,27 +3105,27 @@ INSERT INTO civicrm_state_province (id, country_id, abbreviation, name) VALUES
 (4356, 1200, "19", "Sharq al Istiwa\'iyah"),
 (4357, 1200, "25", "Sinnar"),
 (4358, 1200, "21", "Warab"),
-(4359, 1204, "K", "Blekinge lan"),
-(4360, 1204, "W", "Dalarnas lan"),
-(4361, 1204, "I", "Gotlands lan"),
-(4362, 1204, "X", "Gavleborge lan"),
-(4363, 1204, "N", "Hallands lan"),
-(4364, 1204, "Z", "Jamtlande lan"),
-(4365, 1204, "F", "Jonkopings lan"),
-(4366, 1204, "H", "Kalmar lan"),
-(4367, 1204, "G", "Kronoberge lan"),
-(4368, 1204, "BD", "Norrbottena lan"),
-(4369, 1204, "M", "Skane lan"),
-(4370, 1204, "AB", "Stockholms lan"),
-(4371, 1204, "D", "Sodermanlands lan"),
-(4372, 1204, "C", "Uppsala lan"),
-(4373, 1204, "S", "Varmlanda lan"),
-(4374, 1204, "AC", "Vasterbottens lan"),
-(4375, 1204, "Y", "Vasternorrlands lan"),
-(4376, 1204, "U", "Vastmanlanda lan"),
-(4377, 1204, "Q", "Vastra Gotalands lan"),
-(4378, 1204, "T", "Orebro lan"),
-(4379, 1204, "E", "Ostergotlands lan"),
+(4359, 1204, "K", "Blekinge län"),
+(4360, 1204, "W", "Dalarnas län"),
+(4361, 1204, "I", "Gotlands län"),
+(4362, 1204, "X", "Gävleborgs län"),
+(4363, 1204, "N", "Hallands län"),
+(4364, 1204, "Z", "Jämtlands län"),
+(4365, 1204, "F", "Jönkopings län"),
+(4366, 1204, "H", "Kalmar län"),
+(4367, 1204, "G", "Kronobergs län"),
+(4368, 1204, "BD", "Norrbottens län"),
+(4369, 1204, "M", "Skåne län"),
+(4370, 1204, "AB", "Stockholms län"),
+(4371, 1204, "D", "Södermanlands län"),
+(4372, 1204, "C", "Uppsala län"),
+(4373, 1204, "S", "Värmlands län"),
+(4374, 1204, "AC", "Västerbottens län"),
+(4375, 1204, "Y", "Västernorrlands län"),
+(4376, 1204, "U", "Västmanlands län"),
+(4377, 1204, "Q", "Västra Götalands län"),
+(4378, 1204, "T", "Örebro län"),
+(4379, 1204, "E", "Östergötlands län"),
 (4380, 1180, "SH", "Saint Helena"),
 (4381, 1180, "AC", "Ascension"),
 (4382, 1180, "TA", "Tristan da Cunha"),
@@ -4950,6 +4950,7 @@ VALUES
   (@option_group_id_cs, 'Refunded'   , 7, 'Refunded'   , NULL, 0, NULL, 7, NULL, 0, 1, 1, NULL, NULL),
   (@option_group_id_cs, 'Partially paid', 8, 'Partially paid', NULL, 0, NULL, 8, NULL, 0, 1, 1, NULL, NULL),
   (@option_group_id_cs, 'Pending refund', 9, 'Pending refund', NULL, 0, NULL, 9, NULL, 0, 1, 1, NULL, NULL),
+  (@option_group_id_cs, 'Chargeback', 10, 'Chargeback', NULL, 0, NULL, 10, NULL, 0, 1, 1, NULL, NULL),
 
   (@option_group_id_pcp, 'Waiting Review', 1, 'Waiting Review', NULL, 0, NULL, 1, NULL, 0, 1, 1, NULL, NULL),
   (@option_group_id_pcp, 'Approved'      , 2, 'Approved'      , NULL, 0, NULL, 2, NULL, 0, 1, 1, NULL, NULL),
@@ -5380,7 +5381,7 @@ VALUES
 
 -- account_relationship
     (@option_group_id_arel, 'Income Account is', 1, 'Income Account is', NULL, 0, 1, 1, 'Income Account is', 0, 1, 1, 2, NULL),
-    (@option_group_id_arel, 'Credit/Contra Account is', 2, 'Credit/Contra Account is', NULL, 0, 0, 2, 'Credit/Contra Account is', 0, 1, 0, 2, NULL),
+    (@option_group_id_arel, 'Credit/Contra Revenue Account is', 2, 'Credit/Contra Revenue Account is', NULL, 0, 0, 2, 'Credit/Contra Revenue Account is', 0, 1, 1, 2, NULL),
     (@option_group_id_arel, 'Accounts Receivable Account is', 3, 'Accounts Receivable Account is', NULL, 0, 0, 3, 'Accounts Receivable Account is', 0, 1, 1, 2, NULL),
     (@option_group_id_arel, 'Credit Liability Account is', 4, 'Credit Liability Account is', NULL, 0, 0, 4, 'Credit Liability Account is', 0, 1, 0, 2, NULL),
      (@option_group_id_arel, 'Expense Account is', 5, 'Expense Account is', NULL, 0, 0, 5, 'Expense Account is', 0, 1, 1, 2, NULL),
@@ -5389,6 +5390,7 @@ VALUES
      (@option_group_id_arel, 'Premiums Inventory Account is', 8, 'Premiums Inventory Account is', NULL, 0, 0, 8, 'Premiums Inventory Account is', 0, 1, 1, 2, NULL),
      (@option_group_id_arel, 'Discounts Account is', 9, 'Discounts Account is', NULL, 0, 0, 9, 'Discounts Account is', 0, 1, 1, 2, NULL),
      (@option_group_id_arel, 'Sales Tax Account is', 10, 'Sales Tax Account is', NULL, 0, 0, 10, 'Sales Tax Account is', 0, 1, 1, 2, NULL),
+     (@option_group_id_arel, 'Chargeback Account is', 11, 'Chargeback Account is', NULL, 0, 0, 11, 'Chargeback Account is', 0, 1, 1, 2, NULL),
 
 -- event_contacts
    (@option_group_id_ere, 'Participant Role', 1, 'participant_role', NULL, 0, NULL, 1, NULL, 0, 0, 1, NULL, NULL),
@@ -12643,8 +12645,8 @@ INSERT INTO civicrm_msg_template
 {if $receive_date}
 {ts}Transaction Date{/ts}: {$receive_date|crmDate}
 {/if}
-{if $contributionTypeName}
-{ts}Financial Type{/ts}: {$contributionTypeName}
+{if $financialTypeName}
+{ts}Financial Type{/ts}: {$financialTypeName}
 {/if}
 {if $trxn_id}
 {ts}Transaction #{/ts}: {$trxn_id}
@@ -13098,13 +13100,13 @@ INSERT INTO civicrm_msg_template
         </tr>
        {/if}
 
-       {if $contributionTypeName}
+       {if $financialTypeName}
         <tr>
          <td {$labelStyle}>
           {ts}Financial Type{/ts}
          </td>
          <td {$valueStyle}>
-          {$contributionTypeName}
+          {$financialTypeName}
          </td>
         </tr>
        {/if}
@@ -13476,8 +13478,8 @@ INSERT INTO civicrm_msg_template
 {if $receive_date}
 {ts}Transaction Date{/ts}: {$receive_date|crmDate}
 {/if}
-{if $contributionTypeName}
-{ts}Financial Type{/ts}: {$contributionTypeName}
+{if $financialTypeName}
+{ts}Financial Type{/ts}: {$financialTypeName}
 {/if}
 {if $trxn_id}
 {ts}Transaction #{/ts}: {$trxn_id}
@@ -13931,13 +13933,13 @@ INSERT INTO civicrm_msg_template
         </tr>
        {/if}
 
-       {if $contributionTypeName}
+       {if $financialTypeName}
         <tr>
          <td {$labelStyle}>
           {ts}Financial Type{/ts}
          </td>
          <td {$valueStyle}>
-          {$contributionTypeName}
+          {$financialTypeName}
          </td>
         </tr>
        {/if}
@@ -14316,8 +14318,8 @@ You were registered by: {$payer.name}
 {if $receive_date}
 {ts}Transaction Date{/ts}: {$receive_date|crmDate}
 {/if}
-{if $contributionTypeName}
-{ts}Financial Type{/ts}: {$contributionTypeName}
+{if $financialTypeName}
+{ts}Financial Type{/ts}: {$financialTypeName}
 {/if}
 {if $trxn_id}
 {ts}Transaction #{/ts}: {$trxn_id}
@@ -14792,13 +14794,13 @@ You were registered by: {$payer.name}
         </tr>
        {/if}
 
-       {if $contributionTypeName}
+       {if $financialTypeName}
         <tr>
          <td {$labelStyle}>
           {ts}Financial Type{/ts}
          </td>
          <td {$valueStyle}>
-          {$contributionTypeName}
+          {$financialTypeName}
          </td>
         </tr>
        {/if}
@@ -15154,8 +15156,8 @@ You were registered by: {$payer.name}
 {if $receive_date}
 {ts}Transaction Date{/ts}: {$receive_date|crmDate}
 {/if}
-{if $contributionTypeName}
-{ts}Financial Type{/ts}: {$contributionTypeName}
+{if $financialTypeName}
+{ts}Financial Type{/ts}: {$financialTypeName}
 {/if}
 {if $trxn_id}
 {ts}Transaction #{/ts}: {$trxn_id}
@@ -15630,13 +15632,13 @@ You were registered by: {$payer.name}
         </tr>
        {/if}
 
-       {if $contributionTypeName}
+       {if $financialTypeName}
         <tr>
          <td {$labelStyle}>
           {ts}Financial Type{/ts}
          </td>
          <td {$valueStyle}>
-          {$contributionTypeName}
+          {$financialTypeName}
          </td>
         </tr>
        {/if}
@@ -24264,4 +24266,4 @@ INSERT INTO `civicrm_report_instance`
 VALUES
     (  @domainID, 'Survey Details', 'survey/detail', 'Detailed report for canvassing, phone-banking, walk lists or other surveys.', 'access CiviReport', 'a:39:{s:6:"fields";a:2:{s:9:"sort_name";s:1:"1";s:6:"result";s:1:"1";}s:22:"assignee_contact_id_op";s:2:"eq";s:25:"assignee_contact_id_value";s:0:"";s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:17:"street_number_min";s:0:"";s:17:"street_number_max";s:0:"";s:16:"street_number_op";s:3:"lte";s:19:"street_number_value";s:0:"";s:14:"street_name_op";s:3:"has";s:17:"street_name_value";s:0:"";s:15:"postal_code_min";s:0:"";s:15:"postal_code_max";s:0:"";s:14:"postal_code_op";s:3:"lte";s:17:"postal_code_value";s:0:"";s:7:"city_op";s:3:"has";s:10:"city_value";s:0:"";s:20:"state_province_id_op";s:2:"in";s:23:"state_province_id_value";a:0:{}s:13:"country_id_op";s:2:"in";s:16:"country_id_value";a:0:{}s:12:"survey_id_op";s:2:"in";s:15:"survey_id_value";a:0:{}s:12:"status_id_op";s:2:"eq";s:15:"status_id_value";s:1:"1";s:11:"custom_1_op";s:2:"in";s:14:"custom_1_value";a:0:{}s:11:"custom_2_op";s:2:"in";s:14:"custom_2_value";a:0:{}s:17:"custom_3_relative";s:1:"0";s:13:"custom_3_from";s:0:"";s:11:"custom_3_to";s:0:"";s:11:"description";s:75:"Detailed report for canvassing, phone-banking, walk lists or other surveys.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:17:"access CiviReport";s:6:"groups";s:0:"";s:9:"domain_id";i:1;}');
 
-UPDATE civicrm_domain SET version = '4.7.beta8';
+UPDATE civicrm_domain SET version = '4.7.3';

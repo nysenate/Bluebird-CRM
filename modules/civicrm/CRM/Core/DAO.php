@@ -1167,22 +1167,6 @@ FROM   civicrm_domain
   }
 
   /**
-   * Execute a query.
-   *
-   * @param string $query
-   *   Query to be executed.
-   *
-   * @param array $params
-   * @param bool $abort
-   * @param null $daoName
-   * @param bool $freeDAO
-   * @param bool $i18nRewrite
-   * @param bool $trapException
-   *
-   * @return CRM_Core_DAO|object
-   *   object that holds the results of the query
-   *   NB - if this is defined as just returning a DAO phpstorm keeps pointing
-   *   out all the properties that are not part of the DAO
    * execute an unbuffered query.  This is a wrapper around new functionality
    * exposed with CRM-17748.
    *
@@ -1241,13 +1225,22 @@ FROM   civicrm_domain
   }
 
   /**
-   * execute a query
+   * Execute a query.
    *
-   * @param string $query query to be executed
+   * @param string $query
+   *   Query to be executed.
    *
-   * @return Object CRM_Core_DAO object that holds the results of the query
-   * @static
-   * @access public
+   * @param array $params
+   * @param bool $abort
+   * @param null $daoName
+   * @param bool $freeDAO
+   * @param bool $i18nRewrite
+   * @param bool $trapException
+   *
+   * @return CRM_Core_DAO|object
+   *   object that holds the results of the query
+   *   NB - if this is defined as just returning a DAO phpstorm keeps pointing
+   *   out all the properties that are not part of the DAO
    */
   public static function &executeQuery(
     $query,
