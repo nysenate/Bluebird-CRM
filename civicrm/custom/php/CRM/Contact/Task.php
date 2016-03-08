@@ -365,6 +365,7 @@ class CRM_Contact_Task {
         $tasks[13] = self::$_tasks[13]['title'];
         $tasks[14] = self::$_tasks[14]['title'];
       }
+    }
     return $tasks;
   }
 
