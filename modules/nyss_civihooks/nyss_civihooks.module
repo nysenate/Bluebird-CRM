@@ -604,9 +604,9 @@ function nyss_civihooks_civicrm_postProcess($formName, &$form) {
 
       require_once 'api/api.php';
 
-      $values    = $form->_finalValues;
+      $values = $form->_finalValues;
       $contactID = $form->_contactId;
-      $msg       = '';
+      $msg = '';
 
       //CRM_Core_Error::debug_var('values',$values);
 
@@ -715,7 +715,7 @@ function nyss_civihooks_civicrm_postProcess($formName, &$form) {
 
       //now register the status message. handle here so we can combine in a nice bullet list
       if ($msg) {
-        CRM_Core_Session::setStatus("<ul>$msg</ul>");
+        CRM_Core_Session::setStatus("<ul>$msg</ul>", 'Please note', 'alert', array('expires' => 0));
       }
     } //Individual
   } //CRM_Contact_Form_Contact

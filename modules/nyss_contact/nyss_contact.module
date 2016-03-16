@@ -251,6 +251,30 @@ function nyss_contact_civicrm_postProcess( $formName, &$form ) {
         'is_opt_out' => 1,
         'preferred_communication_method' => '',
       ));
+
+      $params = array(
+        'version' => 3,
+        'contact_id_a' => $vals['cid'],
+        'is_active' => 1,
+      );
+      $rels = civicrm_api('relationship', 'get', $params);
+
+      foreach ($rels['values'] as $rel) {
+        if (($rel['relationship_type_id'] == 6 ||
+            $rel['relationship_type_id'] == 7) &&
+          (!isset($rel['start_date']) ||
+            strtotime($rel['start_date']) < strtotime(date('Y-m-d'))) &&
+          (!isset($rel['end_date']) ||
+            strtotime($rel['end_date']) > strtotime(date('Y-m-d')) ) ) {
+
+          $msg = "<li>You have marked this contact as deceased and it has a household relationship. Be sure to review the household record and update the postal greeting, email greeting, and addressee values as appropriate.</li>";
+        }
+      }
+
+      //now register the status message. handle here so we can combine in a nice bullet list
+      if ($msg) {
+        CRM_Core_Session::setStatus("<ul>$msg</ul>", 'Please note', 'alert', array('expires' => 0));
+      }
     }
   }
 
