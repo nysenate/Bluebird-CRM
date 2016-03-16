@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2015                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -353,11 +353,20 @@ Additional Constituent Information
     });
     {/literal}{/if}{literal}
 
-    $("select#contact_sub_type").crmasmSelect({
-      addItemTarget: 'bottom',
-      animate: false,
-      highlight: true,
-      respectParents: true
+    // Handle delete of multi-record custom data
+    $form.on('click', '.crm-custom-value-del', function(e) {
+      e.preventDefault();
+      var $el = $(this),
+        msg = '{/literal}{ts escape="js"}The record will be deleted immediately. This action cannot be undone.{/ts}{literal}';
+      CRM.confirm({title: $el.attr('title'), message: msg})
+        .on('crmConfirm:yes', function() {
+          var url = CRM.url('civicrm/ajax/customvalue');
+          var request = $.post(url, $el.data('post'));
+          CRM.status({success: '{/literal}{ts escape="js"}Record Deleted{/ts}{literal}'}, request);
+          var addClass = '.add-more-link-' + $el.data('post').groupID;
+          $el.closest('div.crm-custom-accordion').remove();
+          $('div' + addClass).last().show();
+        });
     });
   });
 
@@ -398,8 +407,5 @@ Additional Constituent Information
 
 {* include common additional blocks tpl *}
 {include file="CRM/common/additionalBlocks.tpl"}
-
-{* include jscript to warn if unsaved form field changes *}
-{include file="CRM/common/formNavigate.tpl"}
 
 {/if}
