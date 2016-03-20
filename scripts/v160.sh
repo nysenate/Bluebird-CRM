@@ -12,6 +12,7 @@ prog=`basename $0`
 script_dir=`dirname $0`
 execSql=$script_dir/execSql.sh
 readConfig=$script_dir/readConfig.sh
+drush=$script_dir/drush.sh
 
 . $script_dir/defaults.sh
 
@@ -27,9 +28,54 @@ if ! $readConfig --instance $instance --quiet; then
   exit 1
 fi
 
+data_rootdir=`$readConfig --ig $instance data.rootdir` || data_rootdir="$DEFAULT_DATA_ROOTDIR"
 app_rootdir=`$readConfig --ig $instance app.rootdir` || app_rootdir="$DEFAULT_APP_ROOTDIR"
+webdir=`$readConfig --global drupal.rootdir` || webdir="$DEFAULT_DRUPAL_ROOTDIR"
+base_domain=`$readConfig --ig $instance base.domain` || base_domain="$DEFAULT_BASE_DOMAIN"
+db_basename=`$readConfig --ig $instance db.basename` || db_basename="$instance"
+civi_db_prefix=`$readConfig --ig $instance db.civicrm.prefix` || civi_db_prefix="$DEFAULT_BASE_DOMAIN"
+log_db_prefix=`$readConfig --ig $instance db.log.prefix` || log_db_prefix="$DEFAULT_BASE_DOMAIN"
+cdb="$civi_db_prefix$db_basename"
+ldb=$log_db_prefix$db_basename;
 
 ## upgrade civicrm db
 echo "running civicrm db upgrade..."
 $drush $instance civicrm-upgrade-db
 
+## fix table column collations throughout
+echo "$prog: fix table column collations throughout"
+sql="
+  ALTER SCHEMA $cdb DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_unicode_ci;
+  ALTER TABLE address_abbreviations CONVERT TO CHARACTER SET utf8 COLLATE 'utf8_unicode_ci';
+  ALTER TABLE civicrm_importer_jobs CONVERT TO CHARACTER SET utf8 COLLATE 'utf8_unicode_ci';
+  ALTER TABLE civicrm_system_log CONVERT TO CHARACTER SET utf8 COLLATE 'utf8_unicode_ci';
+  ALTER TABLE fn_group CONVERT TO CHARACTER SET utf8 COLLATE 'utf8_unicode_ci';
+  ALTER TABLE fn_group_name CONVERT TO CHARACTER SET utf8 COLLATE 'utf8_unicode_ci';
+  ALTER TABLE shadow_address CONVERT TO CHARACTER SET utf8 COLLATE 'utf8_unicode_ci';
+  ALTER TABLE shadow_contact CONVERT TO CHARACTER SET utf8 COLLATE 'utf8_unicode_ci';
+"
+$execSql $instance -c "$sql" -q
+
+sql="
+  ALTER TABLE $ldb.log_civicrm_importer_jobs CONVERT TO CHARACTER SET utf8 COLLATE 'utf8_unicode_ci';
+  ALTER TABLE $ldb.log_civicrm_mailing_event_sendgrid_delivered CONVERT TO CHARACTER SET utf8 COLLATE 'utf8_unicode_ci';
+"
+$execSql $instance -c "$sql" -q --log
+
+## rebuild shadow table functions
+echo "$prog: rebuild shadow table functions"
+$execSql $instance -f $script_dir/../modules/nyss_dedupe/shadow_func.sql
+
+## update machine name for case types
+echo "$prog: update case type machine names"
+sql="
+  UPDATE civicrm_case_type SET name = 'request_for_information' WHERE name = 'Request for Information';
+  UPDATE civicrm_case_type SET name = 'general_complaint' WHERE name = 'General Complaint';
+  UPDATE civicrm_case_type SET name = 'request_for_assistance' WHERE name = 'Request for Assistance';
+  UPDATE civicrm_case_type SET name = 'event_invitation' WHERE name = 'Event Invitation';
+  UPDATE civicrm_case_type SET name = 'government_service_problem_local' WHERE name = 'Government Service Problem - Local';
+  UPDATE civicrm_case_type SET name = 'government_service_problem_state' WHERE name = 'Government Service Problem - State';
+  UPDATE civicrm_case_type SET name = 'letter_of_support' WHERE name = 'Letter of Support';
+  UPDATE civicrm_case_type SET name = 'other' WHERE name = 'Other';
+"
+$execSql $instance -c "$sql" -q
