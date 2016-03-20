@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2015                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -40,10 +40,8 @@
                 {if $element neq 'tag'}{*NYSS*}
                 <tr class="crm-contact-custom-search-form-row-{$element}">
                     <td class="label">{$form.$element.label}</td>
-                    {if $element eq 'start_date'}
-                        <td>{include file="CRM/common/jcalendar.tpl" elementName=start_date}</td>
-                    {elseif $element eq 'end_date'}
-                        <td>{include file="CRM/common/jcalendar.tpl" elementName=end_date}</td>
+                    {if $element|strstr:'_date'}
+                        <td>{include file="CRM/common/jcalendar.tpl" elementName=$element}</td>
                     {else}
                         <td>{$form.$element.html}</td>
                     {/if}
@@ -67,14 +65,14 @@
 {/if}
 
 {if $rows}
-	<div class="crm-results-block">
+  <div class="crm-results-block">
     {* Search request has returned 1 or more matching rows. Display results and collapse the search criteria fieldset. *}
         {* This section handles form elements for action task select and submit *}
-       <div class="crm-search-tasks">        
+       <div class="crm-search-tasks">
         {include file="CRM/Contact/Form/Search/ResultTasks.tpl"}
-		</div>
+    </div>
         {* This section displays the rows along and includes the paging controls *}
-	    <div class="crm-search-results">
+      <div class="crm-search-results">
 
         {include file="CRM/common/pager.tpl" location="top"}
 
@@ -82,9 +80,9 @@
         {if $atoZ}
             {include file="CRM/common/pagerAToZ.tpl"}
         {/if}
-        
+
         {strip}
-        <table class="selector" summary="{ts}Search results listings.{/ts}">
+        <table class="selector row-highlight" summary="{ts}Search results listings.{/ts}">
             <thead class="sticky">
                 <tr>
                 <th scope="col" title="Select All Rows">{$form.toggleSelect.html}</th>
@@ -110,7 +108,6 @@
                     {foreach from=$columnHeaders item=header}
                         {assign var=fName value=$header.sort}
                         {if $fName eq 'sort_name'}
-                          {*NYSS 4536/7928*}
                             <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&key=`$qfKey`&context=custom"}">{$row.sort_name}</a></td>
                         {else}
                             <td>{$row.$fName}</td>
@@ -121,12 +118,6 @@
             {/foreach}
         </table>
         {/strip}
-
-        <script type="text/javascript">
-        {* this function is called to change the color of selected row(s) *}
-        var fname = "{$form.formName}";	
-        on_load_init_checkboxes(fname);
-        </script>
 
         {include file="CRM/common/pager.tpl" location="bottom"}
 
@@ -140,51 +131,6 @@
 
 </div>
 {/if}
-{literal}
-<script type="text/javascript">
-cj(function() {
-   cj().crmAccordions();
-});
-
-function toggleContactSelection( name, qfKey, selection ){
-  var Url  = "{/literal}{crmURL p='civicrm/ajax/markSelection' h=0}{literal}";
-
-  if ( selection == 'multiple' ) {
-    var rowArr = new Array( );
-    {/literal}{foreach from=$rows item=row  key=keyVal}
-      {literal}rowArr[{/literal}{$keyVal}{literal}] = '{/literal}{$row.checkbox}{literal}';
-    {/literal}{/foreach}{literal}
-    var elements = rowArr.join('-');
-
-    if ( cj('#' + name).is(':checked') ){
-      cj.post( Url, { name: elements , qfKey: qfKey , variableType: 'multiple' } );
-    }
-    else {
-      cj.post( Url, { name: elements , qfKey: qfKey , variableType: 'multiple' , action: 'unselect' } );
-    }
-  }
-  else if ( selection == 'single' ) {
-    if ( cj('#' + name).is(':checked') ){
-      cj.post( Url, { name: name , qfKey: qfKey } );
-    }
-    else {
-      cj.post( Url, { name: name , qfKey: qfKey , state: 'unchecked' } );
-    }
-  }
-  else if ( name == 'resetSel' && selection == 'reset' ) {
-    cj.post( Url, {  qfKey: qfKey , variableType: 'multiple' , action: 'unselect' } );
-    {/literal}
-    {foreach from=$rows item=row}{literal}
-      cj("#{/literal}{$row.checkbox}{literal}").removeAttr('checked');{/literal}
-    {/foreach}
-    {literal}
-    cj("#toggleSelect").removeAttr('checked');
-    var formName = "{/literal}{$form.formName}{literal}";
-    on_load_init_checkboxes(formName);
-  }
-}
-</script>
-{/literal}
 
 {*NYSS 7748*}
 {if $searchName eq 'IncludeExclude'}

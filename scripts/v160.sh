@@ -79,3 +79,10 @@ sql="
   UPDATE civicrm_case_type SET name = 'other' WHERE name = 'Other';
 "
 $execSql $instance -c "$sql" -q
+
+## collapse custom group attachments
+echo "$prog: collapse custom group attachments"
+sql="
+  UPDATE civicrm_custom_group SET collapse_display = 1 WHERE name = 'Attachments';
+"
+$execSql $instance -c "$sql" -q

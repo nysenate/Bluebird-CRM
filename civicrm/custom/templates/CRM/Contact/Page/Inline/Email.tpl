@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2015                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,10 +26,10 @@
 {* template for building email block*}
 <div id="crm-email-content" {if $permission EQ 'edit'} class="crm-inline-edit" data-edit-params='{ldelim}"cid": "{$contactId}", "class_name": "CRM_Contact_Form_Inline_Email"{rdelim}' data-dependent-fields='["#crm-contact-actions-wrapper"]'{/if}>
   <div class="crm-clear crm-inline-block-content" {if $permission EQ 'edit'}title="{ts}Add or edit email{/ts}"{/if}>
-    {if $permission EQ 'edit'}
+  {if $permission EQ 'edit'}
     <div class="crm-edit-help">
-      <span class="batch-edit"></span>{if empty($email)}{ts}Add email{/ts}{else}{ts}Add or edit email{/ts}{/if}
-     </div>
+      <span class="crm-i fa-pencil"></span> {if empty($email)}{ts}Add email{/ts}{else}{ts}Add or edit email{/ts}{/if}
+    </div>
   {/if}
   {if empty($email)}
     <div class="crm-summary-row">
@@ -39,7 +39,7 @@
       </div>
       <div class="crm-content"></div>
     </div>
-    {/if}
+  {/if}
   {foreach from=$email key="blockId" item=item}
     {if $item.email}
     <div class="crm-summary-row {if $item.is_primary eq 1}primary{/if}">
@@ -57,9 +57,9 @@
             {$item.hold_date|crmDate:"%m/%d/%Y"}
           {/if}
         {if $item.signature_text OR $item.signature_html}
-          <span class="signature-link description">
-            <a href="#" title="{ts}Signature{/ts}" onClick="showHideSignature( '{$blockId}' ); return false;">{ts}(signature){/ts}</a>
-          </span>
+        <span class="signature-link description">
+          <a href="#" title="{ts}Signature{/ts}" onClick="showHideSignature( '{$blockId}' ); return false;">{ts}(signature){/ts}</a>
+        </span>
         {/if}
         <div id="Email_Block_{$blockId}_signature" class="hiddenElement">
           <strong>{ts}Signature HTML{/ts}</strong><br />{$item.signature_html}<br /><br />
@@ -75,30 +75,21 @@
 <script type="text/javascript">
 
 function showHideSignature( blockId ) {
-  cj("#Email_Block_" + blockId + "_signature").show( );   
+  cj("#Email_Block_" + blockId + "_signature").show( );
 
   cj("#Email_Block_" + blockId + "_signature").dialog({
       title: "Signature",
       modal: true,
-      bgiframe: true,
       width: 900,
       height: 500,
-      overlay: { 
-          opacity: 0.5, 
-          background: "black"
-      },
-
       beforeclose: function(event, ui) {
         cj(this).dialog("destroy");
       },
-      open:function() {
-      },
-
-      buttons: { 
-        "Done": function() { 
-                  cj(this).dialog("destroy"); 
-                } 
-      } 
+      buttons: {
+        "Done": function() {
+                  cj(this).dialog("destroy");
+                }
+      }
   });
 }
 </script>

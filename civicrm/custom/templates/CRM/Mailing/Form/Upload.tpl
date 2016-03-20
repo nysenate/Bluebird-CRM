@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2015                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -49,18 +49,14 @@
     </tr>
     {/if}
     <tr class="crm-mailing-upload-form-block-template">
-    	<td class="label">{$form.template.label}</td>
-	<td>{$form.template.html}</td>
+      <td class="label">{$form.template.label}</td>
+  <td>{$form.template.html}</td>
     </tr>
     <tr class="crm-mailing-upload-form-block-subject"><td class="label">{$form.subject.label}</td>
-        <td colspan="2">{$form.subject.html|crmAddClass:huge}
-                        <a href="#" onClick="return showToken('Subject', 3);">{$form.token3.label}</a>
-                        {help id="id-token-subject" file="CRM/Contact/Form/Task/Email.hlp"}
-                        <div id='tokenSubject' style="display:none">
-                           <input style="border:1px solid #999999;" type="text" id="filter3" size="20" name="filter3" onkeyup="filter(this, 3)"/><br />
-                           <span class="description">{ts}Begin typing to filter list of tokens{/ts}</span><br/>
-                           {$form.token3.html}
-                        </div>
+        <td colspan="2">
+          {$form.subject.html|crmAddClass:huge}&nbsp;
+          <input class="crm-token-selector big" data-field="subject" />
+          {help id="id-token-subject" tplFile=$tplFile isAdmin=$isAdmin file="CRM/Contact/Form/Task/Email.hlp"}
         </td>
     </tr>
     {*NYSS hide so we don't have option to upload; use visibility and height so form element retained*}
@@ -105,7 +101,7 @@
                 <span class="description">{ts}You may choose to include a pre-configured Footer block below your message. This is a good place to include the required unsubscribe, opt-out and postal address tokens.{/ts}</span>
             </td>
         </tr>
-    </table> 
+    </table>
   </fieldset>
 
   <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl"}</div>
@@ -117,20 +113,17 @@
 <script type="text/javascript">
     showHideUpload();
     function showHideUpload()
-    { 
-	if (document.getElementsByName("upload_type")[0].checked) {
+    {
+  if (document.getElementsByName("upload_type")[0].checked) {
             cj('#compose_id').hide();
-	    cj('.crm-mailing-upload-form-block-template').hide();
+      cj('.crm-mailing-upload-form-block-template').hide();
       cj('#upload_id').show();
         } else {
             cj('#compose_id').show();
-	    cj('.crm-mailing-upload-form-block-template').show();
+      cj('.crm-mailing-upload-form-block-template').show();
       cj('#upload_id').hide();
             verify( );
         }
     }
 </script>
 {/literal}
-
-{* include jscript to warn if unsaved form field changes *}
-{include file="CRM/common/formNavigate.tpl"}

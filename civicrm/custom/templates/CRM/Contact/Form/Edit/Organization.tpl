@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2015                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,23 +25,33 @@
 *}
 {* tpl for building Organization related fields *}
 <table class="form-layout-compressed">
-  <tr>
-    <td>{$form.organization_name.label}<br/>
-      {$form.organization_name.html}
-    </td>
+    <tr>
+       <td>{$form.organization_name.label}<br/>
+         {$form.organization_name.html}
+       </td>
 
-    <td>{$form.legal_name.label}<br/>
-      {$form.legal_name.html}</td>
+       <td>{$form.legal_name.label}<br/>
+       {$form.legal_name.html}</td>
 
-    <td>{$form.nick_name.label}<br/>
-      {$form.nick_name.html}</td>
+       <td>{$form.nick_name.label}<br/>
+       {$form.nick_name.html}</td>
+
+       {*NYSS*}{*
+       <td>{$form.sic_code.label}<br/>
+       {$form.sic_code.html}</td>
+       *}
+
+       <td>{if $action == 1 and $contactSubType}&nbsp;{else}
+              {$form.contact_sub_type.label}<br />
+              {$form.contact_sub_type.html}
+           {/if}
+       </td>
     
     <td>
       {assign var='custom_41' value=$groupTree.3.fields.41.element_name}
       {$form.$custom_41.label}<br/>
       {$form.$custom_41.html}
     </td>
-    <td>&nbsp;</td>
     <td>&nbsp;</td>
   </tr>
   <tr>

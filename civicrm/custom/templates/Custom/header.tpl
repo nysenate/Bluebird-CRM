@@ -77,31 +77,17 @@ cj(function(){
   });
 });
 
-cj( document ).ready( function( ) {
+cj(document).ready( function( ) {
   var htmlContent = '';
-  if ( cj.browser.msie ) {
-    if( cj.browser.version.substr( 0,1 ) == '7' ) {
-      htmlContent = '<input type="submit" value="Go" name="_qf_Basic_refresh" class="form-submit default tgif" style ="margin-right: -5px;" />';
-    }
-    else {
-      htmlContent = '<input type="submit" id="find_contacts" value="Go" name="_qf_Basic_refresh" class="form-submit default tgif" />';
-    }
-    htmlContent += '<input type="text" class="form-text" id="civi_sort_name" name="sort_name" style="width:193px;" value="enter name" />' +
-      '<input type="hidden" name="qfKey" value="' + {/literal}'{crmKey name='CRM_Contact_Controller_Search' addSequence=1}'{literal} + '" />' +
-      '<input type="text" id="sort_contact_id" style="display: none" />';
-    cj( '.civi-search-section #quickSearch' ).append( htmlContent );
-  }
-  else {
-    htmlContent += '<input type="text" class="form-text" id="civi_sort_name" name="sort_name" style="width:193px;" value="enter name" />' +
+  htmlContent += '<input type="text" class="form-text" id="civi_sort_name" name="sort_name" style="width:193px;" value="enter name" />' +
       '<input type="hidden" id="sort_contact_id" value="" />' +
       '<input type="hidden" name="qfKey" value="' + {/literal}'{crmKey name='CRM_Contact_Controller_Search' addSequence=1}'{literal} + '" />' +
       '<input type="submit" id="find_contacts" value="Go" name="_qf_Basic_refresh" class="form-submit default tgif" />';
-    cj( '.civi-search-section #quickSearch' ).append( htmlContent );
-  }
+  cj( '.civi-search-section #quickSearch' ).append( htmlContent );
 
   var contactUrl = {/literal}"{crmURL p='civicrm/ajax/rest' q='className=CRM_Contact_Page_AJAX&fnName=getContactList&json=1&context=navigation' h=0 }"{literal};
 
-  cj( '#civi_sort_name' ).autocomplete( contactUrl, {
+  /*cj( '#civi_sort_name' ).autocomplete( contactUrl, {
     width: 200,
     selectFirst: false,
     minChars:3,
@@ -109,7 +95,7 @@ cj( document ).ready( function( ) {
   }).result(function(event, data, formatted) {
     document.location={/literal}"{crmURL p='civicrm/contact/view' h=0 q='reset=1&cid='}"{literal}+data[1];
     return false;
-  });
+  });*/
 
   $("input[name=sort_name]").focus(function(){
     var defaultText = $(this).val();
@@ -276,11 +262,3 @@ cj( document ).ready( function( ) {
   {/if}
 </div>
 </div>
-
-{literal}
-<script type="text/javascript">
-cj(function() {
-  cj().crmAccordions();
-});
-</script>
-{/literal}

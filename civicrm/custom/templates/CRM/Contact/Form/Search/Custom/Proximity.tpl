@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2015                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -63,14 +63,14 @@
 {/if}
 
 {if $rows}
-	<div class="crm-results-block">
+  <div class="crm-results-block">
     {* Search request has returned 1 or more matching rows. Display results and collapse the search criteria fieldset. *}
         {* This section handles form elements for action task select and submit *}
-       <div class="crm-search-tasks">        
+       <div class="crm-search-tasks">
         {include file="CRM/Contact/Form/Search/ResultTasks.tpl"}
-		</div>
+    </div>
         {* This section displays the rows along and includes the paging controls *}
-	    <div class="crm-search-results">
+      <div class="crm-search-results">
 
         {include file="CRM/common/pager.tpl" location="top"}
 
@@ -78,9 +78,9 @@
         {if $atoZ}
             {include file="CRM/common/pagerAToZ.tpl"}
         {/if}
-        
+
         {strip}
-        <table class="selector" summary="{ts}Search results listings.{/ts}">
+        <table class="selector row-highlight" summary="{ts}Search results listings.{/ts}">
             <thead class="sticky">
                 <th scope="col" title="Select All Rows">{$form.toggleSelect.html}</th>
                 {foreach from=$columnHeaders item=header}
@@ -104,7 +104,6 @@
                     {foreach from=$columnHeaders item=header}
                         {assign var=fName value=$header.sort}
                         {if $fName eq 'sort_name'}
-                          {*NYSS 4536/7928*}
                             <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&key=`$qfKey`&context=custom"}">{$row.sort_name}</a></td>
                         {else}
                             <td>{$row.$fName}</td>
@@ -116,11 +115,6 @@
         </table>
         {/strip}
 
-        <script type="text/javascript">
-        {* this function is called to change the color of selected row(s) *}
-        var fname = "{$form.formName}";	
-        on_load_init_checkboxes(fname);
-        </script>
 
         {include file="CRM/common/pager.tpl" location="bottom"}
 
@@ -134,13 +128,8 @@
 
 </div>
 {/if}
-
 {literal}
 <script type="text/javascript">
-  cj(function() {
-     cj().crmAccordions();
-  });
-
   //NYSS 7892
   cj(document).ready(function(){
     if ( cj('div.messages.status.no-popup').length ) {

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2015                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,6 +24,7 @@
  +--------------------------------------------------------------------+
 *}
 {* Relationship tab within View Contact - browse, and view relationships for a contact *}
+{*NYSS*}
 {*{if !empty($cdType) }
   {include file="CRM/Custom/Form/CustomData.tpl"}
 {else}
@@ -64,24 +65,31 @@
         </tr>
         </thead>
         {foreach from=$currentRelationships item=rel}
+            {*assign var = "rtype" value = "" }
+            {if $rel.contact_a eq $contactId }
+                {assign var = "rtype" value = "a_b" }
+            {else}
+                {assign var = "rtype" value = "b_a" }
+            {/if*}
+
             <tr id="rel_{$rel.id}" class="{cycle values="odd-row,even-row"} row-relationship {if $rel.is_permission_a_b eq 1 or $rel.is_permission_b_a eq 1}row-highlight{/if}">
 
             {if $relationshipTabContext}
               <td class="bold">
                 <a href="{crmURL p='civicrm/contact/view/rel' q="action=view&reset=1&selectedChild=rel&cid=`$contactId`&id=`$rel.id`&rtype=`$rel.rtype`"}">{$rel.relation}</a>
-				{if ($rel.cid eq $rel.contact_id_a and $rel.is_permission_a_b eq 1) OR
-			    	($rel.cid eq $rel.contact_id_b and $rel.is_permission_b_a eq 1) }
-		            <span id="permission-b-a" class="crm-marker permission-relationship"> *</span>
-		        {/if}
+                {if ($rel.cid eq $rel.contact_id_a and $rel.is_permission_a_b eq 1) OR
+                ($rel.cid eq $rel.contact_id_b and $rel.is_permission_b_a eq 1) }
+                  <span id="permission-b-a" class="crm-marker permission-relationship"> *</span>
+                {/if}
                 {if $rel.description}<p class='description'>{$rel.description}</p>{/if}
              </td>
                 <td>
-                <a href="{crmURL p='civicrm/contact/view' q="action=view&reset=1&cid=`$rel.cid`"}">{$rel.name}</a>
-				{if ($contactId eq $rel.contact_id_a and $rel.is_permission_a_b eq 1) OR
-			    	($contactId eq $rel.contact_id_b and $rel.is_permission_b_a eq 1) } 
-		    	    <span id="permission-a-b" class="crm-marker permission-relationship"> *</span>
-		        {/if}
-				</td>
+       <a href="{crmURL p='civicrm/contact/view' q="action=view&reset=1&cid=`$rel.cid`"}">{$rel.name}</a>
+            {if ($contactId eq $rel.contact_id_a and $rel.is_permission_a_b eq 1) OR
+          ($contactId eq $rel.contact_id_b and $rel.is_permission_b_a eq 1) }
+              <span id="permission-a-b" class="crm-marker permission-relationship"> *</span>
+            {/if}
+    </td>
             {else}
                 <td class="bold">{$rel.relation}</strong></td>
                 <td>{$rel.name}</td>
@@ -92,7 +100,7 @@
                 <td>{$rel.city}</td>
                 *}{*<td>{$rel.state}</td>*}{*
                 <td>{$rel.email}</td>
-                <td>{$rel.phone}</td> 
+                <td>{$rel.phone}</td>
                 <td class="nowrap">{$rel.action|replace:'xx':$rel.id}</td>
                 <td class="start_date hiddenElement">{$rel.start_date|crmDate}</td>
                 <td class="end_date hiddenElement">{$rel.end_date|crmDate}</td>
@@ -141,8 +149,8 @@
         <table id="inactive_relationship" class="display">
         <thead>
         <tr>
-          <th>{ts}Relationship{/ts}</th>
-          <th></th>
+            <th>{ts}Relationship{/ts}</th>
+            <th></th>
           *}{*NYSS remove some columns*}{*
           *}{*<th id="dis-start_date">{ts}Start{/ts}</th>*}{*
           *}{*<th id="dis-end_date">{ts}End{/ts}</th>*}{*
@@ -174,7 +182,7 @@
             <td>{$rel.city}</td>
             *}{*<td>{$rel.state}</td>*}{*
             <td>{$rel.email}</td>
-    	    <td>{$rel.phone}</td>
+            <td>{$rel.phone}</td>
             <td class="nowrap">{$rel.action|replace:'xx':$rel.id}</td>
             <td class="dis-start_date hiddenElement">{$rel.start_date|crmDate}</td>
             <td class="dis-end_date hiddenElement">{$rel.end_date|crmDate}</td>
@@ -182,7 +190,7 @@
         {/foreach}
         </table>
         {/strip}
-        </div>    
+        </div>
 {/if}
 
 *}{* end of code to show inactive relationships *}{*
@@ -202,11 +210,10 @@
 {elseif $action neq 16} {* add, update or view *}
   {include file="CRM/Contact/Form/Relationship.tpl"}
 {else}
-  <div class="view-content">
+  <div id="contact-summary-relationship-tab" class="view-content">
     {if $permission EQ 'edit'}
       <div class="action-link">
-        <a accesskey="N" href="{crmURL p='civicrm/contact/view/rel' q="cid=`$contactId`&action=add&reset=1"}"
-           class="button"><span><div class="icon add-icon"></div>{ts}Add Relationship{/ts}</span></a>
+        {crmButton accesskey="N"  p='civicrm/contact/view/rel' q="cid=`$contactId`&action=add&reset=1" icon="plus-circle"}{ts}Add Relationship{/ts}{/crmButton}
       </div>
     {/if}
 
@@ -227,9 +234,15 @@
   </div>
 
   {include file="CRM/common/enableDisableApi.tpl"}
+  {literal}
+  <script type="text/javascript">
+    CRM.$(function($) {
+      // Changing relationships may affect related members and contributions. Ensure they are refreshed.
+      $('#contact-summary-relationship-tab').on('crmPopupFormSuccess', function() {
+        CRM.tabHeader.resetTab('#tab_contribute');
+        CRM.tabHeader.resetTab('#tab_member');
+      });
+    });
+  </script>
+  {/literal}
 {/if} {* close of custom data else*}
-
-{if !empty($searchRows) }
-  {*include custom data js file*}
-  {include file="CRM/common/customData.tpl"}
-{/if}

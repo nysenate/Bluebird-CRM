@@ -110,7 +110,6 @@
   <script type="text/javascript">
   cj(function() {
     cj().crmtooltip();
-    cj().crmAccordions();
   });
   </script>
   {/literal}

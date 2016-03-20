@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2015                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -32,6 +32,12 @@
   </div><!-- /.crm-accordion-header -->
 <div id="commPrefs" class="crm-accordion-body">
     <table class="form-layout-compressed" >
+        {if !empty($form.communication_style_id)}
+            <tr><td colspan='4'>
+                <span class="label">{$form.communication_style_id.label} {help id="id-communication_style" file="CRM/Contact/Form/Contact.hlp"}</span>
+                <span class="value">{$form.communication_style_id.html}</span>
+            </td><tr>
+        {/if}
         <tr>
             {if !empty($form.email_greeting_id)}
                 <td>{$form.email_greeting_id.label}</td>
@@ -51,7 +57,9 @@
                 <td>
                     <span id="email_greeting" {if !empty($email_greeting_display) and $action eq 2} class="hiddenElement"{/if}>{$form.email_greeting_id.html|crmAddClass:big}</span>
                     {if !empty($email_greeting_display) and $action eq 2}
-                        <div id="email_greeting_display" class="view-data">{$email_greeting_display}&nbsp;&nbsp;<a href="#" onclick="showGreeting('email_greeting');return false;"><img src="{$config->resourceBase}i/edit.png" border="0" title="{ts}Edit{/ts}"></a></div>
+                      <div data-id="email_greeting" class="replace-plain" title="{ts}Click to edit{/ts}">
+                        {$email_greeting_display}
+                      </div>
                     {/if}
                 </td>
             {/if}
@@ -59,7 +67,9 @@
                 <td>
                     <span id="postal_greeting" {if !empty($postal_greeting_display) and $action eq 2} class="hiddenElement"{/if}>{$form.postal_greeting_id.html|crmAddClass:big}</span>
                     {if !empty($postal_greeting_display) and $action eq 2}
-                        <div id="postal_greeting_display" class="view-data">{$postal_greeting_display}&nbsp;&nbsp;<a href="#" onclick="showGreeting('postal_greeting');return false;"><img src="{$config->resourceBase}i/edit.png" border="0" title="{ts}Edit{/ts}"></a></div>
+                      <div data-id="postal_greeting" class="replace-plain" title="{ts}Click to edit{/ts}">
+                        {$postal_greeting_display}
+                      </div>
                     {/if}
                 </td>
             {/if}
@@ -67,7 +77,9 @@
                 <td>
                     <span id="addressee" {if !empty($addressee_display) and $action eq 2} class="hiddenElement"{/if}>{$form.addressee_id.html|crmAddClass:big}</span>
                     {if !empty($addressee_display) and $action eq 2}
-                        <div id="addressee_display" class="view-data">{$addressee_display}&nbsp;&nbsp;<a href="#" onclick="showGreeting('addressee');return false;"><img src="{$config->resourceBase}i/edit.png" border="0" title="{ts}Edit{/ts}"></a></div>
+                      <div data-id="addressee" class="replace-plain" title="{ts}Click to edit{/ts}">
+                        {$addressee_display}
+                      </div>
                     {/if}
                 </td>
             {/if}
@@ -95,25 +107,24 @@
             {/if}
         </tr>
         <tr>
-            {foreach key=key item=item from=$commPreference}
-                <td>
-                    <br /><span class="label">{$form.$key.label}</span> {help id="id-$key" file="CRM/Contact/Form/Contact.hlp"}
-                    {foreach key=k item=i from=$item}
-                     <br />{$form.$key.$k.html}
-                    {/foreach}
-                </td>
-            {/foreach}
-                 <td rowspan="2">
-                     <br /><span class="label">{$form.preferred_language.label}</span>
-                     <br />{$form.preferred_language.html}
-        			 
-                     {*3815 add privacy note field*}
-                     <div id="privacyNote">
-                        {assign var='privacynote' value=$groupTree.8.fields.64.element_name}
-                     	<br /><span class="label">{$form.$privacynote.label}</span>
-                     	<br />{$form.$privacynote.html}
-                     </div>
-                </td>
+          {foreach key=key item=item from=$commPreference}
+            <td>
+              <br/><span class="label">{$form.$key.label}</span> {help id="id-$key" file="CRM/Contact/Form/Contact.hlp"}
+              <br/>{$form.$key.html}
+            </td>
+          {/foreach}
+          {*NYSS*}
+          <td rowspan="2">
+            <br/><span class="label">{$form.preferred_language.label}</span>
+            <br/>{$form.preferred_language.html}
+
+            {*NYSS 3815 add privacy note field*}
+            <div id="privacyNote">
+              {assign var='privacynote' value=$groupTree.8.fields.64.element_name}
+              <br /><span class="label">{$form.$privacynote.label}</span>
+              <br />{$form.$privacynote.html}
+            </div>
+          </td>
         </tr>
         <tr>
             <td>{$form.is_opt_out.html} {$form.is_opt_out.label} {help id="id-optOut" file="CRM/Contact/Form/Contact.hlp"}</td>
@@ -126,46 +137,4 @@
     </table>
  </div><!-- /.crm-accordion-body -->
 </div><!-- /.crm-accordion-wrapper -->
-
-
-{literal}
-<script type="text/javascript">
-cj( function( ) {
-    var fields = new Array( 'postal_greeting', 'addressee', 'email_greeting');
-    for ( var i = 0; i < 3; i++ ) {
-        cj( "#" + fields[i] + "_id").change( function( ) {
-            var fldName = cj(this).attr( 'id' );
-            if ( cj(this).val( ) == 4 ) {
-                cj("#greetings1").show( );
-                cj("#greetings2").show( );
-                cj( "#" + fldName + "_html").show( );
-                cj( "#" + fldName + "_label").show( );
-            } else {
-                cj( "#" + fldName + "_html").hide( );
-                cj( "#" + fldName + "_label").hide( );
-                cj( "#" + fldName.slice(0, -3) + "_custom" ).val('');
-            }
-        });
-		//NYSS 3716
-		if ( cj("#" + fields[i] + "_id").val() == 4 && cj("#" + fields[i] + "_custom").val() == '' ) {
-			showGreeting( fields[i] );
-		}
-    }          
-});
-
-function showGreeting( element ) {
-    cj("#" + element ).show( );
-    cj("#" + element + '_display' ).hide( );
-
-    // TO DO fix for custom greeting
-    var fldName = '#' + element + '_id';
-    if ( cj( fldName ).val( ) == 4 ) {
-        cj("#greetings1").show( );
-        cj("#greetings2").show( );
-        cj( fldName + "_html").show( );
-        cj( fldName + "_label").show( );
-    }
-}
-
-</script>
-{/literal}
+{include file="CRM/Contact/Form/Edit/CommunicationPreferences.js.tpl"}

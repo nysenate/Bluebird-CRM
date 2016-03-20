@@ -43,10 +43,7 @@
 function nyss_boe_civicrm_buildForm( $formName, &$form ) 
 {    
   if ( $formName == 'CRM_Contact_Form_Contact' ) {
-
     //do not allow to edit as well as set 'Board of Election' loc type.
-    require_once 'CRM/Utils/Request.php';
-    require_once 'CRM/Core/BAO/Preferences.php';
     $blocks = array(
       'Email' => 'email',
       'Phone' => 'phone',
