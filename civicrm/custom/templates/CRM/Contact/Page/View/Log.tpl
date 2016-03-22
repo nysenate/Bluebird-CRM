@@ -71,6 +71,7 @@
     CRM.reloadChangeLogTab({/literal}"{$instanceUrl}"{literal});
 
     //NYSS 6960
+    var dataURL = {/literal}"{$instanceUrl}"{literal};
     cj.ajax({
       url: dataURL,
       beforeSend: function(){

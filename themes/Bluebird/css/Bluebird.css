@@ -1896,3 +1896,12 @@ div#mainTabContainer > ul.ui-widget-header {
 #crm-container #mainTabContainer > ul.crm-contact-tabs-list {
   width: 156px;
 }
+/*fixes for buttons*/
+#crm-container.crm-container .crm-content-block a.button,
+#crm-container.crm-container .crm-content-block a.button:link,
+#crm-container.crm-container .crm-actions-ribbon a.button,
+#crm-contact-actions-link,
+#crm-container.crm-container .crm-actions-ribbon a.button:link {
+  padding: 4px;
+  font-family: Verdana, Arial, Helvetica;
+}
