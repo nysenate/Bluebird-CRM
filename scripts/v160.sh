@@ -51,8 +51,12 @@ sql="
   ALTER TABLE civicrm_system_log CONVERT TO CHARACTER SET utf8 COLLATE 'utf8_unicode_ci';
   ALTER TABLE fn_group CONVERT TO CHARACTER SET utf8 COLLATE 'utf8_unicode_ci';
   ALTER TABLE fn_group_name CONVERT TO CHARACTER SET utf8 COLLATE 'utf8_unicode_ci';
+  ALTER TABLE fn_group_contact CONVERT TO CHARACTER SET utf8 COLLATE 'utf8_unicode_ci';
   ALTER TABLE shadow_address CONVERT TO CHARACTER SET utf8 COLLATE 'utf8_unicode_ci';
   ALTER TABLE shadow_contact CONVERT TO CHARACTER SET utf8 COLLATE 'utf8_unicode_ci';
+  ALTER TABLE nyss_schooldistricts CONVERT TO CHARACTER SET utf8 COLLATE 'utf8_unicode_ci';
+  ALTER TABLE nyss_web_account CONVERT TO CHARACTER SET utf8 COLLATE 'utf8_unicode_ci';
+  ALTER TABLE nyss_web_activity CONVERT TO CHARACTER SET utf8 COLLATE 'utf8_unicode_ci';
 "
 $execSql $instance -c "$sql" -q
 
