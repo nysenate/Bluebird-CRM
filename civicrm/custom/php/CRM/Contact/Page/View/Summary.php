@@ -373,33 +373,27 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
     foreach ($rest as $k => $v) {
       if ($accessCiviCRM && !empty($this->_viewOptions[$k])) {
         //NYSS 5184/5185
-        $crmPID = '';
-        if ( CRM_Utils_Request::retrieve('crmPID', 'Integer') &&
-          $k == 'log' ) {
-          $crmPID = '&crmPID='.CRM_Utils_Request::retrieve('crmPID', 'Integer');
-        }
-				if ( CRM_Utils_Request::retrieve('crmPID_B', 'Integer') &&
-          CRM_Utils_Request::retrieve('PagerBottomButton', 'String') &&
-          $k == 'log' ) {
-          $crmPID = '&crmPID='.CRM_Utils_Request::retrieve('crmPID_B', 'Integer');
+        if ($k == 'log') {
+          $crmPID = '';
+          if (CRM_Utils_Request::retrieve('crmPID', 'Integer')) {
+            $crmPID = '&crmPID='.CRM_Utils_Request::retrieve('crmPID', 'Integer');
+          }
+          if (CRM_Utils_Request::retrieve('crmPID_B', 'Integer') &&
+            CRM_Utils_Request::retrieve('PagerBottomButton', 'String')
+          ) {
+            $crmPID = '&crmPID='.CRM_Utils_Request::retrieve('crmPID_B', 'Integer');
+          }
         }
 
-        $tempTab = array(
-          'id' =>  $k,
-          'url' => CRM_Utils_System::url( "civicrm/contact/view/$k",
-                                          "reset=1&snippet=1&cid={$this->_contactId}{$crmPID}" ),//NYSS
-          'title'  => $v,
+        $allTabs[] = $v + array(
+          'id' => $k,
+          'url' => CRM_Utils_System::url(
+            "civicrm/contact/view/$k",
+            "reset=1&snippet=1&cid={$this->_contactId}{$crmPID}"//NYSS
+          ),
           'weight' => $weight,
           'count' => CRM_Contact_BAO_Contact::getCountComponent($k, $this->_contactId),
         );
-        if($k == 'log') {
-          //NYSS
-          //$tempTab['count'] = '<script>cj().ready( function() { getChangeLogCount(); } );</script>';
-        }
-        else {
-          $tempTab['count'] = CRM_Contact_BAO_Contact::getCountComponent( $k, $this->_contactId );
-        }
-        $allTabs[] = $tempTab;
         $weight += 10;
       }
     }

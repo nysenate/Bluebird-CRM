@@ -87,6 +87,7 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
             'title' => ts('Log Type'),
           ),
           'log_date' => array(
+            'name' => 'change_ts',//NYSS
             'default' => TRUE,
             'required' => TRUE,
             'type' => CRM_Utils_Type::T_TIME,

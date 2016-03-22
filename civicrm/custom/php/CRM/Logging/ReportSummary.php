@@ -111,14 +111,14 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
         'log_civicrm_case' =>
           array(
             'bracket_field'  => 'case_type_id',
-            'bracket_lookup' => CRM_Case_PseudoConstant::caseType('label', FALSE),
+            'bracket_lookup' => CRM_Case_PseudoConstant::caseType('title', FALSE),
           ),
         'log_civicrm_case_contact' =>
           array(
             'entity_field'   => 'case_id',
             'entity_table'   => 'log_civicrm_case',
             'bracket_field'  => 'case_type_id',
-            'bracket_lookup' => CRM_Case_PseudoConstant::caseType('label', FALSE),
+            'bracket_lookup' => CRM_Case_PseudoConstant::caseType('title', FALSE),
           ),
       );
 
@@ -235,7 +235,7 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
           ),
           'bracket_info' => array(
             'entity_column' => 'case_type_id',
-            'options' => CRM_Case_PseudoConstant::caseType('label', FALSE)
+            'options' => CRM_Case_PseudoConstant::caseType('title', FALSE)
           ),
         ),
       );

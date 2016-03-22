@@ -1888,3 +1888,11 @@ div.crm-relationship-form-block .crm-relationship-form-block-is_permission_a_b,
 div.crm-relationship-form-block .crm-relationship-form-block-is_permission_b_a {
   display: none;
 }
+div#mainTabContainer.ui-widget-content,
+div#mainTabContainer > ul.ui-widget-header {
+  border: none;
+  padding: 0;
+}
+#crm-container #mainTabContainer > ul.crm-contact-tabs-list {
+  width: 156px;
+}

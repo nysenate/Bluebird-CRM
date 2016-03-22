@@ -24,11 +24,11 @@ shell_exec( $dropCiviTriggers );
 //set logging value in config and settings
 require_once "CRM/Core/BAO/Setting.php";
 $config->logging = 0;
-CRM_Core_DAO::executeQuery('
-  UPDATE civicrm_domain
-  SET config_backend = REPLACE(config_backend, "logging\";s:1:\"1", "logging\";s:1:\"0")
-  WHERE id = 1;
-');
+CRM_Core_DAO::executeQuery("
+  UPDATE civicrm_setting
+  SET value = 'i:0;'
+  WHERE name = 'logging';
+");
 
 echo "Disable Logging...\n";
 require_once 'CRM/Logging/Schema.php';
