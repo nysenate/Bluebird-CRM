@@ -1905,3 +1905,8 @@ div#mainTabContainer > ul.ui-widget-header {
   padding: 4px;
   font-family: Verdana, Arial, Helvetica;
 }
+/*data tables fonts*/
+table.crm-ajax-table td,
+table.crm-ajax-table th {
+  font-size: 0.9em;
+}
