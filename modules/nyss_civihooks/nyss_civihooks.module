@@ -735,8 +735,8 @@ function nyss_civihooks_civicrm_validateForm($formName, &$fields, &$files, &$for
   //4272 ensure that target/with contact is set when activity created from contact record
   if ($formName == 'CRM_Activity_Form_Activity' &&
       $form->_context == 'activity' && $form->_action != 8) { //exclude delete
-    if (empty($fields['contact'][1])) {
-      $errors['source_contact_id'] = ts('Please add at least one target contact.');
+    if (empty($fields['target_contact_id'])) {
+      $errors['target_contact_id'] = ts('Please add at least one target contact.');
     }
   }
 

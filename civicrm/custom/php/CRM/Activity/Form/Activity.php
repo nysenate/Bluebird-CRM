@@ -677,8 +677,8 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
     }
 
     asort($activityTypes);
-    $element =& $this->add('select', 'activity_type_id', ts('Activity Type'),
-      $activityTypes, //NYSS 4921
+    $element = &$this->add('select', 'activity_type_id', ts('Activity Type'),
+      array('' => '- ' . ts('select') . ' -') + $activityTypes, //NYSS 4921
       FALSE, array(
         'onchange' => "CRM.buildCustomData( 'Activity', this.value );",
         'class' => 'crm-select2 required',
@@ -690,7 +690,8 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
       //NYSS 3153 allow modification
       //NYSS 6567 if inbound email, freeze
       if ( $this->_activityTypeName == 'Inbound Email' ) {
-      $element->freeze();
+        $element->freeze();
+      }
     }
 
     // Call to RecurringEntity buildQuickForm for add/update mode.
