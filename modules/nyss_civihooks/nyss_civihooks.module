@@ -900,6 +900,46 @@ function nyss_civihooks_civicrm_navigationMenu(&$params)
   //CRM_Core_Error::debug_var('navigationMenu params (after)',$params);
 }
 
+//build navigation menu
+function nyss_civihooks_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) {
+  //$navigation = CRM_Core_BAO_Navigation::buildNavigation();
+
+  $navigations = array();
+  CRM_Core_BAO_Navigation::buildNavigationTree($navigations, $parent = NULL, TRUE);
+  $navigationString = NULL;
+
+  // run the Navigation  through a hook so users can modify it
+  CRM_Utils_Hook::navigationMenu($navigations);
+  CRM_Core_BAO_Navigation::fixNavigationMenu($navigations);
+
+  //skip children menu item if user don't have access to parent menu item
+  $skipMenuItems = array();
+  foreach ($navigations as $key => $value) {
+    // Home is a special case
+    if ($value['attributes']['name'] != 'Home') {
+      $name = CRM_Core_BAO_Navigation::getMenuName($value, $skipMenuItems);
+      if ($name) {
+        //separator before
+        if (isset($value['attributes']['separator']) && $value['attributes']['separator'] == 2) {
+          $navigationString .= '<li class="menu-separator"></li>';
+        }
+        $removeCharacters = array('/', '!', '&', '*', ' ', '(', ')', '.');
+        $navigationString .= '<li class="menumain">' . $name;
+      }
+    }
+
+    CRM_Core_BAO_Navigation::recurseNavigation($value, $navigationString, FALSE, $skipMenuItems);
+  }
+
+  // clean up - Need to remove empty <ul>'s, this happens when user don't have
+  // permission to access parent
+  $navigationString = str_replace('<ul></ul></li>', '', $navigationString);
+
+  //CRM_Core_Error::debug_var('navigations', $navigationString);
+
+  $form->assign('navigation', $navigationString);
+}//alterTemplateFile
+
 /**
  * The User ID and Job ID are stored as db variables for inclusion
  * in the log database via the triggers. At times, the variables

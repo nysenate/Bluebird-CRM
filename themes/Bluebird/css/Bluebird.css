@@ -1910,3 +1910,22 @@ table.crm-ajax-table td,
 table.crm-ajax-table th {
   font-size: 0.9em;
 }
+/*fixes for menu*/
+ul#nyss-menu.ui-widget-content {
+  color: #FFFFFF;
+  border: none;
+  font-size: 0.95em;
+}
+ul#nyss-menu.ui-widget-content > li > span {
+  display: none;
+}
+ul#nyss-menu.ui-widget-content li:hover {
+  color: #FFFFFF;
+}
+div.civi-menu li.ui-state-active {
+  background-color: #405362;
+  color: #FFFFFF;
+}
+ul#nyss-menu.ui-widget-content li ul {
+  z-index: 100;
+}

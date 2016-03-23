@@ -36,16 +36,20 @@ $rolesList = implode('',$user->roles);
 $role = str_replace('authenticated user','', $rolesList);
 {/php}
 
-{crmNavigationMenu is_default=1}
+{*crmNavigationMenu is_default=1*}
 
 <div class="civi-search-section">
 
 <div class="civi-contact-search">
   <div class="civi-search-title">Find Contacts</div>
   {if call_user_func(array('CRM_Core_Permission','giveMeAllACLs'))}
-    <form action="{crmURL p='civicrm/contact/search/basic' h=0 }" name="search_block" id="id_search_block" method="post" onsubmit="getSearchURLValue( );">
-      <div class="input-wrapper">
-        <div id="quickSearch"></div>{*#2455*}
+    <form action="{crmURL p='civicrm/contact/search/advanced' h=0 }" name="search_block" id="id_search_block" method="post"">
+      <div id="quickSearch">
+        <input type="text" class="form-text" id="sort_name_navigation" placeholder="enter name" name="sort_name" style="width: 6em;" />
+        <input type="text" id="sort_contact_id" style="display: none" />
+        <input type="hidden" name="hidden_location" value="1" />
+        <input type="hidden" name="qfKey" value="" />
+        <div style="height:1px; overflow:hidden;"><input type="submit" value="{ts}Go{/ts}" name="_qf_Advanced_refresh" class="crm-form-submit default" /></div>
       </div>
     </form>
   {/if}
@@ -62,54 +66,9 @@ $role = str_replace('authenticated user','', $rolesList);
         <input type="submit" value="Go" name="_qf_Custom_refresh" class="form-submit default tgif"> 
       </div>
     </form>
-
-{literal}
-<script>
-//CRM-6776, enter-to-submit functionality is broken for IE due to hidden field
-//NYSS-2455
-
-cj(function(){
-  cj('input').keydown(function(e){
-    if (e.keyCode == 13) {
-      cj(this).parents('form').submit();
-      return false;
-    }
-  });
-});
-
-cj(document).ready( function( ) {
-  var htmlContent = '';
-  htmlContent += '<input type="text" class="form-text" id="civi_sort_name" name="sort_name" style="width:193px;" value="enter name" />' +
-      '<input type="hidden" id="sort_contact_id" value="" />' +
-      '<input type="hidden" name="qfKey" value="' + {/literal}'{crmKey name='CRM_Contact_Controller_Search' addSequence=1}'{literal} + '" />' +
-      '<input type="submit" id="find_contacts" value="Go" name="_qf_Basic_refresh" class="form-submit default tgif" />';
-  cj( '.civi-search-section #quickSearch' ).append( htmlContent );
-
-  var contactUrl = {/literal}"{crmURL p='civicrm/ajax/rest' q='className=CRM_Contact_Page_AJAX&fnName=getContactList&json=1&context=navigation' h=0 }"{literal};
-
-  /*cj( '#civi_sort_name' ).autocomplete( contactUrl, {
-    width: 200,
-    selectFirst: false,
-    minChars:3,
-    matchContains: true
-  }).result(function(event, data, formatted) {
-    document.location={/literal}"{crmURL p='civicrm/contact/view' h=0 q='reset=1&cid='}"{literal}+data[1];
-    return false;
-  });*/
-
-  $("input[name=sort_name]").focus(function(){
-    var defaultText = $(this).val();
-    if(defaultText === 'enter name'){
-      $(this).val('');
-      $(this).addClass('input-active');
-    }
-  });
-});
-</script>
-{/literal}
-{/if}
-
+  {/if}
 </div>
+
 <span class="primary-link create-link">
   <span id="create-link" class="main-menu-item">
     <div class="skin-icon link-icon"></div>
@@ -203,20 +162,6 @@ cj(document).ready( function( ) {
   <ul id="nyss-menu">
     {$navigation}
   </ul>
-
-  {literal}
-  <script type="text/javascript">
-    cj('div#toolbar-box div.m').html(cj(".civi-menu").html());
-    cj('#nyss-menu').ready( function(){
-      cj('.outerbox').css({ 'margin-top': '4px'});
-      cj('#root-menu-div .menu-ul li').css({ 'padding-bottom' : '2px', 'margin-top' : '2px' });
-      cj('img.menu-item-arrow').css({ 'top' : '4px' });
-    });
-    cj('#civicrm-home').parent().hide();
-    var resourceBase   = {/literal}"{$config->resourceBase}"{literal};
-    cj('#nyss-menu').menu( {arrowSrc: resourceBase + 'packages/jquery/css/images/arrow.png'} );
-  </script>
-  {/literal}
   </div><!-- /.civi-menu -->
 
 <div class="civi-adv-search-body crm-form-block">
