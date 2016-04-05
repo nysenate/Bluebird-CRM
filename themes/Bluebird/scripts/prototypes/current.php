@@ -20,9 +20,6 @@
     </style>
     <style type="text/css" media="screen,projection">
         @import url("/sites/default/themes/Bluebird/css/Bluebird.css?mwmgvm");
-        @import url("/sites/default/themes/Bluebird/nyss_skin/skin.css?mwmgvm");
-        @import url("/sites/default/themes/Bluebird/nyss_skin/civi-header.css?mwmgvm");
-        @import url("/sites/default/themes/Bluebird/css/style.css?mwmgvm");
         @import url("/sites/default/themes/Bluebird/nyss_skin/tags/tags.css");
 
     </style>

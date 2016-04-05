@@ -857,7 +857,7 @@ textarea, input {
 	top:0px;
 	left:0px;
 	cursor: pointer;
-	background:transparent url(../nyss_skin/images/icons-3e3e3e.png) no-repeat scroll -31px -15px;
+	background:transparent url(../images/icons-3e3e3e.png) no-repeat scroll -31px -15px;
 	}
 	#crm-container .tree .collapsable-hitarea {background-position: -63px -16px;}
 
@@ -1121,7 +1121,7 @@ div.crm-summary-display_name div.crm-icon {
   margin-top: 0;
 }
 #contact-summary .crm-accordion-wrapper .crm-accordion-header .crm-accordion-pointer {
-	background-image: url("../nyss_skin/images/icons-3e3e3e.png");
+	background-image: url("../images/icons-3e3e3e.png");
 }
 #District_Information_7_1 .crm-accordion-header {
 	font-size: 14px;
@@ -1242,7 +1242,7 @@ div.token-input-dropdown-facebook {
 /*override tag tree expand/close icons*/
 .jstree-default ins {
     background-color: transparent;
-    background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png");
+    background-image: url("/sites/default/themes/Bluebird/images/icons-3e3e3e.png");
     background-repeat: no-repeat;
 }
 .jstree-default .jstree-closed > ins {
@@ -1523,7 +1523,7 @@ div#crm-toolTip {
 /*4343 dev/test indicator*/
 .env-crmtest,
 .env-crmdev {
-	background:transparent url(../nyss_skin/images/env-marker-test.png) no-repeat;
+	background:transparent url(../images/env-marker-test.png) no-repeat;
   bottom: 0;
   right: 0;
   position: fixed;
@@ -1532,7 +1532,7 @@ div#crm-toolTip {
 	z-index: 2000;
 }
 .env-crmdev {
-	background:transparent url(../nyss_skin/images/env-marker-dev.png) no-repeat;
+	background:transparent url(../images/env-marker-dev.png) no-repeat;
 }
 
 /*5092*/
@@ -1872,7 +1872,7 @@ div.nyss-mailing-subscriptions-admin div.nyss-email-row {
 /*1337 - will revert*/
 .crm-container .paper-icon {
   background-position: -104px -223px;
-  background-image: url("../nyss_skin/images/jquery-ui-3E3E3E.gif");
+  background-image: url("../images/jquery-ui-3E3E3E.gif");
 }
 
 /*8547*/
@@ -1880,6 +1880,1238 @@ div.nyss-mailing-subscriptions-admin div.nyss-email-row {
   padding: 10px 0;
   font-weight: bold;
 }
+
+/******** from nyss_skin/skin.css ********/
+
+/* non civi skin elements */
+body {
+  background:#7fcdfe url(images/bluebird_back.jpg) repeat-x top left;
+}
+
+/**
+ * base text color: 2f2f2f
+ *
+ *
+ * red text: 8d2c27
+ * red bg: f5c4c4
+ *
+ * yellow text: ba980f
+ * yellow bg: f2f5c4
+ *
+ * dark bg: 3e3e3e
+ * dark blue bg: 32414f
+ *
+ * navigation/button bg: 3a6592
+ * navigation highlight bg: 32414f
+ *
+ * form border,
+ * body text mini form,
+ * description text: e0e0d4
+ *
+ * form inactive text: 848484
+ * form field bg: faf9f9
+ *
+ * blue icon icon: 4ba9fd
+ *
+ * table bg: f6f8f3
+ * table odd row bg: f0efe5
+ * table title bg: cde7fe
+ * table header inactive text : a8a8a8
+ * table header active text: 3f3f3f
+ * table highlight : e2e2e2
+ *
+ * accordion header bg, link separator :5c5c59
+ */
+
+div.warning, .warning,
+div.messages, .messages,
+div.notice, .notice  {
+  background:#f2f5c4;
+  color:#ba980f;
+  border-color:#fbca54;
+}
+div.success, .success,
+.messages-container .help,
+.messages-container #help {
+  background:#E6EFC2;
+  color:#264409;
+  border-color:#C6D880;
+}
+
+div.error, .error, div.crm-error {background:#f5c4c4;color:#8d2c27;border-color:#8d2c27;}
+.warning a,
+.message a,
+.notice a {color:#3e3e3e;}
+.error a, .crm-error a {color:#8a1f11;}
+.success a {color:#264409;}
+
+a,
+a:link,
+a:visited {
+  color:#2a71b4;
+  text-decoration: none;
+}
+
+a:hover {
+  color:#ec5401;
+}
+
+input.form-submit {
+  background:transparent url(images/crm-button-bg.gif) repeat-x scroll left top;
+  border:1px solid #3E3E3E;
+  color:#FFFFFF;
+  cursor:pointer;
+  font-size:12px;
+  font-weight:normal;
+  margin-right:6px;
+  padding:2px 6px;
+  text-decoration:none;
+  text-shadow:0 1px 0 black;
+}
+
+#crm-container .crm-content-block {
+  padding:4px;
+  position: relative;
+  background-color: #FFF;
+}
+#crm-container .crm-tooltip .crm-content-block {
+  background-color: #2F2F2E;
+}
+#crm-container .crm-title { height:20px; }
+
+
+/* icons */
+.skin-icon {
+  height:16px;
+  width:16px;
+  background:transparent url("images/icons-FFFFFF.png") no-repeat top right;
+  float:left;
+}
+:hover .skin-icon {background-image:url("images/icons-FFFFFF.png")}
+
+.link-icon {
+  float: right;
+  background-position: -49px -30px;
+}
+.logout-icon { float: right;}
+
+#header-access div.helpicon,
+#edit-profile .settings-icon,
+#edit-profile .logout-icon,
+#edit-profile .key-icon,
+#edit-profile .flag-icon {
+  background-image:url(images/icons-4EBAFF.png);
+}
+#edit-profile .settings-icon{
+  background-position: -177px -111px;
+  float: right;
+}
+#edit-profile .key-icon{
+  background-position: -113px -127px;
+  float: right;
+}
+.flag-icon {
+  background-position: -14px -113px;
+  float: right;
+}
+/* dropdowns */
+
+
+#crm-container .crm-contact-actions-list,
+#crm-container .panel,
+#crm-container .contextMenu,
+.ac_results{background-image:url(images/ac_pointer.gif);}
+
+
+#crm-container td ul.panel li,
+#crm-container .contextMenu li,
+#crm-container .crm-contact-actions-list-inner,
+.ac_results-inner {
+  background-color:#405362;
+}
+
+#crm-container .panel li a,
+#crm-container .contextMenu a,
+#crm-container .contextMenu a:link {
+  color:#7FCDFE;
+  font-size: 12px;
+}
+
+#crm-container .panel li a:hover,
+#crm-container .contextMenu li.hover a {
+  color:#FFF;
+  background-color: transparent;
+}
+
+.ac_results li {color:#7FCDFE}
+
+.ac_results li.ac_over {
+  background-color:transparent;
+  color:white;
+}
+
+#crm-create-new-wrapper,
+#crm-contact-actions-wrapper {
+  z-index: 11;
+}
+
+div.token-input-dropdown-facebook {
+  max-height: 400px;
+  overflow: auto;
+}
+
+#crm-container div.section-hidden-border {background-color: transparent;}
+
+
+/* nyss menu */
+
+.role-Staff .crm-Administer,
+.shadowbox1,
+.shadowbox2,
+.shadowbox3 {display: none;}
+
+#nyss-menu {margin:0px;}
+
+.civi-menu li.menumain {
+  list-style-type: none;
+  border-right:none;
+  padding:2px 6px;
+  margin-right:10px;
+  background: 2px;
+}
+.civi-menu li.activetarget {
+  background-color: #405362;
+}
+div.outerbox {
+  background-color: #405362;
+  padding: 0px!important;
+}
+
+#civicrm-menu,
+#root-menu-div ul {
+  background:transparent none repeat-x scroll 0 0;
+  color:white;
+  cursor:default;
+  list-style-image:none;
+  list-style-position:outside;
+  list-style-type:none;
+  margin:0;
+  padding:0;
+  border:none;
+}
+.menu-ul li.active {
+  background-color: transparent;
+}
+
+#root-menu-div .menu-ul li {
+  margin:2px 4px;
+  padding:2px;
+}
+
+#root-menu-div .menu-ul li.menu-separator {
+  padding: 0px;
+}
+
+.ui-datepicker {border:1px solid #999999;}
+
+.ac_results li.ac_over strong,
+#crm-container .ac_results li.ac_over strong {
+  color:#FFF;
+}
+
+/* icons */
+.crm-container .crm-icon {
+  background-image: url('images/crm-icons.png');
+  margin:2px 4px 0 0;
+}
+.block-civicrm #crm-recently-viewed .crm-icon {
+  background-image: url('images/crm-icons-dark.png');
+  margin:2px 4px 0 0;
+}
+
+/*icon sprite locations*/
+.crm-container .Individual-icon { background-position: 0 -162px; }
+.crm-container .Group-icon {background-position: 0px -178px; }
+.crm-container .Household-icon {background-position: 0px -48px; }
+.crm-container .Individual-subtype-icon {background-position: 0px -162px; }
+.crm-container .Household-subtype-icon {background-position: 0px -48px; }
+.crm-container .Organization-subtype-icon {background-position: 0px -112px; }
+.crm-container .Organization-icon {background-position: 0px -112px; }
+.crm-container .Activity-icon {background-position: 0px -64px; }
+.crm-container .Case-icon {background-position: 0px -82px; }
+.crm-container .Grant-icon {background-position: 0px -144px; }
+.crm-container .Contribution-icon {background-position: 0px -128px; }
+.crm-container .Pledge-icon {background-position: 0px -129px; }
+.crm-container .Membership-icon {background-position: 0px 0px; }
+.crm-container .Participant-icon {background-position: 0px  -32px; }
+.crm-container .Note-icon {background-position: 0px -16px; }
+.crm-container .Relationship-icon {background-position: 0px 0px; }
+
+/* blue theme buttons */
+#crm-container .crm-actions-ribbon a.button,
+#crm-container .crm-dashboard-buttons a.button,
+#crm-container .crm-content-block a.button,
+#crm-create-new-link,
+#crm-contact-actions-link,
+#crm-container .crm-actions-ribbon a.button:link,
+#crm-container .crm-dashboard-buttons a.button:link,
+#crm-container .crm-content-block a.button:link,
+#crm-container .crm-content-block .crm-button {
+  padding:0px 0 0 6px;
+  border: none;
+}
+
+#crm-contact-actions-link span,
+#crm-container .crm-actions-ribbon a.button span,
+#crm-container .crm-dashboard-buttons a.button span,
+#crm-container .crm-content-block a.button span,
+#crm-container .crm-content-block .crm-button input,
+#crm-container .crm-content-block .crm-button input.form-submit{
+  padding:4px 4px 4px 0;
+  text-shadow: none;
+  white-space: nowrap;
+}
+
+#crm-contact-actions-link,
+#crm-container .crm-content-block .crm-button,
+#crm-container .crm-content-block .crm-button input,
+#crm-container .crm-actions-ribbon a.button,
+#crm-container .crm-dashboard-buttons a.button,
+#crm-container .crm-content-block a.button,
+#crm-container .crm-content-block a.button:link { color:#FFF; }
+#crm-container .crm-content-block a.button:active {color:#D4EEFC;}
+#crm-contact-actions-link,
+#crm-container .crm-actions-ribbon a.button,
+#crm-container .crm-dashboard-buttons a.button,
+#crm-container .crm-content-block a.button,
+#crm-container .crm-content-block a.button:link,
+#crm-container .crm-content-block .crm-button { background:transparent url(images/button.png) no-repeat scroll left 0px;}
+#crm-contact-actions-link span,
+#crm-container .crm-actions-ribbon a.button span,
+#crm-container .crm-dashboard-buttons a.button span,
+#crm-container .crm-content-block a.button span,
+#crm-container .crm-content-block .crm-button input,
+#crm-container .crm-content-block .crm-button input.form-submit { background:transparent url(images/button.png) no-repeat scroll right -25px;}
+#crm-contact-actions-link:hover,
+#crm-container .crm-content-block a.button:hover,
+#crm-container .crm-content-block .crm-button:hover { background:transparent url(images/button.png) no-repeat scroll left -50px;}
+#crm-contact-actions-link:hover span,
+#crm-container .crm-content-block a.button:hover span,
+#crm-container .crm-content-block .crm-button:hover input { background:transparent url(images/button.png) no-repeat scroll right -75px;}
+#crm-container .crm-content-block .crm-button-type-cancel input { color:#e0e0d4; }
+.button:hover .icon {background-image:url("images/button-icon-highlight.png")}
+
+
+/******** from nyss_skin/civi-header.css ********/
+
+.main-container {
+  position: relative;
+  margin-top:5px;
+}
+
+#header-access {
+  position: absolute;
+  top:0px;
+  right: 8px;
+}
+
+#breadcrumb {
+  position: absolute;
+  top:0px;
+  left:3px;
+  width:50%;
+  font-size:11px;
+  z-index:14;
+  color:#3e3e3e;
+}
+#breadcrumb a {color:#2786C2;}
+#breadcrumb a.crm-summary-link {display:none;}
+
+#edit-profile {
+  position: absolute;
+  top:0px;
+  right: 96px;
+}
+
+.logout-icon { background-position: 0 -63px; }
+
+#civi-admin-menu {
+  position: fixed;
+  top:3px;
+  left:4px;
+  cursor:pointer;
+  display: none;
+}
+
+#civi-admin-menu .add-icon {background-image: url(images/icons-4EBAFF.png);}
+
+#civicrm-menu {display: none;}
+
+/* search forms section */
+.civi-search-section {
+  width:465px;
+  font-family: Verdana, Sans;
+  font-size:14px;
+  color: #3e3e3e;
+  height:68px;
+  position:relative;
+  z-index: 12;
+}
+
+.civi-contact-search {
+  position: absolute;
+  top:15px;
+  left: 0px;
+}
+
+.civi-general-search {
+  position: absolute;
+  top:15px;
+  left: 240px;
+}
+
+.civi-search-title {
+  color:#5077A7;
+  font-size:12px;
+  font-weight:normal;
+  padding-left:2px;
+
+}
+
+.civi-contact-search,
+.civi-general-search {
+  width: 222px;
+}
+.civi-search-section .input-wrapper	{
+  background:transparent url(images/header-search-bg.gif) no-repeat top left;
+  padding:0 5px;
+  height:27px;
+}
+
+.civi-search-section #gen-search-wrapper input.form-submit {
+  background:transparent none repeat scroll 0 0;
+  color:transparent;
+  height:23px;
+  position:absolute;
+  right:2px;
+  top:20px;
+  width:15px;
+  text-indent: -1000px;
+  border: none;
+}
+#find_contacts {
+  background:transparent none repeat scroll 0 0;
+  color:transparent;
+  height:23px;
+  position:absolute;
+  right:2px;
+  top:20px;
+  width:15px;
+  text-indent: -1000px;
+  border: none;
+}
+.civi-search-section .input-wrapper input {
+  color:#B2B2B2;
+  width:190px;
+  padding:4px 20px 5px 0;
+  margin:0px;
+}
+.civi-search-section .input-wrapper input.input-active { color:#3e3e3e;}
+
+#civi_sort_name,
+#civi_text_search {
+  margin:0px;
+  border:0px;
+  margin-bottom:4px;
+  background-color: transparent;
+  outline:none;
+}
+
+.civi-search-section .input-wrapper input.ac_loading,
+.civi-navigation-section .crm-loading .icon {
+  background:transparent url(images/header-search-active.gif) no-repeat center right;
+}
+
+.crm-advanced_search_form-accordion>div.crm-accordion-body {
+  border: none;
+}
+
+/* menu functions */
+
+.crm-link-home,
+#menu-logout {display: none;}
+
+.civi-menu li.crm-Administer {
+  float: right;
+  margin-right: 140px;
+}
+
+#crm-container #crm-contact-actions-list {width:auto!important;}
+
+.civi-navigation-section {
+  margin-bottom:2px;
+  position: relative;
+  z-index: 5;
+}
+
+.civi-advanced-search-link-inner {
+  width: 196px;
+  float: left;
+}
+
+.civi-advanced-search-link,
+.civi-advanced-search-button {
+  color:#FFF;
+  background-color: #457AA4;
+  float: left;
+  padding:2px 4px;
+  width: 214px;
+}
+
+
+.civi-advanced-search-link .crm-accordion-pointer,
+.civi-advanced-search-button .crm-accordion-pointer {
+  background-position: -32px -16px;
+  background-image:url(images/icons-FFFFFF.png) ;
+}
+.civi-adv-search-linkwrap-active .crm-accordion-pointer {
+  background-position: -64px -16px;
+  background-image:url(images/icons-3e3e3e.png) ;
+}
+.civi-adv-search-body .crm-master-accordion-header {display: none;}
+
+input.dateplugin,
+#crm-container input.dateplugin {
+  background:white url(images/cal.png) no-repeat scroll right center;
+  padding-right:16px;
+  width:9em;
+}
+.hiddenElement {
+  display:none;
+}
+.ui-datepicker {
+  z-index:1000;
+}
+
+
+.civi-menu {
+  color:#FFF;
+  background-color: #457AA4;
+  margin-left: 240px;
+  height:22px;
+  position: relative;
+  font-family: Verdana, Sans;
+}
+
+.civi-menu .primary-link {
+  float:left;
+  margin-right:8px;
+}
+
+.civi-menu .main-menu-item,
+.civi-menu a.main-menu-item  {
+  padding: 2px 8px;
+  color:#FFF;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.civi-menu a.active {
+  background-color: #405362;
+  padding-bottom: 5px;
+}
+.civi-menu a.active .link-icon {background-position: -192px -31px;}
+
+.primary-link {position: relative;padding-bottom:1px;}
+.primary-link .menu-container {
+  left:0;
+  position:absolute;
+  top:23px;
+  width:190px;
+  display: none;
+  background-color: #405362;
+  z-index: 100;
+  font-size: 11px;
+}
+
+.create-link {
+  position: absolute;
+  top:37px;
+  left: 480px;
+  font-size:12px;
+  color:#FFF;
+  padding: 4px;
+  background-color: #457AA4;
+}
+#create-link {
+  cursor:pointer;
+  width:68px;
+  display: inline-block;
+}
+
+.primary-link .menu-container ul {
+  margin:4px 4px 8px 4px;
+}
+.primary-link .menu-container li {
+  list-style: none;
+  padding: 2px 0px;
+}
+
+.civi-admin-block a,
+.primary-link .menu-container li a,
+#civicrm-menu li a,
+#root-menu-div li a { color:#7FCDFE;}
+.primary-link .menu-container li a:hover,
+#civicrm-menu li a:hover,
+#root-menu-div li a:hover {color:#FFF;}
+
+.primary-link .menu-container li.menu-separator,
+li.menu-separator {
+  border-bottom:1px solid #6F6F6C;
+  padding: 0px;
+  margin:4px 4px 0 4px;
+}
+img.menu-item-arrow {
+  position:absolute;
+  right:1px;
+  top:8px!important;
+}
+.primary-link-active {background-color: #405362;}
+
+.primary-link-active .menu-container {display:inline-block;}
+
+#civi-custom-search-link {width:142px;}
+
+#reports-link {width: 77px;}
+
+#civi-admin-link {width:97px;}
+
+#printer-friendly {float: right;margin:2px 6px 0 0;}
+
+#printer-friendly .ui-icon-print {background-image:url(images/icons-FFFFFF.png) ;}
+
+
+#bluebirds {
+  background:transparent url(images/bluebirds.png) no-repeat scroll left top;
+  height:41px;
+  position:absolute;
+  right:227px;
+  top:30px;
+  width:87px;
+  z-index:6;
+}
+#crm-seal {
+  background:transparent url(images/seal-bluebird.png) no-repeat scroll left top;
+  width:160px;
+  height:55px;
+  margin-top:10px;
+  float: left;
+}
+#crm-container .footer .col1 {
+  width: auto;
+}
+/* adv search */
+.civi-adv-search-linkwrap {
+  cursor: pointer;
+}
+.civi-adv-search-linkwrap-active {
+  padding-bottom:4px;
+  background-color: #E6E6DC;
+  color:#3e3e3e;
+}
+.civi-adv-search-body {
+  margin-top:2px;
+  display: none;
+}
+
+.civi-adv-search-body table td {vertical-align: top;}
+
+#crm-container .crm-advanced_search_form-accordion .section .label {
+  float: none;
+  text-align: left;
+}
+
+#crm-container .crm-advanced_search_form-accordion .section .content {
+  margin-left:0px;
+}
+
+/* contact edit form */
+
+#crm-container #contactDetails table {margin-bottom:2px;}
+
+#contactDetails td {
+  padding:1px;
+}
+#contactDetails input[type="text"],
+#contactDetails input[type="password"],
+#contactDetails input.text,
+#contactDetails input.title,
+#contactDetails textarea,
+#contactDetails select {
+  margin:0 0 2px 0;
+}
+
+
+/* contact summary */
+/*#crm-container div#contactTopBar td.label {width:auto;}*/
+#crm-container  #mainTabContainer .friend-of-senator {
+  border-top:5px solid #FBCA54 !important;
+  border-bottom:5px solid #FBCA54 !important;
+}
+
+
+/* bulk tagging box */
+
+#crm-container .listing-box {
+  max-height: 500px;
+  min-height: 125px;
+}
+
+/* twitter dashlet icons */
+#crm-container .column-1 .widget-icon {background-image:url(images/icons-FFFFFF.png) ;}
+
+
+/* admin block */
+.civi-admin-block-wrapper {
+  position: absolute;
+  top:23px;
+  z-index: 100;
+  display: none;
+  right: 0px;
+  padding-bottom: 100px;
+}
+.civi-admin-block {
+  background-color: #405362;
+  padding:4px;
+  min-width: 300px;
+}
+
+.civi-admin-block .crm-title,
+.civi-admin-block #civicrm-footer,
+.civi-admin-block #access { display:none;}
+
+.admin-link { float:right;margin-right:95px}
+
+.civi-menu .crm-loading-element  {
+  padding-left:30px;
+  height:30px;
+  background: transparent url("images/loading-405362.gif") no-repeat 0px 0px;
+}
+
+/* rounding the corners */
+input.form-submit,
+.create-link,
+.account-info-wrapper,
+.ac_results-inner,
+.civi-advanced-search-link,
+.civi-advanced-search-button,
+.civi-menu,
+.civi-admin-block,
+.civi-search-section .input-wrapper,
+.not-logged-in #block-user-login #edit-submit,
+.standard-container
+{-moz-border-radius: 4px; -webkit-border-radius: 4px;   -khtml-border-radius: 4px; border-radius:4px; }
+
+.civi-adv-search-body,
+div.outerbox,
+.primary-link .menu-container {
+  -moz-border-radius: 	0px 4px 4px 4px;
+  -webkit-border-radius: 	0px 4px 4px 4px;
+  -khtml-border-radius: 	0px 4px 4px 4px;
+  border-radius:			0px 4px 4px 4px;
+  -webkit-border-top-left-radius: 	0px;
+  -webkit-border-top-right-radius: 	4px;
+  -webkit-border-bottom-left-radius: 	4px;
+  -webkit-border-bottom-right-radius: 4px;
+}
+
+.crm-Custom_Search {
+  -moz-border-radius: 	4px 0px 0px 0px;
+  -webkit-border-radius: 	4px 0px 0px 0px;
+  -khtml-border-radius: 	4px 0px 0px 0px;
+  border-radius:			4px 0px 0px 0px;
+  -webkit-border-top-left-radius: 	4px;
+  -webkit-border-top-right-radius: 	0px;
+  -webkit-border-bottom-left-radius: 	0px;
+  -webkit-border-bottom-right-radius: 0px;
+}
+
+#crm-container .column-1 .widget-header,
+.civi-adv-search-linkwrap-active,
+#footer #dashboard-link-wrapper {
+  -moz-border-radius: 	4px 4px 0px 0px;
+  -webkit-border-radius: 	4px 4px 0px 0px;
+  -khtml-border-radius: 	4px 4px 0px 0px;
+  border-radius:			4px 4px 0px 0px;
+  -webkit-border-top-left-radius: 	4px;
+  -webkit-border-top-right-radius: 	4px;
+  -webkit-border-bottom-left-radius: 	0px;
+  -webkit-border-bottom-right-radius: 0px;
+}
+
+#crm-container .column-1 .widget-content {
+  -moz-border-radius: 	0px 0px 4px 4px;
+  -webkit-border-radius: 	0px 0px 4px 4px;
+  -khtml-border-radius: 	0px 0px 4px 4px;
+  border-radius:			0px 0px 4px 4px;
+  -webkit-border-top-left-radius: 	0px;
+  -webkit-border-top-right-radius: 	0px;
+  -webkit-border-bottom-left-radius: 	4px;
+  -webkit-border-bottom-right-radius: 4px;
+}
+
+
+/******** from style.css ********/
+
+#crm-container {position: relative;}
+.not-logged-in {
+  background-color: #7fcdfe;
+  color: #74C0FC;
+}
+
+.not-logged-in #block-user-login,
+.not-logged-in form#user-login {
+  background:transparent url(../images/login.png) no-repeat top center;
+  margin-top:50px;
+  height:235px;
+}
+
+.not-logged-in form#user-login {
+  color:#FFFFFF;
+  padding:30px 0;
+  font-size:14px;
+}
+
+.not-logged-in h1#logo,
+.page-civicrm h1#logo,
+.not-logged-in .form-required,
+.not-logged-in .form-item .description {display:none;}
+
+.not-logged-in div.form-item {
+  margin-left:349px;
+  margin-bottom:8px;
+}
+.not-logged-in #edit-submit {
+  margin-left:418px;
+}
+
+.not-logged-in input.form-text {
+  border:none;
+  width:120px;
+}
+
+.not-logged-in #block-user-login .content {
+  color:#FFFFFF;
+  font-size:16px;
+  padding:45px 370px 45px 332px;
+  text-align:left;
+}
+
+.not-logged-in #block-user-login .item-list { display:none; }
+
+.not-logged-in #block-user-login .form-item {
+  margin:4px 0px;
+  height:45px;
+}
+
+.not-logged-in #block-user-login label {
+  display: block;
+  float: left;
+  margin-top:8px;
+}
+
+.not-logged-in #block-user-login #edit-submit {
+  background-color:#457AA4;
+  border:medium none;
+  color:#FFFFFF;
+  font-size:12px;
+  padding:4px;
+  margin-left:-23px;
+  cursor: pointer;
+}
+
+.not-logged-in #block-user-login h3 {
+  display: none;
+}
+
+div.standard-container { background-color: #FFF; padding:4px;}
+
+.not-logged-in div.standard-container {
+  background: transparent;
+}
+.not-logged-in .tabs,
+.not-logged-in h2 {
+  display:none;
+}
+
+
+#civi-admin-menu {display:none}
+
+.role-Superuser #civi-admin-menu {display: block;}
+/* header */
+
+#header-access,
+#edit-profile {
+  font-size: 11px;
+}
+#edit-profile { width: 182px;}
+
+#header-access,
+#edit-profile a { color:#4EBAFF; }
+
+#edit-profile a {
+  display: block;
+  float:right;
+  margin-left:8px;
+}
+
+.account-info-wrapper {
+  background-color:#E2F3F9;
+  color:#5077A7;
+  height:42px;
+  padding-top:2px;
+  position:absolute;
+  right:0;
+  top:20px;
+  width:235px;
+}
+.account-info {
+  font-size:13px;
+  line-height:14px;
+  margin-left:0.5em;
+  padding:6px;
+}
+.account-info .user-name {
+  font-size: 16px;
+  padding-left:1em;
+}
+/* title section */
+.crm-title {
+  margin:4px 0px 8px 0;
+}
+
+h1.title {
+  color:#435263;
+  font-family:Helvetica,verdana,Arial,Sans;
+  font-size:17px;
+  font-weight:normal;
+  margin-bottom:0;
+  margin-top:11px;
+}
+
+#crm-container .crm-submit-buttons {
+  height: 25px;
+  margin: 3px 0;
+}
+
+li.crm-button {
+  list-style-type: none;
+}
+
+.crm-block,
+.crm-form-block {clear:both;}
+
+/* dashboard page */
+#crm-container .column-0 { width:75%; }
+#crm-container .column-1 { width:25%; }
+#crm-container li.widget, #crm-container li.empty-placeholder { margin:4px;}
+
+#crm-container .column {padding-bottom: 0px;}
+
+#crm-container .column-0 .widget-content {
+  padding: 0px 1px;
+}
+
+#crm-container .column-1 .widget-controls,
+#crm-container .column-1 .widget-header {
+  color:#FFF;
+  font-weight: normal;
+  background-color: #0495CC;
+}
+#crm-container .column-1 .widget-content {
+  background-color: #426683;
+  color:#FFF;
+  font-size: 11px;
+  line-height: 15px;
+}
+/*9637*/
+#crm-container .column-1 .widget-content table {
+  color: #333333;
+}
+
+#crm-container .tweet a { color:#7FCDFE }
+
+.created-date {
+  font-size: 10px;
+  margin-bottom: 16px;
+}
+
+
+
+/* contact page */
+#crm-container .crm-actions-ribbon,
+#crm-container .crm-dashboard-buttons {
+  margin:0 0 8px;
+  position:absolute;
+  right:0;
+  top:-2px;
+  width:710px;
+}
+#crm-container .crm-actions-ribbon a.dashboard {display: none;}
+
+#crm-container .crm-contact-page {
+  background-color: #6fc0f3;
+}
+#crm-container #mainTabContainer {
+  background: transparent;
+}
+
+#crm-container #mainTabContainer .ui-tabs-panel {
+  background-color: #FFF;
+  float:right;
+  width:778px;
+}
+
+.crm-contact-dashboard,
+.crm-contact-print { display:none;}
+
+#crm-container .crm-delete-action a.button,
+#crm-container a.show-refresh {margin-right:0px;}
+
+/* for understanding browsers */
+#crm-container #mainTabContainer .ui-tabs-panel {
+  min-height:600px;
+  height:auto;
+}
+/* for Internet Explorer */
+/*\*/
+* html #crm-container #mainTabContainer .ui-tabs-panel  {
+  height: 600px;
+}
+
+/*contact summary tabs*/
+#crm-container #mainTabContainer .crm-contact-tabs-list {
+  background:transparent none repeat scroll 0 0;
+  float:left;
+  margin:20px 0 0 0;
+  padding:0;
+  width:150px;
+}
+
+#crm-container #mainTabContainer .crm-tab-button {
+  display: block;
+  float: none;
+  height: 25px;
+  background: none;
+  background-color: #D4EEFF;
+  margin:0 0px 6px 0px;
+  border:none;
+  -moz-border-radius-bottomright:0;
+  -moz-border-radius-topright:0;
+  -webkit-border-radius: 4px 0px 0px 4px;
+  -khtml-border-radius: 4px 0px 0px 4px;
+  -webkit-border-top-right-radius: 0px;
+  -webkit-border-bottom-right-radius: 0px;
+}
+#crm-container #mainTabContainer li.disabled a:link {
+  color: #335370 !important;
+}
+
+/*website tabs*/
+#crm-container #mainTabContainer .crm-tab-button#tab_custom_9,
+#crm-container #mainTabContainer .crm-tab-button#tab_nyss_web_account,
+#crm-container #mainTabContainer .crm-tab-button#tab_nyss_web_message,
+#crm-container #mainTabContainer .crm-tab-button#tab_nyss_web_tags,
+#crm-container #mainTabContainer .crm-tab-button#tab_nyss_web_activitystream {
+  background-color: #dddddd;
+}
+#crm-container #mainTabContainer .crm-tab-button.ui-state-active#tab_custom_9,
+#crm-container #mainTabContainer .crm-tab-button.ui-state-active#tab_nyss_web_account,
+#crm-container #mainTabContainer .crm-tab-button.ui-state-active#tab_nyss_web_message,
+#crm-container #mainTabContainer .crm-tab-button.ui-state-active#tab_nyss_web_tags,
+#crm-container #mainTabContainer .crm-tab-button.ui-state-active#tab_nyss_web_activitystream {
+  background-color: #ffffff;
+}
+
+#crm-container #mainTabContainer .ui-state-active { background-color: #FFF; }
+#crm-container #mainTabContainer .crm-tab-button a {
+  color:#335370;
+  font-family: Verdana, Sans;
+  font-size: 13px;
+  line-height: 13px;
+  display: block;
+  padding-right:0px;
+  width:140px;
+  margin-top: 1px;
+  /*background: transparent url(../images/tab-bg.jpg) repeat-y top right;*/
+}
+
+#crm-container #mainTabContainer .ui-state-active a { background: none;}
+
+/* fix table headers */
+table.sticky-header {
+  z-index: 150;
+}
+#crm-container .report-layout .sticky-header,
+#crm-container thead div.sticky-header {top:0px!important;}
+
+#crm-container thead div.sticky-header span { background-color: #FFF; }
+
+#crm-container table.caseSelector {
+  margin:0px;
+}
+
+#crm-container table.caseSelector tr {border-top:none;border-bottom:2px solid #CFCEC3;}
+
+#crm-container table.caseSelector tr.columnheader th,
+#crm-container table.caseSelector tr.columnheader th a {
+  border-top: 0px solid #FFF;
+  border-bottom: none;
+  background-color: #FFF;
+  color:#A7A7A7;
+}
+
+
+#crm-container #ActivityView table {border: none;}
+
+#crm-container #ActivityView td {
+  background-color:#F4F4ED;
+  border-bottom: 1px solid #FFF;
+}
+#crm-container #ActivityView td.label {
+  background-color:#FAFAFA;
+  color:#7A7A60;
+  text-align:left;
+  width:150px;
+}
+
+/* fix legacy accordions */
+#crm-container form .section-hidden-border {
+  margin-bottom: 4px;
+}
+
+/* footer */
+#crm-container #civicrm-footer {
+  border:none;
+  color: #2786C2;
+  text-align: right;
+}
+
+#footer {
+  bottom:0px;
+  position:fixed;
+  text-align:center;
+  background-color:#131A1C;
+  color:#FFF;
+  z-index: 100;
+  left:50%;
+  margin-left:-475px;
+}
+
+#footer-bg {
+  background-color:#131A1C;
+  bottom:0;
+  height:28px;
+  position:fixed;
+  width:100%;
+  left:0px;
+}
+
+#footer .block {
+  margin-bottom:0px;
+  padding:4px 0px;
+  float:left;
+}
+
+#footer #dashboard-link-wrapper {
+  background-color: #405362;
+  margin-top: -5px;
+  padding: 5px 5px 10px;
+  -moz-border-radius-topleft: 4px;
+  -moz-border-radius-topright: 4px;
+  width: 87px;
+  float: left;
+}
+#footer #dashboard-link-wrapper a {
+  color:#FFF;
+}
+#footer #dashboard-link-wrapper .dashboard-icon {
+  background: transparent url(../images/dashboard.gif) no-repeat top left;
+  height: 16px;
+  width: 16px;
+  float: left;
+  text-indent: -10000px;
+}
+
+#footer #block-civicrm-2 {
+  font-size:11px;
+  margin-left:10px;
+  width:836px;
+  height: 19px;
+  overflow: hidden;
+  line-height: 18px;
+}
+
+
+#footer #block-civicrm-2 h2 {
+  color:#FFFFFF;
+  display:block;
+  float:left;
+  font-family:Verdana;
+  font-size:11px;
+  margin-bottom:0;
+  padding-top:2px;
+  line-height: 17px;
+}
+#footer #block-civicrm-2 a {
+  padding-top:5px;
+  color: #4EBAFF;
+}
+
+.page-admin #breadcrumb {display: none;}
+
+/* ============================================================================================================== */
+/* ! hide custom gender row from
+"Additional Constituent Details"
+we are loading it in demographics
+accordion */
+/* ============================================================================================================== */
+.custom_45_47-row {display: none; }
+
+.location .postal-code-search {display: none;}
+
+h1.title .crm-tooltip-wrapper {display:none!important;}
+
+/* SOS Job Handling */
+.sos_job {
+  color:#EEE;
+  height:20px;
+  padding-top:2px;
+  position:absolute;
+  right:28px;
+  top:68px;
+  width:135px;
+  text-align: right;
+  font-size: 11px;
+  z-index: 10;
+  float: right;
+}
+a.setJob {
+  color:#EDEDED;
+}
+
+.non-civicrm-page-title {
+  margin-top: 10px;
+}
+.non-civicrm-page-title a {
+  float: right;
+  font-size: 1.4em;
+  font-style: italic;
+}
+.non-civicrm-page-title h2 {
+  font-size: 2.5em;
+}
+
 
 /******** v4.7.x ********/
 
