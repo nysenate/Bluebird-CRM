@@ -1885,7 +1885,7 @@ div.nyss-mailing-subscriptions-admin div.nyss-email-row {
 
 /* non civi skin elements */
 body {
-  background:#7fcdfe url(images/bluebird_back.jpg) repeat-x top left;
+  background:#7fcdfe url(../images/bluebird_back.jpg) repeat-x top left;
 }
 
 /**
@@ -1957,7 +1957,7 @@ a:hover {
 }
 
 input.form-submit {
-  background:transparent url(images/crm-button-bg.gif) repeat-x scroll left top;
+  background:transparent url(../images/crm-button-bg.gif) repeat-x scroll left top;
   border:1px solid #3E3E3E;
   color:#FFFFFF;
   cursor:pointer;
@@ -1984,10 +1984,10 @@ input.form-submit {
 .skin-icon {
   height:16px;
   width:16px;
-  background:transparent url("images/icons-FFFFFF.png") no-repeat top right;
+  background:transparent url("../images/icons-FFFFFF.png") no-repeat top right;
   float:left;
 }
-:hover .skin-icon {background-image:url("images/icons-FFFFFF.png")}
+:hover .skin-icon {background-image:url("../images/icons-FFFFFF.png")}
 
 .link-icon {
   float: right;
@@ -2000,7 +2000,7 @@ input.form-submit {
 #edit-profile .logout-icon,
 #edit-profile .key-icon,
 #edit-profile .flag-icon {
-  background-image:url(images/icons-4EBAFF.png);
+  background-image:url(../images/icons-4EBAFF.png);
 }
 #edit-profile .settings-icon{
   background-position: -177px -111px;
@@ -2020,7 +2020,7 @@ input.form-submit {
 #crm-container .crm-contact-actions-list,
 #crm-container .panel,
 #crm-container .contextMenu,
-.ac_results{background-image:url(images/ac_pointer.gif);}
+.ac_results{background-image:url(../images/ac_pointer.gif);}
 
 
 #crm-container td ul.panel li,
@@ -2121,11 +2121,11 @@ div.outerbox {
 
 /* icons */
 .crm-container .crm-icon {
-  background-image: url('images/crm-icons.png');
+  background-image: url('../images/crm-icons.png');
   margin:2px 4px 0 0;
 }
 .block-civicrm #crm-recently-viewed .crm-icon {
-  background-image: url('images/crm-icons-dark.png');
+  background-image: url('../images/crm-icons-dark.png');
   margin:2px 4px 0 0;
 }
 
@@ -2185,21 +2185,21 @@ div.outerbox {
 #crm-container .crm-dashboard-buttons a.button,
 #crm-container .crm-content-block a.button,
 #crm-container .crm-content-block a.button:link,
-#crm-container .crm-content-block .crm-button { background:transparent url(images/button.png) no-repeat scroll left 0px;}
+#crm-container .crm-content-block .crm-button { background:transparent url(../images/button.png) no-repeat scroll left 0px;}
 #crm-contact-actions-link span,
 #crm-container .crm-actions-ribbon a.button span,
 #crm-container .crm-dashboard-buttons a.button span,
 #crm-container .crm-content-block a.button span,
 #crm-container .crm-content-block .crm-button input,
-#crm-container .crm-content-block .crm-button input.form-submit { background:transparent url(images/button.png) no-repeat scroll right -25px;}
+#crm-container .crm-content-block .crm-button input.form-submit { background:transparent url(../images/button.png) no-repeat scroll right -25px;}
 #crm-contact-actions-link:hover,
 #crm-container .crm-content-block a.button:hover,
-#crm-container .crm-content-block .crm-button:hover { background:transparent url(images/button.png) no-repeat scroll left -50px;}
+#crm-container .crm-content-block .crm-button:hover { background:transparent url(../images/button.png) no-repeat scroll left -50px;}
 #crm-contact-actions-link:hover span,
 #crm-container .crm-content-block a.button:hover span,
-#crm-container .crm-content-block .crm-button:hover input { background:transparent url(images/button.png) no-repeat scroll right -75px;}
+#crm-container .crm-content-block .crm-button:hover input { background:transparent url(../images/button.png) no-repeat scroll right -75px;}
 #crm-container .crm-content-block .crm-button-type-cancel input { color:#e0e0d4; }
-.button:hover .icon {background-image:url("images/button-icon-highlight.png")}
+.button:hover .icon {background-image:url("../images/button-icon-highlight.png")}
 
 
 /******** from nyss_skin/civi-header.css ********/
@@ -2243,7 +2243,7 @@ div.outerbox {
   display: none;
 }
 
-#civi-admin-menu .add-icon {background-image: url(images/icons-4EBAFF.png);}
+#civi-admin-menu .add-icon {background-image: url(../images/icons-4EBAFF.png);}
 
 #civicrm-menu {display: none;}
 
@@ -2283,7 +2283,7 @@ div.outerbox {
   width: 222px;
 }
 .civi-search-section .input-wrapper	{
-  background:transparent url(images/header-search-bg.gif) no-repeat top left;
+  background:transparent url(../images/header-search-bg.gif) no-repeat top left;
   padding:0 5px;
   height:27px;
 }
@@ -2329,7 +2329,7 @@ div.outerbox {
 
 .civi-search-section .input-wrapper input.ac_loading,
 .civi-navigation-section .crm-loading .icon {
-  background:transparent url(images/header-search-active.gif) no-repeat center right;
+  background:transparent url(../images/header-search-active.gif) no-repeat center right;
 }
 
 .crm-advanced_search_form-accordion>div.crm-accordion-body {
@@ -2372,17 +2372,17 @@ div.outerbox {
 .civi-advanced-search-link .crm-accordion-pointer,
 .civi-advanced-search-button .crm-accordion-pointer {
   background-position: -32px -16px;
-  background-image:url(images/icons-FFFFFF.png) ;
+  background-image:url(../images/icons-FFFFFF.png) ;
 }
 .civi-adv-search-linkwrap-active .crm-accordion-pointer {
   background-position: -64px -16px;
-  background-image:url(images/icons-3e3e3e.png) ;
+  background-image:url(../images/icons-3e3e3e.png) ;
 }
 .civi-adv-search-body .crm-master-accordion-header {display: none;}
 
 input.dateplugin,
 #crm-container input.dateplugin {
-  background:white url(images/cal.png) no-repeat scroll right center;
+  background:white url(../images/cal.png) no-repeat scroll right center;
   padding-right:16px;
   width:9em;
 }
@@ -2488,11 +2488,11 @@ img.menu-item-arrow {
 
 #printer-friendly {float: right;margin:2px 6px 0 0;}
 
-#printer-friendly .ui-icon-print {background-image:url(images/icons-FFFFFF.png) ;}
+#printer-friendly .ui-icon-print {background-image:url(../images/icons-FFFFFF.png) ;}
 
 
 #bluebirds {
-  background:transparent url(images/bluebirds.png) no-repeat scroll left top;
+  background:transparent url(../images/bluebirds.png) no-repeat scroll left top;
   height:41px;
   position:absolute;
   right:227px;
@@ -2501,7 +2501,7 @@ img.menu-item-arrow {
   z-index:6;
 }
 #crm-seal {
-  background:transparent url(images/seal-bluebird.png) no-repeat scroll left top;
+  background:transparent url(../images/seal-bluebird.png) no-repeat scroll left top;
   width:160px;
   height:55px;
   margin-top:10px;
@@ -2568,7 +2568,7 @@ img.menu-item-arrow {
 }
 
 /* twitter dashlet icons */
-#crm-container .column-1 .widget-icon {background-image:url(images/icons-FFFFFF.png) ;}
+#crm-container .column-1 .widget-icon {background-image:url(../images/icons-FFFFFF.png) ;}
 
 
 /* admin block */
@@ -2595,7 +2595,7 @@ img.menu-item-arrow {
 .civi-menu .crm-loading-element  {
   padding-left:30px;
   height:30px;
-  background: transparent url("images/loading-405362.gif") no-repeat 0px 0px;
+  background: transparent url("../images/loading-405362.gif") no-repeat 0px 0px;
 }
 
 /* rounding the corners */
