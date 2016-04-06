@@ -251,6 +251,30 @@ function nyss_contact_civicrm_postProcess( $formName, &$form ) {
         'is_opt_out' => 1,
         'preferred_communication_method' => '',
       ));
+
+      $params = array(
+        'version' => 3,
+        'contact_id_a' => $vals['cid'],
+        'is_active' => 1,
+      );
+      $rels = civicrm_api('relationship', 'get', $params);
+
+      foreach ($rels['values'] as $rel) {
+        if (($rel['relationship_type_id'] == 6 ||
+            $rel['relationship_type_id'] == 7) &&
+          (!isset($rel['start_date']) ||
+            strtotime($rel['start_date']) < strtotime(date('Y-m-d'))) &&
+          (!isset($rel['end_date']) ||
+            strtotime($rel['end_date']) > strtotime(date('Y-m-d')) ) ) {
+
+          $msg = "<li>You have marked this contact as deceased and it has a household relationship. Be sure to review the household record and update the postal greeting, email greeting, and addressee values as appropriate.</li>";
+        }
+      }
+
+      //now register the status message. handle here so we can combine in a nice bullet list
+      if ($msg) {
+        CRM_Core_Session::setStatus("<ul>$msg</ul>", 'Please note', 'alert', array('expires' => 0));
+      }
     }
   }
 
@@ -260,6 +284,127 @@ function nyss_contact_civicrm_postProcess( $formName, &$form ) {
   )) ) {
     _setCustomData($formName, $form->_submitValues);
   }
+
+  if ($formName == 'CRM_Contact_Form_Contact') {
+    //CRM_Core_Error::debug_var('form',$form);
+    if ($form->_contactType == 'Individual') {
+      require_once 'api/api.php';
+
+      $values = $form->_finalValues;
+      $contactID = $form->_contactId;
+      $msg = '';
+
+      //CRM_Core_Error::debug_var('values',$values);
+
+      //determine if the contact has a household relationship
+      $params = array(
+        'version' => 3,
+        'contact_id_a' => $contactID,
+        'is_active' => 1,
+      );
+      $rels = civicrm_api('relationship', 'get', $params);
+
+      //if there are no household relationships, we don't need to continue
+      if (!$rels['count']) {
+        return;
+      }
+      //CRM_Core_Error::debug_var('rels',$rels);
+
+      //check if all indivs related to the household are marked either do not email or do not mail
+      //if so, mark the household with those values and return a message
+      if ($values['privacy']['do_not_email'] || $values['privacy']['do_not_mail']) {
+        foreach ($rels['values'] as $rel) {
+          if (($rel['relationship_type_id'] == 6 ||
+              $rel['relationship_type_id'] == 7) &&
+            (!isset($rel['start_date']) ||
+              strtotime($rel['start_date']) < strtotime(date('Y-m-d'))) &&
+            (!isset($rel['end_date']) ||
+              strtotime($rel['end_date']) > strtotime(date('Y-m-d')))) {
+            //now determine if there are other contacts attached to this household
+            $houseID = $rel['contact_id_b'];
+
+            $params = array(
+              'version'      => 3,
+              'contact_id_b' => $houseID,
+              'is_active'    => 1,
+            );
+            $hRels = civicrm_api('relationship', 'get', $params);
+
+            if (!$rels['count']) {
+              continue;
+            }
+
+            $flagDNM = $flagDNE = true; //assume true and break when a contact is not flagged
+            foreach ($hRels['values'] as $hRel) {
+              //CRM_Core_Error::debug_var('hRel',$hRel);
+              if (($hRel['relationship_type_id'] == 6 ||
+                  $hRel['relationship_type_id'] == 7) &&
+                (!isset($hRel['start_date']) ||
+                  strtotime($hRel['start_date']) < strtotime(date('Y-m-d'))) &&
+                (!isset($hRel['end_date']) ||
+                  strtotime($hRel['end_date']) > strtotime(date('Y-m-d')))) {
+
+                //check if related indiv has DNM or DNE
+                $params = array(
+                  'version' => 3,
+                  'id' => $hRel['contact_id_a'],
+                );
+                $iContact = civicrm_api('contact', 'getsingle', $params);
+                //CRM_Core_Error::debug_var('iContact',$iContact);
+                if (!$iContact['do_not_mail']) {
+                  $flagDNM = false;
+                }
+                if (!$iContact['do_not_email']) {
+                  $flagDNE = false;
+                }
+              }
+            }
+
+            //now process the household
+            if ($flagDNM) {
+              $params = array(
+                'version' => 3,
+                'id' => $houseID,
+                'do_not_mail' => 1,
+              );
+              $dnm = civicrm_api('Contact', 'Update', $params);
+              $msg .= '<li>This individual has a related household record which has been marked Do Not Postal Mail. </li>';
+            }
+            if ($flagDNE) {
+              $params = array(
+                'version' => 3,
+                'id' => $houseID,
+                'do_not_email' => 1,
+              );
+              $dne = civicrm_api('Contact', 'Update', $params);
+              $msg .= '<li>This individual has a related household record which has been marked Do Not Email. </li>';
+            }
+          }
+        }
+      } //DNM/DNE
+
+      //4744 if marked deceased and a household relationship exists, return message
+      $isDeceased = civicrm_api('Contact', 'Getvalue', array('version' => 3, 'id' => $contactID, 'return' => 'is_deceased'));
+      if ($isDeceased) {
+        foreach ($rels['values'] as $rel) {
+          if (($rel['relationship_type_id'] == 6 ||
+              $rel['relationship_type_id'] == 7) &&
+            (!isset($rel['start_date']) ||
+              strtotime($rel['start_date']) < strtotime(date('Y-m-d'))) &&
+            (!isset($rel['end_date']) ||
+              strtotime($rel['end_date']) > strtotime(date('Y-m-d')) ) ) {
+
+            $msg .= "<li>You have marked this contact as deceased and it has a household relationship. Be sure to review the household record and update the postal greeting, email greeting, and addressee values as appropriate.</li>";
+          }
+        }
+      } //is_deceased
+
+      //now register the status message. handle here so we can combine in a nice bullet list
+      if ($msg) {
+        CRM_Core_Session::setStatus("<ul>$msg</ul>", 'Please note', 'alert', array('expires' => 0));
+      }
+    } //Individual
+  } //CRM_Contact_Form_Contact
 }
 
 function nyss_contact_civicrm_tabs( &$tabs, $contactID ) {
