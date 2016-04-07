@@ -776,7 +776,7 @@ class CRM_NYSS_BAO_Integration_Website
     //if not, need to rebuild fields
     if (count($cf['values']) != count($params->form_values)) {
       $fields = self::buildSurvey($params);
-      CRM_Core_Error::debug_var('$fields', $fields);
+      //CRM_Core_Error::debug_var('$fields', $fields);
     }
 
     $fields = array();
