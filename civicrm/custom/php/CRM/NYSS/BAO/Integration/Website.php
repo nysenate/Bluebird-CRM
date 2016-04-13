@@ -843,6 +843,7 @@ class CRM_NYSS_BAO_Integration_Website
 
     $fields = array();
     $weight = 0;
+    $fieldCreated = false;
     foreach ($data->form_values as $k => $f) {
       //check to see if field has already been created; if so, set to fields and skip
       if (in_array($f->field, $existingFieldsList)) {
@@ -870,8 +871,16 @@ class CRM_NYSS_BAO_Integration_Website
       $cf = civicrm_api3('custom_field', 'create', $params);
 
       $fields[$f->field] = "custom_{$cf['id']}";
+
+      $fieldCreated = true;
     }
     //CRM_Core_Error::debug_var('final $fields', $fields);
+    //CRM_Core_Error::debug_var('$fieldCreated', $fieldCreated);
+
+    if ($fieldCreated) {
+      $logging = new CRM_Logging_Schema;
+      $logging->fixSchemaDifferencesForAll();
+    }
 
     return $fields;
   } //buildSurvey()
