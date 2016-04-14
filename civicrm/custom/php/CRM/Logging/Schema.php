@@ -557,8 +557,9 @@ COLS;
         '/ AUTO_INCREMENT/i',
         '/^  [^`].*$/m',
         "/^\) ENGINE=[^ ]+ /im");
+    //NYSS add if not exists
     $replacements = array(
-        "CREATE TABLE `{$this->db}`.log_$table",
+        "CREATE TABLE IF NOT EXISTS `{$this->db}`.log_$table",
         '',
         '',
         ') ENGINE=InnoDB ');
@@ -577,6 +578,7 @@ COLS;
 
     $this->tables[] = $table;
     $this->logs[$table] = "log_$table";
+    //CRM_Core_Error::debug_var('$this->logs AFTER', $this->logs);
   }
 
   private function deleteReports() {
