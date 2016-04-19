@@ -148,6 +148,14 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
 
     $form->setDefaults( $this->setDefaultValues() );
     $form->addFormRule( array( 'CRM_Contact_Form_Search_Custom_TagGroupLog', 'formRule' ), $this );
+
+    //9990
+    $formValues = $form->get('formValues');
+    if (!empty($formValues)) {
+      $quickExportUrl = CRM_Utils_System::url('civicrm/search/custom/taggroup/quickexport',
+        http_build_query(array('formValues' => $formValues)));
+      $form->assign('quickExportUrl', $quickExportUrl);
+    }
   }//buildForm
   
   static function formRule( $fields ) {
@@ -386,4 +394,18 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
       CRM_Utils_System::setTitle(ts('Search'));
     }
   }
+
+  //9990
+  static function quickExport() {
+    //CRM_Core_Error::debug_var('$_REQUEST', $_REQUEST);
+
+    if (!empty($_REQUEST['formValues'])) {
+      $formValues = $_REQUEST['formValues'];
+
+      CRM_Export_BAO_Export::exportCustom($formValues['customSearchClass'],
+        $formValues,
+        'sort_name'
+      );
+    }
+  }//quickExport
 }
