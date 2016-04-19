@@ -1553,6 +1553,20 @@ function _buildSearchMenu($searchNavID) {
       ),
       $searchNavID+9 => array(
         'attributes' => array(
+          'label'      => 'Tag Count Search',
+          'name'       => 'Tag Count Search',
+          'url'        => 'civicrm/contact/search/custom?csid=19&reset=1',
+          'permission' => 'access CiviCRM,view all contacts',
+          'operator'   => 'AND',
+          'separator'  => 0,
+          'parentID'   => $searchNavID,
+          'navID'      => $searchNavID+9,
+          'active'     => 1
+        ),
+        'child' => array(),
+      ),
+      $searchNavID+10 => array(
+        'attributes' => array(
           'label'      => 'Web Activity Search',
           'name'       => 'Web Activity Search',
           'url'        => 'civicrm/contact/search/custom?csid=18&reset=1',
@@ -1560,7 +1574,7 @@ function _buildSearchMenu($searchNavID) {
           'operator'   => 'AND',
           'separator'  => 0,
           'parentID'   => $searchNavID,
-          'navID'      => $searchNavID+9,
+          'navID'      => $searchNavID+10,
           'active'     => 1
         ),
         'child' => array(),

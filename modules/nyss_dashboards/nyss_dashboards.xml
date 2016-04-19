@@ -335,4 +335,9 @@
     <title>Quick Export</title>
     <page_callback>CRM_Contact_Form_Search_Custom_TagGroupLog::quickExport</page_callback>
   </item>
+  <item>
+    <path>civicrm/search/custom/tagcontact/quickexport</path>
+    <title>Quick Export</title>
+    <page_callback>CRM_Contact_Form_Search_Custom_TagContactLog::quickExport</page_callback>
+  </item>
 </menu>
