@@ -33,17 +33,16 @@
  *
  */
 //NYSS 8629
-//class CRM_Core_Lock {
-class CRM_Core_Lock implements \Civi\Core\Lock\LockInterface {
-
-  static $jobLog = FALSE;//NYSS 8629
+class CRM_Core_Lock implements \Civi\Core\Lock\LockInterface
+{
+  static $jobLog = false; //NYSS 8629
 
   // lets have a 3 second timeout for now
-  CONST TIMEOUT = 3;
+  const TIMEOUT = 3;
 
-  protected $_hasLock = FALSE;
-
+  protected $_hasLock = false;
   protected $_name;
+  protected $_id;
 
   //NYSS 8629
   /**
@@ -59,7 +58,7 @@ class CRM_Core_Lock implements \Civi\Core\Lock\LockInterface {
    * @return \Civi\Core\Lock\LockInterface
    */
   public static function createGlobalLock($name) {
-    return new static($name, NULL, TRUE);
+    return new static($name, null, true);
   }
 
   /**
@@ -96,7 +95,7 @@ class CRM_Core_Lock implements \Civi\Core\Lock\LockInterface {
       \CRM_Core_BAO_Setting::MAILING_PREFERENCES_NAME,
       'civimail_server_wide_lock'
     );
-    return new static($name, NULL, $serverWideLock);
+    return new static($name, null, $serverWideLock);
   }
 
   /**
@@ -113,7 +112,7 @@ class CRM_Core_Lock implements \Civi\Core\Lock\LockInterface {
    * @return object the lock object
    *
    */
-  function __construct($name, $timeout = NULL, $serverWideLock = FALSE) {
+  function __construct($name, $timeout = null, $serverWideLock = false) {
     $config = CRM_Core_Config::singleton();
     $dsnArray = DB::parseDSN($config->dsn);
     $database = $dsnArray['database'];
@@ -124,11 +123,15 @@ class CRM_Core_Lock implements \Civi\Core\Lock\LockInterface {
     else {
       $this->_name = $database . '.' . $domainID . '.' . $name;
     }
+
+    // MySQL 5.7 restricts lock names to 64 characters.  The sha1() function
+    // returns a 40-character hexadecimal string representation of the input.
+    $this->_id = sha1($this->_name);
     if (defined('CIVICRM_LOCK_DEBUG')) {
-      CRM_Core_Error::debug_log_message('trying to construct lock for ' . $this->_name);
+      CRM_Core_Error::debug_log_message('trying to construct lock for '.$this->_name.' ('.$this->_id.')');
     }
     //NYSS 8629
-    //static $jobLog = FALSE;
+    //static $jobLog = false;
     //if ($jobLog && CRM_Core_DAO::singleValueQuery("SELECT IS_USED_LOCK( '{$jobLog}')")) {
     //  return $this->hackyHandleBrokenCode($jobLog);
     //if (self::$jobLog && CRM_Core_DAO::singleValueQuery("SELECT IS_USED_LOCK( '" . self::$jobLog . "')")) {
@@ -142,7 +145,7 @@ class CRM_Core_Lock implements \Civi\Core\Lock\LockInterface {
     //if (defined('CIVICRM_LOCK_DEBUG')) {
     //CRM_Core_Error::debug_var('backtrace', debug_backtrace());
     //}
-    $this->_timeout = $timeout !== NULL ? $timeout : self::TIMEOUT;
+    $this->_timeout = $timeout !== null ? $timeout : self::TIMEOUT;
 
     //$this->acquire();
   }
@@ -152,27 +155,27 @@ class CRM_Core_Lock implements \Civi\Core\Lock\LockInterface {
   }
 
   //NYSS 8629
-  public function acquire($timeout = NULL) {
+  public function acquire($timeout = null) {
     /*if (defined('CIVICRM_LOCK_DEBUG')) {
       CRM_Core_Error::debug_log_message('acquire lock for ' . $this->_name);
     }*/
     if (!$this->_hasLock) {
-      if (self::$jobLog && CRM_Core_DAO::singleValueQuery("SELECT IS_USED_LOCK( '" . self::$jobLog . "')")) {
+      if (self::$jobLog && CRM_Core_DAO::singleValueQuery("SELECT IS_USED_LOCK('".$this->_id."')")) {
         return $this->hackyHandleBrokenCode(self::$jobLog);
       }
 
-      $query = "SELECT GET_LOCK( %1, %2 )";
+      $query = "SELECT GET_LOCK(%1, %2)";
       $params = array(
-        1 => array($this->_name, 'String'),
+        1 => array($this->_id, 'String'),
         2 => array($timeout ? $timeout : $this->_timeout, 'Integer'),//NYSS 8629
       );
       $res = CRM_Core_DAO::singleValueQuery($query, $params);
       if ($res) {
         //NYSS 8629
         if (defined('CIVICRM_LOCK_DEBUG')) {
-          CRM_Core_Error::debug_log_message('acquire lock for ' . $this->_name);
+          CRM_Core_Error::debug_log_message('acquire lock for '.$this->_name.'('.$this->_id.')');
         }
-        $this->_hasLock = TRUE;
+        $this->_hasLock = true;
         if (stristr($this->_name, 'data.mailing.job.')) {
           self::$jobLog = $this->_name;
         }
@@ -180,7 +183,7 @@ class CRM_Core_Lock implements \Civi\Core\Lock\LockInterface {
       //NYSS 8629
       else {
         if (defined('CIVICRM_LOCK_DEBUG')) {
-          CRM_Core_Error::debug_log_message('failed to acquire lock for ' . $this->_name);
+          CRM_Core_Error::debug_log_message('failed to acquire lock for '.$this->_name.'('.$this->_id.')');
         }
       }
     }
@@ -192,23 +195,23 @@ class CRM_Core_Lock implements \Civi\Core\Lock\LockInterface {
     if ($this->_hasLock) {
       //NYSS 8629
       if (defined('CIVICRM_LOCK_DEBUG')) {
-        CRM_Core_Error::debug_log_message('release lock for ' . $this->_name);
+        CRM_Core_Error::debug_log_message('release lock for '.$this->_name.'('.$this->_id.')');
       }
-      $this->_hasLock = FALSE;
+      $this->_hasLock = false;
 
       if (self::$jobLog == $this->_name) {
-        self::$jobLog = FALSE;
+        self::$jobLog = false;
       }
 
-      $query = "SELECT RELEASE_LOCK( %1 )";
-      $params = array(1 => array($this->_name, 'String'));
+      $query = "SELECT RELEASE_LOCK(%1)";
+      $params = array(1 => array($this->_id, 'String'));
       return CRM_Core_DAO::singleValueQuery($query, $params);
     }
   }
 
   function isFree() {
-    $query = "SELECT IS_FREE_LOCK( %1 )";
-    $params = array(1 => array($this->_name, 'String'));
+    $query = "SELECT IS_FREE_LOCK(%1)";
+    $params = array(1 => array($this->_id, 'String'));
     return CRM_Core_DAO::singleValueQuery($query, $params);
   }
 
@@ -233,14 +236,14 @@ class CRM_Core_Lock implements \Civi\Core\Lock\LockInterface {
     if (stristr($this->_name, 'job')) {
       //NYSS 8629
       //throw new CRM_Core_Exception('lock aquisition for ' . $this->_name . 'attempted when ' . $jobLog . 'is not released');
-      CRM_Core_Error::debug_log_message('lock acquisition for ' . $this->_name . ' attempted when ' . $jobLog . ' is not released');
-      throw new CRM_Core_Exception('lock acquisition for ' . $this->_name . ' attempted when ' . $jobLog . ' is not released');
+      CRM_Core_Error::debug_log_message('lock acquisition for '.$this->_name.'('.$this->_id.')'.' attempted when '.$jobLog.' is not released');
+      throw new CRM_Core_Exception('lock acquisition for '.$this->_name.'('.$this->_id.')'.' attempted when '.$jobLog.' is not released');
     }
     if (defined('CIVICRM_LOCK_DEBUG')) {
-      CRM_Core_Error::debug_log_message('(CRM-12856) faking lock for ' . $this->_name);
+      CRM_Core_Error::debug_log_message('(CRM-12856) faking lock for '.$this->_name.'('.$this->_id.')');
     }
-    $this->_hasLock = TRUE;
-    return TRUE;
+    $this->_hasLock = true;
+    return true;
   }
 }
 
