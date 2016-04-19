@@ -328,4 +328,11 @@
     <title>Recently Created Contacts</title>
     <page_callback>CRM_Dashlet_Page_NewContacts</page_callback>
   </item>
+
+  <!-- #9990 -->
+  <item>
+    <path>civicrm/search/custom/taggroup/quickexport</path>
+    <title>Quick Export</title>
+    <page_callback>CRM_Contact_Form_Search_Custom_TagGroupLog::quickExport</page_callback>
+  </item>
 </menu>

@@ -97,6 +97,12 @@
         {* This section handles form elements for action task select and submit *}
         <div class="crm-search-tasks">
           {include file="CRM/Contact/Form/Search/ResultTasks.tpl"}
+          {*9990*}
+          {if $quickExportUrl}
+            <a class="button" id="quick_export" style="float: none; display: inline-block" href="{$quickExportUrl}">
+              <span style="padding-right: 8px;">Quick Export</span>
+            </a>
+          {/if}
         </div>
 
         {* This section displays the rows along and includes the paging controls *}
@@ -191,5 +197,9 @@
   cj('input[name=search_type]').click(function(){
     checkType();
   });
+
+  //9990 - move quick export button
+  cj('#quick_export').
+    appendTo('div.crm-search-tasks table tr:nth-child(3) td');
 </script>
 {/literal}
