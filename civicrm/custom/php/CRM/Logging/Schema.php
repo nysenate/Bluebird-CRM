@@ -69,7 +69,7 @@ class CRM_Logging_Schema {
     $domain = new CRM_Core_DAO_Domain();
     $domain->find(TRUE);
     if (!(CRM_Core_DAO::checkTriggerViewPermission(FALSE)) && $value) {
-      throw new API_Exception("In order to use this functionality, the installation's database user must have privileges to create triggers (in MySQL 5.0 – and in MySQL 5.1 if binary logging is enabled – this means the SUPER privilege). This install either does not seem to have the required privilege enabled.");
+      throw new API_Exception("In order to use this functionality, the installation's database user must have privileges to create triggers (in MySQL 5.0 ï¿½ and in MySQL 5.1 if binary logging is enabled ï¿½ this means the SUPER privilege). This install either does not seem to have the required privilege enabled.");
     }
     return TRUE;
   }
@@ -565,7 +565,7 @@ WHERE  table_schema IN ('{$this->db}', '{$civiDB}')";
   }
 
   /**
-   * Create a log table with schema mirroring the given table’s structure and seeding it with the given table’s contents.
+   * Create a log table with schema mirroring the given tableï¿½s structure and seeding it with the given tableï¿½s contents.
    *
    * @param string $table
    */
@@ -590,7 +590,8 @@ COLS;
     // - drop non-column rows of the query (keys, constraints, etc.)
     // - set the ENGINE to ARCHIVE
     // - add log-specific columns (at the end of the table)
-    $query = preg_replace("/^CREATE TABLE `$table`/i", "CREATE TABLE `{$this->db}`.log_$table", $query);
+    //NYSS add if not exists
+    $query = preg_replace("/^CREATE TABLE `$table`/i", "CREATE TABLE IF NOT EXISTS `{$this->db}`.log_$table", $query);
     $query = preg_replace("/ AUTO_INCREMENT/i", '', $query);
     $query = preg_replace("/^  [^`].*$/m", '', $query);
     $query = preg_replace("/^\) ENGINE=[^ ]+ /im", ') ENGINE=ARCHIVE ', $query);
@@ -654,7 +655,7 @@ COLS;
    * Predicate whether the logging triggers are in place.
    */
   private function triggersExist() {
-    // FIXME: probably should be a bit more thorough…
+    // FIXME: probably should be a bit more thoroughï¿½
     // note that the LIKE parameter is TABLE NAME
     return (bool) CRM_Core_DAO::singleValueQuery("SHOW TRIGGERS LIKE 'civicrm_domain'"); //NYSS
   }

@@ -772,6 +772,13 @@ class CRM_NYSS_BAO_Integration_Website
     $cf = civicrm_api3('custom_field', 'get', array('custom_group_id' => $cs));
     //CRM_Core_Error::debug_var('$cf', $cf);
 
+    //check to see if existing fields count equals params field count
+    //if not, need to rebuild fields
+    if (count($cf['values']) != count($params->form_values)) {
+      $fields = self::buildSurvey($params);
+      //CRM_Core_Error::debug_var('$fields', $fields);
+    }
+
     $fields = array();
     foreach ($cf['values'] as $id => $f) {
       $fields[$f['label']] = "custom_{$id}";
@@ -819,9 +826,32 @@ class CRM_NYSS_BAO_Integration_Website
       $csID = $cg['id'];
     }
 
+    //get existing fields for this custom data set
+    $existingFieldsList = array();
+    $existingFields = civicrm_api3('custom_field', 'get', array(
+      'custom_group_id' => $csID,
+      'options' => array(
+        'limit' => 0,
+      ),
+    ));
+    //CRM_Core_Error::debug_var('existingFields', $existingFields);
+    //CRM_Core_Error::debug_var('$data->form_values', $data->form_values);
+
+    foreach ($existingFields['values'] as $ef) {
+      $existingFieldsList[$ef['id']] = $ef['label'];
+    }
+
     $fields = array();
     $weight = 0;
+    $fieldCreated = false;
     foreach ($data->form_values as $k => $f) {
+      //check to see if field has already been created; if so, set to fields and skip
+      if (in_array($f->field, $existingFieldsList)) {
+        $efKey = array_search($f->field, $existingFieldsList);
+        $fields[$f->field] = "custom_{$efKey}";
+        continue;
+      }
+
       //make sure label is unique
       $label = $f->field;
       if (array_key_exists($f->field, $fields)) {
@@ -841,8 +871,16 @@ class CRM_NYSS_BAO_Integration_Website
       $cf = civicrm_api3('custom_field', 'create', $params);
 
       $fields[$f->field] = "custom_{$cf['id']}";
+
+      $fieldCreated = true;
     }
-    //CRM_Core_Error::debug_var('fields', $fields);
+    //CRM_Core_Error::debug_var('final $fields', $fields);
+    //CRM_Core_Error::debug_var('$fieldCreated', $fieldCreated);
+
+    if ($fieldCreated) {
+      $logging = new CRM_Logging_Schema;
+      $logging->fixSchemaDifferencesForAll();
+    }
 
     return $fields;
   } //buildSurvey()
