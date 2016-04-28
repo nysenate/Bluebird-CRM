@@ -8,6 +8,8 @@
 # Date: 2010-09-14
 # Revised: 2011-03-21
 # Revised: 2014-07-22 - allow hyphens in database names by backquoting names
+# Revised: 2016-04-28 - removed data.basename; using data.dirname instead
+#                     - removed --domain option and all references to domain
 #
 
 prog=`basename $0`
@@ -18,14 +20,13 @@ readConfig=$script_dir/readConfig.sh
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog [--ok] [--files-only] [--db-only] [--domain domain] instanceName" >&2
+  echo "Usage: $prog [--ok] [--files-only] [--db-only] instanceName" >&2
 }
 
 force_ok=0
 files_only=0
 db_only=0
 instance=
-domain=
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -33,7 +34,6 @@ while [ $# -gt 0 ]; do
     --ok) force_ok=1 ;;
     --files-only) files_only=1 ;;
     --db-only) db_only=1 ;;
-    --domain|-d) shift; domain="$1" ;;
     -*) echo "$prog: $1: Invalid option" >&2 ; usage ; exit 1 ;;
     *) instance="$1" ;;
   esac
@@ -48,31 +48,26 @@ elif ! $readConfig --instance $instance --quiet; then
   exit 1
 fi
 
-[ "$domain" ] || domain=`$readConfig --ig $instance base.domain` || domain="$DEFAULT_BASE_DOMAIN"
 db_civi_prefix=`$readConfig --ig $instance db.civicrm.prefix` || db_civi_prefix="$DEFAULT_DB_CIVICRM_PREFIX"
 db_drup_prefix=`$readConfig --ig $instance db.drupal.prefix` || db_drup_prefix="$DEFAULT_DB_DRUPAL_PREFIX"
 db_log_prefix=`$readConfig --ig $instance db.log.prefix` || db_log_prefix="$DEFAULT_DB_LOG_PREFIX"
 db_basename=`$readConfig --ig $instance db.basename` || db_basename="$instance"
 drupal_rootdir=`$readConfig --ig $instance drupal.rootdir` || drupal_rootdir="$DEFAULT_DRUPAL_ROOTDIR"
 data_rootdir=`$readConfig --ig $instance data.rootdir` || data_rootdir="$DEFAULT_DATA_ROOTDIR"
-data_basename=`$readConfig --ig $instance data.basename` || data_basename="$instance"
-data_dirname="$data_basename.$domain"
+data_dirname=`$readConfig --ig $instance data.dirname` || data_dirname="$instance"
 errcode=0
 
-instance_dir="$drupal_rootdir/sites/$data_dirname"
 instance_data_dir="$data_rootdir/$data_dirname"
 
 if [ $force_ok -eq 0 ]; then
   echo "Please review before deleting:"
   echo
-  echo "Domain: $domain"
   echo "CiviCRM DB Prefix: $db_civi_prefix"
   echo "Drupal DB Prefix: $db_drup_prefix"
   echo "Log DB Prefix: $db_log_prefix"
   echo "Drupal Root Directory: $drupal_rootdir"
   echo "Data Root Directory: $data_rootdir"
   if [ $db_only -ne 1 ]; then
-    echo "Will delete dir: $instance_dir"
     echo "Will delete dir: $instance_data_dir"
   fi
   if [ $files_only -ne 1 ]; then
@@ -92,7 +87,7 @@ fi
 if [ $db_only -ne 1 ]; then
   echo "Deleting site files for instance [$instance]"
   ( set -x
-    rm -rf "$instance_dir" "$instance_data_dir"
+    rm -rf "$instance_data_dir"
   ) || errcode=$(($errcode | 1))
 fi
 

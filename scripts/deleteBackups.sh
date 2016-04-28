@@ -7,6 +7,7 @@
 # Organization: New York State Senate
 # Date: 2012-08-10
 # Revised: 2012-08-10
+# Revised: 2016-04-28 - removed data.basename; using data.dirname instead
 #
 
 prog=`basename $0`
@@ -43,10 +44,8 @@ elif ! $readConfig --instance $instance --quiet; then
   exit 1
 fi
 
-base_domain=`$readConfig --ig $instance base.domain` || domain="$DEFAULT_BASE_DOMAIN"
 data_rootdir=`$readConfig --ig $instance data.rootdir` || data_rootdir="$DEFAULT_DATA_ROOTDIR"
-data_basename=`$readConfig --ig $instance data.basename` || data_basename="$instance"
-data_dirname="$data_basename.$base_domain"
+data_dirname=`$readConfig --ig $instance data.dirname` || data_dirname="$instance"
 backup_dir="$data_rootdir/$data_dirname/nyss_backup"
 line_num=$(($leave + 1))
 
