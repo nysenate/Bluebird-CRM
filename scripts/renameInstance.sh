@@ -7,6 +7,10 @@
 # Organization: New York State Senate
 # Date: 2015-11-10
 # Revised: 2015-11-11
+# Revised: 2016-04-28 - removed data.basename; using data.dirname instead
+#                     - removed all references to base.domain
+#                     - removed renaming of instance site directory, since
+#                       /sites/ is no longer polluted with directories
 #
 
 prog=`basename $0`
@@ -129,27 +133,13 @@ if [ $skip_views -ne 1 ]; then
   fi
 fi
 
-domain_src=`$readConfig --ig $srcinst base.domain` || domain="$DEFAULT_BASE_DOMAIN"
-domain_dest=`$readConfig --ig $destinst base.domain` || domain="$DEFAULT_BASE_DOMAIN"
 drupal_rootdir=`$readConfig --ig $srcinst drupal.rootdir` || drupal_rootdir="$DEFAULT_DRUPAL_ROOTDIR"
 data_rootdir_src=`$readConfig --ig $srcinst data.rootdir` || data_rootdir_src="$DEFAULT_DATA_ROOTDIR"
 data_rootdir_dest=`$readConfig --ig $destinst data.rootdir` || data_rootdir_dest="$DEFAULT_DATA_ROOTDIR"
-data_basename_src=`$readConfig --ig $srcinst data.basename` || data_basename_src="$srcinst"
-data_basename_dest=`$readConfig --ig $destinst data.basename` || data_basename_dest="$destinst"
-data_dirname_src="$data_basename_src.$domain_src"
-data_dirname_dest="$data_basename_dest.$domain_dest"
-site_dir_src="$drupal_rootdir/sites/$data_dirname_src"
-site_dir_dest="$drupal_rootdir/sites/$data_dirname_dest"
+data_dirname_src=`$readConfig --ig $srcinst data.dirname` || data_dirname_src="$srcinst"
+data_dirname_dest=`$readConfig --ig $destinst data.dirname` || data_dirname_dest="$destinst"
 data_dir_src="$data_rootdir_src/$data_dirname_src"
 data_dir_dest="$data_rootdir_dest/$data_dirname_dest"
-
-echo "Moving site directory [$site_dir_src] to [$site_dir_dest]"
-if [ -d $site_dir_dest ]; then
-  echo "$prog: Destination site directory [$site_dir_dest] already exists; please remove it before running this script" >&2
-  exit 1
-fi
-
-mv $site_dir_src $site_dir_dest || exit 1
 
 echo "Moving data directory [$data_dir_src] to [$data_dir_dest]"
 if [ -d $data_dir_dest ]; then
