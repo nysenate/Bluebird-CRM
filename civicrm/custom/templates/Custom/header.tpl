@@ -144,24 +144,49 @@ $role = str_replace('authenticated user','', $rolesList);
     {/if}
   </div>
   <div class="civi-menu">
-  {if isset($browserPrint) and $browserPrint}
-  {* Javascript window.print link. Used for public pages where we can't do printer-friendly view. *}
-    <div id="printer-friendly">
-      <a href="javascript:window.print()" title="{ts}Print this page.{/ts}">
-        <div class="ui-icon ui-icon-print"></div>
-      </a>
-    </div>
-  {else}
-    {* Printer friendly link/icon. *}
-    <div id="printer-friendly">
-      <a href="{$printerFriendly}" title="{ts}Printer-friendly view of this page.{/ts}" target="_blank">
-        <div class="ui-icon ui-icon-print"></div>
-      </a>
-    </div>
-  {/if}
-  <ul id="nyss-menu">
-    {$navigation}
-  </ul>
+    {if isset($browserPrint) and $browserPrint}
+    {* Javascript window.print link. Used for public pages where we can't do printer-friendly view. *}
+      <div id="printer-friendly">
+        <a href="javascript:window.print()" title="{ts}Print this page.{/ts}">
+          <div class="ui-icon ui-icon-print"></div>
+        </a>
+      </div>
+    {else}
+      {* Printer friendly link/icon. *}
+      <div id="printer-friendly">
+        <a href="{$printerFriendly}" title="{ts}Printer-friendly view of this page.{/ts}" target="_blank">
+          <div class="ui-icon ui-icon-print"></div>
+        </a>
+      </div>
+    {/if}
+    <ul id="nyss-menu">
+      {$navigation}
+    </ul>
+
+    {literal}
+      <script type="text/javascript">
+      //show/hide submenus on click
+      cj('#nyss-menu').ready(function() {
+        cj("#nyss-menu > li:has(ul)").click(function () {
+          cj("#nyss-menu > li:has(ul) ul").hide();
+          cj("#nyss-menu > li:has(ul)").removeClass('selected');
+
+          cj(this).children('ul').show();
+          cj(this).addClass('selected');
+        });
+      });
+
+      //hide submenus on clicking away from menu
+      cj(document).mouseup(function (e) {
+        if (!cj("#nyss-menu").is(e.target)
+          && cj("#nyss-menu").has(e.target).length === 0)
+        {
+          cj("#nyss-menu > li:has(ul) ul").hide();
+          cj("#nyss-menu > li:has(ul)").removeClass('selected');
+        }
+      });
+      </script>
+    {/literal}
   </div><!-- /.civi-menu -->
 
 <div class="civi-adv-search-body crm-form-block">

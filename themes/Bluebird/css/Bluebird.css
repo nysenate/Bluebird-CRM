@@ -2936,14 +2936,12 @@ div.token-input-dropdown-facebook {
 }
 
 /* nyss menu */
-.role-Staff .crm-Administer,.shadowbox1,.shadowbox2,.shadowbox3 {
+.role-Staff .crm-Administer,
+.shadowbox1,
+.shadowbox2,
+.shadowbox3 {
   display: none;
 }
-
-#nyss-menu {
-  margin: 0;
-}
-
 .civi-menu li.menumain {
   list-style-type: none;
   border-right: none;
@@ -2951,17 +2949,15 @@ div.token-input-dropdown-facebook {
   margin-right: 10px;
   background: 2px;
 }
-
 .civi-menu li.activetarget {
   background-color: #405362;
 }
-
 div.outerbox {
   background-color: #405362;
   padding: 0 !important;
 }
-
-#civicrm-menu,#root-menu-div ul {
+#civicrm-menu,
+#root-menu-div ul {
   background: transparent none repeat-x scroll 0 0;
   color: #fff;
   cursor: default;
@@ -3266,10 +3262,10 @@ div.outerbox {
   display: none;
 }
 
-.civi-menu li.crm-Administer {
+/*.civi-menu li.crm-Administer {
   float: right;
   margin-right: 140px;
-}
+}*/
 
 #crm-container #crm-contact-actions-list {
   width: auto !important;
@@ -4137,26 +4133,35 @@ table.crm-ajax-table td,table.crm-ajax-table th {
   font-size: .9em;
 }
 
-/*fixes for menu*/
-ul#nyss-menu.ui-widget-content {
-  color: #FFF;
-  border: none;
-  font-size: .95em;
+/*fixes for civi-menu/nyss-menu*/
+#nyss-menu {
+  margin: 0;
 }
-
-ul#nyss-menu.ui-widget-content > li > span {
-  display: none;
-}
-
-ul#nyss-menu.ui-widget-content li:hover {
-  color: #FFF;
-}
-
-div.civi-menu li.ui-state-active {
-  background-color: #405362;
-  color: #FFF;
-}
-
-ul#nyss-menu.ui-widget-content li ul {
+#nyss-menu > li > ul {
+  position: absolute;
+  top: 22px;
+  margin-left: -6px;
   z-index: 100;
+  display: none;
+  border-radius: 0 5px 5px 5px;
+  list-style: none;
+  font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+  font-size: 13px;
+  background-color: #405362;
+}
+#nyss-menu > li > ul li {
+  padding: 6px 10px 4px;
+}
+#nyss-menu > li > ul li.menu-separator {
+  padding: 0;
+}
+#nyss-menu > li > ul a {
+  color: #7FCDFE;
+}
+#nyss-menu > li > ul li:hover a {
+  color: white;
+}
+#nyss-menu > li.selected {
+  background-color: #405362;
+  border-radius: 5px 5px 0 0;
 }
