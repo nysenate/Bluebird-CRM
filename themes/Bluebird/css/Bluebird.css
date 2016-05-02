@@ -4165,3 +4165,14 @@ table.crm-ajax-table td,table.crm-ajax-table th {
   background-color: #405362;
   border-radius: 5px 5px 0 0;
 }
+
+/*actions dropdown*/
+.crm-container #actions a.button {
+  font-size: 12px;
+  line-height: 15px;
+}
+div.crm-contact-actions-list-inner a {
+  font-family: "Segoe UI";
+  font-size: 12px;
+}
+
