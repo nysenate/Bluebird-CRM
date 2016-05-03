@@ -4176,3 +4176,7 @@ div.crm-contact-actions-list-inner a {
   font-size: 12px;
 }
 
+/*contact summary*/
+#crm-container .crm-content-block .crm-inline-edit-form .crm-button input {
+  padding-left: 16px;
+}
