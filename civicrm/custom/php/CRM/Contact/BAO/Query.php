@@ -5546,6 +5546,9 @@ SELECT COUNT( conts.total_amount ) as cancel_count,
       case 'IN':
       case 'NOT IN':
         //NYSS
+        //in 4.7 the value array is structured: $op => array($key => $value)
+        //CRM_Core_Error::debug_var('dataType', $dataType);
+        //CRM_Core_Error::debug_var('$value', $value);
         if (isset($dataType)) {
           if (is_array($value)) {
             $values = $value;
@@ -5562,9 +5565,11 @@ SELECT COUNT( conts.total_amount ) as cancel_count,
           }
           // supporting multiple values in IN clause
           $val = array();
-          foreach ($values as $v) {
-            $v = trim($v);
-            $val[] = "'" . CRM_Utils_Type::escape($v, $dataType) . "'";
+          foreach ($values as $val) {
+            foreach ($val as $v) {
+              $v = trim($v);
+              $val[] = "'" . CRM_Utils_Type::escape($v, $dataType) . "'";
+            }
           }
           $value = "(" . implode($val, ",") . ")";
         }
