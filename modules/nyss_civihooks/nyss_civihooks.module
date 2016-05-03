@@ -774,7 +774,7 @@ function nyss_civihooks_civicrm_validateForm($formName, &$fields, &$files, &$for
 
   //5725/7653
   if ($formName == 'CRM_Profile_Form_Edit') {
-    $contactProfiles = CRM_Core_BAO_UFGroup::getReservedProfiles('Contact', $extraProfiles);
+    $contactProfiles = CRM_Core_BAO_UFGroup::getProfiles(array('Individual'));
 
     switch ($contactProfiles[$fields['gid']]) {
       case 'New Individual':
@@ -785,18 +785,8 @@ function nyss_civihooks_civicrm_validateForm($formName, &$fields, &$files, &$for
           $errors['first_name'] = 'You must enter a first name, last name, or email address, in order to create a contact.';
         }
         break;
-      case 'New Organization':
-        $org = (isset($fields['organization_name'])) ? trim($fields['organization_name']) : null;
-        if (empty($org)) {
-          $errors['organization_name'] = 'You must enter an organization name in order to create a contact.';
-        }
-        break;
-      case 'New Household':
-        $house = (isset($fields['household_name'])) ? trim($fields['household_name']) : null;
-        if (empty($house)) {
-          $errors['household_name'] = 'You must enter a household name in order to create a contact.';
-        }
-        break;
+
+      default:
     }
   }
 
