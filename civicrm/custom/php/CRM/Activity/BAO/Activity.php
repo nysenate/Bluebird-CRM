@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2015                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2015
+ * @copyright CiviCRM LLC (c) 2004-2016
  */
 
 /**
@@ -1021,7 +1021,7 @@ LEFT JOIN   civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.a
       $commonClauses[] = "civicrm_activity.status_id = 1";
     }*/
         
-    //Filter on component IDs.
+    // Filter on component IDs.
     $components = self::activityComponents();
     if (!empty($components)) {
       $componentsIn = implode(',', array_keys($components));
@@ -2200,11 +2200,13 @@ AND cl.modified_id  = c.id
             'title' => ts('Activity Type'),
             'name' => 'activity_type',
             'type' => CRM_Utils_Type::T_STRING,
+            'searchByLabel' => TRUE,
           ),
           'activity_status' => array(
             'title' => ts('Activity Status'),
             'name' => 'activity_status',
             'type' => CRM_Utils_Type::T_STRING,
+            'searchByLabel' => TRUE,
           ),
         );
         $fields = array_merge($Activityfields, $exportableFields);
@@ -2638,7 +2640,7 @@ INNER JOIN  civicrm_option_group grp ON ( grp.id = val.option_group_id AND grp.n
         );
 
         if ($values['is_recurring_activity']) {
-          $contactActivities[$activityId]['is_recurring_activity'] = CRM_Core_BAO_RecurringEntity::getPositionAndCount($values['activity_id'], 'civicrm_activity');
+          $activity['is_recurring_activity'] = CRM_Core_BAO_RecurringEntity::getPositionAndCount($values['activity_id'], 'civicrm_activity');
         }
 
         array_push($contactActivities, $activity);

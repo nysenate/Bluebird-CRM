@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2015                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2015
+ * @copyright CiviCRM LLC (c) 2004-2016
  */
 class CRM_Logging_Schema {
   private $logs = array();
@@ -69,7 +69,7 @@ class CRM_Logging_Schema {
     $domain = new CRM_Core_DAO_Domain();
     $domain->find(TRUE);
     if (!(CRM_Core_DAO::checkTriggerViewPermission(FALSE)) && $value) {
-      throw new API_Exception("In order to use this functionality, the installation's database user must have privileges to create triggers (in MySQL 5.0 � and in MySQL 5.1 if binary logging is enabled � this means the SUPER privilege). This install either does not seem to have the required privilege enabled.");
+      throw new API_Exception("In order to use this functionality, the installation's database user must have privileges to create triggers (in MySQL 5.0 – and in MySQL 5.1 if binary logging is enabled – this means the SUPER privilege). This install either does not seem to have the required privilege enabled.");
     }
     return TRUE;
   }
@@ -127,6 +127,9 @@ AND    TABLE_NAME LIKE 'civicrm_%'
     //CRM-14672
     $this->tables = preg_grep('/^civicrm_menu/', $this->tables, PREG_GREP_INVERT);
     $this->tables = preg_grep('/_temp_/', $this->tables, PREG_GREP_INVERT);
+    // CRM-18178
+    $this->tables = preg_grep('/_bak$/', $this->tables, PREG_GREP_INVERT);
+    $this->tables = preg_grep('/_backup$/', $this->tables, PREG_GREP_INVERT);
 
     // do not log civicrm_mailing_event* tables, CRM-12300
     $this->tables = preg_grep('/^civicrm_mailing_event_/', $this->tables, PREG_GREP_INVERT);
@@ -565,7 +568,7 @@ WHERE  table_schema IN ('{$this->db}', '{$civiDB}')";
   }
 
   /**
-   * Create a log table with schema mirroring the given table�s structure and seeding it with the given table�s contents.
+   * Create a log table with schema mirroring the given table’s structure and seeding it with the given table’s contents.
    *
    * @param string $table
    */
@@ -655,7 +658,7 @@ COLS;
    * Predicate whether the logging triggers are in place.
    */
   private function triggersExist() {
-    // FIXME: probably should be a bit more thorough�
+    // FIXME: probably should be a bit more thorough…
     // note that the LIKE parameter is TABLE NAME
     return (bool) CRM_Core_DAO::singleValueQuery("SHOW TRIGGERS LIKE 'civicrm_domain'"); //NYSS
   }

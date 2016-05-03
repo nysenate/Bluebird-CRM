@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2015                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2015
+ * @copyright CiviCRM LLC (c) 2004-2016
  * $Id$
  */
 class CRM_Logging_ReportSummary extends CRM_Report_Form {
@@ -37,6 +37,13 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
   protected $_logTables = array();
 
   protected $loggingDB;
+
+  /**
+   * The log table currently being processed.
+   *
+   * @var string
+   */
+  protected $currentLogTable;
 
   /**
    * Class constructor.
@@ -49,7 +56,7 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
     $this->loggingDB = $dsn['database'];
 
     // used for redirect back to contact summary
-    $this->cid = CRM_Utils_Request::retrieve('cid', 'Integer', CRM_Core_DAO::$_nullObject);
+    $this->cid = CRM_Utils_Request::retrieve('cid', 'Integer');
 
     $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
     $sourceID = CRM_Utils_Array::key('Activity Source', $activityContacts);
