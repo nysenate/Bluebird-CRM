@@ -2246,17 +2246,17 @@ class CRM_Contact_BAO_Query {
       ) {
         $setTables = FALSE;
 
-          //NYSS 5494/8104 support multiple values
-          if ( strpos($value, ',') !== FALSE && $locType[0] == 'postal_code' ) {
-            if ( $op == '=' ) {
-              $op = 'IN';
-            }
-            elseif ( $op == '!=' ) {
-              $op = 'NOT IN';
-            }
-            $value = str_replace(array('(',')'), '', $value);
-            $value = '('.trim($value).')';
+        //NYSS 5494/8104 support multiple values
+        if (strpos($value, ',') !== FALSE && $locType[0] == 'postal_code') {
+          if ( $op == '=' ) {
+            $op = 'IN';
           }
+          elseif ( $op == '!=' ) {
+            $op = 'NOT IN';
+          }
+          $value = str_replace(array('(',')'), '', $value);
+          $value = '('.trim($value).')';
+        }
 
         //get the location name
         list($tName, $fldName) = self::getLocationTableName($field['where'], $locType);
@@ -3613,7 +3613,7 @@ WHERE  $smartGroupClause
     list($name, $op, $value, $grouping, $wildcard) = $values;
 
     //NYSS 5494/8104 support multiple values
-    if ( strpos($value, ',') !== FALSE && $name == 'postal_code' ) {
+    if (strpos($value, ',') !== FALSE && $name == 'postal_code') {
       if ( $op == '=' ) {
         $op = 'IN';
       }
@@ -5545,10 +5545,6 @@ SELECT COUNT( conts.total_amount ) as cancel_count,
 
       case 'IN':
       case 'NOT IN':
-        // I feel like this would be escaped properly if passed through $queryString = CRM_Core_DAO::createSqlFilter.
-        if (!empty($value) && (!is_array($value) || !array_key_exists($op, $value))) {
-          $value = array($op => (array) $value);
-        }
         //NYSS
         if (isset($dataType)) {
           if (is_array($value)) {
