@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2015                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2015
+ * @copyright CiviCRM LLC (c) 2004-2016
  */
 class CRM_Dedupe_Merger {
 
@@ -979,11 +979,7 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
       $$moniker = $result['values'][$cid];
     }
 
-    static $fields = array();
-    if (empty($fields)) {
-      $fields = CRM_Contact_DAO_Contact::fields();
-      CRM_Core_DAO::freeResult();
-    }
+    $fields = CRM_Contact_DAO_Contact::fields();
 
     // FIXME: there must be a better way
     foreach (array('main', 'other') as $moniker) {
@@ -1490,7 +1486,7 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
         // @todo Tidy this up
         $operation = 0;
         if ($fieldName != 'website') {
-          $operation = CRM_Utils_Array::value('operation', $migrationInfo['location_blocks'][$fieldName][$fieldCount]);
+          $operation = CRM_Utils_Array::value('operation', $migrationInfo['location'][$fieldName][$fieldCount]);
         }
         // default operation is overwrite.
         if (!$operation) {
@@ -1544,16 +1540,16 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
 
           // Add/update location and type information from the form, if applicable
           if ($locationBlocks[$name]['hasLocation']) {
-            $locTypeId = CRM_Utils_Array::value('locTypeId', $migrationInfo['location_blocks'][$name][$blkCount]);
+            $locTypeId = CRM_Utils_Array::value('locTypeId', $migrationInfo['location'][$name][$blkCount]);
             $otherBlockDAO->location_type_id = $locTypeId;
           }
           if ($locationBlocks[$name]['hasType']) {
-            $typeTypeId = CRM_Utils_Array::value('typeTypeId', $migrationInfo['location_blocks'][$name][$blkCount]);
+            $typeTypeId = CRM_Utils_Array::value('typeTypeId', $migrationInfo['location'][$name][$blkCount]);
             $otherBlockDAO->{$locationBlocks[$name]['hasType']} = $typeTypeId;
           }
 
           // Get main block ID
-          $mainBlockId = CRM_Utils_Array::value('mainContactBlockId', $migrationInfo['location_blocks'][$name][$blkCount], 0);
+          $mainBlockId = CRM_Utils_Array::value('mainContactBlockId', $migrationInfo['location'][$name][$blkCount], 0);
 
           // if main contact already has primary & billing, set the flags to 0.
           if ($primaryDAOId) {
@@ -1781,12 +1777,6 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
       CRM_Core_BAO_CustomValueTable::setValues($viewOnlyCustomFields);
     }
 
-    // **** Delete other contact & update prev-next caching
-    $otherParams = array(
-      'contact_id' => $otherId,
-      'id' => $otherId,
-      'version' => 3,
-    );
     if (CRM_Core_Permission::check('merge duplicate contacts') &&
       CRM_Core_Permission::check('delete contacts')
     ) {
@@ -1796,15 +1786,13 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
         CRM_Core_DAO::executeQuery($query);
       }
 
-      civicrm_api('contact', 'delete', $otherParams);
+      civicrm_api3('contact', 'delete', array('id' => $otherId));
       CRM_Core_BAO_PrevNextCache::deleteItem($otherId);
     }
     // FIXME: else part
-    /*         else { */
-
-    /*             CRM_Core_Session::setStatus( ts('Do not have sufficient permission to delete duplicate contact.') ); */
-
-    /*         } */
+    // else {
+    //  CRM_Core_Session::setStatus( ts('Do not have sufficient permission to delete duplicate contact.') );
+    // }
 
     // CRM-15681 merge sub_types
     if ($other_sub_types = CRM_Utils_array::value('contact_sub_type', $migrationInfo['other_details'])) {
@@ -1840,17 +1828,19 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
       }
 
       CRM_Contact_BAO_Contact::createProfileContact($submitted, CRM_Core_DAO::$_nullArray, $mainId);
-      unset($submitted);
     }
 
     CRM_Utils_Hook::post('merge', 'Contact', $mainId, CRM_Core_DAO::$_nullObject);
+    self::createMergeActivities($mainId, $otherId);
 
     return TRUE;
   }
 
   /**
+   * Get fields in the contact table suitable for merging.
+   *
    * @return array
-   *   Array of field names which will be compared, so everything except ID.
+   *   Array of field names to be potentially merged.
    */
   public static function getContactFields() {
     $contactFields = CRM_Contact_DAO_Contact::fields();
@@ -1924,6 +1914,36 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
     $customValueTables->find();
     while ($customValueTables->fetch()) {
       $cidRefs[$customValueTables->table_name] = array('entity_id');
+    }
+  }
+
+  /**
+   * Create activities tracking the merge on affected contacts.
+   *
+   * @param int $mainId
+   * @param int $otherId
+   *
+   * @throws \CiviCRM_API3_Exception
+   */
+  public static function createMergeActivities($mainId, $otherId) {
+    $params = array(
+      1 => $otherId,
+      2 => $mainId,
+    );
+    $activity = civicrm_api3('activity', 'create', array(
+      'subject' => ts('Contact ID %1 has been merged and deleted.', $params),
+      'target_contact_id' => $mainId,
+      'activity_type_id' => 'Contact Merged',
+      'status_id' => 'Completed',
+    ));
+    if (civicrm_api3('Setting', 'getvalue', array('name' => 'contact_undelete', 'group' => 'CiviCRM Preferences'))) {
+      civicrm_api3('activity', 'create', array(
+        'subject' => ts('Contact ID %1 has been merged into Contact ID %2 and deleted.', $params),
+        'target_contact_id' => $otherId,
+        'activity_type_id' => 'Contact Deleted by Merge',
+        'parent_id' => $activity['id'],
+        'status_id' => 'Completed',
+      ));
     }
   }
 

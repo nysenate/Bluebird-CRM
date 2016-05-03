@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2015                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2015
+ * @copyright CiviCRM LLC (c) 2004-2016
  */
 class CRM_Logging_Schema {
   private $logs = array();
@@ -127,6 +127,9 @@ AND    TABLE_NAME LIKE 'civicrm_%'
     //CRM-14672
     $this->tables = preg_grep('/^civicrm_menu/', $this->tables, PREG_GREP_INVERT);
     $this->tables = preg_grep('/_temp_/', $this->tables, PREG_GREP_INVERT);
+    // CRM-18178
+    $this->tables = preg_grep('/_bak$/', $this->tables, PREG_GREP_INVERT);
+    $this->tables = preg_grep('/_backup$/', $this->tables, PREG_GREP_INVERT);
 
     // do not log civicrm_mailing_event* tables, CRM-12300
     $this->tables = preg_grep('/^civicrm_mailing_event_/', $this->tables, PREG_GREP_INVERT);

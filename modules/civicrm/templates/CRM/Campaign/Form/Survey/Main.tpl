@@ -2,7 +2,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2015                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -83,6 +83,18 @@
        </td>
    </tr>
   </table>
+  <div id="customData"></div>
+  {*include custom data js file*}
+  {include file="CRM/common/customData.tpl"}
+  {literal}
+    <script type="text/javascript">
+      CRM.$(function($) {
+        {/literal}
+        CRM.buildCustomData( 'Survey' );
+        {literal}
+      });
+    </script>
+  {/literal}
 <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
 </div>
 

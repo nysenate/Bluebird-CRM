@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2015                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -43,7 +43,7 @@
  * This provides greater consistency/predictability after flushing.
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2015
+ * @copyright CiviCRM LLC (c) 2004-2016
  */
 class CRM_Core_PseudoConstant {
 
@@ -77,7 +77,7 @@ class CRM_Core_PseudoConstant {
    * States/provinces abbreviations
    * @var array
    */
-  private static $stateProvinceAbbreviation;
+  private static $stateProvinceAbbreviation = array();
 
   /**
    * Country.
@@ -252,7 +252,10 @@ class CRM_Core_PseudoConstant {
 
       // if callback is specified..
       if (!empty($pseudoconstant['callback'])) {
-        return call_user_func(Civi\Core\Resolver::singleton()->get($pseudoconstant['callback']));
+        $fieldOptions = call_user_func(Civi\Core\Resolver::singleton()->get($pseudoconstant['callback']));
+        //CRM-18223: Allow additions to field options via hook.
+        CRM_Utils_Hook::fieldOptions($entity, $fieldName, $fieldOptions, $params);
+        return $fieldOptions;
       }
 
       // Merge params with schema defaults
@@ -738,22 +741,22 @@ class CRM_Core_PseudoConstant {
    *   array reference of all State/Province abbreviations.
    */
   public static function stateProvinceAbbreviation($id = FALSE, $limit = TRUE) {
-    if ($id > 1) {
-      $query = "
-SELECT abbreviation
+    if ($id && is_numeric($id)) {
+      if (!array_key_exists($id, (array) self::$stateProvinceAbbreviation)) {
+        $query = "SELECT abbreviation
 FROM   civicrm_state_province
 WHERE  id = %1";
-      $params = array(
-        1 => array(
-          $id,
-          'Integer',
-        ),
-      );
-      return CRM_Core_DAO::singleValueQuery($query, $params);
+        $params = array(
+          1 => array(
+            $id,
+            'Integer',
+          ),
+        );
+        self::$stateProvinceAbbreviation[$id] = CRM_Core_DAO::singleValueQuery($query, $params);
+      }
+      return self::$stateProvinceAbbreviation[$id];
     }
-
-    if (!self::$stateProvinceAbbreviation || !$id) {
-
+    else {
       $whereClause = FALSE;
 
       if ($limit) {
@@ -774,15 +777,6 @@ WHERE  id = %1";
       self::populate(self::$stateProvinceAbbreviation, 'CRM_Core_DAO_StateProvince', TRUE, 'abbreviation', 'is_active', $whereClause);
     }
 
-    if ($id) {
-      if (array_key_exists($id, self::$stateProvinceAbbreviation)) {
-        return self::$stateProvinceAbbreviation[$id];
-      }
-      else {
-        $result = NULL;
-        return $result;
-      }
-    }
     return self::$stateProvinceAbbreviation;
   }
 

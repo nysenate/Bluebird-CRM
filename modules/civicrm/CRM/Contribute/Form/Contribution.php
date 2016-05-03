@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2015                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -705,6 +705,11 @@ class CRM_Contribute_Form_Contribution extends CRM_Contribute_Form_AbstractEditP
       $name = CRM_Utils_Array::value($contributionStatus, $statusName);
       switch ($name) {
         case 'Completed':
+          // [CRM-17498] Removing unsupported status change options.
+          unset($status[CRM_Utils_Array::key('Pending', $statusName)]);
+          unset($status[CRM_Utils_Array::key('Failed', $statusName)]);
+          unset($status[CRM_Utils_Array::key('Partially paid', $statusName)]);
+          unset($status[CRM_Utils_Array::key('Pending refund', $statusName)]);
         case 'Cancelled':
         case 'Chargeback':
         case 'Refunded':

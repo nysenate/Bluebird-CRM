@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2015                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
  * Provides a collection of static methods for array manipulation.
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2015
+ * @copyright CiviCRM LLC (c) 2004-2016
  */
 class CRM_Utils_Array {
 
@@ -1034,6 +1034,9 @@ class CRM_Utils_Array {
    * @return void
    */
   public static function formatArrayKeys(&$array) {
+    if (!is_array($array)) {
+      return;
+    }
     $keys = array_keys($array, 1);
     if (count($keys) > 1 ||
       (count($keys) == 1 &&

@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2015                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2015
+ * @copyright CiviCRM LLC (c) 2004-2016
  */
 
 /**
@@ -115,7 +115,7 @@ AND    {$this->_componentClause}";
       array(0 => ts('- default -')) + CRM_Core_BAO_PdfFormat::getList(TRUE)
     );
     $this->add('checkbox', 'receipt_update', ts('Update receipt dates for these contributions'), FALSE);
-    $this->add('checkbox', 'override_privacy', ts('Override privacy setting? (Do no email / Do not mail)'), FALSE);
+    $this->add('checkbox', 'override_privacy', ts('Override privacy setting? (Do not email / Do not mail)'), FALSE);
 
     $this->addButtons(array(
         array(
@@ -180,7 +180,7 @@ AND    {$this->_componentClause}";
       $input['net_amount'] = $contribution->net_amount;
       $input['trxn_id'] = $contribution->trxn_id;
       $input['trxn_date'] = isset($contribution->trxn_date) ? $contribution->trxn_date : NULL;
-      $input['receipt_date'] = $contribution->receipt_date;
+      $input['receipt_update'] = $params['receipt_update'];
 
       // CRM_Contribute_BAO_Contribution::composeMessageArray expects mysql formatted date
       $objects['contribution']->receive_date = CRM_Utils_Date::isoToMysql($objects['contribution']->receive_date);
@@ -198,10 +198,6 @@ AND    {$this->_componentClause}";
 
       // reset template values before processing next transactions
       $template->clearTemplateVars();
-      if (!empty($params['receipt_update'])) {
-        $objects['contribution']->receipt_date = date('Y-m-d H-i-s');
-        $objects['contribution']->save();
-      }
     }
 
     if ($elements['createPdf']) {

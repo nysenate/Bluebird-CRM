@@ -3,7 +3,7 @@
   +--------------------------------------------------------------------+
   | CiviCRM version 4.7                                                |
   +--------------------------------------------------------------------+
-  | Copyright CiviCRM LLC (c) 2004-2015                                |
+  | Copyright CiviCRM LLC (c) 2004-2016                                |
   +--------------------------------------------------------------------+
   | This file is a part of CiviCRM.                                    |
   |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2015
+ * @copyright CiviCRM LLC (c) 2004-2016
  */
 
 /**
@@ -600,6 +600,11 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
   public static function formRule($fields, $files, $self) {
     $errors = array();
     $amount = self::computeAmount($fields, $self->_values);
+    if (CRM_Utils_Array::value('auto_renew', $fields) &&
+      CRM_Utils_Array::value('payment_processor_id', $fields) == 0
+    ) {
+      $errors['auto_renew'] = ts('You cannot have auto-renewal on if you are paying later.');
+    }
 
     if ((!empty($fields['selectMembership']) &&
         $fields['selectMembership'] != 'no_thanks'
@@ -1008,6 +1013,7 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
 
     $params['currencyID'] = CRM_Core_Config::singleton()->defaultCurrency;
 
+    $is_quick_config = 0;
     if (!empty($params['priceSetId'])) {
       $is_quick_config = CRM_Core_DAO::getFieldValue('CRM_Price_DAO_PriceSet', $this->_priceSetId, 'is_quick_config');
       if ($is_quick_config) {
@@ -1024,14 +1030,15 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
               case 'membership_amount':
                 $this->_params['selectMembership'] = $params['selectMembership'] = CRM_Utils_Array::value('membership_type_id', $priceOptions[$selectedPriceOptionID]);
                 $this->set('selectMembership', $params['selectMembership']);
-                if (CRM_Utils_Array::value('is_separate_payment', $this->_membershipBlock) == 0) {
-                  $this->_values['amount'] = CRM_Utils_Array::value('amount', $priceOptions[$selectedPriceOptionID]);
-                }
-                break;
 
               case 'contribution_amount':
                 $params['amount'] = $selectedPriceOptionID;
-                $this->_values['amount'] = CRM_Utils_Array::value('amount', $priceOptions[$selectedPriceOptionID]);
+                if ($priceField->name == 'contribution_amount' ||
+                    ($priceField->name == 'membership_amount' &&
+                      CRM_Utils_Array::value('is_separate_payment', $this->_membershipBlock) == 0)
+                ) {
+                  $this->_values['amount'] = CRM_Utils_Array::value('amount', $priceOptions[$selectedPriceOptionID]);
+                }
                 $this->_values[$selectedPriceOptionID]['value'] = CRM_Utils_Array::value('amount', $priceOptions[$selectedPriceOptionID]);
                 $this->_values[$selectedPriceOptionID]['label'] = CRM_Utils_Array::value('label', $priceOptions[$selectedPriceOptionID]);
                 $this->_values[$selectedPriceOptionID]['amount_id'] = CRM_Utils_Array::value('id', $priceOptions[$selectedPriceOptionID]);
@@ -1048,12 +1055,11 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
     }
     // from here on down, $params['amount'] holds a monetary value (or null) rather than an option ID
     $params['amount'] = self::computeAmount($params, $this->_values);
-
     if (($this->_values['is_pay_later'] &&
         empty($this->_paymentProcessor) &&
         !array_key_exists('hidden_processor', $params)) ||
       (CRM_Utils_Array::value('payment_processor_id', $params) == 0)
-      && $params['amount'] != 0
+      && ($is_quick_config == 0 || $params['amount'] != 0)
     ) {
       $params['is_pay_later'] = 1;
     }

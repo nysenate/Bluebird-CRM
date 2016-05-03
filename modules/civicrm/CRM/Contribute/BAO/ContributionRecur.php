@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2015                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2015
+ * @copyright CiviCRM LLC (c) 2004-2016
  */
 class CRM_Contribute_BAO_ContributionRecur extends CRM_Contribute_DAO_ContributionRecur {
 
@@ -459,6 +459,7 @@ INNER JOIN civicrm_contribution       con ON ( con.id = mp.contribution_id )
       'contribution_recur_id' => $id,
       'options' => array('limit' => 1, 'sort' => array('id DESC')),
       'sequential' => 1,
+      'contribution_test' => '',
     ));
     if ($templateContribution['count']) {
       return $templateContribution['values'][0];
@@ -760,7 +761,7 @@ INNER JOIN civicrm_contribution       con ON ( con.id = mp.contribution_id )
   public static function recurringContribution(&$form) {
     // Recurring contribution fields
     foreach (self::getRecurringFields() as $key => $label) {
-      if ($key == 'contribution_recur_payment_made' &&
+      if ($key == 'contribution_recur_payment_made' && !empty($form->_formValues) &&
         !CRM_Utils_System::isNull(CRM_Utils_Array::value($key, $form->_formValues))
       ) {
         $form->assign('contribution_recur_pane_open', TRUE);
@@ -768,7 +769,7 @@ INNER JOIN civicrm_contribution       con ON ( con.id = mp.contribution_id )
       }
       CRM_Core_Form_Date::buildDateRange($form, $key, 1, '_low', '_high');
       // If data has been entered for a recurring field, tell the tpl layer to open the pane
-      if (!empty($form->_formValues[$key . '_relative']) || !empty($form->_formValues[$key . '_low']) || !empty($form->_formValues[$key . '_high'])) {
+      if (!empty($form->_formValues) && !empty($form->_formValues[$key . '_relative']) || !empty($form->_formValues[$key . '_low']) || !empty($form->_formValues[$key . '_high'])) {
         $form->assign('contribution_recur_pane_open', TRUE);
         break;
       }

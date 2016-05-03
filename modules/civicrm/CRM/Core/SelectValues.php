@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2015                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -31,7 +31,7 @@
  * smart caching scheme on a per domain basis
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2015
+ * @copyright CiviCRM LLC (c) 2004-2016
  * $Id$
  *
  */
@@ -910,8 +910,8 @@ class CRM_Core_SelectValues {
    *
    * @return array
    */
-  public static function getSearchBuilderOperators() {
-    return array(
+  public static function getSearchBuilderOperators($fieldType = NULL) {
+    $builderOperators = array(
       '=' => '=',
       '!=' => '≠',
       '>' => '>',
@@ -928,6 +928,17 @@ class CRM_Core_SelectValues {
       'IS NULL' => ts('Is Null'),
       'IS NOT NULL' => ts('Not Null'),
     );
+    if ($fieldType) {
+      switch ($fieldType) {
+        case CRM_Utils_Type::T_STRING:
+          unset($builderOperators['>']);
+          unset($builderOperators['<']);
+          unset($builderOperators['>=']);
+          unset($builderOperators['<=']);
+          break;
+      }
+    }
+    return $builderOperators;
   }
 
   /**

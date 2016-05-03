@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2015                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2015
+ * @copyright CiviCRM LLC (c) 2004-2016
  */
 
 require_once 'HTML/QuickForm/Rule/Email.php';
@@ -810,6 +810,27 @@ class CRM_Utils_Rule {
    */
   public static function qfKey($key) {
     return ($key) ? CRM_Core_Key::valid($key) : FALSE;
+  }
+
+  /**
+   * Check if the values in the date range are in correct chronological order.
+   *
+   * @param array $fields
+   *  Fields of the form.
+   * @param $fieldName
+   *  Name of date range field.
+   * @param $errors
+   *  The error array.
+   * @param $title
+   *  Title of the date range to be displayed in the error message.
+   */
+  public static function validDateRange($fields, $fieldName, &$errors, $title) {
+    $lowDate = strtotime($fields[$fieldName . '_low']);
+    $highDate = strtotime($fields[$fieldName . '_high']);
+
+    if ($lowDate > $highDate) {
+      $errors[$fieldName . '_range_error'] = ts('%1: Please check that your date range is in correct chronological order.', array(1 => $title));
+    }
   }
 
 }

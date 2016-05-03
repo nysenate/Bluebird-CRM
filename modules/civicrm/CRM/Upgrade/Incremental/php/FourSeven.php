@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2015                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -175,6 +175,15 @@ class CRM_Upgrade_Incremental_php_FourSeven extends CRM_Upgrade_Incremental_Base
   }
 
   /**
+   * Upgrade function.
+   *
+   * @param string $rev
+   */
+  public function upgrade_4_7_4($rev) {
+    $this->addTask('Add Contact Deleted by Merge Activity Type', 'addDeletedByMergeActivityType');
+  }
+
+  /**
    * CRM-16354
    *
    * @return int
@@ -288,7 +297,7 @@ class CRM_Upgrade_Incremental_php_FourSeven extends CRM_Upgrade_Incremental_Base
       // Add default position for Getting Started Dashlet ( left column)
       $sql = "INSERT INTO `civicrm_dashboard_contact` (dashboard_id, contact_id, column_no, is_active)
 SELECT (SELECT MAX(id) FROM `civicrm_dashboard`), contact_id, 0, IF (SUM(is_active) > 0, 1, 0)
-FROM `civicrm_dashboard_contact` WHERE 1 GROUP BY contact_id";
+FROM `civicrm_dashboard_contact` JOIN `civicrm_contact` WHERE civicrm_dashboard_contact.contact_id = civicrm_contact.id GROUP BY contact_id";
       CRM_Core_DAO::executeQuery($sql);
     }
     return TRUE;
@@ -522,6 +531,28 @@ FROM `civicrm_dashboard_contact` WHERE 1 GROUP BY contact_id";
   public function addIndexContributionAmount(CRM_Queue_TaskContext $ctx) {
     CRM_Core_BAO_SchemaHandler::createIndexes(array(
       'civicrm_contribution' => array(array('total_amount', 'receive_date')),
+    ));
+    return TRUE;
+  }
+
+  /**
+   * CRM-18124 Add index to civicrm_contribution.total_amount.
+   *
+   * Note that I made this a combined index with receive_date because the issue included
+   * both criteria and they seemed likely to be used in conjunction to me in other cases.
+   *
+   * @param \CRM_Queue_TaskContext $ctx
+   *
+   * @return bool
+   */
+  public function addDeletedByMergeActivityType(CRM_Queue_TaskContext $ctx) {
+    CRM_Core_BAO_OptionValue::ensureOptionValueExists(array(
+      'option_group_id' => 'activity_type',
+      'name' => 'Contact Deleted by Merge',
+      'label' => ts('Contact Deleted by Merge'),
+      'description' => ts('Contact was merged into another contact'),
+      'is_active' => TRUE,
+      'filter' => 1,
     ));
     return TRUE;
   }
