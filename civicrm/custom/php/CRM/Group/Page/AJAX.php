@@ -52,11 +52,11 @@ class CRM_Group_Page_AJAX {
       CRM_Utils_JSON::output($groups);
     }
     else {
-      //NYSS 5991
-      $sortMapper = array(
-        0 => 'groups.title', 1 => 'groups.id', 2 => 'createdBy.sort_name', 3 => '',
-        4 => 'groups.group_type', /*5 => 'groups.visibility',*/
-      );
+      $sortMapper = array();
+      $columns = CRM_Utils_Array::value('columns', $params, array());
+      foreach ($columns as $key => $value) {
+        $sortMapper[$key] = $value['data'];
+      };
 
       $offset = isset($_GET['start']) ? CRM_Utils_Type::escape($_GET['start'], 'Integer') : 0;
       $rowCount = isset($_GET['length']) ? CRM_Utils_Type::escape($_GET['length'], 'Integer') : 25;
@@ -92,14 +92,11 @@ class CRM_Group_Page_AJAX {
         return array($groups['data'], $params['total']);
       }
 
-      //NYSS 5991 remove visibility
-      unset($selectorElements[5]);
-
       //NYSS 5259 convert line breaks to html
-      foreach ( $groups as &$group ) {
-        $group['group_description'] = str_replace("\r\n", "\n",  $group['group_description']);
-        $group['group_description'] = str_replace("\r",   "\n",  $group['group_description']);
-        $group['group_description'] = str_replace("\n",   "<br />", $group['group_description']);
+      foreach ( $groups['data'] as &$group ) {
+        $group['description'] = str_replace('\r\n', '\n', $group['description']);
+        $group['description'] = str_replace('\r', '\n', $group['description']);
+        $group['description'] = str_replace('\n', '<br />', $group['description']);
       }
 
       CRM_Utils_JSON::output($groups);
