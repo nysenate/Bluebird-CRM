@@ -80,8 +80,8 @@ $mailer = Mail::Factory('smtp', array(
   'host' => $bbcfg['smtp.host'],
   'port' => $bbcfg['smtp.port'],
   'auth' => true,
-  'username' => $bbcfg['smtp.subuser'],
-  'password' => $bbcfg['smtp.subpass']
+  'username' => $bbcfg['smtp.username'],
+  'password' => $bbcfg['smtp.password']
 ));
 
 // Assemble headers

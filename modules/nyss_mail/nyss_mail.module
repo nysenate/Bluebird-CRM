@@ -93,7 +93,7 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
     $replyto = $senator_email;
   }
   else {
-    $replyto = $bbconfig['smtp.subuser'];
+    $replyto = 'bluebird.admin@nysenate.gov';
   }
 
   // NYSS 5579 - Construct the whitelisting language and add to e-mail body.

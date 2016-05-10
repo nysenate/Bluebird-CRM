@@ -324,6 +324,20 @@ function updateEmailMenu($dbh)
 
 function updateFromEmail($dbh, $bbcfg)
 {
+  // Set the FROM header info (name and email address)
+  $fromName = 'Bluebird Mail Sender';
+  $fromEmail = 'bluebird.admin@nysenate.gov';
+
+  if (isset($bbcfg['senator.name.formal'])) {
+    $fromName = $bbcfg['senator.name.formal'];
+  }
+
+  if (isset($bbcfg['senator.email'])) {
+    $fromEmail = $bbcfg['senator.email'];
+  }
+
+  $from = '"'.addslashes($fromName).'"'." <$fromEmail>";
+
   $sql = "UPDATE civicrm_option_value SET label='$from', name='$from' ".
          "WHERE option_group_id=(".
                   "SELECT id FROM civicrm_option_group ".

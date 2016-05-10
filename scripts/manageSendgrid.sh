@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # manageSendgrid.sh - Perform operations on Sendgrid subusers via the API
 #
@@ -8,14 +8,16 @@
 # Date: 2011-12-30
 # Revised: 2012-01-26
 # Revised: 2013-12-04 - added Event API v3 functionality; use JSON by default
+# Revised: 2016-05-05 - added Subuser API management options
+# Revised: 2016-05-09 - added options to override config file
 #
 
 prog=`basename $0`
 script_dir=`dirname $0`
 readConfig=$script_dir/readConfig.sh
-apiUrlBase="https://sendgrid.com/api"
-ev_url_v1="http://sendgrid.nysenate.gov/callback.php"
-ev_url_v3="http://sendgrid.nysenate.gov/callback_v3.php"
+apiUrlBase="https://api.sendgrid.com/apiv2"
+# Hard-coding the EventNotify version since v1 and v2 are no longer supported
+eventNotifyVersion=3
 
 . $script_dir/defaults.sh
 
@@ -28,6 +30,7 @@ where [options] are:
   --get-invalidemails|-gi
   --get-spamreports|-gs
   --get-unsubscribes|-gu
+  --delete-blocks
   --delete-bounces
   --delete-invalidemails
   --delete-spamreports
@@ -38,16 +41,27 @@ where [options] are:
   --activate-app|-aa appName
   --deactivate-app|-da appName
   --setup-app|-sa appName
-  --enable-eventnotify|-ee|-ee3 [EventAPI v3]
-  --enable-oldeventnotify|-ee1 [EventAPI v1]
+  --get-app-settings|-gas appName
+  --enable-eventnotify|-ee
   --disable-eventnotify|-de
+  --get-eventnotify-settings|-ges
   --enable-subscriptiontrack|-es
   --disable-subscriptiontrack|-ds
-  --get-app-settings|-gas appName
+  --get-subscriptiontrack-settings|-gss
   --get-event-url|-geu
   --set-event-url|-seu url
   --delete-event-url|-deu
+  --list-all-subusers|-las
+  --get-subuser|-gsu [username]
+  --set-email|-se email
+  --set-password|-sp [password]
+  --username|-u username (overrides sendgrid.username)
+  --password|-P password (overrides sendgrid.password)
+  --subusername|-su) username (overrides smtp.username)
+  --subuserpass|-SP) password (overrides smtp.password)
+  --api-category|-ac apiCategory ['customer'|'user']
   --cmd|-c apiCommand
+  --task|-t task
   --param|-p attr=val
   --json|-j
   --xml|-x
@@ -69,7 +83,9 @@ fi
 format=json
 instance=
 oper=
+acat=customer
 cmd=
+task=
 params=
 postproc=
 verbose=0
@@ -81,31 +97,61 @@ passthru_args=
 while [ $# -gt 0 ]; do
   case "$1" in
     --bluebird-setup|-bs) multicmd=bluebird_setup ;;
-    --get-block*|-gbl) cmd="blocks.get"; params="$params&date=1" ;;
-    --get-bounce*|-gb) cmd="bounces.get"; params="$params&date=1" ;;
-    --get-invalid*|-gi) cmd="invalidemails.get"; params="$params&date=1" ;;
-    --get-spam*|-gs) cmd="spamreports.get"; params="$params&date=1" ;;
-    --get-unsub*|-gu) cmd="unsubscribes.get"; params="$params&date=1" ;;
-    --delete-bounce*) cmd="bounces.delete" ;;
-    --delete-inv*) cmd="invalidemails.delete" ;;
-    --delete-spam*) cmd="spamreports.delete" ;;
-    --delete-unsub*) cmd="unsubscribes.delete" ;;
-    --list-app*|-l) cmd="filter.getavailable" ;;
-    --list-active|-la) cmd="filter.getavailable"; format=json; postproc=active ;;
-    --list-inactive|-li) cmd="filter.getavailable"; format=json; postproc=inactive ;;
-    --activate*|-aa) shift; cmd="filter.activate"; params="$params&name=$1" ;;
-    --deactivate*|-da) shift; cmd="filter.deactivate"; params="$params&name=$1" ;;
-    --setup*|-sa) shift; cmd="filter.setup"; params="$params&name=$1"; use_http_post=1 ;;
-    --enable-event*|-ee|-ee3) ev_url="$ev_url_v3"; ev_version=3; multicmd=enable_eventnotify ;;
-    --enable-oldevent*|-ee1) ev_url="$ev_url_v1"; ev_version=1; multicmd=enable_eventnotify ;;
+    --get-block*|-gbl) cmd="blocks"; task="get"; params="$params&date=1" ;;
+    --get-bounce*|-gb) cmd="bounces"; task="get"; params="$params&date=1" ;;
+    --get-invalid*|-gi) cmd="invalidemails"; task="get"; params="$params&date=1" ;;
+    --get-spam*|-gs) cmd="spamreports"; task="get"; params="$params&date=1" ;;
+    --get-unsub*|-gu) cmd="unsubscribes"; task="get"; params="$params&date=1" ;;
+    --delete-block*) cmd="bounces"; task="delete" ;;
+    --delete-bounce*) cmd="bounces"; task="delete" ;;
+    --delete-invalid*) cmd="invalidemails"; task="delete" ;;
+    --delete-spam*) cmd="spamreports"; task="delete" ;;
+    --delete-unsub*) cmd="unsubscribes"; task="delete" ;;
+    --list-app*|-l) cmd="apps"; task="getAvailable" ;;
+    --list-active|-la) cmd="apps" task="getAvailable"; format=json; postproc=active ;;
+    --list-inactive|-li) cmd="apps"; task="getAvailable"; format=json; postproc=inactive ;;
+    --activate*|-aa) shift; cmd="apps"; task="activate"; params="$params&name=$1" ;;
+    --deactivate*|-da) shift; cmd="apps"; task="deactivate"; params="$params&name=$1" ;;
+    --setup*|-sa) shift; cmd="apps"; task="setup"; params="$params&name=$1"; use_http_post=1 ;;
+    --get-app-settings|-gas) shift; cmd="apps"; task="getsettings"; params="$params&name=$1" ;;
+    --enable-event*|-ee) multicmd=enable_eventnotify ;;
     --disable-event*|-de) multicmd=disable_eventnotify ;;
+    --get-event*|-ges) cmd="apps"; task="getsettings"; params="$params&name=eventnotify" ;;
     --enable-sub*|-es) multicmd=enable_subscriptiontrack ;;
     --disable-sub*|-ds) multicmd=disable_subscriptiontrack ;;
-    --get-app-settings|-gas) shift; cmd="filter.getsettings"; params="$params&name=$1" ;;
-    --get-event-url|-geu) cmd="eventposturl.get" ;;
-    --set-event-url|-seu) shift; cmd="eventposturl.set"; params="$params&url=$1" ;;
-    --delete-event-url|-deu) cmd="eventposturl.delete" ;;
+    --get-sub*|-gss) cmd="apps"; task="getsettings"; params="$params&name=subscriptiontrack" ;;
+    --get-event-url|-geu) cmd="eventposturl"; task="get" ;;
+    --set-event-url|-seu) cmd="eventposturl"; task="set";
+        if [ -n "$2" -a "${2:0:1}" != "-" ]; then
+          shift
+          params="$params&url=$1"
+        else
+          params="$params&url=%EVENTNOTIFYURL%"
+        fi ;;
+    --delete-event-url|-deu) cmd="eventposturl"; task="delete" ;;
+    --list-all-subusers|-las) cmd="profile"; task="get" ;;
+    --get-subuser|-gsu) cmd="profile"; task="get"
+        if [ -n "$2" -a "${2:0:1}" != "-" ]; then
+          shift
+          params="$params&username=$1"
+        else
+          params="$params&username=%SUBUSERNAME%"
+        fi ;;
+    --set-email|-se) shift; cmd="profile"; task="setEmail"; params="$params&email=$1" ;;
+    --set-password|-sp) cmd="password"
+        if [ -n "$2" -a "${2:0:1}" != "-" ]; then
+          shift
+          params="$params&password=$1&confirm_password=$1"
+        else
+          params="$params&password=%SUBUSERPASS%&confirm_password=%SUBUSERPASS%"
+        fi ;;
+    --user*|-u) shift; sgusername="$1" ;;
+    --pass*|-P) shift; sguserpass="$1" ;;
+    --subuser*|-su) shift; subusername="$1" ;;
+    --subpass*|-SP) shift; subuserpass="$1" ;;
+    --api-category|-ac) shift; acat="$1" ;;
     --cmd|-c) shift; cmd="$1" ;;
+    --task|-t) shift; task="$1" ;;
     --param|-p) shift; params="$params&$1" ;;
     --json|-j) format=json; passthru_args="$passthru_args $1" ;;
     --xml|-x) format=xml; passthru_args="$passthru_args $1" ;;
@@ -127,14 +173,27 @@ elif ! $readConfig --instance $instance --quiet; then
   exit 1
 fi
 
-subusername=`$readConfig --ig $instance smtp.subuser`
-subuserpass=`$readConfig --ig $instance smtp.subpass`
+# Read the master SendGrid user credentials from the BBcfg [global] section
+[ "$sgusername" ] || sgusername=`$readConfig --global sendgrid.username`
+[ "$sguserpass" ] || sguserpass=`$readConfig --global sendgrid.password`
+# Read the subuser credentials for the current instance from the BB config
+[ "$subusername" ] || subusername=`$readConfig --ig $instance smtp.username`
+[ "$subuserpass" ] || subuserpass=`$readConfig --ig $instance smtp.password`
+# Read the Event Notify URL from the BB config
+event_url=`$readConfig --ig $instance sendgrid.eventnotify_url`
 
-if [ ! "$subusername" -o ! "$subuserpass" ]; then
-  echo "$prog: Sendgrid subuser account info (username or password) not found" >&2
+if [ ! "$sgusername" -o ! "sguserpass" ]; then
+  echo "$prog: SendGrid master account info (username or password) must be set in config file" >&2
+  exit 1
+elif [ ! "$subusername" -o ! "$subuserpass" ]; then
+  echo "$prog: SendGrid subuser account info (username or password) must be set in config file" >&2
+  exit 1
+elif [ ! "$event_url" ]; then
+  echo "$prog: SendGrid Event Notify URL must be set in config file" >&2
   exit 1
 fi
 
+params=`echo $params | sed -e "s;%SUBUSERNAME%;$subusername;g" -e "s;%SUBUSERPASS%;$subuserpass;g" -e "s;%EVENTNOTIFYURL%;$event_url;g"`
 
 if [ "$multicmd" ]; then
   case "$multicmd" in
@@ -154,7 +213,7 @@ if [ "$multicmd" ]; then
     enable_eventnotify)
       # Note: url= parameter is required. All others are optional.
       $0 $passthru_args --activate-app eventnotify $instance && \
-        $0 $passthru_args --setup-app eventnotify -p url="$ev_url" -p version="$ev_version" -p processed=1 -p dropped=1 -p deferred=1 -p delivered=1 -p bounce=1 -p click=1 -p open=1 -p unsubscribe=1 -p spamreport=1 -p batch=1 $instance
+        $0 $passthru_args --setup-app eventnotify -p url="$event_url" -p version="$eventNotifyVersion" -p processed=1 -p dropped=1 -p deferred=1 -p delivered=1 -p bounce=1 -p click=1 -p open=1 -p unsubscribe=1 -p spamreport=1 -p batch=1 $instance
       rc=$?
       ;;
     disable_eventnotify)
@@ -180,8 +239,8 @@ elif [ ! "$cmd" ]; then
 fi
 
 
-params="api_user=$subusername&api_key=$subuserpass$params"
-apiUrl="$apiUrlBase/$cmd.$format"
+params="api_user=$sgusername&api_key=$sguserpass&user=$subusername&task=$task$params"
+apiUrl="$apiUrlBase/$acat.$cmd.$format"
 
 if [ $use_http_post -eq 1 ]; then
   [ $verbose -eq 1 ] && echo "About to post to URL [$apiUrl] with data [$params]" >&2 && set -x
