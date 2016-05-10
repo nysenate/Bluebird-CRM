@@ -247,14 +247,16 @@ function updateEmailMenu($dbh)
 
 function updateFromEmail($dbh, $bbcfg)
 {
-  //update the FROM email address
-  $fromName = $bbcfg['senator.name.formal'];
+  // Set the FROM header info (name and email address)
+  $fromName = 'Bluebird Mail Sender';
+  $fromEmail = 'bluebird.admin@nysenate.gov';
+
+  if (isset($bbcfg['senator.name.formal'])) {
+    $fromName = $bbcfg['senator.name.formal'];
+  }
 
   if (isset($bbcfg['senator.email'])) {
     $fromEmail = $bbcfg['senator.email'];
-  }
-  else {
-    $fromEmail = $bbcfg['smtp.subuser'];
   }
 
   $from = '"'.addslashes($fromName).'"'." <$fromEmail>";
@@ -543,9 +545,9 @@ function updateCiviConfig($dbh, $civicfg, $bbcfg)
     $mb['smtpServer']   = $bbcfg['smtp.host'];
     $mb['smtpPort']     = $bbcfg['smtp.port'];
     $mb['smtpAuth']     = $bbcfg['smtp.auth'];
-    $mb['smtpUsername'] = (!empty($bbcfg['smtp.subuser'])) ? $bbcfg['smtp.subuser'] : '';
+    $mb['smtpUsername'] = (!empty($bbcfg['smtp.username'])) ? $bbcfg['smtp.username'] : '';
     require_once $appdir.'/modules/civicrm/CRM/Utils/Crypt.php';
-    $mb['smtpPassword'] = CRM_Utils_Crypt::encrypt($bbcfg['smtp.subpass']);
+    $mb['smtpPassword'] = CRM_Utils_Crypt::encrypt($bbcfg['smtp.password']);
     $rc &= updateMailingBackend($dbh, $mb);
     $rc &= updateEmailMenu($dbh);
   }

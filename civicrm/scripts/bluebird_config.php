@@ -7,6 +7,7 @@
 ** Organization: New York State Senate
 ** Date: 2010-09-10
 ** Revised: 2012-03-05
+** Revised: 2016-04-19 - added "envname" param; simplify "data_dirname"
 */
 
 define('BASE_DIR', realpath(dirname(__FILE__).'/../../'));
@@ -151,7 +152,7 @@ function get_bluebird_instance_config($instance = null, $filename = null)
   $civicrm_db_url = $db_url.$s_bbcfg['db.civicrm.prefix'].$db_basename;
   $drupal_db_url = $db_url.$s_bbcfg['db.drupal.prefix'].$db_basename;
   $log_db_url = $db_url.$s_bbcfg['db.log.prefix'].$db_basename;
-  $data_basename = isset($s_bbcfg['data.basename']) ? $s_bbcfg['data.basename'] : $shortname;
+  $data_dirname = isset($s_bbcfg['data.dirname']) ? $s_bbcfg['data.dirname'] : $shortname;
 
   // Prepend a period on the base_domain if it's not empty.
   if (!empty($base_domain) && $base_domain[0] != '.') {
@@ -164,7 +165,7 @@ function get_bluebird_instance_config($instance = null, $filename = null)
   $s_bbcfg['log_db_url'] = $log_db_url;
   $s_bbcfg['base_dir'] = BASE_DIR;
   $s_bbcfg['base_domain'] = $base_domain;
-  $s_bbcfg['data_dirname'] = "$data_basename$base_domain";
+  $s_bbcfg['data_dirname'] = $data_dirname;
   $s_bbcfg['servername'] = "$shortname$base_domain";
   $s_bbcfg['shortname'] = $shortname;
   $s_bbcfg['envname'] = $envname;
