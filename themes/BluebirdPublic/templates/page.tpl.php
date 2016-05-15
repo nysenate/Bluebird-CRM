@@ -1,8 +1,14 @@
 <!-- ______________________ HEADER _______________________ -->
+<?php
+  $bbcfg = get_bluebird_instance_config();
+  $env = $bbcfg['envname'];
+  $ins = $bbcfg['shortname'];
+  $logo_url = "//pubfiles.nysenate.gov/$env/$ins/common/images/nyss_logo.png";
+?>
 
 <header id="header">
   <div class="nyss-logo">
-    <img src="http://pubfiles.nysenate.gov/crmdev/sd99/common/images/nyss_logo.png" alt="NYS Senate Logo">
+    <img src="<?php print $logo_url;?>" alt="NYS Senate Logo">
   </div>
 </header> <!-- /header -->
 

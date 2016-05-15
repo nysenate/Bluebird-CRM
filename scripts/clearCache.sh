@@ -9,6 +9,7 @@
 # Revised: 2011-12-20
 # Revised: 2013-05-14 - reorder drush commands; added more Drupal cache tables
 # Revised: 2013-07-11 - modularize functionality; fix permissions problem
+# Revised: 2016-04-28 - removed data.basename; using data.dirname instead
 #
 
 prog=`basename $0`
@@ -176,15 +177,7 @@ if ! $readConfig --instance $instance --quiet; then
 fi
 
 data_rootdir=`$readConfig --ig $instance data.rootdir` || data_rootdir="$DEFAULT_DATA_ROOTDIR"
-base_domain=`$readConfig --ig $instance base.domain` || base_domain="$DEFAULT_BASE_DOMAIN"
-data_basename=`$readConfig --ig $instance data.basename` || data_basename="$instance"
-
-if [ -z "$base_domain" ]; then
-  data_dirname="$data_basename"
-else
-  data_dirname="$data_basename.$base_domain"
-fi
-
+data_dirname=`$readConfig --ig $instance data.dirname` || data_dirname="$instance"
 
 if [ $dbcache_only -eq 1 ]; then
   clear_civicrm_caches $instance
