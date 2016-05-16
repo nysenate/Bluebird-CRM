@@ -28,7 +28,7 @@ require_once DRUPAL_ROOT.'/includes/bootstrap.inc';
 drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
 
 $bbconfig = get_bluebird_instance_config();
-$pubpath = '/sites/'.$bbconfig['data_dirname'].'/pubfiles/';
+$pubpath = '/data/'.$bbconfig['data_dirname'].'/pubfiles/';
 
 $authenticated = user_access('access CiviCRM');
 
