@@ -117,6 +117,7 @@ DirectoryIndex index.php index.html index.htm
   # index.php. Clean URLs are handled in drupal_environment_initialize().
   # NYSS add sites
   RewriteCond %{REQUEST_URI} !^/sites/
+  RewriteCond %{REQUEST_URI} !^/data/
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteCond %{REQUEST_URI} !=/favicon.ico
