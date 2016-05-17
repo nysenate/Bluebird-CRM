@@ -386,7 +386,7 @@ function generateComponent($comp_type, $cont_type, $cfg)
       if ($cfg['email.header.include_banner']) {
         $banner = <<<HTML
     <tr>
-    <td><a href="{$cfg['email.header.website_url']}" target="_blank"><img src="http://{$cfg['servername']}/sites/{$cfg['servername']}/pubfiles/images/template/header.png" alt="{$cfg['senator.name.formal']}"/></a></td>
+    <td><a href="{$cfg['email.header.website_url']}" target="_blank"><img src="http://{$cfg['servername']}/data/{$cfg['shortname']}/pubfiles/images/template/header.png" alt="{$cfg['senator.name.formal']}"/></a></td>
     </tr>
 HTML;
       }
@@ -465,7 +465,7 @@ HTML;
       if ($cfg['email.footer.include_banner']) {
         $banner = <<<HTML
     <tr style="background-color:#D8E2EA;">
-    <td><a href="http://www.nysenate.gov/" target="_blank"><img src="http://{$cfg['servername']}/sites/{$cfg['servername']}/pubfiles/images/template/footer.png" alt="New York State Senate seal"/></a></td>
+    <td><a href="http://www.nysenate.gov/" target="_blank"><img src="http://{$cfg['servername']}/data/{$cfg['shortname']}/pubfiles/images/template/footer.png" alt="New York State Senate seal"/></a></td>
     </tr>
 HTML;
       }
