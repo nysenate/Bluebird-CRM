@@ -40,16 +40,74 @@ class CRM_NYSS_BAO_Integration_Website
   } //getContactId()
 
   /*
+   * build contact params from row; we now need to look in multiple places.
+   * 1. check for table columns (first level row elements)
+   * 2. check in msg_info->user_info
+   * 3. check in msg_info->form_info
+   *
+   * in each case, we will look for the existence of first/last name
+   */
+  static function getContactParams($row) {
+    $params = json_decode($row->msg_info);
+    $user_info = $params->user_info;
+    $form_info = $params->form_info;
+    //CRM_Core_Error::debug_var('getContactParams $params', $params);
+    //CRM_Core_Error::debug_var('getContactParams $user_info', $user_info);
+    //CRM_Core_Error::debug_var('getContactParams $form_info', $form_info);
+
+    $contactParams = array();
+    if (!empty($row->first_name) || !empty($row->last_name)) {
+      $contactParams = array(
+        'web_user_id' => $row->user_id,
+        'first_name' => $row->first_name,
+        'last_name' => $row->last_name,
+        'email' => $row->email_address,
+        'street_address' => $row->address1,
+        'supplemental_addresss_1' => $row->address2,
+        'city' => $row->city,
+        'state' => $row->state,
+        'postal_code' => $row->zip,
+      );
+    }
+    elseif (!empty($user_info->first_name) || !empty($user_info->last_name)) {
+      $contactParams = array(
+        'web_user_id' => $user_info->id,
+        'first_name' => $user_info->first_name,
+        'last_name' => $user_info->last_name,
+        'email' => $user_info->email,
+        'street_address' => $user_info->address,
+        'city' => $user_info->city,
+        'state' => $user_info->state,
+        'postal_code' => $user_info->zipcode,
+      );
+    }
+    elseif (!empty($form_info->first_name) || !empty($form_info->last_name)) {
+      $contactParams = array(
+        'first_name' => $form_info->first_name,
+        'last_name' => $form_info->last_name,
+        'email' => $form_info->user_email,
+        'street_address' => $form_info->user_address,
+        'city' => $form_info->user_city,
+        'state' => $form_info->user_state,
+        'postal_code' => $form_info->user_zipcode,
+      );
+    }
+
+    return $contactParams;
+  }//getContactParams
+
+  /*
    * attempt to match the record with existing contacts
    */
   static function matchContact($params)
   {
+    //CRM_Core_Error::debug_var('matchContact $params', $params);
+
     //format params to pass to dedupe tool
     $dedupeParams = array(
       'civicrm_contact' => array(
         'first_name' => $params['first_name'],
         'last_name' => $params['last_name'],
-        'postal_code' => $params['postal_code'],
         'birth_date' => $params['birth_date'],
         'gender_id' => $params['gender_id'],
       ),
@@ -92,6 +150,7 @@ class CRM_NYSS_BAO_Integration_Website
     while ($r->fetch()) {
       $dupeIDs[] = $r->id;
     }
+    //CRM_Core_Error::debug_var('dupeIDs', $dupeIDs);
 
     //if dupe found, return id
     if (!empty($dupeIDs)) {
@@ -103,7 +162,7 @@ class CRM_NYSS_BAO_Integration_Website
     }
 
     //set user id
-    if (!empty($cid)) {
+    if (!empty($cid) && !empty($params['web_user_id'])) {
       CRM_Core_DAO::executeQuery("
         UPDATE civicrm_contact
         SET web_user_id = {$params['web_user_id']}
@@ -112,11 +171,13 @@ class CRM_NYSS_BAO_Integration_Website
 
       return $cid;
     }
+    elseif (!empty($cid)) {
+      return $cid;
+    }
     else {
       return null;
     }
   } // matchContact()
-
 
   /*
    * create a new contact
@@ -363,6 +424,12 @@ class CRM_NYSS_BAO_Integration_Website
 
   static function processPetition($contactId, $action, $params)
   {
+    //if signature update action, we are only processing the contact;
+    //no changes to petition data
+    if ($action == 'signature update') {
+      return true;
+    }
+
     //find out if tag exists
     $parentId = CRM_Core_DAO::singleValueQuery("
       SELECT id
@@ -370,18 +437,32 @@ class CRM_NYSS_BAO_Integration_Website
       WHERE name = 'Website Petitions'
         AND is_tagset = 1
     ");
+
+    //find tag name
+    $tagName = '';
+    if (!empty($params->event_info->name)) {
+      $tagName = $params->event_info->name;
+    }
+    elseif (!empty($params->petition_name)) {
+      $tagName = $params->petition_name;
+    }
+    else {
+      CRM_Core_Error::debug_var('processPetition: unable to identify tag name', $params, true, true, 'integration');
+      return false;
+    }
+
     $tagId = CRM_Core_DAO::singleValueQuery("
       SELECT id
       FROM civicrm_tag
       WHERE name = %1
         AND parent_id = {$parentId}
-    ", array(1 => array($params->petition_name, 'String')));
+    ", array(1 => array($tagName, 'String')));
     //CRM_Core_Error::debug_var('tagId', $tagId);
 
     if (!$tagId) {
       $tag = civicrm_api('tag', 'create', array(
         'version' => 3,
-        'name' => $params->petition_name,
+        'name' => $tagName,
         'parent_id' => $parentId,
         'is_selectable' => 0,
         'is_reserved' => 1,
