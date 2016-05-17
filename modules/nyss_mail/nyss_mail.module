@@ -57,15 +57,21 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
   //CRM_Core_Error::debug_var('context', $context);
 
   /* Re-write any URLs in the message body of the form:
-   *   <sitename>/sites/<sitename>/pubfiles
-   *   where <sitename> is <senatorShortname>.crm(dev|test)?.nysenate.gov
+   *   <sitename>/sites/<sitename>/pubfiles [old format]
+   * or
+   *   <sitename>/data/<shortname>/pubfiles [new format]
+   *   (where <shortname> is typically the senator's last name and
+   *          <sitename> is <shortname>.crm(dev|test)?.nysenate.gov)
    * into:
-   *   pubfiles.nysenate.gov/crm(dev|test)?/senator/
+   *   pubfiles.nysenate.gov/crm(dev|test)?/<shortname>/
   */
   $bodyvalues = array('text', 'html');
   foreach ($bodyvalues as $bodyvalue) {
     if (isset($params[$bodyvalue])) {
+      // Rewrite legacy "/sites/" URLs
       $params[$bodyvalue] = preg_replace('#[a-z0-9_-]+\.crm(dev|test)?\.nysenate\.gov/sites/([a-z0-9_-]+)\.(crm(dev|test)?)\.nysenate\.gov/pubfiles/#i', 'pubfiles.nysenate.gov/$3/$2/', $params[$bodyvalue]);
+      // Rewrite "/data/" URLs
+      $params[$bodyvalue] = preg_replace('#[a-z0-9_-]+\.(crm(dev|test)?)\.nysenate\.gov/data/([a-z0-9_-]+)/pubfiles/#i', 'pubfiles.nysenate.gov/$1/$3/', $params[$bodyvalue]);
     }
   }
 
@@ -93,7 +99,7 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
     $replyto = $senator_email;
   }
   else {
-    $replyto = $bbconfig['smtp.subuser'];
+    $replyto = 'bluebird.admin@nysenate.gov';
   }
 
   // NYSS 5579 - Construct the whitelisting language and add to e-mail body.
@@ -168,17 +174,16 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
     }
 
     //7701 - append link for hosted email
-    $env = explode('.', $bbconfig['base.domain']);
     if (!empty($mid)) {
       $viewID = ($hash) ? $hash : $mid;
-      $url = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/view/{$viewID}";
+      $url = "http://pubfiles.nysenate.gov/{$bbconfig['envname']}/{$bbconfig['shortname']}/view/{$viewID}";
       //$url = CRM_Utils_System::url('civicrm/mailing/view', 'reset=1&id='.$viewID, true);
 
       //4864
       $fblink = '';
       if ($bbconfig['email.include_facebook']) {
         $fburl = "https://www.facebook.com/sharer/sharer.php?u={$url}";
-        $fbimg = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/common/images/social_media/facebook_share_68x25.png";
+        $fbimg = "http://pubfiles.nysenate.gov/{$bbconfig['envname']}/{$bbconfig['shortname']}/common/images/social_media/facebook_share_68x25.png";
         $fblink = "<a href='{$fburl}' target=_blank>Share on Facebook.</a>&nbsp;&nbsp;<a href='{$fburl}' target=_blank><img src='{$fbimg}' height='20' align='middle'></a>";
       }
 
@@ -189,7 +194,7 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
     //5581 subscription management link
     if (!empty($contactID) && !empty($mid) && $bbconfig['email.include_subscriptions']) {
       $cs = CRM_Contact_BAO_Contact_Utils::generateChecksum($contactID);
-      $url = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/subscription/manage/{$event_queue_id}/{$cs}";
+      $url = "http://pubfiles.nysenate.gov/{$bbconfig['envname']}/{$bbconfig['shortname']}/subscription/manage/{$event_queue_id}/{$cs}";
 
       $params['text'] .= "\n\nClick here to manage your email subscription settings: {$url}";
       $params['html'] = preg_replace('#(\s*</body>)#', "\n<p style=\"text-align:center; font-size:10px;\"><a href='{$url}' target=_blank>Click here</a> to manage email subscription settings or to unsubscribe.</p>$1", $params['html'], 1);
@@ -208,7 +213,7 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
         $fbShareFolder = 'common/images';
         $fbShareImage = 'nysenate_logo_200.png';
       }
-      $fbShare = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/{$fbShareFolder}/{$fbShareImage}";
+      $fbShare = "http://pubfiles.nysenate.gov/{$bbconfig['envname']}/{$bbconfig['shortname']}/{$fbShareFolder}/{$fbShareImage}";
 
       //append to the head block as meta tag
       $params['html'] = preg_replace('#(\s*</head>)#', "

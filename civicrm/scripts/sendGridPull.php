@@ -39,10 +39,10 @@ function run() {
     
     //retrieve Bluebird config variables
     $bbconfig = get_bluebird_instance_config();
-    $smtpuser = $bbconfig['smtp.user'];
-    $smtppass = $bbconfig['smtp.pass'];
-    $smtpsubuser = $bbconfig['smtp.subuser'];
-    $smtpsubpass = $bbconfig['smtp.subpass'];
+    $smtpuser = $bbconfig['sendgrid.username'];
+    $smtppass = $bbconfig['sendgrid.password'];
+    $smtpsubuser = $bbconfig['smtp.username'];
+    $smtpsubpass = $bbconfig['smtp.password'];
     //print_r($bbconfig);
     
     if ( !$smtpuser || !$smtppass ) {

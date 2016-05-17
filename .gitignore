@@ -1,8 +1,7 @@
-#ignore all drupal installation sites and uploads
+# We would normally ignore drupal/sites/, but unlike typical Drupal
+# installations, we are not using the sites/ directory for dynamic data.
+# Instead, we use a symlink drupal/data that points to the data volume.
 drupal/data
-drupal/sites/*
-!drupal/sites/all
-!drupal/sites/default
 
 # sublime text files
 *.sublime-project
