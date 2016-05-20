@@ -1196,7 +1196,7 @@ FROM   civicrm_domain
     }
 
     if ($trapException) {
-      CRM_Core_Error::ignoreException();
+      CRM_Core_TemporaryErrorScope::ignoreException();
     }
 
     // set the DAO object to use an unbuffered query
