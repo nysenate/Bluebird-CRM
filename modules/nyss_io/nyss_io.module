@@ -522,10 +522,18 @@ function nyss_ioimport_form_submit($form, &$form_state) {
     _processCurrentEmployer($l, $nyss_conn);
 
     //process pipe separated list of keywords
-    if ( array_key_exists('keywords', $l) && !empty($l['keywords']) ) {
+    if (!empty($l['keywords'])) {
       $keywords = explode( '|', str_replace('| ', '|', str_replace('"', '', $l['keywords'])) );
-      foreach ( $keywords as $keyword ) {
-        $tagContacts[$keyword][] = $l['id'];
+      foreach ($keywords as $keyword) {
+        $tagContacts['Keywords'][$keyword][] = $l['id'];
+      }
+    }
+
+    //process pipe separated list of website petitions
+    if (!empty($l['petitions'])) {
+      $petitions = explode( '|', str_replace('| ', '|', str_replace('"', '', $l['petitions'])) );
+      foreach ($petitions as $petition) {
+        $tagContacts['Website Petitions'][$petition][] = $l['id'];
       }
     }
 
@@ -565,7 +573,11 @@ function nyss_ioimport_form_submit($form, &$form_state) {
   }
 
   //tag processing
-  _processTags($tagContacts);
+  if (!empty($tagContacts)) {
+    foreach ($tagContacts as $type => $tagList) {
+      _processTags($tagList, $type);
+    }
+  }
 
   //add contacts to group if set
   _processGroup($form_state, $imported_contacts, $new_contacts);
@@ -1514,10 +1526,24 @@ function _processNote(&$l) {
   }
 }//_processNote
 
-function _processTags($tagContacts) {
+function _processTags($tagContacts, $type = 'Keywords') {
   global $dryrun;
 
-  $keyword_lookup = array();
+  $tag_lookup = array();
+
+  //get parent_id based on tag type
+  $parentId = CRM_Core_DAO::singleValueQuery("
+    SELECT id
+    FROM civicrm_tag
+    WHERE name = '{$type}'
+      AND parent_id IS NULL
+    LIMIT 1
+  ");
+
+  if (empty($parentId)) {
+    nyss_out('debug', "unable to determine tag parent_id...", TRUE);
+    return;
+  }
 
   if ( !$dryrun ) {
     if ( !empty($tagContacts) ) {
@@ -1527,55 +1553,46 @@ function _processTags($tagContacts) {
       $tagStart = time();
       //nyss_out('debug', $tagContacts, TRUE);
       //nyss_out('debug', 'keyword_lookup', TRUE);
-      //nyss_out('debug', $keyword_lookup, TRUE);
+      //nyss_out('debug', $tag_lookup, TRUE);
 
       nyss_out('debug', "processing tags...", TRUE);
-      foreach ( $tagContacts as $keyword => $tContacts ) {
-        if ( empty($keyword_lookup[$keyword]) ) {
-          nyss_out('debug', "looking up keyword: {$keyword}", TRUE);
+      foreach ( $tagContacts as $tag => $tContacts ) {
+        if (empty($tag_lookup[$tag])) {
+          nyss_out('debug', "looking up {$type}: {$tag}", TRUE);
 
           $sql = "
             SELECT id
             FROM civicrm_tag
-            WHERE name = '{$keyword}'
-              AND parent_id = 296
+            WHERE name = '{$tag}'
+              AND parent_id = $parentId
           ";
           $tagid = CRM_Core_DAO::singleValueQuery($sql);
 
           if ( empty($tagid) ) {
-            nyss_out('debug', "creating keyword: {$keyword}", TRUE);
-
-            /*$params = array(
-              'version' => 3,
-              'name' => $keyword,
-              'parent_id' => 296,
-              'used_for' => 'civicrm_contact,civicrm_activity,civicrm_case',
-            );
-            $tag = civicrm_api('tag', 'create', $params);
-            nyss_out('debug', $tag, TRUE);*/
+            nyss_out('debug', "creating {$type}: {$tag}", TRUE);
 
             $sql = "
               INSERT INTO civicrm_tag (name, parent_id, used_for)
-              VALUES ('{$keyword}', 296, 'civicrm_contact,civicrm_activity,civicrm_case');
+              VALUES ('{$tag}', {$parentId}, 'civicrm_contact,civicrm_activity,civicrm_case');
             ";
             CRM_Core_DAO::executeQuery($sql);
 
             $sql = "
               SELECT id
               FROM civicrm_tag
-              WHERE parent_id = 296
-                AND name = '{$keyword}';
+              WHERE parent_id = $parentId
+                AND name = '{$tag}';
             ";
             $tagid = CRM_Core_DAO::singleValueQuery($sql);
 
             //$tagid = $tag['id'];
           }
 
-          $keyword_lookup[$keyword] = $tagid;
+          $tag_lookup[$tag] = $tagid;
         }
         else {
-          $tagid = $keyword_lookup[$keyword];
-          nyss_out('debug', "keyword exists: {$tagid}", TRUE);
+          $tagid = $tag_lookup[$tag];
+          nyss_out('debug', "{$type} tag exists: {$tagid}", TRUE);
         }
         //CRM_Core_Error::debug_var('tagid',$tagid);
 
@@ -1586,7 +1603,7 @@ function _processTags($tagContacts) {
         $tagCount = count($tContacts);
         nyss_out('debug', "tagCount: {$tagCount}", TRUE);
 
-        nyss_out('debug', "cycle through contacts to be tagged: {$keyword}...", TRUE);
+        nyss_out('debug', "cycle through contacts to be tagged: {$type} - {$tag}...", TRUE);
         foreach ( $tContacts as $i => $cid ) {
           $eTList[] = "'civicrm_contact', $cid, $tagid";
           if (
@@ -1608,7 +1625,7 @@ function _processTags($tagContacts) {
             $entityTagEnd  = time();
             $entityTagDiff = $entityTagEnd - $entityTagStart;
 
-            nyss_out('debug', "tag: $keyword | set: $b | record: $i | processing time: $entityTagDiff secs.", TRUE);
+            nyss_out('debug', "{$type} tag: $tag | set: $b | record: $i | processing time: $entityTagDiff secs.", TRUE);
             $b++;
           }
         }
