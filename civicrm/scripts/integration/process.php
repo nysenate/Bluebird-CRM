@@ -82,10 +82,10 @@ class CRM_Integration_Process
       }
 
       //if not verified, skip (archive)
-      if (!$row->user_is_verified) {
+      /*if (!$row->user_is_verified) {
         CRM_NYSS_BAO_Integration_Website::archiveRecord($intDB, 'other', $row, null, null);
         continue;
-      }
+      }*/
 
 
       //check contact/user
@@ -93,18 +93,14 @@ class CRM_Integration_Process
       $cid = CRM_NYSS_BAO_Integration_Website::getContactId($row->user_id);
       if (!$cid) {
         bbscript_log(LL::DEBUG, 'Contact with web_user_id='.$row->user_id.' was not found; attempting match');
-        $contactParams = array(
-          'web_user_id' => $row->user_id,
-          'first_name' => $row->first_name,
-          'last_name' => $row->last_name,
-          'email' => $row->email_address,
-          'street_address' => $row->address1,
-          'supplemental_addresss_1' => $row->address2,
-          'city' => $row->city,
-          'state' => $row->state,
-          'postal_code' => $row->zip,
-        );
 
+        $contactParams = CRM_NYSS_BAO_Integration_Website::getContactParams($row);
+        if (empty($contactParams)) {
+          bbscript_log(LL::DEBUG, 'Unable to create user; not enough data provided.', $row);
+          continue;
+        }
+
+        $contactParams['gender_id'] = '';
         if ($row->gender) {
           switch ($row->gender) {
             case 'male':
@@ -120,6 +116,7 @@ class CRM_Integration_Process
           }
         }
 
+        $contactParams['birth_date'] = '';
         if (!empty($row->dob)) {
           $contactParams['birth_date'] = date('Y-m-d', $row->dob); //dob comes as timestamp
         }
