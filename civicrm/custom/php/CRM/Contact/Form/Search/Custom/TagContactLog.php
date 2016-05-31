@@ -268,7 +268,7 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
   }
 
   function alterRow( &$row ) {
-    CRM_Core_Error::debug_var('row', $row);
+    //CRM_Core_Error::debug_var('row', $row);
   }
 
   function setTitle( $title ) {
@@ -285,6 +285,7 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
     //CRM_Core_Error::debug_var('$_REQUEST', $_REQUEST);
 
     if (!empty($_REQUEST['formValues'])) {
+      $_REQUEST['is_quick_export'] = true;
       $formValues = $_REQUEST['formValues'];
 
       CRM_Export_BAO_Export::exportCustom($formValues['customSearchClass'],
