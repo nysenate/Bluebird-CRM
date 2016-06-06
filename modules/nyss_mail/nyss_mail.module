@@ -6,7 +6,6 @@ define('FILTER_IN_SD_ONLY', 1);
 define('FILTER_IN_SD_OR_NO_SD', 2);
 define('DEFAULT_REPLYTO', 'bluebird.admin@nysenate.gov');
 
-
 // NYSS 5581
 function nyss_mail_custom_theme()
 {
@@ -124,20 +123,31 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
     // NYSS 5579 - Construct the whitelisting language and add to e-mail body.
     // NYSS 7423 - Allow location of whitelisting blurb to be configurable.
     // NYSS 7804 - suppress whitelisting blurb if viewing html
+    // If contactID is set, then this is a real email (either job or preview).
+    // If contactID is not set, then this is an HTML view of the email.
     if (!empty($contactID)) {
-      $whitelist = get_whitelist_clause($bbconfig, $senator_email);
-      if (isset($bbconfig['email.whitelist.location']) &&
-          $bbconfig['email.whitelist.location'] == 'bottom') {
-        $locidx = 'post_body';
+      if (!empty($bbconfig['email.extras.include_whitelist'])) {
+        if (isset($bbconfig['email.extras.whitelist_location']) &&
+            $bbconfig['email.extras.whitelist_location'] == 'bottom') {
+          $locidx = 'post_body';
+        }
+        else {
+          $locidx = 'pre_body';
+        }
+        $s = get_whitelist_clause($bbconfig, $senator_email);
+        $extraContent['text'][$locidx][] = $s['text'];
+        $extraContent['html'][$locidx][] = $s['html'];
       }
-      else {
-        $locidx = 'pre_body';
-      }
-      $extraContent['text'][$locidx][] = $whitelist['text'];
-      $extraContent['html'][$locidx][] = $whitelist['html'];
+    }
+    else {
+      // NYSS 7803 - if viewing HTML, insert FB share image
+      $s = get_opengraph_clause($bbconfig, $params['Subject']);
+      $extraContent['text']['head'][] = $s['text'];
+      $extraContent['html']['head'][] = $s['html'];
     }
 
     // NYSS 7701 - append link for hosted email if this is part of a mailing
+    // NYSS 4864 - optionally include a "Share on Facebook" link
     if ($jobInfo) {
       if (!empty($jobInfo['mailing_hash'])) {
         $viewID = $jobInfo['mailing_hash'];
@@ -145,29 +155,28 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
       else {
         $viewID = $jobInfo['mailing_id'];
       }
-      $viewshare = get_viewshare_clause($bbconfig, $viewID);
-      $extraContent['text']['post_body'][] = $viewshare['text'];
-      $extraContent['html']['post_body'][] = $viewshare['html'];
+
+      if (!empty($bbconfig['email.extras.include_browserview'])) {
+        $s = get_browserview_clause($bbconfig, $viewID);
+        $extraContent['text']['post_body'][] = $s['text'];
+        $extraContent['html']['post_body'][] = $s['html'];
+      }
+      if (!empty($bbconfig['email.extras.include_optout'])) {
+        // NYSS 5581 - opt-out/subscription management link
+        $s = get_optout_clause($bbconfig, $contactID, $eventQueueID);
+        $extraContent['text']['post_body'][] = $s['text'];
+        $extraContent['html']['post_body'][] = $s['html'];
+        // Disable SendGrid Opt-Out as we are handling thru subscription page.
+        $hdr->addFilterSetting('subscriptiontrack', 'enable', 0);
+      }
+      if (!empty($bbconfig['email.extras.include_shareon'])) {
+        $s = get_shareon_clause($bbconfig, $viewID);
+        $extraContent['text']['post_body'][] = $s['text'];
+        $extraContent['html']['post_body'][] = $s['html'];
+      }
     }
 
-    // NYSS 5581 - subscription management link
-    if (!empty($contactID) && $jobInfo && !empty($bbconfig['email.include_subscriptions'])) {
-      $optout = get_optout_clause($bbconfig, $contactID, $eventQueueID);
-      $extraContent['text']['post_body'][] = $optout['text'];
-      $extraContent['html']['post_body'][] = $optout['html'];
-
-      // Disable SendGrid Opt-Out as we are handling thru subscription page.
-      $hdr->addFilterSetting('subscriptiontrack', 'enable', 0);
-    }
-
-    // NYSS 7803 - if viewing HTML, insert FB share image
-    if (empty($contactID)) {
-      $og_meta = get_opengraph_clause($bbconfig, $params['Subject']);
-      $extraContent['text']['head'][] = $og_meta['text'];
-      $extraContent['html']['head'][] = $og_meta['html'];
-    }
-
-    // Add extra content (OpenGraph, whitelist, view/share, opt-out)
+    // Add extra content (OpenGraph, whitelist, browser-view, opt-out, share-on)
     foreach ($contentTypes as $ctype) {
       if (isset($params[$ctype])) {
         $params[$ctype] = add_extra_content($params[$ctype], $extraContent[$ctype], $ctype);
@@ -983,12 +992,13 @@ function get_job_info($jid)
 
 function get_whitelist_clause($bbcfg, $email)
 {
-  if (isset($bbcfg['email.whitelist.text'])) {
-    $text = $bbcfg['email.whitelist.text'];
+  if (!empty($bbcfg['email.extras.whitelist_text'])) {
+    $text = $bbcfg['email.extras.whitelist_text'];
   }
   else {
     $text = 'To ensure delivery of emails to your inbox, please add %SENATOR_EMAIL% to your email address book.';
   }
+  // Order here is important.  HTML first, then text, since text is rewritten.
   $html = str_replace('%SENATOR_EMAIL%', "<a href=\"mailto:$email\">$email</a>", $text);
   $text = str_replace('%SENATOR_EMAIL%', $email, $text);
 
@@ -996,24 +1006,22 @@ function get_whitelist_clause($bbcfg, $email)
 } // get_whitelist_clause()
 
 
-function get_viewshare_clause($bbcfg, $viewId)
+function get_view_url($bbcfg, $viewId)
 {
   $url = "http://pubfiles.nysenate.gov/{$bbcfg['envname']}/{$bbcfg['shortname']}/view/$viewId";
   //$url = CRM_Utils_System::url('civicrm/mailing/view', 'reset=1&id='.$viewId, true);
+  return $url;
+} // get_view_url()
 
-  $text = "Click here to view this email in your browser: $url";
+
+function get_browserview_clause($bbcfg, $viewId)
+{
+  $url = get_view_url($bbcfg, $viewId);
+  $text = "To view this email in your browser, go to $url";
   $html = '<a href="'.$url.'" target="_blank">Click here</a> to view this email in your browser.';
 
-  // NYSS 4864 - optionally include a "Share on Facebook" link
-  if (!empty($bbcfg['email.include_facebook'])) {
-    $fburl = "https://www.facebook.com/sharer/sharer.php?u=$url";
-    $fbimg = "http://pubfiles.nysenate.gov/{$bbcfg['envname']}/{$bbcfg['shortname']}/common/images/social_media/facebook_share_68x25.png";
-    $text .= " | Share on Facebook: $fburl";
-    $html .= '&nbsp;&nbsp; <a style="color:#386eff; text-decoration:underline;" href="'.$fburl.'" target="_blank">Share&nbsp;on&nbsp;Facebook.</a>&nbsp;&nbsp;<a href="'.$fburl.'" target="_blank"><img src="'.$fbimg.'" height="20" align="middle"></a>';
-  }
-
   return array('text' => $text, 'html' => $html);
-} // get_viewshare_clause()
+} // get_browserview_clause()
 
 
 function get_optout_clause($bbcfg, $cid, $qid)
@@ -1021,11 +1029,24 @@ function get_optout_clause($bbcfg, $cid, $qid)
   $cs = CRM_Contact_BAO_Contact_Utils::generateChecksum($cid);
   $url = "http://pubfiles.nysenate.gov/{$bbcfg['envname']}/{$bbcfg['shortname']}/subscription/manage/$qid/$cs";
 
-  $text = "Click here to manage your email subscription settings: $url";
-  $html = '<a href="'.$url.'" target="_blank">Click here</a> to manage email subscription settings or to unsubscribe.';
+  $text = "To manage your email subscription settings or to unsubscribe, go to $url";
+  $html = '<a href="'.$url.'" target="_blank">Click here</a> to manage your email subscription settings or to unsubscribe.';
 
   return array('text' => $text, 'html' => $html);
 } // get_optout_clause()
+
+
+function get_shareon_clause($bbcfg, $viewId)
+{
+  $url = get_view_url($bbcfg, $viewId);
+  $fburl = "https://www.facebook.com/sharer/sharer.php?u=$url";
+  $fbimg = "http://pubfiles.nysenate.gov/{$bbcfg['envname']}/{$bbcfg['shortname']}/common/images/social_media/facebook_share_68x25.png";
+
+  $text = "To share this on Facebook, go to $fburl";
+  $html = '<a style="color:#386eff; text-decoration:underline;" href="'.$fburl.'" target="_blank">Share&nbsp;on&nbsp;Facebook.</a>&nbsp;&nbsp;<a href="'.$fburl.'" target="_blank"><img src="'.$fbimg.'" height="20" align="middle"></a>';
+
+  return array('text' => $text, 'html' => $html);
+} // get_shareon_clause()
 
 
 function get_opengraph_clause($bbcfg, $subj)
