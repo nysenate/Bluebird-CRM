@@ -224,7 +224,7 @@ if [ "$multicmd" ]; then
       ;;
     enable_subscriptiontrack)
       $0 $passthru_args --activate-app subscriptiontrack $instance && \
-        $0 $passthru_args --setup-app subscriptiontrack -p "text/plain=If you would like to stop receiving emails from your Senator, click here: <% %>." -p 'text/html=<p style="text-align: center;font-size:10px;">If you would like to stop receiving emails from your Senator, %26lt;%25 click here %25%26gt;.</p>' $instance
+        $0 $passthru_args --setup-app subscriptiontrack -p "text/plain=If you would like to stop receiving emails from your senator, click here: <% %>." -p 'text/html=<p style="text-align:center;font-size:10px;">If you would like to stop receiving emails from your senator, <% click here %>.</p>' $instance
       ;;
     disable_subscriptiontrack)
       $0 $passthru_args --setup-app subscriptiontrack -p "text/plain=" -p "text/html=" -p "url=%00" $instance && \
