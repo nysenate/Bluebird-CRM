@@ -87,7 +87,6 @@ class CRM_Integration_Process
         continue;
       }*/
 
-
       //check contact/user
       bbscript_log(LL::TRACE, 'calling getContactId('.$row->user_id.')');
       $cid = CRM_NYSS_BAO_Integration_Website::getContactId($row->user_id);

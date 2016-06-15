@@ -54,7 +54,7 @@ CKEDITOR.editorConfig = function( config ) {
 
   // Remove some buttons, provided by the standard plugins, which we don't
   // need to have in the Standard(s) toolbar.
-  config.removeButtons = 'Subscript,Superscript,Anchor,Table,Styles,Format,Symbols,Strike,About';
+  config.removeButtons = 'Subscript,Superscript,Anchor,Styles,Format,Symbols,Strike,About';
 
   //NYSS old config retained for reference
   /*config.toolbar_Full =

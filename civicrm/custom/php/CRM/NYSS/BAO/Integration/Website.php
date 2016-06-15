@@ -309,8 +309,9 @@ class CRM_NYSS_BAO_Integration_Website
   } //processCommittee()
 
 
-  static function processBill($contactId, $action, $params)
-  {
+  static function processBill($contactId, $action, $params) {
+    //CRM_Core_Error::debug_var('processBill $params', $params, true, true, 'integration');
+
     //find out if tag exists
     $parentId = CRM_Core_DAO::singleValueQuery("
       SELECT id
@@ -319,18 +320,26 @@ class CRM_NYSS_BAO_Integration_Website
         AND is_tagset = 1
     ");
 
-    //build bill value text
-    $billNumber = $params->bill_number.'-'.$params->bill_year;
+    //get data pieces from possible locations
+    $bill_number = (!empty($params->event_info->bill_number)) ? 
+      $params->event_info->bill_number : $params->bill_number;
+    $bill_year = (!empty($params->event_info->bill_year)) ?
+      $params->event_info->bill_year : $params->bill_year;
+    $bill_sponsor = (!empty($params->event_info->bill_sponsor)) ? 
+      $params->event_info->bill_sponsor : $params->bill_sponsor;
 
-    if (!empty($params->bill_sponsor)) {
-      $sponsor = strtoupper($params->bill_sponsor);
+    //build bill value text
+    $billName = $bill_number.'-'.$bill_year;
+
+    if (!empty($bill_sponsor)) {
+      $sponsor = strtoupper($bill_sponsor);
     }
     else {
       require_once 'CRM/NYSS/BAO/Integration/OpenLegislation.php';
-      $sponsor = CRM_NYSS_BAO_Integration_OpenLegislation::getBillSponsor($billNumber);
+      $sponsor = CRM_NYSS_BAO_Integration_OpenLegislation::getBillSponsor($billName);
     }
 
-    $tagName = $tagNameBase = "$billNumber ($sponsor)";
+    $tagName = $tagNameBase = "$billName ($sponsor)";
     $tagNameOpposite = '';
 
     //construct tag name and determine action
@@ -1202,7 +1211,7 @@ class CRM_NYSS_BAO_Integration_Website
     //CRM_Core_Error::debug_var('archiveRecord $data', $data);
 
     $sql = "
-      INSERT INTO {$db}.archive
+      INSERT IGNORE INTO {$db}.archive
       ({$fieldList})
       VALUES
       ('{$dataList}')
