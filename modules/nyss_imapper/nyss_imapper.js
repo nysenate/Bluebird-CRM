@@ -13,6 +13,12 @@ if (!String.prototype.capitalize) {
 var messages = [];
 var contacts = [];
 
+function display_ajax_result(data, status) {
+  var result = cj.parseJSON(data),
+      msgtype = result.is_error ? 'error' : 'success';
+  CRM.alert(result.message, msgtype.capitalize(), msgtype);
+}
+
 cj(document).ready(function()
 {
   cj(".range option[value='30']").attr('selected', 'selected');
@@ -1102,10 +1108,7 @@ cj(document).ready(function()
             contactId: newContacts.toString(),
             tags: contact_position
           },
-          success: function(data, status) {
-            var result = cj.parseJSON(data);
-            CRM.alert(result.message, 'Success', 'success');
-          },
+          success: display_ajax_result,
           error: function() {
             var result = cj.parseJSON(data);
             CRM.alert(result.message, 'Error', 'error');
@@ -1125,10 +1128,7 @@ cj(document).ready(function()
             issuecodes: addedIssueCodes.toString(),
             action: 'create'
           },
-          success: function(data, status) {
-            var result = cj.parseJSON(data);
-            CRM.alert(result.message, 'Success', 'success');
-          },
+          success: display_ajax_result,
           error: function() {
             var result = cj.parseJSON(data);
             CRM.alert(result.message, 'Error', 'error');
@@ -1144,10 +1144,7 @@ cj(document).ready(function()
             issuecodes: removedIssueCodes.toString(),
             action: 'delete'
           },
-          success: function(data, status) {
-            var result = cj.parseJSON(data);
-            CRM.alert(result.message, 'Success', 'success');
-          },
+          success: display_ajax_result,
           error: function() {
             var result = cj.parseJSON(data);
             CRM.alert(result.message, 'Error', 'error');
@@ -1164,10 +1161,7 @@ cj(document).ready(function()
             contactId: newContacts.toString(),
             tags: contact_tag
           },
-          success: function(data, status) {
-            var result = cj.parseJSON(data);
-            CRM.alert(result.message, 'Success', 'success');
-          },
+          success: display_ajax_result,
           error: function() {
             var result = cj.parseJSON(data);
             CRM.alert(result.message, 'Error', 'error');
@@ -1185,10 +1179,7 @@ cj(document).ready(function()
             activityId: activityId,
             tags: activity_tag
           },
-          success: function(data, status) {
-            var result = cj.parseJSON(data);
-            CRM.alert(result.message, 'Success', 'success');
-          },
+          success: display_ajax_result,
           error: function() {
             var result = cj.parseJSON(data);
             CRM.alert(result.message, 'Error', 'error');
@@ -1214,15 +1205,7 @@ cj(document).ready(function()
           activity_contact: activity_contact,
           activity_status_id: activity_status_id,
         },
-        success: function(data, status) {
-          result = cj.parseJSON(data);
-          if (result.is_error) {
-            CRM.alert(result.message, 'Error', 'error');
-          }
-          else {
-            CRM.alert(result.message, 'Success', 'success');
-          }
-        },
+        success: display_ajax_result,
         error: function() {
           CRM.alert('Failed to Edit Activity', 'Error', 'error');
           return false;

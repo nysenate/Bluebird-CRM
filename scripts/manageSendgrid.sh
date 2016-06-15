@@ -203,12 +203,6 @@ if [ "$multicmd" ]; then
       $0 $passthru_args --activate-app clicktrack $instance
       $0 $passthru_args --activate-app opentrack $instance
       $0 $passthru_args --activate-app dkim $instance
-      # Kludge: Activate domainkeys before deactivating it, because the
-      # Sendgrid app deactivation is actually a toggle.  So if an app is
-      # already deactivated, then deactivating it will actually activate it.
-      # Yeah, real intuitive.
-      $0 $passthru_args --activate-app domainkeys $instance
-      $0 $passthru_args --deactivate-app domainkeys $instance
       ;;
     enable_eventnotify)
       # Note: url= parameter is required. All others are optional.
@@ -224,7 +218,7 @@ if [ "$multicmd" ]; then
       ;;
     enable_subscriptiontrack)
       $0 $passthru_args --activate-app subscriptiontrack $instance && \
-        $0 $passthru_args --setup-app subscriptiontrack -p "text/plain=If you would like to stop receiving emails from your Senator, click here: <% %>." -p 'text/html=<p style="text-align: center;font-size:10px;">If you would like to stop receiving emails from your Senator, %26lt;%25 click here %25%26gt;.</p>' $instance
+        $0 $passthru_args --setup-app subscriptiontrack -p "text/plain=If you would like to stop receiving emails from your senator, click here: <% %>." -p 'text/html=<p style="text-align:center;font-size:10px;">If you would like to stop receiving emails from your senator, <% click here %>.</p>' $instance
       ;;
     disable_subscriptiontrack)
       $0 $passthru_args --setup-app subscriptiontrack -p "text/plain=" -p "text/html=" -p "url=%00" $instance && \
