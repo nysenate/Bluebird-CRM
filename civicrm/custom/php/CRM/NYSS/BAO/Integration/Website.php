@@ -320,26 +320,7 @@ class CRM_NYSS_BAO_Integration_Website
         AND is_tagset = 1
     ");
 
-    //get data pieces from possible locations
-    $bill_number = (!empty($params->event_info->bill_number)) ? 
-      $params->event_info->bill_number : $params->bill_number;
-    $bill_year = (!empty($params->event_info->bill_year)) ?
-      $params->event_info->bill_year : $params->bill_year;
-    $bill_sponsor = (!empty($params->event_info->bill_sponsor)) ? 
-      $params->event_info->bill_sponsor : $params->bill_sponsor;
-
-    //build bill value text
-    $billName = $bill_number.'-'.$bill_year;
-
-    if (!empty($bill_sponsor)) {
-      $sponsor = strtoupper($bill_sponsor);
-    }
-    else {
-      require_once 'CRM/NYSS/BAO/Integration/OpenLegislation.php';
-      $sponsor = CRM_NYSS_BAO_Integration_OpenLegislation::getBillSponsor($billName);
-    }
-
-    $tagName = $tagNameBase = "$billName ($sponsor)";
+    $tagName = $tagNameBase = self::buildBillName($params);
     $tagNameOpposite = '';
 
     //construct tag name and determine action
@@ -975,6 +956,28 @@ class CRM_NYSS_BAO_Integration_Website
     return $fields;
   } //buildSurvey()
 
+  static function buildBillName($params) {
+    //get data pieces from possible locations
+    $bill_number = (!empty($params->event_info->bill_number)) ?
+      $params->event_info->bill_number : $params->bill_number;
+    $bill_year = (!empty($params->event_info->bill_year)) ?
+      $params->event_info->bill_year : $params->bill_year;
+    $bill_sponsor = (!empty($params->event_info->sponsors)) ?
+      $params->event_info->sponsors : $params->bill_sponsor;
+
+    //build bill value text
+    $billName = $bill_number.'-'.$bill_year;
+
+    if (!empty($bill_sponsor)) {
+      $sponsor = strtoupper($bill_sponsor);
+    }
+    else {
+      require_once 'CRM/NYSS/BAO/Integration/OpenLegislation.php';
+      $sponsor = CRM_NYSS_BAO_Integration_OpenLegislation::getBillSponsor($billName);
+    }
+    
+    return "{$billName} ({$sponsor})";
+  }//buildBillName
 
   /*
    * get the four types of website tagset tags
