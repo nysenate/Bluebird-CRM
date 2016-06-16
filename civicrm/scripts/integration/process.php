@@ -155,7 +155,8 @@ class CRM_Integration_Process
         case 'BILL':
           $result = CRM_NYSS_BAO_Integration_Website::processBill($cid, $row->msg_action, $params);
           $activity_type = 'Bill';
-          $activity_details = "{$row->msg_action} :: {$params->bill_number}-{$params->bill_year} ({$params->bill_sponsor})";
+          $billName = CRM_NYSS_BAO_Integration_Website::buildBillName($params);
+          $activity_details = "{$row->msg_action} :: {$billName}";
           break;
 
         case 'ISSUE':
