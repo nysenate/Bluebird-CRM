@@ -729,7 +729,7 @@ class CRM_NYSS_IMAP_AJAX
     }
 
     if ($fields['email_address']) {
-      $where .= " AND email.email LIKE '{$fields['email_address']}'";
+      $where .= " AND e.email LIKE '{$fields['email_address']}'";
       $order .= ", e.is_primary DESC";
     }
 
