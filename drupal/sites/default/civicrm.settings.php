@@ -67,6 +67,11 @@ define('SAGE_API_BASE', $bbconfig['sage.api.base']);
 // Set some CiviCRM settings
 global $civicrm_setting;
 
+//temporary debugging statements
+//CRM_Core_Error::debug_var('bbconfig', $bbconfig);
+//CRM_Core_Error::debug_var('civicrm_root', $civicrm_root);
+//CRM_Core_Error::debug_var('civicrm_setting', $civicrm_setting);
+
 $civicrm_setting['Mailing Preferences']['profile_double_optin'] = FALSE;
 $civicrm_setting['Mailing Preferences']['profile_add_to_group_double_optin'] = FALSE;
 $civicrm_setting['Mailing Preferences']['track_civimail_replies'] = FALSE;
@@ -83,6 +88,9 @@ $civicrm_setting['CiviCRM Preferences']['securityAlert'] = FALSE;
 $civicrm_setting['CiviCRM Preferences']['versionCheck'] = FALSE;
 $civicrm_setting['CiviCRM Preferences']['max_attachments'] = 5;
 $civicrm_setting['CiviCRM Preferences']['maxFileSize'] = 12; //9842
+
+$civicrm_setting['Directory Preferences']['customTemplateDir'] = "{$bbconfig['app.rootdir']}/civicrm/custom/templates";
+$civicrm_setting['Directory Preferences']['customPHPPathDir'] = "{$bbconfig['app.rootdir']}/civicrm/custom/php";
 
 $civicrm_setting['Search Preferences']['enable_innodb_fts'] = TRUE;
 $civicrm_setting['Search Preferences']['fts_query_mode'] = 'wildwords-suffix';
