@@ -1043,7 +1043,7 @@ function get_shareon_clause($bbcfg, $viewId)
   $fbimg = "http://pubfiles.nysenate.gov/{$bbcfg['envname']}/{$bbcfg['shortname']}/common/images/social_media/facebook_share_68x25.png";
 
   $text = "To share this on Facebook, go to $fburl";
-  $html = '<a style="color:#386eff; text-decoration:underline;" href="'.$fburl.'" target="_blank">Share&nbsp;on&nbsp;Facebook.</a>&nbsp;&nbsp;<a href="'.$fburl.'" target="_blank"><img src="'.$fbimg.'" height="20" align="middle"></a>';
+  $html = '<a style="color:#386eff; text-decoration:underline;" href="'.$fburl.'" target="_blank">Share&nbsp;on&nbsp;Facebook.</a>';
 
   return array('text' => $text, 'html' => $html);
 } // get_shareon_clause()
