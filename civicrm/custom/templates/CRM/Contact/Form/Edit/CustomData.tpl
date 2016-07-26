@@ -2,7 +2,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2015                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,7 +26,8 @@
 
 {foreach from=$groupTree item=cd_edit key=group_id}
 {*NYSS remove org and contact fields as they are integrated directly; collapse attachments by default*}
-  {if $group_id neq 3 && $group_id neq 1 && $group_id neq 8}
+{if $group_id neq 3 && $group_id neq 1 && $group_id neq 8}
+  {if $cd_edit.is_multiple eq 1}
     {assign var=tableID value=$cd_edit.table_id}
     {assign var=divName value=$group_id|cat:"_$tableID"}
     <div></div>
@@ -60,6 +61,7 @@
   </div>
   <!-- crm-accordion-wrapper -->
   <div id="custom_group_{$group_id}_{$cgCount}"></div>
+  {/if}{*NYSS*}
   {/foreach}
 
   {include file="CRM/common/customData.tpl"}

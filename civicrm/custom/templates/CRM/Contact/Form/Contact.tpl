@@ -142,61 +142,60 @@
 {*NYSS manually insert indiv custom fields so we can control layout/eliminate dups*}
 {if $contactType eq "Individual"}
 <div class="crm-accordion-wrapper crm-address-accordion crm-accordion-open">
-<div class="crm-accordion-header">
-<div id="custom1" class="icon crm-accordion-pointer"></div> 
-Additional Constituent Information
-</div><!-- /.crm-accordion-header -->
+  <div class="crm-accordion-header">
+      Additional Constituent Information
+  </div><!-- /.crm-accordion-header -->
 
-<div id="customData1" class="crm-accordion-body">
-        <table class="form-layout-compressed">
-        <tr class="custom_field-row">
-            <td class="html-adjust" width="20%">
-            {assign var='custom_18' value=$groupTree.1.fields.18.element_name}
-        {$form.$custom_18.label}<br />
-{$form.$custom_18.html}<span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$custom_18}', '{$form.formName}'); return false;" >{ts}clear{/ts}</a>)</span>
-            </td>
-            <td class="html-adjust" width="20%">
-            {assign var='custom_17' value=$groupTree.1.fields.17.element_name}
-        {$form.$custom_17.label}<br />
-{$form.$custom_17.html}<span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$custom_17}', '{$form.formName}'); return false;" >{ts}clear{/ts}</a>)</span>
-            </td>
-            <td class="html-adjust" width="60%">
-            {assign var='custom_19' value=$groupTree.1.fields.19.element_name}
-        {$form.$custom_19.label}<br />
-{$form.$custom_19.html}<span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$custom_19}', '{$form.formName}'); return false;" >{ts}clear{/ts}</a>)</span>
-            </td>
-        </tr>
-        <tr class="custom_field-row">
+  <div id="customData1" class="crm-accordion-body">
+    <table class="form-layout-compressed">
+      <tr class="custom_field-row">
+        <td class="html-adjust" width="20%">
+          {assign var='custom_18' value=$groupTree.1.fields.18.element_name}
+          {$form.$custom_18.label}<br />
+          {$form.$custom_18.html}<span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$custom_18}', '{$form.formName}'); return false;" >{ts}clear{/ts}</a>)</span>
+        </td>
+        <td class="html-adjust" width="20%">
+          {assign var='custom_17' value=$groupTree.1.fields.17.element_name}
+          {$form.$custom_17.label}<br />
+          {$form.$custom_17.html}<span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$custom_17}', '{$form.formName}'); return false;" >{ts}clear{/ts}</a>)</span>
+        </td>
+        <td class="html-adjust" width="60%">
+          {assign var='custom_19' value=$groupTree.1.fields.19.element_name}
+          {$form.$custom_19.label}<br />
+          {$form.$custom_19.html}<span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$custom_19}', '{$form.formName}'); return false;" >{ts}clear{/ts}</a>)</span>
+        </td>
+      </tr>
+      <tr class="custom_field-row">
         <td class="html-adjust">
-            {assign var='custom_16' value=$groupTree.1.fields.16.element_name}
-        {$form.$custom_16.label}<br />
-{$form.$custom_16.html}
-            </td>
-            <td class="html-adjust">
-            {assign var='custom_21' value=$groupTree.1.fields.21.element_name}
-        {$form.$custom_21.label}<br />
-{$form.$custom_21.html}
-            </td>
-            <td class="html-adjust" rowspan="2">
-            {assign var='custom_20' value=$groupTree.1.fields.20.element_name}
-        {$form.$custom_20.label}<br />
-{$form.$custom_20.html}
-            </td>
-        </tr>
-        <tr class="custom_field-row">
+          {assign var='custom_16' value=$groupTree.1.fields.16.element_name}
+          {$form.$custom_16.label}<br />
+          {$form.$custom_16.html}
+        </td>
         <td class="html-adjust">
-            {assign var='custom_23' value=$groupTree.1.fields.23.element_name}
-        {$form.$custom_23.label}<br />
-{$form.$custom_23.html}
-            </td>
-            <td class="html-adjust">
-            {assign var='custom_24' value=$groupTree.1.fields.24.element_name}
-        {$form.$custom_24.label}<br />
-{include file="CRM/common/jcalendar.tpl" elementName=$custom_24}
-            </td>
-        </tr>
-        </table>
-</div>
+          {assign var='custom_21' value=$groupTree.1.fields.21.element_name}
+          {$form.$custom_21.label}<br />
+          {$form.$custom_21.html}
+        </td>
+        <td class="html-adjust" rowspan="2">
+          {assign var='custom_20' value=$groupTree.1.fields.20.element_name}
+          {$form.$custom_20.label}<br />
+          {$form.$custom_20.html}
+        </td>
+      </tr>
+      <tr class="custom_field-row">
+        <td class="html-adjust">
+          {assign var='custom_23' value=$groupTree.1.fields.23.element_name}
+          {$form.$custom_23.label}<br />
+          {$form.$custom_23.html}
+        </td>
+        <td class="html-adjust">
+          {assign var='custom_24' value=$groupTree.1.fields.24.element_name}
+          {$form.$custom_24.label}<br />
+          {$form.$custom_24.html}
+        </td>
+      </tr>
+    </table>
+  </div>
 </div>
 {/if}
 
