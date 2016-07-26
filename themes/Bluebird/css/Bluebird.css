@@ -2604,7 +2604,8 @@ div#contact-summary div#contactTopBar {
   color: #333;
 }
 
-.crm-activity-selector-activity .dataTables_wrapper {
+.crm-activity-selector-activity .dataTables_wrapper,
+div#notes .dataTables_wrapper {
   overflow: auto;
 }
 
