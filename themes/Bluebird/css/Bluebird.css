@@ -1,4 +1,4 @@
-@import  url(printCivicrm.css) print;
+@import url(printCivicrm.css) print;
 
 /* -----------------------------------------------------------------------
 
@@ -32,6 +32,7 @@ table {
 caption,th,td {
   text-align: left;
   font-weight: 400;
+  font-size: 0.85em;
 }
 
 table,td,th {

@@ -41,11 +41,12 @@
        {$form.sic_code.html}</td>
        *}
 
-       <td>{if $action == 1 and $contactSubType}&nbsp;{else}
+      {*NYSS*}
+       {*<td>{if $action == 1 and $contactSubType}&nbsp;{else}
               {$form.contact_sub_type.label}<br />
               {$form.contact_sub_type.html}
            {/if}
-       </td>
+       </td>*}
     
     <td>
       {assign var='custom_41' value=$groupTree.3.fields.41.element_name}
