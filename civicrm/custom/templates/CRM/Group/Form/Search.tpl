@@ -2,7 +2,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2015                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -43,8 +43,8 @@
       </span>
     </td>
     <td id="group_type-block">
-      {$form.group_type.label}<br />
-      {$form.group_type.html}<br />
+      {$form.group_type_search.label}<br />
+      {$form.group_type_search.html}<br />
       <span class="description font-italic">
           {ts}Filter search by group type(s).{/ts}
       </span>
@@ -100,11 +100,11 @@
         "url": {/literal}'{crmURL p="civicrm/ajax/grouplist" h=0 q="snippet=4"}'{literal},
         "data": function (d) {
 
-          var groupTypes = ($('.crm-group-search-form-block #group_type_1').prop('checked')) ? '1' : '';
+          var groupTypes = ($('.crm-group-search-form-block #group_type_search_1').prop('checked')) ? '1' : '';
           if (groupTypes) {
-            groupTypes = ($('.crm-group-search-form-block #group_type_2').prop('checked')) ? groupTypes + ',2' : groupTypes;
+            groupTypes = ($('.crm-group-search-form-block #group_type_search_2').prop('checked')) ? groupTypes + ',2' : groupTypes;
           } else {
-            groupTypes = ($('.crm-group-search-form-block #group_type_2').prop('checked')) ? '2' : '';
+            groupTypes = ($('.crm-group-search-form-block #group_type_search_2').prop('checked')) ? '2' : '';
           }
 
           var groupStatus = ($('.crm-group-search-form-block #group_status_1').prop('checked')) ? 1 : '';
@@ -211,7 +211,7 @@
               $.each( response.data, function( i, val ) {
                 appendHTML += '<tr id="row_'+val.group_id+'_'+parent_id+'" data-entity="group" data-id="'+val.group_id+'" class="crm-entity parent_is_'+parent_id+' crm-row-child">';
                 if ( val.is_parent ) {
-                  appendHTML += '<td class="crm-group-name crmf-title crm-editable ' + levelClass + '">' + '{/literal}<span class="collapsed show-children" title="{ts}show child groups{/ts}"/></span>{literal}' + val.title + '</td>';
+                  appendHTML += '<td class="crm-group-name crmf-title ' + levelClass + '">' + '{/literal}<span class="collapsed show-children" title="{ts}show child groups{/ts}"/></span><div class="crmf-title crm-editable">{literal}' + val.title + '</div></td>';
                 }
                 else {
                   appendHTML += '<td class="crm-group-name  crmf-title crm-editable ' + levelClass + '"><span class="crm-no-children"></span>' + val.title + '</td>';

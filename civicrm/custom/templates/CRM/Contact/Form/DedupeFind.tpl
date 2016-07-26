@@ -2,7 +2,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2015                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -34,6 +34,10 @@
        <td class="label">{$form.group_id.label}</td>
        <td>{$form.group_id.html}</td>
      </tr>
+       <tr class="crm-dedupe-find-form-block-limit">
+        <td class="label">{$form.limit.label}</td>
+        <td>{$form.limit.html}</td>
+       </tr>
      <tr>
         <td></td>
         <td class="help">You may now use contacts from previous imports as a dedupe group.</td>
