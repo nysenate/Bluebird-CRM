@@ -943,7 +943,7 @@ WHERE     civicrm_contact.id = " . CRM_Utils_Type::escape($id, 'Integer');
       CRM_Core_DAO::executeQuery('DELETE FROM civicrm_acl_contact_cache WHERE contact_id = %1', array(1 => array($contactID, 'Integer')));
     }
     else {
-      CRM_Contact_BAO_GroupContactCache::remove();
+      CRM_Contact_BAO_GroupContactCache::opportunisticCacheFlush();
     }
   }
 
@@ -964,7 +964,7 @@ WHERE     civicrm_contact.id = " . CRM_Utils_Type::escape($id, 'Integer');
 UPDATE civicrm_contact
 SET image_URL=NULL
 WHERE id={$id}; ";
-    CRM_Core_DAO::executeQuery($query, CRM_Core_DAO::$_nullArray);
+    CRM_Core_DAO::executeQuery($query);
     return TRUE;
   }
 
@@ -1941,8 +1941,7 @@ ORDER BY civicrm_email.is_primary DESC";
       CRM_Contact_BAO_GroupContact::addContactsToGroup($contactIds, $addToGroupID);
     }
 
-    // reset the group contact cache for this group
-    CRM_Contact_BAO_GroupContactCache::remove();
+    CRM_Contact_BAO_GroupContactCache::opportunisticCacheFlush();
 
     if ($editHook) {
       CRM_Utils_Hook::post('edit', 'Profile', $contactID, $params);

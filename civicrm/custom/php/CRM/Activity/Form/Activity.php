@@ -133,8 +133,10 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
    * form fields based on their requirement
    */
   public function setFields() {
+    // Remove print document activity type
+    $unwanted = CRM_Core_OptionGroup::values('activity_type', FALSE, FALSE, FALSE, "AND v.name = 'Print PDF Letter'");
+    $activityTypes = array_diff_key(CRM_Core_PseudoConstant::ActivityType(FALSE), $unwanted);
     //NYSS 4921
-    $activityTypes = CRM_Core_PseudoConstant::ActivityType( false );
     asort($activityTypes);
 
     $this->_fields = array(
@@ -202,9 +204,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
       'followup_activity_type_id' => array(
         'type' => 'select',
         'label' => ts('Followup Activity'),
-        'attributes' => array(
-          '' => '- ' . ts('select activity') . ' -') +
-          $activityTypes, //NYSS
+        'attributes' => array('' => '- ' . ts('select activity') . ' -') + $activityTypes,
         'extra' => array('class' => 'crm-select2'),
       ),
       // Add optional 'Subject' field for the Follow-up Activiity, CRM-4491
@@ -216,12 +216,6 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
         ),
       ),
     );
-
-    if (($this->_context == 'standalone') &&
-      ($printPDF = CRM_Utils_Array::key('Print PDF Letter', $this->_fields['followup_activity_type_id']['attributes']))
-    ) {
-      unset($this->_fields['followup_activity_type_id']['attributes'][$printPDF]);
-    }
   }
 
   /**
@@ -385,7 +379,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
 
     if ($this->_action & CRM_Core_Action::VIEW) {
       // Get the tree of custom fields.
-      $this->_groupTree = &CRM_Core_BAO_CustomGroup::getTree('Activity', $this,
+      $this->_groupTree = CRM_Core_BAO_CustomGroup::getTree('Activity', $this,
         $this->_activityId, 0, $this->_activityTypeId
       );
     }
@@ -529,43 +523,6 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
     $defaults = $this->_values + CRM_Core_Form_RecurringEntity::setDefaultValues();
     // if we're editing...
     if (isset($this->_activityId)) {
-      $defaults['source_contact_qid'] = CRM_Utils_Array::value('source_contact_id',
-        $defaults);
-      $defaults['source_contact_id'] = CRM_Utils_Array::value('source_contact',
-        $defaults);
-
-      if (!CRM_Utils_Array::crmIsEmptyArray($defaults['target_contact'])) {
-        $target_contact_value = explode(';', trim($defaults['target_contact_value']));
-        //NYSS 3083
-        $target_contact = array_combine(array_unique($defaults['target_contact']), $target_contact_value);
-        foreach ( $target_contact as $targetID => $targetName ) {
-          $targetPhone = CRM_Contact_BAO_Contact_Location::getPhoneDetails($targetID);
-          if ( $targetPhone[1] ) {
-            $target_contact[$targetID] = $targetName.' ('.$targetPhone[1].')';
-          }
-        }
-
-        if ($this->_action & CRM_Core_Action::VIEW) {
-          $this->assign('target_contact', $target_contact);
-        }
-        else {
-          //this assigned variable is used by newcontact creation widget to set defaults
-          $this->assign('prePopulateData', $this->formatContactValues($target_contact));
-        }
-      }
-
-      if (!CRM_Utils_Array::crmIsEmptyArray($defaults['assignee_contact'])) {
-        $assignee_contact_value = explode(';', trim($defaults['assignee_contact_value']));
-        $assignee_contact = array_combine($defaults['assignee_contact'], $assignee_contact_value);
-
-        if ($this->_action & CRM_Core_Action::VIEW) {
-          $this->assign('assignee_contact', $assignee_contact);
-        }
-        else {
-          $this->assign('assignee_contact', $this->formatContactValues($assignee_contact));
-        }
-      }
-
       if (empty($defaults['activity_date_time'])) {
         list($defaults['activity_date_time'], $defaults['activity_date_time_time']) = CRM_Utils_Date::setDateDefaults(NULL, 'activityDateTime');
       }
@@ -669,7 +626,8 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
     // Enable form element (ActivityLinks sets this true).
     $this->assign('suppressForm', FALSE);
 
-    $activityTypes = $this->_fields['followup_activity_type_id']['attributes']; //NYSS 4921
+    //NYSS 4921
+    $activityTypes = $this->_fields['followup_activity_type_id']['attributes']; 
 
     //NYSS 6567 if inbound email, add to select list
     if ( $this->_activityTypeName == 'Inbound Email' ) {

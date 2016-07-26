@@ -41,7 +41,7 @@ class CRM_Export_BAO_Export {
   // increase this number a lot to avoid making too many queries
   // LIMIT is not much faster than a no LIMIT query
   // CRM-7675
-  const EXPORT_ROW_COUNT = 10000;
+  const EXPORT_ROW_COUNT = 100000;
 
   /**
    * Get Querymode based on ExportMode
@@ -765,6 +765,7 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
     $limitReached = FALSE;
     while (!$limitReached) {
       $limitQuery = "{$queryString} LIMIT {$offset}, {$rowCount}";
+      //NYSS
       $dao = CRM_Core_DAO::executeUnbufferedQuery($limitQuery);
       // If this is less than our limit by the end of the iteration we do not need to run the query again to
       // check if some remain.
@@ -1346,7 +1347,7 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
         // to accommodate different systems - CRM-13739
         static $notRealIDFields = NULL;
         if ($notRealIDFields == NULL) {
-          $notRealIDFields = array('trxn_id', 'componentpaymentfield_transaction_id');
+          $notRealIDFields = array('trxn_id', 'componentpaymentfield_transaction_id', 'phone_type_id');
         }
 
         if (in_array($fieldName, $notRealIDFields)) {

@@ -81,7 +81,6 @@ class CRM_Core_BAO_Dashboard extends CRM_Core_DAO_Dashboard {
 
       //NYSS 3439 also check for group based permission if created from report
       if ( strpos($dao->url, 'civicrm/report/instance/') !== false ) {
-        require_once 'CRM/Report/Utils/Report.php';
         $end = strpos($dao->url, "&");
         $instanceID = substr($dao->url, 24, $end-24);
         //CRM_Core_Error::debug_var('instanceID',$instanceID);
@@ -181,7 +180,7 @@ class CRM_Core_BAO_Dashboard extends CRM_Core_DAO_Dashboard {
     $defaultDashlets = array();
     $defaults = array('blog' => 1, 'getting-started' => '0');
     foreach ($defaults as $name => $column) {
-      if (!empty($allDashlets[$name])) {
+      if (!empty($allDashlets[$name]) && !empty($allDashlets[$name]['id'])) {
         $defaultDashlets[$name] = array(
           'dashboard_id' => $allDashlets[$name]['id'],
           'is_active' => 1,

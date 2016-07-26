@@ -758,7 +758,7 @@ ORDER BY   i.contact_id, i.{$tempColumn}
   /**
    * Retrieve a ref to an array that holds the email and text templates for this email
    * assembles the complete template including the header and footer
-   * that the user has uploaded or declared (if they have dome that)
+   * that the user has uploaded or declared (if they have done that)
    *
    * @return array
    *   reference to an assoc array
@@ -793,7 +793,8 @@ ORDER BY   i.contact_id, i.{$tempColumn}
         $this->templates['text'] = implode("\n", $template);
       }
 
-      if ($this->body_html) {
+      // To check for an html part strip tags
+      if (trim(strip_tags($this->body_html))) {
 
         $template = array();
         if ($this->header) {
@@ -925,6 +926,10 @@ ORDER BY   i.contact_id, i.{$tempColumn}
    * @return void
    */
   public function getTestRecipients($testParams) {
+    $session = CRM_Core_Session::singleton();
+    $senderId = $session->get('userID');
+    list($aclJoin, $aclWhere) = CRM_ACL_BAO_ACL::buildAcl($senderId);
+
     if (array_key_exists($testParams['test_group'], CRM_Core_PseudoConstant::group())) {
       $contacts = civicrm_api('contact', 'get', array(
           'version' => 3,
@@ -942,13 +947,15 @@ SELECT     civicrm_email.id AS email_id,
            civicrm_email.is_primary as is_primary,
            civicrm_email.is_bulkmail as is_bulkmail
 FROM       civicrm_email
-INNER JOIN civicrm_contact ON civicrm_email.contact_id = civicrm_contact.id
+INNER JOIN civicrm_contact contact_a ON civicrm_email.contact_id = contact_a.id
+{$aclJoin}
 WHERE      (civicrm_email.is_bulkmail = 1 OR civicrm_email.is_primary = 1)
-AND        civicrm_contact.id = {$groupContact}
-AND        civicrm_contact.do_not_email = 0
-AND        civicrm_contact.is_deceased <> 1
+AND        contact_a.id = {$groupContact}
+AND        contact_a.do_not_email = 0
+AND        contact_a.is_deceased <> 1
 AND        civicrm_email.on_hold = 0
-AND        civicrm_contact.is_opt_out = 0
+AND        contact_a.is_opt_out = 0
+{$aclWhere}
 GROUP BY   civicrm_email.id
 ORDER BY   civicrm_email.is_bulkmail DESC
 ";
@@ -2568,11 +2575,11 @@ LEFT JOIN civicrm_mailing_group g ON g.mailing_id   = m.id
         'name' => $dao->name,
         'subject' => $dao->subject,//NYSS 6007
         'status' => $dao->status ? $dao->status : 'Not scheduled',
-        'created_date' => CRM_Utils_Date::customFormat($dao->created_date, '%m/%d/%Y %l:%M %P'),
-        'scheduled' => CRM_Utils_Date::customFormat($dao->scheduled_date, '%m/%d/%Y %l:%M %P'),
+        'created_date' => CRM_Utils_Date::customFormat($dao->created_date),
+        'scheduled' => CRM_Utils_Date::customFormat($dao->scheduled_date),
         'scheduled_iso' => $dao->scheduled_date,
-        'start' => CRM_Utils_Date::customFormat($dao->start_date, '%m/%d/%Y %l:%M %P'),
-        'end' => CRM_Utils_Date::customFormat($dao->end_date, '%m/%d/%Y %l:%M %P'),
+        'start' => CRM_Utils_Date::customFormat($dao->start_date),
+        'end' => CRM_Utils_Date::customFormat($dao->end_date),
         'created_by' => $dao->created_by,
         'scheduled_by' => $dao->scheduled_by,
         'created_id' => $dao->created_id,
@@ -2790,7 +2797,7 @@ LEFT JOIN civicrm_mailing_group g ON g.mailing_id   = m.id
       $className != 'CRM_Contact_Form_Task_SMS'
     ) {
       $form->add('wysiwyg', 'html_message',
-        ts('HTML Format'),
+        strstr($className, 'PDF') ? ts('Document Body') : ts('HTML Format'),
         array(
           'cols' => '80',
           'rows' => '8',

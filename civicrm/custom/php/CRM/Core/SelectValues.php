@@ -912,8 +912,8 @@ class CRM_Core_SelectValues {
    *
    * @return array
    */
-  public static function getSearchBuilderOperators() {
-    return array(
+  public static function getSearchBuilderOperators($fieldType = NULL) {
+    $builderOperators = array(
       '=' => '=',
       '!=' => '≠',
       '>' => '>',
@@ -930,6 +930,17 @@ class CRM_Core_SelectValues {
       'IS NULL' => ts('Is Null'),
       'IS NOT NULL' => ts('Not Null'),
     );
+    if ($fieldType) {
+      switch ($fieldType) {
+        case CRM_Utils_Type::T_STRING:
+          unset($builderOperators['>']);
+          unset($builderOperators['<']);
+          unset($builderOperators['>=']);
+          unset($builderOperators['<=']);
+          break;
+      }
+    }
+    return $builderOperators;
   }
 
   /**
@@ -1061,6 +1072,20 @@ class CRM_Core_SelectValues {
       'month' => ts('Months'),
       'week' => ts('Weeks'),
       'day' => ts('Days'),
+    );
+  }
+
+  /**
+   * Exportable document formats.
+   *
+   * @return array
+   */
+  public static function documentFormat() {
+    return array(
+      'pdf' => ts('Portable Document Format (.pdf)'),
+      'docx' => ts('MS Word (.docx)'),
+      'odt' => ts('Open Office (.odt)'),
+      'html' => ts('Webpage (.html)'),
     );
   }
 

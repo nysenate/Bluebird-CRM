@@ -306,6 +306,7 @@ CREATE TEMPORARY TABLE civicrm_email_temp_values (
               AND       (civicrm_email.reset_date IS NULL OR civicrm_email.reset_date < civicrm_mailing_job.start_date)
             GROUP BY    civicrm_email.id
          ";
+    CRM_Core_DAO::executeQuery($query);
 
     $query = "
 UPDATE     civicrm_email e
@@ -318,4 +319,3 @@ SET        e.on_hold = 0,
   }
 
 }
-

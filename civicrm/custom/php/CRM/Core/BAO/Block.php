@@ -170,8 +170,7 @@ class CRM_Core_BAO_Block {
         return false;
       }
     }
-    elseif ( !CRM_Utils_Array::value( $blockName, $params ) ||
-      !is_array( $params[$blockName] ) ) {
+    elseif (empty($params[$blockName]) || !is_array($params[$blockName])) {
       return FALSE;
     }
 
@@ -435,6 +434,7 @@ class CRM_Core_BAO_Block {
     }
 
     // if params is_primary then set all others to not be primary & exit out
+    // if is_primary = 1
     if (!empty($params['is_primary'])) {
       $sql = "UPDATE $table SET is_primary = 0 WHERE contact_id = %1";
       $sqlParams = array(1 => array($contactId, 'Integer'));
