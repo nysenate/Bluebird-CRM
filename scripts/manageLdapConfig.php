@@ -211,7 +211,7 @@ else {
     exit(1);
   }
 
-  $dbh = $bootstrap['dbh'];
+  $dbh = $bootstrap['dbrefs'][DB_TYPE_DRUPAL];
 
   $rc = true;
 
