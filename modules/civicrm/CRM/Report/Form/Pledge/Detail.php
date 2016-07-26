@@ -54,8 +54,7 @@ class CRM_Report_Form_Pledge_Detail extends CRM_Report_Form {
   );
 
   /**
-   */
-  /**
+   * Class constructor.
    */
   public function __construct() {
     $this->_pledgeStatuses = CRM_Contribute_PseudoConstant::contributionStatus();
@@ -293,6 +292,7 @@ class CRM_Report_Form_Pledge_Detail extends CRM_Report_Form {
   public function statistics(&$rows) {
     $statistics = parent::statistics($rows);
     //regenerate the from field without extra left join on pledge payments
+    $totalPaid = $this->_totalPaid;
     $this->_totalPaid = FALSE;
     $this->from();
     $this->customDataFrom();
@@ -340,6 +340,11 @@ class CRM_Report_Form_Pledge_Detail extends CRM_Report_Form {
           'type' => CRM_Utils_Type::T_INT,
         );
       }
+    }
+    // reset from clause
+    if ($totalPaid) {
+      $this->_totalPaid = TRUE;
+      $this->from();
     }
     return $statistics;
   }

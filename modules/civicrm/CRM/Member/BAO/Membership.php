@@ -137,7 +137,7 @@ class CRM_Member_BAO_Membership extends CRM_Member_DAO_Membership {
     CRM_Member_BAO_MembershipLog::add($membershipLog, CRM_Core_DAO::$_nullArray);
 
     // reset the group contact cache since smart groups might be affected due to this
-    CRM_Contact_BAO_GroupContactCache::remove();
+    CRM_Contact_BAO_GroupContactCache::opportunisticCacheFlush();
 
     if ($id) {
       if ($membership->status_id != $oldStatus) {
@@ -2277,7 +2277,7 @@ WHERE      civicrm_membership.is_test = 0";
           array(
             'membership_id' => $dao->membership_id,
             'version' => 3,
-            'ignore_admin_only' => FALSE,
+            'ignore_admin_only' => TRUE,
           ), TRUE
         );
         $statusId = CRM_Utils_Array::value('id', $newStatus);

@@ -116,6 +116,15 @@ class CRM_Core_DAO extends DB_DataObject {
   }
 
   /**
+   * @return DB_common
+   */
+  public static function getConnection() {
+    global $_DB_DATAOBJECT;
+    $dao = new CRM_Core_DAO();
+    return $_DB_DATAOBJECT['CONNECTIONS'][$dao->_database_dsn_md5];
+  }
+
+  /**
    * @param string $fieldName
    * @param $fieldDef
    * @param array $params
@@ -138,26 +147,26 @@ class CRM_Core_DAO extends DB_DataObject {
       if ($fkDAO->find(TRUE)) {
         $this->$dbName = $fkDAO->id;
       }
-      unset($fkDAO);
+      $fkDAO->free();
     }
 
     elseif (in_array($FKClassName, CRM_Core_DAO::$_testEntitiesToSkip)) {
       $depObject = new $FKClassName();
       $depObject->find(TRUE);
       $this->$dbName = $depObject->id;
-      unset($depObject);
+      $depObject->free();
     }
     elseif ($daoName == 'CRM_Member_DAO_MembershipType' && $fieldName == 'member_of_contact_id') {
       // FIXME: the fields() metadata is not specific enough
       $depObject = CRM_Core_DAO::createTestObject($FKClassName, array('contact_type' => 'Organization'));
       $this->$dbName = $depObject->id;
-      unset($depObject);
+      $depObject->free();
     }
     else {
       //if it is required we need to generate the dependency object first
       $depObject = CRM_Core_DAO::createTestObject($FKClassName, CRM_Utils_Array::value($dbName, $params, 1));
       $this->$dbName = $depObject->id;
-      unset($depObject);
+      $depObject->free();
     }
   }
 
@@ -511,6 +520,7 @@ class CRM_Core_DAO extends DB_DataObject {
 
     $event = new \Civi\Core\DAO\Event\PostDelete($this, $result);
     \Civi::service('dispatcher')->dispatch("DAO::post-delete", $event);
+    $this->free();
 
     return $result;
   }
@@ -1196,7 +1206,7 @@ FROM   civicrm_domain
     }
 
     if ($trapException) {
-      CRM_Core_TemporaryErrorScope::ignoreException();
+      CRM_Core_Error::ignoreException();
     }
 
     // set the DAO object to use an unbuffered query
@@ -1322,14 +1332,16 @@ FROM   civicrm_domain
   }
 
   /**
-   * @param $query
+   * Compose the query by merging the parameters into it.
+   *
+   * @param string $query
    * @param array $params
    * @param bool $abort
    *
    * @return string
    * @throws Exception
    */
-  public static function composeQuery($query, &$params, $abort = TRUE) {
+  public static function composeQuery($query, $params, $abort = TRUE) {
     $tr = array();
     foreach ($params as $key => $item) {
       if (is_numeric($key)) {
@@ -1943,25 +1955,12 @@ SELECT contact_id
    * @param string $tableName
    *   the specific table requiring a rebuild; or NULL to rebuild all tables.
    * @param bool $force
+   * @deprecated
    *
    * @see CRM-9716
    */
   public static function triggerRebuild($tableName = NULL, $force = FALSE) {
-    $info = array();
-
-    $logging = new CRM_Logging_Schema();
-    $logging->triggerInfo($info, $tableName, $force);
-
-    CRM_Core_I18n_Schema::triggerInfo($info, $tableName);
-    CRM_Contact_BAO_Contact::triggerInfo($info, $tableName);
-
-    CRM_Utils_Hook::triggerInfo($info, $tableName);
-
-    // drop all existing triggers on all tables
-    $logging->dropTriggers($tableName);
-
-    // now create the set of new triggers
-    self::createTriggers($info, $tableName);
+    Civi::service('sql_triggers')->rebuild($tableName, $force);
   }
 
   /**
@@ -1986,15 +1985,10 @@ SELECT contact_id
    *
    * @param string $tableName
    *   the specific table requiring a rebuild; or NULL to rebuild all tables.
+   * @deprecated
    */
   public static function dropTriggers($tableName = NULL) {
-    $info = array();
-
-    $logging = new CRM_Logging_Schema();
-    $logging->triggerInfo($info, $tableName);
-
-    // drop all existing triggers on all tables
-    $logging->dropTriggers($tableName);
+    Civi::service('sql_triggers')->dropTriggers($tableName);
   }
 
   /**
@@ -2002,116 +1996,10 @@ SELECT contact_id
    *   per hook_civicrm_triggerInfo.
    * @param string $onlyTableName
    *   the specific table requiring a rebuild; or NULL to rebuild all tables.
+   * @deprecated
    */
   public static function createTriggers(&$info, $onlyTableName = NULL) {
-    // Validate info array, should probably raise errors?
-    if (is_array($info) == FALSE) {
-      return;
-    }
-
-    $triggers = array();
-
-    // now enumerate the tables and the events and collect the same set in a different format
-    foreach ($info as $value) {
-
-      // clean the incoming data, skip malformed entries
-      // TODO: malformed entries should raise errors or get logged.
-      if (isset($value['table']) == FALSE ||
-        isset($value['event']) == FALSE ||
-        isset($value['when']) == FALSE ||
-        isset($value['sql']) == FALSE
-      ) {
-        continue;
-      }
-
-      if (is_string($value['table']) == TRUE) {
-        $tables = array($value['table']);
-      }
-      else {
-        $tables = $value['table'];
-      }
-
-      if (is_string($value['event']) == TRUE) {
-        $events = array(strtolower($value['event']));
-      }
-      else {
-        $events = array_map('strtolower', $value['event']);
-      }
-
-      $whenName = strtolower($value['when']);
-
-      foreach ($tables as $tableName) {
-        if (!isset($triggers[$tableName])) {
-          $triggers[$tableName] = array();
-        }
-
-        foreach ($events as $eventName) {
-          $template_params = array('{tableName}', '{eventName}');
-          $template_values = array($tableName, $eventName);
-
-          //NYSS trim
-          $sql = trim(str_replace($template_params,
-            $template_values,
-            $value['sql']
-          ));
-
-          //NYSS we need this key set or we get ugly PHP notices
-          if ( !isset($value['variables']) ) {
-            $value['variables'] = '';
-          }
-          $variables = str_replace($template_params,
-            $template_values,
-            CRM_Utils_Array::value('variables', $value)
-          );
-
-          if (!isset($triggers[$tableName][$eventName])) {
-            $triggers[$tableName][$eventName] = array();
-          }
-
-          if (!isset($triggers[$tableName][$eventName][$whenName])) {
-            // We're leaving out cursors, conditions, and handlers for now
-            // they are kind of dangerous in this context anyway
-            // better off putting them in stored procedures
-            $triggers[$tableName][$eventName][$whenName] = array(
-              'variables' => array(),
-              'sql' => array(),
-            );
-          }
-
-          if ($variables) {
-            $triggers[$tableName][$eventName][$whenName]['variables'][] = $variables;
-          }
-
-          $triggers[$tableName][$eventName][$whenName]['sql'][] = $sql;
-        }
-      }
-    }
-
-    // now spit out the sql
-    foreach ($triggers as $tableName => $tables) {
-      if ($onlyTableName != NULL && $onlyTableName != $tableName) {
-        continue;
-      }
-      foreach ($tables as $eventName => $events) {
-        foreach ($events as $whenName => $parts) {
-          $varString = implode("\n", $parts['variables']);
-          $sqlString = implode("\n", $parts['sql']);
-          $validName = CRM_Core_DAO::shortenSQLName($tableName, 48, TRUE);
-          $triggerName = "{$validName}_{$whenName}_{$eventName}";
-          $triggerSQL = "CREATE TRIGGER $triggerName $whenName $eventName ON $tableName FOR EACH ROW BEGIN $varString $sqlString END";
-
-          CRM_Core_DAO::executeQuery("DROP TRIGGER IF EXISTS $triggerName");
-          CRM_Core_DAO::executeQuery(
-            $triggerSQL,
-            array(),
-            TRUE,
-            NULL,
-            FALSE,
-            FALSE
-          );
-        }
-      }
-    }
+    Civi::service('sql_triggers')->createTriggers($info, $onlyTableName);
   }
 
   /**

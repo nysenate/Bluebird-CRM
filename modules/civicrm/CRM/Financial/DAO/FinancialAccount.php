@@ -171,6 +171,18 @@ class CRM_Financial_DAO_FinancialAccount extends CRM_Core_DAO
    */
   public $is_default;
   /**
+   * Contains the opening balance for this financial account
+   *
+   * @var float
+   */
+  public $opening_balance;
+  /**
+   * Contains the opening balance for the current period for this financial account
+   *
+   * @var float
+   */
+  public $current_period_opening_balance;
+  /**
    * class constructor
    *
    * @return civicrm_financial_account
@@ -328,6 +340,26 @@ class CRM_Financial_DAO_FinancialAccount extends CRM_Core_DAO
           'title' => ts('Default Financial Account') ,
           'description' => 'Is this account the default one (or default tax one) for its financial_account_type?',
         ) ,
+        'opening_balance' => array(
+          'name' => 'opening_balance',
+          'type' => CRM_Utils_Type::T_MONEY,
+          'title' => ts('Opening Balance') ,
+          'description' => 'Contains the opening balance for this financial account',
+          'precision' => array(
+            20,
+            2
+          ) ,
+        ) ,
+        'current_period_opening_balance' => array(
+          'name' => 'current_period_opening_balance',
+          'type' => CRM_Utils_Type::T_MONEY,
+          'title' => ts('Current period opening Balance') ,
+          'description' => 'Contains the opening balance for the current period for this financial account',
+          'precision' => array(
+            20,
+            2
+          ) ,
+        ) ,
       );
     }
     return self::$_fields;
@@ -357,6 +389,8 @@ class CRM_Financial_DAO_FinancialAccount extends CRM_Core_DAO
         'is_reserved' => 'is_reserved',
         'is_active' => 'is_active',
         'is_default' => 'is_default',
+        'opening_balance' => 'opening_balance',
+        'current_period_opening_balance' => 'current_period_opening_balance',
       );
     }
     return self::$_fieldKeys;

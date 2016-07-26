@@ -775,7 +775,7 @@ SELECT case_status.label AS case_status, status_id, civicrm_case_type.title AS c
  WHERE is_deleted = 0 AND cc.contact_id IN (SELECT id FROM civicrm_contact WHERE is_deleted <> 1)
 {$myCaseWhereClause} {$myGroupByClause}";
 
-    $res = CRM_Core_DAO::executeQuery($query, CRM_Core_DAO::$_nullArray);
+    $res = CRM_Core_DAO::executeQuery($query);
     while ($res->fetch()) {
       if (!empty($rows[$res->case_type]) && !empty($rows[$res->case_type][$res->case_status])) {
         $rows[$res->case_type][$res->case_status]['count'] = $rows[$res->case_type][$res->case_status]['count'] + 1;
@@ -1562,7 +1562,7 @@ SELECT case_status.label AS case_status, status_id, civicrm_case_type.title AS c
 
     $query = self::getCaseActivityQuery($type, $userID, $condition, $cases['case_deleted']);
 
-    $res = CRM_Core_DAO::executeQuery($query, CRM_Core_DAO::$_nullArray);
+    $res = CRM_Core_DAO::executeQuery($query);
 
     $activityInfo = array();
     while ($res->fetch()) {
@@ -1800,8 +1800,8 @@ SELECT case_status.label AS case_status, status_id, civicrm_case_type.title AS c
     $dao = CRM_Core_DAO::executeQuery($query, $queryParam);
 
     while ($dao->fetch()) {
-      //to get valid assignee contact(s).
-      if (isset($dao->caseId) || $dao->rel_contact_id != $contactId) {
+      // The assignee is not the client.
+      if ($dao->rel_contact_id != $contactId) {
         $caseRelationship = $dao->relation_a_b;
         $assigneContactName = $dao->clientName;
         $assigneContactIds[$dao->rel_contact_id] = $dao->rel_contact_id;
@@ -1901,7 +1901,7 @@ SELECT civicrm_contact.id as casemanager_id,
    * @param int $contactId
    * @param bool $excludeDeleted
    *
-   * @return null|string
+   * @return int
    */
   public static function caseCount($contactId = NULL, $excludeDeleted = TRUE) {
     $params = array('check_permissions' => TRUE);
@@ -1911,7 +1911,13 @@ SELECT civicrm_contact.id as casemanager_id,
     if ($contactId) {
       $params['contact_id'] = $contactId;
     }
-    return civicrm_api3('Case', 'getcount', $params);
+    try {
+      return civicrm_api3('Case', 'getcount', $params);
+    }
+    catch (CiviCRM_API3_Exception $e) {
+      // Lack of permissions will throw an exception
+      return 0;
+    }
   }
 
   /**
@@ -2134,7 +2140,7 @@ SELECT civicrm_contact.id as casemanager_id,
             $from = ' FROM ' . $tableName;
             $where = " WHERE {$tableName}.entity_id = {$otherCaseId}";
             $query = $insert . $select . $from . $where;
-            $dao = CRM_Core_DAO::executeQuery($query, CRM_Core_DAO::$_nullArray);
+            $dao = CRM_Core_DAO::executeQuery($query);
           }
         }
 
@@ -2542,12 +2548,18 @@ WHERE id IN (' . implode(',', $copiedActivityIds) . ')';
     if (in_array($operation, $caseActOperations)) {
       static $caseCount;
       if (!isset($caseCount)) {
-        $caseCount = civicrm_api3('Case', 'getcount', array(
-          'check_permissions' => TRUE,
-          'status_id' => array('!=' => 'Closed'),
-          'is_deleted' => 0,
-          'end_date' => array('IS NULL' => 1),
-        ));
+        try {
+          $caseCount = civicrm_api3('Case', 'getcount', array(
+            'check_permissions' => TRUE,
+            'status_id' => array('!=' => 'Closed'),
+            'is_deleted' => 0,
+            'end_date' => array('IS NULL' => 1),
+          ));
+        }
+        catch (CiviCRM_API3_Exception $e) {
+          // Lack of permissions will throw an exception
+          $caseCount = 0;
+        }
       }
       if ($operation == 'File On Case') {
         $allow = !empty($caseCount);
@@ -2793,7 +2805,13 @@ WHERE id IN (' . implode(',', $copiedActivityIds) . ')';
     if ($denyClosed && !CRM_Core_Permission::check('access all cases and activities')) {
       $params['status_id'] = array('!=' => 'Closed');
     }
-    return (bool) civicrm_api3('Case', 'getcount', $params);
+    try {
+      return (bool) civicrm_api3('Case', 'getcount', $params);
+    }
+    catch (CiviCRM_API3_Exception $e) {
+      // Lack of permissions will throw an exception
+      return FALSE;
+    }
   }
 
   /**

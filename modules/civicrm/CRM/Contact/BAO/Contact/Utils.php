@@ -266,7 +266,7 @@ UNION
 UNION
 ( SELECT location_type_id FROM civicrm_address WHERE contact_id = {$contactId} )
 ";
-    $dao = CRM_Core_DAO::executeQuery($query, CRM_Core_DAO::$_nullArray);
+    $dao = CRM_Core_DAO::executeQuery($query);
     return $dao->N;
   }
 
@@ -555,7 +555,7 @@ UPDATE civicrm_contact
    SET organization_name=NULL, employer_id = NULL
  WHERE employer_id={$employerId}; ";
 
-    $dao = CRM_Core_DAO::executeQuery($query, CRM_Core_DAO::$_nullArray);
+    $dao = CRM_Core_DAO::executeQuery($query);
   }
 
   /**
@@ -910,8 +910,7 @@ Group By  componentId";
       CRM_Core_BAO_PrevNextCache::deleteItem();
     }
 
-    // reset the group contact cache for this group
-    CRM_Contact_BAO_GroupContactCache::remove();
+    CRM_Contact_BAO_GroupContactCache::opportunisticCacheFlush();
   }
 
   /**

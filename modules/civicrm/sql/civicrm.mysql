@@ -694,7 +694,7 @@ CREATE TABLE `civicrm_contact` (
      `display_name` varchar(128)    COMMENT 'Formatted name representing preferred format for display/print/other output.',
      `nick_name` varchar(128)    COMMENT 'Nickname.',
      `legal_name` varchar(128)    COMMENT 'Legal Name.',
-     `image_URL` varchar(255)    COMMENT 'optional URL for preferred image (photo, logo, etc.) to display for this contact.',
+     `image_URL` varchar(512)    COMMENT 'optional URL for preferred image (photo, logo, etc.) to display for this contact.',
      `preferred_communication_method` varchar(255)    COMMENT 'What is the preferred mode of communication.',
      `preferred_language` varchar(5)    COMMENT 'Which language is preferred for communication. FK to languages in civicrm_option_value.',
      `preferred_mail_format` varchar(8)   DEFAULT "Both" COMMENT 'What is the preferred mode of sending an email.',
@@ -1135,7 +1135,9 @@ CREATE TABLE `civicrm_financial_account` (
      `tax_rate` decimal(10,8)    COMMENT 'The percentage of the total_amount that is due for this tax.',
      `is_reserved` tinyint    COMMENT 'Is this a predefined system object?',
      `is_active` tinyint    COMMENT 'Is this property active?',
-     `is_default` tinyint    COMMENT 'Is this account the default one (or default tax one) for its financial_account_type?' 
+     `is_default` tinyint    COMMENT 'Is this account the default one (or default tax one) for its financial_account_type?',
+     `opening_balance` decimal(20,2)   DEFAULT 0 COMMENT 'Contains the opening balance for this financial account',
+     `current_period_opening_balance` decimal(20,2)   DEFAULT 0 COMMENT 'Contains the opening balance for the current period for this financial account' 
 ,
     PRIMARY KEY ( `id` )
  
@@ -2663,7 +2665,7 @@ CREATE TABLE `civicrm_acl_cache` (
      `id` int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Unique table ID',
      `contact_id` int unsigned    COMMENT 'Foreign Key to Contact',
      `acl_id` int unsigned NOT NULL   COMMENT 'Foreign Key to ACL',
-     `modified_date` date    COMMENT 'When was this cache entry last modified' 
+     `modified_date` timestamp NULL   COMMENT 'When was this cache entry last modified' 
 ,
     PRIMARY KEY ( `id` )
  
@@ -2696,8 +2698,8 @@ CREATE TABLE `civicrm_group` (
      `select_tables` text    COMMENT 'the tables to be included in a select data',
      `where_tables` text    COMMENT 'the tables to be included in the count statement',
      `group_type` varchar(128)    COMMENT 'FK to group type',
-     `cache_date` datetime    COMMENT 'Date when we created the cache for a smart group',
-     `refresh_date` datetime    COMMENT 'Date and time when we need to refresh the cache next.',
+     `cache_date` timestamp NULL   COMMENT 'Date when we created the cache for a smart group',
+     `refresh_date` timestamp NULL   COMMENT 'Date and time when we need to refresh the cache next.',
      `parents` text    COMMENT 'IDs of the parent(s)',
      `children` text    COMMENT 'IDs of the child(ren)',
      `is_hidden` tinyint   DEFAULT 0 COMMENT 'Is this group hidden?',
@@ -4431,7 +4433,7 @@ CREATE TABLE `civicrm_address` (
      `county_id` int unsigned    COMMENT 'Which County does this address belong to.',
      `state_province_id` int unsigned    COMMENT 'Which State_Province does this address belong to.',
      `postal_code_suffix` varchar(12)    COMMENT 'Store the suffix, like the +4 part in the USPS system.',
-     `postal_code` varchar(12)    COMMENT 'Store both US (zip5) AND international postal codes. App is responsible for country/region appropriate validation.',
+     `postal_code` varchar(64)    COMMENT 'Store both US (zip5) AND international postal codes. App is responsible for country/region appropriate validation.',
      `usps_adc` varchar(32)    COMMENT 'USPS Bulk mailing code.',
      `country_id` int unsigned    COMMENT 'Which Country does this address belong to.',
      `geo_code_1` double    COMMENT 'Latitude',
@@ -4550,7 +4552,8 @@ CREATE TABLE `civicrm_contribution` (
      `check_number` varchar(255)    ,
      `campaign_id` int unsigned    COMMENT 'The campaign for which this contribution has been triggered.',
      `creditnote_id` varchar(255)    COMMENT 'unique credit note id, system generated or passed in',
-     `tax_amount` decimal(20,2)    COMMENT 'Total tax amount of this contribution.' 
+     `tax_amount` decimal(20,2)    COMMENT 'Total tax amount of this contribution.',
+     `revenue_recognition_date` datetime    COMMENT 'Stores the date when revenue should be recognized.' 
 ,
     PRIMARY KEY ( `id` )
  

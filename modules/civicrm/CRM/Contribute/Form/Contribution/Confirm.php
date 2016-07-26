@@ -210,11 +210,11 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
     if (!empty($this->_paymentProcessor) &&  $this->_paymentProcessor['object']->supports('preApproval')) {
       $preApprovalParams = $this->_paymentProcessor['object']->getPreApprovalDetails($this->get('pre_approval_parameters'));
       $this->_params = array_merge($this->_params, $preApprovalParams);
-    }
 
-    // We may have fetched some billing details from the getPreApprovalDetails function so we
-    // want to ensure we set this after that function has been called.
-    CRM_Core_Payment_Form::mapParams($this->_bltID, $this->_params, $this->_params, FALSE);
+      // We may have fetched some billing details from the getPreApprovalDetails function so we
+      // want to ensure we set this after that function has been called.
+      CRM_Core_Payment_Form::mapParams($this->_bltID, $preApprovalParams, $this->_params, FALSE);
+    }
 
     $this->_params['is_pay_later'] = $this->get('is_pay_later');
     $this->assign('is_pay_later', $this->_params['is_pay_later']);
@@ -486,8 +486,8 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
     // The concept of contributeMode is deprecated.
     // the is_monetary concept probably should be too as it can be calculated from
     // the existence of 'amount' & seems fragile.
-    if ($this->_contributeMode == 'notify' || !$this->_values['is_monetary'] ||
-      $this->_amount <= 0.0 || $this->_params['is_pay_later'] ||
+    if ($this->_contributeMode == 'notify' ||
+      $this->_amount < 0.0 || $this->_params['is_pay_later'] ||
       ($this->_separateMembershipPayment && $this->_amount <= 0.0)
     ) {
       $contribButton = ts('Continue');
@@ -1083,7 +1083,7 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
     $recurParams['trxn_id'] = CRM_Utils_Array::value('trxn_id', $params, $params['invoiceID']);
     $recurParams['financial_type_id'] = $contributionType->id;
 
-    if ($form->_values['is_monetary']) {
+    if (!empty($form->_values['is_monetary'])) {
       $recurParams['payment_instrument_id'] = 1;
     }
 
@@ -1501,6 +1501,7 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
           $numTerms, $membershipID, $pending,
           $contributionRecurID, $membershipSource, $isPayLater, $campaignId
         );
+
         $form->set('renewal_mode', $renewalMode);
         if (!empty($dates)) {
           $form->assign('mem_start_date', CRM_Utils_Date::customFormat($dates['start_date'], '%Y%m%d'));
@@ -1591,7 +1592,7 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
       //CRM-18071, where on selecting $0 free membership payment section got hidden and
       // also it reset any payment processor selection result into pending free membership
       // so its a kind of hack to complete free membership at this point since there is no $form->_paymentProcessor info
-      if (empty($form->_params['is_pay_later']) && !empty($membershipContribution) && !is_a($membershipContribution, 'CRM_Core_Error')) {
+      if (!empty($membershipContribution) && !is_a($membershipContribution, 'CRM_Core_Error')) {
         $paymentProcessorIDs = explode(CRM_Core_DAO::VALUE_SEPARATOR, CRM_Utils_Array::value('payment_processor', $this->_values));
         if (empty($form->_paymentProcessor) && !empty($paymentProcessorIDs)) {
           $this->_paymentProcessor['id'] = $paymentProcessorIDs[0];
@@ -2302,7 +2303,8 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
    * @param array $result
    * @param int $contributionID
    *
-   * @throws \CRM_Core_Exception
+   * @throws \CiviCRM_API3_Exception
+   * @throws \Exception
    */
   protected function completeTransaction($result, $contributionID) {
     if (CRM_Utils_Array::value('payment_status_id', $result) == 1) {

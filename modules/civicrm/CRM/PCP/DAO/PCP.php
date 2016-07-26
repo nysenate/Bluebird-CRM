@@ -343,7 +343,7 @@ class CRM_PCP_DAO_PCP extends CRM_Core_DAO
             'table' => 'civicrm_currency',
             'keyColumn' => 'name',
             'labelColumn' => 'full_name',
-            'nameColumn' => 'numeric_code',
+            'nameColumn' => 'name',
           )
         ) ,
         'is_active' => array(

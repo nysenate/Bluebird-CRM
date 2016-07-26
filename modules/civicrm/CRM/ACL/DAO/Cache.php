@@ -101,7 +101,7 @@ class CRM_ACL_DAO_Cache extends CRM_Core_DAO
   /**
    * When was this cache entry last modified
    *
-   * @var date
+   * @var timestamp
    */
   public $modified_date;
   /**
@@ -162,9 +162,10 @@ class CRM_ACL_DAO_Cache extends CRM_Core_DAO
         ) ,
         'modified_date' => array(
           'name' => 'modified_date',
-          'type' => CRM_Utils_Type::T_DATE,
+          'type' => CRM_Utils_Type::T_TIMESTAMP,
           'title' => ts('Cache Modified Date') ,
           'description' => 'When was this cache entry last modified',
+          'required' => false,
         ) ,
       );
     }

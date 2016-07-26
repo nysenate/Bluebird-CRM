@@ -351,7 +351,7 @@ class CRM_Pledge_DAO_Pledge extends CRM_Core_DAO
             'table' => 'civicrm_currency',
             'keyColumn' => 'name',
             'labelColumn' => 'full_name',
-            'nameColumn' => 'numeric_code',
+            'nameColumn' => 'name',
           )
         ) ,
         'pledge_frequency_unit' => array(
@@ -501,6 +501,10 @@ class CRM_Pledge_DAO_Pledge extends CRM_Core_DAO
           'headerPattern' => '',
           'dataPattern' => '',
           'export' => false,
+          'pseudoconstant' => array(
+            'optionGroupName' => 'contribution_status',
+            'optionEditPath' => 'civicrm/admin/options/contribution_status',
+          )
         ) ,
         'pledge_is_test' => array(
           'name' => 'is_test',
