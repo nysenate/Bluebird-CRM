@@ -4189,3 +4189,7 @@ div.crm-contact-actions-list-inner a {
 #crm-container table.dataTable td {
   font-size: 0.85em;
 }
+
+span.crm-contact-deceased {
+  font-size: 0.7em;
+}
