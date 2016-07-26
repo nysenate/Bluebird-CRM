@@ -209,7 +209,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
           'target_contact_email' =>
           array(
             'name' => 'email',
-            'title' => ts('Target Contact Email'),
+            'title' => ts('Target Email'),
             'dbAlias' => 'civicrm_email_contact_target_email',
           ),
         ),
@@ -417,7 +417,6 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
       $recordType != 'final'
     ) {
       $this->_nonDisplayFields[] = "civicrm_contact_contact_{$recordType}";
-      //$this->_params['fields']["contact_{$recordType}"] = 1; //NYSS 9751 backport
     }
 
     //NYSS 7564 check if order bys are present in field list; if not, add
@@ -856,10 +855,7 @@ GROUP BY civicrm_activity_id $having {$this->_orderBy}";
   ADD COLUMN civicrm_phone_contact_assignee_phone VARCHAR(128),
   ADD COLUMN civicrm_phone_contact_source_phone VARCHAR(128),
   ADD COLUMN civicrm_email_contact_assignee_email VARCHAR(128),
-  ADD COLUMN civicrm_email_contact_source_email VARCHAR(128),
-  ADD COLUMN civicrm_phone_contact_assignee_phone VARCHAR(128),
-  ADD COLUMN civicrm_phone_contact_source_phone VARCHAR(128)
-  ";
+  ADD COLUMN civicrm_email_contact_source_email VARCHAR(128)";
     //NYSS 7827
     if ( !in_array('civicrm_email_target.email as civicrm_email_contact_target_email', $this->_selectClauses) ) {
       $tempQuery .= ', ADD COLUMN civicrm_email_contact_target_email VARCHAR(128)';
