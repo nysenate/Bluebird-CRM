@@ -4181,3 +4181,10 @@ div.crm-contact-actions-list-inner a {
 #crm-container .crm-content-block .crm-inline-edit-form .crm-button input {
   padding-left: 16px;
 }
+
+.crm-container .crm-editable-enabled {
+  white-space: normal;
+}
+#crm-container table.dataTable td {
+  font-size: 0.85em;
+}
