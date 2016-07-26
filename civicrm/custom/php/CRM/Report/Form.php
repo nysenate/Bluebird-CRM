@@ -3952,7 +3952,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
    * @return array
    *   address fields for construct clause
    */
-  function addAddressFields($groupBy = TRUE, $orderBy = FALSE, $filters = TRUE, $defaults = array() ) {//NYSS remove country
+  public function addAddressFields($groupBy = TRUE, $orderBy = FALSE, $filters = TRUE, $defaults = array() ) {//NYSS remove country
     $addressFields = array(
       'civicrm_address' => array(
         'dao' => 'CRM_Core_DAO_Address',
@@ -4092,12 +4092,12 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
     if ($orderBy) {
       $addressFields['civicrm_address']['order_bys'] = array(
         'street_name' => array('title' => ts('Street Name')),
-        'street_number' => array( 'title'   => 'Street Number' ), //NYSS
+        'street_number' => array('title' => 'Street Number'), //NYSS
         'street_address' => NULL,
         'city' => NULL,
         'postal_code' => NULL,
-		'street_unit' => NULL, //NYSS 5059
-		'state_province' => NULL, //NYSS
+		    'street_unit' => NULL, //NYSS 5059
+		    //'state_province' => NULL, //NYSS
       );
     }
 
