@@ -1144,6 +1144,24 @@ abstract class CRM_Utils_Hook {
   }
 
   /**
+   * This hook allows modification of the data calculated for merging locations.
+   *
+   * @param array $blocksDAO
+   *   Array of location DAO to be saved. These are arrays in 2 keys 'update' & 'delete'.
+   * @param int $mainId
+   *   Contact_id of the contact that survives the merge.
+   * @param int $otherId
+   *   Contact_id of the contact that will be absorbed and deleted.
+   * @param array $migrationInfo
+   *   Calculated migration info, informational only.
+   *
+   * @return mixed
+   */
+  public static function alterLocationMergeData(&$blocksDAO, $mainId, $otherId, $migrationInfo) {
+    return self::singleton()->invoke(4, $blocksDAO, $mainId, $otherId, $migrationInfo, self::$_nullObject, self::$_nullObject, 'civicrm_alterLocationMergeData');
+  }
+
+  /**
    * This hook provides a way to override the default privacy behavior for notes.
    *
    * @param array &$noteValues
@@ -2073,6 +2091,26 @@ abstract class CRM_Utils_Hook {
     return self::singleton()->invoke(1, $query, self::$_nullObject,
       self::$_nullObject, self::$_nullObject, self::$_nullObject, self::$_nullObject,
       'civicrm_batchQuery'
+    );
+  }
+
+  /**
+   * This hook is called to alter Deferred revenue item values just before they are
+   * inserted in civicrm_financial_trxn table
+   *
+   * @param array $deferredRevenues
+   *
+   * @param array $contributionDetails
+   *
+   * @param bool $update
+   *
+   * @param string $context
+   *
+   * @return mixed
+   */
+  public static function alterDeferredRevenueItems(&$deferredRevenues, $contributionDetails, $update, $context) {
+    return self::singleton()->invoke(4, $deferredRevenues, $contributionDetails, $update, $context,
+      self::$_nullObject, self::$_nullObject, 'civicrm_alterDeferredRevenueItems'
     );
   }
 

@@ -275,6 +275,7 @@ class CRM_Report_Form_Contribute_TopDonor extends CRM_Report_Form {
         }
       }
     }
+    $this->_selectClauses = $select;
 
     $this->_select = " SELECT * FROM ( SELECT " . implode(', ', $select) . " ";
   }
@@ -374,7 +375,7 @@ class CRM_Report_Form_Contribute_TopDonor extends CRM_Report_Form {
   }
 
   public function groupBy() {
-    $this->_groupBy = "GROUP BY {$this->_aliases['civicrm_contact']}.id, {$this->_aliases['civicrm_contribution']}.currency";
+    $this->_groupBy = CRM_Contact_BAO_Query::getGroupByFromSelectColumns($this->_selectClauses, array("{$this->_aliases['civicrm_contact']}.id", "{$this->_aliases['civicrm_contribution']}.currency"));
   }
 
   public function postProcess() {
@@ -384,16 +385,7 @@ class CRM_Report_Form_Contribute_TopDonor extends CRM_Report_Form {
     // get the acl clauses built before we assemble the query
     $this->buildACLClause($this->_aliases['civicrm_contact']);
 
-    $this->select();
-
-    $this->from();
-    $this->getPermissionedFTQuery($this);
-
-    $this->where();
-
-    $this->groupBy();
-
-    $this->limit();
+    $this->buildQuery();
 
     //set the variable value rank, rows = 0
     $setVariable = " SET @rows:=0, @rank=0 ";
