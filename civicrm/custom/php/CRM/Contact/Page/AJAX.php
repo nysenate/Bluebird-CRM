@@ -616,121 +616,6 @@ LIMIT {$offset}, {$rowCount}
     CRM_Utils_JSON::output($signatures);
   }
 
-  static function relationshipContacts() {
-    $searchValues = $searchRows = array();
-    $addCount = 0;
-
-    $relType          = CRM_Utils_Type::escape($_REQUEST['relType'], 'String');
-    $typeName         = isset($_REQUEST['typeName']) ? CRM_Utils_Type::escape($_REQUEST['typeName'], 'String') : '';
-    $relContact       = CRM_Utils_Type::escape($_REQUEST['relContact'], 'String');
-    $currentContactId = CRM_Utils_Type::escape($_REQUEST['cid'], 'Integer');
-
-    if (in_array($typeName, array(
-      'Employee of', 'Employer of'))) {
-      $addCount = 1;
-    }
-
-    //NYSS include address in case resources listing
-    $sortMapper = array(
-      1 => 'sort_name',
-      (2+$addCount) => 'address',
-      (3+$addCount) => 'city',
-      (4+$addCount) => 'state_province',
-      (5+$addCount) => 'email',
-      (6+$addCount) => 'phone' );
-
-    $sEcho     = CRM_Utils_Type::escape($_REQUEST['sEcho'], 'Integer');
-    $offset    = isset($_REQUEST['iDisplayStart']) ? CRM_Utils_Type::escape($_REQUEST['iDisplayStart'], 'Integer') : 0;
-    $rowCount  = isset($_REQUEST['iDisplayLength']) ? CRM_Utils_Type::escape($_REQUEST['iDisplayLength'], 'Integer') : 25;
-    $sort      = isset($_REQUEST['iSortCol_0']) ? $sortMapper[CRM_Utils_Type::escape($_REQUEST['iSortCol_0'], 'Integer')] : 'sort_name';
-    $sortOrder = isset($_REQUEST['sSortDir_0']) ? CRM_Utils_Type::escape($_REQUEST['sSortDir_0'], 'String') : 'asc';
-
-    $searchValues[] = array('sort_name', 'LIKE', $relContact, 0, 1);
-
-    list($rid, $direction) = explode('_', $relType, 2);
-
-    $relationshipType = new CRM_Contact_DAO_RelationshipType();
-
-    $relationshipType->id = $rid;
-    if ($relationshipType->find(TRUE)) {
-      if ($direction == 'a_b') {
-        $type = $relationshipType->contact_type_b;
-        $subType = $relationshipType->contact_sub_type_b;
-      }
-      else {
-        $type = $relationshipType->contact_type_a;
-        $subType = $relationshipType->contact_sub_type_a;
-      }
-
-      if ($type == 'Individual' || $type == 'Organization' || $type == 'Household') {
-        $searchValues[] = array('contact_type', '=', $type, 0, 0);
-      }
-
-      if ($subType) {
-        $searchValues[] = array('contact_sub_type', '=', $subType, 0, 0);
-      }
-    }
-
-    // exclude current contact
-    $searchValues[] = array('contact_id', '!=', $currentContactId, 0, 0);
-
-    $query       = new CRM_Contact_BAO_Query($searchValues);
-    $searchCount = $query->searchQuery(0, 0, NULL, TRUE);
-    $iTotal      = $searchCount;
-
-    if ($searchCount > 0) {
-      // get the result of the search
-      $result = $query->searchQuery($offset, $rowCount, $sort, FALSE, FALSE,
-        FALSE, FALSE, FALSE, NULL, $sortOrder
-      );
-
-      $config = CRM_Core_Config::singleton();
-
-      while ($result->fetch()) {
-        $query->convertToPseudoNames($result);
-        $contactID = $result->contact_id;
-        $typeImage = CRM_Contact_BAO_Contact_Utils::getImage($result->contact_sub_type ?
-          $result->contact_sub_type : $result->contact_type,
-          FALSE, $contactID
-        );
-
-        $searchRows[$contactID]['id'] = $contactID;
-        $searchRows[$contactID]['name'] = $typeImage . ' ' . $result->sort_name;
-        //NYSS include address in case resources listing
-        $searchRows[$contactID]['address'] = $result->street_address;
-        $searchRows[$contactID]['city'] = $result->city;
-        $searchRows[$contactID]['state'] = $result->state_province;
-        $searchRows[$contactID]['email'] = $result->email;
-        $searchRows[$contactID]['phone'] = $result->phone;
-      }
-    }
-
-    foreach ($searchRows as $cid => $row) {
-      $searchRows[$cid]['check'] = '<input type="checkbox" id="contact_check[' . $cid . ']" name="contact_check[' . $cid . ']" value=' . $cid . ' />';
-
-      if ($typeName == 'Employee of') {
-        $searchRows[$cid]['employee_of'] = '<input type="radio" name="employee_of" value=' . $cid . ' >';
-      }
-      elseif ($typeName == 'Employer of') {
-        $searchRows[$cid]['employer_of'] = '<input type="checkbox"  name="employer_of[' . $cid . ']" value=' . $cid . ' />';
-      }
-    }
-
-    $selectorElements = array('check', 'name');
-    if ($typeName == 'Employee of') {
-      $selectorElements[] = 'employee_of';
-    }
-    elseif ($typeName == 'Employer of') {
-      $selectorElements[] = 'employer_of';
-    }
-    //NYSS
-    $selectorElements = array_merge( $selectorElements, array( 'address', 'city', 'state', 'email', 'phone' ) );
-    
-    $iFilteredTotal = $iTotal;
-    echo CRM_Utils_JSON::encodeDataTableSelector($searchRows, $sEcho, $iTotal, $iFilteredTotal, $selectorElements);
-    CRM_Utils_System::civiExit();
-  }
-
   /**
    * Process dupes.
    */
@@ -791,14 +676,14 @@ LIMIT {$offset}, {$rowCount}
 
     $nextParamKey = 3;
     $mappings = array(
-      'src' => 'cc1.display_name',
-      'dst' => 'cc2.display_name',
-      'src_email' => 'ce1.email',
-      'dst_email' => 'ce2.email',
-      'src_postcode' => 'ca1.postal_code',
-      'dst_postcode' => 'ca2.postal_code',
-      'src_street' => 'ca1.street',
-      'dst_street' => 'ca2.street',
+      'dst' => 'cc1.display_name',
+      'src' => 'cc2.display_name',
+      'dst_email' => 'ce1.email',
+      'src_email' => 'ce2.email',
+      'dst_postcode' => 'ca1.postal_code',
+      'src_postcode' => 'ca2.postal_code',
+      'dst_street' => 'ca1.street',
+      'src_street' => 'ca2.street',
     );
 
     foreach ($mappings as $key => $dbName) {
@@ -825,18 +710,18 @@ LIMIT {$offset}, {$rowCount}
     $join .= CRM_Dedupe_Merger::getJoinOnDedupeTable();
 
     $select = array(
-      'cc1.contact_type'     => 'src_contact_type',
-      'cc1.display_name'     => 'src_display_name',
-      'cc1.contact_sub_type' => 'src_contact_sub_type',
-      'cc2.contact_type'     => 'dst_contact_type',
-      'cc2.display_name'     => 'dst_display_name',
-      'cc2.contact_sub_type' => 'dst_contact_sub_type',
-      'ce1.email'            => 'src_email',
-      'ce2.email'            => 'dst_email',
-      'ca1.postal_code'      => 'src_postcode',
-      'ca2.postal_code'      => 'dst_postcode',
-      'ca1.street_address'   => 'src_street',
-      'ca2.street_address'   => 'dst_street',
+      'cc1.contact_type'     => 'dst_contact_type',
+      'cc1.display_name'     => 'dst_display_name',
+      'cc1.contact_sub_type' => 'dst_contact_sub_type',
+      'cc2.contact_type'     => 'src_contact_type',
+      'cc2.display_name'     => 'src_display_name',
+      'cc2.contact_sub_type' => 'src_contact_sub_type',
+      'ce1.email'            => 'dst_email',
+      'ce2.email'            => 'src_email',
+      'ca1.postal_code'      => 'dst_postcode',
+      'ca2.postal_code'      => 'src_postcode',
+      'ca1.street_address'   => 'dst_street',
+      'ca2.street_address'   => 'src_street',
     );
 
     if ($select) {
@@ -860,38 +745,39 @@ LIMIT {$offset}, {$rowCount}
     if (!empty($columnDetails)) {
       switch ($columnDetails['data']) {
         case 'src':
-          $orderByClause = " ORDER BY cc1.display_name {$dir}";
-          break;
-
-        case 'src_email':
-          $orderByClause = " ORDER BY ce1.email {$dir}";
-          break;
-
-        case 'src_street':
-          $orderByClause = " ORDER BY ca1.street_address {$dir}";
-          break;
-
-        case 'src_postcode':
-          $orderByClause = " ORDER BY ca1.postal_code {$dir}";
-          break;
-
-        case 'dst':
           $orderByClause = " ORDER BY cc2.display_name {$dir}";
           break;
 
-        case 'dst_email':
+        case 'src_email':
           $orderByClause = " ORDER BY ce2.email {$dir}";
           break;
 
-        case 'dst_street':
+        case 'src_street':
           $orderByClause = " ORDER BY ca2.street_address {$dir}";
           break;
 
-        case 'dst_postcode':
+        case 'src_postcode':
           $orderByClause = " ORDER BY ca2.postal_code {$dir}";
           break;
 
+        case 'dst':
+          $orderByClause = " ORDER BY cc1.display_name {$dir}";
+          break;
+
+        case 'dst_email':
+          $orderByClause = " ORDER BY ce1.email {$dir}";
+          break;
+
+        case 'dst_street':
+          $orderByClause = " ORDER BY ca1.street_address {$dir}";
+          break;
+
+        case 'dst_postcode':
+          $orderByClause = " ORDER BY ca1.postal_code {$dir}";
+          break;
+
         default:
+          $orderByClause = " ORDER BY cc1.display_name ASC";
           break;
       }
     }
@@ -901,29 +787,29 @@ LIMIT {$offset}, {$rowCount}
 
     $count = 0;
     foreach ($dupePairs as $key => $pairInfo) {
-      $pair =& $pairInfo['data'];
+      $pair = $pairInfo['data'];
       $srcContactSubType  = CRM_Utils_Array::value('src_contact_sub_type', $pairInfo);
       $dstContactSubType  = CRM_Utils_Array::value('dst_contact_sub_type', $pairInfo);
       $srcTypeImage = CRM_Contact_BAO_Contact_Utils::getImage($srcContactSubType ?
         $srcContactSubType : $pairInfo['src_contact_type'],
         FALSE,
-        $pairInfo['entity_id1']
+        $pairInfo['entity_id2']
       );
       $dstTypeImage = CRM_Contact_BAO_Contact_Utils::getImage($dstContactSubType ?
         $dstContactSubType : $pairInfo['dst_contact_type'],
         FALSE,
-        $pairInfo['entity_id2']
+        $pairInfo['entity_id1']
       );
 
       $searchRows[$count]['is_selected'] = $pairInfo['is_selected'];
       $searchRows[$count]['is_selected_input'] = "<input type='checkbox' class='crm-dedupe-select' name='pnid_{$pairInfo['prevnext_id']}' value='{$pairInfo['is_selected']}' onclick='toggleDedupeSelect(this)'>";
       $searchRows[$count]['src_image'] = $srcTypeImage;
-      $searchRows[$count]['src'] = CRM_Utils_System::href($pair['srcName'], 'civicrm/contact/view', "reset=1&cid={$pairInfo['entity_id1']}");
+      $searchRows[$count]['src'] = CRM_Utils_System::href($pair['srcName'], 'civicrm/contact/view', "reset=1&cid={$pairInfo['entity_id2']}");
       $searchRows[$count]['src_email'] = CRM_Utils_Array::value('src_email', $pairInfo);
       $searchRows[$count]['src_street'] = CRM_Utils_Array::value('src_street', $pairInfo);
       $searchRows[$count]['src_postcode'] = CRM_Utils_Array::value('src_postcode', $pairInfo);
       $searchRows[$count]['dst_image'] = $dstTypeImage;
-      $searchRows[$count]['dst'] = CRM_Utils_System::href($pair['dstName'], 'civicrm/contact/view', "reset=1&cid={$pairInfo['entity_id2']}");
+      $searchRows[$count]['dst'] = CRM_Utils_System::href($pair['dstName'], 'civicrm/contact/view', "reset=1&cid={$pairInfo['entity_id1']}");
       $searchRows[$count]['dst_email'] = CRM_Utils_Array::value('dst_email', $pairInfo);
       $searchRows[$count]['dst_street'] = CRM_Utils_Array::value('dst_street', $pairInfo);
       $searchRows[$count]['dst_postcode'] = CRM_Utils_Array::value('dst_postcode', $pairInfo);

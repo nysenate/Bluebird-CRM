@@ -641,8 +641,6 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
     if ($this->_aclWhere) {
       $this->_where .= " AND {$this->_aclWhere} ";
     }
-
-    $this->_where .= " GROUP BY {$this->_aliases['civicrm_contact']}.id ";
   }
 
   /**
@@ -658,7 +656,7 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
       ) {
         $sql = "{$this->_selectComponent[$val]} {$this->_formComponent[$val]}
                          WHERE    {$this->_aliases['civicrm_contact']}.id IN ( $selectedContacts )
-                         GROUP BY {$this->_aliases['civicrm_contact']}.id,{$val}.id ";
+                          ";
 
         $dao = CRM_Core_DAO::executeQuery($sql);
         while ($dao->fetch()) {
@@ -694,7 +692,7 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
                                   {$this->_aliases['civicrm_relationship']}.is_active = 1 AND
                                   contact_a.is_deleted = 0 AND
                                   {$this->_aliases['civicrm_contact']}.is_deleted = 0
-                         GROUP BY {$this->_aliases['civicrm_relationship']}.id";
+                         ";
 
       $dao = CRM_Core_DAO::executeQuery($sql);
       while ($dao->fetch()) {
@@ -751,9 +749,6 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
                          civicrm_option_group.name = 'activity_type' AND
                          {$this->_aliases['civicrm_activity']}.is_test = 0 AND
                          ($componentClause)
-
-                 GROUP BY {$this->_aliases['civicrm_activity']}.id
-
                  ORDER BY {$this->_aliases['civicrm_activity']}.activity_date_time desc  ";
 
       $dao = CRM_Core_DAO::executeQuery($sql);
@@ -888,9 +883,10 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
       if (array_key_exists('civicrm_contact_sort_name', $row) &&
         array_key_exists('civicrm_contact_id', $row)
       ) {
-        //NYSS 2059
+
         $url = CRM_Utils_System::url('civicrm/contact/view',
-          'reset=1&cid='.$row['civicrm_contact_id']
+          'reset=1&cid=' . $row['civicrm_contact_id'],
+          $this->_absoluteUrl
         );
         $rows[$rowNum]['civicrm_contact_sort_name_link'] = $url;
         $rows[$rowNum]['civicrm_contact_sort_name_hover'] = ts('View Contact Summary for this Contact');

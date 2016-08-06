@@ -280,6 +280,7 @@ class CRM_Report_Form_Case_Demographics extends CRM_Report_Form {
 
     $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;
+
     //NYSS
     /*$open_case_val = CRM_Core_OptionGroup::getValue('activity_type', 'Open Case', 'name');
     $crmDAO = &CRM_Core_DAO::executeQuery("SELECT cg.table_name, cg.extends AS ext, cf.label, cf.column_name FROM civicrm_custom_group cg INNER JOIN civicrm_custom_field cf ON cg.id = cf.custom_group_id
@@ -348,6 +349,7 @@ where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_colu
         }
       }
     }
+    $this->_selectClauses = $select;
 
     $this->_select = "SELECT " . implode(', ', $select) . " ";
   }
@@ -453,7 +455,8 @@ where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_colu
   }
 
   public function groupBy() {
-    $this->_groupBy = "GROUP BY {$this->_aliases['civicrm_contact']}.id, {$this->_aliases['civicrm_case']}.id";
+    $groupBy = array("{$this->_aliases['civicrm_contact']}.id", "{$this->_aliases['civicrm_case']}.id");
+    $this->_groupBy = CRM_Contact_BAO_Query::getGroupByFromSelectColumns($this->_selectClauses, $groupBy);
   }
 
   //NYSS 4936 - handle in report criteria
@@ -466,7 +469,6 @@ where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_colu
     $this->beginPostProcess();
 
     $sql = $this->buildQuery(TRUE);
-    //CRM_Core_Error::debug('sql', $sql);
     $rows = $graphRows = array();
     $this->buildRows($sql, $rows);
 

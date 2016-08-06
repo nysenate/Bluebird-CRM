@@ -393,6 +393,7 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
       }
     }
 
+    $this->_selectClauses = $select;
     $this->_select = "SELECT " . implode(', ', $select) . " ";
     //print_r($this->_select);
   }
@@ -489,7 +490,11 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
   }
 
   public function groupBy() {
-    $this->_groupBy = "GROUP BY {$this->_aliases['civicrm_mailing']}.id";
+    $groupBy = array(
+      "{$this->_aliases['civicrm_mailing']}.id",
+      "{$this->_aliases['civicrm_mailing_job']}.end_date",
+    );
+    $this->_groupBy = CRM_Contact_BAO_Query::getGroupByFromSelectColumns($this->_selectClauses, $groupBy);
   }
 
   //NYSS 4936 remove so we control through the interface

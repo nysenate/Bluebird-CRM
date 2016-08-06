@@ -1089,4 +1089,16 @@ class CRM_Core_SelectValues {
     );
   }
 
+  /**
+   * Application type of document.
+   *
+   * @return array
+   */
+  public static function documentApplicationType() {
+    return array(
+      'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'odt' => 'application/vnd.oasis.opendocument.text',
+    );
+  }
+
 }

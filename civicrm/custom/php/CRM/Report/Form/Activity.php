@@ -710,7 +710,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
    * Override group by function.
    */
   public function groupBy() {
-    $this->_groupBy = "GROUP BY {$this->_aliases['civicrm_activity']}.id";
+    $this->_groupBy = CRM_Contact_BAO_Query::getGroupByFromSelectColumns($this->_selectClauses, "{$this->_aliases['civicrm_activity']}.id");
   }
 
   /**
@@ -844,7 +844,6 @@ GROUP BY civicrm_activity_id $having {$this->_orderBy}";
 
     // 2. add new columns to hold assignee and source results
     // fixme: add when required
-    //NYSS
     $tempQuery = "
   ALTER TABLE  civireport_activity_temp_target
   MODIFY COLUMN civicrm_contact_contact_target_id VARCHAR(128),
@@ -856,10 +855,6 @@ GROUP BY civicrm_activity_id $having {$this->_orderBy}";
   ADD COLUMN civicrm_phone_contact_source_phone VARCHAR(128),
   ADD COLUMN civicrm_email_contact_assignee_email VARCHAR(128),
   ADD COLUMN civicrm_email_contact_source_email VARCHAR(128)";
-    //NYSS 7827
-    if ( !in_array('civicrm_email_target.email as civicrm_email_contact_target_email', $this->_selectClauses) ) {
-      $tempQuery .= ', ADD COLUMN civicrm_email_contact_target_email VARCHAR(128)';
-    }
     CRM_Core_DAO::executeQuery($tempQuery);
 
     // 3. fill temp table with assignee results
@@ -900,9 +895,10 @@ GROUP BY civicrm_activity_id $having {$this->_orderBy}";
       }
     }
     $this->limit();
+    $groupByFromSelect = CRM_Contact_BAO_Query::getGroupByFromSelectColumns($this->_selectClauses, 'civicrm_activity_id');
     $sql = "{$this->_select}
 FROM civireport_activity_temp_target tar
-GROUP BY civicrm_activity_id {$this->_having} {$this->_orderBy} {$this->_limit}";
+{$groupByFromSelect} {$this->_having} {$this->_orderBy} {$this->_limit}";
     $this->buildRows($sql, $rows);
 
     // format result set.
@@ -1044,8 +1040,7 @@ GROUP BY civicrm_activity_id {$this->_having} {$this->_orderBy} {$this->_limit}"
         }
       }
 
-      //NYSS 7707
-      /*if (array_key_exists('civicrm_activity_details', $row)) {
+      if (array_key_exists('civicrm_activity_details', $row) && $this->_outputMode == 'html') {
         if ($value = $row['civicrm_activity_details']) {
           $fullDetails = $rows[$rowNum]['civicrm_activity_details'];
           $rows[$rowNum]['civicrm_activity_details'] = substr($fullDetails, 0, strrpos(substr($fullDetails, 0, 80), ' '));
@@ -1054,7 +1049,7 @@ GROUP BY civicrm_activity_id {$this->_having} {$this->_orderBy} {$this->_limit}"
           }
           $entryFound = TRUE;
         }
-      }*/
+      }
 
       if (array_key_exists('civicrm_activity_campaign_id', $row)) {
         if ($value = $row['civicrm_activity_campaign_id']) {
@@ -1127,8 +1122,10 @@ GROUP BY civicrm_activity_id {$this->_having} {$this->_orderBy} {$this->_limit}"
       foreach (array_merge($sectionAliases, $this->_selectAliases) as $alias) {
         $ifnulls[] = "ifnull($alias, '') as $alias";
       }
+      $this->_select = "SELECT " . implode(", ", $ifnulls);
+      $this->appendSelect($ifnulls, $sectionAliases);
 
-      $query = "select " . implode(", ", $ifnulls) .
+      $query = $this->_select .
         ", count(DISTINCT civicrm_activity_id) as ct from civireport_activity_temp_target group by " .
         implode(", ", $sectionAliases);
 
