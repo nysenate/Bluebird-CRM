@@ -3985,7 +3985,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
    * @return array
    *   address fields for construct clause
    */
-  public function addAddressFields($groupBy = TRUE, $orderBy = FALSE, $filters = TRUE, $defaults = array() ) {//NYSS remove country
+  public function addAddressFields($groupBy = TRUE, $orderBy = FALSE, $filters = TRUE, $defaults = array('country_id' => TRUE)) {
     $addressFields = array(
       'civicrm_address' => array(
         'dao' => 'CRM_Core_DAO_Address',
@@ -4037,19 +4037,18 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
             'title' => ts('Postal Code Suffix'),
             'default' => CRM_Utils_Array::value('postal_code_suffix', $defaults, FALSE),
           ),
-          //NYSS 4289
-		  /*'county_id'  =>
-          array('title' => ts( 'County' ),
-            'default' => CRM_Utils_Array::value('county_id', $defaults, FALSE)
-          ),*/
+          'country_id' => array(
+            'title' => ts('Country'),
+            'default' => CRM_Utils_Array::value('country_id', $defaults, FALSE),
+          ),
           'state_province_id' => array(
             'title' => ts('State/Province'),
             'default' => CRM_Utils_Array::value('state_province_id', $defaults, FALSE),
           ),
-          /*'country_id' => //NYSS 4939
-          array('title' => ts( 'Country' ),
-            'default' => CRM_Utils_Array::value('country_id', $defaults, FALSE)
-          ),*/
+          'county_id' => array(
+            'title' => ts('County'),
+            'default' => CRM_Utils_Array::value('county_id', $defaults, FALSE),
+          ),
         ),
         'grouping' => 'location-fields',
       ),
@@ -4095,13 +4094,13 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
           'operator' => 'like',
           'name' => 'city',
         ),
-        /*'country_id' => array(
+        'country_id' => array(
           'name' => 'country_id',
           'title' => ts('Country'),
           'type' => CRM_Utils_Type::T_INT,
           'operatorType' => CRM_Report_Form::OP_MULTISELECT,
           'options' => CRM_Core_PseudoConstant::country(),
-        ),*/
+        ),
         'state_province_id' => array(
           'name' => 'state_province_id',
           'title' => ts('State/Province'),
@@ -4109,13 +4108,13 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
           'operatorType' => CRM_Report_Form::OP_MULTISELECT,
           'options' => array(),
         ),
-        /*'county_id' => array(
+        'county_id' => array(
           'name' => 'county_id',
           'title' => ts('County'),
           'type' => CRM_Utils_Type::T_INT,
           'operatorType' => CRM_Report_Form::OP_MULTISELECT,
           'options' => array(),
-        )*/
+        ),
       );
     }
     $addressFields['civicrm_address']['filters'] = array_merge(
@@ -4125,11 +4124,10 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
     if ($orderBy) {
       $addressFields['civicrm_address']['order_bys'] = array(
         'street_name' => array('title' => ts('Street Name')),
-        'street_number' => array('title' => 'Street Number'), //NYSS
+        'street_number' => array('title' => 'Odd / Even Street Number'),
         'street_address' => NULL,
         'city' => NULL,
         'postal_code' => NULL,
-		'street_unit' => NULL, //NYSS 5059
       );
     }
 
@@ -4141,12 +4139,12 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
         'state_province_id' => array(
           'title' => ts('State/Province'),
         ),
-        /*'country_id' => array(
+        'country_id' => array(
           'title' => ts('Country'),
-        ),*/
-        /*'county_id' => array(
+        ),
+        'county_id' => array(
           'title' => ts('County'),
-        ),*/
+        ),
       );
     }
     return $addressFields;

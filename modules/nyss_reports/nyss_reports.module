@@ -1,0 +1,290 @@
+<?php
+
+/*
+ * Customizations pertaining to CiviCRM reports
+ * Much of this moves mods previously handled in override files to hooks during
+ * the BB 1.6/CiviCRM 4.7 release.
+ */
+
+function nyss_reports_civicrm_buildForm($formName, &$form) {
+  /*Civi::log()->debug('buildForm', array(
+    '$formName' => $formName,
+    '$form' => $form,
+  ));*/
+
+  if (strpos($formName, 'CRM_Report_Form_') !== FALSE) {
+    CRM_Core_Resources::singleton()->addScriptUrl('/sites/all/modules/nyss_reports/js/reports.js');
+
+    //set header/footer defaults
+    $printHeaderRegion = CRM_Core_Region::instance('default-report-header', FALSE);
+    $htmlHeader = ($printHeaderRegion) ? $printHeaderRegion->render('', FALSE) : '';
+    $config = CRM_Core_Config::singleton();
+    $defaults = array(
+      'report_header' => "<html>
+        <head>
+          <title>Bluebird Report</title>
+          <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+          <style type=\"text/css\">@import url({$config->userFrameworkResourceURL}css/print.css);</style>
+          {$htmlHeader}
+        </head>
+        <body><div id=\"crm-container\">",
+      'report_footer' => '</div></body></html>',
+    );
+    $form->setDefaults($defaults);
+
+    CRM_Core_Resources::singleton()->addScript("
+      cj('tr.crm-report-instanceForm-form-block-permission a.helpicon').remove();
+    ");
+  }
+}//buildForm
+
+function nyss_reports_civicrm_postProcess($formName, &$form) {
+  /*Civi::log()->debug('postProcess', array(
+    '$formName' => $formName,
+    //'$form' => $form,
+  ));*/
+}//postProcess
+
+function nyss_reports_civicrm_pageRun(&$page) {
+  //Civi::log()->debug('pageRun', array('$page' => $page));
+
+  //5166 remove contact logging detail report from template list
+  if (is_a($page, 'CRM_Report_Page_TemplateList')) {
+    CRM_Core_Resources::singleton()->addScript("
+      cj('a[href=\"/civicrm/report/logging/contact/detail?reset=1\"]').parents('tr').remove();
+      
+      //4987
+      cj('.crm-report-templateList-description').removeAttr('style');
+    ");
+  }
+}
+
+function nyss_reports_civicrm_alterReportVar($varType, &$var, &$object) {
+  /*Civi::log()->debug('alterReportVar', array(
+    'varType' => $varType,
+    'var' => $var,
+    //'object' => $object,
+  ));*/
+
+  $class = get_class($object);
+  switch ($varType) {
+    case 'columns':
+      //common modifications
+      _nyss_reports_Base_cols($var, $object);
+
+      switch ($class) {
+        case 'CRM_Report_Form_Activity':
+          _nyss_reports_Activity_cols($var, $object);
+          break;
+
+        case 'CRM_Report_Form_ActivitySummary':
+          _nyss_reports_ActivitySummary_cols($var, $object);
+          break;
+
+        case 'CRM_Report_Form_Case_Demographics':
+          _nyss_reports_CaseDemographics_cols($var, $object);
+          break;
+
+        default:
+      }
+      break;
+
+    case 'rows':
+      switch ($class) {
+        case 'CRM_Report_Form_Activity':
+          _nyss_reports_Activity_rows($var, $object);
+          break;
+
+        default:
+      }
+      break;
+
+    default:
+  }
+
+  /*Civi::log()->debug('alterReportVar AFTER', array(
+    'varType' => $varType,
+    'var' => $var,
+    //'object' => $object,
+  ));*/
+}//alterReportVar
+
+function _nyss_reports_Base_cols(&$var, &$object) {
+  unset($var['civicrm_address']['fields']['country_id']);
+  unset($var['civicrm_address']['fields']['county_id']);
+
+  unset($var['civicrm_address']['filters']['country_id']);
+  unset($var['civicrm_address']['filters']['county_id']);
+
+  $var['civicrm_address']['order_bys']['street_number']['title'] = 'Street Number';
+  //$var['civicrm_address']['order_bys']['street_unit'] = NULL;
+}//_nyss_reports_Base
+
+function _nyss_reports_Activity_cols(&$var, &$object) {
+  //8396
+  $var['civicrm_contact']['fields']['contact_tag_name'] = array(
+    'name' => 'id',
+    'alias' => 'civicrm_contact_target',
+    'dbAlias' => "civicrm_contact_target.id",
+    'title' => ts('Contact Tags'),
+  );
+
+  //5059
+  $var['civicrm_contact']['order_bys']['contact_target'] = array(
+    'name'  => 'sort_name',
+    'dbAlias' => 'civicrm_contact_target_name',
+    'title' => ts('Target Name'),
+  );
+
+  $var['civicrm_email']['order_bys']['target_contact_email'] = array(
+    'name' => 'email',
+    'title' => ts('Target Email'),
+    'dbAlias' => 'civicrm_email_contact_target_email',
+  );
+
+  //7540
+  $var['civicrm_activity']['fields']['activity_type_id']['required'] = FALSE;
+  $var['civicrm_activity']['fields']['activity_date_time']['required'] = FALSE;
+  $var['civicrm_activity']['fields']['details']['default'] = TRUE;
+
+  //8396
+  $var['civicrm_activity']['fields']['activity_tag_name'] = array(
+    'name' => 'id',
+    'title' => ts('Activity Tags'),
+  );
+
+  $var['civicrm_activity']['order_bys']['activity_subject'] = array(
+    'title' => ts('Activity Subject'),
+    'dbAlias' => 'civicrm_activity_activity_subject',
+  );
+  $var['civicrm_activity']['order_bys']['status_id'] = array(
+    'title' => ts('Activity Status'),
+    'dbAlias' => 'civicrm_activity_status_id',
+  );
+}//_nyss_reports_Activity_col
+
+
+function _nyss_reports_Activity_rows(&$var, &$object) {
+  //get activity and contact tags
+  $object->_tags = CRM_Core_BAO_Tag::getTagsUsedFor(array('civicrm_contact', 'civicrm_activity'), true, false, 296);
+  //Civi::log()->debug('_nyss_reports_Activity_rows', array('object->_tags' => $object->_tags));
+
+  foreach ($var as $rowNum => &$row) {
+    //8396
+    if (array_key_exists('civicrm_activity_activity_tag_name', $row)) {
+      $actTags = CRM_Core_BAO_EntityTag::getTag($row['civicrm_activity_activity_tag_name'], 'civicrm_activity');
+      foreach ($actTags as $k => &$v) {
+        $v = $object->_tags[$k];
+      }
+      $row['civicrm_activity_activity_tag_name'] = implode(', ', $actTags);
+    }
+
+    if (array_key_exists('civicrm_contact_contact_tag_name', $row)) {
+      $conTags = CRM_Core_BAO_EntityTag::getTag($row['civicrm_contact_contact_tag_name'], 'civicrm_contact');
+      foreach ($conTags as $k => &$v) {
+        //only display keywords; we retrieved entire list earlier, so if not in list, exclude
+        if (isset($object->_tags[$k])) {
+          $v = $object->_tags[$k];
+        }
+        else {
+          unset($conTags[$k]);
+        }
+      }
+      $row['civicrm_contact_contact_tag_name'] = implode(', ', $conTags);
+    }
+  }
+}//_nyss_reports_Activity_rows
+
+function _nyss_reports_ActivitySummary_cols(&$var, &$object) {
+  //4921
+  $activityTypes = CRM_Core_PseudoConstant::activityType(true, true, false, 'label', true);
+  asort( $activityTypes );
+  $var['civicrm_activity']['filters']['activity_type_id']['options'] = $activityTypes;
+}
+
+function _nyss_reports_CaseDemographics_cols(&$var, &$object) {
+  $var['civicrm_contact']['order_bys']= array(
+    'sort_name' => array(
+      'title' => ts('Contact Name'),
+    ),
+    'gender_id' => array(
+      'title' => ts('Gender'),
+    ),
+    'birth_date' => array(
+      'title' => ts('Birth Date'),
+    ),
+  );
+
+  $var['civicrm_email']['order_bys']= array(
+    'email' => array(
+      'title' => ts('Email'),
+    ),
+  );
+
+  //4936
+  $var['civicrm_address']['order_bys']= array(
+    'street_address' => array(
+      'title' => ts('Street Address'),
+    ),
+    'city' => array(
+      'title' => ts('City'),
+    ),
+    'postal_code' => array(
+      'title' => ts('Postal Code'),
+    ),
+    'state_province_id' => array(
+      'title' => ts('State/Province'),
+    ),
+  );
+
+  $var['civicrm_phone']['order_bys']= array(
+    'phone' => array(
+      'title' => ts('Phone'),
+    ),
+  );
+
+  unset($var['civicrm_activity']['fields']['id']['title']);
+  unset($var['civicrm_case']['fields']['id']['title']);
+  $var['civicrm_case']['fields']['id']['no_display'] = TRUE;
+
+  $var['civicrm_case']['order_bys'] = array(
+    'start_date' =>
+      array('title' => ts('Case Start'),),
+    'end_date' =>
+      array('title' => ts('Case End'),),
+  );
+
+  unset($var['civicrm_value_attachments_5']);
+
+  unset($var['civicrm_value_constituent_information_1']['fields']['professional_accreditations_16']);
+  unset($var['civicrm_value_constituent_information_1']['fields']['interest_in_volunteering__17']);
+  unset($var['civicrm_value_constituent_information_1']['fields']['active_constituent__18']);
+  unset($var['civicrm_value_constituent_information_1']['fields']['friend_of_the_senator__19']);
+  unset($var['civicrm_value_constituent_information_1']['fields']['skills_areas_of_interest_20']);
+  unset($var['civicrm_value_constituent_information_1']['fields']['honors_and_awards_21']);
+  unset($var['civicrm_value_constituent_information_1']['fields']['boe_date_of_registration_24']);
+  unset($var['civicrm_value_constituent_information_1']['fields']['other_gender_45']);
+  unset($var['civicrm_value_constituent_information_1']['fields']['ethnicity1_58']);
+  unset($var['civicrm_value_constituent_information_1']['fields']['other_ethnicity_62']);
+
+  $var['civicrm_value_constituent_information_1']['order_bys'] = array(
+    'voter_registration_status_23' => array(
+      'title' => ts('Voter Registration Status')
+    ),
+    'individual_category_42' => array(
+      'title' => ts('Individual Category')
+    ),
+    'contact_source_60' => array(
+      'title' => ts('Contact Source')
+    ),
+    'religion_63' => array(
+      'title' => ts('Religion')
+    ),
+    'record_type_61' => array(
+      'title' => ts('Record Type')
+    ),
+  );
+
+  unset($var['civicrm_value_contact_details_8']);
+  unset($var['civicrm_value_website_profile_9']);
+}//_nyss_reports_CaseDemographics_cols

@@ -90,3 +90,6 @@ sql="
   UPDATE civicrm_custom_group SET collapse_display = 1 WHERE name = 'Attachments';
 "
 $execSql $instance -c "$sql" -q
+
+## enable new nyss_reports module
+$drush $instance en nyss_reports -y

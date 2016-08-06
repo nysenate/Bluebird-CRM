@@ -3836,7 +3836,7 @@ li.crm-button {
   background-color: #6fc0f3;
 }
 
-#crm-container #mainTabContainer {
+/*#crm-container #mainTabContainer {
   background: transparent;
 }
 
@@ -3844,7 +3844,7 @@ li.crm-button {
   background-color: #FFF;
   float: right;
   width: 778px;
-}
+}*/
 
 .crm-contact-dashboard,.crm-contact-print {
   display: none;
@@ -3855,10 +3855,10 @@ li.crm-button {
 }
 
 /* for understanding browsers */
-#crm-container #mainTabContainer .ui-tabs-panel {
+/*#crm-container #mainTabContainer .ui-tabs-panel {
   min-height: 600px;
   height: auto;
-}
+}*/
 
 /* for Internet Explorer */
 /*\*/
@@ -4115,9 +4115,10 @@ div.crm-relationship-form-block .crm-relationship-form-block-is_permission_a_b,d
   display: none;
 }
 
-div#mainTabContainer.ui-widget-content,div#mainTabContainer > ul.ui-widget-header {
+div#mainTabContainer.ui-widget-content,
+div#mainTabContainer > ul.ui-widget-header {
   border: none;
-  padding: 0;
+  padding: 0 0 2px 0;
 }
 
 #crm-container #mainTabContainer > ul.crm-contact-tabs-list {
