@@ -1740,6 +1740,8 @@ abstract class CRM_Utils_Hook {
    *   - name: string, a unique short name (e.g. "ReportInstance")
    *   - class: string, a PHP DAO class (e.g. "CRM_Report_DAO_Instance")
    *   - table: string, a SQL table name (e.g. "civicrm_report_instance")
+   *   - fields_callback: array, list of callables which manipulates field list
+   *   - links_callback: array, list of callables which manipulates fk list
    *
    * @return null
    *   The return value is ignored
@@ -2091,26 +2093,6 @@ abstract class CRM_Utils_Hook {
     return self::singleton()->invoke(1, $query, self::$_nullObject,
       self::$_nullObject, self::$_nullObject, self::$_nullObject, self::$_nullObject,
       'civicrm_batchQuery'
-    );
-  }
-
-  /**
-   * This hook is called to alter Deferred revenue item values just before they are
-   * inserted in civicrm_financial_trxn table
-   *
-   * @param array $deferredRevenues
-   *
-   * @param array $contributionDetails
-   *
-   * @param bool $update
-   *
-   * @param string $context
-   *
-   * @return mixed
-   */
-  public static function alterDeferredRevenueItems(&$deferredRevenues, $contributionDetails, $update, $context) {
-    return self::singleton()->invoke(4, $deferredRevenues, $contributionDetails, $update, $context,
-      self::$_nullObject, self::$_nullObject, 'civicrm_alterDeferredRevenueItems'
     );
   }
 

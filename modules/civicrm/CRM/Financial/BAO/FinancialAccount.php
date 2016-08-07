@@ -358,31 +358,29 @@ LIMIT 1";
 
   /**
    * Validate Financial Type has Deferred Revenue account relationship
-   * with Financial Account.
+   * with Financial Account
    *
    * @param array $params
-   *   Holds submitted formvalues and params from api for updating/adding contribution.
    *
    * @param int $contributionID
-   *   Contribution ID
    *
-   * @param array $priceSetFields
-   *   Array of price fields of a price set.
+   * @param obj $form
    *
-   * @return bool
+   * @return string
    *
    */
-  public static function checkFinancialTypeHasDeferred($params, $contributionID = NULL, $priceSetFields = NULL) {
+  public static function checkFinancialTypeHasDeferred($params, $contributionID = NULL, $form = NULL) {
     if (!CRM_Contribute_BAO_Contribution::checkContributeSettings('deferred_revenue_enabled')) {
       return FALSE;
     }
     $recognitionDate = CRM_Utils_Array::value('revenue_recognition_date', $params);
     if (!(!CRM_Utils_System::isNull($recognitionDate)
-      || ($contributionID && !CRM_Utils_System::isNull($params['prevContribution']->revenue_recognition_date)))
+      || ($contributionID && $params['prevContribution']->revenue_recognition_date))
     ) {
       return FALSE;
     }
 
+    $message = ts('Revenue recognition date can only be specified if the financial type selected has a deferred revenue account configured. Please have an administrator set up the deferred revenue account at Administer > CiviContribute > Financial Accounts, then configure it for financial types at Administer > CiviContribution > Financial Types, Accounts');
     $lineItems = CRM_Utils_Array::value('line_item', $params);
     $financialTypeID = CRM_Utils_Array::value('financial_type_id', $params);
     if (!$financialTypeID) {
@@ -390,7 +388,7 @@ LIMIT 1";
     }
     if (($contributionID || !empty($params['price_set_id'])) && empty($lineItems)) {
       if (!$contributionID) {
-        CRM_Price_BAO_PriceSet::processAmount($priceSetFields,
+        CRM_Price_BAO_PriceSet::processAmount($form->_priceSet['fields'],
         $params, $items);
       }
       else {
@@ -401,25 +399,19 @@ LIMIT 1";
       }
     }
     $deferredFinancialType = self::getDeferredFinancialType();
-    $isError = FALSE;
     if (!empty($lineItems)) {
       foreach ($lineItems as $lineItem) {
         foreach ($lineItem as $items) {
           if (!array_key_exists($items['financial_type_id'], $deferredFinancialType)) {
-            $isError = TRUE;
+            return $message;
           }
         }
       }
     }
     elseif (!array_key_exists($financialTypeID, $deferredFinancialType)) {
-      $isError = TRUE;
+      return $message;
     }
-
-    if ($isError) {
-      $error = ts('Revenue recognition date can only be specified if the financial type selected has a deferred revenue account configured. Please have an administrator set up the deferred revenue account at Administer > CiviContribute > Financial Accounts, then configure it for financial types at Administer > CiviContribution > Financial Types, Accounts');
-      throw new CRM_Core_Exception($error);
-    }
-    return $isError;
+    return FALSE;
   }
 
   /**
@@ -427,13 +419,6 @@ LIMIT 1";
    * with Financial Account.
    *
    * @param int $financialTypeId
-   *   Financial Type Id.
-   *
-   * @param int $entityID
-   *   Holds id for PriceSet/PriceField/PriceFieldValue.
-   *
-   * @param string $entity
-   *   Entity like PriceSet/PriceField/PriceFieldValue.
    *
    * @return bool
    *

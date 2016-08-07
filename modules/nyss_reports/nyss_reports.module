@@ -288,3 +288,16 @@ function _nyss_reports_CaseDemographics_cols(&$var, &$object) {
   unset($var['civicrm_value_contact_details_8']);
   unset($var['civicrm_value_website_profile_9']);
 }//_nyss_reports_CaseDemographics_cols
+
+function nyss_reports_civicrm_entityTypes(&$entityTypes) {
+  /*Civi::log()->debug('entityTypes', array(
+    '$entityTypes' => $entityTypes,
+  ));*/
+  $entityTypes['CRM_Contact_DAO_Contact']['fields_callback'][] = function($class, &$fields) {
+    Civi::log()->debug('entityTypes', array(
+      '$class' => $class,
+      '$fields' => $fields,
+    ));
+    unset($fields['created_date']['export']);
+  };
+}

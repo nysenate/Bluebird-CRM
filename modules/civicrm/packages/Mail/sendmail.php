@@ -105,10 +105,9 @@ class Mail_sendmail extends Mail {
     function send($recipients, $headers, $body)
     {
         if (defined('CIVICRM_MAIL_LOG')) {
-          CRM_Utils_Mail::logger($recipients, $headers, $body);
-          if(!defined('CIVICRM_MAIL_LOG_AND SEND')) {
+            require_once 'CRM/Utils/Mail.php';
+            CRM_Utils_Mail::logger($recipients, $headers, $body);
             return true;
-          }
         }
 
         if (!is_array($headers)) {

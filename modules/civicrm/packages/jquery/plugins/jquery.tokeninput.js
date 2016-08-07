@@ -16,7 +16,7 @@ var DEFAULT_SETTINGS = {
     contentType: "json",
     queryParam: "name",
     searchDelay: 300,
-    minChars: 3, //NYSS
+    minChars: 1,
     propertyToSearch: "name",
     jsonContainer: null,
 
@@ -30,7 +30,7 @@ var DEFAULT_SETTINGS = {
 	// Tokenization settings
     tokenLimit: null,
     tokenDelimiter: ",",
-    preventDuplicates: true, //NYSS
+    preventDuplicates: false,
 
 	// Output settings
     tokenValue: "id",
@@ -184,10 +184,8 @@ $.TokenList = function (input, url_or_data, settings) {
     var timeout;
     var input_val;
 
-    //NYSS keep track of focus to improve IE8
-    var keep_focus=new Array();
     // Create a new text input an attach keyup events
-    var input_box = $("<input type=\"text\" autocomplete=\"off\" maxlength=\"64\">") //NYSS 3550
+    var input_box = $("<input type=\"text\"  autocomplete=\"off\">")
         .css({
             outline: "none"
         })
@@ -196,20 +194,13 @@ $.TokenList = function (input, url_or_data, settings) {
             if (settings.tokenLimit === null || settings.tokenLimit !== token_count) {
                 show_dropdown_hint();
             }
-            keep_focus[input.id] = true; //NYSS
         })
         .blur(function () {
-          //NYSS
-          if (!keep_focus[input.id]) {
             hide_dropdown();
             $(this).val("");
-          } else {
-            keep_focus[input.id] = false;
-          }
         })
         .bind("keyup keydown blur update", resize_input)
         .keydown(function (event) {
-            keep_focus[input.id] = true; //NYSS
             var previous_token;
             var next_token;
 

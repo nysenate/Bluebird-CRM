@@ -669,9 +669,7 @@ WHERE pp.participant_id = {$entityId} AND ft.to_financial_account_id != {$toFina
         }
       }
       $accountRel = key(CRM_Core_PseudoConstant::accountOptionValues('account_relationship', NULL, " AND v.name LIKE 'Income Account is' "));
-
-      CRM_Utils_Hook::alterDeferredRevenueItems($deferredRevenues, $contributionDetails, $update, $context);
-
+      // TODO: Call hook to alter $deferredRevenues
       foreach ($deferredRevenues as $key => $deferredRevenue) {
         $results = civicrm_api3('EntityFinancialAccount', 'get', array(
           'entity_table' => 'civicrm_financial_type',

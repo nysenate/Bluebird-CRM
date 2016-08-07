@@ -1450,7 +1450,7 @@
 		_fn : {
 			set_theme : function (theme_name, theme_url) {
 				if(!theme_name) { return false; }
-				//if(!theme_url) { theme_url = $.jstree._themes + theme_name + '/style.css'; }//NYSS
+				if(!theme_url) { theme_url = $.jstree._themes + theme_name + '/style.css'; }
 				if($.inArray(theme_url, themes_loaded) == -1) {
 					$.vakata.css.add_sheet({ "url" : theme_url });
 					themes_loaded.push(theme_url);
@@ -4071,35 +4071,26 @@
 						break;
 					case (!s.data && !s.ajax):
 						if(!obj || obj == -1) {
-              //NYSS
-							/*this.get_container()
+							this.get_container()
 								.children("ul").empty()
 								.append(this.data.html_data.original_container_html)
 								.find("li, a").filter(function () { return !this.firstChild || !this.firstChild.tagName || this.firstChild.tagName !== "INS"; }).prepend("<ins class='jstree-icon'>&#160;</ins>").end()
-								.filter("a").children("ins:first-child").not(".jstree-icon").addClass("jstree-icon");*/
-              var c = this.get_container();
-              c.children("ul").empty();
-              c.append(this.data.html_data.original_container_html);
-              c.find("li, a").filter(function () {
-                return this.firstChild.tagName !== "INS"; }).prepend("<ins class='jstree-icon'>&#160;</ins>");
-              c.filter("li, a").children("ins:first-child").not(".jstree-icon").addClass("jstree-icon");
-              /*NYSS end*/
+								.filter("a").children("ins:first-child").not(".jstree-icon").addClass("jstree-icon");
 							this.clean_node();
 						}
-						//if(s_call) { s_call.call(this); } //NYSS
+						if(s_call) { s_call.call(this); }
 						break;
 					case (!!s.data && !s.ajax) || (!!s.data && !!s.ajax && (!obj || obj === -1)):
 						if(!obj || obj == -1) {
 							d = $(s.data);
 							if(!d.is("ul")) { d = $("<ul />").append(d); }
-              //NYSS
-							/*this.get_container()
+							this.get_container()
 								.children("ul").empty().append(d.children())
 								.find("li, a").filter(function () { return !this.firstChild || !this.firstChild.tagName || this.firstChild.tagName !== "INS"; }).prepend("<ins class='jstree-icon'>&#160;</ins>").end()
-								.filter("a").children("ins:first-child").not(".jstree-icon").addClass("jstree-icon");*/
+								.filter("a").children("ins:first-child").not(".jstree-icon").addClass("jstree-icon");
 							this.clean_node();
 						}
-						//if(s_call) { s_call.call(this); }//NYSS
+						if(s_call) { s_call.call(this); }
 						break;
 					case (!s.data && !!s.ajax) || (!!s.data && !!s.ajax && obj && obj !== -1):
 						obj = this._get_node(obj);

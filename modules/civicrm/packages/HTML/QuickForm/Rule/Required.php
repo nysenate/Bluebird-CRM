@@ -60,12 +60,7 @@ class HTML_QuickForm_Rule_Required extends HTML_QuickForm_Rule
                 if ( $fileType && $k == 'type' ) {
                     continue;
                 }
-                if ( is_array($v) ) {
-                    if ( $v ) {
-                        $return = true;
-                    }
-                }
-                elseif ( ( string ) $v != '' ) {
+                if ( ( string ) $v != '' ) {
                     $return = true;
                 }
             }

@@ -179,7 +179,7 @@ $GLOBALS['_DB_DATAOBJECT']['QUERYENDTIME'] = 0;
 // NOTE: Overload SEGFAULTS ON PHP4 + Zend Optimizer (see define before..)
 // these two are BC/FC handlers for call in PHP4/5
 
-if ( substr(phpversion(),0,1) > 4) {
+if ( substr(phpversion(),0,1) == 5) {
     class DB_DataObject_Overload
     {
         function __call($method,$args)
@@ -434,8 +434,8 @@ class DB_DataObject extends DB_DataObject_Overload
         } else {
             /* theoretically MDB2! */
             if (isset($this->_query['limit_start']) && strlen($this->_query['limit_start'] . $this->_query['limit_count'])) {
-              $DB->setLimit($this->_query['limit_count'],$this->_query['limit_start']);
-          }
+	            $DB->setLimit($this->_query['limit_count'],$this->_query['limit_start']);
+	        }
         }
 
         $this->_query($sql);
@@ -995,7 +995,7 @@ class DB_DataObject extends DB_DataObject_Overload
 
 
 
-            if (!isset($options['disable_null_strings']) && is_string($this->$k) && (strtolower($this->$k) === 'null') && $this->$k !== 'Null' && !($v & DB_DATAOBJECT_NOTNULL)) {
+            if (!isset($options['disable_null_strings']) && is_string($this->$k) && (strtolower($this->$k) === 'null') && !($v & DB_DATAOBJECT_NOTNULL)) {
                 $rightq .= " NULL ";
                 continue;
             }
@@ -1025,11 +1025,6 @@ class DB_DataObject extends DB_DataObject_Overload
                 $rightq .= $this->_quote((string) $this->$k ) . ' ';
                 continue;
             }
-
-           if ($v & DB_DATAOBJECT_BLOB) {
-              $rightq .= $this->_quote( $this->$k ) . ' ';
-              continue;
-           }
 
 
             if (is_numeric($this->$k)) {
@@ -1236,6 +1231,13 @@ class DB_DataObject extends DB_DataObject_Overload
                 continue;
             }
 
+             // dont insert data into mysql timestamps
+            // use query() if you really want to do this!!!!
+            if ($v & DB_DATAOBJECT_MYSQLTIMESTAMP) {
+                continue;
+            }
+
+
             if ($settings)  {
                 $settings .= ', ';
             }
@@ -1255,23 +1257,10 @@ class DB_DataObject extends DB_DataObject_Overload
             ***/
 
             // special values ... at least null is handled...
-            if (!isset($options['disable_null_strings']) && is_string($this->$k) && (strtolower($this->$k) === 'null') && $this->$k !== 'Null' && !($v & DB_DATAOBJECT_NOTNULL)) {
+            if (!isset($options['disable_null_strings']) && is_string($this->$k) && (strtolower($this->$k) === 'null') && !($v & DB_DATAOBJECT_NOTNULL)) {
                 $settings .= "$kSql = NULL ";
                 continue;
             }
-          if (($v & DB_DATAOBJECT_DATE) || ($v & DB_DATAOBJECT_TIME) || $v & DB_DATAOBJECT_MYSQLTIMESTAMP) {
-            if (strpos($this->$k, '-') !== FALSE) {
-             /*
-              * per CRM-14986 we have been having ongoing problems with the format returned from $dao->find(TRUE) NOT
-              * being acceptable for an immediate save. This has resulted in the codebase being smattered with
-              * instances of CRM_Utils_Date::isoToMysql for date fields retrieved in this way
-              * which seems both risky (have to remember to do it for every field) & cludgey.
-              * doing it here should be safe as only fields with a '-' in them will be affected - if they are
-              *  already formatted or empty then this line will not be hit
-              */
-              $this->$k = CRM_Utils_Date::isoToMysql($this->$k);
-            }
-          }
             // DATE is empty... on a col. that can be null..
             // note: this may be usefull for time as well..
             if (!$this->$k &&
@@ -1299,10 +1288,6 @@ class DB_DataObject extends DB_DataObject_Overload
                 continue;
             }
 
-            if ($v & DB_DATAOBJECT_BLOB) {
-              $settings .= "$kSql = " . $this->_quote($this->$k ) . ' ';
-              continue;
-            }
 
             if (is_numeric($this->$k)) {
                 $settings .= "$kSql = {$this->$k} ";
@@ -1312,6 +1297,7 @@ class DB_DataObject extends DB_DataObject_Overload
             // - V2 may store additional data about float/int
             $settings .= "$kSql = " . intval($this->$k) . ' ';
         }
+
 
         if (!empty($_DB_DATAOBJECT['CONFIG']['debug'])) {
             $this->debug("got keys as ".serialize($keys),3);
@@ -2370,7 +2356,6 @@ class DB_DataObject extends DB_DataObject_Overload
         global $_DB_DATAOBJECT, $queries, $user;
         $this->_connect();
 
-        // Logging the query first makes sure it gets logged even if it fails.
         CRM_Core_Error::debug_query($string);
         $DB = &$_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
 
@@ -2432,11 +2417,8 @@ class DB_DataObject extends DB_DataObject_Overload
         for ($tries = 0;$tries < 3;$tries++) {
 
             if ($_DB_driver == 'DB') {
-                if ($tries) {
-                  CRM_Core_Error::debug_log_message('Attempt: ' . $tries + 1 . ' at query : ' . $string);
-                }
-                $result = $DB->query($string);
 
+                $result = $DB->query($string);
             } else {
                 switch (strtolower(substr(trim($string),0,6))) {
 
@@ -2486,34 +2468,12 @@ class DB_DataObject extends DB_DataObject_Overload
             $queries[] = array($query, $diff);
         }
 
-        $action = strtolower(substr(trim($string),0,6));
-
-        if (!empty($_DB_DATAOBJECT['CONFIG']['debug']) || defined('CIVICRM_DEBUG_LOG_QUERY')) {
-          $timeTaken = sprintf("%0.6f", microtime(TRUE) - $time);
-          $alertLevel = $this->getAlertLevel($timeTaken);
-
-          $message = "$alertLevel QUERY DONE IN $timeTaken  seconds.";
-          if (in_array($action, array('insert', 'update', 'delete')) && $_DB_driver == 'DB') {
-            $message .= " " . $DB->affectedRows() . " row(s)s subject to $action action";
-          }
-          elseif (is_a($result, 'DB_result') && method_exists($result, 'numrows')) {
-            $message .= " Result is {$result->numRows()} rows by {$result->numCols()} columns. ";
-          }
-          elseif ($result === 1) {
-            $message .= " No further information is available for this type of query";
-          }
-          else {
-            echo $message .= " not quite sure why this query does not have more info";
-          }
-          if (defined('CIVICRM_DEBUG_LOG_QUERY')) {
-            CRM_Core_Error::debug_log_message($message, FALSE, 'sql_log');
-          }
-          else {
-            $this->debug($message, 'query', 1);
-          }
+        if (!empty($_DB_DATAOBJECT['CONFIG']['debug'])) {
+            $t= explode(' ',microtime());
+            $_DB_DATAOBJECT['QUERYENDTIME'] = $t[0]+$t[1];
+            $this->debug('QUERY DONE IN  '.($t[0]+$t[1]-$time)." seconds", 'query',1);
         }
-
-        switch ($action) {
+        switch (strtolower(substr(trim($string),0,6))) {
             case 'insert':
             case 'update':
             case 'delete':
@@ -2617,7 +2577,7 @@ class DB_DataObject extends DB_DataObject_Overload
             }
             ***/
 
-            if (!isset($options['disable_null_strings']) && is_string($this->$k) && (strtolower($this->$k) === 'null') && $this->$k !== 'Null' && !($v & DB_DATAOBJECT_NOTNULL)) {
+            if (!isset($options['disable_null_strings']) && is_string($this->$k) && (strtolower($this->$k) === 'null') && !($v & DB_DATAOBJECT_NOTNULL)) {
                 $this->whereAdd(" $kSql  IS NULL");
                 continue;
             }
@@ -3444,7 +3404,7 @@ class DB_DataObject extends DB_DataObject_Overload
                         $this->raiseError($value->getMessage() ,DB_DATAOBJECT_ERROR_INVALIDARG);
                         return false;
                     }
-                    if (!isset($options['disable_null_strings']) && strtolower($value) === 'null' && $value !== 'Null' ) {
+                    if (!isset($options['disable_null_strings']) && strtolower($value) === 'null') {
                         $obj->whereAdd("{$joinAs}.{$kSql} IS NULL");
                         continue;
                     } else {
@@ -3533,18 +3493,18 @@ class DB_DataObject extends DB_DataObject_Overload
                 $jadd = "\n {$joinType} JOIN {$objTable} {$fullJoinAs}";
                 //$this->_join .= "\n {$joinType} JOIN {$objTable} {$fullJoinAs}";
                 if (is_array($ofield)) {
-                  $key_count = count($ofield);
+                	$key_count = count($ofield);
                     for($i = 0; $i < $key_count; $i++) {
-                      if ($i == 0) {
-                        $jadd .= " ON ({$joinAs}.{$ofield[$i]}={$table}.{$tfield[$i]}) ";
-                      }
-                      else {
-                        $jadd .= " AND {$joinAs}.{$ofield[$i]}={$table}.{$tfield[$i]} ";
-                      }
+                    	if ($i == 0) {
+                    		$jadd .= " ON ({$joinAs}.{$ofield[$i]}={$table}.{$tfield[$i]}) ";
+                    	}
+                    	else {
+                    		$jadd .= " AND {$joinAs}.{$ofield[$i]}={$table}.{$tfield[$i]} ";
+                    	}
                     }
                     $jadd .= ' ' . $appendJoin . ' ';
                 } else {
-                  $jadd .= " ON ({$joinAs}.{$ofield}={$table}.{$tfield}) {$appendJoin} ";
+	                $jadd .= " ON ({$joinAs}.{$ofield}={$table}.{$tfield}) {$appendJoin} ";
                 }
                 // jadd avaliable for debugging join build.
                 //echo $jadd ."\n";
@@ -3660,7 +3620,7 @@ class DB_DataObject extends DB_DataObject_Overload
      * @return   array of key => value for row
      */
 
-    function toArray($format = NULL, $hideEmpty = false)//NYSS
+    function toArray($format = '%s', $hideEmpty = false)
     {
         global $_DB_DATAOBJECT;
         $ret = array();
@@ -3674,38 +3634,22 @@ class DB_DataObject extends DB_DataObject_Overload
 
             if (!isset($this->$k)) {
                 if (!$hideEmpty) {
-                  //NYSS
-                  if ($format===null)
-                    $ret[$k] = '';
-                  else
                     $ret[sprintf($format,$k)] = '';
                 }
                 continue;
             }
             // call the overloaded getXXXX() method. - except getLink and getLinks
             if (method_exists($this,'get'.$k) && !in_array(strtolower($k),array('links','link'))) {
-              //NYSS
-              if ($format===null)
-                $ret[$k] = $this->{'get'.$k}();
-              else
                 $ret[sprintf($format,$k)] = $this->{'get'.$k}();
                 continue;
             }
             // should this call toValue() ???
-            //NYSS
-            if ($format===null)
-              $ret[$k] = $this->$k;
-            else
             $ret[sprintf($format,$k)] = $this->$k;
         }
         if (!$this->_link_loaded) {
             return $ret;
         }
         foreach($this->_link_loaded as $k) {
-          //NYSS
-          if ($format===null)
-            $ret[$k] = $this->$k->toArray();
-          else
             $ret[sprintf($format,$k)] = $this->$k->toArray();
 
         }
@@ -3768,7 +3712,7 @@ class DB_DataObject extends DB_DataObject_Overload
             }
 
 
-            if (!isset($options['disable_null_strings']) && is_string($this->$key) && (strtolower($this->$key) == 'null') && $this->$key !== 'Null') {
+            if (!isset($options['disable_null_strings']) && is_string($this->$key) && (strtolower($this->$key) == 'null')) {
                 if ($val & DB_DATAOBJECT_NOTNULL) {
                     $this->debug("'null' field used for '$key', but it is defined as NOT NULL", 'VALIDATION', 4);
                     $ret[$key] = false;
@@ -3983,13 +3927,13 @@ class DB_DataObject extends DB_DataObject_Overload
         //echo "FROM VALUE $col, {$cols[$col]}, $value\n";
         switch (true) {
             // set to null and column is can be null...
-            case (!isset($options['disable_null_strings']) && (strtolower($value) == 'null') && $value !== 'Null' && (!($cols[$col] & DB_DATAOBJECT_NOTNULL))):
+            case (!isset($options['disable_null_strings']) && (strtolower($value) == 'null') && (!($cols[$col] & DB_DATAOBJECT_NOTNULL))):
             case (is_object($value) && is_a($value,'DB_DataObject_Cast')):
                 $this->$col = $value;
                 return true;
 
             // fail on setting null on a not null field..
-            case (!isset($options['disable_null_strings']) && (strtolower($value) == 'null') && $value !== 'Null' && ($cols[$col] & DB_DATAOBJECT_NOTNULL)):
+            case (!isset($options['disable_null_strings']) && (strtolower($value) == 'null') && ($cols[$col] & DB_DATAOBJECT_NOTNULL)):
                 return false;
 
             case (($cols[$col] & DB_DATAOBJECT_DATE) &&  ($cols[$col] & DB_DATAOBJECT_TIME)):
@@ -4193,7 +4137,7 @@ class DB_DataObject extends DB_DataObject_Overload
      * @access  public
      * @return  none
      */
-    public static function debugLevel($v = null)
+    function debugLevel($v = null)
     {
         global $_DB_DATAOBJECT;
         if (empty($_DB_DATAOBJECT['CONFIG'])) {
@@ -4273,7 +4217,7 @@ class DB_DataObject extends DB_DataObject_Overload
      * @access   public
      * @return   object an error object
      */
-    public static function _loadConfig()
+    function _loadConfig()
     {
         global $_DB_DATAOBJECT;
 
@@ -4320,30 +4264,7 @@ class DB_DataObject extends DB_DataObject_Overload
     function _get_table() { return $this->table(); }
     function _get_keys()  { return $this->keys();  }
 
-  /**
-   * Get a string to append to the query log depending on time taken.
-   *
-   * This is to allow easier grepping for slow queries.
-   *
-   * @param float $timeTaken
-   *
-   * @return string
-   */
-  public function getAlertLevel($timeTaken) {
-    if ($timeTaken >= 20) {
-      return '(very-very-very-slow)';
-    }
-    if ($timeTaken > 10) {
-      return '(very-very-slow)';
-    }
-    if ($timeTaken > 5) {
-      return '(very-slow)';
-    }
-    if ($timeTaken > 1) {
-      return '(slow)';
-    }
-    return '';
-  }
+
 
 
 }

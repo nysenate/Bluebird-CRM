@@ -416,18 +416,6 @@ AND    domain_id    = %4
     $ufmatch->contact_id = $contactId;
     $ufmatch->domain_id = CRM_Core_Config::domainID();
     if ($ufmatch->find(TRUE)) {
-      //NYSS 7139 determine if email already exists in contact record
-      $sql = "
-        SELECT id
-        FROM civicrm_email
-        WHERE email LIKE '{$emailAddress}'
-          AND contact_id = {$contactId};
-      ";
-      if ( CRM_Core_DAO::singleValueQuery($sql) ) {
-        //email exists, no need to proceed
-        return;
-      }
-
       // Save the email in UF Match table
       $ufmatch->uf_name = $emailAddress;
       CRM_Core_BAO_UFMatch::create((array) $ufmatch);

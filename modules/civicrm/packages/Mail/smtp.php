@@ -244,11 +244,10 @@ class Mail_smtp extends Mail {
      */
     function send($recipients, $headers, $body)
     {
-        if (defined('CIVICRM_MAIL_LOG')) {
-          CRM_Utils_Mail::logger($recipients, $headers, $body);
-          if(!defined('CIVICRM_MAIL_LOG_AND SEND')) {
+        if ( defined( 'CIVICRM_MAIL_LOG' ) ) {
+            require_once 'CRM/Utils/Mail.php';
+            CRM_Utils_Mail::logger( $recipients, $headers, $body );
             return true;
-          }
         }
 
         /* If we don't already have an SMTP object, create one. */

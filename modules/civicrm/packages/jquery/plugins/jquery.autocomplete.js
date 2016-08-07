@@ -199,8 +199,8 @@ $.Autocompleter = function(input, options) {
         // needed for chinese input? see CRM-6135 and http://plugins.jquery.com/node/14682 
         // this breaks "delay" though, so lets only use it for chinese values
         if (CRM.config.lcMessages === 'zh_CN' || CRM.config.lcMessages === 'zh_TW') {
-            onChange(0, true); 
-        } 
+          onChange(0, true);
+        }       
   });
 	
 	function selectCurrent() {
@@ -394,7 +394,7 @@ $.Autocompleter.defaults = {
 	inputClass: "ac_input",
 	resultsClass: "ac_results",
 	loadingClass: "ac_loading",
-	minChars: 3,//NYSS
+	minChars: 0,
 	delay: 400,
 	matchCase: false,
 	matchSubset: false,

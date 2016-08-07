@@ -28,24 +28,23 @@ function smarty_modifier_print_array($var, $depth = 0, $length = 40)
         case 'array' :
             $results = "array(\n";
             foreach ($var as $curr_key => $curr_val) {
-                $depth++;
-                $results .= str_repeat('  ', ($depth + 1))
+
+                $results .= str_repeat('  ', ($depth * 2) + 1)
                     . "'" . $curr_key . "' => "
-                    . smarty_modifier_print_array($curr_val, $depth, $length). ",\n";
-                $depth--;
+                    . smarty_modifier_print_array($curr_val, ++$depth, $length). ",\n";
+                    $depth--;
             }
-            $results .= str_repeat('  ', ($depth + 1)) . ")";
+            $results .= str_repeat('  ', $depth * 2) . ")";
             break;
 
         case 'object' :
             $object_vars = get_object_vars($var);
             $results =  get_class($var) . ' Object (' . count($object_vars) . ')';
             foreach ($object_vars as $curr_key => $curr_val) {
-                $depth++;
-                $results .=  str_repeat('', $depth + 1)
+                $results .=  str_repeat('', $depth * 2)
                     . '->' . $curr_key . ' = '
-                    . smarty_modifier_debug_print_var($curr_val, $depth, $length);
-                $depth--;
+                    . smarty_modifier_debug_print_var($curr_val, ++$depth, $length);
+                    $depth--;
             }
             break;
         case 'boolean' :
@@ -53,9 +52,9 @@ function smarty_modifier_print_array($var, $depth = 0, $length = 40)
         case 'resource' :
 
             if (true === $var) {
-                $results .= 'TRUE';
+                $results .= 'true';
             } elseif (false === $var) {
-                $results .= 'FALSE';
+                $results .= 'false';
             } elseif (null === $var) {
                 $results .= '';
             } else {

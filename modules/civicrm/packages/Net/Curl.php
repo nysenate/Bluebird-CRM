@@ -408,11 +408,10 @@ class Net_Curl
      * @access public
      * @return void
      */
-    //NYSS remove php4 constructor
-    /*function Net_Curl($url = '', $userAgent = '')
+    function Net_Curl($url = '', $userAgent = '')
     {
         $this->__construct($url, $userAgent);
-    }*/
+    }
     // }}}
 
     // {{{ execute()

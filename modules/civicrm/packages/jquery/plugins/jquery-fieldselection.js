@@ -67,21 +67,16 @@
                     // get the current cursor position
                     // currently IE 8 does not support methods to get cursor start position
                     // replace below code with the equivalent once method is available 
-                    //var startPosition = e.value.length;
-                    //var endPosition = startPosition + text.length;
-
-                    //NYSS 3524 & NYSS 4073
-                    var gSPi = cj('#gSP').text();
-                    var gEPi = cj('#gEP').text();
+                    var startPosition = e.value.length;
+                    var endPosition = startPosition + text.length;
 		    
                     // set the value
-                    //e.value = e.value.substr(0, startPosition) + text + e.value.substr( endPosition, e.value.length);
-                    e.value = e.value.substr(0, gSPi) + text + e.value.substr( gEPi, e.value.length);
+                    e.value = e.value.substr(0, startPosition) + text + e.value.substr( endPosition, e.value.length);
                     
                     // move the focus to correct position, end of inserted token 
 					e.focus();
                     var range = e.createTextRange(); 
-                    range.move( "character", gEPi );//NYSS
+                    range.move( "character", endPosition ); 
                     range.select(); 
 					return this;
 				}) ||
@@ -97,6 +92,6 @@
 		}
 	};
 
-	jQuery.each(fieldSelection, function(i) { jQuery.fn[i] = this; });
+	cj.each(fieldSelection, function(i) { cj.fn[i] = this; });
 
 })();

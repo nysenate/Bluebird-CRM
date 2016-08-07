@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -231,10 +231,9 @@ class GatewayRequest
    function CreateNode($NodeName, $NodeValue)
    {
     require_once 'XML/Util.php';
-
-    $xml = new XML_Util();
-    $node = "<" . $NodeName . ">" . $xml->replaceEntities($NodeValue) . "</" . $NodeName . ">";
-    return $node;
+    
+   	$node = "<" . $NodeName . ">" . XML_Util::replaceEntities($NodeValue) . "</" . $NodeName . ">";
+      return $node;
    }
    
 } // class GatewayRequest
