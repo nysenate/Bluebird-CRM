@@ -235,11 +235,15 @@ function nyss_civihooks_civicrm_contactListQuery(&$query, $name, $context, $id)
   //CRM_Core_Error::debug_var('$query',$query);
   //CRM_Core_Error::debug_var('$name',$name);
   //CRM_Core_Error::debug_var('$context',$context);
-} // nyss_civihooks_civicrm_contactListQuery()
+}//nyss_civihooks_civicrm_contactListQuery()
 
 
-function nyss_civihooks_civicrm_buildForm($formName, &$form)
-{
+function nyss_civihooks_civicrm_buildForm($formName, &$form) {
+ /* Civi::log()->debug('buildForm', array(
+    '$formName' => $formName,
+    '$form' => $form,
+  ));*/
+
   _fixTitles();
 
   //Limit case roles available to add new role dialog to only those that apply to cases
@@ -589,6 +593,14 @@ function nyss_civihooks_civicrm_buildForm($formName, &$form)
 
   _setDBVars();
 
+  if ($formName == 'CRM_Group_Form_Search') {
+    CRM_Core_Resources::singleton()->addScriptUrl('/sites/all/modules/nyss_civihooks/js/groupsSearch.js');
+  }
+
+  if ($formName == 'CRM_Group_Form_Edit') {
+    CRM_Core_Resources::singleton()->addScriptUrl('/sites/all/modules/nyss_civihooks/js/groupsEdit.js');
+  }
+
   //CRM_Core_Error::debug($formName);
   //CRM_Core_Error::debug($form);
 } // nyss_civihooks_civicrm_buildForm()
@@ -721,6 +733,10 @@ function nyss_civihooks_civicrm_pageRun(&$page)
       $pagename == 'CRM_Activity_Page_Tab') {
     $activityStatusList = CRM_Core_PseudoConstant::activityStatus();
     $page->assign('activityStatusList', $activityStatusList);
+  }
+
+  if ($pagename == 'CRM_Group_Page_Group') {
+    CRM_Core_Resources::singleton()->addScriptUrl('/sites/all/modules/nyss_civihooks/js/groupsList.js');
   }
 
   _setDBVars();
