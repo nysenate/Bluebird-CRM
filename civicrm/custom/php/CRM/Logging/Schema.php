@@ -1048,19 +1048,17 @@ COLS;
       "INSERT INTO nyss_changelog_detail (db_op, table_name, entity_id)".
       " VALUES ('{eventName}', 'relationship', NEW.id);";
 
-    $this->delta_triggers['civicrm_case_contact']=
-      "SET @nyss_contact_id = NEW.contact_id;" .
-      "SELECT CONCAT_WS(CHAR(1), 'Case', d.label)".
-      " INTO @nyss_entity_info".
-      " FROM civicrm_case a".
-      " INNER JOIN (".
-      "  civicrm_option_group c".
-      "   INNER JOIN civicrm_option_value d".
-      "   ON c.name='case_type' AND c.id=d.option_group_id)".
-      " ON a.case_type_id=d.value".
-      " WHERE a.id=NEW.case_id;".
-      "INSERT INTO nyss_changelog_detail (db_op, table_name, entity_id)".
-      " VALUES ('{eventName}', 'case_contact', NEW.id);";
+    $this->delta_triggers['civicrm_case_contact'] = "
+      SET @nyss_contact_id = NEW.contact_id;
+      SELECT CONCAT_WS(CHAR(1), 'Case', d.title)
+        INTO @nyss_entity_info
+      FROM civicrm_case a
+      INNER JOIN civicrm_case_type d
+        ON a.case_type_id = d.id
+      WHERE a.id = NEW.case_id;
+      INSERT INTO nyss_changelog_detail (db_op, table_name, entity_id)
+        VALUES ('{eventName}', 'case_contact', NEW.id);
+    ";
 
     $this->delta_triggers['civicrm_note']=
       "SET @tmp_trigger_cid = 0;".
