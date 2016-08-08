@@ -60,7 +60,6 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
     $this->case_statuses = CRM_Core_OptionGroup::values('case_status');
     $this->case_types = CRM_Case_PseudoConstant::caseType();
     $rels = CRM_Core_PseudoConstant::relationshipType();
-    $caseRels = array( 8, 13, 14, 15 ); //NYSS 4942
     foreach ($rels as $relid => $v) {
       $this->rel_types[$relid] = $v['label_b_a'];
     }
@@ -75,7 +74,7 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
     foreach (CRM_Case_PseudoConstant::caseActivityType() as $typeDetail) {
       $this->caseActivityTypes[$typeDetail['id']] = $typeDetail['label'];
     }
-    //NYSS 5102 added order bys throughout
+
     $this->_columns = array(
       'civicrm_case' => array(
         'dao' => 'CRM_Case_DAO_Case',
@@ -136,26 +135,13 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
             'default' => 0,
           ),
         ),
-        'order_bys'  =>
-        array(
-          'subject' => array( 'title' => ts('Subject'),
-          ),
-          'start_date' => array( 'title' => ts('Start Date'),
-          ),
-          'end_date' => array( 'title' => ts('End Date'),
-          ),
-          'status_id' => array( 'title' => ts('Case Status'),
-          ),
-          'case_type_name' => array( 'title' => ts('Case Type'),
-          ),
-        ),
       ),
       'civicrm_contact' => array(
         'dao' => 'CRM_Contact_DAO_Contact',
         'fields' => array(
           'client_sort_name' => array(
             'name' => 'sort_name',
-            'title' => ts('Contact Name'),//NYSS
+            'title' => ts('Client Name'),
             'required' => TRUE,
           ),
           'id' => array(
@@ -164,12 +150,7 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
           ),
         ),
         'filters' => array(
-          'sort_name' => array('title' => ts('Contact Name')),//NYSS
-        ),
-        'order_bys'  =>
-        array( 'sort_name' =>
-          array( 'title' => ts('Contact Name'),
-          ),
+          'sort_name' => array('title' => ts('Client Name')),
         ),
       ),
       'civicrm_relationship' => array(
@@ -187,12 +168,6 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
             'type' => CRM_Utils_Type::T_INT,
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => $this->rel_types,
-          ),
-        ),
-        'order_bys'  =>
-        array( 'case_role' =>
-          array( 'title' => ts('Case Role(s)'),
-            'name'  => 'relationship_type_id',
           ),
         ),
       ),
@@ -223,44 +198,15 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
           'state_province_id' => array(
             'title' => ts('State/Province'),
           ),
-          //NYSS 8735
-          'city' => array(
-            'title' => 'City',
-          ),
-          'postal_code' => array(
-            'title' => 'Postal Code',
-          ),
-          /*'country_id'        => array( 'title' => ts( 'Country' ) )*/
+          'country_id' => array('title' => ts('Country')),
         ),
         'grouping'=> 'contact-fields',
-        'filters' =>
-        array(
-          /*'country_id' =>
-          array( 'title'        => ts( 'Country' ),
+        'filters' => array(
+          'country_id' => array(
+            'title' => ts('Country'),
             'type'         => CRM_Utils_Type::T_INT,
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options'      => CRM_Core_PseudoConstant::country( ),),*/
-          'state_province_id' =>
-          array( 'title'        => ts( 'State/Province' ),
-            'type'         => CRM_Utils_Type::T_INT,
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options'      => CRM_Core_PseudoConstant::stateProvince( ),
-            ),
-          //NYSS 8735
-          'city' => array(
-            'title' => 'City',
-            'type' => CRM_Utils_Type::T_TEXT,
-          ),
-          'postal_code' => array(
-            'title' => 'Postal Code',
-            'type' => CRM_Utils_Type::T_TEXT,
-          ),
-        ),
-        'order_bys'  =>
-        array(
-          'street_address' =>
-          array(
-            'title' => ts('Street Adddress'),
+            'options' => CRM_Core_PseudoConstant::country(),
           ),
           'state_province_id' => array(
             'title' => ts('State/Province'),
@@ -268,20 +214,11 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Core_PseudoConstant::stateProvince(),
           ),
-          //NYSS 8735
-          'city' => array(
-            'title' => 'City',
           ),
-          'postal_code' => array(
-            'title' => 'Postal Code',
           ),
-        ),
-      ),
-        //NYSS 4944
-        /*'civicrm_worldregion' =>
-        array( 'dao'       => 'CRM_Core_DAO_Worldregion',
-          'filters'=>
-          array(
+      'civicrm_worldregion' => array(
+        'dao' => 'CRM_Core_DAO_Worldregion',
+        'filters' => array(
           'worldregion_id' => array(
             'name' => 'id',
             'title' => ts('World Region'),
@@ -289,12 +226,11 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Core_PseudoConstant::worldRegion(),
           ),
-        ),*/
-
-      /*'civicrm_country' =>
-        array( 'dao' => 'CRM_Core_DAO_Country',
-      ),*/
-
+        ),
+      ),
+      'civicrm_country' => array(
+        'dao' => 'CRM_Core_DAO_Country',
+      ),
       'civicrm_activity_last' => array(
         'dao' => 'CRM_Activity_DAO_Activity',
         'filters' => array(
@@ -341,7 +277,6 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
 
   public function caseDetailSpecialColumnsAdd() {
     $elements = array();
-    asort($this->caseActivityTypes); //NYSS 4941
     $elements[] = &$this->createElement('select', 'case_activity_all_dates', NULL,
       array(
         '' => ts('- select -'),
@@ -404,10 +339,10 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
 
     //NYSS 5102 sort by case type label
     $this->_caseTypeNameOrderBy = 0;
-    if ( $orderBys = $this->_params['order_bys'] ) {
+    if ($orderBys = $this->_params['order_bys']) {
       foreach ( $orderBys as $orderBy ) {
         if ( $orderBy['column'] == 'case_type_name' ) {
-          $select[] = "civireport_case_types.label as case_type_name";
+          $select[] = "civireport_case_types.title as case_type_name";
           $this->_caseTypeNameOrderBy = 1;
         }
       }
@@ -471,15 +406,10 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
     }
 
     //NYSS 5102 include case type name
-    if ( $this->_caseTypeNameOrderBy ) {
+    if ($this->_caseTypeNameOrderBy) {
       $this->_from .= "
-        LEFT JOIN (
-          SELECT cov.value, cov.label
-          FROM civicrm_option_value cov
-          JOIN civicrm_option_group cog
-            ON cov.option_group_id = cog.id
-            AND cog.name = 'case_type' ) civireport_case_types
-            ON {$case}.case_type_id = civireport_case_types.value
+        LEFT JOIN civicrm_case_type civireport_case_types
+          ON {$case}.case_type_id = civireport_case_types.id
       ";
     }
 
@@ -573,8 +503,8 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
   //NYSS 5102
   function orderBy( ) {
     parent::orderBy();
-    if ( $this->_caseTypeNameOrderBy ) {
-      $this->_orderBy = str_replace( 'case_civireport.case_type_name', 'civireport_case_types.label', $this->_orderBy );
+    if ($this->_caseTypeNameOrderBy) {
+      $this->_orderBy = str_replace('case_civireport.case_type_name', 'civireport_case_types.title', $this->_orderBy);
     }
   }
 

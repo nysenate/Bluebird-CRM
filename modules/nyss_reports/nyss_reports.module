@@ -69,6 +69,12 @@ function nyss_reports_civicrm_alterReportVar($varType, &$var, &$object) {
   $class = get_class($object);
   switch ($varType) {
     case 'columns':
+      Civi::log()->debug('alterReportVar cols', array(
+        //'varType' => $varType,
+        'var' => $var,
+        //'object' => $object,
+      ));
+
       //common modifications
       _nyss_reports_Base_cols($var, $object);
 
@@ -83,6 +89,10 @@ function nyss_reports_civicrm_alterReportVar($varType, &$var, &$object) {
 
         case 'CRM_Report_Form_Case_Demographics':
           _nyss_reports_CaseDemographics_cols($var, $object);
+          break;
+
+        case 'CRM_Report_Form_Case_Detail':
+          _nyss_reports_CaseDetail_cols($var, $object);
           break;
 
         default:
@@ -288,3 +298,77 @@ function _nyss_reports_CaseDemographics_cols(&$var, &$object) {
   unset($var['civicrm_value_contact_details_8']);
   unset($var['civicrm_value_website_profile_9']);
 }//_nyss_reports_CaseDemographics_cols
+
+function _nyss_reports_CaseDetail_cols(&$var, &$object) {
+  //4942 filter case roles
+  $caseRoleIDs = array(8, 13, 14, 15);
+  $currentRoles = $var['civicrm_relationship']['filters']['case_role']['options'];
+  $roles = array_intersect_key($currentRoles, array_flip($caseRoleIDs));
+  $var['civicrm_relationship']['filters']['case_role']['options'] = $roles;
+
+  //5102
+  $var['civicrm_case']['order_bys'] = array(
+    'subject' => array(
+      'title' => ts('Subject'),
+    ),
+    'start_date' => array(
+      'title' => ts('Start Date'),
+    ),
+    'end_date' => array(
+      'title' => ts('End Date'),
+    ),
+    'status_id' => array(
+      'title' => ts('Case Status'),
+    ),
+    'case_type_name' => array(
+      'title' => ts('Case Type'),
+    ),
+  );
+
+  $var['civicrm_contact']['fields']['client_sort_name']['title'] = ts('Contact Name');
+  $var['civicrm_contact']['filters']['sort_name']['title'] = ts('Contact Name');
+  $var['civicrm_contact']['order_bys'] = array(
+    'sort_name' => array(
+      'title' => ts('Contact Name'),
+    ),
+  );
+
+  $var['civicrm_relationship']['order_bys'] = array(
+    'case_role' => array(
+      'title' => ts('Case Role(s)'),
+      'name' => 'relationship_type_id',
+    ),
+  );
+
+  $var['civicrm_address']['fields']['city']['title']['City'];
+  $var['civicrm_address']['fields']['postal_code']['title']['Postal Code'];
+  unset($var['civicrm_address']['fields']['country_id']);
+  unset($var['civicrm_address']['filters']['country_id']);
+  $var['civicrm_address']['filters']['state_province_id'] = array(
+    'title' => ts( 'State/Province' ),
+    'type' => CRM_Utils_Type::T_INT,
+    'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+    'options' => CRM_Core_PseudoConstant::stateProvince(),
+  );
+  $var['civicrm_address']['filters']['city'] = array(
+    'title' => 'City',
+    'type' => CRM_Utils_Type::T_TEXT,
+  );
+  $var['civicrm_address']['filters']['postal_code'] = array(
+    'title' => 'Postal Code',
+    'type' => CRM_Utils_Type::T_TEXT,
+  );
+  $var['civicrm_address']['order_bys']['street_address'] = array(
+    'title' => ts('Street Address'),
+  );
+  $var['civicrm_address']['order_bys']['city'] = array(
+    'title' => ts('City'),
+  );
+  $var['civicrm_address']['order_bys']['postal_code'] = array(
+    'title' => ts('Postal Code'),
+  );
+
+  unset($var['civicrm_worldregion']);
+  unset($var['civicrm_country']);
+}//_nyss_reports_CaseDetail_cols
+
