@@ -69,11 +69,11 @@ function nyss_reports_civicrm_alterReportVar($varType, &$var, &$object) {
   $class = get_class($object);
   switch ($varType) {
     case 'columns':
-      Civi::log()->debug('alterReportVar cols', array(
+      /*Civi::log()->debug('alterReportVar cols', array(
         //'varType' => $varType,
         'var' => $var,
         //'object' => $object,
-      ));
+      ));*/
 
       //common modifications
       _nyss_reports_Base_cols($var, $object);
