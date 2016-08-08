@@ -3836,15 +3836,15 @@ li.crm-button {
   background-color: #6fc0f3;
 }
 
-/*#crm-container #mainTabContainer {
+#crm-container div.crm-contact-page #mainTabContainer {
   background: transparent;
 }
 
-#crm-container #mainTabContainer .ui-tabs-panel {
+#crm-container div.crm-contact-page #mainTabContainer .ui-tabs-panel {
   background-color: #FFF;
   float: right;
   width: 778px;
-}*/
+}
 
 .crm-contact-dashboard,.crm-contact-print {
   display: none;
@@ -4118,7 +4118,13 @@ div.crm-relationship-form-block .crm-relationship-form-block-is_permission_a_b,d
 div#mainTabContainer.ui-widget-content,
 div#mainTabContainer > ul.ui-widget-header {
   border: none;
-  padding: 0 0 2px 0;
+  padding: 0;
+}
+div.crm-report-criteria div#mainTabContainer.ui-widget-content {
+  padding: 0.2em;
+}
+div.crm-report-criteria div#mainTabContainer > ul.ui-widget-header {
+  padding: 4px;
 }
 
 #crm-container #mainTabContainer > ul.crm-contact-tabs-list {
