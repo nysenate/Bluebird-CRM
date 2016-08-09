@@ -2541,7 +2541,11 @@ form#Contact .groupTagsKeywords .crm-section .label {
 
 /*Contact edit*/
 #crm-container .address-custom-cell {
-  width: 300px;
+  width: 400px;
+}
+
+#crm-container .address-custom-cell td.label {
+  padding-right: 6px;
 }
 
 #crm-container .address-content-block,#crm-container table.form-layout-compressed.crm-edit-address-form {
