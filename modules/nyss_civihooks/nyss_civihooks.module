@@ -534,8 +534,8 @@ function nyss_civihooks_civicrm_buildForm($formName, &$form) {
     if (!$form->elementExists('activity_type_id')) {
       return;
     }
-    $ele    =& $form->getElement('activity_type_id');
-    $fele   =& $form->getElement('followup_activity_type_id');
+    $ele =& $form->getElement('activity_type_id');
+    $fele =& $form->getElement('followup_activity_type_id');
     $aTypes = $eleOptions = $feleOptions = array();
 
     foreach ($ele->_options as $k => $aT) {
