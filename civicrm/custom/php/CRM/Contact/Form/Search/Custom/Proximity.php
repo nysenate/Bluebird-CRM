@@ -265,6 +265,9 @@ AND cgc.group_id = {$this->_group}
       $where .= " AND contact_a.contact_type LIKE '%{$this->_formValues['contact_type']}%'";
     }
 
+    //NYSS standard clauses
+    $where .= " AND is_deleted = 0 AND is_deceased = 0 ";
+
     return $this->whereClause($where, $params);
   }
 
