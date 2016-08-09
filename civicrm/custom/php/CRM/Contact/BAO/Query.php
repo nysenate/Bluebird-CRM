@@ -5561,6 +5561,12 @@ SELECT COUNT( conts.total_amount ) as cancel_count,
 
       case 'IN':
       case 'NOT IN':
+        //NYSS comment out standard
+        // I feel like this would be escaped properly if passed through $queryString = CRM_Core_DAO::createSqlFilter.
+        /*if (!empty($value) && (!is_array($value) || !array_key_exists($op, $value))) {
+          $value = array($op => (array) $value);
+        }*/
+
         //NYSS support multiple values for some fields
         if (isset($dataType)) {
           if (is_array($value)) {
@@ -5576,10 +5582,10 @@ SELECT COUNT( conts.total_amount ) as cancel_count,
               $dataType = str_replace('nyss_', '', $dataType); //return to expected format
             }
           }
-          $value = "(" . implode($values, ",") . ")";
+          //$value = "(" . implode($values, ",") . ")";
+          $value = array($op => (array) $values);
         }
-
-        return "$clause $value";
+        //return "$clause $value";
 
       default:
         if (empty($dataType)) {
