@@ -239,9 +239,9 @@ function nyss_civihooks_civicrm_contactListQuery(&$query, $name, $context, $id)
 
 
 function nyss_civihooks_civicrm_buildForm($formName, &$form) {
- /* Civi::log()->debug('buildForm', array(
+  /*Civi::log()->debug('buildForm', array(
     '$formName' => $formName,
-    '$form' => $form,
+    //'$form' => $form,
   ));*/
 
   _fixTitles();
@@ -599,6 +599,10 @@ function nyss_civihooks_civicrm_buildForm($formName, &$form) {
 
   if ($formName == 'CRM_Group_Form_Edit') {
     CRM_Core_Resources::singleton()->addScriptUrl('/sites/all/modules/nyss_civihooks/js/groupsEdit.js');
+  }
+
+  if ($formName == 'CRM_Contact_Form_Search_Builder') {
+    CRM_Core_Resources::singleton()->addScriptUrl('/sites/all/modules/nyss_civihooks/js/searchBuilder.js');
   }
 
   //CRM_Core_Error::debug($formName);
