@@ -922,7 +922,7 @@ class CRM_NYSS_BAO_Integration_Website
     //CRM_Core_Error::debug_var('getActivityStream $contactID', $contactID);
     $contactIDSql = ($contactID) ? "contact_id = {$contactID}" : '(1)';
 
-    $type = CRM_Utils_Type::escape($_REQUEST['atype'], 'String', false);
+    $type = CRM_Utils_Type::escape($_REQUEST['type'], 'String', false);
     //CRM_Core_Error::debug_var('getActivityStream $type', $type);
     $typeSql = ($type) ? "AND type = '{$type}'" : '';
 
@@ -950,7 +950,6 @@ class CRM_NYSS_BAO_Integration_Website
     if ($contactID) {
       $params['contact_id'] = $contactID;
     }
-
     //CRM_Core_Error::debug_var('getActivityStream $params', $params);
 
     $orderBy = ($params['sortBy']) ? $params['sortBy'] : 'created_date desc';
@@ -1002,33 +1001,12 @@ class CRM_NYSS_BAO_Integration_Website
     $session = CRM_Core_Session::singleton();
     $userID = $session->get('userID');
     if ($userID) {
-      //flush cache before setting filter to account for global cache (memcache)
-      $domainID = CRM_Core_Config::domainID();
-      $cacheKey = CRM_Core_BAO_Setting::inCache(
-        CRM_Core_BAO_Setting::PERSONAL_PREFERENCES_NAME,
-        'web_activity_filter',
-        NULL,
-        $userID,
-        TRUE,
-        $domainID,
-        TRUE
-      );
-      if ( $cacheKey ) {
-        CRM_Core_BAO_Setting::flushCache($cacheKey);
-      }
-
       $activityFilter = array(
         'web_activity_type_filter' => $type,
       );
 
-      CRM_Core_BAO_Setting::setItem(
-        $activityFilter,
-        CRM_Core_BAO_Setting::PERSONAL_PREFERENCES_NAME,
-        'web_activity_type_filter',
-        NULL,
-        $userID,
-        $userID
-      );
+      $cSettings = Civi::service('settings_manager')->getBagByContact(CRM_Core_Config::domainID(), $userID);
+      $cSettings->set('web_activity_type_filter', $activityFilter);
     }
 
     $iFilteredTotal = $iTotal = $params['total'] = $totalRows;
