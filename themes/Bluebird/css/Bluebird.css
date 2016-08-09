@@ -3859,10 +3859,10 @@ li.crm-button {
 }
 
 /* for understanding browsers */
-/*#crm-container #mainTabContainer .ui-tabs-panel {
+#crm-container #mainTabContainer .ui-tabs-panel {
   min-height: 600px;
   height: auto;
-}*/
+}
 
 /* for Internet Explorer */
 /*\*/
