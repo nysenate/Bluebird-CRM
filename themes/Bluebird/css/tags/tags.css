@@ -175,45 +175,45 @@ form#Contact .groupTagsKeywords ul.token-input-list-facebook {
   float: left;
   margin-right: 5px; }
 #crm-container .crm-tagLegend td.addTag div {
-  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  background-image: url("/sites/default/themes/Bluebird/images/fcb.png") !important;
   cursor: pointer;
-  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  background-image: url("/sites/default/themes/Bluebird/images/fcb.png") !important;
   cursor: pointer;
   background-position: 0; }
 #crm-container .crm-tagLegend td.removeTag div {
-  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  background-image: url("/sites/default/themes/Bluebird/images/fcb.png") !important;
   cursor: pointer;
-  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  background-image: url("/sites/default/themes/Bluebird/images/fcb.png") !important;
   cursor: pointer;
   background-position: -17px 0px; }
 #crm-container .crm-tagLegend td.moveTag div {
-  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  background-image: url("/sites/default/themes/Bluebird/images/fcb.png") !important;
   cursor: pointer;
-  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  background-image: url("/sites/default/themes/Bluebird/images/fcb.png") !important;
   cursor: pointer;
   background-position: -34px 0px; }
 #crm-container .crm-tagLegend td.updateTag div {
-  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  background-image: url("/sites/default/themes/Bluebird/images/fcb.png") !important;
   cursor: pointer;
-  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  background-image: url("/sites/default/themes/Bluebird/images/fcb.png") !important;
   cursor: pointer;
   background-position: -50px 0px; }
 #crm-container .crm-tagLegend td.mergeTag div {
-  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  background-image: url("/sites/default/themes/Bluebird/images/fcb.png") !important;
   cursor: pointer;
-  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  background-image: url("/sites/default/themes/Bluebird/images/fcb.png") !important;
   cursor: pointer;
   background-position: -66px 0px; }
 #crm-container .crm-tagLegend td.convertTag div {
-  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  background-image: url("/sites/default/themes/Bluebird/images/fcb.png") !important;
   cursor: pointer;
-  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  background-image: url("/sites/default/themes/Bluebird/images/fcb.png") !important;
   cursor: pointer;
   background-position: -107px 0px; }
 #crm-container .crm-tagLegend td.printTag div {
-  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") !important;
+  background-image: url("/sites/default/themes/Bluebird/images/icons-3e3e3e.png") !important;
   cursor: pointer;
-  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") !important;
+  background-image: url("/sites/default/themes/Bluebird/images/icons-3e3e3e.png") !important;
   cursor: pointer;
   background-position: -160px -96px; }
 #crm-container .crm-tagLegend th {
@@ -251,33 +251,33 @@ form#Contact .groupTagsKeywords ul.token-input-list-facebook {
   cursor: pointer;
 }
 .BBTree dt .fCB ul li.addTag{
-  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  background-image: url("/sites/default/themes/Bluebird/images/fcb.png") !important;
   background-position: 0;
 }
 
 .BBTree dt .fCB ul li.removeTag{
-  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  background-image: url("/sites/default/themes/Bluebird/images/fcb.png") !important;
   background-position: -17px 0px;
 }
 
 .BBTree dt .fCB ul li.moveTag{
-  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  background-image: url("/sites/default/themes/Bluebird/images/fcb.png") !important;
   background-position: -34px 0px;
 }
 .BBTree dt .fCB ul li.updateTag {
-  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  background-image: url("/sites/default/themes/Bluebird/images/fcb.png") !important;
   background-position: -50px 0px;
 }
 .BBTree dt .fCB ul li.mergeTag {
-  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  background-image: url("/sites/default/themes/Bluebird/images/fcb.png") !important;
   background-position: -66px 0px;
 }
 .BBTree dt .fCB ul li.convertTag {
-  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  background-image: url("/sites/default/themes/Bluebird/images/fcb.png") !important;
   background-position: -107px 0px;
 }
 .BBTree dt .fCB ul li.printTag {
-  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") !important;
+  background-image: url("/sites/default/themes/Bluebird/images/icons-3e3e3e.png") !important;
   background-position: -160px -96px;
 }
 
@@ -380,7 +380,7 @@ form#Contact .groupTagsKeywords ul.token-input-list-facebook {
 
 
 #clear {
-  background: url("/sites/default/themes/Bluebird/nyss_skin/images/header-search-bg.gif") no-repeat scroll right top rgba(0, 0, 0, 0);
+  background: url("/sites/default/themes/Bluebird/images/header-search-bg.gif") no-repeat scroll right top rgba(0, 0, 0, 0);
   float: right;
   height: 18px;
   line-height: 1em;
@@ -397,7 +397,7 @@ form#Contact .groupTagsKeywords ul.token-input-list-facebook {
   z-index: 10000;
 }
 #clear.close {
-  background-image:url("/sites/default/themes/Bluebird/nyss_skin/images/close.png");
+  background-image:url("/sites/default/themes/Bluebird/images/close.png");
   background-position: 7px 7px;
   background-color: #FFDCDC;
   cursor:pointer;
@@ -425,7 +425,7 @@ form#Contact .groupTagsKeywords ul.token-input-list-facebook {
   margin: 0;
   width: 20px;
   margin-left: -20px;
-  background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") no-repeat -32px -15px;
+  background: url("/sites/default/themes/Bluebird/images/icons-3e3e3e.png") no-repeat -32px -15px;
   cursor: pointer;
 }
 .ddControl.treeButton.open {

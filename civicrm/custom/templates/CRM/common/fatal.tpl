@@ -40,7 +40,7 @@
   {literal}
   <style media="screen" type="text/css">
     body {
-      background: url("/sites/default/themes/Bluebird/nyss_skin/images/bluebird_back.jpg") repeat-x scroll left top #7FCDFE;
+      background: url("/sites/default/themes/Bluebird/images/bluebird_back.jpg") repeat-x scroll left top #7FCDFE;
     }
     div#crm-container {
       padding: 25px;
@@ -112,7 +112,7 @@
 </div>
 {else}
   <div class="messages status">
-    <p class="large"><img src="/sites/default/themes/Bluebird/nyss_skin/images/seal-bluebird.png" alt="Seal" align="right" class="seal-img">There was a problem returning your requested page.</p>
+    <p class="large"><img src="/sites/default/themes/Bluebird/images/seal-bluebird.png" alt="Seal" align="right" class="seal-img">There was a problem returning your requested page.</p>
     <hr style="border-bottom: 1px solid #999;">
     <p>You can contact the STS Helpline at 518-455-2011 if you need assistance. System information related to this error has already been forwarded to the development team to help troubleshoot.</p>
     <p class="large"><a href="{$config->userFrameworkBaseURL}" title="Bluebird Home">Click here</a> to return to Bluebird.</p>

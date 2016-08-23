@@ -120,7 +120,7 @@ thead .sorting_asc{background-color:#f1f1f1!important;}
 .imapperbox .autocomplete-dropdown a.tag-item {color: #666!important; padding: 2px;}
 .imapperbox .autocomplete-dropdown a.tag-item:hover{color: #336699!important; background: #e1e1e1; }
 .imapperbox .tag-selected{background: #336699; padding: 2px 5px; float:left; margin:0 4px 4px 0; }
-.imapperbox .tag-selected .tag-delete-icon{float:right; margin:5px; width:10px; height:10px; background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-FFFFFF.png") no-repeat scroll; background-position: -100px -132px; }
+.imapperbox .tag-selected .tag-delete-icon{float:right; margin:5px; width:10px; height:10px; background: url("/sites/default/themes/Bluebird/images/icons-FFFFFF.png") no-repeat scroll; background-position: -100px -132px; }
 .imapperbox a.tag-selected {color: #fff!important; }
 .imapperbox a.tag-selected:hover {color: #fff !important; background-color: red; }
 .imapperbox .attachment{float:right !important;}
@@ -324,7 +324,7 @@ a.stats_overview.active{
 
 /* hover icons for matched/matcher contacts */
 .crm-container .icon.mail-merge-icon {
-  background-image: url('/sites/default/themes/Bluebird/nyss_skin/images/inbound_email_icons.png');
+  background-image: url('/sites/default/themes/Bluebird/images/inbound_email_icons.png');
 }
 .crm-container .mail-merge-icon.mail-merge-matched {
   background-position: 0px 0px;

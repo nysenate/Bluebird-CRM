@@ -1,15 +1,15 @@
 /*
 
 Tags CSS
-SassCommandWin: sass --update themes\Bluebird\nyss_skin\tags\tags.scss:themes\Bluebird\nyss_skin\tags\tags.css
-SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/Bluebird/nyss_skin/tags/tags.css
+SassCommandWin: sass --update themes\Bluebird\css\tags\tags.scss:themes\Bluebird\css\tags\tags.css
+SassCommand*nix: sass --update themes/Bluebird/css/tags/tags.scss:themes/Bluebird/css/tags/tags.css
 
 
 */
 /*mixins*/
 /*icons*/
-$functionIconLink : "/sites/default/themes/Bluebird/nyss_skin/images/fcb.png";
-$defaultIconLink : "/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png";
+$functionIconLink : "/sites/default/themes/Bluebird/images/fcb.png";
+$defaultIconLink : "/sites/default/themes/Bluebird/images/icons-3e3e3e.png";
 $levelClassSlug : "lv";
 $inputBoxWidth: 522px;
 
@@ -251,7 +251,7 @@ $inputBoxWidth: 522px;
 	li{
 		float:left;
 		margin-right:15px;
-		background: transparent url(/sites/default/themes/Bluebird/nyss_skin/images/button.png) no-repeat scroll right -30px !important;
+		background: transparent url(/sites/default/themes/Bluebird/images/button.png) no-repeat scroll right -30px !important;
 		list-style: none; 
 		width:135px; 
 		color:#fff; 

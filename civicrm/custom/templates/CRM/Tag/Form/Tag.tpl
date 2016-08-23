@@ -30,7 +30,7 @@
   var BBActionConst = {/literal}{$action}{literal};
 </script>
 <script src="/sites/default/themes/Bluebird/scripts/bbtree.js" type="text/javascript"></script>
-<link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/Bluebird/nyss_skin/tags/tags.css" />
+<link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/Bluebird/css/tags/tags.css" />
 {/literal}
 {*NYSS*}
 <div id="TagGroups" class="view-content">

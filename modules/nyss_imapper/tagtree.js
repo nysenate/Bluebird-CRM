@@ -684,7 +684,7 @@ TagTreeManage.prototype.animate_tree = function(tree) {
         var mywindow = window.open('', 'PrintTags');
         mywindow.document.body.innerHTML="";
         mywindow.document.write('<!DOCTYPE html><html><head><title>Print Tags</title>');
-        mywindow.document.write('<link type="text/css" rel="stylesheet" href="/sites/default/themes/Bluebird/nyss_skin/tags/tags.css" />');
+        mywindow.document.write('<link type="text/css" rel="stylesheet" href="/sites/default/themes/Bluebird/css/tags/tags.css" />');
         mywindow.document.write('</head><body class="popup">');
         mywindow.document.write('<div class="BBTree" style="height:auto;width:auto;overflow-y:hidden;">');
         mywindow.document.write(tree.html());
