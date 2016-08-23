@@ -44,15 +44,16 @@
       {php}
       //NYSS 2724 TODO: look at more complete solution to long titles overlapping action buttons
       $title = drupal_get_title();
-      $strippedtitlelen = strlen(strip_tags($title));
+      $strippedtitlelen = strlen(str_replace(' (deceased)', '', strip_tags($title)));
       $titlelen = strlen($title);
 
-      if( $strippedtitlelen > 28 ) {
-        $shorttitle = substr( $title, 0, $titlelen-($strippedtitlelen-25));
-        print $shorttitle.'...';
+      if( $strippedtitlelen > 25 ) {
+        $shorttitle = str_replace(' <span class="crm-contact-deceased">(deceased)</span>', '', $title);
+        $shorttitle = substr($shorttitle, 0, $titlelen-($strippedtitlelen-20));
+        print trim($shorttitle).'...';
       }
       else {
-        print $title;
+        print str_replace(' <span class="crm-contact-deceased">(deceased)</span>', '', $title);
       }
       {/php}
     {/if}
