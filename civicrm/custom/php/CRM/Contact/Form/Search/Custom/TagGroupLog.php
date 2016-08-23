@@ -100,22 +100,25 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
       $tags = $tags + array ('292' => 'Legislative Positions') + $legpos;
     }
 
-    $fTags = &$form->addElement('advmultiselect', 'tag',
-      ts('Tag(s)'), $tags,
-      array(
-        'size' => 5,
-        'style' => 'width:270px',
-        'class' => 'advmultiselect',
-      )
+    $select2style = array(
+      'multiple' => TRUE,
+      'style' => 'width: 100%; max-width: 60em;',
+      'class' => 'crm-select2',
+      'placeholder' => ts('- select -'),
     );
 
-    $fGroups = &$form->addElement('advmultiselect', 'group',
-      ts('Group(s)'), $groups,
-      array(
-        'size' => 5,
-        'style' => 'width:270px',
-        'class' => 'advmultiselect',
-      )
+    $form->add('select', 'tag',
+      ts('Tag(s)'),
+      $tags,
+      FALSE,
+      $select2style
+    );
+
+    $form->add('select', 'group',
+      ts('Group(s)'),
+      $groups,
+      FALSE,
+      $select2style
     );
     
     $form->addDate( 'start_date', ts( 'Date from' ), false, array('formatType' => 'birth') );
