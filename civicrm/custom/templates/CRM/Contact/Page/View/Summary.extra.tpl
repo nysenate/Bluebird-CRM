@@ -85,6 +85,7 @@
 <script type="text/javascript">
   //remove website profile count
   cj('li#tab_custom_9 a em').remove();
+  cj('li#tab_custom_9').removeClass('crm-count-0');//10316
 </script>
 {/literal}
 
