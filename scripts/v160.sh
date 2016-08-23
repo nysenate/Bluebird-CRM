@@ -93,3 +93,13 @@ $execSql $instance -c "$sql" -q
 
 ## enable new nyss_reports module
 $drush $instance en nyss_reports -y
+
+## disable various unused activity types
+echo "$prog: disable unused activity types"
+sql="
+  UPDATE civicrm_option_value
+  SET is_active = 0
+  WHERE component_id = 2
+    AND option_group_id = 2
+"
+$execSql $instance -c "$sql" -q
