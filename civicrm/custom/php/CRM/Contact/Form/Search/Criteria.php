@@ -98,9 +98,6 @@ class CRM_Contact_Form_Search_Criteria {
       }
     }
 
-    //NYSS 5556
-    $form->add('checkbox', 'all_tag_types', ts('Search in all tag types (contact/case/activity)'));
-
     // add text box for last name, first name, street name, city
     $form->addElement('text', 'sort_name', ts('Find...'), CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Contact', 'sort_name'));
 

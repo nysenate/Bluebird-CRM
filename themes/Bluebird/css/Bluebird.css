@@ -3288,7 +3288,11 @@ div.outerbox {
   float: left;
 }
 
-.civi-advanced-search-link,.civi-advanced-search-button {
+.crm-container .civi-advanced-searc-link-span a {
+  color: #FFFFFF;
+}
+
+.civi-advanced-search-link, .civi-advanced-search-button {
   color: #FFF;
   background-color: #457AA4;
   float: left;

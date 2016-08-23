@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -60,7 +60,6 @@ $role = str_replace('authenticated user','', $rolesList);
           cj('.civi-search-section #quickSearch').append(htmlContent);
 
           var contactUrl = {/literal}"{crmURL p='civicrm/nyss/quicksearch' q='json=1&context=navigation' h=0 }"{literal};
-
 
           cj('#civi_sort_name').autocomplete();
           cj('#civi_sort_name').autocomplete({
@@ -168,9 +167,9 @@ $role = str_replace('authenticated user','', $rolesList);
     {else}
       <div class="civi-advanced-search-link">
       <div class="civi-advanced-search-link-inner">
-        <span>
-        <div class="icon crm-accordion-pointer"></div>
-        ADVANCED SEARCH
+        <span class="civi-advanced-searc-link-span">
+          <div class="icon crm-accordion-pointer"></div>
+          <a href='{crmURL p="civicrm/contact/search/advanced" q="reset=1"}'>ADVANCED SEARCH</a>
         </span>
       </div>
       </div>
@@ -229,7 +228,7 @@ $role = str_replace('authenticated user','', $rolesList);
   {else}
     {literal}
     <script>
-    cj('.civi-advanced-search-link-inner').click(function(){
+    /*cj('.civi-advanced-search-link-inner').click(function(){
       if (cj('form#Advanced').length == 0) {
         cj('.civi-adv-search-linkwrap').addClass('crm-loading');
         cj('#advanced-search-form').load('{/literal}{crmURL p="civicrm/contact/search/advanced" q="snippet=1&reset=1"}{literal}',
@@ -259,7 +258,7 @@ $role = str_replace('authenticated user','', $rolesList);
       else {
         cj('div.civi-advanced-search-button div.helpicon').hide();
       }
-    });
+    });*/
     </script>
     {/literal}
   {/if}

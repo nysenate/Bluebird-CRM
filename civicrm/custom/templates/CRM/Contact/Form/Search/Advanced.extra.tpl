@@ -1,5 +1,3 @@
-<div id="all_tag_types">{$form.all_tag_types.html} {$form.all_tag_types.label}</div>
-
 <div class="crm-accordion-wrapper crm-ajax-accordion crm-ModifiedDate-accordion collapsed">
   <div class="crm-accordion-header" id="ModifiedDate">Modified Date</div>
   <div class="crm-accordion-body ModifiedDate accordion_wrapper">
@@ -32,9 +30,6 @@
   var pof = '{/literal}{$form.custom_64.html}{literal}';
   var pon = '<tr><td colspan="2">Privacy Option Notes  ' + pof + '</td></tr>';
   cj('table.search-privacy-options tbody').append(pon);
-
-  //5556
-  cj('#all_tag_types').appendTo(cj('.contact-tagset-296-section div:nth-child(2)'));
 
   //7946
   cj('div.crm-ModifiedDate-accordion').insertAfter(cj('div.crm-CiviCase-accordion'));
