@@ -88,7 +88,7 @@ $civicrm_setting['CiviCRM Preferences']['securityAlert'] = FALSE;
 $civicrm_setting['CiviCRM Preferences']['versionCheck'] = FALSE;
 $civicrm_setting['CiviCRM Preferences']['max_attachments'] = 5;
 $civicrm_setting['CiviCRM Preferences']['maxFileSize'] = 12; //9842
-$civicrm_setting['CiviCRM Preferences']['communityMessagesUrl'] = false;
+$civicrm_setting['CiviCRM Preferences']['communityMessagesUrl'] = FALSE;
 
 $civicrm_setting['Directory Preferences']['customTemplateDir'] = "{$bbconfig['app.rootdir']}/civicrm/custom/templates";
 $civicrm_setting['Directory Preferences']['customPHPPathDir'] = "{$bbconfig['app.rootdir']}/civicrm/custom/php";

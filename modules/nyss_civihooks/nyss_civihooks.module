@@ -950,6 +950,17 @@ function nyss_civihooks_civicrm_alterTemplateFile($formName, &$form, $context, &
   $form->assign('navigation', $navigationString);
 }//alterTemplateFile
 
+/*
+ * @param $messages
+ * disable system status check messages
+ */
+function nyss_civihooks_civicrm_check(&$messages) {
+  //Civi::log()->debug('check', array('messages' => $messages));
+  foreach ($messages as $k => $msg) {
+    unset($messages[$k]);
+  }
+}//nyss_civihooks_civicrm_check
+
 /**
  * The User ID and Job ID are stored as db variables for inclusion
  * in the log database via the triggers. At times, the variables
