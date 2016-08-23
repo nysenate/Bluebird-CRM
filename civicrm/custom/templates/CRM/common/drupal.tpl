@@ -2,7 +2,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2015                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -35,23 +35,11 @@
 
 <div id="crm-container" class="crm-container{if $urlIsPublic} crm-public{/if}" lang="{$config->lcMessages|truncate:2:"":true}" xml:lang="{$config->lcMessages|truncate:2:"":true}">
 
-{*NYSS*}
-{if !$disableBBheader}
-  {include file="CRM/common/action.tpl"}
-  {*NYSS remove nav*}
-
-  {* temporary hack to fix wysiysg editor failure if js compression is on *}
-  {if $defaultWysiwygEditor eq 1}
-    <script type="text/javascript" src="{$config->resourceBase}packages/tinymce/jscripts/tiny_mce/jquery.tinymce.js"></script>
-    <script type="text/javascript" src="{$config->resourceBase}packages/tinymce/jscripts/tiny_mce/tiny_mce.js"></script>
-  {elseif $defaultWysiwygEditor eq 2}
-    <script type="text/javascript" src="{$config->resourceBase}packages/ckeditor/ckeditor.js"></script>
-  {/if}
-{/if}
+{*NYSS remove nav bar*}
+{*crmNavigationMenu is_default=1*}
 
 <div class="crm-title">
 	<h1 class="title">
-    {if $isDeleted}<del>{/if}
     {if $tplFile eq 'CRM/Contact/Page/View/Summary.tpl'}
       {php}
       //NYSS 2724 TODO: look at more complete solution to long titles overlapping action buttons
@@ -67,51 +55,38 @@
         print $title;
       }
       {/php}
-    {else}
-      {php}
-        print str_replace('CiviMail', 'BluebirdMail', str_replace('CiviCRM', 'Bluebird', drupal_get_title()));
-      {/php}
     {/if}
-    {if $isDeleted}</del>{/if}
-    </h1>
+  </h1>
 </div>
 
 {crmRegion name='page-header'}
 {/crmRegion}
-
-{*{include file="CRM/common/langSwitch.tpl"}*}
-
+<div class="clear"></div>
 
 {if isset($localTasks) and $localTasks}
-  {include file="CRM/common/localNav.tpl"}
+    {include file="CRM/common/localNav.tpl"}
 {/if}
-
-{include file="CRM/common/status.tpl"}
-
-{crmRegion name='page-body'}
-<!-- .tpl file invoked: {$tplFile}. Call via form.tpl if we have a form in the page. -->
-{if isset($isForm) and $isForm}
-    {include file="CRM/Form/$formTpl.tpl"}
-{else}
-    {include file=$tplFile}
-{/if}
-{/crmRegion}
+<div id="crm-main-content-wrapper">
+  {include file="CRM/common/status.tpl"}
+  {crmRegion name='page-body'}
+    <!-- .tpl file invoked: {$tplFile}. Call via form.tpl if we have a form in the page. -->
+    {if isset($isForm) and $isForm and isset($formTpl)}
+      {include file="CRM/Form/$formTpl.tpl"}
+    {else}
+      {include file=$tplFile}
+    {/if}
+  {/crmRegion}
+</div>
 
 {crmRegion name='page-footer'}
-<div id="crm-seal"></div>
+<div id="crm-seal"></div>{*NYSS*}
 
-{if ! $urlIsPublic}
-{include file="CRM/common/footer.tpl"}
+{if $urlIsPublic}
+  {include file="CRM/common/publicFooter.tpl"}
+{else}
+  {include file="CRM/common/footer.tpl"}
 {/if}
 {/crmRegion}
 
-{if !$disableBBheader}
-  {literal}
-  <script type="text/javascript">
-  cj(function() {
-    cj().crmtooltip();
-  });
-  </script>
-  {/literal}
-{/if}
+
 </div> {* end crm-container div *}

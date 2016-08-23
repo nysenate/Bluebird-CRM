@@ -1,4 +1,12 @@
 cj(document).ready(function(){
-  var table = cj('.crm-group-selector').dataTable();
-  table.fnSetColumnVis(5, false);
+  if (cj.fn.dataTable.isDataTable('.crm-group-selector')) {
+    var tblGroups = cj('.crm-group-selector').dataTable();
+    tblGroups.fnSetColumnVis(5, false);
+  }
+  else {
+    /*var tblGroups = cj('.crm-group-selector').dataTable({
+      "retrieve": true
+    });
+    tblGroups.fnSetColumnVis(5, false);*/
+  }
 });
