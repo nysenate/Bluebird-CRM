@@ -2633,8 +2633,7 @@ AND       civicrm_openid.is_primary = 1";
           'caseId' => NULL,
           'context' => 'activity',
         );
-        //NYSS 6719 handle via ajax
-        //return CRM_Activity_BAO_Activity::getActivitiesCount($input);
+        return CRM_Activity_BAO_Activity::getActivitiesCount($input);
 
       case 'mailing':
         $params = array('contact_id' => $contactId);
