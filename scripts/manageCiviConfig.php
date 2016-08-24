@@ -516,27 +516,21 @@ function updateCiviConfig($dbh, $civicfg, $bbcfg)
 {
   $server_name = $bbcfg['servername'];
   $appdir = $bbcfg['app.rootdir'];
-  $incemail = $bbcfg['search.include_email_in_name'];
-  $incwild = $bbcfg['search.include_wildcard_in_name'];
-  $batchlimit = $bbcfg['mailer.batch_limit'];
-  $jobsize = $bbcfg['mailer.job_size'];
-  $jobsmax = $bbcfg['mailer.jobs_max'];
-
   $rc = true;
 
   if (isset($civicfg['config_backend'])) {
     $cb = $civicfg['config_backend'];
     $cb['civiAbsoluteURL'] = "http://$server_name/";
-    $cb['includeEmailInName'] = $incemail;
-    $cb['includeWildCardInName'] = $incwild;
+    $cb['includeEmailInName'] = _getval($bbcfg, 'search.include_email_in_name', 0);
+    $cb['includeWildCardInName'] = _getval($bbcfg, 'search.include_wildcard_in_name', 0);
     $cb['enableComponents'] = array('CiviMail', 'CiviCase', 'CiviReport');
     $cb['enableComponentIDs'] = array(4, 7, 8);
-    $cb['mailerBatchLimit'] = $batchlimit;
-    $cb['mailerJobSize'] = $jobsize;
-    $cb['mailerJobsMax'] = $jobsmax;
+    $cb['mailerBatchLimit'] = _getval($bbcfg, 'mailer.batch_limit', 1000);
+    $cb['mailerJobSize'] = _getval($bbcfg, 'mailer.job_size', 1000);
+    $cb['mailerJobsMax'] = _getval($bbcfg, 'mailer.jobs_max', 10);
     $cb['geoAPIKey'] = '';
     $cb['mapAPIKey'] = '';
-    $cb['wkhtmltopdfPath'] = '/usr/local/bin/wkhtmltopdf';
+    $cb['wkhtmltopdfPath'] = _getval($bbcfg, 'wkhtmltopdf.path', '/usr/local/bin/wkhtmltopdf');
     $rc &= updateConfigBackend($dbh, $cb);
   }
 
@@ -588,6 +582,19 @@ function nullifyCiviConfig($dbh, $civicfg)
   }
   return true;
 } // nullifyCiviConfig()
+
+
+
+function _getval($a, $idx, $def)
+{
+  if (array_key_exists($idx, $a)) {
+    return $a[$idx];
+  }
+  else {
+    echo "Parameter '$idx' is not set in config; using default value [$def]\n";
+    return $def;
+  }
+} // _getval()
 
 
 
