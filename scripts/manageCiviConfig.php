@@ -569,7 +569,6 @@ TEXT;
 
 function updateCiviConfig($dbh, $civicfg, $bbcfg)
 {
-
   $rc = true;
 
   if (isset($civicfg['config_backend'])) {
@@ -599,7 +598,6 @@ function updateCiviConfig($dbh, $civicfg, $bbcfg)
 
   return $rc;
 } // updateCiviConfig()
-
 
 
 $prog = basename($argv[0]);
