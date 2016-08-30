@@ -78,15 +78,18 @@ class TableProcessor {
     // Pulls the PK only to save space.  Also, uses an unbuffered query
     $query = $this->createMatchQuery();
     bbscript_log(LL::DEBUG, "Running query $query");
-    $records = CRM_Core_DAO::executeQuery($query);
+    $records = CRM_Core_DAO::executeUnbufferedQuery($query);
+
+    // Prep a new db connection
+    $log_db = DB::connect(CIVICRM_LOGGING_DSN);
 
     // For each PK value in the civi table, pull the civi record, the log record,
-    // and compare th two
+    // and compare the two
     while ($records->fetch()) {
       bbscript_log(LL::DEBUG, "Found no-match record:\n".var_export($records,1));
       $bad_id = $records->id;
       $match_query = "SELECT * FROM {$this->logdb}.log_{$this->tablename} WHERE id=$bad_id ORDER BY log_date DESC LIMIT 1";
-      $match_row = CRM_Core_DAO::executeQuery($match_query);
+      $match_row = $log_db->query($match_query);
       if (!$match_row->fetch()) {
         bbscript_log(LL::ERROR, "Table:{$this->tablename}, ID:$bad_id: No log records found");
       } else {
