@@ -89,17 +89,18 @@ class TableProcessor {
       bbscript_log(LL::DEBUG, "Found no-match record:\n".var_export($records,1));
       $bad_id = $records->id;
       $match_query = "SELECT * FROM {$this->logdb}.log_{$this->tablename} WHERE id=$bad_id ORDER BY log_date DESC LIMIT 1";
-      $match_row = $log_db->query($match_query);
-      if (!$match_row->fetch()) {
+      $match_result = $log_db->query($match_query);
+      if (!($match_row = $match_result->fetchRow(DB_FETCHMODE_ASSOC))) {
         bbscript_log(LL::ERROR, "Table:{$this->tablename}, ID:$bad_id: No log records found");
-      } else {
+      }
+      else {
         $bad_fields = array();
-        foreach ($this->fields as $key=>$val) {
-          if ($records->{$key} != $match_row->{$key}) {
+        foreach ($this->fields as $key => $val) {
+          if ($records->{$key} != $match_row[$key]) {
             $bad_fields[] = $key;
           }
         }
-        bbscript_log(LL::ERROR, "Table:{$this->tablename}, ID:$bad_id: Fields differ: " . implode(',',$bad_fields));
+        bbscript_log(LL::ERROR, "Table:{$this->tablename}, ID:$bad_id: Fields differ: " . implode(',', $bad_fields));
       }
     }
   }
