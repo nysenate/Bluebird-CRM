@@ -76,60 +76,47 @@ class TableProcessor {
 
     // pull all the primary key values for the Civi records
     // Pulls the PK only to save space.  Also, uses an unbuffered query
-    $query = "SELECT `{$this->primary_key}` FROM {$this->tablename} ORDER BY `{$this->primary_key}`";
-    bbscript_log(LL::DEBUG, "Running unbuffered query $query");
-    $records = CRM_Core_DAO::executeUnbufferedQuery($query);
-
-    // Because the $records loop is based on an unbuffered query, we're going
-    // to need a second DB connection to pull the individual records
-    $log_db = DB::connect(CIVICRM_LOGGING_DSN);
-
-    // Prep the fields names for the SELECT clause
-    $fields = '`' . implode('`,`', array_keys($this->fields)) . '`';
-
-    // Easy reference to the name of the PK field
-    $pk_name = $this->primary_key;
-    bbscript_log(LL::DEBUG, "Looking for fields: " .var_export($fields,1));
+    $query = $this->createMatchQuery();
+    bbscript_log(LL::DEBUG, "Running query $query");
+    $records = CRM_Core_DAO::executeQuery($query);
 
     // For each PK value in the civi table, pull the civi record, the log record,
     // and compare th two
     while ($records->fetch()) {
-      // Eacy reference to the value of the PK field
-      $pk_val = $records->{$pk_name};
-
-      // Look up the full record in Civi
-      $query = "SELECT $fields FROM {$this->cividb}.{$this->tablename} WHERE `{$pk_name}` = '$pk_val'";
-      bbscript_log(LL::DEBUG, "Civi Query: $query");
-      $civi_result = $log_db->query($query);
-      $civi_row = $civi_result->fetchRow(DB_FETCHMODE_ASSOC);
-
-      // Look up the full record in Logging
-      $query = "SELECT $fields FROM {$this->logdb}.log_{$this->tablename} WHERE `{$pk_name}` = '$pk_val' ORDER BY log_date DESC LIMIT 1";
-      bbscript_log(LL::DEBUG, "Log Query: $query");
-      $log_result = $log_db->query($query);
-      $log_row = $log_result->fetchRow(DB_FETCHMODE_ASSOC);
-
-      // If either row did not populate, something is horrible wrong.  Record an error and move on.
-      if (!$civi_row || !$log_row) {
-        bbscript_log(LL::WARN, "Failed to find similar rows when searching {$this->tablename} on $pk_name=$pk_val");
-        continue;
-      }
-
-      // Simple initial check for match
-      if ($civi_row !== $log_row) {
-        // If that check fails, find out which fields differ.  Record the error and move on.
-        $invalid = array();
-        foreach ($this->fields as $key => $val) {
-          if ($civi_row[$key] != $log_row[$key]) {
-            $invalid[] = $key;
+      bbscript_log(LL::DEBUG, "Found no-match record:\n".var_export($records,1));
+      $bad_id = $records->id;
+      $match_query = "SELECT * FROM {$this->logdb}.log_{$this->tablename} WHERE id=$bad_id ORDER BY log_date DESC LIMIT 1";
+      $match_row = CRM_Core_DAO::executeQuery($match_query);
+      if (!$match_row->fetch()) {
+        bbscript_log(LL::ERROR, "Table:{$this->tablename}, ID:$bad_id: No log records found");
+      } else {
+        $bad_fields = array();
+        foreach ($this->fields as $key=>$val) {
+          if ($records->{$key} != $match_row->{$key}) {
+            $bad_fields[] = $key;
           }
         }
-        bbscript_log(LL::WARN, "Record from {$this->tablename} with $pk_name=$pk_val has mismatch on fields: ".implode(',',$invalid));
-        continue;
+        bbscript_log(LL::ERROR, "Table:{$this->tablename}, ID:$bad_id: Fields differ: " . implode(',',$bad_fields));
       }
-
-      // All is well, records match.
-      bbscript_log(LL::INFO, "Found matching records for {$this->tablename} $pk_name=$pk_val ");
     }
+  }
+
+  public function createMatchQuery() {
+    if (is_null($this->tablename)) {
+      bbscript_log(LL::ERROR, "createMatchQuery() called without specifying table");
+      return false;
+    }
+    $fields = array();
+    $join = array();
+    foreach ($this->fields as $key=>$val) {
+      $fields[] = "main.$key";
+      $fields[] = "hist.$key as log_$key";
+      $join[] = "((main.{$key} = hist.{$key}) or (main.{$key} IS NULL AND hist.{$key} IS NULL))";
+    }
+    $query = "SELECT " . implode(',',$fields) . " FROM {$this->cividb}.{$this->tablename} main " .
+      "JOIN ( SELECT MAX(log_date) as max_date, id FROM {$this->logdb}.log_{$this->tablename} " .
+      "GROUP BY id ) join_max ON (join_max.id = main.id) LEFT JOIN {$this->logdb}.log_{$this->tablename} hist " .
+      "ON (join_max.max_date = hist.log_date) AND " . implode(' AND ', $join) . " WHERE hist.id IS NULL";
+    return $query;
   }
 }
