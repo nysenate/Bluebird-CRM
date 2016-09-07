@@ -973,47 +973,50 @@ TagTreeManage.prototype.updateTagModal = function(tag) {
                     cj.ajax({
                         url: '/civicrm/ajax/tag/update',
                         data: {
-                            name: new_name,
-                            description: new_desc,
-                            id: tag_id,
-                            is_reserved: new_resv,
-                            call_uri: window.location.href
+                          name: new_name,
+                          description: new_desc,
+                          id: tag_id,
+                          is_reserved: new_resv,
+                          call_uri: window.location.href
                         },
                         dataType: 'json',
                         success: function(data, status, XMLHttpRequest) {
-                            if(data.code != 1) {
-                                BBTree.reportAction(['updat',0,tagUpdate, data.message]);
-                                if (data.message == 'DB Error: already exists') {
-                                    self.notify('Error', 'Update Tag', 'Tag <span>'+new_name+'</span> already exists')
-                                }
-                                else {
-                                    self.notify('Error', 'Update Tag', 'Tag <span>'+tag_name+'</span> was unable to be updated')
-                                }
+                          if(data.code != 1) {
+                            //console.log('data: ', data);//LCD
+                            //console.log('status: ', status);
+                            //console.log('XMLHttpRequest: ', XMLHttpRequest);
+                            //BBTree.reportAction(['updat',0,tagUpdate, data.message]);
+                            if (data.message == 'DB Error: already exists') {
+                              self.notify('Error', 'Update Tag', 'Tag <span>'+new_name+'</span> already exists')
                             }
                             else {
-                                var tag_data = data.message;
-                                if(parseFloat(tag_data.is_reserved)) {
-                                    tag.addClass('isReserved');
-                                }
-                                else{
-                                    tag.removeClass('isReserved');
-                                }
-                                tag.find('.name').html(tag_data.name);
-                                tag.attr('description', new_desc);
-
-                                var msg = 'Tag <span>'+tag_name+'</span> was updated.';
-                                if (tag_name != new_name) {
-                                    msg += ' Its new name is <span>'+new_name+'</span>.';
-                                }
-                                if (tag_desc != new_desc) {
-                                    msg += ' Its new description is <span>"'+new_desc+'"</span>. ';
-                                }
-                                if (tag_resv != new_resv) {
-                                    msg += ' It is now '+(new_resv ? 'reserved.' : 'unreserved.')
-                                }
-                                self.notify('Success', 'Update Tag', msg);
+                              self.notify('Error', 'Update Tag', 'Tag <span>'+tag_name+'</span> was unable to be updated')
                             }
-                            self.dialog.dialog("close");
+                          }
+                          else {
+                              var tag_data = data.message;
+                              if(parseFloat(tag_data.is_reserved)) {
+                                  tag.addClass('isReserved');
+                              }
+                              else{
+                                  tag.removeClass('isReserved');
+                              }
+                              tag.find('.name').html(tag_data.name);
+                              tag.attr('description', new_desc);
+
+                              var msg = 'Tag <span>'+tag_name+'</span> was updated.';
+                              if (tag_name != new_name) {
+                                  msg += ' Its new name is <span>'+new_name+'</span>.';
+                              }
+                              if (tag_desc != new_desc) {
+                                  msg += ' Its new description is <span>"'+new_desc+'"</span>. ';
+                              }
+                              if (tag_resv != new_resv) {
+                                  msg += ' It is now '+(new_resv ? 'reserved.' : 'unreserved.')
+                              }
+                              self.notify('Success', 'Update Tag', msg);
+                          }
+                          self.dialog.dialog("close");
                         }
                     });
                 }
