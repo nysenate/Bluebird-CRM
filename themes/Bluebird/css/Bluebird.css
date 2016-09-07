@@ -3331,10 +3331,18 @@ input.dateplugin,#crm-container input.dateplugin {
 .civi-menu {
   color: #FFF;
   background-color: #457AA4;
-  margin-left: 240px;
   height: 22px;
   position: relative;
   font-family: Verdana,Sans;
+}
+
+/*first level menu item links (advanced search)*/
+.crm-container .civi-menu #nyss-menu > li > a {
+  color: #FFF;
+}
+
+.civi-menu li.menumain {
+  cursor: pointer;
 }
 
 .civi-menu .primary-link {
@@ -3342,7 +3350,8 @@ input.dateplugin,#crm-container input.dateplugin {
   margin-right: 8px;
 }
 
-.civi-menu .main-menu-item,.civi-menu a.main-menu-item {
+.civi-menu .main-menu-item,
+.civi-menu a.main-menu-item {
   padding: 2px 8px;
   color: #FFF;
   display: inline-block;

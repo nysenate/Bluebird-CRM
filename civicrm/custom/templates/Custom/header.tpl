@@ -142,39 +142,6 @@ $role = str_replace('authenticated user','', $rolesList);
 <div id="bluebirds"></div>
 <div class="clear"></div>
 <div class="civi-navigation-section crm-container">
-  <div class="civi-adv-search-linkwrap">
-    {if $ssID or $rows or $savedSearch or $form.formName eq 'Advanced'}
-      <div class="civi-advanced-search-button">
-        <div class="civi-advanced-search-link-inner">
-          <span>
-            <div class="icon crm-accordion-pointer"></div>
-            {if $ssID or $rows or $form.formName eq 'Advanced'}
-              {if $savedSearch}
-                {ts 1=$savedSearch.name}Edit %1 Smart Group Below{/ts}
-              {else}
-                {ts}Edit Search Criteria Below{/ts}
-              {/if}
-            {else}
-              {if $savedSearch}
-                {ts 1=$savedSearch.name}Edit %1 Smart Group Below{/ts}
-              {else}
-                {ts}Search Criteria Below{/ts}
-              {/if}
-            {/if}
-          </span>
-        </div>
-      </div>
-    {else}
-      <div class="civi-advanced-search-link">
-      <div class="civi-advanced-search-link-inner">
-        <span class="civi-advanced-searc-link-span">
-          <div class="icon crm-accordion-pointer"></div>
-          <a href='{crmURL p="civicrm/contact/search/advanced" q="reset=1"}'>ADVANCED SEARCH</a>
-        </span>
-      </div>
-      </div>
-    {/if}
-  </div>
   <div class="civi-menu">
     {if isset($browserPrint) and $browserPrint}
     {* Javascript window.print link. Used for public pages where we can't do printer-friendly view. *}

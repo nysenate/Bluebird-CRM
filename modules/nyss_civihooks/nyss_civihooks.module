@@ -283,57 +283,6 @@ function nyss_civihooks_civicrm_buildForm($formName, &$form) {
     $form->_rules['uploadFile'][1]['message'] = 'File size should be less than 1 MBytes (1048576 bytes)';
   }
 
-  //Construct some arrays and values to be passed to the tag tab
-  if ($formName == 'CRM_Tag_Form_Tag') {
-    $contactId = $form->getVar('_entityID');
-
-    //Construct list of tags, comma-separated
-    $contactTagsList = array();
-    $contactTags = CRM_Core_BAO_EntityTag::getContactTags($contactId);
-
-    if (!empty($contactTags)) {
-      $contactTagsList = stripslashes(implode(', ', $contactTags));
-    }
-    $form->assign('contactTagsList', $contactTagsList);
-
-    //Construct list of issue codes, comma-separated
-    //Need to work with the full list and subtract tagsets
-    $contactTags = array();
-    $contactIssueCode_item = array();
-    $contactTags = CRM_Core_BAO_EntityTag::getTag($contactId);
-    $tagsNotTagset = CRM_Core_BAO_Tag::getTagsNotInTagset();
-    foreach ($tagsNotTagset as $key => $issueCode) {
-      if (in_array($key, $contactTags)) {
-        $contactIssueCode_item[] = $issueCode;
-      }
-    }
-    sort($contactIssueCode_item);
-    $contactIssueCode_list = stripslashes(implode(' &#8226; ', $contactIssueCode_item));
-    $form->assign('contactIssueCode_list', $contactIssueCode_list);
-
-    //Construct list of Legislative Positions
-    $legpositions = CRM_Core_BAO_EntityTag::getChildEntityTagDetails(292, $contactId);
-
-    $bbcfg = get_bluebird_instance_config();
-    if (isset($bbcfg['openleg.url.template'])) {
-      $url_template = $bbcfg['openleg.url.template'];
-    }
-    else {
-      $url_template = '/bill/{year}/{billno}';
-    }
-
-    foreach ($legpositions as &$legposition) {
-      $name = $legposition['name'];
-      $bill_id = substr($name, 0, strcspn($name, ' :'));
-      $id_parts = explode('-', $bill_id);  // [0]=billno, [1]=year
-      $search = array('{billno}', '{year}');
-      $bill_url = str_replace($search, $id_parts, $url_template);
-      $bill_html = "<a href=\"$bill_url\" target=\"_blank\">$bill_url</a>";
-      $legposition['description'] = $bill_html;
-    }
-    $form->assign('legpositions', $legpositions);
-  }
-
   //advanced search
   if ($formName == 'CRM_Contact_Form_Search_Advanced') {
     //4575 search by all emails
@@ -814,9 +763,8 @@ function nyss_civihooks_civicrm_validateForm($formName, &$fields, &$files, &$for
 } // nyss_civihooks_civicrm_validateForm()
 
 
-function nyss_civihooks_civicrm_navigationMenu(&$params)
-{
-  //CRM_Core_Error::debug_var('navigationMenu params',$params);
+function nyss_civihooks_civicrm_navigationMenu(&$params) {
+  CRM_Core_Error::debug_var('navigationMenu params',$params);
 
   //5260
   //first find parents
@@ -857,8 +805,23 @@ function nyss_civihooks_civicrm_navigationMenu(&$params)
     'child' => array(),
   );
 
+  $params[2] = array(
+    'attributes' => array(
+      'label'      => 'Advanced Search',
+      'name'       => 'Advanced Search',
+      'url'        => 'civicrm/contact/search/advanced?reset=1',
+      'permission' => 'access CiviCRM',
+      'operator'   => 'AND',
+      'separator'  => 0,
+      'parentID'   => null,
+      'navID'      => 2,
+      'active'     => 1
+    ),
+    'child' => array(),
+  );
+
   //build Custom Search menu
-  $params[2] = _buildSearchMenu(2);
+  $params[3] = _buildSearchMenu(2);
 
   //move Report menu
   $params[$reportNavID] = $reportNav;
