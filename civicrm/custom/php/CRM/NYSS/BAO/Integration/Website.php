@@ -429,14 +429,8 @@ class CRM_NYSS_BAO_Integration_Website
     ");
 
     //find tag name
-    $tagName = '';
-    if (!empty($params->event_info->name)) {
-      $tagName = $params->event_info->name;
-    }
-    elseif (!empty($params->petition_name)) {
-      $tagName = $params->petition_name;
-    }
-    else {
+    $tagName = self::getTagName($params, 'petition_name');
+    if (!empty($tagName)) {
       CRM_Core_Error::debug_var('processPetition: unable to identify tag name', $params, true, true, 'integration');
       return false;
     }
@@ -1397,4 +1391,22 @@ class CRM_NYSS_BAO_Integration_Website
     echo CRM_Utils_JSON::encodeDataTableSelector($newcontacts, $sEcho, $iTotal, $iFilteredTotal, $selectorElements);
     CRM_Utils_System::civiExit();
   } //getActivityStream()
+
+  /*
+   * helper to get tag name as it could be passed in different ways
+   * $params the parameter object passed to the record processing function
+   * $alternate the alternate column name/param name where we may need to look
+   *   for backwards compatibility
+   */
+  static function getTagName($params, $alternate) {
+    $tagName = '';
+    if (!empty($params->event_info->name)) {
+      $tagName = $params->event_info->name;
+    }
+    elseif (!empty($params->$alternate)) {
+      $tagName = $params->$alternate;
+    }
+
+    return $tagName;
+  }//getTagName
 }//end class
