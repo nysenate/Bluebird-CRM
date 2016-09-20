@@ -78,8 +78,6 @@
 {literal}
 <script type="text/javascript">
 cj(function() {
-   cj().crmAccordions(); 
-
   //NYSS
   cj('div.crm-plain_text_email-accordion').removeClass('collapsed');
 
