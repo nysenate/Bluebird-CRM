@@ -764,7 +764,7 @@ function nyss_civihooks_civicrm_validateForm($formName, &$fields, &$files, &$for
 
 
 function nyss_civihooks_civicrm_navigationMenu(&$params) {
-  CRM_Core_Error::debug_var('navigationMenu params',$params);
+  //CRM_Core_Error::debug_var('navigationMenu params',$params);
 
   //5260
   //first find parents
