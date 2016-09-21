@@ -31,6 +31,8 @@ elif ! $readConfig --instance $instance --quiet; then
   exit 1
 fi
 
+app_rootdir=`$readConfig --ig $instance app.rootdir` || app_rootdir="$DEFAULT_APP_ROOTDIR"
+
 . $script_dir/defaults.sh
 
 db_basename=`$readConfig --ig $instance db.basename` || db_basename="$instance"
@@ -58,5 +60,12 @@ if [ "$tbls" ]; then
 else
   echo "There are no tables that require conversion to utf8_unicode_ci."
 fi
+
+# update all functions
+php $app_rootdir/civicrm/scripts/changeCollation.php -S $instance
+
+## rebuild shadow table functions with explicit collation
+echo "$prog: rebuild shadow table functions"
+$execSql $instance -f $script_dir/../modules/nyss_dedupe/shadow_func.sql
 
 exit 0

@@ -5,9 +5,10 @@ DELIMITER |
 -- Stored Utility Functions
 -- -----------------------------
 
+SET NAMES UTF8 COLLATE utf8_unicode_ci;
 DROP FUNCTION IF EXISTS BB_ADDR_REPLACE |
-CREATE FUNCTION BB_ADDR_REPLACE (address varchar(255))
-    RETURNS varchar(255) DETERMINISTIC
+CREATE FUNCTION BB_ADDR_REPLACE (address varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci)
+    RETURNS varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci DETERMINISTIC
 
     BEGIN
         -- Start with the first alpha word occurance and loop

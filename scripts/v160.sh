@@ -13,6 +13,7 @@ script_dir=`dirname $0`
 execSql=$script_dir/execSql.sh
 readConfig=$script_dir/readConfig.sh
 drush=$script_dir/drush.sh
+app_rootdir=`$readConfig --ig $instance app.rootdir` || app_rootdir="$DEFAULT_APP_ROOTDIR"
 
 . $script_dir/defaults.sh
 
@@ -103,3 +104,11 @@ sql="
     AND option_group_id = 2
 "
 $execSql $instance -c "$sql" -q
+
+## fix collation
+echo "$prog: fix collations"
+$script_dir/changeCollation.sh $instance
+
+## rebuild triggers
+echo "$prog: rebuild triggers"
+php $app_rootdir/civicrm/scripts/rebuildTriggers.php -S $instance
