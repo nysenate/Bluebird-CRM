@@ -41,11 +41,11 @@ $(document).ready(function() {
   var submitted = false;
   $('form').submit(function(e){
     //console.log(e);
-    var fname        = e.target.name; //alert(fid); //form name
-    var faction      = e.target.action; //action value
+    var fname = e.target.name; //alert(fid); //form name
+    var faction = e.target.action; //action value
     var factionmatch = faction.search("civicrm/report/"); //-1 if not found
-    var fbaseuri     = e.target.baseURI;
-    if ( fbaseuri ) {
+    var fbaseuri = e.target.baseURI;
+    if (fbaseuri) {
       var fbaseurimatch = fbaseuri.search("civicrm/report/");
     }
 
@@ -61,6 +61,7 @@ $(document).ready(function() {
       fname != 'Map' &&
       fname != 'Label' &&
       fname != 'Builder' &&
+      fname != 'ExportPermissions' && //10565
       global_formNavigate != false //5231
     ) {
       return false;
