@@ -1193,7 +1193,7 @@ FROM   civicrm_domain
     }
 
     if ($trapException) {
-      CRM_Core_Error::ignoreException();
+      $errorScope = CRM_Core_TemporaryErrorScope::ignoreException();
     }
 
     // set the DAO object to use an unbuffered query
@@ -1202,7 +1202,7 @@ FROM   civicrm_domain
     $result = $dao->query($queryStr, $i18nRewrite);
 
     if ($trapException) {
-      CRM_Core_Error::setCallback();
+      unset($errorScope);
     }
 
     if (is_a($result, 'DB_Error')) {
