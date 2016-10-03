@@ -105,7 +105,7 @@ class CRM_NYSS_Form_ExportPermissions extends CRM_Core_Form
       '',
       '',
     );
-    while ( $roles->fetch() ) {
+    while ($roles->fetch()) {
       $headers[$roles->rid] = $roles->name;
       $emptySet[$roles->rid] = '';
     }
@@ -113,14 +113,16 @@ class CRM_NYSS_Form_ExportPermissions extends CRM_Core_Form
     //get distinct list of all perms so we can cycle through
     //if civicrm, get only civicrm + nyss
     $additionalWhere = '';
-    if ( $btnName == '_qf_ExportPermissions_next' ) {
+    $fileName = 'AllPermissions';
+    if ($btnName == '_qf_ExportPermissions_next') {
+      $fileName = 'BluebirdPermissions';
       $additionalWhere = "
         AND module IN ('civicrm', 'nyss_civihooks')
       ";
     }
 
     $sql = "
-      SELECT *
+      SELECT module, permission
       FROM {$dDB}.role_permission
       WHERE module != ''
       {$additionalWhere}
@@ -129,13 +131,13 @@ class CRM_NYSS_Form_ExportPermissions extends CRM_Core_Form
     ";
     $ap = CRM_Core_DAO::executeQuery($sql);
 
-    while ( $ap->fetch() ) {
+    while ($ap->fetch()) {
       $allPerms[$ap->module][] = $ap->permission;
     }
     //CRM_Core_Error::debug('$allPerms',$allPerms);
 
-    foreach ( $allPerms as $module => $mPerms ) {
-      foreach ( $mPerms as $mPerm ) {
+    foreach ($allPerms as $module => $mPerms) {
+      foreach ($mPerms as $mPerm) {
         //initialize row so we have all cols
         $row = $emptySet;
         $row[0] = $module;
@@ -153,7 +155,7 @@ class CRM_NYSS_Form_ExportPermissions extends CRM_Core_Form
         $perms = CRM_Core_DAO::executeQuery($sql);
 
         //build rows
-        while ( $perms->fetch() ) {
+        while ($perms->fetch()) {
           $row[$perms->rid] = 'X';
         }
 
@@ -162,7 +164,8 @@ class CRM_NYSS_Form_ExportPermissions extends CRM_Core_Form
     }
     //CRM_Core_Error::debug('$rolePerms',$rolePerms);
 
-    CRM_Core_Report_Excel::writeCSVFile('RolePermissions', $headers, $rolePerms);
+    $fileName = $fileName.'_'.date('YmdHis');
+    CRM_Core_Report_Excel::writeCSVFile($fileName, $headers, $rolePerms);
     CRM_Utils_System::civiExit();
   }//postProcess
 }
