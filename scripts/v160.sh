@@ -105,6 +105,14 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
+## 10491 remove dashlet
+sql="
+  DELETE FROM civicrm_dashboard
+  WHERE name = 'getting-started'
+"
+$execSql $instance -c "$sql" -q
+
+
 ## fix collation
 echo "$prog: fix collations"
 $script_dir/changeCollation.sh $instance
