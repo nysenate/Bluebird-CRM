@@ -313,6 +313,11 @@ function nyss_civihooks_civicrm_buildForm($formName, &$form) {
     $form->addDate('log_start_date', ts('Change Log Start'), false, array('formatType' => 'birth'));
     $form->addDate('log_end_date', ts('Change Log End'), false, array('formatType' => 'birth'));
 
+    //10557 remove CMS User
+    if ($form->elementExists('uf_user')) {
+      $form->removeElement('uf_user');
+    }
+
     //don't set US as default country in advanced search or contacts with no address are excluded
     $defaults['country'] = '';
 
