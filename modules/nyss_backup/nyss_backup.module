@@ -39,7 +39,7 @@ function nyss_backup_page() {
       exit();
     }
     else {
-      drupal_add_js(drupal_get_path('module','civicrm').'/../packages/jquery/jquery.min.js');
+      drupal_add_js(drupal_get_path('module','civicrm').'/../bower_components/jquery/dist/jquery.js');
       drupal_add_js(drupal_get_path('module','nyss_backup').'/js/tmpl.js');
       drupal_add_js(drupal_get_path('module','nyss_backup').'/js/nyss_backup.js');
       drupal_add_css(drupal_get_path('module','nyss_backup').'/nyss_backup.css');
