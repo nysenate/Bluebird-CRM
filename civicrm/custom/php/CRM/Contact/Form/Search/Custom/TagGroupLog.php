@@ -272,18 +272,19 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
   }//from
 
   function where( $includeContactIDs = false ) {
-    //CRM_Core_Error::debug('formVals', $this->_formValues);exit();
+    //CRM_Core_Error::debug_var('formVals', $this->_formValues);
+
     $params = array( );
 
-    $start_date = CRM_Utils_Date::mysqlToIso( CRM_Utils_Date::processDate( $this->_formValues['start_date'] ) );
-    $end_date  = CRM_Utils_Date::mysqlToIso( CRM_Utils_Date::processDate( $this->_formValues['end_date'] ) );
+    $start_date = CRM_Utils_Date::mysqlToIso(CRM_Utils_Date::processDate($this->_formValues['start_date']));
+    $end_date = CRM_Utils_Date::mysqlToIso(CRM_Utils_Date::processDate($this->_formValues['end_date'], '235959'));
     
     //add filters by start/end date
-    if ( $start_date ) {
-      $where[] = "log_et.log_date >= '$start_date' ";
+    if ($start_date) {
+      $where[] = "log_et.log_date >= '{$start_date}' ";
     }
-    if ( $end_date ) {
-      $where[] = "log_et.log_date <= '$end_date' ";
+    if ($end_date) {
+      $where[] = "log_et.log_date <= '{$end_date}' ";
     }
 
     switch($this->_formValues['search_type']) {
@@ -340,8 +341,8 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
         break;
     }
 
-    if ( !empty($this->_formValues['altered_by']) ) {
-      if ( is_numeric($this->_formValues['altered_by']) ) {
+    if (!empty($this->_formValues['altered_by'])) {
+      if (is_numeric($this->_formValues['altered_by'])) {
         $where[] = "ab.id = {$this->_formValues['altered_by']} ";
       }
       else {
@@ -361,7 +362,7 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
     }
     //CRM_Core_Error::debug_var('whereClause', $whereClause);
     
-    return $this->whereClause( $whereClause, $params );
+    return $this->whereClause($whereClause, $params);
   }
 
   function count() {
