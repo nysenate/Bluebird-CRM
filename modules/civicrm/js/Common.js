@@ -751,6 +751,7 @@ if (!CRM.vars) CRM.vars = {};
         "aaSorting": [],
         "dom": '<"crm-datatable-pager-top"lfp>rt<"crm-datatable-pager-bottom"ip>',
         "pageLength": 25,
+        "pagingType": "full_numbers",//NYSS 10561 (will revert)
         "drawCallback": function(settings) {
           //Add data attributes to cells
           $('thead th', settings.nTable).each( function( index ) {
