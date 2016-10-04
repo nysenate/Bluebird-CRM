@@ -595,9 +595,9 @@ class CRM_Contact_BAO_Query {
       }
       if ($value[0] !== 'group') {
         // Just trying to unravel how group interacts here! This whole function is wieid.
-      $this->_paramLookup[$value[0]][] = $value;
+        $this->_paramLookup[$value[0]][] = $value;
+      }
     }
-  }
   }
 
   /**
@@ -2648,7 +2648,7 @@ class CRM_Contact_BAO_Query {
         case 'civicrm_email':
           //NYSS 4575 search by all emails; add is_primary condition in where clause optionally
           //NYSS 6801 forcePrimary option on export
-          if ( $forcePrimary ) {
+          if ($forcePrimary) {
             $from .= " $side JOIN civicrm_email ON (contact_a.id = civicrm_email.contact_id AND civicrm_email.is_primary = 1) ";
           }
           else {
@@ -5012,8 +5012,8 @@ SELECT COUNT( conts.total_amount ) as total_count,
       ORDER BY conts.civicrm_contribution_total_amount_count DESC SEPARATOR ';'), ';', 1) as amount,
       MAX(conts.civicrm_contribution_total_amount_count) as civicrm_contribution_total_amount_count
       FROM ($innerQuery
-    $groupBy $orderBy) as conts
-    GROUP BY currency";
+      $groupBy $orderBy) as conts
+      GROUP BY currency";
 
     $summary['total']['mode'] = CRM_Contribute_BAO_Contribution::computeStats('mode', $modeSQL);
 
@@ -5568,13 +5568,14 @@ SELECT COUNT( conts.total_amount ) as cancel_count,
         }*/
 
         //NYSS support multiple values for some fields
+        //Civi::log()->debug('buildClause', array('dataType' => $dataType, 'value' => $value));
         if (isset($dataType)) {
           if (is_array($value)) {
             $values = $value;
           }
           else {
             $value = CRM_Utils_Type::escape($value, "String");
-            $values = explode(',', CRM_Utils_Array::value(0, explode(')', CRM_Utils_Array::value(1, explode('(', $value)))));
+            $values = explode('[:comma:]', $value);
             //NYSS - type is passed as nyss_String or nyss_Integer
             if (strpos($dataType, 'nyss_') !== FALSE ) {
               $value = str_replace(array('(',')'), '', $value); //4969 make sure no parens were added (search bldr)
@@ -5582,10 +5583,14 @@ SELECT COUNT( conts.total_amount ) as cancel_count,
               $dataType = str_replace('nyss_', '', $dataType); //return to expected format
             }
           }
-          //$value = "(" . implode($values, ",") . ")";
-          $value = array($op => (array) $values);
+
+          foreach ($values as &$v) {
+            $v = "'{$v}'";
+          }
+          $value = "(" . implode($values, ",") . ")";
+          //$value = array($op => (array) $values);
         }
-        //return "$clause $value";
+        return "$clause $value";
 
       default:
         if (empty($dataType)) {
