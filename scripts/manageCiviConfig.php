@@ -200,11 +200,12 @@ function modifyConfig(&$cfg, $bbcfg)
 {
   $server_name = $bbcfg['servername'];
   $appdir = $bbcfg['app.rootdir'];
-  $incemail = $bbcfg['search.include_email_in_name'];
-  $incwild = $bbcfg['search.include_wildcard_in_name'];
-  $batchlimit = $bbcfg['mailer.batch_limit'];
-  $jobsize = $bbcfg['mailer.job_size'];
-  $jobsmax = $bbcfg['mailer.jobs_max'];
+  $incemail = _getval($bbcfg, 'search.include_email_in_name', 0);
+  $incwild =  _getval($bbcfg, 'search.include_wildcard_in_name', 0);
+  $batchlimit = _getval($bbcfg, 'mailer.batch_limit', 1000);
+  $jobsize = _getval($bbcfg, 'mailer.job_size', 1000);
+  $jobsmax = _getval($bbcfg, 'mailer.jobs_max', 10);
+  $wkpath = _getval($bbcfg, 'wkhtmltopdf.path', '/usr/local/bin/wkhtmltopdf');
 
   if (isset($cfg['civicrm']['settings'])) {
     $cs = $cfg['civicrm']['settings'];
@@ -218,7 +219,7 @@ function modifyConfig(&$cfg, $bbcfg)
     modifyParam($cs, 'mailerJobsMax', $jobsmax);
     modifyParam($cs, 'geoAPIKey', '');
     modifyParam($cs, 'mapAPIKey', '');
-    modifyParam($cs, 'wkhtmltopdfPath', '/usr/local/bin/wkhtmltopdf');
+    modifyParam($cs, 'wkhtmltopdfPath', $wkpath);
 
     modifyParam($cs, 'uploadDir', "upload/");
     modifyParam($cs, 'imageUploadDir', "images/");
@@ -598,6 +599,20 @@ function updateCiviConfig($dbh, $civicfg, $bbcfg)
 
   return $rc;
 } // updateCiviConfig()
+
+
+
+function _getval($a, $idx, $def)
+{
+  if (array_key_exists($idx, $a)) {
+    return $a[$idx];
+  }
+  else {
+    echo "Parameter '$idx' is not set in config; using default value [$def]\n";
+    return $def;
+  }
+} // _getval()
+
 
 
 $prog = basename($argv[0]);
