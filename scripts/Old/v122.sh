@@ -28,10 +28,6 @@ if ! $readConfig --instance $instance --quiet; then
   exit 1
 fi
 
-data_rootdir=`$readConfig --ig $instance data.rootdir` || data_rootdir="$DEFAULT_DATA_ROOTDIR"
-webdir=`$readConfig --global drupal.rootdir` || webdir="$DEFAULT_DRUPAL_ROOTDIR"
-base_domain=`$readConfig --ig $instance base.domain` || base_domain="$DEFAULT_BASE_DOMAIN"
-
 ###### Begin Upgrade Scripts ######
 
 ### Drupal ###
