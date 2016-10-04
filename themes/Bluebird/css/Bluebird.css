@@ -1696,20 +1696,6 @@ ul.token-input-list-facebook {
   font-family: Verdana,Arial,Helvetica,sans-serif;
 }
 
-#mainTabContainer div#Tag .tag-section .label,#tagSelect .tag-section .label {
-  font-size: 120%;
-  margin: 10px 0 -10px;
-  float: none;
-}
-
-#tagSelect .tag-section .label {
-  /*margin-bottom: 6px;*/
-}
-
-#mainTabContainer div#Tag .tag-section .content,#tagSelect .tag-section .content {
-  margin-left: 0;
-}
-
 #mainTabContainer .contactTagsList,#tagSelect .contactTagsList {
   font-size: 11px;
   margin: 10px 16px 6px;

@@ -17,8 +17,8 @@ form#Contact .groupTagsKeywords ul.token-input-list-facebook {
 .page-civicrm-contact .tag-section .label{
   font-size: 120%;
   margin-top: 20px;
+  text-align: left;
 }
-
 
 .tag-label{
   margin: 10px 0 0 0;
@@ -31,11 +31,25 @@ form#Contact .groupTagsKeywords ul.token-input-list-facebook {
   width: 100%;
 }
 
+#mainTabContainer div#Tag .tag-section .label,
+#tagSelect .tag-section .label {
+  font-size: 100%;
+  margin: 10px 0 10px;
+}
 
+#mainTabContainer div#Tag .tag-section .content,
+#tagSelect .tag-section .content {
+  margin-left: 0;
+  clear: left;
+}
+
+#tagSelect .tag-section .content div.select2-container {
+  width: 100% !important;
+}
 
 #issue-code-search{
   margin:0;
-  width: 524px;
+  width: 506px;
   -webkit-transition: all 0.30s ease-in-out;
   -moz-transition: all 0.30s ease-in-out;
   -ms-transition: all 0.30s ease-in-out;

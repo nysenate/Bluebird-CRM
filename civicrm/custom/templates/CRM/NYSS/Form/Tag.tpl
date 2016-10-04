@@ -24,7 +24,6 @@
  +--------------------------------------------------------------------+
 *}
 {* this template is used for adding/editing tags  *}
-{debug}
 {literal}
   <script>
     var BBCID = {/literal}{$entityID}{literal};
@@ -49,7 +48,14 @@
     {/if}
 
     <div id="crm-tagListWrap">
-      {include file="CRM/common/Tagset.tpl"}
+      {*NYSS inject our custom tagset and pass parent id: keywords*}
+      {include file="CRM/NYSS/Form/Tagset.tpl" parent=296}
+
+      {*NYSS inject our custom tagtree*}
+      {include file="CRM/NYSS/Form/Tagtree.tpl" level=1}
+
+      {*NYSS inject our custom tagset and pass parent id: leg positions*}
+      {include file="CRM/NYSS/Form/Tagset.tpl" parent=292}
 
       {*NYSS add list of leg positions with descriptions*}
       {if $legpositions}
@@ -105,7 +111,3 @@
       on_load_init_check(fname);
    </script>
 {/if}
-
-<script type="text/javascript">
-  //load_init_check(fname);
-</script>
