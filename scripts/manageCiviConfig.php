@@ -19,7 +19,7 @@ define('SERIALIZED_FALSE', serialize(false));
 
 function sqlPrepareValue($val)
 {
-  if ($val) {
+  if ($val !== null) {
     return "'".serialize($val)."'";
   }
   else {
@@ -29,6 +29,14 @@ function sqlPrepareValue($val)
 
 
 
+/**
+ * @param $dbh reference to database connection
+ * @param $tablename name of table to query using the "name" field
+ * @param $names zero or more values to match against the "name" field
+ *               If $names is a string, the query will match on a single
+ *               value.  If $names is an array, the query will match based
+ *               on any of the values in the array.
+**/
 function getSerializedValues($dbh, $tablename, $names = null)
 {
   $settings = array();
@@ -76,7 +84,8 @@ function getSerializedValues($dbh, $tablename, $names = null)
 
 
 
-// Get name/value settings from the CiviCRM "civicrm_settings" table.
+// Get name/value settings from the CiviCRM "civicrm_setting" table.
+// $name can be a single variable name or an array of names
 function getSettings($dbh, $names = null)
 {
   return getSerializedValues($dbh, 'civicrm_setting', $names);
@@ -85,6 +94,7 @@ function getSettings($dbh, $names = null)
 
 
 // Get variable/value settings from the Drupal "variable" table.
+// $name can be a single variable name or an array of names
 function getVariableValues($dbh, $names = null)
 {
   return getSerializedValues($dbh, 'variable', $names);
@@ -92,14 +102,26 @@ function getVariableValues($dbh, $names = null)
 
 
 
-// Get name/value settings from the CiviCRM "option_value" table.
-function getOptionValues($dbh, $group_name)
+// Get name/value settings from the CiviCRM "option_value" table for the
+// provided option-value group.  If a value is given, retrieve only those
+// entries that match the value.  If a limit is given, limit the results.
+function getOptionValues($dbh, $group_name, $val = null, $limit = 0)
 {
   $optValues = array();
+  $where_extra = '';
+
+  if ($val) {
+    $where_extra .= " AND value='$val'";
+  }
+
+  if ($limit > 0) {
+    $where_extra .= " LIMIT $limit";
+  }
+
   $sql = "SELECT name, value FROM civicrm_option_value ".
          "WHERE option_group_id IN ".
          "  ( SELECT id FROM civicrm_option_group ".
-         "    WHERE name='$group_name' )";
+         "    WHERE name='$group_name' ) $where_extra";
   $stmt = $dbh->query($sql);
   if (!$stmt) {
     print_r($dbh->errorInfo());
@@ -116,9 +138,17 @@ function getOptionValues($dbh, $group_name)
 
 
 
+function getFromEmail($dbh)
+{
+  $optval = getOptionValues($dbh, 'from_email_address', "1", 1);
+  return key($optval);
+} // getFromEmail()
+
+
+
 function getMailingComponent($dbh, $id)
 {
-  $sql = "SELECT name, body_html, body_text ".
+  $sql = "SELECT id, name, body_html, body_text ".
          "FROM civicrm_mailing_component WHERE id=$id";
   $stmt = $dbh->query($sql);
   if (!$stmt) {
@@ -141,7 +171,7 @@ function getConfig($dbrefs, $scope)
 
   if ($scope == 'def' || $scope == 'all') {
     $cfg['civicrm']['settings'] = getSettings($cividb);
-    $cfg['civicrm']['from_name'] = getOptionValues($cividb, 'from_email_address');
+    $cfg['civicrm']['from_email'] = getFromEmail($cividb);
   }
 
   if ($scope == 'tpl' || $scope == 'all') {
@@ -177,253 +207,6 @@ function listConfig($cfg)
     }
   }
 } // listConfig()
-
-
-
-// Modify a config setting in-memory.
-function modifyParam(&$params, $name, $val)
-{
-  if (isset($params[$name])) {
-    $params[$name] = $val;
-    return true;
-  }
-  else {
-    echo "ERROR: Param [$name] does not exist and cannot be modified\n";
-    return false;
-  }
-} // modifyParam()
-
-
-
-// Modify the entire configuration in-memory.
-function modifyConfig(&$cfg, $bbcfg)
-{
-  $server_name = $bbcfg['servername'];
-  $appdir = $bbcfg['app.rootdir'];
-  $incemail = _getval($bbcfg, 'search.include_email_in_name', 0);
-  $incwild =  _getval($bbcfg, 'search.include_wildcard_in_name', 0);
-  $batchlimit = _getval($bbcfg, 'mailer.batch_limit', 1000);
-  $jobsize = _getval($bbcfg, 'mailer.job_size', 1000);
-  $jobsmax = _getval($bbcfg, 'mailer.jobs_max', 10);
-  $wkpath = _getval($bbcfg, 'wkhtmltopdf.path', '/usr/local/bin/wkhtmltopdf');
-
-  if (isset($cfg['civicrm']['settings'])) {
-    $cs = $cfg['civicrm']['settings'];
-    modifyParam($cs, 'civiAbsoluteURL', "http://$server_name/");
-    modifyParam($cs, 'includeEmailInName', $incemail);
-    modifyParam($cs, 'includeWildCardInName', $incwild);
-    modifyParam($cs, 'enableComponents', array('CiviMail', 'CiviCase', 'CiviReport'));
-    modifyParam($cs, 'enableComponentIDs', array(4, 7, 8));
-    modifyParam($cs, 'mailerBatchLimit', $batchlimit);
-    modifyParam($cs, 'mailerJobSize', $jobsize);
-    modifyParam($cs, 'mailerJobsMax', $jobsmax);
-    modifyParam($cs, 'geoAPIKey', '');
-    modifyParam($cs, 'mapAPIKey', '');
-    modifyParam($cs, 'wkhtmltopdfPath', $wkpath);
-
-    modifyParam($cs, 'uploadDir', "upload/");
-    modifyParam($cs, 'imageUploadDir', "images/");
-    modifyParam($cs, 'customFileUploadDir', "custom/");
-    modifyParam($cs, 'customTemplateDir', "$appdir/civicrm/custom/templates");
-    modifyParam($cs, 'customPHPPathDir', "$appdir/civicrm/custom/php");
-
-    modifyParam($cs, 'userFrameworkResourceURL', "sites/all/modules/civicrm/");
-    modifyParam($cs, 'imageUploadURL', "sites/default/files/civicrm/images/");
-
-    $mb = $cs['mailing_backend'];
-    modifyParam($mb, 'smtpServer', $bbcfg['smtp.host']);
-    modifyParam($mb, 'smtpPort', $bbcfg['smtp.port']);
-    modifyParam($mb, 'smtpAuth', $bbcfg['smtp.auth']);
-    modifyParam($mb, 'smtpUsername', (!empty($bbcfg['smtp.subuser'])) ? $bbcfg['smtp.subuser'] : '');
-    require_once $appdir.'/modules/civicrm/CRM/Utils/Crypt.php';
-    modifyParam($mb, 'smtpPassword', (!empty($bbcfg['smtp.subpass'])) ? CRM_Utils_Crypt::encrypt($bbcfg['smtp.subpass']) : '');
-  }
-
-  if (isset($cfg['civicrm']['from_name'])) {
-    //update the FROM email address
-    $fromName = (!empty($bbcfg['senator.name.formal'])) ? $bbcfg['senator.name.formal'] : '';
-
-    if (isset($bbcfg['senator.email'])) {
-      $fromEmail = $bbcfg['senator.email'];
-    }
-    else {
-      $fromEmail = (!empty($bbcfg['smtp.subuser'])) ? $bbcfg['smtp.subuser'] : '';
-    }
-
-    $from = '"'.addslashes($fromName).'"'." <$fromEmail>";
-    modifyParam($cfg['civicrm'], 'from_name', $from);
-  }
-
-  if (isset($cfg['civicrm']['template_header'])) {
-    $tpl['name'] = 'NYSS Mailing Header';
-    $tpl['body_html'] = generateComponent('header', 'html', $bbcfg);
-    $tpl['body_text'] = generateComponent('header', 'text', $bbcfg);
-    modifyParam($cfg['civicrm'], 'template_header', $tpl);
-  }
-
-  if (isset($cfg['civicrm']['template_header'])) {
-    $tpl['name'] = 'NYSS Mailing Footer';
-    $tpl['body_html'] = generateComponent('footer', 'html', $bbcfg);
-    $tpl['body_text'] = generateComponent('footer', 'text', $bbcfg);
-    modifyParam($cfg['civicrm'], 'template_footer', $tpl);
-  }
-} // modifyConfig()
-
-
-
-function updateSetting($dbh, $optname, $optval)
-{
-  $sql = "UPDATE civicrm_setting SET value=".sqlPrepareValue($optval)." ".
-         "WHERE name='$optname'";
-  if ($dbh->exec($sql) === false) {
-    print_r($dbh->errorInfo());
-    return false;
-  }
-  return true;
-} // updateSetting()
-
-
-
-function updateOptionValue($dbh, $groupname, $optname, $optval)
-{
-  $sql = "UPDATE civicrm_option_value SET value='$optval' ".
-         "WHERE name='$optname' AND option_group_id=( ".
-         "   SELECT id FROM civicrm_option_group ".
-         "   WHERE name='$groupname' )";
-  if ($dbh->exec($sql) === false) {
-    print_r($dbh->errorInfo());
-    return false;
-  }
-  return true;
-} // updateOptionValue()
-
-
-
-// Confirm that all Mass Email menu items are active.
-function updateEmailMenu($dbh)
-{
-  // Must perform two queries here, since a sub-select cannot be used
-  // on the same table when performing an UPDATE.
-
-  $sql = "SELECT id FROM civicrm_navigation WHERE name='Mass Email'";
-  $stmt = $dbh->query($sql);
-  $row = $stmt->fetch(PDO::FETCH_ASSOC);
-  $pid = $row['id'];
-  $stmt = null;
-
-  $sql = "UPDATE civicrm_navigation SET is_active=1 WHERE parent_id=$pid";
-  if ($dbh->exec($sql) === false) {
-    print_r($dbh->errorInfo());
-    return false;
-  }
-  else {
-    return true;
-  }
-} // updateEmailMenu()
-
-
-
-function updateFromEmail($dbh, $bbcfg)
-{
-  // Set the FROM header info (name and email address)
-  $fromName = 'Bluebird Mail Sender';
-  $fromEmail = 'bluebird.admin@nysenate.gov';
-
-  if (isset($bbcfg['senator.name.formal'])) {
-    $fromName = $bbcfg['senator.name.formal'];
-  }
-
-  if (isset($bbcfg['senator.email'])) {
-    $fromEmail = $bbcfg['senator.email'];
-  }
-
-  $from = '"'.addslashes($fromName).'"'." <$fromEmail>";
-
-  $sql = "UPDATE civicrm_option_value SET label='$from', name='$from' ".
-         "WHERE option_group_id=(".
-                  "SELECT id FROM civicrm_option_group ".
-                  "WHERE name='from_email_address')";
-  if ($dbh->exec($sql) === false) {
-    print_r($dbh->errorInfo());
-    return false;
-  }
-  else {
-    return true;
-  }
-} //updateFromEmail()
-
-
-
-function updateEmailTemplate($dbh, $bbcfg)
-{
-  $rc = true;
-  $comp_id = 1;
-
-  foreach (array('header', 'footer') as $comp_type) {
-    $comp_type_uc = ucfirst($comp_type);
-    $comp_name = "NYSS Mailing $comp_type_uc";
-    $body = array();
-
-    foreach (array('html', 'txt') as $cont_type) {
-      $comp_tpl = generateComponent($comp_type, $cont_type, $bbcfg);
-      $body[$cont_type] = $dbh->quote($comp_tpl);
-    }
-
-    $sql = "UPDATE civicrm_mailing_component ".
-           "SET name='$comp_name', component_type='$comp_type_uc', ".
-               "subject='$comp_name', is_active=1, ".
-               "body_html={$body['html']}, body_text={$body['txt']} ".
-           "WHERE id = $comp_id";
-    if ($dbh->exec($sql) === false) {
-      print_r($dbh->errorInfo());
-      $rc = false;
-    }
-    $comp_id++;
-  }
-  return $rc;
-} // updateEmailTemplate()
-
-
-
-function setEmailDefaults(&$cfg)
-{
-  if (empty($cfg['email.font.family'])) {
-    $cfg['email.font.family'] = 'arial';
-  }
-  if (empty($cfg['email.font.size'])) {
-    $cfg['email.font.size'] = 14;
-  }
-  if (empty($cfg['email.font.color'])) {
-    $cfg['email.font.color'] = '#505050';
-  }
-  if (empty($cfg['email.background.color'])) {
-    $cfg['email.background.color'] = '#ffffff';
-  }
-  if (!isset($cfg['email.header.include_banner'])) {
-    $cfg['email.header.include_banner'] = true;
-  }
-  if (!isset($cfg['email.header.website_url'])) {
-    $cfg['email.header.website_url'] = "http://{$cfg['shortname']}.nysenate.gov/";
-  }
-  if (!isset($cfg['email.footer.include_banner'])) {
-    $cfg['email.footer.include_banner'] = true;
-  }
-  if (!isset($cfg['email.footer.include_addresses'])) {
-    $cfg['email.footer.include_addresses'] = true;
-  }
-  if (!isset($cfg['senator.name.formal'])) {
-    $cfg['senator.name.formal'] = 'New York State Senator';
-  }
-  if (!isset($cfg['senator.address.albany'])) {
-    $cfg['senator.address.albany'] = 'Legislative Office Bldg|Albany, NY 12247';
-  }
-  if (!isset($cfg['senator.address.district'])) {
-    $cfg['senator.address.district'] = 'ADDRESS OF DISTRICT OFFICE';
-  }
-  if (!isset($cfg['senator.address.satellite'])) {
-    $cfg['senator.address.satellite'] = '';
-  }
-} // setEmailDefaults()
 
 
 
@@ -469,7 +252,7 @@ $banner
     <div style="padding:20px; text-align:left; line-height:150%;">
 HTML;
     }
-    else if ($cont_type == 'txt') {
+    else if ($cont_type == 'text') {
       $s = <<<TEXT
 
 New York State Senate
@@ -491,7 +274,7 @@ TEXT;
         $width = round(100 / count($offices));
         $addresses = <<<HTML
     <tr>
-    <td align="center" valign="top">	
+    <td align="center" valign="top">
     <table style="color:#707070; font-size:12px; line-height:125%;" border="0" cellpadding="20px" cellspacing="0" width="100%">
       <tr>
 
@@ -544,7 +327,7 @@ $banner
 </html>
 HTML;
     }
-    else if ($cont_type == 'txt') {
+    else if ($cont_type == 'text') {
       $addresses = '';
       if ($cfg['email.footer.include_addresses']) {
         foreach ($offices as $office_type => $office_address) {
@@ -568,37 +351,274 @@ TEXT;
 
 
 
-function updateCiviConfig($dbh, $civicfg, $bbcfg)
+// Modify a config setting in-memory.
+function modifyParam(&$params, $name, $val)
+{
+  if (array_key_exists($name, $params)) {
+    $params[$name] = $val;
+    return true;
+  }
+  else {
+    echo "ERROR: Param [$name] does not exist and cannot be modified\n";
+    return false;
+  }
+} // modifyParam()
+
+
+
+// Modify the entire configuration in-memory.
+function modifyConfig(&$cfg, $bbcfg)
+{
+  $server_name = $bbcfg['servername'];
+  $appdir = $bbcfg['app.rootdir'];
+  $data_dirname = $bbcfg['data_dirname'];
+  $datapath = "data/$data_dirname";
+  $druppath = "$datapath/drupal";
+  $pubpath = "$datapath/pubfiles";
+  $incemail = _getval($bbcfg, 'search.include_email_in_name', 0);
+  $incwild =  _getval($bbcfg, 'search.include_wildcard_in_name', 0);
+  $batchlimit = _getval($bbcfg, 'mailer.batch_limit', 1000);
+  $jobsize = _getval($bbcfg, 'mailer.job_size', 1000);
+  $jobsmax = _getval($bbcfg, 'mailer.jobs_max', 10);
+  $wkpath = _getval($bbcfg, 'wkhtmltopdf.path', '/usr/local/bin/wkhtmltopdf');
+
+  if (isset($cfg['civicrm']['settings'])) {
+    $cs = &$cfg['civicrm']['settings'];
+    modifyParam($cs, 'enable_components', array('CiviMail', 'CiviCase', 'CiviReport'));
+    modifyParam($cs, 'includeEmailInName', $incemail);
+    modifyParam($cs, 'includeWildCardInName', $incwild);
+    modifyParam($cs, 'mailerBatchLimit', $batchlimit);
+    modifyParam($cs, 'mailerJobSize', $jobsize);
+    modifyParam($cs, 'mailerJobsMax', $jobsmax);
+    modifyParam($cs, 'geoAPIKey', '');
+    modifyParam($cs, 'mapAPIKey', '');
+    modifyParam($cs, 'wkhtmltopdfPath', $wkpath);
+
+    modifyParam($cs, 'uploadDir', "upload/");
+    modifyParam($cs, 'imageUploadDir', "$appdir/drupal/$pubpath");
+    modifyParam($cs, 'customFileUploadDir', "custom/");
+    modifyParam($cs, 'customTemplateDir', "$appdir/civicrm/custom/templates");
+    modifyParam($cs, 'customPHPPathDir', "$appdir/civicrm/custom/php");
+
+    modifyParam($cs, 'imageUploadURL', "http://$server_name/$pubpath");
+    modifyParam($cs, 'userFrameworkResourceURL', "sites/all/modules/civicrm/");
+
+    if (isset($cs['mailing_backend'])) {
+      $mb = &$cs['mailing_backend'];
+      modifyParam($mb, 'smtpServer', $bbcfg['smtp.host']);
+      modifyParam($mb, 'smtpPort', $bbcfg['smtp.port']);
+      modifyParam($mb, 'smtpAuth', $bbcfg['smtp.auth']);
+      modifyParam($mb, 'smtpUsername', (!empty($bbcfg['smtp.username'])) ? $bbcfg['smtp.username'] : '');
+      require_once $appdir.'/modules/civicrm/CRM/Utils/Crypt.php';
+      modifyParam($mb, 'smtpPassword', (!empty($bbcfg['smtp.password'])) ? CRM_Utils_Crypt::encrypt($bbcfg['smtp.password']) : '');
+    }
+  }
+
+  if (isset($cfg['civicrm']['from_email'])) {
+    // Update the FROM name and email address
+    $fromName = (!empty($bbcfg['senator.name.formal'])) ? $bbcfg['senator.name.formal'] : 'Bluebird Mail Sender';
+
+    if (isset($bbcfg['senator.email'])) {
+      $fromEmail = $bbcfg['senator.email'];
+    }
+    else {
+      $fromEmail = (!empty($bbcfg['smtp.username'])) ? $bbcfg['smtp.username'] : 'bluebird.admin@nysenate.gov';
+    }
+
+    $from = '"'.addslashes($fromName).'"'." <$fromEmail>";
+    modifyParam($cfg['civicrm'], 'from_email', $from);
+  }
+
+  if (isset($cfg['civicrm']['template_header'])) {
+    $tpl['id'] = 1;
+    $tpl['name'] = 'NYSS Mailing Header';
+    $tpl['body_html'] = generateComponent('header', 'html', $bbcfg);
+    $tpl['body_text'] = generateComponent('header', 'text', $bbcfg);
+    modifyParam($cfg['civicrm'], 'template_header', $tpl);
+  }
+
+  if (isset($cfg['civicrm']['template_footer'])) {
+    $tpl['id'] = 2;
+    $tpl['name'] = 'NYSS Mailing Footer';
+    $tpl['body_html'] = generateComponent('footer', 'html', $bbcfg);
+    $tpl['body_text'] = generateComponent('footer', 'text', $bbcfg);
+    modifyParam($cfg['civicrm'], 'template_footer', $tpl);
+  }
+
+  if (isset($cfg['drupal']['variables'])) {
+    $dv = &$cfg['drupal']['variables'];
+    modifyParam($dv, 'file_public_path', $druppath);
+  }
+} // modifyConfig()
+
+
+
+function updateSerializedValues($dbh, $tablename, $namevalmap)
 {
   $rc = true;
+  foreach ($namevalmap as $name => $val) {
+    $sql = "UPDATE $tablename SET value=".sqlPrepareValue($val)." ".
+           "WHERE name='$name'";
+    if ($dbh->exec($sql) === false) {
+      print_r($dbh->errorInfo());
+      $rc = false;
+    }
+  }
+  return $rc;
+} // updateSerializedValues()
 
-  if (isset($civicfg['config_backend'])) {
-    $cb = $civicfg['config_backend'];
-    $rc &= updateConfigBackend($dbh, $cb);
+
+
+function updateSettings($dbh, $settings)
+{
+  return updateSerializedValues($dbh, 'civicrm_setting', $settings);
+} // updateSettings()
+
+
+
+function updateVariableValues($dbh, $varvals)
+{
+  return updateSerializedValues($dbh, 'variable', $varvals);
+} // updateVariableValues()
+
+
+
+// Confirm that all Mass Email menu items are active.
+// [This function is a candidate for removal.]
+function updateEmailMenu($dbh)
+{
+  // Must perform two queries here, since a sub-select cannot be used
+  // on the same table when performing an UPDATE.
+
+  $sql = "SELECT id FROM civicrm_navigation WHERE name='Mass Email'";
+  $stmt = $dbh->query($sql);
+  $row = $stmt->fetch(PDO::FETCH_ASSOC);
+  $pid = $row['id'];
+  $stmt = null;
+
+  $sql = "UPDATE civicrm_navigation SET is_active=1 WHERE parent_id=$pid";
+  if ($dbh->exec($sql) === false) {
+    print_r($dbh->errorInfo());
+    return false;
+  }
+  else {
+    return true;
+  }
+} // updateEmailMenu()
+
+
+
+function updateFromEmail($dbh, $from)
+{
+  $sql = "UPDATE civicrm_option_value SET label='$from', name='$from' ".
+         "WHERE value='1' AND option_group_id=(".
+                  "SELECT id FROM civicrm_option_group ".
+                  "WHERE name='from_email_address')";
+  if ($dbh->exec($sql) === false) {
+    print_r($dbh->errorInfo());
+    return false;
+  }
+  else {
+    return true;
+  }
+} // updateFromEmail()
+
+
+
+function updateMailingComponent($dbh, $tpl)
+{
+  $id = $tpl['id'];
+  $name = $tpl['name'];
+  $bh = $dbh->quote($tpl['body_html']);
+  $bt = $dbh->quote($tpl['body_text']);
+
+  $sql = "UPDATE civicrm_mailing_component ".
+         "SET name='$name', subject='$name', body_html=$bh, body_text=$bt ".
+         "WHERE id = $id";
+  if ($dbh->exec($sql) === false) {
+    print_r($dbh->errorInfo());
+    return false;
+  }
+  return true;
+} // updateMailingComponent()
+
+
+
+function updateConfig($dbrefs, $cfg)
+{
+  $rc = true;
+  $cividb = $dbrefs[DB_TYPE_CIVICRM];
+  $drupdb = $dbrefs[DB_TYPE_DRUPAL];
+
+  if (isset($cfg['civicrm']['settings'])) {
+    echo "Updating CiviCRM settings\n";
+    $rc &= updateSettings($cividb, $cfg['civicrm']['settings']);
   }
 
-  if (isset($civicfg['mailing_backend'])) {
-    $mb = $civicfg['mailing_backend'];
-    $rc &= updateSetting($dbh, 'mailing_backend', $mb);
-    $rc &= updateEmailMenu($dbh);
+  if (isset($cfg['civicrm']['from_email'])) {
+    echo "Updating CiviCRM from_email_address\n";
+    $rc &= updateFromEmail($cividb, $cfg['civicrm']['from_email']);
   }
 
-  if (isset($civicfg['from_name'])) {
-    $rc &= updateFromEmail($dbh, $bbcfg);
+  if (isset($cfg['civicrm']['template_header'])) {
+    echo "Updating CiviCRM header template\n";
+    $rc &= updateMailingComponent($cividb, $cfg['civicrm']['template_header']);
   }
 
-  if (isset($civicfg['dirprefs'])) {
+  if (isset($cfg['civicrm']['template_footer'])) {
+    echo "Updating CiviCRM footer template\n";
+    $rc &= updateMailingComponent($cividb, $cfg['civicrm']['template_footer']);
   }
 
-  if (isset($civicfg['urlprefs'])) {
-  }
-
-  if (isset($civicfg['template_header']) || isset($civicfg['template_footer'])) {
-    $rc &= updateEmailTemplate($dbh, $bbcfg);
+  if (isset($cfg['drupal']['variables'])) {
+    echo "Updating Drupal file_public_path\n";
+    $rc &= updateVariableValues($drupdb, $cfg['drupal']['variables']);
   }
 
   return $rc;
-} // updateCiviConfig()
+} // updateConfig()
+
+
+
+function setEmailDefaults(&$cfg)
+{
+  if (empty($cfg['email.font.family'])) {
+    $cfg['email.font.family'] = 'arial';
+  }
+  if (empty($cfg['email.font.size'])) {
+    $cfg['email.font.size'] = 14;
+  }
+  if (empty($cfg['email.font.color'])) {
+    $cfg['email.font.color'] = '#505050';
+  }
+  if (empty($cfg['email.background.color'])) {
+    $cfg['email.background.color'] = '#ffffff';
+  }
+  if (!isset($cfg['email.header.include_banner'])) {
+    $cfg['email.header.include_banner'] = true;
+  }
+  if (!isset($cfg['email.header.website_url'])) {
+    $cfg['email.header.website_url'] = "http://{$cfg['shortname']}.nysenate.gov/";
+  }
+  if (!isset($cfg['email.footer.include_banner'])) {
+    $cfg['email.footer.include_banner'] = true;
+  }
+  if (!isset($cfg['email.footer.include_addresses'])) {
+    $cfg['email.footer.include_addresses'] = true;
+  }
+  if (!isset($cfg['senator.name.formal'])) {
+    $cfg['senator.name.formal'] = 'New York State Senator';
+  }
+  if (!isset($cfg['senator.address.albany'])) {
+    $cfg['senator.address.albany'] = 'Legislative Office Bldg|Albany, NY 12247';
+  }
+  if (!isset($cfg['senator.address.district'])) {
+    $cfg['senator.address.district'] = 'ADDRESS OF DISTRICT OFFICE';
+  }
+  if (!isset($cfg['senator.address.satellite'])) {
+    $cfg['senator.address.satellite'] = '';
+  }
+} // setEmailDefaults()
 
 
 
@@ -620,7 +640,7 @@ $prog = basename($argv[0]);
 if ($argc != 4) {
   echo "Usage: $prog instance cmd scope\n";
   echo "   cmd can be: list, preview, or update\n";
-  echo " scope can be: def, mb, prf, tpl, drup, or all\n";
+  echo " scope can be: def, tpl, drup, or all\n";
   exit(1);
 }
 else {
@@ -656,7 +676,7 @@ else {
       }
       else {
         echo "Updating the CiviCRM/Drupal configuration.\n";
-        if (updateCiviConfig($dbrefs, $config, $bbconfig) === false) {
+        if (updateConfig($dbrefs, $config) === false) {
           $rc = 1;
         }
       }

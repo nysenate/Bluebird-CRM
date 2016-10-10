@@ -8,8 +8,7 @@
 # Date: 2010-09-30
 # Revised: 2013-05-12
 # Revised: 2013-07-29 - added --list-all and --update-all options
-# Revised: 2013-07-30 - added scope options (--standard, --mail-backend,
-#                       --prefs, --template, --all)
+# Revised: 2013-07-30 - added scope options (--standard, --template, --all)
 # Revised: 2016-06-28 - added --preview, --drupal
 #
 
@@ -20,7 +19,7 @@ readConfig=$script_dir/readConfig.sh
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog [--list | --preview | --update] [ --standard | --mail-backend | --prefs | --template | --drupal | --all ] instanceName" >&2
+  echo "Usage: $prog [--list | --preview/--pre | --update] [ --standard | --template/--tpl | --drupal/--drup | --all ] instanceName" >&2
 }
 
 if [ $# -lt 1 ]; then
@@ -38,8 +37,6 @@ while [ $# -gt 0 ]; do
     --preview|--pre) op=preview ;;
     --update) op=update ;;
     --standard|--default) scope=def ;;
-    --mail*|--mb) scope=mb ;;
-    --pref*) scope=prf ;;
     --template|--tpl) scope=tpl ;;
     --drupal|--drup) scope=drup ;;
     --all) scope=all ;;
