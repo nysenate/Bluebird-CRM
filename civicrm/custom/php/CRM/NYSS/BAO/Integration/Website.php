@@ -718,6 +718,10 @@ class CRM_NYSS_BAO_Integration_Website
       )),
     );
     //CRM_Core_Error::debug_var('actParams', $actParams);
+
+    //wrap activity and custom data in a transaction
+    $transaction = new CRM_Core_Transaction();
+
     $act = civicrm_api3('activity', 'create', $actParams);
     if ($act['is_error']) {
       return $act;
@@ -744,7 +748,19 @@ class CRM_NYSS_BAO_Integration_Website
     }
     //CRM_Core_Error::debug_var('actParams', $actParams);
     $cf = civicrm_api3('custom_value', 'create', $custParams);
-    return $cf;
+
+    $transaction->commit();
+
+    if (!empty($cf) && empty($cf['is_error'])) {
+      return $cf;
+    }
+
+    return array(
+      'is_error' => 1,
+      'details' => 'Unable to store survey',
+      'form_id' => $params->form_id,
+      'contact_id' => $contactId,
+    );
   } //processSurvey()
 
 
