@@ -1,0 +1,31 @@
+[1mdiff --git a/civicrm/custom/php/CRM/NYSS/BAO/Integration/Website.php b/civicrm/custom/php/CRM/NYSS/BAO/Integration/Website.php[m
+[1mindex 2933db0..84562f4 100644[m
+[1m--- a/civicrm/custom/php/CRM/NYSS/BAO/Integration/Website.php[m
+[1m+++ b/civicrm/custom/php/CRM/NYSS/BAO/Integration/Website.php[m
+[36m@@ -718,6 +718,10 @@[m [mclass CRM_NYSS_BAO_Integration_Website[m
+       )),[m
+     );[m
+     //CRM_Core_Error::debug_var('actParams', $actParams);[m
+[32m+[m
+[32m+[m[32m    //wrap activity and custom data in a transaction[m
+[32m+[m[32m    $transaction = new CRM_Core_Transaction();[m
+[32m+[m
+     $act = civicrm_api3('activity', 'create', $actParams);[m
+     if ($act['is_error']) {[m
+       return $act;[m
+[36m@@ -744,7 +748,14 @@[m [mclass CRM_NYSS_BAO_Integration_Website[m
+     }[m
+     //CRM_Core_Error::debug_var('actParams', $actParams);[m
+     $cf = civicrm_api3('custom_value', 'create', $custParams);[m
+[31m-    return $cf;[m
+[32m+[m
+[32m+[m[32m    $transaction->commit();[m
+[32m+[m
+[32m+[m[32m    if (!empty($cf)) {[m
+[32m+[m[32m      return $cf;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    return null;[m
+   } //processSurvey()[m
+ [m
+ [m
