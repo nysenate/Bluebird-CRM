@@ -2,23 +2,25 @@
 
 require_once(dirname(__FILE__) . './../../civicrm/scripts/bluebird_config.php');
 
-function nyss_backup_menu () {
+function nyss_backup_menu ()
+{
   return array(
-    'backupdata' =>
-    array(
+    'backupdata' => array(
       'title' => t('Backup/Restore Instance'),
       'page callback' => 'nyss_backup_page',
       'access arguments' => array('export print production files'),
   ));
-}
+} // nyss_backup_menu()
 
-function nyss_backup_page() {
-  $instance_config = get_bluebird_instance_config();
-  $data_dir = "{$instance_config['data.rootdir']}/{$instance_config['db.basename']}.{$instance_config['base.domain']}/{$instance_config['backup.ui.dirname']}/";
+
+function nyss_backup_page()
+{
+  $bbcfg = get_bluebird_instance_config();
+  $data_dir = $bbcfg['data.rootdir'].'/'.$bbcfg['data_dirname'].'/'.$bbcfg['backup.ui.dirname'].'/';
 
   // If we have a folder name, and it either a directory or we can create it as such
-  if($instance_config['backup.ui.dirname'] && (is_dir($data_dir) || mkdir($data_dir))) {
-    if($_GET['function']) {
+  if ($bbcfg['backup.ui.dirname'] && (is_dir($data_dir) || mkdir($data_dir))) {
+    if ($_GET['function']) {
       $app_functions = array(
         'instance_file_list' => 'nyss_backup_instance_file_list',
         'delete' => 'nyss_backup_delete_file',
@@ -27,9 +29,10 @@ function nyss_backup_page() {
       );
 
       $function = $_GET['function'];
-      if($app_functions[$function]) {
+      if ($app_functions[$function]) {
         $data = call_user_func($app_functions[$function], $data_dir);
-      } else {
+      }
+      else {
         $data = array('error' => 'error');
       }
 
@@ -44,7 +47,6 @@ function nyss_backup_page() {
       drupal_add_js(drupal_get_path('module','nyss_backup').'/js/nyss_backup.js');
       drupal_add_css(drupal_get_path('module','nyss_backup').'/nyss_backup.css');
       include 'js/templates.html';
-
       return "";
     }
   }
@@ -53,14 +55,16 @@ function nyss_backup_page() {
       ."is specified and that apache has write access to "
       ."[data.rootdir]/[data_dirname]/[backup.ui.dirname]";
   }
-}
+} // nyss_backup_page()
 
-function nyss_backup_instance_file_list($data_dir) {
+
+function nyss_backup_instance_file_list($data_dir)
+{
   //fetch all instance backup files from the filesystem
   $files = array();
-  if($handle = opendir($data_dir)) {
-    while(false !== ($file = readdir($handle))) {
-      if($file != '.' && $file != '..' && !is_dir($data_dir.$file) && preg_match('/.*\.zip/', $file)) {
+  if ($handle = opendir($data_dir)) {
+    while (false !== ($file = readdir($handle))) {
+      if ($file != '.' && $file != '..' && !is_dir($data_dir.$file) && preg_match('/.*\.zip/', $file)) {
         $time = filemtime($data_dir.$file);
         $files[$time] = array('file' => $file, 'time' => $time);
       }
@@ -73,24 +77,28 @@ function nyss_backup_instance_file_list($data_dir) {
 
   // TODO: Weird format, could improve at some point to be an object {file1:time1, file2:time2, etc}
   return array_values($files);
-}
+} // nyss_backup_instance_file_list()
 
-function nyss_backup_delete_file($data_dir) {
+
+function nyss_backup_delete_file($data_dir)
+{
   $file = $_GET['file'];
   return array('success' => (!empty($file) && unlink($data_dir.$file)));
-}
+} // nyss_backup_delete_file()
 
-function nyss_backup_backup_file($data_dir) {
+
+function nyss_backup_backup_file($data_dir)
+{
   $file_name = urldecode($_GET['file_name']);
   $file_time = urldecode($_GET['file_time']);
 
   $file_date = date("Ymd-His", $file_time);
-  $instance_config = get_bluebird_instance_config();
-  $backup_script = "{$instance_config['app.rootdir']}/scripts/dumpInstance.sh";
+  $bbcfg = get_bluebird_instance_config();
+  $backup_script = "{$bbcfg['app.rootdir']}/scripts/dumpInstance.sh";
 
   //if provided file name only consists of white spaces
   //and non word chracters set to default YYYYMMDD-HHMMSS
-  if(!$file_name || preg_match('/^[\s\W]*$/', $file_name)) {
+  if (!$file_name || preg_match('/^[\s\W]*$/', $file_name)) {
     $file_name = $file_date['string_date'];
   }
   else {
@@ -102,24 +110,26 @@ function nyss_backup_backup_file($data_dir) {
   $full_path = $data_dir.substr($file_name, 0, 50).".zip";
 
   //if the file already exists tack on date string
-  if(file_exists($full_path)) {
+  if (file_exists($full_path)) {
     $full_path = substr($full_path, 0, -4)."-{$file_date['string_date']}.zip";
   }
 
-  shell_exec("$backup_script {$instance_config['shortname']} --zip --archive-file $full_path");
+  shell_exec("$backup_script {$bbcfg['shortname']} --zip --archive-file $full_path");
 
   //touch file to make sure date in file name matches modified date
   return array('success' => file_exists($full_path));
-}
+} // nyss_backup_backup_file()
 
-function nyss_backup_restore_from_file($data_dir) {
+
+function nyss_backup_restore_from_file($data_dir)
+{
   $file_name = $_GET['file'];
 
-  $instance_config = get_bluebird_instance_config();
-  $restore_script = "{$instance_config['app.rootdir']}/scripts/restoreInstance.sh";
-  if(!$file_name) {
+  $bbcfg = get_bluebird_instance_config();
+  $restore_script = "{$bbcfg['app.rootdir']}/scripts/restoreInstance.sh";
+  if (!$file_name) {
     return false;
   }
-  passthru("$restore_script {$instance_config['shortname']} --archive-file {$data_dir}{$file_name} --ok > /dev/null", $err);
+  passthru("$restore_script {$bbcfg['shortname']} --archive-file $data_dir$file_name --ok > /dev/null", $err);
   return array('success' => ($err == 0 ? true : false));
-}
+} // nyss_backup_restore_from_file()

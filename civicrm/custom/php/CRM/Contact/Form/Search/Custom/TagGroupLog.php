@@ -45,7 +45,7 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
     parent::__construct( $formValues );
 
     $this->_columns = array(
-      ts('&nbsp;') => 'contact_type',
+      ts(' ') => 'contact_type',
       ts('Name') => 'sort_name' ,
       //ts('Street Address') => 'street_address',
       //ts('City') => 'city',
@@ -383,11 +383,12 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
   }
 
   function alterRow( &$row ) {
-    require_once( 'CRM/Contact/BAO/Contact/Utils.php' );
-    $row['contact_type' ] =
-      CRM_Contact_BAO_Contact_Utils::getImage( $row['contact_type'],
-        false,
-        $row['contact_id'] );
+    if (empty($_REQUEST['is_quick_export'])) {
+      $row['contact_type'] =
+        CRM_Contact_BAO_Contact_Utils::getImage($row['contact_type'],
+          false,
+          $row['contact_id']);
+    }
   }
 
   function setTitle( $title ) {
@@ -404,6 +405,7 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
     //CRM_Core_Error::debug_var('$_REQUEST', $_REQUEST);
 
     if (!empty($_REQUEST['formValues'])) {
+      $_REQUEST['is_quick_export'] = true;
       $formValues = $_REQUEST['formValues'];
 
       CRM_Export_BAO_Export::exportCustom($formValues['customSearchClass'],

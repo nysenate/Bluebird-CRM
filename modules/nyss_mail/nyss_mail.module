@@ -4,9 +4,9 @@ define('BASE_SUBSCRIPTION_GROUP', 'Bluebird_Mail_Subscription');
 define('FILTER_ALL', 0);
 define('FILTER_IN_SD_ONLY', 1);
 define('FILTER_IN_SD_OR_NO_SD', 2);
+define('DEFAULT_REPLYTO', 'bluebird.admin@nysenate.gov');
 
-
-//5581
+// NYSS 5581
 function nyss_mail_custom_theme()
 {
   $allowedPaths = array(
@@ -54,18 +54,13 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
 {
   require_once 'SmtpApiHeader.php';
   //CRM_Core_Error::debug_var('params', $params);
-  //CRM_Core_Error::debug_var('context', $context);
 
-  /* Re-write any URLs in the message body of the form:
-   *   <sitename>/sites/<sitename>/pubfiles
-   *   where <sitename> is <senatorShortname>.crm(dev|test)?.nysenate.gov
-   * into:
-   *   pubfiles.nysenate.gov/crm(dev|test)?/senator/
-  */
-  $bodyvalues = array('text', 'html');
-  foreach ($bodyvalues as $bodyvalue) {
-    if (isset($params[$bodyvalue])) {
-      $params[$bodyvalue] = preg_replace('#[a-z0-9_-]+\.crm(dev|test)?\.nysenate\.gov/sites/([a-z0-9_-]+)\.(crm(dev|test)?)\.nysenate\.gov/pubfiles/#i', 'pubfiles.nysenate.gov/$3/$2/', $params[$bodyvalue]);
+  $contentTypes = array('text', 'html');
+
+  // Rewrite the public URLs to use pubfiles.nysenate.gov
+  foreach ($contentTypes as $ctype) {
+    if (isset($params[$ctype])) {
+      $params[$ctype] = rewrite_public_urls($params[$ctype]);
     }
   }
 
@@ -74,10 +69,7 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
   $params['html'] = fixup_html_message($params['html']);
 
   $hdr = new SmtpApiHeader();
-
-  //universal settings
   $bbconfig = get_bluebird_instance_config();
-  //CRM_Core_Error::debug_var('bbconfig', $bbconfig);
 
   if (isset($bbconfig['senator.email'])) {
     $senator_email = $bbconfig['senator.email'];
@@ -93,147 +85,119 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
     $replyto = $senator_email;
   }
   else {
-    $replyto = $bbconfig['smtp.subuser'];
+    $replyto = DEFAULT_REPLYTO;
   }
 
-  // NYSS 5579 - Construct the whitelisting language and add to e-mail body.
-  // NYSS 7423 - Allow location of whitelisting blurb to be configurable.
-  // 7804 suppress if viewing html
-  if ($context == 'civimail' && !empty($params['contact_id'])) {
-    if (isset($bbconfig['email.whitelist.text'])) {
-      $whitelist_txt = $bbconfig['email.whitelist.text'];
-    }
-    else {
-      $whitelist_txt = 'To ensure delivery of emails to your inbox, please add %SENATOR_EMAIL% to your email address book.';
-    }
-    $whitelist_txt = str_replace('%SENATOR_EMAIL%', $senator_email, $whitelist_txt);
 
-    if (isset($bbconfig['email.whitelist.location']) &&
-      $bbconfig['email.whitelist.location'] == "bottom"
-    ) {
-      $params['text'] = $params['text']."\n\n".$whitelist_txt;
-      $params['html'] = preg_replace('#(\s*</body>)#', "\n<p style=\"text-align:center; font-size:10px;\">$whitelist_txt</p>$1", $params['html'], 1);
-    }
-    else {
-      $params['text'] = $whitelist_txt."\n\n".$params['text'];
-      $params['html'] = preg_replace('/(<body( [^>]*)?>\s*)/', "$1<p style=\"text-align:center; font-size:10px;\">$whitelist_txt</p>\n<br/>\n", $params['html'], 1);
-    }
-  }
-
-  // Prevent Sendgrid from dropping any of our messages.
-  $hdr->addFilterSetting('bypass_list_management', 'enable', 1);
-
-  //set character encoding
-  //$params['Content-Transfer-Encoding'] = 'Quoted-Printable';
-
-  //set some values based on context
+  // A context of "civimail" indicates a mass email job, which requires
+  // much more setup than a non-civimail message.
   if ($context == 'civimail') {
-    if (empty($params['event_queue_id']) && empty($params['is_test'])) {
+    $eventQueueID = $contactID = 0;
+    $jobInfo = null;
+    $extraContent = array_fill_keys($contentTypes, array());
+
+    if (isset($params['event_queue_id'])) {
+      $eventQueueID = $params['event_queue_id'];
+      unset($params['event_queue_id']);
+    }
+    else if (empty($params['is_test'])) {
       CRM_Core_Error::debug_var('params: event_queue_id not found', $params);
+    }
+
+    // NYSS 5354 - set the "X-clientid" header
+    if (isset($params['contact_id'])) {
+      $contactID = $params['contact_id'];
+      $params['X-clientid'] = $contactID;
+      unset($params['contact_id']);
     }
 
     $params['Return-Path'] = '';
     $params['List-Unsubscribe'] = '';
     $params['Reply-To'] = $replyto;
 
-    $test = $event_queue_id = $jid = $mid = $mname = 0;
     if (isset($params['job_id'])) {
-      $jid = $params['job_id'];
-      $mJob = CRM_Core_DAO::executeQuery("SELECT mailing_id, is_test FROM civicrm_mailing_job WHERE id = {$jid};");
-      while ($mJob->fetch()) {
-        $mid = $mJob->mailing_id;
-        $test = $mJob->is_test;
-      }
-      $mJob->free();
-
-      $m = CRM_Core_DAO::executeQuery("SELECT name, hash FROM civicrm_mailing WHERE id = {$mid};");
-      while ($m->fetch()) {
-        $mname = $m->name;
-        $hash = $m->hash;
-      }
-
+      $jobInfo = get_job_info($params['job_id']);
       unset($params['job_id']);
     }
 
-    if (isset($params['event_queue_id'])) {
-      $event_queue_id = $params['event_queue_id'];
-      unset($params['event_queue_id']);
+    // NYSS 5579 - Construct the whitelisting language and add to e-mail body.
+    // NYSS 7423 - Allow location of whitelisting blurb to be configurable.
+    // NYSS 7804 - suppress whitelisting blurb if viewing html
+    // If contactID is set, then this is a real email (either job or preview).
+    // If contactID is not set, then this is an HTML view of the email.
+    if (!empty($contactID)) {
+      if (!empty($bbconfig['email.extras.include_whitelist'])) {
+        if (isset($bbconfig['email.extras.whitelist_location']) &&
+            $bbconfig['email.extras.whitelist_location'] == 'bottom') {
+          $locidx = 'post_body';
+        }
+        else {
+          $locidx = 'pre_body';
+        }
+        $s = get_whitelist_clause($bbconfig, $senator_email);
+        $extraContent['text'][$locidx][] = $s['text'];
+        $extraContent['html'][$locidx][] = $s['html'];
+      }
+    }
+    else {
+      // NYSS 7803 - if viewing HTML, insert FB share image
+      $s = get_opengraph_clause($bbconfig, $params['Subject']);
+      $extraContent['text']['head'][] = $s['text'];
+      $extraContent['html']['head'][] = $s['html'];
     }
 
-    //5354
-    if (isset($params['contact_id'])) {
-      $contactID = $params['contact_id'];
-      unset($params['contact_id']);
-      $params['X-clientid'] = $contactID;
-    }
-
-    //7701 - append link for hosted email
-    if (!empty($mid)) {
-      $viewID = ($hash) ? $hash : $mid;
-      $url = "http://pubfiles.nysenate.gov/{$bbconfig['envname']}/{$bbconfig['shortname']}/view/{$viewID}";
-      //$url = CRM_Utils_System::url('civicrm/mailing/view', 'reset=1&id='.$viewID, true);
-
-      //4864
-      $fblink = '';
-      if ($bbconfig['email.include_facebook']) {
-        $fburl = "https://www.facebook.com/sharer/sharer.php?u={$url}";
-        $fbimg = "http://pubfiles.nysenate.gov/{$bbconfig['envname']}/{$bbconfig['shortname']}/common/images/social_media/facebook_share_68x25.png";
-        $fblink = "<a href='{$fburl}' target=_blank>Share on Facebook.</a>&nbsp;&nbsp;<a href='{$fburl}' target=_blank><img src='{$fbimg}' height='20' align='middle'></a>";
+    // NYSS 7701 - append link for hosted email if this is part of a mailing
+    // NYSS 4864 - optionally include a "Share on Facebook" link
+    if ($jobInfo) {
+      if (!empty($jobInfo['mailing_hash'])) {
+        $viewID = $jobInfo['mailing_hash'];
+      }
+      else {
+        $viewID = $jobInfo['mailing_id'];
       }
 
-      $params['text'] .= "\n\nClick here to view this email in your browser: {$url} | Share on Facebook: {$fburl}";
-      $params['html'] = preg_replace('#(\s*</body>)#', "\n<p style=\"text-align:center; font-size:10px;\"><a href='{$url}' target=_blank>Click here</a> to view this email in your browser. {$fblink}</p>$1", $params['html'], 1);
-    }
-
-    //5581 subscription management link
-    if (!empty($contactID) && !empty($mid) && $bbconfig['email.include_subscriptions']) {
-      $cs = CRM_Contact_BAO_Contact_Utils::generateChecksum($contactID);
-      $url = "http://pubfiles.nysenate.gov/{$bbconfig['envname']}/{$bbconfig['shortname']}/subscription/manage/{$event_queue_id}/{$cs}";
-
-      $params['text'] .= "\n\nClick here to manage your email subscription settings: {$url}";
-      $params['html'] = preg_replace('#(\s*</body>)#', "\n<p style=\"text-align:center; font-size:10px;\"><a href='{$url}' target=_blank>Click here</a> to manage email subscription settings or to unsubscribe.</p>$1", $params['html'], 1);
-
-      //disable optout via sendgrid as we are handling through the subscription page
-      $hdr->addFilterSetting('subscriptiontrack', 'enable', 0);
-    }
-
-    //7803 if viewing html, insert FB share image
-    if (empty($params['contact_id'])) {
-      $imgRoot = $bbconfig['data.rootdir'].'/'.$bbconfig['data_dirname'].'/pubfiles/';
-      $fbShareFolder = 'images/template';
-      $fbShareImage = 'fb_share_thumb.png';
-
-      if (!file_exists($imgRoot.$fbShareFolder.'/'.$fbShareImage)) {
-        $fbShareFolder = 'common/images';
-        $fbShareImage = 'nysenate_logo_200.png';
+      if (!empty($bbconfig['email.extras.include_browserview'])) {
+        $s = get_browserview_clause($bbconfig, $viewID);
+        $extraContent['text']['post_body'][] = $s['text'];
+        $extraContent['html']['post_body'][] = $s['html'];
       }
-      $fbShare = "http://pubfiles.nysenate.gov/{$bbconfig['envname']}/{$bbconfig['shortname']}/{$fbShareFolder}/{$fbShareImage}";
+      if (!empty($bbconfig['email.extras.include_optout'])) {
+        // NYSS 5581 - opt-out/subscription management link
+        $s = get_optout_clause($bbconfig, $contactID, $eventQueueID);
+        $extraContent['text']['post_body'][] = $s['text'];
+        $extraContent['html']['post_body'][] = $s['html'];
+        // Disable SendGrid Opt-Out as we are handling thru subscription page.
+        $hdr->addFilterSetting('subscriptiontrack', 'enable', 0);
+      }
+      if (!empty($bbconfig['email.extras.include_shareon'])) {
+        $s = get_shareon_clause($bbconfig, $viewID);
+        $extraContent['text']['post_body'][] = $s['text'];
+        $extraContent['html']['post_body'][] = $s['html'];
+      }
+    }
 
-      //append to the head block as meta tag
-      $params['html'] = preg_replace('#(\s*</head>)#', "
-        \n<meta property='og:image' content={$fbShare} />
-        \n<meta property='og:title' content='{$params['Subject']}' />
-        \n<link rel='image_src' type='image/png' href='{$fbShare}' />
-      $1", $params['html'], 1);
+    // Add extra content (OpenGraph, whitelist, browser-view, opt-out, share-on)
+    foreach ($contentTypes as $ctype) {
+      if (isset($params[$ctype])) {
+        $params[$ctype] = add_extra_content($params[$ctype], $extraContent[$ctype], $ctype);
+      }
     }
 
     //Sendgrid headers
-    $hdr->setCategory("BluebirdMail: $mname (ID: $mid)");
+    $hdr->setCategory("BluebirdMail: {$jobInfo['mailing_name']} (ID: {$jobInfo['mailing_id']})");
     $hdr->setUniqueArgs(array(
       'instance' => $bbconfig['shortname'],
       'install_class' => $bbconfig['install_class'],
       'servername' => $bbconfig['servername'],
-      'mailing_id' => $mid,
-      'job_id' => $jid,
-      'queue_id' => $event_queue_id,
-      'is_test' => $test
-      )
-    );
+      'mailing_id' => $jobInfo['mailing_id'],
+      'job_id' => $jobInfo['job_id'],
+      'queue_id' => $eventQueueID,
+      'is_test' => $jobInfo['is_test']
+    ));
   }
   else {
-    //$params['replyTo'] = $replyto;
-    // Sendgrid SMTP-API
     // For non-Civimail messages, disable subscription/click/open tracking
+    // Sendgrid SMTP-API
     $hdr->setCategory('Bluebird Activity');
     $hdr->setUniqueArgs(array(
       'instance' => $bbconfig['shortname'],
@@ -243,13 +207,16 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
     $hdr->addFilterSetting('subscriptiontrack', 'enable', 0);
     $hdr->addFilterSetting('clicktrack', 'enable', 0);
     $hdr->addFilterSetting('opentrack', 'enable', 0);
+    //$params['replyTo'] = $replyto;
   }
+
+  // Prevent Sendgrid from dropping any of our messages.
+  $hdr->addFilterSetting('bypass_list_management', 'enable', 1);
 
   $params['headers']['X-SMTPAPI'] = $hdr->asJSON();
 
   //CRM_Core_Error::debug('session', $_SESSION);
   //CRM_Core_Error::debug_var('params', $params);
-  //CRM_Core_Error::debug_var('mname', $mname);
 
   return;
 } //nyss_mail_civicrm_alterMailParams()
@@ -273,10 +240,10 @@ function nyss_mail_civicrm_buildForm($formName, &$form)
   if ($formName == 'CRM_Mailing_Form_Group') {
     $mailingID = CRM_Utils_Request::retrieve('mid', 'Integer', $form, false, null );
 
-    //4628
+    // NYSS 4628
     $form->addElement('checkbox', 'all_emails', ts('Send to all contact emails?'));
 
-    //4879
+    // NYSS 4879
     $form->add('select', 'exclude_ood', ts('Send only to emails matched with in-district postal addresses'),
       array(
         FILTER_ALL => 'No District Filtering',
@@ -284,7 +251,7 @@ function nyss_mail_civicrm_buildForm($formName, &$form)
         FILTER_IN_SD_OR_NO_SD => 'In-District and Unknowns'),
       false);
 
-    //5581 mailing category options
+    //NYSS 5581 - mailing category options
     $mCats = array('' => '- select -');
     $opts = CRM_Core_DAO::executeQuery("
       SELECT ov.label, ov.value
@@ -345,7 +312,7 @@ function nyss_mail_civicrm_buildForm($formName, &$form)
   ) {
     CRM_Utils_System::setTitle('New Mass Email');
 
-    //NYSS 4557
+    // NYSS 4557
     //CRM_Core_Error::debug_var('form', $form);
     $session =& CRM_Core_Session::singleton();
     if (!empty($form->_finalValues['name'])) {
@@ -373,7 +340,7 @@ function nyss_mail_civicrm_buildForm($formName, &$form)
     //CRM_Core_Error::debug($parent);
   }
 
-  //5581 - optimized opt out
+  // NYSS 5581 - optimized opt out
   if ($formName == 'CRM_Profile_Form_Edit' &&
       $form->getVar('_ufGroupName') == 'Mass_Email_Subscriptions') {
     $cid = $form->getVar('_id');
@@ -503,7 +470,7 @@ function nyss_mail_civicrm_postProcess($formName, &$form)
     );
     CRM_Core_DAO::executeQuery("UPDATE civicrm_mailing SET exclude_ood = %2 WHERE id = %1;", $sqlParams);
 
-    //5581
+    // NYSS 5581
     if ($mailingCat) {
       $sqlParams  = array(
         1 => array($mailingID, 'Integer'),
@@ -512,7 +479,7 @@ function nyss_mail_civicrm_postProcess($formName, &$form)
       CRM_Core_DAO::executeQuery("UPDATE civicrm_mailing SET category = %2 WHERE id = %1;", $sqlParams);
     }
 
-    //4628, 4879
+    // NYSS 4628, 4879
     if ($form->_submitValues['all_emails']) {
       _addAllEmails($mailingID, $dedupeEmails, $excludeOOD);
     }
@@ -521,7 +488,7 @@ function nyss_mail_civicrm_postProcess($formName, &$form)
       _excludeOOD($mailingID, $dedupeEmails, $excludeOOD);
     }
 
-    //5581
+    // NYSS 5581
     if ($mailingCat) {
       _excludeCategoryOptOut($mailingID, $mailingCat);
     }
@@ -536,7 +503,7 @@ function nyss_mail_civicrm_postProcess($formName, &$form)
       $form->assign('count', $count);
     }
 
-    //5996 set default header/footer if save later on step 1
+    // NYSS 5996 - set default header/footer if save later on step 1
     $buttonName = $form->controller->getButtonName();
     if ($buttonName == '_qf_Group_submit') {
       $mailing = new CRM_Mailing_DAO_Mailing();
@@ -572,7 +539,7 @@ function nyss_mail_civicrm_postProcess($formName, &$form)
     //CRM_Core_Error::debug('postProcess Group form', $form); exit();
   }
 
-  //5581
+  // NYSS 5581
   if ($formName == 'CRM_Profile_Form_Edit' &&
       $form->getVar('_ufGroupName') == 'Mass_Email_Subscriptions') {
     $vals = $form->_submitValues;
@@ -621,7 +588,7 @@ function nyss_mail_civicrm_pageRun(&$page)
 
     $smarty->assign_by_ref('report', $rpt);
 
-    //7860 include mailing category on report page
+    // NYSS 7860 - include mailing category on report page
     $mailingID = $page->_mailing_id;
     if ( $mailingID ) {
       $category = CRM_Core_DAO::singleValueQuery("
@@ -640,7 +607,7 @@ function nyss_mail_civicrm_pageRun(&$page)
 
   }
 
-  //5567 fix title
+  // NYSS 5567 - fix title
   if ($page->getVar('_name') == 'CRM_Mailing_Page_Event') {
     $event = CRM_Utils_Array::value('event', $_GET);
     if ($event == 'unsubscribe') {
@@ -648,7 +615,7 @@ function nyss_mail_civicrm_pageRun(&$page)
     }
   }
 
-  //5581
+  // NYSS 5581
   if ($page->getVar('_name') == 'CRM_Profile_Page_View') {
     $gid = CRM_Core_DAO::singleValueQuery("
       SELECT id
@@ -724,7 +691,7 @@ function nyss_mail_civicrm_pageRun(&$page)
       }
       $page->assign('emails', $contactEmails);
     }
-  }//5581
+  } // NYSS 5581
 }//nyss_mail_civicrm_pageRun()
 
 
@@ -740,7 +707,7 @@ function nyss_mail_civicrm_alterTemplateFile($formName, &$form, $context, &$tplN
     $tplName = 'CRM/NYSS/Subscription.tpl';
   }
 
-  //5581
+  // NYSS 5581
   if ($formName == 'CRM_Profile_Page_View') {
     $gid = CRM_Core_DAO::singleValueQuery("
       SELECT id
@@ -755,7 +722,7 @@ function nyss_mail_civicrm_alterTemplateFile($formName, &$form, $context, &$tplN
 }//alterTemplateFile
 
 
-//4628
+// NYSS 4628
 function _addAllEmails($mailingID, $dedupeEmails = false, $excludeOOD = FILTER_ALL)
 {
   require_once 'CRM/Mailing/BAO/Mailing.php';
@@ -797,7 +764,7 @@ WHERE e.id NOT IN (
 } //_addAllEmails()
 
 
-//4879
+// NYSS 4879
 function _excludeOOD($mailingID, $dedupeEmails = false, $excludeOOD)
 {
   //determine what SD we are in
@@ -889,7 +856,8 @@ function _excludeOOD($mailingID, $dedupeEmails = false, $excludeOOD)
   CRM_Core_DAO::executeQuery("DROP TABLE $tempTbl");
 } // _excludeOOD()
 
-//5581
+
+// NYSS 5581
 function _excludeCategoryOptOut($mailingID, $mailingCat)
 {
   $sql = "
@@ -975,4 +943,157 @@ function fixup_html_message($m)
   }
   return $m;
 } // fixup_html_message()
+
+
+/* Re-write any URLs in the message body of the form:
+ *   <sitename>/sites/<sitename>/pubfiles [old format]
+ * or
+ *   <sitename>/data/<shortname>/pubfiles [new format]
+ *   (where <shortname> is typically the senator's last name and
+ *          <envname> is "crm", "crmdev", "crmtest", etc. and
+ *          <sitename> is <shortname>.<envname>.nysenate.gov)
+ * into:
+ *   pubfiles.nysenate.gov/<envname>/<shortname>/
+*/
+function rewrite_public_urls($s)
+{
+  $patterns = array(
+    // Legacy "/sites/" URLs
+    '#[\w-]+\.(crm[\w]*)\.nysenate\.gov/sites/([\w-]+)\.crm[\w]*\.nysenate\.gov/pubfiles/#i',
+    // Standard "/data/" URLs
+    '#[\w-]+\.(crm[\w]*)\.nysenate\.gov/data/([\w-]+)/pubfiles/#i',
+  );
+  $replacement = 'pubfiles.nysenate.gov/$1/$2/';
+
+  // Two patterns.  One replacement.  One call to preg_replace().
+  return preg_replace($patterns, $replacement, $s);
+} // rewrite_public_urls()
+
+
+function get_job_info($jid)
+{
+  $mJob = CRM_Core_DAO::executeQuery("SELECT mailing_id, is_test FROM civicrm_mailing_job WHERE id = $jid;");
+  while ($mJob->fetch()) {
+    $mid = $mJob->mailing_id;
+    $test = $mJob->is_test;
+  }
+  $mJob->free();
+
+  $m = CRM_Core_DAO::executeQuery("SELECT name, hash FROM civicrm_mailing WHERE id = $mid;");
+  while ($m->fetch()) {
+    $mname = $m->name;
+    $hash = $m->hash;
+  }
+
+  return array('job_id'=>$jid, 'mailing_id'=>$mid, 'is_test'=>$test,
+               'mailing_name'=>$mname, 'mailing_hash'=>$hash);
+} // get_job_info()
+
+
+function get_whitelist_clause($bbcfg, $email)
+{
+  if (!empty($bbcfg['email.extras.whitelist_text'])) {
+    $text = $bbcfg['email.extras.whitelist_text'];
+  }
+  else {
+    $text = 'To ensure delivery of emails to your inbox, please add %SENATOR_EMAIL% to your email address book.';
+  }
+  // Order here is important.  HTML first, then text, since text is rewritten.
+  $html = str_replace('%SENATOR_EMAIL%', "<a href=\"mailto:$email\">$email</a>", $text);
+  $text = str_replace('%SENATOR_EMAIL%', $email, $text);
+
+  return array('text' => $text, 'html' => $html);
+} // get_whitelist_clause()
+
+
+function get_view_url($bbcfg, $viewId)
+{
+  $url = "http://pubfiles.nysenate.gov/{$bbcfg['envname']}/{$bbcfg['shortname']}/view/$viewId";
+  //$url = CRM_Utils_System::url('civicrm/mailing/view', 'reset=1&id='.$viewId, true);
+  return $url;
+} // get_view_url()
+
+
+function get_browserview_clause($bbcfg, $viewId)
+{
+  $url = get_view_url($bbcfg, $viewId);
+  $text = "To view this email in your browser, go to $url";
+  $html = '<a href="'.$url.'" target="_blank">Click here</a> to view this email in your browser.';
+
+  return array('text' => $text, 'html' => $html);
+} // get_browserview_clause()
+
+
+function get_optout_clause($bbcfg, $cid, $qid)
+{
+  $cs = CRM_Contact_BAO_Contact_Utils::generateChecksum($cid);
+  $url = "http://pubfiles.nysenate.gov/{$bbcfg['envname']}/{$bbcfg['shortname']}/subscription/manage/$qid/$cs";
+
+  $text = "To manage your email subscription settings or to unsubscribe, go to $url";
+  $html = '<a href="'.$url.'" target="_blank">Click here</a> to manage your email subscription settings or to unsubscribe.';
+
+  return array('text' => $text, 'html' => $html);
+} // get_optout_clause()
+
+
+function get_shareon_clause($bbcfg, $viewId)
+{
+  $url = get_view_url($bbcfg, $viewId);
+  $fburl = "https://www.facebook.com/sharer/sharer.php?u=$url";
+  $fbimg = "http://pubfiles.nysenate.gov/{$bbcfg['envname']}/{$bbcfg['shortname']}/common/images/social_media/facebook_share_68x25.png";
+
+  $text = "To share this on Facebook, go to $fburl";
+  $html = '<a style="color:#386eff; text-decoration:underline;" href="'.$fburl.'" target="_blank">Share&nbsp;on&nbsp;Facebook.</a>';
+
+  return array('text' => $text, 'html' => $html);
+} // get_shareon_clause()
+
+
+function get_opengraph_clause($bbcfg, $subj)
+{
+  $pubdir = $bbcfg['data.rootdir'].'/'.$bbcfg['data_dirname'].'/pubfiles';
+  $imgpath = 'images/template/fb_share_thumb.png';
+
+  if (!file_exists("$pubdir/$imgpath")) {
+    $imgpath = 'common/images/nysenate_logo_200.png';
+  }
+  $url = "http://pubfiles.nysenate.gov/{$bbconfig['envname']}/{$bbconfig['shortname']}/$imgpath";
+
+  $text = '';
+  $html = '<meta property="og:image" content="'.$url.'" />'."\n".
+          '<meta property="og:title" content="'.$subj.'" />'."\n".
+          '<link rel="image_src" type="image/png" href="'.$url.'" />';
+
+  return array('text' => $text, 'html' => $html);
+} // get_opengraph_clause()
+
+
+function add_extra_content($msg, $extra, $ctype)
+{
+  $sep = ($ctype == 'text') ? "\n" : "\n<br/>\n";
+
+  // Each of the three "extra" variables is an array of items.
+  $extraHead = implode($sep, $extra['head']);
+  $extraPreBody = implode($sep, $extra['pre_body']);
+  $extraPostBody = implode($sep, $extra['post_body']);
+
+  if ($ctype == 'text') {
+    $msg = "$extraHead\n$extraPreBody\n$msg\n$extraPostBody";
+  }
+  else {
+    $patterns = array(
+      '#(\s*</head>)#',
+      '/(<body( [^>]*)?>\s*)/',
+      '#(\s*</body>)#'
+    );
+    $attr = 'style="text-align:center; font:10px/12px Helvetica, Arial, sans-serif; color:#3f3f3f; padding:0 10px 30px;"';
+    $replacements = array(
+      "\n<!-- Extra HEAD content -->\n$extraHead\$1",
+      "\$1<div id=\"extra_prebody_content\" $attr>\n$extraPreBody\n</div>\n",
+      "\n<div id=\"extra_postbody_content\" $attr>\n$extraPostBody\n</div>\$1"
+    );
+    $msg = preg_replace($patterns, $replacements, $msg);
+  }
+  return $msg;
+} // add_extra_content()
 
