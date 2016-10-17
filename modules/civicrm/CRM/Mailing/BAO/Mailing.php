@@ -591,6 +591,7 @@ ORDER BY   i.contact_id, i.{$tempColumn}
                       LIMIT 1";
     }
     else {
+      $mg = CRM_Mailing_DAO_MailingGroup::getTableName();
       $query = "SELECT entity_id
                       FROM   $mg
                       WHERE  mailing_id = {$this->id}
@@ -634,7 +635,7 @@ ORDER BY   i.contact_id, i.{$tempColumn}
     $patterns[] = '\\\\\{\w+\.\w+\\\\\}|\{\{\w+\.\w+\}\}';
     $patterns[] = '\{\w+\.\w+\}';
 
-    $patterns = '{' . implode('|', $patterns) . '}im';
+    $patterns = '{' . implode('|', $patterns) . '}imu';
 
     return $patterns;
   }
@@ -920,10 +921,6 @@ ORDER BY   i.contact_id, i.{$tempColumn}
    * @return void
    */
   public function getTestRecipients($testParams) {
-    $session = CRM_Core_Session::singleton();
-    $senderId = $session->get('userID');
-    list($aclJoin, $aclWhere) = CRM_ACL_BAO_ACL::buildAcl($senderId);
-
     if (array_key_exists($testParams['test_group'], CRM_Core_PseudoConstant::group())) {
       $contacts = civicrm_api('contact', 'get', array(
           'version' => 3,
@@ -941,15 +938,13 @@ SELECT     civicrm_email.id AS email_id,
            civicrm_email.is_primary as is_primary,
            civicrm_email.is_bulkmail as is_bulkmail
 FROM       civicrm_email
-INNER JOIN civicrm_contact contact_a ON civicrm_email.contact_id = contact_a.id
-{$aclJoin}
+INNER JOIN civicrm_contact ON civicrm_email.contact_id = civicrm_contact.id
 WHERE      (civicrm_email.is_bulkmail = 1 OR civicrm_email.is_primary = 1)
-AND        contact_a.id = {$groupContact}
-AND        contact_a.do_not_email = 0
-AND        contact_a.is_deceased <> 1
+AND        civicrm_contact.id = {$groupContact}
+AND        civicrm_contact.do_not_email = 0
+AND        civicrm_contact.is_deceased <> 1
 AND        civicrm_email.on_hold = 0
-AND        contact_a.is_opt_out = 0
-{$aclWhere}
+AND        civicrm_contact.is_opt_out = 0
 GROUP BY   civicrm_email.id
 ORDER BY   civicrm_email.is_bulkmail DESC
 ";
@@ -3181,6 +3176,20 @@ AND        m.id = %1
     );
     // Identical keys & values
     return array_combine($tables, $tables);
+  }
+
+  /**
+   * Get the public view url.
+   *
+   * @param int $id
+   * @param bool $absolute
+   *
+   * @return string
+   */
+  public static function getPublicViewUrl($id, $absolute = TRUE) {
+    if ((civicrm_api3('Mailing', 'getvalue', array('id' => $id, 'return' => 'visibility'))) === 'Public Pages') {
+      return CRM_Utils_System::url('civicrm/mailing/view', array('id' => $id), $absolute, NULL, TRUE, TRUE);
+    }
   }
 
 }

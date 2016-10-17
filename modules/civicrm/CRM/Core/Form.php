@@ -67,16 +67,24 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
   public $_defaults = array();
 
   /**
-   * The options passed into this form
+   * (QUASI-PROTECTED) The options passed into this form
+   *
+   * This field should marked `protected` and is not generally
+   * intended for external callers, but some edge-cases do use it.
+   *
    * @var mixed
    */
-  protected $_options = NULL;
+  public $_options = NULL;
 
   /**
-   * The mode of operation for this form
+   * (QUASI-PROTECTED) The mode of operation for this form
+   *
+   * This field should marked `protected` and is not generally
+   * intended for external callers, but some edge-cases do use it.
+   *
    * @var int
    */
-  protected $_action;
+  public $_action;
 
   /**
    * Available payment processors.
@@ -242,7 +250,7 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
       $this->_name = CRM_Utils_String::getClassName(CRM_Utils_System::getClassName($this));
     }
 
-    $this->HTML_QuickForm_Page($this->_name, $method);
+    parent::__construct($this->_name, $method);
 
     $this->_state =& $state;
     if ($this->_state) {

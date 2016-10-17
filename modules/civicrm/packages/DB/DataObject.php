@@ -2471,21 +2471,6 @@ class DB_DataObject extends DB_DataObject_Overload
             return $this->raiseError($result);
         }
 
-        /* CRM-3225 */
-        if (function_exists('variable_get') && variable_get('dev_query', 0)) {
-            // this is for drupal devel module
-            // If devel.module query logging is enabled, prepend a comment with the username and calling function
-            // to the SQL string.
-            $bt = debug_backtrace();
-            // t() may not be available yet so we don't wrap 'Anonymous'
-            $name = $user->uid ? $user->name : variable_get('anonymous', 'Anonymous');
-            $query = $bt[3]['function'] ."\n/* ". $name .' */ '. str_replace("\n ", '', $string);
-            list($usec, $sec) = explode(' ', microtime());
-            $stop = (float)$usec + (float)$sec;
-            $diff = $stop - $time;
-            $queries[] = array($query, $diff);
-        }
-
         $action = strtolower(substr(trim($string),0,6));
 
         if (!empty($_DB_DATAOBJECT['CONFIG']['debug']) || defined('CIVICRM_DEBUG_LOG_QUERY')) {
@@ -4292,13 +4277,6 @@ class DB_DataObject extends DB_DataObject_Overload
     {
         global $_DB_DATAOBJECT;
 
-        if (isset($_DB_DATAOBJECT['RESULTS'][$this->_DB_resultid])) {
-            if ( is_resource( $_DB_DATAOBJECT['RESULTS'][$this->_DB_resultid]->result ) ) {
-                mysql_free_result( $_DB_DATAOBJECT['RESULTS'][$this->_DB_resultid]->result );
-            }
-            unset($_DB_DATAOBJECT['RESULTS'][$this->_DB_resultid]);
-        }
-
         if (isset($_DB_DATAOBJECT['RESULTFIELDS'][$this->_DB_resultid])) {
             unset($_DB_DATAOBJECT['RESULTFIELDS'][$this->_DB_resultid]);
         }
@@ -4311,7 +4289,17 @@ class DB_DataObject extends DB_DataObject_Overload
         if (isset($_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5])) {
             $_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5]->num_rows = array();
         }
-
+      if (is_array($this->_link_loaded)) {
+        foreach ($this->_link_loaded as $do) {
+          if (
+            !empty($this->{$do}) &&
+            is_object($this->{$do}) &&
+            method_exists($this->{$do}, 'free')
+          ) {
+            $this->{$do}->free();
+          }
+        }
+      }
     }
 
 
@@ -4345,6 +4333,10 @@ class DB_DataObject extends DB_DataObject_Overload
     return '';
   }
 
+  public function lastInsertId() {
+    $DB = &$_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
+    return $DB->lastInsertId();
+  }
 
 }
 // technially 4.3.2RC1 was broken!!
