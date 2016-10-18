@@ -62,8 +62,8 @@ define('CIVICRM_MEMCACHE_TIMEOUT', get_config_value($bbconfig, 'cache.memcache.t
 define('CIVICRM_MEMCACHE_PREFIX', $servername);
 
 // SAGE API constants
-define('SAGE_API_KEY', get_config_value($bbconfig, 'sage.api.key', 'NO_KEY');
-define('SAGE_API_BASE', get_config_value($bbconfig, 'sage.api.base', 'NO_API');
+define('SAGE_API_KEY', get_config_value($bbconfig, 'sage.api.key', 'NO_KEY'));
+define('SAGE_API_BASE', get_config_value($bbconfig, 'sage.api.base', 'NO_API'));
 
 
 //temporary debugging statements
