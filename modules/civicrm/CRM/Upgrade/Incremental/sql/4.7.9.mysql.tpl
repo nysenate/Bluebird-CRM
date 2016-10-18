@@ -48,6 +48,9 @@ SELECT @option_value_rel_id_dr := value FROM civicrm_option_value WHERE option_g
 SELECT @financial_type_id_md := max(id) FROM civicrm_financial_type WHERE name = 'Member Dues';
 SELECT @financial_type_id_ef := max(id) FROM civicrm_financial_type WHERE name = 'Event Fee';
 
+-- NYSS
+SET FOREIGN_KEY_CHECKS=0;
+
 INSERT INTO `civicrm_entity_financial_account`
   (entity_table, entity_id, account_relationship, financial_account_id)
 VALUES
@@ -62,3 +65,6 @@ INSERT INTO
   `civicrm_option_value` (`option_group_id`, {localize field='label'}label{/localize}, `value`, `name`, `grouping`, `filter`, `is_default`, `weight`, {localize field='description'}`description`{/localize}, `is_optgroup`, `is_reserved`, `is_active`, `component_id`, `visibility_id`)
 VALUES
 (@option_group_id_act, {localize}'{ts escape="sql"}Close Accounting Period{/ts}'{/localize}, @option_group_id_act_val+1, 'Close Accounting Period', NULL, 0, 0, @option_group_id_act_wt+1, {localize}'Close Accounting Period'{/localize}, 0, 1, 1, 2, NULL);
+
+-- NYSS
+SET FOREIGN_KEY_CHECKS=1;
