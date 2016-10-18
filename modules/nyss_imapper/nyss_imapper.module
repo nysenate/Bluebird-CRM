@@ -1,7 +1,6 @@
 <?php
 
-function nyss_imapper_init()
-{
+function nyss_imapper_init() {
   if (substr(request_path(), 0, 13) == "civicrm/imap/") {
     // civicrm_initialize(); //Make sure to include jquery first
     $module_path = drupal_get_path('module', 'nyss_imapper');
@@ -9,13 +8,12 @@ function nyss_imapper_init()
     drupal_add_css('./sites/default/themes/Bluebird/css/tags/tags.css');
     drupal_add_js($module_path.'/nyss_imapper.js');
     drupal_add_js('./sites/default/themes/Bluebird/scripts/bbtree.js');
+
+    //DataTables fixedHeader plugin (no longer in civi core)
+    drupal_add_js($module_path.'/DataTablesPlugins/FixedHeader.js');
   }
 }
 
-
-function nyss_imapper_civicrm_xmlMenu(&$files)
-{
+function nyss_imapper_civicrm_xmlMenu(&$files) {
   $files[] = dirname(__FILE__).DIRECTORY_SEPARATOR.'nyss_imapper.xml';
 }
-
-?>

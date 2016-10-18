@@ -196,7 +196,7 @@ class CRM_NYSS_IMAP_AJAX
         WHERE im.status = ".self::STATUS_UNMATCHED." $rangeSql
         GROUP BY im.id";
     }
-    else if ($list_type == self::STATUS_MATCHED) {
+    elseif ($list_type == self::STATUS_MATCHED) {
       $list_key = 'Processed';
       $query = "
         SELECT im.id, im.sender_name, im.sender_email, im.subject, im.forwarder,
@@ -218,10 +218,13 @@ class CRM_NYSS_IMAP_AJAX
     }
 
     $res = mysql_query($query, self::db());
+    $dao = CRM_Core_DAO::executeQuery($query);
+    //Civi::log()->debug('getMessageList', array('$res' => $res, 'dao' => $dao));//NYSS
+
     $msgCount = 0;
-    while ($row = mysql_fetch_assoc($res)) {
-      $id = $row['id'];
-      $resultData[$list_key][$id] = self::postProcess($row);
+    while ($dao->fetch()) {
+      $id = $dao->id;
+      $resultData[$list_key][$id] = self::postProcess($dao);
       $msgCount++;
     }
 
@@ -236,6 +239,7 @@ class CRM_NYSS_IMAP_AJAX
       print_r($resultData);
       echo "\n</pre>\n";
     }
+    //Civi::log()->debug('getMessageList', array('resultData' => $resultData));//NYSS
 
     return $resultData;
   } // getMessageList()
