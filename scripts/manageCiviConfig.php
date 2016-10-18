@@ -369,12 +369,9 @@ function modifyParam(&$params, $name, $val)
 // Modify the entire configuration in-memory.
 function modifyConfig(&$cfg, $bbcfg)
 {
-  $server_name = $bbcfg['servername'];
   $appdir = $bbcfg['app.rootdir'];
+  $datadir = $bbcfg['data.rootdir'];
   $data_dirname = $bbcfg['data_dirname'];
-  $datapath = "data/$data_dirname";
-  $druppath = "$datapath/drupal";
-  $pubpath = "$datapath/pubfiles";
   $incemail = _getval($bbcfg, 'search.include_email_in_name', 0);
   $incwild =  _getval($bbcfg, 'search.include_wildcard_in_name', 0);
   $batchlimit = _getval($bbcfg, 'mailer.batch_limit', 1000);
@@ -395,12 +392,12 @@ function modifyConfig(&$cfg, $bbcfg)
     modifyParam($cs, 'wkhtmltopdfPath', $wkpath);
 
     modifyParam($cs, 'uploadDir', "upload/");
-    modifyParam($cs, 'imageUploadDir', "$appdir/drupal/$pubpath");
+    modifyParam($cs, 'imageUploadDir', "$datadir/$data_dirname/pubfiles");
     modifyParam($cs, 'customFileUploadDir', "custom/");
     modifyParam($cs, 'customTemplateDir', "$appdir/civicrm/custom/templates");
     modifyParam($cs, 'customPHPPathDir', "$appdir/civicrm/custom/php");
 
-    modifyParam($cs, 'imageUploadURL', "http://$server_name/$pubpath");
+    modifyParam($cs, 'imageUploadURL', "data/$data_dirname/pubfiles");
     modifyParam($cs, 'userFrameworkResourceURL', "sites/all/modules/civicrm/");
 
     if (isset($cs['mailing_backend'])) {
