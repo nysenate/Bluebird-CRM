@@ -29,8 +29,6 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC (c) 2004-2016
- * $Id$
- *
  */
 class CRM_Report_Form_Case_Demographics extends CRM_Report_Form {
 
@@ -39,10 +37,21 @@ class CRM_Report_Form_Case_Demographics extends CRM_Report_Form {
   protected $_emailField = FALSE;
 
   protected $_phoneField = FALSE;
+  /**
+   * This report has not been optimised for group filtering.
+   *
+   * The functionality for group filtering has been improved but not
+   * all reports have been adjusted to take care of it. This report has not
+   * and will run an inefficient query until fixed.
+   *
+   * CRM-19170
+   *
+   * @var bool
+   */
+  protected $groupFilterNotOptimised = TRUE;
 
   /**
-   */
-  /**
+   * Class constructor.
    */
   public function __construct() {
     $this->_columns = array(
@@ -180,7 +189,7 @@ class CRM_Report_Form_Case_Demographics extends CRM_Report_Form {
           ),
         ),
       ),
-           );
+    );
 
     $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;
@@ -218,7 +227,7 @@ where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_colu
         'ext' => $curExt,
       );
     }
-    
+
     $this->_genders = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'gender_id');
 
     parent::__construct();
@@ -279,7 +288,7 @@ where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_colu
             LEFT JOIN civicrm_case_activity cca ON cca.case_id = {$this->_aliases['civicrm_case']}.id
             LEFT JOIN civicrm_activity {$this->_aliases['civicrm_activity']} ON {$this->_aliases['civicrm_activity']}.id = cca.activity_id
         ";
-        
+
     foreach ($this->_columns as $t => $c) {
       if (substr($t, 0, 13) == 'civicrm_value' ||
         substr($t, 0, 12) == 'custom_value'
@@ -289,7 +298,7 @@ where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_colu
           'Activity') ? "{$this->_aliases['civicrm_activity']}.id" : "{$this->_aliases['civicrm_contact']}.id";
       }
     }
-            
+
     if ($this->_emailField) {
       $this->_from .= "
             LEFT JOIN  civicrm_email {$this->_aliases['civicrm_email']}

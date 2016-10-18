@@ -46,8 +46,6 @@ class CRM_Group_Page_AJAX {
       $params['page'] = 1;
       $params['rp'] = 0;
       $groups = CRM_Contact_BAO_Group::getGroupListSelector($params);
-
-      CRM_Utils_JSON::output($groups);
     }
     else {
       $requiredParams = array();
@@ -86,8 +84,14 @@ class CRM_Group_Page_AJAX {
         $group['description'] = str_replace('\n', '<br />', $group['description']);
       }
 
-      CRM_Utils_JSON::output($groups);
+      
     }
+
+    if (!empty($_GET['is_unit_test'])) {
+      return $groups;
+    }
+
+    CRM_Utils_JSON::output($groups);
   }
 
 }

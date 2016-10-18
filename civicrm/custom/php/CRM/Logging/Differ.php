@@ -79,8 +79,7 @@ class CRM_Logging_Differ {
     $diffs = array();
 
     $params = array(
-      1 => array($this->log_conn_id, 'Integer'),
-      2 => array($this->log_date, 'String'),
+      1 => array($this->log_conn_id, 'String'),
     );
 
     $logging = new CRM_Logging_Schema();
@@ -176,9 +175,9 @@ LEFT JOIN civicrm_activity_contact source ON source.activity_id = lt.id AND sour
     $sql = "
 SELECT DISTINCT lt.id FROM `{$this->db}`.`log_$table` lt
 {$join}
-WHERE lt.log_conn_id = %1 AND
-      lt.log_date BETWEEN DATE_SUB(%2, INTERVAL {$this->interval}) AND DATE_ADD(%2, INTERVAL {$this->interval})
-      {$contactIdClause}";
+WHERE lt.log_conn_id = %1
+    $logDateClause
+    {$contactIdClause}";
 
     $dao = CRM_Core_DAO::executeQuery($sql, $params);
     while ($dao->fetch()) {
@@ -199,16 +198,24 @@ WHERE lt.log_conn_id = %1 AND
     $diffs = array();
 
     $params = array(
-      1 => array($this->log_conn_id, 'Integer'),
-      2 => array($this->log_date, 'String'),
+      1 => array($this->log_conn_id, 'String'),
       3 => array($id, 'Integer'),
     );
 
     // look for all the changes in the given connection that happened less than {$this->interval} s later than log_date to the given id to catch multi-query changes
-    $changedSQL = "SELECT * FROM `{$this->db}`.`log_$table` WHERE log_conn_id = %1 AND log_date >= %2 AND log_date < DATE_ADD(%2, INTERVAL {$this->interval}) AND id = %3 ORDER BY log_date DESC LIMIT 1";
+    $logDateClause = "";
+    if ($this->log_date && $this->interval) {
+      $logDateClause = " AND log_date >= %2 AND log_date < DATE_ADD(%2, INTERVAL {$this->interval})";
+      $params[2] = array($this->log_date, 'String');
+    }
+
+    $changedSQL = "SELECT * FROM `{$this->db}`.`log_$table` WHERE log_conn_id = %1 $logDateClause AND id = %3 ORDER BY log_date DESC LIMIT 1";
 
     $changedDAO = CRM_Core_DAO::executeQuery($changedSQL, $params);
     while ($changedDAO->fetch()) {
+      if (empty($this->log_date) && !self::checkLogCanBeUsedWithNoLogDate($changedDAO->log_date)) {
+        throw new CRM_Core_Exception('The connection date must be passed in to disambiguate this logging entry per CRM-18193');
+      }
       $changed = $changedDAO->toArray();
 
       // return early if nothing found
@@ -232,6 +239,7 @@ WHERE lt.log_conn_id = %1 AND
           break;
 
         case 'Update':
+          $params[2] = array($changedDAO->log_date, 'String');
           // look for the previous state (different log_conn_id) of the given id
           $originalSQL = "SELECT * FROM `{$this->db}`.`log_$table` WHERE log_conn_id != %1 AND log_date < %2 AND id = %3 ORDER BY log_date DESC LIMIT 1";
           $original = $this->sqlToArray($originalSQL, $params);
@@ -249,7 +257,9 @@ WHERE lt.log_conn_id = %1 AND
       $changed  = array_map('trim', $changed);
 
       // populate $diffs with only the differences between $changed and $original
-      $skipped = array('log_action', 'log_conn_id', 'log_date', 'log_user_id', 'log_job_id');//NYSS add job id
+      //NYSS 5994 exclude is_billing //NYSS 6914 //NYSS 5995
+      //NYSS add job id
+      $skipped = array('log_action', 'log_conn_id', 'log_date', 'log_user_id', 'log_job_id', 'contact_id', 'entity_id', 'id', 'is_billing', 'is_test', 'is_auto', 'is_current_revision', 'hash');
       foreach (array_keys(array_diff_assoc($changed, $original)) as $diff) {
         if (in_array($diff, $skipped)) {
           continue;
@@ -263,7 +273,7 @@ WHERE lt.log_conn_id = %1 AND
         // we need to make sure separators are trimmed
         if ($diff == 'case_type_id') {
           foreach (array('original', 'changed') as $var) {
-            if (!empty($$var[$diff])) {
+            if (!empty(${$var[$diff]})) {
               $holder =& $$var;
               $val = explode(CRM_Case_BAO_Case::VALUE_SEPARATOR, $holder[$diff]);
               $holder[$diff] = CRM_Utils_Array::value(1, $val);
@@ -277,6 +287,9 @@ WHERE lt.log_conn_id = %1 AND
           'field' => $diff,
           'from' => CRM_Utils_Array::value($diff, $original),
           'to' => CRM_Utils_Array::value($diff, $changed),
+          'table' => $table,
+          'log_date' => $changed['log_date'],
+          'log_conn_id' => $changed['log_conn_id'],
         );
       }
     }
@@ -285,11 +298,16 @@ WHERE lt.log_conn_id = %1 AND
   }
 
   /**
-   * @param $table
+   * Get the titles & metadata option values for the table.
+   *
+   * For custom fields the titles may change so we use the ones as at the reference date.
+   *
+   * @param string $table
+   * @param string $referenceDate
    *
    * @return array
    */
-  public function titlesAndValuesForTable($table) {
+  public function titlesAndValuesForTable($table, $referenceDate) {
     // static caches for subsequent calls with the same $table
     static $titles = array();
     static $values = array();
@@ -341,7 +359,7 @@ WHERE lt.log_conn_id = %1 AND
         }
       }
       elseif (substr($table, 0, 14) == 'civicrm_value_') {
-        list($titles[$table], $values[$table]) = $this->titlesAndValuesForCustomDataTable($table);
+        list($titles[$table], $values[$table]) = $this->titlesAndValuesForCustomDataTable($table, $referenceDate);
       }
       else {
         $titles[$table] = $values[$table] = array();
@@ -364,17 +382,20 @@ WHERE lt.log_conn_id = %1 AND
   }
 
   /**
-   * @param $table
+   * Get the field titles & option group values for the custom table as at the reference date.
+   *
+   * @param string $table
+   * @param string $referenceDate
    *
    * @return array
    */
-  private function titlesAndValuesForCustomDataTable($table) {
+  private function titlesAndValuesForCustomDataTable($table, $referenceDate) {
     $titles = array();
     $values = array();
 
     $params = array(
-      1 => array($this->log_conn_id, 'Integer'),
-      2 => array($this->log_date, 'String'),
+      1 => array($this->log_conn_id, 'String'),
+      2 => array($referenceDate, 'String'),
       3 => array($table, 'String'),
     );
 
@@ -419,7 +440,100 @@ ORDER BY log_date
           break;
       }
     }
+
     return array($titles, $values);
   }
-}
 
+  /**
+   * Get all changes made in the connection.
+   *
+   * @param array $tables
+   *   Array of tables to inspect.
+   *
+   * @return array
+   */
+  public function getAllChangesForConnection($tables) {
+    $params = array(1 => array($this->log_conn_id, 'String'));
+    foreach ($tables as $table) {
+      if (empty($sql)) {
+        $sql = " SELECT '{$table}' as table_name, id FROM {$this->db}.log_{$table} WHERE log_conn_id = %1";
+      }
+      else {
+        $sql .= " UNION SELECT '{$table}' as table_name, id FROM {$this->db}.log_{$table} WHERE log_conn_id = %1";
+      }
+    }
+    $diffs = array();
+    $dao = CRM_Core_DAO::executeQuery($sql, $params);
+    while ($dao->fetch()) {
+      if (empty($this->log_date)) {
+        $this->log_date = CRM_Core_DAO::singleValueQuery("SELECT log_date FROM {$this->db}.log_{$table} WHERE log_conn_id = %1 LIMIT 1", $params);
+      }
+      $diffs = array_merge($diffs, $this->diffsInTableForId($dao->table_name, $dao->id));
+    }
+    return $diffs;
+  }
+
+  /**
+   * Check that the log record relates to a unique log id.
+   *
+   * If the record was recorded using the old non-unique style then the
+   * log_date
+   * MUST be set to get the (fairly accurate) list of changes. In this case the
+   * nasty 10 second interval rule is applied.
+   *
+   * See  CRM-18193 for a discussion of unique log id.
+   *
+   * @param string $change_date
+   *
+   * @return bool
+   * @throws \CiviCRM_API3_Exception
+   */
+  public static function checkLogCanBeUsedWithNoLogDate($change_date) {
+
+    if (civicrm_api3('Setting', 'getvalue', array('name' => 'logging_all_tables_uniquid', 'group' => 'CiviCRM Preferences'))) {
+      return TRUE;
+    };
+    $uniqueDate = civicrm_api3('Setting', 'getvalue', array(
+      'name' => 'logging_uniqueid_date',
+      'group' => 'CiviCRM Preferences',
+    ));
+    if (strtotime($uniqueDate) <= strtotime($change_date)) {
+      return TRUE;
+    }
+    else {
+      return FALSE;
+    }
+
+  }
+
+  /**
+   * Filter a MySQL interval expression.
+   *
+   * @param string $interval
+   * @return string
+   *   Normalized version of $interval
+   * @throws \CRM_Core_Exception
+   *   If the expression is invalid.
+   * @see https://dev.mysql.com/doc/refman/5.5/en/date-and-time-functions.html#function_date-add
+   */
+  private static function filterInterval($interval) {
+    if (empty($interval)) {
+      return $interval;
+    }
+
+    $units = array('MICROSECOND', 'SECOND', 'MINUTE', 'HOUR', 'DAY', 'WEEK', 'MONTH', 'QUARTER', 'YEAR');
+    $interval = strtoupper($interval);
+    if (preg_match('/^([0-9]+) ([A-Z]+)$/', $interval, $matches)) {
+      if (in_array($matches[2], $units)) {
+        return $interval;
+      }
+    }
+    if (preg_match('/^\'([0-9: \.\-]+)\' ([A-Z]+)_([A-Z]+)$/', $interval, $matches)) {
+      if (in_array($matches[2], $units) && in_array($matches[3], $units)) {
+        return $interval;
+      }
+    }
+    throw new CRM_Core_Exception("Malformed interval");
+  }
+
+}

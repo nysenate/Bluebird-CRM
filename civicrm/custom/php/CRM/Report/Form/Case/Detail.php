@@ -200,11 +200,11 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
           ),
           'country_id' => array('title' => ts('Country')),
         ),
-        'grouping'=> 'contact-fields',
+        'grouping' => 'contact-fields',
         'filters' => array(
           'country_id' => array(
             'title' => ts('Country'),
-            'type'         => CRM_Utils_Type::T_INT,
+            'type' => CRM_Utils_Type::T_INT,
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Core_PseudoConstant::country(),
           ),
@@ -214,8 +214,8 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Core_PseudoConstant::stateProvince(),
           ),
-          ),
-          ),
+        ),
+      ),
       'civicrm_worldregion' => array(
         'dao' => 'CRM_Core_DAO_Worldregion',
         'filters' => array(
