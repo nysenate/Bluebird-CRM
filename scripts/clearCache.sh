@@ -10,6 +10,7 @@
 # Revised: 2013-05-14 - reorder drush commands; added more Drupal cache tables
 # Revised: 2013-07-11 - modularize functionality; fix permissions problem
 # Revised: 2016-04-28 - removed data.basename; using data.dirname instead
+# Revised: 2016-10-19 - call "drush cc all" when using --all option
 #
 
 prog=`basename $0`
@@ -140,6 +141,13 @@ drush_cache_clear_cssjs() {
 }
 
 
+drush_cache_clear_all() {
+  inst="$1"
+  echo "Running Drush cache-clear for all caches"
+  $drush $inst cc all
+}
+
+
 usage() {
   echo "Usage: $prog [--all] [--db-caches-only] [--drush-only] [--tmp-only] [--tpl-only] [--wd-only] instanceName" >&2
 }
@@ -209,6 +217,7 @@ clear_civicrm_dashboard $instance
 if [ $clear_all -eq 1 ]; then
   clear_drupal_sessions $instance
   clear_drupal_watchdog $instance
+  drush_cache_clear_all $instance
 fi
 
 exit 0
