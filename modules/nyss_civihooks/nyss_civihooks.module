@@ -661,9 +661,8 @@ function nyss_civihooks_civicrm_pre($op, $objectName, $objectId, &$objectRef) {
 } // nyss_civihooks_civicrm_pre()
 
 
-function nyss_civihooks_civicrm_pageRun(&$page)
-{
-  //CRM_Core_Error::debug($page);
+function nyss_civihooks_civicrm_pageRun(&$page) {
+  //CRM_Core_Error::debug_var('pageRun', $page);
   $pagename = $page->getVar('_name');
 
   _fixTitles();
