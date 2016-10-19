@@ -112,6 +112,9 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
+## set default config values for all existing mailings
+
+
 
 ## fix collation
 echo "$prog: fix collations"
