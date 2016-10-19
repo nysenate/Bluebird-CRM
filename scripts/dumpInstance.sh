@@ -12,6 +12,7 @@
 # Revised: 2013-07-12 - remove temp tables prior to dump; option to inhibit
 # Revised: 2013-10-18 - skip the Drupal sessions table
 # Revised: 2014-03-14 - append the Drupal sessions table schema to Drupal dump
+# Revised: 2016-10-19 - exit if temporary directory cannot be created
 #
 
 prog=`basename $0`
@@ -92,8 +93,11 @@ errcode=0
 time_start=$(date +%s)
 
 if [ "$archive_dump" ]; then
-  mkdir -p "$tmpdir"
-  pushd "$tmpdir"
+  if ! mkdir -p "$tmpdir"; then
+    echo "$prog: $tmpdir: Unable to create temporary directory; aborting" >&2
+    exit 1
+  fi
+  pushd "$tmpdir" || exit 1
 fi
 
 # Generate clean dump by remove temporary tables first.

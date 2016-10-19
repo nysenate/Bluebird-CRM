@@ -444,7 +444,7 @@ function modifyConfig(&$cfg, $bbcfg)
 
   if (isset($cfg['drupal']['variables'])) {
     $dv = &$cfg['drupal']['variables'];
-    modifyParam($dv, 'file_public_path', $druppath);
+    modifyParam($dv, 'file_public_path', "data/$data_dirname/drupal");
   }
 } // modifyConfig()
 
