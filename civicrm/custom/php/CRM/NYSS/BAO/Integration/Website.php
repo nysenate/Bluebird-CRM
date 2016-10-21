@@ -1443,6 +1443,9 @@ class CRM_NYSS_BAO_Integration_Website
     if (!empty($params->event_info->name)) {
       $tagName = $params->event_info->name;
     }
+    elseif (!empty($params->event_info->$alternate)) {
+      $tagName = $params->event_info->$alternate;
+    }
     elseif (!empty($params->$alternate)) {
       $tagName = $params->$alternate;
     }
