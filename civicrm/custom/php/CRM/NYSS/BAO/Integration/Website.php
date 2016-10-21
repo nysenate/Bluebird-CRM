@@ -412,14 +412,7 @@ class CRM_NYSS_BAO_Integration_Website
   } //processBill()
 
 
-  static function processPetition($contactId, $action, $params)
-  {
-    //if signature update action, we are only processing the contact;
-    //no changes to petition data
-    if ($action == 'signature update') {
-      return true;
-    }
-
+  static function processPetition($contactId, $action, $params) {
     //find out if tag exists
     $parentId = CRM_Core_DAO::singleValueQuery("
       SELECT id
@@ -429,15 +422,9 @@ class CRM_NYSS_BAO_Integration_Website
     ");
 
     //find tag name
-    $tagName = '';
-    if (!empty($params->event_info->name)) {
-      $tagName = $params->event_info->name;
-    }
-    elseif (!empty($params->petition_name)) {
-      $tagName = $params->petition_name;
-    }
-    else {
-      CRM_Core_Error::debug_var('processPetition: unable to identify tag name', $params, true, true, 'integration');
+    $tagName = self::getTagName($params, 'petition_name');
+    if (empty($tagName)) {
+      CRM_Core_Error::debug_var('processPetition: unable to identify tag name in $params', $params, true, true, 'integration');
       return false;
     }
 
@@ -472,13 +459,36 @@ class CRM_NYSS_BAO_Integration_Website
     //clear tag cache; entity_tag sometimes fails because newly created tag isn't recognized by pseudoconstant
     civicrm_api3('Tag', 'getfields', array('cache_clear' => 1));
 
-    $apiAction = ($action == 'sign') ? 'create' : 'delete';
-    $et = civicrm_api('entity_tag', $apiAction, array(
-      'version' => 3,
-      'entity_table' => 'civicrm_contact',
-      'entity_id' => $contactId,
-      'tag_id' => $tagId,
-    ));
+    $apiAction = (in_array($action, array('sign', 'signature update'))) ? 'create' : 'delete';
+    try {
+      $etID = CRM_Core_DAO::singleValueQuery("
+        SELECT id
+        FROM civicrm_entity_tag
+        WHERE entity_table = 'civicrm_contact'
+          AND entity_id = %1
+          AND tag_id = %2
+        LIMIT 1
+      ", array(1 => array($contactId, 'Integer'), 2 => array($tagId, 'Integer')));
+
+      if (!$etID || $action == 'delete') {
+        $et = civicrm_api3('entity_tag', $apiAction, array(
+          'entity_table' => 'civicrm_contact',
+          'entity_id' => $contactId,
+          'tag_id' => $tagId,
+        ));
+      }
+      else {
+        //get existing value so we can return it
+        $et = civicrm_api3('entity_tag', 'get', array(
+          'entity_table' => 'civicrm_contact',
+          'entity_id' => $contactId,
+          'tag_id' => $tagId,
+        ));
+      }
+    }
+    catch (CiviCRM_API3_Exception $e) {
+      CRM_Core_Error::debug_var('CRM_NYSS_BAO_Integration_Website::processPetition $e', $e);
+    }
 
     return $et;
   } //processPetition()
@@ -724,6 +734,10 @@ class CRM_NYSS_BAO_Integration_Website
       )),
     );
     //CRM_Core_Error::debug_var('actParams', $actParams);
+
+    //wrap activity and custom data in a transaction
+    $transaction = new CRM_Core_Transaction();
+
     $act = civicrm_api3('activity', 'create', $actParams);
     if ($act['is_error']) {
       return $act;
@@ -750,7 +764,19 @@ class CRM_NYSS_BAO_Integration_Website
     }
     //CRM_Core_Error::debug_var('actParams', $actParams);
     $cf = civicrm_api3('custom_value', 'create', $custParams);
-    return $cf;
+
+    $transaction->commit();
+
+    if (!empty($cf) && empty($cf['is_error'])) {
+      return $cf;
+    }
+
+    return array(
+      'is_error' => 1,
+      'details' => 'Unable to store survey',
+      'form_id' => $params->form_id,
+      'contact_id' => $contactId,
+    );
   } //processSurvey()
 
 
@@ -1397,4 +1423,22 @@ class CRM_NYSS_BAO_Integration_Website
     echo CRM_Utils_JSON::encodeDataTableSelector($newcontacts, $sEcho, $iTotal, $iFilteredTotal, $selectorElements);
     CRM_Utils_System::civiExit();
   } //getActivityStream()
+
+  /*
+   * helper to get tag name as it could be passed in different ways
+   * $params the parameter object passed to the record processing function
+   * $alternate the alternate column name/param name where we may need to look
+   *   for backwards compatibility
+   */
+  static function getTagName($params, $alternate) {
+    $tagName = '';
+    if (!empty($params->event_info->name)) {
+      $tagName = $params->event_info->name;
+    }
+    elseif (!empty($params->$alternate)) {
+      $tagName = $params->$alternate;
+    }
+
+    return $tagName;
+  }//getTagName
 }//end class

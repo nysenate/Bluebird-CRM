@@ -195,7 +195,8 @@ class CRM_Integration_Process
           else {
             $result = CRM_NYSS_BAO_Integration_Website::processPetition($cid, $row->msg_action, $params);
             $activity_type = 'Petition';
-            $activity_details = "{$row->msg_action} :: {$params->petition_name}";
+            $tagName = CRM_NYSS_BAO_Integration_Website::getTagName($params, 'petition_name');
+            $activity_details = "{$row->msg_action} :: {$tagName}";
           }
           break;
 
@@ -229,7 +230,7 @@ class CRM_Integration_Process
           $stats['unprocessed'][$row->msg_type][] = $row;
       }
 
-      if ($result['is_error']) {
+      if ($result['is_error'] || $result == FALSE) {
         bbscript_log(LL::ERROR, 'Unable to process row', $result);
         $stats['error'][] = $result;
       }
