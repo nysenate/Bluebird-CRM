@@ -110,9 +110,23 @@ class CRM_NYSS_IMAP_Message
   // Cache the message headers after retrieving them on the first call.
   public function fetchHeaders()
   {
+    //TODO why do we truncate to 50 characters?
     if ($this->_headers == null) {
       $this->_headers = imap_headerinfo($this->getConnection(), $this->_msgnum, $this->_from_limit, $this->_subj_limit);
     }
+
+    //deal with various special characters that create problems
+    if (strpos($this->_headers->subject, '?UTF-8?') !== false) {
+      $cleanSubject = mb_convert_encoding(mb_decode_mimeheader($this->_headers->subject), "HTML-ENTITIES", "UTF-8");
+      //TODO why do we truncate to 50 characters?
+      $cleanSubject = substr($cleanSubject, 0, 50);
+
+      //address some special characters manually (not ideal, but no easy workaround)
+      $search = array('&rsquo;');
+      $replace = array("'");
+      $this->_headers->fetchsubject = str_replace($search, $replace, $cleanSubject);
+    }
+
     return $this->_headers;
   } // fetchHeaders()
 
