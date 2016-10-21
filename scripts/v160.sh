@@ -113,8 +113,15 @@ sql="
 $execSql $instance -c "$sql" -q
 
 ## set default config values for all existing mailings
-
-
+sql="
+  SELECT @reply:=id FROM civicrm_mailing_component WHERE component_type = 'Reply' AND is_default = 1;
+  SELECT @unsubscribe:=id FROM civicrm_mailing_component WHERE component_type = 'Unsubscribe' AND is_default = 1;
+  SELECT @resubscribe:=id FROM civicrm_mailing_component WHERE component_type = 'Resubscribe' AND is_default = 1;
+  SELECT @optout:=id FROM civicrm_mailing_component WHERE component_type = 'OptOut' AND is_default = 1;
+  UPDATE civicrm_mailing
+  SET reply_id = @reply, unsubscribe_id = @unsubscribe, resubscribe_id = @resubscribe, optout_id = @optout;
+"
+$execSql $instance -c "$sql" -q
 
 ## fix collation
 echo "$prog: fix collations"
