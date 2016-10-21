@@ -71,7 +71,6 @@
   var oTable;
 
   cj(function() {
-    cj().crmAccordions();
     var filterSearchOnLoad = true;
     buildRecentContacts(filterSearchOnLoad);
 

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,16 +26,19 @@
 {* tpl for building Household related fields *}
 <table class="form-layout-compressed">
     <tr>
-       <td>
-         {$form.household_name.label}<br/>
+       <td>{$form.household_name.label}<br/>
          {$form.household_name.html}
        </td>
 
-       <td>
-         {$form.nick_name.label}<br/>
-         {$form.nick_name.html}
-       </td>
+       <td>{$form.nick_name.label}<br/>
+       {$form.nick_name.html}</td>
 
+       <td>{if $action == 1 and $contactSubType}&nbsp;{else}
+              {$form.contact_sub_type.label}<br />
+              {$form.contact_sub_type.html}
+           {/if}
+       </td>
+       {*NYSS*}
        <td>
        		{$form.contact_source.label}<br />
           {$form.contact_source.html|crmReplace:class:big}
@@ -48,12 +51,12 @@
         	<label for="internal_identifier">{ts}Internal Id{/ts}</label><br />
           {$contactId}
        </td>
-	</tr>
+     </tr>
 </table>
 
 {literal}
 <script type="text/javascript">
-  //7306
+  //NYSS 7306
   cj('label[for=household_name]').append(' <span class="crm-marker" title="This field is required.">*</span>');
 </script>
 {/literal}

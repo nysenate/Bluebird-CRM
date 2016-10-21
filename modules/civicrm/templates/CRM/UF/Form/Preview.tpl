@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,14 +23,12 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-{capture assign=infoTitle}{ts}Preview Mode{/ts}{/capture}
-{assign var="infoType" value="info"}
 {if $previewField}
-  {capture assign=infoMessage}<strong>{ts}Profile Field Preview{/ts}</strong>{/capture}
+  {capture assign=infoTitle}{ts}Profile Field Preview{/ts}{/capture}
 {else}
-  {capture assign=infoMessage}<strong>{ts}Profile Preview{/ts}</strong>{/capture}
+  {capture assign=infoTitle}{ts}Profile Preview{/ts}{/capture}
 {/if}
-{include file="CRM/common/info.tpl"}
+{include file="CRM/common/info.tpl" infoType="no-popup profile-preview-msg" infoMessage=" "}
 <div class="crm-form-block">
 
 {if ! empty( $fields )}
@@ -97,9 +95,6 @@
                       {/if}
                     {/foreach}
                   </table>
-                  {if $field.html_type eq 'Radio' and $form.formName eq 'Preview'}
-                    <span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$n}', '{$form.formName}'); return false;">{ts}clear{/ts}</a>)</span>
-                  {/if}
                 {/strip}
               </td>
             </tr>
@@ -113,8 +108,7 @@
                 {include file="CRM/Contact/Form/Edit/TagsAndGroups.tpl" type=$n}
               {elseif $n eq 'email_greeting' or  $n eq 'postal_greeting' or $n eq 'addressee'}
                 {include file="CRM/Profile/Form/GreetingType.tpl"}
-              {elseif ( $field.data_type eq 'Date' AND $element.skip_calendar NEQ true ) or
-                ( $n|substr:-5:5 eq '_date' ) or ( $field.name eq 'activity_date_time' )  }
+              {elseif ( $n|substr:-5:5 eq '_date' ) or ( $field.name eq 'activity_date_time' )  }
                 {include file="CRM/common/jcalendar.tpl" elementName=$form.$n.name}
               {elseif $n|substr:0:5 eq 'phone'}
                 {assign var="phone_ext_field" value=$n|replace:'phone':'phone_ext'}
@@ -123,22 +117,15 @@
                   &nbsp;{$form.$phone_ext_field.html}
                 {/if}
               {else}
-                {if $n|substr:0:4 eq 'url-'}
-                  {assign var="websiteType" value=$n|cat:"-website_type_id"}
-                  {$form.$websiteType.html}&nbsp;
-                  {elseif $n|substr:0:3 eq 'im-'}
+                {if $n|substr:0:3 eq 'im-'}
                   {assign var="provider" value=$n|cat:"-provider_id"}
                   {$form.$provider.html}&nbsp;
                 {/if}
                 {$form.$n.html}
                 {if $field.is_view eq 0}
-                  {if ( $field.html_type eq 'Radio' or  $n eq 'gender') and $form.formName eq 'Preview'}
-                    <span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$n}', '{$form.formName}'); return false;">{ts}clear{/ts}</a>)</span>
-                  {elseif $field.html_type eq 'Autocomplete-Select'}
+                  {if $field.html_type eq 'Autocomplete-Select'}
                     {if $field.data_type eq 'ContactReference'}
                     {include file="CRM/Custom/Form/ContactReference.tpl" element_name = $n}
-                      {else}
-                    {include file="CRM/Custom/Form/AutoComplete.tpl" element_name = $n}
                     {/if}
                   {/if}
                 {/if}

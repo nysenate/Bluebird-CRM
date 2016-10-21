@@ -29,152 +29,128 @@
   {ts}Print Production Export{/ts}
   </legend>
 
-  <div class="crm-summary-row">
-    <div class="crm-content">{include file="CRM/Contact/Form/Task.tpl"}</div>
+  <div class="crm-section">
+    <div class="content">{include file="CRM/Contact/Form/Task.tpl"}</div>
   </div>
 
   {if $form.avanti_job_id}
-    <div class="crm-summary-row">
-      <div class="crm-label">{$form.avanti_job_id.label}</div>
-      <div class="crm-content">{$form.avanti_job_id.html}</div>
+    <div class="crm-section">
+      <div class="label">{$form.avanti_job_id.label}</div>
+      <div class="content">{$form.avanti_job_id.html}</div>
     </div>
   {/if}
 
-  <div class="crm-summary-row">
-    <div class="crm-label">{$form.merge_households.label}</div>
-    <div class="crm-content">{$form.merge_households.html}</div>
+  <div class="crm-section">
+    <div class="label">{$form.merge_households.label}</div>
+    <div class="content">{$form.merge_households.html}</div>
   </div>
 
-  <div class="crm-summary-row">
-    <div class="crm-label">{$form.primaryAddress.label}</div>
-    <div class="crm-content">{$form.primaryAddress.html}
+  <div class="crm-section">
+    <div class="label">{$form.primaryAddress.label}</div>
+    <div class="content">{$form.primaryAddress.html}
       <span class="description">By default, we export BOE mailing addresses if they exist and the BOE physical address if flagged as primary. This option overrides that behavior and exports the primary address regardless of what BOE addresses exist.</span>
     </div>
   </div>
 
-  <div class="crm-summary-row">
-    <div class="crm-label">{$form.exclude_rt.label}</div>
-    <div class="crm-content">{$form.exclude_rt.html}
-      {literal}
-      <script type="text/javascript">
-        cj("select#exclude_rt").crmasmSelect({
-            addItemTarget: 'bottom',
-            animate: false,
-            highlight: true,
-            sortable: true,
-            respectParents: true
-            });
-      </script>
-      {/literal}
-    </div>
+  <div class="crm-section">
+    <div class="label">{$form.exclude_rt.label}</div>
+    <div class="content">{$form.exclude_rt.html}</div>
   </div>
 
-  <div class="crm-summary-row">
-    <div class="crm-label">{$form.excludeGroups.label}</div>
-    <div class="crm-content">{$form.excludeGroups.html}
-      {literal}
-      <script type="text/javascript">
-        cj("select#excludeGroups").crmasmSelect({
-            addItemTarget: 'bottom',
-            animate: false,
-            highlight: true,
-            sortable: true,
-            respectParents: true
-            });
-      </script>
-      {/literal}
-    </div>
+  <div class="crm-section">
+    <div class="label">{$form.excludeGroups.label}</div>
+    <div class="content">{$form.excludeGroups.html}</div>
   </div>
 
   {if $form.district_excludes}
-    <div class="crm-summary-row">
-      <div class="crm-label">{$form.district_excludes.label}</div>
-      <div class="crm-content">{$form.district_excludes.html}</div>
+    <div class="crm-section">
+      <div class="label">{$form.district_excludes.label}</div>
+      <div class="content">{$form.district_excludes.html}</div>
     </div>
   {/if}
 
-  <div class="crm-summary-row">
-    <div class="crm-label">{$form.excludeSeeds.label}</div>
-    <div class="crm-content">{$form.excludeSeeds.html}</div>
+  <div class="crm-section">
+    <div class="label">{$form.excludeSeeds.label}</div>
+    <div class="content">{$form.excludeSeeds.html}</div>
   </div>
 
-  <div class="crm-summary-row">
-    <div class="crm-label">{$form.restrict_district.label}</div>
-    <div class="crm-content">{$form.restrict_district.html}</div>
+  <div class="crm-section">
+    <div class="label">{$form.restrict_district.label}</div>
+    <div class="content">{$form.restrict_district.html}</div>
   </div>
 
-  <div class="crm-summary-row">
-    <div class="crm-label">{$form.restrict_state.label}</div>
-    <div class="crm-content">{$form.restrict_state.html}</div>
+  <div class="crm-section">
+    <div class="label">{$form.restrict_state.label}</div>
+    <div class="content">{$form.restrict_state.html}</div>
   </div>
 
   {*8952*}
-  <div class="crm-summary-row">
-    <div class="crm-label">{$form.restrict_zip.label}</div>
-    <div class="crm-content">{$form.restrict_zip.html}
+  <div class="crm-section">
+    <div class="label">{$form.restrict_zip.label}</div>
+    <div class="content">{$form.restrict_zip.html}
       <br /><span class="description">Enter a comma-separated list of zip codes to filter by.</span>
     </div>
   </div>
 
   {*7777*}
-  <div class="crm-summary-row">
-    <div class="crm-label">{$form.di_congressional_district_46.label}</div>
-    <div class="crm-content">{$form.di_congressional_district_46.html}</div>
+  <div class="crm-section">
+    <div class="label">{$form.di_congressional_district_46.label}</div>
+    <div class="content">{$form.di_congressional_district_46.html}</div>
   </div>
 
-  <div class="crm-summary-row">
-    <div class="crm-label">{$form.di_ny_assembly_district_48.label}</div>
-    <div class="crm-content">{$form.di_ny_assembly_district_48.html}</div>
+  <div class="crm-section">
+    <div class="label">{$form.di_ny_assembly_district_48.label}</div>
+    <div class="content">{$form.di_ny_assembly_district_48.html}</div>
   </div>
 
-  <div class="crm-summary-row">
-    <div class="crm-label">{$form.di_election_district_49.label}</div>
-    <div class="crm-content">{$form.di_election_district_49.html}</div>
+  <div class="crm-section">
+    <div class="label">{$form.di_election_district_49.label}</div>
+    <div class="content">{$form.di_election_district_49.html}</div>
   </div>
 
-  <div class="crm-summary-row">
-    <div class="crm-label">{$form.di_county_50.label}</div>
-    <div class="crm-content">{$form.di_county_50.html}</div>
+  <div class="crm-section">
+    <div class="label">{$form.di_county_50.label}</div>
+    <div class="content">{$form.di_county_50.html}</div>
   </div>
 
-  <div class="crm-summary-row">
-    <div class="crm-label">{$form.di_county_legislative_district_51.label}</div>
-    <div class="crm-content">{$form.di_county_legislative_district_51.html}</div>
+  <div class="crm-section">
+    <div class="label">{$form.di_county_legislative_district_51.label}</div>
+    <div class="content">{$form.di_county_legislative_district_51.html}</div>
   </div>
 
-  <div class="crm-summary-row">
-    <div class="crm-label">{$form.di_town_52.label}</div>
-    <div class="crm-content">{$form.di_town_52.html}</div>
+  <div class="crm-section">
+    <div class="label">{$form.di_town_52.label}</div>
+    <div class="content">{$form.di_town_52.html}</div>
   </div>
 
-  <div class="crm-summary-row">
-    <div class="crm-label">{$form.di_ward_53.label}</div>
-    <div class="crm-content">{$form.di_ward_53.html}</div>
+  <div class="crm-section">
+    <div class="label">{$form.di_ward_53.label}</div>
+    <div class="content">{$form.di_ward_53.html}</div>
   </div>
 
-  <div class="crm-summary-row">
-    <div class="crm-label">{$form.di_school_district_54.label}</div>
-    <div class="crm-content">{$form.di_school_district_54.html}</div>
+  <div class="crm-section">
+    <div class="label">{$form.di_school_district_54.label}</div>
+    <div class="content">{$form.di_school_district_54.html}</div>
   </div>
 
-  <div class="crm-summary-row">
-    <div class="crm-label">{$form.di_new_york_city_council_55.label}</div>
-    <div class="crm-content">{$form.di_new_york_city_council_55.html}</div>
+  <div class="crm-section">
+    <div class="label">{$form.di_new_york_city_council_55.label}</div>
+    <div class="content">{$form.di_new_york_city_council_55.html}</div>
   </div>
 
-  <div class="crm-summary-row">
-    <div class="crm-label">{$form.di_neighborhood_56.label}</div>
-    <div class="crm-content">{$form.di_neighborhood_56.html}</div>
+  <div class="crm-section">
+    <div class="label">{$form.di_neighborhood_56.label}</div>
+    <div class="content">{$form.di_neighborhood_56.html}</div>
   </div>
 
-  <div class="crm-summary-row">
-    <div class="crm-label">{$form.orderBy.label}</div>
-    <div class="crm-content">{$form.orderBy.html}</div>
+  <div class="crm-section">
+    <div class="label">{$form.orderBy.label}</div>
+    <div class="content">{$form.orderBy.html}</div>
   </div>
 
-  <div class="crm-summary-row">
-    <div class="crm-label"></div>
-    <div class="crm-content">{$form.buttons.html}</div>
+  <div class="crm-section">
+    <div class="label"></div>
+    <div class="content">{$form.buttons.html}</div>
   </div>
 
 </fieldset>

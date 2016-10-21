@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.5                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2014                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,7 +23,12 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
+
+ /**
+  * @package CRM
+  * @copyright CiviCRM LLC (c) 2004-2016
+  */
 
 /**
  * Class CRM_Utils_QueryFormatter
@@ -77,21 +81,23 @@ class CRM_Utils_QueryFormatter {
    */
   public static function singleton($fresh = FALSE) {
     if ($fresh || self::$singleton === NULL) {
-      $mode = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SEARCH_PREFERENCES_NAME, 'fts_query_mode', NULL, self::MODE_NONE);
+      $mode = Civi::settings()->get('fts_query_mode');
       self::$singleton = new CRM_Utils_QueryFormatter($mode);
     }
     return self::$singleton;
   }
 
   /**
-   * @var string eg MODE_NONE
+   * @var string
+   *   eg MODE_NONE
    */
   protected $mode;
 
   /**
-   * @param string $mode eg MODE_NONE
+   * @param string $mode
+   *   Eg MODE_NONE.
    */
-  function __construct($mode) {
+  public function __construct($mode) {
     $this->mode = $mode;
   }
 
@@ -111,7 +117,8 @@ class CRM_Utils_QueryFormatter {
 
   /**
    * @param string $text
-   * @param string $language eg LANG_SQL_LIKE, LANG_SQL_FTS, LANG_SOLR
+   * @param string $language
+   *   Eg LANG_SQL_LIKE, LANG_SQL_FTS, LANG_SOLR.
    * @throws CRM_Core_Exception
    * @return string
    */
@@ -123,12 +130,15 @@ class CRM_Utils_QueryFormatter {
       case self::LANG_SQL_FTS:
         $text = $this->_formatFts($text, $this->mode);
         break;
+
       case self::LANG_SQL_FTSBOOL:
         $text = $this->_formatFtsBool($text, $this->mode);
         break;
+
       case self::LANG_SQL_LIKE:
         $text = $this->_formatLike($text, $this->mode);
         break;
+
       default:
         $text = NULL;
     }
@@ -140,6 +150,14 @@ class CRM_Utils_QueryFormatter {
     return $text;
   }
 
+  /**
+   * Format Fts.
+   *
+   * @param string $text
+   * @param $mode
+   *
+   * @return mixed
+   */
   protected function _formatFts($text, $mode) {
     $result = NULL;
 
@@ -183,6 +201,14 @@ class CRM_Utils_QueryFormatter {
     return $this->dedupeWildcards($result, '%');
   }
 
+  /**
+   * Format FTS.
+   *
+   * @param string $text
+   * @param $mode
+   *
+   * @return mixed
+   */
   protected function _formatFtsBool($text, $mode) {
     $result = NULL;
 
@@ -201,7 +227,7 @@ class CRM_Utils_QueryFormatter {
       $result = $this->mapWords($text, '+word');
     }
     elseif (preg_match('/^(["\']).*\1$/m', $text)) {
-      //if surrounded by quotes, use term as is
+      // if surrounded by quotes, use term as is
       $result = $text;
     }
     else {
@@ -234,6 +260,14 @@ class CRM_Utils_QueryFormatter {
     return $this->dedupeWildcards($result, '%');
   }
 
+  /**
+   * Format like.
+   *
+   * @param $text
+   * @param $mode
+   *
+   * @return mixed
+   */
   protected function _formatLike($text, $mode) {
     $result = NULL;
 
@@ -266,8 +300,10 @@ class CRM_Utils_QueryFormatter {
   }
 
   /**
-   * @param string $text user-supplied query string
-   * @param string $template a prototypical description of each word, eg "word%" or "word*" or "*word*"
+   * @param string $text
+   *   User-supplied query string.
+   * @param string $template
+   *   A prototypical description of each word, eg "word%" or "word*" or "*word*".
    * @return string
    */
   protected function mapWords($text, $template) {
@@ -317,6 +353,11 @@ class CRM_Utils_QueryFormatter {
     return $text;
   }
 
+  /**
+   * Get modes.
+   *
+   * @return array
+   */
   public static function getModes() {
     return array(
       self::MODE_NONE,
@@ -327,6 +368,11 @@ class CRM_Utils_QueryFormatter {
     );
   }
 
+  /**
+   * Get languages.
+   *
+   * @return array
+   */
   public static function getLanguages() {
     return array(
       self::LANG_SOLR,

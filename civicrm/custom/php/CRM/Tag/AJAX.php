@@ -1,13 +1,5 @@
 <?php
 
-require_once 'api/api.php';
-require_once 'CRM/Core/Page.php';
-require_once 'CRM/Core/DAO.php';
-require_once 'CRM/Utils/System.php';
-require_once 'CRM/Utils/Array.php';
-require_once 'CRM/Core/BAO/Tag.php';
-
-
 // TODO: The DAO layer is injection safe...right?
 // TODO: Needs to return good responses when things go wrong!
 // TODO: How do you tell if a save was successful?
@@ -190,60 +182,65 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         CRM_Utils_System::civiExit();
     }
 
-    static function tag_create() {
-        $stop = self::check_user_level('true');
-        if($stop['code'] == false){
-            echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level."));
-            CRM_Utils_System::civiExit();
-        }
-        // Extract the new tag parameters
-        $tag = array('version'=>3);
-        foreach(self::$TAG_FIELDS as $field) {
-          $value = CRM_Utils_Array::value($field, $_GET);
-          //NYSS 6558
-          if ( isset($value) ) {
-            $tag[$field] = $value;
-          }
-        }
-        $result = civicrm_api('tag', 'create', $tag);
-        if($result['is_error'])
-            echo json_encode(array("code"=>self::ERROR, "message"=>$result['error_message']));
-        else
-            echo json_encode(array("code" => self::SUCCESS, "message" => $result['values'][$result['id']]));
-        CRM_Utils_System::civiExit();
+  static function tag_create() {
+    $stop = self::check_user_level('true');
+    if($stop['code'] == false){
+      echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level."));
+      CRM_Utils_System::civiExit();
+    }
+    // Extract the new tag parameters
+    $tag = array('version' => 3);
+    foreach(self::$TAG_FIELDS as $field) {
+      $value = CRM_Utils_Array::value($field, $_GET);
+      //NYSS 6558
+      if (isset($value) ) {
+        $tag[$field] = $value;
+      }
+    }
+    $result = civicrm_api('tag', 'create', $tag);
+    if($result['is_error'])
+      echo json_encode(array("code"=>self::ERROR, "message"=>$result['error_message']));
+    else
+      echo json_encode(array("code" => self::SUCCESS, "message" => $result['values'][$result['id']]));
+
+    CRM_Utils_System::civiExit();
+  }
+
+  static function tag_update() {
+    $stop = self::check_user_level('true');
+    if($stop['code'] == false){
+      echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level."));
+      CRM_Utils_System::civiExit();
+    }
+    // Get the existing tag for manipulation
+    $tag_id = self::_require('id', $_GET, '`id` parameter is required to identify the tag to be updated.');
+    $params = array('version'=>3, 'id'=>$tag_id);
+    $result = civicrm_api('tag', 'get', $params);
+
+    // A bad id will cause an error
+    if($result['is_error']) {
+      echo json_encode(array('code'=>self::ERROR, 'message'=>$result['error_message']));
+      CRM_Utils_System::civiExit();
     }
 
-    static function tag_update() {
-        $stop = self::check_user_level('true');
-        if($stop['code'] == false){
-            echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level."));
-            CRM_Utils_System::civiExit();
-        }
-        // Get the existing tag for manipulation
-        $tag_id = self::_require('id', $_GET, '`id` parameter is required to identify the tag to be updated.');
-        $params = array('version'=>3, 'id'=>$tag_id);
-        $result = civicrm_api('tag', 'get', $params);
-
-        // A bad id will cause an error
-        if($result['is_error']) {
-            echo json_encode(array('code'=>self::ERROR, 'message'=>$result['error_message']));
-            CRM_Utils_System::civiExit();
-        }
-
-        // Populate the parameters with the new values for update
-        $tag = $result['values'][$result['id']];
-        foreach(self::$TAG_FIELDS as $field) {
-            $params[$field] = CRM_Utils_Array::value($field, $_GET, $tag[$field]);
-        }
-
-        // create actually does an update if the id already exists...
-        $result = civicrm_api('tag', 'create', $params);
-        if($result['is_error'])
-            echo json_encode(array("code"=>self::ERROR, "message"=>$result['error_message']));
-        else
-            echo json_encode(array("code" => self::SUCCESS, "message" => $result['values'][$result['id']]));
-        CRM_Utils_System::civiExit();
+    // Populate the parameters with the new values for update
+    $tag = $result['values'][$result['id']];
+    foreach(self::$TAG_FIELDS as $field) {
+      $params[$field] = CRM_Utils_Array::value($field, $_GET, $tag[$field]);
     }
+    //Civi::log()->debug('tag_update', array('$params' => $params));
+
+    //10304 correct used_for construction (array on create)
+    $params['used_for'] = explode(',', $params['used_for']);
+
+    // create actually does an update if the id already exists...
+    $result = civicrm_api('tag', 'create', $params);
+    if($result['is_error'])
+      echo json_encode(array("code"=>self::ERROR, "message"=>$result['error_message']));
+    else
+      echo json_encode(array("code" => self::SUCCESS, "message" => $result['values'][$result['id']]));
+    CRM_Utils_System::civiExit();
+  }
 
     static function tag_delete() {
         $stop = self::check_user_level('true');

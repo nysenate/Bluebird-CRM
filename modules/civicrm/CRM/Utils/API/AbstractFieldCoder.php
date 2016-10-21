@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,31 +23,40 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  * Base class for writing API_Wrappers which generically manipulate the content
  * of all fields (except for some black-listed skip-fields).
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2013
- * $Id$
- *
+ * @copyright CiviCRM LLC (c) 2004-2016
  */
 
 require_once 'api/Wrapper.php';
+
+/**
+ * Class CRM_Utils_API_AbstractFieldCoder.
+ */
 abstract class CRM_Utils_API_AbstractFieldCoder implements API_Wrapper {
 
   /**
-   * @return array<string> list of field names
+   * Get skipped fields.
+   *
+   * @return array<string>
+   *   List of field names
    */
   public function getSkipFields() {
     return NULL;
   }
 
   /**
+   * Is field skipped.
+   *
    * @param string $fldName
-   * @return bool TRUE if encoding should be skipped for this field
+   *
+   * @return bool
+   *   TRUE if encoding should be skipped for this field
    */
   public function isSkippedField($fldName) {
     $skipFields = $this->getSkipFields();
@@ -74,17 +83,23 @@ abstract class CRM_Utils_API_AbstractFieldCoder implements API_Wrapper {
   }
 
   /**
-   * This function is going to filter the
-   * submitted values.
+   * Going to filter the submitted values.
    *
    * @param array|string $values the field value from the API
    */
   public abstract function encodeInput(&$values);
 
+  /**
+   * Decode output.
+   *
+   * @param string $values
+   *
+   * @return mixed
+   */
   public abstract function decodeOutput(&$values);
 
   /**
-   * {@inheritDoc}
+   * @inheritDoc
    */
   public function fromApiInput($apiRequest) {
     $lowerAction = strtolower($apiRequest['action']);
@@ -109,7 +124,7 @@ abstract class CRM_Utils_API_AbstractFieldCoder implements API_Wrapper {
   }
 
   /**
-   * {@inheritDoc}
+   * @inheritDoc
    */
   public function toApiOutput($apiRequest, $result) {
     $lowerAction = strtolower($apiRequest['action']);
@@ -127,9 +142,12 @@ abstract class CRM_Utils_API_AbstractFieldCoder implements API_Wrapper {
   }
 
   /**
+   * @param $key
+   *
    * @return bool
    */
   protected function isApiControlField($key) {
     return (FALSE !== strpos($key, '.'));
   }
+
 }

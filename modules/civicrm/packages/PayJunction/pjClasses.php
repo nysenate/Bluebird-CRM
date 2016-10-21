@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -50,7 +50,7 @@ class pjpgHttpsPost
    var $pjpgRequest;
    var $pjpgResponse;
    
-   function pjpgHttpsPost( $pjpgRequestOBJ )
+   function __construct( $pjpgRequestOBJ )
    {
       $this->pjpgRequest=$pjpgRequestOBJ;
 
@@ -90,7 +90,7 @@ class pjpgHttpsPost
       $dc_number                   = $pjTxn['pan'];
       $dc_expiration_month         = substr($pjTxn['expdate'],4,2);
       $dc_expiration_year          = substr($pjTxn['expdate'],0,4);
-      $dc_verification_number      = "000";
+      $dc_verification_number      = $pjTxn['cavv'];
 
       // transaction
       $dc_transaction_amount       = $pjTxn['amount'];
@@ -202,10 +202,10 @@ class pjpgHttpsPost
 
 
       // Build response array
-      $content = array_values (split (chr (28), $content));
+      $content = array_values (explode (chr (28), $content));
       while ($key_value = next ($content))
       {
-         list ($key, $value) = split ("=", $key_value);
+         list ($key, $value) = explode ("=", $key_value);
          $response[$key] = $value;
       }
 
@@ -240,7 +240,7 @@ class pjpgRequest
                        );
    var $txnArray;
 
-   function pjpgRequest($txn)
+   function __construct($txn)
    {
       if(is_array($txn))
       {
@@ -277,7 +277,7 @@ class pjpgCustInfo
    var $email;
    var $instructions; 
  
-   function pjpgCustInfo($custinfo=0,$billing=0,$shipping=0,$items=0)
+   function __construct($custinfo=0,$billing=0,$shipping=0,$items=0)
    {
       if($custinfo)
       {
@@ -335,7 +335,7 @@ class pjpgRecur{
  var $recurTemplate = array('recur_unit','start_now','start_date',
                             'num_recurs','period','recur_amount');
  
- function pjpgRecur($params)
+ function __construct($params)
  { 
     $this->params = $params;
     
@@ -355,7 +355,7 @@ class pjpgTransaction
    var $custInfo = null;
    var $recur = null;
 
-   function pjpgTransaction($txn)
+   function __construct($txn)
    {
       $this->txn=$txn; 
    }

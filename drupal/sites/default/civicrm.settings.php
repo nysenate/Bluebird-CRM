@@ -5,7 +5,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-10
-# Revised: 2011-06-06
+# Revised: 2016-10-18 - added imageUpload{Dir,URL}; removed unused params
 #
 # This customized civicrm.settings.php file takes advantage of the strict
 # CRM hostname naming scheme that we have developed.  Each CRM instance is
@@ -14,8 +14,9 @@
 # Bluebird configuration file.
 #
 
-
 require_once dirname(__FILE__).'/../../../civicrm/scripts/bluebird_config.php';
+global $civicrm_root;
+global $civicrm_setting;
 
 $bbconfig = get_bluebird_instance_config();
 
@@ -23,8 +24,21 @@ if ($bbconfig == null) {
   die("Unable to properly bootstrap the CiviCRM module.\n");
 }
 
-if ( $bbconfig['install_class'] == 'dev' ) {
-  //define('CIVICRM_DEBUG_LOG_QUERY', TRUE);
+$servername = get_config_value($bbconfig, 'servername', null);
+$shortname = get_config_value($bbconfig, 'shortname', null);
+$approot = get_config_value($bbconfig, 'app.rootdir', null);
+$drupalroot = get_config_value($bbconfig, 'drupal.rootdir', null);
+$dataroot = get_config_value($bbconfig, 'data.rootdir', null);
+
+if (!$servername || !$shortname || !$approot || !$drupalroot || !$dataroot) {
+  die("Incorrect config; check these settings: servername, shortname, app.rootdir, drupal.rootdir, data.rootdir.\n");
+}
+
+$datadirname = get_config_value($bbconfig, 'data.dirname', $shortname);
+$installclass = get_config_value($bbconfig, 'install_class', 'production');
+
+if ($installclass == 'dev') {
+  //define('CIVICRM_DEBUG_LOG_QUERY', true);
 }
 
 define('CIVICRM_UF', 'Drupal');
@@ -32,58 +46,60 @@ define('CIVICRM_DSN', $bbconfig['civicrm_db_url'].'?new_link=true');
 define('CIVICRM_UF_DSN', $bbconfig['drupal_db_url'].'?new_link=true');
 define('CIVICRM_LOGGING_DSN', $bbconfig['log_db_url'].'?new_link=true');
 
-global $civicrm_root;
-
-$civicrm_root = $bbconfig['drupal.rootdir'].'/sites/all/modules/civicrm';
-define('CIVICRM_TEMPLATE_COMPILEDIR', $bbconfig['data.rootdir'].'/'.$bbconfig['data_dirname'].'/civicrm/templates_c');
-define('CIVICRM_UF_BASEURL', 'http://'.$bbconfig['servername'].'/');
+$civicrm_root = "$drupalroot/sites/all/modules/civicrm";
+define('CIVICRM_TEMPLATE_COMPILEDIR', "$dataroot/$datadirname/civicrm/templates_c");
+define('CIVICRM_UF_BASEURL', "http://$servername/");
 define('CIVICRM_SITE_KEY', get_config_value($bbconfig, 'site.key', '32425kj24h5kjh24542kjh524'));
 
-//define('CIVICRM_MULTISITE', null);
-//define('CIVICRM_UNIQ_EMAIL_PER_SITE', null);
 define('CIVICRM_DOMAIN_ID', 1);
-define('CIVICRM_DOMAIN_GROUP_ID', null);
-define('CIVICRM_DOMAIN_ORG_ID', null);
-define('CIVICRM_EVENT_PRICE_SET_DOMAIN_ID', 0 );
-
-//define('CIVICRM_ACTIVITY_ASSIGNEE_MAIL' , 1 );
-define('CIVICRM_CONTACT_AJAX_CHECK_SIMILAR' , 0 );
-define('CIVICRM_PROFILE_DOUBLE_OPTIN', 1 );
-define('CIVICRM_TRACK_CIVIMAIL_REPLIES', false);
-// define( 'CIVICRM_MAIL_LOG', '%%templateCompileDir%%/mail.log' );
+// define('CIVICRM_MAIL_LOG', '%%templateCompileDir%%/mail.log');
 define('CIVICRM_TAG_UNCONFIRMED', 'Unconfirmed');
 define('CIVICRM_PETITION_CONTACTS','Petition Contacts');
-define('CIVICRM_CIVIMAIL_WORKFLOW', 1 );
 
 // Cache-related constants
 define('CIVICRM_DB_CACHE_CLASS', get_config_value($bbconfig, 'cache.db.class', null));
 define('CIVICRM_MEMCACHE_TIMEOUT', get_config_value($bbconfig, 'cache.memcache.timeout', 600));
-define('CIVICRM_MEMCACHE_PREFIX', $bbconfig['servername']);
+define('CIVICRM_MEMCACHE_PREFIX', $servername);
 
 // SAGE API constants
-define('SAGE_API_KEY', $bbconfig['sage.api.key']);
-define('SAGE_API_BASE', $bbconfig['sage.api.base']);
+define('SAGE_API_KEY', get_config_value($bbconfig, 'sage.api.key', 'NO_KEY'));
+define('SAGE_API_BASE', get_config_value($bbconfig, 'sage.api.base', 'NO_API'));
 
-// Set some CiviCRM settings
-global $civicrm_setting;
 
-$civicrm_setting['Mailing Preferences']['profile_double_optin'] = FALSE;
-$civicrm_setting['Mailing Preferences']['profile_add_to_group_double_optin'] = FALSE;
-$civicrm_setting['Mailing Preferences']['track_civimail_replies'] = FALSE;
-$civicrm_setting['Mailing Preferences']['civimail_workflow'] = TRUE;
-$civicrm_setting['Mailing Preferences']['civimail_server_wide_lock'] = TRUE;
-$civicrm_setting['Mailing Preferences']['civimail_multiple_bulk_emails'] = TRUE;
-$civicrm_setting['Mailing Preferences']['include_message_id'] = TRUE;
-$civicrm_setting['Mailing Preferences']['write_activity_record'] = FALSE;
-$civicrm_setting['Mailing Preferences']['disable_mandatory_tokens_check'] = TRUE;
-$civicrm_setting['Mailing Preferences']['hash_mailing_url'] = TRUE;
+//temporary debugging statements
+//CRM_Core_Error::debug_var('bbconfig', $bbconfig);
+//CRM_Core_Error::debug_var('civicrm_root', $civicrm_root);
+//CRM_Core_Error::debug_var('civicrm_setting', $civicrm_setting);
 
-$civicrm_setting['CiviCRM Preferences']['securityAlert'] = FALSE;
-$civicrm_setting['Search Preferences']['enable_innodb_fts'] = TRUE;
+$civicrm_setting['Mailing Preferences']['profile_double_optin'] = false;
+$civicrm_setting['Mailing Preferences']['profile_add_to_group_double_optin'] = false;
+$civicrm_setting['Mailing Preferences']['track_civimail_replies'] = false;
+$civicrm_setting['Mailing Preferences']['civimail_workflow'] = true;
+$civicrm_setting['Mailing Preferences']['civimail_server_wide_lock'] = true;
+$civicrm_setting['Mailing Preferences']['civimail_multiple_bulk_emails'] = true;
+$civicrm_setting['Mailing Preferences']['include_message_id'] = true;
+$civicrm_setting['Mailing Preferences']['write_activity_record'] = false;
+$civicrm_setting['Mailing Preferences']['disable_mandatory_tokens_check'] = true;
+$civicrm_setting['Mailing Preferences']['hash_mailing_url'] = true;
+
+$civicrm_setting['CiviCRM Preferences']['checksumTimeout'] = 7;
+$civicrm_setting['CiviCRM Preferences']['securityAlert'] = false;
+$civicrm_setting['CiviCRM Preferences']['versionCheck'] = false;
+$civicrm_setting['CiviCRM Preferences']['max_attachments'] = 5;
+$civicrm_setting['CiviCRM Preferences']['maxFileSize'] = 12; //9842
+$civicrm_setting['CiviCRM Preferences']['communityMessagesUrl'] = false;
+
+$civicrm_setting['Directory Preferences']['customTemplateDir'] = "$approot/civicrm/custom/templates";
+$civicrm_setting['Directory Preferences']['customPHPPathDir'] = "$approot/civicrm/custom/php";
+$civicrm_setting['Directory Preferences']['imageUploadDir'] = "$dataroot/$datadirname/pubfiles";
+
+$civicrm_setting['URL Preferences']['imageUploadURL'] = "data/$datadirname/pubfiles";
+
+$civicrm_setting['Search Preferences']['enable_innodb_fts'] = true;
 $civicrm_setting['Search Preferences']['fts_query_mode'] = 'wildwords-suffix';
 
 if (isset($bbconfig['xhprof.profile']) && $bbconfig['xhprof.profile']) {
-  function xhprof_shutdown_func($source, $run_id=NULL) {
+  function xhprof_shutdown_func($source, $run_id = null) {
     // Hopefully we don't throw an exception; there's no way to catch it now...
     $xhprof_data = xhprof_disable();
 
@@ -123,7 +139,7 @@ if (isset($bbconfig['xhprof.profile']) && $bbconfig['xhprof.profile']) {
   }
 
   xhprof_enable($flags, array('ignored_functions' => $ignored_functions));
-  register_shutdown_function('xhprof_shutdown_func', "{$bbconfig['install_class']}_{$bbconfig['shortname']}", NULL);
+  register_shutdown_function('xhprof_shutdown_func', "{$installclass}_{$shortname}", null);
 }
 
 
@@ -135,7 +151,7 @@ if (isset($bbconfig['xhprof.profile']) && $bbconfig['xhprof.profile']) {
 
 $include_path = '.'.PATH_SEPARATOR.$civicrm_root.PATH_SEPARATOR.
                 $civicrm_root.DIRECTORY_SEPARATOR.'packages'.PATH_SEPARATOR.
-                get_include_path( );
+                get_include_path();
 set_include_path($include_path);
 
 if (function_exists('variable_get') && variable_get('clean_url', '0') != '0') {

@@ -235,11 +235,15 @@ function nyss_civihooks_civicrm_contactListQuery(&$query, $name, $context, $id)
   //CRM_Core_Error::debug_var('$query',$query);
   //CRM_Core_Error::debug_var('$name',$name);
   //CRM_Core_Error::debug_var('$context',$context);
-} // nyss_civihooks_civicrm_contactListQuery()
+}//nyss_civihooks_civicrm_contactListQuery()
 
 
-function nyss_civihooks_civicrm_buildForm($formName, &$form)
-{
+function nyss_civihooks_civicrm_buildForm($formName, &$form) {
+  /*Civi::log()->debug('buildForm', array(
+    '$formName' => $formName,
+    //'$form' => $form,
+  ));*/
+
   _fixTitles();
 
   //Limit case roles available to add new role dialog to only those that apply to cases
@@ -279,57 +283,6 @@ function nyss_civihooks_civicrm_buildForm($formName, &$form)
     $form->_rules['uploadFile'][1]['message'] = 'File size should be less than 1 MBytes (1048576 bytes)';
   }
 
-  //Construct some arrays and values to be passed to the tag tab
-  if ($formName == 'CRM_Tag_Form_Tag') {
-    $contactId = $form->getVar('_entityID');
-
-    //Construct list of tags, comma-separated
-    $contactTagsList = array();
-    $contactTags = CRM_Core_BAO_EntityTag::getContactTags($contactId);
-
-    if (!empty($contactTags)) {
-      $contactTagsList = stripslashes(implode(', ', $contactTags));
-    }
-    $form->assign('contactTagsList', $contactTagsList);
-
-    //Construct list of issue codes, comma-separated
-    //Need to work with the full list and subtract tagsets
-    $contactTags = array();
-    $contactIssueCode_item = array();
-    $contactTags = CRM_Core_BAO_EntityTag::getTag($contactId);
-    $tagsNotTagset = CRM_Core_BAO_Tag::getTagsNotInTagset();
-    foreach ($tagsNotTagset as $key => $issueCode) {
-      if (in_array($key, $contactTags)) {
-        $contactIssueCode_item[] = $issueCode;
-      }
-    }
-    sort($contactIssueCode_item);
-    $contactIssueCode_list = stripslashes(implode(' &#8226; ', $contactIssueCode_item));
-    $form->assign('contactIssueCode_list', $contactIssueCode_list);
-
-    //Construct list of Legislative Positions
-    $legpositions = CRM_Core_BAO_EntityTag::getChildEntityTagDetails(292, $contactId);
-
-    $bbcfg = get_bluebird_instance_config();
-    if (isset($bbcfg['openleg.url.template'])) {
-      $url_template = $bbcfg['openleg.url.template'];
-    }
-    else {
-      $url_template = '/bill/{year}/{billno}';
-    }
-
-    foreach ($legpositions as &$legposition) {
-      $name = $legposition['name'];
-      $bill_id = substr($name, 0, strcspn($name, ' :'));
-      $id_parts = explode('-', $bill_id);  // [0]=billno, [1]=year
-      $search = array('{billno}', '{year}');
-      $bill_url = str_replace($search, $id_parts, $url_template);
-      $bill_html = "<a href=\"$bill_url\" target=\"_blank\">$bill_url</a>";
-      $legposition['description'] = $bill_html;
-    }
-    $form->assign('legpositions', $legpositions);
-  }
-
   //advanced search
   if ($formName == 'CRM_Contact_Form_Search_Advanced') {
     //4575 search by all emails
@@ -359,6 +312,11 @@ function nyss_civihooks_civicrm_buildForm($formName, &$form)
     //7946
     $form->addDate('log_start_date', ts('Change Log Start'), false, array('formatType' => 'birth'));
     $form->addDate('log_end_date', ts('Change Log End'), false, array('formatType' => 'birth'));
+
+    //10557 remove CMS User
+    if ($form->elementExists('uf_user')) {
+      $form->removeElement('uf_user');
+    }
 
     //don't set US as default country in advanced search or contacts with no address are excluded
     $defaults['country'] = '';
@@ -530,8 +488,8 @@ function nyss_civihooks_civicrm_buildForm($formName, &$form)
     if (!$form->elementExists('activity_type_id')) {
       return;
     }
-    $ele    =& $form->getElement('activity_type_id');
-    $fele   =& $form->getElement('followup_activity_type_id');
+    $ele =& $form->getElement('activity_type_id');
+    $fele =& $form->getElement('followup_activity_type_id');
     $aTypes = $eleOptions = $feleOptions = array();
 
     foreach ($ele->_options as $k => $aT) {
@@ -588,6 +546,18 @@ function nyss_civihooks_civicrm_buildForm($formName, &$form)
   }
 
   _setDBVars();
+
+  if ($formName == 'CRM_Group_Form_Search') {
+    CRM_Core_Resources::singleton()->addScriptUrl('/sites/all/modules/nyss_civihooks/js/groupsSearch.js');
+  }
+
+  if ($formName == 'CRM_Group_Form_Edit') {
+    CRM_Core_Resources::singleton()->addScriptUrl('/sites/all/modules/nyss_civihooks/js/groupsEdit.js');
+  }
+
+  if ($formName == 'CRM_Contact_Form_Search_Builder') {
+    CRM_Core_Resources::singleton()->addScriptUrl('/sites/all/modules/nyss_civihooks/js/searchBuilder.js');
+  }
 
   //CRM_Core_Error::debug($formName);
   //CRM_Core_Error::debug($form);
@@ -691,9 +661,8 @@ function nyss_civihooks_civicrm_pre($op, $objectName, $objectId, &$objectRef) {
 } // nyss_civihooks_civicrm_pre()
 
 
-function nyss_civihooks_civicrm_pageRun(&$page)
-{
-  //CRM_Core_Error::debug($page);
+function nyss_civihooks_civicrm_pageRun(&$page) {
+  //CRM_Core_Error::debug_var('pageRun', $page);
   $pagename = $page->getVar('_name');
 
   _fixTitles();
@@ -723,6 +692,10 @@ function nyss_civihooks_civicrm_pageRun(&$page)
     $page->assign('activityStatusList', $activityStatusList);
   }
 
+  if ($pagename == 'CRM_Group_Page_Group') {
+    CRM_Core_Resources::singleton()->addScriptUrl('/sites/all/modules/nyss_civihooks/js/groupsList.js');
+  }
+
   _setDBVars();
 } // nyss_civihooks_civicrm_pageRun()
 
@@ -735,8 +708,8 @@ function nyss_civihooks_civicrm_validateForm($formName, &$fields, &$files, &$for
   //4272 ensure that target/with contact is set when activity created from contact record
   if ($formName == 'CRM_Activity_Form_Activity' &&
       $form->_context == 'activity' && $form->_action != 8) { //exclude delete
-    if (empty($fields['contact'][1])) {
-      $errors['source_contact_id'] = ts('Please add at least one target contact.');
+    if (empty($fields['target_contact_id'])) {
+      $errors['target_contact_id'] = ts('Please add at least one target contact.');
     }
   }
 
@@ -774,7 +747,7 @@ function nyss_civihooks_civicrm_validateForm($formName, &$fields, &$files, &$for
 
   //5725/7653
   if ($formName == 'CRM_Profile_Form_Edit') {
-    $contactProfiles = CRM_Core_BAO_UFGroup::getReservedProfiles('Contact', $extraProfiles);
+    $contactProfiles = CRM_Core_BAO_UFGroup::getProfiles(array('Individual'));
 
     switch ($contactProfiles[$fields['gid']]) {
       case 'New Individual':
@@ -785,18 +758,8 @@ function nyss_civihooks_civicrm_validateForm($formName, &$fields, &$files, &$for
           $errors['first_name'] = 'You must enter a first name, last name, or email address, in order to create a contact.';
         }
         break;
-      case 'New Organization':
-        $org = (isset($fields['organization_name'])) ? trim($fields['organization_name']) : null;
-        if (empty($org)) {
-          $errors['organization_name'] = 'You must enter an organization name in order to create a contact.';
-        }
-        break;
-      case 'New Household':
-        $house = (isset($fields['household_name'])) ? trim($fields['household_name']) : null;
-        if (empty($house)) {
-          $errors['household_name'] = 'You must enter a household name in order to create a contact.';
-        }
-        break;
+
+      default:
     }
   }
 
@@ -804,8 +767,7 @@ function nyss_civihooks_civicrm_validateForm($formName, &$fields, &$files, &$for
 } // nyss_civihooks_civicrm_validateForm()
 
 
-function nyss_civihooks_civicrm_navigationMenu(&$params)
-{
+function nyss_civihooks_civicrm_navigationMenu(&$params) {
   //CRM_Core_Error::debug_var('navigationMenu params',$params);
 
   //5260
@@ -847,8 +809,23 @@ function nyss_civihooks_civicrm_navigationMenu(&$params)
     'child' => array(),
   );
 
+  $params[2] = array(
+    'attributes' => array(
+      'label'      => 'Advanced Search',
+      'name'       => 'Advanced Search',
+      'url'        => 'civicrm/contact/search/advanced?reset=1',
+      'permission' => 'access CiviCRM',
+      'operator'   => 'AND',
+      'separator'  => 0,
+      'parentID'   => null,
+      'navID'      => 2,
+      'active'     => 1
+    ),
+    'child' => array(),
+  );
+
   //build Custom Search menu
-  $params[2] = _buildSearchMenu(2);
+  $params[3] = _buildSearchMenu(2);
 
   //move Report menu
   $params[$reportNavID] = $reportNav;
@@ -899,6 +876,57 @@ function nyss_civihooks_civicrm_navigationMenu(&$params)
 
   //CRM_Core_Error::debug_var('navigationMenu params (after)',$params);
 }
+
+//build navigation menu
+function nyss_civihooks_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) {
+  //$navigation = CRM_Core_BAO_Navigation::buildNavigation();
+
+  $navigations = array();
+  CRM_Core_BAO_Navigation::buildNavigationTree($navigations, $parent = NULL, TRUE);
+  $navigationString = NULL;
+
+  // run the Navigation  through a hook so users can modify it
+  CRM_Utils_Hook::navigationMenu($navigations);
+  CRM_Core_BAO_Navigation::fixNavigationMenu($navigations);
+
+  //skip children menu item if user don't have access to parent menu item
+  $skipMenuItems = array();
+  foreach ($navigations as $key => $value) {
+    // Home is a special case
+    if ($value['attributes']['name'] != 'Home') {
+      $name = CRM_Core_BAO_Navigation::getMenuName($value, $skipMenuItems);
+      if ($name) {
+        //separator before
+        if (isset($value['attributes']['separator']) && $value['attributes']['separator'] == 2) {
+          $navigationString .= '<li class="menu-separator"></li>';
+        }
+        $removeCharacters = array('/', '!', '&', '*', ' ', '(', ')', '.');
+        $navigationString .= '<li class="menumain">' . $name;
+      }
+    }
+
+    CRM_Core_BAO_Navigation::recurseNavigation($value, $navigationString, FALSE, $skipMenuItems);
+  }
+
+  // clean up - Need to remove empty <ul>'s, this happens when user don't have
+  // permission to access parent
+  $navigationString = str_replace('<ul></ul></li>', '', $navigationString);
+
+  //CRM_Core_Error::debug_var('navigations', $navigationString);
+
+  $form->assign('navigation', $navigationString);
+}//alterTemplateFile
+
+/*
+ * @param $messages
+ * disable system status check messages
+ */
+function nyss_civihooks_civicrm_check(&$messages) {
+  //Civi::log()->debug('check', array('messages' => $messages));
+  foreach ($messages as $k => $msg) {
+    unset($messages[$k]);
+  }
+}//nyss_civihooks_civicrm_check
 
 /**
  * The User ID and Job ID are stored as db variables for inclusion
@@ -993,7 +1021,7 @@ function _buildManageMenu($manageID) {
         'attributes' => Array(
           'label' => 'Load Sample Data',
           'name' => 'Load Sample Data',
-          'url' => 'civicrm/nyss/loadsampledata&reset=1',
+          'url' => 'civicrm/nyss/loadsampledata?reset=1',
           'permission' => 'administer CiviCRM',
           'operator' => 'OR',
           'separator' => 1,
@@ -1007,7 +1035,7 @@ function _buildManageMenu($manageID) {
         'attributes' => Array(
           'label' => 'Import Contacts',
           'name' => 'Import Contacts',
-          'url' => 'civicrm/import/contact&reset=1',
+          'url' => 'civicrm/import/contact?reset=1',
           'permission' => 'import contacts',
           'operator' => 'AND',
           'separator' => 0,
@@ -1021,7 +1049,7 @@ function _buildManageMenu($manageID) {
         'attributes' => Array(
           'label' => 'Import Activities',
           'name' => 'Import Activities',
-          'url' => 'civicrm/import/activity&reset=1',
+          'url' => 'civicrm/import/activity?reset=1',
           'permission' => 'import contacts',
           'operator' => 'AND',
           'separator' => 1,
@@ -1035,7 +1063,7 @@ function _buildManageMenu($manageID) {
         'attributes' => Array(
           'label' => 'Manage Groups',
           'name' => 'Manage Groups',
-          'url' => 'civicrm/group&reset=1',
+          'url' => 'civicrm/group?reset=1',
           'permission' => 'edit groups',
           'operator' => 'AND',
           'separator' => 0,
@@ -1049,7 +1077,7 @@ function _buildManageMenu($manageID) {
         'attributes' => Array(
           'label' => 'Manage Tags',
           'name' => 'Manage Tags',
-          'url' => 'civicrm/admin/tag&reset=1',
+          'url' => 'civicrm/admin/tag?reset=1',
           'permission' => 'administer CiviCRM,administer district',
           'operator' => 'OR',
           'separator' => 0,
@@ -1092,7 +1120,7 @@ function _buildManageMenu($manageID) {
         'attributes' => Array(
           'label' => 'Merge Duplicate Contacts',
           'name' => 'Merge Duplicate Contacts',
-          'url' => 'civicrm/contact/deduperules&reset=1',
+          'url' => 'civicrm/contact/deduperules?reset=1',
           'permission' => 'merge duplicate contacts',
           'operator' => 'OR',
           'separator' => 2,
@@ -1217,7 +1245,7 @@ function _buildEmailMenu($emailID) {
         'attributes' => array(
           'label' => 'New Mass Email',
           'name' => 'New Mass Email',
-          'url' => 'civicrm/mailing/send&reset=1',
+          'url' => 'civicrm/mailing/send?reset=1',
           'permission' => 'access CiviMail,create mailings,schedule mailings',
           'operator' => 'OR',
           'separator' => 0,
@@ -1231,7 +1259,7 @@ function _buildEmailMenu($emailID) {
         'attributes' => Array(
           'label' => 'Draft and Unscheduled Emails',
           'name' => 'Draft and Unscheduled Emails',
-          'url' => 'civicrm/mailing/browse/unscheduled&reset=1&scheduled=false',
+          'url' => 'civicrm/mailing/browse/unscheduled?reset=1&scheduled=false',
           'permission' => 'access CiviMail,create mailings,schedule mailings',
           'operator' => 'OR',
           'separator' => 0,
@@ -1245,7 +1273,7 @@ function _buildEmailMenu($emailID) {
         'attributes' => Array(
           'label' => 'Scheduled and Sent Emails',
           'name' => 'Scheduled and Sent Emails',
-          'url' => 'civicrm/mailing/browse/scheduled&reset=1&scheduled=true',
+          'url' => 'civicrm/mailing/browse/scheduled?reset=1&scheduled=true',
           'permission' => 'access CiviMail,approve mailings,create mailings,schedule mailings',
           'operator' => 'OR',
           'separator' => 0,
@@ -1259,7 +1287,7 @@ function _buildEmailMenu($emailID) {
         'attributes' => Array(
           'label' => 'Find Mailings',
           'name' => 'Find Mailings',
-          'url' => 'civicrm/mailing/browse&reset=1',
+          'url' => 'civicrm/mailing/browse?reset=1',
           'permission' => 'access CiviMail,approve mailings,create mailings,schedule mailings',
           'operator' => 'OR',
           'separator' => 0,
@@ -1273,7 +1301,7 @@ function _buildEmailMenu($emailID) {
         'attributes' => Array(
           'label' => 'Archived Emails',
           'name' => 'Archived Emails',
-          'url' => 'civicrm/mailing/browse/archived&reset=1',
+          'url' => 'civicrm/mailing/browse/archived?reset=1',
           'permission' => 'create mailings,schedule mailings,access CiviMail',
           'operator' => 'OR',
           'separator' => 1,
@@ -1287,7 +1315,7 @@ function _buildEmailMenu($emailID) {
         'attributes' => Array(
           'label' => 'Mass Email Summary Report',
           'name' => 'Mass Email Summary Report',
-          'url' => "civicrm/report/instance/{$rptIDs['summary']}&reset=1",
+          'url' => "civicrm/report/instance/{$rptIDs['summary']}?reset=1",
           'permission' => 'access CiviReport',
           'operator' => 'AND',
           'separator' => 0,
@@ -1301,7 +1329,7 @@ function _buildEmailMenu($emailID) {
         'attributes' => Array(
           'label' => 'Mass Email Bounce Report',
           'name' => 'Mass Email Bounce Report',
-          'url' => "civicrm/report/instance/{$rptIDs['bounce']}&reset=1",
+          'url' => "civicrm/report/instance/{$rptIDs['bounce']}?reset=1",
           'permission' => 'access CiviReport',
           'operator' => 'AND',
           'separator' => 0,
@@ -1315,7 +1343,7 @@ function _buildEmailMenu($emailID) {
         'attributes' => Array(
           'label' => 'Mass Email Opened Report',
           'name' => 'Mass Email Opened Report',
-          'url' => "civicrm/report/instance/{$rptIDs['opened']}&reset=1",
+          'url' => "civicrm/report/instance/{$rptIDs['opened']}?reset=1",
           'permission' => 'access CiviReport',
           'operator' => 'OR',
           'separator' => 0,
@@ -1329,7 +1357,7 @@ function _buildEmailMenu($emailID) {
         'attributes' => Array(
           'label' => 'Mass Email Clickthrough Report',
           'name' => 'Mass Email Clickthrough Report',
-          'url' => "civicrm/report/instance/{$rptIDs['clicks']}&reset=1",
+          'url' => "civicrm/report/instance/{$rptIDs['clicks']}?reset=1",
           'permission' => 'access CiviReport',
           'operator' => 'OR',
           'separator' => 0,
@@ -1343,7 +1371,7 @@ function _buildEmailMenu($emailID) {
         'attributes' => Array(
           'label' => 'Mass Email Detail Report',
           'name' => 'Mass Email Detail Report',
-          'url' => "civicrm/report/instance/{$rptIDs['detail']}&reset=1",
+          'url' => "civicrm/report/instance/{$rptIDs['detail']}?reset=1",
           'permission' => 'access CiviReport',
           'operator' => 'OR',
           'separator' => 0,
@@ -1443,7 +1471,7 @@ function _buildSearchMenu($searchNavID) {
         'attributes' => array(
           'label'      => 'Find Cases',
           'name'       => 'Find Cases',
-          'url'        => 'civicrm/case/search&reset=1',
+          'url'        => 'civicrm/case/search?reset=1',
           'permission' => 'access my cases and activities,access all cases and activities',
           'operator'   => 'OR',
           'separator'  => 0,
@@ -1457,7 +1485,7 @@ function _buildSearchMenu($searchNavID) {
         'attributes' => array(
           'label'      => 'Find Activities',
           'name'       => 'Find Activities',
-          'url'        => 'civicrm/activity/search&reset=1',
+          'url'        => 'civicrm/activity/search?reset=1',
           'permission' => 'view all activities',
           'operator'   => 'AND',
           'separator'  => 1,
@@ -1471,7 +1499,7 @@ function _buildSearchMenu($searchNavID) {
         'attributes' => array(
           'label'      => 'Full-text Search',
           'name'       => 'Full-text Search',
-          'url'        => 'civicrm/contact/search/custom&csid=15&reset=1',
+          'url'        => 'civicrm/contact/search/custom?csid=15&reset=1',
           'permission' => 'access CiviCRM',
           'operator'   => 'AND',
           'separator'  => 0,
@@ -1485,7 +1513,7 @@ function _buildSearchMenu($searchNavID) {
         'attributes' => array(
           'label'      => 'Search Builder',
           'name'       => 'Search Builder',
-          'url'        => 'civicrm/contact/search/builder&reset=1',
+          'url'        => 'civicrm/contact/search/builder?reset=1',
           'permission' => 'access CiviCRM',
           'operator'   => 'AND',
           'separator'  => 1,
@@ -1499,7 +1527,7 @@ function _buildSearchMenu($searchNavID) {
         'attributes' => array(
           'label'      => 'Proximity Search',
           'name'       => 'Proximity Search',
-          'url'        => 'civicrm/contact/search/custom&reset=1&csid=6',
+          'url'        => 'civicrm/contact/search/custom?reset=1&csid=6',
           'permission' => 'access CiviCRM',
           'operator'   => 'AND',
           'separator'  => 0,

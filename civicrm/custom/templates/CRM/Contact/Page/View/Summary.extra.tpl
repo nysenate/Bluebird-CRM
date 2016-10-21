@@ -52,23 +52,6 @@
     }
   });
 
-  //get activity count
-  var postUrl = {/literal}"{crmURL p='civicrm/ajax/count/activity' h=0 }"{literal};
-  cj.ajax({
-    type: "POST",
-    data:  "contactId=" + contactID + "&key={/literal}{crmKey name='civicrm/ajax/count/activity'}{literal}",
-    url: postUrl,
-    success: function(tabCount){
-      if(Number(tabCount) > 0) {
-        var ele = cj('#tab_activity a');
-        if (!ele.find('em').length) {
-          ele.append($('<em/>'));
-        }
-        ele.find('em').html(tabCount);
-      }
-    }
-  });
-
   //7093 close tag lookup select when clicking tabs
   cj('li.crm-tab-button a').click(function(){
     cj('div.token-input-dropdown-facebook').hide();
@@ -102,6 +85,7 @@
 <script type="text/javascript">
   //remove website profile count
   cj('li#tab_custom_9 a em').remove();
+  cj('li#tab_custom_9').removeClass('crm-count-0');//10316
 </script>
 {/literal}
 

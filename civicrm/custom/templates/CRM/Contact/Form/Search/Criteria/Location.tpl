@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,14 +26,14 @@
 {*NYSS modifications throughout to present all core fields in left col and custom fields in right*}
 <div id="location" class="form-item">
     <table class="form-layout">
-	<tr>
+  <tr>
         <td>
            {$form.location_type.label}<br />
-           {$form.location_type.html} 
+           {$form.location_type.html}
            <div class="description" >
-             {ts}Location search uses the PRIMARY location for each contact by default.{/ts}<br /> 
+             {ts}Location search uses the PRIMARY location for each contact by default.{/ts}<br />
              {ts}To search by specific location types (e.g. Home, Work...), check one or more boxes above.{/ts}
-           </div> 
+           </div>
         </td>
         {if $addressGroupTree}
 	      <td rowspan="3">
@@ -69,7 +69,7 @@
         </table>
         </td>
     </tr>
-           
+
     <tr>
         <td>
 		<table class="inner-table">
@@ -113,19 +113,19 @@
 {literal}
 <script type="text/javascript">
 function processAddressFields( name, loadData ) {
-        if ( name == 'addressElements' ) {
-             if ( loadData ) {
-                  cj( '#street_address' ).val( '' );
-             }
-             
+    if ( name == 'addressElements' ) {
+        if ( loadData ) {
+      cj( '#street_address' ).val( '' );
+      }
+
       cj('#addressElements').show();
       cj('#streetAddress').hide();
-        } else {
-             if ( loadData ) {
-                  cj( '#street_name'   ).val( '' );
-				  cj( '#street_unit'   ).val( '' );
-				  cj( '#street_number' ).val( '' );
-             }
+  } else {
+        if ( loadData ) {
+             cj( '#street_name'   ).val( '' );
+             cj( '#street_unit'   ).val( '' );
+             cj( '#street_number' ).val( '' );
+        }
 
         cj('#streetAddress').show();
         cj('#addressElements').hide();

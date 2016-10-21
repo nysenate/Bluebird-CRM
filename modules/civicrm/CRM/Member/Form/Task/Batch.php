@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,12 +23,12 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2013
+ * @copyright CiviCRM LLC (c) 2004-2016
  * $Id$
  *
  */
@@ -39,34 +39,29 @@
 class CRM_Member_Form_Task_Batch extends CRM_Member_Form_Task {
 
   /**
-   * the title of the group
+   * The title of the group.
    *
    * @var string
    */
   protected $_title;
 
   /**
-   * maximum profile fields that will be displayed
-   *
+   * Maximum profile fields that will be displayed.
    */
   protected $_maxFields = 9;
 
   /**
-   * variable to store redirect path
-   *
+   * Variable to store redirect path.
    */
   protected $_userContext;
 
   /**
-   * build all the data structures needed to build the form
+   * Build all the data structures needed to build the form.
    *
    * @return void
-   * @access public
    */
-  function preProcess() {
-    /*
-         * initialize the task and row fields
-         */
+  public function preProcess() {
+    // initialize the task and row fields
     parent::preProcess();
 
     //get the contact read only fields to display.
@@ -86,19 +81,18 @@ class CRM_Member_Form_Task_Batch extends CRM_Member_Form_Task {
   }
 
   /**
-   * Build the form
+   * Build the form object.
    *
-   * @access public
    *
    * @return void
    */
-  function buildQuickForm() {
+  public function buildQuickForm() {
     $ufGroupId = $this->get('ufGroupId');
 
     if (!$ufGroupId) {
       CRM_Core_Error::fatal('ufGroupId is missing');
     }
-    $this->_title = ts('Batch Update for Members') . ' - ' . CRM_Core_BAO_UFGroup::getTitle($ufGroupId);
+    $this->_title = ts('Update multiple memberships') . ' - ' . CRM_Core_BAO_UFGroup::getTitle($ufGroupId);
     CRM_Utils_System::setTitle($this->_title);
 
     $this->addDefaultButtons(ts('Save'));
@@ -117,7 +111,7 @@ class CRM_Member_Form_Task_Batch extends CRM_Member_Form_Task {
       }
 
       //fix to reduce size as we are using this field in grid
-      if (is_array($field['attributes']) && $this->_fields[$name]['attributes']['size'] > 19) {
+      if (is_array($field['attributes']) && !empty($this->_fields[$name]['attributes']['size']) && $this->_fields[$name]['attributes']['size'] > 19) {
         //shrink class to "form-text-medium"
         $this->_fields[$name]['attributes']['size'] = 19;
       }
@@ -126,18 +120,16 @@ class CRM_Member_Form_Task_Batch extends CRM_Member_Form_Task {
     $this->_fields = array_slice($this->_fields, 0, $this->_maxFields);
 
     $this->addButtons(array(
-        array(
-          'type' => 'submit',
-          'name' => ts('Update Members(s)'),
-          'isDefault' => TRUE,
-        ),
-        array(
-          'type' => 'cancel',
-          'name' => ts('Cancel'),
-        ),
-      )
-    );
-
+      array(
+        'type' => 'submit',
+        'name' => ts('Update Members(s)'),
+        'isDefault' => TRUE,
+      ),
+      array(
+        'type' => 'cancel',
+        'name' => ts('Cancel'),
+      ),
+    ));
 
     $this->assign('profileTitle', $this->_title);
     $this->assign('componentIds', $this->_memberIds);
@@ -159,7 +151,7 @@ class CRM_Member_Form_Task_Batch extends CRM_Member_Form_Task {
       foreach ($this->_fields as $name => $field) {
         if ($customFieldID = CRM_Core_BAO_CustomField::getKeyID($name)) {
           $customValue = CRM_Utils_Array::value($customFieldID, $customFields);
-          if (CRM_Utils_Array::value('extends_entity_column_value', $customValue)) {
+          if (!empty($customValue['extends_entity_column_value'])) {
             $entityColumnValue = explode(CRM_Core_DAO::VALUE_SEPARATOR,
               $customValue['extends_entity_column_value']
             );
@@ -183,20 +175,19 @@ class CRM_Member_Form_Task_Batch extends CRM_Member_Form_Task {
     $buttonName = $this->controller->getButtonName('submit');
 
     if ($suppressFields && $buttonName != '_qf_Batch_next') {
-      CRM_Core_Session::setStatus(ts("FILE or Autocomplete Select type field(s) in the selected profile are not supported for Batch Update and have been excluded."), ts('Unsupport Field Type'), 'error');
+      CRM_Core_Session::setStatus(ts("File or Autocomplete-Select type field(s) in the selected profile are not supported for Update multiple memberships."), ts('Unsupported Field Type'), 'error');
     }
 
     $this->addDefaultButtons(ts('Update Memberships'));
   }
 
   /**
-   * This function sets the default values for the form.
+   * Set default values for the form.
    *
-   * @access public
    *
-   * @return None
+   * @return void
    */
-  function setDefaultValues() {
+  public function setDefaultValues() {
     if (empty($this->_fields)) {
       return;
     }
@@ -211,11 +202,10 @@ class CRM_Member_Form_Task_Batch extends CRM_Member_Form_Task {
   }
 
   /**
-   * process the form after the input has been submitted and validated
+   * Process the form after the input has been submitted and validated.
    *
-   * @access public
    *
-   * @return None
+   * @return void
    */
   public function postProcess() {
     $params = $this->exportValues();
@@ -223,16 +213,16 @@ class CRM_Member_Form_Task_Batch extends CRM_Member_Form_Task {
       'join_date',
       'membership_start_date',
       'membership_end_date',
-     );
+    );
     if (isset($params['field'])) {
       $customFields = array();
       foreach ($params['field'] as $key => $value) {
         $ids['membership'] = $key;
-        if (CRM_Utils_Array::value('membership_source', $value)) {
+        if (!empty($value['membership_source'])) {
           $value['source'] = $value['membership_source'];
         }
 
-        if (CRM_Utils_Array::value('membership_type', $value)) {
+        if (!empty($value['membership_type'])) {
           $membershipTypeId = $value['membership_type_id'] = $value['membership_type'][1];
         }
 
@@ -248,7 +238,7 @@ class CRM_Member_Form_Task_Batch extends CRM_Member_Form_Task {
           }
         }
         if (empty($customFields)) {
-          if (!CRM_Utils_Array::value('membership_type_id', $value)) {
+          if (empty($value['membership_type_id'])) {
             $membershipTypeId = CRM_Core_DAO::getFieldValue('CRM_Member_DAO_Membership', $key, 'membership_type_id');
           }
 
@@ -263,7 +253,6 @@ class CRM_Member_Form_Task_Batch extends CRM_Member_Form_Task {
         }
         //check for custom data
         $value['custom'] = CRM_Core_BAO_CustomField::postProcess($params['field'][$key],
-          $customFields,
           $key,
           'Membership',
           $membershipTypeId
@@ -272,7 +261,7 @@ class CRM_Member_Form_Task_Batch extends CRM_Member_Form_Task {
         $membership = CRM_Member_BAO_Membership::add($value, $ids);
 
         // add custom field values
-        if (CRM_Utils_Array::value('custom', $value) &&
+        if (!empty($value['custom']) &&
           is_array($value['custom'])
         ) {
           CRM_Core_BAO_CustomValueTable::store($value['custom'], 'civicrm_membership', $membership->id);
@@ -285,6 +274,5 @@ class CRM_Member_Form_Task_Batch extends CRM_Member_Form_Task {
       CRM_Core_Session::setStatus(ts("No updates have been saved."), ts('Not Saved'), 'alert');
     }
   }
-  //end of function
-}
 
+}

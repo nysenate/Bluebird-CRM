@@ -407,79 +407,78 @@ function nyss_contact_civicrm_postProcess( $formName, &$form ) {
   } //CRM_Contact_Form_Contact
 }
 
-function nyss_contact_civicrm_tabs( &$tabs, $contactID ) {
-  //CRM_Core_Error::debug_var('tabs', $tabs);
+function nyss_contact_civicrm_tabset($tabsetName, &$tabs, $context) {
+  //CRM_Core_Error::debug_var('$tabset', $tabsetName);
+  //CRM_Core_Error::debug_var('$tabs', $tabs);
+  //CRM_Core_Error::debug_var('$context', $context);
 
-  //create new tab for website integration; only attach to individuals
-  $ctype = civicrm_api3('contact', 'getvalue', array('id' => $contactID, 'return' => 'contact_type'));
-  if ($ctype == 'Individual') {
-    /*$url_account = CRM_Utils_System::url( 'civicrm/nyss/web/account',
-      "reset=1&snippet=1&force=1&cid=$contactID" );
-    $tabs[] = array(
-      'id' => 'nyss_web_account',
-      'url' => $url_account,
-      'title' => 'Website Account',
-      'weight' => 500 );*/
+  if ($tabsetName == 'civicrm/contact/view') {
+    //create new tab for website integration; only attach to individuals
+    $ctype = civicrm_api3('contact', 'getvalue', array('id' => $context['contact_id'], 'return' => 'contact_type'));
+    if ($ctype == 'Individual') {
+      $url_message = CRM_Utils_System::url('civicrm/nyss/web/message',
+        "reset=1&snippet=1&force=1&cid={$context['contact_id']}");
+      $tabs[] = array(
+        'id' => 'nyss_web_message',
+        'url' => $url_message,
+        'title' => 'Website Messages',
+        'weight' => 500
+      );
 
-    $url_message = CRM_Utils_System::url( 'civicrm/nyss/web/message',
-      "reset=1&snippet=1&force=1&cid=$contactID" );
-    $tabs[] = array(
-      'id' => 'nyss_web_message',
-      'url' => $url_message,
-      'title' => 'Website Messages',
-      'weight' => 500 );
+      $url_tags = CRM_Utils_System::url('civicrm/nyss/web/tags',
+        "reset=1&snippet=1&force=1&cid={$context['contact_id']}");
+      $tabs[] = array(
+        'id' => 'nyss_web_tags',
+        'url' => $url_tags,
+        'title' => 'Website Tags',
+        'weight' => 500
+      );
 
-    $url_tags = CRM_Utils_System::url( 'civicrm/nyss/web/tags',
-      "reset=1&snippet=1&force=1&cid=$contactID" );
-    $tabs[] = array(
-      'id' => 'nyss_web_tags',
-      'url' => $url_tags,
-      'title' => 'Website Tags',
-      'weight' => 500 );
+      $url_activity = CRM_Utils_System::url('civicrm/nyss/web/activitystream',
+        "reset=1&snippet=1&force=1&cid={$context['contact_id']}");
+      $tabs[] = array(
+        'id' => 'nyss_web_activitystream',
+        'url' => $url_activity,
+        'title' => 'Website Activity',
+        'weight' => 500
+      );
+    }
 
-    $url_activity = CRM_Utils_System::url( 'civicrm/nyss/web/activitystream',
-      "reset=1&snippet=1&force=1&cid=$contactID" );
-    $tabs[] = array(
-      'id' => 'nyss_web_activitystream',
-      'url' => $url_activity,
-      'title' => 'Website Activity',
-      'weight' => 500 );
-  }
+    //6698 reorder the tabs to insert mailings in a more appropriate order
+    $newTabs = array();
+    $weight = 10;
 
-  //6698 reorder the tabs to insert mailings in a more appropriate order
-  $newTabs = array();
-  $weight = 10;
+    $order = array(
+      'activity',
+      'case',
+      'mailing',
+      'rel',
+      'group',
+      'note',
+      'tag',
+      'custom_9',
+      'nyss_web_account',
+      'nyss_web_message',
+      'nyss_web_tags',
+      'nyss_web_activitystream',
+      'log',
+    );
 
-  $order = array(
-    'activity',
-    'case',
-    'mailing',
-    'rel',
-    'group',
-    'note',
-    'tag',
-    'custom_9',
-    'nyss_web_account',
-    'nyss_web_message',
-    'nyss_web_tags',
-    'nyss_web_activitystream',
-    'log',
-  );
+    foreach ( $order as $id ) {
+      foreach ( $tabs as $details ) {
+        if ( $details['id'] == $id ) {
+          $details['weight'] = $weight;
+          $newTabs[] = $details;
 
-  foreach ( $order as $id ) {
-    foreach ( $tabs as $details ) {
-      if ( $details['id'] == $id ) {
-        $details['weight'] = $weight;
-        $newTabs[] = $details;
-
-        $weight += 10;
+          $weight += 10;
+        }
       }
     }
-  }
 
-  $tabs = $newTabs;
-  //CRM_Core_Error::debug_var('$newTabs', $newTabs);
-}
+    $tabs = $newTabs;
+    //CRM_Core_Error::debug_var('tabset $newTabs', $newTabs);
+  }
+}//tabset
 
 function nyss_contact_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) {
   //CRM_Core_Error::debug_var('alterTemplateFile $formName', $formName);

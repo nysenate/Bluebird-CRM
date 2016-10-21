@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -54,7 +54,7 @@ class GatewayResponse
 	var $txError               = "";
     var $txBeagleScore         = "";
 
-	function GatewayResponse()
+	function __construct()
 	{
 	   // Empty Constructor
     }

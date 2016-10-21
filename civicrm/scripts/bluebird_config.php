@@ -200,7 +200,7 @@ function get_key_value($ini, $instance, $keyname)
 */
 function get_config_value($cfgset, $key, $defval)
 {
-  if (isset($cfgset[$key])) {
+  if (array_key_exists($key, $cfgset)) {
     return $cfgset[$key];
   }
   else if ($defval !== null) {

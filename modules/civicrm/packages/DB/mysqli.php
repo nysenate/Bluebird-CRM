@@ -114,7 +114,8 @@ class DB_mysqli extends DB_common
         1146 => DB_ERROR_NOSUCHTABLE,
         1216 => DB_ERROR_CONSTRAINT,
         1217 => DB_ERROR_CONSTRAINT,
-        1356 => DB_ERROR_DIVZERO,
+        1356 => DB_ERROR_INVALID_VIEW,
+        1365 => DB_ERROR_DIVZERO,
         1451 => DB_ERROR_CONSTRAINT,
         1452 => DB_ERROR_CONSTRAINT,
     );
@@ -228,9 +229,9 @@ class DB_mysqli extends DB_common
      *
      * @return void
      */
-    function DB_mysqli()
+    function __construct()
     {
-        $this->DB_common();
+        parent::__construct();
     }
 
     // }}}
@@ -497,7 +498,11 @@ class DB_mysqli extends DB_common
      */
     function freeResult($result)
     {
-        return is_resource($result) ? mysqli_free_result($result) : false;
+       if (!$result instanceof mysqli_result) {
+            return false;
+        }
+        mysqli_free_result($result);
+        return true;
     }
 
     // }}}
@@ -1079,6 +1084,10 @@ class DB_mysqli extends DB_common
     }
 
     // }}}
+
+    function lastInsertId() {
+        return mysqli_insert_id($this->connection);
+    }
 
 }
 

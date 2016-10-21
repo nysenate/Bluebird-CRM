@@ -393,10 +393,6 @@
 					this.setPosition();
 					this.$eDIV.css({display:'none', visibility: ''}).show();
 
-					//IEs default width: auto is bad! ie6 and ie7 have are producing different errors.. (7 = 5px shadowbox + 2px border)
-					if ( $.browser.msie )
-						this.$eUL.css('width', parseInt($.browser.version) == 6 ? this.$eDIV.width() - 7 : this.$eUL.width());
-
 					if ( this.settings.onOpen )
 						this.settings.onOpen.call(this);
 				}
@@ -893,7 +889,7 @@
 				}
 			});
 		},
-		menu : function(options, items)
+		menuBar : function(options, items)
 		{
 			return this.each(function()
 			{

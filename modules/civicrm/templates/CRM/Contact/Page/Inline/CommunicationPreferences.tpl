@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
   <div class="crm-clear crm-inline-block-content"{if $permission EQ 'edit'} title="{ts}Edit communication preferences{/ts}"{/if}>
     {if $permission EQ 'edit'}
     <div class="crm-edit-help">
-      <span class="batch-edit"></span>{ts}Edit communication preferences{/ts}
+      <span class="crm-i fa-pencil"></span> {ts}Edit communication preferences{/ts}
     </div>
     {/if}
     <div class="crm-summary-row">
@@ -60,6 +60,14 @@
         {$preferred_mail_format}
       </div>
     </div>
+    {if isset($communication_style_display)}
+    <div class="crm-summary-row">
+      <div class="crm-label">{ts}Communication Style{/ts}</div>
+      <div class="crm-content crm-contact-communication_style_display">
+        {$communication_style_display}
+      </div>
+    </div>
+    {/if}
     <div class="crm-summary-row">
       <div class="crm-label">{ts}Email Greeting{/ts}</div>
       <div class="crm-content crm-contact-email_greeting_display">

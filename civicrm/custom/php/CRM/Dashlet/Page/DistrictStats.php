@@ -34,9 +34,6 @@
  *
  */
 
-require_once 'CRM/Core/Page.php';
-require_once 'CRM/Core/DAO.php';
-
 /**
  * Main page for activity dashlet
  *
@@ -199,7 +196,7 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
     $sql_dupeEmails = "
       SELECT count(em3.id) AS dupeEmail
       FROM (
-        SELECT em1.id
+        SELECT ANY_VALUE(em1.id) id
         FROM civicrm_email em1
         JOIN civicrm_email em2
           ON em1.email = em2.email
@@ -219,22 +216,21 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
 
     //potential maximum audience
     $sql_emailsMax = "
-      SELECT COUNT( c.id ) AS emailMax_count
+      SELECT COUNT(c.id) AS emailMax_count
       FROM civicrm_contact c
       JOIN (
         SELECT contact_id
         FROM civicrm_email
         WHERE
           (
-            ( is_primary = 1 AND is_bulkmail = 0 )
+            (is_primary = 1 AND is_bulkmail = 0)
               OR
-            ( is_primary = 0 AND is_bulkmail = 1 )
+            (is_primary = 0 AND is_bulkmail = 1)
           )
           AND on_hold = 0
           AND email IS NOT NULL
           AND email != ''
         GROUP BY contact_id
-        ORDER BY is_bulkmail DESC
       ) ce
         ON c.id = ce.contact_id
       WHERE is_deleted != 1
@@ -480,19 +476,19 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
 
     //get contact counts by School District
     $sql_sc = "
-      SELECT COUNT( civicrm_contact.id ) as sc_count, DistrictName, school_district_54 as sc_id
-      FROM ( civicrm_address
+      SELECT COUNT(civicrm_contact.id) as sc_count, DistrictName, school_district_54 as sc_id
+      FROM (civicrm_address
       INNER JOIN civicrm_value_district_information_7
-        ON ( civicrm_address.id = civicrm_value_district_information_7.entity_id ) )
+        ON (civicrm_address.id = civicrm_value_district_information_7.entity_id))
       INNER JOIN civicrm_contact
-        ON ( civicrm_contact.id = civicrm_address.contact_id )
+        ON (civicrm_contact.id = civicrm_address.contact_id)
       INNER JOIN nyss_schooldistricts nsd
-        ON ( LPAD(school_district_54, 3, 0) = nsd.Code )
-      WHERE ( civicrm_contact.is_deleted != 1 )
-        AND ( civicrm_address.is_primary = 1 )
-        AND ( civicrm_value_district_information_7.school_district_54 IS NOT NULL )
-        AND ( civicrm_value_district_information_7.school_district_54 != '' )
-      GROUP BY school_district_54;
+        ON (LPAD(school_district_54, 3, 0) = nsd.Code)
+      WHERE (civicrm_contact.is_deleted != 1)
+        AND (civicrm_address.is_primary = 1)
+        AND (civicrm_value_district_information_7.school_district_54 IS NOT NULL)
+        AND (civicrm_value_district_information_7.school_district_54 != '')
+      GROUP BY school_district_54, DistrictName;
     ";
     $dao = CRM_Core_DAO::executeQuery( $sql_sc );
     while ( $dao->fetch( ) ) {

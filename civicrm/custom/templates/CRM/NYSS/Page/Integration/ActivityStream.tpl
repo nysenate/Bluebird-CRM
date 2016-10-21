@@ -56,11 +56,10 @@
   var oTable;
 
   cj(function() {
-    cj().crmAccordions();
     var filterSearchOnLoad = true;
     buildWebActivities(filterSearchOnLoad);
 
-    cj('#web_activity_type_filter').change( function( ) {
+    cj('#web_activity_type_filter').change(function() {
       buildWebActivities(true);
     });
   });

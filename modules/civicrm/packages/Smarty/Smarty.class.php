@@ -20,7 +20,7 @@
  *
  * For questions, help, comments, discussion, etc., please join the
  * Smarty mailing list. Send a blank e-mail to
- * smarty-discussion-subscribe@googlegroups.com 
+ * smarty-discussion-subscribe@googlegroups.com
  *
  * @link http://www.smarty.net/
  * @copyright 2001-2005 New Digital Group, Inc.
@@ -566,7 +566,7 @@ class Smarty
     /**
      * The class constructor.
      */
-    function Smarty()
+    function __construct()
     {
       $this->assign('SCRIPT_NAME', isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME']
                     : @$GLOBALS['HTTP_SERVER_VARS']['SCRIPT_NAME']);
@@ -1060,7 +1060,7 @@ class Smarty
         } else {
             // var non-existant, return valid reference
             $_tmp = null;
-            return $_tmp;   
+            return $_tmp;
         }
     }
 
@@ -1120,7 +1120,7 @@ class Smarty
     function fetch($resource_name, $cache_id = null, $compile_id = null, $display = false)
     {
         static $_cache_info = array();
-        
+
         $_smarty_old_error_level = $this->debugging ? error_reporting() : error_reporting(isset($this->error_reporting)
                ? $this->error_reporting : error_reporting() & ~E_NOTICE);
 
@@ -1513,28 +1513,28 @@ class Smarty
      */
     function _get_compile_path($resource_name)
     {
-        $compilePath = $this->_get_auto_filename( $this->compile_dir, 
+        $compilePath = $this->_get_auto_filename( $this->compile_dir,
                                                   $resource_name,
                                                   $this->_compile_id );
         $compilePath .= '.php';
-        
+
         //for 'string:' resource smarty might going to fail to create
         //compile file, so make sure we should have valid path, CRM-5890
         $matches = array( );
         if ( preg_match( '/^(\s+)?string:/', $resource_name, $matches ) ) {
             if ( !$this->validateCompilePath( $compilePath ) ) {
-                $compilePath = $this->_get_auto_filename( $this->compile_dir, 
+                $compilePath = $this->_get_auto_filename( $this->compile_dir,
                                                           time().rand(),
                                                           $this->_compile_id );
                 $compilePath .= '.php';
             }
         }
-        
-        return $compilePath; 
+
+        return $compilePath;
     }
-    
+
     /**
-     *  do check can smarty create a file w/ given path.  
+     *  do check can smarty create a file w/ given path.
      */
     function validateCompilePath( $compilePath ) {
         //first check for directory.
@@ -1543,17 +1543,17 @@ class Smarty
             require_once(SMARTY_CORE_DIR . 'core.create_dir_structure.php');
             smarty_core_create_dir_structure( array('dir' => $dirname ), $this );
         }
-        
+
         $isValid = false;
         if ( $fd = @fopen( $compilePath, 'wb') ) {
             $isValid = true;
             @fclose( $fd );
             @unlink($compilePath);
         }
-        
+
         return $isValid;
     }
-    
+
     /**
      * fetch the template info. Gets timestamp, and source
      * if get_source is true
@@ -1973,10 +1973,10 @@ class Smarty
     {
         return eval($code);
     }
-    
+
     /**
      * Extracts the filter name from the given callback
-     * 
+     *
      * @param callback $function
      * @return string
      */

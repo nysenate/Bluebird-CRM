@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,65 +23,26 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2013
- * $Id$
- *
+ * @copyright CiviCRM LLC (c) 2004-2016
  */
 
 /**
- * This class generates form components for Conference Slots
- *
+ * This class generates form components for Conference Slots.
  */
 class CRM_Event_Form_ManageEvent_Conference extends CRM_Event_Form_ManageEvent {
 
   /**
-   * Page action
+   * Page action.
    */
   public $_action;
 
   /**
-   * This function sets the default values for the form. For edit/view mode
-   * the default values are retrieved from the database
-   *
-   * @access public
-   *
-   * @return None
-   */
-  function setDefaultValues() {
-    $parentDefaults = parent::setDefaultValues();
-
-    $eventId  = $this->_id;
-    $params   = array();
-    $defaults = array();
-    if (isset($eventId)) {
-      $params = array('id' => $eventId);
-    }
-
-    CRM_Event_BAO_Event::retrieve($params, $defaults);
-
-    if (isset($defaults['parent_event_id'])) {
-      $params = array('id' => $defaults['parent_event_id']);
-      $r_defaults = array();
-      $parent_event = CRM_Event_BAO_Event::retrieve($params, $r_defaults);
-      $defaults['parent_event_name'] = $parent_event->title;
-    }
-
-    $defaults = array_merge($defaults, $parentDefaults);
-    $defaults['id'] = $eventId;
-
-    return $defaults;
-  }
-
-  /**
-   * Function to build the form
-   *
-   * @return None
-   * @access public
+   * Build quick form.
    */
   public function buildQuickForm() {
     $slots = CRM_Core_OptionGroup::values('conference_slot');
@@ -90,25 +51,27 @@ class CRM_Event_Form_ManageEvent_Conference extends CRM_Event_Form_ManageEvent {
       'slot_label_id',
       ts('Conference Slot'),
       array(
-        '' => ts('- select -')) + $slots,
+        '' => ts('- select -'),
+      ) + $slots,
       FALSE
     );
 
-    $this->addElement('text', 'parent_event_name', ts('Parent Event'));
-    $this->addElement('hidden', 'parent_event_id');
+    $this->addEntityRef('parent_event_id', ts('Parent Event'), array(
+        'entity' => 'event',
+        'placeholder' => ts('- any -'),
+        'select' => array('minimumInputLength' => 0),
+      )
+    );
 
     parent::buildQuickForm();
   }
 
+  /**
+   * Post process form.
+   */
   public function postProcess() {
-    $params = array();
     $params = $this->exportValues();
 
-    if (trim($params['parent_event_name']) === '') {
-      # believe me...
-      $params['parent_event_id'] = '';
-    }
-    //update events table
     $params['id'] = $this->_id;
     CRM_Event_BAO_Event::add($params);
 
@@ -116,13 +79,12 @@ class CRM_Event_Form_ManageEvent_Conference extends CRM_Event_Form_ManageEvent {
   }
 
   /**
-   * Return a descriptive name for the page, used in wizard header
+   * Return a descriptive name for the page, used in wizard header.
    *
    * @return string
-   * @access public
    */
   public function getTitle() {
     return ts('Conference Slots');
   }
-}
 
+}

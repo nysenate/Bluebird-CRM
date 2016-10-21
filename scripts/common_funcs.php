@@ -84,7 +84,7 @@ function connect_to_database($bbcfg, $dbtype, $driver = DRIVER_MYSQL)
 
 
 
-function bootstrap_script($prog, $instance, $dbtype)
+function bootstrap_script($prog, $instance, $dbtypes)
 {
   $bbconfig = get_bluebird_instance_config($instance);
   if (!$bbconfig) {
@@ -97,13 +97,22 @@ function bootstrap_script($prog, $instance, $dbtype)
   // depends on it.
   define('CIVICRM_SITE_KEY', $bbconfig['site.key']);
 
-  $dbh = connect_to_database($bbconfig, $dbtype);
-  if (!$dbh) {
-    echo "$prog: Unable to connect to database for instance [$instance]\n";
-    return null;
+  if (!is_array($dbtypes)) {
+    $dbtypes = array($dbtypes);
   }
 
-  return array('bbconfig'=>$bbconfig, 'dbh'=>$dbh, 'dblayer'=>'PDO');
+  $dbrefs = array();
+  foreach ($dbtypes as $dbtype) {
+    $dbh = connect_to_database($bbconfig, $dbtype);
+    if (!$dbh) {
+      echo "$prog: Unable to connect to [$dbtype] database for instance [$instance]\n";
+      return null;
+    }
+    $dbrefs[$dbtype] = $dbh;
+  }
+
+
+  return array('bbconfig'=>$bbconfig, 'dbrefs'=>$dbrefs, 'dblayer'=>'PDO');
 } // bootstrap_script()
 
 ?>

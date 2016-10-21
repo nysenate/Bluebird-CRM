@@ -24,22 +24,22 @@ cj(document).ready(function()
   cj(".range option[value='30']").attr('selected', 'selected');
 
   // use highlighted text to populate search areas
-  cj(".found.email_address").live('click', function() {
+  cj(".found.email_address").on('click', function() {
     cj('.highlightTarget:visible .email_address').val(cj(this).data('search'));
   });
 
-  cj(".found.phone").live('click', function() {
+  cj(".found.phone").on('click', function() {
     cj('.highlightTarget:visible .phone').val(cj(this).data('search'));
   });
 
-  cj(".found.zip").live('click', function() {
+  cj(".found.zip").on('click', function() {
     var data = cj(this).data('json');
     cj('.highlightTarget:visible .city').val(data.city);
     cj('.highlightTarget:visible .state').val(data.state);
     cj('.highlightTarget:visible .zip').val(data.zip);
   });
 
-  cj(".found.name").live('click', function() {
+  cj(".found.name").on('click', function() {
     var data = cj(this).data('json');
     cj('.highlightTarget:visible .prefix').val(data.prefix);
     cj('.highlightTarget:visible .first_name').val(data.first);
@@ -49,7 +49,7 @@ cj(document).ready(function()
   });
 
   // prevent the scroll to top issue
-  cj(".imap_actions_column a").live('click', function( event ) {
+  cj(".imap_actions_column a").on('click', function( event ) {
     event.preventDefault();
   });
 
@@ -145,7 +145,7 @@ cj(document).ready(function()
   // ***********************************************************
   // Search -
   // Searching for contacts to assign message to
-  cj("#search").live('click', function() {
+  cj("#search").on('click', function() {
     var first_name = cj('#tab1 .first_name').val();
     var last_name = cj('#tab1 .last_name').val();
     var city = cj('#tab1 .city').val();
@@ -208,14 +208,14 @@ cj(document).ready(function()
   // ask permission first, with bright red buttons
 
   // Delete Single
-  cj(".imap_actions_column .delete").live('click', function() {
+  cj(".imap_actions_column .delete").on('click', function() {
     var messageId = cj(this).parent().parent().find('.checkbox').data('delete');
     cj("#delete-confirm #message").val(messageId);
     cj("#delete-confirm").dialog('open');
   });
 
   // Delete Multiple ( from checkbox )
-  cj(".page_actions .multi_delete").live('click', function() {
+  cj(".page_actions .multi_delete").on('click', function() {
     // grab the rows to delete
     var delete_ids = $("#imapper-messages-list input:checkbox:checked").map(function(){
       return $(this).data('delete');
@@ -288,7 +288,7 @@ cj(document).ready(function()
   // but ask permission first
 
   // Clear Single
-  cj(".imap_actions_column .clear").live('click', function() {
+  cj(".imap_actions_column .clear").on('click', function() {
     // console.log('clear');
     cj("#loading-popup").dialog('open');
     var messageId = cj(this).parent().parent().find('.checkbox').data('delete');
@@ -300,7 +300,7 @@ cj(document).ready(function()
   });
 
   // Clear multiple ( from checkbox )
-  cj(".page_actions .multi_clear").live('click', function() {
+  cj(".page_actions .multi_clear").on('click', function() {
     // console.log('multi_clear');
     var clear_ids = $("#imapper-messages-list input:checkbox:checked").map(function(){
       return $(this).data('delete');
@@ -475,7 +475,7 @@ cj(document).ready(function()
     }
   });
   // what triggers the popup
-  cj(".imap_actions_column .assign").live('click', function() {
+  cj(".imap_actions_column .assign").on('click', function() {
     cj("#loading-popup").dialog('open');
     var messageId = cj(this).parent().parent().attr('id');
     cj('#message').val(messageId);
@@ -867,7 +867,7 @@ cj(document).ready(function()
   });
 
   // What triggers the popup
-  cj(".imap_actions_column .process").live('click', function() {
+  cj(".imap_actions_column .process").on('click', function() {
     cj("#loading-popup").dialog('open');
 
     var messageId = cj(this).parent().parent().attr('data-imap-id');
@@ -889,7 +889,7 @@ cj(document).ready(function()
   });
 
   // What triggers the popup
-  cj(".page_actions .multi_process").live('click', function() {
+  cj(".page_actions .multi_process").on('click', function() {
     cj("#loading-popup").dialog('open');
 
     var newContacts = new Array();
@@ -1230,31 +1230,31 @@ cj(document).ready(function()
 
 // general functions
   // paginated contact search
-  cj(".seeMore").live('click', function() {
+  cj(".seeMore").on('click', function() {
     var position = cj(this).attr('id');
     var update = parseInt(position,10)+200;
     buildContactList(update);
     cj(this).remove();
   });
 
-  cj(".FixedHeader_Cloned th").live('click', function() {
+  cj(".FixedHeader_Cloned th").on('click', function() {
     var clickclass = cj(this).attr('class').split(' ')[0];
     cj('.imapperbox th.'+clickclass).click();
   });
 
   // add highlight to selected rows in table view
-  cj(".checkbox").live('click', function() {
+  cj(".checkbox").on('click', function() {
     cj(this).parent().parent().toggleClass("highlight");
   });
 
   // toggle hidden email info in multi_process popup
-  cj(".hidden_email_info").live('click', function() {
+  cj(".hidden_email_info").on('click', function() {
     var id = cj(this).data('id');
     cj("#email_"+id+" .info").removeClass('hidden_email_info').addClass('shown_email_info').html('Hide Email');
     cj("#email_"+id).removeClass('hidden_email').addClass('shown_email');
   });
 
-  cj(".shown_email_info").live('click', function() {
+  cj(".shown_email_info").on('click', function() {
     var id = cj(this).data('id');
     cj("#email_"+id+" .info").removeClass('shown_email_info').addClass('hidden_email_info').html('Show Email');
     cj("#email_"+id).removeClass('shown_email').addClass('hidden_email');
@@ -1297,6 +1297,7 @@ function getUnmatched(range)
     success: function(data, status) {
       result = cj.parseJSON(data);
       messages = result.data;
+      console.log('messages: ', messages);
       if (result.is_error == true || messages == null || messages.stats.overview.successes == 0) {
         Table();
       }
@@ -1574,7 +1575,7 @@ function ReportTable()
 }
 
 
-cj(".range").live('change', function() {
+cj(".range").on('change', function() {
   if (cj("#Activities").length) {
     getMatched(cj('#range').attr("value"));
   }
@@ -1586,7 +1587,7 @@ cj(".range").live('change', function() {
   }
 });
 
-cj(".checkbox_switch").live('click', function(e) {
+cj(".checkbox_switch").on('click', function(e) {
   if (this.checked) {
     cj('.checkbox').prop('checked', this.checked)
     cj('.checkbox').parent().parent().addClass('highlight');
@@ -1597,29 +1598,29 @@ cj(".checkbox_switch").live('click', function(e) {
   }
 });
 
-cj(".stats_overview").live('click', function() {
+cj(".stats_overview").on('click', function() {
   cj(".stats_overview").removeClass('active');
   cj(this).addClass('active');
 });
 
-cj(".Total").live('click', function() {
+cj(".Total").on('click', function() {
   oTable.fnFilter("", 5, false, false);
 });
-cj(".Unmatched").live('click', function() {
+cj(".Unmatched").on('click', function() {
   oTable.fnFilter('unmatched', 5);
 });
-cj(".Matched").live('click', function() {
+cj(".Matched").on('click', function() {
   oTable.fnFilter('^matched', 5, true);
 });
-cj(".Cleared").live('click', function() {
+cj(".Cleared").on('click', function() {
   oTable.fnFilter('cleared', 5);
 });
 /** removed per NYSS #8396
-cj(".Errors").live('click', function() {
+cj(".Errors").on('click', function() {
   oTable.fnFilter('error', 5);
 });
 **/
-cj(".Deleted").live('click', function() {
+cj(".Deleted").on('click', function() {
   oTable.fnFilter('deleted', 5);
 });
 

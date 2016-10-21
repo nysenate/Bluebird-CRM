@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,26 +29,6 @@
 
 <div id="crm-container" class="crm-container{if $urlIsPublic} crm-public{/if}" lang="{$config->lcMessages|truncate:2:"":true}" xml:lang="{$config->lcMessages|truncate:2:"":true}">
 
-{* we should uncomment below code only when we are experimenting with new css for specific pages and comment css inclusion in civicrm.module*}
-{*if $config->customCSSURL}
-    <link rel="stylesheet" href="{$config->customCSSURL}" type="text/css" />
-{else}
-    {assign var="revamp" value=0}
-    {foreach from=$config->revampPages item=page}
-        {if $page eq $tplFile}
-            {assign var="revamp" value=1}
-        {/if}
-    {/foreach}
-
-    {if $revamp eq 0}
-        <link rel="stylesheet" href="{$config->resourceBase}css/civicrm.css" type="text/css" />
-    {else}
-        <link rel="stylesheet" href="{$config->resourceBase}css/civicrm-new.css" type="text/css" />
-    {/if}
-    <link rel="stylesheet" href="{$config->resourceBase}css/extras.css" type="text/css" />
-{/if*}
-
-
 {crmNavigationMenu is_default=1}
 
 {if $breadcrumb}
@@ -62,21 +42,18 @@
     </div>
 {/if}
 
-{* include wysiwyg related files*}
-{include file="CRM/common/wysiwyg.tpl"}
-
 {if isset($browserPrint) and $browserPrint}
 {* Javascript window.print link. Used for public pages where we can't do printer-friendly view. *}
 <div id="printer-friendly">
 <a href="#" onclick="window.print(); return false;" title="{ts}Print this page.{/ts}">
-  <div class="ui-icon ui-icon-print"></div>
+  <i class="crm-i fa-print"></i>
 </a>
 </div>
 {else}
 {* Printer friendly link/icon. *}
 <div id="printer-friendly">
 <a href="{$printerFriendly}" target='_blank' title="{ts}Printer-friendly view of this page.{/ts}">
-  <div class="ui-icon ui-icon-print"></div>
+  <i class="crm-i fa-print"></i>
 </a>
 </div>
 {/if}
@@ -97,24 +74,24 @@
     {include file="CRM/common/localNav.tpl"}
 {/if}
 
-{include file="CRM/common/status.tpl"}
-
-
-{crmRegion name='page-body'}
-<!-- .tpl file invoked: {$tplFile}. Call via form.tpl if we have a form in the page. -->
-{if isset($isForm) and $isForm}
-    {include file="CRM/Form/$formTpl.tpl"}
-{else}
-    {include file=$tplFile}
-{/if}
-{/crmRegion}
+<div id="crm-main-content-wrapper">
+  {include file="CRM/common/status.tpl"}
+  {crmRegion name='page-body'}
+    {if isset($isForm) and $isForm and isset($formTpl)}
+      {include file="CRM/Form/$formTpl.tpl"}
+    {else}
+      {include file=$tplFile}
+    {/if}
+  {/crmRegion}
+</div>
 
 
 {crmRegion name='page-footer'}
-{if ! $urlIsPublic}
-{include file="CRM/common/footer.tpl"}
+{if $urlIsPublic}
+  {include file="CRM/common/publicFooter.tpl"}
+{else}
+  {include file="CRM/common/footer.tpl"}
 {/if}
 {/crmRegion}
 
 </div> {* end crm-container div *}
-

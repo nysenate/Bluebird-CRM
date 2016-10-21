@@ -3,6 +3,15 @@
 require_once dirname(__FILE__).'/../../civicrm/scripts/bluebird_config.php';
 
 
+function nyss_signupreport_init()
+{
+  if (substr(request_path(), 0, 13) == 'signupreports') {
+    // Add the CSS for this module
+    drupal_add_css(drupal_get_path('module', 'nyss_signupreport').'/nyss_signupreport.css');
+  }
+}
+
+
 function nyss_signupreport_menu()
 {
   $items = array();

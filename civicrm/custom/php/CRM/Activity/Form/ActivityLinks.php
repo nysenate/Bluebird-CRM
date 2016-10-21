@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,26 +23,26 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2013
- * $Id$
- *
+ * @copyright CiviCRM LLC (c) 2004-2016
  */
 
 /**
- * This class generates form components for Activity Links
- *
+ * This class generates form components for Activity Links.
  */
 class CRM_Activity_Form_ActivityLinks extends CRM_Core_Form {
   public function buildQuickForm() {
     self::commonBuildQuickForm($this);
   }
 
-  static function commonBuildQuickForm($self) {
+  /**
+   * @param $self
+   */
+  public static function commonBuildQuickForm($self) {
     $contactId = CRM_Utils_Request::retrieve('cid', 'Positive', $self);
     if (!$contactId) {
       $contactId = CRM_Utils_Request::retrieve('cid', 'Positive', CRM_Core_DAO::$_nullObject, FALSE, NULL, $_REQUEST);
@@ -75,8 +75,9 @@ class CRM_Activity_Form_ActivityLinks extends CRM_Core_Form {
       // Check for existence of a mobile phone and ! do not SMS privacy setting
       $mobileTypeID = CRM_Core_OptionGroup::getValue('phone_type', 'Mobile', 'name');
       list($name, $phone, $doNotSMS) = CRM_Contact_BAO_Contact_Location::getPhoneDetails($contactId, $mobileTypeID);
+
       if (!$doNotSMS && $phone) {
-        $sendSMS = array($SMSId  => ts('Send SMS'));
+        $sendSMS = array($SMSId => ts('Send SMS'));
         $activityTypes += $sendSMS;
       }
     }
@@ -85,7 +86,6 @@ class CRM_Activity_Form_ActivityLinks extends CRM_Core_Form {
 
     $activityTypes += $otherTypes;
     asort($activityTypes); //NYSS 4921
-    //unset( $activityTypes[22] ); //NYSS remove Print PDF option from contact actions list #2435
 
     foreach (array_keys($activityTypes) as $typeId) {
       if ($typeId == $emailTypeId) {
@@ -93,11 +93,11 @@ class CRM_Activity_Form_ActivityLinks extends CRM_Core_Form {
           "{$urlParams}{$typeId}", FALSE, NULL, FALSE
         );
       }
-       elseif ($typeId == $SMSId) {
+      elseif ($typeId == $SMSId) {
         $urls[$typeId] = CRM_Utils_System::url('civicrm/activity/sms/add',
           "{$urlParams}{$typeId}", FALSE, NULL, FALSE
         );
-        }
+      }
       elseif ($typeId == $letterTypeId) {
         $urls[$typeId] = CRM_Utils_System::url('civicrm/activity/pdf/add',
           "{$urlParams}{$typeId}", FALSE, NULL, FALSE

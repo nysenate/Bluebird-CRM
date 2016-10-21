@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -55,6 +55,9 @@
     {ts 1=$ftUrl}There are no financial accounts configured with Financial Account Type 'Asset' Type. <a href='%1'>Click here</a> if you want to configure financial accounts for your site.{/ts}
         {/if}
       </td>
+    </tr>
+    <tr class="crm-paymentProcessor-form-block-payment-instrument-id">
+      <td class="label">{$form.payment_instrument_id.label}</td><td>{$form.payment_instrument_id.html}</td>
     </tr>
     <tr class="crm-paymentProcessor-form-block-is_active">
         <td></td><td>{$form.is_active.html}&nbsp;{$form.is_active.label}</td>
@@ -150,17 +153,15 @@
 </div>
 
 {if $action eq 1  or $action eq 2}
-<script type="text/javascript" >
-{literal}
+  <script type="text/javascript">
+  {literal}
     function reload(refresh) {
-        var paymentProcessorType = document.getElementById("payment_processor_type_id");
-        var url = {/literal}"{$refreshURL}"{literal}
-        var post = url + "&pp=" + paymentProcessorType.value;
-        if( refresh ) {
-            window.location= post;
-        }
+      var paymentProcessorType = cj("#payment_processor_type_id");
+      var url = {/literal}"{$refreshURL}"{literal} + "&pp=" + paymentProcessorType.val();
+      paymentProcessorType.closest('form').attr('data-warn-changes', 'false');
+      window.location.href = url;
     }
-{/literal}
-    </script>
+  {/literal}
+  </script>
 
 {/if}

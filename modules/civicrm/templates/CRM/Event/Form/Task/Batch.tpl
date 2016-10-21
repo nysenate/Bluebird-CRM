@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,24 +25,21 @@
 *}
 <div class="batch-update crm-block crm-form-block crm-event-batch-form-block">
 <fieldset>
-<div id="help">
+  <div class="help">
     {if $context EQ 'statusChange'} {* Update Participant Status task *}
-        {ts}Update the status for each participant individually, OR change all statuses to:{/ts}
-        {$form.status_change.html}  {help id="id-status_change"}
-        <div class="status">
-          {ts}Participants whose status is changed FROM Pending Pay Later TO Registered or Attended will receive a confirmation email and their payment status will be set to completed. If this is not what you want to do, you can change their participant status by editing their event registration record directly.{/ts}
-        </div>
-        {if $notifyingStatuses}
-          <div class="status">
-            {ts 1=$notifyingStatuses}Participants whose status is changed TO any of the following will be automatically notified via email: %1.{/ts}
-          </div>
-        {/if}
+      {ts}Update the status for each participant individually, OR change all statuses to:{/ts}
+      {$form.status_change.html}  {help id="id-status_change"}
+      <div class="status">{$status}</div>
     {else}
-        {ts}Update field values for each participant as needed. To set a field to the same value for ALL rows, enter that value for the first participation and then click the <strong>Copy icon</strong> (next to the column title).{/ts}
+      {if $statusProfile EQ 1} {* Update Participant Status in batch task *}
+        <div class="status">{$status}</div>
+      {/if}
+      {ts}Update field values for each participant as needed. To set a field to the same value for ALL rows, enter that value for the first participation and then click the
+        <strong>Copy icon</strong>
+        (next to the column title).{/ts}
     {/if}
     <p>{ts}Click <strong>Update Participant(s)</strong> below to save all your changes.{/ts}</p>
-</div>
-    <legend>{$profileTitle}</legend>
+  </div>
         <table class="crm-copy-fields">
        <thead class="sticky">
             <tr class="columnheader">
@@ -92,10 +89,10 @@
 /**
  * Function to update participant status
  */
-cj( function(){
-   cj('#status_change').change( function() {
-      if ( cj(this).val() ) {
-        cj('.crm-copy-fields [name^="field["][name*="[participant_status]"]').val( cj(this).val() );
+CRM.$(function($) {
+   $('#status_change').change( function() {
+      if ( $(this).val() ) {
+        $('.crm-copy-fields [name^="field["][name*="[participant_status]"]').val( $(this).val() );
       }
    });
 

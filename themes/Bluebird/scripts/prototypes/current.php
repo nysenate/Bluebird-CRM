@@ -20,10 +20,7 @@
     </style>
     <style type="text/css" media="screen,projection">
         @import url("/sites/default/themes/Bluebird/css/Bluebird.css?mwmgvm");
-        @import url("/sites/default/themes/Bluebird/nyss_skin/skin.css?mwmgvm");
-        @import url("/sites/default/themes/Bluebird/nyss_skin/civi-header.css?mwmgvm");
-        @import url("/sites/default/themes/Bluebird/css/style.css?mwmgvm");
-        @import url("/sites/default/themes/Bluebird/nyss_skin/tags/tags.css");
+        @import url("/sites/default/themes/Bluebird/css/tags/tags.css");
 
     </style>
     <script type="text/javascript" src="/misc/jquery.js?v=1.4.4"></script>

@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,12 +23,12 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2013
+ * @copyright CiviCRM LLC (c) 2004-2016
  * $Id$
  *
  */
@@ -40,13 +40,11 @@
 class CRM_Dashlet_Page_MyCases extends CRM_Core_Page {
 
   /**
-   * List activities as dashlet
+   * List activities as dashlet.
    *
-   * @return none
-   *
-   * @access public
+   * @return void
    */
-  function run() {
+  public function run() {
     $context = CRM_Utils_Request::retrieve('context', 'String', $this, FALSE, 'dashlet');
     $this->assign('context', $context);
 
@@ -55,15 +53,16 @@ class CRM_Dashlet_Page_MyCases extends CRM_Core_Page {
       CRM_Core_Error::fatal(ts('You are not authorized to access this page.'));
     }
 
-    $session  = CRM_Core_Session::singleton();
-    $userID   = $session->get('userID');
+    $session = CRM_Core_Session::singleton();
+    $userID = $session->get('userID');
 
     //NYSS 2173/5340 - now retrieved via AJAX
-    /*$myCases = CRM_Case_BAO_Case::getCases(FALSE, $userID, 'any', $context);
+    /*$upcoming = CRM_Case_BAO_Case::getCases(FALSE, $userID, 'upcoming', $context);
 
-    if (!empty($myCases)) {
-      $this->assign('myCases', $myCases);
+    if (!empty($upcoming)) {
+      $this->assign('upcomingCases', $upcoming);
     }*/
     return parent::run();
   }
+
 }
