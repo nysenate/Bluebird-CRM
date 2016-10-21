@@ -233,7 +233,7 @@ class CRM_NYSS_BAO_Integration_Website
     if (!$tagId) {
       $tag = civicrm_api('tag', 'create', array(
         'version' => 3,
-        'name' => $params->issue_name,
+        'name' => $tagName,
         'parent_id' => $parentId,
         'is_selectable' => 0,
         'is_reserved' => 1,
@@ -1442,6 +1442,9 @@ class CRM_NYSS_BAO_Integration_Website
     $tagName = '';
     if (!empty($params->event_info->name)) {
       $tagName = $params->event_info->name;
+    }
+    elseif (!empty($params->event_info->$alternate)) {
+      $tagName = $params->event_info->$alternate;
     }
     elseif (!empty($params->$alternate)) {
       $tagName = $params->$alternate;
