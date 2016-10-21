@@ -423,8 +423,8 @@ class CRM_NYSS_BAO_Integration_Website
 
     //find tag name
     $tagName = self::getTagName($params, 'petition_name');
-    if (!empty($tagName)) {
-      CRM_Core_Error::debug_var('processPetition: unable to identify tag name', $params, true, true, 'integration');
+    if (empty($tagName)) {
+      CRM_Core_Error::debug_var('processPetition: unable to identify tag name in $params', $params, true, true, 'integration');
       return false;
     }
 
