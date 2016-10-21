@@ -68,7 +68,7 @@ class CRM_Integration_Fix10607
       FROM {$params['intDB']}.archive
       WHERE target_shortname = '{$optlist['site']}'
         AND target_shortname = user_shortname
-        AND msg_action = 'signature update'
+        AND (msg_action = 'signature update' OR msg_action = 'sign')
     ";
     bbscript_log(LL::DEBUG, 'SQL query:', $sql);
     $row = CRM_Core_DAO::executeQuery($sql);
