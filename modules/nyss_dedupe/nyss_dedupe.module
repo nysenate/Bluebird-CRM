@@ -294,7 +294,7 @@ function nyss_dedupe_individual_default_strict_record($o) {
 
     if($city)
         $where .= "
-      AND (address1.city IS NULL or address1.city = '$city')";
+      AND (address1.city IS NULL or address1.city = BB_NORMALIZE_ADDR('$city'))";
 
     if($state_id)
         $where .= "
@@ -402,7 +402,7 @@ function nyss_dedupe_individual_default_fuzzy_record($o) {
 
     if($city)
       $where .= "
-        AND (address1.city IS NULL or address1.city = '$city')";
+        AND (address1.city IS NULL or address1.city = BB_NORMALIZE_ADDR('$city'))";
 
     if($state_id)
       $where .= "
