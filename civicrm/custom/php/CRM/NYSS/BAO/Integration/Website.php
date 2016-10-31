@@ -274,18 +274,26 @@ class CRM_NYSS_BAO_Integration_Website
       WHERE name = 'Website Committees'
         AND is_tagset = 1
     ");
+
+    //find tag name
+    $tagName = self::getTagName($params, 'committee_name');
+    if (empty($tagName)) {
+      CRM_Core_Error::debug_var('processCommittee: unable to identify tag name in $params', $params, true, true, 'integration');
+      return false;
+    }
+
     $tagId = CRM_Core_DAO::singleValueQuery("
       SELECT id
       FROM civicrm_tag
       WHERE name = %1
         AND parent_id = {$parentId}
-    ", array(1 => array($params->committee_name, 'String')));
+    ", array(1 => array($tagName, 'String')));
     //CRM_Core_Error::debug_var('tagId', $tagId);
 
     if (!$tagId) {
       $tag = civicrm_api('tag', 'create', array(
         'version' => 3,
-        'name' => $params->committee_name,
+        'name' => $tagName,
         'parent_id' => $parentId,
         'is_selectable' => 0,
         'is_reserved' => 1,
