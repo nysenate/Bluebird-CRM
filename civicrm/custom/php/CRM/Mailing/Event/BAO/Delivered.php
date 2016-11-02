@@ -223,6 +223,9 @@ class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
       $query .= ' LIMIT ' . CRM_Utils_Type::escape($offset, 'Integer') . ', ' . CRM_Utils_Type::escape($rowCount, 'Integer');
     }
 
+    //NYSS first set mysql group by mode
+    //TODO discuss with core team for more complete fix
+    CRM_Core_DAO::executeQuery("SET SESSION sql_mode = '';");
     $dao->query($query);
 
     $results = array();
