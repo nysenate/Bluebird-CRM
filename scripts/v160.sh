@@ -63,7 +63,11 @@ $execSql $instance -c "$sql" -q
 
 sql="
   ALTER TABLE $ldb.log_civicrm_importer_jobs CONVERT TO CHARACTER SET utf8 COLLATE 'utf8_unicode_ci';
-  ALTER TABLE $ldb.log_civicrm_mailing_event_sendgrid_delivered CONVERT TO CHARACTER SET utf8 COLLATE 'utf8_unicode_ci';
+"
+$execSql $instance -c "$sql" -q --log
+
+sql="
+  DROP TABLE IF EXISTS $ldb.log_civicrm_mailing_event_sendgrid_delivered;
 "
 $execSql $instance -c "$sql" -q --log
 
