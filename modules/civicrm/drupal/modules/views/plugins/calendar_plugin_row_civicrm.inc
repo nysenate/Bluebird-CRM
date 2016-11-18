@@ -65,7 +65,7 @@ class calendar_plugin_row_civicrm extends calendar_plugin_row {
       '#type' => 'value',
       '#value' => '',
     );
-  }
+    }
 
   function pre_render($values) {
 

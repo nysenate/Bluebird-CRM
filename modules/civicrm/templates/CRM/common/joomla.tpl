@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,11 +29,9 @@
 
 <div id="crm-container" class="crm-container{if $urlIsPublic} crm-public{/if}" lang="{$config->lcMessages|truncate:2:"":true}" xml:lang="{$config->lcMessages|truncate:2:"":true}">
 
-{* Only include joomla.css in administrator (backend). Page layout style ids and classes conflict with typical front-end css and break the page layout. *}
+{* Joomla-only container to hold the civicrm menu *}
+<div id="crm-nav-menu-container"></div>
 {crmNavigationMenu is_default=1}
-
-{* include wysiwyg related files*}
-{include file="CRM/common/wysiwyg.tpl"}
 
 <table border="0" cellpadding="0" cellspacing="0" id="crm-content">
   <tr>
@@ -57,10 +55,10 @@
 
 {if $browserPrint}
 {* Javascript window.print link. Used for public pages where we can't do printer-friendly view. *}
-<div id="printer-friendly"><a href="#" onclick="window.print(); return false;" title="{ts}Print this page.{/ts}"><div class="ui-icon ui-icon-print"></div></a></div>
+<div id="printer-friendly"><a href="#" onclick="window.print(); return false;" title="{ts}Print this page.{/ts}"><i class="crm-i fa-print"></i></a></div>
 {else}
 {* Printer friendly link/icon. *}
-<div id="printer-friendly"><a href="{$printerFriendly}" target='_blank' title="{ts}Printer-friendly view of this page.{/ts}"><div class="ui-icon ui-icon-print"></div></a></div>
+<div id="printer-friendly"><a href="{$printerFriendly}" target='_blank' title="{ts}Printer-friendly view of this page.{/ts}"><i class="crm-i fa-print"></i></a></div>
 {/if}
 
 {if $pageTitle}
@@ -80,20 +78,22 @@
         {include file="CRM/common/localNav.tpl"}
     {/if}
 
-    {include file="CRM/common/status.tpl"}
-
-    <!-- .tpl file invoked: {$tplFile}. Call via form.tpl if we have a form in the page. -->
-    {crmRegion name='page-body'}
-    {if $isForm}
-        {include file="CRM/Form/$formTpl.tpl"}
-    {else}
-        {include file=$tplFile}
-    {/if}
-    {/crmRegion}
+    <div id="crm-main-content-wrapper">
+      {include file="CRM/common/status.tpl"}
+      {crmRegion name='page-body'}
+        {if isset($isForm) and $isForm and isset($formTpl)}
+          {include file="CRM/Form/$formTpl.tpl"}
+        {else}
+          {include file=$tplFile}
+        {/if}
+      {/crmRegion}
+    </div>
 
     {crmRegion name='page-footer'}
-    {if ! $urlIsPublic}
-    {include file="CRM/common/footer.tpl"}
+    {if $urlIsPublic}
+      {include file="CRM/common/publicFooter.tpl"}
+    {else}
+      {include file="CRM/common/footer.tpl"}
     {/if}
     {/crmRegion}
 

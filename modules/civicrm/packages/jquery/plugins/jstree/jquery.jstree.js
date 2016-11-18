@@ -72,7 +72,7 @@
             //tmp.styleSheet.cssText = opts.str;
             var setFunc = function(){  
               try{
-						tmp.styleSheet.cssText = opts.str; 
+                tmp.styleSheet.cssText = opts.str;
               }catch(e){  }
             };
             if(tmp.styleSheet.disabled){
@@ -80,9 +80,9 @@
             }else{
               setFunc();
             }
-					}
+          }
 					else {
-						tmp.styleSheet.cssText = tmp.styleSheet.cssText + " " + opts.str; 
+            tmp.styleSheet.cssText = tmp.styleSheet.cssText + " " + opts.str;
 					}
 				}
 				else {

@@ -55,7 +55,6 @@
   var aoTable;
 
   cj(function() {
-    cj().crmAccordions();
     var filterSearchOnLoad = true;
     buildWebActivities(filterSearchOnLoad);
 

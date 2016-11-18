@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.6                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2015                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -107,7 +107,7 @@ class LockManager {
    * @param string|array $factory
    *   A callback. The callback should accept a $name parameter.
    *   Callbacks will be located using the resolver.
-   * @return $this
+   * @return LockManager
    * @see Resolver
    */
   public function register($pattern, $factory) {

@@ -72,32 +72,29 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     //5174
     $this->addElement('checkbox', 'primaryAddress', ts('Export Primary Address'), null );
 
-    require_once 'CRM/Core/OptionGroup.php';
+    $select2style = array(
+      'multiple' => TRUE,
+      'style' => 'width: 300px',
+      'class' => 'crm-select2',
+      'placeholder' => ts('- select -'),
+    );
+
     $rts = CRM_Core_OptionGroup::values('record_type_20100906230753');
     $this->add( 'select',
       'exclude_rt',
-      ts( 'Exclude Record Types' ),
+      ts('Exclude Record Types'),
       $rts,
       false,
-      array(
-        'id' => 'exclude_rt',
-        'multiple'=> 'multiple',
-        'title' => ts('- select -')
-      )
+      $select2style
     );
 
-    require_once 'CRM/Core/PseudoConstant.php';
     $groups = CRM_Core_PseudoConstant::group( );
     $this->add( 'select',
       'excludeGroups',
-      ts( 'Exclude Groups' ),
+      ts('Exclude Groups'),
       $groups,
       false,
-      array(
-        'id' => 'excludeGroups',
-        'multiple' => 'multiple',
-        'title' => ts('- select -')
-      )
+      $select2style
     );
 
     //5142, 7719
@@ -256,11 +253,11 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
     $sql = "INSERT INTO $tmpTblIds VALUES $ids;";
-    $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+    $dao = CRM_Core_DAO::executeQuery($sql, CRM_Core_DAO::$_nullArray);
     itime('after building ID table');
 
-    if ( $excludeGroups ) {
-      excludeGroupContacts( $tmpTblIds, $excludeGroups, $localSeedsList );
+    if ($excludeGroups) {
+      excludeGroupContacts($tmpTblIds, $excludeGroups, $localSeedsList);
     }
 
     //now construct sql to retrieve fields and inject in a second tmp table
@@ -278,12 +275,14 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     idebug($dao, 'dao tmp table2', 2);
 
     //begin with temp table so we work with a smaller data set
-    $sql = "INSERT INTO $tmpTbl
-            SELECT $sFlds FROM $tmpTblIds t
-            JOIN civicrm_contact c ON t.id = c.id ";
+    $sql = "
+      INSERT INTO $tmpTbl
+      SELECT $sFlds FROM $tmpTblIds t
+      JOIN civicrm_contact c ON t.id = c.id 
+    ";
 
     //address joins
-    if ( $primaryAddress ) {
+    if ($primaryAddress) {
       //5174 if selected, export primary address only
       $sql .= "
         LEFT JOIN civicrm_address a
@@ -390,7 +389,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     }
 
     //7777 cycle through and look for any district info fields
-    foreach ( $params as $f => $v ) {
+    foreach ($params as $f => $v) {
       if ( strpos($f, 'di_') === 0 && !empty($v) ) {
         $dbFld = substr($f, 3);
         if ( strpos($v, ',') !== FALSE ) {
@@ -450,7 +449,10 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
 
     idebug($sql, 'sql');
 
-    $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+    //first set mysql group by mode
+    CRM_Core_DAO::executeQuery("SET SESSION sql_mode = '';");
+
+    $dao = CRM_Core_DAO::executeQuery($sql, CRM_Core_DAO::$_nullArray);
     idebug($dao, 'dao insert fields', 2);
     itime('after inserting into full temp table');
     iexit(1);

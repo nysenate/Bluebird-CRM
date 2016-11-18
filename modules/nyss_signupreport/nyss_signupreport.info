@@ -5,4 +5,3 @@ dependencies[] = civicrm
 package = CiviCRM
 core = 7.x
 version = 4.2
-stylesheets[all][] = nyss_signupreport.css

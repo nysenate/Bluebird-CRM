@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -46,7 +46,6 @@ class civicrm_handler_field_link_activity extends views_handler_field {
   function construct() {
     parent::construct();
     $this->additional_fields['id'] = 'id';
-    $this->additional_fields['source_contact_id'] = 'source_contact_id';
     $this->additional_fields['activity_type_id'] = 'activity_type_id';
   }
 
@@ -69,7 +68,8 @@ class civicrm_handler_field_link_activity extends views_handler_field {
         'delete' => t('Link to Delete Activity'),
         'custom' => t('Link to a Custom Node'),
       ),
-      '#default_value' => !empty($this->options['link_to_civicrm_activity']),
+      '#default_value' => $this->options['link_to_civicrm_activity'],
+      '#required' => TRUE,
     );
 
     $form['custom_link'] = array(
@@ -77,14 +77,15 @@ class civicrm_handler_field_link_activity extends views_handler_field {
       '#title' => t('Custom Link to a Drupal Node'),
       '#description' => t('Link to a Drupal Node or View, from the base path. The Activity ID will be appended to the end of the link.'),
       '#default_value' => isset($this->options['custom_link']) ? $this->options['custom_link'] : '',
-      '#dependency' => array('link_to_civicrm_activity' => array('custom')),
+      '#dependency' => array('edit-options-link-to-civicrm-activity' => array('custom')),
     );
 
     $form['link_text'] = array(
       '#type' => 'textfield',
-      '#title' => t('Links Text'),
+      '#title' => t('Link Text'),
       '#description' => t('The text that will display in the field with the link.'),
       '#default_value' => isset($this->options['link_text']) ? $this->options['link_text'] : '',
+      '#required' => TRUE,
     );
   }
 
@@ -106,7 +107,7 @@ class civicrm_handler_field_link_activity extends views_handler_field {
         if (user_access('view all activities') && $link_text !== NULL && $link_text !== '') {
           return civicrm_views_href($link_text,
             'civicrm/contact/view/activity',
-            "atype={$values->civicrm_activity_activity_type_id}&action=view&reset=1&id={$values->id}&cid={$values->civicrm_activity_source_contact_id}&context=home"
+            "atype={$values->civicrm_activity_activity_type_id}&action=view&reset=1&id={$values->id}&cid={$values->civicrm_contact_civicrm_activity_contact_id}&context=home"
           );
         }
 
@@ -115,7 +116,7 @@ class civicrm_handler_field_link_activity extends views_handler_field {
         if (user_access('view all activities') && $link_text !== NULL && $link_text !== '') {
           return civicrm_views_href($link_text,
             'civicrm/contact/view/activity',
-            "atype={$values->civicrm_activity_activity_type_id}&action=update&reset=1&id={$values->id}&cid={$values->civicrm_activity_source_contact_id}&context=home"
+            "atype={$values->civicrm_activity_activity_type_id}&action=update&reset=1&id={$values->id}&cid={$values->civicrm_contact_civicrm_activity_contact_id}&context=home"
           );
         }
 
@@ -124,7 +125,7 @@ class civicrm_handler_field_link_activity extends views_handler_field {
         if (user_access('view all activities') && $link_text !== NULL && $link_text !== '') {
           return civicrm_views_href($link_text,
             'civicrm/contact/view/activity',
-            "atype={$values->civicrm_activity_activity_type_id}&action=delete&reset=1&id={$values->id}&cid={$values->civicrm_activity_source_contact_id}&context=home"
+            "atype={$values->civicrm_activity_activity_type_id}&action=delete&reset=1&id={$values->id}&cid={$values->civicrm_contact_civicrm_activity_contact_id}&context=home"
           );
         }
 

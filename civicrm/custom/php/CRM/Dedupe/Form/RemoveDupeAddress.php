@@ -34,8 +34,6 @@
  *
  */
 
-require_once 'CRM/Core/Form.php';
-
 /**
  * This class generates form components for DedupeRules
  * 
@@ -54,16 +52,18 @@ class CRM_Dedupe_Form_RemoveDupeAddress extends CRM_Core_Form
     $sql = "
       SELECT count(*)
       FROM (
-        SELECT id
+        SELECT contact_id
         FROM civicrm_address
         GROUP BY contact_id, street_address, supplemental_address_1,
           supplemental_address_2, city, state_province_id, postal_code_suffix, postal_code
         HAVING count(*) > 1
         ) as dupes";
     $dupeCount = CRM_Core_DAO::singleValueQuery($sql);
-    if ( !$dupeCount ) {
-      $url = CRM_Utils_System::url( 'civicrm','reset=1' );
-      CRM_Core_Error::statusBounce( 'There are no duplicate addresses in this database.', $url );
+    if (!$dupeCount) {
+      $url = CRM_Utils_System::url( 'civicrm','reset=1');
+      $msg = 'There are no duplicate addresses found in this database.';
+      CRM_Core_Session::setStatus($msg, 'No Duplicate Addresses to Remove', 'info');
+      CRM_Utils_System::redirect($url);
     }
     else {
       $this->_dupeCount = $dupeCount;
@@ -108,12 +108,13 @@ class CRM_Dedupe_Form_RemoveDupeAddress extends CRM_Core_Form
     //remove duplicate addresses; prefer removing address with larger id (newer)
     CRM_Core_DAO::executeQuery("DROP TABLE IF EXISTS $tmpTbl;");
     $sql = "
-      CREATE TABLE $tmpTbl ( id INT(10), PRIMARY KEY (id) )
-      SELECT id
+      CREATE TABLE $tmpTbl (id INT(10), PRIMARY KEY (id))
+      SELECT ANY_VALUE(id) id
       FROM (
         SELECT *
         FROM civicrm_address
-        ORDER BY id DESC ) as addr1
+        ORDER BY id DESC 
+        ) as addr1
       GROUP BY contact_id, street_address, supplemental_address_1,
         supplemental_address_2, city, state_province_id, postal_code_suffix, postal_code
       HAVING count(id) > 1;";
@@ -137,7 +138,9 @@ class CRM_Dedupe_Form_RemoveDupeAddress extends CRM_Core_Form
 
     if ($output_status === true) {
       $url = CRM_Utils_System::url( 'civicrm','reset=1');
-      CRM_Core_Error::statusBounce( "Contacts with duplicate addresses have been cleaned up. The process took $diffTime seconds.", $url );
+      $msg = "Contacts with duplicate addresses have been cleaned up. The process took $diffTime seconds.";
+      CRM_Core_Session::setStatus($msg, 'Duplicate Addresses Removed', 'success');
+      CRM_Utils_System::redirect($url);
     }
   } // postProcess()
 }

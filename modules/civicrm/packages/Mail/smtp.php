@@ -188,7 +188,7 @@ class Mail_smtp extends Mail {
      *              defaults.
      * @access public
      */
-    function Mail_smtp($params)
+    function __construct($params)
     {
         if (isset($params['host'])) $this->host = $params['host'];
         if (isset($params['port'])) $this->port = $params['port'];
@@ -244,10 +244,11 @@ class Mail_smtp extends Mail {
      */
     function send($recipients, $headers, $body)
     {
-        if ( defined( 'CIVICRM_MAIL_LOG' ) ) {
-            require_once 'CRM/Utils/Mail.php';
-            CRM_Utils_Mail::logger( $recipients, $headers, $body );
+        if (defined('CIVICRM_MAIL_LOG')) {
+          CRM_Utils_Mail::logger($recipients, $headers, $body);
+          if(!defined('CIVICRM_MAIL_LOG_AND SEND')) {
             return true;
+          }
         }
 
         /* If we don't already have an SMTP object, create one. */

@@ -6,9 +6,6 @@ core = 7.x
 engine = phptemplate
 
 stylesheets[screen,projection][] = css/Bluebird.css
-stylesheets[screen,projection][] = nyss_skin/skin.css
-stylesheets[screen,projection][] = nyss_skin/civi-header.css
-stylesheets[screen,projection][] = css/style.css
 
 scripts[] = scripts/message-manager.js
 scripts[] = scripts/civi-header.js

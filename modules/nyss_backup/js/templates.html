@@ -2,61 +2,60 @@
 <div id="progress_container" />
 <div id="blocker" />
 <div id="instance_files">
-	<div class="instance_file instance_create_backup">
-		<input action="backup" type="submit" value="Create New Backup" class="form-submit default nyss_backup_create nyss_backup_action">
-	</div>
-	<% if(data && data.length && data.length > 0) { %>
-		<% for(i in data) {	%>
-			<div class="instance_file">
-				<div style="width:<%=util.browser.getLeftWidth()%>;" class="line_item">
-					<span class="instance_file_name"><%=data[i].file%></span>
-					<span class="instance_file_date">Created on <%=util.getDate(data[i].time)%></span>
-				</div>
-				<div style="width:<%=util.browser.getRightWidth()%>;" class="line_item">
-					<input action="restore" type="submit" value="Restore From" class="form-submit default nyss_backup-button nyss_backup_action">
-					<input action="delete" type="submit" value="Delete Copy" class="form-submit default nyss_backup-button nyss_backup_action">
-				</div>
-			</div>
-		<% } %>
-	<% } else { %>
-		<div class="instance_file">
-		<span class="instance_file_date">No backups currently available for this instance</span>
-		</div>
-	<% } %>
+  <div class="instance_file instance_create_backup">
+    <input action="backup" type="submit" value="Create New Backup" class="form-submit default nyss_backup_create nyss_backup_action">
+  </div>
+  <% if (data && data.length && data.length > 0) { %>
+    <% for (i in data) {  %>
+      <div class="instance_file">
+        <div style="width:<%=util.browser.getLeftWidth()%>;" class="line_item">
+          <span class="instance_file_name"><%=data[i].file%></span>
+          <span class="instance_file_date">Created on <%=util.getDate(data[i].time)%></span>
+        </div>
+        <div style="width:<%=util.browser.getRightWidth()%>;" class="line_item">
+          <input action="restore" type="submit" value="Restore From" class="form-submit default nyss_backup-button nyss_backup_action">
+          <input action="delete" type="submit" value="Delete Copy" class="form-submit default nyss_backup-button nyss_backup_action">
+        </div>
+      </div>
+    <% } %>
+  <% } else { %>
+    <div class="instance_file">
+    <span class="instance_file_date">No backups currently available for this instance</span>
+    </div>
+  <% } %>
 </div>
 </script>
 <script type="text/html" id="tmpl_restore">
-	<div id="instance_confirm_text">
-  		Are you sure you want to <span class="hot">restore</span> from <b><%=file%></b>?
-  	</div>
+  <div id="instance_confirm_text">
+  Are you sure you want to <span class="hot">restore</span> from <b><%=file%></b>?
+  </div>
 </script>
 <script type="text/html" id="tmpl_backup">
-	<div id="instance_confirm_text">
-  		Are you sure you want to <span class="hot">back up</span> this instance</b>?
-		<% var date_obj = util.getFileNameDate(); %>
-		<br/><span>File name: </span><input id="file_name" type="text" value="<%=date_obj.str%>" /><span id="file_ext">.zip</span>
-		<input id="file_time" type="hidden" value="<%=date_obj.int%>" />
-  	</div>
+  <div id="instance_confirm_text">
+  Are you sure you want to <span class="hot">back up</span> this instance</b>?
+  <% var date_obj = util.getFileNameDate(); %>
+  <br/><span>File name: </span><input id="file_name" type="text" value="<%=date_obj.str%>" /><span id="file_ext">.zip</span>
+  <input id="file_time" type="hidden" value="<%=date_obj.int%>" />
+  </div>
 </script>
 <script type="text/html" id="tmpl_delete">
-	<div id="instance_confirm_text">
-  		Are you sure you want to <span class="hot">delete</span> <b><%=file%></b>?
-  	</div>
+  <div id="instance_confirm_text">
+  Are you sure you want to <span class="hot">delete</span> <b><%=file%></b>?
+  </div>
 </script>
 <script type="text/html" id="tmpl_confirmation">
-	<div id="instance_confirm_action">
-		<input action="confirm" type="submit" value="Confirm" class="form-submit default nyss_backup_confirm">
-		<input action="cancel" type="submit" value="Cancel" class="form-submit default nyss_backup_confirm">
-	</div>
+  <div id="instance_confirm_action">
+    <input action="confirm" type="submit" value="Confirm" class="form-submit default nyss_backup_confirm">
+    <input action="cancel" type="submit" value="Cancel" class="form-submit default nyss_backup_confirm">
+  </div>
 </script>
 <script type="text/html" id="tmpl_success_true">
-	<div id="instance_confirm_text">Success!</div>
+  <div id="instance_confirm_text">Success!</div>
 </script>
 <script type="text/html" id="tmpl_success_false">
-	<div id="instance_confirm_text" class="hot">Error!</div>
+  <div id="instance_confirm_text" class="hot">Error!</div>
 </script>
 <script type="text/html" id="tmpl_progress">
-	<span id="instance_confirm_text">Working...</span>
-	<img id="instance_progress_image"
-       src="/sites/default/themes/Bluebird/nyss_skin/images/nyss_backup_loading.gif"></img>
+  <span id="instance_confirm_text">Working...</span>
+  <img id="instance_progress_image" src="/sites/default/themes/Bluebird/images/nyss_backup_loading.gif"></img>
 </script>

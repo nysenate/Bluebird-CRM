@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,7 +23,7 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-{* View Case Activities *} {* Uses inline styles since we have not figured out yet how to include our normal .css files. *}
+{* View Case Activities *}
 <div class="crm-block crm-content-block crm-case-activity-view-block">
 {if $revs}
   <strong>{$subject}</strong> ({ts}all revisions{/ts})<br />

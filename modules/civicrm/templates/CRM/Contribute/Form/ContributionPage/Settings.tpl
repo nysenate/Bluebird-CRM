@@ -1,9 +1,9 @@
 
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,7 +25,7 @@
  +--------------------------------------------------------------------+
 *}
 <div class="crm-block crm-form-block crm-contribution-contributionpage-settings-form-block">
-<div id="help">
+<div class="help">
     {if $action eq 0}
         <p>{ts}This is the first step in creating a new online Contribution Page. You can create one or more different Contribution Pages for different purposes, audiences, campaigns, etc. Each page can have it's own introductory message, pre-configured contribution amounts, custom data collection fields, etc.{/ts}</p>
         <p>{ts}In this step, you will configure the page title, financial type (donation, campaign contribution, etc.), goal amount, and introductory message. You will be able to go back and modify all aspects of this page at any time after completing the setup wizard.{/ts}</p>
@@ -68,7 +68,7 @@
               </tr>
             {/if}
             <tr id="for_org_text" class="crm-contribution-contributionpage-settings-form-block-for_organization">
-                <td class="label">{$form.for_organization.label} {if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_contribution_page' field='for_organization' id=$contributionPageID}{/if}</td>
+                <td class="label">{$form.for_organization.label}</td>
                 <td>{$form.for_organization.html}<br />
                     <span class="description">{ts}Text displayed next to the checkbox on the contribution form.{/ts}</span>
                 </td>
@@ -108,13 +108,42 @@
   </tr>
 </table>
 <table class="form-layout-compressed" id="honor">
-    <tr class="crm-contribution-contributionpage-settings-form-block-honor_block_title"><td class="label">{$form.honor_block_title.label} {if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_contribution_page' field='honor_block_title' id=$contributionPageID}{/if}</td><td>{$form.honor_block_title.html}<br />
-      <span class="description">{ts}Title for the Honoree section (e.g. &quot;Honoree Information&quot;).{/ts}</span></td>
+    <tr class="crm-contribution-contributionpage-settings-form-block-honor_block_title">
+        <td class="label">
+            {$form.honor_block_title.label}
+       </td>
+       <td>
+           {$form.honor_block_title.html}<br />
+           <span class="description">{ts}Title for the Honoree section (e.g. &quot;Honoree Information&quot;).{/ts}</span>
+       </td>
+   </tr>
+   <tr class="crm-contribution-contributionpage-settings-form-block-honor_block_text">
+       <td class="label">
+           {crmAPI var='result' entity='OptionGroup' action='get' sequential=1 name='soft_credit_type'}
+           {$form.honor_block_text.label}
+       </td>
+       <td>
+           {$form.honor_block_text.html}<br />
+           <span class="description">{ts}Optional explanatory text for the Honoree section (displayed above the Honoree fields).{/ts}</span>
+       </td>
   </tr>
-  <tr class="crm-contribution-contributionpage-settings-form-block-honor_block_text">
-      <td class="label">{$form.honor_block_text.label} {if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_contribution_page' field='honor_block_text' id=$contributionPageID}{/if}</td><td>{$form.honor_block_text.html}<br />
-      <span class="description">{ts}Optional explanatory text for the Honoree section (displayed above the Honoree fields).{/ts}</span></td>
+  <tr class="crm-contribution-contributionpage-settings-form-block-honor_soft_credit_types">
+      <td class="label">
+          {$form.soft_credit_types.label}
+      </td>
+      <td>
+        {$form.soft_credit_types.html}
+      </td>
   </tr>
+  <tr class="crm-contribution-contributionpage-custom-form-block-custom_pre_id">
+      <td class="label">
+          {$form.honoree_profile.label}
+      </td>
+      <td class="html-adjust">
+          {$form.honoree_profile.html}
+          <span class="description">{ts}Profile to be included in the honoree section{/ts}</span>
+      </td>
+   </tr>
 </table>
 <table class="form-layout-compressed">
         <tr class="crm-contribution-contributionpage-settings-form-block-is_confirm_enabled">
@@ -173,7 +202,3 @@
      }
  {/literal}
 </script>
-
-{* include jscript to warn if unsaved form field changes *}
-{include file="CRM/common/formNavigate.tpl"}
-

@@ -8,8 +8,8 @@
 # Date: 2010-09-30
 # Revised: 2013-05-12
 # Revised: 2013-07-29 - added --list-all and --update-all options
-# Revised: 2013-07-30 - added scope options (--standard, --config-backend,
-#                       --mail-backend, --prefs, --template, --all)
+# Revised: 2013-07-30 - added scope options (--standard, --template, --all)
+# Revised: 2016-06-28 - added --preview, --drupal
 #
 
 prog=`basename $0`
@@ -19,7 +19,7 @@ readConfig=$script_dir/readConfig.sh
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog [--list | --nullify | --update] [ --standard | --config-backend | --mail-backend | --prefs | --template | --all ] instanceName" >&2
+  echo "Usage: $prog [--list | --preview/--pre | --update] [ --standard | --template/--tpl | --drupal/--drup | --all ] instanceName" >&2
 }
 
 if [ $# -lt 1 ]; then
@@ -29,18 +29,16 @@ fi
 
 instance=
 op=list
-scope=default
+scope=def
 
 while [ $# -gt 0 ]; do
   case "$1" in
     --list) op=list ;;
-    --nullify) op=nullify ;;
+    --preview|--pre) op=preview ;;
     --update) op=update ;;
-    --standard|--default) scope=default ;;
-    --config*|--cb) scope=cb ;;
-    --mail*|--mb) scope=mb ;;
-    --pref*) scope=prefs ;;
+    --standard|--default) scope=def ;;
     --template|--tpl) scope=tpl ;;
+    --drupal|--drup) scope=drup ;;
     --all) scope=all ;;
     -*) echo "$prog: $1: Invalid option" >&2; usage; exit 1 ;;
     *) instance="$1" ;;

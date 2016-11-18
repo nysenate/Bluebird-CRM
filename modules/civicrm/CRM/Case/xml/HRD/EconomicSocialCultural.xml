@@ -7,13 +7,13 @@
       <name>Open Case</name>
       <max_instances>1</max_instances>
     </ActivityType>
-	<ActivityType>
+  <ActivityType>
       <name>Change Case Type</name>
     </ActivityType>
     <ActivityType>
       <name>Change Case Status</name>
     </ActivityType>
-	<ActivityType>
+  <ActivityType>
       <name>Follow up</name>
     </ActivityType>
     <ActivityType>
@@ -63,7 +63,7 @@
           <reference_offset>2</reference_offset>
           <reference_select>newest</reference_select>
         </ActivityType>
-		<ActivityType>
+    <ActivityType>
           <name>Follow up</name>
           <reference_activity>Open Case</reference_activity>
           <reference_offset>14</reference_offset>

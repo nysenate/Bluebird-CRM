@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,5 +30,6 @@
 {capture assign=docLink}{docURL page="user/the-user-interface/searching" text="Search documentation in the User Guide"}{/capture}
 <p>{ts}Create your search by selecting the criteria (record type and field), the comparison operator, and entering the value you want to search for. You can define one or many criteria as a set: <em>Include contacts where... State IS Washington AND City IS Seattle AND Birth Date is later than (>) Jan 1, 1985</em>{/ts}</p>
 <p>{ts}You can also create additional sets of criteria: <em>Also include contacts where... State IS California AND City IS Los Angeles AND Birth Date is later than (>) Jan 1, 1985</em>{/ts}</p>
-{*<p>{ts 1=$docLink}For more information see %1.{/ts}</p>*}{*NYSS 2035*}
+{*NYSS 2035*}
+{*<p>{ts 1=$docLink}For more information see %1.{/ts}</p>*}
 {/htxt}

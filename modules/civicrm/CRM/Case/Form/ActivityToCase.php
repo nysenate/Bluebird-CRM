@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,29 +23,23 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2013
- * $Id$
- *
+ * @copyright CiviCRM LLC (c) 2004-2016
  */
 
 /**
- * This class generates form components for building activity to a case
- *
+ * This class generates form components for building activity to a case.
  */
 class CRM_Case_Form_ActivityToCase extends CRM_Core_Form {
 
   /**
-   * build all the data structures needed to build the form.
-   *
-   * @return None
-   * @access public
+   * Build all the data structures needed to build the form.
    */
-  function preProcess() {
+  public function preProcess() {
     $this->_activityId = CRM_Utils_Request::retrieve('activityId', 'Positive', CRM_Core_DAO::$_nullObject);
     if (!$this->_activityId) {
       CRM_Core_Error::fatal('required activity id is missing.');
@@ -57,44 +51,58 @@ class CRM_Case_Form_ActivityToCase extends CRM_Core_Form {
   }
 
   /**
-   * This function sets the default values for the form. For edit/view mode
+   * Set default values for the form. For edit/view mode
    * the default values are retrieved from the database
    *
-   * @access public
    *
-   * @return None
+   * @return array
    */
-  function setDefaultValues() {
-    $targetContactValues = $defaults = array();
+  public function setDefaultValues() {
+    $defaults = array();
     $params = array('id' => $this->_activityId);
 
     CRM_Activity_BAO_Activity::retrieve($params, $defaults);
-    $defaults['case_activity_subject'] = $defaults['subject'];
-    if (!CRM_Utils_Array::crmIsEmptyArray($defaults['target_contact'])) {
-      $targetContactValues = array_combine(array_unique($defaults['target_contact']),
-        explode(';', trim($defaults['target_contact_value']))
-      );
-    }
-    $this->assign('targetContactValues', empty($targetContactValues) ? FALSE : $targetContactValues);
+    $defaults['file_on_case_activity_subject'] = $defaults['subject'];
+    $defaults['file_on_case_target_contact_id'] = $defaults['target_contact'];
 
+    // If this contact has an open case, supply it as a default
+    $cid = CRM_Utils_Request::retrieve('cid', 'Integer');
+    if ($cid) {
+      $cases = civicrm_api3('CaseContact', 'get', array(
+        'contact_id' => $cid,
+        'case_id' => array('!=' => $this->_currentCaseId),
+        'case_id.status_id' => array('!=' => "Closed"),
+        'case_id.is_deleted' => 0,
+        'case_id.end_date' => array('IS NULL' => 1),
+        'options' => array('limit' => 1),
+        'return' => 'case_id',
+      ));
+      foreach ($cases['values'] as $record) {
+        $defaults['file_on_case_unclosed_case_id'] = $record['case_id'];
+        break;
+      }
+    }
     return $defaults;
   }
 
   /**
-   * Function to build the form
-   *
-   * @return None
-   * @access public
+   * Build the form object.
    */
   public function buildQuickForm() {
-    // tokeninput url
-    $tokenUrl = CRM_Utils_System::url("civicrm/ajax/checkemail", "noemail=1", FALSE, NULL, FALSE);
-    $this->assign('tokenUrl', $tokenUrl);
-
-    $this->add('text', 'unclosed_cases', ts('Select Case'));
-    $this->add('hidden', 'unclosed_case_id', '', array('id' => 'open_case_id'));
-    $this->add('text', 'target_contact_id', ts('With Contact(s)'));
-    $this->add('text', 'case_activity_subject', ts('Subject'), array('size' => 50));
+    $this->addEntityRef('file_on_case_unclosed_case_id', ts('Select Case'), array(
+      'entity' => 'Case',
+      'api' => array(
+        'extra' => array('contact_id'),
+        'params' => array(
+          'case_id' => array('!=' => $this->_currentCaseId),
+          'case_id.is_deleted' => 0,
+          'case_id.status_id' => array('!=' => "Closed"),
+          'case_id.end_date' => array('IS NULL' => 1),
+        ),
+      ),
+    ), TRUE);
+    $this->addEntityRef('file_on_case_target_contact_id', ts('With Contact(s)'), array('multiple' => TRUE));
+    $this->add('text', 'file_on_case_activity_subject', ts('Subject'), array('size' => 50));
   }
-}
 
+}

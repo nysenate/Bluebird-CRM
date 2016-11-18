@@ -23,22 +23,12 @@ $logging = new CRM_Logging_Schema;
 $logging->enableLogging();
 
 //set logging value in domain
-echo "setting logging flag in domain record...\n";
+echo "setting logging flag in setting record...\n";
 CRM_Core_DAO::executeQuery("
-  UPDATE civicrm_domain
-  SET config_backend = REPLACE( config_backend, 'logging\';s:1:\'0', 'logging\';s:1:\'1' )
-  WHERE id = 1;
+  UPDATE civicrm_setting
+  SET value = 'i:1;'
+  WHERE name = 'logging';
 ");
-CRM_Core_DAO::executeQuery('
-  UPDATE civicrm_domain
-  SET config_backend = REPLACE(config_backend, "logging\";s:1:\"0", "logging\";s:1:\"1")
-  WHERE id = 1;
-');
-CRM_Core_DAO::executeQuery('
-  UPDATE civicrm_domain
-  SET config_backend = REPLACE(config_backend, "logging\";i:0", "logging\";s:1:\"1\"")
-  WHERE id = 1;
-');
 
 echo "setting logging report permissions...\n";
 CRM_Core_DAO::executeQuery("

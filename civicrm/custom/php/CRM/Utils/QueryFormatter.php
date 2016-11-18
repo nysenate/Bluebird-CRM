@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.5                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2014                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,7 +23,12 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
+
+ /**
+  * @package CRM
+  * @copyright CiviCRM LLC (c) 2004-2016
+  */
 
 /**
  * Class CRM_Utils_QueryFormatter
@@ -36,9 +40,24 @@
  * or in vain.
  */
 class CRM_Utils_QueryFormatter {
+  /**
+   * Generate queries using SQL LIKE expressions.
+   */
   const LANG_SQL_LIKE = 'like';
+
+  /**
+   * Generate queries using MySQL FTS expressions.
+   */
   const LANG_SQL_FTS = 'fts';
+
+  /**
+   * Generate queries using MySQL's boolean FTS expressions.
+   */
   const LANG_SQL_FTSBOOL = 'ftsbool';
+
+  /**
+   * Generate queries using Solr expressions.
+   */
   const LANG_SOLR = 'solr';
 
   /**
@@ -77,21 +96,23 @@ class CRM_Utils_QueryFormatter {
    */
   public static function singleton($fresh = FALSE) {
     if ($fresh || self::$singleton === NULL) {
-      $mode = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SEARCH_PREFERENCES_NAME, 'fts_query_mode', NULL, self::MODE_NONE);
+      $mode = Civi::settings()->get('fts_query_mode');
       self::$singleton = new CRM_Utils_QueryFormatter($mode);
     }
     return self::$singleton;
   }
 
   /**
-   * @var string eg MODE_NONE
+   * @var string
+   *   eg MODE_NONE
    */
   protected $mode;
 
   /**
-   * @param string $mode eg MODE_NONE
+   * @param string $mode
+   *   Eg MODE_NONE.
    */
-  function __construct($mode) {
+  public function __construct($mode) {
     $this->mode = $mode;
   }
 
@@ -111,7 +132,8 @@ class CRM_Utils_QueryFormatter {
 
   /**
    * @param string $text
-   * @param string $language eg LANG_SQL_LIKE, LANG_SQL_FTS, LANG_SOLR
+   * @param string $language
+   *   Eg LANG_SQL_LIKE, LANG_SQL_FTS, LANG_SOLR.
    * @throws CRM_Core_Exception
    * @return string
    */
@@ -123,12 +145,15 @@ class CRM_Utils_QueryFormatter {
       case self::LANG_SQL_FTS:
         $text = $this->_formatFts($text, $this->mode);
         break;
+
       case self::LANG_SQL_FTSBOOL:
         $text = $this->_formatFtsBool($text, $this->mode);
         break;
+
       case self::LANG_SQL_LIKE:
         $text = $this->_formatLike($text, $this->mode);
         break;
+
       default:
         $text = NULL;
     }
@@ -140,6 +165,75 @@ class CRM_Utils_QueryFormatter {
     return $text;
   }
 
+  /**
+   * Create a SQL WHERE expression for matching against a list of
+   * text columns.
+   *
+   * @param string $table
+   *   Eg "civicrm_note" or "civicrm_note mynote".
+   * @param array|string $columns
+   *   List of columns to search against.
+   *   Eg "first_name" or "activity_details".
+   * @param string $queryText
+   * @return string
+   *   SQL, eg "MATCH (col1) AGAINST (queryText)" or "col1 LIKE '%queryText%'"
+   */
+  public function formatSql($table, $columns, $queryText) {
+    if ($queryText === '*' || $queryText === '%' || empty($queryText)) {
+      return '(1)';
+    }
+
+    $strtolower = function_exists('mb_strtolower') ? 'mb_strtolower' : 'strtolower';
+
+    if (strpos($table, ' ') === FALSE) {
+      $tableName = $tableAlias = $table;
+    }
+    else {
+      list ($tableName, $tableAlias) = explode(' ', $table);
+    }
+    if (is_scalar($columns)) {
+      $columns = array($columns);
+    }
+
+    $clauses = array();
+    if (CRM_Core_InnoDBIndexer::singleton()
+      ->hasDeclaredIndex($tableName, $columns)
+    ) {
+      $formattedQuery = $this->format($queryText, CRM_Utils_QueryFormatter::LANG_SQL_FTSBOOL);
+
+      $prefixedFieldNames = array();
+      foreach ($columns as $fieldName) {
+        $prefixedFieldNames[] = "$tableAlias.$fieldName";
+      }
+
+      $clauses[] = sprintf("MATCH (%s) AGAINST ('%s' IN BOOLEAN MODE)",
+        implode(',', $prefixedFieldNames),
+        $strtolower(CRM_Core_DAO::escapeString($formattedQuery))
+      );
+    }
+    else {
+      //CRM_Core_Session::setStatus(ts('Cannot use FTS for %1 (%2)', array(
+      //  1 => $table,
+      //  2 => implode(', ', $fullTextFields),
+      //)));
+
+      $formattedQuery = $this->format($queryText, CRM_Utils_QueryFormatter::LANG_SQL_LIKE);
+      $escapedText = $strtolower(CRM_Core_DAO::escapeString($formattedQuery));
+      foreach ($columns as $fieldName) {
+        $clauses[] = "$tableAlias.$fieldName LIKE '{$escapedText}'";
+      }
+    }
+    return implode(' OR ', $clauses);
+  }
+
+  /**
+   * Format Fts.
+   *
+   * @param string $text
+   * @param $mode
+   *
+   * @return mixed
+   */
   protected function _formatFts($text, $mode) {
     $result = NULL;
 
@@ -183,8 +277,27 @@ class CRM_Utils_QueryFormatter {
     return $this->dedupeWildcards($result, '%');
   }
 
+  /**
+   * Format FTS.
+   *
+   * @param string $text
+   * @param $mode
+   *
+   * @return mixed
+   */
   protected function _formatFtsBool($text, $mode) {
     $result = NULL;
+    $operators = array('+', '-', '~', '(', ')');
+
+    //Return if searched string ends with an unsupported operator.
+    foreach ($operators as $val) {
+      if ($text == '@' || CRM_Utils_String::endsWith($text, $val)) {
+        $csid = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_OptionValue', 'CRM_Contact_Form_Search_Custom_FullText', 'value', 'name');
+        $url = CRM_Utils_System::url("civicrm/contact/search/custom", "csid={$csid}&reset=1");
+        $operators = implode("', '", $operators);
+        CRM_Core_Error::statusBounce("Full-Text Search does not support the use of a search string ending with any of these operators ('{$operators}' or a single '@'). Please adjust your search term and try again.", $url);
+      }
+    }
 
     // normalize user-inputted wildcards
     $text = str_replace('%', '*', $text);
@@ -201,13 +314,13 @@ class CRM_Utils_QueryFormatter {
       $result = $this->mapWords($text, '+word');
     }
     elseif (preg_match('/^(["\']).*\1$/m', $text)) {
-      //if surrounded by quotes, use term as is
+      // if surrounded by quotes, use term as is
       $result = $text;
     }
     else {
       switch ($mode) {
         case self::MODE_NONE:
-          $result = $this->mapWords($text, '+word');
+          $result = $this->mapWords($text, '+word', TRUE);
           break;
 
         case self::MODE_PHRASE:
@@ -234,6 +347,14 @@ class CRM_Utils_QueryFormatter {
     return $this->dedupeWildcards($result, '%');
   }
 
+  /**
+   * Format like.
+   *
+   * @param $text
+   * @param $mode
+   *
+   * @return mixed
+   */
   protected function _formatLike($text, $mode) {
     $result = NULL;
 
@@ -266,13 +387,17 @@ class CRM_Utils_QueryFormatter {
   }
 
   /**
-   * @param string $text user-supplied query string
-   * @param string $template a prototypical description of each word, eg "word%" or "word*" or "*word*"
+   * @param string $text
+   *   User-supplied query string.
+   * @param string $template
+   *   A prototypical description of each word, eg "word%" or "word*" or "*word*".
+   * @param bool $quotes
+   *   True if each searched keyword need to be surrounded with quotes.
    * @return string
    */
-  protected function mapWords($text, $template) {
+  protected function mapWords($text, $template, $quotes = FALSE) {
     $result = array();
-    foreach ($this->parseWords($text) as $word) {
+    foreach ($this->parseWords($text, $quotes) as $word) {
       $result[] = str_replace('word', $word, $template);
     }
     return implode(' ', $result);
@@ -280,24 +405,31 @@ class CRM_Utils_QueryFormatter {
 
   /**
    * @param $text
+   * @bool $quotes
    * @return array
    */
-  protected function parseWords($text) {
-    //CRM_Core_Error::debug_var('parseWords $text', $text);
-
+  protected function parseWords($text, $quotes) {
     //NYSS 9692 special handling for emails
     if (preg_match('/^([a-z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$/', $text)) {
       $parts = explode('@', $text);
-      $parts[1] = stristr($parts[1], '.', true);
-      $text = trim(implode(' ', $parts));
+      $parts[1] = stristr($parts[1], '.', TRUE);
+      $text = implode(' ', $parts);
     }
-    //CRM_Core_Error::debug_var('parseWords $text modified', $text);
 
     //NYSS also replace other occurrences of @
-    $result = explode(' ', trim(preg_replace('/[ \r\n\t\@]+/', ' ', trim($text))));
-    //CRM_Core_Error::debug_var('parseWords $result', $result);
+    $replacedText = preg_replace('/[ \r\n\t\@]+/', ' ', trim($text));
+    //filter empty values if any
+    $keywords = array_filter(explode(' ', $replacedText));
 
-    return $result;
+    //Ensure each searched keywords are wrapped in double quotes.
+    if ($quotes) {
+      foreach ($keywords as &$val) {
+        if (!is_numeric($val)) {
+          $val = "\"{$val}\"";
+        }
+      }
+    }
+    return $keywords;
   }
 
   /**
@@ -317,6 +449,11 @@ class CRM_Utils_QueryFormatter {
     return $text;
   }
 
+  /**
+   * Get modes.
+   *
+   * @return array
+   */
   public static function getModes() {
     return array(
       self::MODE_NONE,
@@ -327,6 +464,11 @@ class CRM_Utils_QueryFormatter {
     );
   }
 
+  /**
+   * Get languages.
+   *
+   * @return array
+   */
   public static function getLanguages() {
     return array(
       self::LANG_SOLR,
@@ -362,4 +504,5 @@ class CRM_Utils_QueryFormatter {
 
     echo $buf;
   }
+
 }

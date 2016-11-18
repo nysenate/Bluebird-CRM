@@ -12,7 +12,7 @@
 **       that is including this one.
 */
 $theme_path = path_to_theme();
-$image_dir = "/$theme_path/nyss_skin/images";
+$image_dir = "/$theme_path/images";
 ?>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>

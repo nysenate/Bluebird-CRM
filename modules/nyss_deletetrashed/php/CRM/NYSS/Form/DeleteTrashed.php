@@ -34,8 +34,6 @@
  *
  */
 
-require_once 'CRM/Core/Form.php';
-
 define('DELETE_BATCH', 1000);
 define('TEST_COUNT', 0);
 
@@ -78,6 +76,9 @@ class CRM_NYSS_Form_DeleteTrashed extends CRM_Core_Form
    */
   static
   function processTrashed() {
+    ini_set('memory_limit', '8000M');
+    ini_set('max_execution_time', 0);
+
     $sTime = microtime(TRUE);
 
     //get configs
@@ -97,7 +98,7 @@ class CRM_NYSS_Form_DeleteTrashed extends CRM_Core_Form
     // start a new transaction
     $transaction = new CRM_Core_Transaction();
 
-    while ( $trashed->fetch() ) {
+    while ($trashed->fetch()) {
       $contactIDs[] = $trashed->id;
       $batchIDs[] = $trashed->id;
 
@@ -108,7 +109,7 @@ class CRM_NYSS_Form_DeleteTrashed extends CRM_Core_Form
       CRM_Core_BAO_Note::cleanContactNotes($trashed->id);
 
       // process batch contacts
-      if ( count($contactIDs) % DELETE_BATCH == 0 ) {
+      if (count($contactIDs) % DELETE_BATCH == 0) {
         $ids = implode(',', $batchIDs);
 
         //delete log records in bulk (batch)
@@ -123,7 +124,8 @@ class CRM_NYSS_Form_DeleteTrashed extends CRM_Core_Form
         CRM_Core_DAO::executeQuery($sql);
 
         //now delete contact records (batch)
-        $sql = "DELETE FROM civicrm_contact
+        $sql = "
+          DELETE FROM civicrm_contact
           WHERE is_deleted = 1
             AND id IN ({$ids})
         ";
@@ -144,13 +146,14 @@ class CRM_NYSS_Form_DeleteTrashed extends CRM_Core_Form
         $transaction = new CRM_Core_Transaction();
       }
 
-      if ( !empty(TEST_COUNT) && count($contactIDs) > TEST_COUNT ) {
+      if (!empty(TEST_COUNT) && count($contactIDs) > TEST_COUNT) {
         exit();
       }
     }
 
     //delete log records in bulk
-    $sql = "DELETE civicrm_log
+    $sql = "
+      DELETE civicrm_log
       FROM civicrm_log
       JOIN civicrm_contact
         ON civicrm_log.entity_id = civicrm_contact.id

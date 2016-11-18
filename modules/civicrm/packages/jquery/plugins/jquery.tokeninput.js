@@ -116,7 +116,7 @@ var methods = {
     },
     get: function() {
     	return this.data("tokenInputObject").getTokens();
-    }
+   	}
 }
 
 // Expose the .tokenInput function to jQuery as a plugin
@@ -186,7 +186,6 @@ $.TokenList = function (input, url_or_data, settings) {
 
     //NYSS keep track of focus to improve IE8
     var keep_focus=new Array();
-
     // Create a new text input an attach keyup events
     var input_box = $("<input type=\"text\" autocomplete=\"off\" maxlength=\"64\">") //NYSS 3550
         .css({
@@ -423,7 +422,7 @@ $.TokenList = function (input, url_or_data, settings) {
             }
         });
     }
-
+    
     this.getTokens = function() {
    		return saved_tokens;
    	}
@@ -522,8 +521,8 @@ $.TokenList = function (input, url_or_data, settings) {
 
         // Insert the new tokens
         if(settings.tokenLimit == null || token_count < settings.tokenLimit) {
-        insert_token(item);
-        checkTokenLimit();
+            insert_token(item);
+            checkTokenLimit();
         }
 
         // Clear input box
@@ -667,7 +666,7 @@ $.TokenList = function (input, url_or_data, settings) {
     function highlight_term(value, term) {
         return value.replace(new RegExp("(?![^&;]+;)(?!<[^<>]*)(" + term + ")(?![^<>]*>)(?![^&;]+;)", "gi"), "<b>$1</b>");
     }
-
+    
     function find_value_and_highlight_term(template, value, term) {
         return template.replace(new RegExp("(?![^&;]+;)(?!<[^<>]*)(" + value + ")(?![^<>]*>)(?![^&;]+;)", "g"), highlight_term(value, term));
     }
@@ -694,7 +693,7 @@ $.TokenList = function (input, url_or_data, settings) {
                 this_li = find_value_and_highlight_term(this_li ,value[settings.propertyToSearch], query);            
                 
                 this_li = $(this_li).appendTo(dropdown_ul);
-
+                
                 if(index % 2) {
                     this_li.addClass(settings.classes.dropdownItem);
                 } else {
@@ -827,6 +826,7 @@ $.TokenList = function (input, url_or_data, settings) {
             }
         }
     }
+
     // compute the dynamic URL
     function computeURL() {
         var url = settings.url;

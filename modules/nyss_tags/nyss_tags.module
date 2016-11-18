@@ -46,10 +46,12 @@ function nyss_tags_civicrm_validate( $formName, &$fields, &$files, &$form ) {
 } //validate
 
 function nyss_tags_civicrm_buildForm($formName, &$form) {
-  //CRM_Core_Error::debug_var('$formName', $formName);
-  //CRM_Core_Error::debug_var('$form', $form);
-  //CRM_Core_Error::debug_var('$form->_elementIndex', $form->_elementIndex);
-  //CRM_Core_Error::debug_var('$form->_tagsetInfo', $form->_tagsetInfo);
+  /*Civi::log()->debug('buildForm', array(
+    'formName' => $formName,
+    //'form' => $form,
+    '$form->_elementIndex' => $form->_elementIndex,
+    '$form->_tagsetInfo' => $form->_tagsetInfo,
+  ));*/
 
   if ($formName == 'CRM_Tag_Form_Tag' ||
     $formName == 'CRM_Contact_Form_Task_AddToTag' ||
@@ -63,8 +65,14 @@ function nyss_tags_civicrm_buildForm($formName, &$form) {
     );
     $webViewOnly = array();
     foreach ($form->_tagsetInfo as $setId => $setDetails) {
-      if (in_array($setDetails['parentName'], $webSets)) {
+      $setName = (!empty($setDetails['parentName'])) ?
+        $setDetails['parentName'] :
+        civicrm_api3('tag', 'getvalue', array('id' => $setDetails['parentID'], 'return' => 'name'));
+      //Civi::log()->debug('buildForm', array('$setName' => $setName));
+
+      if (in_array($setName, $webSets)) {
         $webViewOnly[] = $setDetails['parentID'];
+        unset($form->_tagsetInfo["contact_taglistparentId_[{$setDetails['parentID']}]"]);
 
         //remove the form elements
         if ($form->elementExists("contact_taglist[{$setDetails['parentID']}]")) {
@@ -79,5 +87,78 @@ function nyss_tags_civicrm_buildForm($formName, &$form) {
     }
     $form->assign('webViewOnly', $webViewOnly);
     //CRM_Core_Error::debug_var('$webViewOnly', $webViewOnly);
+  }
+
+  //Construct some arrays and values to be passed to the tag tab
+  if ($formName == 'CRM_Tag_Form_Tag') {
+    $contactId = $form->getVar('_entityID');
+
+    //Construct list of tags, comma-separated
+    $contactTagsList = array();
+    $contactTags = CRM_Core_BAO_EntityTag::getContactTags($contactId);
+
+    if (!empty($contactTags)) {
+      $contactTagsList = stripslashes(implode(', ', $contactTags));
+    }
+    $form->assign('contactTagsList', $contactTagsList);
+
+    //Construct list of issue codes, comma-separated
+    //Need to work with the full list and subtract tagsets
+    $contactIssueCode_item = array();
+    $contactTags = CRM_Core_BAO_EntityTag::getTag($contactId);
+    $tagsNotTagset = CRM_Core_BAO_Tag::getTagsNotInTagset();
+
+    /*Civi::log()->debug('buildForm', array(
+      '$contactTags' => $contactTags,
+      '$tagsNotTagset' => $tagsNotTagset,
+    ));*/
+
+    foreach ($tagsNotTagset as $key => $issueCode) {
+      if (in_array($key, $contactTags)) {
+        $contactIssueCode_item[] = $issueCode;
+      }
+    }
+    sort($contactIssueCode_item);
+    $contactIssueCode_list = stripslashes(implode(' &#8226; ', $contactIssueCode_item));
+    $form->assign('contactIssueCode_list', $contactIssueCode_list);
+
+    //Construct list of Legislative Positions
+    $legpositions = CRM_Core_BAO_EntityTag::getChildEntityTagDetails(292, $contactId);
+
+    $bbcfg = get_bluebird_instance_config();
+    if (isset($bbcfg['openleg.url.template'])) {
+      $url_template = $bbcfg['openleg.url.template'];
+    }
+    else {
+      $url_template = '/bill/{year}/{billno}';
+    }
+
+    foreach ($legpositions as &$legposition) {
+      $name = $legposition['name'];
+      $bill_id = substr($name, 0, strcspn($name, ' :'));
+      $id_parts = explode('-', $bill_id);  // [0]=billno, [1]=year
+      $search = array('{billno}', '{year}');
+      $bill_url = str_replace($search, $id_parts, $url_template);
+      $bill_html = "<a href=\"$bill_url\" target=\"_blank\">$bill_url</a>";
+      $legposition['description'] = $bill_html;
+    }
+    $form->assign('legpositions', $legpositions);
+  }
+}
+
+//use custom template file for tag tab
+function nyss_tags_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) {
+  /*Civi::log()->debug('alterTemplateFile', array(
+    'formName' => $formName,
+    //'form' => $form,
+    'context' => $context,
+    'tplName' => $tplName,
+  ));*/
+
+  //CRM_Contact_Page_View_Tag is just a wrapper for CRM_Tag_Form_Tag
+  //so we replace for both
+  if ($formName == 'CRM_Contact_Page_View_Tag' ||
+    $formName == 'CRM_Tag_Form_Tag') {
+    $tplName = 'CRM/NYSS/Form/Tag.tpl';
   }
 }
