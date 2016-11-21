@@ -68,8 +68,7 @@
 
       $(item).addClass('crm-wysiwyg-enabled');
 
-      //var isFullPage = $(item).hasClass('crm-wysiwyg-fullpage');
-      var isFullPage = false;  // NYSS 10652
+      var isFullPage = $(item).hasClass('crm-wysiwyg-fullpage');
 
       CKEDITOR.replace($(item)[0], {
         filebrowserBrowseUrl: browseUrl + '&type=files',
