@@ -663,3 +663,50 @@ dt.lv-0 .tag-row .name{
   padding-left:110px;
 }
 
+#crm-container #crm-tagRow291 {
+  display: none;
+}
+
+#crm-container #crm-tagListWrap {
+  height: 600px;
+  border: solid 1px #CCC;
+}
+
+#crm-container #crm-tagListWrap td input {
+  float: left;
+}
+
+#crm-container #crm-tagListWrap td label {
+  display: block;
+  float: left;
+  padding-left: 2px;
+}
+
+#crm-container #crm-tagListWrap td label.level2 {
+  font-weight: 700;
+}
+
+#crm-container #crm-tagListWrap td label.level3 {
+  padding-left: 15px;
+  width: 80%;
+}
+
+/*contact edit tag/group panel*/
+div#tagGroup td {
+  vertical-align: top;
+}
+div#tagGroup span.label,
+div#tagGroup div.label {
+  float: left;
+  clear: both;
+  width: 100%;
+  margin: 10px 0;
+}
+div#tagGroup div#s2id_group,
+div#tagGroup div#s2id_contact_taglist_296,
+div#tagGroup div#s2id_contact_taglist_292 {
+  width: 100% !important;
+}
+div#tagGroup div.content {
+  margin-left: 0;
+}
