@@ -13,8 +13,7 @@ require_once 'script_utils.php';
 
 error_reporting(E_ERROR | E_PARSE | E_WARNING);
 
-function run()
-{
+function run() {
   $prog = basename(__FILE__);
   $shortopts = 'c:d';
   $longopts = array('ct=', 'dg=');
@@ -33,7 +32,7 @@ function run()
   }
 
   if (!is_cli_script()) {
-      echo "<pre>\n";
+    echo "<pre>\n";
   }
 
   require_once 'api/api.php';
@@ -46,7 +45,7 @@ function run()
   CRM_Core_Error::debug_log_message('batchDedupeMerge.php');
   
   //if contact type provided and no dedupe rule group given, use default strict
-  $contactType = null;
+  $contactType = 'Individual';
   if (!empty($optlist['ct'])) {
     $contactOptIdx = strtolower($optlist['ct'][0]);
     if (isset($contactOpts[$contactOptIdx])) {
@@ -61,26 +60,27 @@ function run()
   
   if (!empty($optlist['dg'])) {
     $dg = strtolower($optlist['dg'][0]);
-  } else {
-  	$sql = "SELECT id 
-	        FROM civicrm_dedupe_rule_group 
-			WHERE contact_type = '$contactType'
-			  AND level = 'Strict'
-			  AND is_default = 1;";
+  }
+  else {
+    $sql = "
+      SELECT id 
+      FROM civicrm_dedupe_rule_group 
+      WHERE contact_type = '$contactType'
+        AND used = 'Unsupervised';";
     $dg = CRM_Core_DAO::singleValueQuery($sql);
   }
 
   echo "Processing batch merge for {$contactType}s using dedupe rule $dg.\n";  
 
-  $params = array( 'version' => 3,
-                   'rgid' => $dg
-				   ); 
+  $params = array(
+    'version' => 3,
+    'rgid' => $dg
+  );
+  $return = civicrm_api('job', 'process_batch_merge', $params);
 
-  $return = civicrm_api( 'job', 'process_batch_merge', $params );
-
-  if ( $return['is_error'] ) {
+  if ($return['is_error']) {
     echo 'There was an error when processing the batch merge:\n';
-	print_r($return);
+    print_r($return);
   }
 
   echo "[{$optlist['site']}] Finished batch-merging duplicate contacts.\n";

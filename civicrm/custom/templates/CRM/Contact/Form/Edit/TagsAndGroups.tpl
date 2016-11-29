@@ -25,78 +25,52 @@
 *}
 {literal}
 <script>
-//put these in the start instance in the refactor
-var BBCID = {/literal}{if isset($entityID) }{$entityID}{else}0{/if}{literal};
-var BBActionConst = {/literal}{$action}{literal};
-{/literal}{if !$form.tag.value}{literal}
-  var BBLoadTaglist = null;
-{/literal}{else}{literal}
-  var BBLoadTaglist = [{/literal}{foreach key=tagID item=i from=$form.tag.value name=activeTagset}"{$tagID}"{if !$smarty.foreach.activeTagset.last},{/if}{/foreach}{literal}];
-{/literal}{/if}{literal}
+  var BBCID = {/literal}{$entityID}{literal};
+  var BBActionConst = {/literal}{$action}{literal};
 </script>
-<link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/Bluebird/css/tags/tags.css" />
-<script src="/sites/default/themes/Bluebird/scripts/bbtree.js" type="text/javascript"></script>
 {/literal}
-{if $title}
-<div id="dialog"></div>{*NYSS*}
 
+{crmScript url="/sites/default/themes/Bluebird/scripts/bbtree.js" region=form-body}
+{crmStyle url="/sites/default/themes/Bluebird/css/tags/tags.css"}
+
+{if $title}
 <div class="crm-accordion-wrapper crm-tagGroup-accordion collapsed">
   <div class="crm-accordion-header">{$title}</div>
   <div class="crm-accordion-body" id="tagGroup">
 {/if}
     <table class="form-layout-compressed{if $context EQ 'profile'} crm-profile-tagsandgroups{/if}">
       <tr>
-       {if $groupElementType eq 'crmasmSelect'}
-          <td><span class="label">{if $title}{$form.group.label}{/if}</span>
+        {if !$type || $type eq 'group'}
+          <td>
+            {if $groupElementType eq 'select'}
+              <span class="label">{if $title}{$form.group.label}{/if}</span>
+            {/if}
             {$form.group.html}
-            {literal}
-            <script type="text/javascript">
-             cj(function(){
-               cj("select#group").crmasmSelect({
-                 respectParents: true
-               });
-             });
-             </script>
-             {/literal}
           </td>
-      {/if}
-      {foreach key=key item=item from=$tagGroup}
-        {* $type assigned from dynamic.tpl *}
-        {if !$type || $type eq $key }
-          <td width="100%" class="crm-tagList"><div class="label" onClick="rollDownGroup('.crm-tagList');"><div class="arrow"></div>{if $title}{$form.$key.label}{/if}</div>
-            <div id="crm-tagListWrap">
-              <div class="groupTagsKeywords">{include file="CRM/common/Tag.tpl"}</div>
-            </div>
-          </td>
-          {*
-          <td width={cycle name=tdWidth values="70%","30%"}><span class="label">{if $title}{$form.$key.label}{/if}</span>
-            <div id="crm-tagListWrap">
-              <table id="crm-tagGroupTable">
-                {foreach key=k item=it from=$form.$key}
-                  {if $k|is_numeric}
-                    <tr class={cycle values="'odd-row','even-row'" name=$key} id="crm-tagRow{$k}">
-                      <td>
-                        <strong>{$it.html}</strong><br />
-                        {if $item.$k.description}
-                          <div class="description">
-                            {$item.$k.description}
-                          </div>
-                        {/if}
-                      </td>
-                    </tr>
-                  {/if}
-                {/foreach}
-              </table>
-            </div>
-          </td>
-          *}
         {/if}
-      {/foreach}
-    </tr>
-    {*if !$type || $type eq 'tag'}
-      <tr><td>{include file="CRM/common/Tag.tpl"}</td></tr>
-    {/if*}
-  </table>
+        {if (!$type || $type eq 'tag') && $tree}
+          <td width="70%">{if $title}<span class="label">{$form.tag.label}</span>{/if}
+            <div id="dialog"></div>
+
+            <div id="crm-tagListWrap">
+              {*NYSS inject our custom tagset and pass parent id: keywords*}
+              {include file="CRM/NYSS/Form/Tagset.tpl" parent=296}
+
+              {*NYSS inject our custom tagtree*}
+              {include file="CRM/NYSS/Form/Tagtree.tpl" level=1}
+
+              {if $contactIssueCode_list}
+                <div class="contactTagsList help"><span>{$contactIssueCode_list}</span></div>
+                <div class="clear"></div>
+              {/if}
+
+              {*NYSS inject our custom tagset and pass parent id: leg positions*}
+              {include file="CRM/NYSS/Form/Tagset.tpl" parent=292}
+            </div>
+          </td>
+        {/if}
+      </tr>
+    </table>
 {if $title}
   </div>
 </div><!-- /.crm-accordion-wrapper -->

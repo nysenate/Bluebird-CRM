@@ -1837,35 +1837,6 @@ ul.token-input-list-facebook {
   margin-right: 0;
 }
 
-#crm-container #crm-tagRow291 {
-  display: none;
-}
-
-#crm-container #crm-tagListWrap {
-  height: 600px;
-  overflow: auto;
-  border: solid 1px #CCC;
-}
-
-#crm-container #crm-tagListWrap td input {
-  float: left;
-}
-
-#crm-container #crm-tagListWrap td label {
-  display: block;
-  float: left;
-  padding-left: 2px;
-}
-
-#crm-container #crm-tagListWrap td label.level2 {
-  font-weight: 700;
-}
-
-#crm-container #crm-tagListWrap td label.level3 {
-  padding-left: 15px;
-  width: 80%;
-}
-
 /* Hide a few things in case manage page */
 #crm-container .crm-case-caseview-form-block-timeline_id,#crm-container .crm-case-caseview-form-block-report_id {
   display: none;
@@ -2912,10 +2883,6 @@ input.form-submit {
 .ac_results li.ac_over {
   background-color: transparent;
   color: #fff;
-}
-
-#crm-create-new-wrapper,#crm-contact-actions-wrapper {
-  z-index: 11;
 }
 
 div.token-input-dropdown-facebook {
