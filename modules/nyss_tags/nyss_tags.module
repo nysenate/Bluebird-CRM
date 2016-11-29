@@ -89,8 +89,10 @@ function nyss_tags_civicrm_buildForm($formName, &$form) {
     //CRM_Core_Error::debug_var('$webViewOnly', $webViewOnly);
 
     //10659 - leg positions can't create tag
-    $legPosField =& $form->getElement('contact_taglist[292]');
-    $legPosField->_attributes['data-create-links'] = false;
+    if ($form->elementExists('contact_taglist[292]')) {
+      $legPosField =& $form->getElement('contact_taglist[292]');
+      $legPosField->_attributes['data-create-links'] = false;
+    }
   }
 
   //Construct some arrays and values to be passed to the tag tab
