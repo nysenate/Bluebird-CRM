@@ -2914,10 +2914,6 @@ input.form-submit {
   color: #fff;
 }
 
-#crm-create-new-wrapper,#crm-contact-actions-wrapper {
-  z-index: 11;
-}
-
 div.token-input-dropdown-facebook {
   max-height: 400px;
   overflow: auto;
