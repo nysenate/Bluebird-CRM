@@ -1196,7 +1196,7 @@ class CRM_NYSS_BAO_Integration_Website
   /*
    * archive the accumulator record and then delete from accumulator
    */
-  static function archiveRecord($db, $type, $row, $params, $date)
+  static function archiveRecord($db, $type, $row, $params, $date, $success = true)
   {
     //CRM_Core_Error::debug_var('archiveRecord $type', $type);
     //CRM_Core_Error::debug_var('archiveRecord $row', $row);
@@ -1255,8 +1255,10 @@ class CRM_NYSS_BAO_Integration_Website
     $dataList = implode("', '", $data);
     //CRM_Core_Error::debug_var('archiveRecord $data', $data);
 
+    $mainArchiveTable = ($success) ? 'archive' : 'archive_error';
+
     $sql = "
-      INSERT IGNORE INTO {$db}.archive
+      INSERT IGNORE INTO {$db}.{$mainArchiveTable}
       ({$fieldList})
       VALUES
       ('{$dataList}')

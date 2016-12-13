@@ -232,7 +232,15 @@ class CRM_Integration_Process
 
       if ($result['is_error'] || $result == FALSE) {
         bbscript_log(LL::ERROR, 'Unable to process row', $result);
+        bbscript_log(LL::ERROR, 'Row details', $row);
         $stats['error'][] = $result;
+
+        //archive rows by ID into archive_error table
+        if ($optlist['archive']) {
+          $archiveTable = (!empty($archiveTable)) ? $archiveTable : strtolower($row->msg_type);
+          bbscript_log(LL::DEBUG, 'Archiving matched/created record to $archiveTable and archive_error table');
+          CRM_NYSS_BAO_Integration_Website::archiveRecord($intDB, $archiveTable, $row, $params, $date, false);
+        }
       }
       else {
         $stats['processed'][] = $row->id;
