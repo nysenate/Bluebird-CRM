@@ -74,7 +74,7 @@ function run() {
 
   $params = array(
     'version' => 3,
-    'rgid' => $dg
+    'rule_group_id' => $dg
   );
   $return = civicrm_api('job', 'process_batch_merge', $params);
 
