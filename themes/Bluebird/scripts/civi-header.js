@@ -31,11 +31,6 @@ $(document).ready(function() {
     $(this).parent().toggleClass('primary-link-active');
   });
 
-  $('#civicrm-menu').hide();
-  if ($('#civicrm-menu').length >0){
-    $('#civi-admin-menu').show();
-  }
-
   //3674 prevent duplicate form submission with enter key
   //exclude export and report form as it does not redirect and thus the submit buttons should remain active
   var submitted = false;

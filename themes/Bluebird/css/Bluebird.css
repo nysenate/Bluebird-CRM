@@ -2926,6 +2926,26 @@ div.outerbox {
   margin: 0;
   padding: 0;
   border: none;
+  position: static;
+}
+#civicrm-menu #crm-qsearch {
+  background: none !important;
+}
+#civicrm-menu #crm-qsearch input {
+  background: none;
+  border: none;
+  height: auto;
+  font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-size: 14px;
+  padding: 4px 16px 5px 0px;
+}
+#civicrm-menu .ui-autocomplete-input{
+  background: none;
+}
+#civicrm-menu #crm-qsearch input:hover,
+#civicrm-menu #crm-qsearch input:focus,
+#civicrm-menu #crm-qsearch.active-target input {
+  background: none;
 }
 
 .menu-ul li.active {
@@ -3119,10 +3139,6 @@ div.outerbox {
 
 #civi-admin-menu .add-icon {
   background-image: url(../images/icons-4EBAFF.png);
-}
-
-#civicrm-menu {
-  display: none;
 }
 
 /* search forms section */
