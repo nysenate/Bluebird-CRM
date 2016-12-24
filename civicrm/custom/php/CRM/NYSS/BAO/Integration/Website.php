@@ -93,14 +93,20 @@ class CRM_NYSS_BAO_Integration_Website
       );
     }
 
+    //if we have address fields, pass them through SAGE so we correct any mispellings
+    if (!empty($contactParams['state'])) {
+      //match params format required by SAGE checkAddress
+      $contactParams['state_province'] = $contactParams['state'];
+    }
+    CRM_Utils_SAGE::checkAddress($contactParams);
+
     return $contactParams;
   }//getContactParams
 
   /*
    * attempt to match the record with existing contacts
    */
-  static function matchContact($params)
-  {
+  static function matchContact($params) {
     //CRM_Core_Error::debug_var('matchContact $params', $params);
 
     //format params to pass to dedupe tool
@@ -144,6 +150,7 @@ class CRM_NYSS_BAO_Integration_Website
       FROM civicrm_contact as contact JOIN ($sql) as dupes
       WHERE dupes.id1 = contact.id AND contact.is_deleted = 0
     ";
+    //CRM_Core_Error::debug_var('$sql', $sql);
     $r = CRM_Core_DAO::executeQuery($sql);
 
     $dupeIDs = array();
