@@ -1436,4 +1436,58 @@ class CRM_NYSS_BAO_Integration_Website
 
     return $tagName;
   }//getTagName
+
+  /*
+   * we want to make sure we store the email address, regardless of whether we
+   * have created the contact or found an existing one.
+   * given a contact ID, we determine if the email address already exists;
+   * if so, continue with no action. if it does not exist, add it and set it as
+   * the primary email for the contact
+   */
+  static function updateEmail($cid, $row) {
+    //email reside in one of three places
+    $params = json_decode($row->msg_info);
+    $email = null;
+
+    if (!empty($params->user_info->email)) {
+      $email = $params->user_info->email;
+    }
+    elseif (!empty($params->form_info->user_email)) {
+      $email = $params->form_info->user_email;
+    }
+    elseif (!empty($row->email_address)) {
+      $email = $row->email_address;
+    }
+
+    if (empty($email)) {
+      return;
+    }
+
+    //determine if email already exists for contact
+    $exists = CRM_Core_DAO::singleValueQuery("
+      SELECT e.id
+      FROM civicrm_email e
+      JOIN civicrm_contact c 
+        ON e.contact_id = c.id
+        AND c.is_deleted != 1
+      WHERE contact_id = %1
+        AND email = %2
+      LIMIT 1
+    ", array(
+      1 => array($cid, 'Integer'),
+      2 => array($email, 'String')
+    ));
+
+    if (!$exists) {
+      try {
+        civicrm_api3('email', 'create', array(
+          'contact_id' => $cid,
+          'email' => $email,
+          'is_primary' => true,
+          'location_type_id' => 1,
+        ));
+      }
+      catch (CiviCRM_API3_Exception $e) {}
+    }
+  }
 }//end class
