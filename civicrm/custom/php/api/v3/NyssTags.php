@@ -16,6 +16,33 @@ function civicrm_api3_nyss_tags_getList($params) {
 function _civicrm_api3_nyss_tags_getList_spec(&$params) {
 }
 
+function civicrm_api3_nyss_tags_savePosition($params) {
+  //Civi::log()->debug('civicrm_api3_nyss_tags_savePosition', array('params' => $params));
+
+  if (strpos($params['value'], ':::') !== false) {
+    $label = explode(':::', $params['value'])[0];
+    try {
+      //Civi::log()->debug('civicrm_api3_nyss_tags_savePosition', array('label' => $label));
+      $tag = civicrm_api3('tag', 'create', array(
+        'name' => $label,
+        'parent_id' => 292,
+        'is_selectable' => true,
+        'used_for' => 'civicrm_contact',
+      ));
+      //Civi::log()->debug('civicrm_api3_nyss_tags_savePosition', array('tag' => $tag));
+
+      civicrm_api3('entity_tag', 'create', array(
+        'tag_id' => $tag['id'],
+        'entity_id' => $params['contactId'],
+        'entity_table' => 'civicrm_contact',
+      ));
+    }
+    catch (CiviCRM_API3_Exception $e) {
+      Civi::log()->error('civicrm_api3_nyss_tags_savePosition', array('e' => $e));
+    }
+  }
+}
+
 /*
  * helper function to get leg positions
  * IDs are hardcoded as this is a very unique requirement and not

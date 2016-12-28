@@ -165,38 +165,13 @@ function nyss_tags_civicrm_buildForm($formName, &$form) {
           },
           class: 'crm-contact-tagset'
         });
+        
+        //when a leg position is selected, we may need to add it to the tag table
+        $('#contact_taglist_292').on('select2-selecting', function(e) {
+          CRM.api3('nyss_tags', 'savePosition', {value:e.val, contactId:{$contactId}}, false);
+        });
       });
     ");
-
-    /*$tags = civicrm_api3('nyss_tags', 'getlist', array());
-    Civi::log()->debug('nyss_tags', array(
-      'tags' => $tags,
-      '$form->_tagsetInfo' => $form->_tagsetInfo,
-    ));
-
-    $form->removeElement('contact_taglist[292]');
-    $form->addEntityRef('contact_taglist[292]', 'Positions', array(
-      'entity' => 'nyss_tags',
-      'multiple' => TRUE,
-      'create' => FALSE,
-      'api' => array('params' => array('parent_id' => 292)),
-      'data-entity_table' => 'civicrm_contact',
-      'data-entity_id' => $contactId,
-      'class' => "crm-contact-tagset",
-    ));
-
-    if ($contactId) {
-      $entityTags = CRM_Core_BAO_EntityTag::getChildEntityTags(292, $contactId, 'civicrm_contact');
-      if (!empty($entityTags)) {
-        $entityTagDefaults = implode(',', array_keys($entityTags));
-        $form->setDefaults(array('contact_taglist[292]' => implode(',', array_keys($entityTags))));
-      }
-      $form->assign("tagsetInfo", array('contact' => $form->_tagsetInfo));
-      Civi::log()->debug('CRM_Core_Form_Tag', array(
-        '$entityTags' => $entityTags,
-        'entityTagDefaults' => $entityTagDefaults,
-      ));
-    }*/
   }
 }
 
