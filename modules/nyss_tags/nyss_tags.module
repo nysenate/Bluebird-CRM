@@ -47,10 +47,10 @@ function nyss_tags_civicrm_validate( $formName, &$fields, &$files, &$form ) {
 
 function nyss_tags_civicrm_buildForm($formName, &$form) {
   /*Civi::log()->debug('buildForm', array(
-    'formName' => $formName,
+    //'formName' => $formName,
     'form' => $form,
-    '$form->_elementIndex' => $form->_elementIndex,
-    '$form->_tagsetInfo' => $form->_tagsetInfo,
+    //'$form->_elementIndex' => $form->_elementIndex,
+    //'$form->_tagsetInfo' => $form->_tagsetInfo,
   ));*/
 
   if ($formName == 'CRM_Tag_Form_Tag' ||
@@ -149,6 +149,54 @@ function nyss_tags_civicrm_buildForm($formName, &$form) {
       $legposition['description'] = $bill_html;
     }
     $form->assign('legpositions', $legpositions);
+
+    //10658 rebuild leg positions entity ref using custom API and disabling create
+    CRM_Core_Resources::singleton()->addScript("
+      CRM.$(function($) {
+        $('#contact_taglist_292').crmEntityRef('destroy');
+        $('#contact_taglist_292').crmEntityRef({
+          entity: 'nyss_tags',
+          multiple: true,
+          create: false,
+          api: {
+            params: {
+              parent_id: 292
+            }
+          },
+          class: 'crm-contact-tagset'
+        });
+      });
+    ");
+
+    /*$tags = civicrm_api3('nyss_tags', 'getlist', array());
+    Civi::log()->debug('nyss_tags', array(
+      'tags' => $tags,
+      '$form->_tagsetInfo' => $form->_tagsetInfo,
+    ));
+
+    $form->removeElement('contact_taglist[292]');
+    $form->addEntityRef('contact_taglist[292]', 'Positions', array(
+      'entity' => 'nyss_tags',
+      'multiple' => TRUE,
+      'create' => FALSE,
+      'api' => array('params' => array('parent_id' => 292)),
+      'data-entity_table' => 'civicrm_contact',
+      'data-entity_id' => $contactId,
+      'class' => "crm-contact-tagset",
+    ));
+
+    if ($contactId) {
+      $entityTags = CRM_Core_BAO_EntityTag::getChildEntityTags(292, $contactId, 'civicrm_contact');
+      if (!empty($entityTags)) {
+        $entityTagDefaults = implode(',', array_keys($entityTags));
+        $form->setDefaults(array('contact_taglist[292]' => implode(',', array_keys($entityTags))));
+      }
+      $form->assign("tagsetInfo", array('contact' => $form->_tagsetInfo));
+      Civi::log()->debug('CRM_Core_Form_Tag', array(
+        '$entityTags' => $entityTags,
+        'entityTagDefaults' => $entityTagDefaults,
+      ));
+    }*/
   }
 }
 
