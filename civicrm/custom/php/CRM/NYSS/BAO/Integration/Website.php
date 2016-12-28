@@ -93,14 +93,20 @@ class CRM_NYSS_BAO_Integration_Website
       );
     }
 
+    //if we have address fields, pass them through SAGE so we correct any mispellings
+    if (!empty($contactParams['state'])) {
+      //match params format required by SAGE checkAddress
+      $contactParams['state_province'] = $contactParams['state'];
+    }
+    CRM_Utils_SAGE::checkAddress($contactParams);
+
     return $contactParams;
   }//getContactParams
 
   /*
    * attempt to match the record with existing contacts
    */
-  static function matchContact($params)
-  {
+  static function matchContact($params) {
     //CRM_Core_Error::debug_var('matchContact $params', $params);
 
     //format params to pass to dedupe tool
@@ -144,6 +150,7 @@ class CRM_NYSS_BAO_Integration_Website
       FROM civicrm_contact as contact JOIN ($sql) as dupes
       WHERE dupes.id1 = contact.id AND contact.is_deleted = 0
     ";
+    //CRM_Core_Error::debug_var('$sql', $sql);
     $r = CRM_Core_DAO::executeQuery($sql);
 
     $dupeIDs = array();
@@ -1429,4 +1436,58 @@ class CRM_NYSS_BAO_Integration_Website
 
     return $tagName;
   }//getTagName
+
+  /*
+   * we want to make sure we store the email address, regardless of whether we
+   * have created the contact or found an existing one.
+   * given a contact ID, we determine if the email address already exists;
+   * if so, continue with no action. if it does not exist, add it and set it as
+   * the primary email for the contact
+   */
+  static function updateEmail($cid, $row) {
+    //email reside in one of three places
+    $params = json_decode($row->msg_info);
+    $email = null;
+
+    if (!empty($params->user_info->email)) {
+      $email = $params->user_info->email;
+    }
+    elseif (!empty($params->form_info->user_email)) {
+      $email = $params->form_info->user_email;
+    }
+    elseif (!empty($row->email_address)) {
+      $email = $row->email_address;
+    }
+
+    if (empty($email)) {
+      return;
+    }
+
+    //determine if email already exists for contact
+    $exists = CRM_Core_DAO::singleValueQuery("
+      SELECT e.id
+      FROM civicrm_email e
+      JOIN civicrm_contact c 
+        ON e.contact_id = c.id
+        AND c.is_deleted != 1
+      WHERE contact_id = %1
+        AND email = %2
+      LIMIT 1
+    ", array(
+      1 => array($cid, 'Integer'),
+      2 => array($email, 'String')
+    ));
+
+    if (!$exists) {
+      try {
+        civicrm_api3('email', 'create', array(
+          'contact_id' => $cid,
+          'email' => $email,
+          'is_primary' => true,
+          'location_type_id' => 1,
+        ));
+      }
+      catch (CiviCRM_API3_Exception $e) {}
+    }
+  }
 }//end class

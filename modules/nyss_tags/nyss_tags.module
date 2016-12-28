@@ -47,10 +47,10 @@ function nyss_tags_civicrm_validate( $formName, &$fields, &$files, &$form ) {
 
 function nyss_tags_civicrm_buildForm($formName, &$form) {
   /*Civi::log()->debug('buildForm', array(
-    'formName' => $formName,
+    //'formName' => $formName,
     'form' => $form,
-    '$form->_elementIndex' => $form->_elementIndex,
-    '$form->_tagsetInfo' => $form->_tagsetInfo,
+    //'$form->_elementIndex' => $form->_elementIndex,
+    //'$form->_tagsetInfo' => $form->_tagsetInfo,
   ));*/
 
   if ($formName == 'CRM_Tag_Form_Tag' ||
@@ -149,6 +149,29 @@ function nyss_tags_civicrm_buildForm($formName, &$form) {
       $legposition['description'] = $bill_html;
     }
     $form->assign('legpositions', $legpositions);
+
+    //10658 rebuild leg positions entity ref using custom API and disabling create
+    CRM_Core_Resources::singleton()->addScript("
+      CRM.$(function($) {
+        $('#contact_taglist_292').crmEntityRef('destroy');
+        $('#contact_taglist_292').crmEntityRef({
+          entity: 'nyss_tags',
+          multiple: true,
+          create: false,
+          api: {
+            params: {
+              parent_id: 292
+            }
+          },
+          class: 'crm-contact-tagset'
+        });
+        
+        //when a leg position is selected, we may need to add it to the tag table
+        $('#contact_taglist_292').on('select2-selecting', function(e) {
+          CRM.api3('nyss_tags', 'savePosition', {value:e.val, contactId:{$contactId}}, false);
+        });
+      });
+    ");
   }
 }
 

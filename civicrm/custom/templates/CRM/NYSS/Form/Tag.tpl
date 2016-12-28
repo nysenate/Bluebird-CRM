@@ -65,8 +65,8 @@
             <ul>
               {foreach from=$legpositions item="legposition"}
                 {if $legposition.description && $legposition.description neq 'No description available.'}
-                    <li><strong>{$legposition.name}</strong> :: {$legposition.description}</li>
-                  {/if}
+                  <li><strong>{$legposition.name}</strong> :: {$legposition.description}</li>
+                {/if}
               {/foreach}
               </ul>
           </div>

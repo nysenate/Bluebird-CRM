@@ -42,10 +42,13 @@ $role = str_replace('authenticated user','', $rolesList);
 
 <div class="civi-contact-search">
   <div class="civi-search-title">Find Contacts</div>
-  {if call_user_func(array('CRM_Core_Permission','giveMeAllACLs'))}
+  <div class="input-wrapper">
+    {include file="Custom/quickSearch.tpl"}
+  </div>
+  {*{if call_user_func(array('CRM_Core_Permission','giveMeAllACLs'))}
     <form action="{crmURL p='civicrm/contact/search/basic' h=0 }" name="search_block" id="id_search_block" method="post" onsubmit="getSearchURLValue( );">
       <div class="input-wrapper">
-        <div id="quickSearch"></div>{*#2455*}
+        <div id="quickSearch"></div>*}{*#2455*}{*
       </div>
     </form>
 
@@ -84,7 +87,7 @@ $role = str_replace('authenticated user','', $rolesList);
         });
       </script>
     {/literal}
-  {/if}
+  {/if}*}
 </div>
 
 <div class="civi-general-search">
