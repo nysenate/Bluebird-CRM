@@ -81,6 +81,12 @@ class CRM_Integration_Process
         continue;
       }
 
+      //prep params
+      $params = json_decode($row->msg_info);
+      bbscript_log(LL::TRACE, 'Params after json_decode():', $params);
+
+      $date = date('Y-m-d H:i:s', $row->created_at);
+
       //check contact/user
       bbscript_log(LL::TRACE, 'calling getContactId('.$row->user_id.')');
       $cid = CRM_NYSS_BAO_Integration_Website::getContactId($row->user_id);
@@ -90,6 +96,13 @@ class CRM_Integration_Process
         $contactParams = CRM_NYSS_BAO_Integration_Website::getContactParams($row);
         if (empty($contactParams)) {
           bbscript_log(LL::DEBUG, 'Unable to create user; not enough data provided.', $row);
+
+          if ($optlist['archive']) {
+            $archiveTable = strtolower($row->msg_type);
+            bbscript_log(LL::DEBUG, "Archiving unmatched/uncreated record to $archiveTable and archive_error table");
+            CRM_NYSS_BAO_Integration_Website::archiveRecord($intDB, $archiveTable, $row, $params, $date, false);
+          }
+
           continue;
         }
 
@@ -128,8 +141,9 @@ class CRM_Integration_Process
 
         //archive row with null date
         if ($optlist['archive']) {
-          bbscript_log(LL::DEBUG, 'Archiving non-matched record to "other" table');
-          CRM_NYSS_BAO_Integration_Website::archiveRecord($intDB, 'other', $row, null, null);
+          $archiveTable = strtolower($row->msg_type);
+          bbscript_log(LL::DEBUG, "Archiving non-matched record to $archiveTable and archive_error table");
+          CRM_NYSS_BAO_Integration_Website::archiveRecord($intDB, $archiveTable, $row, $params, $date, false);
         }
 
         continue;
@@ -138,11 +152,6 @@ class CRM_Integration_Process
       //update email address
       CRM_NYSS_BAO_Integration_Website::updateEmail($cid, $row);
 
-      //prep params
-      $params = json_decode($row->msg_info);
-      bbscript_log(LL::TRACE, 'Params after json_decode():', $params);
-
-      $date = date('Y-m-d H:i:s', $row->created_at);
       $archiveTable = $activity_data = '';
       $skipActivityLog = false;
 
