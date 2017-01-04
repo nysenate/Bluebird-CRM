@@ -155,10 +155,10 @@ $script_dir/manageCiviConfig.sh $destinst --update --all
 $drush $destinst vset file_public_path data/$data_dirname_dest/drupal
 
 echo "Rebuilding triggers"
-$app_rootdir/civicrm/scripts/rebuildTriggers.php -S$destinst
+php $app_rootdir/civicrm/scripts/rebuildTriggers.php -S$destinst
 
 echo "Recreating shadow-table functions and triggers"
-$execSql $destinst -f $app_rootdir/modules/nyss_dedupe/shadow_func.sql
+$execSql --civicrm $destinst -f "$app_rootdir/modules/nyss_dedupe/shadow_func.sql"
 
 echo "Clearing cache"
 $script_dir/clearCache.sh $destinst --all
