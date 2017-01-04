@@ -38,6 +38,9 @@ create_instance() {
     cd $script_dir
     $script_dir/copyInstance.sh --delete template $instance
     $script_dir/manageCiviConfig.sh --update --all $instance
+    # Need to set file_public_path separately in 1.5.x
+    # In 1.6, this is handled in manageCiviConfig.php
+    $script_dir/drush.sh $instance vset file_public_path "data/$instance/drupal"
     php $cscript_dir/logEnable.php -S$instance
     $script_dir/hitInstance.sh $instance
   )
