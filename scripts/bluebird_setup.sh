@@ -7,20 +7,25 @@
 # Organization: New York State Senate
 # Date: 2010-09-01
 # Revised: 2011-04-12
+# Revised: 2017-01-04 - enable v2 changelog; miscellaneous cleanup
 #
 
 prog=`basename $0`
 script_dir=`dirname $0`
 script_dir=`cd "$script_dir"; echo $PWD`
-base_dir=`cd "$script_dir/.."; echo $PWD`
 readConfig="$script_dir/readConfig.sh"
-geoCoder="$base_dir/civicrm/scripts/updateAddresses.php"
 app_rootdir=`$readConfig --global app.rootdir` || app_rootdir="$DEFAULT_APP_ROOTDIR"
 data_rootdir=`$readConfig --global data.rootdir` || data_rootdir="$DEFAULT_DATA_ROOTDIR"
 import_rootdir=`$readConfig --global import.rootdir` || data_rootdir="$DEFAULT_IMPORT_ROOTDIR"
-iscript_dir=$app_rootdir/civicrm/scripts/importData
-tempdir=/tmp/bluebird_imports
 
+if [ ! "$app_rootdir" -o ! "$data_rootdir" -o ! "$import_rootdir" ]; then
+  echo "$prog: app, data, and import directories must be configured" >&2
+  exit 1
+fi
+
+cscript_dir="$app_rootdir/civicrm/scripts"
+iscript_dir="$cscript_dir/importData"
+tempdir=/tmp/bluebird_imports
 
 usage() {
   echo "Usage: $prog [--no-init] [--no-unzip] [--no-import] [--no-ldapconfig] [--no-cc] [--no-fixperms] [--geocode] [--force-unzip] [--keep] [--temp-dir tempdir] [--use-importdir] instance_name" >&2
@@ -32,9 +37,9 @@ create_instance() {
     set -x
     cd $script_dir
     $script_dir/copyInstance.sh --delete template $instance
-    $script_dir/manageCiviConfig.sh --update $instance
+    $script_dir/manageCiviConfig.sh --update --all $instance
+    php $cscript_dir/logEnable.php -S$instance
     $script_dir/hitInstance.sh $instance
-    $script_dir/fixFileSystemPath.sh $instance
   )
 }
 
@@ -92,42 +97,6 @@ import_data() {
 }
 
 
-add_ldap_group() {
-  instance="$1"
-  group="$2"
-  (
-    set -x
-    $script_dir/manageLdapConfig.sh --add-entry "$group" $instance
-    $script_dir/manageLdapConfig.sh --add-group "$group" $instance
-  )
-}
-
-clear_cache() {
-  instance="$1"
-  (
-    set -x
-    $script_dir/clearCache.sh --all $instance
-  )
-}
-
-
-fix_permissions() {
-  (
-    set -x
-    $script_dir/fixPermissions.sh
-  )
-}
-
-
-geocode_instance() {
-  instance="$1"
-  (
-    set -x
-    php $geoCoder -S$instance -g
-  )
-}
-
-
 stage=$default_stage
 no_init=0
 no_unzip=0
@@ -175,12 +144,8 @@ elif echo "$locked_instances" | egrep -q "(^|[ ]+)$instance([ ]+|$)"; then
   exit 1
 fi
 
-db_name=`$readConfig --instance $instance db.name`
 datasets=`$readConfig --instance $instance datasets`
 ldap_groups=`$readConfig --instance $instance ldap.groups`
-# Not using imap_user, imap_pass yet...
-imap_user=`$readConfig --instance $instance imap.user`
-imap_pass=`$readConfig --instance $instance imap.pass`
 
 if [ $no_init -eq 1 ]; then
   echo "==> Skipping initialization of instance [$instance]"
@@ -189,33 +154,38 @@ else
   create_instance $instance
 fi
 
-datasets=`echo $datasets | tr , " "`
-ldap_groups=`echo $ldap_groups | tr , " "`
+# The first imported data set is always OMIS data.  All subsequent
+# imports are considered to be "external" data.
 sourcedesc=omis
 
-for ds in $datasets; do
-  if [ $no_unzip -eq 1 ]; then
-    echo "==> Skipping data unzip for instance [$instance]"
-  else
-    unzip_data $ds
-  fi
+if [ "$datasets" ]; then
+  datasets=`echo $datasets | tr , " "`
+  for ds in $datasets; do
+    if [ $no_unzip -eq 1 ]; then
+      echo "==> Skipping data unzip for instance [$instance]"
+    else
+      unzip_data $ds
+    fi
 
-  if [ $no_import -eq 1 ]; then
-    echo "==> Skipping data importation for instance [$instance]"
-  else
-    echo "==> About to import data into CRM instance [$instance]"
-    import_data $instance $ds $sourcedesc
-  fi
+    if [ $no_import -eq 1 ]; then
+      echo "==> Skipping data importation for instance [$instance]"
+    else
+      echo "==> About to import data into CRM instance [$instance]"
+      import_data $instance $ds $sourcedesc
+    fi
 
-  sourcedesc=ext
-done
+    sourcedesc=ext
+  done
+fi
 
 if [ $no_ldapcfg -eq 1 ]; then
   echo "==> Skipping LDAP config for instance [$instance]"
-else
+elif [ "$ldap_groups" ]; then
+  ldap_groups=`echo $ldap_groups | tr , " "`
   echo "==> About to configure LDAP groups for CRM instance [$instance]"
   for ldap_group in $ldap_groups; do
-    add_ldap_group $instance $ldap_group
+    $script_dir/manageLdapConfig.sh --add-entry "$group" $instance
+    $script_dir/manageLdapConfig.sh --add-group "$group" $instance
   done
 fi
 
@@ -223,19 +193,19 @@ if [ $no_clearcache -eq 1 ]; then
   echo "==> Skipping cache clear for instance [$instance]"
 else
   echo "==> About to clear all caches for CRM instance [$instance]"
-  clear_cache $instance
+  $script_dir/clearCache.sh --all $instance
 fi
 
 if [ $no_fixperms -eq 1 ]; then
   echo "==> Skipping permission fixups for instance [$instance]"
 else
   echo "==> About to fix permissions for CRM instance [$instance]"
-  fix_permissions
+  $script_dir/fixPermissions.sh
 fi
 
 if [ $geocode -eq 1 ]; then
   echo "==> About to geocode CRM instance [$instance]"
-  geocode_instance $instance
+  php $cscript_dir/updateAddresses2.php -S$instance -g
 else
   echo "==> Skipping geocode process for CRM instance [$instance]"
 fi
