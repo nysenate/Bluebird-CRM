@@ -11,6 +11,7 @@
 #                     - removed all references to base.domain
 #                     - removed renaming of instance site directory, since
 #                       /sites/ is no longer polluted with directories
+# Revised: 2017-01-04 - added drush command to set file_public_path
 #
 
 prog=`basename $0`
@@ -19,6 +20,7 @@ execSql=$script_dir/execSql.sh
 readConfig=$script_dir/readConfig.sh
 deleteInstance=$script_dir/deleteInstance.sh
 manageInstance=$script_dir/manageCiviConfig.sh
+drush=$script_dir/drush.sh
 db_types="civicrm drupal log"
 
 . $script_dir/defaults.sh
@@ -151,5 +153,6 @@ mv $data_dir_src $data_dir_dest || exit 1
 
 echo "Configuring instance [$destinst]"
 $manageInstance $destinst --update
+$drush $destinst vset file_public_path data/$data_dirname_dest/drupal
 
 exit 0
