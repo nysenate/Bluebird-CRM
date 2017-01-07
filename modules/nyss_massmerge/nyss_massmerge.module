@@ -1,12 +1,19 @@
 <?php 
 
-define( 'DEBUG', 1 );
+define('DEBUG', 1);
 
-function nyss_massmerge_civicrm_merge( $type, &$data, $mainId = NULL, $otherId = NULL, $tables = NULL ) {
+function nyss_massmerge_civicrm_merge($type, &$data, $mainId = NULL, $otherId = NULL, $tables = NULL) {
+  /*Civi::log()->debug('nyss_massmerge_civicrm_merge', array(
+    'type' => $type,
+    'data' => $data,
+    'mainId' => $mainId,
+    'otherId' => $otherId,
+    'tables' => $tables,
+  ));*/
 
-  switch( $type ) {
+  switch($type) {
     case 'batch':
-      if ( !empty($data['fields_in_conflict']) ) {
+      if (!empty($data['fields_in_conflict'])) {
         _resolveConflicts( $data, $mainId, $otherId );
       }
       _mD('post-processed batch data', $data, 2);
@@ -14,7 +21,7 @@ function nyss_massmerge_civicrm_merge( $type, &$data, $mainId = NULL, $otherId =
 
     case 'sqls':
       //log the merge against the retained record
-      _logMerge( $mainId, $otherId );
+      _logMerge($mainId, $otherId);
       break;
 
     default:
@@ -23,16 +30,15 @@ function nyss_massmerge_civicrm_merge( $type, &$data, $mainId = NULL, $otherId =
 }
 
 //helper to resolve some conflicts when in batch mode
-function _resolveConflicts( &$data, $mainId, $otherId ) {
-
-  _mD( 'data', $data, 2 );
+function _resolveConflicts(&$data, $mainId, $otherId) {
+  _mD('data', $data, 2);
 
   $conflicts =& $data['fields_in_conflict'];
   $rows =& $data['old_migration_info']['rows'];
 
   //if org names sans space/punctation are equal, merge
-  if ( array_key_exists( 'move_organization_name', $conflicts ) ) {
-    if ( _cleanVal($rows['move_organization_name']['main']) ==
+  if (array_key_exists('move_organization_name', $conflicts)) {
+    if (_cleanVal($rows['move_organization_name']['main']) ==
       _cleanVal($rows['move_organization_name']['other'])
     ) {
       //unset from the conflicts array
@@ -42,8 +48,8 @@ function _resolveConflicts( &$data, $mainId, $otherId ) {
   }
 
 //if job_title sans space/punctation are equal, merge
-  if ( array_key_exists( 'move_job_title', $conflicts ) ) {
-    if ( _cleanVal($rows['move_job_title']['main']) ==
+  if (array_key_exists('move_job_title', $conflicts)) {
+    if (_cleanVal($rows['move_job_title']['main']) ==
       _cleanVal($rows['move_job_title']['other'])
     ) {
       //unset from the conflicts array
@@ -53,59 +59,59 @@ function _resolveConflicts( &$data, $mainId, $otherId ) {
   }
 
   //if external ids in conflict, just keep main value
-  if ( array_key_exists( 'move_external_identifier', $conflicts ) ) {
+  if (array_key_exists('move_external_identifier', $conflicts)) {
     unset($conflicts['move_external_identifier']);
   }
 
   //if do not mail/do not email, uncheck value for retention and proceed with merge
-  if ( array_key_exists( 'move_do_not_mail', $conflicts ) ) {
+  if (array_key_exists('move_do_not_mail', $conflicts)) {
     $conflicts['move_do_not_mail'] = 0;
   }
-  if ( array_key_exists( 'move_do_not_email', $conflicts ) ) {
+  if (array_key_exists('move_do_not_email', $conflicts)) {
     $conflicts['move_do_not_email'] = 0;
   }
 
   //if opt-out, set to yes
-  if ( array_key_exists( 'move_is_opt_out', $conflicts ) ) {
+  if (array_key_exists('move_is_opt_out', $conflicts)) {
     $conflicts['move_is_opt_out'] = 1;
   }
 
   //if greeting in conflict and one is custom, retain formula option
-  if ( array_key_exists( 'move_addressee', $conflicts ) ) {
-    _fixGreeting( 'move_addressee', $rows, $conflicts, $data );
+  if (array_key_exists('move_addressee', $conflicts)) {
+    _fixGreeting('move_addressee', $rows, $conflicts, $data);
   }
-  if ( array_key_exists( 'move_email_greeting', $conflicts ) ) {
-    _fixGreeting( 'move_email_greeting', $rows, $conflicts, $data );
+  if (array_key_exists('move_email_greeting', $conflicts)) {
+    _fixGreeting('move_email_greeting', $rows, $conflicts, $data);
   }
-  if ( array_key_exists( 'move_postal_greeting', $conflicts ) ) {
-    _fixGreeting( 'move_postal_greeting', $rows, $conflicts, $data );
+  if (array_key_exists('move_postal_greeting', $conflicts)) {
+    _fixGreeting('move_postal_greeting', $rows, $conflicts, $data);
   }
-  if ( array_key_exists( 'move_addressee_custom', $conflicts ) ) {
-    _fixGreeting( 'move_addressee_custom', $rows, $conflicts, $data );
+  if (array_key_exists('move_addressee_custom', $conflicts)) {
+    _fixGreeting('move_addressee_custom', $rows, $conflicts, $data);
   }
 
   //if case insensitive fname/mname/lname match or value sans space matches,
   //try to find mixed case and retain
-  if ( array_key_exists( 'move_last_name', $conflicts ) ) {
-    _fixName( 'move_last_name', $rows, $conflicts );
+  if (array_key_exists('move_last_name', $conflicts)) {
+    _fixName('move_last_name', $rows, $conflicts);
   }
-  if ( array_key_exists( 'move_first_name', $conflicts ) ) {
-    _fixName( 'move_first_name', $rows, $conflicts );
+  if (array_key_exists('move_first_name', $conflicts)) {
+    _fixName('move_first_name', $rows, $conflicts);
   }
-  if ( array_key_exists( 'move_middle_name', $conflicts ) ) {
-    _fixName( 'move_middle_name', $rows, $conflicts );
+  if (array_key_exists('move_middle_name', $conflicts)) {
+    _fixName('move_middle_name', $rows, $conflicts);
   }
 
   //if one record type is BOE, retain above other values
-  if ( array_key_exists( 'move_custom_61', $conflicts ) ) {
-    _fixRT( $rows, $conflicts );
+  if (array_key_exists('move_custom_61', $conflicts)) {
+    _fixRT($rows, $conflicts);
   }
 
   //let's log any remaining conflicts for later review
-  if ( in_array( NULL, $conflicts, TRUE) ) {
+  if (in_array(NULL, $conflicts, TRUE)) {
     $conflictDetails = array();
-    foreach ( $conflicts as $fld => $value ) {
-      if ( $value === NULL ) {
+    foreach ($conflicts as $fld => $value) {
+      if ($value === NULL) {
         $conflictDetails[$fld] = array(
           'mainId' => $mainId,
           'mainId value' => $rows[$fld]['main'],
@@ -125,33 +131,33 @@ function _resolveConflicts( &$data, $mainId, $otherId ) {
 } //_resolveConflicts
 
 //helper to strip spaces and punctuation so we normalize comparison
-function _cleanVal( $string ) {
+function _cleanVal($string) {
 
-  $string = preg_replace( '/[\W]+/', '', $string );
-  $string = strtolower( $string );
+  $string = preg_replace('/[\W]+/', '', $string);
+  $string = strtolower($string);
 
   return $string;
 } //_cleanVal
 
 //helper to work out greeting field custom vs formula
-function _fixGreeting( $gType, &$rows, &$conflicts, &$data ) {
+function _fixGreeting($gType, &$rows, &$conflicts, &$data) {
 
   $gMain =& $rows[$gType]['main'];
   $gOther =& $rows[$gType]['other'];
 
     //check if casing/punctuation is only difference
-	if ( _cleanVal($gMain) == _cleanVal($gOther) ) {
+	if (_cleanVal($gMain) == _cleanVal($gOther)) {
     //unset from the conflicts array
     unset($conflicts[$gType]);
     return;
   }
 
   //perform fixup if one is customized and the other is not
-  if ( _isCustom($gMain) && !_isCustom($gOther) ) {
+  if (_isCustom($gMain) && !_isCustom($gOther)) {
     $conflicts[$gType] = $gOther;
     return;
   }
-  elseif ( !_isCustom($gMain) && _isCustom($gOther) ) {
+  elseif (!_isCustom($gMain) && _isCustom($gOther)) {
     $conflicts[$gType] = $gMain;
     return;
   }
@@ -159,12 +165,12 @@ function _fixGreeting( $gType, &$rows, &$conflicts, &$data ) {
   //we know at this point that the values conflict and one is not a formula
   //the other value could be a Dear Friend(s) selection
   //we will retain the custom value as it's more likely to be a meaningful value
-  if ( $gMain == 'Customized' ) {
+  if ($gMain == 'Customized') {
     $conflicts[$gType] = $gMain;
     $conflicts[$gType.'_custom'] = $rows[$gType.'_custom']['main'];
     return;
   }
-  elseif ( $gOther == 'Customized' ) {
+  elseif ($gOther == 'Customized') {
     $conflicts[$gType] = $gOther;
     $conflicts[$gType.'_custom'] = $rows[$gType.'_custom']['other'];
     return;
@@ -173,12 +179,12 @@ function _fixGreeting( $gType, &$rows, &$conflicts, &$data ) {
   //another scenario is where values are customized and variance is
   //due to other field values used to construct a cached value
   //consider middle initial:
-  if ( isset($rows['move_middle_name']) &&
+  if (isset($rows['move_middle_name']) &&
     strpos($gType, '_custom') &&
     $rows['move_middle_name']['main'] != $rows['move_middle_name']['other']
   ) {
 
-    if ( strlen($rows[$gType]['main']) > strlen($rows[$gType]['other']) ) {
+    if (strlen($rows[$gType]['main']) > strlen($rows[$gType]['other'])) {
       $conflicts[$gType] = $rows[$gType]['main'];
     }
     else {
@@ -194,25 +200,24 @@ function _fixGreeting( $gType, &$rows, &$conflicts, &$data ) {
 
 //helper to clean up and compare name fields
 //our algorithms will give preference to the main value
-function _fixName( $name, &$rows, &$conflicts ) {
-
+function _fixName($name, &$rows, &$conflicts) {
   $nMain = $rows[$name]['main'];
   $nOther = $rows[$name]['other'];
   $mWeight = $oWeight = 0;
 
   //first find if we have a cleaned match, else return
-  if ( _cleanVal($nMain) != _cleanVal($nOther) ) {
+  if (_cleanVal($nMain) != _cleanVal($nOther)) {
     return;
   }
 
   //determine if mixed case +1
-  if ( $nMain != strtolower($nMain) &&
+  if ($nMain != strtolower($nMain) &&
     $nMain != strtoupper($nMain)
   ) {
     $mWeight++;
     _mD('nMain is mixed case', $nMain, 2);
   }
-  if ( $nOther != strtolower($nOther) &&
+  if ($nOther != strtolower($nOther) &&
     $nOther != strtoupper($nOther)
   ) {
     $oWeight++;
@@ -220,27 +225,27 @@ function _fixName( $name, &$rows, &$conflicts ) {
   }
 
   //determine if value has spaces -1
-  if ( !preg_match("/\s/", $nMain) ) {
+  if (!preg_match("/\s/", $nMain)) {
     $mWeight++;
     _mD('nMain has no spaces', $nMain, 2);
   }
-  if ( !preg_match("/\s/", $nOther) ) {
+  if (!preg_match("/\s/", $nOther)) {
     $oWeight++;
     _mD('nOther has no spaces', $nOther, 2);
   }
 
   //determine if value has punctuation +1
-  if ( preg_match("/\p{P}/", $nMain) ) {
+  if (preg_match("/\p{P}/", $nMain)) {
     $mWeight++;
     _mD('nMain has punctuation', $nMain, 2);
   }
-  if ( preg_match("/\p{P}/", $nOther) ) {
+  if (preg_match("/\p{P}/", $nOther)) {
     $oWeight++;
     _mD('nOther has punctuation', $nOther, 2);
   }
 
   //take value with greater weight and set other to match
-  if ( $mWeight >= $oWeight ) {
+  if ($mWeight >= $oWeight) {
     $nOther = $nMain;
   }
   else {
@@ -255,12 +260,11 @@ function _fixName( $name, &$rows, &$conflicts ) {
 } //_fixName
 
 //if either of the RT values is Board of Election, set and merge
-function _fixRT( &$rows, &$conflicts ) {
-
+function _fixRT(&$rows, &$conflicts) {
   $rtMain  = $rows['move_custom_61']['main'];
   $rtOther = $rows['move_custom_61']['other'];
 
-  if ( $rtMain == 'Board of Election' ||
+  if ($rtMain == 'Board of Election' ||
     $rtOther == 'Board of Election'
   ) {
     $rtMain = $rtOther = 'Board of Election';
@@ -269,10 +273,10 @@ function _fixRT( &$rows, &$conflicts ) {
 } //_fixRT
 
 //determine if we have a custom greeting value
-function _isCustom( $value ) {
+function _isCustom($value) {
   //if the value is 'Customized' or we don't have braces, then custom
-  if ( $value == 'Customized' ||
-    !preg_match("/[\{\}]/", $value) ) {
+  if ($value == 'Customized' ||
+    !preg_match("/[\{\}]/", $value)) {
     return true;
   }
   else {
@@ -280,23 +284,26 @@ function _isCustom( $value ) {
   }
 }
 
-function _logMerge( $mainId, $otherId ) {
-  $session =& CRM_Core_Session::singleton();
+function _logMerge($mainId, $otherId) {
+  $session = CRM_Core_Session::singleton();
   $cid = $session->get('userID');
   $date = date('YmdHis');
 
   //handle with straight sql as it's faster than using the BAO
-  $sql = "INSERT INTO civicrm_log ( entity_table, entity_id, data, modified_id, modified_date ) VALUES
-    ( 'civicrm_contact', $mainId, 'Contact $otherId was merged into this contact ($mainId).', $cid, $date )";
+  $sql = "
+    INSERT INTO civicrm_log (entity_table, entity_id, data, modified_id, modified_date) 
+    VALUES
+    ('civicrm_contact', $mainId, 'Contact $otherId was merged into this contact ($mainId).', $cid, $date)
+  ";
   CRM_Core_DAO::executeQuery($sql);
 
   return;
 }
 
 //allows us to condition all logging based on a constant
-function _mD( $msg, $var, $level = 1 ) {
-  if ( $level <= DEBUG ) {
-    CRM_Core_Error::debug_var( $msg, $var );
+function _mD($msg, $var, $level = 1) {
+  if ($level <= DEBUG) {
+    CRM_Core_Error::debug_var($msg, $var, true, true, 'merge');
   }
 
   return;
