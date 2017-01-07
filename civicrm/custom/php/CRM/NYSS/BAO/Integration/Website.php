@@ -201,6 +201,7 @@ class CRM_NYSS_BAO_Integration_Website
       'postal_code' => $params['postal_code'],
       'location_type_id' => 1,
     );
+    self::cleanContactParams($params);
     //CRM_Core_Error::debug_var('createContact params', $params);
 
     $contact = civicrm_api3('contact', 'create', $params);
@@ -209,6 +210,44 @@ class CRM_NYSS_BAO_Integration_Website
     return $contact['id'];
   } //createContact()
 
+  /*
+   * because we're getting data from the web, some of it could be junk
+   * initially we will just concern ourselves with field length, but in time
+   * this can be a common function used for cleaning data
+   */
+  static function cleanContactParams(&$params) {
+    $contactFields = civicrm_api3('contact', 'getfields', array('sequential' => 1, 'api_action' => 'create'));
+    $addressFields = civicrm_api3('address', 'getfields', array('sequential' => 1, 'api_action' => 'create'));
+
+    //cycle through contact fields and truncate if necessary
+    foreach ($contactFields['values'] as $field) {
+      if (array_key_exists($field['name'], $params) && !empty($field['maxlength'])) {
+        if (is_string($params[$field['name']]) &&
+          strlen(utf8_decode($params[$field['name']])) > $field['maxlength']
+        ) {
+          $params[$field['name']] = truncate_utf8($params[$field['name']], $field['maxlength']);
+        }
+      }
+    }
+
+    //cycle through address fields and truncate if necessary
+    foreach ($addressFields['values'] as $field) {
+      if (array_key_exists($field['name'], $params['api.address.create']) && !empty($field['maxlength'])) {
+        if (is_string($params['api.address.create'][$field['name']]) &&
+          strlen(utf8_decode($params['api.address.create'][$field['name']])) > $field['maxlength']
+        ) {
+          $params['api.address.create'][$field['name']] =
+            truncate_utf8($params['api.address.create'][$field['name']], $field['maxlength']);
+        }
+      }
+    }
+
+    /*Civi::log()->debug('cleanContactParams', array(
+      'contactFields' => $contactFields,
+      'addressFields' => $addressFields,
+      'params' => $params,
+    ));*/
+  }//cleanContactParams
 
   //TODO when a user moves to a different district, need to reset web_user_id
 
