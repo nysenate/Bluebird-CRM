@@ -17,8 +17,6 @@ prog=`basename $0`
 script_dir=`dirname $0`
 execSql=$script_dir/execSql.sh
 readConfig=$script_dir/readConfig.sh
-deleteInstance=$script_dir/deleteInstance.sh
-manageInstance=$script_dir/manageCiviConfig.sh
 db_types="civicrm drupal log"
 
 . $script_dir/defaults.sh
@@ -79,6 +77,7 @@ if [ $skip_trigger_check -ne 1 ]; then
   trig_count=`$execSql -q --replace-macros $srcinst -c "$sql"`
   if [ $trig_count -ne 0 ]; then
     echo "$prog: There are $trig_count triggers on the CiviCRM database for [$srcinst]; please remove triggers before renaming" >&2
+    echo "$prog: Hint: Use the dropCiviTriggers.sh script" >&2
     exit 1
   fi
 fi
@@ -90,7 +89,7 @@ if [ $no_create -ne 1 ]; then
   # Create new databases for the destination instance.
 
   if [ $delete_before_create -eq 1 ]; then
-    $deleteInstance $destinst
+    $script_dir/deleteInstance.sh $destinst
   fi
 
   for db in $db_types; do
@@ -133,6 +132,7 @@ if [ $skip_views -ne 1 ]; then
   fi
 fi
 
+app_rootdir=`$readConfig --global app.rootdir` || app_rootdir="$DEFAULT_APP_ROOTDIR"
 drupal_rootdir=`$readConfig --ig $srcinst drupal.rootdir` || drupal_rootdir="$DEFAULT_DRUPAL_ROOTDIR"
 data_rootdir_src=`$readConfig --ig $srcinst data.rootdir` || data_rootdir_src="$DEFAULT_DATA_ROOTDIR"
 data_rootdir_dest=`$readConfig --ig $destinst data.rootdir` || data_rootdir_dest="$DEFAULT_DATA_ROOTDIR"
@@ -150,6 +150,18 @@ fi
 mv $data_dir_src $data_dir_dest || exit 1
 
 echo "Configuring instance [$destinst]"
-$manageInstance $destinst --update
+$script_dir/manageCiviConfig.sh $destinst --update --all
+
+echo "Rebuilding triggers"
+php $app_rootdir/civicrm/scripts/rebuildTriggers.php -S$destinst
+
+echo "Recreating shadow-table functions and triggers"
+$execSql --civicrm $destinst -f "$app_rootdir/modules/nyss_dedupe/shadow_func.sql"
+
+echo "Clearing cache"
+$script_dir/clearCache.sh $destinst --all
+
+echo "Done renaming $srcinst -> $destinst.  You will probably want to"
+echo "delete the old CRM ($srcinst) using deleteInstance.sh"
 
 exit 0
