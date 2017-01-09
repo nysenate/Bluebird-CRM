@@ -928,6 +928,21 @@ function nyss_civihooks_civicrm_check(&$messages) {
   }
 }//nyss_civihooks_civicrm_check
 
+/*
+ * implement coreResourceList to define location of custom ckeditor config file
+ */
+function nyss_civihooks_civicrm_coreResourceList(&$list, $region) {
+  $config = array_keys(array_filter($list, function($v){return !empty($v['config']) ? true : false;}));
+  $list[$config[0]]['config']['CKEditorCustomConfig'] =
+    '/sites/all/modules/nyss_civihooks/js/ckeditor.config.js';
+
+  /*Civi::log()->debug('nyss_civihooks_civicrm_coreResourceList', array(
+    'list' => $list,
+    'region' => $region,
+    'configKey' => $config,
+  ));*/
+}
+
 /**
  * The User ID and Job ID are stored as db variables for inclusion
  * in the log database via the triggers. At times, the variables
