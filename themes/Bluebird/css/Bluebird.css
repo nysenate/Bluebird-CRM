@@ -2947,16 +2947,16 @@ div.outerbox {
 #civicrm-menu #crm-qsearch.active-target input {
   background: none;
 }
-
+#civicrm-menu #crm-qsearch ul {
+  z-index: 99999;
+}
 .menu-ul li.active {
   background-color: transparent;
 }
-
 #root-menu-div .menu-ul li {
   margin: 2px 4px;
   padding: 2px;
 }
-
 #root-menu-div .menu-ul li.menu-separator {
   padding: 0;
 }

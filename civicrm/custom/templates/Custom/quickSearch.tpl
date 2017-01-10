@@ -73,7 +73,10 @@
                 field_name: option.val(),
                 table_name: option.attr("data-tablename")
               };
+            console.log('option: ', option);//LCD
+            console.log('params: ', params);//LCD
             CRM.api3('contact', 'getquick', params).done(function(result) {
+              console.log('result: ', result);//LCD
               var ret = [];
               if (result.values.length > 0) {
                 $('#sort_name_navigation').autocomplete('widget').menu('option', 'disabled', false);
@@ -123,24 +126,28 @@
         });
       $('.crm-hidemenu').click(function(e) {
         $('#civicrm-menu').slideUp();
-        if ($('#crm-notification-container').length) {
-          /*var alert = CRM.alert({/literal}'<a href="#" id="crm-restore-menu" style="text-align: center; margin-top: -8px;">{ts escape='js'}Restore CiviCRM Menu{/ts}</a>'{literal}, '', 'none', {expires: 10000});
-          $('#crm-restore-menu')
-            .button({icons: {primary: 'fa-undo'}})
-            .click(function(e) {
-              e.preventDefault();
-              alert.close();
-              $('#civicrm-menu').slideDown();
-            })
-            .parent().css('text-align', 'center').find('.ui-button-text').css({'padding-top': '4px', 'padding-bottom': '4px'})
-          ;*/
-        }
         e.preventDefault();
       });
       function setQuickSearchValue() {
+        $('.crm-quickSearchField input').each(function(){
+          console.log('this: ', this);
+          console.log('this:checked', cj(this).prop('checked'));
+          if ($(this).prop('checked') == 'checked') {
+            console.log('checked this: ', this);
+          }
+        });
+
         var $selection = $('.crm-quickSearchField input:checked'),
           label = $selection.parent().text(),
           value = $selection.val();
+        console.log('$selection', $selection);
+        console.log('label', label);
+        console.log('value', value);
+
+        $('.crm-quickSearchField input').each(function(){
+          console.log('this after: ', this);
+        });
+
         // These fields are not supported by advanced search
         if (!value || value === 'first_name' || value === 'last_name') {
           value = 'sort_name';
@@ -174,7 +181,7 @@
       // Close menu after selecting an item
       $('#root-menu-div').on('click', 'a', $.Menu.closeAll);
     });
-    //$('#civicrm-menu').menuBar({arrowSrc: CRM.config.resourceBase + 'packages/jquery/css/images/arrow.png'});
+    $('#civicrm-menu').menuBar({arrowSrc: CRM.config.resourceBase + 'packages/jquery/css/images/arrow.png'});
   })(CRM.$);
   </script>
   {/literal}
