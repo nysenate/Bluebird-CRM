@@ -91,9 +91,11 @@ $civicrm_setting['CiviCRM Preferences']['communityMessagesUrl'] = false;
 
 $civicrm_setting['Directory Preferences']['customTemplateDir'] = "$approot/civicrm/custom/templates";
 $civicrm_setting['Directory Preferences']['customPHPPathDir'] = "$approot/civicrm/custom/php";
+$civicrm_setting['Directory Preferences']['extensionsDir'] = "$approot/civicrm/custom/ext";
 $civicrm_setting['Directory Preferences']['imageUploadDir'] = "$dataroot/$datadirname/pubfiles";
 
 $civicrm_setting['URL Preferences']['imageUploadURL'] = "data/$datadirname/pubfiles";
+$civicrm_setting['URL Preferences']['extensionsURL'] = "sites/all/ext";
 
 $civicrm_setting['Search Preferences']['enable_innodb_fts'] = true;
 $civicrm_setting['Search Preferences']['fts_query_mode'] = 'wildwords-suffix';
