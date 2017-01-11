@@ -2947,16 +2947,36 @@ div.outerbox {
 #civicrm-menu #crm-qsearch.active-target input {
   background: none;
 }
+#civicrm-menu #crm-qsearch ul {
+  z-index: 99999;
+}
+ul.crm-quickSearch-results {
+  background-color: #405362;
+  border: none;
+  /*margin-top: 14px;*/
+  border-radius: 4px;
+  max-width: 250px !important;
+}
+ul.crm-quickSearch-results li {
+  background-color: #405362;
+  border: none;
+  font-size: 11px;
+}
+ul.crm-quickSearch-results li:hover,
+ul.crm-quickSearch-results li.ui-state-focus,
+.ac_results li:hover {
+  color: black;
+  background-color: #405362 !important;
+  border: none;
+}
 
 .menu-ul li.active {
   background-color: transparent;
 }
-
 #root-menu-div .menu-ul li {
   margin: 2px 4px;
   padding: 2px;
 }
-
 #root-menu-div .menu-ul li.menu-separator {
   padding: 0;
 }
