@@ -88,7 +88,6 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
     $replyto = DEFAULT_REPLYTO;
   }
 
-
   // A context of "civimail" indicates a mass email job, which requires
   // much more setup than a non-civimail message.
   if ($context == 'civimail') {
@@ -134,7 +133,7 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
         else {
           $locidx = 'pre_body';
         }
-        $s = get_whitelist_clause($bbconfig, $senator_email);
+        $s = get_whitelist_clause($bbconfig);
         $extraContent['text'][$locidx][] = $s['text'];
         $extraContent['html'][$locidx][] = $s['html'];
       }
@@ -150,17 +149,26 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
     // NYSS 4864 - optionally include a "Share on Facebook" link
     if ($jobInfo) {
       if (!empty($jobInfo['mailing_hash'])) {
-        $viewID = $jobInfo['mailing_hash'];
+        $view_id = $jobInfo['mailing_hash'];
       }
       else {
-        $viewID = $jobInfo['mailing_id'];
+        $view_id = $jobInfo['mailing_id'];
       }
 
-      if (!empty($bbconfig['email.extras.include_browserview'])) {
-        $s = get_browserview_clause($bbconfig, $viewID);
+      $view_url = get_view_url($bbconfig, $view_id);
+
+      // If a VIEWIN_BROWSER_URL token appears in the HTML content, then
+      // suppress the auto-appending of the "View in Browser" link.
+      $is_viewin_token = strpos($params['html'], '%VIEWIN_BROWSER_URL%');
+      if ($is_viewin_token === false &&
+          !empty($bbconfig['email.extras.include_browserview'])) {
+        $s = get_browserview_clause($bbconfig);
         $extraContent['text']['post_body'][] = $s['text'];
         $extraContent['html']['post_body'][] = $s['html'];
       }
+
+      // Always auto-append the subscription management/optout link, unless
+      // it has been disabled for this CRM instance.
       if (!empty($bbconfig['email.extras.include_optout'])) {
         // NYSS 5581 - opt-out/subscription management link
         $s = get_optout_clause($bbconfig, $contactID, $eventQueueID);
@@ -169,17 +177,39 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
         // Disable SendGrid Opt-Out as we are handling thru subscription page.
         $hdr->addFilterSetting('subscriptiontrack', 'enable', 0);
       }
-      if (!empty($bbconfig['email.extras.include_shareon'])) {
-        $s = get_shareon_clause($bbconfig, $viewID);
+
+      // If a SHAREON_FACEBOOK_URL token appears in the HTML content, then
+      // suppress the auto-appending of the "share on Facebook" link.
+      $is_shareon_token = strpos($params['html'], '%SHAREON_FACEBOOK_URL%');
+      if ($is_shareon_token === false &&
+          !empty($bbconfig['email.extras.include_shareon'])) {
+        $s = get_shareon_clause($bbconfig);
         $extraContent['text']['post_body'][] = $s['text'];
         $extraContent['html']['post_body'][] = $s['html'];
       }
     }
+    else {
+      // In this case, we are viewing in a browser, so there is no job info
+      // available.  However, the URL has the view ID in it.
+      $view_id = $_GET['id'];
+      $view_url = get_view_url($bbconfig, $view_id);
+    }
+
+    $token_replacements = array(
+      '%SENATOR_EMAIL%' => $senator_email,
+      '%SHAREON_FACEBOOK_URL%' => "https://www.facebook.com/sharer/sharer.php?u=$view_url",
+      '%SHAREON_TWITTER_URL%' => "https://twitter.com/intent/tweet?url=$view_url&text=New York State Senate",
+      '%SHAREON_REDDIT_URL%' => "https://www.reddit.com/submit?url=$view_url",
+      '%VIEWIN_BROWSER_URL%' => $view_url,
+      '%MANAGE_SUBSCRIPTIONS_URL%' => ''
+    );
 
     // Add extra content (OpenGraph, whitelist, browser-view, opt-out, share-on)
+    // and replace any tokens.
     foreach ($contentTypes as $ctype) {
       if (isset($params[$ctype])) {
         $params[$ctype] = add_extra_content($params[$ctype], $extraContent[$ctype], $ctype);
+        $params[$ctype] = replace_tokens($params[$ctype], $token_replacements);
       }
     }
 
@@ -219,7 +249,7 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
   //CRM_Core_Error::debug_var('params', $params);
 
   return;
-} //nyss_mail_civicrm_alterMailParams()
+} // nyss_mail_civicrm_alterMailParams()
 
 
 function nyss_mail_civicrm_buildForm($formName, &$form)
@@ -692,7 +722,7 @@ function nyss_mail_civicrm_pageRun(&$page)
       $page->assign('emails', $contactEmails);
     }
   } // NYSS 5581
-}//nyss_mail_civicrm_pageRun()
+} // nyss_mail_civicrm_pageRun()
 
 
 function nyss_mail_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName)
@@ -719,7 +749,7 @@ function nyss_mail_civicrm_alterTemplateFile($formName, &$form, $context, &$tplN
       $tplName = 'CRM/NYSS/SubscriptionView.tpl';
     }
   }
-}//alterTemplateFile
+} // nyss_mail_civicrm_alterTemplateFile()
 
 
 // NYSS 4628
@@ -761,7 +791,7 @@ WHERE e.id NOT IN (
 
   //remove onHold as we didn't do it earlier
   CRM_Mailing_BAO_Mailing::removeOnHold((int)$mailingID);
-} //_addAllEmails()
+} // _addAllEmails()
 
 
 // NYSS 4879
@@ -870,7 +900,7 @@ function _excludeCategoryOptOut($mailingID, $mailingCat)
   ";
   //CRM_Core_Error::debug_var('sql', $sql);
   CRM_Core_DAO::executeQuery($sql);
-}//_excludeCategoryOptOut
+} // _excludeCategoryOptOut()
 
 
 function _addEmailSeeds($mailingID)
@@ -990,17 +1020,21 @@ function get_job_info($jid)
 } // get_job_info()
 
 
-function get_whitelist_clause($bbcfg, $email)
+function get_whitelist_clause($bbcfg)
 {
+  if (!empty($bbcfg['email.extras.whitelist_html'])) {
+    $html = $bbcfg['email.extras.whitelist_html'];
+  }
+  else {
+    $html = 'To ensure delivery of emails to your inbox, please add <a href="mailto:%SENATOR_EMAIL%">%SENATOR_EMAIL%</a> to your email address book.';
+  }
+
   if (!empty($bbcfg['email.extras.whitelist_text'])) {
     $text = $bbcfg['email.extras.whitelist_text'];
   }
   else {
     $text = 'To ensure delivery of emails to your inbox, please add %SENATOR_EMAIL% to your email address book.';
   }
-  // Order here is important.  HTML first, then text, since text is rewritten.
-  $html = str_replace('%SENATOR_EMAIL%', "<a href=\"mailto:$email\">$email</a>", $text);
-  $text = str_replace('%SENATOR_EMAIL%', $email, $text);
 
   return array('text' => $text, 'html' => $html);
 } // get_whitelist_clause()
@@ -1014,12 +1048,10 @@ function get_view_url($bbcfg, $viewId)
 } // get_view_url()
 
 
-function get_browserview_clause($bbcfg, $viewId)
+function get_browserview_clause($bbcfg)
 {
-  $url = get_view_url($bbcfg, $viewId);
-  $text = "To view this email in your browser, go to $url";
-  $html = '<a href="'.$url.'" target="_blank">Click here</a> to view this email in your browser.';
-
+  $text = 'To view this email in your browser, go to %VIEWIN_BROWSER_URL%';
+  $html = '<a href="%VIEWIN_BROWSER_URL%" target="_blank">Click here</a> to view this email in your browser.';
   return array('text' => $text, 'html' => $html);
 } // get_browserview_clause()
 
@@ -1036,34 +1068,32 @@ function get_optout_clause($bbcfg, $cid, $qid)
 } // get_optout_clause()
 
 
-function get_shareon_clause($bbcfg, $viewId)
+function get_shareon_clause($bbcfg)
 {
-  $url = get_view_url($bbcfg, $viewId);
-  $fburl = "https://www.facebook.com/sharer/sharer.php?u=$url";
   $fbimg = "http://pubfiles.nysenate.gov/{$bbcfg['envname']}/{$bbcfg['shortname']}/common/images/social_media/facebook_share_68x25.png";
 
-  $text = "To share this on Facebook, go to $fburl";
-  $html = '<a style="color:#386eff; text-decoration:underline;" href="'.$fburl.'" target="_blank">Share&nbsp;on&nbsp;Facebook.</a>';
-
+  $text = 'To share this on Facebook, go to %SHAREON_FACEBOOK_URL%';
+  $html = '<a style="color:#386eff; text-decoration:underline;" href="https://www.facebook.com/sharer/sharer.php?u=%SHAREON_FACEBOOK_URL%" target="_blank">Share&nbsp;on&nbsp;Facebook.</a>';
   return array('text' => $text, 'html' => $html);
 } // get_shareon_clause()
 
 
 function get_opengraph_clause($bbcfg, $subj)
 {
-  $pubdir = $bbcfg['data.rootdir'].'/'.$bbcfg['data_dirname'].'/pubfiles';
-  $imgpath = 'images/template/fb_share_thumb.png';
-
-  if (!file_exists("$pubdir/$imgpath")) {
-    $imgpath = 'common/images/nysenate_logo_200.png';
-  }
-  $url = "http://pubfiles.nysenate.gov/{$bbconfig['envname']}/{$bbconfig['shortname']}/$imgpath";
-
+  $senator_name = $bbcfg['senator.name.formal'];
+  $url = "http://pubfiles.nysenate.gov/{$bbcfg['envname']}/{$bbcfg['shortname']}/common/images/nysenate_logo_200.png";
   $text = '';
-  $html = '<meta property="og:image" content="'.$url.'" />'."\n".
-          '<meta property="og:title" content="'.$subj.'" />'."\n".
-          '<link rel="image_src" type="image/png" href="'.$url.'" />';
-
+  $metas = array(
+    '<meta property="og:type" content="article" />',
+    '<meta property="og:title" content="'.$subj.'" />',
+    '<meta property="og:description" content="From the desk of '.$senator_name.'" />',
+    '<meta property="og:image" content="'.$url.'" />',
+    '<meta name="twitter:title" content="'.$subj.'" />',
+    '<meta name="twitter:description" content="From the desk of '.$senator_name.'" />',
+    '<meta name="twitter:image" content="'.$url.'" />',
+    '<link rel="image_src" type="image/png" href="'.$url.'" />'
+  );
+  $html = implode("\n", $metas);
   return array('text' => $text, 'html' => $html);
 } // get_opengraph_clause()
 
@@ -1097,3 +1127,10 @@ function add_extra_content($msg, $extra, $ctype)
   return $msg;
 } // add_extra_content()
 
+
+function replace_tokens($msg, $token_map)
+{
+  $patterns = array_keys($token_map);
+  $replacements = array_values($token_map);
+  return str_replace($patterns, $replacements, $msg);
+} // replace_tokens()
