@@ -19,4 +19,4 @@ UPDATE civicrm_navigation SET has_separator = 1 WHERE name = 'Manage Price Sets'
 INSERT INTO civicrm_navigation
   (domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight)
 VALUES
-  (1, 'civicrm/admin/contribute/closeaccperiod?reset=1', '{ts escape="sql" skip="true"}Close Accounting Period{/ts}', 'Close Accounting Period', 'access CiviContribute,administer CiviCRM,administer Accounting', 'AND', @contributionNavId, '1', NULL, @navMaxWeight);
+  (@domainID, 'civicrm/admin/contribute/closeaccperiod?reset=1', '{ts escape="sql" skip="true"}Close Accounting Period{/ts}', 'Close Accounting Period', 'access CiviContribute,administer CiviCRM,administer Accounting', 'AND', @contributionNavId, '1', NULL, @navMaxWeight);
