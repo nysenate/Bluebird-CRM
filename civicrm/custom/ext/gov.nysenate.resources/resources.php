@@ -162,5 +162,4 @@ function resources_civicrm_coreResourceList(&$list, $region) {
   Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/jquery.civicrm-validate.js');
   Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/jquery.tokeninput.js');
   Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/jquery-fieldselection.js');
-  Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/jstree/jquery.jstree.js');
 }
