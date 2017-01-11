@@ -127,6 +127,8 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
+## TODO install gov.nysenate.resources extension
+
 ## fix collation
 echo "$prog: fix collations"
 $script_dir/changeCollation.sh $instance
