@@ -241,7 +241,7 @@ function nyss_civihooks_civicrm_contactListQuery(&$query, $name, $context, $id)
 function nyss_civihooks_civicrm_buildForm($formName, &$form) {
   /*Civi::log()->debug('buildForm', array(
     '$formName' => $formName,
-    //'$form' => $form,
+    '$form' => $form,
   ));*/
 
   _fixTitles();
@@ -543,6 +543,12 @@ function nyss_civihooks_civicrm_buildForm($formName, &$form) {
         unset($form->_elements[2]->_options[$k]);
       }
     }
+  }
+
+  if ($formName == 'CRM_Case_Form_ActivityView') {
+    CRM_Core_Resources::singleton()->addScript("
+      cj('tr.crm-case-activity-view-Client td.label').text('Constituent');
+    ");
   }
 
   _setDBVars();
