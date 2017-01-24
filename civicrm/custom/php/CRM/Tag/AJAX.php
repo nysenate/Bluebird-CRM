@@ -103,18 +103,6 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         GROUP BY tag.id;
       ", $conn);
 
-      /*$result = mysql_query("
-          SELECT tag.id, count(entity_tag.entity_id) as entity_count
-          FROM civicrm_tag as tag
-            LEFT JOIN civicrm_entity_tag as entity_tag ON (
-                   tag.id = entity_tag.tag_id AND
-                   entity_tag.entity_table = '$entity_type')
-            LEFT JOIN $entity_type as entity ON (
-                   entity.id = entity_tag.entity_id)
-          WHERE tag.used_for LIKE '%$entity_type%'
-            AND entity.is_deleted = 0
-          GROUP BY tag.id", $conn);*/
-
       $entity_counts = array();
       while($row = mysql_fetch_assoc($result))
         $entity_counts[$row['id']] = $row['entity_count'];
