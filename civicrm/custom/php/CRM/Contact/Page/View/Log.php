@@ -125,7 +125,7 @@ class CRM_Contact_Page_View_Log extends CRM_Core_Page {
     $this->ajaxResponse += CRM_Contact_Form_Inline::renderFooter($this->_contactId, FALSE);
     $this->assign_by_ref( 'log', $logEntries );
 		
-		$currentContact = CRM_Contact_BAO_Contact::getDisplayAndImage( $this->_contactId ); //4458
+		$currentContact = CRM_Contact_BAO_Contact::getDisplayAndImage( $this->_contactId ); //NYSS 4458
 		$this->assign( 'displayName', $currentContact[0] ); //NYSS 2551
   }
 
