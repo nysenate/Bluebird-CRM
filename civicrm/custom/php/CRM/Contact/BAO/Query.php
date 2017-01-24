@@ -2912,9 +2912,9 @@ class CRM_Contact_BAO_Query {
     }
     elseif (is_array($value)) {
       foreach ($value as $k => $v) {
-          $clause[$k] = "($alias $op '%" . CRM_Core_DAO::VALUE_SEPARATOR . CRM_Utils_Type::escape($v, 'String') . CRM_Core_DAO::VALUE_SEPARATOR . "%')";
-        }
+        $clause[$k] = "($alias $op '%" . CRM_Core_DAO::VALUE_SEPARATOR . CRM_Utils_Type::escape($v, 'String') . CRM_Core_DAO::VALUE_SEPARATOR . "%')";
       }
+    }
     else {
       $clause[$value] = "($alias $op '%" . CRM_Core_DAO::VALUE_SEPARATOR . CRM_Utils_Type::escape($value, 'String') . CRM_Core_DAO::VALUE_SEPARATOR . "%')";
     }
@@ -3022,7 +3022,7 @@ class CRM_Contact_BAO_Query {
       $groupClause[] = " ( " . $this->addGroupContactCache($smartGroupIDs, NULL, "contact_a", $op) . " ) ";
     }
 
-      $and = ($op == 'IS NULL') ? 'AND' : 'OR';
+    $and = ($op == 'IS NULL') ? ' AND ' : ' OR ';
     $this->_where[$grouping][] = implode($and, $groupClause);
 
     list($qillop, $qillVal) = CRM_Contact_BAO_Query::buildQillForFieldValue('CRM_Contact_DAO_Group', 'id', $value, $op);

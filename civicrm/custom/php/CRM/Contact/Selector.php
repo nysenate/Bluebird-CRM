@@ -311,10 +311,11 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
             $url = "civicrm/contact/view/activity";
             $qs = "atype=3&action=add&reset=1&cid=%%id%%{$extraParams}";
           }
-          elseif ( $value['key'] == 'tag' ) { //NYSS 3329
-			$url = "civicrm/contact/view";
-			$qs = "selectedChild=tag&reset=1&cid=%%id%%{$extraParams}";
-		  }
+          //NYSS 3329
+          elseif ($value['key'] == 'tag') {
+            $url = "civicrm/contact/view";
+            $qs = "selectedChild=tag&reset=1&cid=%%id%%{$extraParams}";
+          }
                     
           self::$_links[$counter++] = array(
             'name' => $value['title'],
@@ -517,7 +518,7 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
 
     //NYSS 4979/7319 hack to allow phone searching
     foreach ( $headers as $k => $details ) {
-      if ( $details['name'] == 'Phone' ) {
+      if ($details['name'] == 'Phone') {
         $headers[$k]['sort'] = 'phone';
         $headers[$k]['direction'] = 4;
       }
@@ -800,7 +801,7 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
             ),
           );
           if (CRM_Core_Permission::check('delete contacts') &&
-			CRM_Core_Permission::check('delete contacts permanently')) { //NYSS 3598
+            CRM_Core_Permission::check('delete contacts permanently')) { //NYSS 3598
             $links[] = array(
               'name' => ts('Delete Permanently'),
               'url' => 'civicrm/contact/view/delete',
@@ -867,7 +868,7 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
       }
 
       $rows[$row['contact_id']] = $row;
-      }
+    }
 
     return $rows;
   }
@@ -1064,6 +1065,7 @@ SELECT DISTINCT 'civicrm_contact', contact_a.id, contact_a.id, '$cacheKey', cont
 ";
 
     $sql = str_replace($replaceSQL, $insertSQL, $sql);
+    Civi::log()->debug('insertSQL', array('insertSQL' => $insertSQL, '$sql' => $sql));
 
     $errorScope = CRM_Core_TemporaryErrorScope::ignoreException();
     $result = CRM_Core_DAO::executeQuery($sql);
