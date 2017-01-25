@@ -127,7 +127,8 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
-## TODO install gov.nysenate.resources extension
+## install gov.nysenate.resources extension
+$drush $instance cvapi extension.install key=gov.nysenate.resources
 
 ## fix collation
 echo "$prog: fix collations"
