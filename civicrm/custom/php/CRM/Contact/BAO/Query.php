@@ -2540,6 +2540,25 @@ class CRM_Contact_BAO_Query {
    * //NYSS 6801 force primary option
    */
   public static function fromClause(&$tables, $inner = NULL, $right = NULL, $primaryLocation = TRUE, $mode = 1, $forcePrimary = FALSE) {
+    //NYSS 10770
+    if (!$forcePrimary) {
+      /*Civi::log()->debug('fromClause', array(
+        'primaryLocation' => $primaryLocation,
+        'mode' => $mode,
+        'forcePrimary' => $forcePrimary,
+        'tables' => $tables,
+      ));*/
+      //CRM_Core_Error::backtrace('fromClause', TRUE);
+
+      //hackish solution...
+      //when group contacts are listed, we need the pager to force primary in order to get accurate
+      //page listing counts
+      foreach ($tables as $tbl => $dontCare) {
+        if (strpos($tbl, 'civicrm_group_contact') !== FALSE) {
+          $forcePrimary = TRUE;
+        }
+      }
+    }
 
     $from = ' FROM civicrm_contact contact_a';
     if (empty($tables)) {
@@ -6337,12 +6356,6 @@ AND   displayRelType.is_active = 1
           case 'email':
             $this->_tables["civicrm_email"] = $this->_whereTables["civicrm_email"] = 1;
             $order = str_replace($field, "civicrm_email.{$field}", $order);
-            break;
-
-          //NYSS 7319 support sorting by phone
-          case 'phone':
-            $this->_whereTables["civicrm_phone"] = 1;
-            $order = str_replace($field, "civicrm_phone.{$field}", $order);
             break;
 
           default:
