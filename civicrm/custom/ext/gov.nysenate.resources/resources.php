@@ -162,4 +162,9 @@ function resources_civicrm_coreResourceList(&$list, $region) {
   Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/jquery.civicrm-validate.js');
   Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/jquery.tokeninput.js');
   Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/jquery-fieldselection.js');
+
+  //implement coreResourceList to define location of custom ckeditor config file
+  $config = array_keys(array_filter($list, function($v){return !empty($v['config']) ? true : false;}));
+  $list[$config[0]]['config']['CKEditorCustomConfig'] =
+    '/sites/all/modules/nyss_civihooks/js/ckeditor.config.js';
 }
