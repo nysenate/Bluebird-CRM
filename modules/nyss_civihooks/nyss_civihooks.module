@@ -797,7 +797,7 @@ function nyss_civihooks_civicrm_navigationMenu(&$params) {
   }
 
   //get max key
-  $maxKey = (max(array_keys($params)));
+  $maxKey = (!empty($params)) ? max(array_keys($params)) : 0;
 
   //build home menu item
   $params[1] = array(
