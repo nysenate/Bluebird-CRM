@@ -69,7 +69,7 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
 
     static function tag_tree() {
         $stop = self::check_user_level('true');
-        if($stop['code'] == false){
+        if ($stop['code'] == false) {
             echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level."));
             CRM_Utils_System::civiExit();
         }
@@ -79,30 +79,39 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         //If they request entity counts, build that into the tree as well.
         $ec_start = microtime(TRUE);
         $do_entity_counts = CRM_Utils_Array::value('entity_counts', $_GET);
-        if($do_entity_counts && strtolower($do_entity_counts) != "false") {
-
+        if ($do_entity_counts && strtolower($do_entity_counts) != "false") {
             // There is definitely nothing like this in the civicrm_api. Using
             // the DAO layer is way too slow when we get to hundreds of results.
             // Hand rolled SQL it is...
             $dao = new CRM_Core_DAO();
-            $conn = $dao->getDatabaseConnection()->connection;
+	    $conn = $dao->getDatabaseConnection()->connection;
+
+            $entityTempTable = CRM_Core_DAO::createTempTableName('civicrm_entitytag', TRUE);
+            mysql_query("
+              CREATE TEMPORARY TABLE {$entityTempTable} (INDEX (tag_id))
+              AS 
+              SELECT et.entity_id, et.tag_id
+              FROM civicrm_entity_tag as et
+              JOIN civicrm_contact as entity 
+                ON entity.id = et.entity_id
+              AND entity.is_deleted = 0
+              WHERE et.entity_table = 'civicrm_contact';
+            ", $conn);
             $result = mysql_query("
-                SELECT tag.id, count(entity_tag.entity_id) as entity_count
-                FROM civicrm_tag as tag
-                  LEFT JOIN civicrm_entity_tag as entity_tag ON (
-                         tag.id = entity_tag.tag_id AND
-                         entity_tag.entity_table = '$entity_type')
-                  LEFT JOIN $entity_type as entity ON (
-                         entity.id = entity_tag.entity_id)
-                WHERE tag.used_for LIKE '%$entity_type%'
-                  AND entity.is_deleted = 0
-                GROUP BY tag.id", $conn);
+              SELECT tag.id, count(entity_tag.entity_id) as entity_count
+              FROM civicrm_tag as tag
+              LEFT JOIN {$entityTempTable} entity_tag
+                ON tag.id = entity_tag.tag_id
+              WHERE tag.used_for LIKE '%civicrm_contact%'
+              GROUP BY tag.id;
+            ", $conn);
 
             $entity_counts = array();
-            while($row = mysql_fetch_assoc($result))
-                $entity_counts[$row['id']] = $row['entity_count'];
-
-        } else {
+            while ($row = mysql_fetch_assoc($result)) {
+              $entity_counts[$row['id']] = $row['entity_count'];
+            }
+        }
+        else {
             $entity_counts = null;
         }
         $ec_time = microtime(TRUE)-$ec_start;
