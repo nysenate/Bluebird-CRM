@@ -154,7 +154,7 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
       array(
         array(
           'type' => 'submit',
-          'name' => ts('Save Subscription Options'),
+          'name' => ts('Save Subscription Settings'),
         ),
       )
     );

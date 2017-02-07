@@ -9,6 +9,7 @@ body {
   font-size: 13px;
   letter-spacing: 0.03em;
   background-color: white;
+  line-height: 200%;
 }
 
 a:link, a:visited {
@@ -160,6 +161,7 @@ div.nyss-logo {
   font-size: 22px;
   font-family: "FreightText Book";
   color: #444444;
+  font-weight: bold;
 }
 div.nyss-logo::before {
   content: "";
@@ -245,48 +247,50 @@ div.nyss-intro p {
   margin-bottom: 0;
 }
 div.display_name {
-  color: #eeeeee;
+  color: #444444;
   font-size: 2em;
   margin: 20px 0;
 }
 div.emails {
   padding: 10px;
-  border: 1px solid #AAAAAA;
+  border: none;
 }
 div.nyss-email-label {
   float: left;
-  width: 20%;
-  color: #036;
+  width: 30%;
+  color: #444444;
   text-transform: uppercase;
-  font-size: .8em;
+  font-size: 1.2em;
   font-weight: bold;
   padding: 0 0 5px;
 }
 div.nyss-email-label.wide {
-  width: 30%;
+  width: 40%;
 }
 div.nyss-email-row {
   clear: both;
-  padding-top: 5px;
-  border-top: 1px solid #eee;
+  padding-top: 25px;
+  border-top: none;
 }
 div.nyss-email-fld {
   float: left;
-  width: 70%;
-  font-size: 1.1em;
+  width: 60%;
+  font-size: 1.2em;
 }
 div.nyss-email-fld.wide {
-  width: 30%;
+  width: 40%;
 }
 div.nyss-email-fld input.form-checkbox {
   margin-right: 8px;
   margin-bottom: 8px;
 }
 div.nyss-key {
-  font-size: 1.1em;
   padding-top: 5px;
   padding-bottom: 8px;
   line-height: 130%;
+}
+div.nyss-email-fld input {
+  margin-right: 8px;
 }
 div.notes {
   margin-top: 20px;
@@ -313,4 +317,11 @@ div.nyss-buttons {
 div.nyss-mailing-subscriptions,
 div.crm-title {
   padding: 0 6px;
+}
+div.nyss-buttons input {
+  background-color: #2B6A90;
+  padding: 20px 30px;
+  color: #eee;
+  border: none;
+  font-size: 1.4em;
 }

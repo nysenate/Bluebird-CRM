@@ -7,9 +7,7 @@
 ?>
 
 <header id="header">
-  <div class="nyss-logo">
-    <img src="<?php print $logo_url;?>" alt="NYS Senate Logo">
-  </div>
+  <div class="nyss-logo">The New York State Senate</div>
 </header> <!-- /header -->
 
 <div id="page" class="<?php print $classes; ?>"<?php print $attributes; ?>>
