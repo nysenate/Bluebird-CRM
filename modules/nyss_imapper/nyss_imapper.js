@@ -1574,15 +1574,15 @@ function ReportTable()
   new FixedHeader(oTable, {zTop:'auto'});
 }
 
-
-cj(".range").on('change', function() {
+cj("#range").on('change', function () {
   if (cj("#Activities").length) {
+    console.log('val: ', cj('#range').attr("value"));
     getMatched(cj('#range').attr("value"));
   }
-  else if(cj("#Unmatched").length) {
+  else if (cj("#Unmatched").length) {
     getUnmatched(cj('#range').attr("value"));
   }
-  else if(cj("#Reports").length) {
+  else if (cj("#Reports").length) {
     getReports(cj('#range').attr("value"));
   }
 });
