@@ -1065,7 +1065,7 @@ SELECT DISTINCT 'civicrm_contact', contact_a.id, contact_a.id, '$cacheKey', cont
 ";
 
     $sql = str_replace($replaceSQL, $insertSQL, $sql);
-    Civi::log()->debug('insertSQL', array('insertSQL' => $insertSQL, '$sql' => $sql));
+    //Civi::log()->debug('insertSQL', array('insertSQL' => $insertSQL, '$sql' => $sql));
 
     $errorScope = CRM_Core_TemporaryErrorScope::ignoreException();
     $result = CRM_Core_DAO::executeQuery($sql);
