@@ -5,182 +5,198 @@
 // TODO: How do you tell if a save was successful?
 class CRM_Tag_AJAX extends CRM_Core_Page {
 
-    const SUCCESS = 1;
-    const ERROR = 0;
-    // The full set of fields that can be attached to each node.
-    // If you don't want a field, just comment it out.
+  const SUCCESS = 1;
+  const ERROR = 0;
+
+  // The full set of fields that can be attached to each node.
+  // If you don't want a field, just comment it out.
+  //
+  // id, parent_id, and is_tagset are required.
+  static public $TAG_FIELDS = array(
+    'id',
+    'name',
+    'description',
+    'parent_id',
+    'is_selectable',
+    'is_reserved',
+    'is_tagset',
+    'used_for',
+    'created_id',
+    'created_display_name',
+    'created_date',
+  );
+
+  static function _build_tree($root, &$nodes) {
+    // We need a copy to do looping
+    $current_nodes = $nodes;
+    foreach($current_nodes as $index=>$node) {
+      if ($node['parent_id'] === $root['id']) {
+        unset($nodes[$index]);
+        $root['children'][] = self::_build_tree($node,$nodes);
+      }
+    }
+    return $root;
+  }
+
+  static function _build_node($source, $entity_counts) {
+    $node = array();
+    foreach(self::$TAG_FIELDS as $field){
+      $node[$field] = $source->$field;
+    }
+
+    if($entity_counts !== null)
+      $node['entity_count'] = CRM_Utils_Array::value($node['id'], $entity_counts, 0);
+
+    $node['children'] = array();
+    return $node;
+  }
+
+  static function _require($key, $store, $msg) {
+    if(array_key_exists($key, $store)){
+      return $store[$key];
+    }
+    else {
+      echo "ERROR: ",$msg;
+      exit();
+    }
+  }
+
+  static function tag_tree() {
+    $stop = self::check_user_level('true');
+    if($stop['code'] == false){
+      echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level."));
+      CRM_Utils_System::civiExit();
+    }
+    $start = microtime(TRUE);
+    $entity_type = CRM_Core_DAO::escapeString(self::_require('entity_type', $_GET, "`entity_type` parameter is required."));
+
+    //If they request entity counts, build that into the tree as well.
+    $ec_start = microtime(TRUE);
+    $do_entity_counts = CRM_Utils_Array::value('entity_counts', $_GET);
+
+    if($do_entity_counts && strtolower($do_entity_counts) != "false") {
+
+      // There is definitely nothing like this in the civicrm_api. Using
+      // the DAO layer is way too slow when we get to hundreds of results.
+      // Hand rolled SQL it is...
+      $dao = new CRM_Core_DAO();
+      $conn = $dao->getDatabaseConnection()->connection;
+
+      //10776
+      $entityTempTable = CRM_Core_DAO::createTempTableName('civicrm_entitytag', TRUE);
+      mysql_query("
+        CREATE TEMPORARY TABLE {$entityTempTable} (INDEX (tag_id))
+        AS 
+        SELECT et.entity_id, et.tag_id
+        FROM civicrm_entity_tag as et
+        JOIN civicrm_contact as entity 
+          ON entity.id = et.entity_id
+        AND entity.is_deleted = 0
+        WHERE et.entity_table = 'civicrm_contact';
+      ", $conn);
+      $result = mysql_query("
+        SELECT tag.id, count(entity_tag.entity_id) as entity_count
+        FROM civicrm_tag as tag
+        LEFT JOIN {$entityTempTable} entity_tag
+          ON tag.id = entity_tag.tag_id
+        WHERE tag.used_for LIKE '%civicrm_contact%'
+        GROUP BY tag.id;
+      ", $conn);
+
+      $entity_counts = array();
+      while($row = mysql_fetch_assoc($result))
+        $entity_counts[$row['id']] = $row['entity_count'];
+
+    }
+    else {
+      $entity_counts = null;
+    }
+    $ec_time = microtime(TRUE)-$ec_start;
+
+    // If they pass in an entity_id we can also get information on which tags apply
+    // to the specified entity and include that along with the tree
+    $et_start = microtime(TRUE);
+    // if(array_key_exists('entity_id', $_GET)) {
+    //     $entity_id = $_GET['entity_id'];
+
+    //     //Get the tags for the specifed entity
+    //     $params = array('version'=>3,
+    //         'entity_type'=>$entity_type,
+    //         'entity_id'=>$entity_id);
+    //     $result = civicrm_api('entity_tag', 'get', $params);
+
+    //     $entity_tags = array();
+    //     foreach($result['values'] as $entity_tag)
+    //         $entity_tags[] = $entity_tag['tag_id'];
+
+    // } else {
+    //     $entity_tags = null;
+    // }
+    $et_time = microtime(TRUE)-$et_start;
+
+    // We need to build a list of tags ordered by hierarchy and sorted by
+    // name. Instead of recursively making mysql queries, we'll make one
+    // big query and build the heirarchy with the recursive algorithm below.
     //
-    // id, parent_id, and is_tagset are required.
-    static public $TAG_FIELDS = array(
-            'id',
-            'name',
-            'description',
-            'parent_id',
-            'is_selectable',
-            'is_reserved',
-            'is_tagset',
-            'used_for',
-            'created_id',
-            'created_display_name',
-            'created_date'
-        );
+    //Can't use the API because it doesn't support sorting (yet) and we need
+    //the tags to be sorted in alphabetical order on each level. Can't use
+    //the DAO object because it doesn't support queries by LIKE. Atleast, I
+    //don't know how you would do it, maybe it can be done.
+    $bt_start = microtime(TRUE);
+    $tags = CRM_Core_DAO::executeQuery("
+      SELECT tag.*, contact.display_name as created_display_name
+      FROM civicrm_tag as tag
+      LEFT JOIN civicrm_contact as contact ON contact.id=tag.created_id
+      WHERE used_for LIKE %1
+      ORDER BY tag.name
+    ",array( 1 => array("%$entity_type%",'String')));
 
-    static function _build_tree($root, &$nodes) {
-        // We need a copy to do looping
-        $current_nodes = $nodes;
-        foreach($current_nodes as $index=>$node) {
-            if ($node['parent_id'] === $root['id']) {
-                unset($nodes[$index]);
-                $root['children'][] = self::_build_tree($node,$nodes);
-            }
-        }
-        return $root;
+    // Sort all the tags into root and nodes buckets. This simpifies the process
+    // to building the root nodes by moving tags from the nodes bucket.
+    while($tags->fetch()) {
+      if (!$tags->parent_id)
+        $roots[] = self::_build_node($tags, $entity_counts);
+      else
+        $nodes[] = self::_build_node($tags, $entity_counts);
     }
 
-    static function _build_node($source, $entity_counts) {
-        $node = array();
-        foreach(self::$TAG_FIELDS as $field){
-            $node[$field] = $source->$field;
-        }
-
-        if($entity_counts !== null)
-            $node['entity_count'] = CRM_Utils_Array::value($node['id'], $entity_counts, 0);
-
-        $node['children'] = array();
-        return $node;
+    // Recursively build the tree from each "root" using the "nodes"
+    // as the available building blocks for each subtree
+    $tree = array();
+    foreach($roots as $root) {
+      $tree[] = self::_build_tree($root,$nodes);
     }
+    $bt_time = microtime(TRUE)-$bt_start;
 
-    static function _require($key, $store, $msg) {
-        if(array_key_exists($key, $store)){
-            return $store[$key];
-        } else {
-            echo "ERROR: ",$msg;
-            exit();
-        }
+    echo json_encode(array("code"=>self::SUCCESS,"message"=>$tree,'build_time'=>(microtime(TRUE)-$start),'ec_time'=>$ec_time,'et_time'=>$et_time,'bt_time'=>$bt_time));
+    CRM_Utils_System::civiExit();
+  }
+
+  static function get_entity_tag(){
+    $stop = self::check_user_level('true');
+    if($stop['code'] == false){
+      echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level."));
+      CRM_Utils_System::civiExit();
     }
+    if(array_key_exists('entity_id', $_GET)) {
+      $entity_id = $_GET['entity_id'];
 
-    static function tag_tree() {
-        $stop = self::check_user_level('true');
-        if($stop['code'] == false){
-            echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level."));
-            CRM_Utils_System::civiExit();
-        }
-        $start = microtime(TRUE);
-        $entity_type = CRM_Core_DAO::escapeString(self::_require('entity_type', $_GET, "`entity_type` parameter is required."));
+      //Get the tags for the specifed entity
+      $params = array('version'=>3,
+        'entity_type'=>$entity_type,
+        'entity_id'=>$entity_id);
+      $result = civicrm_api('entity_tag', 'get', $params);
 
-        //If they request entity counts, build that into the tree as well.
-        $ec_start = microtime(TRUE);
-        $do_entity_counts = CRM_Utils_Array::value('entity_counts', $_GET);
-        if($do_entity_counts && strtolower($do_entity_counts) != "false") {
-
-            // There is definitely nothing like this in the civicrm_api. Using
-            // the DAO layer is way too slow when we get to hundreds of results.
-            // Hand rolled SQL it is...
-            $dao = new CRM_Core_DAO();
-            $conn = $dao->getDatabaseConnection()->connection;
-            $result = mysql_query("
-                SELECT tag.id, count(entity_tag.entity_id) as entity_count
-                FROM civicrm_tag as tag
-                  LEFT JOIN civicrm_entity_tag as entity_tag ON (
-                         tag.id = entity_tag.tag_id AND
-                         entity_tag.entity_table = '$entity_type')
-                  LEFT JOIN $entity_type as entity ON (
-                         entity.id = entity_tag.entity_id)
-                WHERE tag.used_for LIKE '%$entity_type%'
-                  AND entity.is_deleted = 0
-                GROUP BY tag.id", $conn);
-
-            $entity_counts = array();
-            while($row = mysql_fetch_assoc($result))
-                $entity_counts[$row['id']] = $row['entity_count'];
-
-        } else {
-            $entity_counts = null;
-        }
-        $ec_time = microtime(TRUE)-$ec_start;
-
-        // If they pass in an entity_id we can also get information on which tags apply
-        // to the specified entity and include that along with the tree
-        $et_start = microtime(TRUE);
-        // if(array_key_exists('entity_id', $_GET)) {
-        //     $entity_id = $_GET['entity_id'];
-
-        //     //Get the tags for the specifed entity
-        //     $params = array('version'=>3,
-        //         'entity_type'=>$entity_type,
-        //         'entity_id'=>$entity_id);
-        //     $result = civicrm_api('entity_tag', 'get', $params);
-
-        //     $entity_tags = array();
-        //     foreach($result['values'] as $entity_tag)
-        //         $entity_tags[] = $entity_tag['tag_id'];
-
-        // } else {
-        //     $entity_tags = null;
-        // }
-        $et_time = microtime(TRUE)-$et_start;
-
-        // We need to build a list of tags ordered by hierarchy and sorted by
-        // name. Instead of recursively making mysql queries, we'll make one
-        // big query and build the heirarchy with the recursive algorithm below.
-        //
-        //Can't use the API because it doesn't support sorting (yet) and we need
-        //the tags to be sorted in alphabetical order on each level. Can't use
-        //the DAO object because it doesn't support queries by LIKE. Atleast, I
-        //don't know how you would do it, maybe it can be done.
-        $bt_start = microtime(TRUE);
-        $tags = CRM_Core_DAO::executeQuery("
-                SELECT tag.*, contact.display_name as created_display_name
-                FROM civicrm_tag as tag
-                LEFT JOIN civicrm_contact as contact ON contact.id=tag.created_id
-                WHERE used_for LIKE %1
-                ORDER BY tag.name
-            ",array( 1 => array("%$entity_type%",'String')));
-
-        // Sort all the tags into root and nodes buckets. This simpifies the process
-        // to building the root nodes by moving tags from the nodes bucket.
-        while($tags->fetch()) {
-            if (!$tags->parent_id)
-                $roots[] = self::_build_node($tags, $entity_counts);
-            else
-                $nodes[] = self::_build_node($tags, $entity_counts);
-        }
-
-        // Recursively build the tree from each "root" using the "nodes"
-        // as the available building blocks for each subtree
-        $tree = array();
-        foreach($roots as $root) {
-            $tree[] = self::_build_tree($root,$nodes);
-        }
-        $bt_time = microtime(TRUE)-$bt_start;
-
-        echo json_encode(array("code"=>self::SUCCESS,"message"=>$tree,'build_time'=>(microtime(TRUE)-$start),'ec_time'=>$ec_time,'et_time'=>$et_time,'bt_time'=>$bt_time));
-        CRM_Utils_System::civiExit();
+      $entity_tags = array();
+      foreach($result['values'] as $entity_tag)
+        $entity_tags[] = $entity_tag['tag_id'];
     }
-    static function get_entity_tag(){
-        $stop = self::check_user_level('true');
-        if($stop['code'] == false){
-            echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level."));
-            CRM_Utils_System::civiExit();
-        }
-        if(array_key_exists('entity_id', $_GET)) {
-            $entity_id = $_GET['entity_id'];
-
-            //Get the tags for the specifed entity
-            $params = array('version'=>3,
-                'entity_type'=>$entity_type,
-                'entity_id'=>$entity_id);
-            $result = civicrm_api('entity_tag', 'get', $params);
-
-            $entity_tags = array();
-            foreach($result['values'] as $entity_tag)
-                $entity_tags[] = $entity_tag['tag_id'];
-        } else {
-            $entity_tags = null;
-        }
-        echo json_encode(array("code" => self::SUCCESS, "message" => $entity_tags));
-        CRM_Utils_System::civiExit();
+    else {
+      $entity_tags = null;
     }
+    echo json_encode(array("code" => self::SUCCESS, "message" => $entity_tags));
+    CRM_Utils_System::civiExit();
+  }
 
   static function tag_create() {
     $stop = self::check_user_level('true');

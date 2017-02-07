@@ -592,7 +592,7 @@ AND ( expire_on IS NULL OR expire_on >= {$currentTime} )
 
     // also get the pre and post help from this price set
     $sql = "
-SELECT extends, financial_type_id, help_pre, help_post, is_quick_config
+SELECT extends, financial_type_id, help_pre, help_post, is_quick_config, min_amount
 FROM   civicrm_price_set
 WHERE  id = %1";
     $dao = CRM_Core_DAO::executeQuery($sql, $params);
@@ -602,6 +602,7 @@ WHERE  id = %1";
       $setTree[$setID]['help_pre'] = $dao->help_pre;
       $setTree[$setID]['help_post'] = $dao->help_post;
       $setTree[$setID]['is_quick_config'] = $dao->is_quick_config;
+      $setTree[$setID]['min_amount'] = $dao->min_amount;
     }
     return $setTree;
   }
@@ -1009,7 +1010,7 @@ WHERE  id = %1";
   public static function getCachedPriceSetDetail($priceSetID) {
     $cacheKey = __CLASS__ . __FUNCTION__ . '_' . $priceSetID;
     $cache = CRM_Utils_Cache::singleton();
-    $values = (array) $cache->get($cacheKey);
+    $values = $cache->get($cacheKey);
     if (empty($values)) {
       $data = self::getSetDetail($priceSetID);
       $values = $data[$priceSetID];
@@ -1722,11 +1723,31 @@ WHERE       ps.id = %1
     $priceSetParams = array();
     foreach ($params as $field => $value) {
       $parts = explode('_', $field);
-      if (count($parts) == 2 && $parts[0] == 'price' && is_numeric($parts[1])) {
+      if (count($parts) == 2 && $parts[0] == 'price' && is_numeric($parts[1]) && is_array($value)) {
         $priceSetParams[$field] = $value;
       }
     }
     return $priceSetParams;
+  }
+
+  /**
+   * Get non-deductible amount from price options
+   *
+   * @param int $priceSetId
+   * @param array $lineItem
+   *
+   * @return int
+   *   calculated non-deductible amount.
+   */
+  public static function getNonDeductibleAmountFromPriceSet($priceSetId, $lineItem) {
+    $nonDeductibleAmount = 0;
+    if (!empty($lineItem[$priceSetId])) {
+      foreach ($lineItem[$priceSetId] as $fieldId => $options) {
+        $nonDeductibleAmount += $options['non_deductible_amount'] * $options['qty'];
+      }
+    }
+
+    return $nonDeductibleAmount;
   }
 
 }

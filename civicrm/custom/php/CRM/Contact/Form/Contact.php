@@ -375,7 +375,7 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
         $this->assign('paramSubType', $paramSubType);
       }
 
-      if (CRM_Utils_Request::retrieve('type', 'String', CRM_Core_DAO::$_nullObject)) {
+      if (CRM_Utils_Request::retrieve('type', 'String')) {
         CRM_Contact_Form_Edit_CustomData::preProcess($this);
       }
       else {
@@ -441,13 +441,7 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
     CRM_Contact_Form_Edit_Address::setDefaultValues($defaults, $this);
 
     if (!empty($defaults['image_URL'])) {
-      list($imageWidth, $imageHeight) = getimagesize(CRM_Utils_String::unstupifyUrl($defaults['image_URL']));
-      list($imageThumbWidth, $imageThumbHeight) = CRM_Contact_BAO_Contact::getThumbSize($imageWidth, $imageHeight);
-      $this->assign('imageWidth', $imageWidth);
-      $this->assign('imageHeight', $imageHeight);
-      $this->assign('imageThumbWidth', $imageThumbWidth);
-      $this->assign('imageThumbHeight', $imageThumbHeight);
-      $this->assign('imageURL', $defaults['image_URL']);
+      $this->assign("imageURL", CRM_Utils_File::getImageURL($defaults['image_URL']));
     }
 
     //set location type and country to default for each block
@@ -1180,14 +1174,14 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
         for ($i = 0; $i < count($contactLinks['rows']); $i++) {
           $row .= '  <tr>   ';
           $row .= '    <td class="matching-contacts-name"> ';
-          $row .= $contactLinks['rows'][$i]['display_name'];
+          $row .= CRM_Utils_Array::value('display_name', $contactLinks['rows'][$i]);
           $row .= '    </td>';
           $row .= '    <td class="matching-contacts-email"> ';
-          $row .= $contactLinks['rows'][$i]['primary_email'];
+          $row .= CRM_Utils_Array::value('primary_email', $contactLinks['rows'][$i]);
           $row .= '    </td>';
           $row .= '    <td class="action-items"> ';
-          $row .= $contactLinks['rows'][$i]['view'];
-          $row .= $contactLinks['rows'][$i]['edit'];
+          $row .= CRM_Utils_Array::value('view', $contactLinks['rows'][$i]);
+          $row .= CRM_Utils_Array::value('edit', $contactLinks['rows'][$i]);
           $row .= CRM_Utils_Array::value('merge', $contactLinks['rows'][$i]);
           $row .= '    </td>';
           $row .= '  </tr>   ';
@@ -1197,8 +1191,6 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
         $duplicateContactsLinks .= ts("If you're sure this record is not a duplicate, click the 'Save Matching Contact' button below.");
 
         $errors['_qf_default'] = $duplicateContactsLinks;
-
-
 
         // let smarty know that there are duplicates
         $template = CRM_Core_Smarty::singleton();

@@ -124,6 +124,12 @@
               ( $form.formName neq 'Confirm' )  AND
               ( $form.formName neq 'ThankYou' ) }
                 {include file="CRM/common/jcalendar.tpl" elementName=$n}
+              {elseif ( $n|substr:-5:5 eq '_date' ) }
+                {assign var="date_value" value=$form.$n.value}
+                <span class="crm-frozen-field">
+                  {$date_value|date_format:"%Y-%m-%d"|crmDate:$config->dateformatshortdate}
+                  <input type="hidden" name="{$form.$n.name}" value="{$form.$n.value}" id="{$form.$n.name}">
+                </span>
               {elseif $n|substr:0:5 eq 'phone'}
                 {assign var="phone_ext_field" value=$n|replace:'phone':'phone_ext'}
                 {if $prefix}{$form.$prefix.$n.html}{else}{$form.$n.html}{/if}
@@ -135,7 +141,13 @@
                   {if $n eq 'organization_name' && !empty($form.onbehalfof_id)}
                     {$form.onbehalfof_id.html}
                   {/if}
-                  {$form.$prefix.$n.html}
+                  {if $field.html_type eq 'File' && $viewOnlyPrefixFileValues}
+                    {$viewOnlyPrefixFileValues.$prefix.$n}
+                  {else}
+                    {$form.$prefix.$n.html}
+                  {/if}
+    {elseif $field.html_type eq 'File' && $viewOnlyFileValues}
+      {$viewOnlyFileValues.$n}
 		{else}
 		  {$form.$n.html}
 		{/if}

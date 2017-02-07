@@ -127,6 +127,10 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
+## install new extension
+$drush $instance cvapi extension.install key=gov.nysenate.resources
+$drush $instance cvapi extension.install key=gov.nysenate.dao
+
 ## fix collation
 echo "$prog: fix collations"
 $script_dir/changeCollation.sh $instance

@@ -292,9 +292,15 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form {
       // check for is_monetary status
       $isMonetary = CRM_Utils_Array::value('is_monetary', $this->_values);
       $isPayLater = CRM_Utils_Array::value('is_pay_later', $this->_values);
-      if (!empty($this->_ccid) && $isPayLater) {
-        $isPayLater = FALSE;
-        $this->_values['is_pay_later'] = FALSE;
+      if (!empty($this->_ccid)) {
+        $this->_values['financial_type_id'] = CRM_Core_DAO::getFieldValue('CRM_Contribute_DAO_Contribution',
+          $this->_ccid,
+          'financial_type_id'
+        );
+        if ($isPayLater) {
+          $isPayLater = FALSE;
+          $this->_values['is_pay_later'] = FALSE;
+        }
       }
 
       if ($isMonetary &&
@@ -450,7 +456,7 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form {
     }
 
     //do check for cancel recurring and clean db, CRM-7696
-    if (CRM_Utils_Request::retrieve('cancel', 'Boolean', CRM_Core_DAO::$_nullObject)) {
+    if (CRM_Utils_Request::retrieve('cancel', 'Boolean')) {
       self::cancelRecurring();
     }
 
@@ -472,14 +478,7 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form {
    * Assign the minimal set of variables to the template.
    */
   public function assignToTemplate() {
-    $name = CRM_Utils_Array::value('billing_first_name', $this->_params);
-    if (!empty($this->_params['billing_middle_name'])) {
-      $name .= " {$this->_params['billing_middle_name']}";
-    }
-    $name .= ' ' . CRM_Utils_Array::value('billing_last_name', $this->_params);
-    $name = trim($name);
-    $this->assign('billingName', $name);
-    $this->set('name', $name);
+    $this->set('name', $this->assignBillingName($this->_params));
 
     $this->assign('paymentProcessor', $this->_paymentProcessor);
     $vars = array(
@@ -531,22 +530,10 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form {
       }
     }
 
-    // assign the address formatted up for display
-    $addressParts = array(
-      "street_address-{$this->_bltID}",
-      "city-{$this->_bltID}",
-      "postal_code-{$this->_bltID}",
-      "state_province-{$this->_bltID}",
-      "country-{$this->_bltID}",
-    );
-
-    $addressFields = array();
-    foreach ($addressParts as $part) {
-      list($n, $id) = explode('-', $part);
-      $addressFields[$n] = CRM_Utils_Array::value('billing_' . $part, $this->_params);
-    }
-
-    $this->assign('address', CRM_Utils_Address::format($addressFields));
+    $this->assign('address', CRM_Utils_Address::getFormattedBillingAddressFieldsFromParameters(
+      $this->_params,
+      $this->_bltID
+    ));
 
     if (!empty($this->_params['onbehalf_profile_id']) && !empty($this->_params['onbehalf'])) {
       $this->assign('onBehalfName', $this->_params['organization_name']);
@@ -644,19 +631,44 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form {
           CRM_Core_Session::setStatus(ts('Some of the profile fields cannot be configured for this page.'), ts('Warning'), 'alert');
         }
 
-        $fields = array_diff_assoc($fields, $this->_fields);
+        //remove common fields only if profile is not configured for onbehalf/honor
+        if (!in_array($profileContactType, array('honor', 'onbehalf'))) {
+          $fields = array_diff_assoc($fields, $this->_fields);
+        }
 
         CRM_Core_BAO_Address::checkContactSharedAddressFields($fields, $contactID);
         $addCaptcha = FALSE;
+        // fetch file preview when not submitted yet, like in online contribution Confirm and ThankYou page
+        $viewOnlyFileValues = empty($profileContactType) ? array() : array($profileContactType => array());
         foreach ($fields as $key => $field) {
           if ($viewOnly &&
             isset($field['data_type']) &&
             $field['data_type'] == 'File' || ($viewOnly && $field['name'] == 'image_URL')
           ) {
-            // ignore file upload fields
-            continue;
-          }
+            //retrieve file value from submitted values on basis of $profileContactType
+            $fileValue = CRM_Utils_Array::value($key, $this->_params);
+            if (!empty($profileContactType) && !empty($this->_params[$profileContactType])) {
+              $fileValue = CRM_Utils_Array::value($key, $this->_params[$profileContactType]);
+            }
 
+            if ($fileValue) {
+              $path = CRM_Utils_Array::value('name', $fileValue);
+              $fileType = CRM_Utils_Array::value('type', $fileValue);
+              $fileValue = CRM_Utils_File::getFileURL($path, $fileType);
+            }
+
+            // format custom file value fetched from submitted value
+            if ($profileContactType) {
+              $viewOnlyFileValues[$profileContactType][$key] = $fileValue;
+            }
+            else {
+              $viewOnlyFileValues[$key] = $fileValue;
+            }
+
+            // On viewOnly use-case (as in online contribution Confirm page) we no longer need to set
+            // required property because being required file is already uploaded while registration
+            $field['is_required'] = FALSE;
+          }
           if ($profileContactType) {
             //Since we are showing honoree name separately so we are removing it from honoree profile just for display
             if ($profileContactType == 'honor') {
@@ -705,6 +717,13 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form {
         }
 
         $this->assign($name, $fields);
+
+        if ($profileContactType && count($viewOnlyFileValues[$profileContactType])) {
+          $this->assign('viewOnlyPrefixFileValues', $viewOnlyFileValues);
+        }
+        elseif (count($viewOnlyFileValues)) {
+          $this->assign('viewOnlyFileValues', $viewOnlyFileValues);
+        }
 
         if ($addCaptcha && !$viewOnly) {
           $captcha = CRM_Utils_ReCAPTCHA::singleton();
@@ -995,15 +1014,15 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form {
    * lets delete the recurring and related contribution.
    */
   public function cancelRecurring() {
-    $isCancel = CRM_Utils_Request::retrieve('cancel', 'Boolean', CRM_Core_DAO::$_nullObject);
+    $isCancel = CRM_Utils_Request::retrieve('cancel', 'Boolean');
     if ($isCancel) {
-      $isRecur = CRM_Utils_Request::retrieve('isRecur', 'Boolean', CRM_Core_DAO::$_nullObject);
-      $recurId = CRM_Utils_Request::retrieve('recurId', 'Positive', CRM_Core_DAO::$_nullObject);
+      $isRecur = CRM_Utils_Request::retrieve('isRecur', 'Boolean');
+      $recurId = CRM_Utils_Request::retrieve('recurId', 'Positive');
       //clean db for recurring contribution.
       if ($isRecur && $recurId) {
         CRM_Contribute_BAO_ContributionRecur::deleteRecurContribution($recurId);
       }
-      $contribId = CRM_Utils_Request::retrieve('contribId', 'Positive', CRM_Core_DAO::$_nullObject);
+      $contribId = CRM_Utils_Request::retrieve('contribId', 'Positive');
       if ($contribId) {
         CRM_Contribute_BAO_Contribution::deleteContribution($contribId);
       }

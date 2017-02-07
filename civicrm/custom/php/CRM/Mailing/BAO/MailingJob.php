@@ -450,6 +450,12 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
       $params = array();
       $count = 0;
       while ($recipients->fetch()) {
+        // CRM-18543: there are situations when both the email and phone are null.
+        // Skip the recipient in this case.
+        if (empty($recipients->email_id) && empty($recipients->phone_id)) {
+          continue;
+        }
+
         if ($recipients->phone_id) {
           $recipients->email_id = "null";
         }
@@ -743,12 +749,10 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
 
       if (is_a($result, 'PEAR_Error') && !$mailing->sms_provider_id) {
         // CRM-9191
-        //NYSS also track for other socket-type errors
         $message = $result->getMessage();
-        if ( strpos($message, 'Failed to write to socket') !== FALSE ||
-          strpos($message, 'Failed to add recipient') !== FALSE ||
-          strpos($message, 'Failed to set sender') !== FALSE ||
-          strpos($message, 'Failed to send data') !== FALSE
+        if (
+          strpos($message, 'Failed to write to socket') !== FALSE ||
+          strpos($message, 'Failed to set sender') !== FALSE
         ) {
           // lets log this message and code
           $code = $result->getCode();
@@ -773,12 +777,6 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
           CRM_Core_Error::debug_log_message("Too many SMTP Socket Errors. Exiting");
           CRM_Utils_System::civiExit();
         }
-        //NYSS lets rebuild the mailer object (its by reference, so will be fixed downstream
-        // since it seems to be messed up in case of errors (as we are reusing the smtp
-        // connection
-        // CRM=93XX
-        $config = CRM_Core_Config::singleton( );
-        $mailer = $config->getMailer( true );
 
         // Register the bounce event.
 

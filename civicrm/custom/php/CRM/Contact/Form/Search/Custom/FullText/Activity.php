@@ -73,8 +73,6 @@ class CRM_Contact_Form_Search_Custom_FullText_Activity extends CRM_Contact_Form_
 
     $contactSQL = array();
 
-    //NYSS 9692 special handling for wildcard only
-    if ($queryText != '*' && $queryText != '%' && !empty($queryText)) {
     $contactSQL[] = "
 SELECT     distinct ca.id
 FROM       civicrm_activity ca
@@ -110,7 +108,6 @@ FROM   civicrm_activity ca
 WHERE  ({$this->matchText('civicrm_activity ca', array('subject', 'details'), $queryText)})
 AND    (ca.is_deleted = 0 OR ca.is_deleted IS NULL)
 ";
-    }
 
     $final = array();
 

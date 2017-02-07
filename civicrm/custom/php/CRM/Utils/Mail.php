@@ -275,6 +275,7 @@ class CRM_Utils_Mail {
         //$to[] = CRM_Utils_Array::value('Bcc', $headers);
       }
     }
+
     if (is_object($mailer)) {
       $errorScope = CRM_Core_TemporaryErrorScope::ignoreException();
       $result = $mailer->send($to, $headers, $message);

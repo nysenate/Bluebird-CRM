@@ -538,23 +538,28 @@ WHERE  mailing_id = %1
       $params = array(1 => array($mailing_id, 'Integer'));
       CRM_Core_DAO::executeQuery($sql, $params);
 
+      $selectClause = array('%1', 'i.contact_id', "i.{$tempColumn}");
+      $select = "SELECT " . implode(', ', $selectClause);
       // CRM-3975
       $groupBy = $groupJoin = '';
+      $orderBy = "i.contact_id, i.{$tempColumn}";
       if ($dedupeEmail) {
+        $orderBy = "MIN(i.contact_id), MIN(i.{$tempColumn})";
         $groupJoin = " INNER JOIN civicrm_email e ON e.id = i.email_id";
-        $groupBy = " GROUP BY e.email, i.contact_id ";
+        $groupBy = " GROUP BY e.email ";
+        $select = CRM_Contact_BAO_Query::appendAnyValueToSelect($selectClause, 'e.email');
       }
 
       $sql = "
 INSERT INTO civicrm_mailing_recipients ( mailing_id, contact_id, {$tempColumn} )
-SELECT %1, i.contact_id, i.{$tempColumn}
+{$select}
 FROM       civicrm_contact contact_a
 INNER JOIN I_$job_id i ON contact_a.id = i.contact_id
            $groupJoin
            {$aclFrom}
            {$aclWhere}
            $groupBy
-ORDER BY   i.contact_id, i.{$tempColumn}
+ORDER BY   {$orderBy}
 ";
 
       CRM_Core_DAO::executeQuery($sql, $params);
@@ -2512,6 +2517,7 @@ LEFT JOIN civicrm_mailing_group g ON g.mailing_id   = m.id
       "$mailing.approval_status_id", "createdContact.sort_name as created_by", "scheduledContact.sort_name as scheduled_by",
       "$mailing.created_id as created_id", "$mailing.scheduled_id as scheduled_id", "$mailing.is_archived as archived",
       "$mailing.created_date as created_date", "campaign_id", "$mailing.sms_provider_id as sms_provider_id",
+      "$mailing.language",
     );
 
     // we only care about parent jobs, since that holds all the info on
@@ -2573,6 +2579,7 @@ LEFT JOIN civicrm_mailing_group g ON g.mailing_id   = m.id
         'campaign_id' => $dao->campaign_id,
         'campaign' => empty($dao->campaign_id) ? NULL : $allCampaigns[$dao->campaign_id],
         'sms_provider_id' => $dao->sms_provider_id,
+        'language' => $dao->language,
       );
     }
     return $rows;
@@ -3169,13 +3176,11 @@ AND        m.id = %1
    * Whitelist of possible values for the entity_table field
    * @return array
    */
-  public static function mailingGroupEntityTables() {
-    $tables = array(
-      CRM_Contact_BAO_Group::getTableName(),
-      CRM_Mailing_BAO_Mailing::getTableName(),
+  public static function mailingGroupEntityTables($context = NULL) {
+    return array(
+      CRM_Contact_BAO_Group::getTableName() => 'Group',
+      CRM_Mailing_BAO_Mailing::getTableName() => 'Mailing',
     );
-    // Identical keys & values
-    return array_combine($tables, $tables);
   }
 
   /**
