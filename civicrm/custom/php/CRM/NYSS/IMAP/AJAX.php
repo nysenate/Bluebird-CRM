@@ -34,8 +34,7 @@ class CRM_NYSS_IMAP_AJAX
    * CiviCRM and set it to a static variable.
    * @return None
    */
-  private static function db()
-  {
+  private static function db() {
     static $mysql_conn = null;
 
     // Load the DAO Object and pull the connection
@@ -44,7 +43,7 @@ class CRM_NYSS_IMAP_AJAX
       $mysql_conn = $nyss_conn->getDatabaseConnection()->connection;
     }
     return $mysql_conn;
-  } // db()
+  }//db()
 
 
   /**
@@ -56,7 +55,7 @@ class CRM_NYSS_IMAP_AJAX
   private static function get($key)
   {
     if (isset($_GET[$key])) {
-      return mysql_real_escape_string($_GET[$key], self::db());
+      return CRM_Core_DAO::escapeString($_GET[$key]);
     }
     else {
       return null;
@@ -217,9 +216,8 @@ class CRM_NYSS_IMAP_AJAX
       return null;
     }
 
-    $res = mysql_query($query, self::db());
     $dao = CRM_Core_DAO::executeQuery($query);
-    //Civi::log()->debug('getMessageList', array('$res' => $res, 'dao' => $dao));//NYSS
+    Civi::log()->debug('CRM_NYSS_IMAP_AJAX', array('query' => $query, 'dao' => $dao));
 
     $msgCount = 0;
     while ($dao->fetch()) {
@@ -228,7 +226,6 @@ class CRM_NYSS_IMAP_AJAX
       $msgCount++;
     }
 
-    mysql_close(self::db());
     $endTime = microtime(true);
     $resultData['stats']['overview']['successes'] = $msgCount;
     $resultData['stats']['overview']['time'] = $endTime - $startTime;

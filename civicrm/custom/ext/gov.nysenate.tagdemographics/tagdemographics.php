@@ -1,14 +1,14 @@
 <?php
 
-require_once 'resources.civix.php';
+require_once 'tagdemographics.civix.php';
 
 /**
  * Implements hook_civicrm_config().
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_config
  */
-function resources_civicrm_config(&$config) {
-  _resources_civix_civicrm_config($config);
+function tagdemographics_civicrm_config(&$config) {
+  _tagdemographics_civix_civicrm_config($config);
 }
 
 /**
@@ -18,8 +18,8 @@ function resources_civicrm_config(&$config) {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_xmlMenu
  */
-function resources_civicrm_xmlMenu(&$files) {
-  _resources_civix_civicrm_xmlMenu($files);
+function tagdemographics_civicrm_xmlMenu(&$files) {
+  _tagdemographics_civix_civicrm_xmlMenu($files);
 }
 
 /**
@@ -27,8 +27,8 @@ function resources_civicrm_xmlMenu(&$files) {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_install
  */
-function resources_civicrm_install() {
-  _resources_civix_civicrm_install();
+function tagdemographics_civicrm_install() {
+  _tagdemographics_civix_civicrm_install();
 }
 
 /**
@@ -36,8 +36,8 @@ function resources_civicrm_install() {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_uninstall
  */
-function resources_civicrm_uninstall() {
-  _resources_civix_civicrm_uninstall();
+function tagdemographics_civicrm_uninstall() {
+  _tagdemographics_civix_civicrm_uninstall();
 }
 
 /**
@@ -45,8 +45,8 @@ function resources_civicrm_uninstall() {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_enable
  */
-function resources_civicrm_enable() {
-  _resources_civix_civicrm_enable();
+function tagdemographics_civicrm_enable() {
+  _tagdemographics_civix_civicrm_enable();
 }
 
 /**
@@ -54,8 +54,8 @@ function resources_civicrm_enable() {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_disable
  */
-function resources_civicrm_disable() {
-  _resources_civix_civicrm_disable();
+function tagdemographics_civicrm_disable() {
+  _tagdemographics_civix_civicrm_disable();
 }
 
 /**
@@ -70,8 +70,8 @@ function resources_civicrm_disable() {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_upgrade
  */
-function resources_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
-  return _resources_civix_civicrm_upgrade($op, $queue);
+function tagdemographics_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
+  return _tagdemographics_civix_civicrm_upgrade($op, $queue);
 }
 
 /**
@@ -82,8 +82,8 @@ function resources_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_managed
  */
-function resources_civicrm_managed(&$entities) {
-  _resources_civix_civicrm_managed($entities);
+function tagdemographics_civicrm_managed(&$entities) {
+  _tagdemographics_civix_civicrm_managed($entities);
 }
 
 /**
@@ -95,8 +95,8 @@ function resources_civicrm_managed(&$entities) {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
  */
-function resources_civicrm_caseTypes(&$caseTypes) {
-  _resources_civix_civicrm_caseTypes($caseTypes);
+function tagdemographics_civicrm_caseTypes(&$caseTypes) {
+  _tagdemographics_civix_civicrm_caseTypes($caseTypes);
 }
 
 /**
@@ -109,8 +109,8 @@ function resources_civicrm_caseTypes(&$caseTypes) {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
  */
-function resources_civicrm_angularModules(&$angularModules) {
-_resources_civix_civicrm_angularModules($angularModules);
+function tagdemographics_civicrm_angularModules(&$angularModules) {
+_tagdemographics_civix_civicrm_angularModules($angularModules);
 }
 
 /**
@@ -118,8 +118,8 @@ _resources_civix_civicrm_angularModules($angularModules);
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_alterSettingsFolders
  */
-function resources_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
-  _resources_civix_civicrm_alterSettingsFolders($metaDataFolders);
+function tagdemographics_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
+  _tagdemographics_civix_civicrm_alterSettingsFolders($metaDataFolders);
 }
 
 /**
@@ -131,7 +131,7 @@ function resources_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_preProcess
  *
-function resources_civicrm_preProcess($formName, &$form) {
+function tagdemographics_civicrm_preProcess($formName, &$form) {
 
 } // */
 
@@ -140,31 +140,14 @@ function resources_civicrm_preProcess($formName, &$form) {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_navigationMenu
  *
-function resources_civicrm_navigationMenu(&$menu) {
-  _resources_civix_insert_navigation_menu($menu, NULL, array(
-    'label' => ts('The Page', array('domain' => 'gov.nysenate.resources')),
+function tagdemographics_civicrm_navigationMenu(&$menu) {
+  _tagdemographics_civix_insert_navigation_menu($menu, NULL, array(
+    'label' => ts('The Page', array('domain' => 'gov.nysenate.tagdemographics')),
     'name' => 'the_page',
     'url' => 'civicrm/the-page',
     'permission' => 'access CiviReport,access CiviContribute',
     'operator' => 'OR',
     'separator' => 0,
   ));
-  _resources_civix_navigationMenu($menu);
+  _tagdemographics_civix_navigationMenu($menu);
 } // */
-
-function resources_civicrm_coreResourceList(&$list, $region) {
-  /*Civi::log()->debug('resource_civicrm_coreResourceList', array(
-    'list' => $list,
-    'region' => $region,
-  ));*/
-
-  Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/jquery.autocomplete.js', 10, 'html-header');
-  Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/jquery.civicrm-validate.js', 10, 'html-header');
-  Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/jquery.tokeninput.js', 10, 'html-header');
-  Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/jquery-fieldselection.js', 10, 'html-header');
-
-  //implement coreResourceList to define location of custom ckeditor config file
-  $config = array_keys(array_filter($list, function($v){return !empty($v['config']) ? true : false;}));
-  $list[$config[0]]['config']['CKEditorCustomConfig'] =
-    '/sites/all/modules/nyss_civihooks/js/ckeditor.config.js';
-}

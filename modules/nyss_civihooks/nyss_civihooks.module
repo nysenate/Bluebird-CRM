@@ -797,7 +797,7 @@ function nyss_civihooks_civicrm_navigationMenu(&$params) {
   }
 
   //get max key
-  $maxKey = (max(array_keys($params)));
+  $maxKey = (!empty($params)) ? max(array_keys($params)) : 0;
 
   //build home menu item
   $params[1] = array(
@@ -885,7 +885,7 @@ function nyss_civihooks_civicrm_navigationMenu(&$params) {
 
 //build navigation menu
 function nyss_civihooks_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) {
-  //$navigation = CRM_Core_BAO_Navigation::buildNavigation();
+  //Civi::log()->debug('alterTemplateFile', array('formName' => $formName));
 
   $navigations = array();
   CRM_Core_BAO_Navigation::buildNavigationTree($navigations, $parent = NULL, TRUE);
@@ -921,6 +921,19 @@ function nyss_civihooks_civicrm_alterTemplateFile($formName, &$form, $context, &
   //CRM_Core_Error::debug_var('navigations', $navigationString);
 
   $form->assign('navigation', $navigationString);
+
+  //build qfKey (from Core/Smarty/plugins/function.crmNavigationMenu.php)
+  $session = CRM_Core_Session::singleton();
+  $contactID = $session->get('userID');
+  if ($contactID) {
+    $lang = CRM_Core_I18n::getLocale();
+    $domain = CRM_Core_Config::domainID();
+    $key = CRM_Core_BAO_Navigation::getCacheKey($contactID);
+    $src = CRM_Utils_System::url("civicrm/ajax/menujs/$contactID/$lang/$domain/$key");
+    $qfKey = CRM_Core_Key::get('CRM_Contact_Controller_Search', TRUE);
+    //src="' . $src . '"
+    $form->assign('quickSearch_qfKey', '<script id="civicrm-navigation-menu" type="text/javascript" data-qfkey=' . json_encode($qfKey) . '></script>');
+  }
 }//alterTemplateFile
 
 /*

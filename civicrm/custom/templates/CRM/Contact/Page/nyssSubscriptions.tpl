@@ -37,7 +37,7 @@
             background: "black"
           },
           buttons: {
-            "Save Subscription Options": function () {
+            "Save Subscription Settings": function () {
               //console.log('this: ', this);
               //console.log('submitting form', cj('form#Admin'));
               //cj('form#Admin').submit();

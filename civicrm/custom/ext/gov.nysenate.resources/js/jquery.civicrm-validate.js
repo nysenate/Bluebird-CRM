@@ -17,4 +17,5 @@
   jQuery.validator.addMethod("crm_postal_code", function(postalcode, element) {
     return this.optional(element) || postalcode.match(/(^\d{5}(-\d{4})?$)|(^[ABCEGHJKLMNPRSTVXYabceghjklmnpstvxy]{1}\d{1}[A-Za-z]{1} ?\d{1}[A-Za-z]{1}\d{1})$/);
   }, "Enter a valid 5 digit zip code.");
+
 })();
