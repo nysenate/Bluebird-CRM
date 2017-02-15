@@ -1,13 +1,13 @@
 if (!String.prototype.capitalize) {
   Object.defineProperty(String.prototype,'capitalize',
-      {
-        writable:true,
-        value:function(first_only,undefined){
-          if (first_only===undefined) {first_only = false;}
-          r = first_only ? /(?!^\/)\b([a-z])/ : /(?!^\/)\b([a-z])/g;
-          return this.replace(r,function(m){return m.toUpperCase()});
-        }
-      });
+    {
+      writable:true,
+      value:function(first_only,undefined){
+        if (first_only===undefined) {first_only = false;}
+        r = first_only ? /(?!^\/)\b([a-z])/ : /(?!^\/)\b([a-z])/g;
+        return this.replace(r,function(m){return m.toUpperCase()});
+      }
+    });
 }
 
 var messages = [];
@@ -19,9 +19,21 @@ function display_ajax_result(data, status) {
   CRM.alert(result.message, msgtype.capitalize(), msgtype);
 }
 
-cj(document).ready(function()
-{
+cj(document).ready(function() {
   cj(".range option[value='30']").attr('selected', 'selected');
+
+  cj("#range").on('change', function () {
+    var range = cj('#range').val();
+    if (cj("#Activities").length) {
+      getMatched(range);
+    }
+    else if (cj("#Unmatched").length) {
+      getUnmatched(range);
+    }
+    else if (cj("#Reports").length) {
+      getReports(range);
+    }
+  });
 
   // use highlighted text to populate search areas
   cj(".found.email_address").on('click', function() {
@@ -72,9 +84,11 @@ cj(document).ready(function()
   // onpageload
   if (cj("#Activities").length) {
     getMatched(range);
-  } else if(cj("#Unmatched").length) {
+  }
+  else if(cj("#Unmatched").length) {
     getUnmatched(range);
-  } else if(cj("#Reports").length) {
+  }
+  else if(cj("#Reports").length) {
     getReports(range);
   }
 
@@ -1282,11 +1296,60 @@ cj(document).ready(function()
       return false;
     }
   });
+
+  // needed to format timestamps to allow sorting: make a hidden date attribute
+  // with the non-readable date (date(U)) and sort on that
+  cj.extend(cj.fn.dataTableExt.oSort, {
+    "title-string-pre": function(a) {
+      return a.match(/data-sort="(.*?)"/)[1].toLowerCase();
+    },
+    "title-string-asc": function(a, b) {
+      return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+    },
+    "title-string-desc": function(a, b) {
+      return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+    }
+  });
+
+  cj(".checkbox_switch").on('click', function(e) {
+    if (this.checked) {
+      cj('.checkbox').prop('checked', this.checked)
+      cj('.checkbox').parent().parent().addClass('highlight');
+    }
+    else {
+      cj('.checkbox').prop('checked', this.checked);
+      cj('tr').removeClass('highlight');
+    }
+  });
+
+  cj(".stats_overview").on('click', function() {
+    cj(".stats_overview").removeClass('active');
+    cj(this).addClass('active');
+  });
+
+  cj(".Total").on('click', function() {
+    oTable.fnFilter("", 5, false, false);
+  });
+  cj(".Unmatched").on('click', function() {
+    oTable.fnFilter('unmatched', 5);
+  });
+  cj(".Matched").on('click', function() {
+    oTable.fnFilter('^matched', 5, true);
+  });
+  cj(".Cleared").on('click', function() {
+    oTable.fnFilter('cleared', 5);
+  });
+  /** removed per NYSS #8396
+   cj(".Errors").on('click', function() {
+  oTable.fnFilter('error', 5);
 });
+   **/
+  cj(".Deleted").on('click', function() {
+    oTable.fnFilter('deleted', 5);
+  });
+});//end cj.ready()
 
-
-function getUnmatched(range)
-{
+function getUnmatched(range) {
   if (typeof oTable != "undefined") {
     oTable.fnDestroy();
     cj('.FixedHeader_Cloned.fixedHeader.FixedHeader_Header').remove();
@@ -1297,7 +1360,6 @@ function getUnmatched(range)
     success: function(data, status) {
       result = cj.parseJSON(data);
       messages = result.data;
-      console.log('messages: ', messages);
       if (result.is_error == true || messages == null || messages.stats.overview.successes == 0) {
         Table();
       }
@@ -1373,9 +1435,7 @@ function getUnmatched(range)
   });
 }
 
-
-function getMatched(range)
-{
+function getMatched(range) {
   if (typeof oTable != "undefined") {
     oTable.fnDestroy();
     cj('.FixedHeader_Cloned.fixedHeader.FixedHeader_Header').remove();
@@ -1443,9 +1503,7 @@ function getMatched(range)
   });
 }
 
-
-function getReports(range)
-{
+function getReports(range) {
   if (typeof oTable != "undefined") {
     oTable.fnDestroy();
     cj('.FixedHeader_Cloned.fixedHeader.FixedHeader_Header').remove();
@@ -1455,7 +1513,8 @@ function getReports(range)
     url: '/civicrm/imap/ajax/reports/list?range='+range,
     success: function(data, status) {
       result = cj.parseJSON(data);
-      reports = result.data;console.log(reports);
+      reports = result.data;
+      //console.log(reports);
       var html = '',
           status_val=null;
       if (reports.total == 0 || reports.Messages == null) {
@@ -1503,24 +1562,7 @@ function getReports(range)
   });
 }
 
-
-// needed to format timestamps to allow sorting: make a hidden date attribute
-// with the non-readable date (date(U)) and sort on that
-cj.extend(cj.fn.dataTableExt.oSort, {
-  "title-string-pre": function(a) {
-    return a.match(/data-sort="(.*?)"/)[1].toLowerCase();
-  },
-  "title-string-asc": function(a, b) {
-    return ((a < b) ? -1 : ((a > b) ? 1 : 0));
-  },
-  "title-string-desc": function(a, b) {
-    return ((a < b) ? 1 : ((a > b) ? -1 : 0));
-  }
-});
-
-
-function Table()
-{
+function Table() {
   oTable = cj("#sortable_results").dataTable({
     "sDom":'<p><"controlls"lif><"clear">rt <p>',//add i here this is the number of records
     // "iDisplayLength": 1,
@@ -1544,9 +1586,7 @@ function Table()
   oHeader.fnUpdate();
 }
 
-
-function ReportTable()
-{
+function ReportTable() {
   oTable = cj("#sortable_results").dataTable({
     "sDom":'<p><"controlls"lif><"clear">rt <p>',//add i here this is the number of records
     // "iDisplayLength": 1,
@@ -1574,60 +1614,7 @@ function ReportTable()
   new FixedHeader(oTable, {zTop:'auto'});
 }
 
-cj("#range").on('change', function () {
-  if (cj("#Activities").length) {
-    console.log('val: ', cj('#range').attr("value"));
-    getMatched(cj('#range').attr("value"));
-  }
-  else if (cj("#Unmatched").length) {
-    getUnmatched(cj('#range').attr("value"));
-  }
-  else if (cj("#Reports").length) {
-    getReports(cj('#range').attr("value"));
-  }
-});
-
-cj(".checkbox_switch").on('click', function(e) {
-  if (this.checked) {
-    cj('.checkbox').prop('checked', this.checked)
-    cj('.checkbox').parent().parent().addClass('highlight');
-  }
-  else {
-    cj('.checkbox').prop('checked', this.checked);
-    cj('tr').removeClass('highlight');
-  }
-});
-
-cj(".stats_overview").on('click', function() {
-  cj(".stats_overview").removeClass('active');
-  cj(this).addClass('active');
-});
-
-cj(".Total").on('click', function() {
-  oTable.fnFilter("", 5, false, false);
-});
-cj(".Unmatched").on('click', function() {
-  oTable.fnFilter('unmatched', 5);
-});
-cj(".Matched").on('click', function() {
-  oTable.fnFilter('^matched', 5, true);
-});
-cj(".Cleared").on('click', function() {
-  oTable.fnFilter('cleared', 5);
-});
-/** removed per NYSS #8396
-cj(".Errors").on('click', function() {
-  oTable.fnFilter('error', 5);
-});
-**/
-cj(".Deleted").on('click', function() {
-  oTable.fnFilter('deleted', 5);
-});
-
-
-
-function buildContactList(loop)
-{
+function buildContactList(loop) {
   var contactsHtml = '';
   for (var i = loop; i < contacts.length && i < loop + 200; i++) {
     // calculate the aprox age
@@ -1675,11 +1662,9 @@ function buildContactList(loop)
   }
 }
 
-
 // Create shortended String with title tag for hover
 // If subject is null return N/A
-function shortenString(subject, length)
-{
+function shortenString(subject, length) {
   if (subject) {
     if (subject.length > length) {
       var safe_subject = '<span title="'+subject+'" data-sort="'+subject+'">'+subject.substring(0,length)+"...</span>";
@@ -1694,12 +1679,10 @@ function shortenString(subject, length)
   }
 }
 
-
 // Look for empty rows that match the KEY of a matched row
 // Remove them from the view so the user doesn't re-add / create duplicates
 // key = user_email
-function checkForMatch(key,newContacts)
-{
+function checkForMatch(key,newContacts) {
   // console.log('checking',key,newContacts);
   cj(".this_address").html(key);
   cj('.imapper-message-box').each(function(i, item) {
@@ -1732,11 +1715,9 @@ function checkForMatch(key,newContacts)
   });
 }
 
-
 // removes row from the UI, forces table reload
 // takes an array, or a single object
-function removeRow(id)
-{
+function removeRow(id) {
   if (cj.isArray(id)) {
     cj.each(id, function(index, value) {
       var row_index = oTable.fnGetPosition(document.getElementById(value));
@@ -1749,8 +1730,6 @@ function removeRow(id)
   }
 }
 
-
-function string_replace(haystack, find, sub)
-{
+function string_replace(haystack, find, sub) {
   return haystack.split(find).join(sub);
 }
