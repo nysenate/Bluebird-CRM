@@ -52,8 +52,7 @@ class CRM_NYSS_IMAP_AJAX
    * @param  [string] $key  The name of the input in the GET message.
    * @return [string] The escaped string.
    */
-  private static function get($key)
-  {
+  private static function get($key) {
     if (isset($_GET[$key])) {
       return CRM_Core_DAO::escapeString($_GET[$key]);
     }
@@ -70,21 +69,30 @@ class CRM_NYSS_IMAP_AJAX
    * Note that array elements that contain no value are removed.  This includes
    * array elements with all whitespace.
    */
-  private static function get_array($key)
-  {
+  private static function get_array($key) {
     $val = self::get($key);
     return array_filter(explode(',', $val), function ($v) {
-                        return trim($v) !== ''; });
+      return trim($v) !== '';
+    });
   } // get_array()
 
 
-  private static function getContactFields()
-  {
-    $fields = array('prefix'=>null, 'first_name'=>null, 'middle_name'=>null,
-                    'last_name'=>null, 'suffix'=>null, 'dob'=>null,
-                    'email_address'=>null, 'phone'=>null,
-                    'street_address'=>null, 'street_address_2'=>null,
-                    'city'=>null, 'state'=>null, 'postal_code'=>null);
+  private static function getContactFields() {
+    $fields = array(
+      'prefix'=>null,
+      'first_name'=>null,
+      'middle_name'=>null,
+      'last_name'=>null,
+      'suffix'=>null,
+      'dob'=>null,
+      'email_address'=>null,
+      'phone'=>null,
+      'street_address'=>null,
+      'street_address_2'=>null,
+      'city'=>null,
+      'state'=>null,
+      'postal_code'=>null
+    );
 
     // Fill in the $fields[] array with our search criteria.
     foreach ($fields as $fldname => $fldval) {
@@ -113,50 +121,65 @@ class CRM_NYSS_IMAP_AJAX
    * Format message details from DB
    * @param  [int] $messageId The ID of the message being retrieved.
    * @return [array] Array of fields with all information about the message,
-   *                 or NULL if the message cannot be located by ID.
+   *   or NULL if the message cannot be located by ID.
    */
-  private static function getFullMessage($messageId)
-  {
+  private static function getFullMessage($messageId) {
     $debug = self::get('debug');
 
-    $query = "SELECT * FROM nyss_inbox_messages WHERE id = $messageId";
-    $res = mysql_query($query, self::db());
-    $row = mysql_fetch_assoc($res);
+    $query = "
+      SELECT * 
+      FROM nyss_inbox_messages 
+      WHERE id = $messageId
+    ";
+    $res = CRM_Core_DAO::executeQuery($query);
 
-    if ($row == false) {
-      return null;
+    $row = array();
+    while ($res->fetch()) {
+      $row = get_object_vars($res);
+    }
+    //CRM_Core_Error::debug_var('$query: ', $query);
+    //CRM_Core_Error::debug_var('row: ', $row);
+
+    if (empty($row)) {
+      return NULL;
     }
 
     $msgFields = self::postProcess($row);
-    mysql_free_result($res);
 
     // useful when setting status for other unmatched messages
     $senderEmail = $msgFields['sender_email'];
     $msgFields['key'] = $senderEmail;
 
     // find matches
-    $query = "SELECT c.id, e.email FROM civicrm_contact c
-              LEFT JOIN civicrm_email e ON c.id = e.contact_id
-              WHERE c.is_deleted=0
-                AND e.email LIKE '$senderEmail'
-              GROUP BY c.id
-              ORDER BY c.id ASC, e.is_primary DESC";
-    $res = mysql_query($query, self::db());
-    $msgFields['matches_count'] = mysql_num_rows($res);
-    mysql_free_result($res);
+    $query = "
+      SELECT c.id, e.email
+      FROM civicrm_contact c
+      LEFT JOIN civicrm_email e
+        ON c.id = e.contact_id
+      WHERE c.is_deleted=0
+        AND e.email LIKE '$senderEmail'
+      GROUP BY c.id, e.email
+    ";
+    $res = CRM_Core_DAO::executeQuery($query);
+    $msgFields['matches_count'] = $res->N;
 
     // attachments
     $attachments = array();
-    $query = "SELECT * FROM nyss_inbox_attachments WHERE email_id = $messageId";
-    $res = mysql_query($query, self::db());
-    while ($row = mysql_fetch_assoc($res)) {
-      $attachments[] = array('fileName' => $row['file_name'],
-                             'fileFull' => $row['file_full'],
-                             'rejection' => $row['rejection'],
-                             'size' => $row['size'],
-                             'ext' => $row['ext']);
+    $query = "
+      SELECT * 
+      FROM nyss_inbox_attachments 
+      WHERE email_id = $messageId
+    ";
+    $res = CRM_Core_DAO::executeQuery($query);
+    while ($res->fetch()) {
+      $attachments[] = array(
+        'fileName' => $res->file_name,
+        'fileFull' => $res->file_full,
+        'rejection' => $res->rejection,
+        'size' => $res->size,
+        'ext' => $res->ext,
+      );
     }
-    mysql_free_result($res);
 
     $msgFields['attachments'] = $attachments;
 
@@ -166,6 +189,7 @@ class CRM_NYSS_IMAP_AJAX
       echo "\n</pre>\n";
     }
 
+    //CRM_Core_Error::debug_var('getFullMessage $msgFields: ', $msgFields);
     return $msgFields;
   } // getFullMessage()
 
@@ -217,7 +241,7 @@ class CRM_NYSS_IMAP_AJAX
     }
 
     $dao = CRM_Core_DAO::executeQuery($query);
-    Civi::log()->debug('CRM_NYSS_IMAP_AJAX', array('query' => $query, 'dao' => $dao));
+    //Civi::log()->debug('CRM_NYSS_IMAP_AJAX', array('query' => $query, 'dao' => $dao));
 
     $msgCount = 0;
     while ($dao->fetch()) {
@@ -242,8 +266,7 @@ class CRM_NYSS_IMAP_AJAX
   } // getMessageList()
 
 
-  private static function postProcess($fields)
-  {
+  private static function postProcess($fields) {
     $res = array();
 
     foreach ($fields as $key => $val) {
@@ -253,12 +276,19 @@ class CRM_NYSS_IMAP_AJAX
       $val = preg_replace('/[^a-zA-Z0-9\s\p{P}]/', '', trim($val));
       $val = substr($val, 0, 240);
       ***/
-      if (in_array($key, array('id', 'message_id', 'imap_id', 'status',
-                               'matcher', 'matched_to', 'activity_id'))) {
+      if (in_array($key, array(
+        'id',
+        'message_id',
+        'imap_id',
+        'status',
+        'matcher',
+        'matched_to',
+        'activity_id'))
+      ) {
         // convert string ID to integer ID
         $res[$key] = (int)$val;
       }
-      else if (in_array($key, array('format', 'updated_date', 'email_date'))) {
+      elseif (in_array($key, array('format', 'updated_date', 'email_date'))) {
         // no conversion necessary for these fields
         $res[$key] = $val;
       }
@@ -671,32 +701,21 @@ class CRM_NYSS_IMAP_AJAX
    * For Unmatched & Matched screen Delete
    * @return [JSON Object]  Status message
    */
-  public static function UnmatchedDelete()
-  {
+  public static function UnmatchedDelete() {
     $ids = self::get_array('id');
-    $session = CRM_Core_Session::singleton();
-    $userId = $session->get('userID');
-    $success = true;
+    $userId = CRM_Core_Session::getLoggedInContactID();
 
     foreach ($ids as $id) {
       // Delete the message with the specified UID
       $query = "
         UPDATE nyss_inbox_messages
-        SET status=".self::STATUS_DELETED.", matcher=$userId
-        WHERE id=$id";
-      if (mysql_query($query, self::db()) === false) {
-        $success = false;
-      }
+        SET status = ".self::STATUS_DELETED.", matcher = $userId
+        WHERE id = $id
+      ";
+      CRM_Core_DAO::executeQuery($query);
     }
 
-    mysql_close(self::db());
-
-    if ($success) {
-      self::exitSuccess('Message deleted', $ids);
-    }
-    else {
-      self::exitError('Unable to delete all messages', $ids);
-    }
+    self::exitSuccess('Message deleted', $ids);
   } // UnmatchedDelete()
 
 
@@ -766,28 +785,32 @@ class CRM_NYSS_IMAP_AJAX
     if (array_filter($fields)) {
       $query = "
         SELECT c.id, c.display_name, c.contact_type, c.birth_date, sp.name,
-               a.street_address, a.postal_code, a.city, p.phone, e.email
+          a.street_address, a.postal_code, a.city, p.phone, e.email, e.is_primary
         FROM civicrm_contact c
-        LEFT JOIN civicrm_email e ON c.id = e.contact_id
-        LEFT JOIN civicrm_address a ON c.id = a.contact_id
-        LEFT JOIN civicrm_phone p ON c.id = p.contact_id
-        LEFT JOIN civicrm_state_province sp ON a.state_province_id=sp.id
+        LEFT JOIN civicrm_email e
+          ON c.id = e.contact_id
+        LEFT JOIN civicrm_address a
+          ON c.id = a.contact_id
+        LEFT JOIN civicrm_phone p
+          ON c.id = p.contact_id
+        LEFT JOIN civicrm_state_province sp
+          ON a.state_province_id=sp.id
         $where
-        GROUP BY c.id
-        $order";
+        GROUP BY c.id, c.display_name, c.contact_type, c.birth_date, sp.name,
+          a.street_address, a.postal_code, a.city, p.phone, e.email, e.is_primary
+        $order
+      ";
 
-      $dbres = mysql_query($query, self::db());
+      $dbres = CRM_Core_DAO::executeQuery($query);
       $res = array();
-      while ($row = mysql_fetch_assoc($dbres)) {
-        $res[] = $row;
+      while ($dbres->fetch()) {
+        $res[] = get_object_vars($dbres);
       }
     }
     else {
       // do nothing if no query
       $errmsg = 'Please enter a query';
     }
-
-    mysql_close(self::db());
 
     if ($errmsg) {
       self::exitError($errmsg);

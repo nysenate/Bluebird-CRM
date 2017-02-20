@@ -221,36 +221,30 @@ cj(document).ready(function() {
   // When you really didn't mean to forward that message in
   // ask permission first, with bright red buttons
 
-  // Delete Single
-  cj(".imap_actions_column .delete").on('click', function() {
-    var messageId = cj(this).parent().parent().find('.checkbox').data('delete');
-    cj("#delete-confirm #message").val(messageId);
-    cj("#delete-confirm").dialog('open');
-  });
-
   // Delete Multiple ( from checkbox )
-  cj(".page_actions .multi_delete").on('click', function() {
+  cj(".page_actions .multi_delete").click(function() {
     // grab the rows to delete
     var delete_ids = $("#imapper-messages-list input:checkbox:checked").map(function(){
       return $(this).data('delete');
     }).get();
+
     if (!delete_ids.length) {
       CRM.alert('Use the checkbox to select one or more messages to delete', '', 'warn');
       return false;
     }
+
     cj("#loading-popup").dialog('open');
     cj("#delete-confirm").dialog({ title:  "Delete "+delete_ids.length+" messages from Bluebird?"});
     cj("#delete-confirm #message").val(delete_ids);
     cj("#loading-popup").dialog('close');
     cj("#delete-confirm").dialog('open');
-    // return false;
   });
 
   // Delete modal dialog
   cj("#delete-confirm").dialog({
     modal: true,
     dialogClass: 'delete_popup_class',
-    width: 370,
+    width: 400,
     title: "Remove this message from Bluebird?",
     open: function() {
       cj(this).closest(".ui-dialog").find(".ui-button:first").addClass("primary_button");
@@ -487,23 +481,6 @@ cj(document).ready(function() {
         cj(this).dialog("close");
       }
     }
-  });
-  // what triggers the popup
-  cj(".imap_actions_column .assign").on('click', function() {
-    cj("#loading-popup").dialog('open');
-    var messageId = cj(this).parent().parent().attr('id');
-    cj('#message').val(messageId);
-    cj("#tabs :input[type='text']").val("");
-    cj(".dob .month,.dob .day,.dob .year,.state").val([]);
-    cj("#status_id option[value='']").attr('selected', 'selected');
-
-    cj('#imapper-contacts-list, #message_left_email').html('');
-    cj("#message_left_email").animate({
-      scrollTop: 0
-    }, 'fast');
-    cj("#assign-popup").dialog('open');
-
-    return false;
   });
 
   // assign a message to a contact Unmatched page
@@ -1347,6 +1324,10 @@ cj(document).ready(function() {
   cj(".Deleted").on('click', function() {
     oTable.fnFilter('deleted', 5);
   });
+
+  cj('span.delete a').click(function(){
+    console.log('delete 2...');
+  });
 });//end cj.ready()
 
 function getUnmatched(range) {
@@ -1355,6 +1336,7 @@ function getUnmatched(range) {
     cj('.FixedHeader_Cloned.fixedHeader.FixedHeader_Header').remove();
   }
   cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty"><span class="loading_row"><span class="loading_message">Loading message data <img src="/sites/default/themes/Bluebird/images/loading.gif"/></span></span></td>');
+
   cj.ajax({
     url: '/civicrm/imap/ajax/unmatched/list?range='+range,
     success: function(data, status) {
@@ -1423,7 +1405,7 @@ function getUnmatched(range) {
           else {
             html += '<td class="imap_forwarder_column"> N/A </td>';
           }
-          html += '<td class="imap_actions_column "><span class="assign"><a href="#">Assign Contact</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
+          html += '<td class="imap_actions_column"><span class="assign"><a href="#" onclick="assignContact(cj(this)); return false;">Assign Contact</a></span><span class="delete"><a href="#" onclick="deleteSingle(cj(this)); return false;">Delete</a></span></td> </tr>';
         });
         cj('#imapper-messages-list').html(html);
         Table();
@@ -1434,6 +1416,33 @@ function getUnmatched(range) {
     }
   });
 }
+
+function deleteSingle(obj) {
+  //console.log('deleteSingle obj: ', obj);
+
+  var messageId = cj(obj).closest('tr').prop('id');
+  cj("#delete-confirm #message").val(messageId);
+  cj("#delete-confirm").dialog('open');
+}//deleteSingle
+
+//triggers the popup
+function assignContact(obj) {
+  //console.log('assignContact obj: ', obj);
+
+  cj("#loading-popup").dialog('open');
+  var messageId = cj(obj).closest('tr').prop('id');
+
+  cj('#message').val(messageId);
+  cj("#tabs :input[type='text']").val("");
+  cj(".dob .month,.dob .day,.dob .year,.state").val([]);
+  cj("#status_id option[value='']").attr('selected', 'selected');
+
+  cj('#imapper-contacts-list, #message_left_email').html('');
+  cj("#message_left_email").animate({
+    scrollTop: 0
+  }, 'fast');
+  cj("#assign-popup").dialog('open');
+}//assignContact
 
 function getMatched(range) {
   if (typeof oTable != "undefined") {
