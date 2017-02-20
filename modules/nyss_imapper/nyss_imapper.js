@@ -295,18 +295,6 @@ cj(document).ready(function() {
   // because whats it good for?
   // but ask permission first
 
-  // Clear Single
-  cj(".imap_actions_column .clear").on('click', function() {
-    // console.log('clear');
-    cj("#loading-popup").dialog('open');
-    var messageId = cj(this).parent().parent().find('.checkbox').data('delete');
-    cj("#clear-confirm #message").val(messageId);
-    cj("#clear-confirm").dialog({ title:  "Clear message from list?"});
-    cj("#loading-popup").dialog('close');
-    cj("#clear-confirm").dialog('open');
-    return false;
-  });
-
   // Clear multiple ( from checkbox )
   cj(".page_actions .multi_clear").on('click', function() {
     // console.log('multi_clear');
@@ -367,7 +355,6 @@ cj(document).ready(function() {
       }
     });
   }
-
 
   // ****************************************************************
   // Assign -
@@ -605,7 +592,6 @@ cj(document).ready(function() {
       CRM.alert('Select a contact to assign message to,<br/> OR create a contact with first name, last name, or email', '', 'warn');
     }
   };
-
 
   // ****************************************************************
   // Process -
@@ -855,28 +841,6 @@ cj(document).ready(function() {
         cj(this).dialog("close");
       }
     }
-  });
-
-  // What triggers the popup
-  cj(".imap_actions_column .process").on('click', function() {
-    cj("#loading-popup").dialog('open');
-
-    var messageId = cj(this).parent().parent().attr('data-imap-id');
-    var activityId = cj(this).parent().parent().attr('data-activity-id');
-    var contactId = cj(this).parent().parent().attr('data-contact-id');
-
-    cj('#message').val(messageId);
-    cj('#activity').val(activityId);
-    cj('#contact').val(contactId);
-    cj("#tabs :input[type='text']").val("");
-    cj(".dob .month,.dob .day,.dob .year,.state").val([]);
-    cj('#imapper-contacts-list, #message_left_email').html('');
-    cj("#status_id option[value='']").attr('selected', 'selected');
-    cj("#message_left_email").animate({
-      scrollTop: 0
-    }, 'fast');
-    cj("#process-popup").dialog('open');
-    return false;
   });
 
   // What triggers the popup
@@ -1499,7 +1463,7 @@ function getMatched(range) {
             html += '<td class="imap_date_column"><span data-sort="'+value.updated_date_unix+'"  title="'+value.updated_date_long+'">'+value.updated_date_short +'</span></td>';
             html += '<td class="imap_match_column  hidden">'+match_sort +'</td>';
             html += '<td class="imap_forwarder_column"><span data-sort="'+value.forwarder.replace("@","_")+'">'+shortenString(value.forwarder,14)+'</span> </td>';
-            html += '<td class="imap_actions_column"><span class="process"><a href="#">Process</a></span><span class="clear"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
+            html += '<td class="imap_actions_column"><span class="process"><a href="#" onclick="processMatched(cj(this)); return false;">Process</a></span><span class="clear"><a href="#" onclick="clearMatched(cj(this)); return false;">Clear</a></span><span class="delete"><a href="#" onclick="deleteSingle(cj(this)); return false;">Delete</a></span></td> </tr>';
           }
         });
         cj('#imapper-messages-list').html(html);
@@ -1511,6 +1475,40 @@ function getMatched(range) {
     }
   });
 }
+
+//clear single record
+function clearMatched(obj) {
+  // console.log('clear');
+  cj("#loading-popup").dialog('open');
+  var messageId = cj(obj).closest('tr').prop('id');
+
+  cj("#clear-confirm #message").val(messageId);
+  cj("#clear-confirm").dialog({ title:  "Clear message from list?"});
+  cj("#loading-popup").dialog('close');
+  cj("#clear-confirm").dialog('open');
+}//clearMatched
+
+//trigger popup
+function processMatched(obj) {
+  cj("#loading-popup").dialog('open');
+
+  var messageId = cj(obj).closest('tr').prop('id');
+  var activityId = cj(obj).closest('tr').attr('data-activity-id');
+  var contactId = cj(obj).closest('tr').attr('data-contact-id');
+
+  cj('#message').val(messageId);
+  cj('#activity').val(activityId);
+  cj('#contact').val(contactId);
+  cj("#tabs :input[type='text']").val("");
+  cj(".dob .month,.dob .day,.dob .year,.state").val([]);
+  cj('#imapper-contacts-list, #message_left_email').html('');
+  cj("#status_id option[value='']").attr('selected', 'selected');
+  cj("#message_left_email").animate({
+    scrollTop: 0
+  }, 'fast');
+  cj("#process-popup").dialog('open');
+  return false;
+}//processMatched
 
 function getReports(range) {
   if (typeof oTable != "undefined") {

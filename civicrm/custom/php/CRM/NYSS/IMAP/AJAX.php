@@ -377,17 +377,19 @@ class CRM_NYSS_IMAP_AJAX
   } // getCities()
 
 
-  private static function getStateName($abbr)
-  {
+  private static function getStateName($abbr) {
     static $stateNameMap = null;
 
     if ($stateNameMap == null) {
-      $query = "SELECT abbreviation, name FROM civicrm_state_province
-                WHERE country_id =
-                 (SELECT id FROM civicrm_country WHERE iso_code='US')";
-      $dbres = mysql_query($query, self::db());
-      while ($row = mysql_fetch_assoc($dbres)) {
-        $stateNameMap[$row['abbreviation']] = $row['name'];
+      $query = "
+        SELECT abbreviation, name 
+        FROM civicrm_state_province
+        WHERE country_id =
+          (SELECT id FROM civicrm_country WHERE iso_code='US')
+      ";
+      $dbres = CRM_Core_DAO::executeQuery($query);
+      while ($dbres->fetch()) {
+        $stateNameMap[$dbres->abbreviation] = $dbres->name;
       }
     }
 
@@ -399,22 +401,17 @@ class CRM_NYSS_IMAP_AJAX
     }
   } // getStateName()
 
-
-  private static function getOtherLocationId()
-  {
-    $query = "SELECT id FROM civicrm_location_type WHERE name = 'Other'";
-    $dbres = mysql_query($query, self::db());
-    if ($row = mysql_fetch_assoc($dbres)) {
-      return $row['id'];
-    }
-    else {
-      return null;
-    }
+  private static function getOtherLocationId() {
+    $query = "
+      SELECT id 
+      FROM civicrm_location_type 
+      WHERE name = 'Other'
+    ";
+    $id = CRM_Core_DAO::singleValueQuery($query);
+    return $id;
   } // getOtherLocationId()
 
-
-  private static function reformulate_preg_array($preg_res)
-  {
+  private static function reformulate_preg_array($preg_res) {
     $res = array();
     foreach ($preg_res as $item) {
       $k = $item[0]; // save the 0-key value, which is the full pattern match
@@ -466,14 +463,16 @@ class CRM_NYSS_IMAP_AJAX
     foreach ($names as $id => $nameInfo) {
       if (isset($nameInfo['first'])) {
         $firstName = strtolower($nameInfo['first']);
-        $query = "SELECT COUNT(id) FROM fn_group WHERE given LIKE '$firstName'";
-        $dbres = mysql_query($query, self::db());
-        if ($row = mysql_fetch_row($dbres)) {
-          if ($row[0] < 1) {
-            unset($names[$id]);
-          }
+        $query = "
+          SELECT COUNT(id) count_id
+          FROM fn_group 
+          WHERE given 
+          LIKE '$firstName'
+        ";
+        $dbres = CRM_Core_DAO::executeQuery($query);
+        if ($dbres->count_id < 1) {
+          unset($names[$id]);
         }
-        mysql_free_result($dbres);
       }
     }
     $res['names'] = self::reformulate_preg_array($names);
@@ -486,8 +485,7 @@ class CRM_NYSS_IMAP_AJAX
    * Given an array of items found in the body of the email, generate
    * HTML to highlight those items.
    */
-  private static function highlightItems($text, $items)
-  {
+  private static function highlightItems($text, $items) {
     //file_put_contents("/tmp/inbound_email/items", print_r($items, true));
     $itemMap = array(
       'emails' => array('class' => 'email_address', 'text' => 'email'),
@@ -575,12 +573,11 @@ class CRM_NYSS_IMAP_AJAX
         $insertValues[] = "( $tagId, $entityId, '$entityTab' )";
         $tagCount++;
       }
-      $query = "INSERT INTO civicrm_entity_tag
-                 ( tag_id, entity_id, entity_table )
-                VALUES ".implode(',', $insertValues);
-      if (mysql_query($query, self::db()) === false) {
-        $tagCount = 0;
-      }
+      $query = "
+        INSERT INTO civicrm_entity_tag
+        (tag_id, entity_id, entity_table)
+        VALUES ".implode(',', $insertValues);
+      CRM_Core_DAO::executeQuery($query);
     }
     return $tagCount;
   } // addEntityTags()
@@ -844,15 +841,18 @@ class CRM_NYSS_IMAP_AJAX
     foreach ($contactIds as $contactId) {
       // Check to see if contact has the email address being assigend to it,
       // if doesn't have email address, add it to contact
-      $query = "SELECT e.email FROM civicrm_email e WHERE e.contact_id = $contactId";
-      $dbres = mysql_query($query, self::db());
+      $query = "
+        SELECT e.email 
+        FROM civicrm_email e 
+        WHERE e.contact_id = $contactId
+      ";
+      $dbres = CRM_Core_DAO::executeQuery($query);
       $emailFound = false;
-      while ($row = mysql_fetch_assoc($dbres)) {
-        if (strtolower($row['email']) == $senderEmail) {
+      while ($dbres->fetch()) {
+        if (strtolower($dbres->email) == $senderEmail) {
           $emailFound = true;
         }
       }
-      mysql_free_result($dbres);
 
       if (!$emailFound) {
         $params['contact_id'] = $contactId;
@@ -863,8 +863,6 @@ class CRM_NYSS_IMAP_AJAX
         }
       }
     }
-
-    mysql_close(self::db());
 
     if ($gotError) {
       self::exitError('Unable to add email');
@@ -928,12 +926,12 @@ class CRM_NYSS_IMAP_AJAX
 
     $oldActivityId = $msg['activity_id'];
     $senderEmail = $msg['sender_email'];
-    $senderName = mysql_real_escape_string($msg['sender_name']);
+    $senderName = CRM_Core_DAO::escapeString($msg['sender_name']);
     $forwarder = $msg['forwarder'];
     $upddate = $msg['updated_date'];
     $fwddate = $msg['email_date'];
-    $subject = mysql_real_escape_string($msg['subject']);
-    $body = mysql_real_escape_string($msg['body']);
+    $subject = CRM_Core_DAO::escapeString($msg['subject']);
+    $body = CRM_Core_DAO::escapeString($msg['body']);
     $messageId = $msg['message_id'];
     $imapId = $msg['imap_id'];
 
@@ -946,13 +944,13 @@ class CRM_NYSS_IMAP_AJAX
         AND g.id=gc.group_id
         AND gc.status='Added'
         AND gc.contact_id=e.contact_id
-      ORDER BY gc.contact_id ASC";
+      ORDER BY gc.contact_id ASC
+    ";
     $contactRes = array();
-    $dbres = mysql_query($query, self::db());
-    while ($row = mysql_fetch_assoc($dbres)) {
-      $contactRes[] = $row;
+    $dbres = CRM_Core_DAO::executeQuery($query);
+    while ($dbres->fetch()) {
+      $contactRes[] = get_object_vars($dbres);
     }
-    mysql_free_result($dbres);
 
     // Authorization of forwarders is done by e-mail address.
     // The forwarder is typically a Bluebird user, but could also be
@@ -1013,10 +1011,6 @@ class CRM_NYSS_IMAP_AJAX
           WHERE id = $recId";
       }
 
-      if (mysql_query($query, self::db()) === false) {
-        self::exitError('Unable to change status to MATCHED');
-      }
-
       $attachments = $msg['attachments'];
 
       if (isset($attachments[0])) {
@@ -1034,15 +1028,17 @@ class CRM_NYSS_IMAP_AJAX
             $mime = finfo_file($finfo, $fileFull);
             finfo_close($finfo);
 
-            $query = "INSERT INTO civicrm_file (mime_type, uri, upload_date)
-                      VALUES ('$mime', '$fileName', 'upddate')";
-            mysql_query($query, self::db());
+            $query = "
+              INSERT INTO civicrm_file (mime_type, uri, upload_date)
+              VALUES ('$mime', '$fileName', 'upddate')
+            ";
+            CRM_Core_DAO::executeQuery($query);
             $fileId = mysql_insert_id(self::db());
 
             $query = "
               INSERT INTO civicrm_entity_file (entity_table, entity_id, file_id)
               VALUES ('civicrm_activity', $activityId, $fileId)";
-            mysql_query($query, self::db());
+            CRM_Core_DAO::executeQuery($query);
           }
         }
       } // if attachments
@@ -1170,14 +1166,11 @@ class CRM_NYSS_IMAP_AJAX
         $query = "
           UPDATE nyss_inbox_messages
           SET status=".self::STATUS_DELETED.", matcher=$userId
-          WHERE id=$messageId";
-        if (mysql_query($query, self::db()) === false) {
-          $success = false;
-        }
+          WHERE id=$messageId
+        ";
+        CRM_Core_DAO::executeQuery($query);
       }
     }
-
-    mysql_close(self::db());
 
     if ($success) {
       self::exitSuccess('Messages and activities deleted', $ids);
@@ -1193,8 +1186,7 @@ class CRM_NYSS_IMAP_AJAX
    * For Matched screen CLEAR
    * @return [JSON Object]  JSON encoded response, OR error codes
    */
-  public static function MatchedClear()
-  {
+  public static function MatchedClear() {
     $ids = self::get_array('id');
     $session = CRM_Core_Session::singleton();
     $userId =  $session->get('userID');
@@ -1203,19 +1195,17 @@ class CRM_NYSS_IMAP_AJAX
     foreach ($ids as $messageId) {
       $msg = self::getFullMessage($messageId);
       if ($msg) {
-        $query = "UPDATE nyss_inbox_messages
-                  SET status=".self::STATUS_CLEARED.", matcher=$userId
-                  WHERE id = $messageId";
-        if (mysql_query($query, self::db()) === false) {
-          $success = false;
-        }
+        $query = "
+          UPDATE nyss_inbox_messages
+          SET status = ".self::STATUS_CLEARED.", matcher = $userId
+          WHERE id = $messageId
+        ";
+        CRM_Core_DAO::executeQuery($query);
       }
       else {
         $success = false;
       }
     }
-
-    mysql_close(self::db());
 
     if ($success) {
       self::exitSuccess('Cleared messages');
@@ -1225,14 +1215,12 @@ class CRM_NYSS_IMAP_AJAX
     }
   } // MatchedClear()
 
-
   /**
    * Assign an inbound email activity to a different contact
    * For Matched screen EDIT
    * @return [JSON Object]  JSON encoded response, OR error codes
    */
-  public static function MatchedReassign()
-  {
+  public static function MatchedReassign() {
     $id = self::get('id');
     $contactIds = self::get_array('contactId');
     $session = CRM_Core_Session::singleton();
@@ -1256,14 +1244,14 @@ class CRM_NYSS_IMAP_AJAX
     // check to see if the activity is still assigned to the same contact
     // if not, kill it
     // 1 = assignee, 2 = source, 3 = target
-    $query = "SELECT COUNT(id) FROM civicrm_activity_contact
-              WHERE activity_id = $activityId
-                AND contact_id = $contact
-                AND record_type_id = 3";
-    $dbres = mysql_query($query, self::db());
-    if ($row = mysql_fetch_row($dbres)) {
-      $check = $row[0];
-    }
+    $query = "
+      SELECT COUNT(id) 
+      FROM civicrm_activity_contact
+      WHERE activity_id = $activityId
+        AND contact_id = $contact
+        AND record_type_id = 3
+    ";
+    $check = CRM_Core_DAO::singleValueQuery($query);
 
     if ($check != '1') {
       self::exitError('Activity is not assigned to this contact. Please reload.');
@@ -1278,46 +1266,49 @@ class CRM_NYSS_IMAP_AJAX
       $email = trim($apires['values'][$contactId]['email']);
 
       // change the contact
-      $query = "UPDATE civicrm_activity_contact
-                SET contact_id = $contactId
-                WHERE activity_id = $activityId
-                  AND record_type_id = 3";
-      mysql_query($query, self::db());
+      $query = "
+        UPDATE civicrm_activity_contact
+        SET contact_id = $contactId
+        WHERE activity_id = $activityId
+          AND record_type_id = 3
+      ";
+      CRM_Core_DAO::executeQuery($query);
 
-      $query = "UPDATE civicrm_activity
-                SET is_auto=0
-                WHERE id = $activityId";
-      mysql_query($query, self::db());
+      $query = "
+        UPDATE civicrm_activity
+        SET is_auto=0
+        WHERE id = $activityId
+      ";
+      CRM_Core_DAO::executeQuery($query);
 
       $query = "
         UPDATE nyss_inbox_messages
         SET matcher=$userId, matched_to=$contactId, sender_name='$changeName',
-            sender_email='$email', updated_date='$upddate'
-        WHERE id = $id";
-      if (mysql_query($query, self::db()) === false) {
-        $success = false;
-      }
+          sender_email='$email', updated_date='$upddate'
+        WHERE id = $id
+      ";
+      CRM_Core_DAO::executeQuery($query);
     }
 
-    mysql_close(self::db());
-
-    if ($success) {
-      $res = array('id'=>$id, 'contact_id'=>$contactId, 'contact_type'=>$contactType, 'first_name'=>$firstName, 'last_name'=>$lastName, 'display_name'=>$changeName, 'email'=>$email, 'activity_id'=>$id);
-      self::exitSuccess("Activity reassigned to $changeName", $res);
-    }
-    else {
-      self::exitError('Unable to reassign activity to all contacts');
-    }
-  } // MatchedReassign()
-
+    $res = array(
+      'id' => $id,
+      'contact_id' => $contactId,
+      'contact_type' => $contactType,
+      'first_name' => $firstName,
+      'last_name' => $lastName,
+      'display_name' => $changeName,
+      'email' => $email,
+      'activity_id' => $id,
+    );
+    self::exitSuccess("Activity reassigned to $changeName", $res);
+  }//MatchedReassign()
 
   /**
    * Edit the Assignee for an inbound email activity to a different user
    * For Matched screen EDIT
    * @return [JSON Object]  JSON encoded response, OR error codes
    */
-  public static function MatchedEdit()
-  {
+  public static function MatchedEdit() {
     $activityIds = self::get_array('activity_id');
     $activity_contactId = self::get('activity_contact');
     $activity_statusId = self::get('activity_status_id');
@@ -1325,24 +1316,31 @@ class CRM_NYSS_IMAP_AJAX
 
     foreach ($activityIds as $activityId) {
       if (!empty($activity_statusId)) {
-        $query = "UPDATE civicrm_activity SET status_id=$activity_statusId
-                  WHERE id = $activityId";
-        mysql_query($query, self::db());
+        $query = "
+          UPDATE civicrm_activity
+          SET status_id=$activity_statusId
+          WHERE id = $activityId
+        ";
+        CRM_Core_DAO::executeQuery($query);
       }
 
       if (!empty($activity_date)) {
-        $query = "UPDATE civicrm_activity
-                  SET activity_date_time = '$activity_date'
-                  WHERE id = $activityId";
-        mysql_query($query, self::db());
+        $query = "
+          UPDATE civicrm_activity
+          SET activity_date_time = '$activity_date'
+          WHERE id = $activityId
+        ";
+        CRM_Core_DAO::executeQuery($query);
       }
 
       // change the contact
       if (!empty($activity_contactId)) {
-        $query = "INSERT INTO civicrm_activity_contact
-                  (activity_id, contact_id, record_type_id)
-                  VALUES ($activityId, $activity_contactId, 1)";
-        mysql_query($query, self::db());
+        $query = "
+          INSERT INTO civicrm_activity_contact
+            (activity_id, contact_id, record_type_id)
+          VALUES ($activityId, $activity_contactId, 1)
+        ";
+        CRM_Core_DAO::executeQuery($query);
 
         // NYSS - 7929
         $attachments = CRM_Core_BAO_File::getEntityFile('civicrm_activity', $activityId );
@@ -1355,33 +1353,30 @@ class CRM_NYSS_IMAP_AJAX
       }
     }
 
-    mysql_close(self::db());
     self::exitSuccess('Edited activity');
   } // MatchedEdit()
-
 
   /**
    * Autocomplete Keyword search for tags
    * For Matched screen TAG
    * @return [JSON Object]  JSON encoded response, OR error codes
    */
-  public static function KeywordSearch()
-  {
+  public static function KeywordSearch() {
     $name = self::get('name');
 
-    $query = "SELECT id, name FROM civicrm_tag
-              WHERE parent_id=".self::KEYWORD_PARENT_ID."
-                AND name LIKE '$name%'";
-    $dbres = mysql_query($query, self::db());
-    if ($dbres === false) {
-      self::exitError('Tag query failed');
-    }
+    $query = "
+      SELECT id, name 
+      FROM civicrm_tag
+      WHERE parent_id=".self::KEYWORD_PARENT_ID."
+        AND name LIKE '$name%'
+    ";
+    $dbres = CRM_Core_DAO::executeQuery($query);
 
     $res = array();
     $exactMatch = false;
-    while ($row = mysql_fetch_assoc($dbres)) {
-      $res[] = $row;
-      if ($res['name'] == $name) {
+    while ($dbres->fetch()) {
+      $res[] = get_object_vars($dbres);
+      if ($dbres->name == $name) {
         $exactMatch = true;
       }
     }
@@ -1392,7 +1387,6 @@ class CRM_NYSS_IMAP_AJAX
       $res = array_merge(array(array('id'=>$name.':::value', 'name'=>$name)), $res);
     }
 
-    mysql_close(self::db());
     self::exitSuccess('Matched tags', $res);
   } // KeywordSearch()
 
@@ -1402,8 +1396,7 @@ class CRM_NYSS_IMAP_AJAX
    * For Matched screen TAG
    * @return [JSON Object]   JSON encoded response, OR error codes
    */
-  public static function TagAdd()
-  {
+  public static function TagAdd() {
     $activityIds = self::get_array('activityId');
     $contactIds = self::get_array('contactId');
     $tagIds = self::get_array('tags');
@@ -1442,16 +1435,19 @@ class CRM_NYSS_IMAP_AJAX
    * For Matched screen TAG
    * @return [JSON Object]  JSON encoded response, OR error codes
    */
-  public static function Issuecode()
-  {
+  public static function Issuecode() {
     require_once 'api/api.php';
     $tags = self::get_array('issuecodes');
     $contacts = self::get_array('contacts');
     $action = self::get('action');
 
     switch ($action) {
-      case 'create': $actionText = 'added to'; break;
-      case 'delete': $actionText = 'deleted from'; break;
+      case 'create':
+        $actionText = 'added to';
+        break;
+      case 'delete':
+        $actionText = 'deleted from';
+        break;
       default:
         self::exitError('Invalid action specified');
     }
@@ -1466,10 +1462,12 @@ class CRM_NYSS_IMAP_AJAX
 
       foreach ($contacts as $contactId) {
         if ($contactId == 0) break;
-        $params = array('entity_table' => 'civicrm_contact',
-                        'entity_id'    => $contactId,
-                        'tag_id'       => $tagId,
-                        'version'      => 3);
+        $params = array(
+          'entity_table' => 'civicrm_contact',
+          'entity_id' => $contactId,
+          'tag_id' => $tagId,
+          'version' => 3
+        );
         $apires = civicrm_api('entity_tag', $action, $params);
         if ($apires['is_error'] == 1) {
           $errorMessage = $apires['error_message'];
@@ -1491,14 +1489,12 @@ class CRM_NYSS_IMAP_AJAX
     }
   } // Issuecode()
 
-
   /**
    * Create New contact from message
    * For Matched edit & Unmatched find
    * @return [JSON Object]  JSON encoded response, OR error codes
    */
-  public static function ContactAdd()
-  {
+  public static function ContactAdd() {
     require_once 'api/api.php';
 
     $debug = self::get('debug');
@@ -1598,15 +1594,13 @@ class CRM_NYSS_IMAP_AJAX
     }
   } // ContactAdd()
 
-
   /**
    * Generate Usage Report
    * Current report shows Statistics & every message list
    * For Report screen
    * @return [JSON Object]  JSON encoded response, OR error codes
    */
-  public static function getReports()
-  {
+  public static function getReports() {
     $debug = self::get('debug');
     $range = self::get('range');
 
@@ -1649,16 +1643,23 @@ class CRM_NYSS_IMAP_AJAX
       LEFT JOIN civicrm_tag as civi_t ON civi_et.tag_id=civi_t.id
       WHERE im.status != 99 $rangeSql
       GROUP BY im.id
-      LIMIT 0 , 100000";
-
-    $dbres = mysql_query($query, self::db());
+      LIMIT 0 , 100000
+    ";
+    $dbres = CRM_Core_DAO::executeQuery($query);
 
     $msgs = array();
-    $res = array('Total'=>0, 'Unmatched'=>0, 'Matched'=>0,
-                 'Cleared'=>0, 'Deleted'=>0, 'Errors'=>0, 'Messages'=>null);
+    $res = array(
+      'Total' => 0,
+      'Unmatched' => 0,
+      'Matched' => 0,
+      'Cleared' => 0,
+      'Deleted' => 0,
+      'Errors' => 0,
+      'Messages' => null
+    );
 
-    while ($row = mysql_fetch_assoc($dbres)) {
-      $msg = self::postProcess($row);
+    while ($dbres->fetch()) {
+      $msg = self::postProcess(get_object_vars($dbres));
       $msgs[] = $msg;
       $res['Total']++;
 
@@ -1700,20 +1701,25 @@ class CRM_NYSS_IMAP_AJAX
    * For Report screen
    * @return [JSON Object]  JSON encoded response, OR error codes
    */
-  public static function getTags()
-  {
+  public static function getTags() {
     $id = (int)$_GET['id'];
     $tags = array();
     $tltext = '';
     if ($id) {
       // get the tags for this activity
-      $q = "SELECT c.name FROM nyss_inbox_messages a INNER JOIN civicrm_entity_tag b " .
-           "ON b.entity_id=a.activity_id " .
-           "INNER JOIN civicrm_tag c ON b.tag_id=c.id " .
-           "WHERE a.id='$id' AND b.entity_table='civicrm_activity';";
-      $res = mysql_query($q, self::db());
-      while ($r = mysql_fetch_assoc($res)) {
-        $new = trim($r['name']);
+      $q = "
+        SELECT c.name 
+        FROM nyss_inbox_messages a 
+        INNER JOIN civicrm_entity_tag b 
+          ON b.entity_id=a.activity_id 
+        INNER JOIN civicrm_tag c 
+          ON b.tag_id=c.id 
+        WHERE a.id='$id' 
+          AND b.entity_table='civicrm_activity';
+      ";
+      $res = CRM_Core_DAO::executeQuery($q);
+      while ($res->fetch()) {
+        $new = trim($res->name);
         if ($new) { $tags[] = $new; }
       }
       // build the HTML
@@ -1722,7 +1728,8 @@ class CRM_NYSS_IMAP_AJAX
                   '<div class="mail-merge-activity-tag-list">' .
                   implode('</span>, <span class="mail-merge-activity-tag">',$tags) .
                   "</span></div>";
-      } else {
+      }
+      else {
         $tltext = '<div class="mail-merge-activity-tag-list-header">No tags assigned</div>';
       }
     }
