@@ -2,13 +2,13 @@
 
 return array(
   array(
-    'name' => 'UnMatched Messages Dashlet',
+    'name' => 'UnMatched Messages',
     'entity' => 'Dashboard',
     'params' => array(
       'version' => 3,
       'domain_id' => 1,
       'name' => 'unmatchedMessages',
-      'label' => 'UnMatched Messages Dashlet',
+      'label' => 'UnMatched Messages',
       'url' => 'civicrm/nyss/dashlet/webintegration/unmatched?reset=1',
       'permission' => 'access CiviCRM',
       'is_active' => 1,
