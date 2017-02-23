@@ -94,7 +94,7 @@ require_once 'CRM/Core/DAO.php';
 require_once 'CRM/Utils/File.php';
 
 require_once 'CRM/NYSS/IMAP/Session.php';
-require_once 'CRM/NYSS/IMAP/Message2.php';
+require_once 'CRM/NYSS/IMAP/Message.php';
 
 /* More than one IMAP account can be checked per CRM instance.
 ** The username and password for each account is specified in the Bluebird
