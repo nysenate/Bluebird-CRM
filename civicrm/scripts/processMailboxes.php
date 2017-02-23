@@ -647,6 +647,10 @@ function searchForMatches($db, $params)
     $contactID = 0;
     $matched_count = 0;
     $result = mysql_query($q, $db);
+    if ($result === false) {
+      bbscript_log(LL::ERROR, "Query for match on [$sender_email] failed; ".mysql_error($db));
+      continue;
+    }
 
     while ($row = mysql_fetch_assoc($result)) {
       $contactID = $row['id'];
