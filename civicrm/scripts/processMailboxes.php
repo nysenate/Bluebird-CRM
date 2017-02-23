@@ -9,6 +9,7 @@
 // Revised: 2014-09-15 - simplified contact matching logic; added debug control
 // Revised: 2015-08-03 - added ability to configure some params from BB config
 // Revised: 2015-08-24 - added pattern-matching for auth forwarders
+// Revised: 2017-02-23 - re-migrated to mysqli (originally done on 2017-01-11)
 //
 
 // Version number, used for debugging
@@ -492,24 +493,24 @@ function storeAttachments($imapMsg, $db, $params, $rowId)
       $mime = '';
     }
 
-    $filename = mysql_real_escape_string($fname);
-    $fullpath = mysql_real_escape_string($fileFull);
-    $ext = mysql_real_escape_string($fileExt);
-    $rejection = mysql_real_escape_string($reject_reason);
+    $filename = mysqli_real_escape_string($db, $fname);
+    $fullpath = mysqli_real_escape_string($db, $fileFull);
+    $ext = mysqli_real_escape_string($db, $fileExt);
+    $rejection = mysqli_real_escape_string($db, $reject_reason);
 
     $q = "INSERT INTO nyss_inbox_attachments
           (email_id, file_name, file_full, size, mime_type, ext, rejection)
           VALUES ($rowId, '$filename', '$fullpath', $size, '$mime', '$ext', '$rejection');";
-    if (mysql_query($q, $db) == false) {
+    if (mysqli_query($db, $q) == false) {
       bbscript_log(LL::ERROR, "Unable to insert attachment [$fileFull] for msgid=$rowId");
       $bSuccess = false;
     }
   }
 
   $q = "SELECT id FROM nyss_inbox_attachments WHERE email_id=$rowId";
-  $res = mysql_query($q, $db);
-  $dbAttachmentCount = mysql_num_rows($res);
-  mysql_free_result($res);
+  $res = mysqli_query($db, $q);
+  $dbAttachmentCount = mysqli_num_rows($res);
+  mysqli_free_result($res);
 
   if ($dbAttachmentCount > 0) {
     bbscript_log(LL::DEBUG, "Inserted $dbAttachmentCount attachments");
@@ -533,13 +534,13 @@ function storeMessage($imapMsg, $db, $params)
   bbscript_log(LL::DEBUG, "all_addr", $all_addr);
 
   // formatting headers
-  $fromEmail = mysql_real_escape_string(substr(mysql_real_escape_string($msgMeta->fromEmail), 0, 200));
-  $fromName = mysql_real_escape_string(substr(mysql_real_escape_string($msgMeta->fromName), 0, 200));
+  $fromEmail = mysqli_real_escape_string($db, substr(mysqli_real_escape_string($db, $msgMeta->fromEmail), 0, 200));
+  $fromName = mysqli_real_escape_string($db, substr(mysqli_real_escape_string($db, $msgMeta->fromName), 0, 200));
   // the subject could be UTF-8
   // CiviCRM will force '<' and '>' to htmlentities, so handle it here
-  $fwdSubject = mysql_real_escape_string(mb_strcut(htmlspecialchars($msgMeta->subject, ENT_QUOTES), 0, 255));
-  $fwdDate = mysql_real_escape_string($msgMeta->date);
-  $fwdBody = mysql_real_escape_string($imapMsg->mangleHTML());
+  $fwdSubject = mysqli_real_escape_string($db, mb_strcut(htmlspecialchars($msgMeta->subject, ENT_QUOTES), 0, 255));
+  $fwdDate = mysqli_real_escape_string($db, $msgMeta->date);
+  $fwdBody = mysqli_real_escape_string($db, $imapMsg->mangleHTML());
   $msgUid = $msgMeta->uid;
 
   /** If there is at least one secondary address, we WILL use an address from
@@ -571,8 +572,8 @@ function storeMessage($imapMsg, $db, $params)
   }
 
   // make data safe
-  $fwdEmail = mysql_real_escape_string($fwdEmail);
-  $fwdName = mysql_real_escape_string($fwdName);
+  $fwdEmail = mysqli_real_escape_string($db, $fwdEmail);
+  $fwdName = mysqli_real_escape_string($db, $fwdName);
 
   $status = STATUS_UNPROCESSED;
 
@@ -582,12 +583,12 @@ function storeMessage($imapMsg, $db, $params)
         VALUES ($msgUid, '$fwdName', '$fwdEmail', '$fwdSubject', '$fwdBody',
                 '$fromEmail', $status, CURRENT_TIMESTAMP, '$fwdDate');";
 
-  if (mysql_query($q, $db) == false) {
+  if (mysqli_query($db, $q) == false) {
     bbscript_log(LL::ERROR, "Unable to insert msgid=$msgUid; query:", $q);
     return false;
   }
 
-  $rowId = mysql_insert_id($db);
+  $rowId = mysqli_insert_id($db);
   bbscript_log(LL::DEBUG, "Inserted message with id=$rowId");
 
   if ($imapMsg->hasAttachments()) {
@@ -619,10 +620,10 @@ function searchForMatches($db, $params)
                subject, body, forwarder, updated_date
         FROM nyss_inbox_messages
         WHERE status=".STATUS_UNPROCESSED." OR status=".STATUS_UNMATCHED.";";
-  $mres = mysql_query($q, $db);
-  bbscript_log(LL::DEBUG, "Unprocessed/Unmatched records: ".mysql_num_rows($mres));
+  $mres = mysqli_query($db, $q);
+  bbscript_log(LL::DEBUG, "Unprocessed/Unmatched records: ".mysqli_num_rows($mres));
 
-  while ($row = mysql_fetch_assoc($mres)) {
+  while ($row = mysqli_fetch_assoc($mres)) {
     $msg_row_id = $row['id'];
     $message_id = $row['message_id'];
     $sender_email = $row['sender_email'];
@@ -646,9 +647,9 @@ function searchForMatches($db, $params)
 
     $contactID = 0;
     $matched_count = 0;
-    $result = mysql_query($q, $db);
+    $result = mysqli_query($db, $q);
 
-    while ($row = mysql_fetch_assoc($result)) {
+    while ($row = mysqli_fetch_assoc($result)) {
       $contactID = $row['id'];
       $matched_count++;
     }
@@ -659,7 +660,7 @@ function searchForMatches($db, $params)
       // mark it to show up on unmatched screen
       $status = STATUS_UNMATCHED;
       $q = "UPDATE nyss_inbox_messages SET status=$status WHERE id=$msg_row_id";
-      if (mysql_query($q, $db) == false) {
+      if (mysqli_query($db, $q) == false) {
         bbscript_log(LL::ERROR, "Unable to update status of message id=$msg_row_id");
       }
     }
@@ -707,16 +708,16 @@ function searchForMatches($db, $params)
               SET status=$status, matcher=1, matched_to=$contactID,
                   activity_id=$activityId
               WHERE id=$msg_row_id";
-        if (mysql_query($q, $db) == false) {
+        if (mysqli_query($db, $q) == false) {
           bbscript_log(LL::ERROR, "Unable to update info for message id=$msg_row_id");
         }
 
         $q = "SELECT file_name, file_full, rejection, mime_type
               FROM nyss_inbox_attachments
               WHERE email_id=$msg_row_id";
-        $ares = mysql_query($q, $db);
+        $ares = mysqli_query($db, $q);
 
-        while ($row = mysql_fetch_assoc($ares)) {
+        while ($row = mysqli_fetch_assoc($ares)) {
           if ((!isset($row['rejection']) || $row['rejection'] == '')
               && file_exists($row['file_full'])) {
             bbscript_log(LL::INFO, "Adding attachment ".$row['file_full']." to activity id=$activityId");
@@ -729,31 +730,31 @@ function searchForMatches($db, $params)
             $q = "INSERT INTO civicrm_file
                   (mime_type, uri, upload_date)
                   VALUES ('{$row['mime_type']}', '$newName', '$date');";
-            if (mysql_query($q, $db) == false) {
+            if (mysqli_query($db, $q) == false) {
               bbscript_log(LL::ERROR, "Unable to insert attachment file info for [$newName]");
             }
 
             $q = "SELECT id FROM civicrm_file WHERE uri='{$newName}';";
-            $res = mysql_query($q, $db);
-            while ($row = mysql_fetch_assoc($res)) {
+            $res = mysqli_query($db, $q);
+            while ($row = mysqli_fetch_assoc($res)) {
               $fileId = $row['id'];
             }
-            mysql_free_result($res);
+            mysqli_free_result($res);
 
             $q = "INSERT INTO civicrm_entity_file
                   (entity_table, entity_id, file_id)
                   VALUES ('civicrm_activity', $activityId, $fileId);";
-            if (mysql_query($q, $db) == false) {
+            if (mysqli_query($db, $q) == false) {
               bbscript_log(LL::ERROR, "Unable to insert attachment mapping from activity id=$activityId to file id=$fileId");
             }
           }
         } // while rows in nyss_inbox_attachments
-        mysql_free_result($ares);
+        mysqli_free_result($ares);
       } // if activity created
     } // if single match on e-mail address
   } // while rows in nyss_inbox_messages
 
-  mysql_free_result($mres);
+  mysqli_free_result($mres);
   bbscript_log(LL::DEBUG, "Finished processing unprocessed/unmatched messages");
   return;
 } // searchForMatches()
