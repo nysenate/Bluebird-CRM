@@ -638,12 +638,10 @@ function searchForMatches($db, $params)
     // find target contact
     bbscript_log(LL::INFO, "Looking for the original sender ($sender_email) in Civi");
 
-    $q = "SELECT c.id, e.email
-          FROM civicrm_contact c
-          LEFT JOIN civicrm_email e ON (c.id = e.contact_id)
-          WHERE c.is_deleted=0 AND e.email LIKE '$sender_email'
-          GROUP BY c.id
-          ORDER BY c.id ASC, e.is_primary DESC";
+    $q = "SELECT DISTINCT c.id FROM civicrm_contact c, civicrm_email e
+          WHERE c.id = e.contact_id AND c.is_deleted=0
+            AND e.email LIKE '$sender_email'
+          ORDER BY c.id ASC";
 
     $contactID = 0;
     $matched_count = 0;
