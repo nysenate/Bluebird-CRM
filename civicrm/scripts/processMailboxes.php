@@ -9,7 +9,7 @@
 // Revised: 2014-09-15 - simplified contact matching logic; added debug control
 // Revised: 2015-08-03 - added ability to configure some params from BB config
 // Revised: 2015-08-24 - added pattern-matching for auth forwarders
-// Revised: 2017-01-11 - migrated to mysqli, since CiviCRM core is now using it
+// Revised: 2017-02-23 - re-migrated to mysqli (originally done on 2017-01-11)
 //
 
 // Version number, used for debugging
@@ -19,7 +19,7 @@ define('VERSION_NUMBER', 0.20);
 define('DEFAULT_IMAP_ARCHIVEBOX', 'Archive');
 define('DEFAULT_IMAP_PROCESS_UNREAD_ONLY', false);
 define('DEFAULT_IMAP_NO_ARCHIVE', false);
-define('DEFAULT_IMAP_LOG_ERRORS', false);
+define('DEFAULT_IMAP_NO_EMAIL', false);
 
 define('IMAP_CMD_POLL', 1);
 define('IMAP_CMD_LIST', 2);
@@ -63,11 +63,11 @@ $prog = basename(__FILE__);
 
 require_once 'script_utils.php';
 $stdusage = civicrm_script_usage();
-$usage = "[--server|-s imap_server]  [--port|-p imap_port]  [--imap-user|-u username]  [--imap-pass|-P password]  [--imap-flags|-f imap_flags]  [--cmd|-c <poll|list|delarchive>]  [--mailbox|-m name]  [--archivebox|-a name]  [--log-level LEVEL] [--unread-only|-r]  [--no-archive|-n]  [--log-errors]";
+$usage = "[--server|-s imap_server]  [--port|-p imap_port]  [--imap-user|-u username]  [--imap-pass|-P password]  [--imap-flags|-f imap_flags]  [--cmd|-c <poll|list|delarchive>]  [--mailbox|-m name]  [--archivebox|-a name]  [--log-level LEVEL] [--unread-only|-r]  [--no-archive|-n]  [--no-email|-e]";
 $shortopts = "s:p:u:P:f:c:m:a:l:rne";
 $longopts = array("server=", "port=", "imap-user=", "imap-pass=", "imap-flags=",
                   "cmd=", "mailbox=", "archivebox=", "log-level=",
-                  "unread-only", "no-archive", "log-errors");
+                  "unread-only", "no-archive", "no-email");
 
 $optlist = civicrm_script_init($shortopts, $longopts);
 
@@ -124,7 +124,7 @@ $all_params = array(
   array('archivebox', 'archivebox', 'imap.archivebox', DEFAULT_IMAP_ARCHIVEBOX),
   array('unreadonly', 'unread-only', null, DEFAULT_IMAP_PROCESS_UNREAD_ONLY),
   array('noarchive', 'no-archive', null, DEFAULT_IMAP_NO_ARCHIVE),
-  array('log_errors', 'log-errors', null, DEFAULT_IMAP_LOG_ERRORS)
+  array('noemail', 'no-email', null, DEFAULT_IMAP_NO_EMAIL)
 );
 
 $imap_params = array();
@@ -189,7 +189,7 @@ if (!is_dir($uploadInbox)) {
 }
 
 if (empty($imap_accounts)) {
-  bbscript_log(LL::FATAL, "No IMAP accounts to process for instance [$site]");
+  echo "$prog: No IMAP accounts to process for CRM instance [$site]\n";
   exit(1);
 }
 
@@ -362,11 +362,14 @@ function checkImapAccount($imapSess, $params)
   if ($params['noarchive'] == false) {
     $rc = imap_createmailbox($imap_conn, imap_utf7_encode($crm_archivebox));
     if ($rc) {
-      bbscript_log(LL::DEBUG, "Created new mailbox: $crm_archivebox");
+      bbscript_log(LL::DEBUG, "Created new archive mailbox: $crm_archivebox");
     }
     else {
       bbscript_log(LL::DEBUG, "Archive mailbox $crm_archivebox already exists");
     }
+  }
+  else {
+    bbscript_log(LL::WARN, "Messages will not be archived since --no-archive was specified");
   }
 
   // start db connection
@@ -381,7 +384,8 @@ function checkImapAccount($imapSess, $params)
   for ($msg_num = 1; $msg_num <= $msg_count; $msg_num++) {
     bbscript_log(LL::INFO, "Retrieving message $msg_num / $msg_count");
     $imap_message = new CRM_NYSS_IMAP_Message($imapSess, $msg_num);
-    $msgMetaData = $imap_message->fetchMetaData();
+    $msgMetaData = $imap_message->getMetaData();
+    bbscript_log(LL::DEBUG, "metadata", $msgMetaData);
     $fwder = strtolower($msgMetaData->fromEmail);
 
     // check whether or not the forwarder is valid
@@ -418,9 +422,14 @@ function checkImapAccount($imapSess, $params)
 
   $invalid_fwder_count = count($invalid_fwders);
   if ($invalid_fwder_count > 0) {
-    bbscript_log(LL::NOTICE, "Sending denial e-mails to $invalid_fwder_count e-mail address(es)");
-    foreach ($invalid_fwders as $invalid_fwder => $dummy) {
-      sendDenialEmail($params['site'], $invalid_fwder);
+    if ($params['noemail'] == false) {
+      bbscript_log(LL::NOTICE, "Sending denial e-mails to $invalid_fwder_count e-mail address(es)");
+      foreach ($invalid_fwders as $invalid_fwder => $dummy) {
+        sendDenialEmail($params['site'], $invalid_fwder);
+      }
+    }
+    else {
+      bbscript_log(LL::ERROR, "Suppressing the delivery of denial emails to $invalid_fwder_count invalid forwarder address(es) since --no-email was specified");
     }
   }
 
@@ -434,142 +443,103 @@ function checkImapAccount($imapSess, $params)
 
 
 
-function parseMimePart($imapMsg, $p, $partno, &$attachments)
+// Store the attachments for the given message in the database and local
+// file system.  Meta data about each attachment is stored in the database,
+// while the actual content is stored in the file system.
+// $rowId is the primary key that was generated when the message was stored.
+function storeAttachments($imapMsg, $db, $params, $rowId)
 {
-  global $uploadInbox;
+  $bSuccess = true;
+  $pattern = '/^('.ATTACHMENT_FILE_EXTS.')$/';
+  $uploadInbox = $params['uploadInbox'];
 
-  //fetch part
-  $part = $imapMsg->fetchBody($partno);
+  // Load attachment data and save to database and local filesystem.
 
-  //if type is not text
-  if ($p->type != 0) {
-    if ($p->encoding == 3) {
-      //decode if base64
-      $part = base64_decode($part);
-    }
-    else if ($p->encoding == 4) {
-      //decode if quoted printable
-      $part = quoted_printable_decode($part);
-    }
-    //no need to decode binary or 8bit!
+  foreach ($imapMsg->fetchAttachments() as $attachment) {
+    $fname = $attachment->name;
+    $size = $attachment->size;
+    $type = $attachment->type;
+    $content = $attachment->data;
+    $fileExt = substr(strrchr($fname, '.'), 1);
+    $civiFilename = CRM_Utils_File::makeFileName($fname);
+    $reject_reason = null;
 
-    //get filename of attachment if present
-    $filename = '';
-    // if there are any dparameters present in this part
-    if (count($p->dparameters) > 0) {
-      foreach ($p->dparameters as $dparam) {
-        $attr = strtoupper($dparam->attribute);
-        if ($attr == 'NAME' || $attr == 'FILENAME') {
-          $filename = $dparam->value;
-        }
+    // Allow body type 3 (application) with certain file extensions,
+    // and allow body types 4 (audio), 5 (image), 6 (video).
+    if (($type == TYPEAPPLICATION && preg_match($pattern, $fileExt))
+        || $type == TYPEAUDIO || $type == TYPEIMAGE || $type == TYPEVIDEO) {
+      if ($size > MAX_ATTACHMENT_SIZE) {
+        $reject_reason = "File is larger than ".MAX_ATTACHMENT_SIZE." bytes";
       }
     }
-
-    //if no filename found
-    if ($filename == '') {
-      // if there are any parameters present in this part
-      if (count($p->parameters) > 0) {
-        foreach ($p->parameters as $param) {
-          $attr = strtoupper($param->attribute);
-          if ($attr == 'NAME' || $attr == 'FILENAME') {
-            $filename = $param->value;
-          }
-        }
-      }
+    else {
+      $label = $imapMsg->getBodyTypeLabel($type);
+      $reject_reason = "File type [$label/$fileExt] not allowed";
     }
 
-    //write to disk and set $attachments variable
-    if ($filename != '') {
-      $tempfilename = imap_mime_header_decode($filename);
-      for ($i = 0; $i < count($tempfilename); $i++) {
-        $filename = $tempfilename[$i]->text;
-      }
-      $fileSize = strlen($part);
-      $fileExt = substr(strrchr($filename, '.'), 1);
-      $allowed = false;
-      $bodyType = $p->type;
-      $pattern = '/^('.ATTACHMENT_FILE_EXTS.')$/';
+    if ($reject_reason == null) {
+      $fileFull = $uploadInbox.'/'.$civiFilename;
+      bbscript_log(LL::INFO, "Writing attachment data to $fileFull");
+      $fp = fopen("$fileFull", "w+");
+      fwrite($fp, $content);
+      fclose($fp);
+      bbscript_log(LL::DEBUG, "Getting mime type of file $fileFull");
+      $finfo = finfo_open(FILEINFO_MIME_TYPE);
+      $mime = finfo_file($finfo, $fileFull);
+      finfo_close($finfo);
+    }
+    else {
+      $fileFull = '';
+      $mime = '';
+    }
 
-      $rejected_reason = "No rejection set";
-      // Allow body type 3 (application) with certain file extensions,
-      // and allow body types 4 (audio), 5 (image), 6 (video).
-      if (($bodyType == 3 && preg_match($pattern, $fileExt))
-          || ($bodyType >= 4 && $bodyType <= 6)) {
-        $allowed = true;
-      }
-      else {
-        $rejected_reason = "File type [$fileExt] not allowed";
-      }
+    $filename = mysqli_real_escape_string($db, $fname);
+    $fullpath = mysqli_real_escape_string($db, $fileFull);
+    $ext = mysqli_real_escape_string($db, $fileExt);
+    $rejection = mysqli_real_escape_string($db, $reject_reason);
 
-      $newName = CRM_Utils_File::makeFileName($filename);
-
-      if ($allowed) {
-        if ($fileSize > MAX_ATTACHMENT_SIZE) {
-          $allowed = false;
-          $rejected_reason = "File is larger than ".MAX_ATTACHMENT_SIZE." bytes";
-        }
-      }
-
-      if ($allowed) {
-        bbscript_log(LL::INFO,"Writing attachment {$uploadInbox}/{$newName}");
-        $fp = fopen("$uploadInbox/$newName", "w+");
-        fwrite($fp, $part);
-        fclose($fp);
-      }
-
-      $attachments[] = array('filename'=>$filename, 'civifilename'=>$newName, 'extension'=>$fileExt, 'size'=>$fileSize, 'allowed'=>$allowed, 'rejected_reason'=>$rejected_reason);
+    $q = "INSERT INTO nyss_inbox_attachments
+          (email_id, file_name, file_full, size, mime_type, ext, rejection)
+          VALUES ($rowId, '$filename', '$fullpath', $size, '$mime', '$ext', '$rejection');";
+    if (mysqli_query($db, $q) == false) {
+      bbscript_log(LL::ERROR, "Unable to insert attachment [$fileFull] for msgid=$rowId");
+      $bSuccess = false;
     }
   }
 
-  //if subparts... recurse into function and parse them too!
-  if (isset($p->parts) && count($p->parts) > 0) {
-    foreach ($p->parts as $pno => $parr) {
-      parseMimePart($imapMsg, $parr, $partno.'.'.($pno+1), $attachments);
-    }
+  $q = "SELECT id FROM nyss_inbox_attachments WHERE email_id=$rowId";
+  $res = mysqli_query($db, $q);
+  $dbAttachmentCount = mysqli_num_rows($res);
+  mysqli_free_result($res);
+
+  if ($dbAttachmentCount > 0) {
+    bbscript_log(LL::DEBUG, "Inserted $dbAttachmentCount attachments");
   }
-  return true;
-} // parseMimePart()
+  return $bSuccess;
+} // storeAttachments()
 
 
 
-// storeMessage
-// Parses multipart message and stores in Civi database
+// Store the various metadata of the given message, plus its content.
+// This calls storeAttachments() to download and store the attachments.
 // Returns true/false to move the email to archive or not.
 function storeMessage($imapMsg, $db, $params)
 {
-  $bSuccess = true;
-  $uploadInbox = $params['uploadInbox'];
   $authForwarders = $params['authForwarders'];
-  $msgMeta = $imapMsg->fetchMetaData();
+  $msgMeta = $imapMsg->getMetaData();
   $all_addr = $imapMsg->findFromAddresses();
 
   // check for plain/html body text
   $msgStruct = $imapMsg->getStructure();
-
-  if (!isset($msgStruct->parts) || !$msgStruct->parts) { // not multipart
-    $rawBody[$msgStruct->subtype] = array(
-        'encoding' => $msgStruct->encoding,
-        'body' => $imapMsg->fetchPart(),
-        'debug' => "Encoding:".$msgStruct->encoding." section:1");
-  }
-  else { // multipart: iterate through each part
-    foreach ($msgStruct->parts as $partno => $pstruct) {
-      $section = $partno + 1;
-      $rawBody[$pstruct->subtype] = array(
-        'encoding' => $pstruct->encoding,
-        'body' => $imapMsg->fetchPart($section),
-        'debug' => "Encoding:".$pstruct->encoding." section:$section");
-    }
-  }
+  bbscript_log(LL::DEBUG, "all_addr", $all_addr);
 
   // formatting headers
-  $fromEmail = mysqli_real_escape_string($db, substr($msgMeta->fromEmail, 0, 200));
-  $fromName = mysqli_real_escape_string($db, substr($msgMeta->fromName, 0, 200));
-  // the subject could be utf-8
-  // civicrm will force '<' and '>' to htmlentities...handle it here to be consistent
+  $fromEmail = mysqli_real_escape_string($db, substr(mysqli_real_escape_string($db, $msgMeta->fromEmail), 0, 200));
+  $fromName = mysqli_real_escape_string($db, substr(mysqli_real_escape_string($db, $msgMeta->fromName), 0, 200));
+  // the subject could be UTF-8
+  // CiviCRM will force '<' and '>' to htmlentities, so handle it here
   $fwdSubject = mysqli_real_escape_string($db, mb_strcut(htmlspecialchars($msgMeta->subject, ENT_QUOTES), 0, 255));
   $fwdDate = mysqli_real_escape_string($db, $msgMeta->date);
-  $fwdFormat = 'plain';
   $fwdBody = mysqli_real_escape_string($db, $imapMsg->mangleHTML());
   $msgUid = $msgMeta->uid;
 
@@ -609,71 +579,28 @@ function storeMessage($imapMsg, $db, $params)
 
   $q = "INSERT INTO nyss_inbox_messages
         (message_id, sender_name, sender_email, subject, body,
-         forwarder, status, format, updated_date, email_date)
-        VALUES ($msgUid, '$fwdName', '$fwdEmail', '$fwdSubject',
-                '$fwdBody', '$fromEmail', $status, '$fwdFormat',
-                CURRENT_TIMESTAMP, '$fwdDate');";
+         forwarder, status, updated_date, email_date)
+        VALUES ($msgUid, '$fwdName', '$fwdEmail', '$fwdSubject', '$fwdBody',
+                '$fromEmail', $status, CURRENT_TIMESTAMP, '$fwdDate');";
 
   if (mysqli_query($db, $q) == false) {
     bbscript_log(LL::ERROR, "Unable to insert msgid=$msgUid; query:", $q);
-    $bSuccess = false;
+    return false;
   }
 
   $rowId = mysqli_insert_id($db);
   bbscript_log(LL::DEBUG, "Inserted message with id=$rowId");
 
-  bbscript_log(LL::INFO, "Fetching attachments");
-  $timeStart = microtime(true);
-
-  // if there is more then one part to the message
-  $attachments = array();
-  if (isset($msgStruct->parts) && count($msgStruct->parts) > 1) {
-    foreach ($msgStruct->parts as $partno => $pstruct) {
-      //parse parts of email
-      parseMimePart($imapMsg, $pstruct, $partno+1, $attachments);
+  if ($imapMsg->hasAttachments()) {
+    bbscript_log(LL::INFO, "Fetching and storing attachments");
+    $timeStart = microtime(true);
+    if (storeAttachments($imapMsg, $db, $params, $rowId) == false) {
+      bbscript_log(LL::WARN, "Unable to store attachments");
     }
+    $totalTime = microtime(true) - $timeStart;
+    bbscript_log(LL::DEBUG, "Attachment processing time: $totalTime");
   }
-
-  $attachmentCount = count($attachments);
-  if ($attachmentCount >= 1) {
-    foreach ($attachments as $attachment) {
-      $date = date('Ymdhis');
-      $filename = mysqli_real_escape_string($db, $attachment['filename']);
-      $size = mysqli_real_escape_string($db, $attachment['size']);
-      $ext = mysqli_real_escape_string($db, $attachment['extension']);
-      $allowed = mysqli_real_escape_string($db, $attachment['allowed']);
-      $rejection = mysqli_real_escape_string($db, $attachment['rejected_reason']);
-      $fileFull = '';
-
-      if ($allowed) {
-        $fileFull = $uploadInbox.'/'.$attachment['civifilename'];
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $mime = finfo_file($finfo, $fileFull);
-        finfo_close($finfo);
-      }
-
-      $q = "INSERT INTO nyss_inbox_attachments
-            (email_id, file_name, file_full, size, mime_type, ext, rejection)
-            VALUES ($rowId, '$filename', '$fileFull', $size, '$mime', '$ext', '$rejection');";
-      if (mysqli_query($db, $q) == false) {
-        bbscript_log(LL::ERROR, "Unable to insert attachment [$fileFull] for msgid=$rowId");
-      }
-    }
-  }
-
-  $timeEnd = microtime(true);
-  bbscript_log(LL::DEBUG, "Attachments download time: ".($timeEnd-$timeStart));
-
-  $q = "SELECT id FROM nyss_inbox_attachments WHERE email_id=$rowId";
-  $res = mysqli_query($db, $q);
-  $dbAttachmentCount = mysqli_num_rows($res);
-  mysqli_free_result($res);
-
-  if ($dbAttachmentCount > 0) {
-    bbscript_log(LL::DEBUG, "Inserted $dbAttachmentCount attachments");
-  }
-
-  return $bSuccess;
+  return true;
 } // storeMessage()
 
 
@@ -709,7 +636,7 @@ function searchForMatches($db, $params)
 
     // Use the e-mail from the body of the message (or header if direct) to
     // find target contact
-    bbscript_log(LL::INFO, "Querying for contacts that match original sender [$sender_email]");
+    bbscript_log(LL::INFO, "Looking for the original sender ($sender_email) in Civi");
 
     $q = "SELECT DISTINCT c.id FROM civicrm_contact c, civicrm_email e
           WHERE c.id = e.contact_id AND c.is_deleted=0
@@ -735,7 +662,7 @@ function searchForMatches($db, $params)
       // mark it to show up on unmatched screen
       $status = STATUS_UNMATCHED;
       $q = "UPDATE nyss_inbox_messages SET status=$status WHERE id=$msg_row_id";
-      if (mysqli_query($db, $q) === false) {
+      if (mysqli_query($db, $q) == false) {
         bbscript_log(LL::ERROR, "Unable to update status of message id=$msg_row_id");
       }
     }
@@ -783,7 +710,7 @@ function searchForMatches($db, $params)
               SET status=$status, matcher=1, matched_to=$contactID,
                   activity_id=$activityId
               WHERE id=$msg_row_id";
-        if (mysqli_query($db, $q) === false) {
+        if (mysqli_query($db, $q) == false) {
           bbscript_log(LL::ERROR, "Unable to update info for message id=$msg_row_id");
         }
 
@@ -791,10 +718,6 @@ function searchForMatches($db, $params)
               FROM nyss_inbox_attachments
               WHERE email_id=$msg_row_id";
         $ares = mysqli_query($db, $q);
-        if ($ares === false) {
-          bbscript_log(LL::ERROR, "Unable to load attachments for email id=$msg_row_id");
-          continue;
-        }
 
         while ($row = mysqli_fetch_assoc($ares)) {
           if ((!isset($row['rejection']) || $row['rejection'] == '')
@@ -809,7 +732,7 @@ function searchForMatches($db, $params)
             $q = "INSERT INTO civicrm_file
                   (mime_type, uri, upload_date)
                   VALUES ('{$row['mime_type']}', '$newName', '$date');";
-            if (mysqli_query($db, $q) === false) {
+            if (mysqli_query($db, $q) == false) {
               bbscript_log(LL::ERROR, "Unable to insert attachment file info for [$newName]");
             }
 
@@ -823,7 +746,7 @@ function searchForMatches($db, $params)
             $q = "INSERT INTO civicrm_entity_file
                   (entity_table, entity_id, file_id)
                   VALUES ('civicrm_activity', $activityId, $fileId);";
-            if (mysqli_query($db, $q) === false) {
+            if (mysqli_query($db, $q) == false) {
               bbscript_log(LL::ERROR, "Unable to insert attachment mapping from activity id=$activityId to file id=$fileId");
             }
           }
