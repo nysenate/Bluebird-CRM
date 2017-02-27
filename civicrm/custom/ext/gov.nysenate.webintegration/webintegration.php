@@ -166,4 +166,42 @@ function webintegration_civicrm_alterMenu(&$items) {
   );
 }
 
+function webintegration_civicrm_buildForm($formName, &$form) {
+  if ($formName == 'CRM_Activity_Form_Activity') {
+    //retrieve webintegration msg ID and store as hidden field
+    $msgID = CRM_Utils_Request::retrieve('msg', 'Positive', $form);
+    if ($msgID) {
+      $form->addElement('hidden', 'msg_id', $msgID);
+    }
+  }
+}//buildForm
 
+function webintegration_civicrm_postProcess($formName, &$form) {
+  if ($formName == 'CRM_Activity_Form_Activity') {
+    $params = $form->controller->exportValues($form->getVar('_name'));
+    $msgID = CRM_Utils_Array::value('msg_id', $params);
+    $aid = $form->_activityId;
+
+    if ($msgID && $aid) {
+      _webintegration_storeMessageActivity($msgID, $aid);
+    }
+
+    /*Civi::log()->debug('postProcess', array(
+      //'form' => $form,
+      'params' => $params,
+      'msgID' => $msgID,
+      'aid' => $aid,
+    ));*/
+  }
+}//postProcess
+
+function _webintegration_storeMessageActivity($msgID, $aid) {
+  CRM_Core_DAO::executeQuery("
+    INSERT IGNORE INTO nyss_web_msg_activity
+    (note_id, activity_id)
+    VALUES (%1, %2)
+  ", array(
+    1 => array($msgID, 'Integer'),
+    2 => array($aid, 'Integer'),
+  ));
+}//_storeMessageActivity

@@ -20,6 +20,7 @@
         }
       });
       $(function($) {
+        //retain in case we are asked to implement filters
         /*$('.unmatchedmessages-search-options :input').change(function(){
           CRM.$('table.contact-unmatchedmessages-selector').DataTable().draw();
         });*/
@@ -27,21 +28,25 @@
 
       $('table.contact-unmatchedmessages-selector').
         on('click', '.view-msg', function(){
-          var id = $(this).prop('id');
-          id = id.replace('view-msg-', '');
-          //console.log('id view: ', id);
+          var msgId = $(this).prop('id').replace('view-msg-', '');
 
-          $('#msg-' + id).dialog({
+          $('#msg-' + msgId).dialog({
             width: 500
           }).dialog('open');
+
           return false;
         }).
         on('click', '.create-activity', function(){
-          var id = $(this).prop('id');
-          id = id.replace('create-activity-', '');
-          //console.log('id create: ', id);
+          var msgId = $(this).prop('id').replace('create-activity-', '');
+          var contactId = $(this).attr('contact_id');
+          var url = '/civicrm/activity/add?reset=1&action=add&atype=' + CRM.vars.NYSS.unmatched_aid + '&cid=' + contactId + '&msg=' + msgId;
 
-          //TODO...
+          CRM.loadForm(url).
+          on('crmFormSuccess', function(event, data){
+            //redraw so list is reloaded
+            CRM.$('table.contact-unmatchedmessages-selector').DataTable().draw();
+          });
+
           return false;
         });
     })(CRM.$);
