@@ -14,23 +14,35 @@ class CRM_NYSS_WebIntegration_Upgrader extends CRM_NYSS_WebIntegration_Upgrader_
   public function install() {
     $this->executeSqlFile('../sql/install.sql');
 
-    //create activity type: Website Message
+    //create activity types: Website Direct/Contextual Message
     try {
       $at = civicrm_api3('option_value', 'get', array(
         'option_group_name' => 'activity_type',
-        'name' => 'website_message',
+        'name' => 'website_direct_message',
       ));
-
       if (empty($at['count'])) {
-        $at = civicrm_api3('option_value', 'create', array(
+        civicrm_api3('option_value', 'create', array(
           'option_group_id' => 'activity_type',
-          'name' => 'website_message',
-          'label' => 'Website Message',
+          'name' => 'website_direct_message',
+          'label' => 'Website Direct Message',
           'is_reserved' => true,
           'is_active' => true,
         ));
       }
-      //Civi::log()->debug('install', array('at' => $at));
+
+      $at = civicrm_api3('option_value', 'get', array(
+        'option_group_name' => 'activity_type',
+        'name' => 'website_contextual_message',
+      ));
+      if (empty($at['count'])) {
+        civicrm_api3('option_value', 'create', array(
+          'option_group_id' => 'activity_type',
+          'name' => 'website_contextual_message',
+          'label' => 'Website Contextual Message',
+          'is_reserved' => true,
+          'is_active' => true,
+        ));
+      }
     }
     catch (CiviCRM_API3_Exception $e) {
       Civi::log()->debug('install', array('$e' => $e));

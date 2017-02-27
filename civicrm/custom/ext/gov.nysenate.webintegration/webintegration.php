@@ -169,10 +169,24 @@ function webintegration_civicrm_alterMenu(&$items) {
 function webintegration_civicrm_buildForm($formName, &$form) {
   if ($formName == 'CRM_Activity_Form_Activity') {
     //retrieve webintegration msg ID and store as hidden field
-    $msgID = CRM_Utils_Request::retrieve('msg', 'Positive', $form);
+    $msgID = CRM_Utils_Request::retrieve('msgId', 'Positive', $form);
+    $msgNote = CRM_Utils_Request::retrieve('msgNote', 'String', $form);
+
     if ($msgID) {
       $form->addElement('hidden', 'msg_id', $msgID);
     }
+
+    if (!empty($msgNote)) {
+      $form->setDefaults(array(
+        'details' => $msgNote,//not sure why this isn't decoded
+      ));
+    }
+
+    /*Civi::log()->debug('webintegration_civicrm_buildForm', array(
+      'msgID' => $msgID,
+      'msgNote' => $msgNote,
+      'msgNote_decode' => json_decode($msgNote),
+    ));*/
   }
 }//buildForm
 

@@ -60,10 +60,10 @@ class CRM_NYSS_WebIntegration_Page_AJAX extends CRM_Core_Page {
 
         switch ($dao->type) {
           case 'nyss_contextmsg':
-            $msg['type'] = 'Contextual';
+            $msg['type'] = '<span class="msg-type">Contextual</span>';
             break;
           case 'nyss_directmsg':
-            $msg['type'] = 'Direct';
+            $msg['type'] = '<span class="msg-type">Direct</span>';
             break;
           default:
         }
