@@ -159,9 +159,8 @@ div.nyss-logo {
   margin: 0 auto;
   border-bottom: 1px solid #AAAAAA;
   font-size: 22px;
-  font-family: "FreightText Book";
+  font-family: "FreightText Regular";
   color: #444444;
-  font-weight: bold;
 }
 div.nyss-logo::before {
   content: "";
@@ -245,6 +244,9 @@ div.nyss-intro {
 }
 div.nyss-intro p {
   margin-bottom: 0;
+}
+div.nyss-intro div.display_name {
+  color: white;
 }
 div.display_name {
   color: #444444;
