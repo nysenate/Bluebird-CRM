@@ -100,6 +100,7 @@ $civicrm_setting['URL Preferences']['extensionsURL'] = "sites/all/ext";
 
 $civicrm_setting['Search Preferences']['enable_innodb_fts'] = true;
 $civicrm_setting['Search Preferences']['fts_query_mode'] = 'wildwords-suffix';
+$civicrm_setting['Search Preferences']['includeEmailInName'] = true;
 
 if (isset($bbconfig['xhprof.profile']) && $bbconfig['xhprof.profile']) {
   function xhprof_shutdown_func($source, $run_id = null) {

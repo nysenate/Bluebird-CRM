@@ -2947,17 +2947,18 @@ div.outerbox {
 #civicrm-menu #crm-qsearch.active-target input {
   background: none;
 }
-#civicrm-menu #crm-qsearch ul {
-  z-index: 99999;
-}
 ul.crm-quickSearch-results {
+  background: none;
   background-color: #405362;
-  border: none;
-  /*margin-top: 14px;*/
+  border: 1px solid transparent;
   border-radius: 4px;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
   max-width: 250px !important;
+  z-index: 99999 !important;
 }
 ul.crm-quickSearch-results li {
+  color: #6fc0f3;
   background-color: #405362;
   border: none;
   font-size: 11px;
@@ -2965,7 +2966,8 @@ ul.crm-quickSearch-results li {
 ul.crm-quickSearch-results li:hover,
 ul.crm-quickSearch-results li.ui-state-focus,
 .ac_results li:hover {
-  color: black;
+  color: #efef8f;
+  background: none;
   background-color: #405362 !important;
   border: none;
 }

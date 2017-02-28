@@ -73,7 +73,8 @@
                   $.each(result.values, function(k, v) {
                     ret.push({value: v.id, label: v.data});
                   });
-                } else {
+                }
+                else {
                   $('#sort_name_navigation').autocomplete('widget').menu('option', 'disabled', true);
                   var label = option.closest('label').text();
                   var msg = ts('{/literal}{ts escape='js' 1='%1'}%1 not found.{/ts}'{literal}, {1: label});
@@ -107,16 +108,8 @@
           })
           .on('focus', function() {
             setQuickSearchValue();
-            if ($(this).attr('style').indexOf('14em') < 0) {
-              $(this).animate({width: '14em'});
-            }
-          })
-          .on('blur', function() {
-            // Shrink if no input and menu is not open
-            if (!$(this).val().length && $(this).attr('style').indexOf('6em') < 0 && !$('.crm-quickSearchField:visible', '#root-menu-div').length) {
-              $(this).animate({width: '6em'});
-            }
           });
+
         $('.crm-hidemenu').click(function(e) {
           $('#civicrm-menu').slideUp();
           if ($('#crm-notification-container').length) {

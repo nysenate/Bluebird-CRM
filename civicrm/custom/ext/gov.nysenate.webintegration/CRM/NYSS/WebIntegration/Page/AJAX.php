@@ -2,10 +2,10 @@
 
 class CRM_NYSS_WebIntegration_Page_AJAX extends CRM_Core_Page {
   static function getUnmatched() {
-    Civi::log()->debug('getUnmatched', array('$_GET' => $_GET));
+    //Civi::log()->debug('getUnmatched', array('$_GET' => $_GET));
 
     $params = CRM_Core_Page_AJAX::defaultSortAndPagerParams();
-    Civi::log()->debug('getUnmatched', array('params' => $params));
+    //Civi::log()->debug('getUnmatched', array('params' => $params));
 
     //get unmatched records
     $unmatched = self::getUnmatchedMessages($params);
@@ -13,6 +13,10 @@ class CRM_NYSS_WebIntegration_Page_AJAX extends CRM_Core_Page {
     CRM_Utils_JSON::output($unmatched);
   }
 
+  /**
+   * @param $params
+   * @return array
+   */
   static function getUnmatchedMessages($params) {
     // Format the params.
     $params['offset'] = ($params['page'] - 1) * $params['rp'];
@@ -56,10 +60,10 @@ class CRM_NYSS_WebIntegration_Page_AJAX extends CRM_Core_Page {
 
         switch ($dao->type) {
           case 'nyss_contextmsg':
-            $msg['type'] = 'Contextual';
+            $msg['type'] = '<span class="msg-type">Contextual</span>';
             break;
           case 'nyss_directmsg':
-            $msg['type'] = 'Direct';
+            $msg['type'] = '<span class="msg-type">Direct</span>';
             break;
           default:
         }
@@ -76,9 +80,11 @@ class CRM_NYSS_WebIntegration_Page_AJAX extends CRM_Core_Page {
         // build links
         $note = nl2br($dao->note);
         $links = array(
-          'note' => "<a href='#' id='view-msg-{$dao->id}' class='action-item crm-hover-button view-msg'>View</a><div title='Message Text' style='display:none;' id='msg-{$dao->id}'>{$note}</div>",
-          'activity' => "<a href='#' id='create-activity-{$dao->id}' class='action-item crm-hover-button create-activity'>Create Activity</a>",
+          'note' => "<a href='#' id='view-msg-{$dao->id}' class='action-item crm-hover-button view-msg'>View</a>",
+          'message' => "<div title='Message Text' style='display:none;' id='msg-{$dao->id}'>{$note}</div>",
+          'activity_create' => "<a href='#' id='create-activity-{$dao->id}' contact_id='{$dao->entity_id}' class='action-item crm-hover-button create-activity'>Create Activity</a>",
         );
+
         $msg['links'] = implode(' ', $links);
 
         array_push($msgs, $msg);

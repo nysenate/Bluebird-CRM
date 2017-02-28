@@ -158,7 +158,10 @@ function resources_civicrm_coreResourceList(&$list, $region) {
     'region' => $region,
   ));*/
 
-  Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/jquery.autocomplete.js', 10, 'html-header');
+  //this was creating conflict with the quicksearch; it appears autocomplete is included
+  //with the base jquery.ui package, which is why our version was probably conflicting
+  //Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/jquery.autocomplete.js', 10, 'html-header');
+
   Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/jquery.civicrm-validate.js', 10, 'html-header');
   Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/jquery.tokeninput.js', 10, 'html-header');
   Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/jquery-fieldselection.js', 10, 'html-header');
