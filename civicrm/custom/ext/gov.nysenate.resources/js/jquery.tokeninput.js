@@ -17,7 +17,7 @@ var DEFAULT_SETTINGS = {
     queryParam: "name",
     searchDelay: 300,
     minChars: 3, //NYSS
-    propertyToSearch: "name",
+    propertyToSearch: "text",//NYSS 10868
     jsonContainer: null,
 
 	// Display settings
