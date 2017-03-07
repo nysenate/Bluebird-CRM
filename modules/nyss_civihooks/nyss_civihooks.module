@@ -1211,7 +1211,7 @@ function _buildManageMenu($manageID) {
         'attributes' => Array(
           'label' => 'Manage Images',
           'name' => 'Manage Images',
-          'url' => 'sites/all/modules/kcfinder/browse.php?type=images&langCode=en',
+          'url' => 'sites/all/modules/civicrm/packages/kcfinder/browse.php?cms=civicrm&type=images&langCode=en',
           'permission' => 'create mailings, schedule mailings, administer CiviCRM',
           'operator' => 'OR',
           'separator' => 0,
