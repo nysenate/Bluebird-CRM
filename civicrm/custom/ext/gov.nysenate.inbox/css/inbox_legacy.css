@@ -1,0 +1,368 @@
+/************* LEGACY *************/
+
+/* Popups */
+
+/* Popup - Hide popups on load */
+.imapperbox #delete-confirm,
+.imapperbox #clear-popup,
+.imapperbox #loading-popup,
+.imapperbox #reloading-popup,
+.imapperbox #fileBug-confirm,
+.imapperbox #no_find_match,
+.imapperbox #tagging-popup,
+.imapperbox #matchCheck-popup,
+.imapperbox #help-popup,
+.imapperbox #AdditionalEmail-popup,
+.imapperbox #loading-popup{display: none;}
+
+.page-civicrm-imap .ui-tabs .ui-tabs-nav {background-color: #f8f8f8!important;}
+.page-civicrm-imap .ui-tabs .ui-state-hover a{background-color: #bbcbdf!important;}
+.page-civicrm-imap .ui-tabs .ui-state-default a{background-color: #ccc!important;}
+.page-civicrm-imap .ui-tabs .ui-state-active a{background-color: #ffffff!important;}
+.page-civicrm-imap .ui-tabs .ui-state-active a:active{ border:none;}
+
+
+/* Popup - Delete Has red for warning */
+.page-civicrm-imap #ui-dialog-title-delete-confirm{color: red;}
+.page-civicrm-imap .delete_popup_class .primary_button span{background: red; color: #fff; font-weight: bold;}
+.page-civicrm-imap .delete_popup_class .primary_button span:hover{background: #ffc6c6; color: #000; font-weight: bold;}
+.page-civicrm-imap .delete_popup_class .ui-widget-content,
+.page-civicrm-imap .delete_popup_class #delete-confirm,
+.page-civicrm-imap .ui-widget-content.delete_popup_class{background: #ffe8e8;}
+.page-civicrm-imap .delete_popup_class #delete-confirm{margin-bottom: 0;}
+.page-civicrm-imap .delete_popup_class .ui-dialog-titlebar {background: red;color:#fff; }
+.page-civicrm-imap .delete_popup_class #ui-dialog-title-delete-confirm{color: #fff; font-weight: bold;}
+
+/* Popup -  tagging specific  */
+.page-civicrm-imap .process_popup_class .primary_button span,
+.page-civicrm-imap .match_popup_class .primary_button span{background: #4483B8; color: #fff; font-weight: bold;}
+
+/* Popup -  margin reset  */
+.page-civicrm-imap .ui-dialog .ui-dialog-content{padding: 0; margin: 0; float: left;}
+
+
+
+.page-civicrm-imap .ui-dialog .ui-dialog-content fieldset { margin: 0 0 8px;padding: 0;}
+/*.page-civicrm-imap .ui-dialog .ui-dialog-content input { margin: 4px 8px;padding: 0;}*/
+.page-civicrm-imap .ui-dialog .ui-dialog-content p {margin: 10px; }
+
+/* IMAP General styles */
+pre{white-space: pre-wrap;  white-space: -moz-pre-wrap; white-space: pre-wrap;  white-space: -o-pre-wrap; word-wrap: break-word;}
+.imapperbox .clear {clear: both;}
+.imapperbox .hidden,
+.page-civicrm-imap .hidden{display:none;}
+
+.imapperbox h1{padding:10px; margin-bottom: 0;}
+.imapperbox h1 small{color:#999; font-size: 20px;}
+
+
+/* IMAP - Table View */
+
+.imapperbox .list_header{font-weight: bold;}
+.imapperbox .imap_checkbox_header,
+.imapperbox .imap_name_header,
+.imapperbox .imap_subject_header,
+.imapperbox .imap_date_header,
+.imapperbox .imap_match_type_header,
+.imapperbox .imap_forwarded_header,
+.imapperbox .imap_action_headers{font-weight: bold!important; color:#999!important; }
+tr.odd td.sorting_1 {background-color:#DBDBDB!important;}
+thead .sorting{cursor:pointer; cursor:hand }
+thead .sorting:hover{background-color:#f8f8f8!important;}
+thead .sorting_desc,
+thead .sorting_asc{background-color:#f1f1f1!important;}
+
+.imapperbox tr.odd.highlight{ background-color: #BADCE0 !important; } /* dark row */
+.imapperbox tr.even.highlight{ background-color: #D4E3EA !important; } /* light row */
+.imapperbox tr.odd.highlight:hover{ background-color: #AFD3D7 !important; }
+.imapperbox tr.even.highlight:hover{ background-color: #C4DCE7 !important; }
+
+.imapperbox tr.odd.highlight .sorting_1{ background-color: #B4CFD3 !important; }
+.imapperbox tr.even.highlight .sorting_1{ background-color: #CEDEE9 !important; }
+.imapperbox tr.odd.highlight:hover .sorting_1{ background-color: #A5CED5 !important; }
+.imapperbox tr.even.highlight:hover .sorting_1{ background-color: #B2D7DD !important; }
+
+.imapperbox tr.odd:hover{ background-color: #D8DAF5 !important; } /* dark row */
+.imapperbox tr.even:hover{ background-color: #E8EEF1 !important; } /* light row */
+.imapperbox tr.odd:hover .sorting_1{ background-color: #CDCFE9 !important; }
+.imapperbox tr.even:hover .sorting_1{ background-color: #D5DFE4 !important; }
+
+/* IMAP - Table View - Row */
+.imapperbox .imap_checkbox_column{width: 15px !important; }
+.imapperbox .imap_name_column{width: 190px !important; }
+.page-civicrm-imap-matched .imapperbox .imap_subject_column{width: 320px !important; }
+.page-civicrm-imap-unmatched .imapperbox .imap_subject_column{width: 220px !important; }
+.imapperbox .imap_date_column{width: 90px !important; }
+.imapperbox .imap_match_column{width: 0px !important; }
+.imapperbox .imap_forwarder_column{width: 85px !important; }
+.page-civicrm-imap-matched .imapperbox .imap_actions_column{width: 135px !important; }
+.page-civicrm-imap-unmatched .imapperbox .imap_actions_column{width: 105px !important; }
+.imapperbox .imap_actions_column span a{float: left; margin: 8px 1px 8px 0; padding: 2px 4px; border-radius: 3px;}
+.imapperbox .imap_actions_column a:hover{background: #fff; }
+.imapperbox .imap_actions_column .delete a{color:red !important;}
+.imapperbox .imap_actions_column .delete a:hover{background: #ff9999; }
+
+/* Button goups */
+.page_actions{ width:100%;margin:10px 0 10px 0; height: 30px;}
+.page_actions input{ float:right;}
+.page_actions_label{ float:right; margin:5px 10px 0 0}
+
+/* IMAP - Pagination */
+ .crm-container .imapperbox .controlls{border-bottom:1px solid #ccc; float: left; width:100%;}
+ .crm-container .imapperbox .dataTables_length {display: inline; float: left !important; width: 30%;padding: 4px 10px;}
+ .crm-container .imapperbox .dataTables_info {display: inline;float: left; width: auto; padding: 10px; font-weight: bold;}
+ .crm-container .imapperbox .dataTables_filter {display: inline;float: right; width: auto; padding: 4px 10px;}
+ .crm-container .imapperbox .dataTables_paginate {width: 100%; padding:0;}
+
+/* IMAP - Autocomplete */
+.imapperbox #tagging-popup.ac_input,
+.imapperbox .autocomplete-tags-bank{width: 258px; padding: 0px;  min-height: 20px; margin-top:10px; max-height: 170px; overflow-y:scroll; overflow-x: hidden; margin-bottom:10px; float:left; }
+.imapperbox .autocomplete-dropdown{padding:0 5px;  max-height: 150px; overflow-y:scroll; overflow-x: hidden; z-index: 10000000; }
+.imapperbox .autocomplete-dropdown a{float: left; width: 100%;}
+.imapperbox .autocomplete-dropdown a.tag-item {color: #666!important; padding: 2px;}
+.imapperbox .autocomplete-dropdown a.tag-item:hover{color: #336699!important; background: #e1e1e1; }
+.imapperbox .tag-selected{background: #336699; padding: 2px 5px; float:left; margin:0 4px 4px 0; }
+.imapperbox .tag-selected .tag-delete-icon{float:right; margin:5px; width:10px; height:10px; background: url("/sites/default/themes/Bluebird/images/icons-FFFFFF.png") no-repeat scroll; background-position: -100px -132px; }
+.imapperbox a.tag-selected {color: #fff!important; }
+.imapperbox a.tag-selected:hover {color: #fff !important; background-color: red; }
+.imapperbox .attachment{float:right !important;}
+.token-input-dropdown-facebook {z-index: 999999!important; float: left;}
+.page-civicrm-imap-matched #contact-issue-codes{margin:0 0 10px;}
+.page-civicrm-imap-matched .tag_filter_bar{ margin: 0px !important;}
+.page-civicrm-imap-matched ul.token-input-list-facebook{width: 318px;}
+.page-civicrm-imap-matched dt.lv-0{display: none}
+/* IMAP - Popup Left */
+.page-civicrm-imap #message_left,
+.page-civicrm-imap #message_left_tag{float:left; width:620px; }
+.page-civicrm-imap .tag_over_ride{width:655px; height:465px; overflow:auto; }
+
+/* IMAP - Popup Left - Debug Info */
+.page-civicrm-imap #message_left .debug_info {display: none; }
+.page-civicrm-imap #message_left .debug_on,
+.page-civicrm-imap #message_left .debug_off {color: #336699!important; }
+.page-civicrm-imap #message_left_header,
+.page-civicrm-imap #message_left_header_tag{padding:10px ; background: #f1f1f1; border-bottom: 1px solid #e5e5e5; height: 95px; line-height: 23px; width: 600px; overflow: hidden;}
+.page-civicrm-imap #message_left_email,
+.page-civicrm-imap #message_left_email_tag{padding:10px ; width:600px; height:330px; overflow:auto; border-bottom: 1px solid #e5e5e5; }
+.page-civicrm-imap #message_left_email.multi{ height:446px; }
+/* IMAP - Popup Right*/
+.page-civicrm-imap #tabs{margin-top: -37px; z-index: 2000; }
+.page-civicrm-imap #tabs.subtab,
+.page-civicrm-imap .subtab{margin-top: 0px; z-index: 2000; }
+
+
+.page-civicrm-imap .ui-dialog-titlebar-close{ z-index: 3000; }
+
+.page-civicrm-imap .ui-dialog .ui-dialog-content { background: #FFFFFF;overflow: visible;}
+.page-civicrm-imap .ui-tabs .ui-tabs-nav { background: transparent !important }
+.page-civicrm-imap #tabs.ui-tabs.ui-widget-content,.page-civicrm-imap #tabs.ui-tabs.ui-tabs-nav,.page-civicrm-imap #tabs.ui-tabs.ui-widget-header { background: transparent !important }
+.page-civicrm-imap #tabs_tag.ui-tabs.ui-widget-content,.page-civicrm-imap #tabs_tag.ui-tabs.ui-tabs-nav,.page-civicrm-imap #tabs_tag.ui-tabs.ui-widget-header { background: transparent !important }
+
+.page-civicrm-imap #tabs_tag #TagContact{ width:335px; height:430px; overflow-y: scroll; }
+.page-civicrm-imap #message_right{width:339px; float:left; border-left: 1px solid #ccc; height:466px;  border-bottom: 1px solid #e5e5e5; }
+.page-civicrm-imap #message_right #tabs .ui-tabs-panel,
+.page-civicrm-imap #message_right_tag.ui-tabs .ui-tabs-panel,
+.page-civicrm-imap #message_right_tag #tab1_tag,
+.page-civicrm-imap #message_right_tag #tab2_tag{padding:0 !important; margin:0 !important; }
+
+
+
+/* DOB select*/
+.page-civicrm-imap #message_right label.dob select.month { width: 100px; }
+.page-civicrm-imap #message_right label.dob select.year { width: 60px; }
+.page-civicrm-imap #message_right label.dob select.day { width: 42px; }
+
+/* search button */
+.page-civicrm-imap #message_right .search { background: #E1E1E1;float: left; padding: 2px;width: 320px; }
+.page-civicrm-imap #message_right .search .right{ float: right;padding-right: 10px;}
+/* IMAP - Debug area */
+.page-civicrm-imap .debug_sumit{border:1px solid #e5e5e5; background: #f1f1f1; padding: 4px; margin: 10px 0;}
+
+/* IMAP - Content area for email */
+.page-civicrm-imap .email{overflow-y: scroll; width: 620px; }
+.page-civicrm-imap .email pre {padding: 10px;}
+.page-civicrm-imap #imapper-messages {scrollbar: always; overflow: auto; height: 600px; float: left;}
+.page-civicrm-imap .imapper-message-box {background-color: #eeeeee; margin: 2px; height:40px;}
+.page-civicrm-imap .imapper-message-box:hover {background-color: #e8eaeb!important;}
+.page-civicrm-imap .imapper-message-box .imapper-select-button {padding-top: 0px;}
+
+/* IMAP - Contact Search */
+.page-civicrm-imap .label_def{width: 110px; font-weight: bold; float: left; margin: 0.4em 0 0.02em;}
+.page-civicrm-imap #message_right label{float: left; display: block;  margin: 0 0 -2px;}
+.page-civicrm-imap #message_right label input {width: 205px; }
+.page-civicrm-imap #message_right label select {width: 213px; }
+
+/* IMAP - Contact List */
+.page-civicrm-imap .contacts-list {scrollbar: always; overflow: auto; height: 165px; float: left; width: 325px;}
+.page-civicrm-imap .imapper-contact-box {background-color: #f8f8f8; margin-bottom: 4px; padding: 4px 0; float:left; width: 100%;}
+.page-civicrm-imap .imapper-contact-box:hover {background-color: #eeeeee;}
+.page-civicrm-imap .imapper-address-select-box {height: 16px; width: 20px; float: left; padding: 15px 0;}
+.page-civicrm-imap .imapper-address-box {float: left; width: 193px; padding-left: 5px;}
+.page-civicrm-imap .imapper-message-box td {vertical-align: middle!important; }
+.page-civicrm-imap .seeMore{height: 20px; background: #e1e1e1; float: left; padding: 5px 10px; width:290px; margin: 5px 0px 10px;}
+
+/* Email toggle for multi tag */
+.hidden_email{margin:0 0 10px 0; height:30px; overflow: hidden; width: 580px; cursor:pointer; cursor:hand}
+.shown_email{margin: 0 0 10px 0; height: auto; background: #fff; border-bottom:1px solid #ccc; width: 580px;}
+.info.hidden_email_info{height: 20px; background: #e1e1e1; float: left; padding: 5px 10px; width: 570px;}
+.info.shown_email_info{height: 20px; background: #e1e1e1; float: left; padding: 5px 10px; width: 570px;}
+.info:hover{background: #ccc; }
+.add_email{width:450px !important; padding: 5px 10px;}
+
+.found {
+    background: rgba(255,230,0, 0.5);
+    padding: 1px 2px;
+    border: 1px solid #C1C1C1;
+    margin: -1px -4px;
+    padding: 1px 4px;
+    border-radius: 3px;
+    display:inline-block;
+}
+.found:hover {
+    background: rgba(255,230,0, 0.8);
+    border: 1px solid #A0A0A0;
+}
+
+.found.name {
+    /* red ffb7b7 */
+    background: rgba(255,183,183, 0.5);
+}
+.found.name:hover {
+    background: rgba(255,183,183, 0.8);
+}
+.found.zip {
+    /* blue a8d1ff*/
+    background: rgba(168,209,255, 0.5);
+}
+.found.zip:hover {
+    background: rgba(168,209,255, 0.8);
+}
+.found.phone {
+    /* green a8d1ff*/
+    background: rgba(196,255,143, 0.5);
+}
+.found.phone:hover {
+    background: rgba(196,255,143, 0.8);
+}
+
+
+/* Reports */
+
+.page-civicrm-imap #crm-container .crm-content-block {
+ background-color: #FFFFFF;
+    clear: both;
+    display: block;
+    float: left;
+    padding: 4px;
+    position: relative;
+    width: 934px;
+}
+
+.full{
+    float: left;
+    position: relative;
+    width: 100%;
+}
+.page-civicrm-imap  .dataTables_wrapper {
+    clear: both;
+    float: left;
+    position: relative;
+    width: 100%;
+    overflow: visible;
+}
+.stats{
+    width:100%;
+    text-align: center;
+    border-top: 1px solid #ccc;
+    margin: 10px 0;
+    z-index: 1;
+}
+a.stats_overview{
+    display:inline-block;
+    padding: 18px 0 12px 10px;
+    width: 170px;
+    color: #666666;
+    font-size: 1.2em;
+    border-bottom: 1px solid #ccc;
+    margin: 0 4px 10px 0;
+}
+a.stats_overview:hover{
+    background: #f2f2f2;
+}
+a.stats_overview.active{
+    background: #C8DEE1;
+}
+.stats_overview span {
+    padding: 0 10px;
+    font-weight: bold;
+    font-size: 1em;
+    color: #444;
+
+}
+/* IMAP - Little buggers */
+.imapperbox #help{float: left; width: 99%;}
+.marginL10 {margin-left: 10px;}
+.marginL5 {margin-left: 5px;}
+.loading_message{margin: 0 auto; background: #fff; padding:5px; width: 200px}
+.popup_def{color: #777; float: left; margin: 0 10px 0 0; text-align: right;   width: 125px;}
+.disabled a{color: #999!important; text-decoration: line-through!important;}
+.rejected{color: red; font-style: italic; }
+.imapperbox .emailbubble,
+.imapperbox .matchbubble {padding: 2px 4px;}
+.imapperbox .emailbubble{background-color: #dee7f8; border: #a3beec solid 1px; color: #333539; line-height: 14px; padding: 2px 8px; vertical-align: baseline; white-space: nowrap; border-radius: 6px 6px 6px 6px;}
+.imapperbox .matchbubble {background-color: #B2E1C2; color: #fff; font-weight: bold; line-height: 14px; padding: 2px 4px; vertical-align: baseline;   white-space: nowrap; border-radius: 3px 3px 3px 3px;}
+.imapperbox .multi {background-color: #468847;  }
+.imapperbox .empty {background-color: #999; }
+.imapperbox .warn {background-color: #FAA732; border-color: #FAA732; }
+.imapperbox .matchbubble.H{background-color: #468847; }
+.imapperbox .matchbubble.A{background-color: #999; }
+
+.crm-container .stats .mail-merge-icon {
+  margin-right: 10px;
+  display: inline-block;
+  float: none;
+  vertical-align: middle;
+}
+
+/* hover icons for matched/matcher contacts */
+.crm-container .icon.mail-merge-icon {
+  background-image: url('/sites/default/themes/Bluebird/images/inbound_email_icons.png');
+}
+.crm-container .mail-merge-icon.mail-merge-matched {
+  background-position: 0px 0px;
+}
+.crm-container .mail-merge-icon.mail-merge-unmatched {
+  background-position: 0px -16px;
+}
+.crm-container .mail-merge-icon.mail-merge-cleared {
+  background-position: 0px -32px;
+}
+.crm-container .mail-merge-icon.mail-merge-deleted {
+  background-position: 0px -48px;
+}
+.crm-container .mail-merge-icon.mail-merge-unprocessed {
+  background-position: 0px -64px;
+}
+.crm-container .mail-merge-icon.mail-merge-tags {
+  background-position: 0px -80px;
+}
+.mail-merge-filter-data {
+  display:none;
+}
+.crm-container .mail-merge-hover .crm-tooltip {
+  min-width: 150px;
+  min-height: 40px;
+  padding: 10px;
+}
+.mail-merge-activity-tag-list-header {
+}
+.crm-container .crm-summary-link { z-index:auto !important; }
+
+/*buttons: these were getting covered by other divs*/
+div.ui-dialog-buttonpane {
+  position: absolute;
+  z-index: 2000;
+  right: 0;
+  bottom: 0;
+  border: none;
+}

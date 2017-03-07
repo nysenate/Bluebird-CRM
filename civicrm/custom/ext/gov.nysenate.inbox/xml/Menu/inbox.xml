@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<menu>
+  <item>
+    <path>civicrm/nyss/inbox/unmatched</path>
+    <page_callback>CRM_NYSS_Inbox_Page_Unmatched</page_callback>
+    <title>Unmatched Messages</title>
+    <access_arguments>access Inbox Polling</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/nyss/inbox/ajax/unmatched</path>
+    <page_callback>CRM_NYSS_Inbox_Page_Unmatched::getUnmatched</page_callback>
+    <access_arguments>access Inbox Polling</access_arguments>
+  </item>
+</menu>
