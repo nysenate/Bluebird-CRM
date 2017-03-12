@@ -45,6 +45,8 @@ class CRM_NYSS_Inbox_Form_MessageFilter extends CRM_Core_Form {
       365 => 'Last year',
     );
     $this->add('select', 'range_filter', ts('Date Range'), $rangeOptions);
+
+    $this->add('text', 'search_filter', 'Search', array('placeholder' => 'search...'));
   }
 
   /**

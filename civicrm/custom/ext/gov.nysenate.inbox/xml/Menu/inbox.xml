@@ -11,4 +11,16 @@
     <page_callback>CRM_NYSS_Inbox_Page_Unmatched::getUnmatched</page_callback>
     <access_arguments>access Inbox Polling</access_arguments>
   </item>
+  <item>
+    <path>civicrm/nyss/inbox/assigncontact</path>
+    <page_callback>CRM_NYSS_Inbox_Form_AssignContact</page_callback>
+    <title>Assign Contact</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/nyss/inbox/delete</path>
+    <page_callback>CRM_NYSS_Inbox_Form_Delete</page_callback>
+    <title>Delete</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
 </menu>

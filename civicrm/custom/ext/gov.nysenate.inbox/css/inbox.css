@@ -7,6 +7,12 @@
 .crm-right {
   float: right;
 }
+.crm-margin-right {
+  margin-right: 10px;
+}
+.crm-container .paging_full_numbers {
+  width: 400px !important;
+}
 
 .emailbubble,
 .matchbubble {
@@ -32,7 +38,13 @@
 .empty {
   background-color: #999;
 }
-.crm-container .inbox-unmatchedmessages-selector .attachment {
+.crm-container .attachment {
   float: right;
+}
+.message-body {
+  max-height: 300px;
+  overflow: auto;
+  border: 1px solid #999999;
+  padding: 5px;
 }
 

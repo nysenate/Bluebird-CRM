@@ -2,8 +2,11 @@
   <h2 class="crm-title">{$title}</h2>
 
   <div class="inbox-unmatchedmessages-actions crm-section crm-form-block">
-    <div class="crm-contact-form-block-range_filter crm-left">
-      {$form.range_filter.label} {$form.range_filter.html|crmAddClass:big}
+    <div class="crm-contact-form-block-range_filter crm-left crm-margin-right">
+      {$form.range_filter.html|crmAddClass:big}
+    </div>
+    <div class="crm-contact-form-block-search crm-left crm-margin-right">
+      {$form.search_filter.html|crmAddClass:twelve}
     </div>
     <div class="crm-contact-form-block-delete crm-right">
       <input type="button" class="multi_delete" value="Delete Selected" name="delete">
@@ -36,48 +39,17 @@
         //redraw table when range filter changes
         CRM.$('#range_filter').change(function(){
           var range = $('#range_filter').val();
+          var search = $('#search_filter').val();
           CRM.$('table.inbox-unmatchedmessages-selector').DataTable().ajax.
-            url(CRM.url('civicrm/nyss/inbox/ajax/unmatched', {snippet: 4, range: range})).load();
+            url(CRM.url('civicrm/nyss/inbox/ajax/unmatched', {snippet: 4, range: range, term: search})).load();
         });
 
-        /*$('table.contact-unmatchedmessages-selector').
-        on('click', '.view-msg', function(){
-          var msgId = $(this).prop('id').replace('view-msg-', '');
-
-          $('#msg-' + msgId).dialog({
-            width: 500
-          }).dialog('open');
-
-          return false;
-        }).
-        on('click', '.create-activity', function(){
-          var msgId = $(this).prop('id').replace('create-activity-', '');
-          var contactId = $(this).attr('contact_id');
-          var msgNote = $('div#msg-' + msgId).html();
-
-          //determine the activity ID
-          var msgType = $('table.contact-unmatchedmessages-selector tr#' + msgId + ' span.msg-type').text();
-          var msgTypeId = 0;
-          switch (msgType) {
-            case 'Direct':
-              msgTypeId = CRM.vars.NYSS.unmatched_activity_direct;
-              break;
-            case 'Contextual':
-              msgTypeId = CRM.vars.NYSS.unmatched_activity_contextual;
-              break;
-            default:
-          }
-
-          var url = '/civicrm/activity/add?reset=1&action=add&atype=' + msgTypeId + '&cid=' + contactId + '&msgId=' + msgId + '&msgNote=' + msgNote;
-
-          CRM.loadForm(url).
-          on('crmFormSuccess', function(event, data){
-            //redraw so list is reloaded
-            CRM.$('table.contact-unmatchedmessages-selector').DataTable().draw();
-          });
-
-          return false;
-        });*/
+        CRM.$('#search_filter').keypress(function(){
+          var range = $('#range_filter').val();
+          var term = $('#search_filter').val();
+          CRM.$('table.inbox-unmatchedmessages-selector').DataTable().ajax.
+          url(CRM.url('civicrm/nyss/inbox/ajax/unmatched', {snippet: 4, range: range, term: JSON.stringify(term)})).load();
+        });
       })(CRM.$);
     </script>
   {/literal}

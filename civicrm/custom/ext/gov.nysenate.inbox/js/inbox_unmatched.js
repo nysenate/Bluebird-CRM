@@ -32,4 +32,8 @@ CRM.$(function($) {
     //cj("#loading-popup").dialog('close');
     //cj("#delete-confirm").dialog('open');
   });
+
+  $('.inbox-delete, .inbox-assign-contact')
+    .on('crmPopupFormSuccess.crmLivePage', CRM.refreshParent);
+
 });

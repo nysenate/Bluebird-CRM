@@ -2039,7 +2039,7 @@ div.crm-summary-display_name div.crm-icon {
 }
 
 /*show attachment icon if activity has attachments*/
-#crm-container .attachment-icon {
+.crm-container .attachment-icon {
   background-position: -142px -142px;
 }
 
