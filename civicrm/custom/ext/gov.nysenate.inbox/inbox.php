@@ -158,3 +158,42 @@ function inbox_civicrm_permission(&$permissions) {
     'Access inbox polling tools.',
   );
 }
+
+function inbox_civicrm_entityRefFilters(&$filters) {
+  //Civi::log()->debug('entityRefFilters', array('filters' => $filters));
+
+  $filters['contact'][] = array(
+    'key' => 'street_address',
+    'value' => 'Street Address',
+    'entity' => 'address',
+    'type' => 'text',
+  );
+
+  $filters['contact'][] = array(
+    'key' => 'city',
+    'value' => 'City',
+    'entity' => 'address',
+    'type' => 'text',
+  );
+
+  $filters['contact'][] = array(
+    'key' => 'postal_code',
+    'value' => 'Postal Code',
+    'entity' => 'address',
+    'type' => 'text',
+  );
+
+  $filters['contact'][] = array(
+    'key' => 'birth_date',
+    'value' => 'Birth Date',
+    'entity' => 'contact',
+    'type' => 'date',
+  );
+
+  $filters['contact'][] = array(
+    'key' => 'phone',
+    'value' => 'Phone',
+    'entity' => 'phone',
+    'type' => 'text',
+  );
+}//entityRefFilters

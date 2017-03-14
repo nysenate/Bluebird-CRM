@@ -17,10 +17,11 @@
 .emailbubble,
 .matchbubble {
   line-height: 14px;
-  padding: 2px 6px;
+  padding: 2px 4px;
   vertical-align: baseline;
   white-space: nowrap;
   border-radius: 4px;
+  margin-left: 4px;
 }
 .emailbubble {
   background-color: #dee7f8;
@@ -46,5 +47,8 @@
   overflow: auto;
   border: 1px solid #999999;
   padding: 5px;
+}
+.crm-actions {
+  min-width: 110px !important;
 }
 

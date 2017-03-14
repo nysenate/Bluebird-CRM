@@ -18,11 +18,11 @@
     <thead>
     <tr>
       <th data-data="id" data-orderable="false" class="crm-unmatchedmessages">{$toggleAll}</th>
-      <th data-data="sender_info" class="crm-unmatchedmessages">Sender's Info</th>
+      <th data-data="sender_name" class="crm-unmatchedmessages">Sender's Info</th>
       <th data-data="subject" class="crm-unmatchedmessages">Subject</th>
-      <th data-data="date_forwarded" class="crm-unmatchedmessages">Date Forwarded</th>
-      <th data-data="forwarded_by" class="crm-unmatchedmessages">Forwarded By</th>
-      <th data-data="links" data-orderable="false" class="crm-unmatchedmessages">Actions</th>
+      <th data-data="updated_date" class="crm-unmatchedmessages">Date Forwarded</th>
+      <th data-data="forwarder" class="crm-unmatchedmessages">Forwarded By</th>
+      <th data-data="links" data-orderable="false" class="crm-unmatchedmessages crm-actions">Actions</th>
     </tr>
     </thead>
   </table>

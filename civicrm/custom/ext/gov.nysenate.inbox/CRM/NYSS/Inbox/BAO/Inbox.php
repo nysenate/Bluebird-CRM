@@ -30,21 +30,28 @@ class CRM_NYSS_Inbox_BAO_Inbox {
   /**
    * @param $string
    * @param int $limit
-   * @param string $break
    * @param string $pad
    * @return string
    *
-   * truncate the string to the configured length
+   * trim and truncate the string to the configured length
+   * also fix possible encoding issues
    */
-  static function truncateText($string, $limit = 50, $break = ".", $pad = "...") {
+  static function cleanText($string, $limit = 0, $pad = "...") {
+    $lib = CRM_Core_Resources::singleton()->getPath('gov.nysenate.inbox', 'incl/htmlfixer.class.php');
+    require_once "{$lib}";
+
+    $string = trim($string);
+    $string = mb_convert_encoding($string, "HTML-ENTITIES", "UTF-8");
+
+    $htmlFixer = new HtmlFixer();
+    $string = $htmlFixer->getFixedHtml($string);
+
     // return with no change if string is shorter than $limit
     if(strlen($string) <= $limit) return $string;
 
-    // is $break present between $limit and the end of the string?
-    if(false !== ($breakpoint = strpos($string, $break, $limit))) {
-      if($breakpoint < strlen($string) - 1) {
-        $string = substr($string, 0, $breakpoint) . $pad;
-      }
+    //truncate
+    if ($limit > 0) {
+      $string = substr($string, 0, $limit) . $pad;
     }
 
     return $string;
@@ -83,15 +90,15 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         'sender_name' => $dao->sender_name,
         'sender_email' => $dao->sender_email,
         'email_count' => $dao->email_count,
-        'subject' =>
-          CRM_Core_DAO::escapeString(CRM_NYSS_Inbox_BAO_Inbox::truncateText(trim($dao->subject))).$attachment,
+        'subject' => CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->subject).$attachment,
         'date_email' => date('m/d/Y', strtotime($dao->email_date)),
         'date_forwarded' => date('m/d/Y', strtotime($dao->updated_date)),
         'forwarded_by' => $dao->forwarder,
-        'body' => CRM_Core_DAO::escapeString($dao->body),
+        'body' => CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->body),
       );
     }
 
+    //Civi::log()->debug('getDetails', array('$details' => $details));
     return $details;
   }
 
@@ -179,7 +186,11 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       while ($dao->fetch()) {
         $msg = array();
         $matchCount = (!empty($dao->email_count)) ? 'multi' : 'empty';
-        $attachment = (!empty($dao->attachments)) ? "<div class='icon attachment-icon attachment' title='{$dao->attachments} Attachment(s)'></div>" : '';
+        $attachment = (!empty($dao->attachments)) ?
+          "<div class='icon attachment-icon attachment' title='{$dao->attachments} Attachment(s)'></div>" : '';
+        $senderEmail = (empty($dao->sender_email)) ? '' :
+          "<span class='emailbubble'>".CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->sender_email, 15)."</span>";
+        $senderName = CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->sender_name, 15);
 
         $msg['DT_RowId'] = "message-{$dao->id}";
         $msg['DT_RowClass'] = 'crm-entity';
@@ -188,12 +199,11 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         $msg['DT_RowAttr']['data-id'] = $dao->id;
 
         $msg['id'] = "<input class='message-select' type='checkbox' id='select-{$dao->id}'>";
-        $msg['sender_info'] = "{$dao->sender_name}<br />
-          <span class='emailbubble'>{$dao->sender_email}</span>
+        $msg['sender_name'] = "{$senderName}{$senderEmail}
           <span class='matchbubble {$matchCount}'>{$dao->email_count}</span>";
-        $msg['subject'] = CRM_NYSS_Inbox_BAO_Inbox::truncateText(trim($dao->subject)).$attachment;
-        $msg['date_forwarded'] = date('m/d/Y', strtotime($dao->updated_date));
-        $msg['forwarded_by'] = $dao->forwarder;
+        $msg['subject'] = CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->subject, 25).$attachment;
+        $msg['updated_date'] = date('M d, Y', strtotime($dao->updated_date));
+        $msg['forwarder'] = $dao->forwarder;
 
         $urlAssign = CRM_Utils_System::url('civicrm/nyss/inbox/assigncontact', "reset=1&id={$dao->id}");
         $urlDelete = CRM_Utils_System::url('civicrm/nyss/inbox/delete', "reset=1&id={$dao->id}");
