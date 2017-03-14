@@ -2946,6 +2946,7 @@ div.outerbox {
 #civicrm-menu #crm-qsearch input:focus,
 #civicrm-menu #crm-qsearch.active-target input {
   background: none;
+  outline: none;
 }
 ul.crm-quickSearch-results {
   background: none;
