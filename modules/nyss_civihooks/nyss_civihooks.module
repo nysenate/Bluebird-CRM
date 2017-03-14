@@ -949,7 +949,9 @@ function nyss_civihooks_civicrm_check(&$messages) {
 
 //10887
 function nyss_civihooks_civicrm_alterContent(&$content, $context, $tplName, &$object) {
-  $content = _nyss_stripSpaces($content);
+  if (!CRM_Core_Config::singleton()->debug) {
+    $content = _nyss_stripSpaces($content);
+  }
 
   /*Civi::log()->debug('nyss_civihooks_civicrm_alterContent', array(
     '$content' => $content,
