@@ -947,6 +947,22 @@ function nyss_civihooks_civicrm_check(&$messages) {
   }
 }//nyss_civihooks_civicrm_check
 
+//10887
+function nyss_civihooks_civicrm_alterContent(&$content, $context, $tplName, &$object) {
+  $content = _nyss_stripSpaces($content);
+
+  /*Civi::log()->debug('nyss_civihooks_civicrm_alterContent', array(
+    '$content' => $content,
+    //'$context' => $context,
+    //'$tplName' => $tplName,
+    //'$object' => $object,
+  ));*/
+}
+
+function _nyss_stripSpaces($text) {
+  return trim(preg_replace('~>\s*\n\s*<~', '><', $text));
+}
+
 /**
  * The User ID and Job ID are stored as db variables for inclusion
  * in the log database via the triggers. At times, the variables
