@@ -22,6 +22,7 @@ html,body,div,span,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acron
   font-size: 100%;
   font-family: inherit;
   vertical-align: baseline;
+  outline: none;
 }
 
 table {
@@ -64,6 +65,7 @@ body {
 h1,h2,h3,h4,h5,h6 {
   font-weight: 400;
   color: #111;
+  outline: none;
 }
 
 h1 {
@@ -121,11 +123,13 @@ p img.right {
 
 a:focus,a:hover {
   color: #000;
+  outline: none;
 }
 
 a {
   color: #009;
   text-decoration: underline;
+  outline: none;
 }
 
 blockquote {
