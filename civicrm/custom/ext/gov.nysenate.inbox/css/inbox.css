@@ -1,0 +1,54 @@
+#crm-container h2.crm-title {
+  margin-bottom: 30px;
+}
+.crm-left {
+  float: left;
+}
+.crm-right {
+  float: right;
+}
+.crm-margin-right {
+  margin-right: 10px;
+}
+.crm-container .paging_full_numbers {
+  width: 400px !important;
+}
+
+.emailbubble,
+.matchbubble {
+  line-height: 14px;
+  padding: 2px 4px;
+  vertical-align: baseline;
+  white-space: nowrap;
+  border-radius: 4px;
+  margin-left: 4px;
+}
+.emailbubble {
+  background-color: #dee7f8;
+  border: #a3beec solid 1px;
+  color: #333539;
+}
+.matchbubble {
+  background-color: #B2E1C2;
+  color: #fff;
+  font-weight: bold;
+}
+.multi {
+  background-color: #468847;
+}
+.empty {
+  background-color: #999;
+}
+.crm-container .attachment {
+  float: right;
+}
+.message-body {
+  max-height: 300px;
+  overflow: auto;
+  border: 1px solid #999999;
+  padding: 5px;
+}
+.crm-actions {
+  min-width: 110px !important;
+}
+

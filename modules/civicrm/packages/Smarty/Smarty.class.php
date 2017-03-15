@@ -570,8 +570,6 @@ class Smarty
     {
       $this->assign('SCRIPT_NAME', isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME']
                     : @$GLOBALS['HTTP_SERVER_VARS']['SCRIPT_NAME']);
-      //NYSS run content through a cleanup filter to compress html prior to rendering
-      $this->register_prefilter( array($this, 'add_strip_tags') );
     }
 
     /**
@@ -1991,19 +1989,6 @@ class Smarty
 			return $function;
 		}
 	}
-
-  //NYSS
-  function add_strip_tags($source, &$smarty)
-  {
-    $template_vars = $this->get_template_vars();
-    if( !$template_vars['config']->debug &&
-      ( !defined('CRM_Upgrade_Form::QUEUE_NAME') ||
-        ( defined('CRM_Upgrade_Form::QUEUE_NAME') && CRM_Upgrade_Form::QUEUE_NAME != 'CRM_Upgrade') )
-    ) {
-      $source = CRM_Utils_String::stripSpaces($source, TRUE);
-    }
-    return $source;
-  }
   
     /**#@-*/
 

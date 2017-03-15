@@ -5,6 +5,7 @@
  */
 class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_Search_Custom_Base implements CRM_Contact_Form_Search_Interface {
   public $_demographicOptions;
+  public $_activeDemographic;
 
   function __construct(&$formValues) {
     parent::__construct($formValues);
@@ -12,8 +13,16 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
     $this->_demographicOptions = array(
       'gender' => 'Gender',
       'age' => 'Age',
-      //'postal_code' => 'Postal Code',
+      'postal_code' => 'Postal Code',
+      'city' => 'City',
+      'town' => 'Town',
+      'county' => 'County',
+      'sd' => 'Senate District',
+      'ad' => 'Assembly District',
+      'school_district' => 'School District',
     );
+
+    $this->_activeDemographic = NULL;
   }
 
   /**
@@ -28,7 +37,12 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
     $tags = array('' => ts('- any tag -')) + CRM_Core_PseudoConstant::get('CRM_Core_DAO_EntityTag', 'tag_id', array('onlyActive' => FALSE));
     $form->add('select', 'tag', ts('Tagged'), $tags, TRUE, array('class' => "crm-select2 huge"));
 
-    $form->add('select', 'demographic', ts('Demographic'), $this->_demographicOptions, TRUE, array('class' => "crm-select2"));
+    $form->add('select', 'demographic', ts('Demographic'),
+      $this->_demographicOptions, TRUE, array(
+        'class' => 'crm-select2 huge',
+        'multiple' => TRUE,
+        'placeholder' => ts('- select -'),
+      ));
 
     // Optionally define default search values
     $form->setDefaults(array());
@@ -64,8 +78,9 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
 
     // return by reference
     $columns = array(
-      "Demographic Breakdown: {$this->_demographicOptions[$this->_formValues['demographic']]}" => 'label',
-      ts('Count') => 'demo_count',
+      'Demographic' => 'demo',
+      'Values' => 'label',
+      'Count' => 'demo_count',
     );
     return $columns;
   }
@@ -83,40 +98,31 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
   function all($offset = 0, $rowcount = 0, $sort = NULL,
     $includeContactIDs = FALSE, $justIDs = FALSE
   ) {
-    $select = $this->select();
-    $from = $this->from();
-    $where = $this->where();
-    $groupBy = $this->groupBy();
+    //Civi::log()->debug('all', array('this' => $this));
 
-    $sql = "
-      SELECT $select
-      $from
-      WHERE $where
-      $groupBy
-    ";
+    $sql = array();
+    foreach ($this->_formValues['demographic'] as $demo) {
+      //set cycle demo value so we can use in sql parts
+      $this->_activeDemographic = $demo;
 
-    // Define ORDER BY for query in $sort, with default value
-    if (!empty($sort)) {
-      if (is_string($sort)) {
-        $sql .= " ORDER BY $sort ";
-      }
-      else {
-        $sql .= " ORDER BY " . trim($sort->orderBy());
-      }
-    }
-    else {
-      $sql .= "ORDER BY label asc";
+      $select = $this->select();
+      $from = $this->from();
+      $where = $this->where();
+      $groupBy = $this->groupBy();
+
+      $sql[] = "(
+        SELECT '{$demo}' demo, $select
+        $from
+        WHERE $where
+        $groupBy
+        ORDER BY label asc
+      )";
     }
 
-    if ($rowcount > 0 && $offset >= 0) {
-      $offset = CRM_Utils_Type::escape($offset, 'Int');
-      $rowcount = CRM_Utils_Type::escape($rowcount, 'Int');
-      $sql .= " LIMIT $offset, $rowcount ";
-    }
+    $sqlCombined = implode(' UNION ', $sql);
+    //Civi::log()->debug('all', array('$sqlCombined' => $sqlCombined));
 
-    Civi::log()->debug('all', array('$sql' => $sql));
-
-    return $sql;
+    return $sqlCombined;
   }
 
   /**
@@ -127,12 +133,9 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
   function select() {
     //Civi::log()->debug('select', array('vals' => $this->_formValues));
 
-    $meta = $this->getDemographicMeta($this->_formValues);
+    $meta = $this->getDemographicMeta($this->_activeDemographic);
 
-    return "
-      {$meta['select']} as label,
-      COUNT(c.id) as demo_count
-    ";
+    return "{$meta['select']} label, COUNT(c.id) demo_count";
   }
 
   /**
@@ -141,7 +144,7 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
    * @return string, sql fragment with FROM and JOIN clauses
    */
   function from() {
-    $meta = $this->getDemographicMeta($this->_formValues);
+    $meta = $this->getDemographicMeta($this->_activeDemographic);
     $tag = CRM_Utils_Array::value('tag', $this->_formValues);
 
     return "
@@ -161,7 +164,7 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
    * @return string, sql fragment with conditional expressions
    */
   function where($includeContactIDs = FALSE) {
-    $meta = $this->getDemographicMeta($this->_formValues);
+    $meta = $this->getDemographicMeta($this->_activeDemographic);
 
     $where = 'c.is_deceased != 1'.$meta['where'];
 
@@ -203,22 +206,23 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
    * @return void
    */
   function alterRow(&$row) {
+    //Civi::log()->debug('alterRow', array('row' => $row));
+
+    $meta = $this->getDemographicMeta($row['demo']);
+    $row['demo'] = $meta['title'];
+    $row['label'] = (empty($row['label']) && $row['label'] !== '0') ? '(none)' : $row['label'];
   }
 
   public function setTitle($title) {
-    if ($title) {
-      CRM_Utils_System::setTitle($title);
-    }
-    else {
-      CRM_Utils_System::setTitle(ts('Tag Demographic Search'));
-    }
+    CRM_Utils_System::setTitle(ts('Tag Demographic Search'));
   }
 
-  function getDemographicMeta($params) {
+  function getDemographicMeta($demo) {
     $meta = array();
-    switch ($params['demographic']) {
+    switch ($demo) {
       case 'gender':
         $meta = array(
+          'title' => $this->_demographicOptions[$demo],
           'select' => 'demo.label',
           'from' => "
             LEFT JOIN civicrm_option_value demo
@@ -231,10 +235,8 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
 
       case 'age':
         $meta = array(
+          'title' => $this->_demographicOptions[$demo],
           'select' => 'YEAR(CURRENT_DATE) - YEAR(c.birth_date) - (RIGHT(CURRENT_DATE, 5) < RIGHT(c.birth_date, 5))',
-          //'select' => 'TIMESTAMPDIFF(YEAR, c.birth_date, CURDATE())',
-          //'select' => "DATE_FORMAT(FROM_DAYS(DATEDIFF(c.birth_date, CURRENT_DATE)), '%Y')+0",
-          //'select' => 'DATEDIFF(CURRENT_DATE, c.birth_date) / 365.25',
           'from' => "",
           'where' => ' AND c.birth_date IS NOT NULL'
         );
@@ -242,11 +244,93 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
 
       case 'postal_code':
         $meta = array(
-          'select' => 'demo.label',
+          'title' => $this->_demographicOptions[$demo],
+          'select' => 'demo.postal_code',
           'from' => "
-            LEFT JOIN civicrm_option_value demo
-              ON c.gender_id = demo.value
-              AND demo.option_group_id = 3
+            LEFT JOIN civicrm_address demo
+              ON c.id = demo.contact_id
+          ",
+          'where' => '',
+        );
+        break;
+
+      case 'city':
+        $meta = array(
+          'title' => $this->_demographicOptions[$demo],
+          'select' => 'demo.city',
+          'from' => "
+            LEFT JOIN civicrm_address demo
+              ON c.id = demo.contact_id
+          ",
+          'where' => '',
+        );
+        break;
+
+      case 'town':
+        $meta = array(
+          'title' => $this->_demographicOptions[$demo],
+          'select' => 'di.town_52',
+          'from' => "
+            LEFT JOIN civicrm_address demo
+              ON c.id = demo.contact_id
+            LEFT JOIN civicrm_value_district_information_7 di
+              ON demo.id = di.entity_id
+          ",
+          'where' => '',
+        );
+        break;
+
+      case 'county':
+        $meta = array(
+          'title' => $this->_demographicOptions[$demo],
+          'select' => 'di.county_50',
+          'from' => "
+            LEFT JOIN civicrm_address demo
+              ON c.id = demo.contact_id
+            LEFT JOIN civicrm_value_district_information_7 di
+              ON demo.id = di.entity_id
+          ",
+          'where' => '',
+        );
+        break;
+
+      case 'sd':
+        $meta = array(
+          'title' => $this->_demographicOptions[$demo],
+          'select' => 'di.ny_senate_district_47',
+          'from' => "
+            LEFT JOIN civicrm_address demo
+              ON c.id = demo.contact_id
+            LEFT JOIN civicrm_value_district_information_7 di
+              ON demo.id = di.entity_id
+          ",
+          'where' => '',
+        );
+        break;
+
+      case 'ad':
+        $meta = array(
+          'title' => $this->_demographicOptions[$demo],
+          'select' => 'di.ny_assembly_district_48',
+          'from' => "
+            LEFT JOIN civicrm_address demo
+              ON c.id = demo.contact_id
+            LEFT JOIN civicrm_value_district_information_7 di
+              ON demo.id = di.entity_id
+          ",
+          'where' => '',
+        );
+        break;
+
+      case 'school_district':
+        $meta = array(
+          'title' => $this->_demographicOptions[$demo],
+          'select' => 'di.school_district_54',
+          'from' => "
+            LEFT JOIN civicrm_address demo
+              ON c.id = demo.contact_id
+            LEFT JOIN civicrm_value_district_information_7 di
+              ON demo.id = di.entity_id
           ",
           'where' => '',
         );
