@@ -14,6 +14,12 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
       'gender' => 'Gender',
       'age' => 'Age',
       'postal_code' => 'Postal Code',
+      'city' => 'City',
+      'town' => 'Town',
+      'county' => 'County',
+      'sd' => 'Senate District',
+      'ad' => 'Assembly District',
+      'school_district' => 'School District',
     );
 
     $this->_activeDemographic = NULL;
@@ -114,7 +120,7 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
     }
 
     $sqlCombined = implode(' UNION ', $sql);
-    Civi::log()->debug('all', array('$sqlCombined' => $sqlCombined));
+    //Civi::log()->debug('all', array('$sqlCombined' => $sqlCombined));
 
     return $sqlCombined;
   }
@@ -204,7 +210,7 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
 
     $meta = $this->getDemographicMeta($row['demo']);
     $row['demo'] = $meta['title'];
-    $row['label'] = (empty($row['label'])) ? '(none)' : $row['label'];
+    $row['label'] = (empty($row['label']) && $row['label'] !== '0') ? '(none)' : $row['label'];
   }
 
   public function setTitle($title) {
@@ -216,7 +222,7 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
     switch ($demo) {
       case 'gender':
         $meta = array(
-          'title' => 'Gender',
+          'title' => $this->_demographicOptions[$demo],
           'select' => 'demo.label',
           'from' => "
             LEFT JOIN civicrm_option_value demo
@@ -229,7 +235,7 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
 
       case 'age':
         $meta = array(
-          'title' => 'Age',
+          'title' => $this->_demographicOptions[$demo],
           'select' => 'YEAR(CURRENT_DATE) - YEAR(c.birth_date) - (RIGHT(CURRENT_DATE, 5) < RIGHT(c.birth_date, 5))',
           'from' => "",
           'where' => ' AND c.birth_date IS NOT NULL'
@@ -238,11 +244,93 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
 
       case 'postal_code':
         $meta = array(
-          'title' => 'Postal Code',
+          'title' => $this->_demographicOptions[$demo],
           'select' => 'demo.postal_code',
           'from' => "
             LEFT JOIN civicrm_address demo
               ON c.id = demo.contact_id
+          ",
+          'where' => '',
+        );
+        break;
+
+      case 'city':
+        $meta = array(
+          'title' => $this->_demographicOptions[$demo],
+          'select' => 'demo.city',
+          'from' => "
+            LEFT JOIN civicrm_address demo
+              ON c.id = demo.contact_id
+          ",
+          'where' => '',
+        );
+        break;
+
+      case 'town':
+        $meta = array(
+          'title' => $this->_demographicOptions[$demo],
+          'select' => 'di.town_52',
+          'from' => "
+            LEFT JOIN civicrm_address demo
+              ON c.id = demo.contact_id
+            LEFT JOIN civicrm_value_district_information_7 di
+              ON demo.id = di.entity_id
+          ",
+          'where' => '',
+        );
+        break;
+
+      case 'county':
+        $meta = array(
+          'title' => $this->_demographicOptions[$demo],
+          'select' => 'di.county_50',
+          'from' => "
+            LEFT JOIN civicrm_address demo
+              ON c.id = demo.contact_id
+            LEFT JOIN civicrm_value_district_information_7 di
+              ON demo.id = di.entity_id
+          ",
+          'where' => '',
+        );
+        break;
+
+      case 'sd':
+        $meta = array(
+          'title' => $this->_demographicOptions[$demo],
+          'select' => 'di.ny_senate_district_47',
+          'from' => "
+            LEFT JOIN civicrm_address demo
+              ON c.id = demo.contact_id
+            LEFT JOIN civicrm_value_district_information_7 di
+              ON demo.id = di.entity_id
+          ",
+          'where' => '',
+        );
+        break;
+
+      case 'ad':
+        $meta = array(
+          'title' => $this->_demographicOptions[$demo],
+          'select' => 'di.ny_assembly_district_48',
+          'from' => "
+            LEFT JOIN civicrm_address demo
+              ON c.id = demo.contact_id
+            LEFT JOIN civicrm_value_district_information_7 di
+              ON demo.id = di.entity_id
+          ",
+          'where' => '',
+        );
+        break;
+
+      case 'school_district':
+        $meta = array(
+          'title' => $this->_demographicOptions[$demo],
+          'select' => 'di.school_district_54',
+          'from' => "
+            LEFT JOIN civicrm_address demo
+              ON c.id = demo.contact_id
+            LEFT JOIN civicrm_value_district_information_7 di
+              ON demo.id = di.entity_id
           ",
           'where' => '',
         );
