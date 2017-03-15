@@ -35,7 +35,7 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
     CRM_Utils_System::setTitle(ts('Tag Demographics Search'));
 
     $tags = array('' => ts('- any tag -')) + CRM_Core_PseudoConstant::get('CRM_Core_DAO_EntityTag', 'tag_id', array('onlyActive' => FALSE));
-    $form->add('select', 'tag', ts('Tagged'), $tags, TRUE, array('class' => "crm-select2 huge"));
+    $form->add('select', 'tag', ts('Tag'), $tags, TRUE, array('class' => "crm-select2 huge"));
 
     $form->add('select', 'demographic', ts('Demographic'),
       $this->_demographicOptions, TRUE, array(
