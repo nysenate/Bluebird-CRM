@@ -1644,6 +1644,20 @@ function _buildSearchMenu($searchNavID) {
         ),
         'child' => array(),
       ),
+      $searchNavID+11 => array(
+        'attributes' => array(
+          'label'      => 'Tag Demographic Search',
+          'name'       => 'Tag Demographic Search',
+          'url'        => 'civicrm/contact/search/custom?csid=20&reset=1',
+          'permission' => 'access CiviCRM,view all contacts',
+          'operator'   => 'AND',
+          'separator'  => 0,
+          'parentID'   => $searchNavID,
+          'navID'      => $searchNavID+11,
+          'active'     => 1
+        ),
+        'child' => array(),
+      ),
     ),
   );
 
