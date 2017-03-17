@@ -84,7 +84,7 @@ function connect_to_database($bbcfg, $dbtype, $driver = DRIVER_MYSQL)
 
 
 
-function bootstrap_script($prog, $instance, $dbtypes)
+function bootstrap_script($prog, $instance, $dbtypes = DB_TYPE_CIVICRM)
 {
   $bbconfig = get_bluebird_instance_config($instance);
   if (!$bbconfig) {
