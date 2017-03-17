@@ -6,6 +6,7 @@
 // Revised: 2017-03-08 - Moved to Smarty template engine
 // Revised: 2017-03-13 - More CLI options for fine-grained control
 // Revised: 2017-03-16 - added --list and --preview options
+// Revised: 2017-03-17 - added support for default template via --default
 //
 
 require_once 'common_funcs.php';
@@ -235,6 +236,7 @@ function update_template($dbh, $ttype, $tdisp, $tpl)
 {
   $name = get_template_name($ttype);
   $ctype = get_component_type($tdisp);
+  $subj = "$name $ctype";  // eg. "NYSS Classic Theme Header"
 
   // First, confirm that a single copy of template is already in the database.
   $curtpl = retrieve_template($dbh, $ttype, $tdisp);
@@ -249,14 +251,14 @@ function update_template($dbh, $ttype, $tdisp, $tpl)
     $sql = "INSERT INTO civicrm_mailing_component ".
            "(name, component_type, subject, body_html, body_text, is_default, is_active) ".
            "VALUES (?, ?, ?, ?, ?, ?, ?)";
-    $params = array($name, $ctype, $name, $tpl['html'], $tpl['text'], 0, 1);
+    $params = array($name, $ctype, $subj, $tpl['html'], $tpl['text'], 0, 1);
   }
   else {
     // There is a single matching template, so update it.
     $sql = "UPDATE civicrm_mailing_component ".
-           "SET body_html=?, body_text=? ".
+           "SET subject=?, body_html=?, body_text=? ".
            "WHERE name=? AND component_type=?";
-    $params = array($tpl['html'], $tpl['text'], $name, $ctype);
+    $params = array($subj, $tpl['html'], $tpl['text'], $name, $ctype);
   }
 
   $sth = $dbh->prepare($sql);
@@ -272,6 +274,39 @@ function update_template($dbh, $ttype, $tdisp, $tpl)
 
 
 
+function update_default_template($dbh, $ttype)
+{
+  $name = get_template_name($ttype);
+  if ($name == null) {
+    return false;
+  }
+
+  // First, clear the default status for all header/footer templates.
+  $sql = "UPDATE civicrm_mailing_component ".
+         "SET is_default=0 ".
+         "WHERE component_type='Header' OR component_type='Footer'";
+  if ($dbh->exec($sql) === false) {
+    print_r($dbh->errorInfo());
+    return false;
+  }
+
+  $sql = "UPDATE civicrm_mailing_component ".
+         "SET is_default=1 ".
+         "WHERE name=? AND (component_type='Header' OR component_type='Footer')";
+  $params = array($name);
+  $sth = $dbh->prepare($sql);
+  $sth->execute($params);
+  if (!$sth) {
+    print_r($dbh->errorInfo());
+    return false;
+  }
+  else {
+    return true;
+  }
+} // update_default_template()
+
+
+
 function _stderr($s)
 {
   fwrite(STDERR, "$s\n");
@@ -281,14 +316,15 @@ function _stderr($s)
 
 function usage($p)
 {
-  _stderr("Usage: $p instance [--website-shortname|-w name] [--all|-a | --classic|-c | --responsive|-r] [--header|-h | --footer|-f] [--list|-l | --preview|-p | --update|-u] [--text|-t]
+  _stderr("Usage: $p instance [--website-shortname|-w <shortname>] [--all|-a | --classic|-c | --responsive|-r] [--default|-d <template-type>] [--header|-h | --footer|-f] [--list|-l | --preview|-p | --update|-u] [--text|-t]
     Option details:
       instance: the Bluebird instance from the config file
-      --website-shortname: senator name to retrieve website data for
+      --website-shortname: senator shortname on website for retrieving JSON
                            (this should generally be the same as <instance>)
-      --all: generate all available template types (classic, responsive)
+      --all: generate all available template types (classic & responsive)
       --classic: generate only a classic template
       --responsive: generate only a responsive template
+      --default: specify default template type (omit to keep current default)
       --header: generate only the header template for each template type
       --footer: generate only the footer template for each template type
       --list: display current template(s) from database [default]
@@ -302,6 +338,7 @@ function usage($p)
 $prog = basename($argv[0]);
 $instance = null;
 $shortname = null;
+$default_ttype = null;
 $mode = 'list';
 $text_display = false;
 $tpl_types = array();
@@ -322,6 +359,9 @@ while ($i < $argc) {
       break;
     case '--responsive': case '-r':
       $tpl_types['responsive'] = true;
+      break;
+    case '--default': case '-d':
+      $default_ttype = $argv[++$i];
       break;
     case '--header': case '-h':
       $tpl_disps['header'] = true;
@@ -367,6 +407,11 @@ else if (count($tpl_types) == 0) {
   usage($prog);
   exit(1);
 }
+// Confirm that default template type is valid.
+else if ($default_ttype && !isset($tpl_types[$default_ttype])) {
+  _stderr("$prog: [$default_ttype] is not a valid default template type");
+  exit(1);
+}
 
 if (!$shortname) {
   _stderr("$prog: Warning: Website shortname not specified; using instance name [$instance]");
@@ -406,46 +451,53 @@ $template_dir = $bbconfig['app_rootdir'].'/templates';
 // Initialize the Smarty template engine.
 $smarty = initialize_smarty($bbconfig, $seninfo, $template_dir);
 
-foreach ($tpl_types as $tpl_type => $is_tt_active) {
-  if ($is_tt_active) {
-    foreach ($tpl_disps as $tpl_disp => $is_td_active) {
-      if ($is_td_active) {
-        if ($mode == 'list') {
-          // In "list" mode, the current template is retrieved from the db.
-          $tpl = retrieve_template($dbref, $tpl_type, $tpl_disp);
-          if ($tpl !== null && $tpl !== false) {
+foreach ($tpl_types as $tpl_type => $dummy) {
+  foreach ($tpl_disps as $tpl_disp => $is_td_active) {
+    if ($is_td_active) {
+      if ($mode == 'list') {
+        // In "list" mode, the current template is retrieved from the db.
+        $tpl = retrieve_template($dbref, $tpl_type, $tpl_disp);
+        if ($tpl !== null && $tpl !== false) {
+          display_template($tpl, $text_display);
+        }
+        else if ($tpl === null) {
+          _stderr("ERROR: Unable to find a matching template for [$tpl_type/$tpl_disp]");
+        }
+        else {
+          _stderr("ERROR: Found more than one matching template for [$tpl_type/$tpl_disp]");
+        }
+      }
+      else {
+        // In "preview" and "update" modes, a new template is generated.
+        _stderr("Generating template [$tpl_type/$tpl_disp]");
+        $tpl = generate_template($smarty, $tpl_type, $tpl_disp);
+        if ($tpl) {
+          if ($mode == 'update') {
+            if (update_template($dbref, $tpl_type, $tpl_disp, $tpl) == true) {
+              _stderr("Successfully updated database for template [$tpl_type/$tpl_disp]");
+            }
+            else {
+              _stderr("ERROR: Failed to update database for template [$tpl_type/$tpl_disp]");
+            }
+          }
+          else { // mode == 'preview'
             display_template($tpl, $text_display);
-          }
-          else if ($tpl === null) {
-            _stderr("ERROR: Unable to find a matching template for [$tpl_type/$tpl_disp]");
-          }
-          else {
-            _stderr("ERROR: Found more than one matching template for [$tpl_type/$tpl_disp]");
           }
         }
         else {
-          // In "preview" and "update" modes, a new template is generated.
-          _stderr("Generating template [$tpl_type/$tpl_disp]");
-          $tpl = generate_template($smarty, $tpl_type, $tpl_disp);
-          if ($tpl) {
-            if ($mode == 'update') {
-              if (update_template($dbref, $tpl_type, $tpl_disp, $tpl) == true) {
-                _stderr("Successfully updated database for template [$tpl_type/$tpl_disp]");
-              }
-              else {
-                _stderr("ERROR: Failed to update database for template [$tpl_type/$tpl_disp]");
-              }
-            }
-            else { // mode == 'preview'
-              display_template($tpl, $text_display);
-            }
-          }
-          else {
-            _stderr("ERROR: Unable to generate template [$tpl_type/$tpl_disp]");
-          }
+          _stderr("ERROR: Unable to generate template [$tpl_type/$tpl_disp]");
         }
       }
     }
+  }
+}
+
+if ($default_ttype && $mode == 'update') {
+  if (update_default_template($dbref, $default_ttype) == true) {
+    _stderr("Successfully enabled [$default_ttype] as default template");
+  }
+  else {
+    _stderr("ERROR: Unable to enable [$default_ttype] as default template");
   }
 }
 
