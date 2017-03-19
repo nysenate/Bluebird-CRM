@@ -109,10 +109,10 @@
                           </div>
                           <!--[if (gte mso 9)|(IE)]>
                         </td>
-                        <td width="50%" height="206" valign="top" style="padding:0;" bgcolor="#850530">
+                        <td width="50%" height="206" valign="top" style="padding:0;" bgcolor="{{$senator.palette->lgt}}">
                           <![endif]-->
-                          <div class="column" style="width:100%;max-width:275px;display:inline-block;vertical-align:top;height:206px;background:#850530;">
-                            <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#850530">
+                          <div class="column" style="width:100%;max-width:275px;display:inline-block;vertical-align:top;height:206px;background:{{$senator.palette->lgt}};">
+                            <table width="100%" cellpadding="0" cellspacing="0" bgcolor="{{$senator.palette->lgt}}">
                               <tr>
                                 <td align="left" class="box" style="padding:17px 10px 17px 20px;">
                                   <table width="100%" cellpadding="0" cellspacing="0">
