@@ -14,6 +14,21 @@ require_once dirname(__FILE__).'/../modules/civicrm/packages/Smarty/Smarty.class
 
 
 
+// Convert all Bluebird configuration parameter names, transforming dots
+// into underscores.  This is because Smarty does not like associative
+// array indices that contain dots.
+function transform_config($bbcfg)
+{
+  $transformed_cfg = array();
+  foreach ($bbcfg as $key => $val) {
+    $nkey = strtr($key, '.', '_');
+    $transformed_cfg[$nkey] = $val;
+  }
+  return $transformed_cfg;
+} // transform_config()
+
+
+
 function set_email_defaults(&$cfg)
 {
   if (empty($cfg['email.font.family'])) {
@@ -427,29 +442,22 @@ if ($bootstrap == null) {
 $bbconfig = $bootstrap['bbconfig'];
 $dbref = $bootstrap['dbrefs'][DB_TYPE_CIVICRM];
 
-$seninfo = retrieve_senator_info($shortname);
-if ($seninfo == null) {
-  _stderr("$prog: Unable to retrieve info for [$shortname] from website");
-  exit(1);
+if ($mode == 'preview' || $mode == 'update') {
+  $seninfo = retrieve_senator_info($shortname);
+  if ($seninfo == null) {
+    _stderr("$prog: Unable to retrieve info for [$shortname] from website");
+    exit(1);
+  }
+
+  $template_dir = $bbconfig['app.rootdir'].'/templates';
+  $smarty_bbcfg = transform_config($bbconfig);
+
+  // Initialize the Smarty template engine.
+  $smarty = initialize_smarty($smarty_bbcfg, $seninfo, $template_dir);
 }
 
 // Set default values for all e-mail template config.
 set_email_defaults($bbconfig);
-
-// Convert all Bluebird configuration parameter names, transforming dots
-// into underscores.  This is because Smarty does not like associative
-// array indices that contain dots.
-foreach ($bbconfig as $key => $val) {
-  $nkey = strtr($key, '.', '_');
-  $bbconfig[$nkey] = $val;
-  unset($bbconfig[$key]);
-}
-
-// Using app_rootdir, not app.rootdir, since it was converted above.
-$template_dir = $bbconfig['app_rootdir'].'/templates';
-
-// Initialize the Smarty template engine.
-$smarty = initialize_smarty($bbconfig, $seninfo, $template_dir);
 
 foreach ($tpl_types as $tpl_type => $dummy) {
   foreach ($tpl_disps as $tpl_disp => $is_td_active) {
