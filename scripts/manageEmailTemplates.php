@@ -40,21 +40,32 @@ function set_email_defaults(&$cfg)
   if (empty($cfg['email.font.color'])) {
     $cfg['email.font.color'] = '#505050';
   }
+
   if (empty($cfg['email.background.color'])) {
     $cfg['email.background.color'] = '#ffffff';
   }
+
   if (!isset($cfg['email.header.include_banner'])) {
     $cfg['email.header.include_banner'] = true;
   }
   if (!isset($cfg['email.header.website_url'])) {
     $cfg['email.header.website_url'] = "http://{$cfg['shortname']}.nysenate.gov/";
   }
+
   if (!isset($cfg['email.footer.include_banner'])) {
     $cfg['email.footer.include_banner'] = true;
   }
   if (!isset($cfg['email.footer.include_addresses'])) {
     $cfg['email.footer.include_addresses'] = true;
   }
+
+  if (!isset($cfg['email.images.instance.base_url'])) {
+    $cfg['email.images.instance.base_url'] = "http://pubfiles.nysenate.gov/{$cfg['envname']}/{$cfg['shortname']}/images";
+  }
+  if (!isset($cfg['email.images.common.base_url'])) {
+    $cfg['email.images.common.base_url'] = "http://pubfiles.nysenate.gov/{$cfg['envname']}/common/images";
+  }
+
   if (!isset($cfg['senator.name.formal'])) {
     $cfg['senator.name.formal'] = 'New York State Senator';
   }
@@ -439,8 +450,11 @@ if ($bootstrap == null) {
   exit(1);
 }
 
-$bbconfig = $bootstrap['bbconfig'];
 $dbref = $bootstrap['dbrefs'][DB_TYPE_CIVICRM];
+$bbconfig = $bootstrap['bbconfig'];
+// Set default values for all e-mail template config.
+set_email_defaults($bbconfig);
+
 
 if ($mode == 'preview' || $mode == 'update') {
   $seninfo = retrieve_senator_info($shortname);
@@ -455,9 +469,6 @@ if ($mode == 'preview' || $mode == 'update') {
   // Initialize the Smarty template engine.
   $smarty = initialize_smarty($smarty_bbcfg, $seninfo, $template_dir);
 }
-
-// Set default values for all e-mail template config.
-set_email_defaults($bbconfig);
 
 foreach ($tpl_types as $tpl_type => $dummy) {
   foreach ($tpl_disps as $tpl_disp => $is_td_active) {
