@@ -9,7 +9,7 @@
       <td valign="top" width="{{math equation="100/x" x=$smarty.foreach.offices.total format="%d"}}%"><strong>{{$offinfo->name}}:</strong>
       <br/>{{$offinfo->street}}
       <br/>{{$offinfo->city}}, {{$offinfo->province}} {{$offinfo->postal_code}}
-      <br/>{{$offinfo->phone}}
+      <br/><a href="tel:{{$offinfo->phone}}" target="_blank" style="text-decoration:none;">{{$offinfo->phone}}</a>
       </td>
 {{/foreach}}
       </tr>
