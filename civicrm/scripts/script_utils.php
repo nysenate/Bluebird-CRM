@@ -30,6 +30,42 @@ function drupal_script_init()
 } // drupal_script_init()
 
 
+/**
+ * Bootstraps the CiviCRM environment on behalf of a custom CLI script.  The
+ * options must have already been read, and must specify which site is being
+ * targeted.
+ *
+ * @param string $site The site being targeted, e.g., 'sd99'.
+ * @param string $key An optional key to specify for the request.
+ * @param bool $session Indicates if the PHP session should be started.
+ * @return bool|null Return TRUE on success.
+ */
+function civicrm_script_cli_bootstrap($site, $key = NULL, $session = TRUE) {
+  // Make sure this is a CLI environment.
+  if (!is_cli_script()) {
+    error_log("CLI bootstrap called for non-CLI environment!  Exiting...");
+    return null;
+  }
+
+  // Add packages to the include path.
+  $old_include_path = add_packages_to_include_path($session);
+  if ($old_include_path === false) {
+    error_log("Unable to modify include_path.");
+    return null;
+  }
+
+  // Set up execution environment to mimic being called from the web server.
+  // Must set the HTTP_HOST before calling civicrm.config.php.
+  $_SERVER['PHP_SELF'] = "/index.php";
+  $_SERVER['HTTP_HOST'] = $_SERVER['SERVER_NAME'] = $site;
+  $_SERVER['SCRIPT_FILENAME'] = __FILE__;
+  $_REQUEST['key'] = $key;
+
+  // Engage Civi's config script and class auto-loader.
+  require_once SCRIPT_UTILS_CIVIROOT.'/civicrm.config.php';
+
+  return TRUE;
+}
 
 function civicrm_script_init($shopts = "", $longopts = array(), $session = true)
 {
@@ -310,3 +346,23 @@ function bb_mysql_query($query, $db, $exit_on_fail = false)
   }
   return $result;
 } // bb_mysql_query()
+
+/**
+ * Miscellaneous helper functions
+ */
+function array_ifelse($index, $source, $default = NULL) {
+  $ret = $default;
+  switch (TRUE) {
+    case is_array($source):
+      if (array_key_exists($index, $source)) {
+        $ret = $source[$index];
+      }
+      break;
+    case is_object($source):
+      if (property_exists($source, $index)) {
+        $ret = $source->{$index};
+      }
+      break;
+  }
+  return $ret;
+}

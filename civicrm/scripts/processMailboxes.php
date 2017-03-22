@@ -24,6 +24,8 @@ define('DEFAULT_IMAP_NO_EMAIL', false);
 define('IMAP_CMD_POLL', 1);
 define('IMAP_CMD_LIST', 2);
 define('IMAP_CMD_DELETE', 3);
+define('IMAP_CMD_REPROCESS', 4);
+define('IMAP_CMD_REPROCESS_HELP', 5);
 
 // Maximum size of an e-mail attachment
 define('MAX_ATTACHMENT_SIZE', 2097152);
@@ -59,10 +61,34 @@ if (!ini_get('date.timezone')) {
 //no limit
 set_time_limit(0);
 
-$prog = basename(__FILE__);
+// This script has a few exit points.  We need to make sure the IMAP
+// session, if created, is killed regardless of how execution ends.
+register_shutdown_function('endIMAPSession');
 
+// Require the script utilities library, minimally for logging and bootstrap.
 require_once 'script_utils.php';
+
+// The real parameter parser.  It will throw an Exception if anything required
+// is missing, or if the parameters don't match up.  It will also throw a
+// handy usage message (short version, by default).
+require_once 'processMailboxesConfig.php';
+try {
+  $optlist = Config::getInstance()->getOptions();
+} catch (Exception $e) {
+  bbscript_log(LL::FATAL, $e->getMessage());
+  die();
+}
+
+if (!civicrm_script_cli_bootstrap($optlist['site'], $optlist['key'])) {
+  bbscript_log(LL::FATAL, "Could not bootstrap CiviCRM environment! Exiting ...");
+  exit(1);
+}
+
+/* TODO: Below is the original parameter parsing code, in case KenZ wants it restored */
+/*
+$prog = basename(__FILE__);
 $stdusage = civicrm_script_usage();
+
 $usage = "[--server|-s imap_server]  [--port|-p imap_port]  [--imap-user|-u username]  [--imap-pass|-P password]  [--imap-flags|-f imap_flags]  [--cmd|-c <poll|list|delarchive>]  [--mailbox|-m name]  [--archivebox|-a name]  [--log-level LEVEL] [--unread-only|-r]  [--no-archive|-n]  [--no-email|-e]";
 $shortopts = "s:p:u:P:f:c:m:a:l:rne";
 $longopts = array("server=", "port=", "imap-user=", "imap-pass=", "imap-flags=",
@@ -75,14 +101,17 @@ if ($optlist === null) {
   error_log("Usage: $prog  $stdusage  $usage\n");
   exit(1);
 }
-
-if (!empty($optlist['log-level'])) {
-  set_bbscript_log_level($optlist['log-level']);
+*/
+if (!empty($optlist['log_level'])) {
+  set_bbscript_log_level($optlist['log_level']);
 }
 
+/*
+** TODO: Since we're bootstrapping Civi with script_utils, we don't need to
+** explicitly require any Civi libraries.  Let the autoloader do the work.
+*/
+/*
 require_once 'CRM/Core/Config.php';
-$config =& CRM_Core_Config::singleton();
-$session =& CRM_Core_Session::singleton();
 require_once 'CRM/Contact/BAO/Contact.php';
 require_once 'CRM/Contact/BAO/GroupContact.php';
 require_once 'CRM/Activity/BAO/Activity.php';
@@ -96,6 +125,11 @@ require_once 'CRM/Utils/File.php';
 
 require_once 'CRM/NYSS/IMAP/Session.php';
 require_once 'CRM/NYSS/IMAP/Message.php';
+*/
+
+$config =& CRM_Core_Config::singleton();
+$session =& CRM_Core_Session::singleton();
+
 
 /* More than one IMAP account can be checked per CRM instance.
 ** The username and password for each account is specified in the Bluebird
@@ -112,7 +146,9 @@ $imap_activity_status = $bbconfig['imap.activity.status.default'];
 
 $site = $optlist['site'];
 $cmd = $optlist['cmd'];
-$g_crm_instance = $site;
+/* TODO: for dev... */ //$cmd = 'list';
+// TODO: why is this here?
+//$g_crm_instance = $site;
 
 $all_params = array(
   // Each element is: paramName, optName, bbcfgName, defaultVal
@@ -136,25 +172,39 @@ foreach ($all_params as $param) {
   }
 }
 
-if (!empty($optlist['imap-user']) && !empty($optlist['imap-pass'])) {
-  $imap_accounts = $optlist['imap-user'].'|'.$optlist['imap-pass'];
+if (!empty($optlist['imap_user']) && !empty($optlist['imap_pass'])) {
+  $imap_accounts = $optlist['imap_user'].'|'.$optlist['imap_pass'];
 }
 else {
   $imap_accounts = $bbconfig['imap.accounts'];
 }
 
-if ($cmd == 'list') {
-  $cmd = IMAP_CMD_LIST;
+// If the reprocess-help switch is included, force the command to display the
+// long-form help.
+if (!empty($optlist['reprocess_help'])) {
+  $cmd = 'reprocesshelp';
 }
-else if ($cmd == 'delarchive') {
-  $cmd = IMAP_CMD_DELETE;
-}
-else if ($cmd == 'poll' || !$cmd) {
-  $cmd = IMAP_CMD_POLL;
-}
-else {
-  error_log("$prog: $cmd: Invalid script command.");
-  exit(1);
+
+switch ($cmd) {
+  case 'list':
+    $cmd = IMAP_CMD_LIST;
+    break;
+  case 'delarchive':
+    $cmd = IMAP_CMD_DELETE;
+    break;
+  case 'reprocess':
+    $cmd = IMAP_CMD_REPROCESS;
+    break;
+  case 'poll':
+    $cmd = IMAP_CMD_POLL;
+    break;
+  case 'reprocesshelp':
+    $cmd = IMAP_CMD_REPROCESS_HELP;
+    break;
+  default:
+    bbscript_log(LL::FATAL, "{$prog}: {$cmd}: Invalid script command.");
+    exit(1);
+    break;
 }
 
 // Grab default values for activities (priority, status, type).
@@ -245,7 +295,28 @@ foreach (explode(',', $imap_accounts) as $imap_account) {
 bbscript_log(LL::NOTICE, "Finished processing all mailboxes for CRM instance [$site]");
 exit(0);
 
+function beginIMAPSession($params) {
+  global $__commonImapSession;
+  if (!$__commonImapSession) {
+    try {
+      $__commonImapSession = new CRM_NYSS_IMAP_Session($params);
+    } catch (Exception $ex) {
+      bbscript_log(LL::ERROR, "Failed to create IMAP session: " . $ex->getMessage());
+      $__commonImapSession = FALSE;
+    }
+  }
+  return $__commonImapSession;
+}
 
+function endIMAPSession() {
+  global $__commonImapSession;
+  // Changes to the IMAP mailbox do not take effect unless the CL_EXPUNGE
+  // flag is provided to the imap_close() call, or if imap_expunge() is
+  // explicitly called.  Also note that if the connection was opened with
+  // the readonly flag set, then no changes will be made to the mailbox.
+  // The destructor handles all of this.
+  $__commonImapSession = null;
+}
 
 /*
  * getAuthorizedForwarders()
@@ -313,35 +384,34 @@ function isAuthForwarder($email, $fwders)
 
 function processMailboxCommand($cmd, $params)
 {
-  try {
-    $imap_session = new CRM_NYSS_IMAP_Session($params);
-  }
-  catch (Exception $ex) {
-    bbscript_log(LL::ERROR, "Failed to create IMAP session: ".$ex->getMessage());
-    $imap_session = null;
-    return false;
+
+  switch ($cmd) {
+    case IMAP_CMD_POLL:
+      $cmd_handler = 'checkImapAccount';
+      break;
+    case IMAP_CMD_LIST:
+      $cmd_handler = 'listMailboxes';
+      break;
+    case IMAP_CMD_REPROCESS:
+      $cmd_handler = 'reprocessMail';
+      break;
+    case IMAP_CMD_DELETE:
+      $cmd_handler = 'deleteArchiveBox';
+      break;
+    case IMAP_CMD_REPROCESS_HELP:
+      $cmd_handler = 'reprocessHelpText';
+      break;
+    default:
+      bbscript_log(LL::ERROR, "Invalid command [{$cmd}], params=" . var_export($params, 1));
+      $cmd_handler = '';
   }
 
-  if ($cmd == IMAP_CMD_POLL) {
-    $rc = checkImapAccount($imap_session, $params);
-  }
-  else if ($cmd == IMAP_CMD_LIST) {
-    $rc = listMailboxes($imap_session, $params);
-  }
-  else if ($cmd == IMAP_CMD_DELETE) {
-    $rc = deleteArchiveBox($imap_session, $params);
+  if ($cmd_handler && function_exists($cmd_handler)) {
+    $rc = $cmd_handler($params);
   }
   else {
-    bbscript_log(LL::ERROR, "Invalid command [$cmd], params=".print_r($params, true));
-    $rc = false;
+    $rc = FALSE;
   }
-
-  // Changes to the IMAP mailbox do not take effect unless the CL_EXPUNGE
-  // flag is provided to the imap_close() call, or if imap_expunge() is
-  // explicitly called.  Also note that if the connection was opened with
-  // the readonly flag set, then no changes will be made to the mailbox.
-  // The destructor handles all of this.
-  $imap_session = null;
 
   return $rc;
 } // processMailboxCommand()
@@ -350,9 +420,14 @@ function processMailboxCommand($cmd, $params)
 
 // Check the given IMAP account for new messages, and process them.
 
-function checkImapAccount($imapSess, $params)
+function checkImapAccount($params)
 {
   bbscript_log(LL::NOTICE, "Polling CRM [".$params['site']."] using IMAP account ".$params['user'].'@'.$params['server'].$params['flags']);
+
+  if (!($imapSess = beginIMAPSession($params))) {
+    bbscript_log(LL::ERROR, "IMAP Session could not be created.");
+    return false;
+  }
 
   $imap_conn = $imapSess->getConnection();
   $crm_archivebox = '{'.$params['server'].'}'.$params['archivebox'];
@@ -763,8 +838,13 @@ function searchForMatches($db, $params)
 
 
 
-function listMailboxes($imapSess, $params)
+function listMailboxes($params)
 {
+  if (!($imapSess = beginIMAPSession($params))) {
+    bbscript_log(LL::ERROR, "IMAP Session could not be created.");
+    return false;
+  }
+
   $inboxes = $imapSess->listFolders('*', true);
   foreach ($inboxes as $inbox) {
     echo "$inbox\n";
@@ -774,8 +854,13 @@ function listMailboxes($imapSess, $params)
 
 
 
-function deleteArchiveBox($imapSess, $params)
+function deleteArchiveBox($params)
 {
+  if (!($imapSess = beginIMAPSession($params))) {
+    bbscript_log(LL::ERROR, "IMAP Session could not be created.");
+    return false;
+  }
+
   $crm_archivebox = '{'.$params['server'].'}'.$params['archivebox'];
   bbscript_log(LL::NOTICE, "Deleting archive mailbox: $crm_archivebox");
   return imap_deletemailbox($imapSess->getConnection(), $crm_archivebox);
@@ -819,4 +904,173 @@ function getImapParam($optlist, $optname, $bbcfg, $cfgname, $defval)
   }
 } // getImapParam()
 
+function reprocessMail($params) {
+
+  // collect the authorized forwarders
+  $authForwarders = getAuthorizedForwarders();
+
+  // generate query from filters.. SELECT * FROM nyss_inbox_messages
+  $where_clauses = parseSearchParameters();
+  $query = "SELECT * FROM nyss_inbox_messages WHERE " . implode(' AND ', $where_clauses);
+  bbscript_log(LL::DEBUG, "Reprocessing search query=\n$query");
+  $dao = CRM_Core_DAO::executeQuery($query);
+  bbscript_log(LL::DEBUG, "Found {$dao->N} records");
+
+  while ($dao->fetch()) {
+    bbscript_log(LL::TRACE, "Working with record:\n".var_export($dao,1));
+    // for each message found, scan for addresses
+    // this returns the "secondary" addresses.  "primary" is in sender_name/sender_email
+    // of the record.
+    $addresses = CRM_NYSS_IMAP_Message::scanForAddresses(
+      $dao->body,
+      CRM_NYSS_IMAP_Message::NYSS_EMAIL_FILTER_HEADER
+    );
+    bbscript_log(LL::TRACE, "Found addresses:\n".var_export($addresses,1));
+
+    // Search for a secondary address which is *not* an authorized forwarder.
+    $fwdEmail = '';
+    $fwdName = '';
+    if (is_array($addresses) && count($addresses) > 0) {
+      $foundIndex = 0;
+      foreach ($addresses as $k => $v) {
+        // if this address is NOT an authorized forwarder
+        if (!isAuthForwarder($v['address'], $authForwarders)) {
+          $foundIndex = $k;
+          break;
+        }
+      }
+      $fwdEmail = $addresses[$foundIndex]['address'];
+      $fwdName = $addresses[$foundIndex]['name'];
+    }
+
+    // If a name is found, update the row.
+    if ($fwdEmail) {
+      bbscript_log(LL::DEBUG, "Updating record {$dao->id} with new email $fwdEmail");
+    }
+  }
+
+  return true;
+}
+
+function reprocessHelpText($params) {
+  $msg = "The reprocessing mode is designed to re-examine messages already stored \n" .
+    "in the database.  By default, reprocessing will look for all messages with a \n" .
+    "status of 0 or 99 (unmatched,unprocessed).  Optionally, one or multiple search \n" .
+    "terms may be passed as the value of the --reproc-select option.  The terms must \n" .
+    "be formatted as comma-delimited list of recognized search parameters.  The \n" .
+    "recognized parameters are:\n\n".
+    "   unmatched: status=0\n".
+    "   unprocessed: status=99\n".
+    "   nomatcher: matcher=0\n".
+    "   nocontact: matched_to=0\n".
+    "   noactivity: activity_id=0\n".
+    "   nosender: (sender_email='' or sender_email IS NULL)\n\n".
+    "Additionally, specific fields may be searched by using the field name, a \n" .
+    "comparison operator, and a target value.  Normal comparison operators such \n" .
+    "as '=', '<', and '>' are valid.  To search ranges, use '..' between the \n" .
+    "min and max values of the desired range.  The values for dates should be in \n" .
+    "any format acceptable to PHP's strtotime()/date_parse() functions.  Accepted \n" .
+    "fields for custom searches are id, message_id, status, matcher, matched_to, \n" .
+    "activity_id, updated_date, and email_date.\n\n".
+    "All search terms are cumulative with 'AND' joins.  If spaces must be included \n".
+    "in the terms, be sure to surround the entire value with quotes.  Examples:\n\n".
+    "  --reproc-select='nosender,id=150..250'\n".
+    "  select..where (sender_email='' or sender_email IS NULL) AND\n" .
+    "     id between 150 and 250\n\n".
+    "  --reproc-select='email_date>2017-01-01 03:00:00'\n".
+    "  select..where email_date > '2017-01-01 03:00:00'\n\n";
+  echo $msg;
+  return true;
+}
+
+function parseSearchParameters() {
+  global $optlist;
+
+  $terms_regex = '/(un(matched|unprocessed)|no(matcher|contact|activity|sender)' .
+    '|id|message_id|status|matcher|matched_to|activity_id|updated_date|email_date)' .
+    '(>|<|=|..)?(.*)/i';
+
+  $ret = array();
+  $terms = explode(',', $optlist['reproc_select']);
+  bbscript_log(LL::DEBUG, "Reprocessing search term discovery:\n".var_export($terms,1));
+  foreach ($terms as $val) {
+    $matches = array();
+    bbscript_log(LL::TRACE, "Testing search term: $val");
+    $found = preg_match($terms_regex, $val, $matches);
+    bbscript_log(LL::TRACE, "Test search term results:\n".var_export($matches,1));
+    if ($found) {
+      $found = buildPredicate($matches);
+      bbscript_log(LL::TRACE, "Built predicate: $found");
+    }
+    if ($found) {
+      $ret[] = $found;
+    }
+  }
+  if (!count($ret)) {
+    bbscript_log(LL::DEBUG, "No reprocessing search terms found, adding default behavior");
+    $ret[] = "status IN (0,99)";
+  }
+  bbscript_log(LL::DEBUG, "Built search parameters:\n".var_export($ret,1));
+  return $ret;
+}
+
+function buildPredicate($term) {
+  $ret = '';
+  switch ($term[1]) {
+    case 'unmatched':
+      $ret = 'status=0';
+      break;
+    case 'unprocessed':
+      $ret = 'status=99';
+      break;
+    case 'nomatcher':
+      $ret = 'matcher=0';
+      break;
+    case 'nocontact':
+      $ret = 'matched_to=0';
+      break;
+    case 'noactivity':
+      $ret = 'activity_id=0';
+      break;
+    case 'nosender':
+      $ret = "(sender_email='' OR sender_email IS NULL)";
+      break;
+    case 'id':
+    case 'message_id':
+    case 'status':
+    case 'matcher':
+    case 'matched_to':
+    case 'activity_id':
+    case 'updated_date':
+    case 'email_date':
+      $ret = buildFieldPredicate($term);
+      break;
+    default:
+      bbscript_log(LL::WARN, "Invalid reproc-select term {$term[1]} being ignored..");
+      break;
+  }
+  return $ret;
+}
+
+function buildFieldPredicate($term) {
+  $ret = '';
+  if (preg_match('/^(id|message_id|status|matcher|matched_to|activity_id|updated_date|email_date)$/', $term[1])) {
+    $field = $term[1];
+    $between_test = explode('..', $term[5]);
+    if (count($between_test) == 2) {
+      $op = 'BETWEEN';
+      $val = "'" . CRM_Core_DAO::escapeString($between_test[0]) .
+        "' AND '" . CRM_Core_DAO::escapeString($between_test[1]) . "'";
+    }
+    else {
+      $op = $term[4];
+      $val = "'" . CRM_Core_DAO::escapeString($term[5]) . "'";
+    }
+    $ret = "$field $op $val";
+  }
+  else {
+    bbscript_log(LL::WARN, "Invalid select field {$term[1]} being ignored..");
+  }
+  return $ret;
+}
 ?>
