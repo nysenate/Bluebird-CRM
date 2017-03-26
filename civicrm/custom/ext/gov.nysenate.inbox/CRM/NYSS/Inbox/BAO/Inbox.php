@@ -102,15 +102,23 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     return $details;
   }
 
-  static function deleteMessages($ids) {
+  static function deleteMessages($ids = array()) {
+    if (empty($ids) && !empty(CRM_Utils_Array::value('ids', $_REQUEST))) {
+      $ids = CRM_Utils_Array::value('ids', $_REQUEST);
+    }
+
     $idList = implode(',', $ids);
     $userId = CRM_Core_Session::getLoggedInContactID();
 
-    CRM_Core_DAO::executeQuery("
-      UPDATE nyss_inbox_messages
-      SET status = ".self::STATUS_DELETED.", matcher = $userId
-      WHERE id IN ({$idList})
-    ");
+    if (!empty($idList) && !empty($userId)) {
+      CRM_Core_DAO::executeQuery("
+        UPDATE nyss_inbox_messages
+        SET status = " . self::STATUS_DELETED . ", matcher = %1
+        WHERE id IN ({$idList})
+      ", array(
+        1 => array($userId, 'Positive'),
+      ));
+    }
   }
 
   /**

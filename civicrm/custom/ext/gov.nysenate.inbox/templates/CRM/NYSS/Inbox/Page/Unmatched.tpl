@@ -35,21 +35,6 @@
             "url": CRM.url('civicrm/nyss/inbox/ajax/unmatched', {snippet: 4, range: 30})
           }
         });
-
-        //redraw table when range filter changes
-        CRM.$('#range_filter').change(function(){
-          var range = $('#range_filter').val();
-          var search = $('#search_filter').val();
-          CRM.$('table.inbox-unmatchedmessages-selector').DataTable().ajax.
-            url(CRM.url('civicrm/nyss/inbox/ajax/unmatched', {snippet: 4, range: range, term: search})).load();
-        });
-
-        CRM.$('#search_filter').keypress(function(){
-          var range = $('#range_filter').val();
-          var term = $('#search_filter').val();
-          CRM.$('table.inbox-unmatchedmessages-selector').DataTable().ajax.
-          url(CRM.url('civicrm/nyss/inbox/ajax/unmatched', {snippet: 4, range: range, term: JSON.stringify(term)})).load();
-        });
       })(CRM.$);
     </script>
   {/literal}
