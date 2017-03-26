@@ -1,54 +1,51 @@
 CRM.$(function($) {
-  //redraw table when range filter changes
-  CRM.$('#range_filter').change(function(){
-    refreshList();
-  });
-
-  //redraw table when search filter triggered
-  CRM.$('#search_filter').keypress(function(){
-    refreshList();
-  });
-
-  //select all action
-  $('.select-all').click(function(){
-    if ($(this).is(":checked")) {
-      $('.message-select').each(function(){
-        $(this).prop('checked', true);
-      });
-    }
-    else {
-      $('.message-select').each(function(){
-        $(this).prop('checked', false);
-      });
-    }
-  });
-
-  //delete multiple
-  $('.multi_delete').click(function() {
-    // grab the rows to delete
-    var delete_ids = $("input.message-select:checked").map(function(){
+  //clear multiple
+  $('.multi_clear').click(function() {
+    // grab the rows to clear
+    var clear_ids = $("input.message-select:checked").map(function(){
       return $(this).prop('id').replace('select-', '');
     }).get();
 
-    if (!delete_ids.length) {
-      CRM.alert('Use the checkbox to select one or more messages to delete.', 'Delete Messages', 'warn');
+    if (!clear_ids.length) {
+      CRM.alert('Use the checkbox to select one or more messages to clear.', 'Clear Messages', 'warn');
       return false;
     }
 
     CRM.confirm({
-      title: 'Permanently Delete Messages?',
-      message: 'Are you sure you want to permanently remove ' + delete_ids.length + ' messages?'
+      title: 'Clear Messages?',
+      message: 'Are you sure you want to clear ' + clear_ids.length + ' messages?'
     }).on('crmConfirm:yes', function() {
-      var url = CRM.url('civicrm/nyss/inbox/deletemsgs', {ids: delete_ids});
+      var url = CRM.url('civicrm/nyss/inbox/clearmsgs', {ids: clear_ids});
       var request = $.post(url);
-      CRM.status({success: 'Messages were successfully deleted.'}, request);
+      CRM.status({success: 'Messages were successfully cleared.'}, request);
 
       refreshList();
     });
   });
 
-  $('.inbox-delete, .inbox-assign-contact, .multi-delete')
-    .on('crmPopupFormSuccess.crmLivePage', CRM.refreshParent);
+  //process multiple
+  $('.multi_process').click(function() {
+    // grab the rows to delete
+    var process_ids = $("input.message-select:checked").map(function(){
+      return $(this).prop('id').replace('select-', '');
+    }).get();
+
+    if (!process_ids.length) {
+      CRM.alert('Use the checkbox to select one or more messages to process.', 'Process Messages', 'warn');
+      return false;
+    }
+
+    CRM.confirm({
+      title: 'Process Messages?',
+      message: 'Are you sure you want to process ' + process_ids.length + ' messages?'
+    }).on('crmConfirm:yes', function() {
+      var url = CRM.url('civicrm/nyss/inbox/processmsgs', {ids: process_ids});
+      var request = $.post(url);
+      CRM.status({success: 'Messages were successfully processed.'}, request);
+
+      refreshList();
+    });
+  });
 
   function refreshList() {
     var range = $('#range_filter').val();

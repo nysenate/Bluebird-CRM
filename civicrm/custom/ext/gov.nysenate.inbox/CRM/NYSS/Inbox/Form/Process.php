@@ -5,9 +5,9 @@
  *
  * @see http://wiki.civicrm.org/confluence/display/CRMDOC43/QuickForm+Reference
  */
-class CRM_NYSS_Inbox_Form_Delete extends CRM_Core_Form {
+class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
   public function buildQuickForm() {
-    CRM_NYSS_Inbox_BAO_Inbox::addResources();
+    CRM_NYSS_Inbox_BAO_Inbox::addResources('process');
 
     //get details about record
     $id = CRM_Utils_Request::retrieve('id', 'Positive');
@@ -17,10 +17,17 @@ class CRM_NYSS_Inbox_Form_Delete extends CRM_Core_Form {
     $this->assign('details', $details);
 
     // add form elements
+    $this->addEntityRef('assignee', 'Select Assignee', array(
+      'api' => array(
+        'params' => array('contact_type' => 'Individual'),
+      ),
+      'create' => TRUE,
+    ), FALSE);
+
     $this->addButtons(array(
       array(
         'type' => 'submit',
-        'name' => ts('Delete'),
+        'name' => ts('Process'),
         'isDefault' => TRUE,
       ),
       array(
@@ -38,11 +45,11 @@ class CRM_NYSS_Inbox_Form_Delete extends CRM_Core_Form {
     $values = $this->exportValues();
 
     if (empty($values['message_id'])) {
-      CRM_Core_Session::setStatus('Unable to delete this message.');
+      CRM_Core_Session::setStatus('Unable to process this message.');
       return;
     }
 
-    CRM_NYSS_Inbox_BAO_Inbox::deleteMessages(array($values['message_id']));
+    CRM_NYSS_Inbox_BAO_Inbox::processMessages($values);
     CRM_Core_Session::setStatus('Message has been deleted.');
 
     parent::postProcess();

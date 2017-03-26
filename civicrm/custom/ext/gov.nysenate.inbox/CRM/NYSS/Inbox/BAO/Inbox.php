@@ -21,6 +21,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
    * add common resources
    */
   static function addResources($type = NULL) {
+    CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.inbox', 'js/inbox.js');
     CRM_Core_Resources::singleton()->addScriptUrl('/sites/default/themes/Bluebird/scripts/bbtree.js');
     CRM_Core_Resources::singleton()->addStyleFile('gov.nysenate.inbox', 'css/inbox.css');
     CRM_Core_Resources::singleton()->addStyleUrl('/sites/default/themes/Bluebird/css/tags/tags.css');
@@ -32,6 +33,9 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         break;
       case 'matched':
         CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.inbox', 'js/inbox_matched.js');
+        break;
+      case 'process':
+        CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.inbox', 'js/inbox_process.js');
         break;
       default:
     }
@@ -78,7 +82,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
     $sql = "
       SELECT im.id, im.sender_name, im.sender_email, im.subject, im.forwarder,
-        im.updated_date, im.email_date, im.body, im.status,
+        im.updated_date, im.email_date, im.body, im.status, im.matched_to,
         IFNULL(count(ia.file_name), '0') as attachments,
         count(e.id) AS email_count
       FROM nyss_inbox_messages im
@@ -94,7 +98,9 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     ));
 
     while ($dao->fetch()) {
-      $attachment = (!empty($dao->attachments)) ? "<div class='icon attachment-icon attachment' title='{$dao->attachments} Attachment(s)'></div>" : '';
+      $attachment = (!empty($dao->attachments)) ?
+        "<div class='icon attachment-icon attachment' title='{$dao->attachments} Attachment(s)'></div>" : '';
+      $matched = self::getMatched($dao->matched_to);
       $details = array(
         'id' => $dao->id,
         'sender_name' => $dao->sender_name,
@@ -105,6 +111,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         'updated_date' => date('m/d/Y', strtotime($dao->updated_date)),
         'forwarded_by' => $dao->forwarder,
         'body' => CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->body),
+        'matched_to' => $matched,
       );
     }
 
@@ -112,6 +119,12 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     return $details;
   }
 
+  /**
+   * @param array $ids
+   *
+   * retrieve list of ids to delete
+   * either passed to function or via $_REQUEST (AJAX)
+   */
   static function deleteMessages($ids = array()) {
     if (empty($ids) && !empty(CRM_Utils_Array::value('ids', $_REQUEST))) {
       $ids = CRM_Utils_Array::value('ids', $_REQUEST);
@@ -124,6 +137,31 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       CRM_Core_DAO::executeQuery("
         UPDATE nyss_inbox_messages
         SET status = " . self::STATUS_DELETED . ", matcher = %1
+        WHERE id IN ({$idList})
+      ", array(
+        1 => array($userId, 'Positive'),
+      ));
+    }
+  }
+
+  /**
+   * @param array $ids
+   *
+   * retrieve list of ids to clear
+   * either passed to function or via $_REQUEST (AJAX)
+   */
+  static function clearMessages($ids = array()) {
+    if (empty($ids) && !empty(CRM_Utils_Array::value('ids', $_REQUEST))) {
+      $ids = CRM_Utils_Array::value('ids', $_REQUEST);
+    }
+
+    $idList = implode(',', $ids);
+    $userId = CRM_Core_Session::getLoggedInContactID();
+
+    if (!empty($idList) && !empty($userId)) {
+      CRM_Core_DAO::executeQuery("
+        UPDATE nyss_inbox_messages
+        SET status = " . self::STATUS_CLEARED . ", matcher = %1
         WHERE id IN ({$idList})
       ", array(
         1 => array($userId, 'Positive'),
@@ -231,8 +269,8 @@ class CRM_NYSS_Inbox_BAO_Inbox {
               "<a href='{$urlAssign}' class='action-item crm-hover-button crm-popup inbox-assign-contact'>Assign Contact</a>";
             break;
           case 'matched':
-            $urlProcess = CRM_Utils_System::url('civicrm/nyss/inbox/assigncontact', "reset=1&id={$dao->id}");
-            $urlClear = CRM_Utils_System::url('civicrm/nyss/inbox/assigncontact', "reset=1&id={$dao->id}");
+            $urlProcess = CRM_Utils_System::url('civicrm/nyss/inbox/process', "reset=1&id={$dao->id}");
+            $urlClear = CRM_Utils_System::url('civicrm/nyss/inbox/clear', "reset=1&id={$dao->id}");
             $links['process'] =
               "<a href='{$urlProcess}' class='action-item crm-hover-button crm-popup inbox-process-contact'>Process</a>";
             $links['clear'] =
@@ -421,5 +459,29 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     }
 
     return $attachments;
+  }
+
+  /**
+   * @param $cid
+   * @return null|string
+   */
+  static function getMatched($cid) {
+    if (empty($cid)) {
+      return NULL;
+    }
+
+    try {
+      $contact = civicrm_api3('contact', 'getsingle', array(
+        'id' => $cid,
+      ));
+
+      $matchedUrl = CRM_Utils_System::url('civicrm/contact/view', "reset=1&cid={$cid}");
+      $matchedContact = "<a href='{$matchedUrl}'>{$contact['display_name']}</a><br /><{$contact['email']}>";
+
+      return $matchedContact;
+    }
+    catch (CiviCRM_API3_Exception $e) {}
+
+    return NULL;
   }
 }
