@@ -8,7 +8,7 @@
     <th>Sender</th>
     <th>Email</th>
     <th>Subject</th>
-    <th>Date Forwarded</th>
+    <th>Date Updated</th>
     <th>Forwarded By</th>
   </tr>
   <tr id="message-{$details.id}">

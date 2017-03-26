@@ -36,7 +36,7 @@
   </div>
   <div class="crm-section">
     <div class="label">Forwarded Date</div>
-    <div class="content">{$details.date_forwarded}</div>
+    <div class="content">{$details.updated_date}</div>
     <div class="clear"></div>
   </div>
   <div class="crm-section">

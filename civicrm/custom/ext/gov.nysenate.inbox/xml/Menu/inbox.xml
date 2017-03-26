@@ -11,6 +11,20 @@
     <page_callback>CRM_NYSS_Inbox_Page_Unmatched::getUnmatched</page_callback>
     <access_arguments>access Inbox Polling</access_arguments>
   </item>
+
+
+  <item>
+    <path>civicrm/nyss/inbox/matched</path>
+    <page_callback>CRM_NYSS_Inbox_Page_Matched</page_callback>
+    <title>Matched Messages</title>
+    <access_arguments>access Inbox Polling</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/nyss/inbox/ajax/matched</path>
+    <page_callback>CRM_NYSS_Inbox_Page_Matched::getMatched</page_callback>
+    <access_arguments>access Inbox Polling</access_arguments>
+  </item>
+
   <item>
     <path>civicrm/nyss/inbox/assigncontact</path>
     <page_callback>CRM_NYSS_Inbox_Form_AssignContact</page_callback>

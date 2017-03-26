@@ -20,11 +20,21 @@ class CRM_NYSS_Inbox_BAO_Inbox {
   /**
    * add common resources
    */
-  static function addResources() {
-    CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.inbox', 'js/inbox_unmatched.js');
+  static function addResources($type = NULL) {
     CRM_Core_Resources::singleton()->addScriptUrl('/sites/default/themes/Bluebird/scripts/bbtree.js');
     CRM_Core_Resources::singleton()->addStyleFile('gov.nysenate.inbox', 'css/inbox.css');
     CRM_Core_Resources::singleton()->addStyleUrl('/sites/default/themes/Bluebird/css/tags/tags.css');
+
+    //add type-specific resources
+    switch ($type) {
+      case 'unmatched':
+        CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.inbox', 'js/inbox_unmatched.js');
+        break;
+      case 'matched':
+        CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.inbox', 'js/inbox_matched.js');
+        break;
+      default:
+    }
   }
 
   /**
@@ -92,7 +102,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         'email_count' => $dao->email_count,
         'subject' => CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->subject).$attachment,
         'date_email' => date('m/d/Y', strtotime($dao->email_date)),
-        'date_forwarded' => date('m/d/Y', strtotime($dao->updated_date)),
+        'updated_date' => date('m/d/Y', strtotime($dao->updated_date)),
         'forwarded_by' => $dao->forwarder,
         'body' => CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->body),
       );
@@ -213,12 +223,26 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         $msg['updated_date'] = date('M d, Y', strtotime($dao->updated_date));
         $msg['forwarder'] = $dao->forwarder;
 
-        $urlAssign = CRM_Utils_System::url('civicrm/nyss/inbox/assigncontact', "reset=1&id={$dao->id}");
+
+        switch ($status) {
+          case 'unmatched':
+            $urlAssign = CRM_Utils_System::url('civicrm/nyss/inbox/assigncontact', "reset=1&id={$dao->id}");
+            $links['assign'] =
+              "<a href='{$urlAssign}' class='action-item crm-hover-button crm-popup inbox-assign-contact'>Assign Contact</a>";
+            break;
+          case 'matched':
+            $urlProcess = CRM_Utils_System::url('civicrm/nyss/inbox/assigncontact', "reset=1&id={$dao->id}");
+            $urlClear = CRM_Utils_System::url('civicrm/nyss/inbox/assigncontact', "reset=1&id={$dao->id}");
+            $links['process'] =
+              "<a href='{$urlProcess}' class='action-item crm-hover-button crm-popup inbox-process-contact'>Process</a>";
+            $links['clear'] =
+              "<a href='{$urlClear}' class='action-item crm-hover-button crm-popup inbox-clear-contact'>Clear</a>";
+            break;
+          default:
+        }
+
         $urlDelete = CRM_Utils_System::url('civicrm/nyss/inbox/delete', "reset=1&id={$dao->id}");
-        $links = array(
-          'assign' => "<a href='{$urlAssign}' class='action-item crm-hover-button crm-popup inbox-assign-contact'>Assign Contact</a>",
-          'delete' => "<a href='{$urlDelete}' class='action-item crm-hover-button crm-popup inbox-delete'>Delete</a>",
-        );
+        $links['delete'] = "<a href='{$urlDelete}' class='action-item crm-hover-button crm-popup inbox-delete'>Delete</a>";
 
         $msg['links'] = implode(' ', $links);
 
