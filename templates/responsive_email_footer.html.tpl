@@ -33,7 +33,9 @@
                                   {{$offinfo->street}}<br/>
                                   {{$offinfo->city}}, {{$offinfo->province}} {{$offinfo->postal_code}}<br/>
                                   Phone: <a href="tel:{{$offinfo->phone}}" target="_blank" style="color:#010101; text-decoration:none;">{{$offinfo->phone}}</a><br/>
+{{if $offinfo->fax}}
                                   Fax: <a href="tel:{{$offinfo->fax}}" target="_blank" style="color:#010101; text-decoration:none;">{{$offinfo->fax}}</a><br/>
+{{/if}}
                                 </td>
                               </tr>
                             </table>
@@ -57,7 +59,7 @@
               <table cellpadding="0" cellspacing="0" align="center" style="margin:0 auto !important;">
                 <tr>
                   <td align="center" style="padding:0 0 19px;">
-                    <a target="_blank" href="https://www.nysenate.gov/"><img src="%COMMON_IMAGES_BASE_URL%/nyss_seal_bw.png" border="0" style="vertical-align:top; width:115px; height:116px;" width="115" height="116" alt="New York State Senate" /></a>
+                    <a target="_blank" href="https://www.nysenate.gov/"><img src="{{$bbcfg.email_images_common_base_url}}/nyss_seal_bw.png" border="0" style="vertical-align:top; width:115px; height:116px;" width="115" height="116" alt="New York State Senate" /></a>
                   </td>
                 </tr>
               </table>

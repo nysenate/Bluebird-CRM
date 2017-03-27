@@ -41,7 +41,7 @@ function get_config_filepath($filename)
 function get_bluebird_config($filename = null)
 {
   static $bbini = null;
-  static $s_filename= null;
+  static $s_filename = null;
 
   /* Do not re-read the configuration file within the same HTTP request,
   ** unless a different config file is specified.
@@ -71,6 +71,24 @@ function get_bluebird_config($filename = null)
 
   return $bbini;
 } // get_bluebird_config()
+
+
+/*
+** Attempt to derive the environment name (eg. "crmdev", "crmtest", "staging",
+** "crm") from the BASE_DIR.
+*/
+function derive_environment()
+{
+  $envname = 'crm';  // Assume prod environment for now.
+  $env_shortname = strrchr(BASE_DIR, '_');
+  if ($env_shortname !== false) {
+    $env_shortname = substr($env_shortname, 1);
+    if ($env_shortname != 'prod') {
+      $envname = "crm$env_shortname";
+    }
+  }
+  return $envname;
+} // derive_environment()
 
 
 /*
@@ -113,9 +131,10 @@ function get_bluebird_instance_config($instance = null, $filename = null)
 
   $firstdot = strpos($instance, '.');
   if ($firstdot === false) {
+    // Instance was not specified as a FQDN.
     $shortname = $instance;
-    $envname = 'crm';
-    $default_base_domain = 'crm.nysenate.gov';
+    $envname = derive_environment();
+    $default_base_domain = "$envname.nysenate.gov";
   }
   else {
     $shortname = substr($instance, 0, $firstdot);
