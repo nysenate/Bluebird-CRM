@@ -52,6 +52,14 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
      * are part of the search criteria
      */
     $form->assign('elements', array('tag', 'demographic'));
+
+    //export option
+    $formValues = $form->get('formValues');
+    if (!empty($formValues)) {
+      $quickExportUrl = CRM_Utils_System::url('civicrm/search/custom/tagdemographics/quickexport',
+        http_build_query(array('formValues' => $formValues)));
+      $form->assign('quickExportUrl', $quickExportUrl);
+    }
   }
 
   /**
@@ -341,4 +349,21 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
 
     return $meta;
   }
+
+  /**
+   * export csv
+   */
+  static function quickExport() {
+    //CRM_Core_Error::debug_var('$_REQUEST', $_REQUEST);
+
+    if (!empty($_REQUEST['formValues'])) {
+      $_REQUEST['is_quick_export'] = true;
+      $formValues = $_REQUEST['formValues'];
+
+      CRM_Export_BAO_Export::exportCustom($formValues['customSearchClass'],
+        $formValues,
+        'sort_name'
+      );
+    }
+  }//quickExport
 }
