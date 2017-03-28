@@ -132,6 +132,7 @@ $drush $instance cvapi extension.install key=gov.nysenate.resources
 $drush $instance cvapi extension.install key=gov.nysenate.dao
 $drush $instance cvapi extension.install key=gov.nysenate.tagdemographics
 $drush $instance cvapi extension.install key=gov.nysenate.webintegration
+$drush $instance cvapi extension.install key=gov.nysenate.inbox
 
 ## fix collation
 echo "$prog: fix collations"
