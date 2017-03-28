@@ -81,8 +81,8 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     $details = array();
 
     $sql = "
-      SELECT im.id, im.sender_name, im.sender_email, im.subject, im.forwarder,
-        im.updated_date, im.email_date, im.body, im.status, im.matched_to,
+      SELECT im.id, im.message_id, im.sender_name, im.sender_email, im.subject, im.body, im.forwarder,
+        im.status, im.matcher, im.matched_to, im.activity_id, im.updated_date, im.email_date, 
         IFNULL(count(ia.file_name), '0') as attachments,
         count(e.id) AS email_count
       FROM nyss_inbox_messages im
@@ -101,17 +101,27 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       $attachment = (!empty($dao->attachments)) ?
         "<div class='icon attachment-icon attachment' title='{$dao->attachments} Attachment(s)'></div>" : '';
       $matched = self::getMatched($dao->matched_to);
+      $body = CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->body);
+      $parsed = self::parseMessage($body);
       $details = array(
         'id' => $dao->id,
+        'message_id' => $dao->message_id,
         'sender_name' => $dao->sender_name,
         'sender_email' => $dao->sender_email,
-        'email_count' => $dao->email_count,
-        'subject' => CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->subject).$attachment,
-        'date_email' => date('m/d/Y', strtotime($dao->email_date)),
-        'updated_date' => date('m/d/Y', strtotime($dao->updated_date)),
+        'subject' => CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->subject),
+        'subject_display' => CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->subject).$attachment,
+        'body_raw' => $body,
+        'body' => self::highlightItems($body, $parsed),
         'forwarded_by' => $dao->forwarder,
-        'body' => CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->body),
-        'matched_to' => $matched,
+        'status' => $dao->status,
+        'matcher' => $dao->matcher,
+        'matched_to' => $dao->matched_to,
+        'matched_to_display' => $matched,
+        'activity_id' => $dao->activity_id,
+        'updated_date' => date('m/d/Y', strtotime($dao->updated_date)),
+        'date_email' => date('m/d/Y', strtotime($dao->email_date)),
+        'attachments' => $dao->attachments,
+        'email_count' => $dao->email_count,
       );
     }
 
@@ -371,7 +381,17 @@ class CRM_NYSS_Inbox_BAO_Inbox {
             $entityFileDAO->save();
           }
         }
-      } // if attachments
+      }
+
+      //store activity_id in messages table
+      CRM_Core_DAO::executeQuery("
+        UPDATE nyss_inbox_messages
+        SET activity_id = %1
+        WHERE id = %2
+      ", array(
+        1 => array($activity['id'], 'Positive'),
+        2 => array($messageId, 'Positive'),
+      ));
     }
     catch (CiviCRM_API3_Exception $e) {
       Civi::log()->error('assignMessage', array('e' => $e));
@@ -404,6 +424,116 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       'is_error' => FALSE,
       'message' => "Message successfully assigned to {$contactName}.",
     );
+  }
+
+  /**
+   * @param $params
+   * @return array
+   *
+   * process message record: assignment, contact tags, activity tags, activity details
+   */
+  static function processMessages($values) {
+    $msg = array();
+
+    if (!empty($values['assignee'])) {
+      CRM_Core_DAO::executeQuery("
+        UPDATE nyss_inbox_messages
+        SET matched_to = %1
+        WHERE id = %2
+      ", array(
+        1 => array($values['assignee'], 'Integer'),
+        2 => array($values['id'], 'Integer'),
+      ));
+    }
+
+    if (!empty($values['contact_keywords'])) {
+      foreach (explode(',', $values['contact_keywords']) as $tagID) {
+        try {
+          civicrm_api3('entity_tag', 'create', array(
+            'entity_id' => (!empty($values['assignee'])) ? $values['assignee'] : $values['current_assignee'],
+            'tag_id' => $tagID,
+            'entity_table' => 'civicrm_contact',
+          ));
+        }
+        catch (CiviCRM_API3_Exception $e) {
+          Civi::log()->debug('processMessages contact keywords', array('e' => $e));
+          $msg[] = 'Unable to assign all keywords to the contact.';
+        }
+      }
+    }
+
+    //TODO retrieve via request better
+    if (!empty($_REQUEST['tag'])) {
+      foreach ($_REQUEST['tag'] as $tagID => $dontCare) {
+        try {
+          civicrm_api3('entity_tag', 'create', array(
+            'entity_id' => (!empty($values['assignee'])) ? $values['assignee'] : $values['current_assignee'],
+            'tag_id' => $tagID,
+            'entity_table' => 'civicrm_contact',
+          ));
+        }
+        catch (CiviCRM_API3_Exception $e) {
+          Civi::log()->debug('processMessages contact issue codes', array('e' => $e));
+          $msg[] = 'Unable to assign all issue codes to the contact.';
+        }
+      }
+    }
+
+    if (!empty($values['contact_positions'])) {
+      foreach (explode(',', $values['contact_positions']) as $tagID) {
+        try {
+          civicrm_api3('entity_tag', 'create', array(
+            'entity_id' => (!empty($values['assignee'])) ? $values['assignee'] : $values['current_assignee'],
+            'tag_id' => $tagID,
+            'entity_table' => 'civicrm_contact',
+          ));
+        }
+        catch (CiviCRM_API3_Exception $e) {
+          Civi::log()->debug('processMessages contact positions', array('e' => $e));
+          $msg[] = 'Unable to assign all positions to the contact.';
+        }
+      }
+    }
+
+    //ensure we have an activity ID before processing these
+    if ($values['activity_id']) {
+      if (!empty($values['activity_keywords'])) {
+        foreach (explode(',', $values['activity_keywords']) as $tagID) {
+          try {
+            civicrm_api3('entity_tag', 'create', array(
+              'entity_id' => $values['activity_id'],
+              'tag_id' => $tagID,
+              'entity_table' => 'civicrm_activity',
+            ));
+          }
+          catch (CiviCRM_API3_Exception $e) {
+            Civi::log()->debug('processMessages activity keywords', array('e' => $e));
+            $msg[] = 'Unable to assign all keywords to the activity.';
+          }
+        }
+      }
+
+      if (!empty($values['activity_assignee']) || !empty($values['activity_status'])) {
+        $params = array('id' => $values['activity_id']);
+
+        if (!empty($values['activity_assignee'])) {
+          $params['assignee_contact_id'] = $values['activity_assignee'];
+        }
+
+        if (!empty($values['activity_status'])) {
+          $params['status_id'] = $values['activity_status'];
+        }
+
+        try {
+          civicrm_api3('activity', 'create', $params);
+        } catch (CiviCRM_API3_Exception $e) {
+          Civi::log()->debug('processMessages create activity', array('e' => $e));
+          $msg[] = 'Unable to update activity record.';
+        }
+      }
+    }
+
+    return $msg;
   }
 
   /**
@@ -484,4 +614,141 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
     return NULL;
   }
+
+  /**
+   * Generate an array of e-mail addresses, phone numbers, city/state/zips,
+   * and proper names that were found in the message body.
+   */
+  private static function parseMessage($msgBody) {
+    $res = array();
+
+    // Convert message body into tagless text.
+    $text = preg_replace('/<(p|br)[^>]*>|\r/', "\n", $msgBody);
+    $text = strip_tags($text);
+    $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML401, 'ISO-8859-1');
+
+    // Find email addresses within the text.
+    preg_match_all('/[\w\.\-\+]+@[a-z\d\-]+(\.[a-z\d\-]+)*/i', $text, $emails);
+    $res['emails'] = array_unique($emails[0]);
+
+    // Find possible phone numbers
+    preg_match_all('/([(]\d{3}[)] *|\d{3}[\-\.\ ])?\d{3}[\-\.]\d{4}/', $text, $phones);
+    $res['phones'] = array_unique($phones[0]);
+
+    // Search for "City, STATE Zip5-Zip4"
+    preg_match_all('/(?<city>[A-Z][A-Za-z\-\.\ ]+[a-z])\h*,\h*(?<stateAbbr>[A-Z]{2})\h+(?<zip>\d{5}(?:\-\d{4})?)/',
+      $text,
+      $addresses,
+      PREG_SET_ORDER);
+    // Expand state abbreviations into full state names.
+    foreach ($addresses as $id => &$addrInfo) {
+      $addrInfo['state'] = self::getStateName($addrInfo['stateAbbr']);
+    }
+    $res['addrs'] = self::reformulate_preg_array($addresses);
+
+    // Find possible names
+    preg_match_all("/(?:(?<prefix>(?:Mr|MR|Ms|MS|Miss|MISS|Mrs|MRS|Dr|DR|Sir|Madam|Senator|(?:Assembly|Congress)(?:wo)?man)\.?)\h+)?(?<first>[A-Z](?:[a-z]+(?:\-[A-Z][a-z]+)?|\.))\h+(?<middle>[A-Z](?:[a-z]+|\.)\h+)?(?<last>(?:[A-Z][a-z]{,2}[\.\']?\ ?)?[A-Z][a-z]+(?:\-[A-Z][a-z]+)?)(?<suffix>(?:\h*,\h)?(?:Jr|JR|Sr|SR|II|III|PhD|PHD|MD|Esq))?/", $text, $names, PREG_SET_ORDER);
+
+    // Use dedupe rules to eliminate names not found in the system.
+    foreach ($names as $id => $nameInfo) {
+      if (isset($nameInfo['first'])) {
+        $firstName = strtolower($nameInfo['first']);
+        $query = "
+          SELECT COUNT(id) count_id
+          FROM fn_group 
+          WHERE given 
+          LIKE '$firstName'
+        ";
+        $dbres = CRM_Core_DAO::executeQuery($query);
+        if ($dbres->count_id < 1) {
+          unset($names[$id]);
+        }
+      }
+    }
+    $res['names'] = self::reformulate_preg_array($names);
+
+    return $res;
+  } // parseMessage()
+
+  /**
+   * Given an array of items found in the body of the email, generate
+   * HTML to highlight those items.
+   */
+  private static function highlightItems($text, $items) {
+    //file_put_contents("/tmp/inbound_email/items", print_r($items, true));
+    $itemMap = array(
+      'emails' => array('class' => 'email_address', 'text' => 'email'),
+      'phones' => array('class' => 'phone', 'text' => 'phone number'),
+      'addrs' => array('class' => 'zip', 'text' => 'city/state/zip'),
+      'names' => array('class' => 'name', 'text' => 'name')
+    );
+
+    foreach ($items as $itemType => $itemList) {
+      $itemClass = $itemMap[$itemType]['class'];
+      $itemText = $itemMap[$itemType]['text'];
+
+      if (count($itemList) == 0) {
+        continue;
+      }
+
+      if ($itemType == 'emails' || $itemType == 'phones') {
+        $re = implode('###', $itemList);
+        $re = preg_quote($re);
+        $re = '/'.preg_replace('/###/', '|', $re).'/';
+        $text = preg_replace($re,
+          "<span class='found $itemClass' data-search='$0' title='Click to use this $itemText'>$0</span>",
+          $text
+        );
+      }
+      else {
+        foreach ($itemList as $search => $json) {
+          $re = preg_quote($search);
+          $text = preg_replace("/$re/",
+            "<span class='found $itemClass' data-json='$json' title='Click to use this $itemText'>$0</span>",
+            $text
+          );
+        }
+      }
+    }
+    return $text;
+  } // highlightItems()
+
+  private static function getStateName($abbr) {
+    static $stateNameMap = null;
+
+    if ($stateNameMap == null) {
+      $query = "
+        SELECT abbreviation, name 
+        FROM civicrm_state_province
+        WHERE country_id =
+          (SELECT id FROM civicrm_country WHERE iso_code='US')
+      ";
+      $dbres = CRM_Core_DAO::executeQuery($query);
+      while ($dbres->fetch()) {
+        $stateNameMap[$dbres->abbreviation] = $dbres->name;
+      }
+    }
+
+    if (isset($stateNameMap[$abbr])) {
+      return $stateNameMap[$abbr];
+    }
+    else {
+      return null;
+    }
+  } // getStateName()
+
+  private static function reformulate_preg_array($preg_res) {
+    $res = array();
+    foreach ($preg_res as $item) {
+      $k = $item[0]; // save the 0-key value, which is the full pattern match
+      // eliminate all numeric keys for the current item
+      foreach ($item as $key => $val) {
+        if (is_int($key)) {
+          unset($item[$key]);
+        }
+      }
+      $res[$k] = json_encode($item);
+    }
+    return $res;
+  } // reformulate_preg_array()
 }

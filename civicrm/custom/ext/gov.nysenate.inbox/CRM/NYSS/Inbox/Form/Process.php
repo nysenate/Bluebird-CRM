@@ -11,18 +11,66 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
 
     //get details about record
     $id = CRM_Utils_Request::retrieve('id', 'Positive');
-    $this->add('hidden', 'message_id', $id);
+    $this->add('hidden', 'id', $id);
 
     $details = CRM_NYSS_Inbox_BAO_Inbox::getDetails($id);
     $this->assign('details', $details);
+    $this->add('hidden', 'activity_id', $details['activity_id']);
+    $this->add('hidden', 'current_assignee', $details['matched_to']);
 
-    // add form elements
+    //assignment form elements
     $this->addEntityRef('assignee', 'Select Assignee', array(
       'api' => array(
         'params' => array('contact_type' => 'Individual'),
       ),
       'create' => TRUE,
     ), FALSE);
+
+    //tag form elements
+    $this->addEntityRef('contact_keywords', 'Keywords', array(
+      'entity' => 'tag',
+      'multiple' => TRUE,
+      'create' => TRUE,
+      'api' => array('params' => array('parent_id' => 296)),
+      'data-entity_table' => 'civicrm_contact',
+      'data-entity_id' => NULL,
+      'class' => "crm-contact-tagset",
+    ), FALSE);
+
+    $this->addEntityRef('contact_positions', 'Positions', array(
+      'entity' => 'tag',
+      'multiple' => TRUE,
+      'create' => FALSE,
+      'api' => array('params' => array('parent_id' => 292)),
+      'data-entity_table' => 'civicrm_contact',
+      'data-entity_id' => NULL,
+      'class' => "crm-contact-tagset",
+    ), FALSE);
+
+    $this->addEntityRef('activity_keywords', 'Keywords', array(
+      'entity' => 'tag',
+      'multiple' => TRUE,
+      'create' => TRUE,
+      'api' => array('params' => array('parent_id' => 296)),
+      'data-entity_table' => 'civicrm_activity',
+      'data-entity_id' => NULL,
+      'class' => "crm-activity-tagset",
+    ), FALSE);
+
+    //edit activity form elements
+    $staffGroupID = civicrm_api3('group', 'getvalue', array('name' => 'Office_Staff', 'return' => 'id'));
+    $this->addEntityRef('activity_assignee', 'Assign Activity to', array(
+      'api' => array(
+        'params' => array(
+          'contact_type' => 'Individual',
+          'group' => $staffGroupID,
+        ),
+      ),
+      'create' => FALSE,
+    ), FALSE);
+    $statusTypes = CRM_Core_PseudoConstant::activityStatus();
+    $this->add('select', 'activity_status', 'Status',
+      array('' => '- select status -') + $statusTypes, FALSE);
 
     $this->addButtons(array(
       array(
@@ -43,14 +91,16 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
 
   public function postProcess() {
     $values = $this->exportValues();
+    Civi::log()->debug('postProcess', array('values' => $values, '$_REQUEST' => $_REQUEST));
 
-    if (empty($values['message_id'])) {
+    if (empty($values['id'])) {
       CRM_Core_Session::setStatus('Unable to process this message.');
       return;
     }
 
-    CRM_NYSS_Inbox_BAO_Inbox::processMessages($values);
-    CRM_Core_Session::setStatus('Message has been deleted.');
+    $msg = CRM_NYSS_Inbox_BAO_Inbox::processMessages($values);
+    $msg = (!empty($msg)) ? implode('<br />', $msg) : 'Message(s) has been processed.';
+    CRM_Core_Session::setStatus($msg);
 
     parent::postProcess();
   }

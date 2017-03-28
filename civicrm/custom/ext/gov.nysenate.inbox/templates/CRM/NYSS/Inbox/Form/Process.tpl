@@ -4,8 +4,9 @@
 <div id='mainTabContainer'>
   <ul>
     <li id='tab_process-reassign'><a href='#process-reassign' title='Reassign Contact'>Reassign Contact</a></li>
-    <li id='tab_process-tags'><a href='#process-tags' title='Tag'>Tag</a></li>
-    <li id='tab_process-activities'><a href='#process-activities' title='Edit Activity'>Edit Activity</a></li>
+    <li id='tab_process-tags_contact'><a href='#process-tagscontact' title='Tag Contact'>Tag Contact</a></li>
+    <li id='tab_process-tags_activity'><a href='#process-tagsactivity' title='Tag Activity'>Tag Activity</a></li>
+    <li id='tab_process-activity'><a href='#process-activity' title='Edit Activity'>Edit Activity</a></li>
   </ul>
   <div id="process-reassign" class='ui-tabs-panel ui-widget-content ui-corner-bottom'>
     <div class="crm-section">
@@ -15,15 +16,48 @@
     </div>
     <div class="crm-section">
       <div class="label">Currently Matched to:</div>
-      <div class="content">{$details.matched_to}</div>
+      <div class="content">{$details.matched_to_display}</div>
       <div class="clear"></div>
     </div>
   </div>
 
-  <div id="process-tags" class='ui-tabs-panel ui-widget-content ui-corner-bottom'>
+  <div id="process-tagscontact" class='ui-tabs-panel ui-widget-content ui-corner-bottom'>
+    <div class="crm-section">
+      <div class="label">{$form.contact_keywords.label}</div>
+      <div class="content">{$form.contact_keywords.html}</div>
+      <div class="clear"></div>
+    </div>
+
+    {*NYSS inject our custom tagtree*}
+    {include file="CRM/NYSS/Form/Tagtree.tpl" level=1}
+    <div class="clear"></div>
+
+    <div class="crm-section">
+      <div class="label">{$form.contact_positions.label}</div>
+      <div class="content">{$form.contact_positions.html}</div>
+      <div class="clear"></div>
+    </div>
   </div>
 
-  <div id="process-activities" class='ui-tabs-panel ui-widget-content ui-corner-bottom'>
+  <div id="process-tagsactivity" class='ui-tabs-panel ui-widget-content ui-corner-bottom'>
+    <div class="crm-section">
+      <div class="label">{$form.activity_keywords.label}</div>
+      <div class="content">{$form.activity_keywords.html}</div>
+      <div class="clear"></div>
+    </div>
+  </div>
+
+  <div id="process-activity" class='ui-tabs-panel ui-widget-content ui-corner-bottom'>
+    <div class="crm-section">
+      <div class="label">{$form.activity_assignee.label}</div>
+      <div class="content">{$form.activity_assignee.html}</div>
+      <div class="clear"></div>
+    </div>
+    <div class="crm-section">
+      <div class="label">{$form.activity_status.label}</div>
+      <div class="content">{$form.activity_status.html}</div>
+      <div class="clear"></div>
+    </div>
   </div>
 </div>
 
