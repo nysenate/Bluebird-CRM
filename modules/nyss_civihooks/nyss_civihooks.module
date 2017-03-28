@@ -1446,7 +1446,7 @@ function _buildInboxMenu($inboxNavID) {
         'attributes' => array(
           'label'      => 'Unmatched Messages',
           'name'       => 'Unmatched Messages',
-          'url'        => 'civicrm/imap/unmatched',
+          'url'        => 'civicrm/nyss/inbox/unmatched?reset=1',
           'permission' => 'administer inbox polling',
           'operator'   => 'AND',
           'separator'  => 0,
@@ -1460,7 +1460,7 @@ function _buildInboxMenu($inboxNavID) {
         'attributes' => array(
           'label'      => 'Matched Messages',
           'name'       => 'Matched Messages',
-          'url'        => 'civicrm/imap/matched',
+          'url'        => 'civicrm/nyss/inbox/matched?reset=1',
           'permission' => 'administer inbox polling',
           'operator'   => 'AND',
           'separator'  => 0,
