@@ -1,6 +1,6 @@
 {* HEADER *}
-<h3>Remove this message from Bluebird?</h3>
-<div class="description">This message will be removed permanently. Are you sure?</div>
+<h3>Clear this message from Bluebird?</h3>
+<div class="description">This message will be cleared from the message list. It will not be deleted from Bluebird.</div>
 <p></p>
 
 <table>

@@ -60,6 +60,15 @@
 
     {if $rows}
       <div class="crm-results-block">
+        <div class="crm-search-tasks">
+          {*9990*}
+          {if $quickExportUrl}
+            <a class="button" id="quick_export" style="float: none; display: inline-block" href="{$quickExportUrl}">
+              <span style="padding-right: 8px;">Export to CSV</span>
+            </a>
+          {/if}
+        </div>
+
         {* This section displays the rows along and includes the paging controls *}
         <div class="crm-search-results">
           {strip}

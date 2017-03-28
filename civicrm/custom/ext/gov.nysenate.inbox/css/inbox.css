@@ -52,3 +52,58 @@
   min-width: 110px !important;
 }
 
+.ui-tabs .ui-tabs-panel {
+  border-left: 1px solid #aaa;
+  border-bottom: 1px solid #aaa;
+  border-right: 1px solid #aaa;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+#mainTabContainer .tag-section {
+  margin-left: 19%;
+  margin-right: 0;
+  margin-bottom: 20px;
+  display: inline-block;
+}
+.tag-label {
+  margin-top: 0;
+}
+
+/*email highlighting*/
+
+.found {
+  background: rgba(255,230,0, 0.5);
+  border: 1px solid #C1C1C1;
+  margin: -1px -4px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  display:inline-block;
+}
+.found:hover {
+  background: rgba(255,230,0, 0.8);
+  border: 1px solid #A0A0A0;
+}
+.found.name {
+  /* red ffb7b7 */
+  background: rgba(255,183,183, 0.5);
+}
+.found.name:hover {
+  background: rgba(255,183,183, 0.8);
+}
+.found.zip {
+  /* blue a8d1ff*/
+  background: rgba(168,209,255, 0.5);
+}
+.found.zip:hover {
+  background: rgba(168,209,255, 0.8);
+}
+.found.phone {
+  /* green a8d1ff*/
+  background: rgba(196,255,143, 0.5);
+}
+.found.phone:hover {
+  background: rgba(196,255,143, 0.8);
+}
