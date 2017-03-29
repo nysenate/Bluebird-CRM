@@ -134,6 +134,10 @@ $drush $instance cvapi extension.install key=gov.nysenate.tagdemographics
 $drush $instance cvapi extension.install key=gov.nysenate.webintegration
 $drush $instance cvapi extension.install key=gov.nysenate.inbox
 
+## update roles/perms
+echo "$prog: update roles and permissions"
+$script_dir/resetRolePerms.sh $instance
+
 ## fix collation
 echo "$prog: fix collations"
 $script_dir/changeCollation.sh $instance
