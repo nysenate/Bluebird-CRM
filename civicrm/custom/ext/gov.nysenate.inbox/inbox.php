@@ -153,8 +153,8 @@ function inbox_civicrm_navigationMenu(&$menu) {
 } // */
 
 function inbox_civicrm_permission(&$permissions) {
-  $permissions['access Inbox Polling'] = array(
-    'Bluebird: access Inbox Polling',
+  $permissions['access inbox polling'] = array(
+    'Bluebird: access inbox polling',
     'Access inbox polling tools.',
   );
 }

@@ -87,7 +87,7 @@ sql="
     (3, 'administer CiviCase', 'civicrm'),
     (3, 'administer CiviCRM', 'civicrm'),
     (3, 'administer dedupe rules', 'civicrm'),
-    (3, 'administer inbox polling', 'nyss_civihooks'),
+    (3, 'access inbox polling', 'nyss_civihooks'),
     (3, 'administer permissions', 'user'),
     (3, 'administer Reports', 'civicrm'),
     (3, 'administer reserved groups', 'civicrm'),
@@ -143,7 +143,7 @@ sql="
     (4, 'administer CiviCRM', 'civicrm'),
     (4, 'administer dedupe rules', 'civicrm'),
     (4, 'administer district', 'nyss_civihooks'),
-    (4, 'administer inbox polling', 'nyss_civihooks'),
+    (4, 'access inbox polling', 'nyss_civihooks'),
     (4, 'administer Reports', 'civicrm'),
     (4, 'administer reserved groups', 'civicrm'),
     (4, 'administer reserved tags', 'civicrm'),
@@ -243,6 +243,11 @@ sql="
     (4, 'view all contacts', 'civicrm'),
     (4, 'view all notes', 'civicrm'),
     (4, 'view the administration theme', 'system'),
+    (4, 'manage tags', 'civicrm'),
+    (4, 'force merge duplicate contacts', 'civicrm'),
+    (4, 'edit message templates', 'civicrm'),
+    (4, 'administer private reports', 'civicrm'),
+    (4, 'administer reserved reports', 'civicrm'),
 
     (5, 'access all custom data', 'civicrm'),
     (5, 'access CiviCRM', 'civicrm'),
@@ -325,7 +330,7 @@ sql="
     (9, 'add cases', 'civicrm'),
     (9, 'add contacts', 'civicrm'),
     (9, 'administer district', 'nyss_civihooks'),
-    (9, 'administer inbox polling', 'nyss_civihooks'),
+    (9, 'access inbox polling', 'nyss_civihooks'),
     (9, 'administer Reports', 'civicrm'),
     (9, 'administer reserved tags', 'civicrm'),
     (9, 'administer users', 'user'),
@@ -381,7 +386,7 @@ sql="
     (10, 'access uploaded files', 'civicrm'),
     (10, 'add cases', 'civicrm'),
     (10, 'add contacts', 'civicrm'),
-    (10, 'administer inbox polling', 'nyss_civihooks'),
+    (10, 'access inbox polling', 'nyss_civihooks'),
     (10, 'administer Reports', 'civicrm'),
     (10, 'delete activities', 'civicrm'),
     (10, 'delete contacts', 'civicrm'),
@@ -491,7 +496,7 @@ sql="
     (18, 'view all contacts', 'civicrm'),
     (18, 'view my contact', 'civicrm'),
 
-    (19, 'administer inbox polling', 'nyss_civihooks');
+    (19, 'access inbox polling', 'nyss_civihooks');
 "
 $execSql -q $instance -c "$sql" --drupal
 
