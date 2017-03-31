@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2016                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2016
+ * @copyright CiviCRM LLC (c) 2004-2017
  */
 class CRM_Core_BAO_Mapping extends CRM_Core_DAO_Mapping {
 
@@ -1126,7 +1126,7 @@ class CRM_Core_BAO_Mapping extends CRM_Core_DAO_Mapping {
    * @return NULL
    */
   public static function saveMappingFields(&$params, $mappingId) {
-    //delete mapping fields records for exixting mapping
+    //delete mapping fields records for existing mapping
     $mappingFields = new CRM_Core_DAO_MappingField();
     $mappingFields->mapping_id = $mappingId;
     $mappingFields->delete();

@@ -3,7 +3,7 @@
   +--------------------------------------------------------------------+
   | CiviCRM version 4.7                                                |
   +--------------------------------------------------------------------+
-  | Copyright CiviCRM LLC (c) 2004-2016                                |
+  | Copyright CiviCRM LLC (c) 2004-2017                                |
   +--------------------------------------------------------------------+
   | This file is a part of CiviCRM.                                    |
   |                                                                    |
@@ -375,6 +375,37 @@ function _civicrm_api3_contact_get_supportanomalies(&$params, &$options) {
     }
     unset($params['filter.group_id']);
     $options['input_params']['group'] = $groups;
+  }
+  if (isset($params['group'])) {
+    $groups = $params['group'];
+    $allGroups = CRM_Core_PseudoConstant::group();
+    if (is_array($groups) && in_array(key($groups), CRM_Core_DAO::acceptedSQLOperators(), TRUE)) {
+      // Get the groups array.
+      $groupsArray = $groups[key($groups)];
+      foreach ($groupsArray as &$group) {
+        if (!is_numeric($group) && array_search($group, $allGroups)) {
+          $group = array_search($group, $allGroups);
+        }
+      }
+      // Now reset the $groups array with the ids not the titles.
+      $groups[key($groups)] = $groupsArray;
+    }
+    // handle format like 'group' => array('title1', 'title2').
+    elseif (is_array($groups)) {
+      foreach ($groups as $k => &$group) {
+        if (!is_numeric($group) && array_search($group, $allGroups)) {
+          $group = array_search($group, $allGroups);
+        }
+        if (!is_numeric($k) && array_search($k, $allGroups)) {
+          unset($groups[$k]);
+          $groups[array_search($k, $allGroups)] = $group;
+        }
+      }
+    }
+    elseif (!is_numeric($groups) &&  array_search($groups, $allGroups)) {
+      $groups = array_search($groups, $allGroups);
+    }
+    $params['group'] = $groups;
   }
 }
 
@@ -1085,7 +1116,7 @@ function civicrm_api3_contact_merge($params) {
         'srcID' => $params['to_remove_id'],
         'dstID' => $params['to_keep_id'],
       ),
-    ), array(), $params['mode'], $params['auto_flip'])) != FALSE) {
+    ), array(), $params['mode'])) != FALSE) {
     return civicrm_api3_create_success($result, $params);
   }
   throw new CiviCRM_API3_Exception('Merge failed');
@@ -1110,10 +1141,6 @@ function _civicrm_api3_contact_merge_spec(&$params) {
     'api.required' => 1,
     'type' => CRM_Utils_Type::T_INT,
     'api.aliases' => array('other_id'),
-  );
-  $params['auto_flip'] = array(
-    'title' => 'Swap destination and source to retain lowest id?',
-    'api.default' => TRUE,
   );
   $params['mode'] = array(
     // @todo need more detail on what this means.

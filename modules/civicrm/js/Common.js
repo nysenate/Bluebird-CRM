@@ -372,6 +372,20 @@ if (!CRM.vars) CRM.vars = {};
     return settings;
   };
 
+  function formatCrmSelect2(row) {
+    var icon = row.icon || $(row.element).data('icon'),
+      color = row.color || $(row.element).data('color'),
+      description = row.description || $(row.element).data('description'),
+      ret = '';
+    if (icon) {
+      ret += '<i class="crm-i ' + icon + '"></i> ';
+    }
+    if (color) {
+      ret += '<span class="crm-select-item-color" style="background-color: ' + color + '"></span> ';
+    }
+    return ret + _.escape(row.text) + (description ? '<div class="crm-select2-row-description"><p>' + _.escape(description) + '</p></div>' : '');
+  }
+
   /**
    * Wrapper for select2 initialization function; supplies defaults
    * @param options object
@@ -388,7 +402,11 @@ if (!CRM.vars) CRM.vars = {};
       var
         $el = $(this),
         iconClass,
-        settings = {allowClear: !$el.hasClass('required')};
+        settings = {
+          allowClear: !$el.hasClass('required'),
+          formatResult: formatCrmSelect2,
+          formatSelection: formatCrmSelect2
+        };
       // quickform doesn't support optgroups so here's a hack :(
       $('option[value^=crm_optgroup]', this).each(function () {
         $(this).nextUntil('option[value^=crm_optgroup]').wrapAll('<optgroup label="' + $(this).text() + '" />');
@@ -474,9 +492,7 @@ if (!CRM.vars) CRM.vars = {};
         },
         minimumInputLength: 1,
         formatResult: CRM.utils.formatSelect2Result,
-        formatSelection: function(row) {
-          return _.escape((row.prefix !== undefined ? row.prefix + ' ' : '') + row.label + (row.suffix !== undefined ? ' ' + row.suffix : ''));
-        },
+        formatSelection: formatEntityRefSelection,
         escapeMarkup: _.identity,
         initSelection: function($el, callback) {
           var
@@ -810,6 +826,7 @@ if (!CRM.vars) CRM.vars = {};
       markup += '<div class="crm-select2-icon"><div class="crm-icon ' + row.icon_class + '-icon"></div></div>';
     }
     markup += '<div><div class="crm-select2-row-label '+(row.label_class || '')+'">' +
+      (row.color ? '<span class="crm-select-item-color" style="background-color: ' + row.color + '"></span> ' : '') +
       _.escape((row.prefix !== undefined ? row.prefix + ' ' : '') + row.label + (row.suffix !== undefined ? ' ' + row.suffix : '')) +
       '</div>' +
       '<div class="crm-select2-row-description">';
@@ -819,6 +836,11 @@ if (!CRM.vars) CRM.vars = {};
     markup += '</div></div></div>';
     return markup;
   };
+
+  function formatEntityRefSelection(row) {
+    return (row.color ? '<span class="crm-select-item-color" style="background-color: ' + row.color + '"></span> ' : '') +
+      _.escape((row.prefix !== undefined ? row.prefix + ' ' : '') + row.label + (row.suffix !== undefined ? ' ' + row.suffix : ''));
+  }
 
   function renderEntityRefCreateLinks($el) {
     var
@@ -1500,8 +1522,13 @@ if (!CRM.vars) CRM.vars = {};
         $(this).siblings('input:text').val('').trigger('change', ['crmClear']);
         return false;
       })
-      .on('change', 'input.crm-form-radio:checked', function() {
-        $(this).siblings('.crm-clear-link').css({visibility: ''});
+      .on('change keyup', 'input.crm-form-radio:checked, input[allowclear=1]', function(e, context) {
+        if (context !== 'crmClear' && ($(this).is(':checked') || ($(this).is('[allowclear=1]') && $(this).val()))) {
+          $(this).siblings('.crm-clear-link').css({visibility: ''});
+        }
+        if (context !== 'crmClear' && $(this).is('[allowclear=1]') && $(this).val() === '') {
+          $(this).siblings('.crm-clear-link').css({visibility: 'hidden'});
+        }
       })
 
       // Allow normal clicking of links within accordions
@@ -1586,6 +1613,33 @@ if (!CRM.vars) CRM.vars = {};
     }
   };
 
+  // Sugar methods for window.localStorage, with a fallback for older browsers
+  var cacheItems = {};
+  CRM.cache = {
+    get: function (name, defaultValue) {
+      try {
+        if (localStorage.getItem('CRM' + name) !== null) {
+          return JSON.parse(localStorage.getItem('CRM' + name));
+        }
+      } catch(e) {}
+      return cacheItems[name] === undefined ? defaultValue : cacheItems[name];
+    },
+    set: function (name, value) {
+      try {
+        localStorage.setItem('CRM' + name, JSON.stringify(value));
+      } catch(e) {}
+      cacheItems[name] = value;
+    },
+    clear: function(name) {
+      try {
+        localStorage.removeItem('CRM' + name);
+      } catch(e) {}
+      delete cacheItems[name];
+    }
+  };
+
+
+
   // Determine if a user has a given permission.
   // @see CRM_Core_Resources::addPermissions
   CRM.checkPerm = function(perm) {
@@ -1607,8 +1661,11 @@ if (!CRM.vars) CRM.vars = {};
         return input;
 
       case 'string':
-        // convert iso format
-        return $.datepicker.parseDate('yy-mm-dd', input.substr(0, 10));
+        // convert iso format with or without dashes
+        if (input.indexOf('-') > 0) {
+          return $.datepicker.parseDate('yy-mm-dd', input.substr(0, 10));
+        }
+        return $.datepicker.parseDate('yymmdd', input.substr(0, 8));
 
       case 'number':
         // convert unix timestamp
@@ -1622,4 +1679,15 @@ if (!CRM.vars) CRM.vars = {};
   CRM.utils.formatDate = function(input, outputFormat) {
     return input ? $.datepicker.formatDate(outputFormat || CRM.config.dateInputFormat, CRM.utils.makeDate(input)) : '';
   };
+
+  // Used to set appropriate text color for a given background
+  CRM.utils.colorContrast = function (hexcolor) {
+    hexcolor = hexcolor.replace(/[ #]/g, '');
+    var r = parseInt(hexcolor.substr(0, 2), 16),
+     g = parseInt(hexcolor.substr(2, 2), 16),
+     b = parseInt(hexcolor.substr(4, 2), 16),
+     yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+    return (yiq >= 128) ? 'black' : 'white';
+  };
+
 })(jQuery, _);

@@ -3,7 +3,7 @@
   +--------------------------------------------------------------------+
   | CiviCRM version 4.7                                                |
   +--------------------------------------------------------------------+
-  | Copyright CiviCRM LLC (c) 2004-2016                                |
+  | Copyright CiviCRM LLC (c) 2004-2017                                |
   +--------------------------------------------------------------------+
   | This file is a part of CiviCRM.                                    |
   |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2016
+ * @copyright CiviCRM LLC (c) 2004-2017
  * $Id$
  *
  */
@@ -159,6 +159,16 @@ WHERE  cacheKey     = %3 AND
     CRM_Core_DAO::executeQuery($sql, $params);
   }
 
+  /**
+   * Mark contacts as being in conflict.
+   *
+   * @param int $id1
+   * @param int $id2
+   * @param string $cacheKey
+   * @param array $conflicts
+   *
+   * @return bool
+   */
   public static function markConflict($id1, $id2, $cacheKey, $conflicts) {
     if (empty($cacheKey) || empty($conflicts)) {
       return FALSE;

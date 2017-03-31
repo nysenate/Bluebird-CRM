@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2016                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2016
+ * @copyright CiviCRM LLC (c) 2004-2017
  */
 
 /**
@@ -438,6 +438,8 @@ class CRM_Utils_File {
   }
 
   /**
+   * Make a valid file name.
+   *
    * @param string $name
    *
    * @return string
@@ -460,8 +462,10 @@ class CRM_Utils_File {
   }
 
   /**
-   * @param $path
-   * @param $ext
+   * Get files for the extension.
+   *
+   * @param string $path
+   * @param string $ext
    *
    * @return array
    */
@@ -801,6 +805,13 @@ HTACCESS;
     return TRUE;
   }
 
+  /**
+   * Format file.
+   *
+   * @param array $param
+   * @param string $fileName
+   * @param array $extraParams
+   */
   public static function formatFile(&$param, $fileName, $extraParams = array()) {
     if (empty($param[$fileName])) {
       return;
@@ -874,6 +885,26 @@ HTACCESS;
     $mimeType = 'image/' . strtolower(pathinfo($path, PATHINFO_EXTENSION));
 
     return self::getFileURL($path, $mimeType);
+  }
+
+
+  /**
+   * Get file icon class for specific MIME Type
+   *
+   * @param string $mimeType
+   * @return string
+   */
+  public static function getIconFromMimeType($mimeType) {
+    if (!isset(Civi::$statics[__CLASS__]['mimeIcons'])) {
+      Civi::$statics[__CLASS__]['mimeIcons'] = json_decode(file_get_contents(__DIR__ . '/File/mimeIcons.json'), TRUE);
+    }
+    $iconClasses = Civi::$statics[__CLASS__]['mimeIcons'];
+    foreach ($iconClasses as $text => $icon) {
+      if (strpos($mimeType, $text) === 0) {
+        return $icon;
+      }
+    }
+    return $iconClasses['*'];
   }
 
 }

@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2016                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2016
+ * @copyright CiviCRM LLC (c) 2004-2017
  */
 
 /**
@@ -708,6 +708,8 @@ LEFT JOIN civicrm_contribution_soft ON civicrm_contribution_soft.contribution_id
           $values['contribution_date_high'] = $date['to'];
         }
         $searchParams = CRM_Contact_BAO_Query::convertFormValues($values);
+        // @todo the use of defaultReturnProperties means the search will be inefficient
+        // as slow-unneeded properties are included.
         $query = new CRM_Contact_BAO_Query($searchParams,
           CRM_Contribute_BAO_Query::defaultReturnProperties(CRM_Contact_BAO_Query::MODE_CONTRIBUTE,
             FALSE

@@ -6,7 +6,7 @@ Required vars: caseType
 <form name="editCaseTypeForm" unsaved-warning-form>
 <div class="crm-block crm-form-block crmCaseType">
   <div class="help">
-    {{ts('Use this screen to define or update the Case Roles, Activity Types, and Timelines for a case type.')}} <a href="http://book.civicrm.org/user/current/case-management/setup/" target="_blank">{{ts('Learn more...')}}</a>
+    {{ts('Use this screen to define or update the Case Roles, Activity Types, and Timelines for a case type.')}} <a href="https://docs.civicrm.org/user/en/stable/case-management/set-up/" target="_blank">{{ts('Learn more...')}}</a>
   </div>
   <div class="crm-submit-buttons">
     <button crm-icon="fa-check" ng-click="editCaseTypeForm.$setPristine(); save()" ng-disabled="editCaseTypeForm.$invalid">
@@ -28,6 +28,7 @@ Required vars: caseType
   <div ng-show="isForkable()" class="crmCaseType-acttab" ui-jq="tabs" ui-options="{show: true, hide: true}">
     <ul>
       <li><a href="#acttab-actType">{{ts('Activity Types')}}</a></li>
+      <li><a href="#acttab-statuses">{{ts('Statuses')}}</a></li>
       <li ng-repeat="activitySet in caseType.definition.activitySets">
         <a href="#acttab-{{$index}}">{{ activitySet.label }}</a>
         <span class="crm-i fa-trash" title="{{ts('Remove')}}"
@@ -46,9 +47,9 @@ Required vars: caseType
       </select>
     </ul>
 
-    <div id="acttab-actType">
-      <div ng-include="'~/crmCaseType/activityTypesTable.html'"></div>
-    </div>
+    <div id="acttab-actType" ng-include="'~/crmCaseType/activityTypesTable.html'"></div>
+
+    <div id="acttab-statuses" ng-include="'~/crmCaseType/statusTable.html'"></div>
 
     <div ng-repeat="activitySet in caseType.definition.activitySets" id="acttab-{{$index}}">
       <div ng-include="activityTableTemplate(activitySet)"></div>

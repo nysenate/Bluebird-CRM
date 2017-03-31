@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2016                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2016
+ * @copyright CiviCRM LLC (c) 2004-2017
  *
  */
 
@@ -500,7 +500,11 @@ class CRM_Profile_Form extends CRM_Core_Form {
             ) {
               $entityId = $this->_activityId;
             }
-            $url = CRM_Core_BAO_CustomField::getFileURL($entityId, $key);
+
+            $url = '';
+            if (isset($value)) {
+              $url = CRM_Core_BAO_CustomField::getFileURL($entityId, $key, $value);
+            }
 
             if ($url) {
               $customFiles[$name]['displayURL'] = ts("Attached File") . ": {$url['file_url']}";

@@ -3,7 +3,7 @@
   +--------------------------------------------------------------------+
   | CiviCRM version 4.7                                                |
   +--------------------------------------------------------------------+
-  | Copyright CiviCRM LLC (c) 2004-2016                                |
+  | Copyright CiviCRM LLC (c) 2004-2017                                |
   +--------------------------------------------------------------------+
   | This file is a part of CiviCRM.                                    |
   |                                                                    |
@@ -453,6 +453,11 @@ function _civicrm_api3_case_format_params(&$params) {
 function civicrm_api3_case_getList($params) {
   require_once 'api/v3/Generic/Getlist.php';
   require_once 'api/v3/CaseContact.php';
+  //CRM:19956 - Assign case_id param if both id and case_id is passed to retrieve the case
+  if (!empty($params['id']) && !empty($params['params']) && !empty($params['params']['case_id'])) {
+    $params['params']['case_id'] = array('IN' => $params['id']);
+    unset($params['id']);
+  }
   $params['id_field'] = 'case_id';
   $params['label_field'] = $params['search_field'] = 'contact_id.sort_name';
   $params['description_field'] = array(
@@ -463,6 +468,7 @@ function civicrm_api3_case_getList($params) {
     'case_id.start_date',
   );
   $apiRequest = array(
+    'version' => 3,
     'entity' => 'CaseContact',
     'action' => 'getlist',
     'params' => $params,

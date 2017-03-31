@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2016                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2016
+ * @copyright CiviCRM LLC (c) 2004-2017
  * $Id$
  *
  */
@@ -55,6 +55,10 @@ function smarty_modifier_crmDate($dateString, $dateFormat = NULL, $onlyTime = FA
     if ($onlyTime) {
       $config = CRM_Core_Config::singleton();
       $dateFormat = $config->dateformatTime;
+    }
+    // Handle possibility we only have a date function style date format.
+    if ($dateFormat && !stristr($dateFormat, '%')) {
+      return date($dateFormat, strtotime($dateString));
     }
 
     return CRM_Utils_Date::customFormat($dateString, $dateFormat);

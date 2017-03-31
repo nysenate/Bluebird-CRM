@@ -3,7 +3,7 @@
   +--------------------------------------------------------------------+
   | CiviCRM version 4.7                                                |
   +--------------------------------------------------------------------+
-  | Copyright CiviCRM LLC (c) 2004-2016                                |
+  | Copyright CiviCRM LLC (c) 2004-2017                                |
   +--------------------------------------------------------------------+
   | This file is a part of CiviCRM.                                    |
   |                                                                    |
@@ -444,7 +444,7 @@ class CRM_Report_Form extends CRM_Core_Form {
   /**
    * @var string Database attributes - character set and collation
    */
-  protected $_databaseAttributes = 'DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci';
+  protected $_databaseAttributes = ' DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci';
 
   /**
    * SQL being run in this report.
@@ -3112,6 +3112,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
    * @param array|null $rows
    */
   public function endPostProcess(&$rows = NULL) {
+    $this->assign('report_class', get_class($this));
     if ($this->_storeResultSet) {
       $this->_resultSet = $rows;
     }
@@ -3317,7 +3318,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
       $rowCount = $this->_dashBoardRowCount;
     }
     if ($this->addPaging) {
-      $this->_select = str_ireplace('SELECT ', 'SELECT SQL_CALC_FOUND_ROWS ', $this->_select);
+      $this->_select = preg_replace('/SELECT(\s+SQL_CALC_FOUND_ROWS)?\s+/i', 'SELECT SQL_CALC_FOUND_ROWS ', $this->_select);
 
       $pageId = CRM_Utils_Request::retrieve('crmPID', 'Integer');
 
@@ -3432,6 +3433,9 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
     if (!is_array($value)) {
       $value = array($value);
     }
+    //include child groups if any
+    $value = array_merge($value, CRM_Contact_BAO_Group::getChildGroupIds($value));
+
     $clause = "{$field['dbAlias']} IN (" . implode(', ', $value) . ")";
 
     $contactAlias = $this->_aliases['civicrm_contact'];
@@ -3472,7 +3476,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
    * This function is called by both the api (tests) and the UI.
    */
   public function buildGroupTempTable() {
-    if (!empty($this->groupTempTable) || empty ($this->_params['gid_value']) || $this->groupFilterNotOptimised) {
+    if (!empty($this->groupTempTable) || empty($this->_params['gid_value']) || $this->groupFilterNotOptimised) {
       return;
     }
     $filteredGroups = (array) $this->_params['gid_value'];
@@ -3503,7 +3507,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
 
     $this->groupTempTable = 'civicrm_report_temp_group_' . date('Ymd_') . uniqid();
     $this->executeReportQuery("
-      CREATE TEMPORARY TABLE $this->groupTempTable
+      CREATE TEMPORARY TABLE $this->groupTempTable $this->_databaseAttributes
       $query
     ");
     CRM_Core_DAO::executeQuery("ALTER TABLE $this->groupTempTable ADD INDEX i_id(id)");
@@ -4563,16 +4567,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
   public function add2group($groupID) {
     if (is_numeric($groupID) && isset($this->_aliases['civicrm_contact'])) {
       $select = "SELECT DISTINCT {$this->_aliases['civicrm_contact']}.id AS addtogroup_contact_id, ";
-
-      // here are we are prepending / adding  contact id field that could be used for adding group
-      // so first check for "SELECT SQL_CALC_FOUND_ROWS" and if does not exist replace "SELECT"
-      if (preg_match('/^SELECT SQL_CALC_FOUND_ROWS/', $this->_select)) {
-        $select = str_ireplace('SELECT SQL_CALC_FOUND_ROWS ', $select, $this->_select);
-      }
-      else {
-        $select = str_ireplace('SELECT ', $select, $this->_select);
-      }
-
+      $select = preg_replace('/SELECT(\s+SQL_CALC_FOUND_ROWS)?\s+/i', $select, $this->_select);
       $sql = "{$select} {$this->_from} {$this->_where} {$this->_groupBy} {$this->_having} {$this->_orderBy}";
       $sql = str_replace('WITH ROLLUP', '', $sql);
       $dao = CRM_Core_DAO::executeQuery($sql);
@@ -4675,6 +4670,8 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
    * @param object $query
    * @param string $alias
    * @param bool $return
+   *
+   * @return string
    */
   public function getPermissionedFTQuery(&$query, $alias = NULL, $return = FALSE) {
     if (!CRM_Financial_BAO_FinancialType::isACLFinancialTypeStatus()) {
@@ -4700,7 +4697,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
       $query->_where = "WHERE {$query->_aliases['civicrm_contribution']}.id IS NOT NULL ";
     }
     CRM_Core_DAO::executeQuery("DROP TEMPORARY TABLE IF EXISTS civicrm_contribution_temp");
-    $sql = "CREATE TEMPORARY TABLE civicrm_contribution_temp AS SELECT {$query->_aliases['civicrm_contribution']}.id {$query->_from}
+    $sql = "CREATE TEMPORARY TABLE civicrm_contribution_temp {$this->_databaseAttributes} AS SELECT {$query->_aliases['civicrm_contribution']}.id {$query->_from}
               LEFT JOIN civicrm_line_item   {$query->_aliases['civicrm_line_item']}
                       ON {$query->_aliases['civicrm_contribution']}.id = {$query->_aliases['civicrm_line_item']}.contribution_id AND
                          {$query->_aliases['civicrm_line_item']}.entity_table = 'civicrm_contribution'

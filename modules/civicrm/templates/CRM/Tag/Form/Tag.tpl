@@ -2,7 +2,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2016                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,17 +25,6 @@
 *}
 {* this template is used for adding/editing tags  *}
 {literal}
-<style>
-  #tagtree .highlighted > span {
-    background-color: #fefca6;
-  }
-  #tagtree .helpicon ins {
-    display: none;
-  }
-  #tagtree ins.jstree-icon {
-    cursor: pointer;
-  }
-</style>
 <script type="text/javascript">
   (function($, _){{/literal}
     var entityID={$entityID},
@@ -44,26 +33,28 @@
     {literal}
     CRM.updateContactSummaryTags = function() {
       var tags = [];
-      $('#tagtree input:checkbox:checked+span label').each(function() {
-        tags.push($(this).text());
+      $('#tagtree input:checkbox:checked+a label').each(function() {
+        tags.push('<span class="crm-tag-item" style="' + $(this).attr('style') + '" title="' + ($(this).attr('title') || '') + '">' + $(this).text() + '</span>');
       });
       $('input.crm-contact-tagset').each(function() {
-        var setTags = _.pluck($(this).select2('data'), 'label');
-        tags = tags.concat(setTags);
+        $.each($(this).select2('data'), function (i, tag) {
+          tags.push('<span class="crm-tag-item" title="' + (tag.description || '') + '"' + (tag.color ? 'style="color: ' + CRM.utils.colorContrast(tag.color) + '; background-color: ' + tag.color + ';"' : '') + '>' + tag.label + '</span>');
+        });
       });
       // contact summary tabs and search forms both listen for this event
       $($form).closest('.crm-ajax-container').trigger('crmFormSuccess', {tabCount: tags.length});
       // update summary tab
-      $("#contact-summary #tags").html(tags.join(', '));
+      $("#contact-summary #tags").html(tags.join(' '));
     };
 
     $(function() {
       function highlightSelected() {
         $("ul input:not(:checked)", '#tagtree').each(function () {
-          $(this).closest("li").removeClass('highlighted');
+          $(this).closest("li").removeClass('highlighted highlighted-child');
         });
         $("ul input:checked", '#tagtree').each(function () {
-          $(this).parents("li[id^=tag]").addClass('highlighted');
+          $(this).closest("li").addClass('highlighted');
+          $(this).parents("li[id^=tag]").addClass('highlighted-child');
         });
       }
       highlightSelected();
@@ -79,7 +70,12 @@
       if (childTag) {
         //load js tree.
         $("#tagtree").jstree({
-          plugins : ["themes", "html_data"],
+          plugins : ["themes", "html_data", "search"],
+          core: {animation: 100},
+          'search': {
+            'case_insensitive' : true,
+            'show_only_matches': true
+          },
           themes: {
             "theme": 'classic',
             "dots": false,
@@ -97,15 +93,37 @@
       {literal}
 
       $(document).on('change', 'input.crm-contact-tagset', CRM.updateContactSummaryTags);
+
+      $('input[name=filter_tag_tree]', '#Tag').on('keyup change', function() {
+        $("#tagtree").jstree('search', $(this).val());
+      });
     });
   })(CRM.$, CRM._);
   {/literal}
 </script>
 <div id="Tag" class="view-content">
-  <h3>{if !$hideContext}{ts}Tags{/ts}{/if}</h3>
-  <div id="tagtree">
-    {include file="CRM/Tag/Form/Tagtree.tpl" level=1}
-  </div>
-  <br />
-{include file="CRM/common/Tagset.tpl"}
+  <table class="">
+    <thead>
+      <tr>
+        <th>{ts}Tag Tree{/ts}</th>
+        {if $tagsetInfo.contact}<th>{ts}Tag Sets{/ts}</th>{/if}
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <input class="crm-form-text big" name="filter_tag_tree" placeholder="{ts}Filter List{/ts}" allowclear="1"/>
+          <a class="crm-hover-button crm-clear-link" style="visibility:hidden;" title="{ts}Clear{/ts}"><i class="crm-i fa-times"></i></a>
+          <div id="tagtree">
+            {include file="CRM/Tag/Form/Tagtree.tpl" level=1}
+          </div>
+        </td>
+        {if $tagsetInfo.contact}
+        <td>
+          {include file="CRM/common/Tagset.tpl"}
+        </td>
+        {/if}
+      </tr>
+    </tbody>
+  </table>
 </div>

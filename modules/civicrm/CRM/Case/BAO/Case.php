@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2016                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2016
+ * @copyright CiviCRM LLC (c) 2004-2017
  */
 
 /**
@@ -661,19 +661,6 @@ AND civicrm_case.status_id != $closedId";
             'Case',
             $result->case_id
           );
-          $casesList[$result->case_id]['moreActions'] = CRM_Core_Action::formLink($actions['moreActions'],
-            $mask,
-            array(
-              'id' => $result->case_id,
-              'cid' => $result->contact_id,
-              'cxt' => $context,
-            ),
-            ts('more'),
-            TRUE,
-            'case.actions.more',
-            'Case',
-            $result->case_id
-          );
         }
         elseif ($field == 'case_status') {
           if (in_array($result->$field, $caseStatus)) {
@@ -1091,7 +1078,7 @@ SELECT case_status.label AS case_status, status_id, civicrm_case_type.title AS c
 
       $caseActivity['DT_RowId'] = $caseActivityId;
       //Add classes to the row, via DataTables syntax
-      $caseActivity['DT_RowClass'] = "crm-entity";
+      $caseActivity['DT_RowClass'] = "crm-entity status-id-$dao->status";
 
       if (CRM_Utils_Array::crmInArray($dao->status, $compStatusValues)) {
         $caseActivity['DT_RowClass'] .= " status-completed";
@@ -1126,7 +1113,8 @@ SELECT case_status.label AS case_status, status_id, civicrm_case_type.title AS c
       $caseActivity['subject'] = $dao->subject;
 
       //Activity Type
-      $caseActivity['type'] = $activityTypes[$dao->type]['label'];
+      $caseActivity['type'] = (!empty($activityTypes[$dao->type]['icon']) ? '<span class="crm-i ' . $activityTypes[$dao->type]['icon'] . '"></span> ' : '')
+        . $activityTypes[$dao->type]['label'];
 
       //Activity Target (With)
       $targetContact = '';
@@ -1868,7 +1856,7 @@ SELECT civicrm_contact.id as casemanager_id,
  FROM civicrm_contact
  LEFT JOIN civicrm_relationship ON (civicrm_relationship.contact_id_b = civicrm_contact.id AND civicrm_relationship.relationship_type_id = %1)
  LEFT JOIN civicrm_case ON civicrm_case.id = civicrm_relationship.case_id
- WHERE civicrm_case.id = %2";
+ WHERE civicrm_case.id = %2 AND is_active = 1";
 
       $managerRoleParams = array(
         1 => array($managerRoleId, 'Integer'),

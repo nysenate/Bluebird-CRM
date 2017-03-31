@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2016                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +30,7 @@
  * PEAR_ErrorStack and use that framework
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2016
+ * @copyright CiviCRM LLC (c) 2004-2017
  */
 
 require_once 'PEAR/ErrorStack.php';
@@ -309,6 +309,11 @@ class CRM_Core_Error extends PEAR_ErrorStack {
 
   /**
    * Display an error page with an error message describing what happened.
+   *
+   * @deprecated
+   *  This is a really annoying function. We ❤ exceptions. Be exceptional!
+   *
+   * @see CRM-20181
    *
    * @param string $message
    *   The error message.
@@ -650,7 +655,12 @@ class CRM_Core_Error extends PEAR_ErrorStack {
 
   /**
    * Generate a hash for the logfile.
+   *
    * CRM-13640.
+   *
+   * @param CRM_Core_Config $config
+   *
+   * @return string
    */
   public static function generateLogFileHash($config) {
     // Use multiple (but stable) inputs for hash information.

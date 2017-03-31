@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2016                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2016
+ * @copyright CiviCRM LLC (c) 2004-2017
  */
 
 /**
@@ -356,9 +356,10 @@ AND    domain_id    = %4
    *   Id of the contact to update.
    */
   public static function updateUFName($contactId) {
-    if (!$contactId) {
+    if (!Civi::settings()->get('syncCMSEmail') || !$contactId) {
       return;
     }
+
     $config = CRM_Core_Config::singleton();
     $ufName = CRM_Contact_BAO_Contact::getPrimaryEmail($contactId);
 
@@ -416,21 +417,14 @@ AND    domain_id    = %4
     $ufmatch->contact_id = $contactId;
     $ufmatch->domain_id = CRM_Core_Config::domainID();
     if ($ufmatch->find(TRUE)) {
-      //NYSS 7139 determine if email already exists in contact record
-      $sql = "
-        SELECT id
-        FROM civicrm_email
-        WHERE email LIKE '{$emailAddress}'
-          AND contact_id = {$contactId};
-      ";
-      if ( CRM_Core_DAO::singleValueQuery($sql) ) {
-        //email exists, no need to proceed
-        return;
-      }
-
       // Save the email in UF Match table
       $ufmatch->uf_name = $emailAddress;
       CRM_Core_BAO_UFMatch::create((array) $ufmatch);
+
+      // If CMS integration is disabled skip Civi email update if CMS user email is changed
+      if (Civi::settings()->get('syncCMSEmail') == FALSE) {
+        return;
+      }
 
       //check if the primary email for the contact exists
       //$contactDetails[1] - email
