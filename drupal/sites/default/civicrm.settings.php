@@ -89,6 +89,7 @@ $civicrm_setting['CiviCRM Preferences']['max_attachments'] = 5;
 $civicrm_setting['CiviCRM Preferences']['maxFileSize'] = 12; //9842
 $civicrm_setting['CiviCRM Preferences']['communityMessagesUrl'] = false;
 $civicrm_setting['CiviCRM Preferences']['empoweredBy'] = false;
+$civicrm_setting['CiviCRM Preferences']['syncCMSEmail'] = false;
 
 $civicrm_setting['Directory Preferences']['customTemplateDir'] = "$approot/civicrm/custom/templates";
 $civicrm_setting['Directory Preferences']['customPHPPathDir'] = "$approot/civicrm/custom/php";
