@@ -118,7 +118,7 @@ class CRM_Contact_Page_View_Log extends CRM_Core_Page {
 		}
 		$logEntries = array_merge_recursive( $logEntries, $alogEntries );
 		require_once 'CRM/Utils/Sort.php';
-		usort( $logEntries, array('CRM_Utils_Sort', 'cmpDate') );
+		usort( $logEntries, array('CRM_NYSS_Utils_Sort', 'cmpDate') );
 		
 		$this->assign( 'logCount', count( $logEntries ) );
     $this->ajaxResponse['tabCount'] = count($logEntries);

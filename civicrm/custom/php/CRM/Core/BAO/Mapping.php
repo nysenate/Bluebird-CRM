@@ -489,7 +489,7 @@ class CRM_Core_BAO_Mapping extends CRM_Core_DAO_Mapping {
       self::_removeFields($key, $value);
 
       //NYSS 2694 sort field column
-      uasort( $value, array('CRM_Utils_Sort', 'cmpTitle') );
+      uasort( $value, array('CRM_NYSS_Utils_Sort', 'cmpTitle') );
 
       foreach ($value as $key1 => $value1) {
         //CRM-2676, replacing the conflict for same custom field name from different custom group.
