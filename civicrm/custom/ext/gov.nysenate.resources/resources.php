@@ -171,3 +171,16 @@ function resources_civicrm_coreResourceList(&$list, $region) {
   $list[$config[0]]['config']['CKEditorCustomConfig'] =
     '/sites/all/modules/nyss_civihooks/js/ckeditor.config.js';
 }
+
+function resources_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) {
+  /*Civi::log()->debug('resources_civicrm_alterTemplateFile', array(
+    '$formName' => $formName,
+    '$form' => $form,
+    '$context' => $context,
+    '$tplName' => $tplName,
+  ));*/
+
+  if ($tplName == 'CRM/common/fatal.tpl') {
+    $tplName = 'CRM/NYSS/fatal.tpl';
+  }
+}
