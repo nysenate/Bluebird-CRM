@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2016                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -201,7 +201,7 @@ function _civicrm_api3_permissions($entity, $action, &$params) {
     'get' => array('access CiviCRM'),
     'default' => array(
       // nested array = OR
-      array('administer CiviCampaign', 'manage campaign')
+      array('administer CiviCampaign', 'manage campaign'),
     ),
   );
   $permissions['survey'] = $permissions['campaign'];

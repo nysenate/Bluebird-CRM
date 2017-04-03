@@ -3,7 +3,7 @@
   +--------------------------------------------------------------------+
   | CiviCRM version 4.7                                                |
   +--------------------------------------------------------------------+
-  | Copyright CiviCRM LLC (c) 2004-2016                                |
+  | Copyright CiviCRM LLC (c) 2004-2017                                |
   +--------------------------------------------------------------------+
   | This file is a part of CiviCRM.                                    |
   |                                                                    |
@@ -29,7 +29,7 @@
  * Our base DAO class. All DAO classes should inherit from this class.
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2016
+ * @copyright CiviCRM LLC (c) 2004-2017
  */
 
 if (!defined('DB_DSN_MODE')) {
@@ -1197,14 +1197,21 @@ FROM   civicrm_domain
   }
 
   /**
-   * execute an unbuffered query.  This is a wrapper around new functionality
-   * exposed with CRM-17748.
+   * Execute an unbuffered query.
+   *
+   * This is a wrapper around new functionality exposed with CRM-17748.
    *
    * @param string $query query to be executed
    *
-   * @return Object CRM_Core_DAO object that points to an unbuffered result set
-   * @static
-   * @access public
+   * @param array $params
+   * @param bool $abort
+   * @param null $daoName
+   * @param bool $freeDAO
+   * @param bool $i18nRewrite
+   * @param bool $trapException
+   *
+   * @return CRM_Core_DAO
+   *   Object that points to an unbuffered result set
    */
   static public function executeUnbufferedQuery(
     $query,

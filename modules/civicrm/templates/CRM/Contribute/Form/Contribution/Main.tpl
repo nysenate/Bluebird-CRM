@@ -2,7 +2,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2016                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -355,11 +355,11 @@
     }
     if (isRecur.val() > 0) {
       cj('#recurHelp').show();
-      cj('#amount_sum_label').text(ts('Regular amount'));
+      cj('#amount_sum_label').text('{/literal}{ts escape='js'}Regular amount{/ts}{literal}');
     }
     else {
       cj('#recurHelp').hide();
-      cj('#amount_sum_label').text(ts('Total amount'));
+      cj('#amount_sum_label').text('{/literal}{ts escape='js'}Total amount{/ts}{literal}');
     }
   }
 

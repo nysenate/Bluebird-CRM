@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2016                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2016
+ * @copyright CiviCRM LLC (c) 2004-2017
  */
 class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
   /**
@@ -229,11 +229,14 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
       }
 
       if ('Contact' == CRM_Utils_Array::value('log_type', $this->_logTables[$row['log_civicrm_entity_log_type']]) &&
-        CRM_Utils_Array::value('log_civicrm_entity_log_action', $row) == 'Insert'
+        CRM_Utils_Array::value('log_civicrm_entity_log_action', $row) == ts('Insert')
       ) {
         $row['log_civicrm_entity_log_action'] = ts('Update');
       }
 
+      // For certain tables, we may want to look at an alternate column to
+      // determine which action to display, determined by the 'action_column'
+      // key of the entry in $this->_logTables.
       if ($newAction = $this->getEntityAction($row['log_civicrm_entity_id'],
         $row['log_civicrm_entity_log_conn_id'],
         $row['log_civicrm_entity_log_type'],

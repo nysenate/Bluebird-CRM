@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2016                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
  * This class contains functions for managing Tag(tag) for a contact
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2016
+ * @copyright CiviCRM LLC (c) 2004-2017
  */
 class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
 
@@ -81,17 +81,15 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
 
     // dont save the object if it already exists, CRM-1276
     if (!$entityTag->find(TRUE)) {
-
-      // we are using this format to keep things consistent between the single and bulk operations
-      // so a bit different from other post hooks
-      $object = array(0 => array(0 => $params['entity_id']), 1 => $params['entity_table']);
-
-      //NYSS invoke pre hook
-      CRM_Utils_Hook::pre( 'create', 'EntityTag', $params['tag_id'], $params );
+      //invoke pre hook
+      CRM_Utils_Hook::pre('create', 'EntityTag', $params['tag_id'], $params);
 
       $entityTag->save();
 
       //invoke post hook on entityTag
+      // we are using this format to keep things consistent between the single and bulk operations
+      // so a bit different from other post hooks
+      $object = array(0 => array(0 => $params['entity_id']), 1 => $params['entity_table']);
       CRM_Utils_Hook::post('create', 'EntityTag', $params['tag_id'], $object);
     }
     return $entityTag;
@@ -116,6 +114,11 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
    *   (reference ) an assoc array of name/value pairs.
    */
   public static function del(&$params) {
+    //invoke pre hook
+    if (!empty($params['tag_id'])) {
+      CRM_Utils_Hook::pre('delete', 'EntityTag', $params['tag_id'], $params);
+    }
+
     $entityTag = new CRM_Core_BAO_EntityTag();
     $entityTag->copyValues($params);
     $entityTag->delete();
@@ -147,10 +150,10 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
     $numEntitiesNotAdded = 0;
     $entityIdsAdded = array();
 
-    //NYSS invoke pre hook
-    $preObject = array( $entityIds, $entityTable );
-    CRM_Utils_Hook::pre('create', 'EntityTag', $tagId, $preObject );
-		
+    //invoke pre hook for entityTag
+    $preObject = array($entityIds, $entityTable);
+    CRM_Utils_Hook::pre('create', 'EntityTag', $tagId, $preObject);
+
     foreach ($entityIds as $entityId) {
       // CRM-17350 - check if we have permission to edit the contact
       // that this tag belongs to.
@@ -224,6 +227,10 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
     $numEntitiesRemoved = 0;
     $numEntitiesNotRemoved = 0;
     $entityIdsRemoved = array();
+
+    //invoke pre hook for entityTag
+    $preObject = array($entityIds, $entityTable);
+    CRM_Utils_Hook::pre('delete', 'EntityTag', $tagId, $preObject);
 
     foreach ($entityIds as $entityId) {
       // CRM-17350 - check if we have permission to edit the contact
@@ -427,8 +434,8 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
    */
   public function mergeTags($tagAId, $tagBId) {
     $queryParams = array(
-      1 => array($tagBId, 'Integer'),
-      2 => array($tagAId, 'Integer'),
+      1 => array($tagAId, 'Integer'),
+      2 => array($tagBId, 'Integer'),
     );
 
     // re-compute used_for field
@@ -442,7 +449,7 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
     }
     $usedFor = array_merge($tags["tagA_used_for"], $tags["tagB_used_for"]);
     $usedFor = implode(',', array_unique($usedFor));
-    $tags["tagB_used_for"] = explode(",", $usedFor);
+    $tags["used_for"] = explode(",", $usedFor);
     //NYSS 6512
     //if a tag doesn't exist, throw error message
     if(($tags['tagA'] == null) || ($tags['tagB'] == null))
@@ -456,13 +463,15 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
     $sqls = array(
       // 1. update entity tag entries
       "UPDATE IGNORE civicrm_entity_tag SET tag_id = %1 WHERE tag_id = %2",
-      // 2. update used_for info for tag B
-      "UPDATE civicrm_tag SET used_for = '{$usedFor}' WHERE id = %1",
-      // 3. remove tag A, if tag A is getting merged into B
+      // 2. move children
+      "UPDATE civicrm_tag SET parent_id = %1 WHERE parent_id = %2",
+      // 3. update used_for info for tag A & children
+      "UPDATE civicrm_tag SET used_for = '{$usedFor}' WHERE id = %1 OR parent_id = %1",
+      // 4. delete tag B
       "DELETE FROM civicrm_tag WHERE id = %2",
-      // 4. remove duplicate entity tag records
+      // 5. remove duplicate entity tag records
       "DELETE et2.* from civicrm_entity_tag et1 INNER JOIN civicrm_entity_tag et2 ON et1.entity_table = et2.entity_table AND et1.entity_id = et2.entity_id AND et1.tag_id = et2.tag_id WHERE et1.id < et2.id",
-      // 5. remove orphaned entity_tags
+      // 6. remove orphaned entity_tags
       "DELETE FROM civicrm_entity_tag WHERE tag_id = %2",
     );
     $tables = array('civicrm_entity_tag', 'civicrm_tag');

@@ -1,7 +1,7 @@
 -- +--------------------------------------------------------------------+
 -- | CiviCRM version 4.7                                                |
 -- +--------------------------------------------------------------------+
--- | Copyright CiviCRM LLC (c) 2004-2016                                |
+-- | Copyright CiviCRM LLC (c) 2004-2017                                |
 -- +--------------------------------------------------------------------+
 -- | This file is a part of CiviCRM.                                    |
 -- |                                                                    |
@@ -30,7 +30,7 @@
 -- +--------------------------------------------------------------------+
 -- | CiviCRM version 4.7                                                |
 -- +--------------------------------------------------------------------+
--- | Copyright CiviCRM LLC (c) 2004-2016                                |
+-- | Copyright CiviCRM LLC (c) 2004-2017                                |
 -- +--------------------------------------------------------------------+
 -- | This file is a part of CiviCRM.                                    |
 -- |                                                                    |
@@ -2324,7 +2324,9 @@ CREATE TABLE `civicrm_option_value` (
      `is_active` tinyint   DEFAULT 1 COMMENT 'Is this option active?',
      `component_id` int unsigned    COMMENT 'Component that this option value belongs/caters to.',
      `domain_id` int unsigned    COMMENT 'Which Domain is this option value for',
-     `visibility_id` int unsigned   DEFAULT NULL  
+     `visibility_id` int unsigned   DEFAULT NULL ,
+     `icon` varchar(255)   DEFAULT NULL COMMENT 'crm-i icon class',
+     `color` varchar(255)   DEFAULT NULL COMMENT 'Hex color value e.g. #ffffff' 
 ,
     PRIMARY KEY ( `id` )
  
@@ -2424,6 +2426,7 @@ CREATE TABLE `civicrm_tag` (
      `is_tagset` tinyint   DEFAULT 0 ,
      `used_for` varchar(64)   DEFAULT NULL ,
      `created_id` int unsigned    COMMENT 'FK to civicrm_contact, who created this tag',
+     `color` varchar(255)   DEFAULT NULL COMMENT 'Hex color value e.g. #ffffff',
      `created_date` datetime    COMMENT 'Date and time that tag was created.' 
 ,
     PRIMARY KEY ( `id` )
@@ -2841,6 +2844,8 @@ CREATE TABLE `civicrm_mailing` (
      `from_name` varchar(128)    COMMENT 'From Header of mailing',
      `from_email` varchar(128)    COMMENT 'From Email of mailing',
      `replyto_email` varchar(128)    COMMENT 'Reply-To Email of mailing',
+     `template_type` varchar(64) NOT NULL  DEFAULT 'traditional' COMMENT 'The language/processing system used for email templates.',
+     `template_options` longtext    COMMENT 'Advanced options used by the email templating system. (JSON encoded)',
      `subject` varchar(128)    COMMENT 'Subject of mailing',
      `body_text` longtext    COMMENT 'Body of the mailing in text format.',
      `body_html` longtext    COMMENT 'Body of the mailing in html format.',
@@ -4125,7 +4130,9 @@ CREATE TABLE `civicrm_financial_trxn` (
      `status_id` int unsigned    COMMENT 'pseudo FK to civicrm_option_value of contribution_status_id option_group',
      `payment_processor_id` int unsigned    COMMENT 'Payment Processor for this financial transaction',
      `payment_instrument_id` int unsigned    COMMENT 'FK to payment_instrument option group values',
-     `check_number` varchar(255)    COMMENT 'Check number' 
+     `card_type` int unsigned    COMMENT 'FK to accept_creditcard option group values',
+     `check_number` varchar(255)    COMMENT 'Check number',
+     `pan_truncation` int unsigned    COMMENT 'Last 4 digits of credit card' 
 ,
     PRIMARY KEY ( `id` )
  
@@ -4236,7 +4243,8 @@ CREATE TABLE `civicrm_activity` (
      `is_deleted` tinyint   DEFAULT 0 ,
      `campaign_id` int unsigned    COMMENT 'The campaign for which this activity has been triggered.',
      `engagement_level` int unsigned    COMMENT 'Assign a specific level of engagement to this activity. Used for tracking constituents in ladder of engagement.',
-     `weight` int     
+     `weight` int    ,
+     `is_star` tinyint   DEFAULT 0 COMMENT 'Activity marked as favorite.' 
 ,
     PRIMARY KEY ( `id` )
  

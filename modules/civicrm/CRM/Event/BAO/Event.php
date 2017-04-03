@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2016                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2016
+ * @copyright CiviCRM LLC (c) 2004-2017
  */
 class CRM_Event_BAO_Event extends CRM_Event_DAO_Event {
 
@@ -386,7 +386,7 @@ WHERE      civicrm_event.is_active = 1 AND
     // Get the event summary display preferences
     $show_max_events = Civi::settings()->get('show_events');
     // show all events if show_events is set to a negative value
-    if ($show_max_events >= 0) {
+    if (isset($show_max_events) && $show_max_events >= 0) {
       $event_summary_limit = "LIMIT      0, $show_max_events";
     }
     else {

@@ -1989,7 +1989,7 @@ class Smarty
 			return $function;
 		}
 	}
-  
+
     /**#@-*/
 
 }

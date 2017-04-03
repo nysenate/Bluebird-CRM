@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2016                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2016
+ * @copyright CiviCRM LLC (c) 2004-2017
  */
 class CRM_Contact_Page_View_Log extends CRM_Core_Page {
 
@@ -118,12 +118,12 @@ class CRM_Contact_Page_View_Log extends CRM_Core_Page {
 		}
 		$logEntries = array_merge_recursive( $logEntries, $alogEntries );
 		require_once 'CRM/Utils/Sort.php';
-		usort( $logEntries, array('CRM_Utils_Sort', 'cmpDate') );
+		usort( $logEntries, array('CRM_NYSS_Utils_Sort', 'cmpDate') );
 		
 		$this->assign( 'logCount', count( $logEntries ) );
     $this->ajaxResponse['tabCount'] = count($logEntries);
     $this->ajaxResponse += CRM_Contact_Form_Inline::renderFooter($this->_contactId, FALSE);
-    $this->assign_by_ref( 'log', $logEntries );
+    $this->assign_by_ref('log', $logEntries);
 		
 		$currentContact = CRM_Contact_BAO_Contact::getDisplayAndImage( $this->_contactId ); //NYSS 4458
 		$this->assign( 'displayName', $currentContact[0] ); //NYSS 2551

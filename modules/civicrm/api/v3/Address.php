@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2016                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -116,6 +116,7 @@ function _civicrm_api3_address_create_spec(&$params) {
     'type' => CRM_Utils_Type::T_TEXT,
   );
 }
+
 /**
  * Adjust Metadata for Get action.
  *

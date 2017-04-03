@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2016                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -58,6 +58,9 @@ class CRM_Upgrade_Incremental_php_FourSeven extends CRM_Upgrade_Incremental_Base
       if ($count && !function_exists('moneris_civicrm_managed')) {
         $preUpgradeMessage .= '<p>' . ts('The %1 payment processor is no longer bundled with CiviCRM. After upgrading you will need to install the extension to continue using it.', array(1 => 'Moneris')) . '</p>';
       }
+    }
+    if ($rev == '4.7.13') {
+      $preUpgradeMessage .= '<p>' . ts('A new permission has been added called %1 This Permission is now used to control access to the Manage Tags screen', array(1 => 'manage tags')) . '</p>';
     }
   }
 
@@ -119,6 +122,7 @@ class CRM_Upgrade_Incremental_php_FourSeven extends CRM_Upgrade_Incremental_Base
    * @param string $rev
    */
   public function upgrade_4_7_alpha1($rev) {
+    $this->addTask('Drop action scheudle mapping foreign key', 'dropActionScheudleMappingForeignKey');
     $this->addTask('Migrate \'on behalf of\' information to module_data', 'migrateOnBehalfOfInfo');
     $this->addTask(ts('Upgrade DB to %1: SQL', array(1 => $rev)), 'runSql', $rev);
     $this->addTask(ts('Migrate Settings to %1', array(1 => $rev)), 'migrateSettings', $rev);
@@ -260,7 +264,8 @@ class CRM_Upgrade_Incremental_php_FourSeven extends CRM_Upgrade_Incremental_Base
    */
   public function upgrade_4_7_13($rev) {
     $this->addTask(ts('Upgrade DB to %1: SQL', array(1 => $rev)), 'runSql', $rev);
-    $this->addTask('Add column to allow for payment processors to set what card types are accepted', 'addAcceptedCardTypesField');
+    $this->addTask('CRM-19372 - Add column to allow for payment processors to set what card types are accepted', 'addColumn',
+      'civicrm_payment_processor', 'accepted_credit_cards', "text DEFAULT NULL COMMENT 'array of accepted credit card types'");
   }
 
   /**
@@ -271,6 +276,35 @@ class CRM_Upgrade_Incremental_php_FourSeven extends CRM_Upgrade_Incremental_Base
   public function upgrade_4_7_14($rev) {
     $this->addTask(ts('Upgrade DB to %1: SQL', array(1 => $rev)), 'runSql', $rev);
     $this->addTask('Add WYSIWYG Editor Presets', 'addWysiwygPresets');
+  }
+
+  /**
+   * Upgrade function.
+   *
+   * @param string $rev
+   */
+  public function upgrade_4_7_15($rev) {
+    $this->addTask('CRM-19626 - Add min_amount column to civicrm_price_set', 'addColumn',
+      'civicrm_price_set', 'min_amount', "INT(10) UNSIGNED DEFAULT '0' COMMENT 'Minimum Amount required for this set.'");
+    $this->addTask(ts('Upgrade DB to %1: SQL', array(1 => $rev)), 'runSql', $rev);
+  }
+
+  /**
+   * Upgrade function.
+   *
+   * @param string $rev
+   */
+  public function upgrade_4_7_16($rev) {
+    $this->addTask('CRM-19723 - Add icon column to civicrm_option_value', 'addColumn',
+      'civicrm_option_value', 'icon', "varchar(255) COMMENT 'crm-i icon class' DEFAULT NULL");
+    $this->addTask('CRM-19769 - Add color column to civicrm_tag', 'addColumn',
+      'civicrm_tag', 'color', "varchar(255) COMMENT 'Hex color value e.g. #ffffff' DEFAULT NULL");
+    $this->addTask('CRM-19779 - Add color column to civicrm_option_value', 'addColumn',
+      'civicrm_option_value', 'color', "varchar(255) COMMENT 'Hex color value e.g. #ffffff' DEFAULT NULL");
+    $this->addTask('Add new CiviMail fields', 'addMailingTemplateType');
+    $this->addTask('CRM-19770 - Add is_star column to civicrm_activity', 'addColumn',
+      'civicrm_activity', 'is_star', "tinyint DEFAULT '0' COMMENT 'Activity marked as favorite.'");
+    $this->addTask(ts('Upgrade DB to %1: SQL', array(1 => $rev)), 'runSql', $rev);
   }
 
   /*
@@ -751,6 +785,18 @@ FROM `civicrm_dashboard_contact` JOIN `civicrm_contact` WHERE civicrm_dashboard_
   }
 
   /**
+   * CRM-18464 Check if Foreign key exists and also drop any index of same name accidentially created.
+   *
+   * @param \CRM_Queue_TaskContext $ctx
+   *
+   * @return bool
+   */
+  public static function dropActionScheudleMappingForeignKey(CRM_Queue_TaskContext $ctx) {
+    CRM_Core_BAO_SchemaHandler::safeRemoveFK('civicrm_action_schedule', 'FK_civicrm_action_schedule_mapping_id');
+    return TRUE;
+  }
+
+  /**
    * CRM-18345 Don't delete mailing data on email/phone deletion
    * Implemented here in CRM-18526
    *
@@ -866,6 +912,22 @@ FROM `civicrm_dashboard_contact` JOIN `civicrm_contact` WHERE civicrm_dashboard_
   }
 
   /**
+   * Add mailing template type.
+   *
+   * @return bool
+   */
+  public static function addMailingTemplateType() {
+    if (!CRM_Core_DAO::checkFieldExists('civicrm_mailing', 'template_type', FALSE)) {
+      CRM_Core_DAO::executeQuery('
+        ALTER TABLE civicrm_mailing
+        ADD COLUMN `template_type` varchar(64)  NOT NULL DEFAULT \'traditional\' COMMENT \'The language/processing system used for email templates.\',
+        ADD COLUMN `template_options` longtext  COMMENT \'Advanced options used by the email templating system. (JSON encoded)\'
+      ');
+    }
+    return TRUE;
+  }
+
+  /**
    * CRM-18651 Add DataType column to Option Group Table
    * @return bool
    */
@@ -890,17 +952,6 @@ FROM `civicrm_dashboard_contact` JOIN `civicrm_contact` WHERE civicrm_dashboard_
    * CRM-19372 Add field to store accepted credit credit cards for a payment processor.
    * @return bool
    */
-  public static function addAcceptedCardTypesField() {
-    if (!CRM_Core_BAO_SchemaHandler::checkIfFieldExists('civicrm_payment_processor', 'accepted_credit_cards')) {
-      CRM_Core_DAO::executeQuery("ALTER TABLE civicrm_payment_processor ADD COLUMN `accepted_credit_cards` text   DEFAULT NULL COMMENT 'array of accepted credit card types'");
-    }
-    return TRUE;
-  }
-
-  /**
-   * CRM-19372 Add field to store accepted credit credit cards for a payment processor.
-   * @return bool
-   */
   public static function addWysiwygPresets() {
     CRM_Core_BAO_OptionGroup::ensureOptionGroupExists(array(
       'name' => 'wysiwyg_presets',
@@ -913,8 +964,7 @@ FROM `civicrm_dashboard_contact` JOIN `civicrm_contact` WHERE civicrm_dashboard_
       'civievent' => array('label' => ts('CiviEvent'), 'component_id' => 'CiviEvent'),
     );
     foreach ($values as $name => $value) {
-      civicrm_api3('OptionValue', 'create', $value + array(
-        'options' => array('match' => array('name', 'option_group_id')),
+      CRM_Core_BAO_OptionValue::ensureOptionValueExists($value + array(
         'name' => $name,
         'option_group_id' => 'wysiwyg_presets',
       ));

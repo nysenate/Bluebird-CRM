@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2016                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2016
+ * @copyright CiviCRM LLC (c) 2004-2017
  */
 
 /**
@@ -1323,7 +1323,7 @@ class CRM_Utils_Token {
    * @return array
    *   contactDetails with hooks swapped out
    */
-  public function getAnonymousTokenDetails($contactIDs = array(
+  public static function getAnonymousTokenDetails($contactIDs = array(
       0,
     ),
                                            $returnProperties = NULL,
@@ -1343,6 +1343,7 @@ class CRM_Utils_Token {
     );
     return $details;
   }
+
   /**
    * Gives required details of contribuion in an indexed array format so we
    * can iterate in a nice loop and do token evaluation
@@ -1425,6 +1426,15 @@ class CRM_Utils_Token {
 
   /**
    * Replace existing greeting tokens in message/subject.
+   *
+   * This function operates by reference, modifying the first parameter. Other
+   * methods for token replacement in this class return the modified string.
+   * This leads to inconsistency in how these methods must be applied.
+   *
+   * @TODO Remove that inconsistency in usage.
+   *
+   * ::replaceContactTokens() may need to be called after this method, to
+   * replace tokens supplied from this method.
    *
    * @param string $tokenString
    * @param array $contactDetails

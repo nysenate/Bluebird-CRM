@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2016                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2016
+ * @copyright CiviCRM LLC (c) 2004-2017
  */
 class CRM_Contact_BAO_Contact_Permission {
 
@@ -160,7 +160,7 @@ WHERE contact_id IN ({$contact_id_list})
       return TRUE;
     }
 
-    //check permission based on relationship, CRM-2963
+    // check permission based on relationship, CRM-2963
     if (self::relationshipList(array($id))) {
       return TRUE;
     }
@@ -170,7 +170,7 @@ WHERE contact_id IN ({$contact_id_list})
     $tables = array();
     $whereTables = array();
 
-    $permission = CRM_ACL_API::whereClause($type, $tables, $whereTables);
+    $permission = CRM_ACL_API::whereClause($type, $tables, $whereTables, NULL, FALSE, FALSE, TRUE);
     $from = CRM_Contact_BAO_Query::fromClause($whereTables);
 
     $query = "
@@ -265,7 +265,7 @@ AND ac.user_id IS NULL
       if (!CRM_Core_DAO::singleValueQuery("
         SELECT count(*) FROM civicrm_acl_contact_cache WHERE user_id = %1 AND contact_id = %1 AND operation = '{$operation}' LIMIT 1", $queryParams)) {
         CRM_Core_DAO::executeQuery("INSERT INTO civicrm_acl_contact_cache ( user_id, contact_id, operation ) VALUES(%1, %1, '{$operation}')", $queryParams);
-    }
+      }
     }
     $_processed[$type][$userID] = 1;
   }
@@ -346,7 +346,7 @@ AND ac.user_id IS NULL
     // no processing empty lists (avoid SQL errors as well)
     if (empty($contact_ids)) {
       return array();
-      }
+    }
 
     // get the currently logged in user
     $contactID = CRM_Core_Session::getLoggedInContactID();
@@ -371,7 +371,7 @@ AND ac.user_id IS NULL
       if (!CRM_Core_Permission::check('access deleted contacts')) {
         $LEFT_JOIN_DELETED       = "LEFT JOIN civicrm_contact ON civicrm_contact.id = {$contact_id_column} ";
         $AND_CAN_ACCESS_DELETED  = "AND civicrm_contact.is_deleted = 0";
-    }
+      }
 
       $queries[] = "
 SELECT civicrm_relationship.{$contact_id_column} AS contact_id
@@ -386,7 +386,7 @@ SELECT civicrm_relationship.{$contact_id_column} AS contact_id
 
     // FIXME: secondDegRelPermissions should be a setting
     $config = CRM_Core_Config::singleton();
-      if ($config->secondDegRelPermissions) {
+    if ($config->secondDegRelPermissions) {
       foreach ($directions as $first_direction) {
         foreach ($directions as $second_direction) {
           // add clause for deleted contacts, if the user doesn't have the permission to access them
@@ -412,7 +412,7 @@ SELECT second_degree_relationship.contact_id_{$second_direction['to']} AS contac
    $AND_CAN_ACCESS_DELETED";
         }
       }
-      }
+    }
 
     // finally UNION the queries and call
     $query = "(" . implode(")\nUNION DISTINCT (", $queries) . ")";

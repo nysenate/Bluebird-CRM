@@ -2,7 +2,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2016                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -35,7 +35,6 @@
   <style type="text/css" media="screen">
     @import url({$config->resourceBase}css/civicrm.css);
     @import url({$config->resourceBase}bower_components/font-awesome/css/font-awesome.min.css);
-    @import url({$config->resourceBase}css/extras.css);
   </style>
   {literal}
   <style media="screen" type="text/css">
@@ -77,7 +76,6 @@
   <style type="text/css" media="screen">
     @import url({$config->resourceBase}css/civicrm.css);
     @import url({$config->resourceBase}bower_components/font-awesome/css/font-awesome.min.css);
-    @import url({$config->resourceBase}css/extras.css);
   </style>
 {/if}
 

@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2016                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -390,7 +390,7 @@ function civicrm_api3_job_fetch_activities($params) {
   }
   catch (Exception $e) {
     $lock->release();
-    return civicrm_api3_create_error('Process Activities failed');
+    return civicrm_api3_create_error($e->getMessage());
   }
 }
 
@@ -487,11 +487,9 @@ function civicrm_api3_job_process_batch_merge($params) {
     ));
   }
   $gid = CRM_Utils_Array::value('gid', $params);
-
   $mode = CRM_Utils_Array::value('mode', $params, 'safe');
-  $autoFlip = CRM_Utils_Array::value('auto_flip', $params, TRUE);
 
-  $result = CRM_Dedupe_Merger::batchMerge($rule_group_id, $gid, $mode, $autoFlip, 1, 2, CRM_Utils_Array::value('criteria', $params, array()), CRM_Utils_Array::value('check_permissions', $params));
+  $result = CRM_Dedupe_Merger::batchMerge($rule_group_id, $gid, $mode, 1, 2, CRM_Utils_Array::value('criteria', $params, array()), CRM_Utils_Array::value('check_permissions', $params));
 
   return civicrm_api3_create_success($result, $params);
 }

@@ -3645,7 +3645,7 @@ class DB_DataObject extends DB_DataObject_Overload
      * @return   array of key => value for row
      */
 
-    function toArray($format = NULL, $hideEmpty = false)//NYSS
+    function toArray($format = null, $hideEmpty = false)
     {
         global $_DB_DATAOBJECT;
         $ret = array();
@@ -3659,40 +3659,35 @@ class DB_DataObject extends DB_DataObject_Overload
 
             if (!isset($this->$k)) {
                 if (!$hideEmpty) {
-                  //NYSS
-                  if ($format===null)
-                    $ret[$k] = '';
-                  else
-                    $ret[sprintf($format,$k)] = '';
+                    if ($format === null)
+                        $ret[$k] = '';
+                    else
+                        $ret[sprintf($format,$k)] = '';
                 }
                 continue;
             }
             // call the overloaded getXXXX() method. - except getLink and getLinks
             if (method_exists($this,'get'.$k) && !in_array(strtolower($k),array('links','link'))) {
-              //NYSS
-              if ($format===null)
-                $ret[$k] = $this->{'get'.$k}();
-              else
-                $ret[sprintf($format,$k)] = $this->{'get'.$k}();
+                if ($format === null)
+                    $ret[$k] = $this->{'get'.$k}();
+                else
+                    $ret[sprintf($format,$k)] = $this->{'get'.$k}();
                 continue;
             }
             // should this call toValue() ???
-            //NYSS
-            if ($format===null)
-              $ret[$k] = $this->$k;
+            if ($format === null)
+                $ret[$k] = $this->$k;
             else
-            $ret[sprintf($format,$k)] = $this->$k;
+                $ret[sprintf($format,$k)] = $this->$k;
         }
         if (!$this->_link_loaded) {
             return $ret;
         }
         foreach($this->_link_loaded as $k) {
-          //NYSS
-          if ($format===null)
-            $ret[$k] = $this->$k->toArray();
-          else
-            $ret[sprintf($format,$k)] = $this->$k->toArray();
-
+            if ($format === null)
+                $ret[$k] = $this->$k->toArray();
+            else
+                $ret[sprintf($format,$k)] = $this->$k->toArray();
         }
 
         return $ret;
@@ -4289,17 +4284,18 @@ class DB_DataObject extends DB_DataObject_Overload
         if (isset($_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5])) {
             $_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5]->num_rows = array();
         }
-      if (is_array($this->_link_loaded)) {
-        foreach ($this->_link_loaded as $do) {
-          if (
-            !empty($this->{$do}) &&
-            is_object($this->{$do}) &&
-            method_exists($this->{$do}, 'free')
-          ) {
-            $this->{$do}->free();
-          }
+        if (is_array($this->_link_loaded)) {
+            foreach ($this->_link_loaded as $do) {
+                if (
+                        !empty($this->{$do}) &&
+                        is_object($this->{$do}) &&
+                       method_exists($this->{$do}, 'free')
+                    ) {
+                    $this->{$do}->free();
+                }
+            }
         }
-      }
+
     }
 
 
