@@ -35,17 +35,28 @@
       }
       @media only screen and (max-width:500px) {
         /* default style */
-        table[class="flexible"]{width:100% !important;}
-        td[class="img-flex"] img{width:100% !important; height:auto !important;}
+        table[class="flexible"] {
+          width:100% !important;
+        }
+        td[class="img-flex"] img {
+          width:100% !important;
+          height:auto !important;
+        }
         /* custom style */
-        td[class="header"]{padding:10px 15px 20px !important;}
-        td[class="box"]{padding:20px !important;}
-        .two-column .column, .three-column .column {max-width:100% !important;}
+        td[class="header"] {
+          padding:10px 15px 20px !important;
+        }
+        td[class="box"] {
+          padding:20px !important;
+        }
+        .two-column .column, .three-column .column {
+          max-width:100% !important;
+        }
       }
     </style>
   </head>
   <body style="margin:0; padding:0; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%;" bgcolor="#efefef">
-    <div class="preview" style="display:none;font-size:1px;color:#333333;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">%PREVIEW_TEXT%
+    <div class="preview" style="display:none; font-size:1px; color:#333333; line-height:1px; max-height:0px; max-width:0px; opacity:0; overflow:hidden;">%PREVIEW_TEXT%
 </div>
     <center style="width:100%; table-layout:fixed; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; min-width:320px; background:#efefef;">
       <div style="max-width:570px; margin:0 auto;">
@@ -54,10 +65,10 @@
         <tr>
         <td style="padding:0;">
         <![endif]-->
-        <table align="center" style="min-width:320px;margin:0 auto;" width="100%" cellspacing="0" cellpadding="0" bgcolor="#efefef">
+        <table align="center" style="min-width:320px; margin:0 auto;" width="100%" cellspacing="0" cellpadding="0" bgcolor="#efefef">
           <tr>
             <td style="padding:0 10px;">
-              <table class="flexible" width="100%" align="center" style="margin:0 auto;max-width:550px;" cellpadding="0" cellspacing="0">
+              <table class="flexible" width="100%" align="center" style="margin:0 auto; max-width:550px;" cellpadding="0" cellspacing="0">
                 <!-- header -->
                 <tr>
                   <td class="header" bgcolor="#ffffff" style="padding:11px 25px 13px;">
@@ -66,7 +77,7 @@
                         <td style="padding:0 0 10px;">
                           <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
-                              <td style="vertical-align:middle;line-height:16px;font:10px/12px Helvetica, Arial, sans-serif; color:#000;">
+                              <td style="vertical-align:middle; line-height:16px; font:10px/12px Helvetica, Arial, sans-serif; color:#000;">
                               <span style="line-height:16px; vertical-align:top;">
                                 Share on: &nbsp; <a href="%SHAREON_FACEBOOK_URL%" target="_blank"><img width="16" height="16" src="{{$bbcfg.email_images_common_base_url}}/social_media/facebook_circle_grey_32.png" alt="Facebook" /></a>
                                 &nbsp;<a href="%SHAREON_TWITTER_URL%" target="_blank"><img width="16" height="16" src="{{$bbcfg.email_images_common_base_url}}/social_media/twitter_circle_grey_32.png" alt="Twitter" /></a>
@@ -92,13 +103,13 @@
                 </tr>
                 <!-- promo -->
                 <tr>
-                  <td class="two-column" style="padding:5px 0 19px;text-align:center;font-size:0;">
+                  <td class="two-column" style="padding:5px 0 19px; text-align:center; font-size:0;">
                     <!--[if (gte mso 9)|(IE)]>
                     <table width="100%" cellspacing="0" cellpadding="0">
                       <tr>
                         <td width="50%" valign="top" style="padding:0;">
                           <![endif]-->
-                          <div class="column" style="width:100%;max-width:275px;display:inline-block;vertical-align:top;">
+                          <div class="column" style="width:100%; max-width:275px; display:inline-block; vertical-align:top;">
                             <table width="100%" cellpadding="0" cellspacing="0">
                               <tr>
                                 <td class="img-flex">
@@ -111,7 +122,7 @@
                         </td>
                         <td width="50%" height="206" valign="top" style="padding:0;" bgcolor="{{$senator.palette->lgt}}">
                           <![endif]-->
-                          <div class="column" style="width:100%;max-width:275px;display:inline-block;vertical-align:top;height:206px;background:{{$senator.palette->lgt}};">
+                          <div class="column" style="width:100%; max-width:275px; display:inline-block; vertical-align:top; height:206px; background:{{$senator.palette->lgt}};">
                             <table width="100%" cellpadding="0" cellspacing="0" bgcolor="{{$senator.palette->lgt}}">
                               <tr>
                                 <td align="left" class="box" style="padding:17px 10px 17px 20px;">
