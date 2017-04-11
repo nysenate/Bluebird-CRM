@@ -372,7 +372,8 @@ function nyss_mail_civicrm_buildForm($formName, &$form)
 
   // NYSS 5581 - optimized opt out
   if ($formName == 'CRM_Profile_Form_Edit' &&
-      $form->getVar('_ufGroupName') == 'Mass_Email_Subscriptions') {
+    $form->getVar('_ufGroupName') == 'Mass_Email_Subscriptions'
+  ) {
     $cid = $form->getVar('_id');
 
     //get contact display name
@@ -438,16 +439,17 @@ function nyss_mail_civicrm_buildForm($formName, &$form)
         CRM_Core_PseudoConstant::get('CRM_Core_DAO_Address', 'location_type_id'));
       $form->addElement('select', "email[$blockId][on_hold]", '', $holdOptions);*/
 
-      $form->add('select',
-                 "email[{$email->id}][mailing_categories]",
-                 ts('Subscription Opt-Outs'),
-                 $mCats,
-                 false,
-                 array(
-                   'id' => 'subscription-optout-'.$email->id,
-                   'multiple' => 'multiple',
-                   'title' => ts('- select -')
-                 )
+      $form->add(
+        'select',
+        "email[{$email->id}][mailing_categories]",
+        ts('Subscription Opt-Outs'),
+        $mCats,
+        false,
+        array(
+          'id' => 'subscription-optout-'.$email->id,
+          'multiple' => 'multiple',
+          'title' => ts('- select -')
+        )
       );
 
       //set defaults
@@ -601,6 +603,19 @@ function nyss_mail_civicrm_postProcess($formName, &$form)
   //CRM_Core_Error::debug($form); exit();
 } //nyss_mail_civicrm_postProcess()
 
+function nyss_mail_civicrm_pre($op, $objectName, $id, &$params) {
+  /*Civi::log()->debug('nyss_mail_civicrm_pre', array(
+    'op' => $op,
+    'objectName' => $objectName,
+    'id' => $id,
+    'params' => $params,
+  ));*/
+
+  //10925 set click/open values to 0
+  if ($op == 'create' && $objectName == 'Mailing') {
+    $params['open_tracking'] = $params['url_tracking'] = FALSE;
+  }
+}
 
 function nyss_mail_civicrm_pageRun(&$page)
 {
