@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2016                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -160,13 +160,16 @@ GROUP BY   m.id
     }
     $select = implode(', ', $select);
 
-    $orderBy = 'ORDER BY j.start_date DESC';
+    //NYSS 10960
+    $orderBy = 'ORDER BY MIN(j.start_date) DESC';
     if ($sort) {
       $orderBy = "ORDER BY $sort";
     }
 
+    //NYSS 10960
+    $select = CRM_Contact_BAO_Query::appendAnyValueToSelect(explode(',', $select), 'm.id');
     $sql = "
-SELECT     $select
+$select
 FROM       civicrm_mailing m
 INNER JOIN civicrm_contact c ON m.created_id = c.id
 INNER JOIN civicrm_mailing_job j ON j.mailing_id = m.id
