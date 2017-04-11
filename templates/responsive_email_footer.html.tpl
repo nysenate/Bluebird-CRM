@@ -31,6 +31,9 @@
                               <tr>
                                 <td class="address" align="center" style="font:12px/14px Helvetica, Arial, sans-serif; color:#000;">
                                   {{$offinfo->street}}<br/>
+{{if $offinfo->additional}}
+                                  {{$offinfo->additional}}<br/>
+{{/if}}
                                   {{$offinfo->city}}, {{$offinfo->province}} {{$offinfo->postal_code}}<br/>
                                   Phone: <a href="tel:{{$offinfo->phone}}" target="_blank" style="color:#010101; text-decoration:none;">{{$offinfo->phone}}</a><br/>
 {{if $offinfo->fax}}
