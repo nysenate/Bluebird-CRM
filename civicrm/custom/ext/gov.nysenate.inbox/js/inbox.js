@@ -1,12 +1,14 @@
 CRM.$(function($) {
+  var inboxType = CRM.vars.NYSS.inboxType;
+
   //redraw table when range filter changes
   CRM.$('#range_filter').change(function(){
-    refreshList();
+    refreshList(inboxType);
   });
 
   //redraw table when search filter triggered
   CRM.$('#search_filter').keypress(function(){
-    refreshList();
+    refreshList(inboxType);
   });
 
   //select all action
@@ -43,10 +45,17 @@ CRM.$(function($) {
       var request = $.post(url);
       CRM.status({success: 'Messages were successfully deleted.'}, request);
 
-      refreshList();
+      refreshList(inboxType);
     });
   });
 
   $('.inbox-delete, .inbox-assign-contact, .inbox-clear-contact, .inbox-process-contact')
     .on('crmPopupFormSuccess.crmLivePage', CRM.refreshParent);
+
+  function refreshList(inboxType) {
+    var range = $('#range_filter').val();
+    var term = $('#search_filter').val();
+    CRM.$('table.inbox-messages-selector').DataTable().ajax.
+    url(CRM.url('civicrm/nyss/inbox/ajax/' + inboxType, {snippet: 4, range: range, term: JSON.stringify(term)})).load();
+  }
 });

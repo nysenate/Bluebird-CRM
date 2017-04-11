@@ -19,7 +19,7 @@ CRM.$(function($) {
       var request = $.post(url);
       CRM.status({success: 'Messages were successfully cleared.'}, request);
 
-      refreshList();
+      refreshList('matched');
     });
   });
 
@@ -43,14 +43,7 @@ CRM.$(function($) {
       var request = $.post(url);
       CRM.status({success: 'Messages were successfully processed.'}, request);
 
-      refreshList();
+      refreshList('matched');
     });
   });
-
-  function refreshList() {
-    var range = $('#range_filter').val();
-    var term = $('#search_filter').val();
-    CRM.$('table.inbox-matchedmessages-selector').DataTable().ajax.
-    url(CRM.url('civicrm/nyss/inbox/ajax/matched', {snippet: 4, range: range, term: JSON.stringify(term)})).load();
-  }
 });

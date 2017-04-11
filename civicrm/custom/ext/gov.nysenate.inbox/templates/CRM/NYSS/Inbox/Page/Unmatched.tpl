@@ -14,7 +14,7 @@
     <div class="clear"></div>
   </div>
 
-  <table class="inbox-unmatchedmessages-selector crm-ajax-table">
+  <table class="inbox-messages-selector crm-ajax-table">
     <thead>
     <tr>
       <th data-data="id" data-orderable="false" class="crm-unmatchedmessages">{$toggleAll}</th>
@@ -30,7 +30,7 @@
   {literal}
     <script type="text/javascript">
       (function($) {
-        CRM.$('table.inbox-unmatchedmessages-selector').data({
+        CRM.$('table.inbox-messages-selector').data({
           "ajax": {
             "url": CRM.url('civicrm/nyss/inbox/ajax/unmatched', {snippet: 4, range: 30})
           }
