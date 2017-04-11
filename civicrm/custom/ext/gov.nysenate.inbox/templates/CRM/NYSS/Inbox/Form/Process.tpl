@@ -76,11 +76,11 @@
     <div class="content">{$details.subject}</div>
     <div class="clear"></div>
   </div>
-  <div class="crm-section">
+  {*<div class="crm-section">
     <div class="label">Date</div>
     <div class="content">{$details.date_email}</div>
     <div class="clear"></div>
-  </div>
+  </div>*}
   <div class="crm-section">
     <div class="label">Forwarded By</div>
     <div class="content">{$details.forwarded_by}</div>
