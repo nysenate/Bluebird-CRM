@@ -26,7 +26,7 @@ class CRM_NYSS_WebIntegration_Page_AJAX extends CRM_Core_Page {
 
     //get direct/contextual msgs with no matching activity
     $sql = "
-      SELECT n.id, n.entity_id, n.entity_table type, n.note, n.modified_date date, c.sort_name contact, di.county_50 county
+      SELECT SQL_CALC_FOUND_ROWS n.id, n.entity_id, n.entity_table type, n.note, n.modified_date date, c.sort_name contact, di.county_50 county
       FROM civicrm_note n
       LEFT JOIN nyss_web_msg_activity ma 
         ON n.id = ma.note_id
@@ -46,7 +46,7 @@ class CRM_NYSS_WebIntegration_Page_AJAX extends CRM_Core_Page {
     $dao = CRM_Core_DAO::executeQuery($sql);
 
     // Add total.
-    $params['total'] = $dao->N;
+    $params['total'] = CRM_Core_DAO::singleValueQuery('SELECT FOUND_ROWS();');
 
     $msgs = array();
     if ($dao->N) {

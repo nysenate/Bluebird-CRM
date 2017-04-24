@@ -1,4 +1,5 @@
 <div class="crm-unmatchedmessages-selector">
+  <div class="help">Create an activity from website inbox messages.</div>
   <table class="contact-unmatchedmessages-selector crm-ajax-table">
     <thead>
     <tr>
