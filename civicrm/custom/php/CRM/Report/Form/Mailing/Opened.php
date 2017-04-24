@@ -192,6 +192,14 @@ class CRM_Report_Form_Mailing_Opened extends CRM_Report_Form {
           'operatorType' => CRM_Report_Form::OP_DATE,
           'type'=> CRM_Utils_Type::T_DATE,
         ),
+        //NYSS 10954
+        'unique_opens' => array(
+          'name' => 'unique_opens',
+          'title' => ts('Unique Opens'),
+          'type' => CRM_Utils_Type::T_INT,
+          'operatorType' => CRM_Report_Form::OP_SELECT,
+          'options' => array('0' => ts('No'), '1' => ts('Yes')),
+        ),
       ),
       'order_bys'  =>
       array( 'time_stamp'    =>
@@ -292,6 +300,11 @@ class CRM_Report_Form_Mailing_Opened extends CRM_Report_Form {
   public function where() {
     parent::where();
     $this->_where .= " AND {$this->_aliases['civicrm_mailing']}.sms_provider_id IS NULL";
+
+    //NYSS 10954 - handle this option in groupBy
+    //Civi::log()->debug('where', array('_where' => $this->_where));
+    $this->_where = str_replace('AND ( event_opened_civireport.unique_opens = 1 )', '', $this->_where);
+    $this->_where = str_replace('AND ( event_opened_civireport.unique_opens = 0 )', '', $this->_where);
   }
 
   public function groupBy() {
@@ -302,6 +315,22 @@ class CRM_Report_Form_Mailing_Opened extends CRM_Report_Form {
       $groupBy = "civicrm_mailing_event_queue.email_id";
     }
     $this->_groupBy = CRM_Contact_BAO_Query::getGroupByFromSelectColumns($this->_selectClauses, $groupBy);
+
+    //NYSS 10954
+    if (!empty($this->_params['unique_opens_value'])) {
+      $this->_groupBy .= ", civicrm_mailing_event_queue.id";
+      $this->_groupBy = str_replace('event_opened_civireport.id,',
+        '',
+        $this->_groupBy);
+      $this->_select = str_replace('event_opened_civireport.id',
+        'ANY_VALUE(event_opened_civireport.id)',
+        $this->_select);
+    }
+    /*Civi::log()->debug('groupBy', array(
+      '_params' => $this->_params,
+      '_groupBy' => $this->_groupBy,
+      '_select' => $this->_select,
+    ));*/
   }
 
   public function postProcess() {
