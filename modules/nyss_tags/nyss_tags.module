@@ -183,11 +183,4 @@ function nyss_tags_civicrm_alterTemplateFile($formName, &$form, $context, &$tplN
     'context' => $context,
     'tplName' => $tplName,
   ));*/
-
-  //CRM_Contact_Page_View_Tag is just a wrapper for CRM_Tag_Form_Tag
-  //so we replace for both
-  if ($formName == 'CRM_Contact_Page_View_Tag' ||
-    $formName == 'CRM_Tag_Form_Tag') {
-    $tplName = 'CRM/NYSS/Form/Tag.tpl';
-  }
 }
