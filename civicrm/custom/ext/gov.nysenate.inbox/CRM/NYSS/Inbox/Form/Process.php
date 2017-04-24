@@ -37,13 +37,12 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
       'class' => "crm-contact-tagset",
     ), FALSE);
 
+    CRM_Core_Resources::singleton()->addVars('NYSS', array('matched_to' => $details['matched_to']));
     $this->addEntityRef('contact_positions', 'Positions', array(
-      'entity' => 'tag',
+      'entity' => 'nyss_tags',
       'multiple' => TRUE,
       'create' => FALSE,
       'api' => array('params' => array('parent_id' => 292)),
-      'data-entity_table' => 'civicrm_contact',
-      'data-entity_id' => NULL,
       'class' => "crm-contact-tagset",
     ), FALSE);
 
