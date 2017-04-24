@@ -57,6 +57,20 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
       'class' => "crm-activity-tagset",
     ), FALSE);
 
+    //tag tree
+    $tags = new CRM_Core_BAO_Tag();
+    $tree = $tags->getTree($this->_entityTable, TRUE);
+    $loadJsTree = CRM_Utils_Array::retrieveValueRecursive($tree, 'children');
+    $this->assign('loadjsTree', FALSE);
+    if (!empty($loadJsTree)) {
+      CRM_Core_Resources::singleton()
+        ->addScriptFile('civicrm', 'packages/jquery/plugins/jstree/jquery.jstree.js', 0, 'html-header', FALSE)
+        ->addStyleFile('civicrm', 'packages/jquery/plugins/jstree/themes/default/style.css', 0, 'html-header');
+      $this->assign('loadjsTree', TRUE);
+    }
+    $this->assign('tree', $tree);
+    $this->assign('level', 1);
+
     //edit activity form elements
     $staffGroupID = civicrm_api3('group', 'getvalue', array('name' => 'Office_Staff', 'return' => 'id'));
     $this->addEntityRef('activity_assignee', 'Assign Activity to', array(

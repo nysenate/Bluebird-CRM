@@ -29,7 +29,11 @@
     </div>
 
     {*NYSS inject our custom tagtree*}
-    {include file="CRM/NYSS/Form/Tagtree.tpl" level=1}
+    <input class="crm-form-text big" name="filter_tag_tree" placeholder="{ts}Filter List{/ts}" allowclear="1"/>
+    <a class="crm-hover-button crm-clear-link" style="visibility:hidden;" title="{ts}Clear{/ts}"><i class="crm-i fa-times"></i></a>
+    <div id="tagtree">
+      {include file="CRM/Tag/Form/Tagtree.tpl" level=1}
+    </div>
     <div class="clear"></div>
 
     <div class="crm-section">
