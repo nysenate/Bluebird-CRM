@@ -1114,8 +1114,8 @@ function _buildManageMenu($manageID) {
         'attributes' => Array(
           'label' => 'Manage Tags',
           'name' => 'Manage Tags',
-          'url' => 'civicrm/admin/tag?reset=1',
-          'permission' => 'administer CiviCRM,administer district',
+          'url' => 'civicrm/tag?reset=1',
+          'permission' => 'administer CiviCRM,administer district,manage tags',
           'operator' => 'OR',
           'separator' => 0,
           'parentID' => $manageID,
