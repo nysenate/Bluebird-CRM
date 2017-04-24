@@ -167,9 +167,16 @@ function resources_civicrm_coreResourceList(&$list, $region) {
   Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/jquery-fieldselection.js', 10, 'html-header');
 
   //implement coreResourceList to define location of custom ckeditor config file
+  $extPath = Civi::resources()->getUrl('gov.nysenate.resources');
   $config = array_keys(array_filter($list, function($v){return !empty($v['config']) ? true : false;}));
   $list[$config[0]]['config']['CKEditorCustomConfig'] =
-    '/sites/all/modules/nyss_civihooks/js/ckeditor.config.js';
+    "{$extPath}/js/ckeditor.config.js";
+
+  //set kcfinder maxImage settings
+  $_SESSION['KCFINDER'] = array(
+    'maxImageWidth' => 600,
+    'maxImageHeight' => 2048,
+  );
 }
 
 function resources_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) {

@@ -4,15 +4,15 @@
  */
 
 //NYSS add paths to additional resources
-CKEDITOR.plugins.addExternal('aspell', '/sites/all/modules/nyss_civihooks/js/aspell/');
+CKEDITOR.plugins.addExternal('aspell', '/sites/all/ext/gov.nysenate.resources/js/aspell/');
 
 CKEDITOR.editorConfig = function( config ) {
 // Define changes to default configuration here.
 // For complete reference see:
 // http://docs.ckeditor.com/#!/api/CKEDITOR.config
 
-  //NYSS set skin; load via hook folder
-  config.skin = 'moonocolor,/sites/all/modules/nyss_civihooks/js/moonocolor/';
+  //NYSS set skin; load via extension folder
+  config.skin = 'moonocolor,/sites/all/ext/gov.nysenate.resources/js/moonocolor/';
 
   // disable auto spell check
   config.scayt_autoStartup = false;
