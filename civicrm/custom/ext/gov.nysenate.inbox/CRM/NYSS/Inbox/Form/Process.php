@@ -21,9 +21,17 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
     //assignment form elements
     $this->addEntityRef('assignee', 'Select Assignee', array(
       'api' => array(
-        'params' => array('contact_type' => 'Individual'),
+        'params' => array(
+          'contact_type' => 'Individual',
+          'group' => array(
+            'IN' => array(
+              'Office Staff',
+            ),
+          ),
+        ),
       ),
       'create' => TRUE,
+      'select' => array('minimumInputLength' => 0),
     ), FALSE);
 
     //tag form elements
