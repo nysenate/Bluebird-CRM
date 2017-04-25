@@ -178,13 +178,13 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
       echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level."));
       CRM_Utils_System::civiExit();
     }
-    if(array_key_exists('entity_id', $_GET)) {
+    if(array_key_exists('entity_id', $_GET) && !empty($_GET['entity_id'])) {
       $entity_id = $_GET['entity_id'];
-
+      $entity_type = $_GET['entity_type'];
       //Get the tags for the specifed entity
       $params = array('version'=>3,
-        'entity_type'=>$entity_type,
-        'entity_id'=>$entity_id);
+        'entity_type' => $entity_type,
+        'entity_id' => $entity_id);
       $result = civicrm_api('entity_tag', 'get', $params);
 
       $entity_tags = array();
