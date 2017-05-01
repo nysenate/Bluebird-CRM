@@ -156,7 +156,7 @@ function webintegration_civicrm_navigationMenu(&$menu) {
 
 function webintegration_civicrm_alterMenu(&$items) {
   $items['civicrm/nyss/dashlet/webintegration/unmatched'] = array(
-    'title' => 'Website Integration UnMatched Messages',
+    'title' => 'Website Inbox Messages',
     'page_callback' => 'CRM_NYSS_WebIntegration_Page_UnMatched',
     'access_arguments' => array(array('access CiviCRM'), "and"),
   );

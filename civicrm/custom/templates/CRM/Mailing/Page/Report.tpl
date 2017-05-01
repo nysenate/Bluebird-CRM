@@ -56,7 +56,7 @@
         <td>{$report.event_totals.actionlinks.opened}</td></tr>
     <tr><td class="label"><a href="{$report.event_totals.links.opened}">{ts}Total Opens{/ts}</a></td>
         <td>{$report.event_totals.total_opened}</td>
-        <td>{$report.event_totals.actionlinks.opened}</td></tr>
+        <td>{$report.event_totals.actionlinks.total_opened}</td></tr>{*NYSS 10954*}
   {/if}
   {if $report.mailing.url_tracking}
     <tr><td class="label"><a href="{$report.event_totals.links.clicks}">{ts}Click-throughs{/ts}</a></td>

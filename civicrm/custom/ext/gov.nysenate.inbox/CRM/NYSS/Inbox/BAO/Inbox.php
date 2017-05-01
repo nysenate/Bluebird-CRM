@@ -459,8 +459,8 @@ class CRM_NYSS_Inbox_BAO_Inbox {
           ));
         }
         catch (CiviCRM_API3_Exception $e) {
-          Civi::log()->debug('processMessages contact keywords', array('e' => $e));
-          $msg[] = 'Unable to assign all keywords to the contact.';
+          //Civi::log()->debug('processMessages contact keywords', array('e' => $e));
+          //$msg[] = 'Unable to assign all keywords to the contact.';
         }
       }
     }
@@ -476,8 +476,8 @@ class CRM_NYSS_Inbox_BAO_Inbox {
           ));
         }
         catch (CiviCRM_API3_Exception $e) {
-          Civi::log()->debug('processMessages contact issue codes', array('e' => $e));
-          $msg[] = 'Unable to assign all issue codes to the contact.';
+          //Civi::log()->debug('processMessages contact issue codes', array('e' => $e));
+          //$msg[] = 'Unable to assign all issue codes to the contact.';
         }
       }
     }
@@ -492,8 +492,8 @@ class CRM_NYSS_Inbox_BAO_Inbox {
           ));
         }
         catch (CiviCRM_API3_Exception $e) {
-          Civi::log()->debug('processMessages contact positions', array('e' => $e));
-          $msg[] = 'Unable to assign all positions to the contact.';
+          //Civi::log()->debug('processMessages contact positions', array('e' => $e));
+          //$msg[] = 'Unable to assign all positions to the contact.';
         }
       }
     }
@@ -510,8 +510,8 @@ class CRM_NYSS_Inbox_BAO_Inbox {
             ));
           }
           catch (CiviCRM_API3_Exception $e) {
-            Civi::log()->debug('processMessages activity keywords', array('e' => $e));
-            $msg[] = 'Unable to assign all keywords to the activity.';
+            //Civi::log()->debug('processMessages activity keywords', array('e' => $e));
+            //$msg[] = 'Unable to assign all keywords to the activity.';
           }
         }
       }
@@ -529,13 +529,15 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
         try {
           civicrm_api3('activity', 'create', $params);
-        } catch (CiviCRM_API3_Exception $e) {
+        }
+        catch (CiviCRM_API3_Exception $e) {
           Civi::log()->debug('processMessages create activity', array('e' => $e));
           $msg[] = 'Unable to update activity record.';
         }
       }
     }
 
+    $msg = array_filter($msg);
     return $msg;
   }
 

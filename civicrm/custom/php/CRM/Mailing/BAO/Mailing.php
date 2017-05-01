@@ -2304,6 +2304,7 @@ ORDER BY   civicrm_email.is_bulkmail DESC
                'forward',
                'reply',
                'opened',
+               'total_opened',//NYSS 10954
                'optout',
              ) as $key) {
       $url = 'mailing/detail';
@@ -2340,7 +2341,14 @@ ORDER BY   civicrm_email.is_bulkmail DESC
           $searchFilter .= "&mailing_optout=1";
           break;
 
+        //NYSS 10954
         case 'opened':
+          $url = "mailing/opened";
+          $reportFilter .= "&unique_opens_value=1";
+          $searchFilter .= "&mailing_open_status=Y&unique_opens_value=1";
+          break;
+
+        case 'total_opened':
           $url = "mailing/opened";
           $searchFilter .= "&mailing_open_status=Y";
           break;
