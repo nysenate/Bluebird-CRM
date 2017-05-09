@@ -72,7 +72,7 @@ class CRM_NYSS_WebIntegration_Page_AJAX extends CRM_Core_Page {
         $msg['contact_id'] = $dao->entity_id;
         $msg['contact'] = $dao->contact;
         $msg['date'] = date('m/d/Y', strtotime($dao->date));
-        $msg['county'] = $dao->county;
+        $msg['county'] = (!empty($dao->county)) ? CRM_NYSS_Resources_Resources::getCountyCodes($dao->county) : '';
 
         /*$activity['source_contact_name'] = $srcTypeImage . CRM_Utils_System::href($values['source_contact_name'],
             'civicrm/contact/view', "reset=1&cid={$values['source_contact_id']}");*/

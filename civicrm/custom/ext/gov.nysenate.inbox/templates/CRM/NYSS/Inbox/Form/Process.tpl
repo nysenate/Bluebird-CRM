@@ -36,7 +36,7 @@
         </div>
         <input type="text" autocomplete="off" placeholder="Type here to search issue codes"
                maxlength="64" id="issue-code-search" />
-        <div id="issue-code-results" class="TreeWrap" data-contact="0"</div>
+        <div id="issue-code-results" class="TreeWrap" data-contact="0"></div>
       </div>
     </div>
     <div class="clear"></div>
