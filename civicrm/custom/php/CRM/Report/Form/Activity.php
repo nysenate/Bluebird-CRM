@@ -402,7 +402,8 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
 
         //NYSS 7540 need to make sure this field is included in select list or we get having clause error
         if ( !empty($this->_selectAliasesTotal) && !in_array($fieldName, $this->_selectAliasesTotal) ) {
-          $this->_selectAliasesTotal[] = $fieldName;
+          //NYSS 11032
+          //$this->_selectAliasesTotal[] = $fieldName;
         }
       }
     }
