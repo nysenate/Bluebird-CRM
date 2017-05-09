@@ -61,6 +61,7 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
     //edit activity form elements
     $staffGroupID = civicrm_api3('group', 'getvalue', array('name' => 'Office_Staff', 'return' => 'id'));
     $this->addEntityRef('activity_assignee', 'Assign Activity to', array(
+      'entity' => 'inbox_assignee',
       'api' => array(
         'params' => array(
           'contact_type' => 'Individual',
