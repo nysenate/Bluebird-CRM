@@ -625,7 +625,7 @@ function searchForMatches($db, $params)
   while ($row = mysql_fetch_assoc($mres)) {
     $msg_row_id = $row['id'];
     $message_id = $row['message_id'];
-    $sender_email = $row['sender_email'];
+    $sender_email = mysql_real_escape_string($row['sender_email'], $db);
     $subject = $row['subject'];
     $body = $row['body'];
     $forwarder = $row['forwarder'];
