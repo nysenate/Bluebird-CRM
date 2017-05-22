@@ -24,14 +24,63 @@
  +--------------------------------------------------------------------+
 *}
 {literal}
-<script>
-  var BBCID = {/literal}{$entityID}{literal};
-  var BBActionConst = {/literal}{$action}{literal};
-</script>
-{/literal}
+<style>
+  #tagtree .highlighted > span {
+    background-color: #fefca6;
+  }
+  #tagtree .helpicon ins {
+    display: none;
+  }
+  #tagtree ins.jstree-icon {
+    cursor: pointer;
+  }
+</style>
+<script type="text/javascript">
+  (function($, _){{/literal}
+    var entityID='{$entityID}',
+      entityTable='{$entityTable}',
+      $form = $('form.{$form.formClass}');
+    {literal}
 
-{crmScript url="/sites/default/themes/Bluebird/scripts/bbtree.js" region=form-body}
-{crmStyle url="/sites/default/themes/Bluebird/css/tags/tags.css"}
+    $(function() {
+      function highlightSelected() {
+        $("ul input:not(:checked)", '#tagtree').each(function () {
+          $(this).closest("li").removeClass('highlighted');
+        });
+        $("ul input:checked", '#tagtree').each(function () {
+          $(this).parents("li[id^=tag]").addClass('highlighted');
+        });
+      }
+      highlightSelected();
+
+      $("#tagtree input").change(function(){
+        highlightSelected();
+      });
+
+      var childTag = "{/literal}{$loadjsTree}{literal}";
+      if (childTag) {
+        //load js tree.
+        $("#tagtree").jstree({
+          plugins : ["themes", "html_data"],
+          themes: {
+            "theme": 'classic',
+            "dots": false,
+            "icons": false,
+            "url": CRM.config.resourceBase + 'packages/jquery/plugins/jstree/themes/classic/style.css'
+          }
+        });
+      }
+	  {/literal}
+      {if !empty($permission) && $permission neq 'edit'}
+        {literal}
+          $("#tagtree input").prop('disabled', true);
+        {/literal}
+      {/if}
+      {literal}
+    });
+  })(CRM.$, CRM._);
+  {/literal}
+</script>
 
 {if $title}
 <div class="crm-accordion-wrapper crm-tagGroup-accordion collapsed">
@@ -40,8 +89,9 @@
 {/if}
     <table class="form-layout-compressed{if $context EQ 'profile'} crm-profile-tagsandgroups{/if}">
       <tr>
+        {*NYSS 11072 add classes*}
         {if !$type || $type eq 'group'}
-          <td>
+          <td class="tagsandgroups-groups">
             {if $groupElementType eq 'select'}
               <span class="label">{if $title}{$form.group.label}{/if}</span>
             {/if}
@@ -49,25 +99,16 @@
           </td>
         {/if}
         {if (!$type || $type eq 'tag') && $tree}
-          <td width="70%">{if $title}<span class="label">{$form.tag.label}</span>{/if}
-            <div id="dialog"></div>
-
-            <div id="crm-tagListWrap">
-              {*NYSS inject our custom tagset and pass parent id: keywords*}
-              {include file="CRM/NYSS/Form/Tagset.tpl" parent=296}
-
-              {*NYSS inject our custom tagtree*}
-              {include file="CRM/NYSS/Form/Tagtree.tpl" level=1}
-
-              {if $contactIssueCode_list}
-                <div class="contactTagsList help"><span>{$contactIssueCode_list}</span></div>
-                <div class="clear"></div>
-              {/if}
-
-              {*NYSS inject our custom tagset and pass parent id: leg positions*}
-              {include file="CRM/NYSS/Form/Tagset.tpl" parent=292}
+          {*NYSS 11072 restructure layout*}
+          <td width="60%" class="tagsandgroups-tags">{if $title}<span class="label">{$form.tag.label}</span>{/if}
+            <div id="tagtree">
+              {include file="CRM/Contact/Form/Edit/Tagtree.tpl" level=1}
+            </div>
+            <div id="tagSets">
+              {include file="CRM/common/Tagset.tpl"}
             </div>
           </td>
+          {*<tr><td>{include file="CRM/common/Tagset.tpl"}</td></tr>*}
         {/if}
       </tr>
     </table>
