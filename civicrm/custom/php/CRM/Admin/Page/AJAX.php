@@ -340,54 +340,6 @@ class CRM_Admin_Page_AJAX {
   } // getTagList()
 
 
-  public static function mergeTagList() {
-    $name = CRM_Utils_Type::escape($_GET['term'], 'String');
-    $fromId = CRM_Utils_Type::escape($_GET['fromId'], 'Integer');
-    $limit = Civi::settings()->get('search_autocomplete_count');
-
-    // build used-for clause to be used in main query
-    $usedForTagA = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_Tag', $fromId, 'used_for');
-    $usedForClause = array();
-    if ($usedForTagA) {
-      $usedForTagA = explode(",", $usedForTagA);
-      foreach ($usedForTagA as $key => $value) {
-        $usedForClause[] = "t1.used_for LIKE '%{$value}%'";
-      }
-    }
-    $usedForClause = !empty($usedForClause) ? implode(' OR ', $usedForClause) : '1';
-    sort($usedForTagA);
-
-    // query to list mergable tags
-    $query = "
-SELECT t1.name, t1.id, t1.used_for, t2.name as parent
-FROM   civicrm_tag t1
-LEFT JOIN civicrm_tag t2 ON t1.parent_id = t2.id
-WHERE  t1.id <> {$fromId} AND
-       t1.name LIKE '%{$name}%' AND
-       ({$usedForClause})
-LIMIT $limit";
-    $dao = CRM_Core_DAO::executeQuery($query);
-    $result = array();
-
-    while ($dao->fetch()) {
-      $row = array(
-        'id' => $dao->id,
-        'text' => ($dao->parent ? "{$dao->parent} :: " : '') . $dao->name,
-      );
-      // Add warning about used_for types
-      if (!empty($dao->used_for)) {
-        $usedForTagB = explode(',', $dao->used_for);
-        sort($usedForTagB);
-        $usedForDiff = array_diff($usedForTagA, $usedForTagB);
-        if (!empty($usedForDiff)) {
-          $row['warning'] = TRUE;
-        }
-      }
-      $result[] = $row;
-    }
-    CRM_Utils_JSON::output($result);
-  }
-
   /**
    * Get a list of mappings.
    *
@@ -454,7 +406,8 @@ LIMIT $limit";
     $result = array();
 
     $parentClause = $parent ? "AND tag.parent_id = $parent" : 'AND tag.parent_id IS NULL';
-    $sql = "SELECT tag.*, child.id AS child, COUNT(et.id) as usages
+    //NYSS ANY_VALUE
+    $sql = "SELECT tag.*, ANY_VALUE(child.id) AS child, COUNT(et.id) as usages
       FROM civicrm_tag tag
       LEFT JOIN civicrm_entity_tag et ON et.tag_id = tag.id
       LEFT JOIN civicrm_tag child ON child.parent_id = tag.id

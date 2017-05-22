@@ -175,6 +175,22 @@ function nyss_tags_civicrm_buildForm($formName, &$form) {
   }
 }
 
+function nyss_tags_civicrm_pageRun(&$page) {
+  //Civi::log()->debug('nyss_tags_civicrm_pageRun', array('$page' => $page));
+
+  if (is_a($page, 'CRM_Tag_Page_Tag')) {
+    //hide some tagsets
+    $tagSets = $page->get_template_vars('tagsets');
+    $remove = array('Positions', 'Website Issues', 'Website Committees', 'Website Bills', 'Website Petitions');
+    foreach ($tagSets as $setID => $tagSet) {
+      if (in_array($tagSet['name'], $remove)) {
+        unset($tagSets[$setID]);
+      }
+    }
+    $page->assign('tagsets', $tagSets);
+  }
+}
+
 //use custom template file for tag tab
 function nyss_tags_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) {
   /*Civi::log()->debug('alterTemplateFile', array(
@@ -183,11 +199,4 @@ function nyss_tags_civicrm_alterTemplateFile($formName, &$form, $context, &$tplN
     'context' => $context,
     'tplName' => $tplName,
   ));*/
-
-  //CRM_Contact_Page_View_Tag is just a wrapper for CRM_Tag_Form_Tag
-  //so we replace for both
-  if ($formName == 'CRM_Contact_Page_View_Tag' ||
-    $formName == 'CRM_Tag_Form_Tag') {
-    $tplName = 'CRM/NYSS/Form/Tag.tpl';
-  }
 }

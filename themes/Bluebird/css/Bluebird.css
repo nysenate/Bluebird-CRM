@@ -2036,12 +2036,6 @@ div.crm-summary-display_name div.crm-icon {
   background: none;
 }
 
-#tagtree li li li {
-  white-space: normal;
-  text-indent: -40px;
-  padding-left: 40px;
-}
-
 /*show attachment icon if activity has attachments*/
 .crm-container .attachment-icon {
   background-position: -142px -142px;
@@ -3880,15 +3874,14 @@ li.crm-button {
 }
 
 /*contact summary tabs*/
-#crm-container #mainTabContainer .crm-contact-tabs-list {
+body:not(.page-civicrm-tag) #crm-container #mainTabContainer .crm-contact-tabs-list {
   background: transparent none repeat scroll 0 0;
   float: left;
   margin: 20px 0 0;
   padding: 0;
-  width: 150px;
 }
 
-#crm-container #mainTabContainer .crm-tab-button {
+body:not(.page-civicrm-tag) #crm-container #mainTabContainer .crm-tab-button {
   display: block;
   float: none;
   height: 25px;
@@ -3921,7 +3914,7 @@ li.crm-button {
   background-color: #FFF;
 }
 
-#crm-container #mainTabContainer .crm-tab-button a {
+body:not(.page-civicrm-tag) #crm-container #mainTabContainer .crm-tab-button a {
   color: #335370;
   font-family: Verdana,Sans;
   font-size: 13px;
@@ -4129,7 +4122,7 @@ div.crm-relationship-form-block .crm-relationship-form-block-is_permission_a_b,d
 }
 
 div#mainTabContainer.ui-widget-content,
-div#mainTabContainer > ul.ui-widget-header {
+body:not(.page-civicrm-tag) div#mainTabContainer > ul.ui-widget-header {
   border: none;
   padding: 0;
 }
