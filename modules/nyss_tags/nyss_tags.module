@@ -22,29 +22,6 @@ function nyss_tags_civicrm_merge( $type, &$sqls, $fromId, $toId, $tables ) {
   }
 } //merge
 
-function nyss_tags_civicrm_validate( $formName, &$fields, &$files, &$form ) {
-
-  if ( $formName == 'CRM_Admin_Form_Tag' ) {
-    if ( isset($fields['name']) && isset($fields['parent_id']) ) {
-      $tagName = mysql_real_escape_string($fields['name']);
-      $sql = "
-        SELECT id
-        FROM civicrm_tag
-        WHERE name = '{$tagName}'
-          AND parent_id = {$fields['parent_id']};
-      ";
-      if ( CRM_Core_DAO::singleValueQuery($sql) ) {
-        $form->setElementError('name', ts('Name already exists in the database with the same parent tag.'));
-      }
-      else {
-        $form->setElementError('name', null);
-      }
-    }
-    //CRM_Core_Error::debug_var('fields',$fields);
-    //CRM_Core_Error::debug_var('form',$form);
-  }
-} //validate
-
 function nyss_tags_civicrm_buildForm($formName, &$form) {
   /*Civi::log()->debug('buildForm', array(
     //'formName' => $formName,
@@ -99,25 +76,10 @@ function nyss_tags_civicrm_buildForm($formName, &$form) {
   if ($formName == 'CRM_Tag_Form_Tag') {
     $contactId = $form->getVar('_entityID');
 
-    //Construct list of tags, comma-separated
-    $contactTagsList = array();
-    $contactTags = CRM_Core_BAO_EntityTag::getContactTags($contactId);
-
-    if (!empty($contactTags)) {
-      $contactTagsList = stripslashes(implode(', ', $contactTags));
-    }
-    $form->assign('contactTagsList', $contactTagsList);
-
-    //Construct list of issue codes, comma-separated
-    //Need to work with the full list and subtract tagsets
+    //Construct list of issue codes, comma-separated; work with the full list and subtract tagsets
     $contactIssueCode_item = array();
     $contactTags = CRM_Core_BAO_EntityTag::getTag($contactId);
     $tagsNotTagset = CRM_Core_BAO_Tag::getTagsNotInTagset();
-
-    /*Civi::log()->debug('buildForm', array(
-      '$contactTags' => $contactTags,
-      '$tagsNotTagset' => $tagsNotTagset,
-    ));*/
 
     foreach ($tagsNotTagset as $key => $issueCode) {
       if (in_array($key, $contactTags)) {
@@ -126,7 +88,6 @@ function nyss_tags_civicrm_buildForm($formName, &$form) {
     }
     sort($contactIssueCode_item);
     $contactIssueCode_list = stripslashes(implode(' &#8226; ', $contactIssueCode_item));
-    $form->assign('contactIssueCode_list', $contactIssueCode_list);
 
     //Construct list of Legislative Positions
     $legpositions = CRM_Core_BAO_EntityTag::getChildEntityTagDetails(292, $contactId);
@@ -139,16 +100,23 @@ function nyss_tags_civicrm_buildForm($formName, &$form) {
       $url_template = '/bill/{year}/{billno}';
     }
 
-    foreach ($legpositions as &$legposition) {
-      $name = $legposition['name'];
-      $bill_id = substr($name, 0, strcspn($name, ' :'));
-      $id_parts = explode('-', $bill_id);  // [0]=billno, [1]=year
-      $search = array('{billno}', '{year}');
-      $bill_url = str_replace($search, $id_parts, $url_template);
-      $bill_html = "<a href=\"$bill_url\" target=\"_blank\">$bill_url</a>";
-      $legposition['description'] = $bill_html;
+    if (!empty($legpositions)) {
+      $legpositionsHTML = '<ul>';
+      foreach ($legpositions as &$legposition) {
+        $name = $legposition['name'];
+        $bill_id = substr($name, 0, strcspn($name, ' :'));
+        $id_parts = explode('-', $bill_id);  // [0]=billno, [1]=year
+        $search = array('{billno}', '{year}');
+        $bill_url = str_replace($search, $id_parts, $url_template);
+        $bill_html = "<a href=\"$bill_url\" target=\"_blank\">$bill_url</a>";
+        $legposition['description'] = $bill_html;
+
+        if (!empty($legposition['description']) && $legposition['description'] != 'No description available.') {
+          $legpositionsHTML .= "<li><strong>{$name}</strong> :: {$legposition['description']}</li>";
+        }
+      }
+      $legpositionsHTML .= '</ul>';
     }
-    $form->assign('legpositions', $legpositions);
 
     //10658 rebuild leg positions entity ref using custom API and disabling create
     CRM_Core_Resources::singleton()->addScript("
@@ -172,6 +140,53 @@ function nyss_tags_civicrm_buildForm($formName, &$form) {
         });
       });
     ");
+
+    //11072 append list of issue codes and leg positions
+    if (!empty($contactIssueCode_list)) {
+      CRM_Core_Region::instance('page-body')->add(array(
+        'markup' => "
+          <div class='contactTagsList help'>
+            <strong>Issue Codes: </strong>
+            <span>{$contactIssueCode_list}</span>
+          </div>
+    	    <div class='clear'></div>
+    	  ",
+      ));
+    }
+
+    if (!empty($legpositions)) {
+      CRM_Core_Region::instance('page-body')->add(array(
+        'markup' => "
+          <div class='contactTagsList help'>
+            <strong>Legislative Position Details</strong>
+            {$legpositionsHTML}
+          </div>
+    	    <div class='clear'></div>
+    	  ",
+      ));
+    }
+
+    //11072 auto-open issue code branch
+    CRM_Core_Region::instance('page-body')->add(array(
+      'jquery' => "$('li#tag_291').removeClass('jstree-closed').addClass('jstree-open').addClass('tuna');",
+    ));
+
+  }
+}
+
+function nyss_tags_civicrm_pageRun(&$page) {
+  //Civi::log()->debug('nyss_tags_civicrm_pageRun', array('$page' => $page));
+
+  if (is_a($page, 'CRM_Tag_Page_Tag')) {
+    //hide some tagsets
+    $tagSets = $page->get_template_vars('tagsets');
+    $remove = array('Positions', 'Website Issues', 'Website Committees', 'Website Bills', 'Website Petitions');
+    foreach ($tagSets as $setID => $tagSet) {
+      if (in_array($tagSet['name'], $remove)) {
+        unset($tagSets[$setID]);
+      }
+    }
+    $page->assign('tagsets', $tagSets);
   }
 }
 
@@ -183,11 +198,4 @@ function nyss_tags_civicrm_alterTemplateFile($formName, &$form, $context, &$tplN
     'context' => $context,
     'tplName' => $tplName,
   ));*/
-
-  //CRM_Contact_Page_View_Tag is just a wrapper for CRM_Tag_Form_Tag
-  //so we replace for both
-  if ($formName == 'CRM_Contact_Page_View_Tag' ||
-    $formName == 'CRM_Tag_Form_Tag') {
-    $tplName = 'CRM/NYSS/Form/Tag.tpl';
-  }
 }

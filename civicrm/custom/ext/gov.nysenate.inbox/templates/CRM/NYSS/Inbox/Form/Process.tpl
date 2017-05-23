@@ -29,15 +29,10 @@
     </div>
 
     {*NYSS inject our custom tagtree*}
-    <div class="BBInit">
-      <div class="crm-section tag-section contact-tagset-291-section crm-processed-input">
-        <div class="tag-label">
-          <label>Issue Codes</label>
-        </div>
-        <input type="text" autocomplete="off" placeholder="Type here to search issue codes"
-               maxlength="64" id="issue-code-search" />
-        <div id="issue-code-results" class="TreeWrap" data-contact="0"></div>
-      </div>
+    <input class="crm-form-text big" name="filter_tag_tree" placeholder="{ts}Filter List{/ts}" allowclear="1"/>
+    <a class="crm-hover-button crm-clear-link" style="visibility:hidden;" title="{ts}Clear{/ts}"><i class="crm-i fa-times"></i></a>
+    <div id="tagtree">
+      {include file="CRM/Tag/Form/Tagtree.tpl" level=1}
     </div>
     <div class="clear"></div>
 

@@ -1581,20 +1581,7 @@ textarea,input {
   display: none;
 }
 
-#crm-container #Tag #tagtree .highlighted {
-  background-color: #F1F8EB;
-  border: 1px solid #B0D730;
-}
 
-#crm-container #Tag #tagtree .jstree-leaf .highlighted {
-  background: none;
-  border: 1px solid transparent;
-}
-
-#crm-container #Tag .tree .expandable .hit {
-  background-image: none !important;
-  padding: 0 2px;
-}
 
 #crm-container .tree li {
   padding-left: 16px;
@@ -1614,41 +1601,12 @@ textarea,input {
   background-position: -63px -16px;
 }
 
-#crm-container #Tag .tree .collapsable .hit {
-  background: none;
-}
-
 #check_291 {
   visibility: hidden;
 }
 
 .tree li {
   position: relative;
-}
-
-#tagLabel_291.highlighted {
-  background-color: #FFF;
-}
-
-#tag_291>ul {
-  display: block !important;
-}
-
-#tagtree {
-  float: right;
-  margin: 12px 20px 4px 4px;
-  width: 315px;
-  overflow: hidden;
-  font-size: 11px;
-}
-
-#crm-container a#tag-refresh-button {
-  height: auto;
-  display: none;
-}
-
-#tag-refresh-button span {
-  color: #FFF;
 }
 
 ul.token-input-list-facebook {
@@ -1687,44 +1645,6 @@ ul.token-input-list-facebook {
 
 #other-gender input {
   margin: 0;
-}
-
-/* Contact Tags Tab*/
-#mainTabContainer div#Tag .tag-section,#tagSelect .tag-section {
-  float: left;
-  width: 410px;
-  margin-left: 16px;
-}
-
-#tagSelect #tagtree {
-  font-family: Verdana,Arial,Helvetica,sans-serif;
-}
-
-#mainTabContainer .contactTagsList,#tagSelect .contactTagsList {
-  font-size: 11px;
-  margin: 10px 16px 6px;
-}
-
-#mainTabContainer ul.token-input-list-facebook,#tagSelect ul.token-input-list-facebook {
-  width: 410px;
-}
-
-#mainTabContainer .legpositions,#tagSelect .legpositions {
-  font-size: 11px;
-  margin: 0 16px 6px;
-  padding: 6px;
-}
-
-#mainTabContainer .legpositions ul,#tagSelect .legpositions ul {
-  margin: .5em 0 0 1.5em;
-}
-
-#mainTabContainer .legpositions .label,#tagSelect .legpositions ul {
-  font-size: 14px;
-}
-
-#mainTabContainer .legpositions li,#tagSelect .legpositions li {
-  font-size: 11px;
 }
 
 /* PDF printing fixes */
@@ -1777,14 +1697,6 @@ ul.token-input-list-facebook {
 
 #check_291 {
   display: none;
-}
-
-.tagset-hitarea {
-  display: none;
-}
-
-#tagLabel_291 {
-  font-size: 14px;
 }
 
 /* used for advanced search reset button; .button class was not available on popup */
@@ -1848,11 +1760,6 @@ ul.token-input-list-facebook {
 
 /* Hide user dashboard and user record links */
 #crm-container .crm-contact-dashboard,#crm-container .crm-contact-user-record {
-  display: none;
-}
-
-/* Hide some tag stuff */
-#crm-container .crm-tag-form-block-used_for,#crm-container #newTagSet,.crm-contact-task-addtotag-form-block-tag #crm-tagRow_tag291,.crm-contact-task-removefromtag-form-block-tag #crm-tagRow_tag291 {
   display: none;
 }
 
@@ -1945,10 +1852,6 @@ div.crm-summary-display_name div.crm-icon {
   margin-left: 5px;
 }
 
-#crm-container .tag-292-section div.token-input-dropdown-facebook,div.token-input-dropdown-facebook {
-  width: 300px;
-}
-
 .civi-adv-search-body {
   padding: 0;
 }
@@ -1978,24 +1881,6 @@ div.crm-summary-display_name div.crm-icon {
   width: 400px;
 }
 
-/*advanced search contact tags/groups*/
-#advSearchContactTags .contact-issue-codes .label,#advSearchContactTags .tag-free-search .label {
-  margin-top: 6px;
-}
-
-#advSearchContactTags .contact-issue-codes .crmasmContainer,#advSearchContactTags .contact-issue-codes .crmasmSelect {
-  width: 320px;
-}
-
-#advSearchContactTags ul.token-input-list-facebook {
-  width: 320px;
-  clear: none;
-}
-
-#advSearchContactTags .tag-free-search input {
-  padding: 5px;
-}
-
 #advSearchContactTypesGroups .label {
   margin-top: 8px;
   width: 20%;
@@ -2011,35 +1896,6 @@ div.crm-summary-display_name div.crm-icon {
 
 #Advanced .search-privacy-options {
   width: auto;
-}
-
-/*override tag tree expand/close icons*/
-.jstree-default ins {
-  background-color: transparent;
-  background-image: url(../images/icons-3e3e3e.png);
-  background-repeat: no-repeat;
-}
-
-.jstree-default .jstree-closed > ins {
-  background-position: -31px -15px;
-}
-
-.jstree-default .jstree-open > ins {
-  background-position: -63px -16px;
-}
-
-.jstree-default .jstree-leaf > ins {
-  background: none;
-}
-
-#tagtree {
-  background: none;
-}
-
-#tagtree li li li {
-  white-space: normal;
-  text-indent: -40px;
-  padding-left: 40px;
 }
 
 /*show attachment icon if activity has attachments*/
@@ -2348,23 +2204,6 @@ li.token-input-input-token-facebook {
   margin: 3px;
 }
 
-form#Contact .groupTagsKeywords ul.token-input-list-facebook {
-  width: 600px;
-}
-
-form#Contact .groupTagsKeywords .crm-section .content {
-  float: left;
-  margin-left: 1%;
-}
-
-form#Contact .groupTagsKeywords .tag-section {
-  margin-top: 6px;
-}
-
-form#Contact .groupTagsKeywords .crm-section .label {
-  width: 10%;
-}
-
 #crm-container .crm-report .crm-report-log_civicrm_contact_altered_contact {
   font-weight: 700;
 }
@@ -2518,13 +2357,6 @@ form#Contact .groupTagsKeywords .crm-section .label {
   font-size: 11px;
 }
 
-#crm-container .tagset-view-only {
-  margin-top: 20px;
-  font-style: italic;
-  border: 1px solid #999;
-  padding: 4px;
-}
-
 /*5575*/
 #crm-container .widget-wrapper {
   min-height: 0;
@@ -2583,19 +2415,6 @@ body.page-civicrm-mailing-browse form#Search div.crm-content-block {
   margin-bottom: 10px;
 }
 
-/*contact edit groups/tags*/
-#crm-container #tagGroup .crmasmSelect,#crm-container #tagGroup .crmasmContainer {
-  width: 325px;
-}
-
-#crm-container #tagGroup #crm-tagListWrap {
-  border: none;
-}
-
-#crm-container #tagGroup #crmasmContainer0 {
-  margin-top: 20px;
-}
-
 /* NYSS#7095 */
 #quickSearch input[type=text]::-ms-clear {
   display: none;
@@ -2630,15 +2449,6 @@ body.page-civicrm-mailing-browse form#Search div.crm-content-block {
 div.crm-tasks div.crm-buttons-actions span {
   display: block;
   margin-top: 4px;
-}
-
-/*contact edit tags and groups*/
-div#tagGroup table.form-layout-compressed {
-  width: 98%;
-}
-
-div#tagGroup table.form-layout-compressed td {
-  width: 45%;
 }
 
 /*1074*/
@@ -3880,15 +3690,14 @@ li.crm-button {
 }
 
 /*contact summary tabs*/
-#crm-container #mainTabContainer .crm-contact-tabs-list {
+body:not(.page-civicrm-tag) #crm-container #mainTabContainer .crm-contact-tabs-list {
   background: transparent none repeat scroll 0 0;
   float: left;
   margin: 20px 0 0;
   padding: 0;
-  width: 150px;
 }
 
-#crm-container #mainTabContainer .crm-tab-button {
+body:not(.page-civicrm-tag) #crm-container #mainTabContainer .crm-tab-button {
   display: block;
   float: none;
   height: 25px;
@@ -3921,7 +3730,7 @@ li.crm-button {
   background-color: #FFF;
 }
 
-#crm-container #mainTabContainer .crm-tab-button a {
+body:not(.page-civicrm-tag) #crm-container #mainTabContainer .crm-tab-button a {
   color: #335370;
   font-family: Verdana,Sans;
   font-size: 13px;
@@ -4129,7 +3938,7 @@ div.crm-relationship-form-block .crm-relationship-form-block-is_permission_a_b,d
 }
 
 div#mainTabContainer.ui-widget-content,
-div#mainTabContainer > ul.ui-widget-header {
+body:not(.page-civicrm-tag) div#mainTabContainer > ul.ui-widget-header {
   border: none;
   padding: 0;
 }
@@ -4212,4 +4021,47 @@ div.crm-contact-actions-list-inner a {
 
 span.crm-contact-deceased {
   font-size: 0.7em;
+}
+
+/********* tagging related css *********/
+
+/*don't highlight Issue Code parent if children highlighted*/
+div#tagtree > ul > li.highlighted-child.jstree-closed {
+  background: none;
+}
+/*force open issue code sublist*/
+div#tagtree > ul > li.jstree-closed > ul {
+  display: block;
+}
+/*adjust keywords/positions display*/
+form.CRM_Tag_Form_Tag div.contact-tagset label,
+form.CRM_Tag_Form_Tag div.contact-tagset div.crm-contact-tagset {
+  float: left;
+  clear: left;
+  width: 370px !important;
+}
+form.CRM_Tag_Form_Tag div.contact-tagset label {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+/*edit: tags and groups fixes*/
+div#tagGroup table {
+  width: 100%
+}
+div#tagGroup table td {
+  vertical-align: top;
+}
+div#tagGroup td span.label,
+div#tagGroup td .tag-section label,
+div#tagGroup td div.select2-container,
+div#tagGroup td div#tagtree,
+div#tagGroup td div#tagSets {
+  float: left;
+  clear: left;
+  width: 100% !important;
+}
+div#tagGroup td span.label,
+div#tagGroup td .tag-section label {
+  margin: 8px 0;
+  font-size: 130%;
 }

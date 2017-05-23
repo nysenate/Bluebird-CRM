@@ -176,11 +176,10 @@ function webintegration_civicrm_buildForm($formName, &$form) {
       $form->addElement('hidden', 'msg_id', $msgID);
     }
 
-    if (!empty($msgNote)) {
-      $form->setDefaults(array(
-        'details' => $msgNote,//not sure why this isn't decoded
-      ));
-    }
+    $form->setDefaults(array(
+      'subject' => _webintegration_extractSubject($msgNote),
+      'details' => $msgNote,//not sure why this isn't decoded
+    ));
 
     /*Civi::log()->debug('webintegration_civicrm_buildForm', array(
       'msgID' => $msgID,
@@ -219,3 +218,20 @@ function _webintegration_storeMessageActivity($msgID, $aid) {
     2 => array($aid, 'Integer'),
   ));
 }//_storeMessageActivity
+
+/**
+ * @param $msgNote
+ * @return string
+ *
+ * helper function to extract the subject line from the message body
+ */
+function _webintegration_extractSubject($msgNote) {
+  preg_match('/Subject: (.*?)<br>/', $msgNote, $matches);
+
+  /*Civi::log()->debug('_webintegration_extractSubject', array(
+    '$msgNote' => $msgNote,
+    'matches' => $matches,
+  ));*/
+
+  return (!empty($matches[1])) ? $matches[1] : '';
+}

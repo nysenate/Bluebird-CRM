@@ -55,7 +55,10 @@ CRM.$(function($) {
   function refreshList(inboxType) {
     var range = $('#range_filter').val();
     var term = $('#search_filter').val();
-    CRM.$('table.inbox-messages-selector').DataTable().ajax.
-    url(CRM.url('civicrm/nyss/inbox/ajax/' + inboxType, {snippet: 4, range: range, term: JSON.stringify(term)})).load();
+    CRM.$('table.inbox-messages-selector').
+      DataTable().
+      ajax.
+      url(CRM.url('civicrm/nyss/inbox/ajax/' + inboxType, {snippet: 4, range: range, term: JSON.stringify(term)})).
+      load();
   }
 });

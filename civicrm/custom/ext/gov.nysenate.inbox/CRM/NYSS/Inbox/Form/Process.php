@@ -58,15 +58,35 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
       'class' => "crm-activity-tagset",
     ), FALSE);
 
+    //tag tree
+    $tags = new CRM_Core_BAO_Tag();
+    $tree = $tags->getTree('civicrm_contact', TRUE);
+    $loadJsTree = CRM_Utils_Array::retrieveValueRecursive($tree, 'children');
+    $this->assign('loadjsTree', FALSE);
+    if (!empty($loadJsTree)) {
+      CRM_Core_Resources::singleton()
+        ->addScriptFile('civicrm', 'packages/jquery/plugins/jstree/jquery.jstree.js', 0, 'html-header', FALSE)
+        ->addStyleFile('civicrm', 'packages/jquery/plugins/jstree/themes/default/style.css', 0, 'html-header');
+      $this->assign('loadjsTree', TRUE);
+    }
+    $elements = array();
+    CRM_Contact_Form_Edit_TagsAndGroups::climbtree($this, $tree, $elements);
+    $this->addGroup($elements, 'tag', 'Tag(s)', '<br />');
+    $this->assign('tagCount', count($elements));
+    $this->assign('tree', $tree);
+    $this->assign('tag', $tree);
+    $this->assign('entityTable', 'civicrm_contact');
+    $this->assign('allTags', CRM_Core_BAO_Tag::getTagsUsedFor('civicrm_contact', FALSE));
+
     //edit activity form elements
     $staffGroupID = civicrm_api3('group', 'getvalue', array('name' => 'Office_Staff', 'return' => 'id'));
     $this->addEntityRef('activity_assignee', 'Assign Activity to', array(
-      'entity' => 'inbox_assignee', //TODO revert to standard api in future version (if we can pass wildcard option)
       'api' => array(
         'params' => array(
           'contact_type' => 'Individual',
           'group' => $staffGroupID,
         ),
+        'add_wildcard' => TRUE,
       ),
       'create' => FALSE,
       'select' => array('minimumInputLength' => 0),

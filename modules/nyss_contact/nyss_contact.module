@@ -213,6 +213,24 @@ function nyss_contact_civicrm_pageRun( &$page ) {
       $page->assign('webUserURL', $webUserUrl);
     }
   }
+
+  //11059
+  if ($pagename == 'CRM_Activity_Page_Tab') {
+    CRM_Core_Region::instance('page-body')->add(array(
+      'style' => "
+        table.contact-activity-selector-activity {
+          table-layout: fixed;
+        }
+        table.contact-activity-selector-activity td span > a.action-item,
+        table.contact-activity-selector-activity span.btn-slide{
+          float: left;
+        }
+        .crm-container .paging_full_numbers {
+          width: 400px !important;
+        }
+      ",
+    ));
+  }
 }//pageRun
 
 function nyss_contact_civicrm_validateForm( $formName, &$fields, &$files, &$form, &$errors ) {
