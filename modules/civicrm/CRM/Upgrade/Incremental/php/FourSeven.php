@@ -114,6 +114,14 @@ class CRM_Upgrade_Incremental_php_FourSeven extends CRM_Upgrade_Incremental_Base
         . '<br />' . ts('You can re-enable it by visitng the <a %1>CKEditor Config</a> screen and setting "fullPage = true" under the Advanced Options of the CiviMail preset.', array(1 => $ck_href))
         . '</p>';
     }
+    if ($rev == '4.7.19') {
+      $postUpgradeMessage .= '<br /><br />' . ts('Default version of the following System Workflow Message Templates have been modified: <ul><li>Additional Payment Receipt or Refund Notification</li><li>Contribution Invoice</li></ul> If you have modified these templates, please review the new default versions and implement updates as needed to your copies (Administer > Communications > Message Templates > System Workflow Messages).');
+      $check = CRM_Core_DAO::singleValueQuery("SELECT count(id) FROM civicrm_domain");
+      $smsCheck = CRM_Core_DAO::singleValueQuery("SELECT count(id) FROM civicrm_sms_provider");
+      if ($check > 1 && (bool) $smsCheck) {
+        $postUpgradeMessage .= '<p>civicrm_sms_provider ' . ts('has now had a domain id column added. As there is more than 1 domains in this install you need to manually set the domain id for the providers in this install') . '</p>';
+      }
+    }
   }
 
   /**
@@ -305,6 +313,37 @@ class CRM_Upgrade_Incremental_php_FourSeven extends CRM_Upgrade_Incremental_Base
     $this->addTask('CRM-19770 - Add is_star column to civicrm_activity', 'addColumn',
       'civicrm_activity', 'is_star', "tinyint DEFAULT '0' COMMENT 'Activity marked as favorite.'");
     $this->addTask(ts('Upgrade DB to %1: SQL', array(1 => $rev)), 'runSql', $rev);
+  }
+
+  /**
+   * Upgrade function.
+   *
+   * @param string $rev
+   */
+  public function upgrade_4_7_18($rev) {
+    $this->addTask('Update Kenyan Provinces', 'updateKenyanProvinces');
+    $this->addTask(ts('Upgrade DB to %1: SQL', array(1 => $rev)), 'runSql', $rev);
+  }
+
+  /**
+   * Upgrade function.
+   *
+   * @param string $rev
+   */
+  public function upgrade_4_7_19($rev) {
+    $query = "SELECT id FROM civicrm_financial_account WHERE opening_balance <> 0 OR current_period_opening_balance <> 0";
+    $result = CRM_Core_DAO::executeQuery($query);
+    if (!$result->N) {
+      $this->addTask('Drop Column current_period_opening_balance From civicrm_financial_account table.', 'dropColumn', 'civicrm_financial_account', 'current_period_opening_balance');
+      $this->addTask('Drop Column opening_balance From civicrm_financial_account table.', 'dropColumn', 'civicrm_financial_account', 'opening_balance');
+    }
+    $this->addTask('CRM-19961 - Add domain_id column to civicrm_sms_provider', 'addColumn',
+      'civicrm_sms_provider', 'domain_id', 'int(10) unsigned', "Which Domain is this sms provier for");
+    $this->addTask('CRM-19961 - Populate domain id table and perhaps add foreign key', 'populateSMSProviderDomainId');
+    $this->addTask(ts('Upgrade DB to %1: SQL', array(1 => $rev)), 'runSql', $rev);
+    $this->addTask('CRM-16633 - Add "Change Case Subject" activity', 'addChangeCaseSubjectActivityType');
+    $this->addTask('Add is_public column to civicrm_custom_group', 'addColumn',
+      'civicrm_custom_group', 'is_public', "boolean DEFAULT '1' COMMENT 'Is this property public?'");
   }
 
   /*
@@ -980,6 +1019,96 @@ FROM `civicrm_dashboard_contact` JOIN `civicrm_contact` WHERE civicrm_dashboard_
       $newFileName = Civi::paths()->getPath('[civicrm.files]/persist/crm-ckeditor-default.js');
       file_put_contents($newFileName, $config);
     }
+    return TRUE;
+  }
+
+  /**
+   * Update Kenyan Provinces to reflect changes per CRM-20062
+   *
+   * @param \CRM_Queue_TaskContext $ctx
+   */
+  public static function updateKenyanProvinces(CRM_Queue_TaskContext $ctx) {
+    $kenyaCountryID = CRM_Core_DAO::singleValueQuery('SELECT max(id) from civicrm_country where iso_code = "KE"');
+    $oldProvinces = array(
+      'Nairobi Municipality',
+      'Coast',
+      'North-Eastern Kaskazini Mashariki',
+      'Rift Valley',
+      'Western Magharibi',
+    );
+    self::deprecateStateProvinces($kenyaCountryID, $oldProvinces);
+    return TRUE;
+  }
+
+  /**
+   * Deprecate provinces that no longer exist.
+   *
+   * @param int $countryID
+   * @param array $provinces
+   */
+  public static function deprecateStateProvinces($countryID, $provinces) {
+    foreach ($provinces as $province) {
+      $existingStateID = CRM_Core_DAO::singleValueQuery("
+        SELECT id FROM civicrm_state_province
+        WHERE country_id = %1
+        AND name = %2
+      ",
+      array(1 => array($countryID, 'Int'), 2 => array($province, 'String')));
+
+      if (!$existingStateID) {
+        continue;
+      }
+      if (!CRM_Core_DAO::singleValueQuery("
+       SELECT count(*) FROM civicrm_address
+       WHERE state_province_id = %1
+       ", array(1 => array($existingStateID, 'Int')))
+      ) {
+        CRM_Core_DAO::executeQuery("DELETE FROM civicrm_state_province WHERE id = %1", array(1 => array($existingStateID, 'Int')));
+      }
+      else {
+        $params = array('1' => array(ts("Former - $province"), 'String'));
+        CRM_Core_DAO::executeQuery("
+          UPDATE civicrm_state_province SET name = %1 WHERE id = $existingStateID
+        ", $params);
+      }
+    }
+  }
+
+  /**
+   * CRM-19961
+   * Poputate newly added domain id column and add foriegn key onto table.
+   */
+  public static function populateSMSProviderDomainId() {
+    $count = CRM_Core_DAO::singleValueQuery("SELECT count(id) FROM civicrm_domain");
+    if ($count = 1) {
+      CRM_Core_DAO::executeQuery("UPDATE civicrm_sms_provider SET domain_id = (SELECT id FROM civicrm_domain)");
+    }
+    CRM_Core_DAO::executeQuery("SET FOREIGN_KEY_CHECKS = 0;");
+    CRM_Core_DAO::executeQuery("ALTER TABLE `civicrm_sms_provider`
+      ADD CONSTRAINT FK_civicrm_sms_provider_domain_id
+      FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain`(`id`)
+      ON DELETE SET NULL");
+
+    CRM_Core_DAO::executeQuery("SET FOREIGN_KEY_CHECKS = 1;");
+    return TRUE;
+  }
+
+  /**
+   * CRM-16633 - Add activity type for Change Case Status
+   *
+   * @param \CRM_Queue_TaskContext $ctx
+   *
+   * @return bool
+   */
+  public static function addChangeCaseSubjectActivityType(CRM_Queue_TaskContext $ctx) {
+    CRM_Core_BAO_OptionValue::ensureOptionValueExists(array(
+      'option_group_id' => 'activity_type',
+      'name' => 'Change Case Subject',
+      'label' => ts('Change Case Subject'),
+      'is_active' => TRUE,
+      'component_id' => 'CiviCase',
+      'icon' => 'fa-pencil-square-o',
+    ));
     return TRUE;
   }
 

@@ -1218,7 +1218,7 @@ class CRM_Core_BAO_CustomField extends CRM_Core_DAO_CustomField {
         // Or should we throw an exception here if it is?
         $value = is_array($value) ? CRM_Utils_Array::first($value) : $value;
 
-        $actualPHPFormats = CRM_Core_SelectValues::datePluginToPHPFormats();
+        $actualPHPFormats = CRM_Utils_Date::datePluginToPHPFormats();
         $format = CRM_Utils_Array::value('date_format', $field);
 
         if ($format) {
@@ -1651,9 +1651,6 @@ SELECT id
 
       $config = CRM_Core_Config::singleton();
 
-      $fName = $value['name'];
-      $mimeType = $value['type'];
-
       // If we are already passing the file id as a value then retrieve and set the file data
       if (CRM_Utils_Rule::integer($value)) {
         $fileDAO = new CRM_Core_DAO_File();
@@ -1664,6 +1661,10 @@ SELECT id
           $fName = $fileDAO->uri;
           $mimeType = $fileDAO->mime_type;
         }
+      }
+      else {
+        $fName = $value['name'];
+        $mimeType = $value['type'];
       }
 
       $filename = pathinfo($fName, PATHINFO_BASENAME);

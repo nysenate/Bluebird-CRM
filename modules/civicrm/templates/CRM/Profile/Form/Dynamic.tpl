@@ -171,12 +171,7 @@
                 &nbsp;{$form.$phone_ext_field.html}
                 {/if}
               {else}
-                {if
-                ( ( $n eq 'birth_date' ) or ( $n eq 'deceased_date' ) or ( $n eq 'activity_date_time' ) ) and $field.is_view neq 1 }
-                {include file="CRM/common/jcalendar.tpl" elementName=$n}
-                {else}
-                  {$form.$n.html}
-                {/if}
+                {$form.$n.html}
                 {if $field.html_type eq 'Autocomplete-Select'}
                   {if $field.data_type eq 'ContactReference'}
                     {include file="CRM/Custom/Form/ContactReference.tpl" element_name = $n}

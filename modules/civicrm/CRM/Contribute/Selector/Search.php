@@ -26,21 +26,17 @@
  */
 
 /**
- *
  * @package CRM
  * @copyright CiviCRM LLC (c) 2004-2017
  */
 
 /**
- * This class is used to retrieve and display a range of
- * contacts that match the given criteria (specifically for
- * results of advanced search options.
- *
+ * Class to render contribution search results.
  */
 class CRM_Contribute_Selector_Search extends CRM_Core_Selector_Base implements CRM_Core_Selector_API {
 
   /**
-   * This defines two actions- View and Edit.
+   * Array of action links.
    *
    * @var array
    */
@@ -366,6 +362,7 @@ class CRM_Contribute_Selector_Search extends CRM_Core_Selector_Base implements C
     $allCampaigns = CRM_Campaign_BAO_Campaign::getCampaigns(NULL, NULL, FALSE, FALSE, FALSE, TRUE);
 
     while ($result->fetch()) {
+      $this->_query->convertToPseudoNames($result);
       $links = self::links($componentId,
           $componentAction,
           $qfKey,
@@ -447,6 +444,14 @@ class CRM_Contribute_Selector_Search extends CRM_Core_Selector_Base implements C
         $buttonName = ts('Record Payment');
         if ($row['contribution_status_name'] == 'Pending refund') {
           $buttonName = ts('Record Refund');
+        }
+        elseif (CRM_Core_Config::isEnabledBackOfficeCreditCardPayments()) {
+          $links[CRM_Core_Action::BASIC] = array(
+            'name' => ts('Submit Credit Card payment'),
+            'url' => 'civicrm/payment/add',
+            'qs' => 'reset=1&id=%%id%%&cid=%%cid%%&action=add&component=contribution&mode=live',
+            'title' => ts('Submit Credit Card payment'),
+          );
         }
         $links[CRM_Core_Action::ADD] = array(
           'name' => $buttonName,
