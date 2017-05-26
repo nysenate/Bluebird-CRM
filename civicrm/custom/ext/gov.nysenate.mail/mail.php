@@ -151,3 +151,9 @@ function mail_civicrm_navigationMenu(&$menu) {
   ));
   _mail_civix_navigationMenu($menu);
 } // */
+
+function mail_civicrm_angularPartials(\Civi\Angular\HtmlFilters $filters) {
+  $filters->add('~/crmMailing/BlockSummary.html', function(phpQueryObject $doc){
+    $doc->find('.crm-group')->append(file_get_contents(__DIR__.'/html/mailing_options.html'));
+  });
+}
