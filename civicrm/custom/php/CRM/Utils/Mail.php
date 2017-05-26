@@ -256,9 +256,7 @@ class CRM_Utils_Mail {
     //NYSS allow content-transfer-encoding to be overwritten
     $headers = &$msg->headers($headers, TRUE);
 
-    //NYSS
-    //$to = array( $params['toEmail'] );
-    $to = array($headers['To']);
+    $to = array($params['toEmail']);
     $result = NULL;
     $mailer = \Civi::service('pear_mail');
 
@@ -274,9 +272,9 @@ class CRM_Utils_Mail {
       if (!empty($headers['Cc'])) {
         $to[] = CRM_Utils_Array::value('Cc', $headers);
       }
-      //NYSS
       if (!empty($headers['Bcc'])) {
-        //$to[] = CRM_Utils_Array::value('Bcc', $headers);
+        $to[] = CRM_Utils_Array::value('Bcc', $headers);
+        unset($headers['Bcc']);
       }
     }
 
