@@ -503,6 +503,9 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
         elseif (isset($this->_query->_fields[$prop]) && isset($this->_query->_fields[$prop]['title'])) {
           $title = $this->_query->_fields[$prop]['title'];
         }
+        elseif (isset($this->_query->_pseudoConstantsSelect[$prop]) && isset($this->_query->_pseudoConstantsSelect[$prop]['pseudoconstant']['optionGroupName'])) {
+          $title = CRM_Core_BAO_OptionGroup::getTitleByName($this->_query->_pseudoConstantsSelect[$prop]['pseudoconstant']['optionGroupName']);
+        }
         else {
           $title = '';
         }
@@ -1051,7 +1054,6 @@ SELECT DISTINCT 'civicrm_contact', contact_a.id, contact_a.id, '$cacheKey', cont
 ";
 
     $sql = str_replace($replaceSQL, $insertSQL, $sql);
-    //Civi::log()->debug('insertSQL', array('insertSQL' => $insertSQL, '$sql' => $sql));
 
     $errorScope = CRM_Core_TemporaryErrorScope::ignoreException();
     $result = CRM_Core_DAO::executeQuery($sql);
