@@ -40,7 +40,7 @@
        </tr>
      <tr>
         <td></td>
-        <td class="help">You may now use contacts from previous imports as a dedupe group.</td>
+        <td class="help">You may use contacts from previous imports as a dedupe group.</td>
      </tr>
      <tr>
         <td class="label">{$form.import_group_id.label}</td>
