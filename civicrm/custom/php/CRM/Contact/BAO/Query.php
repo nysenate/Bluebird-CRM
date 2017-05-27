@@ -512,13 +512,6 @@ class CRM_Contact_BAO_Query {
       $this->buildParamsLookup();
     }
 
-    //NYSS 6801 force primary flag during export if no location vals set
-    $forcePrimary = FALSE;
-    if (!CRM_Utils_Array::value('location', $this->_returnProperties) ||
-      !is_array($this->_returnProperties['location'])) {
-      $forcePrimary = TRUE;
-    }
-
     $this->_whereTables = $this->_tables;
 
     $this->selectClause($apiEntity);
@@ -533,8 +526,8 @@ class CRM_Contact_BAO_Query {
       CRM_Financial_BAO_FinancialType::buildPermissionedClause($this->_whereClause, $component);
     }
 
-    $this->_fromClause = self::fromClause($this->_tables, NULL, NULL, $this->_primaryLocation, $this->_mode, $forcePrimary);//NYSS
-    $this->_simpleFromClause = self::fromClause($this->_whereTables, NULL, NULL, $this->_primaryLocation, $this->_mode, $forcePrimary);//NYSS
+    $this->_fromClause = self::fromClause($this->_tables, NULL, NULL, $this->_primaryLocation, $this->_mode, $apiEntity);
+    $this->_simpleFromClause = self::fromClause($this->_whereTables, NULL, NULL, $this->_primaryLocation, $this->_mode);
 
     $this->openedSearchPanes(TRUE);
   }
@@ -2572,28 +2565,8 @@ class CRM_Contact_BAO_Query {
    *
    * @return string
    *   the from clause
-   * //NYSS 6801 force primary option
    */
-  public static function fromClause(&$tables, $inner = NULL, $right = NULL, $primaryLocation = TRUE, $mode = 1, $forcePrimary = FALSE) {
-    //NYSS 10770
-    if (!$forcePrimary) {
-      /*Civi::log()->debug('fromClause', array(
-        'primaryLocation' => $primaryLocation,
-        'mode' => $mode,
-        'forcePrimary' => $forcePrimary,
-        'tables' => $tables,
-      ));*/
-      //CRM_Core_Error::backtrace('fromClause', TRUE);
-
-      //hackish solution...
-      //when group contacts are listed, we need the pager to force primary in order to get accurate
-      //page listing counts
-      foreach ($tables as $tbl => $dontCare) {
-        if (strpos($tbl, 'civicrm_group_contact') !== FALSE) {
-          $forcePrimary = TRUE;
-        }
-      }
-    }
+  public static function fromClause(&$tables, $inner = NULL, $right = NULL, $primaryLocation = TRUE, $mode = 1, $apiEntity = NULL) {
 
     $from = ' FROM civicrm_contact contact_a';
     if (empty($tables)) {
@@ -2702,14 +2675,7 @@ class CRM_Contact_BAO_Query {
           continue;
 
         case 'civicrm_email':
-          //NYSS 4575 search by all emails; add is_primary condition in where clause optionally
-          //NYSS 6801 forcePrimary option on export
-          if ($forcePrimary) {
-            $from .= " $side JOIN civicrm_email ON (contact_a.id = civicrm_email.contact_id AND civicrm_email.is_primary = 1) ";
-          }
-          else {
-            $from .= " $side JOIN civicrm_email ON (contact_a.id = civicrm_email.contact_id) ";
-          }
+          $from .= " $side JOIN civicrm_email ON (contact_a.id = civicrm_email.contact_id {$searchPrimary})";
           continue;
 
         case 'civicrm_im':
@@ -4866,28 +4832,6 @@ civicrm_relationship.is_permission_a_b = 0
         }
         break;
       }
-    }
-
-    //NYSS 4575 - condition email on primary option; but only if email value present
-    $emailPresent = $emailPrimary = false;
-    foreach ($this->_params as $values) {
-      list($name, $op, $value, $_, $_) = $values;
-      if ( $name == 'email' && $value ) { $emailPresent = TRUE; }
-      if ( $name == 'email_primary' && $value == 1 ) { $emailPrimary = TRUE; }
-    }
-    if ( $emailPresent && $emailPrimary ) {
-      if ( !$additionalWhereClause ) {
-        $additionalWhereClause = " civicrm_email.is_primary = 1 ";
-      } else {
-        $additionalWhereClause .= " AND civicrm_email.is_primary = 1 ";
-      }
-    }
-
-    // CRM_Core_Error::debug( 't', $this );
-    // CRM_Core_Error::debug( 'w', $where );
-    // CRM_Core_Error::debug( 'a', $additionalWhereClause );
-    if ($additionalWhereClause) {
-      $where = $where . ' AND ' . $additionalWhereClause;
     }
 
     // building the query string

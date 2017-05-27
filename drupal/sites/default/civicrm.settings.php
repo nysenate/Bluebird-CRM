@@ -99,9 +99,15 @@ $civicrm_setting['Directory Preferences']['imageUploadDir'] = "$dataroot/$datadi
 $civicrm_setting['URL Preferences']['imageUploadURL'] = "data/$datadirname/pubfiles";
 $civicrm_setting['URL Preferences']['extensionsURL'] = "sites/all/ext";
 
+//reference value separator explicitly as class constant not yet available
+$sep = "";
 $civicrm_setting['Search Preferences']['enable_innodb_fts'] = true;
 $civicrm_setting['Search Preferences']['fts_query_mode'] = 'wildwords-suffix';
 $civicrm_setting['Search Preferences']['includeEmailInName'] = true;
+$civicrm_setting['Search Preferences']['searchPrimaryDetailsOnly'] = false;
+$civicrm_setting['Search Preferences']['search_autocomplete_count'] = "15";
+$civicrm_setting['Search Preferences']['contact_autocomplete_options'] = "{$sep}1{$sep}2{$sep}5{$sep}";
+$civicrm_setting['Search Preferences']['contact_reference_options'] = "{$sep}1{$sep}2{$sep}5{$sep}";
 
 if (isset($bbconfig['xhprof.profile']) && $bbconfig['xhprof.profile']) {
   function xhprof_shutdown_func($source, $run_id = null) {
