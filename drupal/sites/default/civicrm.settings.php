@@ -83,6 +83,7 @@ $civicrm_setting['Mailing Preferences']['disable_mandatory_tokens_check'] = true
 $civicrm_setting['Mailing Preferences']['hash_mailing_url'] = true;
 
 $civicrm_setting['CiviCRM Preferences']['checksumTimeout'] = 7;
+$civicrm_setting['CiviCRM Preferences']['checksum_timeout'] = 7;
 $civicrm_setting['CiviCRM Preferences']['securityAlert'] = false;
 $civicrm_setting['CiviCRM Preferences']['versionCheck'] = false;
 $civicrm_setting['CiviCRM Preferences']['max_attachments'] = 5;
@@ -90,6 +91,9 @@ $civicrm_setting['CiviCRM Preferences']['maxFileSize'] = 12; //9842
 $civicrm_setting['CiviCRM Preferences']['communityMessagesUrl'] = false;
 $civicrm_setting['CiviCRM Preferences']['empoweredBy'] = false;
 $civicrm_setting['CiviCRM Preferences']['syncCMSEmail'] = false;
+$civicrm_setting['CiviCRM Preferences']['communityMessagesUrl'] = false;
+$civicrm_setting['CiviCRM Preferences']['remote_profile_submissions'] = false;
+$civicrm_setting['CiviCRM Preferences']['recentItemsMaxCount'] = 10;
 
 $civicrm_setting['Directory Preferences']['customTemplateDir'] = "$approot/civicrm/custom/templates";
 $civicrm_setting['Directory Preferences']['customPHPPathDir'] = "$approot/civicrm/custom/php";
@@ -104,10 +108,12 @@ $sep = "";
 $civicrm_setting['Search Preferences']['enable_innodb_fts'] = true;
 $civicrm_setting['Search Preferences']['fts_query_mode'] = 'wildwords-suffix';
 $civicrm_setting['Search Preferences']['includeEmailInName'] = true;
-$civicrm_setting['Search Preferences']['searchPrimaryDetailsOnly'] = false;
+$civicrm_setting['Search Preferences']['searchPrimaryDetailsOnly'] = true;//11087 //TODO this should be false; messes up search return count
 $civicrm_setting['Search Preferences']['search_autocomplete_count'] = "15";
 $civicrm_setting['Search Preferences']['contact_autocomplete_options'] = "{$sep}1{$sep}2{$sep}5{$sep}";
 $civicrm_setting['Search Preferences']['contact_reference_options'] = "{$sep}1{$sep}2{$sep}5{$sep}";
+
+$civicrm_setting['Extension Preferences']['ext_repo_url'] = false;
 
 if (isset($bbconfig['xhprof.profile']) && $bbconfig['xhprof.profile']) {
   function xhprof_shutdown_func($source, $run_id = null) {
