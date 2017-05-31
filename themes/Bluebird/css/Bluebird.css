@@ -4044,6 +4044,10 @@ form.CRM_Tag_Form_Tag div.contact-tagset label {
   font-weight: bold;
   margin-bottom: 8px;
 }
+/*11076*/
+#Tag #tagtree {
+  max-width: 380px;
+}
 /*edit: tags and groups fixes*/
 div#tagGroup table {
   width: 100%
