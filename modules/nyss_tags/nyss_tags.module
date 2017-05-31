@@ -24,7 +24,7 @@ function nyss_tags_civicrm_merge( $type, &$sqls, $fromId, $toId, $tables ) {
 
 function nyss_tags_civicrm_buildForm($formName, &$form) {
   /*Civi::log()->debug('buildForm', array(
-    //'formName' => $formName,
+    'formName' => $formName,
     'form' => $form,
     //'$form->_elementIndex' => $form->_elementIndex,
     //'$form->_tagsetInfo' => $form->_tagsetInfo,
@@ -171,6 +171,16 @@ function nyss_tags_civicrm_buildForm($formName, &$form) {
       'jquery' => "$('li#tag_291').removeClass('jstree-closed').addClass('jstree-open').addClass('tuna');",
     ));
 
+  }
+
+  //11082 - force used_for value
+  if ($formName == 'CRM_Tag_Form_Edit' && !$form->getVar('_isTagSet')) {
+    if ($form->elementExists('used_for')) {
+      $form->setDefaults(array(
+        'used_for' => 'civicrm_contact',
+      ));
+      $form->getElement('used_for')->freeze();
+    }
   }
 }
 
