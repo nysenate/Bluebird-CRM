@@ -127,6 +127,14 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
+## 11074 set issue codes unselectable
+sql="
+  UPDATE civicrm_tag
+  SET is_selectable = 0
+  WHERE id = 291
+"
+$execSql $instance -c "$sql" -q
+
 ## install new extension
 $drush $instance cvapi extension.install key=gov.nysenate.resources
 $drush $instance cvapi extension.install key=gov.nysenate.dao
