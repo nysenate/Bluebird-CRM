@@ -22,9 +22,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
    */
   static function addResources($type = NULL) {
     CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.inbox', 'js/inbox.js');
-    CRM_Core_Resources::singleton()->addScriptUrl('/sites/default/themes/Bluebird/scripts/bbtree.js');
     CRM_Core_Resources::singleton()->addStyleFile('gov.nysenate.inbox', 'css/inbox.css');
-    CRM_Core_Resources::singleton()->addStyleUrl('/sites/default/themes/Bluebird/css/tags/tags.css');
 
     //pass type as js var
     CRM_Core_Resources::singleton()->addVars('NYSS', array('inboxType' => $type));

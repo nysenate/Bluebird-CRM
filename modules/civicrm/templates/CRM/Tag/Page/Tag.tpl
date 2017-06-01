@@ -51,7 +51,7 @@
     </ul>
     <div id="tree">
       <div class="help">
-        {ts}Organize the tag hierarchy by clicking and dragging. Shift-click to select multiple tags to merge/move/delete.{/ts}
+        {ts}Organize the tag hierarchy by clicking and dragging. Shift/Ctrl-click to select multiple tags to merge/move/delete.{/ts}
       </div>
     </div>
     {foreach from=$tagsets item=set}
@@ -272,10 +272,6 @@
             plugins: plugins,
             dnd: {
               copy: false
-            },
-            themes: {
-              stripes: true,
-              dots: false
             }
           });
       }

@@ -1,6 +1,0 @@
-name = NYSS Tags
-description = Log actions for tags
-dependencies[] = civicrm
-package = CiviCRM
-core = 7.x
-version = 4.2

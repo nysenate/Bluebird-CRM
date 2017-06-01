@@ -433,4 +433,3 @@ class CRM_Contact_Page_View extends CRM_Core_Page {
     return CRM_Utils_System::url($urlString, $urlParams);
   }
 }
-

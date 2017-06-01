@@ -160,6 +160,14 @@ function _civicrm_api3_contribution_create_spec(&$params) {
     'type' => CRM_Utils_Type::T_STRING,
     'description' => 'Transaction ID specific to the refund taking place',
   );
+  $params['card_type_id'] = array(
+    'title' => 'Card Type ID',
+    'description' => 'Providing Credit Card Type ID',
+    'type' => CRM_Utils_Type::T_INT,
+    'pseudoconstant' => array(
+      'optionGroupName' => 'accept_creditcard',
+    ),
+  );
 }
 
 /**
@@ -443,6 +451,7 @@ function civicrm_api3_contribution_sendconfirmation($params) {
     'payment_processor_id',
   );
   $input = array_intersect_key($params, array_flip($allowedParams));
+  $input['is_email_receipt'] = TRUE;
   CRM_Contribute_BAO_Contribution::sendMail($input, $ids, $params['id'], $values);
 }
 
@@ -510,7 +519,6 @@ function _civicrm_api3_contribution_sendconfirmation_spec(&$params) {
  * @throws \Exception
  */
 function civicrm_api3_contribution_completetransaction(&$params) {
-
   $input = $ids = array();
   if (isset($params['payment_processor_id'])) {
     $input['payment_processor_id'] = $params['payment_processor_id'];
@@ -579,6 +587,14 @@ function _civicrm_api3_contribution_completetransaction_spec(&$params) {
     'title' => 'Transaction Date',
     'description' => 'Date this transaction occurred',
     'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
+  );
+  $params['card_type_id'] = array(
+    'title' => 'Card Type ID',
+    'description' => 'Providing Credit Card Type ID',
+    'type' => CRM_Utils_Type::T_INT,
+    'pseudoconstant' => array(
+      'optionGroupName' => 'accept_creditcard',
+    ),
   );
 }
 
@@ -692,10 +708,11 @@ function _ipn_process_transaction(&$params, $contribution, $input, $ids, $firstC
     $input['receipt_from_name'] = CRM_Utils_Array::value('receipt_from_name', $params, $domainFromName);
     $input['receipt_from_email'] = CRM_Utils_Array::value('receipt_from_email', $params, $domainFromEmail);
   }
+  $input['card_type_id'] = CRM_Utils_Array::value('card_type_id', $params);
+  $input['pan_truncation'] = CRM_Utils_Array::value('pan_truncation', $params);
   $transaction = new CRM_Core_Transaction();
   return CRM_Contribute_BAO_Contribution::completeOrder($input, $ids, $objects, $transaction, !empty
-  ($contribution->contribution_recur_id), $contribution,
-    FALSE, FALSE);
+  ($contribution->contribution_recur_id), $contribution);
 }
 
 /**

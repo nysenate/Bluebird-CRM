@@ -473,15 +473,23 @@ class CRM_Utils_Array {
    *
    * @param array $array
    *   Array to be sorted.
-   * @param string $field
+   * @param string|array $field
    *   Name of the attribute used for sorting.
    *
    * @return array
    *   Sorted array
    */
   public static function crmArraySortByField($array, $field) {
-    $code = "return strnatcmp(\$a['$field'], \$b['$field']);";
-    uasort($array, create_function('$a,$b', $code));
+    $fields = (array) $field;
+    uasort($array, function ($a, $b) use ($fields) {
+      foreach ($fields as $f) {
+        $v = strnatcmp($a[$f], $b[$f]);
+        if ($v !== 0) {
+          return $v;
+        }
+      }
+      return 0;
+    });
     return $array;
   }
 
@@ -614,7 +622,7 @@ class CRM_Utils_Array {
           $result[$key] = $record->{$prop};
         }
         else {
-          $result[$key] = $record[$prop];
+          $result[$key] = self::value($prop, $record);
         }
       }
     }
@@ -925,17 +933,17 @@ class CRM_Utils_Array {
   }
 
   /**
-   * Rewrite the keys in an array by filtering through a function.
+   * Rewrite the keys in an array.
    *
    * @param array $array
-   * @param callable $func
-   *   Function($key, $value). Returns the new key.
+   * @param string|callable $indexBy
+   *   Either the value to key by, or a function($key, $value) that returns the new key.
    * @return array
    */
-  public static function rekey($array, $func) {
+  public static function rekey($array, $indexBy) {
     $result = array();
     foreach ($array as $key => $value) {
-      $newKey = $func($key, $value);
+      $newKey = is_callable($indexBy) ? $indexBy($key, $value) : $value[$indexBy];
       $result[$newKey] = $value;
     }
     return $result;

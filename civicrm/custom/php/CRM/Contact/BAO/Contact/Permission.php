@@ -221,7 +221,7 @@ WHERE contact_a.id = %1 AND $permission
 
       // run a query to see if the cache is filled
       $sql = "
-SELECT count(id)
+SELECT count(*)
 FROM   civicrm_acl_contact_cache
 WHERE  user_id = %1
 AND    $operationClause
@@ -239,7 +239,6 @@ AND    $operationClause
     $permission = CRM_ACL_API::whereClause($type, $tables, $whereTables, $userID, FALSE, FALSE, TRUE);
 
     $from = CRM_Contact_BAO_Query::fromClause($whereTables);
-
     //NYSS
     $count = CRM_Core_DAO::singleValueQuery("SELECT count(*) $from WHERE $permission GROUP BY contact_a.id");
     for($i=0; $i < $count; $i+=CRM_Core_DAO::BULK_INSERT_COUNT) {

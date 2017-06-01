@@ -567,6 +567,11 @@ class CRM_Contact_Form_Task_EmailCommon {
       }
     }
 
+    $contributionIds = array();
+    if ($form->getVar('_contributionIds')) {
+      $contributionIds = $form->getVar('_contributionIds');
+    }
+
     // send the mail
     list($sent, $activityId) = CRM_Activity_BAO_Activity::sendEmail(
       $formattedContactDetails,
@@ -580,7 +585,8 @@ class CRM_Contact_Form_Task_EmailCommon {
       $cc,
       $bcc,
       array_keys($form->_toContactDetails),
-      $additionalDetails
+      $additionalDetails,
+      $contributionIds
     );
 
     $followupStatus = '';

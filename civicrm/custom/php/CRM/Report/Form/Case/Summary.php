@@ -62,7 +62,7 @@ class CRM_Report_Form_Case_Summary extends CRM_Report_Form {
         'fields' => array(
           'client_name' => array(
             'name' => 'sort_name',
-            'title' => ts('Contact Name'),//NYSS
+            'title' => ts('Contact Name'),
             'required' => TRUE,
           ),
           'id' => array(
@@ -70,15 +70,12 @@ class CRM_Report_Form_Case_Summary extends CRM_Report_Form {
             'required' => TRUE,
           ),
         ),
-        //NYSS 4936
-        'order_bys'  =>
-        array( 
-          'client_name' =>
-          array( 
+        'order_bys' => array(
+          'client_name' => array(
             'title' => ts('Contact Name'),
-            'name'  => 'sort_name'
+            'name' => 'sort_name',
           ),
-        ), 
+        ),
         'grouping'  => 'case-fields',
       ),
       'civicrm_case' => array(
@@ -150,23 +147,18 @@ class CRM_Report_Form_Case_Summary extends CRM_Report_Form {
             'default' => 0,
           ),
         ),
-        //NYSS 4936
-        'order_bys'  =>
-        array(
-          'start_date' =>
-          array(
-            'title' => ts( 'Start Date'),
+        'order_bys'  => array(
+          'start_date' => array(
+            'title' => ts('Start Date'),
           ),
-          'end_date' =>
-          array(
-            'title' => ts( 'End Date'),
+          'end_date' => array(
+            'title' => ts('End Date'),
           ),
-          'status_id' =>
-          array(
-            'title' => ts( 'Status'),
+          'status_id' => array(
+            'title' => ts('Status'),
           ),
         ),
-        'grouping'  => 'case-fields'
+        'grouping'  => 'case-fields',
       ),
       'civicrm_contact' => array(
         'dao' => 'CRM_Contact_DAO_Contact',

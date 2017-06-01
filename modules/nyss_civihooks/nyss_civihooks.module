@@ -285,9 +285,6 @@ function nyss_civihooks_civicrm_buildForm($formName, &$form) {
 
   //advanced search
   if ($formName == 'CRM_Contact_Form_Search_Advanced') {
-    //4575 search by all emails
-    $form->addElement('checkbox', 'email_primary', ts('Search only primary emails'));
-
     //3815 add privacy option note
     $form->addElement('text', 'custom_64', ts('Privacy Option Notes'), array('id'=>'custom_64'), 'size="30"');
 
@@ -887,9 +884,8 @@ function nyss_civihooks_civicrm_navigationMenu(&$params) {
 function nyss_civihooks_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) {
   //Civi::log()->debug('alterTemplateFile', array('formName' => $formName));
 
-  $navigations = array();
-  CRM_Core_BAO_Navigation::buildNavigationTree($navigations, $parent = NULL, TRUE);
   $navigationString = NULL;
+  $navigations = CRM_Core_BAO_Navigation::buildNavigationTree();
 
   // run the Navigation  through a hook so users can modify it
   CRM_Utils_Hook::navigationMenu($navigations);

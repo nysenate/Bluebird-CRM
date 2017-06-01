@@ -188,6 +188,23 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form {
   public $_isBillingAddressRequiredForPayLater;
 
   /**
+   * Is this a backoffice form
+   * (this will affect whether paypal express code is displayed)
+   * @var bool
+   */
+  public $isBackOffice = FALSE;
+
+  /**
+   * Payment instrument if for the transaction.
+   *
+   * This will generally be drawn from the payment processor and is ignored for
+   * front end forms.
+   *
+   * @var int
+   */
+  public $paymentInstrumentID;
+
+  /**
    * Set variables up before form is built.
    *
    * @throws \CRM_Contribute_Exception_InactiveContributionPageException
@@ -1194,6 +1211,15 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form {
       $takeUserSubmittedAutoRenew = (!empty($_POST) || $this->isSubmitted()) ? TRUE : FALSE;
       $this->assign('takeUserSubmittedAutoRenew', $takeUserSubmittedAutoRenew);
 
+      // Assign autorenew option (0:hide,1:optional,2:required) so we can use it in confirmation etc.
+      $autoRenewOption = CRM_Price_BAO_PriceSet::checkAutoRenewForPriceSet($this->_priceSetId);
+      if (isset($membershipTypeValues[$selectedMembershipTypeID]['auto_renew'])) {
+        $this->assign('autoRenewOption', $membershipTypeValues[$selectedMembershipTypeID]['auto_renew']);
+      }
+      else {
+        $this->assign('autoRenewOption', $autoRenewOption);
+      }
+
       if ($isContributionMainPage) {
         if (!$membershipPriceset) {
           if (!$this->_membershipBlock['is_required']) {
@@ -1213,13 +1239,14 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form {
 
           $this->addRule('selectMembership', ts('Please select one of the memberships.'), 'required');
         }
-        else {
-          $autoRenewOption = CRM_Price_BAO_PriceSet::checkAutoRenewForPriceSet($this->_priceSetId);
-          $this->assign('autoRenewOption', $autoRenewOption);
-        }
 
         if ((!$this->_values['is_pay_later'] || is_array($this->_paymentProcessors)) && ($allowAutoRenewMembership || $autoRenewOption)) {
-          $this->addElement('checkbox', 'auto_renew', ts('Please renew my membership automatically.'));
+          if ($autoRenewOption == 2) {
+            $this->addElement('hidden', 'auto_renew', ts('Please renew my membership automatically.'));
+          }
+          else {
+            $this->addElement('checkbox', 'auto_renew', ts('Please renew my membership automatically.'));
+          }
         }
 
       }

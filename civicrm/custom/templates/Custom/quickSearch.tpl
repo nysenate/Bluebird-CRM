@@ -28,7 +28,7 @@
       <div id="crm-qsearch" class="menumain">
         <form action="{crmURL p='civicrm/contact/search/advanced' h=0 }" name="search_block" id="id_search_block" method="post">
           <div id="quickSearch">
-            <input class="form-text ui-autocomplete-input" id="sort_name_navigation" placeholder="Name/Email" name="sort_name" style="width: 13em; display: inline-block;" autocomplete="off" type="text">
+            <input class="form-text ui-autocomplete-input" id="sort_name_navigation" value="Name/Email" name="sort_name" style="width: 13em; display: inline-block;" autocomplete="off" type="text">
             <input id="sort_contact_id" style="display: none" type="text">
             <input name="hidden_location" value="1" type="hidden">
             <input name="qfKey" value="" type="hidden">

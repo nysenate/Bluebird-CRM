@@ -87,30 +87,27 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
         ),
         'mailing_name' => array(
           'name' => 'name',
-          'title' => ts('Mailing Name'),//NYSS
+          'title' => ts('Mailing Name'),
           'operatorType' => CRM_Report_Form::OP_MULTISELECT,
           'type' => CRM_Utils_Type::T_STRING,
           'options' => self::mailing_select(),
           'operator' => 'like',
         ),
-        //NYSS 4935
         'mailing_subject' => array(
           'name' => 'subject',
           'title' => ts('Mailing Subject'),
-          'type'=> CRM_Utils_Type::T_STRING,
-          'operator' => 'like', 
+          'type' => CRM_Utils_Type::T_STRING,
+          'operator' => 'like',
         ),
       ),
-      //NYSS 4936
-      'order_bys'  =>
-      array( 
-        'mailing_name' =>
-        array( 'name' => 'name',
-               'title' => ts( 'Mailing Name' ) 
+      'order_bys' => array(
+        'mailing_name' => array(
+          'name' => 'name',
+          'title' => ts('Mailing Name'),
         ),
-        'mailing_subject' =>
-        array( 'name' => 'subject',
-               'title' => ts( 'Mailing Subject' ) 
+        'mailing_subject' => array(
+          'name' => 'subject',
+          'title' => ts('Mailing Subject'),
         ),
       ),
     );
@@ -149,18 +146,17 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
           'type' => CRM_Utils_Type::T_DATE,
         ),
       ),
-      //NYSS
-      'order_bys'  =>
-      array( 
-        /*'status' =>
-        array( 
-          'title' => ts( 'Status') ),*/
-        'start_date'    =>
-         array( 'title' => ts('Start Date') ),
-        'end_date'    =>
-        array( 'title' => ts('End Date') )
+      'order_bys' => array(
+        'start_date' => array(
+          'title' => ts('Start Date'),
+        ),
+        'end_date' => array(
+          'title' => ts('End Date'),
+          'default_weight' => '1',
+          'default_order' => 'DESC',
+        ),
       ),
-      'grouping' => 'mailing-fields'
+      'grouping' => 'mailing-fields',
     );
 
     $this->_columns['civicrm_mailing_event_queue'] = array(
@@ -492,11 +488,6 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
     );
     $this->_groupBy = CRM_Contact_BAO_Query::getGroupByFromSelectColumns($this->_selectClauses, $groupBy);
   }
-
-  //NYSS 4936 remove so we control through the interface
-  /*function orderBy( ) {
-    $this->_orderBy = " ORDER BY {$this->_aliases['civicrm_mailing_job']}.end_date DESC ";
-  }*/
 
   public function postProcess() {
 

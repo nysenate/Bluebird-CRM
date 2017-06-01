@@ -83,7 +83,7 @@ class CRM_Utils_Hook_WordPress extends CRM_Utils_Hook {
    *
    * @return mixed
    */
-  public function invoke(
+  public function invokeViaUF(
     $numParams,
     &$arg1, &$arg2, &$arg3, &$arg4, &$arg5, &$arg6,
     $fnSuffix
@@ -179,7 +179,7 @@ class CRM_Utils_Hook_WordPress extends CRM_Utils_Hook {
         if (!empty($config->customPHPPathDir) &&
           file_exists("{$config->customPHPPathDir}/civicrmHooks.php")
         ) {
-          @include_once 'civicrmHooks.php';
+          @include_once "{$config->customPHPPathDir}/civicrmHooks.php";
         }
 
         // initialise with the pre-existing 'wordpress' prefix

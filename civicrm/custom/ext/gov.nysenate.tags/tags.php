@@ -1,14 +1,165 @@
-<?php 
+<?php
 
-function nyss_tags_civicrm_merge( $type, &$sqls, $fromId, $toId, $tables ) {
+require_once 'tags.civix.php';
 
+/**
+ * Implements hook_civicrm_config().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_config
+ */
+function tags_civicrm_config(&$config) {
+  _tags_civix_civicrm_config($config);
+}
+
+/**
+ * Implements hook_civicrm_xmlMenu().
+ *
+ * @param $files array(string)
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_xmlMenu
+ */
+function tags_civicrm_xmlMenu(&$files) {
+  _tags_civix_civicrm_xmlMenu($files);
+}
+
+/**
+ * Implements hook_civicrm_install().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_install
+ */
+function tags_civicrm_install() {
+  _tags_civix_civicrm_install();
+}
+
+/**
+ * Implements hook_civicrm_uninstall().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_uninstall
+ */
+function tags_civicrm_uninstall() {
+  _tags_civix_civicrm_uninstall();
+}
+
+/**
+ * Implements hook_civicrm_enable().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_enable
+ */
+function tags_civicrm_enable() {
+  _tags_civix_civicrm_enable();
+}
+
+/**
+ * Implements hook_civicrm_disable().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_disable
+ */
+function tags_civicrm_disable() {
+  _tags_civix_civicrm_disable();
+}
+
+/**
+ * Implements hook_civicrm_upgrade().
+ *
+ * @param $op string, the type of operation being performed; 'check' or 'enqueue'
+ * @param $queue CRM_Queue_Queue, (for 'enqueue') the modifiable list of pending up upgrade tasks
+ *
+ * @return mixed
+ *   Based on op. for 'check', returns array(boolean) (TRUE if upgrades are pending)
+ *                for 'enqueue', returns void
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_upgrade
+ */
+function tags_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
+  return _tags_civix_civicrm_upgrade($op, $queue);
+}
+
+/**
+ * Implements hook_civicrm_managed().
+ *
+ * Generate a list of entities to create/deactivate/delete when this module
+ * is installed, disabled, uninstalled.
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_managed
+ */
+function tags_civicrm_managed(&$entities) {
+  _tags_civix_civicrm_managed($entities);
+}
+
+/**
+ * Implements hook_civicrm_caseTypes().
+ *
+ * Generate a list of case-types
+ *
+ * Note: This hook only runs in CiviCRM 4.4+.
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
+ */
+function tags_civicrm_caseTypes(&$caseTypes) {
+  _tags_civix_civicrm_caseTypes($caseTypes);
+}
+
+/**
+ * Implements hook_civicrm_angularModules().
+ *
+ * Generate a list of Angular modules.
+ *
+ * Note: This hook only runs in CiviCRM 4.5+. It may
+ * use features only available in v4.6+.
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
+ */
+function tags_civicrm_angularModules(&$angularModules) {
+_tags_civix_civicrm_angularModules($angularModules);
+}
+
+/**
+ * Implements hook_civicrm_alterSettingsFolders().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_alterSettingsFolders
+ */
+function tags_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
+  _tags_civix_civicrm_alterSettingsFolders($metaDataFolders);
+}
+
+/**
+ * Functions below this ship commented out. Uncomment as required.
+ *
+
+/**
+ * Implements hook_civicrm_preProcess().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_preProcess
+ *
+function tags_civicrm_preProcess($formName, &$form) {
+
+} // */
+
+/**
+ * Implements hook_civicrm_navigationMenu().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_navigationMenu
+ *
+function tags_civicrm_navigationMenu(&$menu) {
+  _tags_civix_insert_navigation_menu($menu, NULL, array(
+    'label' => ts('The Page', array('domain' => 'gov.nysenate.tags')),
+    'name' => 'the_page',
+    'url' => 'civicrm/the-page',
+    'permission' => 'access CiviReport,access CiviContribute',
+    'operator' => 'OR',
+    'separator' => 0,
+  ));
+  _tags_civix_navigationMenu($menu);
+} // */
+
+function tags_civicrm_merge( $type, &$sqls, $fromId, $toId, $tables ) {
   //insert civicrm_log record for every contact, case or activity affected by a tag merge.
-  if ( $type == 'sqls' &&
+  if ($type == 'sqls' &&
     in_array('civicrm_tag', $tables) &&
     $_GET['q'] == 'civicrm/ajax/mergeTags'
   ) {
     $session = CRM_Core_Session::singleton( );
-    $userID  = $session->get( 'userID' );
+    $userID = $session->get( 'userID' );
 
     $sql = "
       INSERT INTO civicrm_log ( entity_table, entity_id, data, modified_id, modified_date )
@@ -22,9 +173,9 @@ function nyss_tags_civicrm_merge( $type, &$sqls, $fromId, $toId, $tables ) {
   }
 } //merge
 
-function nyss_tags_civicrm_buildForm($formName, &$form) {
+function tags_civicrm_buildForm($formName, &$form) {
   /*Civi::log()->debug('buildForm', array(
-    //'formName' => $formName,
+    'formName' => $formName,
     'form' => $form,
     //'$form->_elementIndex' => $form->_elementIndex,
     //'$form->_tagsetInfo' => $form->_tagsetInfo,
@@ -172,10 +323,20 @@ function nyss_tags_civicrm_buildForm($formName, &$form) {
     ));
 
   }
+
+  //11082 - force used_for value
+  if ($formName == 'CRM_Tag_Form_Edit' && !$form->getVar('_isTagSet')) {
+    if ($form->elementExists('used_for')) {
+      $form->setDefaults(array(
+        'used_for' => 'civicrm_contact',
+      ));
+      $form->getElement('used_for')->freeze();
+    }
+  }
 }
 
-function nyss_tags_civicrm_pageRun(&$page) {
-  //Civi::log()->debug('nyss_tags_civicrm_pageRun', array('$page' => $page));
+function tags_civicrm_pageRun(&$page) {
+  //Civi::log()->debug('tags_civicrm_pageRun', array('$page' => $page));
 
   if (is_a($page, 'CRM_Tag_Page_Tag')) {
     //hide some tagsets
@@ -187,15 +348,9 @@ function nyss_tags_civicrm_pageRun(&$page) {
       }
     }
     $page->assign('tagsets', $tagSets);
-  }
-}
 
-//use custom template file for tag tab
-function nyss_tags_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) {
-  /*Civi::log()->debug('alterTemplateFile', array(
-    'formName' => $formName,
-    //'form' => $form,
-    'context' => $context,
-    'tplName' => $tplName,
-  ));*/
+    //load resources
+    Civi::resources()->addScriptFile('gov.nysenate.tags', 'js/page_manage_tags.js');
+    Civi::resources()->addStyleFile('gov.nysenate.tags', 'css/page_manage_tags.css');
+  }
 }

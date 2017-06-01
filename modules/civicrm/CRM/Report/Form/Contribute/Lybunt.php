@@ -248,6 +248,26 @@ class CRM_Report_Form_Contribute_Lybunt extends CRM_Report_Form {
         ),
       ),
     );
+    $this->_columns += array(
+      'civicrm_financial_trxn' => array(
+        'dao' => 'CRM_Financial_DAO_FinancialTrxn',
+        'fields' => array(
+          'card_type_id' => array(
+            'title' => ts('Credit Card Type'),
+            'dbAlias' => 'GROUP_CONCAT(financial_trxn_civireport.card_type_id SEPARATOR ",")',
+          ),
+        ),
+        'filters' => array(
+          'card_type_id' => array(
+            'title' => ts('Credit Card Type'),
+            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+            'options' => CRM_Financial_DAO_FinancialTrxn::buildOptions('card_type_id'),
+            'default' => NULL,
+            'type' => CRM_Utils_Type::T_STRING,
+          ),
+        ),
+      ),
+    );
 
     // If we have a campaign, build out the relevant elements
     if ($campaignEnabled && !empty($this->activeCampaigns)) {
@@ -358,6 +378,8 @@ class CRM_Report_Form_Contribute_Lybunt extends CRM_Report_Form {
       $this->selectivelyAddLocationTablesJoinsToFilterQuery();
     }
 
+    // for credit card type
+    $this->addFinancialTrxnFromClause();
   }
 
   /**
@@ -581,6 +603,7 @@ class CRM_Report_Form_Contribute_Lybunt extends CRM_Report_Form {
    */
   public function buildQuery($applyLimit = TRUE) {
     $this->buildGroupTempTable();
+    $this->buildPermissionClause();
     // Calling where & select before FROM allows us to build temp tables to use in from.
     $this->where();
     $this->select();
@@ -730,6 +753,11 @@ class CRM_Report_Form_Contribute_Lybunt extends CRM_Report_Form {
         if ($birthDate) {
           $rows[$rowNum]['civicrm_contact_birth_date'] = CRM_Utils_Date::customFormat($birthDate, '%Y%m%d');
         }
+        $entryFound = TRUE;
+      }
+
+      if (!empty($row['civicrm_financial_trxn_card_type_id'])) {
+        $rows[$rowNum]['civicrm_financial_trxn_card_type_id'] = $this->getLabels($row['civicrm_financial_trxn_card_type_id'], 'CRM_Financial_DAO_FinancialTrxn', 'card_type_id');
         $entryFound = TRUE;
       }
 

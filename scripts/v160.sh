@@ -96,9 +96,6 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
-## enable new nyss_reports module
-$drush $instance en nyss_reports -y
-
 ## disable various unused activity types
 echo "$prog: disable unused activity types"
 sql="
@@ -127,12 +124,27 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
+## 11074 set issue codes unselectable
+sql="
+  UPDATE civicrm_tag
+  SET is_selectable = 0
+  WHERE id = 291
+"
+$execSql $instance -c "$sql" -q
+
+## enable new nyss_reports module
+$drush $instance en nyss_reports -y
+
+## disable old modules
+$drush $instance en nyss_tags -y
+
 ## install new extension
-$drush $instance cvapi extension.install key=gov.nysenate.resources
 $drush $instance cvapi extension.install key=gov.nysenate.dao
-$drush $instance cvapi extension.install key=gov.nysenate.tagdemographics
-$drush $instance cvapi extension.install key=gov.nysenate.webintegration
 $drush $instance cvapi extension.install key=gov.nysenate.inbox
+$drush $instance cvapi extension.install key=gov.nysenate.resources
+$drush $instance cvapi extension.install key=gov.nysenate.tagdemographics
+$drush $instance cvapi extension.install key=gov.nysenate.tags
+$drush $instance cvapi extension.install key=gov.nysenate.webintegration
 
 ## update roles/perms
 echo "$prog: update roles and permissions"

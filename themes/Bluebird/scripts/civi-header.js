@@ -1,5 +1,6 @@
 var $ = jQuery.noConflict();
 $(document).ready(function() {
+  //find anything: add/remove class on focus/unfocus
   $("#civi_text_search").focus(function(){
     var defaultText = $(this).val();
     if(defaultText === 'enter any text'){
@@ -7,11 +8,26 @@ $(document).ready(function() {
       $(this).addClass('input-active');
     }
   });
-
   $("#civi_text_search").blur(function(){
     var defaultText = $(this).val();
     if(defaultText === ''){
       $(this).val('enter any text');
+      $(this).removeClass('input-active');
+    }
+  });
+
+  //quicksearch: add/remove class on focus/unfocus
+  $("#sort_name_navigation").focus(function(){
+    var defaultText = $(this).val();
+    if(defaultText === 'Name/Email'){
+      $(this).val('');
+      $(this).addClass('input-active');
+    }
+  });
+  $("#sort_name_navigation").blur(function(){
+    var defaultText = $(this).val();
+    if(defaultText === ''){
+      $(this).val('Name/Email');
       $(this).removeClass('input-active');
     }
   });
