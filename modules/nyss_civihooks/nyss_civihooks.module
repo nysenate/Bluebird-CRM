@@ -884,9 +884,8 @@ function nyss_civihooks_civicrm_navigationMenu(&$params) {
 function nyss_civihooks_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) {
   //Civi::log()->debug('alterTemplateFile', array('formName' => $formName));
 
-  $navigations = array();
-  CRM_Core_BAO_Navigation::buildNavigationTree($navigations, $parent = NULL, TRUE);
   $navigationString = NULL;
+  $navigations = CRM_Core_BAO_Navigation::buildNavigationTree();
 
   // run the Navigation  through a hook so users can modify it
   CRM_Utils_Hook::navigationMenu($navigations);
