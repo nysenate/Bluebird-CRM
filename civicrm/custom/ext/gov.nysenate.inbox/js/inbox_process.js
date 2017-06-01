@@ -5,19 +5,42 @@ CRM.$(function($) {
     CRM.api3('nyss_tags', 'savePosition', {value:e.val, contactId:contact_id}, false);
   });
 
-  var BBCID = 0;
-  var BBActionConst = 1;
-  var BBLoadTaglist = null;
+  (function($, _){
+    var entityID = null,
+      entityTable='civicrm_contact',
+      $form = $('form.CRM_NYSS_Inbox_Form_Process');
 
-  var tree = new TagTreeTag({
-    tree_container: cj('#issue-code-results'),
-    list_container: cj('.contactTagsList'),
-    filter_bar: cj('#issue-code-search'),
-    tag_trees: [291],
-    default_tree: 291,
-    auto_save: false,
-    entity_counts: false,
-    entity_table: 'civicrm_contact'
-  });
-  tree.load();
+    $(function() {
+      // Load js tree.
+      CRM.loadScript(CRM.config.resourceBase + 'bower_components/jstree/dist/jstree.min.js').done(function() {
+        $("#tagtree").jstree({
+          plugins : ['search', 'wholerow', 'checkbox'],
+          core: {
+            animation: 100,
+            themes: {
+              "theme": 'classic',
+              "dots": false,
+              "icons": false
+            }
+          },
+          'search': {
+            'case_insensitive' : true,
+            'show_only_matches': true
+          },
+          checkbox: {
+            three_state: false
+          }
+        })
+          .on('select_node.jstree deselect_node.jstree', function(e, selected) {
+            /*var id = selected.node.a_attr.id.replace('tag_', ''),
+              op = e.type === 'select_node' ? 'create' : 'delete';
+            CRM.api3('entity_tag', op, {entity_table: entityTable, entity_id: entityID, tag_id: id}, true);*/
+          });
+      });
+
+      $('input[name=filter_tag_tree]', '#Tag').on('keyup change', function() {
+        $("#tagtree").jstree(true).search($(this).val());
+      });
+    });
+  })(CRM.$, CRM._);
 });

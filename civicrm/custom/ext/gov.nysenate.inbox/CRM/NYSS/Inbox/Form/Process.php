@@ -59,8 +59,8 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
     ), FALSE);
 
     //tag tree
-    $tags = new CRM_Core_BAO_Tag();
-    $tree = $tags->getTree('civicrm_contact', TRUE);
+    /*$tags = new CRM_Core_BAO_Tag();
+    $tree = $tags->getTree('civicrm_contact', TRUE);*/
     $loadJsTree = CRM_Utils_Array::retrieveValueRecursive($tree, 'children');
     $this->assign('loadjsTree', FALSE);
     if (!empty($loadJsTree)) {
@@ -69,14 +69,30 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
         ->addStyleFile('civicrm', 'packages/jquery/plugins/jstree/themes/default/style.css', 0, 'html-header');
       $this->assign('loadjsTree', TRUE);
     }
-    $elements = array();
+    /*$elements = array();
     CRM_Contact_Form_Edit_TagsAndGroups::climbtree($this, $tree, $elements);
     $this->addGroup($elements, 'tag', 'Tag(s)', '<br />');
     $this->assign('tagCount', count($elements));
     $this->assign('tree', $tree);
     $this->assign('tag', $tree);
     $this->assign('entityTable', 'civicrm_contact');
-    $this->assign('allTags', CRM_Core_BAO_Tag::getTagsUsedFor('civicrm_contact', FALSE));
+    $this->assign('allTags', CRM_Core_BAO_Tag::getTagsUsedFor('civicrm_contact', FALSE));*/
+
+    // get the list of all the categories
+    $allTags = CRM_Core_BAO_Tag::getTagsUsedFor('civicrm_contact', FALSE);
+    foreach ($allTags as $tagID => $varValue) {
+      $tagAttribute = array(
+        'id' => "tag_{$tagID}",
+      );
+      $tagChk[$tagID] = $this->createElement('checkbox', $tagID, '', '', $tagAttribute);
+    }
+
+    $this->addGroup($tagChk, 'tagList', NULL, NULL, TRUE);
+
+    $tags = new CRM_Core_BAO_Tag();
+    $tree = $tags->getTree('civicrm_contact', TRUE);
+    $this->assign('tree', $tree);
+    $this->assign('allTags', $allTags);
 
     //edit activity form elements
     $staffGroupID = civicrm_api3('group', 'getvalue', array('name' => 'Office_Staff', 'return' => 'id'));
