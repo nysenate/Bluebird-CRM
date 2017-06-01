@@ -348,5 +348,8 @@ function tags_civicrm_pageRun(&$page) {
       }
     }
     $page->assign('tagsets', $tagSets);
+
+    //load js
+    Civi::resources()->addScriptFile('gov.nysenate.tags', 'js/page_manage_tags.js');
   }
 }
