@@ -1662,8 +1662,10 @@ function _buildSearchMenu($searchNavID) {
 
 
 //unlike other submenus, we retain the existing admin menu and extend it with some options
-function _extendAdminMenu(&$adminNav, $nyssBaseID)
-{
+function _extendAdminMenu(&$adminNav, $nyssBaseID) {
+  //reset admin perm
+  $adminNav['attributes']['permission'] = 'administer CiviCRM';
+
   $adminID = $adminNav['attributes']['navID'];
   $mailingCatID = CRM_Core_DAO::singleValueQuery("SELECT id FROM civicrm_option_group WHERE name = 'mailing_categories'");
   $adminNav['child'][$nyssBaseID] = array(
