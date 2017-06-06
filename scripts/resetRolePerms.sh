@@ -302,6 +302,7 @@ sql="
     (7, 'use text format 1', 'filter'),
     (7, 'view all contacts', 'civicrm'),
     (7, 'view my contact', 'civicrm'),
+    (7, 'manage tags', 'civicrm'),
 
     (8, 'access all custom data', 'civicrm'),
     (8, 'access CiviCRM', 'civicrm'),
@@ -332,7 +333,6 @@ sql="
     (9, 'administer district', 'nyss_civihooks'),
     (9, 'access inbox polling', 'nyss_civihooks'),
     (9, 'administer Reports', 'civicrm'),
-    (9, 'administer reserved tags', 'civicrm'),
     (9, 'administer users', 'user'),
     (9, 'assign roles', 'roleassign'),
     (9, 'delete activities', 'civicrm'),
@@ -374,6 +374,7 @@ sql="
     (9, 'view the administration theme', 'system'),
     (9, 'view my contact', 'civicrm'),
     (9, 'edit my contact', 'civicrm'),
+    (9, 'manage tags', 'civicrm'),
 
     (10, 'access all cases and activities', 'civicrm'),
     (10, 'access all custom data', 'civicrm'),
