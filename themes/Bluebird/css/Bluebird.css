@@ -1743,14 +1743,9 @@ ul.token-input-list-facebook {
 #Advanced .crm-form-block.crm-search-form-block {
   padding: 0;
 }
-
-/*these only impact advanced search dropdown*/
-#advanced-search-form .crm-submit-buttons {
-  width: 84px;
-}
-
-#advanced-search-form .crm-submit-buttons a {
-  margin-right: 0;
+/*11085*/
+#Advanced .tag-section label {
+  display: inline-block;
 }
 
 /* Hide a few things in case manage page */

@@ -1,3 +1,11 @@
+/*wrap block: 11083*/
+div.crm-unmatchedmessages-selector,
+div.crm-matchedmessages-selector {
+  padding: 4px;
+  border-radius: 4px;
+  background-color: white;
+}
+
 #crm-container h2.crm-title {
   margin-bottom: 30px;
 }
@@ -73,7 +81,6 @@
 }
 
 /*email highlighting*/
-
 .found {
   background: rgba(255,230,0, 0.5);
   border: 1px solid #C1C1C1;
