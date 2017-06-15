@@ -152,18 +152,17 @@ function mail_civicrm_navigationMenu(&$menu) {
   _mail_civix_navigationMenu($menu);
 } // */
 
-function mail_civicrm_alterAngular($angular) {
-  $angular->add(\Civi\Angular\ChangeSet::create('mychanges')
-    ->alterHtml('~/crmMailing/EditMailingCtrl/workflow.html', function(phpQueryObject $doc) {
-      $doc->find('[ng-form="crmMailingSubform"]')->attr('cat-stevens', 'ts(\'wild world\')');
-      $doc->find('.crm-group')->append(file_get_contents(__DIR__.'/html/mailing_options.html'));
-
-      //$opts = file_get_contents(__DIR__.'/html/mailing_options.html');
-      //Civi::log()->debug('mail_civicrm_alterAngular', array('options' => $opts));
-    })
-  );
-
-  /*$angular->add('~/crmMailing/BlockSummary.html', function(phpQueryObject $doc) {
-    $doc->find('.crm-group')->append(file_get_contents(__DIR__.'/html/mailing_options.html'));
-  });*/
+function mail_civicrm_alterAngular(\Civi\Angular\Manager $angular) {
+  $changeSet = \Civi\Angular\ChangeSet::create('inject_mailwords')
+    ->alterHtml('~/crmMailing/BlockSummary.html',
+      function (phpQueryObject $doc) {
+        $doc->find('.crm-group')->append('
+          <div crm-ui-field="{name: \'subform.mailwords\', title: ts(\'Category\')}">
+            <input crm-ui-id="subform.mailwords" class="crm-form-text" name="mailwords" ng-model="mailing.template_options.category">
+          </div>
+        ');
+      });
+  //template_option/ng-model *should* insert into template_options
+  //define as entities and handle in post hook
+  $angular->add($changeSet);
 }
