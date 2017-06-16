@@ -132,6 +132,14 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
+## 11111 - remove tag descriptions if identical with name
+sql="
+  UPDATE civicrm_tag
+  SET description = NULL
+  WHERE name = description;
+"
+$execSql $instance -c "$sql" -q
+
 ## enable new nyss_reports module
 $drush $instance en nyss_reports -y
 

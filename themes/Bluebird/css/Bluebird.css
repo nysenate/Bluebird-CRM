@@ -4044,7 +4044,7 @@ form.CRM_Tag_Form_Tag div.contact-tagset label {
   max-width: 380px;
 }
 /*edit: tags and groups fixes*/
-div#tagGroup table {
+/*div#tagGroup table {
   width: 100%
 }
 div#tagGroup table td {
@@ -4063,4 +4063,4 @@ div#tagGroup td span.label,
 div#tagGroup td .tag-section label {
   margin: 8px 0;
   font-size: 130%;
-}
+}*/

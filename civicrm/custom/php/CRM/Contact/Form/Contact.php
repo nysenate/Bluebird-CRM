@@ -1001,6 +1001,7 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
 
     if (array_key_exists('TagsAndGroups', $this->_editOptions)) {
       //add contact to tags
+      $params['tag'] = array_flip(explode(',', $params['tag'])); //NYSS 1111 CRM-20673
       CRM_Core_BAO_EntityTag::create($params['tag'], 'civicrm_contact', $params['contact_id']);
 
       //save free tags

@@ -23,6 +23,7 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
+{*NYSS 1111 CRM-20673*}
 {literal}
 <style>
   #tagtree .highlighted > span {
@@ -89,28 +90,34 @@
 {/if}
     <table class="form-layout-compressed{if $context EQ 'profile'} crm-profile-tagsandgroups{/if}">
       <tr>
-        {*NYSS 11072 add classes*}
+        {if !$type || $type eq 'tag'}
+          <td width="50%">
+            <span class="label">{if $title}{$form.tag.label}{/if}</span><br />
+            {$form.tag.html}
+            {include file="CRM/common/Tagset.tpl"}
+          </td>
+        {/if}
         {if !$type || $type eq 'group'}
-          <td class="tagsandgroups-groups">
+          <td width="50%">
             {if $groupElementType eq 'select'}
               <span class="label">{if $title}{$form.group.label}{/if}</span>
+              {$form.group.html}
+            {else}
+              {foreach key=key item=item from=$tagGroup.group}
+                <div class="group-wrapper">
+                  {$form.group.$key.html}
+                  {if $item.description}
+                    <div class="description">{$item.description}</div>
+                  {/if}
+                </div>
+              {/foreach}
             {/if}
-            {$form.group.html}
           </td>
-        {/if}
-        {if (!$type || $type eq 'tag') && $tree}
-          {*NYSS 11072 restructure layout*}
-          <td width="60%" class="tagsandgroups-tags">{if $title}<span class="label">{$form.tag.label}</span>{/if}
-            <div id="tagtree">
-              {include file="CRM/Contact/Form/Edit/Tagtree.tpl" level=1}
-            </div>
-            <div id="tagSets">
-              {include file="CRM/common/Tagset.tpl"}
-            </div>
-          </td>
-          {*<tr><td>{include file="CRM/common/Tagset.tpl"}</td></tr>*}
         {/if}
       </tr>
+      {if !$type || $type eq 'tag'}
+        <tr><td></td></tr>
+      {/if}
     </table>
 {if $title}
   </div>
