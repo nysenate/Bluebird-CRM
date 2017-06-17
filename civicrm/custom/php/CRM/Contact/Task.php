@@ -198,6 +198,17 @@ class CRM_Contact_Task {
           'result' => true
         );
       }
+
+      if (CRM_Contact_BAO_ContactType::isActive('Individual')) {
+        $label = CRM_Contact_BAO_ContactType::getLabel('individual');
+        self::$_tasks[self::INDIVIDUAL_CONTACTS] = array(
+          'title' => ts('Add relationship - to %1',
+            array(1 => $label)
+          ),
+          'class' => 'CRM_Contact_Form_Task_AddToIndividual',
+        );
+      }
+
       if (CRM_Contact_BAO_ContactType::isActive('Household')) {
         $label = CRM_Contact_BAO_ContactType::getLabel('household');
         self::$_tasks[self::HOUSEHOLD_CONTACTS] = array(

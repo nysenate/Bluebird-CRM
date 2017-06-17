@@ -3198,8 +3198,8 @@ WHERE  $smartGroupClause
           LEFT JOIN civicrm_tag {$tActTable}
             ON {$etActTable}.tag_id = {$tActTable}.id ";
 
-      $this->_where[$grouping][] = "({$tTable}.name $op '". $value . "' OR {$tCaseTable}.name $op '". $value . "' OR {$tActTable}.name $op '". $value . "')";
-      $this->_qill[$grouping][] = ts('Tag %1 %2 ', array(1 => $tagTypesText[2], 2 => $op)) . ' ' . $value;
+      $this->_where[$grouping][] = "({$tTable}.name $op '" . $value . "' OR {$tCaseTable}.name $op '" . $value . "' OR {$tActTable}.name $op '" . $value . "')";
+      $this->_qill[$grouping][] = ts('Tag %1 %2', array(1 => $tagTypesText[2], 2 => $op)) . ' ' . $value;
     }
     else {
       $etTable = "`civicrm_entity_tag-" . $value . "`";
@@ -6463,14 +6463,8 @@ AND   displayRelType.is_active = 1
    */
   public function convertGroupIDStringToLabelString(&$dao, $val) {
     $groupIDs = explode(',', $val);
-
-    // The pseudoConstant function does not actually cache.
-    static $allGroups;
-    if (!$allGroups) {
-      $allGroups = CRM_Core_PseudoConstant::group();
-    }
     // Note that groups that the user does not have permission to will be excluded (good).
-    $groups = array_intersect_key($allGroups, array_flip($groupIDs));
+    $groups = array_intersect_key(CRM_Core_PseudoConstant::group(), array_flip($groupIDs));
     return implode(', ', $groups);
 
   }
