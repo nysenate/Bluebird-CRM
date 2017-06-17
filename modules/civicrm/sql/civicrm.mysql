@@ -774,6 +774,9 @@ CREATE TABLE `civicrm_contact` (
   ,     INDEX `UI_gender`(
         gender_id
   )
+  ,     INDEX `index_is_deceased`(
+        is_deceased
+  )
   ,     INDEX `index_household_name`(
         household_name
   )
