@@ -94,10 +94,12 @@ class CRM_Contact_Task {
         self::TAG_CONTACTS => array(
           'title' => ts('Tag - add to contacts'),
           'class' => 'CRM_Contact_Form_Task_AddToTag',
+          'url' => 'civicrm/task/add-to-tag',
         ),
         self::REMOVE_TAGS => array(
           'title' => ts('Tag - remove from contacts'),
           'class' => 'CRM_Contact_Form_Task_RemoveFromTag',
+          'url' => 'civicrm/task/remove-from-tag',
         ),
         self::EXPORT_CONTACTS => array(
           'title' => ts('Export contacts'),
@@ -111,11 +113,13 @@ class CRM_Contact_Task {
           'title' => ts('Email - send now (to 50 or less)'),
           'class' => 'CRM_Contact_Form_Task_Email',
           'result' => TRUE,
+          'url' => 'civicrm/task/send-email',
         ),
         self::DELETE_CONTACTS => array(
           'title' => ts('Delete contacts'),
           'class' => 'CRM_Contact_Form_Task_Delete',
           'result' => FALSE,
+          'url' => 'civicrm/task/delete-contact',
         ),
         self::RECORD_CONTACTS => array(
           'title' => ts('Add activity'),
@@ -140,6 +144,7 @@ class CRM_Contact_Task {
           'title' => ts('Mailing labels - print'),
           'class' => 'CRM_Contact_Form_Task_Label',
           'result' => TRUE,
+          'url' => 'civicrm/task/make-mailing-label',
         ),
         self::BATCH_UPDATE => array(
           'title' => ts('Update multiple contacts'),
@@ -148,19 +153,23 @@ class CRM_Contact_Task {
             'CRM_Contact_Form_Task_Batch',
           ),
           'result' => TRUE,
+          'url' => 'civicrm/task/pick-profile',
         ),
         self::PRINT_FOR_CONTACTS => array(
           'title' => ts('Print/merge document'),
           'class' => 'CRM_Contact_Form_Task_PDF',
           'result' => TRUE,
+          'url' => 'civicrm/task/print-document',
         ),
         self::EMAIL_UNHOLD => array(
           'title' => ts('Email - unhold addresses'),
           'class' => 'CRM_Contact_Form_Task_Unhold',
+          'url' => 'civicrm/task/unhold-email',
         ),
         self::COMMUNICATION_PREFS => array(
           'title' => ts('Communication preferences - alter'),
           'class' => 'CRM_Contact_Form_Task_AlterPreferences',
+          'url' => 'civicrm/task/alter-contact-preference',
         ),
         //NYSS - add print production export
         100 => array('title' => ts('Export for Print Production'),
@@ -409,6 +418,30 @@ class CRM_Contact_Task {
       CRM_Utils_Array::value('class', self::$_tasks[$value]),
       CRM_Utils_Array::value('result', self::$_tasks[$value]),
     );
+  }
+
+  /**
+   * Function to return the task information on basis of provided task's form name
+   *
+   * @param string $className
+   *
+   * @return array
+   */
+  public static function getTaskAndTitleByClass($className) {
+    self::initTasks();
+
+    foreach (self::$_tasks as $task => $value) {
+      if (!empty($value['url']) && (
+        (is_array($value['class']) && in_array($className, $value['class'])) ||
+         ($value['class'] == $className)
+        )
+      ) {
+        return array(
+          $task,
+          CRM_Utils_Array::value('title', $value),
+        );
+      }
+    }
   }
 
 }

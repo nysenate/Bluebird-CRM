@@ -534,13 +534,24 @@ WHERE  mailing_id = %1
       $params = array(1 => array($mailing_id, 'Integer'));
       CRM_Core_DAO::executeQuery($sql, $params);
 
+      $selectClause = array('%1', 'i.contact_id', "i.{$tempColumn}");
+      $select = "SELECT " . implode(', ', $selectClause);
+
       //NYSS out of district handling
       $exclude_ood = CRM_Core_DAO::singleValueQuery("SELECT exclude_ood FROM civicrm_mailing WHERE id = $mailing_id");
       $all_emails  = CRM_Core_DAO::singleValueQuery("SELECT all_emails FROM civicrm_mailing WHERE id = $mailing_id");
 
       // CRM-3975
-      //NYSS 4879 -- if not exclude_ood, process dupes here
       $groupBy = $groupJoin = '';
+      $orderBy = "i.contact_id, i.{$tempColumn}";
+      if ($dedupeEmail) {
+        $orderBy = "MIN(i.contact_id), MIN(i.{$tempColumn})";
+        $groupJoin = " INNER JOIN civicrm_email e ON e.id = i.email_id";
+        $groupBy = " GROUP BY e.email ";
+        $select = CRM_Contact_BAO_Query::appendAnyValueToSelect($selectClause, 'e.email');
+      }
+
+      //NYSS 4879 -- if not exclude_ood, process dupes here
       if ( $dedupeEmail && !$exclude_ood ) {
         $groupJoin = " INNER JOIN civicrm_email e ON e.id = i.email_id";
         $groupBy = " GROUP BY e.email, i.contact_id ";
@@ -548,14 +559,14 @@ WHERE  mailing_id = %1
 
       $sql = "
 INSERT INTO civicrm_mailing_recipients ( mailing_id, contact_id, {$tempColumn} )
-SELECT %1, i.contact_id, i.{$tempColumn}
+{$select}
 FROM       civicrm_contact contact_a
 INNER JOIN I_$job_id i ON contact_a.id = i.contact_id
            $groupJoin
            {$aclFrom}
            {$aclWhere}
            $groupBy
-ORDER BY   i.contact_id, i.{$tempColumn}
+ORDER BY   {$orderBy}
 ";
 
       CRM_Core_DAO::executeQuery($sql, $params);
@@ -1967,8 +1978,9 @@ ORDER BY   civicrm_email.is_bulkmail DESC
       'header' => ts('Header'),
       'footer' => ts('Footer'),
       'reply' => ts('Reply'),
-      'unsubscribe' => ts('Unsubscribe'),
       'optout' => ts('Opt-Out'),
+      'resubscribe' => ts('Resubscribe'),
+      'unsubscribe' => ts('Unsubscribe'),
     );
     foreach (array_keys($components) as $type) {
       $query[] = "SELECT          {$t['component']}.name as name,
