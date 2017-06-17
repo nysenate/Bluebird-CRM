@@ -579,7 +579,7 @@ LEFT JOIN civicrm_option_group aog ON aog.name='activity_type'
       $condition .= " AND case_relationship.contact_id_b = {$userID} ";
     }
     if ($type == 'upcoming' || $type == 'any') {
-      $closedId = CRM_Core_OptionGroup::getValue('case_status', 'Closed', 'name');
+      $closedId = CRM_Core_PseudoConstant::getKey('CRM_Case_BAO_Case', 'case_status_id', 'Closed');
       $condition .= "
 AND civicrm_case.status_id != $closedId";
     }
@@ -1019,18 +1019,6 @@ SELECT case_status.label AS case_status, status_id, civicrm_case_type.title AS c
     $deleteUrl = "{$url}&action=delete{$contextUrl}";
     $restoreUrl = "{$url}&action=renew{$contextUrl}";
     $viewTitle = ts('View activity');
-    $statusTitle = ts('Edit Status');
-
-    $emailActivityTypeIDs = array(
-      'Email' => CRM_Core_OptionGroup::getValue('activity_type',
-        'Email',
-        'name'
-      ),
-      'Inbound Email' => CRM_Core_OptionGroup::getValue('activity_type',
-        'Inbound Email',
-        'name'
-      ),
-    );
 
     $emailActivityTypeIDs = array(
       'Email' => CRM_Core_OptionGroup::getValue('activity_type',
@@ -2991,7 +2979,7 @@ WHERE id IN (' . implode(',', $copiedActivityIds) . ')';
    */
   public static function createCaseViewsQuery($section = 'upcoming') {
     $sql = "";
-    $scheduled_id = CRM_Core_OptionGroup::getValue('activity_status', 'Scheduled', 'name');
+    $scheduled_id = CRM_Core_Pseudoconstant::getKey('CRM_Activity_BAO_Activity', 'activity_status_id', 'Scheduled');
     switch ($section) {
       case 'upcoming':
         $sql = "CREATE OR REPLACE VIEW `civicrm_view_case_activity_upcoming`

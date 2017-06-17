@@ -265,9 +265,10 @@ class CRM_Event_Form_Participant extends CRM_Contribute_Form_AbstractEditPayment
     }
 
     // get the option value for custom data type
-    $this->_roleCustomDataTypeID = CRM_Core_OptionGroup::getValue('custom_data_type', 'ParticipantRole', 'name');
-    $this->_eventNameCustomDataTypeID = CRM_Core_OptionGroup::getValue('custom_data_type', 'ParticipantEventName', 'name');
-    $this->_eventTypeCustomDataTypeID = CRM_Core_OptionGroup::getValue('custom_data_type', 'ParticipantEventType', 'name');
+    $customDataType = CRM_Core_OptionGroup::values('custom_data_type', FALSE, FALSE, FALSE, NULL, 'name');
+    $this->_roleCustomDataTypeID = array_search('ParticipantRole', $customDataType);
+    $this->_eventNameCustomDataTypeID = array_search('ParticipantEventName', $customDataType);
+    $this->_eventTypeCustomDataTypeID = array_search('ParticipantEventType', $customDataType);
     $this->assign('roleCustomDataTypeID', $this->_roleCustomDataTypeID);
     $this->assign('eventNameCustomDataTypeID', $this->_eventNameCustomDataTypeID);
     $this->assign('eventTypeCustomDataTypeID', $this->_eventTypeCustomDataTypeID);
@@ -477,8 +478,8 @@ class CRM_Event_Form_Participant extends CRM_Contribute_Form_AbstractEditPayment
 
     //setting default register date
     if ($this->_action == CRM_Core_Action::ADD) {
-      $statuses = array_flip($this->_participantStatuses);
-      $defaults[$this->_id]['status_id'] = CRM_Utils_Array::value(ts('Registered'), $statuses);
+      $statuses = array_flip(CRM_Event_PseudoConstant::participantStatus());
+      $defaults[$this->_id]['status_id'] = CRM_Utils_Array::value('Registered', $statuses);
       if (!empty($defaults[$this->_id]['event_id'])) {
         $contributionTypeId = CRM_Core_DAO::getFieldValue('CRM_Event_DAO_Event',
           $defaults[$this->_id]['event_id'],
@@ -958,7 +959,7 @@ class CRM_Event_Form_Participant extends CRM_Contribute_Form_AbstractEditPayment
       $additionalParticipantDetails = array();
       if (CRM_Contribute_BAO_Contribution::checkContributeSettings('deferred_revenue_enabled')) {
         $eventStartDate = CRM_Core_DAO::getFieldValue('CRM_Event_DAO_Event', $this->_eventId, 'start_date');
-        if ($eventStartDate) {
+        if (strtotime($eventStartDate) > strtotime(date('Ymt'))) {
           $contributionParams['revenue_recognition_date'] = date('Ymd', strtotime($eventStartDate));
         }
       }

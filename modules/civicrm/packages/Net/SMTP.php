@@ -707,7 +707,7 @@ class Net_SMTP
 
         if (is_array($callback)) {
             if (!is_object($callback[0]) || !is_string($callback[1]))
-                return PEAR::raiseError('Bad mMethod callback array');
+                return PEAR::raiseError('Bad method callback array');
         }
 
         if ($prepend) {

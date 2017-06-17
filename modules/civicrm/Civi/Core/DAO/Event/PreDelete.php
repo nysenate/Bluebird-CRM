@@ -1,4 +1,5 @@
-{*
+<?php
+/*
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
@@ -22,45 +23,25 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*}
-<div class="crm-block crm-form-block crm-event-savesearch-form-block">
-<fieldset>
-    <legend>{ts}Smart Group{/ts}</legend>
+ */
 
-  <div class="help">
-    <p>{ts}This smart group will stay up-to-date with all contacts who meet the search criteria.{/ts}</p>
-    {if !empty($partiallySelected)}
-      <p>{ts}NOTE: Contacts selected on the search results are not relevant here; all contacts that meet the following criteria will be in the group.{/ts}</p>
-    {/if}
-    {if !empty($qill[0])}
-      <div id="search-status">
-        <ul>
-          {foreach from=$qill[0] item=criteria}
-            <li>{$criteria}</li>
-          {/foreach}
-        </ul>
-      </div>
-    {/if}
-    <p>{docURL page='user/organising-your-data/smart-groups/'}</p>
-  </div>
+namespace Civi\Core\DAO\Event;
 
- <table class="form-layout-compressed">
-   <tr class="crm-event-savesearch-form-block-title">
-      <td class="label">{$form.title.label}</td>
-      <td>{$form.title.html}</td>
-   </tr>
-   <tr class="crm-event-savesearch-form-block-description">
-      <td class="label">{$form.description.label}</td>
-      <td>{$form.description.html}</td>
-   </tr>
-   <tr>
-      <td colspan="2" class="label">{include file="CRM/Event/Form/Task.tpl"}</td>
-   </tr>
-   <tr>
-      <td colspan="2">{include file="CRM/common/formButtons.tpl" location="bottom"}</td>
-   </tr>
-</table>
+/**
+ * Class PreDelete
+ * @package Civi\Core\DAO\Event
+ */
+class PreDelete extends \Symfony\Component\EventDispatcher\Event {
 
-</fieldset>
-</div>
+  /**
+   * @var DAO Object
+   */
+  public $object;
 
+  /**
+   * @param $object
+   */
+  public function __construct($object) {
+    $this->object = $object;
+  }
+}
