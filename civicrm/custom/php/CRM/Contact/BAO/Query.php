@@ -5681,19 +5681,10 @@ SELECT COUNT( conts.total_amount ) as cancel_count,
 
       case 'IN':
       case 'NOT IN':
-        //NYSS comment out standard
-        // I feel like this would be escaped properly if passed through $queryString = CRM_Core_DAO::createSqlFilter.
-        /*if (!empty($value) && (!is_array($value) || !array_key_exists($op, $value))) {
-          $value = array($op => (array) $value);
-        }*/
-
         //NYSS support multiple values for some fields
         //Civi::log()->debug('buildClause', array('dataType' => $dataType, 'value' => $value));
         if (isset($dataType)) {
-          if (is_array($value)) {
-            $values = $value;
-          }
-          else {
+          if (!is_array($value)) {
             $value = CRM_Utils_Type::escape($value, "String");
             $values = explode('[:comma:]', $value);
             //NYSS - type is passed as nyss_String or nyss_Integer
@@ -5702,15 +5693,21 @@ SELECT COUNT( conts.total_amount ) as cancel_count,
               $values = array_map('trim', explode(',', $value));
               $dataType = str_replace('nyss_', '', $dataType); //return to expected format
             }
-          }
 
-          foreach ($values as &$v) {
-            $v = "'{$v}'";
+            foreach ($values as &$v) {
+              $v = "'{$v}'";
+            }
+            $value = "(" . implode($values, ",") . ")";
+            //$value = array($op => (array) $values);
+
+            return "$clause $value";
           }
-          $value = "(" . implode($values, ",") . ")";
-          //$value = array($op => (array) $values);
         }
-        return "$clause $value";
+
+        // I feel like this would be escaped properly if passed through $queryString = CRM_Core_DAO::createSqlFilter.
+        if (!empty($value) && (!is_array($value) || !array_key_exists($op, $value))) {
+          $value = array($op => (array) $value);
+        }
 
       default:
         if (empty($dataType)) {
