@@ -2133,6 +2133,7 @@ WHERE      activity.id IN ($activityIds)";
     $id = CRM_Core_Session::getLoggedInContactID();
     if ($id) {
       $activityParams['source_contact_id'] = $id;
+      $activityParams['target_contact_id'][] = $activity->contact_id;
     }
 
     // CRM-14945
@@ -2141,7 +2142,7 @@ WHERE      activity.id IN ($activityIds)";
     }
     //CRM-4027
     if ($targetContactID) {
-      $activityParams['target_contact_id'] = $targetContactID;
+      $activityParams['target_contact_id'][] = $targetContactID;
     }
     // @todo - use api - remove lots of wrangling above. Remove deprecated fatal & let form layer
     // deal with any exceptions.
