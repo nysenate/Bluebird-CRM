@@ -61,6 +61,7 @@ class CRM_Contact_Task {
     RESTORE = 23,
     DELETE_PERMANENTLY = 24,
     COMMUNICATION_PREFS = 25,
+    INDIVIDUAL_CONTACTS = 26,
     EXPORT_PRINTPROD = 100, //NYSS export print production task
     EXPORT_DISTRICT = 101; //NYSS export district merger/purge task
 
