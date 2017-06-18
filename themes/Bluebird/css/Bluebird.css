@@ -4055,3 +4055,10 @@ div#tagGroup label {
 div#tagGroup div.select2-container {
   width: 100% !important;
 }
+
+/*allow select2 widgets to expand*/
+div.crm-container.select2-drop-multi {
+  width: auto !important;
+  max-width: 500px;
+  border-top: 1px solid #aaa;
+}
