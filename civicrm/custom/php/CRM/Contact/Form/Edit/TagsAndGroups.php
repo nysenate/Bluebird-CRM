@@ -128,7 +128,7 @@ class CRM_Contact_Form_Edit_TagsAndGroups {
 
         if ($groupElementType == 'select' && !empty($groupsOptions)) {
           $form->add('select', $fName, $groupName, $groupsOptions, FALSE,
-            array('id' => $fName, 'multiple' => 'multiple', 'class' => 'crm-select2', 'style' => 'width: 100%')
+            array('id' => $fName, 'multiple' => 'multiple', 'class' => 'crm-select2 twenty')
           );
           $form->assign('groupCount', count($groupsOptions));
         }
@@ -148,13 +148,13 @@ class CRM_Contact_Form_Edit_TagsAndGroups {
       $tags = CRM_Core_BAO_Tag::getColorTags('civicrm_contact');
 
       if (!empty($tags)) {
-        $form->add('select2', 'tag', ts('Tag(s)'), $tags, FALSE, array('class' => 'huge', 'placeholder' => ts('- select -'), 'multiple' => TRUE, 'style' => 'width: 100%;'));
+        $form->add('select2', 'tag', ts('Tag(s)'), $tags, FALSE, array('class' => 'huge', 'placeholder' => ts('- select -'), 'multiple' => TRUE));
       }
-    }
 
-    // build tag widget
-    $parentNames = CRM_Core_BAO_Tag::getTagSet('civicrm_contact');
-    CRM_Core_Form_Tag::buildQuickForm($form, $parentNames, 'civicrm_contact', $contactId, FALSE, TRUE);
+      // build tag widget
+      $parentNames = CRM_Core_BAO_Tag::getTagSet('civicrm_contact');
+      CRM_Core_Form_Tag::buildQuickForm($form, $parentNames, 'civicrm_contact', $contactId, FALSE, TRUE);
+    }
     $form->assign('tagGroup', $form->_tagGroup);
   }
 
@@ -195,7 +195,6 @@ class CRM_Contact_Form_Edit_TagsAndGroups {
 
     if ($type & self::TAG) {
       $defaults['tag'] = implode(',', CRM_Core_BAO_EntityTag::getTag($id, 'civicrm_contact'));
-      CRM_Core_Error::debug_var('tag', $defaults['tag']);
     }
   }
 

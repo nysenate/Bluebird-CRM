@@ -221,6 +221,12 @@ function tags_civicrm_buildForm($formName, &$form) {
       $legPosField =& $form->getElement('contact_taglist[292]');
       $legPosField->_attributes['data-create-links'] = false;
     }
+
+    //11111
+    if ($form->elementExists('tag')) {
+      $issueCodes =& $form->getElement('tag');
+      $issueCodes->_label = 'Issue Codes';
+    }
   }
 
   //Construct some arrays and values to be passed to the tag tab

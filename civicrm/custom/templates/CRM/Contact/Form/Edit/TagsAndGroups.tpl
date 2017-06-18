@@ -24,65 +24,6 @@
  +--------------------------------------------------------------------+
 *}
 {*NYSS 1111 CRM-20673*}
-{literal}
-<style>
-  #tagtree .highlighted > span {
-    background-color: #fefca6;
-  }
-  #tagtree .helpicon ins {
-    display: none;
-  }
-  #tagtree ins.jstree-icon {
-    cursor: pointer;
-  }
-</style>
-<script type="text/javascript">
-  (function($, _){{/literal}
-    var entityID='{$entityID}',
-      entityTable='{$entityTable}',
-      $form = $('form.{$form.formClass}');
-    {literal}
-
-    $(function() {
-      function highlightSelected() {
-        $("ul input:not(:checked)", '#tagtree').each(function () {
-          $(this).closest("li").removeClass('highlighted');
-        });
-        $("ul input:checked", '#tagtree').each(function () {
-          $(this).parents("li[id^=tag]").addClass('highlighted');
-        });
-      }
-      highlightSelected();
-
-      $("#tagtree input").change(function(){
-        highlightSelected();
-      });
-
-      var childTag = "{/literal}{$loadjsTree}{literal}";
-      if (childTag) {
-        //load js tree.
-        $("#tagtree").jstree({
-          plugins : ["themes", "html_data"],
-          themes: {
-            "theme": 'classic',
-            "dots": false,
-            "icons": false,
-            "url": CRM.config.resourceBase + 'packages/jquery/plugins/jstree/themes/classic/style.css'
-          }
-        });
-      }
-	  {/literal}
-      {if !empty($permission) && $permission neq 'edit'}
-        {literal}
-          $("#tagtree input").prop('disabled', true);
-        {/literal}
-      {/if}
-      {literal}
-    });
-  })(CRM.$, CRM._);
-  {/literal}
-</script>
-
 {if $title}
 <div class="crm-accordion-wrapper crm-tagGroup-accordion collapsed">
   <div class="crm-accordion-header">{$title}</div>
@@ -91,17 +32,23 @@
     <table class="form-layout-compressed{if $context EQ 'profile'} crm-profile-tagsandgroups{/if}">
       <tr>
         {if !$type || $type eq 'tag'}
-          <td width="50%">
-            <span class="label">{if $title}{$form.tag.label}{/if}</span><br />
-            {$form.tag.html}
-            {include file="CRM/common/Tagset.tpl"}
+          <td>
+            <div class="crm-section tag-section">
+              {if $title}{$form.tag.label}{/if}
+              {$form.tag.html}
+            </div>
+            {if $context NEQ 'profile'}
+              {include file="CRM/common/Tagset.tpl"}
+            {/if}
           </td>
         {/if}
         {if !$type || $type eq 'group'}
-          <td width="50%">
+          <td>
             {if $groupElementType eq 'select'}
-              <span class="label">{if $title}{$form.group.label}{/if}</span>
+              <div class="crm-section group-section">
+              {if $title}{$form.group.label}{/if}
               {$form.group.html}
+            </div>
             {else}
               {foreach key=key item=item from=$tagGroup.group}
                 <div class="group-wrapper">
@@ -115,9 +62,6 @@
           </td>
         {/if}
       </tr>
-      {if !$type || $type eq 'tag'}
-        <tr><td></td></tr>
-      {/if}
     </table>
 {if $title}
   </div>

@@ -4044,23 +4044,14 @@ form.CRM_Tag_Form_Tag div.contact-tagset label {
   max-width: 380px;
 }
 /*edit: tags and groups fixes*/
-/*div#tagGroup table {
-  width: 100%
-}
-div#tagGroup table td {
+div#tagGroup td {
   vertical-align: top;
+  width: 50%;
 }
-div#tagGroup td span.label,
-div#tagGroup td .tag-section label,
-div#tagGroup td div.select2-container,
-div#tagGroup td div#tagtree,
-div#tagGroup td div#tagSets {
-  float: left;
-  clear: left;
+div#tagGroup label {
+  display: block;
+  width: 100%;
+}
+div#tagGroup div.select2-container {
   width: 100% !important;
 }
-div#tagGroup td span.label,
-div#tagGroup td .tag-section label {
-  margin: 8px 0;
-  font-size: 130%;
-}*/
