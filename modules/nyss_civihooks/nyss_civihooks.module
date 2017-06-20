@@ -315,6 +315,22 @@ function nyss_civihooks_civicrm_buildForm($formName, &$form) {
       $form->removeElement('uf_user');
     }
 
+    //11138 remove activity test
+    if ($form->elementExists('activity_test')) {
+      $form->removeElement('activity_test');
+      CRM_Core_Resources::singleton()->addStyle('a.helpicon[title="Test Records Help"] { display: none; }');
+    }
+
+    //11137 default open location panel
+    CRM_Core_Resources::singleton()->addScript('$("div.crm-location-accordion").removeClass("collapsed");');
+
+    //11134 change tag label text; remove issue codes from list
+    if ($form->elementExists('contact_tags')) {
+      $contactTags =& $form->getElement('contact_tags');
+      unset($contactTags->_options[0]);
+      CRM_Core_Resources::singleton()->addScript('$("select#contact_tags").prev("label").text("Issue Codes")');
+    }
+
     //don't set US as default country in advanced search or contacts with no address are excluded
     $defaults['country'] = '';
 

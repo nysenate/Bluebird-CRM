@@ -152,8 +152,76 @@ function mail_civicrm_navigationMenu(&$menu) {
   _mail_civix_navigationMenu($menu);
 } // */
 
-function mail_civicrm_angularPartials(\Civi\Angular\HtmlFilters $filters) {
-  $filters->add('~/crmMailing/BlockSummary.html', function(phpQueryObject $doc){
-    $doc->find('.crm-group')->append(file_get_contents(__DIR__.'/html/mailing_options.html'));
-  });
+//template_option/ng-model *should* insert into template_options
+//define as entities and handle in post hook
+function mail_civicrm_alterAngular(\Civi\Angular\Manager $angular) {
+  //inject mailing form options
+  $changeSet = \Civi\Angular\ChangeSet::create('inject_options')
+    ->alterHtml('~/crmMailing/BlockMailing.html', '_mail_alterMailingBlock');
+  $angular->add($changeSet);
+
+  //inject wizard
+  $changeSet = \Civi\Angular\ChangeSet::create('inject_wizard')
+    ->alterHtml('~/crmMailing/EditMailingCtrl/workflow.html', '_mail_alterMailingWizard');
+  $angular->add($changeSet);
+}
+
+function mail_civicrm_pageRun(&$page) {
+  //Civi::log()->debug('mail_civicrm_pageRun', array('page' => $page));
+
+  //11038
+  if (is_a($page, 'Civi\Angular\Page\Main')) {
+    CRM_Core_Resources::singleton()->addStyleFile('gov.nysenate.mail', 'css/mail.css');
+  }
+}
+
+/**
+ * @param phpQueryObject $doc
+ *
+ * construct custom wizard html
+ */
+function _mail_alterMailingWizard(phpQueryObject $doc) {
+  $extDir = CRM_Core_Resources::singleton()->getPath('gov.nysenate.mail');
+  $html = file_get_contents($extDir.'/html/workflow.html');
+  $doc->find('div[ng-form=crmMailingSubform]')->html($html);
+}
+
+/**
+ * @param phpQueryObject $doc
+ *
+ * inject custom fields
+ */
+function _mail_alterMailingBlock(phpQueryObject $doc) {
+  //NYSS 5581 - mailing category options
+  $catOptions = "<option value=''>- select -</option>";
+  $opts = CRM_Core_DAO::executeQuery("
+    SELECT ov.label, ov.value
+    FROM civicrm_option_value ov
+    JOIN civicrm_option_group og
+      ON ov.option_group_id = og.id
+      AND og.name = 'mailing_categories'
+    ORDER BY ov.label
+  ");
+  while ($opts->fetch()) {
+    $catOptions .= "<option value='{$opts->value}'>{$opts->label}</option>";
+  }
+
+  $doc->find('.crm-group')->append('
+    <div crm-ui-field="{name: \'subform.nyss\', title: \'Mailing Category\', help: hs(\'category\')}">
+      <select 
+        crm-ui-id="subform.nyss" 
+        crm-ui-select="{dropdownAutoWidth : true, allowClear: true, placeholder: ts(\'Category\')}"
+        name="category" 
+        ng-model="mailing.template_options.category"
+      >'.$catOptions.'</select>
+    </div>
+    <div crm-ui-field="{name: \'subform.nyss\', title: \'All Contacts?\', help: hs(\'all-emails\')}">
+      <input
+        type="checkbox"
+        crm-ui-id="subform.nyss"
+        name="all_emails" 
+        ng-model="mailing.template_options.all_emails"
+      >
+    </div>
+  ');
 }

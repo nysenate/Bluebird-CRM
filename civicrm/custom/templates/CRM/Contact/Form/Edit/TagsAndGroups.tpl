@@ -23,65 +23,7 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-{literal}
-<style>
-  #tagtree .highlighted > span {
-    background-color: #fefca6;
-  }
-  #tagtree .helpicon ins {
-    display: none;
-  }
-  #tagtree ins.jstree-icon {
-    cursor: pointer;
-  }
-</style>
-<script type="text/javascript">
-  (function($, _){{/literal}
-    var entityID='{$entityID}',
-      entityTable='{$entityTable}',
-      $form = $('form.{$form.formClass}');
-    {literal}
-
-    $(function() {
-      function highlightSelected() {
-        $("ul input:not(:checked)", '#tagtree').each(function () {
-          $(this).closest("li").removeClass('highlighted');
-        });
-        $("ul input:checked", '#tagtree').each(function () {
-          $(this).parents("li[id^=tag]").addClass('highlighted');
-        });
-      }
-      highlightSelected();
-
-      $("#tagtree input").change(function(){
-        highlightSelected();
-      });
-
-      var childTag = "{/literal}{$loadjsTree}{literal}";
-      if (childTag) {
-        //load js tree.
-        $("#tagtree").jstree({
-          plugins : ["themes", "html_data"],
-          themes: {
-            "theme": 'classic',
-            "dots": false,
-            "icons": false,
-            "url": CRM.config.resourceBase + 'packages/jquery/plugins/jstree/themes/classic/style.css'
-          }
-        });
-      }
-	  {/literal}
-      {if !empty($permission) && $permission neq 'edit'}
-        {literal}
-          $("#tagtree input").prop('disabled', true);
-        {/literal}
-      {/if}
-      {literal}
-    });
-  })(CRM.$, CRM._);
-  {/literal}
-</script>
-
+{*NYSS 1111 CRM-20673*}
 {if $title}
 <div class="crm-accordion-wrapper crm-tagGroup-accordion collapsed">
   <div class="crm-accordion-header">{$title}</div>
@@ -89,26 +31,35 @@
 {/if}
     <table class="form-layout-compressed{if $context EQ 'profile'} crm-profile-tagsandgroups{/if}">
       <tr>
-        {*NYSS 11072 add classes*}
-        {if !$type || $type eq 'group'}
-          <td class="tagsandgroups-groups">
-            {if $groupElementType eq 'select'}
-              <span class="label">{if $title}{$form.group.label}{/if}</span>
+        {if !$type || $type eq 'tag'}
+          <td>
+            <div class="crm-section tag-section">
+              {if $title}{$form.tag.label}{/if}
+              {$form.tag.html}
+            </div>
+            {if $context NEQ 'profile'}
+              {include file="CRM/common/Tagset.tpl"}
             {/if}
-            {$form.group.html}
           </td>
         {/if}
-        {if (!$type || $type eq 'tag') && $tree}
-          {*NYSS 11072 restructure layout*}
-          <td width="60%" class="tagsandgroups-tags">{if $title}<span class="label">{$form.tag.label}</span>{/if}
-            <div id="tagtree">
-              {include file="CRM/Contact/Form/Edit/Tagtree.tpl" level=1}
+        {if !$type || $type eq 'group'}
+          <td>
+            {if $groupElementType eq 'select'}
+              <div class="crm-section group-section">
+              {if $title}{$form.group.label}{/if}
+              {$form.group.html}
             </div>
-            <div id="tagSets">
-              {include file="CRM/common/Tagset.tpl"}
-            </div>
+            {else}
+              {foreach key=key item=item from=$tagGroup.group}
+                <div class="group-wrapper">
+                  {$form.group.$key.html}
+                  {if $item.description}
+                    <div class="description">{$item.description}</div>
+                  {/if}
+                </div>
+              {/foreach}
+            {/if}
           </td>
-          {*<tr><td>{include file="CRM/common/Tagset.tpl"}</td></tr>*}
         {/if}
       </tr>
     </table>

@@ -166,28 +166,30 @@ class CRM_Report_Form_Mailing_Opened extends CRM_Report_Form {
       ),
       'grouping' => 'contact-fields',
     );
-    
-    //NYSS 4893
-    $this->_columns['civicrm_event_opened']  = array( 
-      'dao'=> 'CRM_Mailing_Event_DAO_Opened',
-      'fields'=> array(
-        //NYSS 7196
+
+    $this->_columns['civicrm_phone'] = array(
+      'dao' => 'CRM_Core_DAO_Phone',
+      'fields' => array('phone' => NULL),
+      'grouping' => 'contact-fields',
+    );
+
+    $this->_columns['civicrm_mailing_event_opened'] = array(
+      'dao' => 'CRM_Mailing_Event_DAO_Opened',
+      'fields' => array(
         'id' => array(
           'required' => TRUE,
           'no_display' => TRUE,
         ),
-        //NYSS 4893
         'time_stamp' => array(
           'title' => ts('Open Date'),
-          //'type' => CRM_Utils_Type::T_DATE,
-          'default' => true,
+          'default' => TRUE,
         ),
       ),
       'filters' => array(
         'time_stamp' => array(
           'title' => ts('Open Date'),
           'operatorType' => CRM_Report_Form::OP_DATE,
-          'type'=> CRM_Utils_Type::T_DATE,
+          'type' => CRM_Utils_Type::T_DATE,
         ),
         //NYSS 10954
         'unique_opens' => array(
@@ -198,16 +200,12 @@ class CRM_Report_Form_Mailing_Opened extends CRM_Report_Form {
           'options' => array('0' => ts('No'), '1' => ts('Yes')),
         ),
       ),
-      'order_bys'  =>
-      array( 'time_stamp'    =>
-        array( 'title' => ts('Open Date') )
+      'order_bys' => array(
+        'time_stamp' => array(
+          'title' => ts('Open Date'),
+        ),
       ),
-      'grouping'  => 'mailing-fields', 
-    );
-    $this->_columns['civicrm_phone'] = array(
-      'dao' => 'CRM_Core_DAO_Phone',
-      'fields' => array('phone' => NULL),
-      'grouping' => 'contact-fields',
+      'grouping' => 'mailing-fields',
     );
 
     $this->_groupFilter = TRUE;
@@ -269,28 +267,28 @@ class CRM_Report_Form_Mailing_Opened extends CRM_Report_Form {
 
   public function from() {
     $this->_from = "
-        FROM civicrm_contact {$this->_aliases['civicrm_contact']} {$this->_aclFrom}";
+      FROM civicrm_contact {$this->_aliases['civicrm_contact']} {$this->_aclFrom}";
 
-    //NYSS alias the open table
     $this->_from .= "
-        INNER JOIN civicrm_mailing_event_queue
-          ON civicrm_mailing_event_queue.contact_id = {$this->_aliases['civicrm_contact']}.id
-        LEFT JOIN civicrm_email {$this->_aliases['civicrm_email']}
-          ON civicrm_mailing_event_queue.email_id = {$this->_aliases['civicrm_email']}.id
-        INNER JOIN civicrm_mailing_event_opened {$this->_aliases['civicrm_event_opened']}
-          ON {$this->_aliases['civicrm_event_opened']}.event_queue_id = civicrm_mailing_event_queue.id
-        INNER JOIN civicrm_mailing_job
-          ON civicrm_mailing_event_queue.job_id = civicrm_mailing_job.id
-        INNER JOIN civicrm_mailing {$this->_aliases['civicrm_mailing']}
-          ON civicrm_mailing_job.mailing_id = {$this->_aliases['civicrm_mailing']}.id
-          AND civicrm_mailing_job.is_test = 0
-      ";
+      INNER JOIN civicrm_mailing_event_queue
+        ON civicrm_mailing_event_queue.contact_id = {$this->_aliases['civicrm_contact']}.id
+      LEFT JOIN civicrm_email {$this->_aliases['civicrm_email']}
+        ON civicrm_mailing_event_queue.email_id = {$this->_aliases['civicrm_email']}.id
+      INNER JOIN civicrm_mailing_event_opened {$this->_aliases['civicrm_mailing_event_opened']}
+        ON {$this->_aliases['civicrm_mailing_event_opened']}.event_queue_id = civicrm_mailing_event_queue.id
+      INNER JOIN civicrm_mailing_job
+        ON civicrm_mailing_event_queue.job_id = civicrm_mailing_job.id
+      INNER JOIN civicrm_mailing {$this->_aliases['civicrm_mailing']}
+        ON civicrm_mailing_job.mailing_id = {$this->_aliases['civicrm_mailing']}.id
+        AND civicrm_mailing_job.is_test = 0
+    ";
 
     if ($this->_phoneField) {
       $this->_from .= "
-            LEFT JOIN civicrm_phone {$this->_aliases['civicrm_phone']}
-                   ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_phone']}.contact_id AND
-                      {$this->_aliases['civicrm_phone']}.is_primary = 1 ";
+        LEFT JOIN civicrm_phone {$this->_aliases['civicrm_phone']}
+          ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_phone']}.contact_id
+          AND {$this->_aliases['civicrm_phone']}.is_primary = 1
+      ";
     }
   }
 

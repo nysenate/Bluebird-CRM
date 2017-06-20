@@ -1978,6 +1978,8 @@ class CRM_Contact_BAO_Query {
       case 'relation_start_date_low':
       case 'relation_end_date_high':
       case 'relation_end_date_low':
+      case 'relation_active_period_date_high':
+      case 'relation_active_period_date_low':
       case 'relation_target_name':
       case 'relation_status':
       case 'relation_date_low':
@@ -3010,34 +3012,44 @@ class CRM_Contact_BAO_Query {
     else {
       $statii[] = "'Added'";
     }
-
     $groupClause = array();
     if (count($regularGroupIDs) || empty($value)) {
+      // include child groups IDs if any
+      $childGroupIds = (array) CRM_Contact_BAO_Group::getChildGroupIds($regularGroupIDs);
+      foreach ($childGroupIds as $key => $id) {
+        if (CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Group', $id, 'saved_search_id')) {
+          $smartGroupIDs[] = $id;
+          unset($childGroupIds[$key]);
+        }
+      }
+      if (count($childGroupIds)) {
+        $regularGroupIDs = array_merge($regularGroupIDs, $childGroupIds);
+      }
+
+      // if $regularGroupIDs is populated with regular child group IDs
+      //   then change the mysql operator to desired
+      if (count($regularGroupIDs) > 1) {
+        $op = strpos($op, 'IN') ? $op : ($op == '!=') ? 'NOT IN' : 'IN';
+      }
       $groupIds = implode(',', (array) $regularGroupIDs);
       $gcTable = "`civicrm_group_contact-{$groupIds}`";
       $joinClause = array("contact_a.id = {$gcTable}.contact_id");
+
+      if (strpos($op, 'IN') !== FALSE) {
+        $clause = "{$gcTable}.group_id $op ( $groupIds ) ";
+      }
+      elseif ($op == '!=') {
+        $clause = "{$gcTable}.contact_id NOT IN (SELECT contact_id FROM civicrm_group_contact cgc WHERE cgc.group_id = $groupIds )";
+      }
+      else {
+        $clause = "{$gcTable}.group_id $op $groupIds ";
+      }
+      $groupClause[] = "( {$clause} )";
+
       if ($statii) {
         $joinClause[] = "{$gcTable}.status IN (" . implode(', ', $statii) . ")";
       }
       $this->_tables[$gcTable] = $this->_whereTables[$gcTable] = " LEFT JOIN civicrm_group_contact {$gcTable} ON (" . implode(' AND ', $joinClause) . ")";
-      if (strpos($op, 'IN') !== FALSE) {
-        $clause = "{$gcTable}.group_id $op ( $groupIds ) %s ";
-      }
-      elseif ($op == '!=') {
-        $clause = "{$gcTable}.contact_id NOT IN (SELECT contact_id FROM civicrm_group_contact cgc WHERE cgc.group_id = $groupIds %s)";
-      }
-      else {
-        $clause = "{$gcTable}.group_id $op $groupIds %s ";
-      }
-
-      // include child groups IDs if any
-      $childGroupIds = CRM_Contact_BAO_Group::getChildGroupIds($regularGroupIDs);
-      $childClause = '';
-      if (count($childGroupIds)) {
-        $gcTable = ($op == '!=') ? 'cgc' : $gcTable;
-        $childClause = " OR {$gcTable}.group_id IN (" . implode(',', $childGroupIds) . ") ";
-      }
-      $groupClause[] = '(' . sprintf($clause, $childClause) . ')';
     }
 
     //CRM-19589: contact(s) removed from a Smart Group, resides in civicrm_group_contact table
@@ -3198,8 +3210,8 @@ WHERE  $smartGroupClause
           LEFT JOIN civicrm_tag {$tActTable}
             ON {$etActTable}.tag_id = {$tActTable}.id ";
 
-      $this->_where[$grouping][] = "({$tTable}.name $op '". $value . "' OR {$tCaseTable}.name $op '". $value . "' OR {$tActTable}.name $op '". $value . "')";
-      $this->_qill[$grouping][] = ts('Tag %1 %2 ', array(1 => $tagTypesText[2], 2 => $op)) . ' ' . $value;
+      $this->_where[$grouping][] = "({$tTable}.name $op '" . $value . "' OR {$tCaseTable}.name $op '" . $value . "' OR {$tActTable}.name $op '" . $value . "')";
+      $this->_qill[$grouping][] = ts('Tag %1 %2', array(1 => $tagTypesText[2], 2 => $op)) . ' ' . $value;
     }
     else {
       $etTable = "`civicrm_entity_tag-" . $value . "`";
@@ -4244,6 +4256,7 @@ civicrm_relationship.is_permission_a_b = 0
     }
 
     $this->addRelationshipDateClauses($grouping, $where);
+    $this->addRelationshipActivePeriodClauses($grouping, $where);
     if (!empty($relationType) && !empty($rType) && isset($rType->id)) {
       $where[$grouping][] = 'civicrm_relationship.relationship_type_id = ' . $rType->id;
     }
@@ -4305,6 +4318,64 @@ civicrm_relationship.is_permission_a_b = 0
         $where[$grouping][] = "civicrm_relationship.$dateField <= $date";
         $this->_qill[$grouping][] = ($dateField == 'end_date' ? ts('Relationship Ended on or Before') : ts('Relationship Recorded Start Date On or Before')) . " " . CRM_Utils_Date::customFormat($date);
       }
+    }
+  }
+
+  /**
+   * Add start & end active period criteria in
+   * @param string $grouping
+   * @param array $where
+   *   = array to add where clauses to, in case you are generating a temp table.
+   * not the main query.
+   */
+  public function addRelationshipActivePeriodClauses($grouping, &$where) {
+    $dateValues = array();
+    $dateField = 'active_period_date';
+
+    $dateValueLow = $this->getWhereValues('relation_active_period_date_low', $grouping);
+    $dateValueHigh = $this->getWhereValues('relation_active_period_date_high', $grouping);
+    $dateValueLowFormated = $dateValueHighFormated = NULL;
+    if (!empty($dateValueLow) && !empty($dateValueHigh)) {
+      $dateValueLowFormated = date('Ymd', strtotime($dateValueLow[2]));
+      $dateValueHighFormated = date('Ymd', strtotime($dateValueHigh[2]));
+      $this->_qill[$grouping][] = (ts('Relationship was active between')) . " " . CRM_Utils_Date::customFormat($dateValueLowFormated) . " and " . CRM_Utils_Date::customFormat($dateValueHighFormated);
+    }
+    elseif (!empty($dateValueLow)) {
+      $dateValueLowFormated = date('Ymd', strtotime($dateValueLow[2]));
+      $this->_qill[$grouping][] = (ts('Relationship was active after')) . " " . CRM_Utils_Date::customFormat($dateValueLowFormated);
+    }
+    elseif (!empty($dateValueHigh)) {
+      $dateValueHighFormated = date('Ymd', strtotime($dateValueHigh[2]));
+      $this->_qill[$grouping][] = (ts('Relationship was active before')) . " " . CRM_Utils_Date::customFormat($dateValueHighFormated);
+    }
+
+    if ($activePeriodClauses = self::getRelationshipActivePeriodClauses($dateValueLowFormated, $dateValueHighFormated, TRUE)) {
+      $where[$grouping][] = $activePeriodClauses;
+    }
+  }
+
+  /**
+   * Get start & end active period criteria
+   */
+  public static function getRelationshipActivePeriodClauses($from, $to, $forceTableName) {
+    $tableName = $forceTableName ? 'civicrm_relationship.' : '';
+    if (!is_null($from) && !is_null($to)) {
+      return '(((' . $tableName . 'start_date >= ' . $from . ' AND ' . $tableName . 'start_date <= ' . $to . ') OR
+                (' . $tableName . 'end_date >= ' . $from . ' AND ' . $tableName . 'end_date <= ' . $to . ') OR
+                (' . $tableName . 'start_date <= ' . $from . ' AND ' . $tableName . 'end_date >= ' . $to . ' )) OR
+               (' . $tableName . 'start_date IS NULL AND ' . $tableName . 'end_date IS NULL) OR
+               (' . $tableName . 'start_date IS NULL AND ' . $tableName . 'end_date >= ' . $from . ') OR
+               (' . $tableName . 'end_date IS NULL AND ' . $tableName . 'start_date <= ' . $to . '))';
+    }
+    elseif (!is_null($from)) {
+      return '((' . $tableName . 'start_date >= ' . $from . ') OR
+               (' . $tableName . 'start_date IS NULL AND ' . $tableName . 'end_date IS NULL) OR
+               (' . $tableName . 'start_date IS NULL AND ' . $tableName . 'end_date >= ' . $from . '))';
+    }
+    elseif (!is_null($to)) {
+      return '((' . $tableName . 'start_date <= ' . $to . ') OR
+               (' . $tableName . 'start_date IS NULL AND ' . $tableName . 'end_date IS NULL) OR
+               (' . $tableName . 'end_date IS NULL AND ' . $tableName . 'start_date <= ' . $to . '))';
     }
   }
 
@@ -4499,8 +4570,9 @@ civicrm_relationship.is_permission_a_b = 0
 
     $sql = "$select $from $where $having";
 
-    // add group by
-    if ($query->_useGroupBy) {
+    // add group by only when API action is not getcount
+    //  otherwise query fetches incorrect count
+    if ($query->_useGroupBy && !$count) {
       $sql .= self::getGroupByFromSelectColumns($query->_select, 'contact_a.id');
     }
     if (!empty($sort)) {
@@ -5609,19 +5681,10 @@ SELECT COUNT( conts.total_amount ) as cancel_count,
 
       case 'IN':
       case 'NOT IN':
-        //NYSS comment out standard
-        // I feel like this would be escaped properly if passed through $queryString = CRM_Core_DAO::createSqlFilter.
-        /*if (!empty($value) && (!is_array($value) || !array_key_exists($op, $value))) {
-          $value = array($op => (array) $value);
-        }*/
-
         //NYSS support multiple values for some fields
         //Civi::log()->debug('buildClause', array('dataType' => $dataType, 'value' => $value));
         if (isset($dataType)) {
-          if (is_array($value)) {
-            $values = $value;
-          }
-          else {
+          if (!is_array($value)) {
             $value = CRM_Utils_Type::escape($value, "String");
             $values = explode('[:comma:]', $value);
             //NYSS - type is passed as nyss_String or nyss_Integer
@@ -5630,15 +5693,21 @@ SELECT COUNT( conts.total_amount ) as cancel_count,
               $values = array_map('trim', explode(',', $value));
               $dataType = str_replace('nyss_', '', $dataType); //return to expected format
             }
-          }
 
-          foreach ($values as &$v) {
-            $v = "'{$v}'";
+            foreach ($values as &$v) {
+              $v = "'{$v}'";
+            }
+            $value = "(" . implode($values, ",") . ")";
+            //$value = array($op => (array) $values);
+
+            return "$clause $value";
           }
-          $value = "(" . implode($values, ",") . ")";
-          //$value = array($op => (array) $values);
         }
-        return "$clause $value";
+
+        // I feel like this would be escaped properly if passed through $queryString = CRM_Core_DAO::createSqlFilter.
+        if (!empty($value) && (!is_array($value) || !array_key_exists($op, $value))) {
+          $value = array($op => (array) $value);
+        }
 
       default:
         if (empty($dataType)) {
@@ -6463,14 +6532,8 @@ AND   displayRelType.is_active = 1
    */
   public function convertGroupIDStringToLabelString(&$dao, $val) {
     $groupIDs = explode(',', $val);
-
-    // The pseudoConstant function does not actually cache.
-    static $allGroups;
-    if (!$allGroups) {
-      $allGroups = CRM_Core_PseudoConstant::group();
-    }
     // Note that groups that the user does not have permission to will be excluded (good).
-    $groups = array_intersect_key($allGroups, array_flip($groupIDs));
+    $groups = array_intersect_key(CRM_Core_PseudoConstant::group(), array_flip($groupIDs));
     return implode(', ', $groups);
 
   }

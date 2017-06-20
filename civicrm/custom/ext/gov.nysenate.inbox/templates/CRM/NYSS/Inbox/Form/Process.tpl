@@ -22,21 +22,20 @@
   </div>
 
   <div id="process-tagscontact" class='ui-tabs-panel ui-widget-content ui-corner-bottom'>
-    <div class="crm-section">
+    <div class="crm-section tag-keywords">
       <div class="label">{$form.contact_keywords.label}</div>
       <div class="content">{$form.contact_keywords.html}</div>
       <div class="clear"></div>
     </div>
 
-    {*NYSS inject our custom tagtree*}
-    <input class="crm-form-text big" name="filter_tag_tree" placeholder="{ts}Filter List{/ts}" allowclear="1"/>
-    <a class="crm-hover-button crm-clear-link" style="visibility:hidden;" title="{ts}Clear{/ts}"><i class="crm-i fa-times"></i></a>
-    <div id="tagtree">
-      {include file="CRM/Tag/Form/Tagtree.tpl" level=1}
+    {*inject tagtree*}
+    <div class="crm-section tag-tree">
+      <div class="label">{$form.tag.label}</div>
+      <div class="content">{$form.tag.html}</div>
+      <div class="clear"></div>
     </div>
-    <div class="clear"></div>
 
-    <div class="crm-section">
+    <div class="crm-section tag-positions">
       <div class="label">{$form.contact_positions.label}</div>
       <div class="content">{$form.contact_positions.html}</div>
       <div class="clear"></div>

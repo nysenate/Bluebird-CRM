@@ -102,23 +102,6 @@
     <weight>250</weight>
     <access_arguments>administer CiviCRM;administer district</access_arguments>
   </item>
-  <item>
-    <path>civicrm/tag</path>
-    <title>Manage Tags (Categories)</title>
-    <desc>Tags are useful for segmenting the contacts in your database into categories (e.g. Staff Member, Donor, Volunteer, etc.). Create and edit available tags here.</desc>
-    <page_callback>CRM_Tag_Page_Tag</page_callback>
-    <adminGroup>Option Lists</adminGroup>
-    <icon>admin/small/11.png</icon>
-    <weight>380</weight>
-    <access_arguments>administer CiviCRM;administer district;manage tags</access_arguments>
-  </item>
-  <item>
-    <path>civicrm/tag/edit</path>
-    <title>New Tag</title>
-    <page_callback>CRM_Tag_Form_Edit</page_callback>
-    <path_arguments>action=add</path_arguments>
-    <access_arguments>administer CiviCRM;administer district;manage tags</access_arguments>
-  </item>
   
   <!--NYSS 3808-->
   <item>

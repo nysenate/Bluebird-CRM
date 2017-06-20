@@ -171,6 +171,8 @@ function resources_civicrm_coreResourceList(&$list, $region) {
   $config = array_keys(array_filter($list, function($v){return !empty($v['config']) ? true : false;}));
   $list[$config[0]]['config']['CKEditorCustomConfig'] =
     "{$extPath}/js/ckeditor.config.js";
+  //set ckeditor location (seems to get messed up by our special directory handling)
+  $list[$config[0]]['config']['wysisygScriptLocation'] = '/sites/all/modules/civicrm/js/wysiwyg/crm.ckeditor.js';
 
   //set kcfinder maxImage settings
   $_SESSION['KCFINDER'] = array(

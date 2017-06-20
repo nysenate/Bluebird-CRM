@@ -1192,11 +1192,7 @@ class CRM_Utils_Token {
     $jobID = NULL,
     $sortBy = NULL
   ) {
-    if (empty($contactIDs)) {
-      // putting a fatal here so we can track if/when this happens
-      CRM_Core_Error::fatal();
-    }
-    // @todo this functions needs unit tests.
+
     $params = array();
     foreach ($contactIDs as $key => $contactID) {
       $params[] = array(
@@ -1247,12 +1243,10 @@ class CRM_Utils_Token {
       }
     }
 
-    //get the total number of contacts to fetch from database.
-    $numberofContacts = count($contactIDs);
     $query = new CRM_Contact_BAO_Query($params, $returnProperties);
 
     //NYSS 5873 allow modifying sort order so we can try to get primary email
-    $details = $query->apiQuery($params, $returnProperties, NULL, $sortBy, 0, $numberofContacts);
+    $details = $query->apiQuery($params, $returnProperties, NULL, $sortBy, 0, count($contactIDs));
 
     $contactDetails = &$details[0];
 

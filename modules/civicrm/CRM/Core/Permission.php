@@ -127,7 +127,7 @@ class CRM_Core_Permission {
         foreach ($permission as $orPerm) {
           if (self::check($orPerm)) {
             //one of our 'or' permissions has succeeded - stop checking this permission
-            return TRUE;;
+            return TRUE;
           }
         }
         //none of our our conditions was met
@@ -1131,6 +1131,12 @@ class CRM_Core_Permission {
     );
     // Loc block is only used for events
     $permissions['loc_block'] = $permissions['event'];
+
+    $permissions['state_province'] = array(
+      'get' => array(
+        'access CiviCRM',
+      ),
+    );
 
     // Price sets are shared by several components, user needs access to at least one of them
     $permissions['price_set'] = array(
