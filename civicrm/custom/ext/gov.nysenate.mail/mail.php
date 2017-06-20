@@ -175,6 +175,34 @@ function mail_civicrm_pageRun(&$page) {
   }
 }
 
+function mail_civicrm_entityTypes(&$entityTypes) {
+  //Civi::log()->debug('mail_civicrm_entityTypes', array('entityTypes' => $entityTypes));
+
+  //formally declare our additions to the mailing table as entity fields
+  $entityTypes['CRM_Mailing_DAO_Mailing']['fields_callback'][] = function($class, &$fields) {
+    //Civi::log()->debug('mail_civicrm_entityTypes', array('$class' => $class, 'fields' => $fields));
+
+    $fields['all_emails'] = array(
+      'name' => 'all_emails',
+      'type' => CRM_Utils_Type::T_INT,
+      'title' => 'All Emails',
+    );
+
+    $fields['exclude_ood'] = array(
+      'name' => 'exclude_ood',
+      'type' => CRM_Utils_Type::T_INT,
+      'title' => 'Exclude Out of District Emails',
+    );
+
+    $fields['category'] = array(
+      'name' => 'category',
+      'type' => CRM_Utils_Type::T_STRING,
+      'title' => 'Category',
+      'maxlength' => 255,
+    );
+  };
+}
+
 /**
  * @param phpQueryObject $doc
  *
@@ -212,7 +240,7 @@ function _mail_alterMailingBlock(phpQueryObject $doc) {
         crm-ui-id="subform.nyss" 
         crm-ui-select="{dropdownAutoWidth : true, allowClear: true, placeholder: ts(\'Category\')}"
         name="category" 
-        ng-model="mailing.template_options.category"
+        ng-model="mailing.category"
       >'.$catOptions.'</select>
     </div>
     <div crm-ui-field="{name: \'subform.nyss\', title: \'All Contacts?\', help: hs(\'all-emails\')}">
@@ -220,7 +248,9 @@ function _mail_alterMailingBlock(phpQueryObject $doc) {
         type="checkbox"
         crm-ui-id="subform.nyss"
         name="all_emails" 
-        ng-model="mailing.template_options.all_emails"
+        ng-model="mailing.all_emails"
+        ng-true-value="\'1\'"
+        ng-false-value="\'0\'"
       >
     </div>
   ');
