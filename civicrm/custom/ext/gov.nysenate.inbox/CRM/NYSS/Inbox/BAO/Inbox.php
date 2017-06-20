@@ -224,7 +224,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
     $sql = "
       SELECT SQL_CALC_FOUND_ROWS im.id, im.sender_name, im.sender_email, im.subject, im.forwarder,
-        im.updated_date, im.email_date,
+        im.updated_date, im.email_date, im.matcher, im.matched_to, mc.display_name matcher_name,
         IFNULL(count(ia.file_name), '0') as attachments,
         count(e.id) AS email_count
       FROM nyss_inbox_messages im
@@ -232,6 +232,9 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         ON im.sender_email = e.email
       LEFT JOIN nyss_inbox_attachments ia 
         ON im.id = ia.email_id
+      LEFT JOIN civicrm_contact mc
+        ON im.matcher = mc.id
+        AND im.matcher != 1
       WHERE (1)
         {$statusSql}
         {$rangeSql}
@@ -255,8 +258,6 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         $matchCount = (!empty($dao->email_count)) ? 'multi' : 'empty';
         $attachment = (!empty($dao->attachments)) ?
           "<div class='icon attachment-icon attachment' title='{$dao->attachments} Attachment(s)'></div>" : '';
-        $senderEmail = (empty($dao->sender_email)) ? '' :
-          "<span class='emailbubble'>".CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->sender_email, 15)."</span>";
         $senderName = CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->sender_name, 15);
 
         $msg['DT_RowId'] = "message-{$dao->id}";
@@ -266,8 +267,36 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         $msg['DT_RowAttr']['data-id'] = $dao->id;
 
         $msg['id'] = "<input class='message-select' type='checkbox' id='select-{$dao->id}'>";
-        $msg['sender_name'] = "{$senderName}{$senderEmail}
-          <span class='matchbubble {$matchCount}'>{$dao->email_count}</span>";
+
+        //sender's info varies based on matched/unmatched view
+        switch ($status) {
+          case 'unmatched':
+            $senderEmail = (empty($dao->sender_email)) ? '' :
+              "<span class='emailbubble'>".CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->sender_email, 15)."</span>";
+            $msg['sender_name'] = "{$senderName}{$senderEmail}
+              <span class='matchbubble {$matchCount}'>{$dao->email_count}</span>";
+            break;
+
+          case 'matched':
+            if ($dao->matcher != 1) {
+              $matchTypeCSS = 'match-manual';
+              $matchTypeText = 'M';
+              $matchString = "Manually matched by {$dao->matcher_name}";
+            }
+            else {
+              $matchTypeCSS = 'match-auto';
+              $matchTypeText = 'A';
+              $matchString = 'Automatically matched';
+            }
+            $matchedUrl = CRM_Utils_System::url('civicrm/contact/view', "reset=1&cid={$dao->matched_to}");
+            $msg['sender_name'] = "<a href='{$matchedUrl}'>{$senderName}</a>
+              <span class='matchbubble {$matchTypeCSS}' title='This email was {$matchString}'>{$matchTypeText}</span>";
+            break;
+
+          default:
+            $msg['sender_name'] = $senderName;
+        }
+
         $msg['subject'] = CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->subject, 25).$attachment;
         $msg['updated_date'] = date('M d, Y', strtotime($dao->updated_date));
         $msg['forwarder'] = $dao->forwarder;

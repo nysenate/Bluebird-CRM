@@ -41,6 +41,9 @@ div.crm-matchedmessages-selector {
   color: #fff;
   font-weight: bold;
 }
+.matchbubble.match-auto {
+  background-color: #999999;
+}
 .multi {
   background-color: #468847;
 }
