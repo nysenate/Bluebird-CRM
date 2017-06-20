@@ -166,6 +166,15 @@ function mail_civicrm_alterAngular(\Civi\Angular\Manager $angular) {
   $angular->add($changeSet);
 }
 
+function mail_civicrm_pageRun(&$page) {
+  //Civi::log()->debug('mail_civicrm_pageRun', array('page' => $page));
+
+  //11038
+  if (is_a($page, 'Civi\Angular\Page\Main')) {
+    CRM_Core_Resources::singleton()->addStyleFile('gov.nysenate.mail', 'css/mail.css');
+  }
+}
+
 /**
  * @param phpQueryObject $doc
  *
