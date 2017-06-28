@@ -706,7 +706,7 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state) {
 
     //get the existing data
     $sql = "SELECT ".$nyss_select[$tbl]['fields']." FROM {$tbl} WHERE {$pkCivi}={$l[$pkImport]}";
-    nyss_out('debug', $sql, true);
+    //nyss_out('debug', $sql, true);
 
     $result = mysql_query($sql, $nyss_conn);
     //nyss_out('error','id lookup result:',true);
