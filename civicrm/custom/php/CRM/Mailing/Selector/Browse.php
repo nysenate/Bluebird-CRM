@@ -455,15 +455,6 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
           $rows[$key]['scheduled'] = '';
         }
         unset($rows[$key]['scheduled_iso']);
-
-        //NYSS 10955 truncate some fields if too long
-        //Civi::log()->debug('browse', array('rows' => $rows));
-        foreach (array('created_by', 'scheduled_by') as $fld) {
-          $length = (strpos($row[$fld], ' ') !== FALSE) ? 30 : 16;
-          if (strlen($row[$fld]) > $length) {
-            $rows[$key][$fld] = substr($row[$fld], 0, 12).'...';
-          }
-        }
       }
     }
 

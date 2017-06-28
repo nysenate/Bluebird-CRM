@@ -62,6 +62,7 @@
       {/foreach}
       </thead>
 
+      {*NYSS 10955/CRM-20781 truncate some fields if too long*}
       {counter start=0 skip=1 print=false}
       {foreach from=$rows item=row}
       <tr id="crm-mailing_{$row.id}" class="{cycle values="odd-row,even-row"} crm-mailing crm-mailing_status-{$row.status}">
@@ -71,9 +72,17 @@
         {/if}
         <td class="crm-mailing-subject">{$row.subject}</td>{*NYSS 6007*}
         <td class="crm-mailing-status crm-mailing_status-{$row.status}">{$row.status}</td>
-        <td class="crm-mailing-created_by"><a href ={crmURL p='civicrm/contact/view' q="reset=1&cid="}{$row.created_id}>{$row.created_by}</a></td>
+        <td class="crm-mailing-created_by">
+          <a href ={crmURL p='civicrm/contact/view' q="reset=1&cid="}{$row.created_id} title="{$row.created_by|escape}">
+            {$row.created_by|mb_truncate:20:"..."}
+          </a>
+        </td>
         <td class="crm-mailing-created_date">{$row.created_date}</td>
-        <td class="crm-mailing-scheduled_by"><a href ={crmURL p='civicrm/contact/view' q="reset=1&cid="}{$row.scheduled_id}>{$row.scheduled_by}</a></td>
+        <td class="crm-mailing-scheduled_by">
+          <a href ={crmURL p='civicrm/contact/view' q="reset=1&cid="}{$row.scheduled_id} title="{$row.scheduled_by|escape}">
+            {$row.scheduled_by|mb_truncate:20:"..."}
+          </a>
+        </td>
         <td class="crm-mailing-scheduled">{$row.scheduled}</td>
         <td class="crm-mailing-start">{$row.start}</td>
         <td class="crm-mailing-end">{$row.end}</td>
