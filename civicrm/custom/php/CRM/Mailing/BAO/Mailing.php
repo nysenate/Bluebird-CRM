@@ -1354,6 +1354,11 @@ ORDER BY   civicrm_email.is_bulkmail DESC
     // Add job ID to mailParams for external email delivery service to utilise
     $mailParams['job_id'] = $job_id;
 
+    //NYSS pass some additional values to the hook
+    $mailParams['event_queue_id'] = $event_queue_id;
+    $mailParams['is_test'] = $test;
+    $mailParams['contact_id'] = $contactId;//5354
+
     CRM_Utils_Hook::alterMailParams($mailParams, 'civimail');
 
     // CRM-10699 support custom email headers
