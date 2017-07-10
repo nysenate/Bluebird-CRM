@@ -298,9 +298,9 @@ function tags_civicrm_buildForm($formName, &$form) {
       });
     ");
 
-    //11072 append list of issue codes and leg positions
+    //11072/11167 append list of issue codes and leg positions
     if (!empty($contactIssueCode_list)) {
-      CRM_Core_Region::instance('page-body')->add(array(
+      CRM_Core_Region::instance('page-header')->add(array(
         'markup' => "
           <div class='contactTagsList help'>
             <strong>Issue Codes: </strong>
