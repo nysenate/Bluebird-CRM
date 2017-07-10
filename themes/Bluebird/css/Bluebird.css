@@ -4059,6 +4059,10 @@ div#tagGroup div.select2-container {
 div.tag-info h4 input[type=color] {
   display: none;
 }
+/*11168*/
+form.CRM_Tag_Form_Tag div#Tag table th {
+  display: none;
+}
 
 /*allow select2 widgets to expand*/
 div.crm-container.select2-drop-multi {
