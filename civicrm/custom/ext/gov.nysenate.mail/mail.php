@@ -201,6 +201,14 @@ function mail_civicrm_entityTypes(&$entityTypes) {
   };
 }
 
+function mail_civicrm_alterMailingRecipients($mailing_id, $job_id, $m) {
+  Civi::log()->debug('', array(
+    'mailing_id' => $mailing_id,
+    'job_id' => $job_id,
+    'm' => $m,
+  ));
+}
+
 /**
  * @param phpQueryObject $doc
  *

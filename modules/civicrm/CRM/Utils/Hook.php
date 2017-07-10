@@ -2380,4 +2380,21 @@ abstract class CRM_Utils_Hook {
     return self::singleton()->invoke(array('message'), $message, self::$_nullObject, self::$_nullObject, self::$_nullObject, self::$_nullObject, self::$_nullObject, 'civicrm_inboundSMS');
   }
 
+  //NYSS 10760
+  /**
+   * This hook is called after the mailing recipients has been generated
+   *
+   * @param int $mailing_id
+   * @param int $job_id only used to reference the temp tables
+   * @param EventQueue object $queue
+   * @param Mailing object $mailing
+   *
+   * @return mixed
+   */
+  public static function alterMailingRecipients($mailing_id, $job_id, $queue, $mailing) {
+    return self::singleton()->invoke(array('mailing_id', 'job_id', 'queue', 'mailing'),
+      $mailing_id, $job_id, $queue, $mailing, self::$_nullObject, self::$_nullObject,
+      'civicrm_alterMailingRecipients'
+    );
+  }
 }
