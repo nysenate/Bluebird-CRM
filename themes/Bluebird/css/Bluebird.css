@@ -4055,6 +4055,10 @@ div#tagGroup label {
 div#tagGroup div.select2-container {
   width: 100% !important;
 }
+/*11172*/
+div.tag-info h4 input[type=color] {
+  display: none;
+}
 
 /*allow select2 widgets to expand*/
 div.crm-container.select2-drop-multi {
