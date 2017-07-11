@@ -191,9 +191,7 @@ class CRM_NYSS_BAO_Integration_Website
    */
   static function createContact($params)
   {
-    $params['custom_60'] = 'Website Account';
-    $params['contact_type'] = 'Individual';
-    $params['api.address.create'] = array(
+    $addressParams = array(
       'street_address' => $params['street_address'],
       'supplemental_addresss_1' => $params['supplemental_addresss_1'],
       'city' => $params['city'],
@@ -201,11 +199,31 @@ class CRM_NYSS_BAO_Integration_Website
       'postal_code' => $params['postal_code'],
       'location_type_id' => 1,
     );
+
+    $params['custom_60'] = 'Website Account';
+    $params['contact_type'] = 'Individual';
+    $params['api.address.create'] = $addressParams;
     self::cleanContactParams($params);
     //CRM_Core_Error::debug_var('createContact params', $params);
 
     $contact = civicrm_api3('contact', 'create', $params);
     //CRM_Core_Error::debug_var('contact', $contact);
+
+    //get and store address district fields
+    CRM_Utils_SAGE::distAssign($addressParams);
+    $distParams = array();
+    foreach ($addressParams as $key => $val) {
+      if (strpos($key, '_-1') !== FALSE) {
+        unset($addressParams[$key]);
+        $distParams[str_replace('_-1', '', $key)] = $val;
+      }
+    }
+
+    if (!empty($addressId = $contact['values'][$contact['id']]['api.address.create']['id'])) {
+      $distParams['entity_id'] = $addressId;
+      $distParams['entity_table'] = 'civicrm_address';
+      civicrm_api3('custom_value', 'create', $distParams);
+    }
 
     return $contact['id'];
   } //createContact()
