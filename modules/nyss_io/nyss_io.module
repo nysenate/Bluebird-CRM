@@ -243,7 +243,6 @@ function nyss_ioimport_form_submit($form, &$form_state) {
   require_once 'CRM/Core/Config.php';
   $config = CRM_Core_Config::singleton();
 
-  require_once 'CRM/Utils/String.php';
   require_once 'api/api.php';
 
   $nyss_conn = new CRM_Core_DAO();
@@ -661,7 +660,6 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 }
 
 function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state) {
-
   //nyss_out('debug', "tbl top: $tbl", true);
   //nyss_out('debug', $l, true);
 
@@ -708,8 +706,11 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state) {
 
     //get the existing data
     $sql = "SELECT ".$nyss_select[$tbl]['fields']." FROM {$tbl} WHERE {$pkCivi}={$l[$pkImport]}";
+    //nyss_out('debug', $sql, true);
 
     $result = mysql_query($sql, $nyss_conn);
+    //nyss_out('error','id lookup result:',true);
+    //nyss_out('debug', $result, true);
 
     $dao = new stdClass();
     if (!$result || mysql_num_rows($result) == 0) {
@@ -785,8 +786,7 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state) {
     $up = array();
 
     //first set a few additional values required for insert action
-    require_once 'CRM/Utils/String.php';
-        
+
     //contact record work
     if ($tbl == 'civicrm_contact') {
       $l['contact_type'] = 'Individual';
@@ -814,7 +814,7 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state) {
     }
         
     //only set these if the corresponding data columns exist in the import file
-    //nyss_out('debug', $l, true);
+    //nyss_out('debug', $l, true);exit();
     if ((array_key_exists('street_address', $l) && !empty($l['street_address'])) ||
          (array_key_exists('supplemental_address_1', $l) && !empty($l['supplemental_address_1']))) {
       if ($form_state['values']['boeimport']) {
@@ -984,9 +984,6 @@ function ioGetLocType()
 } // ioGetLocType()
 
 function convertProperCase($string, $skipMixed = false, $skipSpecial = false) {
-
-  require_once 'CRM/Utils/String.php';
-
   //if mixed case, don't do anything
   if ($skipMixed && preg_match('/[a-z]/', $string)) return $string;
 
@@ -1787,10 +1784,10 @@ function _processAddressDelete($addressDel, $nyss_conn) {
 }
 
 function _cleanData(&$l) {
-  foreach ($l as $k => $v) {
+  foreach ($l as $k => &$v) {
     if (is_string($v)) {
       $v = CRM_Utils_String::stripSpaces($v);
+      $v = CRM_Utils_Type::escape($v, 'String');
     }
-    $l[$k] = mysql_real_escape_string($v);
   }
 }//_cleanData

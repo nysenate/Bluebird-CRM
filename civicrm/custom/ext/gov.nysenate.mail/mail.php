@@ -2,6 +2,10 @@
 
 require_once 'mail.civix.php';
 
+define('FILTER_ALL', 0);
+define('FILTER_IN_SD_ONLY', 1);
+define('FILTER_IN_SD_OR_NO_SD', 2);
+
 /**
  * Implements hook_civicrm_config().
  *
@@ -201,6 +205,91 @@ function mail_civicrm_entityTypes(&$entityTypes) {
   };
 }
 
+function mail_civicrm_alterMailingRecipients($mailing, $queue, $job_id) {
+  /*Civi::log()->debug('', array(
+    '$mailing' => $mailing,
+    '$queue' => $queue,
+    '$job_id' => $job_id,
+  ));*/
+
+  // NYSS 4628, 4879
+  if ($mailing->all_emails) {
+    _mail_addAllEmails($mailing->id, $mailing->exclude_ood);
+  }
+
+  if ($mailing->exclude_ood != FILTER_ALL) {
+    _mail_excludeOOD($mailing->id, $mailing->exclude_ood);
+  }
+
+  // NYSS 5581
+  if ($mailing->category) {
+    _mail_excludeCategoryOptOut($mailing->id, $mailing->category);
+  }
+
+  //add email seed group
+  _mail_addEmailSeeds($mailing->id);
+
+  //dedupe emails as final step
+  if ($mailing->dedupe_email) {
+    _mail_dedupeEmail($mailing->id);
+  }
+
+  //remove onHold as we didn't do it earlier
+  _mail_removeOnHold($mailing->id);
+
+  //don't need this anymore?
+  //recalculate the total recipients
+  /*if ($form->_submitValues['all_emails'] || $excludeOOD != FILTER_ALL || $mailingCat) {
+    $count = CRM_Mailing_BAO_Recipients::mailingSize($mailing->id);
+    $form->set('count', $count);
+    $form->assign('count', $count);
+  }*/
+}
+
+function mail_civicrm_pre($op, $objectName, $id, &$params) {
+  //set exclude_ood and other fixed default values
+  if ($objectName == 'Mailing') {
+    //exclude_ood is set from config file
+    $bbconfig = get_bluebird_instance_config();
+    $excludeOOD = FILTER_ALL;
+    if (isset($bbconfig['email.filter.district'])) {
+      $filter_district = $bbconfig['email.filter.district'];
+      switch ($filter_district) {
+        case "1": case "strict": case "in_sd":
+          $excludeOOD = FILTER_IN_SD_ONLY;
+          break;
+        case "2": case "fuzzy": case "in_sd_or_no_sd":
+          $excludeOOD = FILTER_IN_SD_OR_NO_SD;
+          break;
+        default:
+          $excludeOOD = FILTER_ALL;
+      }
+    }
+    $params['exclude_ood'] = $excludeOOD;
+
+    $params['url_tracking'] = 0;
+    $params['forward_replies'] = 0;
+    $params['auto_responder'] = 0;
+    $params['open_tracking'] = 0;
+    $params['visibility'] = 'Public Pages';
+  }
+}
+
+//NYSS 4870
+function _mail_removeOnHold( $mailing_id ) {
+  $sql = "
+DELETE FROM civicrm_mailing_recipients
+ USING civicrm_mailing_recipients
+  JOIN civicrm_email
+    ON ( civicrm_mailing_recipients.email_id = civicrm_email.id
+   AND   civicrm_email.on_hold > 0 )
+ WHERE civicrm_mailing_recipients.mailing_id = %1";
+
+  $params = array( 1 => array( $mailing_id, 'Integer' ) );
+
+  $dao = CRM_Core_DAO::executeQuery( $sql, $params );
+}
+
 /**
  * @param phpQueryObject $doc
  *
@@ -252,4 +341,156 @@ function _mail_alterMailingBlock(phpQueryObject $doc) {
       >
     </div>
   ');
+}
+
+// NYSS 4628
+function _mail_addAllEmails($mailingID, $excludeOOD = FILTER_ALL) {
+  $sql = "
+    INSERT IGNORE INTO civicrm_mailing_recipients (mailing_id, email_id, contact_id)
+    SELECT DISTINCT %1, e.id, e.contact_id
+    FROM civicrm_email e
+    JOIN civicrm_mailing_recipients mr
+      ON e.contact_id = mr.contact_id
+      AND mr.mailing_id = %1
+      AND e.on_hold = 0
+    WHERE e.id NOT IN (
+      SELECT email_id
+      FROM civicrm_mailing_recipients mr
+      WHERE mailing_id = %1
+    )
+  ";
+  $params = array(1 => array($mailingID, 'Integer'));
+  CRM_Core_DAO::executeQuery($sql, $params);
+} // _addAllEmails()
+
+// NYSS 4879
+function _mail_excludeOOD($mailingID, $excludeOOD) {
+  //determine what SD we are in
+  $bbconfig = get_bluebird_instance_config();
+  $district = $bbconfig['district'];
+
+  if (empty($district)) {
+    return;
+  }
+
+  //create temp table to store contacts confirmed to be in district
+  $tempTbl = "nyss_temp_excludeOOD_$mailingID";
+  $sql = "CREATE TEMPORARY TABLE $tempTbl(contact_id INT NOT NULL, PRIMARY KEY(contact_id)) ENGINE=MyISAM;";
+  CRM_Core_DAO::executeQuery($sql);
+
+  $sql = "
+    INSERT INTO $tempTbl
+    SELECT DISTINCT mr.contact_id
+    FROM civicrm_mailing_recipients mr
+    JOIN civicrm_address a
+      ON mr.contact_id = a.contact_id
+    JOIN civicrm_value_district_information_7 di
+      ON a.id = di.entity_id
+    WHERE mailing_id = $mailingID
+      AND ny_senate_district_47 = $district;
+  ";
+  CRM_Core_DAO::executeQuery($sql);
+
+  //also include unknowns if option enabled
+  if ($excludeOOD == FILTER_IN_SD_OR_NO_SD) {
+    //include where no district is known or no address is present
+    $sql = "
+      INSERT INTO $tempTbl
+      SELECT mr.contact_id
+      FROM civicrm_mailing_recipients mr
+      LEFT JOIN civicrm_address a
+        ON mr.contact_id = a.contact_id
+      LEFT JOIN civicrm_value_district_information_7 di
+        ON a.id = di.entity_id
+      WHERE mr.mailing_id = $mailingID
+      GROUP BY mr.contact_id
+      HAVING COUNT(di.ny_senate_district_47) = 0
+    ";
+    CRM_Core_DAO::executeQuery($sql);
+  }
+
+  $sql = "
+    DELETE FROM civicrm_mailing_recipients
+    USING civicrm_mailing_recipients
+    LEFT JOIN $tempTbl
+      ON civicrm_mailing_recipients.contact_id = $tempTbl.contact_id
+    WHERE civicrm_mailing_recipients.mailing_id = $mailingID
+      AND $tempTbl.contact_id IS NULL;
+  ";
+  CRM_Core_DAO::executeQuery($sql);
+
+  //cleanup
+  CRM_Core_DAO::executeQuery("DROP TABLE $tempTbl");
+} // _excludeOOD()
+
+// NYSS 5581
+function _mail_excludeCategoryOptOut($mailingID, $mailingCat) {
+  $sql = "
+    DELETE FROM civicrm_mailing_recipients
+    USING civicrm_mailing_recipients
+    JOIN civicrm_email
+      ON civicrm_mailing_recipients.email_id = civicrm_email.id
+    WHERE FIND_IN_SET({$mailingCat}, civicrm_email.mailing_categories)
+      AND civicrm_mailing_recipients.mailing_id = $mailingID
+  ";
+  //CRM_Core_Error::debug_var('sql', $sql);
+  CRM_Core_DAO::executeQuery($sql);
+} // _excludeCategoryOptOut()
+
+function _mail_addEmailSeeds($mailingID) {
+  $gid = CRM_Core_DAO::singleValueQuery("SELECT id FROM civicrm_group WHERE name LIKE 'Email_Seeds';");
+
+  if (!$gid) {
+    return;
+  }
+
+  $sql = "
+    INSERT INTO civicrm_mailing_recipients ( mailing_id, contact_id, email_id )
+    SELECT $mailingID, e.contact_id, e.id
+    FROM civicrm_group_contact gc
+    JOIN civicrm_email e
+      ON gc.contact_id = e.contact_id
+      AND gc.group_id = $gid
+      AND gc.status = 'Added'
+      AND e.on_hold = 0
+      AND ( e.is_primary = 1 OR e.is_bulkmail = 1 )
+    JOIN civicrm_contact c
+      ON gc.contact_id = c.id
+    LEFT JOIN civicrm_mailing_recipients mr
+      ON gc.contact_id = mr.contact_id
+      AND mr.mailing_id = $mailingID
+    WHERE mr.id IS NULL
+      AND c.is_deleted = 0;
+  ";
+  CRM_Core_DAO::executeQuery($sql);
+} // _addEmailSeeds()
+
+function _mail_dedupeEmail($mailing_id) {
+  //if dedupeEmails, handle that now, as it was skipped earlier in the process
+  $tempTbl = "nyss_temp_dedupe_emails_$mailing_id";
+  $sql = "CREATE TEMPORARY TABLE $tempTbl (email_id INT NOT NULL, PRIMARY KEY(email_id)) ENGINE=MyISAM;";
+  CRM_Core_DAO::executeQuery($sql);
+
+  $sql = "
+    INSERT INTO $tempTbl
+    SELECT mr.email_id
+    FROM civicrm_mailing_recipients mr
+    JOIN civicrm_email e
+      ON mr.email_id = e.id
+    WHERE mailing_id = $mailing_id
+    GROUP BY mr.email_id;";
+  CRM_Core_DAO::executeQuery($sql);
+
+  //now remove contacts from the recipients table that are not found in the inclusion table
+  $sql = "
+    DELETE FROM civicrm_mailing_recipients
+    USING civicrm_mailing_recipients
+    LEFT JOIN $tempTbl
+      ON civicrm_mailing_recipients.email_id = $tempTbl.email_id
+    WHERE civicrm_mailing_recipients.mailing_id = $mailing_id
+      AND $tempTbl.email_id IS NULL;";
+  CRM_Core_DAO::executeQuery($sql);
+
+  //cleanup
+  CRM_Core_DAO::executeQuery("DROP TABLE $tempTbl");
 }

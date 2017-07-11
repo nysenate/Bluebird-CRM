@@ -34,9 +34,6 @@
  *
  */
 
-require_once 'CRM/Contact/Form/Task.php';
-require_once 'CRM/Core/BAO/EntityTag.php';
-
 define( 'PPDEBUG', 0 ); //set debug mode status
 define( 'EXITLOC', 0 ); //define exit location in script
 define( 'TRACKTIME', 0 ); //track time at points in the script
