@@ -577,7 +577,7 @@ ORDER BY   {$orderBy}
     $mailingGroup->query("DROP TEMPORARY TABLE I_$job_id");
 
     //NYSS 10760 implement hook
-    CRM_Utils_Hook::alterMailingRecipients($mailing_id, $job_id, $eq, $m);
+    CRM_Utils_Hook::alterMailingRecipients($m, $eq, $job_id);
 
     return $eq;
   }

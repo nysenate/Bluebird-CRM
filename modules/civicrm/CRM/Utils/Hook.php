@@ -2391,9 +2391,9 @@ abstract class CRM_Utils_Hook {
    *
    * @return mixed
    */
-  public static function alterMailingRecipients($mailing_id, $job_id, $queue, $mailing) {
-    return self::singleton()->invoke(array('mailing_id', 'job_id', 'queue', 'mailing'),
-      $mailing_id, $job_id, $queue, $mailing, self::$_nullObject, self::$_nullObject,
+  public static function alterMailingRecipients($mailing, $queue, $job_id) {
+    return self::singleton()->invoke(array('mailing', 'queue', 'job_id'),
+      $mailing, $queue, $job_id, self::$_nullObject, self::$_nullObject, self::$_nullObject,
       'civicrm_alterMailingRecipients'
     );
   }
