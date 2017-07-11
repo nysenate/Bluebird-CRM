@@ -153,6 +153,7 @@ $drush $instance cvapi extension.install key=gov.nysenate.resources
 $drush $instance cvapi extension.install key=gov.nysenate.tagdemographics
 $drush $instance cvapi extension.install key=gov.nysenate.tags
 $drush $instance cvapi extension.install key=gov.nysenate.webintegration
+$drush $instance cvapi extension.install key=gov.nysenate.mail
 
 ## update roles/perms
 echo "$prog: update roles and permissions"
