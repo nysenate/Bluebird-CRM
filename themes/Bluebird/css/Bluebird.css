@@ -4063,6 +4063,23 @@ div.tag-info h4 input[type=color] {
 form.CRM_Tag_Form_Tag div#Tag table th {
   display: none;
 }
+/*11175*/
+div#tagtree li[aria-level="1"] > i.jstree-icon,
+div#tagtree li[aria-level="1"] > a.jstree-anchor#tag_291 {
+  display: none;
+}
+div#tagtree li[aria-level="2"] {
+  margin-left: 0;
+}
+div#tagtree span.crm-tag-item {
+  padding: 0;
+  border-radius: 0;
+  border: none;
+}
+div#tagtree li {
+  font-size: 95%;
+  margin-top: 0;
+}
 
 /*allow select2 widgets to expand*/
 div.crm-container.select2-drop-multi {
