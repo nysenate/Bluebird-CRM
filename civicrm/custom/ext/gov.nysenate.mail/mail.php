@@ -166,6 +166,11 @@ function mail_civicrm_alterAngular(\Civi\Angular\Manager $angular) {
   $changeSet = \Civi\Angular\ChangeSet::create('inject_wizard')
     ->alterHtml('~/crmMailing/EditMailingCtrl/workflow.html', '_mail_alterMailingWizard');
   $angular->add($changeSet);
+
+  //11041 adjust mailing summary
+  $changeSet = \Civi\Angular\ChangeSet::create('modify_review')
+    ->alterHtml('~/crmMailing/BlockReview.html', '_mail_alterMailingReview');
+  $angular->add($changeSet);
 }
 
 function mail_civicrm_pageRun(&$page) {
@@ -341,6 +346,12 @@ function _mail_alterMailingBlock(phpQueryObject $doc) {
       >
     </div>
   ');
+}
+
+function _mail_alterMailingReview(phpQueryObject $doc) {
+  $extDir = CRM_Core_Resources::singleton()->getPath('gov.nysenate.mail');
+  $html = file_get_contents($extDir.'/html/BlockReview.html');
+  $doc->find('.crm-group')->html($html);
 }
 
 // NYSS 4628
