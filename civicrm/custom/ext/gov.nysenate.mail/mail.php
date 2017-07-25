@@ -210,37 +210,43 @@ function mail_civicrm_entityTypes(&$entityTypes) {
   };
 }
 
-function mail_civicrm_alterMailingRecipients($mailing, $queue, $job_id) {
+function mail_civicrm_alterMailingRecipients(&$mailing, &$queue, $job_id, &$params, $context) {
   /*Civi::log()->debug('', array(
     '$mailing' => $mailing,
     '$queue' => $queue,
     '$job_id' => $job_id,
   ));*/
 
-  // NYSS 4628, 4879
-  if ($mailing->all_emails) {
-    _mail_addAllEmails($mailing->id, $mailing->exclude_ood);
+  if ($context == 'pre') {
+    unset($params['filters']['on_hold']);
   }
 
-  if ($mailing->exclude_ood != FILTER_ALL) {
-    _mail_excludeOOD($mailing->id, $mailing->exclude_ood);
+  if ($context == 'post') {
+    // NYSS 4628, 4879
+    if ($mailing->all_emails) {
+      _mail_addAllEmails($mailing->id, $mailing->exclude_ood);
+    }
+
+    if ($mailing->exclude_ood != FILTER_ALL) {
+      _mail_excludeOOD($mailing->id, $mailing->exclude_ood);
+    }
+
+    // NYSS 5581
+    if ($mailing->category) {
+      _mail_excludeCategoryOptOut($mailing->id, $mailing->category);
+    }
+
+    //add email seed group
+    _mail_addEmailSeeds($mailing->id);
+
+    //dedupe emails as final step
+    if ($mailing->dedupe_email) {
+      _mail_dedupeEmail($mailing->id);
+    }
+
+    //remove onHold as we didn't do it earlier
+    _mail_removeOnHold($mailing->id);
   }
-
-  // NYSS 5581
-  if ($mailing->category) {
-    _mail_excludeCategoryOptOut($mailing->id, $mailing->category);
-  }
-
-  //add email seed group
-  _mail_addEmailSeeds($mailing->id);
-
-  //dedupe emails as final step
-  if ($mailing->dedupe_email) {
-    _mail_dedupeEmail($mailing->id);
-  }
-
-  //remove onHold as we didn't do it earlier
-  _mail_removeOnHold($mailing->id);
 
   //don't need this anymore?
   //recalculate the total recipients
@@ -484,13 +490,14 @@ function _mail_dedupeEmail($mailing_id) {
 
   $sql = "
     INSERT INTO $tempTbl
-    SELECT mr.email_id
+    SELECT ANY_VALUE(mr.email_id) email_id
     FROM civicrm_mailing_recipients mr
     JOIN civicrm_email e
       ON mr.email_id = e.id
-    WHERE mailing_id = $mailing_id
-    GROUP BY mr.email_id;";
-  CRM_Core_DAO::executeQuery($sql);
+    WHERE mailing_id = %1
+    GROUP BY e.email;
+  ";
+  CRM_Core_DAO::executeQuery($sql, array(1 => array($mailing_id, 'Positive')));
 
   //now remove contacts from the recipients table that are not found in the inclusion table
   $sql = "
@@ -498,9 +505,10 @@ function _mail_dedupeEmail($mailing_id) {
     USING civicrm_mailing_recipients
     LEFT JOIN $tempTbl
       ON civicrm_mailing_recipients.email_id = $tempTbl.email_id
-    WHERE civicrm_mailing_recipients.mailing_id = $mailing_id
-      AND $tempTbl.email_id IS NULL;";
-  CRM_Core_DAO::executeQuery($sql);
+    WHERE civicrm_mailing_recipients.mailing_id = %1
+      AND $tempTbl.email_id IS NULL;
+  ";
+  CRM_Core_DAO::executeQuery($sql, array(1 => array($mailing_id, 'Positive')));
 
   //cleanup
   CRM_Core_DAO::executeQuery("DROP TABLE $tempTbl");
