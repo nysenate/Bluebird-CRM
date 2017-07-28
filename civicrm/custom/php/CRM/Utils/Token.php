@@ -1243,6 +1243,8 @@ class CRM_Utils_Token {
       }
     }
 
+    //NYSS CRM-20855
+    $params['search_by_primary_details_only'] = CRM_Utils_Array::value('search_by_primary_details_only', $params, TRUE);
     $query = new CRM_Contact_BAO_Query($params, $returnProperties);
 
     //NYSS 5873 allow modifying sort order so we can try to get primary email

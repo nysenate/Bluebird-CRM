@@ -282,6 +282,26 @@ WHERE  c.group_id = {$groupDAO->id}
             ENGINE=HEAP"
     );
 
+    //NYSS 10760
+    $params = array(
+      'filters' => array(
+        'do_not_email' => "$contact.do_not_email = 0",
+        'is_opt_out' => "$contact.is_opt_out = 0",
+        'is_deceased' => "$contact.is_deceased <> 1",
+        'location_filter' => $location_filter,
+        'email_not_null' => "( $email.email IS NOT NULL AND $email.email != '' )",
+        'on_hold' => "$email.on_hold = 0",
+      ),
+      'order_by' => $order_by,
+    );
+
+    // Allow user to alter query responsible to fetch mailing recipients before build,
+    //   by changing the mail filters identified $params
+    CRM_Utils_Hook::alterMailingRecipients($m, $eq, $job_id, $params, 'pre');
+
+    $mailRecipientFilterClause = implode(" AND ", $params['filters']);
+    $order_by = $params['order_by'];
+
     // Get the group contacts, but only those which are not in the
     // exclusion temp table.
 
@@ -303,15 +323,9 @@ WHERE  c.group_id = {$groupDAO->id}
                                        ($mg.group_type = 'Include')
                         AND             $mg.search_id IS NULL
                         AND             $g2contact.status = 'Added'
-                        AND             $contact.do_not_email = 0
-                        AND             $contact.is_opt_out = 0
-                        AND             $contact.is_deceased <> 1
-                        AND             $location_filter
-                        AND             $email.email IS NOT NULL
-                        AND             $email.email != ''
-                        AND             $email.on_hold = 0
                         AND             $mg.mailing_id = {$mailing_id}
                         AND             X_$job_id.contact_id IS null
+                        AND $mailRecipientFilterClause
                         GROUP BY $email.id, $contact.id
                     $order_by";
 
@@ -364,11 +378,7 @@ WHERE  c.group_id = {$groupDAO->id}
                             ON          $contact.id = X_$job_id.contact_id
                     WHERE
                                        ($mg.group_type = 'Include')
-                        AND             $contact.do_not_email = 0
-                        AND             $contact.is_opt_out = 0
-                        AND             $contact.is_deceased <> 1
-                        AND             $location_filter
-                        AND             $email.on_hold = 0
+                        AND $mailRecipientFilterClause
                         AND             $mg.mailing_id = {$mailing_id}
                         AND             X_$job_id.contact_id IS null
                         GROUP BY $email.id, $contact.id
@@ -427,11 +437,7 @@ INNER JOIN civicrm_email                ON civicrm_email.contact_id         = c.
 INNER JOIN civicrm_group_contact_cache gc ON gc.contact_id        = c.id
 LEFT  JOIN X_$job_id                      ON X_$job_id.contact_id = c.id
 WHERE      gc.group_id = {$groupDAO->id}
-  AND      c.do_not_email = 0
-  AND      c.is_opt_out = 0
-  AND      c.is_deceased <> 1
-  AND      $location_filter
-  AND      civicrm_email.on_hold = 0
+  AND $mailRecipientFilterClause
   AND      X_$job_id.contact_id IS null
 $order_by
 ";
@@ -489,11 +495,7 @@ AND    $mg.mailing_id = {$mailing_id}
                                         $mg.entity_table = '$group'
                         AND             $mg.group_type = 'Include'
                         AND             $g2contact.status = 'Added'
-                        AND             $contact.do_not_email = 0
-                        AND             $contact.is_opt_out = 0
-                        AND             $contact.is_deceased <> 1
-                        AND             $location_filter
-                        AND             $email.on_hold = 0
+                        AND $mailRecipientFilterClause
                         AND             $mg.mailing_id = {$mailing_id}
                         AND             X_$job_id.contact_id IS null
                         GROUP BY $email.id, $contact.id
@@ -577,7 +579,7 @@ ORDER BY   {$orderBy}
     $mailingGroup->query("DROP TEMPORARY TABLE I_$job_id");
 
     //NYSS 10760 implement hook
-    CRM_Utils_Hook::alterMailingRecipients($m, $eq, $job_id);
+    CRM_Utils_Hook::alterMailingRecipients($m, $eq, $job_id, $params, 'post');
 
     return $eq;
   }
@@ -1910,7 +1912,7 @@ ORDER BY   civicrm_email.is_bulkmail DESC
       'group' => CRM_Contact_BAO_Group::getTableName(),
       'job' => CRM_Mailing_BAO_MailingJob::getTableName(),
       'queue' => CRM_Mailing_Event_BAO_Queue::getTableName(),
-      'delivered' => CRM_Mailing_Event_BAO_Delivered::getTableName(),
+      'delivered' => 'civicrm_mailing_event_sendgrid_delivered', //NYSS 4765
       'opened' => CRM_Mailing_Event_BAO_Opened::getTableName(),
       'reply' => CRM_Mailing_Event_BAO_Reply::getTableName(),
       'unsubscribe' => CRM_Mailing_Event_BAO_Unsubscribe::getTableName(),
@@ -2315,6 +2317,7 @@ ORDER BY   civicrm_email.is_bulkmail DESC
                'forward',
                'reply',
                'opened',
+               'total_opened',//NYSS 10954
                'optout',
              ) as $key) {
       $url = 'mailing/detail';
@@ -2351,7 +2354,14 @@ ORDER BY   civicrm_email.is_bulkmail DESC
           $searchFilter .= "&mailing_optout=1";
           break;
 
+        //NYSS 10954
         case 'opened':
+          $url = "mailing/opened";
+          $reportFilter .= "&unique_opens_value=1";
+          $searchFilter .= "&mailing_open_status=Y&unique_opens_value=1";
+          break;
+
+        case 'total_opened':
           $url = "mailing/opened";
           $searchFilter .= "&mailing_open_status=Y";
           break;
@@ -2548,8 +2558,10 @@ LEFT JOIN civicrm_mailing_group g ON g.mailing_id   = m.id
     // the mailing
     $selectClause = implode(', ', $select);
     $groupFromSelect = CRM_Contact_BAO_Query::getGroupByFromSelectColumns($select, "$mailing.id");
+    //NYSS 6007 include subject
     $query = "
             SELECT      {$selectClause},
+                        $mailing.subject,
                         MIN($job.scheduled_date) as scheduled_date,
                         MIN($job.start_date) as start_date,
                         MAX($job.end_date) as end_date
@@ -2588,6 +2600,7 @@ LEFT JOIN civicrm_mailing_group g ON g.mailing_id   = m.id
       $rows[] = array(
         'id' => $dao->id,
         'name' => $dao->name,
+        'subject' => $dao->subject,//NYSS 6007
         'status' => $dao->status ? $dao->status : 'Not scheduled',
         'created_date' => CRM_Utils_Date::customFormat($dao->created_date),
         'scheduled' => CRM_Utils_Date::customFormat($dao->scheduled_date),
@@ -2718,7 +2731,87 @@ LEFT JOIN civicrm_mailing_group g ON g.mailing_id   = m.id
       $tokens = array_merge($form->listTokens(), $tokens);
     }
 
-    //sorted in ascending order tokens by ignoring word case
+    //NYSS 3849 unset some tokens to streamline the list
+    //CRM_Core_Error::debug($tokens);
+    $tokensRemove = array(
+      '{contact.contact_type}',
+      '{contact.do_not_email}',
+      '{contact.do_not_phone}',
+      '{contact.do_not_mail}',
+      '{contact.do_not_sms}',
+      '{contact.is_opt_out}',
+      '{contact.external_identifier}',
+      '{contact.sort_name}',
+      '{contact.image_URL}',
+      '{contact.current_employer_id}',
+      '{contact.master_address_belongs_to}',
+      '{contact.street_number_suffix}',
+      '{contact.geo_code_1}',
+      '{contact.geo_code_2}',
+      '{contact.address_name}',
+      '{contact.master_id}',
+      '{contact.county}',
+      '{contact.on_hold}',
+      '{contact.im}',
+      '{contact.custom_57}',
+      '{contact.world_region}',
+      '{contact.custom_60}',
+      '{contact.custom_17}',
+      '{contact.custom_18}',
+      '{contact.custom_19}',
+      '{contact.custom_20}',
+      '{contact.custom_21}',
+      '{contact.custom_58}',
+      '{contact.custom_62}',
+      '{contact.custom_24}',
+      '{contact.custom_61}',
+      '{contact.custom_36}',
+      '{contact.custom_37}',
+      '{contact.custom_38}',
+      '{contact.custom_39}',
+      '{contact.custom_40}',
+      '{contact.checksum}',
+      '{contact.contact_id}',
+      '{contact.gender}',
+      '{contact.custom_45}',
+      '{contact.preferred_communication_method}',
+      '{contact.preferred_language}',
+      '{contact.preferred_mail_format}',
+      '{contact.custom_63}',
+      '{contact.contact_source}'
+    );
+    foreach ( $tokens as $token => $dontcare ) {
+      if ( in_array( $token, $tokensRemove ) ) {
+        unset( $tokens[$token] );
+      }
+    }
+    //NYSS end contact token cleanup
+
+    //NYSS 3849 unset some tokens to streamline the list
+    //CRM_Core_Error::debug($tokens);
+    $mailingTokensRemove = array(
+      '{action.unsubscribe}',
+      '{action.unsubscribeUrl}',
+      '{action.resubscribe}',
+      '{action.resubscribeUrl}',
+      '{action.optOut}',
+      '{action.optOutUrl}',
+      '{action.forward}',
+      '{action.reply}',
+      '{action.subscribeUrl}',
+      '{domain.phone}',
+      '{domain.email}',
+      '{domain.name}',
+      '{domain.address}',
+      '{mailing.viewUrl}'
+    );
+    foreach ( $tokens as $token => $dontcare ) {
+      if ( in_array( $token, $mailingTokensRemove ) ) {
+        unset( $tokens[$token] );
+      }
+    }
+    //NYSS end contact token cleanup
+
     $form->assign('tokens', CRM_Utils_Token::formatTokensForDisplay($tokens));
 
     $templates = array();
@@ -2913,12 +3006,13 @@ WHERE  civicrm_mailing_job.id = %1
   public static function processQueue($mode = NULL) {
     $config = CRM_Core_Config::singleton();
 
-    if ($mode == NULL && CRM_Core_BAO_MailSettings::defaultDomain() == "EXAMPLE.ORG") {
+    //NYSS 6703 we don't need this check as we set the default domain programatically
+    /*if ($mode == NULL && CRM_Core_BAO_MailSettings::defaultDomain() == "EXAMPLE.ORG") {
       throw new CRM_Core_Exception(ts('The <a href="%1">default mailbox</a> has not been configured. You will find <a href="%2">more info in the online user and administrator guide</a>', array(
             1 => CRM_Utils_System::url('civicrm/admin/mailSettings', 'reset=1'),
             2 => "http://book.civicrm.org/user/advanced-configuration/email-system-configuration/",
           )));
-    }
+    }*/
 
     // check if we are enforcing number of parallel cron jobs
     // CRM-8460
@@ -3075,6 +3169,19 @@ AND        m.id = %1
       $mailing['recipients'] = CRM_Utils_System::href(ts('(recipients)'), 'civicrm/mailing/report/event',
         "mid={$values['mailing_id']}&reset=1&cid={$params['contact_id']}&event=queue&context=mailing");
       $mailing['start_date'] = CRM_Utils_Date::customFormat($values['start_date']);
+
+      $mailing[$mailingId]['name'] = $values['name'];//NYSS 6895
+      //NYSS 6698/6900
+      if ( CRM_Core_Permission::check('view mass email') ||
+        CRM_Core_Permission::check('create mailings') ||
+        CRM_Core_Permission::check('schedule mailings') ||
+        CRM_Core_Permission::check('approve mailings') ||
+        CRM_Core_Permission::check('access CiviMail')
+      ) {
+        $mailing[$mailingId]['recipients'] = CRM_Utils_System::href(ts('(recipients)'), 'civicrm/mailing/report/event',
+          "mid={$values['mailing_id']}&reset=1&cid={$params['contact_id']}&event=queue&context=mailing");
+      }
+
       //CRM-12814
       $mailing['openstats'] = "Opens: " .
         CRM_Utils_Array::value($values['mailing_id'], $openCounts, 0) .
