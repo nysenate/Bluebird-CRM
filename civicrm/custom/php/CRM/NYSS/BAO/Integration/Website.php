@@ -191,7 +191,9 @@ class CRM_NYSS_BAO_Integration_Website
    */
   static function createContact($params)
   {
-    $addressParams = array(
+    $params['custom_60'] = 'Website Account';
+    $params['contact_type'] = 'Individual';
+    $params['api.address.create'] = array(
       'street_address' => $params['street_address'],
       'supplemental_addresss_1' => $params['supplemental_addresss_1'],
       'city' => $params['city'],
@@ -204,22 +206,6 @@ class CRM_NYSS_BAO_Integration_Website
 
     $contact = civicrm_api3('contact', 'create', $params);
     //CRM_Core_Error::debug_var('contact', $contact);
-
-    //get and store address district fields
-    CRM_Utils_SAGE::distAssign($addressParams);
-    $distParams = array();
-    foreach ($addressParams as $key => $val) {
-      if (strpos($key, '_-1') !== FALSE) {
-        unset($addressParams[$key]);
-        $distParams[str_replace('_-1', '', $key)] = $val;
-      }
-    }
-
-    if (!empty($addressId = $contact['values'][$contact['id']]['api.address.create']['id'])) {
-      $distParams['entity_id'] = $addressId;
-      $distParams['entity_table'] = 'civicrm_address';
-      civicrm_api3('custom_value', 'create', $distParams);
-    }
 
     return $contact['id'];
   } //createContact()
@@ -1077,7 +1063,7 @@ class CRM_NYSS_BAO_Integration_Website
       require_once 'CRM/NYSS/BAO/Integration/OpenLegislation.php';
       $sponsor = CRM_NYSS_BAO_Integration_OpenLegislation::getBillSponsor($billName);
     }
-    
+
     return "{$billName} ({$sponsor})";
   }//buildBillName
 
@@ -1520,7 +1506,7 @@ class CRM_NYSS_BAO_Integration_Website
     $exists = CRM_Core_DAO::singleValueQuery("
       SELECT e.id
       FROM civicrm_email e
-      JOIN civicrm_contact c 
+      JOIN civicrm_contact c
         ON e.contact_id = c.id
         AND c.is_deleted != 1
       WHERE contact_id = %1

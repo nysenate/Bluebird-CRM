@@ -11,7 +11,6 @@
 #                     - removed all references to base.domain
 #                     - removed renaming of instance site directory, since
 #                       /sites/ is no longer polluted with directories
-# Revised: 2017-01-04 - added drush command to set file_public_path
 #
 
 prog=`basename $0`
