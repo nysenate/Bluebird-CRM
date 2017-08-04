@@ -7,11 +7,15 @@
 // Revised: 2017-03-13 - More CLI options for fine-grained control
 // Revised: 2017-03-16 - added --list and --preview options
 // Revised: 2017-03-17 - added support for default template via --default
+// Revised: 2017-04-06 - hero (header) image now downloaded and stored locally
 //
 
 require_once 'common_funcs.php';
 require_once dirname(__FILE__).'/../modules/civicrm/packages/Smarty/Smarty.class.php';
 
+define('DEFAULT_SCALED_WIDTH', 275);
+define('DEFAULT_JPG_QUALITY', 90);
+define('DEFAULT_PNG_QUALITY', 6);
 
 
 // Convert all Bluebird configuration parameter names, transforming dots
@@ -82,7 +86,53 @@ function set_email_defaults(&$cfg)
 
 
 
-function retrieve_senator_info($name)
+function retrieve_and_store_image($url, $filepath, $scaled_width = 0)
+{
+  // Download the image data from the provided URL.
+  // Note that "allow_url_fopen" must be enabled in php.ini.
+  $image_data = file_get_contents($url);
+  if ($image_data === false) {
+    return false;
+  }
+
+  // Create an image resource from the image data.
+  $ih = imagecreatefromstring($image_data);
+  if ($ih === false) {
+    return false;
+  }
+
+  // Scale the image to the provided size, if requested.
+  if ($scaled_width != 0) {
+    // No height parameter forces GD to preserve the aspect ratio.
+    $scaled_ih = imagescale($ih, $scaled_width);
+    imagedestroy($ih);
+    $ih = $scaled_ih;
+  }
+
+  // Output the image data to the specified filepath.  The output format
+  // is determined from the file extension.
+  $fileext = strtolower(substr(strrchr($filepath, '.'), 1));
+  switch ($fileext) {
+    case 'gif':
+      $rc = imagegif($ih, $filepath);
+      break;
+    case 'jpg':
+    case 'jpeg':
+      $rc = imagejpeg($ih, $filepath, DEFAULT_JPG_QUALITY);
+      break;
+    case 'png':
+      $rc = imagepng($ih, $filepath, DEFAULT_PNG_QUALITY);
+      break;
+    default:
+      echo "Error: $filepath: Unknown image file type\n";
+  }
+  imagedestroy($ih);
+  return $rc;
+} // retrieve_and_store_image()
+
+
+
+function retrieve_senator_info($name, $bbcfg, $is_local = true)
 {
   $ch = curl_init("https://www.nysenate.gov/senators-json/$name");
   curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -98,7 +148,20 @@ function retrieve_senator_info($name)
     }
     else {
       // Convert the single object into an array.
-      return (array)$senator_info;
+      $senator_info = (array)$senator_info;
+      if ($is_local) {
+        $tpldir = $bbcfg['data.rootdir'].'/'.$bbcfg['data_dirname'].'/pubfiles/images/template';
+        foreach (array('img', 'hero_img') as $imgtype) {
+          $url = $senator_info[$imgtype];
+          $fname = "{$name}_website_{$imgtype}.jpg";
+          $ipath = "$tpldir/$fname";
+          $rc = retrieve_and_store_image($url, $ipath, DEFAULT_SCALED_WIDTH);
+          if ($rc === true) {
+            $senator_info[$imgtype] = $bbcfg['email.images.instance.base_url']."/template/$fname";
+          }
+        }
+      }
+      return $senator_info;
     }
   }
   else {
@@ -367,6 +430,7 @@ $shortname = null;
 $default_ttype = null;
 $mode = 'list';
 $text_display = false;
+$local_images = true;
 $tpl_types = array();
 $tpl_disps = array('header' => true, 'footer' => true);
 
@@ -408,6 +472,9 @@ while ($i < $argc) {
       break;
     case '--text': case '-t':
       $text_display = true;
+      break;
+    case '--no-local-images': case '-n':
+      $local_images = false;
       break;
     case '--help':
       usage($prog);
@@ -457,7 +524,7 @@ set_email_defaults($bbconfig);
 
 
 if ($mode == 'preview' || $mode == 'update') {
-  $seninfo = retrieve_senator_info($shortname);
+  $seninfo = retrieve_senator_info($shortname, $bbconfig, $local_images);
   if ($seninfo == null) {
     _stderr("$prog: Unable to retrieve info for [$shortname] from website");
     exit(1);
