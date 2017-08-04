@@ -1063,7 +1063,7 @@ class CRM_NYSS_BAO_Integration_Website
       require_once 'CRM/NYSS/BAO/Integration/OpenLegislation.php';
       $sponsor = CRM_NYSS_BAO_Integration_OpenLegislation::getBillSponsor($billName);
     }
-    
+
     return "{$billName} ({$sponsor})";
   }//buildBillName
 
@@ -1506,7 +1506,7 @@ class CRM_NYSS_BAO_Integration_Website
     $exists = CRM_Core_DAO::singleValueQuery("
       SELECT e.id
       FROM civicrm_email e
-      JOIN civicrm_contact c 
+      JOIN civicrm_contact c
         ON e.contact_id = c.id
         AND c.is_deleted != 1
       WHERE contact_id = %1
