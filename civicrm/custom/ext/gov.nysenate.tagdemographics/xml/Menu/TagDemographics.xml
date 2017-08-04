@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<menu>
+  <item>
+    <path>civicrm/search/custom/tagdemographics/quickexport</path>
+    <title>Quick Export</title>
+    <page_callback>CRM_TagDemographics_Form_Search_TagDemographics::quickExport</page_callback>
+  </item>
+</menu>

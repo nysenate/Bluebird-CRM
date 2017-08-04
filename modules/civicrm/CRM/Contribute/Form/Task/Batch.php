@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,50 +23,41 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2013
- * $Id$
- *
+ * @copyright CiviCRM LLC (c) 2004-2017
  */
 
 /**
- * This class provides the functionality for batch profile update for contributions
+ * This class provides the functionality for batch profile update for contributions.
  */
 class CRM_Contribute_Form_Task_Batch extends CRM_Contribute_Form_Task {
 
   /**
-   * the title of the group
+   * The title of the group
    *
    * @var string
    */
   protected $_title;
 
   /**
-   * maximum profile fields that will be displayed
-   *
+   * Maximum profile fields that will be displayed
    */
   protected $_maxFields = 9;
 
   /**
-   * variable to store redirect path
-   *
+   * Variable to store redirect path
    */
   protected $_userContext;
 
   /**
-   * build all the data structures needed to build the form
-   *
-   * @return void
-   * @access public
+   * Build all the data structures needed to build the form.
    */
-  function preProcess() {
-    /*
-     * initialize the task and row fields
-     */
+  public function preProcess() {
+    // initialize the task and row fields
     parent::preProcess();
 
     //get the contact read only fields to display.
@@ -86,19 +77,15 @@ class CRM_Contribute_Form_Task_Batch extends CRM_Contribute_Form_Task {
   }
 
   /**
-   * Build the form
-   *
-   * @access public
-   *
-   * @return void
+   * Build the form object.
    */
-  function buildQuickForm() {
+  public function buildQuickForm() {
     $ufGroupId = $this->get('ufGroupId');
 
     if (!$ufGroupId) {
       CRM_Core_Error::fatal('ufGroupId is missing');
     }
-    $this->_title = ts('Batch Update for Contributions') . ' - ' . CRM_Core_BAO_UFGroup::getTitle($ufGroupId);
+    $this->_title = ts('Update multiple contributions') . ' - ' . CRM_Core_BAO_UFGroup::getTitle($ufGroupId);
     CRM_Utils_System::setTitle($this->_title);
 
     $this->addDefaultButtons(ts('Save'));
@@ -117,7 +104,7 @@ class CRM_Contribute_Form_Task_Batch extends CRM_Contribute_Form_Task {
       }
 
       //fix to reduce size as we are using this field in grid
-      if (is_array($field['attributes']) && $this->_fields[$name]['attributes']['size'] > 19) {
+      if (is_array($field['attributes']) && !empty($this->_fields[$name]['attributes']['size']) && $this->_fields[$name]['attributes']['size'] > 19) {
         //shrink class to "form-text-medium"
         $this->_fields[$name]['attributes']['size'] = 19;
       }
@@ -138,7 +125,6 @@ class CRM_Contribute_Form_Task_Batch extends CRM_Contribute_Form_Task {
       )
     );
 
-
     $this->assign('profileTitle', $this->_title);
     $this->assign('componentIds', $this->_contributionIds);
 
@@ -152,27 +138,36 @@ class CRM_Contribute_Form_Task_Batch extends CRM_Contribute_Form_Task {
       );
     }
 
+    // It is possible to have fields that are required in CiviCRM not be required in the
+    // profile. Overriding that here. Perhaps a better approach would be to
+    // make them required in the schema & read that up through getFields functionality.
+    $requiredFields = array('receive_date');
+
     //fix for CRM-2752
     $customFields = CRM_Core_BAO_CustomField::getFields('Contribution');
     foreach ($this->_contributionIds as $contributionId) {
       $typeId = CRM_Core_DAO::getFieldValue("CRM_Contribute_DAO_Contribution", $contributionId, 'financial_type_id');
       foreach ($this->_fields as $name => $field) {
+        $entityColumnValue = array();
         if ($customFieldID = CRM_Core_BAO_CustomField::getKeyID($name)) {
           $customValue = CRM_Utils_Array::value($customFieldID, $customFields);
-          if (CRM_Utils_Array::value('extends_entity_column_value', $customValue)) {
+          if (!empty($customValue['extends_entity_column_value'])) {
             $entityColumnValue = explode(CRM_Core_DAO::VALUE_SEPARATOR,
               $customValue['extends_entity_column_value']
             );
           }
 
-          if (CRM_Utils_Array::value($typeId, $entityColumnValue) ||
-            CRM_Utils_System::isNull($entityColumnValue[$typeId])
+          if (!empty($entityColumnValue[$typeId]) ||
+            CRM_Utils_System::isNull(CRM_Utils_Array::value($typeId, $entityColumnValue))
           ) {
             CRM_Core_BAO_UFGroup::buildProfile($this, $field, NULL, $contributionId);
           }
         }
         else {
           // handle non custom fields
+          if (in_array($field['name'], $requiredFields)) {
+            $field['is_required'] = TRUE;
+          }
           CRM_Core_BAO_UFGroup::buildProfile($this, $field, NULL, $contributionId);
         }
       }
@@ -184,27 +179,22 @@ class CRM_Contribute_Form_Task_Batch extends CRM_Contribute_Form_Task {
     $buttonName = $this->controller->getButtonName('submit');
 
     if ($suppressFields && $buttonName != '_qf_Batch_next') {
-      CRM_Core_Session::setStatus(ts("FILE or Autocomplete Select type field(s) in the selected profile are not supported for Batch Update and have been excluded."), ts('Unsupported Field Type'), 'error');
+      CRM_Core_Session::setStatus(ts("File or Autocomplete-Select type field(s) in the selected profile are not supported for Update multiple contributions."), ts('Unsupported Field Type'), 'error');
     }
 
     $this->addDefaultButtons(ts('Update Contributions'));
   }
 
   /**
-   * This function sets the default values for the form.
-   *
-   * @access public
-   *
-   * @return None
+   * Set default values for the form.
    */
-  function setDefaultValues() {
+  public function setDefaultValues() {
     if (empty($this->_fields)) {
       return;
     }
 
     $defaults = array();
     foreach ($this->_contributionIds as $contributionId) {
-      $details[$contributionId] = array();
       CRM_Core_BAO_UFGroup::setProfileDefaults(NULL, $this->_fields, $defaults, FALSE, $contributionId, 'Contribute');
     }
 
@@ -212,56 +202,32 @@ class CRM_Contribute_Form_Task_Batch extends CRM_Contribute_Form_Task {
   }
 
   /**
-   * process the form after the input has been submitted and validated
-   *
-   * @access public
-   *
-   * @return None
+   * Process the form after the input has been submitted and validated.
    */
   public function postProcess() {
     $params = $this->exportValues();
-    $dates = array(
-      'receive_date',
-      'receipt_date',
-      'thankyou_date',
-      'cancel_date',
-    );
     if (isset($params['field'])) {
-      foreach ($params['field'] as $key => $value) {
+      foreach ($params['field'] as $contributionID => $value) {
 
-        $value['custom'] = CRM_Core_BAO_CustomField::postProcess($value,
-          CRM_Core_DAO::$_nullObject,
-          $key,
-          'Contribution'
-        );
-
-        $ids['contribution'] = $key;
-        foreach ($dates as $val) {
-          if (isset($value[$val])) {
-            $value[$val] = CRM_Utils_Date::processDate($value[$val]);
-          }
-        }
-        if (CRM_Utils_Array::value('financial_type', $value)) {
+        $value['id'] = $contributionID;
+        if (!empty($value['financial_type'])) {
           $value['financial_type_id'] = $value['financial_type'];
         }
 
-        if (CRM_Utils_Array::value('payment_instrument', $value)) {
-          $value['payment_instrument_id'] = $value['payment_instrument'];
-        }
+        $value['options'] = array(
+          'reload' => 1,
+        );
+        $contribution = civicrm_api3('Contribution', 'create', $value);
+        $contribution = $contribution['values'][$contributionID];
 
-        if (CRM_Utils_Array::value('contribution_source', $value)) {
-          $value['source'] = $value['contribution_source'];
-        }
-
-        unset($value['financial_type']);
-        unset($value['contribution_source']);
-        $contribution = CRM_Contribute_BAO_Contribution::add($value, $ids);
-
-        // add custom field values
-        if (CRM_Utils_Array::value('custom', $value) &&
-          is_array($value['custom'])
-        ) {
-          CRM_Core_BAO_CustomValueTable::store($value['custom'], 'civicrm_contribution', $contribution->id);
+        // @todo add check as to whether the status is updated.
+        if (!empty($value['contribution_status_id'])) {
+          // @todo - use completeorder api or make api call do this.
+          CRM_Contribute_BAO_Contribution::transitionComponentWithReturnMessage($contribution['id'],
+            $value['contribution_status_id'],
+            CRM_Utils_Array::value("field[{$contributionID}][contribution_status_id]", $this->_defaultValues),
+            $contribution['receive_date']
+          );
         }
       }
       CRM_Core_Session::setStatus(ts("Your updates have been saved."), ts('Saved'), 'success');
@@ -270,6 +236,5 @@ class CRM_Contribute_Form_Task_Batch extends CRM_Contribute_Form_Task {
       CRM_Core_Session::setStatus(ts("No updates have been saved."), ts('Not Saved'), 'alert');
     }
   }
-  //end of function
-}
 
+}

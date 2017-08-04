@@ -23,10 +23,9 @@
 @import url("/sites/all/modules/civicrm/drupal/../css/civicrm.css?mr6b49");
 @import url("/sites/all/modules/civicrm/drupal/../css/extras.css?mr6b49");</style>
 <style type="text/css" media="screen,projection">@import url("/sites/default/themes/Bluebird/css/Bluebird.css?mr6b49");
-@import url("/sites/default/themes/Bluebird/nyss_skin/skin.css?mr6b49");
-@import url("/sites/default/themes/Bluebird/nyss_skin/civi-header.css?mr6b49");
-@import url("/sites/default/themes/Bluebird/css/style.css?mr6b49");</style>
-<link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/Bluebird/nyss_skin/tags/tags.css" />
+@import url("/sites/default/themes/Bluebird/skin.css?mr6b49");
+@import url("/sites/default/themes/Bluebird/civi-header.css?mr6b49");</style>
+<link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/Bluebird/css/tags/tags.css" />
   <script type="text/javascript" src="/misc/jquery.js?v=1.4.4"></script>
 <script type="text/javascript" src="/misc/jquery.once.js?v=1.2"></script>
 <script type="text/javascript" src="/misc/drupal.js?mr6b49"></script>

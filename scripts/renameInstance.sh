@@ -152,7 +152,6 @@ mv $data_dir_src $data_dir_dest || exit 1
 
 echo "Configuring instance [$destinst]"
 $script_dir/manageCiviConfig.sh $destinst --update --all
-$script_dir/drush.sh $destinst vset file_public_path data/$data_dirname_dest/drupal
 
 echo "Rebuilding triggers"
 php $app_rootdir/civicrm/scripts/rebuildTriggers.php -S$destinst

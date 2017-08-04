@@ -1,8 +1,15 @@
+@font-face {
+  font-family: "FreightText Book";
+  src: url(freighttext-book.woff);
+}
+
 body {
   margin: 0;
-  font: 13px/1.5em "Helvetica Neue", helvetica, Arial, sans-serif;
+  font-family: "adelle", serif;
+  font-size: 13px;
   letter-spacing: 0.03em;
-  background:#7fcdfe url(../images/bluebird_back.jpg) repeat-x top left;
+  background-color: white;
+  line-height: 200%;
 }
 
 a:link, a:visited {
@@ -143,18 +150,27 @@ div.status {
 #sidebar-first,
 #sidebar-second,
 #navigation {
-  background: url(../images/nyss_bg.png) repeat-x top left;
-  border-bottom: 2px solid white;
-  -moz-box-shadow: 0px 2px 2px 3px #666;
-  -webkit-box-shadow: 0px 2px 2px 3px #666;
-  box-shadow: 0px 2px 2px 3px #666;
   margin-bottom: 10px;
 }
 
 div.nyss-logo {
   max-width: 960px;
-  padding: 10px 0;
+  padding: 20px 0;
   margin: 0 auto;
+  border-bottom: 1px solid #AAAAAA;
+  font-size: 22px;
+  font-family: "FreightText Regular";
+  color: #444444;
+}
+div.nyss-logo::before {
+  content: "";
+  background: url(../images/nys_logo_header240x240.jpg) no-repeat top left;
+  width: 60px;
+  height: 60px;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 10px;
+  background-size: cover;
 }
 
 * {
@@ -207,74 +223,76 @@ body:before {
 div.crm-title h1.title {
   font-size: 1.5em;
   color: #333;
-  font-weight: bold;
   margin-bottom: 0;
   padding-bottom: 0;
+  font-family: "adelle", serif;
+  font-weight: 600;
 }
 div.nyss-senator {
   font-size: 2.5em;
-  color: #FFFFFF;
+  color: #444444;
   line-height: 150%;
-  text-shadow: 1px 1px 3px #666;
   margin-bottom: 15px;
 }
 div.nyss-intro {
-  padding: 15px;
-  background: rgba(255,255,255,.3);
+  background-color: #2B6A90;
+  padding: 20px;
   font-size: 1.3em;
   line-height: 150%;
-  -moz-box-shadow: 0px 0px 4px 1px #999;
-  -webkit-box-shadow: 0px 0px 4px 1px #999;
-  box-shadow: 0px 0px 4px 1px #999;
   margin-bottom: 25px;
+  color: white;
+}
+div.nyss-intro p {
+  margin-bottom: 0;
+}
+div.nyss-intro div.display_name {
+  color: white;
 }
 div.display_name {
-  color: #036;
+  color: #444444;
   font-size: 2em;
   margin: 20px 0;
 }
 div.emails {
-  background: rgba(255,255,255,.3);
   padding: 10px;
-  -moz-box-shadow: 0px 0px 4px 1px #999;
-  -webkit-box-shadow: 0px 0px 4px 1px #999;
-  box-shadow: 0px 0px 4px 1px #999;
+  border: none;
 }
 div.nyss-email-label {
   float: left;
-  width: 20%;
-  color: #036;
+  width: 30%;
+  color: #444444;
   text-transform: uppercase;
-  font-size: .8em;
+  font-size: 1.2em;
   font-weight: bold;
   padding: 0 0 5px;
 }
 div.nyss-email-label.wide {
-  width: 30%;
+  width: 40%;
 }
 div.nyss-email-row {
   clear: both;
-  padding-top: 5px;
-  border-top: 1px solid #eee;
+  padding-top: 25px;
+  border-top: none;
 }
 div.nyss-email-fld {
   float: left;
-  width: 70%;
-  font-size: 1.1em;
+  width: 60%;
+  font-size: 1.2em;
 }
 div.nyss-email-fld.wide {
-  width: 30%;
+  width: 40%;
 }
 div.nyss-email-fld input.form-checkbox {
   margin-right: 8px;
   margin-bottom: 8px;
 }
 div.nyss-key {
-  font-size: 1.1em;
-  font-style: italic;
   padding-top: 5px;
   padding-bottom: 8px;
   line-height: 130%;
+}
+div.nyss-email-fld input {
+  margin-right: 8px;
 }
 div.notes {
   margin-top: 20px;
@@ -291,16 +309,21 @@ div.nyss-buttons {
 .crm-container div.nyss-buttons input.form-submit {
   font-size: 1.4em;
   padding: 4px 8px;
-  background-color: #036;
-  border: 1px solid #666;
-  color: #eee;
-  -moz-border-radius: 5px;
-  border-radius: 5px;
+  background-color: #F1AF58;
+  color: white;
+  border: none;
 }
 .crm-container div.nyss-buttons input.form-submit:hover {
-  background-color: #194775;
+  background-color: #CB8D37;
 }
 div.nyss-mailing-subscriptions,
 div.crm-title {
   padding: 0 6px;
+}
+div.nyss-buttons input {
+  background-color: #2B6A90;
+  padding: 20px 30px;
+  color: #eee;
+  border: none;
+  font-size: 1.4em;
 }

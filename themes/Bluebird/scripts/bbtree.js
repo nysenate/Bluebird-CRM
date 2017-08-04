@@ -573,21 +573,6 @@ TagTreeTag.prototype.removeTagCheck = function(tag_id) {
         });
     }
 
-    // Remove the name from the tag list at the top (if it exists)
-    if (self.list_container != null) {
-        if (self.list_container.find('span').html().length == 0) {
-            var tag_name = tag.find('.name').html();
-            var tag_list_items = self.list_container.find('span').html().split(" • ");
-            // This is done in a crappy way to make all browsers happy
-            cj.each(tag_list_items, function(i, item) {
-                if (tag_name == item) {
-                    tag_list_items.splice(i, 1);
-                }
-            });
-            self.list_container.find('span').html(tag_list_items.join(" • "));
-            self.toggleTagList();
-        }
-    }
     // Decrement the number in the tagging tab
     var tab_counter = cj('li#tab_tag em');
     if (tab_counter.length) {
@@ -604,22 +589,6 @@ TagTreeTag.prototype.addTagCheck = function(tag_id) {
     tag.find('input[type="checkbox"]').attr('checked', true);
     tag.parents('dl').not('.lv-0').prev('dt').addClass('subChecked');
 
-    // Add the name to the tag list at the top (if it exists)
-    if (self.list_container != null) {
-        if (self.list_container.find('span').html().length == 0) {
-
-            var tag_name = tag.find('.name').html();
-
-            var tag_list_items = []
-            if (self.list_container.find('span').html()) {
-                tag_list_items = self.list_container.find('span').html().split(" • ");
-            }
-            tag_list_items.push(tag_name);
-            tag_list_items.sort();
-            self.list_container.find('span').html(tag_list_items.join(" • "));
-            self.toggleTagList();
-        }
-    }
     // Increment the number in the tagging tab (if it exists)
     var tab_counter = cj('li#tab_tag em');
     if (tab_counter.length) {
@@ -720,7 +689,7 @@ TagTreeManage.prototype.animate_tree = function(tree) {
         var mywindow = window.open('', 'PrintTags');
         mywindow.document.body.innerHTML="";
         mywindow.document.write('<!DOCTYPE html><html><head><title>Print Tags</title>');
-        mywindow.document.write('<link type="text/css" rel="stylesheet" href="/sites/default/themes/Bluebird/nyss_skin/tags/tags.css" />');
+        mywindow.document.write('<link type="text/css" rel="stylesheet" href="/sites/default/themes/Bluebird/css/tags/tags.css" />');
         mywindow.document.write('</head><body class="popup">');
         mywindow.document.write('<div class="BBTree" style="height:auto;width:auto;overflow-y:hidden;">');
         mywindow.document.write(tree.html());
@@ -973,47 +942,50 @@ TagTreeManage.prototype.updateTagModal = function(tag) {
                     cj.ajax({
                         url: '/civicrm/ajax/tag/update',
                         data: {
-                            name: new_name,
-                            description: new_desc,
-                            id: tag_id,
-                            is_reserved: new_resv,
-                            call_uri: window.location.href
+                          name: new_name,
+                          description: new_desc,
+                          id: tag_id,
+                          is_reserved: new_resv,
+                          call_uri: window.location.href
                         },
                         dataType: 'json',
                         success: function(data, status, XMLHttpRequest) {
-                            if(data.code != 1) {
-                                BBTree.reportAction(['updat',0,tagUpdate, data.message]);
-                                if (data.message == 'DB Error: already exists') {
-                                    self.notify('Error', 'Update Tag', 'Tag <span>'+new_name+'</span> already exists')
-                                }
-                                else {
-                                    self.notify('Error', 'Update Tag', 'Tag <span>'+tag_name+'</span> was unable to be updated')
-                                }
+                          if(data.code != 1) {
+                            //console.log('data: ', data);//LCD
+                            //console.log('status: ', status);
+                            //console.log('XMLHttpRequest: ', XMLHttpRequest);
+                            //BBTree.reportAction(['updat',0,tagUpdate, data.message]);
+                            if (data.message == 'DB Error: already exists') {
+                              self.notify('Error', 'Update Tag', 'Tag <span>'+new_name+'</span> already exists')
                             }
                             else {
-                                var tag_data = data.message;
-                                if(parseFloat(tag_data.is_reserved)) {
-                                    tag.addClass('isReserved');
-                                }
-                                else{
-                                    tag.removeClass('isReserved');
-                                }
-                                tag.find('.name').html(tag_data.name);
-                                tag.attr('description', new_desc);
-
-                                var msg = 'Tag <span>'+tag_name+'</span> was updated.';
-                                if (tag_name != new_name) {
-                                    msg += ' Its new name is <span>'+new_name+'</span>.';
-                                }
-                                if (tag_desc != new_desc) {
-                                    msg += ' Its new description is <span>"'+new_desc+'"</span>. ';
-                                }
-                                if (tag_resv != new_resv) {
-                                    msg += ' It is now '+(new_resv ? 'reserved.' : 'unreserved.')
-                                }
-                                self.notify('Success', 'Update Tag', msg);
+                              self.notify('Error', 'Update Tag', 'Tag <span>'+tag_name+'</span> was unable to be updated')
                             }
-                            self.dialog.dialog("close");
+                          }
+                          else {
+                              var tag_data = data.message;
+                              if(parseFloat(tag_data.is_reserved)) {
+                                  tag.addClass('isReserved');
+                              }
+                              else{
+                                  tag.removeClass('isReserved');
+                              }
+                              tag.find('.name').html(tag_data.name);
+                              tag.attr('description', new_desc);
+
+                              var msg = 'Tag <span>'+tag_name+'</span> was updated.';
+                              if (tag_name != new_name) {
+                                  msg += ' Its new name is <span>'+new_name+'</span>.';
+                              }
+                              if (tag_desc != new_desc) {
+                                  msg += ' Its new description is <span>"'+new_desc+'"</span>. ';
+                              }
+                              if (tag_resv != new_resv) {
+                                  msg += ' It is now '+(new_resv ? 'reserved.' : 'unreserved.')
+                              }
+                              self.notify('Success', 'Update Tag', msg);
+                          }
+                          self.dialog.dialog("close");
                         }
                     });
                 }

@@ -1,7 +1,7 @@
 /* CiviCRM Print Media Stylesheet */
 
 /* Hide any buttons or other form items when printing*/
-#crm-container .buttons, #crm-container .crm-submit-buttons, #crm-container .crm-actions-ribbon, #crm-container .form-submit {
+#crm-container .buttons, #crm-container .crm-submit-buttons, #crm-container .crm-actions-ribbon, #crm-container .crm-form-submit {
      display: none;
 }
 
@@ -15,7 +15,7 @@ table.form-layout td, table.form-layout th {
      display: none;
  }
 #crm-container {
-    overflow         : visible !important;
+    overflow: visible !important;
     font-family      : DejaVu Sans, serif;
     margin           : 0px 10px 0px 10px;
 }
@@ -74,6 +74,11 @@ table.form-layout td, table.form-layout th {
    border-top       : 2px groove #DCDCDC;
 }
 
+#crm-container div.page-break {
+  page-break-before: always;
+  height: 0;
+}
+
 #crm-container .report-label {
     text-align       : right;
     font-weight      : bold;
@@ -118,4 +123,9 @@ table.form-layout td, table.form-layout th {
     font-size        : .8em;
     font-style       : italic;
     float            : right;
+}
+
+/* Fix for CRM-19869 */
+tr {
+    page-break-inside: avoid;
 }

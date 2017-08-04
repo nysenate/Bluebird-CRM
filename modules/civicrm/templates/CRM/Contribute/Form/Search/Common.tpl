@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,7 +24,7 @@
  +--------------------------------------------------------------------+
 *}
 
-<tr><td><label>{ts}Contribution Dates{/ts}</label></td></tr>
+<tr><td><label>{ts}Date Received{/ts}</label></td></tr>
 <tr>
 {include file="CRM/Core/DateRange.tpl" fieldName="contribution_date" from='_low' to='_high'}
 </tr>
@@ -34,23 +34,45 @@
   {$form.contribution_amount_low.html} &nbsp;&nbsp;
   {$form.contribution_amount_high.label}
   {$form.contribution_amount_high.html} </td>
-  <td><label>{ts}Contribution Status{/ts}</label> <br />
+  <td><label>{$form.contribution_status_id.label}</label> <br />
   {$form.contribution_status_id.html} </td>
 </tr>
 <tr>
   <td>
     <div class="float-left">
-      <label>{ts}Payment Method{/ts}</label> <br />
-      {$form.contribution_payment_instrument_id.html}
+      <label>{$form.payment_instrument_id.label}</label> <br />
+      {$form.payment_instrument_id.html|crmAddClass:twenty}
     </div>
     <div class="float-left" id="contribution_check_number_wrapper">
       {$form.contribution_check_number.label} <br />
       {$form.contribution_check_number.html}
     </div>
+    <div class="float-left" id="financial_trxn_card_type_id_wrapper">
+      {$form.financial_trxn_card_type_id.label} <br />
+      {$form.financial_trxn_card_type_id.html}
+    </div>
+    <div class="float-left" id="pan_truncation_wrapper">
+      {$form.financial_trxn_pan_truncation.label} <br />
+      {$form.financial_trxn_pan_truncation.html}
+    </div>
   </td>
   <td>
-    {$form.contribution_transaction_id.label} <br />
-    {$form.contribution_transaction_id.html}
+    {$form.contribution_trxn_id.label} <br />
+    {$form.contribution_trxn_id.html}
+  </td>
+</tr>
+<tr>
+  <td>
+    {$form.contribution_or_softcredits.label} <br />
+    {$form.contribution_or_softcredits.html}<br />
+    <div class="float-left" id="contribution_soft_credit_type_wrapper">
+      {$form.contribution_soft_credit_type_id.label} <br />
+      {$form.contribution_soft_credit_type_id.html|crmAddClass:twenty}
+    </div>
+  </td>
+  <td>
+    {$form.invoice_id.label} <br />
+    {$form.invoice_id.html}
   </td>
 </tr>
 <tr>
@@ -61,30 +83,18 @@
         <td>{$form.contribution_thankyou_date_is_not_null.label}</td>
         <td>
           {$form.contribution_thankyou_date_is_not_null.html}
-          <span class="crm-clear-link">
-            (<a href="#" onclick="unselectRadio('contribution_thankyou_date_is_not_null','{$form.formName}')">
-            {ts}clear{/ts}</a>)
-          </span>
         </td>
       </tr>
       <tr>
         <td>{$form.contribution_receipt_date_is_not_null.label}</td>
         <td>
           {$form.contribution_receipt_date_is_not_null.html}
-          <span class="crm-clear-link">
-            (<a href="#" onclick="unselectRadio('contribution_receipt_date_is_not_null','{$form.formName}')">
-            {ts}clear{/ts}</a>)
-          </span>
         </td>
       </tr>
       <tr>
         <td>{$form.contribution_test.label} {help id="is-test" file="CRM/Contact/Form/Search/Advanced"}</td>
         <td>
           {$form.contribution_test.html}
-          <span class="crm-clear-link">
-            (<a href="#" onclick="unselectRadio('contribution_test','{$form.formName}')">
-            {ts}clear{/ts}</a>)
-          </span>
         </td>
       </tr>
       </tbody>
@@ -97,18 +107,12 @@
         <td>{$form.contribution_pay_later.label}</td>
         <td>
           {$form.contribution_pay_later.html}
-            <span class="crm-clear-link">
-              (<a href="#" onclick="unselectRadio('contribution_pay_later','{$form.formName}'); return false;">{ts}clear{/ts}</a>)
-            </span>
         </td>
       </tr>
       <tr>
         <td>{$form.contribution_recurring.label}</td>
         <td>
           {$form.contribution_recurring.html}
-            <span class="crm-clear-link">
-              (<a href="#" onclick="unselectRadio('contribution_recurring','{$form.formName}'); return false;">{ts}clear{/ts}</a>)
-            </span>
         </td>
       </tr>
       </tbody>
@@ -127,32 +131,30 @@
 </tr>
 <tr>
   <td>
-    {$form.contribution_in_honor_of.label} <br />
-    {$form.contribution_in_honor_of.html|crmAddClass:twenty}
-  </td>
-  <td>
     {$form.contribution_source.label} <br />
     {$form.contribution_source.html|crmAddClass:twenty}
+  </td>
+  <td>
+    {$form.contribution_product_id.label} <br />
+    {$form.contribution_product_id.html|crmAddClass:twenty}
   </td>
 </tr>
 <tr>
   <td>
     {$form.contribution_pcp_made_through_id.label} <br />
-    {$form.contribution_pcp_made_through_id.html|crmAddClass:twenty}
+    {$form.contribution_pcp_made_through_id.html}
+    {include file="CRM/Contribute/Form/PCP.js.tpl"}
   </td>
   <td>
     {$form.contribution_pcp_display_in_roll.label}
     {$form.contribution_pcp_display_in_roll.html}
-      <span class="crm-clear-link">
-        (<a href="#" onclick="unselectRadio('contribution_pcp_display_in_roll','{$form.formName}'); return false;">{ts}clear{/ts}</a>)
-      </span>
   </td>
 </tr>
 
 <tr>
   <td>
     <label>{ts}Currency{/ts}</label> <br />
-    {$form.contribution_currency_type.html}
+    {$form.contribution_currency_type.html|crmAddClass:twenty}
   </td>
   {if $form.contribution_batch_id.html }
     <td>
@@ -166,17 +168,20 @@
 {include file="CRM/Campaign/Form/addCampaignToComponent.tpl" campaignContext="componentSearch"
 campaignTrClass='' campaignTdClass=''}
 
+{* contribution recurring search *}
 <tr>
   <td colspan="2">
-{include file="CRM/Contribute/Form/Search/ContributionRecur.tpl"}
+    {include file="CRM/Contribute/Form/Search/ContributionRecur.tpl"}
+  </td>
 </tr>
 
-{if $contributeGroupTree}
+{if $contributionGroupTree}
 <tr>
   <td colspan="2">
-  {include file="CRM/Custom/Form/Search.tpl" groupTree=$contributeGroupTree showHideLinks=false}</td>
+  {include file="CRM/Custom/Form/Search.tpl" groupTree=$contributionGroupTree showHideLinks=false}</td>
 </tr>
 {/if}
+
 {literal}
 <script type="text/javascript">
   cj('#contribution_payment_instrument_id').change(function() {
@@ -186,6 +191,15 @@ campaignTrClass='' campaignTdClass=''}
     else {
       cj('#contribution_check_number_wrapper').hide();
       cj('#contribution_check_number').val('');
+    }
+  }).change();
+  cj('#contribution_or_softcredits').change(function() {
+    if (cj(this).val() == 'only_contribs') {
+      cj('#contribution_soft_credit_type_wrapper').hide();
+      cj('#contribution_soft_credit_type_id').val('');
+    }
+    else {
+      cj('#contribution_soft_credit_type_wrapper').show();
     }
   }).change();
 </script>

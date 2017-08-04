@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -137,6 +137,13 @@
     <div class="crm-section {$form.address.$index.supplemental_address_2.id}-section">
             <div class="label">{$form.address.$index.supplemental_address_2.label}</div>
             <div class="content">{$form.address.$index.supplemental_address_2.html}</div>
+            <div class="clear"></div>
+        </div>
+        {/if}
+        {if $addressSequence.supplemental_address_3}
+    <div class="crm-section {$form.address.$index.supplemental_address_3.id}-section">
+            <div class="label">{$form.address.$index.supplemental_address_3.label}</div>
+            <div class="content">{$form.address.$index.supplemental_address_3.html}</div>
             <div class="clear"></div>
         </div>
         {/if}

@@ -199,10 +199,6 @@ class CRM_NYSS_BAO_Integration_Website
       'postal_code' => $params['postal_code'],
       'location_type_id' => 1,
     );
-
-    $params['custom_60'] = 'Website Account';
-    $params['contact_type'] = 'Individual';
-    $params['api.address.create'] = $addressParams;
     self::cleanContactParams($params);
     //CRM_Core_Error::debug_var('createContact params', $params);
 
@@ -1196,39 +1192,6 @@ class CRM_NYSS_BAO_Integration_Website
       );
     }
     //CRM_Core_Error::debug_var('getActivityStream $activity', $activity);
-
-    // store the activity filter preference CRM-11761
-    $session = CRM_Core_Session::singleton();
-    $userID = $session->get('userID');
-    if ($userID) {
-      //flush cache before setting filter to account for global cache (memcache)
-      $domainID = CRM_Core_Config::domainID();
-      $cacheKey = CRM_Core_BAO_Setting::inCache(
-        CRM_Core_BAO_Setting::PERSONAL_PREFERENCES_NAME,
-        'web_activity_filter',
-        NULL,
-        $userID,
-        TRUE,
-        $domainID,
-        TRUE
-      );
-      if ( $cacheKey ) {
-        CRM_Core_BAO_Setting::flushCache($cacheKey);
-      }
-
-      $activityFilter = array(
-        'web_activity_type_filter' => $type,
-      );
-
-      CRM_Core_BAO_Setting::setItem(
-        $activityFilter,
-        CRM_Core_BAO_Setting::PERSONAL_PREFERENCES_NAME,
-        'web_activity_type_filter',
-        NULL,
-        $userID,
-        $userID
-      );
-    }
 
     $iFilteredTotal = $iTotal = $params['total'] = $totalRows;
     $selectorElements = array(

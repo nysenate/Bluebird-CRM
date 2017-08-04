@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,38 +23,48 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2013
- * $Id: $
- *
+ * @copyright CiviCRM LLC (c) 2004-2017
  */
 class CRM_SMS_BAO_Provider extends CRM_SMS_DAO_Provider {
 
-  function __construct() {
+  /**
+   * Class constructor.
+   */
+  public function __construct() {
     parent::__construct();
   }
 
-  static function activeProviderCount() {
+  /**
+   * @return null|string
+   */
+  public static function activeProviderCount() {
     $activeProviders = CRM_Core_DAO::singleValueQuery('SELECT MAX(id) FROM civicrm_sms_provider WHERE is_active = 1');
     return $activeProviders;
   }
 
-  /*
-   * Retrieves the list of providers from the database
+  /**
+   * Retrieves the list of providers from the database.
    *
-   * @access public
    * $selectArr array of coloumns to fetch
    * $getActive boolean to get active providers
+   *
+   * @param null $selectArr
+   * @param null $filter
+   * @param bool $getActive
+   * @param string $orderBy
+   *
+   * @return array
    */
-  static function getProviders($selectArr = NULL, $filter = NULL, $getActive = TRUE, $orderBy = 'id') {
+  public static function getProviders($selectArr = NULL, $filter = NULL, $getActive = TRUE, $orderBy = 'id') {
 
     $providers = array();
-    $temp      = array();
-    $dao       = new CRM_SMS_DAO_Provider();
+    $temp = array();
+    $dao = new CRM_SMS_DAO_Provider();
     if ($filter && !array_key_exists('is_active', $filter) && $getActive) {
       $dao->is_active = 1;
     }
@@ -67,6 +77,7 @@ class CRM_SMS_BAO_Provider extends CRM_SMS_DAO_Provider {
       $select = implode(',', $selectArr);
       $dao->selectAdd($select);
     }
+    $dao->whereAdd("(domain_id = " . CRM_Core_Config::domainID() . " OR domain_id IS NULL)");
     $dao->orderBy($orderBy);
     $dao->find();
     while ($dao->fetch()) {
@@ -76,38 +87,80 @@ class CRM_SMS_BAO_Provider extends CRM_SMS_DAO_Provider {
     return $providers;
   }
 
-  static function saveRecord($values) {
-    $dao = new CRM_SMS_DAO_Provider();
-    $dao->copyValues($values);
-    $dao->save();
-  }
+  /**
+   * Create or Update an SMS provider
+   * @param array $params
+   * @return array saved values
+   */
+  public static function create(&$params) {
+    $id = CRM_Utils_Array::value('id', $params);
 
-  static function updateRecord($values, $providerId) {
-    $dao = new CRM_SMS_DAO_Provider();
-    $dao->id = $providerId;
-    if ($dao->find(TRUE)) {
-      $dao->copyValues($values);
-      $dao->save();
+    if ($id) {
+      CRM_Utils_Hook::pre('edit', 'SmsProvider', $id, $params);
     }
+    else {
+      CRM_Utils_Hook::pre('create', 'SmsProvider', NULL, $params);
+    }
+
+    $provider = new CRM_SMS_DAO_Provider();
+    if ($id) {
+      $provider->id = $id;
+      $provider->find(TRUE);
+    }
+    if ($id) {
+      $provider->domain_id = CRM_Utils_Array::value('domain_id', $params, $provider->domain_id);
+    }
+    else {
+      $provider->domain_id = CRM_Utils_Array::value('domain_id', $params, CRM_Core_Config::domainID());
+    }
+    $provider->copyValues($params);
+    $result = $provider->save();
+    if ($id) {
+      CRM_Utils_Hook::post('edit', 'SmsProvider', $provider->id, $provider);
+    }
+    else {
+      CRM_Utils_Hook::post('create', 'SmsProvider', NULL, $provider);
+    }
+    return $result;
   }
 
-  static function setIsActive($id, $is_active) {
+  /**
+   * @param int $id
+   * @param $is_active
+   *
+   * @return bool
+   */
+  public static function setIsActive($id, $is_active) {
     return CRM_Core_DAO::setFieldValue('CRM_SMS_DAO_Provider', $id, 'is_active', $is_active);
   }
 
-  static function del($providerID) {
+  /**
+   * @param int $providerID
+   *
+   * @return null
+   * @throws Exception
+   */
+  public static function del($providerID) {
     if (!$providerID) {
-      CRM_Core_Error::fatal(ts('Invalid value passed to delete function'));
+      CRM_Core_Error::fatal(ts('Invalid value passed to delete function.'));
     }
 
     $dao = new CRM_SMS_DAO_Provider();
     $dao->id = $providerID;
+    $dao->whereAdd = "(domain_id = " .  CRM_Core_Config::domainID() . "OR domain_id IS NULL)";
     if (!$dao->find(TRUE)) {
       return NULL;
     }
     $dao->delete();
   }
 
+  /**
+   * @param int $providerID
+   * @param null $returnParam
+   * @param null $returnDefaultString
+   *
+   * @return mixed
+   */
   public static function getProviderInfo($providerID, $returnParam = NULL, $returnDefaultString = NULL) {
     static $providerInfo = array();
 
@@ -140,6 +193,5 @@ class CRM_SMS_BAO_Provider extends CRM_SMS_DAO_Provider {
     }
     return $providerInfo[$providerID];
   }
+
 }
-
-

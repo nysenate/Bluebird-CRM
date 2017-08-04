@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.5                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2014                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,27 +23,33 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2014
- * $Id$
- *
+ * @copyright CiviCRM LLC (c) 2004-2017
  */
 class CRM_Contact_Form_Search_Custom_FullText_Contact extends CRM_Contact_Form_Search_Custom_FullText_AbstractPartialQuery {
 
-  function __construct() {
+  /**
+   * Class constructor.
+   */
+  public function __construct() {
     parent::__construct('Contact', ts('Contacts'));
   }
 
-  function isActive() {
+  /**
+   * Check if search is permitted.
+   *
+   * @return bool
+   */
+  public function isActive() {
     return CRM_Core_Permission::check('view all contacts');
   }
 
   /**
-   * {@inheritdoc}
+   * @inheritDoc
    */
   public function fillTempTable($queryText, $entityIDTableName, $toTable, $queryLimit, $detailLimit) {
     $queries = $this->prepareQueries($queryText, $entityIDTableName);
@@ -58,16 +64,14 @@ class CRM_Contact_Form_Search_Custom_FullText_Contact extends CRM_Contact_Form_S
   /**
    * @param string $queryText
    * @param string $entityIDTableName
-   * @return array list tables/queries (for runQueries)
+   * @return array
+   *   list tables/queries (for runQueries)
    */
-  function prepareQueries($queryText, $entityIDTableName) {
+  public function prepareQueries($queryText, $entityIDTableName) {
     // Note: For available full-text indices, see CRM_Core_InnoDBIndexer
 
     $contactSQL = array();
-
-    //NYSS 9692 special handling for wildcard only
-    if ($queryText != '*' && $queryText != '%' && !empty($queryText)) {
-      $contactSQL[] = "
+    $contactSQL[] = "
 SELECT     et.entity_id
 FROM       civicrm_entity_tag et
 INNER JOIN civicrm_tag t ON et.tag_id = t.id
@@ -76,7 +80,6 @@ AND        et.tag_id       = t.id
 AND        ({$this->matchText('civicrm_tag t', 'name', $queryText)})
 GROUP BY   et.entity_id
 ";
-    }
 
     // lets delete all the deceased contacts from the entityID box
     // this allows us to keep numbers in sync
@@ -148,6 +151,13 @@ GROUP BY   et.entity_id
     return $tables;
   }
 
+  /**
+   * Move IDs.
+   *
+   * @param $fromTable
+   * @param $toTable
+   * @param $limit
+   */
   public function moveIDs($fromTable, $toTable, $limit) {
     $sql = "
 INSERT INTO {$toTable}

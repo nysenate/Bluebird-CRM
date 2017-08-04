@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,6 +29,7 @@
 {htxt id="id-basic-criteria"}
     {capture assign=amt}{500|crmMoney}{/capture}
     <p>{ts}Find contacts by partial or full name or email, type of contact, group, and/or tag. You can then view or edit contact details, print a contact list, or use the <strong>- more actions -</strong> drop down list to assign tags, add contacts to groups, create smart groups, export contact data to a spreadsheet, and more.{/ts}</p>
+    {*NYSS*}
     <p>{ts 1=$amt}Click <strong>Advanced Search</strong> to search by address, demographics, custom fields, notes, and/or relationships. {/ts}</p>
 {/htxt}
 
@@ -36,7 +37,12 @@
   {ts}Group Search{/ts}
 {/htxt}
 {htxt id="id-smog-criteria"}
-    <p>{ts 1=$group.title}Contacts in the <strong>%1</strong> group are listed below. Use 'Find Contacts within this Group' to search for specific contacts. Use the 'Group Status...' checkboxes to view contacts with 'Pending' status and/or contacts who have been 'Removed' from this group.{/ts}</p>
+    <p>{ts 1=$params.group_title}Contacts in the <strong>%1</strong> group are listed below.{/ts}
+      <ul>
+        <li>{ts}Use 'Find Contacts within this Group' to search for specific contacts.{/ts}</li>
+        <li>{ts}Use the 'Group Status...' checkboxes to view contacts with 'Pending' status and/or contacts who have been 'Removed' from this group.{/ts}</li>
+      </ul>
+    </p>
     {if $params.permissionedForGroup}
         {capture assign=addMembersURL}{crmURL q="context=amtg&amtgID=`$params.group_id`&reset=1"}{/capture}
         <p>{ts 1=$addMembersURL 2=$params.group_title}Click <a href='%1'>Add Contacts to %2</a> if you want to add contacts to this group.{/ts}

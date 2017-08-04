@@ -22,3 +22,6 @@ local/*
 modules/nyss_LCD
 civicrm/scripts/lcd.php
 scripts/lcd.sh
+
+#civicrm
+civicrm/custom/ext/cache

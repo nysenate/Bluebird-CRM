@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,16 +25,19 @@
 *}
 {*this is included inside a table row*}
 {assign var=relativeName   value=$fieldName|cat:"_relative"}
-<td>{$form.$relativeName.html}</td>
-<td>
+<td colspan=2>
+  {$form.$relativeName.html}<br />
   <span class="crm-absolute-date-range">
-    {assign var=fromName   value=$fieldName|cat:$from}
-    {$form.$fromName.label}
-    {include file="CRM/common/jcalendar.tpl" elementName=$fromName}
-    &nbsp;&nbsp;
-    {assign var=toName   value=$fieldName|cat:$to}
-    {$form.$toName.label}
-    {include file="CRM/common/jcalendar.tpl" elementName=$toName}
+    <span class="crm-absolute-date-from">
+      {assign var=fromName   value=$fieldName|cat:$from}
+      {$form.$fromName.label}
+      {include file="CRM/common/jcalendar.tpl" elementName=$fromName}
+    </span>
+    <span class="crm-absolute-date-to">
+      {assign var=toName   value=$fieldName|cat:$to}
+      {$form.$toName.label}
+      {include file="CRM/common/jcalendar.tpl" elementName=$toName}
+    </span>
   </span>
   {literal}
     <script type="text/javascript">

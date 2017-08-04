@@ -1,0 +1,6 @@
+name = NYSS Reports
+description = Modifications to CiviCRM Reports
+dependencies[] = civicrm
+package = CiviCRM
+core = 7.x
+version = 4.7

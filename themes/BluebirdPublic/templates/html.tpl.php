@@ -26,6 +26,10 @@
     ";
   ?>
 
+  <!--make fonts available-->
+  <script src="https://use.typekit.net/wos2cac.js"></script>
+  <script>try{Typekit.load({ async: true });}catch(e){}</script>
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
 </head>
 <body class="<?php print $classes; ?>" <?php print $attributes; ?>>

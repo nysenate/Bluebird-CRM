@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,6 +23,7 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
+{if call_user_func(array('CRM_Core_Permission','check'), 'access CiviCRM')}
 {include file="CRM/common/bbversion.tpl" assign=bbversion}
 {include file="CRM/Block/RecentlyViewed.extra.tpl"}{*NYSS*}
 {include file="CRM/common/accesskeys.tpl"}
@@ -30,9 +31,11 @@
   {include file="CRM/common/contactFooter.tpl"}
 {/if}
 
-<div class="footer" id="civicrm-footer">{*NYSS*}
-  {include file="CRM/common/version.tpl" assign=version}
+  {*NYSS*}
+  <div class="crm-footer" id="civicrm-footer">
+    {crmVersion assign=version}
 Bluebird v{ts 1=$bbversion}%1.{/ts} Powered by <a href='http://civicrm.org/' target="_blank">CiviCRM</a> {ts 1=$version}%1.{/ts}<br />
 CiviCRM{ts 1='http://www.gnu.org/licenses/agpl-3.0.html'} is openly available under the <a href='%1' target="_blank">GNU Affero General Public License (GNU AGPL)</a>.{/ts}
-</div>
-{include file="CRM/common/notifications.tpl"}
+  </div>
+  {include file="CRM/common/notifications.tpl"}
+{/if}

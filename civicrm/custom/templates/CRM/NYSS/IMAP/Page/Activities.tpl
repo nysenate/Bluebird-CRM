@@ -440,10 +440,10 @@
     <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>Selected messages will be removed from this list. They will not be deleted from Bluebird.</p>
   </div>
   <div id="loading-popup" title="please wait" style="display:none;">
-    <p> <img src="/sites/default/themes/Bluebird/nyss_skin/images/header-search-active.gif"/> Loading message details.</p>
+    <p> <img src="/sites/default/themes/Bluebird/images/header-search-active.gif"/> Loading message details.</p>
   </div>
   <div id="reloading-popup" title="please wait" style="display:none;">
-    <p> <img src="/sites/default/themes/Bluebird/nyss_skin/images/header-search-active.gif"/>  ReLoading messages.</p>
+    <p> <img src="/sites/default/themes/Bluebird/images/header-search-active.gif"/>  ReLoading messages.</p>
   </div>
 
 

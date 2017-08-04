@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<menu>
+  <item>
+    <path>civicrm/nyss/testing</path>
+    <page_callback>CRM_NYSS_Testing_Form_RunTests</page_callback>
+    <title>RunTests</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+</menu>

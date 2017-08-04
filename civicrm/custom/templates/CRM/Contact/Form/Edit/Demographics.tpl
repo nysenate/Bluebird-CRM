@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,15 +29,18 @@
   </div><!-- /.crm-accordion-header -->
   <div id="demographics" class="crm-accordion-body">
   
+  {*NYSS*}
   <div class="leftColumn">
   <div class="form-item">
         <span class="label">{$form.gender_id.label}</span>
-        
-        <span class="value">
+
+  <span class="value">
+        {*NYSS*}
         {$form.gender_id.html|crmInsert:onclick:'showOtherGender()'}
         <span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('gender_id', '{$form.formName}'); return false;">{ts}clear{/ts}</a>)</span>
         </span>
   </div>
+  {*NYSS*}
   <div id="showOtherGender" class="form-item" style="display:none;">
         {assign var='custom_45' value=$groupTree.1.fields.45.element_name}
         <span class="labels">{$form.$custom_45.label}</span>
@@ -48,15 +51,16 @@
         <span class="value">{include file="CRM/common/jcalendar.tpl" elementName=birth_date}</span>
   </div>
   <div class="form-item">
-       <span class="labels">{$form.is_deceased.label}</span>
-       <span class="fields">{$form.is_deceased.html}</span>
+       {$form.is_deceased.html}
+       {$form.is_deceased.label}
   </div>
   <div id="showDeceasedDate" class="form-item">
        <span class="label">{$form.deceased_date.label}</span>
        <span class="value">{include file="CRM/common/jcalendar.tpl" elementName=deceased_date}</span>
   </div> 
-  </div>
+  </div>{*NYSS*}
   
+  {*NYSS*}
   <div class="rightColumn">
   <div class="form-item">
         {assign var='custom_58' value=$groupTree.1.fields.58.element_name}
@@ -76,23 +80,24 @@
   </div>
   
   <div class="clear"></div>
-  
+ 
  </div><!-- /.crm-accordion-body -->
 </div><!-- /.crm-accordion-wrapper -->
 
 {literal}
 <script type="text/javascript">
-    showDeceasedDate( );    
+    showDeceasedDate( );
     function showDeceasedDate( )
     {
         if ( cj("#is_deceased").is(':checked') ) {
             cj("#showDeceasedDate").show( );
         } else {
-          cj("#showDeceasedDate").hide( );
-            cj("#deceased_date").val('');
+    cj("#showDeceasedDate").hide( );
+         cj("#deceased_date").val('');
         }
     }
 
+  //NYSS
   showOtherGender( );
   function showOtherGender( ) {
     var x=document.getElementsByName("gender_id");

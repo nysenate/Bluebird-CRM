@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,12 +26,12 @@
 {*Table displays contribution totals for a contact or search result-set *}
 {if $annual.count OR $contributionSummary}
     <table class="form-layout-compressed">
-    
+
     {if $annual.count}
         <tr>
-            <th class="contriTotalLeft right">{ts}Current Year-to-Date{/ts} - {$annual.amount}</th>
-            <th class="right"> &nbsp; {ts}#  Completed Contributions{/ts} - {$annual.count}</th>
-            <th class="right contriTotalRight"> &nbsp; {ts}Avg Amount{/ts} - {$annual.avg}</th>
+            <th class="contriTotalLeft right">{ts}Current Year-to-Date{/ts} &ndash; {$annual.amount}</th>
+            <th class="right"> &nbsp; {ts}# Completed Contributions{/ts} &ndash; {$annual.count}</th>
+            <th class="right contriTotalRight"> &nbsp; {ts}Avg Amount{/ts} &ndash; {$annual.avg}</th>
             {if $contributionSummary.cancel.amount}
                 <td>&nbsp;</td>
             {/if}
@@ -41,15 +41,33 @@
     {if $contributionSummary }
       <tr>
           {if $contributionSummary.total.amount}
-            <th class="contriTotalLeft right">{ts}Total Amount{/ts} - {$contributionSummary.total.amount}</th>
-            <th class="right"> &nbsp; {ts}# Completed Contributions{/ts} - {$contributionSummary.total.count}</th>
-            <th class="right contriTotalRight"> &nbsp; {ts}Avg Amount{/ts} - {$contributionSummary.total.avg}</th>
+            {if $contributionSummary.total.currencyCount gt 1}
+              <th class="contriTotalLeft right">{ts}Total{/ts} &ndash; {$contributionSummary.total.amount}</th>
+              <th class="left contriTotalRight"> &nbsp; {ts}# Completed{/ts} &ndash; {$contributionSummary.total.count}</th>
+            </tr><tr>
+              <th class="contriTotalLeft">{ts}Avg{/ts} &ndash; {$contributionSummary.total.avg}</th>
+              <th class="right"> &nbsp; {ts}Median{/ts} &ndash; {$contributionSummary.total.median}</th>
+              <th class="right contriTotalRight"> &nbsp; {ts}Mode{/ts} &ndash; {$contributionSummary.total.mode}</th>
+            {else}
+              <th class="contriTotalLeft right">{ts}Total{/ts} &ndash; {$contributionSummary.total.amount}</th>
+              <th class="right"> &nbsp; {ts}# Completed{/ts} &ndash; {$contributionSummary.total.count}</th>
+              <th class="right"> &nbsp; {ts}Avg{/ts} &ndash; {$contributionSummary.total.avg}</th>
+              <th class="right"> &nbsp; {ts}Median{/ts} &ndash; {$contributionSummary.total.median}</th>
+              <th class="right contriTotalRight"> &nbsp; {ts}Mode{/ts} &ndash; {$contributionSummary.total.mode}</th>
+            {/if}
           {/if}
           {if $contributionSummary.cancel.amount}
-            <th class="disabled right contriTotalRight"> &nbsp; {ts}Total Cancelled Amount{/ts} - {$contributionSummary.cancel.amount}</th>
+            <th class="disabled right contriTotalRight"> &nbsp; {ts}Total Cancelled Amount{/ts} &ndash; {$contributionSummary.cancel.amount}</th>
           {/if}
-      </tr>  
+      </tr>
+      {if $contributionSummary.soft_credit.count}
+      <tr>
+        <th class="contriTotalLeft right">{ts}Total Soft Credit Amount{/ts} &ndash; {$contributionSummary.soft_credit.amount}</th>
+        <th class="right"> &nbsp; {ts}# Completed Soft Credits{/ts} &ndash; {$contributionSummary.soft_credit.count}</th>
+        <th class="right contriTotalRight"> &nbsp; {ts}Avg Soft Credit Amount{/ts} &ndash; {$contributionSummary.soft_credit.avg}</th>
+      </tr>
+      {/if}
     {/if}
-    
+
     </table>
 {/if}

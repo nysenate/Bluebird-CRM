@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,14 +23,12 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2013
- * $Id$
- *
+ * @copyright CiviCRM LLC (c) 2004-2016
  */
 
 /**
@@ -39,7 +37,13 @@
 class CRM_Core_BAO_Log extends CRM_Core_DAO_Log {
   static $_processed = NULL;
 
-  static function &lastModified($id, $table = 'civicrm_contact') {
+  /**
+   * @param int $id
+   * @param string $table
+   *
+   * @return array|null
+   */
+  public static function &lastModified($id, $table = 'civicrm_contact') {
 
     $log = new CRM_Core_DAO_Log();
 
@@ -47,7 +51,7 @@ class CRM_Core_BAO_Log extends CRM_Core_DAO_Log {
     $log->entity_id = $id;
     $log->orderBy('modified_date desc');
     $log->limit(1);
-    $result = CRM_Core_DAO::$_nullObject;
+    $result = NULL;
     if ($log->find(TRUE)) {
       list($displayName, $contactImage) = CRM_Contact_BAO_Contact::getDisplayAndImage($log->modified_id);
       $result = array(
@@ -61,13 +65,13 @@ class CRM_Core_BAO_Log extends CRM_Core_DAO_Log {
   }
 
   /**
-   * add log to civicrm_log table
+   * Add log to civicrm_log table.
    *
-   * @param array $params  array of name-value pairs of log table.
+   * @param array $params
+   *   Array of name-value pairs of log table.
    *
-   * @static
    */
-  static function add(&$params) {
+  public static function add(&$params) {
         
     //NYSS - LCD #2365
     $session = & CRM_Core_Session::singleton();
@@ -82,7 +86,14 @@ class CRM_Core_BAO_Log extends CRM_Core_DAO_Log {
     $log->save();
   }
 
-  static function register($contactID,
+  /**
+   * @param int $contactID
+   * @param string $tableName
+   * @param int $tableID
+   * @param int $userID
+   */
+  public static function register(
+    $contactID,
     $tableName,
     $tableID,
     $userID = NULL
@@ -94,6 +105,14 @@ class CRM_Core_BAO_Log extends CRM_Core_DAO_Log {
     if (!$userID) {
       $session = CRM_Core_Session::singleton();
       $userID = $session->get('userID');
+    }
+
+    if (!$userID) {
+      $api_key = CRM_Utils_Request::retrieve('api_key', 'String', $store, FALSE, NULL, 'REQUEST');
+
+      if ($api_key && strtolower($api_key) != 'null') {
+        $userID = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $api_key, 'id', 'api_key');
+      }
     }
 
     if (!$userID) {
@@ -128,11 +147,11 @@ class CRM_Core_BAO_Log extends CRM_Core_DAO_Log {
     //NYSS end
 
     if (!$log->id) {
-      $log->entity_table  = 'civicrm_contact';
-      $log->entity_id     = $contactID;
-      $log->modified_id   = $userID;
+      $log->entity_table = 'civicrm_contact';
+      $log->entity_id = $contactID;
+      $log->modified_id = $userID;
       $log->modified_date = date("YmdHis");
-      $log->data          = $logData;
+      $log->data = $logData;
       $log->save();
     }
     else {
@@ -148,15 +167,14 @@ UPDATE civicrm_log
   }
 
   /**
-   * Function to get log record count for a Contact
+   * Get log record count for a Contact.
    *
-   * @param int $contactId Contact ID
+   * @param int $contactID
    *
-   * @return int count of log records
-   * @access public
-   * @static
+   * @return int
+   *   count of log records
    */
-  static function getContactLogCount($contactID) {
+  public static function getContactLogCount($contactID) {
     //NYSS 4574 include activity logs in count
     $query = "SELECT count(*) FROM civicrm_log
              WHERE civicrm_log.entity_table = 'civicrm_contact' AND civicrm_log.entity_id = {$contactID}";
@@ -194,17 +212,16 @@ UPDATE civicrm_log
   }
 
   /**
-   * Function for find out whether to use logging schema entries for contact
-   * summary, instead of normal log entries.
+   * Get the id of the report to use to display the change log.
    *
-   * @return int report id of Contact Logging Report (Summary) / false
-   * @access public
-   * @static
+   * If logging is not enabled a return value of FALSE means to use the
+   * basic change log view.
+   *
+   * @return int|FALSE
+   *   report id of Contact Logging Report (Summary)
    */
-  static function useLoggingReport() {
-    // first check if logging is enabled
-    $config = CRM_Core_Config::singleton();
-    if (!$config->logging) {
+  public static function useLoggingReport() {
+    if (!\Civi::settings()->get('logging')) {
       return FALSE;
     }
 
@@ -216,8 +233,8 @@ UPDATE civicrm_log
       CRM_Report_BAO_ReportInstance::retrieve($params, $instance);
 
       if (!empty($instance) &&
-        (!CRM_Utils_Array::value('permission', $instance) ||
-          (CRM_Utils_Array::value('permission', $instance) && CRM_Core_Permission::check($instance['permission']))
+        (empty($instance['permission']) ||
+          (!empty($instance['permission']) && CRM_Core_Permission::check($instance['permission']))
         )
       ) {
         return $instance['id'];
@@ -226,4 +243,5 @@ UPDATE civicrm_log
 
     return FALSE;
   }
+
 }

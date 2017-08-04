@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -32,6 +32,7 @@ class civicrm_handler_field_location extends civicrm_handler_field {
   static $_locationTypes;
   static $_locationOps;
   static $location_op;
+
   function construct() {
     parent::construct();
     if (!self::$_locationTypes) {
@@ -65,7 +66,7 @@ class civicrm_handler_field_location extends civicrm_handler_field {
       '#title' => t('Label'),
       '#default_value' => $label,
       '#dependency' => array(
-        'edit-options-custom-label' => array(1),
+          'edit-options-custom-label' => array(1),
       ),
       '#weight' => -102,
     );
@@ -109,18 +110,11 @@ class civicrm_handler_field_location extends civicrm_handler_field {
         vpr_trace();
         exit;
       }
-      if ($this->options['location_type'] > 0 ||
-        (isset($this->options['is_primary']) && $this->options['is_primary'])
-      ) {
-        $join        = $this->get_join();
-        $extra       = $this->location_extras();
-        $join->extra = $extra;
-        // Decide between And/Or
-        $join->extra_type = self::$_locationOps[$this->options['location_op']];
+      $join = $this->get_join();
+      if (empty($this->relationship)) { //https://www.drupal.org/node/2617032
         $this->table_alias = $this->query->add_table($this->table, $this->relationship, $join);
-      }
-      else {
-        $this->table_alias = $this->query->ensure_table($this->table, $this->relationship);
+      } else {
+        $this->table_alias = $this->query->ensure_table($this->table, $this->relationship, $join);
       }
     }
     return $this->table_alias;
@@ -146,8 +140,23 @@ class civicrm_handler_field_location extends civicrm_handler_field {
     }
     return $extra;
   }
+
+  function join_location($join = array()) {
+    $extra = array();
+    if (isset($join->extra)) {
+      $extra = $join->extra;
+    }
+    $extra = array_merge($extra, $this->location_extras());
+    if (!empty($extra)) {
+      $join->extra = $extra;
+      $join->extra_type = self::$_locationOps[$this->options['location_op']];
+    }
+    return $join;
+  }
+
+  function get_join() {
+    $join = parent::get_join();
+    $join = $this->join_location($join);
+    return $join;
+  }
 }
-
-
-
-

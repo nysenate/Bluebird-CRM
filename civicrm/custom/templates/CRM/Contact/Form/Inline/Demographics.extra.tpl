@@ -44,7 +44,6 @@
       cj('div.crm-contact-privacy_values').
         html('Do not phone<br \>Do not email<br \>Do not postal mail<br \>Do not sms<br \>Undeliverable: Do not mail<br \>No Bulk Emails (User Opt Out)');
       cj('div.crm-contact-preferred_communication_method_display').html('');
-      CRM.alert('Communication preferences have been updated to reflect the contact is deceased.', ts('Contact Marked Deceased'), 'alert');
     }
   });
 

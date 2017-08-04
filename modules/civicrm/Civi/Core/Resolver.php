@@ -19,6 +19,8 @@ namespace Civi\Core;
  *   - 'api3://EntityName/action?first=@1&second=@2' - Call an API method, mapping the
  *     first & second args to named parameters.
  *     (Performance note: Requires parsing/interpolating arguments).
+ *   - 'global://Variable/Key2/Key3?getter' - A dummy which looks up a global variable.
+ *   - 'global://Variable/Key2/Key3?setter' - A dummy which updates a global variable.
  *   - '0' or '1' - A dummy which returns the constant '0' or '1'.
  *
  * Note: To differentiate classes and functions, there is a hard requirement that
@@ -51,7 +53,7 @@ class Resolver {
    * @param string|array $id
    *   A callback expression; any of the following.
    *
-   * @return array
+   * @return array|callable
    *   A PHP callback. Do not serialize (b/c it may include an object).
    * @throws \RuntimeException
    */
@@ -70,16 +72,20 @@ class Resolver {
       switch ($url['scheme']) {
         case 'obj':
           // Object: Lookup in container.
-          return Container::singleton()->get($url['host']);
+          return \Civi::service($url['host']);
 
         case 'call':
           // Callback: Object/method in container.
-          $obj = Container::singleton()->get($url['host']);
+          $obj = \Civi::service($url['host']);
           return array($obj, ltrim($url['path'], '/'));
 
         case 'api3':
           // Callback: API.
           return new ResolverApi($url);
+
+        case 'global':
+          // Lookup in a global variable.
+          return new ResolverGlobalCallback($url['query'], $url['host'] . (isset($url['path']) ? rtrim($url['path'], '/') : ''));
 
         default:
           throw new \RuntimeException("Unsupported callback scheme: " . $url['scheme']);
@@ -238,6 +244,43 @@ class ResolverApi {
           $array[$key] = $newVal;
         }
       }
+    }
+  }
+
+}
+
+class ResolverGlobalCallback {
+  private $mode, $path;
+
+  /**
+   * Class constructor.
+   *
+   * @param string $mode
+   *   'getter' or 'setter'.
+   * @param string $path
+   */
+  public function __construct($mode, $path) {
+    $this->mode = $mode;
+    $this->path = $path;
+  }
+
+  /**
+   * Invoke function.
+   *
+   * @param mixed $arg1
+   *
+   * @return mixed
+   */
+  public function __invoke($arg1 = NULL) {
+    if ($this->mode === 'getter') {
+      return \CRM_Utils_Array::pathGet($GLOBALS, explode('/', $this->path));
+    }
+    elseif ($this->mode === 'setter') {
+      \CRM_Utils_Array::pathSet($GLOBALS, explode('/', $this->path), $arg1);
+      return NULL;
+    }
+    else {
+      throw new \RuntimeException("Resolver failed: global:// must specify getter or setter mode.");
     }
   }
 

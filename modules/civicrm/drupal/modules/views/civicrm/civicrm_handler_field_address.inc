@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,20 +29,10 @@
  * @ingroup civicrm_field_handlers
  */
 class civicrm_handler_field_address extends civicrm_handler_field_location {
-  static $_locationOps;
-  function construct() {
-    parent::construct();
-    if (!self::$_locationOps) {
-      if (!civicrm_initialize()) {
-        return;
-      }
-      self::$_locationOps = array(0 => 'AND', 1 => 'OR');
-    }
-  }
 
   function option_definition() {
     $options = parent::option_definition();
-    $options['is_billing'] = array('default' => '');
+    $options['is_billing'] = array('default' => 0);
     return $options;
   }
 
@@ -58,30 +48,42 @@ class civicrm_handler_field_address extends civicrm_handler_field_location {
     );
   }
 
+  function join_address($join = array()) {
+    $extra = array();
+    if (isset($join->extra)) {
+      $extra = $join->extra;
+    }
+    if (isset($this->options['is_billing']) && $this->options['is_billing']) {
+      $extra[] = array(
+        'value' => $this->options['is_billing'],
+        'numeric' => TRUE,
+        'field' => 'is_billing',
+        'operator' => '=',
+      );
+    }
+    if (!empty($extra)) {
+      $join->extra = $extra;
+    }
+    return $join;
+  }
+
+  function get_join() {
+    $join = parent::get_join();
+    $join = $this->join_address($join);
+    return $join;
+  }
+
   function ensure_my_table() {
     if (!isset($this->table_alias)) {
       if (!method_exists($this->query, 'ensure_table')) {
         vpr_trace();
         exit;
       }
-      $extra = array();
-      $extra = parent::location_extras();
-      if (isset($this->options['is_billing']) && $this->options['is_billing']) {
-        $extra[] = array(
-          'value' => $this->options['is_billing'],
-          'numeric' => TRUE,
-          'field' => 'is_billing',
-          'operator' => '=',
-        );
-      }
-      if (isset($extra) && !empty($extra)) {
-        $join              = $this->get_join();
-        $join->extra       = $extra;
-        $join->extra_type  = self::$_locationOps[$this->options['location_op']];
+      $join = $this->get_join();
+      if (empty($this->relationship)) { //https://www.drupal.org/node/2617032
         $this->table_alias = $this->query->add_table($this->table, $this->relationship, $join);
-      }
-      else {
-        $this->table_alias = $this->query->ensure_table($this->table, $this->relationship);
+      } else {
+        $this->table_alias = $this->query->ensure_table($this->table, $this->relationship, $join);
       }
     }
     return $this->table_alias;

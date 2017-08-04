@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,80 +23,46 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-{literal}
-<script>
-//put these in the start instance in the refactor
-var BBCID = {/literal}{if isset($entityID) }{$entityID}{else}0{/if}{literal};
-var BBActionConst = {/literal}{$action}{literal};
-{/literal}{if !$form.tag.value}{literal}
-  var BBLoadTaglist = null;
-{/literal}{else}{literal}
-  var BBLoadTaglist = [{/literal}{foreach key=tagID item=i from=$form.tag.value name=activeTagset}"{$tagID}"{if !$smarty.foreach.activeTagset.last},{/if}{/foreach}{literal}];
-{/literal}{/if}{literal}
-</script>
-<link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/Bluebird/nyss_skin/tags/tags.css" />
-<script src="/sites/default/themes/Bluebird/scripts/bbtree.js" type="text/javascript"></script>
-{/literal}
+{*NYSS 1111 CRM-20673*}
 {if $title}
-<div id="dialog"></div>{*NYSS*}
-
 <div class="crm-accordion-wrapper crm-tagGroup-accordion collapsed">
   <div class="crm-accordion-header">{$title}</div>
   <div class="crm-accordion-body" id="tagGroup">
 {/if}
     <table class="form-layout-compressed{if $context EQ 'profile'} crm-profile-tagsandgroups{/if}">
-    <tr>
-      {if $groupElementType eq 'crmasmSelect'}
-        <td><span class="label">{if $title}{$form.group.label}{/if}</span>
-          {$form.group.html}
-          {literal}
-          <script type="text/javascript">
-          cj(function(){
-            cj("select#group").crmasmSelect({
-              respectParents: true
-            });
-          });
-          </script>
-          {/literal}
-        </td>
-      {/if}
-      {foreach key=key item=item from=$tagGroup}
-        {* $type assigned from dynamic.tpl *}
-        {if !$type || $type eq $key }
-          <td width="100%" class="crm-tagList"><div class="label" onClick="rollDownGroup('.crm-tagList');"><div class="arrow"></div>{if $title}{$form.$key.label}{/if}</div>
-            <div id="crm-tagListWrap">
-              <div class="groupTagsKeywords">{include file="CRM/common/Tag.tpl"}</div>
+      <tr>
+        {if !$type || $type eq 'tag'}
+          <td>
+            <div class="crm-section tag-section">
+              {if $title}{$form.tag.label}{/if}
+              {$form.tag.html}
             </div>
+            {if $context NEQ 'profile'}
+              {include file="CRM/common/Tagset.tpl"}
+            {/if}
           </td>
-          {*
-          <td width={cycle name=tdWidth values="70%","30%"}><span class="label">{if $title}{$form.$key.label}{/if}</span>
-            <div id="crm-tagListWrap">
-              <table id="crm-tagGroupTable">
-                {foreach key=k item=it from=$form.$key}
-                  {if $k|is_numeric}
-                    <tr class={cycle values="'odd-row','even-row'" name=$key} id="crm-tagRow{$k}">
-                      <td>
-                        <strong>{$it.html}</strong><br />
-                        {if $item.$k.description}
-                        <div class="description">
-                          {$item.$k.description}
-                        </div>
-                        {/if}
-                      </td>
-                    </tr>
-                  {/if}
-                {/foreach}
-              </table>
-            </div>
-          </td>
-          *}
         {/if}
-      {/foreach}
-    </tr>
-    {*if !$type || $type eq 'tag'}
-      <tr><td>{include file="CRM/common/Tag.tpl"}</td></tr>
-    {/if*}
-  </table>
+        {if !$type || $type eq 'group'}
+          <td>
+            {if $groupElementType eq 'select'}
+              <div class="crm-section group-section">
+              {if $title}{$form.group.label}{/if}
+              {$form.group.html}
+            </div>
+            {else}
+              {foreach key=key item=item from=$tagGroup.group}
+                <div class="group-wrapper">
+                  {$form.group.$key.html}
+                  {if $item.description}
+                    <div class="description">{$item.description}</div>
+                  {/if}
+                </div>
+              {/foreach}
+            {/if}
+          </td>
+        {/if}
+      </tr>
+    </table>
 {if $title}
   </div>
 </div><!-- /.crm-accordion-wrapper -->

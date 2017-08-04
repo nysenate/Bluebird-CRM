@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -33,7 +33,6 @@
   {crmRegion name='html-header' allowCmsOverride=0}{/crmRegion}
   <style type="text/css" media="print">@import url({$config->resourceBase}css/print.css);</style>
   <style type="text/css" media="screen, print">@import url(/sites/default/themes/Bluebird/css/Bluebird.css);</style>{*NYSS 4854*}
-  {*<style type="text/css">@import url({$config->resourceBase}css/skins/aqua/theme.css);</style>*}
 </head>
 
 <body>
@@ -46,8 +45,7 @@
 {include file="CRM/common/status.tpl"}
 
 {crmRegion name='page-body' allowCmsOverride=0}
-<!-- .tpl file invoked: {$tplFile}. Call via form.tpl if we have a form in the page. -->
-  {if $isForm}
+  {if $isForm and isset($formTpl)}
     {include file="CRM/Form/$formTpl.tpl"}
   {else}
     {include file=$tplFile}
@@ -55,7 +53,11 @@
 {/crmRegion}
 
 
-{crmRegion name='page-footer' allowCmsOverride=0}{/crmRegion}
+{crmRegion name='page-footer' allowCmsOverride=0}
+  <script type="text/javascript">
+    window.print();
+  </script>
+{/crmRegion}
 </div> {* end crm-container div *}
 </body>
 </html>

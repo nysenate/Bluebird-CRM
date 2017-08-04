@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -35,7 +35,7 @@
       {if $action eq 2 and $hasPayment} {* Updating *}
             {if $lineItem}
                 <tr class="crm-event-eventfees-form-block-line_items">
-                    <td class="label">{ts}Event Fees{/ts}</td>
+                    <td class="label">{ts}Selections{/ts}</td>
                     <td>{include file="CRM/Price/Page/LineItem.tpl" context="Event"}</td>
                 </tr>
             {else}
@@ -44,6 +44,12 @@
                     <td>{$fee_level}&nbsp;{if $fee_amount}- {$fee_amount|crmMoney:$fee_currency}{/if}</td>
                 </tr>
             {/if}
+            <tr>
+              <td></td>
+              <td>
+                <a class="action-item crm-hover-button" href='{crmURL p="civicrm/event/participant/feeselection" q="reset=1&id=`$participantId`&cid=`$contactId`&action=update"}'><i class="crm-i fa-pencil"></i> {ts}Change Selections{/ts}</a>
+              </td>
+            </tr>
         {else} {* New participant *}
   {if $priceSet.fields}
       <fieldset id="priceset" class="crm-group priceset-group">
@@ -61,7 +67,7 @@
     </tr>
  {/if}
 
-    { if $accessContribution and ! $participantMode and ($action neq 2 or !$rows.0.contribution_id or $onlinePendingContributionId) and $isRecordPayment and ! $registeredByParticipantId }
+    {if $accessContribution and ! $participantMode and ($action neq 2 or !$rows.0.contribution_id or $onlinePendingContributionId) and $isRecordPayment and ! $registeredByParticipantId }
         <tr class="crm-event-eventfees-form-block-record_contribution">
             <td class="label">{$form.record_contribution.label}</td>
             <td>{$form.record_contribution.html}<br />
@@ -73,15 +79,15 @@
            <fieldset><legend>{ts}Payment Information{/ts}</legend>
              <table id="recordContribution" class="form-layout" style="width:auto;">
                 <tr class="crm-event-eventfees-form-block-financial_type_id">
-                    <td class="label">{$form.financial_type_id.label}<span class="marker"> *</span></td>
+                    <td class="label">{$form.financial_type_id.label}<span class="crm-marker"> *</span></td>
                     <td>{$form.financial_type_id.html}<br /><span class="description">{ts}Select the appropriate financial type for this payment.{/ts}</span></td>
                 </tr>
-                <tr class="crm-event-eventfees-form-block-total_amount"><td class="label">{$form.total_amount.label}</td><td>{$form.total_amount.html|crmMoney:$currency}<br/><span class="description">{ts}Actual payment amount for this registration.{/ts}</span></td></tr>
+                <tr class="crm-event-eventfees-form-block-total_amount"><td class="label">{$form.total_amount.label}</td><td>{$form.total_amount.html|crmMoney:$currency}</td></tr>
                 <tr>
                     <td class="label" >{$form.receive_date.label}</td>
                     <td>{include file="CRM/common/jcalendar.tpl" elementName=receive_date}</td>
                 </tr>
-                <tr class="crm-event-eventfees-form-block-payment_instrument_id"><td class="label">{$form.payment_instrument_id.label}<span class="marker"> *</span></td><td>{$form.payment_instrument_id.html} {help id="payment_instrument_id" file="CRM/Contribute/Page/Tab.hlp"}</td></tr>
+                <tr class="crm-event-eventfees-form-block-payment_instrument_id"><td class="label">{$form.payment_instrument_id.label}<span class="crm-marker"> *</span></td><td>{$form.payment_instrument_id.html} {help id="payment_instrument_id" file="CRM/Contribute/Page/Tab.hlp"}</td></tr>
                 <tr id="checkNumber" class="crm-event-eventfees-form-block-check_number"><td class="label">{$form.check_number.label}</td><td>{$form.check_number.html|crmAddClass:six}</td></tr>
                 {if $showTransactionId }
                     <tr class="crm-event-eventfees-form-block-trxn_id"><td class="label">{$form.trxn_id.label}</td><td>{$form.trxn_id.html}</td></tr>
@@ -91,26 +97,13 @@
            </fieldset>
            </td>
         </tr>
-
-        {* Record contribution field only present if we are NOT in submit credit card mode (! participantMode). *}
-        {include file="CRM/common/showHideByFieldValue.tpl"
-            trigger_field_id    ="record_contribution"
-            trigger_value       =""
-            target_element_id   ="payment_information"
-            target_element_type ="table-row"
-            field_type          ="radio"
-            invert              = 0
-        }
     {/if}
     </table>
 
 {/if}
 
-{* credit card block when it is live or test mode*}
-{if $participantMode and $paid}
-  <div class="spacer"></div>
-  {include file='CRM/Core/BillingBlock.tpl'}
-{/if}
+{include file='CRM/Core/BillingBlockWrapper.tpl'}
+
 {if ($email OR $batchEmail) and $outBound_option != 2}
     <fieldset id="send_confirmation_receipt"><legend>{if $paid}{ts}Registration Confirmation and Receipt{/ts}{else}{ts}Registration Confirmation{/ts}{/if}</legend>
       <table class="form-layout" style="width:auto;">
@@ -198,33 +191,25 @@
 {if $context eq 'standalone' and $outBound_option != 2 }
 <script type="text/javascript">
 {literal}
-cj( function( ) {
-    cj("#contact_1").blur( function( ) {
-        checkEmail( );
-    } );
-    checkEmail( );
-});
-function checkEmail( ) {
-    var contactID =  cj("input[name='contact_select_id[1]']").val();
-    if ( contactID ) {
-        var postUrl = "{/literal}{crmURL p='civicrm/ajax/checkemail' h=0}{literal}";
-        cj.post( postUrl, {contact_id: contactID},
-            function ( response ) {
-                if ( response ) {
-                    cj("#email-receipt").show( );
-                    if ( cj("#send_receipt").is(':checked') ) {
-                        cj("#notice").show( );
-                    }
+  CRM.$(function($) {
+    var $form = $("form.{/literal}{$form.formClass}{literal}");
+    $("#contact_id", $form).change(checkEmail);
+    checkEmail();
 
-                    cj("#email-address").html( response );
-                } else {
-                    cj("#email-receipt").hide( );
-                    cj("#notice").hide( );
-                }
-            }
-        );
+    function checkEmail( ) {
+      var data = $("#contact_id", $form).select2('data');
+      if (data && data.extra && data.extra.email && data.extra.email.length) {
+        $("#email-receipt", $form).show();
+        if ($("#send_receipt", $form).is(':checked')) {
+          $("#notice", $form).show();
+        }
+        $("#email-address", $form).html(data.extra.email);
+      }
+      else {
+        $("#email-receipt, #notice", $form).hide();
+      }
     }
-}
+  });
 {/literal}
 </script>
 {/if}
@@ -234,7 +219,7 @@ function checkEmail( ) {
 {literal}
   function confirmStatus( pStatusId, cStatusId ) {
      if ( (pStatusId == cj("#status_id").val() ) && (cStatusId == cj("#contribution_status_id").val()) ) {
-         var allow = confirm( '{/literal}{ts escape='js'}The Payment Status for this participant is Completed. The Participant Status is set to Pending from pay later. Click Cancel if you want to review or modify these values before saving this record{/ts}{literal}.' );
+         var allow = confirm( '{/literal}{ts escape='js'}The Payment Status for this participant is Completed. The Participant Status is set to Pending (pay later). Click Cancel if you want to review or modify these values before saving this record{/ts}{literal}.' );
          if ( !allow ) return false;
      }
   }
@@ -245,7 +230,7 @@ function checkEmail( ) {
        cj("#contribution_status_id").val( cStatusId );
 
        //unset value for send receipt check box.
-       cj("#send_receipt").attr( "checked", false );
+       cj("#send_receipt").prop("checked", false );
        cj("#send_confirmation_receipt").hide( );
 
        // set receive data to null.

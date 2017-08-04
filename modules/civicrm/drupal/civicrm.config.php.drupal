@@ -64,9 +64,6 @@ function civicrm_conf_init() {
         // check to see if this is under sites/all/modules
         } else if ( strpos( $currentDir, $moduleDir ) !== false ) {
             $confdir = $currentDir . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..';
-        } else if ( strpos( $currentDir, 'plugins' . DIRECTORY_SEPARATOR . 'civicrm' . DIRECTORY_SEPARATOR . 'civicrm' ) !== false ) {
-             //if its wordpress
-            $confdir = $currentDir . DIRECTORY_SEPARATOR . '..';
         } else {
             $confdir = $currentDir . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR;
         }
@@ -81,6 +78,13 @@ function civicrm_conf_init() {
         exit( );
     }
 
+    // since drupal 7, alias could be defined in sites/sites.php
+    if ( file_exists( $confdir . "/sites.php" ) ) {
+      include $confdir . "/sites.php";
+    } else {
+      $sites = array();
+    }
+
     $phpSelf  = array_key_exists( 'PHP_SELF' , $_SERVER ) ? $_SERVER['PHP_SELF' ] : '';
     $httpHost = array_key_exists( 'HTTP_HOST', $_SERVER ) ? $_SERVER['HTTP_HOST'] : '';
 
@@ -93,6 +97,11 @@ function civicrm_conf_init() {
                 $conf = "$confdir/$dir";
                 return $conf;
             }
+            // check for alias
+            if (isset($sites[$dir]) && file_exists("$confdir/{$sites[$dir]}/civicrm.settings.php")) {
+              $conf = "$confdir/{$sites[$dir]}";
+              return $conf;
+            }
         }
     }
 
@@ -103,7 +112,7 @@ function civicrm_conf_init() {
 
 $settingsFile = civicrm_conf_init( ) . '/civicrm.settings.php';
 define('CIVICRM_SETTINGS_PATH', $settingsFile);
-$error = @include_once( $settingsFile );
+$error = include_once( $settingsFile );
 if ( $error == false ) {
     echo "Could not load the settings file at: {$settingsFile}\n";
     exit( );

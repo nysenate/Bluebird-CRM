@@ -380,11 +380,11 @@ class CRM_Utils_SAGE
     $url = SAGE_API_BASE . $url . $params;
 
     //7414 wrap in ignoreException so we don't fatal if the lookup fails
-    CRM_Core_Error::ignoreException();
+    $errorScope = CRM_Core_TemporaryErrorScope::ignoreException();
     $request = new HTTP_Request($url);
     $request->sendRequest();
     $xml = simplexml_load_string($request->getResponseBody());
-    CRM_Core_Error::setCallback();
+    unset($errorScope);
 
     if (!self::validateResponse($xml)) {
       self::warn("Lookup for [$params] has failed.");

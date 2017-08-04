@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 
 <div class="crm-block crm-form-block crm-mailing-test-form-block">
 {include file="CRM/common/WizardHeader.tpl"}
-<div id="help">
+<div class="help">
     {ts}It's a good idea to test your mailing by sending it to yourself and/or a selected group of people in your organization. You can also view your content by clicking (+) Preview Mailing.{/ts} {help id="test-intro"}
 </div>
 
@@ -40,13 +40,7 @@
   <table class="form-layout">
     <tr class="crm-mailing-test-form-block-test_email"><td class="label">{$form.test_email.label}</td><td>{$form.test_email.html} {ts}(filled with your contact's token values){/ts}</td></tr>
     <tr class="crm-mailing-test-form-block-test_group"><td class="label">{$form.test_group.label}</td><td>{$form.test_group.html}</td></tr>
-    <tr><td></td>
-    <td>
-      <!--NYSS-6957-->
-      <input type="button" class='form-submit' id="checktest" value="Send a Test Mailing">
-      {$form.sendtest.html}
-      <!--NYSS-->
-    </td>
+    <tr><td></td><td>{$form.sendtest.html}</td>
   </table>
 </fieldset>
 
@@ -84,8 +78,6 @@
 {literal}
 <script type="text/javascript">
 cj(function() {
-   cj().crmAccordions();
-
   //NYSS
   cj('div.crm-plain_text_email-accordion').removeClass('collapsed');
 

@@ -62,9 +62,9 @@ class HTML_QuickForm_textarea extends HTML_QuickForm_element
      * @access    public
      * @return    void
      */
-    function HTML_QuickForm_textarea($elementName=null, $elementLabel=null, $attributes=null)
+    function __construct($elementName=null, $elementLabel=null, $attributes=null)
     {
-        HTML_QuickForm_element::HTML_QuickForm_element($elementName, $elementLabel, $attributes);
+        parent::__construct($elementName, $elementLabel, $attributes);
         $this->_persistantFreeze = true;
         $this->_type = 'textarea';
     } //end constructor
@@ -197,7 +197,7 @@ class HTML_QuickForm_textarea extends HTML_QuickForm_element
             return $this->_getTabs() .
                    '<textarea' . $this->_getAttrString($this->_attributes) . '>' .
                    // because we wrap the form later we don't want the text indented
-                   preg_replace("/(\r\n|\n|\r)/", '&#010;', htmlspecialchars($this->_value)) .
+                   preg_replace("/(\r\n|\n|\r)/", '&#013;&#010;', htmlspecialchars($this->_value)) .
                    '</textarea>';
         }
     } //end func toHtml

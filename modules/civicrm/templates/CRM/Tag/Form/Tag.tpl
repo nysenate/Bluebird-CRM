@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,127 +24,96 @@
  +--------------------------------------------------------------------+
 *}
 {* this template is used for adding/editing tags  *}
-<style>
-  .hit {ldelim}padding-left:10px;{rdelim}
-  .tree li {ldelim}padding-left:10px;{rdelim}
-  #Tag .tree .collapsable .hit {ldelim}background:url('{$config->resourceBase}i/menu-expanded.png') no-repeat left 8px;padding-left: 9px;cursor:pointer{rdelim}
-  #Tag .tree .expandable .hit {ldelim}background:url('{$config->resourceBase}i/menu-collapsed.png') no-repeat left 6px;padding-left: 9px;cursor:pointer{rdelim}
-  #Tag #tagtree .highlighted {ldelim}background-color:lightgrey;{rdelim}
-</style>
+{crmStyle file='bower_components/jstree/dist/themes/default/style.min.css'}
+{literal}
 <script type="text/javascript">
-  (function($){ldelim}
-    var entityID={$entityID};
-    var entityTable='{$entityTable}';
+  (function($, _){{/literal}
+    var entityID={$entityID},
+      entityTable='{$entityTable}',
+      $form = $('form.{$form.formClass}');
     {literal}
+
     $(function() {
-      //unobsctructive elements are there to provide the function to those not having javascript, no need for the others
-      $(".unobstructive").hide();
 
-      $("#tagtree ul input:checked").each (function(){
-        $(this).parents("li").children(".jstree-icon").addClass('highlighted');
+      // Display tags on the contact summary
+      function updateContactSummaryTags() {
+        var tags = [],
+          selected = $("#tagtree").jstree(true).get_selected(true);
+        $.each(selected, function(k, item) {
+          var $tag = $(item.text);
+          tags.push('<span class="crm-tag-item" style="' + $tag.attr('style') + '" title="' + ($tag.attr('title') || '') + '">' + $tag.text() + '</span>');
+        });
+        $('input.crm-contact-tagset').each(function() {
+          $.each($(this).select2('data'), function (i, tag) {
+            tags.push('<span class="crm-tag-item" title="' + (tag.description || '') + '"' + (tag.color ? 'style="color: ' + CRM.utils.colorContrast(tag.color) + '; background-color: ' + tag.color + ';"' : '') + '>' + tag.label + '</span>');
+          });
+        });
+        // contact summary tabs and search forms both listen for this event
+        $($form).closest('.crm-ajax-container').trigger('crmFormSuccess', {tabCount: tags.length});
+        // update summary tab
+        $("#contact-summary #tags").html(tags.join(' '));
+      }
+
+      // Load js tree.
+      CRM.loadScript(CRM.config.resourceBase + 'bower_components/jstree/dist/jstree.min.js').done(function() {
+        $("#tagtree").jstree({
+          plugins : ['search', 'wholerow', 'checkbox'],
+          core: {
+            animation: 100,
+            themes: {
+              "theme": 'classic',
+              "dots": false,
+              "icons": false
+            }
+          },
+          'search': {
+            'case_insensitive' : true,
+            'show_only_matches': true
+          },
+          checkbox: {
+            three_state: false
+          }
+        })
+          .on('select_node.jstree deselect_node.jstree', function(e, selected) {
+            var id = selected.node.a_attr.id.replace('tag_', ''),
+              op = e.type === 'select_node' ? 'create' : 'delete';
+            CRM.api3('entity_tag', op, {entity_table: entityTable, entity_id: entityID, tag_id: id}, true);
+            updateContactSummaryTags();
+          });
       });
 
-      $("#tagtree input").change(function(){
-        var tagid = this.id.replace("check_", "");
-        var op = (this.checked) ? 'create' : 'delete';
-        CRM.api('entity_tag', op, {entity_table: entityTable, entity_id: entityID, tag_id: tagid});
-        CRM.updateContactSummaryTags();
-      });
+      $(document).on('change', 'input.crm-contact-tagset', updateContactSummaryTags);
 
-      //load js tree.
-      $("#tagtree").jstree({
-        "plugins" : ["themes", "html_data"],
-        "themes": {"url": CRM.config.resourceBase + 'packages/jquery/plugins/jstree/themes/default/style.css'}
+      $('input[name=filter_tag_tree]', '#Tag').on('keyup change', function() {
+        $("#tagtree").jstree(true).search($(this).val());
       });
-
-      {/literal}
-      {if $permission neq 'edit'}
-        {literal}
-          $("#tagtree input").attr('disabled', true);
-        {/literal}
-      {/if}
-      {literal}
     });
-
-    CRM.updateContactSummaryTags = function() {
-      var tags = [], $tab = $('#tab_tag');
-      $('.tag-section .token-input-token-facebook p, #tagtree input:checkbox:checked+label').each(function() {
-        tags.push($(this).text());
-      });
-      // showing count of tags in summary tab
-      $('a em', $tab).html('' + tags.length);
-      tags.length ? $tab.removeClass('disabled') : $tab.addClass('disabled');
-      // update summary tab
-      $("#tags").html(tags.join(', '));
-    };
-  })(cj);
+  })(CRM.$, CRM._);
   {/literal}
 </script>
 <div id="Tag" class="view-content">
-  <h3>{if !$hideContext}{ts}Tags{/ts}{/if}</h3>
-  <p>
-  {if $action eq 16}
-    {if $permission EQ 'edit'}
-      {capture assign=crmURL}{crmURL p='civicrm/contact/view/tag' q='action=update'}{/capture}
-      <span class="unobstructive">{ts 1=$displayName 2=$crmURL}Current tags for <strong>%1</strong> are highlighted. You can add or remove tags from <a href='%2'>Edit Tags</a>.{/ts}</span>
-      {else}
-      {ts}Current tags are highlighted.{/ts}
-    {/if}
-    {else}
-    {if !$hideContext}
-      {ts}Mark or unmark the checkboxes, <span class="unobstructive">and click 'Update Tags' to modify tags.<span>{/ts}
-    {/if}
-  {/if}
-  </p>
-  <div id="tagtree">
-    <ul class="tree">
-    {foreach from=$tree item="node" key="id"}
-      <li id="tag_{$id}">
-        {if ! $node.children}<input name="tagList[{$id}]" id="check_{$id}" type="checkbox" {if $tagged[$id]}checked="checked"{/if}/>{/if}
-        {if $node.children}<input name="tagList[{$id}]" id="check_{$id}" type="checkbox" {if $tagged[$id]}checked="checked"{/if}/>{/if}
-        {if $node.children} <span class="hit"></span> {/if} <label for="check_{$id}" id="tagLabel_{$id}">{$node.name}</label>
-        {if $node.children}
-          <ul>
-            {foreach from=$node.children item="subnode" key="subid"}
-              <li id="tag_{$subid}">
-                <input id="check_{$subid}" name="tagList[{$subid}]" type="checkbox" {if $tagged[$subid]}checked="checked"{/if}/>
-                {if $subnode.children} <span class="hit"></span> {/if} <label for="check_{$subid}" id="tagLabel_{$subid}">{$subnode.name}</label>
-                {if $subnode.children}
-                  <ul>
-                    {foreach from=$subnode.children item="subsubnode" key="subsubid"}
-                      <li id="tag_{$subsubid}">
-                        <input id="check_{$subsubid}" name="tagList[{$subsubid}]" type="checkbox" {if $tagged[$subsubid]}checked="checked"{/if}/>
-                        <label for="check_{$subsubid}" id="tagLabel_{$subsubid}">{$subsubnode.name}</label>
-                      </li>
-                    {/foreach}
-                  </ul>
-                {/if}
-              </li>
-            {/foreach}
-          </ul>
+  <table class="">
+    <thead>
+      <tr>
+        <th>{ts}Tag Tree{/ts}</th>
+        {if $tagsetInfo.contact}<th>{ts}Tag Sets{/ts}</th>{/if}
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <input class="crm-form-text big" name="filter_tag_tree" placeholder="{ts}Filter List{/ts}" allowclear="1"/>
+          <a class="crm-hover-button crm-clear-link" style="visibility:hidden;" title="{ts}Clear{/ts}"><i class="crm-i fa-times"></i></a>
+          <div id="tagtree">
+            {include file="CRM/Tag/Form/Tagtree.tpl" level=1}
+          </div>
+        </td>
+        {if $tagsetInfo.contact}
+        <td>
+          {include file="CRM/common/Tagset.tpl"}
+        </td>
         {/if}
-      </li>
-    {/foreach}
-    </ul>
-  </div>
-
-{* Show Edit Tags link if in View mode *}
-{if $permission EQ 'edit' AND $action eq 16}
-  </fieldset>
-  <div class="action-link unobstructive">
-    <a accesskey="N" href="{crmURL p='civicrm/contact/view/tag' q='action=update'}" class="button"><span><div class="icon edit-icon"></div>{ts}Edit Tags{/ts}</span></a>
-  </div>
-  {else}
-  <div class="form-item unobstructive">{$form.buttons.html}</div>
-  </fieldset>
-{/if}
-  <br />
-{include file="CRM/common/Tag.tpl" context="contactTab"}
+      </tr>
+    </tbody>
+  </table>
 </div>
-
-{if $action eq 1 or $action eq 2 }
-<script type="text/javascript">
-  {* this function is called to change the color of selected row(s) *}
-  on_load_init_check("{$form.formName}");
-</script>
-{/if}

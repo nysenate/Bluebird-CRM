@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -77,11 +77,8 @@
 </tr>
 <tr>
   <td>
-  {$form.pledge_in_honor_of.label}
-    <br />{$form.pledge_in_honor_of.html}
-  </td>
-  <td>
-  {$form.pledge_test.label} {help id="is-test" file="CRM/Contact/Form/Search/Advanced"} &nbsp; {$form.pledge_test.html} <span class="crm-clear-link">(<a href="#" onclick="unselectRadio('pledge_test','{$form.formName}'); return false;">{ts}clear{/ts}</a>)</span>
+  <br />
+  {$form.pledge_test.label} {help id="is-test" file="CRM/Contact/Form/Search/Advanced"} &nbsp; {$form.pledge_test.html}
   </td>
 </tr>
 <tr>
@@ -89,6 +86,20 @@
   {$form.pledge_frequency_unit.label}
     <br /> {$form.pledge_frequency_interval.label} &nbsp; {$form.pledge_frequency_interval.html} &nbsp;
   {$form.pledge_frequency_unit.html}
+  </td>
+</tr>
+<tr>
+  <td colspan="2">
+    {ts}Number of Installments{/ts}
+    {$form.pledge_installments_low.label} {$form.pledge_installments_low.html}
+    &nbsp;&nbsp; {$form.pledge_installments_high.label} {$form.pledge_installments_high.html}
+  </td>
+</tr>
+
+<tr>
+  <td colspan="2">
+    <br /> {$form.pledge_acknowledge_date_is_not_null.label} &nbsp; {$form.pledge_acknowledge_date_is_not_null.html}
+    &nbsp;
   </td>
 </tr>
 

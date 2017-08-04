@@ -1,5 +1,5 @@
 {include file='../CRM/Upgrade/4.4.alpha1.msg_template/civicrm_msg_template.tpl'}
-SET foreign_key_checks = 0;
+
 -- CRM-12357
 SELECT @option_group_id_cvOpt := max(id) FROM civicrm_option_group WHERE name = 'contact_view_options';
 SELECT @max_val := MAX(ROUND(op.value)) FROM civicrm_option_value op  WHERE op.option_group_id  = @option_group_id_cvOpt;
@@ -67,9 +67,11 @@ ALTER TABLE `civicrm_custom_group`
   ADD COLUMN `is_reserved` tinyint(4) DEFAULT '0' COMMENT 'Is this a reserved Custom Group?';
 
 --CRM-12986 fix event_id & contact_id to NOT NULL fields on participant table
+SET foreign_key_checks = 0;
 ALTER TABLE `civicrm_participant`
   CHANGE COLUMN `event_id` `event_id` INT(10) UNSIGNED NOT NULL,
   CHANGE COLUMN `contact_id` `contact_id` INT(10) UNSIGNED NOT NULL;
+SET foreign_key_checks = 1;
 
 -- CRM-12964 civicrm_print_label table creation
 CREATE TABLE IF NOT EXISTS `civicrm_print_label` (

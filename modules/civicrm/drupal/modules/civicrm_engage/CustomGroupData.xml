@@ -92,20 +92,6 @@
       <collapse_adv_display>0</collapse_adv_display>
     </CustomGroup>
     <CustomGroup>
-      <name>Event_Details</name>
-      <title>Event Details</title>
-      <extends>Event</extends>
-      <style>Inline</style>
-      <collapse_display>1</collapse_display>
-      <help_pre></help_pre>
-      <help_post></help_post>
-      <weight>14</weight>
-      <is_active>1</is_active>
-      <table_name>civicrm_value_event_details</table_name>
-      <is_multiple>0</is_multiple>
-      <collapse_adv_display>0</collapse_adv_display>
-    </CustomGroup>
-    <CustomGroup>
       <name>Communication_Details</name>
       <title>Communication Details</title>
       <extends>Contact</extends>
@@ -250,8 +236,10 @@
     </CustomField>
     <CustomField>
       <label>Staff Responsible</label>
-      <data_type>String</data_type>
-      <html_type>Select</html_type>
+      <name>staff_responsible</name>
+      <data_type>ContactReference</data_type>
+      <html_type>Autocomplete-Select</html_type>
+      <filter>action=lookup&amp;group=2</filter>
       <is_required>0</is_required>
       <is_searchable>1</is_searchable>
       <is_search_range>0</is_search_range>
@@ -263,7 +251,6 @@
       <note_columns>60</note_columns>
       <note_rows>4</note_rows>
       <column_name>staff_responsible</column_name>
-      <option_group_name>staff_responsible_values</option_group_name>
       <custom_group_name>Constituent_Info_Individuals</custom_group_name>
     </CustomField>
     <CustomField>
@@ -729,24 +716,6 @@
       <custom_group_name>Participant_Info</custom_group_name>
     </CustomField>
     <CustomField>
-      <label>Event Contact Person</label>
-      <data_type>String</data_type>
-      <html_type>Select</html_type>
-      <is_required>0</is_required>
-      <is_searchable>1</is_searchable>
-      <is_search_range>0</is_search_range>
-      <weight>8</weight>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <date_format>M:;:;:;d:;:;:;Y</date_format>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-      <column_name>event_contact_person</column_name>
-      <option_group_name>staff_responsible_values</option_group_name>
-      <custom_group_name>Event_Details</custom_group_name>
-    </CustomField>
-    <CustomField>
       <label>Best time to Contact</label>
       <data_type>String</data_type>
       <html_type>CheckBox</html_type>
@@ -1067,11 +1036,6 @@
     <OptionGroup>
       <name>constituent_type_ind_values</name>
       <title>Constituent Type Values</title>
-      <is_active>1</is_active>
-    </OptionGroup>
-    <OptionGroup>
-      <name>staff_responsible_values</name>
-      <title>Staff Responsible Values</title>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
@@ -1415,16 +1379,6 @@
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
     <option_group_name>constituent_type_ind_values</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>Add Staff Name Here</label>
-      <value>add_staff_name_here</value>
-      <is_default>0</is_default>
-      <weight>2</weight>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>0</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>staff_responsible_values</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Meeting</label>

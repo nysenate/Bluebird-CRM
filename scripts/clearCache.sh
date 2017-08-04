@@ -10,6 +10,7 @@
 # Revised: 2013-05-14 - reorder drush commands; added more Drupal cache tables
 # Revised: 2013-07-11 - modularize functionality; fix permissions problem
 # Revised: 2016-04-28 - removed data.basename; using data.dirname instead
+# Revised: 2016-10-19 - call "drush cc all" when using --all option
 #
 
 prog=`basename $0`
@@ -41,22 +42,12 @@ clear_civicrm_caches() {
   $execSql $inst -c "$sql"
 }
 
-
-clear_civicrm_dashboard() {
-  inst="$1"
-  echo "Clearing dashboard content"
-  sql="UPDATE civicrm_dashboard_contact SET content=null;"
-  $execSql $inst -c "$sql"
-}
-
-
 clear_civicrm_log() {
   inst="$1"
   echo "Clearing CiviCRM log table"
   sql="TRUNCATE civicrm_log;"
   $execSql $inst -c "$sql"
 }
-
 
 clear_drupal_caches() {
   inst="$1"
@@ -79,7 +70,6 @@ clear_drupal_caches() {
   $execSql $inst -c "$sql" --drupal
 }
 
-
 clear_drupal_sessions() {
   inst="$1"
   echo "Clearing Drupal sessions"
@@ -87,14 +77,12 @@ clear_drupal_sessions() {
   $execSql $inst -c "$sql" --drupal
 }
 
-
 clear_drupal_watchdog() {
   inst="$1"
   echo "Clearing Drupal watchdog table"
   sql="TRUNCATE watchdog;"
   $execSql $inst -c "$sql" --drupal
 }
-
 
 delete_civicrm_cache_files() {
 #  Note that Drush will create civicrm/templates_c/en_US if the dir does not
@@ -110,7 +98,6 @@ delete_civicrm_cache_files() {
   rm -rf $cividir/drupal/js/*
 }
 
-
 drop_temp_tables() {
   inst="$1"
   echo "Dropping CiviCRM and NYSS temporary tables"
@@ -125,13 +112,11 @@ drop_temp_tables() {
   fi
 }
 
-
 drush_cache_clear_civicrm() {
   inst="$1"
   echo "Running Drush cache-clear for CiviCRM"
   $drush $inst cc civicrm
 }
-
 
 drush_cache_clear_cssjs() {
   inst="$1"
@@ -139,11 +124,15 @@ drush_cache_clear_cssjs() {
   $drush $inst cc css-js
 }
 
+drush_cache_clear_all() {
+  inst="$1"
+  echo "Running Drush cache-clear for all caches"
+  $drush $inst cc all
+}
 
 usage() {
   echo "Usage: $prog [--all] [--db-caches-only] [--drush-only] [--tmp-only] [--tpl-only] [--wd-only] instanceName" >&2
 }
-
 
 if [ $# -lt 1 ]; then
   usage
@@ -204,11 +193,11 @@ clear_civicrm_caches $instance
 drush_cache_clear_civicrm $instance
 drush_cache_clear_cssjs $instance
 clear_drupal_caches $instance
-clear_civicrm_dashboard $instance
 
 if [ $clear_all -eq 1 ]; then
   clear_drupal_sessions $instance
   clear_drupal_watchdog $instance
+  drush_cache_clear_all $instance
 fi
 
 exit 0

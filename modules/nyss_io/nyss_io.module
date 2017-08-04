@@ -6,10 +6,10 @@ define("NYSSIODEBUG", true);
 define("VARSTATS", false);
 
 require_once(dirname(__FILE__) . '/nyss_lib.php');
-require_once(dirname(__FILE__) . '/nyss_io.php');
 
 //define menu path
-function nyss_io_menu () {
+function nyss_io_menu()
+{
   $items = array();
 
   $items['importdata'] = array (
@@ -20,15 +20,19 @@ function nyss_io_menu () {
   );
 
   return $items;
-}
+} // nyss_io_menu()
+
 
 //define page
-function nyss_ioimportdata_page() {
+function nyss_ioimportdata_page()
+{
   return drupal_get_form('nyss_ioimport_form');
-}
+} // nyss_ioimportdata_page()
+
 
 //define form
-function nyss_ioimport_form() {
+function nyss_ioimport_form()
+{
   civicrm_initialize();
   require_once 'CRM/Core/Config.php';
   require_once 'CRM/Core/DAO.php';
@@ -183,19 +187,21 @@ function nyss_ioimport_form() {
   );
 
   return $form;
-}
+} // nyss_ioimport_form()
+
 
 //define form validation
-function nyss_ioimport_form_validate($form, &$form_state) {
+function nyss_ioimport_form_validate($form, &$form_state)
+{
   nyss_iovalidateuploadform($form, $form_state);
-}
+} // nyss_ioimport_form_validate()
+
 
 //process form validation steps
-function nyss_iovalidateuploadform($form, &$form_state) {
-
+function nyss_iovalidateuploadform($form, &$form_state)
+{
   //require either a file be uploaded or referenced on the server
   if (!empty($form_state['values']['servercsv'])) {
-
     $form_state['values']['csv']['title'] = $form_state['values']['servercsv'];
     $form_state['values']['csv']['file']->uri = '/data/importData/'.$form_state['values']['servercsv'];
     if (!file_exists($form_state['values']['csv']['file']->uri)) {
@@ -217,10 +223,12 @@ function nyss_iovalidateuploadform($form, &$form_state) {
   }
   //nyss_out('debug', $file, true); exit();
   //nyss_out('debug', $form_state, true); exit();
-}
+} // nyss_iovalidateuploadform()
+
 
 //main function for processing import
-function nyss_ioimport_form_submit($form, &$form_state) {
+function nyss_ioimport_form_submit($form, &$form_state)
+{
   //nyss_out("debug", $form_state, true);
 
   //temporarily bump memory limit
@@ -243,7 +251,6 @@ function nyss_ioimport_form_submit($form, &$form_state) {
   require_once 'CRM/Core/Config.php';
   $config = CRM_Core_Config::singleton();
 
-  require_once 'CRM/Utils/String.php';
   require_once 'api/api.php';
 
   $nyss_conn = new CRM_Core_DAO();
@@ -267,7 +274,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
     nyss_out('status',"unable to find filename.",true);
   }
 
-  $fo = new nyss_iofileobject($filename, "\t");
+  $fo = new NYSS_IOFileObject($filename, "\t");
   $nyss_iototallines = $fo->countLines();
 
   //initialize some values
@@ -658,10 +665,11 @@ function nyss_ioimport_form_submit($form, &$form_state) {
   nyss_out('status','<a href="">click here</a> to continue and return to the import page.',true);
 
   exit();
-}
+} // nyss_ioimport_form_submit()
 
-function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state) {
 
+function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state)
+{
   //nyss_out('debug', "tbl top: $tbl", true);
   //nyss_out('debug', $l, true);
 
@@ -708,8 +716,11 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state) {
 
     //get the existing data
     $sql = "SELECT ".$nyss_select[$tbl]['fields']." FROM {$tbl} WHERE {$pkCivi}={$l[$pkImport]}";
+    //nyss_out('debug', $sql, true);
 
     $result = mysql_query($sql, $nyss_conn);
+    //nyss_out('error','id lookup result:',true);
+    //nyss_out('debug', $result, true);
 
     $dao = new stdClass();
     if (!$result || mysql_num_rows($result) == 0) {
@@ -785,8 +796,7 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state) {
     $up = array();
 
     //first set a few additional values required for insert action
-    require_once 'CRM/Utils/String.php';
-        
+
     //contact record work
     if ($tbl == 'civicrm_contact') {
       $l['contact_type'] = 'Individual';
@@ -814,7 +824,7 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state) {
     }
         
     //only set these if the corresponding data columns exist in the import file
-    //nyss_out('debug', $l, true);
+    //nyss_out('debug', $l, true);exit();
     if ((array_key_exists('street_address', $l) && !empty($l['street_address'])) ||
          (array_key_exists('supplemental_address_1', $l) && !empty($l['supplemental_address_1']))) {
       if ($form_state['values']['boeimport']) {
@@ -922,7 +932,8 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state) {
 
     fwrite($logFile, "line {$nyss_ioline}: inserted record. " . $sqlINSERT . "\n");
   }
-}
+} // nyss_ioimportData()
+
 
 function fillIoGetOptions(&$ioOptions)
 {
@@ -943,7 +954,8 @@ function fillIoGetOptions(&$ioOptions)
     $options[$optionGroups[$dao->option_group_id]][$dao->value] = $name;
   }
   $ioOptions = $options;
-}
+} // fillIoGetOptions()
+
 
 function ioGetOptions($strGroup, &$ioOptions)
 {
@@ -951,7 +963,8 @@ function ioGetOptions($strGroup, &$ioOptions)
     return $ioOptions[$strGroup];
   }
   return array();
-}
+} // ioGetOptions()
+
 
 function ioGetStates()
 {
@@ -972,6 +985,7 @@ function ioGetStates()
   return $options;
 } // ioGetStates()
 
+
 function ioGetLocType()
 {
   $session =& CRM_Core_Session::singleton();
@@ -983,10 +997,9 @@ function ioGetLocType()
   return $options;
 } // ioGetLocType()
 
-function convertProperCase($string, $skipMixed = false, $skipSpecial = false) {
 
-  require_once 'CRM/Utils/String.php';
-
+function convertProperCase($string, $skipMixed = false, $skipSpecial = false)
+{
   //if mixed case, don't do anything
   if ($skipMixed && preg_match('/[a-z]/', $string)) return $string;
 
@@ -1035,10 +1048,11 @@ function convertProperCase($string, $skipMixed = false, $skipSpecial = false) {
   $string = implode(' ',$fixedWords);
 
   return $string;
-}
+} // convertProperCase()
 
-function checkTagIndex() {
 
+function checkTagIndex()
+{
   $sql = "
     SHOW INDEX FROM civicrm_entity_tag
     WHERE key_name = 'UI_entity_id_entity_table_tag_id'
@@ -1079,12 +1093,14 @@ function checkTagIndex() {
   }
 
   return;
-}
+} // checkTagIndex()
+
 
 /*
- * generate some details about what variables exist and how much memory they consume
+ * generate details about what variables exist and how much memory they consume
  */
-function nyss_vars() {
+function nyss_vars()
+{
   nyss_out('debug', 'generating details about variables', true);
 
   $varDetails = array();
@@ -1099,14 +1115,18 @@ function nyss_vars() {
     }
   }
   nyss_out('debug', $varDetails, true);
-}//nyss_vars
+} // nyss_vars()
 
-function convertSize($size) {
+
+function convertSize($size)
+{
   $unit = array('b','kb','mb','gb','tb','pb');
   return @round($size/pow(1024,($i=floor(log($size,1024)))),2).' '.$unit[$i];
-}
+} // convertSize()
 
-function _fixGender(&$l, $aGender) {
+
+function _fixGender(&$l, $aGender)
+{
   if (!empty($l['gender'])) {
     $gender_key = 'gender';
   }
@@ -1129,9 +1149,11 @@ function _fixGender(&$l, $aGender) {
     //remove text value
     unset($l['gender']);
   }
-}//_fixGender
+} // _fixGender()
 
-function _fixBirthdate(&$l) {
+
+function _fixBirthdate(&$l)
+{
   if (isset($l['birth_date'])) {
     $d = $l['birth_date'];
 
@@ -1143,16 +1165,20 @@ function _fixBirthdate(&$l) {
       $l['birth_date'] = null;
     }
   }
-}//_fixBirthdate
+} // _fixBirthdate()
 
-function _fixLocType(&$l, $aLocType) {
+
+function _fixLocType(&$l, $aLocType)
+{
   if (isset($l['location_type_id']) && !is_numeric($l['location_type_id'])) {
     $lti = $l['location_type_id'];
     $l['location_type_id'] = $aLocType[$lti];
   }
-}//_fixLocType
+} // _fixLocType()
 
-function _fixBOERegDate(&$l) {
+
+function _fixBOERegDate(&$l)
+{
   if (isset($l['boe_date_of_registration_24'])) {
     $boe_reg = $l['boe_date_of_registration_24'];
 
@@ -1164,9 +1190,11 @@ function _fixBOERegDate(&$l) {
       $l['boe_date_of_registration_24'] = null;
     }
   }
-}//_fixBOERegType
+} // _fixBOERegDate()
 
-function _fixParseName(&$l) {
+
+function _fixParseName(&$l)
+{
   $parsedValues = parse_name($l['full_name']);
 
   $l['prefix_id']   = $parsedValues['title'];
@@ -1180,9 +1208,11 @@ function _fixParseName(&$l) {
     $l['last_name']  = $l['first_name'];
     $l['first_name'] = '';
   }
-}//_fixParseName
+} // _fixParseName()
 
-function _fixPrefix(&$l, $aPrefix, $nyss_ioprefixes) {
+
+function _fixPrefix(&$l, $aPrefix, $nyss_ioprefixes)
+{
   if (isset($l['prefix_id'])) {
     $prefix_val = '';
 
@@ -1201,9 +1231,11 @@ function _fixPrefix(&$l, $aPrefix, $nyss_ioprefixes) {
 
     $l['prefix_id'] = $aPrefix[$prefix_val];
   }
-}//_fixPrefix
+} // _fixPrefix()
 
-function _fixSuffix(&$l, $aSuffix, $nyss_iosuffixes) {
+
+function _fixSuffix(&$l, $aSuffix, $nyss_iosuffixes)
+{
   if (isset($l['suffix_id'])) {
     //if a valid value, retain
     if (array_key_exists($l['suffix_id'], $aSuffix)) {
@@ -1218,9 +1250,11 @@ function _fixSuffix(&$l, $aSuffix, $nyss_iosuffixes) {
       $l['suffix_id'] = '';
     }
   }
-}//_fixSuffix
+} // _fixSuffix()
 
-function _fixState(&$l, $aStates) {
+
+function _fixState(&$l, $aStates)
+{
   if (!empty($l['st']) && !empty($aStates[$l['st']]) ) {
     $l['state_province_id'] = $aStates[$l['st']];
   }
@@ -1230,9 +1264,11 @@ function _fixState(&$l, $aStates) {
   else {
     $l['state_province_id'] = "";
   }
-}//_fixState
+} // _fixState()
 
-function _fixStreetUnit(&$l) {
+
+function _fixStreetUnit(&$l)
+{
   if (isset($l['street_unit']) && $l['street_unit']) {
     $needle_found = 0;
     $unit_needles = array(
@@ -1260,9 +1296,11 @@ function _fixStreetUnit(&$l) {
       $l['street_unit'] = 'Apt. '.$l['street_unit'];
     }
   }
-}//_fixStreetUnit
+} // _fixStreetUnit()
 
-function _fixStreetAddress(&$l) {
+
+function _fixStreetAddress(&$l)
+{
   if (!empty($l['street_name'])) {
     $so = convertProperCase($l['street_number'], true);
     $sn = convertProperCase($l['street_name'], true);
@@ -1283,9 +1321,11 @@ function _fixStreetAddress(&$l) {
     $l['street_name'] = $parsedFields['street_name'];
     $l['street_unit'] = $parsedFields['street_unit'];
   }
-}//_fixStreetAddress
+} // _fixStreetAddress()
 
-function _fixStreetNumber(&$l) {
+
+function _fixStreetNumber(&$l)
+{
   //borrowed from CRM_Core_BAO_Address::parseStreetAddress()
   if (isset($l['street_number']) && !empty($l['street_number'])) {
     $streetNumAndSuffix = $l['street_number'];
@@ -1297,9 +1337,11 @@ function _fixStreetNumber(&$l) {
       $matches = array();
     }
   }
-}//_fixStreetNumber
+} //_fixStreetNumber()
 
-function _findContact(&$l, $nyss_conn, $ruleID = 1) {
+
+function _findContact(&$l, $nyss_conn, $ruleID = 1)
+{
   require_once 'CRM/Dedupe/Finder.php';
 
   //format params to pass to dedupe tool
@@ -1371,9 +1413,11 @@ function _findContact(&$l, $nyss_conn, $ruleID = 1) {
   unset($row);
   unset($dupeIDs);
   unset($result);
-}//_findContact
+} //_findContact()
 
-function _findRelatedCustom(&$l, $nyss_conn) {
+
+function _findRelatedCustom(&$l, $nyss_conn)
+{
   $sql = "
     SELECT id AS constinfo_id
     FROM civicrm_value_constituent_information_1
@@ -1386,9 +1430,11 @@ function _findRelatedCustom(&$l, $nyss_conn) {
   }
 
   mysql_free_result($result);
-}//_findRelatedCustom
+} // _findRelatedCustom()
 
-function _findAddress(&$l) {
+
+function _findAddress(&$l)
+{
   if (!empty($l['id']) && empty($l['address_id'])) {
     $sql = "
       SELECT id AS address_id, is_primary AS address_is_primary
@@ -1407,15 +1453,17 @@ function _findAddress(&$l) {
       //reset primary flag here to prevent being overwritten by the import file
       //due to unexpected lookup/match with existing record
     }
-    mysql_free_result($result);
 
+    mysql_free_result($result);
     unset($row);
     unset($sql);
     unset($result);
   }
-}//_findAddress
+} // _findAddress()
 
-function _findDistrict(&$l) {
+
+function _findDistrict(&$l)
+{
   if (!empty($l['address_id']) && empty($l['districtinfo_id'])) {
     $sql = "
       SELECT id AS districtinfo_id FROM civicrm_value_district_information_7 WHERE entity_id = {$l['address_id']}
@@ -1427,14 +1475,15 @@ function _findDistrict(&$l) {
     }
 
     mysql_free_result($result);
-
     unset($sql);
     unset($row);
     unset($result);
   }
-}//_findDistrict
+} // _findDistrict()
 
-function _findEmail(&$l) {
+
+function _findEmail(&$l)
+{
   if (!empty($l['id']) && !empty($l['email']) && empty($l['email_id'])) {
     $sql = "
       SELECT id AS email_id FROM civicrm_email WHERE email = '{$l['email']}' AND contact_id = {$l['id']}
@@ -1451,9 +1500,11 @@ function _findEmail(&$l) {
     unset($row);
     unset($result);
   }
-}//_findEmail
+} // _findEmail()
 
-function _processCurrentEmployer(&$l, $nyss_conn) {
+
+function _processCurrentEmployer(&$l, $nyss_conn)
+{
   if (array_key_exists('current_employer', $l) && !empty($l['current_employer'])) {
     $sql = sprintf("
       SELECT c.id
@@ -1487,9 +1538,11 @@ function _processCurrentEmployer(&$l, $nyss_conn) {
     unset($result);
     unset($current_employer);
   }
-}//_processCurrentEmployer
+} // _processCurrentEmployer()
 
-function _processNote(&$l) {
+
+function _processNote(&$l)
+{
   global $dryrun;
 
   if (array_key_exists('note', $l) && !empty($l['note'])) {
@@ -1512,9 +1565,11 @@ function _processNote(&$l) {
 
     unset($params);
   }
-}//_processNote
+} // _processNote()
 
-function _processTags($tagContacts, $type = 'Keywords') {
+
+function _processTags($tagContacts, $type = 'Keywords')
+{
   global $dryrun;
 
   $tag_lookup = array();
@@ -1626,9 +1681,11 @@ function _processTags($tagContacts, $type = 'Keywords') {
     nyss_out('debug', "tags to be processed...", true);
     nyss_out('debug', $tagContacts, true);
   }
-}//_processTags
+} // _processTags()
 
-function _processGroup($form_state, $imported_contacts, $new_contacts) {
+
+function _processGroup($form_state, $imported_contacts, $new_contacts)
+{
   if (!empty($form_state['values']['addtogroup']) &&
       $form_state['values']['addtogroup_handling'] != 'none') {
     nyss_out('debug', "processing group...", true);
@@ -1696,9 +1753,11 @@ function _processGroup($form_state, $imported_contacts, $new_contacts) {
     $groupContactsCount = count($groupContacts);
     nyss_out('status', "Adding {$groupContactsCount} to the {$groupName} group.", true);
   }
-}//_processGroup
+} // _processGroup()
 
-function _processEmailImport($new_contacts, $nyss_conn) {
+
+function _processEmailImport($new_contacts, $nyss_conn)
+{
   nyss_out('debug', "processing email only group...", true);
 
   global $dryrun;
@@ -1766,12 +1825,14 @@ function _processEmailImport($new_contacts, $nyss_conn) {
   unset($new_contacts_list);
   unset($result);
   unset($newContactsCount);
-}//_processEmailImport
+} // _processEmailImport()
 
-function _processAddressDelete($addressDel, $nyss_conn) {
+
+function _processAddressDelete($addressDel, $nyss_conn)
+{
   if (!empty($addressDel) && !$dryrun) {
     nyss_out('debug', "processing addresses to be trashed...", true);
-    $addressDelList  = implode(',', $addressDel);
+    $addressDelList = implode(',', $addressDel);
     $sqlAD = "
       DELETE FROM civicrm_address
       WHERE id IN ( $addressDelList );
@@ -1784,13 +1845,15 @@ function _processAddressDelete($addressDel, $nyss_conn) {
     unset($sqlAD);
     unset($addressDelList);
   }
-}
+} // _processAddressDelete()
 
-function _cleanData(&$l) {
-  foreach ($l as $k => $v) {
+
+function _cleanData(&$l)
+{
+  foreach ($l as $k => &$v) {
     if (is_string($v)) {
       $v = CRM_Utils_String::stripSpaces($v);
+      $v = CRM_Utils_Type::escape($v, 'String');
     }
-    $l[$k] = mysql_real_escape_string($v);
   }
-}//_cleanData
+} // _cleanData()

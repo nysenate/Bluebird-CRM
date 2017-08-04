@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,14 +27,15 @@
 {* @var $form Contains the array for the form elements and other form associated information assigned to the template by the controller *}
 <div class="crm-block crm-form-block crm-export-form-block">
 
- <div id="help">
-    <p>{ts}<strong>Export PRIMARY fields</strong> provides the most commonly used data values. This includes primary address information, preferred phone and email. Select this option and click <strong>Continue</strong> to immediately generate and save the export file.{/ts}</p>{*NYSS*}
+ <div class="help">
+    {*NYSS*}
+    <p>{ts}<strong>Export PRIMARY fields</strong> provides the most commonly used data values. This includes primary address information, preferred phone and email. Select this option and click <strong>Continue</strong> to immediately generate and save the export file.{/ts}</p>
     <p>{ts}Click <strong>Select fields for export</strong> and then <strong>Continue</strong> to choose a subset of fields for export. This option allows you to export multiple specific locations (Home, Work, etc.) as well as custom data. You can also save your selections as a 'field mapping' so you can use it again later.{/ts}</p>
  </div>
 
  {* WizardHeader.tpl provides visual display of steps thru the wizard as well as title for current step *}
-{*include file="CRM/common/WizardHeader.tpl"*}{*NYSS*}
-{*debug*}
+{*NYSS*}
+{*include file="CRM/common/WizardHeader.tpl"*}
 <h3>Export All or Selected Fields</h3>{*NYSS*}
 
  <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
@@ -45,7 +46,7 @@
         {$form.exportOption.html}
    </div>
   </div>
-  
+
   <div id="map" class="crm-section crm-export-mapping-section">
       {if $form.mapping }
         <div class="label crm-label-export-mapping">
@@ -54,7 +55,7 @@
         <div class="content crm-content-export-mapping">
             {$form.mapping.html}
         </div>
-		<div class="clear"></div> 
+    <div class="clear"></div>
       {/if}
   </div>
 
@@ -109,10 +110,10 @@
         &nbsp;{$form.street_long.html}
         {ts}Use the long form of the street address suffix (eg. 'street' instead of 'st' or 'avenue' instead of 'ave').{/ts}
     </div>
-	<div class="clear"></div> 
+  <div class="clear"></div>
   </div>
   {/if}
-    
+
  </div>
 
  <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
@@ -123,7 +124,7 @@
      {
   var element = document.getElementsByName("exportOption");
   //NYSS button renaming
-  if ( element[1].checked ) { 
+  if ( element[1].checked ) {
     cj('#map').show();
     cj('#_qf_Select_next-top').val('Continue >> ');
     cj('#_qf_Select_next-bottom').val('Continue >> ');
@@ -131,9 +132,9 @@
     cj('#map').hide();
     cj('#_qf_Select_next-top').val('Export ');
     cj('#_qf_Select_next-bottom').val('Export ');
-		}
-	 } 
-   	 showMappingOption( );
+  }
+     }
+     showMappingOption( );
     cj('#_qf_Select_cancel-top').val('Back');
     cj('#_qf_Select_cancel-bottom').val('Back');
 
@@ -145,22 +146,22 @@
      function showGreetingOptions( )
      {
         var mergeAddress = cj( "input[name='mergeOption']:checked" ).val( );
-	
+
         if ( mergeAddress == 1 ) {
             cj( "#greetings" ).show( );
         } else {
             cj( "#greetings" ).hide( );
-	}
+  }
      }
 
-     function showOther( ele ) 
+     function showOther( ele )
      {
         if ( cj('option:selected', ele).text( ) == '{/literal}{ts escape='js'}Other{/ts}{literal}' ) {
-	   cj('#' + cj(ele).attr('id') + '_other_wrapper').show( );  
-        } else {	
+     cj('#' + cj(ele).attr('id') + '_other_wrapper').show( );
+        } else {
           cj('#' + cj(ele).attr('id') + '_other').val('');
-	  cj('#' + cj(ele).attr('id') + '_other_wrapper').hide( );
-	}
+    cj('#' + cj(ele).attr('id') + '_other_wrapper').hide( );
+  }
      }
 
      showGreetingOptions( );

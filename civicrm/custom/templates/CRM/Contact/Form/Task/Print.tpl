@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -39,20 +39,23 @@
 {else}
     <td>{ts}Name{/ts}</td>
     {if !empty($columnHeaders.street_address)}
-    <td>{ts}Address{/ts}</td>
+      <td>{ts}Address{/ts}</td>
     {/if}
-    {if !empty($columnHeaders.city)} 
-    <td>{ts}City{/ts}</td>
+    {if !empty($columnHeaders.city)}
+      <td>{ts}City{/ts}</td>
     {/if}
     {if !empty($columnHeaders.state_province)}
-    <td>{ts}State{/ts}</td>
+      <td>{ts}State{/ts}</td>
     {/if}
     {if !empty($columnHeaders.postal_code)}
-    <td>{ts}Postal{/ts}</td>
+      <td>{ts}Postal{/ts}</td>
     {/if}
-{*NYSS remove country*}
+    {*NYSS remove country*}
     <td>{ts}Email{/ts}</td>
     <td>{ts}Phone{/ts}</td>
+    <td>{ts}Do Not Email{/ts}</td>
+    <td>{ts}Do Not Phone{/ts}</td>
+    <td>{ts}Do Not mail{/ts}</td>
 {/if}
   </tr>
 {foreach from=$rows item=row}
@@ -66,19 +69,18 @@
          {/foreach}
 
 {else}
-        {*NYSS 3966/5411*}
         <td>{$row.sort_name}</td>
         {if !empty($columnHeaders.street_address)}
-        <td>{$row.street_address}</td>
+          <td>{$row.street_address}</td>
         {/if}
         {if !empty($columnHeaders.city)}
-        <td>{$row.city}</td>
+          <td>{$row.city}</td>
         {/if}
         {if !empty($columnHeaders.state_province)}
-        <td>{$row.state_province}</td>
+          <td>{$row.state_province}</td>
         {/if}
-	{if !empty($columnHeaders.postal_code)}
-        <td>{$row.postal_code}</td>
+  {if !empty($columnHeaders.postal_code)}
+          <td>{$row.postal_code}</td>
         {/if}
     {*NYSS*}
 	{*if !empty($columnHeaders.country)}
@@ -86,6 +88,21 @@
         {/if*}
         <td>{$row.email}</td>
         <td>{$row.phone}</td>
+        {if $row.do_not_email == 1}
+          <td>{$row.do_not_email}</td>
+        {else}
+          <td>&nbsp;</td>
+        {/if}
+        {if $row.do_not_phone == 1}
+          <td>{$row.do_not_phone}</td>
+        {else}
+          <td>&nbsp;</td>
+        {/if}
+        {if $row.do_not_mail == 1}
+          <td>{$row.do_not_mail}</td>
+        {else}
+          <td>&nbsp;</td>
+        {/if}
 {/if}
     </tr>
 {/foreach}

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4
+ | CiviCRM version 4.7
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,38 +27,41 @@
 <div id="demographics" class="form-item">
   <table class="form-layout">
     <tr>
-      <td><label>{ts}Birth Dates{/ts}</label></td>
+      <td>
+        <label>{ts}Birth Dates{/ts}</label>
+      </td>
       <td></td>
-      <td><label>{$form.birth_date_month.label}</label></td>
-      <td></td>
+      <td>
+        <label>{$form.birth_date_month.label}</label>
+      </td>
+      <td>
+        <label>{ts}Age{/ts}</label>
+      </td>
     </tr>
     <tr>
       {include file="CRM/Core/DateRange.tpl" fieldName="birth_date" from='_low' to='_high'}
       <td>{$form.birth_date_month.html}</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td><label>{$form.is_deceased.label}</label></td>
-      <td></td>
-      <td><label>{ts}Deceased Dates{/ts}</label></td>
-      <td></td>
+      {include file="CRM/Core/AgeRange.tpl" fieldName="age" from='_low' to='_high' date='_asof_date'}
     </tr>
     <tr>
       <td>
+        {$form.is_deceased.label}<br />
         {$form.is_deceased.html}
-        <span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('is_deceased', 'Advanced'); return false;" >{ts}clear{/ts}</a>)</span>
       </td>
-      <td></td>
+    </tr>
+    <tr>
+      <td>
+        <label>{ts}Deceased Dates{/ts}</label>
+      </td>
+    </tr>
+    <tr>
       {include file="CRM/Core/DateRange.tpl" fieldName="deceased_date" from='_low' to='_high'}
     </tr>
     <tr>
       <td>
         {$form.gender_id.label}<br />
-        {$form.gender_id.html}<span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('gender_id', 'Advanced'); return false;" >{ts}clear{/ts}</a>)</span>
+        {$form.gender_id.html}
       </td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
     </tr>
   </table>
 </div>

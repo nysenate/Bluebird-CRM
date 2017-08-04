@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -44,16 +44,19 @@
 {if $report.jobs.0.start_date}
   {strip}
   <table class="crm-info-panel">
-  <tr><td class="label"><a href="{$report.event_totals.links.queue}">{ts}Intended Recipients{/ts}</a></td>
+    <tr><td class="label"><a href="{$report.event_totals.links.queue}">{ts}Intended Recipients{/ts}</a></td>
         <td>{$report.event_totals.queue}</td>
         <td>{$report.event_totals.actionlinks.queue}</td></tr>
     <tr><td class="label"><a href="{$report.event_totals.links.delivered}">{ts}Successful Deliveries{/ts}</a></td>
         <td>{$report.event_totals.delivered} ({$report.event_totals.delivered_rate|string_format:"%0.2f"}%)</td>
         <td>{$report.event_totals.actionlinks.delivered}</td></tr>
   {if $report.mailing.open_tracking}
-    <tr><td class="label"><a href="{$report.event_totals.links.opened}">{ts}Tracked Opens{/ts}</a></td>
+    <tr><td class="label"><a href="{$report.event_totals.links.opened}&distinct=1">{ts}Unique Opens{/ts}</a></td>
         <td>{$report.event_totals.opened}</td>
         <td>{$report.event_totals.actionlinks.opened}</td></tr>
+    <tr><td class="label"><a href="{$report.event_totals.links.opened}">{ts}Total Opens{/ts}</a></td>
+        <td>{$report.event_totals.total_opened}</td>
+        <td>{$report.event_totals.actionlinks.total_opened}</td></tr>{*NYSS 10954*}
   {/if}
   {if $report.mailing.url_tracking}
     <tr><td class="label"><a href="{$report.event_totals.links.clicks}">{ts}Click-throughs{/ts}</a></td>
@@ -76,7 +79,7 @@
   {*<tr><td class="label"><a href="{$report.event_totals.links.unsubscribe}">{ts}Unsubscribe Requests{/ts}</a></td>
       <td>{$report.event_totals.unsubscribe} ({$report.event_totals.unsubscribe_rate|string_format:"%0.2f"}%)</td>
       <td>{$report.event_totals.actionlinks.unsubscribe}</td></tr>*}
-  <tr><td class="label"><a href="{$report.event_totals.links.unsubscribe}">{ts}Opt-out Requests{/ts}</a></td>
+  <tr><td class="label"><a href="{$report.event_totals.links.optout}">{ts}Opt-out Requests{/ts}</a></td>
       <td>{$report.event_totals.optout} ({$report.event_totals.optout_rate|string_format:"%0.2f"}%)</td>
       <td>{$report.event_totals.actionlinks.optout}</td></tr>
   <tr><td class="label">{ts}Scheduled Date{/ts}</td>
@@ -165,13 +168,15 @@
 <th><a href="{$report.event_totals.links.clicks}">{ts}Clicks{/ts}</a></th>
 <th><a href="{$report.event_totals.links.clicks_unique}">{ts}Unique Clicks{/ts}</a></th>
 <th>{ts}Success Rate{/ts}</th>
-<th>{ts}URL{/ts}</th></tr>
+<th>{ts}URL{/ts}</th>
+<th>{ts}Report{/ts}</th></tr>
 {foreach from=$report.click_through item=row}
 <tr class="{cycle values="odd-row,even-row"}">
 <td>{if $row.clicks > 0}<a href="{$row.link}">{$row.clicks}</a>{else}{$row.clicks}{/if}</td>
 <td>{if $row.unique > 0}<a href="{$row.link_unique}">{$row.unique}</a>{else}{$row.unique}{/if}</td>
 <td>{$row.rate|string_format:"%0.2f"}%</td>
 <td><a href="{$row.url}">{$row.url}</a></td>
+<td><a href="{$row.report}">Report</a></td>
 </tr>
 {/foreach}
 </table>
@@ -180,7 +185,7 @@
 {/if}
 
 <fieldset>
-<legend>{ts}Content/Components{/ts}</legend>
+<legend>{ts}Content / Components{/ts}</legend>
 {strip}
 <table class="crm-info-panel">
 {if $report.mailing.body_text}
@@ -189,7 +194,7 @@
   <td>
     {$report.mailing.body_text|mb_truncate:30|escape|nl2br}
     <br />
-    <strong><a href='{$textViewURL}'>&raquo; {ts}View complete message{/ts}</a></strong>
+    <strong><a class="crm-popup" href='{$textViewURL}'>&raquo; {ts}View complete message{/ts}</a></strong>
   </td>
 </tr>
 {/if}
@@ -200,7 +205,7 @@
   <td>
     {$report.mailing.body_html|mb_truncate:30|escape|nl2br}
     <br/>
-    <strong><a href='{$htmlViewURL}'>&raquo; {ts}View complete message{/ts}</a></strong>
+    <strong><a class="crm-popup" href='{$htmlViewURL}'>&raquo; {ts}View complete message{/ts}</a></strong>
   </td>
 </tr>
 {/if}
@@ -238,6 +243,7 @@
 
 <tr><td class="label">{ts}Open tracking{/ts}</td><td>{if $report.mailing.open_tracking}{ts}On{/ts}{else}{ts}Off{/ts}{/if}</td></tr>
 <tr><td class="label">{ts}URL Click-through tracking{/ts}</td><td>{if $report.mailing.url_tracking}{ts}On{/ts}{else}{ts}Off{/ts}{/if}</td></tr>
+{if $public_url}<td class="label">{ts}Public url{/ts}</td><td><a href="{$public_url}"> {$public_url}</a></td></tr>{/if}
 *}
 {if $report.mailing.campaign}
 <tr><td class="label">{ts}Campaign{/ts}</td><td>{$report.mailing.campaign}</td></tr>
@@ -249,7 +255,7 @@
 <div class="action-link">
     <a href="{$backUrl}" >&raquo; {$backUrlTitle}</a>
 </div>
-</div> <!--end block-->
+
 
 
 

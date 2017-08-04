@@ -351,7 +351,7 @@
     <p> Loading message details.</p>
   </div>
   <div id="reloading-popup" title="please wait" style="display:none;">
-    <p> <img src="/sites/default/themes/Bluebird/nyss_skin/images/header-search-active.gif"/>  ReLoading messages.</p>
+    <p> <img src="/sites/default/themes/Bluebird/images/header-search-active.gif"/>  ReLoading messages.</p>
   </div>
   <div id="no_find_match" title="This Message was already matched" style="display:none;">
     <p> We will automatically assign this message in the next 5 mins.</p>

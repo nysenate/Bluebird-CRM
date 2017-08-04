@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 {htxt id="id-dash_welcome"}
 <p>
   {*NYSS*}
-  {ts}To include a dashlet report drag it from the "Available Dashlets" block to one of the two columns. The left column is best suited for most reports.{/ts}
+  {ts}To include a dashlet report click "Configure Dashboard" and drag the desired dashlet from the "Available Dashlets" block to one of the columns (use the left column for a better fit).{/ts}
 </p>
 <p>
   {ts}To add reports to your dashboard:{/ts}
@@ -50,7 +50,7 @@
 {htxt id="id-dash_configure"}
 <p>
   {*NYSS*}
-  {ts}To include a dashlet report drag it from the "Available Dashlets" block to one of the two columns. The left column is best suited for most reports.{/ts}
+  {ts}To include a dashlet report drag it from the "Available Dashlets" block to one of the two columns (use the left column for a better fit).{/ts}
 </p>
 <p>
   {ts}To add reports to your dashboard:{/ts}
