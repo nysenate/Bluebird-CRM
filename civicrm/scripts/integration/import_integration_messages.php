@@ -217,7 +217,8 @@ function get_integration_config_params()
   // '-' instead of '_', and ending with '='.
   $longopts = str_replace('_', '-', array_keys($default_vals));
   $longopts = array_map(function($val) { return $val.'='; }, $longopts);
-  $shortopts = "h:t:u:p:n:H:T:U:P:N:l:";
+  $longopts[] = 'source-db-config-file=';
+  $shortopts = "h:t:u:p:n:H:T:U:P:N:l:f:";
 
   $optlist = process_cli_args($shortopts, $longopts);
   if ($optlist == null) {
@@ -226,8 +227,32 @@ function get_integration_config_params()
     exit(1);
   }
 
+  // Bluebird config MUST be read before the external config.
   $bbcfg = get_bluebird_config();
   $bbintcfg = $bbcfg['globals'];
+
+  // If an external config file is being used, read it in and update values.
+  // This applies to only the source database parameters ("website.source.db").
+  $extcfgfile = null;
+  if (isset($optlist['source-db-config-file'])) {
+    $extcfgfile = $optlist['source-db-config-file'];
+  }
+  else if (isset($bbintcfg['source.db.config.file'])) {
+    $extcfgfile = $bbintcfg['source.db.config.file'];
+  }
+  if ($extcfgfile) {
+    $extcfg = parse_ini_file($extcfgfile, false, INI_SCANNER_TYPED);
+    if ($extcfg === false) {
+      bbscript_log(LL::WARN, "$extcfgfile: Unable to parse external config file");
+    }
+    else {
+      // Replace parameters in Bluebird config with the external config.
+      foreach ($extcfg as $k => $v) {
+        $bbcfgidx = "website.source.db.$k";
+        $bbintcfg[$bbcfgidx] = $v;
+      }
+    }
+  }
 
   $cfgopts = array();
 
