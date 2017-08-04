@@ -26,14 +26,14 @@ usage() {
 Usage: $prog <options>
 
 Options not provided on the command line will be read from the [globals] group
-in bluebird.cfg (which can be overrideen with the --config-group option).
+in bluebird.cfg (which can be overridden with the --config-group option).
 Some options may fall back to a hard-coded default if not present on either
 the command line or bluebird.cfg.  If any required option cannot be resolved,
 the script will exit with return code 1.
 
 Options in bluebird.cfg follow the same general naming conventions, with
 all '-' characters replaced with '.', and an added prefix of 'website.'.
-The prefix can be overriden with the --config-prefix option.
+The prefix can be overridden with the --config-prefix option.
 
 For example, the socket-file command line option corresponds to the
 website.socket.file configuration setting.
