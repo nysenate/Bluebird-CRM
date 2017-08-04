@@ -1,13 +1,15 @@
 <?php
 
-function nyss_out($type,$v,$toscreen=false) {
+function nyss_out($type, $v, $toscreen = false)
+{
+  global $nyss_ioline, $nyss_iototallines;
 
-  global $nyss_ioline,$nyss_iototallines;
+  if (!empty($v) && (($type == 'debug' && NYSSIODEBUG) || $type !='debug')) {
+    $v = print_r($v, true);
 
-  if(!empty($v) && (($type=='debug' && NYSSIODEBUG) || $type!='debug')) {
-    $v = print_r($v,true);
-
-    if ($type=='error') error_log($v. " (line: $nyss_ioline)");
+    if ($type == 'error') {
+      error_log($v. " (line: $nyss_ioline)");
+    }
 
     if ($toscreen) {
       echo "<pre>$v (line: $nyss_ioline of $nyss_iototallines memory: ".(round(memory_get_usage()/1048576,4))." MB".")</pre>";
@@ -17,23 +19,68 @@ function nyss_out($type,$v,$toscreen=false) {
 
     unset($v);
   }
-}
+} // nyss_out()
 
-class nyss_iofileobject {
 
+//replicated from CRM_Utils_String::stripSpaces
+//in order to process off c3.2.x core base
+function nyss_stripSpaces($s)
+{
+  if (empty($s)) {
+    return $s;
+  }
+
+  $pat = array(
+    0 => "/^\s+/",
+    1 =>  "/\s{2,}/",
+    2 => "/\s+\$/"
+  );
+
+  $rep = array(
+    0 => "",
+    1 => " ",
+    2 => ""
+  );
+
+  return preg_replace($pat, $rep, $s);
+} // nyss_stripSpaces()
+
+
+function convertLowerCase($s)
+{
+  return strtolower($s);
+} // convertLowerCase()
+
+
+/*
+ * browsers have changed how they support flushing content to screen
+ * this function calls the necessary PHP flushing actions
+ */
+function nyss_flush()
+{
+  ob_end_flush();
+  ob_flush();
+  flush();
+  ob_start();
+} // nyss_flush()
+
+
+class NYSS_IOFileObject
+{
   public $filepath;
-  public $type = ",";
+  public $type = ',';
   public $hasHeader = 1;
   public $linecount = 0;
   public $header = array();
 
   private $file_handle;
 
-  function nyss_iofileobject($filepath, $type=',') {
-    $this->type=$type;
+  function __construct($filepath, $type = ',')
+  {
+    $this->type = $type;
     $this->filepath = $filepath;
 
-    ini_set('auto_detect_line_endings',TRUE);
+    ini_set('auto_detect_line_endings', true);
 
     // open the file for reading
     $this->file_handle = fopen($filepath, 'r');
@@ -42,17 +89,21 @@ class nyss_iofileobject {
 
     if (!is_array($line)) {
       //set error message and exit
-      drupal_set_message('Bad file. Either the file is not a csv or has the wrong number of headers.','error');
+      drupal_set_message('Bad file. Either the file is not a csv or has the wrong number of headers.', 'error');
       return false;
     }
 
     //get the header row
     $this->header = array();
-    foreach ($line as $key=>$val) $this->header[strtolower($val)]=$key;
-  }
+    foreach ($line as $key => $val) {
+      $this->header[strtolower($val)] = $key;
+    }
+  } // __construct()
 
-  public function countLines() {
-    $ns=$rs=0;
+
+  public function countLines()
+  {
+    $ns = $rs = 0;
     $fh = fopen($this->filepath, 'r');
 
     while ($chunk = fread($fh, 1024000)) {
@@ -60,23 +111,31 @@ class nyss_iofileobject {
       $rs += substr_count($chunk, "\r");
     }
 
-    if ($rs>$ns) $ns=$rs;
+    if ($rs > $ns) {
+      $ns = $rs;
+    }
     return $rs;
-  }
+  } // countLines()
 
-  public function getLine() {
+
+  public function getLine()
+  {
     if ($line = $this->getLineAsArray()) {
       ++$this->linecount;
-      foreach ( $this->header as $colname=>$colnum ) {
+      $aLine = array();
+      foreach ($this->header as $colname => $colnum) {
         $aLine[$colname] = $line[$colnum];
       }
       return $aLine;
     }
+    else {
+      return false;
+    }
+  } // getLine()
 
-    return false;
-  }
 
-  function getLineAsArray() {
+  function getLineAsArray()
+  {
     $line = fgets($this->file_handle);
     if ($line) {
       return explode($this->type, rtrim($line));
@@ -84,5 +143,5 @@ class nyss_iofileobject {
     else {
       return false;
     }
-  }// getLineAsArray()
-}//end class
+  } // getLineAsArray()
+} // NYSS_IOFileObject
