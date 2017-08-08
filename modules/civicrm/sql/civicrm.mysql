@@ -4570,6 +4570,7 @@ CREATE TABLE `civicrm_contribution` (
      `net_amount` decimal(20,2)    COMMENT 'actual funds transfer amount. total less fees. if processor does not report actual fee during transaction, this is set to total_amount.',
      `trxn_id` varchar(255)    COMMENT 'unique transaction id. may be processor id, bank id + trans id, or account number + check number... depending on payment_method',
      `invoice_id` varchar(255)    COMMENT 'unique invoice id, system generated or passed in',
+     `invoice_number` varchar(255)    COMMENT 'Human readable invoice number',
      `currency` varchar(3)   DEFAULT NULL COMMENT '3 character string, value from config setting or input via user.',
      `cancel_date` datetime    COMMENT 'when was gift cancelled',
      `cancel_reason` text    ,

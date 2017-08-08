@@ -154,8 +154,6 @@ class CRM_Contribute_Form_Contribution extends CRM_Contribute_Form_AbstractEditP
 
   protected $_formType;
 
-  public $_honoreeProfileType;
-
   /**
    * Array of the payment fields to be displayed in the payment fieldset (pane) in billingBlock.tpl
    * this contains all the information to describe these fields from quickform. See CRM_Core_Form_Payment getPaymentFormFieldsMetadata
@@ -301,10 +299,6 @@ class CRM_Contribute_Form_Contribution extends CRM_Contribute_Form_AbstractEditP
     else {
       $this->setPageTitle($this->_ppID ? ts('Pledge Payment') : ts('Contribution'));
     }
-
-    if ($this->_id) {
-      CRM_Contribute_Form_SoftCredit::preprocess($this);
-    }
   }
 
   /**
@@ -313,7 +307,6 @@ class CRM_Contribute_Form_Contribution extends CRM_Contribute_Form_AbstractEditP
    * @return array
    */
   public function setDefaultValues() {
-
     $defaults = $this->_values;
 
     // Set defaults for pledge payment.
@@ -370,12 +363,11 @@ class CRM_Contribute_Form_Contribution extends CRM_Contribute_Form_AbstractEditP
       }
     }
 
-    if (isset($defaults['non_deductible_amount'])) {
-      $defaults['non_deductible_amount'] = CRM_Utils_Money::format($defaults['non_deductible_amount'], NULL, '%a');
-    }
-
-    if (isset($defaults['fee_amount'])) {
-      $defaults['fee_amount'] = CRM_Utils_Money::format($defaults['fee_amount'], NULL, '%a');
+    $amountFields = array('non_deductible_amount', 'fee_amount', 'net_amount');
+    foreach ($amountFields as $amt) {
+      if (isset($defaults[$amt])) {
+        $defaults[$amt] = CRM_Utils_Money::format($defaults[$amt], NULL, '%a');
+      }
     }
 
     if ($this->_contributionType) {
@@ -1156,6 +1148,9 @@ class CRM_Contribute_Form_Contribution extends CRM_Contribute_Form_AbstractEditP
     if (!empty($this->_params['receive_date'])) {
       $this->_params['receive_date'] = CRM_Utils_Date::processDate($this->_params['receive_date'], $this->_params['receive_date_time']);
     }
+    else {
+      $this->_params['receive_date'] = $now;
+    }
 
     $this->_params['pcp_display_in_roll'] = CRM_Utils_Array::value('pcp_display_in_roll', $params);
     $this->_params['pcp_roll_nickname'] = CRM_Utils_Array::value('pcp_roll_nickname', $params);
@@ -1198,8 +1193,6 @@ class CRM_Contribute_Form_Contribution extends CRM_Contribute_Form_AbstractEditP
     if (!empty($this->_params['receive_date'])) {
       $paymentParams['receive_date'] = $this->_params['receive_date'];
     }
-
-    $this->_params['receive_date'] = $now;
 
     if (!empty($this->_params['is_email_receipt'])) {
       $this->_params['receipt_date'] = $now;
