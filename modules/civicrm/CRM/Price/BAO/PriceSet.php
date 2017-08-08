@@ -982,7 +982,7 @@ WHERE  id = %1";
           $autoRenewMembershipTypes[] = $membershiptTypeValue['id'];
         }
       }
-      foreach ($form->_priceSet['fields'] as &$field) {
+      foreach ($form->_priceSet['fields'] as $field) {
         if (array_key_exists('options', $field) && is_array($field['options'])) {
           foreach ($field['options'] as $option) {
             if (!empty($option['membership_type_id'])) {
@@ -1341,11 +1341,11 @@ INNER JOIN  civicrm_price_set pset    ON ( pset.id = field.price_set_id )
    */
   public static function getMembershipCount($ids) {
     $queryString = "
-SELECT       count( pfv.id ) AS count, pfv.id AS id
+SELECT       count( pfv.id ) AS count, mt.member_of_contact_id AS id
 FROM         civicrm_price_field_value pfv
 INNER JOIN    civicrm_membership_type mt ON mt.id = pfv.membership_type_id
 WHERE        pfv.id IN ( $ids )
-GROUP BY     mt.member_of_contact_id";
+GROUP BY     mt.member_of_contact_id ";
 
     $crmDAO = CRM_Core_DAO::executeQuery($queryString);
     $count = array();

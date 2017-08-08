@@ -2209,7 +2209,7 @@ SELECT contact_id
   public static function buildOptions($fieldName, $context = NULL, $props = array()) {
     // If a given bao does not override this function
     $baoName = get_called_class();
-    return CRM_Core_PseudoConstant::get($baoName, $fieldName, array(), $context);
+    return CRM_Core_PseudoConstant::get($baoName, $fieldName, $props, $context);
   }
 
   /**
@@ -2527,7 +2527,7 @@ SELECT contact_id
     foreach ((array) $bao->addSelectWhereClause() as $field => $vals) {
       $clauses[$field] = NULL;
       if ($vals) {
-        $clauses[$field] = "`$tableAlias`.`$field` " . implode(" AND `$tableAlias`.`$field` ", (array) $vals);
+        $clauses[$field] = "(`$tableAlias`.`$field` IS NULL OR (`$tableAlias`.`$field` " . implode(" AND `$tableAlias`.`$field` ", (array) $vals) . '))';
       }
     }
     return $clauses;

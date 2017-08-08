@@ -154,7 +154,7 @@
     {capture assign=browseURL}{crmURL p='civicrm/mailing/browse/scheduled' q="scheduled=true&reset=1"}{$qVal}{/capture}
     {assign var="browseType" value="Scheduled and Sent"}
   {/if}
-  <div class="status messages">
+  <div class="status messages no-popup">
     <table class="form-layout">
       <tr><div class="icon inform-icon"></div>
         {ts 1=$componentName}No %1 match your search criteria. Suggestions:{/ts}

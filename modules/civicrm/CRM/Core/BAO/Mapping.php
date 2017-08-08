@@ -108,22 +108,19 @@ class CRM_Core_BAO_Mapping extends CRM_Core_DAO_Mapping {
   /**
    * Get the list of mappings.
    *
-   * @param string $mappingTypeId
-   *   Mapping type id.
+   * @param string $mappingType
+   *   Mapping type name.
    *
    * @return array
-   *   array of mapping name
+   *   Array of mapping names, keyed by id.
    */
-  public static function getMappings($mappingTypeId) {
+  public static function getMappings($mappingType) {
+    $result = civicrm_api3('Mapping', 'get', array('mapping_type_id' => $mappingType, 'options' => array('sort' => 'name')));
     $mapping = array();
-    $mappingDAO = new CRM_Core_DAO_Mapping();
-    $mappingDAO->mapping_type_id = $mappingTypeId;
-    $mappingDAO->find();
 
-    while ($mappingDAO->fetch()) {
-      $mapping[$mappingDAO->id] = $mappingDAO->name;
+    foreach ($result['values'] as $key => $value) {
+      $mapping[$key] = $value['name'];
     }
-
     return $mapping;
   }
 
@@ -133,10 +130,14 @@ class CRM_Core_BAO_Mapping extends CRM_Core_DAO_Mapping {
    * @param int $mappingId
    *   Mapping id.
    *
+   * @param bool $addPrimary
+   *   Add the key 'Primary' when the field is a location field AND there is
+   *   no location type (meaning Primary)?
+   *
    * @return array
    *   array of mapping fields
    */
-  public static function getMappingFields($mappingId) {
+  public static function getMappingFields($mappingId, $addPrimary = FALSE) {
     //mapping is to be loaded from database
     $mapping = new CRM_Core_DAO_MappingField();
     $mapping->mapping_id = $mappingId;
@@ -151,6 +152,14 @@ class CRM_Core_BAO_Mapping extends CRM_Core_DAO_Mapping {
 
       if (!empty($mapping->location_type_id)) {
         $mappingLocation[$mapping->grouping][$mapping->column_number] = $mapping->location_type_id;
+      }
+      elseif ($addPrimary) {
+        if (CRM_Contact_BAO_Contact::isFieldHasLocationType($mapping->name)) {
+          $mappingLocation[$mapping->grouping][$mapping->column_number] = ts('Primary');
+        }
+        else {
+          $mappingLocation[$mapping->grouping][$mapping->column_number] = NULL;
+        }
       }
 
       if (!empty($mapping->phone_type_id)) {

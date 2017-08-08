@@ -1,4 +1,5 @@
-{*
+<?php
+/*
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
@@ -22,48 +23,31 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*}
-{*NYSS 1111 CRM-20673*}
-{if $title}
-<div class="crm-accordion-wrapper crm-tagGroup-accordion collapsed">
-  <div class="crm-accordion-header">{$title}</div>
-  <div class="crm-accordion-body" id="tagGroup">
-{/if}
-    <table class="form-layout-compressed{if $context EQ 'profile'} crm-profile-tagsandgroups{/if}">
-      <tr>
-        {if !$type || $type eq 'tag'}
-          <td>
-            <div class="crm-section tag-section">
-              {if $title}{$form.tag.label}{/if}
-              {$form.tag.html}
-            </div>
-            {if $context NEQ 'profile'}
-              {include file="CRM/common/Tagset.tpl"}
-            {/if}
-          </td>
-        {/if}
-        {if !$type || $type eq 'group'}
-          <td>
-            {if $groupElementType eq 'select'}
-              <div class="crm-section group-section">
-              {if $title}{$form.group.label}{/if}
-              {$form.group.html}
-            </div>
-            {else}
-              {foreach key=key item=item from=$tagGroup.group}
-                <div class="group-wrapper">
-                  {$form.group.$key.html}
-                  {if $item.description}
-                    <div class="description">{$item.description}</div>
-                  {/if}
-                </div>
-              {/foreach}
-            {/if}
-          </td>
-        {/if}
-      </tr>
-    </table>
-{if $title}
-  </div>
-</div><!-- /.crm-accordion-wrapper -->
-{/if}
+ */
+
+/**
+ *
+ * @package CRM
+ * @copyright CiviCRM LLC (c) 2004-2017
+ */
+
+/**
+ * This class generates form components for CiviCase.
+ */
+class CRM_Admin_Form_Setting_Case extends CRM_Admin_Form_Setting {
+
+  protected $_settings = array(
+    'civicaseRedactActivityEmail' => CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
+    'civicaseAllowMultipleClients' => CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
+    'civicaseNaturalActivityTypeSort' => CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
+  );
+
+  /**
+   * Build the form object.
+   */
+  public function buildQuickForm() {
+    CRM_Utils_System::setTitle(ts('Settings - CiviCase'));
+    parent::buildQuickForm();
+  }
+
+}
