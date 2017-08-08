@@ -397,7 +397,6 @@ class CRM_Admin_Page_AJAX {
     $parent = CRM_Utils_Type::escape(CRM_Utils_Array::value('parent_id', $_GET, 0), 'Integer');
     $result = array();
 
-    //NYSS 11072 CRM-20621
     $parentClause = $parent ? "AND parent_id = $parent" : 'AND parent_id IS NULL';
     $sql = "SELECT *
       FROM civicrm_tag
@@ -414,7 +413,6 @@ class CRM_Admin_Page_AJAX {
       if ($dao->color) {
         $style = "background-color: {$dao->color}; color: " . CRM_Utils_Color::getContrast($dao->color);
       }
-      //NYSS 11072 CRM-20621
       $hasChildTags = empty($childTagIDs[$dao->id]) ? FALSE : TRUE;
       $usedFor = (array) explode(',', $dao->used_for);
       $result[] = array(
@@ -429,14 +427,13 @@ class CRM_Admin_Page_AJAX {
           'style' => $style,
           'class' => 'crm-tag-item',
         ),
-        'children' => $hasChildTags, //NYSS 11072 CRM-20621
+        'children' => $hasChildTags,
         'data' => array(
           'description' => (string) $dao->description,
           'is_selectable' => (bool) $dao->is_selectable,
           'is_reserved' => (bool) $dao->is_reserved,
-          'used_for' => $usedFor, //NYSS 11072 CRM-20621
+          'used_for' => $usedFor,
           'color' => $dao->color ? $dao->color : '#ffffff',
-          //NYSS 11072 CRM-20621
           'usages' => civicrm_api3('EntityTag', 'getcount', array(
             'entity_table' => array('IN' => $usedFor),
             'tag_id' => $dao->id,
@@ -445,7 +442,6 @@ class CRM_Admin_Page_AJAX {
       );
     }
 
-    //NYSS 11072 CRM-20621
     if (!empty($_REQUEST['is_unit_test'])) {
       return $result;
     }
