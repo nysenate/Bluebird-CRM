@@ -39,6 +39,10 @@ log_db_prefix=`$readConfig --ig $instance db.log.prefix` || log_db_prefix="$DEFA
 cdb="$civi_db_prefix$db_basename"
 ldb=$log_db_prefix$db_basename;
 
+## upgrade drupal db
+echo "running drupal db upgrade..."
+$drush $instance updatedb
+
 ## upgrade civicrm db
 echo "running civicrm db upgrade..."
 $drush $instance civicrm-upgrade-db
