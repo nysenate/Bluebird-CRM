@@ -273,7 +273,9 @@ function file_default_scheme() {
  *   The normalized URI.
  */
 function file_stream_wrapper_uri_normalize($uri) {
-  $scheme = file_uri_scheme($uri);
+  // Inline file_uri_scheme() function call for performance reasons.
+  $position = strpos($uri, '://');
+  $scheme = $position ? substr($uri, 0, $position) : FALSE;
 
   if ($scheme && file_stream_wrapper_valid_scheme($scheme)) {
     $target = file_uri_target($uri);
@@ -533,7 +535,18 @@ SetHandler Drupal_Security_Do_Not_Remove_See_SA_2006_006
 EOF;
 
   if ($private) {
-    $lines = "Deny from all\n\n" . $lines;
+    $lines = <<<EOF
+# Deny all requests from Apache 2.4+.
+<IfModule mod_authz_core.c>
+  Require all denied
+</IfModule>
+
+# Deny all requests from Apache 2.0-2.2.
+<IfModule !mod_authz_core.c>
+  Deny from all
+</IfModule>
+EOF
+    . "\n\n" . $lines;
   }
 
   return $lines;
@@ -887,7 +900,6 @@ function file_valid_uri($uri) {
  */
 function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) {
   $original_source = $source;
-  $original_destination = $destination;
 
   // Assert that the source file actually exists.
   if (!file_exists($source)) {
@@ -1152,7 +1164,7 @@ function file_munge_filename($filename, $extensions, $alerts = TRUE) {
     // Remove any null bytes. See http://php.net/manual/security.filesystem.nullbytes.php
     $filename = str_replace(chr(0), '', $filename);
 
-    $whitelist = array_unique(explode(' ', trim($extensions)));
+    $whitelist = array_unique(explode(' ', strtolower(trim($extensions))));
 
     // Split the filename up by periods. The first part becomes the basename
     // the last part the final extension.
@@ -1165,7 +1177,7 @@ function file_munge_filename($filename, $extensions, $alerts = TRUE) {
     // of allowed extensions.
     foreach ($filename_parts as $filename_part) {
       $new_filename .= '.' . $filename_part;
-      if (!in_array($filename_part, $whitelist) && preg_match("/^[a-zA-Z]{2,5}\d?$/", $filename_part)) {
+      if (!in_array(strtolower($filename_part), $whitelist) && preg_match("/^[a-zA-Z]{2,5}\d?$/", $filename_part)) {
         $new_filename .= '_';
       }
     }
@@ -1559,7 +1571,7 @@ function file_save_upload($form_field_name, $validators = array(), $destination 
     return FALSE;
   }
 
-  // Add in our check of the the file name length.
+  // Add in our check of the file name length.
   $validators['file_validate_name_length'] = array();
 
   // Call the validation functions specified by this function's caller.
@@ -1602,6 +1614,20 @@ function file_save_upload($form_field_name, $validators = array(), $destination 
 
   // If we made it this far it's safe to record this file in the database.
   if ($file = file_save($file)) {
+    // Track non-public files in the session if they were uploaded by an
+    // anonymous user. This allows modules such as the File module to only
+    // grant view access to the specific anonymous user who uploaded the file.
+    // See file_file_download().
+    // The 'file_public_schema' variable is used to allow other publicly
+    // accessible file schemes to be treated the same as the public:// scheme
+    // provided by Drupal core and to avoid adding unnecessary data to the
+    // session (and the resulting bypass of the page cache) in those cases. For
+    // security reasons, only schemes that are completely publicly accessible,
+    // with no download restrictions, should be added to this variable. See
+    // file_managed_file_value().
+    if (!$user->uid && !in_array($destination_scheme, variable_get('file_public_schema', array('public')))) {
+      $_SESSION['anonymous_allowed_file_ids'][$file->fid] = $file->fid;
+    }
     // Add file to the cache.
     $upload_cache[$form_field_name] = $file;
     return $file;
@@ -1729,8 +1755,6 @@ function file_validate_extensions(stdClass $file, $extensions) {
 /**
  * Checks that the file's size is below certain limits.
  *
- * This check is not enforced for the user #1.
- *
  * @param $file
  *   A Drupal file object.
  * @param $file_limit
@@ -1748,20 +1772,17 @@ function file_validate_extensions(stdClass $file, $extensions) {
  */
 function file_validate_size(stdClass $file, $file_limit = 0, $user_limit = 0) {
   global $user;
-
   $errors = array();
 
-  // Bypass validation for uid  = 1.
-  if ($user->uid != 1) {
-    if ($file_limit && $file->filesize > $file_limit) {
-      $errors[] = t('The file is %filesize exceeding the maximum file size of %maxsize.', array('%filesize' => format_size($file->filesize), '%maxsize' => format_size($file_limit)));
-    }
-
-    // Save a query by only calling file_space_used() when a limit is provided.
-    if ($user_limit && (file_space_used($user->uid) + $file->filesize) > $user_limit) {
-      $errors[] = t('The file is %filesize which would exceed your disk quota of %quota.', array('%filesize' => format_size($file->filesize), '%quota' => format_size($user_limit)));
-    }
+  if ($file_limit && $file->filesize > $file_limit) {
+    $errors[] = t('The file is %filesize exceeding the maximum file size of %maxsize.', array('%filesize' => format_size($file->filesize), '%maxsize' => format_size($file_limit)));
   }
+
+  // Save a query by only calling file_space_used() when a limit is provided.
+  if ($user_limit && (file_space_used($user->uid) + $file->filesize) > $user_limit) {
+    $errors[] = t('The file is %filesize which would exceed your disk quota of %quota.', array('%filesize' => format_size($file->filesize), '%quota' => format_size($user_limit)));
+  }
+
   return $errors;
 }
 
@@ -1790,7 +1811,7 @@ function file_validate_is_image(stdClass $file) {
 /**
  * Verifies that image dimensions are within the specified maximum and minimum.
  *
- * Non-image files will be ignored. If a image toolkit is available the image
+ * Non-image files will be ignored. If an image toolkit is available the image
  * will be scaled to fit within the desired maximum dimensions.
  *
  * @param $file
@@ -2027,7 +2048,7 @@ function file_download() {
  *
  * @see file_transfer()
  * @see file_download_access()
- * @see hook_file_downlaod()
+ * @see hook_file_download()
  */
 function file_download_headers($uri) {
   // Let other modules provide headers and control access to the file.
@@ -2556,7 +2577,6 @@ function file_directory_temp() {
  *   An associative array of headers, as expected by file_transfer().
  */
 function file_get_content_headers($file) {
-  $name = mime_header_encode($file->filename);
   $type = mime_header_encode($file->filemime);
 
   return array(

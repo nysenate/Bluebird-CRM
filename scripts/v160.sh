@@ -39,6 +39,23 @@ log_db_prefix=`$readConfig --ig $instance db.log.prefix` || log_db_prefix="$DEFA
 cdb="$civi_db_prefix$db_basename"
 ldb=$log_db_prefix$db_basename;
 
+## disable/uninstall unused modules
+echo "uninstall unused modules..."
+$drush $instance dis nyss_tags -y
+$drush $instance sql-query "DELETE from system where name = 'nyss_tags' AND type = 'module';" -q
+$drush $instance sql-query "DELETE from system where name = 'apachesolr_nodeaccess' AND type = 'module';" -q
+$drush $instance sql-query "DELETE from system where name = 'admin_menu' AND type = 'module';" -q
+$drush $instance sql-query "DELETE from system where name = 'apachesolr_multisitesearch' AND type = 'module';" -q
+$drush $instance sql-query "DELETE from system where name = 'cacherouter' AND type = 'module';" -q
+$drush $instance sql-query "DELETE from system where name = 'civicrm_van' AND type = 'module';" -q
+$drush $instance sql-query "DELETE from system where name = 'multisite' AND type = 'module';" -q
+$drush $instance sql-query "DELETE from system where name = 'imce' AND type = 'module';" -q
+$drush $instance sql-query "DELETE from system where name = 'rules_forms' AND type = 'module';" -q
+
+## upgrade drupal db
+echo "running drupal db upgrade..."
+$drush $instance updb -y -q
+
 ## upgrade civicrm db
 echo "running civicrm db upgrade..."
 $drush $instance civicrm-upgrade-db
@@ -142,9 +159,6 @@ $execSql $instance -c "$sql" -q
 
 ## enable new nyss_reports module
 $drush $instance en nyss_reports -y
-
-## disable old modules
-$drush $instance en nyss_tags -y
 
 ## install new extension
 $drush $instance cvapi extension.install key=gov.nysenate.dao
