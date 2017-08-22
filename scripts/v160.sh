@@ -144,7 +144,7 @@ $execSql $instance -c "$sql" -q
 $drush $instance en nyss_reports -y
 
 ## disable old modules
-$drush $instance en nyss_tags -y
+$drush $instance dis nyss_tags -y
 
 ## install new extension
 $drush $instance cvapi extension.install key=gov.nysenate.dao
