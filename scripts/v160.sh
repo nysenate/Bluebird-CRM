@@ -41,7 +41,6 @@ ldb=$log_db_prefix$db_basename;
 
 ## disable/uninstall unused modules
 echo "uninstall unused modules..."
-$drush $instance dis nyss_tags -y
 $drush $instance sql-query "DELETE from system where name = 'nyss_tags' AND type = 'module';" -q
 $drush $instance sql-query "DELETE from system where name = 'apachesolr_nodeaccess' AND type = 'module';" -q
 $drush $instance sql-query "DELETE from system where name = 'admin_menu' AND type = 'module';" -q
@@ -161,13 +160,13 @@ $execSql $instance -c "$sql" -q
 $drush $instance en nyss_reports -y
 
 ## install new extension
-$drush $instance cvapi extension.install key=gov.nysenate.dao
-$drush $instance cvapi extension.install key=gov.nysenate.inbox
-$drush $instance cvapi extension.install key=gov.nysenate.resources
-$drush $instance cvapi extension.install key=gov.nysenate.tagdemographics
-$drush $instance cvapi extension.install key=gov.nysenate.tags
-$drush $instance cvapi extension.install key=gov.nysenate.webintegration
-$drush $instance cvapi extension.install key=gov.nysenate.mail
+$drush $instance cvapi extension.install key=gov.nysenate.dao --quiet
+$drush $instance cvapi extension.install key=gov.nysenate.inbox --quiet
+$drush $instance cvapi extension.install key=gov.nysenate.resources --quiet
+$drush $instance cvapi extension.install key=gov.nysenate.tagdemographics --quiet
+$drush $instance cvapi extension.install key=gov.nysenate.tags --quiet
+$drush $instance cvapi extension.install key=gov.nysenate.webintegration --quiet
+$drush $instance cvapi extension.install key=gov.nysenate.mail --quiet
 
 ## update roles/perms
 echo "$prog: update roles and permissions"

@@ -55,6 +55,9 @@ class SqlTriggers {
   public function rebuild($tableName = NULL, $force = FALSE) {
     $info = array();
 
+    //NYSS returning early
+    return;
+
     $logging = new \CRM_Logging_Schema();
     $logging->triggerInfo($info, $tableName, $force);
 
