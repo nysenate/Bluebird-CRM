@@ -3252,7 +3252,7 @@ CREATE TABLE `civicrm_pledge` (
      `max_reminders` int unsigned   DEFAULT 1 COMMENT 'The maximum number of payment reminders to send for any given payment.',
      `initial_reminder_day` int unsigned   DEFAULT 5 COMMENT 'Send initial reminder this many days prior to the payment due date.',
      `additional_reminder_day` int unsigned   DEFAULT 5 COMMENT 'Send additional reminder this many days after last one sent, up to maximum number of reminders.',
-     `status_id` int unsigned    COMMENT 'Implicit foreign key to civicrm_option_values in the contribution_status option group.',
+     `status_id` int unsigned    COMMENT 'Implicit foreign key to civicrm_option_values in the pledge_status option group.',
      `is_test` tinyint   DEFAULT 0 ,
      `campaign_id` int unsigned    COMMENT 'The campaign for which this pledge has been initiated.' 
 ,
