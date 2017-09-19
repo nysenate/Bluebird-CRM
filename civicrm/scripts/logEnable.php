@@ -14,21 +14,14 @@ $optList = civicrm_script_init("", array(), False);
 drupal_script_init();
 
 require_once 'CRM/Core/Config.php';
-$config = CRM_Core_Config::singleton();
-$config->logging = TRUE;
+CRM_Core_Config::singleton();
 
 echo "enable logging and rebuild triggers...\n";
 require_once 'CRM/Logging/Schema.php';
 $logging = new CRM_Logging_Schema;
 $logging->enableLogging();
 
-//set logging value in domain
-echo "setting logging flag in setting record...\n";
-CRM_Core_DAO::executeQuery("
-  UPDATE civicrm_setting
-  SET value = 'i:1;'
-  WHERE name = 'logging';
-");
+Civi::service('sql_triggers')->rebuild(NULL, TRUE);
 
 echo "setting logging report permissions...\n";
 CRM_Core_DAO::executeQuery("

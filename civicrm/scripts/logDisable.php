@@ -21,15 +21,6 @@ $bbconfig = get_bluebird_instance_config();
 $dropCiviTriggers = $bbconfig['app.rootdir'].'/scripts/dropCiviTriggers.sh '.$bbconfig['shortname'];
 shell_exec( $dropCiviTriggers );
 
-//set logging value in config and settings
-require_once "CRM/Core/BAO/Setting.php";
-$config->logging = 0;
-CRM_Core_DAO::executeQuery("
-  UPDATE civicrm_setting
-  SET value = 'i:0;'
-  WHERE name = 'logging';
-");
-
 echo "Disable Logging...\n";
 require_once 'CRM/Logging/Schema.php';
 $logging = new CRM_Logging_Schema;
@@ -38,4 +29,4 @@ $logging->disableLogging();
 
 //triggerRebuild picks up the hook triggers when they are not in schema info
 echo "Rebuild Triggers...\n";
-CRM_Core_DAO::triggerRebuild( );
+Civi::service('sql_triggers')->rebuild(NULL, TRUE);
