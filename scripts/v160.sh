@@ -50,14 +50,18 @@ $drush $instance sql-query "DELETE from system where name = 'civicrm_van' AND ty
 $drush $instance sql-query "DELETE from system where name = 'multisite' AND type = 'module';" -q
 $drush $instance sql-query "DELETE from system where name = 'imce' AND type = 'module';" -q
 $drush $instance sql-query "DELETE from system where name = 'rules_forms' AND type = 'module';" -q
+$drush $instance sql-query "DELETE FROM cache_bootstrap WHERE cid='system_list';" -q
 
-## upgrade drupal db
-echo "running drupal db upgrade..."
-$drush $instance updb -y -q
+## flushing caches before civi upgrade
+$drush $instance cc all -y
 
 ## upgrade civicrm db
 echo "running civicrm db upgrade..."
 $drush $instance civicrm-upgrade-db
+
+## upgrade drupal db
+echo "running drupal db upgrade..."
+$drush $instance updb -y -q
 
 ## fix table column collations throughout
 echo "$prog: fix table column collations throughout"

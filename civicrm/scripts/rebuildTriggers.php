@@ -23,7 +23,7 @@ require_once 'CRM/Core/Config.php';
 $config = CRM_Core_Config::singleton();
 //CRM_Core_Error::debug('config',$config);
 
-if ( $optList['check'] ) {
+if ($optList['check']) {
   $sql = "SHOW TRIGGERS;";
   $trg = CRM_Core_DAO::executeQuery($sql);
   if ( $trg->N != TRIGCOUNT ) {
