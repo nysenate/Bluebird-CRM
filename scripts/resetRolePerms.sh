@@ -147,6 +147,7 @@ sql="
     (4, 'administer Reports', 'civicrm'),
     (4, 'administer reserved groups', 'civicrm'),
     (4, 'administer reserved tags', 'civicrm'),
+    (4, 'administer CiviCase', 'civicrm'),
     (4, 'administer users', 'user'),
     (4, 'approve mailings', 'civicrm'),
     (4, 'assign roles', 'roleassign'),
