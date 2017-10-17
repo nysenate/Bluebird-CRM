@@ -4099,3 +4099,8 @@ div.crm-container.select2-drop-multi {
 span.bb-recipients-required {
   visibility: visible !important;
 }
+
+/*11333*/
+.crm-container a.button, .crm-container a.button:link, .crm-container a.button:visited {
+  line-height: inherit;
+}
