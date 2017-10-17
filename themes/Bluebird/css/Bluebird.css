@@ -4094,3 +4094,8 @@ div.crm-container.select2-drop-multi {
   max-width: 500px;
   border-top: 1px solid #aaa;
 }
+
+/*11338*/
+span.bb-recipients-required {
+  visibility: visible !important;
+}
