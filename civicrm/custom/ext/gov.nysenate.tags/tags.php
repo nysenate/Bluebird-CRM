@@ -329,44 +329,16 @@ function tags_civicrm_buildForm($formName, &$form) {
     ));
   }
 
+  //11334 (extension of 10658): rebuild leg positions entity ref using custom API and disabling create
   if (in_array($formName, array(
-    'CRM_Contact_Form_Edit_TagsAndGroups',
+    //'CRM_Contact_Form_Edit_TagsAndGroups',
     'CRM_Contact_Form_Contact',
   ))) {
-    //10658 rebuild leg positions entity ref using custom API and disabling create
-    $contactId = $form->_contactId;
-    $ele =& $form->getElement('contact_taglist[296]');
+    $ele =& $form->getElement('contact_taglist[292]');
     $ele->_attributes['data-api-entity'] = 'nyss_tags';
     $ele->_attributes['data-create-links'] = FALSE;
-    Civi::log()->debug('', array(
-      'contactId' => $contactId,
-      'eles' => $form->_elementIndex,
-      'ele' => $ele,
-    ));
-    CRM_Core_Resources::singleton()->addScript("
-      CRM.$(function($) {
-        /*$('#contact_taglist_292').crmEntityRef('destroy');
-        $('#contact_taglist_292').crmEntityRef({
-          entity: 'nyss_tags',
-          multiple: true,
-          create: false,
-          api: {
-            params: {
-              parent_id: 292
-            }
-          },
-          class: 'crm-contact-tagset'
-        });
-        
-        //when a leg position is selected, we may need to add it to the tag table
-        $('#contact_taglist_292').on('select2-selecting', function(e) {
-          CRM.api3('nyss_tags', 'savePosition', {value:e.val, contactId:{$contactId}}, false);
-        });*/
-        
-        
-        $('#contact_taglist_292').data('api-entity', 'nyss_tags').data('tuna', 'fish');
-      });
-    ");
+    //TODO existing values not loading properly
+    Civi::log()->debug('tagsandgroups', array(/*'form' => $form,*/ 'ele' => $ele));
   }
 
   //11082 - force used_for value
