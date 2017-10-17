@@ -36,79 +36,57 @@ function nyss_export_civicrm_export( $exportTempTable, $headerRows, $sqlColumns,
   //exit();
 
   //field exclusions; only implement for primary export option
-  if ( $_POST['exportOption'] == 1 ) {
+  if ($_POST['exportOption'] == 1) {
     $headerRemove = array(
-      'Signature Text',
-      'Signature Html',
-      'Contact Subtype',
-      'Current Employer ID',
-      'Geo Code 1',
-      'Geo Code 2',
-      'Address Name',
-      'Master Address Belongs To',
-      'County',
-      'World Region',
       'IM Service Provider',
       'Group(s)',
       'Tag(s)',
       'Note(s)',
-      'Contact Hash',
-      'Image Url'
     );
-    foreach ( $headerRows as $key => $headerRow ) {
-      if ( in_array( $headerRow, $headerRemove ) ) {
+    foreach ($headerRows as $key => $headerRow) {
+      if (in_array( $headerRow, $headerRemove) ) {
         unset( $headerRows[$key] );
       }
     }
 
-    //4308 alter preferred mail header
-    $pmf = array_search( 'Preferred Mail Format', $headerRows);
-    $headerRows[$pmf] = 'Preferred Email Format';
-
     $sqlRemove = array(
-      'signature_text',
-      'signature_html',
-      'contact_sub_type',
-      'current_employer_id',
-      'geo_code_1',
-      'geo_code_2',
-      'address_name',
-      'master_id',
-      'county',
-      'world_region',
       'provider_id',
       'groups',
       'tags',
       'notes',
-      'hash',
-      'image_url'
+      'case_activity_subject',//TODO should really just address in headers
     );
-    foreach ( $sqlRemove as $sqlField ) {
-      unset( $sqlColumns[$sqlField] );
+    foreach ($sqlRemove as $sqlField) {
+      unset($sqlColumns[$sqlField]);
     }
   } //end primary export exclusions
 
   //3665 mailing exclusions option
-  if ( $_POST['postal_mailing_export']['postal_mailing_export'] == 1 &&
-       in_array( 'Last Name', $headerRows ) &&
-       in_array( 'Contact Type', $headerRows )
+  if ($_POST['postal_mailing_export']['postal_mailing_export'] == 1 &&
+    in_array('Last Name', $headerRows) &&
+    in_array('Contact Type', $headerRows)
   ) {
     // exclude contacts where last_name is empty
     $query = "
-DELETE FROM $exportTempTable
-WHERE contact_type = 'Individual' AND ( last_name = '' OR last_name IS NULL )";
-    CRM_Core_DAO::executeQuery( $query );
+      DELETE FROM $exportTempTable
+      WHERE contact_type = 'Individual'
+        AND (last_name = '' OR last_name IS NULL)
+    ";
+    CRM_Core_DAO::executeQuery($query);
   }
 
   //4403 exclude Mailing Exclusions group
-  if ( $_POST['postal_mailing_export']['postal_mailing_export'] == 1 ) {
+  if ($_POST['postal_mailing_export']['postal_mailing_export'] == 1) {
     $gid = CRM_Core_DAO::singleValueQuery( "SELECT id FROM civicrm_group WHERE name LIKE 'Mailing_Exclusions';" );
     if ( $gid ) { //continue if group found
       $query = "
-DELETE exp
-FROM $exportTempTable AS exp
-LEFT JOIN civicrm_group_contact gc ON ( gc.contact_id = exp.civicrm_primary_id AND gc.status = 'Added' )
-WHERE gc.group_id = $gid;";
+        DELETE exp
+        FROM $exportTempTable AS exp
+        LEFT JOIN civicrm_group_contact gc 
+          ON gc.contact_id = exp.civicrm_primary_id 
+          AND gc.status = 'Added'
+        WHERE gc.group_id = $gid;
+      ";
       CRM_Core_DAO::executeQuery( $query );
     }
   }
@@ -116,11 +94,13 @@ WHERE gc.group_id = $gid;";
   //4766 exclude do not mail/do not trade
   if ( $_POST['postal_mailing_export']['postal_mailing_export'] == 1 ) {
     $query = "
-DELETE exp
-FROM $exportTempTable AS exp
-JOIN civicrm_contact c ON ( c.id = exp.civicrm_primary_id )
-WHERE c.do_not_trade = 1
- OR c.do_not_mail = 1;";
+      DELETE exp
+      FROM $exportTempTable AS exp
+      JOIN civicrm_contact c 
+        ON c.id = exp.civicrm_primary_id
+      WHERE c.do_not_trade = 1
+        OR c.do_not_mail = 1;
+    ";
     $delDN = CRM_Core_DAO::executeQuery( $query );
     //CRM_Core_Error::debug('delDN',$delDN);
   }
