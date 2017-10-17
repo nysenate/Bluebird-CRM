@@ -4104,3 +4104,8 @@ span.bb-recipients-required {
 .crm-container a.button, .crm-container a.button:link, .crm-container a.button:visited {
   line-height: inherit;
 }
+
+/*11357*/
+.crm-report-form-block {
+  overflow-x: scroll;
+}
