@@ -174,12 +174,11 @@ function webintegration_civicrm_buildForm($formName, &$form) {
 
     if ($msgID) {
       $form->addElement('hidden', 'msg_id', $msgID);
+      $form->setDefaults(array(
+        'subject' => _webintegration_extractSubject($msgNote),
+        'details' => $msgNote,//not sure why this isn't decoded
+      ));
     }
-
-    $form->setDefaults(array(
-      'subject' => _webintegration_extractSubject($msgNote),
-      'details' => $msgNote,//not sure why this isn't decoded
-    ));
 
     /*Civi::log()->debug('webintegration_civicrm_buildForm', array(
       'msgID' => $msgID,

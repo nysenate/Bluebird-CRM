@@ -467,7 +467,10 @@ function nyss_mail_civicrm_buildForm($formName, &$form)
 
 function nyss_mail_civicrm_postProcess($formName, &$form)
 {
+  //TODO this is no longer used; moved to mailing ext
   if ($formName == 'CRM_Mailing_Form_Group') {
+    return;
+
     $mailingID = $form->getVar('_mailingID');
     $submitValues = $form->_submitValues;
     //CRM_Core_Error::debug_var('submitValues', $submitValues);
@@ -573,7 +576,8 @@ function nyss_mail_civicrm_postProcess($formName, &$form)
 
   // NYSS 5581
   if ($formName == 'CRM_Profile_Form_Edit' &&
-      $form->getVar('_ufGroupName') == 'Mass_Email_Subscriptions') {
+    $form->getVar('_ufGroupName') == 'Mass_Email_Subscriptions'
+  ) {
     $vals = $form->_submitValues;
     $cid = $form->getVar('_id');
     //CRM_Core_Error::debug_var('vals', $vals);

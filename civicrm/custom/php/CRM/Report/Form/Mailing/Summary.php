@@ -48,6 +48,19 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
   public $campaignEnabled = FALSE;
 
   /**
+   * This report has not been optimised for group filtering.
+   *
+   * The functionality for group filtering has been improved but not
+   * all reports have been adjusted to take care of it. This report has not
+   * and will run an inefficient query until fixed.
+   *
+   * CRM-19170
+   *
+   * @var bool
+   */
+  protected $groupFilterNotOptimised = TRUE;
+
+  /**
    * Class constructor.
    */
   public function __construct() {
@@ -219,7 +232,7 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
           'statistics' => array(
             'calc' => 'PERCENTAGE',
             'top' => 'civicrm_mailing_event_opened.unique_open_count',
-            'base' => 'civicrm_mailing_event_delivered.delivered_count',
+            'base' => 'civicrm_mailing_event_sendgrid_delivered.delivered_count',//NYSS
           ),
         ),
         'open_count' => array(
@@ -360,7 +373,7 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
     // Reference: CRM-20660
     $distinctCountColumns = array(
       'civicrm_mailing_event_queue.queue_count',
-      'civicrm_mailing_event_delivered.delivered_count',
+      'civicrm_mailing_event_sendgrid_delivered.delivered_count',//NYSS
       'civicrm_mailing_event_bounce.bounce_count',
       'civicrm_mailing_event_opened.unique_open_count',
       'civicrm_mailing_event_trackable_url_open.click_count',
@@ -538,7 +551,7 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
   public static function getChartCriteria() {
     return array(
       'count' => array(
-        'civicrm_mailing_event_sendgrid_delivered_delivered_count'      => ts('Delivered'), //NYSS
+        'civicrm_mailing_event_sendgrid_delivered_delivered_count' => ts('Delivered'), //NYSS
         'civicrm_mailing_event_bounce_bounce_count' => ts('Bounce'),
         'civicrm_mailing_event_opened_open_count' => ts('Total Opens'),
         'civicrm_mailing_event_opened_unique_open_count' => ts('Unique Opens'),
