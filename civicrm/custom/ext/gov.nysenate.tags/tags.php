@@ -133,7 +133,7 @@ function tags_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
  *
 function tags_civicrm_preProcess($formName, &$form) {
 
-} // */
+} */
 
 /**
  * Implements hook_civicrm_navigationMenu().
@@ -150,7 +150,7 @@ function tags_civicrm_navigationMenu(&$menu) {
     'separator' => 0,
   ));
   _tags_civix_navigationMenu($menu);
-} // */
+} */
 
 function tags_civicrm_merge( $type, &$sqls, $fromId, $toId, $tables ) {
   //insert civicrm_log record for every contact, case or activity affected by a tag merge.
@@ -338,7 +338,7 @@ function tags_civicrm_buildForm($formName, &$form) {
     $ele->_attributes['data-api-entity'] = 'nyss_tags';
     $ele->_attributes['data-create-links'] = FALSE;
     //TODO existing values not loading properly
-    Civi::log()->debug('tagsandgroups', array(/*'form' => $form,*/ 'ele' => $ele));
+    //Civi::log()->debug('tagsandgroups', array(/*'form' => $form,*/ 'ele' => $ele));
   }
 
   //11082 - force used_for value
