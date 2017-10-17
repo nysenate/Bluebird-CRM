@@ -5,6 +5,7 @@ require_once 'mail.civix.php';
 define('FILTER_ALL', 0);
 define('FILTER_IN_SD_ONLY', 1);
 define('FILTER_IN_SD_OR_NO_SD', 2);
+define('BB_MAIL_LOG', TRUE);
 
 /**
  * Implements hook_civicrm_config().
@@ -211,50 +212,52 @@ function mail_civicrm_entityTypes(&$entityTypes) {
 }
 
 function mail_civicrm_alterMailingRecipients(&$mailing, &$queue, $job_id, &$params, $context) {
-  /*Civi::log()->debug('', array(
+  Civi::log()->debug('mail_civicrm_alterMailingRecipients', array(
+    '$context' => $context,
     '$mailing' => $mailing,
     '$queue' => $queue,
     '$job_id' => $job_id,
-  ));*/
+    '$params' => $params,
+  ));
 
   if ($context == 'pre') {
     unset($params['filters']['on_hold']);
   }
 
-  if ($context == 'post') {
+  //only trigger these at the end of the recipient construction process and only when
+  //the mailing has been scheduled
+  if ($context == 'post' && !empty($mailing->scheduled_date)) {
     // NYSS 4628, 4879
     if ($mailing->all_emails) {
       _mail_addAllEmails($mailing->id, $mailing->exclude_ood);
+      _mail_logRecipients('_mail_addAllEmails', $mailing->id);
     }
 
     if ($mailing->exclude_ood != FILTER_ALL) {
       _mail_excludeOOD($mailing->id, $mailing->exclude_ood);
+      _mail_logRecipients('_mail_excludeOOD', $mailing->id);
     }
 
     // NYSS 5581
     if ($mailing->category) {
       _mail_excludeCategoryOptOut($mailing->id, $mailing->category);
+      _mail_logRecipients('_mail_excludeCategoryOptOut', $mailing->id);
     }
 
     //add email seed group
     _mail_addEmailSeeds($mailing->id);
+    _mail_logRecipients('_mail_addEmailSeeds', $mailing->id);
 
     //dedupe emails as final step
     if ($mailing->dedupe_email) {
       _mail_dedupeEmail($mailing->id);
+      _mail_logRecipients('_mail_dedupeEmail', $mailing->id);
     }
 
-    //remove onHold as we didn't do it earlier
+    //remove on_hold as we didn't do it earlier
     _mail_removeOnHold($mailing->id);
+    _mail_logRecipients('_mail_removeOnHold', $mailing->id);
   }
-
-  //don't need this anymore?
-  //recalculate the total recipients
-  /*if ($form->_submitValues['all_emails'] || $excludeOOD != FILTER_ALL || $mailingCat) {
-    $count = CRM_Mailing_BAO_Recipients::mailingSize($mailing->id);
-    $form->set('count', $count);
-    $form->assign('count', $count);
-  }*/
 }
 
 function mail_civicrm_pre($op, $objectName, $id, &$params) {
@@ -287,18 +290,18 @@ function mail_civicrm_pre($op, $objectName, $id, &$params) {
 }
 
 //NYSS 4870
-function _mail_removeOnHold( $mailing_id ) {
+function _mail_removeOnHold($mailingID) {
   $sql = "
-DELETE FROM civicrm_mailing_recipients
- USING civicrm_mailing_recipients
-  JOIN civicrm_email
-    ON ( civicrm_mailing_recipients.email_id = civicrm_email.id
-   AND   civicrm_email.on_hold > 0 )
- WHERE civicrm_mailing_recipients.mailing_id = %1";
+    DELETE FROM civicrm_mailing_recipients
+    USING civicrm_mailing_recipients
+    JOIN civicrm_email
+      ON civicrm_mailing_recipients.email_id = civicrm_email.id
+      AND civicrm_email.on_hold > 0
+    WHERE civicrm_mailing_recipients.mailing_id = %1
+ ";
+  $params = array(1 => array($mailingID, 'Integer'));
 
-  $params = array( 1 => array( $mailing_id, 'Integer' ) );
-
-  $dao = CRM_Core_DAO::executeQuery( $sql, $params );
+  CRM_Core_DAO::executeQuery($sql, $params);
 }
 
 /**
@@ -482,9 +485,9 @@ function _mail_addEmailSeeds($mailingID) {
   CRM_Core_DAO::executeQuery($sql);
 } // _addEmailSeeds()
 
-function _mail_dedupeEmail($mailing_id) {
+function _mail_dedupeEmail($mailingID) {
   //if dedupeEmails, handle that now, as it was skipped earlier in the process
-  $tempTbl = "nyss_temp_dedupe_emails_$mailing_id";
+  $tempTbl = "nyss_temp_dedupe_emails_{$mailingID}";
   $sql = "CREATE TEMPORARY TABLE $tempTbl (email_id INT NOT NULL, PRIMARY KEY(email_id)) ENGINE=MyISAM;";
   CRM_Core_DAO::executeQuery($sql);
 
@@ -497,9 +500,9 @@ function _mail_dedupeEmail($mailing_id) {
     WHERE mailing_id = %1
     GROUP BY e.email;
   ";
-  CRM_Core_DAO::executeQuery($sql, array(1 => array($mailing_id, 'Positive')));
+  CRM_Core_DAO::executeQuery($sql, array(1 => array($mailingID, 'Positive')));
 
-  //now remove contacts from the recipients table that are not found in the inclusion table
+  //now remove contacts from the recipients table that are not found in the deduped table
   $sql = "
     DELETE FROM civicrm_mailing_recipients
     USING civicrm_mailing_recipients
@@ -508,8 +511,32 @@ function _mail_dedupeEmail($mailing_id) {
     WHERE civicrm_mailing_recipients.mailing_id = %1
       AND $tempTbl.email_id IS NULL;
   ";
-  CRM_Core_DAO::executeQuery($sql, array(1 => array($mailing_id, 'Positive')));
+  CRM_Core_DAO::executeQuery($sql, array(1 => array($mailingID, 'Positive')));
 
   //cleanup
   CRM_Core_DAO::executeQuery("DROP TABLE $tempTbl");
+}
+
+/**
+ * @param $mailingID
+ *
+ * small helper function to output mailing recipients list to log
+ * for debugging purposes
+ */
+function _mail_logRecipients($note, $mailingID) {
+  if (BB_MAIL_LOG) {
+    $dao = CRM_Core_DAO::executeQuery("
+      SELECT *
+      FROM civicrm_mailing_recipients
+      WHERE mailing_id = {$mailingID}
+      ORDER BY email_id
+    ");
+
+    $rows = array();
+    while ($dao->fetch()) {
+      $rows[] = "EID: {$dao->email_id} | CID: {$dao->contact_id}";
+    }
+
+    Civi::log()->debug('_mail_logRecipients: '.$note, $rows);
+  }
 }

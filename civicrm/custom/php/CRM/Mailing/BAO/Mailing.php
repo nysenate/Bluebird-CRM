@@ -539,8 +539,9 @@ DELETE
 FROM   civicrm_mailing_recipients
 WHERE  mailing_id = %1
 ";
-      $params = array(1 => array($mailing_id, 'Integer'));
-      CRM_Core_DAO::executeQuery($sql, $params);
+      //NYSS
+      $paramsSR = array(1 => array($mailing_id, 'Integer'));
+      CRM_Core_DAO::executeQuery($sql, $paramsSR);
 
       $selectClause = array('%1', 'i.contact_id', "i.{$tempColumn}");
       $select = "SELECT " . implode(', ', $selectClause);
@@ -566,7 +567,7 @@ INNER JOIN I_$job_id i ON contact_a.id = i.contact_id
 ORDER BY   {$orderBy}
 ";
 
-      CRM_Core_DAO::executeQuery($sql, $params);
+      CRM_Core_DAO::executeQuery($sql, $paramsSR);//NYSS
 
       // if we need to add all emails marked bulk, do it as a post filter
       // on the mailing recipients table
