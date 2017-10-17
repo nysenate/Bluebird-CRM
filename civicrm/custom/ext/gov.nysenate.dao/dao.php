@@ -155,7 +155,14 @@ function dao_civicrm_navigationMenu(&$menu) {
 function dao_civicrm_entityTypes(&$entityTypes) {
   $entityTypes['CRM_Contact_DAO_Contact']['fields_callback'][] = function($class, &$fields) {
     $fields['do_not_trade']['title'] = 'Undeliverable: Do Not Mail';//4766
+    $fields['preferred_mail_format']['title'] = 'Preferred Email Format';
+
+    //set fields that should not be exportable
     $fields['user_unique_id']['export'] = FALSE;//2719
+    $fields['contact_sub_type']['export'] = FALSE;
+    $fields['current_employer_id']['export'] = FALSE;
+    $fields['hash']['export'] = FALSE;
+    $fields['image_url']['export'] = FALSE;
   };
 
   $entityTypes['CRM_Core_DAO_Address']['fields_callback'][] = function($class, &$fields) {
@@ -165,6 +172,17 @@ function dao_civicrm_entityTypes(&$entityTypes) {
     $fields['supplemental_address_1']['title'] = 'Mailing Address';
     $fields['supplemental_address_2']['title'] = 'Building';
     unset($fields['country_id']);//2771
+
+    //set fields that should not be exportable
+    $fields['geo_code_1']['export'] = FALSE;
+    $fields['geo_code_2']['export'] = FALSE;
+    $fields['address_name']['export'] = FALSE;
+    $fields['master_id']['export'] = FALSE;
+    $fields['county']['export'] = FALSE;
+  };
+
+  $entityTypes['CRM_Core_DAO_Worldregion']['fields_callback'][] = function($class, &$fields) {
+    $fields['world_region']['export'] = FALSE;
   };
 
   $entityTypes['CRM_Core_DAO_CustomField']['fields_callback'][] = function($class, &$fields) {

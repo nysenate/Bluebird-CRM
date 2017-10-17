@@ -293,6 +293,7 @@ WHERE  c.group_id = {$groupDAO->id}
         'on_hold' => "$email.on_hold = 0",
       ),
       'order_by' => $order_by,
+      'store_recipients' => $storeRecipients,//NYSS
     );
 
     // Allow user to alter query responsible to fetch mailing recipients before build,
@@ -429,13 +430,14 @@ WHERE      $mg.entity_table = '$group'
         CRM_Contact_BAO_GroupContactCache::load($groupDAO);
       }
 
+      //NYSS remove contact table alias
       $smartGroupInclude = "
 REPLACE INTO I_$job_id (email_id, contact_id)
-SELECT     civicrm_email.id as email_id, c.id as contact_id
-FROM       civicrm_contact c
-INNER JOIN civicrm_email                ON civicrm_email.contact_id         = c.id
-INNER JOIN civicrm_group_contact_cache gc ON gc.contact_id        = c.id
-LEFT  JOIN X_$job_id                      ON X_$job_id.contact_id = c.id
+SELECT     civicrm_email.id as email_id, civicrm_contact.id as contact_id
+FROM       civicrm_contact
+INNER JOIN civicrm_email ON civicrm_email.contact_id = civicrm_contact.id
+INNER JOIN civicrm_group_contact_cache gc ON gc.contact_id = civicrm_contact.id
+LEFT  JOIN X_$job_id ON X_$job_id.contact_id = civicrm_contact.id
 WHERE      gc.group_id = {$groupDAO->id}
   AND $mailRecipientFilterClause
   AND      X_$job_id.contact_id IS null
@@ -444,15 +446,15 @@ $order_by
       if ($mode == 'sms') {
         $smartGroupInclude = "
 REPLACE INTO I_$job_id (phone_id, contact_id)
-SELECT     p.id as phone_id, c.id as contact_id
-FROM       civicrm_contact c
-INNER JOIN civicrm_phone p                ON p.contact_id         = c.id
-INNER JOIN civicrm_group_contact_cache gc ON gc.contact_id        = c.id
-LEFT  JOIN X_$job_id                      ON X_$job_id.contact_id = c.id
+SELECT     p.id as phone_id, civicrm_contact.id as contact_id
+FROM       civicrm_contact
+INNER JOIN civicrm_phone p ON p.contact_id = civicrm_contact.id
+INNER JOIN civicrm_group_contact_cache gc ON gc.contact_id = civicrm_contact.id
+LEFT  JOIN X_$job_id ON X_$job_id.contact_id = civicrm_contact.id
 WHERE      gc.group_id = {$groupDAO->id}
-  AND      c.do_not_sms = 0
-  AND      c.is_opt_out = 0
-  AND      c.is_deceased <> 1
+  AND      civicrm_contact.do_not_sms = 0
+  AND      civicrm_contact.is_opt_out = 0
+  AND      civicrm_contact.is_deceased <> 1
   AND      p.phone_type_id = {$phoneTypes['Mobile']}
   AND      X_$job_id.contact_id IS null";
       }
@@ -537,8 +539,9 @@ DELETE
 FROM   civicrm_mailing_recipients
 WHERE  mailing_id = %1
 ";
-      $params = array(1 => array($mailing_id, 'Integer'));
-      CRM_Core_DAO::executeQuery($sql, $params);
+      //NYSS
+      $paramsSR = array(1 => array($mailing_id, 'Integer'));
+      CRM_Core_DAO::executeQuery($sql, $paramsSR);
 
       $selectClause = array('%1', 'i.contact_id', "i.{$tempColumn}");
       $select = "SELECT " . implode(', ', $selectClause);
@@ -564,7 +567,7 @@ INNER JOIN I_$job_id i ON contact_a.id = i.contact_id
 ORDER BY   {$orderBy}
 ";
 
-      CRM_Core_DAO::executeQuery($sql, $params);
+      CRM_Core_DAO::executeQuery($sql, $paramsSR);//NYSS
 
       // if we need to add all emails marked bulk, do it as a post filter
       // on the mailing recipients table

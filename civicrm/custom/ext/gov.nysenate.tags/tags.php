@@ -122,36 +122,6 @@ function tags_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
   _tags_civix_civicrm_alterSettingsFolders($metaDataFolders);
 }
 
-/**
- * Functions below this ship commented out. Uncomment as required.
- *
-
-/**
- * Implements hook_civicrm_preProcess().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_preProcess
- *
-function tags_civicrm_preProcess($formName, &$form) {
-
-} // */
-
-/**
- * Implements hook_civicrm_navigationMenu().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_navigationMenu
- *
-function tags_civicrm_navigationMenu(&$menu) {
-  _tags_civix_insert_navigation_menu($menu, NULL, array(
-    'label' => ts('The Page', array('domain' => 'gov.nysenate.tags')),
-    'name' => 'the_page',
-    'url' => 'civicrm/the-page',
-    'permission' => 'access CiviReport,access CiviContribute',
-    'operator' => 'OR',
-    'separator' => 0,
-  ));
-  _tags_civix_navigationMenu($menu);
-} // */
-
 function tags_civicrm_merge( $type, &$sqls, $fromId, $toId, $tables ) {
   //insert civicrm_log record for every contact, case or activity affected by a tag merge.
   if ($type == 'sqls' &&
@@ -176,7 +146,7 @@ function tags_civicrm_merge( $type, &$sqls, $fromId, $toId, $tables ) {
 function tags_civicrm_buildForm($formName, &$form) {
   /*Civi::log()->debug('buildForm', array(
     'formName' => $formName,
-    'form' => $form,
+    //'form' => $form,
     //'$form->_elementIndex' => $form->_elementIndex,
     //'$form->_tagsetInfo' => $form->_tagsetInfo,
   ));*/
@@ -327,7 +297,18 @@ function tags_civicrm_buildForm($formName, &$form) {
     CRM_Core_Region::instance('page-body')->add(array(
       'jquery' => "$('li#tag_291').removeClass('jstree-closed').addClass('jstree-open').addClass('tuna');",
     ));
+  }
 
+  //11334 (extension of 10658): rebuild leg positions entity ref using custom API and disabling create
+  if (in_array($formName, array(
+    //'CRM_Contact_Form_Edit_TagsAndGroups',
+    'CRM_Contact_Form_Contact',
+  ))) {
+    $ele =& $form->getElement('contact_taglist[292]');
+    $ele->_attributes['data-api-entity'] = 'nyss_tags';
+    $ele->_attributes['data-create-links'] = FALSE;
+    //TODO existing values not loading properly
+    //Civi::log()->debug('tagsandgroups', array(/*'form' => $form,*/ 'ele' => $ele));
   }
 
   //11082 - force used_for value
