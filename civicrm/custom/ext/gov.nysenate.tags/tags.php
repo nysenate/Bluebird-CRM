@@ -122,36 +122,6 @@ function tags_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
   _tags_civix_civicrm_alterSettingsFolders($metaDataFolders);
 }
 
-/**
- * Functions below this ship commented out. Uncomment as required.
- *
-
-/**
- * Implements hook_civicrm_preProcess().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_preProcess
- *
-function tags_civicrm_preProcess($formName, &$form) {
-
-} */
-
-/**
- * Implements hook_civicrm_navigationMenu().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_navigationMenu
- *
-function tags_civicrm_navigationMenu(&$menu) {
-  _tags_civix_insert_navigation_menu($menu, NULL, array(
-    'label' => ts('The Page', array('domain' => 'gov.nysenate.tags')),
-    'name' => 'the_page',
-    'url' => 'civicrm/the-page',
-    'permission' => 'access CiviReport,access CiviContribute',
-    'operator' => 'OR',
-    'separator' => 0,
-  ));
-  _tags_civix_navigationMenu($menu);
-} */
-
 function tags_civicrm_merge( $type, &$sqls, $fromId, $toId, $tables ) {
   //insert civicrm_log record for every contact, case or activity affected by a tag merge.
   if ($type == 'sqls' &&
