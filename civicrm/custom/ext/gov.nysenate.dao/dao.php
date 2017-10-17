@@ -162,7 +162,7 @@ function dao_civicrm_entityTypes(&$entityTypes) {
     $fields['contact_sub_type']['export'] = FALSE;
     $fields['current_employer_id']['export'] = FALSE;
     $fields['hash']['export'] = FALSE;
-    $fields['image_url']['export'] = FALSE;
+    $fields['image_URL']['export'] = FALSE;
   };
 
   $entityTypes['CRM_Core_DAO_Address']['fields_callback'][] = function($class, &$fields) {
