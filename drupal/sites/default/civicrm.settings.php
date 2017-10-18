@@ -81,7 +81,7 @@ $civicrm_setting['Mailing Preferences']['include_message_id'] = true;
 $civicrm_setting['Mailing Preferences']['write_activity_record'] = false;
 $civicrm_setting['Mailing Preferences']['disable_mandatory_tokens_check'] = true;
 $civicrm_setting['Mailing Preferences']['hash_mailing_url'] = true;
-$civicrm_setting['Mailing Preferences']['auto_recipient_rebuild'] = true;//should be reversed
+$civicrm_setting['Mailing Preferences']['auto_recipient_rebuild'] = false;
 
 $civicrm_setting['CiviCRM Preferences']['checksumTimeout'] = 7;
 $civicrm_setting['CiviCRM Preferences']['checksum_timeout'] = 7;
