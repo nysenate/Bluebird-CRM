@@ -3668,10 +3668,6 @@ li.crm-button {
   width: 778px;
 }
 
-.crm-contact-dashboard,.crm-contact-print {
-  display: none;
-}
-
 #crm-container .crm-delete-action a.button,#crm-container a.show-refresh {
   margin-right: 0;
 }
