@@ -50,8 +50,6 @@ It could perhaps be thinned by 30-60% by making more directives.
       </div>
     </div>
     <div crm-ui-field="{name: 'subform.recipients', title: ts('Recipients')}">
-      <!--NYSS 11338-->
-      <span crm-ui-visible="crmIsRequired" class="crm-marker ng-isolate-scope bb-recipients-required" title="This field is required." style="visibility: visible !important;">*</span>
       <div crm-mailing-block-recipients="{name: 'recipients', id: 'subform.recipients'}" crm-mailing="mailing"></div>
     </div>
     <span ng-controller="EditUnsubGroupCtrl">

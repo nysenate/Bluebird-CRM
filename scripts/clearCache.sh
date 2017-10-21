@@ -92,6 +92,8 @@ delete_civicrm_cache_files() {
   echo "Clearing CiviCRM filesystem caches"
   echo "    Deleting $cividir/civicrm/templates_c/en_US/*"
   rm -rf $cividir/civicrm/templates_c/en_US/*
+  echo "    Deleting $cividir/civicrm/templates_c/Cached*"
+  rm -rf $cividir/civicrm/templates_c/Cached*
   echo "    Deleting $cividir/drupal/css/*"
   rm -rf $cividir/drupal/css/*
   echo "    Deleting $cividir/drupal/js/*"

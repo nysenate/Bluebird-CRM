@@ -8,6 +8,7 @@
   angular.module('crmMailing').controller('EditRecipCtrl', function EditRecipCtrl($scope, dialogService, crmApi, crmMailingMgr, $q, crmMetadata, crmStatus, crmMailingCache) {
     // Time to wait before triggering AJAX update to recipients list
     var RECIPIENTS_DEBOUNCE_MS = 100;
+    var SETTING_DEBOUNCE_MS = 5000;
     var RECIPIENTS_PREVIEW_LIMIT = 50;
 
     var ts = $scope.ts = CRM.ts(null);
@@ -19,26 +20,12 @@
 
     $scope.recipients = null;
     $scope.outdated = null;
-
-    $scope.isRecipientBuildEnabled = function() {
-      var cachekey = 'mailing-id-' + $scope.mailing.id + '-auto_recipient_rebuild';
-      if ($scope.permitRecipientRebuild === undefined) {
-        $scope.permitRecipientRebuild = crmMailingCache.get(cachekey);
-      }
-      // @todo during initializaion this code is called multiple timee, irrespective of the cachekey store at first call
-      if ($scope.permitRecipientRebuild === undefined) {
-        crmApi('Setting', 'getvalue', {"name": 'auto_recipient_rebuild', "return": "value"}).then(function(response) {
-          $scope.permitRecipientRebuild = (response.result !== '1');
-          crmMailingCache.put(cachekey, $scope.permitRecipientRebuild);
-        });
-      }
-      return $scope.permitRecipientRebuild;
-    };
+    $scope.permitRecipientRebuild = null;
 
     $scope.getRecipientsEstimate = function() {
       var ts = $scope.ts;
       if ($scope.recipients === null) {
-        return ts('Estimating..');
+        return ts('Estimating...');
       }
       if ($scope.recipients === 0) {
         return ts('Estimate recipient count');
@@ -74,6 +61,16 @@
     $scope.$watchCollection("mailing.recipients.groups.exclude", refreshRecipients);
     $scope.$watchCollection("mailing.recipients.mailings.include", refreshRecipients);
     $scope.$watchCollection("mailing.recipients.mailings.exclude", refreshRecipients);
+
+    // refresh setting at a duration on 5sec
+    var refreshSetting = _.debounce(function() {
+      $scope.$apply(function() {
+        crmApi('Setting', 'getvalue', {"name": 'auto_recipient_rebuild', "return": "value"}).then(function(response) {
+          $scope.permitRecipientRebuild = (response.result === 0);
+        });
+      });
+    }, SETTING_DEBOUNCE_MS);
+    $scope.$watchCollection("permitRecipientRebuild", refreshSetting);
 
     $scope.previewRecipients = function previewRecipients() {
       var model = {
