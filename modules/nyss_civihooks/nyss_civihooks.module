@@ -583,12 +583,6 @@ function nyss_civihooks_civicrm_buildForm($formName, &$form) {
 } // nyss_civihooks_civicrm_buildForm()
 
 
-function nyss_civihooks_civicrm_postProcess($formName, &$form) {
-  //CRM_Core_Error::debug_var('form',$form);
-  //CRM_Core_Error::debug_var('formName',$formName);
-} // nyss_civihooks_civicrm_postProcess()
-
-
 function nyss_civihooks_civicrm_searchTasks($objectType, &$tasks) {
   //CRM_Core_Error::debug_var('$objectType', $objectType);
   //CRM_Core_Error::debug_var('$tasks', $tasks);

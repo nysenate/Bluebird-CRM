@@ -313,7 +313,9 @@ input[type=text],input[type=password],input.text,input.title,textarea,select {
   background-color: #fff;
   border: 1px solid #bbb;
 }
-input[type=text][name=crmPID] {
+input[type=text][name=crmPID],
+input[type=text][name=crmPID_B],
+input#CRM_Contact_Form_Search_Advanced-rows-per-page-select {
   border: none;
   margin: 0 2em 0 .4em;
 }
