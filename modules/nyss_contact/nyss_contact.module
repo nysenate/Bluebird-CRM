@@ -3,7 +3,7 @@ function nyss_contact_civicrm_buildForm( $formName, &$form ) {
   //CRM_Core_Error::debug_var('form',$form);
   //CRM_Core_Error::debug_var('$formName',$formName);
 
-  if ( $formName == 'CRM_Contact_Form_Inline_Demographics' ) {
+  if ($formName == 'CRM_Contact_Form_Inline_Demographics') {
     $defaults = array();
     $contactID = $form->_contactId;
     $form->assign('cid', $contactID);
@@ -107,9 +107,9 @@ function nyss_contact_civicrm_buildForm( $formName, &$form ) {
   }
 
   //address edits
-  if ( $formName == 'CRM_Contact_Form_Contact' ||
-    $formName == 'CRM_Contact_Form_Inline_Address' ) {
-
+  if ($formName == 'CRM_Contact_Form_Contact' ||
+    $formName == 'CRM_Contact_Form_Inline_Address'
+  ) {
     //set US/New York as defaults
     //we could potentially have as many as 6 addresses, so set for all
     $i = 1;
@@ -124,7 +124,7 @@ function nyss_contact_civicrm_buildForm( $formName, &$form ) {
   }
 
   //contact form edits
-  if ( $formName == 'CRM_Contact_Form_Contact' ) {
+  if ($formName == 'CRM_Contact_Form_Contact') {
     //3527 add js action to deceased field
     if ( isset( $form->_elementIndex['is_deceased'] ) ) {
       $deceased =& $form->getElement( 'is_deceased' );
@@ -176,7 +176,7 @@ function nyss_contact_civicrm_pageRun( &$page ) {
   }
 
   //5412
-  if ( $pagename == 'CRM_Contact_Page_Inline_Address' ) {
+  if ($pagename == 'CRM_Contact_Page_Inline_Address') {
     $smarty = CRM_Core_Smarty::singleton();
     if ( $smarty->get_template_vars('privacy') === NULL ) {
       $cid = $smarty->get_template_vars('contactId');
@@ -196,7 +196,8 @@ function nyss_contact_civicrm_pageRun( &$page ) {
 
   //8547
   if ($pagename == 'CRM_Contact_Page_View_CustomData'
-      && $page->_groupId == 9) {
+    && $page->_groupId == 9
+  ) {
     $cid = $page->_contactId;
     $webId = CRM_NYSS_BAO_Integration_Website::getWebId($cid);
     //CRM_Core_Error::debug_var('pageRun $webId', $webId);
@@ -230,6 +231,16 @@ function nyss_contact_civicrm_pageRun( &$page ) {
         }
       ",
     ));
+  }
+
+  //NYSS 11383 sort activity types
+  if (in_array($pagename, array(
+    'CRM_Contact_Page_View_Summary',
+    'CRM_Activity_Page_Tab',
+  ))) {
+    $activityTypes = $page->get_template_vars('activityTypes');
+    uasort($activityTypes, array('CRM_NYSS_Utils_Sort', 'cmpLabel'));
+    $page->assign('activityTypes', $activityTypes);
   }
 }//pageRun
 
