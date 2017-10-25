@@ -145,6 +145,10 @@
                 mids.push(dv.entity_id);
               }
             }
+            //NYSS mailing rebuild
+            if (gids.length === 0) {
+              return;
+            }
 
             CRM.api3('Group', 'getlist', { params: { id: { IN: gids } }, extra: ["is_hidden"] }).then(
               function(glist) {

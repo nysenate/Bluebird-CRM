@@ -290,11 +290,9 @@
       previewRecipients: function previewRecipients(mailing, previewLimit) {
         // To get list of recipients, we tentatively save the mailing and
         // get the resulting recipients -- then rollback any changes.
-        var params = angular.extend({}, mailing, mailing.recipients, {
-          name: 'placeholder', // for previewing recipients on new, incomplete mailing
-          subject: 'placeholder', // for previewing recipients on new, incomplete mailing
-          options: {force_rollback: 1},
-          'api.mailing_job.create': 1, // note: exact match to API default
+        var params = angular.extend({}, mailing.recipients, {
+          id: mailing.id,
+          get_recipents: 1,
           'api.MailingRecipients.get': {
             mailing_id: '$value.id',
             options: {limit: previewLimit},
@@ -316,11 +314,9 @@
         if (rebuild || _.isEmpty(recipientCount)) {
           // To get list of recipients, we tentatively save the mailing and
           // get the resulting recipients -- then rollback any changes.
-          var params = angular.extend({}, mailing, mailing.recipients, {
-            name: 'placeholder', // for previewing recipients on new, incomplete mailing
-            subject: 'placeholder', // for previewing recipients on new, incomplete mailing
-            options: {force_rollback: 1},
-            'api.mailing_job.create': 1, // note: exact match to API default
+          var params = angular.extend({}, mailing.recipients, {
+            id: mailing.id,
+            get_recipents: 1,
             'api.MailingRecipients.getcount': {
               mailing_id: '$value.id'
             }
@@ -472,7 +468,8 @@
             .then(function (deliveryInfos) {
               var count = Object.keys(deliveryInfos).length;
               if (count === 0) {
-                CRM.alert(ts('Could not identify any recipients. Perhaps the group is empty?'));
+                //NYSS 11277
+                //CRM.alert(ts('Could not identify any recipients. Perhaps the group is empty?'));
               }
             })
           ;

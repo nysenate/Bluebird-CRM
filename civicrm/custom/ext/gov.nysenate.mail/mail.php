@@ -212,13 +212,13 @@ function mail_civicrm_entityTypes(&$entityTypes) {
 }
 
 function mail_civicrm_alterMailingRecipients(&$mailing, &$queue, $job_id, &$params, $context) {
-  Civi::log()->debug('mail_civicrm_alterMailingRecipients', array(
+  /*Civi::log()->debug('mail_civicrm_alterMailingRecipients', array(
     '$context' => $context,
     '$mailing' => $mailing,
     '$queue' => $queue,
     '$job_id' => $job_id,
     '$params' => $params,
-  ));
+  ));*/
 
   if ($context == 'pre') {
     unset($params['filters']['on_hold']);
