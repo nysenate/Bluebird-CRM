@@ -2400,4 +2400,16 @@ abstract class CRM_Utils_Hook {
       'civicrm_alterMailingRecipients'
     );
   }
+
+  //NYSS 11334
+  /**
+   * This hook is called to modify api params of EntityRef form field
+   *
+   * @param array $params
+   *
+   * @return mixed
+   */
+  public static function modifyEntityRefParams(&$params) {
+    return self::singleton()->invoke(array('params'), $params, self::$_nullObject, self::$_nullObject, self::$_nullObject, self::$_nullObject, self::$_nullObject, 'civicrm_modifyEntityRefParams');
+  }
 }

@@ -125,6 +125,7 @@
     // example: <div crm-ui-field="{name: 'subform.myfield', title: ts('My Field')}"> <input crm-ui-id="subform.myfield" name="myfield" /> </div>
     // example: <div crm-ui-field="{name: 'subform.myfield', title: ts('My Field')}"> <input crm-ui-id="subform.myfield" name="myfield" required /> </div>
     // example: <div crm-ui-field="{name: 'subform.myfield', title: ts('My Field'), help: hs('help_field_name')}"> {{mydata}} </div>
+    // example: <div crm-ui-field="{name: 'subform.myfield', title: ts('My Field'), help: hs('help_field_name'), required: true}"> {{mydata}} </div> //NYSS 11338
     .directive('crmUiField', function() {
       // Note: When writing new templates, the "label" position is particular. See/patch "var label" below.
       var templateUrls = {
@@ -255,18 +256,18 @@
           // immediately for initialization. Use retries/retryDelay to initialize such elements.
           var init = function (retries, retryDelay) {
             var input = $('#' + id);
-            if (input.length === 0) {
-              //NYSS 11338
-              // CRM-21335 : there is no other way to fetch the 'ng-required' property of a subform (here recipients),
-              // so better to provide requiredness on basis of name which is a hackish fix for now.
-              if (attrs.crmUiFor === 'subform.recipients') {
-                scope.crmIsRequired = true;
-              }
+            if (input.length === 0 && !attrs.crmUiForceRequired) {//NYSS 11338
               if (retries) {
                 $timeout(function(){
                   init(retries-1, retryDelay);
                 }, retryDelay);
               }
+              return;
+            }
+
+            //NYSS 11338
+            if (attrs.crmUiForceRequired) {
+              scope.crmIsRequired = true;
               return;
             }
 
