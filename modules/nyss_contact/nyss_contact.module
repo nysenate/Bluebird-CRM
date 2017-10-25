@@ -159,10 +159,10 @@ function nyss_contact_civicrm_buildForm( $formName, &$form ) {
   }
 }//buildForm
 
-function nyss_contact_civicrm_pageRun( &$page ) {
+function nyss_contact_civicrm_pageRun(&$page) {
   //CRM_Core_Error::debug_var('pageRun $page', $page);
 
-  $pagename = $page->getVar( '_name' );
+  $pagename = $page->getVar('_name');
   //CRM_Core_Error::debug_var('pageRun $pagename', $pagename);
 
   $contactPages = array(
@@ -171,7 +171,7 @@ function nyss_contact_civicrm_pageRun( &$page ) {
     'CRM_Contact_Page_Inline_CommunicationPreferences',
     'CRM_Contact_Page_Inline_ContactInfo',
   );
-  if ( in_array($pagename, $contactPages) ) {
+  if (in_array($pagename, $contactPages)) {
     _getContactCustom($page);
   }
 
@@ -241,6 +241,52 @@ function nyss_contact_civicrm_pageRun( &$page ) {
     $activityTypes = $page->get_template_vars('activityTypes');
     uasort($activityTypes, array('CRM_NYSS_Utils_Sort', 'cmpLabel'));
     $page->assign('activityTypes', $activityTypes);
+  }
+
+  //NYSS 11335 truncate long file names (attachments panel)
+  if (in_array($pagename, array(
+    'CRM_Contact_Page_View_Summary',
+    'CRM_Contact_Page_Inline_CustomData',
+  ))) {
+    $viewCustomData = $page->get_template_vars('viewCustomData');
+    $viewCustomDataInline = $page->get_template_vars('cd_edit');
+    //Civi::log()->debug('', array('viewCustomData' => $viewCustomData));
+
+    $modified = FALSE;
+    foreach ($viewCustomData as &$set) {
+      foreach ($set as &$details) {
+        //Civi::log()->debug('', array('$details' => $details));
+        if ($details['name'] == 'Attachments') {
+          foreach ($details['fields'] as $key => &$field) {
+            $doc = phpQuery::newDocument($field['field_value']);
+            $text = $doc->find('a')->text();
+            $maxLength = 35;
+            if (strlen($text) > $maxLength) {
+              $text = substr($text, 0, $maxLength).'...';
+              $doc->find('a')->text($text);
+              $field['field_value'] = $doc->html();
+
+              if (!empty($viewCustomDataInline)) {
+                $viewCustomDataInline['fields'][$key]['field_value'] = $doc->html();
+              }
+
+              $modified = TRUE;
+            }
+
+            /*Civi::log()->debug('', array(
+              //'$doc' => $doc,
+              'text' => $text,
+              '$field[field_value]' => $field['field_value'],
+            ));*/
+          }
+        }
+      }
+    }
+
+    if ($modified) {
+      $page->assign('viewCustomData', $viewCustomData);
+      $page->assign('cd_edit', $viewCustomDataInline);
+    }
   }
 }//pageRun
 

@@ -48,7 +48,7 @@
   </div>
   <div class="form-item">
         <span class="label">{$form.birth_date.label}</span>
-        <span class="value">{include file="CRM/common/jcalendar.tpl" elementName=birth_date}</span>
+        <span class="fields">{$form.birth_date.html}</span>
   </div>
   <div class="form-item">
        {$form.is_deceased.html}
@@ -56,7 +56,7 @@
   </div>
   <div id="showDeceasedDate" class="form-item">
        <span class="label">{$form.deceased_date.label}</span>
-       <span class="value">{include file="CRM/common/jcalendar.tpl" elementName=deceased_date}</span>
+       <span class="fields">{$form.deceased_date.html}</span>
   </div> 
   </div>{*NYSS*}
   
