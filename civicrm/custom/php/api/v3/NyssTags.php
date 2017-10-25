@@ -1,11 +1,49 @@
 <?php
 
-function civicrm_api3_nyss_tags_getList($params) {
-  $result = (!empty($params['input'])) ?
-    array('values' => _civicrm_api3_nyss_tags_getLegPositions($params['input'])) :
-    array();
+function civicrm_api3_nyss_tags_getlist($params) {
+  //if input is passed, we are doing a lookup
+  //if input is not passed and IDs are passed, we restructure into the appropriate format to pass back
+  $result = array();
+  if (!empty($params['input'])) {
+    $tagLookup = _civicrm_api3_nyss_tags_getLegPositions($params['input']);
+    $result = array(
+      'is_error' => 0,
+      'version' => 3,
+      'count' => count($tagLookup),
+      'values' => $tagLookup,
+      'page_num' => 1,
+      'more_results' => 0,
+    );
+  }
+  elseif (!empty($params['id'])) {
+    $result = civicrm_api3('tag', 'get', array(
+      'parent_id' => 292,
+      'sequential' => TRUE,
+      'options' => array(
+        'limit' => 0,
+        'sort' => 'name',
+        'offset' => 0,
+      ),
+      'id' => array(
+        'IN' => $params['id'],
+      ),
+      'return' => array(
+        'id',
+        'name',
+        'color',
+        'description',
+      ),
+      'check_permissions' => FALSE,
+    ));
 
-  /*Civi::log()->debug('civicrm_api3_nyss_tags_getList', array(
+    //default getlist assumes label for text value
+    foreach ($result['values'] as &$value) {
+      $value['label'] = $value['name'];
+      $value['value'] = $value['id'];
+    }
+  }
+
+  /*Civi::log()->debug('civicrm_api3_nyss_tags_getlist', array(
     'params' => $params,
     '$_REQUEST' => $_REQUEST,
     'result' => $result,
@@ -13,7 +51,17 @@ function civicrm_api3_nyss_tags_getList($params) {
   return $result;
 }
 
-function _civicrm_api3_nyss_tags_getList_spec(&$params) {
+function _civicrm_api3_nyss_tags_getlist_spec(&$params) {
+}
+
+//this was never hit...
+function _civicrm_api3_nyss_tags_getlist_output($result, $request, $entity, $fields) {
+  /*Civi::log()->debug('_civicrm_api3_nyss_tags_getlist_output', array(
+    '$result' => $result,
+    '$request' => $request,
+    '$entity' => $entity,
+    '$fields' => $fields,
+  ));*/
 }
 
 function civicrm_api3_nyss_tags_savePosition($params) {
@@ -31,11 +79,16 @@ function civicrm_api3_nyss_tags_savePosition($params) {
       ));
       //Civi::log()->debug('civicrm_api3_nyss_tags_savePosition', array('tag' => $tag));
 
-      civicrm_api3('entity_tag', 'create', array(
-        'tag_id' => $tag['id'],
-        'entity_id' => $params['contactId'],
-        'entity_table' => 'civicrm_contact',
-      ));
+      //if this is triggered from contact edit form we don't have a contact ID (if new contact)
+      if (!empty($params['contactId'])) {
+        civicrm_api3('entity_tag', 'create', [
+          'tag_id' => $tag['id'],
+          'entity_id' => $params['contactId'],
+          'entity_table' => 'civicrm_contact',
+        ]);
+      }
+
+      return $tag['id'];
     }
     catch (CiviCRM_API3_Exception $e) {
       Civi::log()->error('civicrm_api3_nyss_tags_savePosition', array('e' => $e));

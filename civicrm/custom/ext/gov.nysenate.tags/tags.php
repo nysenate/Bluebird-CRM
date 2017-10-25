@@ -146,7 +146,7 @@ function tags_civicrm_merge( $type, &$sqls, $fromId, $toId, $tables ) {
 function tags_civicrm_buildForm($formName, &$form) {
   /*Civi::log()->debug('buildForm', array(
     'formName' => $formName,
-    //'form' => $form,
+    'form' => $form,
     //'$form->_elementIndex' => $form->_elementIndex,
     //'$form->_tagsetInfo' => $form->_tagsetInfo,
   ));*/
@@ -246,27 +246,8 @@ function tags_civicrm_buildForm($formName, &$form) {
     }
 
     //10658 rebuild leg positions entity ref using custom API and disabling create
-    CRM_Core_Resources::singleton()->addScript("
-      CRM.$(function($) {
-        $('#contact_taglist_292').crmEntityRef('destroy');
-        $('#contact_taglist_292').crmEntityRef({
-          entity: 'nyss_tags',
-          multiple: true,
-          create: false,
-          api: {
-            params: {
-              parent_id: 292
-            }
-          },
-          class: 'crm-contact-tagset'
-        });
-        
-        //when a leg position is selected, we may need to add it to the tag table
-        $('#contact_taglist_292').on('select2-selecting', function(e) {
-          CRM.api3('nyss_tags', 'savePosition', {value:e.val, contactId:{$contactId}}, false);
-        });
-      });
-    ");
+    CRM_Core_Resources::singleton()->addVars('NYSS', array('contactId' => $contactId));
+    CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.tags', 'js/form_tagset_legpos.js');
 
     //11072/11167 append list of issue codes and leg positions
     if (!empty($contactIssueCode_list)) {
@@ -301,14 +282,13 @@ function tags_civicrm_buildForm($formName, &$form) {
 
   //11334 (extension of 10658): rebuild leg positions entity ref using custom API and disabling create
   if (in_array($formName, array(
-    //'CRM_Contact_Form_Edit_TagsAndGroups',
     'CRM_Contact_Form_Contact',
   ))) {
-    $ele =& $form->getElement('contact_taglist[292]');
-    $ele->_attributes['data-api-entity'] = 'nyss_tags';
-    $ele->_attributes['data-create-links'] = FALSE;
-    //TODO existing values not loading properly
-    //Civi::log()->debug('tagsandgroups', array(/*'form' => $form,*/ 'ele' => $ele));
+    //DISABLED: handled in validateForm below
+    //Civi::log()->debug('CRM_Contact_Form_Contact', array('form' => $form,));
+    //Note: intentionally don't pass contact_id as js param as we don't want entity_tag
+    //saved via AJAX -- only during form submission
+    //CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.tags', 'js/form_tagset_legpos.js');
   }
 
   //11082 - force used_for value
@@ -319,6 +299,40 @@ function tags_civicrm_buildForm($formName, &$form) {
       ));
       $form->getElement('used_for')->freeze();
     }
+  }
+}
+
+function tags_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
+  /*Civi::log()->debug('tags_civicrm_postProcess', array(
+    'formName' => $formName,
+    '$fields' => $fields,
+    //'$files' => $files,
+    //'$form' => $form,
+    '$errors' => $errors,
+  ));*/
+
+  //11334 (extension of 10658): process leg positions from contact edit form
+  //we need to take the submitted value, create the tag, and replace the submitted value
+  //with the newly created tag id
+  if ($formName == 'CRM_Contact_Form_Contact' && !empty($fields['contact_taglist'][292])) {
+    $tags = array();
+    foreach (explode(',', $fields['contact_taglist'][292]) as $tag) {
+      if (strpos($tag, ':::') !== FALSE) {
+        try {
+          $tags[] = civicrm_api3('nyss_tags', 'savePosition', array(
+            'value' => $tag,
+          ));
+        }
+        catch (CiviCRM_API3_Exception $e) {}
+      }
+      else {
+        $tags[] = $tag;
+      }
+    }
+
+    $data = &$form->controller->container();
+    $data['values']['Contact']['contact_taglist'][292] = implode(',', $tags);
+    //Civi::log()->debug('tags_civicrm_postProcess', array('$tags' => $tags, '$data' => $data));
   }
 }
 
@@ -340,4 +354,37 @@ function tags_civicrm_pageRun(&$page) {
     Civi::resources()->addScriptFile('gov.nysenate.tags', 'js/page_manage_tags.js');
     Civi::resources()->addStyleFile('gov.nysenate.tags', 'css/page_manage_tags.css');
   }
+}
+
+function tags_civicrm_modifyEntityRefParams(&$params) {
+  //Civi::log()->debug('tags_civicrm_modifyEntityRefParams', array('params' => $params));
+
+  //use custom api for legislative positions
+  if ($params['entity'] == 'tag' &&
+    !empty($params['api']['params']['parent_id']) &&
+    $params['api']['params']['parent_id'] == 292
+  ) {
+    //Civi::log()->debug('tags_civicrm_modifyEntityRefParams', array('params' => $params));
+    $params['entity'] = 'nyss_tags';
+    $params['create'] = false;
+    $params['search_field'] = 'name';
+    $params['label_field'] = 'name';
+  }
+}
+
+function tags_civicrm_apiWrappers(&$wrappers, $apiRequest) {
+  /*if ($apiRequest['action'] == 'getlist') {
+    Civi::log()->debug('tags_civicrm_apiWrappers', [
+      //'$wrappers' => $wrappers,
+      '$apiRequest' => $apiRequest,
+    ]);
+  }*/
+
+  /*if ($apiRequest['entity'] == 'Tag' &&
+    $apiRequest['action'] == 'getlist' &&
+    !empty($apiRequest['params']['params']['parent_id']) &&
+    $apiRequest['params']['params']['parent_id'] == 292
+  ) {
+    $wrappers[] = new CRM_Tags_APIWrapper();
+  }*/
 }
