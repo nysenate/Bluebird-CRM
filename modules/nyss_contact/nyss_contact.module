@@ -157,6 +157,19 @@ function nyss_contact_civicrm_buildForm( $formName, &$form ) {
       }
     }
   }
+
+  //NYSS 11383 sort activity types
+  if (in_array($formName, array(
+    'CRM_Activity_Form_Search',
+    'CRM_Contact_Form_Search_Advanced',
+    'CRM_Activity_Form_Activity',
+  ))) {
+    if ($form->elementExists('activity_type_id')) {
+      $activityTypeFld =& $form->getElement('activity_type_id');
+      uasort($activityTypeFld->_options, ['CRM_NYSS_Utils_Sort', 'cmpText']);
+      //CRM_Core_Error::debug_var('buildForm $activityTypeFld', $activityTypeFld);
+    }
+  }
 }//buildForm
 
 function nyss_contact_civicrm_pageRun(&$page) {
