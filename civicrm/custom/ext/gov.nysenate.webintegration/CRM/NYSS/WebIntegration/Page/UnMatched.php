@@ -26,6 +26,7 @@ class CRM_NYSS_WebIntegration_Page_UnMatched extends CRM_Core_Page {
       'unmatched_activity_direct' => $activity_direct,
       'unmatched_activity_contextual' => $activity_contextual,
     ));
+    CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.webintegration', 'js/inbox_msgs.js');
 
     parent::run();
   }
