@@ -4809,6 +4809,36 @@ civicrm_relationship.is_permission_a_b = 0
     return "SELECT " . implode(', ', $selectClauses) . " ";
   }
 
+  //NYSS 11356
+  /**
+   * For some special cases, where if non-aggregate ORDER BY columns are not present in GROUP BY
+   *  on full_group_by mode, then append the those missing columns to GROUP BY clause
+   * keyword to select fields not present in groupBy
+   *
+   * @param string $groupBy - GROUP BY clause where missing ORDER BY columns will be appended
+   * @param array $orderBys - order by columns
+   *
+   */
+  public static function getGroupByFromOrderBy(&$groupBy, $orderBys) {
+    $mysqlVersion = CRM_Core_DAO::singleValueQuery('SELECT VERSION()');
+    $sqlMode = explode(',', CRM_Core_DAO::singleValueQuery('SELECT @@sql_mode'));
+
+    // Disable only_full_group_by mode for lower sql versions.
+    if (version_compare($mysqlVersion, '5.7', '<') || (!empty($sqlMode) && !in_array('ONLY_FULL_GROUP_BY', $sqlMode))) {
+      $key = array_search('ONLY_FULL_GROUP_BY', $sqlMode);
+      unset($sqlMode[$key]);
+      CRM_Core_DAO::executeQuery("SET SESSION sql_mode = '" . implode(',', $sqlMode) . "'");
+    }
+    else {
+      foreach ($orderBys as $orderBy) {
+        $orderBy = str_replace(array(' DESC', ' ASC'), '', $orderBy);
+        if (!strstr($groupBy, $orderBy)) {
+          $groupBy .= ", {$orderBy}";
+        }
+      }
+    }
+  }
+
   /**
    * Include Select columns in groupBy clause.
    *
