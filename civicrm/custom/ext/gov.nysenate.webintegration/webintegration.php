@@ -170,13 +170,13 @@ function webintegration_civicrm_buildForm($formName, &$form) {
   if ($formName == 'CRM_Activity_Form_Activity') {
     //retrieve webintegration msg ID and store as hidden field
     $msgID = CRM_Utils_Request::retrieve('msgId', 'Positive', $form);
-    $msgNote = CRM_Utils_Request::retrieve('msgNote', 'String', $form);
 
     if ($msgID) {
+      $msgNote = _webintegration_getNoteText($msgID);
       $form->addElement('hidden', 'msg_id', $msgID);
       $form->setDefaults(array(
         'subject' => _webintegration_extractSubject($msgNote),
-        'details' => $msgNote,//not sure why this isn't decoded
+        'details' => nl2br($msgNote),
       ));
     }
 
@@ -218,6 +218,18 @@ function _webintegration_storeMessageActivity($msgID, $aid) {
   ));
 }//_storeMessageActivity
 
+function _webintegration_getNoteText($msgID) {
+  $msgNote = CRM_Core_DAO::singleValueQuery("
+    SELECT SQL_CALC_FOUND_ROWS n.note
+    FROM civicrm_note n
+    WHERE n.id = %1
+  ", array(
+    1 => array($msgID, 'Positive'),
+  ));
+
+  return $msgNote;
+}
+
 /**
  * @param $msgNote
  * @return string
@@ -225,7 +237,7 @@ function _webintegration_storeMessageActivity($msgID, $aid) {
  * helper function to extract the subject line from the message body
  */
 function _webintegration_extractSubject($msgNote) {
-  preg_match('/Subject: (.*?)<br>/', $msgNote, $matches);
+  preg_match('/Subject: (.*?)\n/', $msgNote, $matches);
 
   /*Civi::log()->debug('_webintegration_extractSubject', array(
     '$msgNote' => $msgNote,
