@@ -149,11 +149,13 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
       'order_bys' => array(
         'start_date' => array(
           'title' => ts('Start Date'),
+          'dbAlias' => 'MIN(mailing_job_civireport.start_date)',//NYSS 11356
         ),
         'end_date' => array(
           'title' => ts('End Date'),
           'default_weight' => '1',
           'default_order' => 'DESC',
+          'dbAlias' => 'MAX(mailing_job_civireport.end_date)',//NYSS 11356
         ),
       ),
       'grouping' => 'mailing-fields',
@@ -500,10 +502,6 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
     else {
       $this->_where = "WHERE " . implode(' AND ', $clauses);
     }
-
-    // if ( $this->_aclWhere ) {
-    // $this->_where .= " AND {$this->_aclWhere} ";
-    // }
   }
 
   public function groupBy() {
