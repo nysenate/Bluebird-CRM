@@ -170,6 +170,13 @@ function nyss_contact_civicrm_buildForm( $formName, &$form ) {
       //CRM_Core_Error::debug_var('buildForm $activityTypeFld', $activityTypeFld);
     }
   }
+
+  //NYSS 11385
+  if (in_array($formName, array('CRM_Activity_Form_ActivityFilter', 'CRM_Dashlet_Page_AllActivities'))) {
+    $form->setDefaults(array(
+      'status_id' => array(),
+    ));
+  }
 }//buildForm
 
 function nyss_contact_civicrm_pageRun(&$page) {
@@ -300,6 +307,14 @@ function nyss_contact_civicrm_pageRun(&$page) {
       $page->assign('viewCustomData', $viewCustomData);
       $page->assign('cd_edit', $viewCustomDataInline);
     }
+  }
+
+  //NYSS 11385
+  if ($pagename == 'CRM_Dashlet_Page_Activity') {
+    CRM_Core_Resources::singleton()->addScript("
+      $('li.widget-activity h3.widget-header').text('My Activities');
+      $('th.crm-contact-activity-activity_date').html('Activity Date');
+    ");
   }
 }//pageRun
 
@@ -581,6 +596,15 @@ function nyss_contact_civicrm_alterTemplateFile($formName, &$form, $context, &$t
     $tplName = 'CRM/NYSS/ContactWebsiteProfileTab.tpl';
   }
 }//alterTemplateFile
+
+function nyss_contact_civicrm_alterContent(&$content, $context, $tplName, &$object) {
+  /*Civi::log()->debug('nyss_contact_civicrm_alterContent', array(
+    '$content' => $content,
+    '$context' => $context,
+    '$tplName' => $tplName,
+    '$object' => $object,
+  ));*/
+}
 
 function _getContactCustom(&$obj, $return = FALSE) {
   $contactId = CRM_Utils_Request::retrieve('cid', 'Positive');

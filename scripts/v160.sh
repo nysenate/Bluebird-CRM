@@ -163,6 +163,17 @@ $execSql $instance -c "$sql" -q
 ## enable new nyss_reports module
 $drush $instance en nyss_reports -y
 
+## 11385 all activities dashlet
+sql="
+  DELETE FROM civicrm_dashboard WHERE name = 'allactivities';
+  INSERT INTO civicrm_dashboard
+  (domain_id, name, label, url, permission, permission_operator, is_active, is_reserved, fullscreen_url)
+  VALUES
+  (1, 'allactivities', 'All Activities', 'civicrm/dashlet/allactivities&reset=1&snippet=4', 'access CiviCRM', NULL, 1, 1, 'civicrm/dashlet/allactivities&reset=1&snippet=4&context=dashletFullscreen');
+  UPDATE civicrm_dashboard SET label = 'My Activities' WHERE name = 'activity';
+"
+$execSql -i $instance -c "$sql"
+
 ## install new extension
 $drush $instance cvapi extension.install key=gov.nysenate.dao --quiet
 $drush $instance cvapi extension.install key=gov.nysenate.inbox --quiet
