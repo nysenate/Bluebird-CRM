@@ -762,14 +762,8 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
       }
     }
 
-    if (empty($order)) {
-      // context = 'activity' in Activities tab.
-      //NYSS 11385
-      $activityParams['options']['sort'] = "activity_date_time DESC";
-    }
-    else {
-      $activityParams['options']['sort'] = str_replace('activity_type ', 'activity_type_id.label ', $order);
-    }
+    //NYSS 11385
+    $activityParams['options']['sort'] = empty($order) ? "activity_date_time DESC" : str_replace('activity_type ', 'activity_type_id.label ', $order);
 
     //TODO :
     // 1. we should use Activity.Getcount for fetching count only, but  in order to check that
