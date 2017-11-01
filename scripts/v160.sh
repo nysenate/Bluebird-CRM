@@ -174,6 +174,28 @@ sql="
 "
 $execSql -i $instance -c "$sql"
 
+## 11427 extend new individual profile
+sql="
+  SELECT @profile:=id FROM civicrm_uf_group WHERE name = 'new_individual';
+  DELETE FROM civicrm_uf_field WHERE uf_group_id = @profile;
+  INSERT INTO civicrm_uf_field (uf_group_id, field_name, is_active, is_view, is_required, weight, help_post, help_pre, visibility, in_selector, is_searchable, location_type_id, phone_type_id, website_type_id, label, field_type, is_reserved, is_multi_summary) VALUES
+(@profile, 'first_name', 1, 0, 0, 2, NULL, NULL, 'User and User Admin Only', 0, 0, NULL, NULL, NULL, 'First Name', 'Individual', 0, 0),
+(@profile, 'last_name', 1, 0, 0, 4, NULL, NULL, 'User and User Admin Only', 0, 0, NULL, NULL, NULL, 'Last Name', 'Individual', 0, 0),
+(@profile, 'email', 1, 0, 0, 7, NULL, NULL, 'User and User Admin Only', 0, 0, NULL, NULL, NULL, 'Email Address', 'Contact', 0, 0),
+(@profile, 'prefix_id', 1, NULL, NULL, 1, NULL, NULL, 'User and User Admin Only', 0, 0, NULL, NULL, NULL, 'Prefix', 'Individual', NULL, NULL),
+(@profile, 'middle_name', 1, NULL, NULL, 3, NULL, NULL, 'User and User Admin Only', 0, 0, NULL, NULL, NULL, 'Middle Name', 'Individual', NULL, NULL),
+(@profile, 'suffix_id', 1, NULL, NULL, 5, NULL, NULL, 'User and User Admin Only', 0, 0, NULL, NULL, NULL, 'Suffix', 'Individual', NULL, NULL),
+(@profile, 'birth_date', 1, NULL, NULL, 6, NULL, NULL, 'User and User Admin Only', 0, 0, NULL, NULL, NULL, 'Birth Date', 'Individual', NULL, NULL),
+(@profile, 'phone', 1, NULL, NULL, 8, NULL, NULL, 'User and User Admin Only', 0, 0, 1, 1, NULL, 'Phone (Home)', 'Contact', NULL, NULL),
+(@profile, 'street_address', 1, NULL, NULL, 9, NULL, NULL, 'User and User Admin Only', 0, 0, NULL, NULL, NULL, 'Street Address', 'Contact', NULL, NULL),
+(@profile, 'city', 1, NULL, NULL, 10, NULL, NULL, 'User and User Admin Only', 0, 0, NULL, NULL, NULL, 'City', 'Contact', NULL, NULL),
+(@profile, 'state_province', 1, NULL, NULL, 11, NULL, NULL, 'User and User Admin Only', 0, 0, NULL, NULL, NULL, 'State', 'Contact', NULL, NULL),
+(@profile, 'postal_code', 1, NULL, NULL, 12, NULL, NULL, 'User and User Admin Only', 0, 0, NULL, NULL, NULL, 'Postal Code', 'Contact', NULL, NULL);
+"
+$execSql -i $instance -c "$sql"
+
+
+
 ## install new extension
 $drush $instance cvapi extension.install key=gov.nysenate.dao --quiet
 $drush $instance cvapi extension.install key=gov.nysenate.inbox --quiet
