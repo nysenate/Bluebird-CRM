@@ -705,9 +705,10 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
       ),
     );
 
-    if ($params['context'] != 'activity') {
+    //NYSS 11385
+    /*if ($params['context'] != 'activity') {
       $activityParams['status_id'] = CRM_Core_PseudoConstant::getKey(__CLASS__, 'status_id', 'Scheduled');
-    }
+    }*/
 
     // activity type ID clause
     if (!empty($params['activity_type_id'])) {
@@ -723,6 +724,11 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
     }
     elseif (!empty($activityTypes) && count($activityTypes)) {
       $activityParams['activity_type_id'] = array('IN' => array_keys($activityTypes));
+    }
+
+    //NYSS 11385
+    if (!empty($params['activity_status_id'])) {
+      $activityParams['activity_status_id'] =  array('IN' => explode(',', $params['activity_status_id']));
     }
 
     $excludeActivityIDs = array();
@@ -758,7 +764,8 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
 
     if (empty($order)) {
       // context = 'activity' in Activities tab.
-      $activityParams['options']['sort'] = (CRM_Utils_Array::value('context', $params) == 'activity') ? "activity_date_time DESC" : "status_id ASC, activity_date_time ASC";
+      //NYSS 11385
+      $activityParams['options']['sort'] = "activity_date_time DESC";
     }
     else {
       $activityParams['options']['sort'] = str_replace('activity_type ', 'activity_type_id.label ', $order);
@@ -954,7 +961,8 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
 
     if (empty($order)) {
       // context = 'activity' in Activities tab.
-      $order = (CRM_Utils_Array::value('context', $input) == 'activity') ? " ORDER BY tbl.activity_date_time desc " : " ORDER BY tbl.status_id asc, tbl.activity_date_time asc ";
+      //NYSS 11385
+      $order = " ORDER BY tbl.activity_date_time desc ";
     }
 
     if (!empty($input['rowCount']) &&
@@ -1264,7 +1272,7 @@ LEFT JOIN   civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.a
     if (!empty($input['activity_status_id'])) {
       $commonClauses[] = sprintf("civicrm_activity.status_id IN (%s)", $input['activity_status_id']);
     }
-    //NYSS 5149
+    //NYSS 5149/11385 (removed in future core)
     /*elseif ( $input['context'] != 'activity' ) {
       $commonClauses[] = "civicrm_activity.status_id = 1";
     }*/
