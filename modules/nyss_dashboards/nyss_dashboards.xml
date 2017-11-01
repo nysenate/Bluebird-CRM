@@ -281,4 +281,16 @@
     <title>Quick Search</title>
     <page_callback>CRM_NYSS_BAO_NYSS::getContactList</page_callback>
   </item>
+
+  <!--11385-->
+  <item>
+    <path>civicrm/dashlet/allactivities</path>
+    <title>All Activities Dashlet</title>
+    <page_callback>CRM_Dashlet_Page_AllActivities</page_callback>
+  </item>
+  <item>
+    <path>civicrm/ajax/allactivities</path>
+    <page_callback>CRM_NYSS_AJAX_Activity::getDashletActivities</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
 </menu>
