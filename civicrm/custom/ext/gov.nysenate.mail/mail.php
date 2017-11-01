@@ -344,7 +344,7 @@ function _mail_alterMailingBlock(phpQueryObject $doc) {
         ng-model="mailing.category"
       >'.$catOptions.'</select>
     </div>
-    <div crm-ui-field="{name: \'subform.nyss\', title: \'All Emails?\', help: hs(\'all-emails\')}">
+    <div crm-ui-field="{name: \'subform.nyss\', title: \'Send to all contact emails?\', help: hs(\'all-emails\')}">
       <input
         type="checkbox"
         crm-ui-id="subform.nyss"
