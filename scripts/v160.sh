@@ -194,7 +194,62 @@ sql="
 "
 $execSql -i $instance -c "$sql"
 
-
+## 11414 activity type icons
+sql="
+  UPDATE civicrm_option_value SET icon = 'fa-check-square-o' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Accept Invitation';
+  UPDATE civicrm_option_value SET icon = 'fa-users' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Add Client To Case';
+  UPDATE civicrm_option_value SET icon = 'fa-university' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Assembly Support';
+  UPDATE civicrm_option_value SET icon = 'fa-user-plus' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Assign Case Role';
+  UPDATE civicrm_option_value SET icon = 'fa-file-text-o' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Certificate (outgoing)';
+  UPDATE civicrm_option_value SET icon = 'fa-calendar' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Change Case Start Date';
+  UPDATE civicrm_option_value SET icon = 'fa-pencil-square-o' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Change Case Status';
+  UPDATE civicrm_option_value SET icon = 'fa-pencil-square-o' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Change Case Subject';
+  UPDATE civicrm_option_value SET icon = 'fa-tags' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Change Case Tags';
+  UPDATE civicrm_option_value SET icon = 'fa-random' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Change Case Type';
+  UPDATE civicrm_option_value SET icon = 'fa-sticky-note-o' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Change Custom Data';
+  UPDATE civicrm_option_value SET icon = 'fa-stop' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Close Case';
+  UPDATE civicrm_option_value SET icon = 'fa-comments-o' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Constituent Event Participation';
+  UPDATE civicrm_option_value SET icon = 'fa-trash-o' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Contact Deleted by Merge';
+  UPDATE civicrm_option_value SET icon = 'fa-compress' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Contact Merged';
+  UPDATE civicrm_option_value SET icon = 'fa-comments-o' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Coordination with Event Organizer';
+  UPDATE civicrm_option_value SET icon = 'fa-envelope-o' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Email';
+  UPDATE civicrm_option_value SET icon = 'fa-envelope-o' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Email Received';
+  UPDATE civicrm_option_value SET icon = 'fa-envelope-o' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Email Sent';
+  UPDATE civicrm_option_value SET icon = 'fa-university' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Executive Support';
+  UPDATE civicrm_option_value SET icon = 'fa-print' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Fax Received';
+  UPDATE civicrm_option_value SET icon = 'fa-print' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Fax Sent';
+  UPDATE civicrm_option_value SET icon = 'fa-share-square-o' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Follow up';
+  UPDATE civicrm_option_value SET icon = 'fa-user' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'In Person';
+  UPDATE civicrm_option_value SET icon = 'fa-envelope-o' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Inbound Email';
+  UPDATE civicrm_option_value SET icon = 'fa-file-text-o' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Letter Received';
+  UPDATE civicrm_option_value SET icon = 'fa-file-text-o' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Letter Sent';
+  UPDATE civicrm_option_value SET icon = 'fa-link' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Link Cases';
+  UPDATE civicrm_option_value SET icon = 'fa-university' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Local Government Contact';
+  UPDATE civicrm_option_value SET icon = 'fa-slideshare' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Meeting';
+  UPDATE civicrm_option_value SET icon = 'fa-compress' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Merge Case';
+  UPDATE civicrm_option_value SET icon = 'fa-folder-open-o' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Open Case';
+  UPDATE civicrm_option_value SET icon = 'fa-file-o' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Other';
+  UPDATE civicrm_option_value SET icon = 'fa-list-alt' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Petition';
+  UPDATE civicrm_option_value SET icon = 'fa-phone' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Phone Call';
+  UPDATE civicrm_option_value SET icon = 'fa-phone' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Phone Call Received';
+  UPDATE civicrm_option_value SET icon = 'fa-file-pdf-o' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Print PDF Letter';
+  UPDATE civicrm_option_value SET icon = 'fa-bullhorn' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Proclamation (outgoing)';
+  UPDATE civicrm_option_value SET icon = 'fa-user-circle-o' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Reassigned Case';
+  UPDATE civicrm_option_value SET icon = 'fa-comments-o' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Receive Event Invitation';
+  UPDATE civicrm_option_value SET icon = 'fa-user-md' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Record SSN';
+  UPDATE civicrm_option_value SET icon = 'fa-share-square-o' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Reject Invitation';
+  UPDATE civicrm_option_value SET icon = 'fa-user-times' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Remove Case Role';
+  UPDATE civicrm_option_value SET icon = 'fa-university' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Senate Support';
+  UPDATE civicrm_option_value SET icon = 'fa-mobile' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'SMS';
+  UPDATE civicrm_option_value SET icon = 'fa-external-link' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Social Media';
+  UPDATE civicrm_option_value SET icon = 'fa-university' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'State Agency Support';
+  UPDATE civicrm_option_value SET icon = 'fa-user' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Supervisor Review';
+  UPDATE civicrm_option_value SET icon = 'fa-list-alt' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'Website Survey';
+  UPDATE civicrm_option_value SET icon = 'fa-paper-plane-o' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'website_contextual_message';
+  UPDATE civicrm_option_value SET icon = 'fa-paper-plane-o' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'website_direct_message';
+  UPDATE civicrm_option_value SET icon = 'fa-paper-plane-o' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'website_message';
+"
+$execSql -i $instance -c "$sql"
 
 ## install new extension
 $drush $instance cvapi extension.install key=gov.nysenate.dao --quiet
