@@ -231,10 +231,11 @@ class CRM_NYSS_AJAX_Activity
 
         $activity['target_contact_name'] = '';
         if (isset($values['target_contact_counter']) && $values['target_contact_counter']) {
-          $activity['target_contact_name'] = '';
+          //grab the first contact
           foreach ($values['target_contact_name'] as $tcID => $tcName) {
             $targetLink = CRM_Utils_System::href($tcName, 'civicrm/contact/view', "reset=1&cid={$tcID}");
-            $activity['target_contact_name'] .= $targetLink;
+            $activity['target_contact_name'] = $targetLink;
+            break;
           }
 
           if ($extraCount = $values['target_contact_counter'] - 1) {
