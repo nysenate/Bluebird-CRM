@@ -45,7 +45,6 @@ class CRM_Dashlet_Page_AllActivities extends CRM_Core_Page {
    * @return void
    */
   public function run() {
-    $session = CRM_Core_Session::singleton();
     $context = CRM_Utils_Request::retrieve('context', 'String', $this, FALSE, 'dashlet');
     $this->assign('context', $context);
 
