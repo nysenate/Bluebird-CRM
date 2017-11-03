@@ -4113,3 +4113,8 @@ form.CRM_Mailing_Form_Search table.selector td {
 div.crm-contact-task-createsmartgroup-form-block div.help a {
   display: none;
 }
+
+/*11436*/
+body.page-civicrm-tag div.crm-content-block > div.help {
+  display: none;
+}
