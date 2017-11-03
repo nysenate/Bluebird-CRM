@@ -37,11 +37,20 @@
     cj('div.crm-ModifiedDate-accordion').removeClass('collapsed');
   }
 
-  //NYSS 7892
+  //7892
   cj(document).ready(function(){
     if (cj('div.crm-results-block-empty').length) {
       CRM.alert('No results found. Please revise your search criteria.', 'No Results', 'warning' );
     }
   });
+
+  //11446/11440
+  cj('div.crm-search_criteria_basic-accordion:first').addClass('collapsed').insertBefore('div.crm-location-accordion');
+  cj('div#display-settings td:nth-child(2)').remove();
+
+  //11442 copy reset button to bottom
+  var resetHTML = cj('<div />').append($('div.reset-advanced-search').clone()).html();
+  cj('table.form-layout span.crm-button_qf_Advanced_refresh').after('<span class="reset-bottom">' + resetHTML + '</span>');
+  cj('span.reset-bottom a').removeClass('css_right');
 </script>
 {/literal}

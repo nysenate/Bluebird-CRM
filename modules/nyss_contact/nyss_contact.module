@@ -49,7 +49,7 @@ function nyss_contact_civicrm_buildForm( $formName, &$form ) {
     $form->setDefaults($defaults);
   }
 
-  if ( $formName == 'CRM_Contact_Form_Inline_CommunicationPreferences' ) {
+  if ($formName == 'CRM_Contact_Form_Inline_CommunicationPreferences') {
     $defaults = array();
     $contactID = $form->_contactId;
     $form->assign('cid', $contactID);
@@ -75,7 +75,7 @@ function nyss_contact_civicrm_buildForm( $formName, &$form ) {
     $form->setDefaults($defaults);
   }
 
-  if ( $formName == 'CRM_Contact_Form_Inline_ContactInfo' ) {
+  if ($formName == 'CRM_Contact_Form_Inline_ContactInfo') {
     $defaults = array();
     $contactID = $form->_contactId;
     $form->assign('cid', $contactID);
@@ -176,6 +176,15 @@ function nyss_contact_civicrm_buildForm( $formName, &$form ) {
     $form->setDefaults(array(
       'status_id' => array(),
     ));
+  }
+
+  //11443
+  if ($formName == 'CRM_Activity_Form_Search') {
+    if ($form->elementExists('activity_test')) {
+      CRM_Core_Resources::singleton()->addScript("
+        $('input[name=activity_test]').parent('td').text('');
+      ");
+    }
   }
 }//buildForm
 
