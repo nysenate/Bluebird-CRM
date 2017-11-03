@@ -371,7 +371,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       'activity_label' => 'Inbound Email',
       'source_contact_id' => $forwarder,
       'target_contact_id' => $contactId,
-      'subject' => $message['subject'],
+      'subject' => substr($message['subject'], 0, 250),
       'is_auto' => 0,
       'status_id' => $status,
       'activity_date_time' => $message['date_updated'],
