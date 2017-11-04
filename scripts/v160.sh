@@ -172,7 +172,7 @@ sql="
   (1, 'allactivities', 'All Activities', 'civicrm/dashlet/allactivities?reset=1&snippet=4', 'access CiviCRM', NULL, 1, 1, 'civicrm/dashlet/allactivities?reset=1&snippet=4&context=dashletFullscreen');
   UPDATE civicrm_dashboard SET label = 'My Activities' WHERE name = 'activity';
 "
-$execSql -i $instance -c "$sql"
+$execSql -i $instance -c "$sql" -q
 
 ## 11427 extend new individual profile
 sql="
@@ -192,7 +192,7 @@ sql="
 (@profile, 'state_province', 1, NULL, NULL, 11, NULL, NULL, 'User and User Admin Only', 0, 0, NULL, NULL, NULL, 'State', 'Contact', NULL, NULL),
 (@profile, 'postal_code', 1, NULL, NULL, 12, NULL, NULL, 'User and User Admin Only', 0, 0, NULL, NULL, NULL, 'Postal Code', 'Contact', NULL, NULL);
 "
-$execSql -i $instance -c "$sql"
+$execSql -i $instance -c "$sql" -q
 
 ## 11414 activity type icons
 sql="
@@ -271,3 +271,6 @@ $script_dir/changeCollation.sh $instance
 ## rebuild triggers
 echo "$prog: rebuild triggers"
 php $app_rootdir/civicrm/scripts/rebuildTriggers.php -S $instance
+
+## record completion
+echo "$prog: upgrade process is complete."
