@@ -4119,3 +4119,9 @@ div.crm-contact-task-createsmartgroup-form-block div.help a {
 body.page-civicrm-tag div.crm-content-block > div.help {
   display: none;
 }
+
+/*log tab*/
+form.CRM_Report_Form_Contact_LoggingSummary table.report-layout th,
+form.CRM_Report_Form_Contact_LoggingSummary table.report-layout td {
+  font-size: 11px;
+}
