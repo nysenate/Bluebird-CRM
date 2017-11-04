@@ -249,7 +249,7 @@ sql="
   UPDATE civicrm_option_value SET icon = 'fa-paper-plane-o' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'website_direct_message';
   UPDATE civicrm_option_value SET icon = 'fa-paper-plane-o' WHERE civicrm_option_value.option_group_id = 2 AND civicrm_option_value.name = 'website_message';
 "
-$execSql -i $instance -c "$sql"
+$execSql -i $instance -c "$sql" -q
 
 ## install new extension
 $drush $instance cvapi extension.install key=gov.nysenate.dao --quiet
