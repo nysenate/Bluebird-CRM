@@ -4125,3 +4125,10 @@ form.CRM_Report_Form_Contact_LoggingSummary table.report-layout th,
 form.CRM_Report_Form_Contact_LoggingSummary table.report-layout td {
   font-size: 11px;
 }
+
+form.CRM_Case_Form_Search table.caseSelector td {
+  font-size: .9em;
+}
+form.CRM_Case_Form_Search a.action-item {
+  display: inline-block;
+}
