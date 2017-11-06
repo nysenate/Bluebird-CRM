@@ -388,3 +388,17 @@ function tags_civicrm_apiWrappers(&$wrappers, $apiRequest) {
     $wrappers[] = new CRM_Tags_APIWrapper();
   }*/
 }
+
+function tags_civicrm_alterAPIPermissions($entity, $action, &$params, &$permissions) {
+  /*Civi::log()->debug('tags_civicrm_alterAPIPermissions', [
+    '$entity' => $entity,
+    '$action' => $action,
+    '$params' => $params,
+    '$permissions' => $permissions,
+  ]);*/
+
+  //11459
+  if ($entity == 'nyss_tags' && $action == 'getlist') {
+    $params['check_permissions'] = FALSE;
+  }
+}
