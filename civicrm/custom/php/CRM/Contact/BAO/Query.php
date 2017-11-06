@@ -2114,6 +2114,15 @@ class CRM_Contact_BAO_Query {
     $grouping = CRM_Utils_Array::value(3, $values);
     $wildcard = CRM_Utils_Array::value(4, $values);
 
+    //NYSS
+    /*Civi::log()->debug('query', array(
+      '$name' => $name,
+      '$op' => $op,
+      '$value' => $value,
+      '$grouping' => $grouping,
+      '$wildcard' => $wildcard,
+    ));*/
+
     if (isset($grouping) && empty($this->_where[$grouping])) {
       $this->_where[$grouping] = array();
     }
@@ -2295,6 +2304,11 @@ class CRM_Contact_BAO_Query {
       }
 
       list($tableName, $fieldName) = explode('.', $field['where'], 2);
+      //NYSS
+      /*Civi::log()->debug('query', array(
+        'logType' => $locType,
+        'value' => $value,
+      ));*/
 
       if (isset($locType[1]) &&
         is_numeric($locType[1])
@@ -3696,6 +3710,9 @@ WHERE  $smartGroupClause
    * @param array $values
    */
   public function postalCode(&$values) {
+    //NYSS
+    Civi::log()->debug('postalCode', array('values' => $values));
+
     // skip if the fields dont have anything to do with postal_code
     if (empty($this->_fields['postal_code'])) {
       return;
@@ -3705,14 +3722,14 @@ WHERE  $smartGroupClause
 
     //NYSS 5494/8104 support multiple values
     if (strpos($value, ',') !== FALSE && $name == 'postal_code') {
-      if ( $op == '=' ) {
+      if ($op == '=') {
         $op = 'IN';
       }
       elseif ( $op == '!=' ) {
         $op = 'NOT IN';
       }
-      $value = str_replace(array('(',')'), '', $value);
-      $value = '('.trim($value).')';
+      //11410 convert to array; will be handled downstream
+      $value = array_filter(explode(',', $value));
     }
 
     // Handle numeric postal code range searches properly by casting the column as numeric
