@@ -198,8 +198,13 @@ function nyss_ioimport_form_validate($form, &$form_state)
 
 
 //process form validation steps
-function nyss_iovalidateuploadform($form, &$form_state)
-{
+function nyss_iovalidateuploadform($form, &$form_state) {
+  //watchdog('io', '<pre>'.print_r($form_state, TRUE).'</pre>');
+
+  if (empty($form_state['values']['csv'])) {
+    $form_state['values']['csv'] = array();
+  }
+
   //require either a file be uploaded or referenced on the server
   if (!empty($form_state['values']['servercsv'])) {
     $form_state['values']['csv']['title'] = $form_state['values']['servercsv'];
@@ -217,8 +222,9 @@ function nyss_iovalidateuploadform($form, &$form_state)
     }
     else {
       // Manually add the uploaded file to the $form_state
+      //watchdog('io', '<pre>'.print_r($file, TRUE).'</pre>');
       $form_state['values']['csv']['title'] = $file->filename;
-      $form_state['values']['csv']['file']  = $file;
+      $form_state['values']['csv']['file'] = $file;
     }
   }
   //nyss_out('debug', $file, true); exit();
@@ -333,7 +339,7 @@ function nyss_ioimport_form_submit($form, &$form_state)
   while ($l = $fo->getLine()) {
 
     if ($nyss_ioline%BATCHSIZE==0) {
-      mysql_query("START TRANSACTION", $nyss_conn);
+      mysqli_query("START TRANSACTION", $nyss_conn);
     }
 
     //nyss_out('debug', $l, true); //exit();
@@ -543,7 +549,7 @@ function nyss_ioimport_form_submit($form, &$form_state)
     _processNote($l);
 
     if ($nyss_ioline%BATCHSIZE == 0) {
-      mysql_query("COMMIT", $nyss_conn);
+      mysqli_query("COMMIT", $nyss_conn);
     }
 
     unset($l);
@@ -551,7 +557,7 @@ function nyss_ioimport_form_submit($form, &$form_state)
 
   // Commit any straglers!
   if ($nyss_ioline%BATCHSIZE!=0) {
-    mysql_query("COMMIT", $nyss_conn);
+    mysqli_query("COMMIT", $nyss_conn);
   }
 
   //Begin post process
@@ -718,19 +724,19 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state)
     $sql = "SELECT ".$nyss_select[$tbl]['fields']." FROM {$tbl} WHERE {$pkCivi}={$l[$pkImport]}";
     //nyss_out('debug', $sql, true);
 
-    $result = mysql_query($sql, $nyss_conn);
+    $result = mysqli_query($sql, $nyss_conn);
     //nyss_out('error','id lookup result:',true);
     //nyss_out('debug', $result, true);
 
     $dao = new stdClass();
-    if (!$result || mysql_num_rows($result) == 0) {
+    if (!$result || mysqli_num_rows($result) == 0) {
       nyss_out('error','no civirecord found. not importing.',true);
     }
     else {
-      $dao = mysql_fetch_object($result);
+      $dao = mysqli_fetch_object($result);
     }
 
-    mysql_free_result($result);
+    mysqli_free_result($result);
 
     $up = array();
     
@@ -772,8 +778,8 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state)
       //print_r($sqlUP."<br>");
 
       if (!$dryrun) {
-        $result = mysql_query($sqlUP, $nyss_conn);
-        mysql_free_result($result);
+        $result = mysqli_query($sqlUP, $nyss_conn);
+        mysqli_free_result($result);
       }
       else {
         //if ($tbl=='civicrm_value_constituent_information_1' || $tbl=='civicrm_value_district_information_7') {
@@ -1423,13 +1429,13 @@ function _findRelatedCustom(&$l, $nyss_conn)
     FROM civicrm_value_constituent_information_1
     WHERE entity_id = {$l['id']}
   ";
-  $result = mysql_query($sql, $nyss_conn);
+  $result = mysqli_query($sql, $nyss_conn);
 
   if ($result && $row = mysql_fetch_assoc($result)) {
     $l['constinfo_id'] = $row['constinfo_id'];
   }
 
-  mysql_free_result($result);
+  mysqli_free_result($result);
 } // _findRelatedCustom()
 
 
