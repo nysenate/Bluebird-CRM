@@ -227,6 +227,8 @@ function mail_civicrm_alterMailingRecipients(&$mailing, &$queue, $job_id, &$para
   //only trigger these at the end of the recipient construction process and only when
   //the mailing has been scheduled
   if ($context == 'post' && !empty($mailing->scheduled_date)) {
+    _mail_logRecipients('pre-filters', $mailing->id);
+
     // NYSS 4628, 4879
     if ($mailing->all_emails) {
       _mail_addAllEmails($mailing->id, $mailing->exclude_ood);
@@ -526,15 +528,17 @@ function _mail_dedupeEmail($mailingID) {
 function _mail_logRecipients($note, $mailingID) {
   if (BB_MAIL_LOG) {
     $dao = CRM_Core_DAO::executeQuery("
-      SELECT *
-      FROM civicrm_mailing_recipients
-      WHERE mailing_id = {$mailingID}
-      ORDER BY email_id
+      SELECT mr.email_id, mr.contact_id, e.email
+      FROM civicrm_mailing_recipients mr
+      JOIN civicrm_email e 
+        ON mr.email_id = e.id
+      WHERE mr.mailing_id = {$mailingID}
+      ORDER BY mr.email_id
     ");
 
     $rows = array();
     while ($dao->fetch()) {
-      $rows[] = "EID: {$dao->email_id} | CID: {$dao->contact_id}";
+      $rows[] = "EID: {$dao->email_id} | CID: {$dao->contact_id} | Email: {$dao->email}";
     }
 
     Civi::log()->debug('_mail_logRecipients: '.$note, $rows);

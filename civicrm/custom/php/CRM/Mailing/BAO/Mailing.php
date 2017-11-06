@@ -210,8 +210,29 @@ class CRM_Mailing_BAO_Mailing extends CRM_Mailing_DAO_Mailing {
             ENGINE=HEAP"
     );
 
+    //NYSS 10760
+    $params = array(
+      'filters' => array(
+        'do_not_email' => "$contact.do_not_email = 0",
+        'is_opt_out' => "$contact.is_opt_out = 0",
+        'is_deceased' => "$contact.is_deceased <> 1",
+        'location_filter' => $location_filter,
+        'email_not_null' => "( $email.email IS NOT NULL AND $email.email != '' )",
+        'on_hold' => "$email.on_hold = 0",
+        'temp_null' => 'temp.contact_id IS null',
+      ),
+      'order_by' => $order_by,
+    );
+
+    // Allow user to alter query responsible to fetch mailing recipients before build,
+    //   by changing the mail filters identified $params
+    $eq = NULL;
+    CRM_Utils_Hook::alterMailingRecipients($mailingObj, $eq, NULL, $params, 'pre');
+    $mailRecipientFilterClause = implode(" AND ", $params['filters']);
+    $order_by = $params['order_by'];
+
     // Criterias to filter recipients that need to be included
-    $includeFilters = array(
+    /*$includeFilters = array(
       "$contact.do_not_email = 0",
       "$contact.is_opt_out = 0",
       "$contact.is_deceased <> 1",
@@ -219,7 +240,7 @@ class CRM_Mailing_BAO_Mailing extends CRM_Mailing_DAO_Mailing {
       "$email.email IS NOT NULL",
       "$email.email != ''",
       'temp.contact_id IS null',
-    );
+    );*/
     // Get the group contacts, but only those which are not in the
     // exclusion temp table.
     $sql = sprintf("REPLACE INTO %s (contact_id, email_id)
@@ -231,18 +252,18 @@ class CRM_Mailing_BAO_Mailing extends CRM_Mailing_DAO_Mailing {
                     LEFT JOIN   %s temp ON $contact.id = temp.contact_id
                     WHERE gc.group_id IN (%s) AND gc.status = 'Added' AND %s
                     GROUP BY $email.id, $contact.id
-                    %s", $includedTempTablename, $excludeTempTablename, implode(',', $recipientsGroup['Include']), implode(' AND ', $includeFilters), $order_by);
-    $mailingGroup->query($sql);
+                    %s", $includedTempTablename, $excludeTempTablename, implode(',', $recipientsGroup['Include']), $mailRecipientFilterClause, $order_by);
+    $mailingGroup->query($sql);//NYSS
 
     if (count($includeSmartGroupIDs)) {
-      unset($includeFilters["gc.status = 'Added'"]);
+      //unset($includeFilters["gc.status = 'Added'"]);
       $sql = sprintf("REPLACE INTO %s (contact_id, email_id)
       SELECT  $contact.id as contact_id, $email.id as email_id
       FROM       $contact
       INNER JOIN civicrm_email ON civicrm_email.contact_id = $contact.id
       INNER JOIN civicrm_group_contact_cache gc ON gc.contact_id = $contact.id
       LEFT  JOIN %s temp              ON temp.contact_id = $contact.id
-      WHERE      gc.group_id IN (%s) AND %s %s ", $includedTempTablename, $excludeTempTablename, implode(',', $includeSmartGroupIDs), implode(' AND ', $includeFilters), $order_by);
+      WHERE      gc.group_id IN (%s) AND %s %s ", $includedTempTablename, $excludeTempTablename, implode(',', $includeSmartGroupIDs), $mailRecipientFilterClause, $order_by);//NYSS
       $mailingGroup->query($sql);
     }
 
@@ -301,6 +322,9 @@ class CRM_Mailing_BAO_Mailing extends CRM_Mailing_DAO_Mailing {
     $mailingGroup->reset();
     $mailingGroup->query(" DROP TEMPORARY TABLE $excludeTempTablename ");
     $mailingGroup->query(" DROP TEMPORARY TABLE $includedTempTablename ");
+
+    //NYSS 10760 implement hook
+    CRM_Utils_Hook::alterMailingRecipients($mailingObj, $eq, NULL, $params, 'post');
   }
 
   //NYSS mailing rebuild
@@ -2025,6 +2049,7 @@ ORDER BY   civicrm_email.is_bulkmail DESC
     }
     //NYSS mailing rebuild
     elseif (!empty($params['get_recipents'])) {
+      //Civi::log()->debug('trigger getMailRecipients', array('params' => $params));
       self::getMailRecipients($mailing);
     }
 

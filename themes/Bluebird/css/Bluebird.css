@@ -4071,7 +4071,8 @@ form.CRM_Tag_Form_Tag div#Tag table th {
 /*11175*/
 div#tagtree li[aria-level="1"] > i.jstree-icon,
 div#tagtree li[aria-level="1"] > a.jstree-anchor#tag_291 {
-  display: none;
+  /*on new contacts we need to keep visible so tree can be expanded*/
+  /*display: none;*/
 }
 div#tagtree li[aria-level="2"] {
   margin-left: 0;
@@ -4117,4 +4118,10 @@ div.crm-contact-task-createsmartgroup-form-block div.help a {
 /*11436*/
 body.page-civicrm-tag div.crm-content-block > div.help {
   display: none;
+}
+
+/*log tab*/
+form.CRM_Report_Form_Contact_LoggingSummary table.report-layout th,
+form.CRM_Report_Form_Contact_LoggingSummary table.report-layout td {
+  font-size: 11px;
 }
