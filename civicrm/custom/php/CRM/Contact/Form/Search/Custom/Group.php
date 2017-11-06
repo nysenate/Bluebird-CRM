@@ -278,7 +278,8 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
     $where = $this->where($includeContactIDs);
 
     if (!$justIDs && !$this->_allSearch) {
-      $groupBy = " GROUP BY contact_a.id";
+      //NYSS 11452
+      $groupBy = " GROUP BY contact_a.id, addr.street_address, addr.city";
     }
     else {
       // CRM-10850
@@ -694,9 +695,8 @@ WHERE  gcc.group_id = {$ssGroup->id}
     //append email/address joins
     $from .= "
       LEFT JOIN civicrm_email
-        ON ( contact_a.id = civicrm_email.contact_id
-        AND ( civicrm_email.is_primary = 1 OR civicrm_email.is_bulkmail = 1 )
-        )
+        ON contact_a.id = civicrm_email.contact_id
+        AND civicrm_email.is_primary = 1 OR civicrm_email.is_bulkmail = 1
       {$this->_aclFrom}
     ";
 
