@@ -259,9 +259,7 @@ function nyss_ioimport_form_submit($form, &$form_state)
 
   require_once 'api/api.php';
 
-  $nyss_conn = new CRM_Core_DAO();
-  $nyss_conn = $nyss_conn->getDatabaseConnection();
-  $nyss_conn = $nyss_conn->connection;
+  $nyss_conn = nyss_getConnection($bbconfig);
 
   $logpath = isset($bbconfig['nyss_io.log_path']) ? $bbconfig['nyss_io.log_path'] : '/data/importData/logs/';
 
@@ -339,7 +337,7 @@ function nyss_ioimport_form_submit($form, &$form_state)
   while ($l = $fo->getLine()) {
 
     if ($nyss_ioline%BATCHSIZE==0) {
-      mysqli_query("START TRANSACTION", $nyss_conn);
+      mysqli_query($nyss_conn, "START TRANSACTION");
     }
 
     //nyss_out('debug', $l, true); //exit();
@@ -468,13 +466,13 @@ function nyss_ioimport_form_submit($form, &$form_state)
     }
 
     //find an address if we don't have an addressID already
-    _findAddress($l);
+    _findAddress($l, $nyss_conn);
 
     //find district id if address id set
-    _findDistrict($l);
+    _findDistrict($l, $nyss_conn);
 
     //find email id if email is set
-    _findEmail($l);
+    _findEmail($l, $nyss_conn);
 
     //nyss_out('debug', 'ready to begin importing record...', true);
     //nyss_out('debug', $l, true); exit();
@@ -528,7 +526,7 @@ function nyss_ioimport_form_submit($form, &$form_state)
     nyss_ioimportData('civicrm_value_district_information_7', $l, $dryrun, $logFile, $form_state);
 
     //process special fields using API/BAO
-    _processCurrentEmployer($l, $nyss_conn);
+    _processCurrentEmployer($l, $nyss_conn, $dryrun);
 
     //process pipe separated list of keywords
     if (!empty($l['keywords'])) {
@@ -549,7 +547,7 @@ function nyss_ioimport_form_submit($form, &$form_state)
     _processNote($l);
 
     if ($nyss_ioline%BATCHSIZE == 0) {
-      mysqli_query("COMMIT", $nyss_conn);
+      mysqli_query($nyss_conn, "COMMIT");
     }
 
     unset($l);
@@ -557,7 +555,7 @@ function nyss_ioimport_form_submit($form, &$form_state)
 
   // Commit any straglers!
   if ($nyss_ioline%BATCHSIZE!=0) {
-    mysqli_query("COMMIT", $nyss_conn);
+    mysqli_query($nyss_conn, "COMMIT" );
   }
 
   //Begin post process
@@ -589,7 +587,7 @@ function nyss_ioimport_form_submit($form, &$form_state)
   }
 
   //add contacts to group if set
-  _processGroup($form_state, $imported_contacts, $new_contacts);
+  _processGroup($form_state, $imported_contacts, $new_contacts, $dryrun);
 
   //add all new contacts to the email only group
   if ($form_state['values']['emailimport'] == 1) {
@@ -598,7 +596,7 @@ function nyss_ioimport_form_submit($form, &$form_state)
 
   //delete addresses flagged for deletion
   $addressDelCount = count($addressDel);
-  _processAddressDelete($addressDel, $nyss_conn);
+  _processAddressDelete($addressDel, $nyss_conn, $dryrun);
 
   //send email if requested
   if ($form_state['values']['sendmail'] == 1) {
@@ -724,7 +722,7 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state)
     $sql = "SELECT ".$nyss_select[$tbl]['fields']." FROM {$tbl} WHERE {$pkCivi}={$l[$pkImport]}";
     //nyss_out('debug', $sql, true);
 
-    $result = mysqli_query($sql, $nyss_conn);
+    $result = mysqli_query($nyss_conn, $sql);
     //nyss_out('error','id lookup result:',true);
     //nyss_out('debug', $result, true);
 
@@ -778,7 +776,7 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state)
       //print_r($sqlUP."<br>");
 
       if (!$dryrun) {
-        $result = mysqli_query($sqlUP, $nyss_conn);
+        $result = mysqli_query($nyss_conn, $sqlUP);
         mysqli_free_result($result);
       }
       else {
@@ -925,10 +923,10 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state)
 
     //process if sql insert exists and not dryrun
     if (!$dryrun && $sqlINSERT) {
-      $result = mysql_query($sqlINSERT, $nyss_conn);
-      $l[$pkImport]=mysql_insert_id($nyss_conn);
+      $result = mysqli_query($nyss_conn, $sqlINSERT);
+      $l[$pkImport] = mysqli_insert_id($nyss_conn);
 
-      mysql_free_result($result);
+      mysqli_free_result($result);
     }
     elseif ($sqlINSERT) {
       //if ($tbl=='civicrm_value_constituent_information_1') {
@@ -1394,13 +1392,13 @@ function _findContact(&$l, $nyss_conn, $ruleID = 1)
     WHERE dupes.id1 = contact.id AND contact.is_deleted = 0
   ";
 
-  if (!$result = mysql_query($sql, $nyss_conn) ) {
+  if (!$result = mysqli_query($nyss_conn, $sql) ) {
     CRM_Core_Error::debug('sql', $sql);
-    var_dump(mysql_error($nyss_conn)); exit();
+    var_dump(mysqli_error($nyss_conn)); exit();
   }
 
   $dupeIDs = array();
-  while($row = mysql_fetch_assoc($result)) {
+  while($row = mysqli_fetch_assoc($result)) {
     $dupeIDs[] = $row['id'];
   }
 
@@ -1409,7 +1407,7 @@ function _findContact(&$l, $nyss_conn, $ruleID = 1)
     $l['id'] = $dupeIDs[0];
   }
 
-  mysql_free_result($result);
+  mysqli_free_result($result);
 
   //now unset all vars/objects
   unset($params);
@@ -1429,9 +1427,9 @@ function _findRelatedCustom(&$l, $nyss_conn)
     FROM civicrm_value_constituent_information_1
     WHERE entity_id = {$l['id']}
   ";
-  $result = mysqli_query($sql, $nyss_conn);
+  $result = mysqli_query($nyss_conn, $sql);
 
-  if ($result && $row = mysql_fetch_assoc($result)) {
+  if ($result && $row = mysqli_fetch_assoc($result)) {
     $l['constinfo_id'] = $row['constinfo_id'];
   }
 
@@ -1439,7 +1437,7 @@ function _findRelatedCustom(&$l, $nyss_conn)
 } // _findRelatedCustom()
 
 
-function _findAddress(&$l)
+function _findAddress(&$l, $nyss_conn)
 {
   if (!empty($l['id']) && empty($l['address_id'])) {
     $sql = "
@@ -1451,16 +1449,16 @@ function _findAddress(&$l)
         AND city LIKE '{$l['city']}'
         AND ( postal_code LIKE '{$l['postal_code']}' OR postal_code LIKE '{$l['postal_code']}' )
     ";
-    $result = mysql_query($sql, $nyss_conn);
+    $result = mysqli_query($nyss_conn, $sql);
 
-    if ($result && $row = mysql_fetch_assoc($result)) {
+    if ($result && $row = mysqli_fetch_assoc($result)) {
       $l['address_id'] = $row['address_id'];
       $l['address_is_primary'] = $row['address_is_primary'];
       //reset primary flag here to prevent being overwritten by the import file
       //due to unexpected lookup/match with existing record
     }
 
-    mysql_free_result($result);
+    mysqli_free_result($result);
     unset($row);
     unset($sql);
     unset($result);
@@ -1468,19 +1466,19 @@ function _findAddress(&$l)
 } // _findAddress()
 
 
-function _findDistrict(&$l)
+function _findDistrict(&$l, $nyss_conn)
 {
   if (!empty($l['address_id']) && empty($l['districtinfo_id'])) {
     $sql = "
       SELECT id AS districtinfo_id FROM civicrm_value_district_information_7 WHERE entity_id = {$l['address_id']}
     ";
-    $result = mysql_query($sql, $nyss_conn);
+    $result = mysqli_query($nyss_conn, $sql);
 
-    if ($result && $row = mysql_fetch_assoc($result)) {
+    if ($result && $row = mysqli_fetch_assoc($result)) {
       $l['districtinfo_id'] = $row['districtinfo_id'];
     }
 
-    mysql_free_result($result);
+    mysqli_free_result($result);
     unset($sql);
     unset($row);
     unset($result);
@@ -1488,19 +1486,19 @@ function _findDistrict(&$l)
 } // _findDistrict()
 
 
-function _findEmail(&$l)
+function _findEmail(&$l, $nyss_conn)
 {
   if (!empty($l['id']) && !empty($l['email']) && empty($l['email_id'])) {
     $sql = "
       SELECT id AS email_id FROM civicrm_email WHERE email = '{$l['email']}' AND contact_id = {$l['id']}
     ";
-    $result = mysql_query($sql, $nyss_conn);
+    $result = mysqli_query($nyss_conn, $sql);
 
-    if ($result && $row = mysql_fetch_assoc($result)) {
+    if ($result && $row = mysqli_fetch_assoc($result)) {
       $l['email_id'] = $row['email_id'];
     }
 
-    mysql_free_result($result);
+    mysqli_free_result($result);
 
     unset($sql);
     unset($row);
@@ -1509,7 +1507,7 @@ function _findEmail(&$l)
 } // _findEmail()
 
 
-function _processCurrentEmployer(&$l, $nyss_conn)
+function _processCurrentEmployer(&$l, $nyss_conn, $dryrun)
 {
   if (array_key_exists('current_employer', $l) && !empty($l['current_employer'])) {
     $sql = sprintf("
@@ -1519,11 +1517,11 @@ function _processCurrentEmployer(&$l, $nyss_conn)
         AND c.contact_type = 'Organization'
         AND is_deleted = 0
       LIMIT 1",
-      mysql_real_escape_string($l['current_employer'], $nyss_conn)
+      mysqli_real_escape_string($l['current_employer'], $nyss_conn)
     );
-    $result = mysql_query($sql, $nyss_conn);
+    $result = mysqli_query($nyss_conn, $sql);
 
-    if ($result && $row = mysql_fetch_assoc($result)) {
+    if ($result && $row = mysqli_fetch_assoc($result)) {
       $current_employer = $row['orgID'];
     }
     else {
@@ -1537,7 +1535,7 @@ function _processCurrentEmployer(&$l, $nyss_conn)
       CRM_Contact_BAO_Contact_Utils::createCurrentEmployerRelationship($l['id'], $current_employer);
     }
 
-    mysql_free_result($result);
+    mysqli_free_result($result);
 
     unset($sql);
     unset($row);
@@ -1659,7 +1657,7 @@ function _processTags($tagContacts, $type = 'Keywords')
 
             $entityTagStart = time();
 
-            $eTSql  = 'INSERT IGNORE INTO civicrm_entity_tag ( entity_table, entity_id, tag_id ) VALUES (';
+            $eTSql  = 'INSERT IGNORE INTO civicrm_entity_tag (entity_table, entity_id, tag_id) VALUES (';
             $eTSql .= implode('), (', $eTList);
             $eTSql .= ');';
             CRM_Core_DAO::executeQuery($eTSql);
@@ -1690,7 +1688,7 @@ function _processTags($tagContacts, $type = 'Keywords')
 } // _processTags()
 
 
-function _processGroup($form_state, $imported_contacts, $new_contacts)
+function _processGroup($form_state, $imported_contacts, $new_contacts, $dryrun)
 {
   if (!empty($form_state['values']['addtogroup']) &&
       $form_state['values']['addtogroup_handling'] != 'none') {
@@ -1818,14 +1816,14 @@ function _processEmailImport($new_contacts, $nyss_conn)
     civicrm_api('group_contact', 'create', $params);
 
     //set do not mail
-    $result = mysql_query($setDNM, $nyss_conn);
+    $result = mysqli_query($nyss_conn, $setDNM);
   }
 
   $newContactsCount = count($new_contacts);
 
   nyss_out('status', "Adding {$newContactsCount} to the Email Only group", true);
 
-  mysql_free_result($result);
+  mysqli_free_result($result);
 
   unset($params);
   unset($new_contacts_list);
@@ -1834,7 +1832,7 @@ function _processEmailImport($new_contacts, $nyss_conn)
 } // _processEmailImport()
 
 
-function _processAddressDelete($addressDel, $nyss_conn)
+function _processAddressDelete($addressDel, $nyss_conn, $dryrun)
 {
   if (!empty($addressDel) && !$dryrun) {
     nyss_out('debug', "processing addresses to be trashed...", true);
@@ -1843,9 +1841,9 @@ function _processAddressDelete($addressDel, $nyss_conn)
       DELETE FROM civicrm_address
       WHERE id IN ( $addressDelList );
     ";
-    $result = mysql_query($sqlAD, $nyss_conn);
+    $result = mysqli_query($nyss_conn, $sqlAD);
 
-    mysql_free_result($result);
+    mysqli_free_result($result);
 
     unset($result);
     unset($sqlAD);
