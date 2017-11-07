@@ -4082,8 +4082,7 @@ form.CRM_Tag_Form_Tag div#Tag table th {
 /*11175*/
 div#tagtree li[aria-level="1"] > i.jstree-icon,
 div#tagtree li[aria-level="1"] > a.jstree-anchor#tag_291 {
-  /*on new contacts we need to keep visible so tree can be expanded*/
-  /*display: none;*/
+  display: none;
 }
 div#tagtree li[aria-level="2"] {
   margin-left: 0;
