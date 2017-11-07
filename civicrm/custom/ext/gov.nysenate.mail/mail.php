@@ -2,10 +2,10 @@
 
 require_once 'mail.civix.php';
 
-define('FILTER_ALL', 0);
-define('FILTER_IN_SD_ONLY', 1);
-define('FILTER_IN_SD_OR_NO_SD', 2);
-define('BB_MAIL_LOG', TRUE);
+defined('FILTER_ALL') or define('FILTER_ALL', 0);
+defined('FILTER_IN_SD_ONLY') or define('FILTER_IN_SD_ONLY', 1);
+defined('FILTER_IN_SD_OR_NO_SD') or define('FILTER_IN_SD_OR_NO_SD', 2);
+define('BB_MAIL_LOG', FALSE);
 
 /**
  * Implements hook_civicrm_config().

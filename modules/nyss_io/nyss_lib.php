@@ -1,5 +1,23 @@
 <?php
 
+/**
+ * get a mysqli connection from the db string
+ */
+function nyss_getConnection($bbconfig) {
+  //Civi::log()->debug('getConnection', array('bbconfig' => $bbconfig));
+
+  $conn = mysqli_connect($bbconfig['db.host'], $bbconfig['db.user'], $bbconfig['db.pass'],
+    $bbconfig['db.civicrm.prefix'].$bbconfig['shortname']);
+
+  if (mysqli_connect_errno()) {
+    echo "Failed to connect to MySQL: " . mysqli_connect_error();
+    exit();
+  }
+  else {
+    return $conn;
+  }
+}
+
 function nyss_out($type, $v, $toscreen = false)
 {
   global $nyss_ioline, $nyss_iototallines;
