@@ -2754,6 +2754,17 @@ div.outerbox {
   font-size: 14px;
   padding: 4px 16px 5px 0px;
 }
+#civicrm-menu #crm-qsearch input.form-submit {
+  color: transparent;
+  height: 23px;
+  position: absolute;
+  right: 2px;
+  top: 20px;
+  width: 20px;
+  text-indent: -1000px;
+  border: none;
+  padding: 0;
+}
 #civicrm-menu .ui-autocomplete-input{
   background: none;
 }
@@ -4071,8 +4082,7 @@ form.CRM_Tag_Form_Tag div#Tag table th {
 /*11175*/
 div#tagtree li[aria-level="1"] > i.jstree-icon,
 div#tagtree li[aria-level="1"] > a.jstree-anchor#tag_291 {
-  /*on new contacts we need to keep visible so tree can be expanded*/
-  /*display: none;*/
+  display: none;
 }
 div#tagtree li[aria-level="2"] {
   margin-left: 0;
@@ -4131,4 +4141,9 @@ form.CRM_Case_Form_Search table.caseSelector td {
 }
 form.CRM_Case_Form_Search a.action-item {
   display: inline-block;
+}
+
+/*increase width of activity target field*/
+form.CRM_Activity_Form_Activity div.select2-container {
+  width: auto !important;
 }

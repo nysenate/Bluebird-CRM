@@ -32,10 +32,7 @@
             <input id="sort_contact_id" style="display: none" type="text">
             <input name="hidden_location" value="1" type="hidden">
             <input name="qfKey" value="" type="hidden">
-
-            <div style="height:1px; overflow:hidden;">
-              <input value="Go" name="_qf_Advanced_refresh" class="crm-form-submit default" type="submit">
-            </div>
+            <input name="_qf_Advanced_refresh" value="Go" type="submit" class="form-submit default tgif">
           </div>
         </form>
       </div>
