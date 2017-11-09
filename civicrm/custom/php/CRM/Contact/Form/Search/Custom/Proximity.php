@@ -64,7 +64,8 @@ class CRM_Contact_Form_Search_Custom_Proximity extends CRM_Contact_Form_Search_C
       }
 
       // use the address to get the latitude and longitude
-      CRM_Utils_Geocode_Google::format($this->_formValues);
+      //CRM_Utils_Geocode_Google::format($this->_formValues);
+      CRM_Utils_SAGE::geocode($this->_formValues);//NYSS 11478
 
       if (!is_numeric(CRM_Utils_Array::value('geo_code_1', $this->_formValues)) ||
         !is_numeric(CRM_Utils_Array::value('geo_code_2', $this->_formValues)) ||
