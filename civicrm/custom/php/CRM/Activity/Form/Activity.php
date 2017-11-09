@@ -573,8 +573,10 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
     // CRM-15472 - 50 is around the practical limit of how many items a select2 entityRef can handle
     if ($this->_action == 2 && !empty($defaults['target_contact_id'])) {
       $count = count(is_array($defaults['target_contact_id']) ? $defaults['target_contact_id'] : explode(',', $defaults['target_contact_id']));
-      if ($count > 50) {
+      //NYSS 11464
+      if ($count > 250) {
         $this->freeze(array('target_contact_id'));
+        $this->assign('max_target_msg', TRUE);
       }
     }
 
