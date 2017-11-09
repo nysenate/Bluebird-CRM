@@ -170,6 +170,9 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
     );
     $form->addRadio('andOr', ts('AND/OR'), $andOr, NULL, '<br />', TRUE);
 
+    //NYSS set default
+    $form->setDefaults(array('andOr' => 1));
+
     $form->add('select', 'includeTags',
       ts('Include Tag(s)'),
       $tags,
@@ -183,46 +186,6 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
       FALSE,
       $select2style
     );
-
-    //NYSS 7748
-    $actAction = array(
-      '' => '- select -',
-      'act_include' => 'Include Activities',
-      'act_exclude' => 'Exclude Activities',
-    );
-    $form->add( 'select',
-      'act_action',
-      ts( 'Activity Action' ),
-      $actAction,
-      FALSE
-    );
-
-    $activityOptions = CRM_Core_PseudoConstant::activityType(TRUE, TRUE, FALSE, 'label', TRUE);
-    asort($activityOptions);
-    $form->add('select', 'activity_type_id', ts('Activity Type'),
-      array('' => '- select -') + $activityOptions,
-      FALSE, array()
-    );
-
-    $dataUrl = CRM_Utils_System::url("civicrm/ajax/getsubjectlist",
-      "json=1&reset=1",
-      FALSE, NULL, FALSE
-    );
-    $form->assign('dataUrl', $dataUrl);
-
-    $allSubjects = CRM_NYSS_AJAX_Activity::getSubjectList(FALSE);
-    $subj = &$form->addElement('advmultiselect', 'act_subject',
-      ts('Activity Subject'), $allSubjects,
-      array(
-        'size' => 5,
-        'style' => 'width:270px; height: 200px;',
-        'class' => 'advmultiselect',
-      )
-    );
-    $subj->setButtonAttributes('add', array('value' => ts('Add >>')));
-    $subj->setButtonAttributes('remove', array('value' => ts('<< Remove')));
-
-    $form->assign('searchName', 'IncludeExclude');
 
     /**
      * if you are using the standard template, this array tells the template what elements
@@ -323,14 +286,6 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
    * @throws Exception
    */
   public function from() {
-    //$tFromStart = microtime();
-    //CRM_Core_Error::debug_var('start from time', $tFromStart);
-
-    //NYSS check if we've already constructed the result table and use it if so
-    if ( !empty($this->_from) ) {
-      //CRM_Core_Error::debug_var('this->_from', $this->_from);
-      return $this->_from;
-    }
 
     $iGroups = $xGroups = $iTags = $xTags = 0;
 
@@ -539,15 +494,9 @@ WHERE  gcc.group_id = {$ssGroup->id}
                             ON       civicrm_entity_tag.tag_id = civicrm_tag.id";
       }
       else {
-        //NYSS 7238
-        $includeTag = "
-          INSERT INTO It_{$this->_tableName} (contact_id, tag_names)
-          SELECT civicrm_contact.id as contact_id, ''
-          FROM civicrm_contact
-          LEFT JOIN civicrm_entity_tag
-            ON civicrm_contact.id = civicrm_entity_tag.entity_id
-            AND civicrm_entity_tag.entity_table = 'civicrm_contact'
-        ";
+        $includeTag = "INSERT INTO It_{$this->_tableName} (contact_id, tag_names)
+                 SELECT              civicrm_contact.id as contact_id, ''
+                 FROM                civicrm_contact";
       }
 
       //used only when exclude tag is selected
@@ -556,11 +505,7 @@ WHERE  gcc.group_id = {$ssGroup->id}
                                        ON       civicrm_contact.id = Xt_{$this->_tableName}.contact_id";
       }
       if ($iTags) {
-        //NYSS
-        $includeTag .= "
-          WHERE civicrm_entity_tag.entity_table = 'civicrm_contact'
-            AND civicrm_entity_tag.tag_id IN ($iTags)
-        ";
+        $includeTag .= " WHERE   civicrm_entity_tag.tag_id IN($iTags)";
       }
       else {
         $includeTag .= " WHERE ( 1 ) ";
@@ -600,105 +545,30 @@ WHERE  gcc.group_id = {$ssGroup->id}
      * Set from statement depending on array sel
      */
     $whereitems = array();
-
-    //NYSS try creating/modifying single temp table rather than having large joins
-    $sql = "
-      CREATE TEMPORARY TABLE result_{$this->_tableName}
-      (id int PRIMARY KEY AUTO_INCREMENT, contact_id int, group_names varchar(64), tag_names varchar(64))
-      ENGINE=HEAP
-    ";
-    CRM_Core_DAO::executeQuery($sql);
-
-    //inclusions
     foreach (array('Ig', 'It') as $inc) {
+      if ($this->_andOr == 1) {
+        if ($$inc) {
+          $from .= " INNER JOIN {$inc}_{$this->_tableName} temptable$inc ON (contact_a.id = temptable$inc.contact_id)";
+        }
+      }
+      else {
+        if ($$inc) {
+          $from .= " LEFT JOIN {$inc}_{$this->_tableName} temptable$inc ON (contact_a.id = temptable$inc.contact_id)";
+        }
+      }
       if ($$inc) {
-        /*if ($this->_andOr == 1) {
-          $from .= "
-            INNER JOIN {$inc}_{$this->_tableName} temptable$inc
-              ON (contact_a.id = temptable$inc.contact_id)
-          ";
-        }
-        else {
-          $from .= "
-            LEFT JOIN {$inc}_{$this->_tableName} temptable$inc
-              ON (contact_a.id = temptable$inc.contact_id)
-          ";
-        }
-        $whereitems[] = "temptable$inc.contact_id IS NOT NULL";*/
-
-        $gtName = ( $inc == 'Ig' ) ? 'group_names' : 'tag_names';
-        $sql = "
-          INSERT INTO result_{$this->_tableName}
-          (contact_id, {$gtName})
-          SELECT contact_id, {$gtName}
-          FROM {$inc}_{$this->_tableName}
-        ";
-        CRM_Core_DAO::executeQuery($sql);
+        $whereitems[] = "temptable$inc.contact_id IS NOT NULL";
       }
     }
-    //$this->_where = $whereitems ? "(" . implode(' OR ', $whereitems) . ')' : '(1)';
-
-    //remove if andOr == 1
-    if ( $this->_andOr == 1 && $this->_groups && $this->_tags ) {
-      //$remStart = microtime();
-      $sql = "
-        DELETE FROM result_{$this->_tableName}
-        WHERE contact_id NOT IN
-        ( SELECT iG.contact_id
-          FROM Ig_{$this->_tableName} iG
-          JOIN It_{$this->_tableName} iT
-            ON iG.contact_id = iT.contact_id )
-      ";
-      CRM_Core_DAO::executeQuery($sql);
-      //$remEnd = microtime();
-      //$remDiff = $remEnd - $remStart;
-      //CRM_Core_Error::debug_log_message("time to remove AND inclusions: {$remDiff}");
-    }
-
-    //exclusions
-    //$exclStart = microtime();
+    $this->_where = $whereitems ? "(" . implode(' OR ', $whereitems) . ')' : '(1)';
     foreach (array('Xg', 'Xt') as $exc) {
       if ($$exc) {
-        /*$from .= "
-          LEFT JOIN {$exc}_{$this->_tableName} temptable$exc
-            ON (contact_a.id = temptable$exc.contact_id)
-        ";
-        $this->_where .= "
-          AND temptable$exc.contact_id IS NULL
-        ";*/
-
-        $sql = "
-          DELETE FROM result_{$this->_tableName}
-          WHERE contact_id IN
-          ( SELECT contact_id
-            FROM {$exc}_{$this->_tableName} )
-        ";
-        CRM_Core_DAO::executeQuery($sql);
+        $from .= " LEFT JOIN {$exc}_{$this->_tableName} temptable$exc ON (contact_a.id = temptable$exc.contact_id)";
+        $this->_where .= " AND temptable$exc.contact_id IS NULL";
       }
     }
-    //$exclEnd = microtime();
-    //$exclDiff = $exclEnd - $exclStart;
-    //CRM_Core_Error::debug_log_message("time to remove exclusions: {$exclDiff}");
 
-    //NYSS 7748
-    //CRM_Core_Error::debug_var('this->_formValues', $this->_formValues);
-    if ( !empty($this->_formValues['activity_type_id']) || !empty($this->_formValues['act_subject']) ) {
-      self::_processActivities("result_{$this->_tableName}", $this->_formValues['act_action'], $this->_formValues['activity_type_id'], $this->_formValues['act_subject']);
-    }
-
-    //now construct from
-    $from .= "
-      JOIN result_{$this->_tableName} temptableResult
-        ON contact_a.id = temptableResult.contact_id
-    ";
-
-    //append email/address joins
-    $from .= "
-      LEFT JOIN civicrm_email
-        ON contact_a.id = civicrm_email.contact_id
-        AND civicrm_email.is_primary = 1 OR civicrm_email.is_bulkmail = 1
-      {$this->_aclFrom}
-    ";
+    $from .= " LEFT JOIN civicrm_email ON ( contact_a.id = civicrm_email.contact_id AND ( civicrm_email.is_primary = 1 OR civicrm_email.is_bulkmail = 1 ) ) {$this->_aclFrom}";
 
     //NYSS
     $from .= "
@@ -715,10 +585,6 @@ WHERE  gcc.group_id = {$ssGroup->id}
     // CRM-11627
     $this->_where .= " AND (contact_a.is_deleted != 1) ";
 
-    //NYSS cache this so we can skip reconstruction
-    $this->_from = $from;
-
-    //CRM_Core_Error::debug_var('from built:', $from);
     return $from;
   }
 
@@ -728,9 +594,6 @@ WHERE  gcc.group_id = {$ssGroup->id}
    * @return string
    */
   public function where($includeContactIDs = FALSE) {
-    //CRM_Core_Error::debug_var('$this->_formValues', $this->_formValues);
-    //CRM_Core_Error::debug_var('$this->_where', $this->_where);
-
     if ($includeContactIDs) {
       $contactIDs = array();
 
@@ -838,77 +701,4 @@ WHERE  gcc.group_id = {$ssGroup->id}
         false,
         $row['contact_id'] );
   }
-
-  //NYSS 7748
-  function _processActivities($table, $action = NULL, $actType = NULL, $actSubject = '') {
-    //CRM_Core_Error::debug_var('_processActivities $table', $table);
-    //CRM_Core_Error::debug_var('_processActivities $action', $action);
-    //CRM_Core_Error::debug_var('_processActivities $actType', $actType);
-    //CRM_Core_Error::debug_var('_processActivities $actSubject', $actSubject);
-
-    //return if no action is selected
-    if ( empty($action) ) {
-      return;
-    }
-
-    $actSubjects = array();
-    foreach ( $actSubject as $actIDs ) {
-      foreach ( explode(',', $actIDs) as $actID ) {
-        $actSubjects[] = $actID;
-      }
-    }
-    $actSubjectList = implode(',', $actSubject);
-    //CRM_Core_Error::debug_var('_processActivities $actSubjects', $actSubjects);
-    //CRM_Core_Error::debug_var('_processActivities $actSubjectList', $actSubjectList);
-
-    //construct where clauses
-    $whereAT = ($actType) ? "a.activity_type_id = {$actType}" : "(1)";
-    $whereAS = ($actSubjectList) ? "a.id IN ({$actSubjectList})" : "(1)";
-
-    $existingIDs = CRM_Core_DAO::singleValueQuery("
-      SELECT GROUP_CONCAT(contact_id) FROM {$table}
-    ");
-    $existingIDs = ($existingIDs) ? $existingIDs : "(0)";
-
-    switch ($action) {
-      case 'act_include':
-        $sql = "
-          INSERT INTO {$table} (contact_id)
-          SELECT ac.contact_id
-          FROM civicrm_activity_contact ac
-          JOIN civicrm_activity a
-            ON ac.activity_id = a.id
-            AND ac.record_type_id = 3
-          WHERE $whereAT
-            AND $whereAS
-            AND ac.contact_id NOT IN ({$existingIDs})
-          GROUP BY ac.contact_id
-        ";
-        CRM_Core_DAO::executeQuery($sql);
-        break;
-
-      case 'act_exclude':
-        $sql = "
-          DELETE {$table}
-          FROM {$table}
-          WHERE contact_id IN (
-            SELECT ac.contact_id
-            FROM civicrm_activity_contact ac
-            JOIN civicrm_activity a
-              ON ac.activity_id = a.id
-              AND ac.record_type_id = 3
-            WHERE $whereAT
-              AND $whereAS
-            GROUP BY ac.contact_id
-          )
-        ";
-        //CRM_Core_Error::debug_var('_processActivities exclude $sql', $sql);
-        CRM_Core_DAO::executeQuery($sql);
-        break;
-
-      default:
-        return;
-    }
-  }//_processActivities
 }
-
