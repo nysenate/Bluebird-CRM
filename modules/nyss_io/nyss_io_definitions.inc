@@ -69,7 +69,7 @@ $nyss_iofields['civicrm_address'] = array(
     'fld' => 'id',
     'PK'=> true,
   ),
-    'contact_id' => array(
+  'contact_id' => array(
     'fld' => 'contact_id',
   ),
   'street_number' => array(
