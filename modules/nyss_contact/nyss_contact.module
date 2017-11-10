@@ -187,6 +187,16 @@ function nyss_contact_civicrm_buildForm( $formName, &$form ) {
     }
   }
 
+  //11464
+  if ($formName == 'CRM_Activity_Form_Activity') {
+    $max_target_msg = $form->get_template_vars('max_target_msg');
+    if ($max_target_msg) {
+      CRM_Core_Resources::singleton()->addScript("
+        $('tr.crm-activity-form-block-target_contact_id td.label').append('<br /><span style=\'font-size:90%; font-style: italic;\'><strong>Note: </strong>You will not be able to edit the target (with) contact list as there are more than 250 contacts already attached to this activity.</span>');
+      ");
+    }
+  }
+
   if ($formName == 'CRM_Tag_Form_Tag') {
     //11450 auto-expand issue code tree
     CRM_Core_Region::instance('form-bottom')->add(array(

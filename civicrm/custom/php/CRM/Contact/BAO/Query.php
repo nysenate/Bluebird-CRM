@@ -3711,7 +3711,7 @@ WHERE  $smartGroupClause
    */
   public function postalCode(&$values) {
     //NYSS
-    Civi::log()->debug('postalCode', array('values' => $values));
+    //Civi::log()->debug('postalCode', array('values' => $values));
 
     // skip if the fields dont have anything to do with postal_code
     if (empty($this->_fields['postal_code'])) {
