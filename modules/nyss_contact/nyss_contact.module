@@ -197,6 +197,28 @@ function nyss_contact_civicrm_buildForm( $formName, &$form ) {
     }
   }
 
+  //11482 - limit assignee field to office staff
+  if (in_array($formName, array('CRM_Activity_Form_Activity', 'CRM_Case_Form_Activity'))) {
+    if ($form->elementExists('assignee_contact_id')) {
+      $staffGroupID = civicrm_api3('group', 'getvalue', array(
+        'name' => 'Office_Staff',
+        'return' => 'id',
+      ));
+      if ($staffGroupID) {
+        $ele =& $form->getElement('assignee_contact_id');
+        $apiParams = json_decode($ele->_attributes['data-api-params']);
+        $apiParams->params->group = $staffGroupID;
+        $ele->_attributes['data-api-params'] = json_encode($apiParams);
+
+        /*Civi::log()->debug('ele', [
+          'ele' => $ele,
+          'staffGroupID' => $staffGroupID,
+          'apiParams' => $apiParams,
+        ]);*/
+      }
+    }
+  }
+
   if ($formName == 'CRM_Tag_Form_Tag') {
     //11450 auto-expand issue code tree
     CRM_Core_Region::instance('form-bottom')->add(array(
@@ -629,15 +651,6 @@ function nyss_contact_civicrm_alterTemplateFile($formName, &$form, $context, &$t
     $tplName = 'CRM/NYSS/ContactWebsiteProfileTab.tpl';
   }
 }//alterTemplateFile
-
-function nyss_contact_civicrm_alterContent(&$content, $context, $tplName, &$object) {
-  /*Civi::log()->debug('nyss_contact_civicrm_alterContent', array(
-    '$content' => $content,
-    '$context' => $context,
-    '$tplName' => $tplName,
-    '$object' => $object,
-  ));*/
-}
 
 function _getContactCustom(&$obj, $return = FALSE) {
   $contactId = CRM_Utils_Request::retrieve('cid', 'Positive');
