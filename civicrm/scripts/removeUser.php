@@ -13,10 +13,9 @@
 error_reporting(E_ERROR | E_PARSE | E_WARNING);
 set_time_limit(0);
 
-define('DEFAULT_LOG_LEVEL', 'TRACE');
 
-class CRM_removeUser {
-
+class CRM_removeUser
+{
   function run() {
 
     global $_SERVER;

@@ -185,15 +185,15 @@ function get_redist_data($db, $filter_contacts = true, $senate_district = -1, $u
 
 	// Get all value added out of district contacts
 	$res = get_contacts($db, $filter_contacts, $senate_district, $use_cache);
-	while (($row = mysql_fetch_assoc($res)) != null ) {
+	while (($row = mysqli_fetch_assoc($res)) != null ) {
 		$contact_id = $row['contact_id'];
 		$district_contact_data[$contact_id] = $row;
 	}
-	mysql_free_result($res);
+	mysqli_free_result($res);
 
 	// Append the redistricting note to the contact
 	$res = get_redist_notes($db, $senate_district, $use_cache);
-	while (($row = mysql_fetch_assoc($res)) != null ) {
+	while (($row = mysqli_fetch_assoc($res)) != null ) {
 		$contact_id = $row['contact_id'];
 		if (isset($district_contact_data[$contact_id])){
 			$district_contact_data[$contact_id]['note'] = $row['note'];
@@ -201,11 +201,11 @@ function get_redist_data($db, $filter_contacts = true, $senate_district = -1, $u
 			$district_contact_data[$contact_id]['prior_dist'] = get_former_district($row['note'], "-");
 		}
 	}
-	mysql_free_result($res);
+	mysqli_free_result($res);
 
 	// Append the email counts to the contact
 	$res = get_email_counts($db);
-	while (($row = mysql_fetch_assoc($res)) != null ) {
+	while (($row = mysqli_fetch_assoc($res)) != null ) {
 		$contact_id = $row['contact_id'];
 		if (isset($district_contact_data[$contact_id])){
 			$district_contact_data[$contact_id]['email_count'] = $row['email_count'];
@@ -213,7 +213,7 @@ function get_redist_data($db, $filter_contacts = true, $senate_district = -1, $u
 
 		}
 	}
-	mysql_free_result($res);
+	mysqli_free_result($res);
 
 	bbscript_log(LL::DEBUG, "Stored " . count($district_contact_data) . " contacts in memory");
 	return $district_contact_data;
@@ -518,7 +518,7 @@ function get_contacts($db, $use_contact_filter = true, $filter_district = -1, $u
     }
 
 	$res = bb_mysql_query($contact_query, $db, true);
-	$num_rows = mysql_num_rows($res);
+	$num_rows = mysqli_num_rows($res);
 	bbscript_log(LL::DEBUG, "Retrieved $num_rows contacts");
 	return $res;
 }// get_contacts
@@ -553,7 +553,7 @@ function get_redist_notes($db, $filter_district = -1, $use_cache = true){
     }
 
 	$res = bb_mysql_query($note_query, $db, true);
-	$num_rows = mysql_num_rows($res);
+	$num_rows = mysqli_num_rows($res);
 
 	bbscript_log(LL::DEBUG, "Retrieved {$num_rows} notes");
 	return $res;
@@ -577,7 +577,7 @@ function get_email_counts($db){
 	";
 
 	$res = bb_mysql_query($email_query, $db, true);
-	$num_rows = mysql_num_rows($res);
+	$num_rows = mysqli_num_rows($res);
 	bbscript_log(LL::DEBUG, "Retrieved {$num_rows} email records");
 	return $res;
 }// get_email_counts
@@ -684,7 +684,7 @@ function get_age($birth_date, $default = '-'){
 
 function table_exists($db, $table_name){
 	$res = bb_mysql_query("SHOW TABLES LIKE '" . $table_name . "'", $db, true);
-	return (mysql_num_rows($res) > 0);
+	return (mysqli_num_rows($res) > 0);
 }
 
 function get_senator_name($district){

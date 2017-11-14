@@ -2409,7 +2409,7 @@ abstract class CRM_Utils_Hook {
    *
    * @return mixed
    */
-  public static function modifyEntityRefParams(&$params) {
-    return self::singleton()->invoke(array('params'), $params, self::$_nullObject, self::$_nullObject, self::$_nullObject, self::$_nullObject, self::$_nullObject, 'civicrm_modifyEntityRefParams');
+  public static function alterEntityRefParams(&$params, $formName) {
+    return self::singleton()->invoke(array('params', 'formName'), $params, $formName, self::$_nullObject, self::$_nullObject, self::$_nullObject, self::$_nullObject, 'civicrm_alterEntityRefParams');
   }
 }

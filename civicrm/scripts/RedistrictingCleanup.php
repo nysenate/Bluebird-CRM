@@ -58,7 +58,7 @@ function do_export($db) {
         JOIN civicrm_state_province as state ON state.id=address.state_province_id",$db);
 
     echo "id\tDelivery Address\tCity\tState\tZIP\tPlus 4\n";
-    while( ($row=mysql_fetch_assoc($result)) != null ) {
+    while (($row = mysqli_fetch_assoc($result)) != null) {
         echo implode("\t",array_values($row))."\n";
     }
 }
@@ -127,9 +127,9 @@ function do_import($db, $filename, $BB_DRY_RUN) {
 
         // Format the old and new values for comparison
         $result = bb_mysql_query("SELECT street_address, street_number, street_number_suffix, street_name, street_unit, postal_code from civicrm_address WHERE id=$address_id",$db);
-        $old_address = mysql_fetch_assoc($result);
-        $old_address['street_address'] = mysql_escape_string($old_address['street_address']);
-        $old_address['street_name'] = mysql_escape_string($old_address['street_name']);
+        $old_address = mysqli_fetch_assoc($result);
+        $old_address['street_address'] = mysqli_escape_string($old_address['street_address']);
+        $old_address['street_name'] = mysqli_escape_string($old_address['street_name']);
         $new_address = array(
                 'street_address' => clean($street_address),
                 'street_number' => clean($street_number),
@@ -190,7 +190,7 @@ function clean($value) {
     if (is_string($value)) {
         $value = CRM_Utils_String::stripSpaces($value);
     }
-    return mysql_real_escape_string($value);
+    return mysqli_real_escape_string($value);
 }
 
 

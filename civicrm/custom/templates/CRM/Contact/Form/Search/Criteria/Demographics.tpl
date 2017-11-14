@@ -23,24 +23,33 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-{*NYSS 7906 completely different layout; add birth date month*}
+{*NYSS 7906 add birth date month*}
 <div id="demographics" class="form-item">
   <table class="form-layout">
     <tr>
       <td>
         <label>{ts}Birth Dates{/ts}</label>
       </td>
-      <td></td>
+    </tr>
+    <tr>
+      {include file="CRM/Core/DateRange.tpl" fieldName="birth_date" from='_low' to='_high'}
+    </tr>
+    <tr>
       <td>
         <label>{$form.birth_date_month.label}</label>
       </td>
+    </tr>
+    <tr>
+      <td>
+        <label>{$form.birth_date_month.html}</label>
+      </td>
+    </tr>
+    <tr>
       <td>
         <label>{ts}Age{/ts}</label>
       </td>
     </tr>
     <tr>
-      {include file="CRM/Core/DateRange.tpl" fieldName="birth_date" from='_low' to='_high'}
-      <td>{$form.birth_date_month.html}</td>
       {include file="CRM/Core/AgeRange.tpl" fieldName="age" from='_low' to='_high' date='_asof_date'}
     </tr>
     <tr>
