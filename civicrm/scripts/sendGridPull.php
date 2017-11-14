@@ -94,7 +94,7 @@ function bounceRetrieve( $smtpuser, $smtppass, $smtpsubuser, $delete = true ) {
         //echo "reason: $reason\n";
         
         //find the email and job details
-        $queue = findEmailJob( mysql_real_escape_string($email) );
+        $queue = findEmailJob(mysqli_real_escape_string($email));
         
         //TODO we need to check to see if the email has already been processed
         //OR we need to delete the bounce from SendGrid after processing

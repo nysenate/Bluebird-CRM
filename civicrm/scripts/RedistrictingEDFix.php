@@ -136,10 +136,10 @@ function start_process($db, $startfrom = 0, $batch_size, $max_addrs = 0, $url)
     }
 
     // Retrieve a batch of in-state addresses with distinfo
-    $mysql_result = retrieve_addresses($db, $start_id, $batch_size, true);
+    $res = retrieve_addresses($db, $start_id, $batch_size, true);
     $formatted_batch = array();
     $orig_batch = array();
-    $batch_rec_cnt = mysql_num_rows($mysql_result);
+    $batch_rec_cnt = mysqli_num_rows($res);
 
     if ($batch_rec_cnt == 0) {
       bbscript_log(LL::TRACE, "No more rows to retrieve");
@@ -148,7 +148,7 @@ function start_process($db, $startfrom = 0, $batch_size, $max_addrs = 0, $url)
 
     bbscript_log(LL::DEBUG, "Query complete; about to fetch batch of $batch_rec_cnt records");
 
-    while ($row = mysql_fetch_assoc($mysql_result)) {
+    while ($row = mysqli_fetch_assoc($res)) {
       $addr_id = $row['id'];
       $note_subject = $row['subject'];
       $total_rec_cnt++;
@@ -303,7 +303,7 @@ function fix_election_districts($db, &$orig_batch, &$batch_results)
       }      
   }
 
-  bb_mysql_query("COMMIT", $db, true);
+  bb_mysql_query('COMMIT', $db, true);
   bbscript_log(LL::INFO, sprintf("NOTES FIXED %d | DIST UPDATED %d | MISMATCHES %d", $cnts['FIXED_NOTES'], $cnts['FIXED_DIST'], $cnts['MISMATCH'] ));
 
 } // process_batch_results()
