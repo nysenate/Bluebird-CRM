@@ -162,7 +162,7 @@ function purge_notes($db)
           WHERE entity_table='civicrm_contact'
           AND subject LIKE '".REDIST_NOTE."%'";
     bb_mysql_query($q, $db, true);
-    $row_cnt = mysql_affected_rows($db);
+    $row_cnt = mysqli_affected_rows($db);
     bbscript_log(LL::INFO, "Removed all $row_cnt redistricting notes from the database.");
   }
   else {
@@ -187,15 +187,15 @@ function address_map($db)
   );
 
   if ($BB_UPDATE_FLAGS & UPDATE_DISTRICTS) {
-    bb_mysql_query("BEGIN", $db, true);
+    bb_mysql_query('BEGIN', $db, true);
   }
 
   $q = "SELECT id, ny_senate_district_47
         FROM civicrm_value_district_information_7";
   $result = bb_mysql_query($q, $db, true);
-  $num_rows = mysql_num_rows($result);
+  $num_rows = mysqli_num_rows($result);
   $actions = array();
-  while (($row = mysql_fetch_assoc($result)) != null) {
+  while (($row = mysqli_fetch_assoc($result)) != null) {
     $district = $row['ny_senate_district_47'];
     if (isset($district_cycle[$district])) {
       if ($BB_UPDATE_FLAGS & UPDATE_DISTRICTS) {
@@ -218,7 +218,7 @@ function address_map($db)
   }
 
   if ($BB_UPDATE_FLAGS & UPDATE_DISTRICTS) {
-    bb_mysql_query("COMMIT", $db, true);
+    bb_mysql_query('COMMIT', $db, true);
     bbscript_log(LL::INFO, "Completed district mapping with $address_map_changes changes");
   }
   else {
@@ -246,7 +246,7 @@ function handle_out_of_state($db)
           WHERE entity_table='civicrm_contact'
           AND subject like '".REDIST_NOTE." ".OUTOFSTATE_NOTE."%'";
     bb_mysql_query($q, $db, true);
-    $row_cnt = mysql_affected_rows($db);
+    $row_cnt = mysqli_affected_rows($db);
     bbscript_log(LL::TRACE, "Removed $row_cnt ".OUTOFSTATE_NOTE." notes");
   }
   else {
@@ -255,9 +255,9 @@ function handle_out_of_state($db)
 
   // Retrieve all out-of-state addresses with distinfo
   $result = retrieve_addresses($db, 0, 0, false);
-  $total_outofstate = mysql_num_rows($result);
+  $total_outofstate = mysqli_num_rows($result);
 
-  while ($row = mysql_fetch_assoc($result)) {
+  while ($row = mysqli_fetch_assoc($result)) {
     if ($BB_UPDATE_FLAGS & UPDATE_DISTRICTS) {
       $note_updates = nullify_district_info($db, $row, false);
       if ($BB_UPDATE_FLAGS & UPDATE_NOTES) {
@@ -313,10 +313,10 @@ function handle_in_state($db, $startfrom = 0, $batch_size, $max_addrs = 0,
     }
 
     // Retrieve a batch of in-state addresses with distinfo
-    $mysql_result = retrieve_addresses($db, $start_id, $batch_size, true);
+    $res = retrieve_addresses($db, $start_id, $batch_size, true);
     $formatted_batch = array();
     $orig_batch = array();
-    $batch_rec_cnt = mysql_num_rows($mysql_result);
+    $batch_rec_cnt = mysqli_num_rows($res);
 
     if ($batch_rec_cnt == 0) {
       bbscript_log(LL::TRACE, "No more rows to retrieve");
@@ -325,7 +325,7 @@ function handle_in_state($db, $startfrom = 0, $batch_size, $max_addrs = 0,
 
     bbscript_log(LL::DEBUG, "Query complete; about to fetch batch of $batch_rec_cnt records");
 
-    while ($row = mysql_fetch_assoc($mysql_result)) {
+    while ($row = mysqli_fetch_assoc($res)) {
       $addr_id = $row['id'];
       $total_rec_cnt++;
 
@@ -601,7 +601,7 @@ function process_batch_results($db, &$orig_batch, &$batch_results, &$cnts)
     }
   }
 
-  bb_mysql_query("COMMIT", $db, true);
+  bb_mysql_query('COMMIT', $db, true);
   $batch_cntrs['MYSQL'] = round(get_elapsed_time($batch_start_time), 4);
   bbscript_log(LL::TRACE, "Updated database in {$batch_cntrs['MYSQL']} secs");
 
@@ -629,7 +629,7 @@ function delete_batch_notes($db, $lo_id, $hi_id)
         AND preg_capture('/[[]id=([0-9]+)[]]/', n.subject, 1)
             BETWEEN $lo_id AND $hi_id";
   bb_mysql_query($q, $db, true);
-  $row_cnt = mysql_affected_rows($db);
+  $row_cnt = mysqli_affected_rows($db);
   bbscript_log(LL::INFO, "Removed $row_cnt notes for address IDs from $lo_id to $hi_id");
   bbscript_log(LL::TRACE, "<== delete_batch_notes()");
 } // delete_batch_notes()
@@ -800,8 +800,8 @@ function insert_redist_note($db, $note_type, $match_type, &$row,
   
   $subject = REDIST_NOTE." $note_type $action [id=$addr_id]$subj_ext";
 
-  $note = mysql_real_escape_string($note, $db);
-  $subject = mysql_real_escape_string($subject, $db);
+  $note = mysqli_real_escape_string($note, $db);
+  $subject = mysqli_real_escape_string($subject, $db);
   $q = "INSERT INTO civicrm_note (entity_table, entity_id, note, contact_id,
                                   modified_date, subject, privacy)
         VALUES ('civicrm_contact', $contact_id, '$note', 1,

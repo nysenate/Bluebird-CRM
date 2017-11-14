@@ -130,12 +130,12 @@ function add_scripts_to_include_path($session = true)
 
 
 
-function process_cli_args($shopts, $longopts)
+function process_cli_args($shopts, $longopts, $keepnulls = true)
 {
-  $shoptlets = str_replace(":", "", $shopts);
+  $shoptlets = str_replace(':', '', $shopts);
 
   if (strlen($shoptlets) != count($longopts)) {
-    error_log("Number of short options and long options must match.");
+    error_log('Number of short options and long options must match.');
     return null;
   }
 
@@ -157,9 +157,9 @@ function process_cli_args($shopts, $longopts)
     $longopt = $longopts[$i];
     $shortopt = $shoptlets[$i];
     $has_arg = false;
-    if (substr($longopt, -1) == "=") {
+    if (substr($longopt, -1) == '=') {
       $has_arg = true;
-      $longopt = rtrim($longopt, "=");
+      $longopt = rtrim($longopt, '=');
     }
     $optlist[$longopt] = null;
     foreach ($opts as $v) {
@@ -167,6 +167,9 @@ function process_cli_args($shopts, $longopts)
         $optlist[$longopt] = ($has_arg) ? $v[1] : true;
         break;
       }
+    }
+    if ($optlist[$longopt] === null && !$keepnulls) {
+      unset($optlist[$longopt]);
     }
   }
 
@@ -176,20 +179,22 @@ function process_cli_args($shopts, $longopts)
 
 
 
-function process_url_args($longopts,$keepnulls=true)
+function process_url_args($longopts, $keepnulls = true)
 {
   $optlist = array();
   foreach ($longopts as $longopt) {
     $has_arg = false;
-    if (substr($longopt, -1) == "=") {
+    if (substr($longopt, -1) == '=') {
       $has_arg = true;
-      $longopt = rtrim($longopt, "=");
+      $longopt = rtrim($longopt, '=');
     }
     $optlist[$longopt] = null;
     if (isset($_REQUEST[$longopt])) {
       $optlist[$longopt] = ($has_arg) ? $_REQUEST[$longopt] : true;
     }
-    if ($optlist[$longopt] === NULL && !$keepnulls) { unset($optlist[$longopt]); }
+    if ($optlist[$longopt] === null && !$keepnulls) {
+      unset($optlist[$longopt]);
+    }
   }
   return $optlist;
 } // process_url_args()
@@ -198,9 +203,9 @@ function process_url_args($longopts,$keepnulls=true)
 
 function civicrm_script_usage()
 {
-  $usage = "[--user|-U username]  [--pass|-P password]";
+  $usage = '[--user|-U username]  [--pass|-P password]';
   if (is_cli_script()) {
-    return "--site|-S site  [--key|-K key]  ".$usage;
+    return '--site|-S site  [--key|-K key]  '.$usage;
   }
   else {
     return $usage;
@@ -295,16 +300,16 @@ function bbscript_log($lvl, $msg, $var = null)
 
 function bb_mysql_query($query, $db, $exit_on_fail = false)
 {
-  $result = mysql_query($query, $db);
+  $result = mysqli_query($db, $query);
   if ($result === false) {
     if ($exit_on_fail) {
-      bbscript_log(LL::FATAL, "MySQL Fatal Error: ".mysql_error($db));
+      bbscript_log(LL::FATAL, "MySQL Fatal Error: ".mysqli_error($db));
       bbscript_log(LL::FATAL, "Caused by:\n$query");
       bbscript_log(LL::FATAL, "Exiting the script immediately");
       exit(1);
     }
     else {
-      bbscript_log(LL::ERROR, "MySQL Error: ".mysql_error($db));
+      bbscript_log(LL::ERROR, "MySQL Error: ".mysqli_error($db));
       bbscript_log(LL::ERROR, "Caused by:\n$query");
     }
   }
