@@ -174,7 +174,14 @@ function nyss_civihooks_civicrm_config(&$config)
   }
 } // nyss_civihooks_civicrm_config()
 
-
+/**
+ * @param $query
+ * @param $name
+ * @param $context
+ * @param $id
+ *
+ * @deprecated and should be removed after review
+ */
 function nyss_civihooks_civicrm_contactListQuery(&$query, $name, $context, $id)
 {
   //office staff group ID to use for activity assignees and case roles

@@ -34,10 +34,10 @@
  *
  */
 
-define( 'PPDEBUG', 0 ); //set debug mode status
-define( 'EXITLOC', 0 ); //define exit location in script
-define( 'TRACKTIME', 0 ); //track time at points in the script
-define( 'BATCH', 5000); //when processing in batches, amount we do at a time
+define('PPDEBUG', 0); //set debug mode status
+define('EXITLOC', 0); //define exit location in script
+define('TRACKTIME', 0); //track time at points in the script
+define('BATCH', 5000); //when processing in batches, amount we do at a time
 
 /**
  * This class provides the functionality to export large data sets for print production.
@@ -55,19 +55,21 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
    * @access public
    * @return void
    */
-  function buildQuickForm( ) {
-    CRM_Utils_System::setTitle( ts('Print Production Export') );
+  function buildQuickForm() {
+    idebug($this, 'exportPrintProd buildForm $this', 3);
+
+    CRM_Utils_System::setTitle(ts('Print Production Export'));
 
     require_once 'CRM/Core/Permission.php';
-    if ( CRM_Core_Permission::check( 'export print production files' ) ) {
-      $this->addElement('text', 'avanti_job_id', ts('Avanti Job ID') );
+    if (CRM_Core_Permission::check('export print production files')) {
+      $this->addElement('text', 'avanti_job_id', ts('Avanti Job ID'));
     }
 
     //4677
-    $this->addElement('checkbox', 'merge_households', ts('Merge Household Records'), null );
+    $this->addElement('checkbox', 'merge_households', ts('Merge Household Records'), null);
 
     //5174
-    $this->addElement('checkbox', 'primaryAddress', ts('Export Primary Address'), null );
+    $this->addElement('checkbox', 'primaryAddress', ts('Export Primary Address'), null);
 
     $select2style = array(
       'multiple' => TRUE,
@@ -184,7 +186,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     itime('start');
 
     //get form values
-    $params = $this->controller->exportValues( $this->_name );
+    $params = $this->controller->exportValues($this->_name);
     idebug($params, 'exportPrintProd postProcess params', 2);
 
     $avanti_job_id = ( $params['avanti_job_id'] ) ? 'avanti-'.$params['avanti_job_id'].'_' : '';

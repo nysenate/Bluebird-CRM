@@ -356,15 +356,15 @@ function tags_civicrm_pageRun(&$page) {
   }
 }
 
-function tags_civicrm_modifyEntityRefParams(&$params) {
-  //Civi::log()->debug('tags_civicrm_modifyEntityRefParams', array('params' => $params));
+function tags_civicrm_alterEntityRefParams(&$params) {
+  //Civi::log()->debug('tags_civicrm_alterEntityRefParams', array('params' => $params));
 
   //use custom api for legislative positions
   if ($params['entity'] == 'tag' &&
     !empty($params['api']['params']['parent_id']) &&
     $params['api']['params']['parent_id'] == 292
   ) {
-    //Civi::log()->debug('tags_civicrm_modifyEntityRefParams', array('params' => $params));
+    //Civi::log()->debug('tags_civicrm_alterEntityRefParams', array('params' => $params));
     $params['entity'] = 'nyss_tags';
     $params['create'] = false;
     $params['search_field'] = 'name';
