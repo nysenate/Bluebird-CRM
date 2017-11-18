@@ -28,7 +28,7 @@
   <item>
     <path>civicrm/nyss/inbox/assigncontact</path>
     <page_callback>CRM_NYSS_Inbox_Form_AssignContact</page_callback>
-    <title>Assign Contact</title>
+    <title>Assign Matched Contacts</title>
     <access_arguments>access inbox polling</access_arguments>
   </item>
   <item>

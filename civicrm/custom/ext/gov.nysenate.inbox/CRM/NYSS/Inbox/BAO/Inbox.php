@@ -76,32 +76,55 @@ class CRM_NYSS_Inbox_BAO_Inbox {
    * @param $id
    * @return array
    *
-   * get details for a single inbox polling row
+   * get details for a single inbox polling row/contact
+   * note, if a row is matched with multiple contacts, you must pass the
+   * matched contact's to ensure a clearly defined set of details is returned
    */
-  static function getDetails($id) {
+  static function getDetails($rowId, $matched_id = '') {
     $details = array();
+    $sqlParams = array(1 => array($rowId, 'Positive'));
+
+    if ($matched_id) {
+      $matched_id_sql = "AND imm.matched_id = %2";
+      $sqlParams[2] = array($matched_id, 'Positive');
+    }
 
     $sql = "
       SELECT im.id, im.message_id, im.sender_name, im.sender_email, im.subject, im.body, im.forwarder,
-        im.status, im.matcher, im.matched_to, im.activity_id, im.updated_date, im.email_date, 
+        im.status, im.matcher, imm.matched_id, imm.activity_id, im.updated_date, im.email_date, 
         IFNULL(count(ia.file_name), '0') as attachments,
         count(e.id) AS email_count
       FROM nyss_inbox_messages im
+      LEFT JOIN nyss_inbox_messages_matched imm 
+        ON im.message_id = imm.message_id
       LEFT JOIN civicrm_email e 
         ON im.sender_email = e.email
       LEFT JOIN nyss_inbox_attachments ia 
         ON im.id = ia.email_id
       WHERE im.id = %1
-      GROUP BY im.id
+        {$matched_id_sql}
+      GROUP BY im.id, imm.id
     ";
-    $dao = CRM_Core_DAO::executeQuery($sql, array(
-      1 => array($id, 'Integer'),
-    ));
+    $dao = CRM_Core_DAO::executeQuery($sql, $sqlParams);
+
+    //if we get more than one row, we should have been passed a contact ID...
+    if ($dao->N > 1) {
+      Civi::log()->debug('', array(
+        'rowId' => $rowId,
+        'matched_id' => $matched_id,
+        'dao' => $dao,
+      ));
+
+      return array(
+        'is_error' => TRUE,
+        'msg' => 'Unable to return a details for this message.'
+      );
+    }
 
     while ($dao->fetch()) {
       $attachment = (!empty($dao->attachments)) ?
         "<div class='icon attachment-icon attachment' title='{$dao->attachments} Attachment(s)'></div>" : '';
-      $matched = self::getMatched($dao->matched_to);
+      $matched = self::getMatched($dao->matched_id);
       $body = CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->body);
       $parsed = self::parseMessage($body);
       $details = array(
@@ -116,7 +139,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         'forwarded_by' => $dao->forwarder,
         'status' => $dao->status,
         'matcher' => $dao->matcher,
-        'matched_to' => $dao->matched_to,
+        'matched_id' => $dao->matched_id,
         'matched_to_display' => $matched,
         'activity_id' => $dao->activity_id,
         'updated_date' => date('m/d/Y', strtotime($dao->updated_date)),
@@ -338,26 +361,24 @@ class CRM_NYSS_Inbox_BAO_Inbox {
   }
 
   /**
-   * @param $messageId
-   * @param $contactId
+   * @param $rowId
+   * @param $contactIds array()
    * @return array
+   *
+   * Important: This method should only be used when FIRST matching a message with
+   * contacts. Reassignments do not support multiple contacts and are already
+   * linked with an activity ID.
    */
-  static function assignMessage($messageId, $contactId) {
-    if (empty($messageId) || empty($contactId)) {
+  static function assignMessage($rowId, $contactIds) {
+    if (empty($rowId) || empty($contactIds)) {
       return array(
         'is_error' => TRUE,
         'message' => 'Unable to assign the message; missing required values.'
       );
     }
 
-    $message = self::getDetails($messageId);
-
-    if ($message['status'] != self::STATUS_UNMATCHED) {
-      return array(
-        'is_error' => TRUE,
-        'message' => 'Unable to assign the message; it has already been matched.'
-      );
-    }
+    //array to hold details of each processed match
+    $matches = array();
 
     $bbconfig = get_bluebird_instance_config();
     $status = self::DEFAULT_ACTIVITY_STATUS;
@@ -365,95 +386,122 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       $status = $bbconfig['imap.activity.status.default'];
     }
 
+    $message = self::getDetails($rowId);
     $forwarder = self::getForwarder($message['forwarded_by']);
 
-    $params = array(
-      'activity_label' => 'Inbound Email',
-      'source_contact_id' => $forwarder,
-      'target_contact_id' => $contactId,
-      'subject' => substr($message['subject'], 0, 250),
-      'is_auto' => 0,
-      'status_id' => $status,
-      'activity_date_time' => $message['date_updated'],
-      'details' => $message['body'],
-    );
-    try {
-      $activity = civicrm_api3('activity', 'create', $params);
-      $attachments = CRM_NYSS_Inbox_BAO_Inbox::getAttachments($messageId);
-      $uploadDir = CRM_Core_Config::singleton()->customFileUploadDir;
+    //exit immediately if the message has already been matched
+    if ($message['status'] != self::STATUS_UNMATCHED) {
+      return [
+        'is_error' => TRUE,
+        'message' => 'Unable to assign the message; it has already been matched.'
+      ];
+    }
 
-      if (!empty($attachments)) {
-        foreach ($attachments as $key => $attachment) {
-          $attachmentName = $attachment['fileName'];
-          $attachmentFull = $attachment['fileFull'];
+    foreach ($contactIds as $contactId) {
+      $params = [
+        'activity_label' => 'Inbound Email',
+        'source_contact_id' => $forwarder,
+        'target_contact_id' => $contactId,
+        'subject' => substr($message['subject'], 0, 250),
+        'is_auto' => 0,
+        'status_id' => $status,
+        'activity_date_time' => $message['date_updated'],
+        'details' => $message['body'],
+      ];
 
-          if (file_exists($attachmentFull)) {
-            $fileName = CRM_Utils_File::makeFileName($attachmentName);
-            $fileFull = $uploadDir.$fileName;
+      try {
+        $activity = civicrm_api3('activity', 'create', $params);
+        $attachments = CRM_NYSS_Inbox_BAO_Inbox::getAttachments($rowId);
+        $uploadDir = CRM_Core_Config::singleton()->customFileUploadDir;
 
-            // move file to the civicrm upload directory
-            rename($attachmentFull, $fileFull);
+        if (!empty($attachments)) {
+          foreach ($attachments as $key => $attachment) {
+            $attachmentName = $attachment['fileName'];
+            $attachmentFull = $attachment['fileFull'];
 
-            $finfo = finfo_open(FILEINFO_MIME_TYPE);
-            $mime = finfo_file($finfo, $fileFull);
-            finfo_close($finfo);
+            if (file_exists($attachmentFull)) {
+              $fileName = CRM_Utils_File::makeFileName($attachmentName);
+              $fileFull = $uploadDir . $fileName;
 
-            $fileDAO = new CRM_Core_DAO_File();
-            $fileDAO->mime_type = $mime;
-            $fileDAO->uri = $fileName;
-            $fileDAO->upload_date = date('YmdHis');
-            $fileDAO->save();
+              // move file to the civicrm upload directory
+              rename($attachmentFull, $fileFull);
 
-            $entityFileDAO = new CRM_Core_DAO_EntityFile();
-            $entityFileDAO->entity_table = 'civicrm_activity';
-            $entityFileDAO->entity_id = $activity['id'];
-            $entityFileDAO->file_id = $fileDAO->id;
-            $entityFileDAO->save();
+              $finfo = finfo_open(FILEINFO_MIME_TYPE);
+              $mime = finfo_file($finfo, $fileFull);
+              finfo_close($finfo);
+
+              $fileDAO = new CRM_Core_DAO_File();
+              $fileDAO->mime_type = $mime;
+              $fileDAO->uri = $fileName;
+              $fileDAO->upload_date = date('YmdHis');
+              $fileDAO->save();
+
+              $entityFileDAO = new CRM_Core_DAO_EntityFile();
+              $entityFileDAO->entity_table = 'civicrm_activity';
+              $entityFileDAO->entity_id = $activity['id'];
+              $entityFileDAO->file_id = $fileDAO->id;
+              $entityFileDAO->save();
+            }
           }
         }
+      } catch (CiviCRM_API3_Exception $e) {
+        Civi::log()->error('assignMessage', ['e' => $e]);
+
+        //we arguably should attempt to process all contacts before we
+        //decide if we are returning with an error; but there's an argument
+        //to be made for exiting immediately...
+        return [
+          'is_error' => TRUE,
+          'message' => 'Unable to create the activity.'
+        ];
       }
 
-      //store activity_id in messages table
-      CRM_Core_DAO::executeQuery("
-        UPDATE nyss_inbox_messages
-        SET activity_id = %1
-        WHERE id = %2
-      ", array(
-        1 => array($activity['id'], 'Positive'),
-        2 => array($messageId, 'Positive'),
-      ));
-    }
-    catch (CiviCRM_API3_Exception $e) {
-      Civi::log()->error('assignMessage', array('e' => $e));
-
-      return array(
-        'is_error' => TRUE,
-        'message' => 'Unable to create the activity.'
+      $matches[] = array(
+        'message_id' => $message['message_id'],
+        'matched_id' => $contactId,
+        'activity_id' => $activity['id'],
       );
     }
 
-    //update the message record
+    //update the message record status and matcher
     CRM_Core_DAO::executeQuery("
       UPDATE nyss_inbox_messages
       SET status = %1,
-        matcher = %2,
-        matched_to = %3
-      WHERE id = %4
-    ", array(
-      1 => array(self::STATUS_MATCHED, 'Integer'),
-      2 => array($forwarder, 'Integer'),
-      3 => array($contactId, 'Integer'),
-      4 => array($messageId, 'Integer'),
-    ));
+        matcher = %2
+      WHERE id = %3
+    ", [
+      1 => [self::STATUS_MATCHED, 'Integer'],
+      2 => [$forwarder, 'Integer'],
+      3 => [$rowId, 'Integer'],
+    ]);
 
-    $contactName = civicrm_api3('contact', 'getvalue', array(
-      'id' => $contactId,
-      'return' => 'display_name',
-    ));
-    return array(
+    //store activity_id in messages_matched table
+    $matchedContacts = array();
+    foreach ($matches as $match) {
+      CRM_Core_DAO::executeQuery("
+        INSERT INTO nyss_inbox_messages_matched
+        (message_id, matched_id, activity_id)
+        VALUES
+        (%1, %2, %3)
+      ", [
+        1 => [$match['message_id'], 'Positive'],
+        2 => [$match['matched_id'], 'Positive'],
+        3 => [$match['activity_id'], 'Positive'],
+      ]);
+
+      $contactName = civicrm_api3('contact', 'getvalue', [
+        'id' => $match['matched_id'],
+        'return' => 'display_name',
+      ]);
+
+      $matchedContacts[] = $contactName;
+    }
+    $matchedContactsList = implode(', ', $matchedContacts);
+
+    return [
       'is_error' => FALSE,
-      'message' => "Message successfully assigned to {$contactName}.",
-    );
+      'message' => "Message successfully assigned to {$matchedContactsList}.",
+    ];
   }
 
   /**
@@ -627,24 +675,26 @@ class CRM_NYSS_Inbox_BAO_Inbox {
    * @param $cid
    * @return null|string
    */
-  static function getMatched($cid) {
-    if (empty($cid)) {
+  static function getMatched($cids) {
+    $matchedContacts = array();
+
+    if (empty($cids)) {
       return NULL;
     }
 
     try {
-      $contact = civicrm_api3('contact', 'getsingle', array(
-        'id' => $cid,
-      ));
+      foreach (explode(',', $cids) as $cid) {
+        $contact = civicrm_api3('contact', 'getsingle', [
+          'id' => $cid,
+        ]);
 
-      $matchedUrl = CRM_Utils_System::url('civicrm/contact/view', "reset=1&cid={$cid}");
-      $matchedContact = "<a href='{$matchedUrl}'>{$contact['display_name']}</a><br /><{$contact['email']}>";
-
-      return $matchedContact;
+        $matchedUrl = CRM_Utils_System::url('civicrm/contact/view', "reset=1&cid={$cid}");
+        $matchedContacts[] = "<a href='{$matchedUrl}'>{$contact['display_name']}</a><br /><{$contact['email']}>";
+      }
     }
     catch (CiviCRM_API3_Exception $e) {}
 
-    return NULL;
+    return $matchedContacts;
   }
 
   /**

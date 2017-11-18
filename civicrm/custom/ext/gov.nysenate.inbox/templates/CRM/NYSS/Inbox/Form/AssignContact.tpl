@@ -1,5 +1,5 @@
 {* HEADER *}
-<div class="description">Select or create a contact to assign this message to.</div>
+<div class="description">Select or create a contact to match this message to.</div>
 <p></p>
 
 {* FIELD EXAMPLE: OPTION 1 (AUTOMATIC LAYOUT) *}

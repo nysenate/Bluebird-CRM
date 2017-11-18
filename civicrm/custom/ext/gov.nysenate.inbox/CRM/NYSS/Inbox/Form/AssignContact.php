@@ -1,7 +1,5 @@
 <?php
 
-require_once 'CRM/Core/Form.php';
-
 /**
  * Form controller class
  *
@@ -13,23 +11,24 @@ class CRM_NYSS_Inbox_Form_AssignContact extends CRM_Core_Form {
 
     //get details about record
     $id = CRM_Utils_Request::retrieve('id', 'Positive');
-    $this->add('hidden', 'message_id', $id);
+    $this->add('hidden', 'id', $id);
 
     $details = CRM_NYSS_Inbox_BAO_Inbox::getDetails($id);
     $this->assign('details', $details);
 
     // add form elements
-    $this->addEntityRef('assignee', 'Select Assignee', array(
+    $this->addEntityRef('matches', 'Select Matched Contact(s)', array(
       'api' => array(
         'params' => array('contact_type' => 'Individual'),
       ),
       'create' => TRUE,
+      'multiple' => TRUE,
     ), TRUE);
 
     $this->addButtons(array(
       array(
         'type' => 'submit',
-        'name' => ts('Submit'),
+        'name' => ts('Assign Matched Contact'),
         'isDefault' => TRUE,
       ),
       array(
@@ -47,9 +46,9 @@ class CRM_NYSS_Inbox_Form_AssignContact extends CRM_Core_Form {
     $values = $this->exportValues();
     //Civi::log()->debug('AssignContact postProcess', array('values' => $values));
 
-    $response = CRM_NYSS_Inbox_BAO_Inbox::assignMessage($values['message_id'], $values['assignee']);
+    $response = CRM_NYSS_Inbox_BAO_Inbox::assignMessage($values['id'], explode(',', $values['matches']));
 
-    $message = 'The message has been assigned.';
+    $message = 'The message has been matched.';
     if (!empty($response['message'])) {
       $message = $response['message'];
     }
