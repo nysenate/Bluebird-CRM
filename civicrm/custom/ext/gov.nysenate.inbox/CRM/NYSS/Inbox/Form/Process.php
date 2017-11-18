@@ -83,8 +83,21 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
 
     $this->addButtons(array(
       array(
-        'type' => 'submit',
-        'name' => ts('Process'),
+        'type' => 'upload',
+        'subName' => 'update',
+        'name' => ts('Update'),
+        'isDefault' => TRUE,
+      ),
+      array(
+        'type' => 'upload',
+        'subName' => 'updateclear',
+        'name' => ts('Update and Clear'),
+        'isDefault' => TRUE,
+      ),
+      array(
+        'type' => 'upload',
+        'subName' => 'clear',
+        'name' => ts('Clear'),
         'isDefault' => TRUE,
       ),
       array(
@@ -107,8 +120,34 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
       return;
     }
 
-    $msg = CRM_NYSS_Inbox_BAO_Inbox::processMessages($values);
-    $msg = (!empty($msg)) ? implode('<br />', $msg) : 'Message(s) has been processed.';
+    $actionName = $this->controller->getButtonName( );
+    $class = get_class($this);
+    $classElements = explode('_', $class);
+    $classSub = end($classElements);
+    //CRM_Core_Error::debug_var('actionName', $actionName);
+    //CRM_Core_Error::debug_var('classSub', $classSub);
+
+    switch ($actionName) {
+      case "_qf_{$classSub}_upload_update":
+        $msg = CRM_NYSS_Inbox_BAO_Inbox::processMessages($values);
+        $msg = (!empty($msg)) ? implode('<br />', $msg) : 'Message(s) has been processed.';
+        break;
+
+      case "_qf_{$classSub}_upload_updateclear":
+        $msg = CRM_NYSS_Inbox_BAO_Inbox::processMessages($values);
+        CRM_NYSS_Inbox_BAO_Inbox::clearMessages(array($values['id']));
+        $msg = (!empty($msg)) ? implode('<br />', $msg) : 'Message(s) has been processed and cleared.';
+        break;
+
+      case "_qf_{$classSub}_upload_clear":
+        CRM_NYSS_Inbox_BAO_Inbox::clearMessages(array($values['id']));
+        $msg = 'Message(s) has been cleared.';
+        break;
+
+      default:
+        $msg = 'Unable to perform a processing action.';
+    }
+
     CRM_Core_Session::setStatus($msg);
 
     parent::postProcess();
