@@ -10,13 +10,18 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
     CRM_NYSS_Inbox_BAO_Inbox::addResources('process');
 
     //get details about record
-    $id = CRM_Utils_Request::retrieve('id', 'Positive');
-    $this->add('hidden', 'id', $id);
+    $rowId = CRM_Utils_Request::retrieve('id', 'Positive');
+    $matchedId = CRM_Utils_Request::retrieve('matched_id', 'Positive');
+    $messageId = CRM_NYSS_Inbox_BAO_Inbox::getMessageId($rowId);
 
-    $details = CRM_NYSS_Inbox_BAO_Inbox::getDetails($id);
+    $this->add('hidden', 'row_id', $rowId);
+    $this->add('hidden', 'matched_id', $matchedId);
+    $this->add('hidden', 'message_id', $messageId);
+
+    $details = CRM_NYSS_Inbox_BAO_Inbox::getDetails($rowId, $matchedId);
     $this->assign('details', $details);
     $this->add('hidden', 'activity_id', $details['activity_id']);
-    $this->add('hidden', 'current_assignee', $details['matched_to']);
+    CRM_Core_Resources::singleton()->addVars('NYSS', array('matched_id' => $matchedId));
 
     //assignment form elements
     $this->addEntityRef('assignee', 'Select Assignee', array(
@@ -39,7 +44,6 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
       'class' => "crm-contact-tagset",
     ), FALSE);
 
-    CRM_Core_Resources::singleton()->addVars('NYSS', array('matched_to' => $details['matched_to']));
     $this->addEntityRef('contact_positions', 'Positions', array(
       'entity' => 'nyss_tags',
       'multiple' => TRUE,
@@ -115,7 +119,7 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
     $values = $this->exportValues();
     //Civi::log()->debug('postProcess', array('values' => $values, '$_REQUEST' => $_REQUEST));
 
-    if (empty($values['id'])) {
+    if (empty($values['id']) || empty($values['matched_id'])) {
       CRM_Core_Session::setStatus('Unable to process this message.');
       return;
     }

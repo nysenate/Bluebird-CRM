@@ -84,7 +84,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     $details = array();
     $sqlParams = array(1 => array($rowId, 'Positive'));
 
-    if ($matched_id) {
+    if ($matched_id && $matched_id != 'unmatched') {
       $matched_id_sql = "AND imm.matched_id = %2";
       $sqlParams[2] = array($matched_id, 'Positive');
     }
@@ -109,12 +109,6 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
     //if we get more than one row, we should have been passed a contact ID...
     if ($dao->N > 1) {
-      Civi::log()->debug('', array(
-        'rowId' => $rowId,
-        'matched_id' => $matched_id,
-        'dao' => $dao,
-      ));
-
       return array(
         'is_error' => TRUE,
         'msg' => 'Unable to return a details for this message.'
@@ -140,7 +134,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         'status' => $dao->status,
         'matcher' => $dao->matcher,
         'matched_id' => $dao->matched_id,
-        'matched_to_display' => $matched,
+        'matched_to_display' => implode(', ', $matched),
         'activity_id' => $dao->activity_id,
         'updated_date' => date('m/d/Y', strtotime($dao->updated_date)),
         'date_email' => date('m/d/Y', strtotime($dao->email_date)),
@@ -158,24 +152,86 @@ class CRM_NYSS_Inbox_BAO_Inbox {
    *
    * retrieve list of ids to delete
    * either passed to function or via $_REQUEST (AJAX)
+   *
+   * this will be an array of arrays with a pairing: row_id, matched_id (optional)
    */
   static function deleteMessages($ids = array()) {
     if (empty($ids) && !empty(CRM_Utils_Array::value('ids', $_REQUEST))) {
       $ids = CRM_Utils_Array::value('ids', $_REQUEST);
     }
 
-    $idList = implode(',', $ids);
     $userId = CRM_Core_Session::getLoggedInContactID();
+    if (empty($userId)) {
+      return array(
+        'is_error' => TRUE,
+        'msg' => 'Unable to determine the logged in user in order to track the message deletion.',
+        'details' => array('ids' => $ids),
+      );
+    }
 
-    if (!empty($idList) && !empty($userId)) {
-      CRM_Core_DAO::executeQuery("
-        UPDATE nyss_inbox_messages
-        SET status = " . self::STATUS_DELETED . ", matcher = %1
-        WHERE id IN ({$idList})
+    foreach ($ids as $idPair) {
+      //check if message has > 1 matched contact
+      $messageMatches = self::getMessageMatches($idPair['row_id']);
+
+      //if more than 1, we only delete the match record
+      if (count($messageMatches) > 1) {
+        //we can only delete the match record if one exists; record may be unmatched
+        if (!empty($idPair['matched_id'])) {
+          self::deleteMessageMatch($idPair['row_id'], NULL, $idPair['matched_id']);
+        }
+      }
+      else {
+        //leave match record intact; just delete message
+        CRM_Core_DAO::executeQuery("
+          UPDATE nyss_inbox_messages
+          SET status = " . self::STATUS_DELETED . ", matcher = %1
+          WHERE id = %2
+        ", [
+          1 => [$userId, 'Positive'],
+          2 => [$idPair['row_id'], 'Positive']
+        ]);
+      }
+    }
+  }
+
+  /**
+   * @param null $rowId
+   * @param null $messageId
+   * @param $matchedId
+   *
+   * @return array
+   *
+   *
+   */
+  static function deleteMessageMatch($rowId = NULL, $messageId = NULL, $matchedId) {
+    if (empty($rowId) && empty($messageId)) {
+      return array(
+        'is_error' => TRUE,
+        'msg' => 'You must provide either the row ID or message ID.',
+      );
+    }
+
+    //if messageId not provided, we must have rowId; retrieve messageId
+    if (empty($messageId)) {
+      $messageId = CRM_Core_DAO::singleValueQuery("
+        SELECT message_id
+        FROM nyss_inbox_messages
+        WHERE id = %1
       ", array(
-        1 => array($userId, 'Positive'),
+        1 => array($rowId, 'Positive'),
       ));
     }
+
+    CRM_Core_DAO::executeQuery("
+      DELETE FROM nyss_inbox_messages_matched
+      WHERE matched_id = %1 
+        AND message_id = %2
+    ", array(
+      1 => array($matchedId, 'Positive'),
+      2 => array($messageId, 'Positive'),
+    ));
+
+    return TRUE;
   }
 
   /**
@@ -246,11 +302,13 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     }
 
     $sql = "
-      SELECT SQL_CALC_FOUND_ROWS im.id, im.sender_name, im.sender_email, im.subject, im.forwarder,
-        im.updated_date, im.email_date, im.matcher, im.matched_to, mc.display_name matcher_name,
+      SELECT SQL_CALC_FOUND_ROWS im.id, im.message_id, im.sender_name, im.sender_email, im.subject, im.forwarder,
+        im.updated_date, im.email_date, im.matcher, imm.matched_id, mc.display_name matcher_name,
         IFNULL(count(ia.file_name), '0') as attachments,
         count(e.id) AS email_count
       FROM nyss_inbox_messages im
+      LEFT JOIN nyss_inbox_messages_matched imm 
+        ON im.message_id = imm.message_id
       LEFT JOIN civicrm_email e 
         ON im.sender_email = e.email
       LEFT JOIN nyss_inbox_attachments ia 
@@ -262,7 +320,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         {$statusSql}
         {$rangeSql}
         {$termSql}
-      GROUP BY im.id
+      GROUP BY im.id, imm.matched_id
       ORDER BY {$orderBy}
       LIMIT {$params['rowCount']}
       OFFSET {$params['offset']}
@@ -282,14 +340,15 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         $attachment = (!empty($dao->attachments)) ?
           "<div class='icon attachment-icon attachment' title='{$dao->attachments} Attachment(s)'></div>" : '';
         $senderName = CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->sender_name, 15);
+        $matchId = (!empty($dao->matched_id)) ? $dao->matched_id : 'unmatched';
 
-        $msg['DT_RowId'] = "message-{$dao->id}";
+        $msg['DT_RowId'] = "message-{$dao->id}-{$matchId}";
         $msg['DT_RowClass'] = 'crm-entity';
         $msg['DT_RowAttr'] = array();
         $msg['DT_RowAttr']['data-entity'] = 'message';
-        $msg['DT_RowAttr']['data-id'] = $dao->id;
+        $msg['DT_RowAttr']['data-id'] = "{$dao->id}-{$matchId}";
 
-        $msg['id'] = "<input class='message-select' type='checkbox' id='select-{$dao->id}'>";
+        $msg['id'] = "<input class='message-select' type='checkbox' id='select-{$dao->id}-{$matchId}'>";
 
         //sender's info varies based on matched/unmatched view
         switch ($status) {
@@ -311,7 +370,8 @@ class CRM_NYSS_Inbox_BAO_Inbox {
               $matchTypeText = 'A';
               $matchString = 'Automatically matched';
             }
-            $matchedUrl = CRM_Utils_System::url('civicrm/contact/view', "reset=1&cid={$dao->matched_to}");
+            $matchedUrl = CRM_Utils_System::url('civicrm/contact/view',
+              "reset=1&cid={$dao->matcher}");
             $msg['sender_name'] = "<a href='{$matchedUrl}'>{$senderName}</a>
               <span class='matchbubble {$matchTypeCSS}' title='This email was {$matchString}'>{$matchTypeText}</span>";
             break;
@@ -332,8 +392,10 @@ class CRM_NYSS_Inbox_BAO_Inbox {
               "<a href='{$urlAssign}' class='action-item crm-hover-button crm-popup inbox-assign-contact'>Assign Contact</a>";
             break;
           case 'matched':
-            $urlProcess = CRM_Utils_System::url('civicrm/nyss/inbox/process', "reset=1&id={$dao->id}");
-            $urlClear = CRM_Utils_System::url('civicrm/nyss/inbox/clear', "reset=1&id={$dao->id}");
+            $urlProcess = CRM_Utils_System::url('civicrm/nyss/inbox/process',
+              "reset=1&id={$dao->id}&matched_id={$dao->matched_id}");
+            $urlClear = CRM_Utils_System::url('civicrm/nyss/inbox/clear',
+              "reset=1&id={$dao->id}&matched_id={$dao->matched_id}");
             $links['process'] =
               "<a href='{$urlProcess}' class='action-item crm-hover-button crm-popup inbox-process-contact'>Process</a>";
             $links['clear'] =
@@ -342,7 +404,8 @@ class CRM_NYSS_Inbox_BAO_Inbox {
           default:
         }
 
-        $urlDelete = CRM_Utils_System::url('civicrm/nyss/inbox/delete', "reset=1&id={$dao->id}");
+        $urlDelete = CRM_Utils_System::url('civicrm/nyss/inbox/delete',
+          "reset=1&id={$dao->id}&matched_id={$matchId}");
         $links['delete'] = "<a href='{$urlDelete}' class='action-item crm-hover-button crm-popup inbox-delete'>Delete</a>";
 
         $msg['links'] = implode(' ', $links);
@@ -515,12 +578,14 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
     if (!empty($values['assignee'])) {
       CRM_Core_DAO::executeQuery("
-        UPDATE nyss_inbox_messages
-        SET matched_to = %1
-        WHERE id = %2
+        UPDATE nyss_inbox_messages_matched
+        SET matched_id = %1
+        WHERE message_id = %2
+          AND matched_id = %3
       ", array(
-        1 => array($values['assignee'], 'Integer'),
-        2 => array($values['id'], 'Integer'),
+        1 => array($values['assignee'], 'Positive'),
+        2 => array($values['message_id'], 'Positive'),
+        2 => array($values['matched_id'], 'Positive'),
       ));
     }
 
@@ -540,9 +605,9 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       }
     }
 
-    //TODO retrieve via request better
-    if (!empty($_REQUEST['tag'])) {
-      foreach ($_REQUEST['tag'] as $tagID => $dontCare) {
+    $tags = CRM_Utils_Array::value('tag', $_REQUEST);
+    if (!empty($tags)) {
+      foreach ($tags as $tagID => $dontCare) {
         try {
           civicrm_api3('entity_tag', 'create', array(
             'entity_id' => (!empty($values['assignee'])) ? $values['assignee'] : $values['current_assignee'],
@@ -695,6 +760,49 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     catch (CiviCRM_API3_Exception $e) {}
 
     return $matchedContacts;
+  }
+
+  /**
+   * @param $rowId
+   *
+   * @return array
+   *
+   * given a message rowId, retrieve an array of all matched contact IDs
+   */
+  static function getMessageMatches($rowId) {
+    $dao = CRM_Core_DAO::executeQuery("
+      SELECT imm.*
+      FROM nyss_inbox_messages_matched imm
+      JOIN nyss_inbox_messages im
+        ON imm.message_id = im.message_id
+      WHERE im.id = %1
+    ", array(
+      1 => array($rowId, 'Positive'),
+    ));
+
+    $matchedIds = array();
+    while ($dao->fetch()) {
+      $matchedIds[] = $dao->matched_id;
+    }
+
+    return $matchedIds;
+  }
+
+  /**
+   * @param $rowId
+   *
+   * @return null|string
+   *
+   * retrieve message_id given a row_id
+   */
+  static function getMessageId($rowId) {
+    return CRM_Core_DAO::singleValueQuery("
+      SELECT message_id
+      FROM nyss_inbox_messages
+      WHERE id = %1
+    ", array(
+      1 => array($rowId, 'Positive')
+    ));
   }
 
   /**
