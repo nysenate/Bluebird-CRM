@@ -115,8 +115,7 @@ class CRM_cleanLogs {
     );
 
     // start db connection
-    $conn = mysql_connect($bbcfg['db.host'], $bbcfg['db.user'], $bbcfg['db.pass'], TRUE);
-    mysql_select_db($logDB, $conn);
+    $conn = mysqli_connect($bbcfg['db.host'], $bbcfg['db.user'], $bbcfg['db.pass'], $logDB);
 
     $memUse = memory_get_usage();
     $memUseMB = round($memUse/1048576,2);
@@ -136,7 +135,7 @@ class CRM_cleanLogs {
       ";
       //bbscript_log(LL::TRACE, "{$tbl} sql", $sql);
       //$r = CRM_Core_DAO::executeQuery($sql);
-      $rq = mysql_unbuffered_query($sql, $conn);
+      $rq = mysqli_query($conn, $sql, MYSQLI_USE_RESULT);
 
       $lastRecord = array('id' => 0);
       $stats[$tbl] = $i = 0;
@@ -147,7 +146,7 @@ class CRM_cleanLogs {
 
       $deleteRows = array();
 
-      while ( $r = mysql_fetch_assoc($rq) ) {
+      while ( $r = mysqli_fetch_assoc($rq) ) {
         //bbscript_log(LL::TRACE, "r", $r);
         $thisRecord = array();
         foreach ( $r as $f => $v ) {
@@ -227,7 +226,7 @@ class CRM_cleanLogs {
       }
 
       //free DAO
-      mysql_free_result($rq);
+      mysqli_free_result($rq);
     }//end table loop
 
     bbscript_log(LL::INFO, 'final stats: ', $stats);

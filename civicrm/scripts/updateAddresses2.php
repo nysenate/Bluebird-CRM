@@ -134,11 +134,11 @@ function processContacts($parseStreetAddress, $optlist) {
   $threshold = $optlist['threshold'];
   $sleepDuration = $optlist['sleep'];
   $sleepCount = 1;
-  $totalRows = mysql_num_rows($res);
+  $totalRows = mysqli_num_rows($res);
 
   bbscript_log(LL::INFO, "Iterating over {$totalRows} addresses...");
 
-  while (($row = mysql_fetch_assoc($res)) != null) {
+  while (($row = mysqli_fetch_assoc($res)) != null) {
     $totalAddresses++;
 
     $address = array(
@@ -294,7 +294,7 @@ function processContacts($parseStreetAddress, $optlist) {
     echo "</pre>";
   }
 
-  mysql_free_result($res);
+  mysqli_free_result($res);
   return;
 } // processContacts()
 
