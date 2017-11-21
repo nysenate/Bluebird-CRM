@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<extension key="biz.lcdservices.joblogmanagement" type="module">
+  <file>joblogmanagement</file>
+  <name>Job log management</name>
+  <description>
+  This extension provides with an API that handles purging old job records.
+  It accepts two parameters:
+  1. days_retained (required) = The number of days to retain records for. Any job logs older than that day range are purged.
+  2. api_call (optional) = Only purges logs of a specific type(e.g. job.versionCheck) if explicitly mentioned else deletes all based on the above param.
+  </description>
+  <license>AGPL-3.0</license>
+  <maintainer>
+    <author>Mountev Ltd</author>
+    <email>info@mountev.co.uk</email>
+  </maintainer>
+  <urls>
+    <url desc="Main Extension Page"></url>
+    <url desc="Documentation"></url>
+    <url desc="Support"></url>
+    <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
+  </urls>
+  <releaseDate>2017-11-14</releaseDate>
+  <version>1.0</version>
+  <develStage>stable</develStage>
+  <compatibility>
+    <ver>4.7</ver>
+  </compatibility>
+  <comments></comments>
+  <civix>
+    <namespace>CRM/Joblogmanagement</namespace>
+  </civix>
+</extension>
