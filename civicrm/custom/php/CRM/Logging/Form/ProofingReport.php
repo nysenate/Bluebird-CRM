@@ -178,33 +178,34 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
   public function postProcess() {
     //CRM_Core_Error::debug_var('this', $this);
 
-    require_once 'CRM/Utils/PDF/Utils.php';
-    require_once 'api/api.php';
+    $bbconfig = get_bluebird_instance_config();
+    $logDB = $bbconfig['db.log.prefix'].$bbconfig['db.basename'];
+    $civiDB = $bbconfig['db.civicrm.prefix'].$bbconfig['db.basename'];
 
     //get form parameters and create sql criteria
     $formParams = $this->controller->exportValues( $this->_name );
     //CRM_Core_Error::debug_var('formParams', $formParams);
 
     $sqlParams = $rows = array();
-    $sqlWhere  = 1;
+    $sqlWhere = 1;
     $startDate = $endDate = $alteredByFrom = '';
-    if ( $formParams['jobID'] ) {
+    if ($formParams['jobID']) {
       $sqlParams['job'] = "main.log_job_id = '{$formParams['jobID']}'";
     }
-    if ( $formParams['alteredBy'] ) {
+    if ($formParams['alteredBy']) {
       $sqlParams['alteredby'] = "ab.sort_name LIKE '%{$formParams['alteredBy']}%'";
       $alteredByFrom = "LEFT JOIN $civiDB.civicrm_contact ab ON main.log_user_id = ab.id ";
     }
-    if ( $formParams['start_date'] ) {
+    if ($formParams['start_date']) {
       $startDate = date( 'Y-m-d', strtotime($formParams['start_date']) );
       $sqlParams['startdate'] = "main.log_date >= '{$startDate} 00:00:00'";
     }
-    if ( $formParams['end_date'] ) {
+    if ($formParams['end_date']) {
       $endDate = date( 'Y-m-d', strtotime($formParams['end_date']) );
       $sqlParams['enddate'] = "main.log_date <= '{$endDate} 23:59:59'";
     }
 
-    if ( !empty($formParams['contact_tags']) ) {
+    if (!empty($formParams['contact_tags'])) {
       $tagsSelected = implode(',', $formParams['contact_tags']);
       $sqlParams['tag'] = "tag_id IN ({$tagsSelected})";
     }
@@ -212,22 +213,17 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
     //compile WHERE clauses
     $sqlWhere = implode(' ) AND ( ', $sqlParams);
 
-    $bbconfig = get_bluebird_instance_config();
-    $logDB = $bbconfig['db.log.prefix'].$bbconfig['db.basename'];
-    $civiDB = $bbconfig['db.civicrm.prefix'].$bbconfig['db.basename'];
-
     $dateNow  = date('F jS Y h:i a');
 
     //begin construction of html
     $html  = self::_reportCSS();
     $html .= "<h2>SOS Proofing Report: $dateNow</h2>";
 
-    if ( $startDate || $endDate ) {
-      $dateRange = '';
-      if ( $startDate && !$endDate ) {
+    if ($startDate || $endDate) {
+      if ($startDate && !$endDate) {
         $dateRange = "$startDate &#8211; Now";
       }
-      elseif ( !$startDate && $endDate ) {
+      elseif (!$startDate && $endDate) {
         $dateRange = "Before $endDate";
       }
       else {
@@ -236,10 +232,10 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
       $html .= "<h3>Date Range: $dateRange</h3>";
     }
 
-    if ( $formParams['jobID'] ) {
+    if ($formParams['jobID']) {
       $html .= "<h3>Job ID: {$formParams['jobID']}</h3>";
     }
-    if ( $formParams['alteredBy'] ) {
+    if ($formParams['alteredBy']) {
       $html .= "<h3>Altered By Search: {$formParams['alteredBy']}</h3>";
     }
 
@@ -268,7 +264,11 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
     //insert contacts with tag changes
     $query = "
       INSERT INTO {$tmpChgProof}
-      SELECT main.entity_id as id, DATE_FORMAT(log_date, '%m/%d/%Y %h:%i %p') as logDate, log_date as logDateLong, GROUP_CONCAT(CONCAT(t.name, ' (', main.log_action, ')') ORDER BY t.name SEPARATOR ', ') as tagList, null as groupList
+      SELECT main.entity_id as id, 
+        DATE_FORMAT(MAX(log_date), '%m/%d/%Y %h:%i %p') as logDate,
+        MAX(log_date) as logDateLong,
+        GROUP_CONCAT(CONCAT(t.name, ' (', main.log_action, ')') ORDER BY t.name SEPARATOR ', ') as tagList,
+        NULL as groupList
       FROM {$logDB}.log_civicrm_entity_tag main
       JOIN {$civiDB}.civicrm_tag t
         ON main.tag_id = t.id
@@ -286,7 +286,11 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
       //contacts
       $query = "
         INSERT IGNORE INTO {$tmpChgProof}
-        SELECT main.id, DATE_FORMAT(main.log_date, '%m/%d/%Y %h:%i %p') as logDate, main.log_date as logDateLong, null as tagList, null as groupList
+        SELECT main.id, 
+          DATE_FORMAT(MAX(main.log_date), '%m/%d/%Y %h:%i %p') as logDate,
+          MAX(main.log_date) as logDateLong,
+          NULL as tagList,
+          NULL as groupList
         FROM {$logDB}.log_civicrm_contact main
         $alteredByFrom
         WHERE ( $sqlWhere )
@@ -306,7 +310,11 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
     if (empty($formParams['contact_tags'])) {
       $query = "
         INSERT INTO {$tmpChgProof}
-        SELECT main.contact_id as id, DATE_FORMAT(main.log_date, '%m/%d/%Y %h:%i %p') as logDate, log_date as logDateLong, null as tagList, GROUP_CONCAT(CONCAT(g.title, ' (', main.log_action, ')') ORDER BY g.title SEPARATOR ', ') as groupList
+        SELECT main.contact_id as id,
+          DATE_FORMAT(MAX(main.log_date), '%m/%d/%Y %h:%i %p') as logDate,
+          MAX(log_date) as logDateLong,
+          NULL as tagList,
+          GROUP_CONCAT(CONCAT(g.title, ' (', main.log_action, ')') ORDER BY g.title SEPARATOR ', ') as groupList
         FROM {$logDB}.log_civicrm_group_contact main
         JOIN {$civiDB}.civicrm_group g
           ON main.group_id = g.id
