@@ -898,10 +898,15 @@ AND    status IN ( 'Scheduled', 'Running', 'Paused' )
     // add an additional check and only process
     // jobs that are approved
     if (CRM_Mailing_Info::workflowEnabled()) {
-      $approveOptionID = CRM_Core_OptionGroup::getValue('mail_approval_status',
+      /*$approveOptionID = CRM_Core_OptionGroup::getValue('mail_approval_status',
         'Approved',
         'name'
+      );*/
+      //NYSS use non-deprecated function (less log warnings)
+      $approveOptionID = CRM_Core_PseudoConstant::getKey('CRM_Mailing_BAO_Mailing',
+        'approval_status_id', 'Approved'
       );
+
       if ($approveOptionID) {
         return " AND m.approval_status_id = $approveOptionID ";
       }
