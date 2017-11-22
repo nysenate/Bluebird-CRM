@@ -43,5 +43,14 @@ ldb=$log_db_prefix$db_basename;
 echo "$prog: install new extensions..."
 $drush $instance cvapi extension.install key=gov.nysenate.case --quiet
 
+## remove CiviCRM sample email templates
+echo "$prog: remove CiviCRM sample email templates..."
+sql="
+  DELETE FROM civicrm_msg_template
+  WHERE msg_title LIKE '%Sample CiviMail%'
+    OR msg_title LIKE '%Sample Responsive%';
+"
+$execSql $instance -c "$sql" -q
+
 ## record completion
 echo "$prog: upgrade process is complete."
