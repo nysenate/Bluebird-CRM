@@ -155,13 +155,49 @@ function case_civicrm_navigationMenu(&$menu) {
 function case_civicrm_buildForm($formName, &$form) {
   /*Civi::log()->debug('case_civicrm_buildForm', array(
     'formName' => $formName,
+    'form' => $form,
   ));*/
 
-  //11518 hide timeline/audit fields
   if ($formName == 'CRM_Case_Form_CaseView') {
+    //11518 hide timeline/audit fields
     foreach (array('timeline_id', 'report_id') as $field) {
       if ($form->elementExists($field)) {
         $form->removeElement($field);
+      }
+    }
+
+    //11482 limit case role field to office staff
+    $staffGroupID = civicrm_api3('group', 'getvalue', array(
+      'name' => 'Office_Staff',
+      'return' => 'id',
+    ));
+    if ($staffGroupID) {
+      $staffGroupJson = json_encode(array('params' => array('group' => $staffGroupID)));
+      CRM_Core_Resources::singleton()
+        ->addVars('NYSS', array('staffGroupJson' => $staffGroupJson));
+      CRM_Core_Resources::singleton()
+        ->addScriptFile('gov.nysenate.case', 'js/CaseView.js');
+    }
+  }
+
+  //11482 - limit assignee field to office staff
+  if (in_array($formName, array('CRM_Activity_Form_Activity', 'CRM_Case_Form_Activity'))) {
+    if ($form->elementExists('assignee_contact_id')) {
+      $staffGroupID = civicrm_api3('group', 'getvalue', array(
+        'name' => 'Office_Staff',
+        'return' => 'id',
+      ));
+      if ($staffGroupID) {
+        $ele =& $form->getElement('assignee_contact_id');
+        $apiParams = json_decode($ele->_attributes['data-api-params']);
+        $apiParams->params->group = $staffGroupID;
+        $ele->_attributes['data-api-params'] = json_encode($apiParams);
+
+        /*Civi::log()->debug('ele', [
+          'ele' => $ele,
+          'staffGroupID' => $staffGroupID,
+          'apiParams' => $apiParams,
+        ]);*/
       }
     }
   }
