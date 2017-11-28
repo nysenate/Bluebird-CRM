@@ -127,7 +127,7 @@ LEFT JOIN civicrm_activity_contact source ON source.activity_id = lt.id AND sour
         //NYSS
         case 'civicrm_group_contact':
           $join = "LEFT JOIN civicrm_group gp on lt.group_id=gp.id";
-          $contactIdClase = "AND lt.contact_id = %3";
+          $contactIdClause = "AND lt.contact_id = %3";
           break;
 
         default:
@@ -178,7 +178,6 @@ SELECT DISTINCT lt.id FROM `{$this->db}`.`log_$table` lt
 WHERE lt.log_conn_id = %1
     $logDateClause
     {$contactIdClause}";
-
     $dao = CRM_Core_DAO::executeQuery($sql, $params);
     while ($dao->fetch()) {
       $diffs = array_merge($diffs, $this->diffsInTableForId($table, $dao->id));

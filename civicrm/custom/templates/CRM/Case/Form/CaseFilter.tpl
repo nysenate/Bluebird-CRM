@@ -1,5 +1,4 @@
-<?php
-/*
+{*
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
@@ -23,52 +22,30 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
- */
-
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
- * $Id$
- *
- */
-class CRM_Report_Form_Contact_LoggingDetail extends CRM_Logging_ReportDetail {
-  /**
-   */
-  public function __construct() {
-    $this->log_conn_id = CRM_Utils_Request::retrieve('log_conn_id', 'String');
-    $this->log_date = CRM_Utils_Request::retrieve('log_date', 'String');
-    $this->setTablesToContactRelatedTables();
-    $this->calculateContactDiffs();
-    $this->detail = 'logging/contact/detail';
-    $this->summary = 'logging/contact/summary';
-
-    parent::__construct();
-  }
-
-  public function buildQuickForm() {
-    $layout = CRM_Utils_Request::retrieve('layout', 'String', $this);
-    $this->assign('layout', $layout);
-
-    parent::buildQuickForm();
-
-    if ($this->cid) {
-      // link back to contact summary
-      $this->assign('backURL', CRM_Utils_System::url('civicrm/contact/view', "reset=1&selectedChild=log&cid={$this->cid}", FALSE, NULL, FALSE));
-      $this->assign('revertURL', self::$_template->get_template_vars('revertURL') . "&cid={$this->cid}");
-    }
-    else {
-      // link back to summary report
-      //NYSS preserve summary instance source
-      $instanceID = CRM_Utils_Request::retrieve('instanceID', 'Integer');
-      if ($instanceID) {
-        $backURL = CRM_Utils_System::url('civicrm/report/instance/'.$instanceID, "reset=1", false, null, false);
-      }
-      else {
-        $backURL = CRM_Report_Utils_Report::getNextUrl('logging/contact/summary', 'reset=1', false, false);//NYSS don't get instance id
-      }
-      $this->assign('backURL', $backURL);
-    }
-  }
-
-}
+*}
+<div class="crm-case-filter-{$list}">
+  <div class="crm-accordion-wrapper crm-search_filters-accordion">
+    <div class="crm-accordion-header">
+    {ts}Filter by Case{/ts}</a>
+    </div><!-- /.crm-accordion-header -->
+    <div class="crm-accordion-body">
+      <table class="no-border form-layout-compressed case-search-options-{$list}">
+        <tr>
+          <td class="crm-contact-form-block-case_type_id crm-inline-edit-field">
+            {$form.case_type_id.label}<br /> {$form.case_type_id.html}
+          </td>
+          <td class="crm-contact-form-block-case_status_id crm-inline-edit-field">
+            {$form.case_status_id.label}<br /> {$form.case_status_id.html}
+          </td>
+          {if $accessAllCases && $form.upcoming}
+            <td class="crm-case-dashboard-switch-view-buttons">
+              <br/>
+              {$form.upcoming.html}&nbsp;{$form.upcoming.label}
+            </td>
+          {/if}
+        </tr>
+      </table>
+    </div><!-- /.crm-accordion-body -->
+  </div><!-- /.crm-accordion-wrapper -->
+</div>
+<div class="spacer"></div>

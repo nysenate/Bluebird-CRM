@@ -31,6 +31,7 @@ fi
 ## install new extensions
 echo "$prog: install new extensions..."
 $drush $instance cvapi extension.install key=gov.nysenate.case --quiet
+$drush $instance cvapi extension.install key=nz.co.fuzion.innodbtriggers --quiet
 
 ## remove CiviCRM sample email templates
 echo "$prog: remove CiviCRM sample email templates..."
@@ -40,6 +41,10 @@ sql="
     OR msg_title LIKE '%Sample Responsive%';
 "
 $execSql $instance -c "$sql" -q
+
+## install new extensions
+echo "$prog: trigger updates for logging tables..."
+$drush $instance cvapi system.updatelogtables --quiet
 
 ## record completion
 echo "$prog: upgrade process is complete."

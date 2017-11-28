@@ -32,43 +32,31 @@
  * $Id$
  *
  */
-class CRM_Report_Form_Contact_LoggingDetail extends CRM_Logging_ReportDetail {
+
+/**
+ * Main page for Case Dashboard dashlet
+ *
+ */
+class CRM_Dashlet_Page_CaseDashboard extends CRM_Core_Page {
+
   /**
+   * Case dashboard as dashlet.
+   *
+   * @return void
    */
-  public function __construct() {
-    $this->log_conn_id = CRM_Utils_Request::retrieve('log_conn_id', 'String');
-    $this->log_date = CRM_Utils_Request::retrieve('log_date', 'String');
-    $this->setTablesToContactRelatedTables();
-    $this->calculateContactDiffs();
-    $this->detail = 'logging/contact/detail';
-    $this->summary = 'logging/contact/summary';
-
-    parent::__construct();
-  }
-
-  public function buildQuickForm() {
-    $layout = CRM_Utils_Request::retrieve('layout', 'String', $this);
-    $this->assign('layout', $layout);
-
-    parent::buildQuickForm();
-
-    if ($this->cid) {
-      // link back to contact summary
-      $this->assign('backURL', CRM_Utils_System::url('civicrm/contact/view', "reset=1&selectedChild=log&cid={$this->cid}", FALSE, NULL, FALSE));
-      $this->assign('revertURL', self::$_template->get_template_vars('revertURL') . "&cid={$this->cid}");
+  public function run() {
+    //check for civicase access.
+    if (!CRM_Case_BAO_Case::accessCiviCase()) {
+      CRM_Core_Error::fatal(ts('You are not authorized to access this page.'));
     }
-    else {
-      // link back to summary report
-      //NYSS preserve summary instance source
-      $instanceID = CRM_Utils_Request::retrieve('instanceID', 'Integer');
-      if ($instanceID) {
-        $backURL = CRM_Utils_System::url('civicrm/report/instance/'.$instanceID, "reset=1", false, null, false);
-      }
-      else {
-        $backURL = CRM_Report_Utils_Report::getNextUrl('logging/contact/summary', 'reset=1', false, false);//NYSS don't get instance id
-      }
-      $this->assign('backURL', $backURL);
+
+    $summary = CRM_Case_BAO_Case::getCasesSummary(TRUE);
+
+    if (!empty($summary)) {
+      $this->assign('casesSummary', $summary);
     }
+
+    return parent::run();
   }
 
 }
