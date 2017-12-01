@@ -35,6 +35,17 @@ function nyss_reports_civicrm_buildForm($formName, &$form) {
     CRM_Core_Resources::singleton()->addScript("
       cj('tr.crm-report-instanceForm-form-block-permission a.helpicon').remove();
     ");
+
+    //11536 limit parent_id to reports branch
+    if ($form->elementExists('parent_id')) {
+      $ele =& $form->getElement('parent_id');
+      foreach ($ele->_options as $k => $opt) {
+        if ($opt['text'] == '- select -' || $opt['text'] == 'Reports') {}
+        else {
+          unset($ele->_options[$k]);
+        }
+      }
+    }
   }
 }//buildForm
 

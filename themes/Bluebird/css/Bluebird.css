@@ -3686,15 +3686,9 @@ li.crm-button {
 }
 
 /* for understanding browsers */
-#crm-container #mainTabContainer .ui-tabs-panel {
+#crm-container #mainTabContainer #contact-summary {
   min-height: 600px;
   height: auto;
-}
-
-/* for Internet Explorer */
-/*\*/
-* html #crm-container #mainTabContainer .ui-tabs-panel {
-  height: 600px;
 }
 
 /*contact summary tabs*/
