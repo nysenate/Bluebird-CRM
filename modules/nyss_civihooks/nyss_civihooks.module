@@ -253,29 +253,6 @@ function nyss_civihooks_civicrm_buildForm($formName, &$form) {
 
   _fixTitles();
 
-  //Limit case roles available to add new role dialog to only those that apply to cases
-  if ($formName=='CRM_Case_Form_CaseView') {
-    $caserelationships = array(
-      '13' => 'Case Manager is',
-      '8'  => 'Case Coordinator is',
-      '15' => 'Support Staff is',
-      '14' => 'Non-District Staff is'
-    );
-    $form->add('select', 'role_type',  ts('Relationship Type'), array('' => ts('- select type -')) + $caserelationships);
-  }
-
-  if ($formName == 'CRM_Case_Form_Search') {
-    if ($form->_formValues['contact_id']) {
-      $form->assign('contact_id', $form->_formValues['contact_id']);
-
-      $dn = civicrm_api3('contact', 'getvalue', array(
-        'id' => $form->_formValues['contact_id'],
-        'return' => 'display_name'
-      ));
-      $form->assign('display_name', $dn);
-    }
-  }
-
   //Limit import file size to 1MB
   if ($formName =='CRM_Import_Form_DataSource') {
     $uploadFileSize = 1048576;
