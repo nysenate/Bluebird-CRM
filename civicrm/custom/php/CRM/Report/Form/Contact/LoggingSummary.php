@@ -293,10 +293,7 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
       unset($row['log_civicrm_entity_log_conn_id']);
     }
 
-    //NYSS 7452 reorder unless flagged not to
-    if ( !$this->_formOrderBy ) {
-      krsort($newRows);
-    }
+    krsort($newRows);
     $rows = $newRows;
   }
 
