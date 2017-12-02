@@ -142,6 +142,20 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
             'type' => CRM_Utils_Type::T_INT,
           ),
         ),
+        //NYSS 11540
+        'order_bys' => array(
+          'log_date' => array(
+            'title' => ts('Log Date (When)'),
+            'default' => '1',
+            'default_weight' => '0',
+            'default_order' => 'DESC',
+          ),
+          'altered_contact' => array(
+            'name' => 'display_name',
+            'title' => ts('Altered Contact'),
+            'alias' => 'modified_contact_civireport',
+          ),
+        ),
       ),
       'altered_by_contact' => array(
         'dao' => 'CRM_Contact_DAO_Contact',
@@ -158,6 +172,13 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
             'name' => 'display_name',
             'title' => ts('Altered By'),
             'type' => CRM_Utils_Type::T_STRING,
+          ),
+        ),
+        //NYSS 11540
+        'order_bys' => array(
+          'altered_by_contact' => array(
+            'name' => 'display_name',
+            'title' => ts('Altered by Contact'),
           ),
         ),
       ),
