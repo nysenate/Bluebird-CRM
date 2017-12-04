@@ -32,43 +32,40 @@
  * $Id$
  *
  */
-class CRM_Report_Form_Contact_LoggingDetail extends CRM_Logging_ReportDetail {
+
+/**
+ * Main page for Cases dashlet
+ *
+ */
+class CRM_Dashlet_Page_MyCases extends CRM_Core_Page {
+
   /**
+   * List activities as dashlet.
+   *
+   * @return void
    */
-  public function __construct() {
-    $this->log_conn_id = CRM_Utils_Request::retrieve('log_conn_id', 'String');
-    $this->log_date = CRM_Utils_Request::retrieve('log_date', 'String');
-    $this->setTablesToContactRelatedTables();
-    $this->calculateContactDiffs();
-    $this->detail = 'logging/contact/detail';
-    $this->summary = 'logging/contact/summary';
+  public function run() {
+    $context = CRM_Utils_Request::retrieve('context', 'String', $this, FALSE, 'dashlet');
+    $this->assign('context', $context);
 
-    parent::__construct();
-  }
-
-  public function buildQuickForm() {
-    $layout = CRM_Utils_Request::retrieve('layout', 'String', $this);
-    $this->assign('layout', $layout);
-
-    parent::buildQuickForm();
-
-    if ($this->cid) {
-      // link back to contact summary
-      $this->assign('backURL', CRM_Utils_System::url('civicrm/contact/view', "reset=1&selectedChild=log&cid={$this->cid}", FALSE, NULL, FALSE));
-      $this->assign('revertURL', self::$_template->get_template_vars('revertURL') . "&cid={$this->cid}");
+    //check for civicase access.
+    if (!CRM_Case_BAO_Case::accessCiviCase()) {
+      CRM_Core_Error::fatal(ts('You are not authorized to access this page.'));
     }
-    else {
-      // link back to summary report
-      //NYSS preserve summary instance source
-      $instanceID = CRM_Utils_Request::retrieve('instanceID', 'Integer');
-      if ($instanceID) {
-        $backURL = CRM_Utils_System::url('civicrm/report/instance/'.$instanceID, "reset=1", false, null, false);
-      }
-      else {
-        $backURL = CRM_Report_Utils_Report::getNextUrl('logging/contact/summary', 'reset=1', false, false);//NYSS don't get instance id
-      }
-      $this->assign('backURL', $backURL);
+
+    $controller = new CRM_Core_Controller_Simple('CRM_Case_Form_Search',
+      ts('Case'), CRM_Core_Action::BROWSE,
+      NULL,
+      FALSE, FALSE, TRUE
+    );
+    $controller->setEmbedded(TRUE);
+    $controller->process();
+    $controller->run();
+
+    if (CRM_Case_BAO_Case::getCases(FALSE, array('type' => 'any'), $context, TRUE)) {
+      $this->assign('casePresent', TRUE);
     }
+    return parent::run();
   }
 
 }

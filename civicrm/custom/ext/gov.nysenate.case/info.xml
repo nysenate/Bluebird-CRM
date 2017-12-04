@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<extension key="gov.nysenate.case" type="module">
+  <file>case</file>
+  <name>NYSS: Case Customizations</name>
+  <description></description>
+  <license>AGPL-3.0</license>
+  <maintainer>
+    <author>NYSS Senate</author>
+    <email>brian@lcdservices.biz</email>
+  </maintainer>
+  <urls>
+    <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
+  </urls>
+  <releaseDate>2017-11-22</releaseDate>
+  <version>1.0</version>
+  <develStage>stable</develStage>
+  <compatibility>
+    <ver>4.7</ver>
+  </compatibility>
+  <comments></comments>
+  <civix>
+    <namespace>CRM/NYSS/Case</namespace>
+  </civix>
+</extension>

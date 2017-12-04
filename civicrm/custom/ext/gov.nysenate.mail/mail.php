@@ -291,6 +291,28 @@ function mail_civicrm_pre($op, $objectName, $id, &$params) {
   }
 }
 
+function mail_civicrm_links($op, $objectName, $objectId, &$links, &$mask, &$values) {
+  /*Civi::log()->debug('mail_civicrm_links', array(
+    '$op' => $op,
+    '$objectName' => $objectName,
+    '$objectId' => $objectId,
+    '$links' => $links,
+    '$mask' => $mask,
+    '$values' => $values,
+  ));*/
+
+  //11500
+  if ($op == 'view.mailing.browse' &&
+    $objectName == 'Mailing'
+  ) {
+    foreach ($links as $key => $link) {
+      if ($link['name'] == 'Public View') {
+        unset($links[$key]);
+      }
+    }
+  }
+}
+
 //NYSS 4870
 function _mail_removeOnHold($mailingID) {
   $sql = "

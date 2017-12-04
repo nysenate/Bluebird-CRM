@@ -366,7 +366,7 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
     ";
     $dao = CRM_Core_DAO::executeQuery($sql);
 
-    while ( $dao->fetch() ) {
+    while ($dao->fetch()) {
       //CRM_Core_Error::debug_var('dao',$dao);
       $params = array(
         'version' => 3,

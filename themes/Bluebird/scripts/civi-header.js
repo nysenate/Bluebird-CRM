@@ -73,6 +73,7 @@ $(document).ready(function() {
       fname != 'Label' &&
       fname != 'Builder' &&
       fname != 'ExportPermissions' && //10565
+      fname != 'ProofingReport' && //11526
       global_formNavigate != false //5231
     ) {
       return false;

@@ -4146,4 +4146,5 @@ form.CRM_Case_Form_Search a.action-item {
 /*increase width of activity target field*/
 form.CRM_Activity_Form_Activity div.select2-container {
   width: auto !important;
+  min-width: 400px;
 }
