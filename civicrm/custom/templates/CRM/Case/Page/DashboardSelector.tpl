@@ -25,7 +25,7 @@
 *}
 {capture assign=expandIconURL}<img src="{$config->resourceBase}i/TreePlus.gif" alt="{ts}open section{/ts}"/>{/capture}
 {strip}
-<table class="case-selector-{$list} crm-ajax-table">
+<table class="case-selector-{$list} crm-ajax-table" data-page-length='10'>
 <thead>
   <tr>
     <th data-data="activity_list" data-orderable="false" class="crm-case-activity_list"></th>
@@ -37,7 +37,7 @@
     <th data-data="manager" data-orderable="false" class="crm-case-manager">{ts}Manager{/ts}</th>
     <th data-data="date" cell-class="crm-case-date">{if $list EQ 'upcoming'}{ts}Next Sched.{/ts}{elseif $list EQ 'recent'}{ts}Most Recent{/ts}{/if}</th>
     <th data-data="links" data-orderable="false" class="crm-case-links">&nbsp;</th>
-  </th>
+  </tr>
 </thead>
 </table>
 

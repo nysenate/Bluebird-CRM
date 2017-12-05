@@ -408,44 +408,50 @@ WHERE cc.contact_id = %1 AND civicrm_case_type.name = '{$caseType}'";
    */
   //NYSS 11460
   public static function getCaseActivityQuery($type = 'upcoming', $userID, $condition = NULL, $limit = NULL, $order = NULL) {
-    $query = "SELECT
-civicrm_case.id as case_id,
-civicrm_case.subject as case_subject,
-civicrm_contact.id as contact_id,
-civicrm_contact.sort_name as sort_name,
-ANY_VALUE(civicrm_phone.phone) as phone,
-civicrm_contact.contact_type as contact_type,
-civicrm_contact.contact_sub_type as contact_sub_type,
-ANY_VALUE(t_act.activity_type_id),
-c_type.title as case_type,
-civicrm_case.case_type_id as case_type_id,
-ANY_VALUE(cov_status.label) as case_status,
-ANY_VALUE(cov_status.label) as case_status_name,
-ANY_VALUE(t_act.status_id),
-civicrm_case.start_date as case_start_date,
-ANY_VALUE(case_relation_type.label_b_a) as case_role, ";
+    $selectClauses = array(
+      'civicrm_case.id as case_id',
+      'civicrm_case.subject as case_subject',
+      'civicrm_contact.id as contact_id',
+      'civicrm_contact.sort_name as sort_name',
+      'civicrm_phone.phone as phone',
+      'civicrm_contact.contact_type as contact_type',
+      'civicrm_contact.contact_sub_type as contact_sub_type',
+      't_act.activity_type_id',
+      'c_type.title as case_type',
+      'civicrm_case.case_type_id as case_type_id',
+      'cov_status.label as case_status',
+      'cov_status.label as case_status_name',
+      't_act.status_id',
+      'civicrm_case.start_date as case_start_date',
+      'case_relation_type.label_b_a as case_role',
+    );
 
     if ($type == 'upcoming') {
-      $query .= "
-MAX(t_act.desired_date) as case_scheduled_activity_date,
-ANY_VALUE(t_act.id) as case_scheduled_activity_id,
-ANY_VALUE(t_act.act_type_name) as case_scheduled_activity_type_name,
-ANY_VALUE(t_act.act_type) AS case_scheduled_activity_type ";
+      $selectClauses = array_merge($selectClauses, array(
+        't_act.desired_date as case_scheduled_activity_date',
+        't_act.id as case_scheduled_activity_id',
+        't_act.act_type_name as case_scheduled_activity_type_name',
+        't_act.act_type AS case_scheduled_activity_type',
+      ));
     }
     elseif ($type == 'recent') {
-      $query .= "
-MAX(t_act.desired_date) as case_recent_activity_date,
-ANY_VALUE(t_act.id) as case_recent_activity_id,
-ANY_VALUE(t_act.act_type_name) as case_recent_activity_type_name,
-ANY_VALUE(t_act.act_type) AS case_recent_activity_type ";
+      $selectClauses = array_merge($selectClauses, array(
+        't_act.desired_date as case_recent_activity_date',
+        't_act.id as case_recent_activity_id',
+        't_act.act_type_name as case_recent_activity_type_name',
+        't_act.act_type AS case_recent_activity_type',
+      ));
     }
     elseif ($type == 'any') {
-      $query .= "
-MAX(t_act.desired_date) as case_activity_date,
-ANY_VALUE(t_act.id) as case_activity_id,
-ANY_VALUE(t_act.act_type_name) as case_activity_type_name,
-ANY_VALUE(t_act.act_type) AS case_activity_type ";
+      $selectClauses = array_merge($selectClauses, array(
+        't_act.desired_date as case_activity_date',
+        't_act.id as case_activity_id',
+        't_act.act_type_name as case_activity_type_name',
+        't_act.act_type AS case_activity_type',
+      ));
     }
+
+    $query = CRM_Contact_BAO_Query::appendAnyValueToSelect($selectClauses, 'case_id');
 
     $query .= " FROM civicrm_case
                   INNER JOIN civicrm_case_contact ON civicrm_case.id = civicrm_case_contact.case_id
@@ -532,7 +538,7 @@ LEFT JOIN civicrm_option_group aog ON aog.name='activity_type'
       // CRM-8749 backwards compatibility - callers of this function expect to start $condition with "AND"
       $query .= " WHERE (1) AND $condition ";//NYSS 11460
     }
-    $query .= " GROUP BY case_id, contact_id ";//NYSS 11460
+    $query .= " GROUP BY case_id ";//NYSS 11460
 
     //NYSS 11460
     if ($order) {
@@ -1600,8 +1606,7 @@ SELECT case_status.label AS case_status, status_id, civicrm_case_type.title AS c
     $contactID = implode(',', $cases['contact_id']);
 
     //NYSS 11460
-    $condition = "
- civicrm_case_contact.contact_id IN( {$contactID} )
+    $condition = " civicrm_case_contact.contact_id IN( {$contactID} )
  AND civicrm_case.id IN( {$caseID})
  AND civicrm_case.is_deleted     = {$cases['case_deleted']}";
 

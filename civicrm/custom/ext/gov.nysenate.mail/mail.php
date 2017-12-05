@@ -302,7 +302,7 @@ function mail_civicrm_links($op, $objectName, $objectId, &$links, &$mask, &$valu
   ));*/
 
   //11500
-  if ($op == 'view.mailing.browse' &&
+  if (strpos($op, 'view.mailing.browse') !== FALSE &&
     $objectName == 'Mailing'
   ) {
     foreach ($links as $key => $link) {

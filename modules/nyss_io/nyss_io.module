@@ -709,30 +709,26 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state)
   //nyss_out('debug', "fields: {$nyss_select[$tbl]['fields']}", true);
   //nyss_out('debug', $l, true);
 
-  //if we are being passed a key, this is going to be an update
-  //otherwise it's an insert
+  //11516 if passed an ID, verify before determining update/insert
+  if (!empty($l[$pkImport])) {
+    $sql = "SELECT " . $nyss_select[$tbl]['fields'] . " FROM {$tbl} WHERE {$pkCivi}={$l[$pkImport]}";
+    $result = mysqli_query($nyss_conn, $sql);
+    if (!$result || mysqli_num_rows($result) == 0) {
+      //nyss_out('error', 'no existing record found. treating like an insert.', TRUE);
+      $l[$pkImport] = NULL;
+      mysqli_free_result($result);
+    }
+  }
+
+  //if we are passed a key, update; else insert
   if (!empty($l[$pkImport])) {
     //nyss_out('status', 1, true);
     //nyss_out('debug', $pkCivi, true);
     //nyss_out('debug', $pkImport, true);
     //nyss_out('debug', $l, true);
 
-    //get the existing data
-    $sql = "SELECT ".$nyss_select[$tbl]['fields']." FROM {$tbl} WHERE {$pkCivi}={$l[$pkImport]}";
-    //nyss_out('debug', $sql, true);
-
-    $result = mysqli_query($nyss_conn, $sql);
-    //nyss_out('error','id lookup result:',true);
-    //nyss_out('debug', $result, true);
-
-    $dao = new stdClass();
-    if (!$result || mysqli_num_rows($result) == 0) {
-      nyss_out('error','no civirecord found. not importing.',true);
-    }
-    else {
-      $dao = mysqli_fetch_object($result);
-    }
-
+    //get results from query above
+    $dao = mysqli_fetch_object($result);
     mysqli_free_result($result);
 
     $up = array();
