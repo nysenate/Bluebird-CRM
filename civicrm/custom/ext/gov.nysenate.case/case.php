@@ -201,4 +201,38 @@ function case_civicrm_buildForm($formName, &$form) {
       }
     }
   }
+
+  if ($formName=='CRM_Case_Form_CaseView') {
+    //11541 Limit case roles available to add new role dialog to only those that apply to cases
+    if ($form->elementExists('role_type')) {
+      $ele =& $form->getElement('role_type');
+      //Civi::log()->debug('case_civicrm_buildForm', array('ele' => $ele));
+
+      $allowedTypes = array(
+        '- select type -',
+        'Case Manager is',
+        'Case Coordinator is',
+        'Support Staff is',
+        'Non-District Staff is'
+      );
+
+      foreach ($ele->_options as $k => $opt) {
+        if (!in_array($opt['text'], $allowedTypes)) {
+          unset($ele->_options[$k]);
+        }
+      }
+    }
+  }
+
+  if ($formName == 'CRM_Case_Form_Search') {
+    if ($form->_formValues['contact_id']) {
+      $form->assign('contact_id', $form->_formValues['contact_id']);
+
+      $dn = civicrm_api3('contact', 'getvalue', array(
+        'id' => $form->_formValues['contact_id'],
+        'return' => 'display_name'
+      ));
+      $form->assign('display_name', $dn);
+    }
+  }
 }

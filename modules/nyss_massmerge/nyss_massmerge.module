@@ -47,7 +47,7 @@ function _resolveConflicts(&$data, $mainId, $otherId) {
     }
   }
 
-//if job_title sans space/punctation are equal, merge
+  //if job_title sans space/punctation are equal, merge
   if (array_key_exists('move_job_title', $conflicts)) {
     if (_cleanVal($rows['move_job_title']['main']) ==
       _cleanVal($rows['move_job_title']['other'])
@@ -105,6 +105,15 @@ function _resolveConflicts(&$data, $mainId, $otherId) {
   //if one record type is BOE, retain above other values
   if (array_key_exists('move_custom_61', $conflicts)) {
     _fixRT($rows, $conflicts);
+  }
+
+  //11494 if move_location_address_0 sans space/punctation are equal, merge
+  if (array_key_exists('move_location_address_0', $conflicts)) {
+    if (_cleanVal($rows['move_location_address_0']['main']) ==
+      _cleanVal($rows['move_location_address_0']['other'])
+    ) {
+      unset($conflicts['move_location_address_0']);
+    }
   }
 
   //let's log any remaining conflicts for later review
