@@ -109,10 +109,29 @@ function _resolveConflicts(&$data, $mainId, $otherId) {
 
   //11494 if move_location_address_0 sans space/punctation are equal, merge
   if (array_key_exists('move_location_address_0', $conflicts)) {
+    //_mD('move_location_address_0 rows', $rows);
     if (_cleanVal($rows['move_location_address_0']['main']) ==
       _cleanVal($rows['move_location_address_0']['other'])
     ) {
       unset($conflicts['move_location_address_0']);
+    }
+  }
+
+  //if contact source custom field conflicts and one or other is BOE, retain that
+  if (array_key_exists('move_custom_60', $conflicts) &&
+    ($rows['move_custom_60']['main'] == 'BOE' || $rows['move_custom_60']['other'] == 'BOE')
+  ) {
+    $rows['move_custom_60']['main'] =
+      $rows['move_custom_60']['other'] =
+      $conflicts['move_custom_60'] = 'BOE';
+  }
+
+  //matching emails
+  if (array_key_exists('move_location_email_0', $conflicts)) {
+    if (_cleanVal($rows['move_location_email_0']['mainId value']) ==
+      _cleanVal($rows['move_location_email_0']['otherId value'])
+    ) {
+      unset($conflicts['move_location_email_0']);
     }
   }
 
@@ -270,7 +289,7 @@ function _fixName($name, &$rows, &$conflicts) {
 
 //if either of the RT values is Board of Election, set and merge
 function _fixRT(&$rows, &$conflicts) {
-  $rtMain  = $rows['move_custom_61']['main'];
+  $rtMain = $rows['move_custom_61']['main'];
   $rtOther = $rows['move_custom_61']['other'];
 
   if ($rtMain == 'Board of Election' ||
