@@ -686,11 +686,18 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state)
     $nyss_select = array();
     foreach ($nyss_iofields as $table=>$tableDetails) {
       $tmp = array();
-      foreach ($tableDetails as $key=>$importField) {
+      foreach ($tableDetails as $key => $importField) {
         $tmp[] = "`{$importField['fld']}` as '{$key}'";
+
         if (isset($importField['PK']) && $importField['PK']) {
           $nyss_select[$table]['PK']['importField'] = $key;
           $nyss_select[$table]['PK']['civiField'] = $importField['fld'];
+        }
+
+        if (!empty($importField['FK'])) {
+          $nyss_select[$table]['FK']['fkAlias'] = $key;
+          $nyss_select[$table]['FK']['fkField'] = $importField['fld'];
+          $nyss_select[$table]['FK']['fkMap'] = $importField['FK'];
         }
       }
       $nyss_select[$table]['fields'] = implode(",",$tmp);
@@ -714,9 +721,25 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state)
     $sql = "SELECT " . $nyss_select[$tbl]['fields'] . " FROM {$tbl} WHERE {$pkCivi}={$l[$pkImport]}";
     $result = mysqli_query($nyss_conn, $sql);
     if (!$result || mysqli_num_rows($result) == 0) {
-      //nyss_out('error', 'no existing record found. treating like an insert.', TRUE);
-      $l[$pkImport] = NULL;
+      nyss_out('error', 'attempting to update but no existing record found. skipping...', TRUE);
       mysqli_free_result($result);
+      return;
+    }
+  }
+
+  //11516 also check if a foreign key relationship exists
+  $fkDetails = $nyss_select[$tbl]['FK'];
+  if (!empty($fkDetails) && !empty($l[$fkDetails['fkAlias']])) {
+    $sql = "
+      SELECT {$fkDetails['fkMap']['fk_id']}
+      FROM {$fkDetails['fkMap']['table']}
+      WHERE {{$fkDetails['fkMap']['fk_id']}} = {$l[$fkDetails['fkAlias']]}
+    ";
+    $result = mysqli_query($nyss_conn, $sql);
+    if (!$result || mysqli_num_rows($result) == 0) {
+      nyss_out('error', 'attempting to update related record but no FK match found. skipping...', TRUE);
+      mysqli_free_result($result);
+      return;
     }
   }
 
