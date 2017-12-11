@@ -105,10 +105,6 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
           'type' => 'submit',
           'name' => ts('Generate CSV'),
         ),
-        array(
-          'type' => 'back',
-          'name' => ts('Cancel')
-        ),
       )
     );
 
