@@ -194,6 +194,7 @@ $nyss_iofields['civicrm_value_district_information_7'] = array(
     'FK' => array(
       'table' => 'civicrm_address',
       'fk_id' => 'id',
+      'fk_alias' => 'address_id',
     ),
   ),
   'town_52' => array(
@@ -253,6 +254,7 @@ $nyss_iofields['civicrm_value_constituent_information_1'] = array(
     'FK' => array(
       'table' => 'civicrm_contact',
       'fk_id' => 'id',
+      'fk_alias' => 'id',
     ),
   ),
   'contact_source_60' => array(
