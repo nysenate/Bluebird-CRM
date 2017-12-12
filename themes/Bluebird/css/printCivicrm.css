@@ -14,7 +14,6 @@ ul.crm-contact-tabs-list {
 }
 #crm-container div.crm-contact-page #mainTabContainer #contact-summary {
   width: 100%;
-  padding: 0 15px;
 }
 
 table.form-layout td, table.form-layout th {
@@ -140,4 +139,25 @@ table.form-layout td, table.form-layout th {
   font-size: .8em;
   font-style: italic;
   float: right;
+}
+
+/*11472 */
+div#contact-summary {
+  font-size: 11px;
+  font-family: Verdana, Arial, sans-serif;
+}
+div#contact-summary div.crm-label {
+  font-weight: bold;
+}
+#crm-container div#contact-summary div.crm-summary-row div.crm-label,
+#crm-container div#contact-summary div.crm-summary-row div.crm-content {
+  padding: 2px;
+}
+#crm-container div#contact-summary div.crm-summary-display_name {
+  font-weight: bold;
+}
+span.subscription-link,
+div#contact-summary div.crm-inline-block-content[title='Add address'],
+div#contact-summary span.geotag {
+  display: none;
 }
