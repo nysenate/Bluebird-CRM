@@ -123,7 +123,17 @@ function _resolveConflicts(&$data, $mainId, $otherId) {
 
   //if one record type is BOE, retain above other values
   if (array_key_exists('move_custom_61', $conflicts)) {
-    _fixRT($rows, $conflicts);
+    _fixRT($data, $conflicts);
+  }
+
+  //11494 select later value for BOE date of registration
+  if (array_key_exists('move_custom_24', $conflicts)) {
+    if (strtotime($rows['move_custom_24']['other']) > strtotime($rows['move_custom_24']['main'])) {
+      $conflicts['move_custom_24'] = $rows['move_custom_24']['other'];
+    }
+    else {
+      $conflicts['move_custom_24'] = $rows['move_custom_24']['main'];
+    }
   }
 
   //11494 if move_location_address_0 sans space/punctation are equal, merge
@@ -306,15 +316,43 @@ function _fixName($name, &$rows, &$conflicts) {
 } //_fixName
 
 //if either of the RT values is Board of Election, set and merge
-function _fixRT(&$rows, &$conflicts) {
+function _fixRT(&$data, &$conflicts) {
+  $rows =& $data['migration_info']['rows'];
   $rtMain = $rows['move_custom_61']['main'];
   $rtOther = $rows['move_custom_61']['other'];
+  //_mD("rtOther", $rtOther, 2);
+  //_mD("rtMain", $rtMain, 2);
 
   if ($rtMain == 'Board of Election' ||
     $rtOther == 'Board of Election'
   ) {
-    $rtMain = $rtOther = 'Board of Election';
-    $conflicts['move_custom_61'] = $rtMain;
+    $conflicts['move_custom_61'] = 1; //value for BOE record type option
+  }
+  else {
+    //compare modified date to determine which is more recent
+    try {
+      $mainModified = civicrm_api3('contact', 'getvalue', [
+        'id' => $data['migration_info']['main_details']['contact_id'],
+        'return' => 'modified_date',
+      ]);
+      $otherModified = civicrm_api3('contact', 'getvalue', [
+        'id' => $data['migration_info']['other_details']['contact_id'],
+        'return' => 'modified_date',
+      ]);
+      $recordTypeOpts = civicrm_api3('contact', 'getoptions',
+        array('field' => 'custom_61'));
+      //_mD("mainModified: $mainModified", strtotime($mainModified), 2);
+      //_mD("otherModified: $otherModified", strtotime($otherModified), 2);
+      //_mD("recordTypeOpts", $recordTypeOpts, 2);
+
+      if (strtotime($otherModified) > strtotime($mainModified)) {
+        $conflicts['move_custom_61'] = array_search($rtOther, $recordTypeOpts['values']);
+      }
+      else {
+        $conflicts['move_custom_61'] = array_search($rtMain, $recordTypeOpts['values']);
+      }
+    }
+    catch (CiviCRM_API3_Exception $e) {}
   }
 } //_fixRT
 
