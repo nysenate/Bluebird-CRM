@@ -79,7 +79,7 @@ function _resolveConflicts(&$data, $mainId, $otherId) {
     unset($conflicts['move_external_identifier']);
   }
 
-  //if do not mail/do not email/do not trade, uncheck value for retention and proceed with merge
+  //if "do not...", uncheck value for retention and proceed with merge
   if (array_key_exists('move_do_not_mail', $conflicts)) {
     $conflicts['move_do_not_mail'] = 0;
   }
@@ -88,6 +88,12 @@ function _resolveConflicts(&$data, $mainId, $otherId) {
   }
   if (array_key_exists('move_do_not_trade', $conflicts)) {
     $conflicts['move_do_not_trade'] = 0;
+  }
+  if (array_key_exists('move_do_not_phone', $conflicts)) {
+    $conflicts['move_do_not_phone'] = 0;
+  }
+  if (array_key_exists('move_do_not_sms', $conflicts)) {
+    $conflicts['move_do_not_sms'] = 0;
   }
 
   //if opt-out, set to yes
@@ -165,6 +171,18 @@ function _resolveConflicts(&$data, $mainId, $otherId) {
   _fixLocationBlocks($data, 'email');
 
   //TODO IM?
+
+  //if web profile email and date both conflict, set to newer value
+  if (array_key_exists('move_custom_72', $conflicts) && array_key_exists('move_custom_79', $conflicts)) {
+    if (strtotime($rows['move_custom_79']['other']) > strtotime($rows['move_custom_79']['main'])) {
+      $conflicts['move_custom_79'] = $rows['move_custom_79']['other'];
+      $conflicts['move_custom_72'] = $rows['move_custom_72']['other'];
+    }
+    else {
+      $conflicts['move_custom_79'] = $rows['move_custom_79']['main'];
+      $conflicts['move_custom_72'] = $rows['move_custom_72']['other'];
+    }
+  }
 
   //let's log any remaining conflicts for later review
   if (in_array(NULL, $conflicts, TRUE)) {
