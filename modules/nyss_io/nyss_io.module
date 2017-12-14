@@ -695,7 +695,7 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state)
         }
 
         if (!empty($importField['FK'])) {
-          $nyss_select[$table]['FK']['fkAlias'] = $key;
+          $nyss_select[$table]['FK']['fkAlias'] = $importField['FK']['fk_alias'];
           $nyss_select[$table]['FK']['fkField'] = $importField['fld'];
           $nyss_select[$table]['FK']['fkMap'] = $importField['FK'];
         }
@@ -718,7 +718,13 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state)
 
   //11516 if passed an ID, verify before determining update/insert
   if (!empty($l[$pkImport])) {
-    $sql = "SELECT " . $nyss_select[$tbl]['fields'] . " FROM {$tbl} WHERE {$pkCivi}={$l[$pkImport]}";
+    $sql = "
+      SELECT {$nyss_select[$tbl]['fields']} 
+      FROM {$tbl} 
+      WHERE {$pkCivi} = {$l[$pkImport]}
+    ";
+    //nyss_out('debug', 'record Id Check:', true);
+    //nyss_out('debug', $sql, true);
     $result = mysqli_query($nyss_conn, $sql);
     if (!$result || mysqli_num_rows($result) == 0) {
       nyss_out('error', 'attempting to update but no existing record found. skipping...', TRUE);
@@ -729,12 +735,16 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state)
 
   //11516 also check if a foreign key relationship exists
   $fkDetails = $nyss_select[$tbl]['FK'];
+  //nyss_out('debug', 'fkDetails:', true);
+  //nyss_out('debug', $fkDetails, true);
   if (!empty($fkDetails) && !empty($l[$fkDetails['fkAlias']])) {
     $sql = "
       SELECT {$fkDetails['fkMap']['fk_id']}
       FROM {$fkDetails['fkMap']['table']}
-      WHERE {{$fkDetails['fkMap']['fk_id']}} = {$l[$fkDetails['fkAlias']]}
+      WHERE {$fkDetails['fkMap']['fk_id']} = {$l[$fkDetails['fkAlias']]}
     ";
+    //nyss_out('debug', 'fk Check:', true);
+    //nyss_out('debug', $sql, true);
     $result = mysqli_query($nyss_conn, $sql);
     if (!$result || mysqli_num_rows($result) == 0) {
       nyss_out('error', 'attempting to update related record but no FK match found. skipping...', TRUE);
