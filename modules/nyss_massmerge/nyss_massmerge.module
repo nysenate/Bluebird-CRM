@@ -14,7 +14,7 @@ function nyss_massmerge_civicrm_merge($type, &$data, $mainId = NULL, $otherId = 
   switch($type) {
     case 'batch':
       if (!empty($data['fields_in_conflict'])) {
-        _resolveConflicts( $data, $mainId, $otherId );
+        _resolveConflicts($data, $mainId, $otherId);
       }
       _mD('post-processed batch data', $data, 2);
       break;
@@ -29,12 +29,28 @@ function nyss_massmerge_civicrm_merge($type, &$data, $mainId = NULL, $otherId = 
   return;
 }
 
-//helper to resolve some conflicts when in batch mode
+/**
+ * @param $data
+ * @param $mainId
+ * @param $otherId
+ *
+ * helper to resolve some conflicts when in batch mode
+ *
+ * $conflicts =& $data['fields_in_conflict'] = list of fields in conflict
+ * $rows =& $data['migration_info']['rows'] = list of all fields with main/other vals
+ *
+ * options for altering data:
+ * 1. set $conflicts = NEW VALUE
+ * 2. unset($conflicts[field]) = remove conflict (proceed without concern)
+ * 3. set $rows[field]
+ * 3. unset($conflicts[field]) && $data[migration_info][main_details] = NEW VALUE
+ *    - remove conflict and fix value
+ */
 function _resolveConflicts(&$data, $mainId, $otherId) {
   _mD('data', $data, 2);
 
   $conflicts =& $data['fields_in_conflict'];
-  $rows =& $data['old_migration_info']['rows'];
+  $rows =& $data['migration_info']['rows'];
 
   //if org names sans space/punctation are equal, merge
   if (array_key_exists('move_organization_name', $conflicts)) {
@@ -63,12 +79,21 @@ function _resolveConflicts(&$data, $mainId, $otherId) {
     unset($conflicts['move_external_identifier']);
   }
 
-  //if do not mail/do not email, uncheck value for retention and proceed with merge
+  //if "do not...", uncheck value for retention and proceed with merge
   if (array_key_exists('move_do_not_mail', $conflicts)) {
     $conflicts['move_do_not_mail'] = 0;
   }
   if (array_key_exists('move_do_not_email', $conflicts)) {
     $conflicts['move_do_not_email'] = 0;
+  }
+  if (array_key_exists('move_do_not_trade', $conflicts)) {
+    $conflicts['move_do_not_trade'] = 0;
+  }
+  if (array_key_exists('move_do_not_phone', $conflicts)) {
+    $conflicts['move_do_not_phone'] = 0;
+  }
+  if (array_key_exists('move_do_not_sms', $conflicts)) {
+    $conflicts['move_do_not_sms'] = 0;
   }
 
   //if opt-out, set to yes
@@ -104,15 +129,58 @@ function _resolveConflicts(&$data, $mainId, $otherId) {
 
   //if one record type is BOE, retain above other values
   if (array_key_exists('move_custom_61', $conflicts)) {
-    _fixRT($rows, $conflicts);
+    _fixRT($data, $conflicts);
+  }
+
+  //11494 select later value for BOE date of registration
+  if (array_key_exists('move_custom_24', $conflicts)) {
+    if (strtotime($rows['move_custom_24']['other']) > strtotime($rows['move_custom_24']['main'])) {
+      $conflicts['move_custom_24'] = $rows['move_custom_24']['other'];
+    }
+    else {
+      $conflicts['move_custom_24'] = $rows['move_custom_24']['main'];
+    }
   }
 
   //11494 if move_location_address_0 sans space/punctation are equal, merge
   if (array_key_exists('move_location_address_0', $conflicts)) {
+    //_mD('move_location_address_0 rows', $rows);
     if (_cleanVal($rows['move_location_address_0']['main']) ==
       _cleanVal($rows['move_location_address_0']['other'])
     ) {
       unset($conflicts['move_location_address_0']);
+    }
+    else {
+      //TODO do more intelligent comparison of values; specifically postal +4
+    }
+  }
+
+  //if contact source custom field conflicts and one or other is BOE, retain that
+  if (array_key_exists('move_custom_60', $conflicts) &&
+    ($rows['move_custom_60']['main'] == 'BOE' || $rows['move_custom_60']['other'] == 'BOE')
+  ) {
+    $rows['move_custom_60']['main'] =
+      $rows['move_custom_60']['other'] =
+      $conflicts['move_custom_60'] = 'BOE';
+  }
+
+  //phone blocks
+  _fixLocationBlocks($data, 'phone');
+
+  //email blocks
+  _fixLocationBlocks($data, 'email');
+
+  //TODO IM?
+
+  //if web profile email and date both conflict, set to newer value
+  if (array_key_exists('move_custom_72', $conflicts) && array_key_exists('move_custom_79', $conflicts)) {
+    if (strtotime($rows['move_custom_79']['other']) > strtotime($rows['move_custom_79']['main'])) {
+      $conflicts['move_custom_79'] = $rows['move_custom_79']['other'];
+      $conflicts['move_custom_72'] = $rows['move_custom_72']['other'];
+    }
+    else {
+      $conflicts['move_custom_79'] = $rows['move_custom_79']['main'];
+      $conflicts['move_custom_72'] = $rows['move_custom_72']['other'];
     }
   }
 
@@ -254,10 +322,7 @@ function _fixName($name, &$rows, &$conflicts) {
   }
 
   //take value with greater weight and set other to match
-  if ($mWeight >= $oWeight) {
-    $nOther = $nMain;
-  }
-  else {
+  if ($oWeight > $mWeight) {
     $nMain = $nOther;
   }
 
@@ -269,17 +334,84 @@ function _fixName($name, &$rows, &$conflicts) {
 } //_fixName
 
 //if either of the RT values is Board of Election, set and merge
-function _fixRT(&$rows, &$conflicts) {
-  $rtMain  = $rows['move_custom_61']['main'];
+function _fixRT(&$data, &$conflicts) {
+  $rows =& $data['migration_info']['rows'];
+  $rtMain = $rows['move_custom_61']['main'];
   $rtOther = $rows['move_custom_61']['other'];
+  //_mD("rtOther", $rtOther, 2);
+  //_mD("rtMain", $rtMain, 2);
 
   if ($rtMain == 'Board of Election' ||
     $rtOther == 'Board of Election'
   ) {
-    $rtMain = $rtOther = 'Board of Election';
-    $conflicts['move_custom_61'] = $rtMain;
+    $conflicts['move_custom_61'] = 1; //value for BOE record type option
+  }
+  else {
+    //compare modified date to determine which is more recent
+    try {
+      $mainModified = civicrm_api3('contact', 'getvalue', [
+        'id' => $data['migration_info']['main_details']['contact_id'],
+        'return' => 'modified_date',
+      ]);
+      $otherModified = civicrm_api3('contact', 'getvalue', [
+        'id' => $data['migration_info']['other_details']['contact_id'],
+        'return' => 'modified_date',
+      ]);
+      $recordTypeOpts = civicrm_api3('contact', 'getoptions',
+        array('field' => 'custom_61'));
+      //_mD("mainModified: $mainModified", strtotime($mainModified), 2);
+      //_mD("otherModified: $otherModified", strtotime($otherModified), 2);
+      //_mD("recordTypeOpts", $recordTypeOpts, 2);
+
+      if (strtotime($otherModified) > strtotime($mainModified)) {
+        $conflicts['move_custom_61'] = array_search($rtOther, $recordTypeOpts['values']);
+      }
+      else {
+        $conflicts['move_custom_61'] = array_search($rtMain, $recordTypeOpts['values']);
+      }
+    }
+    catch (CiviCRM_API3_Exception $e) {}
   }
 } //_fixRT
+
+/**
+ * @param $data
+ * @param $type
+ *
+ * helper to resolve phone/email blocks
+ */
+function _fixLocationBlocks(&$data, $type) {
+  $blocks = array(
+    "move_location_{$type}_0",
+    "move_location_{$type}_1",
+    "move_location_{$type}_2",
+    "move_location_{$type}_3",
+  );
+  foreach ($blocks as $block) {
+    if (array_key_exists($block, $data['fields_in_conflict'])) {
+      $rows =& $data['migration_info']['rows'];
+
+      //if they are equal, unset conflict
+      if (_cleanVal($rows[$block]['mainId value']) ==
+        _cleanVal($rows[$block]['otherId value'])
+      ) {
+        unset($data['fields_in_conflict'][$block]);
+      }
+      //if not equal, append Other phone block to Main
+      else {
+        //split block key so we know the key
+        $blockParts = explode('_', $block);
+
+        //add other block to main
+        $data['migration_info']['main_details']['location_blocks'][$type][] =
+          $data['migration_info']['other_details']['location_blocks'][$type][$blockParts[3]];
+
+        //unset conflict so we can proceed
+        unset($data['fields_in_conflict'][$block]);
+      }
+    }
+  }
+}
 
 //determine if we have a custom greeting value
 function _isCustom($value) {
