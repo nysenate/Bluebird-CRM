@@ -696,13 +696,8 @@ LEFT JOIN civicrm_option_group aog ON aog.name='activity_type'
       $casesList[$key]['case_status'] = in_array($case['case_status'], $caseStatus) ? sprintf('<strong>%s</strong>', strtoupper($case['case_status'])) : $case['case_status'];
       $casesList[$key]['case_type'] = $case['case_type'];
       $casesList[$key]['case_role'] = CRM_Utils_Array::value('case_role', $case, '---');
-      $caseManagerContact = self::getCaseManagerContact($caseTypes[$case['case_type_id']], $case['case_id']);
-      if (!empty($caseManagerContact)) {
-        $casesList[$key]['manager'] = sprintf('<a href="%s">%s</a>',
-          CRM_Utils_System::url('civicrm/contact/view', array('cid' => CRM_Utils_Array::value('casemanager_id', $caseManagerContact))),
-          CRM_Utils_Array::value('casemanager', $caseManagerContact)
-        );
-      }
+      $casesList[$key]['manager'] = self::getCaseManagerContact($caseTypes[$case['case_type_id']], $case['case_id']);
+
       $casesList[$key]['date'] = $case[$caseActivityTypeColumn];
       if (($actId = CRM_Utils_Array::value('case_scheduled_activity_id', $case)) ||
         ($actId = CRM_Utils_Array::value('case_recent_activity_id', $case))
@@ -1939,12 +1934,15 @@ SELECT civicrm_contact.id as casemanager_id,
 
       $dao = CRM_Core_DAO::executeQuery($managerRoleQuery, $managerRoleParams);
       if ($dao->fetch()) {
-        $caseManagerContact['casemanager_id'] = $dao->casemanager_id;
-        $caseManagerContact['casemanager'] = $dao->casemanager;
+        //NYSS 11460
+        return sprintf('<a href="%s">%s</a>',
+          CRM_Utils_System::url('civicrm/contact/view', array('cid' => $dao->casemanager_id)),
+          $dao->casemanager
+        );
       }
     }
 
-    return $caseManagerContact;
+    //return $caseManagerContact;
   }
 
   /**
