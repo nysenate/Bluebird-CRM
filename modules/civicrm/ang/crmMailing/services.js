@@ -269,8 +269,9 @@
         }
         else {
           // Protect against races in saving and previewing by chaining create+preview.
+          //NYSS 11520
           var params = angular.extend({}, mailing, mailing.recipients, {
-            options: {force_rollback: 1},
+            id: mailing.id,
             'api.Mailing.preview': {
               id: '$value.id'
             }
@@ -290,9 +291,9 @@
       previewRecipients: function previewRecipients(mailing, previewLimit) {
         // To get list of recipients, we tentatively save the mailing and
         // get the resulting recipients -- then rollback any changes.
+        //NYSS
         var params = angular.extend({}, mailing.recipients, {
           id: mailing.id,
-          get_recipents: 1,
           'api.MailingRecipients.get': {
             mailing_id: '$value.id',
             options: {limit: previewLimit},
@@ -314,9 +315,9 @@
         if (rebuild || _.isEmpty(recipientCount)) {
           // To get list of recipients, we tentatively save the mailing and
           // get the resulting recipients -- then rollback any changes.
-          var params = angular.extend({}, mailing.recipients, {
+          //NYSS
+          var params = angular.extend({}, mailing, mailing.recipients, {
             id: mailing.id,
-            get_recipents: 1,
             'api.MailingRecipients.getcount': {
               mailing_id: '$value.id'
             }
