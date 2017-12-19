@@ -210,10 +210,9 @@ class CRM_Mailing_BAO_Mailing extends CRM_Mailing_DAO_Mailing {
         'is_opt_out' => "$contact.is_opt_out = 0",
         'is_deceased' => "$contact.is_deceased <> 1",
         'location_filter' => $location_filter,
-        'email_not_null' => "$email.email IS NOT NULL",
-        'email_not_empty' => "$email.email != ''",
+        'email_not_null' => "( $email.email IS NOT NULL AND $email.email != '' )",
         'on_hold' => "$email.on_hold = 0",
-        'temp_null' => 'temp.contact_id IS NULL',
+        'temptable_filter' => 'temp.contact_id IS NULL',
       ),
       'order_by' => $order_by,
     );
