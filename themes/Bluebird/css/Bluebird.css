@@ -3685,16 +3685,10 @@ li.crm-button {
   margin-right: 0;
 }
 
-/* for understanding browsers */
-#crm-container #mainTabContainer .ui-tabs-panel {
+/* set min height for contact record tab panels */
+.page-civicrm-contact-view #crm-container #mainTabContainer .ui-tabs-panel {
   min-height: 600px;
   height: auto;
-}
-
-/* for Internet Explorer */
-/*\*/
-* html #crm-container #mainTabContainer .ui-tabs-panel {
-  height: 600px;
 }
 
 /*contact summary tabs*/
@@ -4146,4 +4140,5 @@ form.CRM_Case_Form_Search a.action-item {
 /*increase width of activity target field*/
 form.CRM_Activity_Form_Activity div.select2-container {
   width: auto !important;
+  min-width: 400px;
 }

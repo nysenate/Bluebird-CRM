@@ -2659,6 +2659,10 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
 
     if (!empty($this->_groupByArray)) {
       $this->_groupBy = CRM_Contact_BAO_Query::getGroupByFromSelectColumns($this->_selectClauses, $this->_groupByArray);
+      //NYSS
+      if (!CRM_Utils_SQL::disableFullGroupByMode()) {
+        $this->_select = CRM_Contact_BAO_Query::appendAnyValueToSelect($this->_selectClauses, $this->_groupByArray);
+      }
     }
   }
 

@@ -253,29 +253,6 @@ function nyss_civihooks_civicrm_buildForm($formName, &$form) {
 
   _fixTitles();
 
-  //Limit case roles available to add new role dialog to only those that apply to cases
-  if ($formName=='CRM_Case_Form_CaseView') {
-    $caserelationships = array(
-      '13' => 'Case Manager is',
-      '8'  => 'Case Coordinator is',
-      '15' => 'Support Staff is',
-      '14' => 'Non-District Staff is'
-    );
-    $form->add('select', 'role_type',  ts('Relationship Type'), array('' => ts('- select type -')) + $caserelationships);
-  }
-
-  if ($formName == 'CRM_Case_Form_Search') {
-    if ($form->_formValues['contact_id']) {
-      $form->assign('contact_id', $form->_formValues['contact_id']);
-
-      $dn = civicrm_api3('contact', 'getvalue', array(
-        'id' => $form->_formValues['contact_id'],
-        'return' => 'display_name'
-      ));
-      $form->assign('display_name', $dn);
-    }
-  }
-
   //Limit import file size to 1MB
   if ($formName =='CRM_Import_Form_DataSource') {
     $uploadFileSize = 1048576;
@@ -375,68 +352,7 @@ function nyss_civihooks_civicrm_buildForm($formName, &$form) {
   }
 
   //3674 add limit submit js to all submit buttons
-  if (isset($form->_elementIndex['buttons']) &&
-      strpos($formName, 'Inline') === false) {
-    $buttons =& $form->getElement('buttons');
-    $formID =  $form->_attributes['id'];
-    $formAction = $form->_attributes['action'];
-
-    //list of exclusions by name or value
-    $btnExcludeName = array(
-      '_qf_Select_next',
-      '_qf_Map_next',
-      '_qf_PDF_submit',
-      '_qf_PDF_cancel',
-      '_qf_Contact_upload_view', //handle separately
-      '_qf_Contact_upload_new', //handle separately
-      '_qf_Contact_upload_cancel', //handle separately
-      '_qf_Email_upload', //7393
-      '_qf_Relationship_upload', //4414
-      '_qf_Search_refresh',
-      '_qf_ProofingReport_next',
-      '_qf_ProofingReport_submit',
-      '_qf_Label_cancel',
-      '_qf_Label_submit',
-      '_qf_ExportPermissions_next',
-      '_qf_ExportPermissions_submit',
-      '_qf_ExportPermissions_cancel',
-      '_qf_Website_upload', //7800
-      '_qf_Demographics_upload', //7800
-      '_qf_CustomData_upload', //7800
-    );
-    $btnExcludeValue = array(
-      'PDF',
-      'Print Contact List',
-      'File on case'
-    );
-    $btnHandleValid = array(
-      '_qf_Contact_upload_view',
-      '_qf_Contact_upload_new',
-      '_qf_Contact_upload_cancel',
-    );
-
-    foreach ($buttons->_elements as $key=>$button) {
-      $btnType = $buttons->_elements[$key]->_attributes['type'];
-      if ($btnType == 'submit') {
-        $btnName = $buttons->_elements[$key]->_attributes['name'];
-        $btnValue = $buttons->_elements[$key]->_attributes['value'];
-        if (!in_array($btnName, $btnExcludeName) &&
-            !in_array($btnValue, $btnExcludeValue)) {
-          $js = "if(this.value!='Processing...'){this._nyss_oldvalue=this.value;this.value='Processing...';cj('#' + this.id).click();this.value=this._nyss_oldvalue;return true;}else{return false;}";
-          $buttons->_elements[$key]->_attributes['onclick'] = $js;
-        }
-        elseif (in_array($btnName, $btnHandleValid)) {
-          $jsValid = $jsCancel = '';
-          if (strpos($btnName, '_cancel') === false) {
-            $jsValid = '&& cj("#Contact").valid()';
-          }
-          $js = 'if(this.value!="Processing..." '.$jsValid.' ){this._nyss_oldvalue=this.value;this.value="Processing...";cj("#" + this.id).click();this.value=this._nyss_oldvalue;return true;}else{return false;}';
-          $buttons->_elements[$key]->_attributes['onclick'] = $js;
-        }
-      }
-    }
-    //CRM_Core_Error::debug($buttons);
-  }
+  _nyss_preventDoubleSubmit($formName, $form);
 
   //add js popup msg to report pdf button
   if ($form->getVar('_instanceForm') && $pdfVar = $form->getVar('_pdfButtonName')) {
@@ -1751,3 +1667,76 @@ function _fixTitles()
     }
   }
 } // _fixTitles()
+
+/**
+ * @param $formName
+ * @param $form
+ *
+ * #3674 - prevent users from submitting forms multiple times
+ * see also themes/Bluebird/scripts/civi-header.js
+ */
+function _nyss_preventDoubleSubmit($formName, &$form) {
+  if (isset($form->_elementIndex['buttons']) &&
+    strpos($formName, 'Inline') === false
+  ) {
+    $buttons =& $form->getElement('buttons');
+
+    //list of exclusions by name or value
+    $btnExcludeName = array(
+      '_qf_Select_next',
+      '_qf_Map_next',
+      '_qf_PDF_submit',
+      '_qf_PDF_cancel',
+      '_qf_Contact_upload_view', //handle separately
+      '_qf_Contact_upload_new', //handle separately
+      '_qf_Contact_upload_cancel', //handle separately
+      '_qf_Email_upload', //7393
+      '_qf_Relationship_upload', //4414
+      '_qf_Search_refresh',
+      '_qf_ProofingReport_next',
+      '_qf_ProofingReport_submit',
+      '_qf_Label_cancel',
+      '_qf_Label_submit',
+      '_qf_ExportPermissions_next',
+      '_qf_ExportPermissions_submit',
+      '_qf_ExportPermissions_cancel',
+      '_qf_Website_upload', //7800
+      '_qf_Demographics_upload', //7800
+      '_qf_CustomData_upload', //7800
+      '_qf_ProofingReport_next', //11526
+      '_qf_ProofingReport_submit', //11526
+    );
+    $btnExcludeValue = array(
+      'PDF',
+      'Print Contact List',
+      'File on case'
+    );
+    $btnHandleValid = array(
+      '_qf_Contact_upload_view',
+      '_qf_Contact_upload_new',
+      '_qf_Contact_upload_cancel',
+    );
+
+    foreach ($buttons->_elements as $key=>$button) {
+      $btnType = $buttons->_elements[$key]->_attributes['type'];
+      if ($btnType == 'submit') {
+        $btnName = $buttons->_elements[$key]->_attributes['name'];
+        $btnValue = $buttons->_elements[$key]->_attributes['value'];
+        if (!in_array($btnName, $btnExcludeName) &&
+          !in_array($btnValue, $btnExcludeValue)) {
+          $js = "if(this.value!='Processing...'){this._nyss_oldvalue=this.value;this.value='Processing...';cj('#' + this.id).click();this.value=this._nyss_oldvalue;return true;}else{return false;}";
+          $buttons->_elements[$key]->_attributes['onclick'] = $js;
+        }
+        elseif (in_array($btnName, $btnHandleValid)) {
+          $jsValid = $jsCancel = '';
+          if (strpos($btnName, '_cancel') === false) {
+            $jsValid = '&& cj("#Contact").valid()';
+          }
+          $js = 'if(this.value!="Processing..." '.$jsValid.' ){this._nyss_oldvalue=this.value;this.value="Processing...";cj("#" + this.id).click();this.value=this._nyss_oldvalue;return true;}else{return false;}';
+          $buttons->_elements[$key]->_attributes['onclick'] = $js;
+        }
+      }
+    }
+    //CRM_Core_Error::debug($buttons);
+  }
+}

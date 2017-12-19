@@ -335,7 +335,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
   while ($l = $fo->getLine()) {
 
-    if ($nyss_ioline%BATCHSIZE==0) {
+    if ($nyss_ioline%BATCHSIZE == 0) {
       mysqli_query($nyss_conn, "START TRANSACTION");
     }
 
@@ -543,7 +543,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
       }
     }
 
-    _processNote($l);
+    _processNote($l, $nyss_conn);
 
     if ($nyss_ioline%BATCHSIZE == 0) {
       mysqli_query($nyss_conn, "COMMIT");
@@ -686,11 +686,18 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state)
     $nyss_select = array();
     foreach ($nyss_iofields as $table=>$tableDetails) {
       $tmp = array();
-      foreach ($tableDetails as $key=>$importField) {
+      foreach ($tableDetails as $key => $importField) {
         $tmp[] = "`{$importField['fld']}` as '{$key}'";
+
         if (isset($importField['PK']) && $importField['PK']) {
           $nyss_select[$table]['PK']['importField'] = $key;
           $nyss_select[$table]['PK']['civiField'] = $importField['fld'];
+        }
+
+        if (!empty($importField['FK'])) {
+          $nyss_select[$table]['FK']['fkAlias'] = $importField['FK']['fk_alias'];
+          $nyss_select[$table]['FK']['fkField'] = $importField['fld'];
+          $nyss_select[$table]['FK']['fkMap'] = $importField['FK'];
         }
       }
       $nyss_select[$table]['fields'] = implode(",",$tmp);
@@ -709,30 +716,52 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state)
   //nyss_out('debug', "fields: {$nyss_select[$tbl]['fields']}", true);
   //nyss_out('debug', $l, true);
 
-  //if we are being passed a key, this is going to be an update
-  //otherwise it's an insert
+  //11516 if passed an ID, verify before determining update/insert
+  if (!empty($l[$pkImport])) {
+    $sql = "
+      SELECT {$nyss_select[$tbl]['fields']} 
+      FROM {$tbl} 
+      WHERE {$pkCivi} = {$l[$pkImport]}
+    ";
+    //nyss_out('debug', 'record Id Check:', true);
+    //nyss_out('debug', $sql, true);
+    $result = mysqli_query($nyss_conn, $sql);
+    if (!$result || mysqli_num_rows($result) == 0) {
+      nyss_out('error', 'attempting to update but no existing record found. skipping...', TRUE);
+      mysqli_free_result($result);
+      return;
+    }
+  }
+
+  //11516 also check if a foreign key relationship exists
+  $fkDetails = $nyss_select[$tbl]['FK'];
+  //nyss_out('debug', 'fkDetails:', true);
+  //nyss_out('debug', $fkDetails, true);
+  if (!empty($fkDetails) && !empty($l[$fkDetails['fkAlias']])) {
+    $sql = "
+      SELECT {$fkDetails['fkMap']['fk_id']}
+      FROM {$fkDetails['fkMap']['table']}
+      WHERE {$fkDetails['fkMap']['fk_id']} = {$l[$fkDetails['fkAlias']]}
+    ";
+    //nyss_out('debug', 'fk Check:', true);
+    //nyss_out('debug', $sql, true);
+    $result = mysqli_query($nyss_conn, $sql);
+    if (!$result || mysqli_num_rows($result) == 0) {
+      nyss_out('error', 'attempting to update related record but no FK match found. skipping...', TRUE);
+      mysqli_free_result($result);
+      return;
+    }
+  }
+
+  //if we are passed a key, update; else insert
   if (!empty($l[$pkImport])) {
     //nyss_out('status', 1, true);
     //nyss_out('debug', $pkCivi, true);
     //nyss_out('debug', $pkImport, true);
     //nyss_out('debug', $l, true);
 
-    //get the existing data
-    $sql = "SELECT ".$nyss_select[$tbl]['fields']." FROM {$tbl} WHERE {$pkCivi}={$l[$pkImport]}";
-    //nyss_out('debug', $sql, true);
-
-    $result = mysqli_query($nyss_conn, $sql);
-    //nyss_out('error','id lookup result:',true);
-    //nyss_out('debug', $result, true);
-
-    $dao = new stdClass();
-    if (!$result || mysqli_num_rows($result) == 0) {
-      nyss_out('error','no civirecord found. not importing.',true);
-    }
-    else {
-      $dao = mysqli_fetch_object($result);
-    }
-
+    //get results from query above
+    $dao = mysqli_fetch_object($result);
     mysqli_free_result($result);
 
     $up = array();
@@ -1507,28 +1536,76 @@ function _processCurrentEmployer(&$l, $nyss_conn, $dryrun)
 {
   if (array_key_exists('current_employer', $l) && !empty($l['current_employer'])) {
     $sql = sprintf("
-      SELECT c.id
+      SELECT c.id, c.organization_name
       FROM civicrm_contact c
-      WHERE c.organization_name = %s
+      WHERE c.organization_name = '%s'
         AND c.contact_type = 'Organization'
         AND is_deleted = 0
       LIMIT 1",
-      mysqli_real_escape_string($l['current_employer'], $nyss_conn)
+      mysqli_real_escape_string($nyss_conn, $l['current_employer'])
     );
     $result = mysqli_query($nyss_conn, $sql);
 
     if ($result && $row = mysqli_fetch_assoc($result)) {
-      $current_employer = $row['orgID'];
+      $employerID = $row['id'];
+      $employerName = $row['organization_name'];
     }
     else {
-      $current_employer = convertProperCase($l['current_employer']);
+      //org was not found with earlier lookup; unsupervised rule is stricter -- no expected return
+      //create org contact here and pass ID
+      try {
+        $employerName = convertProperCase($l['current_employer']);
+        $newOrg = civicrm_api3('contact', 'create', [
+          'contact_type' => 'Organization',
+          'organization_name' => $employerName,
+        ]);
+        $employerID = $newOrg['id'];
+      }
+      catch (CiviCRM_API3_Exception $e) {}
     }
 
-    if ($dryrun) {
-      nyss_out('debug', $current_employer, true);
+    if ($dryrun || empty($employerID)) {
+      nyss_out('debug', $employerName.'::'.$employerID, true);
     }
     else {
-      CRM_Contact_BAO_Contact_Utils::createCurrentEmployerRelationship($l['id'], $current_employer);
+      //this creates lock wait timeout errors; handle manually
+      //CRM_Contact_BAO_Contact_Utils::createCurrentEmployerRelationship($l['id'], $employerID);
+
+      $relTypeId = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_RelationshipType',
+        'Employee of', 'id', 'name_a_b');
+
+      if ($relTypeId) {
+        try {
+          $relParams = [
+            'relationship_type_id' => $relTypeId,
+            'contact_id_a' => $l['id'],
+            'contact_id_b' => $employerID,
+            'is_active' => TRUE,
+          ];
+          //don't use API; conflicts with transaction wrapper
+          //$rel = civicrm_api3('relationship', 'create', $relParams);
+
+          //insert rel
+          $sql = sprintf("
+            INSERT IGNORE INTO civicrm_relationship
+            (relationship_type_id, contact_id_a, contact_id_b, is_active)
+            VALUES
+            ({$relParams['relationship_type_id']}, {$relParams['contact_id_a']}, {$relParams['contact_id_b']}, {$relParams['is_active']})
+          ");
+          mysqli_query($nyss_conn, $sql) or die(mysqli_error($nyss_conn));
+
+          //update contact cache
+          $sql = sprintf("
+            UPDATE civicrm_contact
+            SET employer_id = {$employerID}, organization_name = '%s'
+            WHERE id = {$l['id']}
+          ", mysqli_real_escape_string($nyss_conn, $employerName));
+          mysqli_query($nyss_conn, $sql) or die(mysqli_error($nyss_conn));
+        }
+        catch (CiviCRM_API3_Exception $e) {
+          Civi::log()->debug('_processCurrentEmployer', array('e' => $e));
+        }
+      }
     }
 
     mysqli_free_result($result);
@@ -1536,31 +1613,38 @@ function _processCurrentEmployer(&$l, $nyss_conn, $dryrun)
     unset($sql);
     unset($row);
     unset($result);
-    unset($current_employer);
+    unset($employerID);
   }
 } // _processCurrentEmployer()
 
 
-function _processNote(&$l)
+function _processNote(&$l, $nyss_conn)
 {
   global $dryrun;
 
   if (array_key_exists('note', $l) && !empty($l['note'])) {
     $params = array(
-      'version' => 3,
       'entity_table' => 'civicrm_contact',
       'entity_id' => $l['id'],
       'note' => $l['note'],
       'contact_id' => $l['id'],
       'modified_date' => date('Ymd'),
       'subject' => 'Import Note',
+      'privacy' => 0,
     );
 
     if ($dryrun) {
-      nyss_out('debug', $l['note'], true);
+      nyss_out('debug', $params, true);
     }
     else {
-      civicrm_api('note', 'create', $params);
+      //don't use API or it conflicts with transaction wrapper
+      $sql = sprintf("
+        INSERT INTO civicrm_note
+        (entity_table, entity_id, note, contact_id, modified_date, subject, privacy)
+        VALUES
+        ('{$params['entity_table']}', {$params['entity_id']}, %s, {$params['contact_id']}, '{$params['modified_date']}', '{$params['subject']}', {$params['privacy']})
+      ", mysqli_real_escape_string($nyss_conn, $params['note']));
+      mysqli_query($nyss_conn, $sql) or die(mysqli_error($nyss_conn));
     }
 
     unset($params);

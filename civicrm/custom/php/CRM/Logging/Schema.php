@@ -828,12 +828,12 @@ COLS;
     }
 
     // build the triggers for the delta log summary and detail tables #NYSS 7893
-    self::nyssBuildSummaryTableTrigger($info);
-    self::nyssBuildDetailTableTrigger($info);
+    //self::nyssBuildSummaryTableTrigger($info);
+    //self::nyssBuildDetailTableTrigger($info);
 
     // prepare the trigger SQL for tables included in the delta log
-    $this->nyssPrepareDeltaTriggers();
-    $this->nyssPrepareCustomTriggers();
+    //$this->nyssPrepareDeltaTriggers();
+    //$this->nyssPrepareCustomTriggers();
 
     $insert = array('INSERT');
     $update = array('UPDATE');

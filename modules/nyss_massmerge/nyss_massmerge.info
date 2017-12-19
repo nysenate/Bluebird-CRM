@@ -3,4 +3,4 @@ description = NYSS Mass Merge Module
 dependencies[] = civicrm
 package = CiviCRM
 core = 7.x
-version = 4.2
+version = 4.7

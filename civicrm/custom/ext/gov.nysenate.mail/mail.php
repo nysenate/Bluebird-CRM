@@ -211,13 +211,11 @@ function mail_civicrm_entityTypes(&$entityTypes) {
   };
 }
 
-function mail_civicrm_alterMailingRecipients(&$mailing, &$queue, $job_id, &$params, $context) {
+function mail_civicrm_alterMailingRecipients(&$mailing, &$params, $context) {
   /*Civi::log()->debug('mail_civicrm_alterMailingRecipients', array(
-    '$context' => $context,
-    '$mailing' => $mailing,
-    '$queue' => $queue,
-    '$job_id' => $job_id,
+    //'$mailing' => $mailing,
     '$params' => $params,
+    '$context' => $context,
   ));*/
 
   if ($context == 'pre') {
@@ -288,6 +286,28 @@ function mail_civicrm_pre($op, $objectName, $id, &$params) {
     $params['auto_responder'] = 0;
     $params['open_tracking'] = 0;
     $params['visibility'] = 'Public Pages';
+  }
+}
+
+function mail_civicrm_links($op, $objectName, $objectId, &$links, &$mask, &$values) {
+  /*Civi::log()->debug('mail_civicrm_links', array(
+    '$op' => $op,
+    '$objectName' => $objectName,
+    '$objectId' => $objectId,
+    '$links' => $links,
+    '$mask' => $mask,
+    '$values' => $values,
+  ));*/
+
+  //11500
+  if (strpos($op, 'view.mailing.browse') !== FALSE &&
+    $objectName == 'Mailing'
+  ) {
+    foreach ($links as $key => $link) {
+      if ($link['name'] == 'Public View') {
+        unset($links[$key]);
+      }
+    }
   }
 }
 

@@ -274,9 +274,16 @@ function tags_civicrm_buildForm($formName, &$form) {
       ));
     }
 
-    //11072 auto-open issue code branch
-    CRM_Core_Region::instance('page-body')->add(array(
-      'jquery' => "$('li#tag_291').removeClass('jstree-closed').addClass('jstree-open').addClass('tuna');",
+    //11072/11450 auto-expand issue code tree
+    CRM_Core_Region::instance('form-bottom')->add(array(
+      'jquery' => "
+        var interval_id = setInterval(function(){
+          if ($('li#j1_1').length != 0){
+            clearInterval(interval_id)
+            $('#tagtree').jstree('open_node', $('li#j1_1'))
+          }
+        }, 5);
+      ",
     ));
   }
 
@@ -356,13 +363,17 @@ function tags_civicrm_pageRun(&$page) {
   }
 }
 
-function tags_civicrm_alterEntityRefParams(&$params) {
-  //Civi::log()->debug('tags_civicrm_alterEntityRefParams', array('params' => $params));
+function tags_civicrm_alterEntityRefParams(&$params, $formName) {
+  /*Civi::log()->debug('tags_civicrm_alterEntityRefParams', array(
+    'params' => $params,
+    'formName' => $formName,
+  ));*/
 
-  //use custom api for legislative positions
+  //use custom api for legislative positions; exclude search forms
   if ($params['entity'] == 'tag' &&
     !empty($params['api']['params']['parent_id']) &&
-    $params['api']['params']['parent_id'] == 292
+    $params['api']['params']['parent_id'] == 292 &&
+    strpos($formName, 'Search') === FALSE
   ) {
     //Civi::log()->debug('tags_civicrm_alterEntityRefParams', array('params' => $params));
     $params['entity'] = 'nyss_tags';

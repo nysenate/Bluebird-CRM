@@ -150,9 +150,10 @@
               return;
             }
 
-            CRM.api3('Group', 'getlist', { params: { id: { IN: gids } }, extra: ["is_hidden"] }).then(
+            //NYSS 11523
+            CRM.api3('Group', 'getlist', { params: { id: { IN: gids }, options: { limit: 0 } }, extra: ["is_hidden"] } ).then(
               function(glist) {
-                CRM.api3('Mailing', 'getlist', { params: { id: { IN: mids } } }).then(
+                CRM.api3('Mailing', 'getlist', { params: { id: { IN: mids }, options: { limit: 0 } } }).then(
                   function(mlist) {
                     var datamap = [];
 
