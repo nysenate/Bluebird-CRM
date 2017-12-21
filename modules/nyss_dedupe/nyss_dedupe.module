@@ -84,7 +84,7 @@ function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
   //var_dump($o);
   //var_dump($table);
   //don't run these during user account/contact creation
-  if( $o->noRules || $table != 'table')
+  if($o->noRules || $table != 'table')
     return;
 
   $ruleMap = array(

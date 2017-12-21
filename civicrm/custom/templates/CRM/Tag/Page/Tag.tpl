@@ -246,6 +246,10 @@
           .on('click', '.used-for-toggle', function() {
             $(this).attr('style', 'display: none !important;').next().show();
           })
+          //NYSS 11439
+          .on('click', 'a.crm-clear-link', function() {
+            $('.tag-tree', $panel).jstree(true).refresh();
+          })
           .on('crmPopupFormSuccess crmFormSuccess', function(e, cts, data) {
             if ($(e.target).hasClass('tagset-action-delete')) {
               deleteTagset();
@@ -276,7 +280,10 @@
               check_callback: true
             },
             'search': {
-              'case_insensitive' : true,
+              //NYSS 11439
+              'ajax' : {
+                url : CRM.url('civicrm/ajax/tagTree')
+              },
               'show_only_matches': true
             },
             plugins: plugins,
@@ -287,7 +294,12 @@
 
         //NYSS 11439
         $('input[name=filter_tag_tree]', $panel).on('keyup change', function() {
-          $(".tag-tree", $panel).jstree("search", $(this).val());
+          if ($(this).val() == null) {
+            $('.tag-tree', $panel).jstree(true).refresh();
+          }
+          else {
+            $(".tag-tree", $panel).jstree("search", $(this).val());
+          }
         });
       }
 
