@@ -179,6 +179,7 @@ class CRM_Report_Form_Mailing_Opened extends CRM_Report_Form {
         'id' => array(
           'required' => TRUE,
           'no_display' => TRUE,
+          'dbAlias' => CRM_Utils_SQL::supportsFullGroupBy() ? 'ANY_VALUE(mailing_event_opened_civireport.id)' : NULL,//NYSS
         ),
         'time_stamp' => array(
           'title' => ts('Open Date'),
@@ -193,11 +194,9 @@ class CRM_Report_Form_Mailing_Opened extends CRM_Report_Form {
         ),
         //NYSS 10954
         'unique_opens' => array(
-          'name' => 'unique_opens',
           'title' => ts('Unique Opens'),
-          'type' => CRM_Utils_Type::T_INT,
-          'operatorType' => CRM_Report_Form::OP_SELECT,
-          'options' => array('0' => ts('No'), '1' => ts('Yes')),
+          'type' => CRM_Utils_Type::T_BOOLEAN,
+          'pseudofield' => TRUE,
         ),
       ),
       'order_bys' => array(
@@ -302,24 +301,14 @@ class CRM_Report_Form_Mailing_Opened extends CRM_Report_Form {
   }
 
   public function groupBy() {
-    if (!empty($this->_params['charts'])) {
-      $groupBy = "{$this->_aliases['civicrm_mailing']}.id";
-    }
-    else {
-      $groupBy = "civicrm_mailing_event_queue.email_id";
-    }
-    $this->_groupBy = CRM_Contact_BAO_Query::getGroupByFromSelectColumns($this->_selectClauses, $groupBy);
-
     //NYSS 10954/11556
+    $groupBys = empty($this->_params['charts']) ? array("civicrm_mailing_event_queue.email_id") : array("{$this->_aliases['civicrm_mailing']}.id");
+
     if (!empty($this->_params['unique_opens_value'])) {
-      $this->_groupBy .= ", civicrm_mailing_event_queue.id";
-      $this->_groupBy = str_replace('mailing_event_opened_civireport.id,',
-        '',
-        $this->_groupBy);
-      $this->_select = str_replace('mailing_event_opened_civireport.id',
-        'ANY_VALUE(mailing_event_opened_civireport.id)',
-        $this->_select);
+      $groupBys[] = "civicrm_mailing_event_queue.id";
     }
+    $this->_select = CRM_Contact_BAO_Query::appendAnyValueToSelect($this->_selectClauses, $groupBys);
+    $this->_groupBy = "GROUP BY " . implode(', ', $groupBys);
     /*Civi::log()->debug('groupBy', array(
       '_params' => $this->_params,
       '_groupBy' => $this->_groupBy,
