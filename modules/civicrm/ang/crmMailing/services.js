@@ -277,6 +277,7 @@
             }
           });
           delete params.recipients; // the content was merged in
+          params._skip_evil_bao_auto_recipients_ = 1; // skip recipient rebuild on mail preview //NYSS
           return qApi('Mailing', 'create', params).then(function(result) {
             mailing.modified_date = result.values[result.id].modified_date;
             // changes rolled back, so we don't care about updating mailing
@@ -371,6 +372,7 @@
 
         delete params.recipients; // the content was merged in
 
+        params._skip_evil_bao_auto_recipients_ = 1; // skip recipient rebuild on simple save //NYSS
         return qApi('Mailing', 'create', params).then(function(result) {
           if (result.id && !mailing.id) {
             mailing.id = result.id;
@@ -424,6 +426,7 @@
 
         delete params.recipients; // the content was merged in
 
+        params._skip_evil_bao_auto_recipients_ = 1; // skip recipient rebuild while sending test mail //NYSS
         return qApi('Mailing', 'create', params).then(function (result) {
           if (result.id && !mailing.id) {
             mailing.id = result.id;
