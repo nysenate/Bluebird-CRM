@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# v161.sh
+# v210.sh
 #
 # Project: BluebirdCRM
 # Authors: Brian Shaughnessy and Ken Zalewski
@@ -42,7 +42,7 @@ ldb=$log_db_prefix$db_basename;
 ## migrate messages matched_to and activity_id column to separate table
 echo "$prog: create messages_matched table"
 sql="
-  CREATE TABLE nyss_inbox_messages_matched (
+  CREATE TABLE IF NOT EXISTS nyss_inbox_messages_matched (
     id int(10) NOT NULL,
     message_id int(10) NOT NULL,
     matched_id int(10) NOT NULL,
@@ -62,7 +62,7 @@ $execSql $instance -c "$sql" -q
 
 echo "$prog: migrate data to messages_matched table"
 sql="
-  INSERT INTO nyss_inbox_messages_matched
+  INSERT IGNORE INTO nyss_inbox_messages_matched
   (message_id, matched_id, activity_id)
   SELECT message_id, matched_to, ANY_VALUE(activity_id) FROM nyss_inbox_messages GROUP BY message_id, matched_to;
 "
