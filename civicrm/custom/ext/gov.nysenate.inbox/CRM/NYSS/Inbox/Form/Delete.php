@@ -43,6 +43,7 @@ class CRM_NYSS_Inbox_Form_Delete extends CRM_Core_Form {
 
   public function postProcess() {
     $values = $this->exportValues();
+    //Civi::log()->debug('Delete postProcess', array('$values' => $values));
 
     if (empty($values['row_id'])) {
       CRM_Core_Session::setStatus('Unable to delete this message.');

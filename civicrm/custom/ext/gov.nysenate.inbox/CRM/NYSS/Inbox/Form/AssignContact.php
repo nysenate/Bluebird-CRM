@@ -47,6 +47,7 @@ class CRM_NYSS_Inbox_Form_AssignContact extends CRM_Core_Form {
     //Civi::log()->debug('AssignContact postProcess', array('values' => $values));
 
     $response = CRM_NYSS_Inbox_BAO_Inbox::assignMessage($values['id'], explode(',', $values['matches']));
+    //Civi::log()->debug('AssignContact postProcess', array('$response' => $response));
 
     $message = 'The message has been matched.';
     if (!empty($response['message'])) {

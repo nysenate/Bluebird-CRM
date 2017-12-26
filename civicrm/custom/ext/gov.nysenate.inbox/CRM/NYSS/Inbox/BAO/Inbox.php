@@ -159,6 +159,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     if (empty($ids) && !empty(CRM_Utils_Array::value('ids', $_REQUEST))) {
       $ids = CRM_Utils_Array::value('ids', $_REQUEST);
     }
+    //Civi::log()->debug('deleteMessages', array('$ids' => $ids));
 
     $userId = CRM_Core_Session::getLoggedInContactID();
     if (empty($userId)) {
@@ -170,8 +171,18 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     }
 
     foreach ($ids as $idPair) {
+      //if passed from single delete form, we get an array; if multiple-deleted, we need to split
+      if (!is_array($idPair)) {
+        $pair = explode('-', $idPair);
+        $idPair = array(
+          'row_id' => $pair[0],
+          'matched_id' => $pair[1],
+        );
+      }
+
       //check if message has > 1 matched contact
       $messageMatches = self::getMessageMatches($idPair['row_id']);
+      //Civi::log()->debug('deleteMessages', array('$messageMatches' => $messageMatches));
 
       //if more than 1, we only delete the match record
       if (count($messageMatches) > 1) {
@@ -439,6 +450,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         'message' => 'Unable to assign the message; missing required values.'
       );
     }
+    //Civi::log()->debug('assignMessage', array('$contactIds' => $contactIds));
 
     //array to hold details of each processed match
     $matches = array();
@@ -461,16 +473,25 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     }
 
     foreach ($contactIds as $contactId) {
+      //cleanup subject line
+      $subject = str_replace('>', '', $message['subject']);
+      $subject = str_replace('  ', ' ', $subject);
+      $subject = substr($subject, 0, 250);
+
       $params = [
         'activity_label' => 'Inbound Email',
         'source_contact_id' => $forwarder,
         'target_contact_id' => $contactId,
-        'subject' => substr($message['subject'], 0, 250),
+        'subject' => $subject,
         'is_auto' => 0,
         'status_id' => $status,
         'activity_date_time' => $message['date_updated'],
         'details' => $message['body'],
       ];
+      /*Civi::log()->debug('assignMessage', array(
+        '$params' => $params,
+        'subject length' => strlen($params['subject']),
+      ));*/
 
       try {
         $activity = civicrm_api3('activity', 'create', $params);
