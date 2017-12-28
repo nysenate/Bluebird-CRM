@@ -59,6 +59,9 @@ div.crm-matchedmessages-selector {
 .email_address {
   cursor: pointer;
 }
+select.crm-entityref-filter-key option[value=contact_type] {
+  display: none;
+}
 .empty {
   background-color: #999;
 }
