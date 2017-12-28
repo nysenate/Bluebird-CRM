@@ -11,6 +11,12 @@
   </div>
 {/foreach}
 
+<div class="crm-section" id="match-emails">
+  <div class="label">Match Details</div>
+  <div class="content"></div>
+  <div class="clear"></div>
+</div>
+
 {*display message*}
 <div>
   <h3>Message Details</h3>

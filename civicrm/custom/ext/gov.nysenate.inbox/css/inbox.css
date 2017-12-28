@@ -47,6 +47,18 @@ div.crm-matchedmessages-selector {
 .multi {
   background-color: #468847;
 }
+.match-details {
+  font-size: 90%;
+  padding-left: 4px;
+}
+.match-sort_name {
+  width: 200px;
+  display: inline-block;
+  overflow: hidden;
+}
+.email_address {
+  cursor: pointer;
+}
 .empty {
   background-color: #999;
 }

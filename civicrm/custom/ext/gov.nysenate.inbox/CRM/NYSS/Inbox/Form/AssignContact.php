@@ -7,7 +7,7 @@
  */
 class CRM_NYSS_Inbox_Form_AssignContact extends CRM_Core_Form {
   public function buildQuickForm() {
-    CRM_NYSS_Inbox_BAO_Inbox::addResources();
+    CRM_NYSS_Inbox_BAO_Inbox::addResources('assign');
 
     //get details about record
     $id = CRM_Utils_Request::retrieve('id', 'Positive');
@@ -44,10 +44,42 @@ class CRM_NYSS_Inbox_Form_AssignContact extends CRM_Core_Form {
 
   public function postProcess() {
     $values = $this->exportValues();
-    //Civi::log()->debug('AssignContact postProcess', array('values' => $values));
+    //Civi::log()->debug('AssignContact postProcess', array('values' => $values, '$_REQUEST' => $_REQUEST));
 
     $response = CRM_NYSS_Inbox_BAO_Inbox::assignMessage($values['id'], explode(',', $values['matches']));
     //Civi::log()->debug('AssignContact postProcess', array('$response' => $response));
+
+    //determine if we need to update the email address
+    foreach (explode(',', $values['matches']) as $matchId) {
+      $email = CRM_Utils_Array::value('email-'.$matchId, $_REQUEST);
+      $emailOrig = CRM_Utils_Array::value('emailorig-'.$matchId, $_REQUEST);
+
+      if ($email != $emailOrig) {
+        try {
+          if (!empty($email)) {
+            civicrm_api3('email', 'create', [
+              'contact_id' => $matchId,
+              'email' => $email,
+              'is_primary' => TRUE,
+            ]);
+          }
+          else {
+            //allow an empty value to delete existing email record
+            $primaryEmail = civicrm_api3('email', 'getsingle', array(
+              'contact_id' => $matchId,
+              'is_primary' => TRUE,
+            ));
+
+            if ($primaryEmail['email'] == $emailOrig) {
+              civicrm_api3('email', 'delete', array(
+                'id' => $primaryEmail['id'],
+              ));
+            }
+          }
+        }
+        catch (CiviCRM_API3_Exception $e) {}
+      }
+    }
 
     $message = 'The message has been matched.';
     if (!empty($response['message'])) {

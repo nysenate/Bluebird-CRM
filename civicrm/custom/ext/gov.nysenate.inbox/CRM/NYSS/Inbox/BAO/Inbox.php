@@ -38,6 +38,9 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       case 'process':
         CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.inbox', 'js/inbox_process.js');
         break;
+      case 'assign':
+        CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.inbox', 'js/inbox_assign.js');
+        break;
       default:
     }
   }
