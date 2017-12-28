@@ -15,7 +15,7 @@
       <div class="clear"></div>
     </div>
     <div class="crm-section">
-      <div class="label">Current Match:</div>
+      <div class="label">Current Match</div>
       <div class="content">{if $is_multiple}({$multiple_count} Contacts){else}{$details.matched_to_display}{/if}</div>
       <div class="clear"></div>
     </div>
