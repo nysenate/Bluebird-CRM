@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# v1603.sh
+# v203.sh
 #
 # Project: BluebirdCRM
 # Authors: Brian Shaughnessy and Ken Zalewski
