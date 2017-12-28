@@ -16,7 +16,7 @@
     </div>
     <div class="crm-section">
       <div class="label">Currently Matched to:</div>
-      <div class="content">{$details.matched_to_display}</div>
+      <div class="content">{if $is_multiple}({$multiple_count} Contacts){else}{$details.matched_to_display}{/if}</div>
       <div class="clear"></div>
     </div>
   </div>
@@ -67,6 +67,7 @@
 <p></p>
 
 {*display message*}
+{if !$is_multiple}
 <div>
   <h3>Message Details</h3>
   <div class="crm-section">
@@ -100,6 +101,7 @@
     <div class="clear"></div>
   </div>
 </div>
+{/if}
 
 {* FOOTER *}
 <div class="crm-submit-buttons">

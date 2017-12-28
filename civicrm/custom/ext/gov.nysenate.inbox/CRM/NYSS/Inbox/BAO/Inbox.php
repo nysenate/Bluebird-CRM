@@ -596,104 +596,135 @@ class CRM_NYSS_Inbox_BAO_Inbox {
    */
   static function processMessages($values) {
     $msg = array();
-
-    if (!empty($values['assignee'])) {
-      CRM_Core_DAO::executeQuery("
-        UPDATE nyss_inbox_messages_matched
-        SET matched_id = %1
-        WHERE message_id = %2
-          AND matched_id = %3
-      ", array(
-        1 => array($values['assignee'], 'Positive'),
-        2 => array($values['message_id'], 'Positive'),
-        2 => array($values['matched_id'], 'Positive'),
-      ));
+    if (!empty($values['is_multiple'])) {
+      $rows = json_decode($values['multi_ids'], TRUE);
+    }
+    else {
+      $rows = array(
+        array(
+          'row_id' => $values['row_id'],
+          'matched_id' => $values['matched_id'],
+          'message_id' => $values['message_id'],
+          'activity_id' => $values['activity_id'],
+          'current_assignee' => $values['matched_id'],
+        )
+      );
     }
 
-    if (!empty($values['contact_keywords'])) {
-      foreach (explode(',', $values['contact_keywords']) as $tagID) {
-        try {
-          civicrm_api3('entity_tag', 'create', array(
-            'entity_id' => (!empty($values['assignee'])) ? $values['assignee'] : $values['current_assignee'],
-            'tag_id' => $tagID,
-            'entity_table' => 'civicrm_contact',
-          ));
+    foreach ($rows as $row) {
+      if (!empty($values['assignee'])) {
+        //check if we have already matched with this contact
+        $matchId = CRM_Core_DAO::singleValueQuery("
+          SELECT id
+          FROM nyss_inbox_messages_matched
+          WHERE message_id = %1
+            AND matched_id = %2
+            AND id != %3
+        ", [
+          1 => [$row['message_id'], 'Positive'],
+          2 => [$values['assignee'], 'Positive'],
+          3 => [$row['row_id'], 'Positive'],
+        ]);
+
+        if ($matchId) {
+          //delete match record
+          self::deleteMessageMatch($matchId, $row['message_id'], $values['assignee']);
+          $msg[] = 'This message was already matched with the selected contact. Removing duplicate match.';
         }
-        catch (CiviCRM_API3_Exception $e) {
-          //Civi::log()->debug('processMessages contact keywords', array('e' => $e));
-          //$msg[] = 'Unable to assign all keywords to the contact.';
+        else {
+          CRM_Core_DAO::executeQuery("
+            UPDATE nyss_inbox_messages_matched
+            SET matched_id = %1
+            WHERE message_id = %2
+              AND matched_id = %3
+          ", [
+            1 => [$values['assignee'], 'Positive'],
+            2 => [$row['message_id'], 'Positive'],
+            3 => [$row['matched_id'], 'Positive'],
+          ]);
         }
       }
-    }
 
-    $tags = CRM_Utils_Array::value('tag', $_REQUEST);
-    if (!empty($tags)) {
-      foreach ($tags as $tagID => $dontCare) {
-        try {
-          civicrm_api3('entity_tag', 'create', array(
-            'entity_id' => (!empty($values['assignee'])) ? $values['assignee'] : $values['current_assignee'],
-            'tag_id' => $tagID,
-            'entity_table' => 'civicrm_contact',
-          ));
-        }
-        catch (CiviCRM_API3_Exception $e) {
-          //Civi::log()->debug('processMessages contact issue codes', array('e' => $e));
-          //$msg[] = 'Unable to assign all issue codes to the contact.';
-        }
-      }
-    }
-
-    if (!empty($values['contact_positions'])) {
-      foreach (explode(',', $values['contact_positions']) as $tagID) {
-        try {
-          civicrm_api3('entity_tag', 'create', array(
-            'entity_id' => (!empty($values['assignee'])) ? $values['assignee'] : $values['current_assignee'],
-            'tag_id' => $tagID,
-            'entity_table' => 'civicrm_contact',
-          ));
-        }
-        catch (CiviCRM_API3_Exception $e) {
-          //Civi::log()->debug('processMessages contact positions', array('e' => $e));
-          //$msg[] = 'Unable to assign all positions to the contact.';
-        }
-      }
-    }
-
-    //ensure we have an activity ID before processing these
-    if ($values['activity_id']) {
-      if (!empty($values['activity_keywords'])) {
-        foreach (explode(',', $values['activity_keywords']) as $tagID) {
+      if (!empty($values['contact_keywords'])) {
+        foreach (explode(',', $values['contact_keywords']) as $tagID) {
           try {
-            civicrm_api3('entity_tag', 'create', array(
-              'entity_id' => $values['activity_id'],
+            civicrm_api3('entity_tag', 'create', [
+              'entity_id' => (!empty($values['assignee'])) ? $values['assignee'] : $row['current_assignee'],
               'tag_id' => $tagID,
-              'entity_table' => 'civicrm_activity',
-            ));
-          }
-          catch (CiviCRM_API3_Exception $e) {
-            //Civi::log()->debug('processMessages activity keywords', array('e' => $e));
-            //$msg[] = 'Unable to assign all keywords to the activity.';
+              'entity_table' => 'civicrm_contact',
+            ]);
+          } catch (CiviCRM_API3_Exception $e) {
+            //Civi::log()->debug('processMessages contact keywords', array('e' => $e));
+            //$msg[] = 'Unable to assign all keywords to the contact.';
           }
         }
       }
 
-      if (!empty($values['activity_assignee']) || !empty($values['activity_status'])) {
-        $params = array('id' => $values['activity_id']);
+      $tags = CRM_Utils_Array::value('tag', $_REQUEST);
+      if (!empty($tags)) {
+        foreach ($tags as $tagID => $dontCare) {
+          try {
+            civicrm_api3('entity_tag', 'create', [
+              'entity_id' => (!empty($values['assignee'])) ? $values['assignee'] : $row['current_assignee'],
+              'tag_id' => $tagID,
+              'entity_table' => 'civicrm_contact',
+            ]);
+          } catch (CiviCRM_API3_Exception $e) {
+            //Civi::log()->debug('processMessages contact issue codes', array('e' => $e));
+            //$msg[] = 'Unable to assign all issue codes to the contact.';
+          }
+        }
+      }
 
-        if (!empty($values['activity_assignee'])) {
-          $params['assignee_contact_id'] = $values['activity_assignee'];
+      if (!empty($values['contact_positions'])) {
+        foreach (explode(',', $values['contact_positions']) as $tagID) {
+          try {
+            civicrm_api3('entity_tag', 'create', [
+              'entity_id' => (!empty($values['assignee'])) ? $values['assignee'] : $row['current_assignee'],
+              'tag_id' => $tagID,
+              'entity_table' => 'civicrm_contact',
+            ]);
+          } catch (CiviCRM_API3_Exception $e) {
+            //Civi::log()->debug('processMessages contact positions', array('e' => $e));
+            //$msg[] = 'Unable to assign all positions to the contact.';
+          }
+        }
+      }
+
+      //ensure we have an activity ID before processing these
+      if ($row['activity_id']) {
+        if (!empty($values['activity_keywords'])) {
+          foreach (explode(',', $values['activity_keywords']) as $tagID) {
+            try {
+              civicrm_api3('entity_tag', 'create', [
+                'entity_id' => $row['activity_id'],
+                'tag_id' => $tagID,
+                'entity_table' => 'civicrm_activity',
+              ]);
+            } catch (CiviCRM_API3_Exception $e) {
+              //Civi::log()->debug('processMessages activity keywords', array('e' => $e));
+              //$msg[] = 'Unable to assign all keywords to the activity.';
+            }
+          }
         }
 
-        if (!empty($values['activity_status'])) {
-          $params['status_id'] = $values['activity_status'];
-        }
+        if (!empty($values['activity_assignee']) || !empty($values['activity_status'])) {
+          $params = ['id' => $row['activity_id']];
 
-        try {
-          civicrm_api3('activity', 'create', $params);
-        }
-        catch (CiviCRM_API3_Exception $e) {
-          Civi::log()->debug('processMessages create activity', array('e' => $e));
-          $msg[] = 'Unable to update activity record.';
+          if (!empty($values['activity_assignee'])) {
+            $params['assignee_contact_id'] = $values['activity_assignee'];
+          }
+
+          if (!empty($values['activity_status'])) {
+            $params['status_id'] = $values['activity_status'];
+          }
+
+          try {
+            civicrm_api3('activity', 'create', $params);
+          } catch (CiviCRM_API3_Exception $e) {
+            Civi::log()->debug('processMessages create activity', ['e' => $e]);
+            $msg[] = 'Unable to update activity record.';
+          }
         }
       }
     }
@@ -962,4 +993,21 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     }
     return $res;
   } // reformulate_preg_array()
+
+  /**
+   * @param $rows
+   *
+   * @return array
+   *
+   * given the array structure for multiple rows, extract and return a simple array
+   * of row IDs
+   */
+  public static function getMultiRowIds($rows) {
+    $rowIds = array();
+    foreach ($rows as $row) {
+      $rowIds[] = $row['row_id'];
+    }
+
+    return $rowIds;
+  }
 }
