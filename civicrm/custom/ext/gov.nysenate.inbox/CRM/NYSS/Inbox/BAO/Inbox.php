@@ -595,6 +595,8 @@ class CRM_NYSS_Inbox_BAO_Inbox {
    * process message record: assignment, contact tags, activity tags, activity details
    */
   static function processMessages($values) {
+    //Civi::log()->debug('processMessages', array('values' => $values, '$_REQUEST' => $_REQUEST));
+
     $msg = array();
     if (!empty($values['is_multiple'])) {
       $rows = json_decode($values['multi_ids'], TRUE);
@@ -660,9 +662,9 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         }
       }
 
-      $tags = CRM_Utils_Array::value('tag', $_REQUEST);
+      $tags = explode(',', CRM_Utils_Array::value('tag', $values));
       if (!empty($tags)) {
-        foreach ($tags as $tagID => $dontCare) {
+        foreach ($tags as $tagID) {
           try {
             civicrm_api3('entity_tag', 'create', [
               'entity_id' => (!empty($values['assignee'])) ? $values['assignee'] : $row['current_assignee'],
