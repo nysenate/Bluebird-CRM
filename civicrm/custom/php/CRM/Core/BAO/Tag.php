@@ -567,12 +567,16 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
     // only fetch those tags which has child tags
     $dao = CRM_Utils_SQL_Select::from('civicrm_tag parent')
               ->join('child', 'INNER JOIN civicrm_tag child ON child.parent_id = parent.id ')
-              ->select('parent.id as parent_id, GROUP_CONCAT(child.id) as child_id')
+              ->select('parent.id as parent_id, GROUP_CONCAT(child.id) as child_id, parent.parent_id as ppid')//NYSS
               ->where($whereClauses)
               ->groupBy('parent.id')
               ->execute();
     while ($dao->fetch()) {
       $childTagIDs[$dao->parent_id] = (array) explode(',', $dao->child_id);
+      //NYSS
+      if ($searchString && $dao->ppid) {
+        $childTagIDs[$dao->ppid] = array($dao->parent_id);
+      }
     }
 
     // check if child tag has any childs, if found then include those child tags inside parent tag
