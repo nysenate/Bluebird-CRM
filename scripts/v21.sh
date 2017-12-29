@@ -31,20 +31,16 @@ fi
 echo "$prog: create messages_matched table"
 sql="
   CREATE TABLE IF NOT EXISTS nyss_inbox_messages_matched (
-    id int(10) NOT NULL,
+    id int(10) NOT NULL AUTO_INCREMENT,
     message_id int(10) NOT NULL,
     matched_id int(10) NOT NULL,
-    activity_id int(10) NOT NULL
+    activity_id int(10) NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY idx_message_matched_unique (message_id, matched_id),
+    KEY message_id (message_id),
+    KEY matched_id (matched_id),
+    KEY activity_id (activity_id)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-  ALTER TABLE nyss_inbox_messages_matched
-    ADD PRIMARY KEY (id),
-    ADD KEY message_id (message_id),
-    ADD KEY matched_id (matched_id),
-    ADD KEY activity_id (activity_id);
-  ALTER TABLE nyss_inbox_messages_matched
-    MODIFY id int(10) NOT NULL AUTO_INCREMENT;
-  ALTER TABLE nyss_inbox_messages_matched
-    ADD UNIQUE idx_message_matched_unique (message_id, matched_id);
 "
 $execSql $instance -c "$sql" -q
 
