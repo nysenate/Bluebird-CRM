@@ -399,10 +399,13 @@ class CRM_Admin_Page_AJAX {
     $result = array();
 
     //NYSS 11439
-    $whereClauses = array(
-      'is_tagset <> 1',
-      $parent ? "parent_id = $parent" : 'parent_id IS NULL',
-    );
+    $whereClauses = array('is_tagset <> 1');
+    if ($parent) {
+      $whereClauses[] = "parent_id = $parent";
+    }
+    elseif (!$substring) {
+      $whereClauses[] = "parent_id IS NULL";
+    }
 
     // fetch all child tags in Array('parent_tag' => array('child_tag_1', 'child_tag_2', ...)) format
     $childTagIDs = CRM_Core_BAO_Tag::getChildTags($substring);
@@ -411,7 +414,7 @@ class CRM_Admin_Page_AJAX {
     if ($substring) {
       $whereClauses['substring'] = " name LIKE '%$substring%' ";
       if (!empty($parentIDs)) {
-        $whereClauses['substring'] = sprintf("( %s OR id IN (%s) )", $whereClauses['substring'], implode(',', $parentIDs));
+        $whereClauses['substring'] = sprintf(" %s OR id IN (%s) ", $whereClauses['substring'], implode(',', $parentIDs));
       }
     }
 
@@ -424,7 +427,8 @@ class CRM_Admin_Page_AJAX {
       if (!empty($substring)) {
         $result[] = $dao->id;
         if (!empty($childTagIDs[$dao->id])) {
-            $result = array_merge($result, $childTagIDs[$dao->id]);
+          $result = array_merge($result, $childTagIDs[$dao->id]);
+          asort($result);//NYSS
         }
       }
       else {
