@@ -294,8 +294,9 @@
 
         //NYSS 11439
         $('input[name=filter_tag_tree]', $panel).on('keyup change', function() {
-          if ($(this).val() == null) {
-            $('.tag-tree', $panel).jstree(true).refresh();
+          if ($(this).val() === '') {
+            $('.tag-tree', $panel).jstree("clear_search");
+            $('.tag-tree', $panel).jstree("refresh", true, true);
           }
           else {
             $(".tag-tree", $panel).jstree("search", $(this).val());
