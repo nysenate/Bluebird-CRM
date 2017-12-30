@@ -427,8 +427,8 @@ class CRM_Admin_Page_AJAX {
       if (!empty($substring)) {
         $result[] = $dao->id;
         if (!empty($childTagIDs[$dao->id])) {
+          //NYSS
           $result = array_merge($result, $childTagIDs[$dao->id]);
-          asort($result);//NYSS
         }
       }
       else {
