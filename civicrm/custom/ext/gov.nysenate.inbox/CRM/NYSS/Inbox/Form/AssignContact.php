@@ -17,7 +17,7 @@ class CRM_NYSS_Inbox_Form_AssignContact extends CRM_Core_Form {
     $this->assign('details', $details);
 
     // add form elements
-    $this->addEntityRef('matches', 'Select Matched Contact(s)', array(
+    $this->addEntityRef('matches', 'Match Contacts', array(
       'api' => array(
         'params' => array('contact_type' => 'Individual'),
       ),
@@ -40,6 +40,26 @@ class CRM_NYSS_Inbox_Form_AssignContact extends CRM_Core_Form {
     // export form elements
     $this->assign('elementNames', $this->getRenderableElementNames());
     parent::buildQuickForm();
+
+    $this->addFormRule(array('CRM_NYSS_Inbox_Form_AssignContact', 'formRule'), $this);
+  }
+
+  public static function formRule($fields, $files, $self) {
+    /*Civi::log()->debug('', array(
+      'fields' => $fields,
+      '$_REQUEST' => $_REQUEST,
+    ));*/
+
+    $errors = array();
+    foreach ($fields as $field => $value) {
+      if (strpos($field, 'email-') !== FALSE) {
+        if (!empty($value) && !CRM_Utils_Rule::email($value)) {
+          $errors['qfKey'] = 'Please enter valid email addresses.';
+        }
+      }
+    }
+
+    return $errors;
   }
 
   public function postProcess() {

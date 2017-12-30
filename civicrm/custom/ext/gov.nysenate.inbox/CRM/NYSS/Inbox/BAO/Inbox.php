@@ -63,6 +63,8 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
     $htmlFixer = new HtmlFixer();
     $string = $htmlFixer->getFixedHtml($string);
+    $string = str_replace('&nbsp;', ' ', $string);
+    $string = trim($string);
 
     // return with no change if string is shorter than $limit
     if(strlen($string) <= $limit) return $string;
@@ -127,7 +129,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       $details = array(
         'id' => $dao->id,
         'message_id' => $dao->message_id,
-        'sender_name' => $dao->sender_name,
+        'sender_name' => CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->sender_name),
         'sender_email' => $dao->sender_email,
         'subject' => CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->subject),
         'subject_display' => CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->subject).$attachment,

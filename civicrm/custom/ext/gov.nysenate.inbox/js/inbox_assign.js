@@ -1,6 +1,11 @@
 CRM.$(function($) {
+  displayEmails();
   $('#matches').change(function(){
-    var ids = $(this).val().split(',');
+    displayEmails();
+  });
+
+  function displayEmails() {
+    var ids = $('#matches').val().split(',');
     //console.log(ids);
 
     for (var i = 0; i < ids.length; i++) {
@@ -10,10 +15,14 @@ CRM.$(function($) {
         var contact = CRM.api3('contact', 'getsingle', {id: id})
           .done(function (result) {
             //console.log(result);
+            var value = '';
+            if (result.email.length > 0) {
+              value = 'value="' + result.email + '" ';
+            }
             $('div#match-emails .content').append('<div id="cid-' + id + '" class="match-details ' +
               oddeven + '"><span class="match-sort_name">' + result.sort_name +
-              '</span><input type="text" name="email-' + id + '" value="' + result.email +
-              '"><input type="hidden" name="emailorig-' + id + '" value="' + result.email + '"></div>');
+              '</span><input type="text" name="email-' + id + '" ' + value +
+              'placeholder="email"><input type="hidden" name="emailorig-' + id + '" value="' + result.email + '"></div>');
           });
       }
     }
@@ -30,7 +39,7 @@ CRM.$(function($) {
     if (ids.length === 0 || (ids.length === 1 && ids[0] === '')) {
       $('div.match-details').remove();
     }
-  });
+  }
 
   $('span.email_address').click(function(){
     if ($('#match-emails div.match-details').length === 1) {

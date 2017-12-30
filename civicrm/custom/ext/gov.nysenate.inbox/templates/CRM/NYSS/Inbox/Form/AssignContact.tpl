@@ -18,7 +18,7 @@
 </div>
 
 {*display message*}
-<div>
+<div class="message-details">
   <h3>Message Details</h3>
   <div class="crm-section">
     <div class="label">From</div>
@@ -30,11 +30,6 @@
     <div class="content">{$details.subject_display}</div>
     <div class="clear"></div>
   </div>
-  {*<div class="crm-section">
-    <div class="label">Date</div>
-    <div class="content">{$details.date_email}</div>
-    <div class="clear"></div>
-  </div>*}
   <div class="crm-section">
     <div class="label">Forwarded By</div>
     <div class="content">{$details.forwarded_by}</div>
