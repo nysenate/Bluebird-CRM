@@ -20,7 +20,8 @@
     <thead>
     <tr>
       <th data-data="id" data-orderable="false" class="crm-matchedmessages">{$toggleAll}</th>
-      <th data-data="sender_name" class="crm-matchedmessages">Sender's Info</th>
+      <th data-data="sender_name" class="crm-matchedmessages">
+        {if $list eq 'matched'}Matched Info{else}Sender Info{/if}</th>
       <th data-data="subject" class="crm-matchedmessages">Subject</th>
       <th data-data="updated_date" class="crm-matchedmessages">Matched Date</th>
       <th data-data="forwarder" class="crm-matchedmessages">Forwarded By</th>

@@ -5,6 +5,7 @@ class CRM_NYSS_Inbox_Page_Unmatched extends CRM_Core_Page {
     CRM_NYSS_Inbox_BAO_Inbox::addResources('unmatched');
 
     $this->assign('title', 'Unmatched Messages');
+    $this->assign('list', 'unmatched');
     $this->assign('toggleAll', "<input class='select-all' type='checkbox'>");
 
     $controller = new CRM_Core_Controller_Simple('CRM_NYSS_Inbox_Form_MessageFilter',

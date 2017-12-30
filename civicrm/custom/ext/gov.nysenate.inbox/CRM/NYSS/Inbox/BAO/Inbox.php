@@ -386,9 +386,15 @@ class CRM_NYSS_Inbox_BAO_Inbox {
               $matchTypeText = 'A';
               $matchString = 'Automatically matched';
             }
+            try {
+              $matchedName = civicrm_api3('contact', 'getvalue', array(
+                'id' => $dao->matched_id,
+                'return' => 'sort_name',
+              ));
+            } catch (CiviCRM_API3_Exception $e) {}
             $matchedUrl = CRM_Utils_System::url('civicrm/contact/view',
-              "reset=1&cid={$dao->matcher}");
-            $msg['sender_name'] = "<a href='{$matchedUrl}'>{$senderName}</a>
+              "reset=1&cid={$dao->matched_id}");
+            $msg['sender_name'] = "<a href='{$matchedUrl}'>{$matchedName}</a>
               <span class='matchbubble {$matchTypeCSS}' title='This email was {$matchString}'>{$matchTypeText}</span>";
             break;
 

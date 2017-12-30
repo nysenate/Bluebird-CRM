@@ -5,6 +5,7 @@ class CRM_NYSS_Inbox_Page_Matched extends CRM_Core_Page {
     CRM_NYSS_Inbox_BAO_Inbox::addResources('matched');
 
     $this->assign('title', 'Matched Messages');
+    $this->assign('list', 'matched');
     $this->assign('toggleAll', "<input class='select-all' type='checkbox'>");
 
     $controller = new CRM_Core_Controller_Simple('CRM_NYSS_Inbox_Form_MessageFilter',
