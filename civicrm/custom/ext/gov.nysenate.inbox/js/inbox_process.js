@@ -27,7 +27,7 @@ CRM.$(function($) {
       id = $('input[name=matched_id]').val();
     }
 
-    if (id.length > 0) {
+    if (typeof id !== 'undefined' && id.length > 0) {
       //remove existing value first
       $('div.match-details').remove();
       var contact = CRM.api3('contact', 'getsingle', {id: id})

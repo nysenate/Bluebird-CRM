@@ -34,11 +34,13 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
             'message_id' => CRM_NYSS_Inbox_BAO_Inbox::getMessageId($pairParts[0]),
             'activity_id' => $details['activity_id'],
             'current_assignee' => $pairParts[1],
+            'details' => $details,
           ];
           $matchedIds[] = $pairParts[1];
         }
       }
       $this->assign('multiple_count', count($multiIdPairs));
+      $this->assign('message_details', $multiIds);
       $this->add('hidden', 'multi_ids', json_encode($multiIds));
       CRM_Core_Resources::singleton()->addVars('NYSS', array('matched_id' => $matchedIds));
     }
@@ -53,7 +55,7 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
       $this->add('hidden', 'message_id', $messageId);
 
       $details = CRM_NYSS_Inbox_BAO_Inbox::getDetails($rowId, $matchedId);
-      $this->assign('details', $details);
+      $this->assign('message_details', array(array('details' => $details)));
       $this->add('hidden', 'activity_id', $details['activity_id']);
       CRM_Core_Resources::singleton()->addVars('NYSS', array('matched_id' => $matchedId));
     }
