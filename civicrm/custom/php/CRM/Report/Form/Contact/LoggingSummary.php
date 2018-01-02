@@ -146,7 +146,7 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
         'order_bys' => array(
           'log_date' => array(
             'title' => ts('Log Date (When)'),
-            'default' => '1',
+            'default' => TRUE,
             'default_weight' => '0',
             'default_order' => 'DESC',
           ),
@@ -178,7 +178,7 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
         'order_bys' => array(
           'altered_by_contact' => array(
             'name' => 'display_name',
-            'title' => ts('Altered by Contact'),
+            'title' => ts('Altered by'),
           ),
         ),
       ),

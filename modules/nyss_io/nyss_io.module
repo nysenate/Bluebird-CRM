@@ -1699,8 +1699,8 @@ function _processTags($tagContacts, $type = 'Keywords')
             nyss_out('debug', "creating {$type}: {$tag}", true);
 
             $sql = "
-              INSERT INTO civicrm_tag (name, parent_id, used_for)
-              VALUES ('{$tag}', {$parentId}, 'civicrm_contact,civicrm_activity,civicrm_case');
+              INSERT INTO civicrm_tag (name, parent_id, is_selectable, used_for, created_id, created_date)
+              VALUES ('{$tag}', {$parentId}, 1, 'civicrm_contact,civicrm_activity,civicrm_case', 1, NOW());
             ";
             CRM_Core_DAO::executeQuery($sql);
 

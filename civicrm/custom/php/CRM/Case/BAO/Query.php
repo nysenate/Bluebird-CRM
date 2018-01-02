@@ -734,10 +734,7 @@ case_relation_type.id = case_relationship.relationship_type_id )";
     self::addCustomFormFields($form, array('Case'));
 
     //NYSS 11460
-    $form->setDefaults(array(
-      'case_owner' => 1,
-      'upcoming' => 1,
-    ));
+    $form->setDefaults(array('case_owner' => 1));
   }
 
   /**
