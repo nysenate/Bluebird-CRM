@@ -11,6 +11,8 @@
 # Revised: 2013-07-11 - modularize functionality; fix permissions problem
 # Revised: 2016-04-28 - removed data.basename; using data.dirname instead
 # Revised: 2016-10-19 - call "drush cc all" when using --all option
+# Revised: 2017-12-30 - force script to run as unprivileged user
+# Revised: 2018-01-01 - use data.rootdir.owner parameter for unpriv user
 #
 
 prog=`basename $0`
@@ -24,6 +26,7 @@ drush_only=0
 tmp_only=0
 tpl_only=0
 wd_only=0
+skip_root_check=0
 
 . $script_dir/defaults.sh
 
@@ -133,7 +136,7 @@ drush_cache_clear_all() {
 }
 
 usage() {
-  echo "Usage: $prog [--all] [--db-caches-only] [--drush-only] [--tmp-only] [--tpl-only] [--wd-only] instanceName" >&2
+  echo "Usage: $prog [--all] [--db-caches-only] [--drush-only] [--tmp-only] [--tpl-only] [--wd-only] [--skip-root-check] instanceName" >&2
 }
 
 if [ $# -lt 1 ]; then
@@ -141,18 +144,18 @@ if [ $# -lt 1 ]; then
   exit 1
 fi
 
-while [ $# -gt 0 ]; do
-  case "$1" in
+for arg in "$@"; do
+  case "$arg" in
     --all) clear_all=1 ;;
     --db*) dbcache_only=1 ;;
     --drush*) drush_only=1 ;;
     --tmp*) tmp_only=1 ;;
     --tpl*) tpl_only=1 ;;
     --wd*) wd_only=1 ;;
+    --skip*) skip_root_check=1 ;;
     -*) echo "$prog: $1: Invalid option" >&2; usage; exit 1 ;;
     *) instance="$1" ;;
   esac
-  shift
 done
 
 uniq_sum=`expr $clear_all + $drush_only + $tmp_only + $tpl_only + $wd_only`
@@ -169,6 +172,18 @@ fi
 
 data_rootdir=`$readConfig --ig $instance data.rootdir` || data_rootdir="$DEFAULT_DATA_ROOTDIR"
 data_dirname=`$readConfig --ig $instance data.dirname` || data_dirname="$instance"
+data_owner=`$readConfig --ig $instance data.rootdir.owner | cut -d: -f1` || data_owner="apache"
+
+
+# Force this script to run as the apache user, rather than root.
+# This prevents root-owned cache files from being created in the
+# templates_c/ directory when "drush cc css-js" is run.
+
+if [ $EUID -eq 0 -a $skip_root_check -ne 1 ]; then
+  echo "$prog: Running as root causes file permission problems; restarting as user apache"
+  exec su $data_owner -s /bin/sh -c "$0 $*"
+fi
+
 
 if [ $dbcache_only -eq 1 ]; then
   clear_civicrm_caches $instance
