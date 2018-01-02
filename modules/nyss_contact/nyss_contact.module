@@ -1,5 +1,6 @@
 <?php
-function nyss_contact_civicrm_buildForm( $formName, &$form ) {
+function nyss_contact_civicrm_buildForm($formName, &$form) {
+  //CRM_Core_Error::backtrace('buildForm', TRUE);
   //CRM_Core_Error::debug_var('form',$form);
   //CRM_Core_Error::debug_var('$formName',$formName);
 
@@ -342,8 +343,9 @@ function nyss_contact_civicrm_validateForm( $formName, &$fields, &$files, &$form
   //CRM_Core_Error::debug_var('fields',$fields);
   //CRM_Core_Error::debug_var('files',$files);
 
-  if ( $formName == 'CRM_Contact_Form_Inline_CustomData' ||
-       $formName == 'CRM_Contact_Form_Contact' ) {
+  if ($formName == 'CRM_Contact_Form_Inline_CustomData' ||
+    $formName == 'CRM_Contact_Form_Contact'
+  ) {
     //5776
     foreach ( $files as $field => $details ) {
       if ( $details['size'] > 2100000 ) { //2MB
@@ -354,8 +356,12 @@ function nyss_contact_civicrm_validateForm( $formName, &$fields, &$files, &$form
 }
 
 function nyss_contact_civicrm_postProcess( $formName, &$form ) {
-  //CRM_Core_Error::debug_var('$formName',$formName);
-  if ( $formName == 'CRM_Contact_Form_Inline_Demographics' ) {
+  /*Civi::log()->debug('', array(
+    'formName' => $formName,
+    'form' => $form,
+  ));*/
+
+  if ($formName == 'CRM_Contact_Form_Inline_Demographics') {
     $vals = $form->_submitValues;
 
     _setCustomData('CRM_Contact_Form_Inline_Demographics', $vals);

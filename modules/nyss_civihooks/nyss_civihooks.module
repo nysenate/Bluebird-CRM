@@ -447,7 +447,7 @@ function nyss_civihooks_civicrm_buildForm($formName, &$form) {
   }
 
   //5399
-  if ($formName == 'CRM_Note_Form_Note') {
+  if ($formName == 'CRM_Note_Form_Note' && $form->_action != CRM_Core_Action::DELETE) {
     $form->addRule('subject', ts('Please include subject text.'), 'required');
   }
 
@@ -636,8 +636,7 @@ function nyss_civihooks_civicrm_pageRun(&$page) {
 } // nyss_civihooks_civicrm_pageRun()
 
 
-function nyss_civihooks_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors)
-{
+function nyss_civihooks_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
   //CRM_Core_Error::debug_var('$formName', $formName);
   //CRM_Core_Error::debug_var('fields', $fields);
 
@@ -656,7 +655,9 @@ function nyss_civihooks_civicrm_validateForm($formName, &$fields, &$files, &$for
     }
   }
 
-  if ($formName == 'CRM_Note_Form_Note') {
+  if ($formName == 'CRM_Note_Form_Note' &&
+    $form->_action != CRM_Core_Action::DELETE
+  ) {
     $noteVal = trim($fields['note']);
     if (empty($noteVal)) {
       $errors['note'] = ts('Please enter text in the note field.');
