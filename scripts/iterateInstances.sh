@@ -7,6 +7,7 @@
 # Organization: New York State Senate
 # Date: 2010-12-03
 # Revised: 2013-03-07
+# Revised: 2018-01-02 - add ability to run commands as non-root user
 #
 
 prog=`basename $0`
@@ -20,7 +21,7 @@ piddir=/var/run
 . "$script_dir/defaults.sh"
 
 usage() {
-  echo "Usage: $prog [--quiet] [--all] [--live] [--live-fast] [--locked] [--civimail] [--signups] [--training] [--set instanceSet] [--instance instanceName] [--exclude instanceName [--exclude ...]] [--exclude-set instanceSet [--exclude-set ...]] [--bg] [--no-wait] [--serial uniq-id] [--timing] [cmd]" >&2
+  echo "Usage: $prog [--quiet] [--all] [--live] [--live-fast] [--locked] [--civimail] [--signups] [--training] [--set instanceSet] [--instance instanceName] [--exclude instanceName [--exclude ...]] [--exclude-set instanceSet [--exclude-set ...]] [--bg] [--no-wait] [--serial uniq-id] [--timing] [--run-as user] [cmd]" >&2
   echo "Note: Any occurrence of '%%INSTANCE%%' or '{}' in the command will be replaced by the current instance name." >&2
 }
 
@@ -44,6 +45,7 @@ bg_jobs=
 no_wait=0
 serial_id=
 show_timing=0
+run_as=
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -64,6 +66,7 @@ while [ $# -gt 0 ]; do
     --no-wait) no_wait=1 ;;
     --serial) shift; serial_id="$1" ;;
     --timing|-t) show_timing=1 ;;
+    --run-as|-r) shift; run_as="$1" ;;
     -*) echo "$prog: $1: Invalid option" >&2; usage; exit 1 ;;
     *) cmd="$1" ;;
   esac
@@ -170,12 +173,23 @@ elif [ ! "$instances" ]; then
   cleanup_and_exit 1
 fi
 
+if [ "$run_as" ]; then
+  if ! id -u $run_as >/dev/null 2>&1; then
+    echo "$prog: Unable to run as '$run_as'; user does not exist" >&2
+    cleanup_and_exit 1
+  fi
+fi
+
 for instance in $instances; do
   if $readConfig --instance $instance --quiet; then
     realcmd=`echo "$cmd" | sed -e "s;%%INSTANCE%%;$instance;g" -e "s;{};$instance;g"`
-    [ $quiet_mode -eq 0 ] && logdt "About to exec: $realcmd" >&2
+    [ $quiet_mode -eq 0 ] && logdt "[$run_as@$instance] About to exec: $realcmd $bg_jobs" >&2
     [ $show_timing -eq 1 ] && echo "==> START [`date +%H:%M:%S.%N`]"
-    eval $realcmd $bg_jobs
+    if [ "$run_as" ]; then
+      su $run_as -s /bin/sh -c "$realcmd $bg_jobs"
+    else
+      eval $realcmd $bg_jobs
+    fi
     [ $show_timing -eq 1 ] && echo "<== FINISH [`date +%H:%M:%S.%N`]"
   else
     echo "$prog: $instance: Instance not found in config file; skipping" >&2
