@@ -1,7 +1,14 @@
-#!/bin/bash
+#!/bin/sh
 #
+# integrationCronWrapper.sh - Run website integration tasks via cron
+#
+# Project: BluebirdCRM
+# Author: Ken Zalewski
+# Organization: New York State Senate
+# Date: 2015-06-29
+# Revised: 2015-08-17 - added iteration of calls to process.php
+# Revised: 2018-01-03 - added --run-as command line option
 
-# self reference
 prog=`basename $0`
 script_dir=`dirname $0`
 base_dir=`cd $script_dir/../../..; echo $PWD`
@@ -10,6 +17,7 @@ iterator="$base_dir/scripts/iterateInstances.sh"
 # set all script defaults
 run_import=1
 run_process=1
+runas_opt=
 use_debug=0
 
 
@@ -17,10 +25,11 @@ usage() {
   echo "
 Usage: $prog <options>
 
---no-import   : skip running the import section
---no-process  : skip running the message processing section
---debug       : include verbose debugging information
---help        : prints this message and exits
+--no-import (-I)  : skip running the import section
+--no-process (-P) : skip running the message processing section
+--run-as (-r)     : run instance-specific subtasks as specified user
+--debug (-d)      : include verbose debugging information
+--help (-h)       : prints this message and exits
 " >&2
 }
 
@@ -35,9 +44,10 @@ fi
 while [ $# -gt 0 ]; do
   case "$1" in
     --help|-h) usage; exit 0 ;;
-    --no-import) run_import=0 ;;
-    --no-process) run_process=0 ;;
-    --debug) use_debug=1 ;;
+    --no-import|-I) run_import=0 ;;
+    --no-process|-P) run_process=0 ;;
+    --run-as|-r) shift; runas_opt="--run-as $1" ;;
+    --debug|-d) use_debug=1 ;;
     *) echo "$prog: $1: Invalid option" >&2; usage; exit 1 ;;
   esac
   shift
@@ -69,7 +79,7 @@ if [ $run_process -eq 1 ]; then
   if [ $use_debug -eq 1 ]; then
     echo "About to run $script_dir/process.php for each CRM instance"
   fi
-  $iterator --live-fast "php $script_dir/process.php -S{} --archive"
+  $iterator --live-fast $runas_opt "php $script_dir/process.php -S{} --archive"
 else
   if [ $use_debug -eq 1 ]; then
     echo "Option --no-process detected; skipping process section"
