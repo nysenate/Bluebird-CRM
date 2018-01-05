@@ -1,4 +1,8 @@
 CRM.$(function($) {
+  //11623 hackish fix for hiding our dummy text field for misdirecting autofocus
+  $('input[name=trick_autofocus]').parents('div.crm-section').css('visibility', 'hidden').css('height', 0);
+  $('input[name=matches]').parents('div.crm-section').css('clear', 'both');
+
   displayEmails();
   $('#matches').change(function(){
     displayEmails();

@@ -17,6 +17,7 @@ class CRM_NYSS_Inbox_Form_AssignContact extends CRM_Core_Form {
     $this->assign('details', $details);
 
     // add form elements
+    $this->add('text', 'trick_autofocus', 'Trick Autofocus', array('autofocus' => TRUE));
     $this->addEntityRef('matches', 'Match Contacts', array(
       'api' => array(
         'params' => array('contact_type' => 'Individual'),
