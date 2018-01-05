@@ -35,8 +35,11 @@ CRM.$(function($) {
       return false;
     }
 
-    var url = CRM.url('civicrm/nyss/inbox/process', {ids: process_ids, multi: 1});
+    //TODO after processing multiple rows, if you change the filter it throws a datatables warning
+    //this prevents the popup; functionality still works; but it is preferred if we determine the root cause
     $.fn.dataTableExt.sErrMode = "console";
+
+    var url = CRM.url('civicrm/nyss/inbox/process', {ids: process_ids, multi: 1});
     CRM.loadForm(url)
       .on('crmFormSuccess', function(event, data) {
         //console.log('onFormSuccess event: ', event, ' data: ', data, 'this: ', this);
@@ -51,6 +54,11 @@ CRM.$(function($) {
         }
 
         refreshList('matched');
+      })
+      .on('crmFormCancel', function(event, data) {
+        //console.log('crmFormCancel event: ', event);
+        //TODO this works, but throws console errors
+        $(this).dialog('close');
       });
   });
 
