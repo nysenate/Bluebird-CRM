@@ -36,15 +36,18 @@ CRM.$(function($) {
     }
 
     var url = CRM.url('civicrm/nyss/inbox/process', {ids: process_ids, multi: 1});
+    $.fn.dataTableExt.sErrMode = "console";
     CRM.loadForm(url)
       .on('crmFormSuccess', function(event, data) {
-        //console.log('onFormSuccess event: ', event, ' data: ', data);
+        //console.log('onFormSuccess event: ', event, ' data: ', data, 'this: ', this);
 
         if (data.isError) {
           CRM.status({success: data.message});
         }
-        else {
-          CRM.status({success: 'Messages were successfully processed.'});
+
+        //TODO this works, but throws console errors
+        if (data.status === 'success') {
+          $(this).dialog('close');
         }
 
         refreshList('matched');

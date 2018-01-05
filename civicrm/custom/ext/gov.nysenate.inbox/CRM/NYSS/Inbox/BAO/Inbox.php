@@ -658,48 +658,59 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         }
       }
 
+      //get assignee ID (from new or existing) and all existing tags
+      $assigneeId = (!empty($values['assignee'])) ? $values['assignee'] : $row['current_assignee'];
+      $assigneeTags = CRM_Core_BAO_EntityTag::getTag($assigneeId);
+      //Civi::log()->debug('processMessages', array('$assigneeTags' => $assigneeTags));
+
       if (!empty($values['contact_keywords'])) {
         foreach (explode(',', $values['contact_keywords']) as $tagID) {
-          try {
-            civicrm_api3('entity_tag', 'create', [
-              'entity_id' => (!empty($values['assignee'])) ? $values['assignee'] : $row['current_assignee'],
-              'tag_id' => $tagID,
-              'entity_table' => 'civicrm_contact',
-            ]);
-          } catch (CiviCRM_API3_Exception $e) {
-            //Civi::log()->debug('processMessages contact keywords', array('e' => $e));
-            //$msg[] = 'Unable to assign all keywords to the contact.';
+          if (!in_array($tagID, $assigneeTags)) {
+            try {
+              civicrm_api3('entity_tag', 'create', [
+                'entity_id' => (!empty($values['assignee'])) ? $values['assignee'] : $row['current_assignee'],
+                'tag_id' => $tagID,
+                'entity_table' => 'civicrm_contact',
+              ]);
+            } catch (CiviCRM_API3_Exception $e) {
+              //Civi::log()->debug('processMessages contact keywords', array('e' => $e));
+              //$msg[] = 'Unable to assign all keywords to the contact.';
+            }
           }
         }
       }
 
-      $tags = explode(',', CRM_Utils_Array::value('tag', $values));
-      if (!empty($tags)) {
+      if (!empty($values['tag'])) {
+        $tags = explode(',', CRM_Utils_Array::value('tag', $values));
         foreach ($tags as $tagID) {
-          try {
-            civicrm_api3('entity_tag', 'create', [
-              'entity_id' => (!empty($values['assignee'])) ? $values['assignee'] : $row['current_assignee'],
-              'tag_id' => $tagID,
-              'entity_table' => 'civicrm_contact',
-            ]);
-          } catch (CiviCRM_API3_Exception $e) {
-            //Civi::log()->debug('processMessages contact issue codes', array('e' => $e));
-            //$msg[] = 'Unable to assign all issue codes to the contact.';
+          if (!in_array($tagID, $assigneeTags)) {
+            try {
+              civicrm_api3('entity_tag', 'create', [
+                'entity_id' => (!empty($values['assignee'])) ? $values['assignee'] : $row['current_assignee'],
+                'tag_id' => $tagID,
+                'entity_table' => 'civicrm_contact',
+              ]);
+            } catch (CiviCRM_API3_Exception $e) {
+              //Civi::log()->debug('processMessages contact issue codes', array('e' => $e));
+              //$msg[] = 'Unable to assign all issue codes to the contact.';
+            }
           }
         }
       }
 
       if (!empty($values['contact_positions'])) {
         foreach (explode(',', $values['contact_positions']) as $tagID) {
-          try {
-            civicrm_api3('entity_tag', 'create', [
-              'entity_id' => (!empty($values['assignee'])) ? $values['assignee'] : $row['current_assignee'],
-              'tag_id' => $tagID,
-              'entity_table' => 'civicrm_contact',
-            ]);
-          } catch (CiviCRM_API3_Exception $e) {
-            //Civi::log()->debug('processMessages contact positions', array('e' => $e));
-            //$msg[] = 'Unable to assign all positions to the contact.';
+          if (!in_array($tagID, $assigneeTags)) {
+            try {
+              civicrm_api3('entity_tag', 'create', [
+                'entity_id' => (!empty($values['assignee'])) ? $values['assignee'] : $row['current_assignee'],
+                'tag_id' => $tagID,
+                'entity_table' => 'civicrm_contact',
+              ]);
+            } catch (CiviCRM_API3_Exception $e) {
+              //Civi::log()->debug('processMessages contact positions', array('e' => $e));
+              //$msg[] = 'Unable to assign all positions to the contact.';
+            }
           }
         }
       }
