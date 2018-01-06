@@ -68,5 +68,22 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
+echo "$prog: insert birth date quicksearch option"
+sql="
+  SELECT @option_group_id_acsOpt := max(id) from civicrm_option_group where name = 'contact_autocomplete_options';
+  SELECT @option_group_id_acConRef := max(id) from civicrm_option_group where name = 'contact_reference_options';
+
+  DELETE FROM civicrm_option_value
+  WHERE name = 'birth_date'
+    AND option_group_id IN (@option_group_id_acsOpt, @option_group_id_acConRef);
+
+  INSERT INTO civicrm_option_value
+  (option_group_id, label, value, name, grouping, filter, is_default, weight, description, is_optgroup, is_reserved, is_active, component_id, visibility_id, icon)
+  VALUES
+  (@option_group_id_acsOpt, 'Birth Date', 9, 'birth_date', NULL, 0, NULL, 9, NULL, 0, 0, 1, NULL, NULL, NULL),
+  (@option_group_id_acConRef, 'Birth Date', 9, 'birth_date', NULL, 0, NULL, 9, NULL, 0, 0, 1, NULL, NULL, NULL);
+"
+$execSql $instance -c "$sql" -q
+
 ## record completion
 echo "$prog: upgrade process is complete."
