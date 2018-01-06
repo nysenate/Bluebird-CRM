@@ -24,23 +24,33 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
 
       foreach ($multiIdPairs as $pair) {
         $pairParts = explode('-', $pair);
-        $details = CRM_NYSS_Inbox_BAO_Inbox::getDetails($pairParts[0], $pairParts[1]);
+
+        /**
+         * multiIds = array of key values LESS details
+         *   - this is stored in hidden field to be passed to postProcess
+         * multiIdsDetails = array of key values WITH details
+         *   - this is assigned to the template so we can display details
+         * matchedIds = array of just match contacts
+         *   - to generate count and passed to javascript
+         */
 
         //we shouldn't have unmatched records in the mix, but just in case...
         if ($pairParts[1] != 'unmatched') {
-          $multiIds[] = [
+          $details = CRM_NYSS_Inbox_BAO_Inbox::getDetails($pairParts[0], $pairParts[1]);
+          $data = [
             'row_id' => $pairParts[0],
             'matched_id' => $pairParts[1],
             'message_id' => CRM_NYSS_Inbox_BAO_Inbox::getMessageId($pairParts[0]),
             'activity_id' => $details['activity_id'],
             'current_assignee' => $pairParts[1],
-            'details' => $details,
           ];
+          $multiIds[] = $data;
+          $multiIdsDetails[] = $data + array('details' => $details);
           $matchedIds[] = $pairParts[1];
         }
       }
       $this->assign('multiple_count', count($multiIdPairs));
-      $this->assign('message_details', $multiIds);
+      $this->assign('message_details', $multiIdsDetails);
       $this->add('hidden', 'multi_ids', json_encode($multiIds));
       CRM_Core_Resources::singleton()->addVars('NYSS', array('matched_id' => $matchedIds));
     }
