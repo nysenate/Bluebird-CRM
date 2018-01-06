@@ -64,6 +64,15 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     $htmlFixer = new HtmlFixer();
     $string = $htmlFixer->getFixedHtml($string);
     $string = str_replace('&nbsp;', ' ', $string);
+
+    //cludgy way to try to strip out text chunks with tons of line breaks...
+    $string = str_replace('<br /><br /><br />', '<br /> <br />', $string);
+    $string = str_replace('<br /><br /><br />', '<br /> <br />', $string);
+    $string = str_replace('<br /> <br /> <br />', '<br /> <br />', $string);
+    $string = str_replace('<br /> <br /> <br />', '<br /> <br />', $string);
+    $string = str_replace('<br /> <br /> <br />', '<br /> <br />', $string);
+    $string = str_replace('<br /> <br /> <br />', '<br /> <br />', $string);
+
     $string = trim($string);
 
     // return with no change if string is shorter than $limit
