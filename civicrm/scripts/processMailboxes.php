@@ -13,7 +13,7 @@
 //
 
 // Version number, used for debugging
-define('VERSION_NUMBER', 0.20);
+define('VERSION_NUMBER', 2.1);
 
 // Mailbox settings common to all CRM instances
 define('DEFAULT_IMAP_ARCHIVEBOX', 'Archive');
@@ -718,18 +718,17 @@ function searchForMatches($db, $params)
       // create the activity
       $activityDefaults = $params['activityDefaults'];
       $activityParams = array(
-                  "source_contact_id" => $forwarderId,
-                  "subject" => $subject,
-                  "details" =>  $body,
-                  "activity_date_time" => $email_date,
-                  "status_id" => $activityDefaults['status'],
-                  "priority_id" => $activityDefaults['priority'],
-                  "activity_type_id" => $activityDefaults['type'],
-                  "duration" => 1,
-                  "is_auto" => 1,
-                  // "original_id" => $email->uid,
-                  "target_contact_id" => $contactID,
-                  "version" => 3
+        "source_contact_id" => $forwarderId,
+        "subject" => $subject,
+        "details" =>  $body,
+        "activity_date_time" => $email_date,
+        "status_id" => $activityDefaults['status'],
+        "priority_id" => $activityDefaults['priority'],
+        "activity_type_id" => $activityDefaults['type'],
+        "duration" => 1,
+        "is_auto" => 1,
+        "target_contact_id" => $contactID,
+        "version" => 3
       );
 
       $activityResult = civicrm_api('activity', 'create', $activityParams);
@@ -741,34 +740,56 @@ function searchForMatches($db, $params)
         $activityId = $activityResult['id'];
         bbscript_log(LL::INFO, "CREATED e-mail activity id=$activityId for contact id=$contactID");
         $status = STATUS_MATCHED;
-        $q = "UPDATE nyss_inbox_messages
-              SET status=$status, matcher=1, matched_to=$contactID,
-                  activity_id=$activityId
-              WHERE id=$msg_row_id";
+
+        //in v2.1 we split matched_id (formerly matched_to) and activity_id into related table
+        $q = "
+          INSERT IGNORE INTO nyss_inbox_messages_matched
+          (message_id, matched_id, activity_id)
+          VALUES
+          ({$message_id}, {$contactID}, {$activityId})
+        ";
         if (mysqli_query($db, $q) == false) {
-          bbscript_log(LL::ERROR, "Unable to update info for message id=$msg_row_id");
+          bbscript_log(LL::ERROR,
+            "Unable to store matched_id and activity_id for message id=$msg_row_id");
+        }
+        else {
+          //update status to matched
+          $q = "
+            UPDATE nyss_inbox_messages
+            SET status = $status, matcher = 1
+            WHERE id = $msg_row_id
+          ";
+          if (mysqli_query($db, $q) == FALSE) {
+            bbscript_log(LL::ERROR,
+              "Unable to update status for message id=$msg_row_id");
+          }
         }
 
-        $q = "SELECT file_name, file_full, rejection, mime_type
-              FROM nyss_inbox_attachments
-              WHERE email_id=$msg_row_id";
+        $q = "
+          SELECT file_name, file_full, rejection, mime_type
+          FROM nyss_inbox_attachments
+          WHERE email_id = $msg_row_id";
         $ares = mysqli_query($db, $q);
 
         while ($row = mysqli_fetch_assoc($ares)) {
           if ((!isset($row['rejection']) || $row['rejection'] == '')
               && file_exists($row['file_full'])) {
-            bbscript_log(LL::INFO, "Adding attachment ".$row['file_full']." to activity id=$activityId");
+            bbscript_log(LL::INFO,
+              "Adding attachment ".$row['file_full']." to activity id=$activityId");
             $date = date("Y-m-d H:i:s");
             $newName = CRM_Utils_File::makeFileName($row['file_name']);
             $file = "$uploadDir/$newName";
             // Move file to the CiviCRM custom upload directory
             rename($row['file_full'], $file);
 
-            $q = "INSERT INTO civicrm_file
-                  (mime_type, uri, upload_date)
-                  VALUES ('{$row['mime_type']}', '$newName', '$date')";
+            $q = "
+              INSERT INTO civicrm_file
+              (mime_type, uri, upload_date)
+              VALUES ('{$row['mime_type']}', '$newName', '$date')
+            ";
             if (mysqli_query($db, $q) == false) {
-              bbscript_log(LL::ERROR, "Unable to insert attachment file info for [$newName]");
+              bbscript_log(LL::ERROR,
+                "Unable to insert attachment file info for [$newName]");
             }
 
             $q = "SELECT id FROM civicrm_file WHERE uri='{$newName}'";
@@ -778,11 +799,14 @@ function searchForMatches($db, $params)
             }
             mysqli_free_result($res);
 
-            $q = "INSERT INTO civicrm_entity_file
-                  (entity_table, entity_id, file_id)
-                  VALUES ('civicrm_activity', $activityId, $fileId)";
+            $q = "
+              INSERT INTO civicrm_entity_file
+              (entity_table, entity_id, file_id)
+              VALUES ('civicrm_activity', $activityId, $fileId)
+            ";
             if (mysqli_query($db, $q) == false) {
-              bbscript_log(LL::ERROR, "Unable to insert attachment mapping from activity id=$activityId to file id=$fileId");
+              bbscript_log(LL::ERROR,
+                "Unable to insert attachment mapping from activity id=$activityId to file id=$fileId");
             }
           }
         } // while rows in nyss_inbox_attachments

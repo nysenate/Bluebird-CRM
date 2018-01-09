@@ -35,15 +35,50 @@ CRM.$(function($) {
       return false;
     }
 
-    CRM.confirm({
-      title: 'Process Messages?',
-      message: 'Are you sure you want to process ' + process_ids.length + ' messages?'
-    }).on('crmConfirm:yes', function() {
-      var url = CRM.url('civicrm/nyss/inbox/processmsgs', {ids: process_ids});
-      var request = $.post(url);
-      CRM.status({success: 'Messages were successfully processed.'}, request);
+    //TODO after processing multiple rows, if you change the filter it throws a datatables warning
+    //this prevents the popup; functionality still works; but it is preferred if we determine the root cause
+    $.fn.dataTableExt.sErrMode = "console";
 
-      refreshList('matched');
-    });
+    var url = CRM.url('civicrm/nyss/inbox/process', {ids: process_ids, multi: 1});
+    CRM.loadForm(url)
+      .on('crmFormSuccess', function(event, data) {
+        //console.log('onFormSuccess event: ', event, ' data: ', data, 'this: ', this);
+
+        if (data.isError) {
+          CRM.status({success: data.message});
+        }
+
+        //TODO this works, but throws console errors
+        if (data.status === 'success') {
+          $(this).dialog('close');
+        }
+
+        refreshList('matched');
+      })
+      .on('crmFormCancel', function(event, data) {
+        //console.log('crmFormCancel event: ', event);
+        //TODO this works, but throws console errors
+        $(this).dialog('close');
+      });
   });
+
+  //TODO we should NOT have to duplicate this from inbox.js, but can't properly reference
+  //it without getting errors
+  /**
+   *
+   * @param inboxType
+   *
+   * refresh the listing, retaining filter options;
+   */
+  function refreshList(inboxType) {
+    var range = $('#range_filter').val();
+    var term = $('#search_filter').val();
+    //console.log('refreshList:: inboxType: ', inboxType, ' range: ', range, ' term: ', term);
+
+    CRM.$('table.inbox-messages-selector').DataTable().ajax.url(CRM.url('civicrm/nyss/inbox/ajax/' + inboxType, {
+      snippet: 4,
+      range: range,
+      term: JSON.stringify(term)
+    })).load();
+  }
 });

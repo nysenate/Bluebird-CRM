@@ -10,17 +10,24 @@ class CRM_NYSS_Inbox_Form_Delete extends CRM_Core_Form {
     CRM_NYSS_Inbox_BAO_Inbox::addResources();
 
     //get details about record
-    $id = CRM_Utils_Request::retrieve('id', 'Positive');
-    $this->add('hidden', 'message_id', $id);
+    $rowId = CRM_Utils_Request::retrieve('id', 'Positive');
+    $matchedId = CRM_Utils_Request::retrieve('matched_id', 'String');
+    if ($matchedId != 'unmatched') {
+      //if not unmatched, verify value is a positive int
+      $matchedId = CRM_Utils_Request::retrieve('matched_id', 'Positive');
+    }
 
-    $details = CRM_NYSS_Inbox_BAO_Inbox::getDetails($id);
+    $this->add('hidden', 'row_id', $rowId);
+    $this->add('hidden', 'matched_id', $matchedId);
+
+    $details = CRM_NYSS_Inbox_BAO_Inbox::getDetails($rowId, $matchedId);
     $this->assign('details', $details);
 
     // add form elements
     $this->addButtons(array(
       array(
         'type' => 'submit',
-        'name' => ts('Delete'),
+        'name' => ts('Delete Message'),
         'isDefault' => TRUE,
       ),
       array(
@@ -36,13 +43,21 @@ class CRM_NYSS_Inbox_Form_Delete extends CRM_Core_Form {
 
   public function postProcess() {
     $values = $this->exportValues();
+    //Civi::log()->debug('Delete postProcess', array('$values' => $values));
 
-    if (empty($values['message_id'])) {
+    if (empty($values['row_id'])) {
       CRM_Core_Session::setStatus('Unable to delete this message.');
       return;
     }
 
-    CRM_NYSS_Inbox_BAO_Inbox::deleteMessages(array($values['message_id']));
+    $ids = array(
+      array(
+        'row_id' => $values['row_id'],
+        'matched_id' => CRM_Utils_Array::value('matched_id', $values),
+      )
+    );
+
+    CRM_NYSS_Inbox_BAO_Inbox::deleteMessages($ids);
     CRM_Core_Session::setStatus('Message has been deleted.');
 
     parent::postProcess();
