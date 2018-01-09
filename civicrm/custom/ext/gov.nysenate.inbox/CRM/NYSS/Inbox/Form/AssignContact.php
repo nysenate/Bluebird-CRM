@@ -1,7 +1,5 @@
 <?php
 
-require_once 'CRM/Core/Form.php';
-
 /**
  * Form controller class
  *
@@ -9,27 +7,30 @@ require_once 'CRM/Core/Form.php';
  */
 class CRM_NYSS_Inbox_Form_AssignContact extends CRM_Core_Form {
   public function buildQuickForm() {
-    CRM_NYSS_Inbox_BAO_Inbox::addResources();
+    CRM_NYSS_Inbox_BAO_Inbox::addResources('assign');
 
     //get details about record
     $id = CRM_Utils_Request::retrieve('id', 'Positive');
-    $this->add('hidden', 'message_id', $id);
+    $this->add('hidden', 'id', $id);
 
     $details = CRM_NYSS_Inbox_BAO_Inbox::getDetails($id);
     $this->assign('details', $details);
 
     // add form elements
-    $this->addEntityRef('assignee', 'Select Assignee', array(
+    //11623 dummy field for misdirecting auto-focus
+    $this->add('text', 'trick_autofocus', 'Trick Autofocus', array('autofocus' => TRUE));
+    $this->addEntityRef('matches', 'Match Contacts', array(
       'api' => array(
         'params' => array('contact_type' => 'Individual'),
       ),
       'create' => TRUE,
+      'multiple' => TRUE,
     ), TRUE);
 
     $this->addButtons(array(
       array(
         'type' => 'submit',
-        'name' => ts('Submit'),
+        'name' => ts('Assign Matched Contact'),
         'isDefault' => TRUE,
       ),
       array(
@@ -41,15 +42,68 @@ class CRM_NYSS_Inbox_Form_AssignContact extends CRM_Core_Form {
     // export form elements
     $this->assign('elementNames', $this->getRenderableElementNames());
     parent::buildQuickForm();
+
+    $this->addFormRule(array('CRM_NYSS_Inbox_Form_AssignContact', 'formRule'), $this);
+  }
+
+  public static function formRule($fields, $files, $self) {
+    /*Civi::log()->debug('', array(
+      'fields' => $fields,
+      '$_REQUEST' => $_REQUEST,
+    ));*/
+
+    $errors = array();
+    foreach ($fields as $field => $value) {
+      if (strpos($field, 'email-') !== FALSE) {
+        if (!empty($value) && !CRM_Utils_Rule::email($value)) {
+          $errors['qfKey'] = 'Please enter valid email addresses.';
+        }
+      }
+    }
+
+    return $errors;
   }
 
   public function postProcess() {
     $values = $this->exportValues();
-    //Civi::log()->debug('AssignContact postProcess', array('values' => $values));
+    //Civi::log()->debug('AssignContact postProcess', array('values' => $values, '$_REQUEST' => $_REQUEST));
 
-    $response = CRM_NYSS_Inbox_BAO_Inbox::assignMessage($values['message_id'], $values['assignee']);
+    $response = CRM_NYSS_Inbox_BAO_Inbox::assignMessage($values['id'], explode(',', $values['matches']));
+    //Civi::log()->debug('AssignContact postProcess', array('$response' => $response));
 
-    $message = 'The message has been assigned.';
+    //determine if we need to update the email address
+    foreach (explode(',', $values['matches']) as $matchId) {
+      $email = CRM_Utils_Array::value('email-'.$matchId, $_REQUEST);
+      $emailOrig = CRM_Utils_Array::value('emailorig-'.$matchId, $_REQUEST);
+
+      if ($email != $emailOrig) {
+        try {
+          if (!empty($email)) {
+            civicrm_api3('email', 'create', [
+              'contact_id' => $matchId,
+              'email' => $email,
+              'is_primary' => TRUE,
+            ]);
+          }
+          else {
+            //allow an empty value to delete existing email record
+            $primaryEmail = civicrm_api3('email', 'getsingle', array(
+              'contact_id' => $matchId,
+              'is_primary' => TRUE,
+            ));
+
+            if ($primaryEmail['email'] == $emailOrig) {
+              civicrm_api3('email', 'delete', array(
+                'id' => $primaryEmail['id'],
+              ));
+            }
+          }
+        }
+        catch (CiviCRM_API3_Exception $e) {}
+      }
+    }
+
+    $message = 'The message has been matched.';
     if (!empty($response['message'])) {
       $message = $response['message'];
     }

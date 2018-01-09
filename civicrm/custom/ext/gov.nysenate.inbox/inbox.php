@@ -197,3 +197,19 @@ function inbox_civicrm_entityRefFilters(&$filters) {
     'type' => 'text',
   );
 }//entityRefFilters
+
+function inbox_civicrm_buildForm($formName, &$form) {
+  /*Civi::log()->debug('inbox_civicrm_buildForm', array(
+    'formName' => $formName,
+    'form' => $form,
+  ));*/
+
+  if ($formName == 'CRM_Profile_Form_Edit') {
+    $ufGroup = $form->getVar('_ufGroup');
+    if ($ufGroup['name'] == 'new_individual') {
+      CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.inbox', 'js/new_individual.js');
+      CRM_Core_Resources::singleton()->addStyleFile('gov.nysenate.inbox', 'css/new_individual.css');
+    }
+
+  }
+}

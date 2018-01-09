@@ -9,14 +9,73 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
   public function buildQuickForm() {
     CRM_NYSS_Inbox_BAO_Inbox::addResources('process');
 
-    //get details about record
-    $id = CRM_Utils_Request::retrieve('id', 'Positive');
-    $this->add('hidden', 'id', $id);
+    if ($isMultiple = CRM_Utils_Request::retrieve('multi', 'Boolean')) {
+      $this->add('hidden', 'is_multiple', $isMultiple);
+      $this->assign('is_multiple', $isMultiple);
 
-    $details = CRM_NYSS_Inbox_BAO_Inbox::getDetails($id);
-    $this->assign('details', $details);
-    $this->add('hidden', 'activity_id', $details['activity_id']);
-    $this->add('hidden', 'current_assignee', $details['matched_to']);
+      $multiIds = $matchedIds = array();
+      $multiIdPairs = CRM_Utils_Request::retrieve('ids', 'String');
+      if (empty($multiIdPairs)) {
+        return array(
+          'is_error' => TRUE,
+          'message' => 'Unable to process messages. Please try re-selecting records.'
+        );
+      }
+
+      foreach ($multiIdPairs as $pair) {
+        $pairParts = explode('-', $pair);
+
+        /**
+         * multiIds = array of key values LESS details
+         *   - this is stored in hidden field to be passed to postProcess
+         * multiIdsDetails = array of key values WITH details
+         *   - this is assigned to the template so we can display details
+         * matchedIds = array of just match contacts
+         *   - to generate count and passed to javascript
+         */
+
+        //we shouldn't have unmatched records in the mix, but just in case...
+        if ($pairParts[1] != 'unmatched') {
+          $details = CRM_NYSS_Inbox_BAO_Inbox::getDetails($pairParts[0], $pairParts[1]);
+          $data = [
+            'row_id' => $pairParts[0],
+            'matched_id' => $pairParts[1],
+            'message_id' => CRM_NYSS_Inbox_BAO_Inbox::getMessageId($pairParts[0]),
+            'activity_id' => $details['activity_id'],
+            'current_assignee' => $pairParts[1],
+          ];
+          $multiIds[] = $data;
+          $multiIdsDetails[] = $data + array('details' => $details);
+          $matchedIds[] = $pairParts[1];
+        }
+      }
+      $this->assign('multiple_count', count($multiIdPairs));
+      $this->assign('message_details', $multiIdsDetails);
+      $this->add('hidden', 'multi_ids', json_encode($multiIds));
+      CRM_Core_Resources::singleton()->addVars('NYSS', array('matched_id' => $matchedIds));
+    }
+    else {
+      //get details about record
+      $rowId = CRM_Utils_Request::retrieve('id', 'Positive');
+      $matchedId = CRM_Utils_Request::retrieve('matched_id', 'Positive');
+      $messageId = CRM_NYSS_Inbox_BAO_Inbox::getMessageId($rowId);
+
+      $this->add('hidden', 'row_id', $rowId);
+      $this->add('hidden', 'matched_id', $matchedId);
+      $this->add('hidden', 'message_id', $messageId);
+
+      $details = CRM_NYSS_Inbox_BAO_Inbox::getDetails($rowId, $matchedId);
+      $this->assign('message_details', array(array('details' => $details)));
+      $this->add('hidden', 'activity_id', $details['activity_id']);
+      CRM_Core_Resources::singleton()->addVars('NYSS', array('matched_id' => $matchedId));
+    }
+    /*Civi::log()->debug('CRM_NYSS_Inbox_Form_Process', array(
+      'isMultiple' => $isMultiple,
+      '$multiIdPairs' => $multiIdPairs,
+      'request' => $_REQUEST,
+      '$multiIds' => $multiIds,
+      '$details' => $details,
+    ));*/
 
     //assignment form elements
     $this->addEntityRef('assignee', 'Select Assignee', array(
@@ -39,7 +98,6 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
       'class' => "crm-contact-tagset",
     ), FALSE);
 
-    CRM_Core_Resources::singleton()->addVars('NYSS', array('matched_to' => $details['matched_to']));
     $this->addEntityRef('contact_positions', 'Positions', array(
       'entity' => 'nyss_tags',
       'multiple' => TRUE,
@@ -83,8 +141,21 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
 
     $this->addButtons(array(
       array(
-        'type' => 'submit',
-        'name' => ts('Process'),
+        'type' => 'upload',
+        'subName' => 'update',
+        'name' => ts('Update'),
+        'isDefault' => TRUE,
+      ),
+      array(
+        'type' => 'upload',
+        'subName' => 'updateclear',
+        'name' => ts('Update and Clear'),
+        'isDefault' => TRUE,
+      ),
+      array(
+        'type' => 'upload',
+        'subName' => 'clear',
+        'name' => ts('Clear'),
         'isDefault' => TRUE,
       ),
       array(
@@ -100,15 +171,49 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
 
   public function postProcess() {
     $values = $this->exportValues();
-    //Civi::log()->debug('postProcess', array('values' => $values, '$_REQUEST' => $_REQUEST));
+    /*Civi::log()->debug('postProcess', array(
+      'values' => $values,
+      '$_REQUEST' => $_REQUEST,
+    ));*/
 
-    if (empty($values['id'])) {
+    if ((empty($values['row_id']) || empty($values['matched_id'])) && !$values['is_multiple']) {
       CRM_Core_Session::setStatus('Unable to process this message.');
       return;
     }
 
-    $msg = CRM_NYSS_Inbox_BAO_Inbox::processMessages($values);
-    $msg = (!empty($msg)) ? implode('<br />', $msg) : 'Message(s) has been processed.';
+    $actionName = $this->controller->getButtonName( );
+    $class = get_class($this);
+    $classElements = explode('_', $class);
+    $classSub = end($classElements);
+    //CRM_Core_Error::debug_var('actionName', $actionName);
+    //CRM_Core_Error::debug_var('classSub', $classSub);
+
+    $rows = array($values['row_id']);
+    if ($values['is_multiple']) {
+      $rows = CRM_NYSS_Inbox_BAO_Inbox::getMultiRowIds(json_decode($values['multi_ids'], TRUE));
+    }
+
+    switch ($actionName) {
+      case "_qf_{$classSub}_upload_update":
+        $msg = CRM_NYSS_Inbox_BAO_Inbox::processMessages($values);
+        $msg = (!empty($msg)) ? implode('<br />', $msg) : 'Message(s) has been processed.';
+        break;
+
+      case "_qf_{$classSub}_upload_updateclear":
+        $msg = CRM_NYSS_Inbox_BAO_Inbox::processMessages($values);
+        CRM_NYSS_Inbox_BAO_Inbox::clearMessages($rows);
+        $msg = (!empty($msg)) ? implode('<br />', $msg) : 'Message(s) has been processed and cleared.';
+        break;
+
+      case "_qf_{$classSub}_upload_clear":
+        CRM_NYSS_Inbox_BAO_Inbox::clearMessages($rows);
+        $msg = 'Message(s) has been cleared.';
+        break;
+
+      default:
+        $msg = 'Unable to perform a processing action.';
+    }
+
     CRM_Core_Session::setStatus($msg);
 
     parent::postProcess();

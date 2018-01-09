@@ -47,6 +47,21 @@ div.crm-matchedmessages-selector {
 .multi {
   background-color: #468847;
 }
+.match-details {
+  font-size: 90%;
+  padding-left: 4px;
+}
+.match-sort_name {
+  width: 200px;
+  display: inline-block;
+  overflow: hidden;
+}
+.email_address {
+  cursor: pointer;
+}
+select.crm-entityref-filter-key option[value=contact_type] {
+  display: none;
+}
 .empty {
   background-color: #999;
 }
@@ -58,6 +73,17 @@ div.crm-matchedmessages-selector {
   overflow: auto;
   border: 1px solid #999999;
   padding: 5px;
+  margin-right: 8px;
+}
+.message-details {
+  font-size: 90%;
+}
+.message-details div.label {
+  background-color: #ddd;
+  padding: 2px 6px;
+}
+.message-details div.content {
+  padding-right: 4px;
 }
 .crm-actions {
   min-width: 110px !important;
