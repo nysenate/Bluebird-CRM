@@ -512,6 +512,8 @@ function storeAttachments($imapMsg, $db, $params, $rowId)
 
     if (mysqli_stmt_execute($sql_stmt) == false) {
       bbscript_log(LL::ERROR, "Unable to insert attachment [$fileFull] for msgid=$rowId");
+      $errorDetails = print_r(mysqli_stmt_error($sql_stmt), TRUE);
+      bbscript_log(LL::ERROR, "<pre>{$errorDetails}</pre>");
       $bSuccess = false;
     }
   }
