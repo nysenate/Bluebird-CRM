@@ -6,6 +6,10 @@ div.crm-matchedmessages-selector {
   background-color: white;
 }
 
+table.inbox-messages-selector th:first-child {
+  padding-left: 10px;
+}
+
 #crm-container h2.crm-title {
   margin-bottom: 30px;
 }
