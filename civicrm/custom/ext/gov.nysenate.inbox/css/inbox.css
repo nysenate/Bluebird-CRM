@@ -10,6 +10,10 @@ table.inbox-messages-selector th:first-child {
   padding-left: 10px;
 }
 
+div.crm-contact-form-block-multiactions {
+  padding-top: 7px;
+}
+
 #crm-container h2.crm-title {
   margin-bottom: 30px;
 }

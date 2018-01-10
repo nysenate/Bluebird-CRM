@@ -8,7 +8,7 @@
     <div class="crm-contact-form-block-search crm-left crm-margin-right">
       {$form.search_filter.html|crmAddClass:twelve}
     </div>
-    <div class="crm-contact-form-block-delete crm-right">
+    <div class="crm-contact-form-block-multiactions crm-right">
       <input type="button" class="multi_process" value="Process" name="process">
       <input type="button" class="multi_clear" value="Clear" name="clear">
       <input type="button" class="multi_delete" value="Delete" name="delete">
