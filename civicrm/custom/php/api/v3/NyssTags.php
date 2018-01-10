@@ -81,11 +81,16 @@ function civicrm_api3_nyss_tags_savePosition($params) {
 
       //if this is triggered from contact edit form we don't have a contact ID (if new contact)
       if (!empty($params['contactId'])) {
-        civicrm_api3('entity_tag', 'create', [
-          'tag_id' => $tag['id'],
-          'entity_id' => $params['contactId'],
-          'entity_table' => 'civicrm_contact',
-        ]);
+        if (!is_array($params['contactId'])) {
+          $params['contactId'] = array($params['contactId']);
+        }
+        foreach ($params['contactId'] as $contactId) {
+          civicrm_api3('entity_tag', 'create', [
+            'tag_id' => $tag['id'],
+            'entity_id' => $contactId,
+            'entity_table' => 'civicrm_contact',
+          ]);
+        }
       }
 
       return $tag['id'];
