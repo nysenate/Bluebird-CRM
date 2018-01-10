@@ -1467,11 +1467,11 @@ function _findAddress(&$l, $nyss_conn) {
     $sql = "
       SELECT id AS address_id, is_primary AS address_is_primary
       FROM civicrm_address
-      WHERE contact_id LIKE '{$l['id']}'
-        AND street_number LIKE '{$l['street_number']}'
-        AND street_name LIKE '{$l['street_name']}'
-        AND city LIKE '{$l['city']}'
-        AND ( postal_code LIKE '{$l['postal_code']}' OR postal_code LIKE '{$l['postal_code']}' )
+      WHERE contact_id = {$l['id']}
+        AND street_number = '{$l['street_number']}'
+        AND street_name = '{$l['street_name']}'
+        AND city = '{$l['city']}'
+        AND postal_code = '{$l['postal_code']}'
     ";
     //nyss_out('debug', $sql, true); exit();
     $result = mysqli_query($nyss_conn, $sql);
@@ -1491,8 +1491,7 @@ function _findAddress(&$l, $nyss_conn) {
 } // _findAddress()
 
 
-function _findDistrict(&$l, $nyss_conn)
-{
+function _findDistrict(&$l, $nyss_conn) {
   if (!empty($l['address_id']) && empty($l['districtinfo_id'])) {
     $sql = "
       SELECT id AS districtinfo_id FROM civicrm_value_district_information_7 WHERE entity_id = {$l['address_id']}
