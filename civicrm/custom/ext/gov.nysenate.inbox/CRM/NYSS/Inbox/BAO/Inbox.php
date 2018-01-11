@@ -856,7 +856,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
   /**
    * @param $cid
-   * @return null|string
+   * @return array
    */
   static function getMatched($cids) {
     $matchedContacts = array();
@@ -872,7 +872,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         ]);
 
         $matchedUrl = CRM_Utils_System::url('civicrm/contact/view', "reset=1&cid={$cid}");
-        $matchedContacts[] = "<a href='{$matchedUrl}'>{$contact['display_name']}</a><br /><{$contact['email']}>";
+        $matchedContacts[] = "<a href='{$matchedUrl}'>{$contact['display_name']}</a>";
       }
     }
     catch (CiviCRM_API3_Exception $e) {}
