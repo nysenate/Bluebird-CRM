@@ -2,6 +2,7 @@
 
 require_once 'tags.civix.php';
 
+
 /**
  * Implements hook_civicrm_config().
  *
@@ -10,6 +11,7 @@ require_once 'tags.civix.php';
 function tags_civicrm_config(&$config) {
   _tags_civix_civicrm_config($config);
 }
+
 
 /**
  * Implements hook_civicrm_xmlMenu().
@@ -22,6 +24,7 @@ function tags_civicrm_xmlMenu(&$files) {
   _tags_civix_civicrm_xmlMenu($files);
 }
 
+
 /**
  * Implements hook_civicrm_install().
  *
@@ -30,6 +33,7 @@ function tags_civicrm_xmlMenu(&$files) {
 function tags_civicrm_install() {
   _tags_civix_civicrm_install();
 }
+
 
 /**
  * Implements hook_civicrm_uninstall().
@@ -40,6 +44,7 @@ function tags_civicrm_uninstall() {
   _tags_civix_civicrm_uninstall();
 }
 
+
 /**
  * Implements hook_civicrm_enable().
  *
@@ -48,6 +53,7 @@ function tags_civicrm_uninstall() {
 function tags_civicrm_enable() {
   _tags_civix_civicrm_enable();
 }
+
 
 /**
  * Implements hook_civicrm_disable().
@@ -58,21 +64,24 @@ function tags_civicrm_disable() {
   _tags_civix_civicrm_disable();
 }
 
+
 /**
  * Implements hook_civicrm_upgrade().
  *
- * @param $op string, the type of operation being performed; 'check' or 'enqueue'
- * @param $queue CRM_Queue_Queue, (for 'enqueue') the modifiable list of pending up upgrade tasks
+ * @param $op string, type of operation being performed; 'check' or 'enqueue'
+ * @param $queue CRM_Queue_Queue, (for 'enqueue') the modifiable list of
+ *               pending upgrade tasks
  *
  * @return mixed
- *   Based on op. for 'check', returns array(boolean) (TRUE if upgrades are pending)
+ *   Based on op. for 'check', returns array(boolean) (true if pending upgrades)
  *                for 'enqueue', returns void
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_upgrade
  */
-function tags_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
+function tags_civicrm_upgrade($op, CRM_Queue_Queue $queue = null) {
   return _tags_civix_civicrm_upgrade($op, $queue);
 }
+
 
 /**
  * Implements hook_civicrm_managed().
@@ -85,6 +94,7 @@ function tags_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
 function tags_civicrm_managed(&$entities) {
   _tags_civix_civicrm_managed($entities);
 }
+
 
 /**
  * Implements hook_civicrm_caseTypes().
@@ -99,6 +109,7 @@ function tags_civicrm_caseTypes(&$caseTypes) {
   _tags_civix_civicrm_caseTypes($caseTypes);
 }
 
+
 /**
  * Implements hook_civicrm_angularModules().
  *
@@ -110,26 +121,28 @@ function tags_civicrm_caseTypes(&$caseTypes) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
  */
 function tags_civicrm_angularModules(&$angularModules) {
-_tags_civix_civicrm_angularModules($angularModules);
+  _tags_civix_civicrm_angularModules($angularModules);
 }
+
 
 /**
  * Implements hook_civicrm_alterSettingsFolders().
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_alterSettingsFolders
  */
-function tags_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
+function tags_civicrm_alterSettingsFolders(&$metaDataFolders = null) {
   _tags_civix_civicrm_alterSettingsFolders($metaDataFolders);
 }
 
-function tags_civicrm_merge( $type, &$sqls, $fromId, $toId, $tables ) {
-  //insert civicrm_log record for every contact, case or activity affected by a tag merge.
-  if ($type == 'sqls' &&
-    in_array('civicrm_tag', $tables) &&
-    $_GET['q'] == 'civicrm/ajax/mergeTags'
-  ) {
-    $session = CRM_Core_Session::singleton( );
-    $userID = $session->get( 'userID' );
+
+function tags_civicrm_merge($type, &$sqls, $fromId, $toId, $tables)
+{
+  //insert civicrm_log record for every contact, case or activity affected
+  //by a tag merge.
+  if ($type == 'sqls' && is_array($tables) && in_array('civicrm_tag', $tables)
+      && $_GET['q'] == 'civicrm/ajax/mergeTags') {
+    $session = CRM_Core_Session::singleton();
+    $userID = $session->get('userID');
 
     $sql = "
       INSERT INTO civicrm_log ( entity_table, entity_id, data, modified_id, modified_date )
@@ -139,28 +152,23 @@ function tags_civicrm_merge( $type, &$sqls, $fromId, $toId, $tables ) {
         ON et.tag_id = tag.id
       WHERE tag_id = %2
     ";
-    array_unshift( $sqls, $sql );
+    array_unshift($sqls, $sql);
   }
-} //merge
+} //tags_civicrm_merge()
 
-function tags_civicrm_buildForm($formName, &$form) {
+
+function tags_civicrm_buildForm($formName, &$form)
+{
   /*Civi::log()->debug('buildForm', array(
     'formName' => $formName,
     'form' => $form,
-    //'$form->_elementIndex' => $form->_elementIndex,
-    //'$form->_tagsetInfo' => $form->_tagsetInfo,
   ));*/
 
   if ($formName == 'CRM_Tag_Form_Tag' ||
-    $formName == 'CRM_Contact_Form_Task_AddToTag' ||
-    $formName == 'CRM_Contact_Form_Contact'
-  ) {
-    $webSets = array(
-      'Website Bills',
-      'Website Committees',
-      'Website Issues',
-      'Website Petitions',
-    );
+      $formName == 'CRM_Contact_Form_Task_AddToTag' ||
+      $formName == 'CRM_Contact_Form_Contact') {
+    $webSets = array('Website Bills', 'Website Committees',
+                     'Website Issues', 'Website Petitions');
     $webViewOnly = array();
     foreach ($form->_tagsetInfo as $setId => $setDetails) {
       $setName = (!empty($setDetails['parentName'])) ?
@@ -288,9 +296,7 @@ function tags_civicrm_buildForm($formName, &$form) {
   }
 
   //11334 (extension of 10658): rebuild leg positions entity ref using custom API and disabling create
-  if (in_array($formName, array(
-    'CRM_Contact_Form_Contact',
-  ))) {
+  if ($formName === 'CRM_Contact_Form_Contact') {
     //DISABLED: handled in validateForm below
     //Civi::log()->debug('CRM_Contact_Form_Contact', array('form' => $form,));
     //Note: intentionally don't pass contact_id as js param as we don't want entity_tag
@@ -307,24 +313,24 @@ function tags_civicrm_buildForm($formName, &$form) {
       $form->getElement('used_for')->freeze();
     }
   }
-}
+} //tags_civicrm_buildForm()
 
-function tags_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
+
+function tags_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors)
+{
   /*Civi::log()->debug('tags_civicrm_postProcess', array(
     'formName' => $formName,
     '$fields' => $fields,
-    //'$files' => $files,
-    //'$form' => $form,
     '$errors' => $errors,
   ));*/
 
   //11334 (extension of 10658): process leg positions from contact edit form
-  //we need to take the submitted value, create the tag, and replace the submitted value
-  //with the newly created tag id
+  //we need to take the submitted value, create the tag, and replace the
+  //submitted value with the newly created tag id
   if ($formName == 'CRM_Contact_Form_Contact' && !empty($fields['contact_taglist'][292])) {
     $tags = array();
     foreach (explode(',', $fields['contact_taglist'][292]) as $tag) {
-      if (strpos($tag, ':::') !== FALSE) {
+      if (strpos($tag, ':::') !== false) {
         try {
           $tags[] = civicrm_api3('nyss_tags', 'savePosition', array(
             'value' => $tag,
@@ -341,9 +347,11 @@ function tags_civicrm_validateForm($formName, &$fields, &$files, &$form, &$error
     $data['values']['Contact']['contact_taglist'][292] = implode(',', $tags);
     //Civi::log()->debug('tags_civicrm_postProcess', array('$tags' => $tags, '$data' => $data));
   }
-}
+} //tags_civicrm_validateForm()
 
-function tags_civicrm_pageRun(&$page) {
+
+function tags_civicrm_pageRun(&$page)
+{
   //Civi::log()->debug('tags_civicrm_pageRun', array('$page' => $page));
 
   if (is_a($page, 'CRM_Tag_Page_Tag')) {
@@ -361,9 +369,11 @@ function tags_civicrm_pageRun(&$page) {
     Civi::resources()->addScriptFile('gov.nysenate.tags', 'js/page_manage_tags.js');
     Civi::resources()->addStyleFile('gov.nysenate.tags', 'css/page_manage_tags.css');
   }
-}
+} //tags_civicrm_pageRun()
 
-function tags_civicrm_alterEntityRefParams(&$params, $formName) {
+
+function tags_civicrm_alterEntityRefParams(&$params, $formName)
+{
   /*Civi::log()->debug('tags_civicrm_alterEntityRefParams', array(
     'params' => $params,
     'formName' => $formName,
@@ -373,7 +383,7 @@ function tags_civicrm_alterEntityRefParams(&$params, $formName) {
   if ($params['entity'] == 'tag' &&
     !empty($params['api']['params']['parent_id']) &&
     $params['api']['params']['parent_id'] == 292 &&
-    strpos($formName, 'Search') === FALSE
+    strpos($formName, 'Search') === false
   ) {
     //Civi::log()->debug('tags_civicrm_alterEntityRefParams', array('params' => $params));
     $params['entity'] = 'nyss_tags';
@@ -381,9 +391,11 @@ function tags_civicrm_alterEntityRefParams(&$params, $formName) {
     $params['search_field'] = 'name';
     $params['label_field'] = 'name';
   }
-}
+} //tags_civicrm_alterEntityRefParams()
 
-function tags_civicrm_apiWrappers(&$wrappers, $apiRequest) {
+
+function tags_civicrm_apiWrappers(&$wrappers, $apiRequest)
+{
   /*if ($apiRequest['action'] == 'getlist') {
     Civi::log()->debug('tags_civicrm_apiWrappers', [
       //'$wrappers' => $wrappers,
@@ -398,9 +410,11 @@ function tags_civicrm_apiWrappers(&$wrappers, $apiRequest) {
   ) {
     $wrappers[] = new CRM_Tags_APIWrapper();
   }*/
-}
+} //tags_civicrm_apiWrapper()
 
-function tags_civicrm_alterAPIPermissions($entity, $action, &$params, &$permissions) {
+
+function tags_civicrm_alterAPIPermissions($entity, $action, &$params, &$permissions)
+{
   /*Civi::log()->debug('tags_civicrm_alterAPIPermissions', [
     '$entity' => $entity,
     '$action' => $action,
@@ -410,6 +424,6 @@ function tags_civicrm_alterAPIPermissions($entity, $action, &$params, &$permissi
 
   //11459
   if ($entity == 'nyss_tags' && $action == 'getlist') {
-    $params['check_permissions'] = FALSE;
+    $params['check_permissions'] = false;
   }
-}
+} //tags_civicrm_alterAPIPermissions()
