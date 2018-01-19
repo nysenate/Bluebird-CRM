@@ -242,10 +242,11 @@ function nyss_civihooks_civicrm_contactListQuery(&$query, $name, $context, $id)
   //CRM_Core_Error::debug_var('$query',$query);
   //CRM_Core_Error::debug_var('$name',$name);
   //CRM_Core_Error::debug_var('$context',$context);
-}//nyss_civihooks_civicrm_contactListQuery()
+} //nyss_civihooks_civicrm_contactListQuery()
 
 
-function nyss_civihooks_civicrm_buildForm($formName, &$form) {
+function nyss_civihooks_civicrm_buildForm($formName, &$form)
+{
   /*Civi::log()->debug('buildForm', array(
     '$formName' => $formName,
     '$form' => $form,
@@ -506,7 +507,8 @@ function nyss_civihooks_civicrm_buildForm($formName, &$form) {
 } // nyss_civihooks_civicrm_buildForm()
 
 
-function nyss_civihooks_civicrm_searchTasks($objectType, &$tasks) {
+function nyss_civihooks_civicrm_searchTasks($objectType, &$tasks)
+{
   //CRM_Core_Error::debug_var('$objectType', $objectType);
   //CRM_Core_Error::debug_var('$tasks', $tasks);
 
@@ -532,31 +534,28 @@ function nyss_civihooks_civicrm_searchTasks($objectType, &$tasks) {
 } // nyss_civihooks_civicrm_searchTasks()
 
 
-function nyss_civihooks_civicrm_pre($op, $objectName, $objectId, &$objectRef) {
-//CRM_Core_Error::debug_var('op',$op);
-//CRM_Core_Error::debug_var('objectName',$objectName);
-//CRM_Core_Error::debug_var('objectId',$objectId);
-//CRM_Core_Error::debug_var('objectRef',$objectRef);
-//CRM_Core_Error::backtrace('backTrace', true);
+function nyss_civihooks_civicrm_pre($op, $objectName, $objectId, &$objectRef)
+{
+  //CRM_Core_Error::debug_var('op',$op);
+  //CRM_Core_Error::debug_var('objectName',$objectName);
+  //CRM_Core_Error::debug_var('objectId',$objectId);
+  //CRM_Core_Error::debug_var('objectRef',$objectRef);
+  //CRM_Core_Error::backtrace('backTrace', true);
 
   //NYSS #2729 strip line break
-  if (($op == 'edit' || $op == 'create') &&
-    ($objectName == 'Individual' || $objectName == 'Organization' || $objectName == 'Household')
-  ) {
-    if ($objectRef['email']) {
-      foreach ($objectRef['email'] as $key => $block) {
-        if ($block['signature_html'] == '<br />') {
-          $objectRef['email'][$key]['signature_html'] = null;
-        }
+  if (in_array($op, ['edit','create'], true)
+      && in_array($objectName, ['Individual','Organization','Household'], true)
+      && isset($objectRef['email'])) {
+    foreach ($objectRef['email'] as $key => $block) {
+      if ($block['signature_html'] == '<br />') {
+        $objectRef['email'][$key]['signature_html'] = null;
       }
     }
   }
 
   //4627 allow blank email overrides
-  if ($op == 'edit' &&
-    $objectName == 'Profile' &&
-    $objectRef['uf_group_id'] == 8
-  ) {
+  if ($op == 'edit' && $objectName == 'Profile'
+      && isset($objectRef['uf_group_id']) && $objectRef['uf_group_id'] == 8) {
     $objectRef['updateBlankLocInfo'] = true;
   }
 
@@ -817,7 +816,7 @@ function nyss_civihooks_civicrm_navigationMenu(&$params) {
 function nyss_civihooks_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) {
   //Civi::log()->debug('alterTemplateFile', array('formName' => $formName));
 
-  $navigationString = NULL;
+  $navigationString = null;
   $navigations = CRM_Core_BAO_Navigation::buildNavigationTree();
 
   // run the Navigation  through a hook so users can modify it
@@ -840,7 +839,7 @@ function nyss_civihooks_civicrm_alterTemplateFile($formName, &$form, $context, &
       }
     }
 
-    CRM_Core_BAO_Navigation::recurseNavigation($value, $navigationString, FALSE, $skipMenuItems);
+    CRM_Core_BAO_Navigation::recurseNavigation($value, $navigationString, false, $skipMenuItems);
   }
 
   // clean up - Need to remove empty <ul>'s, this happens when user don't have
@@ -859,7 +858,7 @@ function nyss_civihooks_civicrm_alterTemplateFile($formName, &$form, $context, &
     $domain = CRM_Core_Config::domainID();
     $key = CRM_Core_BAO_Navigation::getCacheKey($contactID);
     $src = CRM_Utils_System::url("civicrm/ajax/menujs/$contactID/$lang/$domain/$key");
-    $qfKey = CRM_Core_Key::get('CRM_Contact_Controller_Search', TRUE);
+    $qfKey = CRM_Core_Key::get('CRM_Contact_Controller_Search', true);
     //src="' . $src . '"
     $form->assign('quickSearch_qfKey', '<script id="civicrm-navigation-menu" type="text/javascript" data-qfkey=' . json_encode($qfKey) . '></script>');
   }

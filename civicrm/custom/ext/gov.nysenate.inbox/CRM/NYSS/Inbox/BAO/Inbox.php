@@ -754,6 +754,14 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
           try {
             civicrm_api3('activity', 'create', $params);
+
+            if (!empty($values['activity_assignee'])) {
+              $sendEmail = self::sendActivityAssigneeEmail($params);
+              if ($sendEmail['status']) {
+                $msg[] = 'Message(s) has been processed.';
+                $msg[] = $sendEmail['msg'];
+              }
+            }
           } catch (CiviCRM_API3_Exception $e) {
             Civi::log()->debug('processMessages create activity', ['e' => $e]);
             $msg[] = 'Unable to update activity record.';
@@ -1075,5 +1083,47 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     }
 
     return $rowIds;
+  }
+
+  static function sendActivityAssigneeEmail($params) {
+    $mailStatus = array('status' => FALSE, 'msg' => '');
+
+    if (Civi::settings()->get('activity_assignee_notification')) {
+      $activityIDs = array($params['id']);
+      $assignees = array($params['assignee_contact_id']);
+      $assigneeContacts = CRM_Activity_BAO_ActivityAssignment::getAssigneeNames($activityIDs, TRUE, FALSE);
+
+      if (!CRM_Utils_Array::crmIsEmptyArray($assignees)) {
+        $mailToContacts = array();
+
+        // Build an associative array with unique email addresses
+        foreach ($assignees as $id) {
+          if (isset($id) && array_key_exists($id, $assigneeContacts)) {
+            $mailToContacts[$assigneeContacts[$id]['email']] = $assigneeContacts[$id];
+          }
+        }
+
+        $activity = new CRM_Activity_DAO_Activity();
+        $activityParams = array('id' => $params['id']);
+        $activity->copyValues($activityParams);
+
+        if ($activity->find(TRUE)) {
+          $sent = CRM_Activity_BAO_Activity::sendToAssignee($activity, $mailToContacts);
+          if ($sent) {
+            $mailStatus['status'] = TRUE;
+            $mailStatus['msg'] = ts("A copy of the activity has also been sent to assignee contacts(s).");
+          }
+        }
+      }
+
+      /*Civi::log()->debug('sendActivityAssigneeEmail', array(
+        '$params' => $params,
+        '$activity' => $activity,
+        '$mailToContacts' => $mailToContacts,
+        '$mailStatus' => $mailStatus,
+      ));*/
+    }
+
+    return $mailStatus;
   }
 }
