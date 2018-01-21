@@ -543,9 +543,10 @@ function nyss_civihooks_civicrm_pre($op, $objectName, $objectId, &$objectRef)
   //CRM_Core_Error::backtrace('backTrace', true);
 
   //NYSS #2729 strip line break
-  if (in_array($op, ['edit','create'], true)
-      && in_array($objectName, ['Individual','Organization','Household'], true)
-      && isset($objectRef['email'])) {
+  if (in_array($op, ['edit','create'], true) &&
+    in_array($objectName, ['Individual','Organization','Household'], true) &&
+    !empty($objectRef['email'])
+  ) {
     foreach ($objectRef['email'] as $key => $block) {
       if ($block['signature_html'] == '<br />') {
         $objectRef['email'][$key]['signature_html'] = null;
