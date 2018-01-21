@@ -869,7 +869,10 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state)
       } //else use as set in the import file
 
       if (!array_key_exists('address_is_primary', $l)) {
-        $l['address_is_primary'] = 1; //set to primary
+        //if contact has no existing address, set to primary
+        if (!_addressExists($l)){
+          $l['address_is_primary'] = 1;
+        }
       }
       $l['country_id'] = 1228; //assume US
     }
@@ -1940,3 +1943,20 @@ function _cleanData(&$l)
     }
   }
 } // _cleanData()
+
+/**
+ * @param $l
+ *
+ * @return bool
+ *
+ * simple helper to determine if an address already exists for this contact.
+ * used to determine if we should set new address block as primary.
+ */
+function _addressExists($l) {
+  $sql = "SELECT id FROM civicrm_address WHERE contact_id = {$l['contact_id']} LIMIT 1";
+  if (CRM_Core_DAO::singleValueQuery($sql)) {
+    return TRUE;
+  }
+
+  return FALSE;
+}
