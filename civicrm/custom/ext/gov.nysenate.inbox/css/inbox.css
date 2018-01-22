@@ -149,8 +149,8 @@ select.crm-entityref-filter-key option[value=contact_type] {
 }
 .found.phone {
   /* green a8d1ff*/
-  background: rgba(196,255,143, 0.5);
+  background: #32333C;
 }
 .found.phone:hover {
-  background: rgba(196,255,143, 0.8);
+  background: #32333C;
 }
