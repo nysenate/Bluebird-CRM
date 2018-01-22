@@ -57,7 +57,12 @@ div.crm-contact-form-block-multiactions {
 }
 .match-details {
   font-size: 90%;
+}
+.match-details-email-row {
   border-bottom: 1px solid #cccccc;
+}
+.match-details-email-row .label {
+  padding-top: 4px;
 }
 .email_address {
   cursor: pointer;
@@ -128,29 +133,50 @@ select.crm-entityref-filter-key option[value=contact_type] {
   border-radius: 3px;
   display:inline-block;
   color: white;
+  cursor: pointer;
 }
 .found:hover {
   background: #31546F;
   border: 1px solid #A0A0A0;
 }
+
+/*name/zip/phone highlighting*/
 .found.name {
-  /* red ffb7b7 */
   background: #69B4EE;
 }
 .found.name:hover {
   background: #69B4EE;
 }
 .found.zip {
-  /* blue a8d1ff*/
   background: #477AA2;
 }
 .found.zip:hover {
   background: #477AA2;
 }
 .found.phone {
-  /* green a8d1ff*/
-  background: rgba(196,255,143, 0.5);
+  background: #32333C;
 }
 .found.phone:hover {
-  background: rgba(196,255,143, 0.8);
+  background: #32333C;
+}
+
+/*when viewing existing contacts, reset name/zip/phone*/
+.CRM_NYSS_Inbox_Form_AssignContact .found.name,
+.CRM_NYSS_Inbox_Form_AssignContact .found.name:hover,
+.CRM_NYSS_Inbox_Form_AssignContact .found.zip,
+.CRM_NYSS_Inbox_Form_AssignContact .found.zip:hover,
+.CRM_NYSS_Inbox_Form_AssignContact .found.phone,
+.CRM_NYSS_Inbox_Form_AssignContact .found.phone:hover,
+.CRM_NYSS_Inbox_Form_Process .found.name,
+.CRM_NYSS_Inbox_Form_Process .found.name:hover,
+.CRM_NYSS_Inbox_Form_Process .found.zip,
+.CRM_NYSS_Inbox_Form_Process .found.zip:hover,
+.CRM_NYSS_Inbox_Form_Process .found.phone,
+.CRM_NYSS_Inbox_Form_Process .found.phone:hover {
+  background: none;
+  color: black;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: auto;
 }

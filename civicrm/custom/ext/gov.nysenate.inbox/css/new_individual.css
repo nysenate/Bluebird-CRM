@@ -14,7 +14,7 @@ div.crm-profile-name-new_individual {
 }
 form.CRM_Profile_Form_Edit div.message-details {
   float: right;
-  max-width: 630px;
+  width: 630px;
 }
 form.CRM_Profile_Form_Edit div.message-details .content {
   padding-left: 4px;
