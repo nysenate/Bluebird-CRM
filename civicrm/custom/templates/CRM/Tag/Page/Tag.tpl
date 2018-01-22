@@ -296,14 +296,31 @@
           });
 
         //NYSS 11439
-        $('input[name=filter_tag_tree]', $panel).on('keyup change', function() {
-          if ($(this).val() === '') {
-            $('.tag-tree', $panel).jstree("clear_search");
-            $('.tag-tree', $panel).jstree("refresh", true, true);
+        $('input[name=filter_tag_tree]', $panel).on('keyup change', function(e) {
+          e.preventDefault();
+          var debounce = this;
+          var element = $(this);
+          var searchString = element.val();
+          if (e.type == 'change') {
+            if (window.searchedString === searchString) {
+              if (searchString === '') {
+                $('.tag-tree', $panel).jstree("clear_search");
+                $('.tag-tree', $panel).jstree("refresh", true, true);
+              }
+              else {
+                $("div.search-box").show();
+                $(".tag-tree", $panel).jstree("search", searchString);
+              }
+            }
           }
           else {
-            $("div.search-box").show();//NYSS 11439
-            $(".tag-tree", $panel).jstree("search", $(this).val());
+            if (debounce) clearTimeout(debounce);
+            debounce = setTimeout(function() {
+              if (window.searchedString !== searchString) {
+                window.searchedString = searchString;
+                element.trigger('change');
+              }
+            }, 1000);
           }
         });
       }
