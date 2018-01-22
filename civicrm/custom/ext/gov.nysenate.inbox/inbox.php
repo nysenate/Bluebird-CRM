@@ -204,12 +204,15 @@ function inbox_civicrm_buildForm($formName, &$form) {
     'form' => $form,
   ));*/
 
+  //inject js/css to new indiv form, but only when triggered from inbox matched list
   if ($formName == 'CRM_Profile_Form_Edit') {
     $ufGroup = $form->getVar('_ufGroup');
-    if ($ufGroup['name'] == 'new_individual') {
+    $referer = CRM_Utils_Array::value('HTTP_REFERER', $_SERVER);
+    if ($ufGroup['name'] == 'new_individual' &&
+      strpos($referer, 'civicrm/nyss/inbox/matched') !== FALSE
+    ) {
       CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.inbox', 'js/new_individual.js');
       CRM_Core_Resources::singleton()->addStyleFile('gov.nysenate.inbox', 'css/new_individual.css');
     }
-
   }
 }

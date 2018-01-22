@@ -6,6 +6,7 @@ CRM.$(function($) {
   displayEmails();
   $('#matches').change(function(){
     displayEmails();
+    $('.click-message').show();
   });
 
   function displayEmails() {
@@ -23,10 +24,13 @@ CRM.$(function($) {
             if (result.email.length > 0) {
               value = 'value="' + result.email + '" ';
             }
-            $('div#match-emails .content').append('<div id="cid-' + id + '" class="match-details ' +
-              oddeven + '"><span class="match-sort_name">' + result.sort_name +
-              '</span><input type="text" name="email-' + id + '" ' + value +
-              'placeholder="email"><input type="hidden" name="emailorig-' + id + '" value="' + result.email + '"></div>');
+            $('div#match-emails').append('<div id="cid-' + id + '" class="label match-sort_name match-details">' +
+              result.sort_name + '</div>' +
+              '<div class="match-details content"><input type="text" name="email-' + id + '" ' + value +
+              'placeholder="email"><input type="hidden" name="emailorig-' + id + '" value="' +
+              result.email + '"></div>' +
+              '<div class="clear"></div> '
+            );
           });
       }
     }

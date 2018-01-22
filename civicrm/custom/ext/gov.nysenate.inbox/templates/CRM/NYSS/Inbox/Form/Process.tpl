@@ -103,7 +103,7 @@
         <div class="content">{$message.details.matched_to_display}</div>
         <div class="clear"></div>
       </div>
-      <div class="crm-section">
+      <div class="crm-section message-body-section">
         <div class="label">Body</div>
         <div class="content message-body">{$message.details.body}</div>
         <div class="clear"></div>
