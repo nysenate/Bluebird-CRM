@@ -1953,9 +1953,11 @@ function _cleanData(&$l)
  * used to determine if we should set new address block as primary.
  */
 function _addressExists($l) {
-  $sql = "SELECT id FROM civicrm_address WHERE contact_id = {$l['contact_id']} LIMIT 1";
-  if (CRM_Core_DAO::singleValueQuery($sql)) {
-    return TRUE;
+  if (!empty($l['contact_id'])) {
+    $sql = "SELECT id FROM civicrm_address WHERE contact_id = {$l['contact_id']} LIMIT 1";
+    if (CRM_Core_DAO::singleValueQuery($sql)) {
+      return TRUE;
+    }
   }
 
   return FALSE;
