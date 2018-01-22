@@ -16,9 +16,6 @@ CRM.$(function($) {
       var email = $(this).text();
       $('.match-details input[type=text]').val(email);
     }
-    else {
-      //TODO if we have more than one match, how do we pass selection?...
-    }
   });
 
   function loadEmails() {

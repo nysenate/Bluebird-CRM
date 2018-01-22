@@ -1,5 +1,5 @@
 CRM.$(function($) {
-  var message = $('div.message-details').html();
+  var message = $('div.message-details-wrapper').html();
   if (message.length) {
     $(document).ready(function() {
       $('input#street_address-Primary').removeClass('huge').addClass('big');
