@@ -6,6 +6,7 @@ CRM.$(function($) {
   displayEmails();
   $('#matches').change(function(){
     displayEmails();
+    $('.click-message').show();
   });
 
   function displayEmails() {
@@ -23,16 +24,20 @@ CRM.$(function($) {
             if (result.email.length > 0) {
               value = 'value="' + result.email + '" ';
             }
-            $('div#match-emails .content').append('<div id="cid-' + id + '" class="match-details ' +
-              oddeven + '"><span class="match-sort_name">' + result.sort_name +
-              '</span><input type="text" name="email-' + id + '" ' + value +
-              'placeholder="email"><input type="hidden" name="emailorig-' + id + '" value="' + result.email + '"></div>');
+            $('div#match-emails').append('<div class="match-details-email-row" id="cid-' + id +
+              '"><div class="label match-sort_name match-details">' +
+              result.sort_name + '</div>' +
+              '<div class="match-details content"><input type="text" name="email-' + id + '" ' + value +
+              'placeholder="email"><input type="hidden" name="emailorig-' + id + '" value="' +
+              result.email + '"></div>' +
+              '<div class="clear"></div></div>'
+            );
           });
       }
     }
 
     //account for remove of specific values
-    $('div.match-details').each(function(){
+    $('div.match-details-email-row').each(function(){
       var id = $(this).prop('id').replace('cid-', '');
       if ($.inArray(id, ids) === -1) {
         $('div#cid-' + id).remove();
@@ -41,12 +46,12 @@ CRM.$(function($) {
 
     //account for removal of all matched contacts (cleanup edge case)
     if (ids.length === 0 || (ids.length === 1 && ids[0] === '')) {
-      $('div.match-details').remove();
+      $('div.match-details-email-row').remove();
     }
   }
 
   $('span.email_address').click(function(){
-    if ($('#match-emails div.match-details').length === 1) {
+    if ($('#match-emails div.match-details-email-row').length === 1) {
       var email = $(this).text();
       $('.match-details input[type=text]').val(email);
     }

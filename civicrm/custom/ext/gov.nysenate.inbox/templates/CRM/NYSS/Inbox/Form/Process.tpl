@@ -74,6 +74,7 @@
 <p></p>
 
 {*display message*}
+<div class="message-details-wrapper">
 {foreach from=$message_details item=message}
   <div class="crm-accordion-wrapper crm-accordion {if $is_multiple}collapsed{/if} message-details">
     <div class="crm-accordion-header">{$message.details.sender_name}: {$message.details.subject}</div>
@@ -103,7 +104,7 @@
         <div class="content">{$message.details.matched_to_display}</div>
         <div class="clear"></div>
       </div>
-      <div class="crm-section">
+      <div class="crm-section message-body-section">
         <div class="label">Body</div>
         <div class="content message-body">{$message.details.body}</div>
         <div class="clear"></div>
@@ -111,6 +112,7 @@
     </div>
   </div>
 {/foreach}
+</div>
 
 {* FOOTER *}
 <div class="crm-submit-buttons">

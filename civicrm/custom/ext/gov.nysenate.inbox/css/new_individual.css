@@ -1,7 +1,21 @@
-.new-indiv-message-details {
-  margin-top: 10px;
+div#crm-profile-block {
+  font-size: 85%;
 }
-.new-indiv-message-details div.crm-accordion-body {
-  font-size: 80%;
-  padding: 8px;
+div#crm-profile-block a.select2-choice {
+  font-size: 85%;
+  padding: 0 0 0 4px;
+}
+div.ui-dialog {
+  min-width: 1000px !important;
+}
+div.crm-profile-name-new_individual {
+  min-width: 320px;
+  float: left;
+}
+form.CRM_Profile_Form_Edit div.message-details {
+  float: right;
+  width: 630px;
+}
+form.CRM_Profile_Form_Edit div.message-details .content {
+  padding-left: 4px;
 }
