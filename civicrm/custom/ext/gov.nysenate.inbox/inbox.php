@@ -209,7 +209,8 @@ function inbox_civicrm_buildForm($formName, &$form) {
     $ufGroup = $form->getVar('_ufGroup');
     $referer = CRM_Utils_Array::value('HTTP_REFERER', $_SERVER);
     if ($ufGroup['name'] == 'new_individual' &&
-      strpos($referer, 'civicrm/nyss/inbox/matched') !== FALSE
+      (strpos($referer, 'civicrm/nyss/inbox/matched') !== FALSE ||
+       strpos($referer, 'civicrm/nyss/inbox/unmatched') !== FALSE)
     ) {
       CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.inbox', 'js/new_individual.js');
       CRM_Core_Resources::singleton()->addStyleFile('gov.nysenate.inbox', 'css/new_individual.css');
