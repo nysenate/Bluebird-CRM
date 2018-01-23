@@ -334,7 +334,13 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       FROM nyss_inbox_messages im
       LEFT JOIN nyss_inbox_messages_matched imm 
         ON im.message_id = imm.message_id
-      LEFT JOIN civicrm_email e 
+      LEFT JOIN (
+          SELECT civicrm_email.id, email
+          FROM civicrm_email
+          JOIN civicrm_contact
+            ON civicrm_email.contact_id = civicrm_contact.id
+            AND civicrm_contact.is_deleted != 1
+        ) e
         ON im.sender_email = e.email
       LEFT JOIN nyss_inbox_attachments ia 
         ON im.id = ia.email_id
