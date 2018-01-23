@@ -381,7 +381,7 @@ function _fixLocationBlocks(&$data, $type, &$rows, &$conflicts)
     $block = "move_location_{$type}_{$blk_idx}"; // eg. move_location_phone_0
     if (array_key_exists($block, $conflicts)) {
       unset($conflicts[$block]);
-      if (_cleanVal($rows[$block]['mainId']) != _cleanVal($rows[$block]['otherId'])) {
+      if (_cleanVal($rows[$block]['main']) != _cleanVal($rows[$block]['other'])) {
         //if not equal, append Other phone block to Main
         //add other block to main
         $data['migration_info']['main_details']['location_blocks'][$type][] =
