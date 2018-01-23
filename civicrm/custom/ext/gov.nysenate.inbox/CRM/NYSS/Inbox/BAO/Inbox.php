@@ -5,17 +5,11 @@ class CRM_NYSS_Inbox_BAO_Inbox {
   const STATUS_MATCHED = 1;
   const STATUS_CLEARED = 7;
   const STATUS_DELETED = 9;
-  const STATUS_UNPROCESSED = 99;
-
-  const USPS_AMS_URL = 'http://geo.nysenate.gov:8080/usps-ams/api/citystate?batch=true';
 
   const DEFAULT_ACTIVITY_STATUS = 'Completed';
-  const DEFAULT_ACTIVITY_TYPE = 'Inbound Email';
   const DEFAULT_AUTH_GROUP = 'Authorized_Forwarders';
   const DEFAULT_CONTACT_ID = 1;
 
-  const POSITION_PARENT_ID = 292;
-  const KEYWORD_PARENT_ID = 296;
 
   /**
    * add common resources
