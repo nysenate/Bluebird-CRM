@@ -266,6 +266,11 @@ sql="
     (5, 'view my contact', 'civicrm'),
     (5, 'edit my contact', 'civicrm'),
 
+    (5, 'edit users with role ConferenceServices', 'administerusersbyrole'),
+    (5, 'cancel users with role ConferenceServices', 'administerusersbyrole'),
+    (5, 'edit users with role ConferenceServices and other roles', 'administerusersbyrole'),
+    (5, 'cancel users with role ConferenceServices and other roles', 'administerusersbyrole'),
+
     (6, 'access all custom data', 'civicrm'),
     (6, 'access CiviCRM', 'civicrm'),
     (6, 'access CiviReport', 'civicrm'),
