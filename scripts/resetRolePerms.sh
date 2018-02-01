@@ -270,6 +270,8 @@ sql="
     (5, 'cancel users with role ConferenceServices', 'administerusersbyrole'),
     (5, 'edit users with role ConferenceServices and other roles', 'administerusersbyrole'),
     (5, 'cancel users with role ConferenceServices and other roles', 'administerusersbyrole'),
+    (5, 'administer district', 'nyss_civihooks'),
+    (5, 'administer users', 'user'),
 
     (6, 'access all custom data', 'civicrm'),
     (6, 'access CiviCRM', 'civicrm'),
