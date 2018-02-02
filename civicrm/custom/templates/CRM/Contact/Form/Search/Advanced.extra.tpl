@@ -32,8 +32,8 @@
   cj('table.search-privacy-options tbody').append(pon);
 
   //7946
-  cj('div.crm-ModifiedDate-accordion').insertAfter(cj('div.crm-CiviCase-accordion'));
-  if ( cj('#log_start_date').val() || cj('#log_end_date').val() ) {
+  cj('div.crm-ModifiedDate-accordion').insertBefore(cj('div.crm-search-form-block div.spacer'));
+  if (cj('#log_start_date').val() || cj('#log_end_date').val()) {
     cj('div.crm-ModifiedDate-accordion').removeClass('collapsed');
   }
 
