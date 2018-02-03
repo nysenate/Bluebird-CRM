@@ -5,6 +5,7 @@
   <ul>
     <li id='tab_process-reassign'><a href='#process-reassign' title='Reassign Contact'>Reassign Contact</a></li>
     <li id='tab_process-tags_contact'><a href='#process-tagscontact' title='Tag Contact'>Tag Contact</a></li>
+    <li id='tab_process-groups_contact'><a href='#process-groupscontact' title='Add to Group'>Add to Group(s)</a></li>
     <li id='tab_process-tags_activity'><a href='#process-tagsactivity' title='Tag Activity'>Tag Activity</a></li>
     <li id='tab_process-activity'><a href='#process-activity' title='Edit Activity'>Edit Activity</a></li>
   </ul>
@@ -45,6 +46,14 @@
     <div class="crm-section tag-positions">
       <div class="label">{$form.contact_positions.label}</div>
       <div class="content">{$form.contact_positions.html}</div>
+      <div class="clear"></div>
+    </div>
+  </div>
+
+  <div id="process-groupscontact" class='ui-tabs-panel ui-widget-content ui-corner-bottom'>
+    <div class="crm-section group-select">
+      <div class="label">{$form.group_id.label}</div>
+      <div class="content">{$form.group_id.html}</div>
       <div class="clear"></div>
     </div>
   </div>

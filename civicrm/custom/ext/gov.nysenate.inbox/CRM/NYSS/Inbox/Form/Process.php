@@ -6,6 +6,14 @@
  * @see http://wiki.civicrm.org/confluence/display/CRMDOC43/QuickForm+Reference
  */
 class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
+
+  /**
+   * Pre process form.
+   */
+  public function preProcess() {
+    $this->setAction(CRM_Core_Action::UPDATE + CRM_Core_Action::ADD);
+  }
+
   public function buildQuickForm() {
     CRM_NYSS_Inbox_BAO_Inbox::addResources('process');
 
@@ -121,6 +129,13 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
     if (!empty($tags)) {
       $this->add('select2', 'tag', ts('Issue Codes'), $tags, FALSE, array('class' => 'huge', 'placeholder' => ts('- select -'), 'multiple' => TRUE));
     }
+
+    //groups
+    $allGroups = CRM_Core_PseudoConstant::group();
+    $groupHierarchy = CRM_Contact_BAO_Group::getGroupsHierarchy($allGroups, NULL, '&nbsp;&nbsp;', TRUE);
+    $this->add('select', 'group_id', 'Group(s)', $groupHierarchy, FALSE,
+      array('id' => 'group_id', 'multiple' => 'multiple', 'class' => 'crm-select2 twenty')
+    );
 
     //edit activity form elements
     $staffGroupID = civicrm_api3('group', 'getvalue', array('name' => 'Office_Staff', 'return' => 'id'));
@@ -238,5 +253,13 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
       }
     }
     return $elementNames;
+  }
+
+  function getDefaultContext() {
+    return 'create';
+  }
+
+  function getDefaultEntity() {
+    return 'GroupContact';
   }
 }

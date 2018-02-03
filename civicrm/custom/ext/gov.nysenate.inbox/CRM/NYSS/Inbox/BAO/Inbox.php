@@ -724,6 +724,18 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         }
       }
 
+      //groups
+      if (!empty($values['group_id'])) {
+        try {
+          civicrm_api3('group_contact', 'create', array(
+            'contact_id' => (!empty($values['assignee'])) ? $values['assignee'] : $row['current_assignee'],
+            'group_id' => $values['group_id'],
+          ));
+        } catch (CiviCRM_API3_Exception $e) {
+          //Civi::log()->debug('processMessages groups', array('e' => $e));
+        }
+      }
+
       //ensure we have an activity ID before processing these
       if ($row['activity_id']) {
         if (!empty($values['activity_keywords'])) {
