@@ -413,8 +413,7 @@ function tags_civicrm_apiWrappers(&$wrappers, $apiRequest)
 } //tags_civicrm_apiWrapper()
 
 
-function tags_civicrm_alterAPIPermissions($entity, $action, &$params, &$permissions)
-{
+function tags_civicrm_alterAPIPermissions($entity, $action, &$params, &$permissions) {
   /*Civi::log()->debug('tags_civicrm_alterAPIPermissions', [
     '$entity' => $entity,
     '$action' => $action,
@@ -423,7 +422,7 @@ function tags_civicrm_alterAPIPermissions($entity, $action, &$params, &$permissi
   ]);*/
 
   //11459
-  if ($entity == 'nyss_tags' && $action == 'getlist') {
+  if ($entity == 'nyss_tags' && in_array($action, array('getlist', 'saveposition'))) {
     $params['check_permissions'] = false;
   }
 } //tags_civicrm_alterAPIPermissions()
