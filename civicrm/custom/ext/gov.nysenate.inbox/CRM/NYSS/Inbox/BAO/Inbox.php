@@ -570,6 +570,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       }
 
       $matches[] = array(
+        'row_id' => $rowId,
         'message_id' => $message['message_id'],
         'matched_id' => $contactId,
         'activity_id' => $activity['id'],
@@ -588,18 +589,19 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       3 => [$rowId, 'Integer'],
     ]);
 
-    //store activity_id in messages_matched table
+    //store in messages_matched table
     $matchedContacts = array();
     foreach ($matches as $match) {
       CRM_Core_DAO::executeQuery("
         INSERT INTO nyss_inbox_messages_matched
-        (message_id, matched_id, activity_id)
+        (row_id, message_id, matched_id, activity_id)
         VALUES
-        (%1, %2, %3)
+        (%1, %2, %3, %4)
       ", [
-        1 => [$match['message_id'], 'Positive'],
-        2 => [$match['matched_id'], 'Positive'],
-        3 => [$match['activity_id'], 'Positive'],
+        1 => [$match['row_id'], 'Positive'],
+        2 => [$match['message_id'], 'Positive'],
+        3 => [$match['matched_id'], 'Positive'],
+        4 => [$match['activity_id'], 'Positive'],
       ]);
 
       $contactName = civicrm_api3('contact', 'getvalue', [
