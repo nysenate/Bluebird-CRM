@@ -28,12 +28,16 @@ if ! $readConfig --instance $instance --quiet; then
 fi
 
 ## 11723 relationship types
-echo "$prog: add relationship types"
+echo "$prog: add/update relationship types"
 sql="
   INSERT IGNORE INTO civicrm_relationship_type
   (name_a_b, label_a_b, name_b_a, label_b_a, description, contact_type_a, contact_type_b, contact_sub_type_a, contact_sub_type_b, is_reserved, is_active)
   VALUES
   ('Client of', 'Client of', 'Client for', 'Client for', NULL, NULL, NULL, NULL, NULL, NULL, 1);
+
+  UPDATE civicrm_relationship_type
+  SET contact_type_b = NULL
+  WHERE name_a_b = 'Organization of';
 "
 $execSql $instance -c "$sql" -q
 
