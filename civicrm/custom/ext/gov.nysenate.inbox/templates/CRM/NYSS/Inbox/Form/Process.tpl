@@ -114,8 +114,7 @@
         <div class="clear"></div>
       </div>
       <div class="crm-section message-body-section">
-        <div class="label">Body</div>
-        <div class="content message-body">{$message.details.body}</div>
+        <div class="message-body">{$message.details.body}</div>
         <div class="clear"></div>
       </div>
     </div>
