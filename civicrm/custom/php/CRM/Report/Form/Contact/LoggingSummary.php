@@ -75,6 +75,7 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
             'required' => TRUE,
             'type' => CRM_Utils_Type::T_TIME,
             'title' => ts('When'),
+            'dbAlias' => 'MIN(entity_log_civireport.log_date)',//NYSS CRM-21611
           ),
           'altered_contact' => array(
             'default' => TRUE,
@@ -149,6 +150,7 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
             'default' => TRUE,
             'default_weight' => '0',
             'default_order' => 'DESC',
+            'dbAlias' => 'MIN(entity_log_civireport.log_date)',//NYSS CRM-21611
           ),
           'altered_contact' => array(
             'name' => 'display_name',

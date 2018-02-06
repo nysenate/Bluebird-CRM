@@ -39,6 +39,12 @@ class CRM_NYSS_Inbox_Form_AssignContact extends CRM_Core_Form {
       ),
     ));
 
+    if (!empty($details['matched_ids'])) {
+      $this->setDefaults(array(
+        'matches' => $details['matched_ids'],
+      ));
+    }
+
     // export form elements
     $this->assign('elementNames', $this->getRenderableElementNames());
     parent::buildQuickForm();

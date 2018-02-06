@@ -746,9 +746,9 @@ function searchForMatches($db, $params)
         //in v2.1 we split matched_id (formerly matched_to) and activity_id into related table
         $q = "
           INSERT IGNORE INTO nyss_inbox_messages_matched
-          (message_id, matched_id, activity_id)
+          (row_id, message_id, matched_id, activity_id)
           VALUES
-          ({$message_id}, {$contactID}, {$activityId})
+          ({$msg_row_id}, {$message_id}, {$contactID}, {$activityId})
         ";
         if (mysqli_query($db, $q) == false) {
           bbscript_log(LL::ERROR,

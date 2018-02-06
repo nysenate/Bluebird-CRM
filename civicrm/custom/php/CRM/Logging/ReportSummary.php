@@ -31,6 +31,7 @@
  * @copyright CiviCRM LLC (c) 2004-2017
  * $Id$
  */
+//NYSS implement future core version (CRM-21611)
 class CRM_Logging_ReportSummary extends CRM_Report_Form {
   protected $cid;
 
@@ -184,7 +185,27 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
   }
 
   public function groupBy() {
-    $this->_groupBy = 'GROUP BY entity_log_civireport.log_conn_id, entity_log_civireport.log_user_id, EXTRACT(DAY_MICROSECOND FROM entity_log_civireport.log_date), entity_log_civireport.id';
+    $this->_groupByArray = array(
+      'entity_log_civireport.log_conn_id',
+      'entity_log_civireport.log_user_id',
+      'EXTRACT(DAY_MICROSECOND FROM entity_log_civireport.log_date)',
+      'entity_log_civireport.id',
+    );
+    $this->_groupBy = 'GROUP BY ' .  implode(', ', $this->_groupByArray);
+    $this->_select = CRM_Contact_BAO_Query::appendAnyValueToSelect(
+      $this->_selectClauses,
+      $this->_groupByArray,
+      'GROUP_CONCAT'
+    );
+  }
+
+  public function orderBy() {
+    parent::orderBy();
+    $orderBys = array_merge(CRM_Utils_Array::collect('dbAlias', $this->_orderByFields), $this->_groupByArray);
+    if (!empty($orderBys)) {
+      CRM_Contact_BAO_Query::getGroupByFromOrderBy($this->_groupBy, $orderBys);
+      $this->_select = CRM_Contact_BAO_Query::appendAnyValueToSelect($this->_selectClauses, $orderBys, 'GROUP_CONCAT');
+    }
   }
 
   /**
@@ -211,7 +232,12 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
         return 1;
       }
       $mergeActivityID = CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'activity_type_id', 'Contact Merged');
-      return " IF (entity_log_civireport.log_action = 'Insert' AND extra_table.activity_type_id = $mergeActivityID , GROUP_CONCAT(entity_log_civireport.contact_id), 1) ";
+      if (CRM_Utils_SQL::supportsFullGroupBy()) {
+        return " IF (LOCATE('Insert', GROUP_CONCAT(DISTINCT entity_log_civireport.log_action)) = 0 AND MAX(extra_table.activity_type_id) = $mergeActivityID , GROUP_CONCAT(entity_log_civireport.contact_id), 1) ";
+      }
+      else {
+        return " IF (entity_log_civireport.log_action = 'Insert' AND extra_table.activity_type_id = $mergeActivityID , GROUP_CONCAT(entity_log_civireport.contact_id), 1) ";
+      }
     }
   }
 
@@ -268,18 +294,9 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
       ) {
         $this->currentLogTable = $entity;
         $sql = $this->buildQuery(FALSE);
-        $sql = str_replace("entity_log_civireport.log_type as", "'{$entity}' as", $sql);
+        $sql = str_replace(array("entity_log_civireport.log_type as", "GROUP_CONCAT(DISTINCT entity_log_civireport.log_type) as"), "'{$entity}' as", $sql);
         $sql = "INSERT IGNORE INTO civicrm_temp_civireport_logsummary {$sql}";
-
-        //NYSS disable full_group_by temporarily; then restore
-        $sqlModes = $sqlModesOrig = CRM_Utils_SQL::getSqlModes();
-        if (in_array('ONLY_FULL_GROUP_BY', $sqlModes)) {
-          $key = array_search('ONLY_FULL_GROUP_BY', $sqlModes);
-          unset($sqlModes[$key]);
-          CRM_Core_DAO::executeQuery("SET SESSION sql_mode = '" . implode(',', $sqlModes) . "'");
-        }
         CRM_Core_DAO::executeQuery($sql);
-        CRM_Core_DAO::executeQuery("SET SESSION sql_mode = '" . implode(',', $sqlModesOrig) . "'");
       }
     }
 
@@ -312,29 +329,20 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
 
     // note the group by columns are same as that used in alterDisplay as $newRows - $key
     $this->limit();
-    $this->orderBy();//NYSS 11540
+    $this->orderBy();
     $sql = "{$this->_select}
 FROM civicrm_temp_civireport_logsummary entity_log_civireport
 WHERE {$logTypeTableClause}
-GROUP BY log_civicrm_entity_log_date, log_civicrm_entity_log_type_label, log_civicrm_entity_log_conn_id, log_civicrm_entity_log_user_id, log_civicrm_entity_altered_contact_id, log_civicrm_entity_log_grouping
+{$this->_groupBy}
 {$this->_orderBy}
-{$this->_limit}";
+{$this->_limit} ";
     $sql = str_replace('modified_contact_civireport.display_name', 'entity_log_civireport.altered_contact', $sql);
     $sql = str_replace('modified_contact_civireport.id', 'entity_log_civireport.altered_contact_id', $sql);
     $sql = str_replace(array(
       'modified_contact_civireport.',
       'altered_by_contact_civireport.',
     ), 'entity_log_civireport.', $sql);
-
-    //NYSS disable full_group_by temporarily; then restore
-    $sqlModes = $sqlModesOrig = CRM_Utils_SQL::getSqlModes();
-    if (in_array('ONLY_FULL_GROUP_BY', $sqlModes)) {
-      $key = array_search('ONLY_FULL_GROUP_BY', $sqlModes);
-      unset($sqlModes[$key]);
-      CRM_Core_DAO::executeQuery("SET SESSION sql_mode = '" . implode(',', $sqlModes) . "'");
-    }
     $this->buildRows($sql, $rows);
-    CRM_Core_DAO::executeQuery("SET SESSION sql_mode = '" . implode(',', $sqlModesOrig) . "'");
 
     // format result set.
     $this->formatDisplay($rows);

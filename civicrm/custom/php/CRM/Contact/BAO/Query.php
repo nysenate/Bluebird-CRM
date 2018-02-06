@@ -4801,7 +4801,7 @@ civicrm_relationship.is_permission_a_b = 0
    *
    * @return string
    */
-  public static function appendAnyValueToSelect($selectClauses, $groupBy) {
+  public static function appendAnyValueToSelect($selectClauses, $groupBy, $aggregateFunction = 'ANY_VALUE') {
     //NYSS 11356
     if (!CRM_Utils_SQL::disableFullGroupByMode()) {
       $groupBy = array_map('trim', (array) $groupBy);
@@ -4810,7 +4810,9 @@ civicrm_relationship.is_permission_a_b = 0
         list($selectColumn, $alias) = array_pad(preg_split('/ as /i', $val), 2, NULL);
         // append ANY_VALUE() keyword
         if (!in_array($selectColumn, $groupBy) && preg_match($aggregateFunctions, trim($selectColumn)) !== 1) {
-          $val = str_replace($selectColumn, "ANY_VALUE({$selectColumn})", $val);
+          $val = ($aggregateFunction == 'GROUP_CONCAT') ?
+            str_replace($selectColumn, "$aggregateFunction(DISTINCT {$selectColumn})", $val) :
+            str_replace($selectColumn, "$aggregateFunction({$selectColumn})", $val);
         }
       }
     }
@@ -4829,7 +4831,7 @@ civicrm_relationship.is_permission_a_b = 0
    *
    */
   public static function getGroupByFromOrderBy(&$groupBy, $orderBys) {
-    if (CRM_Utils_SQL::disableFullGroupByMode()) {
+    if (!CRM_Utils_SQL::disableFullGroupByMode()) {
       foreach ($orderBys as $orderBy) {
         $orderBy = str_replace(array(' DESC', ' ASC'), '', $orderBy);
         if (preg_match('/(MAX|MIN)\(/i', trim($orderBy)) !== 1 && !strstr($groupBy, $orderBy)) {

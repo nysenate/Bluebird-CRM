@@ -9,13 +9,25 @@ div.ui-dialog {
   min-width: 1000px !important;
 }
 div.crm-profile-name-new_individual {
-  min-width: 320px;
+  min-width: 310px;
   float: left;
+  border-right: 1px solid #aaaaaa;
+  margin-bottom: 10px;
 }
 form.CRM_Profile_Form_Edit div.message-details {
   float: right;
   width: 630px;
+  margin-right: 10px;
 }
 form.CRM_Profile_Form_Edit div.message-details .content {
   padding-left: 4px;
 }
+form.CRM_Profile_Form_Edit div.crm-submit-buttons {
+  overflow: visible !important;
+  padding-left: 150px !important;
+}
+div.ui-dialog-buttonpane {
+  margin-top: 0 !important;
+  display: none;
+}
+

@@ -101,11 +101,18 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       SELECT im.id, im.message_id, im.sender_name, im.sender_email, im.subject, im.body, im.forwarder,
         im.status, im.matcher, imm.matched_id, imm.activity_id, im.updated_date, im.email_date, 
         IFNULL(count(ia.file_name), '0') as attachments,
-        count(e.id) AS email_count
+        COUNT(e.id) AS email_count, GROUP_CONCAT(DISTINCT e.id) AS email_ids,
+        GROUP_CONCAT(DISTINCT e.contact_id) AS matched_ids
       FROM nyss_inbox_messages im
       LEFT JOIN nyss_inbox_messages_matched imm 
         ON im.message_id = imm.message_id
-      LEFT JOIN civicrm_email e 
+      LEFT JOIN (
+        SELECT civicrm_email.id, email, contact_id
+        FROM civicrm_email
+        JOIN civicrm_contact
+          ON civicrm_email.contact_id = civicrm_contact.id
+          AND civicrm_contact.is_deleted != 1
+      ) e
         ON im.sender_email = e.email
       LEFT JOIN nyss_inbox_attachments ia 
         ON im.id = ia.email_id
@@ -148,6 +155,8 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         'date_email' => date('m/d/Y', strtotime($dao->email_date)),
         'attachments' => $dao->attachments,
         'email_count' => $dao->email_count,
+        'email_ids' => $dao->email_ids,
+        'matched_ids' => $dao->matched_ids,
       );
     }
 
@@ -561,6 +570,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       }
 
       $matches[] = array(
+        'row_id' => $rowId,
         'message_id' => $message['message_id'],
         'matched_id' => $contactId,
         'activity_id' => $activity['id'],
@@ -579,18 +589,19 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       3 => [$rowId, 'Integer'],
     ]);
 
-    //store activity_id in messages_matched table
+    //store in messages_matched table
     $matchedContacts = array();
     foreach ($matches as $match) {
       CRM_Core_DAO::executeQuery("
         INSERT INTO nyss_inbox_messages_matched
-        (message_id, matched_id, activity_id)
+        (row_id, message_id, matched_id, activity_id)
         VALUES
-        (%1, %2, %3)
+        (%1, %2, %3, %4)
       ", [
-        1 => [$match['message_id'], 'Positive'],
-        2 => [$match['matched_id'], 'Positive'],
-        3 => [$match['activity_id'], 'Positive'],
+        1 => [$match['row_id'], 'Positive'],
+        2 => [$match['message_id'], 'Positive'],
+        3 => [$match['matched_id'], 'Positive'],
+        4 => [$match['activity_id'], 'Positive'],
       ]);
 
       $contactName = civicrm_api3('contact', 'getvalue', [
@@ -721,6 +732,18 @@ class CRM_NYSS_Inbox_BAO_Inbox {
               //$msg[] = 'Unable to assign all positions to the contact.';
             }
           }
+        }
+      }
+
+      //groups
+      if (!empty($values['group_id'])) {
+        try {
+          civicrm_api3('group_contact', 'create', array(
+            'contact_id' => (!empty($values['assignee'])) ? $values['assignee'] : $row['current_assignee'],
+            'group_id' => $values['group_id'],
+          ));
+        } catch (CiviCRM_API3_Exception $e) {
+          //Civi::log()->debug('processMessages groups', array('e' => $e));
         }
       }
 

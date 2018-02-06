@@ -468,9 +468,10 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
           strstr($clause, 'civicrm_email_contact_source_email') ||
           strstr($clause, 'civicrm_email_contact_assignee_email') ||
           strstr($clause, 'civicrm_email_contact_target_email') ||
-          strstr($clause, 'civicrm_phone_contact_target_phone')
+          strstr($clause, 'civicrm_phone_contact_target_phone') ||
+          strstr($clause, 'civicrm_address_') //NYSS 11663
         ) {
-          $this->_selectClauses[$key] = "GROUP_CONCAT($clause SEPARATOR ';') as $clause";
+          $this->_selectClauses[$key] = "GROUP_CONCAT(DISTINCT $clause SEPARATOR ';') as $clause"; //NYSS 11663
         }
       }
     }
@@ -1079,7 +1080,44 @@ GROUP BY civicrm_activity_id $having {$this->_orderBy}";
         }
       }
 
-      $entryFound = $this->alterDisplayAddressFields($row, $rows, $rowNum, 'activity', 'List all activities for this ') ? TRUE : $entryFound;
+      //NYSS 11663
+      //$entryFound = $this->alterDisplayAddressFields($row, $rows, $rowNum, 'activity', 'List all activities for this ') ? TRUE : $entryFound;
+      foreach (array('civicrm_address_country_id', 'civicrm_address_county_id', 'civicrm_address_state_province_id') as $field) {
+        $criteriaQueryParams = CRM_Report_Utils_Report::getPreviewCriteriaQueryParams($this->_defaults, $this->_params);
+        if (array_key_exists($field, $row)) {
+          if ($value = $row[$field]) {
+            $values = (array) explode(';', $value);
+            $rows[$rowNum][$field] = array();
+            $addressField = '';
+            foreach ($values as $value) {
+              if (strstr($field, 'country')) {
+                $rows[$rowNum][$field][] = CRM_Core_PseudoConstant::country($value, FALSE);
+                $addressField = 'country';
+              }
+              elseif (strstr($field, 'county')) {
+                $rows[$rowNum][$field][] = CRM_Core_PseudoConstant::county($value, FALSE);
+                $addressField = 'county';
+              }
+              elseif (strstr($field, 'state_province')) {
+                $rows[$rowNum][$field][] = CRM_Core_PseudoConstant::stateProvince($value, FALSE);
+                $addressField = 'state';
+              }
+            }
+            $rows[$rowNum][$field] = implode(', ', $rows[$rowNum][$field]);
+            $url = CRM_Report_Utils_Report::getNextUrl('activity',
+              sprintf("reset=1&force=1&%s&%s_op=in&%s_value=%s",
+                $criteriaQueryParams,
+                str_replace('civicrm_address_', '', $field),
+                str_replace('civicrm_address_', '', $field),
+                implode(',', $values)
+              ), $this->_absoluteUrl, $this->_id
+            );
+            $rows[$rowNum]["{$field}_link"] = $url;
+            $rows[$rowNum]["{$field}_hover"] = ts("'List all activities for this for this %1.", array(1 => $addressField));
+            $entryFound = TRUE;
+          }
+        }
+      }
 
       if (!$entryFound) {
         break;
