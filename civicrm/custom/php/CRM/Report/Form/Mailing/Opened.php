@@ -179,7 +179,7 @@ class CRM_Report_Form_Mailing_Opened extends CRM_Report_Form {
         'id' => array(
           'required' => TRUE,
           'no_display' => TRUE,
-          'dbAlias' => CRM_Utils_SQL::supportsFullGroupBy() ? 'ANY_VALUE(mailing_event_opened_civireport.id)' : NULL,//NYSS
+          //'dbAlias' => CRM_Utils_SQL::supportsFullGroupBy() ? 'ANY_VALUE(mailing_event_opened_civireport.id)' : NULL,//NYSS
         ),
         'time_stamp' => array(
           'title' => ts('Open Date'),
@@ -293,25 +293,37 @@ class CRM_Report_Form_Mailing_Opened extends CRM_Report_Form {
   public function where() {
     parent::where();
     $this->_where .= " AND {$this->_aliases['civicrm_mailing']}.sms_provider_id IS NULL";
-
-    //NYSS 10954/11556 - handle this option in groupBy
-    //Civi::log()->debug('where', array('_where' => $this->_where));
-    $this->_where = str_replace('AND ( mailing_event_opened_civireport.unique_opens = 1 )', '', $this->_where);
-    $this->_where = str_replace('AND ( mailing_event_opened_civireport.unique_opens = 0 )', '', $this->_where);
   }
 
   public function groupBy() {
     //NYSS 10954/11556
-    $groupBys = empty($this->_params['charts']) ? array("civicrm_mailing_event_queue.email_id") : array("{$this->_aliases['civicrm_mailing']}.id");
+    $this->_groupByArray = empty($this->_params['charts']) ? array("civicrm_mailing_event_queue.email_id") : array("{$this->_aliases['civicrm_mailing']}.id");
 
-    if (!empty($this->_params['unique_opens_value'])) {
-      $groupBys[] = "civicrm_mailing_event_queue.id";
+    if (!empty($this->_params['unique_opens_value']) || CRM_Utils_SQL::supportsFullGroupBy()) {
+      $this->_groupByArray[] = "civicrm_mailing_event_queue.id";
     }
-    $this->_select = CRM_Contact_BAO_Query::appendAnyValueToSelect($this->_selectClauses, $groupBys);
-    $this->_groupBy = "GROUP BY " . implode(', ', $groupBys);
+    $this->_select = CRM_Contact_BAO_Query::appendAnyValueToSelect($this->_selectClauses, $this->_groupByArray);
+    $this->_groupBy = "GROUP BY " . implode(', ', $this->_groupByArray);
     /*Civi::log()->debug('groupBy', array(
       '_params' => $this->_params,
       '_groupBy' => $this->_groupBy,
+      '_select' => $this->_select,
+    ));*/
+  }
+
+  //NYSS
+  public function orderBy() {
+    parent::orderBy();
+    $orderBys = array_merge(CRM_Utils_Array::collect('dbAlias', $this->_orderByFields), $this->_groupByArray);
+    if (!empty($orderBys)) {
+      CRM_Contact_BAO_Query::getGroupByFromOrderBy($this->_groupBy, $orderBys);
+      $this->_select = CRM_Contact_BAO_Query::appendAnyValueToSelect($this->_selectClauses, $orderBys);
+    }
+
+    /*Civi::log()->debug('', array(
+      'orderBys' => $orderBys,
+      '_groupBy' => $this->_groupBy,
+      '_selectClauses' => $this->_selectClauses,
       '_select' => $this->_select,
     ));*/
   }

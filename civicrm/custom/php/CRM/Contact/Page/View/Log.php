@@ -73,60 +73,10 @@ class CRM_Contact_Page_View_Log extends CRM_Core_Page {
       );
     }
 
-    //NYSS 2551 need to retrieve activity logs for the current record
-    //NYSS 4592 remove bulk email activities from displaying
-    $params = array(
-      'version' => 3,
-      'contact_id' => $this->_contactId,
-    );
-    $activities = civicrm_api('activity', 'get', $params);
-    //CRM_Core_Error::debug($activities);
-
-    $activityIDs = array();
-    $activitySubject = array();
-    $bulkEmailID = CRM_Core_OptionGroup::getValue( 'activity_type', 'Bulk Email', 'name' );
-
-		foreach ( $activities['values'] as $activityID => $activityDetail ) {
-			if ( $activityDetail['activity_type_id'] != $bulkEmailID ) {
-			    $activityIDs[] = $activityID;
-			    $activitySubject[$activityID] = $activityDetail['subject'];
-			}
-		}
-		$activityIDlist = implode(',', $activityIDs);
-		//CRM_Core_Error::debug($activityIDlist);
-
-		$allContacts = 0;
-		$alogEntries = array( );
-		if ( !empty($activityIDlist) ) {
-			$sqlAlogs = "
-			  SELECT entity_id, data, modified_id, modified_date
-				FROM civicrm_log
-				WHERE entity_table = 'civicrm_activity' AND entity_id IN ($activityIDlist);
-			";
-			$dao = CRM_Core_DAO::executeQuery( $sqlAlogs );
-		
-			while ( $dao->fetch( ) ) {
-        list( $displayName, $contactImage ) = CRM_Contact_BAO_Contact::getDisplayAndImage( $dao->modified_id );
-				$alogEntries[] = array(
-          'id'    => $dao->modified_id,
-        	'name'  => $displayName,
-        	'image' => $contactImage,
-        	'date'  => $dao->modified_date,
-					'description' => $dao->data
-        );
-      }
-		}
-		$logEntries = array_merge_recursive( $logEntries, $alogEntries );
-		require_once 'CRM/Utils/Sort.php';
-		usort( $logEntries, array('CRM_NYSS_Utils_Sort', 'cmpDate') );
-		
-		$this->assign( 'logCount', count( $logEntries ) );
+    $this->assign('logCount', count($logEntries));
     $this->ajaxResponse['tabCount'] = count($logEntries);
     $this->ajaxResponse += CRM_Contact_Form_Inline::renderFooter($this->_contactId, FALSE);
     $this->assign_by_ref('log', $logEntries);
-		
-		$currentContact = CRM_Contact_BAO_Contact::getDisplayAndImage( $this->_contactId ); //NYSS 4458
-		$this->assign( 'displayName', $currentContact[0] ); //NYSS 2551
   }
 
   public function preProcess() {

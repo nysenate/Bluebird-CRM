@@ -16,7 +16,6 @@ CRM.$(function($) {
     for (var i = 0; i < ids.length; i++) {
       var id = ids[i];
       if (id.length > 0 && $('div#cid-' + id).length === 0) {
-        var oddeven = (i % 2 === 0) ? 'odd' : '';
         var contact = CRM.api3('contact', 'getsingle', {id: id})
           .done(function (result) {
             //console.log(result);
@@ -24,11 +23,13 @@ CRM.$(function($) {
             if (result.email.length > 0) {
               value = 'value="' + result.email + '" ';
             }
-            $('div#match-emails').append('<div class="match-details-email-row" id="cid-' + id +
-              '"><div class="label match-sort_name match-details">' +
-              result.sort_name + '</div>' +
-              '<div class="match-details content"><input type="text" name="email-' + id + '" ' + value +
-              'placeholder="email"><input type="hidden" name="emailorig-' + id + '" value="' +
+            var url = CRM.url("civicrm/contact/view", {reset: 1, cid: result.contact_id});
+            $('div#match-emails').append('<div class="match-details-email-row" id="cid-' + result.contact_id +
+              '"><div class="label match-sort_name match-details"><a href="' + url + '" target="_blank">' +
+              result.sort_name + '</a></div>' +
+              '<div class="match-details content"><input type="text" name="email-' +
+              result.contact_id + '" ' + value +
+              'placeholder="email"><input type="hidden" name="emailorig-' + result.contact_id + '" value="' +
               result.email + '"></div>' +
               '<div class="clear"></div></div>'
             );

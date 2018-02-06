@@ -1627,7 +1627,7 @@ class CRM_NYSS_IMAP_AJAX
             WHEN im.status = ".self::STATUS_UNPROCESSED." THEN 'Unprocessed'
             ELSE 'Unknown Status'
         END as status_string,
-        im.matched_to, im.sender_email, im.subject, im.forwarder, im.activity_id,
+        imm.matched_id matched_to, im.sender_email, im.subject, im.forwarder, imm.activity_id,
         im.matcher, im.status,
         IFNULL(count(ia.file_name), 0) as attachments,
         matcher.display_name as matcher_name,
@@ -1636,13 +1636,21 @@ class CRM_NYSS_IMAP_AJAX
         matched_to.contact_type as contactType,
         COUNT(civi_t.id) as tagCount
       FROM nyss_inbox_messages as im
-      LEFT JOIN civicrm_contact as matcher ON (im.matcher = matcher.id)
-      LEFT JOIN civicrm_contact as matched_to ON (im.matched_to = matched_to.id)
-      LEFT JOIN nyss_inbox_attachments ia ON (im.id = ia.email_id)
-      LEFT JOIN civicrm_entity_tag as civi_et ON im.activity_id=civi_et.entity_id and civi_et.entity_table='civicrm_activity'
-      LEFT JOIN civicrm_tag as civi_t ON civi_et.tag_id=civi_t.id
+      LEFT JOIN nyss_inbox_messages_matched imm
+        ON im.message_id = imm.message_id
+      LEFT JOIN civicrm_contact as matcher
+        ON im.matcher = matcher.id
+      LEFT JOIN civicrm_contact as matched_to
+        ON imm.matched_id = matched_to.id
+      LEFT JOIN nyss_inbox_attachments ia
+        ON im.id = ia.email_id
+      LEFT JOIN civicrm_entity_tag as civi_et
+        ON imm.activity_id = civi_et.entity_id
+        AND civi_et.entity_table = 'civicrm_activity'
+      LEFT JOIN civicrm_tag as civi_t
+        ON civi_et.tag_id = civi_t.id
       WHERE im.status != 99 $rangeSql
-      GROUP BY im.id
+      GROUP BY im.id, imm.id
       LIMIT 0 , 100000
     ";
     $dbres = CRM_Core_DAO::executeQuery($query);
