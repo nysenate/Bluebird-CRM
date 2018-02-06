@@ -18,8 +18,21 @@ CRM.$(function($) {
       $('span.name').click(function(){
         $('input#last_name').val($(this).text());
       });
+
+      //address is a single element with parsed values in data
       $('span.zip').click(function(){
-        $('input#postal_code-Primary').val($(this).text());
+        var json = $(this).data('json');
+        $('input#city-Primary').val(json.city);
+        $('input#postal_code-Primary').val(json.zip);
+
+        //state select: determine id from label
+        $('select#state_province-Primary option').each(function(){
+          if ($(this).text() == json.state) {
+            var stateId = $(this).val();
+            $('select#state_province-Primary').val(stateId).trigger('change');
+            return false;
+          }
+        });
       });
     });
   }

@@ -177,13 +177,7 @@ div.description {
 .CRM_NYSS_Inbox_Form_AssignContact .found.zip,
 .CRM_NYSS_Inbox_Form_AssignContact .found.zip:hover,
 .CRM_NYSS_Inbox_Form_AssignContact .found.phone,
-.CRM_NYSS_Inbox_Form_AssignContact .found.phone:hover,
-.CRM_NYSS_Inbox_Form_Process .found.name,
-.CRM_NYSS_Inbox_Form_Process .found.name:hover,
-.CRM_NYSS_Inbox_Form_Process .found.zip,
-.CRM_NYSS_Inbox_Form_Process .found.zip:hover,
-.CRM_NYSS_Inbox_Form_Process .found.phone,
-.CRM_NYSS_Inbox_Form_Process .found.phone:hover {
+.CRM_NYSS_Inbox_Form_AssignContact .found.phone:hover {
   background: none;
   color: black;
   border: none;
