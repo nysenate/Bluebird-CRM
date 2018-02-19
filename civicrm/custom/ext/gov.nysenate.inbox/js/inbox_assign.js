@@ -11,6 +11,7 @@ CRM.$(function($) {
 
   function displayEmails() {
     var ids = $('#matches').val().split(',');
+    var summaryOverlayProfileId = CRM.vars.NYSS.summaryOverlayProfileId;
     //console.log(ids);
 
     for (var i = 0; i < ids.length; i++) {
@@ -24,8 +25,11 @@ CRM.$(function($) {
               value = 'value="' + result.email + '" ';
             }
             var url = CRM.url("civicrm/contact/view", {reset: 1, cid: result.contact_id});
+            var summaryUrl = CRM.url("civicrm/profile/view", {reset: 1, gid: summaryOverlayProfileId, id: result.contact_id, snippet: 4});
             $('div#match-emails').append('<div class="match-details-email-row" id="cid-' + result.contact_id +
-              '"><div class="label match-sort_name match-details"><a href="' + url + '" target="_blank">' +
+              '"><div class="label match-sort_name match-details"><a href="' + summaryUrl +
+              '" class="crm-summary-link"><i class="crm-i fa-list-alt"></i></a>&nbsp;<a href="' +
+              url + '" target="_blank">' +
               result.sort_name + '</a></div>' +
               '<div class="match-details content"><input type="text" name="email-' +
               result.contact_id + '" ' + value +

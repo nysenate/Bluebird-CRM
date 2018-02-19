@@ -32,6 +32,12 @@ div.crm-contact-form-block-multiactions {
 a.button.cancel {
   min-height: 19px;
 }
+.crm-container table.crm-table-group-summary {
+  border: none;
+}
+.crm-container #match-emails .crm-tooltip-wrapper {
+  left: -16px;
+}
 
 .emailbubble,
 .matchbubble {

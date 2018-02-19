@@ -8,6 +8,9 @@
 class CRM_NYSS_Inbox_Form_AssignContact extends CRM_Core_Form {
   public function buildQuickForm() {
     CRM_NYSS_Inbox_BAO_Inbox::addResources('assign');
+    $summaryOverlayProfileId = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_UFGroup', 'summary_overlay', 'id', 'name');
+    CRM_Core_Resources::singleton()->addVars('NYSS',
+      array('summaryOverlayProfileId' => $summaryOverlayProfileId));
 
     //get details about record
     $id = CRM_Utils_Request::retrieve('id', 'Positive');
