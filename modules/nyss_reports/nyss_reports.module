@@ -71,11 +71,11 @@ function nyss_reports_civicrm_pageRun(&$page) {
 }
 
 function nyss_reports_civicrm_alterReportVar($varType, &$var, &$object) {
-  Civi::log()->debug('alterReportVar', array(
+  /*Civi::log()->debug('alterReportVar', array(
     'varType' => $varType,
     'var' => $var,
     //'object' => $object,
-  ));
+  ));*/
 
   $class = get_class($object);
   switch ($varType) {
