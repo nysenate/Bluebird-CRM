@@ -300,9 +300,11 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     switch ($status) {
       case 'unmatched':
         $statusSql = 'AND im.status = '.self::STATUS_UNMATCHED;
+        $matchedSql = '';
         break;
       case 'matched':
         $statusSql = 'AND im.status = '.self::STATUS_MATCHED;
+        $matchedSql = 'AND imm.id IS NOT NULL';
         break;
       default:
         $statusSql = '';
@@ -335,6 +337,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         {$statusSql}
         {$rangeSql}
         {$termSql}
+        {$matchedSql}
       GROUP BY im.id, imm.matched_id
       ORDER BY {$orderBy}
       LIMIT {$params['rowCount']}
