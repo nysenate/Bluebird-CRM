@@ -230,6 +230,8 @@ class CRM_NYSS_Inbox_BAO_Inbox {
    *
    */
   static function deleteMessageMatch($rowId, $matchedId) {
+    //Civi::log()->debug('deleteMessageMatch', array('rowId' => $rowId, 'matchedId' => $matchedId));
+
     CRM_Core_DAO::executeQuery("
       DELETE FROM nyss_inbox_messages_matched
       WHERE matched_id = %1
@@ -626,7 +628,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         )
       );
     }
-    Civi::log()->debug('processMessages', array('$rows' => $rows));
+    //Civi::log()->debug('processMessages', array('$rows' => $rows));
 
     foreach ($rows as $row) {
       if (!empty($values['assignee'])) {
@@ -643,7 +645,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
         if ($matchId) {
           //delete match record
-          self::deleteMessageMatch($matchId, $values['assignee']);
+          self::deleteMessageMatch($row['row_id'], $values['assignee']);
           $msg[] = 'This message was already matched with the selected contact. Removing duplicate match.';
         }
         else {

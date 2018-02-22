@@ -183,10 +183,10 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
 
   public function postProcess() {
     $values = $this->exportValues();
-    Civi::log()->debug('postProcess', array(
+    /*Civi::log()->debug('postProcess', array(
       'values' => $values,
       '$_REQUEST' => $_REQUEST,
-    ));
+    ));*/
 
     if ((empty($values['row_id']) || empty($values['matched_id'])) && !$values['is_multiple']) {
       CRM_Core_Session::setStatus('Unable to process this message.');
