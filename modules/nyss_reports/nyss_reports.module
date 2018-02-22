@@ -80,12 +80,6 @@ function nyss_reports_civicrm_alterReportVar($varType, &$var, &$object) {
   $class = get_class($object);
   switch ($varType) {
     case 'columns':
-      /*Civi::log()->debug('alterReportVar cols', array(
-        //'varType' => $varType,
-        'var' => $var,
-        //'object' => $object,
-      ));*/
-
       //common modifications
       _nyss_reports_Base_cols($var, $object);
 
@@ -116,6 +110,10 @@ function nyss_reports_civicrm_alterReportVar($varType, &$var, &$object) {
           _nyss_reports_Activity_rows($var, $object);
           break;
 
+        case 'CRM_Report_Form_Contact_LoggingDetail':
+          _nyss_reports_LogDetail_rows($var, $object);
+          break;
+
         default:
       }
       break;
@@ -129,6 +127,29 @@ function nyss_reports_civicrm_alterReportVar($varType, &$var, &$object) {
     //'object' => $object,
   ));*/
 }//alterReportVar
+
+function nyss_reports_civicrm_alterLogTables(&$logTableSpec) {
+  //fix error when viewing log detail report; these shouldn't be referenced in this context
+  if (strpos(current_path(), 'civicrm/report/instance') !== FALSE) {
+    unset($logTableSpec['civicrm_batch']);
+    unset($logTableSpec['civicrm_mailing_abtest']);
+    unset($logTableSpec['civicrm_campaign']);
+    unset($logTableSpec['civicrm_survey']);
+    unset($logTableSpec['civicrm_event_carts']);
+    unset($logTableSpec['civicrm_dedupe_exception']);
+    unset($logTableSpec['civicrm_custom_group']);
+    unset($logTableSpec['civicrm_tag']);
+    unset($logTableSpec['civicrm_print_label']);
+    unset($logTableSpec['civicrm_group']);
+    unset($logTableSpec['civicrm_group_organization']);
+    unset($logTableSpec['civicrm_contribution_page']);
+    unset($logTableSpec['civicrm_membership_type']);
+    unset($logTableSpec['civicrm_report_instance']);
+    unset($logTableSpec['civicrm_uf_group']);
+    unset($logTableSpec['civicrm_mailing']);
+    unset($logTableSpec['civicrm_event']);
+  }
+}
 
 function _nyss_reports_Base_cols(&$var, &$object) {
   unset($var['civicrm_address']['fields']['country_id']);
@@ -383,3 +404,13 @@ function _nyss_reports_CaseDetail_cols(&$var, &$object) {
   unset($var['civicrm_country']);
 }//_nyss_reports_CaseDetail_cols
 
+//11730 remove Modified/Created date from log detail report
+function _nyss_reports_LogDetail_rows(&$var, &$object) {
+  foreach ($var as $rowNum => $row) {
+    if (strpos($row['field'], 'Modified Date') !== FALSE ||
+      strpos($row['field'], 'Created Date') !== FALSE
+    ) {
+      unset($var[$rowNum]);
+    }
+  }
+}

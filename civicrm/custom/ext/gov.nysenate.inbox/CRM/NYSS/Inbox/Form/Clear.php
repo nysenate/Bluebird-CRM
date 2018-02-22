@@ -11,7 +11,7 @@ class CRM_NYSS_Inbox_Form_Clear extends CRM_Core_Form {
 
     //get details about record
     $id = CRM_Utils_Request::retrieve('id', 'Positive');
-    $this->add('hidden', 'message_id', $id);
+    $this->add('hidden', 'row_id', $id);
 
     $details = CRM_NYSS_Inbox_BAO_Inbox::getDetails($id);
     $this->assign('details', $details);
@@ -37,12 +37,12 @@ class CRM_NYSS_Inbox_Form_Clear extends CRM_Core_Form {
   public function postProcess() {
     $values = $this->exportValues();
 
-    if (empty($values['message_id'])) {
+    if (empty($values['row_id'])) {
       CRM_Core_Session::setStatus('Unable to clear this message.');
       return;
     }
 
-    CRM_NYSS_Inbox_BAO_Inbox::clearMessages(array($values['message_id']));
+    CRM_NYSS_Inbox_BAO_Inbox::clearMessages(array($values['row_id']));
     CRM_Core_Session::setStatus('Message has been cleared.');
 
     parent::postProcess();

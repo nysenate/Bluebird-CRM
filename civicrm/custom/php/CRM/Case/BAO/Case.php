@@ -1914,6 +1914,7 @@ SELECT case_status.label AS case_status, status_id, civicrm_case_type.title AS c
     }
 
     $caseManagerContact = array();
+    $caseManagerName = '---';//NYSS 11709
     $xmlProcessor = new CRM_Case_XMLProcessor_Process();
 
     $managerRoleId = $xmlProcessor->getCaseManagerRoleId($caseType);
@@ -1934,15 +1935,16 @@ SELECT civicrm_contact.id as casemanager_id,
 
       $dao = CRM_Core_DAO::executeQuery($managerRoleQuery, $managerRoleParams);
       if ($dao->fetch()) {
-        //NYSS 11460
-        return sprintf('<a href="%s">%s</a>',
+        //NYSS 11460/11709
+        $caseManagerName = sprintf('<a href="%s">%s</a>',
           CRM_Utils_System::url('civicrm/contact/view', array('cid' => $dao->casemanager_id)),
           $dao->casemanager
         );
       }
     }
 
-    //return $caseManagerContact;
+    //NYSS 11709
+    return $caseManagerName;
   }
 
   /**

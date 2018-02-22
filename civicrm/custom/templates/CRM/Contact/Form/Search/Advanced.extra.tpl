@@ -31,12 +31,6 @@
   var pon = '<tr><td colspan="2">Privacy Option Notes  ' + pof + '</td></tr>';
   cj('table.search-privacy-options tbody').append(pon);
 
-  //7946
-  cj('div.crm-ModifiedDate-accordion').insertBefore(cj('div.crm-search-form-block div.spacer'));
-  if (cj('#log_start_date').val() || cj('#log_end_date').val()) {
-    cj('div.crm-ModifiedDate-accordion').removeClass('collapsed');
-  }
-
   //7892
   cj(document).ready(function(){
     if (cj('div.crm-results-block-empty').length) {

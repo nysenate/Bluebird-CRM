@@ -1957,11 +1957,6 @@ class CRM_Contact_BAO_Query {
       case 'changed_by':
         $this->changeLog($values);
         return;
-		
-      //NYSS 3355
-      case 'changeLogData':
-        $this->changeLogData( $values );
-        return;
 
       case 'do_not_phone':
       case 'do_not_email':
@@ -2018,12 +2013,6 @@ class CRM_Contact_BAO_Query {
       case 'prox_state_province_id':
       case 'prox_country_id':
         // handled by the proximity_distance clause
-        return;
-
-      //NYSS 7946
-      case 'log_start_date':
-      case 'log_end_date':
-        $this->nysslog($values);
         return;
 
       default:
@@ -2808,14 +2797,6 @@ class CRM_Contact_BAO_Query {
 
         case 'civicrm_website':
           $from .= " $side JOIN civicrm_website ON contact_a.id = civicrm_website.contact_id ";
-          continue;
-
-        //NYSS 7946
-        case 'nyss_changelog_summary':
-          $from .= "
-            INNER JOIN nyss_changelog_summary
-              ON nyss_changelog_summary.contact_id = contact_a.id
-          ";
           continue;
 
         default:
@@ -3710,9 +3691,6 @@ WHERE  $smartGroupClause
    * @param array $values
    */
   public function postalCode(&$values) {
-    //NYSS
-    //Civi::log()->debug('postalCode', array('values' => $values));
-
     // skip if the fields dont have anything to do with postal_code
     if (empty($this->_fields['postal_code'])) {
       return;
@@ -3966,23 +3944,6 @@ WHERE  $smartGroupClause
     $this->_where[$grouping][] = "contact_b_log.sort_name LIKE '%$name%'";
     $this->_tables['civicrm_log'] = $this->_whereTables['civicrm_log'] = 1;
     $this->_qill[$grouping][] = ts('Modified By') . " $name";
-  }
-	
-  //NYSS 3355
-  function changeLogData ( &$values ) {
-    list( $name, $op, $value, $grouping, $wildcard ) = $values;
-        
-    $targetName = $this->getWhereValues( 'changeLogData', $grouping );
-    if ( ! $targetName ) {
-      return;
-    }
-
-    $data = trim( $targetName[2] );
-    $data = strtolower( CRM_Core_DAO::escapeString( $data ) );
-    $data = $targetName[4] ? "%$data%" : $data;
-    $this->_where[$grouping][] = "civicrm_log.data LIKE '%$data%'";
-    $this->_tables['civicrm_log'] = $this->_whereTables['civicrm_log'] = 1; 
-    $this->_qill[$grouping][] = ts('Change log') . ": $name";
   }
 
   /**
@@ -4833,7 +4794,8 @@ civicrm_relationship.is_permission_a_b = 0
   public static function getGroupByFromOrderBy(&$groupBy, $orderBys) {
     if (!CRM_Utils_SQL::disableFullGroupByMode()) {
       foreach ($orderBys as $orderBy) {
-        $orderBy = str_replace(array(' DESC', ' ASC'), '', $orderBy);
+        //NYSS
+        $orderBy = str_replace(array(' DESC', ' ASC', '`'), '', $orderBy); // remove sort syntax from ORDER BY clauses if present
         if (preg_match('/(MAX|MIN)\(/i', trim($orderBy)) !== 1 && !strstr($groupBy, $orderBy)) {
           $groupBy .= ", {$orderBy}";
         }
@@ -4953,22 +4915,21 @@ civicrm_relationship.is_permission_a_b = 0
       }
     }
 
+    //NYSS 11709 throughout next section
     // building the query string
-    $groupBy = $groupByCol = NULL;
+    $groupBy = $groupByCols = NULL;
     if (!$count) {
       if (isset($this->_groupByComponentClause)) {
         $groupBy = $this->_groupByComponentClause;
-        $groupCols = preg_replace('/^GROUP BY /', '', trim($this->_groupByComponentClause));
-        $groupByCol = explode(', ', $groupCols);
+        $groupByCols = preg_replace('/^GROUP BY /', '', trim($this->_groupByComponentClause));
+        $groupByCols = explode(', ', $groupByCols);
       }
       elseif ($this->_useGroupBy) {
-        $groupByCol = 'contact_a.id';
-        $groupBy = ' GROUP BY contact_a.id';
+        $groupByCols = array('contact_a.id');
       }
     }
     if ($this->_mode & CRM_Contact_BAO_Query::MODE_ACTIVITY && (!$count)) {
-      $groupByCol = 'civicrm_activity.id';
-      $groupBy = 'GROUP BY civicrm_activity.id ';
+      $groupByCols = array('civicrm_activity.id');
     }
 
     $order = $orderBy = $limit = '';
@@ -4990,9 +4951,15 @@ civicrm_relationship.is_permission_a_b = 0
 
     list($select, $from, $where, $having) = $this->query($count, $sortByChar, $groupContacts, $onlyDeleted);
 
-    if (!empty($groupByCol)) {
-      $groupBy = self::getGroupByFromSelectColumns($this->_select, $groupByCol);
-    }
+    //NYSS 11709
+    if (!empty($groupByCols)) {
+      $select = self::appendAnyValueToSelect($this->_select, $groupByCols, 'GROUP_CONCAT');
+      $groupBy = " GROUP BY " . implode(', ', $groupByCols);
+      if (!empty($order)) {
+        $orderBys = explode(",", str_replace('ORDER BY ', '', $order));
+        self::getGroupByFromOrderBy($groupBy, $orderBys);
+      }
+     }
 
     if ($additionalWhereClause) {
       $where = $where . ' AND ' . $additionalWhereClause;
@@ -6641,28 +6608,5 @@ AND   displayRelType.is_active = 1
     }
     return FALSE;
   }
-
-  //NYSS 7946
-  function nysslog($values) {
-    //CRM_Core_Error::debug_var('values', $values);
-
-    list( $name, $op, $value, $grouping, $wildcard ) = $values;
-    $value = date('Y-m-d', strtotime($value));
-
-    if ($name == 'log_start_date') {
-      $this->_where[$grouping][] = "nyss_changelog_summary.change_ts >= '{$value} 00:00:00'";
-      $quill = 'Change Log Start Date';
-    }
-    elseif ($name == 'log_end_date') {
-      $this->_where[$grouping][] = "nyss_changelog_summary.change_ts <= '{$value} 23:59:59'";
-      $quill = 'Change Log End Date';
-    }
-
-    $this->_tables['nyss_changelog_summary'] = 1;
-    $this->_whereTables['nyss_changelog_summary'] = 1;
-
-    $this->_qill[$grouping][] = ts('Modified Date') . ": $quill";
-  }//nysslog
-
 
 }
