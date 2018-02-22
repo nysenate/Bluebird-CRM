@@ -10,7 +10,7 @@
 
 prog=`basename $0`
 script_dir=`dirname $0`
-execSql=$script_dir/execSql.sh
+drush=$script_dir/drush.sh
 readConfig=$script_dir/readConfig.sh
 
 . $script_dir/defaults.sh
