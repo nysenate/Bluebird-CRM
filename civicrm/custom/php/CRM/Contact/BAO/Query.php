@@ -4794,7 +4794,8 @@ civicrm_relationship.is_permission_a_b = 0
   public static function getGroupByFromOrderBy(&$groupBy, $orderBys) {
     if (!CRM_Utils_SQL::disableFullGroupByMode()) {
       foreach ($orderBys as $orderBy) {
-        $orderBy = str_replace(array(' DESC', ' ASC'), '', $orderBy);
+        //NYSS
+        $orderBy = str_replace(array(' DESC', ' ASC', '`'), '', $orderBy); // remove sort syntax from ORDER BY clauses if present
         if (preg_match('/(MAX|MIN)\(/i', trim($orderBy)) !== 1 && !strstr($groupBy, $orderBy)) {
           $groupBy .= ", {$orderBy}";
         }
@@ -4914,22 +4915,21 @@ civicrm_relationship.is_permission_a_b = 0
       }
     }
 
+    //NYSS 11709 throughout next section
     // building the query string
-    $groupBy = $groupByCol = NULL;
+    $groupBy = $groupByCols = NULL;
     if (!$count) {
       if (isset($this->_groupByComponentClause)) {
         $groupBy = $this->_groupByComponentClause;
-        $groupCols = preg_replace('/^GROUP BY /', '', trim($this->_groupByComponentClause));
-        $groupByCol = explode(', ', $groupCols);
+        $groupByCols = preg_replace('/^GROUP BY /', '', trim($this->_groupByComponentClause));
+        $groupByCols = explode(', ', $groupByCols);
       }
       elseif ($this->_useGroupBy) {
-        $groupByCol = 'contact_a.id';
-        $groupBy = ' GROUP BY contact_a.id';
+        $groupByCols = array('contact_a.id');
       }
     }
     if ($this->_mode & CRM_Contact_BAO_Query::MODE_ACTIVITY && (!$count)) {
-      $groupByCol = 'civicrm_activity.id';
-      $groupBy = 'GROUP BY civicrm_activity.id ';
+      $groupByCols = array('civicrm_activity.id');
     }
 
     $order = $orderBy = $limit = '';
@@ -4951,9 +4951,15 @@ civicrm_relationship.is_permission_a_b = 0
 
     list($select, $from, $where, $having) = $this->query($count, $sortByChar, $groupContacts, $onlyDeleted);
 
-    if (!empty($groupByCol)) {
-      $groupBy = self::getGroupByFromSelectColumns($this->_select, $groupByCol);
-    }
+    //NYSS 11709
+    if (!empty($groupByCols)) {
+      $select = self::appendAnyValueToSelect($this->_select, $groupByCols, 'GROUP_CONCAT');
+      $groupBy = " GROUP BY " . implode(', ', $groupByCols);
+      if (!empty($order)) {
+        $orderBys = explode(",", str_replace('ORDER BY ', '', $order));
+        self::getGroupByFromOrderBy($groupBy, $orderBys);
+      }
+     }
 
     if ($additionalWhereClause) {
       $where = $where . ' AND ' . $additionalWhereClause;
