@@ -30,7 +30,8 @@ div.crm-contact-form-block-multiactions {
   width: 400px !important;
 }
 a.button.cancel {
-  min-height: 19px;
+  min-height: 15px;
+  padding-top: 4px !important;
 }
 .crm-container table.crm-table-group-summary {
   border: none;
