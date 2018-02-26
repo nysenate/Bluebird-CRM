@@ -48,7 +48,6 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
           $data = [
             'row_id' => $pairParts[0],
             'matched_id' => $pairParts[1],
-            'message_id' => CRM_NYSS_Inbox_BAO_Inbox::getMessageId($pairParts[0]),
             'activity_id' => $details['activity_id'],
             'current_assignee' => $pairParts[1],
           ];
@@ -66,11 +65,9 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
       //get details about record
       $rowId = CRM_Utils_Request::retrieve('id', 'Positive');
       $matchedId = CRM_Utils_Request::retrieve('matched_id', 'Positive');
-      $messageId = CRM_NYSS_Inbox_BAO_Inbox::getMessageId($rowId);
 
       $this->add('hidden', 'row_id', $rowId);
       $this->add('hidden', 'matched_id', $matchedId);
-      $this->add('hidden', 'message_id', $messageId);
 
       $details = CRM_NYSS_Inbox_BAO_Inbox::getDetails($rowId, $matchedId);
       $this->assign('message_details', array(array('details' => $details)));

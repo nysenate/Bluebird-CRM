@@ -153,8 +153,8 @@ for arg in "$@"; do
     --tpl*) tpl_only=1 ;;
     --wd*) wd_only=1 ;;
     --skip*) skip_root_check=1 ;;
-    -*) echo "$prog: $1: Invalid option" >&2; usage; exit 1 ;;
-    *) instance="$1" ;;
+    -*) echo "$prog: $arg: Invalid option" >&2; usage; exit 1 ;;
+    *) instance="$arg" ;;
   esac
 done
 

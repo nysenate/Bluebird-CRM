@@ -117,6 +117,10 @@ $civicrm_setting['Search Preferences']['contact_autocomplete_options'] =
 $civicrm_setting['Search Preferences']['contact_reference_options'] =
   "{$sep}1{$sep}2{$sep}3{$sep}4{$sep}5{$sep}8{$sep}9{$sep}";
 
+//display preferences
+$civicrm_setting['Display Preferences']['advanced_search_options'] =
+  "{$sep}1{$sep}2{$sep}3{$sep}4{$sep}5{$sep}6{$sep}10{$sep}13{$sep}16{$sep}17{$sep}18{$sep}19{$sep}";
+
 $civicrm_setting['Extension Preferences']['ext_repo_url'] = false;
 
 if (isset($bbconfig['xhprof.profile']) && $bbconfig['xhprof.profile']) {

@@ -85,8 +85,6 @@ class CRM_NYSS_Inbox_BAO_Inbox {
    * @return array
    *
    * get details for a single inbox polling row/contact
-   * note, if a row is matched with multiple contacts, you must pass the
-   * matched contact's to ensure a clearly defined set of details is returned
    */
   static function getDetails($rowId, $matched_id = '') {
     $details = array();
@@ -105,7 +103,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         GROUP_CONCAT(DISTINCT e.contact_id) AS matched_ids
       FROM nyss_inbox_messages im
       LEFT JOIN nyss_inbox_messages_matched imm 
-        ON im.message_id = imm.message_id
+        ON im.id = imm.row_id
       LEFT JOIN (
         SELECT civicrm_email.id, email, contact_id
         FROM civicrm_email
@@ -205,7 +203,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       if (count($messageMatches) > 1) {
         //we can only delete the match record if one exists; record may be unmatched
         if (!empty($idPair['matched_id'])) {
-          self::deleteMessageMatch($idPair['row_id'], NULL, $idPair['matched_id']);
+          self::deleteMessageMatch($idPair['row_id'], $idPair['matched_id']);
         }
       }
       else {
@@ -227,36 +225,20 @@ class CRM_NYSS_Inbox_BAO_Inbox {
    * @param null $messageId
    * @param $matchedId
    *
-   * @return array
+   * @return boolean
    *
    *
    */
-  static function deleteMessageMatch($rowId = NULL, $messageId = NULL, $matchedId) {
-    if (empty($rowId) && empty($messageId)) {
-      return array(
-        'is_error' => TRUE,
-        'msg' => 'You must provide either the row ID or message ID.',
-      );
-    }
-
-    //if messageId not provided, we must have rowId; retrieve messageId
-    if (empty($messageId)) {
-      $messageId = CRM_Core_DAO::singleValueQuery("
-        SELECT message_id
-        FROM nyss_inbox_messages
-        WHERE id = %1
-      ", array(
-        1 => array($rowId, 'Positive'),
-      ));
-    }
+  static function deleteMessageMatch($rowId, $matchedId) {
+    //Civi::log()->debug('deleteMessageMatch', array('rowId' => $rowId, 'matchedId' => $matchedId));
 
     CRM_Core_DAO::executeQuery("
       DELETE FROM nyss_inbox_messages_matched
-      WHERE matched_id = %1 
-        AND message_id = %2
+      WHERE matched_id = %1
+        AND row_id = %2
     ", array(
       1 => array($matchedId, 'Positive'),
-      2 => array($messageId, 'Positive'),
+      2 => array($rowId, 'Positive'),
     ));
 
     return TRUE;
@@ -320,9 +302,11 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     switch ($status) {
       case 'unmatched':
         $statusSql = 'AND im.status = '.self::STATUS_UNMATCHED;
+        $matchedSql = '';
         break;
       case 'matched':
         $statusSql = 'AND im.status = '.self::STATUS_MATCHED;
+        $matchedSql = 'AND imm.id IS NOT NULL';
         break;
       default:
         $statusSql = '';
@@ -330,13 +314,14 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     }
 
     $sql = "
-      SELECT SQL_CALC_FOUND_ROWS im.id, im.message_id, im.sender_name, im.sender_email, im.subject, im.forwarder,
-        im.updated_date, im.email_date, im.matcher, imm.matched_id, mc.display_name matcher_name,
+      SELECT SQL_CALC_FOUND_ROWS im.id, im.sender_name,
+        im.sender_email, im.subject, im.forwarder, im.updated_date,
+        im.email_date, im.matcher, imm.matched_id, mc.display_name matcher_name,
         IFNULL(count(ia.file_name), '0') as attachments,
         count(e.id) AS email_count
       FROM nyss_inbox_messages im
       LEFT JOIN nyss_inbox_messages_matched imm 
-        ON im.message_id = imm.message_id
+        ON im.id = imm.row_id
       LEFT JOIN (
           SELECT civicrm_email.id, email
           FROM civicrm_email
@@ -354,6 +339,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         {$statusSql}
         {$rangeSql}
         {$termSql}
+        {$matchedSql}
       GROUP BY im.id, imm.matched_id
       ORDER BY {$orderBy}
       LIMIT {$params['rowCount']}
@@ -637,12 +623,12 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         array(
           'row_id' => $values['row_id'],
           'matched_id' => $values['matched_id'],
-          'message_id' => $values['message_id'],
           'activity_id' => $values['activity_id'],
           'current_assignee' => $values['matched_id'],
         )
       );
     }
+    //Civi::log()->debug('processMessages', array('$rows' => $rows));
 
     foreach ($rows as $row) {
       if (!empty($values['assignee'])) {
@@ -650,29 +636,27 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         $matchId = CRM_Core_DAO::singleValueQuery("
           SELECT id
           FROM nyss_inbox_messages_matched
-          WHERE message_id = %1
+          WHERE row_id = %1
             AND matched_id = %2
-            AND id != %3
         ", [
-          1 => [$row['message_id'], 'Positive'],
+          1 => [$row['row_id'], 'Positive'],
           2 => [$values['assignee'], 'Positive'],
-          3 => [$row['row_id'], 'Positive'],
         ]);
 
         if ($matchId) {
           //delete match record
-          self::deleteMessageMatch($matchId, $row['message_id'], $values['assignee']);
+          self::deleteMessageMatch($row['row_id'], $values['assignee']);
           $msg[] = 'This message was already matched with the selected contact. Removing duplicate match.';
         }
         else {
           CRM_Core_DAO::executeQuery("
             UPDATE nyss_inbox_messages_matched
             SET matched_id = %1
-            WHERE message_id = %2
+            WHERE row_id = %2
               AND matched_id = %3
           ", [
             1 => [$values['assignee'], 'Positive'],
-            2 => [$row['message_id'], 'Positive'],
+            2 => [$row['row_id'], 'Positive'],
             3 => [$row['matched_id'], 'Positive'],
           ]);
         }
@@ -922,9 +906,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     $dao = CRM_Core_DAO::executeQuery("
       SELECT imm.*
       FROM nyss_inbox_messages_matched imm
-      JOIN nyss_inbox_messages im
-        ON imm.message_id = im.message_id
-      WHERE im.id = %1
+      WHERE imm.row_id = %1
     ", array(
       1 => array($rowId, 'Positive'),
     ));
@@ -935,23 +917,6 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     }
 
     return $matchedIds;
-  }
-
-  /**
-   * @param $rowId
-   *
-   * @return null|string
-   *
-   * retrieve message_id given a row_id
-   */
-  static function getMessageId($rowId) {
-    return CRM_Core_DAO::singleValueQuery("
-      SELECT message_id
-      FROM nyss_inbox_messages
-      WHERE id = %1
-    ", array(
-      1 => array($rowId, 'Positive')
-    ));
   }
 
   /**
