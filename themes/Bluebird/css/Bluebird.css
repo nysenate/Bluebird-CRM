@@ -1753,6 +1753,13 @@ ul.token-input-list-facebook {
 #Advanced .tag-section label {
   display: inline-block;
 }
+/*11738*/
+#Advanced span.crm-absolute-date-range {
+  line-height: 300%;
+}
+#Advanced span.crm-absolute-date-range label {
+  padding-right: 6px;
+}
 
 /* Hide a few things in case manage page */
 #crm-container .crm-case-caseview-form-block-timeline_id,#crm-container .crm-case-caseview-form-block-report_id {
