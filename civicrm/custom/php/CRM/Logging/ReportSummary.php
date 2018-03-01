@@ -188,7 +188,6 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
     $this->_groupByArray = array(
       'entity_log_civireport.log_conn_id',
       'entity_log_civireport.log_user_id',
-      'EXTRACT(DAY_MICROSECOND FROM entity_log_civireport.log_date)',
       'entity_log_civireport.id',
     );
     $this->_groupBy = 'GROUP BY ' .  implode(', ', $this->_groupByArray);
