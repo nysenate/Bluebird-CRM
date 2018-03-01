@@ -4953,7 +4953,11 @@ civicrm_relationship.is_permission_a_b = 0
 
     //NYSS 11709
     if (!empty($groupByCols)) {
-      $select = self::appendAnyValueToSelect($this->_select, $groupByCols, 'GROUP_CONCAT');
+      //NYSS 11790
+      $path = CRM_Utils_System::getUrlPath();
+      if ($path != 'civicrm/contact/search/builder') {
+        $select = self::appendAnyValueToSelect($this->_select, $groupByCols, 'GROUP_CONCAT');
+      }
       $groupBy = " GROUP BY " . implode(', ', $groupByCols);
       if (!empty($order)) {
         $orderBys = explode(",", str_replace('ORDER BY ', '', $order));
