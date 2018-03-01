@@ -297,6 +297,8 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
 
     krsort($newRows);
     $rows = $newRows;
+    //NYSS 11729
+    $this->_rowsFound = count($newRows);
   }
 
   /**
