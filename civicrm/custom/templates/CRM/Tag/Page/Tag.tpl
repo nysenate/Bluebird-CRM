@@ -236,6 +236,18 @@
               }
             });
         }
+
+        //11432
+        function isDraggable(nodes, event) {
+          var draggable = true;
+          _.each(nodes, function(node) {
+            if (node.data.is_reserved && !CRM.checkPerm('administer reserved tags')) {
+              draggable = false;
+            }
+          });
+          return draggable;
+        }
+
         //NYSS 11439
         $panel
           .append('<div class="tag-tree-wrapper"><div class="tag-tree"></div><div class="tag-info"></div></div>')
@@ -291,6 +303,7 @@
             },
             plugins: plugins,
             dnd: {
+              is_draggable: isDraggable,//NYSS 11432
               copy: false
             }
           });
@@ -437,6 +450,15 @@
   li.is-reserved > a:after {
     content: ' *';
   }
+  /*NYSS 11432*/
+  {/literal}{if !call_user_func(array('CRM_Core_Permission', 'check'), 'administer reserved tags')}{literal}
+    #tree li.is-reserved > a.crm-tag-item {
+      cursor: not-allowed;
+    }
+    li.is-reserved > a:after {
+      color: #8A1F11;
+    }
+  {/literal}{/if}{literal}
   .tag-tree-wrapper ul {
     margin: 0;
     padding: 0;
