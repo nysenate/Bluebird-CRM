@@ -1029,14 +1029,16 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
     // For custom searches, use the contactIDs method
     if (is_a($this, 'CRM_Contact_Selector_Custom')) {
       $sql = $this->_search->contactIDs($start, $end, $sort, TRUE);
-      $replaceSQL = "SELECT contact_a.id as contact_id";
+      //NYSS 11790
+      //$replaceSQL = "SELECT contact_a.id as contact_id";
       $coreSearch = FALSE;
     }
     // For core searches use the searchQuery method
     else {
       $sql = $this->_query->searchQuery($start, $end, $sort, FALSE, $this->_query->_includeContactIds,
         FALSE, TRUE, TRUE);
-      $replaceSQL = "SELECT contact_a.id as id";
+      //NYSS 11790
+      //$replaceSQL = "SELECT contact_a.id as id";
     }
 
     // CRM-9096
@@ -1048,18 +1050,19 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
     // the other alternative of running the FULL query will just be incredibly inefficient
     // and slow things down way too much on large data sets / complex queries
 
+    //NYSS
     $insertSQL = "
 INSERT INTO civicrm_prevnext_cache ( entity_table, entity_id1, entity_id2, cacheKey, data )
-SELECT DISTINCT 'civicrm_contact', contact_a.id, contact_a.id, '$cacheKey', contact_a.display_name
+SELECT DISTINCT 'civicrm_contact', contact_a.id, contact_a.id, '$cacheKey', contact_a.sort_name
 ";
 
-    $sql = str_replace($replaceSQL, $insertSQL, $sql);
+    $sql = str_replace(array("SELECT contact_a.id as contact_id", "SELECT contact_a.id as id"), $insertSQL, $sql);
 
-    $errorScope = CRM_Core_TemporaryErrorScope::ignoreException();
-    $result = CRM_Core_DAO::executeQuery($sql);
-    unset($errorScope);
-
-    if (is_a($result, 'DB_Error')) {
+    //NYSS 11790
+    try {
+      CRM_Core_DAO::executeQuery($sql);
+    }
+    catch (CRM_Core_Exception $e) {
       // check if we get error during core search
       if ($coreSearch) {
         // in the case of error, try rebuilding cache using full sql which is used for search selector display
@@ -1067,7 +1070,7 @@ SELECT DISTINCT 'civicrm_contact', contact_a.id, contact_a.id, '$cacheKey', cont
         $this->rebuildPreNextCache($start, $end, $sort, $cacheKey);
       }
       else {
-        // return if above query fails
+        CRM_Core_Session::setStatus(ts('Query Failed'));
         return;
       }
     }

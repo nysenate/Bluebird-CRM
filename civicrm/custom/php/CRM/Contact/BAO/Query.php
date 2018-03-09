@@ -1453,11 +1453,8 @@ class CRM_Contact_BAO_Query {
         }
       }
 
-      $select = "SELECT ";
-      if (isset($this->_distinctComponentClause)) {
-        $select .= "{$this->_distinctComponentClause}, ";
-      }
-      $select .= implode(', ', $this->_select);
+      //NYSS 11790
+      $select = $this->getSelect();
       $from = $this->_fromClause;
     }
 
@@ -4953,9 +4950,8 @@ civicrm_relationship.is_permission_a_b = 0
 
     //NYSS 11709
     if (!empty($groupByCols)) {
-      //NYSS 11790
-      $path = CRM_Utils_System::getUrlPath();
-      if ($path != 'civicrm/contact/search/builder') {
+      // It doesn't matter to include columns in SELECT clause, which are present in GROUP BY when we just want the contact IDs
+      if (!$groupContacts) {
         $select = self::appendAnyValueToSelect($this->_select, $groupByCols, 'GROUP_CONCAT');
       }
       $groupBy = " GROUP BY " . implode(', ', $groupByCols);
@@ -6614,4 +6610,18 @@ AND   displayRelType.is_active = 1
     return FALSE;
   }
 
+  //NYSS 11790
+  /**
+   * Get Select Clause.
+   *
+   * @return string
+   */
+  public function getSelect() {
+    $select = "SELECT ";
+    if (isset($this->_distinctComponentClause)) {
+      $select .= "{$this->_distinctComponentClause}, ";
+    }
+    $select .= implode(', ', $this->_select);
+    return $select;
+  }
 }
