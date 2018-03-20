@@ -122,36 +122,6 @@ function dao_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
   _dao_civix_civicrm_alterSettingsFolders($metaDataFolders);
 }
 
-/**
- * Functions below this ship commented out. Uncomment as required.
- *
-
-/**
- * Implements hook_civicrm_preProcess().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_preProcess
- *
-function dao_civicrm_preProcess($formName, &$form) {
-
-} // */
-
-/**
- * Implements hook_civicrm_navigationMenu().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_navigationMenu
- *
-function dao_civicrm_navigationMenu(&$menu) {
-  _dao_civix_insert_navigation_menu($menu, NULL, array(
-    'label' => ts('The Page', array('domain' => 'gov.nysenate.dao')),
-    'name' => 'the_page',
-    'url' => 'civicrm/the-page',
-    'permission' => 'access CiviReport,access CiviContribute',
-    'operator' => 'OR',
-    'separator' => 0,
-  ));
-  _dao_civix_navigationMenu($menu);
-} // */
-
 function dao_civicrm_entityTypes(&$entityTypes) {
   $entityTypes['CRM_Contact_DAO_Contact']['fields_callback'][] = function($class, &$fields) {
     $fields['do_not_trade']['title'] = 'Undeliverable: Do Not Mail';//4766
@@ -178,7 +148,7 @@ function dao_civicrm_entityTypes(&$entityTypes) {
     $fields['geo_code_2']['export'] = FALSE;
     $fields['address_name']['export'] = FALSE;
     $fields['master_id']['export'] = FALSE;
-    $fields['county']['export'] = FALSE;
+    $fields['county_id']['export'] = FALSE;
   };
 
   $entityTypes['CRM_Core_DAO_Worldregion']['fields_callback'][] = function($class, &$fields) {
