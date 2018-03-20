@@ -116,8 +116,8 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
    */
   function setDefaultValues( ) {
     $defaults = array(
-      'year'           => date('Y'),
-      'pdf_format_id'  => 1895,
+      'year' => date('Y'),
+      'pdf_format_id' => 1895,
     );
     return $defaults;
   }
