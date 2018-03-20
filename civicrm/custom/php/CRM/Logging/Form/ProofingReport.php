@@ -116,8 +116,8 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
    */
   function setDefaultValues( ) {
     $defaults = array(
-      'year'           => date('Y'),
-      'pdf_format_id'  => 1895,
+      'year' => date('Y'),
+      'pdf_format_id' => 1895,
     );
     return $defaults;
   }
@@ -253,7 +253,9 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
     $rnd = mt_rand(1,9999999999999999);
     $tmpChgProof = "nyss_temp_changeproof_$rnd";
     $sql = "
-      CREATE TABLE {$tmpChgProof} (id int not null primary key, logDate varchar(100), logDateLong timestamp, tagList varchar(1020), groupList varchar(1020)) ENGINE=myisam;
+      CREATE TABLE {$tmpChgProof}
+      (id INT NOT NULL PRIMARY KEY, logDate VARCHAR(100), logDateLong TIMESTAMP, tagList VARCHAR(5100), groupList VARCHAR(5100))
+      ENGINE=MyISAM;
     ";
     CRM_Core_DAO::executeQuery($sql);
 
