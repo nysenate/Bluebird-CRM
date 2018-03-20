@@ -35,12 +35,19 @@ class CRM_NYSS_BAO_Log {
       ORDER BY id ASC
       LIMIT 1
     ");
-    $inputParams['filters'] = array(
-      'altered_contact_id_op' => 'eq',
-      'altered_contact_id_value' => $contactID,
-      'cid' => $contactID,
-      'context' => 'contact',
-      'instanceId' => $instanceId,
+    $inputParams = array(
+      'filters' => array(
+        'altered_contact_id_op' => 'eq',
+        'altered_contact_id_value' => $contactID,
+        'cid' => $contactID,
+        'context' => 'contact',
+        'instanceId' => $instanceId,
+      ),
+      'group_bys' => array(
+        'entity_log_civireport.log_conn_id',
+        'entity_log_civireport.log_user_id',
+        'entity_log_civireport.id',
+      ),
     );
 
     $config = CRM_Core_Config::singleton();
@@ -51,7 +58,11 @@ class CRM_NYSS_BAO_Log {
     $reportObj =& $controller->_pages[$reportName];
     $tmpGlobals = array();
     $tmpGlobals['_REQUEST']['force'] = 1;
-    $tmpGlobals['_GET'][$config->userFrameworkURLVar] = 'civicrm/placeholder';
+    $tmpGlobals['_REQUEST']['reset'] = 1;
+    $tmpGlobals['_REQUEST']['snippet'] = 1;
+    $tmpGlobals['_REQUEST']['section'] = 1;
+    //$tmpGlobals['_GET'][$config->userFrameworkURLVar] = 'civicrm/placeholder';
+    $tmpGlobals['_GET'][$config->userFrameworkURLVar] = 'civicrm/report/instance/'.$instanceId;
     $tmpGlobals['_SERVER']['QUERY_STRING'] = '';
     if (!empty($inputParams['fields'])) {
       $fields = implode(',', $inputParams['fields']);
@@ -63,14 +74,21 @@ class CRM_NYSS_BAO_Log {
         $tmpGlobals['_GET'][$key] = $val;
       }
     }
-    if (!empty($inputParams['group_bys'])) {
+    /*if (!empty($inputParams['group_bys'])) {
       $groupByFields = implode(' ', $inputParams['group_bys']);
       $tmpGlobals['_GET']['gby'] = $groupByFields;
-    }
+    }*/
     CRM_Utils_GlobalStack::singleton()->push($tmpGlobals);
+
     try {
       $reportObj->storeResultSet();
       $reportObj->buildForm();
+
+      /*Civi::log()->debug('', array(
+        //'$reportObj' => $reportObj,
+        '$reportObj->getVar(_rowsFound)' => $reportObj->getVar('_rowsFound'),
+      ));*/
+
       return $reportObj->getVar('_rowsFound');
     }
     catch (Exception $e) {
@@ -78,9 +96,5 @@ class CRM_NYSS_BAO_Log {
       //throw $e;
     }
     CRM_Utils_GlobalStack::singleton()->pop();
-    /*Civi::log()->debug('', array(
-      '$reportObj' => $reportObj,
-      '$reportObj->getVar(_rowsFound)' => $reportObj->getVar('_rowsFound'),
-    ));*/
   }
 }
