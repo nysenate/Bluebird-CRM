@@ -183,9 +183,10 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
     foreach (CRM_Utils_Array::value('contact_taglist', $formParams) as $tagSet => $tagSetList) {
       $tagsSelected = array_merge($tagsSelected, explode(',', $tagSetList));
     }
+    $tagsSelected = array_filter($tagsSelected);
 
     if (!empty($tagsSelected)) {
-      $tagsSelectedList = implode(',', array_filter($tagsSelected));
+      $tagsSelectedList = implode(',', $tagsSelected);
       $sqlParams['tag'] = "tag_id IN ({$tagsSelectedList})";
     }
 
@@ -288,7 +289,7 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
     unset($sqlParams2['tag']);
     $sqlWhere2 = implode(' ) AND ( ', $sqlParams2);
 
-    if (empty($formParams['contact_tags'])) {
+    if (empty($tagsSelected)) {
       $query = "
         INSERT INTO {$tmpChgProof}
         SELECT main.contact_id as id,
@@ -358,14 +359,14 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
 
       //address block
       $address = array();
-      if ( !empty($cDetails['street_address']) ) {
+      if (!empty($cDetails['street_address'])) {
         $address[] = $cDetails['street_address'];
       }
-      if ( !empty($cDetails['supplemental_address_1']) ) {
+      if (!empty($cDetails['supplemental_address_1'])) {
         $address[] = $cDetails['supplemental_address_1'];
       }
-      if ( !empty($cDetails['city']) || !empty($cDetails['postal_code']) ) {
-        $postSuffix = ( $cDetails['postal_code_suffix'] ) ? '-'.$cDetails['postal_code_suffix'] : '';
+      if (!empty($cDetails['city']) || !empty($cDetails['postal_code'])) {
+        $postSuffix = ($cDetails['postal_code_suffix']) ? '-'.$cDetails['postal_code_suffix'] : '';
         $address[] = $cDetails['city'].', '
           .$cDetails['state_province'].' '
           .$cDetails['postal_code'].$postSuffix;
@@ -374,7 +375,7 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
 
       //gender/dob/phone block
       $gdp = array();
-      if ( !empty($cDetails['gender']) ) {
+      if (!empty($cDetails['gender'])) {
         $gdp[] = $cDetails['gender'];
       }
       if ( isset($cDetails['birth_date']) && !empty($cDetails['birth_date']) ) {
