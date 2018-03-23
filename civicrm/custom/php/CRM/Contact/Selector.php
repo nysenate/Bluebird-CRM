@@ -1025,20 +1025,28 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
    * @param int $end
    */
   public function fillupPrevNextCache($sort, $cacheKey, $start = 0, $end = self::CACHE_SIZE) {
-    $coreSearch = TRUE;
+    //NYSS 11821
+    $coreSearch = (!is_a($this, 'CRM_Contact_Selector_Custom')) ?: FALSE;
     // For custom searches, use the contactIDs method
-    if (is_a($this, 'CRM_Contact_Selector_Custom')) {
+    $tempTable = 'civicrm_temp_' . substr(sha1(rand()), 0, 7);
+    if (!$coreSearch) {
       $sql = $this->_search->contactIDs($start, $end, $sort, TRUE);
       //NYSS 11790
-      //$replaceSQL = "SELECT contact_a.id as contact_id";
-      $coreSearch = FALSE;
+      CRM_Core_DAO::executeQuery(" CREATE TEMPORARY TABLE {$tempTable} {$sql} ");
+      $sql = sprintf("
+      INSERT INTO civicrm_prevnext_cache ( entity_table, entity_id1, entity_id2, cacheKey, data )
+        SELECT DISTINCT 'civicrm_contact', contact_a.contact_id, contact_a.contact_id, '%s', cc.sort_name
+        FROM %s contact_a
+        INNER JOIN civicrm_contact cc ON contact_a.contact_id = cc.id ", $cacheKey, $tempTable);
     }
     // For core searches use the searchQuery method
     else {
-      $sql = $this->_query->searchQuery($start, $end, $sort, FALSE, $this->_query->_includeContactIds,
-        FALSE, TRUE, TRUE);
-      //NYSS 11790
-      //$replaceSQL = "SELECT contact_a.id as id";
+      $sql = $this->_query->searchQuery($start, $end, $sort, FALSE, FALSE, FALSE, FALSE, TRUE);
+      CRM_Core_DAO::executeQuery("CREATE TEMPORARY TABLE {$tempTable} {$sql} ");
+      $sql = sprintf("
+      INSERT INTO civicrm_prevnext_cache ( entity_table, entity_id1, entity_id2, cacheKey, data )
+        SELECT DISTINCT 'civicrm_contact', contact_id, contact_id, '%s', sort_name
+        FROM %s ", $cacheKey, $tempTable);
     }
 
     // CRM-9096
@@ -1049,14 +1057,6 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
     // the prev next cache in this situation
     // the other alternative of running the FULL query will just be incredibly inefficient
     // and slow things down way too much on large data sets / complex queries
-
-    //NYSS
-    $insertSQL = "
-INSERT INTO civicrm_prevnext_cache ( entity_table, entity_id1, entity_id2, cacheKey, data )
-SELECT DISTINCT 'civicrm_contact', contact_a.id, contact_a.id, '$cacheKey', contact_a.sort_name
-";
-
-    $sql = str_replace(array("SELECT contact_a.id as contact_id", "SELECT contact_a.id as id"), $insertSQL, $sql);
 
     //NYSS 11790
     try {
