@@ -407,7 +407,7 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
       $html .= "
         <tr>
           <td>{$dao->logDate}</td>
-          <td>{$cDetails['display_name']}&nbsp;</td>
+          <td><a href='/civicrm/contact/view?reset=1&cid={$dao->id}' target='_blank'>{$cDetails['display_name']}</a></td>
           <td>{$addressHTML}&nbsp;</td>
           <td>{$gdpHTML}&nbsp;</td>
           <td>{$cDetails['email']}&nbsp;</td>
