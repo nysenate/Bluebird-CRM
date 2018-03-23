@@ -33,9 +33,6 @@
  *
  */
 
-//NYSS edits throughout for 11700 -- includes some updates from core that may
-//not have been part of 11700 and aren't always labeled
-
 /**
  * This class contains the functions for Component export
  *
@@ -569,7 +566,6 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
     $query->_sort = $order;
     list($select, $from, $where, $having) = $query->query();
 
-    //NYSS 11700
     $allRelContactArray = $relationQuery = $relationType = array();
 
     if ($mergeSameHousehold == 1) {
@@ -580,7 +576,6 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
       //also merge Head of Household
       $relationKeyMOH = CRM_Utils_Array::key('Household Member of', $contactRelationshipTypes);
       $relationKeyHOH = CRM_Utils_Array::key('Head of Household for', $contactRelationshipTypes);
-      //NYSS 11700
       $relationType = [
         $relationKeyMOH => NULL,
         $relationKeyHOH => NULL,
@@ -599,14 +594,10 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
       unset($returnProperties[$relationKeyHOH]['im_provider']);
     }
 
-    //NYSS 11700
-    //$allRelContactArray = $relationQuery = array();
-
     foreach ($contactRelationshipTypes as $rel => $dnt) {
       if ($relationReturnProperties = CRM_Utils_Array::value($rel, $returnProperties)) {
         $allRelContactArray[$rel] = array();
         // build Query for each relationship
-        //NYSS 7197
         $relationQuery[$rel] = new CRM_Contact_BAO_Query(NULL, $relationReturnProperties,
           NULL, FALSE, FALSE, $queryMode
         );
@@ -783,8 +774,6 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
     $limitReached = FALSE;
     while (!$limitReached) {
       $limitQuery = "{$queryString} LIMIT {$offset}, {$rowCount}";
-      //NYSS
-      //$dao = CRM_Core_DAO::executeUnbufferedQuery($limitQuery);
       $dao = CRM_Core_DAO::executeQuery($limitQuery);
       // If this is less than our limit by the end of the iteration we do not need to run the query again to
       // check if some remain.
@@ -810,7 +799,6 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
 
         //first loop through output columns so that we return what is required, and in same order.
         foreach ($outputColumns as $field => $value) {
-
           // add im_provider to $dao object
           if ($field == 'im_provider' && property_exists($iterationDAO, 'provider_id')) {
             $iterationDAO->im_provider = $iterationDAO->provider_id;
@@ -852,13 +840,11 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
             $row[$field] = $iterationDAO->pledge_next_pay_amount + $iterationDAO->pledge_outstanding_amount;
           }
           elseif (array_key_exists($field, $contactRelationshipTypes)) {
-            //NYSS 11700
             if (!array_key_exists($field, $relationType)) {
               $relationType[$field] = NULL;
             }
             $relDAO = CRM_Utils_Array::value($iterationDAO->contact_id, $allRelContactArray[$field]);
             $relationQuery[$field]->convertToPseudoNames($relDAO);
-            //NYSS 11700
             self::fetchRelationshipDetails($relDAO, $value, $field, $row);
           }
           elseif (isset($fieldValue) &&
@@ -953,7 +939,6 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
 
         if ($setHeader) {
           $exportTempTable = self::createTempTable($sqlColumns);
-          //NYSS 11700
           foreach ($relationType as $type => &$dontCare) {
             $relationType[$type] = self::createTempTable($sqlColumns);
           }
@@ -992,7 +977,6 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
 
         // output every $tempRowCount rows
         if ($count % $tempRowCount == 0) {
-          //NYSS 11700
           self::writeDetailsToTable($exportTempTable, $componentDetails, $sqlColumns, $relationType, $returnProperties);
           $componentDetails = array();
         }
@@ -1005,7 +989,6 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
     }
 
     if ($exportTempTable) {
-      //NYSS 11700
       self::writeDetailsToTable($exportTempTable, $componentDetails, $sqlColumns, $relationType, $returnProperties);
 
       // if postalMailing option is checked, exclude contacts who are deceased, have
@@ -1023,7 +1006,6 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
 
       // merge the records if they have corresponding households
       if ($mergeSameHousehold) {
-        //NYSS 11700
         self::mergeSameHousehold($exportTempTable, $sqlColumns, $relationType);
       }
 
@@ -1051,7 +1033,6 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
     }
   }
 
-  //NYSS 11700
   /**
    * Get the values of linked household contact
    *
@@ -1095,6 +1076,7 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
       else {
         $fieldValue = '';
       }
+
       if (is_object($relDAO) && $relationField == 'id') {
         $row[$relPrefix][$relationField] = $relDAO->contact_id;
       }
@@ -1112,17 +1094,20 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
               case (!is_object($relDAO)):
                 $row[$relPrefix . '_' . $fldValue] = '';
                 break;
+
               case in_array('country', $type):
               case in_array('world_region', $type):
                 $row[$relPrefix][$fldValue] = $i18n->crm_translate($relDAO->$fldValue,
                   array('context' => 'country')
                 );
                 break;
+
               case in_array('state_province', $type):
                 $row[$relPrefix][$fldValue] = $i18n->crm_translate($relDAO->$fldValue,
                   array('context' => 'province')
                 );
                 break;
+
               default:
                 $row[$relPrefix][$fldValue] = $relDAO->$fldValue;
                 break;
@@ -1143,9 +1128,11 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
             case 'world_region':
               $row[$relPrefix][$relationField] = $i18n->crm_translate($fieldValue, array('context' => 'country'));
               break;
+
             case 'state_province':
               $row[$relPrefix][$relationField] = $i18n->crm_translate($fieldValue, array('context' => 'province'));
               break;
+
             default:
               $row[$relPrefix][$relationField] = $fieldValue;
               break;
@@ -1419,7 +1406,6 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
    * @param array $relationTypes
    * @param array $returnProperties
    */
-  //NYSS 11700 - mods throughout function
   public static function writeDetailsToTable($tableName, &$details, &$sqlColumns, $relationTypes, $returnProperties) {
     if (empty($details)) {
       return;
@@ -1824,7 +1810,6 @@ WHERE  id IN ( $deleteIDString )
    * @param array $relationTempTables
    *   Name of the temp tables that holds the relationship records
    */
-  //NYSS 11700 - mods throughout function
   public static function mergeSameHousehold($exportTempTable, &$sqlColumns, $relationTempTables) {
     $allKeys = array_keys($sqlColumns);
     $replaced = array();
@@ -2060,12 +2045,7 @@ WHERE  {$whereClause}";
       elseif ($query->_fields['activity'][$field]['title']) {
         $headerRows[] = $query->_fields['activity'][$field]['title'];
       }
-      //NYSS 9018
-      elseif ($field == 'case_activity_id') {
-        $headerRows[] = 'Activity ID';
-      }
     }
-    //NYSS 11700 (removed elseif block)
     elseif ($selectedPaymentFields && array_key_exists($field, self::componentPaymentFields())) {
       $headerRows[] = CRM_Utils_Array::value($field, self::componentPaymentFields());
     }
