@@ -135,8 +135,7 @@ function tags_civicrm_alterSettingsFolders(&$metaDataFolders = null) {
 }
 
 
-function tags_civicrm_merge($type, &$sqls, $fromId, $toId, $tables)
-{
+function tags_civicrm_merge($type, &$sqls, $fromId, $toId, $tables) {
   //insert civicrm_log record for every contact, case or activity affected
   //by a tag merge.
   if ($type == 'sqls' && is_array($tables) && in_array('civicrm_tag', $tables)
@@ -157,8 +156,7 @@ function tags_civicrm_merge($type, &$sqls, $fromId, $toId, $tables)
 } //tags_civicrm_merge()
 
 
-function tags_civicrm_buildForm($formName, &$form)
-{
+function tags_civicrm_buildForm($formName, &$form) {
   /*Civi::log()->debug('buildForm', array(
     'formName' => $formName,
     'form' => $form,
@@ -372,8 +370,7 @@ function tags_civicrm_pageRun(&$page)
 } //tags_civicrm_pageRun()
 
 
-function tags_civicrm_alterEntityRefParams(&$params, $formName)
-{
+function tags_civicrm_alterEntityRefParams(&$params, $formName) {
   /*Civi::log()->debug('tags_civicrm_alterEntityRefParams', array(
     'params' => $params,
     'formName' => $formName,
@@ -383,19 +380,19 @@ function tags_civicrm_alterEntityRefParams(&$params, $formName)
   if ($params['entity'] == 'tag' &&
     !empty($params['api']['params']['parent_id']) &&
     $params['api']['params']['parent_id'] == 292 &&
-    strpos($formName, 'Search') === false
+    strpos($formName, 'Search') === FALSE &&
+    $formName != 'CRM_Logging_Form_ProofingReport'
   ) {
     //Civi::log()->debug('tags_civicrm_alterEntityRefParams', array('params' => $params));
     $params['entity'] = 'nyss_tags';
-    $params['create'] = false;
+    $params['create'] = FALSE;
     $params['search_field'] = 'name';
     $params['label_field'] = 'name';
   }
 } //tags_civicrm_alterEntityRefParams()
 
 
-function tags_civicrm_apiWrappers(&$wrappers, $apiRequest)
-{
+function tags_civicrm_apiWrappers(&$wrappers, $apiRequest) {
   /*if ($apiRequest['action'] == 'getlist') {
     Civi::log()->debug('tags_civicrm_apiWrappers', [
       //'$wrappers' => $wrappers,
