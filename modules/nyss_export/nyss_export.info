@@ -1,6 +1,0 @@
-name = NYSS Export
-description = Modifications to standard export
-dependencies[] = civicrm
-package = CiviCRM
-core = 7.x
-version = 4.2
