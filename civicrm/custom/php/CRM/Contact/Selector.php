@@ -1032,21 +1032,19 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
     if (!$coreSearch) {
       $sql = $this->_search->contactIDs($start, $end, $sort, TRUE);
       //NYSS 11790
-      CRM_Core_DAO::executeQuery(" CREATE TEMPORARY TABLE {$tempTable} {$sql} ");
       $sql = sprintf("
       INSERT INTO civicrm_prevnext_cache ( entity_table, entity_id1, entity_id2, cacheKey, data )
         SELECT DISTINCT 'civicrm_contact', contact_a.contact_id, contact_a.contact_id, '%s', cc.sort_name
-        FROM %s contact_a
-        INNER JOIN civicrm_contact cc ON contact_a.contact_id = cc.id ", $cacheKey, $tempTable);
+        FROM ( %s )  contact_a
+        INNER JOIN civicrm_contact cc ON contact_a.contact_id = cc.id ", $cacheKey, $this->_search->contactIDs($start, $end, $sort, TRUE));
+
     }
     // For core searches use the searchQuery method
     else {
-      $sql = $this->_query->searchQuery($start, $end, $sort, FALSE, FALSE, FALSE, FALSE, TRUE);
-      CRM_Core_DAO::executeQuery("CREATE TEMPORARY TABLE {$tempTable} {$sql} ");
       $sql = sprintf("
       INSERT INTO civicrm_prevnext_cache ( entity_table, entity_id1, entity_id2, cacheKey, data )
         SELECT DISTINCT 'civicrm_contact', contact_id, contact_id, '%s', sort_name
-        FROM %s ", $cacheKey, $tempTable);
+        FROM ( %s ) contact_a ", $cacheKey, $this->_query->searchQuery($start, $end, $sort, FALSE, FALSE, FALSE, FALSE, TRUE));
     }
 
     // CRM-9096
