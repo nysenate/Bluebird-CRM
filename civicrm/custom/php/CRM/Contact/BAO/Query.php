@@ -4759,7 +4759,8 @@ civicrm_relationship.is_permission_a_b = 0
    *
    * @return string
    */
-  public static function appendAnyValueToSelect($selectClauses, $groupBy, $aggregateFunction = 'ANY_VALUE') {
+  //NYSS 11700
+  public static function appendAnyValueToSelect($selectClauses, $groupBy, $aggregateFunction = 'ANY_VALUE', $appendAlias = FALSE) {
     //NYSS 11356/11747
     if (!CRM_Utils_SQL::disableFullGroupByMode()) {
       $groupBy = array_map('trim', (array) $groupBy);
@@ -4771,6 +4772,7 @@ civicrm_relationship.is_permission_a_b = 0
           $val = ($aggregateFunction == 'GROUP_CONCAT') ?
             str_replace($selectColumn, "$aggregateFunction(DISTINCT {$selectColumn})", $val) :
             str_replace($selectColumn, "$aggregateFunction({$selectColumn})", $val);
+          $val .= $appendAlias ? " as $selectColumn " : '';//NYSS 11700
         }
       }
     }
