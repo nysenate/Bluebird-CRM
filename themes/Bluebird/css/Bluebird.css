@@ -4098,6 +4098,11 @@ div#tagtree li {
   margin-top: 0;
 }
 
+/*add bold to tagset labels in contact form edit*/
+form.CRM_Contact_Form_Contact div#tagGroup label {
+  font-weight: bold;
+}
+
 /*allow select2 widgets to expand*/
 div.crm-container.select2-drop-multi {
   width: auto !important;

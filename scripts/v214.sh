@@ -34,5 +34,9 @@ echo "$prog: implement new export extension"
 $drush $instance dis nyss_export
 $drush $instance cvapi extension.install key=gov.nysenate.export --quiet
 
+## 11273
+echo "$prog: 11273 restore website tags"
+php $script_dir/../civicrm/scripts/11273_restoreWebsiteTags.php -S $instance
+
 ## record completion
 echo "$prog: upgrade process is complete."
