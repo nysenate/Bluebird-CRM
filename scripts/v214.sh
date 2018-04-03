@@ -32,6 +32,11 @@ app_rootdir=`$readConfig --ig $instance app.rootdir` || app_rootdir="$DEFAULT_AP
 ## 11700
 echo "$prog: implement new export extension"
 $drush $instance dis nyss_export
+# The module disable command will fail, because the module code itself
+# has already been removed. Therefore, the module must be manually removed
+# using a direct SQL query, followed by a cache clear.
+$drush $instance sql-query "DELETE FROM system WHERE type='module' AND name='nyss_export';"
+$drush $instance cc all
 $drush $instance cvapi extension.install key=gov.nysenate.export --quiet
 
 ## 11273
