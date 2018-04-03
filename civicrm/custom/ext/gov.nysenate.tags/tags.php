@@ -162,30 +162,51 @@ function tags_civicrm_buildForm($formName, &$form) {
     'form' => $form,
   ));*/
 
-  if ($formName == 'CRM_Tag_Form_Tag' ||
-      $formName == 'CRM_Contact_Form_Task_AddToTag' ||
-      $formName == 'CRM_Contact_Form_Contact') {
-    $webSets = array('Website Bills', 'Website Committees',
-                     'Website Issues', 'Website Petitions');
+  if (in_array($formName, array('CRM_Tag_Form_Tag', 'CRM_Contact_Form_Task_AddToTag',
+    'CRM_Contact_Form_Contact', 'CRM_Contact_Form_Task_RemoveFromTag'))
+  ) {
+    $webSets = array(
+      'Website Bills',
+      'Website Committees',
+      'Website Issues',
+      'Website Petitions',
+    );
     $webViewOnly = array();
     foreach ($form->_tagsetInfo as $setId => $setDetails) {
-      $setName = (!empty($setDetails['parentName'])) ?
-        $setDetails['parentName'] :
-        civicrm_api3('tag', 'getvalue', array('id' => $setDetails['parentID'], 'return' => 'name'));
-      //Civi::log()->debug('buildForm', array('$setName' => $setName));
+      //Civi::log()->debug('buildForm', array('$setDetails' => $setDetails));
+
+      try {
+        $setName = (!empty($setDetails['parentName'])) ?
+          $setDetails['parentName'] :
+          civicrm_api3('tag', 'getvalue', [
+            'id' => $setDetails['parentID'],
+            'return' => 'name'
+          ]);
+        //Civi::log()->debug('buildForm', array('$setName' => $setName));
+      }
+      catch (CiviCRM_API3_Exception $e) {}
 
       if (in_array($setName, $webSets)) {
         $webViewOnly[] = $setDetails['parentID'];
         unset($form->_tagsetInfo["contact_taglistparentId_[{$setDetails['parentID']}]"]);
 
-        //remove the form elements
-        if ($form->elementExists("contact_taglist[{$setDetails['parentID']}]")) {
-          $form->removeElement("contact_taglist[{$setDetails['parentID']}]");
+        //on contact edit form, set to read-only
+        if ($formName == 'CRM_Contact_Form_Contact') {
+          if ($form->elementExists("contact_taglist[{$setDetails['parentID']}]")) {
+            $ele =& $form->getElement("contact_taglist[{$setDetails['parentID']}]");
+            $ele->freeze();
+          }
         }
+        //for all other forms, remove the tagset elements
+        else {
+          if ($form->elementExists("contact_taglist[{$setDetails['parentID']}]")) {
+            $form->removeElement("contact_taglist[{$setDetails['parentID']}]");
+          }
 
-        //for some reason tagset ID is added twice, so we need to cycle/remove twice
-        if ($form->elementExists("contact_taglist[{$setDetails['parentID']}]")) {
-          $form->removeElement("contact_taglist[{$setDetails['parentID']}]");
+          //for some reason tagset ID is added twice, so we need to cycle/remove twice
+          if ($form->elementExists("contact_taglist[{$setDetails['parentID']}]")) {
+            $form->removeElement("contact_taglist[{$setDetails['parentID']}]");
+          }
         }
       }
     }

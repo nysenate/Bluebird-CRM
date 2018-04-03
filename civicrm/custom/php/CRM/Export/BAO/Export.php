@@ -601,6 +601,15 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
 
     //NYSS 11700
     //$allRelContactArray = $relationQuery = array();
+    if ($mergeSameHousehold || $mergeSameAddress) {
+      foreach (['Household Member of', 'Head of Household for'] as $relName) {
+        $key = CRM_Utils_Array::key($relName, $contactRelationshipTypes);
+        $relationType[$key] = NULL;
+        if ($mergeSameAddress) {
+          $returnProperties[$key] = ['id' => 1];
+        }
+      }
+    }
 
     foreach ($contactRelationshipTypes as $rel => $dnt) {
       if ($relationReturnProperties = CRM_Utils_Array::value($rel, $returnProperties)) {
@@ -833,7 +842,11 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
                 $masterAddressId = $iterationDAO->$field;
               }
               // get display name of contact that address is shared.
-              $fieldValue = CRM_Contact_BAO_Contact::getMasterDisplayName($masterAddressId, $iterationDAO->contact_id);
+              //NYSS 11861
+              //$fieldValue = CRM_Contact_BAO_Contact::getMasterDisplayName($masterAddressId, $iterationDAO->contact_id);
+              if (!$mergeSameAddress) {
+                $fieldValue = CRM_Contact_BAO_Contact::getMasterDisplayName($masterAddressId, $iterationDAO->contact_id);
+              }
             }
           }
 
@@ -1018,7 +1031,8 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
 
       // do merge same address and merge same household processing
       if ($mergeSameAddress) {
-        self::mergeSameAddress($exportTempTable, $headerRows, $sqlColumns, $exportParams);
+        //NYSS 11861
+        self::mergeSameAddress($exportTempTable, $headerRows, $sqlColumns, $exportParams, $relationType);
       }
 
       // merge the records if they have corresponding households
@@ -1537,7 +1551,8 @@ CREATE TABLE {$exportTempTable} (
    * @param $sqlColumns
    * @param array $exportParams
    */
-  public static function mergeSameAddress($tableName, &$headerRows, &$sqlColumns, $exportParams) {
+  //NYSS 11861
+  public static function mergeSameAddress($tableName, &$headerRows, &$sqlColumns, $exportParams, $relationTypes) {
     // check if any records are present based on if they have used shared address feature,
     // and not based on if city / state .. matches.
     $sql = "
@@ -1636,6 +1651,21 @@ WHERE  id IN ( $deleteIDString )
         if (array_key_exists($sqlColKey, $exportParams['merge_same_address']['temp_columns'])) {
           unset($sqlColumns[$sqlColKey], $headerRows[$headerKey]);
         }
+      }
+    }
+
+    //NYSS 11861
+    // iterate through each relation types to fetch related Household record and
+    //  if found then take precendence over it's member by deleting them from the
+    //  original export table.
+    foreach ($relationTypes as $relationType => $relTableName) {
+      $sql = "SELECT GROUP_CONCAT(DISTINCT t.id)
+       FROM $tableName t INNER JOIN $relTableName rt ON rt.id = t.civicrm_primary_id
+       WHERE rt.civicrm_primary_id IN (SELECT DISTINCT civicrm_primary_id FROM $tableName)";
+      $deleteIDs = CRM_Core_DAO::singleValueQuery($sql);
+      if ($deleteIDs) {
+        CRM_Core_DAO::executeQuery("DELETE FROM $tableName WHERE id IN ($deleteIDs) ");
+        CRM_Core_DAO::executeQuery("DROP TABLE $relTableName");
       }
     }
   }

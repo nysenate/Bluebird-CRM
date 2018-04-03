@@ -2901,50 +2901,6 @@ ul.crm-quickSearch-results li.ui-state-focus,
   background-position: 0 0;
 }
 
-/* blue theme buttons */
-#crm-container .crm-actions-ribbon a.button,#crm-container .crm-dashboard-buttons a.button,#crm-container .crm-content-block a.button,#crm-create-new-link,#crm-contact-actions-link,#crm-container .crm-actions-ribbon a.button:link,#crm-container .crm-dashboard-buttons a.button:link,#crm-container .crm-content-block a.button:link,#crm-container .crm-content-block .crm-button {
-  padding: 0 0 0 6px;
-  border: none;
-}
-
-#crm-contact-actions-link span,#crm-container .crm-actions-ribbon a.button span,#crm-container .crm-dashboard-buttons a.button span,#crm-container .crm-content-block a.button span,#crm-container .crm-content-block .crm-button input,#crm-container .crm-content-block .crm-button input.form-submit {
-  padding: 4px 4px 4px 0;
-  text-shadow: none;
-  white-space: nowrap;
-}
-
-#crm-contact-actions-link,#crm-container .crm-content-block .crm-button,#crm-container .crm-content-block .crm-button input,#crm-container .crm-actions-ribbon a.button,#crm-container .crm-dashboard-buttons a.button,#crm-container .crm-content-block a.button,#crm-container .crm-content-block a.button:link {
-  color: #FFF;
-}
-
-#crm-container .crm-content-block a.button:active {
-  color: #D4EEFC;
-}
-
-#crm-contact-actions-link,#crm-container .crm-actions-ribbon a.button,#crm-container .crm-dashboard-buttons a.button,#crm-container .crm-content-block a.button,#crm-container .crm-content-block a.button:link,#crm-container .crm-content-block .crm-button {
-  background: transparent url(../images/button.png) no-repeat scroll left 0;
-}
-
-#crm-contact-actions-link span,#crm-container .crm-actions-ribbon a.button span,#crm-container .crm-dashboard-buttons a.button span,#crm-container .crm-content-block a.button span,#crm-container .crm-content-block .crm-button input,#crm-container .crm-content-block .crm-button input.form-submit {
-  background: transparent url(../images/button.png) no-repeat scroll right -25px;
-}
-
-#crm-contact-actions-link:hover,#crm-container .crm-content-block a.button:hover,#crm-container .crm-content-block .crm-button:hover {
-  background: transparent url(../images/button.png) no-repeat scroll left -50px;
-}
-
-#crm-contact-actions-link:hover span,#crm-container .crm-content-block a.button:hover span,#crm-container .crm-content-block .crm-button:hover input {
-  background: transparent url(../images/button.png) no-repeat scroll right -75px;
-}
-
-#crm-container .crm-content-block .crm-button-type-cancel input {
-  color: #e0e0d4;
-}
-
-.button:hover .icon {
-  background-image: url(../images/button-icon-highlight.png);
-}
-
 /******** from nyss_skin/civi-header.css ********/
 .main-container {
   position: relative;
@@ -3608,6 +3564,10 @@ h1.title {
 li.crm-button {
   list-style-type: none;
 }
+span.crm-button {
+  min-height: 22px;
+  padding-top: 3px !important;
+}
 
 .crm-block,.crm-form-block {
   clear: both;
@@ -4096,6 +4056,11 @@ div#tagtree span.crm-tag-item {
 div#tagtree li {
   font-size: 95%;
   margin-top: 0;
+}
+
+/*add bold to tagset labels in contact form edit*/
+form.CRM_Contact_Form_Contact div#tagGroup label {
+  font-weight: bold;
 }
 
 /*allow select2 widgets to expand*/
