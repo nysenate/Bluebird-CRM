@@ -660,6 +660,20 @@ class CRM_NYSS_Inbox_BAO_Inbox {
             3 => [$row['matched_id'], 'Positive'],
           ]);
         }
+
+        //also reassign activity target
+        if ($row['activity_id']) {
+          try {
+            civicrm_api3('activity', 'create', array(
+              'id' => $row['activity_id'],
+              'target_contact_id' => $values['assignee'],
+            ));
+          }
+          catch (CiviCRM_API3_Exception $e) {
+            Civi::log()->debug('processMessages update activity target', ['e' => $e]);
+            $msg[] = 'Unable to update activity target.';
+          }
+        }
       }
 
       //get assignee ID (from new or existing) and all existing tags
