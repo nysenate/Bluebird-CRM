@@ -343,7 +343,6 @@ class CRM_Mailing_BAO_Mailing extends CRM_Mailing_DAO_Mailing {
     $mailingGroup->query(" DROP TEMPORARY TABLE $includedTempTablename ");
   }
 
-  //NYSS mailing rebuild
   /**
    * Function to retrieve location filter and order by clause later used by SQL query that is used to fetch and include mailing recipients
    *
@@ -530,10 +529,12 @@ class CRM_Mailing_BAO_Mailing extends CRM_Mailing_DAO_Mailing {
   }
 
   /**
-   *
    * Prepares the text and html templates
    * for generating the emails and returns a copy of the
    * prepared templates
+   *
+   * @deprecated
+   *   This is used by CiviMail but will be made redundant by FlexMailer/TokenProcessor.
    */
   private function getPreparedTemplates() {
     if (!$this->preparedTemplates) {
@@ -612,7 +613,6 @@ class CRM_Mailing_BAO_Mailing extends CRM_Mailing_DAO_Mailing {
       }
 
       // To check for an html part strip tags
-      //NYSS 11549
       if (trim(strip_tags($this->body_html, '<img>'))) {
 
         $template = array();
@@ -985,6 +985,8 @@ ORDER BY   civicrm_email.is_bulkmail DESC
   /**
    * Compose a message.
    *
+   * @deprecated
+   *   This is used by CiviMail but will be made redundant by FlexMailer/TokenProcessor.
    * @param int $job_id
    *   ID of the Job associated with this message.
    * @param int $event_queue_id
@@ -1258,6 +1260,8 @@ ORDER BY   civicrm_email.is_bulkmail DESC
    *
    * Get mailing object and replaces subscribeInvite, domain and mailing tokens.
    *
+   * @deprecated
+   *   This is used by CiviMail but will be made redundant by FlexMailer/TokenProcessor.
    * @param CRM_Mailing_BAO_Mailing $mailing
    */
   public static function tokenReplace(&$mailing) {
@@ -1280,6 +1284,9 @@ ORDER BY   civicrm_email.is_bulkmail DESC
 
   /**
    * Get data to resolve tokens.
+   *
+   * @deprecated
+   *   This is used by CiviMail but will be made redundant by FlexMailer/TokenProcessor.
    *
    * @param array $token_a
    * @param bool $html
@@ -1403,7 +1410,11 @@ ORDER BY   civicrm_email.is_bulkmail DESC
    * @return CRM_Mailing_DAO_Mailing
    */
   public static function add(&$params, $ids = array()) {
-    $id = CRM_Utils_Array::value('mailing_id', $ids, CRM_Utils_Array::value('id', $params));
+    $id = CRM_Utils_Array::value('id', $params, CRM_Utils_Array::value('mailing_id', $ids));
+
+    if (empty($params['id']) && !empty($ids)) {
+      \Civi::log('Parameter $ids is no longer used by Mailing::add. Use the api or just pass $params', ['civi.tag' => 'deprecated']);
+    }
 
     if ($id) {
       CRM_Utils_Hook::pre('edit', 'Mailing', $id, $params);
@@ -1437,7 +1448,7 @@ ORDER BY   civicrm_email.is_bulkmail DESC
       $result->modified_date = $mailing->modified_date;
     }
 
-    if (!empty($ids['mailing'])) {
+    if ($id) {
       CRM_Utils_Hook::post('edit', 'Mailing', $mailing->id, $mailing);
     }
     else {
@@ -1476,15 +1487,16 @@ ORDER BY   civicrm_email.is_bulkmail DESC
    * @throws \Exception
    */
   public static function create(&$params, $ids = array()) {
-    // WTH $ids
-    if (empty($ids) && isset($params['id'])) {
-      $ids['mailing_id'] = $ids['id'] = $params['id'];
+
+    if (empty($params['id']) && (array_filter($ids) !== [])) {
+      $params['id'] = isset($ids['mailing_id']) ? $ids['mailing_id'] : $ids['id'];
+      \Civi::log('Parameter $ids is no longer used by Mailing::create. Use the api or just pass $params', ['civi.tag' => 'deprecated']);
     }
 
     // CRM-12430
     // Do the below only for an insert
     // for an update, we should not set the defaults
-    if (!isset($ids['id']) && !isset($ids['mailing_id'])) {
+    if (!isset($params['id'])) {
       // Retrieve domain email and name for default sender
       $domain = civicrm_api(
         'Domain',
@@ -1553,7 +1565,7 @@ ORDER BY   civicrm_email.is_bulkmail DESC
 
     $transaction = new CRM_Core_Transaction();
 
-    $mailing = self::add($params, $ids);
+    $mailing = self::add($params);
 
     if (is_a($mailing, 'CRM_Core_Error')) {
       $transaction->rollback();
@@ -1603,8 +1615,7 @@ ORDER BY   civicrm_email.is_bulkmail DESC
 
     // Create parent job if not yet created.
     // Condition on the existence of a scheduled date.
-    //NYSS
-    if (!empty($params['scheduled_date']) && $params['scheduled_date'] != 'null') {
+    if (!empty($params['scheduled_date']) && $params['scheduled_date'] != 'null' && empty($params['_skip_evil_bao_auto_schedule_'])) {
       $job = new CRM_Mailing_BAO_MailingJob();
       $job->mailing_id = $mailing->id;
       // If we are creating a new Completed mailing (e.g. import from another system) set the job to completed.
@@ -1617,25 +1628,11 @@ ORDER BY   civicrm_email.is_bulkmail DESC
         $job->scheduled_date = NULL;
         $job->save();
       }
-
-      //NYSS
-      // Populate the recipients.
-      /*if (empty($params['_skip_evil_bao_auto_recipients_'])) {
-        // check if it's sms
-        $mode = $mailing->sms_provider_id && $mailing->sms_provider_id != 'null' ? 'sms' : NULL;
-        self::getRecipients($job->id, $mailing->id, TRUE, $mailing->dedupe_email, $mode);
-      }*/
       // Schedule the job now that it has recipients.
       $job->scheduled_date = $params['scheduled_date'];
       $job->save();
     }
-    //NYSS mailing rebuild
-    elseif (!empty($params['get_recipents'])) {
-      //Civi::log()->debug('trigger getMailRecipients', array('params' => $params));
-      self::getMailRecipients($mailing);
-    }
 
-    //NYSS
     // Populate the recipients.
     if (empty($params['_skip_evil_bao_auto_recipients_'])) {
       self::getRecipients($mailing->id);
@@ -1645,6 +1642,8 @@ ORDER BY   civicrm_email.is_bulkmail DESC
   }
 
   /**
+   * @deprecated
+   *   This is used by CiviMail but will be made redundant by FlexMailer.
    * @param CRM_Mailing_DAO_Mailing $mailing
    *   The mailing which may or may not be sendable.
    * @return array
@@ -2037,7 +2036,7 @@ ORDER BY   civicrm_email.is_bulkmail DESC
       $report['event_totals']['queue'] = $newTableSize;
     }
     else {
-      $report['event_totals']['queue'] = self::getRecipientsCount($mailing_id);//NYSS
+      $report['event_totals']['queue'] = self::getRecipientsCount($mailing_id);
     }
 
     if (!empty($report['event_totals']['queue'])) {
@@ -2520,6 +2519,8 @@ LEFT JOIN civicrm_mailing_group g ON g.mailing_id   = m.id
   }
 
   /**
+   * @deprecated
+   *   This is used by CiviMail but will be made redundant by FlexMailer/TokenProcessor.
    * @return array
    */
   public function getReturnProperties() {
@@ -2848,7 +2849,7 @@ WHERE  civicrm_mailing_job.id = %1
     /*if ($mode == NULL && CRM_Core_BAO_MailSettings::defaultDomain() == "EXAMPLE.ORG") {
       throw new CRM_Core_Exception(ts('The <a href="%1">default mailbox</a> has not been configured. You will find <a href="%2">more info in the online user and administrator guide</a>', array(
             1 => CRM_Utils_System::url('civicrm/admin/mailSettings', 'reset=1'),
-            2 => "http://book.civicrm.org/user/advanced-configuration/email-system-configuration/",
+            2 => "https://docs.civicrm.org/sysadmin/en/latest/setup/civimail/",
           )));
     }*/
 
@@ -2946,25 +2947,6 @@ ORDER BY civicrm_mailing.name";
     }
 
     return $list;
-  }
-
-  /**
-   * @param int $mid
-   *
-   * @return null|string
-   */
-  public static function hiddenMailingGroup($mid) {
-    $sql = "
-SELECT     g.id
-FROM       civicrm_mailing m
-INNER JOIN civicrm_mailing_group mg ON mg.mailing_id = m.id
-INNER JOIN civicrm_group g ON mg.entity_id = g.id AND mg.entity_table = 'civicrm_group'
-WHERE      g.is_hidden = 1
-AND        mg.group_type = 'Include'
-AND        m.id = %1
-";
-    $params = array(1 => array($mid, 'Integer'));
-    return CRM_Core_DAO::singleValueQuery($sql, $params);
   }
 
   /**

@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 class CRM_Mailing_BAO_Query {
 
@@ -188,6 +188,10 @@ class CRM_Mailing_BAO_Query {
 
       case 'recipient_email':
         $from = " $side JOIN civicrm_email recipient_email ON recipient_email.id = civicrm_mailing_recipients.email_id";
+        break;
+
+      case 'civicrm_campaign':
+        $from = " $side JOIN civicrm_campaign ON civicrm_campaign.id = civicrm_mailing.campaign_id";
         break;
     }
 
