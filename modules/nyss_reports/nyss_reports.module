@@ -100,6 +100,10 @@ function nyss_reports_civicrm_alterReportVar($varType, &$var, &$object) {
           _nyss_reports_CaseDetail_cols($var, $object);
           break;
 
+        case 'CRM_Report_Form_Case_Summary':
+          _nyss_reports_CaseSummary_cols($var, $object);
+          break;
+
         default:
       }
       break;
@@ -403,6 +407,21 @@ function _nyss_reports_CaseDetail_cols(&$var, &$object) {
   unset($var['civicrm_worldregion']);
   unset($var['civicrm_country']);
 }//_nyss_reports_CaseDetail_cols
+
+function _nyss_reports_CaseSummary_cols(&$var, &$object) {
+  //11866 add relationship status field
+  $var['civicrm_relationship']['filters']['is_active'] = array(
+    'title' => ts('Staff Relationship Status'),
+    'operatorType' => CRM_Report_Form::OP_SELECT,
+    'options' => array(
+      '' => ts('- Any -'),
+      1 => ts('Active'),
+      0 => ts('Inactive'),
+    ),
+    'type' => CRM_Utils_Type::T_INT,
+    'default' => 1,
+  );
+}//_nyss_reports_CaseSummary_cols
 
 //11730 remove Modified/Created date from log detail report
 function _nyss_reports_LogDetail_rows(&$var, &$object) {
