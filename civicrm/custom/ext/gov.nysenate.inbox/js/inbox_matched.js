@@ -67,6 +67,7 @@ CRM.$(function($) {
         //console.log('crmFormCancel event: ', event);
         //TODO this works, but throws console errors
         $(this).dialog('close');
+        refreshList('matched');
       });
   });
 
