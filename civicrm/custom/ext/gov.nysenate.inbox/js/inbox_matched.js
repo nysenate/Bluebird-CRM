@@ -2,9 +2,16 @@ CRM.$(function($) {
   //clear multiple
   $('.multi_clear').click(function() {
     // grab the rows to clear
-    var clear_ids = $("input.message-select:checked").map(function(){
+
+    var checked_boxes = $("input.message-select:checked").map(function () {
       return $(this).prop('id').replace('select-', '');
     }).get();
+
+    // The checkbox values are now in the form <msg_id>-<contact_id>.
+    // Split the values so we pass the right info to the handler.  We use
+    // "new Set()" to get a list of unique values for each.
+    var clear_ids = Array.from(new Set(checked_boxes.map(function(k){return k.split('-')[0];}))),
+      clear_cids = Array.from(new Set(checked_boxes.map(function(k){return k.split('-')[1];})));
 
     if (!clear_ids.length) {
       CRM.alert('Use the checkbox to select one or more messages to clear.', 'Clear Messages', 'warn');
@@ -13,8 +20,9 @@ CRM.$(function($) {
 
     CRM.confirm({
       title: 'Clear Messages?',
-      message: 'Are you sure you want to clear ' + clear_ids.length + ' messages?'
-    }).on('crmConfirm:yes', function() {
+      message: 'Are you sure you want to clear ' + clear_ids.length +
+      ' messages (affecting ' + clear_cids.length + ' contacts)?'
+    }).on('crmConfirm:yes', function () {
       var url = CRM.url('civicrm/nyss/inbox/clearmsgs', {ids: clear_ids});
       var request = $.post(url);
       CRM.status({success: 'Messages were successfully cleared.'}, request);
@@ -59,6 +67,7 @@ CRM.$(function($) {
         //console.log('crmFormCancel event: ', event);
         //TODO this works, but throws console errors
         $(this).dialog('close');
+        refreshList('matched');
       });
   });
 
