@@ -1,39 +1,171 @@
 <?php
 
-function nyss_export_civicrm_buildForm( $formName, &$form ) {
-  if ( $formName == 'CRM_Export_Form_Select' ) {
-    $form->addElement('checkbox', 'street_long', ts('Street Address Long Form'), null);
+require_once 'export.civix.php';
+
+/**
+ * Implements hook_civicrm_config().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_config
+ */
+function export_civicrm_config(&$config) {
+  _export_civix_civicrm_config($config);
+}
+
+/**
+ * Implements hook_civicrm_xmlMenu().
+ *
+ * @param $files array(string)
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_xmlMenu
+ */
+function export_civicrm_xmlMenu(&$files) {
+  _export_civix_civicrm_xmlMenu($files);
+}
+
+/**
+ * Implements hook_civicrm_install().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_install
+ */
+function export_civicrm_install() {
+  _export_civix_civicrm_install();
+}
+
+/**
+ * Implements hook_civicrm_uninstall().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_uninstall
+ */
+function export_civicrm_uninstall() {
+  _export_civix_civicrm_uninstall();
+}
+
+/**
+ * Implements hook_civicrm_enable().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_enable
+ */
+function export_civicrm_enable() {
+  _export_civix_civicrm_enable();
+}
+
+/**
+ * Implements hook_civicrm_disable().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_disable
+ */
+function export_civicrm_disable() {
+  _export_civix_civicrm_disable();
+}
+
+/**
+ * Implements hook_civicrm_upgrade().
+ *
+ * @param $op string, the type of operation being performed; 'check' or 'enqueue'
+ * @param $queue CRM_Queue_Queue, (for 'enqueue') the modifiable list of pending up upgrade tasks
+ *
+ * @return mixed
+ *   Based on op. for 'check', returns array(boolean) (TRUE if upgrades are pending)
+ *                for 'enqueue', returns void
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_upgrade
+ */
+function export_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
+  return _export_civix_civicrm_upgrade($op, $queue);
+}
+
+/**
+ * Implements hook_civicrm_managed().
+ *
+ * Generate a list of entities to create/deactivate/delete when this module
+ * is installed, disabled, uninstalled.
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_managed
+ */
+function export_civicrm_managed(&$entities) {
+  _export_civix_civicrm_managed($entities);
+}
+
+/**
+ * Implements hook_civicrm_caseTypes().
+ *
+ * Generate a list of case-types
+ *
+ * Note: This hook only runs in CiviCRM 4.4+.
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
+ */
+function export_civicrm_caseTypes(&$caseTypes) {
+  _export_civix_civicrm_caseTypes($caseTypes);
+}
+
+/**
+ * Implements hook_civicrm_angularModules().
+ *
+ * Generate a list of Angular modules.
+ *
+ * Note: This hook only runs in CiviCRM 4.5+. It may
+ * use features only available in v4.6+.
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
+ */
+function export_civicrm_angularModules(&$angularModules) {
+_export_civix_civicrm_angularModules($angularModules);
+}
+
+/**
+ * Implements hook_civicrm_alterSettingsFolders().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_alterSettingsFolders
+ */
+function export_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
+  _export_civix_civicrm_alterSettingsFolders($metaDataFolders);
+}
+
+function export_civicrm_buildForm( $formName, &$form ) {
+  if ($formName == 'CRM_Export_Form_Select') {
+    $form->addElement('checkbox', 'street_long', ts('Street Address Long Form'), NULL);
+
+    CRM_Core_Region::instance('form-body')->add(array(
+      'template' => 'CRM/NYSS/ExportSelect.tpl',
+    ));
+    CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.export', 'js/ExportSelect.js');
   }
 
-  if ( $formName == 'CRM_Export_Form_Map' ) {
+  if ($formName == 'CRM_Export_Form_Map') {
     //NYSS 4426 set as hidden field so we have it in the $_POST array
     $form->addElement('hidden', 'street_long', $form->_streetLong);
+
+    CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.export', 'js/ExportMap.js');
   }
+
+  //TODO insert html/js
+
 } //end buildForm
 
-function nyss_export_civicrm_validateForm( $formName, &$fields, &$files, &$form, &$errors ) {
+function export_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
   //6248
-  if ( $formName == 'CRM_Export_Form_Map' ) {
-    if ( $form->_streetLong ) {
+  if ($formName == 'CRM_Export_Form_Map') {
+    if ($form->_streetLong) {
       $streetAddressFound = FALSE;
-      foreach ( $fields['mapper'][1] as $f ) {
-        if ( $f[1] == 'street_address' ) {
+      foreach ($fields['mapper'][1] as $f) {
+        if ($f[1] == 'street_address') {
           $streetAddressFound = TRUE;
         }
       }
-      if ( !$streetAddressFound ) {
+      if (!$streetAddressFound) {
         $errors['street_long'] = 'You chose to export street addresses in long form, but have not included the street address field in your export mapping. Please add that field or return to the first step and deselect the long address option.';
       }
     }
   }
 }
 
-function nyss_export_civicrm_export( $exportTempTable, $headerRows, $sqlColumns, $exportMode ) {
+function export_civicrm_export($exportTempTable, $headerRows, $sqlColumns, $exportMode) {
   //CRM_Core_Error::debug_var('POST', $_POST);
   //CRM_Core_Error::debug_var('headerRows', $headerRows);
   //CRM_Core_Error::debug_var('exportMode', $exportMode);
   //CRM_Core_Error::debug_var('sqlColumns', $sqlColumns);
-  //exit();
+  //CRM_Core_Error::debug_var('$exportTempTable', $exportTempTable);
 
   //field exclusions; only implement for primary export option
   if ($_POST['exportOption'] == 1) {
@@ -77,8 +209,13 @@ function nyss_export_civicrm_export( $exportTempTable, $headerRows, $sqlColumns,
 
   //4403 exclude Mailing Exclusions group
   if ($_POST['postal_mailing_export']['postal_mailing_export'] == 1) {
-    $gid = CRM_Core_DAO::singleValueQuery( "SELECT id FROM civicrm_group WHERE name LIKE 'Mailing_Exclusions';" );
-    if ( $gid ) { //continue if group found
+    $gid = CRM_Core_DAO::singleValueQuery("
+      SELECT id
+      FROM civicrm_group
+      WHERE name LIKE 'Mailing_Exclusions';
+    ");
+
+    if ($gid) { //continue if group found
       $query = "
         DELETE exp
         FROM $exportTempTable AS exp
@@ -92,7 +229,7 @@ function nyss_export_civicrm_export( $exportTempTable, $headerRows, $sqlColumns,
   }
 
   //4766 exclude do not mail/do not trade
-  if ( $_POST['postal_mailing_export']['postal_mailing_export'] == 1 ) {
+  if ($_POST['postal_mailing_export']['postal_mailing_export'] == 1) {
     $query = "
       DELETE exp
       FROM $exportTempTable AS exp
@@ -106,7 +243,7 @@ function nyss_export_civicrm_export( $exportTempTable, $headerRows, $sqlColumns,
   }
 
   //4426 change street suffix to long form
-  if ( $_POST['street_long'] == 1 ) {
+  if ($_POST['street_long'] == 1) {
     //construct pattern array from address_abbreviations
     $patReplace = array();
 
@@ -116,7 +253,7 @@ function nyss_export_civicrm_export( $exportTempTable, $headerRows, $sqlColumns,
     ";
     $dao = CRM_Core_DAO::executeQuery($sql);
 
-    while( $dao->fetch() ) {
+    while($dao->fetch()) {
       $patReplace[$dao->normalized] = $dao->long_form;
     }
     $dao->free();
@@ -124,42 +261,39 @@ function nyss_export_civicrm_export( $exportTempTable, $headerRows, $sqlColumns,
 
     //get street_address for all records from the temp table
     $sql = "
-      SELECT id, street_address
+      SELECT civicrm_primary_id, street_address
       FROM $exportTempTable
       WHERE street_address IS NOT NULL
         AND street_address != '';
     ";
     $dao = CRM_Core_DAO::executeQuery($sql);
 
-    $streetSplit = array();
-
-    while( $dao->fetch() ) {
+    while($dao->fetch()) {
       //split street_address into array of elements in reverse
-      $streetSplit = array_reverse(explode( ' ', $dao->street_address ));
+      $streetSplit = array_reverse(explode(' ', $dao->street_address));
 
       //we have to handle the cycles separately so that we do a complete search for long form before looking for abbrev
-      foreach ( $streetSplit as $chunk ) {
+      foreach ($streetSplit as $chunk) {
         $chunk = _cleanStr($chunk);
         //if the long form is present continue with next record
-        if ( in_array($chunk, $patReplace) ) {
+        if (in_array($chunk, $patReplace)) {
           continue;
         }
       }
 
-      foreach ( $streetSplit as $chunk ) {
+      foreach ($streetSplit as $chunk) {
         $chunk = _cleanStr($chunk);
         //see if the short form is present and conduct the replacement
-        if ( array_key_exists($chunk, $patReplace) ) {
-          $id       = $dao->id;
+        if (array_key_exists($chunk, $patReplace)) {
           $longForm = ucfirst($patReplace[$chunk]);
-          $chunk    = "(\b)$chunk(\b)";
-          $newAddr  = addslashes(preg_replace("~(?i)$chunk(?!.*?$chunk)~", "$1{$longForm}$2", $dao->street_address));
+          $chunk = "(\b)$chunk(\b)";
+          $newAddr = addslashes(preg_replace("~(?i)$chunk(?!.*?$chunk)~", "$1{$longForm}$2", $dao->street_address));
           //CRM_Core_Error::debug('newAddr',$newAddr);exit();
 
           $sql = "
             UPDATE $exportTempTable
             SET street_address = '$newAddr'
-            WHERE id = $id;
+            WHERE civicrm_primary_id = $dao->civicrm_primary_id;
           ";
           $upd = CRM_Core_DAO::executeQuery($sql);
           //CRM_Core_Error::debug('sqlupd',$sqlupd);exit();
@@ -177,30 +311,27 @@ function nyss_export_civicrm_export( $exportTempTable, $headerRows, $sqlColumns,
 
   //if no records in the table, return to search
   //ideally we return to the existing search, but we don't seem to have the qfKey at this point
-  $sql = "SELECT count(id) FROM $exportTempTable;";
-  if ( CRM_Core_DAO::singleValueQuery($sql) == 0 ) {
+  $sql = "SELECT count(*) FROM $exportTempTable;";
+  if (CRM_Core_DAO::singleValueQuery($sql) == 0) {
     $status = "There were no records to export. Please run your search and export again.";
-    $session = CRM_Core_Session::singleton( );
-    $session->setStatus( $status );
+    $session = CRM_Core_Session::singleton();
+    $session->setStatus($status);
 
-    require_once 'CRM/Utils/System.php';
-    require_once 'CRM/Utils/Rule.php';
+    $currentPath = CRM_Utils_System::currentPath();
+    $urlParams = NULL;
+    $qfKey = CRM_Utils_Request::retrieve('qfKey', 'String');
+    if (CRM_Utils_Rule::qfKey($qfKey)) $urlParams = "&qfKey=$qfKey";
 
-    $currentPath = CRM_Utils_System::currentPath( );
-    $urlParams = null;
-    $qfKey = CRM_Utils_Request::retrieve( 'qfKey', 'String' );
-    if ( CRM_Utils_Rule::qfKey( $qfKey ) ) $urlParams = "&qfKey=$qfKey";
-
-    CRM_Utils_System::redirect( CRM_Utils_System::url( $currentPath, $urlParams ) );
+    CRM_Utils_System::redirect(CRM_Utils_System::url($currentPath, $urlParams));
   }
 
   //3665 code copied from CRM_Export_BAO_Export::writeCSVFromTable, just to modify the order clause
   $writeHeader = true;
   $offset = 0;
-  $limit  = 100;
+  $limit = 100;
 
   //only apply special sort if using primary export, as we know the necessary fields will exist
-  if ( $_POST['exportOption'] == 1 ) {
+  if ($_POST['exportOption'] == 1) {
     $query = "
       SELECT *
       FROM $exportTempTable
@@ -221,7 +352,7 @@ function nyss_export_civicrm_export( $exportTempTable, $headerRows, $sqlColumns,
   }
 
   //5703 remove some activity fields
-  if ( $exportMode == CRM_Export_Form_Select::ACTIVITY_EXPORT &&
+  if ($exportMode == CRM_Export_Form_Select::ACTIVITY_EXPORT &&
     $_POST['exportOption'] == 1
   ) {
     $rm = array(
@@ -235,13 +366,13 @@ function nyss_export_civicrm_export( $exportTempTable, $headerRows, $sqlColumns,
       'Campaign Title',
       'Engagement Index',
     );
-    foreach ( $headerRows as $key => $headerRow ) {
-      if ( in_array( $headerRow, $rm ) ) {
-        unset( $headerRows[$key] );
+    foreach ($headerRows as $key => $headerRow) {
+      if (in_array( $headerRow, $rm)) {
+        unset($headerRows[$key]);
       }
     }
-    foreach ( $rm as $rmf ) {
-      unset( $sqlColumns[$rmf] );
+    foreach ($rm as $rmf) {
+      unset($sqlColumns[$rmf]);
     }
   }//end activity mods
 
@@ -249,17 +380,17 @@ function nyss_export_civicrm_export( $exportTempTable, $headerRows, $sqlColumns,
     $limitQuery = $query . "
       LIMIT $offset, $limit
     ";
-    $dao = CRM_Core_DAO::executeQuery( $limitQuery );
+    $dao = CRM_Core_DAO::executeQuery($limitQuery);
 
-    if ( $dao->N <= 0 ) {
+    if ($dao->N <= 0) {
       break;
     }
 
     $componentDetails = array( );
-    while ( $dao->fetch( ) ) {
-      $row = array( );
+    while ($dao->fetch()) {
+      $row = array();
 
-      foreach ( $sqlColumns as $column => $dontCare ) {
+      foreach ($sqlColumns as $column => $dontCare) {
         //9018 apply activity details cleanup
         if (in_array($column, array('activity_details', 'case_activity_details'))) {
           $row[$column] = _cleanHTML($dao->$column);
@@ -279,7 +410,7 @@ function nyss_export_civicrm_export( $exportTempTable, $headerRows, $sqlColumns,
     $offset += $limit;
   }
 
-  CRM_Utils_System::civiExit( );
+  CRM_Utils_System::civiExit();
 
   //debug
   /*CRM_Core_Error::debug('tt', $exportTempTable);
@@ -291,9 +422,9 @@ function nyss_export_civicrm_export( $exportTempTable, $headerRows, $sqlColumns,
 }
 
 //helper to strip spaces and punctuation so we normalize comparison
-function _cleanStr( $string ) {
-  $string = preg_replace( '/[\W]+/', '', $string );
-  $string = strtolower( $string );
+function _cleanStr($string) {
+  $string = preg_replace('/[\W]+/', '', $string);
+  $string = strtolower($string);
   return $string;
 }//_cleanStr
 
@@ -310,3 +441,4 @@ function _cleanHTML($str) {
   //CRM_Core_Error::debug_var('_cleanHTML $str (after)', $str);
   return $str;
 }//_cleanStr
+

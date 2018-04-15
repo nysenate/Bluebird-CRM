@@ -51,42 +51,20 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
     $this->add( 'select', 'pdf_format_id', ts( 'Page Format' ),
       array( 0 => ts( '- default -' ) ) + CRM_Core_BAO_PdfFormat::getList( true ) );
 
-    //7582/7685 add tags
-    $contactTags = CRM_Core_BAO_Tag::getTags();
-    $tagsKW = CRM_Core_BAO_Tag::getTagsUsedFor(array( 'civicrm_contact' ), TRUE, FALSE, 296);
-    if ( $tagsKW ) {
-      foreach ( $tagsKW as $key => $keyword ) {
-        $tagsKW[$key] = '&nbsp;&nbsp;'.$keyword;
-      }
-      $contactTags = $contactTags + array ('296' => 'Keywords') + $tagsKW;
-    }
-    $tagsLP = CRM_Core_BAO_Tag::getTagsUsedFor(array( 'civicrm_contact' ), TRUE, FALSE, 292);
-    if ( $tagsLP ) {
-      foreach ( $tagsLP as $key => $lp ) {
-        $tagsLP[$key] = '&nbsp;&nbsp;'.$lp;
-      }
-      $contactTags = $contactTags + array ('292' => 'Legislative Positions') + $tagsLP;
+    //7582/7685/11831 add tags
+    $tags = CRM_Core_BAO_Tag::getColorTags('civicrm_contact');
+    if (!empty($tags)) {
+      $this->add('select2', 'tag', ts('Tag(s)'), $tags, FALSE, array('class' => 'huge', 'placeholder' => ts('- select -'), 'multiple' => TRUE));
     }
 
-    if ($contactTags) {
-      $this->add('select', 'contact_tags', ts('Tags'), $contactTags, FALSE,
-        array('id' => 'contact_tags', 'multiple' => 'multiple', 'title' => ts('- select -'))
-      );
+    // build tag widget
+    $parentNames = CRM_Core_BAO_Tag::getTagSet('civicrm_contact');
+    foreach ($parentNames as $k => $name) {
+      if (!in_array($name, array('Keywords', 'Positions'))) {
+        unset($parentNames[$k]);
+      }
     }
-
-    //7352
-    /*$groups = CRM_Core_PseudoConstant::group( );
-    $this->add( 'select',
-      'groups',
-      ts( 'Groups' ),
-      $groups,
-      false,
-      array(
-        'id' => 'groups',
-        'multiple' => 'multiple',
-        'title' => ts('- select -')
-      )
-    );*/
+    CRM_Core_Form_Tag::buildQuickForm($this, $parentNames, 'civicrm_contact', NULL, TRUE);
 
     $this->add('checkbox', 'merge_house', 'Merge Households? (CSV export only)');
 
@@ -108,13 +86,13 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
       )
     );
 
-    $this->addFormRule( array( 'CRM_Logging_Form_ProofingReport', 'formRule' ), $this );
+    $this->addFormRule(array('CRM_Logging_Form_ProofingReport', 'formRule'), $this);
   }
     
   /**
    * Set default values
    */
-  function setDefaultValues( ) {
+  function setDefaultValues() {
     $defaults = array(
       'year' => date('Y'),
       'pdf_format_id' => 1895,
@@ -136,9 +114,9 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
   static function formRule( $fields, $files, $self )
   {
     //CRM_Core_Error::debug_var('fields',$fields);
-    $errors = array( );
+    $errors = array();
 
-    if ( empty($fields['jobID']) &&
+    if (empty($fields['jobID']) &&
       empty($fields['alteredBy']) &&
       empty($fields['start_date']) &&
       empty($fields['end_date'])
@@ -146,7 +124,7 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
       $errors['jobID'] = ts('You must select a Job ID or Altered By value, and date field to run this report.');
     }
 
-    if ( empty($fields['start_date']) ) {
+    if (empty($fields['start_date'])) {
       $errors['start_date'] = 'You must select a start date to run this report.';
     }
 
@@ -158,7 +136,7 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
     $days = $interval->format('%a');
     //CRM_Core_Error::debug_var('days', $days);
 
-    if ( $days > 180 ) {
+    if ($days > 366) {
       $errors['end_date'] = 'The date range cannot exceed 180 days. Please adjust your start and end dates to a smaller interval in order to run this report.';
     }
 
@@ -183,7 +161,6 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
     //CRM_Core_Error::debug_var('formParams', $formParams);
 
     $sqlParams = $rows = array();
-    $sqlWhere = 1;
     $startDate = $endDate = $alteredByFrom = '';
     if ($formParams['jobID']) {
       $sqlParams['job'] = "main.log_job_id = '{$formParams['jobID']}'";
@@ -201,15 +178,22 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
       $sqlParams['enddate'] = "main.log_date <= '{$endDate} 23:59:59'";
     }
 
-    if (!empty($formParams['contact_tags'])) {
-      $tagsSelected = implode(',', $formParams['contact_tags']);
-      $sqlParams['tag'] = "tag_id IN ({$tagsSelected})";
+    //handle tags
+    $tagsSelected = explode(',', CRM_Utils_Array::value('tag', $formParams, array()));
+    foreach (CRM_Utils_Array::value('contact_taglist', $formParams) as $tagSet => $tagSetList) {
+      $tagsSelected = array_merge($tagsSelected, explode(',', $tagSetList));
+    }
+    $tagsSelected = array_filter($tagsSelected);
+
+    if (!empty($tagsSelected)) {
+      $tagsSelectedList = implode(',', $tagsSelected);
+      $sqlParams['tag'] = "tag_id IN ({$tagsSelectedList})";
     }
 
     //compile WHERE clauses
     $sqlWhere = implode(' ) AND ( ', $sqlParams);
 
-    $dateNow  = date('F jS Y h:i a');
+    $dateNow = date('F jS Y h:i a');
 
     //begin construction of html
     $html  = self::_reportCSS();
@@ -271,7 +255,7 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
       JOIN {$civiDB}.civicrm_tag t
         ON main.tag_id = t.id
       $alteredByFrom
-      WHERE ( $sqlWhere )
+      WHERE ($sqlWhere)
         AND entity_table = 'civicrm_contact'
         AND main.log_action != 'Initialization'
       GROUP BY main.entity_id
@@ -280,7 +264,7 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
     CRM_Core_DAO::executeQuery($query);
 
     //if no tag option, look for changes to contacts
-    if (empty($formParams['contact_tags'])) {
+    if (empty($tagsSelected)) {
       //contacts
       $query = "
         INSERT IGNORE INTO {$tmpChgProof}
@@ -305,7 +289,7 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
     unset($sqlParams2['tag']);
     $sqlWhere2 = implode(' ) AND ( ', $sqlParams2);
 
-    if (empty($formParams['contact_tags'])) {
+    if (empty($tagsSelected)) {
       $query = "
         INSERT INTO {$tmpChgProof}
         SELECT main.contact_id as id,
@@ -375,14 +359,14 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
 
       //address block
       $address = array();
-      if ( !empty($cDetails['street_address']) ) {
+      if (!empty($cDetails['street_address'])) {
         $address[] = $cDetails['street_address'];
       }
-      if ( !empty($cDetails['supplemental_address_1']) ) {
+      if (!empty($cDetails['supplemental_address_1'])) {
         $address[] = $cDetails['supplemental_address_1'];
       }
-      if ( !empty($cDetails['city']) || !empty($cDetails['postal_code']) ) {
-        $postSuffix = ( $cDetails['postal_code_suffix'] ) ? '-'.$cDetails['postal_code_suffix'] : '';
+      if (!empty($cDetails['city']) || !empty($cDetails['postal_code'])) {
+        $postSuffix = ($cDetails['postal_code_suffix']) ? '-'.$cDetails['postal_code_suffix'] : '';
         $address[] = $cDetails['city'].', '
           .$cDetails['state_province'].' '
           .$cDetails['postal_code'].$postSuffix;
@@ -391,7 +375,7 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
 
       //gender/dob/phone block
       $gdp = array();
-      if ( !empty($cDetails['gender']) ) {
+      if (!empty($cDetails['gender'])) {
         $gdp[] = $cDetails['gender'];
       }
       if ( isset($cDetails['birth_date']) && !empty($cDetails['birth_date']) ) {
@@ -423,7 +407,7 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
       $html .= "
         <tr>
           <td>{$dao->logDate}</td>
-          <td>{$cDetails['display_name']}&nbsp;</td>
+          <td><a href='/civicrm/contact/view?reset=1&cid={$dao->id}' target='_blank'>{$cDetails['display_name']}</a></td>
           <td>{$addressHTML}&nbsp;</td>
           <td>{$gdpHTML}&nbsp;</td>
           <td>{$cDetails['email']}&nbsp;</td>

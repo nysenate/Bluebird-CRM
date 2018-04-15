@@ -1,5 +1,6 @@
 CRM.$(function($) {
-  var inboxType = CRM.vars.NYSS.inboxType;
+  var inboxType = CRM.vars.NYSS.inboxType,
+      refreshTimer = null;
 
   //redraw table when range filter changes
   CRM.$('#range_filter').change(function(){
@@ -7,8 +8,15 @@ CRM.$(function($) {
   });
 
   //redraw table when search filter triggered
-  CRM.$('#search_filter').keypress(function(){
-    refreshList(inboxType);
+  CRM.$('#search_filter').keyup(function (e) {
+    if (e.key.length == 1 || e.key == 'Backspace') {
+      if (refreshTimer) {
+        window.clearTimeout(refreshTimer);
+      }
+      refreshTimer = window.setTimeout(function () {
+        refreshList(inboxType);
+      }, 250);
+    }
   });
 
   //select all action
