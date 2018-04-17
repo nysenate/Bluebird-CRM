@@ -87,8 +87,15 @@ class CRM_NYSS_Inbox_BAO_Inbox {
    */
   static function getBlacklistAddresses() {
     $bbconfig = get_bluebird_instance_config();
-    $blacklist_cfg = isset($bbconfig['imap.sender.blacklist']) ? $bbconfig['imap.sender.blacklist'] : '';
-    return preg_split('/[\s,]+/', $blacklist_cfg, null, PREG_SPLIT_NO_EMPTY) ?: [];
+    $blacklist_cfg = [];
+    if (isset($bbconfig['imap.sender.blacklist_file'])) {
+      $fn = $bbconfig['imap.sender.blacklist_file'];
+      if (file_exists($fn)) {
+        $fn_read = file($fn, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        $blacklist_cfg = $fn_read ? $fn_read : [];
+      }
+    }
+    return $blacklist_cfg;
   }
 
   /**
