@@ -15,19 +15,19 @@ class CRM_NYSS_Inbox_BAO_Inbox {
    * add common resources
    */
   static function addResources($type = NULL) {
-    CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.inbox', 'js/inbox.js');
     CRM_Core_Resources::singleton()->addStyleFile('gov.nysenate.inbox', 'css/inbox.css');
-
-    //pass type as js var
-    CRM_Core_Resources::singleton()->addVars('NYSS', array('inboxType' => $type));
 
     //add type-specific resources
     switch ($type) {
       case 'unmatched':
+        CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.inbox', 'js/inbox.js');
         CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.inbox', 'js/inbox_unmatched.js');
+        CRM_Core_Resources::singleton()->addVars('NYSS', array('inboxType' => $type));
         break;
       case 'matched':
+        CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.inbox', 'js/inbox.js');
         CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.inbox', 'js/inbox_matched.js');
+        CRM_Core_Resources::singleton()->addVars('NYSS', array('inboxType' => $type));
         break;
       case 'process':
         CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.inbox', 'js/inbox_process.js');
