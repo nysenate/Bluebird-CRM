@@ -157,9 +157,17 @@ div.description {
   color: white;
   cursor: pointer;
 }
+.found.aggregator_email {
+  background-color: #aa0000;
+  color: #ffff00;
+  text-decoration: line-through;
+}
 .found:hover {
   background: #31546F;
   border: 1px solid #A0A0A0;
+}
+.found.aggregator_email:hover {
+  background-color:#ff0000;
 }
 
 /*name/zip/phone highlighting*/

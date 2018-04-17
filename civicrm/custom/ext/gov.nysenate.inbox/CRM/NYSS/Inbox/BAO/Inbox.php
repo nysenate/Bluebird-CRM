@@ -81,6 +81,17 @@ class CRM_NYSS_Inbox_BAO_Inbox {
   }
 
   /**
+   * Reads the Bluebird config file for the list of blacklist addresses to
+   * ignore during automated matching.
+   * @return array[]|false|string[]
+   */
+  static function getBlacklistAddresses() {
+    $bbconfig = get_bluebird_instance_config();
+    $blacklist_cfg = isset($bbconfig['imap.sender.blacklist']) ? $bbconfig['imap.sender.blacklist'] : '';
+    return preg_split('/[\s,]+/', $blacklist_cfg, null, PREG_SPLIT_NO_EMPTY) ?: [];
+  }
+
+  /**
    * @param $id
    * @return array
    *
@@ -949,6 +960,10 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     preg_match_all('/[\w\.\-\+]+@[a-z\d\-]+(\.[a-z\d\-]+)*/i', $text, $emails);
     $res['emails'] = array_unique($emails[0]);
 
+    // Isolate blacklist senders.
+    $res['blacklist'] = self::getBlacklistAddresses();
+    $res['emails'] = array_values(array_diff($res['emails'], $res['blacklist']));
+
     // Find possible phone numbers
     preg_match_all('/([(]\d{3}[)] *|\d{3}[\-\.\ ])?\d{3}[\-\.]\d{4}/', $text, $phones);
     $res['phones'] = array_unique($phones[0]);
@@ -996,6 +1011,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     //file_put_contents("/tmp/inbound_email/items", print_r($items, true));
     $itemMap = array(
       'emails' => array('class' => 'email_address', 'text' => 'email'),
+      'blacklist' => array('class' => 'aggregator_email', 'text' => 'aggregator email'),
       'phones' => array('class' => 'phone', 'text' => 'phone number'),
       'addrs' => array('class' => 'zip', 'text' => 'city/state/zip'),
       'names' => array('class' => 'name', 'text' => 'name')
@@ -1009,7 +1025,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         continue;
       }
 
-      if ($itemType == 'emails' || $itemType == 'phones') {
+      if (in_array($itemType, ['emails', 'blacklist', 'phones'])) {
         $re = implode('###', $itemList);
         $re = preg_quote($re);
         $re = '/'.preg_replace('/###/', '|', $re).'/';

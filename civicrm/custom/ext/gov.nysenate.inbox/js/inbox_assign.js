@@ -64,4 +64,19 @@ CRM.$(function($) {
       //TODO if we have more than one match, how do we pass selection?...
     }
   });
+
+  $('span.aggregator_email').click(function(){
+    if ($('#match-emails div.match-details-email-row').length === 1) {
+      var email = $(this).text(),
+        msg = "The email address " + email + " has been flagged as belonging to a public action entity.  This is not a constituent's email address.<br />Are you sure you want to add this email address to the consitutent record?",
+        options = { message: msg };
+      CRM.confirm(options)
+        .on('crmConfirm:yes', function() {
+          $('.match-details input[type=text]').val(email);
+        });
+    }
+    else {
+      //TODO if we have more than one match, how do we pass selection?...
+    }
+  });
 });
