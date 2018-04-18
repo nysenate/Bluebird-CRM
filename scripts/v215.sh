@@ -27,8 +27,6 @@ if ! $readConfig --instance $instance --quiet; then
   exit 1
 fi
 
-app_rootdir=`$readConfig --ig $instance app.rootdir` || app_rootdir="$DEFAULT_APP_ROOTDIR"
-
 ## 11864
 echo "$prog: upgrade Drupal"
 $drush $instance updb -y -q
