@@ -13,8 +13,8 @@ drupal/data
 .settings
 .idea
 
-#bluebird.cfg at root is installation specific
-bluebird.cfg*
+# Config files (ending in .cfg) at the root level are installation specific.
+/*.cfg
 
 #user custom
 local/*
