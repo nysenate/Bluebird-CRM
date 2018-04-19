@@ -184,23 +184,40 @@ div.description {
   background: #477AA2;
 }
 .found.phone {
-  background: #32333C;
+  background: #aaaa00;
 }
 .found.phone:hover {
-  background: #32333C;
+  background: #ffff00;
+  color: #000000;
 }
 
 /*when viewing existing contacts, reset name/zip/phone*/
 .CRM_NYSS_Inbox_Form_AssignContact .found.name,
 .CRM_NYSS_Inbox_Form_AssignContact .found.name:hover,
 .CRM_NYSS_Inbox_Form_AssignContact .found.zip,
-.CRM_NYSS_Inbox_Form_AssignContact .found.zip:hover,
-.CRM_NYSS_Inbox_Form_AssignContact .found.phone,
-.CRM_NYSS_Inbox_Form_AssignContact .found.phone:hover {
+.CRM_NYSS_Inbox_Form_AssignContact .found.zip:hover {
   background: none;
   color: black;
   border: none;
   padding: 0;
   margin: 0;
   cursor: auto;
+}
+
+div.crm-section-trick_autofocus {
+  visibility: hidden;
+  height: 0;
+}
+div.crm-section-matches {
+  clear: both;
+}
+.match-details-email-row .content.match-details {
+  display: inline-block;
+  margin-left: 2%;
+}
+#match-emails .match-details input.text-input-phone[type=text] {
+  margin-left: 2em;
+}
+#match-emails .match-details input[type=text] {
+  margin: 0;
 }
