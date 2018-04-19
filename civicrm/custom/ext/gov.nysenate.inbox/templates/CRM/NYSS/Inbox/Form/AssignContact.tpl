@@ -3,7 +3,7 @@
 
 {* FIELD EXAMPLE: OPTION 1 (AUTOMATIC LAYOUT) *}
 {foreach from=$elementNames item=elementName}
-  <div class="crm-section">
+  <div class="crm-section crm-section-{$elementName}">
     <div class="label">{$form.$elementName.label}</div>
     <div class="content">{$form.$elementName.html}</div>
     <div class="clear"></div>

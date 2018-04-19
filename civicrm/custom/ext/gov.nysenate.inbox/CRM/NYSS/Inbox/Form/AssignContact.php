@@ -80,35 +80,38 @@ class CRM_NYSS_Inbox_Form_AssignContact extends CRM_Core_Form {
     $response = CRM_NYSS_Inbox_BAO_Inbox::assignMessage($values['id'], explode(',', $values['matches']));
     //Civi::log()->debug('AssignContact postProcess', array('$response' => $response));
 
-    //determine if we need to update the email address
+    // determine if we need to update the email address or phone.
     foreach (explode(',', $values['matches']) as $matchId) {
-      $email = CRM_Utils_Array::value('email-'.$matchId, $_REQUEST);
-      $emailOrig = CRM_Utils_Array::value('emailorig-'.$matchId, $_REQUEST);
-
-      if ($email != $emailOrig) {
-        try {
-          if (!empty($email)) {
-            civicrm_api3('email', 'create', [
-              'contact_id' => $matchId,
-              'email' => $email,
-              'is_primary' => TRUE,
-            ]);
-          }
-          else {
-            //allow an empty value to delete existing email record
-            $primaryEmail = civicrm_api3('email', 'getsingle', array(
-              'contact_id' => $matchId,
-              'is_primary' => TRUE,
-            ));
-
-            if ($primaryEmail['email'] == $emailOrig) {
-              civicrm_api3('email', 'delete', array(
-                'id' => $primaryEmail['id'],
-              ));
+      foreach (['email','phone'] as $type) {
+        $new_val = CRM_Utils_Array::value("{$type}-" . $matchId, $_REQUEST);
+        $orig_val = CRM_Utils_Array::value("{$type}orig-" . $matchId, $_REQUEST);
+        if ($new_val != $orig_val) {
+          try {
+            if (!empty($new_val)) {
+              $result = civicrm_api3($type, 'create', [
+                'contact_id' => $matchId,
+                $type => $new_val,
+                'is_primary' => TRUE,
+                'location_type_id' => "Home",
+              ]);
+              //Civi::log()->debug("AssignContact Create type=$type response", array('$result' => $result));
+            }
+            else {
+              //allow an empty value to delete existing email record
+              $primary = civicrm_api3($type, 'getsingle', [
+                'contact_id' => $matchId,
+                'is_primary' => TRUE,
+              ]);
+              if ($primary[$type] == $orig_val) {
+                civicrm_api3($type, 'delete', [
+                  'id' => $primary['id'],
+                ]);
+              }
             }
           }
+          catch (CiviCRM_API3_Exception $e) {
+          }
         }
-        catch (CiviCRM_API3_Exception $e) {}
       }
     }
 

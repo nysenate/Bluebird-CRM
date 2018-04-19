@@ -811,33 +811,37 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       //if working with a single contact, check if email should be updated
       if (!$values['is_multiple']) {
         $matchId = (!empty($values['assignee'])) ? $values['assignee'] : $row['current_assignee'];
-        $email = CRM_Utils_Array::value('email-'.$matchId, $_REQUEST);
-        $emailOrig = CRM_Utils_Array::value('emailorig-'.$matchId, $_REQUEST);
+        foreach (['phone', 'email'] as $type) {
+          $new_val = CRM_Utils_Array::value("{$type}-" . $matchId, $_REQUEST);
+          $orig_val = CRM_Utils_Array::value("{$type}orig-" . $matchId, $_REQUEST);
 
-        if ($email != $emailOrig) {
-          try {
-            if (!empty($email)) {
-              civicrm_api3('email', 'create', [
-                'contact_id' => $matchId,
-                'email' => $email,
-                'is_primary' => TRUE,
-              ]);
-            }
-            else {
-              //allow an empty value to delete existing email record
-              $primaryEmail = civicrm_api3('email', 'getsingle', array(
-                'contact_id' => $matchId,
-                'is_primary' => TRUE,
-              ));
+          if ($new_val != $orig_val) {
+            try {
+              if (!empty($new_val)) {
+                civicrm_api3($type, 'create', [
+                  'contact_id' => $matchId,
+                  $type => $new_val,
+                  'is_primary' => TRUE,
+                  'location_type_id' => "Home",
+                ]);
+              }
+              else {
+                //allow an empty value to delete existing email record
+                $primary = civicrm_api3($type, 'getsingle', [
+                  'contact_id' => $matchId,
+                  'is_primary' => TRUE,
+                ]);
 
-              if ($primaryEmail['email'] == $emailOrig) {
-                civicrm_api3('email', 'delete', array(
-                  'id' => $primaryEmail['id'],
-                ));
+                if ($primary[$type] == $orig_val) {
+                  civicrm_api3($type, 'delete', [
+                    'id' => $primaryEmail['id'],
+                  ]);
+                }
               }
             }
+            catch (CiviCRM_API3_Exception $e) {
+            }
           }
-          catch (CiviCRM_API3_Exception $e) {}
         }
       }
     }
