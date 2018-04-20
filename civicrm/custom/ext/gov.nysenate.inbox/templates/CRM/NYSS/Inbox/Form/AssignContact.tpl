@@ -37,7 +37,7 @@
       <div class="clear"></div>
     </div>
     <div class="crm-section click-message">
-      Click on an email address to populate the email fields above.
+      Click on an email address and/or phone number to populate the corresponding fields above.
     </div>
     <div class="crm-section">
       <div class="message-body">{$details.body}</div>
