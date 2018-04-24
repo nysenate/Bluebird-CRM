@@ -32,7 +32,7 @@
 <br />
 <table>
   <tr class="columnheader">
-{if $id}
+{if $id OR $customSearchID}{*NYSS dev/core#70*}
   {foreach from=$columnHeaders item=header}
      <th>{$header}</th>
   {/foreach}
@@ -61,12 +61,17 @@
 {foreach from=$rows item=row}
     <tr class="{cycle values="odd-row,even-row"}">
 {if $id}
-        <td>{$row.sort_name}</td>
-         {foreach from=$row item=value key=key}
-           {if ($key neq "checkbox") and ($key neq "action") and ($key neq "contact_type") and ($key neq "status") and ($key neq "contact_id") and ($key neq "sort_name")}
-              <td>{$value}</td>
-           {/if}
-         {/foreach}
+  {*NYSS dev/core#70*}
+  <td>{$row.sort_name}</td>
+  {foreach from=$row item=value key=key}
+    {if ($key neq "checkbox") and ($key neq "action") and ($key neq "contact_type") and ($key neq "status") and ($key neq "contact_id") and ($key neq "sort_name")}
+      <td>{$value}</td>
+    {/if}
+  {/foreach}
+{elseif $customSearchID}
+  {foreach from=$columnHeaders item=header key=name}
+    <td>{$row.$name}</td>
+  {/foreach}
 
 {else}
         <td>{$row.sort_name}</td>
