@@ -10,7 +10,7 @@
   </div>
 {/foreach}
 
-<div class="crm-section" id="match-emails"></div>
+<div class="crm-section" id="matched-contacts"></div>
 
 {*display message*}
 <div class="message-details-wrapper">
@@ -35,9 +35,6 @@
       <div class="label">Forwarded Date:</div>
       <div class="content">{$details.updated_date}</div>
       <div class="clear"></div>
-    </div>
-    <div class="crm-section click-message">
-      Click on an email address and/or phone number to populate the corresponding fields above.
     </div>
     <div class="crm-section">
       <div class="message-body">{$details.body}</div>

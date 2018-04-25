@@ -37,7 +37,7 @@ a.button.cancel {
 .crm-container table.crm-table-group-summary {
   border: none;
 }
-.crm-container #match-emails .crm-tooltip-wrapper {
+.crm-container #matched-contacts .crm-tooltip-wrapper {
   left: -16px;
 }
 
@@ -66,14 +66,15 @@ a.button.cancel {
 .multi {
   background-color: #468847;
 }
-.match-details {
-  font-size: 90%;
-}
-.match-details-email-row {
+.match-details-row {
   border-bottom: 1px solid #cccccc;
+  padding-bottom: .75em;
 }
-.match-details-email-row .label {
-  padding-top: 4px;
+.match-details-row:last-child {
+  border-bottom: none;
+}
+.match-details-row .label {
+  padding-top: 3px;
 }
 .email_address {
   cursor: pointer;
@@ -211,13 +212,34 @@ div.crm-section-trick_autofocus {
 div.crm-section-matches {
   clear: both;
 }
-.match-details-email-row .content.match-details {
+.match-details-row .content.match-details {
   display: inline-block;
   margin-left: 2%;
 }
-#match-emails .match-details input.text-input-phone[type=text] {
-  margin-left: 2em;
+.match-details-row a.crm-summary-link {
+  margin-right: .75em;
 }
-#match-emails .match-details input[type=text] {
+#matched-contacts .match-details input[type=text] {
   margin: 0;
+}
+#matched-contacts {
+  font-size: 90%;
+}
+#process-reassign i.crm-i:before {
+  font-size: 1.75em;
+  margin-right: .4em;
+  display: inline-block;
+}
+#process-reassign label[for="assignee"] {
+  line-height: 1.9em;
+}
+#process-reassign .match-details-row .match-details {
+  display: inline-block;
+  margin-right: 2em;
+}
+#process-reassign .disabled-text-input {
+  display: inline-block;
+  border: 1px solid #dddddd;
+  color: #7f7f7f;
+  padding: .2em 1.5em .2em .2em;
 }
