@@ -6,7 +6,7 @@ CRM.$(function ($) {
       url = CRM.url("civicrm/contact/view", {reset: 1, cid: cid}),
       summopt = {reset: 1, gid: profile, id: cid, snippet: 4},
       summurl = CRM.url("civicrm/profile/view", summopt),
-      row = $('<div class="match-details-email-row"></div>')
+      row = $('<div class="match-details-row"></div>')
         .attr('id', "cid-" + cid),
       iconlink = $('<a class="crm-summary-link"></a>')
         .attr('href', summurl)
@@ -14,15 +14,19 @@ CRM.$(function ($) {
       namelink = $('<a target="_blank"></a>')
         .attr('href', url)
         .html(r.sort_name),
-      label = $('<div class="label match-sort_name match-details"></div>')
-        .append(iconlink)
-        .append(namelink),
+      label = $('<div class="match-label label">Matched To:</div>'),
       ctnr = $('<div class="match-details content"></div>'),
       clear = $('<div class="clear"></div>'),
       ctrl = null,
-      d = null;
+      d = null,
+      icons = {email: 'fa-envelope-o', phone: 'fa-phone'};
 
     row.append(label);
+
+    d = ctnr.clone().addClass('match-details-sort_name')
+      .append(iconlink)
+      .append(namelink);
+    row.append(d);
 
     ['email', 'phone'].forEach(function (v) {
       ctrl = $('<input type="text" />')
@@ -32,10 +36,13 @@ CRM.$(function ($) {
       if (r[v]) {
         ctrl.attr('value', r[v]);
       }
-      d = ctnr.clone().append(ctrl);
+      d = ctnr.clone().addClass('match-details-' + v).append(ctrl);
       d.append(ctrl.clone()
         .attr('name', v + 'orig-' + cid)
         .attr('type', 'hidden'));
+      if (icons.hasOwnProperty(v)) {
+        d.prepend($('<i></i>').addClass('crm-i ' + icons[v]));
+      }
       row.append(d);
     });
 
@@ -53,15 +60,13 @@ CRM.$(function ($) {
       if (id.length > 0 && $('div#cid-' + id).length === 0) {
         var contact = CRM.api3('contact', 'getsingle', {id: id})
           .done(function (result) {
-            $('div#match-emails').append(addDetailRow(result));
-            var fn = $('.match-details-email-row').length ? 'show' : 'hide';
-            $('.click-message')[fn]();
+            $('div#matched-contacts').append(addDetailRow(result));
           });
       }
     }
 
     //account for remove of specific values
-    $('div.match-details-email-row').each(function () {
+    $('div.match-details-row').each(function () {
       var id = $(this).prop('id').replace('cid-', '');
       if ($.inArray(id, ids) === -1) {
         $('div#cid-' + id).remove();
@@ -70,7 +75,7 @@ CRM.$(function ($) {
 
     //account for removal of all matched contacts (cleanup edge case)
     if (ids.length === 0 || (ids.length === 1 && ids[0] === '')) {
-      $('div.match-details-email-row').remove();
+      $('div.match-details-row').remove();
     }
 
   }
