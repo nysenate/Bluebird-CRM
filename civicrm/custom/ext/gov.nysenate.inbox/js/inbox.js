@@ -3,12 +3,12 @@ CRM.$(function($) {
       refreshTimer = null;
 
   //redraw table when range filter changes
-  CRM.$('#range_filter').change(function(){
+  $('#range_filter').change(function(){
     refreshList(inboxType);
   });
 
   //redraw table when search filter triggered
-  CRM.$('#search_filter').keyup(function (e) {
+  $('#search_filter').keyup(function (e) {
     if (e.key.length == 1 || e.key == 'Backspace') {
       if (refreshTimer) {
         window.clearTimeout(refreshTimer);
@@ -57,8 +57,10 @@ CRM.$(function($) {
     });
   });
 
-  $('.inbox-delete, .inbox-assign-contact, .inbox-clear-contact, .inbox-process-contact')
-    .on('crmPopupFormSuccess.crmLivePage', CRM.refreshParent);
+  $('body')
+    .on('crmPopupFormSuccess', '.inbox-delete, .inbox-assign-contact, .inbox-clear-contact, .inbox-process-contact', function() {
+      refreshList(inboxType);
+    });
 
   /**
    *
