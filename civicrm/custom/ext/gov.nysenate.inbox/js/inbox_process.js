@@ -11,31 +11,100 @@ CRM.$(function($) {
     loadEmails();
   });
 
-  $('span.email_address').click(function(){
-    if ($('#match-emails div.match-details').length === 1) {
-      var email = $(this).text();
-      $('.match-details input[type=text]').val(email);
-    }
-  });
+  function addDetailRow(r) {
+    var cid = r.contact_id,
+      ctnr = $('<div class="match-details-row"></div>')
+        .attr('id', 'cid-' + cid),
+      ctrl = null,
+      d = null,
+      icons = {email: 'fa-envelope-o', phone: 'fa-phone'};
+
+    ['email', 'phone'].forEach(function (v) {
+      d = $('<div></div>').addClass('match-details match-details-' + v);
+      if (icons.hasOwnProperty(v)) {
+        d.prepend($('<i></i>').addClass('crm-i ' + icons[v]));
+      }
+      ctrl = $('<input type="text" />')
+        .addClass('text-input-' + v)
+        .attr('name', v + '-' + cid)
+        .attr('placeholder', v);
+      if (r[v]) {
+        ctrl.attr('value', r[v]);
+      }
+      d.append(ctrl);
+      d.append(ctrl.clone()
+        .attr('name', v + 'orig-' + cid)
+        .attr('type', 'hidden'));
+
+      ctnr.append(d);
+    });
+
+    return ctnr;
+
+  }
 
   function loadEmails() {
-    var id = $('#assignee').val();
-    if (!id) {
-      id = $('input[name=matched_id]').val();
+    var id = $('#assignee').val(),
+      orig_id = $('input[name=matched_id]').val(),
+      new_assign = (typeof id !== undefined && id.length > 0);
+
+    // If a new assignment is not detected, we will be pulling the row
+    // for the original/current assignee.  We'll need to remove the
+    // existing row.
+    if (!new_assign) {
+      id = orig_id;
+      $('#current-assignee .match-details-row').remove();
     }
 
+    // remove any new match details from previous searches.
+    $('#matched-contacts .match-details-row').remove();
+
     if (typeof id !== 'undefined' && id.length > 0) {
-      //remove existing value first
-      $('div.match-details').remove();
       var contact = CRM.api3('contact', 'getsingle', {id: id})
         .done(function (result) {
+          // If there is a new assignment, replace the current assignee's form
+          // controls with "disabled" text boxes.
+          if (new_assign) {
+            ['email','phone'].forEach(function(vv) {
+              var orig_val = $('#current-assignee input[name=' + vv + 'orig-' + orig_id + ']').val(),
+                replaceDiv = $('<div class="disabled-text-input"></div>').html(orig_val);
+              $('#current-assignee input[name=' + vv + '-' + orig_id + ']').replaceWith(replaceDiv);
+            });
+          }
+
           //console.log(result);
-          $('div#match-emails .content').append('<div id="cid-' + id +
-            '" class="match-details"><input type="text" name="email-' + id + '" value="' + result.email +
-            '"><input type="hidden" name="emailorig-' + id + '" value="' + result.email + '"></div>');
+          var selector = new_assign ? '#matched-contacts' : '#current-assignee';
+          $(selector + ' .content').append(addDetailRow(result));
         });
+
     }
   }
+
+  // Click handler for phone numbers, populates the selected contacts.
+  $('span.found.phone').click(function () {
+    var pn = $(this).text();
+    $('.match-details input.text-input-phone[type=text]').val(pn);
+  });
+
+  // Click handler for normal email addresses, populates the selected contacts.
+  $('span.email_address').click(function () {
+    var email = $(this).text();
+    $('.match-details input.text-input-email[type=text]').val(email);
+  });
+
+  // Click handler for aggregator emails, populates only after confirmation.
+  $('span.aggregator_email').click(function () {
+    var email = $(this).text(),
+      msg = "The email address " + email + " has been flagged as belonging " +
+        "to a public action entity.  This is not a constituent's email " +
+        "address.<br />Are you sure you want to add this email address to the " +
+        "consitutent record?",
+      options = {message: msg};
+    CRM.confirm(options)
+      .on('crmConfirm:yes', function () {
+        $('.match-details input.text-input-email[type=text]').val(email);
+      });
+  });
 
   //tag tree
   (function($, _){

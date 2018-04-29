@@ -37,7 +37,7 @@ a.button.cancel {
 .crm-container table.crm-table-group-summary {
   border: none;
 }
-.crm-container #match-emails .crm-tooltip-wrapper {
+.crm-container #matched-contacts .crm-tooltip-wrapper {
   left: -16px;
 }
 
@@ -66,14 +66,15 @@ a.button.cancel {
 .multi {
   background-color: #468847;
 }
-.match-details {
-  font-size: 90%;
-}
-.match-details-email-row {
+.match-details-row {
   border-bottom: 1px solid #cccccc;
+  padding-bottom: .75em;
 }
-.match-details-email-row .label {
-  padding-top: 4px;
+.match-details-row:last-child {
+  border-bottom: none;
+}
+.match-details-row .label {
+  padding-top: 3px;
 }
 .email_address {
   cursor: pointer;
@@ -157,9 +158,17 @@ div.description {
   color: white;
   cursor: pointer;
 }
+.found.aggregator_email {
+  background-color: #aa0000;
+  color: #ffff00;
+  text-decoration: line-through;
+}
 .found:hover {
   background: #31546F;
   border: 1px solid #A0A0A0;
+}
+.found.aggregator_email:hover {
+  background-color:#ff0000;
 }
 
 /*name/zip/phone highlighting*/
@@ -176,23 +185,61 @@ div.description {
   background: #477AA2;
 }
 .found.phone {
-  background: #32333C;
+  background: #aaaa00;
 }
 .found.phone:hover {
-  background: #32333C;
+  background: #ffff00;
+  color: #000000;
 }
 
 /*when viewing existing contacts, reset name/zip/phone*/
 .CRM_NYSS_Inbox_Form_AssignContact .found.name,
 .CRM_NYSS_Inbox_Form_AssignContact .found.name:hover,
 .CRM_NYSS_Inbox_Form_AssignContact .found.zip,
-.CRM_NYSS_Inbox_Form_AssignContact .found.zip:hover,
-.CRM_NYSS_Inbox_Form_AssignContact .found.phone,
-.CRM_NYSS_Inbox_Form_AssignContact .found.phone:hover {
+.CRM_NYSS_Inbox_Form_AssignContact .found.zip:hover {
   background: none;
   color: black;
   border: none;
   padding: 0;
   margin: 0;
   cursor: auto;
+}
+
+div.crm-section-trick_autofocus {
+  visibility: hidden;
+  height: 0;
+}
+div.crm-section-matches {
+  clear: both;
+}
+.match-details-row .content.match-details {
+  display: inline-block;
+  margin-left: 2%;
+}
+.match-details-row a.crm-summary-link {
+  margin-right: .75em;
+}
+#matched-contacts .match-details input[type=text] {
+  margin: 0;
+}
+#matched-contacts {
+  font-size: 90%;
+}
+#process-reassign i.crm-i:before {
+  font-size: 1.75em;
+  margin-right: .4em;
+  display: inline-block;
+}
+#process-reassign label[for="assignee"] {
+  line-height: 1.9em;
+}
+#process-reassign .match-details-row .match-details {
+  display: inline-block;
+  margin-right: 2em;
+}
+#process-reassign .disabled-text-input {
+  display: inline-block;
+  border: 1px solid #dddddd;
+  color: #7f7f7f;
+  padding: .2em 1.5em .2em .2em;
 }

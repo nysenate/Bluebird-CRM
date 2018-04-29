@@ -81,6 +81,24 @@ class CRM_NYSS_Inbox_BAO_Inbox {
   }
 
   /**
+   * Reads the Bluebird config file for the list of blacklist addresses to
+   * ignore during automated matching.
+   * @return array[]|false|string[]
+   */
+  static function getBlacklistAddresses() {
+    $bbconfig = get_bluebird_instance_config();
+    $blacklist_cfg = [];
+    if (isset($bbconfig['imap.sender.blacklist_file'])) {
+      $fn = $bbconfig['imap.sender.blacklist_file'];
+      if (file_exists($fn)) {
+        $fn_read = file($fn, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        $blacklist_cfg = $fn_read ? $fn_read : [];
+      }
+    }
+    return $blacklist_cfg;
+  }
+
+  /**
    * @param $id
    * @return array
    *
@@ -793,33 +811,37 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       //if working with a single contact, check if email should be updated
       if (!$values['is_multiple']) {
         $matchId = (!empty($values['assignee'])) ? $values['assignee'] : $row['current_assignee'];
-        $email = CRM_Utils_Array::value('email-'.$matchId, $_REQUEST);
-        $emailOrig = CRM_Utils_Array::value('emailorig-'.$matchId, $_REQUEST);
+        foreach (['phone', 'email'] as $type) {
+          $new_val = CRM_Utils_Array::value("{$type}-" . $matchId, $_REQUEST);
+          $orig_val = CRM_Utils_Array::value("{$type}orig-" . $matchId, $_REQUEST);
 
-        if ($email != $emailOrig) {
-          try {
-            if (!empty($email)) {
-              civicrm_api3('email', 'create', [
-                'contact_id' => $matchId,
-                'email' => $email,
-                'is_primary' => TRUE,
-              ]);
-            }
-            else {
-              //allow an empty value to delete existing email record
-              $primaryEmail = civicrm_api3('email', 'getsingle', array(
-                'contact_id' => $matchId,
-                'is_primary' => TRUE,
-              ));
+          if ($new_val != $orig_val) {
+            try {
+              if (!empty($new_val)) {
+                civicrm_api3($type, 'create', [
+                  'contact_id' => $matchId,
+                  $type => $new_val,
+                  'is_primary' => TRUE,
+                  'location_type_id' => "Home",
+                ]);
+              }
+              else {
+                //allow an empty value to delete existing email record
+                $primary = civicrm_api3($type, 'getsingle', [
+                  'contact_id' => $matchId,
+                  'is_primary' => TRUE,
+                ]);
 
-              if ($primaryEmail['email'] == $emailOrig) {
-                civicrm_api3('email', 'delete', array(
-                  'id' => $primaryEmail['id'],
-                ));
+                if ($primary[$type] == $orig_val) {
+                  civicrm_api3($type, 'delete', [
+                    'id' => $primaryEmail['id'],
+                  ]);
+                }
               }
             }
+            catch (CiviCRM_API3_Exception $e) {
+            }
           }
-          catch (CiviCRM_API3_Exception $e) {}
         }
       }
     }
@@ -949,6 +971,10 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     preg_match_all('/[\w\.\-\+]+@[a-z\d\-]+(\.[a-z\d\-]+)*/i', $text, $emails);
     $res['emails'] = array_unique($emails[0]);
 
+    // Isolate blacklist senders.
+    $res['blacklist'] = self::getBlacklistAddresses();
+    $res['emails'] = array_values(array_diff($res['emails'], $res['blacklist']));
+
     // Find possible phone numbers
     preg_match_all('/([(]\d{3}[)] *|\d{3}[\-\.\ ])?\d{3}[\-\.]\d{4}/', $text, $phones);
     $res['phones'] = array_unique($phones[0]);
@@ -977,8 +1003,8 @@ class CRM_NYSS_Inbox_BAO_Inbox {
           WHERE given 
           LIKE '$firstName'
         ";
-        $dbres = CRM_Core_DAO::executeQuery($query);
-        if ($dbres->count_id < 1) {
+        $dbres = CRM_Core_DAO::singleValueQuery($query);
+        if ($dbres < 1) {
           unset($names[$id]);
         }
       }
@@ -996,6 +1022,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     //file_put_contents("/tmp/inbound_email/items", print_r($items, true));
     $itemMap = array(
       'emails' => array('class' => 'email_address', 'text' => 'email'),
+      'blacklist' => array('class' => 'aggregator_email', 'text' => 'aggregator email'),
       'phones' => array('class' => 'phone', 'text' => 'phone number'),
       'addrs' => array('class' => 'zip', 'text' => 'city/state/zip'),
       'names' => array('class' => 'name', 'text' => 'name')
@@ -1009,7 +1036,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         continue;
       }
 
-      if ($itemType == 'emails' || $itemType == 'phones') {
+      if (in_array($itemType, ['emails', 'blacklist', 'phones'])) {
         $re = implode('###', $itemList);
         $re = preg_quote($re);
         $re = '/'.preg_replace('/###/', '|', $re).'/';

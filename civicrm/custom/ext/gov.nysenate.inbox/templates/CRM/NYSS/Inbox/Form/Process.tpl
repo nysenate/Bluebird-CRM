@@ -10,19 +10,19 @@
     <li id='tab_process-activity'><a href='#process-activity' title='Edit Activity'>Edit Activity</a></li>
   </ul>
   <div id="process-reassign" class='ui-tabs-panel ui-widget-content ui-corner-bottom'>
+    <div class="crm-section" id="current-assignee">
+      <div class="label">Current Match{if $is_multiple}(es){/if}</div>
+      <div class="content">{if $is_multiple}{$multiple_count} Contact(s){else}{$message_details[0].details.matched_to_display}{/if}</div>
+      <div class="clear"></div>
+    </div>
     <div class="crm-section">
       <div class="label">{$form.assignee.label}</div>
       <div class="content">{$form.assignee.html}</div>
       <div class="clear"></div>
     </div>
-    <div class="crm-section">
-      <div class="label">Current Match{if $is_multiple}(es){/if}</div>
-      <div class="content">{if $is_multiple}{$multiple_count} Contact(s){else}{$message_details[0].details.matched_to_display}{/if}</div>
-      <div class="clear"></div>
-    </div>
     {if !$is_multiple}
-      <div class="crm-section" id="match-emails">
-        <div class="label">Email</div>
+      <div class="crm-section" id="matched-contacts">
+        <div class="label">&nbsp;</div>
         <div class="content"></div>
         <div class="clear"></div>
       </div>

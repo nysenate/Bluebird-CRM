@@ -3,14 +3,14 @@
 
 {* FIELD EXAMPLE: OPTION 1 (AUTOMATIC LAYOUT) *}
 {foreach from=$elementNames item=elementName}
-  <div class="crm-section">
+  <div class="crm-section crm-section-{$elementName}">
     <div class="label">{$form.$elementName.label}</div>
     <div class="content">{$form.$elementName.html}</div>
     <div class="clear"></div>
   </div>
 {/foreach}
 
-<div class="crm-section" id="match-emails"></div>
+<div class="crm-section" id="matched-contacts"></div>
 
 {*display message*}
 <div class="message-details-wrapper">
@@ -35,9 +35,6 @@
       <div class="label">Forwarded Date:</div>
       <div class="content">{$details.updated_date}</div>
       <div class="clear"></div>
-    </div>
-    <div class="crm-section click-message">
-      Click on an email address to populate the email fields above.
     </div>
     <div class="crm-section">
       <div class="message-body">{$details.body}</div>
