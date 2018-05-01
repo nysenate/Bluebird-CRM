@@ -787,7 +787,7 @@ function nyss_civihooks_civicrm_navigationMenu(&$params) {
     'attributes' => array(
       'label'      => 'Changelog Proofing Report',
       'name'       => 'Changelog Proofing Report',
-      'url'        => 'civicrm/logging/proofingreport?reset=1',
+      'url'        => 'civicrm/nyss/proofingreport?reset=1',
       'permission' => 'access CiviReport',
       'operator'   => 'AND',
       'separator'  => 0,

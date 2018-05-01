@@ -124,13 +124,6 @@
     <access_arguments>access CiviCRM</access_arguments>
   </item>
 
-  <!--5260-->
-  <item>
-    <path>civicrm/logging/proofingreport</path>
-    <page_callback>CRM_Logging_Form_ProofingReport</page_callback>
-    <access_arguments>access CiviCRM</access_arguments>
-  </item>
-
   <!--5230-->
   <item>
     <path>civicrm/dedupe/dupeaddress</path>
