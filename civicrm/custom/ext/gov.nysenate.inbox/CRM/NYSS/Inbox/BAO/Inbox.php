@@ -1003,8 +1003,8 @@ class CRM_NYSS_Inbox_BAO_Inbox {
           WHERE given 
           LIKE '$firstName'
         ";
-        $dbres = CRM_Core_DAO::executeQuery($query);
-        if ($dbres->count_id < 1) {
+        $dbres = CRM_Core_DAO::singleValueQuery($query);
+        if ($dbres < 1) {
           unset($names[$id]);
         }
       }
