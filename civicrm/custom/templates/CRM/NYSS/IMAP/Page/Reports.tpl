@@ -10,6 +10,13 @@
         <option value="365">Last Year</option>
       </select>
     </h1>
+    <div class="crm-contact-form-block-range_filter crm-left crm-margin-right">
+      {$form.range_filter.html|crmAddClass:big}
+    </div>
+    <div class="crm-contact-form-block-search crm-left crm-margin-right">
+      {$form.search_filter.html|crmAddClass:twelve}
+    </div>
+
     <div class="stats">
       <a href="#Total" class="stats_overview Total">Total<span id="total"> </span></a>
       <a href="#Unmatched" class="stats_overview Unmatched"><div class="icon mail-merge-icon mail-merge-unmatched"></div>Unmatched<span id="total_unmatched"> </span></a>
