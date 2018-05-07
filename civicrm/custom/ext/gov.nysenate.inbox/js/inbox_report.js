@@ -29,38 +29,80 @@ cj(document).ready(function () {
 
   // Set the onClick selection for the stats bar.
   cj(".stats-overview").on('click', function () {
-    var t = cj(this),
-      cl = t.attr('class'),
-      found = cl.match('stats-(matched|unmatched|cleared|deleted)');
     cj(".stats-overview").removeClass('active');
-    t.addClass('active');
-    if (found) {
-      cj('#sortable-results').DataTable().column(5).search(found[1]).draw();
+    cj(this).addClass('active');
+    setTableFilters();
+  });
+
+  // Set the onClick for adding an advanced filter.
+  cj("#advanced-filter-add-new").on('click', function (e) {
+    e.preventDefault();
+
+    var col = Number(cj("#advanced-filter-field-select option:selected").val()),
+      lbl = cj("#advanced-filter-field-select option:selected").text(),
+      term = cj('#advanced-filter-field-text').val();
+
+    if (col >= 0 && term) {
+      cj('.advanced-filter-current-item[data-col=' + col + ']').remove();
+      var new_div = cj('<div/>').addClass('advanced-filter-current-item')
+        .attr('data-col', col)
+        .attr('data-term', term)
+        .append(cj('<div/>').addClass('filter-item-label')
+          .html(lbl))
+        .append(cj('<div/>').addClass('filter-item-term')
+          .html(term))
+        .append(cj('<div/>').addClass('filter-item-remove'));
+      cj('.advanced-filter-current').append(new_div);
+      setTableFilters();
     }
-    else {
-      cj('#sortable-results').DataTable().search('').columns().search('').draw();
-    }
+  });
+
+  // Set the onClick handler for clearing an individual advanced filter.
+  cj(".advanced-filter-current").on('click', ".filter-item-remove", function (e) {
+    cj(e.target).closest('.advanced-filter-current-item').remove();
+    setTableFilters();
+  });
+
+  // Set the onClick handler for clearing all advanced filters.
+  cj("#advanced-filter-clear-all").on('click', function (e) {
+    e.preventDefault();
+    cj('.advanced-filter-current-item').remove();
+    setTableFilters();
   });
 
   // Set the default value for date range, and trigger the query.
   cj('select#date_range_relative').val('this.month').change();
 
-  // needed to format timestamps to allow sorting: make a hidden date attribute
-  // with the non-readable date (date(U)) and sort on that
-  // cj.extend(cj.fn.dataTableExt.oSort, {
-  //   "title-string-pre": function (a) {
-  //     return a.match(/data-sort="(.*?)"/)[1].toLowerCase();
-  //   },
-  //   "title-string-asc": function (a, b) {
-  //     return ((a < b) ? -1 : ((a > b) ? 1 : 0));
-  //   },
-  //   "title-string-desc": function (a, b) {
-  //     return ((a < b) ? 1 : ((a > b) ? -1 : 0));
-  //   }
-  // });
-
-
 });//end cj.ready()
+
+function setTableFilters() {
+  var stats = cj('.stats-overview.active'),
+    found = stats.length ? stats.attr('class').match('stats-(matched|unmatched|cleared|deleted)') : [],
+    advfilt = cj('.advanced-filter-current-item'),
+    table = cj('#sortable-results').DataTable();
+
+  // Reset the table's filters.
+  table.search('').columns().search('').draw();
+
+  // Add any filter from the stats bar.
+  if (found[1]) {
+    table.column(5).search(found[1]);
+  }
+
+  // Add any advanced filters.
+  if (advfilt.length) {
+    advfilt.each(function (k, v) {
+      var col = Number(v.attributes['data-col'].nodeValue),
+        term = v.attributes['data-term'].nodeValue;
+      if (col >= 0 && term) {
+        table.column(col).search(term);
+      }
+    });
+  }
+
+  // Redraw the table.
+  table.draw();
+}
 
 function validateDates() {
   var oDates = cj('input.hasDatepicker'),
@@ -232,7 +274,7 @@ function getReports() {
       var reports = data.data,
         new_body = cj('<tbody></tbody>');
 
-      console.log(data);
+      //console.log(data);
       if (!(reports.total == 0 || reports.Messages == null)) {
         cj.each(reports.Messages, function (key, value) {
           new_body.append(constructRow(value));
@@ -277,5 +319,4 @@ function ReportTable() {
       "sEmptyTable": "No records found"
     },
   });
-  //new FixedHeader(oTable, {zTop:'auto'});
 }
