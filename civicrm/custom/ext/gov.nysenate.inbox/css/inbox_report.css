@@ -69,8 +69,11 @@ a.stats-overview span {
   Advanced filter
  */
 .advanced-filter-container {
-  padding: 0 1em;
+  padding: 1em 1em;
   margin: 0 auto 1em;
+  border: 1px solid #cccccc;
+  border-radius: 1em;
+  max-width: 95%;
 }
 .advanced-filter-switch {
   cursor: pointer;
@@ -128,4 +131,24 @@ a.stats-overview span {
   min-width: 150px;
   min-height: 40px;
   padding: 10px;
+}
+.filter-item-remove {
+  border: 1.5px solid #777777;
+  line-height: 1em;
+  padding: .1em;
+  border-radius: .5em;
+  text-align: center;
+  cursor: pointer;
+}
+.filter-item-remove:after {
+  display:inline-block;
+  width:1em;
+  height:1em;
+  font-family: FontAwesome;
+  content: '\f00d';
+  pointer-events: none;
+}
+.advanced-filter-current-item > div {
+  display: inline-block;
+  margin: 0 0 0 1em;
 }

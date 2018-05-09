@@ -16,7 +16,25 @@
   </div>
   <div class="advanced-filter-container">
     <div class="advanced-filter-switch">Advanced Filter</div>
-    <div class="advanced-filters">Not Implemented Yet</div>
+    <div class="advanced-filters">
+      <div class="advanced-filter-add">
+        <label for="advanced-filter-field-select">Choose a column:
+        <select name="advanced_filter_field_select" id="advanced-filter-field-select">
+          sender, matched to, subject, forwarded by
+          <option value="-1" disabled="disabled" selected="selected">Filter by ...</option>
+          <option value="0">Sender Info</option>
+          <option value="1">Matched To</option>
+          <option value="2">Subject</option>
+          <option value="7">Forwarded By</option>
+        </select>
+        </label>
+        <label for="advanced-filter-field-text">Search Term:
+        <input name="advanced_filter_field_text" id="advanced-filter-field-text" placeholder="Search term ..." /></label>
+        <button name="advanced_filter_add_new" id="advanced-filter-add-new" value="add">Add</button>
+        <button name="advanced_filter_clear_all" id="advanced-filter-clear-all" value="clear">Clear All</button>
+      </div>
+      <div class="advanced-filter-current"></div>
+    </div>
   </div>
   <div class="full">
     <table id="sortable-results" class="">

@@ -30,17 +30,6 @@ class CRM_NYSS_IMAP_Message
     /* host */
     '((?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)/i';
 
-  private static $_html_tags_to_strip = array(
-    'ABBR','ACRONYM','ADDRESS','APPLET','AREA','A','BASE','BASEFONT',
-    'BDO','BIG','BLOCKQUOTE','BODY','BUTTON','B','CAPTION','CENTER',
-    'CITE','CODE','COL','COLGROUP','DD','DEL','DFN','DIR','DL','DT',
-    'EM','FIELDSET','FONT','FORM','FRAME','FRAMESET','H\d','HEAD',
-    'HTML','IFRAME','INPUT','INS','ISINDEX','I','KBD','LABEL','LEGEND',
-    'LI','LINK','MAP','MENU','META','NOFRAMES','NOSCRIPT','OBJECT',
-    'OL','OPTGROUP','OPTION','PARAM','PRE','P','Q','SAMP','SCRIPT',
-    'SELECT','SMALL','STRIKE','STRONG','STYLE','SUB','SUP','S','SPAN',
-    'TEXTAREA','TITLE','TT','U','UL','VAR');
-
   private $_session = null;
   private $_msgnum = 0;
   private $_uid = 0;
@@ -275,6 +264,11 @@ class CRM_NYSS_IMAP_Message
   } // findFromAddresses()
 
 
+  /*
+  ** Output the text message as simple HTML.  Newlines are converted to <br/>
+  ** tags, and email addresses that are enclosed in angle brackets are pulled
+  ** out of the brackets.
+  */
   public function mangleHTML()
   {
     // get the primary content
@@ -283,16 +277,8 @@ class CRM_NYSS_IMAP_Message
     // change newlines to <br/>
     $body = nl2br($body);
 
-    $patterns = array(
-      '/<([-\w.]+@[-\w.]+)>/i',       /* standardize email addresses */
-      '/\<p(\s*)?\/?\>/i',            /* paragraph elements */
-      '/[^(\x20-\x7F)]*/',            /* non-ascii characters */
-      '/(style|class|on[a-z]+|title|href)=(["\'])[^\2]*?\2/i', /* HTML attrs */
-      '~<\s*\bscript\b[^>]*>(.*?)<\s*\/\s*script\s*>~is',      /* script elem */
-    );
-    $replace = array ('$1', '<br /><br />', '', '', '');
-    $body = trim(preg_replace($patterns, $replace, $body));
-    return $this->_stripHTML($body);
+    // Remove angle brackets from email addresses so they don't render as HTML
+    return preg_replace('/<((mailto:)?[-\w.]+@[-\w.]+)>/', '$1', $body);
   } // mangleHTML()
 
 
@@ -385,9 +371,12 @@ class CRM_NYSS_IMAP_Message
   private function _getPrimaryContent()
   {
     if (is_array($this->_content['text'])) {
-      reset($this->_content['text']);
-      $first_key = key($this->_content['text']);
-      return $this->_content['text'][$first_key];
+      if (reset($this->_content['text']) === false) {
+        return '';
+      }
+      else {
+        return current($this->_content['text']);
+      }
     }
     else {
       return '';
@@ -395,39 +384,68 @@ class CRM_NYSS_IMAP_Message
   } // _getPrimaryContent()
 
 
-  private function _stripHTML($content, $tags = null)
+  /*
+  ** Given a source string, replace all matching HTML tags with a replacement
+  ** string.
+  **
+  ** If no tags are specified, anything that looks like a tag will be matched.
+  ** Otherwise, $tags is best specified as an array of tag names.
+  */
+  private function _html_replace($str, $tags = null, $repl = '')
   {
-    if (is_null($tags)) {
-      $tags = static::$_html_tags_to_strip;
+    if ($tags === null || $tags == '') {
+      // Match anything that looks like an HTML tag.
+      $tag_pattern = '\w+';
     }
-    if (is_array($tags)) {
-      $tags = implode('|', $tags);
+    else if (is_array($tags)) {
+      // Match only the provided tag names.
+      $tag_pattern = implode('|', $tags);
     }
+    else {
+      $tag_pattern = (string)$tags;
+    }
+
     return preg_replace('%
-        # Match an opening or closing HTML 4.01 tag.
-        </?                  # Tag opening "<" delimiter.
-        (?:                  # Group for HTML 4.01 tags.
-        '.$tags.'
-        )\b                  # End group of tag name alternative.
-        (?:                  # Non-capture group for optional attribute(s).
-          \s+                # Attributes must be separated by whitespace.
-          [\w\-.:]+          # Attribute name is required for attr=value pair.
-          (?:                # Non-capture group for optional attribute value.
-            \s*=\s*          # Name and value separated by "=" and optional ws.
-            (?:              # Non-capture group for attrib value alternatives.
-              "[^"]*"        # Double quoted string.
-            | \'[^\']*\'     # Single quoted string.
-            | [\w\-.:]+      # Non-quoted attrib value can be A-Z0-9-._:
-            )                # End of attribute value alternatives.
-          )?                 # Attribute value is optional.
+      \v*                    # Preceding vertical whitespace is eliminated
+      (?:                    # Match either open/empty tag or close tag        
+        <                    # Open/Empty tag initial "<" delimiter
+        (?:                  # Group for HTML 4.01 tags
+        '.$tag_pattern.'
+        )\b                  # End group of tag name alternatives
+        (?:                  # Non-capture group for optional attribute(s)
+          \s+                # Attributes must be separated by whitespace
+          [\w\-.:]+          # Attribute name is required for attr=value pair
+          (?:                # Non-capture group for optional attribute value
+            \s*=\s*          # Name and value separated by "=" and optional ws
+            (?:              # Non-capture group for attrib value alternatives
+              "[^"]*"        # Double quoted string
+            | \'[^\']*\'     # Single quoted string
+            | [\w\-.:]+      # Non-quoted attrib value can be A-Z0-9_-.:
+            )                # End of attribute value alternatives
+          )?                 # Attribute value is optional
         )*                   # Allow zero or more attribute=value pairs
-        \s*                  # Whitespace is allowed before closing delimiter.
-        /?                   # Tag may be empty (with self-closing "/>" sequence
-        >                    # Opening tag closing ">" delimiter.
-        | <!--.*-->          # Or a (non-SGML compliant) HTML comment.
-        | <!DOCTYPE[^>]*>    # Or a DOCTYPE.
-        %six', '', (string)$content);
-  } // _stripHTML()
+        \s*                  # Whitespace is allowed before ending delimiter
+        /?                   # Empty tag indicator (such as <br />)
+        >                    # Open/Empty tag ending ">" delimiter
+      |
+        </                   # Close tag initial "</" delimiter
+        (?:
+        '.$tag_pattern.'
+        )\b
+        \s*                  # Whitespace is allowed before ending delimiter
+        >                    # Close tag ending ">" delimiter
+      )                      # End of open/empty or close tag alternatives
+      \v*                    # Trailing vertical whitespace is eliminated
+      %six', $repl, (string)$str);
+  } // _html_replace()
+
+
+  // Replace common HTML block level elements with newlines.
+  private function _block2nl($str)
+  {
+    $tags = [ 'blockquote', 'br', 'div', 'h[1-6]', 'hr', 'li', 'p' ];
+    return $this->_html_replace($str, $tags, "\n");
+  } // _block2nl()
 
 
   private function _resolveLDAPAddress($addr = '')
@@ -498,24 +516,32 @@ class CRM_NYSS_IMAP_Message
 
 
   // Decode content based on its encoding and subtype.
+  // If the content is HTML, convert it to plain text by stripping tags.
+  // Finally, trim leading and trailing whitespace.
   private function _decodeContent($content = '', $enc = ENC7BIT, $subtype = '')
   {
     $ret = (string)$content;
     switch ((int)$enc) {
       case ENCBASE64:
-        $ret = base64_decode($content);
+        $ret = base64_decode($ret);
         break; /* base-64 encoding */
       case ENCQUOTEDPRINTABLE:
-        $ret = quoted_printable_decode($content);
-        if (strcasecmp($subtype, 'HTML') == 0) {
-          $ret = html_entity_decode($content, ENT_QUOTES);
-        }
+        $ret = quoted_printable_decode($ret);
         break; /* quoted printable encoding */
       default:
         /* covers 7BIT/8BIT/BINARY/OTHER, but is essentially a pass-thru */
         break;
     }
-    return $ret;
+
+    // If HTML, convert <br\> and other block level tags to newlines, strip
+    // all remaining HTML tags, and convert entities.
+    if (strcasecmp($subtype, 'HTML') == 0) {
+      $ret = $this->_block2nl($ret);
+      $ret = strip_tags($ret);
+      $ret = html_entity_decode($ret, ENT_QUOTES);
+    }
+
+    return trim($ret);
   } // _decodeContent()
 
 
@@ -540,9 +566,11 @@ class CRM_NYSS_IMAP_Message
     else {
       // fetchPart() with no args calls fetchBody('1'), which is what we want.
       $struct = $this->getStructure();
-      $content = $this->fetchPart();
-      $content = $this->_decodeContent($content, $struct->encoding, $struct->subtype);
-      $this->_content[$label]['1'] = $content;
+      if ($struct->type === $bodyType) {
+        $content = $this->fetchPart();
+        $content = $this->_decodeContent($content, $struct->encoding, $struct->subtype);
+        $this->_content[$label]['1'] = $content;
+      }
     }
   } // _loadContent()
 
