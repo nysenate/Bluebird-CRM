@@ -121,12 +121,3 @@ _changelogproofing_civix_civicrm_angularModules($angularModules);
 function changelogproofing_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
   _changelogproofing_civix_civicrm_alterSettingsFolders($metaDataFolders);
 }
-
-function changelogproofing_civicrm_alterMenu(&$items) {
-  //Civi::log()->debug('changelogproofing_civicrm_alterMenu', array('items' => $items));
-
-  $items['civicrm/nyss/proofingreport'] = array(
-    'page_callback' => 'CRM_NYSS_ProofingReport',
-    'access_arguments' => array(array('access CiviCRM'), "and"),
-  );
-}
