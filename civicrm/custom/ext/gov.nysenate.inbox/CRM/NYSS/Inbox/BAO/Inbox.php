@@ -1,39 +1,63 @@
 <?php
 
 class CRM_NYSS_Inbox_BAO_Inbox {
+
   const STATUS_UNMATCHED = 0;
+
   const STATUS_MATCHED = 1;
+
   const STATUS_CLEARED = 7;
+
   const STATUS_DELETED = 9;
 
+  const STATUS_UNPROCESSED = 99;
+
   const DEFAULT_ACTIVITY_STATUS = 'Completed';
+
   const DEFAULT_AUTH_GROUP = 'Authorized_Forwarders';
+
   const DEFAULT_CONTACT_ID = 1;
+
 
 
   /**
    * add common resources
    */
   static function addResources($type = NULL) {
-    CRM_Core_Resources::singleton()->addStyleFile('gov.nysenate.inbox', 'css/inbox.css');
+    CRM_Core_Resources::singleton()
+      ->addStyleFile('gov.nysenate.inbox', 'css/inbox.css');
 
     //add type-specific resources
     switch ($type) {
       case 'unmatched':
-        CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.inbox', 'js/inbox.js');
-        CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.inbox', 'js/inbox_unmatched.js');
-        CRM_Core_Resources::singleton()->addVars('NYSS', array('inboxType' => $type));
+        CRM_Core_Resources::singleton()
+          ->addScriptFile('gov.nysenate.inbox', 'js/inbox.js');
+        CRM_Core_Resources::singleton()
+          ->addScriptFile('gov.nysenate.inbox', 'js/inbox_unmatched.js');
+        CRM_Core_Resources::singleton()
+          ->addVars('NYSS', ['inboxType' => $type]);
         break;
       case 'matched':
-        CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.inbox', 'js/inbox.js');
-        CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.inbox', 'js/inbox_matched.js');
-        CRM_Core_Resources::singleton()->addVars('NYSS', array('inboxType' => $type));
+        CRM_Core_Resources::singleton()
+          ->addScriptFile('gov.nysenate.inbox', 'js/inbox.js');
+        CRM_Core_Resources::singleton()
+          ->addScriptFile('gov.nysenate.inbox', 'js/inbox_matched.js');
+        CRM_Core_Resources::singleton()
+          ->addVars('NYSS', ['inboxType' => $type]);
         break;
       case 'process':
-        CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.inbox', 'js/inbox_process.js');
+        CRM_Core_Resources::singleton()
+          ->addScriptFile('gov.nysenate.inbox', 'js/inbox_process.js');
+        break;
+      case 'report':
+        CRM_Core_Resources::singleton()
+          ->addScriptFile('gov.nysenate.inbox', 'js/inbox_report.js');
+        CRM_Core_Resources::singleton()
+          ->addStyleFile('gov.nysenate.inbox', 'css/inbox_report.css');
         break;
       case 'assign':
-        CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.inbox', 'js/inbox_assign.js');
+        CRM_Core_Resources::singleton()
+          ->addScriptFile('gov.nysenate.inbox', 'js/inbox_assign.js');
         break;
       default:
     }
@@ -43,13 +67,15 @@ class CRM_NYSS_Inbox_BAO_Inbox {
    * @param $string
    * @param int $limit
    * @param string $pad
+   *
    * @return string
    *
    * trim and truncate the string to the configured length
    * also fix possible encoding issues
    */
   static function cleanText($string, $limit = 0, $pad = "...") {
-    $lib = CRM_Core_Resources::singleton()->getPath('gov.nysenate.inbox', 'incl/htmlfixer.class.php');
+    $lib = CRM_Core_Resources::singleton()
+      ->getPath('gov.nysenate.inbox', 'incl/htmlfixer.class.php');
     require_once "{$lib}";
 
     $string = trim($string);
@@ -70,7 +96,9 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     $string = trim($string);
 
     // return with no change if string is shorter than $limit
-    if(strlen($string) <= $limit) return $string;
+    if (strlen($string) <= $limit) {
+      return $string;
+    }
 
     //truncate
     if ($limit > 0) {
@@ -83,6 +111,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
   /**
    * Reads the Bluebird config file for the list of blacklist addresses to
    * ignore during automated matching.
+   *
    * @return array[]|false|string[]
    */
   static function getBlacklistAddresses() {
@@ -100,17 +129,18 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
   /**
    * @param $id
+   *
    * @return array
    *
    * get details for a single inbox polling row/contact
    */
   static function getDetails($rowId, $matched_id = '') {
-    $details = array();
-    $sqlParams = array(1 => array($rowId, 'Positive'));
+    $details = [];
+    $sqlParams = [1 => [$rowId, 'Positive']];
 
     if ($matched_id && $matched_id != 'unmatched') {
       $matched_id_sql = "AND imm.matched_id = %2";
-      $sqlParams[2] = array($matched_id, 'Positive');
+      $sqlParams[2] = [$matched_id, 'Positive'];
     }
 
     $sql = "
@@ -140,10 +170,10 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
     //if we get more than one row, we should have been passed a contact ID...
     if ($dao->N > 1) {
-      return array(
+      return [
         'is_error' => TRUE,
         'msg' => 'Unable to return a details for this message.'
-      );
+      ];
     }
 
     while ($dao->fetch()) {
@@ -152,13 +182,13 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       $matched = self::getMatched($dao->matched_id);
       $body = CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->body);
       $parsed = self::parseMessage($body);
-      $details = array(
+      $details = [
         'id' => $dao->id,
         'message_id' => $dao->message_id,
         'sender_name' => CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->sender_name),
         'sender_email' => $dao->sender_email,
         'subject' => CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->subject),
-        'subject_display' => CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->subject).$attachment,
+        'subject_display' => CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->subject) . $attachment,
         'body_raw' => $body,
         'body' => self::highlightItems($body, $parsed),
         'forwarded_by' => $dao->forwarder,
@@ -173,7 +203,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         'email_count' => $dao->email_count,
         'email_ids' => $dao->email_ids,
         'matched_ids' => $dao->matched_ids,
-      );
+      ];
     }
 
     //Civi::log()->debug('getDetails', array('$details' => $details));
@@ -188,7 +218,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
    *
    * this will be an array of arrays with a pairing: row_id, matched_id (optional)
    */
-  static function deleteMessages($ids = array()) {
+  static function deleteMessages($ids = []) {
     if (empty($ids) && !empty(CRM_Utils_Array::value('ids', $_REQUEST))) {
       $ids = CRM_Utils_Array::value('ids', $_REQUEST);
     }
@@ -196,21 +226,21 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
     $userId = CRM_Core_Session::getLoggedInContactID();
     if (empty($userId)) {
-      return array(
+      return [
         'is_error' => TRUE,
         'msg' => 'Unable to determine the logged in user in order to track the message deletion.',
-        'details' => array('ids' => $ids),
-      );
+        'details' => ['ids' => $ids],
+      ];
     }
 
     foreach ($ids as $idPair) {
       //if passed from single delete form, we get an array; if multiple-deleted, we need to split
       if (!is_array($idPair)) {
         $pair = explode('-', $idPair);
-        $idPair = array(
+        $idPair = [
           'row_id' => $pair[0],
           'matched_id' => $pair[1],
-        );
+        ];
       }
 
       //check if message has > 1 matched contact
@@ -254,10 +284,10 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       DELETE FROM nyss_inbox_messages_matched
       WHERE matched_id = %1
         AND row_id = %2
-    ", array(
-      1 => array($matchedId, 'Positive'),
-      2 => array($rowId, 'Positive'),
-    ));
+    ", [
+      1 => [$matchedId, 'Positive'],
+      2 => [$rowId, 'Positive'],
+    ]);
 
     return TRUE;
   }
@@ -268,7 +298,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
    * retrieve list of ids to clear
    * either passed to function or via $_REQUEST (AJAX)
    */
-  static function clearMessages($ids = array()) {
+  static function clearMessages($ids = []) {
     if (empty($ids) && !empty(CRM_Utils_Array::value('ids', $_REQUEST))) {
       $ids = CRM_Utils_Array::value('ids', $_REQUEST);
     }
@@ -281,14 +311,15 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         UPDATE nyss_inbox_messages
         SET status = " . self::STATUS_CLEARED . ", matcher = %1
         WHERE id IN ({$idList})
-      ", array(
-        1 => array($userId, 'Positive'),
-      ));
+      ", [
+        1 => [$userId, 'Positive'],
+      ]);
     }
   }
 
   /**
    * @param $params
+   *
    * @return array
    */
   static function getMessages($params, $status = 'unmatched') {
@@ -305,7 +336,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     //build range SQL; range = 0 -> all time (no where clause)
     $rangeSql = '';
     if ($params['range'] > 0) {
-      $rangeSql = "AND (updated_date BETWEEN '".date('Y-m-d H:i:s', strtotime('-'.$params['range'].' days'))."' AND '".date('Y-m-d H:i:s')."')";
+      $rangeSql = "AND (updated_date BETWEEN '" . date('Y-m-d H:i:s', strtotime('-' . $params['range'] . ' days')) . "' AND '" . date('Y-m-d H:i:s') . "')";
     }
 
     //build search term SQL
@@ -319,11 +350,11 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
     switch ($status) {
       case 'unmatched':
-        $statusSql = 'AND im.status = '.self::STATUS_UNMATCHED;
+        $statusSql = 'AND im.status = ' . self::STATUS_UNMATCHED;
         $matchedSql = '';
         break;
       case 'matched':
-        $statusSql = 'AND im.status = '.self::STATUS_MATCHED;
+        $statusSql = 'AND im.status = ' . self::STATUS_MATCHED;
         $matchedSql = 'AND imm.id IS NOT NULL';
         break;
       default:
@@ -370,10 +401,10 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     // Add total.
     $params['total'] = CRM_Core_DAO::singleValueQuery('SELECT FOUND_ROWS();');
 
-    $msgs = array();
+    $msgs = [];
     if ($dao->N) {
       while ($dao->fetch()) {
-        $msg = array();
+        $msg = [];
         $matchCount = (!empty($dao->email_count)) ? 'multi' : 'empty';
         $attachment = (!empty($dao->attachments)) ?
           "<div class='icon attachment-icon attachment' title='{$dao->attachments} Attachment(s)'></div>" : '';
@@ -382,7 +413,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
         $msg['DT_RowId'] = "message-{$dao->id}-{$matchId}";
         $msg['DT_RowClass'] = 'crm-entity';
-        $msg['DT_RowAttr'] = array();
+        $msg['DT_RowAttr'] = [];
         $msg['DT_RowAttr']['data-entity'] = 'message';
         $msg['DT_RowAttr']['data-id'] = "{$dao->id}-{$matchId}";
 
@@ -392,7 +423,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         switch ($status) {
           case 'unmatched':
             $senderEmail = (empty($dao->sender_email)) ? '' :
-              "<span class='emailbubble'>".CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->sender_email, 15)."</span>";
+              "<span class='emailbubble'>" . CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->sender_email, 15) . "</span>";
             $msg['sender_name'] = "{$senderName}{$senderEmail}
               <span class='matchbubble {$matchCount}'>{$dao->email_count}</span>";
             break;
@@ -409,11 +440,13 @@ class CRM_NYSS_Inbox_BAO_Inbox {
               $matchString = 'Automatically matched';
             }
             try {
-              $matchedName = civicrm_api3('contact', 'getvalue', array(
+              $matchedName = civicrm_api3('contact', 'getvalue', [
                 'id' => $dao->matched_id,
                 'return' => 'sort_name',
-              ));
-            } catch (CiviCRM_API3_Exception $e) {}
+              ]);
+            }
+            catch (CiviCRM_API3_Exception $e) {
+            }
             $matchedUrl = CRM_Utils_System::url('civicrm/contact/view',
               "reset=1&cid={$dao->matched_id}");
             $msg['sender_name'] = "<a href='{$matchedUrl}'>{$matchedName}</a>
@@ -424,7 +457,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
             $msg['sender_name'] = $senderName;
         }
 
-        $msg['subject'] = CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->subject, 25).$attachment;
+        $msg['subject'] = CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->subject, 25) . $attachment;
         $msg['updated_date'] = date('M d, Y', strtotime($dao->updated_date));
         $msg['forwarder'] = $dao->forwarder;
 
@@ -458,7 +491,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       }
     }
 
-    $msgsDT = array();
+    $msgsDT = [];
     $msgsDT['data'] = $msgs;
     $msgsDT['recordsTotal'] = $params['total'];
     $msgsDT['recordsFiltered'] = $params['total'];
@@ -470,6 +503,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
   /**
    * @param $rowId
    * @param $contactIds array()
+   *
    * @return array
    *
    * Important: This method should only be used when FIRST matching a message with
@@ -478,15 +512,15 @@ class CRM_NYSS_Inbox_BAO_Inbox {
    */
   static function assignMessage($rowId, $contactIds) {
     if (empty($rowId) || empty($contactIds)) {
-      return array(
+      return [
         'is_error' => TRUE,
         'message' => 'Unable to assign the message; missing required values.'
-      );
+      ];
     }
     //Civi::log()->debug('assignMessage', array('$contactIds' => $contactIds));
 
     //array to hold details of each processed match
-    $matches = array();
+    $matches = [];
 
     $bbconfig = get_bluebird_instance_config();
     $status = self::DEFAULT_ACTIVITY_STATUS;
@@ -561,7 +595,8 @@ class CRM_NYSS_Inbox_BAO_Inbox {
             }
           }
         }
-      } catch (CiviCRM_API3_Exception $e) {
+      }
+      catch (CiviCRM_API3_Exception $e) {
         Civi::log()->error('assignMessage', ['e' => $e]);
 
         //we arguably should attempt to process all contacts before we
@@ -573,12 +608,12 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         ];
       }
 
-      $matches[] = array(
+      $matches[] = [
         'row_id' => $rowId,
         'message_id' => $message['message_id'],
         'matched_id' => $contactId,
         'activity_id' => $activity['id'],
-      );
+      ];
     }
 
     //update the message record status and matcher
@@ -594,7 +629,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     ]);
 
     //store in messages_matched table
-    $matchedContacts = array();
+    $matchedContacts = [];
     foreach ($matches as $match) {
       CRM_Core_DAO::executeQuery("
         INSERT INTO nyss_inbox_messages_matched
@@ -625,6 +660,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
   /**
    * @param $params
+   *
    * @return array
    *
    * process message record: assignment, contact tags, activity tags, activity details
@@ -632,19 +668,19 @@ class CRM_NYSS_Inbox_BAO_Inbox {
   static function processMessages($values) {
     //Civi::log()->debug('processMessages', array('values' => $values, '$_REQUEST' => $_REQUEST));
 
-    $msg = array();
+    $msg = [];
     if (!empty($values['is_multiple'])) {
       $rows = json_decode($values['multi_ids'], TRUE);
     }
     else {
-      $rows = array(
-        array(
+      $rows = [
+        [
           'row_id' => $values['row_id'],
           'matched_id' => $values['matched_id'],
           'activity_id' => $values['activity_id'],
           'current_assignee' => $values['matched_id'],
-        )
-      );
+        ]
+      ];
     }
     //Civi::log()->debug('processMessages', array('$rows' => $rows));
 
@@ -682,13 +718,14 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         //also reassign activity target
         if ($row['activity_id']) {
           try {
-            civicrm_api3('activity', 'create', array(
+            civicrm_api3('activity', 'create', [
               'id' => $row['activity_id'],
               'target_contact_id' => $values['assignee'],
-            ));
+            ]);
           }
           catch (CiviCRM_API3_Exception $e) {
-            Civi::log()->debug('processMessages update activity target', ['e' => $e]);
+            Civi::log()
+              ->debug('processMessages update activity target', ['e' => $e]);
             $msg[] = 'Unable to update activity target.';
           }
         }
@@ -708,7 +745,8 @@ class CRM_NYSS_Inbox_BAO_Inbox {
                 'tag_id' => $tagID,
                 'entity_table' => 'civicrm_contact',
               ]);
-            } catch (CiviCRM_API3_Exception $e) {
+            }
+            catch (CiviCRM_API3_Exception $e) {
               //Civi::log()->debug('processMessages contact keywords', array('e' => $e));
               //$msg[] = 'Unable to assign all keywords to the contact.';
             }
@@ -726,7 +764,8 @@ class CRM_NYSS_Inbox_BAO_Inbox {
                 'tag_id' => $tagID,
                 'entity_table' => 'civicrm_contact',
               ]);
-            } catch (CiviCRM_API3_Exception $e) {
+            }
+            catch (CiviCRM_API3_Exception $e) {
               //Civi::log()->debug('processMessages contact issue codes', array('e' => $e));
               //$msg[] = 'Unable to assign all issue codes to the contact.';
             }
@@ -743,7 +782,8 @@ class CRM_NYSS_Inbox_BAO_Inbox {
                 'tag_id' => $tagID,
                 'entity_table' => 'civicrm_contact',
               ]);
-            } catch (CiviCRM_API3_Exception $e) {
+            }
+            catch (CiviCRM_API3_Exception $e) {
               //Civi::log()->debug('processMessages contact positions', array('e' => $e));
               //$msg[] = 'Unable to assign all positions to the contact.';
             }
@@ -754,11 +794,12 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       //groups
       if (!empty($values['group_id'])) {
         try {
-          civicrm_api3('group_contact', 'create', array(
+          civicrm_api3('group_contact', 'create', [
             'contact_id' => (!empty($values['assignee'])) ? $values['assignee'] : $row['current_assignee'],
             'group_id' => $values['group_id'],
-          ));
-        } catch (CiviCRM_API3_Exception $e) {
+          ]);
+        }
+        catch (CiviCRM_API3_Exception $e) {
           //Civi::log()->debug('processMessages groups', array('e' => $e));
         }
       }
@@ -773,7 +814,8 @@ class CRM_NYSS_Inbox_BAO_Inbox {
                 'tag_id' => $tagID,
                 'entity_table' => 'civicrm_activity',
               ]);
-            } catch (CiviCRM_API3_Exception $e) {
+            }
+            catch (CiviCRM_API3_Exception $e) {
               //Civi::log()->debug('processMessages activity keywords', array('e' => $e));
               //$msg[] = 'Unable to assign all keywords to the activity.';
             }
@@ -801,7 +843,8 @@ class CRM_NYSS_Inbox_BAO_Inbox {
                 $msg[] = $sendEmail['msg'];
               }
             }
-          } catch (CiviCRM_API3_Exception $e) {
+          }
+          catch (CiviCRM_API3_Exception $e) {
             Civi::log()->debug('processMessages create activity', ['e' => $e]);
             $msg[] = 'Unable to update activity record.';
           }
@@ -852,22 +895,23 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
   /**
    * @param $email
+   *
    * @return int|null|string
    */
   static function getForwarder($email) {
     $forwarderId = CRM_Core_DAO::singleValueQuery("
       SELECT e.contact_id
       FROM civicrm_group_contact gc, civicrm_group g, civicrm_email e
-      WHERE g.name = '".self::DEFAULT_AUTH_GROUP."'
+      WHERE g.name = '" . self::DEFAULT_AUTH_GROUP . "'
         AND e.email = %1
         AND g.id = gc.group_id
         AND gc.status = 'Added'
         AND gc.contact_id = e.contact_id
       ORDER BY gc.contact_id ASC
       LIMIT 1
-    ", array(
-      1 => array($email, 'String'),
-    ));
+    ", [
+      1 => [$email, 'String'],
+    ]);
 
     if (empty($forwarderId)) {
       $forwarderId = self::DEFAULT_CONTACT_ID;
@@ -878,6 +922,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
   /**
    * @param $messageId
+   *
    * @return array
    *
    * given a messageId, retrieve all attachment details
@@ -887,19 +932,19 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       SELECT * 
       FROM nyss_inbox_attachments 
       WHERE email_id = %1
-    ", array(
-      1 => array($messageId, 'Integer'),
-    ));
+    ", [
+      1 => [$messageId, 'Integer'],
+    ]);
 
-    $attachments = array();
+    $attachments = [];
     while ($dao->fetch()) {
-      $attachments[] = array(
+      $attachments[] = [
         'fileName' => $dao->file_name,
         'fileFull' => $dao->file_full,
         'rejection' => $dao->rejection,
         'size' => $dao->size,
         'ext' => $dao->ext,
-      );
+      ];
     }
 
     return $attachments;
@@ -907,10 +952,11 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
   /**
    * @param $cid
+   *
    * @return array
    */
   static function getMatched($cids) {
-    $matchedContacts = array();
+    $matchedContacts = [];
 
     if (empty($cids)) {
       return NULL;
@@ -926,7 +972,8 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         $matchedContacts[] = "<a href='{$matchedUrl}'>{$contact['display_name']}</a>";
       }
     }
-    catch (CiviCRM_API3_Exception $e) {}
+    catch (CiviCRM_API3_Exception $e) {
+    }
 
     return $matchedContacts;
   }
@@ -943,11 +990,11 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       SELECT imm.*
       FROM nyss_inbox_messages_matched imm
       WHERE imm.row_id = %1
-    ", array(
-      1 => array($rowId, 'Positive'),
-    ));
+    ", [
+      1 => [$rowId, 'Positive'],
+    ]);
 
-    $matchedIds = array();
+    $matchedIds = [];
     while ($dao->fetch()) {
       $matchedIds[] = $dao->matched_id;
     }
@@ -960,7 +1007,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
    * and proper names that were found in the message body.
    */
   private static function parseMessage($msgBody) {
-    $res = array();
+    $res = [];
 
     // Convert message body into tagless text.
     $text = preg_replace('/<(p|br)[^>]*>|\r/', "\n", $msgBody);
@@ -1020,13 +1067,16 @@ class CRM_NYSS_Inbox_BAO_Inbox {
    */
   private static function highlightItems($text, $items) {
     //file_put_contents("/tmp/inbound_email/items", print_r($items, true));
-    $itemMap = array(
-      'emails' => array('class' => 'email_address', 'text' => 'email'),
-      'blacklist' => array('class' => 'aggregator_email', 'text' => 'aggregator email'),
-      'phones' => array('class' => 'phone', 'text' => 'phone number'),
-      'addrs' => array('class' => 'zip', 'text' => 'city/state/zip'),
-      'names' => array('class' => 'name', 'text' => 'name')
-    );
+    $itemMap = [
+      'emails' => ['class' => 'email_address', 'text' => 'email'],
+      'blacklist' => [
+        'class' => 'aggregator_email',
+        'text' => 'aggregator email'
+      ],
+      'phones' => ['class' => 'phone', 'text' => 'phone number'],
+      'addrs' => ['class' => 'zip', 'text' => 'city/state/zip'],
+      'names' => ['class' => 'name', 'text' => 'name']
+    ];
 
     foreach ($items as $itemType => $itemList) {
       $itemClass = $itemMap[$itemType]['class'];
@@ -1039,7 +1089,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       if (in_array($itemType, ['emails', 'blacklist', 'phones'])) {
         $re = implode('###', $itemList);
         $re = preg_quote($re);
-        $re = '/'.preg_replace('/###/', '|', $re).'/';
+        $re = '/' . preg_replace('/###/', '|', $re) . '/';
         $text = preg_replace($re,
           "<span class='found $itemClass' data-search='$0' title='Click to use this $itemText'>$0</span>",
           $text
@@ -1059,9 +1109,9 @@ class CRM_NYSS_Inbox_BAO_Inbox {
   } // highlightItems()
 
   private static function getStateName($abbr) {
-    static $stateNameMap = null;
+    static $stateNameMap = NULL;
 
-    if ($stateNameMap == null) {
+    if ($stateNameMap == NULL) {
       $query = "
         SELECT abbreviation, name 
         FROM civicrm_state_province
@@ -1078,12 +1128,12 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       return $stateNameMap[$abbr];
     }
     else {
-      return null;
+      return NULL;
     }
   } // getStateName()
 
   private static function reformulate_preg_array($preg_res) {
-    $res = array();
+    $res = [];
     foreach ($preg_res as $item) {
       $k = $item[0]; // save the 0-key value, which is the full pattern match
       // eliminate all numeric keys for the current item
@@ -1106,7 +1156,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
    * of row IDs
    */
   public static function getMultiRowIds($rows) {
-    $rowIds = array();
+    $rowIds = [];
     foreach ($rows as $row) {
       $rowIds[] = $row['row_id'];
     }
@@ -1115,15 +1165,15 @@ class CRM_NYSS_Inbox_BAO_Inbox {
   }
 
   static function sendActivityAssigneeEmail($params) {
-    $mailStatus = array('status' => FALSE, 'msg' => '');
+    $mailStatus = ['status' => FALSE, 'msg' => ''];
 
     if (Civi::settings()->get('activity_assignee_notification')) {
-      $activityIDs = array($params['id']);
-      $assignees = array($params['assignee_contact_id']);
+      $activityIDs = [$params['id']];
+      $assignees = [$params['assignee_contact_id']];
       $assigneeContacts = CRM_Activity_BAO_ActivityAssignment::getAssigneeNames($activityIDs, TRUE, FALSE);
 
       if (!CRM_Utils_Array::crmIsEmptyArray($assignees)) {
-        $mailToContacts = array();
+        $mailToContacts = [];
 
         // Build an associative array with unique email addresses
         foreach ($assignees as $id) {
@@ -1133,7 +1183,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         }
 
         $activity = new CRM_Activity_DAO_Activity();
-        $activityParams = array('id' => $params['id']);
+        $activityParams = ['id' => $params['id']];
         $activity->copyValues($activityParams);
 
         if ($activity->find(TRUE)) {
@@ -1155,4 +1205,174 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
     return $mailStatus;
   }
+
+  public static function getUsageReport($range_low = NULL, $range_high = NULL) {
+    $rangeSql = '';
+    if ($range_low && $range_high) {
+      $rangeSql = "AND (updated_date BETWEEN '" . $range_low . "' AND '" . $range_high . "')";
+    }
+
+    $query = "
+      SELECT im.id, updated_date, email_date,
+        CASE
+          WHEN im.status = " . self::STATUS_UNMATCHED . " THEN 'unmatched'
+          WHEN im.status = " . self::STATUS_MATCHED . " THEN 'matched'
+          WHEN im.status = " . self::STATUS_CLEARED . " THEN 'cleared'
+          WHEN im.status = " . self::STATUS_DELETED . " THEN 'deleted'
+          WHEN im.status = " . self::STATUS_UNPROCESSED . " THEN 'unprocessed'
+          ELSE 'unknown'
+        END as status_icon_class,
+        CASE
+            WHEN im.status = " . self::STATUS_UNMATCHED . " THEN 'Unmatched'
+            WHEN im.status = " . self::STATUS_MATCHED . " THEN CONCAT('Matched by ', IFNULL(matcher.display_name,'Unknown Contact'))
+            WHEN im.status = " . self::STATUS_CLEARED . " THEN 'Cleared'
+            WHEN im.status = " . self::STATUS_DELETED . " THEN 'Deleted'
+            WHEN im.status = " . self::STATUS_UNPROCESSED . " THEN 'Unprocessed'
+            ELSE 'Unknown Status'
+        END as status_string,
+        imm.matched_id matched_to, im.sender_email, im.subject, im.forwarder, imm.activity_id,
+        im.matcher, im.status,
+        IFNULL(count(ia.file_name), 0) as attachments,
+        matcher.display_name as matcher_name,
+        IFNULL(matched_to.display_name, im.sender_email) as fromName,
+        matched_to.first_name as firstName, matched_to.last_name as lastName,
+        matched_to.contact_type as contactType,
+        COUNT(civi_t.id) as tagCount
+      FROM nyss_inbox_messages as im
+      LEFT JOIN nyss_inbox_messages_matched imm
+        ON im.message_id = imm.message_id
+      LEFT JOIN civicrm_contact as matcher
+        ON im.matcher = matcher.id
+      LEFT JOIN civicrm_contact as matched_to
+        ON imm.matched_id = matched_to.id
+      LEFT JOIN nyss_inbox_attachments ia
+        ON im.id = ia.email_id
+      LEFT JOIN civicrm_entity_tag as civi_et
+        ON imm.activity_id = civi_et.entity_id
+        AND civi_et.entity_table = 'civicrm_activity'
+      LEFT JOIN civicrm_tag as civi_t
+        ON civi_et.tag_id = civi_t.id
+      WHERE im.status != 99 $rangeSql
+      GROUP BY im.id, imm.id
+      LIMIT 0 , 100000
+    ";
+    $dbres = CRM_Core_DAO::executeQuery($query);
+
+    $msgs = [];
+    $res = [
+      'Total' => 0,
+      'Unmatched' => 0,
+      'Matched' => 0,
+      'Cleared' => 0,
+      'Deleted' => 0,
+      'Errors' => 0,
+      'Messages' => NULL,
+    ];
+
+    while ($dbres->fetch()) {
+      $msg = self::processUsageRecords(get_object_vars($dbres));
+      $msgs[] = $msg;
+      $res['Total']++;
+
+      switch ($msg['status']) {
+        case self::STATUS_UNMATCHED:
+          $res['Unmatched']++;
+          break;
+        case self::STATUS_MATCHED:
+          $res['Matched']++;
+          break;
+        case self::STATUS_CLEARED:
+          $res['Cleared']++;
+          break;
+        case self::STATUS_DELETED:
+          $res['Deleted']++;
+          break;
+        default:
+          $res['Errors']++;
+          break;
+      }
+    }
+
+    $res['Messages'] = $msgs;
+
+    $return = [
+      'is_error' => false,
+      'message' => 'Report generated',
+      'data' => $res,
+    ];
+
+    return $return;
+  }
+
+  private static function processUsageRecords($fields) {
+    $res = array();
+
+    foreach ($fields as $key => $val) {
+      /*** the old way of cleaning fields....
+      $val = str_replace(chr(194).chr(160), ' ', $val);
+      $val = htmlspecialchars_decode(stripslashes($val));
+      $val = preg_replace('/[^a-zA-Z0-9\s\p{P}]/', '', trim($val));
+      $val = substr($val, 0, 240);
+       ***/
+      if (in_array($key, array(
+        'id',
+        'message_id',
+        'imap_id',
+        'status',
+        'matcher',
+        'matched_to',
+        'activity_id'))
+      ) {
+        // convert string ID to integer ID
+        $res[$key] = (int)$val;
+      }
+      elseif (in_array($key, array('format', 'updated_date', 'email_date'))) {
+        // no conversion necessary for these fields
+        $res[$key] = $val;
+      }
+      else {
+        // all other fields get converted to UTF-8
+        $res[$key] = utf8_encode($val);
+      }
+    }
+
+    // set various date formats
+    $expandedDate = self::expandDate($res['updated_date']);
+    $res['updated_date_long'] = $expandedDate['long'];
+    $res['updated_date_short'] = $expandedDate['short'];
+    $res['updated_date_unix'] = $expandedDate['unix'];
+
+    $expandedDate = self::expandDate($res['email_date']);
+    $res['email_date_long'] = $expandedDate['long'];
+    $res['email_date_short'] = $expandedDate['short'];
+    $res['email_date_unix'] = $expandedDate['unix'];
+
+    return $res;
+  } // processUsageRecords()
+
+  /**
+   * Given a textual date, return date in multiple formats
+   * @param  [string] $date The date to be converted
+   * @return [array] The date converted to three formats: unix, long, short
+   */
+  private static function expandDate($date)
+  {
+    $unixTime = strtotime($date);
+
+    if (date('Ymd') == date('Ymd', $unixTime)) {
+      // if provided date is today
+      $shortForm = 'Today '.date('h:i A', $unixTime);
+    }
+    else if (date('Y') == date('Y', $unixTime)) {
+      // if provided date is this year
+      $shortForm = date('M d h:i A', $unixTime);
+    }
+    else {
+      $shortForm = date('M d, Y', $unixTime);
+    }
+
+    return array('unix' => $unixTime,
+      'long' => date('M d, Y h:i A', $unixTime),
+      'short' => $shortForm);
+  } // expandDate()
 }

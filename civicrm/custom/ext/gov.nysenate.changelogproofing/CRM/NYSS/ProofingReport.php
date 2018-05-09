@@ -11,7 +11,7 @@
  * This class generates form components
  * 
  */
-class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
+class CRM_NYSS_ProofingReport extends CRM_Core_Form
 {
   /**
    * pre-form data checks
@@ -19,19 +19,19 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
    * @return void
    * @access public
    */
-  function preProcess( ) {
+  function preProcess() {
     //handle breadcrumbs
-    $url = CRM_Utils_System::url( 'civicrm/logging/proofingreport', 'reset=1' );
+    $url = CRM_Utils_System::url('civicrm/nyss/proofingreport', 'reset=1');
     $breadCrumb = array(
       array(
         'url' => $url,
         'title' => ts('Log Proofing Report')
       )
     );
-    CRM_Utils_System::appendBreadCrumb( $breadCrumb );
+    CRM_Utils_System::appendBreadCrumb($breadCrumb);
 
     //set page title
-    CRM_Utils_System::setTitle( ts('Generate Log Proofing Report') );
+    CRM_Utils_System::setTitle(ts('Generate Log Proofing Report'));
   }
     
   /**
@@ -111,8 +111,7 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
    * @access public
    * @static
    */
-  static function formRule( $fields, $files, $self )
-  {
+  static function formRule($fields, $files, $self) {
     //CRM_Core_Error::debug_var('fields',$fields);
     $errors = array();
 

@@ -77,8 +77,7 @@ class CRM_Dedupe_Form_RemoveDupeAddress extends CRM_Core_Form
    * @return None
    * @access public
    */
-  public function buildQuickForm()
-  {
+  public function buildQuickForm() {
     $this->addButtons( array(
       array(
         'type' => 'next',
@@ -100,8 +99,7 @@ class CRM_Dedupe_Form_RemoveDupeAddress extends CRM_Core_Form
    *                      be set to false when running from the CLI.
    * @return None
    */
-  public function postProcess($output_status = true)
-  {
+  public function postProcess($output_status = true) {
     $sTime = microtime(true);
     $tmpTbl = 'nyss_temp_dedupe_address';
 
@@ -117,19 +115,56 @@ class CRM_Dedupe_Form_RemoveDupeAddress extends CRM_Core_Form
         ) as addr1
       GROUP BY contact_id, street_address, supplemental_address_1,
         supplemental_address_2, city, state_province_id, postal_code_suffix, postal_code
-      HAVING count(id) > 1;";
+      HAVING count(id) > 1;
+    ";
     CRM_Core_DAO::executeQuery($sql);
 
     $sql = "
       DELETE FROM civicrm_address
-      WHERE id IN ( SELECT id FROM $tmpTbl );";
+      WHERE id IN (SELECT id FROM $tmpTbl);
+    ";
     CRM_Core_DAO::executeQuery($sql);
 
     //also cleanup any orphaned district block sets
     $sql = "
       DELETE FROM civicrm_value_district_information_7
-      WHERE entity_id IN ( SELECT id FROM $tmpTbl );";
+      WHERE entity_id IN (SELECT id FROM $tmpTbl);
+    ";
     CRM_Core_DAO::executeQuery($sql);
+
+    //ensure all contacts with an address have a primary address
+    $sql = "
+      SELECT a.contact_id
+      FROM civicrm_address a
+      LEFT JOIN (
+        SELECT contact_id
+        FROM civicrm_address
+        WHERE is_primary = 1
+        GROUP BY contact_id
+      ) ap
+        ON a.contact_id = ap.contact_id
+      WHERE ap.contact_id IS NULL
+      GROUP BY a.contact_id
+    ";
+    $dao = CRM_Core_DAO::executeQuery($sql);
+
+    while ($dao->fetch()) {
+      $addressId = CRM_Core_DAO::singleValueQuery("
+        SELECT id
+        FROM civicrm_address
+        WHERE contact_id = {$dao->contact_id}
+        ORDER BY CASE WHEN location_type_id = 6 THEN 0 ELSE location_type_id END
+        LIMIT 1
+      ");
+
+      if ($addressId) {
+        CRM_Core_DAO::executeQuery("
+          UPDATE civicrm_address
+          SET is_primary = 1
+          WHERE id = {$addressId}
+        ");
+      }
+    }
 
     CRM_Core_DAO::executeQuery("DROP TABLE $tmpTbl;");
 

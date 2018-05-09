@@ -1,0 +1,154 @@
+/**
+  Main block
+ */
+.page-civicrm-imap #crm-container .crm-content-block {
+  background-color: #FFFFFF;
+  clear: both;
+  display: block;
+  float: left;
+  padding: 4px;
+  position: relative;
+  width: 934px;
+}
+
+/**
+  Header row
+ */
+.header-title {
+  min-height: 6em;
+}
+.header-title h1 {
+  float:left;
+  margin-bottom:1em;
+}
+
+/**
+  Date range selector
+ */
+.date-range-container {
+  float: right;
+  margin-bottom: 1em;
+  text-align: right;
+}
+#date_range_relative {
+  margin-right: 1.7em;
+}
+
+/**
+  Stats row
+ */
+.stats {
+  text-align: center;
+  border-top: 1px solid #cccccc;
+  margin: 10px 0;
+  clear: both;
+}
+a.stats-overview{
+  display: inline-block;
+  box-sizing: border-box;
+  margin: 0 1%;
+  padding: 1.2em 0 1em;
+  width: 18%;
+  font-size: 1.2em;
+  border-bottom: 1px solid #cccccc;
+}
+a.stats-overview:hover{
+  background: #f2f2f2;
+}
+a.stats-overview.active{
+  background: #C8DEE1;
+}
+a.stats-overview span {
+  padding: 0 0 0 .5em;
+  font-weight: bold;
+  font-size: 1em;
+  color: #444444;
+}
+
+/**
+  Advanced filter
+ */
+.advanced-filter-container {
+  padding: 1em 1em;
+  margin: 0 auto 1em;
+  border: 1px solid #cccccc;
+  border-radius: 1em;
+  max-width: 95%;
+}
+.advanced-filter-switch {
+  cursor: pointer;
+}
+.advanced-filter-switch:after {
+  content: '\f101';
+  font-size: 1em;
+  height: 1.4em;
+  width: 2.5em;
+  display: inline-block;
+  margin-left: .5em;
+  font-family: FontAwesome;
+  padding-left: .5em;
+  font-weight: bold;
+}
+.advanced-filter-container.active .advanced-filter-switch:after {
+  content: '\f103';
+}
+.advanced-filters {
+  display: none;
+}
+.advanced-filter-container.active .advanced-filters {
+  display: block;
+}
+
+/* hover icons for matched/matcher contacts */
+.crm-container .imapperbox .icon.mail-merge-icon {
+  background-image: url(/sites/default/themes/Bluebird/images/inbound_email_icons.png);
+  display: inline-block;
+  float: none;
+  margin-right: 1em;
+}
+.crm-container .imapperbox .mail-merge-icon.mail-merge-matched {
+  background-position: 0px 0px;
+}
+.crm-container .imapperbox .mail-merge-icon.mail-merge-unmatched {
+  background-position: 0px -16px;
+}
+.crm-container .imapperbox .mail-merge-icon.mail-merge-cleared {
+  background-position: 0px -32px;
+}
+.crm-container .imapperbox .mail-merge-icon.mail-merge-deleted {
+  background-position: 0px -48px;
+}
+.crm-container .imapperbox .mail-merge-icon.mail-merge-unprocessed {
+  background-position: 0px -64px;
+}
+.crm-container .imapperbox .mail-merge-icon.mail-merge-tags {
+  background-position: 0px -80px;
+}
+.mail-merge-filter-data {
+  display:none;
+}
+.crm-container .mail-merge-hover .crm-tooltip {
+  min-width: 150px;
+  min-height: 40px;
+  padding: 10px;
+}
+.filter-item-remove {
+  border: 1.5px solid #777777;
+  line-height: 1em;
+  padding: .1em;
+  border-radius: .5em;
+  text-align: center;
+  cursor: pointer;
+}
+.filter-item-remove:after {
+  display:inline-block;
+  width:1em;
+  height:1em;
+  font-family: FontAwesome;
+  content: '\f00d';
+  pointer-events: none;
+}
+.advanced-filter-current-item > div {
+  display: inline-block;
+  margin: 0 0 0 1em;
+}
