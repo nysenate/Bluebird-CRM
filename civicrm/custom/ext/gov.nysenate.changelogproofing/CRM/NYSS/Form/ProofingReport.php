@@ -1,40 +1,33 @@
 <?php
 
-/*
- * NYSS 5260
- * SOS Log Proofing Report
- * Created: May, 2012
- * Author:  Brian Shaughnessy
- */
+require_once 'CRM/Core/Form.php';
 
 /**
- * This class generates form components
- * 
+ * Form controller class
+ *
+ * @see http://wiki.civicrm.org/confluence/display/CRMDOC43/QuickForm+Reference
  */
-class CRM_NYSS_ProofingReport extends CRM_Core_Form
-{
+class CRM_NYSS_Form_ProofingReport extends CRM_Core_Form {
   /**
    * pre-form data checks
    *
    * @return void
    * @access public
    */
-  function preProcess() {
-    Civi::log()->debug('CRM_NYSS_ProofingReport', array('this' => $this));
+  function preProcess( ) {
     //handle breadcrumbs
-    $url = CRM_Utils_System::url('civicrm/nyss/proofingreport', 'reset=1');
+    $url = CRM_Utils_System::url( 'civicrm/logging/proofingreport', 'reset=1' );
     $breadCrumb = array(
       array(
         'url' => $url,
         'title' => ts('Log Proofing Report')
       )
     );
-    CRM_Utils_System::appendBreadCrumb($breadCrumb);
-
+    CRM_Utils_System::appendBreadCrumb( $breadCrumb );
     //set page title
-    CRM_Utils_System::setTitle(ts('Generate Log Proofing Report'));
+    CRM_Utils_System::setTitle( ts('Generate Log Proofing Report') );
   }
-    
+
   /**
    * Build the form
    *
@@ -43,21 +36,16 @@ class CRM_NYSS_ProofingReport extends CRM_Core_Form
    */
   public function buildQuickForm() {
     $this->addElement( 'text', 'jobID', ts('Job ID') );
-
     $this->addElement( 'text', 'alteredBy', ts('Altered By') );
-
     $this->addDate( 'start_date', ts('Date from'), FALSE, array( 'formatType' => 'custom') );
     $this->addDate( 'end_date', ts('...to'), FALSE, array( 'formatType' => 'custom') );
-
     $this->add( 'select', 'pdf_format_id', ts( 'Page Format' ),
       array( 0 => ts( '- default -' ) ) + CRM_Core_BAO_PdfFormat::getList( true ) );
-
     //7582/7685/11831 add tags
     $tags = CRM_Core_BAO_Tag::getColorTags('civicrm_contact');
     if (!empty($tags)) {
       $this->add('select2', 'tag', ts('Tag(s)'), $tags, FALSE, array('class' => 'huge', 'placeholder' => ts('- select -'), 'multiple' => TRUE));
     }
-
     // build tag widget
     $parentNames = CRM_Core_BAO_Tag::getTagSet('civicrm_contact');
     foreach ($parentNames as $k => $name) {
@@ -66,9 +54,7 @@ class CRM_NYSS_ProofingReport extends CRM_Core_Form
       }
     }
     CRM_Core_Form_Tag::buildQuickForm($this, $parentNames, 'civicrm_contact', NULL, TRUE);
-
     $this->add('checkbox', 'merge_house', 'Merge Households? (CSV export only)');
-
     $this->addButtons(
       array(
         array(
@@ -86,10 +72,9 @@ class CRM_NYSS_ProofingReport extends CRM_Core_Form
         ),
       )
     );
-
-    $this->addFormRule(array('CRM_Logging_Form_ProofingReport', 'formRule'), $this);
+    $this->addFormRule(array('CRM_NYSS_Form_ProofingReport', 'formRule'), $this);
   }
-    
+
   /**
    * Set default values
    */
@@ -100,7 +85,6 @@ class CRM_NYSS_ProofingReport extends CRM_Core_Form
     );
     return $defaults;
   }
-
   /**
    * global form rule
    *
@@ -112,10 +96,10 @@ class CRM_NYSS_ProofingReport extends CRM_Core_Form
    * @access public
    * @static
    */
-  static function formRule($fields, $files, $self) {
+  static function formRule( $fields, $files, $self )
+  {
     //CRM_Core_Error::debug_var('fields',$fields);
     $errors = array();
-
     if (empty($fields['jobID']) &&
       empty($fields['alteredBy']) &&
       empty($fields['start_date']) &&
@@ -123,26 +107,21 @@ class CRM_NYSS_ProofingReport extends CRM_Core_Form
     ) {
       $errors['jobID'] = ts('You must select a Job ID or Altered By value, and date field to run this report.');
     }
-
     if (empty($fields['start_date'])) {
       $errors['start_date'] = 'You must select a start date to run this report.';
     }
-
     //7776 check if date range is > 1 month
     $dateStart = new DateTime(CRM_Utils_Array::value('start_date', $fields));
     $dateEnd = new DateTime(CRM_Utils_Array::value('end_date', $fields, date('Y-m-d')));
-
     $interval = $dateStart->diff($dateEnd);
     $days = $interval->format('%a');
     //CRM_Core_Error::debug_var('days', $days);
-
     if ($days > 366) {
       $errors['end_date'] = 'The date range cannot exceed 180 days. Please adjust your start and end dates to a smaller interval in order to run this report.';
     }
-
     return $errors;
   }
-    
+
   /**
    * process the form after the input has been submitted and validated
    *
@@ -151,15 +130,12 @@ class CRM_NYSS_ProofingReport extends CRM_Core_Form
    */
   public function postProcess() {
     //CRM_Core_Error::debug_var('this', $this);
-
     $bbconfig = get_bluebird_instance_config();
     $logDB = $bbconfig['db.log.prefix'].$bbconfig['db.basename'];
     $civiDB = $bbconfig['db.civicrm.prefix'].$bbconfig['db.basename'];
-
     //get form parameters and create sql criteria
     $formParams = $this->controller->exportValues( $this->_name );
     //CRM_Core_Error::debug_var('formParams', $formParams);
-
     $sqlParams = $rows = array();
     $startDate = $endDate = $alteredByFrom = '';
     if ($formParams['jobID']) {
@@ -177,28 +153,22 @@ class CRM_NYSS_ProofingReport extends CRM_Core_Form
       $endDate = date( 'Y-m-d', strtotime($formParams['end_date']) );
       $sqlParams['enddate'] = "main.log_date <= '{$endDate} 23:59:59'";
     }
-
     //handle tags
     $tagsSelected = explode(',', CRM_Utils_Array::value('tag', $formParams, array()));
     foreach (CRM_Utils_Array::value('contact_taglist', $formParams) as $tagSet => $tagSetList) {
       $tagsSelected = array_merge($tagsSelected, explode(',', $tagSetList));
     }
     $tagsSelected = array_filter($tagsSelected);
-
     if (!empty($tagsSelected)) {
       $tagsSelectedList = implode(',', $tagsSelected);
       $sqlParams['tag'] = "tag_id IN ({$tagsSelectedList})";
     }
-
     //compile WHERE clauses
     $sqlWhere = implode(' ) AND ( ', $sqlParams);
-
     $dateNow = date('F jS Y h:i a');
-
     //begin construction of html
     $html  = self::_reportCSS();
     $html .= "<h2>SOS Proofing Report: $dateNow</h2>";
-
     if ($startDate || $endDate) {
       if ($startDate && !$endDate) {
         $dateRange = "$startDate &#8211; Now";
@@ -211,14 +181,12 @@ class CRM_NYSS_ProofingReport extends CRM_Core_Form
       }
       $html .= "<h3>Date Range: $dateRange</h3>";
     }
-
     if ($formParams['jobID']) {
       $html .= "<h3>Job ID: {$formParams['jobID']}</h3>";
     }
     if ($formParams['alteredBy']) {
       $html .= "<h3>Altered By Search: {$formParams['alteredBy']}</h3>";
     }
-
     $html .= "
       <table>
         <tr>
@@ -230,9 +198,7 @@ class CRM_NYSS_ProofingReport extends CRM_Core_Form
           <th>Tag(s)</th>
           <th>Group(s)</th>
         </tr>";
-
     CRM_Core_DAO::executeQuery("SET SESSION group_concat_max_len = 100000;");
-
     //create temp table
     $rnd = mt_rand(1,9999999999999999);
     $tmpChgProof = "nyss_temp_changeproof_$rnd";
@@ -242,7 +208,6 @@ class CRM_NYSS_ProofingReport extends CRM_Core_Form
       ENGINE=MyISAM;
     ";
     CRM_Core_DAO::executeQuery($sql);
-
     //insert contacts with tag changes
     $query = "
       INSERT INTO {$tmpChgProof}
@@ -262,7 +227,6 @@ class CRM_NYSS_ProofingReport extends CRM_Core_Form
     ";
     //CRM_Core_Error::debug_var('tags query',$query);
     CRM_Core_DAO::executeQuery($query);
-
     //if no tag option, look for changes to contacts
     if (empty($tagsSelected)) {
       //contacts
@@ -282,13 +246,11 @@ class CRM_NYSS_ProofingReport extends CRM_Core_Form
       //CRM_Core_Error::debug_var('contact query', $query);
       CRM_Core_DAO::executeQuery($query);
     }
-
     //insert contacts with group changes
     //remove the tag param first to avoid sql errors
     $sqlParams2 = $sqlParams;
     unset($sqlParams2['tag']);
     $sqlWhere2 = implode(' ) AND ( ', $sqlParams2);
-
     if (empty($tagsSelected)) {
       $query = "
         INSERT INTO {$tmpChgProof}
@@ -304,7 +266,6 @@ class CRM_NYSS_ProofingReport extends CRM_Core_Form
         WHERE ( $sqlWhere2 )
           AND main.log_action != 'Initialization'
         GROUP BY main.contact_id
-
         ON DUPLICATE KEY UPDATE groupList = (
           SELECT GROUP_CONCAT(CONCAT(g.title, ' (', main.log_action, ')') ORDER BY g.title SEPARATOR ', ')
           FROM {$logDB}.log_civicrm_group_contact main
@@ -339,7 +300,6 @@ class CRM_NYSS_ProofingReport extends CRM_Core_Form
       //CRM_Core_Error::debug_var('groups update query',$query);
       CRM_Core_DAO::executeQuery($query);
     }
-
     //get records from temp table
     $sql = "
       SELECT *
@@ -347,7 +307,6 @@ class CRM_NYSS_ProofingReport extends CRM_Core_Form
       ORDER BY logDateLong
     ";
     $dao = CRM_Core_DAO::executeQuery($sql);
-
     while ($dao->fetch()) {
       //CRM_Core_Error::debug_var('dao',$dao);
       $params = array(
@@ -356,7 +315,6 @@ class CRM_NYSS_ProofingReport extends CRM_Core_Form
       );
       $cDetails = civicrm_api('contact','getsingle',$params);
       //CRM_Core_Error::debug_var('cDetails',$cDetails);
-
       //address block
       $address = array();
       if (!empty($cDetails['street_address'])) {
@@ -372,7 +330,6 @@ class CRM_NYSS_ProofingReport extends CRM_Core_Form
           .$cDetails['postal_code'].$postSuffix;
       }
       $addressHTML = implode('<br />', $address);
-
       //gender/dob/phone block
       $gdp = array();
       if (!empty($cDetails['gender'])) {
@@ -385,11 +342,9 @@ class CRM_NYSS_ProofingReport extends CRM_Core_Form
         $gdp[] = $cDetails['phone'];
       }
       $gdpHTML = implode('<br />', $gdp);
-
       //cleanup tag list
       $tagList = str_replace(' (Insert)', '', $dao->tagList);
       $tagList = str_replace(' (Delete)', ' (removed)', $tagList);
-
       //7352 groups
       /*$sql = "
         SELECT GROUP_CONCAT(g.title SEPARATOR ', ')
@@ -399,11 +354,9 @@ class CRM_NYSS_ProofingReport extends CRM_Core_Form
         WHERE contact_id = {$dao->id}
       ";
       $groupList = CRM_Core_DAO::singleValueQuery($sql);*/
-
       //cleanup group list
       $groupList = str_replace(' (Insert)', '', $dao->groupList);
       $groupList = str_replace(' (Delete)', ' (removed)', $groupList);
-
       $html .= "
         <tr>
           <td>{$dao->logDate}</td>
@@ -414,7 +367,6 @@ class CRM_NYSS_ProofingReport extends CRM_Core_Form
           <td>{$tagList}&nbsp;</td>
           <td>{$groupList}&nbsp;</td>
         </tr>";
-
       $rows[$dao->id] = array(
         'id' => $dao->id,
         'sort_name' => CRM_Utils_Array::value('sort_name', $cDetails, ''),
@@ -442,7 +394,6 @@ class CRM_NYSS_ProofingReport extends CRM_Core_Form
         'grouplist' => stripslashes(iconv('UTF-8', 'Windows-1252', $groupList)),
         'when' => $dao->logDate,
       );
-
       //check if household rel exists
       if ( !empty($formParams['merge_house']) ) {
         $sql = "
@@ -456,7 +407,6 @@ class CRM_NYSS_ProofingReport extends CRM_Core_Form
         ";
         $rows[$dao->id]['house_id'] = CRM_Core_DAO::singleValueQuery($sql);
       }
-
       //set col headers after the first row is constructed
       if ( !isset($this->_columnHeaders) ) {
         foreach ( $rows[$dao->id] as $hdr => $dontcare ) {
@@ -464,22 +414,18 @@ class CRM_NYSS_ProofingReport extends CRM_Core_Form
         }
       }
     }
-
     //add summary counts
     $html .= "
       <tr class='tableSummary'>
         <td>Contacts Changed:</td>
         <td colspan='6'>{$dao->N}</td>
       </tr>";
-
     //close table
     $html .= "</table>";
-
     //remove temp table
     CRM_Core_DAO::executeQuery("
       DROP TABLE IF EXISTS {$tmpChgProof}
     ");
-
     //now generate pdf
     $actionName = $this->controller->getButtonName( );
     //PDF
@@ -501,10 +447,8 @@ class CRM_NYSS_ProofingReport extends CRM_Core_Form
       }
       CRM_Report_Utils_Report::export2csv($this, $rows);
     }
-
     CRM_Utils_System::civiExit( );
   }//postProcess
-
   //generate css
   function _reportCSS() {
     $css = "
@@ -542,10 +486,8 @@ tr.tableSummary td {
 -->
 </style>
 ";
-
     return $css;
   }//_reportCSS
-
   /*
    * if merge_household option selected, we run through this function during CSV export
    * existing rows are passed and the household ID included if exists
@@ -561,7 +503,6 @@ tr.tableSummary td {
    */
   function _mergeHouseholds(&$rows) {
     //CRM_Core_Error::debug_var('_mergeHouseholds rows', $rows);
-
     foreach ( $rows as $cid => $cDetails ) {
       if ( !empty($cDetails['house_id']) ) {
         if ( isset($rows[$cDetails['house_id']]) ) {
@@ -575,7 +516,6 @@ tr.tableSummary td {
           );
           $house = civicrm_api('contact', 'getsingle', $params);
           //CRM_Core_Error::debug_var('_mergeHouseholds $house', $house);
-
           //add to rows; pass some non-standard details from indiv record; unset indiv
           $rows[$cDetails['house_id']] = array(
             'id' => $cDetails['house_id'],
@@ -604,7 +544,6 @@ tr.tableSummary td {
             'when' => $cDetails['when'],
             'house_id' => '',
           );
-
           unset($rows[$cid]);
         }
       }

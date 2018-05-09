@@ -114,14 +114,14 @@ function _changelogproofing_civix_civicrm_upgrade($op, CRM_Queue_Queue $queue = 
 }
 
 /**
- * @return CRM_Changelogproofing_Upgrader
+ * @return CRM_NYSS_Upgrader
  */
 function _changelogproofing_civix_upgrader() {
-  if (!file_exists(__DIR__.'/CRM/Changelogproofing/Upgrader.php')) {
+  if (!file_exists(__DIR__.'/CRM/NYSS/Upgrader.php')) {
     return NULL;
   }
   else {
-    return CRM_Changelogproofing_Upgrader_Base::instance();
+    return CRM_NYSS_Upgrader_Base::instance();
   }
 }
 
