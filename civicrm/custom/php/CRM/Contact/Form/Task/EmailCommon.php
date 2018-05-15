@@ -580,6 +580,8 @@ class CRM_Contact_Form_Task_EmailCommon {
       $contributionIds,
       CRM_Utils_Array::value('campaign_id', $formValues)
     );
+    //NYSS 7362 store activityId so it's available to postProcess hook
+    $form->_activityId = $activityId;
 
     $followupStatus = '';
     if ($sent) {
