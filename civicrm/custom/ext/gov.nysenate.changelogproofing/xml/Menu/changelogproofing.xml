@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<menu>
+  <item>
+    <path>civicrm/nyss/proofingreport</path>
+    <page_callback>CRM_NYSS_Form_ProofingReport</page_callback>
+    <title>Changelog Proofing Report</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+</menu>

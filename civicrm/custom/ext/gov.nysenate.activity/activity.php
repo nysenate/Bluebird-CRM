@@ -1,14 +1,14 @@
 <?php
 
-require_once 'changelogproofing.civix.php';
+require_once 'activity.civix.php';
 
 /**
  * Implements hook_civicrm_config().
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_config
  */
-function changelogproofing_civicrm_config(&$config) {
-  _changelogproofing_civix_civicrm_config($config);
+function activity_civicrm_config(&$config) {
+  _activity_civix_civicrm_config($config);
 }
 
 /**
@@ -18,8 +18,8 @@ function changelogproofing_civicrm_config(&$config) {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_xmlMenu
  */
-function changelogproofing_civicrm_xmlMenu(&$files) {
-  _changelogproofing_civix_civicrm_xmlMenu($files);
+function activity_civicrm_xmlMenu(&$files) {
+  _activity_civix_civicrm_xmlMenu($files);
 }
 
 /**
@@ -27,8 +27,8 @@ function changelogproofing_civicrm_xmlMenu(&$files) {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_install
  */
-function changelogproofing_civicrm_install() {
-  _changelogproofing_civix_civicrm_install();
+function activity_civicrm_install() {
+  _activity_civix_civicrm_install();
 }
 
 /**
@@ -36,8 +36,8 @@ function changelogproofing_civicrm_install() {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_uninstall
  */
-function changelogproofing_civicrm_uninstall() {
-  _changelogproofing_civix_civicrm_uninstall();
+function activity_civicrm_uninstall() {
+  _activity_civix_civicrm_uninstall();
 }
 
 /**
@@ -45,8 +45,8 @@ function changelogproofing_civicrm_uninstall() {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_enable
  */
-function changelogproofing_civicrm_enable() {
-  _changelogproofing_civix_civicrm_enable();
+function activity_civicrm_enable() {
+  _activity_civix_civicrm_enable();
 }
 
 /**
@@ -54,8 +54,8 @@ function changelogproofing_civicrm_enable() {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_disable
  */
-function changelogproofing_civicrm_disable() {
-  _changelogproofing_civix_civicrm_disable();
+function activity_civicrm_disable() {
+  _activity_civix_civicrm_disable();
 }
 
 /**
@@ -70,8 +70,8 @@ function changelogproofing_civicrm_disable() {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_upgrade
  */
-function changelogproofing_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
-  return _changelogproofing_civix_civicrm_upgrade($op, $queue);
+function activity_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
+  return _activity_civix_civicrm_upgrade($op, $queue);
 }
 
 /**
@@ -82,8 +82,8 @@ function changelogproofing_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_managed
  */
-function changelogproofing_civicrm_managed(&$entities) {
-  _changelogproofing_civix_civicrm_managed($entities);
+function activity_civicrm_managed(&$entities) {
+  _activity_civix_civicrm_managed($entities);
 }
 
 /**
@@ -95,8 +95,8 @@ function changelogproofing_civicrm_managed(&$entities) {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
  */
-function changelogproofing_civicrm_caseTypes(&$caseTypes) {
-  _changelogproofing_civix_civicrm_caseTypes($caseTypes);
+function activity_civicrm_caseTypes(&$caseTypes) {
+  _activity_civix_civicrm_caseTypes($caseTypes);
 }
 
 /**
@@ -109,8 +109,8 @@ function changelogproofing_civicrm_caseTypes(&$caseTypes) {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
  */
-function changelogproofing_civicrm_angularModules(&$angularModules) {
-_changelogproofing_civix_civicrm_angularModules($angularModules);
+function activity_civicrm_angularModules(&$angularModules) {
+_activity_civix_civicrm_angularModules($angularModules);
 }
 
 /**
@@ -118,6 +118,37 @@ _changelogproofing_civix_civicrm_angularModules($angularModules);
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_alterSettingsFolders
  */
-function changelogproofing_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
-  _changelogproofing_civix_civicrm_alterSettingsFolders($metaDataFolders);
+function activity_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
+  _activity_civix_civicrm_alterSettingsFolders($metaDataFolders);
+}
+
+function activity_civicrm_postProcess($formName, &$form) {
+  /*Civi::log()->debug('activity_civicrm_postProcess', array(
+    'formName' => $formName,
+    'form' => $form,
+  ));*/
+
+  if (in_array($formName, array('CRM_Contact_Form_Task_Email')) &&
+    $form->_action == CRM_Core_Action::ADD &&
+    !empty($form->_activityId)
+  ) {
+    if (!empty($form->_ccContactIds) || !empty($form->_bccContactIds)) {
+      $ccBccIds = array_merge($form->_ccContactIds, $form->_bccContactIds);
+      //Civi::log()->debug('activity_civicrm_postProcess', array('$ccBccIds' => $ccBccIds));
+
+      $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
+      $targetID = CRM_Utils_Array::key('Activity Targets', $activityContacts);
+
+      foreach ($ccBccIds as $cid) {
+        try {
+          civicrm_api3('activity_contact', 'create', [
+            'activity_id' => $form->_activityId,
+            'contact_id' => $cid,
+            'record_type_id' => $targetID,
+          ]);
+        }
+        catch (CiviCRM_API3_Exception $e) {}
+      }
+    }
+  }
 }
