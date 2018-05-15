@@ -36,5 +36,9 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
+## 7362
+echo "$prog: install activity extension"
+$drush $instance cvapi extension.install key=gov.nysenate.activity --quiet
+
 ## record completion
 echo "$prog: upgrade process is complete."
