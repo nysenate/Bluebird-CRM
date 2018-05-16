@@ -196,7 +196,11 @@ div.description {
 .CRM_NYSS_Inbox_Form_AssignContact .found.name,
 .CRM_NYSS_Inbox_Form_AssignContact .found.name:hover,
 .CRM_NYSS_Inbox_Form_AssignContact .found.zip,
-.CRM_NYSS_Inbox_Form_AssignContact .found.zip:hover {
+.CRM_NYSS_Inbox_Form_AssignContact .found.zip:hover,
+.CRM_NYSS_Inbox_Form_Process .found.name,
+.CRM_NYSS_Inbox_Form_Process .found.name:hover,
+.CRM_NYSS_Inbox_Form_Process .found.zip,
+.CRM_NYSS_Inbox_Form_Process .found.zip:hover {
   background: none;
   color: black;
   border: none;
