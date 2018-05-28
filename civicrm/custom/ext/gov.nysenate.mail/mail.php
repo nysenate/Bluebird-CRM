@@ -228,6 +228,8 @@ function mail_civicrm_alterMailingRecipients(&$mailing, &$params, $context) {
     _mail_removeOnHold($mailing->id);
     _mail_logRecipients('_mail_removeOnHold', $mailing->id);
   }
+
+  _mail_dedupeContacts($mailing->id);
 }
 
 function mail_civicrm_pre($op, $objectName, $id, &$params) {
@@ -539,6 +541,26 @@ function _mail_dedupeEmail($mailingID) {
 
   //cleanup
   CRM_Core_DAO::executeQuery("DROP TABLE $tempTbl");
+}
+
+/**
+ * @param $mailingId
+ *
+ * the mailing recipients should already be deduped by contact/email
+ * this is a failsafe to ensure it is properly deduped
+ */
+function _mail_dedupeContacts($mailingId) {
+  CRM_Core_DAO::executeQuery("
+    DELETE a
+    FROM civicrm_mailing_recipients AS a, civicrm_mailing_recipients AS b
+    WHERE a.id < b.id
+      AND a.mailing_id <=> b.mailing_id
+      AND a.contact_id <=> b.contact_id
+      AND a.email_id <=> b.email_id
+      AND a.mailing_id = %1
+  ", array(
+    1 => array($mailingId, 'Positive')
+  ));
 }
 
 /**
