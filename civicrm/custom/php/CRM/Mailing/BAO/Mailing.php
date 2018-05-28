@@ -1631,6 +1631,9 @@ ORDER BY   civicrm_email.is_bulkmail DESC
       // Schedule the job now that it has recipients.
       $job->scheduled_date = $params['scheduled_date'];
       $job->save();
+
+      //NYSS 11888
+      CRM_Utils_Hook::post('create', 'MailingJob', $job->id, $job);
     }
 
     // Populate the recipients.
@@ -2516,6 +2519,9 @@ LEFT JOIN civicrm_mailing_group g ON g.mailing_id   = m.id
     $dao = new CRM_Mailing_BAO_MailingJob();
     $dao->id = $id;
     $dao->delete();
+
+    //NYSS 11888
+    CRM_Utils_Hook::post('delete', 'MailingJob', $id, $dao);
   }
 
   /**

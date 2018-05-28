@@ -71,6 +71,10 @@ class CRM_Mailing_BAO_MailingJob extends CRM_Mailing_DAO_MailingJob {
     $job->save();
     if ($params['mailing_id']) {
       CRM_Mailing_BAO_Mailing::getRecipients($params['mailing_id']);
+
+      //NYSS 11888
+      CRM_Utils_Hook::post('create', 'MailingJob', $job->id, $job);
+
       return $job;
     }
     else {
@@ -181,6 +185,9 @@ class CRM_Mailing_BAO_MailingJob extends CRM_Mailing_DAO_MailingJob {
         $saveJob->save();
 
         $transaction->commit();
+
+        //NYSS 11888
+        CRM_Utils_Hook::post('edit', 'MailingJob', $saveJob->id, $saveJob);
       }
 
       // Get the mailer
@@ -214,6 +221,9 @@ class CRM_Mailing_BAO_MailingJob extends CRM_Mailing_DAO_MailingJob {
         $saveJob->save();
 
         $transaction->commit();
+
+        //NYSS 11888
+        CRM_Utils_Hook::post('edit', 'MailingJob', $saveJob->id, $saveJob);
 
         // don't mark the mailing as complete
       }
@@ -301,6 +311,9 @@ class CRM_Mailing_BAO_MailingJob extends CRM_Mailing_DAO_MailingJob {
         $mailing->save();
         $transaction->commit();
 
+        //NYSS 11888
+        CRM_Utils_Hook::post('edit', 'MailingJob', $saveJob->id, $saveJob);
+
         // CRM-17763
         CRM_Utils_Hook::postMailing($job->mailing_id);
       }
@@ -387,6 +400,9 @@ class CRM_Mailing_BAO_MailingJob extends CRM_Mailing_DAO_MailingJob {
       $saveJob->save();
 
       $transaction->commit();
+
+      //NYSS 11888
+      CRM_Utils_Hook::post('edit', 'MailingJob', $saveJob->id, $saveJob);
 
       // Release the job lock
       $lock->release();
@@ -845,6 +861,9 @@ AND    ( ( job_type IS NULL ) OR
       $newJob->end_date = date('YmdHis');
       $newJob->status = 'Canceled';
       $newJob->save();
+
+      //NYSS 11888
+      CRM_Utils_Hook::post('edit', 'MailingJob', $newJob->id, $newJob);
 
       // also cancel all child jobs
       $sql = "
