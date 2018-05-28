@@ -259,6 +259,38 @@ function mail_civicrm_pre($op, $objectName, $id, &$params) {
   }
 }
 
+function mail_civicrm_post($op, $objectName, $objectId, &$objectRef) {
+  /*Civi::log()->debug('mail_civicrm_post', array(
+    '$op' => $op,
+    '$objectName' => $objectName,
+    '$objectId' => $objectId,
+    '$objectRef' => $objectRef,
+  ));*/
+
+  if ($objectName == 'MailingJob') {
+    //check if existing non-test parent job exists for same mailing
+    if ($op == 'create' && !$objectRef->is_test && empty($objectRef->parent_id)) {
+      $jobId = CRM_Core_DAO::singleValueQuery("
+        SELECT id
+        FROM civicrm_mailing_job
+        WHERE mailing_id = {$objectRef->mailing_id}
+          AND is_test = 0
+          AND parent_id IS NULL
+          AND id != {$objectId}
+        LIMIT 1
+      ");
+
+      if ($jobId) {
+        //if exists, delete the newly created parent job
+        CRM_Core_DAO::executeQuery("
+          DELETE FROM civicrm_mailing_job
+          WHERE id = {$objectId}
+        ");
+      }
+    }
+  }
+}
+
 function mail_civicrm_links($op, $objectName, $objectId, &$links, &$mask, &$values) {
   /*Civi::log()->debug('mail_civicrm_links', array(
     '$op' => $op,
