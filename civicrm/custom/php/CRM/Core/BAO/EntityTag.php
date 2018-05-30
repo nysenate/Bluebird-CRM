@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
  * This class contains functions for managing Tag(tag) for a contact
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
 
@@ -424,8 +424,10 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
     return $entityTagDetails;
   }
 	
-  /**
-   * Merge two tags: tag B into tag A.
+   * Merge two tags
+   *
+   * Tag A will inherit all of tag B's properties.
+   * Tag B will be deleted.
    *
    * @param int $tagAId
    * @param int $tagBId

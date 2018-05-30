@@ -35,7 +35,6 @@
  * Class to represent the actions that can be performed on a group of contacts used by the search forms.
  */
 class CRM_Contact_Task extends CRM_Core_Task {
-
   const
     // Contact tasks
     HOUSEHOLD_CONTACTS = 101,
