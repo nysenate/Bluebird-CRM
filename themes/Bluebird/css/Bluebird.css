@@ -4114,3 +4114,33 @@ form.CRM_Activity_Form_Activity div.select2-container {
   width: auto !important;
   min-width: 400px;
 }
+
+/*11725 user edit form*/
+form#user-profile-form div.form-item > label {
+  font-weight: bold;
+  font-size: 110%;
+  min-width: 130px;
+  display: inline-block;
+}
+form#user-profile-form div.form-item.form-type-checkbox > label,
+form#user-profile-form div.form-item.form-type-radio > label {
+  font-weight: normal;
+  font-size: 100%;
+}
+form#user-profile-form div#edit-roles,
+form#user-profile-form div#edit-status {
+  margin-left: 20px;
+}
+form#user-profile-form div.nyss-roles-section-header {
+  margin-top: 10px;
+  font-weight: bold;
+  font-size: 110%;
+  color: #2a71b4;
+}
+form#user-profile-form div.nyss-roles-subsection-header {
+  margin-top: 5px;
+  font-weight: bold;
+}
+form#user-profile-form div.nyss-roles-description {
+  font-style: italic;
+}

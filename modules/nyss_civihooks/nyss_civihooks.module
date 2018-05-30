@@ -13,8 +13,7 @@ function nyss_civihooks_menu()
 } // nyss_civihooks_menu()
 
 
-function nyss_civihooks_menu_alter(&$items)
-{
+function nyss_civihooks_menu_alter(&$items) {
   //5253
   $items['admin/user/user/create']['access arguments'] = array('create users');
 
@@ -23,14 +22,40 @@ function nyss_civihooks_menu_alter(&$items)
 } // nyss_civihooks_menu_alter()
 
 
-function nyss_civihooks_form_alter(&$form, &$form_state, $form_id)
-{
-  //dpm($form_id);
-  //dpm($form);
+function nyss_civihooks_form_alter(&$form, &$form_state, $form_id) {
+  //watchdog('bluebird', 'form_id: <pre>'.print_r($form_id, TRUE).'</pre>');
+  //watchdog('bluebird', 'form: <pre>'.print_r($form, TRUE).'</pre>');
 
-  //6062
+  //6062/11725
   if ($form_id == 'user_profile_form') {
     $form['actions']['cancel']['#value'] = 'Delete User Account';
+    $form['account']['name']['#description'] = '';
+    $form['account']['mail']['#description'] = '';
+    unset($form['account']['pass']);
+
+    //roles
+    $form['account']['roles']['#title'] = 'Assignable Roles';
+    unset($form['account']['roles'][2]);
+
+    $form['account']['roles'][9]['#prefix'] = '
+      <div class="nyss-roles-section-header">Main Role</div>
+      <div class="nyss-roles-description">In order for a staff member to get started in Bluebird, they must first have ONE main role assigned to them.</div>
+    ';
+    $form['account']['roles'][16]['#prefix'] = '
+      <div class="nyss-roles-section-header">Add-on Roles</div>
+      <div class="nyss-roles-description">Additional roles to extend access in specific feature areas.</div>
+      <div class="nyss-roles-subsection-header">Bluebird Mass Email</div>
+    ';
+    $form['account']['roles'][19]['#prefix'] = '
+      <div class="nyss-roles-subsection-header">Bluebird Inbound Email</div>
+    ';
+    $form['account']['roles'][8]['#prefix'] = '
+      <div class="nyss-roles-section-header">Other Senate Office Roles</div>
+      <div class="nyss-roles-description">Several Senate central staff offices have permission to access your Senator\'s Bluebird database. The roles below are used specifically for those offices.</div>
+    ';
+    $form['account']['roles'][4]['#prefix'] = '
+      <div class="nyss-roles-section-header">Administrator Roles</div>
+    ';
   }
   if ($form_id == 'user_cancel_confirm_form') {
     unset($form['user_cancel_method']['user_cancel_block']);
