@@ -16,7 +16,15 @@ CRM.$(function($) {
         $('input#email-Primary').val($(this).text());
       });
       $('span.name').click(function(){
-        $('input#last_name').val($(this).text());
+        var $e = $(this),
+          j = $e.data('json'),
+          check = ['first', 'middle', 'last'];
+        for (v in j) {
+          var select = '.CRM_Profile_Form_Edit #' + v + '_name';
+          if ($(select).length) {
+            $(select).val(j[v]);
+          }
+        }
       });
 
       //address is a single element with parsed values in data

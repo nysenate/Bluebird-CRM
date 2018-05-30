@@ -1022,15 +1022,16 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     $res['blacklist'] = self::getBlacklistAddresses();
     $res['emails'] = array_values(array_diff($res['emails'], $res['blacklist']));
 
-    // Find possible phone numbers
-    preg_match_all('/([(]\d{3}[)] *|\d{3}[\-\.\ ])?\d{3}[\-\.]\d{4}/', $text, $phones);
-    $res['phones'] = array_unique($phones[0]);
-
     // Search for "City, STATE Zip5-Zip4"
     preg_match_all('/(?<city>[A-Z][A-Za-z\-\.\ ]+[a-z])\h*,\h*(?<stateAbbr>[A-Z]{2})\h+(?<zip>\d{5}(?:\-\d{4})?)/',
       $text,
       $addresses,
       PREG_SET_ORDER);
+
+    // Find possible phone numbers
+    preg_match_all('/(?:([\D]|^))([(]\d{3}[)] *|\d{3}[\-\.\ ])?\d{3}[\-\.]\d{4}/', $text, $phones);
+    $res['phones'] = array_unique($phones[0]);
+
     // Expand state abbreviations into full state names.
     foreach ($addresses as $id => &$addrInfo) {
       $addrInfo['state'] = self::getStateName($addrInfo['stateAbbr']);
