@@ -1403,7 +1403,7 @@ function _buildInboxMenu($inboxNavID) {
         'attributes' => array(
           'label'      => 'Reports',
           'name'       => 'Reports',
-          'url'        => 'civicrm/imap/reports',
+          'url'        => 'civicrm/nyss/inbox/report',
           'permission' => 'access inbox polling',
           'operator'   => 'AND',
           'separator'  => 2,
