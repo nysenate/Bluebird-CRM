@@ -234,7 +234,7 @@ class CRM_Mailing_BAO_Mailing extends CRM_Mailing_DAO_Mailing {
         'is_deceased' => "$contact.is_deceased <> 1",
         'location_filter' => $location_filter,
         'email_not_null' => "( {$entityTable}.email IS NOT NULL AND {$entityTable}.email != '' )",
-        'on_hold' => "$email.on_hold = 0",
+        'on_hold' => "{$entityTable}.on_hold = 0",
         'temptable_filter' => 'temp.contact_id IS NULL',
       ),
       'order_by' => $order_by,
