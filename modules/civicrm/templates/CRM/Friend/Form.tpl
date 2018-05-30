@@ -2,7 +2,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -32,7 +32,7 @@
     {* Add button for donor to create their own Personal Campaign page *}
     {if $linkText}
    <div class="crm-section create_pcp_link-section">
-        <a href="{$linkTextUrl}" title="{$linkText}" class="button"><span>&raquo; {$linkText}</span></a>
+        <a href="{$linkTextUrl}" title="{$linkText|escape}" class="button"><span>&raquo; {$linkText}</span></a>
     </div><br /><br />
     {/if}
 

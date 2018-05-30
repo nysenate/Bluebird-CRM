@@ -274,11 +274,10 @@ VALUES
 ALTER TABLE `civicrm_mail_settings`
   ADD CONSTRAINT `FK_civicrm_mail_settings_domain_id` FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain` (`id`) ON DELETE CASCADE;
 
--- NYSS
 -- CRM-14436
--- ALTER TABLE `civicrm_mailing`
---  ADD COLUMN `hash` varchar(16) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Key for validating requests related to this mailing.',
---  ADD INDEX `index_hash` (`hash`);
+ALTER TABLE `civicrm_mailing`
+  ADD COLUMN `hash` varchar(16) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Key for validating requests related to this mailing.',
+  ADD INDEX `index_hash` (`hash`);
 
 -- CRM-14300
 UPDATE `civicrm_event` SET is_template = 0 WHERE is_template IS NULL;

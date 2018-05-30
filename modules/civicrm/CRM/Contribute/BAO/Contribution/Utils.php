@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 class CRM_Contribute_BAO_Contribution_Utils {
 
@@ -102,10 +102,26 @@ class CRM_Contribute_BAO_Contribution_Utils {
         'id' => CRM_Utils_Array::value('contribution_id', $paymentParams),
         'contact_id' => $contactID,
         'is_test' => $isTest,
-        'campaign_id' => CRM_Utils_Array::value('campaign_id', $paymentParams, CRM_Utils_Array::value('campaign_id', $form->_values)),
-        'contribution_page_id' => $form->_id,
         'source' => CRM_Utils_Array::value('source', $paymentParams, CRM_Utils_Array::value('description', $paymentParams)),
       );
+
+      // CRM-21200: Don't overwrite contribution details during 'Pay now' payment
+      if (empty($form->_params['contribution_id'])) {
+        $contributionParams['contribution_page_id'] = $form->_id;
+        $contributionParams['campaign_id'] = CRM_Utils_Array::value('campaign_id', $paymentParams, CRM_Utils_Array::value('campaign_id', $form->_values));
+      }
+      // In case of 'Pay now' payment, append the contribution source with new text 'Paid later via page ID: N.'
+      else {
+        // contribution.source only allows 255 characters so we are using ellipsify(...) to ensure it.
+        $contributionParams['source'] = CRM_Utils_String::ellipsify(
+          ts('Paid later via page ID: %1. %2', array(
+            1 => $form->_id,
+            2 => $contributionParams['source'],
+          )),
+          220 // eventually activity.description append price information to source text so keep it 220 to ensure string length doesn't exceed 255 characters.
+        );
+      }
+
       if (isset($paymentParams['line_item'])) {
         // @todo make sure this is consisently set at this point.
         $contributionParams['line_item'] = $paymentParams['line_item'];
@@ -114,6 +130,9 @@ class CRM_Contribute_BAO_Contribution_Utils {
         $contributionParams['payment_instrument_id'] = $paymentParams['payment_instrument_id'] = $form->_paymentProcessor['payment_instrument_id'];
       }
 
+      // @todo this is the wrong place for this - it should be done as close to form submission
+      // as possible
+      $paymentParams['amount'] = CRM_Utils_Rule::cleanMoney($paymentParams['amount']);
       $contribution = CRM_Contribute_Form_Contribution_Confirm::processFormContribution(
         $form,
         $paymentParams,
@@ -127,7 +146,7 @@ class CRM_Contribute_BAO_Contribution_Utils {
 
       $paymentParams['item_name'] = $form->_params['description'];
 
-      $paymentParams['qfKey'] = $form->controller->_key;
+      $paymentParams['qfKey'] = empty($paymentParams['qfKey']) ? $form->controller->_key : $paymentParams['qfKey'];
       if ($paymentParams['skipLineItem']) {
         // We are not processing the line item here because we are processing a membership.
         // Do not continue with contribution processing in this function.
@@ -468,15 +487,24 @@ LIMIT 1
    *   Amount of field.
    * @param float $taxRate
    *   Tax rate of selected financial account for field.
+   * @param bool $ugWeDoNotKnowIfItNeedsCleaning_Help
+   *   This should ALWAYS BE FALSE and then be removed. A 'clean' money string uses a standardised format
+   *   such as '1000.99' for one thousand $/Euro/CUR and ninety nine cents/units.
+   *   However, we are in the habit of not necessarily doing that so need to grandfather in
+   *   the new expectation.
    *
    * @return array
    *   array of tax amount
    *
    */
-  public static function calculateTaxAmount($amount, $taxRate) {
+  public static function calculateTaxAmount($amount, $taxRate, $ugWeDoNotKnowIfItNeedsCleaning_Help = FALSE) {
     $taxAmount = array();
+    if ($ugWeDoNotKnowIfItNeedsCleaning_Help) {
+      Civi::log()->warning('Deprecated function, make sure money is in usable format before calling this.', array('civi.tag' => 'deprecated'));
+      $amount = CRM_Utils_Rule::cleanMoney($amount);
+    }
     // There can not be any rounding at this stage - as this is prior to quantity multiplication
-    $taxAmount['tax_amount'] = ($taxRate / 100) * CRM_Utils_Rule::cleanMoney($amount);
+    $taxAmount['tax_amount'] = ($taxRate / 100) * $amount;
 
     return $taxAmount;
   }
@@ -495,6 +523,119 @@ LIMIT 1
    */
   public static function formatAmount($amount, $decimals = 2) {
     return number_format((float) round($amount, (int) $decimals), (int) $decimals, '.', '');
+  }
+
+  /**
+   * Get contribution statuses by entity e.g. contribution, membership or 'participant'
+   *
+   * @param string $usedFor
+   * @param int $id
+   *   Contribution ID
+   *
+   * @return array $statuses
+   *   Array of contribution statuses in array('status id' => 'label') format
+   */
+  public static function getContributionStatuses($usedFor = 'contribution', $id = NULL) {
+    if ($usedFor == 'pledge') {
+      $statusNames = CRM_Pledge_BAO_Pledge::buildOptions('status_id', 'validate');
+    }
+    else {
+      $statusNames = CRM_Contribute_BAO_Contribution::buildOptions('contribution_status_id', 'validate');
+    }
+
+    $statusNamesToUnset = array();
+    // on create fetch statuses on basis of component
+    if (!$id) {
+      $statusNamesToUnset = array(
+        'Refunded',
+        'Chargeback',
+        'Pending refund',
+      );
+
+      // Event registration and New Membership backoffice form support partially paid payment,
+      //  so exclude this status only for 'New Contribution' form
+      if ($usedFor == 'contribution') {
+        $statusNamesToUnset = array_merge($statusNamesToUnset, array(
+          'In Progress',
+          'Overdue',
+          'Partially paid',
+        ));
+      }
+      elseif ($usedFor == 'participant') {
+        $statusNamesToUnset = array_merge($statusNamesToUnset, array(
+          'Cancelled',
+          'Failed',
+        ));
+      }
+      elseif ($usedFor == 'membership') {
+        $statusNamesToUnset = array_merge($statusNamesToUnset, array(
+          'In Progress',
+          'Overdue',
+        ));
+      }
+    }
+    else {
+      $contributionStatus = CRM_Core_DAO::getFieldValue('CRM_Contribute_DAO_Contribution', $id, 'contribution_status_id');
+      $name = CRM_Utils_Array::value($contributionStatus, $statusNames);
+      switch ($name) {
+        case 'Completed':
+          // [CRM-17498] Removing unsupported status change options.
+          $statusNamesToUnset = array_merge($statusNamesToUnset, array(
+            'Pending',
+            'Failed',
+            'Partially paid',
+            'Pending refund',
+          ));
+          break;
+
+        case 'Cancelled':
+        case 'Chargeback':
+        case 'Refunded':
+          $statusNamesToUnset = array_merge($statusNamesToUnset, array(
+            'Pending',
+            'Failed',
+          ));
+          break;
+
+        case 'Pending':
+        case 'In Progress':
+          $statusNamesToUnset = array_merge($statusNamesToUnset, array(
+            'Refunded',
+            'Chargeback',
+          ));
+          break;
+
+        case 'Failed':
+          $statusNamesToUnset = array_merge($statusNamesToUnset, array(
+            'Pending',
+            'Refunded',
+            'Chargeback',
+            'Completed',
+            'In Progress',
+            'Cancelled',
+          ));
+          break;
+      }
+    }
+
+    foreach ($statusNamesToUnset as $name) {
+      unset($statusNames[CRM_Utils_Array::key($name, $statusNames)]);
+    }
+
+    // based on filtered statuse names fetch the final list of statuses in array('id' => 'label') format
+    if ($usedFor == 'pledge') {
+      $statuses = CRM_Pledge_BAO_Pledge::buildOptions('status_id');
+    }
+    else {
+      $statuses = CRM_Contribute_BAO_Contribution::buildOptions('contribution_status_id');
+    }
+    foreach ($statuses as $statusID => $label) {
+      if (!array_key_exists($statusID, $statusNames)) {
+        unset($statuses[$statusID]);
+      }
+    }
+
+    return $statuses;
   }
 
 }

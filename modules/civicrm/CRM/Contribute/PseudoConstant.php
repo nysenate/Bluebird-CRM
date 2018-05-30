@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 
 /**
@@ -95,19 +95,24 @@ class CRM_Contribute_PseudoConstant extends CRM_Core_PseudoConstant {
   private static $batch;
 
   /**
-   * DEPRECATED. Please use the buildOptions() method in the appropriate BAO object.
+   * @deprecated. Please use the buildOptions() method in the appropriate BAO object.
+   *
    *
    * Get all the financial types
    *
    *
    * @param int $id
+   * @param bool $includeDisabled
    *
    * @return array
    *   array reference of all financial types if any
    */
-  public static function &financialType($id = NULL) {
+  public static function &financialType($id = NULL, $includeDisabled = FALSE) {
     if (!self::$financialType) {
-      $condition = " is_active = 1 ";
+      $condition = "";
+      if (!$includeDisabled) {
+        $condition = " is_active = 1 ";
+      }
       CRM_Core_PseudoConstant::populate(
         self::$financialType,
         'CRM_Financial_DAO_FinancialType',
@@ -126,13 +131,14 @@ class CRM_Contribute_PseudoConstant extends CRM_Core_PseudoConstant {
   }
 
   /**
-   * DEPRECATED. Please use the buildOptions() method in the appropriate BAO object.
+   * @deprecated. Please use the buildOptions() method in the appropriate BAO object.
+   * TODO: buildOptions() doesn't replace this as it doesn't support filtering, which is used with this function.
    *
-   * Get all the financial Accounts
+   * Get all/filtered array of the financial Accounts
    *
    *
    * @param int $id
-   * @param int $financialAccountTypeId
+   * @param int $financialAccountTypeId Optional filer to return only financial accounts of type
    * @param string $retrieveColumn
    * @param string $key
    *
@@ -179,7 +185,7 @@ class CRM_Contribute_PseudoConstant extends CRM_Core_PseudoConstant {
   }
 
   /**
-   * DEPRECATED. Please use the buildOptions() method in the appropriate BAO object.
+   * @deprecated. Please use the buildOptions() method in the appropriate BAO object.
    *
    * Get all the contribution pages
    *
@@ -214,7 +220,7 @@ class CRM_Contribute_PseudoConstant extends CRM_Core_PseudoConstant {
   }
 
   /**
-   * DEPRECATED. Please use the buildOptions() method in the appropriate BAO object.
+   * @deprecated. Please use the buildOptions() method in the appropriate BAO object.
    *
    * Get all the payment instruments
    *

@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -31,7 +31,7 @@
  * Serves as a wrapper between the UserFrameWork and Core CRM
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 class CRM_Core_Invoke {
 
@@ -132,10 +132,6 @@ class CRM_Core_Invoke {
   static public function init($args) {
     // first fire up IDS and check for bad stuff
     $config = CRM_Core_Config::singleton();
-    if (!CRM_Core_Permission::check('skip IDS check')) {
-      $ids = new CRM_Core_IDS();
-      $ids->check($args);
-    }
 
     // also initialize the i18n framework
     require_once 'CRM/Core/I18n.php';
@@ -197,6 +193,9 @@ class CRM_Core_Invoke {
    * @return string, HTML
    */
   static public function runItem($item) {
+    $ids = new CRM_Core_IDS();
+    $ids->check($item);
+
     $config = CRM_Core_Config::singleton();
     if ($config->userFramework == 'Joomla' && $item) {
       $config->userFrameworkURLVar = 'task';
@@ -394,9 +393,6 @@ class CRM_Core_Invoke {
     }
     CRM_Core_DAO_AllCoreTables::reinitializeCache(TRUE);
     CRM_Core_ManagedEntities::singleton(TRUE)->reconcile();
-
-    //CRM-16257 update Config.IDS.ini might be an old copy
-    CRM_Core_IDS::createConfigFile(TRUE);
   }
 
 }

@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  * $Id$
  *
  */
@@ -196,13 +196,13 @@ class CRM_Dedupe_BAO_RuleGroup extends CRM_Dedupe_DAO_RuleGroup {
     if ($this->params && !$this->noRules) {
       $tempTableQuery = "CREATE TEMPORARY TABLE dedupe (id1 int, weight int, UNIQUE UI_id1 (id1)) ENGINE=InnoDB";
       $insertClause = "INSERT INTO dedupe (id1, weight)";
-      $groupByClause = "GROUP BY id1";
+      $groupByClause = "GROUP BY id1, weight";
       $dupeCopyJoin = " JOIN dedupe_copy ON dedupe_copy.id1 = t1.column WHERE ";
     }
     else {
       $tempTableQuery = "CREATE TEMPORARY TABLE dedupe (id1 int, id2 int, weight int, UNIQUE UI_id1_id2 (id1, id2)) ENGINE=InnoDB";
       $insertClause = "INSERT INTO dedupe (id1, id2, weight)";
-      $groupByClause = "GROUP BY id1, id2";
+      $groupByClause = "GROUP BY id1, id2, weight";
       $dupeCopyJoin = " JOIN dedupe_copy ON dedupe_copy.id1 = t1.column AND dedupe_copy.id2 = t2.column WHERE ";
     }
     $patternColumn = '/t1.(\w+)/';
@@ -238,6 +238,18 @@ class CRM_Dedupe_BAO_RuleGroup extends CRM_Dedupe_DAO_RuleGroup {
 
             preg_match($patternColumn, $query, $matches);
             $query = str_replace(' WHERE ', str_replace('column', $matches[1], $dupeCopyJoin), $query);
+
+            // CRM-19612: If there's a union, there will be two WHEREs, and you
+            // can't use the temp table twice.
+            if (preg_match('/dedupe_copy[\S\s]*(union)[\S\s]*dedupe_copy/i', $query, $matches, PREG_OFFSET_CAPTURE)) {
+              // Make a second temp table:
+              $dao->query("DROP TEMPORARY TABLE IF EXISTS dedupe_copy_2");
+              $dao->query("CREATE TEMPORARY TABLE dedupe_copy_2 SELECT * FROM dedupe WHERE weight >= {$weightSum}");
+              $dao->free();
+              // After the union, use that new temp table:
+              $part1 = substr($query, 0, $matches[1][1]);
+              $query = $part1 . str_replace('dedupe_copy', 'dedupe_copy_2', substr($query, $matches[1][1]));
+            }
           }
           $searchWithinDupes = 1;
 

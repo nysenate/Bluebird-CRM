@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 class CRM_Core_BAO_Navigation extends CRM_Core_DAO_Navigation {
 
@@ -55,27 +55,6 @@ class CRM_Core_BAO_Navigation extends CRM_Core_DAO_Navigation {
    */
   public static function setIsActive($id, $is_active) {
     return CRM_Core_DAO::setFieldValue('CRM_Core_DAO_Navigation', $id, 'is_active', $is_active);
-  }
-
-  /**
-   * Get existing / build navigation for CiviCRM Admin Menu.
-   *
-   * @return array
-   *   associated array
-   */
-  public static function getMenus() {
-    $menus = array();
-
-    $menu = new CRM_Core_DAO_Menu();
-    $menu->domain_id = CRM_Core_Config::domainID();
-    $menu->find();
-
-    while ($menu->fetch()) {
-      if ($menu->title) {
-        $menus[$menu->path] = $menu->title;
-      }
-    }
-    return $menus;
   }
 
   /**
@@ -271,26 +250,24 @@ FROM civicrm_navigation WHERE domain_id = $domainID {$whereClause} ORDER BY pare
     $domainID = CRM_Core_Config::domainID();
     $navigationTree = array();
 
-    // get the list of menus
-    $query = "
-SELECT id, label, url, permission, permission_operator, has_separator, parent_id, is_active, name
-FROM civicrm_navigation
-WHERE domain_id = $domainID
-ORDER BY parent_id, weight";
+    $navigationMenu = new self();
+    $navigationMenu->domain_id = $domainID;
+    $navigationMenu->orderBy('parent_id, weight');
+    $navigationMenu->find();
 
-    $navigation = CRM_Core_DAO::executeQuery($query);
-    while ($navigation->fetch()) {
-      $navigationTree[$navigation->id] = array(
+    while ($navigationMenu->fetch()) {
+      $navigationTree[$navigationMenu->id] = array(
         'attributes' => array(
-          'label' => $navigation->label,
-          'name' => $navigation->name,
-          'url' => $navigation->url,
-          'permission' => $navigation->permission,
-          'operator' => $navigation->permission_operator,
-          'separator' => $navigation->has_separator,
-          'parentID' => $navigation->parent_id,
-          'navID' => $navigation->id,
-          'active' => $navigation->is_active,
+          'label' => $navigationMenu->label,
+          'name' => $navigationMenu->name,
+          'url' => $navigationMenu->url,
+          'icon' => $navigationMenu->icon,
+          'permission' => $navigationMenu->permission,
+          'operator' => $navigationMenu->permission_operator,
+          'separator' => $navigationMenu->has_separator,
+          'parentID' => $navigationMenu->parent_id,
+          'navID' => $navigationMenu->id,
+          'active' => $navigationMenu->is_active,
         ),
       );
     }
@@ -550,6 +527,11 @@ ORDER BY parent_id, weight";
       }
     }
 
+    if (!empty($value['attributes']['icon'])) {
+      $menuIcon = sprintf('<i class="%s"></i>', $value['attributes']['icon']);
+      $name = $menuIcon . $name;
+    }
+
     if ($makeLink) {
       $url = CRM_Utils_System::evalUrl($url);
       if ($target) {
@@ -626,7 +608,8 @@ ORDER BY parent_id, weight";
   public static function resetNavigation($contactID = NULL) {
     $newKey = CRM_Utils_String::createRandom(self::CACHE_KEY_STRLEN, CRM_Utils_String::ALPHANUMERIC);
     if (!$contactID) {
-      $query = "UPDATE civicrm_setting SET value = '$newKey' WHERE name='navigation' AND contact_id IS NOT NULL";
+      $ser = serialize($newKey);
+      $query = "UPDATE civicrm_setting SET value = '$ser' WHERE name='navigation' AND contact_id IS NOT NULL";
       CRM_Core_DAO::executeQuery($query);
       CRM_Core_BAO_Cache::deleteGroup('navigation');
     }

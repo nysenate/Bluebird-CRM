@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 
 /**
@@ -52,6 +52,7 @@ class CRM_Admin_Form_Setting_Smtp extends CRM_Admin_Form_Setting {
     $this->addRadio('outBound_option', ts('Select Mailer'), $outBoundOption);
 
     CRM_Utils_System::setTitle(ts('Settings - Outbound Mail'));
+    $this->add('checkbox', 'allow_mail_from_logged_in_contact', ts('Allow Mail to be sent from logged in contact\'s email address'));
     $this->add('text', 'sendmail_path', ts('Sendmail Path'));
     $this->add('text', 'sendmail_args', ts('Sendmail Argument'));
     $this->add('text', 'smtpServer', ts('SMTP Server'));
@@ -78,6 +79,9 @@ class CRM_Admin_Form_Setting_Smtp extends CRM_Admin_Form_Setting {
     CRM_Utils_System::flushCache();
 
     $formValues = $this->controller->exportValues($this->_name);
+
+    Civi::settings()->set('allow_mail_from_logged_in_contact', (!empty($formValues['allow_mail_from_logged_in_contact'])));
+    unset($formValues['allow_mail_from_logged_in_contact']);
 
     $buttonName = $this->controller->getButtonName();
     // check if test button
@@ -166,7 +170,10 @@ class CRM_Admin_Form_Setting_Smtp extends CRM_Admin_Form_Setting {
         $errorScope = CRM_Core_TemporaryErrorScope::ignoreException();
         $result = $mailer->send($toEmail, $headers, $message);
         unset($errorScope);
-        if (!is_a($result, 'PEAR_Error')) {
+        if (defined('CIVICRM_MAIL_LOG')) {
+          CRM_Core_Session::setStatus($testMailStatusMsg . ts('You have defined CIVICRM_MAIL_LOG - no mail will be sent.  Your %1 settings have not been tested.', array(1 => strtoupper($mailerName))), ts("Mail not sent"), "warning");
+        }
+        elseif (!is_a($result, 'PEAR_Error')) {
           CRM_Core_Session::setStatus($testMailStatusMsg . ts('Your %1 settings are correct. A test email has been sent to your email address.', array(1 => strtoupper($mailerName))), ts("Mail Sent"), "success");
         }
         else {
@@ -256,6 +263,7 @@ class CRM_Admin_Form_Setting_Smtp extends CRM_Admin_Form_Setting {
         }
       }
     }
+    $this->_defaults['allow_mail_from_logged_in_contact'] = Civi::settings()->get('allow_mail_from_logged_in_contact');
     return $this->_defaults;
   }
 

@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 
 /**
@@ -140,6 +140,13 @@ class CRM_Member_Form extends CRM_Contribute_Form_AbstractEditPayment {
       if (isset($defaults['status'])) {
         $this->assign('membershipStatus', $defaults['status']);
       }
+
+      if (!empty($defaults['is_override'])) {
+        $defaults['is_override'] = CRM_Member_StatusOverrideTypes::PERMANENT;
+      }
+      if (!empty($defaults['status_override_end_date'])) {
+        $defaults['is_override'] = CRM_Member_StatusOverrideTypes::UNTIL_DATE;
+      }
     }
 
     if ($this->_action & CRM_Core_Action::ADD) {
@@ -153,6 +160,21 @@ class CRM_Member_Form extends CRM_Contribute_Form_AbstractEditPayment {
         $defaults['member_of_contact_id'], 'display_name'
       );
     }
+    if (!empty($defaults['membership_type_id'])) {
+      $this->_memType = $defaults['membership_type_id'];
+    }
+    if (is_numeric($this->_memType)) {
+      $defaults['membership_type_id'] = array();
+      $defaults['membership_type_id'][0] = CRM_Core_DAO::getFieldValue('CRM_Member_DAO_MembershipType',
+        $this->_memType,
+        'member_of_contact_id',
+        'id'
+      );
+      $defaults['membership_type_id'][1] = $this->_memType;
+    }
+    else {
+      $defaults['membership_type_id'] = $this->_memType;
+    }
     return $defaults;
   }
 
@@ -161,13 +183,7 @@ class CRM_Member_Form extends CRM_Contribute_Form_AbstractEditPayment {
    */
   public function buildQuickForm() {
 
-    if ($this->_mode) {
-      $this->add('select', 'payment_processor_id',
-        ts('Payment Processor'),
-        $this->_processors, TRUE,
-        array('onChange' => "buildAutoRenew( null, this.value, '{$this->_mode}');")
-      );
-    }
+    $this->addPaymentProcessorSelect(TRUE, FALSE, TRUE);
     CRM_Core_Payment_Form::buildPaymentForm($this, $this->_paymentProcessor, FALSE, TRUE, $this->getDefaultPaymentInstrumentId());
     // Build the form for auto renew. This is displayed when in credit card mode or update mode.
     // The reason for showing it in update mode is not that clear.
@@ -371,7 +387,7 @@ class CRM_Member_Form extends CRM_Contribute_Form_AbstractEditPayment {
     $priceFields = CRM_Member_BAO_Membership::setQuickConfigMembershipParameters(
       $formValues['membership_type_id'][0],
       $formValues['membership_type_id'][1],
-      $formValues['total_amount'],
+      CRM_Utils_Array::value('total_amount', $formValues),
       $this->_priceSetId
     );
     $formValues = array_merge($formValues, $priceFields['price_fields']);

@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
  *
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  * $Id$
  *
  */
@@ -645,8 +645,8 @@ class CRM_Event_Form_Participant extends CRM_Contribute_Form_AbstractEditPayment
     if ($this->_mode) {
       // exclude events which are not monetary when credit card registration is used
       $eventFieldParams['api']['params']['is_monetary'] = 1;
-      $this->add('select', 'payment_processor_id', ts('Payment Processor'), $this->_processors, TRUE);
     }
+    $this->addPaymentProcessorSelect(TRUE, FALSE, FALSE);
 
     $element = $this->addEntityRef('event_id', ts('Event'), $eventFieldParams, TRUE);
 
@@ -815,7 +815,9 @@ class CRM_Event_Form_Participant extends CRM_Contribute_Form_AbstractEditPayment
       if (empty($values['payment_instrument_id'])) {
         $errorMsg['payment_instrument_id'] = ts('Payment Method is a required field.');
       }
-      CRM_Price_BAO_PriceField::priceSetValidation($values['priceSetId'], $values, $errorMsg);
+      if (!empty($values['priceSetId'])) {
+        CRM_Price_BAO_PriceField::priceSetValidation($values['priceSetId'], $values, $errorMsg);
+      }
     }
 
     // validate contribution status for 'Failed'.
@@ -984,7 +986,7 @@ class CRM_Event_Form_Participant extends CRM_Contribute_Form_AbstractEditPayment
     }
     if ($this->_isPaidEvent) {
 
-      $contributionParams = array();
+      $contributionParams = array('skipCleanMoney' => TRUE);
       $lineItem = array();
       $additionalParticipantDetails = array();
       if (CRM_Contribute_BAO_Contribution::checkContributeSettings('deferred_revenue_enabled')) {
@@ -1027,6 +1029,9 @@ class CRM_Event_Form_Participant extends CRM_Contribute_Form_AbstractEditPayment
 
         //lets carry currency, CRM-4453
         $params['fee_currency'] = $config->defaultCurrency;
+        if (!isset($lineItem[0])) {
+          $lineItem[0] = array();
+        }
         CRM_Price_BAO_PriceSet::processAmount($this->_values['fee'],
           $params, $lineItem[0]
         );
@@ -1303,9 +1308,8 @@ class CRM_Event_Form_Participant extends CRM_Contribute_Form_AbstractEditPayment
         'participant_id' => $participants[0]->id,
         'contribution_id' => $contribution->id,
       );
-      $ids = array();
 
-      CRM_Event_BAO_ParticipantPayment::create($paymentParticipant, $ids);
+      CRM_Event_BAO_ParticipantPayment::create($paymentParticipant);
       $this->_contactIds[] = $this->_contactId;
     }
     else {
@@ -1530,7 +1534,7 @@ class CRM_Event_Form_Participant extends CRM_Contribute_Form_AbstractEditPayment
       $this->assign('module', 'Event Registration');
       //use of the message template below requires variables in different format
       $event = $events = array();
-      $returnProperties = array('fee_label', 'start_date', 'end_date', 'is_show_location', 'title');
+      $returnProperties = array('event_type_id', 'fee_label', 'start_date', 'end_date', 'is_show_location', 'title');
 
       //get all event details.
       CRM_Core_DAO::commonRetrieveAll('CRM_Event_DAO_Event', 'id', $params['event_id'], $events, $returnProperties);
@@ -1628,9 +1632,12 @@ class CRM_Event_Form_Participant extends CRM_Contribute_Form_AbstractEditPayment
       //format submitted data
       foreach ($params['custom'] as $fieldID => $values) {
         foreach ($values as $fieldValue) {
-          $customFields[$fieldID]['id'] = $fieldID;
-          $formattedValue = CRM_Core_BAO_CustomField::displayValue($fieldValue['value'], $fieldID, $participants[0]->id);
-          $customGroup[$customFields[$fieldID]['groupTitle']][$customFields[$fieldID]['label']] = str_replace('&nbsp;', '', $formattedValue);
+          $isPublic = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_CustomGroup', $fieldValue['custom_group_id'], 'is_public');
+          if ($isPublic) {
+            $customFields[$fieldID]['id'] = $fieldID;
+            $formattedValue = CRM_Core_BAO_CustomField::displayValue($fieldValue['value'], $fieldID, $participants[0]->id);
+            $customGroup[$customFields[$fieldID]['groupTitle']][$customFields[$fieldID]['label']] = str_replace('&nbsp;', '', $formattedValue);
+          }
         }
       }
 
@@ -1661,7 +1668,7 @@ class CRM_Event_Form_Participant extends CRM_Contribute_Form_AbstractEditPayment
           //add dataArray in the receipts in ADD and UPDATE condition
           $dataArray = array();
           if ($this->_action & CRM_Core_Action::ADD) {
-            $line = $lineItem[0];
+            $line = isset($lineItem[0]) ? $lineItem[0] : array();
           }
           elseif ($this->_action & CRM_Core_Action::UPDATE) {
             $line = $this->_values['line_items'];

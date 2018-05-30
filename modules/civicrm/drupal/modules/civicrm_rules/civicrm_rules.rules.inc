@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,12 +23,12 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  * $Id$
  *
  */
@@ -39,7 +39,7 @@ require_once 'civicrm_rules.event-eval.inc';
 require_once 'civicrm_rules.participant-eval.inc';
 
 /**
- * Implements hook_rules_file_info() on behalf of the user module.
+ * Implements hook_rules_file_info().
  */
 function civicrm_rules_rules_file_info() {
   return array(
@@ -51,7 +51,7 @@ function civicrm_rules_rules_file_info() {
 }
 
 /**
- * Implementation of hook_rules_event_info().
+ * Implements hook_rules_event_info().
  */
 function civicrm_rules_rules_event_info() {
   require_once 'civicrm_rules_event.inc';
@@ -80,7 +80,7 @@ function civicrm_rules_rules_admin_access() {
 }
 
 /**
- * Implementation of hook_rules_action_info().
+ * Implements hook_rules_action_info().
  */
 function civicrm_rules_rules_action_info() {
   require_once 'civicrm_rules_action.inc';
@@ -88,10 +88,9 @@ function civicrm_rules_rules_action_info() {
 }
 
 /**
- * Implementation of hook_rules_data_type_info().
+ * Implements hook_rules_data_type_info().
  */
 function civicrm_rules_rules_data_info() {
   require_once 'civicrm_rules_entity.inc';
   return civicrm_rules_get_entity();
 }
-

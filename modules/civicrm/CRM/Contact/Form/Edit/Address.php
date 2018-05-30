@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 
 /**
@@ -55,9 +55,6 @@ class CRM_Contact_Form_Edit_Address {
     else {
       $blockId = $addressBlockCount;
     }
-
-    $config = CRM_Core_Config::singleton();
-    $countryDefault = $config->defaultContactCountry;
 
     $form->applyFilter('__ALL__', 'trim');
 
@@ -93,7 +90,6 @@ class CRM_Contact_Form_Edit_Address {
     $addressOptions = CRM_Core_BAO_Setting::valueOptions(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
       'address_options', TRUE, NULL, TRUE
     );
-    $attributes = CRM_Core_DAO::getAttribute('CRM_Core_DAO_Address');
 
     $elements = array(
       'address_name',
@@ -115,7 +111,7 @@ class CRM_Contact_Form_Edit_Address {
     );
 
     foreach ($elements as $name) {
-      //Remove id from name, to allow comparison against enabled addressOtions.
+      //Remove id from name, to allow comparison against enabled addressOptions.
       $nameWithoutID = strpos($name, '_id') !== FALSE ? substr($name, 0, -3) : $name;
       // Skip fields which are not enabled in the address options.
       if (empty($addressOptions[$nameWithoutID])) {
@@ -153,7 +149,7 @@ class CRM_Contact_Form_Edit_Address {
 
     // CRM-11665 geocode override option
     $geoCode = FALSE;
-    if (!empty($config->geocodeMethod)) {
+    if (CRM_Utils_GeocodeProvider::getUsableClassName()) {
       $geoCode = TRUE;
       $form->addElement('checkbox',
         "address[$blockId][manual_geo_code]",
@@ -204,8 +200,7 @@ class CRM_Contact_Form_Edit_Address {
       // more handling done in formRule func
       CRM_Contact_Form_Edit_Address::storeRequiredCustomDataInfo($form, $groupTree);
 
-      $template = CRM_Core_Smarty::singleton();
-      $tplGroupTree = $template->get_template_vars('address_groupTree');
+      $tplGroupTree = CRM_Core_Smarty::singleton()->get_template_vars('address_groupTree');
       $tplGroupTree = empty($tplGroupTree) ? array() : $tplGroupTree;
 
       $form->assign('address_groupTree', $tplGroupTree + array($blockId => $groupTree));

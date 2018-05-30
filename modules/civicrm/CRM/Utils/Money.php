@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 
 /**
@@ -123,6 +123,35 @@ class CRM_Utils_Money {
       '%c' => CRM_Utils_Array::value($currency, self::$_currencySymbols, $currency),
     );
     return strtr($format, $replacements);
+  }
+
+  /**
+   * This is a placeholder function for calculating the number of decimal places for a currency.
+   *
+   * Currently code assumes 2 decimal places but some currencies (bitcoin, middle eastern) have
+   * more. By using this function we can signpost the locations where the number of decimal places is
+   * currency specific for future enhancement.
+   *
+   * @param string $currency
+   *
+   * @return int
+   *   Number of decimal places.
+   */
+  public static function getCurrencyPrecision($currency = NULL) {
+    return 2;
+  }
+
+  /**
+   * Subtract currencies using integers instead of floats, to preserve precision
+   *
+   * @return float
+   *   Result of subtracting $rightOp from $leftOp to the precision of $currency
+   */
+  public static function subtractCurrencies($leftOp, $rightOp, $currency) {
+    if (is_numeric($leftOp) && is_numeric($rightOp)) {
+      $precision = pow(10, self::getCurrencyPrecision($currency));
+      return (($leftOp * $precision) - ($rightOp * $precision)) / $precision;
+    }
   }
 
 }
