@@ -278,7 +278,18 @@ class CRM_NYSS_IMAP_Message
     $body = nl2br($body);
 
     // Remove angle brackets from email addresses so they don't render as HTML
-    return preg_replace('/<((mailto:)?[-\w.]+@[-\w.]+)>/', '$1', $body);
+    // Convert tabs and non-breaking spaces; remove non-printing characters.
+    $patterns = [
+      '/<((mailto:)?[-\w.]+@[-\w.]+)>/',
+      '/[\x09\xA0]/',
+      '/[^\x20-\x7F]+/',
+    ];
+
+    $replacements = [
+      '$1', ' ', ''
+    ];
+
+    return preg_replace($patterns, $replacements, $body);
   } // mangleHTML()
 
 
