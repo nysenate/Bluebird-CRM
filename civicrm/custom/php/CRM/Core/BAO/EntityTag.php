@@ -424,6 +424,7 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
     return $entityTagDetails;
   }
 	
+  /**
    * Merge two tags
    *
    * Tag A will inherit all of tag B's properties.
