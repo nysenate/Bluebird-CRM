@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 
 /**
@@ -142,6 +142,9 @@ WHERE contact_id = %1
    * Deletes all the cache entries.
    */
   public static function resetCache() {
+    if (!CRM_Core_Config::isPermitCacheFlushMode()) {
+      return;
+    }
     // reset any static caching
     self::$_cache = NULL;
 

@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,12 +23,12 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  * $Id$
  *
  */
@@ -73,7 +73,7 @@ function civicrm_rules_rules_action_mailing_send_email($to,
       $params['toEmail'] = CRM_Utils_Token::replaceMailingTokens($toEmail, $state->variables['mailing'], NULL, $tokens);
 
       //only process user permission tokens if used in toEmail
-      if ( in_array(trim($toEmail, '{}'), $tokens['user']) ) {
+      if (in_array(trim($toEmail, '{}'), $tokens['user'])) {
         //we require a TO email, but can only send one; so we strip the first off and send the rest as CCs
         $userEmails = explode(',', CRM_Utils_Token::replaceUserTokens($params['toEmail'], $tokens));
         $params['toEmail'] = $userEmails[0];
@@ -93,4 +93,3 @@ function civicrm_rules_condition_mailing_approved($mailing, $settings) {
 function civicrm_rules_condition_mailing_rejected($mailing, $settings) {
   return $mailing->approval_status_id != 1;
 }
-

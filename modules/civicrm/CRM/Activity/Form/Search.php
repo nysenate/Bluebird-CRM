@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 
 /**
@@ -98,6 +98,13 @@ class CRM_Activity_Form_Search extends CRM_Core_Form_Search {
     }
     else {
       $this->_formValues = $this->get('formValues');
+
+      if ($this->_force) {
+        // If we force the search then merge form values with url values
+        // and set submit values to form values.
+        $this->_formValues = array_merge((array) $this->_formValues, CRM_Utils_Request::exportValues());
+        $this->_submitValues = $this->_formValues;
+      }
     }
 
     if (empty($this->_formValues)) {
@@ -163,9 +170,7 @@ class CRM_Activity_Form_Search extends CRM_Core_Form_Search {
         $this->addRowSelectors($rows);
       }
 
-      $permission = CRM_Core_Permission::getPermission();
-
-      $this->addTaskMenu(CRM_Activity_Task::permissionedTaskTitles($permission));
+      $this->addTaskMenu(CRM_Activity_Task::permissionedTaskTitles(CRM_Core_Permission::getPermission()));
     }
 
   }

@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 class CRM_Case_XMLProcessor_Process extends CRM_Case_XMLProcessor {
   /**
@@ -237,6 +237,7 @@ class CRM_Case_XMLProcessor_Process extends CRM_Case_XMLProcessor {
         'is_active' => 1,
         'case_id' => $params['caseID'],
         'start_date' => date("Ymd"),
+        'end_date' => CRM_Utils_Array::value('relationship_end_date', $params),
       );
 
       if (!$this->createRelationship($relationshipParams)) {
@@ -361,7 +362,7 @@ class CRM_Case_XMLProcessor_Process extends CRM_Case_XMLProcessor {
    * @param array $params
    */
   public function deleteEmptyActivity(&$params) {
-    $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
+    $activityContacts = CRM_Activity_BAO_ActivityContact::buildOptions('record_type_id', 'validate');
     $targetID = CRM_Utils_Array::key('Activity Targets', $activityContacts);
 
     $query = "

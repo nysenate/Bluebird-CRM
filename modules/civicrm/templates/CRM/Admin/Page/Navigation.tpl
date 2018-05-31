@@ -2,7 +2,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -60,7 +60,7 @@
             CRM.api3('Navigation', 'get', {
               domain_id: {/literal}{$config->domainID()}{literal},
               options: {limit: 0, sort: 'weight'},
-              return: ['label', 'parent_id'],
+              return: ['label', 'parent_id', 'icon'],
               name: {'!=': 'Home'},
               sequential: 1
             }).done(function(data) {
@@ -69,7 +69,7 @@
                 items.push({
                   id: value.id,
                   text: value.label,
-                  icon: false,
+                  icon: value.icon || false,
                   parent: value.parent_id || '#'
                 });
               });

@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,7 +27,7 @@
 
 /**
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 
 /**
@@ -566,6 +566,11 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration {
         $adminFieldVisible = TRUE;
       }
 
+      $hideAdminValues = TRUE;
+      if (CRM_Core_Permission::check('edit event participants')) {
+        $hideAdminValues = FALSE;
+      }
+
       foreach ($form->_feeBlock as $field) {
         // public AND admin visibility fields are included for back-office registration and back-office change selections
         if (CRM_Utils_Array::value('visibility', $field) == 'public' ||
@@ -583,8 +588,21 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration {
 
           //user might modified w/ hook.
           $options = CRM_Utils_Array::value('options', $field);
+          $formClasses = array('CRM_Event_Form_Participant', 'CRM_Event_Form_ParticipantFeeSelection');
+
           if (!is_array($options)) {
             continue;
+          }
+          elseif ($hideAdminValues && !in_array($className, $formClasses)) {
+            $publicVisibilityID = CRM_Price_BAO_PriceField::getVisibilityOptionID('public');
+            $adminVisibilityID = CRM_Price_BAO_PriceField::getVisibilityOptionID('admin');
+
+            foreach ($options as $key => $currentOption) {
+              $optionVisibility = CRM_Utils_Array::value('visibility_id', $currentOption, $publicVisibilityID);
+              if ($optionVisibility == $adminVisibilityID) {
+                unset($options[$key]);
+              }
+            }
           }
 
           $optionFullIds = CRM_Utils_Array::value('option_full_ids', $field, array());

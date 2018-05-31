@@ -2,7 +2,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -129,7 +129,7 @@
         </tr>
         <tr id="fromEmail">
           <td class="label">{$form.from_email_address.label}</td>
-          <td>{$form.from_email_address.html}</td>
+          <td>{$form.from_email_address.html} {help id="id-from_email" file="CRM/Contact/Form/Task/Email.hlp" isAdmin=$isAdmin}</td>
         </tr>
         <tr id="notice" class="crm-member-membershiprenew-form-block-receipt_text_renewal">
           <td class="label">{$form.receipt_text_renewal.label}</td>
@@ -179,14 +179,6 @@
   {/if}
 
   {if !$membershipMode}
-    {include file="CRM/common/showHideByFieldValue.tpl"
-    trigger_field_id    ="payment_instrument_id"
-    trigger_value       = '4'
-    target_element_id   ="checkNumber"
-    target_element_type ="table-row"
-    field_type          ="select"
-    invert              = 0
-    }
     {include file="CRM/common/showHideByFieldValue.tpl"
     trigger_field_id    ="send_receipt"
     trigger_value       =""

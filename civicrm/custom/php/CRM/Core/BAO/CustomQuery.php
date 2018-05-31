@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
  *
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 class CRM_Core_BAO_CustomQuery {
   const PREFIX = 'custom_value_';
@@ -179,6 +179,7 @@ SELECT f.id, f.label, f.data_type,
     while ($dao->fetch()) {
       // get the group dao to figure which class this custom field extends
       $extends = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_CustomGroup', $dao->custom_group_id, 'extends');
+      $extendsTable = '';
       if (array_key_exists($extends, self::$extendsMap)) {
         $extendsTable = self::$extendsMap[$extends];
       }

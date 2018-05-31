@@ -207,6 +207,9 @@ class CRM_Export_BAO_Export {
     }
 
     if (!empty($groupBy)) {
+      if (!Civi::settings()->get('searchPrimaryDetailsOnly')) {
+        CRM_Core_DAO::disableFullGroupByMode();
+      }
       $groupBy = CRM_Contact_BAO_Query::getGroupByFromSelectColumns($query->_select, $groupBy);
     }
 
@@ -615,7 +618,6 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
       if ($relationReturnProperties = CRM_Utils_Array::value($rel, $returnProperties)) {
         $allRelContactArray[$rel] = array();
         // build Query for each relationship
-        //NYSS 7197
         $relationQuery[$rel] = new CRM_Contact_BAO_Query(NULL, $relationReturnProperties,
           NULL, FALSE, FALSE, $queryMode
         );
@@ -792,29 +794,15 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
     $limitReached = FALSE;
     while (!$limitReached) {
       $limitQuery = "{$queryString} LIMIT {$offset}, {$rowCount}";
-      //NYSS
-      //$dao = CRM_Core_DAO::executeUnbufferedQuery($limitQuery);
-      $dao = CRM_Core_DAO::executeQuery($limitQuery);
+      $iterationDAO = CRM_Core_DAO::executeQuery($limitQuery);
       // If this is less than our limit by the end of the iteration we do not need to run the query again to
       // check if some remain.
       $rowsThisIteration = 0;
 
-      while ($dao->fetch()) {
+      while ($iterationDAO->fetch()) {
         $count++;
         $rowsThisIteration++;
         $row = array();
-
-        //convert the pseudo constants
-        // CRM-14398 there is problem in this architecture that is not easily solved. For now we are using the cloned
-        // temporary iterationDAO object to get around it.
-        // the issue is that the convertToPseudoNames function is adding additional properties (e.g for campaign) to the DAO object
-        // these additional properties are NOT reset when the $dao cycles through the while loop
-        // nor are they overwritten as they are not in the loop
-        // the convertToPseudoNames will not adequately over-write them either as it doesn't 'kick-in' unless the
-        // relevant property is set.
-        // It may be that a long-term fix could be introduced there - however, it's probably necessary to figure out how to test the
-        // export class before tackling a better architectural fix
-        $iterationDAO = clone $dao;
         $query->convertToPseudoNames($iterationDAO);
 
         //first loop through output columns so that we return what is required, and in same order.
@@ -843,7 +831,6 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
               }
               // get display name of contact that address is shared.
               //NYSS 11861
-              //$fieldValue = CRM_Contact_BAO_Contact::getMasterDisplayName($masterAddressId, $iterationDAO->contact_id);
               if (!$mergeSameAddress) {
                 $fieldValue = CRM_Contact_BAO_Contact::getMasterDisplayName($masterAddressId, $iterationDAO->contact_id);
               }
@@ -871,7 +858,6 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
             }
             $relDAO = CRM_Utils_Array::value($iterationDAO->contact_id, $allRelContactArray[$field]);
             $relationQuery[$field]->convertToPseudoNames($relDAO);
-            //NYSS 11700
             self::fetchRelationshipDetails($relDAO, $value, $field, $row);
           }
           elseif (isset($fieldValue) &&
@@ -1010,7 +996,6 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
           $componentDetails = array();
         }
       }
-      $dao->free();
       if ($rowsThisIteration < self::EXPORT_ROW_COUNT) {
         $limitReached = TRUE;
       }
@@ -1057,10 +1042,11 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
       // delete the export temp table and component table
       $sql = "DROP TABLE IF EXISTS {$exportTempTable}";
       CRM_Core_DAO::executeQuery($sql);
-
+      CRM_Core_DAO::reenableFullGroupByMode();
       CRM_Utils_System::civiExit();
     }
     else {
+      CRM_Core_DAO::reenableFullGroupByMode();
       throw new CRM_Core_Exception(ts('No records to export'));
     }
   }
@@ -1428,10 +1414,8 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
 
   /**
    * @param string $tableName
-   * @param array $details
-   * @param array $sqlColumns
-   * @param array $relationTypes
-   * @param array $returnProperties
+   * @param $details
+   * @param $sqlColumns
    */
   //NYSS 11700 - mods throughout function
   public static function writeDetailsToTable($tableName, &$details, &$sqlColumns, $relationTypes, $returnProperties) {

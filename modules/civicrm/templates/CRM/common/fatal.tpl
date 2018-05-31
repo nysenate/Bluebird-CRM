@@ -2,7 +2,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -34,6 +34,7 @@
   <base href="{$config->resourceBase}" />
   <style type="text/css" media="screen">
     @import url({$config->resourceBase}css/civicrm.css);
+    @import url({$config->resourceBase}css/crm-i.css);
     @import url({$config->resourceBase}bower_components/font-awesome/css/font-awesome.min.css);
   </style>
 </head>
@@ -43,6 +44,7 @@
 <div id="crm-container" class="crm-container" lang="{$config->lcMessages|truncate:2:"":true}" xml:lang="{$config->lcMessages|truncate:2:"":true}">
   <style type="text/css" media="screen">
     @import url({$config->resourceBase}css/civicrm.css);
+    @import url({$config->resourceBase}css/crm-i.css);
     @import url({$config->resourceBase}bower_components/font-awesome/css/font-awesome.min.css);
   </style>
 {/if}

@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 class CRM_Financial_BAO_FinancialTypeAccount extends CRM_Financial_DAO_EntityFinancialAccount {
 
@@ -257,6 +257,7 @@ class CRM_Financial_BAO_FinancialTypeAccount extends CRM_Financial_DAO_EntityFin
    *
    * @param obj $financialTypeAccount of CRM_Financial_DAO_EntityFinancialAccount
    *
+   * @throws CRM_Core_Exception
    */
   public static function validateRelationship($financialTypeAccount) {
     $financialAccountLinks = CRM_Financial_BAO_FinancialAccount::getfinancialAccountRelations();
@@ -266,7 +267,7 @@ class CRM_Financial_BAO_FinancialTypeAccount extends CRM_Financial_DAO_EntityFin
       $params = array(
         1 => $accountRelationships[$financialTypeAccount->account_relationship],
       );
-      throw new Exception(ts("This financial account cannot have '%1' relationship.", $params));
+      throw new CRM_Core_Exception(ts("This financial account cannot have '%1' relationship.", $params));
     }
   }
 

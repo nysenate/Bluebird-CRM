@@ -2,7 +2,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -55,7 +55,7 @@
             {$item|regex_replace:"/do_not_trade/":"Undeliverable: Do not mail"}{*NYSS*}
             {if !$smarty.foreach.criteria.last}
                 {if $operator}
-                  <span class="font-italic">...{$operator}...</span>
+                  <span class="font-italic">...{$operator|escape}...</span>
                 {else}
                   <span class="font-italic">...{ts}AND{/ts}...</span>
                 {/if}

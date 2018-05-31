@@ -2,7 +2,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -70,7 +70,6 @@
 <div id="crm-main-content-wrapper">
   {include file="CRM/common/status.tpl"}
   {crmRegion name='page-body'}
-    <!-- .tpl file invoked: {$tplFile}. Call via form.tpl if we have a form in the page. -->
     {if isset($isForm) and $isForm and isset($formTpl)}
       {include file="CRM/Form/$formTpl.tpl"}
     {else}

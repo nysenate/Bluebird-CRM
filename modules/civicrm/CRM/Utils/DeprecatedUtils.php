@@ -3,7 +3,7 @@
   +--------------------------------------------------------------------+
   | CiviCRM version 4.7                                                |
   +--------------------------------------------------------------------+
-  | Copyright CiviCRM LLC (c) 2004-2017                                |
+  | Copyright CiviCRM LLC (c) 2004-2018                                |
   +--------------------------------------------------------------------+
   | This file is a part of CiviCRM.                                    |
   |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 
 /*
@@ -484,7 +484,9 @@ function _civicrm_api3_deprecated_check_contact_dedupe($params) {
     if ($field == NULL || $field === '') {
       continue;
     }
-    if (is_array($field)) {
+    // CRM-17040, Considering only primary contact when importing contributions. So contribution inserts into primary contact
+    // instead of soft credit contact.
+    if (is_array($field) && $key != "soft_credit") {
       foreach ($field as $value) {
         $break = FALSE;
         if (is_array($value)) {

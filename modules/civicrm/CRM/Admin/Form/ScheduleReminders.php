@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 
 /**
@@ -100,6 +100,9 @@ class CRM_Admin_Form_ScheduleReminders extends CRM_Admin_Form {
     }
     elseif ($this->_mappingID) {
       $mappingID = $this->_mappingID;
+      if ($this->_context == 'event') {
+        $this->add('hidden', 'mappingID', $mappingID);
+      }
     }
 
     $this->add(
@@ -165,11 +168,10 @@ class CRM_Admin_Form_ScheduleReminders extends CRM_Admin_Form {
     $this->add('number', 'start_action_offset', ts('When'), array('class' => 'six', 'min' => 0));
     $this->addRule('start_action_offset', ts('Value should be a positive number'), 'positiveInteger');
 
-    $isActive = ts('Send email');
+    $isActive = ts('Scheduled Reminder Active');
     $recordActivity = ts('Record activity for automated email');
     if ($providersCount) {
       $this->assign('sms', $providersCount);
-      $isActive = ts('Send email or SMS');
       $recordActivity = ts('Record activity for automated email or SMS');
       $options = CRM_Core_OptionGroup::values('msg_mode');
       $this->add('select', 'mode', ts('Send as'), $options);

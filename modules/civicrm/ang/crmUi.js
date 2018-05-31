@@ -124,8 +124,7 @@
     // example: <div crm-ui-field="{title: ts('My Field')}"> {{mydata}} </div>
     // example: <div crm-ui-field="{name: 'subform.myfield', title: ts('My Field')}"> <input crm-ui-id="subform.myfield" name="myfield" /> </div>
     // example: <div crm-ui-field="{name: 'subform.myfield', title: ts('My Field')}"> <input crm-ui-id="subform.myfield" name="myfield" required /> </div>
-    // example: <div crm-ui-field="{name: 'subform.myfield', title: ts('My Field'), help: hs('help_field_name')}"> {{mydata}} </div>
-    // example: <div crm-ui-field="{name: 'subform.myfield', title: ts('My Field'), help: hs('help_field_name'), required: true}"> {{mydata}} </div> //NYSS 11338
+    // example: <div crm-ui-field="{name: 'subform.myfield', title: ts('My Field'), help: hs('help_field_name'), required: true}"> {{mydata}} </div>
     .directive('crmUiField', function() {
       // Note: When writing new templates, the "label" position is particular. See/patch "var label" below.
       var templateUrls = {
@@ -256,7 +255,7 @@
           // immediately for initialization. Use retries/retryDelay to initialize such elements.
           var init = function (retries, retryDelay) {
             var input = $('#' + id);
-            if (input.length === 0 && !attrs.crmUiForceRequired) {//NYSS 11338
+            if (input.length === 0 && !attrs.crmUiForceRequired) {
               if (retries) {
                 $timeout(function(){
                   init(retries-1, retryDelay);
@@ -265,7 +264,6 @@
               return;
             }
 
-            //NYSS 11338
             if (attrs.crmUiForceRequired) {
               scope.crmIsRequired = true;
               return;
@@ -677,7 +675,6 @@
       };
     })
 
-    //NYSS
     // validate multiple email text
     // usage: <input crm-multiple-email type="text" ng-model="myobj.field" />
     .directive('crmMultipleEmail', function ($parse, $timeout) {
@@ -879,6 +876,20 @@
         },
         link: function (scope, element, attrs) {
           scope.ts = CRM.ts(null);
+
+          element.find('.crm-wizard-buttons button').click(function () {
+            // These values are captured inside the click handler to ensure the
+            // positions/sizes of the elements are captured at the time of the
+            // click vs. at the time this directive is initialized.
+            var topOfWizard = element.offset().top;
+            var heightOfMenu = $('#civicrm-menu').height() || 0;
+
+            $('html')
+              // stop any other animations that might be happening...
+              .stop()
+              // gracefully slide the user to the top of the wizard
+              .animate({scrollTop: topOfWizard - heightOfMenu}, 1000);
+          });
         }
       };
     })

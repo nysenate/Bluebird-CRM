@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
  * Class for constructing the payment processor block.
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 class CRM_Core_Payment_Form {
 
@@ -207,8 +207,7 @@ class CRM_Core_Payment_Form {
    * @return string
    */
   public static function getPaymentTypeLabel($paymentProcessor) {
-    $paymentProcessorObject = Civi\Payment\System::singleton()->getByProcessor($paymentProcessor);
-    return ts(($paymentProcessorObject->getPaymentTypeLabel()) . ' Information');
+    return ts(($paymentProcessor['object']->getPaymentTypeLabel()) . ' Information');
   }
 
   /**
@@ -392,6 +391,9 @@ class CRM_Core_Payment_Form {
         }
       }
     }
+
+    //CRM-19469 provide option for returning modified params
+    return $dst;
   }
 
   /**

@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 
 /**
@@ -98,6 +98,9 @@ class CRM_Contact_Form_Inline_CommunicationPreferences extends CRM_Contact_Form_
       $params['contact_sub_type'] = $this->_contactSubType;
     }
 
+    if (!isset($params['preferred_communication_method'])) {
+      $params['preferred_communication_method'] = 'null';
+    }
     CRM_Contact_BAO_Contact::create($params);
 
     $this->response();

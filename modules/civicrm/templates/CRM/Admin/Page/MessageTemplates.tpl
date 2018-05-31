@@ -2,7 +2,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -81,12 +81,12 @@
     </div>
   </div>
 
-  <div id="crm-submit-buttons">{$form.buttons.html}</div>
+  <div id="crm-submit-buttons" class="crm-submit-buttons">{$form.buttons.html}</div>
   </fieldset>
 {/if}
 
 {if $rows and $action ne 2 and $action ne 4}
-
+<div class="crm-content-block crm-block">
   <div id='mainTabContainer'>
     <ul>
       <li id='tab_user'>    <a href='#user'     title='{ts}User-driven Messages{/ts}'>    {ts}User-driven Messages{/ts}    </a></li>
@@ -112,7 +112,12 @@
           {/if}
           </div>
         <div>
-          <p></p>
+          {if $action ne 1 and $action ne 2 and $type eq 'userTemplates'}
+            <div class="action-link">
+              {crmButton p='civicrm/admin/messageTemplates/add' q="action=add&reset=1" id="newMessageTemplates"  icon="plus-circle"}{ts}Add Message Template{/ts}{/crmButton}
+            </div>
+            <div class="spacer"></div>
+          {/if}
             {if !empty( $template_row) }
               <table class="display">
                 <thead>
@@ -157,7 +162,7 @@
       </div>
     {/foreach}
   </div>
-
+</div>
   <script type='text/javascript'>
     var selectedTab = 'user';
     {if $selectedChild}selectedTab = '{$selectedChild}';{/if}
