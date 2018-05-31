@@ -28,6 +28,10 @@ if ! $readConfig --instance $instance --quiet; then
   exit 1
 fi
 
+## upgrade civicrm db
+echo "running civicrm db upgrade..."
+$drush $instance civicrm-upgrade-db
+
 ## 8034
 echo "$prog: alter activity assignment email subject"
 sql="
