@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  * $Id$
  *
  */
@@ -41,25 +41,19 @@ class CRM_Upgrade_Incremental_General {
   /**
    * The recommended PHP version.
    */
-  const MIN_RECOMMENDED_PHP_VER = '5.6';
+  const RECOMMENDED_PHP_VER = '7.0';
 
   /**
    * The previous recommended PHP version.
    */
-  const PREVIOUS_MIN_RECOMMENDED_PHP_VER = '5.5';
+  const MIN_RECOMMENDED_PHP_VER = '5.6';
 
   /**
    * The minimum PHP version required to install Civi.
    *
    * @see install/index.php
    */
-  const MIN_INSTALL_PHP_VER = '5.3.4';
-
-  /**
-   * The minimum PHP version required to avoid known
-   * limits or defects.
-   */
-  const MIN_DEFECT_PHP_VER = '5.3.23';
+  const MIN_INSTALL_PHP_VER = '5.5';
 
   /**
    * Compute any messages which should be displayed before upgrade.
@@ -73,25 +67,11 @@ class CRM_Upgrade_Incremental_General {
     $dateFormat = Civi::Settings()->get('dateformatshortdate');
     if (version_compare(phpversion(), self::MIN_RECOMMENDED_PHP_VER) < 0) {
       $preUpgradeMessage .= '<p>';
-      // CRM-20941 PHP 5.3 end date of End of 2017, PHP 5.4 End date End of Feb 2018 Recommend anyone on PHP 5.5 to move up to 5.6 or later e.g. 7.0
-      if (version_compare(phpversion(), self::PREVIOUS_MIN_RECOMMENDED_PHP_VER) >= 0) {
-        $preUpgradeMessage .= ts('You may proceed with the upgrade and CiviCRM %1 will continue working normally, but future releases will require PHP %2 or above. We recommend you use the most recent php version you can.', array(
-           1 => $latestVer,
-           2 => self::MIN_RECOMMENDED_PHP_VER,
-        ));
-      }
-      elseif (version_compare(phpversion(), 5.5) < 0) {
-        $date = CRM_Utils_Date::customFormat('2018-02-28', $dateFormat);
-        if (version_compare(phpversion(), 5.4) < 0) {
-          $date = CRM_Utils_Date::customFormat('2017-12-31', $dateFormat);
-        }
-        $preUpgradeMessage .= ts('You may proceed with the upgrade and CiviCRM %1 will continue working normally, but PHP %2 will not work in releases published after %3. We recommend you use the most recent php version you can. For more explanation see <a href="%4">the announcement</a>.', array(
-          1 => $currentVer,
-          2 => phpversion(),
-          3 => $date,
-          4 => 'https://civicrm.org/blog/totten/end-of-zombies-php-53-and-54',
-        ));
-      }
+      $preUpgradeMessage .= ts('You may proceed with the upgrade and CiviCRM %1 will continue working normally, but future releases will require PHP %2 or above. We recommend PHP version %3.', array(
+         1 => $latestVer,
+         2 => self::MIN_RECOMMENDED_PHP_VER,
+         3 => self::RECOMMENDED_PHP_VER,
+      ));
       $preUpgradeMessage .= '</p>';
     }
 
@@ -125,6 +105,15 @@ class CRM_Upgrade_Incremental_General {
       // after the upgrade.  But that's speculative.  For now, we'll leave this
       // advanced feature in the hands of the sysadmin.
       $preUpgradeMessage .= '<br />' . ts('This database uses InnoDB Full Text Search for optimized searching. The upgrade procedure has not been tested with this feature. You should disable (and later re-enable) the feature by navigating to "Administer => System Settings => Miscellaneous".');
+    }
+
+    $ftAclSetting = Civi::settings()->get('acl_financial_type');
+    $financialAclExtension = civicrm_api3('extension', 'get', array('key' => 'biz.jmaconsulting.financialaclreport'));
+    if ($ftAclSetting && (($financialAclExtension['count'] == 1 && $financialAclExtension['status'] != 'Installed') || $financialAclExtension['count'] !== 1)) {
+      $preUpgradeMessage .= '<br />' . ts('CiviCRM will in the future require the extension %1 for CiviCRM Reports to work correctly with the Financial Type ACLs. The extension can be downloaded <a href="%2">here</a>', array(
+        1 => 'biz.jmaconsulting.financialaclreport',
+        2 => 'https://github.com/JMAConsulting/biz.jmaconsulting.financialaclreport',
+      ));
     }
   }
 

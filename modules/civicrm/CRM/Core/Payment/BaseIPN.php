@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -421,7 +421,7 @@ class CRM_Core_Payment_BaseIPN {
    * This function has been problematic for some time but there are now several tests via the api_v3_Contribution test
    * and the Paypal & Authorize.net IPN tests so any refactoring should be done in conjunction with those.
    *
-   * This function needs to have the 'body' moved to the CRM_Contribution_BAO_Contribute class and to undergo
+   * This function needs to have the 'body' moved to the CRM_Contribute_BAO_Contribute class and to undergo
    * refactoring to separate the complete transaction and repeat transaction functionality into separate functions with
    * a shared function that updates related components.
    *

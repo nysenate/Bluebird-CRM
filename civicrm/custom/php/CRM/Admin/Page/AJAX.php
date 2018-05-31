@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 
 /**
@@ -395,46 +395,47 @@ class CRM_Admin_Page_AJAX {
    */
   public static function getTagTree() {
     $parent = CRM_Utils_Type::escape(CRM_Utils_Array::value('parent_id', $_GET, 0), 'Integer');
-    $substring = CRM_Utils_Type::escape(CRM_Utils_Array::value('str', $_GET), 'String');//NYSS 11439
+    $substring = CRM_Utils_Type::escape(CRM_Utils_Array::value('str', $_GET), 'String');
     $result = array();
 
-    //NYSS 11439
     $whereClauses = array('is_tagset <> 1');
-    if ($parent) {
-      $whereClauses[] = "parent_id = $parent";
-    }
-    elseif (!$substring) {
-      $whereClauses[] = "parent_id IS NULL";
-    }
+    $orderColumn = 'name';
 
     // fetch all child tags in Array('parent_tag' => array('child_tag_1', 'child_tag_2', ...)) format
     $childTagIDs = CRM_Core_BAO_Tag::getChildTags($substring);
     $parentIDs = array_keys($childTagIDs);
 
-    if ($substring) {
+    if ($parent) {
+      $whereClauses[] = "parent_id = $parent";
+    }
+    elseif ($substring) {
       $whereClauses['substring'] = " name LIKE '%$substring%' ";
       if (!empty($parentIDs)) {
         $whereClauses['substring'] = sprintf(" %s OR id IN (%s) ", $whereClauses['substring'], implode(',', $parentIDs));
       }
+      $orderColumn = 'id';
+    }
+    else {
+      $whereClauses[] = "parent_id IS NULL";
     }
 
     $dao = CRM_Utils_SQL_Select::from('civicrm_tag')
             ->where($whereClauses)
             ->groupBy('id')
-            ->orderBy('name')
+            ->orderBy($orderColumn)
             ->execute();
+
     while ($dao->fetch()) {
       if (!empty($substring)) {
         $result[] = $dao->id;
         if (!empty($childTagIDs[$dao->id])) {
-          //NYSS
           $result = array_merge($result, $childTagIDs[$dao->id]);
         }
       }
       else {
         $style = '';
         if ($dao->color) {
-            $style = "background-color: {$dao->color}; color: " . CRM_Utils_Color::getContrast($dao->color);
+          $style = "background-color: {$dao->color}; color: " . CRM_Utils_Color::getContrast($dao->color);
         }
         $hasChildTags = empty($childTagIDs[$dao->id]) ? FALSE : TRUE;
         $usedFor = (array) explode(',', $dao->used_for);
@@ -464,6 +465,10 @@ class CRM_Admin_Page_AJAX {
           ),
         );
       }
+    }
+
+    if ($substring) {
+      $result = array_values(array_unique($result));
     }
 
     if (!empty($_REQUEST['is_unit_test'])) {

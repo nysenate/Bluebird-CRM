@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,12 +28,9 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 class CRM_Report_Form_Contribute_Bookkeeping extends CRM_Report_Form {
-  protected $_addressField = FALSE;
-
-  protected $_emailField = FALSE;
 
   protected $_summary = NULL;
 
@@ -507,8 +504,6 @@ class CRM_Report_Form_Contribute_Bookkeeping extends CRM_Report_Form {
               LEFT JOIN civicrm_batch batch
                     ON  ent_batch.batch_id = batch.id";
     }
-
-    $this->getPermissionedFTQuery($this, "civicrm_line_item_1");
   }
 
   public function orderBy() {

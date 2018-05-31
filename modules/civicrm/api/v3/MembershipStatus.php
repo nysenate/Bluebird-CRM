@@ -40,7 +40,7 @@
  * @return array
  */
 function civicrm_api3_membership_status_create($params) {
-  return _civicrm_api3_basic_create(_civicrm_api3_get_BAO(__FUNCTION__), $params);
+  return _civicrm_api3_basic_create(_civicrm_api3_get_BAO(__FUNCTION__), $params, 'MembershipStatus');
 }
 
 /**
@@ -178,4 +178,17 @@ SELECT start_date, end_date, join_date, membership_type_id
   }
   $dao->free();
   return $result;
+}
+
+/**
+ * Adjust Metadata for Calc action.
+ *
+ * The metadata is used for setting defaults, documentation & validation.
+ *
+ * @param array $params
+ *   Array of parameters determined by getfields.
+ */
+function _civicrm_api3_membership_status_calc_spec(&$params) {
+  $params['membership_id']['api.required'] = 1;
+  $params['membership_id']['title'] = 'Membership ID';
 }

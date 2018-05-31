@@ -2,7 +2,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -64,6 +64,33 @@
       }
     }
 
+  }
+
+  var adminVisibilityID = 0;
+  cj('#visibility_id').on('change', function () {
+    if (adminVisibilityID == 0) {
+      CRM.api3('OptionValue', 'getvalue', {
+        'sequential': 1,
+        'return': 'value',
+        'option_group_id': 'visibility',
+        'name': 'admin'
+      }).done(function(result) {
+        adminVisibilityID = result.result;
+        if (cj('#visibility_id').val() == adminVisibilityID) {
+          updateVisibilitySelects(adminVisibilityID);
+        }
+      });
+    } else {
+      if (cj('#visibility_id').val() == adminVisibilityID) {
+        updateVisibilitySelects(adminVisibilityID);
+      }
+    }
+  });
+
+  function updateVisibilitySelects(value) {
+    for (var i=1; i<=15; i++) {
+      cj('#option_visibility_id_' + i).val(value);
+    }
   }
 </script>
 {/literal}
@@ -158,11 +185,20 @@
       </td>
     </tr>
 
+    <tr class="crm-price-field-form-block-help_pre">
+      <td class="label">{$form.help_pre.label}</td>
+      <td>{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_price_field' field='help_pre' id=$fid}{/if}{$form.help_pre.html|crmAddClass:huge}&nbsp;
+      {if $action neq 4}
+        <div class="description">{ts}Explanatory text displayed to users at the beginning of this field.{/ts}</div>
+      {/if}
+      </td>
+    </tr>
+
     <tr class="crm-price-field-form-block-help_post">
       <td class="label">{$form.help_post.label}</td>
       <td>{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_price_field' field='help_post' id=$fid}{/if}{$form.help_post.html|crmAddClass:huge}&nbsp;
       {if $action neq 4}
-        <div class="description">{ts}Explanatory text displayed to users for this field.{/ts}</div>
+        <div class="description">{ts}Explanatory text displayed to users below this field.{/ts}</div>
       {/if}
       </td>
     </tr>

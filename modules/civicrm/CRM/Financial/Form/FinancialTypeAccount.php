@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 
 /**
@@ -241,6 +241,7 @@ class CRM_Financial_Form_FinancialTypeAccount extends CRM_Contribute_Form {
       $params = array(
         'account_relationship' => $values['account_relationship'],
         'entity_id' => $self->_aid,
+        'entity_table' => 'civicrm_financial_type',
       );
       $defaults = array();
       if ($self->_action == CRM_Core_Action::ADD) {
@@ -299,8 +300,13 @@ class CRM_Financial_Form_FinancialTypeAccount extends CRM_Contribute_Form {
       if ($this->_action & CRM_Core_Action::ADD) {
         $params['entity_id'] = $this->_aid;
       }
-      $financialTypeAccount = CRM_Financial_BAO_FinancialTypeAccount::add($params, $ids);
-      CRM_Core_Session::setStatus(ts('The financial type Account has been saved.'));
+      try {
+        $financialTypeAccount = CRM_Financial_BAO_FinancialTypeAccount::add($params, $ids);
+        CRM_Core_Session::setStatus(ts('The financial type Account has been saved.'), ts('Saved'), 'success');
+      }
+      catch (CRM_Core_Exception $e) {
+        CRM_Core_Error::statusBounce($e->getMessage());
+      }
     }
 
     $buttonName = $this->controller->getButtonName();

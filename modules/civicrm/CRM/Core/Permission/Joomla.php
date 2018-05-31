@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  * $Id$
  *
  */
@@ -181,8 +181,9 @@ class CRM_Core_Permission_Joomla extends CRM_Core_Permission_Base {
 
     $db->setQuery($query);
 
-    // Load the result as a stdClass object, decoding JSON on the way
-    return json_decode($db->loadObject()->rules);
+    // Joomla gotcha: loadObject returns NULL in the case of no matches.
+    $result = $db->loadObject();
+    return $result ? json_decode($result->rules) : (object) array();
   }
 
   /**

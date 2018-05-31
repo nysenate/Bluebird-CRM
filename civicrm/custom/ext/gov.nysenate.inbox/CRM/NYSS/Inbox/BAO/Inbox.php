@@ -1241,7 +1241,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         COUNT(civi_t.id) as tagCount
       FROM nyss_inbox_messages as im
       LEFT JOIN nyss_inbox_messages_matched imm
-        ON im.message_id = imm.message_id
+        ON im.id = imm.row_id
       LEFT JOIN civicrm_contact as matcher
         ON im.matcher = matcher.id
       LEFT JOIN civicrm_contact as matched_to
@@ -1299,6 +1299,8 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     $return = [
       'is_error' => false,
       'message' => 'Report generated',
+      /* For debugging purposes only! */
+      /*'meta' => ['query' => $query],*/
       'data' => $res,
     ];
 

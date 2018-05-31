@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
   /**
@@ -75,7 +75,6 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
             'required' => TRUE,
             'type' => CRM_Utils_Type::T_TIME,
             'title' => ts('When'),
-            'dbAlias' => 'MIN(entity_log_civireport.log_date)',//NYSS CRM-21611
           ),
           'altered_contact' => array(
             'default' => TRUE,
@@ -143,14 +142,12 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
             'type' => CRM_Utils_Type::T_INT,
           ),
         ),
-        //NYSS 11540
         'order_bys' => array(
           'log_date' => array(
             'title' => ts('Log Date (When)'),
             'default' => TRUE,
             'default_weight' => '0',
             'default_order' => 'DESC',
-            'dbAlias' => 'MIN(entity_log_civireport.log_date)',//NYSS CRM-21611
           ),
           'altered_contact' => array(
             'name' => 'display_name',
@@ -176,7 +173,6 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
             'type' => CRM_Utils_Type::T_STRING,
           ),
         ),
-        //NYSS 11540
         'order_bys' => array(
           'altered_by_contact' => array(
             'name' => 'display_name',
@@ -297,8 +293,6 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
 
     krsort($newRows);
     $rows = $newRows;
-    //NYSS 11729
-    $this->_rowsFound = count($newRows);
   }
 
   /**

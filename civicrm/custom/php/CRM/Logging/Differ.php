@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  * $Id$
  *
  */
@@ -108,7 +108,7 @@ class CRM_Logging_Differ {
           break;
 
         case 'civicrm_activity':
-          $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
+          $activityContacts = CRM_Activity_BAO_ActivityContact::buildOptions('record_type_id', 'validate');
           $sourceID = CRM_Utils_Array::key('Activity Source', $activityContacts);
           $assigneeID = CRM_Utils_Array::key('Activity Assignees', $activityContacts);
           $targetID = CRM_Utils_Array::key('Activity Targets', $activityContacts);

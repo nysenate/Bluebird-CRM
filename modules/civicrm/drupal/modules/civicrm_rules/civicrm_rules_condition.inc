@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,12 +23,12 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  * $Id$
  *
  */
@@ -81,7 +81,8 @@ function civicrm_rules_condition_parameter($label, $type = 'contact') {
 
   if ($type == 'participant') {
     return $default + array(
-      'civicrm_participant_role' => array('type' => 'list<integer>',
+      'civicrm_participant_role' => array(
+        'type' => 'list<integer>',
         'label' => t('Participant role'),
         'options list' => 'civicrm_rules_get_participant_role_options',
       ));
@@ -89,7 +90,8 @@ function civicrm_rules_condition_parameter($label, $type = 'contact') {
 
   if ($type == 'event') {
     return $default + array(
-      'civicrm_event_type' => array('type' => 'list<integer>',
+      'civicrm_event_type' => array(
+        'type' => 'list<integer>',
         'label' => t('CiviCRM event type'),
         'options list' => 'civicrm_rules_get_event_type_options',
       ));
@@ -97,4 +99,3 @@ function civicrm_rules_condition_parameter($label, $type = 'contact') {
 
   return $default;
 }
-

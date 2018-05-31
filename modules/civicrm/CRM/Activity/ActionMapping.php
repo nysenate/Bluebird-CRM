@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,7 +27,7 @@
 
 /**
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 
 use Civi\ActionSchedule\RecipientBuilder;
@@ -108,7 +108,7 @@ class CRM_Activity_ActionMapping extends \Civi\ActionSchedule\Mapping {
     $query['casDateField'] = 'e.activity_date_time';
 
     if (!is_null($schedule->limit_to)) {
-      $activityContacts = \CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
+      $activityContacts = \CRM_Activity_BAO_ActivityContact::buildOptions('record_type_id', 'validate');
       if ($schedule->limit_to == 0 || !isset($activityContacts[$schedule->recipient])) {
         $recipientTypeId = \CRM_Utils_Array::key('Activity Targets', $activityContacts);
       }

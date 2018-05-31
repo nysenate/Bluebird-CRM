@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 class CRM_Core_BAO_Mapping extends CRM_Core_DAO_Mapping {
 
@@ -115,13 +115,53 @@ class CRM_Core_BAO_Mapping extends CRM_Core_DAO_Mapping {
    *   Array of mapping names, keyed by id.
    */
   public static function getMappings($mappingType) {
-    $result = civicrm_api3('Mapping', 'get', array('mapping_type_id' => $mappingType, 'options' => array('sort' => 'name')));
+    $result = civicrm_api3('Mapping', 'get', array(
+      'mapping_type_id' => $mappingType,
+      'options' => array(
+        'sort' => 'name',
+        'limit' => 0,
+      ),
+    ));
     $mapping = array();
 
     foreach ($result['values'] as $key => $value) {
       $mapping[$key] = $value['name'];
     }
     return $mapping;
+  }
+
+  /**
+   * Get the mappings array, creating if it does not exist.
+   *
+   * @param string $mappingType
+   *   Mapping type name.
+   *
+   * @return array
+   *   Array of mapping names, keyed by id.
+   *
+   * @throws \CiviCRM_API3_Exception
+   */
+  public static function getCreateMappingValues($mappingType) {
+    try {
+      return CRM_Core_BAO_Mapping::getMappings($mappingType);
+    }
+    catch (CiviCRM_API3_Exception $e) {
+      // Having a valid mapping_type_id is now enforced. However, rather than error let's
+      // add it. This is required for Multi value which could be done by upgrade script, but
+      // it feels like there could be other instances so this is safer.
+      $errorParams = $e->getExtraParams();
+      if ($errorParams['error_field'] === 'mapping_type_id') {
+        $mappingValues = civicrm_api3('Mapping', 'getoptions', array('field' => 'mapping_type_id'));
+        civicrm_api3('OptionValue', 'create', array(
+          'option_group_id' => 'mapping_type',
+          'label' => $mappingType,
+          'value' => max(array_keys($mappingValues['values'])) + 1,
+          'is_reserved' => 1,
+        ));
+        return CRM_Core_BAO_Mapping::getMappings($mappingType);
+      }
+      throw $e;
+    }
   }
 
   /**

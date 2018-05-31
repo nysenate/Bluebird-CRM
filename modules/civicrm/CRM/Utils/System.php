@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 
 /**
@@ -41,7 +41,7 @@
  * @method static mixed permissionDenied() Show access denied screen.
  * @method static mixed logout() Log out the current user.
  * @method static mixed updateCategories() Clear CMS caches related to the user registration/profile forms.
- * @method static appendBreadCrumb(string $breadCrumbs) Append an additional breadcrumb tag to the existing breadcrumbs.
+ * @method static appendBreadCrumb(array $breadCrumbs) Append an additional breadcrumb tag to the existing breadcrumbs.
  * @method static resetBreadCrumb() Reset an additional breadcrumb tag to the existing breadcrumb.
  * @method static addHTMLHead(string $bc) Append a string to the head of the HTML file.
  * @method static string postURL(int $action) Determine the post URL for a form.
@@ -433,8 +433,10 @@ class CRM_Utils_System {
    *
    * @param string $url
    *   The URL to provide to the browser via the Location header.
+   * @param array $context
+   *   Optional additional information for the hook.
    */
-  public static function redirect($url = NULL) {
+  public static function redirect($url = NULL, $context = []) {
     if (!$url) {
       $url = self::url('civicrm/dashboard', 'reset=1');
     }
@@ -442,8 +444,14 @@ class CRM_Utils_System {
     // this is kinda hackish but not sure how to do it right
     $url = str_replace('&amp;', '&', $url);
 
+    $context['output'] = CRM_Utils_Array::value('snippet', $_GET);
+
+    $parsedUrl = CRM_Utils_Url::parseUrl($url);
+    CRM_Utils_Hook::alterRedirect($parsedUrl, $context);
+    $url = CRM_Utils_Url::unparseUrl($parsedUrl);
+
     // If we are in a json context, respond appropriately
-    if (CRM_Utils_Array::value('snippet', $_GET) === 'json') {
+    if ($context['output'] === 'json') {
       CRM_Core_Page_AJAX::returnJsonResponse(array(
         'status' => 'redirect',
         'userContext' => $url,
@@ -1074,25 +1082,12 @@ class CRM_Utils_System {
 
     if (!$version) {
       $verFile = implode(DIRECTORY_SEPARATOR,
-        array(dirname(__FILE__), '..', '..', 'civicrm-version.php')
+        array(dirname(__FILE__), '..', '..', 'xml', 'version.xml')
       );
       if (file_exists($verFile)) {
-        require_once $verFile;
-        if (function_exists('civicrmVersion')) {
-          $info = civicrmVersion();
-          $version = $info['version'];
-        }
-      }
-      else {
-        // svn installs don't have version.txt by default. In that case version.xml should help -
-        $verFile = implode(DIRECTORY_SEPARATOR,
-          array(dirname(__FILE__), '..', '..', 'xml', 'version.xml')
-        );
-        if (file_exists($verFile)) {
-          $str = file_get_contents($verFile);
-          $xmlObj = simplexml_load_string($str);
-          $version = (string) $xmlObj->version_no;
-        }
+        $str = file_get_contents($verFile);
+        $xmlObj = simplexml_load_string($str);
+        $version = (string) $xmlObj->version_no;
       }
 
       // pattern check
@@ -1404,6 +1399,14 @@ class CRM_Utils_System {
     // move things to CiviCRM cache as needed
     CRM_Core_Session::storeSessionObjects();
 
+    if (Civi\Core\Container::isContainerBooted()) {
+      Civi::dispatcher()->dispatch('civi.core.exit');
+    }
+
+    $userSystem = CRM_Core_Config::singleton()->userSystem;
+    if (is_callable(array($userSystem, 'onCiviExit'))) {
+      $userSystem->onCiviExit();
+    }
     exit($status);
   }
 

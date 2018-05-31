@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
  * This file contains the various menus of the CiviCRM module
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 
 require_once 'CRM/Core/I18n.php';
@@ -105,15 +105,25 @@ class CRM_Core_Menu {
    * Read menu.
    *
    * @param string $name
-   * @param string $menu
+   *   File name
+   * @param array $menu
+   *   An alterable list of menu items.
    *
    * @throws Exception
    */
   public static function read($name, &$menu) {
-
-    $config = CRM_Core_Config::singleton();
-
     $xml = simplexml_load_file($name);
+    self::readXML($xml, $menu);
+  }
+
+  /**
+   * @param SimpleXMLElement $xml
+   *   An XML document defining a list of menu items.
+   * @param array $menu
+   *   An alterable list of menu items.
+   */
+  public static function readXML($xml, &$menu) {
+    $config = CRM_Core_Config::singleton();
     foreach ($xml->item as $item) {
       if (!(string ) $item->path) {
         CRM_Core_Error::debug('i', $item);
@@ -122,6 +132,19 @@ class CRM_Core_Menu {
       $path = (string ) $item->path;
       $menu[$path] = array();
       unset($item->path);
+
+      if ($item->ids_arguments) {
+        $ids = array();
+        foreach (array('json' => 'json', 'html' => 'html', 'exception' => 'exceptions') as $tag => $attr) {
+          $ids[$attr] = array();
+          foreach ($item->ids_arguments->{$tag} as $value) {
+            $ids[$attr][] = (string) $value;
+          }
+        }
+        $menu[$path]['ids_arguments'] = $ids;
+        unset($item->ids_arguments);
+      }
+
       foreach ($item as $key => $value) {
         $key = (string ) $key;
         $value = (string ) $value;
@@ -284,7 +307,7 @@ class CRM_Core_Menu {
 
     self::build($menuArray);
 
-    $config = CRM_Core_Config::singleton();
+    $daoFields = CRM_Core_DAO_Menu::fields();
 
     foreach ($menuArray as $path => $item) {
       $menu = new CRM_Core_DAO_Menu();
@@ -292,6 +315,21 @@ class CRM_Core_Menu {
       $menu->domain_id = CRM_Core_Config::domainID();
 
       $menu->find(TRUE);
+
+      if (!CRM_Core_Config::isUpgradeMode() ||
+        CRM_Core_DAO::checkFieldExists('civicrm_menu', 'module_data', FALSE)
+      ) {
+        // Move unrecognized fields to $module_data.
+        $module_data = array();
+        foreach (array_keys($item) as $key) {
+          if (!isset($daoFields[$key])) {
+            $module_data[$key] = $item[$key];
+            unset($item[$key]);
+          }
+        }
+
+        $menu->module_data = serialize($module_data);
+      }
 
       $menu->copyValues($item);
 
@@ -634,8 +672,6 @@ class CRM_Core_Menu {
     // return null if menu rebuild
     $config = CRM_Core_Config::singleton();
 
-    $params = array();
-
     $args = explode('/', $path);
 
     $elements = array();
@@ -648,22 +684,13 @@ class CRM_Core_Menu {
 
     $queryString = implode(', ', $elements);
     $domainID = CRM_Core_Config::domainID();
-    $domainWhereClause = " AND domain_id = $domainID ";
-    if ($config->isUpgradeMode() &&
-      !CRM_Core_DAO::checkFieldExists('civicrm_menu', 'domain_id')
-    ) {
-      //domain_id wouldn't be available for earlier version of
-      //3.0 and therefore can't be used as part of query for
-      //upgrade case
-      $domainWhereClause = "";
-    }
 
     $query = "
 (
   SELECT *
   FROM     civicrm_menu
   WHERE    path in ( $queryString )
-           $domainWhereClause
+           AND domain_id = $domainID
   ORDER BY length(path) DESC
   LIMIT    1
 )
@@ -675,7 +702,7 @@ UNION (
   SELECT *
   FROM   civicrm_menu
   WHERE  path IN ( 'navigation' )
-         $domainWhereClause
+         AND domain_id = $domainID
 )
 ";
     }
@@ -689,6 +716,14 @@ UNION (
       self::$_menuCache[$menu->path] = array();
       CRM_Core_DAO::storeValues($menu, self::$_menuCache[$menu->path]);
 
+      // Move module_data into main item.
+      if (isset(self::$_menuCache[$menu->path]['module_data'])) {
+        CRM_Utils_Array::extend(self::$_menuCache[$menu->path],
+          unserialize(self::$_menuCache[$menu->path]['module_data']));
+        unset(self::$_menuCache[$menu->path]['module_data']);
+      }
+
+      // Unserialize other elements.
       foreach (self::$_serializedElements as $element) {
         self::$_menuCache[$menu->path][$element] = unserialize($menu->$element);
 
@@ -705,12 +740,6 @@ UNION (
       }
     }
 
-    // *FIXME* : hack for 2.1 -> 2.2 upgrades.
-    if ($path == 'civicrm/upgrade') {
-      $menuPath['page_callback'] = 'CRM_Upgrade_Page_Upgrade';
-      $menuPath['access_arguments'][0][] = 'administer CiviCRM';
-      $menuPath['access_callback'] = array('CRM_Core_Permission', 'checkMenu');
-    }
     // *FIXME* : hack for 4.1 -> 4.2 upgrades.
     if (preg_match('/^civicrm\/(upgrade\/)?queue\//', $path)) {
       CRM_Queue_Menu::alter($path, $menuPath);

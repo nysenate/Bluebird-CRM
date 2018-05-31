@@ -2,7 +2,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -93,7 +93,7 @@ $('#civicrm-menu').ready(function() {
     .autocomplete({
       source: function(request, response) {
         //start spinning the civi logo
-        $('.crm-logo-sm').addClass('crm-i fa-spin fa-pulse');
+        $('.crm-logo-sm').addClass('crm-i fa-spin');
         var
           option = $('input[name=quickSearchField]:checked'),
           params = {
@@ -120,7 +120,7 @@ $('#civicrm-menu').ready(function() {
           }
           response(ret);
           //stop spinning the civi logo
-          $('.crm-logo-sm').removeClass('crm-i fa-spin fa-pulse');          
+          $('.crm-logo-sm').removeClass('crm-i fa-spin');
         })
       },
       focus: function (event, ui) {
@@ -182,7 +182,8 @@ $('#civicrm-menu').ready(function() {
   }
   $('.crm-quickSearchField').click(function() {
     setQuickSearchValue();
-    $('#sort_name_navigation').focus();
+    $.Menu.closeAll();
+    $('#sort_name_navigation').focus().autocomplete("search");
   });
   // Set & retrieve default value
   if (window.localStorage) {
@@ -209,6 +210,6 @@ $('#civicrm-menu').ready(function() {
 });
 $('#civicrm-menu').menuBar({arrowSrc: CRM.config.resourceBase + 'packages/jquery/css/images/arrow.png'});
 $(window).on("beforeunload", function() {
-  $('.crm-logo-sm').addClass('crm-i fa-spin fa-pulse');
+  $('.crm-logo-sm', '#civicrm-menu').addClass('crm-i fa-spin');
 });
 })(CRM.$);{/literal}
