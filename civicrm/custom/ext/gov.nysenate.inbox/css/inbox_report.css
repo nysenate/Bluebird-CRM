@@ -1,7 +1,7 @@
 /**
   Main block
  */
-.page-civicrm-imap #crm-container .crm-content-block {
+.nyss-inbox-report-container {
   background-color: #FFFFFF;
   clear: both;
   display: block;
@@ -15,11 +15,18 @@
   Header row
  */
 .header-title {
-  min-height: 6em;
+  padding-bottom:.6em;
+}
+.header-title:after {
+  content: '';
+  width: 0;
+  height: 0;
+  display: block;
+  clear: both;
 }
 .header-title h1 {
   float:left;
-  margin-bottom:1em;
+  margin: .1em 0 0 .2em;
 }
 
 /**
@@ -27,7 +34,7 @@
  */
 .date-range-container {
   float: right;
-  margin-bottom: 1em;
+  margin-top: .6em;
   text-align: right;
 }
 #date_range_relative {
@@ -39,18 +46,20 @@
  */
 .stats {
   text-align: center;
-  border-top: 1px solid #cccccc;
   margin: 10px 0;
   clear: both;
 }
-a.stats-overview{
+a.stats-overview {
   display: inline-block;
   box-sizing: border-box;
   margin: 0 1%;
   padding: 1.2em 0 1em;
   width: 18%;
+  height: 3.7em;
+  vertical-align: top;
   font-size: 1.2em;
-  border-bottom: 1px solid #cccccc;
+  border: 1px solid #cccccc;
+  border-radius: .5em;
 }
 a.stats-overview:hover{
   background: #f2f2f2;
@@ -66,14 +75,80 @@ a.stats-overview span {
 }
 
 /**
+  Datatables style overrides
+ */
+.page-civicrm-nyss-inbox-report .paging-controls {
+  float: right;
+  width: min-content;
+  min-width: 50%;
+  max-width: 70%;
+  text-align: right;
+  white-space: nowrap;
+}
+.page-civicrm-nyss-inbox-report .length-subset .length {
+  display: inline-block;
+  white-space: nowrap;
+  margin-right: 2em;
+}
+.page-civicrm-nyss-inbox-report .paging-controls {
+  display: inline-block;
+  text-align: right;
+  white-space: nowrap;
+  min-width: 400px;
+}
+.page-civicrm-nyss-inbox-report .paging-controls .paging_full_numbers {
+  width: initial !important;
+}
+.page-civicrm-nyss-inbox-report .table-controls .filter {
+  margin-right: 3em;
+  line-height: 1.5em;
+}
+.page-civicrm-nyss-inbox-report .table-controls .dataTables_filter {
+  float: none;
+  text-align: initial;
+  width: initial;
+  padding-top: .5em;
+}
+.page-civicrm-nyss-inbox-report .table-controls .dataTables_filter input[type="search"] {
+  width: 20%;
+}
+.page-civicrm-nyss-inbox-report .length-subset {
+  margin-top: 1.5em;
+}
+.page-civicrm-nyss-inbox-report .length-subset .dataTables_length {
+  width: initial;
+  padding-bottom: initial;
+}
+.page-civicrm-nyss-inbox-report .info {
+  font-weight: bold;
+  display: inline-block;
+  white-space: nowrap;
+  margin-right: 2em;
+  vertical-align: middle;
+  height: 31px;
+  line-height: 25px;
+}
+.page-civicrm-nyss-inbox-report .paging-controls .dataTables_info {
+  float:none;
+  width: initial;
+}
+.page-civicrm-nyss-inbox-report #sortable-results th {
+  font-size: 11.4px;
+  font-weight: bold;
+  vertical-align: middle;
+}
+
+/**
   Advanced filter
  */
 .advanced-filter-container {
-  padding: 1em 1em;
   margin: 0 auto 1em;
-  border: 1px solid #cccccc;
-  border-radius: 1em;
   max-width: 95%;
+  padding: .5em 1em;
+}
+.advanced-filter-container.active {
+  border: 1px solid #cccccc;
+  border-radius: .75em;
 }
 .advanced-filter-switch {
   cursor: pointer;
@@ -98,30 +173,33 @@ a.stats-overview span {
 .advanced-filter-container.active .advanced-filters {
   display: block;
 }
+.advanced-filter-add label, .advanced-filter-add button {
+  margin-right: 2em;
+}
 
 /* hover icons for matched/matcher contacts */
-.crm-container .imapperbox .icon.mail-merge-icon {
+.crm-container .nyss-inbox-report-container .icon.mail-merge-icon {
   background-image: url(/sites/default/themes/Bluebird/images/inbound_email_icons.png);
   display: inline-block;
   float: none;
   margin-right: 1em;
 }
-.crm-container .imapperbox .mail-merge-icon.mail-merge-matched {
+.crm-container .nyss-inbox-report-container .mail-merge-icon.mail-merge-matched {
   background-position: 0px 0px;
 }
-.crm-container .imapperbox .mail-merge-icon.mail-merge-unmatched {
+.crm-container .nyss-inbox-report-container .mail-merge-icon.mail-merge-unmatched {
   background-position: 0px -16px;
 }
-.crm-container .imapperbox .mail-merge-icon.mail-merge-cleared {
+.crm-container .nyss-inbox-report-container .mail-merge-icon.mail-merge-cleared {
   background-position: 0px -32px;
 }
-.crm-container .imapperbox .mail-merge-icon.mail-merge-deleted {
+.crm-container .nyss-inbox-report-container .mail-merge-icon.mail-merge-deleted {
   background-position: 0px -48px;
 }
-.crm-container .imapperbox .mail-merge-icon.mail-merge-unprocessed {
+.crm-container .nyss-inbox-report-container .mail-merge-icon.mail-merge-unprocessed {
   background-position: 0px -64px;
 }
-.crm-container .imapperbox .mail-merge-icon.mail-merge-tags {
+.crm-container .nyss-inbox-report-container .mail-merge-icon.mail-merge-tags {
   background-position: 0px -80px;
 }
 .mail-merge-filter-data {
@@ -131,6 +209,9 @@ a.stats-overview span {
   min-width: 150px;
   min-height: 40px;
   padding: 10px;
+}
+.filter-item-label, .filter-item-term {
+  width:120px;
 }
 .filter-item-remove {
   border: 1.5px solid #777777;
