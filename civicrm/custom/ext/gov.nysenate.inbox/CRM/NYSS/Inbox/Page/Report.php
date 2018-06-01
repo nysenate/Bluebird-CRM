@@ -15,13 +15,22 @@ class CRM_NYSS_Inbox_Page_Report extends CRM_Core_Page {
   }
 
   static function getFiltered() {
-
-    // Find the date parameters being requested
-    $dateParams = [
-      '_date_relative' => $_GET['date_range'],
-      '_date_low' => $_GET['date_from'],
-      '_date_high' => $_GET['date_to'],
-    ];
+    // Find the date parameters being requested.  Handle the "-any-"
+    // selection special.  All others go through the Civi function.
+    if ($_GET['date_range'] === '') {
+      $dateParams = [
+        '_date_relative' => '0',
+        '_date_low' => date('m/d/Y', 0),
+        '_date_high' => date('m/d/Y', time()),
+      ];
+    }
+    else {
+      $dateParams = [
+        '_date_relative' => $_GET['date_range'],
+        '_date_low' => $_GET['date_from'],
+        '_date_high' => $_GET['date_to'],
+      ];
+    }
     CRM_Contact_BAO_Query::convertFormValues($dateParams);
 
     // If the date range was selected, make sure the "high" date ends at 23:59:59.
