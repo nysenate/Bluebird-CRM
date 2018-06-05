@@ -233,7 +233,13 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       ];
     }
 
+    $ret = [
+      'is_error' => FALSE,
+      'msg' => "Messages have been deleted/unmatched.",
+      'details' => [],
+    ];
     foreach ($ids as $idPair) {
+      $action = '';
       //if passed from single delete form, we get an array; if multiple-deleted, we need to split
       if (!is_array($idPair)) {
         $pair = explode('-', $idPair);
@@ -246,12 +252,12 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       //check if message has > 1 matched contact
       $messageMatches = self::getMessageMatches($idPair['row_id']);
       //Civi::log()->debug('deleteMessages', array('$messageMatches' => $messageMatches));
-
       //if more than 1, we only delete the match record
       if (count($messageMatches) > 1) {
         //we can only delete the match record if one exists; record may be unmatched
         if (!empty($idPair['matched_id'])) {
           self::deleteMessageMatch($idPair['row_id'], $idPair['matched_id']);
+          $action = 'unmatched';
         }
       }
       else {
@@ -264,8 +270,14 @@ class CRM_NYSS_Inbox_BAO_Inbox {
           1 => [$userId, 'Positive'],
           2 => [$idPair['row_id'], 'Positive']
         ]);
+        $action = 'deleted';
+      }
+      if ($action) {
+        $ret['details'][] = ['id' => $idPair['row_id'], 'action' => $action];
       }
     }
+
+    CRM_Utils_JSON::output($ret);
   }
 
   /**
