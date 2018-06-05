@@ -49,11 +49,16 @@ CRM.$(function($) {
       title: 'Permanently Delete Messages?',
       message: 'Are you sure you want to permanently remove ' + delete_ids.length + ' messages?'
     }).on('crmConfirm:yes', function() {
-      var url = CRM.url('civicrm/nyss/inbox/deletemsgs', {ids: delete_ids});
-      var request = $.post(url);
-      CRM.status({success: 'Messages were successfully deleted.'}, request);
-
-      refreshList(inboxType);
+      var handle_msg = function(d) { return d.msg; },
+        handlers = {success: handle_msg, error: handle_msg},
+        opts = {
+          url: CRM.url('civicrm/nyss/inbox/deletemsgs', {ids: delete_ids}),
+          dataType: 'json',
+          complete: function (xhr, status) {
+            refreshList(inboxType);
+          }
+        };
+      CRM.status(handlers, $.post(opts));
     });
   });
 
