@@ -343,7 +343,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     $params['sort'] = CRM_Utils_Array::value('sortBy', $params);
     $params['range'] = CRM_Utils_Array::value('range', $params, 0);
     $params['term'] = json_decode(CRM_Utils_Array::value('term', $params, NULL));
-    $orderBy = (!empty($params['sort'])) ? $params['sort'] : 'updated_date DESC, subject, matched_id';
+    $orderBy = (!empty($params['sort'])) ? $params['sort'] : 'updated_date DESC, subject, matched_id, sender_email';
 
     //build range SQL; range = 0 -> all time (no where clause)
     $rangeSql = '';
