@@ -36,7 +36,7 @@ $drush $instance civicrm-upgrade-db
 echo "$prog: alter activity assignment email subject"
 sql="
   UPDATE civicrm_msg_template
-  SET msg_subject = '[Bluebird] Constituent Activity: {contact.display_name}'
+  SET msg_subject = '[Bluebird] {if $isCaseActivity}Case{else}Constituent{/if} Activity: {contact.display_name}'
   WHERE msg_title = 'Cases - Send Copy of an Activity';
 "
 $execSql $instance -c "$sql" -q

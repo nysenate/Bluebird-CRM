@@ -57,6 +57,7 @@ function nyss_civihooks_form_alter(&$form, &$form_state, $form_id) {
       <div class="nyss-roles-section-header">Administrator Roles</div>
     ';
   }
+
   if ($form_id == 'user_cancel_confirm_form') {
     unset($form['user_cancel_method']['user_cancel_block']);
     unset($form['user_cancel_method']['user_cancel_block_unpublish']);
@@ -88,6 +89,8 @@ function nyss_civihooks_form_alter(&$form, &$form_state, $form_id) {
     $urlBase['destination'] = $urlBase['destination'].'?'.$urlQuery;
     $form['#action'] = url(current_path(), array('query' => $urlBase, 'external' => false));
   }
+
+  //watchdog('bluebird', 'form (after hook): <pre>'.print_r($form, TRUE).'</pre>');
 } // nyss_civihooks_form_alter()
 
 
@@ -834,6 +837,9 @@ function nyss_civihooks_civicrm_navigationMenu(&$params) {
 
   //move Administer menu
   $params[$adminNavID] = _buildAdminMenu($adminNavID);
+
+  //create Help menu 11965
+  $params[4000] = _buildHelpMenu(4000);
 
   //CRM_Core_Error::debug_var('navigationMenu params (after)',$params);
 }
@@ -1672,6 +1678,84 @@ function _buildAdminMenu($nyssBaseID) {
   //CRM_Core_Error::debug_var('adminNav', $adminNav);
   return $adminNav;
 } //_buildAdminMenu()
+
+//11965
+function _buildHelpMenu($nyssBaseID) {
+  $nav = array(
+    'attributes' => array(
+      'label' => 'Help',
+      'name' => 'Help',
+      'url' => null,
+      'permission' => 'access CiviCRM',
+      'operator' => 'AND',
+      'separator' => 0,
+      'parentID' => null,
+      'navID' => $nyssBaseID,
+      'active' => 1
+    ),
+    'child' => array(
+      $nyssBaseID+1 => array(
+        'attributes' => array(
+          'label' => 'Bluebird Introduction',
+          'name' => 'Bluebird Introduction',
+          'url' => 'http://senateonline.senate.state.ny.us/STS.nsf/($all)/834B05B0923E3D6A85257CEC00622A0E/$file/Bluebird%20Intro%20Nov%202017.pdf',
+          'permission' => 'access CiviCRM',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $nyssBaseID,
+          'navID' => $nyssBaseID+1,
+          'active' => 1
+        ),
+        'child' => array(),
+      ),
+      $nyssBaseID+2 => array(
+        'attributes' => array(
+          'label' => 'Bluebird Managing Inbound Emails',
+          'name' => 'Bluebird Managing Inbound Emails',
+          'url' => 'http://senateonline.senate.state.ny.us/STS.nsf/($all)/B165F4DF4AC7CF9585257CEC00627ABA/$file/Bluebird%20Managing%20Inbound%20Emails%20Feb%202018.pdf',
+          'permission' => 'access CiviCRM',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $nyssBaseID,
+          'navID' => $nyssBaseID+2,
+          'active' => 1
+        ),
+        'child' => array(),
+      ),
+      $nyssBaseID+3 => array(
+        'attributes' => array(
+          'label' => 'Bluebird Mass Email',
+          'name' => 'Bluebird Mass Email',
+          'url' => 'http://senateonline.senate.state.ny.us/STS.nsf/($all)/5C7B4FB960A91B9E85257CEC006255AB/$file/Bluebird%20Mass%20Email%20Nov%202017.pdf',
+          'permission' => 'access CiviCRM',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $nyssBaseID,
+          'navID' => $nyssBaseID+3,
+          'active' => 1
+        ),
+        'child' => array(),
+      ),
+      $nyssBaseID+4 => array(
+        'attributes' => array(
+          'label' => 'Bluebird Postal Mailings',
+          'name' => 'Bluebird Postal Mailings',
+          'url' => 'http://senateonline.senate.state.ny.us/STS.nsf/($all)/D6935E6B4319E97485257CEC00628C18/$file/Bluebird%20Postal%20Mailings%20Dec%202017.pdf',
+          'permission' => 'access CiviCRM',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $nyssBaseID,
+          'navID' => $nyssBaseID+4,
+          'active' => 1
+        ),
+        'child' => array(),
+      ),
+    ),
+  );
+
+  //CRM_Core_Error::debug_var('adminNav', $adminNav);
+  return $nav;
+} //_buildHelpMenu()
 
 
 //4808/2960 word replacement for titles
