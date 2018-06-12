@@ -183,7 +183,7 @@ function mail_civicrm_entityTypes(&$entityTypes) {
 
 function mail_civicrm_alterMailingRecipients(&$mailing, &$params, $context) {
   /*Civi::log()->debug('mail_civicrm_alterMailingRecipients', array(
-    //'$mailing' => $mailing,
+    '$mailing' => $mailing,
     '$params' => $params,
     '$context' => $context,
   ));*/

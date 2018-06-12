@@ -47,7 +47,7 @@ class CRM_Contact_Task extends CRM_Core_Task {
     RESTORE = 108,
     COMMUNICATION_PREFS = 109,
     INDIVIDUAL_CONTACTS = 110,
-    ADD_TO_CASE = 111;
+    ADD_TO_CASE = 111,
     EXPORT_PRINTPROD = 1000, //NYSS export print production task
     EXPORT_DISTRICT = 1001; //NYSS export district merger/purge task
 
