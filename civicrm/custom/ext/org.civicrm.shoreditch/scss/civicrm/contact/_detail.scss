@@ -1,0 +1,895 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id */
+
+@import 'collapse';
+@import 'tooltip';
+
+.ui-tabs-panel {
+  padding-top: 10px !important;
+
+  // Remove the space from the angular's container
+  > div {
+    padding: 0 !important;
+  }
+
+  .crm-summary-block {
+    background: $crm-white;
+    border-radius: $border-radius-small;
+    box-shadow: $box-shadow;
+    margin-bottom: 20px;
+
+    &.crm-address-block {
+      margin-bottom: 20px !important;
+
+      .crm-edit-address-form {
+        tr:not(:first-child) {
+          td:first-child {
+            padding-left: 20px !important;
+
+            .crm-address-element td,
+            .form-layout-compressed tr td:first-child {
+              padding-left: 0 !important;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  div.crm-clear {
+    font-family: 'Open Sans';
+    font-size: 13px;
+    padding: 12.5px 20px;
+
+    &,
+    a {
+      color: $gray-dark;
+    }
+  }
+
+  div.crm-summary-row {
+    div.crm-label {
+      font-weight: 600;
+
+      &,
+      a {
+        color: $gray-darker !important;
+      }
+    }
+  }
+
+  div.crm-clear,
+  div.crm-summary-row,
+  div.crm-summary-row div.crm-label {
+    background-color: $crm-white !important;
+  }
+
+  // Fix the row width when has the .container class
+  .container.crm-summary-row {
+    padding: 0;
+    width: auto;
+  }
+
+  // Hide the user photo from the panels
+  #crm-contact-thumbnail {
+    display: none;
+  }
+
+  .float-left {
+    float: none !important;
+    padding: 0 !important;
+  }
+
+  // Contributions tab
+  .CRM_Contribute_Form_Search {
+    .action-link {
+      line-height: normal;
+    }
+
+    .select2-choice {
+      border-color: $crm-grayblue-darker;
+      border-radius: $border-radius-base;
+      box-shadow: $crm-select2-box-shadow-inset;
+    }
+
+    .select2-dropdown-open .select2-choice {
+      border-color: $brand-primary;
+      box-shadow: none;
+    }
+
+    .form-layout-compressed {
+      background: $crm-white;
+      border-radius: $panel-border-radius;
+      box-shadow: $box-shadow;
+
+      tr {
+        height: 50px;
+        line-height: 50px;
+      }
+
+      tr:first-child {
+        background: transparent;
+        border-top-left-radius: $border-radius-base;
+        border-top-right-radius: $border-radius-base;
+        height: 40px;
+        line-height: normal;
+
+        th {
+          padding-bottom: 0;
+          padding-top: 15px;
+
+          &:first-child {
+            border-top-left-radius: $border-radius-base;
+          }
+
+          &:last-child {
+            border-top-right-radius: $border-radius-base;
+          }
+        }
+      }
+
+      tr th {
+        border: 0 !important;
+        color: $gray-darker;
+        text-transform: capitalize;
+
+        &:first-child {
+          padding-left: 20px !important;
+        }
+      }
+
+      tr:last-child {
+        background: transparent;
+        border-bottom-left-radius: $panel-border-radius;
+        border-bottom-right-radius: $panel-border-radius;
+        border-top: 1px solid $crm-grayblue-dark;
+
+        td,
+        th {
+          &:first-child {
+            border-bottom-left-radius: $panel-border-radius;
+          }
+
+          &:last-child {
+            border-bottom-right-radius: $panel-border-radius;
+          }
+        }
+      }
+    }
+
+    .selector {
+      border-radius: $panel-border-radius;
+
+      .sticky {
+        tr:first-child {
+          border-bottom: 1px solid $crm-grayblue-dark;
+          border-top-left-radius: $border-radius-base;
+          border-top-right-radius: $border-radius-base;
+        }
+
+        tr:first-child  th {
+          padding: 15px 10px !important;
+          white-space: nowrap;
+
+          &:first-child {
+            border-top-left-radius: $border-radius-base;
+            padding-left: 20px !important;
+          }
+
+          &:last-child {
+            border-top-right-radius: $border-radius-base;
+            padding-right: 20px !important;
+          }
+        }
+      }
+
+      tr:not(.crm-child-row) > td {
+        padding: 15px !important;
+
+        &:first-child {
+          padding-left: 20px !important;
+        }
+
+        &:last-child {
+          padding-right: 20px !important;
+        }
+      }
+
+      tbody tr:last-child {
+        border-bottom-left-radius: $border-radius-base;
+        border-bottom-right-radius: $border-radius-base;
+
+        td {
+          &:first-child {
+            border-bottom-left-radius: $border-radius-base;
+          }
+
+          &:last-child {
+            border-bottom-right-radius: $border-radius-base;
+          }
+        }
+      }
+
+      .crm-expand-row {
+        background: none;
+        position: relative;
+
+        &::after {
+          @include fa-icon($font-size-base, $fa-var-chevron-right);
+          left: 0;
+          position: absolute;
+        }
+
+        &.expanded::after {
+          @include fa-icon($font-size-base, $fa-var-chevron-down);
+        }
+      }
+
+      th {
+        background-color: $gray-lighter !important;
+      }
+
+      .crm-child-row {
+        &,
+        td {
+          padding: 0;
+        }
+
+        #info {
+          th {
+            border-bottom: 1px solid $crm-grayblue-dark !important;
+            text-transform: capitalize;
+          }
+
+          td,
+          th {
+            line-height: 1.5em !important;
+            padding: 15px 20px !important;
+          }
+        }
+      }
+    }
+
+    .crm-expand-row {
+      line-height: 16px;
+    }
+
+    table.crm-softcredit-selector {
+      thead th {
+        background-color: $gray-lighter !important;
+      }
+    }
+  }
+}
+
+// Edit label
+#crm-container {
+  .crm-summary-block-wrap {
+    float: left;
+    width: calc(100% - $contact-avatar*2); // 100% - width of the image - margin
+  }
+
+  #crm-contactname-content {
+    border: 0 !important;
+    max-height: 70px;
+
+    .crm-summary-display_name {
+      float: left;
+      padding: 22px 0; // centering name vertically
+    }
+
+    .crm-edit-help {
+      left: auto;
+      position: relative;
+      top: 20px;
+    }
+
+    &:hover {
+      .crm-edit-help {
+        display: inline-block;
+      }
+    }
+  }
+
+  .crm-summary-contactname-block {
+    padding: 10px 0;
+  }
+
+  .crm-contact-detail-wrap {
+    clear: both;
+    margin-top: 0;
+  }
+
+  .crm-actions-ribbon {
+    li.crm-delete-action {
+      margin-left: 12px;
+    }
+  }
+
+  .crm-actions-ribbon .button {
+    border-color: $crm-white !important;
+    margin-right: 2px;
+    padding: 7px 20px 7px 15px;
+
+    i {
+      margin-right: 6px;
+    }
+
+    &:hover i {
+      color: $crm-white;
+    }
+  }
+
+  form.CRM_Contact_Form_Inline_ContactName {
+    border: 0;
+
+    .select2-choice {
+      .select2-search-choice-close {
+        right: 30px;
+        top: 8px;
+      }
+
+      .select2-chosen {
+        margin-right: 26px;
+      }
+    }
+
+    .crm-inline-edit-form {
+      background-color: transparent !important;
+      border: 0;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      padding: 0;
+      padding-left: 10px;
+
+      > .crm-inline-edit-field ~ .crm-inline-edit-field {
+        padding: 10px 5px;
+      }
+
+      > .crm-inline-edit-field {
+        padding: 10px 5px 10px 0;
+
+        label {
+          color: $crm-white;
+          font: $crm-font-weight-h1 $font-size-base $font-family-base;
+        }
+
+        #household_name {
+          background: $crm-gray-bright;
+          border-color: $crm-copy;
+          color: $crm-white;
+          height: 33px !important;
+          margin-top: 2px;
+          padding: 1px 10px;
+        }
+      }
+
+      .select2-container.eight {
+        width: 120px !important;
+      }
+
+      .crm-inline-button {
+        border: 0;
+        margin: 0 !important;
+        order: 2;
+        padding: 27px 5px;
+
+        .crm-button {
+          border: 0;
+
+          i {
+            display: none;
+          }
+
+          .crm-form-submit {
+            margin-top: 0;
+            padding: 0.4em 0.9em !important;
+
+            &.cancel {
+              color: $crm-white !important;
+            }
+          }
+        }
+      }
+
+      .crm-button_qf_ContactName_upload i {
+        display: inline-block;
+      }
+
+      .crm-form-submit {
+        min-width: initial;
+
+        &:hover {
+          background-color: $brand-primary !important;
+          color: $crm-white !important;
+        }
+
+        &.cancel {
+          background-color: $brand-danger !important;
+          border: 0 !important;
+          border-radius: $border-radius-base;
+          color: $crm-white !important;
+
+          &:hover {
+            background-color: $brand-danger !important;
+          }
+        }
+      }
+    }
+  }
+
+  table.crm-inline-edit-form:not(.form-layout),
+  .CRM_Contact_Form_Inline_CommunicationPreferences {
+    .select2-container .select2-choice abbr {
+      right: 30px;
+      top: 8px;
+    }
+  }
+
+  .crm-inline-edit-form {
+    background-color: transparent !important;
+    padding: 10px;
+
+    td {
+      color: $gray-darker;
+    }
+
+    .crm-button-type-upload {
+      border: 0;
+    }
+
+    [id*='Email_Block'],
+    .crm-phone-is_primary {
+      input[type='checkbox'],
+      input[type='radio'] {
+        display: block;
+        margin-top: 7px;
+      }
+    }
+  }
+
+  .crm-inline-edit {
+    border-width: 1px !important;
+
+    .crm-edit-help {
+      background: $crm-accordion-header-color !important;
+      border-radius: 0;
+      color: $gray-dark;
+      padding: 0.2em 0.9em;
+    }
+
+    &:hover {
+      border-color: $gray-dark;
+      border-radius: $border-radius-base;
+      border-style: solid;
+
+      .crm-edit-help {
+        border-bottom: 1px solid $gray-dark;
+        border-left: 1px solid $gray-dark;
+      }
+    }
+
+    &.form {
+      border: 1px solid $brand-primary !important;
+      border-radius: $border-radius-small;
+      font-family: $font-family-base;
+
+      input[type='text'],
+      input.crm-form-text,
+      input.dateplugin {
+        @include input-text;
+      }
+
+      .crm-label > label,
+      .location_type_id-address-element > label {
+        font: $crm-font-weight-h1 $font-size-base $font-family-base !important;
+      }
+
+      .crm-hover-button.add-more-inline {
+        color: $brand-primary;
+        padding: 0 5px;
+        vertical-align: top;
+
+        &::before {
+          @include fa-icon($font-size-base, $fa-var-plus-circle);
+          color: $brand-primary;
+          padding-right: 5px;
+        }
+      }
+
+      .select2-container {
+        .select2-choice {
+          box-shadow: $crm-input-shadow;
+          min-width: $crm-sm-input-width !important;
+
+          .select2-arrow {
+            padding-top: 1px;
+          }
+        }
+
+        &.select2-dropdown-open {
+          box-shadow: none;
+        }
+      }
+
+      .crm-button {
+        border: 0;
+
+        .crm-i {
+          display: none;
+        }
+
+        input.default {
+          padding-left: 0;
+          padding-right: 0;
+        }
+      }
+
+      .select2-arrow b {
+        background-position: -41px -27px;
+        height: 15px;
+        margin-left: 1px;
+        margin-top: 7px;
+        width: 16px;
+      }
+
+      .delete-button {
+        background: $brand-danger !important;
+        border-color: $brand-danger !important;
+        color: $crm-white !important;
+
+        float: right !important;
+        margin-right: 15px;
+
+        &:hover {
+          background: darken($brand-danger, 10%) !important;
+        }
+
+        .icon {
+          display: none;
+        }
+      }
+
+      td {
+        background-color: transparent !important;
+      }
+
+      td.label {
+        display: inline-block;
+        font-size: $font-size-base;
+      }
+    }
+  }
+
+  .form-layout-compressed {
+    width: 100% !important;
+  }
+
+  .crm-address-element {
+    .helpicon {
+      right: -16px !important;
+    }
+  }
+
+  .crm-container .twelve {
+    width: 10em;
+  }
+
+  .crm-inline-button,
+  .crm-submit-buttons {
+    border-bottom: 1px solid #ccc;
+    height: 35px;
+    margin-bottom: 10px !important;
+    padding-bottom: 10px;
+    white-space: normal;
+  }
+
+  div.contact_panel td {
+    border: 0;
+  }
+}
+
+
+//Apply to more than one address
+[class*='#Address_'] {
+  padding: 10px;
+
+  .form {
+    overflow-x: hidden;
+  }
+
+  .crm-form-select {
+    width: 39% !important;
+  }
+
+  .crm-form-text {
+    max-width: 100% !important;
+    min-width: $crm-sm-input-width !important;
+    width: 94% !important;
+  }
+
+
+  #address_1_geo_code_1,
+  #address_1_geo_code_2,
+  #address_2_geo_code_1,
+  #address_2_geo_code_2,
+  #address_3_geo_code_1,
+  #address_3_geo_code_2,
+  #address_4_geo_code_1,
+  #address_4_geo_code_2,
+  #address_5_geo_code_1,
+  #address_5_geo_code_2,
+  #address_6_geo_code_1,
+  #address_6_geo_code_2 {
+    width: 18% !important;
+  }
+
+  input[type='checkbox'] {
+    margin: 6.5px 5px 7.5px 0 !important;
+  }
+
+  label {
+    font-weight: normal !important;
+
+    &[for='address_1_location_type_id'],
+    &[for='address_2_location_type_id'],
+    &[for='address_3_location_type_id'],
+    &[for='address_4_location_type_id'],
+    &[for='address_5_location_type_id'],
+    &[for='address_6_location_type_id'] {
+      font-weight: bold !important;
+    }
+  }
+
+  .crm-submit-buttons,
+  .crm-inline-button {
+    margin-bottom: 20px;
+  }
+
+  .form-layout-compressed {
+    label,
+    br {
+      display: none;
+    }
+
+    .helpicon {
+      float: right;
+      position: relative;
+      right: 7px;
+      top: 15px;
+    }
+
+    .crm-form-select {
+      min-width: $crm-sm-input-width !important;
+      width: 96% !important;
+    }
+  }
+}
+
+
+.crm-inline-edit {
+  form {
+    .crm-content {
+      margin-left: 0 !important;
+
+      input[type='text'] {
+        width: 100%;
+      }
+    }
+
+    .label {
+      display: none;
+    }
+
+    .crm-label,
+    .crm-content {
+      display: table-cell;
+    }
+
+    .crm-clear {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+    }
+
+    &.CRM_Contact_Form_Inline_IM {
+      .big.crm-form-text {
+        max-width: 155px;
+      }
+
+      .select2-container {
+        width: 8.6em !important;
+      }
+    }
+
+    &.CRM_Contact_Form_Inline_Phone {
+      .crm_phone {
+        max-width: 95px;
+      }
+
+      .four.crm-form-text {
+        max-width: 39px;
+      }
+
+      .select2-container {
+        max-width: 16em;
+        width: 9em !important;
+      }
+    }
+
+    &.CRM_Contact_Form_Inline_Email {
+      .email.big {
+        width: 11em;
+      }
+    }
+
+    &#ContactInfo {
+      .crm-label,
+      .label {
+        display: block;
+        float: none;
+        margin: 0;
+        width: auto;
+
+        label {
+          font: $headings-font-weight $font-size-base $font-family-base;
+        }
+      }
+
+      .select2-container,
+      .crm-form-text {
+        margin-right: 10px;
+      }
+    }
+
+    &#Demographics {
+      input.dateplugin {
+        border-color: $crm-grayblue-darker;
+        margin-top: 0;
+      }
+
+      .crm-clear-link {
+        padding: 4px 0;
+      }
+    }
+  }
+}
+
+.contactCardRight #CustomData {
+  td {
+    display: block;
+  }
+
+  .crm-form-text {
+    min-width: $crm-sm-input-width;
+
+    &.crm-form-time {
+      padding: 0.17em 0.8em !important;
+      width: 35% !important;
+    }
+  }
+
+  .label {
+    display: block;
+    padding-top: 10px;
+  }
+
+  .crm-form-date-wrapper {
+    margin-top: 0 !important;
+
+    input {
+      margin-top: 0;
+    }
+  }
+}
+
+.select2-arrow {
+  background: none !important;
+  padding: 0 4px;
+}
+
+#CustomData {
+  .custom_20_1-row {
+    .label {
+      display: table-cell !important;
+      width: 100% !important;
+    }
+
+    .html-adjust {
+      .crm-hover-button {
+        display: none;
+      }
+    }
+  }
+}
+
+.form-layout-compressed {
+  th {
+    text-align: left;
+  }
+}
+
+#Contribution {
+  .crm-form-block > .form-layout-compressed {
+    td:first-child {
+      padding-left: 23px;
+    }
+  }
+
+  #s2id_currency {
+    &::after {
+      display: none;
+    }
+  }
+
+  table {
+    width: 100%;
+  }
+
+  .crm-button_qf_Contribution_upload {
+    margin-left: 0;
+  }
+
+  .font-size12pt.label {
+    padding-left: 23px;
+  }
+
+  #softCredit > .crm-accordion-body {
+    &,
+    tr,
+    td {
+      padding-left: 0;
+    }
+
+    .crm-contribution-form-block-soft_credit_to:not(.hiddenElement) {
+      td {
+        width: auto;
+
+        label {
+          line-height: 20px;
+          padding: 0;
+        }
+
+        .select2-container {
+          margin-right: 0 !important;
+        }
+
+        .soft-credit-delete-link {
+          width: 10px;
+        }
+      }
+    }
+
+    label {
+      width: auto;
+    }
+  }
+
+  #customData .label label {
+    line-height: normal;
+  }
+
+  .Premium td {
+    display: table-cell;
+
+    &:first-child {
+      width: 173px;
+    }
+  }
+
+  .crm-contribution-form-table-credit_to_pcp {
+    tr {
+      &,
+      td.label {
+        padding-left: 0;
+      }
+    }
+
+    td.label {
+      width: 185px;
+    }
+  }
+}
+
+.ui-dialog-buttonpane {
+  display: none;
+}

@@ -1,0 +1,9 @@
+&#{civi-page('admin-setting-preferences-date')} {
+
+  #crm-main-content-wrapper .form-item {
+    @include civicrm-panel;
+    @include civicrm-table;
+    overflow: hidden;
+    padding: 0;
+  }
+}

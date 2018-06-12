@@ -1,0 +1,13 @@
+&#{civi-page('admin-options-subtype')} {
+
+  #crm-main-content-wrapper {
+
+    div:nth-of-type(2) {
+      @include civicrm-table;
+    }
+
+    .dataTables_wrapper {
+      margin-bottom: 0;
+    }
+  }
+}

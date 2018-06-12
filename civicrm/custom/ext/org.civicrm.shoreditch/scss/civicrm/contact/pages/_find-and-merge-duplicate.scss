@@ -1,0 +1,177 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder */
+
+#{civi-page('contact-deduperules')} {
+  #crm-main-content-wrapper {
+    margin-bottom: 30px;
+
+    &::after {
+      clear: both;
+      content: '';
+      display: table;
+    }
+  }
+
+  .help {
+    margin-bottom: 20px;
+
+    + .crm-submit-buttons {
+      display: none;
+    }
+  }
+
+  .action-link {
+    height: auto;
+    line-height: normal;
+    margin: 20px 15px 20px 0;
+
+    .button {
+      border: 0 !important;
+      box-shadow: $box-shadow;
+    }
+  }
+
+  .crm-hover-button {
+    color: $brand-primary !important;
+    text-transform: lowercase;
+  }
+
+  #browseValues_ {
+    &Household .button,
+    &Individual .button,
+    &Organization .button {
+      margin: 10px 0 20px;
+    }
+
+    &Individual,
+    &Orgazination {
+      margin: 20px 0 !important;
+    }
+  }
+
+  #crm-main-content-wrapper div[id*='browseValues_'] {
+    table {
+      @include expandable-table;
+
+      thead th {
+        padding: 15px 20px !important;
+      }
+
+      tbody td {
+        padding: 15px 20px !important;
+
+        &:last-child {
+          text-align: right;
+        }
+      }
+    }
+
+    a.button {
+      box-shadow: $box-shadow;
+    }
+  }
+
+  table {
+    &.mergecontact {
+      @extend %civihr-table;
+    }
+  }
+
+  #DedupeRules {
+    h3 {
+      @extend .collapsible-title;
+      margin-bottom: 0;
+    }
+
+    .crm-dedupe-rules-form-block {
+      padding: 20px 20px 0 !important;
+
+      .form-layout-compressed {
+        @extend %civihr-table;
+        border: 1px solid $crm-background;
+        box-shadow: none !important;
+        width: 100% !important;
+      }
+
+      &.crm-form-block {
+        > .crm-submit-buttons {
+          margin: 20px -20px 0 !important;
+        }
+      }
+
+      .crm-dedupe-rules-form-block-is_reserved {
+        br {
+          display: none;
+        }
+      }
+    }
+  }
+}
+
+
+#DedupeRules {
+  box-shadow: $box-shadow;
+
+  h3 {
+    background: $gray-lighter !important;
+    color: $gray-darker;
+    font-size: $font-size-h2;
+    font-weight: 600;
+    margin: 0;
+    padding: 17px 25px;
+  }
+
+  .crm-dedupe-rules-form-block {
+    box-shadow: none;
+  }
+
+  .crm-dedupe-rules-form-block-fields {
+    table {
+      &.form-layout-compressed {
+        @include expandable-table;
+
+        tr {
+          &.columnheader {
+            border: 1px solid $crm-background !important;
+
+            td {
+              font-size: $font-size-base;
+
+              div {
+                padding: 0;
+              }
+            }
+          }
+
+          td {
+            width: 33.2%;
+
+            &:last-child {
+              text-align: left !important;
+            }
+          }
+        }
+
+        .two {
+          min-width: 50px;
+          width: 50px !important;
+        }
+      }
+    }
+  }
+}
+
+#DedupeFind {
+  .crm-submit-buttons .crm-button {
+    margin-left: 0;
+  }
+
+  table.form-layout-compressed {
+    margin: 0 15px;
+
+    td {
+      display: table-cell;
+      text-align: left;
+      vertical-align: middle;
+    }
+  }
+}

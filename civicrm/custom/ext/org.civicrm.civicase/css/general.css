@@ -1,0 +1,311 @@
+#bootstrap-theme .text-dark {
+  color: #383f4b;
+}
+#bootstrap-theme.civicase-main {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+#bootstrap-theme .btn .caret {
+  position: relative;
+  left: 4px;
+}
+#bootstrap-theme .panel {
+  border-radius: 2px;
+}
+#bootstrap-theme .panel .panel-header {
+  background-color: #f3f6f7;
+}
+#bootstrap-theme .cc-zero-w {
+  width: 0%;
+  box-shadow: none;
+  padding: 0;
+  border: 0 none;
+  overflow: hidden;
+}
+#bootstrap-theme .cc-zero-h {
+  height: 0px;
+  transition: height .2s linear;
+}
+#bootstrap-theme .civicase-icon-placeholder {
+  color: white;
+  position: relative;
+  left: -14px;
+  font-size: 10px;
+  top: -1px;
+  width: 10px;
+  display: inline-block;
+}
+#bootstrap-theme .civicase-panel-empty {
+  margin-bottom: 110px;
+  margin-top: 110px;
+  padding: 5px;
+  text-align: center;
+}
+#bootstrap-theme .civicase-panel-empty .fa.fa-big {
+  color: #C9D6DC;
+  font-size: 64px;
+}
+#bootstrap-theme .civicase-panel-empty .empty-label{
+  color: #BECDD4;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 19px;
+  padding: 18px 0;
+  text-align: center;
+}
+#bootstrap-theme .crm-ui-range > span {
+  width: 50%;
+  display: inline-block;
+}
+#bootstrap-theme .crm-ui-range span.crm-form-date-wrapper {
+  width: 100%;
+  display: inline-block;
+  position: relative;
+}
+#bootstrap-theme .crm-ui-range span.crm-form-date-wrapper .crm-clear-link {
+  color: #42AFCB;
+  position: absolute;
+  right: 46px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+#bootstrap-theme .crm-ui-range span.crm-form-date-wrapper .crm-clear-link i.fa-times:before {
+  content: '\f057';
+}
+#bootstrap-theme .crm-ui-range .crm-form-date {
+  width: 100%;
+  display: inline-block;
+}
+
+/* Customize tabs on "View Contact" page */
+#civicaseContactTab h1[crm-page-title=""] {
+    display: none;
+}
+
+/* Searchable dropdown widget */
+#bootstrap-theme .dropdown-toggle.searchable-dropdown > input {
+  margin: 0;
+  display: none;
+}
+#bootstrap-theme .dropdown-toggle.searchable-dropdown[aria-expanded=true] {
+  padding: 0;
+}
+#bootstrap-theme .dropdown-toggle.searchable-dropdown[aria-expanded=true] > input {
+  display: inline-block;
+}
+#bootstrap-theme .dropdown-toggle.searchable-dropdown[aria-expanded=true] > span {
+  display: none;
+}
+#bootstrap-theme .dropdown-toggle.searchable-dropdown > input::placeholder {
+  font-family: FontAwesome;
+  text-align: right;
+}
+#bootstrap-theme .dropdown-toggle.searchable-dropdown > input::-moz-placeholder {
+  font-family: FontAwesome;
+  text-align: right;
+}
+#bootstrap-theme .dropdown-toggle.searchable-dropdown > input:-ms-input-placeholder {
+  font-family: FontAwesome;
+  text-align: right;
+}
+#bootstrap-theme .dropdown-toggle.searchable-dropdown > input::-webkit-input-placeholder {
+  font-family: FontAwesome;
+  text-align: right;
+}
+#bootstrap-theme .dropdown-toggle.searchable-dropdown + ul.dropdown-menu {
+  overflow-y: auto;
+  max-height: 400px;
+}
+#bootstrap-theme .act-feed-item {
+  border-radius: 2px;
+  cursor: pointer;
+  padding: 10px 0px 18px;
+}
+#bootstrap-theme .act-feed-item.act-category-milestone {
+  background: #F3F6F7;
+  border-bottom: 1px solid #ddd;
+  border-left: 5px solid;
+  border-right: 5px solid;
+  border-top: 1px solid #ddd;
+}
+#bootstrap-theme .act-feed-item.act-category-task {
+  border: 1px solid #E8EEF0 !important;
+  border-radius: 4px;
+}
+#bootstrap-theme .act-feed-item.act-category-task.activity-overdue {
+  border-color: #E8EEF0 !important;
+}
+#bootstrap-theme .act-feed-item .act-subject {
+  color: #4D5663;
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+  margin-right: 1em;
+  max-width: 70%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#bootstrap-theme .act-feed-item.act-category-milestone .act-subject {
+  color: #4D5663;
+}
+#bootstrap-theme .act-feed-item.activity-overdue {
+  border-left-color: #E6807F !important;
+  border-right-color: #E6807F !important;
+}
+#bootstrap-theme .act-feed-item.activity-overdue .act-direction-icon{
+  color: #E6807F !important;
+}
+#bootstrap-theme .act-feed-item .cb-dot {
+  top: -7px;
+}
+#bootstrap-theme .act-feed-inner {
+  padding-left: 30px;
+}
+#bootstrap-theme .act-feed-item.activity-overdue .cb-dot {
+  background: #E6807F !important;
+}
+#bootstrap-theme .act-feed-item.act-category-milestone .cb-dot {
+  border-color: #F3F6F7;
+}
+#bootstrap-theme .case-activity-card-wrapper .btn {
+  border: none;
+}
+#bootstrap-theme .act-category-task .act-feed-inner {
+  padding-left: 5em;
+}
+#bootstrap-theme td.case-activity-card-wrapper .activity-card-menu {
+  margin-top: -5px;
+}
+#bootstrap-theme td.case-activity-card-wrapper a.act-star {
+  margin-top: -7px;
+}
+#bootstrap-theme .act-task-checkbox {
+  color: #586277;
+  cursor: pointer;
+  font-size: 1.5em;
+  left: 34px;
+  position: absolute;
+  top: -3px;
+}
+#bootstrap-theme .act-task-checkbox:hover i {
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+}
+.civicase-type-donut-chart text.dc-donutty-label-main {
+  font-size: 1.5em;
+}
+.civicase-type-donut-chart text.dc-donutty-label-sub {
+  font-size: 0.8em;
+}
+.dc-chart .civicase-type-duration-chart g.row text {
+  fill: black;
+}
+
+#bootstrap-theme .act-category-communication .act-feed-item-content {
+  background-color: #F3F6F7;
+  border: 1px solid #E8EEF0;
+  border-radius: 4px;
+  margin-left: 5px;
+  padding: 5px 20px 10px;
+}
+#bootstrap-theme .act-category-communication .act-feed-item-content:before {
+  background: #F3F6F7;
+  border-left: 1px solid #E8EEF0;
+  border-top: 1px solid #E8EEF0;
+  content: ' ';
+  height: 8px;
+  left: 31px;
+  top: 15px;
+  position: absolute;
+  transform: rotate(-45deg);
+  width: 8px;
+}
+#bootstrap-theme .act-category-communication {
+  padding-top: 0;
+  padding-right: 0 !important;
+}
+#bootstrap-theme .act-category-communication .activity-card-menu.btn-group {
+  margin-top: 10px;
+  margin-right: 10px;
+}
+#bootstrap-theme .act-subject-draft {
+  color: #525966;
+  font-size: 13px;
+  margin-right: 10px;
+}
+#bootstrap-theme .activity-card-loading-placeholder {
+  border: 1px solid #E8EEF0;
+  border-radius: 4px;
+  height: 90px;
+  margin-bottom: 10px;
+  position: relative;
+}
+#bootstrap-theme .activity-card-loading-placeholder:before {
+  content: ' ';
+  position: absolute;
+  left: 1em;
+  top: 0.4em;
+  width: 2.7em;
+  height: 2.7em;
+  background-color: #EDF3F5;
+  border-radius: 1.5em;
+  font-size: 1.5em;
+  text-align: center;
+  padding-top: .2em;
+  border: .4em solid white;
+}
+#bootstrap-theme .activity-card-loading-placeholder:after {
+  content: ' ';
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  height: 30px;
+  width: 12px;
+  background-color: #EDF3F5;
+}
+#bootstrap-theme .activity-card-loading-placeholder div {
+  margin-left: 90px;
+  margin-right: 90px;
+}
+#bootstrap-theme .activity-card-loading-placeholder div:before,
+#bootstrap-theme .activity-card-loading-placeholder div:after {
+  content: ' ';
+  display: block;
+  height: 10px;
+  background-color: #EDF3F5;
+  margin-top: 23px;
+}
+#bootstrap-theme .oneline-loading-placeholder:before {
+  content: ' ';
+  display: block;
+  height: 1em;
+  background-color: #EDF3F5;
+}
+#bootstrap-theme .placeholder-big:before {
+  height: 1.5em;
+}
+#bootstrap-theme .panel-header .oneline-loading-placeholder:before {
+  background-color: #d7e0e8;
+}
+#bootstrap-theme .panel-default .case-view-placeholder-panel .panel-body {
+  border-top: 0 none;
+}
+#bootstrap-theme .case-view-placeholder-panel nav.civicase-view-tab-bar {
+  height: 53px;
+  background-color: #d5e3e6;
+}
+#bootstrap-theme .case-view-placeholder-panel .civicase-type-and-manager {
+  padding: 5px 19px 5px 25px;
+  margin-top: 12px;
+}
+#bootstrap-theme .activity-card.act-category-none {
+  border: 1px solid #E8EEF0;
+}
+#bootstrap-theme .activity-card.act-category-none.activity-overdue {
+  border-color: #E8EEF0 !important;
+}
+#bootstrap-theme .open>.dropdown-menu {
+  position: fixed;
+  width: fit-content;
+}

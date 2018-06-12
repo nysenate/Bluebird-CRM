@@ -1,0 +1,196 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder, property-no-vendor-prefix */
+
+.CRM_Contact_Form_Search_Advanced .crm-results-block,
+.CRM_Contact_Form_Search_Basic .crm-results-block,
+.CRM_Event_Form_Search .crm-results-block,
+.CRM_Campaign_Form_Search .crm-results-block,
+.CRM_Grant_Form_Search .crm-results-block,
+.CRM_Pledge_Form_Search .crm-results-block,
+.CRM_Contribute_Form_Search .crm-results-block,
+.CRM_Activity_Form_Search .crm-results-block,
+.CRM_Member_Form_Search .crm-results-block {
+  @extend %block-with-shadow;
+  border-radius: $border-radius-base;
+  margin-top: 20px;
+
+  .crm-search-results {
+    margin: 0;
+  }
+
+  .crm-search-tasks {
+    background: $gray-lighter;
+    border-bottom: solid 1px $crm-background;
+    border-radius: $border-radius-base $border-radius-base 0 0 !important;
+    box-shadow: none;
+    margin-bottom: 0 !important;
+
+    td {
+      padding: 10px;
+    }
+
+    td .qill {
+      color: $crm-copy;
+    }
+
+    .select2-container {
+      margin: 0 !important;
+    }
+  }
+
+  .crm-pager {
+    margin: 0;
+
+    > .element-right {
+      margin-right: 20px !important;
+      margin-top: 7px;
+    }
+  }
+
+  .float-right {
+    padding: 10px 20px 20px !important;
+  }
+
+  script + .crm-pager {
+    background: $crm-gray-lightest;
+  }
+
+  .sticky th {
+    line-height: 1.1em !important;
+    padding: 15px 10px !important;
+
+    .sticky-header {
+      height: 30px;
+    }
+
+    &:last-child {
+      &,
+      span {
+        line-height: normal;
+      }
+    }
+  }
+
+  #alpha-filter,
+  .crm-search-tasks,
+  .crm-selection-reset {
+    background: $crm-white !important;
+    padding: 15px 15px 5px !important;
+  }
+
+  #alpha-filter {
+    float: left;
+    margin: 0 !important;
+
+    + .crm-selection-reset {
+      float: right;
+      margin-bottom: 10px !important;
+      margin-top: 10px;
+    }
+  }
+
+  .crm-pager,
+  table {
+    box-shadow: none !important;
+  }
+
+  table.selector {
+    @extend %crm-table;
+    border-top: solid 1px $crm-grayblue-dark;
+    clear: both;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+
+    tr {
+      padding-left: 0 !important;
+
+      > th {
+        background: $gray-lighter;
+        color: $gray-darker;
+        line-height: 18px !important;
+        padding: 15px 10px !important;
+
+        a.sorting,
+        a.sorting_asc,
+        a.sorting_desc {
+          color: $gray-darker;
+        }
+      }
+
+      > th:first-child {
+        padding-left: 20px !important;
+      }
+
+      > td {
+        line-height: 1.5em;
+        padding: 12px 10px;
+        text-align: left;
+
+        &:first-child {
+          padding-left: 20px;
+        }
+
+        a.action-item {
+          display: inline-block;
+        }
+      }
+
+      > td:not(:last-child),
+      > th:not(:last-child) {
+        .privacy-flag {
+          margin-left: 5px;
+          width: 27px;
+        }
+
+        > span {
+          align-items: center;
+          display: flex;
+        }
+      }
+    }
+
+    > tbody > tr > td:last-child {
+      padding-right: 20px;
+      text-align: right;
+    }
+
+    tr.highlight > td {
+      background: $gray-light !important;
+    }
+
+    ul.panel {
+      @extend %block-with-shadow;
+      border: solid 1px $crm-background !important;
+      margin-top: 10px !important;
+
+      li {
+        background: $crm-white !important;
+        padding: 0 !important;
+      }
+
+      li a.crm-hover-button.action-item {
+        border: 0 !important;
+        border-radius: 0 !important;
+        color: $crm-copy !important;
+        font-weight: initial;
+
+        &:hover {
+          background-color: $crm-background !important;
+          color: $crm-copy !important;
+        }
+      }
+    }
+  }
+
+  .font-size12pt {
+    color: $gray-darker;
+    font-size: $font-size-h2;
+    font-weight: $crm-font-weight-h2;
+    padding-bottom: 10px;
+  }
+
+  .font-size11pt {
+    color: $gray-darker;
+    font-size: $font-size-base;
+    font-weight: $crm-font-weight-h2;
+  }
+}

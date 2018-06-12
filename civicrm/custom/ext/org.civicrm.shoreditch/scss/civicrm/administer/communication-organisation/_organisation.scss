@@ -1,0 +1,26 @@
+&#{civi-page('admin-domain')} {
+
+  .crm-form-block {
+    .crm-edit-address-form {
+      td {
+        padding: 0;
+      }
+    }
+
+    .form-layout-compressed:not(.crm-edit-address-form) {
+      margin-left: 10px;
+
+      td {
+        padding: 5px 10px;
+      }
+    }
+
+    h3 {
+      @include section-title;
+    }
+
+    div.description {
+      margin: 20px;
+    }
+  }
+}

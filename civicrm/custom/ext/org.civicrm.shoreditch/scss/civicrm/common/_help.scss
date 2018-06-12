@@ -1,0 +1,12 @@
+.help,
+#help {
+  background: $alert-success-bg;
+  border: none;
+  border-radius: $border-radius-base;
+  color: $gray-darker;
+  padding: 10px;
+
+  a {
+    color: darken($brand-primary, $crm-darken-percentage);
+  }
+}

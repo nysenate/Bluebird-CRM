@@ -1,0 +1,41 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id */
+
+&#{civi-page('admin-paymentprocessor')} {
+  @include civicrm-table;
+
+  .crm-container {
+    .crm-content-block {
+      overflow: hidden;
+    }
+
+    #ltype {
+      tr.columnheader {
+        border: 0;
+        border-bottom: 1px solid $gray-light;
+      }
+    }
+
+    .CRM_Admin_Form_PaymentProcessor {
+      h3 {
+        @include box-shadow($box-shadow);
+        @include panel-header;
+        margin-bottom: 0;
+      }
+
+      .crm-paymentProcessor-form-block {
+        @include box-shadow($crm-form-layout-shadow-lower);
+        border-radius: 0 0 $border-radius-base $border-radius-base !important;
+
+        legend {
+          @include section-title;
+          box-sizing: border-box;
+          width: 100%;
+        }
+
+        .status.no-popup {
+          margin: $crm-status-bar-no-top;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,17 @@
+&#{civi-page('admin-tag')} #crm-main-content-wrapper {
+
+  .crm-content-block {
+    background: none;
+    box-shadow: none;
+
+    #option11 {
+      @include civicrm-panel;
+    }
+
+    .crm-submit-buttons {
+      @include civicrm-panel;
+
+      padding: 0;
+    }
+  }
+}

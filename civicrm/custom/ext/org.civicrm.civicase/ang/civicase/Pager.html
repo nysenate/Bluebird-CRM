@@ -1,0 +1,12 @@
+<div class="pager-loading" ng-if="remaining === true">
+</div>
+<div class="pager-no-more" ng-if="!remaining">
+  <button class="btn btn-default" disabled>
+    {{ remaining === false ? ts('None Found') : ts('Showing all %1', {1: totalCount}) }}
+  </button>
+</div>
+<div class="pager-show-more" ng-if="remaining && remaining !== true">
+  <button class="btn btn-primary" ng-click="nextPage()" title="{{ ts('Click for more') }}">
+    <i class="crm-i fa-angle-double-down"></i> &nbsp; {{ ts('%1 More', {1: remaining}) }} &nbsp; <i class="crm-i fa-angle-double-down"></i>
+  </button>
+</div>

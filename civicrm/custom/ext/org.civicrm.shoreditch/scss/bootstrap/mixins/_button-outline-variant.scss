@@ -1,0 +1,34 @@
+// From Bootstrap 4 alpha
+@mixin button-outline-variant($color, $bg-color: $color, $hover-color: $crm-white) {
+  color: $color;
+  background-image: none;
+  background-color: transparent;
+  border-color: $bg-color;
+
+  &:focus,
+  &.focus,
+  &:active,
+  &.active,
+  .open > &.dropdown-toggle {
+    color: $crm-white;
+    background-color: $bg-color;
+    border-color: $bg-color;
+  }
+  @include hover {
+    color: $hover-color;
+    background-color: darken($bg-color, $crm-darken-percentage);
+    border-color: darken($bg-color, $crm-darken-percentage);
+  }
+
+  &.disabled,
+  &:disabled,
+  fieldset[disabled] & {
+    &:focus,
+    &.focus {
+      border-color: lighten($color, 20%);
+    }
+    @include hover {
+      border-color: lighten($color, 20%);
+    }
+  }
+}

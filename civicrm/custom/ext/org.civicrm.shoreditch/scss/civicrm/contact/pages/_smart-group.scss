@@ -1,0 +1,10 @@
+.crm-contact-task-createsmartgroup-form-block,
+.crm-event-savesearch-form-block {
+  h3 {
+    @include panel-header;
+  }
+
+  .help {
+    margin: 20px;
+  }
+}

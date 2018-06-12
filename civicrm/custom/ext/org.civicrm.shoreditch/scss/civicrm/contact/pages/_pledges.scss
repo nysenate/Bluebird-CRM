@@ -1,0 +1,69 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id */
+
+#{civi-page('contact-view')} {
+  #Search.CRM_Pledge_Form_Search {
+    table.selector {
+      @include expandable-table;
+      margin-bottom: 20px;
+
+      thead.sticky {
+        background: transparent;
+      }
+
+      td .crm-hover-button:hover {
+        color: $brand-primary !important;
+
+        a {
+          color: $crm-copy !important;
+        }
+      }
+
+      .crm-expand-row {
+        padding-left: 0;
+      }
+    }
+
+    p.description {
+      padding: 10px;
+    }
+
+    .action-link {
+      margin-bottom: 0;
+    }
+  }
+
+  #Pledge {
+    .crm-pledge-form-block-create_date,
+    .crm-pledge-form-block-start_date,
+    .crm-PaymentReminders-accordion {
+      br {
+        display: none;
+      }
+
+      span.description {
+        display: block;
+      }
+
+      .crm-accordion-body {
+        padding: 20px !important;
+      }
+    }
+
+    span.description {
+      display: block;
+      line-height: 1.5em;
+    }
+
+    .crm-pledge-form-block-installments  #eachPaymentAmount {
+      &[disabled],
+      &[readonly] {
+        background: $gray-lighter !important;
+        border-color: $crm-grayblue-darker;
+        color: $gray-darker;
+        cursor: not-allowed;
+        margin-right: 5px !important;
+        opacity: 0.6;
+      }
+    }
+  }
+}

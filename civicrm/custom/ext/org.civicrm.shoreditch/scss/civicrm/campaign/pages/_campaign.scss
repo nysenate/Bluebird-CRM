@@ -1,0 +1,137 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id */
+
+#{civi-page('campaign')} {
+  .crm-content-block {
+    .dataTables_wrapper {
+      > table {
+        thead th:nth-child(2),
+        tbody td:nth-child(2) {
+          padding-left: 20px;
+        }
+      }
+
+      .dataTables_paginate {
+        margin-top: -5px;
+      }
+    }
+
+    .crm-search-form-block {
+      .searchCampaign,
+      .searchSurvey,
+      .searchPetition {
+        margin-top: 10px;
+      }
+    }
+  }
+
+  .CRM_Campaign_Form_Task_Interview {
+    padding-bottom: 1px;
+
+    .messages.status {
+      margin: 20px;
+
+      ul {
+        list-style: none;
+        margin: 0;
+      }
+    }
+
+    .float-right {
+      margin-bottom: 16px;
+      margin-right: 14px;
+    }
+
+    .dataTables_length {
+      margin-left: 20px;
+    }
+
+    .dataTables_info {
+      padding-top: 11px;
+    }
+
+    .civireport-criteria {
+      .form-layout-compressed {
+        @extend %crm-table;
+        width: 100%;
+
+        th {
+          background: $gray-lighter;
+        }
+
+        td,
+        th {
+          padding: 8px 10px;
+        }
+      }
+
+      .add-remove-link {
+        margin: 20px 10px;
+
+        a {
+          font-size: $font-size-base;
+        }
+      }
+    }
+
+    .form-item {
+      overflow-x: scroll;
+    }
+
+    .crm-copy-fields {
+      border-bottom: 1px solid $gray-light;
+      border-top: 1px solid $gray-light;
+
+      tr {
+        td,
+        th {
+          line-height: normal;
+        }
+
+        td {
+          &.compressed {
+            input {
+              font-size: $font-size-base;
+              font-weight: normal;
+            }
+          }
+
+          a.button {
+            background: transparent;
+            color: $brand-primary;
+            float: none !important;
+            padding-left: 0;
+            padding-right: 0;
+            text-transform: capitalize;  
+          }
+        }
+      }
+    }
+  }
+
+  .CRM_Campaign_Form_Gotv {
+    .crm-contribution_search_form-accordion {
+      .crm-accordion-body {
+        @include box-shadow($crm-box-shadow-inset-top);
+      }
+    }
+
+    .dataTables_wrapper {
+      border-radius: 0;
+      border-top: 1px solid $crm-grayblue-dark;
+    }
+
+    .dataTables_paginate {
+      margin-right: 15px;
+
+      .paginate_button {
+        padding: 5px;
+      }
+    }
+
+    .crm-datatable-pager-bottom {
+      .dataTables_paginate {
+        margin-top: -5px;
+      }
+    }
+  }
+}

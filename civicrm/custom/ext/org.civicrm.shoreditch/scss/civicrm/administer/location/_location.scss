@@ -1,0 +1,8 @@
+&#{civi-page('admin-locationtype')},
+&#{civi-page('hours-location')} {
+
+  #ltype {
+    @include civicrm-panel;
+    @include civicrm-table;
+  }
+}

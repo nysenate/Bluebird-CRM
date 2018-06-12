@@ -1,0 +1,220 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder */
+
+#{civi-page('import-contact')},
+#{civi-page('import-activity')},
+#{civi-page('import-custom')},
+#{civi-page('event-import')} {
+  &#{civi-page('import-custom')} {
+    #upload-file {
+      > .crm-submit-buttons {
+        @include civicrm-submit-buttons;
+        margin: 20px 0 0 !important;
+        min-height: 43px;
+
+        &:first-child {
+          display: none;
+        }
+      }
+    }
+  }
+
+  #wizard-steps {
+    margin: -20px -20px 0 -20px;
+  }
+
+  #dataSource {
+    min-width: 250px;
+  }
+
+  .crm-form-block.crm-form-block {
+    .crm-form-block {
+      box-shadow: none;
+    }
+
+    td {
+      color: $crm-copy;
+    }
+
+    .crm-submit-buttons {
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    h2 {
+      margin: 0 0 20px;
+      position: initial !important;
+    }
+
+    h3 {
+      @extend .collapsible-title;
+      margin-top: 20px;
+    }
+
+    .help {
+      + .crm-submit-buttons {
+        display: none;
+      }
+    }
+
+    .label {
+      width: 180px;
+    }
+  }
+
+  form > .crm-form-block.crm-form-block {
+    padding: 20px 20px 0 !important;
+  }
+
+  #map-field {
+    > table {
+      @extend %civihr-table;
+      border: 1px solid $crm-background;
+      box-shadow: none !important;
+      margin-bottom: 20px;
+      width: 100% !important;
+
+      tr {
+        th {
+          border-right: 0 !important;
+        }
+      }
+    }
+  }
+
+  #Preview {
+    > .crm-form-block.crm-form-block {
+      padding: 20px 0 0 !important;
+
+      .crm-submit-buttons {
+        padding: 20px;
+      }
+    }
+
+    #wizard-steps {
+      margin-left: 0;
+      margin-right: 0;
+    }
+
+    .help {
+      margin-left: 20px;
+      margin-right: 20px;
+    }
+
+    h2 {
+      margin: 0 20px !important;
+    }
+
+    #map-field,
+    #preview-counts {
+      margin: 0 20px;
+    }
+
+    #preview-counts {
+      margin-bottom: 20px;
+      width: calc(100% - 40px) !important;
+
+      tr {
+        td:first-child {
+          @include table-header();
+        }
+      }
+    }
+  }
+
+  #map-field,
+  #preview-counts {
+    .columnheader {
+      td {
+        @include table-header();
+      }
+    }
+  }
+
+  #summary-counts {
+    width: 100% !important;
+
+    tr {
+      td:first-child {
+        @include table-header();
+      }
+    }
+  }
+
+  #map-field > .selector,
+  #preview-counts,
+  #summary-counts {
+    border: 1px solid $crm-background;
+    box-shadow: none !important;
+  }
+
+  #saveDetails {
+    tr {
+      td {
+        &:last-child {
+          border-right: 0;
+        }
+      }
+    }
+  }
+
+  .required {
+    &::after {
+      display: none;
+    }
+  }
+
+  h3 {
+    border-bottom: 0 !important;
+  }
+
+  h3,
+  td.label {
+    padding-left: 0;
+  }
+
+  .CRM_Contact_Import_Form_DataSource,
+  .CRM_Event_Import_Form_DataSource {
+    .form-layout {
+      width: auto;
+
+      td.label {
+        display: table-cell;
+        padding-left: 0;
+      }
+    }
+
+    input[type=radio] + label[for] {
+      margin-bottom: 5px;
+    }
+
+    #data-source-form-block {
+      td.label {
+        padding-top: 20px;
+        vertical-align: top !important;
+      }
+
+      br {
+        display: none;
+      }
+
+      .crm-import_sql-form-block-sqlQuery {
+        td.label {
+          display: table-cell;
+          padding-top: 10px;
+          vertical-align: top !important;
+        }
+
+        .crm-form-textarea {
+          display: block;
+          min-height: 100px;
+        }
+      }
+    }
+
+    #common-form-controls {
+      td.label {
+        padding-left: 0;
+      }
+    }
+  }
+}

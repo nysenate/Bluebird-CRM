@@ -1,0 +1,14 @@
+.crm-container {
+  .uploaded-file {
+    min-width: 300px;
+    display: inline-block;
+    cursor: pointer;
+    margin: 10px 0;
+
+    .uploaded-file-icon-trash {
+      color: $brand-danger;
+      float: right;
+      margin-left: 20px;
+    }
+  }
+}

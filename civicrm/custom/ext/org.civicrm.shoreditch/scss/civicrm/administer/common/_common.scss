@@ -1,0 +1,105 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id */
+
+// Styles that may apply to more than one page
+//
+.crm-content-block {
+  @include table-block;
+}
+
+ul.civihr-popup {
+  background: $crm-white;
+  box-shadow: $box-shadow;
+  list-style: none;
+  margin: 0;
+  position: absolute;
+
+  li > a {
+    color: $gray-dark;
+    display: block;
+    padding: 10px 20px;
+    text-decoration: none;
+
+    &:hover {
+      background-color: $crm-background;
+    }
+  }
+}
+
+&.civihr-popup-open {
+  /* If popup is open we do not allow scrolling */
+  .dataTables_wrapper,
+  #activity_type,
+  #custom_group,
+  #ltype {
+    overflow: hidden !important;
+  }
+}
+
+#crm-main-content-wrapper {
+  #ltype {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .dataTables_wrapper {
+    background: transparent !important;
+    box-shadow: none;
+    margin: 0;
+  }
+
+  .crm-submit-buttons {
+    background: $crm-white;
+    border-top: 1px solid $gray-lighter;
+    margin: 0;
+
+    a.button {
+      @extend %btn-civi-primary;
+
+      &:last-child {
+        margin-right: 0;
+      }
+    }
+
+    .crm-button {
+      @extend %btn-civi;
+
+      &[crm-icon=fa-check] {
+        @extend %btn-civi-primary;
+        padding: 8px 19px;
+      }
+
+      &[crm-icon=fa-times] {
+        @extend %btn-civi-secondary-outline;
+        border: solid 1px $gray-dark;
+        color: $gray;
+        margin: 0;
+        padding: 7px 19px;
+
+        &:hover {
+          background: $gray-dark;
+          color: $crm-white;
+        }
+      }
+    }
+  }
+
+  .action-link {
+    margin: 0;
+    padding: 20px;
+
+    > span.crm-button,
+    > a.button {
+      box-shadow: none;
+      margin: 0 10px 0 0;
+    }
+  }
+
+  .crm-submit-buttons > .action-link {
+    box-shadow: none;
+    padding: 0 !important;
+  }
+
+  .help {
+    margin-bottom: 20px;
+  }
+}

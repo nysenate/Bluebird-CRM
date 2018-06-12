@@ -1,0 +1,44 @@
+/**
+ * Absolutely positions and vertically and horizontally centers an element
+ */
+@mixin absolute-centered() {
+  bottom: 0;
+  left: 0;
+  margin: auto;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+/**
+ * Dropdown arrow
+ */
+@mixin search-icon() {
+  content: '\f002';
+  bottom: 0;
+  font-family: "FontAwesome";
+  display: inline-block;
+  height: 100%;
+  line-height: $input-height-base;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  text-align: center;
+  width: 32px;
+  z-index: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/**
+ * Apply uniform padding for all children
+ */
+@mixin uniform-padding($width) {
+  padding-left: $width/2;
+  padding-right: $width/2;
+
+  > * {
+    padding-left: $width/2 !important;
+    padding-right: $width/2 !important;
+  }
+}

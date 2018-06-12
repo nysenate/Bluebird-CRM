@@ -1,0 +1,23 @@
+.badge {
+  min-width: $crm-badge-min-width;
+}
+
+// Contextual variations
+
+.badge-danger {
+  background: $brand-danger;
+}
+
+.badge-secondary {
+  background: $gray-darker;
+}
+
+.badge-success {
+  background: $btn-success-bg;
+  color: $gray-darker;
+}
+
+.badge-warning {
+  background: $btn-warning-bg;
+  color: $gray-darker;
+}

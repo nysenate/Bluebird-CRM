@@ -1,0 +1,43 @@
+#bootstrap-theme .act-feed-view-activity {
+  height: calc(100vh - 173px);
+  overflow-y: auto;
+}
+
+#bootstrap-theme .act-feed-view-activity nav {
+  margin: 0;
+  border: 0;
+  background-color: #F3F6F7;
+}
+#bootstrap-theme .act-feed-view-activity nav h3 {
+  display: inline-block;
+  margin-bottom: 0px;
+  margin-top: 15px;
+}
+#bootstrap-theme .act-view-container {
+  min-height: 200px;
+}
+#bootstrap-theme .act-view-container .crm-content-block {
+  box-shadow: none;
+  background: #FFF;
+}
+#bootstrap-theme .act-view-container .crm-button_qf_Activity_cancel {
+  display: none !important;
+}
+#bootstrap-theme .act-view-container .crm-submit-buttons {
+  height: auto !important;
+  padding-bottom: 20px;
+  margin-bottom: 0;
+}
+#bootstrap-theme .act-view-container .crm-activity-form-block {
+  padding: 0 20px;
+}
+#bootstrap-theme .act-view-container .crm-activity-form-block .crm-submit-buttons:first-of-type {
+  border-bottom: 1px solid #F3F6F7;
+  border-top: none;
+  margin-bottom: 20px !important;
+  margin-top: 0 !important;
+}
+#bootstrap-theme .act-view-container .crm-submit-buttons .crm-button {
+  display: inline-block;
+  float: none !important;
+}

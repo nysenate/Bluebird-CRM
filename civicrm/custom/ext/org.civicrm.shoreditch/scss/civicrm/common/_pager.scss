@@ -1,0 +1,43 @@
+.crm-pager {
+  background: $crm-white;
+  border-radius: 0;
+  box-shadow: $box-shadow;
+  margin: 15px 0;
+  font-size: 13px;
+
+  &,
+  a {
+    color: $gray-darker !important;
+  }
+
+  > .element-right {
+    margin-top: 3px;
+  }
+
+  .crm-hover-button {
+    text-transform: capitalize !important;
+    position: relative;
+    top: -2px;
+  }
+}
+
+.ui-spinner {
+  border-radius: 2px;
+  border: 1px solid $crm-grayblue-darker !important;
+  font-size: 13px;
+  color: $crm-copy;
+
+  > a {
+    background: none;
+
+    &:first-child {
+      border-bottom: 1px solid $crm-copy;
+    }
+  }
+}
+
+.dataTables_paginate {
+  .ui-button {
+    padding: 5px 10px;
+  }
+}

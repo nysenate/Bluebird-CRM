@@ -1,0 +1,16 @@
+@mixin page-header-variant($bg-color, $title-color: $crm-white, $sm-color: $crm-background) {
+  background: $bg-color;
+
+  > h1,
+  > h2,
+  > h3,
+  > h4,
+  > h5,
+  > h6 {
+    color: $title-color;
+
+    small {
+      color: $sm-color;
+    }
+  }
+}

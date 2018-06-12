@@ -1,0 +1,274 @@
+.nav {
+
+  > li {
+
+    > a {
+      color: $gray-darker;
+      font-weight: 600;
+    }
+
+    &.disabled > a:hover {
+      border-top-color: transparent;
+      border-right-color: transparent;
+      border-left-color: transparent;
+    }
+  }
+}
+
+.nav-stacked {
+  background: $crm-nav-stacked-bg;
+
+  > li {
+
+    > a {
+      padding: $crm-nav-stacked-link-padding;
+
+      &:active {
+        background: $gray-light;
+      }
+    }
+
+    + li {
+      margin-top: 0;
+    }
+  }
+}
+
+.tab-content {
+  background: $crm-white;
+}
+
+.tab-pane {
+  padding: $crm-nav-tab-content-padding;
+}
+
+.nav-pills {
+
+  > li {
+
+    &.active > a,
+    > a {
+      &:focus {
+        background-color: transparent;
+      }
+    }
+  }
+}
+
+//== Horizontal variation of .nav-pills
+.nav-pills-horizontal {
+  @include box-shadow($box-shadow);
+  padding-left: 20px;
+
+  > li {
+
+    > a {
+      padding: $crm-nav-stacked-link-padding;
+    }
+
+    + li {
+      margin-left: 0;
+    }
+
+    &.active {
+
+      > a {
+        background: transparent;
+        position: relative;
+
+        &:after {
+          border-bottom: 3px solid transparent;
+          bottom: 0;
+          content: '';
+          left: 0;
+          position: absolute;
+          width: 100%;
+        }
+
+        &:hover {
+          background: transparent;
+        }
+      }
+    }
+
+    &.disabled {
+      opacity: 0.5;
+    }
+  }
+}
+
+// Contextual variations
+.nav-pills-horizontal-default {
+  @include nav-pills-horizontal-variant($crm-nav-stacked-bg, $gray-darker, false);
+}
+
+.nav-pills-horizontal-primary {
+  @include nav-pills-horizontal-variant($brand-primary, $crm-white);
+}
+
+.nav-pills-horizontal-success {
+  @include nav-pills-horizontal-variant($btn-success-bg, $gray-darker);
+}
+
+.nav-pills-horizontal-info {
+  @include nav-pills-horizontal-variant($brand-info, $crm-white);
+}
+
+.nav-pills-horizontal-warning {
+  @include nav-pills-horizontal-variant($btn-warning-bg, $gray-darker);
+}
+
+.nav-pills-horizontal-danger {
+  @include nav-pills-horizontal-variant($brand-danger, $crm-white);
+}
+
+
+//== Sidebar navigation
+.nav-pills-stacked-sidebar {
+  background: transparent;
+
+  > li {
+    position: relative;
+    z-index: 2;
+
+    > a {
+      background: $crm-nav-stacked-bg;
+    }
+
+    &.active {
+      z-index: 0;
+
+      &:after,
+      &:before {
+        @include box-shadow($box-shadow);
+
+        content: '';
+        display: block;
+        height: 999999px;
+        left: 0;
+        position: absolute;
+        width: 100%;
+        z-index: 1;
+      }
+
+      &:after {
+        top: 100%;
+      }
+
+      &:before {
+        bottom: 100%;
+      }
+
+      > a {
+        background: transparent !important;
+        color: $gray-darker !important;
+      }
+    }
+  }
+}
+
+
+//== Nav tabs in the heading of a primary panel
+.panel-primary {
+
+  > .panel-heading {
+
+    > .nav-tabs {
+      border: $crm-nav-tabs-panel-heading-border;
+      margin: $crm-nav-tabs-panel-heading-margin;
+
+      > li {
+
+        &.active,
+        &:hover {
+
+          > a {
+            border-width: $crm-nav-tabs-panel-heading-link-border-hover-width;
+          }
+        }
+
+        > a {
+          background: $crm-nav-tabs-panel-heading-link-background !important;
+          border-color: $crm-white !important;
+          border-width: $crm-nav-tabs-panel-heading-link-border-width;
+          color: $crm-white !important;
+          font-weight: $crm-nav-tabs-panel-heading-link-weight;
+          padding: $crm-nav-tabs-panel-heading-link-padding;
+        }
+      }
+    }
+  }
+}
+
+
+//== Nav tabs in a panel-default
+.panel-default {
+
+  // Horizontal nav tabs
+  .nav-tabs:not(.nav-tabs-stacked) {
+    $padding-x: nth($crm-panel-subheading-padding, 2);
+
+    background: $gray-lighter;
+    padding: 5px 0 0 $padding-x;
+  }
+
+  // Vertical nav tabs w/ content on the right, in a grid+flexbox layout
+  .nav-tabs-stacked {
+    border-bottom: 0;
+
+    > li {
+      float: none;
+
+      > a {
+        margin-right: 0;
+        padding: $crm-nav-stacked-link-padding;
+
+        &,
+        &:hover {
+          border-color: transparent $nav-tabs-active-link-hover-border-color transparent transparent;
+        }
+      }
+
+      &.active {
+
+        > a,
+        > a:hover,
+        > a:focus {
+          border-color: $nav-tabs-active-link-hover-border-color transparent $nav-tabs-active-link-hover-border-color transparent;
+          border-bottom-color: $nav-tabs-active-link-hover-border-color;
+        }
+      }
+    }
+
+    // The wrapper that enforces the layout
+    &-wrapper {
+      border-top: 1px solid $crm-grayblue-dark;
+      display: flex;
+
+      .active:first-child > a {
+        border-top-color: transparent !important;
+      }
+
+      // Removes the grid gutter to visually connect the tabs to the content
+      .nav-tabs-stacked {
+        margin-right: -$grid-gutter-width;
+      }
+
+      .nav-tabs-stacked-content {
+        display: flex;
+      }
+
+      .tab-content {
+        flex: 1;
+      }
+    }
+  }
+
+  // If under a panel heading, add a border
+  .panel-heading {
+
+    + .nav-tabs {
+      border-top: 1px solid $gray-light;
+    }
+  }
+}

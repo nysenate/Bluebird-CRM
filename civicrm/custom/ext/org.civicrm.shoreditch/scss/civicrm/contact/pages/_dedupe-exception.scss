@@ -1,0 +1,85 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id */
+
+#{civi-page('dedupe-exception')} {
+  .action-link {
+    height: auto;
+    line-height: normal;
+    margin: 10px 0;
+
+    .crm-i {
+      display: none;
+    }
+  }
+
+  .crm-accordion-header {
+    border-radius: $panel-border-radius $panel-border-radius 0 0 !important;
+  }
+
+  .crm-main-content-wrapper.collapsed .crm-accordion-header {
+    border-radius: $panel-border-radius !important;
+  }
+
+  .crm-accordion-body {
+    border-radius: 0 0 $panel-border-radius $panel-border-radius !important;
+  }
+
+  #dedupeExceptions {
+    @extend %civihr-table;
+  }
+
+  .ui-toolbar {
+    border: 0;
+    color: $crm-copy !important;
+    line-height: 2em;
+    padding: 10px 0 !important;
+
+    &:first-child {
+      background: $gray-lighter !important;
+      border-bottom: 1px solid $crm-background !important;
+    }
+
+    &:last-child {
+      background: $crm-gray-lightest !important;
+    }
+  }
+
+  .dataTables_wrapper {
+    background: $crm-white;
+    border-radius: $border-radius-base;
+    margin: 20px 0 0;
+
+    .dataTables_length,
+    .dataTables_info {
+      float: left;
+      padding: 12px;
+    }
+
+    .dataTables_paginate {
+      margin-top: 2px;
+    }
+
+    .dataTables_length,
+    #dedupeExceptions_filter {
+      padding: 15px;
+    }
+  }
+
+  .dataTables_filter input[type='search'] {
+    @include transition(border-color 0.15s ease-in-out 0s, box-shadow 0.15s ease-in-out 0s);
+    background-color: $crm-white;
+    border: 1px solid $crm-grayblue-darker;
+    border-radius: $border-radius-base;
+    box-shadow: $crm-search-input-shadow;
+    color: $gray-darker;
+    font-size: $font-size-base;
+    height: 30px;
+    line-height: 1.5;
+    padding: 4px 10px;
+  }
+
+  table {
+    th {
+      background: $gray-lighter !important;
+    }
+  }
+}
