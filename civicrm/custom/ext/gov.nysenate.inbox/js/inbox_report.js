@@ -28,7 +28,8 @@ cj(document).ready(function () {
   });
 
   // Set the onClick selection for the stats bar.
-  cj(".stats-overview").on('click', function () {
+  cj(".stats-overview").on('click', function (e) {
+    e.preventDefault();
     cj(".stats-overview").removeClass('active');
     cj(this).addClass('active');
     setTableFilters();
@@ -47,11 +48,11 @@ cj(document).ready(function () {
       var new_div = cj('<div/>').addClass('advanced-filter-current-item')
         .attr('data-col', col)
         .attr('data-term', term)
+        .append(cj('<div/>').addClass('filter-item-remove'))
         .append(cj('<div/>').addClass('filter-item-label')
           .html(lbl))
         .append(cj('<div/>').addClass('filter-item-term')
-          .html(term))
-        .append(cj('<div/>').addClass('filter-item-remove'));
+          .html(term));
       cj('.advanced-filter-current').append(new_div);
       setTableFilters();
     }
@@ -296,7 +297,7 @@ function getReports() {
 
 function ReportTable() {
   cj("#sortable-results").DataTable({
-    "sDom": '<p><"controlls"lif><"clear">rt <p>',//add i here this is the number of records
+    "sDom": '<"table-controls"<"paging"p><"filter"f>><"length-subset"<"length"l><"info"i>><"clear">rt <p><"clear">',
     "sPaginationType": "full_numbers",
     "aaSorting": [[3, "desc"]],
     "aoColumnDefs": [{"sType": "title-string", "aTargets": [3, 4]},
@@ -311,7 +312,7 @@ function ReportTable() {
       {"sWidth": "22%"},
     ],
     'aTargets': [1],
-    "iDisplayLength": 10,
+    "iDisplayLength": 50,
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
     "bAutoWidth": false,
     "bFilter": true,

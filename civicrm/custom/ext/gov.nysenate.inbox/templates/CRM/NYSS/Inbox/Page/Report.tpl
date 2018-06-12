@@ -1,7 +1,7 @@
-<div class="crm-content-block imapperbox" id="Reports">
+<div class="crm-content-block nyss-inbox-report-container" id="Reports">
   <div class="full" id="top">
     <div class="header-title">
-      <h1>Inbox Reports</h1>
+      <h1>Inbox Report</h1>
       <div class="date-range-container">
         {include file="CRM/Core/DateRange.tpl" fieldName="date_range" from='_low' to='_high'}
       </div>
