@@ -1587,6 +1587,16 @@ textarea,input {
   display: none;
 }
 
+body.page-civicrm-mailing a.crm-summary-link.mail-merge-hover {
+  display: block;
+}
+body.page-civicrm-mailing .crm-tooltip-wrapper {
+  left: -15px;
+}
+body.page-civicrm-mailing .crm-tooltip {
+  white-space: nowrap;
+  margin: initial;
+}
 
 
 #crm-container .tree li {

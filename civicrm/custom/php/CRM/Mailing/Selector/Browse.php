@@ -151,7 +151,7 @@ class CRM_Mailing_Selector_Browse extends CRM_Core_Selector_Base implements CRM_
             'sort' => 'status',
             'direction' => CRM_Utils_Sort::DONTCARE,
           ),
-          array(
+          /*array(
             'name' => ts('Created By'),
             'sort' => 'created_by',
             'direction' => CRM_Utils_Sort::DONTCARE,
@@ -160,7 +160,7 @@ class CRM_Mailing_Selector_Browse extends CRM_Core_Selector_Base implements CRM_
             'name' => ts('Created Date'),
             'sort' => 'created_date',
             'direction' => $unscheduledOrder,
-          ),
+          ),*/
           array(
             'name' => ts('Sent By'),
             'sort' => 'scheduled_by',
@@ -171,7 +171,7 @@ class CRM_Mailing_Selector_Browse extends CRM_Core_Selector_Base implements CRM_
             'sort' => 'scheduled_date',
             'direction' => $scheduledOrder,
           ),
-          array(
+          /*array(
             'name' => ts('Started'),
             'sort' => 'start_date',
             'direction' => CRM_Utils_Sort::DONTCARE,
@@ -180,7 +180,7 @@ class CRM_Mailing_Selector_Browse extends CRM_Core_Selector_Base implements CRM_
             'name' => ts('Completed'),
             'sort' => 'end_date',
             'direction' => $completedOrder,
-          ),
+          ),*/
         )
       );
 
