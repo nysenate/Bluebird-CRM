@@ -300,12 +300,7 @@ class CRM_NYSS_BAO_Integration_Website
     civicrm_api3('Tag', 'getfields', array('cache_clear' => 1));
 
     $apiAction = ($action == 'follow') ? 'create' : 'delete';
-    $et = civicrm_api('entity_tag', $apiAction, array(
-      'version' => 3,
-      'entity_table' => 'civicrm_contact',
-      'entity_id' => $contactId,
-      'tag_id' => $tagId,
-    ));
+    $et = self::entityTagAction($contactId, $tagId, $apiAction);
 
     return $et;
   } //processIssue()
@@ -360,12 +355,7 @@ class CRM_NYSS_BAO_Integration_Website
     civicrm_api3('Tag', 'getfields', array('cache_clear' => 1));
 
     $apiAction = ($action == 'follow') ? 'create' : 'delete';
-    $et = civicrm_api('entity_tag', $apiAction, array(
-      'version' => 3,
-      'entity_table' => 'civicrm_contact',
-      'entity_id' => $contactId,
-      'tag_id' => $tagId,
-    ));
+    $et = self::entityTagAction($contactId, $tagId, $apiAction);;
 
     return $et;
   } //processCommittee()
@@ -442,13 +432,7 @@ class CRM_NYSS_BAO_Integration_Website
 
     //clear tag cache; entity_tag sometimes fails because newly created tag isn't recognized by pseudoconstant
     civicrm_api3('Tag', 'getfields', array('cache_clear' => 1));
-
-    $et = civicrm_api('entity_tag', $apiAction, array(
-      'version' => 3,
-      'entity_table' => 'civicrm_contact',
-      'entity_id' => $contactId,
-      'tag_id' => $tagId,
-    ));
+    $et = self::entityTagAction($contactId, $tagId, $apiAction);
 
     //see if the opposite tag exists and if so, remove it
     if (!empty($tagNameOpposite)) {
@@ -461,12 +445,7 @@ class CRM_NYSS_BAO_Integration_Website
 
       //if the tag doesn't even exist, it's never been used on the site and we can skip the check
       if ($tagIdOpp) {
-        $et = civicrm_api('entity_tag', 'delete', array(
-          'version' => 3,
-          'entity_table' => 'civicrm_contact',
-          'entity_id' => $contactId,
-          'tag_id' => $tagIdOpp,
-        ));
+        $et = self::entityTagAction($contactId, $tagId, 'delete');
       }
     }
 
@@ -523,30 +502,7 @@ class CRM_NYSS_BAO_Integration_Website
 
     $apiAction = (in_array($action, array('sign', 'signature update'))) ? 'create' : 'delete';
     try {
-      $etID = CRM_Core_DAO::singleValueQuery("
-        SELECT id
-        FROM civicrm_entity_tag
-        WHERE entity_table = 'civicrm_contact'
-          AND entity_id = %1
-          AND tag_id = %2
-        LIMIT 1
-      ", array(1 => array($contactId, 'Integer'), 2 => array($tagId, 'Integer')));
-
-      if (!$etID || $action == 'delete') {
-        $et = civicrm_api3('entity_tag', $apiAction, array(
-          'entity_table' => 'civicrm_contact',
-          'entity_id' => $contactId,
-          'tag_id' => $tagId,
-        ));
-      }
-      else {
-        //get existing value so we can return it
-        $et = civicrm_api3('entity_tag', 'get', array(
-          'entity_table' => 'civicrm_contact',
-          'entity_id' => $contactId,
-          'tag_id' => $tagId,
-        ));
-      }
+      $et = self::entityTagAction($contactId, $tagId, $apiAction);
     }
     catch (CiviCRM_API3_Exception $e) {
       CRM_Core_Error::debug_var('CRM_NYSS_BAO_Integration_Website::processPetition $e', $e);
@@ -1528,5 +1484,41 @@ class CRM_NYSS_BAO_Integration_Website
       }
       catch (CiviCRM_API3_Exception $e) {}
     }
+  }
+
+  /**
+   * @param $contactId
+   * @param $tagId
+   * @param $action
+   *
+   * @return array
+   *
+   * wrapper for entity_tag actions. this let's us determine existence before we
+   * act in order to avoid harmless errors from the API
+   */
+  static function entityTagAction($contactId, $tagId, $action, $entityTable = 'civicrm_contact') {
+    //setup common params
+    $params = array(
+      'tag_id' => $tagId,
+      'entity_id' => $contactId,
+      'entity_table' => $entityTable,
+    );
+
+    try {
+      //perform a get to see if entity_tag record exists
+      $exists = civicrm_api3('entity_tag', 'get', $params);
+
+      if (($exists['count'] && $action == 'create') ||
+        (empty($exists['count']) && $action == 'delete')
+      ) {
+        $results = $exists;
+      }
+      else {
+        $results = civicrm_api3('entity_tag', $action, $params);
+      }
+    }
+    catch (CiviCRM_API3_Exception $e) {}
+
+    return $results;
   }
 }//end class
