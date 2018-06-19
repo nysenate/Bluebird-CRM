@@ -1005,14 +1005,14 @@ class CRM_NYSS_BAO_Integration_Website
     $fieldCreated = false;
     foreach ($data->form_values as $k => $f) {
       //check to see if field has already been created; if so, set to fields and skip
-      if (in_array($f->field, $existingFieldsList)) {
+      if (in_array(trim($f->field), $existingFieldsList)) {
         $efKey = array_search($f->field, $existingFieldsList);
         $fields[$f->field] = "custom_{$efKey}";
         continue;
       }
 
       //make sure label is unique
-      $label = $f->field;
+      $label = trim($f->field);
       if (array_key_exists($f->field, $fields)) {
         $label = "{$f->field} ({$k})";
       }
