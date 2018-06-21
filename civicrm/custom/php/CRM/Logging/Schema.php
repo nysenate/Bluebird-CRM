@@ -203,7 +203,12 @@ AND    (TABLE_NAME LIKE 'log_civicrm_%' $nonStandardTableNameString )
     $customGroupDAO = CRM_Core_BAO_CustomGroup::getAllCustomGroupsByBaseEntity($extends);
     $customGroupDAO->find();
     while ($customGroupDAO->fetch()) {
-      $customGroupTables[$customGroupDAO->table_name] = $this->logs[$customGroupDAO->table_name];
+      //NYSS PR-12070
+      // logging is disabled for the table (e.g by hook) then $this->logs[$customGroupDAO->table_name]
+      // will be empty.
+      if (!empty($this->logs[$customGroupDAO->table_name])) {
+        $customGroupTables[$customGroupDAO->table_name] = $this->logs[$customGroupDAO->table_name];
+      }
     }
     return $customGroupTables;
   }
