@@ -4128,7 +4128,8 @@ form#user-profile-form div.form-item.form-type-radio > label {
   font-size: 100%;
 }
 form#user-profile-form div#edit-roles,
-form#user-profile-form div#edit-status {
+form#user-profile-form div#edit-status,
+div#edit-roleassign-roles {
   margin-left: 20px;
 }
 form#user-profile-form div.nyss-roles-section-header {
