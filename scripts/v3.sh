@@ -44,5 +44,16 @@ $drush $instance pm-enable module_filter -y
 echo "$prog: install navigation extension"
 $drush $instance cvapi extension.install key=gov.nysenate.navigation --quiet
 
+## set user block to seven theme
+echo "$prog: set user block to seven theme"
+sql="
+  UPDATE block
+  SET status = 1, region = 'content'
+  WHERE module = 'user'
+    AND delta = 'login'
+    AND theme = 'seven';
+"
+$execSql -i $instance -c "$sql" --drupal -q
+
 ## record completion
 echo "$prog: upgrade process is complete."
