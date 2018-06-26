@@ -40,5 +40,9 @@ $drush $instance pm-enable admin_menu -y
 $drush $instance pm-enable adminimal_admin_menu -y
 $drush $instance pm-enable module_filter -y
 
+## install navigation extension
+echo "$prog: install navigation extension"
+$drush $instance cvapi extension.install key=gov.nysenate.navigation --quiet
+
 ## record completion
 echo "$prog: upgrade process is complete."
