@@ -70,5 +70,9 @@ sql="
 "
 $execSql -i $instance -c "$sql" --drupal -q
 
+## 11887
+echo "$prog: install reports extension"
+$drush $instance cvapi extension.install key=gov.nysenate.reports --quiet
+
 ## record completion
 echo "$prog: upgrade process is complete."

@@ -31,7 +31,13 @@ function nyss_civihooks_form_alter(&$form, &$form_state, $form_id) {
     $form['actions']['cancel']['#value'] = 'Delete User Account';
     $form['account']['name']['#description'] = '';
     $form['account']['mail']['#description'] = '';
+    $form['account']['name']['#disabled'] = 1;
     unset($form['account']['pass']);
+
+    //inject js because the role modifications below don't work for non-super-admins
+    $form['#attached']['js'] = array(
+      drupal_get_path('module', 'nyss_civihooks') . '/js/user_profile_form.js',
+    );
 
     //roles
     $form['account']['roles']['#title'] = 'Assignable Roles';
