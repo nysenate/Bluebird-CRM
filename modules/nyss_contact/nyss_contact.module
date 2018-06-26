@@ -332,8 +332,10 @@ function nyss_contact_civicrm_pageRun(&$page) {
   //NYSS 11385
   if ($pagename == 'CRM_Dashlet_Page_Activity') {
     CRM_Core_Resources::singleton()->addScript("
-      $('li.widget-activity h3.widget-header').text('My Activities');
-      $('th.crm-contact-activity-activity_date').html('Activity Date');
+      CRM.$(function($) {
+        $('li.widget-activity h3.widget-header').text('My Activities');
+        $('th.crm-contact-activity-activity_date').html('Activity Date');
+      });
     ");
   }
 }//pageRun
@@ -347,7 +349,7 @@ function nyss_contact_civicrm_validateForm( $formName, &$fields, &$files, &$form
     $formName == 'CRM_Contact_Form_Contact'
   ) {
     //5776
-    foreach ( $files as $field => $details ) {
+    foreach ($files as $field => $details) {
       if ( $details['size'] > 2100000 ) { //2MB
         $errors[$field] = 'Attached files must be less than 2MB in size.';
       }

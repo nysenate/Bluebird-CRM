@@ -1,13 +1,16 @@
 <?php 
 
-define('LOG_INFO', 1);
-define('LOG_DEBUG', 2);
+if (!defined('LOG_INFO')) {
+  define('LOG_INFO', 1);
+}
+if (!defined('LOG_DEBUG')) {
+  define('LOG_DEBUG', 2);
+}
+if (!defined('LOG_LEVEL')) {
+  define('LOG_LEVEL', LOG_INFO);
+}
 
-define('LOG_LEVEL', LOG_INFO);
-
-
-function nyss_massmerge_civicrm_merge($type, &$data, $mainId = null, $otherId = null, $tables = null)
-{
+function nyss_massmerge_civicrm_merge($type, &$data, $mainId = null, $otherId = null, $tables = null) {
   switch ($type) {
     case 'batch':
       if (!empty($data['fields_in_conflict'])) {
