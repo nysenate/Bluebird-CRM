@@ -235,7 +235,8 @@
 <tr><td class="label">{ts}Mailing Name{/ts}</td><td>{$report.mailing.name}</td></tr>
 <tr><td class="label">{ts}Subject{/ts}</td><td>{$report.mailing.subject}</td></tr>
 <tr><td class="label">{ts}From{/ts}</td><td>{$report.mailing.from_name} &lt;{$report.mailing.from_email}&gt;</td></tr>
-<tr><td class="label">{ts}Reply-to email{/ts}</td><td>{$report.mailing.replyto_email|htmlentities}</td></tr>
+<tr><td class="label">{ts}Created By{/ts}</td><td>{$report.mailing.created_by|htmlentities}</td></tr>
+<tr><td class="label">{ts}Created Date{/ts}</td><td>{$report.mailing.created_date}</td></tr>
 
 {*NYSS 3895*}{*
 <tr><td class="label">{ts}Forward replies{/ts}</td><td>{if $report.mailing.forward_replies}{ts}On{/ts}{else}{ts}Off{/ts}{/if}</td></tr>
