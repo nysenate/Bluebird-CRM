@@ -82,8 +82,16 @@
             {$row.scheduled}
             <div class="crm-tooltip-wrapper">
               <div class="crm-tooltip">
-                {if $row.start}Started {$row.start}{/if}
-                {if $row.end}<br/>Completed {$row.end}{/if}
+                {if $row.start}
+                  Started {$row.start}<br/>
+                  {if $row.end}
+                    Completed {$row.end}
+                  {else}
+                    but not yet completed
+                  {/if}
+                {else}
+                  Mailing job has not started
+                {/if}
               </div>
             </div>
           </a>
