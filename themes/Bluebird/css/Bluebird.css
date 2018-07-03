@@ -4155,3 +4155,15 @@ form#user-profile-form div.nyss-roles-subsection-header {
 form#user-profile-form div.nyss-roles-description {
   font-style: italic;
 }
+
+/*11889 - schedule mailing*/
+#crm-container form.CRM_Mailing_Form_Search span.btn-slide {
+  z-index: auto;
+}
+#crm-container form.CRM_Mailing_Form_Search div.crm-tooltip-wrapper {
+  font-size: 0.95em;
+  white-space: nowrap;
+}
+.crm-container form.CRM_Mailing_Form_Search a.crm-summary-link {
+  z-index: auto;
+}
