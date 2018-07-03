@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  * $Id$
  *
  */
@@ -159,7 +159,7 @@ class CRM_Core_BAO_CustomOption {
           $options[$dao->id]['is_default'] = '';
         }
       }
-
+      $options[$dao->id]['description'] = $dao->description;
       $options[$dao->id]['class'] = $dao->id . ',' . $class;
       $options[$dao->id]['is_active'] = empty($dao->is_active) ? ts('No') : ts('Yes');
       $options[$dao->id]['links'] = CRM_Core_Action::formLink($links,

@@ -1262,6 +1262,11 @@ class CRM_NYSS_BAO_Integration_Website
       WHERE id = {$row->id}
     ");
 
+    //if errored, trigger notification email
+    if (!$success) {
+      self::notifyError($db, $type, $row, $params, $date);
+    }
+
     $transaction->commit();
   } // archiveRecord()
 
@@ -1520,5 +1525,45 @@ class CRM_NYSS_BAO_Integration_Website
     catch (CiviCRM_API3_Exception $e) {}
 
     return $results;
+  }
+
+  /**
+   * @param $db
+   * @param $type
+   * @param $row
+   * @param $params
+   * @param $date
+   *
+   * notify admins when there is an error getting archived
+   */
+  static function notifyError($db, $type, $row, $params, $date) {
+    $toEmails = variable_get('civicrm_error_to');
+    //Civi::log()->debug('notifyError', array('$toEmails' => $toEmails));
+
+    if (empty($toEmails)) {
+      return;
+    }
+
+    $html = "The website integration script has encountered an error at {$date}. The details are below. <br /><br /><pre>";
+    $html .= "db: {$db}\n";
+    $html .= "type: {$type}\n";
+    $html .= "date: {$date}\n";
+    $html .= "row: ".print_r($row, TRUE);
+    $html .= "params: ".print_r($params, TRUE);
+    $html .= "</pre>";
+
+    $fromEmailAddress = CRM_Core_OptionGroup::values('from_email_address', NULL, NULL, NULL, ' AND is_default = 1');
+
+    foreach (explode(',', $toEmails) as $toEmail) {
+      $mailParams = [
+        'toEmail' => $toEmail,
+        'subject' => "Error processing accumulator data: {$db}",
+        'html' => $html,
+        'from' => reset($fromEmailAddress),
+      ];
+      //Civi::log()->debug('notifyError', array('mailParams' => $mailParams));
+
+      CRM_Utils_Mail::send($mailParams);
+    }
   }
 }//end class

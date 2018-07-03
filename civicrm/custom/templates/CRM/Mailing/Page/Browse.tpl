@@ -2,7 +2,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -72,20 +72,22 @@
         {/if}
         <td class="crm-mailing-subject">{$row.subject}</td>{*NYSS 6007*}
         <td class="crm-mailing-status crm-mailing_status-{$row.status}">{$row.status}</td>
-        <td class="crm-mailing-created_by">
-          <a href ={crmURL p='civicrm/contact/view' q="reset=1&cid="}{$row.created_id} title="{$row.created_by|escape}">
-            {$row.created_by|mb_truncate:20:"..."}
-          </a>
-        </td>
-        <td class="crm-mailing-created_date">{$row.created_date}</td>
         <td class="crm-mailing-scheduled_by">
           <a href ={crmURL p='civicrm/contact/view' q="reset=1&cid="}{$row.scheduled_id} title="{$row.scheduled_by|escape}">
             {$row.scheduled_by|mb_truncate:20:"..."}
           </a>
         </td>
-        <td class="crm-mailing-scheduled">{$row.scheduled}</td>
-        <td class="crm-mailing-start">{$row.start}</td>
-        <td class="crm-mailing-end">{$row.end}</td>
+        <td class="crm-mailing-scheduled">
+          <a href="#" class="crm-summary-link mail-merge-hover">
+            {$row.scheduled}
+            <div class="crm-tooltip-wrapper">
+              <div class="crm-tooltip">
+                {if $row.start}Started {$row.start}{/if}
+                {if $row.end}<br/>Completed {$row.end}{/if}
+              </div>
+            </div>
+          </a>
+        </td>
        {if call_user_func(array('CRM_Campaign_BAO_Campaign','isCampaignEnable'))}
           <td class="crm-mailing-campaign">{$row.campaign}</td>
       {/if}

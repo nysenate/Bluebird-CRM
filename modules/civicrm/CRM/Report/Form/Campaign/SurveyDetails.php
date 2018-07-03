@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  * $Id$
  *
  */
@@ -157,6 +157,8 @@ class CRM_Report_Form_Campaign_SurveyDetails extends CRM_Report_Form {
         ),
         'grouping' => 'location-fields',
       ),
+    ) + $this->getAddressColumns() +
+    array(
       'civicrm_activity' => array(
         'dao' => 'CRM_Activity_DAO_Activity',
         'alias' => 'survey_activity',
@@ -182,6 +184,11 @@ class CRM_Report_Form_Campaign_SurveyDetails extends CRM_Report_Form {
             'required' => TRUE,
             'title' => ts('Survey Result'),
           ),
+          'activity_date_time' => array(
+            'name' => 'activity_date_time',
+            'title' => ts('Date'),
+            'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
+          ),
         ),
         'filters' => array(
           'survey_id' => array(
@@ -204,10 +211,20 @@ class CRM_Report_Form_Campaign_SurveyDetails extends CRM_Report_Form {
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => $resultOptions,
           ),
+          'activity_date_time' => array(
+            'title' => ts('Date'),
+            'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
+            'operatorType' => CRM_Report_Form::OP_DATE,
+          ),
         ),
         'grouping' => 'survey-activity-fields',
+        'order_bys' => array(
+          'activity_date_time' => array(
+            'title' => ts('Date'),
+          ),
+        ),
       ),
-    ) + $this->getAddressColumns();
+    );
     parent::__construct();
   }
 
@@ -262,7 +279,7 @@ class CRM_Report_Form_Campaign_SurveyDetails extends CRM_Report_Form {
 
   public function from() {
     $this->_from = " FROM civicrm_contact {$this->_aliases['civicrm_contact']} {$this->_aclFrom} ";
-    $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
+    $activityContacts = CRM_Activity_BAO_ActivityContact::buildOptions('record_type_id', 'validate');
     $assigneeID = CRM_Utils_Array::key('Activity Assignees', $activityContacts);
     $targetID = CRM_Utils_Array::key('Activity Targets', $activityContacts);
 
@@ -274,19 +291,9 @@ class CRM_Report_Form_Campaign_SurveyDetails extends CRM_Report_Form {
     $this->_from .= " INNER JOIN civicrm_activity_contact activity_contact_civireport ON
                       ( {$this->_aliases['civicrm_activity']}.id = activity_contact_civireport.activity_id  AND activity_contact_civireport.record_type_id = {$assigneeID} )\n";
 
-    //get the address table.
-    $this->_from .= " LEFT JOIN civicrm_address {$this->_aliases['civicrm_address']} ON
-                      {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_address']}.contact_id AND {$this->_aliases['civicrm_address']}.is_primary = 1\n";
-
-    if ($this->_emailField) {
-      $this->_from .= "LEFT JOIN civicrm_email {$this->_aliases['civicrm_email']} ON
-                       {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_email']}.contact_id AND {$this->_aliases['civicrm_email']}.is_primary = 1\n";
-    }
-
-    if ($this->_phoneField) {
-      $this->_from .= "LEFT JOIN civicrm_phone {$this->_aliases['civicrm_phone']} ON
-                       {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_phone']}.contact_id AND {$this->_aliases['civicrm_phone']}.is_primary = 1\n";
-    }
+    $this->joinAddressFromContact();
+    $this->joinPhoneFromContact();
+    $this->joinEmailFromContact();
 
     if ($this->_locationBasedPhoneField) {
       foreach ($this->_surveyResponseFields as $key => $value) {

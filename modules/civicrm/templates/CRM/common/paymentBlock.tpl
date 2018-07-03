@@ -2,7 +2,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -52,6 +52,8 @@
       payment_processor.show();
       payment_information.show();
       billing_block.show();
+      // also set selected payment methods
+      cj('input[name="payment_processor_id"][checked=checked]').prop('checked', true);
     }
   }
 
@@ -109,7 +111,7 @@
 
       var payment_instrument_id = $('#payment_instrument_id').val();
 
-      var dataUrl = "{crmURL p='civicrm/payment/form' h=0 q="&currency=`$currency`&`$urlPathVar``$isBackOfficePathVar``$profilePathVar``$contributionPageID``$preProfileID`processor_id="}" + type;
+      var dataUrl = "{crmURL p='civicrm/payment/form' h=0 q="&formName=`$form.formName`&currency=`$currency`&`$urlPathVar``$isBackOfficePathVar``$profilePathVar``$contributionPageID``$preProfileID`processor_id="}" + type;
       {literal}
       if (typeof(CRM.vars) != "undefined") {
         if (typeof(CRM.vars.coreForm) != "undefined") {

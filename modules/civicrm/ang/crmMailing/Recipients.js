@@ -145,7 +145,6 @@
                 mids.push(dv.entity_id);
               }
             }
-            //NYSS mailing rebuild
             // push non existant 0 group/mailing id in order when no recipents group or prior mailing is selected
             //  this will allow to resuse the below code to handle datamap
             if (gids.length === 0) {

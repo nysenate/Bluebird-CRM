@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,18 +23,18 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  * $Id$
  *
  */
 
-/*
- * Implemenation of hook_enable()
+/**
+ * Implements hook_enable().
  */
 function civicrmtheme_enable() {
   // update module weight to 110, to make it run after system and civicrm
@@ -42,19 +42,19 @@ function civicrmtheme_enable() {
 }
 
 /**
- * Implementation of hook_install().
+ * Implements hook_install().
  */
 function civicrmtheme_install() {
-  $link = l(t('Administer > Appearance > Administration theme'), 'admin/appearance');
-  drupal_set_message(t("CiviCRM theme configuration setting is available under !link", array('!link' => $link)));
+  $t = get_t();
+  $link = l($t('Administer > Appearance > Administration theme'), 'admin/appearance');
+  drupal_set_message($t("CiviCRM theme configuration setting is available under !link", array('!link' => $link)));
 }
 
 /**
- * Implementation of hook_uninstall().
+ * Implements hook_uninstall().
  */
 function civicrmtheme_uninstall() {
   // cleaning variables
   variable_del('civicrmtheme_theme_admin');
   variable_del('civicrmtheme_theme_public');
 }
-

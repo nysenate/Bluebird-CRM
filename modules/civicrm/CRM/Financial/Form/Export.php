@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 
 /**
@@ -61,6 +61,11 @@ class CRM_Financial_Form_Export extends CRM_Core_Form {
   protected $_exportFormat;
 
   /**
+   * Download export File.
+   */
+  protected $_downloadFile = TRUE;
+
+  /**
    * Build all the data structures needed to build the form.
    */
   public function preProcess() {
@@ -89,15 +94,15 @@ class CRM_Financial_Form_Export extends CRM_Core_Form {
       $this->_batchIds = $this->_id;
     }
 
-    $allBatchStatus = CRM_Core_PseudoConstant::get('CRM_Batch_DAO_Batch', 'status_id');
-    $this->_exportStatusId = CRM_Utils_Array::key('Exported', $allBatchStatus);
+    $this->_exportStatusId = CRM_Core_PseudoConstant::getKey('CRM_Batch_DAO_Batch', 'status_id', 'Exported');
 
     // check if batch status is valid, do not allow exported batches to export again
     $batchStatus = CRM_Batch_BAO_Batch::getBatchStatuses($this->_batchIds);
 
     foreach ($batchStatus as $batchStatusId) {
       if ($batchStatusId == $this->_exportStatusId) {
-        CRM_Core_Error::fatal(ts('You cannot exported the batches which were exported earlier.'));
+        $url = CRM_Core_Session::singleton()->readUserContext();
+        CRM_Core_Error::statusBounce(ts('You cannot export batches which have already been exported.'), $url);
       }
     }
 
@@ -174,7 +179,7 @@ class CRM_Financial_Form_Export extends CRM_Core_Form {
       CRM_Batch_BAO_Batch::create($batchParams);
     }
 
-    CRM_Batch_BAO_Batch::exportFinancialBatch($batchIds, $this->_exportFormat);
+    CRM_Batch_BAO_Batch::exportFinancialBatch($batchIds, $this->_exportFormat, $this->_downloadFile);
   }
 
 }

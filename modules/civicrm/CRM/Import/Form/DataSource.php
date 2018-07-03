@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,7 +27,7 @@
 
 /**
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 
 /**
@@ -79,9 +79,8 @@ abstract class CRM_Import_Form_DataSource extends CRM_Core_Form {
 
     $this->add('text', 'fieldSeparator', ts('Import Field Separator'), array('size' => 2), TRUE);
     $this->setDefaults(array('fieldSeparator' => $config->fieldSeparator));
+    $mappingArray = CRM_Core_BAO_Mapping::getCreateMappingValues('Import ' . static::IMPORT_ENTITY);
 
-    //get the saved mapping details
-    $mappingArray = CRM_Core_BAO_Mapping::getMappings('Import ' . static::IMPORT_ENTITY);
     $this->assign('savedMapping', $mappingArray);
     $this->add('select', 'savedMapping', ts('Mapping Option'), array('' => ts('- select -')) + $mappingArray);
 

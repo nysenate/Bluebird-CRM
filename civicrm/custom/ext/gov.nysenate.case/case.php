@@ -122,36 +122,6 @@ function case_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
   _case_civix_civicrm_alterSettingsFolders($metaDataFolders);
 }
 
-/**
- * Functions below this ship commented out. Uncomment as required.
- *
-
-/**
- * Implements hook_civicrm_preProcess().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_preProcess
- *
-function case_civicrm_preProcess($formName, &$form) {
-
-} // */
-
-/**
- * Implements hook_civicrm_navigationMenu().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_navigationMenu
- *
-function case_civicrm_navigationMenu(&$menu) {
-  _case_civix_insert_navigation_menu($menu, NULL, array(
-    'label' => ts('The Page', array('domain' => 'gov.nysenate.case')),
-    'name' => 'the_page',
-    'url' => 'civicrm/the-page',
-    'permission' => 'access CiviReport,access CiviContribute',
-    'operator' => 'OR',
-    'separator' => 0,
-  ));
-  _case_civix_navigationMenu($menu);
-} // */
-
 function case_civicrm_buildForm($formName, &$form) {
   /*Civi::log()->debug('case_civicrm_buildForm', array(
     'formName' => $formName,
@@ -235,4 +205,66 @@ function case_civicrm_buildForm($formName, &$form) {
       $form->assign('display_name', $dn);
     }
   }
+}
+
+function case_civicrm_post($op, $objectName, $objectId, &$objectRef) {
+  /*Civi::log()->debug('case_civicrm_post', array(
+    '$op' => $op,
+    '$objectName' => $objectName,
+    '$objectId' => $objectId,
+    '$objectRef' => $objectRef,
+  ));*/
+
+  //2450 - notify case worker/coordinator when role created/changed
+  if (in_array($op, array('edit', 'create')) &&
+    $objectName == 'Relationship' &&
+    $objectRef->case_id
+  ) {
+    //notify case worker with an email
+    $caseID = $objectRef->case_id;
+    $caseDetails = civicrm_api3('case', 'getsingle', array('id' => $caseID));
+    //Civi::log()->debug('case_civicrm_post', array('caseDetails' => $caseDetails));
+
+    //get client ID
+    foreach ($caseDetails['contacts'] as $contact) {
+      if ($contact['role'] == 'Constituent') {
+        $clientID = $contact['contact_id'];
+        $clientName = $contact['display_name'];
+      }
+    }
+
+    //get case role email
+    $roleEmail = civicrm_api3('contact', 'getvalue', array(
+      'id' => $objectRef->contact_id_b,
+      'return' => 'email',
+    ));
+    //Civi::log()->debug('case_civicrm_post', array('$roleEmail' => $roleEmail));
+
+    if (!empty($clientID)) {
+      $url = CRM_Utils_System::url(
+        'civicrm/contact/view/case',
+        "reset=1&action=view&cid={$clientID}&id={$caseID}",
+        true
+      );
+
+      //prepare mail params
+      $fromEmailAddress = CRM_Core_OptionGroup::values('from_email_address', NULL, NULL, NULL, ' AND is_default = 1');
+      $mailParams = array(
+        'toEmail' => $roleEmail,
+        'subject' => "Case Role Created/Changed for: $clientName (Case ID: {$caseID})",
+        'html' => "<p>You have been assigned a case for $clientName (Case ID: {$caseID})</p>
+          <p><a href='$url' target=_blank>$url</a></p>",
+        'from' => reset($fromEmailAddress),
+      );
+      //Civi::log()->debug('case_civicrm_post', array('$mailParams' => $mailParams));
+
+      $mailingBackend = Civi::settings()->get('mailing_backend');
+      if ($mailingBackend['outBound_option'] != 2) {
+        CRM_Utils_Mail::send($mailParams);
+      }
+      else {
+        CRM_Core_Error::debug_var('$mailParams - role', $mailParams);
+      }
+    }
+  }//end case role email
 }

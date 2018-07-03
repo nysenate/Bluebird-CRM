@@ -3,7 +3,7 @@
   +--------------------------------------------------------------------+
   | CiviCRM version 4.7                                                |
   +--------------------------------------------------------------------+
-  | Copyright CiviCRM LLC (c) 2004-2017                                |
+  | Copyright CiviCRM LLC (c) 2004-2018                                |
   +--------------------------------------------------------------------+
   | This file is a part of CiviCRM.                                    |
   |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 
 /**
@@ -803,6 +803,7 @@ class CRM_Core_BAO_CustomField extends CRM_Core_DAO_CustomField {
     $field = self::getFieldObject($fieldId);
     $widget = $field->html_type;
     $element = NULL;
+    $customFieldAttributes = array();
 
     // Custom field HTML should indicate group+field name
     $groupName = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_CustomGroup', $field->custom_group_id);
@@ -837,23 +838,27 @@ class CRM_Core_BAO_CustomField extends CRM_Core_DAO_CustomField {
       if ($search || ($widget !== 'AdvMulti-Select' && strpos($widget, 'Select') !== FALSE)) {
         $widget = 'Select';
       }
-      $selectAttributes = array(
-        'data-crm-custom' => $dataCrmCustomVal,
-        'class' => 'crm-select2',
-      );
+
+      $customFieldAttributes['data-crm-custom'] = $dataCrmCustomVal;
+      $selectAttributes = array('class' => 'crm-select2');
+
       // Search field is always multi-select
       if ($search || strpos($field->html_type, 'Multi') !== FALSE) {
         $selectAttributes['class'] .= ' huge';
         $selectAttributes['multiple'] = 'multiple';
         $selectAttributes['placeholder'] = $placeholder;
       }
+
       // Add data for popup link. Normally this is handled by CRM_Core_Form->addSelect
-      if ($field->option_group_id && !$search && $widget == 'Select' && CRM_Core_Permission::check('administer CiviCRM')) {
-        $selectAttributes += array(
+      $isSupportedWidget = in_array($widget, ['Select', 'Radio']);
+      $canEditOptions = CRM_Core_Permission::check('administer CiviCRM');
+      if ($field->option_group_id && !$search && $isSelect && $canEditOptions) {
+        $customFieldAttributes += array(
           'data-api-entity' => $field->getEntity(),
           'data-api-field' => 'custom_' . $field->id,
           'data-option-edit-path' => 'civicrm/admin/options/' . CRM_Core_DAO::getFieldValue('CRM_Core_DAO_OptionGroup', $field->option_group_id),
         );
+        $selectAttributes += $customFieldAttributes;
       }
     }
 
@@ -933,10 +938,18 @@ class CRM_Core_BAO_CustomField extends CRM_Core_DAO_CustomField {
 
       case 'Radio':
         $choice = array();
+        parse_str($field->attributes, $radioAttributes);
+        $radioAttributes = array_merge($radioAttributes, $customFieldAttributes);
+
         foreach ($options as $v => $l) {
-          $choice[] = $qf->createElement('radio', NULL, '', $l, (string) $v, $field->attributes);
+          $choice[] = $qf->createElement('radio', NULL, '', $l, (string) $v, $radioAttributes);
         }
         $element = $qf->addGroup($choice, $elementName, $label);
+        $optionEditKey = 'data-option-edit-path';
+        if (isset($selectAttributes[$optionEditKey])) {
+          $element->setAttribute($optionEditKey, $selectAttributes[$optionEditKey]);
+        }
+
         if ($useRequired && !$search) {
           $qf->addRule($elementName, ts('%1 is a required field.', array(1 => $label)), 'required');
         }
@@ -988,9 +1001,15 @@ class CRM_Core_BAO_CustomField extends CRM_Core_DAO_CustomField {
       case 'CheckBox':
         $check = array();
         foreach ($options as $v => $l) {
-          $check[] = &$qf->addElement('advcheckbox', $v, NULL, $l, array('data-crm-custom' => $dataCrmCustomVal));
+          $check[] = &$qf->addElement('advcheckbox', $v, NULL, $l, $customFieldAttributes);
         }
-        $element = $qf->addGroup($check, $elementName, $label);
+
+        $group = $element = $qf->addGroup($check, $elementName, $label);
+        $optionEditKey = 'data-option-edit-path';
+        if (isset($customFieldAttributes[$optionEditKey])) {
+          $group->setAttribute($optionEditKey, $customFieldAttributes[$optionEditKey]);
+        }
+
         if ($useRequired && !$search) {
           $qf->addRule($elementName, ts('%1 is a required field.', array(1 => $label)), 'required');
         }
@@ -1141,12 +1160,12 @@ class CRM_Core_BAO_CustomField extends CRM_Core_DAO_CustomField {
   /**
    * @param string|int|array|null $value
    * @param CRM_Core_BAO_CustomField|int|array|string $field
-   * @param $contactId
+   * @param int $entityId
    *
    * @return string
    * @throws \Exception
    */
-  public static function displayValue($value, $field, $contactId = NULL) {
+  public static function displayValue($value, $field, $entityId = NULL) {
     $field = is_array($field) ? $field['id'] : $field;
     $fieldId = is_object($field) ? $field->id : (int) str_replace('custom_', '', $field);
 
@@ -1160,7 +1179,7 @@ class CRM_Core_BAO_CustomField extends CRM_Core_DAO_CustomField {
 
     $fieldInfo = array('options' => $field->getOptions()) + (array) $field;
 
-    return self::formatDisplayValue($value, $fieldInfo, $contactId);
+    return self::formatDisplayValue($value, $fieldInfo, $entityId);
   }
 
   /**
@@ -1247,7 +1266,13 @@ class CRM_Core_BAO_CustomField extends CRM_Core_DAO_CustomField {
         // In the context of displaying a profile, show file/image
         if ($value) {
           if ($entityId) {
-            $url = self::getFileURL($entityId, $field['id']);
+            if (CRM_Utils_Rule::positiveInteger($value)) {
+              $fileId = $value;
+            }
+            else {
+              $fileId = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_File', $value, 'id', 'uri');
+            }
+            $url = self::getFileURL($entityId, $field['id'], $fileId);
             if ($url) {
               $display = $url['file_url'];
             }
@@ -1264,6 +1289,10 @@ class CRM_Core_BAO_CustomField extends CRM_Core_DAO_CustomField {
             }
           }
         }
+        break;
+
+      case 'Link':
+        $display = $display ? "<a href=\"$display\" target=\"_blank\">$display</a>" : $display;
         break;
 
       case 'TextArea':

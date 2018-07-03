@@ -136,7 +136,6 @@
     <path>civicrm/ajax/delcaserole</path>
     <page_callback>CRM_Case_Page_AJAX::deleteCaseRoles</page_callback>
   </item>
-  <!--NYSS 11460-->
   <item>
     <path>civicrm/ajax/get-cases</path>
     <page_callback>CRM_Case_Page_AJAX::getCases</page_callback>

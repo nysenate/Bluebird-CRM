@@ -1,7 +1,7 @@
 -- +--------------------------------------------------------------------+
 -- | CiviCRM version 4.7                                                |
 -- +--------------------------------------------------------------------+
--- | Copyright CiviCRM LLC (c) 2004-2017                                |
+-- | Copyright CiviCRM LLC (c) 2004-2018                                |
 -- +--------------------------------------------------------------------+
 -- | This file is a part of CiviCRM.                                    |
 -- |                                                                    |
@@ -30,7 +30,7 @@
 -- +--------------------------------------------------------------------+
 -- | CiviCRM version 4.7                                                |
 -- +--------------------------------------------------------------------+
--- | Copyright CiviCRM LLC (c) 2004-2017                                |
+-- | Copyright CiviCRM LLC (c) 2004-2018                                |
 -- +--------------------------------------------------------------------+
 -- | This file is a part of CiviCRM.                                    |
 -- |                                                                    |
@@ -1670,7 +1670,7 @@ CREATE TABLE `civicrm_queue_item` (
      `weight` int NOT NULL   ,
      `submit_time` datetime NOT NULL   COMMENT 'date on which this item was submitted to the queue',
      `release_time` datetime    COMMENT 'date on which this job becomes available; null if ASAP',
-     `data` text    COMMENT 'Serialized queue' 
+     `data` text    COMMENT 'Serialized queue data' 
 ,
         PRIMARY KEY (`id`)
  
@@ -2213,7 +2213,8 @@ CREATE TABLE `civicrm_menu` (
      `weight` int NOT NULL  DEFAULT 1 COMMENT 'Ordering of the menu items in various blocks.',
      `type` int NOT NULL  DEFAULT 1 COMMENT 'Drupal menu type.',
      `page_type` int NOT NULL  DEFAULT 1 COMMENT 'CiviCRM menu type.',
-     `skipBreadcrumb` tinyint    COMMENT 'skip this url being exposed to breadcrumb' 
+     `skipBreadcrumb` tinyint    COMMENT 'skip this url being exposed to breadcrumb',
+     `module_data` text    COMMENT 'All other menu metadata not stored in other fields' 
 ,
         PRIMARY KEY (`id`)
  
@@ -2240,6 +2241,7 @@ CREATE TABLE `civicrm_navigation` (
      `label` varchar(255)    COMMENT 'Navigation Title',
      `name` varchar(255)    COMMENT 'Internal Name',
      `url` varchar(255)    COMMENT 'url in case of custom navigation link',
+     `icon` varchar(255) NULL  DEFAULT NULL COMMENT 'CSS class name for an icon',
      `permission` varchar(255)    COMMENT 'Permission for menu item',
      `permission_operator` varchar(3)    COMMENT 'Permission Operator',
      `parent_id` int unsigned    COMMENT 'Parent navigation item, used for grouping',
@@ -2723,7 +2725,7 @@ CREATE TABLE `civicrm_subscription_history` (
      `id` int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Internal Id',
      `contact_id` int unsigned NOT NULL   COMMENT 'Contact Id',
      `group_id` int unsigned    COMMENT 'Group Id',
-     `date` datetime NOT NULL   COMMENT 'Date of the (un)subscription',
+     `date` timestamp NOT NULL  DEFAULT CURRENT_TIMESTAMP COMMENT 'Date of the (un)subscription',
      `method` varchar(8)    COMMENT 'How the (un)subscription was triggered',
      `status` varchar(8)    COMMENT 'The state of the contact within the group',
      `tracking` varchar(255)    COMMENT 'IP address or other tracking info' 
@@ -3114,7 +3116,7 @@ CREATE TABLE `civicrm_membership_type` (
      `description` varchar(255)    COMMENT 'Description of Membership Type',
      `member_of_contact_id` int unsigned NOT NULL   COMMENT 'Owner organization for this membership type. FK to Contact ID',
      `financial_type_id` int unsigned NOT NULL   COMMENT 'If membership is paid by a contribution - what financial type should be used. FK to civicrm_financial_type.id',
-     `minimum_fee` decimal(20,2)   DEFAULT 0 COMMENT 'Minimum fee for this membership (0 for free/complimentary memberships).',
+     `minimum_fee` decimal(18,9)   DEFAULT 0 COMMENT 'Minimum fee for this membership (0 for free/complimentary memberships).',
      `duration_unit` varchar(8)    COMMENT 'Unit in which membership period is expressed.',
      `duration_interval` int    COMMENT 'Number of duration units in membership period (e.g. 1 year, 12 months).',
      `period_type` varchar(8)    COMMENT 'Rolling membership period starts on signup date. Fixed membership periods start on fixed_period_start_day.',
@@ -3186,7 +3188,9 @@ CREATE TABLE `civicrm_case` (
      `end_date` date    COMMENT 'Date on which given case ends.',
      `details` text    COMMENT 'Details about the meeting (agenda, notes, etc).',
      `status_id` int unsigned NOT NULL   COMMENT 'Id of case status.',
-     `is_deleted` tinyint   DEFAULT 0  
+     `is_deleted` tinyint   DEFAULT 0 ,
+     `created_date` timestamp NULL  DEFAULT NULL COMMENT 'When was the case was created.',
+     `modified_date` timestamp NULL  DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'When was the case (or closely related entity) was created or modified or deleted.' 
 ,
         PRIMARY KEY (`id`)
  
@@ -3278,7 +3282,7 @@ CREATE TABLE `civicrm_report_instance` (
      `id` int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Report Instance ID',
      `domain_id` int unsigned NOT NULL   COMMENT 'Which Domain is this instance for',
      `title` varchar(255)    COMMENT 'Report Instance Title.',
-     `report_id` varchar(64) NOT NULL   COMMENT 'FK to civicrm_option_value for the report template',
+     `report_id` varchar(512) NOT NULL   COMMENT 'FK to civicrm_option_value for the report template',
      `name` varchar(255)    COMMENT 'when combined with report_id/template uniquely identifies the instance',
      `args` varchar(255)    COMMENT 'arguments that are passed in the url when invoking the instance',
      `description` varchar(255)    COMMENT 'Report Instance description.',
@@ -3478,8 +3482,9 @@ CREATE TABLE `civicrm_uf_group` (
 
      `id` int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Unique table ID',
      `is_active` tinyint   DEFAULT 1 COMMENT 'Is this form currently active? If false, hide all related fields for all sharing contexts.',
-     `group_type` varchar(255)    COMMENT 'This column will store a comma separated list of the type(s) of profile fields.',
+     `group_type` varchar(255)    COMMENT 'Comma separated list of the type(s) of profile fields.',
      `title` varchar(64) NOT NULL   COMMENT 'Form title.',
+     `frontend_title` varchar(64)    COMMENT 'Profile Form Public title',
      `description` text    COMMENT 'Optional verbose description of the profile.',
      `help_pre` text    COMMENT 'Description and/or help text to display before fields in form.',
      `help_post` text    COMMENT 'Description and/or help text to display after fields in form.',
@@ -3498,7 +3503,9 @@ CREATE TABLE `civicrm_uf_group` (
      `name` varchar(64)    COMMENT 'Name of the UF group for directly addressing it in the codebase',
      `created_id` int unsigned    COMMENT 'FK to civicrm_contact, who created this UF group',
      `created_date` datetime    COMMENT 'Date and time this UF group was created.',
-     `is_proximity_search` tinyint   DEFAULT 0 COMMENT 'Should we include proximity search feature in this profile search form?' 
+     `is_proximity_search` tinyint   DEFAULT 0 COMMENT 'Should we include proximity search feature in this profile search form?',
+     `cancel_button_text` varchar(64)   DEFAULT NULL COMMENT 'Custom Text to display on the Cancel button when used in create or edit mode',
+     `submit_button_text` varchar(64)   DEFAULT NULL COMMENT 'Custom Text to display on the submit button on profile edit/create screens' 
 ,
         PRIMARY KEY (`id`)
  
@@ -3750,7 +3757,8 @@ CREATE TABLE `civicrm_mailing` (
      `msg_template_id` int unsigned    COMMENT 'FK to the message template.',
      `override_verp` tinyint   DEFAULT 0 COMMENT 'Should we overrite VERP address in Reply-To',
      `created_id` int unsigned    COMMENT 'FK to Contact ID who first created this mailing',
-     `created_date` timestamp NULL  DEFAULT CURRENT_TIMESTAMP COMMENT 'Date and time this mailing was created.',
+     `created_date` timestamp NULL  DEFAULT NULL COMMENT 'Date and time this mailing was created.',
+     `modified_date` timestamp NULL  DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'When the mailing (or closely related entity) was created or modified or deleted.',
      `scheduled_id` int unsigned    COMMENT 'FK to Contact ID who scheduled this mailing',
      `scheduled_date` timestamp NULL  DEFAULT NULL COMMENT 'Date and time this mailing was scheduled.',
      `approver_id` int unsigned    COMMENT 'FK to Contact ID who approved this mailing',
@@ -4180,6 +4188,7 @@ CREATE TABLE `civicrm_membership` (
      `source` varchar(128)    ,
      `status_id` int unsigned NOT NULL   COMMENT 'FK to Membership Status',
      `is_override` tinyint    COMMENT 'Admin users may set a manual status which overrides the calculated status. When this flag is true, automated status update scripts should NOT modify status for the record.',
+     `status_override_end_date` date   DEFAULT NULL COMMENT 'Then end date of membership status override if \'Override until selected date\' override type is selected.',
      `owner_membership_id` int unsigned    COMMENT 'Optional FK to Parent Membership.',
      `max_related` int    COMMENT 'Maximum number of related memberships (membership_type override).',
      `is_test` tinyint   DEFAULT 0 ,
@@ -4256,7 +4265,9 @@ CREATE TABLE `civicrm_activity` (
      `campaign_id` int unsigned    COMMENT 'The campaign for which this activity has been triggered.',
      `engagement_level` int unsigned    COMMENT 'Assign a specific level of engagement to this activity. Used for tracking constituents in ladder of engagement.',
      `weight` int    ,
-     `is_star` tinyint   DEFAULT 0 COMMENT 'Activity marked as favorite.' 
+     `is_star` tinyint   DEFAULT 0 COMMENT 'Activity marked as favorite.',
+     `created_date` timestamp NULL  DEFAULT NULL COMMENT 'When was the activity was created.',
+     `modified_date` timestamp NULL  DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'When was the activity (or closely related entity) was created or modified or deleted.' 
 ,
         PRIMARY KEY (`id`)
  
@@ -4389,7 +4400,7 @@ CREATE TABLE `civicrm_price_field_value` (
      `description` text   DEFAULT NULL COMMENT '>Price field option description.',
      `help_pre` text   DEFAULT NULL COMMENT 'Price field option pre help text.',
      `help_post` text   DEFAULT NULL COMMENT 'Price field option post field help.',
-     `amount` varchar(512) NOT NULL   COMMENT 'Price field option amount',
+     `amount` decimal(18,9) NOT NULL   COMMENT 'Price field option amount',
      `count` int unsigned   DEFAULT NULL COMMENT 'Number of participants per field option',
      `max_value` int unsigned   DEFAULT NULL COMMENT 'Max number of participants per field options',
      `weight` int   DEFAULT 1 COMMENT 'Order in which the field options should appear',
@@ -4398,7 +4409,8 @@ CREATE TABLE `civicrm_price_field_value` (
      `is_default` tinyint   DEFAULT 0 COMMENT 'Is this default price field option',
      `is_active` tinyint   DEFAULT 1 COMMENT 'Is this price field value active',
      `financial_type_id` int unsigned   DEFAULT NULL COMMENT 'FK to Financial Type.',
-     `non_deductible_amount` decimal(20,2) NOT NULL  DEFAULT 0.0 COMMENT 'Portion of total amount which is NOT tax deductible.' 
+     `non_deductible_amount` decimal(20,2) NOT NULL  DEFAULT 0.0 COMMENT 'Portion of total amount which is NOT tax deductible.',
+     `visibility_id` int unsigned   DEFAULT 1 COMMENT 'Implicit FK to civicrm_option_group with name = \'visibility\'' 
 ,
         PRIMARY KEY (`id`)
  

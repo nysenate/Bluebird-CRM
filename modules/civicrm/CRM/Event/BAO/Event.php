@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 class CRM_Event_BAO_Event extends CRM_Event_DAO_Event {
 
@@ -186,15 +186,26 @@ class CRM_Event_BAO_Event extends CRM_Event_DAO_Event {
     $extends = array('event');
     $groupTree = CRM_Core_BAO_CustomGroup::getGroupDetail(NULL, NULL, $extends);
     foreach ($groupTree as $values) {
-      $query = "DELETE FROM " . $values['table_name'] . " WHERE entity_id = " . $id;
-
-      $params = array(
-        1 => array($values['table_name'], 'string'),
-        2 => array($id, 'integer'),
-      );
-
-      CRM_Core_DAO::executeQuery($query);
+      $query = "DELETE FROM %1 WHERE entity_id = %2";
+      CRM_Core_DAO::executeQuery($query, array(
+        1 => array($values['table_name'], 'String', CRM_Core_DAO::QUERY_FORMAT_NO_QUOTES),
+        2 => array($id, 'Integer'),
+      ));
     }
+
+    // Clean up references to profiles used by the event (CRM-20935)
+    $ufJoinParams = array(
+      'module' => 'CiviEvent',
+      'entity_table' => 'civicrm_event',
+      'entity_id' => $id,
+    );
+    CRM_Core_BAO_UFJoin::deleteAll($ufJoinParams);
+    $ufJoinParams = array(
+      'module' => 'CiviEvent_Additional',
+      'entity_table' => 'civicrm_event',
+      'entity_id' => $id,
+    );
+    CRM_Core_BAO_UFJoin::deleteAll($ufJoinParams);
 
     // price set cleanup, CRM-5527
     CRM_Price_BAO_PriceSet::removeFrom('civicrm_event', $id);
@@ -1099,6 +1110,7 @@ WHERE civicrm_event.is_active = 1
    * @param int $participantId
    * @param bool $isTest
    * @param bool $returnMessageText
+   * @return array|null
    */
   public static function sendMail($contactID, &$values, $participantId, $isTest = FALSE, $returnMessageText = FALSE) {
 
@@ -2055,23 +2067,24 @@ WHERE  ce.loc_block_id = $locBlockId";
     static $permissions = NULL;
 
     if (empty($permissions)) {
-      $result = civicrm_api3('Event', 'get', array(
+      $params = array(
         'check_permissions' => 1,
         'return' => 'title',
         'options' => array(
           'limit' => 0,
         ),
-      ));
+      );
+
+      if ($eventId) {
+        $params['id'] = $eventId;
+      }
+
+      $result = civicrm_api3('Event', 'get', $params);
       $allEvents = CRM_Utils_Array::collect('title', $result['values']);
 
-      $result = civicrm_api3('Event', 'get', array(
-        'check_permissions' => 1,
-        'return' => 'title',
-        'created_id' => 'user_contact_id',
-        'options' => array(
-          'limit' => 0,
-        ),
-      ));
+      // Search again, but only events created by the user.
+      $params['created_id'] = 'user_contact_id';
+      $result = civicrm_api3('Event', 'get', $params);
       $createdEvents = CRM_Utils_Array::collect('title', $result['values']);
 
       // Note: for a multisite setup, a user with edit all events, can edit all events

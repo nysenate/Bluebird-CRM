@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 
 /**
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 class CRM_Event_BAO_Participant extends CRM_Event_DAO_Participant {
 
@@ -547,6 +547,7 @@ INNER JOIN  civicrm_participant participant ON ( line.entity_table  = 'civicrm_p
 INNER JOIN  civicrm_price_field_value value ON ( value.id = line.price_field_value_id )
 INNER JOIN  civicrm_price_field field       ON ( value.price_field_id = field.id )
      WHERE  participant.event_id = %1
+       AND  line.qty > 0
             {$statusIdClause}
             {$isTestClause}
             {$skipParticipantClause}";
@@ -648,7 +649,7 @@ GROUP BY  participant.event_id
           'title' => ts('Participant Note'),
           'name' => 'participant_note',
           'headerPattern' => '/(participant.)?note$/i',
-          'type' => 'text',
+          'data_type' => CRM_Utils_Type::T_TEXT,
         ),
       );
 
@@ -1431,24 +1432,24 @@ UPDATE  civicrm_participant
 
       //check is it primary and has additional.
       if (array_key_exists($participantId, $primaryANDAdditonalIds)) {
-        foreach ($primaryANDAdditonalIds[$participantId] as $additonalId) {
+        foreach ($primaryANDAdditonalIds[$participantId] as $additionalId) {
 
           if ($emailType) {
-            $mail = self::sendTransitionParticipantMail($additonalId,
-              $participantDetails[$additonalId],
-              $eventDetails[$participantDetails[$additonalId]['event_id']],
-              $contactDetails[$participantDetails[$additonalId]['contact_id']],
+            $mail = self::sendTransitionParticipantMail($additionalId,
+              $participantDetails[$additionalId],
+              $eventDetails[$participantDetails[$additionalId]['event_id']],
+              $contactDetails[$participantDetails[$additionalId]['contact_id']],
               $domainValues,
               $emailType
             );
 
             //get the mail participant ids
             if ($mail) {
-              $mailedParticipants[$additonalId] = $contactDetails[$participantDetails[$additonalId]['contact_id']]['display_name'];
+              $mailedParticipants[$additionalId] = $contactDetails[$participantDetails[$additionalId]['contact_id']]['display_name'];
             }
           }
-          $updateParticipantIds[] = $additonalId;
-          $processedParticipantIds[] = $additonalId;
+          $updateParticipantIds[] = $additionalId;
+          $processedParticipantIds[] = $additionalId;
         }
       }
 
@@ -1788,16 +1789,20 @@ WHERE    civicrm_participant.contact_id = {$contactID} AND
     }
 
     // get primary participant id
-    $query = "SELECT participant_id FROM civicrm_participant_payment WHERE contribution_id = {$contributionId}";
-    $participantId = CRM_Core_DAO::singleValueQuery($query);
+    $query = "SELECT participant_id
+      FROM civicrm_participant cp
+      LEFT JOIN civicrm_participant_payment cpp ON cp.id = cpp.participant_id
+      WHERE cpp.contribution_id = {$contributionId}
+      AND cp.registered_by_id IS NULL";
+    $participantPayment = CRM_Core_DAO::executeQuery($query);
 
     // get additional participant ids (including cancelled)
-    if ($participantId) {
-      $ids = array_merge(array(
-        $participantId,
-      ), self::getAdditionalParticipantIds($participantId,
+    while ($participantPayment->fetch()) {
+      $ids = array_merge($ids, array_merge(array(
+        $participantPayment->participant_id,
+      ), self::getAdditionalParticipantIds($participantPayment->participant_id,
         $excludeCancelled
-      ));
+      )));
     }
 
     return $ids;
@@ -1840,7 +1845,7 @@ WHERE    civicrm_participant.contact_id = {$contactID} AND
    * @param int $discountedPriceFieldOptionID
    *   ID of the civicrm_price_field_value field for the discount id.
    */
-  public static function createDiscountTrxn($eventID, $contributionParams, $feeLevel, $discountedPriceFieldOptionID) {
+  public static function createDiscountTrxn($eventID, $contributionParams, $feeLevel, $discountedPriceFieldOptionID = NULL) {
     $financialTypeID = $contributionParams['contribution']->financial_type_id;
     $total_amount = $contributionParams['total_amount'];
 
@@ -1893,13 +1898,11 @@ WHERE    civicrm_participant.contact_id = {$contactID} AND
     $date = CRM_Utils_Date::currentDBDate();
     $event = CRM_Event_BAO_Event::getEvents(0, $eventId);
     $subject = sprintf("Registration selections changed for %s", CRM_Utils_Array::value($eventId, $event));
-    $targetCid = $contactId;
-    $srcRecId = $participantId;
 
     // activity params
     $activityParams = array(
-      'source_contact_id' => $targetCid,
-      'source_record_id' => $srcRecId,
+      'source_contact_id' => $contactId,
+      'source_record_id' => $participantId,
       'activity_type_id' => CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'activity_type_id', $activityType),
       'subject' => $subject,
       'activity_date_time' => $date,
@@ -1908,11 +1911,10 @@ WHERE    civicrm_participant.contact_id = {$contactID} AND
     );
 
     // create activity with target contacts
-    $session = CRM_Core_Session::singleton();
-    $id = $session->get('userID');
+    $id = CRM_Core_Session::singleton()->getLoggedInContactID();;
     if ($id) {
       $activityParams['source_contact_id'] = $id;
-      $activityParams['target_contact_id'][] = $targetCid;
+      $activityParams['target_contact_id'][] = $contactId;
     }
     // @todo use api & also look at duplication of similar methods.
     CRM_Activity_BAO_Activity::create($activityParams);

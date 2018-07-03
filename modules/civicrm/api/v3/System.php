@@ -408,7 +408,40 @@ function civicrm_api3_system_updatelogtables() {
  * This adds any indexes that exist in the schema but not the database.
  */
 function civicrm_api3_system_updateindexes() {
-  list($missingIndices) = CRM_Core_BAO_SchemaHandler::getMissingIndices();
-  CRM_Core_BAO_SchemaHandler::createMissingIndices($missingIndices);
+  CRM_Core_BAO_SchemaHandler::createMissingIndices(CRM_Core_BAO_SchemaHandler::getMissingIndices(TRUE));
   return civicrm_api3_create_success(1);
+}
+
+/**
+ * Creates missing log tables.
+ *
+ * CRM-20838 - This adds any missing log tables into the database.
+ */
+function civicrm_api3_system_createmissinglogtables() {
+  $schema = new CRM_Logging_Schema();
+  $missingLogTables = $schema->getMissingLogTables();
+  if (!empty($missingLogTables)) {
+    foreach ($missingLogTables as $tableName) {
+      $schema->fixSchemaDifferencesFor($tableName, NULL, FALSE);
+    }
+  }
+  return civicrm_api3_create_success(1);
+}
+
+/**
+ * Rebuild Multilingual Schema
+ *
+ */
+function civicrm_api3_system_rebuildmultilingualschema() {
+  $domain = new CRM_Core_DAO_Domain();
+  $domain->find(TRUE);
+
+  if ($domain->locales) {
+    $locales = explode(CRM_Core_DAO::VALUE_SEPARATOR, $domain->locales);
+    CRM_Core_I18n_Schema::rebuildMultilingualSchema($locales);
+    return civicrm_api3_create_success(1);
+  }
+  else {
+    throw new API_Exception('Cannot call rebuild Multilingual schema on non Multilingual database');
+  }
 }

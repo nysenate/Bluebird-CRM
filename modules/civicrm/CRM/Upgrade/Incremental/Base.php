@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7.alpha1                                         |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -160,7 +160,9 @@ class CRM_Upgrade_Incremental_Base {
         if ($localizable) {
           $locales = explode(CRM_Core_DAO::VALUE_SEPARATOR, $domain->locales);
           foreach ($locales as $locale) {
-            $queries[] = "ALTER TABLE `$table` ADD COLUMN `{$column}_{$locale}` $properties";
+            if (!CRM_Core_BAO_SchemaHandler::checkIfFieldExists($table, "{$column}_{$locale}")) {
+              $queries[] = "ALTER TABLE `$table` ADD COLUMN `{$column}_{$locale}` $properties";
+            }
           }
         }
         else {
@@ -176,7 +178,7 @@ class CRM_Upgrade_Incremental_Base {
     }
     if ($domain->locales) {
       $locales = explode(CRM_Core_DAO::VALUE_SEPARATOR, $domain->locales);
-      CRM_Core_I18n_Schema::rebuildMultilingualSchema($locales, NULL);
+      CRM_Core_I18n_Schema::rebuildMultilingualSchema($locales, NULL, TRUE);
     }
     return TRUE;
   }
@@ -223,6 +225,21 @@ class CRM_Upgrade_Incremental_Base {
   public static function dropIndex($ctx, $table, $indexName) {
     CRM_Core_BAO_SchemaHandler::dropIndexIfExists($table, $indexName);
 
+    return TRUE;
+  }
+
+  /**
+   * Rebuild Multilingual Schema.
+   * @param CRM_Queue_TaskContext $ctx
+   * @return bool
+   */
+  public static function rebuildMultilingalSchema($ctx) {
+    $domain = new CRM_Core_DAO_Domain();
+    $domain->find(TRUE);
+    if ($domain->locales) {
+      $locales = explode(CRM_Core_DAO::VALUE_SEPARATOR, $domain->locales);
+      CRM_Core_I18n_Schema::rebuildMultilingualSchema($locales);
+    }
     return TRUE;
   }
 

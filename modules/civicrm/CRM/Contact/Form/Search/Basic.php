@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2018
  */
 
 /**
@@ -64,11 +64,14 @@ class CRM_Contact_Form_Search_Basic extends CRM_Contact_Form_Search {
     }
 
     // add select for groups
+    // Get hierarchical listing of groups, respecting ACLs for CRM-16836.
+    $groupHierarchy = CRM_Contact_BAO_Group::getGroupsHierarchy($this->_group, NULL, '&nbsp;&nbsp;', TRUE);
     if (!empty($searchOptions['groups'])) {
       $this->addField('group', array(
           'entity' => 'group_contact',
           'label' => ts('in'),
           'placeholder' => ts('- any group -'),
+          'options' => $groupHierarchy,
         ));
     }
 
@@ -108,7 +111,7 @@ class CRM_Contact_Form_Search_Basic extends CRM_Contact_Form_Search {
     }
 
     if ($this->_context === 'amtg') {
-      $defaults['task'] = CRM_Contact_Task::GROUP_CONTACTS;
+      $defaults['task'] = CRM_Contact_Task::GROUP_ADD;
     }
 
     if ($this->_context === 'smog') {
