@@ -1,0 +1,25 @@
+{
+  "OptionGroup": [
+    {
+      "name": "participant_role"
+    }
+  ],
+  "OptionValue": [
+    {
+      "label": "Attendee",
+      "option_group": "participant_role"
+    },
+    {
+      "label": "Volunteer",
+      "option_group": "participant_role"
+    },
+    {
+      "label": "Host",
+      "option_group": "participant_role"
+    },
+    {
+      "label": "Speaker",
+      "option_group": "participant_role"
+    }
+  ]
+}

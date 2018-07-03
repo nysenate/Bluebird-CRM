@@ -1,0 +1,185 @@
+/* Add any CSS rules for Angular module "contactsummary" */
+
+#bootstrap-theme #contactSummaryEditor .panel-body {
+  min-height: 600px;
+  padding: 0;
+}
+#bootstrap-theme #contactSummaryEditor .panel-inner {
+  width: 100%;
+  overflow-y: auto;
+  height: 100%;
+  padding: 15px 20px;
+}
+
+/* Fix weird shorditch style */
+#bootstrap-theme #contactSummaryEditor .panel-heading {
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+  margin-bottom: 0;
+  height: 50px;
+}
+
+#bootstrap-theme #contactSummaryEditor .panel-heading .btn-group {
+  top: -8px;
+}
+#bootstrap-theme #contactSummaryEdit .panel-heading .btn-group {
+  top: -6px;
+}
+#bootstrap-theme #contactSummaryEditor .panel-heading .btn {
+  padding: 7px 13px;
+  border-color: white;
+}
+#bootstrap-theme #contactSummaryEditor .panel-heading .btn i {
+  margin-right: 4px;
+}
+#bootstrap-theme #contactSummaryEditor .panel-heading .panel-title form {
+  position: relative;
+  top: -3px;
+}
+
+#bootstrap-theme #contactSummaryEditor .alert {
+  padding: 10px;
+  margin: 0;
+}
+
+#bootstrap-theme #contactSummaryEditor .cse-layout-item {
+  border-radius: 4px;
+  border: 1px solid grey;
+  padding: 3px;
+  text-align: center;
+  margin-bottom: 10px;
+  cursor: move;
+  background-color: #eee;
+  position: relative;
+}
+
+#bootstrap-theme #contactSummaryEditor h4.cse-layout-item-title {
+  font-weight: 600;
+  margin: 7px 0;
+}
+
+#bootstrap-theme #contactSummaryEditor .cse-layout-delete {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+#bootstrap-theme #contactSummaryEditor .cse-layout-delete .btn {
+  border: 0 none;
+}
+
+#bootstrap-theme #contactSummaryEditor .cse-item-selected {
+  background-color: #58b7d1;
+  color: white;
+}
+#bootstrap-theme #contactSummaryEditor .cse-item-selected h4 {
+  color: white;
+}
+#bootstrap-theme #contactSummaryEditor .navbar {
+  border-radius: 0;
+  margin: 0;
+}
+#bootstrap-theme #contactSummaryEditor .navbar select {
+  width: 13em;
+}
+#bootstrap-theme #contactSummaryEditor .navbar input.form-control {
+  width: 20em;
+}
+
+#cse-block-container {
+  display: flex;
+  align-items: stretch;
+}
+#cse-block-container > div {
+  flex: 1;
+  padding: 10px;
+  margin: 0 10px;
+  min-height: 515px;
+}
+#cse-block-container > div:first-child,
+#cse-block-container > div:last-child {
+  margin: 0;
+}
+#cse-block-container .cse-col {
+  border: 2px dashed #9c9c9c;
+  background-color: #f8f8f8;
+}
+#cse-block-container #cse-palette-col {
+  padding: 0;
+}
+#cse-block-container #cse-palette-col > h4 {
+  padding: 11px 10px;
+  border-radius: 2px 2px 0 0;
+  margin: 0;
+  background-color: #0071bd;
+  color: white;
+  font-weight: 600;
+  position: relative;
+}
+#cse-block-container #cse-palette-col > h4 .btn-group {
+  position: relative;
+  top: -5px;
+}
+#cse-block-container #cse-palette-col > h4 .btn {
+  padding: 3px 8px;
+  border-color: white;
+}
+#cse-block-container #cse-palette {
+  color: #333;
+  background-color: lightgrey;
+  border-radius: 0 0 2px 2px;
+  border: 1px solid #0071bd;
+  padding: 2px 4px;
+}
+#cse-block-container .cse-block {
+  cursor: move;
+  border-radius: 4px;
+  border: 2px solid #0071bd;
+  position: relative;
+  background-color: white;
+  margin-bottom: 14px;
+  margin-top: 2px;
+}
+#cse-block-container .cse-block .btn-group-xs {
+  position: absolute;
+  right: 3px;
+  top: 3px;
+}
+#cse-block-container .cse-block .btn-group-xs .btn {
+  border: 0 none;
+}
+#cse-block-container .cse-block h5 {
+  color: #0071bd;
+  position: absolute;
+  background-color: white;
+  background: linear-gradient(to bottom, #f8f8f8 0%,#f8f8f8 50%,#fff 51%,#fff 100%);
+  padding: 1px 3px;
+  top: -15px;
+  left: 8px;
+  margin: 5px 0;
+}
+#cse-block-container .cse-block-sample {
+  margin-top: 12px;
+  margin-left: 8px;
+  margin-bottom: 4px;
+}
+#cse-block-container .cse-block-sample p {
+  color: grey;
+  font-size: 10px;
+  padding: 1px;
+  margin: 0;
+}
+#cse-block-container #cse-palette .cse-block {
+  border: 1px solid #0071bd;
+  margin-bottom: 6px;
+  margin-top: 6px;
+}
+#cse-block-container #cse-palette .cse-block-sample {
+  display: none;
+}
+#cse-block-container #cse-palette .cse-block h5 {
+  position: initial;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 500;
+  background: transparent;
+}

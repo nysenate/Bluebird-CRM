@@ -1,0 +1,13 @@
+<h5><i class="crm-i {{ block.icon }}"></i> {{ block.title }}</h5>
+<div class="btn-group btn-group-xs">
+  <button class="btn btn-success-outline cse-block-edit" ng-if="block.edit" ng-click="editBlock(block)">
+    <i class="crm-i fa-pencil"></i>
+  </button>
+  <button class="btn btn-danger-outline cse-block-remove" ng-if="col" ng-click="removeBlock($index, col)">
+    <i class="crm-i fa-close"></i>
+  </button>
+</div>
+<div class="cse-block-sample">
+  <p class="cse-no-sample" ng-if="!block.sample || !block.sample.length">{{ ts('(No fields)') }}</p>
+  <p ng-repeat="sample in block.sample">{{ sample }}</p>
+</div>

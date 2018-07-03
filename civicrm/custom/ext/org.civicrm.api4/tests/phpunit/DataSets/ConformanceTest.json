@@ -1,0 +1,62 @@
+{
+  "Contact": [
+    {
+      "first_name": "Janice",
+      "last_name": "Voss",
+      "contact_type": "Individual"
+    }
+  ],
+  "CustomGroup": [
+    {
+      "name": "MyFavoriteThings",
+      "extends": "Contact"
+    }
+  ],
+  "OptionGroup": [
+    {
+      "name": "payment_instrument"
+    },
+    {
+      "name": "contribution_status"
+    },
+    {
+      "name": "account_relationship"
+    },
+    {
+      "name": "event_type"
+    },
+    {
+      "name": "activity_type"
+    }
+  ],
+  "OptionValue": [
+    {
+      "option_group": "contribution_status",
+      "label": "Completed"
+    },
+    {
+      "option_group": "payment_instrument",
+      "label": "cash",
+      "is_default": 1
+    },
+    {
+      "option_group": "account_relationship",
+      "label": "Sales Tax Account is"
+    },
+    {
+      "option_group": "event_type",
+      "label": "major_historical_event"
+    },
+    {
+      "option_group": "activity_type",
+      "label": "Contribution"
+    }
+  ],
+  "Event": [
+    {
+      "start_date": "20401010000000",
+      "title": "The Singularity",
+      "event_type_id": "major_historical_event"
+    }
+  ]
+}
