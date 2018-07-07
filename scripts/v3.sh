@@ -40,9 +40,14 @@ $drush $instance pm-enable admin_menu -y
 $drush $instance pm-enable adminimal_admin_menu -y
 $drush $instance pm-enable module_filter -y
 
-## install navigation extension
-echo "$prog: install navigation extension"
+## install extensions
+echo "$prog: install extensions"
 $drush $instance cvapi extension.install key=gov.nysenate.navigation --quiet
+$drush $instance cvapi extension.install key=gov.nysenate.angularprofiles --quiet
+$drush $instance cvapi extension.install key=gov.nysenate.api4 --quiet
+$drush $instance cvapi extension.install key=gov.nysenate.shoreditch --quiet
+$drush $instance cvapi extension.install key=gov.nysenate.contactsummary --quiet
+$drush $instance cvapi extension.install key=gov.nysenate.civicase --quiet
 
 ## set user block to seven theme
 echo "$prog: set user block to seven theme"
