@@ -55,5 +55,16 @@ sql="
 "
 $execSql -i $instance -c "$sql" --drupal -q
 
+##
+echo "$prog: set file attachments to default open"
+sql="
+  UPDATE civicrm_custom_group
+  SET collapse_display = 0
+  WHERE name = 'Attachments';
+"
+$execSql $instance -c "$sql" -q
+
+## TODO implement contact-summary config
+
 ## record completion
 echo "$prog: upgrade process is complete."
