@@ -149,7 +149,7 @@ function navigation_civicrm_navigationMenu(&$params) {
   $maxKey = (!empty($params)) ? max(array_keys($params)) : 0;
 
   //build home menu item
-  $params[1] = array(
+  /*$params[1] = array(
     'attributes' => array(
       'label'      => 'Home',
       'name'       => 'Home',
@@ -162,7 +162,9 @@ function navigation_civicrm_navigationMenu(&$params) {
       'active'     => 1
     ),
     'child' => array(),
-  );
+  );*/
+
+  $params[1000] = _buildCreateMenu(1000);
 
   $params[2] = array(
     'attributes' => array(
@@ -217,19 +219,19 @@ function navigation_civicrm_navigationMenu(&$params) {
   );
 
   //build Manage menu
-  $params[1000] = _buildManageMenu(1000);
+  $params[2000] = _buildManageMenu(2000);
 
   //build Mass Email menu
-  $params[2000] = _buildEmailMenu(2000);
+  $params[3000] = _buildEmailMenu(3000);
 
   //build Inbox menu
-  $params[3000] = _buildInboxMenu(3000);
+  $params[4000] = _buildInboxMenu(4000);
 
   //move Administer menu
   $params[$adminNavID] = _buildAdminMenu($adminNavID);
 
   //create Help menu 11965
-  $params[4000] = _buildHelpMenu(4000);
+  $params[5000] = _buildHelpMenu(5000);
 
   //CRM_Core_Error::debug_var('navigationMenu params (after)',$params);
 }
@@ -1036,3 +1038,123 @@ function _buildHelpMenu($nyssBaseID) {
   //CRM_Core_Error::debug_var('adminNav', $adminNav);
   return $nav;
 } //_buildHelpMenu()
+
+function _buildCreateMenu($nyssBaseID) {
+  $nav = array(
+    'attributes' => array(
+      'label' => 'Create',
+      'name' => 'Create',
+      'url' => null,
+      'permission' => 'access CiviCRM',
+      'operator' => 'AND',
+      'separator' => 0,
+      'parentID' => null,
+      'navID' => $nyssBaseID,
+      'active' => 1
+    ),
+    'child' => array(
+      $nyssBaseID+1 => array(
+        'attributes' => array(
+          'label' => 'New Individual',
+          'name' => 'New Individual',
+          'url' => 'civicrm/contact/add?reset=1&ct=Individual',
+          'permission' => 'add contacts',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $nyssBaseID,
+          'navID' => $nyssBaseID+1,
+          'active' => 1
+        ),
+        'child' => array(),
+      ),
+      $nyssBaseID+2 => array(
+        'attributes' => array(
+          'label' => 'New Household',
+          'name' => 'New Household',
+          'url' => 'civicrm/contact/add?reset=1&ct=Household',
+          'permission' => 'add contacts',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $nyssBaseID,
+          'navID' => $nyssBaseID+2,
+          'active' => 1
+        ),
+        'child' => array(),
+      ),
+      $nyssBaseID+3 => array(
+        'attributes' => array(
+          'label' => 'New Organization',
+          'name' => 'New Organization',
+          'url' => 'civicrm/contact/add?reset=1&ct=Organization',
+          'permission' => 'add contacts',
+          'operator' => 'OR',
+          'separator' => 1,
+          'parentID' => $nyssBaseID,
+          'navID' => $nyssBaseID+3,
+          'active' => 1
+        ),
+        'child' => array(),
+      ),
+      $nyssBaseID+4 => array(
+        'attributes' => array(
+          'label' => 'New Activity',
+          'name' => 'New Activity',
+          'url' => 'civicrm/activity?reset=1&action=add&context=standalone',
+          'permission' => 'view all activities',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $nyssBaseID,
+          'navID' => $nyssBaseID+4,
+          'active' => 1
+        ),
+        'child' => array(),
+      ),
+      $nyssBaseID+5 => array(
+        'attributes' => array(
+          'label' => 'New Case',
+          'name' => 'New Case',
+          'url' => 'civicrm/case/add?reset=1&action=add&atype=13&context=standalone',
+          'permission' => 'access all cases and activities',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $nyssBaseID,
+          'navID' => $nyssBaseID+5,
+          'active' => 1
+        ),
+        'child' => array(),
+      ),
+      $nyssBaseID+6 => array(
+        'attributes' => array(
+          'label' => 'New Email',
+          'name' => 'New Email',
+          'url' => 'civicrm/activity/email/add?atype=3&action=add&reset=1&context=standalone',
+          'permission' => 'add contacts',
+          'operator' => 'OR',
+          'separator' => 1,
+          'parentID' => $nyssBaseID,
+          'navID' => $nyssBaseID+6,
+          'active' => 1
+        ),
+        'child' => array(),
+      ),
+      $nyssBaseID+7 => array(
+        'attributes' => array(
+          'label' => 'New Group',
+          'name' => 'New Group',
+          'url' => 'civicrm/group/add?reset=1',
+          'permission' => 'edit groups',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $nyssBaseID,
+          'navID' => $nyssBaseID+7,
+          'active' => 1
+        ),
+        'child' => array(),
+      ),
+    ),
+  );
+
+  //CRM_Core_Error::debug_var('adminNav', $adminNav);
+  return $nav;
+} //_buildHelpMenu()
+
