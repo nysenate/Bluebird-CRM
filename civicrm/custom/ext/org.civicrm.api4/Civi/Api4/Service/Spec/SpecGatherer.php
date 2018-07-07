@@ -35,7 +35,7 @@ class SpecGatherer {
     $specification = new RequestSpec($entity, $action);
 
     $this->addDAOFields($entity, $action, $specification);
-    if ($includeCustom) {
+    if ($includeCustom && array_key_exists($entity, \CRM_Core_SelectValues::customGroupExtends())) {
       $this->addCustomFields($entity, $specification);
     }
 

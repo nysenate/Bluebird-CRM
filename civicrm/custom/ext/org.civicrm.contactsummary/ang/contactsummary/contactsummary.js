@@ -44,13 +44,6 @@
       profileEntities = [{entity_name: "contact_1", entity_type: "IndividualModel"}],
       allBlocks = loadBlocks(data.blocks);
 
-    // Initialize
-    if ($scope.layouts.length) {
-      loadLayouts();
-    } else {
-      $scope.newLayout();
-    }
-
     $scope.selectLayout = function(layout) {
       $scope.selectedLayout = layout;
     };
@@ -115,6 +108,31 @@
       }
     };
 
+    $scope.deleteBlock = function(block) {
+      var message = [_.escape(ts('Delete the block "%1"?', {1: block.title}))];
+      _.each($scope.layouts, function (layout) {
+        if (_.where(layout.blocks[0].concat(layout.blocks[1]), {name: block.name}).length) {
+          message.push(_.escape(ts('It is currently part of the "%1" layout.', {1: layout.label})));
+        }
+      });
+      CRM.confirm({
+        message: '<p>' + message.join('</p><p>') + '</p>',
+        options: {no: ts('No'), yes: ts('Yes')}
+      })
+        .on('crmConfirm:yes', function() {
+          // Remove block from all layouts
+          _.each($scope.layouts, function (layout) {
+            _.each(layout.blocks, function(blocks) {
+              var idx = _.findIndex(blocks, {name: block.name});
+              if (idx > -1) {
+                blocks.splice(idx, 1);
+              }
+            });
+          });
+          reloadBlocks([['UFGroup', 'delete', {where: [['id', '=', block.profile_id]]}]]);
+        });
+    };
+
     $scope.enforceUnique = function(e, ui) {
       if (!ui.item.sortable.received &&
         $(ui.item.sortable.droptarget).is('#cse-palette'))
@@ -160,7 +178,12 @@
       CRM.designerApp.vent.off('ufSaved', null, 'contactsummary');
       CRM.designerApp.vent.on('ufSaved', function() {
         var newId = profileEditor.model.get('id');
-        reloadBlocks(newId);
+        // Save a record of this new profile as a contact summary block so this extension recognizes it.
+        // Also save it as a profile form so that you can click to edit and it will render a form on the summary screen.
+        reloadBlocks([
+          ['UFJoin', 'create', {values: {module: "Profile", uf_group_id: newId}}],
+          ['UFJoin', 'create', {values: {module: "Contact Summary", uf_group_id: newId}}]
+        ]);
       }, 'contactsummary');
     };
 
@@ -185,12 +208,14 @@
       }, 'contactsummary');
     }
 
+    // Called when pressing the save button
     $scope.save = function() {
-      $scope.saving = true;
-      $scope.deletedLayout = null;
       var data = [],
-        layoutWeight = 0;
+        layoutWeight = 0,
+        emptyLayouts = [],
+        noLabel = false;
       _.each($scope.layouts, function(layout) {
+        var empty = true;
         var item = {
           label: layout.label,
           weight: ++layoutWeight,
@@ -203,18 +228,43 @@
         _.each(layout.blocks, function(blocks, col) {
           _.each(blocks, function(block) {
             item.blocks[col].push(_.pick(block, 'name'));
+            empty = false;
           });
         });
+        if (!layout.label) {
+          noLabel = true;
+          alert(ts('Please give the layout a name.'));
+          return;
+        }
+        if (empty) {
+          emptyLayouts.push(layout.label);
+        }
         data.push(item);
       });
-      CRM.api4('ContactSummary', 'replace', {records: data})
-        .done(function() {
-          $scope.$apply(function() {
+      if (emptyLayouts.length) {
+        alert(ts('The layout %1 is empty. Please add at least one block before saving.', {1: emptyLayouts.join(', ')}));
+      } else if (!noLabel) {
+        writeRecords(data);
+      }
+    };
+
+    // Write layout data to the server
+    function writeRecords(data) {
+      $scope.saving = true;
+      $scope.deletedLayout = null;
+      // Replace records (or delete all if there are none)
+      var apiCall = ['ContactSummary', 'delete', {where: [['id', 'IS NOT NULL']]}];
+      if (data.length) {
+        apiCall = ['ContactSummary', 'replace', {records: data}];
+      }
+      CRM.api4([apiCall])
+        .done(function () {
+          $scope.$apply(function () {
             $scope.saving = false;
             $scope.changesSaved = true;
           });
         });
-    };
+    }
 
     function loadBlocks(blockData) {
       allBlocks = [];
@@ -243,15 +293,11 @@
       });
     }
 
-    function reloadBlocks(newProfileId) {
+    function reloadBlocks(apiCalls) {
+      apiCalls = apiCalls || [];
+      apiCalls.push(['ContactSummary', 'getBlocks']);
       $scope.deletedLayout = null;
-      var calls = [['ContactSummary', 'getBlocks']];
-      // If a new profile was just created, link it to this extension.
-      if (newProfileId) {
-        calls.unshift(['UFJoin', 'create', {values: {module: "Contact Summary", uf_group_id: newProfileId}}]);
-        calls.unshift(['UFJoin', 'create', {values: {module: "Profile", uf_group_id: newProfileId}}]);
-      }
-      CRM.api4(calls)
+      CRM.api4(apiCalls)
         .done(function(data) {
           $scope.$apply(function() {
             allBlocks = loadBlocks(_.last(data));
@@ -268,7 +314,17 @@
     };
     CRM.Schema.reloadModels();
 
-    $scope.$watch('layouts', function(a, b) {$scope.changesSaved = $scope.changesSaved === 1;}, true);
+    $scope.$watch('layouts', function (a, b) {
+      $scope.changesSaved = $scope.changesSaved === 1;
+    }, true);
+
+    // Initialize
+    if ($scope.layouts.length) {
+      loadLayouts();
+    }
+    else {
+      $scope.newLayout();
+    }
 
   });
 

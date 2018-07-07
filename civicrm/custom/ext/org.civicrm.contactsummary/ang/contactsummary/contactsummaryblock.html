@@ -1,10 +1,13 @@
-<h5><i class="crm-i {{ block.icon }}"></i> {{ block.title }}</h5>
+<h5><i class="crm-i {{ block.icon }}"></i> {{ block.title || ts('Unknown block') }}</h5>
 <div class="btn-group btn-group-xs">
-  <button class="btn btn-success-outline cse-block-edit" ng-if="block.edit" ng-click="editBlock(block)">
+  <button class="btn btn-success-outline" ng-if="block.edit" ng-click="editBlock(block)" title="{{ ts('Edit block') }}">
     <i class="crm-i fa-pencil"></i>
   </button>
-  <button class="btn btn-danger-outline cse-block-remove" ng-if="col" ng-click="removeBlock($index, col)">
+  <button class="btn btn-danger-outline" ng-if="col" ng-click="removeBlock($index, col)" title="{{ ts('Remove block') }}">
     <i class="crm-i fa-close"></i>
+  </button>
+  <button class="btn btn-danger-outline" ng-if="!col && block.profile_id" ng-click="deleteBlock(block)" title="{{ ts('Delete block') }}">
+    <i class="crm-i fa-trash"></i>
   </button>
 </div>
 <div class="cse-block-sample">

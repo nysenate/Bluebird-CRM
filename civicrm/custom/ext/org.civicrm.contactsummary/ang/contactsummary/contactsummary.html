@@ -8,7 +8,9 @@
       <div class="panel panel-primary">
         <div class="panel-heading">
           <div class="btn-group btn-group-md pull-right">
-            <button class="btn btn-primary" ng-click="newLayout()"><i class="crm-i fa-plus"></i> {{ ts('Layout') }}</button>
+            <button class="btn btn-primary" ng-click="newLayout()" title="{{ ts('Create new layout') }}">
+              <i class="crm-i fa-plus"></i> {{ ts('Layout') }}
+            </button>
           </div>
           <h3 class="panel-title">
             {{ ts('Layouts') }}
@@ -22,11 +24,11 @@
           <div class="panel-inner" ui-sortable="{axis: 'y'}" ng-model="layouts">
             <div class="cse-layout-item" ng-repeat="layout in layouts" ng-class="{'cse-item-selected': layout == selectedLayout}" ng-click="selectLayout(layout)">
               <div class="btn-group btn-group-sm cse-layout-delete">
-                <button class="btn btn-danger-outline" ng-click="deleteLayout($index)">
+                <button class="btn btn-danger-outline" ng-click="deleteLayout($index)" title="{{ ts('Delete layout') }}">
                   <i class="crm-i fa-trash"></i>
                 </button>
               </div>
-              <h4 class="cse-layout-item-title">{{ layout.label }}</h4>
+              <h4 class="cse-layout-item-title">{{ layout.label || ts('(no name)') }}</h4>
               <div class="cse-layout-item-contact_types">{{ ts('Show: %1', {1: showContactTypes(layout)}) }}</div>
               <div class="cse-layout-item-groups">{{ ts('To: %1', {1: showGroups(layout)}) }}</div>
             </div>
@@ -51,7 +53,7 @@
                 <span ng-if="!selectedLayout">{{ ts('No layout selected') }}</span>
                 <span ng-if="selectedLayout">{{ ts('Edit Layout:') }}</span>
               </label>
-              <input ng-if="selectedLayout" id="selected_layout_label" class="form-control" maxlength="255" placeholder="{{ ts('Layout name') }}" ng-model="selectedLayout.label" />
+              <input ng-if="selectedLayout" id="selected_layout_label" class="form-control" maxlength="255" title="{{ ts('Layout name (shown on this screen only)') }}" ng-model="selectedLayout.label" />
             </form>
           </h3>
         </div>
@@ -63,7 +65,7 @@
                   <div class="form-group">
                     <label for="selected_layout_contact_type">{{ ts('Show:') }}</label>
                     <select id="selected_layout_contact_type" class="form-control" ng-model="selectedLayout.contact_type" crm-ui-select ng-change="clearSubType(selectedLayout)">
-                      <option value="">{{ ts('Any') }}</option>
+                      <option value="">{{ ts('Contact type') }}</option>
                       <option ng-repeat="ct in contactTypes" value="{{ ct.name }}" ng-if="!ct.parent_id">{{ ct.label }}</option>
                     </select>
                     <span ng-if="selectedLayout.contact_type && selectableSubTypes(selectedLayout.contact_type).length">
@@ -74,7 +76,7 @@
                     &nbsp;&nbsp;
                     <label for="selected_layout_groups">{{ ts('To:') }}</label>
                     <input id="selected_layout_groups" class="form-control" ng-list ng-model="selectedLayout.groups"
-                      crm-entityref="{entity: 'Group', api: {id_field: 'name', params: {is_hidden: 0, is_active: 1}}, select: {multiple: true, allowClear:true, minimumInputLength: 0}}"
+                      crm-entityref="{entity: 'Group', api: {id_field: 'name', params: {is_hidden: 0, is_active: 1}}, select: {placeholder: ts('Groups'), multiple: true, allowClear:true, minimumInputLength: 0}}"
                     />
                   </div>
                 </form>
@@ -89,8 +91,8 @@
                   <h4>
                     {{ ts('Blocks') }}
                     <div class="btn-group btn-group-sm pull-right">
-                      <button type="button" class="btn btn-primary" ng-click="newProfile()">
-                        <i class="crm-i fa-plus"></i> Block
+                      <button type="button" class="btn btn-primary" ng-click="newProfile()" title="{{ ts('Create new block') }}">
+                        <i class="crm-i fa-plus"></i> {{ts('Block')}}
                       </button>
                     </div>
                   </h4>
