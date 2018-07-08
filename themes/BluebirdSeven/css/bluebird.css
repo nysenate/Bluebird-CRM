@@ -1,0 +1,15 @@
+body.admin-menu.adminimal-menu:before {
+  height: auto;
+}
+#bb-header {
+  top: -5px;
+  position: relative;
+  float: right;
+  margin-right: 80px;
+  font-size: 70%;
+  text-align: right;
+  line-height: normal;
+}
+#bb-sosjob a {
+  color: white;
+}

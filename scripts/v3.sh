@@ -29,34 +29,39 @@ if ! $readConfig --instance $instance --quiet; then
 fi
 
 ## set new default theme
-echo "set default theme to Seven..."
-$drush $instance pm-enable seven -y
-$drush $instance vset theme_default seven -y
-$drush $instance vset admin_theme seven -y
+echo "set default theme to BluebirdSeven..."
+$drush $instance pm-enable BluebirdSeven -y
+$drush $instance vset theme_default BluebirdSeven -y
+$drush $instance vset admin_theme BluebirdSeven -y
 
 ## enable menu/admin modules
 echo "enable menu/admin modules..."
 $drush $instance pm-enable admin_menu -y
 $drush $instance pm-enable adminimal_admin_menu -y
 $drush $instance pm-enable module_filter -y
+$drush $instance pm-enable nyss_theme -y
 
 ## install extensions
 echo "$prog: install extensions"
 $drush $instance cvapi extension.install key=gov.nysenate.navigation --quiet
-$drush $instance cvapi extension.install key=gov.nysenate.angularprofiles --quiet
-$drush $instance cvapi extension.install key=gov.nysenate.api4 --quiet
-$drush $instance cvapi extension.install key=gov.nysenate.shoreditch --quiet
-$drush $instance cvapi extension.install key=gov.nysenate.contactsummary --quiet
-$drush $instance cvapi extension.install key=gov.nysenate.civicase --quiet
+$drush $instance cvapi extension.install key=org.civicrm.angularprofiles --quiet
+$drush $instance cvapi extension.install key=org.civicrm.api4 --quiet
+$drush $instance cvapi extension.install key=org.civicrm.shoreditch --quiet
+$drush $instance cvapi extension.install key=org.civicrm.contactsummary --quiet
+$drush $instance cvapi extension.install key=org.civicrm.civicase --quiet
 
-## set user block to seven theme
-echo "$prog: set user block to seven theme"
+## configure blocks for BluebirdSeven theme
+echo "$prog: configure blocks for BluebirdSeven theme"
 sql="
   UPDATE block
   SET status = 1, region = 'content'
   WHERE module = 'user'
     AND delta = 'login'
-    AND theme = 'seven';
+    AND theme = 'BluebirdSeven';
+  UPDATE block
+  SET status = 0
+  WHERE module = 'civicrm'
+    AND theme = 'BluebirdSeven'
 "
 $execSql -i $instance -c "$sql" --drupal -q
 
