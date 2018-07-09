@@ -302,66 +302,6 @@ function nyss_civihooks_civicrm_buildForm($formName, &$form)
     $form->_rules['uploadFile'][1]['message'] = 'File size should be less than 1 MBytes (1048576 bytes)';
   }
 
-  //advanced search
-  if ($formName == 'CRM_Contact_Form_Search_Advanced') {
-    //3815 add privacy option note
-    $form->addElement('text', 'custom_64', ts('Privacy Option Notes'), array('id'=>'custom_64'), 'size="30"');
-
-    //7906 search birth date by month only
-    $months = array(
-      ''  => '- select month -',
-      '1' => 'January',
-      '2' => 'February',
-      '3' => 'March',
-      '4' => 'April',
-      '5' => 'May' ,
-      '6' => 'June',
-      '7' => 'July',
-      '8' => 'August',
-      '9' => 'September',
-      '10' => 'October',
-      '11' => 'November',
-      '12' => 'December',
-    );
-    $form->add('select', 'birth_date_month',  ts('Birth Date Month'), array('' => ts('- select month -')) + $months);
-
-    //7946
-    $form->addDate('log_start_date', ts('Change Log Start'), false, array('formatType' => 'birth'));
-    $form->addDate('log_end_date', ts('Change Log End'), false, array('formatType' => 'birth'));
-
-    //10557 remove CMS User
-    if ($form->elementExists('uf_user')) {
-      $form->removeElement('uf_user');
-    }
-
-    //11138 remove activity test
-    if ($form->elementExists('activity_test')) {
-      $form->removeElement('activity_test');
-      CRM_Core_Resources::singleton()->addStyle('a.helpicon[title="Test Records Help"] { display: none; }');
-    }
-
-    //11137 default open location panel
-    CRM_Core_Resources::singleton()->addScript('$("div.crm-location-accordion").removeClass("collapsed");');
-
-    //11134 change tag label text; remove issue codes from list
-    if ($form->elementExists('contact_tags')) {
-      $contactTags =& $form->getElement('contact_tags');
-      unset($contactTags->_options[0]);
-      CRM_Core_Resources::singleton()->addScript('$("select#contact_tags").prev("label").text("Issue Codes")');
-    }
-
-    //don't set US as default country in advanced search or contacts with no address are excluded
-    $defaults['country'] = '';
-
-    //3527 set deceased to no
-    $defaults['is_deceased'] = 0;
-
-    //4332 clear activity creator/assigned
-    $defaults['activity_role'] = 0;
-
-    $form->setDefaults($defaults);
-  }
-
   //set NY as default for state field in proximity search
   if ($formName == 'CRM_Contact_Form_Search_Custom' &&
       $form->getVar('_customSearchClass') == 'CRM_Contact_Form_Search_Custom_Proximity') {
