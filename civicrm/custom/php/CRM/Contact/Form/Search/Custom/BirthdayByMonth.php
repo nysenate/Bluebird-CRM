@@ -112,30 +112,15 @@ class CRM_Contact_Form_Search_Custom_BirthdayByMonth
     $form->addFormRule( array( 'CRM_Contact_Form_Search_Custom_BirthdayByMonth', 'formRule' ), $this );
   }
   
-  static function formRule( $fields ) {
-    $errors = array( );
-    //CRM_Core_Error::debug($fields); exit();
-
-    //make sure _start < _end
-    //removed: there may be value in doing gap searches
-    /*if ( (int)$fields['year_start'] > (int)$fields['year_end'] ) {
-      $errors['year_start'] = ts( 'Year after should be less than Year before.' );
-        }
-    if ( (int)$fields['day_start'] > (int)$fields['day_end'] ) {
-      $errors['day_start'] = ts( 'Day after should be less than Day before.' );
-        }
-    $start_date  = CRM_Utils_Date::mysqlToIso( CRM_Utils_Date::processDate( $fields['start_date'] ) );
-    $end_date  = CRM_Utils_Date::mysqlToIso( CRM_Utils_Date::processDate( $fields['end_date'] ) );
-    if ( $start_date > $end_date ) {
-      $errors['start_date'] = ts( 'Birthday after should be less than Birthday before.' );
-    }*/
+  function formRule($fields) {
+    $errors = array();
     
     //days cannot be > 31
-    if ( (int)$fields['day_start'] > 31 ) {
+    if ((int)$fields['day_start'] > 31) {
       $errors['day_start'] = ts( 'Day after cannot be greater than 31.' );
     }
 
-    if ( (int)$fields['day_end'] > 31 ) {
+    if ((int)$fields['day_end'] > 31) {
       $errors['day_end'] = ts( 'Day before cannot be greater than 31.' );
     }
     
@@ -145,19 +130,18 @@ class CRM_Contact_Form_Search_Custom_BirthdayByMonth
     unset($criteria['qfKey']);
     unset($criteria['_qf_default']);
     unset($criteria['_qf_Custom_refresh']);
-    //CRM_Core_Error::debug($criteria); exit();
 
-    foreach ( $criteria as $criterion ) {
-      if ( !empty($criterion) ) $criteriaexists = 1;
+    foreach ($criteria as $criterion) {
+      if (!empty($criterion)) $criteriaexists = 1;
     }
-    if ( !$criteriaexists ) {
-      $errors['form_message'] = ts( 'Please select some criteria.' );
+    if (!$criteriaexists) {
+      $errors['form_message'] = ts('Please select some criteria.');
     }
         
     return empty($errors) ? true : $errors;
   }
 
-  function summary( ) {
+  function summary() {
     return null;
   }
 
