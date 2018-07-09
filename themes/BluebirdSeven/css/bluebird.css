@@ -13,3 +13,12 @@ body.admin-menu.adminimal-menu:before {
 #bb-sitejob a {
   color: white;
 }
+
+.bb-footer-left {
+  text-align: left;
+  float: left;
+}
+.bb-footer-right {
+  text-align: right;
+  float: right;
+}
