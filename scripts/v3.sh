@@ -44,6 +44,8 @@ $drush $instance pm-enable module_filter -y
 echo "$prog: install extensions"
 $drush $instance cvapi extension.install key=gov.nysenate.navigation --quiet
 $drush $instance cvapi extension.install key=gov.nysenate.search --quiet
+$drush $instance cvapi extension.install key=gov.nysenate.contact --quiet
+
 $drush $instance cvapi extension.install key=org.civicrm.angularprofiles --quiet
 $drush $instance cvapi extension.install key=org.civicrm.api4 --quiet
 $drush $instance cvapi extension.install key=org.civicrm.shoreditch --quiet

@@ -35,3 +35,10 @@ body.admin-menu.adminimal-menu:before {
   top: -6px !important;
   right: 40px !important;
 }
+
+/*contact summary*/
+.bb-contactsummary {
+  clear: left;
+  margin-left: 27px;
+  font-size: 90%;
+}
