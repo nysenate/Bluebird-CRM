@@ -58,6 +58,7 @@
       modal: true,
       title: 'Set Job ID',
       bgiframe: true,
+      width: 400,
       overlay: {
         opacity: 0.5,
         background: "black"
@@ -66,13 +67,16 @@
         cj(this).dialog("destroy");
         },
       buttons: {
-        "Set ID": function() {
-          cj('#bbCurrentJobId').text(' :: ' + cj('#bbSetJobId').val())
-          cj("#formSetJob").submit();
+        "Cancel": function() {
           cj(this).dialog("close");
         },
         "Clear Existing ID": function() {
           cj('#bbClearJobId').val(1);
+          cj("#formSetJob").submit();
+          cj(this).dialog("close");
+        },
+        "Set ID": function() {
+          cj('#bbCurrentJobId').text(' :: ' + cj('#bbSetJobId').val())
           cj("#formSetJob").submit();
           cj(this).dialog("close");
         }
@@ -110,24 +114,21 @@ function _bbSetupHeader() {
 
   $instance = substr( $_SERVER['HTTP_HOST'], 0, strpos( $_SERVER['HTTP_HOST'], '.' ) );
 
-  $variables['bbheader'] = "{$contact['display_name']} &raquo; {$instance} &raquo; {$rolesList}";
+  $variables['bbheader'] = "<span title='{$rolesList}'>{$contact['display_name']}</span>";
 
   //setup job dialog
   $job_roles = array('Superuser', 'SOS', 'Administrator');
-  $jobblock = '';
+  $jobblock = "<div id='bb-sitejob'>{$instance}";
   foreach ($user->roles as $user_role) {
     if (in_array($user_role, $job_roles)) {
       $jobId = (isset($_SESSION['CiviCRM']['jobID']) && $_SESSION['CiviCRM']['jobID']) ?
         '<span id="bbCurrentJobId"> :: '.$_SESSION['CiviCRM']['jobID']."</span>" : '';
-      $jobblock = "
-        <div id='bb-sosjob'>
-          [<a href='#' title='Set SOS JobID' onclick='setJobID();return false;'>Job #</a>{$jobId}]
-        </div>
-      ";
+      $jobblock .= " &raquo; [<a href='#' title='Set SOS Job ID' onclick='setJobID();return false;'>Job #</a>{$jobId}]";
 
       break;
     }
   }
+  $jobblock .= '</div>';
   $variables['bbjob'] = $jobblock;
 
   return $variables;
