@@ -13,7 +13,6 @@ body.admin-menu.adminimal-menu:before {
 #bb-sitejob a {
   color: white;
 }
-
 .bb-footer-left {
   text-align: left;
   float: left;
@@ -21,6 +20,9 @@ body.admin-menu.adminimal-menu:before {
 .bb-footer-right {
   text-align: right;
   float: right;
+}
+ul#civicrm-menu {
+  background: white url(../images/bluebirds.png) no-repeat scroll 98% bottom;
 }
 
 /*display branding bar (breadcrumbs, etc.), printer icon, on contact page*/
