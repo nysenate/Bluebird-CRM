@@ -39,7 +39,6 @@ echo "enable menu/admin modules..."
 $drush $instance pm-enable admin_menu -y
 $drush $instance pm-enable adminimal_admin_menu -y
 $drush $instance pm-enable module_filter -y
-$drush $instance pm-enable nyss_theme -y
 
 ## install extensions
 echo "$prog: install extensions"
