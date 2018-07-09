@@ -1587,6 +1587,16 @@ textarea,input {
   display: none;
 }
 
+body.page-civicrm-mailing a.crm-summary-link.mail-merge-hover {
+  display: block;
+}
+body.page-civicrm-mailing .crm-tooltip-wrapper {
+  left: -15px;
+}
+body.page-civicrm-mailing .crm-tooltip {
+  white-space: nowrap;
+  margin: initial;
+}
 
 
 #crm-container .tree li {
@@ -1973,7 +1983,7 @@ div.crm-summary-display_name div.crm-icon {
 .block-civicrm div#crm-recently-viewed ul li.crm-recently-viewed div {
   background-color: #131A1C;
   border-color: #000;
-  margin-top: -16px !important;
+  margin-top: -6px !important;
   margin-left: 20px !important;
   -webkit-border-radius: 4px 4px 0 0;
   -moz-border-radius: 4px 4px 0 0;
@@ -4128,7 +4138,8 @@ form#user-profile-form div.form-item.form-type-radio > label {
   font-size: 100%;
 }
 form#user-profile-form div#edit-roles,
-form#user-profile-form div#edit-status {
+form#user-profile-form div#edit-status,
+div#edit-roleassign-roles {
   margin-left: 20px;
 }
 form#user-profile-form div.nyss-roles-section-header {
@@ -4143,4 +4154,16 @@ form#user-profile-form div.nyss-roles-subsection-header {
 }
 form#user-profile-form div.nyss-roles-description {
   font-style: italic;
+}
+
+/*11889 - schedule mailing*/
+#crm-container form.CRM_Mailing_Form_Search span.btn-slide {
+  z-index: auto;
+}
+#crm-container form.CRM_Mailing_Form_Search div.crm-tooltip-wrapper {
+  font-size: 0.95em;
+  white-space: nowrap;
+}
+.crm-container form.CRM_Mailing_Form_Search a.crm-summary-link {
+  z-index: auto;
 }

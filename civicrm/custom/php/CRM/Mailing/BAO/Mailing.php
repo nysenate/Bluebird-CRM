@@ -1824,6 +1824,7 @@ ORDER BY   civicrm_email.is_bulkmail DESC
     foreach (array_keys(self::fields()) as $field) {
       $report['mailing'][$field] = $mailing->$field;
     }
+    $report['mailing']['created_by'] = CRM_Contact_BAO_Contact::displayName($report['mailing']['created_id']);
 
     //get the campaign
     if ($campaignId = CRM_Utils_Array::value('campaign_id', $report['mailing'])) {
