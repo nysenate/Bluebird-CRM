@@ -22,3 +22,16 @@ body.admin-menu.adminimal-menu:before {
   text-align: right;
   float: right;
 }
+
+/*display branding bar (breadcrumbs, etc.), printer icon, on contact page*/
+.page-civicrm-contact-view #branding {
+  display: block;
+  min-height: 34px;
+}
+.page-civicrm-contact-view #branding h1.page-title {
+  display: none;
+}
+.page-civicrm.page-civicrm-contact-view div#printer-friendly {
+  top: -6px !important;
+  right: 40px !important;
+}
