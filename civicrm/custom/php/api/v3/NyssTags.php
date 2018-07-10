@@ -119,6 +119,10 @@ function _civicrm_api3_nyss_tags_getLegPositions($input) {
   $bills = CRM_NYSS_BAO_Integration_OpenLegislation::getBills($input);
   $billcnt = count($bills);
 
+  if ($bills === null) {
+    CRM_Core_Error::fatal("Unable to fetch bills from OpenLegislation");
+  }
+
   /*Civi::log()->debug('_civicrm_api3_nyss_tags_getLegPositions', array(
     '$bills' => $bills,
     '$billcnt' => $billcnt,
