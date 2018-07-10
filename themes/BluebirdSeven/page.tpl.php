@@ -3,21 +3,23 @@
   $addlVars = _bbSetupHeader();
 ?>
 
-<div id="branding" class="clearfix">
-  <?php print $breadcrumb; ?>
-  <div id="bb-header">
-    <?php
-      print $addlVars['bbheader'];
-      print $addlVars['bbjob'];
-    ?>
+<?php if (!empty($addlVars)) { ?>
+  <div id="branding" class="clearfix">
+    <?php print $breadcrumb; ?>
+    <div id="bb-header">
+      <?php
+        print $addlVars['bbheader'];
+        print $addlVars['bbjob'];
+      ?>
+    </div>
+    <?php print render($title_prefix); ?>
+    <?php if ($title): ?>
+      <h1 class="page-title"><?php print $title; ?></h1>
+    <?php endif; ?>
+    <?php print render($title_suffix); ?>
+    <?php print render($primary_local_tasks); ?>
   </div>
-  <?php print render($title_prefix); ?>
-  <?php if ($title): ?>
-    <h1 class="page-title"><?php print $title; ?></h1>
-  <?php endif; ?>
-  <?php print render($title_suffix); ?>
-  <?php print render($primary_local_tasks); ?>
-</div>
+<?php } ?>
 
 <div id="page">
   <?php if ($secondary_local_tasks): ?>
@@ -88,6 +90,12 @@
 <?php
 
 function _bbSetupHeader() {
+  //check if logged in; exit if not;
+  global $user;
+  if (!$user->uid) {
+    return array();
+  }
+
   //store job id in db variable and session
   //Civi::log()->debug('page', array('session' => $_SESSION, 'post' => $_POST));
   if (!empty($_POST['bbSetJobId']) && empty($_POST['bbClearJobId'])) {
@@ -103,7 +111,6 @@ function _bbSetupHeader() {
   }
 
   //setup header line
-  global $user;
   $rolesList = implode('',$user->roles);
   $rolesList = str_replace('authenticated user','', $rolesList);
 
