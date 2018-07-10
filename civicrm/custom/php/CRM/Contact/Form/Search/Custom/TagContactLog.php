@@ -41,8 +41,9 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
   protected $_formValues;
   protected $_columns;
 
-  function __construct( &$formValues ) {
-    parent::__construct( $formValues );
+
+  function __construct(&$formValues) {
+    parent::__construct($formValues);
 
     $this->_columns = array(
       ts('Tag Name') => 'tag_name',
@@ -50,7 +51,8 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
     );
   }
 
-  function buildForm( &$form ) {
+
+  function buildForm(&$form) {
     $this->setTitle('Tag Count Search');
 
     $tagType = array(
@@ -64,13 +66,13 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
     );
     $form->add('select',
       'tag_type',
-      ts( 'Tag Type' ),
+      ts('Tag Type'),
       $tagType,
       true
     );
     
-    $form->addDate( 'start_date', ts( 'Date from' ), false, array('formatType' => 'birth') );
-    $form->addDate( 'end_date', ts( 'Date to' ), false, array('formatType' => 'birth') );
+    $form->addDate('start_date', ts('Date from'), false, array('formatType' => 'birth'));
+    $form->addDate('end_date', ts('Date to'), false, array('formatType' => 'birth'));
 
     $actionType = array(
       '1' => ts('Added'),
@@ -84,9 +86,9 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
       'tag_type',
       'action_type',
     );
-    $form->assign( 'elements', $formfields );
+    $form->assign('elements', $formfields);
     
-    $form->add('hidden', 'form_message' );
+    $form->add('hidden', 'form_message');
 
     $resetUrl = CRM_Utils_System::url('civicrm/contact/search/custom', 'csid=19&reset=1');
     $form->assign('resetUrl', $resetUrl);
@@ -103,25 +105,25 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
     }
   }//buildForm
   
-  static function formRule( $fields ) {
-    $errors = array( );
-    //CRM_Core_Error::debug_var('formRule fields', $fields);
-        
+
+  function formRule($fields) {
+    $errors = [];
     return empty($errors) ? true : $errors;
   }//formRule
 
-  function summary( ) {
+
+  function summary() {
     return null;
   }
+
 
   function contactIDs($offset = 0, $rowcount = 0, $sort = NULL, $returnSQL = FALSE) {
     return $this->all($offset, $rowcount, $sort, FALSE, TRUE);
   }
 
-  function all(
-    $offset = 0, $rowcount = 0, $sort = NULL,
-    $includeContactIDs = FALSE, $justIDs = FALSE
-  ) {
+
+  function all($offset = 0, $rowcount = 0, $sort = NULL,
+               $includeContactIDs = FALSE, $justIDs = FALSE) {
     if ($justIDs) {
       $selectClause = "tag.id as contact_id";
       $sort = 'tag.id';
@@ -138,15 +140,16 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
     }
     
     //CRM_Core_Error::debug('select',$selectClause); exit();
-    $sql = $this->sql( $selectClause,
+    $sql = $this->sql($selectClause,
       $offset, $rowcount, $sort,
       $includeContactIDs, $group
     );
     //CRM_Core_Error::debug_var('$sql',$sql);
     return $sql;
   }
+
     
-  function from( ) {
+  function from() {
     //CRM_Core_Error::debug_var('$this->_formValues', $this->_formValues);
 
     $bbconfig = get_bluebird_instance_config();
@@ -156,7 +159,7 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
 
     $parentTags = self::getParentTags();
 
-    switch($this->_formValues['tag_type']) {
+    switch ($this->_formValues['tag_type']) {
       case 1:
         $parentId = array_search('Keywords', $parentTags);
         $tagTypeSql = "parent_id = {$parentId}";
@@ -211,22 +214,23 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
     return $from;
   }//from
 
-  function where( $includeContactIDs = false ) {
+
+  function where($includeContactIDs = false) {
     //CRM_Core_Error::debug('formVals', $this->_formValues);exit();
-    $params = array( );
+    $params = [];
 
     $start_date = CRM_Utils_Date::mysqlToIso(CRM_Utils_Date::processDate($this->_formValues['start_date']));
     $end_date = CRM_Utils_Date::mysqlToIso(CRM_Utils_Date::processDate($this->_formValues['end_date'], null, false, 'Ymd'));
     
     //add filters by start/end date
-    if ( $start_date ) {
+    if ($start_date) {
       $where[] = "log_et.log_date >= '$start_date' ";
     }
-    if ( $end_date ) {
+    if ($end_date) {
       $where[] = "log_et.log_date <= '$end_date 23:59:59' ";
     }
 
-    switch($this->_formValues['action_type']) {
+    switch ($this->_formValues['action_type']) {
       case 1:
         $where[] = "(log_et.log_action = 'Insert') ";
         break;
@@ -239,16 +243,17 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
     $where[] = "contact_a.is_deleted = 0 ";
     $where[] = "contact_a.is_deceased = 0 ";
     
-    if ( !empty($where) ) {
-      $whereClause = implode( ' AND ', $where );
+    if (!empty($where)) {
+      $whereClause = implode(' AND ', $where);
     }
     else {
       $whereClause = '';
     }
     //CRM_Core_Error::debug_var('whereClause', $whereClause);
     
-    return $this->whereClause( $whereClause, $params );
+    return $this->whereClause($whereClause, $params);
   }
+
 
   function count() {
     $sql = $this->all();
@@ -256,29 +261,34 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
     return $dao->N;
   }
 
-  function templateFile( ) {
+
+  function templateFile() {
     return 'CRM/Contact/Form/Search/Custom/TagContactLog.tpl';
   }
 
-  function setDefaultValues( ) {
+
+  function setDefaultValues() {
     $defaults = array(
       'action_type' => 1,
     );
     return $defaults;
   }
 
-  function alterRow( &$row ) {
+
+  function alterRow(&$row) {
     //CRM_Core_Error::debug_var('row', $row);
   }
 
-  function setTitle( $title ) {
-    if ( $title ) {
-      CRM_Utils_System::setTitle( $title );
+
+  function setTitle($title) {
+    if ($title) {
+      CRM_Utils_System::setTitle($title);
     }
     else {
       CRM_Utils_System::setTitle(ts('Search'));
     }
   }
+
 
   //9990
   static function quickExport() {
@@ -295,8 +305,9 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
     }
   }//quickExport
 
+
   function getParentTags() {
-    $parentTags = array();
+    $parentTags = [];
     $dao = CRM_Core_DAO::executeQuery("
       SELECT id, name
       FROM civicrm_tag

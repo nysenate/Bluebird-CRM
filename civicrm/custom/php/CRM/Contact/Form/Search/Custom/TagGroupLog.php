@@ -41,8 +41,9 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
   protected $_formValues;
   protected $_columns;
 
-  function __construct( &$formValues ) {
-    parent::__construct( $formValues );
+
+  function __construct(&$formValues) {
+    parent::__construct($formValues);
 
     $this->_columns = array(
       ts(' ') => 'contact_type',
@@ -59,7 +60,8 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
     );
   }
 
-  function buildForm( &$form ) {
+
+  function buildForm(&$form) {
     $this->setTitle('Tag/Group Changelog Search');
 
     $searchType = array(
@@ -78,23 +80,23 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
       $parentId = 296
     );
     asort($keywords);
-    if ( $keywords ) {
+    if ($keywords) {
       //lets indent keywords
-      foreach ( $keywords as $key => $keyword ) {
+      foreach ($keywords as $key => $keyword) {
         $keywords[$key] = '&nbsp;&nbsp;'.$keyword;
       }
       $tags = $tags + array ('296' => 'Keywords') + $keywords;
     }
 
-    $legpos = CRM_Core_BAO_Tag::getTagsUsedFor( $usedFor = array( 'civicrm_contact' ),
+    $legpos = CRM_Core_BAO_Tag::getTagsUsedFor($usedFor = array('civicrm_contact'),
       $buildSelect = true,
       $all = false,
       $parentId = 292
     );
     asort($legpos);
-    if ( $legpos ) {
+    if ($legpos) {
       //lets indent leg positions
-      foreach ( $legpos as $key => $pos ) {
+      foreach ($legpos as $key => $pos) {
         $legpos[$key] = '&nbsp;&nbsp;'.$pos;
       }
       $tags = $tags + array ('292' => 'Legislative Positions') + $legpos;
@@ -121,8 +123,8 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
       $select2style
     );
     
-    $form->addDate( 'start_date', ts( 'Date from' ), false, array('formatType' => 'birth') );
-    $form->addDate( 'end_date', ts( 'Date to' ), false, array('formatType' => 'birth') );
+    $form->addDate('start_date', ts('Date from'), false, array('formatType' => 'birth'));
+    $form->addDate('end_date', ts('Date to'), false, array('formatType' => 'birth'));
 
     $actionType = array(
       '1' => ts('Added'),
@@ -142,15 +144,15 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
       'action_type',
       'altered_by',
     );
-    $form->assign( 'elements', $formfields );
+    $form->assign('elements', $formfields);
     
-    $form->add('hidden', 'form_message' );
+    $form->add('hidden', 'form_message');
 
     $resetUrl = CRM_Utils_System::url('civicrm/contact/search/custom', 'csid=17&reset=1');
     $form->assign('resetUrl', $resetUrl);
 
-    $form->setDefaults( $this->setDefaultValues() );
-    $form->addFormRule( array( 'CRM_Contact_Form_Search_Custom_TagGroupLog', 'formRule' ), $this );
+    $form->setDefaults($this->setDefaultValues());
+    $form->addFormRule(array('CRM_Contact_Form_Search_Custom_TagGroupLog', 'formRule'), $this);
 
     //9990
     $formValues = $form->get('formValues');
@@ -163,35 +165,35 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
     }
   }//buildForm
   
-  static function formRule( $fields ) {
-    $errors = array( );
-    //CRM_Core_Error::debug_var('formRule fields', $fields);
 
-    if ( $fields['search_type'] == 1 && empty($fields['tag']) ) {
-      //$errors['form_message'] = ts( 'Please select at least one tag.' );
+  function formRule($fields) {
+    $errors = [];
+
+    if ($fields['search_type'] == 1 && empty($fields['tag'])) {
+      //$errors['form_message'] = ts('Please select at least one tag.');
     }
-    elseif ( $fields['search_type'] == 2 && empty($fields['group']) ) {
-      //$errors['form_message'] = ts( 'Please select at least one group.' );
+    elseif ($fields['search_type'] == 2 && empty($fields['group'])) {
+      //$errors['form_message'] = ts('Please select at least one group.');
     }
         
     return empty($errors) ? true : $errors;
   }//formRule
 
-  function summary( ) {
+
+  function summary() {
     return null;
   }
+
 
   function contactIDs($offset = 0, $rowcount = 0, $sort = NULL, $returnSQL = FALSE) {
     return $this->all($offset, $rowcount, $sort, FALSE, TRUE);
   }
 
-  function all(
-    $offset = 0, $rowcount = 0, $sort = NULL,
-    $includeContactIDs = FALSE, $justIDs = FALSE
-  ) {
 
+  function all($offset = 0, $rowcount = 0, $sort = NULL,
+               $includeContactIDs = FALSE, $justIDs = FALSE) {
     $log_details = '';
-    switch($this->_formValues['search_type']) {
+    switch ($this->_formValues['search_type']) {
       case 1:
         $log_details = "CONCAT(tag.name, ' (',
           CASE WHEN log_et.log_action = 'Insert' THEN 'Added'
@@ -225,15 +227,14 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
     }
     
     //CRM_Core_Error::debug('select',$selectClause); exit();
-    $sql = $this->sql( $selectClause,
-      $offset, $rowcount, $sort,
-      $includeContactIDs, null
-    );
+    $sql = $this->sql($selectClause, $offset, $rowcount, $sort,
+                      $includeContactIDs, null);
     //CRM_Core_Error::debug('$sql',$sql); exit();
     return $sql;
   }
+
     
-  function from( ) {
+  function from() {
     //CRM_Core_Error::debug_var('$this->_formValues', $this->_formValues);
 
     $bbconfig = get_bluebird_instance_config();
@@ -241,7 +242,7 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
 
     $logDB = $bbconfig['db.log.prefix'].$bbconfig['db.basename'];
 
-    switch($this->_formValues['search_type']) {
+    switch ($this->_formValues['search_type']) {
       case 1:
         $from = "
           FROM civicrm_contact contact_a
@@ -273,10 +274,11 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
     return $from;
   }//from
 
-  function where( $includeContactIDs = false ) {
+
+  function where($includeContactIDs = false) {
     //CRM_Core_Error::debug_var('formVals', $this->_formValues);
 
-    $params = array( );
+    $params = [];
 
     $start_date = CRM_Utils_Date::mysqlToIso(CRM_Utils_Date::processDate($this->_formValues['start_date']));
     $end_date = CRM_Utils_Date::mysqlToIso(CRM_Utils_Date::processDate($this->_formValues['end_date'], '235959'));
@@ -289,10 +291,10 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
       $where[] = "log_et.log_date <= '{$end_date}' ";
     }
 
-    switch($this->_formValues['search_type']) {
+    switch ($this->_formValues['search_type']) {
       case 1:
         $tags = implode(',', $this->_formValues['tag']);
-        if ( !empty($tags) ) {
+        if (!empty($tags)) {
           $where[] = "log_et.tag_id IN ({$tags}) ";
         }
         else {
@@ -302,7 +304,7 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
 
       case 2:
         $groups = implode(',', $this->_formValues['group']);
-        if ( !empty($groups) ) {
+        if (!empty($groups)) {
           $where[] = "log_et.group_id IN ({$groups}) ";
         }
         else {
@@ -311,10 +313,10 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
         break;
     }
 
-    switch($this->_formValues['action_type']) {
+    switch ($this->_formValues['action_type']) {
       case 1:
         //condition on tag/group
-        switch($this->_formValues['search_type']) {
+        switch ($this->_formValues['search_type']) {
           case 1:
             $where[] = "(log_et.log_action = 'Insert') ";
             break;
@@ -327,7 +329,7 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
         break;
       case 2:
         //condition on tag/group
-        switch($this->_formValues['search_type']) {
+        switch ($this->_formValues['search_type']) {
           case 1:
             $where[] = "(log_et.log_action = 'Delete') ";
             break;
@@ -356,8 +358,8 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
     $where[] = "contact_a.is_deleted = 0 ";
     $where[] = "contact_a.is_deceased = 0 ";
     
-    if ( !empty($where) ) {
-      $whereClause = implode( ' AND ', $where );
+    if (!empty($where)) {
+      $whereClause = implode(' AND ', $where);
     }
     else {
       $whereClause = '';
@@ -367,24 +369,28 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
     return $this->whereClause($whereClause, $params);
   }
 
+
   function count() {
     $sql = $this->all();
     $dao = CRM_Core_DAO::executeQuery($sql, CRM_Core_DAO::$_nullArray);
     return $dao->N;
   }
 
-  function templateFile( ) {
+
+  function templateFile() {
     return 'CRM/Contact/Form/Search/Custom/TagGroupLog.tpl';
   }
 
-  function setDefaultValues( ) {
+
+  function setDefaultValues() {
     $defaults = array(
       'action_type' => 3,
     );
     return $defaults;
   }
 
-  function alterRow( &$row ) {
+
+  function alterRow(&$row) {
     if (empty($_REQUEST['is_quick_export'])) {
       $row['contact_type'] =
         CRM_Contact_BAO_Contact_Utils::getImage($row['contact_type'],
@@ -393,14 +399,16 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
     }
   }
 
-  function setTitle( $title ) {
-    if ( $title ) {
-      CRM_Utils_System::setTitle( $title );
+
+  function setTitle($title) {
+    if ($title) {
+      CRM_Utils_System::setTitle($title);
     }
     else {
       CRM_Utils_System::setTitle(ts('Search'));
     }
   }
+
 
   //9990
   static function quickExport() {

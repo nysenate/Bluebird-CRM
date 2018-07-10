@@ -41,8 +41,9 @@ class CRM_Contact_Form_Search_Custom_WebActivityStream
   protected $_formValues;
   protected $_columns;
 
-  function __construct( &$formValues ) {
-    parent::__construct( $formValues );
+
+  function __construct(&$formValues) {
+    parent::__construct($formValues);
 
     $this->_columns = array(
       ts('&nbsp;') => 'contact_type',
@@ -53,7 +54,8 @@ class CRM_Contact_Form_Search_Custom_WebActivityStream
     );
   }
 
-  function buildForm( &$form ) {
+
+  function buildForm(&$form) {
     $this->setTitle('Website Activity Stream Search');
 
     $form->add('text', 'sort_name', ts('Contact Name'), array('size' => 20));
@@ -72,36 +74,35 @@ class CRM_Contact_Form_Search_Custom_WebActivityStream
     );
     $form->add('select', 'type', ts('Type'), $type, false);
     
-    $form->addDate('start_date', ts( 'Date from' ), false, array('formatType' => 'birth'));
-    $form->addDate('end_date', ts( 'Date to' ), false, array('formatType' => 'birth'));
+    $form->addDate('start_date', ts('Date from'), false, array('formatType' => 'birth'));
+    $form->addDate('end_date', ts('Date to'), false, array('formatType' => 'birth'));
 
     $resetUrl = CRM_Utils_System::url('civicrm/contact/search/custom', 'csid=18&reset=1');
     $form->assign('resetUrl', $resetUrl);
 
-    $form->setDefaults( $this->setDefaultValues() );
-    $form->addFormRule( array( 'CRM_Contact_Form_Search_Custom_WebActivityStream', 'formRule' ), $this );
+    $form->setDefaults($this->setDefaultValues());
+    $form->addFormRule(array('CRM_Contact_Form_Search_Custom_WebActivityStream', 'formRule'), $this);
   }//buildForm
   
-  static function formRule( $fields ) {
-    $errors = array( );
-    //CRM_Core_Error::debug_var('formRule fields', $fields);
-        
+
+  function formRule($fields) {
+    $errors = [];
     return empty($errors) ? true : $errors;
   }//formRule
 
-  function summary( ) {
+
+  function summary() {
     return null;
   }
+
 
   function contactIDs($offset = 0, $rowcount = 0, $sort = NULL, $returnSQL = FALSE) {
     return $this->all($offset, $rowcount, $sort, FALSE, TRUE);
   }
 
-  function all(
-    $offset = 0, $rowcount = 0, $sort = NULL,
-    $includeContactIDs = FALSE, $justIDs = FALSE
-  ) {
 
+  function all($offset = 0, $rowcount = 0, $sort = NULL,
+               $includeContactIDs = FALSE, $justIDs = FALSE) {
     if ($justIDs) {
       $selectClause = "contact_a.id as contact_id";
       $sort = 'contact_a.id';
@@ -118,7 +119,7 @@ class CRM_Contact_Form_Search_Custom_WebActivityStream
     }
     
     //CRM_Core_Error::debug('select',$selectClause); exit();
-    $sql = $this->sql( $selectClause,
+    $sql = $this->sql($selectClause,
       $offset, $rowcount, $sort,
       $includeContactIDs, null
     );
@@ -126,8 +127,9 @@ class CRM_Contact_Form_Search_Custom_WebActivityStream
     //CRM_Core_Error::debug_var('$sql', $sql);
     return $sql;
   }
+
     
-  function from( ) {
+  function from() {
     //CRM_Core_Error::debug_var('$this->_formValues', $this->_formValues);
 
     $from = "
@@ -139,27 +141,28 @@ class CRM_Contact_Form_Search_Custom_WebActivityStream
     return $from;
   }//from
 
-  function where( $includeContactIDs = false ) {
-    //CRM_Core_Error::debug('formVals', $this->_formValues);exit();
-    $params = array();
 
-    $start_date = CRM_Utils_Date::mysqlToIso( CRM_Utils_Date::processDate( $this->_formValues['start_date'] ) );
-    $end_date  = CRM_Utils_Date::mysqlToIso( CRM_Utils_Date::processDate( $this->_formValues['end_date'] ) );
+  function where($includeContactIDs = false) {
+    //CRM_Core_Error::debug('formVals', $this->_formValues);exit();
+    $params = [];
+
+    $start_date = CRM_Utils_Date::mysqlToIso(CRM_Utils_Date::processDate($this->_formValues['start_date']));
+    $end_date  = CRM_Utils_Date::mysqlToIso(CRM_Utils_Date::processDate($this->_formValues['end_date']));
     
     //add filters by start/end date
-    if ( $start_date ) {
+    if ($start_date) {
       $where[] = "wa.created_date >= '$start_date' ";
     }
-    if ( $end_date ) {
+    if ($end_date) {
       $where[] = "wa.created_date <= '$end_date' ";
     }
 
-    if ( !empty($this->_formValues['sort_name']) ) {
+    if (!empty($this->_formValues['sort_name'])) {
       $sortName = CRM_Utils_Type::escape($this->_formValues['sort_name'], 'String');
       $where[] = "sort_name LIKE '{$sortName}'";
     }
 
-    if ( !empty($this->_formValues['type']) ) {
+    if (!empty($this->_formValues['type'])) {
       $where[] = "wa.type LIKE '{$this->_formValues['type']}'";
     }
     
@@ -167,16 +170,17 @@ class CRM_Contact_Form_Search_Custom_WebActivityStream
     $where[] = "contact_a.is_deleted = 0 ";
     $where[] = "contact_a.is_deceased = 0 ";
     
-    if ( !empty($where) ) {
-      $whereClause = implode( ' AND ', $where );
+    if (!empty($where)) {
+      $whereClause = implode(' AND ', $where);
     }
     else {
       $whereClause = '';
     }
     //CRM_Core_Error::debug_var('whereClause', $whereClause);
     
-    return $this->whereClause( $whereClause, $params );
+    return $this->whereClause($whereClause, $params);
   }
+
 
   function count() {
     $sql = $this->all();
@@ -184,29 +188,33 @@ class CRM_Contact_Form_Search_Custom_WebActivityStream
     return $dao->N;
   }
 
-  function templateFile( ) {
+
+  function templateFile() {
     return 'CRM/Contact/Form/Search/Custom/WebActivityStream.tpl';
   }
 
-  function setDefaultValues( ) {
+
+  function setDefaultValues() {
     $defaults = array(
       'action_type' => 3,
     );
     return $defaults;
   }
 
-  function alterRow( &$row ) {
+
+  function alterRow(&$row) {
     $row['contact_type' ] =
-      CRM_Contact_BAO_Contact_Utils::getImage( $row['contact_type'],
+      CRM_Contact_BAO_Contact_Utils::getImage($row['contact_type'],
         false,
-        $row['contact_id'] );
+        $row['contact_id']);
 
     $row['created_date'] = date('m/d/Y g:i a', strtotime($row['created_date']));
   }
 
-  function setTitle( $title ) {
-    if ( $title ) {
-      CRM_Utils_System::setTitle( $title );
+
+  function setTitle($title) {
+    if ($title) {
+      CRM_Utils_System::setTitle($title);
     }
     else {
       CRM_Utils_System::setTitle(ts('Search'));
