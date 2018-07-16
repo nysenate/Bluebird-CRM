@@ -640,7 +640,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
         $rnd = date('Ymdhis');
         $tmpTbl = "nyss_temp_greetings_$rnd";
         $sql = "CREATE TABLE $tmpTbl (id INT NOT NULL PRIMARY KEY) ENGINE = myisam;";
-        $dao = CRM_Core_DAO::executeQuery($sql, CRM_Core_DAO::$_nullArray);
+        CRM_Core_DAO::executeQuery($sql, CRM_Core_DAO::$_nullArray);
 
         //insert ids from stored arrays
         $allIDs = array_merge($updated_contacts, $new_contacts);

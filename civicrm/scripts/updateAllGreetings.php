@@ -48,7 +48,7 @@ function run()
   CRM_Core_Error::debug_log_message('updateAllGreetings.php');
 
   require_once 'CRM/Core/Config.php';
-  $config = CRM_Core_Config::singleton();
+  CRM_Core_Config::singleton();
 
   $contactType = null;
   if (!empty($optlist['ct'])) {
@@ -66,6 +66,35 @@ function run()
   require_once 'CRM/Contact/BAO/Contact.php';
   $dao = new CRM_Contact_BAO_Contact();
 
+  //get greeting defaults
+  $greetings = array(
+    'Individual' => array(
+      'addressee' => CRM_Core_OptionGroup::values('addressee',
+        NULL, NULL, NULL, 'AND v.filter = 1 AND is_default = 1'),
+      'email' => CRM_Core_OptionGroup::values('email_greeting',
+        NULL, NULL, NULL, 'AND v.filter = 1 AND is_default = 1'),
+      'postal' => CRM_Core_OptionGroup::values('postal_greeting',
+        NULL, NULL, NULL, 'AND v.filter = 1 AND is_default = 1'),
+    ),
+    'Household' => array(
+      'addressee' => CRM_Core_OptionGroup::values('addressee',
+        NULL, NULL, NULL, 'AND v.filter = 2 AND is_default = 1'),
+      'email' => CRM_Core_OptionGroup::values('email_greeting',
+        NULL, NULL, NULL, 'AND v.filter = 2 AND is_default = 1'),
+      'postal' => CRM_Core_OptionGroup::values('postal_greeting',
+        NULL, NULL, NULL, 'AND v.filter = 2 AND is_default = 1'),
+    ),
+    'Organization' => array(
+      'addressee' => CRM_Core_OptionGroup::values('addressee',
+        NULL, NULL, NULL, 'AND v.filter = 3 AND is_default = 1'),
+      'email' => CRM_Core_OptionGroup::values('email_greeting',
+        NULL, NULL, NULL, 'AND v.filter = 3 AND is_default = 1'),
+      'postal' => CRM_Core_OptionGroup::values('postal_greeting',
+        NULL, NULL, NULL, 'AND v.filter = 3 AND is_default = 1'),
+    ),
+  );
+  CRM_Core_Error::debug_var('$greetings', $greetings);
+
   if ($contactType) {
     $dao->contact_type = $contactType;
   }
@@ -82,10 +111,10 @@ function run()
   }
 
   //7247 option to restrict by IDs in temp table
-  if ( !empty($optlist['idtbl']) ) {
+  if (!empty($optlist['idtbl'])) {
     //make sure table exists
     $idTbl = $optlist['idtbl'];
-    if ( CRM_Core_DAO::singleValueQuery("SHOW TABLES LIKE '{$idTbl}'") ) {
+    if (CRM_Core_DAO::singleValueQuery("SHOW TABLES LIKE '{$idTbl}'")) {
       //limit to ids found in the import set
       $dao->whereAdd("id IN (SELECT id FROM {$idTbl})");
     }
@@ -102,6 +131,8 @@ function run()
     require_once 'CRM/Core/Transaction.php';
 
     while ($dao->fetch()) {
+      //CRM_Core_Error::debug_var('dao', $dao);
+
       if ($cnt % BATCHSIZE == 0) {
         if (isset($transaction)) {
           $transaction->commit();
@@ -111,7 +142,7 @@ function run()
       }
 
       //make sure we have a contact type
-      if ( empty($dao->contact_type) ) {
+      if (empty($dao->contact_type)) {
         echo "Contact ID {$dao->id} has no contact type set. We are unable to set the greeting values.\n";
         flush();
         ob_flush();
@@ -125,7 +156,12 @@ function run()
         flush();
         ob_start();
       }
-      CRM_Contact_BAO_Contact::processGreetings($dao, TRUE);
+
+      $dao->addressee_id = (!empty($dao->addressee_id)) ? $dao->addressee_id : key($greetings[$dao->contact_type]['addressee']);
+      $dao->email_greeting_id = (!empty($dao->email_greeting_id)) ? $dao->email_greeting_id : key($greetings[$dao->contact_type]['email']);
+      $dao->postal_greeting_id = (!empty($dao->postal_greeting_id)) ? $dao->postal_greeting_id : key($greetings[$dao->contact_type]['postal']);
+
+      CRM_Contact_BAO_Contact::processGreetings($dao);
       $cnt++;
     }
 
