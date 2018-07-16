@@ -449,18 +449,18 @@
           full: '~/crmMailing/PreviewMgr/full.html'
         };
         var result = null;
-        var p = crmMailingMgr
-          .preview(mailing)
-          .then(function (content) {
-            var options = CRM.utils.adjustDialogDefaults({
-              autoOpen: false,
-              title: ts('Subject: %1', {
-                1: content.subject
-              })
-            });
-            result = dialogService.open('previewDialog', templates[mode], content, options);
+        //NYSS 12029
+        CRM.status(ts('Previewing...'));
+        CRM.api3('Mailing', 'preview', {id: mailing.id}).then(function(result) {
+          content = result.values;
+          var options = CRM.utils.adjustDialogDefaults({
+            autoOpen: false,
+            title: ts('Subject: %1', {
+              1: content.subject
+            })
           });
-        crmStatus({start: ts('Previewing...'), success: ''}, p);
+          result = dialogService.open('previewDialog', templates[mode], content, options);
+        });
         return result;
       },
 
