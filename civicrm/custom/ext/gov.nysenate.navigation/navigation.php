@@ -978,9 +978,9 @@ function _buildHelpMenu($nyssBaseID) {
     'child' => array(
       $nyssBaseID+1 => array(
         'attributes' => array(
-          'label' => 'Bluebird Introduction',
-          'name' => 'Bluebird Introduction',
-          'url' => 'http://senateonline.senate.state.ny.us/STS.nsf/($all)/834B05B0923E3D6A85257CEC00622A0E/$file/Bluebird%20Intro%20Nov%202017.pdf',
+          'label' => 'Introduction',
+          'name' => 'Introduction',
+          'url' => 'sites/all/docs/201711_bluebird_intro.pdf',
           'permission' => 'access CiviCRM',
           'operator' => 'OR',
           'separator' => 0,
@@ -992,9 +992,9 @@ function _buildHelpMenu($nyssBaseID) {
       ),
       $nyssBaseID+2 => array(
         'attributes' => array(
-          'label' => 'Bluebird Managing Inbound Emails',
-          'name' => 'Bluebird Managing Inbound Emails',
-          'url' => 'http://senateonline.senate.state.ny.us/STS.nsf/($all)/B165F4DF4AC7CF9585257CEC00627ABA/$file/Bluebird%20Managing%20Inbound%20Emails%20Feb%202018.pdf',
+          'label' => 'Inbound Email',
+          'name' => 'Inbound Email',
+          'url' => 'sites/all/docs/201802_bluebird_inbound_email.pdf',
           'permission' => 'access CiviCRM',
           'operator' => 'OR',
           'separator' => 0,
@@ -1006,9 +1006,9 @@ function _buildHelpMenu($nyssBaseID) {
       ),
       $nyssBaseID+3 => array(
         'attributes' => array(
-          'label' => 'Bluebird Mass Email',
-          'name' => 'Bluebird Mass Email',
-          'url' => 'http://senateonline.senate.state.ny.us/STS.nsf/($all)/5C7B4FB960A91B9E85257CEC006255AB/$file/Bluebird%20Mass%20Email%20Nov%202017.pdf',
+          'label' => 'Mass Email',
+          'name' => 'Mass Email',
+          'url' => 'sites/all/docs/201711_bluebird_mass_email.pdf',
           'permission' => 'access CiviCRM',
           'operator' => 'OR',
           'separator' => 0,
@@ -1020,9 +1020,9 @@ function _buildHelpMenu($nyssBaseID) {
       ),
       $nyssBaseID+4 => array(
         'attributes' => array(
-          'label' => 'Bluebird Postal Mailings',
-          'name' => 'Bluebird Postal Mailings',
-          'url' => 'http://senateonline.senate.state.ny.us/STS.nsf/($all)/D6935E6B4319E97485257CEC00628C18/$file/Bluebird%20Postal%20Mailings%20Dec%202017.pdf',
+          'label' => 'Postal Mailings',
+          'name' => 'Postal Mailings',
+          'url' => 'sites/all/docs/201712_bluebird_postal_mail.pdf',
           'permission' => 'access CiviCRM',
           'operator' => 'OR',
           'separator' => 0,
