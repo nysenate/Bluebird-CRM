@@ -188,9 +188,24 @@ function _nyss_reports_Activity_cols(&$var, &$object) {
     'dbAlias' => 'civicrm_email_contact_target_email',
   );
 
-  //7540
+  //7540/12067
+  $var['civicrm_activity']['fields']['activity_type_id_orderby'] = $var['civicrm_activity']['fields']['activity_type_id'];
+  $var['civicrm_activity']['fields']['activity_type_id_orderby']['name'] = 'activity_type_id';
+  $var['civicrm_activity']['fields']['activity_type_id_orderby']['no_display'] = TRUE;
   $var['civicrm_activity']['fields']['activity_type_id']['required'] = FALSE;
+  $var['civicrm_activity']['order_bys']['activity_type_id_orderby'] = $var['civicrm_activity']['order_bys']['activity_type_id'];
+  $var['civicrm_activity']['order_bys']['activity_type_id_orderby']['dbAlias'] =
+    str_replace('civicrm_activity_activity_type_id', 'civicrm_activity_activity_type_id_orderby', $var['civicrm_activity']['order_bys']['activity_type_id_orderby']['dbAlias']);
+  unset($var['civicrm_activity']['order_bys']['activity_type_id']);
+
+  $var['civicrm_activity']['fields']['activity_date_time_orderby'] = $var['civicrm_activity']['fields']['activity_date_time'];
+  $var['civicrm_activity']['fields']['activity_date_time_orderby']['name'] = 'activity_date_time';
+  $var['civicrm_activity']['fields']['activity_date_time_orderby']['no_display'] = TRUE;
   $var['civicrm_activity']['fields']['activity_date_time']['required'] = FALSE;
+  $var['civicrm_activity']['order_bys']['activity_date_time_orderby'] = $var['civicrm_activity']['order_bys']['activity_date_time'];
+  $var['civicrm_activity']['order_bys']['activity_date_time_orderby']['dbAlias'] = 'civicrm_activity_activity_date_time_orderby';
+  unset($var['civicrm_activity']['order_bys']['activity_date_time']);
+
   $var['civicrm_activity']['fields']['details']['default'] = TRUE;
 
   //8396
