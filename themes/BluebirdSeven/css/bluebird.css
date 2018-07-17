@@ -38,9 +38,18 @@ ul#civicrm-menu {
   right: 40px !important;
 }
 
-/*contact summary*/
+/*contact summary + tabs*/
 .bb-contactsummary {
   clear: left;
   margin-left: 27px;
   font-size: 90%;
+}
+.page-civicrm-contact-view .ui-tabs-panel>div.help {
+  padding: 10px !important;
+}
+.page-civicrm-contact-view #Tag .contact-tagset label {
+  float: left;
+  width: 100%;
+  font-weight: bold;
+  margin-top: 10px;
 }

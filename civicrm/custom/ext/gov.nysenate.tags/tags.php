@@ -274,7 +274,7 @@ function tags_civicrm_buildForm($formName, &$form) {
 
     //10658 rebuild leg positions entity ref using custom API and disabling create
     CRM_Core_Resources::singleton()->addVars('NYSS', array('contactId' => $contactId));
-    CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.tags', 'js/form_tagset_legpos.js');
+    CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.tags', 'js/form_tags.js');
 
     //11072/11167 append list of issue codes and leg positions
     if (!empty($contactIssueCode_list)) {

@@ -13,4 +13,7 @@ CRM.$(function($) {
         });
     });
   });
+
+  $('div#Tag th:first').text('Issue Codes');
+  $('div#Tag th:nth-child(2)').text('Keywords/Positions').css('padding-left', 0);
 });
