@@ -49,7 +49,7 @@ $drush $instance cvapi extension.install key=gov.nysenate.contact --quiet
 $drush $instance cvapi extension.install key=org.civicrm.angularprofiles --quiet
 $drush $instance cvapi extension.install key=org.civicrm.api4 --quiet
 $drush $instance cvapi extension.install key=org.civicrm.shoreditch --quiet
-$drush $instance cvapi extension.install key=org.civicrm.contactsummary --quiet
+$drush $instance cvapi extension.install key=org.civicrm.contactlayout --quiet
 $drush $instance cvapi extension.install key=org.civicrm.civicase --quiet
 
 ## configure blocks for BluebirdSeven theme
