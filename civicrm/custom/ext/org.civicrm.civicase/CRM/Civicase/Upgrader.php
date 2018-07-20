@@ -386,7 +386,7 @@ class CRM_Civicase_Upgrader extends CRM_Civicase_Upgrader_Base {
   private function getCaseMenuItem($name) {
     $result = civicrm_api3('Navigation', 'get', array(
       'sequential' => 1,
-      'parent_id' => 'Cases',
+      //'parent_id' => 'Cases',
       'name' => $name,
       'options' => array('limit' => 1),
     ));
