@@ -286,6 +286,16 @@
         }
       },
 
+      //NYSS 12029
+      // @param mailing ID
+      // @return preview content
+      quickPreview: function quickPreview(mailingID) {
+        var backend = crmApi.backend || CRM.api3;
+        return backend('Mailing', 'preview', {id: mailingID}).then(function(result) {
+          return result.values;
+        });
+      },
+
       // @param mailing Object (per APIv3)
       // @param int previewLimit
       // @return Promise for a list of recipients (mailing_id, contact_id, api.contact.getvalue, api.email.getvalue)
@@ -449,18 +459,18 @@
           full: '~/crmMailing/PreviewMgr/full.html'
         };
         var result = null;
-        //NYSS 12029
-        CRM.status(ts('Previewing...'));
-        CRM.api3('Mailing', 'preview', {id: mailing.id}).then(function(result) {
-          content = result.values;
-          var options = CRM.utils.adjustDialogDefaults({
-            autoOpen: false,
-            title: ts('Subject: %1', {
-              1: content.subject
-            })
+        var p = crmMailingMgr
+          .quickPreview(mailing.id) //NYSS 12029
+          .then(function (content) {
+            var options = CRM.utils.adjustDialogDefaults({
+              autoOpen: false,
+              title: ts('Subject: %1', {
+                1: content.subject
+              })
+            });
+            result = dialogService.open('previewDialog', templates[mode], content, options);
           });
-          result = dialogService.open('previewDialog', templates[mode], content, options);
-        });
+        crmStatus({start: ts('Previewing...'), success: ''}, p);
         return result;
       },
 
