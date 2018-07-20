@@ -33,7 +33,7 @@
 
   <div class="crm-footer" id="civicrm-footer">
     <div class="bb-footer-left">
-      {if $action NEQ 2}{ts}Contact ID{/ts}:&nbsp;{$contactId}{/if}
+      {if $action NEQ 2 AND $contactId}{ts}Contact ID{/ts}:&nbsp;{$contactId}{/if}
       {if !empty($external_identifier)}&nbsp;&nbsp;{ts}External ID{/ts}:&nbsp;{$external_identifier}{/if}
     </div>
     <div class="bb-footer-right">
