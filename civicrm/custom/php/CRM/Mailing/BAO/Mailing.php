@@ -192,7 +192,7 @@ class CRM_Mailing_BAO_Mailing extends CRM_Mailing_DAO_Mailing {
 
       if (count($excludeSmartGroupIDs)) {
         CRM_Utils_SQL_Select::from('civicrm_group_contact_cache')
-          ->select('contact_id')
+          ->select('DISTINCT contact_id') //NYSS
           ->where('group_id IN (#groups)')
           ->param('#groups', $excludeSmartGroupIDs)
           ->insertIgnoreInto($excludeTempTablename, array('contact_id'))
@@ -267,7 +267,7 @@ class CRM_Mailing_BAO_Mailing extends CRM_Mailing_DAO_Mailing {
     // exclusion temp table.
     if (!empty($recipientsGroup['Include'])) {
       CRM_Utils_SQL_Select::from($entityTable)
-        ->select("$contact.id as contact_id, $entityTable.id as $entityColumn")
+        ->select("DISTINCT $contact.id as contact_id, $entityTable.id as $entityColumn") //NYSS
         ->join($contact, " INNER JOIN $contact ON $entityTable.contact_id = $contact.id ")
         ->join('gc', " INNER JOIN civicrm_group_contact gc ON gc.contact_id = $contact.id ")
         ->join('mg', " INNER JOIN civicrm_mailing_group mg  ON  gc.group_id = mg.entity_id AND mg.search_id IS NULL ")
@@ -284,7 +284,7 @@ class CRM_Mailing_BAO_Mailing extends CRM_Mailing_DAO_Mailing {
     // Get recipients selected in prior mailings
     if (!empty($priorMailingIDs['Include'])) {
       CRM_Utils_SQL_Select::from('civicrm_mailing_recipients')
-        ->select("contact_id, $entityColumn")
+        ->select("DISTINCT contact_id, $entityColumn") //NYSS
         ->where('mailing_id IN (#mailings)')
         ->param('#mailings', $priorMailingIDs['Include'])
         ->insertIgnoreInto($includedTempTablename, array('contact_id', $entityColumn))
@@ -293,14 +293,14 @@ class CRM_Mailing_BAO_Mailing extends CRM_Mailing_DAO_Mailing {
 
     if (count($includeSmartGroupIDs)) {
       $query = CRM_Utils_SQL_Select::from($contact)
-        ->select("$contact.id as contact_id, $entityTable.id as $entityColumn")
+        ->select("DISTINCT $contact.id as contact_id, $entityTable.id as $entityColumn") //NYSS 12082
         ->join($entityTable, " INNER JOIN $entityTable ON $entityTable.contact_id = $contact.id ")
         ->join('gc', " INNER JOIN civicrm_group_contact_cache gc ON $contact.id = gc.contact_id ")
         ->join('mg', " INNER JOIN civicrm_mailing_group mg  ON  gc.group_id = mg.entity_id AND mg.search_id IS NULL ")
         ->join('temp', " LEFT JOIN $excludeTempTablename temp ON $contact.id = temp.contact_id ")
         ->where('gc.group_id IN (#groups)')
         ->where($includeFilters)
-        ->orderBy($order_by)
+        //->orderBy($order_by) //NYSS 12082
         ->replaceInto($includedTempTablename, array('contact_id', $entityColumn))
         ->param('#groups', $includeSmartGroupIDs)
         ->param('#mailingID', $mailingID)
@@ -309,7 +309,7 @@ class CRM_Mailing_BAO_Mailing extends CRM_Mailing_DAO_Mailing {
 
     // Construct the filtered search queries.
     $dao = CRM_Utils_SQL_Select::from('civicrm_mailing_group')
-            ->select('search_id, search_args, entity_id')
+            ->select('DISTINCT search_id, search_args, entity_id') //NYSS
             ->where('search_id IS NOT NULL AND mailing_id = #mailingID')
             ->param('#mailingID', $mailingID)
             ->execute();
