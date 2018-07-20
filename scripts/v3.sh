@@ -51,6 +51,7 @@ $drush $instance cvapi extension.install key=org.civicrm.api4 --quiet
 $drush $instance cvapi extension.install key=org.civicrm.shoreditch --quiet
 $drush $instance cvapi extension.install key=org.civicrm.contactlayout --quiet
 $drush $instance cvapi extension.install key=org.civicrm.civicase --quiet
+$drush $instance cvapi extension.install key=com.aghstrategies.slicknav --quiet
 
 ## configure blocks for BluebirdSeven theme
 echo "$prog: configure blocks for BluebirdSeven theme"
