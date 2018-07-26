@@ -147,6 +147,11 @@ class CRM_Mailing_Selector_Browse extends CRM_Core_Selector_Base implements CRM_
             'direction' => CRM_Utils_Sort::DONTCARE,
           ),
           array(
+            'name' => ts('Created'),
+            'sort' => 'created_date',
+            'direction' => $unscheduledOrder,
+          ),
+          array(
             'name' => ts('Status'),
             'sort' => 'status',
             'direction' => CRM_Utils_Sort::DONTCARE,
@@ -155,11 +160,6 @@ class CRM_Mailing_Selector_Browse extends CRM_Core_Selector_Base implements CRM_
             'name' => ts('Created By'),
             'sort' => 'created_by',
             'direction' => CRM_Utils_Sort::DONTCARE,
-          ),
-          array(
-            'name' => ts('Created Date'),
-            'sort' => 'created_date',
-            'direction' => $unscheduledOrder,
           ),*/
           array(
             'name' => ts('Sent By'),
