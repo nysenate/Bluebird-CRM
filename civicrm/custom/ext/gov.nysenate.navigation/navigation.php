@@ -986,7 +986,8 @@ function _buildHelpMenu($nyssBaseID) {
           'separator' => 0,
           'parentID' => $nyssBaseID,
           'navID' => $nyssBaseID+1,
-          'active' => 1
+          'active' => 1,
+          'target' => '_blank',
         ),
         'child' => array(),
       ),
@@ -1000,7 +1001,8 @@ function _buildHelpMenu($nyssBaseID) {
           'separator' => 0,
           'parentID' => $nyssBaseID,
           'navID' => $nyssBaseID+2,
-          'active' => 1
+          'active' => 1,
+          'target' => '_blank',
         ),
         'child' => array(),
       ),
@@ -1014,7 +1016,8 @@ function _buildHelpMenu($nyssBaseID) {
           'separator' => 0,
           'parentID' => $nyssBaseID,
           'navID' => $nyssBaseID+3,
-          'active' => 1
+          'active' => 1,
+          'target' => '_blank',
         ),
         'child' => array(),
       ),
@@ -1028,7 +1031,8 @@ function _buildHelpMenu($nyssBaseID) {
           'separator' => 0,
           'parentID' => $nyssBaseID,
           'navID' => $nyssBaseID+4,
-          'active' => 1
+          'active' => 1,
+          'target' => '_blank',
         ),
         'child' => array(),
       ),
