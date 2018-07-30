@@ -1,0 +1,22 @@
+<div class="mosaico-templates-wrapper">
+  <span ng-model="body_html_defined" crm-ui-validate="!!mailing.body_html"></span>
+<!--
+       style="float: left; margin: 1em;"
+-->
+  <div class="crm-mosaico-selected"
+       crm-mosaico-template-item="{state:'selected', title: ts('My Design'), subtitle: mosaicoCtrl.getTemplate(mailing).type, img: mosaicoCtrl.getTemplate(mailing).thumbnail}"
+       on-item-click="mosaicoCtrl.edit(mailing)"
+       on-item-reset="mosaicoCtrl.reset(mailing)"
+       ng-show="!!mailing.template_options.mosaicoTemplate">
+  </div>
+
+  <div ng-repeat="template in mosaicoCtrl.templates"
+       ng-show="!mailing.template_options.mosaicoTemplate">
+    <div class="crm-mosaico-unselected"
+         crm-mosaico-template-item="{state:'select', title: template.title, subtitle: (template.isBase ? template.type : ''), img: template.thumbnail}"
+         on-item-click="mosaicoCtrl.select(mailing, template)">
+    </div>
+  </div>
+
+  <div style="clear: both"></div>
+</div>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<table>
+  <base>CRM/Mosaico</base>
+  <class>MosaicoTemplate</class>
+  <name>civicrm_mosaico_template</name>
+  <comment>Standalone Mosaico Template</comment>
+  <log>true</log>
+
+  <field>
+    <name>id</name>
+    <type>int unsigned</type>
+    <required>true</required>
+    <comment>Unique Template ID</comment>
+  </field>
+  <primaryKey>
+    <name>id</name>
+    <autoincrement>true</autoincrement>
+  </primaryKey>
+
+  <field>
+    <name>title</name>
+    <type>varchar</type>
+    <length>255</length>
+    <comment>Title</comment>
+    <title>Title</title>
+  </field>
+
+  <field>
+    <name>base</name>
+    <type>varchar</type>
+    <length>64</length>
+    <comment>Name of the Mosaico base template (e.g. versafix-1)</comment>
+    <title>Base Template</title>
+  </field>
+
+  <field>
+    <name>html</name>
+    <title>HTML</title>
+    <type>longtext</type>
+    <comment>Fully renderd HTML</comment>
+  </field>
+
+  <field>
+    <name>metadata</name>
+    <title>metadata</title>
+    <type>longtext</type>
+    <comment>Mosaico metadata (JSON)</comment>
+  </field>
+
+  <field>
+    <name>content</name>
+    <title>Content</title>
+    <type>longtext</type>
+    <comment>Mosaico content (JSON)</comment>
+  </field>
+
+  <field>
+    <name>msg_tpl_id</name>
+    <type>int unsigned</type>
+    <title>message template ID</title>
+    <required>false</required>
+    <comment>FK to civicrm_msg_template.</comment>
+    <pseudoconstant>
+      <table>civicrm_msg_template</table>
+      <keyColumn>id</keyColumn>
+      <labelColumn>msg_title</labelColumn>
+    </pseudoconstant>
+    <html>
+      <type>Select</type>
+    </html>
+  </field>
+  <foreignKey>
+    <name>msg_tpl_id</name>
+    <table>civicrm_msg_template</table>
+    <key>id</key>
+    <onDelete>SET NULL</onDelete>
+  </foreignKey>
+
+</table>

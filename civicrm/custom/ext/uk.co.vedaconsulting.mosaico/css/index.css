@@ -1,0 +1,130 @@
+body {
+  font-family: "trebuchet ms",arial,sans-serif;
+  font-size: 13.6px;
+}
+
+a, a:link, a:visited {
+  color: #A00000;
+  text-decoration: none;
+}
+.template {
+  margin: 10px;
+  display: inline-block;
+  vertical-align: top; 
+}
+.template a {
+  display: block;
+  outline: 2px solid #333332;
+  padding: 2px;
+  width: 340px;
+  height: 500px;
+  overflow-y: auto;
+}
+.template a:hover {
+  outline: 5px solid #900000;
+  transition: outline .2s;
+}
+#savedTable tbody tr:nth-child(odd) td {
+  background-color: white;
+}
+#savedTable td {
+  padding: 2px 5px ;
+}
+.operationButton, .resumeButton {
+  background-color: #333332;
+  color: white !important;
+  padding: 5px 8px;
+  border-radius: 5px;
+  display: inline-block;
+}
+.operationButton i {
+  color: white;
+}
+.ribbon {
+  background-color: #900000;
+  color: white;
+  display: inline-block;
+  padding: 3px 10px;
+  margin: 6px;
+  position: relative;
+  z-index: 10;
+  outline: 1px solid #600000;
+}
+/* outline su firefox viene fuori dal content */
+@-moz-document url-prefix() { 
+  .ribbon {
+     outline-color: transparent;
+  }
+}
+.ribbon:before, .ribbon:after {
+  z-index: -4;
+  content: ' ';
+  position: absolute;
+  width: 5px;
+  top: 7px;
+  height: 0;
+  border-width: 12px 12px;
+  border-style: solid;
+  border-color: #900000;
+}
+.ribbon:before {
+  left: -20px;
+  border-left-color: transparent;
+}
+.ribbon:after {
+  right: -20px;
+  border-right-color: transparent;
+}
+
+@media screen and (max-width: 1400px) {
+  .disclaimer {
+    left: 0 !important; right: 0 !important;
+    top: 0 !important;
+    width: auto !important;
+    border: none !important;
+  }
+  body { padding-top: 40px !important; }
+}
+
+@media screen and (max-width: 900px) {
+  .byTable { display: none; }
+  .byRibbon { display: inline !important; }
+}
+
+/*
+<!-- stili per logo -->
+*/
+ .logoContainer { padding-bottom: 4px; }
+ /*
+ body.mo table.logoWrapper, #mosaico-logo { width: auto; border-bottom: 0; margin: auto; }
+ body.mo table.logoWrapper td, #mosaico-logo td { background-color: transparent; height: auto; vertical-align: bottom; padding: 0;}
+ */
+ #mosaico-logo.mosaico-text td { padding: 0px 1px 1px 0px; }
+ #mosaico-logo.mosaico-text td div { width: 16px; height: 16px; }
+ #mosaico-logo.mosaico-text { border-collapse: collapse; border-spacing: 0; }
+ #mosaico-logo .pullleft { margin-left: -50%; }
+ #mosaico-logo .pullup { margin-top: -110%; }
+ #mosaico-logo .s0 {  transform: rotate(2deg); }
+ #mosaico-logo .s1 {  transform: rotate(4deg); }
+ #mosaico-logo .s2 {  transform: rotate(6deg); }
+ #mosaico-logo .s3 {  transform: rotate(8deg); }
+ #mosaico-logo .s4 {  transform: rotate(10deg); }
+ #mosaico-logo .s5 {  transform: rotate(-2deg); }
+ #mosaico-logo .s6 {  transform: rotate(-4deg); }
+ #mosaico-logo .s7 {  transform: rotate(-6deg); }
+ #mosaico-logo .s8 {  transform: rotate(-8deg); }
+ #mosaico-logo .s9 {  transform: rotate(-10deg); }
+ #mosaico-logo .on {  border: 0px solid #CCC; transition: transform .3s; -webkit-transition: transform .3s; }
+ #mosaico-logo .on.cc:hover { transform: rotate(90deg) scale(1.3); box-shadow: 1px -1px 2px #888; }
+ #mosaico-logo .ce {  background-color: #333332; border-color: #FFFFFF; }
+ #mosaico-logo .cc {  box-shadow: 1px 1px 1px #555; position: relative; z-index: 2; }
+ #mosaico-logo .c0 {  background-color: #EECC20; border-color: #CEAC00; }
+ #mosaico-logo .c1 {  background-color: #DD8010; border-color: #BD6000; }
+ #mosaico-logo .c2 {  background-color: #CC8010; border-color: #AC6000; }
+ #mosaico-logo .c3 {  background-color: #BB7010; border-color: #9B5000; }
+ #mosaico-logo .c4 {  background-color: #CC6010; border-color: #AC4000; }
+ #mosaico-logo .c5 {  background-color: #A03020; border-color: #801000; }
+ #mosaico-logo .c6 {  background-color: #CE1000; border-color: #AC1000; }
+ #mosaico-logo .c7 {  background-color: #7E1000; border-color: #5E0000; }
+ #mosaico-logo .c8 {  background-color: #A01020; border-color: #800000; }
+ #mosaico-logo .c9 {  background-color: #EE4400; border-color: #CC2400; }

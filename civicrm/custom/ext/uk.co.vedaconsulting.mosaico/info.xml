@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<extension key="uk.co.vedaconsulting.mosaico" type="module">
+  <file>mosaico</file>
+  <name>Mosaico</name>
+  <description>Integration with mosaico templates builder. Allows building civi message templates using mosaico template builder.</description>
+  <license>AGPL-3.0</license>
+  <maintainer>
+    <author>deepak-srivastava</author>
+    <email>deepak@vedaconsulting.co.uk</email>
+  </maintainer>
+  <urls>
+    <url desc="Main Extension Page">https://github.com/veda-consulting/uk.co.vedaconsulting.mosaico</url>
+    <url desc="Documentation">https://civicrm.org/blogs/parvez/a-new-beginning-for-civimail</url>
+    <url desc="Support">http://vedaconsulting.co.uk</url>
+    <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
+  </urls>
+  <releaseDate>2018-06-12</releaseDate>
+  <version>2.0-beta4.1528762072</version>
+  <develStage>beta</develStage>
+  <compatibility>
+    <ver>4.7</ver>
+  </compatibility>
+  <requires>
+    <ext>org.civicrm.flexmailer</ext>
+  </requires>
+  <comments>To help contribute please contact us on support@vedaconsulting.co.uk or initiate a conversation / issue on github.</comments>
+  <civix>
+    <namespace>CRM/Mosaico</namespace>
+  </civix>
+</extension>

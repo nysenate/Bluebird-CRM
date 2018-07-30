@@ -1,0 +1,22 @@
+.crm-mosaico-page {
+  .btn {
+    display: block;
+    padding: 0.8em;
+    &:hover {
+      text-decoration: none;
+      cursor: pointer;
+    }
+  }
+
+  .btn-primary {
+    background: $brand-primary;
+    color: $gray-light;
+    &:hover { background: darken($brand-primary, 5%); }
+  }
+
+  .btn-danger {
+    background: $brand-danger;
+    color: $gray-light;
+    &:hover { background: darken($brand-danger, 5%); }
+  }
+}

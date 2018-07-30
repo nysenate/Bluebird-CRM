@@ -1,0 +1,24 @@
+// Polyfill minimal BootstrapCSS.
+
+.crm-container .thumbnail {
+  display: block;
+  padding: 4px;
+  margin-bottom: 20px;
+  line-height: 1.5384615385;
+  background-color: #E8EEF0;
+  border: 1px solid #ddd;
+  border-radius: 2px;
+  -webkit-transition: border 0.2s ease-in-out;
+  -o-transition: border 0.2s ease-in-out;
+  transition: border 0.2s ease-in-out; }
+
+.crm-container .thumbnail > img, .crm-container .thumbnail a > img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-left: auto;
+  margin-right: auto; }
+
+.crm-container .thumbnail .caption {
+  padding: 9px;
+  color: #4D4D69; }

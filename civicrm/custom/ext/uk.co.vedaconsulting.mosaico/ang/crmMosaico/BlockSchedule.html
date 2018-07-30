@@ -1,0 +1,22 @@
+<div class="crmMosaico-schedule-outer" crm-mailing-radio-date="schedule" ng-model="mailing.scheduled_date">
+
+  <label class="crmMosaico-schedule-title">{{ts('Schedule email to:')}}</label>
+
+  <div class="crmMosaico-schedule-inner form-inline form-inline-tabs" ng-init="selectedTab = 'sendNow'">
+    <div class="form-group" ng-class="{'active':schedule.mode === 'now'}" ng-click="selectedTab = 'sendNow'; schedule.mode = 'now'">
+      <div class="radio">
+        <input ng-model="schedule.mode" type="radio" name="send" value="now" id="schedule-send-now" ng-checked="selectedTab === 'sendNow'" />
+        <label for="schedule-send-now">{{ts('Send immediately')}}</label>
+      </div>
+    </div><div class="form-group" ng-class="{'active':schedule.mode === 'at'}" ng-click="selectedTab = 'sendAt'; schedule.mode = 'at'">
+      <div class="radio">
+        <input ng-model="schedule.mode" type="radio" name="send" value="at" id="schedule-send-at" ng-checked="selectedTab === 'sendAt'" />
+        <label for="schedule-send-at">{{ts('Send on..')}}</label>
+      </div>
+    </div>
+  </div>
+
+  <div ng-class="{'hide':schedule.mode === 'now'}">
+    <input crm-ui-datepicker class="form-control crm-date-time" ng-model="schedule.datetime" ng-required="schedule.mode == 'at'" />
+  </div>
+</div>

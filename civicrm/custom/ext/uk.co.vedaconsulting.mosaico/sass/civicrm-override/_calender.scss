@@ -1,0 +1,193 @@
+.ui-datepicker {
+  background: $crm-white;
+  border: 1px solid $datepicker-border-color;
+  border-radius: 0;
+  box-shadow: $box-shadow;
+  min-width: 160px;
+  padding: 10px;
+  width: auto;
+
+  &,
+  * {
+    border-radius: 0;
+    font-family: $font-family-base;
+  }
+
+  * {
+    background: none;
+    box-shadow: none;
+  }
+
+  &,
+  .ui-datepicker-calendar {
+    td[data-handler] a {
+      background: $gray-lighter;
+    }
+
+    td[data-handler] a.ui-state-highlight {
+      border-color: $brand-primary;
+    }
+  }
+}
+
+.ui-datepicker .ui-datepicker-header {
+  border: 0;
+  margin-bottom: 5px;
+
+  .ui-datepicker-next,
+  .ui-datepicker-prev {
+    box-shadow: none;
+    height: 28px;
+    top: 4px;
+
+    &::before {
+      display: inline-block;
+      line-height: 30px;
+    }
+  }
+
+  .ui-datepicker-prev::before {
+    @include fa-icon($font-size-base, '\f0d9');
+    padding-left: 5px;
+  }
+
+  .ui-datepicker-next::before {
+    @include fa-icon($font-size-base, '\f0da');
+    padding-left: 15px;
+  }
+
+  select {
+    appearance: none;
+    background: url('../svgs/drop-down-arrow.svg') no-repeat right;
+    display: inline-block;
+    font-family: $font-family-base;
+    font-size: 0.8em;
+    padding-left: 5px;
+    padding-right: 10px;
+    position: relative;
+    top: 1px;
+    width: 75px;
+  }
+}
+
+.ui-datepicker-header {
+  .ui-datepicker-next,
+  .ui-datepicker-prev {
+    border-radius: 2px;
+    cursor: pointer;
+    text-align: center;
+    width: 35px;
+
+    span {
+      background: none;
+    }
+
+    &:before {
+      color: $datepicker-gray-dark;
+      font-size: $font-size-medium;
+      font-weight: normal;
+      padding: 0;
+    }
+
+    &-hover {
+      background: $gray-lighter;
+      border: 0;
+      border-color: $datepicker-gray-darker;
+      color: $datepicker-gray-dark;
+    }
+  }
+
+  .ui-datepicker-prev {
+    &:before {
+      @include fa-icon($font-size-base, '\f053');
+    }
+
+    &-hover {
+      left: 2px;
+    }
+  }
+
+  .ui-datepicker-next {
+    &:before {
+      @include fa-icon($font-size-base, '\f054');
+    }
+
+    &-hover {
+      right: 2px;
+    }
+  }
+
+  .ui-datepicker-title {
+    padding: 0 30px;
+
+    .select2-container {
+      background: $crm-white;
+      margin: 0 5px;
+
+      .select2-choice {
+        background: none;
+        border: 1px solid $crm-darker-grayblue;
+        border-radius: 2px;
+        box-shadow: $crm-form-control-shadow;
+        font-weight: 400;
+      }
+
+      .select2-arrow {
+        background: none;
+        padding: 0 5px;
+      }
+    }
+  }
+}
+
+.ui-datepicker-calendar {
+  border: 0;
+
+  thead th {
+    color: $datepicker-gray-darker;
+    font-size: $crm-mosaico-font-size-sm;
+  }
+
+  td.ui-state-disabled,
+  td[data-handler] {
+    background: $gray-lighter;
+    border: 0;
+    font-size: $crm-mosaico-font-size-sm;
+    opacity: 1;
+    padding: 7px;
+
+    a {
+      background: transparent;
+      border: 0;
+      border-radius: 20px;
+      color: $datepicker-gray-dark;
+      cursor: pointer;
+      line-height: 1;
+      padding: 7px;
+      text-align: center;
+      width: auto;
+
+      &.ui-state-active {
+        background: $brand-primary;
+        color: $crm-white;
+      }
+    }
+
+    &.ui-datepicker-days-cell-over.ui-datepicker-today a.ui-state-highlight {
+      background: $brand-primary;
+      color: $crm-white;
+    }
+  }
+}
+
+.ui-state-default {
+  border: 0;
+}
+
+.input-group-addon.fa-calendar {
+  background: none;
+  border: solid 1px $gray-dark;
+  border-left: 0;
+  color: $brand-primary;
+  cursor: pointer;
+}

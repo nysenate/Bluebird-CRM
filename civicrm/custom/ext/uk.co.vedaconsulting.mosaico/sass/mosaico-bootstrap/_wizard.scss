@@ -1,0 +1,50 @@
+.crm-mosaico-wizard {
+  padding: 0.7em;
+
+  .crm_wizard {
+    &__title .nav-pills {
+      margin: 0;
+    }
+
+    &__title .nav-pills li a {
+      outline: 0;
+    }
+
+    &__title .nav-pills li.disabled a {
+      color: $gray-darker;
+    }
+
+    &__footer .crmb-wizard-button-right button:not(:last-child) {
+      margin-right: 10px;
+    }
+  }
+
+  .crm_wizard__body {
+
+    .form-group {
+      max-width: 640px;
+    }
+
+    .form-control::placeholder {
+      color: $placeholder;
+    }
+
+    .token-holder .select2-container{
+      min-width: 260px;
+    }
+
+    .ng-invalid.ng-invalid-incomplete-date-time {
+      border: none;
+    }
+  }
+}
+
+.mosaico-templates-wrapper {
+  margin-top: 30px;
+}
+
+div[ng-controller="PreviewMailingDialogCtrl"] iframe.resized {
+  height: calc(100% - 57px);
+  position: absolute;
+  z-index: -1;
+}

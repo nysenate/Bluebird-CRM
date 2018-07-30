@@ -1,0 +1,110 @@
+.crm-mosaico-selected.center-block {
+  float: none;
+
+  .crm-mosaico-template-item {
+    width: 240px;
+
+    .crm-mosaico-template-image-wrapper {
+      height: 275px;
+    }
+
+    .crm-mosaico-template-title-wrapper p {
+      width: 225px;
+    }
+  }
+}
+
+.crm-mosaico-template-item {
+  background: $crm-mosaico-template-item;
+  border: 2px solid $crm-white;
+  border-radius: 4px;
+  margin: auto;
+  opacity: 1;
+  width: 165px;
+  margin-bottom: 30px;
+
+  &.thumbnail {
+    padding: 0;
+  }
+
+  &:hover {
+    border: 2px solid $brand-primary;
+    box-shadow: $crm-mosaico-template-item-shadow;
+
+    .crm-mosaico-template-actions {
+      opacity: 1;
+    }
+
+    img {
+      opacity: 0.66;
+    }
+  }
+
+  .crm-mosaico-template-image-wrapper {
+    background: $crm-mosaico-template-item-wrapper;
+    height: 200px;
+    overflow: hidden;
+    position: relative;
+
+    img {
+      height: auto !important;
+    }
+  }
+
+  .crm-mosaico-template-actions-wrapper {
+    bottom: 0;
+    display: table;
+    height: 100%;
+    left: 0;
+    position: absolute;
+    right: 0;
+    text-align: center;
+    top: 0;
+    width: 100%;
+  }
+
+  .crm-mosaico-template-actions {
+    display: table-cell;
+    opacity: 0;
+    transition: opacity 400ms;
+    vertical-align: middle;
+  }
+
+  .crm-mosaico-template-image-wrapper .crm-mosaico-template-actions .btn {
+    float: none !important;
+    margin-bottom: 7px;
+    width: 63%;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .crm-mosaico-template-title-wrapper {
+    border: 1px solid $crm-mosaico-template-border;
+    color: $gray-darker;
+    font-weight: 600;
+    height: 60px;
+    line-height: 16px;
+    overflow: hidden;
+    padding: 10px 5px;
+    position: relative;
+    vertical-align: middle;
+    text-align: center;
+    text-decoration: none;
+
+    small {
+      display: block;
+      font-weight: 400;
+      margin-top: 3px;
+    }
+
+    p {
+      left: 50%;
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 160px;
+    }
+  }
+}
