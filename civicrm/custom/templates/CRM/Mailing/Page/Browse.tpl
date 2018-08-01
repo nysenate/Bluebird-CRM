@@ -66,7 +66,7 @@
       {counter start=0 skip=1 print=false}
       {foreach from=$rows item=row}
       <tr id="crm-mailing_{$row.id}" class="{cycle values="odd-row,even-row"} crm-mailing crm-mailing_status-{$row.status}">
-        <td class="crm-mailing-name">{$row.name|replace:'_':' '}{$row.name|replace:'_':' '}{$row.name|replace:'_':' '}</div></td>
+        <td class="crm-mailing-name">{$row.name|replace:'_':' '}</td>
         {if $multilingual}
           <td class="crm-mailing-language">{$row.language}</td>
         {/if}
