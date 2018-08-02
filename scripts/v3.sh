@@ -79,6 +79,24 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
+##
+echo "$prog: update location type display labels"
+sql="
+  UPDATE civicrm_location_type
+  SET display_name = 'Home 2'
+  WHERE name = 'Home2';
+  UPDATE civicrm_location_type
+  SET display_name = 'Home 2'
+  WHERE name = 'Home2';
+  UPDATE civicrm_location_type
+  SET display_name = 'Home 2'
+  WHERE name = 'Home2';
+  UPDATE civicrm_location_type
+  SET display_name = 'Home 2'
+  WHERE name = 'Home2';
+"
+$execSql $instance -c "$sql" -q
+
 ## TODO implement contact-summary config
 
 ## record completion
