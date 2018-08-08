@@ -95,6 +95,8 @@ $civicrm_setting['CiviCRM Preferences']['syncCMSEmail'] = false;
 $civicrm_setting['CiviCRM Preferences']['communityMessagesUrl'] = false;
 $civicrm_setting['CiviCRM Preferences']['remote_profile_submissions'] = false;
 $civicrm_setting['CiviCRM Preferences']['recentItemsMaxCount'] = 10;
+$civicrm_setting['CiviCRM Preferences']['smart_group_cache_refresh_mode'] = 'deterministic';
+$civicrm_setting['CiviCRM Preferences']['smartGroupCacheTimeout'] = 10;
 
 $civicrm_setting['Directory Preferences']['customTemplateDir'] = "$approot/civicrm/custom/templates";
 $civicrm_setting['Directory Preferences']['customPHPPathDir'] = "$approot/civicrm/custom/php";
