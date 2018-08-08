@@ -66,11 +66,12 @@
       {counter start=0 skip=1 print=false}
       {foreach from=$rows item=row}
       <tr id="crm-mailing_{$row.id}" class="{cycle values="odd-row,even-row"} crm-mailing crm-mailing_status-{$row.status}">
-        <td class="crm-mailing-name">{$row.name}</td>
+        <td class="crm-mailing-name">{$row.name|replace:'_':' '}</td>
         {if $multilingual}
           <td class="crm-mailing-language">{$row.language}</td>
         {/if}
         <td class="crm-mailing-subject">{$row.subject}</td>{*NYSS 6007*}
+        <td class="crm-mailing-created_date">{$row.created_date}</td>
         <td class="crm-mailing-status crm-mailing_status-{$row.status}">{$row.status}</td>
         <td class="crm-mailing-scheduled_by">
           <a href ={crmURL p='civicrm/contact/view' q="reset=1&cid="}{$row.scheduled_id} title="{$row.scheduled_by|escape}">
@@ -96,7 +97,7 @@
             </div>
           </a>
         </td>
-       {if call_user_func(array('CRM_Campaign_BAO_Campaign','isCampaignEnable'))}
+        {if call_user_func(array('CRM_Campaign_BAO_Campaign','isCampaignEnable'))}
           <td class="crm-mailing-campaign">{$row.campaign}</td>
       {/if}
         <td>{$row.action|replace:'xx':$row.id}</td>
