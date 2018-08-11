@@ -387,7 +387,7 @@ function checkImapAccount($imapSess, $params)
 
   $msg_count = $imapSess->fetchMessageCount();
   $invalid_fwders = array();
-  bbscript_log(LL::NOTICE, "Number of messages: $msg_count");
+  bbscript_log(LL::NOTICE, "Number of messages in IMAP inbox: $msg_count");
 
   for ($msg_num = 1; $msg_num <= $msg_count; $msg_num++) {
     bbscript_log(LL::INFO, "Retrieving message $msg_num / $msg_count");
@@ -443,7 +443,7 @@ function checkImapAccount($imapSess, $params)
 
   bbscript_log(LL::NOTICE, "Finished checking IMAP account ".$params['user'].'@'.$params['server'].$params['flags']);
 
-  bbscript_log(LL::NOTICE, "Searching for matches on unmatched records");
+  bbscript_log(LL::NOTICE, "Searching for matches between message senders and contact records");
   searchForMatches($dbconn, $params);
 
   return true;
@@ -666,6 +666,8 @@ function searchForMatches($db, $params)
     $q .= ' OR status='.STATUS_UNMATCHED;
     $status_str .= '/Unmatched';
   }
+
+  bbscript_log(LL:NOTICE, "Obtaining list of $status_str messages to be checked");
 
   $mres = mysqli_query($db, $q);
   if ($mres === false) {
