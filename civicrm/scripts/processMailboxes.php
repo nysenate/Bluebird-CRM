@@ -667,7 +667,7 @@ function searchForMatches($db, $params)
     $status_str .= '/Unmatched';
   }
 
-  bbscript_log(LL:NOTICE, "Obtaining list of $status_str messages to be checked");
+  bbscript_log(LL::NOTICE, "Obtaining list of $status_str messages to be checked");
 
   $mres = mysqli_query($db, $q);
   if ($mres === false) {
