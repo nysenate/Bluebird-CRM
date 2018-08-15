@@ -21,7 +21,7 @@ piddir=/var/run
 . "$script_dir/defaults.sh"
 
 usage() {
-  echo "Usage: $prog [--quiet] [--all] [--live] [--live-fast] [--locked] [--civimail] [--signups] [--training] [--set instanceSet] [--instance instanceName] [--exclude instanceName [--exclude ...]] [--exclude-set instanceSet [--exclude-set ...]] [--bg] [--no-wait] [--serial uniq-id] [--timing] [--run-as user] [cmd]" >&2
+  echo "Usage: $prog [--quiet] [--all] [--live] [--live-fast] [--locked] [--civimail] [--signups] [--training] [--set instanceSet] [--instance instanceName] [--exclude instanceName [--exclude ...]] [--exclude-set instanceSet [--exclude-set ...]] [--bg] [--no-wait] [--serial uniq-id] [--timing] [--run-as user] [--prefix-instance] [cmd]" >&2
   echo "Note: Any occurrence of '%%INSTANCE%%' or '{}' in the command will be replaced by the current instance name." >&2
 }
 
@@ -32,7 +32,6 @@ cleanup_and_exit() {
 
 
 cmd=
-cmdfile=
 use_all=0
 use_live=0
 fast_live=0
@@ -46,6 +45,7 @@ no_wait=0
 serial_id=
 show_timing=0
 run_as=
+prefix_instance=0
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -67,6 +67,7 @@ while [ $# -gt 0 ]; do
     --serial) shift; serial_id="$1" ;;
     --timing|-t) show_timing=1 ;;
     --run-as|-r) shift; run_as="$1" ;;
+    --prefix-instance|-p) prefix_instance=1 ;;
     -*) echo "$prog: $1: Invalid option" >&2; usage; exit 1 ;;
     *) cmd="$1" ;;
   esac
@@ -178,6 +179,10 @@ if [ "$run_as" ]; then
     echo "$prog: Unable to run as '$run_as'; user does not exist" >&2
     cleanup_and_exit 1
   fi
+fi
+
+if [ $prefix_instance -eq 1 ]; then
+  cmd="echo -n '{}: '; $cmd"
 fi
 
 for instance in $instances; do
