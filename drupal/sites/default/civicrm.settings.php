@@ -74,7 +74,7 @@ define('SAGE_API_BASE', get_config_value($bbconfig, 'sage.api.base', 'NO_API'));
 $civicrm_setting['Mailing Preferences']['profile_double_optin'] = false;
 $civicrm_setting['Mailing Preferences']['profile_add_to_group_double_optin'] = false;
 $civicrm_setting['Mailing Preferences']['track_civimail_replies'] = false;
-$civicrm_setting['Mailing Preferences']['civimail_workflow'] = true;
+//$civicrm_setting['Mailing Preferences']['civimail_workflow'] = true; //TODO support with Mosaico
 $civicrm_setting['Mailing Preferences']['civimail_server_wide_lock'] = true;
 $civicrm_setting['Mailing Preferences']['civimail_multiple_bulk_emails'] = true;
 $civicrm_setting['Mailing Preferences']['include_message_id'] = true;
