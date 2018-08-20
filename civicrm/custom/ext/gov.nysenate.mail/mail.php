@@ -315,6 +315,12 @@ function mail_civicrm_links($op, $objectName, $objectId, &$links, &$mask, &$valu
   }
 }
 
+function mail_civicrm_mosaicoBaseTemplates(&$templates) {
+  //Civi::log()->debug('', array('templates' => $templates));
+  unset($templates['tedc15']);
+  unset($templates['tutorial']);
+}
+
 //NYSS 4870
 function _mail_removeOnHold($mailingID) {
   $sql = "
