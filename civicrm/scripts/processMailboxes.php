@@ -10,16 +10,24 @@
 // Revised: 2015-08-03 - added ability to configure some params from BB config
 // Revised: 2015-08-24 - added pattern-matching for auth forwarders
 // Revised: 2017-02-23 - re-migrated to mysqli (originally done on 2017-01-11)
+// Revised: 2018-08-10 - removed --unread-only command line argument
+//                     - added --recheck-unmatched command line argument
+//                     - added more default value constants
 //
 
 // Version number, used for debugging
 define('VERSION_NUMBER', 2.1);
 
 // Mailbox settings common to all CRM instances
+define('DEFAULT_IMAP_SERVER', 'senmail.nysenate.gov');
+define('DEFAULT_IMAP_PORT', 143);
+define('DEFAULT_IMAP_FLAGS', '/imap/notls');
+define('DEFAULT_IMAP_MAILBOX', 'INBOX');
 define('DEFAULT_IMAP_ARCHIVEBOX', 'Archive');
 define('DEFAULT_IMAP_PROCESS_UNREAD_ONLY', false);
 define('DEFAULT_IMAP_NO_ARCHIVE', false);
 define('DEFAULT_IMAP_NO_EMAIL', false);
+define('DEFAULT_IMAP_RECHECK', false);
 
 define('IMAP_CMD_POLL', 1);
 define('IMAP_CMD_LIST', 2);
@@ -63,11 +71,11 @@ $prog = basename(__FILE__);
 
 require_once 'script_utils.php';
 $stdusage = civicrm_script_usage();
-$usage = "[--server|-s imap_server]  [--port|-p imap_port]  [--imap-user|-u username]  [--imap-pass|-P password]  [--imap-flags|-f imap_flags]  [--cmd|-c <poll|list|delarchive>]  [--mailbox|-m name]  [--archivebox|-a name]  [--log-level LEVEL] [--unread-only|-r]  [--no-archive|-n]  [--no-email|-e]";
-$shortopts = "s:p:u:P:f:c:m:a:l:rne";
+$usage = "[--server|-s imap_server]  [--port|-p imap_port]  [--imap-user|-u username]  [--imap-pass|-P password]  [--imap-flags|-f imap_flags]  [--cmd|-c <poll|list|delarchive>]  [--mailbox|-m name]  [--archivebox|-a name]  [--log-level|-l LEVEL] [--no-archive|-n]  [--no-email|-e]  [--recheck-unmatched|-r]";
+$shortopts = "s:p:u:P:f:c:m:a:l:ner";
 $longopts = array("server=", "port=", "imap-user=", "imap-pass=", "imap-flags=",
                   "cmd=", "mailbox=", "archivebox=", "log-level=",
-                  "unread-only", "no-archive", "no-email");
+                  "no-archive", "no-email", "recheck-unmatched");
 
 $optlist = civicrm_script_init($shortopts, $longopts);
 
@@ -117,14 +125,14 @@ $g_crm_instance = $site;
 $all_params = array(
   // Each element is: paramName, optName, bbcfgName, defaultVal
   array('site', 'site', null, null),
-  array('server', 'server', 'imap.server', 'senmail.senate.state.ny.us'),
-  array('port', 'port', 'imap.port', 143),
-  array('flags', 'imap-flags', 'imap.flags', '/imap/notls'),
-  array('mailbox', 'mailbox', 'imap.mailbox', 'INBOX'),
+  array('server', 'server', 'imap.server', DEFAULT_IMAP_SERVER),
+  array('port', 'port', 'imap.port', DEFAULT_IMAP_PORT),
+  array('flags', 'imap-flags', 'imap.flags', DEFAULT_IMAP_FLAGS),
+  array('mailbox', 'mailbox', 'imap.mailbox', DEFAULT_IMAP_MAILBOX),
   array('archivebox', 'archivebox', 'imap.archivebox', DEFAULT_IMAP_ARCHIVEBOX),
-  array('unreadonly', 'unread-only', null, DEFAULT_IMAP_PROCESS_UNREAD_ONLY),
   array('noarchive', 'no-archive', null, DEFAULT_IMAP_NO_ARCHIVE),
-  array('noemail', 'no-email', null, DEFAULT_IMAP_NO_EMAIL)
+  array('noemail', 'no-email', null, DEFAULT_IMAP_NO_EMAIL),
+  array('recheck', 'recheck-unmatched', null, DEFAULT_IMAP_RECHECK)
 );
 
 $imap_params = array();
@@ -379,7 +387,7 @@ function checkImapAccount($imapSess, $params)
 
   $msg_count = $imapSess->fetchMessageCount();
   $invalid_fwders = array();
-  bbscript_log(LL::NOTICE, "Number of messages: $msg_count");
+  bbscript_log(LL::NOTICE, "Number of messages in IMAP inbox: $msg_count");
 
   for ($msg_num = 1; $msg_num <= $msg_count; $msg_num++) {
     bbscript_log(LL::INFO, "Retrieving message $msg_num / $msg_count");
@@ -435,7 +443,7 @@ function checkImapAccount($imapSess, $params)
 
   bbscript_log(LL::NOTICE, "Finished checking IMAP account ".$params['user'].'@'.$params['server'].$params['flags']);
 
-  bbscript_log(LL::NOTICE, "Searching for matches on unmatched records");
+  bbscript_log(LL::NOTICE, "Searching for matches between message senders and contact records");
   searchForMatches($dbconn, $params);
 
   return true;
@@ -512,7 +520,7 @@ function storeAttachments($imapMsg, $db, $params, $rowId)
 
     if (mysqli_stmt_execute($sql_stmt) == false) {
       bbscript_log(LL::ERROR, "Unable to insert attachment [$fileFull] for msgid=$rowId");
-      $errorDetails = print_r(mysqli_stmt_error($sql_stmt), TRUE);
+      $errorDetails = print_r(mysqli_stmt_error($sql_stmt), true);
       bbscript_log(LL::ERROR, "<pre>{$errorDetails}</pre>");
       $bSuccess = false;
     }
@@ -589,6 +597,8 @@ function storeMessage($imapMsg, $db, $params)
   if ($fwdName === null) {
     $fwdName = '';
   }
+
+  // The default status for newly saved messages is UNPROCESSED.
   $status = STATUS_UNPROCESSED;
 
   $q = "INSERT INTO nyss_inbox_messages
@@ -634,23 +644,38 @@ function storeMessage($imapMsg, $db, $params)
 
 
 
-// searchForMatches
-// Creates an activity from parsed email parts.
-// Detects email type (html|plain).
-// Looks for the source_contact and if not found uses Bluebird Admin.
-// Returns true/false to move the email to archive or not.
+// Process each message, looking for a match between the sender's email
+// address in the message and a contact record with the same email address.
+// If there is a single match on a contact record, an inbound email activity
+// is created and associated with the contact.
 function searchForMatches($db, $params)
 {
   $authForwarders = $params['authForwarders'];
   $uploadDir = $params['uploadDir'];
+  $recheck = $params['recheck'];
 
-  // Check the items we have yet to match (unmatched=0, unprocessed=99)
-  $q = "SELECT id, message_id, sender_email,
+  // Check the unprocessed messages (status=99)
+  $q = 'SELECT id, message_id, sender_email,
                subject, body, forwarder, updated_date
         FROM nyss_inbox_messages
-        WHERE status=".STATUS_UNPROCESSED." OR status=".STATUS_UNMATCHED;
+        WHERE status='.STATUS_UNPROCESSED;
+  $status_str = 'Unprocessed';
+
+  // If "recheck" was specified, then also check unmatched messages (status=0)
+  if ($recheck === true) {
+    $q .= ' OR status='.STATUS_UNMATCHED;
+    $status_str .= '/Unmatched';
+  }
+
+  bbscript_log(LL::NOTICE, "Obtaining list of $status_str messages to be checked");
+
   $mres = mysqli_query($db, $q);
-  bbscript_log(LL::DEBUG, "Unprocessed/Unmatched records: ".mysqli_num_rows($mres));
+  if ($mres === false) {
+    bbscript_log(LL::ERROR, "Unable to retrieve $status_str messages; ".mysqli_error($db));
+    return false;
+  }
+
+  bbscript_log(LL::DEBUG, "$status_str records: ".mysqli_num_rows($mres));
 
   $q = "SELECT DISTINCT c.id FROM civicrm_contact c, civicrm_email e
         WHERE c.id = e.contact_id AND c.is_deleted=0 AND e.email LIKE ?
@@ -761,7 +786,7 @@ function searchForMatches($db, $params)
             SET status = $status, matcher = 1
             WHERE id = $msg_row_id
           ";
-          if (mysqli_query($db, $q) == FALSE) {
+          if (mysqli_query($db, $q) == false) {
             bbscript_log(LL::ERROR,
               "Unable to update status for message id=$msg_row_id");
           }

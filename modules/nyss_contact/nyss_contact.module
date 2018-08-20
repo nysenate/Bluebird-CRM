@@ -1,4 +1,5 @@
 <?php
+
 function nyss_contact_civicrm_buildForm($formName, &$form) {
   //CRM_Core_Error::backtrace('buildForm', TRUE);
   //CRM_Core_Error::debug_var('form',$form);
@@ -114,28 +115,30 @@ function nyss_contact_civicrm_buildForm($formName, &$form) {
     //set US/New York as defaults
     //we could potentially have as many as 6 addresses, so set for all
     $i = 1;
-    while ( $i <= 6 ) {
-      if ( empty( $form->_defaultValues['address'][$i]['country_id'] ) )
+    while ($i <= 6) {
+      if (empty($form->_defaultValues['address'][$i]['country_id'])) {
         $defaults['address'][$i]['country_id'] = 1228;
-      if ( empty( $form->_defaultValues['address'][$i]['state_province_id'] ) )
+      }
+      if (empty($form->_defaultValues['address'][$i]['state_province_id'])) {
         $defaults['address'][$i]['state_province_id'] = 1031;
+      }
       $i++;
     }
-    $form->setDefaults( $defaults );
+    $form->setDefaults($defaults);
   }
 
   //contact form edits
   if ($formName == 'CRM_Contact_Form_Contact') {
     //3527 add js action to deceased field
-    if ( isset( $form->_elementIndex['is_deceased'] ) ) {
-      $deceased =& $form->getElement( 'is_deceased' );
+    if (isset($form->_elementIndex['is_deceased'])) {
+      $deceased =& $form->getElement('is_deceased');
       $js = "showDeceasedDate();processDeceased();";
       $deceased->_attributes['onclick'] = $js;
     } //end deceased
 
     //3530 tweak js to place cursor at end of http in website field (IE8)
-    if ( isset( $form->_elementIndex['website[1][url]'] ) ) {
-      $website =& $form->getElement( 'website[1][url]' );
+    if (isset($form->_elementIndex['website[1][url]'])) {
+      $website =& $form->getElement('website[1][url]');
       $js = "if(!this.value) {
         this.value='http://';
         if (this.createTextRange) {
@@ -149,10 +152,10 @@ function nyss_contact_civicrm_buildForm($formName, &$form) {
     }
 
     //NYSS 4407 remove bulk email from privacy list as it is a separate element
-    if ( isset( $form->_elementIndex['privacy'] ) ) {
-      $privacy =& $form->getElement( 'privacy' );
-      foreach ( $privacy->_elements as $key=>$option ) {
-        if ( $option->_attributes['name'] == 'is_opt_out' ) {
+    if (isset($form->_elementIndex['privacy'])) {
+      $privacy =& $form->getElement('privacy');
+      foreach ($privacy->_elements as $key=>$option) {
+        if ($option->_attributes['name'] == 'is_opt_out') {
           unset($privacy->_elements[$key]);
         }
       }
@@ -218,14 +221,14 @@ function nyss_contact_civicrm_pageRun(&$page) {
   //5412
   if ($pagename == 'CRM_Contact_Page_Inline_Address') {
     $smarty = CRM_Core_Smarty::singleton();
-    if ( $smarty->get_template_vars('privacy') === NULL ) {
+    if ($smarty->get_template_vars('privacy') === NULL) {
       $cid = $smarty->get_template_vars('contactId');
       $contact = civicrm_api('contact', 'getsingle', array('version' => 3, 'id' => $cid));
       //CRM_Core_Error::debug_var('contact', $contact);
 
       $privacy = array();
-      foreach ( $contact as $f => $v ) {
-        if ( strpos($f, 'do_not_') !== FALSE || $f == 'is_opt_out' ) {
+      foreach ($contact as $f => $v) {
+        if (strpos($f, 'do_not_') !== FALSE || $f == 'is_opt_out') {
           $privacy[$f] = $v;
         }
       }
@@ -340,24 +343,7 @@ function nyss_contact_civicrm_pageRun(&$page) {
   }
 }//pageRun
 
-function nyss_contact_civicrm_validateForm( $formName, &$fields, &$files, &$form, &$errors ) {
-  //CRM_Core_Error::debug_var('formName',$formName);
-  //CRM_Core_Error::debug_var('fields',$fields);
-  //CRM_Core_Error::debug_var('files',$files);
-
-  if ($formName == 'CRM_Contact_Form_Inline_CustomData' ||
-    $formName == 'CRM_Contact_Form_Contact'
-  ) {
-    //5776
-    foreach ($files as $field => $details) {
-      if ( $details['size'] > 2100000 ) { //2MB
-        $errors[$field] = 'Attached files must be less than 2MB in size.';
-      }
-    }
-  }
-}
-
-function nyss_contact_civicrm_postProcess( $formName, &$form ) {
+function nyss_contact_civicrm_postProcess($formName, &$form) {
   /*Civi::log()->debug('', array(
     'formName' => $formName,
     'form' => $form,
@@ -369,7 +355,7 @@ function nyss_contact_civicrm_postProcess( $formName, &$form ) {
     _setCustomData('CRM_Contact_Form_Inline_Demographics', $vals);
 
     //6803 set comm pref when deceased
-    if ( isset($vals['is_deceased']) && $vals['is_deceased'] ) {
+    if (isset($vals['is_deceased']) && $vals['is_deceased']) {
       civicrm_api('contact', 'create', array(
         'version' => 3,
         'id' => $vals['cid'],
@@ -408,10 +394,10 @@ function nyss_contact_civicrm_postProcess( $formName, &$form ) {
     }
   }
 
-  if ( in_array($formName, array(
+  if (in_array($formName, array(
     'CRM_Contact_Form_Inline_CommunicationPreferences',
     'CRM_Contact_Form_Inline_ContactInfo'
-  )) ) {
+  ))) {
     _setCustomData($formName, $form->_submitValues);
   }
 
@@ -594,9 +580,9 @@ function nyss_contact_civicrm_tabset($tabsetName, &$tabs, $context) {
       'log',
     );
 
-    foreach ( $order as $id ) {
-      foreach ( $tabs as $details ) {
-        if ( $details['id'] == $id ) {
+    foreach ($order as $id) {
+      foreach ($tabs as $details) {
+        if ($details['id'] == $id) {
           $details['weight'] = $weight;
           $newTabs[] = $details;
 
@@ -628,12 +614,12 @@ function _getContactCustom(&$obj, $return = FALSE) {
   $contactId = CRM_Utils_Request::retrieve('cid', 'Positive');
 
   //look for contact id in object if not in $_REQUEST
-  if ( empty($contactId) ) {
+  if (empty($contactId)) {
     $contactId = $obj->getVar('_contactId');
   }
 
   //return immediately if no contact ID available; see 7370
-  if ( empty($contactId) ) {
+  if (empty($contactId)) {
     return;
   }
 
@@ -658,9 +644,9 @@ function _getContactCustom(&$obj, $return = FALSE) {
   );
   $custom = civicrm_api('custom_value', 'get', $params);
 
-  foreach ( $custom['values'] as $custID => $custVal ) {
+  foreach ($custom['values'] as $custID => $custVal) {
     //if select/multi-select, we need to retrieve and set the label values
-    if ( in_array($custFlds['values'][$custID]['html_type'], array('Select', 'Multi-Select')) ) {
+    if (in_array($custFlds['values'][$custID]['html_type'], array('Select', 'Multi-Select'))) {
       $params = array(
         'version' => 3,
         'option_group_id' => $custFlds['values'][$custID]['option_group_id'],
@@ -669,9 +655,9 @@ function _getContactCustom(&$obj, $return = FALSE) {
       //CRM_Core_Error::debug_var('$opts', $opts);
       //CRM_Core_Error::debug_var('$custVal[latest]', $custVal['latest']);
 
-      foreach ( $opts['values'] as $opt ) {
-        if ( $custFlds['values'][$custID]['html_type'] == 'Multi-Select' ) {
-          if ( in_array($opt['value'], $custVal['latest']) ) {
+      foreach ($opts['values'] as $opt) {
+        if ($custFlds['values'][$custID]['html_type'] == 'Multi-Select') {
+          if (in_array($opt['value'], $custVal['latest'])) {
             //CRM_Core_Error::debug_var('$opts', $opts);
             //CRM_Core_Error::debug_var('$custVal', $custVal);
             $key = array_search($opt['value'], $custVal['latest']);
@@ -679,7 +665,7 @@ function _getContactCustom(&$obj, $return = FALSE) {
           }
         }
         else {
-          if ( $custVal['latest'] == $opt['value'] ) {
+          if ($custVal['latest'] == $opt['value']) {
             $contact['custom_'.$custID] = $opt['label'];
             break;
           }
@@ -691,7 +677,7 @@ function _getContactCustom(&$obj, $return = FALSE) {
     }
   }
 
-  if ( $return ) {
+  if ($return) {
     return $contact;
   }
   else {
@@ -717,14 +703,14 @@ function _getFldOpts($id) {
   //CRM_Core_Error::debug_var('$opts', $opts);
 
   //if select list, prepend -select-
-  if ( $fld['values'][$id]['html_type'] == 'Select' ) {
+  if ($fld['values'][$id]['html_type'] == 'Select') {
     $optList = array('' => '- select -');
   }
   else {
     $optList = array();
   }
 
-  foreach ( $opts['values'] as $opt ) {
+  foreach ($opts['values'] as $opt) {
     $optList[$opt['value']] = $opt['label'];
   }
   //CRM_Core_Error::debug_var('$optList', $optList);
@@ -752,16 +738,16 @@ function _setCustomData($formName, $vals) {
     ),
   );
 
-  foreach ( $formFlds[$formName] as $fld => $type ) {
+  foreach ($formFlds[$formName] as $fld => $type) {
     //CRM_Core_Error::debug_var("vals[{$fld}]", $vals[$fld]);
 
     //if a multi field and not set, set to empty array
-    if ( $type == 'multi' && !isset($vals[$fld]) ) {
+    if ($type == 'multi' && !isset($vals[$fld])) {
       $vals[$fld] = array();
     }
 
     //set custom data
-    if ( isset($vals[$fld]) ) {
+    if (isset($vals[$fld])) {
       civicrm_api('contact', 'create', array(
         'version' => 3,
         'id' => $vals['cid'],
