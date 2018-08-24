@@ -9,6 +9,9 @@ require_once 'navigation.civix.php';
  */
 function navigation_civicrm_config(&$config) {
   _navigation_civix_civicrm_config($config);
+
+  CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.navigation', 'js/navigation.js');
+  CRM_Core_Resources::singleton()->addStyleFile('gov.nysenate.navigation', 'css/navigation.css');
 }
 
 /**
@@ -131,7 +134,7 @@ function navigation_civicrm_navigationMenu(&$params) {
   $reportNav = $adminNav = array();
   foreach ($params as $navID => $navDetails) {
     //unset all but the reports and administer menus
-    switch ($navDetails['attributes']['label']) {
+    switch ($navDetails['attributes']['name']) {
       case 'Reports':
         $reportNavID = $navID;
         $reportNav = $navDetails;
@@ -148,41 +151,10 @@ function navigation_civicrm_navigationMenu(&$params) {
   //get max key
   $maxKey = (!empty($params)) ? max(array_keys($params)) : 0;
 
-  //build home menu item
-  /*$params[1] = array(
-    'attributes' => array(
-      'label'      => 'Home',
-      'name'       => 'Home',
-      'url'        => 'civicrm/dashboard&reset=1',
-      'permission' => 'access CiviCRM',
-      'operator'   => 'AND',
-      'separator'  => 0,
-      'parentID'   => null,
-      'navID'      => 1,
-      'active'     => 1
-    ),
-    'child' => array(),
-  );*/
-
   $params[1000] = _buildCreateMenu(1000);
 
-  $params[2] = array(
-    'attributes' => array(
-      'label'      => 'Advanced Search',
-      'name'       => 'Advanced Search',
-      'url'        => 'civicrm/contact/search/advanced?reset=1',
-      'permission' => 'access CiviCRM',
-      'operator'   => 'AND',
-      'separator'  => 0,
-      'parentID'   => null,
-      'navID'      => 2,
-      'active'     => 1
-    ),
-    'child' => array(),
-  );
-
   //build Custom Search menu
-  $params[3] = _buildSearchMenu(2);
+  $params[2000] = _buildSearchMenu(2000);
 
   //move Report menu
   $params[$reportNavID] = $reportNav;
@@ -219,19 +191,34 @@ function navigation_civicrm_navigationMenu(&$params) {
   );
 
   //build Manage menu
-  $params[2000] = _buildManageMenu(2000);
+  $params[3000] = _buildManageMenu(3000);
 
   //build Mass Email menu
-  $params[3000] = _buildEmailMenu(3000);
+  $params[4000] = _buildEmailMenu(4000);
 
   //build Inbox menu
-  $params[4000] = _buildInboxMenu(4000);
+  $params[5000] = _buildInboxMenu(5000);
 
   //move Administer menu
   $params[$adminNavID] = _buildAdminMenu($adminNavID);
 
   //create Help menu 11965
-  $params[5000] = _buildHelpMenu(5000);
+  $params[6000] = _buildHelpMenu(6000);
+
+  $params[7000] = array(
+    'attributes' => array(
+      'label'      => "<i class='nyss-i fa-sign-out'></i>",
+      'name'       => 'Log Out',
+      'url'        => 'civicrm/logout?reset=1',
+      'permission' => 'access CiviCRM',
+      'operator'   => 'AND',
+      'separator'  => 0,
+      'parentID'   => null,
+      'navID'      => 7000,
+      'active'     => 1
+    ),
+    'child' => array(),
+  );
 
   //CRM_Core_Error::debug_var('navigationMenu params (after)',$params);
 }
@@ -735,8 +722,8 @@ function _buildInboxMenu($inboxNavID) {
 function _buildSearchMenu($searchNavID) {
   $search = array(
     'attributes' => array(
-      'label'      => 'Custom Search',
-      'name'       => 'Custom Search',
+      'label'      => 'Search',
+      'name'       => 'Search',
       'url'        => null,
       'permission' => 'access CiviCRM',
       'operator'   => 'AND',
@@ -748,12 +735,12 @@ function _buildSearchMenu($searchNavID) {
     'child' => array(
       $searchNavID+1 => array(
         'attributes' => array(
-          'label'      => 'Find Cases',
-          'name'       => 'Find Cases',
-          'url'        => 'civicrm/case/search?reset=1',
-          'permission' => 'access my cases and activities,access all cases and activities',
+          'label'      => 'Advanced Search',
+          'name'       => 'Advanced Search',
+          'url'        => 'civicrm/contact/search/advanced?reset=1',
+          'permission' => 'access CiviCRM',
           'operator'   => 'OR',
-          'separator'  => 0,
+          'separator'  => 1,
           'parentID'   => $searchNavID,
           'navID'      => $searchNavID+1,
           'active'     => 1
@@ -762,12 +749,12 @@ function _buildSearchMenu($searchNavID) {
       ),
       $searchNavID+2 => array(
         'attributes' => array(
-          'label'      => 'Find Activities',
-          'name'       => 'Find Activities',
-          'url'        => 'civicrm/activity/search?reset=1',
-          'permission' => 'view all activities',
-          'operator'   => 'AND',
-          'separator'  => 1,
+          'label'      => 'Find Cases',
+          'name'       => 'Find Cases',
+          'url'        => 'civicrm/case/search?reset=1',
+          'permission' => 'access my cases and activities,access all cases and activities',
+          'operator'   => 'OR',
+          'separator'  => 0,
           'parentID'   => $searchNavID,
           'navID'      => $searchNavID+2,
           'active'     => 1
@@ -776,12 +763,12 @@ function _buildSearchMenu($searchNavID) {
       ),
       $searchNavID+3 => array(
         'attributes' => array(
-          'label'      => 'Full-text Search',
-          'name'       => 'Full-text Search',
-          'url'        => 'civicrm/contact/search/custom?csid=15&reset=1',
-          'permission' => 'access CiviCRM',
+          'label'      => 'Find Activities',
+          'name'       => 'Find Activities',
+          'url'        => 'civicrm/activity/search?reset=1',
+          'permission' => 'view all activities',
           'operator'   => 'AND',
-          'separator'  => 0,
+          'separator'  => 1,
           'parentID'   => $searchNavID,
           'navID'      => $searchNavID+3,
           'active'     => 1
@@ -790,12 +777,12 @@ function _buildSearchMenu($searchNavID) {
       ),
       $searchNavID+4 => array(
         'attributes' => array(
-          'label'      => 'Search Builder',
-          'name'       => 'Search Builder',
-          'url'        => 'civicrm/contact/search/builder?reset=1',
+          'label'      => 'Full-text Search',
+          'name'       => 'Full-text Search',
+          'url'        => 'civicrm/contact/search/custom?csid=15&reset=1',
           'permission' => 'access CiviCRM',
           'operator'   => 'AND',
-          'separator'  => 1,
+          'separator'  => 0,
           'parentID'   => $searchNavID,
           'navID'      => $searchNavID+4,
           'active'     => 1
@@ -804,12 +791,12 @@ function _buildSearchMenu($searchNavID) {
       ),
       $searchNavID+5 => array(
         'attributes' => array(
-          'label'      => 'Proximity Search',
-          'name'       => 'Proximity Search',
-          'url'        => 'civicrm/contact/search/custom?reset=1&csid=6',
+          'label'      => 'Search Builder',
+          'name'       => 'Search Builder',
+          'url'        => 'civicrm/contact/search/builder?reset=1',
           'permission' => 'access CiviCRM',
           'operator'   => 'AND',
-          'separator'  => 0,
+          'separator'  => 1,
           'parentID'   => $searchNavID,
           'navID'      => $searchNavID+5,
           'active'     => 1
@@ -818,9 +805,9 @@ function _buildSearchMenu($searchNavID) {
       ),
       $searchNavID+6 => array(
         'attributes' => array(
-          'label'      => 'Birthday Search',
-          'name'       => 'Birthday Search',
-          'url'        => 'civicrm/contact/search/custom?reset=1&csid=16',
+          'label'      => 'Proximity Search',
+          'name'       => 'Proximity Search',
+          'url'        => 'civicrm/contact/search/custom?reset=1&csid=6',
           'permission' => 'access CiviCRM',
           'operator'   => 'AND',
           'separator'  => 0,
@@ -832,10 +819,10 @@ function _buildSearchMenu($searchNavID) {
       ),
       $searchNavID+7 => array(
         'attributes' => array(
-          'label'      => 'Include/Exclude Search',
-          'name'       => 'Include/Exclude Search',
-          'url'        => 'civicrm/contact/search/custom?csid=4&reset=1',
-          'permission' => 'access CiviCRM,view all contacts',
+          'label'      => 'Birthday Search',
+          'name'       => 'Birthday Search',
+          'url'        => 'civicrm/contact/search/custom?reset=1&csid=16',
+          'permission' => 'access CiviCRM',
           'operator'   => 'AND',
           'separator'  => 0,
           'parentID'   => $searchNavID,
@@ -846,9 +833,9 @@ function _buildSearchMenu($searchNavID) {
       ),
       $searchNavID+8 => array(
         'attributes' => array(
-          'label'      => 'Tag/Group Changelog Search',
-          'name'       => 'Tag/Group Changelog Search',
-          'url'        => 'civicrm/contact/search/custom?csid=17&reset=1',
+          'label'      => 'Include/Exclude Search',
+          'name'       => 'Include/Exclude Search',
+          'url'        => 'civicrm/contact/search/custom?csid=4&reset=1',
           'permission' => 'access CiviCRM,view all contacts',
           'operator'   => 'AND',
           'separator'  => 0,
@@ -860,9 +847,9 @@ function _buildSearchMenu($searchNavID) {
       ),
       $searchNavID+9 => array(
         'attributes' => array(
-          'label'      => 'Tag Count Search',
-          'name'       => 'Tag Count Search',
-          'url'        => 'civicrm/contact/search/custom?csid=19&reset=1',
+          'label'      => 'Tag/Group Changelog Search',
+          'name'       => 'Tag/Group Changelog Search',
+          'url'        => 'civicrm/contact/search/custom?csid=17&reset=1',
           'permission' => 'access CiviCRM,view all contacts',
           'operator'   => 'AND',
           'separator'  => 0,
@@ -874,9 +861,9 @@ function _buildSearchMenu($searchNavID) {
       ),
       $searchNavID+10 => array(
         'attributes' => array(
-          'label'      => 'Web Activity Search',
-          'name'       => 'Web Activity Search',
-          'url'        => 'civicrm/contact/search/custom?csid=18&reset=1',
+          'label'      => 'Tag Count Search',
+          'name'       => 'Tag Count Search',
+          'url'        => 'civicrm/contact/search/custom?csid=19&reset=1',
           'permission' => 'access CiviCRM,view all contacts',
           'operator'   => 'AND',
           'separator'  => 0,
@@ -888,6 +875,20 @@ function _buildSearchMenu($searchNavID) {
       ),
       $searchNavID+11 => array(
         'attributes' => array(
+          'label'      => 'Web Activity Search',
+          'name'       => 'Web Activity Search',
+          'url'        => 'civicrm/contact/search/custom?csid=18&reset=1',
+          'permission' => 'access CiviCRM,view all contacts',
+          'operator'   => 'AND',
+          'separator'  => 0,
+          'parentID'   => $searchNavID,
+          'navID'      => $searchNavID+11,
+          'active'     => 1
+        ),
+        'child' => array(),
+      ),
+      $searchNavID+12 => array(
+        'attributes' => array(
           'label'      => 'Tag Demographic Search',
           'name'       => 'Tag Demographic Search',
           'url'        => 'civicrm/contact/search/custom?csid=20&reset=1',
@@ -895,7 +896,7 @@ function _buildSearchMenu($searchNavID) {
           'operator'   => 'AND',
           'separator'  => 0,
           'parentID'   => $searchNavID,
-          'navID'      => $searchNavID+11,
+          'navID'      => $searchNavID+12,
           'active'     => 1
         ),
         'child' => array(),
