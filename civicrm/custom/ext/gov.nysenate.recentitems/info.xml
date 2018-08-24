@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<extension key="gov.nysenate.recentitems" type="module">
+  <file>recentitems</file>
+  <name>NYSS: Recent Items</name>
+  <description></description>
+  <license>AGPL-3.0</license>
+  <maintainer>
+    <author>Brian Shaughnessy</author>
+    <email>brian@lcdservices.biz</email>
+  </maintainer>
+  <urls>
+    <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
+  </urls>
+  <releaseDate>2018-08-24</releaseDate>
+  <version>1.0</version>
+  <develStage>stable</develStage>
+  <compatibility>
+    <ver>5.1</ver>
+  </compatibility>
+  <comments></comments>
+  <civix>
+    <namespace>CRM/NYSS/RecentItems</namespace>
+  </civix>
+</extension>

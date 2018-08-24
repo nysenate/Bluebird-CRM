@@ -5,6 +5,7 @@
 
 <?php if (!empty($addlVars)) { ?>
   <div id="branding" class="clearfix">
+    <div id="bb-recentitems"></div>
     <?php print $breadcrumb; ?>
     <div id="bb-header">
       <?php

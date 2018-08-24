@@ -1,8 +1,8 @@
-# Recent Items Menu
+# gov.nysenate.recentitems
 
 ![Screenshot](/images/screenshot.png)
 
-Places recently-viewed items in the Menu bar for quick access.
+(*FIXME: In one or two paragraphs, describe what the extension does and why one would download it. *)
 
 The extension is licensed under [AGPL-3.0](LICENSE.txt).
 
@@ -22,7 +22,7 @@ install it with the command-line tool [cv](https://github.com/civicrm/cv).
 
 ```bash
 cd <extension-dir>
-cv dl org.civicrm.recentmenu@https://github.com/FIXME/org.civicrm.recentmenu/archive/master.zip
+cv dl gov.nysenate.recentitems@https://github.com/FIXME/gov.nysenate.recentitems/archive/master.zip
 ```
 
 ## Installation (CLI, Git)
@@ -31,8 +31,8 @@ Sysadmins and developers may clone the [Git](https://en.wikipedia.org/wiki/Git) 
 install it with the command-line tool [cv](https://github.com/civicrm/cv).
 
 ```bash
-git clone https://github.com/FIXME/org.civicrm.recentmenu.git
-cv en recentmenu
+git clone https://github.com/FIXME/gov.nysenate.recentitems.git
+cv en recentitems
 ```
 
 ## Usage
