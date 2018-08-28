@@ -654,9 +654,6 @@ function storeMessage(CRM_NYSS_IMAP_Message $imapMsg, $db, $params)
 // is created and associated with the contact.
 function searchForMatches($db, $params)
 {
-  $authForwarders = $params['authForwarders'];
-  $uploadDir = $params['uploadDir'];
-
   // Check the unprocessed messages (status=99)
   $look_for_status = ['Unprocessed' => STATUS_UNPROCESSED];
 
@@ -684,32 +681,24 @@ function searchForMatches($db, $params)
   bbscript_log(LL::DEBUG, "$status_str records: " . $mres->N);
 
   // Prepare query to find contacts based on email address.
-  $find_email_query = "SELECT DISTINCT c.id FROM civicrm_contact c, " .
+  $find_email_query = "SELECT DISTINCT c.id, e.email FROM civicrm_contact c, " .
     "civicrm_email e WHERE c.id = e.contact_id AND c.is_deleted=0 AND " .
     "e.email LIKE %1";
-//  $sql_stmt = mysqli_prepare($db, $q);
-//  if ($sql_stmt == false) {
-//    bbscript_log(LL::ERROR, "Unable to prepare SQL query [$q]");
-//    mysqli_free_result($mres);
-//    return false;
-//  }
 
   while ($mres->fetch()) {
-//    $msg_row_id = $row['id'];
-//    $message_id = $row['message_id'];
-    $sender_email = $mres->sender_email;
-//    $subject = $row['subject'];
-//    $body = $row['body'];
-//    $forwarder = $row['forwarder'];
-//    $email_date = $row['updated_date'];
-
     bbscript_log(LL::DEBUG, "Processing Record ID: {$mres->id}");
+
+    $sender_email = $mres->sender_email;
+    if (CRM_NYSS_Inbox_BAO_Inbox::isInBlacklist($sender_email)) {
+      bbscript_log(LL::INFO, "Sender [$sender_email] found in blacklist, skipping");
+      continue;
+    }
 
     // Use the e-mail from the body of the message (or header if direct) to
     // find target contact
     bbscript_log(LL::INFO, "Looking for the original sender: $sender_email");
 
-    $find_email_param = [1 => ['%' . $mres->sender_email . '%', 'String']];
+    $find_email_param = [1 => ["%{$sender_email}%", 'String']];
     $result = CRM_Core_DAO::executeQuery($find_email_query, $find_email_param);
     if (!$result->N) {
       bbscript_log(LL::INFO, "No matches for [$sender_email]");
@@ -718,13 +707,9 @@ function searchForMatches($db, $params)
     elseif ($result->N != 1) {
       bbscript_log(LL::DEBUG, "Original sender {$sender_email} matches [{$result->N}] records in this instance; leaving for manual addition");
       // mark it to show up on unmatched screen
-      $status = STATUS_UNMATCHED;
       $reset_status_query = "UPDATE nyss_inbox_messages SET status=%1 WHERE id=%2";
       $query_param = [1 => [STATUS_UNMATCHED, 'Integer'], 2 => [$mres->id, 'Integer']];
-      $result = CRM_Core_DAO::executeQuery($reset_status_query, $query_param);
-//      if (mysqli_query($db, $q) == false) {
-//        bbscript_log(LL::ERROR, "Unable to update status of message id=$msg_row_id");
-//      }
+      CRM_Core_DAO::executeQuery($reset_status_query, $query_param);
     }
     else {
       if ($result->fetch()) {

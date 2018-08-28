@@ -115,16 +115,27 @@ class CRM_NYSS_Inbox_BAO_Inbox {
    * @return array[]|false|string[]
    */
   static function getBlacklistAddresses() {
+    static $blacklist_cfg = NULL;
     $bbconfig = get_bluebird_instance_config();
-    $blacklist_cfg = [];
-    if (isset($bbconfig['imap.sender.blacklist_file'])) {
-      $fn = $bbconfig['imap.sender.blacklist_file'];
-      if (file_exists($fn)) {
-        $fn_read = file($fn, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-        $blacklist_cfg = $fn_read ? $fn_read : [];
+    if (is_null($blacklist_cfg)) {
+      if (isset($bbconfig['imap.sender.blacklist_file'])) {
+        $fn = $bbconfig['imap.sender.blacklist_file'];
+        if (file_exists($fn)) {
+          $fn_read = file($fn, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+          $blacklist_cfg = $fn_read ? $fn_read : [];
+        }
+      }
+      else {
+        $blacklist_cfg = [];
       }
     }
     return $blacklist_cfg;
+  }
+
+  static function isInBlacklist($addr) {
+    $blacklist = self::getBlacklistAddresses();
+    $addr = trim((string) $addr);
+    return in_array($addr, $blacklist);
   }
 
   /**
@@ -553,7 +564,6 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
     //exit immediately if the message has already been matched
     if (in_array($message['status'], [self::STATUS_MATCHED, self::STATUS_CLEARED, self::STATUS_DELETED])) {
-    //if ($message['status'] != self::STATUS_UNMATCHED) {
       return [
         'is_error' => TRUE,
         'message' => 'Unable to assign the message; already matched/cleared/deleted.'
@@ -982,7 +992,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     $matchedContacts = [];
 
     if (empty($cids)) {
-      return NULL;
+      return $matchedContacts;
     }
 
     try {
