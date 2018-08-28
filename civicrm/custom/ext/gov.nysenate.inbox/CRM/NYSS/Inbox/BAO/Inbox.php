@@ -515,14 +515,22 @@ class CRM_NYSS_Inbox_BAO_Inbox {
   /**
    * @param $rowId
    * @param $contactIds array()
+   * @param $is_auto boolean
    *
    * @return array
+   *
+   * @throws CiviCRM_API3_Exception
    *
    * Important: This method should only be used when FIRST matching a message with
    * contacts. Reassignments do not support multiple contacts and are already
    * linked with an activity ID.
    */
-  static function assignMessage($rowId, $contactIds) {
+  static function assignMessage($rowId, $contactIds, $is_auto = FALSE) {
+    // Ensure contactIds is an array.
+    if (!is_array($contactIds)) {
+      $contactIds = array_filter([(int) $contactIds]);
+    }
+
     if (empty($rowId) || empty($contactIds)) {
       return [
         'is_error' => TRUE,
@@ -544,10 +552,11 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     $forwarder = self::getForwarder($message['forwarded_by']);
 
     //exit immediately if the message has already been matched
-    if ($message['status'] != self::STATUS_UNMATCHED) {
+    if (in_array($message['status'], [self::STATUS_MATCHED, self::STATUS_CLEARED, self::STATUS_DELETED])) {
+    //if ($message['status'] != self::STATUS_UNMATCHED) {
       return [
         'is_error' => TRUE,
-        'message' => 'Unable to assign the message; it has already been matched.'
+        'message' => 'Unable to assign the message; already matched/cleared/deleted.'
       ];
     }
 
@@ -562,10 +571,12 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         'source_contact_id' => $forwarder,
         'target_contact_id' => $contactId,
         'subject' => $subject,
-        'is_auto' => 0,
+        'is_auto' => (int) $is_auto,
         'status_id' => $status,
         'activity_date_time' => $message['date_updated'],
         'details' => $message['body'],
+        'priority_id' => 'Normal',
+        'activity_type_id' => 'Inbound Email',
       ];
       /*Civi::log()->debug('assignMessage', array(
         '$params' => $params,

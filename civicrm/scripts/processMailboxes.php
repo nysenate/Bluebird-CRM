@@ -71,11 +71,11 @@ $prog = basename(__FILE__);
 
 require_once 'script_utils.php';
 $stdusage = civicrm_script_usage();
-$usage = "[--server|-s imap_server]  [--port|-p imap_port]  [--imap-user|-u username]  [--imap-pass|-P password]  [--imap-flags|-f imap_flags]  [--cmd|-c <poll|list|delarchive>]  [--mailbox|-m name]  [--archivebox|-a name]  [--log-level|-l LEVEL] [--no-archive|-n]  [--no-email|-e]  [--recheck-unmatched|-r]";
-$shortopts = "s:p:u:P:f:c:m:a:l:ner";
+$usage = "[--server|-s imap_server]  [--port|-p imap_port]  [--imap-user|-u username]  [--imap-pass|-P password]  [--imap-flags|-f imap_flags]  [--cmd|-c <poll|list|delarchive>]  [--mailbox|-m name]  [--archivebox|-a name]  [--log-level|-l LEVEL] [--no-archive|-n]  [--no-email|-e]  [--recheck-unmatched|-r]  [--skip-imap|-k]";
+$shortopts = "s:p:u:P:f:c:m:a:l:nerk";
 $longopts = array("server=", "port=", "imap-user=", "imap-pass=", "imap-flags=",
                   "cmd=", "mailbox=", "archivebox=", "log-level=",
-                  "no-archive", "no-email", "recheck-unmatched");
+                  "no-archive", "no-email", "recheck-unmatched", "skip-imap");
 
 $optlist = civicrm_script_init($shortopts, $longopts);
 
@@ -237,20 +237,24 @@ $imap_params['authForwarders'] = $authForwarders;
 
 bbscript_log(LL::DEBUG, "imap_params before account loop:", $imap_params);
 
-
-// Iterate over all IMAP accounts associated with the current CRM instance.
-
-foreach (explode(',', $imap_accounts) as $imap_account) {
-  list($imapUser, $imapPass) = explode("|", $imap_account);
-  $imap_params['user'] = $imapUser;
-  $imap_params['password'] = $imapPass;
-  $rc = processMailboxCommand($cmd, $imap_params);
-  if ($rc == false) {
-    bbscript_log(LL::ERROR, "Failed to process IMAP account $imapUser@{$imap_params['server']}\n".print_r(imap_errors(), true));
+if (!empty($optlist['skip-imap'])) {
+  bbscript_log(LL::NOTICE, "Skipping IMAP, checking retrieved messages only.");
+  searchForMatches(NULL, $imap_params);
+}
+else {
+  // Iterate over all IMAP accounts associated with the current CRM instance.
+  foreach (explode(',', $imap_accounts) as $imap_account) {
+    list($imapUser, $imapPass) = explode("|", $imap_account);
+    $imap_params['user'] = $imapUser;
+    $imap_params['password'] = $imapPass;
+    $rc = processMailboxCommand($cmd, $imap_params);
+    if ($rc == false) {
+      bbscript_log(LL::ERROR, "Failed to process IMAP account $imapUser@{$imap_params['server']}\n".print_r(imap_errors(), true));
+    }
   }
+  bbscript_log(LL::NOTICE, "Finished processing all mailboxes for CRM instance [$site]");
 }
 
-bbscript_log(LL::NOTICE, "Finished processing all mailboxes for CRM instance [$site]");
 exit(0);
 
 
@@ -544,7 +548,7 @@ function storeAttachments($imapMsg, $db, $params, $rowId)
 // Store the various metadata of the given message, plus its content.
 // This calls storeAttachments() to download and store the attachments.
 // Returns true/false to move the email to archive or not.
-function storeMessage($imapMsg, $db, $params)
+function storeMessage(CRM_NYSS_IMAP_Message $imapMsg, $db, $params)
 {
   $authForwarders = $params['authForwarders'];
   $msgMeta = $imapMsg->getMetaData();
@@ -652,199 +656,91 @@ function searchForMatches($db, $params)
 {
   $authForwarders = $params['authForwarders'];
   $uploadDir = $params['uploadDir'];
-  $recheck = $params['recheck'];
 
   // Check the unprocessed messages (status=99)
-  $q = 'SELECT id, message_id, sender_email,
-               subject, body, forwarder, updated_date
-        FROM nyss_inbox_messages
-        WHERE status='.STATUS_UNPROCESSED;
-  $status_str = 'Unprocessed';
+  $look_for_status = ['Unprocessed' => STATUS_UNPROCESSED];
 
   // If "recheck" was specified, then also check unmatched messages (status=0)
-  if ($recheck === true) {
-    $q .= ' OR status='.STATUS_UNMATCHED;
-    $status_str .= '/Unmatched';
+  if ($params['recheck'] ?? false) {
+    $look_for_status['Unmatched'] = STATUS_UNMATCHED;
   }
 
+  $status_str = implode('/', array_keys($look_for_status));
   bbscript_log(LL::NOTICE, "Obtaining list of $status_str messages to be checked");
 
-  $mres = mysqli_query($db, $q);
-  if ($mres === false) {
-    bbscript_log(LL::ERROR, "Unable to retrieve $status_str messages; ".mysqli_error($db));
+  $q = 'SELECT id, message_id, sender_email, ' .
+    'subject, body, forwarder, updated_date ' .
+    'FROM nyss_inbox_messages ' .
+    'WHERE status IN (%1)';
+  $mres = CRM_Core_DAO::executeQuery($q, [
+    1 => [implode(',', $look_for_status), 'CommaSeparatedIntegers'],
+  ]);
+
+  if (!$mres->N) {
+    bbscript_log(LL::WARN, "No messages returned, searching for $status_str.");
     return false;
   }
 
-  bbscript_log(LL::DEBUG, "$status_str records: ".mysqli_num_rows($mres));
+  bbscript_log(LL::DEBUG, "$status_str records: " . $mres->N);
 
-  $q = "SELECT DISTINCT c.id FROM civicrm_contact c, civicrm_email e
-        WHERE c.id = e.contact_id AND c.is_deleted=0 AND e.email LIKE ?
-        ORDER BY c.id ASC";
-  $sql_stmt = mysqli_prepare($db, $q);
-  if ($sql_stmt == false) {
-    bbscript_log(LL::ERROR, "Unable to prepare SQL query [$q]");
-    mysqli_free_result($mres);
-    return false;
-  }
+  // Prepare query to find contacts based on email address.
+  $find_email_query = "SELECT DISTINCT c.id FROM civicrm_contact c, " .
+    "civicrm_email e WHERE c.id = e.contact_id AND c.is_deleted=0 AND " .
+    "e.email LIKE %1";
+//  $sql_stmt = mysqli_prepare($db, $q);
+//  if ($sql_stmt == false) {
+//    bbscript_log(LL::ERROR, "Unable to prepare SQL query [$q]");
+//    mysqli_free_result($mres);
+//    return false;
+//  }
 
-  while ($row = mysqli_fetch_assoc($mres)) {
-    $msg_row_id = $row['id'];
-    $message_id = $row['message_id'];
-    $sender_email = $row['sender_email'];
-    $subject = $row['subject'];
-    $body = $row['body'];
-    $forwarder = $row['forwarder'];
-    $email_date = $row['updated_date'];
+  while ($mres->fetch()) {
+//    $msg_row_id = $row['id'];
+//    $message_id = $row['message_id'];
+    $sender_email = $mres->sender_email;
+//    $subject = $row['subject'];
+//    $body = $row['body'];
+//    $forwarder = $row['forwarder'];
+//    $email_date = $row['updated_date'];
 
-    bbscript_log(LL::DEBUG, "Processing Record ID: $msg_row_id");
+    bbscript_log(LL::DEBUG, "Processing Record ID: {$mres->id}");
 
     // Use the e-mail from the body of the message (or header if direct) to
     // find target contact
-    bbscript_log(LL::INFO, "Looking for the original sender ($sender_email) in Civi");
+    bbscript_log(LL::INFO, "Looking for the original sender: $sender_email");
 
-    mysqli_stmt_bind_param($sql_stmt, 's', $sender_email);
-    mysqli_stmt_execute($sql_stmt);
-    $result = mysqli_stmt_get_result($sql_stmt);
-    if ($result === false) {
-      bbscript_log(LL::ERROR, "Query for match on [$sender_email] failed; ".mysqli_error($db));
+    $find_email_param = [1 => ['%' . $mres->sender_email . '%', 'String']];
+    $result = CRM_Core_DAO::executeQuery($find_email_query, $find_email_param);
+    if (!$result->N) {
+      bbscript_log(LL::INFO, "No matches for [$sender_email]");
       continue;
     }
-
-    $contactID = 0;
-    $matched_count = 0;
-    while ($row = mysqli_fetch_assoc($result)) {
-      $contactID = $row['id'];
-      $matched_count++;
-    }
-    mysqli_free_result($result);
-
-    // No matches, or more than one match, marks message as UNMATCHED.
-    if ($matched_count != 1) {
-      bbscript_log(LL::DEBUG, "Original sender $sender_email matches [$matched_count] records in this instance; leaving for manual addition");
+    elseif ($result->N != 1) {
+      bbscript_log(LL::DEBUG, "Original sender {$sender_email} matches [{$result->N}] records in this instance; leaving for manual addition");
       // mark it to show up on unmatched screen
       $status = STATUS_UNMATCHED;
-      $q = "UPDATE nyss_inbox_messages SET status=$status WHERE id=$msg_row_id";
-      if (mysqli_query($db, $q) == false) {
-        bbscript_log(LL::ERROR, "Unable to update status of message id=$msg_row_id");
-      }
+      $reset_status_query = "UPDATE nyss_inbox_messages SET status=%1 WHERE id=%2";
+      $query_param = [1 => [STATUS_UNMATCHED, 'Integer'], 2 => [$mres->id, 'Integer']];
+      $result = CRM_Core_DAO::executeQuery($reset_status_query, $query_param);
+//      if (mysqli_query($db, $q) == false) {
+//        bbscript_log(LL::ERROR, "Unable to update status of message id=$msg_row_id");
+//      }
     }
     else {
-      // Matched on a single contact.  Success!
-      bbscript_log(LL::INFO, "Original sender [$sender_email] had a direct match (cid=$contactID)");
-
-      // Set the activity creator ID to the contact ID of the forwarder.
-      if (isset($authForwarders['emails'][$forwarder])) {
-        $forwarderId = $authForwarders['emails'][$forwarder];
-        bbscript_log(LL::INFO, "Forwarder [$forwarder] mapped to cid=$forwarderId");
+      if ($result->fetch()) {
+        // Matched on a single contact.  Success!
+        bbscript_log(LL::INFO, "Sender [$sender_email] had a direct match (cid={$result->id})");
+        $assign = CRM_NYSS_Inbox_BAO_Inbox::assignMessage($mres->id, $result->id, TRUE);
+        $err_lvl = $assign['is_error'] ? LL::ERROR : LL::NOTICE;
+        bbscript_log($err_lvl, $assign['message']);
       }
       else {
-        $forwarderId = 1;
-        bbscript_log(LL::WARN, "Unable to locate [$forwarder] in the auth forwarder mapping table; using Bluebird Admin");
+        bbscript_log(LL::ERROR, "Could not retrieve matched record!");
       }
-
-      // create the activity
-      $activityDefaults = $params['activityDefaults'];
-      $activityParams = array(
-        "source_contact_id" => $forwarderId,
-        "subject" => $subject,
-        "details" =>  $body,
-        "activity_date_time" => $email_date,
-        "status_id" => $activityDefaults['status'],
-        "priority_id" => $activityDefaults['priority'],
-        "activity_type_id" => $activityDefaults['type'],
-        "duration" => 1,
-        "is_auto" => 1,
-        "target_contact_id" => $contactID,
-        "version" => 3
-      );
-
-      $activityResult = civicrm_api('activity', 'create', $activityParams);
-
-      if ($activityResult['is_error']) {
-        bbscript_log(LL::ERROR, "Could not save activity; {$activityResult['error_message']}");
-      }
-      else {
-        $activityId = $activityResult['id'];
-        bbscript_log(LL::INFO, "CREATED e-mail activity id=$activityId for contact id=$contactID");
-        $status = STATUS_MATCHED;
-
-        //in v2.1 we split matched_id (formerly matched_to) and activity_id into related table
-        $q = "
-          INSERT IGNORE INTO nyss_inbox_messages_matched
-          (row_id, message_id, matched_id, activity_id)
-          VALUES
-          ({$msg_row_id}, {$message_id}, {$contactID}, {$activityId})
-        ";
-        if (mysqli_query($db, $q) == false) {
-          bbscript_log(LL::ERROR,
-            "Unable to store matched_id and activity_id for message id=$msg_row_id");
-        }
-        else {
-          //update status to matched
-          $q = "
-            UPDATE nyss_inbox_messages
-            SET status = $status, matcher = 1
-            WHERE id = $msg_row_id
-          ";
-          if (mysqli_query($db, $q) == false) {
-            bbscript_log(LL::ERROR,
-              "Unable to update status for message id=$msg_row_id");
-          }
-        }
-
-        $q = "
-          SELECT file_name, file_full, rejection, mime_type
-          FROM nyss_inbox_attachments
-          WHERE email_id = $msg_row_id";
-        $ares = mysqli_query($db, $q);
-
-        while ($row = mysqli_fetch_assoc($ares)) {
-          if ((!isset($row['rejection']) || $row['rejection'] == '')
-              && file_exists($row['file_full'])) {
-            bbscript_log(LL::INFO,
-              "Adding attachment ".$row['file_full']." to activity id=$activityId");
-            $date = date("Y-m-d H:i:s");
-            $newName = CRM_Utils_File::makeFileName($row['file_name']);
-            $file = "$uploadDir/$newName";
-            // Move file to the CiviCRM custom upload directory
-            rename($row['file_full'], $file);
-
-            $q = "
-              INSERT INTO civicrm_file
-              (mime_type, uri, upload_date)
-              VALUES ('{$row['mime_type']}', '$newName', '$date')
-            ";
-            if (mysqli_query($db, $q) == false) {
-              bbscript_log(LL::ERROR,
-                "Unable to insert attachment file info for [$newName]");
-            }
-
-            $q = "SELECT id FROM civicrm_file WHERE uri='{$newName}'";
-            $res = mysqli_query($db, $q);
-            while ($row = mysqli_fetch_assoc($res)) {
-              $fileId = $row['id'];
-            }
-            mysqli_free_result($res);
-
-            $q = "
-              INSERT INTO civicrm_entity_file
-              (entity_table, entity_id, file_id)
-              VALUES ('civicrm_activity', $activityId, $fileId)
-            ";
-            if (mysqli_query($db, $q) == false) {
-              bbscript_log(LL::ERROR,
-                "Unable to insert attachment mapping from activity id=$activityId to file id=$fileId");
-            }
-          }
-        } // while rows in nyss_inbox_attachments
-        mysqli_free_result($ares);
-      } // if activity created
     } // if single match on e-mail address
   } // while rows in nyss_inbox_messages
 
-  mysqli_stmt_close($sql_stmt);
-  mysqli_free_result($mres);
-  bbscript_log(LL::DEBUG, "Finished processing unprocessed/unmatched messages");
+  bbscript_log(LL::DEBUG, "Finished processing $status_str messages");
   return;
 } // searchForMatches()
 
