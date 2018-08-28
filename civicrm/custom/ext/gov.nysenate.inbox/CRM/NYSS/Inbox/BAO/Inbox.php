@@ -192,7 +192,6 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         "<div class='icon attachment-icon attachment' title='{$dao->attachments} Attachment(s)'></div>" : '';
       $matched = self::getMatched($dao->matched_id);
       $body = CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->body);
-      $parsed = self::parseMessage($body);
       $details = [
         'id' => $dao->id,
         'message_id' => $dao->message_id,
@@ -201,7 +200,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         'subject' => CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->subject),
         'subject_display' => CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->subject) . $attachment,
         'body_raw' => $body,
-        'body' => self::highlightItems($body, $parsed),
+        'body' => self::transformMessage($body),
         'forwarded_by' => $dao->forwarder,
         'status' => $dao->status,
         'matcher' => $dao->matcher,
@@ -1411,4 +1410,9 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       'long' => date('M d, Y h:i A', $unixTime),
       'short' => $shortForm);
   } // expandDate()
+
+  static function transformMessage($body) {
+    $parsed = self::parseMessage($body);
+    return self::highlightItems($body, $parsed);
+  }
 }
