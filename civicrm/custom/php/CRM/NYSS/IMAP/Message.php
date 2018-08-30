@@ -275,7 +275,8 @@ class CRM_NYSS_IMAP_Message
     $body = $this->_getPrimaryContent();
 
     // change newlines to <br/>
-    $body = nl2br($body);
+    // Removed per KenZ 20180829
+    //$body = nl2br($body);
 
     // Remove angle brackets from email addresses so they don't render as HTML
     // Convert tabs and non-breaking spaces; remove non-printing characters.

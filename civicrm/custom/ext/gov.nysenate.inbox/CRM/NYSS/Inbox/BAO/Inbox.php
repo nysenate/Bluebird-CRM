@@ -78,33 +78,24 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       ->getPath('gov.nysenate.inbox', 'incl/htmlfixer.class.php');
     require_once "{$lib}";
 
-    $string = trim($string);
     $string = mb_convert_encoding($string, "HTML-ENTITIES", "UTF-8");
 
-    $htmlFixer = new HtmlFixer();
-    $string = $htmlFixer->getFixedHtml($string);
-    $string = str_replace('&nbsp;', ' ', $string);
+    // Trim the string, and add "<br />" to all newlines.
+    $string = nl2br(trim($string));
 
-    //cludgy way to try to strip out text chunks with tons of line breaks...
-    $string = str_replace('<br /><br /><br />', '<br /> <br />', $string);
-    $string = str_replace('<br /><br /><br />', '<br /> <br />', $string);
-    $string = str_replace('<br /> <br /> <br />', '<br /> <br />', $string);
-    $string = str_replace('<br /> <br /> <br />', '<br /> <br />', $string);
-    $string = str_replace('<br /> <br /> <br />', '<br /> <br />', $string);
-    $string = str_replace('<br /> <br /> <br />', '<br /> <br />', $string);
+    // Get rid of HTML.
+    $string = (new HtmlFixer)->getFixedHtml($string);
 
-    $string = trim($string);
+    // Replace excessive breaks with a single "double-tap".
+    // Also replace HTML spaces with normal spaces.
+    $pattern = ['=((>\s*)?<br\s*/?>\s*){2,}=', '/&nbsp;/'];
+    $repl = ['<br /><br />', ' '];
+    $string = trim(preg_replace($pattern, $repl, $string));
 
-    // return with no change if string is shorter than $limit
-    if (strlen($string) <= $limit) {
-      return $string;
-    }
-
-    //truncate
-    if ($limit > 0) {
+    if ($limit && strlen($string) > $limit) {
       $string = substr($string, 0, $limit) . $pad;
     }
-
+    // return with no change if string is shorter than $limit
     return $string;
   }
 
