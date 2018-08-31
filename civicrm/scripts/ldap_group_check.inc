@@ -5,6 +5,7 @@
 ** Organization: New York State Senate
 ** Date: 2013-05-31
 ** Revised: 2013-06-01
+** Revised: 2018-08-31 - add support for Active Directory LDAP
 **
 ** This script is run by the Drupal 7 LDAP module to check that the
 ** username attempting to log in is a member of any one of the allowed
@@ -26,12 +27,53 @@
 **                             all CRM instances
 */
 
-// Get the list of group IDs that the user belongs to from the LDAP entry.
-$userGroupIds = array();
-$gidnumbers = $_ldap_user_entry['attr']['gidnumber'];
-for ($i = 0; $i < $gidnumbers['count']; $i++) {
-  $userGroupIds[] = $gidnumbers[$i];
+define('LDAP_TYPE_AD', 1);
+define('LDAP_TYPE_DOMINO', 2);
+define('LDAP_TYPE_OPENLDAP', 3);
+
+log_auth("Beginning NYSS login checks for user [$_name]", true);
+
+// Determine if this is Domino LDAP or ActiveDirectory LDAP
+if (isset($_ldap_user_entry['attr']['dominounid'])) {
+  $ldap_type = LDAP_TYPE_DOMINO;
+  $ldap_type_str = 'Domino';
+  $group_idx = 'gidnumber';
 }
+else if (isset($_ldap_user_entry['attr']['samaccountname'])) {
+  $ldap_type = LDAP_TYPE_AD;
+  $ldap_type_str = 'ActiveDirectory';
+  $group_idx = 'memberof';
+}
+else {
+  log_auth("ERROR: Unable to determine LDAP type for user [$_name]");
+  echo '0';
+  return;
+}
+
+log_auth("LDAP type is [$ldap_type_str] and group index is [$group_idx]", true);
+
+// Get the list of groups that the user belongs to from the LDAP entry.
+// Groups of the form "CN=groupName,OU=orgUnit,DC=domain" will simply
+// return "groupName".
+$userGroups = array();
+$groups = $_ldap_user_entry['attr'][$group_idx];
+for ($i = 0; $i < $groups['count']; $i++) {
+  $g = $groups[$i];
+  if (strncasecmp($g, "CN=", 3) === 0) {
+    $g = substr($g, 3);
+  }
+  $g_parts = explode(',', $g);
+  $g = $g_parts[0];
+  $userGroups[] = $g;
+}
+
+if (count($userGroups) == 0) {
+  log_auth("Login denied; user [$_name] has no groups in LDAP");
+  echo '0';
+  return;
+}
+
+log_auth("Found ".count($userGroups)." group(s) for user [$_name]; groups: ".implode(',', $userGroups), true);
 
 // Get the list of group IDs that are allowed to log in to this instance.
 // First, combine the global and instance-specific login groups from
@@ -42,29 +84,65 @@ $in_groups = preg_split('/[\s,]+/', $bbconfig['ldap.logingroups'], null, PREG_SP
 $allowedGroups = array_merge($gl_groups, $in_groups);
 
 if (count($allowedGroups) < 1) {
-  error_log("There are no allowed login groups for this CRM instance; user [$_name] denied");
+  log_auth("There are no allowed login groups for this CRM instance; user [$_name] denied");
   echo 0;
+  return;
+}
+
+if ($ldap_type == LDAP_TYPE_DOMINO) {
+  $allowedGroups = convert_groups_to_ids($allowedGroups);
+  if ($allowedGroups == null) {
+    log_auth("Unable to convert Domino group names to IDs; user [$_name] denied");
+    echo '0';
+    return;
+  }
+}
+
+log_auth('This CRM allows the following groups: '.implode(',', $allowedGroups), true);
+
+// Compare allowed groups to the user's groups to see if at
+// least one group is in common between both.
+$commonGroups = array_intersect($allowedGroups, $userGroups);
+
+log_auth("User [$_name] and CRM have the following groups in common: ".implode(',', $commonGroups), true);
+
+// If at least one group in common, then permit the login.
+if (count($commonGroups) > 0) {
+  log_auth("User [$_name] is permitted to log in to this instance");
+  echo '1';
 }
 else {
-  // Given the array of allowed login groups, convert those groups into
-  // group IDs by performing LDAP lookups on them.
+  log_auth("User [$_name] is not allowed to log in to this instance; CRM allows groups: [".implode(',', $allowedGroups)."]; user is in groups [".implode(',', $userGroups)."]");
+  echo '0';
+}
+
+
+// Given an array of LDAP groups, convert those groups into group IDs
+// by performing LDAP lookups on them.
+// This function is specific to Domino LDAP, where group IDs are stored
+// with each user record, rather than group names.
+function convert_groups_to_ids($groups)
+{
   if (!$auth_conf) {
     $auth_conf = ldap_authentication_get_valid_conf();
   }
+
   $ldap_server = $auth_conf->enabledAuthenticationServers['nyss_ldap'];
+
   $res = $ldap_server->connect();
   if ($res != LdapServer::LDAP_SUCCESS) {
-    error_log("Unable to connect to LDAP server");
-    echo 0;
+    log_auth("Unable to connect to LDAP server");
+    return null;
   }
+
   $res = $ldap_server->bind();
   if ($res != LdapServer::LDAP_SUCCESS) {
-    error_log("Unable to bind to LDAP server anonymously");
-    echo 0;
+    log_auth("Unable to bind to LDAP server anonymously");
+    return null;
   }
 
   $groupFilter = '';
-  foreach ($allowedGroups as $groupName) {
+  foreach ($groups as $groupName) {
     $groupFilter .= "(cn=$groupName)";
   }
   $res = $ldap_server->search(null, "(&(objectclass=groupOfNames)(|$groupFilter))");
@@ -73,24 +151,21 @@ else {
   // closing the LDAP module's connection to this server, which causes all
   // logins to fail.
 
-  $allowedGroupIds = array();
+  $groupIds = array();
   for ($i = 0; $i < $res['count']; $i++) {
     $gid = $res[$i]['gidnumber'][0];
-    $allowedGroupIds[] = $gid;
+    $groupIds[] = $gid;
   }
 
-  // Compare allowed group IDs to the user's group IDs to see if at
-  // least one group ID is in common between both.
-  $commonGroupIds = array_intersect($allowedGroupIds, $userGroupIds);
+  return $groupIds;
+} // convert_groups_to_ids()
 
-  // If at least one group ID in common, then permit the login.
-  if (count($commonGroupIds) > 0) {
-    error_log("User [$_name] is permitted to log in to this instance");
-    echo 1;
+
+function log_auth($msg, $debug = false)
+{
+  if ($debug == false || (defined('DEBUG_LOGIN') && DEBUG_LOGIN == true)) {
+    error_log("LOGIN: $msg");
   }
-  else {
-    error_log("User [$_name] is not allowed to log in to this instance; CRM allows groups: [".implode(',', $allowedGroupIds)."]; user is in groups [".implode(',', $userGroupIds)."]");
-    echo 0;
-  }
-}
+} // log_auth()
+
 ?>
