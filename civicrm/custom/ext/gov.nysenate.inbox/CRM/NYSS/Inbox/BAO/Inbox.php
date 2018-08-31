@@ -900,7 +900,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
                 if ($primary[$type] == $orig_val) {
                   civicrm_api3($type, 'delete', [
-                    'id' => $primaryEmail['id'],
+                    'id' => $primary['id'],
                   ]);
                 }
               }
@@ -1025,11 +1025,45 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     return $matchedIds;
   }
 
+  private static function filterHighlightTokens($tokens) {
+    $ret = [];
+
+    // Filter emails for blacklist entries and recategorize.
+    $ret['blacklist'] = self::getBlacklistAddresses();
+    $ret['emails'] = array_values(array_diff($tokens['emails'], $ret['blacklist']));
+
+    // Phones need no filter right now.
+    $ret['phones'] = $tokens['phones'];
+
+    // Addresses need no filter right now.
+    $ret['addrs'] = $tokens['addrs'];
+
+    // Use dedupe rules to eliminate names not found in the system.
+    $ret['names'] = [];
+    foreach ($tokens['names'] as $id => $nameInfo) {
+      if (isset($nameInfo['first'])) {
+        $firstName = strtolower($nameInfo['first']);
+        $query = "
+          SELECT COUNT(id) count_id
+          FROM fn_group 
+          WHERE given 
+          LIKE '$firstName'
+        ";
+        $dbres = CRM_Core_DAO::singleValueQuery($query);
+        if (!($dbres < 1)) {
+          $ret['names'][$id] = $nameInfo;
+        }
+      }
+    }
+
+    return $ret;
+  }
+
   /**
    * Generate an array of e-mail addresses, phone numbers, city/state/zips,
    * and proper names that were found in the message body.
    */
-  private static function parseMessage($msgBody) {
+  private static function findHighlightTokens($msgBody) {
     $res = [];
 
     // Convert message body into tagless text.
@@ -1041,9 +1075,9 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     preg_match_all('/[\w\.\-\+]+@[a-z\d\-]+(\.[a-z\d\-]+)*/i', $text, $emails);
     $res['emails'] = array_unique($emails[0]);
 
-    // Isolate blacklist senders.
-    $res['blacklist'] = self::getBlacklistAddresses();
-    $res['emails'] = array_values(array_diff($res['emails'], $res['blacklist']));
+    // Find possible phone numbers
+    preg_match_all('/(?:([\D]|^))([(]\d{3}[)] *|\d{3}[\-\.\ ])?\d{3}[\-\.]\d{4}/', $text, $phones);
+    $res['phones'] = array_unique($phones[0]);
 
     // Search for "City, STATE Zip5-Zip4"
     preg_match_all('/(?<city>[A-Z][A-Za-z\-\.\ ]+[a-z])\h*,\h*(?<stateAbbr>[A-Z]{2})\h+(?<zip>\d{5}(?:\-\d{4})?)/',
@@ -1051,39 +1085,17 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       $addresses,
       PREG_SET_ORDER);
 
-    // Find possible phone numbers
-    preg_match_all('/(?:([\D]|^))([(]\d{3}[)] *|\d{3}[\-\.\ ])?\d{3}[\-\.]\d{4}/', $text, $phones);
-    $res['phones'] = array_unique($phones[0]);
-
     // Expand state abbreviations into full state names.
     foreach ($addresses as $id => &$addrInfo) {
       $addrInfo['state'] = self::getStateName($addrInfo['stateAbbr']);
     }
-    $res['addrs'] = self::reformulate_preg_array($addresses);
 
     // Find possible names
     preg_match_all("/(?:(?<prefix>(?:Mr|MR|Ms|MS|Miss|MISS|Mrs|MRS|Dr|DR|Sir|Madam|Senator|(?:Assembly|Congress)(?:wo)?man)\.?)\h+)?(?<first>[A-Z](?:[a-z]+(?:\-[A-Z][a-z]+)?|\.))\h+(?<middle>[A-Z](?:[a-z]+|\.)\h+)?(?<last>(?:[A-Z][a-z]{,2}[\.\']?\ ?)?[A-Z][a-z]+(?:\-[A-Z][a-z]+)?)(?<suffix>(?:\h*,\h)?(?:Jr|JR|Sr|SR|II|III|PhD|PHD|MD|Esq))?/", $text, $names, PREG_SET_ORDER);
-
-    // Use dedupe rules to eliminate names not found in the system.
-    foreach ($names as $id => $nameInfo) {
-      if (isset($nameInfo['first'])) {
-        $firstName = strtolower($nameInfo['first']);
-        $query = "
-          SELECT COUNT(id) count_id
-          FROM fn_group 
-          WHERE given 
-          LIKE '$firstName'
-        ";
-        $dbres = CRM_Core_DAO::singleValueQuery($query);
-        if ($dbres < 1) {
-          unset($names[$id]);
-        }
-      }
-    }
-    $res['names'] = self::reformulate_preg_array($names);
+    $res['names'] = $names;
 
     return $res;
-  } // parseMessage()
+  } // findHighlightTokens()
 
   /**
    * Given an array of items found in the body of the email, generate
@@ -1110,23 +1122,31 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         continue;
       }
 
-      if (in_array($itemType, ['emails', 'blacklist', 'phones'])) {
-        $re = implode('###', $itemList);
-        $re = preg_quote($re);
-        $re = '/' . preg_replace('/###/', '|', $re) . '/';
-        $text = preg_replace($re,
-          "<span class='found $itemClass' data-search='$0' title='Click to use this $itemText'>$0</span>",
-          $text
-        );
-      }
-      else {
-        foreach ($itemList as $search => $json) {
-          $re = preg_quote($search);
-          $text = preg_replace("/$re/",
-            "<span class='found $itemClass' data-json='$json' title='Click to use this $itemText'>$0</span>",
+      switch ($itemType) {
+        case 'emails':
+        case 'blacklist':
+        case 'phones':
+          $re = implode('###', $itemList);
+          $re = preg_quote($re);
+          $re = '/' . preg_replace('/###/', '|', $re) . '/';
+          $text = preg_replace($re,
+            "<span class='found $itemClass' data-search='$0' title='Click to use this $itemText'>$0</span>",
             $text
           );
-        }
+          break;
+        case 'addrs':
+        case 'names':
+          $reform = self::reformulate_preg_array($itemList);
+          foreach ($reform as $search => $json) {
+            $re = preg_quote($search);
+            $text = preg_replace("/$re/",
+              "<span class='found $itemClass' data-json='$json' title='Click to use this $itemText'>$0</span>",
+              $text
+            );
+          }
+          break;
+        default:
+          break;
       }
     }
     return $text;
@@ -1403,7 +1423,8 @@ class CRM_NYSS_Inbox_BAO_Inbox {
   } // expandDate()
 
   static function transformMessage($body) {
-    $parsed = self::parseMessage($body);
-    return self::highlightItems($body, $parsed);
+    $parsed = self::findHighlightTokens($body);
+    $tokens = self::filterHighlightTokens($parsed);
+    return self::highlightItems($body, $tokens);
   }
 }
