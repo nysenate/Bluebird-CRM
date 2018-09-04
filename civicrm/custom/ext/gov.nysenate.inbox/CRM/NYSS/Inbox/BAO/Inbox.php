@@ -1042,15 +1042,10 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     $ret['names'] = [];
     foreach ($tokens['names'] as $id => $nameInfo) {
       if (isset($nameInfo['first'])) {
-        $firstName = strtolower($nameInfo['first']);
-        $query = "
-          SELECT COUNT(id) count_id
-          FROM fn_group 
-          WHERE given 
-          LIKE '$firstName'
-        ";
-        $dbres = CRM_Core_DAO::singleValueQuery($query);
-        if (!($dbres < 1)) {
+        $params = [1 => [strtolower($nameInfo['first']), 'String']];
+        $query = "SELECT COUNT(id) count_id FROM fn_group WHERE given LIKE %1";
+        $dbres = CRM_Core_DAO::singleValueQuery($query, $params);
+        if ((int) $dbres) {
           $ret['names'][$id] = $nameInfo;
         }
       }
