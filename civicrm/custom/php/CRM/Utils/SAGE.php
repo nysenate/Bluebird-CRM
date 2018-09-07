@@ -39,6 +39,7 @@ class CRM_Utils_SAGE
     }
   } // warn()
 
+
   /**
   * Performs USPS validation. If the address was validated, it will be stored in {$values}.
   *
@@ -113,6 +114,7 @@ class CRM_Utils_SAGE
     return false;
   } // batchCheckAddress()
 
+
   /**
   * Performs geocoding by address and stores the geocodes in {$values}
   *
@@ -150,6 +152,7 @@ class CRM_Utils_SAGE
     return true;
   } // geocode()
 
+
   /**
   * Performs batch geocoding of addresses and stores the geocodes in {$rows}.
   *
@@ -180,7 +183,7 @@ class CRM_Utils_SAGE
       return true;
     }
     return false;
-  }
+  } // batchGeocode()
 
 
   /**
@@ -276,7 +279,7 @@ class CRM_Utils_SAGE
       return true;
     }
     return false;
-  }
+  } // batchDistAssign()
 
 
   /**
@@ -343,7 +346,7 @@ class CRM_Utils_SAGE
       return true;
     }
     return false;
-  }
+  } // batchLookupFromPoint()
 
 
   /**
@@ -408,7 +411,8 @@ class CRM_Utils_SAGE
       self::storeDistricts($values, $xml, $overwrite_districts);
     }
     return true;
-  }
+  } // lookup()
+
 
   /**
   * Performs a batch bluebird lookup by address and assigns district and geocode information to 
@@ -454,7 +458,8 @@ class CRM_Utils_SAGE
       return true;
     }
     return false;
-  }
+  } // batchLookup()
+
 
   /**
   * Returns an array of addresses using data in the supplied {$rows}.
@@ -481,7 +486,7 @@ class CRM_Utils_SAGE
       $addresses[] = $address;
     }
     return $addresses;
-  }
+  } // getAddressesFromRows()
 
 
   /**
@@ -500,7 +505,8 @@ class CRM_Utils_SAGE
       );
     }
     return $points;
-  }
+  } // getPointsFromRows()
+
 
   /**
   * Fail silently if the XML response from SAGE was invalid and could not
@@ -631,7 +637,7 @@ class CRM_Utils_SAGE
     if ($overwrite || empty($values["custom_54_$id"]) || !$values["custom_54_$id"]) {
       $values["custom_54_$id"] = (string)$xml->districts->school->district;
     }
-  }
+  } // storeDistricts()
 
 
   /**
@@ -715,9 +721,13 @@ class CRM_Utils_SAGE
       $values = array_merge($values, $addr_parts);
     }
   } // fixStreetAddressParts()
+
+
+  /**
+   * wrapper function to retain compatibility with expected methods in core
+   */
+  public static function format(&$values, $stateName = false)
+  {
+    self::geocode($values);
+  } // format()
 }
-
-
-class CRM_Utils_Address_SAGE extends CRM_Utils_SAGE {};
-class CRM_Utils_Geocode_SAGE extends CRM_Utils_SAGE {};
-
