@@ -24,6 +24,21 @@ body.admin-menu.adminimal-menu:before {
 ul#civicrm-menu {
   background: white url(../images/bluebirds.png) no-repeat scroll 98% bottom;
 }
+#branding {
+  position: fixed;
+  top: 60px;
+  z-index: 1;
+  width: 100%;
+}
+.page-civicrm #page {
+  margin-top: 90px;
+}
+.page-civicrm div#printer-friendly {
+  top: 106px !important;
+  right: 40px !important;
+  z-index: 50;
+  position: fixed !important;
+}
 
 /*display branding bar (breadcrumbs, etc.), printer icon, on contact page*/
 .page-civicrm-contact-view #branding {
@@ -33,9 +48,8 @@ ul#civicrm-menu {
 .page-civicrm-contact-view #branding h1.page-title {
   display: none;
 }
-.page-civicrm.page-civicrm-contact-view div#printer-friendly {
-  top: -6px !important;
-  right: 40px !important;
+.page-civicrm.page-civicrm-contact-view #page {
+  margin-top: 54px;
 }
 
 /*contact summary + tabs*/
@@ -103,3 +117,5 @@ ul#civicrm-menu {
   text-transform: uppercase;
   margin-right: 0;
 }
+
+
