@@ -100,5 +100,41 @@ $execSql $instance -c "$sql" -q
 
 ## TODO implement contact-summary config
 
+## 8439 cleanup safe file extensions; add new options
+echo "$prog: cleanup safe file extensions; add new options"
+sql="
+   SELECT @optgrp:=id FROM civicrm_option_group WHERE name = 'safe_file_extension';
+   INSERT INTO civicrm_option_value (option_group_id, label, value, name, filter, weight, is_active)
+   VALUES (@optgrp, 'mp3', '16', 'mp3', 0, 16, 1),
+     (@optgrp, 'wav', '17', 'wav', 0, 17, 1),
+     (@optgrp, 'accdb', '18', 'accdb', 0, 18, 1),
+     (@optgrp, 'one', '19', 'one', 0, 19, 1),
+     (@optgrp, 'pptx', '20', 'pptx', 0, 20, 1),
+     (@optgrp, 'pub', '21', 'pub', 0, 21, 1),
+     (@optgrp, 'xsf', '22', 'xsf', 0, 22, 1),
+     (@optgrp, '123', '23', '123', 0, 23, 1),
+     (@optgrp, 'lwp', '24', 'lwp', 0, 24, 1),
+     (@optgrp, 'apr', '25', 'apr', 0, 25, 1),
+     (@optgrp, 'html', '26', 'html', 0, 26, 1),
+     (@optgrp, '3gp', '27', '3gp', 0, 27, 1),
+     (@optgrp, 'avi', '28', 'avi', 0, 28, 1),
+     (@optgrp, 'm4v', '29', 'm4v', 0, 29, 1),
+     (@optgrp, 'mp4', '30', 'mp4', 0, 30, 1),
+     (@optgrp, 'mpeg', '31', 'mpeg', 0, 31, 1),
+     (@optgrp, 'wma', '32', 'wma', 0, 32, 1),
+     (@optgrp, 'wmv', '33', 'wmv', 0, 33, 1),
+     (@optgrp, 'flv', '34', 'flv', 0, 34, 1),
+     (@optgrp, 'psd', '35', 'psd', 0, 35, 1),
+     (@optgrp, 'tif', '36', 'tif', 0, 36, 1);
+   DELETE ov1
+   FROM civicrm_option_value ov1
+   INNER JOIN civicrm_option_value ov2
+   WHERE ov1.id < ov2.id
+     AND ov1.name = ov2.name
+     AND ov1.option_group_id = @optgrp
+     AND ov2.option_group_id = @optgrp;
+"
+$execSql $instance -c "$sql" -q
+
 ## record completion
 echo "$prog: upgrade process is complete."
