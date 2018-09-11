@@ -157,6 +157,10 @@ function _recentitems_buildList() {
     'Organization' => 'fa-building',
     'Household' => 'fa-home',
     'Relationship' => 'fa-user-circle-o',
+    'Activity' => 'fa-pencil-square-o',
+    'Note' => 'fa-sticky-note',
+    'Group' => 'fa-users',
+    'Case' => 'fa-folder-open',
   ];
   $recent = CRM_Utils_Recent::get();
   //Civi::log()->debug('', array('recent' => $recent));
@@ -170,8 +174,9 @@ function _recentitems_buildList() {
   foreach ($recent as $item) {
     $editUrl = (!empty($item['edit_url'])) ?
       " (<a href='{$item['edit_url']}'><span class='nyss-recentitems-edit'>edit</span></a>)" : '';
+    $icon = CRM_Utils_Array::value($item['type'], $icons);
     $html .= "
-      <li><a href='{$item['url']}'>{$item['title']}</a>{$editUrl}</li>
+      <li><i class='nyss-i {$icon}'></i>&nbsp;<a href='{$item['url']}'>{$item['title']}</a>{$editUrl}</li>
     ";
   }
 
