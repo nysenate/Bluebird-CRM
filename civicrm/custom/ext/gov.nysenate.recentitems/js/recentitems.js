@@ -1,5 +1,7 @@
 CRM.$(function($) {
-  $('#bb-recentitems').append(CRM.vars.NYSS.recentItemsList);
+  if ($('#bb-recentitems').is(':empty')) {
+    $('#bb-recentitems').append(CRM.vars.NYSS.recentItemsList);
+  }
 
   //recent items list; expose when clicked; hide when anything else is clicked;
   $('div#nyss-recentitems i').click(function(e){
