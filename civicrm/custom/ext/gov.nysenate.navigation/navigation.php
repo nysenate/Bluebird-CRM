@@ -133,23 +133,17 @@ function navigation_civicrm_navigationMenu(&$params) {
   $reportNavID = $adminNavID = '';
   $reportNav = $adminNav = array();
   foreach ($params as $navID => $navDetails) {
-    //unset all but the reports and administer menus
+    //get reports menu so we can retain user-added items
     switch ($navDetails['attributes']['name']) {
       case 'Reports':
-        $reportNavID = $navID;
         $reportNav = $navDetails;
         break;
-      case 'Administer':
-        $adminNavID = $navID;
-        $adminNav = $navDetails;
-        break;
+
       default:
     }
+
     unset($params[$navID]);
   }
-
-  //get max key
-  $maxKey = (!empty($params)) ? max(array_keys($params)) : 0;
 
   $params[1000] = _buildCreateMenu(1000);
 
@@ -157,38 +151,7 @@ function navigation_civicrm_navigationMenu(&$params) {
   $params[2000] = _buildSearchMenu(2000);
 
   //move Report menu
-  $params[$reportNavID] = $reportNav;
-
-  //NYSS-7260 add websignup reports
-  $params[$reportNavID]['child'][$maxKey+1] = array(
-    'attributes' => array(
-      'label'      => 'Web Signup Reports',
-      'name'       => 'Web Signup Reports',
-      'url'        => 'signupreports',
-      'permission' => 'access CiviReport',
-      'operator'   => 'AND',
-      'separator'  => 0,
-      'parentID'   => $reportNavID,
-      'navID'      => $maxKey+1,
-      'active'     => 1
-    ),
-    'child' => array(),
-  );
-  //5260 add changelog proofing report
-  $params[$reportNavID]['child'][$maxKey+2] = array(
-    'attributes' => array(
-      'label'      => 'Changelog Proofing Report',
-      'name'       => 'Changelog Proofing Report',
-      'url'        => 'civicrm/nyss/proofingreport?reset=1',
-      'permission' => 'access CiviReport',
-      'operator'   => 'AND',
-      'separator'  => 0,
-      'parentID'   => $reportNavID,
-      'navID'      => $maxKey+2,
-      'active'     => 1
-    ),
-    'child' => array(),
-  );
+  $params[2500] = _buildReportsMenu(2500, $reportNav);
 
   //build Manage menu
   $params[3000] = _buildManageMenu(3000);
@@ -200,7 +163,7 @@ function navigation_civicrm_navigationMenu(&$params) {
   $params[5000] = _buildInboxMenu(5000);
 
   //move Administer menu
-  $params[$adminNavID] = _buildAdminMenu($adminNavID);
+  $params[5500] = _buildAdminMenu(5500);
 
   //create Help menu 11965
   $params[6000] = _buildHelpMenu(6000);
@@ -221,6 +184,128 @@ function navigation_civicrm_navigationMenu(&$params) {
   );
 
   //CRM_Core_Error::debug_var('navigationMenu params (after)',$params);
+}
+
+function _buildReportsMenu($navID, $reportNav) {
+  //Civi::log()->debug('', array('reportNav' => $reportNav));
+
+  $nav = array(
+    'attributes' => array(
+      'label' => 'Reports',
+      'name' => 'Reports',
+      'url' => null,
+      'permission' => null,
+      'operator' => 'AND',
+      'separator' => 0,
+      'parentID' => null,
+      'navID' => $navID,
+      'active' => 1
+    ),
+    'child' => array(
+      //top level items
+      $navID + 1 => array(
+        'attributes' => array(
+          'label' => 'Reports Listing',
+          'name' => 'Reports Listing',
+          'url' => 'civicrm/report/list?reset=1',
+          'permission' => 'access CiviReport',
+          'operator' => 'AND',
+          'separator' => 0,
+          'parentID' => $navID,
+          'navID' => $navID + 1,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+      $navID + 2 => array(
+        'attributes' => array(
+          'label' => 'My Reports',
+          'name' => 'My Reports',
+          'url' => 'civicrm/report/list?myreports=1&reset=1',
+          'permission' => 'access CiviReport',
+          'operator' => 'AND',
+          'separator' => 0,
+          'parentID' => $navID,
+          'navID' => $navID + 2,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+      $navID + 3 => array(
+        'attributes' => array(
+          'label' => 'Create Reports from Templates',
+          'name' => 'Create Reports from Templates',
+          'url' => 'civicrm/admin/report/template/list?reset=1',
+          'permission' => 'administer Reports',
+          'operator' => 'AND',
+          'separator' => 1,
+          'parentID' => $navID,
+          'navID' => $navID + 3,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+
+      //standard reports
+      $navID + 11 => array(
+        'attributes' => array(
+          'label' => 'District Stats',
+          'name' => 'District Stats',
+          'url' => 'civicrm/dashlet/districtstats',
+          'permission' => 'access CiviReport',
+          'operator' => 'AND',
+          'separator' => 0,
+          'parentID' => $navID,
+          'navID' => $navID + 11,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+      //7260 add websignup reports
+      $navID + 12 => array(
+        'attributes' => array(
+          'label' => 'Web Signup Reports',
+          'name' => 'Web Signup Reports',
+          'url' => 'signupreports',
+          'permission' => 'access CiviReport',
+          'operator'   => 'AND',
+          'separator'  => 0,
+          'parentID' => $navID,
+          'navID' => $navID + 12,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+      //5260 add changelog proofing report
+      $navID + 13 => array(
+        'attributes' => array(
+          'label' => 'Changelog Proofing Report',
+          'name' => 'Changelog Proofing Report',
+          'url' => 'civicrm/nyss/proofingreport?reset=1',
+          'permission' => 'access CiviReport',
+          'operator' => 'AND',
+          'separator' => 1,
+          'parentID' => $navID,
+          'navID' => $navID + 13,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+    ),
+  );
+
+  //extract user-added nav items
+  unset($reportNav['attributes']);
+  $navRemove = array('District Stats', 'Reports Listing', 'Create Reports from Templates');
+  foreach ($reportNav['child'] as $k => $item) {
+    if (in_array($item['attributes']['name'], $navRemove)) {
+      unset($reportNav['child'][$k]);
+    }
+  }
+
+  $nav['child'] += $reportNav['child'];
+
+  return $nav;
 }
 
 /*
