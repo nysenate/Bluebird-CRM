@@ -53,3 +53,53 @@ ul#civicrm-menu {
   font-weight: bold;
   margin-top: 10px;
 }
+
+/*login*/
+.not-logged-in,
+.not-logged-in #page {
+  background-color: #eee;
+}
+.not-logged-in #block-user-login,.not-logged-in form#user-login {
+  background: transparent url(../images/login.png) no-repeat top center;
+  margin-top: 50px;
+  height: 235px;
+}
+.not-logged-in #block-user-login h2,
+.not-logged-in #block-user-login div.item-list,
+.not-logged-in #block-user-login .form-required{
+  display: none;
+}
+.not-logged-in #block-user-login div.content {
+  width: 230px;
+  margin: auto;
+  padding-top: 50px;
+}
+.not-logged-in #block-user-login .form-item {
+  margin-bottom: 20px;
+}
+.not-logged-in #block-user-login label {
+  display: block;
+  float: left;
+  color: white;
+  font-size: 110%;
+  font-weight: normal;
+  width: 40%;
+}
+.not-logged-in input.form-text {
+  border: none;
+  width: 120px;
+  font-size: 110%;
+  float: right;
+}
+.not-logged-in div.form-actions {
+  text-align: right;
+  padding-top: 10px;
+}
+.not-logged-in input.form-submit {
+  border-radius: 2px;
+  -webkit-border-radius: 2px;
+  font-size: .8em;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-right: 0;
+}
