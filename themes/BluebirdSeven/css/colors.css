@@ -1,0 +1,6 @@
+.page-civicrm #branding {
+  background: #364863 !important;
+}
+.page-civicrm-contact-view #crm-container div.crm-summary-contactname-block {
+  background: #3e5577 !important;
+}

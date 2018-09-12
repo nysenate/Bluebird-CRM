@@ -24,7 +24,7 @@ body.admin-menu.adminimal-menu:before {
 ul#civicrm-menu {
   background: white url(../images/bluebirds.png) no-repeat scroll 98% bottom;
 }
-#branding {
+.page-civicrm #branding {
   position: fixed;
   top: 60px;
   z-index: 1;
