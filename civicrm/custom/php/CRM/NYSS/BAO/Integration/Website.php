@@ -463,7 +463,7 @@ class CRM_NYSS_BAO_Integration_Website
     ");
 
     //find tag name
-    $tagName = self::getTagName($params, 'petition_name', 'title_stub');
+    $tagName = self::getTagName($params, 'petition_name', 'stub');
     if (empty($tagName)) {
       CRM_Core_Error::debug_var('processPetition: unable to identify tag name in $params', $params, true, true, 'integration');
       return false;
@@ -1421,7 +1421,7 @@ class CRM_NYSS_BAO_Integration_Website
    * $params the parameter object passed to the record processing function
    * $alternate the alternate column name/param name where we may need to look
    *   for backwards compatibility
-   * $primary let's us pass a preferred key
+   * $primary pass a preferred key to search for instead of the default
    */
   static function getTagName($params, $alternate, $primary = NULL) {
     $tagName = '';
