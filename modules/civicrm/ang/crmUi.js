@@ -339,8 +339,9 @@
               iframe.setAttribute('src', scope.$parent.$eval(attrs.crmUiIframeSrc));
             }
             else {
-              var iframeHtml = scope.$parent.$eval(attrs.crmUiIframe);
-
+              //NYSS
+              var iframeHtml = scope.$parent.$eval(attrs.crmUiIframe).replace(/<a /g, "<a target='_blank' ");
+console.log('iframeHtml test');
               var doc = iframe.document;
               if (iframe.contentDocument) {
                 doc = iframe.contentDocument;
