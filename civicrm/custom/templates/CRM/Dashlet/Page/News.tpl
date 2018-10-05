@@ -38,5 +38,5 @@
               <div class="created-date">{$newsitem.pubDate}</div>
          </div>
     {/foreach}
-    &raquo;&nbsp;<a href="http://senateonline.senate.state.ny.us/BluebirdNews.nsf/" target="_blank" class="more_news">View more news items</a>
+    &raquo;&nbsp;<a href="{$newsurl}" target="_blank" class="more_news">View more news items</a>
 </div>
