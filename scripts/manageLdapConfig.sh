@@ -98,10 +98,11 @@ if [ "$cmd" = "setup" ]; then
   for p in host port type anonymous user pass basedn user_attr mail_attr group_class; do
     fld=`map_param_to_field $p`
     val=`$readConfig --ig $instance ldap.$p`
-    if [ "$p" = "anonymous" ]; then
-      [ "$val" = "true" -o "$val" = "1" ] && bind_method=3 || bind_method=1
-      ldap_server="$ldap_server|$fld=$bind_method"
-    elif [ "$val" ]; then
+    if [ $? -eq 0 ]; then
+      if [ "$p" = "anonymous" ]; then
+        [ "$val" = "true" -o "$val" = "1" ] && bind_method=3 || bind_method=1
+        val=$bind_method
+      fi
       ldap_server="$ldap_server|$fld=$val"
     fi
   done
