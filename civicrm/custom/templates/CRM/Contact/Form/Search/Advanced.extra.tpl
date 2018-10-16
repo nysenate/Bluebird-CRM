@@ -18,10 +18,5 @@
   //11446/11440
   cj('div.crm-search_criteria_basic-accordion:first').addClass('collapsed').insertBefore('div.crm-location-accordion');
   cj('div#display-settings td:nth-child(2)').remove();
-
-  //11442 copy reset button to bottom
-  var resetHTML = cj('<div />').append($('div.reset-advanced-search').clone()).html();
-  cj('table.form-layout span.crm-button_qf_Advanced_refresh').after('<span class="reset-bottom">' + resetHTML + '</span>');
-  cj('span.reset-bottom a').removeClass('css_right');
 </script>
 {/literal}

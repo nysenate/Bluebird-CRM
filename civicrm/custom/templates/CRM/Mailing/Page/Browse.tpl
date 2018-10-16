@@ -48,6 +48,8 @@
     {include file="CRM/common/pagerAToZ.tpl"}
 
     {strip}
+    {*NYSS 12029*}
+    <div id="actionDialog" class="crm-container" style="display:none;"></div>
     <table class="selector row-highlight">
       <thead class="sticky">
       {foreach from=$columnHeaders item=header}
@@ -182,3 +184,38 @@
   </div>
 {/if}
 </div> {*NYSS*}
+
+{*NYSS 12029*}
+{literal}
+<script type="text/javascript">
+  function mailingActionTask(link, action) {
+    var msg = {/literal}'{ts escape="js"}Are you sure you want to delete this mailing?{/ts}'{literal},
+      title = {/literal}'{ts escape="js"}Delete Mailing{/ts}'{literal};
+    if (action == 'archive') {
+      msg = {/literal}'{ts escape="js"}Are you sure you want to archive this mailing?{/ts}'{literal},
+      title = {/literal}'{ts escape="js"}Archive Mailing{/ts}'{literal};
+    }
+    else if (action ==  'cancel') {
+      msg = {/literal}'{ts escape="js"}Are you sure you want to cancel this mailing?{/ts}'{literal},
+      title = {/literal}'{ts escape="js"}Cancel Mailing{/ts}'{literal};
+    }
+    CRM.$('#actionDialog').dialog({
+      title: title,
+      modal: true,
+      open:function() {
+        CRM.$('#actionDialog').show().html(msg);
+      },
+      buttons: {
+        {/literal}"{ts escape='js'}No{/ts}"{literal}: function() {
+          CRM.$(this).dialog("close");
+        },
+        {/literal}"{ts escape='js'}Yes{/ts}"{literal}: function() {
+          CRM.$(this).dialog("close");
+          window.location.href = link;
+          return;
+        }
+      }
+    });
+  }
+</script>
+{/literal}
