@@ -101,7 +101,7 @@ function setVariableValue($dbh, $name, $val)
   $qval = $dbh->quote($sval);
   $sql = "UPDATE variable SET value=$qval WHERE name='$name';";
   $result = $dbh->exec($sql);
-  if (!$result) {
+  if ($result === false) {
     print_r($dbh->errorInfo());
     return false;
   }
@@ -134,11 +134,24 @@ function setAuthenticationField($dbh, $fldname, $fldval)
 
 
 
-function setField($dbh, $tabname, $fldname, $fldval)
+function setFields($dbh, $tabname, $fields)
 {
-  $sql = "UPDATE $tabname SET $fldname = '$fldval' where sid='".SERVER_ID."';";
+  if (count($fields) == 0) {
+    echo "Must pass in at least one field name/value pair\n";
+    return false;
+  }
+
+  $sql_set = $delim = '';
+  foreach ($fields as $fldname => $fldval) {
+    $sql_set .= "$delim $fldname = '$fldval'";
+    if (empty($delim)) {
+      $delim = ',';
+    }
+  }
+
+  $sql = "UPDATE $tabname SET $sql_set where sid='".SERVER_ID."';";
   $result = $dbh->exec($sql);
-  if (!$result) {
+  if ($result === false) {
     print_r($dbh->errorInfo());
     return false;
   }
@@ -146,6 +159,20 @@ function setField($dbh, $tabname, $fldname, $fldval)
     return true;
   }
 } // setField()
+
+
+
+function setField($dbh, $tabname, $fldname, $fldval)
+{
+  return setFields($dbh, $tabname, [ $fldname => $fldval ]);
+} // setField()
+
+
+
+function setServerFields($dbh, $fields)
+{
+  return setFields($dbh, 'ldap_servers', $fields);
+} // setServerFields()
 
 
 
@@ -160,6 +187,26 @@ function setAuthorizationField($dbh, $fldname, $fldval)
 {
   return setField($dbh, 'ldap_authorization', $fldname, $fldval);
 } // setAuthorizationField()
+
+
+
+function setServer($dbh, $serverFieldStr)
+{
+  $fields = [];
+  $field_list = explode('|', $serverFieldStr);
+  foreach ($field_list as $field) {
+    $s = explode('=', $field, 2);
+    $fldname = trim($s[0]);
+    $fldval = isset($s[1]) ? trim($s[1]) : '';
+    if ($fldname == 'basedn') {
+      // Special case:  Convert the BaseDN into a serialized array.
+      $fldval = serialize([$fldval]);
+    }
+    $fields[$fldname] = $fldval;
+  }
+
+  return setServerFields($dbh, $fields);
+} // setServer()
 
 
 
@@ -245,6 +292,9 @@ else {
   }
   else if ($cmd == 'setPort') {
     $rc = setServerField($dbh, 'port', $param);
+  }
+  else if ($cmd == 'setServer') {
+    $rc = setServer($dbh, $param);
   }
   else if ($cmd == 'setEntries') {
     $rc = setEntries($dbh, $param);
