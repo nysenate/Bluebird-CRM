@@ -125,6 +125,8 @@ $civicrm_setting['Display Preferences']['advanced_search_options'] =
 
 $civicrm_setting['Extension Preferences']['ext_repo_url'] = false;
 
+$civicrm_setting['Map Preferences']['geoProvider'] = 'SAGE';
+
 if (isset($bbconfig['xhprof.profile']) && $bbconfig['xhprof.profile']) {
   function xhprof_shutdown_func($source, $run_id = null) {
     // Hopefully we don't throw an exception; there's no way to catch it now...

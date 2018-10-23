@@ -464,11 +464,13 @@ class CRM_NYSS_BAO_Integration_Website
 
     //find tag name
     $tagName = self::getTagName($params, 'petition_name');
+    $tagStub = self::getTagName($params, 'petition_name', 'stub');
     if (empty($tagName)) {
       CRM_Core_Error::debug_var('processPetition: unable to identify tag name in $params', $params, true, true, 'integration');
       return false;
     }
 
+    //search by petition name
     $tagId = CRM_Core_DAO::singleValueQuery("
       SELECT id
       FROM civicrm_tag
@@ -476,6 +478,16 @@ class CRM_NYSS_BAO_Integration_Website
         AND parent_id = {$parentId}
     ", array(1 => array($tagName, 'String')));
     //CRM_Core_Error::debug_var('tagId', $tagId);
+
+    //search by stub if not found by name
+    if (!$tagId) {
+      $tagId = CRM_Core_DAO::singleValueQuery("
+        SELECT id
+        FROM civicrm_tag
+        WHERE name = %1
+          AND parent_id = {$parentId}
+      ", array(1 => array($tagStub, 'String')));
+    }
 
     if (!$tagId) {
       $tag = civicrm_api('tag', 'create', array(
@@ -1421,10 +1433,14 @@ class CRM_NYSS_BAO_Integration_Website
    * $params the parameter object passed to the record processing function
    * $alternate the alternate column name/param name where we may need to look
    *   for backwards compatibility
+   * $primary pass a preferred key to search for instead of the default
    */
-  static function getTagName($params, $alternate) {
+  static function getTagName($params, $alternate, $primary = NULL) {
     $tagName = '';
-    if (!empty($params->event_info->name)) {
+    if (!empty($primary) && !empty($params->event_info->$primary)) {
+      $tagName = $params->event_info->$primary;
+    }
+    elseif (!empty($params->event_info->name)) {
       $tagName = $params->event_info->name;
     }
     elseif (!empty($params->event_info->$alternate)) {

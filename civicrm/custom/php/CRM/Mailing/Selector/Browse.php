@@ -250,9 +250,7 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
   public function &getRows($action, $offset, $rowCount, $sort, $output = NULL) {
     static $actionLinks = NULL;
     if (empty($actionLinks)) {
-      $cancelExtra = ts('Are you sure you want to cancel this mailing?');
-      $deleteExtra = ts('Are you sure you want to delete this mailing?');
-      $archiveExtra = ts('Are you sure you want to archive this mailing?');
+      //NYSS 12029 throughout function
 
       $actionLinks = array(
         CRM_Core_Action::ENABLE => array(
@@ -277,7 +275,7 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
           'name' => ts('Cancel'),
           'url' => 'civicrm/mailing/browse',
           'qs' => 'action=disable&mid=%%mid%%&reset=1',
-          'extra' => 'onclick="if (confirm(\'' . $cancelExtra . '\')) this.href+=\'&amp;confirmed=1\'; else return false;"',
+          'extra' => 'onclick="mailingActionTask(this.href+=\'&amp;confirmed=1\', \'cancel\'); return false;"',
           'title' => ts('Cancel Mailing'),
         ),
         CRM_Core_Action::PREVIEW => array(
@@ -290,14 +288,14 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
           'name' => ts('Delete'),
           'url' => 'civicrm/mailing/browse',
           'qs' => 'action=delete&mid=%%mid%%&reset=1',
-          'extra' => 'onclick="if (confirm(\'' . $deleteExtra . '\')) this.href+=\'&amp;confirmed=1\'; else return false;"',
+          'extra' => 'onclick="mailingActionTask(this.href+=\'&amp;confirmed=1\', \'delete\'); return false;"',
           'title' => ts('Delete Mailing'),
         ),
         CRM_Core_Action::RENEW => array(
           'name' => ts('Archive'),
           'url' => 'civicrm/mailing/browse/archived',
           'qs' => 'action=renew&mid=%%mid%%&reset=1',
-          'extra' => 'onclick="if (confirm(\'' . $archiveExtra . '\')) this.href+=\'&amp;confirmed=1\'; else return false;"',
+          'extra' => 'onclick="mailingActionTask(this.href+=\'&amp;confirmed=1\', \'archive\'); return false;"',
           'title' => ts('Archive Mailing'),
         ),
       );

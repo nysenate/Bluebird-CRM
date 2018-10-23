@@ -32,7 +32,7 @@ echo "$prog: Starting v2.2.1 upgrade process"
 
 ## 12109
 echo "$prog: nyss #12109 - cleanup duplicate entity_file records"
-$script_dir/deleteEntityFileDupes.sh $instance
+$script_dir/deleteEntityFileDupes.sh --ok $instance
 
 ## record completion
 echo "$prog: Finished the v2.2.1 upgrade process"
