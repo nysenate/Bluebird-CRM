@@ -25,18 +25,17 @@
 *}
 
 <div id="newsFeeds">
-	
-    {foreach from=$newsfeed key=newskey item=newsitem}
-         {if $smarty.get.context != 'dashletFullscreen'}
-              {assign var="desc" value=$newsitem.encoded|truncate:100}
-         {else}
-              {assign var="desc" value=$newsitem.encoded}
-         {/if}
-         <div class="newsFeed">
-              <div class="newsTitle"><a href="{$newsitem.link}" target="_blank">{$newsitem.title}</a></div>
-              <div class="newsDesc">{$desc}</div>
-              <div class="created-date">{$newsitem.pubDate}</div>
-         </div>
-    {/foreach}
-    &raquo;&nbsp;<a href="{$newsurl}" target="_blank" class="more_news">View more news items</a>
+  {foreach from=$newsfeed key=newskey item=newsitem}
+    {if $smarty.get.context != 'dashletFullscreen'}
+      {assign var="desc" value=$newsitem.encoded|truncate:100}
+    {else}
+      {assign var="desc" value=$newsitem.encoded}
+    {/if}
+    <div class="newsFeed">
+      <div class="newsTitle"><a href="{$newsitem.link}" target="_blank">{$newsitem.title}</a></div>
+      <div class="newsDesc">{$desc}</div>
+      <div class="created-date">{$newsitem.pubDate}</div>
+    </div>
+  {/foreach}
+  &raquo;&nbsp;<a href="{$newsurl}" target="_blank" class="more_news">View more news items</a>
 </div>

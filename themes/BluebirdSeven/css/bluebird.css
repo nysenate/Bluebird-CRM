@@ -118,4 +118,7 @@ ul#civicrm-menu {
   margin-right: 0;
 }
 
-
+/*news feed*/
+div#newsFeeds {
+  padding: 20px;
+}
