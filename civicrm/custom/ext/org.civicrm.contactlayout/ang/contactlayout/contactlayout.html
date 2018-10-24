@@ -1,10 +1,9 @@
 <div id="bootstrap-theme">
-  <div crm-ui-debug="layouts"></div>
   <h1 crm-page-title>{{ts('Contact Summary Editor')}}</h1>
 
-  <div id="contactLayoutEditor" class="row">
+  <div id="contactLayoutEditor">
 
-    <div id="contactLayoutLayouts" class="col-md-3">
+    <div id="contactLayoutLayouts">
       <div class="panel panel-primary">
         <div class="panel-heading">
           <div class="btn-group btn-group-md pull-right">
@@ -12,23 +11,23 @@
               <i class="crm-i fa-plus"></i> {{ ts('Layout') }}
             </button>
           </div>
-          <h3 class="panel-title">
+          <h2 class="panel-title">
             {{ ts('Layouts') }}
-          </h3>
+          </h2>
         </div>
         <div class="panel-body">
-          <div class="alert alert-warning" ng-if="deletedLayout">
+          <div class="alert alert-warning cse-deleted-msg" ng-if="deletedLayout">
             {{ ts('Deleted %1', {1: deletedLayout.label}) }}
             <a href ng-click="restoreLayout()">{{ ts('Undo') }}</a>
           </div>
-          <div class="panel-inner" ui-sortable="{axis: 'y'}" ng-model="layouts">
+          <div class="panel-inner" ui-sortable="{axis: 'y', cancel: 'input,textarea,button,select,option,a,.crm-editable-enabled,[contenteditable]'}" ng-model="layouts">
             <div class="cse-layout-item" ng-repeat="layout in layouts" ng-class="{'cse-item-selected': layout == selectedLayout}" ng-click="selectLayout(layout)">
               <div class="btn-group btn-group-sm cse-layout-delete">
                 <button class="btn btn-danger-outline" ng-click="deleteLayout($index)" title="{{ ts('Delete layout') }}">
                   <i class="crm-i fa-trash"></i>
                 </button>
               </div>
-              <h4 class="cse-layout-item-title">{{ layout.label || ts('(no name)') }}</h4>
+              <h4 class="cse-layout-item-title" contact-layout-editable ng-model="layout.label">{{ layout.label || ts('Untitled') }}</h4>
               <div class="cse-layout-item-contact_types">{{ ts('Show: %1', {1: showContactTypes(layout)}) }}</div>
               <div class="cse-layout-item-groups">{{ ts('To: %1', {1: showGroups(layout)}) }}</div>
             </div>
@@ -36,10 +35,10 @@
         </div>
       </div>
     </div>
-    <div id="contactLayoutEdit" class="col-md-9">
+    <div id="contactLayoutEdit">
       <div class="panel panel-default">
         <div class="panel-heading">
-          <h3 class="panel-title" >
+          <h2 class="panel-title" >
             <form class="form-inline">
               <div class="btn-group btn-group-md pull-right">
                 <button class="btn" ng-class="{'btn-primary': !changesSaved && !saving, 'btn-warning': saving, 'btn-success': changesSaved}" ng-disabled="changesSaved || saving" ng-click="save()">
@@ -49,13 +48,10 @@
                   <span ng-if="saving">{{ ts('Saving...') }}</span>
                 </button>
               </div>
-              <label for="selected_layout_label">
-                <span ng-if="!selectedLayout">{{ ts('No layout selected') }}</span>
-                <span ng-if="selectedLayout">{{ ts('Edit Layout:') }}</span>
-              </label>
-              <input ng-if="selectedLayout" id="selected_layout_label" class="form-control" maxlength="255" title="{{ ts('Layout name (shown on this screen only)') }}" ng-model="selectedLayout.label" />
+              <div ng-if="!selectedLayout">{{ ts('No layout selected') }}</div>
+              <div ng-if="selectedLayout" contact-layout-editable ng-model="selectedLayout.label">{{ selectedLayout.label || ts('Untitled') }}</div>
             </form>
-          </h3>
+          </h2>
         </div>
         <div class="panel-body">
           <div ng-if="selectedLayout">
@@ -64,7 +60,7 @@
                 <form class="navbar-form navbar-left">
                   <div class="form-group">
                     <label for="selected_layout_contact_type">{{ ts('Show:') }}</label>
-                    <select id="selected_layout_contact_type" class="form-control" ng-model="selectedLayout.contact_type" crm-ui-select ng-change="clearSubType(selectedLayout)">
+                    <select id="selected_layout_contact_type" class="form-control" ng-model="selectedLayout.contact_type" crm-ui-select ng-change="changeContactType(selectedLayout)">
                       <option value="">{{ ts('Contact type') }}</option>
                       <option ng-repeat="ct in contactTypes" value="{{ ct.name }}" ng-if="!ct.parent_id">{{ ct.label }}</option>
                     </select>
@@ -84,8 +80,8 @@
             </nav>
             <div class="panel-inner">
               <div id="cse-block-container">
-                <div class="cse-col" ng-repeat="col in selectedLayout.blocks" ui-sortable="{connectWith: '.cse-col', containment: '#cse-block-container'}" ng-model="col">
-                  <div class="cse-block" ng-repeat="block in col" ng-include="'~/contactlayout/contactlayoutblock.html'"></div>
+                <div class="cse-col cse-layout-col" ng-repeat="col in selectedLayout.blocks" ui-sortable="{connectWith: '.cse-col', containment: '#cse-block-container', cancel: 'input,textarea,button,select,option,a,.crm-editable-enabled,[contenteditable]'}" ng-model="col">
+                  <div class="cse-block" ng-repeat="block in col" ng-class="{collapsible: block.collapsible, collapsed: block.collapsed, 'show-title': block.showTitle, 'block-multiple': block.multiple}" ng-include="'~/contactlayout/contactlayoutblock.html'"></div>
                 </div>
                 <div id="cse-palette-col">
                   <h4>
@@ -96,8 +92,8 @@
                       </button>
                     </div>
                   </h4>
-                  <div id="cse-palette" class="cse-col" ui-sortable="{connectWith: '.cse-col', containment: '#cse-block-container', update: enforceUnique}" ng-model="selectedLayout.palette">
-                    <div class="cse-block" ng-repeat="block in selectedLayout.palette" ng-include="'~/contactlayout/contactlayoutblock.html'"></div>
+                  <div id="cse-palette" class="cse-col" ui-sortable="{connectWith: '.cse-col', containment: '#cse-block-container', update: enforceUnique, cancel: 'input,textarea,button,select,option,a,.invalid-block'}" ng-model="selectedLayout.palette">
+                    <div class="cse-block" ng-repeat="block in selectedLayout.palette" ng-class="{'invalid-block': selectedLayout.contact_type && block.contact_type && selectedLayout.contact_type !== block.contact_type}" ng-include="'~/contactlayout/contactlayoutblock.html'"></div>
                   </div>
                 </div>
               </div>

@@ -149,3 +149,40 @@ function contactlayout_civicrm_pageRun(&$page) {
     }
   }
 }
+
+/**
+ * Implements hook_civicrm_postProcess().
+ *
+ * Refreshes profile blocks when related info is updated.
+ */
+function contactlayout_civicrm_postProcess($formName, &$form) {
+  if (is_a($form, 'CRM_Contact_Form_Inline')) {
+    $blocks = CRM_Contactlayout_BAO_ContactLayout::getAllBlocks();
+    $selector = NULL;
+    if ($formName == 'CRM_Contact_Form_Inline_ContactName') {
+      $selector = '#crm-contactname-content';
+    }
+    else {
+      $tpl = str_replace('Form/Inline', 'Page/Inline', $form->getTemplateFileName());
+      foreach ($blocks as $group) {
+        foreach ($group['blocks'] as $block) {
+          if (
+            $block['tpl_file'] == $tpl ||
+            ($formName == 'CRM_Contact_Form_Inline_CustomData' && $form->_groupID == CRM_Utils_Array::value('custom_group_id', $block)) ||
+            $block['name'] == 'Address' && $formName == 'CRM_Contact_Form_Inline_Address'
+          ) {
+            $selector = CRM_Utils_Array::value('selector', $block);
+            break 2;
+          }
+        }
+      }
+    }
+    if ($selector) {
+      foreach ($blocks['profile']['blocks'] as $profileBlock) {
+        if (in_array($selector, $profileBlock['refresh'])) {
+          $form->ajaxResponse['reloadBlocks'][] = $profileBlock['selector'];
+        }
+      }
+    }
+  }
+}

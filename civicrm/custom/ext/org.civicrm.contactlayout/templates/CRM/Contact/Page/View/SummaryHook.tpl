@@ -3,7 +3,7 @@
     <div class="contactCard{if $columnNo}Right{else}Left{/if}">
       {foreach from=$column item='block'}
         <div class="{if $block.collapsible}crm-collapsible{if $block.collapsed} collapsed{/if}{/if}">
-          {if $block.collapsible}
+          {if (!empty($block.collapsible) || !empty($block.showTitle))}
             <div class="collapsible-title">
               {$block.title}
             </div>

@@ -15,10 +15,13 @@
             return crmApi4({
               layouts: ['ContactLayout', 'get', {orderBy: {weight: 'ASC'}}],
               blocks:  ['ContactLayout', 'getBlocks'],
-              contactTypes: ['ContactType', 'get'],
+              contactTypes: ['ContactType', 'get', {
+                where: [['is_active','=','1']],
+                orderBy: {label: 'ASC'}
+              }],
               groups: ['Group', 'get', {
                 select: ['name','title','description'],
-                where: [['is_hidden','=','0'],['is_active','=','1'],['saved_search_id','IS NULL','']]
+                where: [['is_hidden','=','0'], ['is_active','=','1'], ['saved_search_id','IS NULL','']]
               }]
             });
           }
@@ -34,7 +37,6 @@
   angular.module('contactlayout').controller('Contactlayoutcontactlayout', function($scope, $timeout, crmApi4, crmStatus, crmUiHelp, data) {
     var ts = $scope.ts = CRM.ts('contactlayout');
     var hs = $scope.hs = crmUiHelp({file: 'CRM/contactlayout/contactlayout'});
-    $scope.paletteGroups = {};
     $scope.selectedLayout = null;
     $scope.changesSaved = 1;
     $scope.saving = false;
@@ -70,8 +72,20 @@
       return ts('All contact types');
     };
 
-    $scope.clearSubType = function(layout) {
+    $scope.contactTypeLabel = function(contactType) {
+      return getLabels(contactType, data.contactTypes);
+    };
+
+    $scope.changeContactType = function(layout) {
       layout.contact_sub_type = null;
+      if (layout.contact_type) {
+        _.each(layout.blocks, function(blocks, i) {
+          layout.blocks[i] = _.filter(blocks, function(block) {
+            return !block.contact_type || block.contact_type === layout.contact_type;
+          });
+        });
+        loadLayout(layout);
+      }
     };
 
     $scope.showGroups = function(layout) {
@@ -100,9 +114,18 @@
           .on('crmFormSuccess', function() {
             edited = true;
           })
+          .on('crmLoad', function(e) {
+            if ($(e.target).is('.ui-dialog-content')) {
+              $(this).prepend('<div class="messages status"><i class="crm-i fa-exclamation-triangle"></i> ' +
+                ts('You are editing global settings, which will affect more than just this layout.') +
+                '</div>'
+              );
+            }
+          })
           .on('dialogclose', function() {
             if (edited) {
               reloadBlocks();
+              CRM.Schema.reloadModels();
             }
           });
       }
@@ -131,6 +154,21 @@
           });
           reloadBlocks([['UFGroup', 'delete', {where: [['id', '=', block.profile_id]]}]]);
         });
+    };
+
+    $scope.toggleCollapsible = function(block) {
+      if (!block.collapsible && !block.showTitle) {
+        block.collapsible = true;
+        block.collapsed = true;
+      } else if (!block.collapsible && block.showTitle) {
+        block.showTitle = false;
+      } else if (block.collapsed) {
+        block.collapsed = false;
+      } else {
+        block.collapsible = false;
+        block.collapsed = false;
+        block.showTitle = true;
+      }
     };
 
     $scope.enforceUnique = function(e, ui) {
@@ -227,7 +265,7 @@
         };
         _.each(layout.blocks, function(blocks, col) {
           _.each(blocks, function(block) {
-            item.blocks[col].push(_.pick(block, 'name'));
+            item.blocks[col].push(getBlockProperties(block));
             empty = false;
           });
         });
@@ -247,6 +285,11 @@
         writeRecords(data);
       }
     };
+
+    // Return the editable properties of a block
+    function getBlockProperties(block) {
+      return _.pick(block, 'name', 'title', 'collapsible', 'collapsed', 'showTitle');
+    }
 
     // Write layout data to the server
     function writeRecords(data) {
@@ -269,9 +312,9 @@
     function loadBlocks(blockData) {
       allBlocks = [];
       _.each(blockData, function(group) {
-        $scope.paletteGroups[group.name] = {title: group.title, icon: group.icon};
         _.each(group.blocks, function(block) {
           block.group = group.name;
+          block.groupTitle = group.title;
           block.icon = group.icon;
           allBlocks.push(block);
         });
@@ -286,13 +329,15 @@
     function loadLayout(layout) {
       layout.palette = _.cloneDeep(allBlocks);
       _.each(layout.blocks, function(column) {
-        _.each(column, function(block) {
-          $.extend(block, _.where(layout.palette, {name: block.name})[0]);
+        _.each(column, function(block, num) {
+          column[num] = _.extend(_.where(layout.palette, {name: block.name})[0] || {}, getBlockProperties(block));
           _.remove(layout.palette, {name: block.name});
         });
       });
     }
 
+    // Reload all block data and refresh layouts
+    // Optionally call the api first (e.g. to save a profile)
     function reloadBlocks(apiCalls) {
       apiCalls = apiCalls || [];
       apiCalls.push(['ContactLayout', 'getBlocks']);
@@ -301,7 +346,7 @@
         .done(function(data) {
           $scope.$apply(function() {
             allBlocks = loadBlocks(_.last(data));
-            loadLayouts($scope.layouts);
+            loadLayouts();
           });
         });
     }
@@ -314,18 +359,64 @@
     };
     CRM.Schema.reloadModels();
 
-    $scope.$watch('layouts', function (a, b) {
+    // Set changesSaved to true on initial load, false thereafter whenever changes are made to the model
+    $scope.$watch('layouts', function () {
       $scope.changesSaved = $scope.changesSaved === 1;
     }, true);
 
     // Initialize
     if ($scope.layouts.length) {
       loadLayouts();
+      $scope.selectedLayout = $scope.layouts[0];
     }
     else {
       $scope.newLayout();
     }
 
+  });
+
+  // Editable titles using ngModel & html5 contenteditable
+  angular.module('contactlayout').directive("contactLayoutEditable", function() {
+    return {
+      restrict: "A",
+      require: "ngModel",
+      link: function(scope, element, attrs, ngModel) {
+        var ts = CRM.ts('contactlayout');
+
+        function read() {
+          var htmlVal = element.html();
+          if (!htmlVal) {
+            htmlVal = ts('Untitled');
+            element.html(htmlVal);
+          }
+          ngModel.$setViewValue(htmlVal);
+        }
+
+        ngModel.$render = function() {
+          element.html(ngModel.$viewValue || ' ');
+        };
+
+        // Special handling for enter and escape keys
+        element.on('keydown', function(e) {
+          // Enter: prevent line break and save
+          if (e.which === 13) {
+            e.preventDefault();
+            element.blur();
+          }
+          // Escape: undo
+          if (e.which === 27) {
+            element.html(ngModel.$viewValue || ' ');
+            element.blur();
+          }
+        });
+
+        element.on("blur change", function() {
+          scope.$apply(read);
+        });
+
+        element.attr('contenteditable', 'true').addClass('crm-editable-enabled');
+      }
+    };
   });
 
 })(angular, CRM.$, CRM._);

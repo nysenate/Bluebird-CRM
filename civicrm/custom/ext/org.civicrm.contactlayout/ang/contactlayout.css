@@ -41,6 +41,9 @@
   padding: 10px;
   margin: 0;
 }
+#bootstrap-theme #contactLayoutEditor .cse-deleted-msg a {
+  float: right;
+}
 
 #bootstrap-theme #contactLayoutEditor .cse-layout-item {
   border-radius: 4px;
@@ -85,9 +88,16 @@
   width: 20em;
 }
 
+#contactLayoutEditor,
 #cse-block-container {
   display: flex;
-  align-items: stretch;
+}
+#contactLayoutLayouts {
+  flex: 1;
+  margin-right: 10px;
+}
+#contactLayoutEdit {
+  flex: 3;
 }
 #cse-block-container > div {
   flex: 1;
@@ -129,6 +139,7 @@
   border-radius: 0 0 2px 2px;
   border: 1px solid #0071bd;
   padding: 2px 4px;
+  min-height: 200px;
 }
 #cse-block-container .cse-block {
   cursor: move;
@@ -139,7 +150,7 @@
   margin-bottom: 14px;
   margin-top: 2px;
 }
-#cse-block-container .cse-block .btn-group-xs {
+#cse-block-container .cse-block .cse-block-buttons {
   position: absolute;
   right: 3px;
   top: 3px;
@@ -149,16 +160,27 @@
 }
 #cse-block-container .cse-block h5 {
   color: #0071bd;
-  position: absolute;
-  background-color: white;
-  background: linear-gradient(to bottom, #f8f8f8 0%,#f8f8f8 50%,#fff 51%,#fff 100%);
-  padding: 1px 3px;
-  top: -15px;
+  top: -18px;
   left: 8px;
   margin: 5px 0;
 }
+#cse-block-container .cse-layout-col .cse-block h5 {
+  padding: 0 3px;
+  position: absolute;
+  background: white linear-gradient(to bottom, #f8f8f8 0%,#f8f8f8 50%,#fff 65%,#fff 100%);
+}
+#contactLayoutEditor .crm-editable-enabled {
+  display: inline-block;
+}
+#cse-block-container .cse-block h5 [contenteditable]:focus {
+  cursor: text;
+  background: white;
+}
+#cse-block-container .cse-layout-col .cse-block:not(.collapsible):not(.show-title) h5 {
+  font-weight: normal;
+  color: grey;
+}
 #cse-block-container .cse-block-sample {
-  margin-top: 12px;
   margin-left: 8px;
   margin-bottom: 4px;
 }
@@ -173,13 +195,85 @@
   margin-bottom: 6px;
   margin-top: 6px;
 }
-#cse-block-container #cse-palette .cse-block-sample {
+#cse-block-container .cse-block .cse-block-collapsible-toggle {
+  margin-left: 5px;
+  margin-top: 6px;
+  margin-bottom: 2px;
+}
+#cse-block-container .cse-block .cse-block-collapsible-toggle button {
+  background: white;
+}
+#cse-block-container .cse-block .cse-block-collapsible-toggle button:active,
+#cse-block-container .cse-block .cse-block-collapsible-toggle button:focus {
+  background-color: rgba(88, 183, 209, 0.7);
+}
+#cse-block-container .cse-block .cse-block-collapsible-toggle button:hover {
+  background-color: #58b7d1;
+}
+#cse-block-container .cse-block .cse-block-collapsible-toggle button span span:last-child {
+  text-transform: none;
+  color: white;
+}
+#cse-block-container #cse-palette .cse-block .cse-block-sample,
+#cse-block-container #cse-palette .cse-block .cse-block-collapsible-toggle,
+#cse-block-container .cse-block.collapsed .cse-block-sample,
+#cse-block-container #cse-palette .cse-block .form-inline {
   display: none;
 }
 #cse-block-container #cse-palette .cse-block h5 {
-  position: initial;
   padding: 0 10px;
   font-size: 12px;
   font-weight: 500;
-  background: transparent;
+}
+#cse-block-container #cse-palette .invalid-block {
+  cursor: not-allowed;
+}
+#cse-block-container #cse-palette .invalid-block h5 {
+  color: grey;
+  text-decoration: line-through;
+}
+#cse-block-container .cse-layout-col .block-multiple:not(.collapsed) {
+  margin-bottom: 40px;
+}
+#cse-block-container .cse-layout-col .block-multiple:not(.collapsed):after {
+  display: block;
+  content: '+ Multiple';
+  position: absolute;
+  bottom: -28px;
+  border: 2px solid grey;
+  border-radius: 4px;
+  background-color: white;
+  height: 24px;
+  width: 100%;
+  padding-left: 8px;
+  padding-top: 2px;
+  color: grey;
+  font-size: 11px;
+  box-sizing: border-box;
+}
+
+/**
+ * Shims so the UI isn't completely broken when a Bootstrap theme is not installed
+ */
+.panel {
+  border: 1px solid grey;
+  box-sizing: border-box;
+}
+.panel-heading {
+  padding: 10px 20px;
+  color: #464354;
+  background-color: #f3f6f7;
+}
+.panel-primary>.panel-heading {
+  color: #fff;
+  background-color: #0071bd;
+}
+.panel-inner {
+  box-sizing: border-box;
+}
+.btn:not([disabled]) {
+  cursor: pointer;
+}
+#contactLayoutEditor h5 {
+  font-size: 13px;
 }
