@@ -9,7 +9,7 @@
   background: #468189 !important;
 }
 .page-civicrm-contact-view .crm-actions-ribbon {
-  background: #D5573B !important;
+  background: #D8B989 !important;
 }
 .crm-container input[type=button],
 .crm-container a.button,
@@ -39,4 +39,10 @@
 .crm-contact-deceased {
   color: #FFE36D !important;
   font-size: 0.9em;
+}
+.crm-container #contact-summary-relationship-tab.view-content h3 {
+  background: #445E93 !important;
+}
+.crm-container #contact-summary-relationship-tab.view-content .label.font-red {
+  background: #468189 !important;
 }

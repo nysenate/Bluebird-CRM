@@ -13,3 +13,9 @@ li.crm-delete-action.crm-contact-delete {
 .crm-summary-block .crm-address-block .crm-collapsible .collapsible-title {
   font-size: 14px;
 }
+
+/*tags tab*/
+div#Tag li#j1_1 > i.jstree-icon,
+div#Tag li#j1_1 > a#tag_291 {
+  display: none;
+}

@@ -71,7 +71,7 @@ ul#civicrm-menu {
 /*login*/
 .not-logged-in,
 .not-logged-in #page {
-  background-color: #eee;
+  background-color: #C9DBD9;
 }
 .not-logged-in #block-user-login,.not-logged-in form#user-login {
   background: transparent url(../images/login.png) no-repeat top center;
