@@ -6,6 +6,7 @@ core = 7.x
 
 stylesheets[all][] = css/bluebird.css
 stylesheets[all][] = css/colors.css
+stylesheets[all][] = css/customizations.css
 
 regions[content] = Content
 regions[help] = Help

@@ -1,0 +1,9 @@
+/*news feed*/
+div#newsFeeds {
+  padding: 20px;
+}
+
+/*contact summary*/
+li.crm-delete-action.crm-contact-delete {
+  display: none;
+}
