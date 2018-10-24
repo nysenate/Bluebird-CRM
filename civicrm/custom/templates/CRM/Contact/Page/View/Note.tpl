@@ -217,7 +217,8 @@
         </thead>
 
         {foreach from=$notes item=note}
-        <tr id="cnote_{$note.id}" class="{cycle values="odd-row,even-row"} crm-note">
+          {*NYSS future core*}
+          <tr id="Note-{$note.id}" data-action="setvalue" class="{cycle values="odd-row,even-row"} crm-note crm-entity">
             <td class="crm-note-comment">
                 {if $note.comment_count}
                     <span id="{$note.id}_show" style="display:block" class="icon_comments_show">
@@ -230,8 +231,8 @@
                     <span class="crm-i fa-caret-right" id="{$note.id}_hide" style="display:none"></span>
                 {/if}
             </td>
-          {*NYSS 6016 shuffle column order*}
-            <td class="crm-note-subject">{$note.subject}</td>
+          {*NYSS 6016 shuffle column order; implement inline editable - future core*}
+            <td class="crm-note-subject crmf-subject crm-editable">{$note.subject}</td>
             <td class="crm-note-note">
                 {$note.note|mb_truncate:80:"...":false|nl2br}
                 {* Include '(more)' link to view entire note if it has been truncated *}
