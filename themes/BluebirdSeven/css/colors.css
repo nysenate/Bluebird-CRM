@@ -36,3 +36,7 @@
 .crm-container .crm-accordion-header {
   background: #9DBEBB !important;
 }
+.crm-contact-deceased {
+  color: #FFE36D !important;
+  font-size: 0.9em;
+}

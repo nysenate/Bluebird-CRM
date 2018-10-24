@@ -7,3 +7,9 @@ div#newsFeeds {
 li.crm-delete-action.crm-contact-delete {
   display: none;
 }
+.crm-summary-block .crm-address-block .crm-collapsible {
+  padding: 5px 10px !important;
+}
+.crm-summary-block .crm-address-block .crm-collapsible .collapsible-title {
+  font-size: 14px;
+}
