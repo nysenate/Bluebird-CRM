@@ -88,6 +88,10 @@ class ReflectionUtils {
         if ($key == 'var') {
           $info['type'] = explode('|', $words[1]);
         }
+        elseif ($key == 'options') {
+          $val = str_replace(', ', ',', implode(' ', array_slice($words, 1)));
+          $info['options'] = explode(',', $val);
+        }
         else {
           // Unrecognized annotation, but we'll duly add it to the info array
           $val = implode(' ', array_slice($words, 1));

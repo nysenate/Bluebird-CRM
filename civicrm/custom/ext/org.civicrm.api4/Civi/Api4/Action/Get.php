@@ -34,6 +34,10 @@ use Civi\Api4\Generic\Result;
 /**
  * Retrieve items based on criteria specified in the 'where' param.
  *
+ * Use the 'select' param to determine which fields are returned, defaults to *.
+ *
+ * Perform joins on other related entities using a dot notation.
+ *
  * @method $this addSelect(string $select)
  * @method $this setSelect(array $selects)
  * @method $this setWhere(array $wheres)
@@ -60,6 +64,7 @@ class Get extends AbstractAction {
    * Array of field(s) to use in ordering the results
    *
    * Defaults to id ASC
+   *
    * $example->addOrderBy('sort_name', 'ASC')
    *
    * @var array
@@ -101,7 +106,7 @@ class Get extends AbstractAction {
    * Adds one or more AND/OR/NOT clause groups
    *
    * @param string $operator
-   * @param mixed $condition1,... $conditionN
+   * @param mixed $condition1 ... $conditionN
    *   Either a nested array of arguments, or a variable number of arguments passed to this function.
    *
    * @return $this

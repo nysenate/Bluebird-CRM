@@ -8,15 +8,16 @@ use Civi\Test\Api4\UnitTestCase;
 /**
  * @group headless
  */
-class EntityTest extends UnitTestCase  {
+class EntityTest extends UnitTestCase {
 
   public function testEntityGet() {
     $result = Entity::get()
       ->setCheckPermissions(FALSE)
-      ->execute();
-    $this->assertContains('Entity', $result,
+      ->execute()
+      ->indexBy('name');
+    $this->assertArrayHasKey('Entity', $result,
       "Entity::get missing itself");
-    $this->assertContains('Participant', $result,
+    $this->assertArrayHasKey('Participant', $result,
       "Entity::get missing Participant");
   }
 

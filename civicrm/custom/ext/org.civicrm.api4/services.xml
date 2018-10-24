@@ -29,6 +29,10 @@
             <tag name="spec_provider"/>
         </service>
 
+        <service class="Civi\Api4\Service\Spec\Provider\AddressCreationSpecProvider">
+            <tag name="spec_provider"/>
+        </service>
+
         <service id="option_value_creation.spec_provider" class="Civi\Api4\Service\Spec\Provider\OptionValueCreationSpecProvider">
             <tag name="spec_provider"/>
         </service>
@@ -41,7 +45,15 @@
             <tag name="spec_provider"/>
         </service>
 
+        <service class="Civi\Api4\Service\Spec\Provider\PhoneCreationSpecProvider">
+            <tag name="spec_provider"/>
+        </service>
+
         <service class="Civi\Api4\Service\Spec\Provider\EventCreationSpecProvider">
+            <tag name="spec_provider"/>
+        </service>
+
+        <service class="Civi\Api4\Service\Spec\Provider\NoteCreationSpecProvider">
             <tag name="spec_provider"/>
         </service>
 
@@ -54,6 +66,10 @@
         </service>
 
         <service class="Civi\Api4\Service\Spec\Provider\GroupCreationSpecProvider">
+            <tag name="spec_provider"/>
+        </service>
+
+        <service class="Civi\Api4\Service\Spec\Provider\NavigationCreationSpecProvider">
             <tag name="spec_provider"/>
         </service>
 
@@ -91,6 +107,10 @@
 
         <service id="api4.post_select_query.subscriber" class="Civi\Api4\Event\Subscriber\PostSelectQuerySubscriber">
             <tag name="event_subscriber"/>
+        </service>
+
+        <service class="Civi\Api4\Service\Spec\Provider\CustomValueSpecProvider">
+            <tag name="spec_provider"/>
         </service>
 
     </services>

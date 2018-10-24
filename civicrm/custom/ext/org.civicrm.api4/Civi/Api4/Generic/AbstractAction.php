@@ -47,6 +47,13 @@ abstract class AbstractAction implements \ArrayAccess {
    */
   protected $version = 4;
 
+  /**
+   * Custom Group name if this is a CustomValue pseudo-entity.
+   *
+   * @var string
+   */
+  private $customGroup;
+
   /*
    * Todo: not implemented.
    *
@@ -111,7 +118,7 @@ abstract class AbstractAction implements \ArrayAccess {
    *
    * @param $name
    * @param $arguments
-   * @return $this|mixed
+   * @return static|mixed
    * @throws \API_Exception
    */
   public function __call($name, $arguments) {
@@ -184,6 +191,22 @@ abstract class AbstractAction implements \ArrayAccess {
       $params[$name] = $this->$name;
     }
     return $params;
+  }
+
+  /**
+   * @param $customGroup
+   * @return static
+   */
+  public function setCustomGroup($customGroup) {
+    $this->customGroup = $customGroup;
+    return $this;
+  }
+
+  /**
+   * @return string
+   */
+  public function getCustomGroup() {
+    return $this->customGroup;
   }
 
   /**
@@ -330,7 +353,7 @@ abstract class AbstractAction implements \ArrayAccess {
   }
 
   public function getPermissions() {
-    $permissions = call_user_func(["\\Civi\\Api4\\" . $this->getEntity(), 'permissions']);
+    $permissions = call_user_func(["\\Civi\\Api4\\" . $this->entity, 'permissions']);
     $permissions += [
       // applies to getFields, getActions, etc.
       'meta' => ['access CiviCRM'],
@@ -368,8 +391,9 @@ abstract class AbstractAction implements \ArrayAccess {
     }
     // Some BAOs are weird and don't support a straightforward "create" method.
     $oddballs = [
-      'Website' => 'add',
       'Address' => 'add',
+      'GroupContact' => 'add',
+      'Website' => 'add',
     ];
     $method = UtilsArray::value($this->getEntity(), $oddballs, 'create');
     if (!method_exists($bao, $method)) {
@@ -385,6 +409,10 @@ abstract class AbstractAction implements \ArrayAccess {
     if (!$createResult) {
       $errMessage = sprintf('%s write operation failed', $this->getEntity());
       throw new \API_Exception($errMessage);
+    }
+
+    if (!empty($this->reload) && is_a($createResult, 'CRM_Core_DAO')) {
+      $createResult->find(TRUE);
     }
 
     // trim back the junk and just get the array:
@@ -426,8 +454,8 @@ abstract class AbstractAction implements \ArrayAccess {
   }
 
   /**
-   * @param $params
-   * @param $entityId
+   * @param array $params
+   * @param int $entityId
    * @return mixed
    */
   private function formatCustomParams(&$params, $entityId) {

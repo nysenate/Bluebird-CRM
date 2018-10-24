@@ -39,4 +39,5 @@ trait QueryCounterTrait {
 
     return ArrayHelper::value('RESULTSEQ', $_DB_DATAOBJECT, 0);
   }
+
 }

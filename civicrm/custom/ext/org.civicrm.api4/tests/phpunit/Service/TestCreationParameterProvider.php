@@ -128,6 +128,9 @@ class TestCreationParameterProvider {
       case 'String':
         return StringHelper::createRandom(10, implode('', range('a', 'z')));
 
+      case 'Text':
+        return StringHelper::createRandom(100, implode('', range('a', 'z')));
+
       case 'Money':
         return sprintf('%d.%2d', rand(0, 2000), rand(1, 99));
     }

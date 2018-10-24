@@ -18,6 +18,11 @@ use Symfony\Component\Config\FileLocator;
  */
 function civicrm_api4($entity, $action, $params = []) {
   $params['version'] = 4;
+  // For custom pseudo-entities
+  if (strpos($entity, 'Custom_') === 0) {
+    $params['customGroup'] = substr($entity, 7);
+    $entity = 'CustomValue';
+  }
   $request = \Civi\API\Request::create($entity, $action, $params);
   return \Civi::service('civi_api_kernel')->runRequest($request);
 }
@@ -82,8 +87,6 @@ function api4_civicrm_config(&$config) {
 /**
  * Implements hook_civicrm_xmlMenu().
  *
- * @param $files array(string)
- *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_xmlMenu
  */
 function api4_civicrm_xmlMenu(&$files) {
@@ -129,13 +132,6 @@ function api4_civicrm_disable() {
 /**
  * Implements hook_civicrm_upgrade().
  *
- * @param $op string, the type of operation being performed; 'check' or 'enqueue'
- * @param $queue CRM_Queue_Queue, (for 'enqueue') the modifiable list of pending up upgrade tasks
- *
- * @return mixed
- *   Based on op. for 'check', returns array(boolean) (TRUE if upgrades are pending)
- *                for 'enqueue', returns void
- *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_upgrade
  */
 function api4_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
@@ -165,7 +161,7 @@ function api4_civicrm_managed(&$entities) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
  */
 function api4_civicrm_angularModules(&$angularModules) {
-_api4_civix_civicrm_angularModules($angularModules);
+  _api4_civix_civicrm_angularModules($angularModules);
 }
 
 /**

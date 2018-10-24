@@ -19,4 +19,5 @@ trait TableDropperTrait {
       \CRM_Core_DAO::executeQuery($dropTableQuery);
     }
   }
+
 }

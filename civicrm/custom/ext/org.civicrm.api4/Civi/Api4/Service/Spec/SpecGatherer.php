@@ -34,9 +34,16 @@ class SpecGatherer {
   public function getSpec($entity, $action, $includeCustom) {
     $specification = new RequestSpec($entity, $action);
 
-    $this->addDAOFields($entity, $action, $specification);
-    if ($includeCustom && array_key_exists($entity, \CRM_Core_SelectValues::customGroupExtends())) {
-      $this->addCustomFields($entity, $specification);
+    // Real entities
+    if (strpos($entity, 'Custom_') !== 0) {
+      $this->addDAOFields($entity, $action, $specification);
+      if ($includeCustom && array_key_exists($entity, \CRM_Core_SelectValues::customGroupExtends())) {
+        $this->addCustomFields($entity, $specification);
+      }
+    }
+    // Custom pseudo-entities
+    else {
+      $this->getCustomGroupFields(substr($entity, 7), $specification);
     }
 
     foreach ($this->specProviders as $provider) {
@@ -84,6 +91,22 @@ class SpecGatherer {
 
     foreach ($customFields as $fieldArray) {
       $field = SpecFormatter::arrayToField($fieldArray, $entity);
+      $specification->addFieldSpec($field);
+    }
+  }
+
+  /**
+   * @param string $customGroup
+   * @param RequestSpec $specification
+   */
+  private function getCustomGroupFields($customGroup, RequestSpec $specification) {
+    $customFields = CustomField::get()
+      ->addWhere('custom_group.name', '=', $customGroup)
+      ->setSelect(['custom_group.name', 'custom_group_id', 'name', 'label', 'data_type', 'html_type', 'is_required', 'is_searchable', 'is_search_range', 'weight', 'is_active', 'is_view', 'option_group_id', 'default_value', 'custom_group.table_name', 'column_name'])
+      ->execute();
+
+    foreach ($customFields as $fieldArray) {
+      $field = SpecFormatter::arrayToField($fieldArray, 'Custom_' . $customGroup);
       $specification->addFieldSpec($field);
     }
   }

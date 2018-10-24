@@ -136,6 +136,18 @@ class ParticipantTest extends UnitTestCase {
     $otherParticipantResult = Participant::get()
       ->setCheckPermissions(FALSE)
       ->setSelect(['id'])
+      ->addClause('NOT', [
+          ['event_id', '=', $firstEventId],
+          ['contact_id', '=', $firstContactId],
+        ]
+      )
+      ->execute()
+      ->indexBy('id');
+
+    // check alternate syntax for NOT
+    $otherParticipantResult2 = Participant::get()
+      ->setCheckPermissions(FALSE)
+      ->setSelect(['id'])
       ->addClause('NOT', 'AND', [
           ['event_id', '=', $firstEventId],
           ['contact_id', '=', $firstContactId],
@@ -143,6 +155,8 @@ class ParticipantTest extends UnitTestCase {
       )
       ->execute()
       ->indexBy('id');
+
+    $this->assertEquals($otherParticipantResult, $otherParticipantResult2);
 
     $this->assertEquals($participantCount - 1,
       count($otherParticipantResult),

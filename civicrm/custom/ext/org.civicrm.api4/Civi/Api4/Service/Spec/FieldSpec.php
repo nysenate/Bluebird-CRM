@@ -36,7 +36,7 @@ class FieldSpec {
   protected $required = FALSE;
 
   /**
-   * @var array
+   * @var array|boolean
    */
   protected $options;
 
@@ -231,7 +231,7 @@ class FieldSpec {
    * @return array
    */
   public function getOptions() {
-    if (!isset($this->options)) {
+    if (!isset($this->options) || $this->options === TRUE) {
       $fieldName = $this->getName();
 
       if ($this instanceof CustomFieldSpec) {
@@ -252,7 +252,7 @@ class FieldSpec {
   }
 
   /**
-   * @param array $options
+   * @param array|bool $options
    *
    * @return $this
    */
@@ -279,11 +279,17 @@ class FieldSpec {
     return $this;
   }
 
-  public function toArray() {
+  /**
+   * @param array $values
+   * @return array
+   */
+  public function toArray($values = []) {
     $ret = [];
     foreach (get_object_vars($this) as $key => $val) {
       $key = strtolower(preg_replace('/(?=[A-Z])/', '_$0', $key));
-      $ret[$key] = $val;
+      if (!$values || in_array($key, $values)) {
+        $ret[$key] = $val;
+      }
     }
     return $ret;
   }

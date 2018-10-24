@@ -44,11 +44,18 @@ class Replace extends Get {
   protected $records = [];
 
   /**
+   * Array of select elements
+   *
+   * @required
+   * @var array
+   */
+  protected $select = ['id'];
+
+  /**
    * @inheritDoc
    */
   public function _run(Result $result) {
     // First run the parent action (get)
-    $this->select = ['id'];
     parent::_run($result);
 
     $toDelete = (array) $result->indexBy('id');

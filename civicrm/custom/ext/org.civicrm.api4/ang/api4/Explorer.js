@@ -20,15 +20,19 @@
 
   angular.module('api4').controller('Api4Explorer', function($scope, $routeParams, $location, $timeout, crmUiHelp, crmApi4) {
     var ts = $scope.ts = CRM.ts('api4');
-    var hs = $scope.hs = crmUiHelp({file: 'CRM/Api4/Explorer'});
     $scope.entities = entities;
     $scope.operators = arrayToSelect2(CRM.vars.api4.operators);
     $scope.actions = actions;
     $scope.fields = [];
+    $scope.fieldsAndJoins = [];
     $scope.availableParams = {};
     $scope.params = {};
-    var richParams = {where: 'array', values: 'object', orderBy: 'object'};
-    var getMetaParams = schema.length ? {} : {schema: ['Entity', 'getFields'], links: ['Entity', 'getLinks']};
+    var getMetaParams = schema.length ? {} : {schema: ['Entity', 'getFields'], links: ['Entity', 'getLinks']},
+      objectParams = {orderBy: 'ASC', values: ''},
+      helpTitle = '',
+      helpContent = {};
+    $scope.helpTitle = '';
+    $scope.helpContent = {};
     $scope.entity = $routeParams.api4entity;
     $scope.result = [];
     $scope.status = 'default';
@@ -81,13 +85,18 @@
     }
 
     function entityFields(entity) {
-      return _.result(_.findWhere(schema, {entity: entity}), 'fields');
+      return _.result(_.findWhere(schema, {name: entity}), 'fields');
     }
 
     function getFieldList() {
-      var fields = [],
-        fks = _.findWhere(links, {entity: $scope.entity}) || {};
+      var fields = [];
       formatForSelect2(entityFields($scope.entity), fields, 'name', ['description', 'required', 'default_value']);
+      return fields;
+    }
+
+    function addJoins(fieldList) {
+      var fields = _.cloneDeep(fieldList),
+        fks = _.findWhere(links, {entity: $scope.entity}) || {};
       _.each(fks.links, function(link) {
         var linkFields = entityFields(link.entity);
         if (linkFields) {
@@ -101,10 +110,20 @@
       return fields;
     }
 
+    $scope.help = function(title, param) {
+      if (!param) {
+        $scope.helpTitle = helpTitle;
+        $scope.helpContent = helpContent;
+      } else {
+        $scope.helpTitle = title;
+        $scope.helpContent = param;
+      }
+    };
+
     $scope.valuesFields = function() {
       var fields = [];
       _.each(_.cloneDeep($scope.fields), function(field, index) {
-        if (field.id === 'id' || field.children) {
+        if ((field.id === 'id' && $scope.action === 'create') || field.children) {
           return;
         }
         if ($scope.params.values && typeof $scope.params.values[field.id] !== 'undefined') {
@@ -113,6 +132,14 @@
         fields.push(field);
       });
       return fields;
+    };
+
+    $scope.selectOptions = function() {
+      if ($scope.availableParams.select.options) {
+        return arrayToSelect2($scope.availableParams.select.options);
+      } else {
+        return $scope.fieldsAndJoins;
+      }
     };
 
     $scope.formatSelect2Item = function(row) {
@@ -133,8 +160,8 @@
           params[key] = param;
         }
       });
-      _.each(richParams, function(type, key) {
-        if (params[key] && type === 'object') {
+      _.each(objectParams, function(defaultVal, key) {
+        if (params[key]) {
           var newParam = {};
           _.each(params[key], function(item) {
             newParam[item[0]] = item[1];
@@ -148,10 +175,12 @@
     function selectAction() {
       $scope.action = $routeParams.api4action;
       $scope.fields = getFieldList();
+      $scope.fieldsAndJoins = addJoins($scope.fields);
       if ($scope.action) {
         var actionInfo = _.findWhere(actions, {id: $scope.action});
         _.each(actionInfo.params, function (param, name) {
-          var format, defaultVal;
+          var format,
+            defaultVal = _.cloneDeep(param.default);
           if (param.type) {
             switch (param.type[0]) {
               case 'int':
@@ -170,9 +199,6 @@
             if (name == 'limit') {
               defaultVal = 25;
             }
-            if (name == 'checkPermissions') {
-              defaultVal = true;
-            }
             $scope.$bindToRoute({
               expr: 'params["' + name + '"]',
               param: name,
@@ -181,7 +207,7 @@
               deep: name === 'where'
             });
           }
-          if (richParams[name]) {
+          if (typeof objectParams[name] !== 'undefined') {
             $scope.$watch('params.' + name, function(values) {
               // Remove empty values
               _.each(values, function(clause, index) {
@@ -194,7 +220,7 @@
               var field = value;
               $timeout(function() {
                 if (field) {
-                  var defaultOp = {orderBy: 'ASC', where: '=', values: ''}[name];
+                  var defaultOp = objectParams[name];
                   if (_.isEmpty($scope.params[name])) {
                     $scope.params[name] = [[field, defaultOp]];
                   } else {
@@ -209,6 +235,14 @@
         $scope.availableParams = actionInfo.params;
       }
       writeCode();
+    }
+
+    function stringify(value, trim) {
+      var str = JSON.stringify(value).replace(/,/g, ', ');
+      if (trim) {
+        str = str.slice(1, -1);
+      }
+      return str.trim();
     }
 
     function writeCode() {
@@ -229,29 +263,35 @@
           i = 0;
         code.javascript = "CRM.api4('" + entity + "', '" + action + "', {";
         _.each(params, function(param, key) {
-          code.javascript += "\n  " + key + ': ' + JSON.stringify(param) +
+          code.javascript += "\n  " + key + ': ' + stringify(param) +
             (++i < paramCount ? ',' : '');
           if (key === 'checkPermissions') {
             code.javascript += ' // IGNORED: permissions are always enforced from client-side requests';
           }
         });
         code.javascript += "\n}).done(function(" + results + ") {\n  // do something with " + results + " array\n});";
-        code.php = '$' + results + " = \\Civi\\Api4\\" + entity + '::' + action + '()';
+        if (entity.substr(0, 7) !== 'Custom_') {
+          code.php = '$' + results + " = \\Civi\\Api4\\" + entity + '::' + action + '()';
+        } else {
+          code.php = '$' + results + " = \\Civi\\Api4\\CustomValue()::" + action + "('" + entity.substr(7) + "')";
+        }
         _.each(params, function(param, key) {
-          if (richParams[key]) {
+          var val = '';
+          if (typeof objectParams[key] !== 'undefined') {
             _.each(param, function(item, index) {
-              var val = '';
-              if (richParams[key] === 'array') {
-                _.each(item, function (it) {
-                  val += ((val.length ? ', ' : '') + JSON.stringify(it));
-                });
-              } else {
-                val = JSON.stringify(index) + ', ' + JSON.stringify(item);
-              }
+              val = stringify(index) + ', ' + stringify(item);
               code.php += "\n  ->add" + ucfirst(key).replace(/s$/, '') + '(' + val + ')';
             });
+          } else if (key === 'where') {
+            _.each(param, function (clause) {
+              if (clause[0] === 'AND' || clause[0] === 'OR' || clause[0] === 'NOT') {
+                code.php += "\n  ->addClause('" + clause[0] + "', " + stringify(clause[1], true) + ')';
+              } else {
+                code.php += "\n  ->addWhere(" + stringify(clause, true) + ")";
+              }
+            });
           } else {
-            code.php += "\n  ->set" + ucfirst(key) + '(' + JSON.stringify(param) + ')';
+            code.php += "\n  ->set" + ucfirst(key) + '(' + stringify(param) + ')';
           }
         });
         code.php += "\n  ->execute();\nforeach ($" + results + ' as $' + result + ') {\n  // do something\n}';
@@ -284,7 +324,10 @@
           if (data.schema) {
             schema = data.schema;
             entities.length = 0;
-            formatForSelect2(schema, entities, 'entity');
+            formatForSelect2(schema, entities, 'name', ['description']);
+            if ($scope.entity && !$scope.action) {
+              showEntityHelp($scope.entity);
+            }
           }
           if (data.links) {
             links = data.links;
@@ -296,9 +339,19 @@
         });
     }
 
+    // Help for an entity with no action selected
+    function showEntityHelp(entity) {
+      var entityInfo = _.findWhere(schema, {name: entity});
+      $scope.helpTitle = helpTitle = $scope.entity;
+      $scope.helpContent = helpContent = {
+        description: entityInfo.description,
+        comment: entityInfo.comment
+      };
+    }
+
     if (!$scope.entity) {
-      $scope.helpTitle = ts('Help');
-      $scope.helpText = [ts('Welcome to the api explorer.'), ts('Select an entity to begin.')];
+      $scope.helpTitle = helpTitle = ts('Help');
+      $scope.helpContent = helpContent = {description: ts('Welcome to the api explorer.'), comment: ts('Select an entity to begin.')};
       if (getMetaParams.schema) {
         fetchMeta();
       }
@@ -312,9 +365,8 @@
       selectAction();
     }
 
-    if ($scope.entity) {
-      $scope.helpTitle = $scope.entity;
-      $scope.helpText = [ts('Select an action')];
+    if ($scope.entity && schema.length) {
+      showEntityHelp($scope.entity);
     }
 
     // Update route when changing entity
@@ -331,14 +383,68 @@
       if ($scope.entity && $routeParams.api4action !== newVal && !_.isUndefined(newVal)) {
         $location.url('/api4/' + $scope.entity + '/' + newVal);
       } else if (newVal) {
-        $scope.helpTitle = $scope.entity + '::' + newVal;
-        $scope.helpText = [_.findWhere(actions, {id: newVal}).description];
+        $scope.helpTitle = helpTitle = $scope.entity + '::' + newVal;
+        $scope.helpContent = helpContent = _.pick(_.findWhere(actions, {id: newVal}), ['description', 'comment']);
       }
     });
 
     $scope.$watch('params', writeCode, true);
     writeCode();
 
+  });
+
+  angular.module('api4').directive('crmApi4WhereClause', function($timeout) {
+    return {
+      scope: {
+        data: '=crmApi4WhereClause'
+      },
+      templateUrl: '~/api4/WhereClause.html',
+      link: function (scope, element, attrs) {
+        var ts = scope.ts = CRM.ts('api4');
+        scope.newClause = '';
+        scope.conjunctions = ['AND', 'OR', 'NOT'];
+
+        scope.addGroup = function(op) {
+          scope.data.where.push([op, []]);
+        };
+
+        scope.removeGroup = function() {
+          scope.data.groupParent.splice(scope.data.groupIndex, 1);
+        };
+
+        scope.onSort = function(event, ui) {
+          $('.api4-where-fieldset').toggleClass('api4-sorting', event.type === 'sortstart');
+          $('.api4-input.form-inline').css('margin-left', '');
+        };
+
+        // Indent clause while dragging between nested groups
+        scope.onSortOver = function(event, ui) {
+          var offset = 0;
+          if (ui.sender) {
+            offset = $(ui.placeholder).offset().left - $(ui.sender).offset().left;
+          }
+          $('.api4-input.form-inline.ui-sortable-helper').css('margin-left', '' + offset + 'px');
+        };
+
+        scope.$watch('newClause', function(value) {
+          var field = value;
+          $timeout(function() {
+            if (field) {
+              scope.data.where.push([field, '=', '']);
+              scope.newClause = null;
+            }
+          });
+        });
+        scope.$watch('data.where', function(values) {
+          // Remove empty values
+          _.each(values, function(clause, index) {
+            if (typeof clause !== 'undefined' && !clause[0]) {
+              values.splice(index, 1);
+            }
+          });
+        }, true);
+      }
+    };
   });
 
   // Collapsible optgroups for select2

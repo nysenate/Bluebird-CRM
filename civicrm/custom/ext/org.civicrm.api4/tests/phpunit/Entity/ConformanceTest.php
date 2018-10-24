@@ -43,8 +43,8 @@ class ConformanceTest extends UnitTestCase {
     $result = [];
     $entities = Entity::get()->setCheckPermissions(FALSE)->execute();
     foreach ($entities as $entity) {
-      if ($entity != 'Entity') {
-        $result[] = [$entity];
+      if ($entity['name'] != 'Entity') {
+        $result[] = [$entity['name']];
       }
     }
     return $result;

@@ -11,7 +11,17 @@ class CustomFieldSpec extends FieldSpec {
   /**
    * @var int
    */
-  protected $customGroupId;
+  protected $customGroup;
+
+  /**
+   * @var string
+   */
+  protected $tableName;
+
+  /**
+   * @var string
+   */
+  protected $columnName;
 
   /**
    * @inheritDoc
@@ -54,17 +64,53 @@ class CustomFieldSpec extends FieldSpec {
   /**
    * @return int
    */
-  public function getCustomGroupId() {
-    return $this->customGroupId;
+  public function getCustomGroupName() {
+    return $this->customGroup;
   }
 
   /**
-   * @param int $customGroupId
+   * @param string $customGroupName
    *
    * @return $this
    */
-  public function setCustomGroupId($customGroupId) {
-    $this->customGroupId = $customGroupId;
+  public function setCustomGroupName($customGroupName) {
+    $this->customGroup = $customGroupName;
+
+    return $this;
+  }
+
+  /**
+   * @return string
+   */
+  public function getCustomTableName() {
+    return $this->tableName;
+  }
+
+  /**
+   * @param string $customFieldColumnName
+   *
+   * @return $this
+   */
+  public function setCustomTableName($customFieldColumnName) {
+    $this->tableName = $customFieldColumnName;
+
+    return $this;
+  }
+
+  /**
+   * @return string
+   */
+  public function getCustomFieldColumnName() {
+    return $this->columnName;
+  }
+
+  /**
+   * @param string $customFieldColumnName
+   *
+   * @return $this
+   */
+  public function setCustomFieldColumnName($customFieldColumnName) {
+    $this->columnName = $customFieldColumnName;
 
     return $this;
   }

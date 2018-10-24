@@ -40,13 +40,25 @@ class GetFields extends GenericGetFields {
     $includeCustom = $this->getIncludeCustom();
     $entities = \Civi\Api4\Entity::get()->execute();
     foreach ($entities as $entity) {
-      $data = ['entity' => $entity, 'fields' => []];
+      $entity = ((array) $entity) + ['fields' => []];
       // Prevent infinite recursion
-      if ($entity != 'Entity') {
-        $data['fields'] = (array) civicrm_api4($entity, 'getFields', ['action' => $action, 'includeCustom' => $includeCustom]);
+      if ($entity['name'] != 'Entity') {
+        $entity['fields'] = (array) civicrm_api4($entity['name'], 'getFields', ['action' => $action, 'includeCustom' => $includeCustom, 'select' => $this->select]);
       }
-      $result[] = $data;
+      $result[] = $entity;
     }
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function getParamInfo($param = NULL) {
+    $info = parent::getParamInfo($param);
+    if (!$param) {
+      // This action doesn't actually let you select fields.
+      unset($info['fields']);
+    }
+    return $info;
   }
 
 }

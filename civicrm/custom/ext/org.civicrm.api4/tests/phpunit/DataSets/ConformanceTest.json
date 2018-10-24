@@ -58,5 +58,11 @@
       "title": "The Singularity",
       "event_type_id": "major_historical_event"
     }
+  ],
+  "Group": [
+    {
+      "name": "the_group",
+      "title": "The Group"
+    }
   ]
 }

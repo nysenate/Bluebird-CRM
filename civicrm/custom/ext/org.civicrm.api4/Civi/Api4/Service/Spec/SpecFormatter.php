@@ -7,30 +7,23 @@ use CRM_Core_DAO_AllCoreTables as TableHelper;
 
 class SpecFormatter {
   /**
-   * @param RequestSpec $spec
+   * @param FieldSpec[] $fields
+   * @param array $return
    * @param bool $includeFieldOptions
    *
    * @return array
    */
-  public static function specToArray(RequestSpec $spec, $includeFieldOptions = FALSE) {
-    $specArray = [];
-    $specArray['entity'] = $spec->getEntity();
-    $specArray['action'] = $spec->getAction();
-    $specArray['fields'] = [];
+  public static function specToArray($fields, $return = [], $includeFieldOptions = FALSE) {
+    $fieldArray = [];
 
-    foreach ($spec->getFields() as $field) {
-      if ($includeFieldOptions) {
+    foreach ($fields as $field) {
+      if ($includeFieldOptions || in_array('options', $return)) {
         $field->getOptions();
       }
-      $specArray['fields'][$field->getName()] = $field->toArray();
-    }
-    if (!$includeFieldOptions) {
-      foreach ($specArray['fields'] as &$field) {
-        unset($field['options']);
-      }
+      $fieldArray[$field->getName()] = $field->toArray($return);
     }
 
-    return $specArray;
+    return $fieldArray;
   }
 
   /**
@@ -43,12 +36,19 @@ class SpecFormatter {
     $dataTypeName = self::getDataType($data);
 
     if (!empty($data['custom_group_id'])) {
-      $name = $data['custom_group']['name'] . '.' . $data['name'];
-      $field = new CustomFieldSpec($name, $entity, $dataTypeName);
+      $field = new CustomFieldSpec($data['name'], $entity, $dataTypeName);
+      if (strpos($entity, 'Custom_') !== 0) {
+        $field->setName($data['custom_group']['name'] . '.' . $data['name']);
+      }
+      else {
+        $field->setCustomTableName($data['custom_group']['table_name']);
+        $field->setCustomFieldColumnName($data['column_name']);
+      }
       $field->setCustomFieldId(ArrayHelper::value('id', $data));
-      $field->setCustomGroupId($data['custom_group_id']);
+      $field->setCustomGroupName($data['custom_group']['name']);
       $field->setRequired((bool) ArrayHelper::value('is_required', $data, FALSE));
       $field->setTitle(ArrayHelper::value('label', $data));
+      $field->setOptions(self::customFieldHasOptions($data));
       if (\CRM_Core_BAO_CustomField::isSerialized($data)) {
         $field->setSerialize(\CRM_Core_DAO::SERIALIZE_SEPARATOR_BOOKEND);
       }
@@ -58,6 +58,7 @@ class SpecFormatter {
       $field = new FieldSpec($name, $entity, $dataTypeName);
       $field->setRequired((bool) ArrayHelper::value('required', $data, FALSE));
       $field->setTitle(ArrayHelper::value('title', $data));
+      $field->setOptions(!empty($data['pseudoconstant']));
       $field->setSerialize(ArrayHelper::value('serialize', $data));
     }
 
@@ -71,6 +72,28 @@ class SpecFormatter {
     }
 
     return $field;
+  }
+
+  /**
+   * Does this custom field have options
+   *
+   * @param array $field
+   * @return bool
+   */
+  private static function customFieldHasOptions($field) {
+    // This will include boolean fields with Yes/No options.
+    if (in_array($field['html_type'], ['Radio', 'CheckBox'])) {
+      return TRUE;
+    }
+    // Do this before the "Select" string search because date fields have a "Select Date" html_type
+    // and contactRef fields have an "Autocomplete-Select" html_type - contacts are an FK not an option list.
+    if (in_array($field['data_type'], ['ContactReference', 'Date'])) {
+      return FALSE;
+    }
+    if (strpos($field['html_type'], 'Select')) {
+      return TRUE;
+    }
+    return !empty($field['option_group_id']);
   }
 
   /**

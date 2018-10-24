@@ -67,10 +67,21 @@ class RequestSpec {
   }
 
   /**
+   * @param array $fieldNames
+   *   Optional array of fields to return
    * @return FieldSpec[]
    */
-  public function getFields() {
-    return $this->fields;
+  public function getFields($fieldNames = NULL) {
+    if (!$fieldNames) {
+      return $this->fields;
+    }
+    $fields = [];
+    foreach ($this->fields as $field) {
+      if (in_array($field->getName(), $fieldNames)) {
+        $fields[] = $field;
+      }
+    }
+    return $fields;
   }
 
   /**

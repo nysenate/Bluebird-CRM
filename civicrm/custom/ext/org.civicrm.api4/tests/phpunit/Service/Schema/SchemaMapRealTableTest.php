@@ -18,4 +18,5 @@ class SchemaMapRealTableTest extends UnitTestCase {
     $path = $map->getPath('civicrm_contact', 'emails');
     $this->assertCount(1, $path);
   }
+
 }

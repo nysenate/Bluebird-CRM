@@ -96,4 +96,5 @@ class Delete extends Get {
     }
     return $info;
   }
+
 }

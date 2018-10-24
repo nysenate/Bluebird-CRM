@@ -66,6 +66,9 @@ class ValidateFieldsSubscriber extends AbstractPrepareSubscriber {
    * @throws \API_Exception
    */
   public static function checkType($value, $types) {
+    if ($value === NULL) {
+      return TRUE;
+    }
     foreach ($types as $type) {
       switch ($type) {
         case 'array':

@@ -31,7 +31,9 @@ use Civi\Api4\Generic\AbstractAction;
 use Civi\Api4\Generic\Result;
 
 /**
- * Base class for all create actions.
+ * Create a new object from supplied values.
+ *
+ * This function will create 1 new object. It cannot be used to update existing objects. Use the Update or Replace actions for that.
  *
  * @method $this setValues(array $values) Set all field values from an array of key => value pairs.
  * @method $this addValue($field, $value) Set field value.
@@ -76,7 +78,7 @@ class Create extends AbstractAction {
     }
     $unmatched = [];
     foreach ($this->getEntityFields() as $fieldName => $fieldInfo) {
-      if (!$this->getValue($fieldName) && !empty($fieldInfo['required']) && empty($fieldInfo['default_value'])) {
+      if (!$this->getValue($fieldName) && !empty($fieldInfo['required']) && !isset($fieldInfo['default_value'])) {
         $unmatched[] = $fieldName;
       }
     }

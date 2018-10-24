@@ -28,12 +28,22 @@ namespace Civi\Api4\Action;
 use Civi\Api4\Generic\Result;
 
 /**
- * Update one or more records with new values. Use the where clause to select them.
+ * Update one or more records with new values.
+ *
+ * Use the where clause (required) to select them.
  *
  * @method $this setValues(array $values) Set all field values from an array of key => value pairs.
  * @method $this addValue($field, $value) Set field value to update.
+ * @method $this setReload(bool $reload) Specify whether complete objects will be returned after saving.
  */
 class Update extends Get {
+
+  /**
+   * Criteria for get to fetch id against which the update will occur
+   *
+   * @var array
+   */
+  protected $select = ['id'];
 
   /**
    * Criteria for selecting items to update.
@@ -51,6 +61,16 @@ class Update extends Get {
   protected $values = [];
 
   /**
+   * Reload object after saving.
+   *
+   * Setting to TRUE will load complete records and return them as the api result.
+   * If FALSE the api usually returns only the fields specified to be updated.
+   *
+   * @var bool
+   */
+  protected $reload = FALSE;
+
+  /**
    * @param $key
    *
    * @return mixed|null
@@ -66,8 +86,6 @@ class Update extends Get {
     if (!empty($this->values['id'])) {
       throw new \Exception('Cannot update the id of an existing object.');
     }
-    // First run the parent action (get)
-    $this->select = ['id'];
     // For some reason the contact bao requires this
     if ($this->getEntity() == 'Contact') {
       $this->select[] = 'contact_type';
