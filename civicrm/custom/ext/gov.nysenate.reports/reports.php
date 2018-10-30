@@ -128,3 +128,56 @@ function reports_civicrm_queryObjects(&$queryObjects, $type) {
   }
 }
 
+function reports_civicrm_alterReportVar($varType, &$var, &$object) {
+  /*Civi::log()->debug('alterReportVar', array(
+    'varType' => $varType,
+    'var' => $var,
+    //'object' => $object,
+  ));*/
+
+  $class = get_class($object);
+  switch ($varType) {
+    case 'columnss':
+      break;
+
+    case 'sql':
+      switch ($class) {
+        case 'CRM_Report_Form_Contact_LoggingSummary':
+          _reports_LoggingSummary_sql($var, $object);
+          break;
+        default:
+      }
+      break;
+
+    case 'rows':
+      break;
+
+    default:
+  }
+}
+
+/*
+ * 12173 see also CRM_NYSS_Reports_BAO_Query
+ * this ensures tag/group logs aren't duplicated as contact entries
+ * we need to do this because we trigger a modified_date update for those
+ * objects which causes them to show up as contact updates
+ */
+function _reports_LoggingSummary_sql(&$var, &$object) {
+  if ($var->getVar('currentLogTable') == 'log_civicrm_contact') {
+    $from = $var->getVar('_from');
+    $where = $var->getVar('_where');
+
+    $dsn = defined('CIVICRM_LOGGING_DSN') ? DB::parseDSN(CIVICRM_LOGGING_DSN) : DB::parseDSN(CIVICRM_DSN);
+    $loggingDB = $dsn['database'];
+
+    //change extra_join to LEFT JOIN
+    $from = str_replace("INNER JOIN `{$loggingDB}`.log_civicrm_entity_tag",
+      "LEFT JOIN `{$loggingDB}`.log_civicrm_entity_tag", $from);
+    $from = str_replace("INNER JOIN `{$loggingDB}`.log_civicrm_group_contact",
+      "LEFT JOIN `{$loggingDB}`.log_civicrm_group_contact", $from);
+    $var->setVar('_from', $from);
+
+    $where .= " AND extra_table.id IS NULL AND extra_table_2.id IS NULL";
+    $var->setVar('_where', $where);
+  }
+}
