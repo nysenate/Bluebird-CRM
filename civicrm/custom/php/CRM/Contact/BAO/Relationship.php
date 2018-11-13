@@ -1426,6 +1426,9 @@ LEFT JOIN  civicrm_country ON (civicrm_address.country_id = civicrm_country.id)
               if ($values[$rid]['rtype'] == 'b_a') {
                 $replace['clientid'] = $values[$rid]['cid'];
               }
+
+              //NYSS 12189 future core
+              $values[$rid]['case'] = '<a href="' . CRM_Utils_System::url('civicrm/case/ajax/details', 'caseId=' . $values[$rid]['case_id'] . '&cid=' . $replace['clientid']  . '&snippet=4') .'" class="action-item crm-hover-button crm-summary-link"><i class="crm-i fa-folder-open-o"></i></a>';
             }
           }
 

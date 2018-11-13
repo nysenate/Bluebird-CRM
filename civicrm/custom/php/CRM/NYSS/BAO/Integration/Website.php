@@ -492,7 +492,7 @@ class CRM_NYSS_BAO_Integration_Website
     if (!$tagId) {
       $tag = civicrm_api('tag', 'create', array(
         'version' => 3,
-        'name' => $tagName,
+        'name' => $tagStub,
         'parent_id' => $parentId,
         'is_selectable' => 0,
         'is_reserved' => 1,
