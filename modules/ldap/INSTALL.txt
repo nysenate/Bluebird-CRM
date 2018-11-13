@@ -1,37 +1,60 @@
+==================================================================================
+Prerequisites
+==================================================================================
+
+To set up LDAP efficiently, you need to acquire the relevant information for the
+domain you are authenticating against.
+
+Contact your organization's staff to receive the necessary information. This
+should include:
+
+* The servers available to you (hostname, port, encryption preference)
+* The binding method (service account including credentials, if necessary)
+* If applicable, the structure of the data you are trying to sync, e.g.
+sAMAccountName is the unique name attribute for your Active Directory.
+
+### Requirements
+
+The following requirements need to be met for you to work with any of the LDAP
+modules.
+
+* PHP version 5.6.
+* PHP LDAP extension.
 
 ==================================================================================
-LDAP Installation instructions:
+ Installation instructions:
 ==================================================================================
 
-Note:  This does not automatically upgrade for Drupal 6 LDAP Integration Modules.
-	This functionality may be developed. Some notes are below.
+1) Download the LDAP module as you would any other.
 
-1) Download the whole package of files from
-   http://drupal.org/project/ldap
+2) Go to admin/build/modules and enable the needed modules from the
+   Lightweight Directory Access Protocol group.
 
-2) Upload the LDAP files to the modules directory.
+3) Enable and configure ldap servers and configure at least one server.
 
+4) Enable the other LDAP modules you need.
 
-2b) If you are using an Active Directory server, you may benefit from AD LDAP: http://adldap.sourceforge.net/
-Download it and install in /sites/all/libraries.  The folder hierarchy should look like:
-/sites/all/libraries/adLDAP/src
-
-
-3) Go to admin/build/modules and enable the needed modules from the
-   Lightweight Directory Access Protocal group.
-
-4) Enable and configure ldap servers and configure at least one server.
-
-5) Enable and configure ldap authentication and/or ldap authorization
-
-6) LDAP Help is just for debugging and administrator help.  Use it if you have problems.
-Disable it in production; it adds no functionality or end user help.
+5) LDAP Help is just for debugging and administrator help. Use it if you have
+problems. Disable it in production; it adds no functionality or end user help.
 
 ==================================================================================
-Older PHP versions
+ Configuration overrides
 ==================================================================================
-These modules will NOT work If you are using PHP 4 or any other version less
-than 5.1.
+
+If you need to selectively disable LDAP functionality and cannot disable the
+modules, use configuration overrides, such as the following in settings.php and
+clearing your cache afterwards.
+
+// Disable the server you are syncing users from LDAP to Drupal.
+$conf['ldap_user_conf']['drupalAcctProvisionServer'] = 0;
+// Disable LDAP authentication.
+$conf['ldap_authentication_conf']['sids'] = [];
+// Set bind DN and bind password for service account.
+$conf['ldap_servers_overrides']['my_server']['binddn'] = 'my_dn';
+$conf['ldap_servers_overrides']['my_server']['bindpw'] = 'my_password';
+
+IMPORTANT: These overrides will change the data in your admin forms, saving them
+will save them permanently in the database.
 
 ==================================================================================
 More documentation is available at:
@@ -39,9 +62,3 @@ More documentation is available at:
  http://drupal.org/project/ldap -- project homepage
  http://drupal.org/node/997082 - project documentation
 ==================================================================================
-
-Crossgrading:
-
-Drupal 6 ldapauth -> ldap_authentication
-- get rid of authmap records associated with ldapauth with the following sql:
-DELETE FROM authmap WHERE module = 'ldapauth'

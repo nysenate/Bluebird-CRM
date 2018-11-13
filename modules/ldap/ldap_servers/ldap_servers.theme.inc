@@ -1,6 +1,4 @@
 <?php
-// $Id: ldap_servers.theme.inc,v 1.4.2.1 2011/02/08 20:05:41 johnbarclay Exp $
-
 
 /**
  * @file
@@ -36,7 +34,7 @@ function theme_ldap_servers_list($variables) {
   }
   if (count($ldap_servers)) {
     foreach ($ldap_servers as $sid => $ldap_server ) {
-      $row =  array(
+      $row = array(
         $ldap_server->name,
         $ldap_server->ldap_type,
         ($ldap_server->status == 1) ? "Yes" : "No",
@@ -72,7 +70,7 @@ function theme_ldap_servers_list($variables) {
 function theme_ldap_servers_server($variables) {
   extract($variables);  // $ldap_server, $actions, $type (see above)
 
-  ldap_server_module_load_include('php', 'ldap_servers', 'LdapServer.class');
+  ldap_servers_module_load_include('php', 'ldap_servers', 'LdapServer.class');
   $properties = array();
   foreach (LdapServer::field_to_properties_map() as $field_name => $property_name) {
     $properties[] = "$field_name = " . print_r($ldap_server->$property_name, TRUE);
@@ -95,19 +93,6 @@ function theme_ldap_servers_server($variables) {
   return $output;
 }
 
-function theme_ldap_servers_https_required($vars) {
-
-  if (!isset($vars['site_contact_link']) || empty($vars['site_contact_link'])) {
-    $vars['site_contact_link'] = 'site admin';
-  }
-  return t("You are accessing site_name using an unencrypted connection. For your security,
-     site_name only supports account logins using a secure protocol such as HTTPS. You can switch
-     to HTTPS by trying to view this page again after changing the URL in your browser's
-     location bar to begin with \"https\" instead of \"http\". Please contact
-      site_contact_link for help if this error continues.", $vars);
-
-}
-
 function theme_ldap_server_token_table($variables) {
   $header = array(
     array('data' => 'Token', 'sort' => 'asc'),
@@ -124,7 +109,6 @@ function theme_ldap_server_token_table($variables) {
 }
 
 function theme_ldap_server_ldap_entry_table($variables) {
-
   if (!isset($variables['entry']) || !is_array($variables['entry'])) {
     return '<p>' . t('No Entry Returned.') . t('</p>');
   }
@@ -156,10 +140,10 @@ function theme_ldap_server_ldap_entry_table($variables) {
         else {
           $token = "";
         }
-        $rows[] = array('data' => array($key, $i, $value2, $token));
+        $rows[] = array('data' => array($key, $i, ldap_servers_string_binary_check($value2), $token));
       }
     }
   }
-  $entry_table = '<div class="content"><h2>' . t('LDAP Entry for %username', array('%username' => $variables['username'])) . '</h2>' . theme('table', array('colgroups' => NULL, 'caption' => 'ldap entry array', 'header' => $header, 'rows' => $rows, 'sticky' => TRUE, 'attributes' => array(), 'empty' => 'No data')) . '</div>';
+  $entry_table = '<div class="content"><h2>' . t('LDAP Entry for %username (dn: %dn)', array('%dn' => $variables['dn'], '%username' => $variables['username'])) . '</h2>' . theme('table', array('colgroups' => NULL, 'caption' => 'ldap entry array', 'header' => $header, 'rows' => $rows, 'sticky' => TRUE, 'attributes' => array(), 'empty' => 'No data')) . '</div>';
   return $entry_table;
 }

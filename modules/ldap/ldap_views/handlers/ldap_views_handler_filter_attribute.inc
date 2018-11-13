@@ -5,13 +5,14 @@
  * Basic textfield filter to handle string filtering commands for a generic ldap attribute
  * Includes new criterias
  */
+
 class ldap_views_handler_filter_attribute extends ldap_views_handler_filter {
 
   /**
    * Determine if a filter can be exposed.
    */
   function can_expose() {
-    return FALSE;
+    return TRUE;
   }
 
   function option_definition() {
@@ -51,7 +52,7 @@ class ldap_views_handler_filter_attribute extends ldap_views_handler_filter {
     $current_display = $this->view->display[$this->view->current_display];
     $qid             = isset($current_display->display_options['query']['options']['qid']) ? $current_display->display_options['query']['options']['qid']
                                                                                            : $current_display->handler->default_display->display->display_options['query']['options']['qid'];
-*/
+ */
     $ldap_data       = new LdapQuery(ldap_views_get_qid($this->view)); //ldap_data_load($qid);
 
     if (empty($ldap_data)) {
@@ -66,14 +67,16 @@ class ldap_views_handler_filter_attribute extends ldap_views_handler_filter {
       $options[$attribute] = $attribute;
     }
 
-    $form['attribute_name'] = array(
-      '#type' => 'select',
-      '#title' => t('Attribute name'),
-      '#description' => t('The attribute name from LDAP response'),
-      '#options' => $options,
-      '#default_value' => $this->options['attribute_name'],
-      '#required' => TRUE,
-    );
+    if (empty($form_state['exposed'])) {
+      $form['attribute_name'] = array(
+        '#type' => 'select',
+        '#title' => t('Attribute name'),
+        '#description' => t('The attribute name from LDAP response'),
+        '#options' => $options,
+        '#default_value' => $this->options['attribute_name'],
+        '#required' => TRUE,
+      );
+    }
 
     parent::value_form($form, $form_state);
   }

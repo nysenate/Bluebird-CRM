@@ -22,7 +22,7 @@ Running the Script
     
     in provisioning part of array:
       'delete_if_exists' TURE | FALSE indicates if the provisioned object should be deleted if it exists
-      'find_filter'      is the filter to find the object. eg.  'cn=jdoe', 'distinguishedname=...'
+      'find_filter'      is the filter to find the object. eg.  'cn=jdoe', 'distinguishedname=...' (This is needed only if delete_if_exists is TRUE)
       'attr'             is the array of attribute/values to provision.  should not include 'dn'
 
     such as:
@@ -89,5 +89,3 @@ Running the Script
       
 4. From the ldap_test_script, type:
    php test.php
-
-

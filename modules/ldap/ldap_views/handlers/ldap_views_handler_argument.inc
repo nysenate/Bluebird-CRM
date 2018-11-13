@@ -4,6 +4,7 @@
  * @file
  * Basic textfield argument to handle known ldap attributes
  */
+
 class ldap_views_handler_argument extends views_handler_argument {
 
   /**

@@ -1,5 +1,12 @@
 
 
+/* Used in /admin/config/people/ldap/user. */
+table.ldap-provision-todrupal input.convert, table.ldap-provision-toldap input.convert {
+  background-image: url('/themes/seven/images/list-item.png');
+  background-repeat: no-repeat;
+}
+
+/* Used in admin/config/people/ldap/servers/edit/$sid. */
 div.ldap-pwd-abscent {
   background-image:url('/misc/message-16-error.png');
   background-repeat:no-repeat;
@@ -15,3 +22,22 @@ div.ldap-pwd-present  {
   padding-left: 20px;
   border: solid 1px #beb;
   }
+
+/* Used in /admin/config/people/ldap/user. */
+table th.mixedcase, .mixedcase {
+  text-transform: none;
+}
+
+/* Unknown overrides in dblog. */
+form#dblog-filter-form div#edit-type-wrapper,
+table#admin-dblog th img {
+  display: none;
+}
+code.export-summary {
+  font-weight: normal;
+}
+
+table#admin-dblog th a,
+table#admin-dblog th {
+  text-decoration: none; color: #000000;
+}

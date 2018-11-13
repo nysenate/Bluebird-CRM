@@ -1,31 +1,25 @@
-; $Id: ldap_servers.info,v 1.4.2.1 2011/02/08 06:01:00 johnbarclay Exp $
 name = LDAP Servers
-description = "Implements LDAP Server Configuration"
-package = "Lightweight Directory Access Protocol"
-
+description = Implements LDAP Server Configuration
+package = Lightweight Directory Access Protocol
+dependencies[] = ctools
 core = 7.x
+php = 5.4
 
 files[] = LdapServer.class.php
 files[] = LdapServerAdmin.class.php
 files[] = ldap_servers.admin.inc
 files[] = ldap_servers.encryption.inc
 files[] = ldap_servers.functions.inc
-files[] = ldap_servers.inc
 files[] = ldap_servers.install
 files[] = ldap_servers.module
 files[] = ldap_servers.settings.inc
 files[] = ldap_servers.test_form.inc
 files[] = ldap_servers.theme.inc
 files[] = tests/ldap_servers.test
-
-
-
 configure = admin/config/people/ldap/servers
 
-
-; Information added by drupal.org packaging script on 2012-08-20
-version = "7.x-1.0-beta12"
+; Information added by Drupal.org packaging script on 2018-08-13
+version = "7.x-2.4"
 core = "7.x"
 project = "ldap"
-datestamp = "1345503423"
-
+datestamp = "1534201086"

@@ -1,5 +1,4 @@
 <?php
-// $Id: ldap_query.admin.inc,v 1.4.2.1 2011/02/08 06:01:00 johnbarclay Exp $
 
 /**
  * @file
@@ -29,7 +28,7 @@ function ldap_query_index() {
 function ldap_query_list($qid = NULL, $actions = FALSE) {
 
   $ldap_queries = ldap_query_get_queries($qid, 'all');
-  $variables =  array(
+  $variables = array(
     'ldap_queries' => $ldap_queries,
     'action' => TRUE,
     'type' => 'table',
@@ -56,7 +55,7 @@ function ldap_query_list($qid = NULL, $actions = FALSE) {
  */
 
 function ldap_query_admin_form($form, &$form_state, $op = NULL, $qid = NULL) {
-  ldap_server_module_load_include('php', 'ldap_query', 'LdapQueryAdmin.class');
+  ldap_servers_module_load_include('php', 'ldap_query', 'LdapQueryAdmin.class');
   $server = new LdapQueryAdmin($qid);
   $form = $server->drupalForm($op);
   return $form;
@@ -67,7 +66,7 @@ function ldap_query_admin_form($form, &$form_state, $op = NULL, $qid = NULL) {
  */
 function ldap_query_admin_form_validate($form, &$form_state) {
   $op = drupal_strtolower($form_state['clicked_button']['#value']);
-  ldap_server_module_load_include('php', 'ldap_query', 'LdapQueryAdmin.class');
+  ldap_servers_module_load_include('php', 'ldap_query', 'LdapQueryAdmin.class');
   $server = new LdapQueryAdmin($form_state['values']['qid']);
 
   $errors = $server->drupalFormValidate($op, $form_state['values']);
@@ -90,7 +89,7 @@ function ldap_query_admin_form_submit($form, &$form_state) {
   $button = drupal_strtolower($form_state['clicked_button']['#value']);
   $op = ($button == 'add') ? 'add' : 'edit';
   $verb = ($op == 'edit') ? 'edited' : $op . 'ed';
-  ldap_server_module_load_include('php', 'ldap_query', 'LdapQueryAdmin.class');
+  ldap_servers_module_load_include('php', 'ldap_query', 'LdapQueryAdmin.class');
   $query = new LdapQueryAdmin($form_state['values']['qid']);
   $query->drupalFormSubmit($op, $form_state['values']);  // add form data to object and save or create
 
@@ -106,8 +105,8 @@ function ldap_query_admin_form_submit($form, &$form_state) {
    // }
   }
   else {
-    form_set_error($server->errorName(), $server->errorMsg());
-    $server->clearError();
+    form_set_error($query->errorName(), $query->errorMsg());
+    $query->clearError();
   }
   ldap_query_cache_clear();
 }
@@ -160,13 +159,13 @@ function ldap_query_admin_delete($form, &$form_state, $op = NULL, $qid = NULL) {
 function ldap_query_admin_delete_submit($form, &$form_state) {
   $values = $form_state['values'];
   $qid = $values['qid'];
-  ldap_server_module_load_include('php', 'ldap_query', 'LdapQueryAdmin.class');
+  ldap_servers_module_load_include('php', 'ldap_query', 'LdapQueryAdmin.class');
   $ldap_query = new LdapQueryAdmin($qid);
   if ($values['confirm'] && $qid) {
     if ($result = $ldap_query->delete($qid)) {
       $tokens = array('%name' => $ldap_query->name, '!qid' => $qid);
       drupal_set_message(t('LDAP Server %name (query id = !qid) has been deleted.', $tokens), 'status');
-      watchdog('ldap', 'LDAP Query deleted: %name (qid = !qid) ', $tokens);
+      watchdog('ldap_query', 'LDAP Query deleted: %name (qid = !qid) ', $tokens);
     }
     else {
       drupal_set_message(t('LDAP Query delete failed.'), 'warning');
@@ -215,7 +214,7 @@ function ldap_query_admin_enable_disable($form, &$form_state, $action = NULL, $q
     );
     return confirm_form(
       $form,
-      t('Are you sure you want to') . t($action) . ' ' . t('the LDAP query named <em><strong>%name</strong></em>?', array('%name' =>  $ldap_query->name)),
+      t('Are you sure you want to') . t($action) . ' ' . t('the LDAP query named <em><strong>%name</strong></em>?', array('%name' => $ldap_query->name)),
       LDAP_QUERY_MENU_BASE_PATH . '/query/list',
       t('<p></p>'),
       t($action),
@@ -242,7 +241,7 @@ function ldap_query_admin_enable_disable_submit($form, &$form_state) {
     $tokens = array('%name' => $values['name'], '!qid' => $qid, '!action' => t($values['action']) . 'd');
     drupal_set_message(t('LDAP Query Configuration %name (query id = !qid) has been !action.', $tokens));
     $message = t('LDAP Query !action: %name (qid = !qid) ', $tokens);
-    watchdog('ldap', $message);
+    watchdog('ldap_query', $message);
 
   }
 

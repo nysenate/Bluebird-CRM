@@ -1,6 +1,4 @@
 <?php
-// $Id: ldap_query.theme.inc,v 1.4.2.1 2011/02/08 20:05:41 johnbarclay Exp $
-
 
 /**
  * @file
@@ -37,7 +35,7 @@ function theme_ldap_query_list($variables) {
 
   if (count($ldap_queries)) {
     foreach ($ldap_queries as $qid => $ldap_query ) {
-      $row =  array(
+      $row = array(
         $ldap_query->name,
         $ldap_query->base_dn_str,
         $ldap_query->filter,
@@ -75,7 +73,7 @@ function theme_ldap_query($variables) {
 
   extract($variables);  // $ldap_query, $actions, $type (see above)
 
-  ldap_server_module_load_include('php', 'ldap_query', 'LdapQuery.class');
+  ldap_servers_module_load_include('php', 'ldap_query', 'LdapQuery.class');
   $properties = array();
   foreach (LdapQuery::fields() as $field_id => $field) {
     $value = $ldap_query->{$field['property_name']};
@@ -112,7 +110,7 @@ function theme_ldap_query_results($variables) {
   }
 
   $table = array(
-    'header' =>  array('DN'),
+    'header' => array('DN'),
     'attributes' => array('id' => 'ldap_query_resultset', 'class' => 'data'),
     'colgroups' => array(),
     'sticky' => FALSE,

@@ -209,5 +209,3 @@ function ldap_views_views_default_views() {
 
   return $views;
 }
-
-
