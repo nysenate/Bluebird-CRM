@@ -96,7 +96,7 @@
      and require different update frequencies than the documents they are
      associated with.
     -->
-    <fieldType name="pfloat" class="solr.FloatField" omitNorms="true"/>
+    <fieldType name="pfloat" class="solr.TrieFloatField" omitNorms="true"/>
     <fieldType name="file" keyField="id" defVal="1" stored="false" indexed="false" class="solr.ExternalFileField" valType="pfloat"/>
 
     <!-- The format for this date field is of the form 1995-12-31T23:59:59Z, and
@@ -119,7 +119,7 @@
 
          Consult the DateField javadocs for more information.
       -->
-    <fieldType name="date" class="solr.DateField" sortMissingLast="true" omitNorms="true"/>
+    <fieldType name="date" class="solr.TrieDateField" sortMissingLast="true" omitNorms="true"/>
 
     <!-- A Trie based date field for faster date range queries and date faceting. -->
     <fieldType name="tdate" class="solr.TrieDateField" omitNorms="true" precisionStep="6" positionIncrementGap="0"/>

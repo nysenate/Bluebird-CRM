@@ -82,7 +82,7 @@ function apachesolr_search_init() {
             }
           }
           catch (Exception $e) {
-            watchdog('Apache Solr', nl2br(check_plain($e->getMessage())), NULL, WATCHDOG_ERROR);
+            apachesolr_log_exception($search_page['env_id'], $e);
           }
         }
       }
@@ -445,6 +445,8 @@ function apachesolr_search_page_clone($page_id) {
   // Set this id to the new search page
   $search_page['page_id'] = $new_search_page_id;
   $search_page['label'] = $search_page['label'] . ' [cloned]';
+  // Make sure the new label is <= 32 characters in length, to fit in the table.
+  $search_page['label'] = substr($search_page['label'], 0, 32);
   // All cloned search pages should be removable
   if (isset($search_page['settings']['apachesolr_search_not_removable'])) {
     unset($search_page['settings']['apachesolr_search_not_removable']);
@@ -552,7 +554,7 @@ function apachesolr_search_block_view($delta = '') {
         }
       }
       catch (Exception $e) {
-        watchdog('Apache Solr', nl2br(check_plain($e->getMessage())), NULL, WATCHDOG_ERROR);
+        apachesolr_log_exception($env_id, $e);
       }
     }
     return $suggestions;
@@ -696,9 +698,12 @@ function apachesolr_search_mlt_suggestions($settings, $id, $solr = NULL, $contex
       $query->addFilter('bundle', '(' . implode(' OR ', $settings['mlt_type_filters']) . ') ');
     }
 
-    if ($custom_filters = $settings['mlt_custom_filters']) {
-      // @todo - fix the settings form to take a comma-delimited set of filters.
-      $query->addFilter('', $custom_filters);
+    if (!empty($settings['mlt_custom_filters'])) {
+      $custom_filters = explode(',', $settings['mlt_custom_filters']);
+      foreach ($custom_filters as $custom_filter) {
+        list($filter_index, $filter_value) = explode(':', $custom_filter, 2);
+        $query->addFilter($filter_index, $filter_value);
+      }
     }
 
     // This hook allows modules to modify the query object.
@@ -714,7 +719,7 @@ function apachesolr_search_mlt_suggestions($settings, $id, $solr = NULL, $contex
     }
   }
   catch (Exception $e) {
-    watchdog('Apache Solr', nl2br(check_plain($e->getMessage())), NULL, WATCHDOG_ERROR);
+    apachesolr_log_exception($solr->getId(), $e);
   }
 }
 
@@ -809,7 +814,7 @@ function apachesolr_search_search_page($results) {
 
 /**
  * Mimics apachesolr_search_search_page() but is used for custom search pages
- * We prefer to keep them seperate so we are not dependent from core search
+ * We prefer to keep them separate so we are not dependent from core search
  * when someone tries to disable the core search
  * @param $results
  *   The results that came from apache solr
@@ -934,7 +939,7 @@ function apachesolr_search_search_results($keys = NULL, $conditions = NULL, $sea
       }
     }
     catch (Exception $e) {
-      watchdog('Apache Solr', nl2br(check_plain($e->getMessage())), NULL, WATCHDOG_ERROR);
+      apachesolr_log_exception($search_page['env_id'], $e);
       apachesolr_failure(t('Solr search'), $keys);
     }
   }
@@ -1405,7 +1410,7 @@ function apachesolr_search_get_search_suggestions($env_id) {
   $suggestions_output = array();
   if (apachesolr_has_searched($env_id)) {
     $query = apachesolr_current_query($env_id);
-    $keyword = $query->getParam('q');
+    $keyword = strtolower($query->getParam('q'));
     $searcher = $query->getSearcher();
     $response = apachesolr_static_response_cache($searcher);
     // Get spellchecker suggestions into an array.
@@ -1596,8 +1601,8 @@ function apachesolr_search_form_search_submit($form, &$form_state) {
  *
  * Rebuild (empty) the spellcheck dictionary when the index is deleted..
  */
-function apachesolr_search_form_apachesolr_delete_index_confirm_alter(&$form, $form_state) {
-  $form['submit']['#submit'][] = 'apachesolr_search_build_spellcheck';
+function apachesolr_search_form_apachesolr_index_action_form_delete_confirm_alter(&$form, $form_state) {
+  $form['#submit'][] = 'apachesolr_search_build_spellcheck';
 }
 
 /**
@@ -1605,14 +1610,17 @@ function apachesolr_search_form_apachesolr_delete_index_confirm_alter(&$form, $f
  *
  */
 function apachesolr_search_build_spellcheck($form, &$form_state) {
+  $env_id = $form_state['build_info']['args'][0]['env_id'];
   try {
-    $solr = apachesolr_get_solr();
-    $params['spellcheck'] = 'true';
-    $params['spellcheck.build'] = 'true';
-    $response = $solr->search('solr', 0, 0, $params);
+    $solr = apachesolr_get_solr($env_id);
+    $params = array(
+      'spellcheck' => 'true',
+      'spellcheck.build' => 'true'
+    );
+    $response = $solr->search('solr', $params);
   }
   catch (Exception $e) {
-    watchdog('Apache Solr', nl2br(check_plain($e->getMessage())), NULL, WATCHDOG_ERROR);
+    apachesolr_log_exception($env_id, $e);
   }
 }
 

@@ -340,7 +340,7 @@ function hook_apachesolr_search_result_alter(ApacheSolrDocument $document, array
 }
 
 /**
- * This is invoked by apachesolr_search.module for the whole resultset returned
+ * This is invoked by apachesolr_search.module for the whole result set returned
  * in a search.
  *
  * @param array $results
@@ -425,7 +425,7 @@ function hook_apachesolr_index_document_build(ApacheSolrDocument $document, $ent
 function hook_apachesolr_index_document_build_ENTITY_TYPE(ApacheSolrDocument $document, $entity, $env_id) {
   // Index field_main_image as a separate field
   if ($entity->type == 'profile') {
-    $user = user_load(array('uid' => $entity->uid));
+    $user = user_load($entity->uid);
     // Hard coded field, not recommended for inexperienced users.
     $document->setMultiValue('sm_field_main_image', $user->picture);
   }
