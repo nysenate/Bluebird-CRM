@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -317,9 +317,16 @@ class CRM_Mailing_Event_BAO_TrackableURLOpen extends CRM_Mailing_Event_DAO_Track
     $query = "
             SELECT      $contact.display_name as display_name,
                         $contact.id as contact_id,
-                        $email.email as email,
-                        $click.time_stamp as date,
-                        $url.url as url
+                        $email.email as email,";
+
+    if ($is_distinct) {
+      $query .= "MIN($click.time_stamp) as date,";
+    }
+    else {
+      $query .= "$click.time_stamp as date,";
+    }
+
+    $query .= "$url.url as url
             FROM        $contact
             INNER JOIN  $queue
                     ON  $queue.contact_id = $contact.id
@@ -349,7 +356,7 @@ class CRM_Mailing_Event_BAO_TrackableURLOpen extends CRM_Mailing_Event_DAO_Track
     }
 
     if ($is_distinct) {
-      $query .= " GROUP BY $queue.id, $click.time_stamp, $url.url ";
+      $query .= " GROUP BY $queue.id, $url.url ";
     }
 
     $orderBy = "sort_name ASC, {$click}.time_stamp DESC";

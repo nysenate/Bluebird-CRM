@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -370,7 +370,7 @@ SELECT f.id, f.label, f.data_type,
               if ($isSerialized && !CRM_Utils_System::isNull($value) && !strstr($op, 'NULL') && !strstr($op, 'LIKE')) {
                 $sp = CRM_Core_DAO::VALUE_SEPARATOR;
                 $value = str_replace(",", "$sp|$sp", $value);
-                $value = str_replace(array('[:comma:]', '(', ')'), array(',', '[[.left-parenthesis.]]', '[[.right-parenthesis.]]'), $value);
+                $value = str_replace(array('[:comma:]', '(', ')'), array(',', '[(]', '[)]'), $value);
 
                 $op = (strstr($op, '!') || strstr($op, 'NOT')) ? 'NOT RLIKE' : 'RLIKE';
                 $value = $sp . $value . $sp;
@@ -470,7 +470,7 @@ SELECT f.id, f.label, f.data_type,
             break;
 
           case 'Date':
-            $this->_where[$grouping][] = CRM_Contact_BAO_Query::buildClause($fieldName, $op, $value, 'String');
+            $this->_where[$grouping][] = CRM_Contact_BAO_Query::buildClause($fieldName, $op, $value, 'Date');
             list($qillOp, $qillVal) = CRM_Contact_BAO_Query::buildQillForFieldValue(NULL, $field['label'], $value, $op, array(), CRM_Utils_Type::T_DATE);
             $this->_qill[$grouping][] = "{$field['label']} $qillOp '$qillVal'";
             break;

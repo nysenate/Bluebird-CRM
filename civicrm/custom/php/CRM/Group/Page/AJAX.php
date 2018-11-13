@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -54,6 +54,7 @@ class CRM_Group_Page_AJAX {
         'created_by' => 'String',
         'group_type' => 'String',
         'visibility' => 'String',
+        'component_mode' => 'String',
         'status' => 'Integer',
         'parentsOnly' => 'Integer',
         'showOrgInfo' => 'Boolean',

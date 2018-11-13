@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -36,6 +36,12 @@ class CRM_Contact_BAO_Relationship extends CRM_Contact_DAO_Relationship {
    * @var int
    */
   const ALL = 0, PAST = 1, DISABLED = 2, CURRENT = 4, INACTIVE = 8;
+
+  /**
+   * Constants for is_permission fields.
+   * Note: the slightly non-obvious ordering is due to history...
+   */
+  const NONE = 0, EDIT = 1, VIEW = 2;
 
   /**
    * Create function - use the API instead.
@@ -300,7 +306,9 @@ class CRM_Contact_BAO_Relationship extends CRM_Contact_DAO_Relationship {
     if ($type == 6) {
       CRM_Contact_BAO_Household::updatePrimaryContact($params['contact_id_b'], $params['contact_id_a']);
     }
-
+    if (!empty($relationshipId) && self::isCurrentEmployerNeedingToBeCleared($params, $relationshipId, $type)) {
+      CRM_Contact_BAO_Contact_Utils::clearCurrentEmployer($params['contact_id_a']);
+    }
     $relationship = new CRM_Contact_BAO_Relationship();
     //@todo this code needs to be updated for the possibility that not all fields are set
     // by using $relationship->copyValues($params);
@@ -468,8 +476,8 @@ class CRM_Contact_BAO_Relationship extends CRM_Contact_DAO_Relationship {
   public static function getdefaults() {
     return array(
       'is_active' => 0,
-      'is_permission_a_b' => 0,
-      'is_permission_b_a' => 0,
+      'is_permission_a_b' => self::NONE,
+      'is_permission_b_a' => self::NONE,
       'description' => '',
       'start_date' => 'NULL',
       'case_id' => NULL,
@@ -539,7 +547,7 @@ class CRM_Contact_BAO_Relationship extends CRM_Contact_DAO_Relationship {
       $relationship->id = $relationshipId;
       if ($relationship->find(TRUE)) {
         $contact = new CRM_Contact_DAO_Contact();
-        $contact->id = ($relationship->contact_id_a === $contactId) ? $relationship->contact_id_b : $relationship->contact_id_a;
+        $contact->id = ($relationship->contact_id_a == $contactId) ? $relationship->contact_id_b : $relationship->contact_id_a;
 
         if ($contact->find(TRUE)) {
           $otherContactType = $contact->contact_type;
@@ -654,7 +662,7 @@ class CRM_Contact_BAO_Relationship extends CRM_Contact_DAO_Relationship {
       $relTypes = CRM_Utils_Array::index(array('name_a_b'), CRM_Core_PseudoConstant::relationshipType('name'));
       if (
         (isset($relTypes['Employee of']) && $relationship->relationship_type_id == $relTypes['Employee of']['id']) ||
-        (isset ($relTypes['Household Member of']) && $relationship->relationship_type_id == $relTypes['Household Member of']['id'])
+        (isset($relTypes['Household Member of']) && $relationship->relationship_type_id == $relTypes['Household Member of']['id'])
       ) {
         $sharedContact = new CRM_Contact_DAO_Contact();
         $sharedContact->id = $relationship->contact_id_a;
@@ -1716,10 +1724,10 @@ SELECT relationship_type_id, relationship_direction
               $membershipValues['skipStatusCal'] = TRUE;
             }
             foreach (array(
-                       'join_date',
-                       'start_date',
-                       'end_date',
-                     ) as $dateField) {
+              'join_date',
+              'start_date',
+              'end_date',
+            ) as $dateField) {
               if (!empty($membershipValues[$dateField])) {
                 $membershipValues[$dateField] = CRM_Utils_Date::processDate($membershipValues[$dateField]);
               }
@@ -1736,6 +1744,10 @@ SELECT relationship_type_id, relationship_direction
               //delete the membership record for related
               //contact before creating new membership record.
               CRM_Member_BAO_Membership::deleteRelatedMemberships($membershipId, $relatedContactId);
+            }
+            //skip status calculation for pay later memberships.
+            if (!empty($membershipValues['status_id']) && $membershipValues['status_id'] == $pendingStatusId) {
+              $membershipValues['skipStatusCal'] = TRUE;
             }
 
             // check whether we have some related memberships still available
@@ -2084,6 +2096,8 @@ AND cc.sort_name LIKE '%$name%'";
     unset($relationships['total_relationships']);
     if (!empty($relationships)) {
 
+      $displayName = CRM_Contact_BAO_Contact::displayName($params['contact_id']);
+
       // format params
       foreach ($relationships as $relationshipId => $values) {
         $relationship = array();
@@ -2116,22 +2130,42 @@ AND cc.sort_name LIKE '%$name%'";
           $values['relation']
         );
 
-        if ($params['context'] == 'current') {
-          if (($params['contact_id'] == $values['contact_id_a'] AND $values['is_permission_a_b'] == 1) OR
-            ($params['contact_id'] == $values['contact_id_b'] AND $values['is_permission_b_a'] == 1)
-          ) {
-            $relationship['sort_name'] .= '<span id="permission-a-b" class="crm-marker permission-relationship"> *</span>';
-          }
-
-          if (($values['cid'] == $values['contact_id_a'] AND $values['is_permission_a_b'] == 1) OR
-            ($values['cid'] == $values['contact_id_b'] AND $values['is_permission_b_a'] == 1)
-          ) {
-            $relationship['relation'] .= '<span id="permission-b-a" class="crm-marker permission-relationship"> *</span>';
-          }
-        }
-
         if (!empty($values['description'])) {
           $relationship['relation'] .= "<p class='description'>{$values['description']}</p>";
+        }
+
+        if ($params['context'] == 'current') {
+          $smarty = CRM_Core_Smarty::singleton();
+
+          $contactCombos = [
+            [
+              'permContact' => $params['contact_id'],
+              'permDisplayName' => $displayName,
+              'otherContact' => $values['cid'],
+              'otherDisplayName' => $values['display_name'],
+              'columnKey' => 'sort_name',
+            ],
+            [
+              'permContact' => $values['cid'],
+              'permDisplayName' => $values['display_name'],
+              'otherContact' => $params['contact_id'],
+              'otherDisplayName' => $displayName,
+              'columnKey' => 'relation',
+            ],
+          ];
+
+          foreach ($contactCombos as $combo) {
+            foreach ([CRM_Contact_BAO_Relationship::EDIT, CRM_Contact_BAO_Relationship::VIEW] as $permType) {
+              $smarty->assign('permType', $permType);
+              if (($combo['permContact'] == $values['contact_id_a'] and $values['is_permission_a_b'] == $permType)
+                || ($combo['permContact'] == $values['contact_id_b'] and $values['is_permission_b_a'] == $permType)
+              ) {
+                $smarty->assign('permDisplayName', $combo['permDisplayName']);
+                $smarty->assign('otherDisplayName', $combo['otherDisplayName']);
+                $relationship[$combo['columnKey']] .= $smarty->fetch('CRM/Contact/Page/View/RelationshipPerm.tpl');
+              }
+            }
+          }
         }
 
         $relationship['start_date'] = CRM_Utils_Date::customFormat($values['start_date']);
@@ -2152,6 +2186,109 @@ AND cc.sort_name LIKE '%$name%'";
     $relationshipsDT['recordsFiltered'] = $params['total'];
 
     return $relationshipsDT;
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public static function buildOptions($fieldName, $context = NULL, $props = array()) {
+    if ($fieldName === 'relationship_type_id') {
+      return self::buildRelationshipTypeOptions($props);
+    }
+
+    return parent::buildOptions($fieldName, $context, $props);
+  }
+
+  /**
+   * Builds a list of options available for relationship types
+   *
+   * @param array $params
+   *   - contact_type: Limits by contact type on the "A" side
+   *   - relationship_id: Used to find the value for contact type for "B" side.
+   *     If contact_a matches provided contact_id then type of contact_b will
+   *     be used. Otherwise uses type of contact_a. Must be used with contact_id
+   *   - contact_id: Limits by contact types of this contact on the "A" side
+   *   - is_form: Returns array with keys indexed for use in a quickform
+   *   - relationship_direction: For relationship types with duplicate names
+   *     on both sides, defines which option should be returned, a_b or b_a
+   *
+   * @return array
+   */
+  public static function buildRelationshipTypeOptions($params = array()) {
+    $contactId = CRM_Utils_Array::value('contact_id', $params);
+    $direction = CRM_Utils_Array::value('relationship_direction', $params, 'a_b');
+    $relationshipId = CRM_Utils_Array::value('relationship_id', $params);
+    $contactType = CRM_Utils_Array::value('contact_type', $params);
+    $isForm = CRM_Utils_Array::value('is_form', $params);
+    $showAll = FALSE;
+
+    // getContactRelationshipType will return an empty set if these are not set
+    if (!$contactId && !$relationshipId && !$contactType) {
+      $showAll = TRUE;
+    }
+
+    $labels = self::getContactRelationshipType(
+      $contactId,
+      $direction,
+      $relationshipId,
+      $contactType,
+      $showAll,
+      'label'
+    );
+
+    if ($isForm) {
+      return $labels;
+    }
+
+    $names = self::getContactRelationshipType(
+      $contactId,
+      $direction,
+      $relationshipId,
+      $contactType,
+      $showAll,
+      'name'
+    );
+
+    // ensure $names contains only entries in $labels
+    $names = array_intersect_key($names, $labels);
+
+    $nameToLabels = array_combine($names, $labels);
+
+    return $nameToLabels;
+  }
+
+  /**
+   * Process the params from api, form and check if current
+   * employer should be set or unset.
+   *
+   * @param array $params
+   * @param int $relationshipId
+   * @param int|NULL $updatedRelTypeID
+   *
+   * @return bool
+   *   TRUE if current employer needs to be cleared.
+   */
+  public static function isCurrentEmployerNeedingToBeCleared($params, $relationshipId, $updatedRelTypeID = NULL) {
+    $existingTypeID = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Relationship', $relationshipId, 'relationship_type_id');
+    $existingTypeName = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_RelationshipType', $existingTypeID, 'name_b_a');
+    $updatedRelTypeID = $updatedRelTypeID ? $updatedRelTypeID : $existingTypeID;
+
+    if ($existingTypeName !== 'Employer of') {
+      return FALSE;
+    }
+    //Clear employer if relationship is expired.
+    if (!empty($params['end_date']) && strtotime($params['end_date']) < time()) {
+      return TRUE;
+    }
+    //current employer checkbox is disabled on the form.
+    //inactive or relationship type(employer of) is updated.
+    if ((isset($params['is_current_employer']) && empty($params['is_current_employer']))
+      || ((isset($params['is_active']) && empty($params['is_active'])))
+      || $existingTypeID != $updatedRelTypeID) {
+      return TRUE;
+    }
+
+    return FALSE;
   }
 
 }

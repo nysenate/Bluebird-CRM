@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -327,11 +327,18 @@ class CRM_Contact_Task extends CRM_Core_Task {
         $tasks[self::MAP_CONTACTS] = self::$_tasks[self::MAP_CONTACTS]['title'];
       }
 
-      if (isset(self::$_tasks[self::CREATE_MAILING]) &&
-        !empty(self::$_tasks[self::CREATE_MAILING]['title'])
-      ) {
-        $tasks[self::CREATE_MAILING] = self::$_tasks[self::CREATE_MAILING]['title'];
+      foreach ([
+        self::MAP_CONTACTS,
+        self::CREATE_MAILING,
+        self::TASK_SMS
+      ] as $task) {
+        if (isset(self::$_tasks[$task]) &&
+          !empty(self::$_tasks[$task]['title'])
+        ) {
+          $tasks[$task] = self::$_tasks[$task]['title'];
+        }
       }
+
       //NYSS 3205 allow print prod to work with groups
       if ( CRM_Core_Permission::check( 'export print production files' ) ) {
         $tasks[1] = self::$_tasks[1]['title'];

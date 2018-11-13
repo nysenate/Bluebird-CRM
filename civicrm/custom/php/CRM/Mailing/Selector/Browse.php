@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -147,11 +147,6 @@ class CRM_Mailing_Selector_Browse extends CRM_Core_Selector_Base implements CRM_
             'direction' => CRM_Utils_Sort::DONTCARE,
           ),
           array(
-            'name' => ts('Created'),
-            'sort' => 'created_date',
-            'direction' => $unscheduledOrder,
-          ),
-          array(
             'name' => ts('Status'),
             'sort' => 'status',
             'direction' => CRM_Utils_Sort::DONTCARE,
@@ -161,6 +156,11 @@ class CRM_Mailing_Selector_Browse extends CRM_Core_Selector_Base implements CRM_
             'sort' => 'created_by',
             'direction' => CRM_Utils_Sort::DONTCARE,
           ),*/
+          array(
+            'name' => ts('Created Date'),
+            'sort' => 'created_date',
+            'direction' => $unscheduledOrder,
+          ),
           array(
             'name' => ts('Sent By'),
             'sort' => 'scheduled_by',
@@ -251,6 +251,9 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
     static $actionLinks = NULL;
     if (empty($actionLinks)) {
       //NYSS 12029 throughout function
+      $cancelExtra = ts('Are you sure you want to cancel this mailing?');
+      $deleteExtra = ts('Are you sure you want to delete this mailing?');
+      $archiveExtra = ts('Are you sure you want to archive this mailing?');
 
       $actionLinks = array(
         CRM_Core_Action::ENABLE => array(
@@ -275,7 +278,7 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
           'name' => ts('Cancel'),
           'url' => 'civicrm/mailing/browse',
           'qs' => 'action=disable&mid=%%mid%%&reset=1',
-          'extra' => 'onclick="mailingActionTask(this.href+=\'&amp;confirmed=1\', \'cancel\'); return false;"',
+          'extra' => 'onclick="if (confirm(\'' . $cancelExtra . '\')) this.href+=\'&amp;confirmed=1\'; else return false;"',
           'title' => ts('Cancel Mailing'),
         ),
         CRM_Core_Action::PREVIEW => array(
@@ -288,15 +291,27 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
           'name' => ts('Delete'),
           'url' => 'civicrm/mailing/browse',
           'qs' => 'action=delete&mid=%%mid%%&reset=1',
-          'extra' => 'onclick="mailingActionTask(this.href+=\'&amp;confirmed=1\', \'delete\'); return false;"',
+          'extra' => 'onclick="if (confirm(\'' . $deleteExtra . '\')) this.href+=\'&amp;confirmed=1\'; else return false;"',
           'title' => ts('Delete Mailing'),
         ),
         CRM_Core_Action::RENEW => array(
           'name' => ts('Archive'),
           'url' => 'civicrm/mailing/browse/archived',
           'qs' => 'action=renew&mid=%%mid%%&reset=1',
-          'extra' => 'onclick="mailingActionTask(this.href+=\'&amp;confirmed=1\', \'archive\'); return false;"',
+          'extra' => 'onclick="if (confirm(\'' . $archiveExtra . '\')) this.href+=\'&amp;confirmed=1\'; else return false;"',
           'title' => ts('Archive Mailing'),
+        ),
+        CRM_Core_Action::REOPEN => array(
+          'name' => ts('Resume'),
+          'url' => 'civicrm/mailing/browse',
+          'qs' => 'action=reopen&mid=%%mid%%&reset=1',
+          'title' => ts('Resume mailing'),
+        ),
+        CRM_Core_Action::CLOSE => array(
+          'name' => ts('Pause'),
+          'url' => 'civicrm/mailing/browse',
+          'qs' => 'action=close&mid=%%mid%%&reset=1',
+          'title' => ts('Pause mailing'),
         ),
       );
     }
@@ -393,6 +408,12 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
           ) {
 
             $actionMask |= CRM_Core_Action::DISABLE;
+            if ($row['status'] == "Paused") {
+              $actionMask |= CRM_Core_Action::REOPEN;
+            }
+            else {
+              $actionMask |= CRM_Core_Action::CLOSE;
+            }
           }
           if ($row['status'] == 'Scheduled' &&
             empty($row['approval_status_id'])
@@ -566,7 +587,7 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
     if (!$isFormSubmitted && $this->_parent->get('scheduled')) {
       // mimic default behavior for scheduled screen
       $isArchived = 0;
-      $mailingStatus = array('Scheduled' => 1, 'Complete' => 1, 'Running' => 1, 'Canceled' => 1);
+      $mailingStatus = array('Scheduled' => 1, 'Complete' => 1, 'Running' => 1, 'Paused' => 1, 'Canceled' => 1);
     }
     if (!$isFormSubmitted && $this->_parent->get('archived')) {
       // mimic default behavior for archived screen

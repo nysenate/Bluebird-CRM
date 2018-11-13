@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -227,7 +227,6 @@ class CRM_Contact_Selector_Custom extends CRM_Contact_Selector {
    */
   public function &getColumnHeaders($action = NULL, $output = NULL) {
     $columns = $this->_search->columns();
-    //NYSS dev/core#70
     $headers = array();
     if ($output == CRM_Core_Selector_Controller::EXPORT || $output == CRM_Core_Selector_Controller::SCREEN) {
       foreach ($columns as $name => $key) {
@@ -236,7 +235,6 @@ class CRM_Contact_Selector_Custom extends CRM_Contact_Selector {
       return $headers;
     }
     else {
-      $headers = array();
       foreach ($columns as $name => $key) {
         if (!empty($name)) {
           $headers[] = array(

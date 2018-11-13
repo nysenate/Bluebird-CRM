@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -48,7 +48,7 @@ class CRM_Contact_Form_Task_EmailCommon {
    * @return array $domainEmails;
    */
   public static function domainEmails() {
-    Civi::log()->warning('Deprecated function, use CRM_Core_BAO_Email::domainEmails()', array('civi.tag' => 'deprecated'));
+    CRM_Core_Error::deprecatedFunctionWarning('CRM_Core_BAO_Email::domainEmails()');
     return CRM_Core_BAO_Email::domainEmails();
   }
 
@@ -69,8 +69,10 @@ class CRM_Contact_Form_Task_EmailCommon {
 
     $form->_emails = array();
 
-    $contactID = CRM_Core_Session::singleton()->getLoggedInContactID();
-    $form->_contactIds = array($contactID);
+    // @TODO remove these line and to it somewhere more appropriate. Currently some classes (e.g Case
+    // are having to re-write contactIds afterwards due to this inappropriate variable setting
+    // If we don't have any contact IDs, use the logged in contact ID
+    $form->_contactIds = $form->_contactIds ?: [CRM_Core_Session::getLoggedInContactID()];
 
     $fromEmailValues = CRM_Core_BAO_Email::getFromEmail();
 
@@ -87,6 +89,7 @@ class CRM_Contact_Form_Task_EmailCommon {
     }
 
     $form->_emails = $fromEmailValues;
+    $defaults = array();
     $form->_fromEmails = $fromEmailValues;
 
     //NYSS 4810
@@ -95,7 +98,6 @@ class CRM_Contact_Form_Task_EmailCommon {
       $form->_searchKey = $form->controller->_key;
       $form->_searchContext = $form->_context;
     }
-
     if (is_numeric(key($form->_fromEmails))) {
       // Add signature
       $defaultEmail = civicrm_api3('email', 'getsingle', array('id' => key($form->_fromEmails)));
@@ -106,8 +108,8 @@ class CRM_Contact_Form_Task_EmailCommon {
       if (!empty($defaultEmail['signature_text'])) {
         $defaults['text_message'] = "\n\n--\n" . $defaultEmail['signature_text'];
       }
-      $form->setDefaults($defaults);
     }
+    $form->setDefaults($defaults);
   }
 
   /**
