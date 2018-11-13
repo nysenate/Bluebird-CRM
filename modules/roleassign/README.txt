@@ -66,8 +66,9 @@ and select a role with both the 'assign roles' and the 'administer users'
 permissions.
 
 Beware: Granting the 'administer users' permission to users will allow them to
-modify admin passwords or email addresses or even delete the site administrator
-account. The User Protect module can prevent this.
+modify admin passwords or email addresses. The User Protect module can help to
+prevent this. RoleAssign will protect user 1's name, email, and password fields,
+but it won't protect any other accounts.
 
 
 USAGE
@@ -79,4 +80,16 @@ permissions.
 2. To change the roles of a user, go to the user's account and review the
 assignable roles and change them as necessary.
 
+
+BEWARE
+------
+
+'Administer users' is and remains a security-critical permission that must NOT
+be given to untrusted users! RoleAssign, together with the recommended FixCore
+fix (https://www.drupal.org/project/fixcore, Protect the Administrator role),
+will keep your assistant admins within their limits, but if you introduce
+alternative ways to edit users, assign roles, or give permissions (like the
+"Administration: Users" view in the popular Administration Views module), then
+you are probably opening up ways for your assistant admins to gain additional
+privileges.
 
