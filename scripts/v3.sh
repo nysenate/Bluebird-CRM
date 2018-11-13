@@ -56,6 +56,7 @@ $drush $instance cvapi extension.install key=org.civicrm.api4 --quiet
 $drush $instance cvapi extension.install key=org.civicrm.shoreditch --quiet
 $drush $instance cvapi extension.install key=org.civicrm.contactlayout --quiet
 $drush $instance cvapi extension.install key=org.civicrm.civicase --quiet
+#$drush $instance cvapi extension.install key=org.civicrm.tutorial --quiet
 $drush $instance cvapi extension.install key=com.aghstrategies.slicknav --quiet
 $drush $instance cvapi extension.install key=org.civicrm.flexmailer --quiet
 $drush $instance cvapi extension.install key=uk.co.vedaconsulting.mosaico --quiet
