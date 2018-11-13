@@ -470,7 +470,8 @@
             .then(function (deliveryInfos) {
               var count = Object.keys(deliveryInfos).length;
               if (count === 0) {
-                CRM.alert(ts('Could not identify any recipients. Perhaps the group is empty?'));
+                //NYSS 11277
+                //CRM.alert(ts('Could not identify any recipients. Perhaps the group is empty?'));
               }
             })
           ;
