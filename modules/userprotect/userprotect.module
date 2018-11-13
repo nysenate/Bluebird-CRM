@@ -165,7 +165,7 @@ function userprotect_form_alter(&$form, &$form_state, $form_id) {
  * Ensures user protections are respected in VBO views.
  */
 function userprotect_views_bulk_operations_form_alter(&$form, $form_state, $vbo) {
-  if (!$vbo->table == 'users') {
+  if ($vbo->table != 'users') {
     return;
   }
 
@@ -390,7 +390,7 @@ function userprotect_user_edit_access($account) {
     if (!userprotect_check_bypass('up_edit') && userprotect_get_user_protection($account, 'up_edit')) {
       // If so, and we're at /user/X/edit, set a message.
       if (arg(0) == 'user' && is_numeric(arg(1)) && arg(2) == 'edit') {
-        drupal_set_message(t('%user is currently being protected from any edits.', array('%user' => $account->name)), 'error');
+        drupal_set_message(t('%user is currently being protected from any edits.', array('%user' => $account->name)), 'error', FALSE);
       }
       return FALSE;
     }
@@ -423,7 +423,7 @@ function userprotect_user_cancel_access($account) {
       if (!userprotect_check_bypass('up_cancel') && userprotect_get_user_protection($account, 'up_cancel')) {
         // If so, and we're at /user/X/cancel, set a message.
         if (arg(0) == 'user' && is_numeric(arg(1)) && arg(2) == 'cancel') {
-          drupal_set_message(t('%user is currently being protected from cancellation.', array('%user' => $account->name)), 'error');
+          drupal_set_message(t('%user is currently being protected from cancellation.', array('%user' => $account->name)), 'error', FALSE);
         }
         return FALSE;
       }
