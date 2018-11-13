@@ -39,6 +39,9 @@ echo "enable menu/admin modules..."
 $drush $instance pm-enable admin_menu -y
 $drush $instance pm-enable adminimal_admin_menu -y
 $drush $instance pm-enable module_filter -y
+$drush $instance pm-enable chain_menu_access -y
+$drush $instance pm-enable ldap_user -y
+$drush $instance pm-enable ctools -y
 
 ## install extensions
 echo "$prog: install extensions"
@@ -56,6 +59,10 @@ $drush $instance cvapi extension.install key=org.civicrm.civicase --quiet
 $drush $instance cvapi extension.install key=com.aghstrategies.slicknav --quiet
 $drush $instance cvapi extension.install key=org.civicrm.flexmailer --quiet
 $drush $instance cvapi extension.install key=uk.co.vedaconsulting.mosaico --quiet
+
+## upgrade drupal db
+echo "running drupal db upgrade..."
+$drush $instance updb -y -q
 
 ## configure blocks for BluebirdSeven theme
 echo "$prog: configure blocks for BluebirdSeven theme"
