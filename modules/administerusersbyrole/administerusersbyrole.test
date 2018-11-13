@@ -41,15 +41,15 @@ class AdministerUsersByRoleTestCase extends DrupalWebTestCase {
 
     // clear permissions cache, so we can use the 'edit users with ...' permission for this role
     $this->checkPermissions(array(), TRUE);
-    // create role to edit above role
+    // create role to edit above role and also anyone with no custom roles.
     $perms = array(
-      'access administration pages',
       'access content',
-      'administer users',
-      _administerusersbyrole_build_perm_string($roleName, 'edit', FALSE),
+      _administerusersbyrole_build_perm_string(DRUPAL_AUTHENTICATED_RID, 'edit'),
+      _administerusersbyrole_build_perm_string($this->roles[$roleName], 'edit'),
     );
     if ($allowEditorToCancel) {
-      $perms[] = _administerusersbyrole_build_perm_string($roleName, 'cancel', FALSE);
+      // Don't add in "no custom roles" this time, to give better variety of testing.
+      $perms[] = _administerusersbyrole_build_perm_string($this->roles[$roleName], 'cancel');
     }
     $this->roles["{$roleName}_editor"] = $this->drupalCreateRole($perms, "{$roleName}_editor");
     $this->createUserWithRole("{$roleName}_editor", array("{$roleName}_editor"));
@@ -64,55 +64,27 @@ class AdministerUsersByRoleTestCase extends DrupalWebTestCase {
     $this->assertTrue(module_exists('administerusersbyrole'), "administerusersbyrole.module isn't installed");
 
     $this->createUserWithRole('noroles', array());
-
     $this->createRolesAndUsers('alpha', FALSE);
-
-    // 'alpha and other' editor
-    $perms = array(
-      'access administration pages',
-      'access content',
-      'administer users',
-      _administerusersbyrole_build_perm_string('alpha', 'edit', TRUE),
-    );
-    $this->checkPermissions(array(), TRUE);
-    $this->roles['alpha_o_ed'] = $this->drupalCreateRole($perms, 'alpha_o_ed');
-    $this->createUserWithRole('alpha_o_ed', array('alpha_o_ed'));
-
-    // 'alpha and other' deletor
-    $perms = array(
-      'access administration pages',
-      'access content',
-      'administer users',
-      _administerusersbyrole_build_perm_string('alpha', 'cancel', TRUE),
-    );
-    $this->checkPermissions(array(), TRUE);
-    $this->roles['alpha_o_del'] = $this->drupalCreateRole($perms, 'alpha_o_del');
-    $this->createUserWithRole('alpha_o_del', array('alpha_o_del'));
-
     $this->createRolesAndUsers('beta', TRUE);
+    $this->createUserWithRole('alphabeta', array('alpha', 'beta'));
 
-    // 'beta and other' editor
+    // alphabeta_ed
     $perms = array(
-      'access administration pages',
       'access content',
-      'administer users',
-      _administerusersbyrole_build_perm_string('beta', 'edit', TRUE),
+      _administerusersbyrole_build_perm_string($this->roles['alpha'], 'edit'),
+      _administerusersbyrole_build_perm_string($this->roles['beta'], 'edit'),
     );
     $this->checkPermissions(array(), TRUE);
-    $this->roles['beta_o_ed'] = $this->drupalCreateRole($perms, 'beta_o_ed');
-    $this->createUserWithRole('beta_o_ed', array('beta_o_ed'));
-
-    $this->createUserWithRole('alphabeta', array('alpha', 'beta'));
+    $this->roles['alphabeta_ed'] = $this->drupalCreateRole($perms, 'alphabeta_ed');
+    $this->createUserWithRole('alphabeta_ed', array('alphabeta_ed'));
 
     // all_editor
     $perms = array(
-      'access administration pages',
       'access content',
-      'administer users',
-      'edit users with no custom roles',
+      _administerusersbyrole_build_perm_string(DRUPAL_AUTHENTICATED_RID, 'edit'),
     );
     foreach ($this->roles as $roleName => $roleID) {
-      $perms[] = _administerusersbyrole_build_perm_string($roleName, 'edit', FALSE);
+      $perms[] = _administerusersbyrole_build_perm_string($this->roles[$roleName], 'edit');
     }
     $this->checkPermissions(array(), TRUE);
     $this->roles['all_editor'] = $this->drupalCreateRole($perms, 'all_editor');
@@ -120,13 +92,11 @@ class AdministerUsersByRoleTestCase extends DrupalWebTestCase {
 
     // all_deletor
     $perms = array(
-      'access administration pages',
       'access content',
-      'administer users',
-      'cancel users with no custom roles',
+      _administerusersbyrole_build_perm_string(DRUPAL_AUTHENTICATED_RID, 'cancel'),
     );
     foreach ($this->roles as $roleName => $roleID) {
-      $perms[] = _administerusersbyrole_build_perm_string($roleName, 'cancel', FALSE);
+      $perms[] = _administerusersbyrole_build_perm_string($roleID, 'cancel');
     }
     $this->checkPermissions(array(), TRUE);
     $this->roles['all_deletor'] = $this->drupalCreateRole($perms, 'all_deletor');
@@ -134,9 +104,7 @@ class AdministerUsersByRoleTestCase extends DrupalWebTestCase {
 
     // creator
     $perms = array(
-      'access administration pages',
       'access content',
-      'administer users',
       'create users',
     );
     $this->checkPermissions(array(), TRUE);
@@ -152,12 +120,10 @@ class AdministerUsersByRoleTestCase extends DrupalWebTestCase {
         'noroles'      => array('edit' => FALSE, 'cancel' => FALSE),
         'alpha'        => array('edit' => FALSE, 'cancel' => FALSE),
         'alpha_editor' => array('edit' => FALSE, 'cancel' => FALSE),
-        'alpha_o_ed'   => array('edit' => FALSE, 'cancel' => FALSE),
-        'alpha_o_del'  => array('edit' => FALSE, 'cancel' => FALSE),
         'beta'         => array('edit' => FALSE, 'cancel' => FALSE),
         'beta_editor'  => array('edit' => FALSE, 'cancel' => FALSE),
-        'beta_o_ed'    => array('edit' => FALSE, 'cancel' => FALSE),
         'alphabeta'    => array('edit' => FALSE, 'cancel' => FALSE),
+        'alphabeta_ed' => array('edit' => FALSE, 'cancel' => FALSE),
         'creator'      => array('edit' => FALSE, 'cancel' => FALSE),
         'all_editor'   => array('edit' => FALSE, 'cancel' => FALSE),
         'all_deletor'  => array('edit' => FALSE, 'cancel' => FALSE),
@@ -167,12 +133,10 @@ class AdministerUsersByRoleTestCase extends DrupalWebTestCase {
         'noroles'      => array('edit' => TRUE,  'cancel' => FALSE),
         'alpha'        => array('edit' => FALSE, 'cancel' => FALSE),
         'alpha_editor' => array('edit' => FALSE, 'cancel' => FALSE),
-        'alpha_o_ed'   => array('edit' => FALSE, 'cancel' => FALSE),
-        'alpha_o_del'  => array('edit' => FALSE, 'cancel' => FALSE),
         'beta'         => array('edit' => FALSE, 'cancel' => FALSE),
         'beta_editor'  => array('edit' => FALSE, 'cancel' => FALSE),
-        'beta_o_ed'    => array('edit' => FALSE, 'cancel' => FALSE),
         'alphabeta'    => array('edit' => FALSE, 'cancel' => FALSE),
+        'alphabeta_ed' => array('edit' => FALSE, 'cancel' => FALSE),
         'creator'      => array('edit' => FALSE, 'cancel' => FALSE),
         'all_editor'   => array('edit' => FALSE, 'cancel' => FALSE),
         'all_deletor'  => array('edit' => FALSE, 'cancel' => FALSE),
@@ -182,57 +146,23 @@ class AdministerUsersByRoleTestCase extends DrupalWebTestCase {
         'noroles'      => array('edit' => FALSE, 'cancel' => FALSE),
         'alpha'        => array('edit' => TRUE,  'cancel' => FALSE),
         'alpha_editor' => array('edit' => FALSE, 'cancel' => FALSE),
-        'alpha_o_ed'   => array('edit' => FALSE, 'cancel' => FALSE),
-        'alpha_o_del'  => array('edit' => FALSE, 'cancel' => FALSE),
         'beta'         => array('edit' => FALSE, 'cancel' => FALSE),
         'beta_editor'  => array('edit' => FALSE, 'cancel' => FALSE),
-        'beta_o_ed'    => array('edit' => FALSE, 'cancel' => FALSE),
         'alphabeta'    => array('edit' => FALSE, 'cancel' => FALSE),
+        'alphabeta_ed' => array('edit' => FALSE, 'cancel' => FALSE),
         'creator'      => array('edit' => FALSE, 'cancel' => FALSE),
         'all_editor'   => array('edit' => FALSE, 'cancel' => FALSE),
         'all_deletor'  => array('edit' => FALSE, 'cancel' => FALSE),
         'create users' => FALSE,
       ),
       'alpha_editor' => array(
-        'noroles'      => array('edit' => FALSE, 'cancel' => FALSE),
+        'noroles'      => array('edit' => TRUE,  'cancel' => FALSE),
         'alpha'        => array('edit' => TRUE,  'cancel' => FALSE),
         'alpha_editor' => array('edit' => TRUE,  'cancel' => FALSE),
-        'alpha_o_ed'   => array('edit' => FALSE, 'cancel' => FALSE),
-        'alpha_o_del'  => array('edit' => FALSE, 'cancel' => FALSE),
         'beta'         => array('edit' => FALSE, 'cancel' => FALSE),
         'beta_editor'  => array('edit' => FALSE, 'cancel' => FALSE),
-        'beta_o_ed'    => array('edit' => FALSE, 'cancel' => FALSE),
         'alphabeta'    => array('edit' => FALSE, 'cancel' => FALSE),
-        'creator'      => array('edit' => FALSE, 'cancel' => FALSE),
-        'all_editor'   => array('edit' => FALSE, 'cancel' => FALSE),
-        'all_deletor'  => array('edit' => FALSE, 'cancel' => FALSE),
-        'create users' => FALSE,
-      ),
-      'alpha_o_ed' => array(
-        'noroles'      => array('edit' => FALSE, 'cancel' => FALSE),
-        'alpha'        => array('edit' => TRUE,  'cancel' => FALSE),
-        'alpha_editor' => array('edit' => FALSE, 'cancel' => FALSE),
-        'alpha_o_ed'   => array('edit' => TRUE,  'cancel' => FALSE),
-        'alpha_o_del'  => array('edit' => FALSE, 'cancel' => FALSE),
-        'beta'         => array('edit' => FALSE, 'cancel' => FALSE),
-        'beta_editor'  => array('edit' => FALSE, 'cancel' => FALSE),
-        'beta_o_ed'    => array('edit' => FALSE, 'cancel' => FALSE),
-        'alphabeta'    => array('edit' => TRUE,  'cancel' => FALSE),
-        'creator'      => array('edit' => FALSE, 'cancel' => FALSE),
-        'all_editor'   => array('edit' => FALSE, 'cancel' => FALSE),
-        'all_deletor'  => array('edit' => FALSE, 'cancel' => FALSE),
-        'create users' => FALSE,
-      ),
-      'alpha_o_del' => array(
-        'noroles'      => array('edit' => FALSE, 'cancel' => FALSE),
-        'alpha'        => array('edit' => FALSE, 'cancel' => TRUE),
-        'alpha_editor' => array('edit' => FALSE, 'cancel' => FALSE),
-        'alpha_o_ed'   => array('edit' => FALSE, 'cancel' => FALSE),
-        'alpha_o_del'  => array('edit' => TRUE,  'cancel' => FALSE),
-        'beta'         => array('edit' => FALSE, 'cancel' => FALSE),
-        'beta_editor'  => array('edit' => FALSE, 'cancel' => FALSE),
-        'beta_o_ed'    => array('edit' => FALSE, 'cancel' => FALSE),
-        'alphabeta'    => array('edit' => FALSE, 'cancel' => TRUE),
+        'alphabeta_ed' => array('edit' => FALSE, 'cancel' => FALSE),
         'creator'      => array('edit' => FALSE, 'cancel' => FALSE),
         'all_editor'   => array('edit' => FALSE, 'cancel' => FALSE),
         'all_deletor'  => array('edit' => FALSE, 'cancel' => FALSE),
@@ -242,42 +172,23 @@ class AdministerUsersByRoleTestCase extends DrupalWebTestCase {
         'noroles'      => array('edit' => FALSE, 'cancel' => FALSE),
         'alpha'        => array('edit' => FALSE, 'cancel' => FALSE),
         'alpha_editor' => array('edit' => FALSE, 'cancel' => FALSE),
-        'alpha_o_ed'   => array('edit' => FALSE, 'cancel' => FALSE),
-        'alpha_o_del'  => array('edit' => FALSE, 'cancel' => FALSE),
         'beta'         => array('edit' => TRUE,  'cancel' => FALSE),
         'beta_editor'  => array('edit' => FALSE, 'cancel' => FALSE),
-        'beta_o_ed'    => array('edit' => FALSE, 'cancel' => FALSE),
         'alphabeta'    => array('edit' => FALSE, 'cancel' => FALSE),
+        'alphabeta_ed' => array('edit' => FALSE, 'cancel' => FALSE),
         'creator'      => array('edit' => FALSE, 'cancel' => FALSE),
         'all_editor'   => array('edit' => FALSE, 'cancel' => FALSE),
         'all_deletor'  => array('edit' => FALSE, 'cancel' => FALSE),
         'create users' => FALSE,
       ),
       'beta_editor' => array(
-        'noroles'      => array('edit' => FALSE, 'cancel' => FALSE),
+        'noroles'      => array('edit' => TRUE,  'cancel' => FALSE),
         'alpha'        => array('edit' => FALSE, 'cancel' => FALSE),
         'alpha_editor' => array('edit' => FALSE, 'cancel' => FALSE),
-        'alpha_o_ed'   => array('edit' => FALSE, 'cancel' => FALSE),
-        'alpha_o_del'  => array('edit' => FALSE, 'cancel' => FALSE),
         'beta'         => array('edit' => TRUE,  'cancel' => TRUE),
         'beta_editor'  => array('edit' => TRUE,  'cancel' => FALSE),
-        'beta_o_ed'    => array('edit' => FALSE, 'cancel' => FALSE),
         'alphabeta'    => array('edit' => FALSE, 'cancel' => FALSE),
-        'creator'      => array('edit' => FALSE, 'cancel' => FALSE),
-        'all_editor'   => array('edit' => FALSE, 'cancel' => FALSE),
-        'all_deletor'  => array('edit' => FALSE, 'cancel' => FALSE),
-        'create users' => FALSE,
-      ),
-      'beta_o_ed' => array(
-        'noroles'      => array('edit' => FALSE, 'cancel' => FALSE),
-        'alpha'        => array('edit' => FALSE, 'cancel' => FALSE),
-        'alpha_editor' => array('edit' => FALSE, 'cancel' => FALSE),
-        'alpha_o_ed'   => array('edit' => FALSE, 'cancel' => FALSE),
-        'alpha_o_del'  => array('edit' => FALSE, 'cancel' => FALSE),
-        'beta'         => array('edit' => TRUE,  'cancel' => FALSE),
-        'beta_editor'  => array('edit' => FALSE, 'cancel' => FALSE),
-        'beta_o_ed'    => array('edit' => TRUE,  'cancel' => FALSE),
-        'alphabeta'    => array('edit' => TRUE,  'cancel' => FALSE),
+        'alphabeta_ed' => array('edit' => FALSE, 'cancel' => FALSE),
         'creator'      => array('edit' => FALSE, 'cancel' => FALSE),
         'all_editor'   => array('edit' => FALSE, 'cancel' => FALSE),
         'all_deletor'  => array('edit' => FALSE, 'cancel' => FALSE),
@@ -287,12 +198,23 @@ class AdministerUsersByRoleTestCase extends DrupalWebTestCase {
         'noroles'      => array('edit' => FALSE, 'cancel' => FALSE),
         'alpha'        => array('edit' => FALSE, 'cancel' => FALSE),
         'alpha_editor' => array('edit' => FALSE, 'cancel' => FALSE),
-        'alpha_o_ed'   => array('edit' => FALSE, 'cancel' => FALSE),
-        'alpha_o_del'  => array('edit' => FALSE, 'cancel' => FALSE),
         'beta'         => array('edit' => FALSE, 'cancel' => FALSE),
         'beta_editor'  => array('edit' => FALSE, 'cancel' => FALSE),
-        'beta_o_ed'    => array('edit' => FALSE, 'cancel' => FALSE),
         'alphabeta'    => array('edit' => TRUE,  'cancel' => FALSE),
+        'alphabeta_ed' => array('edit' => FALSE, 'cancel' => FALSE),
+        'creator'      => array('edit' => FALSE, 'cancel' => FALSE),
+        'all_editor'   => array('edit' => FALSE, 'cancel' => FALSE),
+        'all_deletor'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'create users' => FALSE,
+      ),
+      'alphabeta_ed' => array(
+        'noroles'      => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha'        => array('edit' => TRUE,  'cancel' => FALSE),
+        'alpha_editor' => array('edit' => FALSE, 'cancel' => FALSE),
+        'beta'         => array('edit' => TRUE,  'cancel' => FALSE),
+        'beta_editor'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'alphabeta'    => array('edit' => TRUE,  'cancel' => FALSE),
+        'alphabeta_ed' => array('edit' => TRUE,  'cancel' => FALSE),
         'creator'      => array('edit' => FALSE, 'cancel' => FALSE),
         'all_editor'   => array('edit' => FALSE, 'cancel' => FALSE),
         'all_deletor'  => array('edit' => FALSE, 'cancel' => FALSE),
@@ -302,12 +224,10 @@ class AdministerUsersByRoleTestCase extends DrupalWebTestCase {
         'noroles'      => array('edit' => TRUE,  'cancel' => FALSE),
         'alpha'        => array('edit' => TRUE,  'cancel' => FALSE),
         'alpha_editor' => array('edit' => TRUE,  'cancel' => FALSE),
-        'alpha_o_ed'   => array('edit' => TRUE,  'cancel' => FALSE),
-        'alpha_o_del'  => array('edit' => TRUE,  'cancel' => FALSE),
         'beta'         => array('edit' => TRUE,  'cancel' => FALSE),
         'beta_editor'  => array('edit' => TRUE,  'cancel' => FALSE),
-        'beta_o_ed'    => array('edit' => TRUE,  'cancel' => FALSE),
         'alphabeta'    => array('edit' => TRUE,  'cancel' => FALSE),
+        'alphabeta_ed' => array('edit' => TRUE,  'cancel' => FALSE),
         'creator'      => array('edit' => FALSE, 'cancel' => FALSE),
         'all_editor'   => array('edit' => TRUE,  'cancel' => FALSE),
         'all_deletor'  => array('edit' => FALSE, 'cancel' => FALSE),
@@ -317,12 +237,10 @@ class AdministerUsersByRoleTestCase extends DrupalWebTestCase {
         'noroles'      => array('edit' => FALSE, 'cancel' => TRUE),
         'alpha'        => array('edit' => FALSE, 'cancel' => TRUE),
         'alpha_editor' => array('edit' => FALSE, 'cancel' => TRUE),
-        'alpha_o_ed'   => array('edit' => FALSE, 'cancel' => TRUE),
-        'alpha_o_del'  => array('edit' => FALSE, 'cancel' => TRUE),
         'beta'         => array('edit' => FALSE, 'cancel' => TRUE),
         'beta_editor'  => array('edit' => FALSE, 'cancel' => TRUE),
-        'beta_o_ed'    => array('edit' => FALSE, 'cancel' => TRUE),
         'alphabeta'    => array('edit' => FALSE, 'cancel' => TRUE),
+        'alphabeta_ed' => array('edit' => FALSE, 'cancel' => TRUE),
         'creator'      => array('edit' => FALSE, 'cancel' => FALSE),
         'all_editor'   => array('edit' => FALSE, 'cancel' => TRUE),
         'all_deletor'  => array('edit' => TRUE,  'cancel' => FALSE),
@@ -332,12 +250,10 @@ class AdministerUsersByRoleTestCase extends DrupalWebTestCase {
         'noroles'      => array('edit' => FALSE, 'cancel' => FALSE),
         'alpha'        => array('edit' => FALSE, 'cancel' => FALSE),
         'alpha_editor' => array('edit' => FALSE, 'cancel' => FALSE),
-        'alpha_o_ed'   => array('edit' => FALSE, 'cancel' => FALSE),
-        'alpha_o_del'  => array('edit' => FALSE, 'cancel' => FALSE),
         'beta'         => array('edit' => FALSE, 'cancel' => FALSE),
         'beta_editor'  => array('edit' => FALSE, 'cancel' => FALSE),
-        'beta_o_ed'    => array('edit' => FALSE, 'cancel' => FALSE),
         'alphabeta'    => array('edit' => FALSE, 'cancel' => FALSE),
+        'alphabeta_ed' => array('edit' => FALSE, 'cancel' => FALSE),
         'creator'      => array('edit' => TRUE,  'cancel' => FALSE),
         'all_editor'   => array('edit' => FALSE, 'cancel' => FALSE),
         'all_deletor'  => array('edit' => FALSE, 'cancel' => FALSE),
