@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -135,7 +135,6 @@ class CRM_Custom_Form_Field extends CRM_Core_Form {
           'Radio' => ts('Radio'),
           'CheckBox' => ts('CheckBox'),
           'Multi-Select' => ts('Multi-Select'),
-          'AdvMulti-Select' => ts('Adv Multi-Select (obsolete)'),
           'Autocomplete-Select' => ts('Autocomplete-Select'),
         ),
         array(
@@ -237,6 +236,7 @@ class CRM_Custom_Form_Field extends CRM_Core_Form {
     else {
       $defaults['is_active'] = 1;
       $defaults['option_type'] = 1;
+      $defaults['is_search_range'] = 1;
     }
 
     // set defaults for weight.
@@ -284,6 +284,8 @@ class CRM_Custom_Form_Field extends CRM_Core_Form {
       $this->assign('gid', $this->_gid);
     }
 
+    $this->assign('dataTypeKeys', self::$_dataTypeKeys);
+
     // lets trim all the whitespace
     $this->applyFilter('__ALL__', 'trim');
 
@@ -305,7 +307,6 @@ class CRM_Custom_Form_Field extends CRM_Core_Form {
     $sel = &$this->addElement('hierselect',
       'data_type',
       ts('Data and Input Field Type'),
-      'onclick="clearSearchBoxes();custom_option_html_type(this.form)"; onBlur="custom_option_html_type(this.form)";',
       '&nbsp;&nbsp;&nbsp;'
     );
     $sel->setOptions(array($dt, $it));
@@ -314,24 +315,33 @@ class CRM_Custom_Form_Field extends CRM_Core_Form {
       $this->add('checkbox', 'in_selector', ts('Display in Table?'));
     }
 
+    $optionGroupParams = [
+      'is_reserved' => 0,
+      'is_active' => 1,
+      'options' => ['limit' => 0, 'sort' => "title ASC"],
+      'return' => ['title'],
+    ];
+
     if ($this->_action == CRM_Core_Action::UPDATE) {
       $this->freeze('data_type');
+      if (!empty($this->_values['option_group_id'])) {
+        // Before dev/core#155 we didn't set the is_reserved flag properly, which should be handled by the upgrade script...
+        //  but it is still possible that existing installs may have optiongroups linked to custom fields that are marked reserved.
+        $optionGroupParams['id'] = $this->_values['option_group_id'];
+        $optionGroupParams['options']['or'] = [["is_reserved", "id"]];
+      }
     }
-    $includeFieldIds = NULL;
-    if ($this->_action == CRM_Core_Action::UPDATE) {
-      $includeFieldIds = $this->_values['id'];
-    }
-    $optionGroups = CRM_Core_BAO_CustomField::customOptionGroup($includeFieldIds);
-    $emptyOptGroup = FALSE;
-    if (empty($optionGroups)) {
-      $emptyOptGroup = TRUE;
-      $optionTypes = array('1' => ts('Create a new set of options'));
-    }
-    else {
-      $optionTypes = array(
-        '1' => ts('Create a new set of options'),
-        '2' => ts('Reuse an existing set'),
-      );
+
+    // Retrieve optiongroups for selection list
+    $optionGroupMetadata = civicrm_api3('OptionGroup', 'get', $optionGroupParams);
+
+    // OptionGroup selection
+    $optionTypes = array('1' => ts('Create a new set of options'));
+
+    if (!empty($optionGroupMetadata['values'])) {
+      $emptyOptGroup = FALSE;
+      $optionGroups = CRM_Utils_Array::collect('title', $optionGroupMetadata['values']);
+      $optionTypes['2'] = ts('Reuse an existing set');
 
       $this->add('select',
         'option_group_id',
@@ -341,6 +351,10 @@ class CRM_Custom_Form_Field extends CRM_Core_Form {
         ) + $optionGroups
       );
     }
+    else {
+      // No custom (non-reserved) option groups
+      $emptyOptGroup = TRUE;
+    }
 
     $element = &$this->addRadio('option_type',
       ts('Option Type'),
@@ -349,6 +363,10 @@ class CRM_Custom_Form_Field extends CRM_Core_Form {
         'onclick' => "showOptionSelect();",
       ), '<br/>'
     );
+    // if empty option group freeze the option type.
+    if ($emptyOptGroup) {
+      $element->freeze();
+    }
 
     $contactGroups = CRM_Core_PseudoConstant::group();
     asort($contactGroups);
@@ -358,7 +376,7 @@ class CRM_Custom_Form_Field extends CRM_Core_Form {
       ts('Limit List to Group'),
       $contactGroups,
       FALSE,
-      array('multiple' => 'multiple')
+      array('multiple' => 'multiple', 'class' => 'crm-select2')
     );
 
     $this->add('text',
@@ -368,11 +386,6 @@ class CRM_Custom_Form_Field extends CRM_Core_Form {
     );
 
     $this->add('hidden', 'filter_selected', 'Group', array('id' => 'filter_selected'));
-
-    //if empty option group freeze the option type.
-    if ($emptyOptGroup) {
-      $element->freeze();
-    }
 
     // form fields of Custom Option rows
     $defaultOption = array();
@@ -515,8 +528,7 @@ class CRM_Custom_Form_Field extends CRM_Core_Form {
     // is searchable ?
     $this->addElement('advcheckbox',
       'is_searchable',
-      ts('Is this Field Searchable?'),
-      NULL, array('onclick' => "showSearchRange(this)")
+      ts('Is this Field Searchable?')
     );
 
     // is searchable by range?
@@ -707,7 +719,7 @@ SELECT count(*)
     if (isset($fields['data_type'][1])) {
       $dataField = $fields['data_type'][1];
     }
-    $optionFields = array('Select', 'Multi-Select', 'CheckBox', 'Radio', 'AdvMulti-Select');
+    $optionFields = array('Select', 'Multi-Select', 'CheckBox', 'Radio');
 
     if (isset($fields['option_type']) && $fields['option_type'] == 1) {
       //capture duplicate Custom option values

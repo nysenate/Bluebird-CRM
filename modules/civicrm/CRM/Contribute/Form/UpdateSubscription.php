@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -85,6 +85,9 @@ class CRM_Contribute_Form_UpdateSubscription extends CRM_Core_Form {
         $this->_paymentProcessorObj = CRM_Financial_BAO_PaymentProcessor::getPaymentProcessorForRecurringContribution($this->contributionRecurID);
       }
       catch (CRM_Core_Exception $e) {
+        CRM_Core_Error::statusBounce(ts('There is no valid processor for this subscription so it cannot be edited.'));
+      }
+      catch (CiviCRM_API3_Exception $e) {
         CRM_Core_Error::statusBounce(ts('There is no valid processor for this subscription so it cannot be edited.'));
       }
       $this->_subscriptionDetails = CRM_Contribute_BAO_ContributionRecur::getSubscriptionDetails($this->contributionRecurID);
@@ -254,7 +257,7 @@ class CRM_Contribute_Form_UpdateSubscription extends CRM_Core_Form {
 
     $params['subscriptionId'] = $this->_subscriptionDetails->subscription_id;
     $updateSubscription = TRUE;
-    if ($this->_paymentProcessorObj->isSupported('changeSubscriptionAmount')) {
+    if ($this->_paymentProcessorObj->supports('changeSubscriptionAmount')) {
       $updateSubscription = $this->_paymentProcessorObj->changeSubscriptionAmount($message, $params);
     }
     if (is_a($updateSubscription, 'CRM_Core_Error')) {

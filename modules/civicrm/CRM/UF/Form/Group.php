@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -270,6 +270,7 @@ class CRM_UF_Form_Group extends CRM_Core_Form {
       }
     }
     else {
+      $defaults['add_cancel_button'] = 1;
       $defaults['is_active'] = 1;
       $defaults['is_map'] = 0;
       $defaults['is_update_dupe'] = 0;

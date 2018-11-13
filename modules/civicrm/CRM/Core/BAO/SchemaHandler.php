@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -189,14 +189,15 @@ class CRM_Core_BAO_SchemaHandler {
 
     //create index only for searchable fields during ADD,
     //create index only if field is become searchable during MODIFY,
-    //drop index only if field is no more searchable and index was exist.
+    //drop index only if field is no longer searchable and it does not reference
+    //a forgein key (and indexExist is true)
     if (!empty($params['searchable']) && !$indexExist) {
       $sql .= $separator;
       $sql .= str_repeat(' ', 8);
       $sql .= $prefix;
       $sql .= "INDEX_{$params['name']} ( {$params['name']} )";
     }
-    elseif (empty($params['searchable']) && $indexExist) {
+    elseif (empty($params['searchable']) && empty($params['fk_table_name']) && $indexExist) {
       $sql .= $separator;
       $sql .= str_repeat(' ', 8);
       $sql .= "DROP INDEX INDEX_{$params['name']}";
@@ -626,18 +627,17 @@ MODIFY      {$columnName} varchar( $length )
    *
    * @param string $tableName
    * @param string $columnName
+   * @param bool $i18nRewrite
+   *   Whether to rewrite the query on multilingual setups.
    *
    * @return bool
    */
-  public static function checkIfFieldExists($tableName, $columnName) {
-    $result = CRM_Core_DAO::executeQuery(
-      "SHOW COLUMNS FROM $tableName LIKE %1",
-      array(1 => array($columnName, 'String'))
-    );
-    if ($result->fetch()) {
-      return TRUE;
-    }
-    return FALSE;
+  public static function checkIfFieldExists($tableName, $columnName, $i18nRewrite = TRUE) {
+    $query = "SHOW COLUMNS FROM $tableName LIKE '%1'";
+    $dao = CRM_Core_DAO::executeQuery($query, [1 => [$columnName, 'Alphanumeric']], TRUE, NULL, FALSE, $i18nRewrite);
+    $result = $dao->fetch() ? TRUE : FALSE;
+    $dao->free();
+    return $result;
   }
 
   /**

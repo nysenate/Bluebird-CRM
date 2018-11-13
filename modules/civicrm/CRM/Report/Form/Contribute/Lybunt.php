@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -77,6 +77,7 @@ class CRM_Report_Form_Contribute_Lybunt extends CRM_Report_Form {
    * Class constructor.
    */
   public function __construct() {
+    $this->optimisedForOnlyFullGroupBy = FALSE;
     $this->_rollup = 'WITH ROLLUP';
     $this->_autoIncludeIndexedFieldsAsOrderBys = 1;
     $yearsInPast = 10;
@@ -566,7 +567,7 @@ class CRM_Report_Form_Contribute_Lybunt extends CRM_Report_Form {
     // @todo this acl has no test coverage and is very hard to test manually so could be fragile.
     $this->resetFormSqlAndWhereHavingClauses();
 
-    $this->contactTempTable = 'civicrm_report_temp_lybunt_c_' . date('Ymd_') . uniqid();
+    $this->contactTempTable = CRM_Utils_SQL_TempTable::build()->setCategory('rptlybunt')->setId(date('Ymd_') . uniqid())->getName();
     $this->limit();
     $getContacts = "
       CREATE TEMPORARY TABLE $this->contactTempTable {$this->_databaseAttributes}

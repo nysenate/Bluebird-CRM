@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -157,7 +157,7 @@ class CRM_Utils_Rule {
     // at all, so we split and loop over.
     $parts = explode(',', $str);
     foreach ($parts as $part) {
-      if (!preg_match('/^((`[\w-]{1,64}`|[\w-]{1,64})\.)?(`[\w-]{1,64}`|[\w-]{1,64})( (asc|desc))?$/i', trim($part))) {
+      if (!preg_match('/^((`[\w-]{1,64}`|[\w-]{1,64})\.)*(`[\w-]{1,64}`|[\w-]{1,64})( (asc|desc))?$/i', trim($part))) {
         return FALSE;
       }
     }
@@ -503,6 +503,27 @@ class CRM_Utils_Rule {
     }
 
     return preg_match('/(^-?\d\d*\.\d*$)|(^-?\d\d*$)|(^-?\.\d\d*$)/', $value) ? TRUE : FALSE;
+  }
+
+  /**
+   * Test whether $value is alphanumeric.
+   *
+   * Underscores and dashes are also allowed!
+   *
+   * This is the type of string you could expect to see in URL parameters
+   * like `?mode=live` vs `?mode=test`. This function exists so that we can be
+   * strict about what we accept for such values, thus mitigating against
+   * potential security issues.
+   *
+   * @see \CRM_Utils_RuleTest::alphanumericData
+   *   for examples of vales that give TRUE/FALSE here
+   *
+   * @param $value
+   *
+   * @return bool
+   */
+  public static function alphanumeric($value) {
+    return preg_match('/^[a-zA-Z0-9_-]*$/', $value) ? TRUE : FALSE;
   }
 
   /**

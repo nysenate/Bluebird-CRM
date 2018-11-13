@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -200,7 +200,14 @@ class CRM_Financial_Form_FinancialAccount extends CRM_Contribute_Form {
       if ($this->_action & CRM_Core_Action::UPDATE) {
         $params['id'] = $this->_id;
       }
-
+      foreach ([
+        'is_active',
+        'is_deductible',
+        'is_tax',
+        'is_default',
+      ] as $field) {
+        $params[$field] = CRM_Utils_Array::value($field, $params, FALSE);
+      }
       $financialAccount = CRM_Financial_BAO_FinancialAccount::add($params);
       CRM_Core_Session::setStatus(ts('The Financial Account \'%1\' has been saved.', array(1 => $financialAccount->name)), ts('Saved'), 'success');
     }

@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -126,7 +126,7 @@ class CRM_Core_DAO_AllCoreTables {
   /**
    * Modify indices to account for localization options.
    *
-   * @param CRM_Core_DAO $class DAO class
+   * @param string $class DAO class
    * @param array $originalIndices index definitions before localization
    *
    * @return array

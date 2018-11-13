@@ -339,8 +339,7 @@
               iframe.setAttribute('src', scope.$parent.$eval(attrs.crmUiIframeSrc));
             }
             else {
-              //NYSS 12135
-              var iframeHtml = scope.$parent.$eval(attrs.crmUiIframe).replace(/<a /g, "<a target='_blank' ");
+              var iframeHtml = scope.$parent.$eval(attrs.crmUiIframe);
 
               var doc = iframe.document;
               if (iframe.contentDocument) {
@@ -708,7 +707,6 @@
         }
       };
     })
-
     // example <div crm-ui-tab id="tab-1" crm-title="ts('My Title')" count="3">...content...</div>
     // WISHLIST: use a full Angular component instead of an incomplete jQuery wrapper
     .directive('crmUiTab', function($parse) {

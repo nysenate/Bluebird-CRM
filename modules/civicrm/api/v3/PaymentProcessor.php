@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
@@ -61,6 +61,7 @@ function _civicrm_api3_payment_processor_create_spec(&$params) {
   $params['payment_processor_type_id']['api.required'] = 1;
   $params['is_default']['api.default'] = 0;
   $params['is_test']['api.default'] = 0;
+  $params['domain_id']['api.default'] = CRM_Core_Config::domainID();
 }
 
 /**

@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
@@ -40,6 +40,12 @@
  */
 function civicrm_api3_financial_type_create($params) {
   return _civicrm_api3_basic_create(_civicrm_api3_get_BAO(__FUNCTION__), $params, 'FinancialType');
+}
+
+function _civicrm_api3_financial_type_create_spec(&$params) {
+  $params['name']['api.required'] = 1;
+  $params['name']['type'] = CRM_Utils_Type::T_STRING;
+  unset($params['name']['pseudoconstant']);
 }
 
 /**

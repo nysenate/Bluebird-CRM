@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -46,11 +46,12 @@ class CRM_Core_Permission_UnitTests extends CRM_Core_Permission_Base {
    *
    * @param string $str
    *   The permission to check.
+   * @param int $userId
    *
    * @return bool
    *   true if yes, else false
    */
-  public function check($str) {
+  public function check($str, $userId = NULL) {
     if ($str == CRM_Core_Permission::ALWAYS_DENY_PERMISSION) {
       return FALSE;
     }

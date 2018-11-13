@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -304,6 +304,13 @@ if (!defined('CIVICRM_MAIL_SMARTY')) {
 // define( 'CIVICRM_MAIL_LOG', '%%templateCompileDir%%/mail.log');
 // }
 
+/**
+ * This setting will only work if CIVICRM_MAIL_LOG is defined.  Mail will be logged and then sent.
+ */
+//if (!defined('CIVICRM_MAIL_LOG_AND_SEND')) {
+//  define( 'CIVICRM_MAIL_LOG_AND_SEND', 1);
+//}
+
 
 if (!defined('CIVICRM_DOMAIN_ID')) {
   define( 'CIVICRM_DOMAIN_ID', 1);
@@ -361,7 +368,12 @@ if (!defined('CIVICRM_DB_CACHE_HOST')) {
  * The standard port for Memcache & APCCache is 11211. For Redis it is 6379.
  */
 if (!defined('CIVICRM_DB_CACHE_PORT')) {
-  define('CIVICRM_DB_CACHE_PORT', 11211 );
+  if (CIVICRM_DB_CACHE_CLASS === 'Redis') {
+    define('CIVICRM_DB_CACHE_PORT', 6379 );
+  }
+  else {
+    define('CIVICRM_DB_CACHE_PORT', 11211);
+  }
 }
 
 /**
@@ -390,6 +402,14 @@ if (!defined('CIVICRM_DB_CACHE_TIMEOUT')) {
  */
 if (!defined('CIVICRM_DB_CACHE_PREFIX')) {
   define('CIVICRM_DB_CACHE_PREFIX', '');
+}
+
+/**
+ * The cache system traditionally allowed a wide range of cache-keys, but some
+ * cache-keys are prohibited by PSR-16.
+ */
+if (!defined('CIVICRM_PSR16_STRICT')) {
+  define('CIVICRM_PSR16_STRICT', FALSE);
 }
 
 /**

@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -59,9 +59,7 @@ class CRM_Member_Page_Tab extends CRM_Core_Page {
     $membership = array();
     $dao = new CRM_Member_DAO_Membership();
     $dao->contact_id = $this->_contactId;
-    $dao->is_test = 0;
     $dao->whereAdd($addWhere);
-    //$dao->orderBy('name');
     $dao->find();
 
     //CRM--4418, check for view, edit, delete
@@ -110,9 +108,7 @@ class CRM_Member_Page_Tab extends CRM_Core_Page {
         $paymentObject = CRM_Financial_BAO_PaymentProcessor::getProcessorForEntity(
           $membership[$dao->id]['membership_id'], 'membership', 'obj');
         if (!empty($paymentObject)) {
-          // @todo - get this working with syntax style $paymentObject->supports(array
-          //('updateSubscriptionBillingInfo'));
-          $isUpdateBilling = $paymentObject->isSupported('updateSubscriptionBillingInfo');
+          $isUpdateBilling = $paymentObject->supports('updateSubscriptionBillingInfo');
         }
 
         // @todo - get this working with syntax style $paymentObject->supports(array
@@ -264,7 +260,7 @@ class CRM_Member_Page_Tab extends CRM_Core_Page {
    */
   public function edit() {
     // set https for offline cc transaction
-    $mode = CRM_Utils_Request::retrieve('mode', 'String', $this);
+    $mode = CRM_Utils_Request::retrieve('mode', 'Alphanumeric', $this);
     if ($mode == 'test' || $mode == 'live') {
       CRM_Utils_System::redirectToSSL();
     }
@@ -306,7 +302,7 @@ class CRM_Member_Page_Tab extends CRM_Core_Page {
   }
 
   public function preProcess() {
-    $context = CRM_Utils_Request::retrieve('context', 'String', $this);
+    $context = CRM_Utils_Request::retrieve('context', 'Alphanumeric', $this);
     $this->_action = CRM_Utils_Request::retrieve('action', 'String', $this, FALSE, 'browse');
     $this->_id = CRM_Utils_Request::retrieve('id', 'Positive', $this);
 
@@ -390,7 +386,7 @@ class CRM_Member_Page_Tab extends CRM_Core_Page {
    * @param int $contactId
    */
   public static function setContext(&$form, $contactId = NULL) {
-    $context = CRM_Utils_Request::retrieve('context', 'String', $form, FALSE, 'search');
+    $context = CRM_Utils_Request::retrieve('context', 'Alphanumeric', $form, FALSE, 'search');
 
     $qfKey = CRM_Utils_Request::retrieve('key', 'String', $form);
 

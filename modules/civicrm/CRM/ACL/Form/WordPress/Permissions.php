@@ -1,7 +1,7 @@
 <?php
 /*
   +--------------------------------------------------------------------+
-  | CiviCRM version 4.7                                                |
+  | CiviCRM version 5                                                  |
   +--------------------------------------------------------------------+
   | Copyright CiviCRM LLC (c) 2004-2018                                |
   +--------------------------------------------------------------------+
@@ -191,7 +191,7 @@ class CRM_ACL_Form_WordPress_Permissions extends CRM_Core_Form {
 
     CRM_Core_Session::setStatus("", ts('Wordpress Access Control Updated'), "success");
 
-    // rebuild the menus to comply with the new permisssions/capabilites
+    // rebuild the menus to comply with the new permissions/capabilites
     CRM_Core_Invoke::rebuildMenuAndCaches();
 
     CRM_Utils_System::redirect('admin.php?page=CiviCRM&q=civicrm/admin/access&reset=1');

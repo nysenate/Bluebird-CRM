@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -144,6 +144,8 @@ AND    TABLE_NAME LIKE 'civicrm_%'
     // CRM-18178
     $this->tables = preg_grep('/_bak$/', $this->tables, PREG_GREP_INVERT);
     $this->tables = preg_grep('/_backup$/', $this->tables, PREG_GREP_INVERT);
+    // dev/core#462
+    $this->tables = preg_grep('/^civicrm_tmp_/', $this->tables, PREG_GREP_INVERT);
 
     // do not log civicrm_mailing_event* tables, CRM-12300
     $this->tables = preg_grep('/^civicrm_mailing_event_/', $this->tables, PREG_GREP_INVERT);
@@ -200,7 +202,11 @@ AND    (TABLE_NAME LIKE 'log_civicrm_%' $nonStandardTableNameString )
     $customGroupDAO = CRM_Core_BAO_CustomGroup::getAllCustomGroupsByBaseEntity($extends);
     $customGroupDAO->find();
     while ($customGroupDAO->fetch()) {
-      $customGroupTables[$customGroupDAO->table_name] = $this->logs[$customGroupDAO->table_name];
+      // logging is disabled for the table (e.g by hook) then $this->logs[$customGroupDAO->table_name]
+      // will be empty.
+      if (!empty($this->logs[$customGroupDAO->table_name])) {
+        $customGroupTables[$customGroupDAO->table_name] = $this->logs[$customGroupDAO->table_name];
+      }
     }
     return $customGroupTables;
   }
@@ -327,7 +333,7 @@ AND    (TABLE_NAME LIKE 'log_civicrm_%' $nonStandardTableNameString )
         $updateLogConn = TRUE;
       }
       if (!empty($alterSql)) {
-        CRM_Core_DAO::executeQuery("ALTER TABLE {$this->db}.{$logTable} " . implode(', ', $alterSql));
+        CRM_Core_DAO::executeQuery("ALTER TABLE {$this->db}.{$logTable} " . implode(', ', $alterSql), [], TRUE, NULL, FALSE, FALSE);
       }
     }
     if ($updateLogConn) {
@@ -941,7 +947,7 @@ COLS;
    * but this is the only entity currently available...
    */
   public function getLogTablesForContact() {
-    $tables = array_keys(CRM_Dedupe_Merger::cidRefs());
+    $tables = array_keys(CRM_Core_DAO::getReferencesToContactTable());
     return array_intersect($tables, $this->tables);
   }
 

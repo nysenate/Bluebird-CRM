@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -204,6 +204,14 @@ class CRM_Contribute_Form_Contribution extends CRM_Contribute_Form_AbstractEditP
   protected $statusMessageTitle;
 
   /**
+   * @var int
+   *
+   * Max row count for soft credits. The value here is +1 the actual number of
+   * rows displayed.
+   */
+  public $_softCreditItemCount = 11;
+
+  /**
    * Explicitly declare the form context.
    */
   public function getDefaultContext() {
@@ -242,7 +250,7 @@ class CRM_Contribute_Form_Contribution extends CRM_Contribute_Form_AbstractEditP
       $this->assign('isUsePaymentBlock', TRUE);
     }
 
-    $this->_context = CRM_Utils_Request::retrieve('context', 'String', $this);
+    $this->_context = CRM_Utils_Request::retrieve('context', 'Alphanumeric', $this);
     $this->assign('context', $this->_context);
 
     $this->_compId = CRM_Utils_Request::retrieve('compId', 'Positive', $this);
@@ -250,7 +258,7 @@ class CRM_Contribute_Form_Contribution extends CRM_Contribute_Form_AbstractEditP
     $this->_compContext = CRM_Utils_Request::retrieve('compContext', 'String', $this);
 
     //set the contribution mode.
-    $this->_mode = CRM_Utils_Request::retrieve('mode', 'String', $this);
+    $this->_mode = CRM_Utils_Request::retrieve('mode', 'Alphanumeric', $this);
 
     $this->assign('contributionMode', $this->_mode);
     if ($this->_action & CRM_Core_Action::DELETE) {
@@ -370,7 +378,7 @@ class CRM_Contribute_Form_Contribution extends CRM_Contribute_Form_AbstractEditP
       }
     }
 
-    $amountFields = array('non_deductible_amount', 'fee_amount', 'net_amount');
+    $amountFields = array('non_deductible_amount', 'fee_amount');
     foreach ($amountFields as $amt) {
       if (isset($defaults[$amt])) {
         $defaults[$amt] = CRM_Utils_Money::format($defaults[$amt], NULL, '%a');
@@ -527,7 +535,6 @@ class CRM_Contribute_Form_Contribution extends CRM_Contribute_Form_AbstractEditP
       'invoice_id',
       'non_deductible_amount',
       'fee_amount',
-      'net_amount',
     );
     foreach ($additionalDetailFields as $key) {
       if (!empty($defaults[$key])) {
@@ -875,13 +882,6 @@ class CRM_Contribute_Form_Contribution extends CRM_Contribute_Form_AbstractEditP
 
     $softErrors = CRM_Contribute_Form_SoftCredit::formRule($fields, $errors, $self);
 
-    if (!empty($fields['total_amount']) && (!empty($fields['net_amount']) || !empty($fields['fee_amount']))) {
-      $sum = CRM_Utils_Rule::cleanMoney($fields['net_amount']) + CRM_Utils_Rule::cleanMoney($fields['fee_amount']);
-      if (CRM_Utils_Rule::cleanMoney($fields['total_amount']) != $sum) {
-        $errors['total_amount'] = ts('The sum of fee amount and net amount must be equal to total amount');
-      }
-    }
-
     //CRM-16285 - Function to handle validation errors on form, for recurring contribution field.
     CRM_Contribute_BAO_ContributionRecur::validateRecurContribution($fields, $files, $self, $errors);
 
@@ -1048,14 +1048,6 @@ class CRM_Contribute_Form_Contribution extends CRM_Contribute_Form_AbstractEditP
     $this->_params['payment_processor'] = $submittedValues['payment_processor_id'];
 
     $now = date('YmdHis');
-
-    // we need to retrieve email address
-    if ($this->_context == 'standalone' && !empty($submittedValues['is_email_receipt'])) {
-      list($this->userDisplayName,
-        $this->userEmail
-        ) = CRM_Contact_BAO_Contact_Location::getEmailDetails($contactID);
-      $this->assign('displayName', $this->userDisplayName);
-    }
 
     $this->_contributorEmail = $this->userEmail;
     $this->_contributorContactID = $contactID;

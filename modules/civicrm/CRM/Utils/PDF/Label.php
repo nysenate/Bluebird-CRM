@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -184,8 +184,10 @@ class CRM_Utils_PDF_Label extends TCPDF {
    * @param string $text
    */
   public function generateLabel($text) {
+    // paddingLeft is used for both left & right padding so needs to be
+    // subtracted twice from width to get the width that is available for text
     $args = array(
-      'w' => $this->width,
+      'w' => $this->width - 2 * $this->paddingLeft,
       'h' => 0,
       'txt' => $text,
       'border' => 0,

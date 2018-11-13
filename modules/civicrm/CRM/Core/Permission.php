@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -83,9 +83,11 @@ class CRM_Core_Permission {
 
   /**
    * Given a permission string or array, check for access requirements
-   * @param mixed $permissions
+   * @param string|array $permissions
    *   The permission to check as an array or string -see examples.
-   *   arrays
+   *
+   * @param int $contactId
+   *   Contact id to check permissions for. Defaults to current logged-in user.
    *
    *  Ex 1
    *
@@ -117,15 +119,20 @@ class CRM_Core_Permission {
    * @return bool
    *   true if yes, else false
    */
-  public static function check($permissions) {
+  public static function check($permissions, $contactId = NULL) {
     $permissions = (array) $permissions;
+    $userId = NULL;
+    if ($contactId) {
+      $userId = CRM_Core_BAO_UFMatch::getUFId($contactId);
+    }
 
+    /** @var CRM_Core_Permission_Temp $tempPerm */
     $tempPerm = CRM_Core_Config::singleton()->userPermissionTemp;
 
     foreach ($permissions as $permission) {
       if (is_array($permission)) {
         foreach ($permission as $orPerm) {
-          if (self::check($orPerm)) {
+          if (self::check($orPerm, $contactId)) {
             //one of our 'or' permissions has succeeded - stop checking this permission
             return TRUE;
           }
@@ -135,9 +142,9 @@ class CRM_Core_Permission {
       }
       else {
         // This is an individual permission
-        $granted = CRM_Core_Config::singleton()->userPermissionClass->check($permission);
+        $granted = CRM_Core_Config::singleton()->userPermissionClass->check($permission, $userId);
         // Call the permission_check hook to permit dynamic escalation (CRM-19256)
-        CRM_Utils_Hook::permission_check($permission, $granted);
+        CRM_Utils_Hook::permission_check($permission, $granted, $contactId);
         if (
           !$granted
           && !($tempPerm && $tempPerm->check($permission))
@@ -724,7 +731,7 @@ class CRM_Core_Permission {
       ),
       'skip IDS check' => array(
         $prefix . ts('skip IDS check'),
-        ts('IDS system is bypassed for users with this permission. Prevents false errors for admin users.'),
+        ts('Warning: Give to trusted roles only; this permission has security implications. IDS system is bypassed for users with this permission. Prevents false errors for admin users.'),
       ),
       'access uploaded files' => array(
         $prefix . ts('access uploaded files'),
@@ -732,21 +739,23 @@ class CRM_Core_Permission {
       ),
       'profile listings and forms' => array(
         $prefix . ts('profile listings and forms'),
-        ts('Access the profile Search form and listings'),
+        ts('Warning: Give to trusted roles only; this permission has privacy implications. Add/edit data in online forms and access public searchable directories.'),
       ),
       'profile listings' => array(
         $prefix . ts('profile listings'),
+        ts('Warning: Give to trusted roles only; this permission has privacy implications. Access public searchable directories.'),
       ),
       'profile create' => array(
         $prefix . ts('profile create'),
-        ts('Use profiles in Create mode'),
+        ts('Add data in a profile form.'),
       ),
       'profile edit' => array(
         $prefix . ts('profile edit'),
-        ts('Use profiles in Edit mode'),
+        ts('Edit data in a profile form.'),
       ),
       'profile view' => array(
         $prefix . ts('profile view'),
+        ts('View data in a profile.'),
       ),
       'access all custom data' => array(
         $prefix . ts('access all custom data'),
@@ -759,9 +768,17 @@ class CRM_Core_Permission {
       'delete activities' => array(
         $prefix . ts('Delete activities'),
       ),
+      'edit inbound email basic information' => array(
+        $prefix . ts('edit inbound email basic information'),
+        ts('Edit all inbound email activities (for visible contacts) basic information. Content editing not allowed.'),
+      ),
+      'edit inbound email basic information and content' => array(
+        $prefix . ts('edit inbound email basic information and content'),
+        ts('Edit all inbound email activities (for visible contacts) basic information and content.'),
+      ),
       'access CiviCRM' => array(
-        $prefix . ts('access CiviCRM'),
-        ts('Master control for access to the main CiviCRM backend and API'),
+        $prefix . ts('access CiviCRM backend and API'),
+        ts('Master control for access to the main CiviCRM backend and API. Give to trusted roles only.'),
       ),
       'access Contact Dashboard' => array(
         $prefix . ts('access Contact Dashboard'),
@@ -876,6 +893,12 @@ class CRM_Core_Permission {
       ),
       'edit message templates' => array(
         $prefix . ts('edit message templates'),
+      ),
+      'edit system workflow message templates' => array(
+        $prefix . ts('edit system workflow message templates'),
+      ),
+      'edit user-driven message templates' => array(
+        $prefix . ts('edit user-driven message templates'),
       ),
       'view my invoices' => array(
         $prefix . ts('view my invoices'),
@@ -1457,11 +1480,18 @@ class CRM_Core_Permission {
     $permissions['option_value'] = $permissions['uf_group'];
     $permissions['option_group'] = $permissions['option_value'];
 
+    $permissions['custom_value'] = array(
+      'gettree' => array('access CiviCRM'),
+    );
+
     $permissions['message_template'] = array(
       'get' => array('access CiviCRM'),
-      'create' => array('edit message templates'),
-      'update' => array('edit message templates'),
+      'create' => array(array('edit message templates', 'edit user-driven message templates', 'edit system workflow message templates')),
+      'update' => array(array('edit message templates', 'edit user-driven message templates', 'edit system workflow message templates')),
     );
+
+    $permissions['report_template']['update'] = 'save Report Criteria';
+    $permissions['report_template']['create'] = 'save Report Criteria';
     return $permissions;
   }
 

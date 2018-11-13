@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -154,6 +154,18 @@ function _civicrm_core_data(&$data, $enabled) {
       'base field' => 'contact_id_b',
       'handler' => 'civicrm_handler_relationship_relationship',
       'label' => t('CiviCRM Relationship (starting from contact B)'),
+    ),
+  );
+
+  $data['civicrm_event']['civicrm_participant'] = array(
+    'real field' => 'id',
+    'title' => t('CiviCRM Participant'),
+    'help' => t('Allows a Participant Contact relationship from an Event'),
+    'relationship' => array(
+      'base' => 'civicrm_participant',
+      'base field' => 'event_id',
+      'handler' => 'civicrm_handler_relationship_participant',
+      'label' => t('CiviCRM Participant'),
     ),
   );
 

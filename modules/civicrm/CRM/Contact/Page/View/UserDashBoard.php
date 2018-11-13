@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -69,10 +69,18 @@ class CRM_Contact_Page_View_UserDashBoard extends CRM_Core_Page {
     $session = CRM_Core_Session::singleton();
     $userID = $session->get('userID');
 
+    $userChecksum = CRM_Utils_Request::retrieve('cs', 'String', $this);
+    $validUser = FALSE;
+    if (empty($userID) && $this->_contactId && $userChecksum) {
+      $this->assign('userChecksum', $userChecksum);
+      $validUser = CRM_Contact_BAO_Contact_Utils::validChecksum($this->_contactId, $userChecksum);
+      $this->_isChecksumUser = $validUser;
+    }
+
     if (!$this->_contactId) {
       $this->_contactId = $userID;
     }
-    elseif ($this->_contactId != $userID) {
+    elseif ($this->_contactId != $userID && !$validUser) {
       if (!CRM_Contact_BAO_Contact_Permission::allow($this->_contactId, CRM_Core_Permission::VIEW)) {
         CRM_Core_Error::fatal(ts('You do not have permission to access this contact.'));
       }
@@ -162,7 +170,7 @@ class CRM_Contact_Page_View_UserDashBoard extends CRM_Core_Page {
       $this->assign('pcpInfo', $pcpInfo);
     }
 
-    if (!empty($this->_userOptions['Assigned Activities'])) {
+    if (!empty($this->_userOptions['Assigned Activities']) && empty($this->_isChecksumUser)) {
       // Assigned Activities section
       $dashboardElements[] = array(
         'class' => 'crm-dashboard-assignedActivities',

@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -30,10 +30,12 @@
     </td>
     <td>
         <label>{ts}Grant Status(s){/ts}</label>
+        <br>
         {$form.grant_status_id.html}
     </td>
     <td>
         <label>{ts}Grant Type(s){/ts}</label>
+        <br>
         {$form.grant_type_id.html}
     </td>
 </tr>

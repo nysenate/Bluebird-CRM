@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -123,7 +123,7 @@ class CRM_Admin_Page_AJAX {
           $ret['content'] = ts('Are you sure you want to disable this CiviCRM Profile field?');
           break;
 
-        case 'CRM_Contribute_BAO_ManagePremiums':
+        case 'CRM_Contribute_BAO_Product':
           $ret['content'] = ts('Are you sure you want to disable this premium? This action will remove the premium from any contribution pages that currently offer it. However it will not delete the premium record - so you can re-enable it and add it back to your contribution page(s) at a later time.');
           break;
 
@@ -165,7 +165,7 @@ class CRM_Admin_Page_AJAX {
           $ret['content'] = ts('Are you sure you want to disable this Participant Status?') . '<br/><br/> ' . ts('Users will no longer be able to select this value when adding or editing Participant Status.');
           break;
 
-        case 'CRM_Mailing_BAO_Component':
+        case 'CRM_Mailing_BAO_MailingComponent':
           $ret['content'] = ts('Are you sure you want to disable this component?');
           break;
 
@@ -265,8 +265,8 @@ class CRM_Admin_Page_AJAX {
     $recipientMapping = array_combine(array_keys($entityRecipientLabels), array_keys($entityRecipientLabels));
 
     $output = array(
-      'sel4' => CRM_Utils_Array::toKeyValueRows($dateFieldLabels),
-      'sel5' => CRM_Utils_Array::toKeyValueRows($entityRecipientLabels),
+      'sel4' => CRM_Utils_Array::makeNonAssociative($dateFieldLabels),
+      'sel5' => CRM_Utils_Array::makeNonAssociative($entityRecipientLabels),
       'recipientMapping' => $recipientMapping,
     );
 
@@ -291,7 +291,7 @@ class CRM_Admin_Page_AJAX {
     ));
 
     CRM_Utils_JSON::output(array(
-      'recipients' => CRM_Utils_Array::toKeyValueRows(CRM_Core_BAO_ActionSchedule::getRecipientListing($mappingID, $recipientType)),
+      'recipients' => CRM_Utils_Array::makeNonAssociative(CRM_Core_BAO_ActionSchedule::getRecipientListing($mappingID, $recipientType)),
     ));
   }
 
@@ -340,37 +340,37 @@ class CRM_Admin_Page_AJAX {
         }
       }
       else {
-        $style = '';
-        if ($dao->color) {
-          $style = "background-color: {$dao->color}; color: " . CRM_Utils_Color::getContrast($dao->color);
-        }
         $hasChildTags = empty($childTagIDs[$dao->id]) ? FALSE : TRUE;
         $usedFor = (array) explode(',', $dao->used_for);
-        $result[] = array(
+        $tag = [
           'id' => $dao->id,
           'text' => $dao->name,
-          'icon' => FALSE,
-          'li_attr' => array(
-            'title' => ((string) $dao->description) . ($dao->is_reserved ? ' (*' . ts('Reserved') . ')' : ''),
-            'class' => $dao->is_reserved ? 'is-reserved' : '',
-          ),
-          'a_attr' => array(
-            'style' => $style,
+          'a_attr' => [
             'class' => 'crm-tag-item',
-          ),
+          ],
           'children' => $hasChildTags,
-          'data' => array(
+          'data' => [
             'description' => (string) $dao->description,
             'is_selectable' => (bool) $dao->is_selectable,
             'is_reserved' => (bool) $dao->is_reserved,
             'used_for' => $usedFor,
             'color' => $dao->color ? $dao->color : '#ffffff',
-            'usages' => civicrm_api3('EntityTag', 'getcount', array(
-              'entity_table' => array('IN' => $usedFor),
+            'usages' => civicrm_api3('EntityTag', 'getcount', [
+              'entity_table' => ['IN' => $usedFor],
               'tag_id' => $dao->id,
-            )),
-          ),
-        );
+            ]),
+          ],
+        ];
+        if ($dao->description || $dao->is_reserved) {
+          $tag['li_attr']['title'] = ((string) $dao->description) . ($dao->is_reserved ? ' (*' . ts('Reserved') . ')' : '');
+        }
+        if ($dao->is_reserved) {
+          $tag['li_attr']['class'] = 'is-reserved';
+        }
+        if ($dao->color) {
+          $tag['a_attr']['style'] = "background-color: {$dao->color}; color: " . CRM_Utils_Color::getContrast($dao->color);
+        }
+        $result[] = $tag;
       }
     }
 

@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
@@ -56,7 +56,6 @@ function _civicrm_api3_payment_processor_type_create_spec(&$params) {
   $params['class_name']['api.required'] = 1;
   $params['is_active']['api.default'] = 1;
   $params['is_recur']['api.default'] = FALSE;
-  // FIXME bool support // $params['is_recur']['api.required'] = 1;
   $params['name']['api.required'] = 1;
   $params['title']['api.required'] = 1;
   $params['payment_instrument_id']['api.default'] = 'Credit Card';

@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -1416,8 +1416,21 @@ class CRM_Utils_System {
   public static function flushCache() {
     // flush out all cache entries so we can reload new data
     // a bit aggressive, but livable for now
-    $cache = CRM_Utils_Cache::singleton();
-    $cache->flush();
+    CRM_Utils_Cache::singleton()->flush();
+
+    // Traditionally, systems running on memory-backed caches were quite
+    // zealous about destroying *all* memory-backed caches during a flush().
+    // These flushes simulate that legacy behavior. However, they should probably
+    // be removed at some point.
+    $localDrivers = ['CRM_Utils_Cache_Arraycache', 'CRM_Utils_Cache_NoCache'];
+    if (Civi\Core\Container::isContainerBooted()
+      && !in_array(get_class(CRM_Utils_Cache::singleton()), $localDrivers)) {
+      Civi::cache('settings')->flush();
+      Civi::cache('js_strings')->flush();
+      Civi::cache('community_messages')->flush();
+      CRM_Extension_System::singleton()->getCache()->flush();
+      CRM_Cxn_CiviCxnHttp::singleton()->getCache()->flush();
+    }
 
     // also reset the various static memory caches
 

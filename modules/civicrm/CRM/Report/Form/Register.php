@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -190,10 +190,8 @@ class CRM_Report_Form_Register extends CRM_Core_Form {
     else {
       // get the submitted form values.
       $params = $this->controller->exportValues($this->_name);
-      $ids = array();
 
-      $groupParams = array('name' => ('report_template'));
-      $optionValue = CRM_Core_OptionValue::addOptionValue($params, $groupParams, $this->_action, $this->_id);
+      $optionValue = CRM_Core_OptionValue::addOptionValue($params, 'report_template', $this->_action, $this->_id);
       CRM_Core_Session::setStatus(ts('The %1 \'%2\' has been saved.', array(
             1 => 'Report Template',
             2 => $optionValue->label,

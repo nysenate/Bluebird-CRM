@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -117,7 +117,7 @@ class CRM_Grant_Info extends CRM_Core_Component_Info {
     return array(
       'title' => ts('Grants'),
       'url' => 'grant',
-      'weight' => 50,
+      'weight' => 60,
     );
   }
 

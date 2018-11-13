@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -64,6 +64,12 @@
 
   {if $action & 1024}
   {include file="CRM/Contribute/Form/Contribution/PreviewHeader.tpl"}
+  {/if}
+
+  {if $displayCaptchaWarning}
+  <div class="messages status no-popup">
+      {ts}To display reCAPTCHA on form you must get an API key from<br /> <a href='https://www.google.com/recaptcha/admin/create'>https://www.google.com/recaptcha/admin/create</a>{/ts}
+  </div>
   {/if}
 
   {include file="CRM/common/TrackingFields.tpl"}

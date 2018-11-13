@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -497,7 +497,7 @@ class CRM_Contact_Form_Search extends CRM_Core_Form_Search {
     if ($qfKeyParam && ($this->get('component_mode') <= CRM_Contact_BAO_Query::MODE_CONTACTS || $this->get('component_mode') == CRM_Contact_BAO_Query::MODE_CONTACTSRELATED)) {
       $this->addClass('crm-ajax-selection-form');
       $qfKeyParam = "civicrm search {$qfKeyParam}";
-      $selectedContactIdsArr = CRM_Core_BAO_PrevNextCache::getSelection($qfKeyParam);
+      $selectedContactIdsArr = Civi::service('prevnext')->getSelection($qfKeyParam);
       $selectedContactIds = array_keys($selectedContactIdsArr[$qfKeyParam]);
     }
 
@@ -555,7 +555,7 @@ class CRM_Contact_Form_Search extends CRM_Core_Form_Search {
     }
 
     // assign context to drive the template display, make sure context is valid
-    $this->_context = CRM_Utils_Request::retrieve('context', 'String', $this, FALSE, 'search');
+    $this->_context = CRM_Utils_Request::retrieve('context', 'Alphanumeric', $this, FALSE, 'search');
     if (!CRM_Utils_Array::value($this->_context, self::validContext())) {
       $this->_context = 'search';
     }
@@ -782,7 +782,7 @@ class CRM_Contact_Form_Search extends CRM_Core_Form_Search {
     ) {
       //reset the cache table for new search
       $cacheKey = "civicrm search {$this->controller->_key}";
-      CRM_Core_BAO_PrevNextCache::deleteItem(NULL, $cacheKey);
+      Civi::service('prevnext')->deleteItem(NULL, $cacheKey);
     }
 
     //get the button name

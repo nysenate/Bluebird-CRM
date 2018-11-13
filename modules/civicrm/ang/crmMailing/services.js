@@ -1,5 +1,4 @@
 (function (angular, $, _) {
-//NYSS 12029 - https://github.com/civicrm/civicrm-core/pull/12509
 
   // The representation of from/reply-to addresses is inconsistent in the mailing data-model,
   // so the UI must do some adaptation. The crmFromAddresses provides a richer way to slice/dice
@@ -471,8 +470,7 @@
             .then(function (deliveryInfos) {
               var count = Object.keys(deliveryInfos).length;
               if (count === 0) {
-                //NYSS 11277
-                //CRM.alert(ts('Could not identify any recipients. Perhaps the group is empty?'));
+                CRM.alert(ts('Could not identify any recipients. Perhaps the group is empty?'));
               }
             })
           ;

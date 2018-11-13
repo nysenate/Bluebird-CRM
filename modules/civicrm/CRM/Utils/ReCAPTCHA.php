@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -60,6 +60,29 @@ class CRM_Utils_ReCAPTCHA {
       self::$_singleton = new CRM_Utils_ReCAPTCHA();
     }
     return self::$_singleton;
+  }
+
+
+  /**
+   * Check if reCaptcha settings is avilable to add on form.
+   */
+  public static function hasSettingsAvailable() {
+    $config = CRM_Core_Config::singleton();
+    if ($config->recaptchaPublicKey == NULL || $config->recaptchaPublicKey == "") {
+      return FALSE;
+    }
+    return TRUE;
+  }
+
+  /**
+   * Check if reCaptcha has to be added on form forcefully.
+   */
+  public static function hasToAddForcefully() {
+    $config = CRM_Core_Config::singleton();
+    if (!$config->forceRecaptcha) {
+      return FALSE;
+    }
+    return TRUE;
   }
 
   /**

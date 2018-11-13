@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -286,7 +286,7 @@ class CRM_Core_Session {
       $values = &$this->_session[$this->_key];
     }
     else {
-      $values = CRM_Core_BAO_Cache::getItem('CiviCRM Session', "CiviCRM_{$prefix}");
+      $values = Civi::cache('session')->get("CiviCRM_{$prefix}");
     }
 
     if ($values) {
@@ -470,6 +470,10 @@ class CRM_Core_Session {
     // make sure session is initialized, CRM-8120
     $session = self::singleton();
     $session->initialize();
+
+    // Sanitize any HTML we're displaying. This helps prevent reflected XSS in error messages.
+    $text = CRM_Utils_String::purifyHTML($text);
+    $title = CRM_Utils_String::purifyHTML($title);
 
     // default options
     $options += array('unique' => TRUE);

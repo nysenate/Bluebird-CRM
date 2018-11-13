@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -274,9 +274,6 @@ abstract class CRM_Contact_Import_Parser extends CRM_Import_Parser {
       if ($this->_maxLinesToProcess > 0 && $this->_validCount >= $this->_maxLinesToProcess) {
         break;
       }
-
-      // clean up memory from dao's
-      CRM_Core_DAO::freeResult();
 
       // see if we've hit our timeout yet
       /* if ( $the_thing_with_the_stuff ) {
@@ -907,7 +904,6 @@ abstract class CRM_Contact_Import_Parser extends CRM_Import_Parser {
             break;
 
           case 'CheckBox':
-          case 'AdvMulti-Select':
           case 'Multi-Select':
 
             if (!empty($formatted[$key]) && !empty($params[$key])) {
@@ -1217,7 +1213,6 @@ abstract class CRM_Contact_Import_Parser extends CRM_Import_Parser {
             $htmlType = CRM_Utils_Array::value('html_type', $customFields[$customFieldID]);
             switch ($htmlType) {
               case 'CheckBox':
-              case 'AdvMulti-Select':
               case 'Multi-Select':
                 if ($val) {
                   $mulValues = explode(',', $val);

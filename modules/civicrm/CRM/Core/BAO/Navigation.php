@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -50,8 +50,8 @@ class CRM_Core_BAO_Navigation extends CRM_Core_DAO_Navigation {
    * @param bool $is_active
    *   Value we want to set the is_active field.
    *
-   * @return CRM_Core_DAO_Navigation|NULL
-   *   DAO object on success, NULL otherwise
+   * @return bool
+   *   true if we found and updated the object, else false
    */
   public static function setIsActive($id, $is_active) {
     return CRM_Core_DAO::setFieldValue('CRM_Core_DAO_Navigation', $id, 'is_active', $is_active);
@@ -70,6 +70,7 @@ class CRM_Core_BAO_Navigation extends CRM_Core_DAO_Navigation {
     if (empty($params['id'])) {
       $params['is_active'] = CRM_Utils_Array::value('is_active', $params, FALSE);
       $params['has_separator'] = CRM_Utils_Array::value('has_separator', $params, FALSE);
+      $params['domain_id'] = CRM_Utils_Array::value('domain_id', $params, CRM_Core_Config::domainID());
     }
 
     if (!isset($params['id']) ||
@@ -92,8 +93,6 @@ class CRM_Core_BAO_Navigation extends CRM_Core_DAO_Navigation {
     }
 
     $navigation->copyValues($params);
-
-    $navigation->domain_id = CRM_Core_Config::domainID();
 
     $navigation->save();
     return $navigation;
@@ -172,7 +171,7 @@ class CRM_Core_BAO_Navigation extends CRM_Core_DAO_Navigation {
       $domainID = CRM_Core_Config::domainID();
       $query = "
 SELECT id, label, parent_id, weight, is_active, name
-FROM civicrm_navigation WHERE domain_id = $domainID {$whereClause} ORDER BY parent_id, weight ASC";
+FROM civicrm_navigation WHERE domain_id = $domainID";
       $result = CRM_Core_DAO::executeQuery($query);
 
       $pidGroups = array();
@@ -262,6 +261,7 @@ FROM civicrm_navigation WHERE domain_id = $domainID {$whereClause} ORDER BY pare
           'name' => $navigationMenu->name,
           'url' => $navigationMenu->url,
           'icon' => $navigationMenu->icon,
+          'weight' => $navigationMenu->weight,
           'permission' => $navigationMenu->permission,
           'operator' => $navigationMenu->permission_operator,
           'separator' => $navigationMenu->has_separator,
@@ -312,6 +312,13 @@ FROM civicrm_navigation WHERE domain_id = $domainID {$whereClause} ORDER BY pare
     CRM_Utils_Hook::navigationMenu($navigations);
     self::fixNavigationMenu($navigations);
 
+    // Hooks have added menu items in an arbitrary order. We need to order by
+    // weight again. I would put this function directly after
+    // CRM_Utils_Hook::navigationMenu but for some reason, fixNavigationMenu is
+    // moving items added by hooks on the end of the menu. Hence I do it
+    // afterwards
+    self::orderByWeight($navigations);
+
     //skip children menu item if user don't have access to parent menu item
     $skipMenuItems = array();
     foreach ($navigations as $key => $value) {
@@ -335,6 +342,32 @@ FROM civicrm_navigation WHERE domain_id = $domainID {$whereClause} ORDER BY pare
     $navigationString = str_replace('<ul></ul></li>', '', $navigationString);
 
     return $navigationString;
+  }
+
+  /**
+   * buildNavigationTree retreives items in order. We call this function to
+   * ensure that any items added by the hook are also in the correct order.
+   */
+  private static function orderByWeight(&$navigations) {
+    // sort each item in navigations by weight
+    usort($navigations, function($a, $b) {
+
+      // If no weight have been defined for an item put it at the end of the list
+      if (!isset($a['attributes']['weight'])) {
+        $a['attributes']['weight'] = 1000;
+      }
+      if (!isset($b['attributes']['weight'])) {
+        $b['attributes']['weight'] = 1000;
+      }
+      return $a['attributes']['weight'] - $b['attributes']['weight'];
+    });
+
+    // If any of the $navigations have children, recurse
+    foreach ($navigations as $navigation) {
+      if (isset($navigation['child'])) {
+        self::orderByWeight($navigation['child']);
+      }
+    }
   }
 
   /**
@@ -449,7 +482,6 @@ FROM civicrm_navigation WHERE domain_id = $domainID {$whereClause} ORDER BY pare
     $parentID = CRM_Utils_Array::value('parentID', $value['attributes']);
     $navID = CRM_Utils_Array::value('navID', $value['attributes']);
     $active = CRM_Utils_Array::value('active', $value['attributes']);
-    $menuName = CRM_Utils_Array::value('name', $value['attributes']);
     $target = CRM_Utils_Array::value('target', $value['attributes']);
 
     if (in_array($parentID, $skipMenuItems) || !$active) {
@@ -460,8 +492,9 @@ FROM civicrm_navigation WHERE domain_id = $domainID {$whereClause} ORDER BY pare
     $config = CRM_Core_Config::singleton();
 
     $makeLink = FALSE;
-    if (isset($url) && $url) {
-      if (substr($url, 0, 4) !== 'http') {
+    if (!empty($url)) {
+      // Skip processing fully-formed urls
+      if (substr($url, 0, 4) !== 'http' && $url[0] !== '/' && $url[0] !== '#') {
         //CRM-7656 --make sure to separate out url path from url params,
         //as we'r going to validate url path across cross-site scripting.
         $parsedUrl = parse_url($url);

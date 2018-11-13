@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -35,6 +35,7 @@
  * Class to represent the actions that can be performed on a group of contacts used by the search forms.
  */
 class CRM_Contact_Task extends CRM_Core_Task {
+
   const
     // Contact tasks
     HOUSEHOLD_CONTACTS = 101,
@@ -296,18 +297,17 @@ class CRM_Contact_Task extends CRM_Core_Task {
         self::LABEL_CONTACTS => self::$_tasks[self::LABEL_CONTACTS]['title'],
       );
 
-      if (isset(self::$_tasks[self::MAP_CONTACTS]) &&
-        !empty(self::$_tasks[self::MAP_CONTACTS]['title'])
-      ) {
-        $tasks[self::MAP_CONTACTS] = self::$_tasks[self::MAP_CONTACTS]['title'];
+      foreach ([
+        self::MAP_CONTACTS,
+        self::CREATE_MAILING,
+        self::TASK_SMS
+      ] as $task) {
+        if (isset(self::$_tasks[$task]) &&
+          !empty(self::$_tasks[$task]['title'])
+        ) {
+          $tasks[$task] = self::$_tasks[$task]['title'];
+        }
       }
-
-      if (isset(self::$_tasks[self::CREATE_MAILING]) &&
-        !empty(self::$_tasks[self::CREATE_MAILING]['title'])
-      ) {
-        $tasks[self::CREATE_MAILING] = self::$_tasks[self::CREATE_MAILING]['title'];
-      }
-
     }
 
     $tasks = parent::corePermissionedTaskTitles($tasks, $permission, $params);

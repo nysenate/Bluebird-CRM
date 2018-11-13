@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -286,6 +286,7 @@
                   return {parent_id: node.id === '#' ? tagset : node.id};
                 }
               },
+              themes: {icons: false},
               check_callback: true
             },
             'search': {
@@ -537,7 +538,7 @@
         <span><i class="crm-i fa-plus"></i>&nbsp; {ts}Add Child{/ts}</span>
       </a>
     <% {rdelim} %>
-    <a href="{crmURL p="civicrm/tag/edit" q="action=add&clone_from="}<%= id %>" class="button crm-popup" title="{ts}Duplicate ths tag{/ts}">
+    <a href="{crmURL p="civicrm/tag/edit" q="action=add&clone_from="}<%= id %>" class="button crm-popup" title="{ts}Duplicate this tag{/ts}">
       <span><i class="crm-i fa-copy"></i>&nbsp; {ts}Clone Tag{/ts}</span>
     </a>
     <% if(!data.is_reserved || adminReserved) {ldelim} %>

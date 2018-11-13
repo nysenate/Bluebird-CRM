@@ -36,13 +36,14 @@
   "require": {
     "dompdf/dompdf" : "0.8.*",
     "electrolinux/phpquery": "^0.9.6",
-    "symfony/config": "^2.6.13 || ~3.0",
-    "symfony/dependency-injection": "^2.6.13 || ~3.0",
-    "symfony/event-dispatcher": "^2.6.13 || ~3.0",
-    "symfony/filesystem": "^2.6.13 || ~3.0",
-    "symfony/process": "^2.6.13 || ~3.0",
+    "symfony/config": "^2.8.44 || ~3.0",
+    "symfony/polyfill-iconv": "~1.0",
+    "symfony/dependency-injection": "^2.8.44 || ~3.0",
+    "symfony/event-dispatcher": "^2.8.44 || ~3.0",
+    "symfony/filesystem": "^2.8.44 || ~3.0",
+    "symfony/process": "^2.8.44 || ~3.0",
     "psr/log": "~1.0.0",
-    "symfony/finder": "^2.6.13 || ~3.0",
+    "symfony/finder": "^2.8.44 || ~3.0",
     "tecnickcom/tcpdf" : "6.2.*",
     "totten/ca-config": "~17.05",
     "zetacomponents/base": "1.7.*",
@@ -55,7 +56,8 @@
     "pear/Net_SMTP": "1.6.*",
     "pear/Net_socket": "1.0.*",
     "civicrm/civicrm-setup": "~0.2.0",
-    "guzzlehttp/guzzle": "^6.3"
+    "guzzlehttp/guzzle": "^6.3",
+    "psr/simple-cache": "~1.0.1"
   },
   "repositories": [
     {

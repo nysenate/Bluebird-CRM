@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -28,6 +28,11 @@
 
 {if $action eq 4} {* when action is view *}
     {if $recur}
+        {if $recur.is_test}
+        <div class="help">
+          <strong>{ts}This is a TEST transaction{/ts}</strong>
+        </div>
+        {/if}
         <h3>{ts}View Recurring Payment{/ts}</h3>
         <div class="crm-block crm-content-block crm-recurcontrib-view-block">
           <table class="crm-info-panel">
@@ -62,6 +67,31 @@
           <div class="crm-submit-buttons"><a class="button cancel crm-form-submit" href="{crmURL p='civicrm/contact/view' q='action=browse&selectedChild=contribute'}">{ts}Done{/ts}</a></div>
         </div>
     {/if}
+
+  <script type="text/javascript">
+    var recurContribID = {$recur.id};
+    var contactID = {$contactId};
+    {literal}
+    CRM.$(function($) {
+      CRM.loadPage(
+        CRM.url(
+          'civicrm/contribute/contributionrecur-payments',
+          {
+            reset: 1,
+            id: recurContribID,
+            cid: contactID
+          },
+          'back'
+        ),
+        {
+          target : '#recurring-contribution-payments',
+          dialog : false
+        }
+      );
+    });
+    {/literal}
+  </script>
+  <div id="recurring-contribution-payments"></div>
 {/if}
 {if $recurRows}
     {strip}

@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -560,9 +560,9 @@ class CRM_Report_Form_Contribute_Sybunt extends CRM_Report_Form {
     $graphRows['value'] = $display;
     $config = CRM_Core_Config::Singleton();
     $chartInfo = array(
-      'legend' => 'Sybunt Report',
-      'xname' => 'Year',
-      'yname' => "Amount ({$config->defaultCurrency})",
+      'legend' => ts('Sybunt Report'),
+      'xname' => ts('Year'),
+      'yname' => ts('Amount (%1)', array(1 => $config->defaultCurrency)),
     );
     if ($this->_params['charts']) {
       // build the chart.

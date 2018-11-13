@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -145,7 +145,7 @@ class TimestampTriggers {
     // In the past, this was a version-based check, but checkFieldExists()
     // seems more robust.
     if (\CRM_Core_Config::isUpgradeMode()) {
-      if (!\CRM_Core_DAO::checkFieldExists($this->getTableName(),
+      if (!\CRM_Core_BAO_SchemaHandler::checkIfFieldExists($this->getTableName(),
         $this->getCreatedDate())
       ) {
         return;
