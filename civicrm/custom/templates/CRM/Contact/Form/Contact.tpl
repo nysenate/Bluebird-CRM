@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -214,8 +214,10 @@
 
   <script type="text/javascript" >
   CRM.$(function($) {
-    var $form = $("form.{/literal}{$form.formClass}{literal}");
-    var action = "{/literal}{$action}{literal}";
+    var $form = $("form.{/literal}{$form.formClass}{literal}"),
+      action = {/literal}{$action|intval}{literal},
+      cid = {/literal}{$contactId|intval}{literal},
+      _ = CRM._;
 
     $('.crm-accordion-body').each( function() {
       //remove tab which doesn't have any element
@@ -230,7 +232,7 @@
         $(this).parents('.collapsed').crmAccordionToggle();
       }
     });
-    if (action == '2') {
+    if (action === 2) {
       $('.crm-accordion-wrapper').not('.crm-accordion-wrapper .crm-accordion-wrapper').each(function() {
         highlightTabs(this);
 

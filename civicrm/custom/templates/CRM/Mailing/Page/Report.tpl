@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -52,7 +52,7 @@
         <td>{$report.event_totals.actionlinks.delivered}</td></tr>
   {if $report.mailing.open_tracking}
     <tr><td class="label"><a href="{$report.event_totals.links.opened}&distinct=1">{ts}Unique Opens{/ts}</a></td>
-        <td>{$report.event_totals.opened}</td>
+        <td>{$report.event_totals.opened} ({$report.event_totals.opened_rate|string_format:"%0.2f"}%)</td>
         <td>{$report.event_totals.actionlinks.opened}</td></tr>
     <tr><td class="label"><a href="{$report.event_totals.links.opened}">{ts}Total Opens{/ts}</a></td>
         <td>{$report.event_totals.total_opened}</td>
@@ -60,7 +60,7 @@
   {/if}
   {if $report.mailing.url_tracking}
     <tr><td class="label"><a href="{$report.event_totals.links.clicks}">{ts}Click-throughs{/ts}</a></td>
-        <td>{$report.event_totals.url}</td>
+        <td>{$report.event_totals.url} ({$report.event_totals.clickthrough_rate|string_format:"%0.2f"}%)</td>
         <td>{$report.event_totals.actionlinks.clicks}</td></tr>
   {/if}
   {*NYSS 3895*}
@@ -235,8 +235,7 @@
 <tr><td class="label">{ts}Mailing Name{/ts}</td><td>{$report.mailing.name}</td></tr>
 <tr><td class="label">{ts}Subject{/ts}</td><td>{$report.mailing.subject}</td></tr>
 <tr><td class="label">{ts}From{/ts}</td><td>{$report.mailing.from_name} &lt;{$report.mailing.from_email}&gt;</td></tr>
-<tr><td class="label">{ts}Created By{/ts}</td><td>{$report.mailing.created_by|htmlentities}</td></tr>
-<tr><td class="label">{ts}Created Date{/ts}</td><td>{$report.mailing.created_date}</td></tr>
+<tr><td class="label">{ts}Reply-to email{/ts}</td><td>{$report.mailing.replyto_email|htmlentities}</td></tr>
 
 {*NYSS 3895*}{*
 <tr><td class="label">{ts}Forward replies{/ts}</td><td>{if $report.mailing.forward_replies}{ts}On{/ts}{else}{ts}Off{/ts}{/if}</td></tr>

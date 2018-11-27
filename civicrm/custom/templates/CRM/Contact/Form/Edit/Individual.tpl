@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -27,12 +27,6 @@
 <script type="text/javascript">
 {literal}
 CRM.$(function($) {
-  {/literal}
-    var cid = "{$contactId}",
-      viewIndividual = "{crmURL p='civicrm/contact/view' q='reset=1&cid=' h=0}",
-      checkSimilar = {$checkSimilar},
-      lastnameMsg;
-  {literal}
   if ($('#contact_sub_type *').length == 0) {//if they aren't any subtype we don't offer the option
     $('#contact_sub_type').parent().hide();
   }

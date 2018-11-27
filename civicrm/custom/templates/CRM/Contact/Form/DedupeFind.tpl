@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
@@ -23,11 +23,11 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-<div class="crm-block crm-form-block crm-dedupe-find-form-block">
 <div class="help">
     {*NYSS*}
     {ts}You can search all contacts for duplicates or limit the search to a specific group. After initiating the rule, please be patient as it may take some time to fully process.{/ts} 
 </div>
+<div class="crm-block crm-form-block crm-dedupe-find-form-block">
    <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
    <table class="form-layout-compressed">
      <tr class="crm-dedupe-find-form-block-group_id">
