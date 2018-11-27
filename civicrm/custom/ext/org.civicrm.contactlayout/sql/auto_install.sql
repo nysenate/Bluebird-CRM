@@ -87,7 +87,8 @@ CREATE TABLE `civicrm_contact_layout` (
      `contact_sub_type` varchar(255)    COMMENT 'The contacts subtypes this layout applies to.',
      `groups` varchar(255)    COMMENT 'Show layout to users belonging to these groups.',
      `weight` int   DEFAULT 0 ,
-     `blocks` longtext NOT NULL   COMMENT 'Contains json encoded layout blocks.' 
+     `blocks` longtext NOT NULL   COMMENT 'Contains json encoded layout blocks.',
+     `tabs` longtext NOT NULL   COMMENT 'Contains json encoded layout tabs.' 
 ,
         PRIMARY KEY (`id`)
  

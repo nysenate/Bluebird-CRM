@@ -1,4 +1,6 @@
 <?php
+use Civi\Api4\ContactLayout;
+use Civi\Api4\Navigation;
 use CRM_Contactlayout_ExtensionUtil as E;
 
 /**
@@ -18,13 +20,13 @@ class CRM_Contactlayout_Upgrader extends CRM_Contactlayout_Upgrader_Base {
   public function postInstall() {
     // Add menu item for contact summary editor.
     try {
-      $parent = Civi\Api4\Navigation::get()
+      $parent = Navigation::get()
         ->addWhere('name', '=', 'Customize Data and Screens')
         ->setCheckPermissions(FALSE)
         ->setLimit(1)
         ->execute()
         ->first();
-      Civi\Api4\Navigation::create()
+      Navigation::create()
         ->setCheckPermissions(FALSE)
         ->addValue('label', E::ts('Contact Summary Layouts'))
         ->addValue('name', 'contact_summary_editor')
@@ -43,7 +45,7 @@ class CRM_Contactlayout_Upgrader extends CRM_Contactlayout_Upgrader_Base {
    */
   public function uninstall() {
     try {
-      Civi\Api4\Navigation::delete()
+      Navigation::delete()
         ->setCheckPermissions(FALSE)
         ->addWhere('name', '=', 'contact_summary_editor')
         ->execute();
@@ -68,17 +70,34 @@ class CRM_Contactlayout_Upgrader extends CRM_Contactlayout_Upgrader_Base {
   }
 
   /**
-   * Example: Run a couple simple queries.
+   * Change layout format from columns only to rows + columns.
    *
    * @return TRUE on success
    * @throws Exception
-   *
-  public function upgrade_4200() {
-    $this->ctx->log->info('Applying update 4200');
-    CRM_Core_DAO::executeQuery('UPDATE foo SET bar = "whiz"');
-    CRM_Core_DAO::executeQuery('DELETE FROM bang WHERE willy = wonka(2)');
+   */
+  public function upgrade_1000() {
+    $this->ctx->log->info('Applying update 1000 - Change layout format from columns only to rows + columns.');
+    foreach (ContactLayout::get()->setSelect(['id', 'blocks'])->setCheckPermissions(FALSE)->execute() as $layout) {
+      ContactLayout::update()
+        ->addWhere('id', '=', $layout['id'])
+        ->addValue('blocks', [$layout['blocks']])
+        ->setCheckPermissions(FALSE)
+        ->execute();
+    }
     return TRUE;
-  } // */
+  }
+
+  /**
+   * Add support for tabs.
+   *
+   * @return TRUE on success
+   * @throws Exception
+   */
+  public function upgrade_1001() {
+    $this->ctx->log->info('Applying update 1001 - Add support for tabs.');
+    CRM_Core_DAO::executeQuery("ALTER TABLE `civicrm_contact_layout` ADD COLUMN `tabs` longtext NOT NULL COMMENT 'Contains json encoded layout tabs.'");
+    return TRUE;
+  }
 
 
   /**

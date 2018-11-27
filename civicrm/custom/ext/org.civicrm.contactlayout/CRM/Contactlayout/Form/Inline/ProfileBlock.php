@@ -97,7 +97,7 @@ class CRM_Contactlayout_Form_Inline_ProfileBlock extends CRM_Profile_Form_Edit {
    * @throws CiviCRM_API3_Exception
    */
   public function postProcess() {
-    $values = $origValues = $this->exportValues();
+    $values = $origValues = $this->controller->exportValues($this->_name);
     // Ignore value from contact id field
     unset($values['id']);
     $values['contact_id'] = $cid = $this->_id;
@@ -107,7 +107,13 @@ class CRM_Contactlayout_Form_Inline_ProfileBlock extends CRM_Profile_Form_Edit {
     $this->_action = CRM_Core_Action::UPDATE;
 
     $this->processEmployer($values);
-    $this->processGroups($values);
+    if (isset($values['group'])) {
+      $this->processGroups($values);
+    }
+    // Process image
+    if (!empty($values['image_URL'])) {
+      CRM_Contact_BAO_Contact::processImageParams($values);
+    }
     civicrm_api3('Profile', 'submit', $values);
 
     // Save tagsets (not handled by profile api)

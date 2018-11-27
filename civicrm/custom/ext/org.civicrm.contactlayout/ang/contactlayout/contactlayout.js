@@ -4,9 +4,6 @@
       $routeProvider.when('/contact-summary-editor', {
         controller: 'Contactlayoutcontactlayout',
         templateUrl: '~/contactlayout/contactlayout.html',
-
-        // If you need to look up data when opening the page, list it out
-        // under 'resolve'.
         resolve: {
           profile_status: function(crmProfiles) {
             return crmProfiles.load();
@@ -15,6 +12,7 @@
             return crmApi4({
               layouts: ['ContactLayout', 'get', {orderBy: {weight: 'ASC'}}],
               blocks:  ['ContactLayout', 'getBlocks'],
+              tabs:  ['ContactLayout', 'getTabs'],
               contactTypes: ['ContactType', 'get', {
                 where: [['is_active','=','1']],
                 orderBy: {label: 'ASC'}
@@ -42,6 +40,7 @@
     $scope.saving = false;
     $scope.contactTypes = data.contactTypes;
     $scope.layouts = data.layouts;
+    $scope.tabs = _.indexBy(data.tabs, 'id');
     var newLayoutCount = 0,
       profileEntities = [{entity_name: "contact_1", entity_type: "IndividualModel"}],
       allBlocks = loadBlocks(data.blocks);
@@ -79,9 +78,11 @@
     $scope.changeContactType = function(layout) {
       layout.contact_sub_type = null;
       if (layout.contact_type) {
-        _.each(layout.blocks, function(blocks, i) {
-          layout.blocks[i] = _.filter(blocks, function(block) {
-            return !block.contact_type || block.contact_type === layout.contact_type;
+        _.each(layout.blocks, function(row) {
+          _.each(row, function(col, i) {
+            row[i] = _.filter(col, function(block) {
+              return !block.contact_type || block.contact_type === layout.contact_type;
+            });
           });
         });
         loadLayout(layout);
@@ -131,10 +132,37 @@
       }
     };
 
+    $scope.addRow = function() {
+      $scope.selectedLayout.blocks.push([[], []]);
+    };
+
+    $scope.addCol = function(row) {
+      row.push([]);
+    };
+
+    $scope.removeCol = function(row, col) {
+      row.splice(col, 1);
+      _.each($scope.selectedLayout.blocks, function(row, num) {
+        if (row && !row.length) {
+          $scope.selectedLayout.blocks.splice(num, 1);
+        }
+      });
+    };
+
+    function getBlocksInLayout(layout) {
+      var blocksInLayout = [];
+      _.each(layout.blocks, function(row) {
+        _.each(row, function(col) {
+          blocksInLayout.push.apply(blocksInLayout, col);
+        });
+      });
+      return blocksInLayout;
+    }
+
     $scope.deleteBlock = function(block) {
       var message = [_.escape(ts('Delete the block "%1"?', {1: block.title}))];
       _.each($scope.layouts, function (layout) {
-        if (_.where(layout.blocks[0].concat(layout.blocks[1]), {name: block.name}).length) {
+        if (_.where(getBlocksInLayout(layout), {name: block.name}).length) {
           message.push(_.escape(ts('It is currently part of the "%1" layout.', {1: layout.label})));
         }
       });
@@ -145,17 +173,20 @@
         .on('crmConfirm:yes', function() {
           // Remove block from all layouts
           _.each($scope.layouts, function (layout) {
-            _.each(layout.blocks, function(blocks) {
-              var idx = _.findIndex(blocks, {name: block.name});
-              if (idx > -1) {
-                blocks.splice(idx, 1);
-              }
+            _.each(layout.blocks, function(row) {
+              _.each(row, function(col) {
+                var idx = _.findIndex(col, {name: block.name});
+                if (idx > -1) {
+                  col.splice(idx, 1);
+                }
+              });
             });
           });
           reloadBlocks([['UFGroup', 'delete', {where: [['id', '=', block.profile_id]]}]]);
         });
     };
 
+    // Cycles between the 4 possible collapsible/collapsed states
     $scope.toggleCollapsible = function(block) {
       if (!block.collapsible && !block.showTitle) {
         block.collapsible = true;
@@ -182,12 +213,12 @@
     $scope.newLayout = function() {
       var newLayout = {
         label: ts('Untitled %1', {1: ++newLayoutCount}),
-        blocks: [[],[]],
-        palette: _.cloneDeep(allBlocks)
+        blocks: [[[],[]]]
       };
       $scope.deletedLayout = null;
+      loadLayout(newLayout);
       $scope.layouts.unshift(newLayout);
-      $scope.selectedLayout = newLayout;
+      $scope.selectLayout(newLayout);
     };
 
     $scope.deleteLayout = function(index) {
@@ -200,8 +231,15 @@
 
     $scope.restoreLayout = function() {
       $scope.layouts.unshift($scope.deletedLayout);
-      $scope.selectedLayout = $scope.deletedLayout;
+      $scope.selectLayout($scope.deletedLayout);
       $scope.deletedLayout = null;
+    };
+
+    $scope.toggleTabActive = function(tab) {
+      tab.is_active = !tab.is_active;
+      if (!tab.is_active) {
+        tab.title = $scope.tabs[tab.id].title;
+      }
     };
 
     $scope.newProfile = function() {
@@ -253,7 +291,7 @@
         emptyLayouts = [],
         noLabel = false;
       _.each($scope.layouts, function(layout) {
-        var empty = true;
+        var empty = true, tabs = [];
         var item = {
           label: layout.label,
           weight: ++layoutWeight,
@@ -261,13 +299,25 @@
           contact_type: layout.contact_type || null,
           contact_sub_type: layout.contact_sub_type && layout.contact_sub_type.length ? layout.contact_sub_type : null,
           groups: layout.groups && layout.groups.length ? layout.groups : null,
-          blocks: [[],[]]
+          blocks: [],
+          tabs: []
         };
-        _.each(layout.blocks, function(blocks, col) {
-          _.each(blocks, function(block) {
-            item.blocks[col].push(getBlockProperties(block));
-            empty = false;
+        _.each(layout.blocks, function(row, rowNum) {
+          item.blocks.push([]);
+          _.each(row, function(col, colNum) {
+            item.blocks[rowNum].push([]);
+            _.each(col, function(block) {
+              item.blocks[rowNum][colNum].push(getBlockProperties(block));
+              empty = false;
+            });
           });
+        });
+        _.each(layout.tabs, function(tab, pos) {
+          var tabInfo = {id: tab.id, is_active: tab.is_active};
+          if (tab.title !== $scope.tabs[tab.id].title) {
+            tabInfo.title = tab.title;
+          }
+          item.tabs[pos] = tabInfo;
         });
         if (!layout.label) {
           noLabel = true;
@@ -328,10 +378,21 @@
 
     function loadLayout(layout) {
       layout.palette = _.cloneDeep(allBlocks);
-      _.each(layout.blocks, function(column) {
-        _.each(column, function(block, num) {
-          column[num] = _.extend(_.where(layout.palette, {name: block.name})[0] || {}, getBlockProperties(block));
-          _.remove(layout.palette, {name: block.name});
+      layout.tabs = layout.tabs || _.cloneDeep(data.tabs);
+      _.each(data.tabs, function(defaultTab) {
+        var layoutTab = _.where(layout.tabs, {id: defaultTab.id})[0];
+        if (!layoutTab) {
+          layout.tabs.push(defaultTab);
+        } else {
+          layoutTab.title = layoutTab.title || defaultTab.title;
+        }
+      });
+      _.each(layout.blocks, function(row) {
+        _.each(row, function(col) {
+          _.each(col, function(block, num) {
+            col[num] = _.extend(_.where(layout.palette, {name: block.name})[0] || {}, getBlockProperties(block));
+            _.remove(layout.palette, {name: block.name});
+          });
         });
       });
     }
@@ -367,7 +428,7 @@
     // Initialize
     if ($scope.layouts.length) {
       loadLayouts();
-      $scope.selectedLayout = $scope.layouts[0];
+      $scope.selectLayout($scope.layouts[0]);
     }
     else {
       $scope.newLayout();

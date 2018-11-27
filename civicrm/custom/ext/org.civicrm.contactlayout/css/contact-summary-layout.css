@@ -1,0 +1,10 @@
+.crm-container .contact_panel.crm-contact-summary-layout-row {
+  display: flex;
+  box-sizing: border-box;
+  flex-wrap: wrap;
+}
+.crm-container .crm-contact-summary-layout-col {
+  flex: 1 1 250px;
+  box-sizing: border-box;
+  padding: 10px 10px 0;
+}

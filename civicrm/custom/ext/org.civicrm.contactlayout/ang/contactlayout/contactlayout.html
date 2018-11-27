@@ -1,4 +1,5 @@
 <div id="bootstrap-theme">
+  <div crm-ui-debug="selectedLayout"></div>
   <h1 crm-page-title>{{ts('Contact Summary Editor')}}</h1>
 
   <div id="contactLayoutEditor">
@@ -44,7 +45,7 @@
                 <button class="btn" ng-class="{'btn-primary': !changesSaved && !saving, 'btn-warning': saving, 'btn-success': changesSaved}" ng-disabled="changesSaved || saving" ng-click="save()">
                   <i class="crm-i" ng-class="{'fa-check': !saving, 'fa-spin fa-spinner': saving}"></i>
                   <span ng-if="changesSaved">{{ ts('All Saved') }}</span>
-                  <span ng-if="!changesSaved && !saving">{{ ts('Save All') }}</span>
+                  <span ng-if="!changesSaved && !saving">{{ layouts.length? ts('Save All') : ts('Delete All') }}</span>
                   <span ng-if="saving">{{ ts('Saving...') }}</span>
                 </button>
               </div>
@@ -79,9 +80,30 @@
               </div>
             </nav>
             <div class="panel-inner">
+              <div id="cse-tabs-container" ui-sortable="{containment: '#cse-tabs-container', handle: '.fa-arrows'}" ng-model="selectedLayout.tabs">
+                <div class="cse-tab" data-tab-id="{{ tab.id }}" ng-if="!tab.contact_type || !selectedLayout.contact_type || tab.contact_type === selectedLayout.contact_type" ng-class="{'cse-tab-disabled': !tab.is_active}" ng-repeat="tab in selectedLayout.tabs">
+                  <span class="crm-i fa-arrows"></span>
+                  <span class="cse-tab-title" ng-if="tab.is_active" contact-layout-editable ng-model="tab.title">{{ tab.title }}</span>
+                  <span class="cse-tab-title" ng-if="!tab.is_active">{{ tab.title }}</span>
+                  <a href ng-if="tab.id !== 'summary'" ng-click="toggleTabActive(tab)">
+                    <i class="crm-i" ng-class="{'fa-close': tab.is_active, 'fa-undo': !tab.is_active}"></i>
+                  </a>
+                </div>
+              </div>
               <div id="cse-block-container">
-                <div class="cse-col cse-layout-col" ng-repeat="col in selectedLayout.blocks" ui-sortable="{connectWith: '.cse-col', containment: '#cse-block-container', cancel: 'input,textarea,button,select,option,a,.crm-editable-enabled,[contenteditable]'}" ng-model="col">
-                  <div class="cse-block" ng-repeat="block in col" ng-class="{collapsible: block.collapsible, collapsed: block.collapsed, 'show-title': block.showTitle, 'block-multiple': block.multiple}" ng-include="'~/contactlayout/contactlayoutblock.html'"></div>
+                <div id="cse-rows">
+                  <div class="cse-row" ng-repeat="row in selectedLayout.blocks">
+                    <div class="cse-col cse-layout-col" ng-repeat="(colNum, col) in row">
+                      <button class="btn btn-xs btn-danger-outline cse-remove-col" ng-click="removeCol(row, colNum)" title="{{ ts('Remove column') }}">
+                        <i class="crm-i fa-close"></i>
+                      </button>
+                      <div class="cse-drop" ui-sortable="{connectWith: '.cse-drop', containment: '#cse-block-container', cancel: 'input,textarea,button,select,option,a,.crm-editable-enabled,[contenteditable]'}" ng-model="col">
+                        <div class="cse-block" ng-repeat="block in col" ng-class="{collapsible: block.collapsible, collapsed: block.collapsed, 'show-title': block.showTitle, 'block-multiple': block.multiple}" ng-include="'~/contactlayout/contactlayoutblock.html'"></div>
+                      </div>
+                    </div>
+                    <a class="cse-add-col" href ng-click="addCol(row)" title="{{ ts('Add column') }}"><i class="crm-i fa-plus"></i></a>
+                  </div>
+                  <a class="cse-add-row" href ng-click="addRow()" title="{{ ts('Add row') }}"><i class="crm-i fa-plus"></i></a>
                 </div>
                 <div id="cse-palette-col">
                   <h4>
@@ -92,7 +114,7 @@
                       </button>
                     </div>
                   </h4>
-                  <div id="cse-palette" class="cse-col" ui-sortable="{connectWith: '.cse-col', containment: '#cse-block-container', update: enforceUnique, cancel: 'input,textarea,button,select,option,a,.invalid-block'}" ng-model="selectedLayout.palette">
+                  <div id="cse-palette" class="cse-col cse-drop" ui-sortable="{connectWith: '.cse-drop', containment: '#cse-block-container', update: enforceUnique, cancel: 'input,textarea,button,select,option,a,.invalid-block'}" ng-model="selectedLayout.palette">
                     <div class="cse-block" ng-repeat="block in selectedLayout.palette" ng-class="{'invalid-block': selectedLayout.contact_type && block.contact_type && selectedLayout.contact_type !== block.contact_type}" ng-include="'~/contactlayout/contactlayoutblock.html'"></div>
                   </div>
                 </div>

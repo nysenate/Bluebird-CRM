@@ -1,4 +1,4 @@
-/* Add any CSS rules for Angular module "contactlayout" */
+/* CSS rules for Angular module "contactlayout" */
 
 #bootstrap-theme #contactLayoutEditor .panel-body {
   min-height: 600px;
@@ -52,7 +52,7 @@
   text-align: center;
   margin-bottom: 10px;
   cursor: move;
-  background-color: #eee;
+  background-color: #f8f8f8;
   position: relative;
 }
 
@@ -71,11 +71,8 @@
 }
 
 #bootstrap-theme #contactLayoutEditor .cse-item-selected {
-  background-color: #58b7d1;
-  color: white;
-}
-#bootstrap-theme #contactLayoutEditor .cse-item-selected h4 {
-  color: white;
+  background-color: #a2d2f3;
+  border-color: #0071bd;
 }
 #bootstrap-theme #contactLayoutEditor .navbar {
   border-radius: 0;
@@ -89,7 +86,8 @@
 }
 
 #contactLayoutEditor,
-#cse-block-container {
+#cse-block-container,
+#cse-rows .cse-row {
   display: flex;
 }
 #contactLayoutLayouts {
@@ -99,11 +97,23 @@
 #contactLayoutEdit {
   flex: 3;
 }
-#cse-block-container > div {
+#cse-rows {
+  flex: 2;
+}
+#cse-rows .cse-col {
   flex: 1;
-  padding: 10px;
-  margin: 0 10px;
-  min-height: 515px;
+  min-height: 50px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  position: relative;
+}
+#cse-rows .cse-row:first-child .cse-col {
+  min-height: 200px;
+}
+#cse-rows .cse-drop {
+  width: 100%;
+  height: 100%;
+  padding: 22px 5px 0;
 }
 #cse-block-container > div:first-child,
 #cse-block-container > div:last-child {
@@ -113,8 +123,20 @@
   border: 2px dashed #9c9c9c;
   background-color: #f8f8f8;
 }
+#cse-rows .cse-add-col,
+#cse-rows .cse-add-row {
+  display: block;
+  border: 2px dashed grey;
+  width: 20px;
+  height: 20px;
+  color: grey;
+  margin-right: 8px;
+  text-align: center;
+  line-height: 1.3;
+}
+
 #cse-block-container #cse-palette-col {
-  padding: 0;
+  flex: 1;
 }
 #cse-block-container #cse-palette-col > h4 {
   padding: 11px 10px;
@@ -150,12 +172,14 @@
   margin-bottom: 14px;
   margin-top: 2px;
 }
-#cse-block-container .cse-block .cse-block-buttons {
+#cse-block-container .cse-block .cse-block-buttons,
+#cse-rows .cse-remove-col {
   position: absolute;
   right: 3px;
   top: 3px;
 }
-#cse-block-container .cse-block .btn-group-xs .btn {
+#cse-block-container .btn-group-xs .btn,
+#cse-block-container .btn-xs {
   border: 0 none;
 }
 #cse-block-container .cse-block h5 {
@@ -169,8 +193,19 @@
   position: absolute;
   background: white linear-gradient(to bottom, #f8f8f8 0%,#f8f8f8 50%,#fff 65%,#fff 100%);
 }
-#contactLayoutEditor .crm-editable-enabled {
+#contactLayoutEditor .crm-editable-enabled,
+#contactLayoutEditor .cse-tab-title {
   display: inline-block;
+  padding: 0 !important;
+  border: 2px solid transparent !important;
+}
+#contactLayoutEditor .crm-editable-enabled:hover:not(:focus) {
+  border: 2px dashed grey !important;
+}
+#contactLayoutEditor .crm-editable-enabled:before,
+#contactLayoutEditor .crm-editable-enabled:after {
+  content: '';
+  display: none;
 }
 #cse-block-container .cse-block h5 [contenteditable]:focus {
   cursor: text;
@@ -244,7 +279,8 @@
   border-radius: 4px;
   background-color: white;
   height: 24px;
-  width: 100%;
+  margin: 0 -2px;
+  width: calc(100% + 4px);
   padding-left: 8px;
   padding-top: 2px;
   color: grey;
@@ -252,12 +288,57 @@
   box-sizing: border-box;
 }
 
+#cse-tabs-container {
+  padding-left: 6px;
+  padding-bottom: 5px;
+  margin-bottom: 5px;
+  background: lightgrey;
+}
+
+#cse-tabs-container .cse-tab {
+  display: inline-block;
+  position: relative;
+  padding: 1px 12px 0px 5px;
+  border-radius: 4px;
+  border: 2px solid #0071bd;
+  margin-top: 5px;
+  margin-right: 5px;
+  font-size: 12px;
+  height: 30px;
+  background-color: #f8f8f8;
+}
+#cse-tabs-container .cse-tab[data-tab-id=summary] {
+  background-color: #a2d2f3;
+  padding-right: 5px;
+}
+#cse-tabs-container .cse-tab.cse-tab-disabled {
+  background-color: #bdbdbd;
+}
+#cse-tabs-container .cse-tab.cse-tab-disabled .cse-tab-title {
+  text-decoration: line-through;
+}
+#cse-tabs-container .cse-tab a {
+  color: inherit;
+  position: absolute;
+  font-size: 10px;
+  top: -1px;
+  right:  3px;
+}
+#cse-tabs-container .cse-tab.ui-sortable-helper {
+  padding-right: 0;
+}
+#cse-tabs-container .cse-tab .fa-arrows {
+  cursor: move;
+}
+
 /**
  * Shims so the UI isn't completely broken when a Bootstrap theme is not installed
  */
+#contactLayoutEditor * {
+  box-sizing: border-box;
+}
 .panel {
   border: 1px solid grey;
-  box-sizing: border-box;
 }
 .panel-heading {
   padding: 10px 20px;
@@ -267,9 +348,6 @@
 .panel-primary>.panel-heading {
   color: #fff;
   background-color: #0071bd;
-}
-.panel-inner {
-  box-sizing: border-box;
 }
 .btn:not([disabled]) {
   cursor: pointer;
