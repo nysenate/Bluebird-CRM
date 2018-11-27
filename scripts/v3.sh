@@ -80,7 +80,7 @@ sql="
 "
 $execSql -i $instance -c "$sql" --drupal -q
 
-##
+## adjust custom field settings
 echo "$prog: set file attachments to default open"
 sql="
   UPDATE civicrm_custom_group
@@ -89,7 +89,7 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
-##
+## DISABLE: some problem with this change...
 echo "$prog: update location type display labels"
 sql="
   UPDATE civicrm_location_type
@@ -105,7 +105,7 @@ sql="
   SET display_name = 'Home 2'
   WHERE name = 'Home2';
 "
-$execSql $instance -c "$sql" -q
+#$execSql $instance -c "$sql" -q
 
 ## TODO implement contact-summary config
 
@@ -142,6 +142,16 @@ sql="
      AND ov1.name = ov2.name
      AND ov1.option_group_id = @optgrp
      AND ov2.option_group_id = @optgrp;
+"
+$execSql $instance -c "$sql" -q
+
+## set default state
+echo "$prog: set default state"
+sql="
+  INSERT INTO civicrm_setting
+  (name, value, domain_id, contact_id, is_domain, component_id, created_id)
+  VALUES
+  ('defaultContactStateProvince', 's:4:\"1031\";', 1, NULL, 1, NULL, 1);
 "
 $execSql $instance -c "$sql" -q
 
