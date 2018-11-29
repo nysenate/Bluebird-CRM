@@ -477,7 +477,7 @@ class CRM_NYSS_BAO_Integration_Website
       WHERE name = %1
         AND parent_id = {$parentId}
     ", array(1 => array($tagName, 'String')));
-    //CRM_Core_Error::debug_var('tagId', $tagId);
+    //CRM_Core_Error::debug_var('tagId1', $tagId);
 
     //search by stub if not found by name
     if (!$tagId) {
@@ -488,19 +488,28 @@ class CRM_NYSS_BAO_Integration_Website
           AND parent_id = {$parentId}
       ", array(1 => array($tagStub, 'String')));
     }
+    //CRM_Core_Error::debug_var('tagId2', $tagId);
 
     if (!$tagId) {
-      $tag = civicrm_api('tag', 'create', array(
-        'version' => 3,
-        'name' => $tagStub,
-        'parent_id' => $parentId,
-        'is_selectable' => 0,
-        'is_reserved' => 1,
-        'used_for' => 'civicrm_contact',
-        'created_date' => date('Y-m-d H:i:s'),
-        'description' => '',//TODO store link back to website
-      ));
-      //CRM_Core_Error::debug_var('$tag', $tag);
+      try {
+        $tag = civicrm_api3('tag', 'create', [
+          'name' => $tagStub,
+          'parent_id' => $parentId,
+          'is_selectable' => 0,
+          'is_reserved' => 1,
+          'used_for' => 'civicrm_contact',
+          'created_date' => date('Y-m-d H:i:s'),
+          'description' => '',//TODO store link back to website
+        ]);
+        //CRM_Core_Error::debug_var('$tag', $tag);
+      }
+      catch (CiviCRM_API3_Exception $e) {
+        CRM_Core_Error::debug_var('processPetition tag creation', $e);
+        return array(
+          'is_error' => 1,
+          'details' => $e,
+        );
+      }
 
       if ($tag['is_error']) {
         return $tag;
@@ -1538,7 +1547,9 @@ class CRM_NYSS_BAO_Integration_Website
         $results = civicrm_api3('entity_tag', $action, $params);
       }
     }
-    catch (CiviCRM_API3_Exception $e) {}
+    catch (CiviCRM_API3_Exception $e) {
+      CRM_Core_Error::debug_var('CRM_NYSS_BAO_Integration_Website::entityTagAction', $e);
+    }
 
     return $results;
   }
