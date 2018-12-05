@@ -8,3 +8,6 @@
   box-sizing: border-box;
   padding: 10px 10px 0;
 }
+#crm-contact-thumbnail + .crm-inline-block-content {
+  clear: left;
+}

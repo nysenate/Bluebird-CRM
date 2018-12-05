@@ -140,7 +140,7 @@ class CRM_Contactlayout_BAO_ContactLayout extends CRM_Contactlayout_DAO_ContactL
     // Core blocks are not editable
     $blocks['core']['blocks']['Basic'] = [
       'title' => E::ts('ID, Type, Tags'),
-      'tpl_file' => 'CRM/Contact/Page/Inline/Basic.tpl',
+      'tpl_file' => 'CRM/Contactlayout/Page/Inline/BasicPlusImage.tpl',
       'sample' => [E::ts('Tags'), E::ts('Contact Type'), E::ts('Contact ID'), E::ts('External ID')],
       'edit' => FALSE,
     ];
@@ -362,7 +362,7 @@ class CRM_Contactlayout_BAO_ContactLayout extends CRM_Contactlayout_DAO_ContactL
     foreach (CRM_Core_Component::getEnabledComponents() as $name => $component) {
       $tab = $component->registerTab();
       if ($tab) {
-        $tabs[] = $tab + ['id' => $component->getKeyword()];
+        $tabs[] = $tab + ['id' => $component->getKeyword(), 'icon' => $component->getIcon()];
       }
     }
     $weight = 200;
@@ -377,6 +377,7 @@ class CRM_Contactlayout_BAO_ContactLayout extends CRM_Contactlayout_DAO_ContactL
         'id' => "custom_{$group['id']}",
         'title' => $group['title'],
         'weight' => $weight += 10,
+        'icon' => 'crm-i fa-gear',
         'contact_type' => $group['extends'] == 'Contact' ? NULL : $group['extends'],
       ];
     }
@@ -392,6 +393,7 @@ class CRM_Contactlayout_BAO_ContactLayout extends CRM_Contactlayout_DAO_ContactL
           'id' => 'discounts_assigned',
           'title' => ts('Codes Assigned', ['domain' => 'org.civicrm.module.cividiscount']),
           'weight' => 115,
+          'icon' => $tab['icon'],
           'contact_type' => 'Organization',
           'is_active' => TRUE,
         );

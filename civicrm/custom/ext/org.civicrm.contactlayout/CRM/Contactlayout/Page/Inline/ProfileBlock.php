@@ -17,6 +17,11 @@ class CRM_Contactlayout_Page_Inline_ProfileBlock extends CRM_Core_Page {
       }
     }
 
+    // Needed to display image
+    if ($image_URL = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $contactId, 'image_URL')) {
+      $this->assign("imageURL", CRM_Utils_File::getImageURL($image_URL));
+    }
+
     // Needed to display tags
     $this->assign('contactTag', CRM_Core_BAO_EntityTag::getContactTags($contactId));
     $this->assign('allTags', CRM_Core_BAO_Tag::getTagsUsedFor('civicrm_contact', FALSE));

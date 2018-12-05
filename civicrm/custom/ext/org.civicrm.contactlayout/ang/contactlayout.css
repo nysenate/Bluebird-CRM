@@ -298,7 +298,7 @@
 #cse-tabs-container .cse-tab {
   display: inline-block;
   position: relative;
-  padding: 1px 12px 0px 5px;
+  padding: 1px 15px 0 8px;
   border-radius: 4px;
   border: 2px solid #0071bd;
   margin-top: 5px;
@@ -306,10 +306,11 @@
   font-size: 12px;
   height: 30px;
   background-color: #f8f8f8;
+  cursor: move;
 }
 #cse-tabs-container .cse-tab[data-tab-id=summary] {
   background-color: #a2d2f3;
-  padding-right: 5px;
+  padding-right: 8px;
 }
 #cse-tabs-container .cse-tab.cse-tab-disabled {
   background-color: #bdbdbd;
@@ -317,12 +318,23 @@
 #cse-tabs-container .cse-tab.cse-tab-disabled .cse-tab-title {
   text-decoration: line-through;
 }
-#cse-tabs-container .cse-tab a {
+#cse-tabs-container .cse-tab-icon {
+  margin-right: -4px;
+}
+#cse-tabs-container .cse-tab-icon i {
+  padding-left: 2px;
+  padding-right: 2px;
+}
+#cse-tabs-container .cse-tab-toggle {
   color: inherit;
   position: absolute;
   font-size: 10px;
   top: -1px;
   right:  3px;
+  opacity: .5;
+}
+#cse-tabs-container .cse-tab:hover .cse-tab-toggle {
+  opacity: 1;
 }
 #cse-tabs-container .cse-tab.ui-sortable-helper {
   padding-right: 0;
