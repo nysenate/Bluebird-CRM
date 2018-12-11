@@ -128,3 +128,11 @@ ul#civicrm-menu {
   text-transform: uppercase;
   margin-right: 0;
 }
+
+/*DASHBOARD*/
+#crm-container .column-0 {
+  width: 75% !important;
+}
+#crm-container .column-1 {
+  width: 25% !important;
+}
