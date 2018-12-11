@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2018                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -37,9 +37,9 @@
           <td class="crm-contact-form-block-activity_type_exclude_filter_id crm-inline-edit-field">
             {$form.activity_type_exclude_filter_id.label}<br /> {$form.activity_type_exclude_filter_id.html|crmAddClass:medium}
           </td>
-          {include file="CRM/Core/DateRange.tpl" fieldName="activity_date" from='_low' to='_high' label='Date'}
+          {include file="CRM/Core/DateRange.tpl" fieldName="activity_date" from='_low' to='_high' label='<label>Date</label>'}
           <td class="crm-contact-form-block-activity_status_filter_id crm-inline-edit-field">
-            {ts}Status{/ts}<br /> {$form.status_id.html|crmAddClass:medium}
+            <label>{ts}Status{/ts}</label><br /> {$form.status_id.html|crmAddClass:medium}
           </td>
         </tr>
       </table>
@@ -53,7 +53,7 @@
       <th data-data="source_contact_name" class="crm-contact-activity-source_contact">{ts}Added By{/ts}</th>
       <th data-data="target_contact_name" data-orderable="false" class="crm-contact-activity-target_contact">{ts}With{/ts}</th>
       <th data-data="assignee_contact_name" data-orderable="false" class="crm-contact-activity-assignee_contact">{ts}Assigned{/ts}</th>
-      <th data-data="activity_date_time" class="crm-contact-activity-activity_date">{ts}Activity Date{/ts}</th>
+      <th data-data="activity_date_time" class="crm-contact-activity-activity_date">{ts}Date{/ts}</th>
       <th data-data="status_id" cell-class="crmf-status_id crm-editable" cell-data-type="select" cell-data-refresh="true" class="crm-contact-activity-activity_status">{ts}Status{/ts}</th>
       <th data-data="links" data-orderable="false" class="crm-contact-activity-links">&nbsp;</th>
     </tr>
