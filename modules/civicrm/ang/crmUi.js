@@ -877,7 +877,8 @@
         link: function (scope, element, attrs) {
           scope.ts = CRM.ts(null);
 
-          element.find('.crm-wizard-buttons button').click(function () {
+          //NYSS 12191
+          element.find('.crm-wizard-buttons button[ng-click^=crmUiWizardCtrl]').click(function () {
             // These values are captured inside the click handler to ensure the
             // positions/sizes of the elements are captured at the time of the
             // click vs. at the time this directive is initialized.
