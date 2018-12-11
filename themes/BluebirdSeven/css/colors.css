@@ -1,9 +1,13 @@
 .page-civicrm,
 .page-civicrm #page {
-  background: #C6C5B9 !important;
+  background: #DADAD2 !important;
+}
+ul#civicrm-menu {
+  background-color: #DADAD2 !important;
+  width: 100% !important;
 }
 .crm-container #civicrm-footer {
-  border-top: 1px solid #393D3F !important;
+  border-top: 1px solid #B7B8B9 !important;
 }
 .page-civicrm #branding {
   background: #393D3F !important;
@@ -12,7 +16,7 @@
   background: #546A7B !important;
 }
 .page-civicrm-contact-view .crm-actions-ribbon {
-  background: #8E3B46 !important;
+  background: #637787 !important;
 }
 .crm-container input[type=button],
 .crm-container a.button,
