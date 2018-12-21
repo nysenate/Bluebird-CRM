@@ -111,11 +111,7 @@ class CRM_NYSS_AJAX_Activity
         }
       }
 
-      /**
-       * @var \Civi\Core\SettingsBag $cSettings
-       */
-      $cSettings = Civi::service('settings_manager')->getBagByContact(CRM_Core_Config::domainID(), $userID);
-      $cSettings->set('activity_tab_filter', $activityFilter);
+      Civi::contactSettings()->set('activity_tab_filter', $activityFilter);
     }
     if (!empty($_GET['is_unit_test'])) {
       return array($activities, $activityFilter);
@@ -158,13 +154,11 @@ class CRM_NYSS_AJAX_Activity
 
     // Get contact activities.
     $params['admin'] = TRUE;
-    $activities = CRM_Activity_BAO_Activity::getActivities($params);
+    $activities = CRM_Activity_BAO_Activity::deprecatedGetActivities($params);
     //Civi::log()->debug('getContactActivitySelector', array('activities' => $activities));
 
     // Add total.
-    $paramsCount = $params;
-    unset($paramsCount['rowCount']);
-    $params['total'] = CRM_Activity_BAO_Activity::getActivities($paramsCount, TRUE);
+    $params['total'] = CRM_Activity_BAO_Activity::deprecatedGetActivitiesCount($params);
     //Civi::log()->debug('getContactActivitySelector', array('$params' => $params));
 
     // Format params and add links.
