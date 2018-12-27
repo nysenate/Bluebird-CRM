@@ -1,3 +1,9 @@
+// Namespace for the entire theme
+// (set it to an empty string to remove the namespace)
+$bootstrap-namespace: '#bootstrap-theme';
+
+// Any selector within this namespace will be place outside
+// of $bootstrap-namespace during the build process
 $outside-namespace-marker: '.___outside-namespace';
 
 $box-shadow: 0 3px 18px 0 rgba(48, 40, 40, 0.25);
@@ -19,6 +25,10 @@ $crm-page-topbar-item-padding: 15px !default;
 // Variables override
 // --------------------------------------------------
 
+// Shoreditch does not have an actual folder for images but this variable
+// allows other extensions to reuse and/or re-define it.
+// This is a relative path to the distributive CSS file.
+$crm-image-path: '../img/' !default;
 
 //== Font paths
 //
@@ -113,13 +123,6 @@ $crm-font-weight-h4:          500 !default;
 $crm-font-weight-h5:          700 !default;
 $crm-font-weight-h6:          500 !default;
 
-
-//== Iconography
-//
-//## Specify custom location and filename of the included Glyphicons icon font. Useful for those including Bootstrap via Bower.
-
-$icon-font-path: '../vendor/bootstrap/fonts/bootstrap/' !default;
-
 //== Layout
 //
 //## Common layout spacings, margins, and paddings
@@ -186,7 +189,9 @@ $input-border-radius-small: $border-radius-base !default;
 $dropdown-link-hover-bg:    $gray-lighter !default;
 $dropdown-header-color:     $gray-darker !default;
 
-$crm-dropdown-padding:      11px 20px;
+$crm-dropdown-container-padding: 4px 0 9px 0;
+$crm-dropdown-item-padding:      7px 19px 7px 24px;
+$crm-dropdown-divider-margin:    7px 0;
 
 
 //== Labels
@@ -365,6 +370,8 @@ $breadcrumb-separator:           '>' !default;
 //
 //##
 
+$text-muted:                     #aab2b9 !default;
+
 $dl-horizontal-offset:           250px !default;
 
 $blockquote-small-color:         $crm-copy !default;
@@ -395,3 +402,11 @@ $crm-uib-datepicker-header-font-weight:    $crm-font-weight-h5 !default;
 $crm-uib-datepicker-muted-cell-color:      #dcdddd !default;
 $crm-uib-datepicker-today-bg-color:        transparent !default;
 $crm-uib-datepicker-today-font-color:      $brand-primary !default;
+
+
+//== CRM Wizard
+//
+//##
+
+$crm-wizard-active-bg-color: $gray-lighter !default;
+$crm-wizard-active-font-color: $brand-primary !default;

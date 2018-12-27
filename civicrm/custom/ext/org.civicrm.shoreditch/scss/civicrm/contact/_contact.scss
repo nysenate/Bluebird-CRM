@@ -1,11 +1,15 @@
 /* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id */
 
-#{civi-page('contact-view')} {
+$page-class: civi-page('contact-view');
+$page-class-name: str_slice($page-class, 2);
+
+#{$page-class}:not([class*='#{$page-class-name}-']) {
   @import 'tabs';
   @import 'header';
   @import 'detail';
 }
 
+@import 'pages/activities';
 @import 'pages/activity-search';
 @import 'pages/new-individual';
 @import 'pages/new-email';

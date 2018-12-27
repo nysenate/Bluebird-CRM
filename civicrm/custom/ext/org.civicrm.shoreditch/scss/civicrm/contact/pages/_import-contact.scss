@@ -45,11 +45,6 @@
       position: initial !important;
     }
 
-    h3 {
-      @extend .collapsible-title;
-      margin-top: 20px;
-    }
-
     .help {
       + .crm-submit-buttons {
         display: none;
@@ -163,11 +158,6 @@
     }
   }
 
-  h3 {
-    border-bottom: 0 !important;
-  }
-
-  h3,
   td.label {
     padding-left: 0;
   }
@@ -202,11 +192,6 @@
           display: table-cell;
           padding-top: 10px;
           vertical-align: top !important;
-        }
-
-        .crm-form-textarea {
-          display: block;
-          min-height: 100px;
         }
       }
     }

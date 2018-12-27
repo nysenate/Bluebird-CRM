@@ -1,9 +1,9 @@
 /* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder */
 
-@import 'SCSSROOT/org.civicrm.shoreditch/base/scss/vendor/bootstrap/buttons';
-@import 'SCSSROOT/org.civicrm.shoreditch/base/scss/vendor/bootstrap/button-groups';
-@import 'SCSSROOT/org.civicrm.shoreditch/base/scss/vendor/bootstrap/modals';
-@import '../bootstrap/overrides/style/buttons';
+@import 'base/scss/vendor/bootstrap/buttons';
+@import 'base/scss/vendor/bootstrap/button-groups';
+@import 'base/scss/vendor/bootstrap/modals';
+@import 'bootstrap/overrides/style/buttons';
 
 $button-border-radius: 2px;
 
@@ -185,8 +185,7 @@ $button-border-radius: 2px;
   a.button,
   a.button:link,
   a.button:visited,
-  input[type=button],
-  input[type=file] {
+  input[type=button] {
     @extend %btn;
   }
 

@@ -34,9 +34,9 @@
  * It cancels out the styles that CTools applies via JS
  */
 .modal-civihr-bootstrap {
+  left: initial !important;
   position: initial !important;
   top: initial !important;
-  left: initial !important;
 
   .loading-spinner {
     left: initial !important;
@@ -45,5 +45,3 @@
     top: initial !important;
   }
 }
-
-@import "../../variants/modals-xs-screen";

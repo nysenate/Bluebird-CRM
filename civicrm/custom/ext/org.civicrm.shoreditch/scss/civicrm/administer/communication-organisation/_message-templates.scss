@@ -1,4 +1,4 @@
-/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id */
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder, property-no-vendor-prefix */
 
 &#{civi-page('admin-messagetemplates')} {
   .crm-content-block {
@@ -8,17 +8,15 @@
       .spacer {
         display: none;
       }
+
+      .help {
+        margin: 20px 20px 0 !important;
+      }
     }
   }
 }
 
 &#{civi-page('admin-messagetemplates-add')} {
-  h3 {
-    @include box-shadow($box-shadow);
-    @include panel-header;
-    margin: 0;
-  }
-
   .crm-form-block {
     @include box-shadow($crm-form-layout-shadow-lower);
 
@@ -39,6 +37,16 @@
     tr {
       td:first-child {
         padding-left: 20px;
+      }
+    }
+
+    &:last-of-type {
+      td {
+        padding: 20px;
+
+        &:last-child {
+          padding: 20px 0;
+        }
       }
     }
   }

@@ -1,4 +1,4 @@
-/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id */
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder, property-no-vendor-prefix */
 
 &#{civi-page('admin-contribute')},
 &#{civi-page('admin-pcp')} {
@@ -29,10 +29,6 @@
 
   .crm-contribution-search_contribution-form-block {
     margin-bottom: 20px;
-
-    h3 {
-      @include panel-header;
-    }
 
     .form-layout-compressed {
       margin-left: 20px;
@@ -79,10 +75,6 @@
         tr.columnheader {
           background: $gray-lighter;
         }
-
-        td:not(:last-child) {
-          width: 300px;
-        }
       }
     }
   }
@@ -116,10 +108,6 @@
   }
 
   .crm-contribution-contributionpage-premium-form-block {
-    textarea + br {
-      display: none;
-    }
-
     #ltype {
       .form-item {
         @include civicrm-table;
@@ -136,16 +124,10 @@
   }
 
   #Widget {
-    h3,
     legend {
       @include section-title;
       box-sizing: border-box;
       width: 100%;
-    }
-
-    h3 {
-      background: $crm-white;
-      border-top: 0;
     }
 
     #id-get_code {
@@ -164,12 +146,6 @@
   .crm-member-membershipblock-form-block {
     #memberFields {
       margin-right: 20px;
-    }
-  }
-
-  .crm-friend-manage-block {
-    br {
-      display: none;
     }
   }
 }

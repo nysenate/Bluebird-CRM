@@ -10,48 +10,38 @@
     "url": "https://github.com/civicrm/org.civicrm.shoreditch/issues"
   },
   "scripts": {
-    "precommit": "lint-staged"
+    "postinstall": "npx gulp copy && npx gulp sass"
   },
-  "lint-staged": {
-    "*.js": [
-      "semistandard --fix",
-      "git add"
+  "semistandard": {
+    "globals": [
+      "CRM",
+      "jQuery"
     ],
-    "*.scss": [
-      "stylelint --fix",
-      "git add"
+    "ignore": [
+      "base/js/*"
     ]
   },
-  "stylelint": {
-    "extends": "stylelint-config-sass-guidelines",
-    "plugins": [
-      "stylelint-order",
-      "stylelint-scss"
-    ],
-    "rules": {
-      "selector-class-pattern": null,
-      "max-nesting-depth": 3,
-      "no-extra-semicolons": true,
-      "no-duplicate-selectors": true,
-      "scss/dollar-variable-colon-space-after": "at-least-one-space"
-    }
-  },
   "devDependencies": {
-    "civicrm-scssroot": "git://github.com/totten/civicrm-scssroot.git#v0.1.1",
-    "gulp": "^3.9.1",
+    "bootstrap-sass": "3.4.0",
+    "gulp": "^4.0.0",
     "gulp-postcss": "^7.0.1",
-    "gulp-sass": "^3.2.1",
-    "gulp-sass-bulk-import": "^1.0.1",
+    "gulp-replace": "^1.0.0",
+    "gulp-sass": "^4.0.1",
+    "gulp-sass-glob": "^1.0.9",
     "gulp-strip-css-comments": "^2.0.0",
     "gulp-transform-selectors": "0.0.2",
-    "husky": "^0.14.3",
+    "husky": "^1.0.0",
     "lint-staged": "^6.1.1",
+    "path": "^0.12.7",
+    "plugin-error": "^1.0.1",
     "postcss-discard-duplicates": "^2.1.0",
     "postcss-prefix-selector": "^1.6.0",
     "semistandard": "^12.0.1",
+    "simple-git": "^1.100.0",
     "stylelint": "^8.4.0",
     "stylelint-config-sass-guidelines": "^4.2.0",
     "stylelint-order": "^0.8.1",
-    "stylelint-scss": "^2.5.0"
+    "stylelint-scss": "^2.5.0",
+    "yargs": "^12.0.2"
   }
 }

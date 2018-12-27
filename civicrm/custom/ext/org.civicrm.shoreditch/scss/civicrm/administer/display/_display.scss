@@ -1,4 +1,4 @@
-/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id */
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder, property-no-vendor-prefix */
 
 &#{civi-page('admin-setting-preferences-display')},
 &#{civi-page('admin-setting-search')},
@@ -7,12 +7,8 @@
 &#{civi-page('admin-setting-date')},
 &#{civi-page('admin-setting-case')} {
   .crm-form-block {
-    h3,
     legend {
       @include section-title;
-    }
-
-    legend {
       box-sizing: border-box;
       width: 100%;
     }
@@ -84,15 +80,6 @@
       #ckeditor_config {
         margin: 0 !important;
         padding-left: 30px;
-      }
-    }
-
-    tr.crm-preferences-display-form-block-display_name_format,
-    tr.crm-preferences-display-form-block-sort_name_format {
-      .crm-form-textarea {
-        min-height: 150px;
-        padding: 10px;
-        width: 400px !important;
       }
     }
   }

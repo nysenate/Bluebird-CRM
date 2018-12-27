@@ -1,16 +1,21 @@
+@import 'base/scss/vendor/bootstrap/variables';
+@import 'base/scss/vendor/bootstrap/mixins';
+
 /**
- * Resets css rules that are applied by the CiviCRM style
- *
- * (`initial` was used at first, but there is no support by IE for it)
+ * Resets css rules that are applied by the original CiviCRM style
+ * and the "legacy mode" of Shoreditch
  */
 h3 {
   @include initial(background-color, transparent);
+  @include initial(border, 0);
+  @include initial(border-radius, 0);
+  @include initial(box-shadow, none);
   @include initial(font-family, $font-family-base);
   @include initial(padding, 0);
   @include initial(margin, 0);
+  font-size: $font-size-h3;
 
   font-weight: 400;
-  font-size: $font-size-h3;
 }
 
 table {
@@ -52,6 +57,19 @@ table {
 }
 
 .crm-button .crm-i {
-  left: .6em;
-  top: .6em;
+  left: 0.6em;
+  top: 0.6em;
+}
+
+// It is necessary to keep the min width of the <select multiple>
+// underneath the CiviCRM's select2, otherwise the select2 might be too narrow
+// for the <option>s to display properly
+.crm-select2 {
+  width: 15em;
+}
+
+label .crm-error-label {
+  @include initial(padding, 0);
+
+  font-size: $font-size-base;
 }

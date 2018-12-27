@@ -1,17 +1,22 @@
 /* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id */
 
-body {
-  // Ensures that there is the same top padding regardless whether
-  // the user can see the admin toolbar or not
+#{$outside-namespace-marker} {
+  html {
+    // Ensures that there is the same amount of vertical room for the main menu
+    // regardless of whether there is a drupal menu module enabled or not
+    body {
+      @include open-sans-font-family();
 
-  &:not(.toolbar) {
-    padding-top: $crm-main-menu-height !important;
-  }
+      &:not(.toolbar) {
+        margin-top: $crm-main-menu-height !important;
+      }
 
-  .toolbar-menu {
-    height: $crm-main-menu-height !important;
-    padding-bottom: 0 !important;
-    padding-top: 0 !important;
+      .toolbar-menu {
+        height: $crm-main-menu-height !important;
+        padding-bottom: 0 !important;
+        padding-top: 0 !important;
+      }
+    }
   }
 }
 
@@ -103,45 +108,6 @@ body {
           color: $crm-gray-matte !important;
           cursor: default !important;
         }
-      }
-    }
-  }
-
-  .select2-container {
-    .select2-choice {
-      background: $crm-white;
-      border-color: $crm-grayblue-darker;
-      border-radius: $border-radius-base;
-      box-shadow: none;
-
-      .select2-arrow {
-        background: $crm-white;
-        padding: 0 4px;
-      }
-
-      .select2-arrow b {
-        height: 18px;
-        margin-top: 2px;
-      }
-
-      abbr {
-        right: 28px;
-        top: 8px;
-      }
-    }
-
-    .select2-default {
-      color: $input-color-placeholder !important;
-    }
-
-    &.select2-dropdown-open {
-      .select2-choice {
-        border-color: $brand-primary;
-      }
-
-      &.select2-drop-above .select2-choice {
-        border-color: $crm-blue-light-color;
-        border-top: 0;
       }
     }
   }
@@ -239,10 +205,11 @@ body {
     }
 
     .crm-datatable-pager-bottom {
+      @include clearfix;
       background: $crm-gray-lightest;
       border-radius: 0 0 $border-radius-child $border-radius-child;
       line-height: 1.8em;
-      padding-bottom: 39px;
+      padding-bottom: 10px;
       padding-top: 10px;
 
       .dataTables_info,
@@ -254,6 +221,8 @@ body {
 
     .dataTables_info {
       color: $crm-copy;
+      line-height: 25px;
+      margin: 5px 0;
       padding-left: 20px;
       width: 50%;
     }

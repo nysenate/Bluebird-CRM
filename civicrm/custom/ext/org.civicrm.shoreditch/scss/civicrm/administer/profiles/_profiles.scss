@@ -118,6 +118,10 @@
         color: $crm-white;
       }
     }
+
+    .crm-form-block {
+      box-shadow: none;
+    }
   }
 }
 
@@ -150,11 +154,6 @@
         box-shadow: none;
       }
     }
-
-    textarea {
-      line-height: 1.5em;
-      vertical-align: middle;
-    }
   }
 }
 
@@ -169,6 +168,10 @@
 
       .crm-accordion-body {
         padding: 0 20px !important;
+      }
+
+      .crm-block {
+        padding: 0;
       }
     }
   }

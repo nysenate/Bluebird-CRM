@@ -5,17 +5,15 @@
     display: none;
   }
 
+  .crm-submit-buttons:last-child {
+    border-top: 0 !important;
+  }
+
   .crm-contactEmail-form-block {
     padding-top: 20px !important;
 
     > .form-layout-compressed {
       margin: 0 0 20px 20px;
-    }
-
-    .select2-choice {
-      > span.select2-chosen {
-        color: $brand-primary;
-      }
     }
   }
 
@@ -63,10 +61,6 @@
             color: $gray-darker;
             font-weight: 600;
           }
-        }
-
-        .select2-container {
-          width: 100% !important;
         }
       }
 

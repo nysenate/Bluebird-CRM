@@ -1,17 +1,6 @@
-/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id */
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder, property-no-vendor-prefix */
 
 .CRM_Event_Form_Search {
-  h3 {
-    @include box-shadow($box-shadow);
-    @include panel-header();
-    border-radius: $border-radius-base $border-radius-base 0 0;
-    margin-bottom: 0;
-
-    a {
-      font-size: $font-size-base;
-    }
-  }
-
   .status {
     background: lighten($btn-success-bg, 30%);
     border-color: $btn-success-bg;
@@ -160,10 +149,6 @@
     left: 0;
   }
 
-  .select2-container {
-    max-width: 230px;
-  }
-
   .crm-participant-form-block {
     table {
       box-shadow: none;
@@ -201,7 +186,7 @@
     legend {
       float: left;
       margin: 15px 0;
-      padding: 10px 15px 10px 0;
+      padding: 10px 15px 10px 20px;
       width: 100%;
     }
 
@@ -209,6 +194,11 @@
       br {
         display: none;
       }
+    }
+
+    td.label {
+      min-width: 170px;
+      padding-left: 0;
     }
   }
 
@@ -221,10 +211,6 @@
   .crm-event-eventfees-form-block-receipt_text {
     td:not(.label) {
       width: 100%;
-    }
-
-    textarea {
-      margin-bottom: 20px;
     }
   }
 
@@ -295,8 +281,8 @@
       margin: 0 -20px;
     }
 
-    .description {
-      padding: 20px;
+    .td {
+      line-height: 18px !important;
     }
 
     .crm-participant-form-block-delete {
@@ -466,12 +452,6 @@
       }
     }
   }
-
-  textarea {
-    line-height: 1em;
-    padding: 5px;
-    vertical-align: middle;
-  }
 }
 
 #ParticipantStatus {
@@ -503,11 +483,6 @@
   }
 
   .crm-event-searchevent-form-block {
-    h3 {
-      @include panel-header();
-      margin-bottom: 0;
-    }
-
     .form-layout {
       > tbody {
         > tr {
@@ -691,6 +666,27 @@
     .helpIcon {
       margin-bottom: 20px;
       margin-right: 0;
+    }
+  }
+}
+
+.CRM_Event_Form_Task_ParticipantStatus,
+.CRM_Event_Form_Task_Batch {
+  .help {
+    background: none;
+
+    .status {
+      background: none;
+      border: 0;
+      padding: 0;
+    }
+  }
+}
+
+.CRM_Event_Form_Task_Batch {
+  .help {
+    .status {
+      font-weight: $crm-font-weight-h5;
     }
   }
 }

@@ -1,21 +1,8 @@
-/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id */
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder, property-no-vendor-prefix */
 
 #{civi-page('admin-price')} {
   &,
   .ui-dialog-content {
-    table.form-layout td {
-      input.crm-form-text,
-      .crm-form-select,
-      .crm-form-textarea {
-        margin-bottom: 0 !important;
-        margin-top: 0 !important;
-      }
-
-      .crm-form-textarea {
-        min-height: 100px;
-      }
-    }
-
     .ui-dialog-titlebar .ui-button .ui-icon {
       top: 12px;
     }
@@ -29,6 +16,7 @@
     legend {
       @include panel-header;
       box-sizing: border-box;
+      margin-bottom: 20px;
       width: 100%;
     }
 
@@ -75,6 +63,12 @@
         text-transform: none;
       }
     }
+
+    #options {
+      .field-action {
+        float: right;
+      }
+    }
   }
 
   .CRM_Price_Form_Field {
@@ -98,11 +92,6 @@
 
       td {
         padding: 10px 20px !important;
-
-        .crm-form-text {
-          min-width: 50px !important;
-          width: 50px !important;
-        }
       }
     }
   }

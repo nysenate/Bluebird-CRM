@@ -1,15 +1,10 @@
-/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id */
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder, property-no-vendor-prefix */
 
 #civicrm-dashboard {
   .column {
     .widget-controls {
       background: $crm-copy;
       padding: 17px 10px;
-
-      h3 {
-        font-family: $font-family-base;
-        font-size: $font-size-h2;
-      }
 
       .crm-i {
         opacity: 1;
@@ -40,9 +35,13 @@
       display: grid;
 
       .crm-search_filters-accordion {
-        .select2-container {
-          min-width: auto;
-          width: auto;
+        td:nth-child(3) {
+          min-width: 285px;
+
+          .crm-absolute-date-from label,
+          .crm-absolute-date-to label {
+            display: block;
+          }
         }
       }
 
@@ -74,28 +73,10 @@
           padding: 10px 0;
           width: 49%;
         }
-
-        div[id*='s2id_autogen'] {
-          .select2-choice {
-            background: none;
-            border: 1px solid $crm-grayblue-darker;
-            border-radius: $border-radius-small;
-            box-shadow: $crm-select2-box-shadow-inset;
-          }
-
-          .select2-arrow {
-            background: none;
-            padding: 0 5px;
-          }
-        }
       }
     }
 
     #civicrm-getting-started {
-      h3 {
-        @include section-title;
-      }
-
       table {
         border: 0;
         margin: 7px 0;
@@ -123,7 +104,7 @@
       .crm-news-feed-item-preview,
       .crm-news-feed-item-title {
         color: $crm-copy;
-        font-weight: $crm-font-weight-h1 !important;
+        font-weight: normal;
       }
     }
 
