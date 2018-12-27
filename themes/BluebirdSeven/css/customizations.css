@@ -27,6 +27,21 @@ li.crm-delete-action.crm-contact-delete {
   /*box-shadow: 3px 0 18px 0 #adadad;*/
   /*background:url('../images/shadow.png') 100% 0% repeat-y;*/
 }
+.nyss-integration-tab h3 {
+  background: #393D3F !important;
+  color: #fff !important;
+  border-radius: 3px 3px 0 0;
+  font: 600 18px "Open Sans","Helvetica Neue",Helvetica,Arial,sans-serif;
+  margin: 0;
+  padding: 12px 20px;
+  border-bottom: 1px solid #e8eef0;
+}
+.nyss-integration-tab td {
+  padding: 16px;
+}
+.crm-container .nyss-integration-tab table.crm-info-panel td.label {
+  font-weight: bold;
+}
 
 /*tags tab*/
 div#Tag li#j1_1 > i.jstree-icon,

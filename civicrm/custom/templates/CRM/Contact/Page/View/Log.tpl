@@ -23,10 +23,9 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-<div id="changeLog" class="view-content">
+<div id="changeLog" class="view-content nyss-integration-tab">{*NYSS*}
     <h3>{ts}Change Log:{/ts} {$displayName}</h3>{*NYSS*}
    {if $useLogging}
-     <br />
      <div class='instance_data'><div class="crm-loading-element"></div></div>
    {else}
     <div class="form-item">

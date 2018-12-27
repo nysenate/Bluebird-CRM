@@ -1,4 +1,4 @@
-<div id="WebsiteTags" class="crm-block crm-content-block">
+<div id="WebsiteTags" class="crm-block crm-content-block nyss-integration-tab">
   {foreach from=$tags key=tagset item=tag}
     <h3>{$tagset}</h3>
 

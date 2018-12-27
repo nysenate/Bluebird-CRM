@@ -51,7 +51,9 @@ ul#civicrm-menu {
   color: #FFE36D !important;
   font-size: 0.9em;
 }
-.crm-container #contact-summary-relationship-tab.view-content h3 {
+.crm-container #contact-summary-relationship-tab.view-content h3,
+.page-civicrm-contact #GroupContact h3,
+.crm-container input.crm-form-submit {
   background: #393D3F !important;
 }
 .crm-container #contact-summary-relationship-tab.view-content .label.font-red {
