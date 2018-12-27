@@ -46,7 +46,7 @@
 -->
 </style>
 {/literal}
-<form action="{crmURL p='civicrm/contact/view' q="&cid=`$contactId`&reset=1"}" method="post" id="Print1" >
+<form action="{crmURL p='civicrm/contact/view' q="cid=`$contactId`&reset=1"}" method="post" id="Print1" >
   <div class="form-item">
        <span class="element-right"><input onclick="window.print(); return false" class="crm-form-submit default" name="_qf_Print_next" value="{ts}Print{/ts}" type="submit" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="crm-form-submit" name="_qf_Print_back" value="{ts}Done{/ts}" type="submit" /></span>
   </div>
@@ -55,7 +55,7 @@
 <h3 style="margin: .25em;" class="display-name">{$display_name}</h3>
 <div class="solid-border-top"><br />
     {include file="CRM/Contact/Page/View/Summary.tpl"}
-    <form action="{crmURL p='civicrm/contact/view' q="&cid=`$contactId`&reset=1"}" method="post" id="Print2" >
+    <form action="{crmURL p='civicrm/contact/view' q="cid=`$contactId`&reset=1"}" method="post" id="Print2" >
       <div class="form-item">
            <span class="element-right"><input onclick="window.print(); return false" class="crm-form-submit default" name="_qf_Print_next" value="{ts}Print{/ts}" type="submit" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="crm-form-submit" name="_qf_Print_back" value="{ts}Done{/ts}" type="submit" /></span>
       </div>
@@ -64,7 +64,6 @@
 {literal}
 <script type="text/javascript">
 cj('#mainTabContainer').children(':first').remove();
-cj('#contact-summary' ).children(':first').remove();
 
 </script>
 {/literal}
