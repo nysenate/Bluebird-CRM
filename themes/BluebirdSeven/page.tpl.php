@@ -9,8 +9,10 @@
     <?php print $breadcrumb; ?>
     <div id="bb-header">
       <?php
-        print $addlVars['bbheader'];
-        print $addlVars['bbjob'];
+        if ($addlVars['isCiviCRM']) {
+          print $addlVars['bbheader'];
+          print $addlVars['bbjob'];
+        }
       ?>
     </div>
     <?php print render($title_prefix); ?>
@@ -138,6 +140,13 @@ function _bbSetupHeader() {
   }
   $jobblock .= '</div>';
   $variables['bbjob'] = $jobblock;
+
+  //get path to flag if CiviCRM
+  $path = explode('/', current_path());
+  $variables['isCiviCRM'] = FALSE;
+  if ($path[0] == 'civicrm') {
+    $variables['isCiviCRM'] = TRUE;
+  }
 
   return $variables;
 }
