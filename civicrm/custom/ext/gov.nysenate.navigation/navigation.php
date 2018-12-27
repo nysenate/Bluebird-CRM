@@ -1122,6 +1122,48 @@ function _buildHelpMenu($nyssBaseID) {
         ),
         'child' => array(),
       ),
+      $nyssBaseID+5 => array(
+        'attribute' => array(
+          'label' => 'View Tutorial',
+          'name' => 'tutorial',
+          'url' => '#tutorial-start',
+          'permission' => 'access CiviCRM',
+          'operator' => 'OR',
+          'separator' => 1,
+          'parentID' => $nyssBaseID,
+          'navID' => $nyssBaseID+5,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+      $nyssBaseID+6 => array(
+        'attributes' => array(
+          'label' => 'Edit Tutorial',
+          'name' => 'tutorial_edit',
+          'url' => '#tutorial-edit',
+          'permission' => 'administer CiviCRM',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $nyssBaseID,
+          'navID' => $nyssBaseID+6,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+      $nyssBaseID+7 => array(
+        'attributes' => array(
+          'label' => 'Create Tutorial',
+          'name' => 'tutorial_add',
+          'url' => '#tutorial-add',
+          'permission' => 'administer CiviCRM',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $nyssBaseID,
+          'navID' => $nyssBaseID+7,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
     ),
   );
 
