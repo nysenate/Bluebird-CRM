@@ -13,6 +13,20 @@ li.crm-delete-action.crm-contact-delete {
 .crm-summary-block .crm-address-block .crm-collapsible .collapsible-title {
   font-size: 14px;
 }
+.page-civicrm-contact-view .crm-contact-page #mainTabContainer li.crm-tab-button a {
+  font-size: 14px;
+}
+.page-civicrm-contact-view .crm-contact-page #mainTabContainer li.crm-tab-button.ui-tabs-active {
+  background-color: #DADAD2;
+  box-shadow: none;
+}
+.page-civicrm-contact-view .crm-contact-page #mainTabContainer .crm-contact-tabs-list {
+  box-shadow: none;
+}
+.page-civicrm-contact-view .crm-contact-page #mainTabContainer li.crm-tab-button {
+  /*box-shadow: 3px 0 18px 0 #adadad;*/
+  /*background:url('../images/shadow.png') 100% 0% repeat-y;*/
+}
 
 /*tags tab*/
 div#Tag li#j1_1 > i.jstree-icon,

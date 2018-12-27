@@ -2,6 +2,10 @@
 .page-civicrm #page {
   background: #DADAD2 !important;
 }
+.crm-container .help,
+.crm-container #help {
+  background: #d0c46c;
+}
 ul#civicrm-menu {
   background-color: #DADAD2 !important;
   width: 100% !important;
