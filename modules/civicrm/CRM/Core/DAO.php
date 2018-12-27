@@ -696,6 +696,14 @@ class CRM_Core_DAO extends DB_DataObject {
           if (!$serializeArrays && is_array($pValue) && !empty($value['serialize'])) {
             Civi::log()->warning(ts('use copyParams to serialize arrays (' . __CLASS__ . '.' . $name . ')'), ['civi.tag' => 'deprecated']);
           }
+          $maxLength = CRM_Utils_Array::value('maxlength', $value);
+          if (!is_array($pValue) && $maxLength && mb_strlen($pValue) > $maxLength
+            && empty($value['pseudoconstant'])
+          ) {
+            Civi::log()->warning(ts('A string for field $dbName has been truncated. The original string was %1', [CRM_Utils_Type::escape($pValue, 'String')]));
+            // The string is too long - what to do what to do? Well losing data is generally bad so lets' truncate
+            $pValue = CRM_Utils_String::ellipsify($pValue, $maxLength);
+          }
           $this->$dbName = $pValue;
           $allNull = FALSE;
         }
@@ -900,6 +908,7 @@ class CRM_Core_DAO extends DB_DataObject {
          AND TABLE_NAME LIKE 'civicrm_%'
          AND TABLE_NAME NOT LIKE 'civicrm_import_job_%'
          AND TABLE_NAME NOT LIKE '%_temp%'
+         AND TABLE_NAME NOT LIKE 'civicrm_tmp_%'
       ");
   }
 
