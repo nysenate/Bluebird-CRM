@@ -65,6 +65,10 @@ $drush $instance cvapi extension.install key=uk.co.vedaconsulting.mosaico --quie
 echo "running drupal db upgrade..."
 $drush $instance updb -y -q
 
+## upgrade civicrm db
+echo "running civicrm db upgrade..."
+$drush $instance civicrm-upgrade-db -y -q
+
 ## configure blocks for BluebirdSeven theme
 echo "$prog: configure blocks for BluebirdSeven theme"
 sql="
@@ -154,6 +158,9 @@ sql="
   ('defaultContactStateProvince', 's:4:\"1031\";', 1, NULL, 1, NULL, 1);
 "
 $execSql $instance -c "$sql" -q
+
+echo "$prog: resetting roles and permissions..."
+$script_dir/resetRolePerms.sh $instance
 
 ## record completion
 echo "$prog: upgrade process is complete."

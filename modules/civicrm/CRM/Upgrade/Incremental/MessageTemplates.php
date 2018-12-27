@@ -68,6 +68,7 @@ class CRM_Upgrade_Incremental_MessageTemplates {
    * @return array
    */
   protected function getTemplateUpdates() {
+    return []; //NYSS avoid upgrade errors
     return [
       [
         'version' => '5.4.alpha1',
