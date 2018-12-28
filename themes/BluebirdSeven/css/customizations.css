@@ -10,11 +10,9 @@ li.crm-delete-action.crm-contact-delete {
 .crm-summary-block .crm-address-block .crm-collapsible {
   padding: 5px 10px !important;
 }
-.crm-summary-block .crm-address-block .crm-collapsible .collapsible-title {
-  font-size: 14px;
-}
+.crm-summary-block .crm-address-block .crm-collapsible .collapsible-title,
 .page-civicrm-contact-view .crm-contact-page #mainTabContainer li.crm-tab-button a {
-  font-size: 14px;
+  font-size: 14px !important;
 }
 .page-civicrm-contact-view .crm-contact-page #mainTabContainer li.crm-tab-button.ui-tabs-active {
   background-color: #DADAD2;
@@ -47,4 +45,10 @@ li.crm-delete-action.crm-contact-delete {
 div#Tag li#j1_1 > i.jstree-icon,
 div#Tag li#j1_1 > a#tag_291 {
   display: none;
+}
+
+/*remove old icons (should be unnecessary in future release of shoreditch...)*/
+.page-civicrm-contact-view:not([class*='page-civicrm-contact-view-']) .crm-contact-tabs-list a::before {
+  content: none !important;
+  margin-right: 0 !important;
 }

@@ -44,15 +44,16 @@ ul#civicrm-menu {
 }
 
 /*display branding bar (breadcrumbs, etc.), printer icon, on contact page*/
-.page-civicrm-contact-view #branding {
-  display: block;
+.page-civicrm-contact-view #branding,
+.page-civicrm-contact-view:not([class*='page-civicrm-contact-view-']) #brandin {
+  display: block !important;
   min-height: 34px;
 }
 .page-civicrm-contact-view #branding h1.page-title {
   display: none;
 }
 .page-civicrm.page-civicrm-contact-view #page {
-  margin-top: 54px;
+  margin-top: 114px;
 }
 
 /*contact summary + tabs*/
@@ -72,7 +73,8 @@ ul#civicrm-menu {
   font-weight: bold;
   margin-top: 10px;
 }
-.page-civicrm-contact-view #crm-container div.crm-summary-contactname-block {
+.page-civicrm-contact-view #crm-container div.crm-summary-contactname-block,
+.page-civicrm-contact-view:not([class*='page-civicrm-contact-view-']) #crm-container div.crm-summary-contactname-block {
   min-height: 56px;
 }
 .page-civicrm-contact-view .crm-contact-page #mainTabContainer .ui-tabs-panel {
