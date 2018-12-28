@@ -46,6 +46,13 @@ div#Tag li#j1_1 > i.jstree-icon,
 div#Tag li#j1_1 > a#tag_291 {
   display: none;
 }
+#tagtree ul.jstree-children ul.jstree-children ul.jstree-children {
+  margin-left: 1.5em !important;
+}
+.page-civicrm-contact-view .CRM_Tag_Form_Tag #Tag .jstree-default .jstree-wholerow-hovered,
+.page-civicrm-contact-view .CRM_Tag_Form_Tag #Tag .jstree-default .jstree-wholerow-clicked {
+  background: #e8eef0 !important;
+}
 
 /*remove old icons (should be unnecessary in future release of shoreditch...)*/
 .page-civicrm-contact-view:not([class*='page-civicrm-contact-view-']) .crm-contact-tabs-list a::before {
