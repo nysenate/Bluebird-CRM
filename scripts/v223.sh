@@ -39,5 +39,16 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
+## 12288
+echo "$prog: nyss #12288 - create founder relationship"
+sql="
+  DELETE FROM civicrm_relationship_type WHERE name_a_b = 'founder_of';
+  INSERT INTO civicrm_relationship_type
+  (name_a_b, label_a_b, name_b_a, label_b_a, contact_type_a, contact_type_b, is_active)
+  VALUES
+  ('founder_of', 'Founder of', 'founded_by', 'Founded By', 'Individual', 'Organization', 1);
+"
+$execSql $instance -c "$sql" -q
+
 ## record completion
 echo "$prog: Finished the v2.2.3 upgrade process"
