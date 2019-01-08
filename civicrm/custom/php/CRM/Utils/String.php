@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2018                                |
+ | Copyright CiviCRM LLC (c) 2004-2019                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2018
+ * @copyright CiviCRM LLC (c) 2004-2019
  */
 
 require_once 'HTML/QuickForm/Rule/Email.php';
@@ -560,7 +560,7 @@ class CRM_Utils_String {
    *   the cleaned string
    */
   //NYSS
-  static function stripSpaces( $string, $tabs = FALSE ) {
+  public static function stripSpaces( $string, $tabs = FALSE ) {
     $match = ( $tabs ) ? "/ {2,}|\t/" : "/ {2,}/";
     return (empty($string)) ? $string : preg_replace($match, " ", trim($string));
   }

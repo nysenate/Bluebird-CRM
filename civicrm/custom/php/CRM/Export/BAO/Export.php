@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2018                                |
+ | Copyright CiviCRM LLC (c) 2004-2019                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2018
+ * @copyright CiviCRM LLC (c) 2004-2019
  */
 
 //NYSS edits throughout for 11700 -- includes some updates from core that may
@@ -304,6 +304,7 @@ class CRM_Export_BAO_Export {
         if (!array_key_exists($column, $returnProperties)) {
           $returnProperties[$column] = 1;
           $column = $column == 'id' ? 'civicrm_primary_id' : $column;
+          $processor->setColumnAsCalculationOnly($column);
           $exportParams['merge_same_address']['temp_columns'][$column] = 1;
         }
       }
@@ -336,6 +337,7 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
         if (!array_key_exists($column, $returnProperties)) {
           $returnProperties[$column] = 1;
           $exportParams['postal_mailing_export']['temp_columns'][$column] = 1;
+          $processor->setColumnAsCalculationOnly($column);
         }
       }
     }
@@ -466,22 +468,13 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
       // If we haven't selected specific payment fields, load in all the
       // payment headers.
       if (!$processor->isExportSpecifiedPaymentFields()) {
-        $paymentHeaders = self::componentPaymentFields();
         if (!empty($paymentDetails)) {
           $addPaymentHeader = TRUE;
         }
       }
-      // If we have selected specific payment fields, leave the payment headers
-      // as an empty array; the headers for each selected field will be added
-      // elsewhere.
-      else {
-        $paymentHeaders = array();
-      }
-      $nullContributionDetails = array_fill_keys(array_keys($paymentHeaders), NULL);
     }
 
     $componentDetails = array();
-    $setHeader = TRUE;
 
     $rowCount = self::EXPORT_ROW_COUNT;
     $offset = 0;
@@ -490,15 +483,27 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
 
     $count = -1;
 
-    // for CRM-3157 purposes
-    $i18n = CRM_Core_I18n::singleton();
+    list($outputColumns, $sqlColumns, $metadata) = self::getExportStructureArrays($returnProperties, $processor);
+    $headerRows = $processor->getHeaderRows();
 
-    list($outputColumns, $headerRows, $sqlColumns, $metadata) = self::getExportStructureArrays($returnProperties, $processor);
+    // add payment headers if required
+    if ($addPaymentHeader && $processor->isExportPaymentFields()) {
+      // @todo rather than do this for every single row do it before the loop starts.
+      // where other header definitions take place.
+      $headerRows = array_merge($headerRows, $processor->getPaymentHeaders());
+      foreach (array_keys($processor->getPaymentHeaders()) as $paymentHdr) {
+        self::sqlColumnDefn($processor, $sqlColumns, $paymentHdr);
+      }
+    }
 
+    $exportTempTable = self::createTempTable($sqlColumns);
     $limitReached = FALSE;
+
     while (!$limitReached) {
       $limitQuery = "{$queryString} LIMIT {$offset}, {$rowCount}";
+      CRM_Core_DAO::disableFullGroupByMode();
       $iterationDAO = CRM_Core_DAO::executeQuery($limitQuery);
+      CRM_Core_DAO::reenableFullGroupByMode();
       // If this is less than our limit by the end of the iteration we do not need to run the query again to
       // check if some remain.
       $rowsThisIteration = 0;
