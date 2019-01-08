@@ -661,7 +661,12 @@ class CRM_Report_Form_ActivityTag extends CRM_Report_Form {
   function postProcess( ) {
     // get the acl clauses built before we assemble the query
     $this->buildACLClause( $this->_aliases['civicrm_contact'] );
+
+    CRM_Core_DAO::disableFullGroupByMode();
+
     parent::postProcess();
+
+    CRM_Core_DAO::reenableFullGroupByMode();
   }
     
   function alterDisplay( &$rows ) {
