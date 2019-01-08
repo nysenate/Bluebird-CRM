@@ -183,6 +183,10 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
         ),
       ),
     );
+
+    //NYSS 12305 include group clause
+    $this->_aliases['civicrm_contact'] = 'modified_contact_civireport';
+    $this->buildGroupFilter();//NYSS
   }
 
   /**
