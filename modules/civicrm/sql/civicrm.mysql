@@ -1,7 +1,7 @@
 -- +--------------------------------------------------------------------+
 -- | CiviCRM version 5                                                  |
 -- +--------------------------------------------------------------------+
--- | Copyright CiviCRM LLC (c) 2004-2018                                |
+-- | Copyright CiviCRM LLC (c) 2004-2019                                |
 -- +--------------------------------------------------------------------+
 -- | This file is a part of CiviCRM.                                    |
 -- |                                                                    |
@@ -30,7 +30,7 @@
 -- +--------------------------------------------------------------------+
 -- | CiviCRM version 5                                                  |
 -- +--------------------------------------------------------------------+
--- | Copyright CiviCRM LLC (c) 2004-2018                                |
+-- | Copyright CiviCRM LLC (c) 2004-2019                                |
 -- +--------------------------------------------------------------------+
 -- | This file is a part of CiviCRM.                                    |
 -- |                                                                    |
@@ -3436,7 +3436,7 @@ CREATE TABLE `civicrm_entity_file` (
         entity_table
       , entity_id
   )
-  ,     INDEX `index_entity_file_id`(
+  ,     UNIQUE INDEX `UI_entity_table_entity_id_file_id`(
         entity_table
       , entity_id
       , file_id

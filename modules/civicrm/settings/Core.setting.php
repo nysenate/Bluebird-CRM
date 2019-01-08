@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2019                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2019
  */
 
 /**
@@ -220,6 +220,7 @@ return array(
     'title' => ts('Wysiwig Editor'),
     'pseudoconstant' => array(
       'optionGroupName' => 'wysiwyg_editor',
+      'keyColumn' => 'name',
     ),
     'is_domain' => 1,
     'is_contact' => 0,

@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2019                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2019
  * $Id$
  *
  */
@@ -189,7 +189,7 @@ return array(
     'title' => ts('Enable multiple bulk email address for a contact.'),
     'is_domain' => 1,
     'is_contact' => 0,
-    'description' => ts('CiviMail will deliver a copy of the email to each bulk email listed for the contact.'),
+    'description' => ts('CiviMail will deliver a copy of the email to each bulk email listed for the contact. Enabling this setting will also change the options for the "Email on Hold" field in Advanced Search.'),
     'help_text' => NULL,
   ),
   'include_message_id' => array(

@@ -336,12 +336,13 @@ class CRM_Core_CodeGen_Specification {
         break;
 
       default:
-        $field['sqlType'] = $field['phpType'] = $type;
+        $field['phpType'] = $this->value('phpType', $fieldXML, $type);
+        $field['sqlType'] = $type;
         if ($type == 'int unsigned') {
           $field['crmType'] = 'CRM_Utils_Type::T_INT';
         }
         else {
-          $field['crmType'] = 'CRM_Utils_Type::T_' . strtoupper($type);
+          $field['crmType'] = $this->value('crmType', $fieldXML, 'CRM_Utils_Type::T_' . strtoupper($type));
         }
         break;
     }
@@ -402,7 +403,9 @@ class CRM_Core_CodeGen_Specification {
         $field['widget']['required'] = $this->value('required', $fieldXML);
       }
     }
-
+    if (isset($fieldXML->localize_context)) {
+      $field['localize_context'] = $fieldXML->localize_context;
+    }
     $field['pseudoconstant'] = $this->value('pseudoconstant', $fieldXML);
     if (!empty($field['pseudoconstant'])) {
       //ok this is a bit long-winded but it gets there & is consistent with above approach

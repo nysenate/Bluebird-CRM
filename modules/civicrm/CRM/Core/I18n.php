@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2018                                |
+ | Copyright CiviCRM LLC (c) 2004-2019                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2018
+ * @copyright CiviCRM LLC (c) 2004-2019
  */
 class CRM_Core_I18n {
 
@@ -649,6 +649,9 @@ class CRM_Core_I18n {
     global $dbLocale;
     $dbLocale = "_{$locale}";
 
+    // For self::getLocale()
+    global $tsLocale;
+    $tsLocale = $locale;
   }
 
   /**
@@ -657,14 +660,15 @@ class CRM_Core_I18n {
    * @return CRM_Core_I18n
    */
   public static function &singleton() {
-    static $singleton = array();
-
+    if (!isset(Civi::$statics[__CLASS__]['singleton'])) {
+      Civi::$statics[__CLASS__]['singleton'] = array();
+    }
     $tsLocale = CRM_Core_I18n::getLocale();
-    if (!isset($singleton[$tsLocale])) {
-      $singleton[$tsLocale] = new CRM_Core_I18n($tsLocale);
+    if (!isset(Civi::$statics[__CLASS__]['singleton'][$tsLocale])) {
+      Civi::$statics[__CLASS__]['singleton'][$tsLocale] = new CRM_Core_I18n($tsLocale);
     }
 
-    return $singleton[$tsLocale];
+    return Civi::$statics[__CLASS__]['singleton'][$tsLocale];
   }
 
   /**

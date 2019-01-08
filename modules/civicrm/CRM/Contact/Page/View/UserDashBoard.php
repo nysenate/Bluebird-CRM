@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2018                                |
+ | Copyright CiviCRM LLC (c) 2004-2019                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2018
+ * @copyright CiviCRM LLC (c) 2004-2019
  */
 
 /**
@@ -69,9 +69,9 @@ class CRM_Contact_Page_View_UserDashBoard extends CRM_Core_Page {
     $session = CRM_Core_Session::singleton();
     $userID = $session->get('userID');
 
-    $userChecksum = CRM_Utils_Request::retrieve('cs', 'String', $this);
+    $userChecksum = $this->getUserChecksum();
     $validUser = FALSE;
-    if (empty($userID) && $this->_contactId && $userChecksum) {
+    if ($userChecksum) {
       $this->assign('userChecksum', $userChecksum);
       $validUser = CRM_Contact_BAO_Contact_Utils::validChecksum($this->_contactId, $userChecksum);
       $this->_isChecksumUser = $validUser;
@@ -254,6 +254,19 @@ class CRM_Contact_Page_View_UserDashBoard extends CRM_Core_Page {
       self::$_links
     );
     return self::$_links;
+  }
+
+  /**
+   * Get the user checksum from the url to use in links.
+   *
+   * @return string
+   */
+  protected function getUserChecksum() {
+    $userChecksum = CRM_Utils_Request::retrieve('cs', 'String', $this);
+    if (empty($userID) && $this->_contactId) {
+      return $userChecksum;
+    }
+    return FALSE;
   }
 
 }

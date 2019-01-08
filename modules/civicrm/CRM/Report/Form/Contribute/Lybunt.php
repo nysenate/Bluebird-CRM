@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2018                                |
+ | Copyright CiviCRM LLC (c) 2004-2019                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2018
+ * @copyright CiviCRM LLC (c) 2004-2019
  */
 class CRM_Report_Form_Contribute_Lybunt extends CRM_Report_Form {
 
@@ -364,9 +364,7 @@ class CRM_Report_Form_Contribute_Lybunt extends CRM_Report_Form {
       $this->_from .= " ON {$this->_aliases['civicrm_contribution']}.contact_id = {$this->_aliases['civicrm_contact']}.id
          AND {$this->_aliases['civicrm_contribution']}.is_test = 0
          AND " . $this->whereClauseLastYear("{$this->_aliases['civicrm_contribution']}.receive_date") . "
-       {$this->_aclFrom}
-       LEFT JOIN civicrm_contribution cont_exclude ON cont_exclude.contact_id = {$this->_aliases['civicrm_contact']}.id
-         AND " . $this->whereClauseThisYear('cont_exclude.receive_date');
+       {$this->_aclFrom} ";
       $this->selectivelyAddLocationTablesJoinsToFilterQuery();
     }
 
@@ -399,7 +397,11 @@ class CRM_Report_Form_Contribute_Lybunt extends CRM_Report_Form {
     if ($field['name'] == 'receive_date') {
       $clause = 1;
       if (empty($this->contactTempTable)) {
-        $this->_whereClauses[] = "cont_exclude.id IS NULL";
+        $clause = "{$this->_aliases['civicrm_contact']}.id NOT IN (
+          SELECT cont_exclude.contact_id
+          FROM civicrm_contribution cont_exclude
+          WHERE " . $this->whereClauseThisYear('cont_exclude.receive_date')
+        . ")";
       }
     }
     // Group filtering is already done so skip.
@@ -567,13 +569,12 @@ class CRM_Report_Form_Contribute_Lybunt extends CRM_Report_Form {
     // @todo this acl has no test coverage and is very hard to test manually so could be fragile.
     $this->resetFormSqlAndWhereHavingClauses();
 
-    $this->contactTempTable = CRM_Utils_SQL_TempTable::build()->setCategory('rptlybunt')->setId(date('Ymd_') . uniqid())->getName();
+    $this->contactTempTable = $this->createTemporaryTable('rptlybunt', "
+      SELECT SQL_CALC_FOUND_ROWS {$this->_aliases['civicrm_contact']}.id as cid {$this->_from}
+      {$this->_where}
+      GROUP BY {$this->_aliases['civicrm_contact']}.id"
+    );
     $this->limit();
-    $getContacts = "
-      CREATE TEMPORARY TABLE $this->contactTempTable {$this->_databaseAttributes}
-      SELECT SQL_CALC_FOUND_ROWS {$this->_aliases['civicrm_contact']}.id as cid {$this->_from} {$this->_where}
-      GROUP BY {$this->_aliases['civicrm_contact']}.id";
-    $this->executeReportQuery($getContacts);
     if (empty($this->_params['charts'])) {
       $this->setPager();
     }

@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2018                                |
+ | Copyright CiviCRM LLC (c) 2004-2019                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -734,6 +734,7 @@ abstract class CRM_Core_Payment {
             'rule_parameters' => TRUE,
           ),
         ),
+        'extra' => ['class' => 'crm-form-select'],
       ),
       'credit_card_type' => array(
         'htmlType' => 'select',

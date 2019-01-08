@@ -3,7 +3,7 @@
   +--------------------------------------------------------------------+
   | CiviCRM version 5                                                  |
   +--------------------------------------------------------------------+
-  | Copyright CiviCRM LLC (c) 2004-2018                                |
+  | Copyright CiviCRM LLC (c) 2004-2019                                |
   +--------------------------------------------------------------------+
   | This file is a part of CiviCRM.                                    |
   |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2018
+ * @copyright CiviCRM LLC (c) 2004-2019
  */
 
 /**
@@ -439,6 +439,23 @@ class CRM_Utils_Date {
   }
 
   /**
+   * Wrapper for customFormat that takes a timestamp
+   *
+   * @param int $timestamp
+   *   Date and time in timestamp format.
+   * @param string $format
+   *   The output format.
+   * @param array $dateParts
+   *   An array with the desired date parts.
+   *
+   * @return string
+   *   the $format-formatted $date
+   */
+  public static function customFormatTs($timestamp, $format = NULL, $dateParts = NULL) {
+    return CRM_Utils_Date::customFormat(date("Y-m-d H:i:s", $timestamp), $format, $dateParts);
+  }
+
+  /**
    * Converts the date/datetime from MySQL format to ISO format
    *
    * @param string $mysql
@@ -771,7 +788,7 @@ class CRM_Utils_Date {
       $now = self::isoToMysql($now);
     }
 
-    return ($mysqlDate >= $now) ? FALSE : TRUE;
+    return (strtotime($mysqlDate) >= strtotime($now)) ? FALSE : TRUE;
   }
 
   /**
