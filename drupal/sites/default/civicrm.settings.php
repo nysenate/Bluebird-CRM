@@ -92,7 +92,6 @@ $civicrm_setting['CiviCRM Preferences']['maxFileSize'] = 12; //9842
 $civicrm_setting['CiviCRM Preferences']['communityMessagesUrl'] = false;
 $civicrm_setting['CiviCRM Preferences']['empoweredBy'] = false;
 $civicrm_setting['CiviCRM Preferences']['syncCMSEmail'] = false;
-$civicrm_setting['CiviCRM Preferences']['communityMessagesUrl'] = false;
 $civicrm_setting['CiviCRM Preferences']['remote_profile_submissions'] = false;
 $civicrm_setting['CiviCRM Preferences']['recentItemsMaxCount'] = 10;
 $civicrm_setting['CiviCRM Preferences']['smart_group_cache_refresh_mode'] = 'deterministic';
