@@ -1042,14 +1042,28 @@ function _buildAdminMenu($nyssBaseID) {
       ),
       $nyssBaseID+3 => array(
         'attributes' => array(
-          'label' => 'NYSS System Status',
-          'name' => 'NYSS System Status',
+          'label' => 'CiviCRM System Status',
+          'name' => 'CiviCRM System Status',
           'url' => 'civicrm/a/#/status',
           'permission' => 'view debug output',
           'operator' => 'OR',
           'separator' => 0,
           'parentID' => $nyssBaseID,
           'navID' => $nyssBaseID+3,
+          'active' => 1
+        ),
+        'child' => array(),
+      ),
+      $nyssBaseID+4 => array(
+        'attributes' => array(
+          'label' => 'Manage Extensions',
+          'name' => 'Manage Extensions',
+          'url' => 'civicrm/admin/extensions?reset=1',
+          'permission' => 'view debug output',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $nyssBaseID,
+          'navID' => $nyssBaseID+4,
           'active' => 1
         ),
         'child' => array(),
