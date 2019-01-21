@@ -5,8 +5,8 @@
     ENTER_KEY = 13,
     saved = true,
     newTutorial = {},
-    templatesLoaded,
-    resourceSuffix,
+    resourcesLoaded,
+    supportMenuName,
     templates = {
       admin_main_tpl: null,
       admin_step_tpl: null
@@ -19,17 +19,26 @@
       icon: null
     };
 
-  $('body')
-    .on('click', '.menu-item a[href$="#tutorial-start"]', close)
-    .on('click', '.menu-item a[href$="#tutorial-edit"], .menu-item a[href$="#tutorial-add"]', function(e) {
-      e.preventDefault();
-      editTour($(this).data('tutorial'));
-    });
-
+  $(document).on('crmLoad', '#civicrm-menu', function() {
+    supportMenuName = CRM.menubar.getItem('Support') ? 'Support' : (CRM.menubar.getItem('Help') ? 'Help' : 'Home');
+    $('#civicrm-menu')
+      .on('click', 'a[href="#tutorial-view"]', close)
+      .on('click', 'a[href="#tutorial-edit"],a[href="#tutorial-add"]', function(e) {
+        e.preventDefault();
+        editTour($(this).parent().data('name').split(':')[1]);
+      });
+    CRM.menubar.addItems(-1, supportMenuName, [{
+      label: ts('Create new tutorial'),
+      name: 'tutorial_add',
+      url: '#tutorial-add',
+      icon: 'crm-i fa-plus-circle',
+      separator: 'top'
+    }]);
+  });
 
   function setDefaults(id) {
     currentStep = 0;
-    tutorial = CRM.vars.tutorial.items && CRM.vars.tutorial.items[id] || newTutorial;
+    tutorial = id && CRM.vars.tutorial.items && CRM.vars.tutorial.items[id] || newTutorial;
     var defaults = {
       id: null,
       title: ts('Learn about this screen'),
@@ -109,7 +118,7 @@
   }
 
   function close() {
-    $('#civitutorial-admin, #civitutorial-overlay, #tutorial-admin-css').remove();
+    $('#civitutorial-admin, #civitutorial-overlay').remove();
     $('body').removeClass('civitutorial-admin-open');
   }
 
@@ -121,7 +130,7 @@
         id: 'admin-unsaved',
         steps: [
           {
-            target: $('.menumain a[href$="#tutorial-start"]').closest('.menumain')[0],
+            target: '#civicrm-menu li[data-name="' + supportMenuName + '"]',
             placement: 'bottom',
             nextOnTargetClick: true,
             title: ts('Unsaved Changes.'),
@@ -129,7 +138,7 @@
           }
         ],
         i18n: {
-          doneBtn: ts('Close'),
+          doneBtn: ts('Ok'),
           stepNums: ['<i class="crm-i fa-info"></i>']
         }
       });
@@ -148,10 +157,32 @@
     if (!tutorial.id && saved.id) {
       tutorial.id = saved.id;
       newTutorial = {};
-      CRM.vars.tutorial.items = CRM.vars.tutorial.items || {};
+      CRM.menubar.addItems(-2 - CRM.vars.tutorial.menuItems.length, supportMenuName,[{
+        label: tutorial.title,
+        name: 'tutorial_view:' + saved.id,
+        url: '#tutorial-view',
+        icon: 'crm-i fa-play',
+        separator: CRM.vars.tutorial.menuItems.length ? null: 'top'
+      }]);
+      CRM.menubar.addItems(-2, supportMenuName, [{
+        label: ts('Edit %1', {1: tutorial.title}),
+        name: 'tutorial_edit:' + saved.id,
+        url: '#tutorial-edit',
+        icon: 'crm-i fa-pencil-square',
+        separator: CRM.vars.tutorial.menuItems.length ? null : 'top'
+      }]);
       CRM.vars.tutorial.items[saved.id] = tutorial;
+      CRM.vars.tutorial.menuItems.push(saved.id);
+    } else if (saved.id) {
+      CRM.menubar.updateItem({
+        label: tutorial.title,
+        name: 'tutorial_view:' + saved.id
+      });
+      CRM.menubar.updateItem({
+        label: ts('Edit %1', {1: tutorial.title}),
+        name: 'tutorial_edit:' + saved.id
+      });
     }
-    CRM.vars.tutorial.insertIntoMenu(tutorial, saved.id);
   }
 
   function deleteTutorial() {
@@ -172,7 +203,9 @@
         });
       } else {
         delete CRM.vars.tutorial.items[params.id];
-        $('.menu-item a[data-tutorial="' + params.id + '"]').removeAttr('data-tutorial').off('click').closest('li').hide();
+        _.pull(CRM.vars.tutorial.menuItems, params.id);
+        CRM.menubar.removeItem('tutorial_view:' + params.id);
+        CRM.menubar.removeItem('tutorial_edit:' + params.id);
         CRM.api3('Tutorial', 'delete', params, true);
       }
     });
@@ -297,29 +330,35 @@
 
   function renderStep(step, num) {
     $('#civitutorial-steps')
-      .append(templates.admin_step_tpl(_.extend({num: num+1, ts: ts}, stepDefaults, step)))
+      .append(templates.admin_step_tpl(_.extend({num: num+1}, stepDefaults, step)))
       .find('.crm-icon-picker').not('.iconpicker-widget').crmIconPicker();
   }
 
-  function loadTemplates() {
-    if (!templatesLoaded) {
-      templatesLoaded = $.Deferred();
+  function loadResources() {
+    if (!resourcesLoaded) {
+      var cssLoaded = $.Deferred(),
+        requests = [
+          cssLoaded,
+          $().crmIconPicker ? $.Deferred().resolve() : CRM.loadScript(CRM.config.resourceBase + 'js/jquery/jquery.crmIconPicker.js')
+        ],
+        cssFile = document.createElement('link');
+      cssFile.type = 'text/css';
+      cssFile.rel = 'stylesheet';
+      cssFile.onload = cssLoaded.resolve;
+      cssFile.href = CRM.vars.tutorial.basePath + 'css/tutorial-admin.css?' + CRM.config.resourceCacheCode;
       $.each(templates, function(file) {
-        $.get(CRM.vars.tutorial.basePath + 'html/' + file + '.html?' + resourceSuffix)
-          .done(function (html) {
-            templates[file] = _.template(html);
-            if (_.min(templates) !== null) {
-              templatesLoaded.resolve();
-            }
+        var request = $.Deferred();
+        requests.push(request);
+        $.get(CRM.vars.tutorial.basePath + 'html/' + file + '.html?' + CRM.config.resourceCacheCode)
+          .done(function(html) {
+            templates[file] = _.template(html, {imports: {ts: ts}});
+            request.resolve();
           });
       });
+      $('body')[0].appendChild(cssFile);
+      resourcesLoaded = $.when.apply($, requests);
     }
-    return templatesLoaded;
-  }
-
-  function setResourceSuffix() {
-    var src = (CRM.$('script[src*="civicrm/ajax/l10n-js"]').attr('src') || '').match(/r=\w{5}/);
-    resourceSuffix = (src && src[0]) || ('r=' + Math.random().toString(36).substring(2, 7));
+    return resourcesLoaded;
   }
 
   function editTour(id) {
@@ -327,11 +366,10 @@
     hopscotch.endTour();
     $('body').append('<form id="civitutorial-admin" class="crm-container"></form><div id="civitutorial-overlay"></div>');
     setDefaults(id);
-    setResourceSuffix();
-    loadTemplates().done(function() {
+    loadResources().done(function() {
       $('#civitutorial-admin')
         .css('padding-top', '' + ($('#civicrm-menu').height() + 12) + 'px')
-        .html(templates.admin_main_tpl(_.extend({ts: ts}, tutorial)))
+        .html(templates.admin_main_tpl(tutorial))
         .submit(save);
       $('#civitutorial-admin-close').click(cancel);
       $('#civitutorial-admin-delete').click(deleteTutorial);
@@ -341,12 +379,12 @@
         api: {id_field: 'name', params: {is_hidden: 0, is_active: 1}},
         select: {placeholder: ts('Groups'), multiple: true, allowClear: true, minimumInputLength: 0}
       });
-      $('input[id^="civitutorial-field"]').change(function () {
+      $('input[id^="civitutorial-field"]').change(function() {
         updateFieldVal($(this), tutorial);
       });
       _.each(tutorial.steps, renderStep);
       $('#civitutorial-steps')
-        .on('change input', ':input[name], [contenteditable]', function () {
+        .on('change input', ':input[name], [contenteditable]', function() {
           var name = $(this).attr('name'),
             index = $(this).closest('.civitutorial-step').index();
           if (index === currentStep && (name === 'title' || name === 'content')) {
@@ -355,7 +393,7 @@
           updateFieldVal($(this), tutorial.steps[index]);
         })
         .on('change', '[name=icon]', updateIcon)
-        .on('keydown', '[contenteditable]', function (e) {
+        .on('keydown', '[contenteditable]', function(e) {
           if (e.which === ENTER_KEY) {
             e.preventDefault();
             $(this).blur();
@@ -364,7 +402,7 @@
         .on('click focus', '[name=target]', selectTarget)
         .on('keydown', '[name=target]', doneSelecting)
         .on('click', '.civitutorial-step-remove', deleteStep)
-        .on('accordionbeforeactivate', function (e, ui) {
+        .on('accordionbeforeactivate', function(e, ui) {
           currentStep = $(ui.newHeader).closest('.civitutorial-step').index();
           openPreview();
         })
@@ -379,17 +417,8 @@
           icons: false,
           header: '.civitutorial-step-title'
         }).find('h5').off('keydown');
-    });
-    // Set body class after stylesheet loads to trigger css animation
-    var cssFile = document.createElement('link');
-    cssFile.type = 'text/css';
-    cssFile.rel = 'stylesheet';
-    cssFile.id = 'tutorial-admin-css';
-    cssFile.onload = function() {
       $('body').addClass('civitutorial-admin-open');
-    };
-    cssFile.href = CRM.vars.tutorial.basePath + 'css/tutorial-admin.css?' + resourceSuffix;
-    $('body')[0].appendChild(cssFile);
+    });
     openPreview();
   }
 

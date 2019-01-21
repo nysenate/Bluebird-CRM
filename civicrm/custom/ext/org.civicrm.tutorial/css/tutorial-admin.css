@@ -15,12 +15,12 @@
 
 body.civitutorial-admin-open {
   margin-right: 350px;
-  transition: 0.5s;
+  transition: margin-right 0.5s;
 }
 
 body.civitutorial-admin-open #civitutorial-admin {
   right: 0;
-  transition: 0.5s;
+  transition: right 0.5s;
 }
 body.civitutorial-admin-open .hopscotch-bubble {
   z-index: 598;
@@ -81,11 +81,11 @@ button#civitutorial-admin-delete {
 
 #civitutorial-admin-top label {
   display: inline-block;
-  min-width: 45px;
+  min-width: 50px;
 }
 
 #civitutorial-admin-top .description {
-  margin-left: 50px;
+  margin-left: 53px;
 }
 
 #civitutorial-admin .ui-widget-content,
