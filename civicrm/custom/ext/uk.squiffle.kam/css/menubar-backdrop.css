@@ -1,0 +1,32 @@
+@media (min-width: 768px) {
+
+  body.crm-menubar-visible.crm-menubar-over-cms-menu {
+    border-top: 0 none !important;
+    margin-top: 40px;
+  }
+  body.crm-menubar-visible.crm-menubar-over-cms-menu.crm-menubar-wrapped {
+    margin-top: 80px;
+  }
+  body.crm-menubar-visible.crm-menubar-over-cms-menu #admin-bar {
+    visibility: hidden;
+  }
+
+  body.crm-menubar-visible.crm-menubar-below-cms-menu {
+    padding-top: 37px;
+  }
+  body.crm-menubar-visible.crm-menubar-below-cms-menu.crm-menubar-wrapped {
+    padding-top: 77px;
+  }
+  .admin-bar body.crm-menubar-below-cms-menu #civicrm-menu {
+    position: absolute;
+  }
+
+}
+@media (max-width: 768px) {
+
+  body #civicrm-menu-nav .crm-menubar-toggle-btn {
+    margin-top: 0;
+    top: 33px;
+  }
+
+}
