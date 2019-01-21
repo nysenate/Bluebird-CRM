@@ -1040,6 +1040,20 @@ function _buildAdminMenu($nyssBaseID) {
         ),
         'child' => array(),
       ),
+      $nyssBaseID+3 => array(
+        'attributes' => array(
+          'label' => 'NYSS System Status',
+          'name' => 'NYSS System Status',
+          'url' => 'civicrm/a/#/status',
+          'permission' => 'view debug output',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $nyssBaseID,
+          'navID' => $nyssBaseID+3,
+          'active' => 1
+        ),
+        'child' => array(),
+      ),
     ),
   );
 
