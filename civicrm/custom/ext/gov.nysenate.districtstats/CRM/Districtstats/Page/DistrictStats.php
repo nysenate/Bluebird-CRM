@@ -1,58 +1,16 @@
 <?php
+use CRM_Districtstats_ExtensionUtil as E;
 
-/*
- +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
- |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
- +--------------------------------------------------------------------+
-*/
+class CRM_Districtstats_Page_DistrictStats extends CRM_Core_Page {
 
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
- * $Id$
- *
- */
+  //7447
+  public function run() {
+    CRM_Core_Resources::singleton()->addStyleFile(E::LONG_NAME, 'css/DistrictStats.css');
 
-/**
- * Main page for activity dashlet
- *
- */
-class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page 
-{
-  /**
-   * Assemble database stats
-   *
-   * @return none
-   *
-   * @access public
-   */
-  function run( ) {
-    //7447
-    $breadCrumb = drupal_get_breadcrumb();
-    $breadCrumb[2] = '<a href="/civicrm?reset=1">Bluebird Home</a>';
-    drupal_set_breadcrumb($breadCrumb);
-        
+    if (CRM_Utils_Request::retrieve('snippet', 'Positive') == 2) {
+      CRM_Core_Resources::singleton()->addStyleFile(E::LONG_NAME, 'css/DistrictStatsPrint.css');
+    }
+
     //contact counts by type
     $allContacts  = 0;
     $contactTypes = array();
@@ -77,7 +35,7 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
     ";
     $trashed = CRM_Core_DAO::singleValueQuery( $sql_trashed );
     $contactTypes['Trashed Contacts'] = $trashed;
-    
+
     //deceased contacts
     $sql_trashed = "
       SELECT COUNT(*) AS deceased_count
@@ -85,9 +43,9 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
       WHERE is_deleted != 1 AND is_deceased = 1;
     ";
     $contactTypes['Deceased Contacts'] = CRM_Core_DAO::singleValueQuery( $sql_trashed );
-    
+
     $this->assign('contactTypes', $contactTypes);
-    
+
     //get gender counts
     $sql_genders = "
       SELECT gender_id, COUNT(*) AS gender_count
@@ -103,7 +61,7 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
 
     //email counts
     $emailCounts = array();
-    
+
     //get contacts with emails
     $sql_emails = "
       SELECT COUNT( c.id ) AS email_count
@@ -116,7 +74,7 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
         AND email != '';
     ";
     $emailsPri = CRM_Core_DAO::singleValueQuery( $sql_emails );
-    
+
     //contacts with bulk, non-primary emails
     $sql_emailsBulk = "
       SELECT COUNT( c.id ) AS emailBulk_count
@@ -130,11 +88,11 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
         AND email != '';
     ";
     $emailsBulk = CRM_Core_DAO::singleValueQuery( $sql_emailsBulk );
-    
+
     $emailCounts['Primary-Only Emails'] = $emailsPri - $emailsBulk;
-    
+
     $emailCounts['Alternate Bulk Emails'] = $emailsBulk;
-    
+
     $emailCounts['Total Contacts with Emails'] = $emailsPri;
 
     //pri or bulk on_hold
@@ -151,7 +109,7 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
       WHERE is_deleted != 1;
     ";
     $emailCounts['Primary/Bulk On Hold'] = CRM_Core_DAO::singleValueQuery( $sql_emailsOH );
-    
+
     //do not email
     $sql_emailsDNE = "
       SELECT COUNT( c.id ) AS emailDNE_count
@@ -322,7 +280,7 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
       $contactSD[$dao->ny_senate_district_47] = $dao->sd_count;
     }
     $this->assign('contactSD', $contactSD);
-    
+
     //get contact counts by Assembly District
     $sql_ad = "
       SELECT COUNT( civicrm_contact.id ) as ad_count, ny_assembly_district_48
@@ -342,7 +300,7 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
       $contactAD[$dao->ny_assembly_district_48] = $dao->ad_count;
     }
     $this->assign('contactAD', $contactAD);
-    
+
     //get contact counts by Election District
     $sql_ed = "
       SELECT COUNT( civicrm_contact.id ) as ed_count, election_district_49
@@ -363,7 +321,7 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
     }
     $this->assign('contactED', $contactED);
     //CRM_Core_Error::debug($contactAD);
-    
+
     //contact counts by Town/Assembly District/Election District
     $sql_townaded = "
       SELECT COUNT( civicrm_contact.id ) as townaded_count, town_52, ny_assembly_district_48, election_district_49
@@ -453,7 +411,7 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
       $contactTown[$dao->town_52] = $dao->town_count;
     }
     $this->assign('contactTown', $contactTown);
-    
+
     //get contact counts by Wards
     $sql_ward = "
       SELECT COUNT( civicrm_contact.id ) as ward_count, ward_53
@@ -495,7 +453,7 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
       $contactSC["{$dao->DistrictName} [{$dao->sc_id}]"] = $dao->sc_count;
     }
     $this->assign('contactSC', $contactSC);
-    
+
     //get contact counts by Zip code
     $sql_zp = "
       SELECT COUNT( civicrm_contact.id ) as zip_count, postal_code
@@ -513,7 +471,7 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
       $contactZip[$dao->postal_code] = $dao->zip_count;
     }
     $this->assign('contactZip', $contactZip);
-        
+
     //get contact issue codes
     $sql_ic = "
       SELECT civicrm_tag.name, COUNT( civicrm_entity_tag.id ) as ic_count
@@ -556,7 +514,7 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
       $keywords[$dao->name] = $dao->kword_count;
     }
     $this->assign('keywords', $keywords);
-    
+
     //get activity keywords
     $sql_akword = "
       SELECT civicrm_tag.name, COUNT( civicrm_entity_tag.id ) as akword_count
@@ -577,7 +535,7 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
       $akeywords[$dao->name] = $dao->akword_count;
     }
     $this->assign('akeywords', $akeywords);
-    
+
     //get case keywords
     $sql_ckword = "
       SELECT civicrm_tag.name, COUNT( civicrm_entity_tag.id ) as ckword_count
@@ -598,7 +556,7 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
       $ckeywords[$dao->name] = $dao->ckword_count;
     }
     $this->assign('ckeywords', $ckeywords);
-    
+
     //get contact positions
     $sql_pos = "
       SELECT civicrm_tag.name, COUNT( civicrm_entity_tag.id ) as pos_count

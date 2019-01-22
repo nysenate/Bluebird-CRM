@@ -1,0 +1,20 @@
+#districts table {
+  table-layout: fixed;
+}
+#districts th {
+  width: 75px;
+  overflow: hidden;
+}
+#districts .IssueCodes th,
+#districts .Keywords th,
+#districts .Positions th,
+#districts .Counties th,
+#districts .Towns th,
+#districts .Wards th,
+#districts .Schools th,
+#districts .Zip th {
+  width: 150px;
+}
+#districts table {
+  width: 100%;
+}

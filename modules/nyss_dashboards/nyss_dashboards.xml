@@ -22,11 +22,6 @@
     <page_callback>CRM_Dashlet_Page_AllCases</page_callback>
     <access_arguments>access all cases and activities</access_arguments>
   </item>
-  <item>
-    <path>civicrm/dashlet/districtstats</path>
-    <title>District Stats</title>
-    <page_callback>CRM_Dashlet_Page_DistrictStats</page_callback>
-  </item> 
 
   <!--add so we override core perm and allow create mailings to access-->
   <item> 
