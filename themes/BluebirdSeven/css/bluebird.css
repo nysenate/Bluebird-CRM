@@ -23,10 +23,7 @@ body.page-civicrm.admin-menu.adminimal-menu:before {
 }
 
 ul#civicrm-menu {
-  background: white url(../images/bluebirds.png) no-repeat scroll 98% bottom;
-}
-ul#civicrm-menu li {
-  padding: 10px 0;
+  background: white url(../images/bluebirds_55x26.png) no-repeat scroll 98% bottom;
 }
 
 .page-civicrm-contact-view .crm-actions-ribbon {
@@ -34,7 +31,6 @@ ul#civicrm-menu li {
 }
 .page-civicrm #branding {
   position: fixed;
-  top: 60px;
   z-index: 1;
   width: 100%;
 }
@@ -42,7 +38,7 @@ ul#civicrm-menu li {
   margin-top: 90px;
 }
 .page-civicrm div#printer-friendly {
-  top: 106px !important;
+  top: 90px !important;
   right: 15px !important;
   z-index: 50;
   position: fixed !important;
@@ -58,7 +54,7 @@ ul#civicrm-menu li {
   display: none;
 }
 .page-civicrm.page-civicrm-contact-view #page {
-  margin-top: 114px;
+  margin-top: 64px;
 }
 
 /*contact summary + tabs*/
