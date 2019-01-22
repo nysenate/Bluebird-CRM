@@ -11,6 +11,10 @@ class CRM_Districtstats_Page_DistrictStats extends CRM_Core_Page {
       CRM_Core_Resources::singleton()->addStyleFile(E::LONG_NAME, 'css/DistrictStatsPrint.css');
     }
 
+    //set base advanced search url
+    $baseUrl = CRM_Utils_System::url('civicrm/contact/search/advanced', 'reset=1&force=1&context=districtstats');
+    $this->assign('baseUrl', $baseUrl);
+
     //contact counts by type
     $allContacts  = 0;
     $contactTypes = array();

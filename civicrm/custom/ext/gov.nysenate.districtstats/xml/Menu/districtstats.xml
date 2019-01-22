@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <menu>
   <item>
-    <path>civicrm/dashlet/districts</path>
+    <path>civicrm/districtstats</path>
     <page_callback>CRM_Districtstats_Page_DistrictStats</page_callback>
-    <title>DistrictStats</title>
-    <access_arguments>access CiviCRM</access_arguments>
+    <title>District Stats</title>
+    <access_arguments>access CiviReport</access_arguments>
   </item>
 </menu>

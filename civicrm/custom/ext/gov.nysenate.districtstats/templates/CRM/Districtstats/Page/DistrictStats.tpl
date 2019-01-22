@@ -1,14 +1,19 @@
 <div class="crm-block crm-content-block">
-  <div class="crm-section">
   <div id="ContactTypes">
     <h3>Contact Counts</h3>
     <table>
-      <tr>{foreach from=$contactTypes key=type item=tcount}<th>{$type}</th>{/foreach}
+      <tr>
+        {foreach from=$contactTypes key=type item=tcount}
+          <th>{$type}</th>
+        {/foreach}
         <th>Male</th>
         <th>Female</th>
         <th>Other Gender</th>
       </tr>
-      <tr>{foreach from=$contactTypes key=type item=tcount}<td>{$tcount}</td>{/foreach}
+      <tr>
+        {foreach from=$contactTypes key=type item=tcount}
+          <td><a href="{$baseUrl}&contact_type={$type}">{$tcount}</a></td>
+        {/foreach}
         <td>{$contactGenders.2}</td>
         <td>{$contactGenders.1}</td>
         <td>{$contactGenders.4}</td>
@@ -231,5 +236,4 @@
 
     </tr> <!--end districts-->
   </table>
-  </div>
 </div>

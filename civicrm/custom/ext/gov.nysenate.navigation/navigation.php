@@ -267,7 +267,7 @@ function _buildReportsMenu($navID, $reportNav) {
         'attributes' => array(
           'label' => 'District Stats',
           'name' => 'District Stats',
-          'url' => 'civicrm/dashlet/districtstats',
+          'url' => 'civicrm/districtstats',
           'permission' => 'access CiviReport',
           'operator' => 'AND',
           'separator' => 0,

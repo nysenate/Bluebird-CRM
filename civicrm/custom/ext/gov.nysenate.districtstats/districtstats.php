@@ -134,30 +134,25 @@ function districtstats_civicrm_entityTypes(&$entityTypes) {
   _districtstats_civix_civicrm_entityTypes($entityTypes);
 }
 
-// --- Functions below this ship commented out. Uncomment as required. ---
+function districtstats_civicrm_buildForm($formName, &$form) {
+  //Civi::log()->debug('districtstats_civicrm_buildForm', ['formName' => $formName, 'form' => $form]);
 
-/**
- * Implements hook_civicrm_preProcess().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_preProcess
- *
-function districtstats_civicrm_preProcess($formName, &$form) {
+  if ($formName == 'CRM_Contact_Form_Search_Advanced' &&
+    CRM_Utils_Request::retrieve('context', 'String') == 'districtstats'
+  ) {
+    //Civi::log()->debug('districtstats_civicrm_buildForm', ['$_GET' => $_GET]);
 
-} // */
+    $defaults = [];
+    $skip = ['reset', 'force', 'context', 'q', 'qfKey'];
+    foreach ($_GET as $f => $v) {
+      if (!in_array($f, $skip)) {
+        $defaults[$f] = $v;
+      }
+    }
 
-/**
- * Implements hook_civicrm_navigationMenu().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_navigationMenu
- *
-function districtstats_civicrm_navigationMenu(&$menu) {
-  _districtstats_civix_insert_navigation_menu($menu, 'Mailings', array(
-    'label' => E::ts('New subliminal message'),
-    'name' => 'mailing_subliminal_message',
-    'url' => 'civicrm/mailing/subliminal',
-    'permission' => 'access CiviMail',
-    'operator' => 'OR',
-    'separator' => 0,
-  ));
-  _districtstats_civix_navigationMenu($menu);
-} // */
+    //Civi::log()->debug('districtstats_civicrm_buildForm', ['$defaults' => $defaults]);
+    if (!empty($defaults)) {
+      //$form->setDefaults($defaults);
+    }
+  }
+}
