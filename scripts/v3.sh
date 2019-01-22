@@ -55,6 +55,7 @@ $drush $instance cvapi extension.install key=org.civicrm.angularprofiles --quiet
 $drush $instance cvapi extension.install key=org.civicrm.api4 --quiet
 $drush $instance cvapi extension.install key=org.civicrm.civicase --quiet
 $drush $instance cvapi extension.install key=org.civicrm.contactlayout --quiet
+$drush $instance cvapi extension.install key=org.civicrm.districtstats --quiet
 $drush $instance cvapi extension.install key=org.civicrm.doctorwhen --quiet
 $drush $instance cvapi extension.install key=org.civicrm.flexmailer --quiet
 $drush $instance cvapi extension.install key=org.civicrm.shoreditch --quiet
