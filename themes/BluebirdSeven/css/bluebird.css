@@ -21,9 +21,14 @@ body.page-civicrm.admin-menu.adminimal-menu:before {
   text-align: right;
   float: right;
 }
+
 ul#civicrm-menu {
   background: white url(../images/bluebirds.png) no-repeat scroll 98% bottom;
 }
+ul#civicrm-menu li {
+  padding: 10px 0;
+}
+
 .page-civicrm-contact-view .crm-actions-ribbon {
   padding: 10px !important;
 }

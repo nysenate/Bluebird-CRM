@@ -129,9 +129,8 @@ function navigation_civicrm_navigationMenu(&$params) {
   //CRM_Core_Error::debug_var('navigationMenu params',$params);
 
   //5260
-  //first find parents
-  $reportNavID = $adminNavID = '';
-  $reportNav = $adminNav = array();
+  //find report parents
+  $reportNav = array();
   foreach ($params as $navID => $navDetails) {
     //get reports menu so we can retain user-added items
     switch ($navDetails['attributes']['name']) {
@@ -144,6 +143,22 @@ function navigation_civicrm_navigationMenu(&$params) {
 
     unset($params[$navID]);
   }
+
+  $params[0] = array(
+    'attributes' => array(
+      'label' => '',
+      'name' => 'Home',
+      'url' => 'civicrm/dashboard?reset=1',
+      'icon' => 'fa-home crm-i',
+      'permission' => 'access CiviCRM',
+      'operator' => 'AND',
+      'separator' => 0,
+      'parentID' => null,
+      'navID' => 0,
+      'active' => 1
+    ),
+    'child' => array(),
+  );
 
   $params[1000] = _buildCreateMenu(1000);
 
@@ -170,15 +185,16 @@ function navigation_civicrm_navigationMenu(&$params) {
 
   $params[7000] = array(
     'attributes' => array(
-      'label'      => "<i class='nyss-i fa-sign-out'></i>",
-      'name'       => 'Log Out',
-      'url'        => 'civicrm/logout?reset=1',
+      'label' => '',
+      'name' => 'Log Out',
+      'url' => 'civicrm/logout?reset=1',
+      'icon' => 'fa-sign-out crm-i',
       'permission' => 'access CiviCRM',
-      'operator'   => 'AND',
-      'separator'  => 0,
-      'parentID'   => null,
-      'navID'      => 7000,
-      'active'     => 1
+      'operator' => 'AND',
+      'separator' => 0,
+      'parentID' => null,
+      'navID' => 7000,
+      'active' => 1
     ),
     'child' => array(),
   );
@@ -1147,48 +1163,6 @@ function _buildHelpMenu($nyssBaseID) {
           'navID' => $nyssBaseID+4,
           'active' => 1,
           'target' => '_blank',
-        ),
-        'child' => array(),
-      ),
-      $nyssBaseID+5 => array(
-        'attribute' => array(
-          'label' => 'View Tutorial',
-          'name' => 'tutorial',
-          'url' => '#tutorial-start',
-          'permission' => 'access CiviCRM',
-          'operator' => 'OR',
-          'separator' => 1,
-          'parentID' => $nyssBaseID,
-          'navID' => $nyssBaseID+5,
-          'active' => 1,
-        ),
-        'child' => array(),
-      ),
-      $nyssBaseID+6 => array(
-        'attributes' => array(
-          'label' => 'Edit Tutorial',
-          'name' => 'tutorial_edit',
-          'url' => '#tutorial-edit',
-          'permission' => 'administer CiviCRM',
-          'operator' => 'OR',
-          'separator' => 0,
-          'parentID' => $nyssBaseID,
-          'navID' => $nyssBaseID+6,
-          'active' => 1,
-        ),
-        'child' => array(),
-      ),
-      $nyssBaseID+7 => array(
-        'attributes' => array(
-          'label' => 'Create Tutorial',
-          'name' => 'tutorial_add',
-          'url' => '#tutorial-add',
-          'permission' => 'administer CiviCRM',
-          'operator' => 'OR',
-          'separator' => 0,
-          'parentID' => $nyssBaseID,
-          'navID' => $nyssBaseID+7,
-          'active' => 1,
         ),
         'child' => array(),
       ),

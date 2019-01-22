@@ -1,8 +1,10 @@
 CRM.$(function($) {
-  //replace home link
-  $('li.menumain.crm-link-home').html('<a href="/civicrm/dashboard?reset=1"><i class="nyss-i fa-home"></i></a>');
-  $('a.crm-logout-link').parents('ul.innerbox').remove();
+  //quick search: prepend icon (should be fixed in future core)
+  if ($('input#crm-qsearch-input').prop('placeholder') === 'Quick Search') {
+    $('input#crm-qsearch-input').prop('placeholder', ' Quick Search');
+  }
 
-  //add title to logout
+  //add titles
+  $('i.fa-home').prop('title', 'Bluebird Home');
   $('i.fa-sign-out').prop('title', 'Log Out');
 });
