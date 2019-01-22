@@ -164,6 +164,33 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
+## create Test Email List group type
+echo "$prog: create Test Email List group type"
+sql="
+  SELECT @optgrp:=id FROM civicrm_option_group WHERE name = 'group_type';
+  DELETE FROM civicrm_option_value
+  WHERE option_group_id = @optgrp
+    AND name = 'test_email_list';
+  INSERT INTO civicrm_option_value
+  (option_group_id, label, value, name, grouping, filter, is_default, weight, description, is_optgroup, is_reserved, is_active, component_id, domain_id, visibility_id, icon, color)
+  VALUES
+  (@optgrp, 'Test Email List', 3, 'test_email_list', NULL, 0, NULL, 3, NULL, 0, 1, 1, NULL, NULL, NULL, NULL, NULL);
+"
+$execSql $instance -c "$sql" -q
+
+## cleanup group type options
+echo "$prog: cleanup group type options"
+sql="
+  SELECT @optgrp:=id FROM civicrm_option_group WHERE name = 'group_type';
+  DELETE ov1 FROM civicrm_option_value ov1
+  JOIN civicrm_option_value ov2
+  WHERE ov1.option_group_id = @optgrp
+    AND ov2.option_group_id = @optgrp
+    AND ov1.id < ov2.id
+    AND ov1.name = ov2.name;
+"
+$execSql $instance -c "$sql" -q
+
 echo "$prog: resetting roles and permissions..."
 $script_dir/resetRolePerms.sh $instance
 

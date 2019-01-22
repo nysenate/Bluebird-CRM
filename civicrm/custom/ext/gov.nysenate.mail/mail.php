@@ -142,6 +142,11 @@ function mail_civicrm_alterAngular(\Civi\Angular\Manager $angular) {
   $changeSet = \Civi\Angular\ChangeSet::create('modify_review')
     ->alterHtml('~/crmMailing/BlockReview.html', '_mail_alterMailingReview');
   $angular->add($changeSet);
+
+  //12136 mailing test group
+  $changeSet = \Civi\Angular\ChangeSet::create('modify_preview')
+    ->alterHtml('~/crmMailing/BlockPreview.html', '_mail_alterMailingPreview');
+  $angular->add($changeSet);
 }
 
 function mail_civicrm_pageRun(&$page) {
@@ -321,6 +326,24 @@ function mail_civicrm_mosaicoBaseTemplates(&$templates) {
   unset($templates['tutorial']);
 }
 
+function mail_civicrm_apiWrappers(&$wrappers, $apiRequest) {
+  if ($apiRequest['entity'] == 'Group' &&
+    $apiRequest['action'] == 'getlist' &&
+    isset($apiRequest['params']['params']['is_hidden']) &&
+    isset($apiRequest['params']['params']['is_active'])
+  ) {
+    $nmp = CRM_Core_Session::singleton()->get('nyss-mailing-preview');
+    Civi::log()->debug('', [
+      //'$wrappers' => $wrappers,
+      //'$apiRequest' => $apiRequest,
+      '$_REQUEST' => $_REQUEST,
+      'session nmp' => $nmp,
+    ]);
+
+    $wrappers[] = new CRM_NYSS_Mail_APIWrapper();
+  }
+}
+
 //NYSS 4870
 function _mail_removeOnHold($mailingID) {
   $sql = "
@@ -393,6 +416,11 @@ function _mail_alterMailingReview(phpQueryObject $doc) {
   $extDir = CRM_Core_Resources::singleton()->getPath('gov.nysenate.mail');
   $html = file_get_contents($extDir.'/html/BlockReview.html');
   $doc->find('.crm-group')->html($html);
+}
+
+function _mail_alterMailingPreview(phpQueryObject $doc) {
+  //12136 set var so we can manipulate in apiWrappers
+  CRM_Core_Session::singleton()->set('nyss-mailing-preview', TRUE);
 }
 
 // NYSS 4628
