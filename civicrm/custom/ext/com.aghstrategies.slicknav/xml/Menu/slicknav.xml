@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-<menu>
-  <item>
-    <path>civicrm/ajax/responsiveadminmenu</path>
-    <page_callback>CRM_Slicknav_Page_ResponsiveAdminMenu</page_callback>
-    <title>ResponsiveAdminMenu</title>
-    <access_arguments>access CiviCRM</access_arguments>
-  </item>
-</menu>
