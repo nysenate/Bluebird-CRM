@@ -64,6 +64,8 @@ $drush $instance cvapi extension.install key=com.aghstrategies.slicknav --quiet
 $drush $instance cvapi extension.install key=uk.co.vedaconsulting.mosaico --quiet
 $drush $instance cvapi extension.install key=uk.squiffle.kam --quiet
 
+$drush $instance cvapi DoctorWhen.run tasks=* --quiet
+
 ## upgrade drupal db
 echo "running drupal db upgrade..."
 $drush $instance updb -y -q
