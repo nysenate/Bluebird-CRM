@@ -45,21 +45,24 @@ $drush $instance pm-enable ctools -y
 
 ## install extensions
 echo "$prog: install extensions"
-$drush $instance cvapi extension.install key=gov.nysenate.navigation --quiet
-$drush $instance cvapi extension.install key=gov.nysenate.search --quiet
 $drush $instance cvapi extension.install key=gov.nysenate.contact --quiet
-$drush $instance cvapi extension.install key=gov.nysenate.recentitems --quiet
 $drush $instance cvapi extension.install key=gov.nysenate.deceased --quiet
+$drush $instance cvapi extension.install key=gov.nysenate.navigation --quiet
+$drush $instance cvapi extension.install key=gov.nysenate.recentitems --quiet
+$drush $instance cvapi extension.install key=gov.nysenate.search --quiet
 
 $drush $instance cvapi extension.install key=org.civicrm.angularprofiles --quiet
 $drush $instance cvapi extension.install key=org.civicrm.api4 --quiet
-$drush $instance cvapi extension.install key=org.civicrm.shoreditch --quiet
-$drush $instance cvapi extension.install key=org.civicrm.contactlayout --quiet
 $drush $instance cvapi extension.install key=org.civicrm.civicase --quiet
-#$drush $instance cvapi extension.install key=org.civicrm.tutorial --quiet
-$drush $instance cvapi extension.install key=com.aghstrategies.slicknav --quiet
+$drush $instance cvapi extension.install key=org.civicrm.contactlayout --quiet
+$drush $instance cvapi extension.install key=org.civicrm.doctorwhen --quiet
 $drush $instance cvapi extension.install key=org.civicrm.flexmailer --quiet
+$drush $instance cvapi extension.install key=org.civicrm.shoreditch --quiet
+$drush $instance cvapi extension.install key=org.civicrm.tutorial --quiet
+
+$drush $instance cvapi extension.install key=com.aghstrategies.slicknav --quiet
 $drush $instance cvapi extension.install key=uk.co.vedaconsulting.mosaico --quiet
+$drush $instance cvapi extension.install key=uk.squiffle.kam --quiet
 
 ## upgrade drupal db
 echo "running drupal db upgrade..."
