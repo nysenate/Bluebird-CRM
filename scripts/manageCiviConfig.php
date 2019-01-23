@@ -263,15 +263,17 @@ TEXT;
   // *** Footer Template ***
   else if ($comp_type == 'footer') {
     $offices = array();
-    $offices['Albany'] = $cfg['senator.address.albany'];
-    $offices['District'] = $cfg['senator.address.district'];
-    if ($cfg['senator.address.satellite']) {
-      $offices['Satellite'] = $cfg['senator.address.satellite'];
+    foreach (['Albany', 'District', 'Satellite'] as $offtype) {
+      $cfgparam = 'senator.address.' . strtolower($offtype);
+      if ($cfg[$cfgparam]) {
+        $offices[$offtype] = $cfg[$cfgparam];
+      }
     }
 
     if ($cont_type == 'html') {
-      if ($cfg['email.footer.include_addresses']) {
-        $width = round(100 / count($offices));
+      $num_offices = count($offices);
+      if ($cfg['email.footer.include_addresses'] && $num_offices > 0) {
+        $width = round(100 / $num_offices);
         $addresses = <<<HTML
     <tr>
     <td align="center" valign="top">
@@ -610,7 +612,7 @@ function setEmailDefaults(&$cfg)
     $cfg['senator.address.albany'] = 'Legislative Office Bldg|Albany, NY 12247';
   }
   if (!isset($cfg['senator.address.district'])) {
-    $cfg['senator.address.district'] = 'ADDRESS OF DISTRICT OFFICE';
+    $cfg['senator.address.district'] = 'COMING SOON';
   }
   if (!isset($cfg['senator.address.satellite'])) {
     $cfg['senator.address.satellite'] = '';
