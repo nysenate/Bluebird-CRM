@@ -333,12 +333,13 @@ function mail_civicrm_apiWrappers(&$wrappers, $apiRequest) {
     isset($apiRequest['params']['params']['is_active'])
   ) {
     $nmp = CRM_Core_Session::singleton()->get('nyss-mailing-preview');
-    Civi::log()->debug('', [
+
+    /*Civi::log()->debug('', [
       //'$wrappers' => $wrappers,
       //'$apiRequest' => $apiRequest,
       '$_REQUEST' => $_REQUEST,
       'session nmp' => $nmp,
-    ]);
+    ]);*/
 
     $wrappers[] = new CRM_NYSS_Mail_APIWrapper();
   }
