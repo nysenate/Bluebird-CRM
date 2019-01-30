@@ -1,0 +1,7 @@
+{htxt id="id-report_perms-title" override=1}
+  {ts}Permission{/ts}
+{/htxt}
+{htxt id="id-report_perms" override=1}
+{*NYSS*}
+{ts}You can control access to this report by selecting a 'Permission' from the list. You can also prevent users from modifying the default report criteria and filters for reports by NOT giving them <em>access Report Criteria</em> permission. Those users will be able to run the report - but only with the criteria and filters that you've established for them.{/ts}
+{/htxt} 

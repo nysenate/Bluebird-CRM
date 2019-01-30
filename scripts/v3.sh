@@ -47,6 +47,7 @@ $drush $instance pm-enable ctools -y
 echo "$prog: install extensions"
 $drush $instance cvapi extension.install key=gov.nysenate.contact --quiet
 $drush $instance cvapi extension.install key=gov.nysenate.deceased --quiet
+$drush $instance cvapi extension.install key=gov.nysenate.inlinehelp --quiet
 $drush $instance cvapi extension.install key=gov.nysenate.navigation --quiet
 $drush $instance cvapi extension.install key=gov.nysenate.recentitems --quiet
 $drush $instance cvapi extension.install key=gov.nysenate.search --quiet

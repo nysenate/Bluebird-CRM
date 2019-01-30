@@ -1,0 +1,9 @@
+{htxt id="id-basic-criteria-title" override=1}
+  {ts}Search{/ts}
+{/htxt}
+{htxt id="id-basic-criteria" override=1}
+    {capture assign=amt}{500|crmMoney}{/capture}
+    <p>{ts}Find contacts by partial or full name or email, type of contact, group, and/or tag. You can then view or edit contact details, print a contact list, or use the <strong>- more actions -</strong> drop down list to assign tags, add contacts to groups, create smart groups, export contact data to a spreadsheet, and more.{/ts}</p>
+    {*NYSS*}
+    <p>{ts 1=$amt}Click <strong>Advanced Search</strong> to search by address, demographics, custom fields, notes, and/or relationships. {/ts}</p>
+{/htxt}

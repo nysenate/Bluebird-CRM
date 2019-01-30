@@ -1,0 +1,9 @@
+{htxt id="id-privacy-title" override=1}
+  {ts}Privacy{/ts}
+{/htxt}
+{htxt id="id-privacy" override=1}
+{ts}Select the appropriate Privacy Options.{/ts}
+{*NYSS 7344*}
+<p>{ts}Contacts with 'Do not email' will be excluded from receiving CiviMail mailings, and the Send Email activity will be disabled for them.{/ts}
+<p>{ts}Contacts with 'Do not mail' will be excluded when mailing labels are created.{/ts}</p>
+{/htxt}

@@ -1,0 +1,12 @@
+{htxt id="id-dedupe-intro-title" override=1}
+  {ts}Duplicate Contacts{/ts}
+{/htxt}
+
+{*NYSS remove contrib/profile references*}
+{htxt id="id-dedupe-intro" override=1}
+  <p>{ts}Scan for duplicates using a selected rule and merge duplicate contact data as needed.{/ts}</p>
+  <p>{ts}The 'Unsupervised' rule for each contact type is automatically used when new contacts are created, such as through imports. They are generally configured with a narrow definition of what constitutes a duplicate.{/ts}</p>
+  <p>{ts}The 'Supervised' rule for each contact type is automatically used to check for possible duplicates when contacts are added or edited via the user interface. Supervised Rules should be configured with a broader definition of what constitutes a duplicate.{/ts}</p>
+  <p>{ts}You can configure any number of additional 'General' rules to provide other criteria to scan for possible duplicates. Click <strong>Use Rule</strong> to start a scan.{/ts}</p>
+  <p>{$docLink}</p>
+{/htxt}

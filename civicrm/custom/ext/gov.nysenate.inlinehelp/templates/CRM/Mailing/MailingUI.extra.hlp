@@ -1,0 +1,10 @@
+{*NYSS 7852*}
+{htxt id="category" override=1}
+  <p>Mailing categories allow mail recipients to subscribe to/unsubscribe from specific mailing categories.</p>
+{/htxt}
+
+{*NYSS*}
+{htxt id="all-emails" override=1}
+  <p>By default, Bluebird will send to the contact's primary email address and any additional email addresses explicitly marked for bulk mail.</p>
+  <p>Selecting this option will send your email to all addresses present for a given contact, regardless of whether it is a primary email or marked for bulk mail sending.</p>
+{/htxt}
