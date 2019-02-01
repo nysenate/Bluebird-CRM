@@ -54,7 +54,15 @@ div#Tag li#j1_1 > a#tag_291 {
   background: #e8eef0 !important;
 }
 
-/*********** BELOW SHOULD BE TEMPORARY! *************/
+/*search builder*/
+#crm-container .CRM_Contact_Form_Search_Builder .crm-search-builder-add-row input.submit-link,
+#crm-container .CRM_Contact_Form_Search_Builder .crm-search-builder-add-block input.submit-link,
+.crm-container .CRM_Contact_Form_Search_Builder .crm-search-builder-add-row .form-item::before,
+.crm-container .CRM_Contact_Form_Search_Builder .crm-search-builder-add-block::before {
+  color: white !important;
+}
+
+  /*********** BELOW SHOULD BE TEMPORARY! *************/
 
 /*remove old icons (should be unnecessary in future release of shoreditch...)*/
 .page-civicrm-contact-view:not([class*='page-civicrm-contact-view-']) .crm-contact-tabs-list a::before {

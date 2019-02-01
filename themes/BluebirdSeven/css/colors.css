@@ -68,6 +68,9 @@ ul#civicrm-menu {
   color: white !important;
   background: #606365 !important;
 }
+.crm-container .crm-accordion-header.crm-master-accordion-header a.helpicon:before {
+  color: white;
+}
 
 /*alternating row color*/
 .crm-container #changeLog table tr.odd-row,
