@@ -42,5 +42,5 @@
     CiviCRM{ts 1='http://www.gnu.org/licenses/agpl-3.0.html'} is openly available under the <a href='%1' target="_blank">GNU Affero General Public License (GNU AGPL)</a>.{/ts}
     </div>
   </div>
-  {*include file="CRM/common/notifications.tpl"*}
+  {include file="CRM/common/notifications.tpl"}
 {/if}
