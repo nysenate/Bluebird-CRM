@@ -70,12 +70,24 @@ function civicrm_api3_nyss_tags_savePosition($params) {
   if (strpos($params['value'], ':::') !== false) {
     $label = explode(':::', $params['value'])[0];
     try {
+      //do lookup to see if it already exists
+      $existingTag = civicrm_api3('tag', 'get', [
+        'name' => $label,
+        'parent_id' => 292,
+        'sequential' => TRUE,
+      ]);
+      //Civi::log()->debug('civicrm_api3_nyss_tags_savePosition', array('$existingTag' => $existingTag));
+
+      if (!empty($existingTag['values'][0])) {
+        return $existingTag['values'][0]['id'];
+      }
+
       //Civi::log()->debug('civicrm_api3_nyss_tags_savePosition', array('label' => $label));
       $tag = civicrm_api3('tag', 'create', array(
         'name' => $label,
         'parent_id' => 292,
         'is_selectable' => true,
-        'used_for' => 'civicrm_contact',
+        'used_for' => ['civicrm_contact','civicrm_activity','civicrm_case'],
       ));
       //Civi::log()->debug('civicrm_api3_nyss_tags_savePosition', array('tag' => $tag));
 
