@@ -223,19 +223,19 @@ class CRM_Contact_Page_View_UserDashBoard extends CRM_Core_Page {
           'name' => ts('Edit Contact Information'),
           'url' => 'civicrm/contact/relatedcontact',
           'qs' => 'action=update&reset=1&cid=%%cbid%%&rcid=%%cid%%',
-          'title' => ts('Edit Relationship'),
+          'title' => ts('Edit Contact Information'),
         ),
         CRM_Core_Action::VIEW => array(
           'name' => ts('Dashboard'),
           'url' => 'civicrm/user',
           'class' => 'no-popup',
           'qs' => 'reset=1&id=%%cbid%%',
-          'title' => ts('View Relationship'),
+          'title' => ts('View Contact Dashboard'),
         ),
       );
 
       if (CRM_Core_Permission::check('access CiviCRM')) {
-        self::$_links = array_merge(self::$_links, array(
+        self::$_links += array(
           CRM_Core_Action::DISABLE => array(
             'name' => ts('Disable'),
             'url' => 'civicrm/contact/view/rel',
@@ -243,7 +243,7 @@ class CRM_Contact_Page_View_UserDashBoard extends CRM_Core_Page {
             'extra' => 'onclick = "return confirm(\'' . $disableExtra . '\');"',
             'title' => ts('Disable Relationship'),
           ),
-        ));
+        );
       }
     }
 
