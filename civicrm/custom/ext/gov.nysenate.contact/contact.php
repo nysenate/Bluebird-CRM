@@ -142,4 +142,8 @@ function contact_civicrm_pageRun(&$page) {
     CRM_Core_Resources::singleton()->addVars('NYSS', array('bbContactSummary' => $html));
     CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.contact', 'js/ContactSummary.js');
   }
+
+  if (is_a($page, 'CRM_Activity_Page_Tab')) {
+    CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.contact', 'js/ActivityTab.js');
+  }
 }

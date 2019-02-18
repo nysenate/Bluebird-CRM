@@ -74,7 +74,8 @@ ul#civicrm-menu {
 
 /*alternating row color*/
 .crm-container #changeLog table tr.odd-row,
-.crm-container #changeLog table tbody tr.odd-row td {
+.crm-container #changeLog table tbody tr.odd-row td,
+.crm-container table.dataTable.contact-activity-selector-activity#DataTables_Table_0 tbody tr.odd td {
   background-color: #FAFAFA !important;
 }
 
