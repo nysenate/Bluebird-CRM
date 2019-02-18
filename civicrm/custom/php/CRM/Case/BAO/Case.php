@@ -594,9 +594,14 @@ LEFT JOIN civicrm_option_group aog ON aog.name='activity_type'
     $condition = NULL;
     $casesList = array();
 
-    //validate access for own cases.
+    // validate access for own cases.
     if (!self::accessCiviCase()) {
       return $getCount ? 0 : $casesList;
+    }
+
+    // Return cached value instead of re-running query
+    if (isset(Civi::$statics[__CLASS__]['totalCount']) && $getCount) {
+      return Civi::$statics[__CLASS__]['totalCount'];
     }
 
     $type = CRM_Utils_Array::value('type', $params, 'upcoming');
@@ -616,7 +621,7 @@ LEFT JOIN civicrm_option_group aog ON aog.name='activity_type'
       $caseActivityIDColumn = 'case_recent_activity_id';
     }
 
-    //validate access for all cases.
+    // validate access for all cases.
     if ($allCases && !CRM_Core_Permission::check('access all cases and activities')) {
       $allCases = FALSE;
     }
@@ -637,7 +642,7 @@ LEFT JOIN civicrm_option_group aog ON aog.name='activity_type'
     }
     $condition = implode(' AND ', $whereClauses);
 
-    $totalCount = CRM_Core_DAO::singleValueQuery(self::getCaseActivityCountQuery($type, $userID, $condition));
+    Civi::$statics[__CLASS__]['totalCount'] = $totalCount = CRM_Core_DAO::singleValueQuery(self::getCaseActivityCountQuery($type, $userID, $condition));
     if ($getCount) {
       return $totalCount;
     }
@@ -751,6 +756,7 @@ LEFT JOIN civicrm_option_group aog ON aog.name='activity_type'
         $case['case_id']
       );
     }
+
     return $casesList;
   }
 
