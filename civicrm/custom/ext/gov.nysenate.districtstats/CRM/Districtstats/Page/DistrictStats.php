@@ -13,10 +13,11 @@ class CRM_Districtstats_Page_DistrictStats extends CRM_Core_Page {
 
     //set base advanced search url
     $baseUrl = CRM_Utils_System::url('civicrm/contact/search/advanced', 'reset=1&force=1&context=districtstats');
+    $linkIcon = "&nbsp;&nbsp;<i class='crm-i fa-rocket'></i>";
     $this->assign('baseUrl', $baseUrl);
 
     //contact counts by type
-    $allContacts  = 0;
+    $allContacts = 0;
     $contactTypes = array();
     $sql_contacts = "
       SELECT contact_type, COUNT(*) AS ct_count
@@ -26,10 +27,11 @@ class CRM_Districtstats_Page_DistrictStats extends CRM_Core_Page {
     ";
     $dao = CRM_Core_DAO::executeQuery( $sql_contacts );
     while ( $dao->fetch( ) ) {
-      $contactTypes[$dao->contact_type] = $dao->ct_count;
+      $link = "<a href='{$baseUrl}&contact_type={$dao->contact_type}' target='_blank'>{$linkIcon}</a>";
+      $contactTypes[$dao->contact_type] = "{$dao->ct_count}{$link}";
       $allContacts = $allContacts + $dao->ct_count;
     }
-    $contactTypes['All Contacts'] = $allContacts;
+    $contactTypes['All Contacts'] = $allContacts."<a href='{$baseUrl}' target='_blank'>{$linkIcon}</a>";
 
     //trashed contacts
     $sql_trashed = "
@@ -46,7 +48,7 @@ class CRM_Districtstats_Page_DistrictStats extends CRM_Core_Page {
       FROM civicrm_contact
       WHERE is_deleted != 1 AND is_deceased = 1;
     ";
-    $contactTypes['Deceased Contacts'] = CRM_Core_DAO::singleValueQuery( $sql_trashed );
+    $contactTypes['Deceased Contacts'] = CRM_Core_DAO::singleValueQuery($sql_trashed)."<a href='{$baseUrl}&is_deceased=1' target='_blank'>{$linkIcon}</a>";
 
     $this->assign('contactTypes', $contactTypes);
 
@@ -59,7 +61,7 @@ class CRM_Districtstats_Page_DistrictStats extends CRM_Core_Page {
     ";
     $dao = CRM_Core_DAO::executeQuery( $sql_genders );
     while ( $dao->fetch( ) ) {
-      $contactGenders[$dao->gender_id] = $dao->gender_count;
+      $contactGenders[$dao->gender_id] = $dao->gender_count."<a href='{$baseUrl}&gender_id={$dao->gender_id}' target='_blank'>{$linkIcon}</a>";
     }
     $this->assign('contactGenders', $contactGenders);
 
@@ -77,7 +79,7 @@ class CRM_Districtstats_Page_DistrictStats extends CRM_Core_Page {
         AND email IS NOT NULL
         AND email != '';
     ";
-    $emailsPri = CRM_Core_DAO::singleValueQuery( $sql_emails );
+    $emailsPri = CRM_Core_DAO::singleValueQuery($sql_emails);
 
     //contacts with bulk, non-primary emails
     $sql_emailsBulk = "
@@ -97,7 +99,7 @@ class CRM_Districtstats_Page_DistrictStats extends CRM_Core_Page {
 
     $emailCounts['Alternate Bulk Emails'] = $emailsBulk;
 
-    $emailCounts['Total Contacts with Emails'] = $emailsPri;
+    $emailCounts['Total Contacts with Emails'] = $emailsPri."<a href='{$baseUrl}&email=%' target='_blank'>{$linkIcon}</a>";
 
     //pri or bulk on_hold
     $sql_emailsOH = "
@@ -112,7 +114,7 @@ class CRM_Districtstats_Page_DistrictStats extends CRM_Core_Page {
         AND ce.email != ''
       WHERE is_deleted != 1;
     ";
-    $emailCounts['Primary/Bulk On Hold'] = CRM_Core_DAO::singleValueQuery( $sql_emailsOH );
+    $emailCounts['Primary/Bulk On Hold'] = CRM_Core_DAO::singleValueQuery($sql_emailsOH);
 
     //do not email
     $sql_emailsDNE = "
@@ -125,7 +127,7 @@ class CRM_Districtstats_Page_DistrictStats extends CRM_Core_Page {
       WHERE is_deleted != 1
         AND do_not_email = 1;
     ";
-    $emailCounts['Do Not Email'] = CRM_Core_DAO::singleValueQuery( $sql_emailsDNE );
+    $emailCounts['Do Not Email'] = CRM_Core_DAO::singleValueQuery($sql_emailsDNE);
 
     //opt out
     $sql_emailsOO = "
@@ -138,7 +140,7 @@ class CRM_Districtstats_Page_DistrictStats extends CRM_Core_Page {
       WHERE is_deleted != 1
         AND is_opt_out = 1;
     ";
-    $emailCounts['Contact Opt Out/No Bulk Email'] = CRM_Core_DAO::singleValueQuery( $sql_emailsOO );
+    $emailCounts['Contact Opt Out/No Bulk Email'] = CRM_Core_DAO::singleValueQuery($sql_emailsOO);
 
     //contact deceased, with email
     $sql_emailDec = "
@@ -152,7 +154,7 @@ class CRM_Districtstats_Page_DistrictStats extends CRM_Core_Page {
       WHERE is_deleted != 1
         AND is_deceased = 1;
     ";
-    $emailCounts['Contacts Deceased, with Email'] = CRM_Core_DAO::singleValueQuery( $sql_emailDec );
+    $emailCounts['Contacts Deceased, with Email'] = CRM_Core_DAO::singleValueQuery($sql_emailDec)."<a href='{$baseUrl}&is_deceased=1&email=%' target='_blank'>{$linkIcon}</a>";
 
     //duplicate emails
     $sql_dupeEmails = "
@@ -212,10 +214,12 @@ class CRM_Districtstats_Page_DistrictStats extends CRM_Core_Page {
       SELECT COUNT( c.id ) AS phone_count
       FROM civicrm_contact c
       JOIN civicrm_phone cp
-        ON ( c.id = cp.contact_id AND cp.is_primary = 1 AND cp.phone_type_id = 1 )
+        ON c.id = cp.contact_id
+        AND cp.is_primary = 1
+        AND cp.phone_type_id = 1
       WHERE is_deleted != 1;
     ";
-    $miscCounts['Contacts with Phone'] = CRM_Core_DAO::singleValueQuery( $sql_phone );
+    $miscCounts['Contacts with Phone'] = CRM_Core_DAO::singleValueQuery($sql_phone)."<a href='{$baseUrl}&phone=%' target='_blank'>{$linkIcon}</a>";;
 
     //do not mail
     $sql_DNM = "
@@ -224,19 +228,21 @@ class CRM_Districtstats_Page_DistrictStats extends CRM_Core_Page {
       WHERE is_deleted != 1
         AND do_not_mail = 1;
     ";
-    $miscCounts['Do Not Mail'] = CRM_Core_DAO::singleValueQuery( $sql_DNM );
+    $miscCounts['Do Not Mail'] = CRM_Core_DAO::singleValueQuery($sql_DNM);
 
     //mailing seed group
     $mailingSeedGroup = CRM_Core_DAO::singleValueQuery( "SELECT id FROM civicrm_group WHERE name = 'Mailing_Seeds';" );
-    if ( $mailingSeedGroup ) {
+    if ($mailingSeedGroup) {
       $sql_MailingSeeds = "
         SELECT COUNT( c.id ) AS mailingSeeds_count
         FROM civicrm_contact c
         JOIN civicrm_group_contact gc
-          ON ( c.id = gc.contact_id AND group_id = $mailingSeedGroup )
+          ON c.id = gc.contact_id
+          AND group_id = $mailingSeedGroup
+          AND gc.status = 'Added'
         WHERE is_deleted != 1;
       ";
-      $miscCounts['Mailing Seeds'] = CRM_Core_DAO::singleValueQuery( $sql_MailingSeeds );
+      $miscCounts['Mailing Seeds'] = CRM_Core_DAO::singleValueQuery($sql_MailingSeeds)."<a href='{$baseUrl}&group={$mailingSeedGroup}' target='_blank'>{$linkIcon}</a>";
     }
 
     //log last 30 days
@@ -256,10 +262,10 @@ class CRM_Districtstats_Page_DistrictStats extends CRM_Core_Page {
       SELECT COUNT(DISTINCT c.id ) AS logYTD_count
       FROM civicrm_contact c
       JOIN civicrm_log cl
-        ON ( c.id = cl.entity_id
-        AND cl.entity_table = 'civicrm_contact' )
+        ON c.id = cl.entity_id
+        AND cl.entity_table = 'civicrm_contact'
       WHERE is_deleted != 1
-        AND cl.modified_date > CONCAT( YEAR(NOW()),'-01-01' );
+        AND cl.modified_date > CONCAT(YEAR(NOW()),'-01-01');
     ";
     $miscCounts['Modified this Year'] = CRM_Core_DAO::singleValueQuery( $sql_logYTD );
 
@@ -267,90 +273,90 @@ class CRM_Districtstats_Page_DistrictStats extends CRM_Core_Page {
 
     //get contact counts by Senate District
     $sql_sd = "
-      SELECT COUNT( civicrm_contact.id ) as sd_count, ny_senate_district_47
-      FROM ( civicrm_address
+      SELECT COUNT(civicrm_contact.id) as sd_count, ny_senate_district_47
+      FROM civicrm_address
       INNER JOIN civicrm_value_district_information_7
-        ON ( civicrm_address.id = civicrm_value_district_information_7.entity_id ) )
+        ON civicrm_address.id = civicrm_value_district_information_7.entity_id
       INNER JOIN civicrm_contact
-        ON ( civicrm_contact.id = civicrm_address.contact_id )
-      WHERE ( civicrm_contact.is_deleted != 1 )
-        AND ( civicrm_address.is_primary = 1 )
-        AND ( civicrm_value_district_information_7.ny_senate_district_47 IS NOT NULL )
-        AND ( civicrm_value_district_information_7.ny_senate_district_47 != '' )
+        ON civicrm_contact.id = civicrm_address.contact_id
+      WHERE civicrm_contact.is_deleted != 1
+        AND civicrm_address.is_primary = 1
+        AND civicrm_value_district_information_7.ny_senate_district_47 IS NOT NULL
+        AND civicrm_value_district_information_7.ny_senate_district_47 != ''
       GROUP BY ny_senate_district_47;
     ";
     $dao = CRM_Core_DAO::executeQuery( $sql_sd );
-    while ( $dao->fetch( ) ) {
-      $contactSD[$dao->ny_senate_district_47] = $dao->sd_count;
+    while ($dao->fetch()) {
+      $contactSD[$dao->ny_senate_district_47] = $dao->sd_count."<a href='{$baseUrl}&custom_47={$dao->ny_senate_district_47}' target='_blank'>{$linkIcon}</a>";
     }
     $this->assign('contactSD', $contactSD);
 
     //get contact counts by Assembly District
     $sql_ad = "
-      SELECT COUNT( civicrm_contact.id ) as ad_count, ny_assembly_district_48
-      FROM ( civicrm_address
+      SELECT COUNT(civicrm_contact.id) as ad_count, ny_assembly_district_48
+      FROM civicrm_address
       INNER JOIN civicrm_value_district_information_7
-        ON ( civicrm_address.id = civicrm_value_district_information_7.entity_id ) )
+        ON civicrm_address.id = civicrm_value_district_information_7.entity_id
       INNER JOIN civicrm_contact
-        ON ( civicrm_contact.id = civicrm_address.contact_id )
-      WHERE ( civicrm_contact.is_deleted != 1 )
-        AND ( civicrm_address.is_primary = 1 )
-        AND ( civicrm_value_district_information_7.ny_assembly_district_48 IS NOT NULL )
-        AND ( civicrm_value_district_information_7.ny_assembly_district_48 != '' )
+        ON civicrm_contact.id = civicrm_address.contact_id
+      WHERE civicrm_contact.is_deleted != 1
+        AND civicrm_address.is_primary = 1
+        AND civicrm_value_district_information_7.ny_assembly_district_48 IS NOT NULL
+        AND civicrm_value_district_information_7.ny_assembly_district_48 != ''
       GROUP BY ny_assembly_district_48;
     ";
     $dao = CRM_Core_DAO::executeQuery( $sql_ad );
-    while ( $dao->fetch( ) ) {
-      $contactAD[$dao->ny_assembly_district_48] = $dao->ad_count;
+    while ($dao->fetch()) {
+      $contactAD[$dao->ny_assembly_district_48] = $dao->ad_count."<a href='{$baseUrl}&custom_48={$dao->ny_assembly_district_48}' target='_blank'>{$linkIcon}</a>";
     }
     $this->assign('contactAD', $contactAD);
 
     //get contact counts by Election District
     $sql_ed = "
-      SELECT COUNT( civicrm_contact.id ) as ed_count, election_district_49
-      FROM ( civicrm_address
+      SELECT COUNT(civicrm_contact.id) as ed_count, election_district_49
+      FROM civicrm_address
       INNER JOIN civicrm_value_district_information_7
-        ON ( civicrm_address.id = civicrm_value_district_information_7.entity_id ) )
+        ON civicrm_address.id = civicrm_value_district_information_7.entity_id
       INNER JOIN civicrm_contact
-        ON ( civicrm_contact.id = civicrm_address.contact_id )
-      WHERE ( civicrm_contact.is_deleted != 1 )
-        AND ( civicrm_address.is_primary = 1 )
-        AND ( civicrm_value_district_information_7.election_district_49 IS NOT NULL )
-        AND ( civicrm_value_district_information_7.election_district_49 != '' )
+        ON civicrm_contact.id = civicrm_address.contact_id
+      WHERE civicrm_contact.is_deleted != 1
+        AND civicrm_address.is_primary = 1
+        AND civicrm_value_district_information_7.election_district_49 IS NOT NULL
+        AND civicrm_value_district_information_7.election_district_49 != ''
       GROUP BY election_district_49;
     ";
     $dao = CRM_Core_DAO::executeQuery( $sql_ed );
-    while ( $dao->fetch( ) ) {
-      $contactED[$dao->election_district_49] = $dao->ed_count;
+    while ($dao->fetch()) {
+      $contactED[$dao->election_district_49] = $dao->ed_count."<a href='{$baseUrl}&custom_49={$dao->election_district_49}' target='_blank'>{$linkIcon}</a>";
     }
     $this->assign('contactED', $contactED);
     //CRM_Core_Error::debug($contactAD);
 
     //contact counts by Town/Assembly District/Election District
     $sql_townaded = "
-      SELECT COUNT( civicrm_contact.id ) as townaded_count, town_52, ny_assembly_district_48, election_district_49
-      FROM ( civicrm_address
+      SELECT COUNT(civicrm_contact.id) as townaded_count, town_52, ny_assembly_district_48, election_district_49
+      FROM civicrm_address
       INNER JOIN civicrm_value_district_information_7
-        ON ( civicrm_address.id = civicrm_value_district_information_7.entity_id ) )
+        ON civicrm_address.id = civicrm_value_district_information_7.entity_id
       INNER JOIN civicrm_contact
         ON civicrm_contact.id = civicrm_address.contact_id
-      WHERE ( civicrm_contact.is_deleted != 1 )
-        AND ( civicrm_address.is_primary = 1 )
-        AND ( civicrm_value_district_information_7.town_52 IS NOT NULL )
-        AND ( civicrm_value_district_information_7.town_52 != '' )
-        AND ( civicrm_value_district_information_7.ny_assembly_district_48 IS NOT NULL )
-        AND ( civicrm_value_district_information_7.ny_assembly_district_48 != '' )
-        AND ( civicrm_value_district_information_7.election_district_49 IS NOT NULL )
-        AND ( civicrm_value_district_information_7.election_district_49 != '' )
+      WHERE civicrm_contact.is_deleted != 1
+        AND civicrm_address.is_primary = 1
+        AND civicrm_value_district_information_7.town_52 IS NOT NULL
+        AND civicrm_value_district_information_7.town_52 != ''
+        AND civicrm_value_district_information_7.ny_assembly_district_48 IS NOT NULL
+        AND civicrm_value_district_information_7.ny_assembly_district_48 != ''
+        AND civicrm_value_district_information_7.election_district_49 IS NOT NULL
+        AND civicrm_value_district_information_7.election_district_49 != ''
       GROUP BY town_52, ny_assembly_district_48, election_district_49;
     ";
     $dao = CRM_Core_DAO::executeQuery( $sql_townaded );
-    while ( $dao->fetch( ) ) {
+    while ($dao->fetch()) {
       $contactTownADED[] = array(
         'town' => $dao->town_52,
         'ad' => $dao->ny_assembly_district_48,
         'ed' => $dao->election_district_49,
-        'count' => $dao->townaded_count
+        'count' => $dao->townaded_count."<a href='{$baseUrl}&custom_52={$dao->town_52}&custom_48={$dao->ny_assembly_district_48}&custom_49={$dao->election_district_49}' target='_blank'>{$linkIcon}</a>"
       );
     }
     $this->assign('contactTownADED', $contactTownADED);
@@ -358,61 +364,61 @@ class CRM_Districtstats_Page_DistrictStats extends CRM_Core_Page {
 
     //get contact counts by Congressional District
     $sql_cd = "
-      SELECT COUNT( civicrm_contact.id ) as cd_count, congressional_district_46
-      FROM ( civicrm_address
+      SELECT COUNT(civicrm_contact.id) as cd_count, congressional_district_46
+      FROM civicrm_address
       INNER JOIN civicrm_value_district_information_7
-        ON ( civicrm_address.id = civicrm_value_district_information_7.entity_id ) )
+        ON civicrm_address.id = civicrm_value_district_information_7.entity_id
       INNER JOIN civicrm_contact
-        ON ( civicrm_contact.id = civicrm_address.contact_id )
-      WHERE ( civicrm_contact.is_deleted != 1 )
-        AND ( civicrm_address.is_primary = 1 )
-        AND ( civicrm_value_district_information_7.congressional_district_46 IS NOT NULL )
-        AND ( civicrm_value_district_information_7.congressional_district_46 != '' )
+        ON civicrm_contact.id = civicrm_address.contact_id
+      WHERE civicrm_contact.is_deleted != 1
+        AND civicrm_address.is_primary = 1
+        AND civicrm_value_district_information_7.congressional_district_46 IS NOT NULL
+        AND civicrm_value_district_information_7.congressional_district_46 != ''
       GROUP BY congressional_district_46;
     ";
     $dao = CRM_Core_DAO::executeQuery( $sql_cd );
-    while ( $dao->fetch( ) ) {
-      $contactCD[$dao->congressional_district_46] = $dao->cd_count;
+    while ($dao->fetch()) {
+      $contactCD[$dao->congressional_district_46] = $dao->cd_count."<a href='{$baseUrl}&custom_46={$dao->congressional_district_46}' target='_blank'>{$linkIcon}</a>";
     }
     $this->assign('contactCD', $contactCD);
 
     //get contact counts by County
     $sql_county = "
-      SELECT COUNT( civicrm_contact.id ) as county_count, county_50
-      FROM ( civicrm_address
+      SELECT COUNT(civicrm_contact.id) as county_count, county_50
+      FROM civicrm_address
       INNER JOIN civicrm_value_district_information_7
-        ON ( civicrm_address.id = civicrm_value_district_information_7.entity_id ) )
+        ON civicrm_address.id = civicrm_value_district_information_7.entity_id
       INNER JOIN civicrm_contact
-        ON ( civicrm_contact.id = civicrm_address.contact_id )
-      WHERE ( civicrm_contact.is_deleted != 1 )
-        AND ( civicrm_address.is_primary = 1 )
-        AND ( civicrm_value_district_information_7.county_50 IS NOT NULL )
-        AND ( civicrm_value_district_information_7.county_50 != '' )
+        ON civicrm_contact.id = civicrm_address.contact_id
+      WHERE civicrm_contact.is_deleted != 1
+        AND civicrm_address.is_primary = 1
+        AND civicrm_value_district_information_7.county_50 IS NOT NULL
+        AND civicrm_value_district_information_7.county_50 != ''
       GROUP BY county_50;
     ";
-    $dao = CRM_Core_DAO::executeQuery( $sql_county );
-    while ( $dao->fetch( ) ) {
-      $contactCounty[$dao->county_50] = $dao->county_count;
+    $dao = CRM_Core_DAO::executeQuery($sql_county);
+    while ($dao->fetch()) {
+      $contactCounty[$dao->county_50] = $dao->county_count."<a href='{$baseUrl}&custom_50={$dao->county_50}' target='_blank'>{$linkIcon}</a>";
     }
     $this->assign('contactCounty', $contactCounty);
 
     //get contact counts by Towns
     $sql_town = "
-      SELECT COUNT( civicrm_contact.id ) as town_count, town_52
-      FROM ( civicrm_address
+      SELECT COUNT(civicrm_contact.id) as town_count, town_52
+      FROM civicrm_address
       INNER JOIN civicrm_value_district_information_7
-        ON ( civicrm_address.id = civicrm_value_district_information_7.entity_id ) )
+        ON civicrm_address.id = civicrm_value_district_information_7.entity_id
       INNER JOIN civicrm_contact
-        ON ( civicrm_contact.id = civicrm_address.contact_id )
-      WHERE ( civicrm_contact.is_deleted != 1 )
-        AND ( civicrm_address.is_primary = 1 )
-        AND ( civicrm_value_district_information_7.town_52 IS NOT NULL )
-        AND ( civicrm_value_district_information_7.town_52 != '' )
+        ON civicrm_contact.id = civicrm_address.contact_id
+      WHERE civicrm_contact.is_deleted != 1
+        AND civicrm_address.is_primary = 1
+        AND civicrm_value_district_information_7.town_52 IS NOT NULL
+        AND civicrm_value_district_information_7.town_52 != ''
       GROUP BY town_52;
     ";
-    $dao = CRM_Core_DAO::executeQuery( $sql_town );
-    while ( $dao->fetch( ) ) {
-      $contactTown[$dao->town_52] = $dao->town_count;
+    $dao = CRM_Core_DAO::executeQuery($sql_town);
+    while ($dao->fetch()) {
+      $contactTown[$dao->town_52] = $dao->town_count."<a href='{$baseUrl}&custom_52={$dao->town_52}' target='_blank'>{$linkIcon}</a>";
     }
     $this->assign('contactTown', $contactTown);
 
@@ -430,157 +436,157 @@ class CRM_Districtstats_Page_DistrictStats extends CRM_Core_Page {
         AND ( civicrm_value_district_information_7.ward_53 != '' )
       GROUP BY ward_53;
     ";
-    $dao = CRM_Core_DAO::executeQuery( $sql_ward );
-    while ( $dao->fetch( ) ) {
-      $contactWard[$dao->ward_53] = $dao->ward_count;
+    $dao = CRM_Core_DAO::executeQuery($sql_ward);
+    while ($dao->fetch()) {
+      $contactWard[$dao->ward_53] = $dao->ward_count."<a href='{$baseUrl}&custom_53={$dao->ward_53}' target='_blank'>{$linkIcon}</a>";
     }
     $this->assign('contactWard', $contactWard);
 
     //get contact counts by School District
     $sql_sc = "
       SELECT COUNT(civicrm_contact.id) as sc_count, DistrictName, school_district_54 as sc_id
-      FROM (civicrm_address
+      FROM civicrm_address
       INNER JOIN civicrm_value_district_information_7
-        ON (civicrm_address.id = civicrm_value_district_information_7.entity_id))
+        ON civicrm_address.id = civicrm_value_district_information_7.entity_id
       INNER JOIN civicrm_contact
-        ON (civicrm_contact.id = civicrm_address.contact_id)
+        ON civicrm_contact.id = civicrm_address.contact_id
       INNER JOIN nyss_schooldistricts nsd
-        ON (LPAD(school_district_54, 3, 0) = nsd.Code)
-      WHERE (civicrm_contact.is_deleted != 1)
-        AND (civicrm_address.is_primary = 1)
-        AND (civicrm_value_district_information_7.school_district_54 IS NOT NULL)
-        AND (civicrm_value_district_information_7.school_district_54 != '')
+        ON LPAD(school_district_54, 3, 0) = nsd.Code
+      WHERE civicrm_contact.is_deleted != 1
+        AND civicrm_address.is_primary = 1
+        AND civicrm_value_district_information_7.school_district_54 IS NOT NULL
+        AND civicrm_value_district_information_7.school_district_54 != ''
       GROUP BY school_district_54, DistrictName;
     ";
-    $dao = CRM_Core_DAO::executeQuery( $sql_sc );
-    while ( $dao->fetch( ) ) {
-      $contactSC["{$dao->DistrictName} [{$dao->sc_id}]"] = $dao->sc_count;
+    $dao = CRM_Core_DAO::executeQuery($sql_sc);
+    while ($dao->fetch()) {
+      $contactSC["{$dao->DistrictName} [{$dao->sc_id}]"] = $dao->sc_count."<a href='{$baseUrl}&custom_54={$dao->sc_id}' target='_blank'>{$linkIcon}</a>";
     }
     $this->assign('contactSC', $contactSC);
 
     //get contact counts by Zip code
     $sql_zp = "
-      SELECT COUNT( civicrm_contact.id ) as zip_count, postal_code
+      SELECT COUNT(civicrm_contact.id) as zip_count, postal_code
       FROM civicrm_address
       INNER JOIN civicrm_contact
-        ON ( civicrm_contact.id = civicrm_address.contact_id )
-      WHERE ( civicrm_contact.is_deleted != 1 )
-        AND ( civicrm_address.is_primary = 1 )
-        AND ( civicrm_address.postal_code != '' )
-        AND ( civicrm_address.postal_code IS NOT NULL )
+        ON civicrm_contact.id = civicrm_address.contact_id
+      WHERE civicrm_contact.is_deleted != 1
+        AND civicrm_address.is_primary = 1
+        AND civicrm_address.postal_code != ''
+        AND civicrm_address.postal_code IS NOT NULL
       GROUP BY postal_code
     ";
     $dao = CRM_Core_DAO::executeQuery( $sql_zp );
-    while ( $dao->fetch( ) ) {
-      $contactZip[$dao->postal_code] = $dao->zip_count;
+    while ($dao->fetch()) {
+      $contactZip[$dao->postal_code] = $dao->zip_count."<a href='{$baseUrl}&postal_code={$dao->postal_code}' target='_blank'>{$linkIcon}</a>";
     }
     $this->assign('contactZip', $contactZip);
 
     //get contact issue codes
     $sql_ic = "
-      SELECT civicrm_tag.name, COUNT( civicrm_entity_tag.id ) as ic_count
+      SELECT civicrm_tag.name, COUNT(civicrm_entity_tag.id) as ic_count, civicrm_tag.id tag_id
       FROM civicrm_entity_tag
       INNER JOIN civicrm_tag
-        ON ( civicrm_entity_tag.tag_id = civicrm_tag.id )
+        ON civicrm_entity_tag.tag_id = civicrm_tag.id
       INNER JOIN civicrm_contact
-        ON ( civicrm_contact.id = civicrm_entity_tag.entity_id )
-      WHERE ( civicrm_entity_tag.entity_table LIKE '%civicrm_contact%' )
-        AND ( civicrm_tag.parent_id != 292 )
-        AND ( civicrm_tag.parent_id != 296 )
-        AND ( civicrm_tag.is_tagset != 1 )
-        AND ( civicrm_contact.is_deleted != 1 )
-      GROUP BY name
+        ON civicrm_contact.id = civicrm_entity_tag.entity_id
+      WHERE civicrm_entity_tag.entity_table LIKE '%civicrm_contact%'
+        AND civicrm_tag.parent_id != 292
+        AND civicrm_tag.parent_id != 296
+        AND civicrm_tag.is_tagset != 1
+        AND civicrm_contact.is_deleted != 1
+      GROUP BY civicrm_tag.id, name
       ORDER BY ic_count DESC;
     ";
-    $dao = CRM_Core_DAO::executeQuery( $sql_ic );
-    while ( $dao->fetch( ) ) {
-      $issueCodes[$dao->name] = $dao->ic_count;
+    $dao = CRM_Core_DAO::executeQuery($sql_ic);
+    while ($dao->fetch()) {
+      $issueCodes[$dao->name] = $dao->ic_count."<a href='{$baseUrl}&contact_tags={$dao->tag_id}' target='_blank'>{$linkIcon}</a>";
     }
     $this->assign('issueCodes', $issueCodes);
 
     //get contact keywords
     $sql_kword = "
-      SELECT civicrm_tag.name, COUNT( civicrm_entity_tag.id ) as kword_count
+      SELECT civicrm_tag.name, COUNT(civicrm_entity_tag.id) as kword_count, civicrm_tag.id tag_id
       FROM civicrm_entity_tag
       INNER JOIN civicrm_tag
-        ON ( civicrm_entity_tag.tag_id = civicrm_tag.id )
+        ON civicrm_entity_tag.tag_id = civicrm_tag.id
       INNER JOIN civicrm_contact
-        ON ( civicrm_contact.id = civicrm_entity_tag.entity_id )
-      WHERE ( civicrm_entity_tag.entity_table LIKE '%civicrm_contact%' )
-        AND ( civicrm_tag.parent_id = 296 )
-        AND ( civicrm_tag.is_tagset != 1 )
-        AND ( civicrm_contact.is_deleted != 1 )
-      GROUP BY name
+        ON civicrm_contact.id = civicrm_entity_tag.entity_id
+      WHERE civicrm_entity_tag.entity_table LIKE '%civicrm_contact%'
+        AND civicrm_tag.parent_id = 296
+        AND civicrm_tag.is_tagset != 1
+        AND civicrm_contact.is_deleted != 1
+      GROUP BY civicrm_tag.id, name
       ORDER BY kword_count DESC;
     ";
-    $dao = CRM_Core_DAO::executeQuery( $sql_kword );
-    while ( $dao->fetch( ) ) {
-      $keywords[$dao->name] = $dao->kword_count;
+    $dao = CRM_Core_DAO::executeQuery($sql_kword);
+    while ($dao->fetch()) {
+      $keywords[$dao->name] = $dao->kword_count."<a href='{$baseUrl}&contact_tags={$dao->tag_id}' target='_blank'>{$linkIcon}</a>";
     }
     $this->assign('keywords', $keywords);
 
-    //get activity keywords
-    $sql_akword = "
-      SELECT civicrm_tag.name, COUNT( civicrm_entity_tag.id ) as akword_count
+    //get contact positions
+    $sql_pos = "
+      SELECT civicrm_tag.name, COUNT(civicrm_entity_tag.id) as pos_count, civicrm_tag.id tag_id
       FROM civicrm_entity_tag
       INNER JOIN civicrm_tag
-        ON ( civicrm_entity_tag.tag_id = civicrm_tag.id )
+        ON civicrm_entity_tag.tag_id = civicrm_tag.id
+      INNER JOIN civicrm_contact
+        ON civicrm_contact.id = civicrm_entity_tag.entity_id
+      WHERE civicrm_entity_tag.entity_table LIKE '%civicrm_contact%'
+        AND civicrm_tag.parent_id = 292
+        AND civicrm_tag.is_tagset != 1
+        AND civicrm_contact.is_deleted != 1
+      GROUP BY civicrm_tag.id, name
+      ORDER BY pos_count DESC;
+    ";
+    $dao = CRM_Core_DAO::executeQuery( $sql_pos );
+    while ($dao->fetch()) {
+      $positions[$dao->name] = $dao->pos_count."<a href='{$baseUrl}&contact_tags={$dao->tag_id}' target='_blank'>{$linkIcon}</a>";
+    }
+    $this->assign('positions', $positions);
+
+    //get activity keywords
+    $sql_akword = "
+      SELECT civicrm_tag.name, COUNT( civicrm_entity_tag.id ) as akword_count, civicrm_tag.id tag_id
+      FROM civicrm_entity_tag
+      INNER JOIN civicrm_tag
+        ON civicrm_entity_tag.tag_id = civicrm_tag.id
       INNER JOIN civicrm_activity
-        ON ( civicrm_activity.id = civicrm_entity_tag.entity_id )
-      WHERE ( civicrm_entity_tag.entity_table LIKE '%civicrm_activity%' )
-        AND ( civicrm_tag.parent_id = 296 )
-        AND ( civicrm_tag.is_tagset != 1 )
-        AND ( civicrm_activity.is_deleted != 1 )
-      GROUP BY name
+        ON civicrm_activity.id = civicrm_entity_tag.entity_id
+      WHERE civicrm_entity_tag.entity_table LIKE '%civicrm_activity%'
+        AND civicrm_tag.parent_id = 296
+        AND civicrm_tag.is_tagset != 1
+        AND civicrm_activity.is_deleted != 1
+      GROUP BY civicrm_tag.id, name
       ORDER BY akword_count DESC
     ";
-    $dao = CRM_Core_DAO::executeQuery( $sql_akword );
-    while ( $dao->fetch( ) ) {
+    $dao = CRM_Core_DAO::executeQuery($sql_akword);
+    while ($dao->fetch()) {
       $akeywords[$dao->name] = $dao->akword_count;
     }
     $this->assign('akeywords', $akeywords);
 
     //get case keywords
     $sql_ckword = "
-      SELECT civicrm_tag.name, COUNT( civicrm_entity_tag.id ) as ckword_count
+      SELECT civicrm_tag.name, COUNT( civicrm_entity_tag.id ) as ckword_count, civicrm_tag.id tag_id
       FROM civicrm_entity_tag
       INNER JOIN civicrm_tag
-        ON ( civicrm_entity_tag.tag_id = civicrm_tag.id )
+        ON civicrm_entity_tag.tag_id = civicrm_tag.id
       INNER JOIN civicrm_case
-        ON ( civicrm_case.id = civicrm_entity_tag.entity_id )
-      WHERE ( civicrm_entity_tag.entity_table LIKE '%civicrm_case%' )
-        AND ( civicrm_tag.parent_id = 296 )
-        AND ( civicrm_tag.is_tagset != 1 )
-        AND ( civicrm_case.is_deleted != 1 )
-      GROUP BY name
+        ON civicrm_case.id = civicrm_entity_tag.entity_id
+      WHERE civicrm_entity_tag.entity_table LIKE '%civicrm_case%'
+        AND civicrm_tag.parent_id = 296
+        AND civicrm_tag.is_tagset != 1
+        AND civicrm_case.is_deleted != 1
+      GROUP BY civicrm_tag.id, name
       ORDER BY ckword_count DESC
     ";
-    $dao = CRM_Core_DAO::executeQuery( $sql_ckword );
-    while ( $dao->fetch( ) ) {
+    $dao = CRM_Core_DAO::executeQuery($sql_ckword);
+    while ($dao->fetch()) {
       $ckeywords[$dao->name] = $dao->ckword_count;
     }
     $this->assign('ckeywords', $ckeywords);
-
-    //get contact positions
-    $sql_pos = "
-      SELECT civicrm_tag.name, COUNT( civicrm_entity_tag.id ) as pos_count
-      FROM civicrm_entity_tag
-      INNER JOIN civicrm_tag
-        ON ( civicrm_entity_tag.tag_id = civicrm_tag.id )
-      INNER JOIN civicrm_contact
-        ON ( civicrm_contact.id = civicrm_entity_tag.entity_id )
-      WHERE ( civicrm_entity_tag.entity_table LIKE '%civicrm_contact%' )
-        AND ( civicrm_tag.parent_id = 292 )
-        AND ( civicrm_tag.is_tagset != 1 )
-        AND ( civicrm_contact.is_deleted != 1 )
-      GROUP BY name
-      ORDER BY pos_count DESC;
-    ";
-    $dao = CRM_Core_DAO::executeQuery( $sql_pos );
-    while ( $dao->fetch( ) ) {
-      $positions[$dao->name] = $dao->pos_count;
-    }
-    $this->assign('positions', $positions);
 
     return parent::run( );
   }

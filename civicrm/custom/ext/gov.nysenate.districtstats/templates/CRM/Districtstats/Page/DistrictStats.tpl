@@ -12,7 +12,7 @@
       </tr>
       <tr>
         {foreach from=$contactTypes key=type item=tcount}
-          <td><a href="{$baseUrl}&contact_type={$type}">{$tcount}</a></td>
+          <td>{$tcount}</td>
         {/foreach}
         <td>{$contactGenders.2}</td>
         <td>{$contactGenders.1}</td>
