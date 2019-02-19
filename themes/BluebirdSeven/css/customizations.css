@@ -54,6 +54,12 @@ div#Tag li#j1_1 > a#tag_291 {
   background: #e8eef0 !important;
 }
 
+/*relationship tab 12077*/
+.crm-relationship-form-block-is_permission_a_b,
+.crm-relationship-form-block-is_permission_b_a {
+  display: none;
+}
+
 /*search builder*/
 #crm-container .CRM_Contact_Form_Search_Builder .crm-search-builder-add-row input.submit-link,
 #crm-container .CRM_Contact_Form_Search_Builder .crm-search-builder-add-block input.submit-link,
