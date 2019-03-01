@@ -2748,7 +2748,7 @@ WHERE id IN (' . implode(',', $copiedActivityIds) . ')';
         'Link Cases',
         'Assign Case Role',
         'Email',
-        'Inbound Email',
+        //'Inbound Email', //NYSS 12523
       );
 
       //do not allow to delete these activities, CRM-4543
