@@ -18,8 +18,6 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
   const DEFAULT_CONTACT_ID = 1;
 
-
-
   /**
    * add common resources
    */
@@ -830,6 +828,39 @@ class CRM_NYSS_Inbox_BAO_Inbox {
             catch (CiviCRM_API3_Exception $e) {
               //Civi::log()->debug('processMessages activity keywords', array('e' => $e));
               //$msg[] = 'Unable to assign all keywords to the activity.';
+            }
+          }
+        }
+
+        if (!empty($values['activity_tag'])) {
+          $tags = explode(',', CRM_Utils_Array::value('activity_tag', $values));
+          foreach ($tags as $tagID) {
+            try {
+              civicrm_api3('entity_tag', 'create', [
+                'entity_id' => $row['activity_id'],
+                'tag_id' => $tagID,
+                'entity_table' => 'civicrm_activity',
+              ]);
+            }
+            catch (CiviCRM_API3_Exception $e) {
+              //Civi::log()->debug('processMessages contact issue codes', array('e' => $e));
+              //$msg[] = 'Unable to assign all issue codes to the activity.';
+            }
+          }
+        }
+
+        if (!empty($values['activity_positions'])) {
+          foreach (explode(',', $values['activity_positions']) as $tagID) {
+            try {
+              civicrm_api3('entity_tag', 'create', [
+                'entity_id' => $row['activity_id'],
+                'tag_id' => $tagID,
+                'entity_table' => 'civicrm_activity',
+              ]);
+            }
+            catch (CiviCRM_API3_Exception $e) {
+              //Civi::log()->debug('processMessages contact positions', array('e' => $e));
+              //$msg[] = 'Unable to assign all positions to the contact.';
             }
           }
         }
