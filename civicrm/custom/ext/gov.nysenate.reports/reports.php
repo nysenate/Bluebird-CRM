@@ -208,18 +208,6 @@ function _reports_CaseDetail_col(&$var, &$object) {
         'no_repeat' => TRUE,
       ],
     ],
-    'group_bys' => [
-      'tag_name' => [
-        'name' => 'id',
-        'title' => ts('Tag'),
-        'default' => TRUE,
-      ],
-    ],
-    'order_bys' => [
-      'name' => [
-        'title' => ts('Tag Name'),
-      ],
-    ],
     'grouping' => 'case-fields',
   ];
 }
