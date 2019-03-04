@@ -122,6 +122,22 @@ function reports_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
   _reports_civix_civicrm_alterSettingsFolders($metaDataFolders);
 }
 
+function reports_civicrm_buildForm($formName, &$form) {
+  /*Civi::log()->debug('reports_civicrm_buildForm', array(
+    '$formName' => $formName,
+    '$form' => $form,
+  ));*/
+
+  if (strpos($formName, 'CRM_Report_Form_') !== FALSE) {
+    CRM_Core_Resources::singleton()->addStyleFile('gov.nysenate.reports', 'css/Reports.css');
+
+    if ($form->elementExists('grouprole')) {
+      $ele = &$form->getElement('grouprole');
+      _reports_GroupRole($ele);
+    }
+  }
+}
+
 function reports_civicrm_queryObjects(&$queryObjects, $type) {
   if ($type == 'Report') {
     $queryObjects[] = new CRM_NYSS_Reports_BAO_Query();
@@ -131,8 +147,9 @@ function reports_civicrm_queryObjects(&$queryObjects, $type) {
 function reports_civicrm_alterReportVar($varType, &$var, &$object) {
   /*Civi::log()->debug('alterReportVar', array(
     'varType' => $varType,
-    'var' => $var,
+    //'var' => $var,
     //'object' => $object,
+    '$ele' => $ele,
   ));*/
 
   $class = get_class($object);
@@ -165,6 +182,37 @@ function reports_civicrm_alterReportVar($varType, &$var, &$object) {
       break;
 
     default:
+  }
+}
+
+/**
+ * @param $ele
+ *
+ * simplify the list of groups/roles in the Access tab
+ * note: passed by reference
+ */
+function _reports_GroupRole(&$ele) {
+  //Civi::log()->debug('', ['ele' => $ele]);
+
+  $permittedRoles = [
+    'Office Administrator',
+    'Office Manager',
+    'Staff',
+    'Data Entry',
+    'Volunteer',
+    'Mailing Approver',
+    'Mailing Creator',
+    'Mailing Scheduler',
+    'Mailing Viewer',
+    'Manage Bluebird Inbox',
+    'Analytics User',
+    'Conference Services',
+  ];
+
+  foreach ($ele->_options as $key => &$opt) {
+    if (!in_array($opt['text'], $permittedRoles)) {
+      unset($ele->_options[$key]);
+    }
   }
 }
 

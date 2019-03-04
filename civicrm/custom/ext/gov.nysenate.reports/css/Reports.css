@@ -1,0 +1,15 @@
+body[class*='page-civicrm-report-'] #crm-container .crm-report-form-block .report-layout.statistics-table th,
+body[class*='page-civicrm-report-'] #crm-container .crm-report-form-block .report-layout.statistics-table td {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+body[class*='page-civicrm-report-'] #crm-container .crm-report-form-block .report-layout.display th,
+body[class*='page-civicrm-report-'] #crm-container .crm-report-form-block .report-layout.display td {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+body[class*='page-civicrm-report-'] #crm-container .crm-report-form-block .report-layout.display tr.odd-row td {
+  background-color: #FAFAFA !important;
+}
