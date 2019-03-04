@@ -1110,7 +1110,7 @@ function _buildHelpMenu($nyssBaseID) {
         'attributes' => array(
           'label' => 'Introduction',
           'name' => 'Introduction',
-          'url' => 'sites/all/docs/201711_bluebird_intro.pdf',
+          'url' => 'sites/all/docs/bluebird_intro.pdf',
           'permission' => 'access CiviCRM',
           'operator' => 'OR',
           'separator' => 0,
@@ -1125,7 +1125,7 @@ function _buildHelpMenu($nyssBaseID) {
         'attributes' => array(
           'label' => 'Inbound Email',
           'name' => 'Inbound Email',
-          'url' => 'sites/all/docs/201802_bluebird_inbound_email.pdf',
+          'url' => 'sites/all/docs/bluebird_inbound_email.pdf',
           'permission' => 'access CiviCRM',
           'operator' => 'OR',
           'separator' => 0,
@@ -1140,7 +1140,7 @@ function _buildHelpMenu($nyssBaseID) {
         'attributes' => array(
           'label' => 'Mass Email',
           'name' => 'Mass Email',
-          'url' => 'sites/all/docs/201711_bluebird_mass_email.pdf',
+          'url' => 'sites/all/docs/bluebird_mass_email.pdf',
           'permission' => 'access CiviCRM',
           'operator' => 'OR',
           'separator' => 0,
@@ -1155,7 +1155,7 @@ function _buildHelpMenu($nyssBaseID) {
         'attributes' => array(
           'label' => 'Postal Mailings',
           'name' => 'Postal Mailings',
-          'url' => 'sites/all/docs/201712_bluebird_postal_mail.pdf',
+          'url' => 'sites/all/docs/bluebird_postal_mail.pdf',
           'permission' => 'access CiviCRM',
           'operator' => 'OR',
           'separator' => 0,
