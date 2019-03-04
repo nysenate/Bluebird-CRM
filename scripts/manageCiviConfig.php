@@ -263,15 +263,17 @@ TEXT;
   // *** Footer Template ***
   else if ($comp_type == 'footer') {
     $offices = array();
-    $offices['Albany'] = $cfg['senator.address.albany'];
-    $offices['District'] = $cfg['senator.address.district'];
-    if ($cfg['senator.address.satellite']) {
-      $offices['Satellite'] = $cfg['senator.address.satellite'];
+    foreach (['Albany', 'District', 'Satellite'] as $offtype) {
+      $cfgparam = 'senator.address.' . strtolower($offtype);
+      if ($cfg[$cfgparam]) {
+        $offices[$offtype] = $cfg[$cfgparam];
+      }
     }
 
     if ($cont_type == 'html') {
-      if ($cfg['email.footer.include_addresses']) {
-        $width = round(100 / count($offices));
+      $num_offices = count($offices);
+      if ($cfg['email.footer.include_addresses'] && $num_offices > 0) {
+        $width = round(100 / $num_offices);
         $addresses = <<<HTML
     <tr>
     <td align="center" valign="top">
@@ -377,6 +379,10 @@ function modifyConfig(&$cfg, $bbcfg)
   $batchlimit = _getval($bbcfg, 'mailer.batch_limit', 1000);
   $jobsize = _getval($bbcfg, 'mailer.job_size', 1000);
   $jobsmax = _getval($bbcfg, 'mailer.jobs_max', 10);
+  $geoname = _getval($bbcfg, 'geo.provider', 'Google');
+  $geokey = _getval($bbcfg, 'geo.api.key', null);
+  $mapname = _getval($bbcfg, 'map.provider', 'Google');
+  $mapkey = _getval($bbcfg, 'map.api.key', null);
   $wkpath = _getval($bbcfg, 'wkhtmltopdf.path', '/usr/local/bin/wkhtmltopdf');
 
   if (isset($cfg['civicrm']['settings'])) {
@@ -387,8 +393,10 @@ function modifyConfig(&$cfg, $bbcfg)
     modifyParam($cs, 'mailerBatchLimit', $batchlimit);
     modifyParam($cs, 'mailerJobSize', $jobsize);
     modifyParam($cs, 'mailerJobsMax', $jobsmax);
-    modifyParam($cs, 'geoAPIKey', '');
-    modifyParam($cs, 'mapAPIKey', '');
+    modifyParam($cs, 'geoProvider', $geoname);
+    modifyParam($cs, 'geoAPIKey', $geokey);
+    modifyParam($cs, 'mapProvider', $mapname);
+    modifyParam($cs, 'mapAPIKey', $mapkey);
     modifyParam($cs, 'wkhtmltopdfPath', $wkpath);
 
     modifyParam($cs, 'uploadDir', "upload/");
@@ -610,7 +618,7 @@ function setEmailDefaults(&$cfg)
     $cfg['senator.address.albany'] = 'Legislative Office Bldg|Albany, NY 12247';
   }
   if (!isset($cfg['senator.address.district'])) {
-    $cfg['senator.address.district'] = 'ADDRESS OF DISTRICT OFFICE';
+    $cfg['senator.address.district'] = 'COMING SOON';
   }
   if (!isset($cfg['senator.address.satellite'])) {
     $cfg['senator.address.satellite'] = '';

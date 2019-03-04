@@ -137,7 +137,14 @@ function reports_civicrm_alterReportVar($varType, &$var, &$object) {
 
   $class = get_class($object);
   switch ($varType) {
-    case 'columnss':
+    case 'columns':
+      switch ($class) {
+        case 'CRM_Report_Form_Case_Detail':
+          _reports_CaseDetail_col($var, $object);
+          break;
+
+        default:
+      }
       break;
 
     case 'sql':
@@ -145,6 +152,11 @@ function reports_civicrm_alterReportVar($varType, &$var, &$object) {
         case 'CRM_Report_Form_Contact_LoggingSummary':
           _reports_LoggingSummary_sql($var, $object);
           break;
+
+        case 'CRM_Report_Form_Case_Detail':
+          _reports_CaseDetail_sql($var, $object);
+          break;
+
         default:
       }
       break;
@@ -180,4 +192,63 @@ function _reports_LoggingSummary_sql(&$var, &$object) {
     $where .= " AND extra_table.id IS NULL AND extra_table_2.id IS NULL";
     $var->setVar('_where', $where);
   }
+}
+
+function _reports_CaseDetail_col(&$var, &$object) {
+  $var['civicrm_tag'] = [
+    'dao' => 'CRM_Core_DAO_Tag',
+    'fields' => [
+      'id' => [
+        'required' => TRUE,
+        'no_display' => TRUE,
+      ],
+      'name' => [
+        'title' => ts('Tag Name'),
+        'default' => TRUE,
+        'no_repeat' => TRUE,
+      ],
+    ],
+    'grouping' => 'case-fields',
+  ];
+}
+
+function _reports_CaseDetail_sql(&$var, &$object) {
+  /*Civi::log()->debug('alterReportVar', array(
+    'var' => $var,
+    //'object' => $object,
+  ));*/
+
+  $from = $var->getVar('_from');
+  $from .= "
+    LEFT JOIN civicrm_entity_tag
+      ON civicrm_entity_tag.entity_id = {$var->getVar('_aliases')['civicrm_case']}.id
+      AND civicrm_entity_tag.entity_table LIKE '%civicrm_case%'
+    LEFT JOIN civicrm_tag tag_civireport
+      ON civicrm_entity_tag.tag_id = tag_civireport.id
+  ";
+
+  $var->setVar('_from', $from);
+
+  $selectClauses = &$var->_selectClauses;
+  foreach ($selectClauses as &$clause) {
+    switch ($clause) {
+      case 'tag_civireport.id as civicrm_tag_id':
+        $clause = 'GROUP_CONCAT(DISTINCT tag_civireport.id) as civicrm_tag_id';
+        break;
+      case 'tag_civireport.name as civicrm_tag_name':
+        $clause = 'GROUP_CONCAT(DISTINCT tag_civireport.name SEPARATOR ", ") as civicrm_tag_name';
+        break;
+      default:
+    }
+  }
+
+  $select = $var->_select;
+  $select = str_replace(', tag_civireport.id as civicrm_tag_id',
+    ', GROUP_CONCAT(DISTINCT tag_civireport.id) as civicrm_tag_id', $select);
+  $select = str_replace(', tag_civireport.name as civicrm_tag_name',
+    ', GROUP_CONCAT(DISTINCT tag_civireport.name SEPARATOR ", ") as civicrm_tag_name', $select);
+  $var->_select = $select;
+
+  $groupBy = $var->_groupBy;
+  $var->_groupBy = str_replace(', tag_civireport.id', '', $groupBy);
 }

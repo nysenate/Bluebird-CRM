@@ -1644,7 +1644,7 @@ function _processNote(&$l, $nyss_conn)
         INSERT INTO civicrm_note
         (entity_table, entity_id, note, contact_id, modified_date, subject, privacy)
         VALUES
-        ('{$params['entity_table']}', {$params['entity_id']}, %s, {$params['contact_id']}, '{$params['modified_date']}', '{$params['subject']}', {$params['privacy']})
+        ('{$params['entity_table']}', {$params['entity_id']}, '%s', {$params['contact_id']}, '{$params['modified_date']}', '{$params['subject']}', {$params['privacy']})
       ", mysqli_real_escape_string($nyss_conn, $params['note']));
       mysqli_query($nyss_conn, $sql) or die(mysqli_error($nyss_conn));
     }

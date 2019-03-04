@@ -32,7 +32,7 @@ CKEDITOR.editorConfig = function( config ) {
   config.pasteFromWordNumberedHeadingToList = true;
 
   //NYSS additional plugins
-  config.extraPlugins = 'font,aspell,justify';
+  config.extraPlugins = 'font,aspell,justify,colorbutton';
 
   //NYSS support anchors
   config.extraAllowedContent = 'a[name]';
@@ -50,9 +50,9 @@ CKEDITOR.editorConfig = function( config ) {
     '/',
     { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
     { name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align', 'justify' ] }, //NYSS
-    { name: 'styles' },
-    { name: 'colors' },
-    { name: 'about' }
+    { name: 'styles', groups: [ 'styles' ] },
+    { name: 'colors', groups: [ 'colors' ] },
+    { name: 'about', groups: [ 'about' ] }
   ];
 
   // Remove some buttons provided by the standard plugins, which are
