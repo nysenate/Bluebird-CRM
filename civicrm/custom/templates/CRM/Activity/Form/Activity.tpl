@@ -172,6 +172,7 @@
     <td class="label">{$form.result.label}</td><td class="view-value">{$form.result.html}</td>
   </tr>
   {/if}
+  {*NYSS 12439*}
   {if $form.tag.html}
   <tr class="crm-activity-form-block-tag">
     <td class="label">Issue Codes</td>
@@ -182,7 +183,7 @@
   {/if}
 
   {if $tagsetInfo.activity}
-  <tr class="crm-activity-form-block-tag_set">{include file="CRM/common/Tagset.tpl" tagsetType='activity' tableLayout=true}</tr>
+    <tr class="crm-activity-form-block-tag_set">{include file="CRM/common/Tagset.tpl" tagsetType='activity' tableLayout=true}</tr>
   {/if}
 
   {if $action neq 4 OR $viewCustomData}
