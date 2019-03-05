@@ -343,15 +343,20 @@ function tags_civicrm_validateForm($formName, &$fields, &$files, &$form, &$error
   //we need to take the submitted value, create the tag, and replace the
   //submitted value with the newly created tag id
   if (($formName == 'CRM_Contact_Form_Contact' && !empty($fields['contact_taglist'][292])) ||
-    ($formName == 'CRM_Activity_Form_Activity' && !empty($fields['activity_taglist'][292]))
+    ($formName == 'CRM_Activity_Form_Activity' && !empty($fields['activity_taglist'][292])) ||
+    ($formName == 'CRM_Case_Form_Case' && !empty($fields['case_taglist'][292]))
   ) {
     if (isset($fields['contact_taglist'])) {
       $legPosTagFld = 'contact_taglist';
       $recordType = 'Contact';
     }
-    else {
+    elseif (isset($fields['activity_taglist'])) {
       $legPosTagFld = 'activity_taglist';
       $recordType = 'Activity';
+    }
+    elseif (isset($fields['case_taglist'])) {
+      $legPosTagFld = 'case_taglist';
+      $recordType = 'Case';
     }
 
     $tags = array();
