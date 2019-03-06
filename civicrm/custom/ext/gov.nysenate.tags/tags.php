@@ -359,20 +359,7 @@ function tags_civicrm_validateForm($formName, &$fields, &$files, &$form, &$error
       $recordType = 'Case';
     }
 
-    $tags = array();
-    foreach (explode(',', $fields[$legPosTagFld][292]) as $tag) {
-      if (strpos($tag, ':::') !== false) {
-        try {
-          $tags[] = civicrm_api3('nyss_tags', 'savePosition', array(
-            'value' => $tag,
-          ));
-        }
-        catch (CiviCRM_API3_Exception $e) {}
-      }
-      else {
-        $tags[] = $tag;
-      }
-    }
+    $tags = CRM_Tags_NYSS::processPositionsList($fields[$legPosTagFld][292]);
 
     $data = &$form->controller->container();
     $data['values'][$recordType][$legPosTagFld][292] = implode(',', $tags);
