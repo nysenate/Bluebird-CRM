@@ -46,6 +46,10 @@ class CRM_Case_Page_AJAX {
     $tags = CRM_Utils_Type::escape($_POST['tag'], 'String');
     $tagList = $_POST['taglist'];
 
+    //NYSS 12439
+    $legPos = CRM_Tags_NYSS::processPositionsList($tagList[292]);
+    $tagList[292] = implode(',', $legPos);
+
     if (!CRM_Case_BAO_Case::accessCase($caseId)) {
       CRM_Utils_System::permissionDenied();
     }

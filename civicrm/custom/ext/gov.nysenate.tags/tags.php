@@ -343,31 +343,23 @@ function tags_civicrm_validateForm($formName, &$fields, &$files, &$form, &$error
   //we need to take the submitted value, create the tag, and replace the
   //submitted value with the newly created tag id
   if (($formName == 'CRM_Contact_Form_Contact' && !empty($fields['contact_taglist'][292])) ||
-    ($formName == 'CRM_Activity_Form_Activity' && !empty($fields['activity_taglist'][292]))
+    ($formName == 'CRM_Activity_Form_Activity' && !empty($fields['activity_taglist'][292])) ||
+    ($formName == 'CRM_Case_Form_Case' && !empty($fields['case_taglist'][292]))
   ) {
     if (isset($fields['contact_taglist'])) {
       $legPosTagFld = 'contact_taglist';
       $recordType = 'Contact';
     }
-    else {
+    elseif (isset($fields['activity_taglist'])) {
       $legPosTagFld = 'activity_taglist';
       $recordType = 'Activity';
     }
-
-    $tags = array();
-    foreach (explode(',', $fields[$legPosTagFld][292]) as $tag) {
-      if (strpos($tag, ':::') !== false) {
-        try {
-          $tags[] = civicrm_api3('nyss_tags', 'savePosition', array(
-            'value' => $tag,
-          ));
-        }
-        catch (CiviCRM_API3_Exception $e) {}
-      }
-      else {
-        $tags[] = $tag;
-      }
+    elseif (isset($fields['case_taglist'])) {
+      $legPosTagFld = 'case_taglist';
+      $recordType = 'Case';
     }
+
+    $tags = CRM_Tags_NYSS::processPositionsList($fields[$legPosTagFld][292]);
 
     $data = &$form->controller->container();
     $data['values'][$recordType][$legPosTagFld][292] = implode(',', $tags);
