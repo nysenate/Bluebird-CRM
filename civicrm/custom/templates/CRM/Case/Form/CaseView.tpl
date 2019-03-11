@@ -312,10 +312,9 @@
 </div><!-- /.crm-accordion-wrapper -->
 
 <div id="manageTagsDialog" class="hiddenElement">
-  {*NYSS 5320*}
+  {*NYSS 5320/12439*}
   {*<div class="label">{$form.case_tag.label}</div>*}
-  <div class="view-value">
-  {*<div class="crm-select-container">{$form.case_tag.html}</div>*}
+  <div class="view-value"><div class="crm-select-container">Issue Codes {$form.case_tag.html}</div>
     <br/>
     <div style="text-align:left;">{include file="CRM/common/Tagset.tpl" tagsetType='case'}</div>
     <br/>
