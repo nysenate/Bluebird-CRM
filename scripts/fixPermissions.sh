@@ -48,8 +48,8 @@ set -x
 # Senators cannot delete their own header and footer images.  I am chowning
 # the directory to "root" so that only root can modify images there.
 # In addition, the common/ directory must be locked down.
-chown -R root "$datdir"/*.*/pubfiles/images/template
-chmod -R go-w "$datdir"/*.*/pubfiles/images/template
+chown -R root "$datdir"/*/pubfiles/images/template
+chmod -R go-w "$datdir"/*/pubfiles/images/template
 chown -R root "$datdir"/common/
 chmod -R go-w "$datdir"/common/
 
