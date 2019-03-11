@@ -106,6 +106,12 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
       'class' => "crm-contact-tagset",
     ), FALSE);
 
+    //tag tree
+    $tags = CRM_Core_BAO_Tag::getColorTags('civicrm_contact');
+    if (!empty($tags)) {
+      $this->add('select2', 'tag', ts('Issue Codes'), $tags, FALSE, array('class' => 'huge', 'placeholder' => ts('- select -'), 'multiple' => TRUE));
+    }
+
     $this->addEntityRef('activity_keywords', 'Keywords', array(
       'entity' => 'tag',
       'multiple' => TRUE,
@@ -116,10 +122,16 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
       'class' => "crm-activity-tagset",
     ), FALSE);
 
-    //tag tree
-    $tags = CRM_Core_BAO_Tag::getColorTags('civicrm_contact');
+    $this->addEntityRef('activity_positions', 'Positions', array(
+      'entity' => 'nyss_tags',
+      'multiple' => TRUE,
+      'create' => FALSE,
+      'api' => array('params' => array('parent_id' => 292)),
+      'class' => "crm-activity-tagset",
+    ), FALSE);
+
     if (!empty($tags)) {
-      $this->add('select2', 'tag', ts('Issue Codes'), $tags, FALSE, array('class' => 'huge', 'placeholder' => ts('- select -'), 'multiple' => TRUE));
+      $this->add('select2', 'activity_tag', ts('Issue Codes'), $tags, FALSE, array('class' => 'huge', 'placeholder' => ts('- select -'), 'multiple' => TRUE));
     }
 
     //groups

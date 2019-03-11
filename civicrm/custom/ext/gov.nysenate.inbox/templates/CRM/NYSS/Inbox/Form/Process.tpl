@@ -30,16 +30,15 @@
   </div>
 
   <div id="process-tagscontact" class='ui-tabs-panel ui-widget-content ui-corner-bottom'>
-    <div class="crm-section tag-keywords">
-      <div class="label">{$form.contact_keywords.label}</div>
-      <div class="content">{$form.contact_keywords.html}</div>
-      <div class="clear"></div>
-    </div>
-
-    {*inject tagtree*}
     <div class="crm-section tag-tree">
       <div class="label">{$form.tag.label}</div>
       <div class="content">{$form.tag.html}</div>
+      <div class="clear"></div>
+    </div>
+    
+    <div class="crm-section tag-keywords">
+      <div class="label">{$form.contact_keywords.label}</div>
+      <div class="content">{$form.contact_keywords.html}</div>
       <div class="clear"></div>
     </div>
 
@@ -59,9 +58,21 @@
   </div>
 
   <div id="process-tagsactivity" class='ui-tabs-panel ui-widget-content ui-corner-bottom'>
+    <div class="crm-section tag-tree">
+      <div class="label">{$form.activity_tag.label}</div>
+      <div class="content">{$form.activity_tag.html}</div>
+      <div class="clear"></div>
+    </div>
+
     <div class="crm-section">
       <div class="label">{$form.activity_keywords.label}</div>
       <div class="content">{$form.activity_keywords.html}</div>
+      <div class="clear"></div>
+    </div>
+
+    <div class="crm-section tag-positions">
+      <div class="label">{$form.activity_positions.label}</div>
+      <div class="content">{$form.activity_positions.html}</div>
       <div class="clear"></div>
     </div>
   </div>

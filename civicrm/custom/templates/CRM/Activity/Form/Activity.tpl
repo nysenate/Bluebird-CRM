@@ -172,28 +172,18 @@
     <td class="label">{$form.result.label}</td><td class="view-value">{$form.result.html}</td>
   </tr>
   {/if}
-  {*NYSS 5105 - suppress hierarchal tags*}
-  {*if $form.tag.html}
+  {*NYSS 12439*}
+  {if $form.tag.html}
   <tr class="crm-activity-form-block-tag">
-    <td class="label">{$form.tag.label}</td>
-    <td class="view-value"><div class="crm-select-container">{$form.tag.html}</div>
-      {literal}
-        <script type="text/javascript">
-          cj(".crm-activity-form-block-tag select[multiple]").crmasmSelect({
-            addItemTarget: 'bottom',
-            animate: true,
-            highlight: true,
-            sortable: true,
-            respectParents: true
-          });
-        </script>
-      {/literal}
+    <td class="label">Issue Codes</td>
+    <td class="view-value">
+      <div class="crm-select-container">{$form.tag.html}</div>
     </td>
   </tr>
-  {/if*}
+  {/if}
 
   {if $tagsetInfo.activity}
-  <tr class="crm-activity-form-block-tag_set">{include file="CRM/common/Tagset.tpl" tagsetType='activity' tableLayout=true}</tr>
+    <tr class="crm-activity-form-block-tag_set">{include file="CRM/common/Tagset.tpl" tagsetType='activity' tableLayout=true}</tr>
   {/if}
 
   {if $action neq 4 OR $viewCustomData}

@@ -134,7 +134,6 @@ function tags_civicrm_alterSettingsFolders(&$metaDataFolders = null) {
   _tags_civix_civicrm_alterSettingsFolders($metaDataFolders);
 }
 
-
 function tags_civicrm_merge($type, &$sqls, $fromId, $toId, $tables) {
   //insert civicrm_log record for every contact, case or activity affected
   //by a tag merge.
@@ -154,7 +153,6 @@ function tags_civicrm_merge($type, &$sqls, $fromId, $toId, $tables) {
     array_unshift($sqls, $sql);
   }
 } //tags_civicrm_merge()
-
 
 function tags_civicrm_buildForm($formName, &$form) {
   /*Civi::log()->debug('buildForm', array(
@@ -327,16 +325,14 @@ function tags_civicrm_buildForm($formName, &$form) {
   if ($formName == 'CRM_Tag_Form_Edit' && !$form->getVar('_isTagSet')) {
     if ($form->elementExists('used_for')) {
       $form->setDefaults(array(
-        'used_for' => 'civicrm_contact',
+        'used_for' => 'civicrm_contact,civicrm_activity,civicrm_case',
       ));
       $form->getElement('used_for')->freeze();
     }
   }
 } //tags_civicrm_buildForm()
 
-
-function tags_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors)
-{
+function tags_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
   /*Civi::log()->debug('tags_civicrm_postProcess', array(
     'formName' => $formName,
     '$fields' => $fields,
@@ -346,31 +342,32 @@ function tags_civicrm_validateForm($formName, &$fields, &$files, &$form, &$error
   //11334 (extension of 10658): process leg positions from contact edit form
   //we need to take the submitted value, create the tag, and replace the
   //submitted value with the newly created tag id
-  if ($formName == 'CRM_Contact_Form_Contact' && !empty($fields['contact_taglist'][292])) {
-    $tags = array();
-    foreach (explode(',', $fields['contact_taglist'][292]) as $tag) {
-      if (strpos($tag, ':::') !== false) {
-        try {
-          $tags[] = civicrm_api3('nyss_tags', 'savePosition', array(
-            'value' => $tag,
-          ));
-        }
-        catch (CiviCRM_API3_Exception $e) {}
-      }
-      else {
-        $tags[] = $tag;
-      }
+  if (($formName == 'CRM_Contact_Form_Contact' && !empty($fields['contact_taglist'][292])) ||
+    ($formName == 'CRM_Activity_Form_Activity' && !empty($fields['activity_taglist'][292])) ||
+    ($formName == 'CRM_Case_Form_Case' && !empty($fields['case_taglist'][292]))
+  ) {
+    if (isset($fields['contact_taglist'])) {
+      $legPosTagFld = 'contact_taglist';
+      $recordType = 'Contact';
+    }
+    elseif (isset($fields['activity_taglist'])) {
+      $legPosTagFld = 'activity_taglist';
+      $recordType = 'Activity';
+    }
+    elseif (isset($fields['case_taglist'])) {
+      $legPosTagFld = 'case_taglist';
+      $recordType = 'Case';
     }
 
+    $tags = CRM_Tags_NYSS::processPositionsList($fields[$legPosTagFld][292]);
+
     $data = &$form->controller->container();
-    $data['values']['Contact']['contact_taglist'][292] = implode(',', $tags);
+    $data['values'][$recordType][$legPosTagFld][292] = implode(',', $tags);
     //Civi::log()->debug('tags_civicrm_postProcess', array('$tags' => $tags, '$data' => $data));
   }
 } //tags_civicrm_validateForm()
 
-
-function tags_civicrm_pageRun(&$page)
-{
+function tags_civicrm_pageRun(&$page) {
   //Civi::log()->debug('tags_civicrm_pageRun', array('$page' => $page));
 
   if (is_a($page, 'CRM_Tag_Page_Tag')) {
@@ -389,7 +386,6 @@ function tags_civicrm_pageRun(&$page)
     Civi::resources()->addStyleFile('gov.nysenate.tags', 'css/page_manage_tags.css');
   }
 } //tags_civicrm_pageRun()
-
 
 function tags_civicrm_alterEntityRefParams(&$params, $formName) {
   /*Civi::log()->debug('tags_civicrm_alterEntityRefParams', array(
@@ -411,25 +407,6 @@ function tags_civicrm_alterEntityRefParams(&$params, $formName) {
     $params['label_field'] = 'name';
   }
 } //tags_civicrm_alterEntityRefParams()
-
-
-function tags_civicrm_apiWrappers(&$wrappers, $apiRequest) {
-  /*if ($apiRequest['action'] == 'getlist') {
-    Civi::log()->debug('tags_civicrm_apiWrappers', [
-      //'$wrappers' => $wrappers,
-      '$apiRequest' => $apiRequest,
-    ]);
-  }*/
-
-  /*if ($apiRequest['entity'] == 'Tag' &&
-    $apiRequest['action'] == 'getlist' &&
-    !empty($apiRequest['params']['params']['parent_id']) &&
-    $apiRequest['params']['params']['parent_id'] == 292
-  ) {
-    $wrappers[] = new CRM_Tags_APIWrapper();
-  }*/
-} //tags_civicrm_apiWrapper()
-
 
 function tags_civicrm_alterAPIPermissions($entity, $action, &$params, &$permissions) {
   /*Civi::log()->debug('tags_civicrm_alterAPIPermissions', [

@@ -379,6 +379,10 @@ function modifyConfig(&$cfg, $bbcfg)
   $batchlimit = _getval($bbcfg, 'mailer.batch_limit', 1000);
   $jobsize = _getval($bbcfg, 'mailer.job_size', 1000);
   $jobsmax = _getval($bbcfg, 'mailer.jobs_max', 10);
+  $geoname = _getval($bbcfg, 'geo.provider', 'Google');
+  $geokey = _getval($bbcfg, 'geo.api.key', null);
+  $mapname = _getval($bbcfg, 'map.provider', 'Google');
+  $mapkey = _getval($bbcfg, 'map.api.key', null);
   $wkpath = _getval($bbcfg, 'wkhtmltopdf.path', '/usr/local/bin/wkhtmltopdf');
 
   if (isset($cfg['civicrm']['settings'])) {
@@ -389,8 +393,10 @@ function modifyConfig(&$cfg, $bbcfg)
     modifyParam($cs, 'mailerBatchLimit', $batchlimit);
     modifyParam($cs, 'mailerJobSize', $jobsize);
     modifyParam($cs, 'mailerJobsMax', $jobsmax);
-    modifyParam($cs, 'geoAPIKey', '');
-    modifyParam($cs, 'mapAPIKey', '');
+    modifyParam($cs, 'geoProvider', $geoname);
+    modifyParam($cs, 'geoAPIKey', $geokey);
+    modifyParam($cs, 'mapProvider', $mapname);
+    modifyParam($cs, 'mapAPIKey', $mapkey);
     modifyParam($cs, 'wkhtmltopdfPath', $wkpath);
 
     modifyParam($cs, 'uploadDir', "upload/");
