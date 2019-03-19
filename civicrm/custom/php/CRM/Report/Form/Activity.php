@@ -636,8 +636,15 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                 CRM_Utils_Array::value("{$fieldName}_min", $this->_params),
                 CRM_Utils_Array::value("{$fieldName}_max", $this->_params)
               );
+
               if ($field['name'] == 'include_case_activities') {
                 $clause = NULL;
+                //NYSS 12523
+                if (empty($this->_params['include_case_activities_value'])) {
+                  $clause = "{$this->_aliases['civicrm_activity']}.id NOT IN (
+                    SELECT activity_id FROM civicrm_case_activity
+                  )";
+                }
               }
               if ($fieldName == 'activity_type_id' &&
                 empty($this->_params['activity_type_id_value'])
