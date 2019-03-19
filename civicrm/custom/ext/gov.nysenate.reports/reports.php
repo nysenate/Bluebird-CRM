@@ -175,6 +175,11 @@ function reports_civicrm_alterReportVar($varType, &$var, &$object) {
 
         default:
       }
+
+      if (array_key_exists('civicrm_address', $var)) {
+        _reports_DistrictInfo_col($var, $object);
+      }
+
       break;
 
     case 'sql':
@@ -189,6 +194,11 @@ function reports_civicrm_alterReportVar($varType, &$var, &$object) {
 
         default:
       }
+
+      if (array_key_exists('civicrm_address', $var->getVar('_columns'))) {
+        _reports_DistrictInfo_sql($var, $object);
+      }
+
       break;
 
     case 'rows':
@@ -281,4 +291,145 @@ function _reports_CaseDetail_sql(&$var, &$object) {
 
   $groupBy = $var->_groupBy;
   $var->_groupBy = str_replace(', tag_civireport.id', '', $groupBy);
+}
+
+function _reports_DistrictInfo_col(&$var, &$object) {
+  $var['civicrm_value_district_information_7'] = [
+    'alias' => 'district_info',
+    'grouping' => 'civicrm_value_district_information_7',
+    'group_title' => 'Disrict Information',
+    'fields' => [
+      'congressional_district' => [
+        'name' => 'congressional_district_46',
+        'title' => 'Congressional District',
+      ],
+      'senate_district' => [
+        'name' => 'ny_senate_district_47',
+        'title' => 'Senate District',
+      ],
+      'assembly_district' => [
+        'name' => 'ny_assembly_district_48',
+        'title' => 'Assembly District',
+      ],
+      'election_district' => [
+        'name' => 'election_district_49',
+        'title' => 'Election District',
+      ],
+      'county' => [
+        'name' => 'county_50',
+        'title' => 'County',
+      ],
+      'county_legislative_distrcit' => [
+        'name' => 'county_legislative_district_51',
+        'title' => 'County Legislative District',
+      ],
+      'town' => [
+        'name' => 'town_52',
+        'title' => 'Town',
+      ],
+      'ward' => [
+        'name' => 'ward_53',
+        'title' => 'Ward',
+      ],
+      'school_district' => [
+        'name' => 'school_district_54',
+        'title' => 'School District',
+      ],
+      'new_york_city_council' => [
+        'name' => 'new_york_city_council_55',
+        'title' => 'New York City Council',
+      ],
+      'neighborhood' => [
+        'name' => 'neighborhood_56',
+        'title' => 'Neighborhood',
+      ],
+    ],
+    'filters' => [
+      'congressional_district' => [
+        'name' => 'congressional_district_46',
+        'title' => 'Congressional District',
+        'operator' => 'like',
+        'type' => CRM_Report_Form::OP_INT,
+      ],
+      'senate_district' => [
+        'name' => 'ny_senate_district_47',
+        'title' => 'Senate District',
+        'operator' => 'like',
+        'type' => CRM_Report_Form::OP_INT,
+      ],
+      'assembly_district' => [
+        'name' => 'ny_assembly_district_48',
+        'title' => 'Assembly District',
+        'operator' => 'like',
+        'type' => CRM_Report_Form::OP_INT,
+      ],
+      'election_district' => [
+        'name' => 'election_district_49',
+        'title' => 'Election District',
+        'operator' => 'like',
+        'type' => CRM_Report_Form::OP_INT,
+      ],
+      'county' => [
+        'name' => 'county_50',
+        'title' => 'County',
+        'operator' => 'like',
+        'type' => CRM_Report_Form::OP_INT,
+      ],
+      'county_legislative_distrcit' => [
+        'name' => 'county_legislative_district_51',
+        'title' => 'County Legislative District',
+        'operator' => 'like',
+        'type' => CRM_Report_Form::OP_INT,
+      ],
+      'town' => [
+        'name' => 'town_52',
+        'title' => 'Town',
+        'operator' => 'like',
+        'type' => CRM_Report_Form::OP_STRING,
+      ],
+      'ward' => [
+        'name' => 'ward_53',
+        'title' => 'Ward',
+        'operator' => 'like',
+        'type' => CRM_Report_Form::OP_INT,
+      ],
+      'school_district' => [
+        'name' => 'school_district_54',
+        'title' => 'School District',
+        'operator' => 'like',
+        'type' => CRM_Report_Form::OP_INT,
+      ],
+      'new_york_city_council' => [
+        'name' => 'new_york_city_council_55',
+        'title' => 'New York City Council',
+        'operator' => 'like',
+        'type' => CRM_Report_Form::OP_INT,
+      ],
+      'neighborhood' => [
+        'name' => 'neighborhood_56',
+        'title' => 'Neighborhood',
+        'operator' => 'like',
+        'type' => CRM_Report_Form::OP_STRING,
+      ],
+    ],
+  ];
+}
+
+function _reports_DistrictInfo_sql(&$var, &$object) {
+  /*Civi::log()->debug('_reports_DistrictInfo_sql', array(
+    'var' => $var,
+    'object' => $object,
+  ));*/
+
+  $from = $var->getVar('_from');
+  $aliases = $var->getVar('_aliases');
+
+  //civi tries to add it automatically; remove so we can control the join
+  $from = str_replace('LEFT JOIN civicrm_value_district_information_7 district_info_civireport ON district_info_civireport.entity_id = .id', '', $from);
+
+  $from .= "
+    LEFT JOIN civicrm_value_district_information_7 {$aliases['civicrm_value_district_information_7']}
+      ON {$aliases['civicrm_address']}.id = {$aliases['civicrm_value_district_information_7']}.entity_id
+  ";
+  $var->setVar('_from', $from);
 }
