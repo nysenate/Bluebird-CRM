@@ -175,19 +175,6 @@ function _nyss_reports_Activity_cols(&$var, &$object) {
     'title' => ts('Contact Tags'),
   );
 
-  //5059
-  $var['civicrm_contact']['order_bys']['contact_target'] = array(
-    'name'  => 'sort_name',
-    'dbAlias' => 'civicrm_contact_target_name',
-    'title' => ts('Target Name'),
-  );
-
-  $var['civicrm_email']['order_bys']['target_contact_email'] = array(
-    'name' => 'email',
-    'title' => ts('Target Email'),
-    'dbAlias' => 'civicrm_email_contact_target_email',
-  );
-
   //7540/12067
   $var['civicrm_activity']['fields']['activity_type_id_orderby'] = $var['civicrm_activity']['fields']['activity_type_id'];
   $var['civicrm_activity']['fields']['activity_type_id_orderby']['name'] = 'activity_type_id';
