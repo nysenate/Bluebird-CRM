@@ -178,7 +178,7 @@ function _nyss_reports_Activity_cols(&$var, &$object) {
   //5059
   $var['civicrm_contact']['order_bys']['contact_target'] = array(
     'name'  => 'sort_name',
-    'dbAlias' => 'civicrm_contact_target_name',
+    'dbAlias' => 'civicrm_contact_contact_target',
     'title' => ts('Target Name'),
   );
 
