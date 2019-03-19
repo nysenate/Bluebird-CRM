@@ -129,27 +129,6 @@ function reports_civicrm_validateForm($formName, &$fields, &$files, &$form, &$er
     'fields' => $fields,
     'errors' => $errors,
   ]);*/
-
-  //12440 allow tags with the same name and different parents
-  if ($formName == 'CRM_Tag_Form_Edit') {
-    $form->setElementError('name', NULL);
-
-    $parentSql = (!empty($fields['parent_id'])) ? "AND parent_id = %2" : 'AND parent_id IS NULL';
-    $checkExistence = CRM_Core_DAO::singleValueQuery("
-      SELECT id
-      FROM civicrm_tag
-      WHERE name = %1
-        {$parentSql}
-      LIMIT 1
-    ", [
-      1 => [$fields['name'], 'String'],
-      2 => [$fields['parent_id'], 'Positive'],
-    ]);
-
-    if ($checkExistence) {
-      $errors['name'] = 'Tag names must be unique for a common parent tag.';
-    }
-  }
 }
 
 function reports_civicrm_queryObjects(&$queryObjects, $type) {
