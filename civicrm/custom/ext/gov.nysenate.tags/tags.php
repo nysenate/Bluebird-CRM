@@ -334,9 +334,11 @@ function tags_civicrm_buildForm($formName, &$form) {
 
 function tags_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
   /*Civi::log()->debug('tags_civicrm_postProcess', array(
-    'formName' => $formName,
+    '$formName' => $formName,
     '$fields' => $fields,
     '$errors' => $errors,
+    '$form' => $form,
+    '$_REQUEST' => $_REQUEST,
   ));*/
 
   //11334 (extension of 10658): process leg positions from contact edit form
@@ -367,8 +369,15 @@ function tags_civicrm_validateForm($formName, &$fields, &$files, &$form, &$error
   }
 
   //12440 allow tags with the same name and different parents
-  if ($formName == 'CRM_Tag_Form_Edit') {
+  if ($formName == 'CRM_Tag_Form_Edit' &&
+    ($form->_action == CRM_Core_Action::ADD || $form->_action == CRM_Core_Action::UPDATE)
+  ) {
     $form->setElementError('name', NULL);
+
+    //parent_id is not passed in $fields for tagsets
+    if (!isset($fields['parent_id']) && !empty($_REQUEST['parent_id'])) {
+      $fields['parent_id'] = $_REQUEST['parent_id'];
+    }
 
     //construct SQL clauses/params
     $sqlParams = [1 => [$fields['name'], 'String']];
