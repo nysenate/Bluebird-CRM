@@ -370,17 +370,23 @@ function tags_civicrm_validateForm($formName, &$fields, &$files, &$form, &$error
   if ($formName == 'CRM_Tag_Form_Edit') {
     $form->setElementError('name', NULL);
 
-    $parentSql = (!empty($fields['parent_id'])) ? "AND parent_id = %2" : 'AND parent_id IS NULL';
+    //construct SQL clauses/params
+    $sqlParams = [1 => [$fields['name'], 'String']];
+    if (!empty($fields['parent_id'])) {
+      $parentSql = "AND parent_id = %2";
+      $sqlParams[2] = [$fields['parent_id'], 'Positive'];
+    }
+    else {
+      $parentSql = 'AND parent_id IS NULL';
+    }
+
     $checkExistence = CRM_Core_DAO::singleValueQuery("
       SELECT id
       FROM civicrm_tag
       WHERE name = %1
         {$parentSql}
       LIMIT 1
-    ", [
-      1 => [$fields['name'], 'String'],
-      2 => [$fields['parent_id'], 'Positive'],
-    ]);
+    ", $sqlParams);
 
     if ($checkExistence) {
       $errors['name'] = 'Tag names must be unique for a common parent tag.';
