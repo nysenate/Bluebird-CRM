@@ -276,7 +276,7 @@ function _reports_DistrictInfo_col(&$var, &$object) {
   $var['civicrm_value_district_information_7'] = [
     'alias' => 'district_info',
     'grouping' => 'civicrm_value_district_information_7',
-    'group_title' => 'Disrict Information',
+    'group_title' => 'District Information',
     'fields' => [
       'congressional_district' => [
         'name' => 'congressional_district_46',
