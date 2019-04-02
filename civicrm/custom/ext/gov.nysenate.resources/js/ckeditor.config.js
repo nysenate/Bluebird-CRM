@@ -32,7 +32,7 @@ CKEDITOR.editorConfig = function( config ) {
   config.pasteFromWordNumberedHeadingToList = true;
 
   //NYSS additional plugins
-  config.extraPlugins = 'font,aspell,justify,colorbutton';
+  config.extraPlugins = 'font,aspell,justify,colorbutton,image2';
 
   //NYSS support anchors
   config.extraAllowedContent = 'a[name]';
