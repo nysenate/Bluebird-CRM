@@ -397,6 +397,8 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
    * @param null $recordType
    */
   public function select($recordType = 'target') {
+    //Civi::log()->debug('', ['$this->_selectClauses' => $this->_selectClauses]);
+
     if (!array_key_exists("contact_{$recordType}", $this->_params['fields']) &&
       $recordType != 'final'
     ) {
@@ -437,7 +439,8 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
           strstr($clause, 'civicrm_email_source.') ||
           strstr($clause, 'civicrm_phone_target.') ||
           strstr($clause, 'civicrm_phone_source.') ||
-          strstr($clause, 'civicrm_address_') //NYSS 11663
+          strstr($clause, 'civicrm_address_') || //NYSS 11663
+          strstr($clause, 'district_info_civireport.') //NYSS 12558
         ) {
           $removeKeys[] = $key;
           unset($this->_selectClauses[$key]);
@@ -452,7 +455,8 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
           strstr($clause, 'civicrm_email_assignee.') ||
           strstr($clause, 'civicrm_phone_target.') ||
           strstr($clause, 'civicrm_phone_assignee.') ||
-          strstr($clause, 'civicrm_address_') //NYSS 11663
+          strstr($clause, 'civicrm_address_') || //NYSS 11663
+          strstr($clause, 'district_info_civireport.') //NYSS 12558
         ) {
           $removeKeys[] = $key;
           unset($this->_selectClauses[$key]);
@@ -461,6 +465,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
     }
     elseif ($recordType == 'final') {
       $this->_selectClauses = $this->_selectAliasesTotal;
+      //Civi::log()->debug('final', ['$this->_selectClauses' => $this->_selectClauses]);
       foreach ($this->_selectClauses as $key => $clause) {
         if (strstr($clause, 'civicrm_contact_contact_target') ||
           strstr($clause, 'civicrm_contact_contact_assignee') ||
@@ -471,7 +476,8 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
           strstr($clause, 'civicrm_email_contact_assignee_email') ||
           strstr($clause, 'civicrm_email_contact_target_email') ||
           strstr($clause, 'civicrm_phone_contact_target_phone') ||
-          strstr($clause, 'civicrm_address_') //NYSS 11663
+          strstr($clause, 'civicrm_address_') || //NYSS 11663
+          strstr($clause, 'civicrm_value_district_') //NYSS 12558
         ) {
           $this->_selectClauses[$key] = "GROUP_CONCAT(DISTINCT $clause SEPARATOR ';') as $clause"; //NYSS 11663
         }
