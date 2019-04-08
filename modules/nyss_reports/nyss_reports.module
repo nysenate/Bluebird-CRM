@@ -156,14 +156,16 @@ function nyss_reports_civicrm_alterLogTables(&$logTableSpec) {
 }
 
 function _nyss_reports_Base_cols(&$var, &$object) {
-  unset($var['civicrm_address']['fields']['country_id']);
-  unset($var['civicrm_address']['fields']['county_id']);
+  if (isset($var['civicrm_address'])) {
+    unset($var['civicrm_address']['fields']['country_id']);
+    unset($var['civicrm_address']['fields']['county_id']);
 
-  unset($var['civicrm_address']['filters']['country_id']);
-  unset($var['civicrm_address']['filters']['county_id']);
+    unset($var['civicrm_address']['filters']['country_id']);
+    unset($var['civicrm_address']['filters']['county_id']);
 
-  $var['civicrm_address']['order_bys']['street_number']['title'] = 'Street Number';
-  //$var['civicrm_address']['order_bys']['street_unit'] = NULL;
+    $var['civicrm_address']['order_bys']['street_number']['title'] = 'Street Number';
+    //$var['civicrm_address']['order_bys']['street_unit'] = NULL;
+  }
 }//_nyss_reports_Base
 
 function _nyss_reports_Activity_cols(&$var, &$object) {

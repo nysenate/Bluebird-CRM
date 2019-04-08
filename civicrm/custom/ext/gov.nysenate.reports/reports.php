@@ -272,11 +272,13 @@ function _reports_CaseDetail_sql(&$var, &$object) {
   $var->_groupBy = str_replace(', tag_civireport.id', '', $groupBy);
 }
 
+//12558
 function _reports_DistrictInfo_col(&$var, &$object) {
   $var['civicrm_value_district_information_7'] = [
     'alias' => 'district_info',
     'grouping' => 'civicrm_value_district_information_7',
     'group_title' => 'District Information',
+    'extends' => 'Address',
     'fields' => [
       'congressional_district' => [
         'name' => 'congressional_district_46',
@@ -403,12 +405,12 @@ function _reports_DistrictInfo_sql(&$var, &$object) {
   $from = $var->getVar('_from');
   $aliases = $var->getVar('_aliases');
 
-  //civi tries to add it automatically; remove so we can control the join
-  $from = str_replace('LEFT JOIN civicrm_value_district_information_7 district_info_civireport ON district_info_civireport.entity_id = .id', '', $from);
+  if (strpos($from, 'civicrm_value_district_information_7') === FALSE) {
+    $from .= "
+      LEFT JOIN civicrm_value_district_information_7 {$aliases['civicrm_value_district_information_7']}
+        ON {$aliases['civicrm_address']}.id = {$aliases['civicrm_value_district_information_7']}.entity_id
+    ";
+    $var->setVar('_from', $from);
+  }
 
-  $from .= "
-    LEFT JOIN civicrm_value_district_information_7 {$aliases['civicrm_value_district_information_7']}
-      ON {$aliases['civicrm_address']}.id = {$aliases['civicrm_value_district_information_7']}.entity_id
-  ";
-  $var->setVar('_from', $from);
 }
