@@ -280,113 +280,113 @@ function _reports_DistrictInfo_col(&$var, &$object) {
     'group_title' => 'District Information',
     'extends' => 'Address',
     'fields' => [
-      'congressional_district' => [
+      'custom_46' => [
         'name' => 'congressional_district_46',
         'title' => 'Congressional District',
       ],
-      'senate_district' => [
+      'custom_47' => [
         'name' => 'ny_senate_district_47',
         'title' => 'Senate District',
       ],
-      'assembly_district' => [
+      'custom_48' => [
         'name' => 'ny_assembly_district_48',
         'title' => 'Assembly District',
       ],
-      'election_district' => [
+      'custom_49' => [
         'name' => 'election_district_49',
         'title' => 'Election District',
       ],
-      'county' => [
+      'custom_50' => [
         'name' => 'county_50',
         'title' => 'County',
       ],
-      'county_legislative_distrcit' => [
+      'custom_51' => [
         'name' => 'county_legislative_district_51',
         'title' => 'County Legislative District',
       ],
-      'town' => [
+      'custom_52' => [
         'name' => 'town_52',
         'title' => 'Town',
       ],
-      'ward' => [
+      'custom_53' => [
         'name' => 'ward_53',
         'title' => 'Ward',
       ],
-      'school_district' => [
+      'custom_54' => [
         'name' => 'school_district_54',
         'title' => 'School District',
       ],
-      'new_york_city_council' => [
+      'custom_55' => [
         'name' => 'new_york_city_council_55',
         'title' => 'New York City Council',
       ],
-      'neighborhood' => [
+      'custom_56' => [
         'name' => 'neighborhood_56',
         'title' => 'Neighborhood',
       ],
     ],
     'filters' => [
-      'congressional_district' => [
+      'custom_46' => [
         'name' => 'congressional_district_46',
         'title' => 'Congressional District',
         'operator' => 'like',
         'type' => CRM_Report_Form::OP_INT,
       ],
-      'senate_district' => [
+      'custom_47' => [
         'name' => 'ny_senate_district_47',
         'title' => 'Senate District',
         'operator' => 'like',
         'type' => CRM_Report_Form::OP_INT,
       ],
-      'assembly_district' => [
+      'custom_48' => [
         'name' => 'ny_assembly_district_48',
         'title' => 'Assembly District',
         'operator' => 'like',
         'type' => CRM_Report_Form::OP_INT,
       ],
-      'election_district' => [
+      'custom_49' => [
         'name' => 'election_district_49',
         'title' => 'Election District',
         'operator' => 'like',
         'type' => CRM_Report_Form::OP_INT,
       ],
-      'county' => [
+      'custom_50' => [
         'name' => 'county_50',
         'title' => 'County',
         'operator' => 'like',
         'type' => CRM_Report_Form::OP_INT,
       ],
-      'county_legislative_distrcit' => [
+      'custom_51' => [
         'name' => 'county_legislative_district_51',
         'title' => 'County Legislative District',
         'operator' => 'like',
         'type' => CRM_Report_Form::OP_INT,
       ],
-      'town' => [
+      'custom_52' => [
         'name' => 'town_52',
         'title' => 'Town',
         'operator' => 'like',
         'type' => CRM_Report_Form::OP_STRING,
       ],
-      'ward' => [
+      'custom_53' => [
         'name' => 'ward_53',
         'title' => 'Ward',
         'operator' => 'like',
         'type' => CRM_Report_Form::OP_INT,
       ],
-      'school_district' => [
+      'custom_54' => [
         'name' => 'school_district_54',
         'title' => 'School District',
         'operator' => 'like',
         'type' => CRM_Report_Form::OP_INT,
       ],
-      'new_york_city_council' => [
+      'custom_55' => [
         'name' => 'new_york_city_council_55',
         'title' => 'New York City Council',
         'operator' => 'like',
         'type' => CRM_Report_Form::OP_INT,
       ],
-      'neighborhood' => [
+      'custom_56' => [
         'name' => 'neighborhood_56',
         'title' => 'Neighborhood',
         'operator' => 'like',
