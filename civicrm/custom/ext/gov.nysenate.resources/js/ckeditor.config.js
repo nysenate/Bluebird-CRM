@@ -5,6 +5,7 @@
 
 //NYSS add paths to additional resources
 CKEDITOR.plugins.addExternal('aspell', '/sites/all/ext/gov.nysenate.resources/js/aspell/');
+CKEDITOR.plugins.addExternal('lineheight', '/sites/all/ext/gov.nysenate.resources/js/lineheight/');
 
 CKEDITOR.editorConfig = function( config ) {
 // Define changes to default configuration here.
@@ -32,7 +33,7 @@ CKEDITOR.editorConfig = function( config ) {
   config.pasteFromWordNumberedHeadingToList = true;
 
   //NYSS additional plugins
-  config.extraPlugins = 'font,aspell,justify,colorbutton,image2';
+  config.extraPlugins = 'font,aspell,justify,colorbutton,image2,lineheight';
 
   //NYSS support anchors
   config.extraAllowedContent = 'a[name]';
