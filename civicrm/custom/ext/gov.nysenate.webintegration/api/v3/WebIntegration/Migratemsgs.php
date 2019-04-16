@@ -13,13 +13,17 @@ $_MigrateMsgsDebug = FALSE;
 function _civicrm_api3_web_integration_migratemsgs_spec(&$spec) {
   $spec['action'] = [
     'title' => 'Action',
-    'options' => ['migrate' => 'Migrate', 'purge' => 'Purge'],
+    'options' => ['migrate' => 'Migrate', 'purge' => 'Purge', 'migratepurge' => 'Migrate and Purge'],
     'api.required' => TRUE,
   ];
 
   $spec['type'] = [
     'title' => 'Record Type',
-    'options' => ['nyss_directmsg' => 'Direct Messages', 'nyss_contextmsg' => 'Contextual'],
+    'options' => [
+      'nyss_directmsg' => 'Direct Messages',
+      'nyss_contextmsg' => 'Contextual Messages',
+      'both' => 'Both Direct and Contextual Messages',
+    ],
     'api.required' => TRUE,
   ];
 
@@ -46,6 +50,7 @@ function _civicrm_api3_web_integration_migratemsgs_spec(&$spec) {
 function civicrm_api3_web_integration_migratemsgs($params) {
   global $_MigrateMsgsDebug;
 
+  $result = [];
   $action = CRM_Utils_Array::value('action', $params);
   $limit = CRM_Utils_Array::value('limit', $params);
   $type = CRM_Utils_Array::value('type', $params);
@@ -54,11 +59,33 @@ function civicrm_api3_web_integration_migratemsgs($params) {
 
   switch ($action) {
     case 'migrate':
-      $result = _wimm_Migrate($limit, $type);
+      if ($type == 'both') {
+        $result['nyss_directmsg'] = _wimm_Migrate($limit, 'nyss_directmsg');
+        $result['nyss_contextmsg'] = _wimm_Migrate($limit, 'nyss_contextmsg');
+      }
+      else {
+        $result[$type] = _wimm_Migrate($limit, $type);
+      }
+
       break;
 
     case 'purge':
-      $result = _wimm_Purge($limit, $type);
+      if ($type == 'both') {
+        $result['nyss_directmsg'] = _wimm_Purge($limit, 'nyss_directmsg');
+        $result['nyss_contextmsg'] = _wimm_Purge($limit, 'nyss_contextmsg');
+      }
+      else {
+        $result[$type] = _wimm_Purge($limit, $type);
+      }
+
+      break;
+
+    case 'migratepurge':
+      $result['nyss_directmsg'] = _wimm_Migrate($limit, 'nyss_directmsg');
+      $result['nyss_contextmsg'] = _wimm_Migrate($limit, 'nyss_contextmsg');
+      $result['nyss_directmsg'] += _wimm_Purge($limit, 'nyss_directmsg');
+      $result['nyss_contextmsg'] += _wimm_Purge($limit, 'nyss_contextmsg');
+
       break;
 
     default:
