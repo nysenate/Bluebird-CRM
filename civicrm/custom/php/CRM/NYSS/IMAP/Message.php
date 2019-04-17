@@ -265,32 +265,31 @@ class CRM_NYSS_IMAP_Message
 
 
   /*
-  ** Output the text message as simple HTML.  Newlines are converted to <br/>
-  ** tags, and email addresses that are enclosed in angle brackets are pulled
-  ** out of the brackets.
+  ** Output the text message as simple HTML by doing the following:
+  ** - Remove angle brackets from email addresses so they don't render as HTML.
+  ** - Convert tabs and non-breaking spaces to single spaces.
+  ** - Convert "&", "<", and ">" to their corresponding HTML entities.
+  ** - Insert <br/> before each newline, and remove non-printing characters.
   */
-  public function mangleHTML()
+  public function renderAsHtml()
   {
     // get the primary content
     $body = $this->_getPrimaryContent();
 
-    // change newlines to <br/>
-    $body = nl2br($body);
 
-    // Remove angle brackets from email addresses so they don't render as HTML
-    // Convert tabs and non-breaking spaces; remove non-printing characters.
     $patterns = [
       '/<((mailto:)?[-\w.]+@[-\w.]+)>/',
       '/[\x09\xA0]/',
-      '/[^\x20-\x7F]+/',
+      '/&/', '/</', '/>/', '/(\n)/',
+      '/[^\n\x20-\x7F]+/',
     ];
 
     $replacements = [
-      '$1', ' ', ''
+      '$1', ' ', '&amp;', '&lt;', '&gt;', '<br/>$1', ''
     ];
 
     return preg_replace($patterns, $replacements, $body);
-  } // mangleHTML()
+  } // renderAsHtml()
 
 
   /*
@@ -544,7 +543,7 @@ class CRM_NYSS_IMAP_Message
         break;
     }
 
-    // If HTML, convert <br\> and other block level tags to newlines, strip
+    // If HTML, convert <br/> and other block level tags to newlines, strip
     // all remaining HTML tags, and convert entities.
     if (strcasecmp($subtype, 'HTML') == 0) {
       $ret = $this->_block2nl($ret);
