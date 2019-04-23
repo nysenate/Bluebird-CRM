@@ -683,47 +683,50 @@ class CRM_NYSS_BAO_Integration_Website
   static function processCommunication($contactId, $action, $params, $type)
   {
     if ($type == 'DIRECTMSG') {
-      $entity_table = 'nyss_directmsg';
-      $subject = 'Direct Message';
-      $note = $params->message;
+      $activityType = 'website_direct_message';
 
+      $subject = 'Direct Message Received';
       if (!empty($params->subject)) {
-        $note = "Subject: {$params->subject}\n{$note}";
+        $subject = $params->subject;
       }
 
+      $note = $params->message;
       if (empty($note)) {
         $note = '[no message]';
       }
     }
     else {
-      $entity_table = 'nyss_contextmsg';
-      $subject = 'Contextual Message';
+      $activityType = 'website_contextual_message';
+
+      $subject = 'Contextual Message Received';
+      if (!empty($params->subject)) {
+        $subject = $params->subject;
+      }
 
       $note = $params->message;
       if (!empty($params->bill_number)) {
-        //TODO create link to openleg?
-        $note = "{$params->message}\n\n
-          Bill Number: {$params->bill_number}\n
+        $note = "{$params->message}<br /><br />
+          Bill Number: {$params->bill_number}<br />
           Bill Year: {$params->bill_year}
         ";
       }
-
-      if (!empty($params->subject)) {
-        $note = "Subject: {$params->subject}\n{$note}";
+      if (empty($note)) {
+        $note = '[no message]';
       }
     }
 
     $params = array(
-      'entity_table' => $entity_table,
-      'entity_id' => $contactId,
-      'note' => $note,
-      'contact_id' => $contactId,
-      'modified_date' => date('Y-m-d H:i:s'),
-      'subject' => "Website {$subject}",
+      'activity_type_id' => $activityType,
+      'source_contact_id' => $contactId,
+      'target_id' => $contactId,
+      'subject' => $subject,
+      'activity_date_time' => date('Y-m-d H:i:s'),
+      'details' => $note,
+      'status_id' => 'Completed',
     );
 
     try {
-      $result = civicrm_api3('note', 'create', $params);
+      $result = civicrm_api3('activity', 'create', $params);
       //CRM_Core_Error::debug_var('processCommunication result', $result);
     }
     catch (CiviCRM_API3_Exception $e) {

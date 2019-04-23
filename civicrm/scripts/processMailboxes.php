@@ -13,6 +13,7 @@
 // Revised: 2018-08-10 - removed --unread-only command line argument
 //                     - added --recheck-unmatched command line argument
 //                     - added more default value constants
+// Revised: 2019-04-17 - changed mangleHTML() to renderAsHtml()
 //
 
 // Version number, used for debugging
@@ -561,7 +562,7 @@ function storeMessage($imapMsg, $db, $params)
   // CiviCRM will force '<' and '>' to htmlentities, so handle it here
   $fwdSubject = mb_strcut(htmlspecialchars($msgMeta->subject, ENT_QUOTES), 0, 255);
   $fwdDate = $msgMeta->date;
-  $fwdBody = $imapMsg->mangleHTML();
+  $fwdBody = $imapMsg->renderAsHtml();
   $msgUid = $msgMeta->uid;
 
   /** If there is at least one secondary address, we WILL use an address from

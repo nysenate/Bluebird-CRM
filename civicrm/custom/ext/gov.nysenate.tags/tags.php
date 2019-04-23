@@ -403,6 +403,50 @@ function tags_civicrm_validateForm($formName, &$fields, &$files, &$form, &$error
   }
 } //tags_civicrm_validateForm()
 
+function tags_civicrm_postProcess($formName, &$form) {
+  /*Civi::log()->debug('', [
+    'formName' => $formName,
+    'form' => $form,
+  ]);*/
+
+  //12640 handle leg pos tags manually, as we may need to create them on the fly
+  if ($formName == 'CRM_Contact_Form_Task_AddToTag') {
+    $vals = $form->_submitValues;
+    //Civi::log()->debug('', ['$vals' => $vals]);
+
+    if (!empty($vals['contact_taglist'][292])) {
+      $tags = explode(',', $vals['contact_taglist'][292]);
+      foreach ($tags as $tag) {
+        if (strpos($tag, ':::') !== FALSE) {
+          try {
+            $newTag = civicrm_api3('tag', 'create', [
+              'name' => str_replace(':::value', '', $tag),
+              'parent_id' => 292,
+              'is_selectable' => 1,
+              'used_for' => ['Contacts', 'Activities', 'Cases'],
+            ]);
+            //Civi::log()->debug('', ['$newTag' => $newTag]);
+
+            if ($newTag['id']) {
+              foreach ($form->_contactIds as $contactId) {
+                $et = civicrm_api3('EntityTag', 'create', [
+                  'entity_table' => 'civicrm_contact',
+                  'tag_id' => $newTag['id'],
+                  'entity_id' => $contactId,
+                ]);
+                //Civi::log()->debug('', ['$et' => $et]);
+              }
+            }
+          }
+          catch (CiviCRM_API3_Exception $e) {
+            Civi::log()->debug('CRM_Contact_Form_Task_AddToTag', ['$e' => $e]);
+          }
+        }
+      }
+    }
+  }
+}
+
 function tags_civicrm_pageRun(&$page) {
   //Civi::log()->debug('tags_civicrm_pageRun', array('$page' => $page));
 

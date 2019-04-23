@@ -13,7 +13,7 @@
 
   waitForEl('div#edit-roleassign-roles', function() {
     //main role
-    $('div#edit-roleassign-roles').prepend('<div class="nyss-roles-section-header">Main Role</div><div class="nyss-roles-description">In order for a staff member to get started in Bluebird, they must first have ONE main role assigned to them.</div>');
+    $('div.form-item-roleassign-roles-9').before('<div class="nyss-roles-section-header">Main Role</div><div class="nyss-roles-description">In order for a staff member to get started in Bluebird, they must first have ONE main role assigned to them.</div>');
 
     //add-on roles
     $('div.form-item-roleassign-roles-16').before('<div class="nyss-roles-section-header">Add-on Roles</div><div class="nyss-roles-description">Additional roles to extend access in specific feature areas.</div><div class="nyss-roles-subsection-header">Bluebird Mass Email</div>');
