@@ -60,8 +60,8 @@ function civicrm_api3_web_integration_migratemsgs($params) {
   switch ($action) {
     case 'migrate':
       if ($type == 'both') {
-        $result['nyss_directmsg'] = _wimm_Migrate($limit, 'nyss_directmsg');
-        $result['nyss_contextmsg'] = _wimm_Migrate($limit, 'nyss_contextmsg');
+        $result['nyss_directmsg.migrate'] = _wimm_Migrate($limit, 'nyss_directmsg');
+        $result['nyss_contextmsg.migrate'] = _wimm_Migrate($limit, 'nyss_contextmsg');
       }
       else {
         $result[$type] = _wimm_Migrate($limit, $type);
@@ -71,8 +71,8 @@ function civicrm_api3_web_integration_migratemsgs($params) {
 
     case 'purge':
       if ($type == 'both') {
-        $result['nyss_directmsg'] = _wimm_Purge($limit, 'nyss_directmsg');
-        $result['nyss_contextmsg'] = _wimm_Purge($limit, 'nyss_contextmsg');
+        $result['nyss_directmsg.purge'] = _wimm_Purge($limit, 'nyss_directmsg');
+        $result['nyss_contextmsg.purge'] = _wimm_Purge($limit, 'nyss_contextmsg');
       }
       else {
         $result[$type] = _wimm_Purge($limit, $type);
@@ -81,10 +81,10 @@ function civicrm_api3_web_integration_migratemsgs($params) {
       break;
 
     case 'migratepurge':
-      $result['nyss_directmsg'] = _wimm_Migrate($limit, 'nyss_directmsg');
-      $result['nyss_contextmsg'] = _wimm_Migrate($limit, 'nyss_contextmsg');
-      $result['nyss_directmsg'] += _wimm_Purge($limit, 'nyss_directmsg');
-      $result['nyss_contextmsg'] += _wimm_Purge($limit, 'nyss_contextmsg');
+      $result['nyss_directmsg.migrate'] = _wimm_Migrate($limit, 'nyss_directmsg');
+      $result['nyss_contextmsg.migrate'] = _wimm_Migrate($limit, 'nyss_contextmsg');
+      $result['nyss_directmsg.purge'] = _wimm_Purge($limit, 'nyss_directmsg');
+      $result['nyss_contextmsg.purge'] = _wimm_Purge($limit, 'nyss_contextmsg');
 
       break;
 
