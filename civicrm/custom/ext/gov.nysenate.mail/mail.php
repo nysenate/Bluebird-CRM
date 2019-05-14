@@ -238,6 +238,13 @@ function mail_civicrm_alterMailingRecipients(&$mailing, &$params, $context) {
 }
 
 function mail_civicrm_pre($op, $objectName, $id, &$params) {
+  /*Civi::log()->debug('mail_civicrm_pre', array(
+    '$op' => $op,
+    '$objectName' => $objectName,
+    '$id' => $id,
+    '$params' => $params,
+  ));*/
+
   //set exclude_ood and other fixed default values
   if ($objectName == 'Mailing') {
     //exclude_ood is set from config file
@@ -263,6 +270,15 @@ function mail_civicrm_pre($op, $objectName, $id, &$params) {
     $params['auto_responder'] = 0;
     $params['open_tracking'] = 0;
     $params['visibility'] = 'Public Pages';
+
+    $doc = phpQuery::newDocument($params['body_html']);
+    $style = $doc->find('figure')->attr('style');
+    if (strpos($style, 'margin-inline-start') === FALSE) {
+      $doc->find('figure')
+        ->attr('style', "{$style}; margin-inline-start: 5px; margin-inline-end: 5px;");
+      $params['body_html'] = $doc->html();
+    }
+    //Civi::log()->debug('mail_civicrm_pre', ['$params[body_html]' => $params['body_html']]);
   }
 }
 

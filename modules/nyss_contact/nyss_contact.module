@@ -404,14 +404,14 @@ function nyss_contact_civicrm_tabset($tabsetName, &$tabs, $context) {
         'return' => 'contact_type'
       ]);
       if ($ctype == 'Individual') {
-        $url_message = CRM_Utils_System::url('civicrm/nyss/web/message',
+        /*$url_message = CRM_Utils_System::url('civicrm/nyss/web/message',
           "reset=1&snippet=1&force=1&cid={$context['contact_id']}");
         $tabs[] = [
           'id' => 'nyss_web_message',
           'url' => $url_message,
           'title' => 'Website Messages',
           'weight' => 500
-        ];
+        ];*/
 
         $url_tags = CRM_Utils_System::url('civicrm/nyss/web/tags',
           "reset=1&snippet=1&force=1&cid={$context['contact_id']}");

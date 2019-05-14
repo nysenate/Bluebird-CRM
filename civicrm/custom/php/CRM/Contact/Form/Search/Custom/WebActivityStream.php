@@ -159,7 +159,7 @@ class CRM_Contact_Form_Search_Custom_WebActivityStream
 
     if (!empty($this->_formValues['sort_name'])) {
       $sortName = CRM_Utils_Type::escape($this->_formValues['sort_name'], 'String');
-      $where[] = "sort_name LIKE '{$sortName}'";
+      $where[] = "sort_name LIKE '%{$sortName}%'";
     }
 
     if (!empty($this->_formValues['type'])) {

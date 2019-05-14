@@ -1759,10 +1759,7 @@ ul.token-input-list-facebook {
 #Advanced .crm-form-block.crm-search-form-block {
   padding: 0;
 }
-/*11085*/
-#Advanced .tag-section label {
-  display: inline-block;
-}
+
 /*11738*/
 #Advanced span.crm-absolute-date-range {
   line-height: 300%;

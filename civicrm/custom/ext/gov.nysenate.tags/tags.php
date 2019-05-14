@@ -334,9 +334,11 @@ function tags_civicrm_buildForm($formName, &$form) {
 
 function tags_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
   /*Civi::log()->debug('tags_civicrm_postProcess', array(
-    'formName' => $formName,
+    '$formName' => $formName,
     '$fields' => $fields,
     '$errors' => $errors,
+    '$form' => $form,
+    '$_REQUEST' => $_REQUEST,
   ));*/
 
   //11334 (extension of 10658): process leg positions from contact edit form
@@ -365,7 +367,85 @@ function tags_civicrm_validateForm($formName, &$fields, &$files, &$form, &$error
     $data['values'][$recordType][$legPosTagFld][292] = implode(',', $tags);
     //Civi::log()->debug('tags_civicrm_postProcess', array('$tags' => $tags, '$data' => $data));
   }
+
+  //12440 allow tags with the same name and different parents
+  if ($formName == 'CRM_Tag_Form_Edit' &&
+    ($form->_action == CRM_Core_Action::ADD || $form->_action == CRM_Core_Action::UPDATE)
+  ) {
+    $form->setElementError('name', NULL);
+
+    //parent_id is not passed in $fields for tagsets
+    if (!isset($fields['parent_id']) && !empty($_REQUEST['parent_id'])) {
+      $fields['parent_id'] = $_REQUEST['parent_id'];
+    }
+
+    //construct SQL clauses/params
+    $sqlParams = [1 => [$fields['name'], 'String']];
+    if (!empty($fields['parent_id'])) {
+      $parentSql = "AND parent_id = %2";
+      $sqlParams[2] = [$fields['parent_id'], 'Positive'];
+    }
+    else {
+      $parentSql = 'AND parent_id IS NULL';
+    }
+
+    $checkExistence = CRM_Core_DAO::singleValueQuery("
+      SELECT id
+      FROM civicrm_tag
+      WHERE name = %1
+        {$parentSql}
+      LIMIT 1
+    ", $sqlParams);
+
+    if ($checkExistence) {
+      $errors['name'] = 'Tag names must be unique for a common parent tag.';
+    }
+  }
 } //tags_civicrm_validateForm()
+
+function tags_civicrm_postProcess($formName, &$form) {
+  /*Civi::log()->debug('', [
+    'formName' => $formName,
+    'form' => $form,
+  ]);*/
+
+  //12640 handle leg pos tags manually, as we may need to create them on the fly
+  if ($formName == 'CRM_Contact_Form_Task_AddToTag') {
+    $vals = $form->_submitValues;
+    //Civi::log()->debug('', ['$vals' => $vals]);
+
+    if (!empty($vals['contact_taglist'][292])) {
+      $tags = explode(',', $vals['contact_taglist'][292]);
+      foreach ($tags as $tag) {
+        if (strpos($tag, ':::') !== FALSE) {
+          try {
+            $newTag = civicrm_api3('tag', 'create', [
+              'name' => str_replace(':::value', '', $tag),
+              'parent_id' => 292,
+              'is_selectable' => 1,
+              'used_for' => ['Contacts', 'Activities', 'Cases'],
+            ]);
+            //Civi::log()->debug('', ['$newTag' => $newTag]);
+
+            if ($newTag['id']) {
+              foreach ($form->_contactIds as $contactId) {
+                $et = civicrm_api3('EntityTag', 'create', [
+                  'entity_table' => 'civicrm_contact',
+                  'tag_id' => $newTag['id'],
+                  'entity_id' => $contactId,
+                ]);
+                //Civi::log()->debug('', ['$et' => $et]);
+              }
+            }
+          }
+          catch (CiviCRM_API3_Exception $e) {
+            Civi::log()->debug('CRM_Contact_Form_Task_AddToTag', ['$e' => $e]);
+          }
+        }
+      }
+    }
+  }
+}
 
 function tags_civicrm_pageRun(&$page) {
   //Civi::log()->debug('tags_civicrm_pageRun', array('$page' => $page));

@@ -405,6 +405,8 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
    *   different tables as the same table.
    */
   public function select($recordType = 'target') {
+    //Civi::log()->debug('', ['$this->_selectClauses' => $this->_selectClauses]);
+
     if (!array_key_exists("contact_{$recordType}", $this->_params['fields']) &&
       $recordType != 'final'
     ) {
@@ -447,7 +449,8 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
           strstr($clause, 'civicrm_email_source.') ||
           strstr($clause, 'civicrm_phone_target.') ||
           strstr($clause, 'civicrm_phone_source.') ||
-          strstr($clause, 'civicrm_address_')
+          strstr($clause, 'civicrm_address_') || //NYSS 11663
+          strstr($clause, 'district_info_civireport.') //NYSS 12558
         ) {
           $removeKeys[] = $key;
           unset($this->_selectClauses[$key]);
@@ -463,7 +466,8 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
           strstr($clause, 'civicrm_email_assignee.') ||
           strstr($clause, 'civicrm_phone_target.') ||
           strstr($clause, 'civicrm_phone_assignee.') ||
-          strstr($clause, 'civicrm_address_')
+          strstr($clause, 'civicrm_address_') || //NYSS 11663
+          strstr($clause, 'district_info_civireport.') //NYSS 12558
         ) {
           $removeKeys[] = $key;
           unset($this->_selectClauses[$key]);
@@ -472,6 +476,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
     }
     elseif ($recordType == 'final') {
       $this->_selectClauses = $this->_selectAliasesTotal;
+      //Civi::log()->debug('final', ['$this->_selectClauses' => $this->_selectClauses]);
       foreach ($this->_selectClauses as $key => $clause) {
         // @todo - fix up the way the tables are declared in construct & remove this.
         if (strstr($clause, 'civicrm_contact_contact_target') ||
@@ -483,7 +488,8 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
           strstr($clause, 'civicrm_email_contact_assignee_email') ||
           strstr($clause, 'civicrm_email_contact_target_email') ||
           strstr($clause, 'civicrm_phone_contact_target_phone') ||
-          strstr($clause, 'civicrm_address_')
+          strstr($clause, 'civicrm_address_') || //NYSS 11663
+          strstr($clause, 'civicrm_value_district_') //NYSS 12558
         ) {
           $this->_selectClauses[$key] = "GROUP_CONCAT(DISTINCT $clause SEPARATOR ';') as $clause";
         }
@@ -595,8 +601,15 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                 CRM_Utils_Array::value("{$fieldName}_min", $this->_params),
                 CRM_Utils_Array::value("{$fieldName}_max", $this->_params)
               );
+
               if ($field['name'] == 'include_case_activities') {
                 $clause = NULL;
+                //NYSS 12523
+                if (empty($this->_params['include_case_activities_value'])) {
+                  $clause = "{$this->_aliases['civicrm_activity']}.id NOT IN (
+                    SELECT activity_id FROM civicrm_case_activity
+                  )";
+                }
               }
               if ($fieldName == 'activity_type_id' &&
                 empty($this->_params['activity_type_id_value'])

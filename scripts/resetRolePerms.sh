@@ -246,6 +246,7 @@ sql="
     (5, 'administer Reports', 'civicrm'),
     (5, 'save Report Criteria', 'civicrm'),
     (5, 'edit all contacts', 'civicrm'),
+    (5, 'edit groups', 'civicrm'),
     (5, 'edit my contact', 'civicrm'),
     (5, 'profile create', 'civicrm'),
     (5, 'profile edit', 'civicrm'),

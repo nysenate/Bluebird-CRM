@@ -111,7 +111,7 @@ $civicrm_setting['Search Preferences']['enable_innodb_fts'] = true;
 $civicrm_setting['Search Preferences']['fts_query_mode'] = 'wildwords-suffix';
 $civicrm_setting['Search Preferences']['includeEmailInName'] = true;
 //11087 //TODO this should be false; messes up search return count
-$civicrm_setting['Search Preferences']['searchPrimaryDetailsOnly'] = true;
+$civicrm_setting['Search Preferences']['searchPrimaryDetailsOnly'] = false;
 $civicrm_setting['Search Preferences']['search_autocomplete_count'] = "15";
 $civicrm_setting['Search Preferences']['contact_autocomplete_options'] =
   "{$sep}1{$sep}2{$sep}3{$sep}4{$sep}5{$sep}8{$sep}9{$sep}";

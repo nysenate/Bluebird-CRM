@@ -5,6 +5,7 @@
 
 //NYSS add paths to additional resources
 CKEDITOR.plugins.addExternal('aspell', '/sites/all/ext/gov.nysenate.resources/js/aspell/');
+CKEDITOR.plugins.addExternal('lineheight', '/sites/all/ext/gov.nysenate.resources/js/lineheight/');
 
 CKEDITOR.editorConfig = function( config ) {
 // Define changes to default configuration here.
@@ -32,7 +33,7 @@ CKEDITOR.editorConfig = function( config ) {
   config.pasteFromWordNumberedHeadingToList = true;
 
   //NYSS additional plugins
-  config.extraPlugins = 'font,aspell,justify,colorbutton';
+  config.extraPlugins = 'font,aspell,justify,colorbutton,image2,lineheight';
 
   //NYSS support anchors
   config.extraAllowedContent = 'a[name]';
@@ -71,8 +72,7 @@ CKEDITOR.editorConfig = function( config ) {
 };
 
 //NYSS 3878 remove some unnecessary elements
-CKEDITOR.on( 'dialogDefinition', function( ev )
-{
+CKEDITOR.on('dialogDefinition', function(ev) {
   // Take the dialog name and its definition from the event data.
   var dialogName = ev.data.name;
   var dialogDefinition = ev.data.definition;
@@ -114,5 +114,28 @@ CKEDITOR.on( 'dialogDefinition', function( ev )
     var linkTab = dialogDefinition.getContents( 'Link' );
     linkTab.remove( 'cmbTarget');
   }
+});
 
+CKEDITOR.on('instanceReady', function (ev) {
+  //console.log('ev: ', ev);
+
+  ev.editor.dataProcessor.htmlFilter.addRules({
+    elements: {
+      figure: function( el ) {
+        //console.log('el: ', el);
+        var style = el.attributes.style;
+        el.attributes.style = 'margin-inline-start: 5px; margin-inline-end: 5px;' + style;
+      }
+    }
+  });
+
+  ev.editor.dataProcessor.dataFilter.addRules({
+    elements: {
+      figure: function( el ) {
+        //console.log('el: ', el);
+        var style = el.attributes.style;
+        el.attributes.style = 'margin-inline-start: 5px; margin-inline-end: 5px;' + style;
+      }
+    }
+  });
 });

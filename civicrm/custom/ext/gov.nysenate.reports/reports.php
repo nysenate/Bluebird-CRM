@@ -129,13 +129,23 @@ function reports_civicrm_buildForm($formName, &$form) {
   ));*/
 
   if (strpos($formName, 'CRM_Report_Form_') !== FALSE) {
-    CRM_Core_Resources::singleton()->addStyleFile('gov.nysenate.reports', 'css/Reports.css');
+    CRM_Core_Resources::singleton()
+      ->addStyleFile('gov.nysenate.reports', 'css/Reports.css');
 
     if ($form->elementExists('grouprole')) {
       $ele = &$form->getElement('grouprole');
       _reports_GroupRole($ele);
     }
   }
+}
+
+function reports_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
+  /*Civi::log()->debug('reports_civicrm_validateForm', [
+    'formName' => $formName,
+    //'form' => $form,
+    'fields' => $fields,
+    'errors' => $errors,
+  ]);*/
 }
 
 function reports_civicrm_queryObjects(&$queryObjects, $type) {
@@ -162,6 +172,11 @@ function reports_civicrm_alterReportVar($varType, &$var, &$object) {
 
         default:
       }
+
+      if (array_key_exists('civicrm_address', $var)) {
+        _reports_DistrictInfo_col($var, $object);
+      }
+
       break;
 
     case 'sql':
@@ -176,6 +191,11 @@ function reports_civicrm_alterReportVar($varType, &$var, &$object) {
 
         default:
       }
+
+      if (array_key_exists('civicrm_address', $var->getVar('_columns'))) {
+        _reports_DistrictInfo_sql($var, $object);
+      }
+
       break;
 
     case 'rows':
@@ -299,4 +319,146 @@ function _reports_CaseDetail_sql(&$var, &$object) {
 
   $groupBy = $var->_groupBy;
   $var->_groupBy = str_replace(', tag_civireport.id', '', $groupBy);
+}
+
+//12558
+function _reports_DistrictInfo_col(&$var, &$object) {
+  $var['civicrm_value_district_information_7'] = [
+    'alias' => 'district_info',
+    'grouping' => 'civicrm_value_district_information_7',
+    'group_title' => 'District Information',
+    'extends' => 'Address',
+    'fields' => [
+      'custom_46' => [
+        'name' => 'congressional_district_46',
+        'title' => 'Congressional District',
+      ],
+      'custom_47' => [
+        'name' => 'ny_senate_district_47',
+        'title' => 'Senate District',
+      ],
+      'custom_48' => [
+        'name' => 'ny_assembly_district_48',
+        'title' => 'Assembly District',
+      ],
+      'custom_49' => [
+        'name' => 'election_district_49',
+        'title' => 'Election District',
+      ],
+      'custom_50' => [
+        'name' => 'county_50',
+        'title' => 'County',
+      ],
+      'custom_51' => [
+        'name' => 'county_legislative_district_51',
+        'title' => 'County Legislative District',
+      ],
+      'custom_52' => [
+        'name' => 'town_52',
+        'title' => 'Town',
+      ],
+      'custom_53' => [
+        'name' => 'ward_53',
+        'title' => 'Ward',
+      ],
+      'custom_54' => [
+        'name' => 'school_district_54',
+        'title' => 'School District',
+      ],
+      'custom_55' => [
+        'name' => 'new_york_city_council_55',
+        'title' => 'New York City Council',
+      ],
+      'custom_56' => [
+        'name' => 'neighborhood_56',
+        'title' => 'Neighborhood',
+      ],
+    ],
+    'filters' => [
+      'custom_46' => [
+        'name' => 'congressional_district_46',
+        'title' => 'Congressional District',
+        'operator' => 'like',
+        'type' => CRM_Report_Form::OP_INT,
+      ],
+      'custom_47' => [
+        'name' => 'ny_senate_district_47',
+        'title' => 'Senate District',
+        'operator' => 'like',
+        'type' => CRM_Report_Form::OP_INT,
+      ],
+      'custom_48' => [
+        'name' => 'ny_assembly_district_48',
+        'title' => 'Assembly District',
+        'operator' => 'like',
+        'type' => CRM_Report_Form::OP_INT,
+      ],
+      'custom_49' => [
+        'name' => 'election_district_49',
+        'title' => 'Election District',
+        'operator' => 'like',
+        'type' => CRM_Report_Form::OP_INT,
+      ],
+      'custom_50' => [
+        'name' => 'county_50',
+        'title' => 'County',
+        'operator' => 'like',
+        'type' => CRM_Report_Form::OP_INT,
+      ],
+      'custom_51' => [
+        'name' => 'county_legislative_district_51',
+        'title' => 'County Legislative District',
+        'operator' => 'like',
+        'type' => CRM_Report_Form::OP_INT,
+      ],
+      'custom_52' => [
+        'name' => 'town_52',
+        'title' => 'Town',
+        'operator' => 'like',
+        'type' => CRM_Report_Form::OP_STRING,
+      ],
+      'custom_53' => [
+        'name' => 'ward_53',
+        'title' => 'Ward',
+        'operator' => 'like',
+        'type' => CRM_Report_Form::OP_INT,
+      ],
+      'custom_54' => [
+        'name' => 'school_district_54',
+        'title' => 'School District',
+        'operator' => 'like',
+        'type' => CRM_Report_Form::OP_INT,
+      ],
+      'custom_55' => [
+        'name' => 'new_york_city_council_55',
+        'title' => 'New York City Council',
+        'operator' => 'like',
+        'type' => CRM_Report_Form::OP_INT,
+      ],
+      'custom_56' => [
+        'name' => 'neighborhood_56',
+        'title' => 'Neighborhood',
+        'operator' => 'like',
+        'type' => CRM_Report_Form::OP_STRING,
+      ],
+    ],
+  ];
+}
+
+function _reports_DistrictInfo_sql(&$var, &$object) {
+  /*Civi::log()->debug('_reports_DistrictInfo_sql', array(
+    'var' => $var,
+    'object' => $object,
+  ));*/
+
+  $from = $var->getVar('_from');
+  $aliases = $var->getVar('_aliases');
+
+  if (strpos($from, 'civicrm_value_district_information_7') === FALSE) {
+    $from .= "
+      LEFT JOIN civicrm_value_district_information_7 {$aliases['civicrm_value_district_information_7']}
+        ON {$aliases['civicrm_address']}.id = {$aliases['civicrm_value_district_information_7']}.entity_id
+    ";
+    $var->setVar('_from', $from);
+  }
 }
