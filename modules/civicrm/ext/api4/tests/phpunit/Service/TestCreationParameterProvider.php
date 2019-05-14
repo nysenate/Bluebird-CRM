@@ -27,7 +27,7 @@ class TestCreationParameterProvider {
    */
   public function getRequired($entity) {
     $createSpec = $this->gatherer->getSpec($entity, 'create', FALSE);
-    $requiredFields = $createSpec->getRequiredFields();
+    $requiredFields = array_merge($createSpec->getRequiredFields(), $createSpec->getConditionalRequiredFields());
 
     if ($entity === 'Contact') {
       $requiredFields[] = $createSpec->getFieldByName('first_name');
@@ -103,13 +103,17 @@ class TestCreationParameterProvider {
   private function getFkID(FieldSpec $field) {
     $fkEntity = $field->getFkEntity();
     $params = ['checkPermissions' => FALSE];
+    // Be predictable about what type of contact we select
+    if ($fkEntity === 'Contact') {
+      $params['where'] = [['contact_type', '=', 'Individual']];
+    }
     $entityList = civicrm_api4($fkEntity, 'get', $params);
     if ($entityList->count() < 1) {
       $msg = sprintf('At least one %s is required in test', $fkEntity);
       throw new \Exception($msg);
     }
 
-    return $entityList->first()['id'];
+    return $entityList->last()['id'];
   }
 
   /**
@@ -133,6 +137,9 @@ class TestCreationParameterProvider {
 
       case 'Money':
         return sprintf('%d.%2d', rand(0, 2000), rand(1, 99));
+
+      case 'Date':
+        return '20100102';
     }
 
     return NULL;

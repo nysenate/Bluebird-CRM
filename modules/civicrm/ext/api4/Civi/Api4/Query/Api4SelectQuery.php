@@ -77,6 +77,7 @@ class Api4SelectQuery extends SelectQuery {
   public function __construct($entity, $checkPermissions) {
     require_once 'api/v3/utils.php';
     $this->entity = $entity;
+    $this->checkPermissions = $checkPermissions;
 
     $baoName = CoreUtil::getDAOFromApiName($entity);
     $bao = new $baoName();
@@ -87,7 +88,6 @@ class Api4SelectQuery extends SelectQuery {
     \CRM_Utils_SQL_Select::from($this->getTableName($baoName) . ' ' . self::MAIN_TABLE_ALIAS);
 
     // Add ACLs first to avoid redundant subclauses
-    $this->checkPermissions = $checkPermissions;
     $this->query->where($this->getAclClause(self::MAIN_TABLE_ALIAS, $baoName));
   }
 
@@ -109,8 +109,24 @@ class Api4SelectQuery extends SelectQuery {
    * Gets all FK fields and does the required joins
    */
   protected function preRun() {
-    $whereFields = array_column($this->where, 0);
-    $allFields = array_merge($whereFields, $this->select, $this->orderBy);
+    $allFields = array_merge($this->select, array_keys($this->orderBy));
+    $recurse = function($clauses) use (&$allFields, &$recurse) {
+      foreach ($clauses as $clause) {
+        if ($clause[0] === 'NOT' && is_string($clause[1][0])) {
+          $recurse($clause[1][1]);
+        }
+        elseif (in_array($clause[0], ['AND', 'OR', 'NOT'])) {
+          $recurse($clause[1]);
+        }
+        elseif (is_array($clause[0])) {
+          array_walk($clause, $recurse);
+        }
+        else {
+          $allFields[] = $clause[0];
+        }
+      }
+    };
+    $recurse($this->where);
     $dotFields = array_unique(array_filter($allFields, function ($field) {
       return strpos($field, '.') !== FALSE;
     }));
@@ -278,7 +294,7 @@ class Api4SelectQuery extends SelectQuery {
    * @inheritDoc
    */
   protected function getFields() {
-    $fields = civicrm_api4($this->entity, 'getFields', ['action' => 'get', 'includeCustom' => FALSE])->indexBy('name');
+    $fields = civicrm_api4($this->entity, 'getFields', ['action' => 'get', 'checkPermissions' => $this->checkPermissions, 'includeCustom' => FALSE])->indexBy('name');
     return (array) $fields;
   }
 
@@ -302,6 +318,7 @@ class Api4SelectQuery extends SelectQuery {
 
   /**
    * @param $key
+   * @throws \API_Exception
    */
   protected function joinFK($key) {
     $pathArray = explode('.', $key);
@@ -336,9 +353,13 @@ class Api4SelectQuery extends SelectQuery {
       }
     }
 
+    if (!$lastLink->getField($field)) {
+      throw new \API_Exception('Invalid join');
+    }
+
     // custom groups use aliases for field names
     if ($lastLink instanceof CustomGroupJoinable) {
-      $field = $lastLink->getSqlColumn();
+      $field = $lastLink->getSqlColumn($field);
     }
 
     $this->fkSelectAliases[$key] = sprintf('%s.%s', $lastLink->getAlias(), $field);

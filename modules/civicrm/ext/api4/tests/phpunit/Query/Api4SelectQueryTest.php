@@ -12,15 +12,12 @@ class Api4SelectQueryTest extends UnitTestCase {
 
   public function setUpHeadless() {
     $relatedTables = [
-      'civicrm_contact',
       'civicrm_address',
       'civicrm_email',
       'civicrm_phone',
       'civicrm_openid',
       'civicrm_im',
       'civicrm_website',
-      'civicrm_option_group',
-      'civicrm_option_value',
       'civicrm_activity',
       'civicrm_activity_contact',
     ];
@@ -30,14 +27,6 @@ class Api4SelectQueryTest extends UnitTestCase {
     \Civi::settings()->set('display_name_format', $displayNameFormat);
 
     return parent::setUpHeadless();
-  }
-
-  public function testBasicSelect() {
-    $query = new Api4SelectQuery('Contact', FALSE);
-    $results = $query->run();
-
-    $this->assertCount(2, $results);
-    $this->assertEquals('Test', array_shift($results)['first_name']);
   }
 
   public function testWithSingleWhereJoin() {
@@ -91,19 +80,12 @@ class Api4SelectQueryTest extends UnitTestCase {
     $query->select[] = 'id';
     $query->select[] = 'first_name';
     $query->select[] = 'phones.phone';
+    $query->where[] = ['first_name', '=', 'Phoney'];
     $results = $query->run();
+    $result = array_pop($results);
 
-    $this->assertCount(2, $results);
-
-    foreach ($results as $result) {
-      if ($result['id'] == 2) {
-        // Contact has no phones
-        $this->assertEmpty($result['phones']);
-      }
-      elseif ($result['id'] == 1) {
-        $this->assertCount(2, $result['phones']);
-      }
-    }
+    $this->assertEquals('Phoney', $result['first_name']);
+    $this->assertCount(2, $result['phones']);
   }
 
 }

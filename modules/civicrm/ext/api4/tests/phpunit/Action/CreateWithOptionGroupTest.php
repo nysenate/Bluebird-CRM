@@ -21,16 +21,21 @@ class CreateWithOptionGroupTest extends BaseCustomValueTest {
   }
 
   public function testGetWithCustomData() {
+    $group = uniqid('fava');
+    $colorField = uniqid('colora');
+    $foodField = uniqid('fooda');
+
     $customGroupId = CustomGroup::create()
       ->setCheckPermissions(FALSE)
-      ->addValue('name', 'FavoriteThings')
+      ->addValue('name', $group)
       ->addValue('extends', 'Contact')
       ->execute()
       ->first()['id'];
 
     CustomField::create()
       ->setCheckPermissions(FALSE)
-      ->addValue('label', 'FavColor')
+      ->addValue('label', $colorField)
+      ->addValue('name', $colorField)
       ->addValue('options', ['r' => 'Red', 'g' => 'Green', 'b' => 'Blue'])
       ->addValue('custom_group_id', $customGroupId)
       ->addValue('html_type', 'Select')
@@ -39,7 +44,8 @@ class CreateWithOptionGroupTest extends BaseCustomValueTest {
 
     CustomField::create()
       ->setCheckPermissions(FALSE)
-      ->addValue('label', 'FavFood')
+      ->addValue('label', $foodField)
+      ->addValue('name', $foodField)
       ->addValue('options', ['1' => 'Corn', '2' => 'Potatoes', '3' => 'Cheese'])
       ->addValue('custom_group_id', $customGroupId)
       ->addValue('html_type', 'Select')
@@ -66,26 +72,26 @@ class CreateWithOptionGroupTest extends BaseCustomValueTest {
       ->addValue('first_name', 'Jerome')
       ->addValue('last_name', 'Tester')
       ->addValue('contact_type', 'Individual')
-      ->addValue('FavoriteThings.FavColor', 'r')
-      ->addValue('FavoriteThings.FavFood', '1')
+      ->addValue("$group.$colorField", 'r')
+      ->addValue("$group.$foodField", '1')
       ->addValue('FinancialStuff.Salary', 50000)
       ->execute();
 
     $result = Contact::get()
       ->setCheckPermissions(FALSE)
       ->addSelect('first_name')
-      ->addSelect('FavoriteThings.FavColor.label')
-      ->addSelect('FavoriteThings.FavFood.label')
+      ->addSelect("$group.$colorField.label")
+      ->addSelect("$group.$foodField.label")
       ->addSelect('FinancialStuff.Salary')
-      ->addWhere('FavoriteThings.FavFood.label', 'IN', ['Corn', 'Potatoes'])
+      ->addWhere("$group.$foodField.label", 'IN', ['Corn', 'Potatoes'])
       ->addWhere('FinancialStuff.Salary', '>', '10000')
       ->execute()
       ->first();
 
-    $this->assertArrayHasKey('FavoriteThings', $result);
-    $favoriteThings = $result['FavoriteThings'];
-    $favoriteFood = $favoriteThings['FavFood'];
-    $favoriteColor = $favoriteThings['FavColor'];
+    $this->assertArrayHasKey($group, $result);
+    $favoriteThings = $result[$group];
+    $favoriteFood = $favoriteThings[$foodField];
+    $favoriteColor = $favoriteThings[$colorField];
     $financialStuff = $result['FinancialStuff'];
     $this->assertEquals('Red', $favoriteColor['label']);
     $this->assertEquals('Corn', $favoriteFood['label']);
@@ -93,16 +99,21 @@ class CreateWithOptionGroupTest extends BaseCustomValueTest {
   }
 
   public function testWithCustomDataForMultipleContacts() {
+    $group = uniqid('favb');
+    $colorField = uniqid('colorb');
+    $foodField = uniqid('foodb');
+
     $customGroupId = CustomGroup::create()
       ->setCheckPermissions(FALSE)
-      ->addValue('name', 'FavoriteThings')
+      ->addValue('name', $group)
       ->addValue('extends', 'Contact')
       ->execute()
       ->first()['id'];
 
     CustomField::create()
       ->setCheckPermissions(FALSE)
-      ->addValue('label', 'FavColor')
+      ->addValue('label', $colorField)
+      ->addValue('name', $colorField)
       ->addValue('options', ['r' => 'Red', 'g' => 'Green', 'b' => 'Blue'])
       ->addValue('custom_group_id', $customGroupId)
       ->addValue('html_type', 'Select')
@@ -111,7 +122,8 @@ class CreateWithOptionGroupTest extends BaseCustomValueTest {
 
     CustomField::create()
       ->setCheckPermissions(FALSE)
-      ->addValue('label', 'FavFood')
+      ->addValue('label', $foodField)
+      ->addValue('name', $foodField)
       ->addValue('options', ['1' => 'Corn', '2' => 'Potatoes', '3' => 'Cheese'])
       ->addValue('custom_group_id', $customGroupId)
       ->addValue('html_type', 'Select')
@@ -138,8 +150,8 @@ class CreateWithOptionGroupTest extends BaseCustomValueTest {
       ->addValue('first_name', 'Red')
       ->addValue('last_name', 'Corn')
       ->addValue('contact_type', 'Individual')
-      ->addValue('FavoriteThings.FavColor', 'r')
-      ->addValue('FavoriteThings.FavFood', '1')
+      ->addValue("$group.$colorField", 'r')
+      ->addValue("$group.$foodField", '1')
       ->addValue('FinancialStuff.Salary', 10000)
       ->execute();
 
@@ -148,8 +160,8 @@ class CreateWithOptionGroupTest extends BaseCustomValueTest {
       ->addValue('first_name', 'Blue')
       ->addValue('last_name', 'Cheese')
       ->addValue('contact_type', 'Individual')
-      ->addValue('FavoriteThings.FavColor', 'b')
-      ->addValue('FavoriteThings.FavFood', '3')
+      ->addValue("$group.$colorField", 'b')
+      ->addValue("$group.$foodField", '3')
       ->addValue('FinancialStuff.Salary', 500000)
       ->execute();
 
@@ -157,10 +169,10 @@ class CreateWithOptionGroupTest extends BaseCustomValueTest {
       ->setCheckPermissions(FALSE)
       ->addSelect('first_name')
       ->addSelect('last_name')
-      ->addSelect('FavoriteThings.FavColor.label')
-      ->addSelect('FavoriteThings.FavFood.label')
+      ->addSelect("$group.$colorField.label")
+      ->addSelect("$group.$foodField.label")
       ->addSelect('FinancialStuff.Salary')
-      ->addWhere('FavoriteThings.FavFood.label', 'IN', ['Corn', 'Cheese'])
+      ->addWhere("$group.$foodField.label", 'IN', ['Corn', 'Cheese'])
       ->execute();
 
     $blueCheese = NULL;
@@ -170,8 +182,8 @@ class CreateWithOptionGroupTest extends BaseCustomValueTest {
       }
     }
 
-    $this->assertEquals('Blue', $blueCheese['FavoriteThings']['FavColor']['label']);
-    $this->assertEquals('Cheese', $blueCheese['FavoriteThings']['FavFood']['label']);
+    $this->assertEquals('Blue', $blueCheese[$group][$colorField]['label']);
+    $this->assertEquals('Cheese', $blueCheese[$group][$foodField]['label']);
     $this->assertEquals(500000, $blueCheese['FinancialStuff']['Salary']);
   }
 

@@ -16,6 +16,8 @@ class CustomValuePerformanceTest extends BaseCustomValueTest {
 
   public function testQueryCount() {
 
+    $this->markTestIncomplete();
+
     $customGroupId = CustomGroup::create()
       ->setCheckPermissions(FALSE)
       ->addValue('name', 'MyContactFields')
@@ -88,7 +90,6 @@ class CustomValuePerformanceTest extends BaseCustomValueTest {
     // FIXME: This count is artificially high due to the line
     // $this->entity = Tables::getBriefName(Tables::getClassForTable($targetTable));
     // In class Joinable. TODO: Investigate why.
-    $this->markTestIncomplete("Query count: " . $this->getQueryCount());
   }
 
 }
