@@ -663,7 +663,7 @@ case_relation_type.id = case_relationship.relationship_type_id )";
         'case_activity_details' => 1,
         'case_activity_is_auto' => 1,
         'case_activity_id' => 1,//NYSS 9018
-      );
+      ];
     }
     return $properties;
   }
