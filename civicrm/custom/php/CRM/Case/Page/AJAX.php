@@ -54,15 +54,15 @@ class CRM_Case_Page_AJAX {
       CRM_Utils_System::permissionDenied();
     }
 
-    $tagIds = array();
+    $tagIds = [];
     if ($tags) {
       $tagIds = explode(',', $tags);
     }
 
-    $params = array(
+    $params = [
       'entity_id' => $caseId,
       'entity_table' => 'civicrm_case',
-    );
+    ];
 
     CRM_Core_BAO_EntityTag::del($params);
 
@@ -79,7 +79,7 @@ class CRM_Case_Page_AJAX {
 
     $session = CRM_Core_Session::singleton();
 
-    $activityParams = array();
+    $activityParams = [];
     $activityParams['source_contact_id'] = $session->get('userID');
     $activityParams['activity_type_id'] = CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'activity_type_id', 'Change Case Tags');
     $activityParams['activity_date_time'] = date('YmdHis');
@@ -90,10 +90,10 @@ class CRM_Case_Page_AJAX {
 
     $activity = CRM_Activity_BAO_Activity::create($activityParams);
 
-    $caseParams = array(
+    $caseParams = [
       'activity_id' => $activity->id,
       'case_id' => $caseId,
-    );
+    ];
 
     CRM_Case_BAO_Case::processCaseActivity($caseParams);
 
@@ -108,11 +108,11 @@ class CRM_Case_Page_AJAX {
     $caseId = CRM_Utils_Type::escape($_GET['caseId'], 'Positive');
     $cid = CRM_Utils_Type::escape($_GET['cid'], 'Positive');//NYSS 12189
 
-    $case = civicrm_api3('Case', 'getsingle', array(
+    $case = civicrm_api3('Case', 'getsingle', [
       'id' => $caseId,
       'check_permissions' => TRUE,
-      'return' => array('subject', 'case_type_id', 'status_id', 'start_date', 'end_date'))
-    );
+      'return' => ['subject', 'case_type_id', 'status_id', 'start_date', 'end_date'],
+    ]);
 
     $caseStatuses = CRM_Case_PseudoConstant::caseStatus();
     $caseTypes = CRM_Case_PseudoConstant::caseType('title', FALSE);
@@ -143,10 +143,10 @@ class CRM_Case_Page_AJAX {
       CRM_Utils_System::permissionDenied();
     }
 
-    $params = array(
+    $params = [
       'case_id' => $caseId,
       'contact_id' => $contactId,
-    );
+    ];
 
     CRM_Case_BAO_CaseContact::create($params);
 
@@ -155,7 +155,7 @@ class CRM_Case_Page_AJAX {
 
     $session = CRM_Core_Session::singleton();
 
-    $activityParams = array();
+    $activityParams = [];
     $activityParams['source_contact_id'] = $session->get('userID');
     $activityParams['activity_type_id'] = CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'activity_type_id', 'Add Client To Case');
     $activityParams['activity_date_time'] = date('YmdHis');
@@ -166,10 +166,10 @@ class CRM_Case_Page_AJAX {
 
     $activity = CRM_Activity_BAO_Activity::create($activityParams);
 
-    $caseParams = array(
+    $caseParams = [
       'activity_id' => $activity->id,
       'case_id' => $caseId,
-    );
+    ];
 
     CRM_Case_BAO_Case::processCaseActivity($caseParams);
     CRM_Utils_JSON::output(TRUE);
@@ -194,14 +194,14 @@ class CRM_Case_Page_AJAX {
   }
 
   public static function getCases() {
-    $requiredParameters = array(
+    $requiredParameters = [
       'type' => 'String',
-    );
-    $optionalParameters = array(
+    ];
+    $optionalParameters = [
       'case_type_id' => 'CommaSeparatedIntegers',
       'status_id' => 'CommaSeparatedIntegers',
       'all' => 'Positive',
-    );
+    ];
     $params = CRM_Core_Page_AJAX::defaultSortAndPagerParams();
     $params += CRM_Core_Page_AJAX::validateParams($requiredParameters, $optionalParameters);
 
@@ -209,10 +209,10 @@ class CRM_Case_Page_AJAX {
 
     $cases = CRM_Case_BAO_Case::getCases($allCases, $params);
 
-    $casesDT = array(
+    $casesDT = [
       'recordsFiltered' => $cases['total'],
       'recordsTotal' => $cases['total'],
-    );
+    ];
     unset($cases['total']);
     $casesDT['data'] = array_values($cases);
 

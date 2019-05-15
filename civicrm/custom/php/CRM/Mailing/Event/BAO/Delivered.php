@@ -230,18 +230,18 @@ class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
     CRM_Core_DAO::executeQuery("SET SESSION sql_mode = '';");
     $dao->query($query);
 
-    $results = array();
+    $results = [];
 
     while ($dao->fetch()) {
       $url = CRM_Utils_System::url('civicrm/contact/view',
         "reset=1&cid={$dao->contact_id}"
       );
-      $results[$dao->id] = array(
+      $results[$dao->id] = [
         'contact_id' => $dao->contact_id,
         'name' => "<a href=\"$url\">{$dao->display_name}</a>",
         'email' => $dao->email,
         'date' => CRM_Utils_Date::customFormat($dao->date),
-      );
+      ];
     }
     return $results;
   }
@@ -256,7 +256,7 @@ class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
     }
 
     // construct a bulk insert statement
-    $values = array();
+    $values = [];
     foreach ($eventQueueIDs as $eqID) {
       $values[] = "( $eqID, '{$time}' )";
     }

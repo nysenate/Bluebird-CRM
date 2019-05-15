@@ -55,12 +55,12 @@ class CRM_Utils_PDF_Utils {
    *
    * @return string|void
    */
-  public static function html2pdf(&$text, $fileName = 'civicrm.pdf', $output = FALSE, $pdfFormat = NULL) {
+  public static function html2pdf($text, $fileName = 'civicrm.pdf', $output = FALSE, $pdfFormat = NULL) {
     if (is_array($text)) {
       $pages = &$text;
     }
     else {
-      $pages = array($text);
+      $pages = [$text];
     }
     // Get PDF Page Format
     $format = CRM_Core_BAO_PdfFormat::getDefaultValues();
@@ -68,7 +68,7 @@ class CRM_Utils_PDF_Utils {
       // PDF Page Format parameters passed in
       $format = array_merge($format, $pdfFormat);
     }
-    else {
+    elseif (!empty($pdfFormat)) {
       // PDF Page Format ID passed in
       $format = CRM_Core_BAO_PdfFormat::getById($pdfFormat);
     }
@@ -76,7 +76,7 @@ class CRM_Utils_PDF_Utils {
     $paper_width = self::convertMetric($paperSize['width'], $paperSize['metric'], 'pt');
     $paper_height = self::convertMetric($paperSize['height'], $paperSize['metric'], 'pt');
     // dompdf requires dimensions in points
-    $paper_size = array(0, 0, $paper_width, $paper_height);
+    $paper_size = [0, 0, $paper_width, $paper_height];
     $orientation = CRM_Core_BAO_PdfFormat::getValue('orientation', $format);
     $metric = CRM_Core_BAO_PdfFormat::getValue('metric', $format);
     $t = CRM_Core_BAO_PdfFormat::getValue('margin_top', $format);
@@ -84,17 +84,7 @@ class CRM_Utils_PDF_Utils {
     $b = CRM_Core_BAO_PdfFormat::getValue('margin_bottom', $format);
     $l = CRM_Core_BAO_PdfFormat::getValue('margin_left', $format);
 
-    $stationery_path_partial = CRM_Core_BAO_PdfFormat::getValue('stationery', $format);
-
-    $stationery_path = NULL;
-    if (strlen($stationery_path_partial)) {
-      $doc_root = $_SERVER['DOCUMENT_ROOT'];
-      $stationery_path = $doc_root . "/" . $stationery_path_partial;
-    }
-
-    $margins = array($metric, $t, $r, $b, $l);
-
-    $config = CRM_Core_Config::singleton();
+    $margins = [$metric, $t, $r, $b, $l];
 
     // Add a special region for the HTML header of PDF files:
     $pdfHeaderRegion = CRM_Core_Region::instance('export-document-header', FALSE);
@@ -105,7 +95,7 @@ class CRM_Utils_PDF_Utils {
   <head>
     <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/>
     <style>@page { margin: {$t}{$metric} {$r}{$metric} {$b}{$metric} {$l}{$metric}; }</style>
-    <style type=\"text/css\">@import url({$config->userFrameworkResourceURL}css/print.css);</style>
+    <style type=\"text/css\">@import url(" . CRM_Core_Config::singleton()->userFrameworkResourceURL . "css/print.css);</style>
     {$htmlHeader}
   </head>
   <body>
@@ -201,9 +191,10 @@ class CRM_Utils_PDF_Utils {
     // This function also uses the FPDI library documented at: http://www.setasign.com/products/fpdi/about/
     // Syntax borrowed from https://github.com/jake-mw/CDNTaxReceipts/blob/master/cdntaxreceipts.functions.inc
     require_once 'tcpdf/tcpdf.php';
-    require_once 'FPDI/fpdi.php'; // This library is only in the 'packages' area as of version 4.5
+    // This library is only in the 'packages' area as of version 4.5
+    require_once 'FPDI/fpdi.php';
 
-    $paper_size_arr = array($paper_size[2], $paper_size[3]);
+    $paper_size_arr = [$paper_size[2], $paper_size[3]];
 
     $pdf = new TCPDF($orientation, 'pt', $paper_size_arr);
     $pdf->Open();
@@ -292,7 +283,7 @@ class CRM_Utils_PDF_Utils {
     $snappy->setOption("margin-left", $margins[4] . $margins[0]);
 
     //NYSS support passing filename instead of HTML
-    if ( $fileInput ) {
+    if ($fileInput) {
       $pdf = $snappy->getOutput($html);
     }
     else {

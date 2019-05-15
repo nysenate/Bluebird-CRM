@@ -59,7 +59,7 @@ class CRM_Export_BAO_Export {
    * @param int $exportMode
    *   Export mode.
    *
-   * @return string $property
+   * @return string
    *   Default Return property
    */
   public static function defaultReturnProperty($exportMode) {
@@ -95,7 +95,7 @@ class CRM_Export_BAO_Export {
    * @param int $exportMode
    *   Export mode.
    *
-   * @return string $component
+   * @return string
    *   CiviCRM Export Component
    */
   public static function exportComponent($exportMode) {
@@ -132,11 +132,11 @@ class CRM_Export_BAO_Export {
    * @param object $query
    *   CRM_Contact_BAO_Query
    *
-   * @return string $groupBy
+   * @return string
    *   Group By Clause
    */
   public static function getGroupBy($processor, $returnProperties, $query) {
-    $groupBy = '';
+    $groupBy = NULL;
     $exportMode = $processor->getExportMode();
     $queryMode = $processor->getQueryMode();
     if (!empty($returnProperties['tags']) || !empty($returnProperties['groups']) ||
@@ -152,7 +152,7 @@ class CRM_Export_BAO_Export {
         $groupBy = 'civicrm_contribution.id';
         if (CRM_Contribute_BAO_Query::isSoftCreditOptionEnabled()) {
           // especial group by  when soft credit columns are included
-          $groupBy = array('contribution_search_scredit_combined.id', 'contribution_search_scredit_combined.scredit_id');
+          $groupBy = ['contribution_search_scredit_combined.id', 'contribution_search_scredit_combined.scredit_id'];
         }
         break;
 
@@ -225,7 +225,7 @@ class CRM_Export_BAO_Export {
     $componentTable = NULL,
     $mergeSameAddress = FALSE,
     $mergeSameHousehold = FALSE,
-    $exportParams = array(),
+    $exportParams = [],
     $queryOperator = 'AND'
   ) {
 
