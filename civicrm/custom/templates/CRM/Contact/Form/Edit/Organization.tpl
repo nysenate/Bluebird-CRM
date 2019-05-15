@@ -25,10 +25,11 @@
 *}
 {* tpl for building Organization related fields *}
 <table class="form-layout-compressed">
-    <tr>
-       <td>{$form.organization_name.label}<br/>
-         {$form.organization_name.html}
-       </td>
+  <tr>
+    <td>{
+      $form.organization_name.label}<br/>
+      {$form.organization_name.html}
+    </td>
 
        <td>{$form.legal_name.label}<br/>
        {$form.legal_name.html}</td>

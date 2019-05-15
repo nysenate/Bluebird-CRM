@@ -25,33 +25,33 @@
 *}
 {* tpl for building Household related fields *}
 <table class="form-layout-compressed">
-    <tr>
-       <td>{$form.household_name.label}<br/>
-         {$form.household_name.html}
-       </td>
-
-       <td>{$form.nick_name.label}<br/>
-       {$form.nick_name.html}</td>
-
-       <td>{if $action == 1 and $contactSubType}&nbsp;{else}
-              {$form.contact_sub_type.label}<br />
-              {$form.contact_sub_type.html}
-           {/if}
-       </td>
-       {*NYSS*}
-       <td>
-       		{$form.contact_source.label}<br />
-          {$form.contact_source.html|crmReplace:class:big}
-       </td>
-       <td>
-        	{$form.external_identifier.label}<br />
-            {$form.external_identifier.value}
-       </td>
-       <td>
-        	<label for="internal_identifier">{ts}Internal Id{/ts}</label><br />
-          {$contactId}
-       </td>
-     </tr>
+  <tr>
+    <td>
+      {$form.household_name.label}<br/>
+      {$form.household_name.html}
+    </td>
+    <td>
+      {$form.nick_name.label}<br/>
+      {$form.nick_name.html}
+    </td>
+    <td>
+      {$form.contact_sub_type.label}<br />
+      {$form.contact_sub_type.html}
+    </td>
+    {*NYSS*}
+    <td>
+      {$form.contact_source.label}<br />
+      {$form.contact_source.html|crmReplace:class:big}
+    </td>
+    <td>
+      {$form.external_identifier.label}<br />
+      {$form.external_identifier.value}
+    </td>
+    <td>
+      <label for="internal_identifier">{ts}Internal Id{/ts}</label><br />
+      {$contactId}
+    </td>
+  </tr>
 </table>
 
 {literal}
