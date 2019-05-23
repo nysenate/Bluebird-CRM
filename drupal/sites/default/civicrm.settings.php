@@ -5,7 +5,9 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-10
-# Revised: 2016-10-18 - added imageUpload{Dir,URL}; removed unused params
+# Revised: 2016-10-18 - add imageUpload{Dir,URL}; removed unused params
+# Revised: 2019-02-28 - add more CiviCRM settings
+# Revised: 2019-05-23 - add more settings and reorganize
 #
 # This customized civicrm.settings.php file takes advantage of the strict
 # CRM hostname naming scheme that we have developed.  Each CRM instance is
@@ -15,119 +17,265 @@
 #
 
 require_once dirname(__FILE__).'/../../../civicrm/scripts/bluebird_config.php';
-global $civicrm_root;
+
+// Both of these globals must be here.
 global $civicrm_setting;
+global $civicrm_root;
 
-$bbconfig = get_bluebird_instance_config();
+$bbcfg = get_bluebird_instance_config();
 
-if ($bbconfig == null) {
+if ($bbcfg == null) {
   die("Unable to properly bootstrap the CiviCRM module.\n");
 }
 
-$servername = get_config_value($bbconfig, 'servername', null);
-$shortname = get_config_value($bbconfig, 'shortname', null);
-$approot = get_config_value($bbconfig, 'app.rootdir', null);
-$drupalroot = get_config_value($bbconfig, 'drupal.rootdir', null);
-$dataroot = get_config_value($bbconfig, 'data.rootdir', null);
+$servername = get_config_value($bbcfg, 'servername', null);
+$shortname = get_config_value($bbcfg, 'shortname', null);
+$approot = get_config_value($bbcfg, 'app.rootdir', null);
+$drupalroot = get_config_value($bbcfg, 'drupal.rootdir', null);
+$dataroot = get_config_value($bbcfg, 'data.rootdir', null);
 
 if (!$servername || !$shortname || !$approot || !$drupalroot || !$dataroot) {
-  die("Incorrect config; check these settings: servername, shortname, app.rootdir, drupal.rootdir, data.rootdir.\n");
+  die("Incorrect config; check these settings: servername, shortname, app.rootdir, drupal.rootdir, data.rootdir\n");
 }
 
-$datadirname = get_config_value($bbconfig, 'data.dirname', $shortname);
-$installclass = get_config_value($bbconfig, 'install_class', 'production');
+$datadirname = get_config_value($bbcfg, 'data_dirname', $shortname);
+$installclass = get_config_value($bbcfg, 'install_class', 'production');
+$civicrm_root = "$drupalroot/sites/all/modules/civicrm";
 
 if ($installclass == 'dev') {
   //define('CIVICRM_DEBUG_LOG_QUERY', true);
 }
 
 define('CIVICRM_UF', 'Drupal');
-define('CIVICRM_DSN', $bbconfig['civicrm_db_url'].'?new_link=true');
-define('CIVICRM_UF_DSN', $bbconfig['drupal_db_url'].'?new_link=true');
-define('CIVICRM_LOGGING_DSN', $bbconfig['log_db_url'].'?new_link=true');
+define('CIVICRM_DSN', $bbcfg['civicrm_db_url'].'?new_link=true');
+define('CIVICRM_UF_DSN', $bbcfg['drupal_db_url'].'?new_link=true');
+define('CIVICRM_LOGGING_DSN', $bbcfg['log_db_url'].'?new_link=true');
 
-$civicrm_root = "$drupalroot/sites/all/modules/civicrm";
 define('CIVICRM_TEMPLATE_COMPILEDIR', "$dataroot/$datadirname/civicrm/templates_c");
 define('CIVICRM_UF_BASEURL', "http://$servername/");
-define('CIVICRM_SITE_KEY', get_config_value($bbconfig, 'site.key', '32425kj24h5kjh24542kjh524'));
+define('CIVICRM_SITE_KEY', get_config_value($bbcfg, 'site.key', '32425kj24h5kjh24542kjh524'));
 
 define('CIVICRM_DOMAIN_ID', 1);
 // define('CIVICRM_MAIL_LOG', '%%templateCompileDir%%/mail.log');
 define('CIVICRM_TAG_UNCONFIRMED', 'Unconfirmed');
-define('CIVICRM_PETITION_CONTACTS','Petition Contacts');
+define('CIVICRM_PETITION_CONTACTS', 'Petition Contacts');
 
 // Cache-related constants
-define('CIVICRM_DB_CACHE_CLASS', get_config_value($bbconfig, 'cache.db.class', null));
-define('CIVICRM_MEMCACHE_TIMEOUT', get_config_value($bbconfig, 'cache.memcache.timeout', 600));
+define('CIVICRM_DB_CACHE_CLASS', get_config_value($bbcfg, 'cache.db.class', null));
+define('CIVICRM_MEMCACHE_TIMEOUT', get_config_value($bbcfg, 'cache.memcache.timeout', 600));
 define('CIVICRM_MEMCACHE_PREFIX', $servername);
 
 // SAGE API constants
-define('SAGE_API_KEY', get_config_value($bbconfig, 'sage.api.key', 'NO_KEY'));
-define('SAGE_API_BASE', get_config_value($bbconfig, 'sage.api.base', 'NO_API'));
+define('SAGE_API_KEY', get_config_value($bbcfg, 'sage.api.key', 'NO_KEY'));
+define('SAGE_API_BASE', get_config_value($bbcfg, 'sage.api.base', 'NO_API'));
+
+//reference value separator explicitly as class constant not yet available
+define('SEP', "");
 
 
 //temporary debugging statements
-//CRM_Core_Error::debug_var('bbconfig', $bbconfig);
+//CRM_Core_Error::debug_var('bbcfg', $bbcfg);
 //CRM_Core_Error::debug_var('civicrm_root', $civicrm_root);
 //CRM_Core_Error::debug_var('civicrm_setting', $civicrm_setting);
 
-$civicrm_setting['Mailing Preferences']['profile_double_optin'] = false;
-$civicrm_setting['Mailing Preferences']['profile_add_to_group_double_optin'] = false;
-$civicrm_setting['Mailing Preferences']['track_civimail_replies'] = false;
-$civicrm_setting['Mailing Preferences']['civimail_workflow'] = true;
-$civicrm_setting['Mailing Preferences']['civimail_server_wide_lock'] = true;
-$civicrm_setting['Mailing Preferences']['civimail_multiple_bulk_emails'] = true;
-$civicrm_setting['Mailing Preferences']['include_message_id'] = true;
-$civicrm_setting['Mailing Preferences']['write_activity_record'] = false;
-$civicrm_setting['Mailing Preferences']['disable_mandatory_tokens_check'] = true;
-$civicrm_setting['Mailing Preferences']['hash_mailing_url'] = true;
-$civicrm_setting['Mailing Preferences']['auto_recipient_rebuild'] = false;
+// Array shortcuts
+$prefsCore = &$civicrm_setting['CiviCRM Preferences'];
+$prefsCase = &$civicrm_setting['CiviCRM Preferences'];
+$prefsDir = &$civicrm_setting['Directory Preferences'];
+$prefsExt = &$civicrm_setting['Extension Preferences'];
+$prefsMail = &$civicrm_setting['Mailing Preferences'];
+$prefsMap = &$civicrm_setting['Map Preferences'];
+$prefsSearch = &$civicrm_setting['Search Preferences'];
+$prefsUrl = &$civicrm_setting['URL Preferences'];
 
-$civicrm_setting['CiviCRM Preferences']['checksumTimeout'] = 7;
-$civicrm_setting['CiviCRM Preferences']['checksum_timeout'] = 7;
-$civicrm_setting['CiviCRM Preferences']['securityAlert'] = false;
-$civicrm_setting['CiviCRM Preferences']['versionCheck'] = false;
-$civicrm_setting['CiviCRM Preferences']['max_attachments'] = 5;
-$civicrm_setting['CiviCRM Preferences']['maxFileSize'] = 12; //9842
-$civicrm_setting['CiviCRM Preferences']['communityMessagesUrl'] = false;
-$civicrm_setting['CiviCRM Preferences']['empoweredBy'] = false;
-$civicrm_setting['CiviCRM Preferences']['syncCMSEmail'] = false;
-$civicrm_setting['CiviCRM Preferences']['communityMessagesUrl'] = false;
-$civicrm_setting['CiviCRM Preferences']['remote_profile_submissions'] = false;
-$civicrm_setting['CiviCRM Preferences']['recentItemsMaxCount'] = 10;
-$civicrm_setting['CiviCRM Preferences']['smart_group_cache_refresh_mode'] = 'deterministic';
-$civicrm_setting['CiviCRM Preferences']['smartGroupCacheTimeout'] = 10;
+// Core settings, from Core.setting.php
+// contact_view_options, contact_edit_options
+// user_dashboard_options
+// address_options, address_format
+// mailing_format, display_name_format, sort_name_format
+// editor_id
+// contact_ajax_check_similar, ajaxPopupsEnabled
+// activity_assignee_notification, activity_assignee_notification_ics
+// contact_smart_group_display
+// installed
+// contact_undelete, allowPermDeleteFinancial
+// doNotAttachPDFReceipt
+// recordGeneratedLetters
+// recaptchaOptions, recaptchaPublicKey, recaptchaPrivateKey
+// blogUrl, gettingStartedUrl
+// resCacheCode
+// verifySSL, enableSSL
+// wpBasePage, wpLoadPhp
+// secondDegRelPermissions
+// disable_core_css
+// logging_no_trigger_permission
+// logging, logging_uniqueid_date, logging_all_tables_uniquid
+// userFrameworkUsersTableName
+// secure_cache_timeout_minutes
+// site_id
+// systemStatusCheckResult
+// recentItemsProviders
+// dedupe_default_limit
+// preserve_activity_tab_filter
+// do_not_notify_assignees_for
+$prefsCore['advanced_search_options'] = SEP.implode(SEP, [1,2,3,4,5,6,10,13,16,17,18,19]).SEP;
+$prefsCore['checksum_timeout'] = 7;
+$prefsCore['communityMessagesUrl'] = false;
+$prefsCore['contact_autocomplete_options'] = SEP.implode(SEP, [1,2,3,4,5,8,9]).SEP;
+$prefsCore['contact_reference_options'] = SEP.implode(SEP, [1,2,3,4,5,8,9]).SEP;
+$prefsCore['empoweredBy'] = false;
+$prefsCore['enable_components'] = [ 'CiviMail', 'CiviCase', 'CiviReport' ];
+$prefsCore['max_attachments'] = 5;
+$prefsCore['maxFileSize'] = 12;
+$prefsCore['recentItemsMaxCount'] = 10;
+$prefsCore['remote_profile_submissions'] = false;
+$prefsCore['securityAlert'] = false;
+$prefsCore['smart_group_cache_refresh_mode'] = 'deterministic';
+$prefsCore['syncCMSEmail'] = false;
+$prefsCore['wkhtmltopdfPath'] = get_config_value($bbcfg, 'wkhtmltopdf.path', '/usr/local/bin/wkhtmltopdf');
+$prefsCore['versionCheck'] = false;
+$prefsCore['checksumTimeout'] = 7;
 
-$civicrm_setting['Directory Preferences']['customTemplateDir'] = "$approot/civicrm/custom/templates";
-$civicrm_setting['Directory Preferences']['customPHPPathDir'] = "$approot/civicrm/custom/php";
-$civicrm_setting['Directory Preferences']['extensionsDir'] = "$approot/civicrm/custom/ext";
-$civicrm_setting['Directory Preferences']['imageUploadDir'] = "$dataroot/$datadirname/pubfiles";
+// Address settings, from Address.setting.php
+// address_standardization_provider
+// address_standardization_userid
+// address_standardization_url
+// hideCountryMailingLabels
 
-$civicrm_setting['URL Preferences']['imageUploadURL'] = "data/$datadirname/pubfiles";
-$civicrm_setting['URL Preferences']['extensionsURL'] = "sites/all/ext";
+// Campaign settings, from Campaign.setting.php
+// tag_unconfirmed
+// petition_contacts
 
-//reference value separator explicitly as class constant not yet available
-$sep = "";
-$civicrm_setting['Search Preferences']['enable_innodb_fts'] = true;
-$civicrm_setting['Search Preferences']['fts_query_mode'] = 'wildwords-suffix';
-$civicrm_setting['Search Preferences']['includeEmailInName'] = true;
-//11087 //TODO this should be false; messes up search return count
-$civicrm_setting['Search Preferences']['searchPrimaryDetailsOnly'] = false;
-$civicrm_setting['Search Preferences']['search_autocomplete_count'] = "15";
-$civicrm_setting['Search Preferences']['contact_autocomplete_options'] =
-  "{$sep}1{$sep}2{$sep}3{$sep}4{$sep}5{$sep}8{$sep}9{$sep}";
-$civicrm_setting['Search Preferences']['contact_reference_options'] =
-  "{$sep}1{$sep}2{$sep}3{$sep}4{$sep}5{$sep}8{$sep}9{$sep}";
+// Case settings, from Case.setting.php
+// civicaseRedactActivityEmail
+// civicaseAllowMultipleClients
+// civicaseNaturalActivityTypeSort
+$prefsCase['civicaseActivityRevisions'] = true;
 
-//display preferences
-$civicrm_setting['Display Preferences']['advanced_search_options'] =
-  "{$sep}1{$sep}2{$sep}3{$sep}4{$sep}5{$sep}6{$sep}10{$sep}13{$sep}16{$sep}17{$sep}18{$sep}19{$sep}";
+// Contribute settings, from Contribute.setting.php
+// cvv_backoffice_required
+// contribution_invoice_settings
+// invoicing
+// acl_financial_type
+// deferred_revenue_enabled
+// default_invoice_page
+// always_post_to_accounts_receivable
+// update_contribution_on_membership_type_change
 
-$civicrm_setting['Extension Preferences']['ext_repo_url'] = false;
+// Developer settings, from Developer.setting.php
+// assetCache
+// userFrameworkLogging
+// debug_enabled
+// backtrace
+// environment
+// fatalErrorHandler
 
-$civicrm_setting['Map Preferences']['geoProvider'] = 'SAGE';
+// Directory settings, from Directory.setting.php
+$prefsDir['uploadDir'] = 'upload/';
+$prefsDir['imageUploadDir'] = "$dataroot/$datadirname/pubfiles";
+$prefsDir['customFileUploadDir'] = 'custom/';
+$prefsDir['customTemplateDir'] = "$approot/civicrm/custom/templates";
+$prefsDir['customPHPPathDir'] = "$approot/civicrm/custom/php";
+$prefsDir['extensionsDir'] = "$approot/civicrm/custom/ext";
 
-if (isset($bbconfig['xhprof.profile']) && $bbconfig['xhprof.profile']) {
+// Event settings, from Event.setting.php
+// enable_cart
+// show_events
+
+// Extension settings, from Extension.setting.php
+$prefsExt['ext_repo_url'] = false;
+
+// Localization settings, from Localization.setting.php
+// customTranslateFunction
+// monetaryThousandSeparator, monetaryDecimalPoint
+// moneyformat, moneyvalueformat
+// defaultCurrency
+// defaultContactCountry, defaultContactStateProvince
+// countryLimit, provinceLimit
+// inheritLocale
+// dateformatDatetime
+// dateformatFull, dateformatPartial
+// dateformatTime, dateformatYear
+// dateformatFinancialBatch
+// dateformatshortdate
+// dateInputFormat
+// fieldSeparator
+// fiscalYearStart
+// lanaguageLimit
+// lcMessages
+// legacyEncoding
+// timeInputFormat
+// weekBegins
+// contact_default_language
+
+// Mailing settings, from Mailing.setting.php
+$prefsMail['profile_double_optin'] = false;
+$prefsMail['track_civimail_replies'] = false;
+$prefsMail['civimail_workflow'] = true;
+$prefsMail['civimail_server_wide_lock'] = true;
+// replyTo
+$prefsMail['mailing_backend'] = [
+  'outBound_option' => CRM_Mailing_Config::OUTBOUND_OPTION_SMTP,
+  'sendmail_path' => '',
+  'sendmail_args' => '',
+  'smtpServer' => get_config_value($bbcfg, 'smtp.host', 'localhost'),
+  'smtpPort' => get_config_value($bbcfg, 'smtp.port', 25),
+  'smtpAuth' => get_config_value($bbcfg, 'smtp.auth', 0),
+  'smtpUsername' => get_config_value($bbcfg, 'smtp.username', ''),
+  'smtpPassword' => CRM_Utils_Crypt::encrypt(get_config_value($bbcfg, 'smtp.password', ''))
+];
+$prefsMail['profile_add_to_group_double_optin'] = false;
+$prefsMail['disable_mandatory_tokens_check'] = true;
+// dedupe_email_default
+$prefsMail['hash_mailing_url'] = true;
+$prefsMail['civimail_multiple_bulk_emails'] = true;
+$prefsMail['include_message_id'] = true;
+$prefsMail['mailerBatchLimit'] = get_config_value($bbcfg, 'mailer.batch_limit', 1000);
+$prefsMail['mailerJobSize'] = get_config_value($bbcfg, 'mailer.job_size', 1000);
+$prefsMail['mailerJobsMax'] = get_config_value($bbcfg, 'mailer.jobs_max', 10);
+// mailThrottleTime
+// verpSeparator
+$prefsMail['write_activity_record'] = false;
+// simple_mail_limit
+$prefsMail['auto_recipient_rebuild'] = false;
+// allow_mail_from_logged_in_contact
+
+// Map settings, from Map.setting.php
+$prefsMap['geoProvider'] = get_config_value($bbcfg, 'geo.provider', 'SAGE');
+$prefsMap['geoAPIKey'] = get_config_value($bbcfg, 'geo.api.key', '');
+$prefsMap['mapProvider'] = get_config_value($bbcfg, 'map.provider', 'Google');
+$prefsMap['mapAPIKey'] = get_config_value($bbcfg, 'map.api.key', '');
+
+// Member settings, from Member.setting.php
+// default_renewal_contribution_page
+
+// Multisite settings, from Multisite.setting.php
+// is_enabled
+// domain_group_id
+// event_price_set_domain_id
+// uniq_email_per_site
+
+// Search settings, from Search.setting.php
+$prefsSearch['search_autocomplete_count'] = 15;
+$prefsSearch['enable_innodb_fts'] = true;
+$prefsSearch['fts_query_mode'] = 'wildwords-suffix';
+// includeOrderByClause
+$prefsSearch['includeWildCardInName'] = get_config_value($bbcfg, 'search.include_wildcard_in_name', false);
+$prefsSearch['includeEmailInName'] = get_config_value($bbcfg, 'search.include_email_in_name', true);
+// includeNickNameInName
+// includeAlphabeticalPager
+$prefsSearch['smartGroupCacheTimeout'] = 10;
+// defaultSearchProfileID
+$prefsSearch['searchPrimaryDetailsOnly'] = false;
+
+// URL settings, from Url.setting.php
+$prefsUrl['userFrameworkResourceURL'] = 'sites/all/modules/civicrm/';
+$prefsUrl['imageUploadURL'] = "data/$datadirname/pubfiles";
+// customCSSURL
+$prefsUrl['extensionsURL'] = 'sites/all/ext';
+
+
+if (isset($bbcfg['xhprof.profile']) && $bbcfg['xhprof.profile']) {
   function xhprof_shutdown_func($source, $run_id = null) {
     // Hopefully we don't throw an exception; there's no way to catch it now...
     $xhprof_data = xhprof_disable();
@@ -151,20 +299,20 @@ if (isset($bbconfig['xhprof.profile']) && $bbconfig['xhprof.profile']) {
 
   // Build the profiling flags based on configuration parameters
   $flags = 0;
-  if (isset($bbconfig['xhprof.memory']) && $bbconfig['xhprof.memory']) {
+  if (isset($bbcfg['xhprof.memory']) && $bbcfg['xhprof.memory']) {
     $flags += XHPROF_FLAGS_MEMORY;
   }
-  if (isset($bbconfig['xhprof.cpu']) && $bbconfig['xhprof.cpu']) {
+  if (isset($bbcfg['xhprof.cpu']) && $bbcfg['xhprof.cpu']) {
     $flags += XHPROF_FLAGS_CPU;
   }
-  if (!isset($bbconfig['xhprof.builtins']) || !$bbconfig['xhprof.builtins']) {
+  if (!isset($bbcfg['xhprof.builtins']) || !$bbcfg['xhprof.builtins']) {
     $flags += XHPROF_FLAGS_NO_BUILTINS;
   }
 
   // Build the ignore list based on configuration parameters
   $ignored_functions = array();
-  if (isset($bbconfig['xhprof.ignore']) && $bbconfig['xhprof.ignore']) {
-    $ignored_functions = $bbconfig['xhprof.ignore'];
+  if (isset($bbcfg['xhprof.ignore']) && $bbcfg['xhprof.ignore']) {
+    $ignored_functions = $bbcfg['xhprof.ignore'];
   }
 
   xhprof_enable($flags, array('ignored_functions' => $ignored_functions));
@@ -207,3 +355,4 @@ if ($memLimit >= 0 and $memLimit < 67108864) {
 
 require_once 'CRM/Core/ClassLoader.php';
 CRM_Core_ClassLoader::singleton()->register();
+
