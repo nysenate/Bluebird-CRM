@@ -95,6 +95,7 @@ class CRM_Contactlayout_BAO_ContactLayout extends CRM_Contactlayout_DAO_ContactL
         foreach ($group['blocks'] as $blockName => &$block) {
           $block['name'] = "$groupName.$blockName";
         }
+        $group['blocks'] = array_values($group['blocks']);
       }
     }
     return \Civi::$statics[__CLASS__]['blocks'];
@@ -110,7 +111,12 @@ class CRM_Contactlayout_BAO_ContactLayout extends CRM_Contactlayout_DAO_ContactL
   public static function getBlock($fullName) {
     list($groupName, $blockName) = explode('.', $fullName, 2);
     $group = CRM_Utils_Array::value($groupName, self::getAllBlocks());
-    return isset($group['blocks'][$blockName]) ? $group['blocks'][$blockName] : NULL;
+    foreach ($group['blocks'] as $block) {
+      if ($block['name'] == $fullName) {
+        return $block;
+      }
+    }
+    return NULL;
   }
 
   /**

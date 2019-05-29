@@ -5,7 +5,7 @@ namespace Civi\Api4\Action\ContactLayout;
 /**
  * @inheritDoc
  */
-class Replace extends \Civi\Api4\Action\Replace {
+class Replace extends \Civi\Api4\Generic\BasicReplaceAction {
 
   /**
    * Criteria for selecting items to replace.

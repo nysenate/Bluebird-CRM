@@ -182,6 +182,18 @@
 #cse-block-container .btn-xs {
   border: 0 none;
 }
+#cse-block-container .cse-block-buttons button,
+#cse-rows button.cse-remove-col,
+#cse-block-container .cse-add-row,
+#cse-block-container .cse-add-col {
+  opacity: .6;
+}
+#cse-block-container .cse-block-buttons button:hover,
+#cse-rows button.cse-remove-col:hover,
+#cse-block-container .cse-add-row:hover,
+#cse-block-container .cse-add-col:hover {
+  opacity: 1;
+}
 #cse-block-container .cse-block h5 {
   color: #0071bd;
   top: -18px;

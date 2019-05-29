@@ -152,7 +152,7 @@ function contactlayout_civicrm_pageRun(&$page) {
             elseif (isset($tabs[$id])) {
               $tabs[$id]['weight'] = $weight;
               $tabs[$id]['title'] = CRM_Utils_Array::value('title', $tab, $tabs[$id]['title']);
-              $tabs[$id]['icon'] = CRM_Utils_Array::value('icon', $tab, $tabs[$id]['icon']);
+              $tabs[$id]['icon'] = CRM_Utils_Array::value('icon', $tab, CRM_Utils_Array::value('icon', $tabs[$id]));
             }
           }
           usort($tabs, ['CRM_Utils_Sort', 'cmpFunc']);
