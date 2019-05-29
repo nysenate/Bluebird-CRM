@@ -13,9 +13,6 @@ class FkJoinTest extends UnitTestCase {
 
   public function setUpHeadless() {
     $relatedTables = [
-      'civicrm_contact',
-      'civicrm_option_group',
-      'civicrm_option_value',
       'civicrm_activity',
       'civicrm_phone',
       'civicrm_activity_contact',
@@ -27,13 +24,13 @@ class FkJoinTest extends UnitTestCase {
   }
 
   /**
-   * Fetch all activities for housing support cases. Expects a single activity
+   * Fetch all phone call activities. Expects a single activity
    * loaded from the data set.
    */
   public function testThreeLevelJoin() {
     $results = Activity::get()
       ->setCheckPermissions(FALSE)
-      ->addWhere('activity_type.name', '=', 'housing_support')
+      ->addWhere('activity_type.name', '=', 'Phone Call')
       ->execute();
 
     $this->assertCount(1, $results);
@@ -45,7 +42,7 @@ class FkJoinTest extends UnitTestCase {
       ->addSelect('assignees.id')
       ->addSelect('assignees.first_name')
       ->addSelect('assignees.display_name')
-      ->addWhere('assignees.first_name', '=', 'Test')
+      ->addWhere('assignees.first_name', '=', 'Phoney')
       ->execute();
 
     $firstResult = $results->first();
@@ -54,7 +51,7 @@ class FkJoinTest extends UnitTestCase {
     $this->assertTrue(is_array($firstResult['assignees']));
 
     $firstAssignee = array_shift($firstResult['assignees']);
-    $this->assertEquals($firstAssignee['first_name'], 'Test');
+    $this->assertEquals($firstAssignee['first_name'], 'Phoney');
   }
 
   public function testContactPhonesJoin() {

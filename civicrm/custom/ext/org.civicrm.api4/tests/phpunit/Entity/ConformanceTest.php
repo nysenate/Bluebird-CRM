@@ -2,7 +2,6 @@
 
 namespace Civi\Test\Api4\Entity;
 
-use Civi\Api4\Generic\AbstractAction;
 use Civi\Api4\Generic\AbstractEntity;
 use Civi\Api4\Entity;
 use Civi\Test\Api4\Service\TestCreationParameterProvider;
@@ -15,6 +14,9 @@ use Civi\Test\Api4\UnitTestCase;
 class ConformanceTest extends UnitTestCase {
 
   use TableDropperTrait;
+  use \Civi\Test\Api4\Traits\OptionCleanupTrait {
+    setUp as setUpOptionCleanup;
+  }
 
   /**
    * @var TestCreationParameterProvider
@@ -28,10 +30,13 @@ class ConformanceTest extends UnitTestCase {
     $tablesToTruncate = [
       'civicrm_custom_group',
       'civicrm_custom_field',
-      'civicrm_option_group',
+      'civicrm_group',
+      'civicrm_event',
+      'civicrm_participant',
     ];
     $this->dropByPrefix('civicrm_value_myfavorite');
     $this->cleanup(['tablesToTruncate' => $tablesToTruncate]);
+    $this->setUpOptionCleanup();
     $this->loadDataSet('ConformanceTest');
     $this->creationParamProvider = \Civi::container()->get('test.param_provider');
     parent::setUp();

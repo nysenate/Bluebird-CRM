@@ -20,7 +20,7 @@ class UnitTestCase extends \PHPUnit_Framework_TestCase implements HeadlessInterf
    * @param array $data
    * @param string $dataName
    */
-  public function __construct($name = NULL, array$data = [], $dataName = '') {
+  public function __construct($name = NULL, array $data = [], $dataName = '') {
     parent::__construct($name, $data, $dataName);
     error_reporting(E_ALL & ~E_NOTICE);
   }
@@ -63,7 +63,7 @@ class UnitTestCase extends \PHPUnit_Framework_TestCase implements HeadlessInterf
    * @returns int record count
    */
   public function getRowCount($table_name) {
-    $sql = "SELECT count(*) FROM $table_name";
+    $sql = "SELECT count(id) FROM $table_name";
     return (int) \CRM_Core_DAO::singleValueQuery($sql);
   }
 

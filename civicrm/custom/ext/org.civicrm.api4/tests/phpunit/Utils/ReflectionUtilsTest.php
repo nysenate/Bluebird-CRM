@@ -3,6 +3,7 @@
 namespace Civi\Test\Api4\Utils;
 
 use Civi\Api4\Utils\ReflectionUtils;
+use Civi\Test\Api4\Mock\MockV4ReflectionGrandchild;
 use Civi\Test\Api4\UnitTestCase;
 
 /**
@@ -14,7 +15,7 @@ class ReflectionUtilsTest extends UnitTestCase {
    * Test that class annotations are returned across @inheritDoc
    */
   public function testGetDocBlockForClass() {
-    $grandChild = new TestV4ReflectionGrandchild();
+    $grandChild = new MockV4ReflectionGrandchild();
     $reflection = new \ReflectionClass($grandChild);
     $doc = ReflectionUtils::getCodeDocs($reflection);
 
@@ -34,7 +35,7 @@ This is the base class.';
    * Test that property annotations are returned across @inheritDoc
    */
   public function testGetDocBlockForProperty() {
-    $grandChild = new TestV4ReflectionGrandchild();
+    $grandChild = new MockV4ReflectionGrandchild();
     $reflection = new \ReflectionClass($grandChild);
     $doc = ReflectionUtils::getCodeDocs($reflection->getProperty('foo'), 'Property');
 

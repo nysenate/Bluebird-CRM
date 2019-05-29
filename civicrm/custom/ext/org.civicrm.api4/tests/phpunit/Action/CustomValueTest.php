@@ -15,14 +15,17 @@ class CustomValueTest extends BaseCustomValueTest {
   protected $contactID;
 
   /**
-   * Create dummy Custom group, custom field and contact for testing
+   * Test CustomValue::GetFields/Get/Create/Update/Replace/Delete
    */
-  public function createCustomData() {
+  public function testCRUD() {
     $optionValues = ['r' => 'Red', 'g' => 'Green', 'b' => 'Blue'];
+
+    $group = uniqid('groupc');
+    $colorField = uniqid('colorc');
 
     $customGroup = CustomGroup::create()
       ->setCheckPermissions(FALSE)
-      ->addValue('name', 'MyContactFields')
+      ->addValue('name', $group)
       ->addValue('extends', 'Contact')
       ->addValue('is_multiple', TRUE)
       ->execute()
@@ -30,18 +33,12 @@ class CustomValueTest extends BaseCustomValueTest {
 
     CustomField::create()
       ->setCheckPermissions(FALSE)
-      ->addValue('label', 'Color')
+      ->addValue('label', $colorField)
       ->addValue('options', $optionValues)
       ->addValue('custom_group_id', $customGroup['id'])
       ->addValue('html_type', 'Select')
       ->addValue('data_type', 'String')
       ->execute();
-
-    $customField = CustomField::get()
-      ->setCheckPermissions(FALSE)
-      ->addWhere('label', '=', 'Color')
-      ->execute()
-      ->first();
 
     $this->contactID = Contact::create()
       ->setCheckPermissions(FALSE)
@@ -50,40 +47,30 @@ class CustomValueTest extends BaseCustomValueTest {
       ->addValue('contact_type', 'Individual')
       ->execute()
       ->first()['id'];
-  }
 
-  /**
-   * Test CustomValue::getFields
-   */
-  public function testGetFields() {
-    // Create custom group and its field
-    $this->createCustomData();
-
-    // Retrieve and check the fields of CustomValue = Custom_MyContactFields
-    $fields = CustomValue::getFields('MyContactFields')->execute();
+    // Retrieve and check the fields of CustomValue = Custom_$group
+    $fields = CustomValue::getFields($group)->execute();
     $expectedResult = [
       [
         'custom_field_id' => 1,
-        'custom_group' => 'MyContactFields',
-        'table_name' => 'civicrm_value_mycontactfiel_1',
-        'column_name' => 'color_1',
-        'name' => 'Color',
-        'title' => ts('Color'),
-        'entity' => 'Custom_MyContactFields',
+        'custom_group' => $group,
+        'name' => $colorField,
+        'title' => ts($colorField),
+        'entity' => "Custom_$group",
         'data_type' => 'String',
         'fk_entity' => NULL,
       ],
       [
         'name' => 'id',
-        'title' => ts('Custom Table Unique ID'),
-        'entity' => 'Custom_MyContactFields',
+        'title' => ts('Custom Value ID'),
+        'entity' => "Custom_$group",
         'data_type' => 'Integer',
         'fk_entity' => NULL,
       ],
       [
         'name' => 'entity_id',
         'title' => ts('Entity ID'),
-        'entity' => 'Custom_MyContactFields',
+        'entity' => "Custom_$group",
         'data_type' => 'Integer',
         'fk_entity' => 'Contact',
       ],
@@ -94,38 +81,31 @@ class CustomValueTest extends BaseCustomValueTest {
         $this->assertEquals($expectedResult[$key][$attr], $fields[$key][$attr]);
       }
     }
-  }
-
-  /**
-   * Test CustomValue::Get/Create/Update/Replace/Delete
-   */
-  public function testCRUD() {
-    $this->createCustomData();
 
     // CASE 1: Test CustomValue::create
     // Create two records for a single contact and using CustomValue::get ensure that two records are created
-    CustomValue::create('MyContactFields')
-      ->addValue("Color", 'Green')
+    CustomValue::create($group)
+      ->addValue($colorField, 'Green')
       ->addValue("entity_id", $this->contactID)
       ->execute();
-    CustomValue::create('MyContactFields')
-      ->addValue("Color", 'Red')
+    CustomValue::create($group)
+      ->addValue($colorField, 'Red')
       ->addValue("entity_id", $this->contactID)
       ->execute();
     // fetch custom values using API4 CustomValue::get
-    $result = CustomValue::get('MyContactFields')->execute();
+    $result = CustomValue::get($group)->execute();
 
     // check if two custom values are created
     $this->assertEquals(2, count($result));
     $expectedResult = [
       [
         'id' => 1,
-        'Color' => 'Green',
+        $colorField => 'Green',
         'entity_id' => $this->contactID,
       ],
       [
         'id' => 2,
-        'Color' => 'Red',
+        $colorField => 'Red',
         'entity_id' => $this->contactID,
       ],
     ];
@@ -138,16 +118,16 @@ class CustomValueTest extends BaseCustomValueTest {
 
     // CASE 2: Test CustomValue::update
     // Update a records whose id is 1 and change the custom field (name = Color) value to 'White' from 'Green'
-    CustomValue::update('MyContactFields')
+    CustomValue::update($group)
       ->addWhere("id", "=", 1)
-      ->addValue("Color", 'White')
+      ->addValue($colorField, 'White')
       ->execute();
 
     // ensure that the value is changed for id = 1
-    $color = CustomValue::get('MyContactFields')
+    $color = CustomValue::get($group)
       ->addWhere("id", "=", 1)
       ->execute()
-      ->first()['Color'];
+      ->first()[$colorField];
     $this->assertEquals('White', $color);
 
     // CASE 3: Test CustomValue::replace
@@ -160,20 +140,20 @@ class CustomValueTest extends BaseCustomValueTest {
       ->execute()
       ->first()['id'];
     // Replace all the records which was created earlier with entity_id = first contact
-    //  with custom record ['Color' => 'Rainbow', 'entity_id' => $secondContactID]
-    CustomValue::replace('MyContactFields')
-      ->setRecords([['Color' => 'Rainbow', 'entity_id' => $secondContactID]])
+    //  with custom record [$colorField => 'Rainbow', 'entity_id' => $secondContactID]
+    CustomValue::replace($group)
+      ->setRecords([[$colorField => 'Rainbow', 'entity_id' => $secondContactID]])
       ->addWhere('entity_id', '=', $this->contactID)
       ->execute();
 
     // Check the two records created earlier is replaced by new contact
-    $result = CustomValue::get('MyContactFields')->execute();
+    $result = CustomValue::get($group)->execute();
     $this->assertEquals(1, count($result));
 
     $expectedResult = [
       [
         'id' => 3,
-        'Color' => 'Rainbow',
+        $colorField => 'Rainbow',
         'entity_id' => $secondContactID,
       ],
     ];
@@ -185,8 +165,8 @@ class CustomValueTest extends BaseCustomValueTest {
 
     // CASE 4: Test CustomValue::delete
     // There is only record left whose id = 3, delete that record on basis of criteria id = 3
-    CustomValue::delete('MyContactFields')->addWhere("id", "=", 3)->execute();
-    $result = CustomValue::get('MyContactFields')->execute();
+    CustomValue::delete($group)->addWhere("id", "=", 3)->execute();
+    $result = CustomValue::get($group)->execute();
     // check that there are no custom values present
     $this->assertEquals(0, count($result));
   }

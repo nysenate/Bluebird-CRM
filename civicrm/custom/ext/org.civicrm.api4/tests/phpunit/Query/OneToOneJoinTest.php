@@ -15,25 +15,6 @@ use Civi\Test\Api4\UnitTestCase;
 class OneToOneJoinTest extends UnitTestCase {
 
   public function testOneToOneJoin() {
-    $languageGroupId = OptionGroup::create()
-      ->addValue('name', 'languages')
-      ->execute()
-      ->first()['id'];
-
-    OptionValue::create()
-      ->addValue('option_group_id', $languageGroupId)
-      ->addValue('name', 'hy_AM')
-      ->addValue('value', 'hy')
-      ->addValue('label', 'Armenian')
-      ->execute();
-
-    OptionValue::create()
-      ->addValue('option_group_id', $languageGroupId)
-      ->addValue('name', 'eu_ES')
-      ->addValue('value', 'eu')
-      ->addValue('label', 'Basque')
-      ->execute();
-
     $armenianContact = Contact::create()
       ->addValue('first_name', 'Contact')
       ->addValue('last_name', 'One')

@@ -12,13 +12,13 @@ class ParticipantTest extends UnitTestCase {
 
   public function setUp() {
     parent::setUp();
-    $truncateTables = [
-      'civicrm_participant',
-      'civicrm_option_group',
-      'civicrm_option_value'
+    $cleanup_params = [
+      'tablesToTruncate' => [
+        'civicrm_event',
+        'civicrm_participant',
+      ],
     ];
-    $this->cleanup(['tablesToTruncate' => $truncateTables]);
-    $this->loadDataSet('ParticipantRoleOptionGroup');
+    $this->cleanup($cleanup_params);
   }
 
   public function testGetActions() {
@@ -28,15 +28,15 @@ class ParticipantTest extends UnitTestCase {
       ->indexBy('name');
 
     $getParams = $result['get']['params'];
-    $whereDescription = 'Array of conditions keyed by field.';
+    $whereDescription = 'Criteria for selecting items.';
 
     $this->assertEquals(TRUE, $getParams['checkPermissions']['default']);
     $this->assertEquals($whereDescription, $getParams['where']['description']);
   }
 
   public function testGet() {
-
-    if ($this->getRowCount('civicrm_participant') > 0) {
+    $rows = $this->getRowCount('civicrm_participant');
+    if ($rows > 0) {
       $this->markTestSkipped('Participant table must be empty');
     }
 

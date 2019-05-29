@@ -1,7 +1,7 @@
 (function(angular, $, _) {
 
   angular.module('api4').factory('crmApi4', function($q) {
-    var crmApi4 = function(entity, action, params, message) {
+    var crmApi4 = function(entity, action, params, index) {
       // JSON serialization in CRM.api4 is not aware of Angular metadata like $$hash, so use angular.toJson()
       var deferred = $q.defer();
       var p;
@@ -13,7 +13,7 @@
       } else {
         // eval content is locally generated.
         /*jshint -W061 */
-        p = backend(entity, action, eval('('+angular.toJson(params)+')'), message);
+        p = backend(entity, action, eval('('+angular.toJson(params)+')'), index);
       }
       p.then(
         function(result) {

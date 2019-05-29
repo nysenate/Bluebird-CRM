@@ -6,6 +6,7 @@ use Civi\Api4\Service\Spec\FieldSpec;
 use Civi\Api4\Service\Spec\Provider\SpecProviderInterface;
 use Civi\Api4\Service\Spec\RequestSpec;
 use Civi\Api4\Service\Spec\SpecGatherer;
+use Civi\Test\Api4\Traits\OptionCleanupTrait;
 use Civi\Test\Api4\UnitTestCase;
 use Civi\Api4\CustomField;
 use Civi\Api4\CustomGroup;
@@ -18,6 +19,7 @@ use Prophecy\Argument;
 class SpecGathererTest extends UnitTestCase {
 
   use TableDropperTrait;
+  use OptionCleanupTrait;
 
   public function setUpHeadless() {
     $this->dropByPrefix('civicrm_value_favorite');

@@ -1,13 +1,11 @@
 <?php
 
-namespace Civi\Test\Api4\Utils;
-
-use Civi\Test\Api4\Utils;
+namespace Civi\Test\Api4\Mock;
 
 /**
  * @inheritDoc
  */
-class TestV4ReflectionChild extends Utils\TestV4ReflectionBase {
+class MockV4ReflectionChild extends MockV4ReflectionBase {
   /**
    * @inheritDoc
    *

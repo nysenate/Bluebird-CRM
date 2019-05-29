@@ -12,15 +12,12 @@ class Api4SelectQueryComplexJoinTest extends UnitTestCase {
 
   public function setUpHeadless() {
     $relatedTables = [
-      'civicrm_contact',
       'civicrm_address',
       'civicrm_email',
       'civicrm_phone',
       'civicrm_openid',
       'civicrm_im',
       'civicrm_website',
-      'civicrm_option_group',
-      'civicrm_option_value',
       'civicrm_activity',
       'civicrm_activity_contact',
     ];
@@ -40,6 +37,7 @@ class Api4SelectQueryComplexJoinTest extends UnitTestCase {
     $query->select[] = 'created_activities.activity.subject';
     $query->select[] = 'created_activities.activity.activity_type.name';
     $query->where[] = ['first_name', '=', 'Single'];
+    $query->where[] = ['id', '=', $this->getReference('test_contact_1')['id']];
     $results = $query->run();
 
     $testActivities = [
@@ -77,6 +75,7 @@ class Api4SelectQueryComplexJoinTest extends UnitTestCase {
     $query->select[] = 'first_name';
     $query->select[] = 'emails.location_type.name'; // before emails selection
     $query->select[] = 'emails.email';
+    $query->where[] = ['emails.email', 'IS NOT NULL'];
     $results = $query->run();
     $firstResult = array_shift($results);
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace Civi\Test\Api4\Utils;
+namespace Civi\Test\Api4\Mock;
 
 /**
  * Class TestV4ReflectionBase
@@ -9,7 +9,7 @@ namespace Civi\Test\Api4\Utils;
  *
  * @internal
  */
-class TestV4ReflectionBase {
+class MockV4ReflectionBase {
   /**
    * This is the foo property.
    *
