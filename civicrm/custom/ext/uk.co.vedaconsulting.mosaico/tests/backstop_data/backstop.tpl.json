@@ -1,0 +1,114 @@
+{
+  "id": "backstop_mosaico",
+  "viewports": [{
+    "name": "desktop",
+    "width": 1920,
+    "height": 3000
+  }],
+  "onBeforeScript": "onBefore.js",
+  "onReadyScript": "onReady.js",
+  "paths": {
+    "bitmaps_reference": "screenshots/reference",
+    "bitmaps_test": "screenshots/test",
+    "engine_scripts": "engine_scripts/puppet",
+    "html_report": "html_report",
+    "ci_report": "ci_report"
+  },
+  "scenarios": [
+    {
+      "label": "Mosaico - Main Page",
+      "url": "{url}/civicrm/a/#/mosaico-template",
+      "onReadyScript": "mosaico/main-page.js"
+    },
+    {
+      "label": "Mosaico - Main Page - hover state",
+      "url": "{url}/civicrm/a/#/mosaico-template",
+      "onReadyScript": "mosaico/main-page-hover-state.js"
+    },
+    {
+      "label": "Mosaico - Main Page - editor screens",
+      "url": "{url}/civicrm/a/#/mosaico-template",
+      "onReadyScript": "mosaico/editor.js"
+    },
+    {
+      "label": "Mosaico - Migrate",
+      "url": "{url}/civicrm/admin/mosaico/migrate"
+    },
+    {
+      "label": "Mosaico - Settings",
+      "url": "{url}/civicrm/admin/mosaico"
+    },
+    {
+      "label": "Mosaico - Mailing list - Step 1",
+      "url": "{url}/civicrm/mailing/browse/unscheduled?reset=1&scheduled=false",
+      "onReadyScript": "mosaico/mailing/step-1.js"
+    },
+    {
+      "label": "Mosaico - Mailing list - Step 2",
+      "url": "{url}/civicrm/mailing/browse/unscheduled?reset=1&scheduled=false",
+      "onReadyScript": "mosaico/mailing/step-2.js"
+    },
+    {
+      "label": "Mosaico - Mailing list - Step 3",
+      "url": "{url}/civicrm/mailing/browse/unscheduled?reset=1&scheduled=false",
+      "onReadyScript": "mosaico/mailing/step-3.js"
+    },
+    {
+      "label": "Mosaico - Mailing list - Delete draft Modal",
+      "url": "{url}/civicrm/mailing/browse/unscheduled?reset=1&scheduled=false",
+      "onReadyScript": "mosaico/mailing/delete.js",
+      "selectors": [".ui-dialog"]
+    },    
+    {
+      "label": "Mosaico - Mailing list - View Reciepents Modal",
+      "url": "{url}/civicrm/mailing/browse/unscheduled?reset=1&scheduled=false",
+      "onReadyScript": "mosaico/mailing/reciepents-modal.js",
+      "selectors": [".ui-dialog"]
+    },    
+    {
+      "label": "Mosaico - Mailing list - Editor test screen",
+      "url": "{url}/civicrm/mailing/browse/unscheduled?reset=1&scheduled=false",
+      "selectors": [".ui-dialog"],
+      "onReadyScript": "mosaico/mailing/editor-test.js"
+    },
+    {
+      "label": "Mosaico - Mailing list - Preview Plain Text",
+      "url": "{url}/civicrm/mailing/browse/unscheduled?reset=1&scheduled=false",
+      "selectors": [".ui-dialog[aria-describedby*=ui-id-]"],
+      "onReadyScript": "mosaico/mailing/preview-plain-text.js"
+    },
+    {
+      "label": "Mosaico - Mailing list - Advance Mailing Options - Attachments",
+      "url": "{url}/civicrm/mailing/browse/unscheduled?reset=1&scheduled=false",
+      "onReadyScript": "mosaico/mailing/advance-mailing-options.js",
+      "selectors": [".ui-dialog"]
+    },
+    {
+      "label": "Mosaico - Mailing list - Advance Mailing Options - Responses",
+      "url": "{url}/civicrm/mailing/browse/unscheduled?reset=1&scheduled=false",
+      "onReadyScript": "mosaico/mailing/advance-mailing-options-responses.js",
+      "selectors": [".ui-dialog"]
+    },
+    {
+      "label": "Mosaico - Mailing list - Advance Mailing Options - Tracking",
+      "url": "{url}/civicrm/mailing/browse/unscheduled?reset=1&scheduled=false",
+      "onReadyScript": "mosaico/mailing/advance-mailing-options-tracking.js",
+      "selectors": [".ui-dialog"]
+    },
+    {
+      "label": "Mosaico - Mailing list - Advance Mailing Options- Publications",
+      "url": "{url}/civicrm/mailing/browse/unscheduled?reset=1&scheduled=false",
+      "onReadyScript": "mosaico/mailing/advance-mailing-options-publications.js",
+      "selectors": [".ui-dialog"]
+    }
+  ],
+  "report": ["CLI", "browser"],
+  "engine": "puppeteer",
+  "engineOptions": {
+    "waitTimeout": 120000
+  },
+  "asyncCaptureLimit": 1,
+  "asyncCompareLimit": 50,
+  "debug": false,
+  "debugWindow": false
+}

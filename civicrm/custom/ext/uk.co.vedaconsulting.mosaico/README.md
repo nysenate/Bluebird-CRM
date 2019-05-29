@@ -11,15 +11,17 @@ This extension integrates a responsive email template editor, [Mosaico](http://m
 
 ## Requirements
 
-* CiviCRM
-    * Recommended: `v4.7.{latest}`
-    * Unofficial: `v4.6.26+` with [backports patch #9555](https://github.com/civicrm/civicrm-core/pull/9555)
-* PHP-ImageMagick
-* [FlexMailer](https://docs.civicrm.org/flexmailer/en/latest/) `v0.2-alpha5+`
+* CiviCRM `v5.0`+
+* PHP-ImageMagick - recommended.
+* [FlexMailer](https://docs.civicrm.org/flexmailer/en/latest/) `v1.0`+
+
+### Using with Scheduled reminders, personal messages etc
+
+An experimental extension is available here: https://github.com/civicrm/org.civicrm.mosaicomsgtpl
 
 ## Installation
 
-A CiviCRM extensions folder (In new sites since CiviCRM v4.7.0, this defaults to `files/civicrm/ext`. For older systems, see [the wiki](https://wiki.civicrm.org/confluence/display/CRMDOC/Extensions).)
+A CiviCRM extensions folder (this normally defaults to `files/civicrm/ext`)
 
 #### Option 1: Download via Web
 
@@ -47,11 +49,6 @@ Alternatively, you can download the latest nightly:
 cv dl --dev flexmailer shoreditch
 cv dl uk.co.vedaconsulting.mosaico@https://download.civicrm.org/extension/uk.co.vedaconsulting.mosaico/latest/uk.co.vedaconsulting.mosaico-latest.zip
 ```
-
-> __TIP__: If you're using v4.6.x with backports, then `cv dl` will require an
-> extra argument: "`--filter-ver=4.7.16`".  This enables it to download the
-> latest extensions intended for v4.7.x (even if they aren't officially
-> compatible with v4.6.x).
 
 #### Option 3: Download via Git (preferred for development)
 
@@ -131,11 +128,20 @@ Styling changes should go into `sass` directory and compiled to CSS using the fo
 gulp sass
 ```
 
+Once you are done making your changes, please use BackstopJS (see [TESTING.MD](TESTING.md#backstopjs-visual-regression-tesing) to check for any possible visual regression issues
+
+#### Migration
+
+When moving CiviCRM to a new domain, you must update the template paths in the CiviCRM database with a MySQL query such as:
+```
+UPDATE civicrm_mosaico_template SET metadata = replace(metadata, 'old-domain.org', 'new-domain.org');
+```
 
 #### Patching Mosaico
 
 This extensions ships with a patched version of Mosaico. The patches are maintained as a fork
 in https://github.com/civicrm/mosaico using [Twigflow (Rebase)](https://gist.github.com/totten/39e932e5d10bc9e73e82790b2475eff2).
+>>>>>>> a9274b21272407c1b4974762a886646871050cb4
 
 #### Testing
 

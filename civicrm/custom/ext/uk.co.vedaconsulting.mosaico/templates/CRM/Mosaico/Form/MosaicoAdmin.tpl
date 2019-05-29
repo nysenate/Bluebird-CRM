@@ -11,6 +11,13 @@
         <span class="description">{ts}How should the CiviMail composition screen look?{/ts}</span>
       </td>
     </tr>
+    <tr class="crm-mosaico-form-block-mosaico_graphics">
+      <td class="label">{$form.mosaico_graphics.label}</td>
+      <td>
+        {$form.mosaico_graphics.html}<br/>
+        <span class="description">{ts}Which backend should process images?{/ts}</span>
+      </td>
+    </tr>
     <tr class="crm-mosaico-form-block-mosaico_custom_templates_dir">
       <td class="label">
         {$form.mosaico_custom_templates_dir.label}

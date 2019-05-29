@@ -61,7 +61,7 @@ class CRM_Mosaico_Page_Editor extends CRM_Core_Page {
       'sequential' => 1,
     ));
 
-    return array(
+    $config = array(
       'imgProcessorBackend' => $this->getUrl('civicrm/mosaico/img', NULL, TRUE),
       'emailProcessorBackend' => 'unused-emailProcessorBackend',
       'titleToken' => 'MOSAICO Responsive Email Designer',
@@ -98,6 +98,17 @@ class CRM_Mosaico_Page_Editor extends CRM_Core_Page {
         'toolbar1' => 'bold italic forecolor backcolor hr styleselect removeformat | civicrmtoken | link unlink | pastetext code',
       ),
     );
+
+    // Allow configuration to be modified by a hook
+    if (class_exists('\Civi\Core\Event\GenericHookEvent')) {
+      \Civi::dispatcher()->dispatch('hook_civicrm_mosaicoConfig',
+        \Civi\Core\Event\GenericHookEvent::create(array(
+          'config' => &$config,
+        ))
+      );
+    }
+
+    return $config;
   }
 
   /**

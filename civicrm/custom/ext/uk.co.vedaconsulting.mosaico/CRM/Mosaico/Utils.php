@@ -30,6 +30,21 @@ class CRM_Mosaico_Utils {
   }
 
   /**
+   * Get a list of graphics handling options.
+   *
+   * @return array
+   *   Array (string $machineName => string $label).
+   */
+  public static function getGraphicsOptions() {
+    return [
+      'auto' => E::ts('Automatically select a driver'),
+      'iv-gd' => E::ts('Intervention Image API (gd)'),
+      'iv-imagick' => E::ts('Intervention Image API (imagick)'),
+      'imagick' => E::ts('(Deprecated) Direct ImageMagick API'),
+    ];
+  }
+
+  /**
    * Get the path to the Mosaico layout file.
    *
    * @return string
@@ -148,6 +163,8 @@ class CRM_Mosaico_Utils {
         /* width and height of generated thumbnails */
         'THUMBNAIL_WIDTH' => 90,
         'THUMBNAIL_HEIGHT' => 90,
+
+        'MOBILE_MIN_WIDTH' => 246,
       );
     }
 
@@ -252,169 +269,77 @@ class CRM_Mosaico_Utils {
    * handler for img requests
    */
   public static function processImg() {
+    $config = self::getConfig();
+    $methods = ['placeholder', 'resize', 'cover'];
     if ($_SERVER["REQUEST_METHOD"] == "GET") {
-      $method = $_GET["method"];
+      $method = CRM_Utils_Array::value('method', $_GET, 'cover');
+      if (!in_array($method, $methods)) {
+        $method = 'cover'; // Old behavior. Seems silly. Being cautious.
+      }
 
       $params = explode(",", $_GET["params"]);
-
       $width = (int) $params[0];
       $height = (int) $params[1];
 
-      if ($method == "placeholder") {
-        $image = new Imagick();
+      switch ($method) {
+        case 'placeholder':
+          Civi::service('mosaico_graphics')->sendPlaceholder($width, $height);
+          break;
 
-        $image->newImage($width, $height, "#707070");
-        $image->setImageFormat("png");
+        case 'resize':
+        case 'cover':
+          $func = ($method === 'resize') ? 'createResizedImage' : 'createCoveredImage';
 
-        $x = 0;
-        $y = 0;
-        $size = 40;
+          $path_parts = pathinfo($_GET["src"]);
+          $src_file = $config['BASE_DIR'] . $config['UPLOADS_DIR'] . $path_parts["basename"];
+          $cache_file = $config['BASE_DIR'] . $config['STATIC_DIR'] . $path_parts["basename"];
+          // $cache_file = $config['BASE_DIR'] . $config['STATIC_DIR'] . $method . '-' . $width . "x" . $height . '-' . $path_parts["basename"];
+          // The current naming convention for cache-files is buggy because it means that all variants
+          // of the basename *must* have the same size, which breaks scenarios for re-using images
+          // from the gallery. However, to fix it, one must also fix CRM_Mosaico_ImageFilter.
 
-        $draw = new ImagickDraw();
-
-        while ($y < $height) {
-          $draw->setFillColor("#808080");
-
-          $points = array(
-            array("x" => $x, "y" => $y),
-            array("x" => $x + $size, "y" => $y),
-            array("x" => $x + $size * 2, "y" => $y + $size),
-            array("x" => $x + $size * 2, "y" => $y + $size * 2),
-          );
-
-          $draw->polygon($points);
-
-          $points = array(
-            array("x" => $x, "y" => $y + $size),
-            array("x" => $x + $size, "y" => $y + $size * 2),
-            array("x" => $x, "y" => $y + $size * 2),
-          );
-
-          $draw->polygon($points);
-
-          $x += $size * 2;
-
-          if ($x > $width) {
-            $x = 0;
-            $y += $size * 2;
+          if (!file_exists($src_file)) {
+            throw new \Exception("Failed to locate source file: " . $path_parts["basename"]);
           }
-        }
+          if (!file_exists($cache_file)) {
+            Civi::service('mosaico_graphics')->$func($src_file, $cache_file, $width, $height);
+          }
+          self::sendImage($cache_file);
+          break;
 
-        $draw->setFillColor("#B0B0B0");
-        $draw->setFontSize($width / 5);
-        $draw->setFontWeight(800);
-        $draw->setGravity(Imagick::GRAVITY_CENTER);
-        $draw->annotation(0, 0, $width . " x " . $height);
-
-        $image->drawImage($draw);
-
-        header("Content-type: image/png");
-
-        echo $image;
-      }
-      else {
-        $file_name = $_GET["src"];
-
-        $path_parts = pathinfo($file_name);
-
-        switch ($path_parts["extension"]) {
-          case "png":
-            $mime_type = "image/png";
-            break;
-
-          case "gif":
-            $mime_type = "image/gif";
-            break;
-
-          default:
-            $mime_type = "image/jpeg";
-            break;
-        }
-
-        $file_name = $path_parts["basename"];
-
-        $image = self::resizeImage($file_name, $method, $width, $height);
-
-        $expiry_time = 2592000;  //30days (60sec * 60min * 24hours * 30days)
-        header("Pragma: cache");
-        header("Cache-Control: max-age=" . $expiry_time . ", public");
-        header('Expires: ' . gmdate('D, d M Y H:i:s', time() + $expiry_time) . ' GMT');
-        header("Content-type:" . $mime_type);
-
-        echo $image;
       }
     }
     CRM_Utils_System::civiExit();
   }
 
   /**
-   * function to resize images using resize or cover methods
+   * @param string $file
+   *   Full path to the image file.
    */
-  public static function resizeImage($file_name, $method, $width, $height) {
-    $mobileMinWidth = 246;
-    $config = self::getConfig();
+  public static function sendImage($file) {
+    $mimeMap = [
+      'gif' => 'image/gif',
+      'jpg' => 'image/jpeg',
+      'jpeg' => 'image/jpeg',
+      'png' => 'image/png',
+    ];
+    $mime_type = CRM_Utils_Array::value(
+      pathinfo($file, PATHINFO_EXTENSION), $mimeMap, 'image/jpeg');
 
-    if (file_exists($config['BASE_DIR'] . $config['STATIC_DIR'] . $file_name)) {
-      //use existing file
-      $image = new Imagick($config['BASE_DIR'] . $config['STATIC_DIR'] . $file_name);
+    $expiry_time = 2592000;  //30days (60sec * 60min * 24hours * 30days)
+    header("Pragma: cache");
+    header("Cache-Control: max-age=" . $expiry_time . ", public");
+    header('Expires: ' . gmdate('D, d M Y H:i:s', time() + $expiry_time) . ' GMT');
+    header("Content-type:" . $mime_type);
 
+    $fh = fopen($file, 'r');
+    if ($fh === FALSE) {
+      throw new \Exception("Failed to read image file: $file");
     }
-    else {
-
-      $image = new Imagick($config['BASE_DIR'] . $config['UPLOADS_DIR'] . $file_name);
-
-      if ($method == "resize") {
-        $resize_width = $width;
-        $resize_height = $image->getImageHeight();
-        if ($width < $mobileMinWidth) {
-          // DS: resize images to higher resolution, for images with lower width than needed for mobile devices
-          // DS: FIXME: only works for 'resize' method, not 'cover' methods.
-          // Partially resolves - https://github.com/veda-consulting/uk.co.vedaconsulting.mosaico/issues/50
-          $fraction = ceil($mobileMinWidth / $width);
-          $resize_width = $resize_width * $fraction;
-          $resize_height = $resize_height * $fraction;
-        }
-        // We get 0 for height variable from mosaico
-        // In order to use last parameter(best fit), this will make right scale, as true in 'resizeImage' menthod, we can't have 0 for height
-        // hence retreiving height from image
-        // more details about best fit http://php.net/manual/en/imagick.resizeimage.php
-        $image->resizeImage($resize_width, $resize_height, Imagick::FILTER_LANCZOS, 1.0, TRUE);
-      }
-      else {
-        // assert: $method == "cover"
-        $image_geometry = $image->getImageGeometry();
-
-        $width_ratio = $image_geometry["width"] / $width;
-        $height_ratio = $image_geometry["height"] / $height;
-
-        $resize_width = $width;
-        $resize_height = $height;
-
-        if ($width_ratio > $height_ratio) {
-          $resize_width = 0;
-        }
-        else {
-          $resize_height = 0;
-        }
-
-        $image->resizeImage($resize_width, $resize_height,
-          Imagick::FILTER_LANCZOS, 1.0);
-
-        $image_geometry = $image->getImageGeometry();
-
-        $x = ($image_geometry["width"] - $width) / 2;
-        $y = ($image_geometry["height"] - $height) / 2;
-
-        $image->cropImage($width, $height, $x, $y);
-      }
-      //save image for next time so don't need to resize each time
-      if ($f = fopen($config['BASE_DIR'] . $config['STATIC_DIR'] . $file_name, "w")) {
-        $image->writeImageFile($f);
-      }
-
+    while (!feof($fh)) {
+      echo fread($fh, 2048);
     }
-
-    return $image;
+    fclose($fh);
   }
 
 }

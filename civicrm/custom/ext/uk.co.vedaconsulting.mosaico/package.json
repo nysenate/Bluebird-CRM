@@ -27,8 +27,19 @@
     "gulp-postcss": "^6.4.0",
     "gulp-sass": "^3.1.0",
     "gulp-sourcemaps": "^2.5.0",
+    "gulp-clean": "^0.4.0",
+    "gulp-file": "^0.4.0",
+    "gulp-notify": "^3.2.0",
     "postcss": "^5.2.16",
     "postcss-discard-duplicates": "^2.1.0",
-    "postcss-prefix-selector": "^1.6.0"
+    "postcss-prefix-selector": "^1.6.0",
+    "ansi-colors": "^2.0.2",
+    "backstopjs": "^3.3.1",
+    "clean": "^4.0.2",
+    "fs": "0.0.1-security",
+    "lodash": "^4.17.10",
+    "path": "^0.12.7",
+    "plugin-error": "^1.0.1",
+    "yargs": "^4.8.1"
   }
 }
