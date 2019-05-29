@@ -343,16 +343,25 @@ function mail_civicrm_mosaicoBaseTemplates(&$templates) {
 }
 
 function mail_civicrm_apiWrappers(&$wrappers, $apiRequest) {
+  /*Civi::log()->debug('', [
+    'wrappers' => $wrappers,
+    'apiRequest' => $apiRequest,
+  ]);*/
+
+  //we do our best to target the specific API called on the preview popup grouplist
+  //this is tricky, as we don't have a clear way to target that page view this hook
   if ($apiRequest['entity'] == 'Group' &&
     $apiRequest['action'] == 'getlist' &&
     isset($apiRequest['params']['params']['is_hidden']) &&
-    isset($apiRequest['params']['params']['is_active'])
+    isset($apiRequest['params']['params']['is_active']) &&
+    empty($apiRequest['params']['params']['group_type'])
   ) {
+    //TODO this isn't working but would be great if it did...
     $nmp = CRM_Core_Session::singleton()->get('nyss-mailing-preview');
 
     /*Civi::log()->debug('', [
       //'$wrappers' => $wrappers,
-      //'$apiRequest' => $apiRequest,
+      '$apiRequest' => $apiRequest,
       '$_REQUEST' => $_REQUEST,
       'session nmp' => $nmp,
     ]);*/
