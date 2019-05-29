@@ -10,6 +10,7 @@
 // Revised: 2014-07-23 - migrated from PHP mysql interface to PDO
 // Revised: 2015-01-20 - email footer can now have three office addresses
 // Revised: 2015-07-22 - added email.header.website_url
+// Revised: 2019-03-14 - remove parameters that are now set in civicrm.settings
 //
 
 require_once 'common_funcs.php';
@@ -371,52 +372,15 @@ function modifyParam(&$params, $name, $val)
 // Modify the entire configuration in-memory.
 function modifyConfig(&$cfg, $bbcfg)
 {
-  $appdir = $bbcfg['app.rootdir'];
-  $datadir = $bbcfg['data.rootdir'];
   $data_dirname = $bbcfg['data_dirname'];
-  $incemail = _getval($bbcfg, 'search.include_email_in_name', 0);
-  $incwild =  _getval($bbcfg, 'search.include_wildcard_in_name', 0);
-  $batchlimit = _getval($bbcfg, 'mailer.batch_limit', 1000);
-  $jobsize = _getval($bbcfg, 'mailer.job_size', 1000);
-  $jobsmax = _getval($bbcfg, 'mailer.jobs_max', 10);
-  $geoname = _getval($bbcfg, 'geo.provider', 'Google');
-  $geokey = _getval($bbcfg, 'geo.api.key', null);
-  $mapname = _getval($bbcfg, 'map.provider', 'Google');
-  $mapkey = _getval($bbcfg, 'map.api.key', null);
-  $wkpath = _getval($bbcfg, 'wkhtmltopdf.path', '/usr/local/bin/wkhtmltopdf');
 
   if (isset($cfg['civicrm']['settings'])) {
     $cs = &$cfg['civicrm']['settings'];
-    modifyParam($cs, 'enable_components', array('CiviMail', 'CiviCase', 'CiviReport'));
-    modifyParam($cs, 'includeEmailInName', $incemail);
-    modifyParam($cs, 'includeWildCardInName', $incwild);
-    modifyParam($cs, 'mailerBatchLimit', $batchlimit);
-    modifyParam($cs, 'mailerJobSize', $jobsize);
-    modifyParam($cs, 'mailerJobsMax', $jobsmax);
-    modifyParam($cs, 'geoProvider', $geoname);
-    modifyParam($cs, 'geoAPIKey', $geokey);
-    modifyParam($cs, 'mapProvider', $mapname);
-    modifyParam($cs, 'mapAPIKey', $mapkey);
-    modifyParam($cs, 'wkhtmltopdfPath', $wkpath);
-
-    modifyParam($cs, 'uploadDir', "upload/");
-    modifyParam($cs, 'imageUploadDir', "$datadir/$data_dirname/pubfiles");
-    modifyParam($cs, 'customFileUploadDir', "custom/");
-    modifyParam($cs, 'customTemplateDir', "$appdir/civicrm/custom/templates");
-    modifyParam($cs, 'customPHPPathDir', "$appdir/civicrm/custom/php");
-
-    modifyParam($cs, 'imageUploadURL', "data/$data_dirname/pubfiles");
-    modifyParam($cs, 'userFrameworkResourceURL', "sites/all/modules/civicrm/");
-
-    if (isset($cs['mailing_backend'])) {
-      $mb = &$cs['mailing_backend'];
-      modifyParam($mb, 'smtpServer', $bbcfg['smtp.host']);
-      modifyParam($mb, 'smtpPort', $bbcfg['smtp.port']);
-      modifyParam($mb, 'smtpAuth', $bbcfg['smtp.auth']);
-      modifyParam($mb, 'smtpUsername', (!empty($bbcfg['smtp.username'])) ? $bbcfg['smtp.username'] : '');
-      require_once $appdir.'/modules/civicrm/CRM/Utils/Crypt.php';
-      modifyParam($mb, 'smtpPassword', (!empty($bbcfg['smtp.password'])) ? CRM_Utils_Crypt::encrypt($bbcfg['smtp.password']) : '');
-    }
+    // All settings are now being handled in civicrm.settings.php.
+    // As a result, there is nothing to store in the civicrm_setting table.
+//    modifyParam($cs, 'uploadDir', "upload/");
+//    modifyParam($cs, 'customFileUploadDir', "custom/");
+//    modifyParam($cs, 'imageUploadURL', "data/$data_dirname/pubfiles");
   }
 
   if (isset($cfg['civicrm']['from_email'])) {
@@ -455,6 +419,68 @@ function modifyConfig(&$cfg, $bbcfg)
     modifyParam($dv, 'file_public_path', "data/$data_dirname/drupal");
   }
 } // modifyConfig()
+
+
+
+function clearSettings($dbh, $scope)
+{
+  // $setlist is a list of settings that are already configured in the
+  // civicrm.settings.php file, and should not be present in the settings table.
+
+  $setlist = [
+    // Core settings
+    'advanced_search_options', 'checksum_timeout', 'communityMessagesUrl',
+    'contact_autocomplete_options', 'contact_reference_options', 'empoweredBy',
+    'enable_components', 'max_attachments', 'maxFileSize',
+    'recentItemsMaxCount', 'remote_profile_submissions', 'securityAlert',
+    'smart_group_cache_refresh_mode', 'syncCMSEmail', 'wkhtmltopdfPath',
+
+    // Case settings
+    'civicaseActivityRevisions',
+
+    // Dir settings
+    'uploadDir', 'imageUploadDir', 'customFileUploadDir',
+    'customTemplateDir', 'customPHPPathDir', 'extensionsDir',
+
+    // Extension settings
+    'ext_repo_url',
+
+    // Mailing settings
+    'profile_double_optin', 'track_civimail_replies', 'civimail_workflow',
+    'civimail_server_wide_lock', 'mailing_backend',
+    'profile_add_to_group_double_optin', 'disable_mandatory_tokens_check',
+    'hash_mailing_url', 'civimail_multiple_bulk_emails', 'include_message_id',
+    'mailerBatchLimit', 'mailerJobSize', 'mailerJobsMax',
+    'write_activity_record', 'auto_recipient_rebuild',
+
+    // Map settings
+    'geoProvider', 'geoAPIKey', 'mapProvider', 'mapAPIKey',
+
+    // Search settings
+    'search_autocomplete_count', 'enable_innodb_fts', 'fts_query_mode',
+    'includeWildCardInName', 'includeEmailInName', 'smartGroupCacheTimeout',
+    'searchPrimaryDetailsOnly',
+
+    // URL settings
+    'userFrameworkResourceURL', 'imageUploadURL', 'extensionsURL',
+  ];
+
+  if ($scope == 'all') {
+    $sql = 'DELETE FROM civicrm_setting';
+  }
+  else {
+    $setlist_str = "'" . implode("','", $setlist) . "'";
+    $sql = "DELETE FROM civicrm_setting WHERE name IN ( $setlist_str )";
+  }
+
+  if ($dbh->exec($sql) === false) {
+    print_r($dbh->errorInfo());
+    return false;
+  }
+  else {
+    return true;
+  }
+} // clearSettings()
 
 
 
@@ -644,7 +670,7 @@ $prog = basename($argv[0]);
 
 if ($argc != 4) {
   echo "Usage: $prog instance cmd scope\n";
-  echo "   cmd can be: list, preview, or update\n";
+  echo "   cmd can be: list, preview, update, or clear\n";
   echo " scope can be: def, tpl, drup, or all\n";
   exit(1);
 }
@@ -671,6 +697,17 @@ else {
   if ($config === false) {
     echo "$prog: Unable to get CiviCRM/Drupal configuration.\n";
     $rc = 1;
+  }
+  else if ($cmd == 'clear') {
+    if ($scope == 'all') {
+      echo "Removing ALL settings from the civicrm_setting table\n";
+    }
+    else {
+      echo "Removing settings that are configured via civicrm.settings.php\n";
+    }
+    if (clearSettings($dbrefs[DB_TYPE_CIVICRM], $scope) === false) {
+      $rc = 1;
+    }
   }
   else if (is_array($config) && $config) {
     if ($cmd == 'update' || $cmd == 'preview') {
