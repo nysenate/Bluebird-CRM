@@ -63,7 +63,6 @@ $drush $instance cvapi extension.install key=org.civicrm.shoreditch --quiet
 $drush $instance cvapi extension.install key=org.civicrm.tutorial --quiet
 
 $drush $instance cvapi extension.install key=uk.co.vedaconsulting.mosaico --quiet
-$drush $instance cvapi extension.install key=uk.squiffle.kam --quiet
 
 $drush $instance cvapi DoctorWhen.run tasks=* --quiet
 
