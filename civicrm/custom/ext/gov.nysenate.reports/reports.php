@@ -157,9 +157,8 @@ function reports_civicrm_queryObjects(&$queryObjects, $type) {
 function reports_civicrm_alterReportVar($varType, &$var, &$object) {
   /*Civi::log()->debug('alterReportVar', array(
     'varType' => $varType,
-    //'var' => $var,
-    //'object' => $object,
-    '$ele' => $ele,
+    'var' => $var,
+    'object' => $object,
   ));*/
 
   $class = get_class($object);
@@ -168,6 +167,10 @@ function reports_civicrm_alterReportVar($varType, &$var, &$object) {
       switch ($class) {
         case 'CRM_Report_Form_Case_Detail':
           _reports_CaseDetail_col($var, $object);
+          break;
+
+        case 'CRM_Report_Form_Case_Summary':
+          _reports_CaseSummary_col($var, $object);
           break;
 
         default:
@@ -319,6 +322,12 @@ function _reports_CaseDetail_sql(&$var, &$object) {
 
   $groupBy = $var->_groupBy;
   $var->_groupBy = str_replace(', tag_civireport.id', '', $groupBy);
+}
+
+function _reports_CaseSummary_col(&$var, &$object) {
+  //12635
+  $relTypes = CRM_Utils_Array::index(['name_a_b'], CRM_Core_PseudoConstant::relationshipType('name'));
+  $var['civicrm_relationship']['filters']['relationship_type_id']['default'] = [$relTypes['Case Manager']['id']];
 }
 
 //12558
