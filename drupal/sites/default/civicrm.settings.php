@@ -46,6 +46,9 @@ if ($installclass == 'dev') {
   //define('CIVICRM_DEBUG_LOG_QUERY', true);
 }
 
+// Set the correct include path and memory limit.
+nyss_bootstrap_settings($civicrm_root);
+
 define('CIVICRM_UF', 'Drupal');
 define('CIVICRM_DSN', $bbcfg['civicrm_db_url'].'?new_link=true');
 define('CIVICRM_UF_DSN', $bbcfg['drupal_db_url'].'?new_link=true');
@@ -322,37 +325,43 @@ if (isset($bbcfg['xhprof.profile']) && $bbcfg['xhprof.profile']) {
 
 /**
  *
- * Do not change anything below this line. Keep as is
+ * Do not change anything below this line.
  *
  */
 
-$include_path = '.'.PATH_SEPARATOR.$civicrm_root.PATH_SEPARATOR.
-                $civicrm_root.DIRECTORY_SEPARATOR.'packages'.PATH_SEPARATOR.
-                get_include_path();
-set_include_path($include_path);
+function nyss_bootstrap_settings($rootdir)
+{
+  $include_path = '.'.PATH_SEPARATOR.$rootdir.PATH_SEPARATOR.
+                  $rootdir.DIRECTORY_SEPARATOR.'packages'.PATH_SEPARATOR.
+                  get_include_path();
+  set_include_path($include_path);
 
-if (function_exists('variable_get') && variable_get('clean_url', '0') != '0') {
+  if (function_exists('variable_get') && variable_get('clean_url','0') != '0') {
     define('CIVICRM_CLEANURL', 1);
-} else {
+  }
+  else {
     define('CIVICRM_CLEANURL', 0);
-}
+  }
 
-// force PHP to auto-detect Mac line endings
-ini_set('auto_detect_line_endings', '1');
+  // force PHP to auto-detect Mac line endings
+  ini_set('auto_detect_line_endings', '1');
 
-// make sure the memory_limit is at least 64 MB
-$memLimitString = trim(ini_get('memory_limit'));
-$memLimitUnit   = strtolower(substr($memLimitString, -1));
-$memLimit       = (int) $memLimitString;
-switch ($memLimitUnit) {
+  // Get the current PHP memory limit.
+  $memLimitString = trim(ini_get('memory_limit'));
+  $memLimitUnit   = strtolower(substr($memLimitString, -1));
+  $memLimit       = (int) $memLimitString;
+
+  switch ($memLimitUnit) {
     case 'g': $memLimit *= 1024;
     case 'm': $memLimit *= 1024;
     case 'k': $memLimit *= 1024;
-}
-if ($memLimit >= 0 and $memLimit < 67108864) {
-    ini_set('memory_limit', '1000M');
-}
+  }
 
-require_once 'CRM/Core/ClassLoader.php';
-CRM_Core_ClassLoader::singleton()->register();
+  // If the PHP memory limit is less than 64MB, then set it to 512MB
+  if ($memLimit >= 0 and $memLimit < 67108864) {
+    ini_set('memory_limit', '512M');
+  }
 
+  require_once 'CRM/Core/ClassLoader.php';
+  CRM_Core_ClassLoader::singleton()->register();
+} // nyss_bootstrap_settings()
