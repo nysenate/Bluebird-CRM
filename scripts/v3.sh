@@ -191,6 +191,15 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
+## remove news dashlet
+echo "$prog: remove news dashlet"
+sql="
+  SELECT @dashid:=id FROM civicrm_dashboard WHERE name = 'news';
+  DELETE FROM civicrm_dashboard_contact WHERE dashboard_id = @dashid;
+  DELETE FROM civicrm_dashboard WHERE id = @dashid;
+"
+$execSql $instance -c "$sql" -q
+
 echo "$prog: resetting roles and permissions..."
 $script_dir/resetRolePerms.sh $instance
 
