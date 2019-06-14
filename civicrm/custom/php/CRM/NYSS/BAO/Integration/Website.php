@@ -936,10 +936,9 @@ class CRM_NYSS_BAO_Integration_Website
   /*
    * create custom data set and fields for survey
    */
-  static function buildSurvey($data)
-  {
+  static function buildSurvey($data) {
     if (empty($data->form_id)) {
-      return false;
+      return FALSE;
     }
 
     //create custom group if it doesn't exist
@@ -954,9 +953,14 @@ class CRM_NYSS_BAO_Integration_Website
         SELECT max(weight)
         FROM civicrm_custom_group
       ");
+
+      //truncate title; first determine length we can handle, accounting for static text and form_id
+      $addedText = strlen((string)$data->form_id) + 12;
+      $formTitle = substr($data->form_title, 0, 128 - $addedText);
+
       $params = array(
         'name' => "Survey_{$data->form_id}",
-        'title' => "Survey: {$data->form_title} [{$data->form_id}]",
+        'title' => "Survey: {$formTitle} [{$data->form_id}]",
         'table_name' => "civicrm_value_surveydata_{$data->form_id}",
         'extends' => array('0' => 'Activity'),
         'extends_entity_column_value' => CRM_Core_OptionGroup::getValue('activity_type', 'Website Survey', 'name'),
@@ -966,8 +970,16 @@ class CRM_NYSS_BAO_Integration_Website
         'is_active' => 1,
         'weight' => $weight++,
       );
-      $cg = civicrm_api3('custom_group', 'create', $params);
-      $csID = $cg['id'];
+
+      try {
+        $cg = civicrm_api3('custom_group', 'create', $params);
+        $csID = $cg['id'];
+      }
+      catch (CiviCRM_API3_Exception $e) {
+        CRM_Core_Error::debug_var('buildSurvey $e', $e, TRUE, TRUE, 'integration');
+
+        return FALSE;
+      }
     }
 
     //get existing fields for this custom data set
@@ -1002,6 +1014,8 @@ class CRM_NYSS_BAO_Integration_Website
         $label = substr($label, 0, 1010);
         $label = "{$label} ({$k})";
       }
+      //CRM_Core_Error::debug_var('buildSurvey $label', $label, TRUE, TRUE, 'integration');
+
       $params = array(
         'custom_group_id' => $csID,
         'label' => $label,
