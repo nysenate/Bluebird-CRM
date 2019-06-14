@@ -1890,7 +1890,11 @@ function _nyss_preventDoubleSubmit($formName, &$form) {
  */
 function _accessProtected($obj, $prop) {
   $reflection = new ReflectionClass($obj);
-  $property = $reflection->getProperty($prop);
-  $property->setAccessible(true);
-  return $property->getValue($obj);
+  if ($reflection->hasProperty($prop)) {
+    $property = $reflection->getProperty($prop);
+    $property->setAccessible(TRUE);
+    return $property->getValue($obj);
+  }
+
+  return NULL;
 }
