@@ -1216,12 +1216,14 @@ class CRM_NYSS_BAO_Integration_Website
   /*
    * archive the accumulator record and then delete from accumulator
    */
-  static function archiveRecord($db, $type, $row, $params, $date, $success = true)
+  static function archiveRecord($db, $type, $row, $params, $success = true)
   {
     //CRM_Core_Error::debug_var('archiveRecord $type', $type);
     //CRM_Core_Error::debug_var('archiveRecord $row', $row);
     //CRM_Core_Error::debug_var('archiveRecord $params', $params);
-    //CRM_Core_Error::debug_var('archiveRecord $date', $date);
+
+    //set archive date to current timestamp
+    $date = date('Y-m-d H:i:s');
 
     //wrap in a transaction so we store archive and delete from accumulator together
     $transaction = new CRM_Core_Transaction();
