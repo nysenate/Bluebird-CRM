@@ -161,7 +161,7 @@ function webintegration_civicrm_alterMenu(&$items) {
     'access_arguments' => array(array('access CiviCRM'), "and"),
   );
   $items['civicrm/nyss/ajax/unmatchedmessages'] = array(
-    'page_callback' => 'CRM_NYSS_WebIntegration_Page_AJAX::getUnmatched',
+    'page_callback' => 'CRM_NYSS_WebIntegration_Page_AJAX::getMessages',
     'access_arguments' => array(array('access CiviCRM'), "and"),
   );
 }

@@ -1716,14 +1716,16 @@ class CRM_NYSS_IMAP_AJAX
     if ($id) {
       // get the tags for this activity
       $q = "
-        SELECT c.name 
-        FROM nyss_inbox_messages a 
-        INNER JOIN civicrm_entity_tag b 
-          ON b.entity_id=a.activity_id 
-        INNER JOIN civicrm_tag c 
-          ON b.tag_id=c.id 
-        WHERE a.id='$id' 
-          AND b.entity_table='civicrm_activity';
+        SELECT c.name
+        FROM nyss_inbox_messages a
+        JOIN nyss_inbox_messages_matched mm
+          ON a.message_id = mm.message_id
+        JOIN civicrm_entity_tag b
+          ON b.entity_id = mm.activity_id
+        JOIN civicrm_tag c
+          ON b.tag_id = c.id
+        WHERE a.id = {$id}
+          AND b.entity_table = 'civicrm_activity';
       ";
       $res = CRM_Core_DAO::executeQuery($q);
       while ($res->fetch()) {

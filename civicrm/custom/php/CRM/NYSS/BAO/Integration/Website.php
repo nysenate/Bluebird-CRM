@@ -778,39 +778,44 @@ class CRM_NYSS_BAO_Integration_Website
     //CRM_Core_Error::debug_var('actParams', $actParams);
 
     //wrap activity and custom data in a transaction
-    $transaction = new CRM_Core_Transaction();
+    try {
+      $transaction = new CRM_Core_Transaction();
 
-    $act = civicrm_api3('activity', 'create', $actParams);
-    if ($act['is_error']) {
-      return $act;
-    }
-
-    $custParams = array(
-      'entity_id' => $act['id'],
-      'custom_80' => $params->form_title,
-      'custom_81' => $params->form_id,
-    );
-
-    foreach ($params->form_values as $k => $f) {
-      //CRM_Core_Error::debug_var("field $k", $f);
-
-      //some surveys are constructed with duplicate field names, so need to make
-      //sure we don't overwrite or skip
-      if (isset($flds[$f->field]) && !isset($custParams[$flds[$f->field]])) {
-        $custParams[$flds[$f->field]] = $f->value;
+      $act = civicrm_api3('activity', 'create', $actParams);
+      if ($act['is_error']) {
+        return $act;
       }
-      else {
-        //try alternate field label (if duplicate)
-        $custParams[$flds["{$f->field} ({$k})"]] = $f->value;
+
+      $custParams = [
+        'entity_id' => $act['id'],
+        'custom_80' => $params->form_title,
+        'custom_81' => $params->form_id,
+      ];
+
+      foreach ($params->form_values as $k => $f) {
+        //CRM_Core_Error::debug_var("field $k", $f);
+
+        //some surveys are constructed with duplicate field names, so need to make
+        //sure we don't overwrite or skip
+        if (isset($flds[$f->field]) && !isset($custParams[$flds[$f->field]])) {
+          $custParams[$flds[$f->field]] = $f->value;
+        }
+        else {
+          //try alternate field label (if duplicate)
+          $custParams[$flds["{$f->field} ({$k})"]] = $f->value;
+        }
+      }
+      //CRM_Core_Error::debug_var('actParams', $actParams);
+      $cf = civicrm_api3('custom_value', 'create', $custParams);
+
+      $transaction->commit();
+
+      if (!empty($cf) && empty($cf['is_error'])) {
+        return $cf;
       }
     }
-    //CRM_Core_Error::debug_var('actParams', $actParams);
-    $cf = civicrm_api3('custom_value', 'create', $custParams);
-
-    $transaction->commit();
-
-    if (!empty($cf) && empty($cf['is_error'])) {
-      return $cf;
+    catch (CiviCRM_API3_Exception $e) {
+      CRM_Core_Error::debug_var('Survey Construction Issue', $e, TRUE, TRUE, 'integration');
     }
 
     return array(
@@ -880,7 +885,7 @@ class CRM_NYSS_BAO_Integration_Website
    * check if survey already exists; if so, return fields by label
    * else return false
    */
-  function surveyExists($params)
+  static function surveyExists($params)
   {
     if (empty($params->form_id)) {
       return false;
@@ -931,10 +936,9 @@ class CRM_NYSS_BAO_Integration_Website
   /*
    * create custom data set and fields for survey
    */
-  function buildSurvey($data)
-  {
+  static function buildSurvey($data) {
     if (empty($data->form_id)) {
-      return false;
+      return FALSE;
     }
 
     //create custom group if it doesn't exist
@@ -949,9 +953,14 @@ class CRM_NYSS_BAO_Integration_Website
         SELECT max(weight)
         FROM civicrm_custom_group
       ");
+
+      //truncate title; first determine length we can handle, accounting for static text and form_id
+      $addedText = strlen((string)$data->form_id) + 12;
+      $formTitle = substr($data->form_title, 0, 128 - $addedText);
+
       $params = array(
         'name' => "Survey_{$data->form_id}",
-        'title' => "Survey: {$data->form_title} [{$data->form_id}]",
+        'title' => "Survey: {$formTitle} [{$data->form_id}]",
         'table_name' => "civicrm_value_surveydata_{$data->form_id}",
         'extends' => array('0' => 'Activity'),
         'extends_entity_column_value' => CRM_Core_OptionGroup::getValue('activity_type', 'Website Survey', 'name'),
@@ -961,8 +970,16 @@ class CRM_NYSS_BAO_Integration_Website
         'is_active' => 1,
         'weight' => $weight++,
       );
-      $cg = civicrm_api3('custom_group', 'create', $params);
-      $csID = $cg['id'];
+
+      try {
+        $cg = civicrm_api3('custom_group', 'create', $params);
+        $csID = $cg['id'];
+      }
+      catch (CiviCRM_API3_Exception $e) {
+        CRM_Core_Error::debug_var('buildSurvey $e', $e, TRUE, TRUE, 'integration');
+
+        return FALSE;
+      }
     }
 
     //get existing fields for this custom data set
@@ -992,10 +1009,13 @@ class CRM_NYSS_BAO_Integration_Website
       }
 
       //make sure label is unique
-      $label = trim($f->field);
+      $label = substr(trim($f->field), 0, 1018);
       if (array_key_exists($f->field, $fields)) {
-        $label = "{$f->field} ({$k})";
+        $label = substr($label, 0, 1010);
+        $label = "{$label} ({$k})";
       }
+      //CRM_Core_Error::debug_var('buildSurvey $label', $label, TRUE, TRUE, 'integration');
+
       $params = array(
         'custom_group_id' => $csID,
         'label' => $label,
@@ -1007,11 +1027,18 @@ class CRM_NYSS_BAO_Integration_Website
         'weight' => $weight++,
       );
       //CRM_Core_Error::debug_var('fields $params', $params);
-      $cf = civicrm_api3('custom_field', 'create', $params);
 
-      $fields[$f->field] = "custom_{$cf['id']}";
+      try {
+        $cf = civicrm_api3('custom_field', 'create', $params);
 
-      $fieldCreated = true;
+        $fields[$f->field] = "custom_{$cf['id']}";
+
+        $fieldCreated = TRUE;
+      }
+      catch (CiviCRM_API3_Exception $e) {
+        $fieldCreated = FALSE;
+        CRM_Core_Error::debug_var('buildSurvey $e', $e, TRUE, TRUE, 'integration');
+      }
     }
     //CRM_Core_Error::debug_var('final $fields', $fields);
     //CRM_Core_Error::debug_var('$fieldCreated', $fieldCreated);

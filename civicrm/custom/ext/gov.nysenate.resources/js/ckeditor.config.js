@@ -72,8 +72,7 @@ CKEDITOR.editorConfig = function( config ) {
 };
 
 //NYSS 3878 remove some unnecessary elements
-CKEDITOR.on( 'dialogDefinition', function( ev )
-{
+CKEDITOR.on('dialogDefinition', function(ev) {
   // Take the dialog name and its definition from the event data.
   var dialogName = ev.data.name;
   var dialogDefinition = ev.data.definition;
@@ -115,5 +114,28 @@ CKEDITOR.on( 'dialogDefinition', function( ev )
     var linkTab = dialogDefinition.getContents( 'Link' );
     linkTab.remove( 'cmbTarget');
   }
+});
 
+CKEDITOR.on('instanceReady', function (ev) {
+  //console.log('ev: ', ev);
+
+  ev.editor.dataProcessor.htmlFilter.addRules({
+    elements: {
+      figure: function( el ) {
+        //console.log('el: ', el);
+        var style = el.attributes.style;
+        el.attributes.style = 'margin-inline-start: 5px; margin-inline-end: 5px;' + style;
+      }
+    }
+  });
+
+  ev.editor.dataProcessor.dataFilter.addRules({
+    elements: {
+      figure: function( el ) {
+        //console.log('el: ', el);
+        var style = el.attributes.style;
+        el.attributes.style = 'margin-inline-start: 5px; margin-inline-end: 5px;' + style;
+      }
+    }
+  });
 });
