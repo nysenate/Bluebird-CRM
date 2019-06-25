@@ -78,7 +78,7 @@ class CRM_Integration_Process
       if ($row->target_shortname != $row->user_shortname &&
         in_array($row->msg_type, array('DIRECTMSG', 'CONTEXTMSG'))
       ) {
-        CRM_NYSS_BAO_Integration_Website::archiveRecord($intDB, 'other', $row, null, null);
+        CRM_NYSS_BAO_Integration_Website::archiveRecord($intDB, 'other', $row, null);
         continue;
       }
 
@@ -101,7 +101,7 @@ class CRM_Integration_Process
           if ($optlist['archive']) {
             $archiveTable = strtolower($row->msg_type);
             bbscript_log(LL::DEBUG, "Archiving unmatched/uncreated record to $archiveTable and archive_error table");
-            CRM_NYSS_BAO_Integration_Website::archiveRecord($intDB, $archiveTable, $row, $params, $date, false);
+            CRM_NYSS_BAO_Integration_Website::archiveRecord($intDB, $archiveTable, $row, $params, false);
           }
 
           continue;
@@ -144,7 +144,7 @@ class CRM_Integration_Process
         if ($optlist['archive']) {
           $archiveTable = strtolower($row->msg_type);
           bbscript_log(LL::DEBUG, "Archiving non-matched record to $archiveTable and archive_error table");
-          CRM_NYSS_BAO_Integration_Website::archiveRecord($intDB, $archiveTable, $row, $params, $date, false);
+          CRM_NYSS_BAO_Integration_Website::archiveRecord($intDB, $archiveTable, $row, $params, false);
         }
 
         continue;
@@ -246,7 +246,7 @@ class CRM_Integration_Process
         if ($optlist['archive']) {
           $archiveTable = (!empty($archiveTable)) ? $archiveTable : strtolower($row->msg_type);
           bbscript_log(LL::DEBUG, 'Archiving matched/created record to $archiveTable and archive_error table');
-          CRM_NYSS_BAO_Integration_Website::archiveRecord($intDB, $archiveTable, $row, $params, $date, false);
+          CRM_NYSS_BAO_Integration_Website::archiveRecord($intDB, $archiveTable, $row, $params, false);
         }
       }
       else {
@@ -262,7 +262,7 @@ class CRM_Integration_Process
         if ($optlist['archive']) {
           $archiveTable = (!empty($archiveTable)) ? $archiveTable : strtolower($row->msg_type);
           bbscript_log(LL::DEBUG, 'Archiving matched/created record to $archiveTable table');
-          CRM_NYSS_BAO_Integration_Website::archiveRecord($intDB, $archiveTable, $row, $params, $date);
+          CRM_NYSS_BAO_Integration_Website::archiveRecord($intDB, $archiveTable, $row, $params);
         }
       }
     }

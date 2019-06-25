@@ -507,6 +507,23 @@ function nyss_civihooks_civicrm_searchTasks($objectType, &$tasks)
   }
 } // nyss_civihooks_civicrm_searchTasks()
 
+function nyss_civihooks_civicrm_searchColumns($objectName, &$headers, &$rows, &$selector) {
+  /*Civi::log()->debug('', [
+    '$objectName' => $objectName,
+    '$headers' => $headers,
+    //'$rows' => $rows,
+    '$selector' => $selector,
+  ]);*/
+
+  //12644 remove sort cols on search builder
+  if (_accessProtected(_accessProtected($selector, '_object'), '_searchContext') == 'builder') {
+    foreach ($headers as &$header) {
+      if (!empty($header['sort']) && $header['sort'] != 'sort_name') {
+        unset($header['sort']);
+      }
+    }
+  }
+}
 
 function nyss_civihooks_civicrm_pre($op, $objectName, $objectId, &$objectRef)
 {
@@ -826,4 +843,25 @@ function _nyss_preventDoubleSubmit($formName, &$form) {
     }
     //CRM_Core_Error::debug($buttons);
   }
+}
+
+/**
+ * @param $obj
+ * @param $prop
+ *
+ * @return mixed
+ * @throws \ReflectionException
+ *
+ * 12644
+ * helper function to access protected object properties
+ */
+function _accessProtected($obj, $prop) {
+  $reflection = new ReflectionClass($obj);
+  if ($reflection->hasProperty($prop)) {
+    $property = $reflection->getProperty($prop);
+    $property->setAccessible(TRUE);
+    return $property->getValue($obj);
+  }
+
+  return NULL;
 }

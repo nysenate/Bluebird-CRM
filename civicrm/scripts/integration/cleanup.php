@@ -78,6 +78,10 @@ class CRM_Integration_Cleanup
         $result = self::archiveUnassigned($params);
         break;
 
+      case 'dupeactivities':
+        $result = self::removeDuplicateMessageActivities($params);
+        break;
+
       default:
         bbscript_log(LL::ERROR, 'Requested action is not available.');
         return;
@@ -86,13 +90,15 @@ class CRM_Integration_Cleanup
     //report stats
     $stats['counts'] = array(
       'processed' => count($result['processed']),
+      'skipped' => count($result['skipped']),
+      'error' => count($result['error']),
     );
 
     bbscript_log(LL::NOTICE, "Clean up stats:", $stats['counts']);
 
     if ($optlist['stats']) {
       bbscript_log(LL::NOTICE, "Clean up details:");
-      bbscript_log(LL::NOTICE, "Processed:", $result['processed']);
+      bbscript_log(LL::NOTICE, "Results:", $result);
     }
   }//run
 
@@ -121,6 +127,43 @@ class CRM_Integration_Cleanup
 
     return $result;
   }//archiveUnassigned
+
+  function removeDuplicateMessageActivities($params) {
+    $activityIds = CRM_Core_DAO::singleValueQuery("
+      SELECT GROUP_CONCAT(value)
+      FROM civicrm_option_value
+      WHERE name IN ('website_contextual_message', 'website_direct_message')
+        AND option_group_id = 2
+    ");
+
+    $dao = CRM_Core_DAO::executeQuery("
+      SELECT max(a.id) aid, a.subject, a.activity_type_id, ac.contact_id, count(a.id)
+      FROM civicrm_activity a
+      JOIN civicrm_activity_contact ac
+        ON a.id = ac.activity_id
+        AND ac.record_type_id = 3
+      WHERE activity_type_id IN ({$activityIds})
+      GROUP BY subject, activity_type_id, ac.contact_id, a.details
+      HAVING count(a.id) > 1
+    ");
+
+    while ($dao->fetch()) {
+      try {
+        civicrm_api3('activity', 'delete', [
+          'id' => $dao->aid,
+        ]);
+
+        $result['processed'][] = $dao->aid;
+      }
+      catch (CiviCRM_API3_Exception $e) {
+        bbscript_log(LL::DEBUG, 'removeDuplicateMessageActivities $e:', $e);
+
+        $result['error'][] = $dao->aid;
+      }
+    }
+
+    return $result;
+  }
 }//end class
 
 //run the script

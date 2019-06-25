@@ -273,12 +273,12 @@ function mail_civicrm_pre($op, $objectName, $id, &$params) {
 
     $doc = phpQuery::newDocument($params['body_html']);
     $style = $doc->find('figure')->attr('style');
-    if (strpos($style, 'margin-inline-start') === FALSE) {
+    if (!empty($params['body_html']) && strpos($style, 'margin-inline-start') === FALSE) {
       $doc->find('figure')
         ->attr('style', "{$style}; margin-inline-start: 5px; margin-inline-end: 5px;");
       $params['body_html'] = $doc->html();
     }
-    //Civi::log()->debug('mail_civicrm_pre', ['$params[body_html]' => $params['body_html']]);
+    //Civi::log()->debug('mail_civicrm_pre AFTER', ['$style' => $style, '$params[body_html]' => $params['body_html']]);
   }
 }
 
