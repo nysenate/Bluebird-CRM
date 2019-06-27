@@ -88,6 +88,11 @@
       <div class="content">{$form.activity_status.html}</div>
       <div class="clear"></div>
     </div>
+    <div class="crm-section">
+      <div class="label">{$form.case_id.label}</div>
+      <div class="content">{$form.case_id.html}</div>
+      <div class="clear"></div>
+    </div>
   </div>
 </div>
 
