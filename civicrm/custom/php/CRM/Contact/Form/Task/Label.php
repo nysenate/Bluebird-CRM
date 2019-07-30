@@ -179,9 +179,11 @@ class CRM_Contact_Form_Task_Label extends CRM_Contact_Form_Task {
       $location = array('location' => array("{$locName}" => $address));
       $returnProperties = array_merge($returnProperties, $location);
       $params[] = array('location_type', '=', array(1 => $fv['location_type_id']), 0, 0);
+      $primaryLocationOnly = FALSE;//NYSS
     }
     else {
       $returnProperties = array_merge($returnProperties, $address);
+      $primaryLocationOnly = TRUE;//NYSS
     }
 
     $rows = array();
@@ -214,7 +216,7 @@ class CRM_Contact_Form_Task_Label extends CRM_Contact_Form_Task {
     //get the total number of contacts to fetch from database.
     $numberofContacts = count($this->_contactIds);
     $query = new CRM_Contact_BAO_Query($params, $returnProperties);
-    $details = $query->apiQuery($params, $returnProperties, NULL, NULL, 0, $numberofContacts);
+    $details = $query->apiQuery($params, $returnProperties, NULL, NULL, 0, $numberofContacts, TRUE, FALSE, TRUE, CRM_Contact_BAO_Query::MODE_CONTACTS, NULL, $primaryLocationOnly);//NYSS
 
     $messageToken = CRM_Utils_Token::getTokens($mailingFormat);
 
