@@ -179,6 +179,16 @@ function resources_civicrm_coreResourceList(&$list, $region) {
     'maxImageWidth' => 600,
     'maxImageHeight' => 2048,
   );
+
+  //add special non-Admin css file
+  global $user;
+  $roles = $user->roles;
+  $adminRoles = ['Administrator', 'Superuser'];
+  $isAdmin = array_intersect($adminRoles, $roles);
+  if (empty($isAdmin)) {
+    CRM_Core_Resources::singleton()
+      ->addStyleFile('gov.nysenate.resources', 'css/nonAdmin.css');
+  }
 }
 
 function resources_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) {
