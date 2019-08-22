@@ -200,6 +200,26 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
+## non-admin menu + block
+echo "$prog: insert non-admin menu and block"
+sql="
+  DELETE FROM menu_custom WHERE menu_name = 'menu-non-admin-drupal-menu';
+  INSERT INTO menu_custom (menu_name, title, description)
+    VALUES ('menu-non-admin-drupal-menu', 'Non-Admin Drupal Menu', '');
+
+  DELETE FROM menu_links WHERE menu_name = 'menu-non-admin-drupal-menu';
+  INSERT INTO menu_links
+    (menu_name, mlid, plid, link_path, router_path, link_title, options, module, hidden, external, has_children, expanded, weight, depth, customized, p1, p2, p3, p4, p5, p6, p7, p8, p9, updated)
+    VALUES
+    ('menu-non-admin-drupal-menu', 704, 0, 'civicrm', 'civicrm', 'Bluebird Dashboard', 0x613a313a7b733a31303a2261747472696275746573223b613a313a7b733a353a227469746c65223b733a33373a2252657475726e20746f20746865206d61696e20426c7565626972642044617368626f617264223b7d7d, 'menu', 0, 0, 0, 0, 0, 1, 1, 704, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+
+  DELETE FROM block WHERE delta = 'menu-non-admin-drupal-menu';
+  INSERT INTO block (module, delta, theme, status, weight, region, custom, visibility, pages, title, cache)\
+    VALUES
+    ('menu', 'menu-non-admin-drupal-menu', 'BluebirdSeven', 1, 0, 'content', 0, 1, 'admin/people', '<none>', -1);
+"
+$execSql $instance -c "$sql" --drupal -q
+
 echo "$prog: resetting roles and permissions..."
 $script_dir/resetRolePerms.sh $instance
 
