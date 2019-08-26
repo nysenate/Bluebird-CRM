@@ -1166,6 +1166,21 @@ function _buildHelpMenu($nyssBaseID) {
         ),
         'child' => array(),
       ),
+      $nyssBaseID+5 => [
+        'attributes' => [
+          'label' => 'Bluebird News',
+          'name' => 'Bluebird News',
+          'url' => 'https://senateonline.nysenate.gov/BluebirdNews.nsf',
+          'permission' => 'access CiviCRM',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $nyssBaseID,
+          'navID' => $nyssBaseID+5,
+          'active' => 1,
+          'target' => '_blank',
+        ],
+        'child' => [],
+      ],
     ),
   );
 
