@@ -189,6 +189,7 @@ function reports_civicrm_alterReportVar($varType, &$var, &$object) {
           break;
 
         case 'CRM_Report_Form_Case_Detail':
+          $object->optimisedForOnlyFullGroupBy = FALSE;
           _reports_CaseDetail_sql($var, $object);
           break;
 

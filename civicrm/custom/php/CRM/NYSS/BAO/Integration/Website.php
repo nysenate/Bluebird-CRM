@@ -769,6 +769,7 @@ class CRM_NYSS_BAO_Integration_Website
       'subject' => $params->form_title,
       'date' => date('Y-m-d H:i:s'),
       'activity_type_id' => CRM_Core_OptionGroup::getValue('activity_type', 'Website Survey', 'name'),
+      'details' => (!empty($params->details)) ? $params->details : '',
       'target_contact_id' => $contactId,
       'source_contact_id' => civicrm_api3('uf_match', 'getvalue', array(
         'uf_id' => 1,

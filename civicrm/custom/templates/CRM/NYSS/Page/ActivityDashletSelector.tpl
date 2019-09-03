@@ -23,24 +23,51 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-<div class="crm-activity-selector-{$context}">
+<div class="crm-allactivity-selector-{$context}">
   <div class="crm-accordion-wrapper crm-search_filters-accordion">
     <div class="crm-accordion-header">
       {ts}Filter Activities{/ts}</a>
     </div><!-- /.crm-accordion-header -->
     <div class="crm-accordion-body">
       <form><!-- form element is here to fool the datepicker widget -->
-      <table class="no-border form-layout-compressed activity-search-options">
+      <table class="no-border form-layout-compressed all-activity-search-options">
         <tr>
           <td class="crm-contact-form-block-activity_type_filter_id crm-inline-edit-field">
-            {$form.activity_type_filter_id.label}<br /> {$form.activity_type_filter_id.html|crmAddClass:medium}
+            {$form.all_activity_type_filter_id.label}<br /> {$form.all_activity_type_filter_id.html|crmAddClass:medium}
           </td>
           <td class="crm-contact-form-block-activity_type_exclude_filter_id crm-inline-edit-field">
-            {$form.activity_type_exclude_filter_id.label}<br /> {$form.activity_type_exclude_filter_id.html|crmAddClass:medium}
+            {$form.all_activity_type_exclude_filter_id.label}<br /> {$form.all_activity_type_exclude_filter_id.html|crmAddClass:medium}
           </td>
+
           <td>
-            {include file="CRM/Core/DatePickerRange.tpl" fieldName="activity_date_time"}
+            <label>Date</label><br />
+            {$form.all_activity_date_relative.html}<br />
+            <span class="crm-absolute-date-range">
+              <span class="crm-absolute-date-from">
+                {$form.all_activity_date_low.label}
+                {include file="CRM/common/jcalendar.tpl" elementName='all_activity_date_low'}
+              </span>
+              <span class="crm-absolute-date-to">
+                {$form.all_activity_date_high.label}
+                {include file="CRM/common/jcalendar.tpl" elementName='all_activity_date_high'}
+              </span>
+            </span>
+            {literal}
+            <script type="text/javascript">
+              var context = {/literal}"{$context}"{literal};
+              cj('.crm-allactivity-selector-' + context + " #all_activity_date_relative").change(function() {
+                var n = cj(this).parent().parent();
+                if (cj(this).val() == "0") {
+                  cj(".crm-absolute-date-range", n).show();
+                } else {
+                  cj(".crm-absolute-date-range", n).hide();
+                  cj(':text', n).val('');
+                }
+              }).change();
+            </script>
+            {/literal}
           </td>
+
           <td class="crm-contact-form-block-activity_status_filter_id crm-inline-edit-field">
             <label>{ts}Status{/ts}</label><br /> {$form.status_id.html|crmAddClass:medium}
           </td>
@@ -49,7 +76,7 @@
       </form>
     </div><!-- /.crm-accordion-body -->
   </div><!-- /.crm-accordion-wrapper -->
-  <table class="contact-activity-selector-{$context} crm-ajax-table" style="width: 100%;">
+  <table class="contact-allactivity-selector-{$context} crm-ajax-table">
     <thead>
     <tr>
       <th data-data="activity_type" class="crm-contact-activity-activity_type">{ts}Type{/ts}</th>
@@ -68,23 +95,23 @@
   <script type="text/javascript">
     (function($) {
       var context = {/literal}"{$context}"{literal};
-      CRM.$('table.contact-activity-selector-' + context).data({
+      CRM.$('table.contact-allactivity-selector-' + context).data({
         "ajax": {
           "url": {/literal}'{crmURL p="civicrm/ajax/allactivities" h=0 q="snippet=4&context=$context"}'{literal},
           "data": function (d) {
-            var status_id = $('.crm-activity-selector-' + context + ' select#status_id').val() || [];
-            d.activity_type_id = $('.crm-activity-selector-' + context + ' select#activity_type_filter_id').val(),
-              d.activity_type_exclude_id = $('.crm-activity-selector-' + context + ' select#activity_type_exclude_filter_id').val(),
-              d.activity_date_time_relative = $('select#activity_date_time_relative').val(),
-              d.activity_date_time_low = $('#activity_date_time_low').val(),
-              d.activity_date_time_high = $('#activity_date_time_high').val(),
+            var status_id = $('.crm-allactivity-selector-' + context + ' select#status_id').val() || [];
+            d.activity_type_id = $('.crm-allactivity-selector-' + context + ' select#all_activity_type_filter_id').val(),
+              d.activity_type_exclude_id = $('.crm-allactivity-selector-' + context + ' select#all_activity_type_exclude_filter_id').val(),
+              d.activity_date_relative = $('.crm-allactivity-selector-' + context + ' select#all_activity_date_relative').val(),
+              d.activity_date_low = $('.crm-allactivity-selector-' + context + ' #all_activity_date_low').val(),
+              d.activity_date_high = $('.crm-allactivity-selector-' + context + ' #all_activity_date_high').val(),
               d.activity_status_id = status_id.join(',')
           }
         }
       });
       $(function($) {
-        $('.activity-search-options :input').change(function(){
-          CRM.$('table.contact-activity-selector-' + context).DataTable().draw();
+        $('.all-activity-search-options :input').change(function(){
+          CRM.$('table.contact-allactivity-selector-' + context).DataTable().draw();
         });
       });
     })(CRM.$);

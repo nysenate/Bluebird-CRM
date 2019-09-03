@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<extension key="gov.nysenate.merge" type="module">
+  <file>merge</file>
+  <name>NYSS: Merge</name>
+  <description></description>
+  <license>AGPL-3.0</license>
+  <maintainer>
+    <author>NYS Senate</author>
+    <email>brian@lcdservices.biz</email>
+  </maintainer>
+  <urls>
+    <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
+  </urls>
+  <releaseDate>2019-09-03</releaseDate>
+  <version>1.0</version>
+  <develStage>stable</develStage>
+  <compatibility>
+    <ver>5.x</ver>
+  </compatibility>
+  <comments></comments>
+  <civix>
+    <namespace>CRM/NYSS/Merge</namespace>
+  </civix>
+</extension>
