@@ -13,7 +13,7 @@ class CRM_Districtstats_Page_DistrictStats extends CRM_Core_Page {
 
     //set base advanced search url
     $baseUrl = CRM_Utils_System::url('civicrm/contact/search/advanced', 'reset=1&force=1&context=districtstats');
-    $linkIcon = "&nbsp;&nbsp;<i class='crm-i fa-rocket'></i>";
+    $linkIcon = "&nbsp;&nbsp;<i class='crm-i fa-search'></i>";
     $this->assign('baseUrl', $baseUrl);
 
     //contact counts by type
