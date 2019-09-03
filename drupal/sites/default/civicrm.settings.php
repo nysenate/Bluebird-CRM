@@ -215,7 +215,7 @@ $prefsExt['ext_repo_url'] = false;
 // Mailing settings, from Mailing.setting.php
 $prefsMail['profile_double_optin'] = false;
 $prefsMail['track_civimail_replies'] = false;
-$prefsMail['civimail_workflow'] = true;
+$prefsMail['civimail_workflow'] = false;//TODO 12879
 $prefsMail['civimail_server_wide_lock'] = true;
 // replyTo
 $prefsMail['mailing_backend'] = [
