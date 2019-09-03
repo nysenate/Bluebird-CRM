@@ -146,8 +146,18 @@ ul#civicrm-menu {
 
 /*DASHBOARD*/
 #crm-container .column-0 {
-  width: 75% !important;
+  width: 100% !important;
 }
 #crm-container .column-1 {
-  width: 25% !important;
+  width: 0 !important;
+  display: none;
+}
+#crm-container #dashlets-header-col-0,
+#crm-container #existing-dashlets-col-0 {
+  width: 100% !important;
+}
+#crm-container #dashlets-header-col-1,
+#crm-container #existing-dashlets-col-1 {
+  width: 0 !important;
+  display: none;
 }

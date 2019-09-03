@@ -136,6 +136,13 @@ function dashboard_civicrm_entityTypes(&$entityTypes) {
 
 function dashboard_civicrm_pageRun(&$page) {
   if (is_a($page, 'CRM_Contact_Page_DashBoard')) {
+    CRM_Core_Resources::singleton()->addScriptFile(CRM_Dashboard_ExtensionUtil::LONG_NAME, 'js/dashboard.js');
+    CRM_Core_Resources::singleton()->addStyleFile(CRM_Dashboard_ExtensionUtil::LONG_NAME, 'css/dashboard.css');
+
+    CRM_Core_Resources::singleton()->addVars('NYSS', [
+      'bbNewsUrl' => '<a href="https://senateonline.nysenate.gov/BluebirdNews.nsf" target="_blank">Bluebird News</a>'
+    ]);
+
     //check to see if already loaded this session
     if (CRM_Core_Session::singleton()->get('bbDashNews')) {
       return;
