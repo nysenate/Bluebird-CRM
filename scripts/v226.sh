@@ -38,5 +38,11 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
+## 12878
+echo "$prog: nyss #12878 - disable merge module; enable merge extension;"
+$drush $instance pm-disable nyss_massmerge -y
+$drush $instance pm-uninstall nyss_massmerge -y
+$drush $instance cvapi extension.install key=gov.nysenate.merge --quiet
+
 ## record completion
 echo "$prog: Finished the v2.2.6 upgrade process"
