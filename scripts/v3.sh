@@ -59,11 +59,11 @@ $drush $instance cvapi extension.install key=org.civicrm.civicase --quiet
 $drush $instance cvapi extension.install key=org.civicrm.contactlayout --quiet
 $drush $instance cvapi extension.install key=org.civicrm.districtstats --quiet
 $drush $instance cvapi extension.install key=org.civicrm.doctorwhen --quiet
-$drush $instance cvapi extension.install key=org.civicrm.flexmailer --quiet
+##$drush $instance cvapi extension.install key=org.civicrm.flexmailer --quiet
 $drush $instance cvapi extension.install key=org.civicrm.shoreditch --quiet
 $drush $instance cvapi extension.install key=org.civicrm.tutorial --quiet
 
-$drush $instance cvapi extension.install key=uk.co.vedaconsulting.mosaico --quiet
+##$drush $instance cvapi extension.install key=uk.co.vedaconsulting.mosaico --quiet
 
 $drush $instance cvapi DoctorWhen.run tasks=* --quiet
 
