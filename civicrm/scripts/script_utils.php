@@ -51,11 +51,9 @@ function civicrm_script_init($shopts = "", $longopts = array(), $session = true)
 
   if ($myopts) {
     require_once SCRIPT_UTILS_CIVIROOT.'/civicrm.config.php';
-
     // If running from web server, or if a username was provided, then
     // authenticate the user.  This allows us to run anonymously from the CLI.
     if ($force_auth || $myopts['user']) {
-      require_once 'CRM/Utils/System.php';
       CRM_Utils_System::authenticateScript(true, $myopts['user'], $myopts['pass']);
     }
   }

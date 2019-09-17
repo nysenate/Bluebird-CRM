@@ -59,7 +59,7 @@ define('AUTH_FORWARDERS_GROUP_NAME', 'Authorized_Forwarders');
 error_reporting(E_ERROR | E_PARSE | E_WARNING);
 
 /* enable for debugging only */
-//ini_set('error_reporting',-1);
+ini_set('error_reporting',-1);
 
 if (!ini_get('date.timezone')) {
   date_default_timezone_set('America/New_York');
@@ -90,18 +90,8 @@ if (!empty($optlist['log-level'])) {
 }
 
 require_once 'CRM/Core/Config.php';
-$config =& CRM_Core_Config::singleton();
-$session =& CRM_Core_Session::singleton();
-require_once 'CRM/Contact/BAO/Contact.php';
-require_once 'CRM/Contact/BAO/GroupContact.php';
-require_once 'CRM/Activity/BAO/Activity.php';
-require_once 'CRM/Core/Transaction.php';
-require_once 'CRM/Core/BAO/CustomValueTable.php';
-require_once 'CRM/Core/PseudoConstant.php';
-require_once 'CRM/Core/Error.php';
-require_once 'api/api.php';
-require_once 'CRM/Core/DAO.php';
-require_once 'CRM/Utils/File.php';
+$config = CRM_Core_Config::singleton();
+$session = CRM_Core_Session::singleton();
 
 require_once 'CRM/NYSS/IMAP/Session.php';
 require_once 'CRM/NYSS/IMAP/Message.php';
