@@ -264,7 +264,7 @@ TEXT;
   // *** Footer Template ***
   else if ($comp_type == 'footer') {
     $offices = array();
-    foreach (['Albany', 'District', 'Satellite'] as $offtype) {
+    foreach (['Albany', 'District', 'Satellite', 'Satellite2'] as $offtype) {
       $cfgparam = 'senator.address.' . strtolower($offtype);
       if ($cfg[$cfgparam]) {
         $offices[$offtype] = $cfg[$cfgparam];
