@@ -60,4 +60,8 @@
   #{civi-dialog()} {
     min-width: 400px;
   }
+
+  #searchOptions input[type='text'] {
+    @include input-text-bootstrap();
+  }
 }

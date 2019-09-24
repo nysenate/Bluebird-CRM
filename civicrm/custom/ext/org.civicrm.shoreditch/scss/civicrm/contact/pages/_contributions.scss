@@ -28,7 +28,7 @@
   .CRM_Contribute_Form_Task_Delete {
     background: $crm-white;
     border-radius: $border-radius-small;
-    box-shadow: $crm-contribute-form-shadow;
+    box-shadow: $box-shadow;
     margin-top: 15px;
 
     + p {
@@ -105,7 +105,7 @@
 
     .dateplugin {
       margin-bottom: 5px;
-      max-width: 150px;
+      max-width: $crm-table-label-column-width;
     }
 
     .addon.fa-calendar {
@@ -360,7 +360,7 @@
 
     .pay-later_info-section {
       .label {
-        width: 150px;
+        width: $crm-table-label-column-width;
       }
 
       .content {
@@ -411,6 +411,11 @@
 }
 
 #{civi-page('contact-view-contribution')} {
+  #crm-main-content-wrapper {
+    background-color: $crm-white;
+    box-shadow: $box-shadow;
+  }
+
   #branding {
     display: block;
   }
@@ -543,16 +548,25 @@
   .crm-contact-contribute-recur-active {
     margin-bottom: 13px;
   }
+
+  .crm-contact-contribute-recur {
+    @include civicrm-table-with-header;
+  }
 }
 
 .CRM_Contribute_Form_Contribution {
+  // Hides "Alternatively, you can use a price set" text
+  #totalAmountBlock {
+    display: none !important;
+  }
+
+  #priceset {
+    margin-top: $crm-standard-gap / 2;
+  }
+
   .crm-accordion-header {
     font-family: $font-family-base;
     font-weight: $crm-font-weight-h1 !important;
-  }
-
-  &#Contribution .crm-accordion-body {
-    padding: 15px 20px !important;
   }
 
   .crm-submit-buttons {
@@ -647,52 +661,6 @@
     }
   }
 
-  input,
-  select,
-  textarea {
-    &.crm-inline-error,
-    &.crm-error,
-    &.error {
-      background: none !important;
-      border: 1px solid $brand-danger;
-      min-height: 30px;
-    }
-  }
-
-  label {
-    &.crm-inline-error,
-    &.crm-error {
-      background: $brand-danger !important;
-      border-radius: 3px;
-      color: $crm-white !important;
-      padding: 5px;
-
-      &.crm-inline-error {
-        margin: 0 4px;
-      }
-
-      span {
-        background: none;
-        color: $crm-white;
-      }
-    }
-  }
-
-  span {
-    &.crm-error {
-      background: $brand-danger !important;
-      border-radius: 3px;
-      color: $crm-white !important;
-      margin: 2px;
-      padding: 5px;
-
-      span {
-        background: none;
-        color: $crm-white;
-      }
-    }
-  }
-
   .form-layout-compressed td.label {
     padding-left: 0 !important;
   }
@@ -731,90 +699,25 @@
 }
 
 .CRM_Contribute_Form_ContributionView {
-  .action-link {
-    display: none;
+  .crm-info-panel {
+    @include table-selector-full-style();
+
+    .selector {
+      box-shadow: none;
+    }
   }
 
-  table {
-    background: transparent;
+  #Donor_Information__ {
     border: 0;
-    box-shadow: none !important;
-    font-family: $font-family-base;
-    margin: 10px 0;
+    padding: 0;
 
-    thead tr {
-      border: 1px solid $crm-background !important;
-
-      th {
-        background: $gray-lighter !important;
-        border: 0;
-        color: $gray-darker !important;
-        height: 42px;
-        line-height: 1.1em;
-        vertical-align: middle;
-
-        div {
-          padding: 0;
-        }
-      }
+    .crm-accordion-body {
+      box-shadow: none;
     }
+  }
 
-    tbody tr {
-      background: $crm-white;
-      border: 1px solid $crm-background;
-      border-left: 0;
-      border-right: 0;
-
-      &.crm-child-row {
-        > td {
-          padding: 0;
-
-          .crm-ajax-container table {
-            margin: 0;
-
-            tbody {
-              border-top: 1px solid $crm-grayblue-dark !important;
-            }
-          }
-
-          .crm-ajax-container table th {
-            background: $gray-lighter !important;
-            border: 0;
-            color: $gray-darker;
-            vertical-align: middle;
-          }
-        }
-      }
-
-      td {
-        background: $crm-white !important;
-        border: 0;
-        line-height: 1.1em;
-        padding: 20px;
-
-        &.label {
-          border-bottom: 0;
-          color: $gray-darker !important;
-          vertical-align: middle;
-
-          div {
-            padding: 0;
-          }
-        }
-
-        &:not(.label) {
-          color: $gray-dark;
-        }
-      }
-
-      &:last-child {
-        border-bottom: 0;
-      }
-
-      &:first-child {
-        border-top: 0;
-      }
-    }
+  .action-link {
+    display: none;
   }
 
   #paymentDetails_Information {
@@ -828,61 +731,12 @@
     }
   }
 
-  #Donor_Information__ {
-    padding: 0;
-
-    .crm-accordion-body {
-      padding: 20px 40px !important;
-    }
-  }
-
-  .crm-accordion-header {
-    font-family: $font-family-base;
-    font-size: 13px !important;
-
-    + .crm-accordion-body {
-      padding: 20px !important;
-
-      td.label {
-        padding-left: 0 !important;
-      }
-    }
-  }
-
   label[for='thankyou_date'] {
     top: 7px;
   }
 
   label[for='thankyou_date_time'] {
     top: 5px;
-  }
-}
-
-#ContributionView {
-  [id*='Donor_Information_'] {
-    padding: 0;
-
-    .crm-accordion-wrapper .crm-accordion-body {
-      padding: 20px 43px !important;
-    }
-
-    td {
-      box-sizing: border-box;
-      display: table-cell;
-      min-width: 170px;
-      vertical-align: middle;
-    }
-
-    .html-adjust {
-      width: 100%;
-    }
-  }
-
-  .crm-submit-buttons {
-    a.button {
-      background-color: #0071bd;
-      margin-bottom: 29px;
-    }
   }
 }
 
@@ -896,7 +750,7 @@
         td {
           &.label {
             color: $gray-darker;
-            font-weight: 600;
+            font-weight: $crm-font-weight-bold;
           }
 
           &:first-child {
@@ -953,6 +807,15 @@
 }
 
 form.CRM_Contribute_Form_ContributionCharts {
+  h3 + div {
+    background-color: $crm-white;
+  }
+
+  .crm-pager,
+  table.selector {
+    box-shadow: none !important;
+  }
+
   .ui-tabs-nav {
     background: $crm-white;
     border: 0;
@@ -1005,7 +868,12 @@ form.CRM_Contribute_Form_ContributionCharts {
       box-shadow: none;
 
       td {
-        padding: 10px 20px;
+        padding: #{$crm-standard-gap / 2} $crm-standard-gap;
+      }
+
+      th {
+        padding-left: $crm-standard-gap;
+        padding-right: $crm-standard-gap;
       }
     }
 
@@ -1024,17 +892,28 @@ form.CRM_Contribute_Form_ContributionCharts {
 
   #mainTabContainer {
     @include box-shadow($crm-form-layout-shadow-lower);
+
+    + .spacer {
+      height: $crm-standard-gap;
+    }
   }
 
   .crm-pager {
-    @include box-shadow($crm-form-layout-shadow-lower);
-    background: $gray-lighter;
     line-height: 1.7em;
     margin: 0;
     padding: 7px 0;
 
     > .element-right {
+      margin-right: $crm-standard-gap !important;
       margin-top: 3px;
+    }
+
+    + .form-item {
+      padding: $crm-standard-gap !important;
+    }
+
+    .crm-pager-nav {
+      padding-left: 0;
     }
   }
 
@@ -1051,7 +930,6 @@ form.CRM_Contribute_Form_ContributionCharts {
     > tbody > tr > td + .crm-pager {
       border-radius: 0 0 $panel-border-radius $panel-border-radius;
       border-top: 1px solid $crm-background;
-      box-shadow: $crm-form-item-shadow;
       margin-top: 0;
     }
 
@@ -1140,6 +1018,21 @@ form.CRM_Contribute_Form_ContributionCharts {
   #upload-file {
     .help {
       margin: $crm-panel-nested-indent;
+    }
+  }
+}
+
+.contact-summary-contribute-tab {
+  .ui-tabs-nav {
+    background-color: $crm-white;
+    border: solid 1px $crm-grayblue-dark;
+
+    .ui-tabs-tab {
+      background-color: transparent;
+
+      &.ui-tabs-active {
+        background-color: $gray-light;
+      }
     }
   }
 }

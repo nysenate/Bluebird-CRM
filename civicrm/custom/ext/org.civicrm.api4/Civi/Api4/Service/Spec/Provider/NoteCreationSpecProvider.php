@@ -4,11 +4,10 @@ namespace Civi\Api4\Service\Spec\Provider;
 
 use Civi\Api4\Service\Spec\RequestSpec;
 
-
-class NoteCreationSpecProvider implements SpecProviderInterface {
+class NoteCreationSpecProvider implements Generic\SpecProviderInterface {
 
   /**
-   * @param RequestSpec $spec
+   * @param \Civi\Api4\Service\Spec\RequestSpec $spec
    */
   public function modifySpec(RequestSpec $spec) {
     $spec->getFieldByName('note')->setRequired(TRUE);

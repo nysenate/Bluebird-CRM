@@ -12,7 +12,7 @@ class Table {
   protected $name;
 
   /**
-   * @var Joinable[]
+   * @var \Civi\Api4\Service\Schema\Joinable\Joinable[]
    *   Array of links to other tables
    */
   protected $tableLinks = [];
@@ -43,14 +43,14 @@ class Table {
   }
 
   /**
-   * @return Joinable[]
+   * @return \Civi\Api4\Service\Schema\Joinable\Joinable[]
    */
   public function getTableLinks() {
     return $this->tableLinks;
   }
 
   /**
-   * @return Joinable[]
+   * @return \Civi\Api4\Service\Schema\Joinable\Joinable[]
    *   Only those links that are not joining the table to itself
    */
   public function getExternalLinks() {
@@ -60,7 +60,7 @@ class Table {
   }
 
   /**
-   * @param Joinable $linkToRemove
+   * @param \Civi\Api4\Service\Schema\Joinable\Joinable $linkToRemove
    */
   public function removeLink(Joinable $linkToRemove) {
     foreach ($this->tableLinks as $index => $link) {
@@ -72,7 +72,7 @@ class Table {
 
   /**
    * @param string $baseColumn
-   * @param Joinable $joinable
+   * @param \Civi\Api4\Service\Schema\Joinable\Joinable $joinable
    *
    * @return $this
    */

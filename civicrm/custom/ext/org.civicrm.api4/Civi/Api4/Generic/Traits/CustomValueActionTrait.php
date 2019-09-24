@@ -12,7 +12,7 @@ use Civi\Api4\Utils\CoreUtil;
  */
 trait CustomValueActionTrait {
 
-  function __construct($customGroup, $actionName) {
+  public function __construct($customGroup, $actionName) {
     $this->customGroup = $customGroup;
     parent::__construct('CustomValue', $actionName, ['id', 'entity_id']);
   }
@@ -36,8 +36,17 @@ trait CustomValueActionTrait {
    */
   protected function writeObjects($items) {
     $result = [];
+    $fields = $this->entityFields();
     foreach ($items as $item) {
-      FormattingUtil::formatWriteParams($item, $this->getEntityName(), $this->getEntityFields());
+      FormattingUtil::formatWriteParams($item, $this->getEntityName(), $fields);
+
+      // Convert field names to custom_xx format
+      foreach ($fields as $name => $field) {
+        if (!empty($field['custom_field_id']) && isset($item[$name])) {
+          $item['custom_' . $field['custom_field_id']] = $item[$name];
+          unset($item[$name]);
+        }
+      }
 
       $result[] = \CRM_Core_BAO_CustomValueTable::setValues($item);
     }
@@ -66,7 +75,7 @@ trait CustomValueActionTrait {
    * @inheritDoc
    */
   protected function fillDefaults(&$params) {
-    foreach ($this->getEntityFields() as $name => $field) {
+    foreach ($this->entityFields() as $name => $field) {
       if (!isset($params[$name]) && isset($field['default_value'])) {
         $params[$name] = $field['default_value'];
       }

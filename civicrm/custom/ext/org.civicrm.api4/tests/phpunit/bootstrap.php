@@ -8,8 +8,8 @@ eval($bootCode);
 
 preg_match('/require_once\s*\'(.*)\'/', $bootCode, $matches);
 $loader = require sprintf('%s/vendor/autoload.php', $matches[1]);
-$loader->addPsr4('Civi\\Test\\Api4\\', __DIR__);
-$loader->addPsr4('Civi\\Api4\\', __DIR__ . '/Mock/Api4');
+$loader->addPsr4('api\\v4\\', __DIR__ . '/api/v4');
+$loader->addPsr4('Civi\\Api4\\', __DIR__ . '/api/v4' . '/Mock/Api4');
 
 /**
  * Call the "cv" command.

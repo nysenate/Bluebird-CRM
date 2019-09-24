@@ -32,10 +32,10 @@ use Civi\API\Event\PrepareEvent;
 /**
  * Validate field inputs based on annotations in the action class
  */
-class ValidateFieldsSubscriber extends AbstractPrepareSubscriber {
+class ValidateFieldsSubscriber extends Generic\AbstractPrepareSubscriber {
 
   /**
-   * @param PrepareEvent $event
+   * @param \Civi\API\Event\PrepareEvent $event
    * @throws \Exception
    */
   public function onApiPrepare(PrepareEvent $event) {
@@ -86,6 +86,9 @@ class ValidateFieldsSubscriber extends AbstractPrepareSubscriber {
             return TRUE;
           }
           break;
+
+        case 'mixed':
+          return TRUE;
 
         default:
           throw new \API_Exception('Unknown parameter type: ' . $type);

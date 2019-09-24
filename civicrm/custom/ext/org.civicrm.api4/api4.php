@@ -3,86 +3,58 @@
 require_once 'api4.civix.php';
 require_once 'api/Exception.php';
 
-use Symfony\Component\DependencyInjection\Reference;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
-use Symfony\Component\Config\FileLocator;
+if (!is_callable('civicrm_api4')) {
 
-/**
- * Procedural wrapper for the OO api version 4.
- *
- * @param string $entity
- * @param string $action
- * @param array $params
- * @param string|int $index
- *   If $index is a string, the results array will be indexed by that key.
- *   If $index is an integer, only the result at that index will be returned.
- *
- * @return \Civi\Api4\Generic\Result
- * @throws \API_Exception
- * @throws \Civi\API\Exception\NotImplementedException
- */
-function civicrm_api4($entity, $action, $params = [], $index = NULL) {
-  $apiCall = \Civi\Api4\Utils\ActionUtil::getAction($entity, $action);
-  foreach ($params as $name => $param) {
-    $setter = 'set' . ucfirst($name);
-    $apiCall->$setter($param);
-  }
-  $result = $apiCall->execute();
-
-  // Index results by key
-  if ($index && is_string($index) && !CRM_Utils_Rule::integer($index)) {
-    $result->indexBy($index);
-  }
-  // Return result at index
-  if (CRM_Utils_Rule::integer($index)) {
-    $item = $result->itemAt($index);
-    if (is_null($item)) {
-      throw new \API_Exception("Index $index not found in api results");
+    /**
+     * Procedural wrapper for the OO api version 4.
+     *
+     * @param string $entity
+     * @param string $action
+     * @param array $params
+     * @param string|int $index
+     *   If $index is a string, the results array will be indexed by that key.
+     *   If $index is an integer, only the result at that index will be returned.
+     *
+     * @return \Civi\Api4\Generic\Result
+     * @throws \API_Exception
+     * @throws \Civi\API\Exception\NotImplementedException
+     */
+  function civicrm_api4($entity, $action, $params = [], $index = NULL) {
+    $apiCall = \Civi\Api4\Utils\ActionUtil::getAction($entity, $action);
+    foreach ($params as $name => $param) {
+      $setter = 'set' . ucfirst($name);
+      $apiCall->$setter($param);
     }
-    $result->exchangeArray($item);
+    $result = $apiCall->execute();
 
-  }
-  return $result;
-}
+    // Index results by key
+    if ($index && is_string($index) && !CRM_Utils_Rule::integer($index)) {
+      $result->indexBy($index);
+    }
+    // Return result at index
+    if (CRM_Utils_Rule::integer($index)) {
+      $item = $result->itemAt($index);
+      if (is_null($item)) {
+        throw new \API_Exception("Index $index not found in api results");
+      }
+      // Attempt to return a Result object if item is array, otherwise just return the item
+      if (!is_array($item)) {
+        return $item;
+      }
+      $result->exchangeArray($item);
 
-/**
- * @param ContainerBuilder $container
- */
-function api4_civicrm_container($container) {
-  $loader = new XmlFileLoader($container, new FileLocator(__DIR__));
-  $loader->load('services.xml');
-
-  $container->getDefinition('civi_api_kernel')->addMethodCall(
-    'registerApiProvider',
-    [new Reference('action_object_provider')]
-  );
-
-  // add event subscribers$container->get(
-  $dispatcher = $container->getDefinition('dispatcher');
-  $subscribers = $container->findTaggedServiceIds('event_subscriber');
-
-  foreach (array_keys($subscribers) as $subscriber) {
-    $dispatcher->addMethodCall(
-      'addSubscriber',
-      [new Reference($subscriber)]
-    );
+    }
+    return $result;
   }
 
-  // add spec providers
-  $providers = $container->findTaggedServiceIds('spec_provider');
-  $gatherer = $container->getDefinition('spec_gatherer');
-
-  foreach (array_keys($providers) as $provider) {
-    $gatherer->addMethodCall(
-      'addSpecProvider',
-      [new Reference($provider)]
-    );
+  /**
+   * @param \Symfony\Component\DependencyInjection\ContainerBuilder $container
+   */
+  function api4_civicrm_container($container) {
+    require_once __DIR__ . '/CRM/Api4/Services.php';
+    CRM_Api4_Services::hook_container($container);
   }
 
-  if (defined('CIVICRM_UF') && CIVICRM_UF === 'UnitTests') {
-    $loader->load('tests/services.xml');
-  }
 }
 
 /**

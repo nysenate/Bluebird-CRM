@@ -31,6 +31,7 @@ namespace Civi\Api4\Utils;
  * Just another place to put static functions...
  */
 class ReflectionUtils {
+
   /**
    * @param \Reflector|\ReflectionClass $reflection
    * @param string $type
@@ -58,7 +59,8 @@ class ReflectionUtils {
           $newReflection = $reflection->getParentClass();
         }
       }
-      catch (\ReflectionException $e) {}
+      catch (\ReflectionException $e) {
+      }
       if ($newReflection) {
         // Mix in
         $additionalDocs = self::getCodeDocs($newReflection, $type);
@@ -114,6 +116,25 @@ class ReflectionUtils {
       $info['comment'] = trim($info['comment']);
     }
     return $info;
+  }
+
+  /**
+   * List all traits used by a class and its parents.
+   *
+   * @param object|string $class
+   * @return array
+   */
+  public static function getTraits($class) {
+    $traits = [];
+    // Get traits of this class + parent classes
+    do {
+      $traits = array_merge(class_uses($class), $traits);
+    } while ($class = get_parent_class($class));
+    // Get traits of traits
+    foreach ($traits as $trait => $same) {
+      $traits = array_merge(class_uses($trait), $traits);
+    }
+    return $traits;
   }
 
 }

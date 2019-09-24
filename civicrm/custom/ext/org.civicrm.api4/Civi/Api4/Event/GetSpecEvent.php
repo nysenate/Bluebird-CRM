@@ -7,19 +7,19 @@ use Symfony\Component\EventDispatcher\Event as BaseEvent;
 
 class GetSpecEvent extends BaseEvent {
   /**
-   * @var AbstractAction
+   * @var \Civi\Api4\Generic\AbstractAction
    */
   protected $request;
 
   /**
-   * @param AbstractAction $request
+   * @param \Civi\Api4\Generic\AbstractAction $request
    */
   public function __construct(AbstractAction $request) {
     $this->request = $request;
   }
 
   /**
-   * @return AbstractAction
+   * @return \Civi\Api4\Generic\AbstractAction
    */
   public function getRequest() {
     return $this->request;

@@ -37,6 +37,7 @@ class BasicGetAction extends AbstractGetAction {
    * @param \Civi\Api4\Generic\Result $result
    */
   public function _run(Result $result) {
+    $this->setDefaultWhereClause();
     $values = $this->getRecords();
     $result->exchangeArray($this->queryArray($values));
   }
@@ -78,67 +79,6 @@ class BasicGetAction extends AbstractGetAction {
       return call_user_func($this->getter, $this);
     }
     throw new NotImplementedException('Getter function not found for api4 ' . $this->getEntityName() . '::' . $this->getActionName());
-  }
-
-  /**
-   * Helper to parse the WHERE param for getRecords to perform simple pre-filtering.
-   *
-   * This is intended to optimize some common use-cases e.g. calling the api to get
-   * one or more records by name or id.
-   *
-   * Ex: If getRecords fetches a long list of items each with a unique name,
-   * but the user has specified a single record to retrieve, you can optimize the call
-   * by checking $this->_itemsToGet('name') and only fetching the item(s) with that name.
-   *
-   * @param string $field
-   * @return array|null
-   */
-  public function _itemsToGet($field) {
-    foreach ($this->where as $clause) {
-      if ($clause[0] == $field && in_array($clause[1], ['=', 'IN'])) {
-        return (array) $clause[2];
-      }
-    }
-    return NULL;
-  }
-
-  /**
-   * Helper to see if a field should be selected by the getRecords function.
-   *
-   * Checks the SELECT, WHERE and ORDER BY params to see what fields are needed.
-   *
-   * Note that if no SELECT clause has been set then all fields should be selected
-   * and this function will always return TRUE.
-   *
-   * @param string $field
-   * @return bool
-   */
-  public function _isFieldSelected($field) {
-    if (!$this->select || in_array($field, $this->select) || isset($this->orderBy[$field])) {
-      return TRUE;
-    }
-    return $this->_whereContains($field, $this->where);
-  }
-
-  /**
-   * Walk through the where clause and check if a field is in use.
-   *
-   * @param string $field
-   * @param array $clauses
-   * @return bool
-   */
-  private function _whereContains($field, $clauses) {
-    foreach ($clauses as $clause) {
-      if (is_array($clause) && is_string($clause[0])) {
-        if ($clause[0] == $field) {
-          return TRUE;
-        }
-        elseif (is_array($clause[1])) {
-          return $this->_whereContains($field, $clause[1]);
-        }
-      }
-    }
-    return FALSE;
   }
 
 }

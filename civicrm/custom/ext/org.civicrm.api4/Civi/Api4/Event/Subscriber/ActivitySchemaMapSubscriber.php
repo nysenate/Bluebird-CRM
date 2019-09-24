@@ -8,9 +8,9 @@ use Civi\Api4\Service\Schema\Joinable\ActivityToActivityContactAssigneesJoinable
 use Civi\Api4\Service\Schema\Joinable\BridgeJoinable;
 use Civi\Api4\Service\Schema\Joinable\Joinable;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use \CRM_Utils_String as StringHelper;
 
 class ActivitySchemaMapSubscriber implements EventSubscriberInterface {
+
   /**
    * @return array
    */
@@ -21,13 +21,13 @@ class ActivitySchemaMapSubscriber implements EventSubscriberInterface {
   }
 
   /**
-   * @param SchemaMapBuildEvent $event
+   * @param \Civi\Api4\Event\SchemaMapBuildEvent $event
    */
   public function onSchemaBuild(SchemaMapBuildEvent $event) {
     $schema = $event->getSchemaMap();
     $table = $schema->getTableByName('civicrm_activity');
 
-    $middleAlias = StringHelper::createRandom(10, implode(range('a', 'z')));
+    $middleAlias = \CRM_Utils_String::createRandom(10, implode(range('a', 'z')));
     $middleLink = new ActivityToActivityContactAssigneesJoinable($middleAlias);
 
     $bridge = new BridgeJoinable('civicrm_contact', 'id', 'assignees', $middleLink);

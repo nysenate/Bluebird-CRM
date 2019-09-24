@@ -13,14 +13,14 @@ class PostSelectQueryEvent extends Event {
   protected $results;
 
   /**
-   * @var Api4SelectQuery
+   * @var \Civi\Api4\Query\Api4SelectQuery
    */
   protected $query;
 
   /**
    * PostSelectQueryEvent constructor.
    * @param array $results
-   * @param Api4SelectQuery $query
+   * @param \Civi\Api4\Query\Api4SelectQuery $query
    */
   public function __construct(array $results, Api4SelectQuery $query) {
     $this->results = $results;
@@ -45,14 +45,14 @@ class PostSelectQueryEvent extends Event {
   }
 
   /**
-   * @return Api4SelectQuery
+   * @return \Civi\Api4\Query\Api4SelectQuery
    */
   public function getQuery() {
     return $this->query;
   }
 
   /**
-   * @param Api4SelectQuery $query
+   * @param \Civi\Api4\Query\Api4SelectQuery $query
    * @return $this
    */
   public function setQuery($query) {

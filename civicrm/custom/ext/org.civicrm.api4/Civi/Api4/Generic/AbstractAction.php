@@ -1,10 +1,8 @@
 <?php
 namespace Civi\Api4\Generic;
 
-use Civi\API\Exception\UnauthorizedException;
-use Civi\API\Kernel;
-use Civi\Api4\Generic\Result;
 use Civi\Api4\Utils\ReflectionUtils;
+use Civi\Api4\Utils\ActionUtil;
 
 /**
  * Base class for all api actions.
@@ -53,23 +51,42 @@ abstract class AbstractAction implements \ArrayAccess {
    */
   protected $checkPermissions = TRUE;
 
-  /* @var string */
+  /**
+   * @var string
+   */
   protected $_entityName;
 
-  /* @var string */
+  /**
+   * @var string
+   */
   protected $_actionName;
 
-  /* @var \ReflectionClass */
-  private $thisReflection;
+  /**
+   * @var \ReflectionClass
+   */
+  private $_reflection;
 
-  /* @var array */
-  private $thisParamInfo;
+  /**
+   * @var array
+   */
+  private $_paramInfo;
 
-  /* @var array */
-  private $entityFields;
+  /**
+   * @var array
+   */
+  private $_entityFields;
 
-  /* @var array */
-  private $thisArrayStorage;
+  /**
+   * @var array
+   */
+  private $_arrayStorage = [];
+
+  /**
+   * @var int
+   * Used to identify api calls for transactions
+   * @see \Civi\Core\Transaction\Manager
+   */
+  private $_id;
 
   /**
    * Action constructor.
@@ -85,6 +102,7 @@ abstract class AbstractAction implements \ArrayAccess {
     }
     $this->_entityName = $entityName;
     $this->_actionName = $actionName;
+    $this->_id = \Civi\API\Request::getNextId();
   }
 
   /**
@@ -172,11 +190,11 @@ abstract class AbstractAction implements \ArrayAccess {
    * At this point all the params have been sent in and we initiate the api call & return the result.
    * This is basically the outer wrapper for api v4.
    *
-   * @return Result|array
-   * @throws UnauthorizedException
+   * @return \Civi\Api4\Generic\Result
+   * @throws \Civi\API\Exception\UnauthorizedException
    */
-  final public function execute() {
-    /** @var Kernel $kernel */
+  public function execute() {
+    /** @var \Civi\API\Kernel $kernel */
     $kernel = \Civi::service('civi_api_kernel');
 
     return $kernel->runRequest($this);
@@ -193,7 +211,7 @@ abstract class AbstractAction implements \ArrayAccess {
    */
   public function getParams() {
     $params = [];
-    foreach ($this->getReflection()->getProperties(\ReflectionProperty::IS_PROTECTED) as $property) {
+    foreach ($this->reflect()->getProperties(\ReflectionProperty::IS_PROTECTED) as $property) {
       $name = $property->getName();
       // Skip variables starting with an underscore
       if ($name[0] != '_') {
@@ -210,17 +228,17 @@ abstract class AbstractAction implements \ArrayAccess {
    * @return array of arrays [description, type, default, (comment)]
    */
   public function getParamInfo($param = NULL) {
-    if (!isset($this->thisParamInfo)) {
+    if (!isset($this->_paramInfo)) {
       $defaults = $this->getParamDefaults();
-      foreach ($this->getReflection()->getProperties(\ReflectionProperty::IS_PROTECTED) as $property) {
+      foreach ($this->reflect()->getProperties(\ReflectionProperty::IS_PROTECTED) as $property) {
         $name = $property->getName();
         if ($name != 'version' && $name[0] != '_') {
-          $this->thisParamInfo[$name] = ReflectionUtils::getCodeDocs($property, 'Property');
-          $this->thisParamInfo[$name]['default'] = $defaults[$name];
+          $this->_paramInfo[$name] = ReflectionUtils::getCodeDocs($property, 'Property');
+          $this->_paramInfo[$name]['default'] = $defaults[$name];
         }
       }
     }
-    return $param ? $this->thisParamInfo[$param] : $this->thisParamInfo;
+    return $param ? $this->_paramInfo[$param] : $this->_paramInfo;
   }
 
   /**
@@ -242,7 +260,7 @@ abstract class AbstractAction implements \ArrayAccess {
    * @param string $param
    * @return bool
    */
-  protected function paramExists($param) {
+  public function paramExists($param) {
     return array_key_exists($param, $this->getParams());
   }
 
@@ -250,14 +268,14 @@ abstract class AbstractAction implements \ArrayAccess {
    * @return array
    */
   protected function getParamDefaults() {
-    return array_intersect_key($this->getReflection()->getDefaultProperties(), $this->getParams());
+    return array_intersect_key($this->reflect()->getDefaultProperties(), $this->getParams());
   }
 
   /**
    * @inheritDoc
    */
   public function offsetExists($offset) {
-    return in_array($offset, ['entity', 'action', 'params', 'version', 'check_permissions']) || isset($this->thisArrayStorage[$offset]);
+    return in_array($offset, ['entity', 'action', 'params', 'version', 'check_permissions', 'id']) || isset($this->_arrayStorage[$offset]);
   }
 
   /**
@@ -276,8 +294,11 @@ abstract class AbstractAction implements \ArrayAccess {
     if ($offset == 'check_permissions') {
       return $this->checkPermissions;
     }
-    if (isset ($this->thisArrayStorage[$offset])) {
-      return $this->thisArrayStorage[$offset];
+    if ($offset == 'id') {
+      return $this->_id;
+    }
+    if (isset($this->_arrayStorage[$offset])) {
+      return $this->_arrayStorage[$offset];
     }
     return $val;
   }
@@ -286,14 +307,14 @@ abstract class AbstractAction implements \ArrayAccess {
    * @inheritDoc
    */
   public function offsetSet($offset, $value) {
-    if (in_array($offset, ['entity', 'action', 'entityName', 'actionName', 'params', 'version'])) {
+    if (in_array($offset, ['entity', 'action', 'entityName', 'actionName', 'params', 'version', 'id'])) {
       throw new \API_Exception('Cannot modify api4 state via array access');
     }
     if ($offset == 'check_permissions') {
       $this->setCheckPermissions($value);
     }
     else {
-      $this->thisArrayStorage[$offset] = $value;
+      $this->_arrayStorage[$offset] = $value;
     }
   }
 
@@ -301,10 +322,10 @@ abstract class AbstractAction implements \ArrayAccess {
    * @inheritDoc
    */
   public function offsetUnset($offset) {
-    if (in_array($offset, ['entity', 'action', 'entityName', 'actionName', 'params', 'check_permissions', 'version'])) {
+    if (in_array($offset, ['entity', 'action', 'entityName', 'actionName', 'params', 'check_permissions', 'version', 'id'])) {
       throw new \API_Exception('Cannot modify api4 state via array access');
     }
-    unset($this->thisArrayStorage[$offset]);
+    unset($this->_arrayStorage[$offset]);
   }
 
   /**
@@ -319,6 +340,9 @@ abstract class AbstractAction implements \ArrayAccess {
     return \CRM_Core_Permission::check($permissions);
   }
 
+  /**
+   * @return array
+   */
   public function getPermissions() {
     $permissions = call_user_func(["\\Civi\\Api4\\" . $this->_entityName, 'permissions']);
     $permissions += [
@@ -340,31 +364,62 @@ abstract class AbstractAction implements \ArrayAccess {
   /**
    * Returns schema fields for this entity & action.
    *
+   * Here we bypass the api wrapper and execute the getFields action directly.
+   * This is because we DON'T want the wrapper to check permissions as this is an internal op,
+   * but we DO want permissions to be checked inside the getFields request so e.g. the api_key
+   * field can be conditionally included.
+   * @see \Civi\Api4\Action\Contact\GetFields
+   *
    * @return array
-   * @throws \API_Exception
    */
-  protected function getEntityFields() {
-    if (!$this->entityFields) {
-      $params = [
-        'action' => $this->getActionName(),
-        'checkPermissions' => $this->checkPermissions,
-      ];
+  public function entityFields() {
+    if (!$this->_entityFields) {
+      $getFields = ActionUtil::getAction($this->getEntityName(), 'getFields');
+      $result = new Result();
       if (method_exists($this, 'getBaoName')) {
-        $params['includeCustom'] = FALSE;
+        $getFields->setIncludeCustom(FALSE);
       }
-      $this->entityFields = (array) civicrm_api4($this->getEntityName(), 'getFields', $params, 'name');
+      $getFields
+        ->setCheckPermissions($this->checkPermissions)
+        ->setAction($this->getActionName())
+        ->_run($result);
+      $this->_entityFields = (array) $result->indexBy('name');
     }
-    return $this->entityFields;
+    return $this->_entityFields;
   }
 
   /**
    * @return \ReflectionClass
    */
-  protected function getReflection() {
-    if (!$this->thisReflection) {
-      $this->thisReflection = new \ReflectionClass($this);
+  public function reflect() {
+    if (!$this->_reflection) {
+      $this->_reflection = new \ReflectionClass($this);
     }
-    return $this->thisReflection;
+    return $this->_reflection;
+  }
+
+  /**
+   * Validates required fields for actions which create a new object.
+   *
+   * @param $values
+   * @return array
+   * @throws \API_Exception
+   */
+  protected function checkRequiredFields($values) {
+    $unmatched = [];
+    foreach ($this->entityFields() as $fieldName => $fieldInfo) {
+      if (!isset($values[$fieldName]) || $values[$fieldName] === '') {
+        if (!empty($fieldInfo['required']) && !isset($fieldInfo['default_value'])) {
+          $unmatched[] = $fieldName;
+        }
+        elseif (!empty($fieldInfo['required_if'])) {
+          if ($this->evaluateCondition($fieldInfo['required_if'], ['values' => $values])) {
+            $unmatched[] = $fieldName;
+          }
+        }
+      }
+    }
+    return $unmatched;
   }
 
   /**

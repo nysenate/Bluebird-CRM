@@ -4,12 +4,13 @@ namespace Civi\Api4\Service\Spec\Provider;
 
 use Civi\Api4\Service\Spec\RequestSpec;
 
-class CustomGroupCreationSpecProvider implements SpecProviderInterface {
+class CustomGroupCreationSpecProvider implements Generic\SpecProviderInterface {
+
   /**
    * @inheritDoc
    */
   public function modifySpec(RequestSpec $spec) {
-    return $spec->getFieldByName('extends')->setRequired(TRUE);
+    $spec->getFieldByName('extends')->setRequired(TRUE);
   }
 
   /**

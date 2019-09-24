@@ -3,7 +3,6 @@
 namespace Civi\Api4\Service\Schema;
 
 use Civi\Api4\Service\Schema\Joinable\BridgeJoinable;
-use Civi\Api4\Service\Schema\Joinable\Joinable;
 
 class SchemaMap {
 
@@ -18,7 +17,7 @@ class SchemaMap {
    * @param $baseTableName
    * @param $targetTableAlias
    *
-   * @return Joinable[]
+   * @return \Civi\Api4\Service\Schema\Joinable\Joinable[]
    *   Array of links to the target table, empty if no path found
    */
   public function getPath($baseTableName, $targetTableAlias) {
@@ -98,9 +97,9 @@ class SchemaMap {
    *   The target joinable table alias
    * @param int $depth
    *   The current level of recursion which reflects the number of joins needed
-   * @param Joinable[] $path
+   * @param \Civi\Api4\Service\Schema\Joinable\Joinable[] $path
    *   (By-reference) The possible paths to the target table
-   * @param Joinable[] $currentPath
+   * @param \Civi\Api4\Service\Schema\Joinable\Joinable[] $currentPath
    *   For internal use only to track the path to reach the target table
    */
   private function findPaths(Table $table, $target, $depth, &$path, $currentPath = []

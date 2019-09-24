@@ -25,7 +25,7 @@ abstract class AbstractBatchAction extends AbstractQueryAction {
   private $select;
 
   /**
-   * QueryAction constructor.
+   * BatchAction constructor.
    * @param string $entityName
    * @param string $actionName
    * @param string|array $select

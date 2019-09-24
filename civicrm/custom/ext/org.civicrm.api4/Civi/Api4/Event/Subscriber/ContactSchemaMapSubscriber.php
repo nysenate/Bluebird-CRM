@@ -5,10 +5,10 @@ namespace Civi\Api4\Event\Subscriber;
 use Civi\Api4\Event\Events;
 use Civi\Api4\Event\SchemaMapBuildEvent;
 use Civi\Api4\Service\Schema\Joinable\Joinable;
-use Civi\Api4\Service\Schema\Table;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class ContactSchemaMapSubscriber implements EventSubscriberInterface {
+
   /**
    * @return array
    */
@@ -19,7 +19,7 @@ class ContactSchemaMapSubscriber implements EventSubscriberInterface {
   }
 
   /**
-   * @param SchemaMapBuildEvent $event
+   * @param \Civi\Api4\Event\SchemaMapBuildEvent $event
    */
   public function onSchemaBuild(SchemaMapBuildEvent $event) {
     $schema = $event->getSchemaMap();
@@ -29,7 +29,7 @@ class ContactSchemaMapSubscriber implements EventSubscriberInterface {
   }
 
   /**
-   * @param Table $table
+   * @param \Civi\Api4\Service\Schema\Table $table
    */
   private function addCreatedActivitiesLink($table) {
     $alias = 'created_activities';
@@ -40,7 +40,7 @@ class ContactSchemaMapSubscriber implements EventSubscriberInterface {
   }
 
   /**
-   * @param Table $table
+   * @param \Civi\Api4\Service\Schema\Table $table
    */
   private function fixPreferredLanguageAlias($table) {
     foreach ($table->getExternalLinks() as $link) {

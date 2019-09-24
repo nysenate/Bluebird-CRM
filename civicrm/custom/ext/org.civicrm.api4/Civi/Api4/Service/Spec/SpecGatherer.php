@@ -3,13 +3,13 @@
 namespace Civi\Api4\Service\Spec;
 
 use Civi\Api4\CustomField;
-use Civi\Api4\Service\Spec\Provider\SpecProviderInterface;
+use Civi\Api4\Service\Spec\Provider\Generic\SpecProviderInterface;
 use Civi\Api4\Utils\CoreUtil;
 
 class SpecGatherer {
 
   /**
-   * @var SpecProviderInterface[]
+   * @var \Civi\Api4\Service\Spec\Provider\Generic\SpecProviderInterface[]
    */
   protected $specProviders = [];
 
@@ -46,6 +46,13 @@ class SpecGatherer {
       $this->getCustomGroupFields(substr($entity, 7), $specification);
     }
 
+    // Default value only makes sense for create actions
+    if ($action != 'create') {
+      foreach ($specification->getFields() as $field) {
+        $field->setDefaultValue(NULL);
+      }
+    }
+
     foreach ($this->specProviders as $provider) {
       if ($provider->applies($entity, $action)) {
         $provider->modifySpec($specification);
@@ -56,7 +63,7 @@ class SpecGatherer {
   }
 
   /**
-   * @param SpecProviderInterface $provider
+   * @param \Civi\Api4\Service\Spec\Provider\Generic\SpecProviderInterface $provider
    */
   public function addSpecProvider(SpecProviderInterface $provider) {
     $this->specProviders[] = $provider;
@@ -64,7 +71,8 @@ class SpecGatherer {
 
   /**
    * @param string $entity
-   * @param RequestSpec $specification
+   * @param string $action
+   * @param \Civi\Api4\Service\Spec\RequestSpec $specification
    */
   private function addDAOFields($entity, $action, RequestSpec $specification) {
     $DAOFields = $this->getDAOFields($entity);
@@ -86,13 +94,14 @@ class SpecGatherer {
 
   /**
    * @param string $entity
-   * @param RequestSpec $specification
+   * @param \Civi\Api4\Service\Spec\RequestSpec $specification
    */
   private function addCustomFields($entity, RequestSpec $specification) {
     $extends = ($entity == 'Contact') ? ['Contact', 'Individual', 'Organization', 'Household'] : [$entity];
     $customFields = CustomField::get()
+      ->setCheckPermissions(FALSE)
       ->addWhere('custom_group.extends', 'IN', $extends)
-      ->setSelect(['custom_group.name', 'custom_group_id', 'name', 'label', 'data_type', 'html_type', 'is_searchable', 'is_search_range', 'weight', 'is_active', 'is_view', 'option_group_id', 'default_value'])
+      ->setSelect(['custom_group.name', 'custom_group_id', 'name', 'label', 'data_type', 'html_type', 'is_searchable', 'is_search_range', 'weight', 'is_active', 'is_view', 'option_group_id', 'default_value', 'date_format', 'time_format', 'start_date_years', 'end_date_years'])
       ->execute();
 
     foreach ($customFields as $fieldArray) {
@@ -103,12 +112,12 @@ class SpecGatherer {
 
   /**
    * @param string $customGroup
-   * @param RequestSpec $specification
+   * @param \Civi\Api4\Service\Spec\RequestSpec $specification
    */
   private function getCustomGroupFields($customGroup, RequestSpec $specification) {
     $customFields = CustomField::get()
       ->addWhere('custom_group.name', '=', $customGroup)
-      ->setSelect(['custom_group.name', 'custom_group_id', 'name', 'label', 'data_type', 'html_type', 'is_searchable', 'is_search_range', 'weight', 'is_active', 'is_view', 'option_group_id', 'default_value', 'custom_group.table_name', 'column_name'])
+      ->setSelect(['custom_group.name', 'custom_group_id', 'name', 'label', 'data_type', 'html_type', 'is_searchable', 'is_search_range', 'weight', 'is_active', 'is_view', 'option_group_id', 'default_value', 'custom_group.table_name', 'column_name', 'date_format', 'time_format', 'start_date_years', 'end_date_years'])
       ->execute();
 
     foreach ($customFields as $fieldArray) {
@@ -123,9 +132,9 @@ class SpecGatherer {
    * @return array
    */
   private function getDAOFields($entityName) {
-    $dao = CoreUtil::getDAOFromApiName($entityName);
+    $bao = CoreUtil::getBAOFromApiName($entityName);
 
-    return $dao::fields();
+    return $bao::fields();
   }
 
 }

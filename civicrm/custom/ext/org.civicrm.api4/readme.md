@@ -40,7 +40,7 @@ $entity = $result->entity; // "Contact"
 We can do the something very similar in javascript thanks to js arrays also being objects:
 
 ```javascript
-CRM.api4('Contact', 'get', params).done(function(result) {
+CRM.api4('Contact', 'get', params).then(function(result) {
   // you can loop through the results
   result.forEach(function(contact, n) {});
 

@@ -102,4 +102,43 @@ abstract class AbstractQueryAction extends AbstractAction {
     return $this;
   }
 
+  /**
+   * A human-readable where clause, for the reading enjoyment of you humans.
+   *
+   * @param array $whereClause
+   * @param string $op
+   * @return string
+   */
+  protected function whereClauseToString($whereClause = NULL, $op = 'AND') {
+    if ($whereClause === NULL) {
+      $whereClause = $this->where;
+    }
+    $output = '';
+    if (!is_array($whereClause) || !$whereClause) {
+      return $output;
+    }
+    if (in_array($whereClause[0], ['AND', 'OR', 'NOT'])) {
+      $op = array_shift($whereClause);
+      if ($op == 'NOT') {
+        $output = 'NOT ';
+        $op = 'AND';
+      }
+      return $output . '(' . $this->whereClauseToString($whereClause, $op) . ')';
+    }
+    elseif (isset($whereClause[1]) && in_array($whereClause[1], \CRM_Core_DAO::acceptedSQLOperators())) {
+      $output = $whereClause[0] . ' ' . $whereClause[1] . ' ';
+      if (isset($whereClause[2])) {
+        $output .= is_array($whereClause[2]) ? '[' . implode(', ', $whereClause[2]) . ']' : $whereClause[2];
+      }
+    }
+    else {
+      $clauses = [];
+      foreach (array_filter($whereClause) as $clause) {
+        $clauses[] = $this->whereClauseToString($clause, $op);
+      }
+      $output = implode(" $op ", $clauses);
+    }
+    return $output;
+  }
+
 }

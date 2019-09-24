@@ -1,26 +1,8 @@
 /* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id */
 
-#{$outside-namespace-marker} {
-  html {
-    // Ensures that there is the same amount of vertical room for the main menu
-    // regardless of whether there is a drupal menu module enabled or not
-    body {
-      @include open-sans-font-family();
-
-      &:not(.toolbar) {
-        margin-top: $crm-main-menu-height !important;
-      }
-
-      .toolbar-menu {
-        height: $crm-main-menu-height !important;
-        padding-bottom: 0 !important;
-        padding-top: 0 !important;
-      }
-    }
-  }
-}
-
 .crm-container {
+  font-family: $font-family-base;
+
   a,
   a:link {
     color: $brand-primary;
@@ -167,6 +149,12 @@
     box-shadow: $box-shadow;
     margin-bottom: 20px;
 
+    // Sometimes there are .dataTables_wrapper > .dataTables_wrapper
+    // blocks that produce double shadows.
+    > .dataTables_wrapper {
+      box-shadow: none;
+    }
+
     table.dataTable {
       box-shadow: none !important;
       max-width: 100%;
@@ -227,33 +215,18 @@
       width: 50%;
     }
   }
-}
 
-.page-civicrm {
-  #branding {
-    padding: 20px 0 0 !important;
-
-    .breadcrumb {
-      padding: 0 40px;
-    }
-
-    .breadcrumb a {
-      padding: 0 !important;
-    }
-
-    .add-shortcut {
-      display: none;
-    }
-
-    h1 {
-      &.page-title {
-        background: $crm-white;
-        color: $gray-darker;
-        margin-bottom: 20px !important;
-        margin-top: -20px !important;
-        padding: 0 40px !important;
-      }
-    }
+  /**
+   * @NOTE the table that goes straight after <h3> does not
+   * need a shadow because in that case the shadow falls onto the <h3>.
+   * The shadow instead is applied
+   * to the *container* of the <h3> and <table>.dataTables_wrapper
+   *
+   * @TODO remove all the .dataTables_wrapper { box-shadow: none; }
+   * from "per-page" styles and other files
+   */
+  h3 + .dataTables_wrapper {
+    box-shadow: none;
   }
 }
 
@@ -276,14 +249,14 @@
   .font-size12pt {
     color: $gray-darker;
     font-size: $font-size-h2;
-    font-weight: 600;
+    font-weight: $crm-font-weight-bold;
     padding-bottom: 10px;
   }
 
   .font-size11pt {
     color: $gray-darker;
     font-size: $font-size-base;
-    font-weight: 600;
+    font-weight: $crm-font-weight-bold;
   }
 }
 
@@ -302,7 +275,12 @@ a.sorting_desc {
   &::after {
     position: absolute;
     right: 0;
-    top: 3px;
+  }
+
+  &:not(.sorting) {
+    &::after {
+      top: 3px;
+    }
   }
 }
 
@@ -316,4 +294,8 @@ a.sorting_asc::after {
 
 a.sorting_desc::after {
   @include fa-icon($font-size-base, $fa-var-sort-desc, $brand-primary);
+}
+
+.crm-expand-row {
+  line-height: 1em;
 }

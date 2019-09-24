@@ -23,6 +23,13 @@ class Address extends Generic\DAOEntity {
   }
 
   /**
+   * @return \Civi\Api4\Action\Address\Save
+   */
+  public static function save() {
+    return new \Civi\Api4\Action\Address\Save(__CLASS__, __FUNCTION__);
+  }
+
+  /**
    * @return \Civi\Api4\Action\Address\Update
    */
   public static function update() {

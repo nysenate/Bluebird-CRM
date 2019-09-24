@@ -5,9 +5,10 @@ namespace Civi\Api4\Event\Subscriber;
 use Civi\Api4\Generic\DAOCreateAction;
 use Civi\Api4\OptionValue;
 
-class ActivityPreCreationSubscriber extends PreCreationSubscriber {
+class ActivityPreCreationSubscriber extends Generic\PreCreationSubscriber {
+
   /**
-   * @param DAOCreateAction $request
+   * @param \Civi\Api4\Generic\DAOCreateAction $request
    * @throws \API_Exception
    * @throws \Exception
    */
@@ -29,7 +30,7 @@ class ActivityPreCreationSubscriber extends PreCreationSubscriber {
   }
 
   /**
-   * @param DAOCreateAction $request
+   * @param \Civi\Api4\Generic\DAOCreateAction $request
    *
    * @return bool
    */

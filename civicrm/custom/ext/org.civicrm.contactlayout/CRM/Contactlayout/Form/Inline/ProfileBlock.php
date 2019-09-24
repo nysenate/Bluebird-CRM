@@ -160,7 +160,8 @@ class CRM_Contactlayout_Form_Inline_ProfileBlock extends CRM_Profile_Form_Edit {
       $results[] = [
         'id' => $relationship['id'],
         'contact_id' => $relationship['contact_id_b'],
-        'display_name' => $relationship['contact_b']['display_name'],
+        // Api4 output changed for custom fields circa apiv4.6
+        'display_name' => $relationship['contact_b.display_name'] ?? $relationship['contact_b']['display_name'],
       ];
     }
     return $results;

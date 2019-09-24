@@ -7,7 +7,8 @@
     //Must execute in order.
     function loadNextScript(scripts, callback, fail) {
       var script = scripts.shift();
-      script.url = script.url.indexOf('http') === 0 ? script.url : CRM.config.resourceBase + script.url;
+      var isAbsoluteUrl = /^(http|\/)/.test(script.url);
+      script.url = isAbsoluteUrl ? script.url : CRM.config.resourceBase + script.url;
 
       CRM.$.getScript(script.url)
         .done(function(scriptData, status) {

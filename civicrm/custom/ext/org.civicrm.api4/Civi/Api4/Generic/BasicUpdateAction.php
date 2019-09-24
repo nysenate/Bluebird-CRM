@@ -38,10 +38,16 @@ class BasicUpdateAction extends AbstractUpdateAction {
    * We expect to get the same format back.
    *
    * @param \Civi\Api4\Generic\Result $result
+   * @throws \API_Exception
+   * @throws \Civi\API\Exception\NotImplementedException
    */
   public function _run(Result $result) {
     foreach ($this->getBatchRecords() as $item) {
       $result[] = $this->writeRecord($this->values + $item);
+    }
+
+    if (!$result->count()) {
+      throw new \API_Exception('Cannot ' . $this->getActionName() . ' ' . $this->getEntityName() . ', no records found with ' . $this->whereClauseToString());
     }
   }
 

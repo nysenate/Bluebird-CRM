@@ -7,7 +7,7 @@
   padding-top: 10px !important;
 
   // Remove the space from the angular's container
-  > div {
+  > div:not(.messages.status) {
     padding: 0 !important;
   }
 
@@ -52,12 +52,16 @@
 
   div.crm-summary-row {
     div.crm-label {
-      font-weight: 600;
+      font-weight: $crm-font-weight-bold;
 
       &,
       a {
         color: $gray-darker !important;
       }
+    }
+
+    &.primary .crm-label::after {
+      content: '*';
     }
   }
 
@@ -257,11 +261,13 @@
   }
 
   #crm-contactname-content {
+    background-color: $crm-gray-clay;
     border: 0 !important;
     max-height: 70px;
 
     .crm-summary-display_name {
       float: left;
+      margin-left: $crm-standard-gap;
       padding: 22px 0; // centering name vertically
     }
 
@@ -750,10 +756,6 @@
     &::after {
       display: none;
     }
-  }
-
-  table {
-    width: 100%;
   }
 
   .crm-button_qf_Contribution_upload {

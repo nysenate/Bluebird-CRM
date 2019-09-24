@@ -1,7 +1,9 @@
 /* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id */
 
 @import 'mixins/accordion';
+@import 'mixins/alpha-filter';
 @import 'mixins/advanced-multiselect';
+@import 'mixins/block-form';
 @import 'mixins/border-box';
 @import 'mixins/calc';
 @import 'mixins/civicrm-form-control';
@@ -13,12 +15,12 @@
 @import 'mixins/expandable-table';
 @import 'mixins/input-fields-container';
 @import 'mixins/input-text';
-@import 'mixins/open-sans-font-family';
 @import 'mixins/panel-header';
 @import 'mixins/plain-old-text';
 @import 'mixins/responsive-search';
 @import 'mixins/section-title';
 @import 'mixins/table-block';
 @import 'mixins/table-header';
+@import 'mixins/table-selector';
 @import 'mixins/transform';
 @import 'mixins/translate';

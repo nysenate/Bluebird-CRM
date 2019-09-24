@@ -1,6 +1,7 @@
 <?php
 
 namespace Civi\Api4\Generic;
+
 use Civi\API\Exception\NotImplementedException;
 
 /**

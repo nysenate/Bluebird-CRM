@@ -33,7 +33,7 @@ class CRM_Api4_Page_AJAX extends CRM_Core_Page {
       ];
       if (CRM_Core_Permission::check('view debug output')) {
         $response['error_message'] = $e->getMessage();
-        if (CRM_Core_BAO_Setting::getItem(NULL, 'backtrace')) {
+        if (\Civi::settings()->get('backtrace')) {
           $response['backtrace'] = $e->getTrace();
         }
       }
@@ -54,12 +54,18 @@ class CRM_Api4_Page_AJAX extends CRM_Core_Page {
    */
   protected function execute($entity, $action, $params = [], $index = NULL) {
     $params['checkPermissions'] = TRUE;
-    $result = civicrm_api4($entity, $action, $params, $index);
+
+    // Handle numeric indexes later so we can get the count
+    $itemAt = CRM_Utils_Type::validate($index, 'Integer', FALSE);
+
+    $result = civicrm_api4($entity, $action, $params, isset($itemAt) ? NULL : $index);
+
     // Convert arrayObject into something more suitable for json
-    $vals = ['values' => (array) $result];
+    $vals = ['values' => isset($itemAt) ? $result->itemAt($itemAt) : (array) $result];
     foreach (get_class_vars(get_class($result)) as $key => $val) {
       $vals[$key] = $result->$key;
     }
+    $vals['count'] = $result->count();
     return $vals;
   }
 

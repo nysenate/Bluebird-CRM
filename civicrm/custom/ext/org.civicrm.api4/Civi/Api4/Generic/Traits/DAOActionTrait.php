@@ -5,7 +5,20 @@ use CRM_Utils_Array as UtilsArray;
 use Civi\Api4\Utils\FormattingUtil;
 use Civi\Api4\Query\Api4SelectQuery;
 
+/**
+ * @method string getLanguage()
+ * @method setLanguage(string $language)
+ */
 trait DAOActionTrait {
+
+  /**
+   * Specify the language to use if this is a multi-lingual environment.
+   *
+   * E.g. "en_US" or "fr_CA"
+   *
+   * @var string
+   */
+  protected $language;
 
   /**
    * @return \CRM_Core_DAO|string
@@ -28,7 +41,7 @@ trait DAOActionTrait {
     foreach ($fields as $key => $field) {
       $name = $field['name'];
       if (property_exists($bao, $name)) {
-        $values[$name] = $bao->$name;
+        $values[$name] = isset($bao->$name) ? $bao->$name : NULL;
       }
     }
     return $values;
@@ -38,7 +51,7 @@ trait DAOActionTrait {
    * @return array|int
    */
   protected function getObjects() {
-    $query = new Api4SelectQuery($this->getEntityName(), $this->getCheckPermissions());
+    $query = new Api4SelectQuery($this->getEntityName(), $this->getCheckPermissions(), $this->entityFields());
     $query->select = $this->getSelect();
     $query->where = $this->getWhere();
     $query->orderBy = $this->getOrderBy();
@@ -48,12 +61,32 @@ trait DAOActionTrait {
   }
 
   /**
-   * Write a bao object as part of a create/update action.
+   * Fill field defaults which were declared by the api.
+   *
+   * Note: default values from core are ignored because the BAO or database layer will supply them.
+   *
+   * @param array $params
+   */
+  protected function fillDefaults(&$params) {
+    $fields = $this->entityFields();
+    $bao = $this->getBaoName();
+    $coreFields = array_column($bao::fields(), NULL, 'name');
+
+    foreach ($fields as $name => $field) {
+      // If a default value in the api field is different than in core, the api should override it.
+      if (!isset($params[$name]) && !empty($field['default_value']) && $field['default_value'] != \CRM_Utils_Array::pathGet($coreFields, [$name, 'default'])) {
+        $params[$name] = $field['default_value'];
+      }
+    }
+  }
+
+  /**
+   * Write bao objects as part of a create/update action.
    *
    * @param array $items
-   *   The record to write to the DB.
+   *   The records to write to the DB.
    * @return array
-   *   The record after being written to the DB (e.g. including newly assigned "id").
+   *   The records after being written to the DB (e.g. including newly assigned "id").
    * @throws \API_Exception
    */
   protected function writeObjects($items) {
@@ -61,11 +94,11 @@ trait DAOActionTrait {
 
     // Some BAOs are weird and don't support a straightforward "create" method.
     $oddballs = [
-      'Address' => 'add',
+      'EntityTag' => 'add',
       'GroupContact' => 'add',
       'Website' => 'add',
     ];
-    $method = UtilsArray::value($this->getEntityName(), $oddballs, 'create');
+    $method = $oddballs[$this->getEntityName()] ?? 'create';
     if (!method_exists($baoName, $method)) {
       $method = 'add';
     }
@@ -74,27 +107,23 @@ trait DAOActionTrait {
 
     foreach ($items as $item) {
       $entityId = UtilsArray::value('id', $item);
-      FormattingUtil::formatWriteParams($item, $this->getEntityName(), $this->getEntityFields());
+      FormattingUtil::formatWriteParams($item, $this->getEntityName(), $this->entityFields());
       $this->formatCustomParams($item, $entityId);
       $item['check_permissions'] = $this->getCheckPermissions();
-
-      $apiKeyPermission = $this->getEntityName() != 'Contact' || !$this->getCheckPermissions() || array_key_exists('api_key', $this->getEntityFields())
-        || ($entityId && \CRM_Core_Permission::check('edit own api keys') && \CRM_Core_Session::getLoggedInContactID() == $entityId);
-
-      if (!$apiKeyPermission && array_key_exists('api_key', $item)) {
-        throw new \Civi\API\Exception\UnauthorizedException('Permission denied to modify api key');
-      }
 
       // For some reason the contact bao requires this
       if ($entityId && $this->getEntityName() == 'Contact') {
         $item['contact_id'] = $entityId;
       }
 
-      if ($this->getCheckPermissions() && $entityId) {
+      if ($this->getCheckPermissions()) {
         $this->checkContactPermissions($baoName, $item);
       }
 
-      if (method_exists($baoName, $method)) {
+      if ($this->getEntityName() == 'Address') {
+        $createResult = $baoName::add($item, $this->fixAddress);
+      }
+      elseif (method_exists($baoName, $method)) {
         $createResult = $baoName::$method($item);
       }
       else {
@@ -112,10 +141,6 @@ trait DAOActionTrait {
 
       // trim back the junk and just get the array:
       $resultArray = $this->baoToArray($createResult);
-
-      if (!$apiKeyPermission && array_key_exists('api_key', $resultArray)) {
-        unset($resultArray['api_key']);
-      }
 
       $result[] = $resultArray;
     }
@@ -147,7 +172,7 @@ trait DAOActionTrait {
    * @param int $entityId
    * @return mixed
    */
-  private function formatCustomParams(&$params, $entityId) {
+  protected function formatCustomParams(&$params, $entityId) {
     $customParams = [];
 
     // $customValueID is the ID of the custom value in the custom table for this
@@ -191,7 +216,8 @@ trait DAOActionTrait {
           $customParams,
           $value,
           $customFieldExtends,
-          NULL, // todo check when this is needed
+          // todo check when this is needed
+          NULL,
           $entityId,
           FALSE,
           FALSE,
@@ -213,7 +239,7 @@ trait DAOActionTrait {
    * @throws \Civi\API\Exception\UnauthorizedException
    */
   protected function checkContactPermissions($baoName, $item) {
-    if ($baoName == 'CRM_Contact_BAO_Contact') {
+    if ($baoName == 'CRM_Contact_BAO_Contact' && !empty($item['id'])) {
       $permission = $this->getActionName() == 'delete' ? \CRM_Core_Permission::DELETE : \CRM_Core_Permission::EDIT;
       if (!\CRM_Contact_BAO_Contact_Permission::allow($item['id'], $permission)) {
         throw new \Civi\API\Exception\UnauthorizedException('Permission denied to modify contact record');

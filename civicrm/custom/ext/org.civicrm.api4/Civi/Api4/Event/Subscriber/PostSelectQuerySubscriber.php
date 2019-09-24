@@ -19,12 +19,12 @@ class PostSelectQuerySubscriber implements EventSubscriberInterface {
    */
   public static function getSubscribedEvents() {
     return [
-      Events::POST_SELECT_QUERY => 'onPostQuery'
+      Events::POST_SELECT_QUERY => 'onPostQuery',
     ];
   }
 
   /**
-   * @param PostSelectQueryEvent $event
+   * @param \Civi\Api4\Event\PostSelectQueryEvent $event
    */
   public function onPostQuery(PostSelectQueryEvent $event) {
     $results = $event->getResults();
@@ -33,7 +33,7 @@ class PostSelectQuerySubscriber implements EventSubscriberInterface {
 
   /**
    * @param array $results
-   * @param Api4SelectQuery $query
+   * @param \Civi\Api4\Query\Api4SelectQuery $query
    *
    * @return array
    */
@@ -69,7 +69,7 @@ class PostSelectQuerySubscriber implements EventSubscriberInterface {
 
   /**
    * @param array $joinResults
-   * @param Api4SelectQuery $query
+   * @param \Civi\Api4\Query\Api4SelectQuery $query
    * @param string $alias
    */
   private function formatJoinResults(&$joinResults, $query, $alias) {
@@ -108,7 +108,7 @@ class PostSelectQuerySubscriber implements EventSubscriberInterface {
   }
 
   /**
-   * @param Api4SelectQuery $query
+   * @param \Civi\Api4\Query\Api4SelectQuery $query
    *
    * @return array
    */
@@ -140,11 +140,10 @@ class PostSelectQuerySubscriber implements EventSubscriberInterface {
     return $selects;
   }
 
-
   /**
    * @param array $selects
    * @param $serializationType
-   * @param Api4SelectQuery $query
+   * @param \Civi\Api4\Query\Api4SelectQuery $query
    *
    * @return array
    */
@@ -202,13 +201,12 @@ class PostSelectQuerySubscriber implements EventSubscriberInterface {
     return $newResults;
   }
 
-
   /**
    * Prepares selects for the subquery to fetch join results
    *
    * @param string $alias
    * @param array $selects
-   * @param Api4SelectQuery $query
+   * @param \Civi\Api4\Query\Api4SelectQuery $query
    *
    * @return array
    */
@@ -236,7 +234,7 @@ class PostSelectQuerySubscriber implements EventSubscriberInterface {
 
   /**
    * @param array $selects
-   * @param Api4SelectQuery $query
+   * @param \Civi\Api4\Query\Api4SelectQuery $query
    *
    * @return array
    */
@@ -268,7 +266,7 @@ class PostSelectQuerySubscriber implements EventSubscriberInterface {
   }
 
   /**
-   * @param Api4SelectQuery $query
+   * @param \Civi\Api4\Query\Api4SelectQuery $query
    * @param $alias
    * @param $selects
    * @return array
@@ -297,14 +295,15 @@ class PostSelectQuerySubscriber implements EventSubscriberInterface {
    *
    * @param string $pathString
    *   Dot separated path to the field
-   * @param Api4SelectQuery $query
+   * @param \Civi\Api4\Query\Api4SelectQuery $query
    *
    * @return array
    *   Index is table alias and value is boolean whether is 1-to-many join
    */
   private function getJoinPathInfo($pathString, $query) {
     $pathParts = explode('.', $pathString);
-    array_pop($pathParts); // remove field
+    // remove field
+    array_pop($pathParts);
     $path = [];
     $isMultipleChecker = function($alias) use ($query) {
       foreach ($query->getJoinedTables() as $table) {
@@ -326,7 +325,7 @@ class PostSelectQuerySubscriber implements EventSubscriberInterface {
    * Get all the option_value values required in the query
    *
    * @param array $selects
-   * @param Api4SelectQuery $query
+   * @param \Civi\Api4\Query\Api4SelectQuery $query
    * @param array $values
    *
    * @return array

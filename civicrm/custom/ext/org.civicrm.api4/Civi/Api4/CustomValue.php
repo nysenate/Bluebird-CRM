@@ -27,6 +27,14 @@ class CustomValue extends Generic\AbstractEntity {
 
   /**
    * @param string $customGroup
+   * @return Action\CustomValue\Save
+   */
+  public static function save($customGroup) {
+    return new Action\CustomValue\Save($customGroup, __FUNCTION__);
+  }
+
+  /**
+   * @param string $customGroup
    * @return Action\CustomValue\Create
    */
   public static function create($customGroup) {

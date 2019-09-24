@@ -4,9 +4,10 @@ namespace Civi\Api4\Event\Subscriber;
 
 use Civi\Api4\Generic\DAOCreateAction;
 
-class CustomGroupPreCreationSubscriber extends PreCreationSubscriber {
+class CustomGroupPreCreationSubscriber extends Generic\PreCreationSubscriber {
+
   /**
-   * @param DAOCreateAction $request
+   * @param \Civi\Api4\Generic\DAOCreateAction $request
    */
   protected function modify(DAOCreateAction $request) {
     $extends = $request->getValue('extends');

@@ -5,7 +5,7 @@ namespace Civi\Api4\Service\Spec\Provider;
 use Civi\Api4\Service\Spec\FieldSpec;
 use Civi\Api4\Service\Spec\RequestSpec;
 
-class CustomValueSpecProvider implements SpecProviderInterface {
+class CustomValueSpecProvider implements Generic\SpecProviderInterface {
 
   /**
    * @inheritDoc

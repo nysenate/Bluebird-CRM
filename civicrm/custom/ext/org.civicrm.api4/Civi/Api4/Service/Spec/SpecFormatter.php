@@ -3,24 +3,24 @@
 namespace Civi\Api4\Service\Spec;
 
 use CRM_Utils_Array as ArrayHelper;
-use CRM_Core_DAO_AllCoreTables as TableHelper;
+use CRM_Core_DAO_AllCoreTables as AllCoreTables;
 
 class SpecFormatter {
+
   /**
    * @param FieldSpec[] $fields
-   * @param array $return
    * @param bool $includeFieldOptions
    *
    * @return array
    */
-  public static function specToArray($fields, $return = [], $includeFieldOptions = FALSE) {
+  public static function specToArray($fields, $includeFieldOptions = FALSE) {
     $fieldArray = [];
 
     foreach ($fields as $field) {
-      if ($includeFieldOptions || in_array('options', $return)) {
+      if ($includeFieldOptions) {
         $field->getOptions();
       }
-      $fieldArray[$field->getName()] = $field->toArray($return);
+      $fieldArray[$field->getName()] = $field->toArray();
     }
 
     return $fieldArray;
@@ -63,11 +63,12 @@ class SpecFormatter {
 
     $field->setDefaultValue(ArrayHelper::value('default', $data));
     $field->setDescription(ArrayHelper::value('description', $data));
+    self::setInputTypeAndAttrs($field, $data, $dataTypeName);
 
     $fkAPIName = ArrayHelper::value('FKApiName', $data);
     $fkClassName = ArrayHelper::value('FKClassName', $data);
     if ($fkAPIName || $fkClassName) {
-      $field->setFkEntity($fkAPIName ?: TableHelper::getBriefName($fkClassName));
+      $field->setFkEntity($fkAPIName ?: AllCoreTables::getBriefName($fkClassName));
     }
 
     return $field;
@@ -89,7 +90,7 @@ class SpecFormatter {
     if (in_array($field['data_type'], ['ContactReference', 'Date'])) {
       return FALSE;
     }
-    if (strpos($field['html_type'], 'Select')) {
+    if (strpos($field['html_type'], 'Select') !== FALSE) {
       return TRUE;
     }
     return !empty($field['option_group_id']);
@@ -105,13 +106,111 @@ class SpecFormatter {
    */
   private static function getDataType(array $data) {
     if (isset($data['data_type'])) {
-      return $data['data_type'];
+      return !empty($data['time_format']) ? 'Timestamp' : $data['data_type'];
     }
 
     $dataTypeInt = ArrayHelper::value('type', $data);
     $dataTypeName = \CRM_Utils_Type::typeToString($dataTypeInt);
 
     return $dataTypeName;
+  }
+
+  /**
+   * @param \Civi\Api4\Service\Spec\FieldSpec $fieldSpec
+   * @param array $data
+   * @param string $dataTypeName
+   */
+  public static function setInputTypeAndAttrs(FieldSpec &$fieldSpec, $data, $dataTypeName) {
+    $inputType = isset($data['html']['type']) ? $data['html']['type'] : ArrayHelper::value('html_type', $data);
+    $inputAttrs = ArrayHelper::value('html', $data, []);
+    unset($inputAttrs['type']);
+
+    if (!$inputType) {
+      // If no html type is set, guess
+      switch ($dataTypeName) {
+        case 'Int':
+          $inputType = 'Number';
+          $inputAttrs['min'] = 0;
+          break;
+
+        case 'Text':
+          $inputType = ArrayHelper::value('type', $data) === \CRM_Utils_Type::T_LONGTEXT ? 'TextArea' : 'Text';
+          break;
+
+        case 'Timestamp':
+          $inputType = 'Date';
+          $inputAttrs['time'] = TRUE;
+          break;
+
+        case 'Date':
+          $inputAttrs['time'] = FALSE;
+          break;
+
+        case 'Time':
+          $inputType = 'Date';
+          $inputAttrs['time'] = TRUE;
+          $inputAttrs['date'] = FALSE;
+          break;
+
+        default:
+          $map = [
+            'Email' => 'Email',
+            'Boolean' => 'Checkbox',
+          ];
+          $inputType = ArrayHelper::value($dataTypeName, $map, 'Text');
+      }
+    }
+    if (strstr($inputType, 'Multi-Select') || ($inputType == 'Select' && !empty($data['serialize']))) {
+      $inputAttrs['multiple'] = TRUE;
+      $inputType = 'Select';
+    }
+    $map = [
+      'Select State/Province' => 'Select',
+      'Select Country' => 'Select',
+      'Select Date' => 'Date',
+      'Link' => 'Url',
+    ];
+    $inputType = ArrayHelper::value($inputType, $map, $inputType);
+    if ($inputType == 'Date' && !empty($inputAttrs['formatType'])) {
+      self::setLegacyDateFormat($inputAttrs);
+    }
+    // Date/time settings from custom fields
+    if ($inputType == 'Date' && !empty($data['custom_group_id'])) {
+      $inputAttrs['time'] = empty($data['time_format']) ? FALSE : ($data['time_format'] == 1 ? 12 : 24);
+      $inputAttrs['date'] = $data['date_format'];
+      $inputAttrs['start_date_years'] = (int) $data['start_date_years'];
+      $inputAttrs['end_date_years'] = (int) $data['end_date_years'];
+    }
+    if ($inputType == 'Text' && !empty($data['maxlength'])) {
+      $inputAttrs['maxlength'] = (int) $data['maxlength'];
+    }
+    if ($inputType == 'TextArea') {
+      foreach (['rows', 'cols', 'note_rows', 'note_cols'] as $prop) {
+        if (!empty($data[$prop])) {
+          $inputAttrs[str_replace('note_', '', $prop)] = (int) $data[$prop];
+        }
+      }
+    }
+    $fieldSpec
+      ->setInputType($inputType)
+      ->setInputAttrs($inputAttrs);
+  }
+
+  /**
+   * @param array $inputAttrs
+   */
+  private static function setLegacyDateFormat(&$inputAttrs) {
+    if (empty(\Civi::$statics['legacyDatePrefs'][$inputAttrs['formatType']])) {
+      \Civi::$statics['legacyDatePrefs'][$inputAttrs['formatType']] = [];
+      $params = ['name' => $inputAttrs['formatType']];
+      \CRM_Core_DAO::commonRetrieve('CRM_Core_DAO_PreferencesDate', $params, \Civi::$statics['legacyDatePrefs'][$inputAttrs['formatType']]);
+    }
+    $dateFormat = \Civi::$statics['legacyDatePrefs'][$inputAttrs['formatType']];
+    unset($inputAttrs['formatType']);
+    $inputAttrs['time'] = !empty($dateFormat['time_format']);
+    $inputAttrs['date'] = TRUE;
+    $inputAttrs['start_date_years'] = (int) $dateFormat['start'];
+    $inputAttrs['end_date_years'] = (int) $dateFormat['end'];
   }
 
 }

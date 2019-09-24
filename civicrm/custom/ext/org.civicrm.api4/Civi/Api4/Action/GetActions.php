@@ -27,11 +27,10 @@ class GetActions extends BasicGetAction {
       }
     }
     if (!$this->_actionsToGet || count($this->_actionsToGet) > count($this->_actions)) {
-      $includePaths = array_unique(explode(PATH_SEPARATOR, get_include_path()));
       // Search entity-specific actions (including those provided by extensions)
-      foreach ($includePaths as $path) {
-        $dir = \CRM_Utils_File::addTrailingSlash($path) . 'Civi/Api4/Action/' . $this->_entityName;
-        $this->scanDir($dir);
+      foreach (\CRM_Extension_System::singleton()->getMapper()->getActiveModuleFiles() as $ext) {
+        $dir = \CRM_Utils_File::addTrailingSlash(dirname($ext['filePath']));
+        $this->scanDir($dir . 'Civi/Api4/Action/' . $this->_entityName);
       }
     }
     ksort($this->_actions);
@@ -47,7 +46,10 @@ class GetActions extends BasicGetAction {
         $matches = [];
         preg_match('/(\w*).php/', $file, $matches);
         $actionName = array_pop($matches);
-        $this->loadAction(lcfirst($actionName));
+        $actionClass = new \ReflectionClass('\\Civi\\Api4\\Action\\' . $this->_entityName . '\\' . $actionName);
+        if ($actionClass->isInstantiable() && $actionClass->isSubclassOf('\\Civi\\Api4\\Generic\\AbstractAction')) {
+          $this->loadAction(lcfirst($actionName));
+        }
       }
     }
   }
@@ -69,6 +71,14 @@ class GetActions extends BasicGetAction {
           }
           if ($this->_isFieldSelected('params')) {
             $this->_actions[$actionName]['params'] = $action->getParamInfo();
+            // Language param is only relevant on multilingual sites
+            $languageLimit = (array) \Civi::settings()->get('languageLimit');
+            if (count($languageLimit) < 2) {
+              unset($this->_actions[$actionName]['params']['language']);
+            }
+            elseif (isset($this->_actions[$actionName]['params']['language'])) {
+              $this->_actions[$actionName]['params']['language']['options'] = array_keys($languageLimit);
+            }
           }
         }
       }

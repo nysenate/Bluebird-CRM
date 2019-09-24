@@ -2,7 +2,6 @@
 
 namespace Civi\Api4\Generic;
 
-use Civi\Api4\Service\Spec\SpecGatherer;
 use Civi\Api4\Service\Spec\SpecFormatter;
 
 /**
@@ -27,14 +26,14 @@ class DAOGetFieldsAction extends BasicGetFieldsAction {
    */
   protected function getRecords() {
     $fields = $this->_itemsToGet('name');
-    /** @var SpecGatherer $gatherer */
+    /** @var \Civi\Api4\Service\Spec\SpecGatherer $gatherer */
     $gatherer = \Civi::container()->get('spec_gatherer');
     // Any fields name with a dot in it is custom
     if ($fields) {
       $this->includeCustom = strpos(implode('', $fields), '.') !== FALSE;
     }
-    $spec = $gatherer->getSpec($this->getEntityName(), $this->action, $this->includeCustom);
-    return SpecFormatter::specToArray($spec->getFields($fields), (array) $this->select, $this->loadOptions);
+    $spec = $gatherer->getSpec($this->getEntityName(), $this->getAction(), $this->includeCustom);
+    return SpecFormatter::specToArray($spec->getFields($fields), $this->loadOptions);
   }
 
   public function fields() {

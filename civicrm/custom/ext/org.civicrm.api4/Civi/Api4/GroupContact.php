@@ -20,6 +20,13 @@ class GroupContact extends Generic\DAOEntity {
   }
 
   /**
+   * @return Action\GroupContact\Save
+   */
+  public static function save() {
+    return new Action\GroupContact\Save(__CLASS__, __FUNCTION__);
+  }
+
+  /**
    * @return Action\GroupContact\Update
    */
   public static function update() {

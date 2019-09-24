@@ -46,16 +46,6 @@ class FormattingUtil {
         $params[$name] = 'null';
       }
 
-      if (strstr($entity, 'Custom_')) {
-        if ($name == 'entity_id') {
-          $params['entityID'] = $params['entity_id'];
-          unset($params['entity_id']);
-        }
-        elseif (!empty($field['custom_field_id'])) {
-          $params['custom_' . $field['custom_field_id']] = $params[$name];
-          unset($params[$name]);
-        }
-      }
     }
   }
 

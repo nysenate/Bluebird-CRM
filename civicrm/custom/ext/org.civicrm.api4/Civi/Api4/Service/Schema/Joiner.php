@@ -3,7 +3,6 @@
 namespace Civi\Api4\Service\Schema;
 
 use Civi\Api4\Query\Api4SelectQuery;
-use Civi\Api4\Service\Schema\Joinable\Joinable;
 
 class Joiner {
   /**
@@ -12,7 +11,7 @@ class Joiner {
   protected $schemaMap;
 
   /**
-   * @var Joinable[][]
+   * @var \Civi\Api4\Service\Schema\Joinable\Joinable[][]
    */
   protected $cache = [];
 
@@ -24,7 +23,7 @@ class Joiner {
   }
 
   /**
-   * @param Api4SelectQuery $query
+   * @param \Civi\Api4\Query\Api4SelectQuery $query
    *   The query object to do the joins on
    * @param string $joinPath
    *   A path of aliases in dot notation, e.g. contact.phone
@@ -32,7 +31,7 @@ class Joiner {
    *   Can be LEFT or INNER
    *
    * @throws \Exception
-   * @return Joinable[]
+   * @return \Civi\Api4\Service\Schema\Joinable\Joinable[]
    *   The path used to make the join
    */
   public function join(Api4SelectQuery $query, $joinPath, $side = 'LEFT') {
@@ -54,7 +53,7 @@ class Joiner {
   }
 
   /**
-   * @param Api4SelectQuery $query
+   * @param \Civi\Api4\Query\Api4SelectQuery $query
    * @param $joinPath
    *
    * @return bool

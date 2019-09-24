@@ -5,6 +5,7 @@ namespace Civi\Api4\Utils;
 use CRM_Utils_Array as UtilsArray;
 
 class ArrayInsertionUtil {
+
   /**
    * If the values to be inserted contain a key _parent_id they will only be
    * inserted if the parent node ID matches their ID

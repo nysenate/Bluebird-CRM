@@ -4,14 +4,13 @@ namespace Civi\Api4\Service\Spec\Provider;
 
 use Civi\Api4\Service\Spec\RequestSpec;
 
-class ContactCreationSpecProvider implements SpecProviderInterface {
+class ContactCreationSpecProvider implements Generic\SpecProviderInterface {
 
   /**
-   * @param RequestSpec $spec
+   * @param \Civi\Api4\Service\Spec\RequestSpec $spec
    */
   public function modifySpec(RequestSpec $spec) {
     $spec->getFieldByName('contact_type')
-      ->setRequired(TRUE)
       ->setDefaultValue('Individual');
 
     $spec->getFieldByName('is_opt_out')->setRequired(FALSE);

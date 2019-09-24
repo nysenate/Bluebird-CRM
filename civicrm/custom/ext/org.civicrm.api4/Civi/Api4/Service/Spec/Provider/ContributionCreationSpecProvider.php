@@ -4,7 +4,8 @@ namespace Civi\Api4\Service\Spec\Provider;
 
 use Civi\Api4\Service\Spec\RequestSpec;
 
-class ContributionCreationSpecProvider implements SpecProviderInterface {
+class ContributionCreationSpecProvider implements Generic\SpecProviderInterface {
+
   /**
    * @inheritDoc
    */

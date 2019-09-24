@@ -2,14 +2,12 @@
 
 namespace Civi\Api4\Service\Spec\Provider;
 
-use Civi\Api4\Service\Spec\FieldSpec;
 use Civi\Api4\Service\Spec\RequestSpec;
 
-
-class AddressCreationSpecProvider implements SpecProviderInterface {
+class AddressCreationSpecProvider implements Generic\SpecProviderInterface {
 
   /**
-   * @param RequestSpec $spec
+   * @param \Civi\Api4\Service\Spec\RequestSpec $spec
    */
   public function modifySpec(RequestSpec $spec) {
     $spec->getFieldByName('contact_id')->setRequired(TRUE);

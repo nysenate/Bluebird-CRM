@@ -2,6 +2,7 @@
 
 namespace Civi\Api4\Generic;
 
+use Civi\API\Exception\NotImplementedException;
 use Civi\Api4\Utils\ActionUtil;
 
 /**
@@ -40,8 +41,12 @@ class BasicGetFieldsAction extends BasicGetAction {
    * @throws \Civi\API\Exception\NotImplementedException
    */
   public function _run(Result $result) {
-    $actionClass = ActionUtil::getAction($this->getEntityName(), $this->action);
-    if (method_exists($actionClass, 'fields')) {
+    try {
+      $actionClass = ActionUtil::getAction($this->getEntityName(), $this->getAction());
+    }
+    catch (NotImplementedException $e) {
+    }
+    if (isset($actionClass) && method_exists($actionClass, 'fields')) {
       $values = $actionClass->fields();
     }
     else {
@@ -52,20 +57,30 @@ class BasicGetFieldsAction extends BasicGetAction {
   }
 
   /**
+   * Ensure every result contains, at minimum, the array keys as defined in $this->fields.
+   *
+   * Attempt to set some sensible defaults for some fields.
+   *
+   * In most cases it's not necessary to override this function, even if your entity is really weird.
+   * Instead just override $this->fields and thes function will respect that.
+   *
    * @param array $values
    */
-  private function padResults(&$values) {
+  protected function padResults(&$values) {
+    $fields = array_column($this->fields(), 'name');
     foreach ($values as &$field) {
-      $field += [
-        'title' => ucwords(str_replace('_', ' ', $field['name'])),
+      $defaults = array_intersect_key([
+        'title' => empty($field['name']) ? NULL : ucwords(str_replace('_', ' ', $field['name'])),
         'entity' => $this->getEntityName(),
         'required' => FALSE,
-        'options' => FALSE,
-        'data_type' => 'String',
-      ];
-      if (!$this->loadOptions) {
+        'options' => !empty($field['pseudoconstant']),
+        'data_type' => \CRM_Utils_Array::value('type', $field, 'String'),
+      ], array_flip($fields));
+      $field += $defaults;
+      if (!$this->loadOptions && isset($defaults['options'])) {
         $field['options'] = (bool) $field['options'];
       }
+      $field += array_fill_keys($fields, NULL);
     }
   }
 
@@ -73,7 +88,12 @@ class BasicGetFieldsAction extends BasicGetAction {
    * @return string
    */
   public function getAction() {
-    return $this->action;
+    // For actions that build on top of other actions, return fields for the simpler action
+    $sub = [
+      'save' => 'create',
+      'replace' => 'create',
+    ];
+    return $sub[$this->action] ?? $this->action;
   }
 
   public function fields() {
@@ -99,6 +119,10 @@ class BasicGetFieldsAction extends BasicGetAction {
         'data_type' => 'Boolean',
       ],
       [
+        'name' => 'required_if',
+        'data_type' => 'String',
+      ],
+      [
         'name' => 'options',
         'data_type' => 'Array',
       ],
@@ -107,12 +131,24 @@ class BasicGetFieldsAction extends BasicGetAction {
         'data_type' => 'String',
       ],
       [
+        'name' => 'input_type',
+        'data_type' => 'String',
+      ],
+      [
+        'name' => 'input_attrs',
+        'data_type' => 'Array',
+      ],
+      [
         'name' => 'fk_entity',
         'data_type' => 'String',
       ],
       [
         'name' => 'serialize',
         'data_type' => 'Integer',
+      ],
+      [
+        'name' => 'entity',
+        'data_type' => 'String',
       ],
     ];
   }

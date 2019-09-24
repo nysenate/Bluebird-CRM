@@ -45,6 +45,8 @@ class Result extends \ArrayObject {
    */
   public $version = 4;
 
+  private $indexedBy;
+
   /**
    * Return first result.
    * @return array|null
@@ -87,6 +89,7 @@ class Result extends \ArrayObject {
    * @throws \API_Exception
    */
   public function indexBy($key) {
+    $this->indexedBy = $key;
     if (count($this)) {
       $newResults = [];
       foreach ($this as $values) {
@@ -100,6 +103,29 @@ class Result extends \ArrayObject {
       $this->exchangeArray($newResults);
     }
     return $this;
+  }
+
+  /**
+   * Returns the number of results
+   *
+   * @return int
+   */
+  public function count() {
+    $count = parent::count();
+    if ($count == 1 && is_array($this->first()) && array_keys($this->first()) == ['row_count']) {
+      return $this->first()['row_count'];
+    }
+    return $count;
+  }
+
+  /**
+   * Reduce each result to one field
+   *
+   * @param $name
+   * @return array
+   */
+  public function column($name) {
+    return array_column($this->getArrayCopy(), $name, $this->indexedBy);
   }
 
 }

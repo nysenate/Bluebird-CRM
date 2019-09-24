@@ -50,7 +50,8 @@ abstract class AbstractEntity {
     $permissions = \CRM_Core_Permission::getEntityActionPermissions();
 
     // For legacy reasons the permissions are keyed by lowercase entity name
-    $lcentity = _civicrm_api_get_entity_name_from_camel(self::getEntityName());
+    // Note: Convert to camel & back in order to circumvent all the api3 naming oddities
+    $lcentity = _civicrm_api_get_entity_name_from_camel(\CRM_Utils_String::convertStringToCamel(self::getEntityName()));
     // Merge permissions for this entity with the defaults
     return \CRM_Utils_Array::value($lcentity, $permissions, []) + $permissions['default'];
   }

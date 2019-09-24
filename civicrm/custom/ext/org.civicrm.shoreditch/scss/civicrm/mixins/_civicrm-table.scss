@@ -46,3 +46,15 @@
     }
   }
 }
+
+
+/*
+ * Styles a table with a H3 header:
+ * - removes unnecessary borders from the column headers
+ */
+@mixin civicrm-table-with-header() {
+  .columnheader {
+    border: 0 !important;
+    border-bottom: 1px solid $crm-grayblue-dark !important;
+  }
+}

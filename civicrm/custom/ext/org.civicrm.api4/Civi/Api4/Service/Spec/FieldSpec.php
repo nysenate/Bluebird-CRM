@@ -53,6 +53,16 @@ class FieldSpec {
   /**
    * @var string
    */
+  protected $inputType;
+
+  /**
+   * @var array
+   */
+  protected $inputAttrs = [];
+
+  /**
+   * @var string
+   */
   protected $fkEntity;
 
   /**
@@ -187,7 +197,7 @@ class FieldSpec {
   }
 
   /**
-   * @param bool $required
+   * @param bool $requiredIf
    *
    * @return $this
    */
@@ -233,9 +243,46 @@ class FieldSpec {
 
   /**
    * @param int|null $serialize
+   * @return $this
    */
   public function setSerialize($serialize) {
     $this->serialize = $serialize;
+
+    return $this;
+  }
+
+  /**
+   * @return string
+   */
+  public function getInputType() {
+    return $this->inputType;
+  }
+
+  /**
+   * @param string $inputType
+   * @return $this
+   */
+  public function setInputType($inputType) {
+    $this->inputType = $inputType;
+
+    return $this;
+  }
+
+  /**
+   * @return array
+   */
+  public function getInputAttrs() {
+    return $this->inputAttrs;
+  }
+
+  /**
+   * @param array $inputAttrs
+   * @return $this
+   */
+  public function setInputAttrs($inputAttrs) {
+    $this->inputAttrs = $inputAttrs;
+
+    return $this;
   }
 
   /**
@@ -244,7 +291,7 @@ class FieldSpec {
    * @return array
    */
   private function getValidDataTypes() {
-    $extraTypes = ['Boolean', 'Text', 'Float', 'Url'];
+    $extraTypes = ['Boolean', 'Text', 'Float', 'Url', 'Array'];
     $extraTypes = array_combine($extraTypes, $extraTypes);
 
     return array_merge(\CRM_Utils_Type::dataTypes(), $extraTypes);
@@ -262,8 +309,8 @@ class FieldSpec {
         $fieldName = sprintf('custom_%d', $this->getCustomFieldId());
       }
 
-      $dao = CoreUtil::getDAOFromApiName($this->getEntity());
-      $options = $dao::buildOptions($fieldName);
+      $bao = CoreUtil::getBAOFromApiName($this->getEntity());
+      $options = $bao::buildOptions($fieldName);
 
       if (!is_array($options) || !$options) {
         $options = FALSE;

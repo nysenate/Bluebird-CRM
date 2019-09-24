@@ -9,7 +9,7 @@ $button-border-radius: 2px;
 
 %btn-civi {
   @extend .btn;
-  @include open-sans-font-family();
+  font-family: $font-family-base;
   font-size: $font-size-base;
   opacity: 1;
   text-shadow: none;
@@ -189,6 +189,10 @@ $button-border-radius: 2px;
     @extend %btn;
   }
 
+  .crm-hover-button.crm-i {
+    font-family: $font-family-fontawesome !important;
+  }
+
   input[type=button],
   a.button,
   a.button:link,
@@ -250,7 +254,8 @@ $button-border-radius: 2px;
     .crm-i {
       background-color: transparent !important;
       color: $crm-white;
-      padding: 3px;
+      padding: 2px 3px;
+      top: 0;
     }
   }
 
@@ -401,5 +406,27 @@ button {
       background: $crm-copy;
       color: $crm-white;
     }
+  }
+}
+
+// We style only plain buttons which are <div>s/<button>s with `crm-button` class
+// and do *not* have `crm-button-type-*` class. <span>s should not be touched.
+// We do *not* extend to `%btn-civi` because we want the height to be preserved.
+// Because of that we need to additionally discard the text shadow though.
+*:not(.crm-submit-buttons) {
+  > div,
+  > button {
+    &.crm-button:not([class*='crm-button-type-']) {
+      @extend %btn-civi-primary;
+      text-shadow: none;
+    }
+  }
+}
+
+.crm-container span.crm-button {
+  overflow: inherit;
+
+  > .crm-i {
+    margin-top: 7px;
   }
 }

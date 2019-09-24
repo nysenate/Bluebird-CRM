@@ -12,23 +12,29 @@ class CRM_Api4_Upgrader extends CRM_Api4_Upgrader_Base {
    * Install script
    */
   public function install() {
-    // Add menu item for api explorer; rename v3 explorer menu item.
     try {
       $v3Item = civicrm_api3('Navigation', 'get', [
         'name' => 'API Explorer',
-        'return' => ['id', 'parent_id'],
+        'return' => ['id', 'parent_id', 'weight'],
         'sequential' => 1,
+        'domain_id' => CRM_Core_Config::domainID(),
         'api.Navigation.create' => ['label' => ts("Api Explorer v3")],
       ]);
-      civicrm_api3('Navigation', 'create', [
-        'parent_id' => $v3Item['values'][0]['parent_id'],
-        'label' => ts("Api Explorer v4"),
-        'weight' => 2,
+      $existing = civicrm_api3('Navigation', 'getcount', [
         'name' => "Api Explorer v4",
-        'permission' => "administer CiviCRM",
-        'url' => "civicrm/api4#/explorer",
-        'is_active' => 1,
+        'domain_id' => CRM_Core_Config::domainID(),
       ]);
+      if (!$existing) {
+        civicrm_api3('Navigation', 'create', [
+          'parent_id' => $v3Item['values'][0]['parent_id'] ?? 'Developer',
+          'label' => ts("Api Explorer v4"),
+          'weight' => $v3Item['values'][0]['weight'] ?? 2,
+          'name' => "Api Explorer v4",
+          'permission' => "administer CiviCRM",
+          'url' => "civicrm/api4#/explorer",
+          'is_active' => 1,
+        ]);
+      }
     }
     catch (Exception $e) {
       // Couldn't create menu item.
@@ -57,12 +63,14 @@ class CRM_Api4_Upgrader extends CRM_Api4_Upgrader_Base {
    * Uninstall script
    */
   public function uninstall() {
-    // Remove Api4 Explorer navigation menu item
-    civicrm_api3('Navigation', 'get', [
-      'name' => 'Api Explorer v4',
-      'return' => ['id'],
-      'api.Navigation.delete' => [],
-    ]);
+    // Remove Api4 Explorer navigation menu item unless civicrm core includes api4
+    if (version_compare(CRM_Utils_System::version(), '5.19.alpha1', '<')) {
+      civicrm_api3('Navigation', 'get', [
+        'name' => 'Api Explorer v4',
+        'return' => ['id'],
+        'api.Navigation.delete' => [],
+      ]);
+    }
   }
 
   /**

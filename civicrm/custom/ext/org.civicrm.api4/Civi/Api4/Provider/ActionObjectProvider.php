@@ -31,7 +31,7 @@ use Civi\API\Event\ResolveEvent;
 use Civi\API\Provider\ProviderInterface;
 use Civi\Api4\Generic\AbstractAction;
 use Civi\API\Events;
-use Civi\Api4\Generic\Result;
+use Civi\Api4\Utils\ReflectionUtils;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -52,8 +52,9 @@ class ActionObjectProvider implements EventSubscriberInterface, ProviderInterfac
       ],
     ];
   }
+
   /**
-   * @param ResolveEvent $event
+   * @param \Civi\API\Event\ResolveEvent $event
    *   API resolution event.
    */
   public function onApiResolve(ResolveEvent $event) {
@@ -68,12 +69,16 @@ class ActionObjectProvider implements EventSubscriberInterface, ProviderInterfac
   /**
    * @inheritDoc
    *
-   * @param AbstractAction $action
+   * @param \Civi\Api4\Generic\AbstractAction $action
    *
-   * @return array|mixed
+   * @return \Civi\Api4\Generic\Result
    */
   public function invoke($action) {
-    $result = new Result();
+    // Load result class based on @return annotation in the execute() method.
+    $reflection = new \ReflectionClass($action);
+    $doc = ReflectionUtils::getCodeDocs($reflection->getMethod('execute'), 'Method');
+    $resultClass = \CRM_Utils_Array::value('return', $doc, '\\Civi\\Api4\\Generic\\Result');
+    $result = new $resultClass();
     $result->action = $action->getActionName();
     $result->entity = $action->getEntityName();
     $action->_run($result);
@@ -84,11 +89,13 @@ class ActionObjectProvider implements EventSubscriberInterface, ProviderInterfac
   /**
    * Run each chained action once per row
    *
-   * @param AbstractAction $action
-   * @param Result $result
+   * @param \Civi\Api4\Generic\AbstractAction $action
+   * @param \Civi\Api4\Generic\Result $result
    */
   protected function handleChains($action, $result) {
     foreach ($action->getChain() as $name => $request) {
+      $request += [NULL, NULL, [], NULL];
+      $request[2]['checkPermissions'] = $action->getCheckPermissions();
       foreach ($result as &$row) {
         $row[$name] = $this->runChain($request, $row);
       }
@@ -104,7 +111,7 @@ class ActionObjectProvider implements EventSubscriberInterface, ProviderInterfac
    * @throws \API_Exception
    */
   protected function runChain($request, $row) {
-    list($entity, $action, $params, $index) = $request + [NULL, NULL, [], NULL];
+    list($entity, $action, $params, $index) = $request;
     // Swap out variables in $entity, $action & $params
     $this->resolveChainLinks($entity, $row);
     $this->resolveChainLinks($action, $row);

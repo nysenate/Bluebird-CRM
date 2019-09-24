@@ -4,10 +4,10 @@ namespace Civi\Api4\Service\Spec\Provider;
 
 use Civi\Api4\Service\Spec\RequestSpec;
 
-class ContactTypeCreationSpecProvider implements SpecProviderInterface {
+class ContactTypeCreationSpecProvider implements Generic\SpecProviderInterface {
 
   /**
-   * @param RequestSpec $spec
+   * @param \Civi\Api4\Service\Spec\RequestSpec $spec
    */
   public function modifySpec(RequestSpec $spec) {
     $spec->getFieldByName('label')->setRequired(TRUE);

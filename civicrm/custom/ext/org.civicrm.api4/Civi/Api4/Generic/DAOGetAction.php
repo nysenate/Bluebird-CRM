@@ -2,8 +2,6 @@
 
 namespace Civi\Api4\Generic;
 
-use Civi\Api4\Generic\Result;
-
 /**
  * Retrieve items based on criteria specified in the 'where' param.
  *
@@ -15,6 +13,7 @@ class DAOGetAction extends AbstractGetAction {
   use Traits\DAOActionTrait;
 
   public function _run(Result $result) {
+    $this->setDefaultWhereClause();
     $result->exchangeArray($this->getObjects());
   }
 

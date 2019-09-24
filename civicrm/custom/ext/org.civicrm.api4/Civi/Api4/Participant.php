@@ -3,17 +3,10 @@
 namespace Civi\Api4;
 
 /**
- * Participant entity.
+ * Participant entity, stores the participation record of a contact in an event.
  *
  * @package Civi\Api4
  */
 class Participant extends Generic\DAOEntity {
-
-  /**
-   * @return Action\Participant\Get
-   */
-  public static function get() {
-    return new Action\Participant\Get(__CLASS__, __FUNCTION__);
-  }
 
 }

@@ -2,8 +2,8 @@
 
 namespace Civi\Api4\Service\Schema\Joinable;
 
-use Civi\Api4\Service\Spec\FieldSpec;
-use CRM_Core_DAO_AllCoreTables as Tables;
+use Civi\Api4\Utils\CoreUtil;
+use CRM_Core_DAO_AllCoreTables as AllCoreTables;
 
 class Joinable {
 
@@ -75,7 +75,7 @@ class Joinable {
     $this->targetTable = $targetTable;
     $this->targetColumn = $targetColumn;
     if (!$this->entity) {
-      $this->entity = Tables::getBriefName(Tables::getClassForTable($targetTable));
+      $this->entity = CoreUtil::getApiNameFromTableName($targetTable);
     }
     $this->alias = $alias ?: str_replace('civicrm_', '', $targetTable);
   }
@@ -252,7 +252,7 @@ class Joinable {
    */
   public function getEntityFields() {
     if (!$this->entityFields) {
-      $bao = Tables::getClassForTable($this->getTargetTable());
+      $bao = AllCoreTables::getClassForTable($this->getTargetTable());
       if ($bao) {
         foreach ($bao::fields() as $field) {
           $this->entityFields[] = \Civi\Api4\Service\Spec\SpecFormatter::arrayToField($field, $this->getEntity());

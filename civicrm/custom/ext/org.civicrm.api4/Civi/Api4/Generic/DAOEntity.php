@@ -15,6 +15,13 @@ abstract class DAOEntity extends AbstractEntity {
   }
 
   /**
+   * @return DAOGetAction
+   */
+  public static function save() {
+    return new DAOSaveAction(static::class, __FUNCTION__);
+  }
+
+  /**
    * @return DAOGetFieldsAction
    */
   public static function getFields() {

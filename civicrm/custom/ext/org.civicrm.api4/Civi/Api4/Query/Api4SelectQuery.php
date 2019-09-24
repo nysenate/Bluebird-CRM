@@ -34,8 +34,7 @@ use Civi\Api4\Service\Schema\Joinable\CustomGroupJoinable;
 use Civi\Api4\Service\Schema\Joinable\Joinable;
 use Civi\Api4\Utils\FormattingUtil;
 use Civi\Api4\Utils\CoreUtil;
-use CRM_Core_DAO_AllCoreTables as TableHelper;
-use CRM_Core_DAO_CustomField as CustomFieldDAO;
+use CRM_Core_DAO_AllCoreTables as AllCoreTables;
 use CRM_Utils_Array as UtilsArray;
 
 /**
@@ -65,7 +64,7 @@ class Api4SelectQuery extends SelectQuery {
   protected $fkSelectAliases = [];
 
   /**
-   * @var Joinable[]
+   * @var \Civi\Api4\Service\Schema\Joinable\Joinable[]
    *   The joinable tables that have been joined so far
    */
   protected $joinedTables = [];
@@ -73,17 +72,18 @@ class Api4SelectQuery extends SelectQuery {
   /**
    * @param string $entity
    * @param bool $checkPermissions
+   * @param array $fields
    */
-  public function __construct($entity, $checkPermissions) {
+  public function __construct($entity, $checkPermissions, $fields) {
     require_once 'api/v3/utils.php';
     $this->entity = $entity;
     $this->checkPermissions = $checkPermissions;
 
-    $baoName = CoreUtil::getDAOFromApiName($entity);
+    $baoName = CoreUtil::getBAOFromApiName($entity);
     $bao = new $baoName();
 
     $this->entityFieldNames = _civicrm_api3_field_names(_civicrm_api3_build_fields_array($bao));
-    $this->apiFieldSpec = $this->getFields();
+    $this->apiFieldSpec = (array) $fields;
 
     \CRM_Utils_SQL_Select::from($this->getTableName($baoName) . ' ' . self::MAIN_TABLE_ALIAS);
 
@@ -97,9 +97,43 @@ class Api4SelectQuery extends SelectQuery {
    * @return array|int
    */
   public function run() {
-    $this->preRun();
-    $baseResults = parent::run();
-    $event = new PostSelectQueryEvent($baseResults, $this);
+    $this->addJoins();
+    $this->buildSelectFields();
+    $this->buildWhereClause();
+
+    // Select
+    if (in_array('row_count', $this->select)) {
+      $this->query->select("count(*) as c");
+    }
+    else {
+      foreach ($this->selectFields as $column => $alias) {
+        $this->query->select("$column as `$alias`");
+      }
+      // Order by
+      $this->buildOrderBy();
+    }
+
+    // Limit
+    if (!empty($this->limit) || !empty($this->offset)) {
+      $this->query->limit($this->limit, $this->offset);
+    }
+
+    $results = [];
+    $query = \CRM_Core_DAO::executeQuery($this->query->toSQL());
+
+    while ($query->fetch()) {
+      if (in_array('row_count', $this->select)) {
+        $results[]['row_count'] = (int) $query->c;
+        break;
+      }
+      $results[$query->id] = [];
+      foreach ($this->selectFields as $column => $alias) {
+        $returnName = $alias;
+        $alias = str_replace('.', '_', $alias);
+        $results[$query->id][$returnName] = property_exists($query, $alias) ? $query->$alias : NULL;
+      };
+    }
+    $event = new PostSelectQueryEvent($results, $this);
     \Civi::dispatcher()->dispatch(Events::POST_SELECT_QUERY, $event);
 
     return $event->getResults();
@@ -108,9 +142,25 @@ class Api4SelectQuery extends SelectQuery {
   /**
    * Gets all FK fields and does the required joins
    */
-  protected function preRun() {
-    $whereFields = array_column($this->where, 0);
-    $allFields = array_merge($whereFields, $this->select, $this->orderBy);
+  protected function addJoins() {
+    $allFields = array_merge($this->select, array_keys($this->orderBy));
+    $recurse = function($clauses) use (&$allFields, &$recurse) {
+      foreach ($clauses as $clause) {
+        if ($clause[0] === 'NOT' && is_string($clause[1][0])) {
+          $recurse($clause[1][1]);
+        }
+        elseif (in_array($clause[0], ['AND', 'OR', 'NOT'])) {
+          $recurse($clause[1]);
+        }
+        elseif (is_array($clause[0])) {
+          array_walk($clause, $recurse);
+        }
+        else {
+          $allFields[] = $clause[0];
+        }
+      }
+    };
+    $recurse($this->where);
     $dotFields = array_unique(array_filter($allFields, function ($field) {
       return strpos($field, '.') !== FALSE;
     }));
@@ -193,7 +243,6 @@ class Api4SelectQuery extends SelectQuery {
       if ($this->getField($field)) {
         $this->query->orderBy(self::MAIN_TABLE_ALIAS . '.' . $field . " $dir");
       }
-      // TODO: Handle joined fields, custom fields, etc.
       else {
         throw new \API_Exception("Invalid sort field. Cannot order by $field $dir");
       }
@@ -278,8 +327,7 @@ class Api4SelectQuery extends SelectQuery {
    * @inheritDoc
    */
   protected function getFields() {
-    $fields = civicrm_api4($this->entity, 'getFields', ['action' => 'get', 'checkPermissions' => $this->checkPermissions, 'includeCustom' => FALSE])->indexBy('name');
-    return (array) $fields;
+    return $this->apiFieldSpec;
   }
 
   /**
@@ -321,7 +369,7 @@ class Api4SelectQuery extends SelectQuery {
     }
 
     $joinPath = $joiner->join($this, $pathString);
-    /** @var Joinable $lastLink */
+    /** @var \Civi\Api4\Service\Schema\Joinable\Joinable $lastLink */
     $lastLink = array_pop($joinPath);
 
     // Cache field info for retrieval by $this->getField()
@@ -343,14 +391,14 @@ class Api4SelectQuery extends SelectQuery {
 
     // custom groups use aliases for field names
     if ($lastLink instanceof CustomGroupJoinable) {
-      $field = $lastLink->getSqlColumn();
+      $field = $lastLink->getSqlColumn($field);
     }
 
     $this->fkSelectAliases[$key] = sprintf('%s.%s', $lastLink->getAlias(), $field);
   }
 
   /**
-   * @param Joinable $joinable
+   * @param \Civi\Api4\Service\Schema\Joinable\Joinable $joinable
    *
    * @return $this
    */
@@ -364,7 +412,7 @@ class Api4SelectQuery extends SelectQuery {
    * @return FALSE|string
    */
   public function getFrom() {
-    return TableHelper::getTableForClass(TableHelper::getFullName($this->entity));
+    return AllCoreTables::getTableForClass(AllCoreTables::getFullName($this->entity));
   }
 
   /**
@@ -480,14 +528,14 @@ class Api4SelectQuery extends SelectQuery {
   }
 
   /**
-   * @return Joinable[]
+   * @return \Civi\Api4\Service\Schema\Joinable\Joinable[]
    */
   public function getJoinedTables() {
     return $this->joinedTables;
   }
 
   /**
-   * @return Joinable
+   * @return \Civi\Api4\Service\Schema\Joinable\Joinable
    */
   public function getJoinedTable($alias) {
     foreach ($this->joinedTables as $join) {
@@ -512,7 +560,6 @@ class Api4SelectQuery extends SelectQuery {
     else {
       $bao = new $baoName();
       $this->query = \CRM_Utils_SQL_Select::from($bao->tableName() . ' ' . self::MAIN_TABLE_ALIAS);
-      $bao->free();
     }
   }
 

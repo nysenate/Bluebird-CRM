@@ -9,12 +9,12 @@ use Civi\Api4\Service\Schema\Joinable\CustomGroupJoinable;
 use Civi\Api4\Service\Schema\Joinable\Joinable;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Civi\Api4\Service\Schema\Joinable\OptionValueJoinable;
-use CRM_Core_DAO_AllCoreTables as TableHelper;
+use CRM_Core_DAO_AllCoreTables as AllCoreTables;
 use CRM_Utils_Array as UtilsArray;
 
 class SchemaMapBuilder {
   /**
-   * @var EventDispatcherInterface
+   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
    */
   protected $dispatcher;
   /**
@@ -23,7 +23,7 @@ class SchemaMapBuilder {
   protected $apiEntities;
 
   /**
-   * @param EventDispatcherInterface $dispatcher
+   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $dispatcher
    */
   public function __construct(EventDispatcherInterface $dispatcher) {
     $this->dispatcher = $dispatcher;
@@ -50,7 +50,7 @@ class SchemaMapBuilder {
    */
   private function loadTables(SchemaMap $map) {
     /** @var \CRM_Core_DAO $daoName */
-    foreach (TableHelper::get() as $daoName => $data) {
+    foreach (AllCoreTables::get() as $daoName => $data) {
       $table = new Table($data['table']);
       foreach ($daoName::fields() as $field => $fieldData) {
         $this->addJoins($table, $field, $fieldData);
@@ -74,7 +74,7 @@ class SchemaMapBuilder {
 
     // can there be multiple methods e.g. pseudoconstant and fkclass
     if ($fkClass) {
-      $tableName = TableHelper::getTableForClass($fkClass);
+      $tableName = AllCoreTables::getTableForClass($fkClass);
       $fkKey = UtilsArray::value('FKKeyColumn', $data, 'id');
       $alias = str_replace('_id', '', $field);
       $joinable = new Joinable($tableName, $fkKey, $alias);
@@ -182,7 +182,10 @@ class SchemaMapBuilder {
       ->select(['g.name as custom_group_name', 'g.table_name', 'g.is_multiple', 'f.name', 'label', 'column_name', 'option_group_id'])
       ->where('g.extends IN (@entity)', ['@entity' => $queryEntity])
       ->where('g.is_active')
+      ->where('f.is_active')
       ->execute();
+
+    $links = [];
 
     while ($fieldData->fetch()) {
       $tableName = $fieldData->table_name;
@@ -198,9 +201,15 @@ class SchemaMapBuilder {
       }
 
       $map->addTable($customTable);
+
       $alias = $fieldData->custom_group_name;
-      $isMultiple = !empty($fieldData->is_multiple);
-      $joinable = new CustomGroupJoinable($tableName, $alias, $isMultiple, $entity, $fieldData->column_name);
+      $links[$alias]['tableName'] = $tableName;
+      $links[$alias]['isMultiple'] = !empty($fieldData->is_multiple);
+      $links[$alias]['columns'][$fieldData->name] = $fieldData->column_name;
+    }
+
+    foreach ($links as $alias => $link) {
+      $joinable = new CustomGroupJoinable($link['tableName'], $alias, $link['isMultiple'], $entity, $link['columns']);
       $baseTable->addTableLink('id', $joinable);
     }
   }
