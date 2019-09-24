@@ -170,6 +170,12 @@ function merge_civicrm_merge($type, &$data, $mainId = NULL, $otherId = NULL, $ta
   return;
 }
 
+function merge_civicrm_buildForm($formName, &$form) {
+  if ($formName == 'CRM_Contact_Form_Merge') {
+    CRM_Core_Resources::singleton()->addScriptFile(CRM_Merge_ExtensionUtil::LONG_NAME, 'js/Merge.js');
+  }
+}
+
 /**
  * @param $data
  * @param $mainId
