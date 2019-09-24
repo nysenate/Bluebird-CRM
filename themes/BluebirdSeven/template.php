@@ -4,7 +4,7 @@
  * Get rid of Home in breadcrumb trail.
  */
 function BluebirdSeven_breadcrumb($variables) {
-$breadcrumb = $variables['breadcrumb'];
+  $breadcrumb = $variables['breadcrumb'];
 
   if (!empty($breadcrumb)) {
     // Provide a navigational heading to give context for breadcrumb links to
@@ -13,6 +13,9 @@ $breadcrumb = $variables['breadcrumb'];
 
     array_shift($breadcrumb); // Removes the Home item
     $output .= '<div class="breadcrumb">' . implode(' » ', $breadcrumb) . '</div>';
+
     return $output;
   }
+
+  return NULL;
 }

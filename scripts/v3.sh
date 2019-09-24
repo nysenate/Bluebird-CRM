@@ -49,7 +49,7 @@ $drush $instance cvapi extension.install key=gov.nysenate.contact --quiet
 $drush $instance cvapi extension.install key=gov.nysenate.deceased --quiet
 $drush $instance cvapi extension.install key=gov.nysenate.inlinehelp --quiet
 $drush $instance cvapi extension.install key=gov.nysenate.navigation --quiet
-$drush $instance cvapi extension.install key=gov.nysenate.recentitems --quiet
+#$drush $instance cvapi extension.install key=gov.nysenate.recentitems --quiet
 $drush $instance cvapi extension.install key=gov.nysenate.search --quiet
 $drush $instance cvapi extension.install key=gov.nysenate.dashboard --quiet
 
@@ -62,6 +62,7 @@ $drush $instance cvapi extension.install key=org.civicrm.doctorwhen --quiet
 ##$drush $instance cvapi extension.install key=org.civicrm.flexmailer --quiet
 $drush $instance cvapi extension.install key=org.civicrm.shoreditch --quiet
 $drush $instance cvapi extension.install key=org.civicrm.tutorial --quiet
+$drush $instance cvapi extension.install key=org.civicrm.recentmenu --quiet
 
 ##$drush $instance cvapi extension.install key=uk.co.vedaconsulting.mosaico --quiet
 

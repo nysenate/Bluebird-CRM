@@ -6,9 +6,13 @@
 .crm-container #help {
   background: #d0c46c;
 }
-ul#civicrm-menu {
-  /*background-color: #DADAD2 !important;*/
+ul#civicrm-menu,
+ul#civicrm-menu.sm {
+  background-color: white !important;
   width: 100% !important;
+}
+ul#civicrm-menu.sm li a {
+  background-color: white !important;
 }
 .crm-container #civicrm-footer {
   border-top: 1px solid #B7B8B9 !important;

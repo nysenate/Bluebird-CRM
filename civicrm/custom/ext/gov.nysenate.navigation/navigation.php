@@ -185,10 +185,10 @@ function navigation_civicrm_navigationMenu(&$params) {
 
   $params[7000] = array(
     'attributes' => array(
-      'label' => '',
+      'label' => 'Log Out',
       'name' => 'Log Out',
       'url' => 'civicrm/logout?reset=1',
-      'icon' => 'fa-sign-out crm-i',
+      //'icon' => 'fa-sign-out crm-i',
       'permission' => 'access CiviCRM',
       'operator' => 'AND',
       'separator' => 0,

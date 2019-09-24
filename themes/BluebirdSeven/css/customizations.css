@@ -72,6 +72,9 @@ div#Tag li#j1_1 > a#tag_291 {
 .crm-container #civicrm-dashboard .column .widget-wrapper .widget-controls {
   padding: 10px;
 }
+.crm-container .crm-dashboard-controls {
+  margin-top: 0;
+}
 
 /*********** BELOW SHOULD BE TEMPORARY! *************/
 

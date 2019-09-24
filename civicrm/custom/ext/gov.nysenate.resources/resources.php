@@ -166,6 +166,8 @@ function resources_civicrm_coreResourceList(&$list, $region) {
   Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/jquery.tokeninput.js', 10, 'html-header');
   Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/jquery-fieldselection.js', 10, 'html-header');
 
+  Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/jobId.js');
+
   //implement coreResourceList to define location of custom ckeditor config file
   $extPath = Civi::resources()->getUrl('gov.nysenate.resources');
   $config = array_keys(array_filter($list, function($v){return !empty($v['config']) ? true : false;}));

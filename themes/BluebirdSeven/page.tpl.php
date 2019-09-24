@@ -3,26 +3,14 @@
   $addlVars = _bbSetupHeader();
 ?>
 
-<?php if (!empty($addlVars)) { ?>
-  <div id="branding" class="clearfix">
-    <div id="bb-recentitems"></div>
-    <?php print $breadcrumb; ?>
-    <div id="bb-header">
-      <?php
-        if ($addlVars['isCiviCRM']) {
-          print $addlVars['bbheader'];
-          print $addlVars['bbjob'];
-        }
-      ?>
-    </div>
-    <?php print render($title_prefix); ?>
-    <?php if ($title): ?>
-      <h1 class="page-title"><?php print $title; ?></h1>
-    <?php endif; ?>
-    <?php print render($title_suffix); ?>
-    <?php print render($primary_local_tasks); ?>
-  </div>
-<?php } ?>
+<div id="bb-header-title">
+  <?php print render($title_prefix); ?>
+  <?php if ($title): ?>
+    <h1 class="page-title"><?php print $title; ?></h1>
+  <?php endif; ?>
+  <?php print render($title_suffix); ?>
+  <?php print render($primary_local_tasks); ?>
+</div>
 
 <div id="page">
   <?php if ($secondary_local_tasks): ?>
@@ -48,6 +36,23 @@
   </div>
 </div>
 
+<div id="branding" class="clearfix">
+  <?php
+  if ($addlVars['recent_items']) {
+    print $addlVars['recent_items'];
+  }
+  ?>
+
+  <div id="bb-header">
+    <?php
+    if ($addlVars['isCiviCRM']) {
+      print $addlVars['bbheader'];
+      print $addlVars['bbjob'];
+    }
+    ?>
+  </div>
+</div>
+
 <div id="dialogJobID" style="display: none;">
   <form action="" method="post" id="formSetJob">
     Enter a new SOS Job #<br/>
@@ -55,40 +60,6 @@
     <input type="hidden" id="bbClearJobId" name="bbClearJobId" value=0 />
   </form>
 </div>
-
-<script type="text/javascript">
-  function setJobID( ) {
-    cj("#dialogJobID").show();
-    cj("#dialogJobID").dialog({
-      modal: true,
-      title: 'Set Job ID',
-      bgiframe: true,
-      width: 400,
-      overlay: {
-        opacity: 0.5,
-        background: "black"
-      },
-      beforeclose: function(event, ui) {
-        cj(this).dialog("destroy");
-        },
-      buttons: {
-        "Cancel": function() {
-          cj(this).dialog("close");
-        },
-        "Clear Existing ID": function() {
-          cj('#bbClearJobId').val(1);
-          cj("#formSetJob").submit();
-          cj(this).dialog("close");
-        },
-        "Set ID": function() {
-          cj('#bbCurrentJobId').text(' :: ' + cj('#bbSetJobId').val())
-          cj("#formSetJob").submit();
-          cj(this).dialog("close");
-        }
-      }
-    });
-  }
-</script>
 
 <?php
 
@@ -148,7 +119,40 @@ function _bbSetupHeader() {
     $variables['isCiviCRM'] = TRUE;
   }
 
+  $variables['recent_items'] = bb_buildRecentItemsList();
+
   return $variables;
 }
 
+function bb_buildRecentItemsList() {
+  $icons = [
+    'Individual' => 'fa-user',
+    'Organization' => 'fa-building',
+    'Household' => 'fa-home',
+    'Relationship' => 'fa-user-circle-o',
+    'Activity' => 'fa-pencil-square-o',
+    'Note' => 'fa-sticky-note',
+    'Group' => 'fa-users',
+    'Case' => 'fa-folder-open',
+  ];
+  $recent = CRM_Utils_Recent::get();
+  //Civi::log()->debug('bb_buildRecentItemsList', ['recent' => $recent]);
 
+  $html = '
+    <div id="nyss-recentitems" title="Recent Items">Recent Items: 
+      <ul id="nyss-recentitems-list">
+  ';
+
+  foreach ($recent as $item) {
+    $editUrl = (!empty($item['edit_url'])) ?
+      " (<a href='{$item['edit_url']}'><span class='nyss-recentitems-edit'>edit</span></a>)" : '';
+    $icon = CRM_Utils_Array::value($item['type'], $icons);
+    $html .= "
+      <li><i class='nyss-i {$icon}'></i>&nbsp;<a href='{$item['url']}'>{$item['title']}</a>{$editUrl}</li>
+    ";
+  }
+
+  $html .= '</ul></div>';
+
+  return $html;
+}

@@ -6,10 +6,10 @@
  * The ExtensionUtil class provides small stubs for accessing resources of this
  * extension.
  */
-class CRM_Recentitems_ExtensionUtil {
-  const SHORT_NAME = "recentitems";
-  const LONG_NAME = "gov.nysenate.recentitems";
-  const CLASS_PREFIX = "CRM_Recentitems";
+class CRM_Recentmenu_ExtensionUtil {
+  const SHORT_NAME = "recentmenu";
+  const LONG_NAME = "org.civicrm.recentmenu";
+  const CLASS_PREFIX = "CRM_Recentmenu";
 
   /**
    * Translate a string using the extension's domain.
@@ -77,14 +77,14 @@ class CRM_Recentitems_ExtensionUtil {
 
 }
 
-use CRM_Recentitems_ExtensionUtil as E;
+use CRM_Recentmenu_ExtensionUtil as E;
 
 /**
  * (Delegated) Implements hook_civicrm_config().
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_config
  */
-function _recentitems_civix_civicrm_config(&$config = NULL) {
+function _recentmenu_civix_civicrm_config(&$config = NULL) {
   static $configured = FALSE;
   if ($configured) {
     return;
@@ -114,8 +114,8 @@ function _recentitems_civix_civicrm_config(&$config = NULL) {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_xmlMenu
  */
-function _recentitems_civix_civicrm_xmlMenu(&$files) {
-  foreach (_recentitems_civix_glob(__DIR__ . '/xml/Menu/*.xml') as $file) {
+function _recentmenu_civix_civicrm_xmlMenu(&$files) {
+  foreach (_recentmenu_civix_glob(__DIR__ . '/xml/Menu/*.xml') as $file) {
     $files[] = $file;
   }
 }
@@ -125,9 +125,9 @@ function _recentitems_civix_civicrm_xmlMenu(&$files) {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_install
  */
-function _recentitems_civix_civicrm_install() {
-  _recentitems_civix_civicrm_config();
-  if ($upgrader = _recentitems_civix_upgrader()) {
+function _recentmenu_civix_civicrm_install() {
+  _recentmenu_civix_civicrm_config();
+  if ($upgrader = _recentmenu_civix_upgrader()) {
     $upgrader->onInstall();
   }
 }
@@ -137,9 +137,9 @@ function _recentitems_civix_civicrm_install() {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_postInstall
  */
-function _recentitems_civix_civicrm_postInstall() {
-  _recentitems_civix_civicrm_config();
-  if ($upgrader = _recentitems_civix_upgrader()) {
+function _recentmenu_civix_civicrm_postInstall() {
+  _recentmenu_civix_civicrm_config();
+  if ($upgrader = _recentmenu_civix_upgrader()) {
     if (is_callable(array($upgrader, 'onPostInstall'))) {
       $upgrader->onPostInstall();
     }
@@ -151,9 +151,9 @@ function _recentitems_civix_civicrm_postInstall() {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_uninstall
  */
-function _recentitems_civix_civicrm_uninstall() {
-  _recentitems_civix_civicrm_config();
-  if ($upgrader = _recentitems_civix_upgrader()) {
+function _recentmenu_civix_civicrm_uninstall() {
+  _recentmenu_civix_civicrm_config();
+  if ($upgrader = _recentmenu_civix_upgrader()) {
     $upgrader->onUninstall();
   }
 }
@@ -163,9 +163,9 @@ function _recentitems_civix_civicrm_uninstall() {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_enable
  */
-function _recentitems_civix_civicrm_enable() {
-  _recentitems_civix_civicrm_config();
-  if ($upgrader = _recentitems_civix_upgrader()) {
+function _recentmenu_civix_civicrm_enable() {
+  _recentmenu_civix_civicrm_config();
+  if ($upgrader = _recentmenu_civix_upgrader()) {
     if (is_callable(array($upgrader, 'onEnable'))) {
       $upgrader->onEnable();
     }
@@ -178,9 +178,9 @@ function _recentitems_civix_civicrm_enable() {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_disable
  * @return mixed
  */
-function _recentitems_civix_civicrm_disable() {
-  _recentitems_civix_civicrm_config();
-  if ($upgrader = _recentitems_civix_upgrader()) {
+function _recentmenu_civix_civicrm_disable() {
+  _recentmenu_civix_civicrm_config();
+  if ($upgrader = _recentmenu_civix_upgrader()) {
     if (is_callable(array($upgrader, 'onDisable'))) {
       $upgrader->onDisable();
     }
@@ -198,21 +198,21 @@ function _recentitems_civix_civicrm_disable() {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_upgrade
  */
-function _recentitems_civix_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
-  if ($upgrader = _recentitems_civix_upgrader()) {
+function _recentmenu_civix_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
+  if ($upgrader = _recentmenu_civix_upgrader()) {
     return $upgrader->onUpgrade($op, $queue);
   }
 }
 
 /**
- * @return CRM_Recentitems_Upgrader
+ * @return CRM_Recentmenu_Upgrader
  */
-function _recentitems_civix_upgrader() {
-  if (!file_exists(__DIR__ . '/CRM/Recentitems/Upgrader.php')) {
+function _recentmenu_civix_upgrader() {
+  if (!file_exists(__DIR__ . '/CRM/Recentmenu/Upgrader.php')) {
     return NULL;
   }
   else {
-    return CRM_Recentitems_Upgrader_Base::instance();
+    return CRM_Recentmenu_Upgrader_Base::instance();
   }
 }
 
@@ -226,7 +226,7 @@ function _recentitems_civix_upgrader() {
  * @param $pattern string, glob pattern, eg "*.txt"
  * @return array(string)
  */
-function _recentitems_civix_find_files($dir, $pattern) {
+function _recentmenu_civix_find_files($dir, $pattern) {
   if (is_callable(array('CRM_Utils_File', 'findFiles'))) {
     return CRM_Utils_File::findFiles($dir, $pattern);
   }
@@ -235,7 +235,7 @@ function _recentitems_civix_find_files($dir, $pattern) {
   $result = array();
   while (!empty($todos)) {
     $subdir = array_shift($todos);
-    foreach (_recentitems_civix_glob("$subdir/$pattern") as $match) {
+    foreach (_recentmenu_civix_glob("$subdir/$pattern") as $match) {
       if (!is_dir($match)) {
         $result[] = $match;
       }
@@ -261,18 +261,18 @@ function _recentitems_civix_find_files($dir, $pattern) {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_managed
  */
-function _recentitems_civix_civicrm_managed(&$entities) {
-  $mgdFiles = _recentitems_civix_find_files(__DIR__, '*.mgd.php');
+function _recentmenu_civix_civicrm_managed(&$entities) {
+  $mgdFiles = _recentmenu_civix_find_files(__DIR__, '*.mgd.php');
   foreach ($mgdFiles as $file) {
     $es = include $file;
     foreach ($es as $e) {
       if (empty($e['module'])) {
         $e['module'] = E::LONG_NAME;
       }
+      $entities[] = $e;
       if (empty($e['params']['version'])) {
         $e['params']['version'] = '3';
       }
-      $entities[] = $e;
     }
   }
 }
@@ -286,12 +286,12 @@ function _recentitems_civix_civicrm_managed(&$entities) {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
  */
-function _recentitems_civix_civicrm_caseTypes(&$caseTypes) {
+function _recentmenu_civix_civicrm_caseTypes(&$caseTypes) {
   if (!is_dir(__DIR__ . '/xml/case')) {
     return;
   }
 
-  foreach (_recentitems_civix_glob(__DIR__ . '/xml/case/*.xml') as $file) {
+  foreach (_recentmenu_civix_glob(__DIR__ . '/xml/case/*.xml') as $file) {
     $name = preg_replace('/\.xml$/', '', basename($file));
     if ($name != CRM_Case_XMLProcessor::mungeCaseType($name)) {
       $errorMessage = sprintf("Case-type file name is malformed (%s vs %s)", $name, CRM_Case_XMLProcessor::mungeCaseType($name));
@@ -315,12 +315,12 @@ function _recentitems_civix_civicrm_caseTypes(&$caseTypes) {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_angularModules
  */
-function _recentitems_civix_civicrm_angularModules(&$angularModules) {
+function _recentmenu_civix_civicrm_angularModules(&$angularModules) {
   if (!is_dir(__DIR__ . '/ang')) {
     return;
   }
 
-  $files = _recentitems_civix_glob(__DIR__ . '/ang/*.ang.php');
+  $files = _recentmenu_civix_glob(__DIR__ . '/ang/*.ang.php');
   foreach ($files as $file) {
     $name = preg_replace(':\.ang\.php$:', '', basename($file));
     $module = include $file;
@@ -343,7 +343,7 @@ function _recentitems_civix_civicrm_angularModules(&$angularModules) {
  * @param string $pattern
  * @return array, possibly empty
  */
-function _recentitems_civix_glob($pattern) {
+function _recentmenu_civix_glob($pattern) {
   $result = glob($pattern);
   return is_array($result) ? $result : array();
 }
@@ -357,7 +357,7 @@ function _recentitems_civix_glob($pattern) {
  * @param array $item - the item to insert (parent/child attributes will be
  *    filled for you)
  */
-function _recentitems_civix_insert_navigation_menu(&$menu, $path, $item) {
+function _recentmenu_civix_insert_navigation_menu(&$menu, $path, $item) {
   // If we are done going down the path, insert menu
   if (empty($path)) {
     $menu[] = array(
@@ -378,7 +378,7 @@ function _recentitems_civix_insert_navigation_menu(&$menu, $path, $item) {
         if (!isset($entry['child'])) {
           $entry['child'] = array();
         }
-        $found = _recentitems_civix_insert_navigation_menu($entry['child'], implode('/', $path), $item, $key);
+        $found = _recentmenu_civix_insert_navigation_menu($entry['child'], implode('/', $path), $item, $key);
       }
     }
     return $found;
@@ -388,9 +388,9 @@ function _recentitems_civix_insert_navigation_menu(&$menu, $path, $item) {
 /**
  * (Delegated) Implements hook_civicrm_navigationMenu().
  */
-function _recentitems_civix_navigationMenu(&$nodes) {
+function _recentmenu_civix_navigationMenu(&$nodes) {
   if (!is_callable(array('CRM_Core_BAO_Navigation', 'fixNavigationMenu'))) {
-    _recentitems_civix_fixNavigationMenu($nodes);
+    _recentmenu_civix_fixNavigationMenu($nodes);
   }
 }
 
@@ -398,17 +398,17 @@ function _recentitems_civix_navigationMenu(&$nodes) {
  * Given a navigation menu, generate navIDs for any items which are
  * missing them.
  */
-function _recentitems_civix_fixNavigationMenu(&$nodes) {
+function _recentmenu_civix_fixNavigationMenu(&$nodes) {
   $maxNavID = 1;
   array_walk_recursive($nodes, function($item, $key) use (&$maxNavID) {
     if ($key === 'navID') {
       $maxNavID = max($maxNavID, $item);
     }
   });
-  _recentitems_civix_fixNavigationMenuItems($nodes, $maxNavID, NULL);
+  _recentmenu_civix_fixNavigationMenuItems($nodes, $maxNavID, NULL);
 }
 
-function _recentitems_civix_fixNavigationMenuItems(&$nodes, &$maxNavID, $parentID) {
+function _recentmenu_civix_fixNavigationMenuItems(&$nodes, &$maxNavID, $parentID) {
   $origKeys = array_keys($nodes);
   foreach ($origKeys as $origKey) {
     if (!isset($nodes[$origKey]['attributes']['parentID']) && $parentID !== NULL) {
@@ -423,7 +423,7 @@ function _recentitems_civix_fixNavigationMenuItems(&$nodes, &$maxNavID, $parentI
       $origKey = $newKey;
     }
     if (isset($nodes[$origKey]['child']) && is_array($nodes[$origKey]['child'])) {
-      _recentitems_civix_fixNavigationMenuItems($nodes[$origKey]['child'], $maxNavID, $nodes[$origKey]['attributes']['navID']);
+      _recentmenu_civix_fixNavigationMenuItems($nodes[$origKey]['child'], $maxNavID, $nodes[$origKey]['attributes']['navID']);
     }
   }
 }
@@ -433,7 +433,7 @@ function _recentitems_civix_fixNavigationMenuItems(&$nodes, &$maxNavID, $parentI
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_alterSettingsFolders
  */
-function _recentitems_civix_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
+function _recentmenu_civix_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
   static $configured = FALSE;
   if ($configured) {
     return;
@@ -454,7 +454,7 @@ function _recentitems_civix_civicrm_alterSettingsFolders(&$metaDataFolders = NUL
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_entityTypes
  */
 
-function _recentitems_civix_civicrm_entityTypes(&$entityTypes) {
+function _recentmenu_civix_civicrm_entityTypes(&$entityTypes) {
   $entityTypes = array_merge($entityTypes, array (
   ));
 }

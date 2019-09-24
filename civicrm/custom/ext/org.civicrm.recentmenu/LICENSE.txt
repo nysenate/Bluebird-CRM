@@ -1,5 +1,5 @@
-Package: gov.nysenate.recentitems
-Copyright (C) 2018, FIXME <FIXME>
+Package: org.civicrm.recentmenu
+Copyright (C) 2018, Coleman Watts <coleman@civicrm.org>
 Licensed under the GNU Affero Public License 3.0 (below).
 
 -------------------------------------------------------------------------------
