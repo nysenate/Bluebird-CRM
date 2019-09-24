@@ -863,14 +863,12 @@ ORDER BY   civicrm_email.is_bulkmail DESC
       $this->header = new CRM_Mailing_BAO_MailingComponent();
       $this->header->id = $this->header_id;
       $this->header->find(TRUE);
-      $this->header->free();
     }
 
     if (!$this->footer and $this->footer_id) {
       $this->footer = new CRM_Mailing_BAO_MailingComponent();
       $this->footer->id = $this->footer_id;
       $this->footer->find(TRUE);
-      $this->footer->free();
     }
   }
 
@@ -1368,6 +1366,10 @@ ORDER BY   civicrm_email.is_bulkmail DESC
       $numSlices = count($embed_data);
       $url = '';
       for ($i = 0; $i < $numSlices; $i++) {
+        $embed_url_data = parse_url($embed_data[$i]);
+        if (!empty($embed_url_data['scheme'])) {
+          $token_a['embed_parts'][$i] = preg_replace("/href=\"(https*:\/\/)/", "href=\"", $token_a['embed_parts'][$i]);
+        }
         $url .= "{$token_a['embed_parts'][$i]}{$embed_data[$i]}";
       }
       if (isset($token_a['embed_parts'][$numSlices])) {
@@ -1452,7 +1454,6 @@ ORDER BY   civicrm_email.is_bulkmail DESC
     while ($mg->fetch()) {
       $groups[] = $mg->name;
     }
-    $mg->free();
     return $groups;
   }
 
@@ -2156,19 +2157,7 @@ ORDER BY   civicrm_email.is_bulkmail DESC
     $action = array_sum(array_keys($actionLinks));
 
     $report['event_totals']['actionlinks'] = [];
-    foreach ([
-               'clicks',
-               'clicks_unique',
-               'queue',
-               'delivered',
-               'bounce',
-               'unsubscribe',
-               'forward',
-               'reply',
-               'opened',
-               'total_opened',//NYSS 10954
-               'optout',
-             ] as $key) {
+    foreach (['clicks', 'clicks_unique', 'queue', 'delivered', 'bounce', 'unsubscribe', 'forward', 'reply', 'opened', 'opened_unique', 'optout'] as $key) {
       $url = 'mailing/detail';
       $reportFilter = "reset=1&mailing_id_value={$mailing_id}";
       $searchFilter = "force=1&mailing_id=%%mid%%";
@@ -2210,7 +2199,7 @@ ORDER BY   civicrm_email.is_bulkmail DESC
           $searchFilter .= "&mailing_open_status=Y&unique_opens_value=1";
           break;
 
-        case 'total_opened':
+        case 'opened_unique':
           $url = "mailing/opened";
           $searchFilter .= "&mailing_open_status=Y";
           break;
@@ -3187,6 +3176,13 @@ ORDER BY civicrm_mailing.name";
       'id' => $id,
       'return' => 'visibility',
     ])) === 'Public Pages') {
+
+      // if hash setting is on then we change the public url into a hash
+      $hash = CRM_Mailing_BAO_Mailing::getMailingHash($id);
+      if (!empty($hash)) {
+        $id = $hash;
+      }
+
       return CRM_Utils_System::url('civicrm/mailing/view', ['id' => $id], $absolute, NULL, TRUE, TRUE);
     }
   }

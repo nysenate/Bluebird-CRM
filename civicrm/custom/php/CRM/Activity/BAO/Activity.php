@@ -329,7 +329,7 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
 
     // CRM-9137
     if (!empty($params['id'])) {
-      CRM_Utils_Hook::pre('edit', 'Activity', $activity->id, $params);
+      CRM_Utils_Hook::pre('edit', 'Activity', $params['id'], $params);
     }
     else {
       CRM_Utils_Hook::pre('create', 'Activity', NULL, $params);
@@ -753,8 +753,8 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
       GROUP BY activity_id', [
         1 => [
           CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_ActivityContact', 'record_type_id', 'Activity Targets'),
-          'Integer'
-        ]
+          'Integer',
+        ],
       ])->fetchAll();
     }
     foreach ($targetCount as $activityTarget) {
@@ -2458,7 +2458,7 @@ INNER JOIN  civicrm_option_group grp ON (grp.id = option_group_id AND grp.name =
   }
 
   /**
-   * Checks if user has permissions to edit inbound e-mails, either bsic info
+   * Checks if user has permissions to edit inbound e-mails, either basic info
    * or both basic information and content.
    *
    * @return bool
@@ -2581,6 +2581,8 @@ INNER JOIN  civicrm_option_group grp ON (grp.id = option_group_id AND grp.name =
           $firstTargetName = reset($values['target_contact_name']);
           $firstTargetContactID = key($values['target_contact_name']);
 
+          // The first target may not be accessable to the logged in user dev/core#1052
+          if ($firstTargetName) {
           $targetLink = CRM_Utils_System::href($firstTargetName, 'civicrm/contact/view', "reset=1&cid={$firstTargetContactID}");
           if ($showContactOverlay) {
             $targetTypeImage = CRM_Contact_BAO_Contact_Utils::getImage(
@@ -2598,6 +2600,7 @@ INNER JOIN  civicrm_option_group grp ON (grp.id = option_group_id AND grp.name =
           }
           if ($showContactOverlay) {
             $activity['target_contact_name'] .= "</div> ";
+            }
           }
         }
         elseif (!$values['target_contact_name']) {

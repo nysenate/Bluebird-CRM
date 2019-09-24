@@ -121,8 +121,7 @@ class CRM_Case_Page_AJAX {
                                   <tr><td>" . ts('Case Type') . "</td><td>{$caseTypes[$case['case_type_id']]}</td></tr>
                                   <tr><td>" . ts('Case Status') . "</td><td>{$caseStatuses[$case['status_id']]}</td></tr>
                                   <tr><td>" . ts('Case Start Date') . "</td><td>" . CRM_Utils_Date::customFormat($case['start_date']) . "</td></tr>
-                                  <tr><td>" . ts('Case End Date') . "</td><td></td></tr>" . CRM_Utils_Date::customFormat($case['end_date']) . "
-                                  <tr><td colspan=2><a class='medium-popup action-item crm-hover-button' href=\"" . CRM_Utils_System::url('civicrm/contact/view/case', "id=$caseId&cid=$cid&action=view") . "\" > " . ts('Manage Case') . "</a></td><tr></table>";
+                                  <tr><td>" . ts('Case End Date') . "</td><td></td></tr>" . CRM_Utils_Date::customFormat($case['end_date']) . "</table>";
 
     if (CRM_Utils_Array::value('snippet', $_GET) == 'json') {
       CRM_Core_Page_AJAX::returnJsonResponse($caseDetails);

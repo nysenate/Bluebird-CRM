@@ -114,13 +114,13 @@
     </tr>
 {/if}
 
-<tr class="crm-case-form-block-tag_set"><td colspan="2">{include file="CRM/common/Tagset.tpl" tagsetType='case'}</td></tr>
-
 <tr class="crm-case-form-block-custom_data">
     <td colspan="2">
       {include file="CRM/common/customDataBlock.tpl"}
     </td>
 </tr>
+
+<tr class="crm-case-form-block-tag_set"><td colspan="2">{include file="CRM/common/Tagset.tpl" tagsetType='case'}</td></tr>
 
 </table>
 {/if}

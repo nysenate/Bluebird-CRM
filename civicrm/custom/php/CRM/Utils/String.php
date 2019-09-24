@@ -296,7 +296,7 @@ class CRM_Utils_String {
       }
       return $match;
     }
-    return CRM_Core_DAO::$_nullArray;
+    return [];
   }
 
   /**

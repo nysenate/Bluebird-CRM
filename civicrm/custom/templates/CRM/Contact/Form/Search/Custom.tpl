@@ -40,11 +40,7 @@
                 {if $element neq 'tag'}{*NYSS*}
                 <tr class="crm-contact-custom-search-form-row-{$element}">
                     <td class="label">{$form.$element.label}</td>
-                    {if $element|strstr:'_date'}
-                        <td>{include file="CRM/common/jcalendar.tpl" elementName=$element}</td>
-                    {else}
-                        <td>{$form.$element.html}</td>
-                    {/if}
+                    <td>{$form.$element.html}</td>
                 </tr>
                 {/if}
             {/foreach}

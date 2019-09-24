@@ -111,7 +111,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
   /**
    * Survey activity.
    *
-   * @var boolean
+   * @var bool
    */
   protected $_isSurveyActivity;
 
@@ -133,11 +133,12 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
    * Note: This is a class property so that child classes can turn off this
    * behavior (e.g. in CRM_Case_Form_Activity)
    *
-   * @var boolean
+   * @var bool
    *
    */
-
   protected $supportsActivitySeparation = TRUE;
+
+  public $submitOnce = TRUE;
 
   /**
    * Explicitly declare the entity api name.
@@ -279,7 +280,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
 
     if ($this->_action & CRM_Core_Action::DELETE) {
       if (!CRM_Core_Permission::check('delete activities')) {
-        CRM_Core_Error::fatal(ts('You do not have permission to access this page.'));
+        CRM_Core_Error::statusBounce(ts('You do not have permission to access this page.'));
       }
     }
 
@@ -308,7 +309,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
       ]) &&
       !CRM_Activity_BAO_Activity::checkPermission($this->_activityId, $this->_action)
     ) {
-      CRM_Core_Error::fatal(ts('You do not have permission to access this page.'));
+      CRM_Core_Error::statusBounce(ts('You do not have permission to access this page.'));
     }
     if (($this->_action & CRM_Core_Action::VIEW) &&
       CRM_Activity_BAO_Activity::checkPermission($this->_activityId, CRM_Core_Action::UPDATE)
@@ -331,8 +332,6 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
         $this->_activityTypeName = $activityTName[$this->_activityTypeId];
         $this->assign('activityTName', $activityTName[$this->_activityTypeId]);
       }
-    }
-
     // Set title.
     if (isset($activityTName)) {
       $activityName = CRM_Utils_Array::value($this->_activityTypeId, $activityTName);
@@ -348,6 +347,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
       else {
         CRM_Utils_System::setTitle(ts('%1 Activity', [1 => $activityName]));
       }
+    }
     }
 
     // Check the mode when this form is called either single or as
@@ -606,7 +606,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
     }
 
     // CRM-15472 - 50 is around the practical limit of how many items a select2 entityRef can handle
-    if ($this->_action == 2 && !empty($defaults['target_contact_id'])) {
+    if ($this->_action == CRM_Core_Action::UPDATE && !empty($defaults['target_contact_id'])) {
       $count = count(is_array($defaults['target_contact_id']) ? $defaults['target_contact_id'] : explode(',', $defaults['target_contact_id']));
       //NYSS 11464
       if ($count > 250) {
@@ -633,6 +633,12 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
     return $defaults;
   }
 
+  /**
+   * Build Quick form.
+   *
+   * @throws \CRM_Core_Exception
+   * @throws \CiviCRM_API3_Exception
+   */
   public function buildQuickForm() {
     if ($this->_action & (CRM_Core_Action::DELETE | CRM_Core_Action::RENEW)) {
       //enable form element (ActivityLinks sets this true)
@@ -827,7 +833,6 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
           'type' => 'upload',
           'name' => ts('Save'),
           'isDefault' => TRUE,
-          'submitOnce' => TRUE,
         ],
         [
           'type' => 'cancel',
@@ -879,15 +884,17 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
       $errors['activity_type_id'] = ts('Activity Type is a required field');
     }
 
-    if (CRM_Utils_Array::value('activity_type_id', $fields) == 3 &&
-      CRM_Utils_Array::value('status_id', $fields) == 1
-    ) {
+    $activity_type_id = CRM_Utils_Array::value('activity_type_id', $fields);
+    $activity_status_id = CRM_Utils_Array::value('status_id', $fields);
+    $scheduled_status_id = CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'status_id', 'Scheduled');
+
+    if ($activity_type_id && $activity_status_id == $scheduled_status_id) {
+      if ($activity_type_id == CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'activity_type_id', 'Email')) {
       $errors['status_id'] = ts('You cannot record scheduled email activity.');
     }
-    elseif (CRM_Utils_Array::value('activity_type_id', $fields) == 4 &&
-      CRM_Utils_Array::value('status_id', $fields) == 1
-    ) {
-      $errors['status_id'] = ts('You cannot record scheduled SMS activity.');
+      elseif ($activity_type_id == CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'activity_type_id', 'SMS')) {
+        $errors['status_id'] = ts('You cannot record scheduled SMS activity');
+      }
     }
 
     if (!empty($fields['followup_activity_type_id']) && empty($fields['followup_date'])) {
@@ -915,23 +922,39 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
    *
    *
    * @param array $params
+   *
    * @return array|null
+   * @throws \CiviCRM_API3_Exception
    */
   public function postProcess($params = NULL) {
     if ($this->_action & CRM_Core_Action::DELETE) {
-      $deleteParams = ['id' => $this->_activityId];
-      $moveToTrash = CRM_Case_BAO_Case::isCaseActivity($this->_activityId);
+      // Look up any repeat activities to be deleted.
+      $activityIds = array_column(CRM_Core_BAO_RecurringEntity::getEntitiesFor($this->_activityId, 'civicrm_activity', TRUE, NULL), 'id');
+      if (!$activityIds) {
+        // There are no repeat activities to delete - just this one.
+        $activityIds = [$this->_activityId];
+      }
+
+      // Delete each activity.
+      foreach ($activityIds as $activityId) {
+        $deleteParams = ['id' => $activityId];
+        $moveToTrash = CRM_Case_BAO_Case::isCaseActivity($activityId);
       CRM_Activity_BAO_Activity::deleteActivity($deleteParams, $moveToTrash);
 
       // delete tags for the entity
       $tagParams = [
         'entity_table' => 'civicrm_activity',
-        'entity_id' => $this->_activityId,
+          'entity_id' => $activityId,
       ];
 
       CRM_Core_BAO_EntityTag::del($tagParams);
+      }
 
-      CRM_Core_Session::setStatus(ts("Selected Activity has been deleted successfully."), ts('Record Deleted'), 'success');
+      CRM_Core_Session::setStatus(
+        ts("Selected Activity has been deleted successfully.", ['plural' => '%count Activities have been deleted successfully.', 'count' => count($activityIds)]),
+        ts('Record Deleted', ['plural' => 'Records Deleted', 'count' => count($activityIds)]), 'success'
+      );
+
       return NULL;
     }
 
@@ -1004,6 +1027,17 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
     else {
       // save activity
       $activity = $this->processActivity($params);
+    }
+
+    // Redirect to contact page or activity view in standalone mode
+    if ($this->_context == 'standalone') {
+      if (count($params['target_contact_id']) == 1) {
+        $url = CRM_Utils_System::url('civicrm/contact/view', ['cid' => CRM_Utils_Array::first($params['target_contact_id']), 'selectedChild' => 'activity']);
+      }
+      else {
+        $url = CRM_Utils_System::url('civicrm/activity', ['action' => 'view', 'reset' => 1, 'id' => $this->_activityId]);
+      }
+      CRM_Core_Session::singleton()->pushUserContext($url);
     }
 
     $activityIds = empty($this->_activityIds) ? [$this->_activityId] : $this->_activityIds;

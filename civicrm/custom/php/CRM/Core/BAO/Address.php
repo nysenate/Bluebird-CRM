@@ -162,6 +162,10 @@ class CRM_Core_BAO_Address extends CRM_Core_DAO_Address {
     $address->save();
 
     if ($address->id) {
+      if (isset($params['custom'])) {
+        $addressCustom = $params['custom'];
+      }
+      else {
       $customFields = CRM_Core_BAO_CustomField::getFields('Address', FALSE, TRUE, NULL, NULL, FALSE, FALSE, $checkPermissions);
 
       if (!empty($customFields)) {
@@ -171,6 +175,7 @@ class CRM_Core_BAO_Address extends CRM_Core_DAO_Address {
           FALSE,
           $checkPermissions
         );
+      }
       }
       if (!empty($addressCustom)) {
         CRM_Core_BAO_CustomValueTable::store($addressCustom, 'civicrm_address', $address->id);
@@ -1097,7 +1102,6 @@ SELECT is_primary,
       $addressDAO->copyValues($params);
       $addressDAO->id = $dao->id;
       $addressDAO->save();
-      $addressDAO->free();
     }
   }
 
@@ -1353,6 +1357,9 @@ SELECT is_primary,
           }
         }
         if (!empty($props['country_id'])) {
+          if (!CRM_Utils_Rule::commaSeparatedIntegers(implode(',', (array) $props['country_id']))) {
+            throw new CRM_Core_Exception(ts('Province limit or default country setting is incorrect'));
+          }
           $params['condition'] = 'country_id IN (' . implode(',', (array) $props['country_id']) . ')';
         }
         break;
@@ -1365,6 +1372,9 @@ SELECT is_primary,
         if ($context != 'get' && $context != 'validate') {
           $config = CRM_Core_Config::singleton();
           if (!empty($config->countryLimit) && is_array($config->countryLimit)) {
+            if (!CRM_Utils_Rule::commaSeparatedIntegers(implode(',', $config->countryLimit))) {
+              throw new CRM_Core_Exception(ts('Available Country setting is incorrect'));
+            }
             $params['condition'] = 'id IN (' . implode(',', $config->countryLimit) . ')';
           }
         }
@@ -1373,6 +1383,9 @@ SELECT is_primary,
       // Filter county list based on chosen state
       case 'county_id':
         if (!empty($props['state_province_id'])) {
+          if (!CRM_Utils_Rule::commaSeparatedIntegers(implode(',', (array) $props['state_province_id']))) {
+            throw new CRM_Core_Exception(ts('Can only accept Integers for state_province_id filtering'));
+          }
           $params['condition'] = 'state_province_id IN (' . implode(',', (array) $props['state_province_id']) . ')';
         }
         break;
