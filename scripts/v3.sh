@@ -43,6 +43,10 @@ $drush $instance pm-enable chain_menu_access -y
 $drush $instance pm-enable ldap_user -y
 $drush $instance pm-enable ctools -y
 
+## disable massmerge
+$drush $instance pm-disable nyss_massmerge -y
+$execSql -i $instance -c "DELETE FROM system WHERE type='module' AND name='nyss_massmerge';" --drupal -q
+
 ## install extensions
 echo "$prog: install extensions"
 $drush $instance cvapi extension.install key=gov.nysenate.contact --quiet

@@ -104,7 +104,7 @@ function _bbSetupHeader() {
     if (in_array($user_role, $job_roles)) {
       $jobId = (isset($_SESSION['CiviCRM']['jobID']) && $_SESSION['CiviCRM']['jobID']) ?
         '<span id="bbCurrentJobId"> :: '.$_SESSION['CiviCRM']['jobID']."</span>" : '';
-      $jobblock .= " &raquo; [<a href='#' title='Set SOS Job ID' onclick='setJobID();return false;'>Job #</a>{$jobId}]";
+      $jobblock .= " &raquo; [<a href='#' title='Set SOS Job ID' id='bbSetJobId'>Job #</a>{$jobId}]";
 
       break;
     }
@@ -143,13 +143,18 @@ function bb_buildRecentItemsList() {
       <ul id="nyss-recentitems-list">
   ';
 
+  $i = 1;
   foreach ($recent as $item) {
+    if ($i > 5) break;
+
     $editUrl = (!empty($item['edit_url'])) ?
       " (<a href='{$item['edit_url']}'><span class='nyss-recentitems-edit'>edit</span></a>)" : '';
     $icon = CRM_Utils_Array::value($item['type'], $icons);
     $html .= "
       <li><i class='nyss-i {$icon}'></i>&nbsp;<a href='{$item['url']}'>{$item['title']}</a>{$editUrl}</li>
     ";
+
+    $i++;
   }
 
   $html .= '</ul></div>';

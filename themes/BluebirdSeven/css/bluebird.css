@@ -4,19 +4,6 @@ body.page-civicrm.admin-menu.adminimal-menu:before {
 #page {
   padding-top: 0;
 }
-#bb-header {
-  top: -10px;
-  position: relative;
-  float: right;
-  margin-right: 50px;
-  font-size: 70%;
-  text-align: right;
-  line-height: normal;
-  color: white;
-}
-#bb-sitejob a {
-  color: white;
-}
 .bb-footer-left {
   text-align: left;
   float: left;
@@ -34,6 +21,9 @@ ul#civicrm-menu.sm {
   background: #DADAD2 url(../images/bluebirds_55x26.png) no-repeat scroll 97% bottom;
   border-top: 2px solid #393D3F;
 }
+ul#civicrm-menu.sm ul {
+  padding: 0;
+}
 
 .page-civicrm-contact-view .crm-actions-ribbon {
   padding: 10px !important;
@@ -43,18 +33,17 @@ ul#civicrm-menu.sm {
   z-index: 10;
   width: 100%;
   bottom: 0;
-  padding: 20px 40px 0 40px !important;
+  padding: 10px 0 !important;
   font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
 }
 .page-civicrm #page {
   margin-top: 0;
-  margin-bottom: 50px;
+  margin-bottom: 30px !important;
 }
 .page-civicrm div#printer-friendly {
-  top: 84px !important;
-  right: 15px !important;
+  top: -6px !important;
+  right: -25px !important;
   z-index: 50;
-  position: fixed !important;
 }
 
 #bb-header-title h1.page-title {
@@ -78,16 +67,20 @@ ul#civicrm-menu.sm {
   display: none;
 }
 .page-civicrm.page-civicrm-contact-view #page {
-  margin-top: 64px;
+  margin-top: 12px;
+  margin-bottom: 66px !important;
 }
 
 /*contact summary + tabs*/
 .bb-contactsummary {
   margin-right: 30px;
   margin-top: 10px;
-  font-size: 95%;
+  font-size: 0.9em;
   float: right;
   text-align: right;
+}
+.page-civicrm.page-civicrm-contact-view #crm-container div#printer-friendly {
+  color: white;
 }
 .page-civicrm-contact-view .ui-tabs-panel>div.help {
   padding: 10px !important;
@@ -101,6 +94,7 @@ ul#civicrm-menu.sm {
 .page-civicrm-contact-view #crm-container div.crm-summary-contactname-block,
 .page-civicrm-contact-view:not([class*='page-civicrm-contact-view-']) #crm-container div.crm-summary-contactname-block {
   min-height: 56px;
+  padding-top: 0;
 }
 .page-civicrm-contact-view .crm-contact-page #mainTabContainer .ui-tabs-panel {
   padding: 10px !important;
@@ -183,4 +177,38 @@ ul#civicrm-menu.sm {
 #crm-container #existing-dashlets-col-1 {
   width: 0 !important;
   display: none;
+}
+
+/*Footer*/
+#bb-header {
+  float: right;
+  margin-right: 50px;
+  font-size: 0.7em;
+  text-align: right;
+  line-height: normal;
+  color: white;
+}
+#bb-sitejob a {
+  color: white;
+}
+
+/*Recent Items - Footer*/
+#nyss-recentitems {
+  font-size: 0.7em;
+  color: white;
+  padding-left: 46px;
+  width: 70%;
+  float: left;
+  line-height: normal;
+}
+#nyss-recentitems-list {
+  list-style-type: none;
+  margin: 0;
+}
+#nyss-recentitems-list li {
+  display: inline;
+  margin-right: 6px;
+}
+#nyss-recentitems-list li a {
+  color: white;
 }
