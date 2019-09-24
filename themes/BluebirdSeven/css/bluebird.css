@@ -2,13 +2,14 @@ body.page-civicrm.admin-menu.adminimal-menu:before {
   height: auto;
 }
 #bb-header {
-  top: -5px;
+  top: -10px;
   position: relative;
   float: right;
   margin-right: 50px;
   font-size: 70%;
   text-align: right;
   line-height: normal;
+  color: white;
 }
 #bb-sitejob a {
   color: white;
@@ -22,8 +23,12 @@ body.page-civicrm.admin-menu.adminimal-menu:before {
   float: right;
 }
 
-ul#civicrm-menu {
-  background: white url(../images/bluebirds_55x26.png) no-repeat scroll 98% bottom;
+.page-civicrm #crm-main-content-wrapper {
+  background: none !important;
+}
+
+ul#civicrm-menu.sm {
+  background: white url(../images/bluebirds_55x26.png) no-repeat scroll 97% bottom;
 }
 
 .page-civicrm-contact-view .crm-actions-ribbon {
@@ -34,6 +39,8 @@ ul#civicrm-menu {
   z-index: 1;
   width: 100%;
   top: 40px;
+  padding: 20px 0 0 !important;
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
 }
 .page-civicrm #page {
   margin-top: 90px;
@@ -43,11 +50,24 @@ ul#civicrm-menu {
   right: 15px !important;
   z-index: 50;
   position: fixed !important;
+  color: white;
+}
+.page-civicrm div#printer-friendly i {
+  color: white;
+}
+#branding h1.page-title {
+  width: 100%;
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+  font-weight: 600;
+  padding: 0 40px !important;
+  background-color: white;
+  line-height: 50px !important;
+  color: rgb(70, 67, 84);
 }
 
 /*display branding bar (breadcrumbs, etc.), printer icon, on contact page*/
 .page-civicrm-contact-view #branding,
-.page-civicrm-contact-view:not([class*='page-civicrm-contact-view-']) #brandin {
+.page-civicrm-contact-view:not([class*='page-civicrm-contact-view-']) #branding {
   display: block !important;
   min-height: 34px;
 }
