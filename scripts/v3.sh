@@ -33,6 +33,7 @@ echo "set default theme to BluebirdSeven..."
 $drush $instance pm-enable BluebirdSeven -y
 $drush $instance vset theme_default BluebirdSeven -y
 $drush $instance vset admin_theme BluebirdSeven -y
+$drush $instance pm-disable Bluebird -y
 
 ## enable menu/admin modules
 echo "enable menu/admin modules..."
