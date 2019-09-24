@@ -126,10 +126,10 @@ class CRM_Event_BAO_Query extends CRM_Core_BAO_Query {
       }
 
       if (!empty($query->_returnProperties['event_type_id'])) {
-        $query->_select['event_type_id'] = "event_type.id as event_type_id";
+        $query->_select['event_type_id'] = "civicrm_event.event_type_id as event_type_id";
         $query->_element['event_type_id'] = 1;
-        $query->_tables['event_type'] = 1;
-        $query->_whereTables['event_type'] = 1;
+        $query->_tables['civicrm_event'] = 1;
+        $query->_whereTables['civicrm_event'] = 1;
       }
 
       //add status_id
@@ -238,7 +238,7 @@ class CRM_Event_BAO_Query extends CRM_Core_BAO_Query {
       if (substr($query->_params[$id][0], 0, 6) == 'event_' ||
         substr($query->_params[$id][0], 0, 12) == 'participant_'
       ) {
-        if ($query->_mode == CRM_Contact_BAO_QUERY::MODE_CONTACTS) {
+        if ($query->_mode == CRM_Contact_BAO_Query::MODE_CONTACTS) {
           $query->_useDistinct = TRUE;
         }
         $grouping = $query->_params[$id][3];
@@ -575,9 +575,30 @@ class CRM_Event_BAO_Query extends CRM_Core_BAO_Query {
   }
 
   /**
-   * @param CRM_Core_Form $form
+   * Get the metadata for fields to be included on the grant search form.
+   *
+   * @throws \CiviCRM_API3_Exception
+   */
+  public static function getSearchFieldMetadata() {
+    $fields = [
+      'participant_status_id',
+      'participant_register_date',
+    ];
+    $metadata = civicrm_api3('Participant', 'getfields', [])['values'];
+    return array_intersect_key($metadata, array_flip($fields));
+  }
+
+  /**
+   * Build the event search form.
+   *
+   * @param \CRM_Event_Form_Search $form
+   *
+   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public static function buildSearchForm(&$form) {
+    $form->addSearchFieldMetadata(['Participant' => self::getSearchFieldMetadata()]);
+    $form->addFormFieldsFromMetadata();
     $dataURLEventFee = CRM_Utils_System::url('civicrm/ajax/eventFee',
       "reset=1",
       FALSE, NULL, FALSE
@@ -608,23 +629,10 @@ class CRM_Event_BAO_Query extends CRM_Core_BAO_Query {
 
     CRM_Core_Form_Date::buildDateRange($form, 'event', 1, '_start_date_low', '_end_date_high', ts('From'), FALSE);
 
-    CRM_Core_Form_Date::buildDateRange($form, 'participant', 1, '_register_date_low', '_register_date_high', ts('From'), FALSE);
-
     $form->addElement('hidden', 'event_date_range_error');
-    $form->addElement('hidden', 'participant_date_range_error');
     $form->addFormRule(['CRM_Event_BAO_Query', 'formRule'], $form);
 
     $form->addElement('checkbox', "event_include_repeating_events", NULL, ts('Include participants from all events in the %1 series', [1 => '<em>%1</em>']));
-
-    $form->addSelect('participant_status_id',
-      [
-        'entity' => 'participant',
-        'label' => ts('Participant Status'),
-        'multiple' => 'multiple',
-        'option_url' => NULL,
-        'placeholder' => ts('- any -'),
-      ]
-    );
 
     $form->addSelect('participant_role_id',
       [
@@ -676,7 +684,7 @@ class CRM_Event_BAO_Query extends CRM_Core_BAO_Query {
   public static function formRule($fields, $files, $form) {
     $errors = [];
 
-    if ((empty($fields['event_start_date_low']) || empty($fields['event_end_date_high'])) && (empty($fields['participant_register_date_low']) || empty($fields['participant_register_date_high']))) {
+    if ((empty($fields['event_start_date_low']) || empty($fields['event_end_date_high']))) {
       return TRUE;
     }
     $lowDate = strtotime($fields['event_start_date_low']);
@@ -686,12 +694,6 @@ class CRM_Event_BAO_Query extends CRM_Core_BAO_Query {
       $errors['event_date_range_error'] = ts('Please check that your Event Date Range is in correct chronological order.');
     }
 
-    $lowDate1 = strtotime($fields['participant_register_date_low']);
-    $highDate1 = strtotime($fields['participant_register_date_high']);
-
-    if ($lowDate1 > $highDate1) {
-      $errors['participant_date_range_error'] = ts('Please check that your Registration Date Range is in correct chronological order.');
-    }
     return empty($errors) ? TRUE : $errors;
   }
 

@@ -131,6 +131,7 @@
       <keyColumn>name</keyColumn>
       <labelColumn>full_name</labelColumn>
       <nameColumn>name</nameColumn>
+      <abbrColumn>symbol</abbrColumn>
     </pseudoconstant>
     <html>
       <type>Select</type>
@@ -291,6 +292,9 @@
     <import>true</import>
     <export>false</export>
     <type>int unsigned</type>
+    <html>
+      <type>Select</type>
+    </html>
     <pseudoconstant>
       <optionGroupName>pledge_status</optionGroupName>
     </pseudoconstant>

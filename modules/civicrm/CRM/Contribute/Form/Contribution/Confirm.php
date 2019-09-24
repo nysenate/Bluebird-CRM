@@ -52,6 +52,8 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
    */
   public $_contributionID;
 
+  public $submitOnce = TRUE;
+
   /**
    * @param $form
    * @param $params
@@ -615,7 +617,6 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
         'name' => $contribButton,
         'spacing' => '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
         'isDefault' => TRUE,
-        'js' => ['onclick' => "return submitOnce(this,'" . $this->_name . "','" . ts('Processing') . "');"],
       ],
       [
         'type' => 'back',
@@ -892,7 +893,9 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
    *   Is this recurring?
    *
    * @return \CRM_Contribute_DAO_Contribution
-   * @throws \Exception
+   *
+   * @throws \CRM_Core_Exception
+   * @throws \CiviCRM_API3_Exception
    */
   public static function processFormContribution(
     &$form,
@@ -1575,8 +1578,13 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
         if (!empty($membershipContribution)) {
           // update recurring id for membership record
           CRM_Member_BAO_Membership::updateRecurMembership($membership, $membershipContribution);
-          // Next line is probably redundant. Checksprevent it happening twice.
-          CRM_Member_BAO_Membership::linkMembershipPayment($membership, $membershipContribution);
+          // Next line is probably redundant. Checks prevent it happening twice.
+          $membershipPaymentParams = [
+            'membership_id' => $membership->id,
+            'membership_type_id' => $membership->membership_type_id,
+            'contribution_id' => $membershipContribution->id,
+          ];
+          civicrm_api3('MembershipPayment', 'create', $membershipPaymentParams);
         }
         if ($membership) {
           CRM_Core_BAO_CustomValueTable::postProcess($form->_params, 'civicrm_membership', $membership->id, 'Membership');

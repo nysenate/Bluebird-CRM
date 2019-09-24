@@ -39,7 +39,7 @@ class CRM_Financial_Form_FinancialAccount extends CRM_Contribute_Form {
   /**
    * Flag if its a AR account type.
    *
-   * @var boolean
+   * @var bool
    */
   protected $_isARFlag = FALSE;
 
@@ -53,7 +53,7 @@ class CRM_Financial_Form_FinancialAccount extends CRM_Contribute_Form {
       $params = [
         'id' => $this->_id,
       ];
-      $financialAccount = CRM_Financial_BAO_FinancialAccount::retrieve($params, CRM_Core_DAO::$_nullArray);
+      $financialAccount = CRM_Financial_BAO_FinancialAccount::retrieve($params);
       $financialAccountTypeId = key(CRM_Core_PseudoConstant::accountOptionValues('financial_account_type', NULL, " AND v.name LIKE 'Asset' "));
       if ($financialAccount->financial_account_type_id == $financialAccountTypeId
         && strtolower($financialAccount->account_type_code) == 'ar'

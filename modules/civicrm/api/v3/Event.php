@@ -40,6 +40,8 @@
  *
  * @return array
  *   API result Array.
+ * @throws \CRM_Core_Exception
+ * @throws \API_Exception
  */
 function civicrm_api3_event_create($params) {
   // Required fields for creating an event
@@ -254,7 +256,7 @@ function _civicrm_api3_event_getlist_output($result, $request) {
         'id' => $row[$request['id_field']],
         'label' => $row[$request['label_field']],
         'description' => [
-          CRM_Core_Pseudoconstant::getLabel('CRM_Event_BAO_Event', 'event_type_id', $row['event_type_id']),
+          CRM_Core_PseudoConstant::getLabel('CRM_Event_BAO_Event', 'event_type_id', $row['event_type_id']),
         ],
       ];
       if (!empty($row['start_date'])) {

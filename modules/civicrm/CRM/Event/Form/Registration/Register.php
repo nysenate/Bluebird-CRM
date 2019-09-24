@@ -37,29 +37,32 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration {
 
   /**
    * The fields involved in this page.
+   *
    * @var array
    */
   public $_fields;
 
   /**
    * The status message that user view.
-   * @var sting
+   *
+   * @var string
    */
-  protected $_waitlistMsg = NULL;
-  protected $_requireApprovalMsg = NULL;
+  protected $_waitlistMsg;
+  protected $_requireApprovalMsg;
 
   /**
    * Deprecated parameter that we hope to remove.
    *
    * @var bool
    */
-  public $_quickConfig = NULL;
+  public $_quickConfig;
 
   /**
    * Skip duplicate check.
    *
    * This can be set using hook_civicrm_buildForm() to override the registration dupe check.
    * CRM-7604
+   *
    * @var bool
    */
   public $_skipDupeRegistrationCheck = FALSE;
@@ -69,12 +72,14 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration {
   /**
    * Show fee block or not.
    *
-   * @var boolean determines if fee block should be shown or hidden
+   * @var bool
    */
   public $_noFees;
 
   /**
-   * @var array Fee Block
+   * Fee Block.
+   *
+   * @var array
    */
   public $_feeBlock;
 
@@ -86,6 +91,38 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration {
    * @var array
    */
   public $_paymentFields = [];
+
+  /**
+   * Is this submission incurring no costs.
+   *
+   * @param array $fields
+   * @param \CRM_Event_Form_Registration_Register $form
+   *
+   * @return bool
+   */
+  protected static function isZeroAmount($fields, $form): bool {
+    $isZeroAmount = FALSE;
+    if (!empty($fields['priceSetId'])) {
+      if (CRM_Utils_Array::value('amount', $fields) == 0) {
+        $isZeroAmount = TRUE;
+      }
+    }
+    elseif (!empty($fields['amount']) &&
+      (isset($form->_values['discount'][$fields['amount']])
+        && CRM_Utils_Array::value('value', $form->_values['discount'][$fields['amount']]) == 0
+      )
+    ) {
+      $isZeroAmount = TRUE;
+    }
+    elseif (!empty($fields['amount']) &&
+      (isset($form->_values['fee'][$fields['amount']])
+        && CRM_Utils_Array::value('value', $form->_values['fee'][$fields['amount']]) == 0
+      )
+    ) {
+      $isZeroAmount = TRUE;
+    }
+    return $isZeroAmount;
+  }
 
   /**
    * Get the contact id for the registration.
@@ -109,6 +146,8 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration {
 
   /**
    * Set variables up before form is built.
+   *
+   * @throws \CRM_Core_Exception
    */
   public function preProcess() {
     parent::preProcess();
@@ -151,6 +190,11 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration {
 
   /**
    * Set default values for the form.
+   *
+   * @return array
+   *
+   * @throws \CRM_Core_Exception
+   * @throws \CiviCRM_API3_Exception
    */
   public function setDefaultValues() {
     $this->_defaults = [];
@@ -380,7 +424,7 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration {
     }
     if ($this->getContactID() === 0 && !$this->_values['event']['is_multiple_registrations']) {
       //@todo we are blocking for multiple registrations because we haven't tested
-      $this->addCidZeroOptions($onlinePaymentProcessorEnabled);
+      $this->addCIDZeroOptions($onlinePaymentProcessorEnabled);
     }
     if (!empty($this->_values['event']['is_pay_later']) &&
       ($this->_allowConfirmation || (!$this->_requireApproval && !$this->_allowWaitlist))
@@ -461,10 +505,8 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration {
     ) {
 
       //freeze button to avoid multiple calls.
-      $js = NULL;
-
       if (empty($this->_values['event']['is_monetary'])) {
-        $js = ['onclick' => "return submitOnce(this,'" . $this->_name . "','" . ts('Processing') . "');"];
+        $this->submitOnce = TRUE;
       }
 
       // CRM-11182 - Optional confirmation screen
@@ -486,7 +528,6 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration {
           'name' => $buttonLabel,
           'spacing' => '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
           'isDefault' => TRUE,
-          'js' => $js,
         ],
       ]);
     }
@@ -509,6 +550,8 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration {
    *   True if you want to add formRule.
    * @param int $discountId
    *   Discount id for the event.
+   *
+   * @throws \CRM_Core_Exception
    */
   public static function buildAmount(&$form, $required = TRUE, $discountId = NULL) {
     // build amount only when needed, skip incase of event full and waitlisting is enabled
@@ -776,11 +819,12 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration {
    *   The input form values.
    * @param array $files
    *   The uploaded files if any.
-   * @param CRM_Event_Form_Registration $form
-   *
+   * @param \CRM_Event_Form_Registration_Register $form
    *
    * @return bool|array
    *   true if no errors, else array of errors
+   *
+   * @throws \CRM_Core_Exception
    */
   public static function formRule($fields, $files, $form) {
     $errors = [];
@@ -868,34 +912,12 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration {
         $errors['payment_processor_id'] = ts('Please select a Payment Method');
       }
 
-      $isZeroAmount = $skipPaymentValidation = FALSE;
-      if (!empty($fields['priceSetId'])) {
-        if (CRM_Utils_Array::value('amount', $fields) == 0) {
-          $isZeroAmount = TRUE;
-        }
-      }
-      elseif (!empty($fields['amount']) &&
-        (isset($form->_values['discount'][$fields['amount']])
-          && CRM_Utils_Array::value('value', $form->_values['discount'][$fields['amount']]) == 0
-        )
-      ) {
-        $isZeroAmount = TRUE;
-      }
-      elseif (!empty($fields['amount']) &&
-        (isset($form->_values['fee'][$fields['amount']])
-          && CRM_Utils_Array::value('value', $form->_values['fee'][$fields['amount']]) == 0
-        )
-      ) {
-        $isZeroAmount = TRUE;
-      }
-
-      if ($isZeroAmount && !($form->_forcePayement && !empty($fields['additional_participants']))) {
-        $skipPaymentValidation = TRUE;
+      if (self::isZeroAmount($fields, $form)) {
+        return empty($errors) ? TRUE : $errors;
       }
 
       // also return if zero fees for valid members
       if (!empty($fields['bypass_payment']) ||
-        $skipPaymentValidation ||
         (!$form->_allowConfirmation && ($form->_requireApproval || $form->_allowWaitlist))
       ) {
         return empty($errors) ? TRUE : $errors;

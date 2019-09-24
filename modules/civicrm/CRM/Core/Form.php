@@ -190,6 +190,11 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
   protected $context;
 
   /**
+   * @var bool
+   */
+  public $submitOnce = FALSE;
+
+  /**
    * @return string
    */
   public function getContext() {
@@ -627,6 +632,10 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
     ) {
       $this->setAttribute('data-warn-changes', 'true');
     }
+
+    if ($this->submitOnce) {
+      $this->setAttribute('data-submit-once', 'true');
+    }
   }
 
   /**
@@ -642,7 +651,7 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
     $prevnext = $spacing = [];
     foreach ($params as $button) {
       if (!empty($button['submitOnce'])) {
-        $button['js']['onclick'] = "return submitOnce(this,'{$this->_name}','" . ts('Processing') . "');";
+        $this->submitOnce = TRUE;
       }
 
       $attrs = ['class' => 'crm-form-submit'] + (array) CRM_Utils_Array::value('js', $button);
@@ -767,6 +776,13 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
   }
 
   /**
+   * @return int
+   */
+  public function getPaymentProcessorID() {
+    return $this->_paymentProcessorID;
+  }
+
+  /**
    * This if a front end form function for setting the payment processor.
    *
    * It would be good to sync it with the back-end function on abstractEditPayment & use one everywhere.
@@ -830,6 +846,8 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
       $this->_params = array_merge($this->_params, $addressParams);
     }
 
+    // @fixme it would be really nice to have a comment here so I had a clue why we are setting $fields[$name] = 1
+    // Also how does relate to similar code in CRM_Contact_BAO_Contact::addBillingNameFieldsIfOtherwiseNotSet()
     $nameFields = ['first_name', 'middle_name', 'last_name'];
     foreach ($nameFields as $name) {
       $fields[$name] = 1;
@@ -878,9 +896,8 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
       else {
         $this->_paymentProcessor = [];
       }
-      CRM_Financial_Form_Payment::addCreditCardJs($this->_paymentProcessorID);
     }
-    $this->assign('paymentProcessorID', $this->_paymentProcessorID);
+
     // We save the fact that the profile 'billing' is required on the payment form.
     // Currently pay-later is the only 'processor' that takes notice of this - but ideally
     // 1) it would be possible to select the minimum_billing_profile_id for the contribution form
@@ -1247,7 +1264,7 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
    * @param string $nextType
    *   Button type for the form after processing.
    * @param string $backType
-   * @param bool|string $submitOnce If true, add javascript to next button submit which prevents it from being clicked more than once
+   * @param bool|string $submitOnce
    */
   public function addDefaultButtons($title, $nextType = 'next', $backType = 'back', $submitOnce = FALSE) {
     $buttons = [];
@@ -1264,7 +1281,7 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
         'isDefault' => TRUE,
       ];
       if ($submitOnce) {
-        $nextButton['js'] = ['onclick' => "return submitOnce(this,'{$this->_name}','" . ts('Processing') . "');"];
+        $this->submitOnce = TRUE;
       }
       $buttons[] = $nextButton;
     }
@@ -1501,6 +1518,7 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
 
     $isSelect = (in_array($widget, [
       'Select',
+      'Select2',
       'CheckBoxGroup',
       'RadioGroup',
       'Radio',
@@ -1515,7 +1533,7 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
         $options = isset($fieldSpec['options']) ? $fieldSpec['options'] : NULL;
       }
       if ($context == 'search') {
-        $widget = 'Select';
+        $widget = $widget == 'Select2' ? $widget : 'Select';
         $props['multiple'] = CRM_Utils_Array::value('multiple', $props, TRUE);
       }
 
@@ -1591,12 +1609,13 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
         return $this->addChainSelect($name, $props);
 
       case 'Select':
+      case 'Select2':
         $props['class'] = CRM_Utils_Array::value('class', $props, 'big') . ' crm-select2';
         if (!array_key_exists('placeholder', $props)) {
           $props['placeholder'] = $required ? ts('- select -') : ($context == 'search' ? ts('- any -') : ts('- none -'));
         }
         // TODO: Add and/or option for fields that store multiple values
-        return $this->add('select', $name, $label, $options, $required, $props);
+        return $this->add(strtolower($widget), $name, $label, $options, $required, $props);
 
       case 'CheckBoxGroup':
         return $this->addCheckBox($name, $label, array_flip($options), $required, $props);
@@ -2127,7 +2146,7 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
   /**
    * Get the contact id that the form is being submitted for.
    *
-   * @return int|NULL
+   * @return int|null
    */
   public function getContactID() {
     return $this->setContactID();

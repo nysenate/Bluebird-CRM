@@ -2462,8 +2462,9 @@ class DB_DataObject extends DB_DataObject_Overload
             }
             return $this->raiseError($result);
         }
-
-        $action = strtolower(substr(trim($string),0,6));
+        // Strip any prepended comments
+        $queryString = (substr($string, 0, 2) === '/*') ? substr($string, strpos($string, '*/') + 2) : $string;
+        $action = strtolower(substr(trim($queryString),0,6));
 
         if (!empty($_DB_DATAOBJECT['CONFIG']['debug']) || defined('CIVICRM_DEBUG_LOG_QUERY')) {
           $timeTaken = sprintf("%0.6f", microtime(TRUE) - $time);

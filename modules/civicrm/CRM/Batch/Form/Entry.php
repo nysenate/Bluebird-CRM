@@ -122,6 +122,7 @@ class CRM_Batch_Form_Entry extends CRM_Core_Form {
       ->addSetting(['setting' => ['monetaryThousandSeparator' => CRM_Core_Config::singleton()->monetaryThousandSeparator]])
       ->addSetting(['setting' => ['monetaryDecimalPoint' => CRM_Core_Config::singleton()->monetaryDecimalPoint]]);
 
+    $this->assign('defaultCurrencySymbol', CRM_Core_BAO_Country::defaultCurrencySymbol());
   }
 
   /**
@@ -143,7 +144,7 @@ class CRM_Batch_Form_Entry extends CRM_Core_Form {
 
     $this->addElement('hidden', 'batch_id', $this->_batchId);
 
-    $batchTypes = CRM_Core_Pseudoconstant::get('CRM_Batch_DAO_Batch', 'type_id', ['flip' => 1], 'validate');
+    $batchTypes = CRM_Core_PseudoConstant::get('CRM_Batch_DAO_Batch', 'type_id', ['flip' => 1], 'validate');
     // get the profile information
     if ($this->_batchInfo['type_id'] == $batchTypes['Contribution']) {
       CRM_Utils_System::setTitle(ts('Batch Data Entry for Contributions'));
@@ -263,7 +264,8 @@ class CRM_Batch_Form_Entry extends CRM_Core_Form {
     // set an offset to account for other vars we are not counting
     $offset = 50;
     if ((count($this->_elementIndex) + $offset) > ini_get("max_input_vars")) {
-      CRM_Core_Error::fatal(ts('Batch size is too large. Increase value of php.ini setting "max_input_vars" (current val = ' . ini_get("max_input_vars") . ')'));
+      // Avoiding 'ts' for obscure messages.
+      CRM_Core_Error::fatal('Batch size is too large. Increase value of php.ini setting "max_input_vars" (current val = ' . ini_get("max_input_vars") . ')');
     }
 
     $this->assign('fields', $this->_fields);
@@ -298,7 +300,7 @@ class CRM_Batch_Form_Entry extends CRM_Core_Form {
    */
   public static function formRule($params, $files, $self) {
     $errors = [];
-    $batchTypes = CRM_Core_Pseudoconstant::get('CRM_Batch_DAO_Batch', 'type_id', ['flip' => 1], 'validate');
+    $batchTypes = CRM_Core_PseudoConstant::get('CRM_Batch_DAO_Batch', 'type_id', ['flip' => 1], 'validate');
     $fields = [
       'total_amount' => ts('Amount'),
       'financial_type' => ts('Financial Type'),
@@ -564,7 +566,7 @@ class CRM_Batch_Form_Entry extends CRM_Core_Form {
         $value['skipCleanMoney'] = TRUE;
         //finally call contribution create for all the magic
         $contribution = CRM_Contribute_BAO_Contribution::create($value);
-        $batchTypes = CRM_Core_Pseudoconstant::get('CRM_Batch_DAO_Batch', 'type_id', ['flip' => 1], 'validate');
+        $batchTypes = CRM_Core_PseudoConstant::get('CRM_Batch_DAO_Batch', 'type_id', ['flip' => 1], 'validate');
         if (!empty($this->_batchInfo['type_id']) && ($this->_batchInfo['type_id'] == $batchTypes['Pledge Payment'])) {
           $adjustTotalAmount = FALSE;
           if (isset($params['option_type'][$key])) {
@@ -859,6 +861,7 @@ class CRM_Batch_Form_Entry extends CRM_Core_Form {
           unset($value['membership_start_date']);
           unset($value['membership_end_date']);
           $ids = [];
+          // @todo stop passing empty $ids
           $membership = CRM_Member_BAO_Membership::create($value, $ids);
         }
 
