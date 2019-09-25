@@ -220,4 +220,14 @@ ul#civicrm-menu.sm ul {
 }
 
 /*changelog tab*/
-
+#changeLog .crm-report-form-block .crm-report-overlay td {
+  font-size: 0.95em;
+  padding: 10px;
+  width: 33% !important;
+}
+.page-civicrm-contact-view:not([class*='page-civicrm-contact-view-']) #crm-container #changeLog .crm-report-form-block .crm-report-overlay.form-layout-compressed {
+  width: 600px !important;
+}
+.crm-container #changeLog .crm-tooltip p {
+  color: #4d4d69;
+}
