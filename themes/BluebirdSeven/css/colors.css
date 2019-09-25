@@ -75,6 +75,13 @@ ul#civicrm-menu.sm li a {
 .crm-container .crm-accordion-header.crm-master-accordion-header a.helpicon:before {
   color: white;
 }
+.crm-container input.crm-form-submit.cancel {
+  color: white;
+}
+#contact-summary-relationship-tab h3,
+.view-contact-groups h3 {
+  color: white !important;
+}
 
 /*alternating row color*/
 .crm-container #changeLog table tr.odd-row,

@@ -99,6 +99,12 @@ ul#civicrm-menu.sm ul {
 .page-civicrm-contact-view .crm-contact-page #mainTabContainer .ui-tabs-panel {
   padding: 10px !important;
 }
+.page-civicrm-contact-view:not([class*='page-civicrm-contact-view-']) #crm-container #crm-contactname-content .crm-edit-help {
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100px;
+}
 
   /*login*/
 .not-logged-in,
@@ -212,3 +218,6 @@ ul#civicrm-menu.sm ul {
 #nyss-recentitems-list li a {
   color: white;
 }
+
+/*changelog tab*/
+
