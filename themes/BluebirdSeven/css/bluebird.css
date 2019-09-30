@@ -36,6 +36,10 @@ ul#civicrm-menu.sm ul {
   padding: 10px 0 !important;
   font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
 }
+.not-logged-in #branding,
+.not-logged-in div#bb-header-title {
+  display: none;
+}
 .page-civicrm #page {
   margin-top: 0;
   margin-bottom: 30px !important;
