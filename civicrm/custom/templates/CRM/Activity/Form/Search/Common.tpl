@@ -74,23 +74,18 @@
       </td></tr>
     </table>
   </td>
-  {if $form.activity_tags}
-    <td><label>{ts}Activity Tag(s){/ts}</label>
-      <div id="Tags" class="listing-box">
-        {foreach from=$form.activity_tags item="tag_val"}
-          <div class="{cycle values='odd-row,even-row'}">
-            {$tag_val.html}
-          </div>
-        {/foreach}
+</tr>
+
+{if $form.activity_tags}
+  <tr>
+    <td><label>{$form.activity_tags.label}</label>
+      <br/>
+      {$form.activity_tags.html}
     </td>
-  {else}
-    <td>&nbsp;</td>
-  {/if}
-</tr>
-{*NYSS 12559*}
-<tr>
-  <td colspan="2">{include file="CRM/common/Tagset.tpl" tagsetType='activity'}</td>
-</tr>
+    {*NYSS 12559*}
+    <td>{include file="CRM/common/Tagset.tpl" tagsetType='activity'}</td>
+  </tr>
+{/if}
 
 <tr>
   {include file="CRM/Core/DatePickerRangeWrapper.tpl" fieldName="activity_date_time" colspan="2"}
