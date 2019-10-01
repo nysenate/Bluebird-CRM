@@ -167,8 +167,12 @@ ul#civicrm-menu.sm ul {
 #block-menu-menu-non-admin-drupal-menu {
   position: fixed;
   top: 10px;
+  right: 30px;
   font-size: 120%;
   font-style: italic;
+}
+#block-menu-menu-non-admin-drupal-menu ul li {
+  list-style: none;
 }
 
 /*DASHBOARD*/
