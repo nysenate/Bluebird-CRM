@@ -75,12 +75,14 @@ ul#civicrm-menu.sm li a {
 .crm-container .crm-accordion-header.crm-master-accordion-header a.helpicon:before {
   color: white;
 }
-.crm-container input.crm-form-submit.cancel {
-  color: white;
+.crm-container input.crm-form-submit.cancel,
+.crm-container .crm-form-block .crm-submit-buttons .crm-button-type-back input.cancel {
+  color: white !important;
 }
 #contact-summary-relationship-tab h3,
 .view-contact-groups h3 {
   color: white !important;
+  background: #7EA5AF !important;
 }
 
 /*alternating row color*/
