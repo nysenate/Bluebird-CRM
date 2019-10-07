@@ -402,8 +402,12 @@ function export_civicrm_export($exportTempTable, $headerRows, $sqlColumns, $expo
 
       $componentDetails[] = $row;
     }
+
+    //create object so we can use class method to get name
+    $obj = new CRM_Export_BAO_ExportProcessor($exportMode, NULL, 'AND');
+
     CRM_Core_Report_Excel::writeCSVFile(
-      CRM_Export_BAO_Export::getExportFileName('csv', $exportMode),
+      $obj->getExportFileName(),
       $headerRows, $componentDetails, null, $writeHeader );
 
     $writeHeader = false;
