@@ -17,6 +17,9 @@ body.page-civicrm.admin-menu.adminimal-menu:before {
   background: none !important;
 }
 
+#civicrm-menu.sm #crm-qsearch-input {
+  font-family: FontAwesome,"Open Sans","Helvetica Neue",Helvetica,Arial,sans-serif;
+}
 ul#civicrm-menu.sm {
   background: #DADAD2 url(../images/bluebirds_55x26.png) no-repeat scroll 97% bottom;
   border-top: 2px solid #393D3F;
