@@ -678,8 +678,6 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
       }
 
       //NYSS 4764 -- run an email validation at this point and log as an invalid bounce if it fails
-      require_once 'packages/Mail/RFC822.php';
-
       $validEmail = Mail_RFC822::parseAddressList($recipient);
       //CRM_Core_Error::debug_var("Email validation parseAddressList", $validEmail);
       
