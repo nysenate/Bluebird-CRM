@@ -45,7 +45,7 @@ class CRM_Mailing_Form_Search extends CRM_Core_Form {
     );
     //NYSS
     $this->add( 'text', 'mailing_subject', ts( 'Mailing Subject' ),
-      CRM_Core_DAO::getAttribute('CRM_Mailing_DAO_Mailing', 'subject')
+      CRM_Core_DAO::getAttribute('CRM_Mailing_DAO_Mailing', 'title')
     );
                 
     CRM_Core_Form_Date::buildDateRange($this, 'mailing', 1, '_from', '_to', ts('From'), FALSE);

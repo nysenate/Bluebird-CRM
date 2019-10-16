@@ -252,3 +252,8 @@ ul#civicrm-menu.sm ul {
 .crm-container #changeLog .crm-tooltip p {
   color: #4d4d69;
 }
+
+/*Mailing*/
+.page-civicrm-mailing.page-civicrm #crm-main-content-wrapper {
+  background-color: white !important;
+}

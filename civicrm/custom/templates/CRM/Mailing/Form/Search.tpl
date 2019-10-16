@@ -31,7 +31,7 @@
         </td>
         {*NYSS*}
         <td>{$form.mailing_subject.label}<br />
-          {$form.mailing_subject.html|crmReplace:class:big}
+          {$form.mailing_subject.html|crmAddClass:big}
         </td>
     </tr>
     <tr>
