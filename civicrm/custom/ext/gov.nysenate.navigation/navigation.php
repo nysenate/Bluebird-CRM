@@ -183,21 +183,19 @@ function navigation_civicrm_navigationMenu(&$params) {
   //create Help menu 11965
   $params[6000] = _buildHelpMenu(6000);
 
-  $params[7000] = array(
-    'attributes' => array(
+  $params[7000] = [
+    'attributes' => [
       'label' => 'Log Out',
-      'name' => 'Log Out',
+      'name' => 'log_out',
       'url' => 'civicrm/logout?reset=1',
-      //'icon' => 'fa-sign-out crm-i',
       'permission' => 'access CiviCRM',
       'operator' => 'AND',
       'separator' => 0,
       'parentID' => null,
       'navID' => 7000,
-      'active' => 1
-    ),
-    'child' => array(),
-  );
+      'active' => 1,
+    ],
+  ];
 
   //CRM_Core_Error::debug_var('navigationMenu params (after)',$params);
 }
@@ -208,7 +206,7 @@ function _buildReportsMenu($navID, $reportNav) {
   $nav = array(
     'attributes' => array(
       'label' => 'Reports',
-      'name' => 'Reports',
+      'name' => 'reports',
       'url' => null,
       'permission' => null,
       'operator' => 'AND',
@@ -222,7 +220,7 @@ function _buildReportsMenu($navID, $reportNav) {
       $navID + 1 => array(
         'attributes' => array(
           'label' => 'Reports Listing',
-          'name' => 'Reports Listing',
+          'name' => 'reports_listing',
           'url' => 'civicrm/report/list?reset=1',
           'permission' => 'access CiviReport',
           'operator' => 'AND',
@@ -231,12 +229,11 @@ function _buildReportsMenu($navID, $reportNav) {
           'navID' => $navID + 1,
           'active' => 1,
         ),
-        'child' => array(),
       ),
       $navID + 2 => array(
         'attributes' => array(
           'label' => 'My Reports',
-          'name' => 'My Reports',
+          'name' => 'my_reports',
           'url' => 'civicrm/report/list?myreports=1&reset=1',
           'permission' => 'access CiviReport',
           'operator' => 'AND',
@@ -245,12 +242,11 @@ function _buildReportsMenu($navID, $reportNav) {
           'navID' => $navID + 2,
           'active' => 1,
         ),
-        'child' => array(),
       ),
       $navID + 3 => array(
         'attributes' => array(
           'label' => 'Create Reports from Templates',
-          'name' => 'Create Reports from Templates',
+          'name' => 'create_reports_from_templates',
           'url' => 'civicrm/admin/report/template/list?reset=1',
           'permission' => 'administer Reports',
           'operator' => 'AND',
@@ -259,14 +255,13 @@ function _buildReportsMenu($navID, $reportNav) {
           'navID' => $navID + 3,
           'active' => 1,
         ),
-        'child' => array(),
       ),
 
       //standard reports
       $navID + 11 => array(
         'attributes' => array(
           'label' => 'District Stats',
-          'name' => 'District Stats',
+          'name' => 'district_stats',
           'url' => 'civicrm/districtstats',
           'permission' => 'access CiviReport',
           'operator' => 'AND',
@@ -275,13 +270,12 @@ function _buildReportsMenu($navID, $reportNav) {
           'navID' => $navID + 11,
           'active' => 1,
         ),
-        'child' => array(),
       ),
       //7260 add websignup reports
       $navID + 12 => array(
         'attributes' => array(
           'label' => 'Web Signup Reports',
-          'name' => 'Web Signup Reports',
+          'name' => 'web_signup_reports',
           'url' => 'signupreports',
           'permission' => 'access CiviReport',
           'operator'   => 'AND',
@@ -290,13 +284,12 @@ function _buildReportsMenu($navID, $reportNav) {
           'navID' => $navID + 12,
           'active' => 1,
         ),
-        'child' => array(),
       ),
       //5260 add changelog proofing report
       $navID + 13 => array(
         'attributes' => array(
           'label' => 'Changelog Proofing Report',
-          'name' => 'Changelog Proofing Report',
+          'name' => 'changelog_proofing_report',
           'url' => 'civicrm/nyss/proofingreport?reset=1',
           'permission' => 'access CiviReport',
           'operator' => 'AND',
@@ -305,7 +298,6 @@ function _buildReportsMenu($navID, $reportNav) {
           'navID' => $navID + 13,
           'active' => 1,
         ),
-        'child' => array(),
       ),
     ),
   );
@@ -354,7 +346,6 @@ function _buildManageMenu($manageID) {
           'navID' => $manageID+1,
           'active' => 1,
         ),
-        'child' => array(),
       ),
       $manageID+2 => array(
         'attributes' => Array(
@@ -368,7 +359,6 @@ function _buildManageMenu($manageID) {
           'navID' => $manageID+2,
           'active' => 1,
         ),
-        'child' => array(),
       ),
       $manageID+3 => array(
         'attributes' => Array(
@@ -382,7 +372,6 @@ function _buildManageMenu($manageID) {
           'navID' => $manageID+3,
           'active' => 1,
         ),
-        'child' => array(),
       ),
       $manageID+4 => array(
         'attributes' => Array(
@@ -396,7 +385,6 @@ function _buildManageMenu($manageID) {
           'navID' => $manageID+4,
           'active' => 1,
         ),
-        'child' => array(),
       ),
       $manageID+5 => array(
         'attributes' => Array(
@@ -410,7 +398,6 @@ function _buildManageMenu($manageID) {
           'navID' => $manageID+5,
           'active' => 1,
         ),
-        'child' => array(),
       ),
       $manageID+6 => array(
         'attributes' => Array(
@@ -424,7 +411,6 @@ function _buildManageMenu($manageID) {
           'navID' => $manageID+6,
           'active' => 1,
         ),
-        'child' => array(),
       ),
       $manageID+7 => array(
         'attributes' => Array(
@@ -438,7 +424,6 @@ function _buildManageMenu($manageID) {
           'navID' => $manageID+7,
           'active' => 1,
         ),
-        'child' => array(),
       ),
       $manageID+8 => array(
         'attributes' => Array(
@@ -452,7 +437,6 @@ function _buildManageMenu($manageID) {
           'navID' => $manageID+8,
           'active' => 1,
         ),
-        'child' => array(),
       ),
       $manageID+9 => array(
         'attributes' => Array(
@@ -466,7 +450,6 @@ function _buildManageMenu($manageID) {
           'navID' => $manageID+9,
           'active' => 1,
         ),
-        'child' => array(),
       ),
       //6552
       $manageID+10 => array(
@@ -481,7 +464,6 @@ function _buildManageMenu($manageID) {
           'navID' => $manageID+10,
           'active' => 1,
         ),
-        'child' => array(),
       ),
       $manageID+11 => array(
         'attributes' => Array(
@@ -495,7 +477,6 @@ function _buildManageMenu($manageID) {
           'navID' => $manageID+11,
           'active' => 1,
         ),
-        'child' => array(),
       ),
       $manageID+12 => array(
         'attributes' => Array(
@@ -509,7 +490,6 @@ function _buildManageMenu($manageID) {
           'navID' => $manageID+12,
           'active' => 1,
         ),
-        'child' => array(),
       ),
       $manageID+13 => array(
         'attributes' => Array(
@@ -523,7 +503,6 @@ function _buildManageMenu($manageID) {
           'navID' => $manageID+13,
           'active' => 1,
         ),
-        'child' => array(),
       ),
       //5230 add duplicate address removal tool
       $manageID+14 => array(
@@ -538,7 +517,6 @@ function _buildManageMenu($manageID) {
           'navID' => $manageID+14,
           'active' => 1,
         ),
-        'child' => array(),
       ),
       //delete trashed tool
       $manageID+15 => array(
@@ -553,7 +531,6 @@ function _buildManageMenu($manageID) {
           'navID' => $manageID+15,
           'active' => 1,
         ),
-        'child' => array(),
       ),
       $manageID+16 => array(
         'attributes' => Array(
@@ -568,7 +545,6 @@ function _buildManageMenu($manageID) {
           'active' => 1,
           'target' => '_blank',
         ),
-        'child' => array(),
       ),
     ),
   );
@@ -620,7 +596,6 @@ function _buildEmailMenu($emailID) {
           'navID' => $emailID+1,
           'active' => 1,
         ),
-        'child' => array(),
       ),
       $emailID+2 => array(
         'attributes' => Array(
@@ -634,7 +609,6 @@ function _buildEmailMenu($emailID) {
           'navID' => $emailID+2,
           'active' => 1,
         ),
-        'child' => array(),
       ),
       $emailID+3 => array(
         'attributes' => Array(
@@ -648,7 +622,6 @@ function _buildEmailMenu($emailID) {
           'navID' => $emailID+3,
           'active' => 1,
         ),
-        'child' => array(),
       ),
       $emailID+4 => array(
         'attributes' => Array(
@@ -662,7 +635,6 @@ function _buildEmailMenu($emailID) {
           'navID' => $emailID+4,
           'active' => 1,
         ),
-        'child' => array(),
       ),
       $emailID+5 => array(
         'attributes' => Array(
@@ -676,7 +648,6 @@ function _buildEmailMenu($emailID) {
           'navID' => $emailID+5,
           'active' => 1,
         ),
-        'child' => array(),
       ),
       $emailID+6 => array(
         'attributes' => Array(
@@ -690,7 +661,6 @@ function _buildEmailMenu($emailID) {
           'navID' => $emailID+6,
           'active' => 1,
         ),
-        'child' => array(),
       ),
       $emailID+7 => array(
         'attributes' => Array(
@@ -704,7 +674,6 @@ function _buildEmailMenu($emailID) {
           'navID' => $emailID+7,
           'active' => 1,
         ),
-        'child' => array(),
       ),
       $emailID+8 => array(
         'attributes' => Array(
@@ -718,7 +687,6 @@ function _buildEmailMenu($emailID) {
           'navID' => $emailID+8,
           'active' => 1,
         ),
-        'child' => array(),
       ),
       $emailID+9 => array(
         'attributes' => Array(
@@ -732,7 +700,6 @@ function _buildEmailMenu($emailID) {
           'navID' => $emailID+9,
           'active' => 1,
         ),
-        'child' => array(),
       ),
       $emailID+10 => array(
         'attributes' => Array(
@@ -746,7 +713,6 @@ function _buildEmailMenu($emailID) {
           'navID' => $emailID+10,
           'active' => 1,
         ),
-        'child' => array(),
       ),
     ),
   );
@@ -784,7 +750,6 @@ function _buildInboxMenu($inboxNavID) {
           'navID'      => $inboxNavID+1,
           'active'     => 1
         ),
-        'child' => array(),
       ),
       $inboxNavID+2 => array(
         'attributes' => array(
@@ -798,7 +763,6 @@ function _buildInboxMenu($inboxNavID) {
           'navID'      => $inboxNavID+2,
           'active'     => 1
         ),
-        'child' => array(),
       ),
       $inboxNavID+3 => array(
         'attributes' => array(
@@ -812,7 +776,6 @@ function _buildInboxMenu($inboxNavID) {
           'navID'      => $inboxNavID+3,
           'active'     => 1
         ),
-        'child' => array(),
       ),
     ),
   );
@@ -846,7 +809,6 @@ function _buildSearchMenu($searchNavID) {
           'navID'      => $searchNavID+1,
           'active'     => 1
         ),
-        'child' => array(),
       ),
       $searchNavID+2 => array(
         'attributes' => array(
@@ -860,7 +822,6 @@ function _buildSearchMenu($searchNavID) {
           'navID'      => $searchNavID+2,
           'active'     => 1
         ),
-        'child' => array(),
       ),
       $searchNavID+3 => array(
         'attributes' => array(
@@ -874,7 +835,6 @@ function _buildSearchMenu($searchNavID) {
           'navID'      => $searchNavID+3,
           'active'     => 1
         ),
-        'child' => array(),
       ),
       $searchNavID+4 => array(
         'attributes' => array(
@@ -888,7 +848,6 @@ function _buildSearchMenu($searchNavID) {
           'navID'      => $searchNavID+4,
           'active'     => 1
         ),
-        'child' => array(),
       ),
       $searchNavID+5 => array(
         'attributes' => array(
@@ -902,7 +861,6 @@ function _buildSearchMenu($searchNavID) {
           'navID'      => $searchNavID+5,
           'active'     => 1
         ),
-        'child' => array(),
       ),
       $searchNavID+6 => array(
         'attributes' => array(
@@ -916,7 +874,6 @@ function _buildSearchMenu($searchNavID) {
           'navID'      => $searchNavID+6,
           'active'     => 1
         ),
-        'child' => array(),
       ),
       $searchNavID+7 => array(
         'attributes' => array(
@@ -930,7 +887,6 @@ function _buildSearchMenu($searchNavID) {
           'navID'      => $searchNavID+7,
           'active'     => 1
         ),
-        'child' => array(),
       ),
       $searchNavID+8 => array(
         'attributes' => array(
@@ -944,7 +900,6 @@ function _buildSearchMenu($searchNavID) {
           'navID'      => $searchNavID+8,
           'active'     => 1
         ),
-        'child' => array(),
       ),
       $searchNavID+9 => array(
         'attributes' => array(
@@ -958,7 +913,6 @@ function _buildSearchMenu($searchNavID) {
           'navID'      => $searchNavID+9,
           'active'     => 1
         ),
-        'child' => array(),
       ),
       $searchNavID+10 => array(
         'attributes' => array(
@@ -972,7 +926,6 @@ function _buildSearchMenu($searchNavID) {
           'navID'      => $searchNavID+10,
           'active'     => 1
         ),
-        'child' => array(),
       ),
       $searchNavID+11 => array(
         'attributes' => array(
@@ -986,7 +939,6 @@ function _buildSearchMenu($searchNavID) {
           'navID'      => $searchNavID+11,
           'active'     => 1
         ),
-        'child' => array(),
       ),
       $searchNavID+12 => array(
         'attributes' => array(
@@ -1000,7 +952,6 @@ function _buildSearchMenu($searchNavID) {
           'navID'      => $searchNavID+12,
           'active'     => 1
         ),
-        'child' => array(),
       ),
     ),
   );
@@ -1040,7 +991,6 @@ function _buildAdminMenu($nyssBaseID) {
           'navID' => $nyssBaseID+1,
           'active' => 1
         ),
-        'child' => array(),
       ),
       $nyssBaseID+2 => array(
         'attributes' => array(
@@ -1054,7 +1004,6 @@ function _buildAdminMenu($nyssBaseID) {
           'navID' => $nyssBaseID+2,
           'active' => 1
         ),
-        'child' => array(),
       ),
       $nyssBaseID+3 => array(
         'attributes' => array(
@@ -1068,7 +1017,6 @@ function _buildAdminMenu($nyssBaseID) {
           'navID' => $nyssBaseID+3,
           'active' => 1
         ),
-        'child' => array(),
       ),
       $nyssBaseID+4 => array(
         'attributes' => array(
@@ -1082,7 +1030,6 @@ function _buildAdminMenu($nyssBaseID) {
           'navID' => $nyssBaseID+4,
           'active' => 1
         ),
-        'child' => array(),
       ),
     ),
   );
@@ -1119,7 +1066,6 @@ function _buildHelpMenu($nyssBaseID) {
           'active' => 1,
           'target' => '_blank',
         ),
-        'child' => array(),
       ),
       $nyssBaseID+2 => array(
         'attributes' => array(
@@ -1134,7 +1080,6 @@ function _buildHelpMenu($nyssBaseID) {
           'active' => 1,
           'target' => '_blank',
         ),
-        'child' => array(),
       ),
       $nyssBaseID+3 => array(
         'attributes' => array(
@@ -1149,7 +1094,6 @@ function _buildHelpMenu($nyssBaseID) {
           'active' => 1,
           'target' => '_blank',
         ),
-        'child' => array(),
       ),
       $nyssBaseID+4 => array(
         'attributes' => array(
@@ -1164,7 +1108,6 @@ function _buildHelpMenu($nyssBaseID) {
           'active' => 1,
           'target' => '_blank',
         ),
-        'child' => array(),
       ),
       $nyssBaseID+5 => [
         'attributes' => [
@@ -1179,7 +1122,6 @@ function _buildHelpMenu($nyssBaseID) {
           'active' => 1,
           'target' => '_blank',
         ],
-        'child' => [],
       ],
     ),
   );
@@ -1214,7 +1156,6 @@ function _buildCreateMenu($nyssBaseID) {
           'navID' => $nyssBaseID+1,
           'active' => 1
         ),
-        'child' => array(),
       ),
       $nyssBaseID+2 => array(
         'attributes' => array(
@@ -1228,7 +1169,6 @@ function _buildCreateMenu($nyssBaseID) {
           'navID' => $nyssBaseID+2,
           'active' => 1
         ),
-        'child' => array(),
       ),
       $nyssBaseID+3 => array(
         'attributes' => array(
@@ -1242,7 +1182,6 @@ function _buildCreateMenu($nyssBaseID) {
           'navID' => $nyssBaseID+3,
           'active' => 1
         ),
-        'child' => array(),
       ),
       $nyssBaseID+4 => array(
         'attributes' => array(
@@ -1256,7 +1195,6 @@ function _buildCreateMenu($nyssBaseID) {
           'navID' => $nyssBaseID+4,
           'active' => 1
         ),
-        'child' => array(),
       ),
       $nyssBaseID+5 => array(
         'attributes' => array(
@@ -1270,7 +1208,6 @@ function _buildCreateMenu($nyssBaseID) {
           'navID' => $nyssBaseID+5,
           'active' => 1
         ),
-        'child' => array(),
       ),
       $nyssBaseID+6 => array(
         'attributes' => array(
@@ -1284,7 +1221,6 @@ function _buildCreateMenu($nyssBaseID) {
           'navID' => $nyssBaseID+6,
           'active' => 1
         ),
-        'child' => array(),
       ),
       $nyssBaseID+7 => array(
         'attributes' => array(
@@ -1298,7 +1234,6 @@ function _buildCreateMenu($nyssBaseID) {
           'navID' => $nyssBaseID+7,
           'active' => 1
         ),
-        'child' => array(),
       ),
     ),
   );

@@ -14,3 +14,6 @@ div.nyss-logout {
   text-rendering: auto;
   -webkit-font-smoothing: antialiased;
 }
+#civicrm-menu li[data-name="log_out"] {
+  float: right;
+}
