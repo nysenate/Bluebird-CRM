@@ -24,7 +24,7 @@ cj(document).ready(function () {
 
   // Set the accordion toggle for advanced filters.
   cj('body').on('click', '.advanced-filter-switch', function (e) {
-    $('.advanced-filter-container').toggleClass('active');
+    cj('.advanced-filter-container').toggleClass('active');
   });
 
   // Set the onClick selection for the stats bar.
@@ -265,7 +265,7 @@ function getReports() {
   if (cj.fn.DataTable.isDataTable("#sortable-results")) {
     cj("#sortable-results").DataTable().destroy();
   }
-  table_body.html('<td valign="top" colspan="7" class="dataTables_empty"><span class="loading_row"><span class="loading_message">Loading message data <img src="/sites/default/themes/Bluebird/images/loading.gif"/></span></span></td>');
+  table_body.html('<td valign="top" colspan="7" class="dataTables_empty"><span class="loading_row"><span class="loading_message">Loading message data <img src="/sites/all/ext/gov.nysenate.inbox/img/loading.gif"/></span></span></td>');
 
   // Send the report request
   cj.ajax({

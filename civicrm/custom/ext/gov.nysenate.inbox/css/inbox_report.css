@@ -8,7 +8,6 @@
   float: left;
   padding: 4px;
   position: relative;
-  width: 934px;
 }
 
 /**
@@ -52,10 +51,7 @@
 a.stats-overview {
   display: inline-block;
   box-sizing: border-box;
-  margin: 0 1%;
-  padding: 1.2em 0 1em;
-  width: 18%;
-  height: 3.7em;
+  padding: 1em;
   vertical-align: top;
   font-size: 1.2em;
   border: 1px solid #cccccc;
@@ -112,8 +108,12 @@ a.stats-overview span {
 .page-civicrm-nyss-inbox-report .table-controls .dataTables_filter input[type="search"] {
   width: 20%;
 }
+.page-civicrm-nyss-inbox-report .table-controls,
 .page-civicrm-nyss-inbox-report .length-subset {
-  margin-top: 1.5em;
+  padding: 4px 20px;
+}
+.page-civicrm-nyss-inbox-report .length-subset {
+  margin-top: 1em;
 }
 .page-civicrm-nyss-inbox-report .length-subset .dataTables_length {
   width: initial;
@@ -179,10 +179,10 @@ a.stats-overview span {
 
 /* hover icons for matched/matcher contacts */
 .crm-container .nyss-inbox-report-container .icon.mail-merge-icon {
-  background-image: url(/sites/default/themes/Bluebird/images/inbound_email_icons.png);
+  background-image: url(../img/inbound_email_icons.png);
   display: inline-block;
   float: none;
-  margin-right: 1em;
+  margin-right: 0.3em;
 }
 .crm-container .nyss-inbox-report-container .mail-merge-icon.mail-merge-matched {
   background-position: 0px 0px;
@@ -209,6 +209,7 @@ a.stats-overview span {
   min-width: 150px;
   min-height: 40px;
   padding: 10px;
+  background-color: #2f2f2e !important;
 }
 .filter-item-label, .filter-item-term {
   width:120px;
