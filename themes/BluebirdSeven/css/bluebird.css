@@ -112,6 +112,16 @@ ul#civicrm-menu.sm ul {
   top: 0;
   width: 100px;
 }
+.page-civicrm-contact-view:not([class*='page-civicrm-contact-view-']) .crm-contact-tabs-list .crm-tab-button#tab_custom_9,
+.page-civicrm-contact-view:not([class*='page-civicrm-contact-view-']) .crm-contact-tabs-list .crm-tab-button#tab_nyss_web_activitystream,
+.page-civicrm-contact-view:not([class*='page-civicrm-contact-view-']) .crm-contact-tabs-list .crm-tab-button#tab_nyss_web_tags {
+  background-color: #f4f4f4;
+}
+.page-civicrm-contact-view:not([class*='page-civicrm-contact-view-']) .crm-contact-tabs-list .crm-tab-button#tab_custom_9:hover,
+.page-civicrm-contact-view:not([class*='page-civicrm-contact-view-']) .crm-contact-tabs-list .crm-tab-button#tab_nyss_web_activitystream:hover,
+.page-civicrm-contact-view:not([class*='page-civicrm-contact-view-']) .crm-contact-tabs-list .crm-tab-button#tab_nyss_web_tags:hover {
+  background-color: #e8eef0;
+}
 
   /*login*/
 .not-logged-in,
