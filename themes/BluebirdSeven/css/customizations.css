@@ -56,7 +56,8 @@ div#Tag li#j1_1 > a#tag_291 {
 
 /*relationship tab 12077*/
 .crm-relationship-form-block-is_permission_a_b,
-.crm-relationship-form-block-is_permission_b_a {
+.crm-relationship-form-block-is_permission_b_a,
+#contact-summary-relationship-tab div#permission-legend {
   display: none;
 }
 
