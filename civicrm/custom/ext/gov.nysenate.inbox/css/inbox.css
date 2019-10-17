@@ -114,6 +114,10 @@ div.description {
 .crm-actions {
   min-width: 110px !important;
 }
+.crm-container table.dataTable.inbox-messages-selector tr.even td,
+.crm-container #DataTables_Table_0.inbox-messages-selector tr.even td {
+  background-color: #f3f6f7 !important;
+}
 
 .ui-tabs .ui-tabs-panel {
   border-left: 1px solid #aaa;
