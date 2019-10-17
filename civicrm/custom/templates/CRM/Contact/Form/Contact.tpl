@@ -58,15 +58,15 @@
       </div><!-- /.crm-accordion-header -->
       <div class="crm-accordion-body" id="contactDetails">
     <table>
-        <tr>
+      <tr>
         <td>
         {include file="CRM/Contact/Form/Edit/$contactType.tpl"}
         <span class="crm-button crm-button_qf_Contact_refresh_dedupe">
             {$form._qf_Contact_refresh_dedupe.html}
         </span>
-</td>
-</tr>
-        <tr>
+        </td>
+      </tr>
+      <tr>
         <td>
         {foreach from = $editOptions item ="title" key="name"}
         {if $name eq "Address"}
@@ -74,46 +74,45 @@
         {/if}
         {/foreach}
         </td>
-        </tr>
+      </tr>
        
-        <tr>
+      <tr>
         <td>
-            <div class="subHeader">Communication Details</div>
-            </td>
-        </tr>
-<tr>
-<td>
-<table class="crm-section contact_information-section form-layout-compressed">
+          <div class="subHeader">Communication Details</div>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <table class="crm-section contact_information-section form-layout-compressed">
             {foreach from=$blocks item="label" key="block"}
               {include file="CRM/Contact/Form/Edit/$block.tpl"}
             {/foreach}
           </table>
         </td>
-        </tr>
+      </tr>
         
-        {if $contactType eq "Individual"}
-        <tr>
+      {if $contactType eq "Individual"}
+      <tr>
         <td>
             <div class="subHeader">Employment</div>
         </td>
-        </tr>
-        <tr>
-<td>
-        <table class="form-layout-compressed individual-contact-details">
-        <tr>
+      </tr>
+      <tr>
+        <td>
+          <table class="form-layout-compressed individual-contact-details">
+          <tr>
             <td>
-              {$form.current_employer.label}&nbsp;{help id="id-current-employer" file="CRM/Contact/Form/Contact.hlp"}<br />
-              {$form.current_employer.html|crmAddClass:twenty}
-              <div id="employer_address" style="display:none;"></div>
-    </td>
-    <td>
-           {$form.job_title.label}<br />
-           {$form.job_title.html}
-    </td>
+              {$form.employer_id.label}&nbsp;{help id="id-current-employer" file="CRM/Contact/Form/Contact.hlp"}<br />
+              {$form.employer_id.html}
+            </td>
+            <td>
+              {$form.job_title.label}<br />
+              {$form.job_title.html}
+            </td>
           </tr>
-        </table>
-      </td>
-    </tr>
+          </table>
+        </td>
+      </tr>
     {/if}
     </table>
  </div><!-- /.crm-accordion-body -->

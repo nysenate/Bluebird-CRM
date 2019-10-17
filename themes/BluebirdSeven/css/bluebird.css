@@ -123,7 +123,15 @@ ul#civicrm-menu.sm ul {
   background-color: #e8eef0;
 }
 
-  /*login*/
+/*Contact Form*/
+.crm-container table.form-layout-compressed.individual-contact-details {
+  width: 100% !important;
+}
+div.subHeader {
+  font-size: 1.3em;
+}
+
+/*login*/
 .not-logged-in,
 .not-logged-in #page {
   background-color: #C9DBD9;
