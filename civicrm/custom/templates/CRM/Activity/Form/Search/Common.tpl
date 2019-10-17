@@ -74,18 +74,25 @@
       </td></tr>
     </table>
   </td>
+
+  {*NYSS reorganize tags; also 12559*}
+  {if $form.activity_tags}
+    <td>
+      <table>
+        <tr class="nyss-search-issuecodes">
+          <td colspan="2"><label>Issue Codes</label><br/>
+            {$form.activity_tags.html}
+          </td>
+        </tr>
+        <tr>
+          {include file="CRM/common/Tagset.tpl" tagsetType='activity'}
+        </tr>
+      </table>
+    </td>
+  {/if}
 </tr>
 
-{if $form.activity_tags}
-  <tr>
-    <td><label>{$form.activity_tags.label}</label>
-      <br/>
-      {$form.activity_tags.html}
-    </td>
-    {*NYSS 12559*}
-    <td>{include file="CRM/common/Tagset.tpl" tagsetType='activity'}</td>
-  </tr>
-{/if}
+
 
 <tr>
   {include file="CRM/Core/DatePickerRangeWrapper.tpl" fieldName="activity_date_time" colspan="2"}

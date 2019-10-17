@@ -135,6 +135,8 @@ function search_civicrm_buildForm($formName, &$form) {
 
     CRM_Core_Resources::singleton()->addVars('NYSS', array('bbPrivacyOptionNotes_Html' => $eleHtml));
     CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.search', 'js/AdvancedSearch.js');
+    CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.search', 'js/ActivitySearch.js');
+    CRM_Core_Resources::singleton()->addStyleFile('gov.nysenate.search', 'css/AdvancedSearch.css');
 
     //7906 search birth date by month only
     $months = array(
@@ -179,5 +181,9 @@ function search_civicrm_buildForm($formName, &$form) {
       'activity_role' => 0, //4332 clear activity creator/assigned
     );
     $form->setDefaults($defaults);
+  }
+
+  if ($formName == 'CRM_Activity_Form_Search') {
+    CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.search', 'js/ActivitySearch.js');
   }
 }

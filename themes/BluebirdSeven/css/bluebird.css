@@ -257,3 +257,24 @@ ul#civicrm-menu.sm ul {
 .page-civicrm-mailing.page-civicrm #crm-main-content-wrapper {
   background-color: white !important;
 }
+
+/*Search*/
+.CRM_Contact_Form_Search_Advanced .tag-section label,
+.CRM_Activity_Form_Search .tag-section label,
+.CRM_Case_Form_Search .tag-section label {
+  display: block;
+}
+.crm-container table.form-layout .nyss-search-issuecodes td,
+.crm-container div#searchForm table.form-layout .nyss-search-issuecodes td {
+  padding: 0 0 1em 0;
+}
+.crm-container .CRM_Case_Form_Search .crm-case-search-form-block .crm-accordion-body {
+  padding: 20px;
+}
+.page-civicrm-case-search .crm-accordion-body .form-layout>tbody:first-child>tr {
+  display: table-row !important;
+}
+.page-civicrm-case-search .crm-accordion-body .form-layout>tbody:first-child>tr>td,
+.page-civicrm-case-search .crm-accordion-body .form-layout>tbody:first-child>tr:nth-of-type(1)>td:nth-of-type(2) {
+  display: table-cell !important;
+}
