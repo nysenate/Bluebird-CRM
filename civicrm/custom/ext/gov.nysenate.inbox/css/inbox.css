@@ -119,6 +119,10 @@ div.description {
   background-color: #f3f6f7 !important;
 }
 
+.crm-container .dataTables_wrapper table.dataTable>tbody>tr>td:not(.dataTables_empty):last-child {
+  text-align: left !important;
+}
+
 .ui-tabs .ui-tabs-panel {
   border-left: 1px solid #aaa;
   border-bottom: 1px solid #aaa;
