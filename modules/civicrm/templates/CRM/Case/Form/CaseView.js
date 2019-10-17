@@ -116,7 +116,8 @@
       pre: function(data) {
         var params = {create: true};
         if (data.contact_type) {
-          params.api = {params: {contact_type: data.contact_type}};
+          //NYSS 11482 -- should be something we can modify via hook/js
+          params.api = {params: {contact_type: data.contact_type, group:3}};
         }
         $('[name=edit_role_contact_id]', this).val('').crmEntityRef(params);
       },

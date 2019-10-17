@@ -142,7 +142,7 @@ function case_civicrm_buildForm($formName, &$form) {
       'return' => 'id',
     ));
     if ($staffGroupID) {
-      $staffGroupJson = json_encode(array('params' => array('group' => $staffGroupID)));
+      $staffGroupJson = json_encode(['params' => ['group' => $staffGroupID]]);
       CRM_Core_Resources::singleton()
         ->addVars('NYSS', array('staffGroupJson' => $staffGroupJson));
       CRM_Core_Resources::singleton()
