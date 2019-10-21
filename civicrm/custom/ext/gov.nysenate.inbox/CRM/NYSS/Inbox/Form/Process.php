@@ -186,6 +186,22 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
     // export form elements
     $this->assign('elementNames', $this->getRenderableElementNames());
     parent::buildQuickForm();
+
+    $this->addFormRule(['CRM_NYSS_Inbox_Form_Process', 'formRule'], $this);
+  }
+
+  public static function formRule($fields, $files, $self) {
+    /*Civi::log()->debug('formRule', array(
+      'fields' => $fields,
+      '$_REQUEST' => $_REQUEST,
+    ));*/
+
+    $errors = [];
+    if (!empty($fields['activity_assignee']) && empty($fields['activity_status'])) {
+      $errors['activity_status'] = 'If you are assigning the activity to someone, please also select a status.';
+    }
+
+    return $errors;
   }
 
   public function postProcess() {
