@@ -243,7 +243,7 @@
       <thead>
         <tr>
           <th data-data="sort_name">{$globalGroupInfo.title}</th>
-          <th>Organization</th> {*NYSS*}
+          <th data-data="organization">Organization</th> {*NYSS*}
           <th data-data="phone">{ts}Phone{/ts}</th>
           <th data-data="email">{ts}Email{/ts}</th>
         </tr>
