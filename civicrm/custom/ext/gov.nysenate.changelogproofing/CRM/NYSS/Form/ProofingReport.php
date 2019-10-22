@@ -357,10 +357,11 @@ class CRM_NYSS_Form_ProofingReport extends CRM_Core_Form {
       //cleanup group list
       $groupList = str_replace(' (Insert)', '', $dao->groupList);
       $groupList = str_replace(' (Delete)', ' (removed)', $groupList);
+      $contactUrl = CRM_Utils_System::url('civicrm/contact/view', "reset=1&cid={$dao->id}", TRUE);
       $html .= "
         <tr>
           <td>{$dao->logDate}</td>
-          <td><a href='/civicrm/contact/view?reset=1&cid={$dao->id}' target='_blank'>{$cDetails['display_name']}</a></td>
+          <td><a href='{$contactUrl}' target='_blank'>{$cDetails['display_name']}</a></td>
           <td>{$addressHTML}&nbsp;</td>
           <td>{$gdpHTML}&nbsp;</td>
           <td>{$cDetails['email']}&nbsp;</td>
