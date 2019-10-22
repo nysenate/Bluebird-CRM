@@ -183,7 +183,7 @@ class CRM_Case_BAO_CaseType extends CRM_Case_DAO_CaseType {
       foreach ($definition['caseRoles'] as $values) {
         $xmlFile .= "<RelationshipType>\n";
         foreach ($values as $key => $value) {
-          $xmlFile .= "<{$key}>" . self::encodeXmlString($value) . "</{$key}>\n";
+          $xmlFile .= "<{$key}>" . (is_array($value) ? implode(',', array_map(['\CRM_Case_BAO_CaseType', 'encodeXmlString'], $value)) : self::encodeXmlString($value)) . "</{$key}>\n";
         }
         $xmlFile .= "</RelationshipType>\n";
       }
@@ -219,7 +219,12 @@ class CRM_Case_BAO_CaseType extends CRM_Case_DAO_CaseType {
    */
   protected static function encodeXmlString($str) {
     // PHP 5.4: return htmlspecialchars($str, ENT_XML1, 'UTF-8')
-    return htmlspecialchars($str);
+    if (is_scalar($str)) {
+      return htmlspecialchars($str);
+    }
+    else {
+      return NULL;
+    }
   }
 
   /**
@@ -245,6 +250,12 @@ class CRM_Case_BAO_CaseType extends CRM_Case_DAO_CaseType {
 
     if (isset($xml->ActivityAsgmtGrps)) {
       $definition['activityAsgmtGrps'] = (array) $xml->ActivityAsgmtGrps->Group;
+      // Backwards compat - convert group ids to group names if ids are supplied
+      if (array_filter($definition['activityAsgmtGrps'], ['\CRM_Utils_Rule', 'integer']) === $definition['activityAsgmtGrps']) {
+        foreach ($definition['activityAsgmtGrps'] as $idx => $group) {
+          $definition['activityAsgmtGrps'][$idx] = CRM_Core_DAO::getFieldValue('CRM_Contact_BAO_Group', $group);
+        }
+      }
     }
 
     // set activity types
@@ -295,7 +306,11 @@ class CRM_Case_BAO_CaseType extends CRM_Case_DAO_CaseType {
     if (isset($xml->CaseRoles)) {
       $definition['caseRoles'] = [];
       foreach ($xml->CaseRoles->RelationshipType as $caseRoleXml) {
-        $definition['caseRoles'][] = json_decode(json_encode($caseRoleXml), TRUE);
+        $caseRole = json_decode(json_encode($caseRoleXml), TRUE);
+        if (!empty($caseRole['groups'])) {
+          $caseRole['groups'] = explode(',', $caseRole['groups']);
+        }
+        $definition['caseRoles'][] = $caseRole;
       }
     }
 
