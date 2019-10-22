@@ -82,6 +82,17 @@ class CRM_Activity_Page_AJAX {
       $relationship['phone'] = $value['phone'];
       $relationship['email'] = $value['email'];
 
+      //NYSS 12990 - expose org
+      try {
+        $relationship['organization'] = civicrm_api3('contact', 'getvalue', [
+          'id' => $value['contact_id'],
+          'return' => 'current_employer',
+        ]);
+      }
+      catch (CiviCRM_API3_Exception $e) {
+        $relationship['organization'] = '';
+      }
+
       array_push($relationships, $relationship);
     }
 

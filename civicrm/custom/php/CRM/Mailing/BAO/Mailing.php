@@ -1624,6 +1624,17 @@ ORDER BY   civicrm_email.is_bulkmail DESC
 
     $transaction = new CRM_Core_Transaction();
 
+    //NYSS 12942 when scheduling an email, ensure approval values are reset
+    if (!empty($params['scheduled_date']) && !empty($params['scheduled_id']) &&
+      $params['scheduled_date'] != 'null' && $params['scheduled_id'] != 'null' &&
+      empty($params['approval_date']) && empty($params['approval_id']) && empty($params['approval_status_id'])
+    ) {
+      $params['approval_date'] = 'null';
+      $params['approver_id'] = 'null';
+      $params['approval_status_id'] = 'null';
+      $params['approval_note'] = 'null';
+    }
+
     $mailing = self::add($params);
 
     if (is_a($mailing, 'CRM_Core_Error')) {
