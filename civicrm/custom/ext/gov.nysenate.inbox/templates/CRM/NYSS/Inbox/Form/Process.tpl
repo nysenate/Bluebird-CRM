@@ -115,7 +115,7 @@
         <div class="clear"></div>
       </div>
       <div class="crm-section">
-        <div class="label">Forwarded Date</div>
+        <div class="label">Last Updated</div>
         <div class="content">{$message.details.updated_date}</div>
         <div class="clear"></div>
       </div>
