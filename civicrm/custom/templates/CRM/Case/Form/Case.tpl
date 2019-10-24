@@ -120,7 +120,8 @@
     </td>
 </tr>
 
-<tr class="crm-case-form-block-tag_set"><td colspan="2">{include file="CRM/common/Tagset.tpl" tagsetType='case'}</td></tr>
+{*NYSS 13029*}
+<tr class="crm-case-form-block-tag_set">{include file="CRM/common/Tagset.tpl" tagsetType='case' tableLayout=1}</tr>
 
 </table>
 {/if}
