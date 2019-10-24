@@ -258,7 +258,8 @@
       </td>
     </tr>
     {/if}
-  <tr class="crm-case-activity-form-block-tag_set"><td colspan="2">{include file="CRM/common/Tagset.tpl" tagsetType='activity'}</td></tr>
+{*NYSS 13030*}
+  <tr class="crm-case-activity-form-block-tag_set">{include file="CRM/common/Tagset.tpl" tagsetType='activity' tableLayout=1}</tr>
   </table>
 
   {/if}
