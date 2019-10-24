@@ -124,7 +124,8 @@ ul#civicrm-menu.sm ul {
 }
 
 /*Contact Form*/
-.crm-container table.form-layout-compressed.individual-contact-details {
+.crm-container table.form-layout-compressed.individual-contact-details,
+.CRM_Contact_Form_Contact #commPrefs table.form-layout-compressed {
   width: 100% !important;
 }
 div.subHeader {
