@@ -87,7 +87,7 @@ function setTableFilters() {
 
   // Add any filter from the stats bar.
   if (found[1]) {
-    table.column(5).search(found[1]);
+    table.column(5).search('\\b' + found[1] + '\\b',true);
   }
 
   // Add any advanced filters.
