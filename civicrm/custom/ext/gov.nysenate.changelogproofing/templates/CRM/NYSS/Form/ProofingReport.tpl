@@ -11,6 +11,7 @@
     CRM.$(function($) {
       $('#proofing-report input.crm-form-submit').click(function(){
         $('div.ui-notify-message a.ui-notify-close').click();
+        $('span.crm-error').remove();
       });
     });
   </script>
@@ -85,5 +86,7 @@
       </div>
       <div class="clear"></div>
     </div>
+
+    <div class="clear"></div>
   </div>
 </div>
