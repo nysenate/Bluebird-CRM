@@ -25,124 +25,122 @@
 *}
 {*NYSS modifications throughout to present all core fields in left col and custom fields in right*}
 <div id="location" class="form-item">
-    <table class="form-layout">
+  <table class="form-layout">
   <tr>
-        <td>
-           {$form.location_type.label}<br />
-           {$form.location_type.html}
-           <div class="description" >
-             {ts}Location search uses the PRIMARY location for each contact by default.{/ts}<br />
-             {ts}To search by specific location types (e.g. Home, Work...), check one or more boxes above.{/ts}
-           </div>
-        </td>
-        {if $addressGroupTree}
-	      <td rowspan="3">
-	        {include file="CRM/Custom/Form/Search.tpl" groupTree=$addressGroupTree showHideLinks=false}
-          </td>
-    	{/if}	   
-    </tr>
-    
-    {*NYSS move street/city*}
-    <tr>
-    	<td>
-        <table cellpadding="inner-table">
-        	<tr>
-             <td>
-             {*NYSS*}
-            	 <span id="streetAddress">
-                   {$form.street_address.label}<br />
- 	               {$form.street_address.html|crmReplace:class:big}<br />
- 	               {if $parseStreetAddress}
- 	                 &nbsp;&nbsp;<a href="#" title="{ts}Use Address Elements{/ts}" onClick="processAddressFields( 'addressElements' , 1 );return false;">{ts}Use Address Elements{/ts}</a>
- 	             </span>
- 	             <span id="addressElements" class=hiddenElement>
-                   Street Number / Name / Unit<br />
- 	               {$form.street_number.html}&nbsp;{$form.street_name.html}&nbsp;{$form.street_unit.html}<br />
- 	               <a href="#" title="{ts}Use Street Address{/ts}" onClick="processAddressFields( 'streetAddress', 1 );return false;">{ts}Use Street Address{/ts}</a>&nbsp;&nbsp;You may enter "odd" or "even" in the street number field.
-                   {/if}
- 	             </span>
-             </td>
-             <td>{$form.city.label}<br />
-            	 {$form.city.html}
-             </td>
-            </tr>
-        </table>
-        </td>
-    </tr>
+    <td>
+      {*NYSS moved from right col*}
+      <div class="crm-field-wrapper">
+        <div>{$form.location_type.label} {help id="location_type" title=$form.location_type.label}</div>
+        {$form.location_type.html}
+      </div>
+      {if $form.address_name.html}
+        <div class="crm-field-wrapper">
+          {$form.address_name.label}<br />
+          {$form.address_name.html}
+        </div>
+      {/if}
+      {if $form.postal_code.html}
+        <div class="crm-field-wrapper">
+          {$form.postal_code.label}
+          <input type="checkbox" id="postal-code-range-toggle" value="1"/>
+          <label for="postal-code-range-toggle">{ts}Range{/ts}</label><br />
+          <div class="postal_code-wrapper">
+            {$form.postal_code.html}
+          </div>
+          <div class="postal_code_range-wrapper" style="display: none;">
+            {$form.postal_code_low.html}&nbsp;-&nbsp;{$form.postal_code_high.html}
+          </div>
+        </div>
+        <script type="text/javascript">
+          {literal}
+          CRM.$(function($) {
+            $('#postal-code-range-toggle').change(function() {
+              if ($(this).is(':checked')) {
+                $('.postal_code_range-wrapper').show();
+                $('.postal_code-wrapper').hide().find('input').val('');
+              } else {
+                $('.postal_code-wrapper').show();
+                $('.postal_code_range-wrapper').hide().find('input').val('');
+              }
+            });
+            if ($('#postal_code_low').val() || $('#postal_code_high').val()) {
+              $('#postal-code-range-toggle').prop('checked', true).change();
+            }
+          });
+          {/literal}
+        </script>
+      {/if}
+      {if $form.prox_distance.html}
+        <div class="crm-field-wrapper">
+          {$form.prox_distance.label}<br />
+          {$form.prox_distance.html}&nbsp;{$form.prox_distance_unit.html}
+        </div>
+      {/if}
 
-    <tr>
-        <td>
-		<table class="inner-table">
-		   <tr>
-			<td>
-			  {$form.postal_code.label}<br />
-        {$form.postal_code.html|crmReplace:size:72|crmReplace:maxlength:72|crmReplace:class:big}{*NYSS 5494*}
-			</td>
-			<td>
-				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-				<label>{ts}OR{/ts}</label>
-				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			</td>
-			<td><label>{ts}Postal Code{/ts}</label>
-				{$form.postal_code_low.label|replace:'-':'<br />'}
-		                &nbsp;&nbsp;{$form.postal_code_low.html|crmReplace:class:six}
-                                {$form.postal_code_high.label}
-                		&nbsp;&nbsp;{$form.postal_code_high.html|crmReplace:class:six}
-			</td>
-		    </tr>
-		    <tr>
-            <td colspan="3">{$form.prox_distance.label}<br />{$form.prox_distance.html}&nbsp;{$form.prox_distance_unit.html}</td>
+      <div id="streetAddress" class="crm-field-wrapper">
+        {$form.street_address.label}<br />
+        {$form.street_address.html|crmAddClass:big}
+        {if $parseStreetAddress}
+          <div>
+            <a href="#" title="{ts}Use Address Elements{/ts}" rel="addressElements" class="address-elements-toggle">{ts}Use Address Elements{/ts}</a>
+          </div>
+        {/if}
+      </div>
+      {if $parseStreetAddress}
+        <div id="addressElements" class="crm-field-wrapper" style="display: none;">
+          <table class="crm-block crm-form-block advanced-search-address-elements">
+            <tr><td>{$form.street_number.label}<br />{$form.street_number.html}<br /><span class="description nowrap">{ts}or ODD / EVEN{/ts}</td>
+              <td>{$form.street_name.label}<br />{$form.street_name.html}</td>
+              <td>{$form.street_unit.label}<br />{$form.street_unit.html|crmAddClass:four}</td>
             </tr>
-
-		    <tr>
-			<td colspan="2">{$form.state_province.label}<br />
-            {$form.state_province.html|crmReplace:class:bigSelect}
-			</td>        
-			<td>{$form.country.label}<br />
-				{$form.country.html|crmReplace:class:big}&nbsp;
-			</td>
-		    </tr>
-		</table>
-        </td>
-    </tr>
-    </table>
+            <tr>
+              <td colspan="3"><a href="#" title="{ts}Use Complete Address{/ts}" rel="streetAddress" class="address-elements-toggle">{ts}Use Street Address{/ts}</a></td>
+            </tr>
+          </table>
+        </div>
+      {/if}
+      <div class="crm-field-wrapper">
+        {$form.city.label}<br />
+        {$form.city.html}
+      </div>
+      <div class="crm-field-wrapper">
+        {$form.state_province.label}<br />
+        {$form.state_province.html}
+      </div>
+    </td>
+    <td>
+      {if $addressGroupTree}
+        {include file="CRM/Custom/Form/Search.tpl" groupTree=$addressGroupTree showHideLinks=false}
+      {/if}
+    </td>
+  </tr>
+</table>
 </div>
 
-{*NYSS*}
-{if $parseStreetAddress eq 1}
+{if $parseStreetAddress}
 {literal}
-<script type="text/javascript">
-function processAddressFields( name, loadData ) {
-    if ( name == 'addressElements' ) {
-        if ( loadData ) {
-      cj( '#street_address' ).val( '' );
-      }
+  <script type="text/javascript">
+    CRM.$(function($) {
+        function processAddressFields(name) {
+          $('#' + name).show();
+          if (name == 'addressElements') {
+            $('#streetAddress').hide().find('input').val('');
+          } else {
+            $('#addressElements').hide().find('input').val('');
+          }
 
-      cj('#addressElements').show();
-      cj('#streetAddress').hide();
-  } else {
-        if ( loadData ) {
-             cj( '#street_name'   ).val( '' );
-             cj( '#street_unit'   ).val( '' );
-             cj( '#street_number' ).val( '' );
         }
+        $("a.address-elements-toggle").click(function(e) {
+          e.preventDefault();
+          processAddressFields(this.rel);
+        });
+        if ($('#street_name').val() || $('#street_unit').val() || $('#street_number').val()) {
+          processAddressFields('addressElements');
+        }
+      }
+    );
 
-        cj('#streetAddress').show();
-        cj('#addressElements').hide();
-       }
-
-}
-
-cj(function( ) {
-  if (  cj('#street_name').val( ).length > 0 ||
-        cj('#street_unit').val( ).length > 0 ||
-        cj('#street_number').val( ).length > 0 ) {
-    processAddressFields( 'addressElements', 1 );
-  }
-}
-);
-
-</script>
+  </script>
 {/literal}
 {/if}
 
