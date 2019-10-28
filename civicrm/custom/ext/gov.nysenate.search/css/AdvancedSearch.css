@@ -9,3 +9,8 @@ div#s2id_mailing_id {
 #mailing_job_status {
   width: 200px !important;
 }
+
+/*13009*/
+td.crm-case-common-form-block-case_id {
+  width: 250px;
+}
