@@ -15,4 +15,8 @@ CRM.$(function($) {
   //11446/11440
   $('div#display-settings td:nth-child(2)').text('');
   $('div#display-settings').parents('div.crm-search_criteria_basic-accordion').addClass('collapsed');
+
+  //13008 Mailings
+  $('#mailingForm input[name=mailing_reply_status]').parent('td').html('');
+  $('#mailingForm input#mailing_forward').parent('td').html('');
 });
