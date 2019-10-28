@@ -130,7 +130,7 @@ function search_civicrm_buildForm($formName, &$form) {
 
   if ($formName == 'CRM_Contact_Form_Search_Advanced') {
     //3815 add privacy option note
-    $ele = $form->addElement('text', 'custom_64', ts('Privacy Option Notes'), array('id'=>'custom_64'), 'size="30"');
+    $ele = $form->addElement('text', 'custom_64', ts('Privacy Option Notes'), ['id'=>'custom_64', 'class' => 'crm-form-text big'], 'size="30"');
     $eleHtml = $ele->toHtml();
 
     CRM_Core_Resources::singleton()->addVars('NYSS', array('bbPrivacyOptionNotes_Html' => $eleHtml));

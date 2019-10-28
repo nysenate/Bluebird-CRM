@@ -267,6 +267,7 @@ div.subHeader {
   background-color: white !important;
 }
 
+
 /*Search*/
 .CRM_Contact_Form_Search_Advanced .tag-section label,
 .CRM_Activity_Form_Search .tag-section label,
@@ -287,3 +288,19 @@ div.subHeader {
 .page-civicrm-case-search .crm-accordion-body .form-layout>tbody:first-child>tr:nth-of-type(1)>td:nth-of-type(2) {
   display: table-cell !important;
 }
+.CRM_Contact_Form_Search_Advanced #s2id_group {
+  width: 300px !important;
+}
+.CRM_Contact_Form_Search_Advanced #s2id_contact_type {
+  width: 200px !important;
+}
+.crm-container .CRM_Contact_Form_Search_Advanced span.crm-button>.crm-i {
+  margin-top: 2px !important;
+}
+.crm-container .CRM_Contact_Form_Search_Advanced .adv-search-top-submit span.crm-button>.crm-i {
+  margin-top: 7px !important;
+}
+.crm-container .CRM_Contact_Form_Search_Advanced .crm-form-block .crm-submit-buttons .crm-i {
+  display: inline-block !important;
+}
+

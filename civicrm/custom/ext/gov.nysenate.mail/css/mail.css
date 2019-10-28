@@ -1,3 +1,9 @@
 div.crmMailing a.helpicon[title="From Help"] {
   display: none;
 }
+li[aria-controls=tab-attachment],
+li[aria-controls=tab-pub],
+li[aria-controls=tab-response],
+li[aria-controls=tab-tracking] {
+  display: none;
+}

@@ -1,6 +1,6 @@
 CRM.$(function($) {
   //3815 move privacy options note
-  var pon = '<td colspan="1" id="bb-privacy-option-notes"><label>Privacy Option Notes</label>' + CRM.vars.NYSS.bbPrivacyOptionNotes_Html + '</td>';
+  var pon = '<td colspan="1" id="bb-privacy-option-notes"><label>Privacy Option Notes</label><br />' + CRM.vars.NYSS.bbPrivacyOptionNotes_Html + '</td>';
   if ($('#bb-privacy-option-notes').length == 0) {
     $('select#preferred_communication_method').parents('td').after(pon);
   }
