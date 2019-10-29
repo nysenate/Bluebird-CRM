@@ -7,3 +7,8 @@ li[aria-controls=tab-response],
 li[aria-controls=tab-tracking] {
   display: none;
 }
+
+/*13021*/
+.crm-container.ui-dialog .ui-dialog-content {
+  height: 90% !important;
+}

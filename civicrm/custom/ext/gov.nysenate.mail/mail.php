@@ -155,6 +155,7 @@ function mail_civicrm_pageRun(&$page) {
   //11038
   if (is_a($page, 'Civi\Angular\Page\Main')) {
     CRM_Core_Resources::singleton()->addStyleFile('gov.nysenate.mail', 'css/mail.css');
+    CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.mail', 'js/mail.js');
   }
 }
 
