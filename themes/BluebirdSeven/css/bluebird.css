@@ -304,3 +304,18 @@ div.subHeader {
   display: inline-block !important;
 }
 
+/*ckeditor*/
+.cke_notification_info {
+  width: 400px;
+  background-color: #7EA5AF;
+  padding: 10px;
+  color: white;
+  font-size: 0.9em;
+}
+p.cke_notification_message {
+  margin: 0;
+}
+.cke_notification_close {
+  display: block;
+  font-weight: bold;
+}
