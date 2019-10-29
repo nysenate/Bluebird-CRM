@@ -407,9 +407,10 @@ class CRM_Report_Form_Contact_Relationship extends CRM_Report_Form {
 
              {$this->_aclFrom} ";
 
-    if (!empty($this->_params['country_id_value']) ||
+    //NYSS always join address table
+    /*if (!empty($this->_params['country_id_value']) ||
       !empty($this->_params['state_province_id_value'])
-    ) {
+    ) {*/
       $this->_from .= "
             INNER  JOIN civicrm_address {$this->_aliases['civicrm_address']}
                          ON (( {$this->_aliases['civicrm_address']}.contact_id =
@@ -417,7 +418,7 @@ class CRM_Report_Form_Contact_Relationship extends CRM_Report_Form {
                                {$this->_aliases['civicrm_address']}.contact_id =
                                {$this->_aliases['civicrm_contact_b']}.id ) AND
                                {$this->_aliases['civicrm_address']}.is_primary = 1 ) ";
-    }
+    //}
 
     $this->_from .= "
         INNER JOIN civicrm_relationship_type {$this->_aliases['civicrm_relationship_type']}

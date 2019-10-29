@@ -487,6 +487,9 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
       FROM civicrm_contact {$this->_aliases['civicrm_contact']} {$this->_aclFrom}
     ";
 
+    //NYSS always join address
+    $this->_addressField = TRUE;
+
     $this->joinAddressFromContact();
     $this->joinCountryFromAddress();
     $this->joinPhoneFromContact();
