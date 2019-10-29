@@ -223,7 +223,7 @@ sql="
   DELETE FROM block WHERE delta = 'menu-non-admin-drupal-menu';
   INSERT INTO block (module, delta, theme, status, weight, region, custom, visibility, pages, title, cache)\
     VALUES
-    ('menu', 'menu-non-admin-drupal-menu', 'BluebirdSeven', 1, 0, 'content', 0, 1, 'admin/people', '<none>', -1);
+    ('menu', 'menu-non-admin-drupal-menu', 'BluebirdSeven', 1, 0, 'content', 0, 1, 'admin/people\r\nuser/*', '<none>', -1);
 "
 $execSql $instance -c "$sql" --drupal -q
 
