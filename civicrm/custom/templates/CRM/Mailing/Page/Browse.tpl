@@ -73,8 +73,8 @@
           <td class="crm-mailing-language">{$row.language}</td>
         {/if}
         <td class="crm-mailing-subject">{$row.subject}</td>{*NYSS 6007*}
-        <td class="crm-mailing-created_date">{$row.created_date}</td>
         <td class="crm-mailing-status crm-mailing_status-{$row.status}">{$row.status}</td>
+        <td class="crm-mailing-created_date">{$row.created_date}</td>
         <td class="crm-mailing-scheduled_by">
           <a href ={crmURL p='civicrm/contact/view' q="reset=1&cid="}{$row.scheduled_id} title="{$row.scheduled_by|escape}">
             {$row.scheduled_by|mb_truncate:20:"..."}
