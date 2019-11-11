@@ -34,6 +34,7 @@
       {ts}Edit Search Criteria{/ts}
     </div><!-- /.crm-accordion-header -->
     <div class="crm-accordion-body">
+      <div class="spacer"></div>
       <table class="form-layout-compressed">
         {* Loop through all defined search criteria fields (defined in the buildForm() function). *}
         {foreach from=$elements item=element}

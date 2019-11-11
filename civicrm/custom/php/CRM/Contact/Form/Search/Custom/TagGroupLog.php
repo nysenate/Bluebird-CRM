@@ -148,9 +148,6 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
     
     $form->add('hidden', 'form_message');
 
-    $resetUrl = CRM_Utils_System::url('civicrm/contact/search/custom', 'csid=17&reset=1');
-    $form->assign('resetUrl', $resetUrl);
-
     $form->setDefaults($this->setDefaultValues());
     $form->addFormRule(array('CRM_Contact_Form_Search_Custom_TagGroupLog', 'formRule'), $this);
 

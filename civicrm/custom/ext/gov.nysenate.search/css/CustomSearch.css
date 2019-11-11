@@ -1,0 +1,9 @@
+.crm-container .crm-form-block .crm-submit-buttons .crm-i {
+  display: inline-block;
+}
+.crm-container .crm-submit-buttons .crm-button {
+  float: left !important;
+}
+.crm-container .crm-submit-buttons.reset-custom-search {
+  padding: 5px;
+}

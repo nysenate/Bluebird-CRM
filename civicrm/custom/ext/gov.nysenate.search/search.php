@@ -186,4 +186,24 @@ function search_civicrm_buildForm($formName, &$form) {
   if ($formName == 'CRM_Activity_Form_Search') {
     CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.search', 'js/ActivitySearch.js');
   }
+
+
+  if (strpos($formName, 'CRM_Contact_Form_Search_Custom') !== FALSE) {
+    //Civi::log()->debug('', ['form' => $form]);
+
+    $searchId = $form->getVar('_customSearchID');
+    $resetUrl = CRM_Utils_System::url('civicrm/contact/search/custom', "reset=1&csid={$searchId}");
+
+    CRM_Core_Resources::singleton()->addStyleFile('gov.nysenate.search', 'css/CustomSearch.css');
+
+    CRM_Core_Region::instance('form-buttons')->add(array(
+      'markup' => "
+        <div class='crm-submit-buttons reset-custom-search'>
+          <a href='{$resetUrl}' id='resetCustomSearch' class='crm-hover-button' title='Clear search criteria'>
+            <i class='crm-i fa-undo'></i>&nbsp;Reset Form
+          </a>
+        </div>
+      ",
+    ));
+  }
 }
