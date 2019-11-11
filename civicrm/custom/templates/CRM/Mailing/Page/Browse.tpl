@@ -74,32 +74,25 @@
         {/if}
         <td class="crm-mailing-subject">{$row.subject}</td>{*NYSS 6007*}
         <td class="crm-mailing-status crm-mailing_status-{$row.status}">{$row.status}</td>
+        {*NYSS
+        <td class="crm-mailing-created_by">
+          <a href ={crmURL p='civicrm/contact/view' q="reset=1&cid="}{$row.created_id} title="{$row.created_by|escape}">
+            {$row.created_by|mb_truncate:20:"..."}
+          </a>
+        </td>
+        *}
         <td class="crm-mailing-created_date">{$row.created_date}</td>
         <td class="crm-mailing-scheduled_by">
           <a href ={crmURL p='civicrm/contact/view' q="reset=1&cid="}{$row.scheduled_id} title="{$row.scheduled_by|escape}">
             {$row.scheduled_by|mb_truncate:20:"..."}
           </a>
         </td>
-        <td class="crm-mailing-scheduled">
-          <a href="#" class="crm-summary-link mail-merge-hover">
-            {$row.scheduled}
-            <div class="crm-tooltip-wrapper">
-              <div class="crm-tooltip">
-                {if $row.start}
-                  Started {$row.start}<br/>
-                  {if $row.end}
-                    Completed {$row.end}
-                  {else}
-                    but not yet completed
-                  {/if}
-                {else}
-                  Mailing job has not started
-                {/if}
-              </div>
-            </div>
-          </a>
-        </td>
-        {if call_user_func(array('CRM_Campaign_BAO_Campaign','isCampaignEnable'))}
+        <td class="crm-mailing-scheduled">{$row.scheduled}</td>
+        {*NYSS
+        <td class="crm-mailing-start">{$row.start}</td>
+        <td class="crm-mailing-end">{$row.end}</td>
+        *}
+       {if call_user_func(array('CRM_Campaign_BAO_Campaign','isCampaignEnable'))}
           <td class="crm-mailing-campaign">{$row.campaign}</td>
       {/if}
         <td>{$row.action|replace:'xx':$row.id}</td>
@@ -156,66 +149,11 @@
             {ts 1=$crmURL 2=$componentName}There are no Archived %2. You can archive %2 from <a href='%1'>Scheduled or Sent %2</a>.{/ts}
    </div>
 {else}
-  {*NYSS 5391 combine isSearch and unscheduled; genericize the text*}
-  {if $archived}
-    {capture assign=browseURL}{crmURL p='civicrm/mailing/browse/archived' q="reset=1"}{$qVal}{/capture}
-    {assign var="browseType" value="Archived"}
-  {elseif $unscheduled}
-    {capture assign=browseURL}{crmURL p='civicrm/mailing/browse/unscheduled' q="scheduled=false&reset=1"}{$qVal}{/capture}
-    {assign var="browseType" value="Draft and Unscheduled"}
-  {else}
-    {capture assign=browseURL}{crmURL p='civicrm/mailing/browse/scheduled' q="scheduled=true&reset=1"}{$qVal}{/capture}
-    {assign var="browseType" value="Scheduled and Sent"}
-  {/if}
-  <div class="status messages no-popup">
-    <table class="form-layout">
-      <tr><div class="icon inform-icon"></div>
-        {ts 1=$componentName}No %1 match your search criteria. Suggestions:{/ts}
-      </tr>
-      <tr>
-        <div class="spacer"></div>
-        <ul>
-          <li>{ts}Check your spelling.{/ts}</li>
-          <li>{ts}Try a different spelling or use fewer letters.{/ts}</li>
-          <li>{ts}Select different mailing statuses.{/ts}</li>
-        </ul>
-      </tr>
-    </table>
-  </div>
+    <div class="messages status no-popup">
+            <div class="icon inform-icon"></div>&nbsp;
+            {capture assign=crmURL}{crmURL p=$newMassUrl q='reset=1'}{/capture}
+            {capture assign=archiveURL}{crmURL p='civicrm/mailing/browse/archived' q='reset=1'}{$qVal}{/capture}
+            {ts 1=$componentName}There are no Scheduled or Sent %1.{/ts}
+      {if $showLinks}{ts 1=$crmURL}You can <a href='%1'>create and send one</a>{/ts}{/if}{if $archiveLinks}{ts 1=$archiveURL 2=$componentName} OR you can search the <a href='%1'>Archived %2</a>{/ts}{/if}.
+   </div>
 {/if}
-</div> {*NYSS*}
-
-{*NYSS 12029*}
-{literal}
-<script type="text/javascript">
-  function mailingActionTask(link, action) {
-    var msg = {/literal}'{ts escape="js"}Are you sure you want to delete this mailing?{/ts}'{literal},
-      title = {/literal}'{ts escape="js"}Delete Mailing{/ts}'{literal};
-    if (action == 'archive') {
-      msg = {/literal}'{ts escape="js"}Are you sure you want to archive this mailing?{/ts}'{literal},
-      title = {/literal}'{ts escape="js"}Archive Mailing{/ts}'{literal};
-    }
-    else if (action ==  'cancel') {
-      msg = {/literal}'{ts escape="js"}Are you sure you want to cancel this mailing?{/ts}'{literal},
-      title = {/literal}'{ts escape="js"}Cancel Mailing{/ts}'{literal};
-    }
-    CRM.$('#actionDialog').dialog({
-      title: title,
-      modal: true,
-      open:function() {
-        CRM.$('#actionDialog').show().html(msg);
-      },
-      buttons: {
-        {/literal}"{ts escape='js'}No{/ts}"{literal}: function() {
-          CRM.$(this).dialog("close");
-        },
-        {/literal}"{ts escape='js'}Yes{/ts}"{literal}: function() {
-          CRM.$(this).dialog("close");
-          window.location.href = link;
-          return;
-        }
-      }
-    });
-  }
-</script>
-{/literal}
