@@ -271,6 +271,7 @@ $prefsSearch['includeEmailInName'] = get_config_value($bbcfg, 'search.include_em
 $prefsSearch['smartGroupCacheTimeout'] = 10;
 // defaultSearchProfileID
 $prefsSearch['searchPrimaryDetailsOnly'] = false;
+$prefsSearch['quicksearch_options'] = ['sort_name', 'first_name', 'last_name', 'email', 'phone_numeric', 'street_address', 'city', 'postal_code'];
 
 // URL settings, from Url.setting.php
 $prefsUrl['userFrameworkResourceURL'] = 'sites/all/modules/civicrm/';
