@@ -208,79 +208,8 @@ function nyss_civihooks_civicrm_config(&$config)
   }
 } // nyss_civihooks_civicrm_config()
 
-/**
- * @param $query
- * @param $name
- * @param $context
- * @param $id
- *
- * @deprecated and should be removed after review
- */
-function nyss_civihooks_civicrm_contactListQuery(&$query, $name, $context, $id)
-{
-  //office staff group ID to use for activity assignees and case roles
-  $sql = "SELECT id FROM civicrm_group WHERE name LIKE 'Office_Staff%'";
-  $groupID = CRM_Core_DAO::singleValueQuery($sql);
 
-  //limit activity assignees to office staff group
-  if (($context == 'activity_assignee' || $context == 'case_activity_assignee')
-      && $groupID) {
-    //echo $query;
-    $query = "
-      SELECT CONCAT_WS(' :: ', sort_name, city) as name, cc.id
-      FROM civicrm_contact cc
-      INNER JOIN civicrm_group_contact cgc
-        ON cgc.contact_id = cc.id
-      LEFT JOIN civicrm_address a
-        ON cc.id = a.contact_id
-        AND a.is_primary = 1
-      WHERE ( cc.is_deceased != 1 OR cc.is_deceased IS NULL )
-        AND cc.sort_name LIKE '%$name%'
-        AND cc.is_deleted != 1
-        AND cgc.group_id IN ($groupID) AND cgc.status = 'Added'";
-  }
-  elseif ($context == 'caseview' && $groupID) { //case roles
-    $query = "
-      SELECT id, data
-      FROM (
-        SELECT cc.id as id, CONCAT_WS(' :: ', sort_name, city, email) as data, sort_name
-        FROM civicrm_contact cc
-        LEFT JOIN civicrm_email eml
-          ON ( cc.id = eml.contact_id AND eml.is_primary = 1 )
-        LEFT JOIN civicrm_address sts
-          ON ( cc.id = sts.contact_id AND sts.is_primary = 1 )
-        INNER JOIN civicrm_group_contact cgc
-          ON cgc.contact_id = cc.id
-        WHERE sort_name LIKE '%$name%'
-          AND cc.is_deleted != 1
-          AND cgc.group_id IN ($groupID)
-          AND cgc.status = 'Added'
-        LIMIT 0, 10
-        ) t
-      ORDER BY sort_name";
-  }
-  elseif ($context == 'navigation') {
-    $query = "
-      SELECT DISTINCT(cc.id) as id, CONCAT_WS(' :: ', sort_name, email, city) as data, sort_name, email, city
-      FROM civicrm_contact cc
-      LEFT JOIN civicrm_email eml
-        ON ( cc.id = eml.contact_id AND eml.is_primary = 1 )
-      LEFT JOIN civicrm_address sts
-        ON ( cc.id = sts.contact_id AND sts.is_primary = 1 )
-      WHERE ( sort_name LIKE '{$name}%' )
-        AND cc.is_deleted != 1
-      LIMIT 0, 10
-    ";
-  }
-
-  //CRM_Core_Error::debug_var('$query',$query);
-  //CRM_Core_Error::debug_var('$name',$name);
-  //CRM_Core_Error::debug_var('$context',$context);
-} //nyss_civihooks_civicrm_contactListQuery()
-
-
-function nyss_civihooks_civicrm_buildForm($formName, &$form)
-{
+function nyss_civihooks_civicrm_buildForm($formName, &$form) {
   /*Civi::log()->debug('buildForm', array(
     '$formName' => $formName,
     '$form' => $form,
