@@ -112,14 +112,20 @@ class CRM_Contact_Form_Search_Custom_Proximity extends CRM_Contact_Form_Search_C
       ts('Street Address')
     );
 
+    //NYSS 13034 make required
     $form->add('text',
       'city',
-      ts('City')
+      ts('City'),
+      NULL,
+      TRUE
     );
 
+    //NYSS 13034 make required
     $form->add('text',
       'postal_code',
-      ts('Postal Code')
+      ts('Postal Code'),
+      NULL,
+      TRUE
     );
 
     $defaults = [];
