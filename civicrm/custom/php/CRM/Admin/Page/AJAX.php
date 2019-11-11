@@ -89,6 +89,12 @@ class CRM_Admin_Page_AJAX {
         $item['label'] = ts($props['label'], ['context' => 'menu']);
       }
       $item['name'] = !empty($props['name']) ? $props['name'] : CRM_Utils_String::munge(CRM_Utils_Array::value('label', $props));
+
+      //NYSS 13087
+      if (!empty($props['target'])) {
+        $item['target'] = $props['target'];
+      }
+
       if (!empty($item['child'])) {
         self::formatMenuItems($item['child']);
       }
