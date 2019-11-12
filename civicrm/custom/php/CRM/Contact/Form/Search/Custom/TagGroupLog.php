@@ -71,7 +71,7 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
     $form->addRadio('search_type', ts('Search Type'), $searchType, NULL, '&nbsp;', TRUE);
 
     //construct tags/groups
-    $groups = CRM_Core_PseudoConstant::group();
+    $groups = CRM_Core_PseudoConstant::nestedGroup();
 
     $tags = CRM_Core_BAO_Tag::getTags();
     $keywords = CRM_Core_BAO_Tag::getTagsUsedFor($usedFor = array('civicrm_contact'),
