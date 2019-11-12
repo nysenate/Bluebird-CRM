@@ -207,3 +207,79 @@ function search_civicrm_buildForm($formName, &$form) {
     ));
   }
 }
+
+/**
+ * Implements hook_civicrm_pageRun().
+ */
+function search_civicrm_pageRun(&$page) {
+  if (!empty($_REQUEST['snippet']) && in_array($_REQUEST['snippet'], ['json', 6])) {
+    $page->ajaxResponse['searchresults_items'] = _get_searchresults_items($page);
+  }
+  else {
+    Civi::resources()->addVars('searchresults', _get_searchresults_items($page));
+  }
+}
+
+/**
+ * Implements hook_civicrm_preProcess().
+ */
+function search_civicrm_preProcess($formName, &$form) {
+  if (!empty($_REQUEST['snippet']) && in_array($_REQUEST['snippet'], ['json', 6])) {
+    $form->ajaxResponse['searchresults_items'] = _get_searchresults_items($form);
+  }
+}
+
+/**
+ * Implements hook_civicrm_postProcess().
+ */
+function search_civicrm_postProcess($formName, &$form) {
+  if (!empty($_REQUEST['snippet']) && in_array($_REQUEST['snippet'], ['json', 6])) {
+    $form->ajaxResponse['searchresults_items'] = _get_searchresults_items($form);
+  }
+}
+
+/**
+ * Implements hook_civicrm_coreResourceList().
+ */
+function search_civicrm_coreResourceList(&$list, $region) {
+  if ($region == 'html-header' && CRM_Core_Permission::check('access CiviCRM')) {
+    Civi::resources()
+      ->addScriptFile('gov.nysenate.search', 'js/SearchResult.js', 0, 'html-header');
+      //->addVars('searchresults', _get_searchresults_items());
+  }
+}
+
+function _get_searchresults_items($obj = NULL) {
+  $menu = [];
+
+  //validate the qfKey
+  $qfKey = CRM_Utils_Request::retrieve('key', 'String');
+  if (CRM_Utils_Rule::qfKey($qfKey)) {
+    $breadCrumb = drupal_get_breadcrumb();
+    $searchUrl = '';
+    foreach ($breadCrumb as $crumb) {
+      if (strpos($crumb, 'Search Results') !== FALSE) {
+        $searchUrl = str_replace('<a href="', '', $crumb);
+        $searchUrl = str_replace('">Search Results</a>', '', $searchUrl);
+      }
+    }
+
+    /*Civi::log()->debug('', [
+      'searchUrl' => $searchUrl,
+      'breadcrumb' => $breadCrumb,
+      'obj' => $obj,
+      'qfKey' => $qfKey,
+    ]);*/
+
+    if ($searchUrl) {
+      $menu = [
+        'label' => 'Search Results',
+        'name' => 'search_results',
+        'icon' => 'crm-i fa-search-plus',
+        'url' => $searchUrl,
+      ];
+    }
+  }
+
+  return $menu;
+}
