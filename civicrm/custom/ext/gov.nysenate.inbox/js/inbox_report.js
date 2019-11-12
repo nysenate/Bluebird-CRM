@@ -86,7 +86,7 @@ function setTableFilters() {
   table.search('').columns().search('').draw();
 
   // Add any filter from the stats bar.
-  if (found[1]) {
+  if (found != null && found[1]) {
     table.column(5).search('\\b' + found[1] + '\\b',true);
   }
 
