@@ -141,7 +141,8 @@
     <td>{$form.phone_phone_type_id.label}<br />{$form.phone_phone_type_id.html}</td>
   </tr>
   <tr>
-    <td colspan="2">
+    {*NYSS 1 col*}
+    <td colspan="1">
       <table class="form-layout-compressed">
       <tr>
         <td colspan="2">
@@ -169,6 +170,7 @@
         </script>
       {/literal}
     </td>
+    <td id="privacyOptionNotes_cell"></td>{*NYSS*}
     <td colspan="3">
       {$form.preferred_communication_method.label}<br />
       {$form.preferred_communication_method.html}<br />
