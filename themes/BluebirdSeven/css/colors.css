@@ -87,6 +87,9 @@ ul#civicrm-menu.sm li a {
 #crm-container input.submit-link {
   color: white;
 }
+ul#civicrm-menu.sm li[data-name=search_results] a {
+  background-color: #ccc !important;
+}
 
 /*alternating row color*/
 .crm-container #changeLog table tr.odd-row,
