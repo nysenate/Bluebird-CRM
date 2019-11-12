@@ -1072,8 +1072,9 @@ class CRM_Contact_BAO_Group extends CRM_Contact_DAO_Group {
     // query and build the hierarchy with the algorithm below.
     $groups = [];
     $args = [1 => [$groupIdString, 'String']];
+    //NYSS 12137
     $query = "
-SELECT id, title, description, visibility, parents
+SELECT id, title, description, visibility, parents, saved_search_id
 FROM   civicrm_group
 WHERE  id IN $groupIdString
 ";
@@ -1102,6 +1103,7 @@ WHERE  id IN $groupIdString
           'title' => $dao->title,
           'visibility' => $dao->visibility,
           'description' => $dao->description,
+          'icon' => empty($dao->saved_search_id) ? NULL : 'fa-lightbulb-o', //NYSS 12137
         ];
       }
       else {
@@ -1110,6 +1112,7 @@ WHERE  id IN $groupIdString
           'title' => $dao->title,
           'visibility' => $dao->visibility,
           'description' => $dao->description,
+          'icon' => empty($dao->saved_search_id) ? NULL : 'fa-lightbulb-o', //NYSS 12137
         ];
       }
     }
@@ -1136,14 +1139,18 @@ WHERE  id IN $groupIdString
   private static function buildGroupHierarchy(&$hierarchy, $group, $tree, $titleOnly, $spacer, $level) {
     $spaces = str_repeat($spacer, $level);
 
+    //NYSS 12137
     if ($titleOnly) {
-      $hierarchy[$group['id']] = $spaces . $group['title'];
+      $icon = $group['icon'] ? '* ' : '';
+      $hierarchy[$group['id']] = $icon . $spaces . $group['title'];
     }
     else {
-      $hierarchy[$group['id']] = [
-        'title' => $spaces . $group['title'],
+      $hierarchy[] = [
+        'id' => $group['id'],
+        'text' => $spaces . $group['title'],
         'description' => $group['description'],
         'visibility' => $group['visibility'],
+        'icon' => $group['icon'],
       ];
     }
 
