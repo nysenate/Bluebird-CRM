@@ -107,9 +107,12 @@ class CRM_Contact_Form_Search_Custom_Proximity extends CRM_Contact_Form_Search_C
     $proxUnits = ['km' => ts('km'), 'miles' => ts('miles')];
     $form->add('select', 'prox_distance_unit', ts('Units'), $proxUnits, TRUE);
 
+    //NYSS 13034 make required
     $form->add('text',
       'street_address',
-      ts('Street Address')
+      ts('Street Address'),
+      NULL,
+      TRUE
     );
 
     //NYSS 13034 make required
