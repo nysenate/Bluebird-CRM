@@ -1592,7 +1592,17 @@ class CRM_Contact_BAO_Query {
 
     self::filterCountryFromValuesIfStateExists($formValues);
     // We shouldn't have to whitelist fields to not hack but here we are, for now.
-    $nonLegacyDateFields = ['participant_register_date_relative', 'receive_date_relative'];
+    $nonLegacyDateFields = [
+      'participant_register_date_relative',
+      'receive_date_relative',
+      'pledge_end_date_relative',
+      'pledge_create_date_relative',
+      'pledge_start_date_relative',
+      'pledge_payment_scheduled_date_relative',
+      'membership_join_date_relative',
+      'membership_start_date_relative',
+      'membership_end_date_relative',
+    ];
     // Handle relative dates first
     foreach (array_keys($formValues) as $id) {
       if (
@@ -1685,8 +1695,8 @@ class CRM_Contact_BAO_Query {
       elseif (
         !in_array($id, $nonLegacyDateFields) && (
           preg_match('/_date_relative$/', $id) ||
-        $id == 'event_relative' ||
-        $id == 'case_from_relative' ||
+          $id == 'event_relative' ||
+          $id == 'case_from_relative' ||
           $id == 'case_to_relative')
       ) {
         // Already handled in previous loop
@@ -1825,6 +1835,7 @@ class CRM_Contact_BAO_Query {
       $this->buildRelativeDateQuery($values);
       return;
     }
+    // @todo also handle _low, _high generically here with if ($query->buildDateRangeQuery($values)) {return}
 
     // do not process custom fields or prefixed contact ids or component params
     if (CRM_Core_BAO_CustomField::getKeyID($values[0]) ||
@@ -2783,7 +2794,7 @@ class CRM_Contact_BAO_Query {
       case 'civicrm_worldregion':
         // We can be sure from the calling function that country will already be joined in.
         // we really don't need world_region - we could use a pseudoconstant for it.
-        return "$side JOIN civicrm_worldregion ON civicrm_country.region_id = civicrm_worldregion.id ";
+        return " $side JOIN civicrm_worldregion ON civicrm_country.region_id = civicrm_worldregion.id ";
 
       case 'civicrm_location_type':
         return " $side JOIN civicrm_location_type ON civicrm_address.location_type_id = civicrm_location_type.id ";
@@ -3114,8 +3125,8 @@ class CRM_Contact_BAO_Query {
         }
         // If it is still empty we want a filter that blocks all results.
         if (empty($regularGroupIDs)) {
-        $regularGroupIDs = [0];
-      }
+          $regularGroupIDs = [0];
+        }
       }
 
       $gcTable = "`civicrm_group_contact-" . uniqid() . "`";
@@ -3123,13 +3134,13 @@ class CRM_Contact_BAO_Query {
 
       // @todo consider just casting != to NOT IN & handling both together.
       if ($op == '!=') {
-      $groupIds = '';
-      if (!empty($regularGroupIDs)) {
-        $groupIds = CRM_Utils_Type::validate(
-          implode(',', (array) $regularGroupIDs),
-          'CommaSeparatedIntegers'
-        );
-      }
+        $groupIds = '';
+        if (!empty($regularGroupIDs)) {
+          $groupIds = CRM_Utils_Type::validate(
+            implode(',', (array) $regularGroupIDs),
+            'CommaSeparatedIntegers'
+          );
+        }
         $clause = "{$gcTable}.contact_id NOT IN (SELECT contact_id FROM civicrm_group_contact cgc WHERE cgc.group_id = $groupIds )";
       }
       else {
@@ -3621,7 +3632,7 @@ WHERE  $smartGroupClause
     // so following code is use build whereClause for contact's primart email id
     if (!empty($isForcePrimaryOnly)) {
       $this->_where[$grouping][] = self::buildClause('civicrm_email.is_primary', '=', 1, 'Integer');
-      }
+    }
     // @todo - this should come from the $this->_fields array
     $dbName = $name === 'email_id' ? 'id' : $name;
 
@@ -5367,7 +5378,7 @@ civicrm_relationship.start_date > {$today}
    * @param string $dateFormat
    */
   public function dateQueryBuilder(
-    &$values, $tableName, $fieldName,
+    $values, $tableName, $fieldName,
     $dbFieldName, $fieldTitle,
     $appendTimeStamp = TRUE,
     $dateFormat = 'YmdHis'
@@ -5699,6 +5710,14 @@ civicrm_relationship.start_date > {$today}
   public static function buildClause($field, $op, $value = NULL, $dataType = NULL) {
     $op = trim($op);
     $clause = "$field $op";
+
+    //NYSS ugly hack for group search in advanced search
+    if (strpos($field, 'group_contact') != FALSE && is_array($value) && $op == 'LIKE') {
+      $op = 'IN';
+    }
+
+    //CRM_Core_Error::backtrace('buildClause', TRUE);
+    //Civi::log()->debug('', ['field' => $field, 'value' => $value, 'dataType' => $dataType, 'op' => $op, 'clause' => $clause]);
 
     switch ($op) {
       case 'IS NULL':
@@ -6535,6 +6554,10 @@ AND   displayRelType.is_active = 1
         if (!empty($pseudoConstantMetadata['optionGroupName'])
           || $this->isPseudoFieldAnFK($fieldSpec)
         ) {
+          // dev/core#1305 @todo this is not the right thing to do but for now avoid fatal error
+          if (empty($fieldSpec['bao'])) {
+            continue;
+          }
           $sortedOptions = $fieldSpec['bao']::buildOptions($fieldSpec['name'], NULL, [
             'orderColumn' => CRM_Utils_Array::value('labelColumn', $pseudoConstantMetadata, 'label'),
           ]);
@@ -7078,6 +7101,47 @@ AND   displayRelType.is_active = 1
   }
 
   /**
+   * Get the specifications for the field, if available.
+   *
+   * @param string $fieldName
+   *   Fieldname as displayed on the form.
+   *
+   * @return array
+   */
+  public function getFieldSpec($fieldName) {
+    if (isset($this->_fields[$fieldName])) {
+      return $this->_fields[$fieldName];
+    }
+    $lowFieldName = str_replace('_low', '', $fieldName);
+    if (isset($this->_fields[$lowFieldName])) {
+      return array_merge($this->_fields[$lowFieldName], ['field_name' => $lowFieldName]);
+    }
+    $highFieldName = str_replace('_high', '', $fieldName);
+    if (isset($this->_fields[$highFieldName])) {
+      return array_merge($this->_fields[$highFieldName], ['field_name' => $highFieldName]);
+    }
+    return [];
+  }
+
+  public function buildWhereForDate() {
+
+  }
+
+  /**
+   * Is the field a relative date field.
+   *
+   * @param string $fieldName
+   *
+   * @return bool
+   */
+  protected function isADateRangeField($fieldName) {
+    if (substr($fieldName, -4, 4) !== '_low' && substr($fieldName, -5, 5) !== '_high') {
+      return FALSE;
+    }
+    return !empty($this->getFieldSpec($fieldName));
+  }
+
+  /**
    * @param $values
    */
   protected function buildRelativeDateQuery(&$values) {
@@ -7120,6 +7184,23 @@ AND   displayRelType.is_active = 1
         CRM_Utils_Date::customFormat($dates[1]),
       ]) . ')';
     }
+  }
+
+  /**
+   * Build the query for a date field if it is a _high or _low field.
+   *
+   * @param $values
+   *
+   * @return bool
+   */
+  public function buildDateRangeQuery($values) {
+    if ($this->isADateRangeField($values[0])) {
+      $fieldSpec = $this->getFieldSpec($values[0]);
+      $title = empty($fieldSpec['unique_title']) ? $fieldSpec['title'] : $fieldSpec['unique_title'];
+      $this->dateQueryBuilder($values, $fieldSpec['table_name'], $fieldSpec['field_name'], $fieldSpec['name'], $title);
+      return TRUE;
+    }
+    return FALSE;
   }
 
   /**
