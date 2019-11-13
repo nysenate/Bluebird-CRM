@@ -207,6 +207,15 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
+## repair zombie records
+echo "$prog: repair zombie records"
+sql="
+  UPDATE civicrm_contact
+  SET is_deceased = 0
+  WHERE is_deceased IS NULL
+"
+$execSql $instance -c "$sql" -q
+
 ## non-admin menu + block
 echo "$prog: insert non-admin menu and block"
 sql="

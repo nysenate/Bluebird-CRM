@@ -225,8 +225,10 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
     
     //CRM_Core_Error::debug('select',$selectClause); exit();
     $sql = $this->sql($selectClause, $offset, $rowcount, $sort,
-                      $includeContactIDs, null);
-    //CRM_Core_Error::debug('$sql',$sql); exit();
+      $includeContactIDs, NULL);
+
+    //Civi::log()->debug('', ['sql' => $sql]);
+
     return $sql;
   }
 
