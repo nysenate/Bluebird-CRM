@@ -308,7 +308,8 @@ div.subHeader {
 }
 
 /*ckeditor*/
-.cke_notification_info {
+.cke_notification_info,
+.cke_notification {
   width: 400px;
   background-color: #7EA5AF;
   padding: 10px;
