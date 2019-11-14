@@ -60,20 +60,20 @@
     <td>
       {assign var='custom_26' value=$groupTree.3.fields.26.element_name}
       {$form.$custom_26.label}<br/>
-      {$form.$custom_26.html|crmReplace:class:big}
+      {$form.$custom_26.html|crmReplace:class:"big crm-form-text"}
     </td>
     <td>
       {assign var='custom_25' value=$groupTree.3.fields.25.element_name}
       {$form.$custom_25.label}<br/>
-      {$form.$custom_25.html|crmReplace:class:big}
+      {$form.$custom_25.html|crmReplace:class:"big crm-form-text"}
     </td>
     <td>
       {$form.sic_code.label}<br/>
-      {$form.sic_code.html|crmReplace:class:big}
+      {$form.sic_code.html|crmReplace:class:"big crm-form-text"}
     </td>
     <td>
       {$form.contact_source.label}<br />
-      {$form.contact_source.html|crmReplace:class:big}
+      {$form.contact_source.html|crmReplace:class:"big crm-form-text"}
      </td>
     <td>
       {$form.external_identifier.label}<br />
