@@ -474,7 +474,7 @@ function tags_civicrm_alterEntityRefParams(&$params, $formName) {
   ));*/
 
   //use custom api for legislative positions; exclude search forms
-  if ($params['entity'] == 'tag' &&
+  if (strtolower($params['entity']) == 'tag' &&
     !empty($params['api']['params']['parent_id']) &&
     $params['api']['params']['parent_id'] == 292 &&
     strpos($formName, 'Search') === FALSE &&
