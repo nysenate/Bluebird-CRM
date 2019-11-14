@@ -88,6 +88,10 @@ ul#civicrm-menu.sm {
 ul#civicrm-menu.sm li[data-name=search_results] a {
   background-color: #ccc !important;
 }
+.crm-container .select2-container-active a.select2-choice {
+  border-color: #66afe9;
+  outline: 0;
+}
 
 /*alternating row color*/
 .crm-container #changeLog table tr.odd-row,
