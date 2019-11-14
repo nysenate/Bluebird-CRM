@@ -58,7 +58,7 @@ CKEDITOR.editorConfig = function( config ) {
 
   // Remove some buttons provided by the standard plugins, which are
   // not needed in the Standard(s) toolbar.
-  config.removeButtons = 'Subscript,Superscript,Anchor,Format,Styles,Symbols,Strike,About';  // ,Format
+  config.removeButtons = 'Subscript,Superscript,Anchor,Format,Styles,Symbols,Strike,About,PasteFromWord';  // ,Format
 
   //NYSS allows the browser (non-ie) to take out the context menues
   config.disableNativeSpellChecker = true;
