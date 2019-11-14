@@ -125,6 +125,9 @@ ul#civicrm-menu.sm ul {
 .crm-activityLinks a {
   width: 100%;
 }
+div#s2id_prefix_id {
+  min-width: 150px !important;
+}
 
 /*Contact Form*/
 .crm-container table.form-layout-compressed.individual-contact-details,
