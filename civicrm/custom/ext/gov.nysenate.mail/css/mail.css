@@ -12,3 +12,8 @@ li[aria-controls=tab-tracking] {
 .crm-container.ui-dialog .ui-dialog-content {
   height: 90% !important;
 }
+
+/*13116*/
+.crm-container .crm-hover-button[disabled] {
+  cursor: pointer !important;
+}
