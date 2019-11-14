@@ -122,6 +122,9 @@ ul#civicrm-menu.sm ul {
 .page-civicrm-contact-view:not([class*='page-civicrm-contact-view-']) .crm-contact-tabs-list .crm-tab-button#tab_nyss_web_tags:hover {
   background-color: #e8eef0;
 }
+.crm-activityLinks a {
+  width: 100%;
+}
 
 /*Contact Form*/
 .crm-container table.form-layout-compressed.individual-contact-details,
