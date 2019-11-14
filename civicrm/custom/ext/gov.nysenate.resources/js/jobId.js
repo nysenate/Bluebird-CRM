@@ -31,7 +31,6 @@ CRM.$(function($) {
   }
 
   $('a#bbSetJobId').click(function(){
-    console.log('clicked...');
     setJobID();
     return false;
   })

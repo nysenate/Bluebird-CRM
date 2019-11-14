@@ -1,3 +1,8 @@
+/*menu*/
+li#crm-qsearch a input#crm-qsearch-input {
+  width: 130px !important;
+}
+
 /*news feed*/
 div#newsFeeds {
   padding: 20px;
