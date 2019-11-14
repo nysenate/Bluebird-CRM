@@ -357,3 +357,8 @@ form#user-profile-form div.nyss-roles-description {
   display: none;
 }
 
+@media (min-device-width: 768px) {
+  .page-civicrm-contact-add .crm-container .crm-contactDetails-accordion .crm-form-select {
+    min-width: 160px !important;
+  }
+}
