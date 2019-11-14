@@ -127,7 +127,21 @@ function contact_civicrm_pageRun(&$page) {
 
   if (is_a($page, 'CRM_Contact_Page_View_Summary')) {
     $cid = $page->getVar('_contactId');
-    $contact = civicrm_api3('contact', 'getsingle', array('id' => $cid));
+    $contact = civicrm_api3('contact', 'getsingle', [
+      'id' => $cid,
+      'return' => [
+        'supplemental_address_1',
+        'street_address',
+        'city',
+        'state',
+        'postal_code',
+        'phone',
+        'email',
+        'id',
+        'custom_19'
+      ]
+    ]);
+    //Civi::log()->debug('contact_civicrm_pageRun', array('$contact' => $contact));
 
     $supp1 = (!empty($contact['supplemental_address_1'])) ? ", {$contact['supplemental_address_1']}" : '';
     $html = "
@@ -141,6 +155,14 @@ function contact_civicrm_pageRun(&$page) {
 
     CRM_Core_Resources::singleton()->addVars('NYSS', array('bbContactSummary' => $html));
     CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.contact', 'js/ContactSummary.js');
+
+    if (!empty($contact['custom_19'])) {
+      CRM_Core_Resources::singleton()->addStyle('
+        div.crm-actions-ribbon {
+          border-bottom: 5px solid #FBCA54 !important;
+        }
+      ');
+    }
   }
 
   if (is_a($page, 'CRM_Activity_Page_Tab')) {
