@@ -58,6 +58,9 @@ div#Tag li#j1_1 > a#tag_291 {
 .page-civicrm-contact-view .CRM_Tag_Form_Tag #Tag .jstree-default .jstree-wholerow-clicked {
   background: #e8eef0 !important;
 }
+input[type=color] {
+  display: none;
+}
 
 /*relationship tab 12077*/
 .crm-relationship-form-block-is_permission_a_b,
@@ -81,6 +84,11 @@ div#Tag li#j1_1 > a#tag_291 {
 .crm-container .crm-dashboard-controls {
   margin-top: 0;
   margin-bottom: 0;
+}
+
+/*groups*/
+.crm-container.ui-dialog .ui-dialog-content .crm-submit-buttons {
+  display: block !important;
 }
 
 /*********** BELOW SHOULD BE TEMPORARY! *************/

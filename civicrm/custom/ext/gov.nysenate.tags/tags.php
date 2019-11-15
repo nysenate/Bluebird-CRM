@@ -330,6 +330,11 @@ function tags_civicrm_buildForm($formName, &$form) {
       $form->getElement('used_for')->freeze();
     }
   }
+
+  //13120 color field removed universally
+  if ($form->elementExists('color')) {
+    $form->removeElement('color');
+  }
 } //tags_civicrm_buildForm()
 
 function tags_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
