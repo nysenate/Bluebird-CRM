@@ -18,5 +18,8 @@ CRM.$(function($) {
         clearInterval(intKeywords);
       }
     }, 5);
+
+    //13119
+    $('ul[role=tablist] li.crm-tab-button:first-child a').html('<i class="crm-i fa-tags"></i> Issue Codes');
   });
 });
