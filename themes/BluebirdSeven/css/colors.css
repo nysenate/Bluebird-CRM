@@ -1,3 +1,11 @@
+.form-item input.error,
+.form-item textarea.error,
+.form-item select.error {
+  border: 1px solid #D77;
+  background: #FCC;
+  color: #8A1F11;
+}
+
 .page-civicrm,
 .page-civicrm #page {
   background: #DADAD2 !important;
