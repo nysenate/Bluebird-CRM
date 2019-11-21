@@ -36,22 +36,28 @@
   </div>
 </div>
 
-<div id="branding" class="clearfix">
-  <?php
-  if ($addlVars['recent_items']) {
-    print $addlVars['recent_items'];
-  }
-  ?>
-
-  <div id="bb-header">
+<?php if (empty($userNoRoles)) { ?>
+  <div id="branding" class="clearfix">
     <?php
-    if ($addlVars['isCiviCRM']) {
-      print $addlVars['bbheader'];
-      print $addlVars['bbjob'];
+    if ($addlVars['recent_items']) {
+      print $addlVars['recent_items'];
     }
     ?>
+
+    <div id="bb-header">
+      <?php
+      if ($addlVars['isCiviCRM']) {
+        print $addlVars['bbheader'];
+        print $addlVars['bbjob'];
+      }
+      ?>
+    </div>
   </div>
-</div>
+<?php } else { ?>
+  <div id="userNoRoles">
+    <p>Thank you for signing in. Please contact your Bluebird Office Administrator to assign your user role and access the system.</p>
+  </div>
+<?php } ?>
 
 <div id="dialogJobID" style="display: none;">
   <form action="" method="post" id="formSetJob">

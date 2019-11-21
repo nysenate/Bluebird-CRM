@@ -17,6 +17,20 @@ body.page-civicrm.admin-menu.adminimal-menu:before {
   background: none !important;
 }
 
+/*no user logged in page*/
+body.user-no-roles {
+  background-color: #C9DBD9;
+  padding: 50px;
+}
+body.user-no-roles #page {
+  display: none;
+}
+body.user-no-roles #userNoRoles {
+  margin: 0 40px 40px;
+  padding: 20px;
+  border: 8px solid #546A7B;
+}
+
 #civicrm-menu.sm #crm-qsearch-input {
   font-family: FontAwesome,"Open Sans","Helvetica Neue",Helvetica,Arial,sans-serif;
 }

@@ -30,4 +30,34 @@ function BluebirdSeven_page_alter(&$page) {
       drupal_set_message($error, 'error');
     }
   }
+
+  //echo '<pre>';print_r($page);echo $title;echo '</pre>';
+}
+
+function BluebirdSeven_preprocess_page(&$vars) {
+  //echo '<pre>';print_r($vars);echo '</pre>';
+
+  //set title when no roles
+  $title = drupal_get_title();
+  if ($title == 'Please Login' && !empty($vars['user']->uid)) {
+    drupal_set_title('Bluebird Access Permission Required');
+  }
+
+  //only role is authenticated user
+  if (count($vars['user']->roles) == 1 && isset($vars['user']->roles[2])) {
+    $vars['userNoRoles'] = TRUE;
+  }
+
+  //$vars['myvar'] = "value";
+}
+
+function BluebirdSeven_preprocess_html(&$vars) {
+  //echo '<pre>';print_r($vars);echo '</pre>';
+
+  //add body class if no roles
+  if ($vars['head_title_array']['title'] == 'Bluebird Access Permission Required') {
+    $vars['classes_array'][] = 'user-no-roles';
+  }
+
+  //$vars['classes_array'][] = 'new-class';
 }
