@@ -96,8 +96,18 @@ ul#civicrm-menu.sm {
 ul#civicrm-menu.sm li[data-name=search_results] a {
   background-color: #ccc !important;
 }
-.crm-container .select2-container-active a.select2-choice {
-  border-color: #66afe9;
+
+/*13093 highlighted fields*/
+.crm-container .select2-container-active a.select2-choice,
+.crm-container input.crm-form-text:focus,
+.crm-container .crm-icon-picker-button:focus,
+.crm-container input.dateplugin:focus,
+.crm-container input.crm-form-password:focus,
+.crm-container .replace-plain:focus,
+.crm-container textarea:focus,
+.crm-container select.crm-form-multiselect:focus {
+  border-color: #66afe9 !important;
+  box-shadow: 0 0 5px rgba(81, 203, 238, 1) !important;
   outline: 0;
 }
 
