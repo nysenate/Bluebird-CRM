@@ -250,6 +250,7 @@ div.subHeader {
 #nyss-recentitems-list li {
   display: inline;
   margin-right: 6px;
+  white-space: nowrap;
 }
 #nyss-recentitems-list li a {
   color: white;
