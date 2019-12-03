@@ -29,7 +29,7 @@ map_param_to_field() {
   elif [ "$p" = "pass" ]; then
     fld="bindpw"
   elif [ "$p" = "group_class" ]; then
-    fld="group_object_category"
+    fld="grp_object_cat"
   else
     # port, basedn, user_attr, mail_attr
     fld="$p"
