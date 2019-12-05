@@ -19,7 +19,8 @@ Options -Indexes
 Options +FollowSymLinks
 
 # Make Drupal handle any 404 errors.
-ErrorDocument 404 /index.php
+# NYSS - Commented this out, since we do not want to pass 404 errors to Drupal.
+#ErrorDocument 404 /index.php
 
 # Set the default handler.
 DirectoryIndex index.php index.html index.htm
@@ -113,6 +114,14 @@ DirectoryIndex index.php index.html index.htm
   # If your site is running in a VirtualDocumentRoot at http://example.com/,
   # uncomment the following line:
   # RewriteBase /
+
+  # NYSS - URLs that cannot be found in the filesystem are typically passed
+  # to Drupal for handling.  However, for Bluebird, any URL that begins with
+  # "/data/" should never be passed to Drupal.  It either resolves to a
+  # file, or it's an HTTP 404 error.  The same applies for "favicon.ico".
+  RewriteCond %{REQUEST_URI} "^/(data/|favicon.ico)"
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteRule ^ - [L,R=404]
 
   # Pass all requests not referring directly to files in the filesystem to
   # index.php. Clean URLs are handled in drupal_environment_initialize().
