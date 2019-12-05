@@ -64,7 +64,6 @@ ini_set('session.cookie_lifetime',  0); //6741 rollback
 ini_set('session.gc_maxlifetime',   360000); //10hrs
 ini_set('session.gc_probability',   1);
 ini_set('session.gc_divisor',       100);
-ini_set('session.save_handler',     'user');
 ini_set('session.use_cookies',      1);
 ini_set('session.use_only_cookies', 1);
 ini_set('session.use_trans_sid',    0);
@@ -101,7 +100,7 @@ if (preg_match("/^simpletest\d+$/", $_SERVER['HTTP_USER_AGENT'])) {
 //$conf['apc_show_debug'] = TRUE;  // Remove the slashes to use debug mode.
 
 # Varnish reverse proxy on localhost
-$conf['reverse_proxy'] = TRUE;           
+$conf['reverse_proxy'] = TRUE;
 $conf['reverse_proxy_addresses'] = array('127.0.0.1');
 
 /**
