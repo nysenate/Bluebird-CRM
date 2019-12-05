@@ -65,8 +65,8 @@ define('CIVICRM_PETITION_CONTACTS', 'Petition Contacts');
 
 // Cache-related constants
 define('CIVICRM_DB_CACHE_CLASS', get_config_value($bbcfg, 'cache.db.class', null));
-//define('CIVICRM_MEMCACHE_TIMEOUT', get_config_value($bbcfg, 'cache.memcache.timeout', 600));
-//define('CIVICRM_MEMCACHE_PREFIX', $servername);
+define('CIVICRM_MEMCACHE_TIMEOUT', get_config_value($bbcfg, 'cache.memcache.timeout', 600));
+define('CIVICRM_MEMCACHE_PREFIX', $servername);
 
 // SAGE API constants
 define('SAGE_API_KEY', get_config_value($bbcfg, 'sage.api.key', 'NO_KEY'));
