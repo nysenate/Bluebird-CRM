@@ -216,6 +216,10 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
+## insert contact_layout records
+echo "$prog: insert contact layout records"
+$execSql $instance -f $app_rootdir/scripts/sql/contact_layout.sql -q
+
 ## non-admin menu + block
 echo "$prog: insert non-admin menu and block"
 sql="
