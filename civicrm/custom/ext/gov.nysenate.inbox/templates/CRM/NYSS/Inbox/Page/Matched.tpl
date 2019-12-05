@@ -23,7 +23,7 @@
       <th data-data="sender_name" class="crm-matchedmessages">
         {if $list eq 'matched'}Matched Info{else}Sender Info{/if}</th>
       <th data-data="subject" class="crm-matchedmessages">Subject</th>
-      <th data-data="updated_date" class="crm-matchedmessages">Matched Date</th>
+      <th data-data="updated_date" class="crm-matchedmessages">Last Updated</th>
       <th data-data="forwarder" class="crm-matchedmessages">Forwarded By</th>
       <th data-data="links" data-orderable="false" class="crm-matchedmessages crm-actions">Actions</th>
     </tr>

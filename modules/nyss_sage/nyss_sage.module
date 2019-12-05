@@ -1,79 +1,92 @@
 <?php
 
-function nyss_sage_address( $id ) {
-    if($id) {
-        require_once 'CRM/Core/DAO/Address.php';
-        $old_address = new CRM_Core_DAO_Address();
-        $old_address->id = $id;
-        if($old_address->find(true))
-            return $old_address;
-    }
-    return null;
-}
-
-function nyss_sage_compare($old_address, $params, $key) {
-    return strcmp($old_address->$key, $params[$key]) != 0;
-}
-
-// NYSS 5308 Search through parameters for a key
-// that starts with custom_{$id} and return it
-function nyss_sage_custom_value($params, $id, $addrId) {
-    foreach($params as $k => $v) {
-        if(substr($k, 0, 9) == "custom_{$id}") {
-            return $v;
-        }
-    }
-    return null;
-}
-
-function nyss_sage_civicrm_pre( $op, $objectName, $id, &$params )
+// Retrieve the full address record associated with the given address ID.
+function nyss_sage_address($id)
 {
-    //Don't do anything unless we are saving an address
-    if( $objectName == 'Address' ) {
-        require_once 'CRM/Utils/SAGE.php';
-
-        // If the address already exists, fetch it and compare with form values
-        // Unless the address is being modified we never overwrite districts
-        $old_addr = nyss_sage_address($id);
-
-        $addr_changed = ($old_addr === null ||
-            nyss_sage_compare($old_addr,$params,'street_address')     ||
-            nyss_sage_compare($old_addr,$params,'city')               ||
-            nyss_sage_compare($old_addr,$params,'postal_code')        ||
-            nyss_sage_compare($old_addr,$params,'postal_code_suffix') ||
-            nyss_sage_compare($old_addr,$params,'state_province_id')  ||
-            nyss_sage_compare($old_addr,$params,'supplemental_address_1'));
-
-        $geo_missing = empty($old_addr->geo_code_1) || empty($old_addr->geo_code_2);
-
-        $custom_46 = nyss_sage_custom_value($params, 46, $old_addr->id);
-        $custom_47 = nyss_sage_custom_value($params, 47, $old_addr->id);
-        $custom_48 = nyss_sage_custom_value($params, 48, $old_addr->id);
-        $custom_49 = nyss_sage_custom_value($params, 49, $old_addr->id);
-        $custom_50 = nyss_sage_custom_value($params, 50, $old_addr->id);
-        $custom_52 = nyss_sage_custom_value($params, 52, $old_addr->id);
-        $custom_54 = nyss_sage_custom_value($params, 54, $old_addr->id);
-
-        $district_info_missing = empty($custom_46)  ||
-                                 empty($custom_47)  ||
-                                 empty($custom_48)  ||
-                                 empty($custom_49)  ||
-                                 empty($custom_50)  ||
-                                 empty($custom_52)  ||
-                                 empty($custom_54);
-
-        //NYSS 5308 - Changed code to check for postal_code_suffix as well as
-        //empty geo_code lat/lon. If empty, or suffix changed, then lookup
-        //the new geocode information.
-        if( $addr_changed || $geo_missing || $district_info_missing) {
-
-            //NYSS 5263 - Removed the check for country_id as the $params
-            //variable wasn't being given the country_id.
-            //In turn, lookups are only done when the address is different.
-            CRM_Utils_SAGE::lookup($params, $addr_changed, true);
-        }
+  if ($id) {
+    require_once 'CRM/Core/DAO/Address.php';
+    $old_address = new CRM_Core_DAO_Address();
+    $old_address->id = $id;
+    if ($old_address->find(true)) {
+      return $old_address;
     }
-    return true;
-}
+  }
+  return null;
+} // nyss_sage_address()
+
+
+// Return true if all components of the address are equal to the params.
+function nyss_sage_compare_address_components($addr, $params)
+{
+  if ($addr === null || is_array($params) === false) {
+    return false;
+  }
+
+  $cmp_keys = [ 'street_address', 'city', 'postal_code', 'postal_code_suffix',
+                'state_province_id', 'supplemental_address_1' ];
+  foreach ($cmp_keys as $akey) {
+    if ($addr->$akey != $params[$akey]) {
+      return false;
+    }
+  }
+  return true;
+} // nyss_sage_compare_address_components()
+
+
+// Search through parameters for a key that starts with "custom_NN_", where
+// "NN" is the custom key ID.  If found, return the value associated with
+// the partial key.  If not found, return null.
+function nyss_sage_custom_value($params, $id)
+{
+  foreach ($params as $k => $v) {
+    $key_prefix = "custom_{$id}_";
+    $len = strlen($key_prefix);
+    if (substr($k, 0, $len) === $key_prefix) {
+      return $v;
+    }
+  }
+  return null;
+} // nyss_sage_custom_value()
+
+
+// Return true if all 7 district info parameters are populated, false otherwise.
+// NYSS 5308
+function nyss_sage_district_info_populated($params)
+{
+  foreach ([46,47,48,49,50,52,54] as $cidx) {
+    if (empty(nyss_sage_custom_value($params, $cidx))) {
+      return false;
+    }
+  }
+  return true;
+} // nyss_sage_district_info_populated()
+
+
+// This is the main entry point for this module.
+
+function nyss_sage_civicrm_pre($op, $objectName, $id, &$params)
+{
+  //Don't do anything unless we are saving an address
+  if ($objectName == 'Address') {
+    require_once 'CRM/Utils/SAGE.php';
+
+    // If the address already exists, fetch it and compare with form values
+    // Unless the address is being modified we never overwrite districts
+    $old_addr = nyss_sage_address($id);
+
+    // If the new address is different from the old one, or either of the
+    // geocodes from the old address are not populated, or any of the 7
+    // required district fields from the old address are not populated,
+    // then the address will be sent to SAGE and the results will be saved.
+    $addr_changed = !nyss_sage_compare_address_components($old_addr, $params);
+    $geo_missing = empty($old_addr->geo_code_1) || empty($old_addr->geo_code_2);
+    $district_info_missing = !nyss_sage_district_info_populated($params);
+
+    if ($addr_changed || $geo_missing || $district_info_missing) {
+      CRM_Utils_SAGE::lookup($params, $addr_changed, true);
+    }
+  }
+  return true;
+} // nyss_sage_civicrm_pre()
 
 ?>

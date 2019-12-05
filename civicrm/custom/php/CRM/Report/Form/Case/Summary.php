@@ -230,6 +230,10 @@ class CRM_Report_Form_Case_Summary extends CRM_Report_Form {
             if ($fieldName == 'duration') {
               $select[] = "IF({$table['fields']['end_date']['dbAlias']} Is Null, '', DATEDIFF({$table['fields']['end_date']['dbAlias']}, {$table['fields']['start_date']['dbAlias']})) as {$tableName}_{$fieldName}";
             }
+            //NYSS 13126
+            elseif ($tableName == 'civicrm_relationship_type') {
+              $select[] = "  IF(contact_civireport.id = relationship_civireport.contact_id_a, relationship_type_civireport.label_b_a, relationship_type_civireport.label_a_b) as civicrm_relationship_type_label_b_a";
+            }
             else {
               $select[] = "{$field['dbAlias']} as {$tableName}_{$fieldName}";
             }
@@ -278,8 +282,12 @@ class CRM_Report_Form_Case_Summary extends CRM_Report_Form {
     $crt = $this->_aliases['civicrm_relationship_type'];
     $ccc = $this->_aliases['civicrm_case_contact'];
 
+    //NYSS 13126
     foreach ($this->_columns['civicrm_relationship']['filters'] as $fieldName => $field) {
-      if (!empty($this->_params[$fieldName . '_op']) && isset($this->_params[$fieldName . '_value'])) {
+      if (!empty($this->_params[$fieldName . '_op'])
+        && array_key_exists("{$fieldName}_value", $this->_params)
+        && !CRM_Utils_System::isNull($this->_params["{$fieldName}_value"])
+      ) {
         $this->_relField = TRUE;
         break;
       }
@@ -288,7 +296,7 @@ class CRM_Report_Form_Case_Summary extends CRM_Report_Form {
     if ($this->_relField) {
       $this->_from = "
             FROM civicrm_contact $c
-inner join civicrm_relationship $cr on {$c}.id = ${cr}.contact_id_b
+inner join civicrm_relationship $cr on {$c}.id = ${cr}.contact_id_b OR {$c}.id = ${cr}.contact_id_a
 inner join civicrm_case $cc on ${cc}.id = ${cr}.case_id
 inner join civicrm_relationship_type $crt on ${crt}.id=${cr}.relationship_type_id
 inner join civicrm_case_contact $ccc on ${ccc}.case_id = ${cc}.id

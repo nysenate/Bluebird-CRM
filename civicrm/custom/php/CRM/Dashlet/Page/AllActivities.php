@@ -52,7 +52,7 @@ class CRM_Dashlet_Page_AllActivities extends CRM_Core_Page {
     $this->assign('admin', $admin);
 
     // also create the form element for the activity filter box
-    $controller = new CRM_Core_Controller_Simple('CRM_Activity_Form_ActivityFilter',
+    $controller = new CRM_Core_Controller_Simple('CRM_Dashlet_Form_AllActivityFilter',
       ts('Activity Filter'), NULL
     );
     $controller->setEmbedded(TRUE);
