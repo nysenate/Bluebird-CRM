@@ -31,7 +31,7 @@ fi
 echo "$prog: Starting v2.2.7 upgrade process"
 
 sql="DELETE FROM system WHERE type='module' AND name='nyss_massmerge';"
-$execSql $instance -c "$sql" -q
+$execSql $instance --drupal -c "$sql" -q
 
 ## record completion
 echo "$prog: Finished the v2.2.7 upgrade process"
