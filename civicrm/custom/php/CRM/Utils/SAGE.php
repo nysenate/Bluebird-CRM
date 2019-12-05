@@ -562,7 +562,9 @@ class CRM_Utils_SAGE
     $values['state_province'] = (string)$xml->address->state;
     $values['postal_code'] = (string)$xml->address->zip5;
     $values['postal_code_suffix'] = (string)$xml->address->zip4;
-    $values[$addr_field] = self::normalizeAddr((string)$xml->address->addr1, $values[$addr_field]);
+
+    $address = (!empty($xml->address->addr2)) ? $xml->address->addr1.', '.$xml->address->addr2 : $xml->address->addr1;
+    $values[$addr_field] = self::normalizeAddr((string)$address, $values[$addr_field]);
 
     // Since standardization could change the street address, fix the parts
     self::fixStreetAddressParts($values);
