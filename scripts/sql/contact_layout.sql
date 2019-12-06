@@ -1,3 +1,7 @@
+SET FOREIGN_KEY_CHECKS = 0;
+
+DELETE FROM civicrm_uf_field WHERE uf_group_id IN (21,22,24,25);
+DELETE FROM civicrm_uf_join WHERE module IN ('Profile', 'Contact Summary') AND entity_id IN (21,22,24,25);
 DELETE FROM civicrm_uf_group
 WHERE name IN ('Contact_Summary_Individual', 'Contact_Summary_Demographics', 'Contact_Summary_Privacy_Notes', 'Contact_Summary_Additional_Constituent_Information');
 
@@ -8,8 +12,6 @@ VALUES
 (24, 1, 'Contact', 'Privacy Notes', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 1, NULL, 0, NULL, NULL, 'Contact_Summary_Privacy_Notes', 1, '2019-12-07 00:00:00', 0, NULL, NULL, 'Privacy Notes', 1),
 (25, 1, 'Individual', 'Additional Constituent Information', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 1, NULL, 0, NULL, NULL, 'Contact_Summary_Additional_Constituent_Information', 1, '2019-12-07 00:00:00', 0, NULL, NULL, 'Additional Constituent Information', 1);
 
-DELETE FROM civicrm_uf_join WHERE module IN ('Profile', 'Contact Summary') AND entity_id IN (21,22,24,25);
-
 INSERT IGNORE INTO civicrm_uf_join (id, is_active, module, entity_table, entity_id, weight, uf_group_id, module_data) VALUES
 (26, 1, 'Profile', NULL, NULL, 1, 21, NULL),
 (27, 1, 'Contact Summary', NULL, NULL, 1, 21, NULL),
@@ -19,8 +21,6 @@ INSERT IGNORE INTO civicrm_uf_join (id, is_active, module, entity_table, entity_
 (33, 1, 'Contact Summary', NULL, NULL, 1, 24, NULL),
 (34, 1, 'Profile', NULL, NULL, 1, 25, NULL),
 (35, 1, 'Contact Summary', NULL, NULL, 1, 25, NULL);
-
-DELETE FROM civicrm_uf_field WHERE uf_group_id IN (21,22,24,25);
 
 INSERT INTO civicrm_uf_field (id, uf_group_id, field_name, is_active, is_view, is_required, weight, help_post, help_pre, visibility, in_selector, is_searchable, location_type_id, phone_type_id, website_type_id, label, field_type, is_reserved, is_multi_summary) VALUES
 (158, 21, 'current_employer', 1, 0, 0, 1, NULL, NULL, 'User and User Admin Only', 0, 0, NULL, NULL, NULL, 'Employer', 'Individual', NULL, 0),
@@ -54,3 +54,5 @@ INSERT INTO civicrm_contact_layout (id, label, contact_type, contact_sub_type, g
 VALUES (1, 'Default: Individual', 'Individual', NULL, NULL, 3, '[[[{\"name\":\"profile.Contact_Summary_Individual\",\"title\":\"Contact Summary: Individual\",\"collapsible\":false,\"collapsed\":false,\"showTitle\":false},{\"name\":\"core.Address\",\"title\":\"Address\"},{\"name\":\"profile.Contact_Summary_Additional_Constituent_Information\",\"title\":\"Additional Constituent Information\",\"collapsible\":true}],[{\"name\":\"profile.Contact_Summary_Demographics\",\"title\":\"Demographics\",\"collapsible\":false,\"collapsed\":false,\"showTitle\":false},{\"name\":\"core.Email\",\"title\":\"Email\"},{\"name\":\"core.Phone\",\"title\":\"Phone\"},{\"name\":\"core.CommunicationPreferences\",\"title\":\"Communication Preferences\"},{\"name\":\"profile.Contact_Summary_Privacy_Notes\",\"title\":\"Privacy Notes\",\"collapsible\":false,\"collapsed\":false,\"showTitle\":false},{\"name\":\"custom.Attachments\",\"title\":\"File Attachments\",\"collapsible\":true,\"collapsed\":false}]]]', '[{\"id\":\"summary\",\"is_active\":true},{\"id\":\"activity\",\"is_active\":true},{\"id\":\"case\",\"is_active\":true},{\"id\":\"mailing\",\"is_active\":true},{\"id\":\"rel\",\"is_active\":true},{\"id\":\"group\",\"is_active\":true},{\"id\":\"note\",\"is_active\":true},{\"id\":\"tag\",\"is_active\":true},{\"id\":\"custom_9\",\"is_active\":true,\"icon\":\"crm-i fa-user\"},{\"id\":\"nyss_web_activitystream\",\"is_active\":true,\"icon\":\"crm-i fa-globe\"},{\"id\":\"nyss_web_tags\",\"is_active\":true,\"icon\":\"crm-i fa-tags\"},{\"id\":\"log\",\"is_active\":true}]'),
 (2, 'Default: Household', 'Household', NULL, NULL, 1, '[[[{\"name\":\"core.ContactInfo\",\"title\":\"Employer, Nickname, Source\"},{\"name\":\"core.Address\",\"title\":\"Address\"},{\"name\":\"custom.Attachments\",\"title\":\"File Attachments\",\"collapsible\":true,\"collapsed\":false}],[{\"name\":\"core.Email\",\"title\":\"Email\"},{\"name\":\"core.Phone\",\"title\":\"Phone\"},{\"name\":\"core.CommunicationPreferences\",\"title\":\"Communication Preferences\"}]]]', '[{\"id\":\"summary\",\"is_active\":true},{\"id\":\"activity\",\"is_active\":true},{\"id\":\"case\",\"is_active\":true},{\"id\":\"mailing\",\"is_active\":true},{\"id\":\"rel\",\"is_active\":true},{\"id\":\"group\",\"is_active\":true},{\"id\":\"note\",\"is_active\":true},{\"id\":\"tag\",\"is_active\":true},{\"id\":\"log\",\"is_active\":true},{\"id\":\"custom_9\",\"is_active\":true},{\"id\":\"nyss_web_activitystream\",\"is_active\":true,\"icon\":\"crm-i fa-globe\"},{\"id\":\"nyss_web_tags\",\"is_active\":true,\"icon\":\"crm-i fa-tags\"}]'),
 (3, 'Default: Organization', 'Organization', NULL, NULL, 2, '[[[{\"name\":\"core.ContactInfo\",\"title\":\"Employer, Nickname, Source\"},{\"name\":\"core.Address\",\"title\":\"Address\"},{\"name\":\"custom.Organization_Constituent_Information\",\"title\":\"Organization Constituent Information\",\"collapsible\":true,\"collapsed\":false}],[{\"name\":\"core.Email\",\"title\":\"Email\"},{\"name\":\"core.Phone\",\"title\":\"Phone\"},{\"name\":\"core.CommunicationPreferences\",\"title\":\"Communication Preferences\"},{\"name\":\"custom.Attachments\",\"title\":\"File Attachments\",\"collapsible\":true,\"collapsed\":false}]]]', '[{\"id\":\"summary\",\"is_active\":true},{\"id\":\"activity\",\"is_active\":true},{\"id\":\"case\",\"is_active\":true},{\"id\":\"mailing\",\"is_active\":true},{\"id\":\"rel\",\"is_active\":true},{\"id\":\"group\",\"is_active\":true},{\"id\":\"note\",\"is_active\":true},{\"id\":\"tag\",\"is_active\":true},{\"id\":\"log\",\"is_active\":true},{\"id\":\"custom_9\",\"is_active\":true},{\"id\":\"nyss_web_activitystream\",\"is_active\":true,\"icon\":\"crm-i fa-globe\"},{\"id\":\"nyss_web_tags\",\"is_active\":true,\"icon\":\"crm-i fa-tags\"}]');
+
+SET FOREIGN_KEY_CHECKS = 1;
