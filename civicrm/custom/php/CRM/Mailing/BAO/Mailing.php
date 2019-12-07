@@ -2537,7 +2537,7 @@ LEFT JOIN civicrm_mailing_group g ON g.mailing_id   = m.id
     CRM_Mailing_BAO_MailingJob::del($id);
 
     //NYSS 11888
-    CRM_Utils_Hook::post('delete', 'MailingJob', $id, array());
+    CRM_Utils_Hook::post('delete', 'MailingJob', $id);
   }
 
   /**
