@@ -39,16 +39,20 @@
 <?php if (empty($userNoRoles)) { ?>
   <div id="branding" class="clearfix">
     <?php
-    if ($addlVars['recent_items']) {
+    if (isset($addlVars['recent_items'])) {
       print $addlVars['recent_items'];
     }
     ?>
 
     <div id="bb-header">
       <?php
-      if ($addlVars['isCiviCRM']) {
-        print $addlVars['bbheader'];
-        print $addlVars['bbjob'];
+      if (isset($addlVars['isCiviCRM'])) {
+        if (isset($addlVars['bbheader'])) {
+          print $addlVars['bbheader'];
+        }
+        if (isset($addlVars['bbjob'])) {
+          print $addlVars['bbjob'];
+        }
       }
       ?>
     </div>
@@ -69,11 +73,15 @@
 
 <?php
 
-function _bbSetupHeader() {
-  //check if logged in; exit if not;
+function _bbSetupHeader()
+{
   global $user;
+
+  $params = [];
+
+  // If user is not logged in, return an empty array of parameters.
   if (!$user->uid) {
-    return array();
+    return $params;
   }
 
   //store job id in db variable and session
@@ -91,21 +99,26 @@ function _bbSetupHeader() {
   }
 
   //setup header line
-  $rolesList = implode('',$user->roles);
-  $rolesList = str_replace('authenticated user','', $rolesList);
+  $rolesList = implode('', $user->roles);
+  $rolesList = str_replace('authenticated user', '', $rolesList);
 
   civicrm_initialize();
   $contact = civicrm_api3('contact', 'getsingle', array(
     'id' => CRM_Core_Session::singleton()->getLoggedInContactID(),
   ));
 
-  $instance = substr( $_SERVER['HTTP_HOST'], 0, strpos( $_SERVER['HTTP_HOST'], '.' ) );
+  if (($hostlen = strpos($_SERVER['HTTP_HOST'], '.')) === false) {
+    $instance = $_SERVER['HTTP_HOST'];
+  }
+  else {
+    $instance = substr($_SERVER['HTTP_HOST'], 0, $hostlen);
+  }
 
-  $variables['bbheader'] = "<span title='{$rolesList}'>{$contact['display_name']}</span>";
+  $params['bbheader'] = "<span title='{$rolesList}'>{$contact['display_name']}</span>";
 
   //setup job dialog
   $job_roles = array('Superuser', 'SOS', 'Administrator');
-  $jobblock = "<div id='bb-sitejob'>{$instance}";
+  $jobblock = "<div id='bb-sitejob'>$instance";
   foreach ($user->roles as $user_role) {
     if (in_array($user_role, $job_roles)) {
       $jobId = (isset($_SESSION['CiviCRM']['jobID']) && $_SESSION['CiviCRM']['jobID']) ?
@@ -116,21 +129,23 @@ function _bbSetupHeader() {
     }
   }
   $jobblock .= '</div>';
-  $variables['bbjob'] = $jobblock;
+  $params['bbjob'] = $jobblock;
 
   //get path to flag if CiviCRM
   $path = explode('/', current_path());
-  $variables['isCiviCRM'] = FALSE;
+  $params['isCiviCRM'] = false;
   if ($path[0] == 'civicrm') {
-    $variables['isCiviCRM'] = TRUE;
+    $params['isCiviCRM'] = true;
   }
 
-  $variables['recent_items'] = bb_buildRecentItemsList();
+  $params['recent_items'] = bb_buildRecentItemsList();
 
-  return $variables;
-}
+  return $params;
+} // _bbSetupHeader()
 
-function bb_buildRecentItemsList() {
+
+function bb_buildRecentItemsList()
+{
   $icons = [
     'Individual' => 'fa-user',
     'Organization' => 'fa-building',
@@ -151,7 +166,9 @@ function bb_buildRecentItemsList() {
 
   $i = 1;
   foreach ($recent as $item) {
-    if ($i > 5) break;
+    if ($i > 5) {
+      break;
+    }
 
     $editUrl = (!empty($item['edit_url'])) ?
       " (<a href='{$item['edit_url']}'><span class='nyss-recentitems-edit'>edit</span></a>)" : '';
@@ -166,4 +183,4 @@ function bb_buildRecentItemsList() {
   $html .= '</ul></div>';
 
   return $html;
-}
+} // bb_buildRecentItemsList()
