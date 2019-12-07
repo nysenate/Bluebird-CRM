@@ -218,10 +218,37 @@ function setEntries($dbh, $entries)
 
 
 
-function setMappings($dbh, $mappings)
+/**
+ ** Given a string of mappings, first convert the string to a mapping object
+ ** as required by the ldap_authorization module, then serialize and save it.
+ ** The input string must contain a comma-separated list of mappings, where
+ ** each mapping is of the form:  [LDAP group]|[Drupal role]
+ ** In other words, each mapping in the string is pipe-delimited.
+ ** The ldap_authorization module stores each mapping as an array with
+ ** 6 data points.  All of the mappings are then stored in a result array.
+ ** The result array is serialized and stored in the "mapping" field of
+ ** the ldap_authorization table.
+ */
+function setMappings($dbh, $mapping_str)
 {
-  $mappings = preg_replace('/[ ]*(,[ ]*)+/', "\n", $mappings);
-  return setAuthorizationField($dbh, 'mappings', $mappings);
+  $result = [];
+  $mappings = explode(',', $mapping_str);
+  foreach ($mappings as $line) {
+    $mapping = explode('|', $line);
+    if (count($mapping) == 2) {
+      $ldap_group = trim($mapping[0]);
+      $drupal_role = trim($mapping[1]);
+      $new_mapping = [];
+      $new_mapping['user_entered'] = $drupal_role;
+      $new_mapping['from'] = $ldap_group;
+      $new_mapping['normalized'] = $drupal_role;
+      $new_mapping['simplified'] = $drupal_role;
+      $new_mapping['valid'] = true;
+      $new_mapping['error_message'] = '';
+      $result[] = $new_mapping;
+    }
+  }
+  return setAuthorizationField($dbh, 'mappings', serialize($result));
 } // setMappings()
 
 
