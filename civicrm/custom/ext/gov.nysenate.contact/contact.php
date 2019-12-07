@@ -133,7 +133,7 @@ function contact_civicrm_pageRun(&$page) {
         'supplemental_address_1',
         'street_address',
         'city',
-        'state',
+        'state_province',
         'postal_code',
         'phone',
         'email',
@@ -146,7 +146,7 @@ function contact_civicrm_pageRun(&$page) {
     $supp1 = (!empty($contact['supplemental_address_1'])) ? ", {$contact['supplemental_address_1']}" : '';
     $html = "
       <div class='bb-contactsummary'>
-        {$contact['street_address']}{$supp1}, {$contact['city']}, {$contact['state']} {$contact['postal_code']}<br />
+        {$contact['street_address']}{$supp1}, {$contact['city']}, {$contact['state_province']} {$contact['postal_code']}<br />
         {$contact['phone']} | {$contact['email']} | Contact ID: {$contact['id']}
       </div>
     ";
