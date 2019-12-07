@@ -1,0 +1,31 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id */
+
+#{civi-page('contact-search')} {
+  #searchForm {
+    .crm-form-block {
+      padding: 0 !important;
+    }
+
+    .crm-accordion-body {
+      .label {
+        margin-top: 6px;
+      }
+    }
+  }
+
+  #popupContainer {
+    padding: 20px;
+
+    .dataTables_wrapper {
+      margin-bottom: 0;
+    }
+
+    .crm-search-form-block {
+      padding: 0;
+
+      select {
+        min-width: auto;
+      }
+    }
+  }
+}

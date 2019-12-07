@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                               |
+ | CiviCRM version 5                                                 |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,8 @@
  * @ingroup civicrm_field_handlers
  */
 class civicrm_handler_field_activity extends civicrm_handler_field {
-  static $_recordType;
+  public static $_recordType;
+
   public function construct() {
     parent::construct();
     if (!self::$_recordType) {

@@ -1,0 +1,11 @@
+.bb-news-url {
+  float: right;
+  font-size: 70%;
+  margin-right: 90px;
+}
+#crm-container .column-0 {
+  padding-bottom: 0;
+}
+#crm-container h3.widget-header {
+  margin-left: 25px;
+}

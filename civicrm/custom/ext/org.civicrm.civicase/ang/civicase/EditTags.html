@@ -1,0 +1,10 @@
+<div>
+  <p>
+    <label>{{ model.ts('Tags') }}</label>
+    <input class="huge" ng-list crm-ui-select="{allowClear: true, multiple: true, data: model.colorTags}" ng-model="model.tags" />
+  </p>
+  <p ng-repeat="tagset in model.tagsets">
+    <label>{{ tagset.name }}</label>
+    <input class="huge" ng-list crm-entityref="{entity: 'Tag', create: true, api: {params: {is_selectable: 1, parent_id: tagset.id}}, select: {multiple: true}}" ng-model="model[tagset.id]" />
+  </p>
+</div>

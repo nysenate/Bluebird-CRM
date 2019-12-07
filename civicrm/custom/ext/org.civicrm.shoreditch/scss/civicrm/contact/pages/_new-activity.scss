@@ -1,0 +1,289 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder, property-no-vendor-prefix */
+
+#{civi-page('activity')} {
+  .CRM_Activity_Form_Activity {
+    .crm-form-block > .crm-submit-buttons {
+      border-top: 0;
+
+      > .crm-button {
+        margin-left: 0 !important;
+        margin-right: 10px !important;
+      }
+    }
+
+    table.form-layout tr {
+      td.view-value {
+        padding-right: 20px;
+      }
+
+      > td > .crm-form-text {
+        &::after {
+          display: none;
+        }
+      }
+    }
+
+    .label,
+    label {
+      color: $gray-darker;
+      font-size: $font-family-base;
+      margin-bottom: 0 !important;
+    }
+
+    #activity_date_time_time {
+      margin-top: 0 !important;
+    }
+
+    #cke_details {
+      width: 100%;
+    }
+
+    .addon.fa-calendar {
+      background-color: $gray-lighter;
+      border: 1px solid $crm-grayblue-darker;
+      border-bottom-right-radius: $border-radius-base;
+      border-top-right-radius: $border-radius-base;
+      left: -2px;
+      position: relative;
+    }
+
+    #s2id_activity_type_id,
+    #s2id_source_contact_id,
+    #s2id_target_contact_id,
+    #s2id_assignee_contact_id,
+    #s2id_status_id {
+      min-width: 500px;
+    }
+
+    .crm-activity-form-block-subject,
+    .crm-activity-form-block-location,
+    .crm-activity-form-block-duration {
+      input {
+        min-width: 100px !important;
+        width: 100px !important;
+      }
+    }
+  }
+
+  #{civi-dialog()} {
+    .ui-dialog-content {
+      padding: 0;
+    }
+
+    .row-highlight {
+      @include expandable-table;
+
+      tbody {
+        tr {
+          td:last-child {
+            text-align: left;
+          }
+        }
+      }
+    }
+  }
+}
+
+.CRM_Activity_Form_Activity {
+  .crm-activity-form-block-status_id,
+  .crm-activity-form-block-priority_id {
+    .crm-hover-button .crm-i {
+      margin-bottom: -15px;
+    }
+  }
+
+  .crm-core-form-recurringentity-block-absolute_date td.label {
+    visibility: hidden;
+  }
+
+  .crm-activity-form-block-assignee_contact_id .description {
+    display: block;
+    line-height: 1.5em;
+    margin-top: 5px;
+  }
+
+  .crm-activity-form-block-duration .description {
+    padding: 5px;
+    position: relative;
+    text-transform: capitalize;
+    top: 5px;
+  }
+
+  .crm-activity-form-block-attachment td {
+    &.label {
+      padding-bottom: 5px !important;
+    }
+
+    .description {
+      margin: 5px;
+    }
+  }
+
+  .crm-activity-form-block-attachment,
+  .crm-activity-form-block-recurring_activity,
+  .crm-activity-form-block-schedule_followup {
+    > td {
+      padding: 0;
+    }
+  }
+
+  #recurring-entity-block,
+  #follow-up {
+    .crm-accordion-body {
+      padding: 20px !important;
+    }
+
+    td {
+      &.label {
+        padding-bottom: 5px !important;
+      }
+    }
+  }
+
+  #s2id_exclude_date_list {
+    .fa-calendar {
+      display: none;
+    }
+  }
+
+  .crm-activity-form-block-details {
+    td {
+      &.label {
+        padding-bottom: 10px;
+      }
+    }
+  }
+
+  .crm-is-multi-activity-wrapper {
+    label {
+      padding: 15px 0;
+      position: relative;
+
+      &::after {
+        left: 1px !important;
+        top: 22px !important;
+      }
+    }
+  }
+
+  .required {
+    &::after {
+      display: none;
+    }
+  }
+
+
+  .crm-form-block > .crm-submit-buttons {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    min-height: auto !important;
+
+    .crm-button_qf_Activity_upload {
+      margin-left: 0;
+    }
+  }
+
+  .form-layout {
+    td {
+      &.label {
+        padding-left: 0 !important;
+      }
+    }
+
+    .crm-activity-form-block-details {
+      td.label {
+        vertical-align: top;
+      }
+    }
+  }
+}
+
+#{civi-page('contact')} {
+  #Activity {
+    .crm-activity-form-block-assignee_contact_id td:not(.label) {
+      padding: 0 5px;
+    }
+
+    #attachments tr {
+      &:nth-child(4),
+      &:nth-child(7) {
+        td.label {
+          padding: 0;
+        }
+      }
+    }
+
+    .crm-activity-form-block-attachment .crm-accordion-body {
+      padding: 20px !important;
+    }
+  }
+
+  .crm-activityLinks {
+    line-height: 27px;
+    margin-bottom: 20px !important;
+    margin-top: 0;
+    min-height: 30px;
+  }
+
+  #mainTabContainer .crm-activity-selector-activity {
+    .crm-accordion-body {
+      @include box-shadow($crm-box-shadow-inset-top);
+      padding: 6px 15px !important;
+    }
+
+    .dataTables_wrapper {
+      border-radius: $border-radius-child;
+      box-shadow: $box-shadow;
+      margin: 20px 0;
+
+      table {
+        box-shadow: none;
+        width: 100% !important;
+      }
+
+      .crm-datatable-pager-top {
+        .dataTables_length {
+          width: auto;
+        }
+      }
+
+      .crm-datatable-pager-bottom {
+        .dataTables_info,
+        .dataTables_paginate {
+          padding-top: 0;
+        }
+
+        .dataTables_paginate {
+          margin-top: -5px;
+        }
+      }
+
+      .dataTables_info {
+        font-size: $font-size-base;
+        padding-left: 20px;
+        width: auto;
+      }
+
+      @media (max-width: $crm-page-main-max-width) {
+        overflow-x: auto;
+        width: 100%;
+      }
+    }
+
+    .accordion,
+    .crm-search_filters-accordion {
+      box-shadow: $box-shadow;
+    }
+
+    .crm-search_filters-accordion {
+      border-radius: $border-radius-base;
+      box-shadow: $box-shadow;
+      overflow: hidden;
+    }
+
+    .dataTables_length,
+    .dataTables_paginate {
+      font-size: $font-size-base;
+    }
+  }
+}

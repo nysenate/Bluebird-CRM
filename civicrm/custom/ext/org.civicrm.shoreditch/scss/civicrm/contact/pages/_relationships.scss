@@ -1,0 +1,135 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder, property-no-vendor-prefix */
+
+#{civi-page('contact')} {
+  #contact-summary-relationship-tab {
+
+    font-family: $font-family-base;
+    // Removes the gap between headers and tables
+    h3 + .help {
+      margin-bottom: 0;
+    }
+
+    .action-link {
+      line-height: 20px;
+      margin-bottom: 20px;
+      margin-top: 0;
+      min-height: 20px;
+
+      a.button {
+        background: $brand-primary !important;
+        border-color: transparent !important;
+      }
+    }
+
+    .dataTables_wrapper {
+      @include box-shadow($crm-form-layout-shadow-lower);
+      border-radius: 0 0 $border-radius-child $border-radius-child;
+      margin: 0 0 20px;
+
+      table {
+        box-shadow: none !important;
+      }
+
+      .crm-datatable-pager-top {
+        background: $gray-lighter;
+        border-bottom: 1px solid $crm-background;
+        border-radius: 0;
+        padding-bottom: 20px;
+        padding-top: 10px;
+
+        .dataTables_paginate {
+          padding-top: 0;
+        }
+      }
+
+      .crm-datatable-pager-bottom {
+        background: $crm-gray-lightest;
+        overflow: hidden;
+
+        .dataTables_info,
+        .dataTables_paginate {
+          padding-top: 0;
+        }
+      }
+
+      .dataTables_paginate {
+        font: $font-size-base $font-family-base;
+        width: 48% !important;
+      }
+
+      .dataTables_length {
+        font: $font-size-base $font-family-base;
+        padding-left: 20px;
+      }
+
+      .dataTables_info {
+        font: $font-size-base $font-family-base;
+        margin-top: 0;
+        padding-left: 20px;
+        width: 49%;
+      }
+    }
+
+    div[id*='DataTables_Table_'] table.dataTable {
+      thead tr {
+        th {
+          background: $gray-lighter !important;
+        }
+      }
+
+      > tbody > tr {
+        > td {
+          &.dataTables_empty {
+            text-align: center;
+          }
+
+          .description {
+            box-shadow: none;
+            padding: 0;
+          }
+
+          a:not(.action-item) {
+            background: none;
+            color: $brand-primary;
+          }
+        }
+      }
+    }
+
+    .accordion {
+      border-radius: $panel-border-radius;
+      box-shadow: $box-shadow;
+      margin-bottom: 10px;
+    }
+
+    #permission-legend {
+      color: $gray-darker;
+      font-size: $font-size-base;
+    }
+
+    .description {
+      padding: 10px;
+    }
+
+    .font-red.label {
+      border-radius: $panel-border-radius $panel-border-radius 0 0;
+      font: $crm-font-weight-h2 $font-size-h2 $font-family-base;
+      padding: 12px 20px;
+
+      + .description {
+        background-color: $gray-lighter;
+        color: $gray-dark;
+      }
+    }
+  }
+}
+
+.CRM_Contact_Form_Relationship {
+  td {
+    vertical-align: middle;
+  }
+
+  #is_active {
+    margin-left: 0 !important;
+  }
+}

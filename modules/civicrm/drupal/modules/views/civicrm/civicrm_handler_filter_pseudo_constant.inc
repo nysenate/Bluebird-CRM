@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -33,6 +33,7 @@
  */
 class civicrm_handler_filter_pseudo_constant extends views_handler_filter_in_operator {
   public $_pseudo_constant;
+
   public function construct() {
     parent::construct();
     if (!civicrm_initialize() ||

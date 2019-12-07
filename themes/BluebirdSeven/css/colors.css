@@ -1,0 +1,127 @@
+.form-item input.error,
+.form-item textarea.error,
+.form-item select.error {
+  border: 1px solid #D77;
+  background: #FCC;
+  color: #8A1F11;
+}
+
+.page-civicrm,
+.page-civicrm #page {
+  background: #DADAD2 !important;
+}
+.crm-container .help,
+.crm-container #help {
+  background: #d0c46c;
+}
+ul#civicrm-menu,
+ul#civicrm-menu.sm {
+  background-color: white !important;
+  width: 100% !important;
+}
+
+.crm-container #civicrm-footer {
+  border-top: 1px solid #B7B8B9 !important;
+}
+.page-civicrm #branding {
+  background: #393D3F !important;
+}
+.page-civicrm-contact-view #crm-container div.crm-summary-contactname-block {
+  background: #546A7B !important;
+}
+.page-civicrm-contact-view .crm-actions-ribbon {
+  background: #546A7B !important;
+}
+.crm-container input[type=button],
+.crm-container a.button,
+.crm-container a.button:link,
+.crm-container a.button:visited,
+.page-civicrm-contact-view .crm-actions-ribbon .button,
+.page-civicrm-contact-view:not([class*='page-civicrm-contact-view-']) .crm-actions-ribbon .button {
+  color: #ffffff;
+  background: #393D3F !important;
+}
+.crm-container .btn-primary, .crm-container .ui-dialog .ui-dialog-content .button:not(.hr-job-info-close), .crm-container #crm-submit-buttons input.crm-form-submit:not(.cancel), .crm-container .crm-button input.crm-form-submit:not(.cancel), .crm-container .crm-form-submit.crm-hover-button:not(.cancel), .crm-container .ui-dialog-buttonset .crm-form-submit.ui-button:not(.cancel), .crm-container a.crm-form-submit.button:not(.cancel), .crm-container input.crm-form-submit:not(.cancel)[type=button], .crm-container input.crm-form-submit:not(.cancel)[type=file], .page-civicrm-group .crm-submit-buttons a.newGroup.button, .page-civicrm-admin #crm-main-content-wrapper .crm-submit-buttons a.button, .page-civicrm-a #crm-main-content-wrapper .crm-submit-buttons a.button, .page-civicrm-admin #crm-main-content-wrapper .crm-submit-buttons .crm-button[crm-icon=fa-check], .page-civicrm-a #crm-main-content-wrapper .crm-submit-buttons .crm-button[crm-icon=fa-check], .crm-container.ui-dialog .ui-dialog-content .button:not(.hr-job-info-close), body[class*='page-civicrm-report-'] #report-tab-order-by-elements #optionFieldLink>.form-link, .crm-container #contact-summary-relationship-tab.view-content div.action-link>a.button {
+  background: #393D3F !important;
+}
+.crm-container #civicrm-dashboard .column .widget-controls {
+  background: #546A7B !important;
+}
+.page-civicrm-contact-view .crm-contact-page #mainTabContainer li.crm-tab-button.ui-tabs-active a,
+.page-civicrm-contact-view .crm-contact-page #mainTabContainer li.crm-tab-button.ui-tabs-active em,
+.page-civicrm-contact-view .crm-contact-page #mainTabContainer li.crm-tab-button:hover a,
+.page-civicrm-contact-view .crm-contact-page #mainTabContainer li.crm-tab-button:hover em {
+  color: #393D3F !important;
+}
+.crm-container .crm-accordion-header.crm-master-accordion-header {
+  background: #546A7B !important;
+}
+.crm-container .crm-accordion-header {
+  background: #7EA5AF !important;
+}
+.crm-contact-deceased {
+  color: #FFE36D !important;
+  font-size: 0.9em;
+}
+.crm-container #contact-summary-relationship-tab.view-content h3,
+.page-civicrm-contact #GroupContact h3,
+.crm-container input.crm-form-submit {
+  background: #393D3F !important;
+}
+.crm-container .crm-button-type-cancel input.crm-form-submit {
+  color: #ffffff !important;
+}
+.crm-container #contact-summary-relationship-tab.view-content .label.font-red {
+  background: #546A7B !important;
+}
+.crm-container .crm-form-block .crm-submit-buttons .crm-button-type-cancel input {
+  color: white !important;
+  background: #606365 !important;
+}
+.crm-container .crm-accordion-header.crm-master-accordion-header a.helpicon:before {
+  color: white;
+}
+.crm-container input.crm-form-submit.cancel,
+.crm-container .crm-form-block .crm-submit-buttons .crm-button-type-back input.cancel {
+  color: white !important;
+}
+#contact-summary-relationship-tab h3,
+.view-contact-groups h3 {
+  color: white !important;
+  background: #7EA5AF !important;
+}
+#crm-container input.submit-link {
+  color: white;
+}
+ul#civicrm-menu.sm li[data-name=search_results] a {
+  background-color: #ccc !important;
+}
+
+/*13093 highlighted fields*/
+.crm-container .select2-container-active a.select2-choice,
+.crm-container input.crm-form-text:focus,
+.crm-container .crm-icon-picker-button:focus,
+.crm-container input.dateplugin:focus,
+.crm-container input.crm-form-password:focus,
+.crm-container .replace-plain:focus,
+.crm-container textarea:focus,
+.crm-container select.crm-form-multiselect:focus {
+  border-color: #66afe9 !important;
+  box-shadow: 0 0 5px rgba(81, 203, 238, 1) !important;
+  outline: 0;
+}
+
+/*alternating row color*/
+.crm-container #changeLog table tr.odd-row,
+.crm-container #changeLog table tbody tr.odd-row td,
+.crm-container table.dataTable.contact-activity-selector-activity#DataTables_Table_0 tbody tr.odd td {
+  background-color: #FAFAFA !important;
+}
+
+/*text colors*/
+.crm-container .crm-dashboard-controls a {
+  color: #546A7B !important;
+}
+.crm-container a, .crm-container a:link {
+  color: #546A7B;
+}

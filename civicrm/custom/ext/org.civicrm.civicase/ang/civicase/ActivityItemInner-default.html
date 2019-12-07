@@ -1,0 +1,49 @@
+<a href class="act-task-checkbox" ng-if="activity.category.indexOf('task') > -1" ng-click="markCompleted(activity)" title="{{ activity.is_completed ? ts('Mark incomplete') : ts('Mark complete') }}">
+  <i class="fa" ng-class="{'fa-square-o': !activity.is_completed, 'fa-check-square-o': activity.is_completed}"></i>
+</a>
+<h4>
+  <span class="act-subject" ng-if="activity.subject">{{ activity.subject }}</span>
+  <span class="act-subject" ng-if="!activity.subject">{{ activity.type }}</span>
+  <a class="act-star crm-i" ng-click="star(activity)" href ng-if="star && activity.is_star">
+    <i class="crm-i" ng-class="{'fa-star-o': activity.is_star === '0', 'fa-star': activity.is_star === '1'}" title="{{ activity.is_star === '0' ? ts('Add star') : ts('Unstar') }}"></i>
+  </a>
+  <div ng-if="activity.file_id" class="act-attachment-menu btn-group btn-group-sm">
+    <button
+      type="button"
+      class="btn btn-default dropdown-toggle"
+      data-toggle="dropdown"
+      title="{{ activity.file_id.length === 1 ? ts('1 Attachment') : ts('%1 Attachments', {1: activity.file_id.length}) }}"
+      ng-click="getAttachments(activity)"
+    >
+      <i class="crm-i fa-paperclip"></i>
+    </button>
+    <ul class="dropdown-menu" role="menu">
+      <li ng-if="!activity.attachments || !activity.attachments.length">
+        <span><i class="crm-i fa-spinner fa-pulse fa-fw"></i> &nbsp;{{ ts('Loading...') }}</span>
+      </li>
+      <li ng-repeat="file in activity.attachments || []">
+        <a title="{{ file.description || ts('Download File') }}" href="{{ file.url }}"><i class="crm-i {{ file.icon }}"></i> &nbsp;{{ file.name }}</a>
+      </li>
+    </ul>
+  </div>
+</h4>
+<div class="act-tags">
+  <span
+    class="label label-default"
+    ng-repeat="tag in activity.tag_id || []"
+    style="background-color: {{ tag['tag_id.color'] }};"
+    title="{{ tag['tag_id.description'] }}"
+  >{{ tag['tag_id.name'] }}</span>
+</div>
+<div class="act-date">{{ CRM.utils.formatDate(activity.activity_date_time) }}</div>
+<div class="act-details" ng-bind-html="activity.details"></div>
+<div class="act-contacts clearfix">
+  <div class="act-contacts-target" ng-if="activity.target_contact_name">
+    <strong>{{ ts('With:') }}</strong>
+    <span civicase-activity-contacts="activity.target_contact_name"></span>
+  </div>
+  <div class="act-contacts-assignee" ng-if="activity.assignee_contact_name">
+    <strong>{{ ts('Assigned to:') }}</strong>
+    <span civicase-activity-contacts="activity.assignee_contact_name"></span>
+  </div>
+</div>

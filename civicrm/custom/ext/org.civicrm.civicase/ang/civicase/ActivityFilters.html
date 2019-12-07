@@ -1,0 +1,52 @@
+<form class="form-inline act-filters">
+
+  <div class="btn-group btn-group-sm pull-right act-clear-filter" ng-show="hasFilters()">
+    <button class="btn btn-danger btn-sm" ng-click="clearFilters()">
+      <i class="fa fa-ban"></i> {{ ts('Clear Filters') }}
+    </button>
+  </div>
+
+  <div class="input-group">
+    <span class="input-group-btn">
+      <input class="form-control" ng-model="availableFilterSearchText" data-toggle="dropdown" placeholder="{{ ts('Add Filter') }}" />
+      <button type="button" class="btn btn-info btn-sm dropdown-toggle btn-filter" data-toggle="dropdown">
+          <span class="crm-i fa-filter"></span>
+        </button>
+      <ul class="dropdown-menu act-available-filter-menu" role="menu">
+        <li ng-repeat="field in (filteredFilters = (availableFilters | filter:{label: availableFilterSearchText}))">
+          <span ng-class="{'act-filter-has-header': field.group && ($first || field.group !== filteredFilters[$index - 1].group)}">
+            <span class="act-filter-header">
+              {{ field.group }}
+            </span>
+            <span ng-click="exposeFilter(field, $event)">
+              <input type="checkbox" id="availableFilter_{{ field.name }}" ng-model="exposedFilters[field.name]" />
+              <label for="availableFilter_{{ field.name }}">{{ field.label }}</label>
+            </span>
+          </span>
+        </li>
+      </ul>
+    </span>
+  </div>
+
+  <span class="filter-separator input-group"></span>
+
+  <span ng-repeat="field in availableFilters" ng-if="exposedFilters[field.name]" data-activity-filter="{{ field.name }}" ng-switch="field.html_type">
+    <span ng-switch-when="Autocomplete-Select">
+      <input
+        placeholder="{{ field.label }}"
+        ng-list class="form-control"
+        ng-model="filters[field.name]"
+        crm-entityref="{entity: field.entity, select: {multiple: true}, api: {params: field.api_params}}"
+      />
+    </span>
+    <span ng-switch-when="Select Date">
+      <span placeholder="{{ field.label }}" crm-ui-date-range="filters[field.name]"></span>
+    </span>
+    <span ng-switch-default>
+      <input placeholder="{{ field.label }}" type="{{ field.data_type === 'Number' || field.data_type === 'Integer' ? 'number' : 'text' }}" ng-if="!field.options && !field.is_search_range" class="form-control" id="case_search_field_custom_{{ field.id }}" ng-model="filters[field.name]" />
+      <span ng-if="!field.options && field.is_search_range" crm-ui-number-range="filters[field.name]"></span>
+      <input ng-list ng-if="field.options" class="form-control" placeholder="{{ field.label }}" crm-ui-select="{allowClear: true, multiple: true, data: field.options}" ng-model="filters[field.name]" />
+    </span>
+  </span>
+
+</form>

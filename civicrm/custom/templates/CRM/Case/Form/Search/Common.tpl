@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2018                                |
+ | Copyright CiviCRM LLC (c) 2004-2019                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -69,17 +69,22 @@
         {$form.case_deleted.label}
       {/if}
     </td>
+    {*NYSS reorganize; also 12559*}
     <td class="crm-case-common-form-block-case_tags">
-      {if $form.case_tags.html}
-        {$form.case_tags.label}<br />
-        {$form.case_tags.html}
-      {/if}
+      <table>
+        <tr class="nyss-search-issuecodes">
+          <td>
+            {if $form.case_tags.html}
+              <label>Issue Codes</label><br />
+              {$form.case_tags.html}
+            {/if}
+          </td>
+        </tr>
+        <tr>
+          {include file="CRM/common/Tagset.tpl" tagsetType='case'}
+        </tr>
+      </table>
     </td>
-  </tr>
-
-  <tr>
-    {*NYSS 12559*}
-    <td colspan="2">{include file="CRM/common/Tagset.tpl" tagsetType='case'}</td>
   </tr>
 
   {if $caseGroupTree}

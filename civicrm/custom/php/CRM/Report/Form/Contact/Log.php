@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2018                                |
+ | Copyright CiviCRM LLC (c) 2004-2019                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2018
+ * @copyright CiviCRM LLC (c) 2004-2019
  */
 class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
 
@@ -43,49 +43,49 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
     $this->activityTypes = CRM_Core_PseudoConstant::activityType(TRUE, TRUE);
     asort($this->activityTypes);
 
-    $this->_columns = array(
-      'civicrm_contact' => array(
+    $this->_columns = [
+      'civicrm_contact' => [
         'dao' => 'CRM_Contact_DAO_Contact',
-        'fields' => array(
-          'sort_name' => array(
+        'fields' => [
+          'sort_name' => [
             'title' => ts('Modified By'),
             'required' => TRUE,
-          ),
-          'id' => array(
+          ],
+          'id' => [
             'no_display' => TRUE,
             'required' => TRUE,
-          ),
-        ),
-        'filters' => array(
-          'sort_name' => array(
+          ],
+        ],
+        'filters' => [
+          'sort_name' => [
             'title' => ts('Modified By'),
             'type' => CRM_Utils_Type::T_STRING,
-          ),
-        ),
+          ],
+        ],
         'grouping' => 'contact-fields',
-      ),
-      'civicrm_contact_touched' => array(
+      ],
+      'civicrm_contact_touched' => [
         'dao' => 'CRM_Contact_DAO_Contact',
-        'fields' => array(
-          'sort_name_touched' => array(
+        'fields' => [
+          'sort_name_touched' => [
             'title' => ts('Touched Contact'),
             'name' => 'sort_name',
             'required' => TRUE,
-          ),
-          'id' => array(
+          ],
+          'id' => [
             'no_display' => TRUE,
             'required' => TRUE,
-          ),
-        ),
-        'filters' => array(
-          'sort_name_touched' => array(
+          ],
+        ],
+        'filters' => [
+          'sort_name_touched' => [
             'title' => ts('Touched Contact'),
             'name' => 'sort_name',
             'type' => CRM_Utils_Type::T_STRING,
-          ),
-        ),
+          ],
+        ],
         'grouping' => 'contact-fields',
-      ),
+      ],
           
       //NYSS address
       'civicrm_address' =>
@@ -104,70 +104,68 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
         ),
       ),
 
-      'civicrm_activity' => array(
+      'civicrm_activity' => [
         'dao' => 'CRM_Activity_DAO_Activity',
-        'fields' => array(
-          'id' => array(
+        'fields' => [
+          'id' => [
             'title' => ts('Activity ID'),
             'no_display' => TRUE,
             'required' => TRUE,
-          ),
-          'subject' => array(
+          ],
+          'subject' => [
             'title' => ts('Touched Activity'),
             'required' => TRUE,
-          ),
-          'activity_type_id' => array(
+          ],
+          'activity_type_id' => [
             'title' => ts('Activity Type'),
             'required' => TRUE,
-          ),
-        ),
-      ),
-      'civicrm_activity_source' => array(
+          ],
+        ],
+      ],
+      'civicrm_activity_source' => [
         'dao' => 'CRM_Activity_DAO_ActivityContact',
-        'fields' => array(
-          'contact_id' => array(
+        'fields' => [
+          'contact_id' => [
             'no_display' => TRUE,
             'required' => TRUE,
-          ),
-        ),
-      ),
-      'civicrm_log' => array(
+          ],
+        ],
+      ],
+      'civicrm_log' => [
         'dao' => 'CRM_Core_DAO_Log',
-        'fields' => array(
-          'modified_date' => array(
+        'fields' => [
+          'modified_date' => [
             'title' => ts('Modified Date'),
             'required' => TRUE,
-          ),
-          'data' => array(
+          ],
+          'data' => [
             'title' => ts('Description'),
-          ),
-        ),
-        'filters' => array(
-          'modified_date' => array(
+          ],
+        ],
+        'filters' => [
+          'modified_date' => [
             'title' => ts('Modified Date'),
             'operatorType' => CRM_Report_Form::OP_DATE,
             'type' => CRM_Utils_Type::T_DATE,
             'default' => 'this.week',
-          ),
+          ],
           //NYSS
-          'data' =>
-          array(
+          'data' => [
             'title' => ts('Description'),
             'type' => CRM_Utils_Type::T_STRING,
-          ),
+          ],
           //NYSS exclude activity records
-          'exclude_activities' =>
-          array(
+          'exclude_activities' => [
             'name' => 'exclude_activities' ,
             'title' => ts('Exclude Activity Records'),
             'type' => CRM_Utils_Type::T_INT,
             'operatorType' => CRM_Report_Form::OP_SELECT,
             'options' => array('0'=>'No', '1'=>'Yes'),
             'default' => 1,
-          ),
-        ),
-      ),
-    );
+          ],
+        ],
+      ],
+    ];
 
     parent::__construct();
   }
@@ -177,8 +175,8 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
   }
 
   public function select() {
-    $select = array();
-    $this->_columnHeaders = array();
+    $select = [];
+    $this->_columnHeaders = [];
     foreach ($this->_columns as $tableName => $table) {
       if (array_key_exists('fields', $table)) {
         foreach ($table['fields'] as $fieldName => $field) {
@@ -205,7 +203,7 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
    * @return array
    */
   public static function formRule($fields, $files, $self) {
-    $errors = $grouping = array();
+    $errors = $grouping = [];
     return $errors;
   }
 
@@ -224,7 +222,7 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
   }
 
   public function where() {
-    $clauses = array();
+    $clauses = [];
     $this->_having = '';
     foreach ($this->_columns as $tableName => $table) {
       if (array_key_exists('filters', $table)) {
@@ -408,11 +406,11 @@ ORDER BY {$this->_aliases['civicrm_log']}.modified_date DESC, {$this->_aliases['
         
       }
 
-      // convert touched name to links with details
-      if ( array_key_exists('civicrm_contact_touched_display_name_touched', $row) &&
+      if (array_key_exists('civicrm_contact_touched_sort_name_touched', $row) &&
         array_key_exists('civicrm_contact_touched_id', $row) &&
-        $row['civicrm_contact_touched_display_name_touched'] !== '' ) {
-                
+        $row['civicrm_contact_touched_sort_name_touched'] !== ''
+      ) {
+        
         //NYSS add details about touched contact via API
         //Gender, DOB, ALL District Information.
         if ( $row['civicrm_contact_touched_id'] ) {

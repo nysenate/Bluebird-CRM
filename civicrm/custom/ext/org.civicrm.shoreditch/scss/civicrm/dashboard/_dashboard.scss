@@ -1,0 +1,15 @@
+.crm-dashboard-controls {
+  margin: 20px 0;
+  padding: 0;
+
+  a {
+    color: $brand-primary !important;
+
+    &:hover {
+      color: darken($brand-primary, $crm-darken-percentage) !important;
+    }
+  }
+}
+
+@import 'pages/view-dashboard';
+@import 'pages/edit-dashboard';

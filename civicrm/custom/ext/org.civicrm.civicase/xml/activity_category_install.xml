@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<CustomData>
+  
+  <OptionGroups>
+    <OptionGroup>
+      <name>activity_category</name>
+      <title>Activity Category</title>
+      <is_reserved>1</is_reserved>
+      <is_active>1</is_active>
+    </OptionGroup>
+  </OptionGroups>
+  
+  <OptionValues>
+    <OptionValue>
+      <label>Task</label>
+      <value>task</value>
+      <name>task</name>
+      <is_default>0</is_default>
+      <weight>1</weight>
+      <is_active>1</is_active>
+      <icon>fa-check-circle</icon>
+      <option_group_name>activity_category</option_group_name>
+    </OptionValue>
+    <OptionValue>
+      <label>File</label>
+      <value>file</value>
+      <name>file</name>
+      <is_default>0</is_default>
+      <weight>2</weight>
+      <is_active>1</is_active>
+      <icon>fa-file</icon>
+      <option_group_name>activity_category</option_group_name>
+    </OptionValue>
+    <OptionValue>
+      <label>Communication</label>
+      <value>communication</value>
+      <name>communication</name>
+      <is_default>0</is_default>
+      <weight>3</weight>
+      <is_active>1</is_active>
+      <icon>fa-comment</icon>
+      <option_group_name>activity_category</option_group_name>
+    </OptionValue>
+    <OptionValue>
+      <label>Milestone</label>
+      <value>milestone</value>
+      <name>milestone</name>
+      <is_default>0</is_default>
+      <weight>4</weight>
+      <is_active>1</is_active>
+      <icon>fa-flag</icon>
+      <option_group_name>activity_category</option_group_name>
+    </OptionValue>
+    <OptionValue>
+      <label>Alert</label>
+      <value>alert</value>
+      <name>alert</name>
+      <is_default>0</is_default>
+      <weight>5</weight>
+      <is_active>1</is_active>
+      <icon>fa-exclamation-triangle</icon>
+      <option_group_name>activity_category</option_group_name>
+    </OptionValue>
+    <OptionValue>
+      <label>System</label>
+      <value>system</value>
+      <name>system</name>
+      <is_default>0</is_default>
+      <weight>6</weight>
+      <is_active>1</is_active>
+      <icon>fa-info-circle</icon>
+      <option_group_name>activity_category</option_group_name>
+    </OptionValue>
+  </OptionValues>
+  
+</CustomData>

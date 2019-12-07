@@ -1,0 +1,358 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder, property-no-vendor-prefix */
+
+@import 'base/scss/vendor/bootstrap/forms';
+@import 'bootstrap/overrides/style/forms';
+
+%control-half-width {
+  @media (min-width: 1065px) {
+    min-width: 115px;
+  }
+
+  @media (max-width: 1064px) {
+    min-width: 30% !important;
+    width: 30% !important;
+  }
+}
+
+%responsive {
+  @media (min-device-width: $screen-sm-min) {
+    min-width: 230px;
+    width: 230px;
+  }
+
+  @media (max-device-width: $screen-sm-max) {
+    min-width: 270px;
+    width: 270px;
+  }
+
+  @media (max-device-width: $screen-xs-max) {
+    margin: 0;
+    max-width: 270px;
+  }
+}
+
+.crm-container {
+  $disabled-color: lighten($gray-dark, 25);
+  $control-spacing: 15px;
+
+  @include input-fields-container {
+    label {
+      @extend .control-label;
+      color: $gray-darker;
+      font-size: $font-size-base;
+      font-weight: $crm-font-weight-h3 !important;
+    }
+
+    label.crm-inline-error {
+      margin-left: 10px;
+    }
+
+    td {
+      background: none !important;
+
+      &.label {
+        color: $gray-darker;
+        padding-left: 20px;
+      }
+
+      // "Edit options" ("wrench") buttons besides the dropdowns
+      .crm-option-edit-link {
+        margin-left: 5px;
+      }
+
+      > input[type='text']:not(:only-of-type) {
+        @extend %control-half-width;
+      }
+
+      .crm-field-wrapper {
+        label {
+          padding-right: 5px;
+        }
+      }
+    }
+  }
+
+  table {
+    &.form-layout,
+    &.form-layout-compressed {
+      td {
+        padding: 4px;
+
+        &.view-value {
+          > div.cke {
+            width: 95%;
+          }
+        }
+      }
+    }
+  }
+
+  .cke {
+    border: solid 1px $gray-dark;
+    border-radius: 0;
+    box-shadow: none;
+
+    &,
+    .cke_top,
+    .cke_bottom {
+      background: $gray-lighter;
+      border-color: $crm-grayblue-darker;
+    }
+
+    .cke_toolgroup {
+      background: none;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+
+      a {
+        box-shadow: none;
+
+        &:hover {
+          background: lighten($gray-lighter, 10);
+        }
+      }
+    }
+
+    .cke_combo_text {
+      border-right: solid 1px $gray-dark;
+      font-family: $font-family-base;
+      margin: 0;
+      padding-right: 7px;
+      //Match the dropdown size;
+      width: 107px !important;
+    }
+
+    .cke_combo_button {
+      background: $crm-white !important;
+      border: solid 1px $gray-dark !important;
+      border-radius: 0 !important;
+
+      &,
+      &:active {
+        box-shadow: none !important;
+      }
+    }
+
+    .cke_combo_on {
+      box-shadow: none !important;
+    }
+
+    .cke_combo_open {
+      margin: 0 !important;
+      padding: 0 10px;
+    }
+  }
+
+  .permission-delete-link {
+    border: 0 !important;
+    padding: 0 !important;
+
+    &:hover,
+    &:focus {
+      background: none !important;
+    }
+
+    > .icon {
+      background-image: none !important;
+      display: inline !important;
+      margin-left: 0;
+      text-indent: 0 !important;
+
+      &:hover,
+      &:focus {
+        background: none !important;
+      }
+
+      &::after {
+        @include fa-icon($font-size-base, $fa-var-trash-o);
+        color: $brand-danger !important;
+        font-weight: normal;
+        position: relative;
+        top: -3px;
+      }
+    }
+  }
+
+  .crm-option-edit-link.crm-hover-button {
+    border: 0 !important;
+
+    &:hover,
+    &:focus {
+      background-color: transparent !important;
+    }
+
+    > .crm-i {
+      color: $brand-primary !important;
+
+      &:hover {
+        color: darken($brand-primary, $crm-darken-percentage) !important;
+      }
+    }
+  }
+
+  .crm-marker {
+    color: $brand-danger;
+  }
+
+  label.crm-error {
+
+    @include plain-old-text();
+
+    span {
+
+      @include plain-old-text();
+    }
+  }
+
+  label span.crm-error-label {
+
+    @include plain-old-text();
+  }
+}
+
+input.crm-form-text,
+.crm-icon-picker-button,
+input.dateplugin,
+input.crm-form-password {
+  @include transition(border-color 0.15s ease-in-out 0s);
+  background-color: $crm-white;
+  background-image: none;
+  border-color: $crm-grayblue-darker;
+  border-radius: $border-radius-base;
+  box-shadow: $crm-form-control-shadow;
+  color: $gray-darker;
+  font-family: $font-family-base;
+  font-size: $font-size-base;
+  height: $input-height-small;
+  padding: $crm-input-padding;
+
+  &:focus {
+    border-color: $input-border-focus;
+    outline: 0;
+  }
+}
+
+input[type='file'] {
+  display: inline-block;
+  font-family: $font-family-base;
+  font-size: $font-size-base;
+}
+
+textarea {
+  font-family: $font-family-base;
+
+  &.ng-valid,
+  &.ng-pristine {
+    border-color: $crm-grayblue-darker;
+  }
+}
+
+.replace-plain,
+textarea,
+select.crm-form-multiselect {
+  @include transition(border-color 0.15s ease-in-out 0s);
+  border-color: $crm-grayblue-darker;
+  border-radius: $border-radius-base;
+  box-shadow: $crm-form-control-shadow;
+  color: $gray-darker;
+  padding: 4px 10px;
+
+  &:focus {
+    border-color: $input-border-focus;
+    outline: 0;
+  }
+}
+
+select.crm-form-select,
+select[aria-controls] {
+  @include transition(border-color 0.15s ease-in-out 0s);
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background: url('../img/drop-down-arrow.svg') no-repeat right #fff;
+  border: 1px solid $crm-grayblue-darker;
+  border-radius: $border-radius-base;
+  box-shadow: $crm-form-control-shadow;
+  font-family: $font-family-base;
+  font-size: $font-size-base;
+  height: $input-height-base;
+  padding: 4px 35px 4px 10px;
+
+  &:focus {
+    border-color: $input-border-focus;
+    outline: 0;
+  }
+
+  &[disabled] {
+    background: url('../img/drop-down-arrow.svg') no-repeat right $input-bg-disabled;
+  }
+}
+
+input.crm-form-text[disabled],
+input.dateplugin[disabled],
+input.crm-form-text[readonly],
+input.crm-form-password[disabled],
+input.crm-form-password[readonly] {
+  background: $input-bg-disabled;
+}
+
+input.crm-error,
+input.error {
+  border-color: $brand-danger;
+}
+
+.crm-error,
+.crm-inline-error {
+  &:not(.crm-error-label):not(input):not(textarea):not(select):not(.select2-container) {
+    background: $brand-danger;
+    border-radius: 3px;
+    color: $crm-white;
+    padding: 5px;
+
+    a,
+    .crm-marker {
+      color: $crm-white;
+    }
+  }
+}
+
+.addon.fa-calendar {
+  background: $gray-lighter;
+  border: 1px solid $crm-grayblue-darker;
+  border-radius: 0 $border-radius-base $border-radius-base 0;
+  color: $gray-darker;
+  cursor: pointer;
+  margin-left: -2px;
+  padding: 8px 10px 7px;
+  vertical-align: middle;
+
+  input:focus + & {
+    border-color: $input-border-focus;
+  }
+}
+
+// Add this class to style a form inside a container
+// like you see at /civicrm/civirule/form/rule?reset=1&action=add
+.crm-form-block-container {
+  .crm-form-block {
+    @include block-form();
+  }
+}
+
+.crm-container > .crm-section.form-item {
+  margin-bottom: $crm-gap-medium;
+}
+
+input.hasDatepicker::placeholder {
+  color: transparent;
+}
+
+fieldset:not(.collapsed) > legend {
+  margin-bottom: $crm-standard-gap !important;
+}
+
+.crm-container .crm-collapsible .collapsible-title {
+  font-size: $font-size-base;
+  padding: #{$crm-standard-gap / 2} $crm-standard-gap;
+}

@@ -272,7 +272,7 @@ function tags_civicrm_buildForm($formName, &$form) {
 
     //10658 rebuild leg positions entity ref using custom API and disabling create
     CRM_Core_Resources::singleton()->addVars('NYSS', array('contactId' => $contactId));
-    CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.tags', 'js/form_tagset_legpos.js');
+    CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.tags', 'js/form_tags.js');
 
     //11072/11167 append list of issue codes and leg positions
     if (!empty($contactIssueCode_list)) {
@@ -329,6 +329,11 @@ function tags_civicrm_buildForm($formName, &$form) {
       ));
       $form->getElement('used_for')->freeze();
     }
+  }
+
+  //13120 color field removed universally
+  if ($form->elementExists('color')) {
+    $form->removeElement('color');
   }
 } //tags_civicrm_buildForm()
 
@@ -474,7 +479,7 @@ function tags_civicrm_alterEntityRefParams(&$params, $formName) {
   ));*/
 
   //use custom api for legislative positions; exclude search forms
-  if ($params['entity'] == 'tag' &&
+  if (strtolower($params['entity']) == 'tag' &&
     !empty($params['api']['params']['parent_id']) &&
     $params['api']['params']['parent_id'] == 292 &&
     strpos($formName, 'Search') === FALSE &&

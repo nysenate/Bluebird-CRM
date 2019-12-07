@@ -1,0 +1,148 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder, property-no-vendor-prefix */
+
+.CRM_Export_Form_Select {
+  .help {
+    margin-bottom: 20px;
+  }
+
+  .label {
+    font-size: 13px;
+  }
+
+  .label,
+  label,
+  .content {
+    color: $gray-darker;
+  }
+
+  #postal_mailing_export_postal_mailing_export {
+    margin-left: 0 !important;
+  }
+
+  .crm-section {
+    @include box-shadow($box-shadow);
+    background-color: $crm-white;
+    margin-bottom: 0;
+    padding: 20px;
+
+    &.crm-exportOption-section {
+      border-radius: $border-radius-base $border-radius-base 0 0;
+
+      h3 {
+        padding-left: 0;
+      }
+    }
+
+    &.crm-export-mapping-section {
+      padding: 0;
+
+      .label,
+      .content {
+        padding: 20px 0;
+      }
+    }
+  }
+
+  .crm-form-block {
+    background-color: transparent;
+    box-shadow: none;
+
+    > .crm-submit-buttons {
+      @include box-shadow($crm-form-layout-shadow-lower);
+      border-radius: 0 0 $border-radius-base $border-radius-base;
+    }
+  }
+
+  #wizard-steps {
+    .wizard-bar {
+      @include box-shadow($box-shadow);
+      border-radius: $border-radius-base;
+    }
+  }
+}
+
+.CRM_Export_Form_Map {
+  .help {
+    margin-bottom: 20px;
+
+    p {
+      margin-bottom: 10px;
+    }
+  }
+
+  .wizard-bar {
+    border-radius: $border-radius-base $border-radius-base 0 0;
+    margin-bottom: 0 !important;
+  }
+
+  #map-field {
+    > table {
+      width: 100% !important;
+
+      .columnheader {
+        border: 0;
+
+        th {
+          font-size: $font-size-h2;
+        }
+
+        &-dark {
+          th {
+            font-size: $font-size-h3;
+          }
+        }
+
+        &,
+        &-dark {
+          th {
+            @include panel-header;
+            border: 0;
+            border-bottom: 1px solid $crm-grayblue-dark;
+            color: $gray-darker;
+            font-weight: $crm-font-weight-h3;
+            text-transform: none;
+          }
+        }
+      }
+
+      th,
+      td {
+        border-right: 0 !important;
+      }
+
+      td {
+        padding-left: 20px !important;
+      }
+
+      + div {
+        padding-left: 20px;
+
+        td {
+          padding-left: 0 !important;
+        }
+      }
+    }
+  }
+
+  .crm-submit-buttons {
+    border-radius: 0 0 $border-radius-base $border-radius-base;
+  }
+
+  #saveMapping,
+  #saveMapping + label {
+    display: inline-block;
+    margin-bottom: 20px;
+    vertical-align: middle;
+  }
+
+  #saveDetails {
+    .label {
+      display: table-cell;
+      padding-bottom: 0 !important;
+      padding-top: 0 !important;
+      text-align: left;
+      vertical-align: middle;
+      width: 80px;
+    }
+  }
+}

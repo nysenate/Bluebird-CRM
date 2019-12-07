@@ -1,0 +1,32 @@
+<div class="civicase-view-tasks">
+  <h3>
+    {{ ts('Tasks') }}
+    <a ng-href="#{{ activityFeedUrl(item.id, 'task', 'incomplete') }}"
+       class="badge"
+       ng-class="{'item-overdue': item.activity_summary.task[0].is_overdue}"
+       ng-if="item.category_count.incomplete.task"
+       title="{{ ts('View All') }}"
+    >
+      {{ item.category_count.incomplete.task }}
+    </a>
+  </h3>
+  <ul class="list-group act-feed-list-group" ng-if="item.tasks.length">
+    <li class="list-group-item" ng-repeat="activity in item.tasks">
+      <div
+        case-activity-card="activity"
+        refresh-callback="refresh"
+        crm-popup-form-success="pushCaseData($data.civicase_reload[0])"
+        edit-activity-url="editActivityUrl"
+      ></div>
+    </li>
+  </ul>
+  <ul class="list-group act-feed-list-group" ng-if="!item.tasks.length && item.category_count.incomplete.task">
+    <li class="list-group-item" ng-repeat="placeholder in panelPlaceholders(item.category_count.incomplete.task)">
+      <div class="activity-card-loading-placeholder"><div></div></div>
+    </li>
+  </ul>
+  <div class="civicase-panel-empty" ng-if="!item.category_count.incomplete.task">
+    <i class="fa fa-inbox fa-big"></i>
+    <div class="empty-label">{{ ts('This case has no new tasks') }}</div>
+  </div>
+</div>

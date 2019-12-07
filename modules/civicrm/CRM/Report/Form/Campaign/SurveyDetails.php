@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2018                                |
+ | Copyright CiviCRM LLC (c) 2004-2019                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2018
+ * @copyright CiviCRM LLC (c) 2004-2019
  * $Id$
  *
  */
@@ -54,11 +54,15 @@ class CRM_Report_Form_Campaign_SurveyDetails extends CRM_Report_Form {
   private static $_surveyRespondentStatus;
 
   // Survey Question titles are overridden when in print or pdf mode to
-  // say Q1, Q2 instead of the full title - to save space.
+  /**
+   * say Q1, Q2 instead of the full title - to save space.
+   * @var array
+   */
   private $_columnTitleOverrides = array();
 
   /**
    */
+
   /**
    */
   public function __construct() {
@@ -469,22 +473,6 @@ INNER JOIN  civicrm_option_value val ON ( val.option_group_id = survey.result_id
 
     $entryFound = FALSE;
     foreach ($rows as $rowNum => $row) {
-      // handle state province
-      if (array_key_exists('civicrm_address_state_province_id', $row)) {
-        if ($value = $row['civicrm_address_state_province_id']) {
-          $rows[$rowNum]['civicrm_address_state_province_id'] = CRM_Core_PseudoConstant::stateProvince($value);
-        }
-        $entryFound = TRUE;
-      }
-
-      // handle country
-      if (array_key_exists('civicrm_address_country_id', $row)) {
-        if ($value = $row['civicrm_address_country_id']) {
-          $rows[$rowNum]['civicrm_address_country_id'] = CRM_Core_PseudoConstant::country($value);
-        }
-        $entryFound = TRUE;
-      }
-
       // convert display name to links
       if (array_key_exists('civicrm_contact_sort_name', $row) &&
         array_key_exists('civicrm_contact_id', $row)
@@ -511,6 +499,8 @@ INNER JOIN  civicrm_option_value val ON ( val.option_group_id = survey.result_id
         );
         $entryFound = TRUE;
       }
+
+      $entryFound = $this->alterDisplayAddressFields($row, $rows, $rowNum, NULL, NULL) ? TRUE : $entryFound;
 
       // skip looking further in rows, if first row itself doesn't
       // have the column we need
@@ -665,7 +655,6 @@ INNER JOIN  civicrm_custom_group cg ON ( cg.id = cf.custom_group_id )
         $fieldValueMap[$responseField->option_group_id][$responseField->value] = $value;
       }
     }
-    $responseField->free();
 
     //actual data formatting.
     $hasData = FALSE;
@@ -718,12 +707,11 @@ INNER JOIN  civicrm_custom_group cg ON ( cg.id = cf.custom_group_id )
           'alias' => "phone_civireport_{$fName}",
           'fields' => array(
             $fName => array_merge($value, array(
-                'is_required' => '1',
-                'alias' => "phone_civireport_{$fName}",
-                'dbAlias' => "phone_civireport_{$fName}.phone",
-                'no_display' => TRUE,
-              )
-            ),
+              'is_required' => '1',
+              'alias' => "phone_civireport_{$fName}",
+              'dbAlias' => "phone_civireport_{$fName}.phone",
+              'no_display' => TRUE,
+            )),
           ),
         );
         $this->_aliases["civicrm_phone_{$fName}"] = $this->_columns["civicrm_{$fName}"]['alias'];

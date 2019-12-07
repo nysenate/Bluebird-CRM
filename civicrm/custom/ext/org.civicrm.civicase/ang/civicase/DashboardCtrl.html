@@ -1,0 +1,147 @@
+<div id="bootstrap-theme" class="civicase-main civicase-dashboard">
+
+  <h1 crm-page-title crm-document-title="myCasesOnly ? ts('CiviCase Dashboard - My Cases') : ts('CiviCase Dashboard - All Cases')"></h1>
+
+  <div class="dashboard-tab-container clearfix">
+    <uib-tabset active="activeTab" type="pills" uib-tabset-class="nav-pills-horizontal nav-pills-horizontal-primary clearfix" uib-tabset-affix>
+      <uib-tab index="0" heading="{{ ts('Dashboard') }}" select="navTabs()">
+
+        <div class="panel panel-default" ng-include="'~/civicase/DashboardSummary.html'"></div>
+
+        <div class="row case-stats-wrapper">
+          <!-- Mockup proscribes different coloring for these panels, but don't see a suitable class in the style guide -->
+          <div class="col-md-4">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">{{ts('Open Cases')}}</h3>
+              </div>
+              <div class="panel-body"><div civicase-type-donut-chart="{my_cases: myCasesOnly, 'status_id.grouping': 'Opened'}"></div></div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">{{ts('Cases Closed')}}</h3>
+              </div>
+              <div class="panel-body"><div civicase-type-donut-chart="{my_cases: myCasesOnly, 'status_id.grouping': 'Closed'}"></div></div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">{{ts('Average Duration')}}</h3>
+              </div>
+              <div class="panel-body"><div civicase-type-duration-chart="{my_cases: myCasesOnly}"></div>
+            </div>
+          </div>
+        </div>
+        </div>
+
+        <div class="row dashboard-case-wrapper">
+          <div class="col-md-4">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">{{ ts('Next Milestones') }}
+                  <span class="badge badge-primary" ng-class="{'badge-danger': dashboardActivities.nextMilestones[0].is_overdue}">{{ dashboardActivities.nextMilestonesCount }}</span>
+                  <a ng-href="{{ seeAllLink('milestone', 'incomplete') }}" class="pull-right">({{ ts('see all') }})</a>
+                </h3>
+
+              </div>
+              <div class="panel-body">
+                <div>
+                  <ul class="list-group act-feed-list-group">
+                    <li class="list-group-item" ng-repeat="activity in dashboardActivities.nextMilestones">
+                      <div
+                        case-activity-card="activity"
+                        refresh-callback="refresh"
+                        edit-activity-url="editActivityUrl"
+                      ></div>
+                    </li>
+                    <li class="list-group-item" ng-repeat="placeholder in activityPlaceholders" ng-if="!dashboardActivities.nextMilestones">
+                      <div class="activity-card-loading-placeholder"><div></div></div>
+                    </li>
+                  </ul>
+                  <div class="civicase-panel-empty" ng-if="dashboardActivities.nextMilestones && !dashboardActivities.nextMilestones.length">
+                    <i class="fa fa-flag fa-big"></i>
+                    <div class="empty-label">{{ ts('There are currently no milestones') }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">{{ ts('Recent Communications') }}
+                  <span class="badge badge-primary">{{ dashboardActivities.recentCommunicationCount }}</span>
+                  <a ng-href="{{ seeAllLink('communication', 'completed') }}" class="pull-right">({{ ts('see all') }})</a>
+                </h3>
+              </div>
+              <div class="panel-body">
+                <div>
+                  <ul class="list-group act-feed-list-group">
+                    <li class="list-group-item" ng-repeat="activity in dashboardActivities.recentCommunication">
+                      <div
+                        case-activity-card="activity"
+                        refresh-callback="refresh"
+                        edit-activity-url="editActivityUrl"
+                      ></div>
+                    </li>
+                    <li class="list-group-item" ng-repeat="placeholder in activityPlaceholders" ng-if="!dashboardActivities.recentCommunication">
+                      <div class="activity-card-loading-placeholder"><div></div></div>
+                    </li>
+                  </ul>
+                  <div class="civicase-panel-empty" ng-if="dashboardActivities.recentCommunication && !dashboardActivities.recentCommunication.length">
+                    <i class="fa fa-comment fa-big"></i>
+                    <div class="empty-label">{{ ts('There are no past communications') }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-8">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">{{ ts('Recent Cases') }}
+                  <a ng-href="{{ recentCaseLink }}" class="pull-right">({{ ts('see all') }})</a>
+                </h3>
+              </div>
+              <div class="panel-body case-list-panel">
+                <div class="scrolling outer">
+                  <div class="custom-scroll-wrapper">
+                    <div class="custom-scroll"></div>
+                  </div>
+                  <div
+                  class="inner"
+                  case-list-table
+                  case-list-table-sort="{dir: 'DESC', field: 'modified_date'}"
+                  case-list-table-page="{num: 1, size: 10, total: 0}"
+                  case-list-table-filters="recentCaseFilter"
+                  refresh-callback="refresh"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </uib-tab>
+      <uib-tab index="1" heading="{{ts('Activities')}}">
+        <!-- Micro-optimization: Only load data when tab is active -->
+        <div ng-if="activeTab == 1" civicase-activity-feed="{filters: activityFilters}" class="dashboard-activites"></div>
+      </uib-tab>
+      <!--<uib-tab index="2" heading="{{ts('Calendar')}}">-->
+        <!--{{ts('TODO: Calendar')}}-->
+      <!--</uib-tab>-->
+      <div class="btn-group btn-group-md pull-right dashboard-nav">
+        <input type="checkbox" id="dashboard-myCasesOnly" ng-model="myCasesOnly" ng-show="checkPerm('access all cases and activities')">
+        <label for="dashboard-myCasesOnly" ng-show="checkPerm('access all cases and activities')">{{ts('My cases only')}}</label>
+        <a ng-if="checkPerm('add cases')"
+          ng-href="{{ url('civicrm/case/add', {reset: 1, action: 'add', context: 'standalone'}) }}"
+          class="btn btn-default crm-popup"
+          crm-popup-form-success="refresh()">
+          <i class="crm-i fa-plus"></i>
+          {{ ts('Add Case') }}
+        </a>
+      </div>
+    </uib-tabset>
+  </div>
+</div>

@@ -30,7 +30,6 @@ function drupal_script_init()
 } // drupal_script_init()
 
 
-
 function civicrm_script_init($shopts = "", $longopts = array(), $session = true)
 {
   // Determine if script is running from command line, or from web server.
@@ -48,14 +47,11 @@ function civicrm_script_init($shopts = "", $longopts = array(), $session = true)
     $force_auth = true;
     $myopts = civicrm_script_init_http($longopts);
   }
-
   if ($myopts) {
     require_once SCRIPT_UTILS_CIVIROOT.'/civicrm.config.php';
-
     // If running from web server, or if a username was provided, then
     // authenticate the user.  This allows us to run anonymously from the CLI.
     if ($force_auth || $myopts['user']) {
-      require_once 'CRM/Utils/System.php';
       CRM_Utils_System::authenticateScript(true, $myopts['user'], $myopts['pass']);
     }
   }
@@ -93,6 +89,7 @@ function civicrm_script_init_cli($shopts, $longopts, $session = true)
   $_SERVER['HTTP_HOST'] = $_SERVER['SERVER_NAME'] = $myopts['site'];
   $_SERVER['SCRIPT_FILENAME'] = __FILE__;
   $_REQUEST['key'] = $myopts['key'];
+
   return $myopts;
 } // civicrm_script_init_cli()
 
@@ -111,9 +108,12 @@ function civicrm_script_init_http($longopts)
 function add_packages_to_include_path($session = true)
 {
   $old_incpath = set_include_path(SCRIPT_UTILS_CIVIROOT."/packages".PATH_SEPARATOR.get_include_path());
+  $old_incpath = set_include_path(SCRIPT_UTILS_CIVIROOT."/vendor".PATH_SEPARATOR.get_include_path());
+
   if ($session) {
     session_start();
   }
+
   return $old_incpath;
 } // add_packages_to_include_path()
 
@@ -139,7 +139,10 @@ function process_cli_args($shopts, $longopts, $keepnulls = true)
     return null;
   }
 
-  require_once 'Console/Getopt.php';
+  //require_once 'Console/Getopt.php';
+  require_once SCRIPT_UTILS_CIVIROOT.'/vendor/pear/pear-core-minimal/src/PEAR.php';
+  require_once __DIR__.'/libs/Getopt.php';
+
   $getopt = new Console_Getopt();
   $args = $getopt->readPHPArgv();
   array_shift($args);

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2018                                |
+ | Copyright CiviCRM LLC (c) 2004-2019                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -74,29 +74,29 @@
       </td></tr>
     </table>
   </td>
+
+  {*NYSS reorganize tags; also 12559*}
   {if $form.activity_tags}
-    <td><label>{ts}Activity Tag(s){/ts}</label>
-      <div id="Tags" class="listing-box">
-        {foreach from=$form.activity_tags item="tag_val"}
-          <div class="{cycle values='odd-row,even-row'}">
-            {$tag_val.html}
-          </div>
-        {/foreach}
+    <td>
+      <table>
+        <tr class="nyss-search-issuecodes">
+          <td colspan="2"><label>Issue Codes</label><br/>
+            {$form.activity_tags.html}
+          </td>
+        </tr>
+        <tr>
+          {include file="CRM/common/Tagset.tpl" tagsetType='activity'}
+        </tr>
+      </table>
     </td>
-  {else}
-    <td>&nbsp;</td>
   {/if}
 </tr>
-{*NYSS 12559*}
-<tr>
-  <td colspan="2">{include file="CRM/common/Tagset.tpl" tagsetType='activity'}</td>
-</tr>
+
+
 
 <tr>
-  <td><label>{ts}Activity Dates{/ts}</label></td>
-</tr>
-<tr>
-  {include file="CRM/Core/DateRange.tpl" fieldName="activity_date" from='_low' to='_high'}
+  {include file="CRM/Core/DatePickerRangeWrapper.tpl" fieldName="activity_date_time" colspan="2"}
+  <td>&nbsp;</td>
 </tr>
 <tr>
   <td>
@@ -118,6 +118,11 @@
     {$form.activity_test.label} {help id="is-test" file="CRM/Contact/Form/Search/Advanced"}
     &nbsp; {$form.activity_test.html}
   </td>
+</tr>
+<tr>
+<td>{$form.activity_location.label}<br />
+  {$form.activity_location.html}</td>
+<td></td>
 </tr>
 {if $buildSurveyResult }
   <tr>

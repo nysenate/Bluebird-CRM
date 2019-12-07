@@ -1,0 +1,18 @@
+.CRM_Contact_Form_Search_Advanced {
+  .adv-search-top-submit {
+    .crm-button {
+      float: right !important;
+    }
+  }
+
+  .form-layout {
+    .crm-i-button {
+      margin-left: 20px;
+      margin-top: 15px;
+
+      .crm-i { /* stylelint-disable-line selector-max-compound-selectors */
+        top: -2px;
+      }
+    }
+  }
+}

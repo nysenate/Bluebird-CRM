@@ -3,7 +3,7 @@
 
 /**
  * Base class for form elements
- * 
+ *
  * PHP versions 4 and 5
  *
  * LICENSE: This source file is subject to version 3.01 of the PHP license
@@ -17,9 +17,9 @@
  * @author      Adam Daniel <adaniel1@eesus.jnj.com>
  * @author      Bertrand Mansion <bmansion@mamasam.com>
  * @author      Alexey Borzov <avb@php.net>
- * @copyright   2001-2009 The PHP Group
+ * @copyright   2001-2011 The PHP Group
  * @license     http://www.php.net/license/3_01.txt PHP License 3.01
- * @version     CVS: $Id: element.php,v 1.37 2009/04/04 21:34:02 avb Exp $
+ * @version     CVS: $Id$
  * @link        http://pear.php.net/package/HTML_QuickForm
  */
 
@@ -27,16 +27,20 @@
  * Base class for all HTML classes
  */
 require_once 'HTML/Common.php';
+/**
+ * Static utility methods
+ */
+require_once 'HTML/QuickForm/utils.php';
 
 /**
  * Base class for form elements
- * 
+ *
  * @category    HTML
  * @package     HTML_QuickForm
  * @author      Adam Daniel <adaniel1@eesus.jnj.com>
  * @author      Bertrand Mansion <bmansion@mamasam.com>
  * @author      Alexey Borzov <avb@php.net>
- * @version     Release: 3.2.11
+ * @version     Release: 3.2.16
  * @since       1.0
  * @abstract
  */
@@ -75,13 +79,13 @@ class HTML_QuickForm_element extends HTML_Common
      * @access    private
      */
     var $_persistantFreeze = false;
-    
+
     // }}}
     // {{{ constructor
-    
+
     /**
      * Class constructor
-     * 
+     *
      * @param    string     Name of the element
      * @param    mixed      Label(s) for the element
      * @param    mixed      Associative array of tag attributes or HTML attributes name="value" pairs
@@ -99,7 +103,7 @@ class HTML_QuickForm_element extends HTML_Common
             $this->setLabel($elementLabel);
         }
     } //end constructor
-    
+
     // }}}
     // {{{ apiVersion()
 
@@ -135,7 +139,7 @@ class HTML_QuickForm_element extends HTML_Common
 
     /**
      * Sets the input field name
-     * 
+     *
      * @param     string    $name   Input field name attribute
      * @since     1.0
      * @access    public
@@ -145,13 +149,13 @@ class HTML_QuickForm_element extends HTML_Common
     {
         // interface method
     } //end func setName
-    
+
     // }}}
     // {{{ getName()
 
     /**
      * Returns the element name
-     * 
+     *
      * @since     1.0
      * @access    public
      * @return    string
@@ -160,7 +164,7 @@ class HTML_QuickForm_element extends HTML_Common
     {
         // interface method
     } //end func getName
-    
+
     // }}}
     // {{{ setValue()
 
@@ -192,13 +196,13 @@ class HTML_QuickForm_element extends HTML_Common
         // interface
         return null;
     } // end func getValue
-    
+
     // }}}
     // {{{ freeze()
 
     /**
      * Freeze the element so that only its value is returned
-     * 
+     *
      * @access    public
      * @return    void
      */
@@ -227,7 +231,7 @@ class HTML_QuickForm_element extends HTML_Common
 
     /**
      * Returns the value of field without HTML tags
-     * 
+     *
      * @since     1.0
      * @access    public
      * @return    string
@@ -238,13 +242,13 @@ class HTML_QuickForm_element extends HTML_Common
         return (strlen($value)? htmlspecialchars($value): '&nbsp;') .
                $this->_getPersistantData();
     } //end func getFrozenHtml
-    
+
     // }}}
     // {{{ _getPersistantData()
 
    /**
     * Used by getFrozenHtml() to pass the element's value if _persistantFreeze is on
-    * 
+    *
     * @access private
     * @return string
     */
@@ -283,7 +287,7 @@ class HTML_QuickForm_element extends HTML_Common
     /**
      * Sets wether an element value should be kept in an hidden field
      * when the element is frozen or not
-     * 
+     *
      * @param     bool    $persistant   True if persistant value
      * @since     2.0
      * @access    public
@@ -299,7 +303,7 @@ class HTML_QuickForm_element extends HTML_Common
 
     /**
      * Sets display text for the element
-     * 
+     *
      * @param     string    $label  Display text for the element
      * @since     1.3
      * @access    public
@@ -315,7 +319,7 @@ class HTML_QuickForm_element extends HTML_Common
 
     /**
      * Returns display text for the element
-     * 
+     *
      * @since     1.3
      * @access    public
      * @return    string
@@ -330,7 +334,7 @@ class HTML_QuickForm_element extends HTML_Common
 
     /**
      * Tries to find the element value from the values array
-     * 
+     *
      * @since     2.7
      * @access    private
      * @return    mixed
@@ -344,11 +348,8 @@ class HTML_QuickForm_element extends HTML_Common
         if (isset($values[$elementName])) {
             return $values[$elementName];
         } elseif (strpos($elementName, '[')) {
-            $myVar = "['" . str_replace(
-                         array('\\', '\'', ']', '['), array('\\\\', '\\\'', '', "']['"), 
-                         $elementName
-                     ) . "']";
-            return eval("return (isset(\$values$myVar)) ? \$values$myVar : null;");
+            $keys = explode('[', str_replace(']', '', $elementName));
+            return CRM_Utils_Array::pathGet($values, $keys);
         } else {
             return null;
         }
@@ -407,7 +408,7 @@ class HTML_QuickForm_element extends HTML_Common
     * @param bool                       Whether an element is required
     * @param string                     An error message associated with an element
     * @access public
-    * @return void 
+    * @return void
     */
     function accept(&$renderer, $required=false, $error=null)
     {
@@ -419,12 +420,12 @@ class HTML_QuickForm_element extends HTML_Common
 
    /**
     * Automatically generates and assigns an 'id' attribute for the element.
-    * 
+    *
     * Currently used to ensure that labels work on radio buttons and
     * checkboxes. Per idea of Alexander Radivanovich.
     *
     * @access private
-    * @return void 
+    * @return void
     */
     function _generateId()
     {
@@ -454,7 +455,7 @@ class HTML_QuickForm_element extends HTML_Common
         }
         return $this->_prepareValue($value, $assoc);
     }
-    
+
     // }}}
     // {{{ _prepareValue()
 
@@ -477,17 +478,14 @@ class HTML_QuickForm_element extends HTML_Common
             if (!strpos($name, '[')) {
                 return array($name => $value);
             } else {
-                $valueAry = array();
-                $myIndex  = "['" . str_replace(
-                                array('\\', '\'', ']', '['), array('\\\\', '\\\'', '', "']['"), 
-                                $name
-                            ) . "']";
-                eval("\$valueAry$myIndex = \$value;");
-                return $valueAry;
+                $keys = explode('[', str_replace(']', '', $name));
+                $preparedValue = [];
+                CRM_Utils_Array::pathSet($preparedValue, $keys, $value);
+                return $preparedValue;
             }
         }
     }
-    
+
     // }}}
 } // end class HTML_QuickForm_element
 ?>

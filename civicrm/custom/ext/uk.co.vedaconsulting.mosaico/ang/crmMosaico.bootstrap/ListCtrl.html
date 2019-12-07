@@ -1,0 +1,47 @@
+<div id="bootstrap-theme">
+  <div class="crm-mosaico-page">
+
+    <div crm-ui-debug="crmMosaicoTemplates.getBases()"></div>
+    <div crm-ui-debug="crmMosaicoTemplates.getConfigured()"></div>
+    <div class="mosaico-panels-group">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">{{ts('New from base template:')}}</h3>
+        </div>
+        <div class="panel-body">
+          <div class="row mosaico-templates-wrapper">
+            <div ng-repeat="template in crmMosaicoTemplates.getBases() | orderBy:'type'">
+              <div
+                class="col-xs-6 col-md-3 col-lg-3"
+                crm-mosaico-template-item="{state:'new', title: template.type, img: template.thumbnail}"
+                on-item-click="createTpl(template)">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel panel-default" ng-show="crmMosaicoTemplates.getConfigured().length > 0">
+        <div class="panel-heading">
+          <h3 class="panel-title">{{ts('Configured templates:')}}</h3>
+        </div>
+        <div class="panel-body">
+          <div class="row mosaico-templates-wrapper">
+            <div ng-repeat="template in crmMosaicoTemplates.getConfigured() | orderBy:'title'">
+              <div
+                class="col-xs-6 col-md-3 col-lg-3"
+                crm-mosaico-template-item="{state:'configure', title: template.title, subtitle: template.type, img: template.thumbnail}"
+                on-item-click="editTpl(template)"
+                on-item-copy="copyTpl(template)"
+                on-item-settings="renameTpl(template)"
+                on-item-delete="deleteTpl(template)"
+                check-item-delete="canDelete()">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

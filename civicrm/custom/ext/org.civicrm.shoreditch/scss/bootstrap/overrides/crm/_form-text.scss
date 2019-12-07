@@ -1,0 +1,5 @@
+// Bootstrap applies border-box to everything, so the height
+// of .crm-form-text needs to be adjusted accordingly
+.crm-form-text {
+  height: $input-height-base;
+}

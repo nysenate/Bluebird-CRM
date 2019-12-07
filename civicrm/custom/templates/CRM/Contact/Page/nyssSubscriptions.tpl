@@ -2,7 +2,7 @@
 {foreach from=$email key="blockId" item=item}
   <span class="subscription-link description" id="subscription-row-{$item.id}">
     <a href="#" title="{ts}Subscriptions{/ts}" onClick="showHideSubscriptions('{$item.id}', '{$blockId}'); return false;">{ts}(subscriptions){/ts}</a>
-    <div id="subscription-form-{$item.id}" class="hiddenElement"></div>
+    <div id="subscription-form-{$item.id}" class="hiddenElement nyss-subscription-form"></div>
   </span>
 
   {literal}
@@ -77,14 +77,17 @@
 
               cj(this).dialog("close");
               cj(this).dialog("destroy");
+              cj('.nyss-subscription-form').hide();
             },
             "Cancel": function() {
               cj(this).dialog("close");
               cj(this).dialog("destroy");
+              cj('.nyss-subscription-form').hide();
             }
           },
           close: function(event, ui) {
             //console.log('event: ', event);
+            cj('.nyss-subscription-form').hide();
           }
         });
       }

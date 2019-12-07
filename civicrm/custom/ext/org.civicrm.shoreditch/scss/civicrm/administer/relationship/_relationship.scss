@@ -1,0 +1,17 @@
+&#{civi-page('admin-reltype')} {
+  .dataTables_wrapper {
+    margin-bottom: 0;
+  }
+
+  #ltype {
+    @include civicrm-table;
+
+    table {
+      tr {
+        td {
+          background: $crm-white !important;
+        }
+      }
+    }
+  }
+}

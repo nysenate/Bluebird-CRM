@@ -1,0 +1,31 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder, property-no-vendor-prefix */
+
+&#{civi-page('admin-job')} {
+  #ltype {
+    @include civicrm-table;
+
+    .disabled {
+      &,
+      td {
+        color: $crm-gray-matte !important;
+      }
+    }
+
+    th {
+      white-space: nowrap;
+    }
+  }
+
+  .CRM_Admin_Form_Job {
+    .crm-job-form-block {
+      @include box-shadow($crm-form-layout-shadow-lower);
+      border-radius: 0 0 $border-radius-base $border-radius-base !important;
+    }
+  }
+}
+
+&#{civi-page('admin-joblog')} {
+  .status.no-popup {
+    margin: 0 20px;
+  }
+}

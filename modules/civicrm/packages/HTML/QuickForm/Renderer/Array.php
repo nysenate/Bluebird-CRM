@@ -3,7 +3,7 @@
 
 /**
  * A concrete renderer for HTML_QuickForm, makes an array of form contents
- * 
+ *
  * PHP versions 4 and 5
  *
  * LICENSE: This source file is subject to version 3.01 of the PHP license
@@ -18,9 +18,9 @@
  * @author      Adam Daniel <adaniel1@eesus.jnj.com>
  * @author      Bertrand Mansion <bmansion@mamasam.com>
  * @author      Thomas Schulz <ths@4bconsult.de>
- * @copyright   2001-2009 The PHP Group
+ * @copyright   2001-2011 The PHP Group
  * @license     http://www.php.net/license/3_01.txt PHP License 3.01
- * @version     CVS: $Id: Array.php,v 1.11 2009/04/04 21:34:04 avb Exp $
+ * @version     CVS: $Id$
  * @link        http://pear.php.net/package/HTML_QuickForm
  */
 
@@ -109,7 +109,7 @@ require_once 'HTML/QuickForm/Renderer.php';
  * @author      Adam Daniel <adaniel1@eesus.jnj.com>
  * @author      Bertrand Mansion <bmansion@mamasam.com>
  * @author      Thomas Schulz <ths@4bconsult.de>
- * @version     Release: 3.2.11
+ * @version     Release: 3.2.16
  * @since       3.0
  */
 class HTML_QuickForm_Renderer_Array extends HTML_QuickForm_Renderer
@@ -229,10 +229,10 @@ class HTML_QuickForm_Renderer_Array extends HTML_QuickForm_Renderer
     function renderHidden(&$element, $required = FALSE, $error = FALSE)
     {
         if ($this->_collectHidden) {
-            // add to error array 
-            if (!empty($error)) { 
-                $this->_ary['errors']['hidden'] = $error; 
-            } 
+            // add to error array
+            if (!empty($error)) {
+                $this->_ary['errors']['hidden'] = $error;
+            }
             $this->_ary['hidden'] .= $element->toHtml() . "\n";
         } else {
             $this->renderElement($element, $required, $error);

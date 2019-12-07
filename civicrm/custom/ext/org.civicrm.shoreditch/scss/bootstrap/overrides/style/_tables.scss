@@ -1,0 +1,73 @@
+table,
+.table {
+  margin-bottom: 0;
+
+  th {
+    background: $gray-lighter;
+  }
+
+  > thead {
+
+    > tr {
+
+      > th {
+        border-bottom: 0;
+        color: $gray-darker;
+        text-transform: capitalize;
+      }
+    }
+  }
+
+  // The border below the headings should be darker
+  &:not(.table-bordered) {
+
+    > tbody {
+
+      > tr:first-child {
+
+        > td {
+          border-color: $crm-grayblue-dark;
+        }
+      }
+    }
+  }
+}
+
+
+// Table included in a tab (as the only content)
+.table-tab {
+  $padding-y: nth($crm-nav-tab-content-padding, 1);
+  $padding-x: nth($crm-nav-tab-content-padding, 2);
+
+  margin: #{-$padding-y} #{-$padding-x};
+
+  > table {
+
+    > thead {
+
+      > tr {
+
+        > th {
+          background: $nav-tabs-active-link-hover-bg;
+        }
+      }
+    }
+  }
+}
+
+.panel-default {
+
+  > .table,
+  > .table-responsive > .table,
+  > .panel-collapse > .table {
+    border-top: 1px solid $crm-grayblue-dark;
+  }
+}
+
+.panel {
+
+  .table,
+  .table-responsive {
+    margin-bottom: 0;
+  }
+}

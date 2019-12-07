@@ -1,0 +1,31 @@
+<div id="civitutorial-admin-buttons">
+  <button id="civitutorial-admin-save" <% if (saved) { %> disabled="disabled" <% } %>><i class="crm-i fa-check"></i></button>
+  <button type="button" id="civitutorial-admin-delete" <% if (domain || !id) { %> disabled="disabled" <% } %>><i class="crm-i fa-trash"></i></button>
+  <button type="button" id="civitutorial-admin-close"><i class="crm-i fa-close"></i></button>
+</div>
+<h4><%- source ? ts('Tutorial From %1', {1: source}) : ts('Custom Tutorial') %></h4>
+<div id="civitutorial-admin-top">
+  <div>
+    <label for="civitutorial-field-title"><%- ts('Title') %> <span class="crm-marker">*</span></label>
+    <input id="civitutorial-field-title" name="title" class="crm-form-text big" value="<%= title %>" required />
+    <div class="description"><%- ts('Title as it will appear in the menu.') %></div>
+  </div>
+  <div>
+    <label for="civitutorial-field-url"><%- ts('Page') %> <span class="crm-marker">*</span></label>
+    <input id="civitutorial-field-url" name="url" class="crm-form-text big" value="<%= url %>" required />
+    <div class="description"><%- ts('Relative url of page.') %></div>
+  </div>
+  <div>
+    <label for="civitutorial-field-groups"><%- ts('For') %></label>
+    <input id="civitutorial-field-groups" name="groups" class="crm-form-text big" placeholder="<%- ts('Everyone') %>" value="<%= groups ? groups.join(',') : '' %>" />
+    <div class="description"><%- ts('Users who can see this tutorial.') %></div>
+  </div>
+  <div>
+    <label for="civitutorial-field-auto_start"><%- ts('Auto-run') %></label>
+    <input id="civitutorial-field-auto_start" type="checkbox" name="auto_start" <% if (auto_start) { %> checked="checked" <% } %>  />
+    <div class="description"><%- ts('Start tutorial when a user first visits this page.') %></div>
+  </div>
+</div>
+<div id="civitutorial-steps"></div>
+<br />
+<button type="button" id="civitutorial-add-step"><i class="crm-i fa-plus"></i> <%- ts('Add Step') %></button>

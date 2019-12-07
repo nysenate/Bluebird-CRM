@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<menu>
+  <item>
+    <path>civicrm/angularprofiles/template</path>
+    <page_callback>CRM_AngularProfiles_Page_Template</page_callback>
+    <title>Template</title>
+    <access_callback>1</access_callback>
+  </item>
+</menu>

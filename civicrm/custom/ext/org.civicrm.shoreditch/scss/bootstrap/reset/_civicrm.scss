@@ -1,0 +1,75 @@
+@import 'base/scss/vendor/bootstrap/variables';
+@import 'base/scss/vendor/bootstrap/mixins';
+
+/**
+ * Resets css rules that are applied by the original CiviCRM style
+ * and the "legacy mode" of Shoreditch
+ */
+h3 {
+  @include initial(background-color, transparent);
+  @include initial(border, 0);
+  @include initial(border-radius, 0);
+  @include initial(box-shadow, none);
+  @include initial(font-family, $font-family-base);
+  @include initial(padding, 0);
+  @include initial(margin, 0);
+  font-size: $font-size-h3;
+
+  font-weight: 400;
+}
+
+table {
+  @include initial(border, 0);
+  @include initial(margin, 0);
+
+  font-size: inherit;
+
+  td {
+    @include initial(border, 0);
+
+    color: inherit;
+  }
+
+  th {
+    @include initial(background-color, inherit);
+    @include initial(border, 0);
+    @include initial(text-transform, none);
+
+    color: inherit;
+    font-size: inherit;
+    font-weight: 600;
+  }
+}
+
+.collapsed {
+  @include initial(background, none);
+  @include initial(cursor, auto);
+  @include initial(padding, 0);
+}
+
+.panel {
+  @include initial(position, static);
+  @include initial(padding, 0);
+  @include initial(width, auto);
+  @include initial(z-index, auto);
+
+  display: block;
+}
+
+.crm-button .crm-i {
+  left: 0.6em;
+  top: 0.6em;
+}
+
+// It is necessary to keep the min width of the <select multiple>
+// underneath the CiviCRM's select2, otherwise the select2 might be too narrow
+// for the <option>s to display properly
+.crm-select2 {
+  width: 15em;
+}
+
+label .crm-error-label {
+  @include initial(padding, 0);
+
+  font-size: $font-size-base;
+}

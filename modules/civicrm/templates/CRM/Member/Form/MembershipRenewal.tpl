@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2018                                |
+ | Copyright CiviCRM LLC (c) 2004-2019                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -58,10 +58,6 @@
     </div>
     <div>{include file="CRM/common/formButtons.tpl" location="top"}</div>
     <table class="form-layout">
-      <tr class="crm-member-membershiprenew-form-block-payment_processor_id">
-        <td class="label">{$form.payment_processor_id.label}</td>
-        <td class="html-adjust">{$form.payment_processor_id.html}</td>
-      </tr>
       <tr class="crm-member-membershiprenew-form-block-org_name">
         <td class="label">{ts}Membership Organization and Type{/ts}</td>
         <td class="html-adjust">{$orgName}&nbsp;&nbsp;-&nbsp;&nbsp;{$memType}
@@ -88,7 +84,7 @@
       </tr>
       <tr class="crm-member-membershiprenew-form-block-renewal_date">
         <td class="label">{$form.renewal_date.label}</td>
-        <td>{include file="CRM/common/jcalendar.tpl" elementName=renewal_date}</td>
+        <td>{$form.renewal_date.html}</td>
       </tr>
       <tr id="defaultNumTerms" class="crm-member-membershiprenew-form-block-default-num_terms">
         <td colspan="2" class="description">
@@ -140,9 +136,7 @@
       </table>
     {/if}
 
-    <div id="customData"></div>
-    {*include custom data js file*}
-    {include file="CRM/common/customData.tpl"}
+    {include file="CRM/common/customDataBlock.tpl"}
 
     <div>{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
 
@@ -193,12 +187,6 @@
     CRM.$(function($) {
       $('#membershipOrgType').hide();
       $('#changeNumTerms').hide();
-      {/literal}
-      CRM.buildCustomData('{$customDataType}');
-      {if $customDataSubType}
-      CRM.buildCustomData('{$customDataType}', {$customDataSubType});
-      {/if}
-      {literal}
     });
 
     function checkPayment() {

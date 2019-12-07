@@ -37,9 +37,6 @@
     <div class="crm-accordion-body" id="BirthdayByMonth">
       <div class="crm-submit-buttons">
         {include file="CRM/common/formButtons.tpl" location="top"}
-        <div class="crm-submit-buttons reset-advanced-search">
-          <a href="{$resetUrl}" class="button" style="text-align:center;"><span>Reset</span></a>
-        </div>
       </div>
       <table class="form-layout-compressed">
         <tr class="crm-contact-custom-search-form-row-search-type">
@@ -73,9 +70,6 @@
       </table>
         <div class="crm-submit-buttons">
           {include file="CRM/common/formButtons.tpl" location="bottom"}
-          <div class="crm-submit-buttons reset-advanced-search">
-            <a href="{$resetUrl}" class="button" style="text-align:center;"><span>Reset</span></a>
-          </div>
         </div>
     </div><!-- /.crm-accordion-body -->
 </div><!-- /.crm-accordion-wrapper -->

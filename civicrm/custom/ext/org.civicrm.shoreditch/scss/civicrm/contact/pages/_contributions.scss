@@ -1,0 +1,1038 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder, property-no-vendor-prefix */
+
+#{civi-page('contribute')} {
+  #branding h1.page-title {
+    margin-bottom: 20px !important;
+  }
+
+  #crm-container #crm-main-content-wrapper .crm-accordion-header {
+    font-weight: 600 !important;
+  }
+
+  .button {
+    font-family: $font-family-base;
+    text-transform: uppercase;
+  }
+
+  .CRM_Contribute_Form_Task_PDF {
+    background: $crm-white;
+    padding: 15px;
+
+    .status {
+      margin-left: -15px;
+      margin-right: -15px;
+      margin-top: -15px !important;
+    }
+  }
+
+  .CRM_Contribute_Form_Task_Delete {
+    background: $crm-white;
+    border-radius: $border-radius-small;
+    box-shadow: $box-shadow;
+    margin-top: 15px;
+
+    + p {
+      margin: 0;
+    }
+
+    .form-item {
+      background: $crm-white;
+      border-radius: 0;
+      border-top: 1px solid $gray-lighter;
+      margin: 20px 20px 0;
+      min-height: 43px;
+      padding: 20px 0 10px;
+    }
+  }
+
+  .CRM_Contribute_Form_Task_Batch {
+    fieldset {
+      box-shadow: $box-shadow;
+    }
+
+    .help {
+      background: $crm-white;
+      border-radius: $border-radius-child $border-radius-child 0 0;
+      margin: 0;
+      padding: 15px 20px;
+    }
+
+    .crm-submit-buttons {
+      background: $crm-white;
+      border-radius: 0 0 $border-radius-child $border-radius-child;
+      margin: 0;
+      padding: 15px 10px 23px;
+    }
+
+    .columnheader {
+      border-color: $crm-grayblue-dark !important;
+      border-left: 0 !important;
+      border-right: 0 !important;
+
+      th,
+      td {
+        background: $gray-lighter;
+        border: 0;
+        color: $gray-darker;
+        font: bold $font-size-base $font-family-base !important;
+        padding: 10px 20px;
+        vertical-align: middle;
+      }
+
+      .sticky-header {
+        display: none !important;
+      }
+    }
+
+    tbody {
+      tr {
+        background: $crm-white;
+        border-bottom: 1px solid $crm-background;
+        border-right: 0;
+        line-height: 30px;
+      }
+
+      td {
+        border: 0;
+        color: $crm-copy;
+        padding: 10px 20px;
+
+        &:nth-child(6) {
+          width: 200px;
+        }
+      }
+    }
+
+    .dateplugin {
+      margin-bottom: 5px;
+      max-width: $crm-table-label-column-width;
+    }
+
+    .addon.fa-calendar {
+      padding: 8px 10px 9px;
+    }
+
+    input[type='text'] {
+      @include transition(border-color 0.15s ease-in-out 0s, box-shadow 0.15s ease-in-out 0s);
+      background: $crm-white;
+      border: 1px solid $crm-grayblue-darker;
+      border-radius: $border-radius-small;
+      box-shadow: $crm-input-shadow;
+      color: $gray-darker;
+      font-size: $font-size-base !important;
+      font-weight: normal !important;
+      height: 30px;
+      line-height: 30px;
+      padding: 0 10px;
+      vertical-align: middle;
+      width: 100%;
+
+      &:focus {
+        border-color: $brand-primary;
+      }
+    }
+  }
+
+  form[class*='CRM_Contribute_Form_'] {
+    .status {
+      margin-bottom: 0;
+      margin-top: 0;
+
+      p {
+        margin-top: 0;
+      }
+
+      + .help {
+        margin: 10px 0;
+      }
+    }
+
+    .label-left {
+      padding: 15px;
+      width: 205px;
+    }
+
+    .crm-accordion-body {
+      .crm-form-block {
+        box-shadow: none;
+        padding: 0;
+      }
+
+      .label-left {
+        padding: 15px 0;
+        width: 220px;
+      }
+    }
+
+    .crm-html_email-accordion .helpIcon {
+      margin-bottom: 20px;
+      margin-right: 0;
+    }
+  }
+
+  .CRM_Contribute_Form_Task_Result {
+    .crm-form-submit {
+      margin: 20px;
+    }
+
+    p {
+      margin: 0;
+    }
+  }
+
+  #{civi-dialog()} {
+    .crm-contribution-form-block {
+      margin-bottom: -10px;
+      padding-bottom: 0;
+    }
+  }
+
+  .crm-contact-contribute-contributions {
+    .crm-ajax-container {
+      border: 1px solid $crm-grayblue-dark !important;
+    }
+  }
+}
+
+#{civi-page('contribute-campaign')},
+#{civi-page('pcp-info')},
+#{civi-page('contribute-transact')} {
+  .crm-form-block {
+    legend {
+      @include panel-header;
+      box-sizing: border-box;
+      margin-bottom: 10px;
+      width: 100%;
+    }
+
+    .label {
+      padding-left: 20px;
+    }
+
+    input[type='text'],
+    input[type='password'],
+    input[type='email'],
+    select {
+      font-size: $font-size-base !important;
+    }
+
+    .crm-contribution-form-block-title {
+      padding-top: 14px;
+    }
+  }
+}
+
+#{civi-page('pcp-info')} {
+  .CRM_PCP_Form_Campaign {
+    .content {
+      padding-bottom: 5px;
+    }
+
+    .crm-contribution-form-block-page_text,
+    .crm-contribution-form-block-is_active {
+      padding-bottom: 15px;
+    }
+
+    .crm-contribution-form-block-is_honor_roll {
+      padding-top: 15px;
+    }
+  }
+
+}
+
+#{civi-page('contribute-transact')} {
+  .crm-form-block {
+    padding-top: 20px;
+
+    legend {
+      @include section-title;
+    }
+
+    fieldset {
+      margin-bottom: 10px;
+    }
+
+    .crm-section:not(.intro_text-section) {
+      margin-bottom: 10px !important;
+    }
+
+    .intro_text-section,
+    .status.no-popup {
+      margin: $crm-status-bar-no-top !important;
+    }
+  }
+
+  #page {
+    clear: both;
+  }
+}
+
+#{civi-page('contribute-search')} {
+  .CRM_Contribute_Form_Search {
+    table.selector {
+      @include expandable-table;
+      margin-bottom: 20px;
+
+      thead.sticky {
+        background: transparent;
+      }
+
+      tbody {
+        tr.crm-child-row {
+          > td {
+            padding: 0 !important;
+          }
+        }
+      }
+    }
+
+    .crm-absolute-date-range > span,
+    .crm-absolute-date-range > span > input {
+      display: inline-block;
+      margin-top: 5px;
+      vertical-align: middle;
+    }
+
+    .description {
+      padding: 10px 20px;
+    }
+
+    #contribution_recur {
+      margin: 0 -24px 15px;
+    }
+
+    #search-status {
+      .form-layout-compressed {
+        tr {
+          th {
+            background: none;
+            color: $gray-dark;
+            font-weight: $crm-font-weight-h3;
+            text-transform: capitalize;
+
+            &.contriTotalLeft,
+            &.contriTotalRight {
+              border: 0;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .crm-results-block-empty {
+    box-shadow: none !important;
+  }
+
+  #contributionSearch {
+    .crm-pager {
+      margin: 15px 0;
+
+      .element-right {
+        margin-top: 0;
+      }
+    }
+  }
+}
+
+#{civi-page('contribute-add')} {
+  .CRM_Contribute_Form_Contribution {
+    .crm-accordion-header:not(.crm-master-accordion-header) + .crm-accordion-body {
+      padding: 20px !important;
+    }
+
+    .accordion + br {
+      display: none;
+    }
+
+    .crm-link-credit-card-mode {
+      margin-top: 21px !important;
+
+      .action-item {
+        padding: 8px 20px !important;
+      }
+    }
+
+    legend {
+      @include section-title;
+      width: 100%;
+    }
+
+    .pay-later_info-section {
+      .label {
+        width: $crm-table-label-column-width;
+      }
+
+      .content {
+        margin-left: 160px;
+      }
+    }
+
+    .crm-contribution-form-block-fulfilled_date {
+      .dateplugin {
+        min-width: 199px !important;
+      }
+    }
+  }
+}
+
+#{civi-page('contact-view-contribution')},
+#{civi-page('contribute-add')} {
+  .CRM_Contribute_Form_Contribution {
+    > .form-layout-compressed {
+      @include civicrm-panel;
+      margin-bottom: 20px;
+      width: 100%;
+
+      tr {
+        &:first-child {
+          td {
+            padding-top: 20px;
+          }
+        }
+
+        &:last-child {
+          td {
+            padding-bottom: 20px;
+          }
+        }
+
+        td:first-child {
+          padding-left: 20px !important;
+        }
+      }
+
+      #_qf_Contribution_reload {
+        min-width: auto;
+        width: auto;
+      }
+    }
+  }
+}
+
+#{civi-page('contact-view-contribution')} {
+  #crm-main-content-wrapper {
+    background-color: $crm-white;
+    box-shadow: $box-shadow;
+  }
+
+  #branding {
+    display: block;
+  }
+
+  #page {
+    margin-left: 40px;
+    margin-right: 40px;
+    padding: 20px 0 40px;
+  }
+
+  .crm-contribution-form-block {
+    position: relative;
+  }
+
+  .description {
+    font-family: $font-family-base;
+  }
+
+  #Contribution {
+    > .crm-form-block > .form-layout-compressed td.label {
+      padding: 10px 20px !important;
+    }
+
+    div.label {
+      padding: 0 20px !important;
+      width: 190px;
+    }
+
+    td {
+      color: $crm-copy;
+
+      &.label {
+        width: 190px;
+      }
+    }
+
+    .crm-accordion-body {
+      padding: 15px 0 !important;
+
+      tr td {
+        color: $crm-copy;
+        padding: 0;
+      }
+
+      tr td:first-child label {
+        padding: 0 !important;
+      }
+
+      tr td:not(.label) {
+        width: 100%;
+      }
+
+      tr td .label {
+        padding: 10px 0 !important;
+      }
+
+      tr [id*='soft-credit-row'] td {
+        &:first-child {
+          padding-left: 0 !important;
+          padding-right: 10px !important;
+        }
+
+        label {
+          margin-right: 10px;
+          min-width: 205px;
+        }
+      }
+
+      table {
+        &.crm-contribution-form-table-credit_to_pcp,
+        &.crm-soft-credit-block {
+          tr td {
+            min-height: 40px;
+            padding: 0 10px 10px 0 !important;
+            vertical-align: middle !important;
+          }
+
+          input {
+            margin: 0 !important;
+          }
+        }
+      }
+
+      .crm-contribution-form-block-pcp_details {
+        left: -189px;
+      }
+
+      #id-premium td {
+        display: table-cell;
+
+        &:first-child {
+          min-width: 190px;
+          padding: 15px 20px 15px 0 !important;
+          width: 190px;
+        }
+      }
+    }
+
+    legend {
+      margin: 0;
+      padding: 15px 20px !important;
+    }
+
+    .crm-submit-buttons {
+      border-bottom: 0;
+    }
+
+    .crm-contribution-form-block {
+      padding-top: 20px !important;
+
+      .status {
+        margin: 0 20px 20px;
+      }
+    }
+  }
+}
+
+#{civi-page('contact-view')} {
+  .CRM_Contribute_Form_Search {
+    .description {
+      padding: 10px 0 20px;
+    }
+
+    .selector {
+      @include expandable-table;
+    }
+  }
+
+  // 13px is the equivalent of 1em in vanilla
+  .crm-contact-contribute-recur-active {
+    margin-bottom: 13px;
+  }
+
+  .crm-contact-contribute-recur {
+    @include civicrm-table-with-header;
+  }
+}
+
+.CRM_Contribute_Form_Contribution {
+  // Hides "Alternatively, you can use a price set" text
+  #totalAmountBlock {
+    display: none !important;
+  }
+
+  #priceset {
+    margin-top: $crm-standard-gap / 2;
+  }
+
+  .crm-accordion-header {
+    font-family: $font-family-base;
+    font-weight: $crm-font-weight-h1 !important;
+  }
+
+  .crm-submit-buttons {
+    .crm-button_qf_Contribution_upload {
+      margin-left: 0 !important;
+    }
+  }
+
+  .ui-accordion + br {
+    display: none;
+  }
+
+  .required {
+    &::after {
+      display: none;
+    }
+  }
+
+  .action-link .crm-hover-button {
+    background-color: $crm-white !important;
+    border: 1px solid $crm-copy !important;
+    color: $crm-copy !important;
+  }
+
+  .crm-form-select {
+    margin-right: 0 !important;
+
+    + .helpicon {
+      left: -3px;
+      position: relative;
+    }
+  }
+
+  td {
+    border-bottom: 0 !important;
+
+    label {
+      font-family: $font-family-base;
+    }
+  }
+
+  .crm-contribution-form-block-payment_instrument_id .helpicon {
+    left: 0;
+  }
+
+  .crm-link-credit-card-mode {
+    margin: 10px 20px 0 0;
+
+    .action-item {
+      border-color: $gray-darker !important;
+      border-radius: $border-radius-base;
+      padding: 6px 15px;
+    }
+  }
+
+  #recurringPaymentBlock {
+    strong {
+      color: $gray-darker;
+    }
+
+    input {
+      margin-bottom: 5px;
+      margin-top: 0;
+    }
+
+    .description {
+      display: block;
+      font-family: $font-family-base;
+      line-height: 1.5em;
+      margin-top: 5px;
+    }
+  }
+
+  #from_email_address {
+    padding-right: 30px !important;
+  }
+
+  div.description {
+    display: block;
+    font-family: $font-family-base;
+    line-height: 1.5em;
+    padding-bottom: 10px;
+  }
+
+  .credit_card_info-section,
+  .billing_name_address-section {
+    .cvv2-section {
+      input,
+      .cvv2-icon {
+        float: left;
+      }
+    }
+  }
+
+  .form-layout-compressed td.label {
+    padding-left: 0 !important;
+  }
+
+  .crm-contribution-form-block-note {
+    .label {
+      display: table-cell;
+      vertical-align: top;
+    }
+  }
+}
+
+#{civi-page('contact-view')} .ui-dialog .CRM_Contribute_Form_Contribution {
+  .crm-link-credit-card-mode {
+    float: right;
+    margin-bottom: -30px !important;
+  }
+
+  .description {
+    font-family: $font-family-base;
+    margin-top: 10px;
+  }
+
+  #payment_information {
+    .credit_card_info-group,
+    .billing_name_address-group {
+      margin: 0 -20px;
+
+      legend {
+        @include section-title;
+        box-sizing: border-box;
+        width: 100%;
+      }
+    }
+  }
+}
+
+.CRM_Contribute_Form_ContributionView {
+  .crm-info-panel {
+    @include table-selector-full-style();
+
+    .selector {
+      box-shadow: none;
+    }
+  }
+
+  #Donor_Information__ {
+    border: 0;
+    padding: 0;
+
+    .crm-accordion-body {
+      box-shadow: none;
+    }
+  }
+
+  .action-link {
+    display: none;
+  }
+
+  #paymentDetails_Information {
+    .helpicon {
+      left: 0;
+    }
+
+    td:not(.label) {
+      padding: 0;
+      width: 100%;
+    }
+  }
+
+  label[for='thankyou_date'] {
+    top: 7px;
+  }
+
+  label[for='thankyou_date_time'] {
+    top: 5px;
+  }
+}
+
+.CRM_Contribute_Form_Task_Email {
+  .crm-contactEmail-form-block {
+    .form-layout-compressed {
+      background: $crm-white;
+      width: 100%;
+
+      .crm-contactEmail-form-block-recipient {
+        td {
+          &.label {
+            color: $gray-darker;
+            font-weight: $crm-font-weight-bold;
+          }
+
+          &:first-child {
+            &::after {
+              color: $brand-danger;
+              content: '*';
+              font-weight: bold;
+              margin: 0 5px;
+
+            }
+          }
+        }
+      }
+
+      td {
+        &.label {
+          padding-left: 30px !important;
+        }
+      }
+    }
+
+    .crm-submit-buttons + .status {
+      margin: 15px 20px;
+    }
+
+    .crm-html_email-accordion {
+      .helpIcon {
+        margin-bottom: 20px;
+        margin-right: 0;
+      }
+    }
+
+    #s2id_fromEmailAddress,
+    #s2id_to {
+      &::after {
+        display: none;
+      }
+    }
+
+    .crm-contactEmail-form-block-template {
+      .crm-form-select {
+        padding-right: 30px !important;
+      }
+    }
+  }
+
+  .crm-accordion-wrapper {
+    .crm-accordion-body {
+      td.label {
+        padding-left: 15px !important;
+      }
+    }
+  }
+}
+
+form.CRM_Contribute_Form_ContributionCharts {
+  h3 + div {
+    background-color: $crm-white;
+  }
+
+  .crm-pager,
+  table.selector {
+    box-shadow: none !important;
+  }
+
+  .ui-tabs-nav {
+    background: $crm-white;
+    border: 0;
+    padding: 0 20px;
+    position: relative;
+  }
+
+  .row-highlight.selector {
+    border-top: 1px solid $crm-grayblue-dark;
+  }
+
+  .ui-tabs-nav .crm-tab-button {
+    background: none;
+    border: 0;
+    border-radius: 0;
+    height: 50px;
+    line-height: 50px;
+
+    &:hover {
+      background-color: $gray-lighter;
+    }
+
+    a {
+      color: $gray-darker;
+    }
+
+    &.ui-tabs-selected {
+      border-bottom: 3px solid $gray-darker;
+
+      a {
+        background: none;
+        color: $gray-darker;
+      }
+    }
+  }
+
+  .ui-tabs-nav .crm-tab-button + #chartData > #chartData {
+    box-shadow: $box-shadow;
+    padding: 20px;
+
+    table {
+      border: 0;
+      border-top: 1px solid $gray-lighter;
+      margin-top: 20px;
+    }
+  }
+
+  #chartData {
+    table {
+      box-shadow: none;
+
+      td {
+        padding: #{$crm-standard-gap / 2} $crm-standard-gap;
+      }
+
+      th {
+        padding-left: $crm-standard-gap;
+        padding-right: $crm-standard-gap;
+      }
+    }
+
+    .chart {
+      border: 0 !important;
+
+      td {
+        border: 0 !important;
+      }
+    }
+  }
+
+  .ui-tabs {
+    border-radius: 0 0 $border-radius-base $border-radius-base;
+  }
+
+  #mainTabContainer {
+    @include box-shadow($crm-form-layout-shadow-lower);
+
+    + .spacer {
+      height: $crm-standard-gap;
+    }
+  }
+
+  .crm-pager {
+    line-height: 1.7em;
+    margin: 0;
+    padding: 7px 0;
+
+    > .element-right {
+      margin-right: $crm-standard-gap !important;
+      margin-top: 3px;
+    }
+
+    + .form-item {
+      padding: $crm-standard-gap !important;
+    }
+
+    .crm-pager-nav {
+      padding-left: 0;
+    }
+  }
+
+  p.description {
+    @include box-shadow($crm-form-layout-shadow-lower);
+    background: $crm-white;
+    padding: 15px;
+    position: relative;
+  }
+
+  table.selector {
+    border-radius: 0;
+
+    > tbody > tr > td + .crm-pager {
+      border-radius: 0 0 $panel-border-radius $panel-border-radius;
+      border-top: 1px solid $crm-background;
+      margin-top: 0;
+    }
+
+    + .crm-pager {
+      margin-bottom: 10px;
+    }
+  }
+
+  .selector,
+  .report {
+    @include expandable-table;
+  }
+
+  .report {
+    border: solid 1px $crm-background;
+    margin-top: 20px;
+  }
+
+  .CRM_Contribute_Form_AdditionalPayment {
+    padding: 10px;
+
+    table.selector {
+      border: 1px solid $crm-grayblue-dark !important;
+    }
+  }
+}
+
+.CRM_Contribute_Form_Task_Print {
+  padding: 0 15px;
+
+  .crm-form-block {
+    background: transparent;
+  }
+
+  table {
+    @extend %civihr-table;
+    border: 0;
+    border-radius: $panel-border-radius;
+    margin: 30px 0 20px;
+
+    tr.columnheader {
+      border: 0 !important;
+      border-bottom: 1px solid $crm-grayblue-dark !important;
+    }
+
+    tr.crm-contribution {
+      border-left: 0;
+      border-right: 0;
+    }
+
+    th,
+    td {
+      border: 0 !important;
+      line-height: 1.5em !important;
+      padding: 15px 20px !important;
+    }
+
+    td.crm-contribution-contribution_source {
+      max-width: 300px;
+    }
+  }
+
+  .element-right {
+    margin-right: 0 !important;
+  }
+}
+
+.CRM_Financial_Form_Search {
+  .action-link {
+    margin: 0 0 20px;
+  }
+
+  .form-layout-compressed {
+    margin: 20px 0 0;
+
+    input.crm-form-submit {
+      margin-left: 5px;
+      padding: 4px 10px;
+      text-shadow: none;
+      vertical-align: middle;
+    }
+  }
+}
+
+#{civi-page('contribute-import')} {
+  #upload-file {
+    .help {
+      margin: $crm-panel-nested-indent;
+    }
+  }
+}
+
+.contact-summary-contribute-tab {
+  .ui-tabs-nav {
+    background-color: $crm-white;
+    border: solid 1px $crm-grayblue-dark;
+
+    .ui-tabs-tab {
+      background-color: transparent;
+
+      &.ui-tabs-active {
+        background-color: $gray-light;
+      }
+    }
+  }
+}

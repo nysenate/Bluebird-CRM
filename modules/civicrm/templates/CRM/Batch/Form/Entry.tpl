@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2018                                |
+ | Copyright CiviCRM LLC (c) 2004-2019                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -54,7 +54,7 @@
       <td class="label">
         <label>{ts}Total amount entered{/ts}</label>
       </td>
-      <td class="right">{$config->defaultCurrencySymbol} <span class="batch-actual-total"></span></td>
+      <td class="right">{$defaultCurrencySymbol} <span class="batch-actual-total"></span></td>
     </tr>
   </table>
 
@@ -341,7 +341,7 @@ function updateContactInfo(blockNo, prefix) {
   {/literal}
   {if $contactFields}
   {foreach from=$contactFields item=val key=fldName}
-  var fldName = "{$fldName}";
+  var fldName = {$fldName|@json_encode};
   {literal}
   if (returnProperties) {
     returnProperties = returnProperties + ',';

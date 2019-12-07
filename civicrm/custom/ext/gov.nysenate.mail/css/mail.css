@@ -1,3 +1,19 @@
 div.crmMailing a.helpicon[title="From Help"] {
   display: none;
 }
+li[aria-controls=tab-attachment],
+li[aria-controls=tab-pub],
+li[aria-controls=tab-response],
+li[aria-controls=tab-tracking] {
+  display: none;
+}
+
+/*13021*/
+.crm-container.ui-dialog .ui-dialog-content {
+  height: 90% !important;
+}
+
+/*13116*/
+.crm-container .crm-hover-button[disabled] {
+  cursor: pointer !important;
+}

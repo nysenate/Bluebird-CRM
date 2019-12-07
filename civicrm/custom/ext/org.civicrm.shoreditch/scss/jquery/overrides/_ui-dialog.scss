@@ -1,0 +1,5 @@
+@import '../jquery/mixins/ui-dialog';
+
+.ui-dialog {
+  @include ui-dialog;
+}

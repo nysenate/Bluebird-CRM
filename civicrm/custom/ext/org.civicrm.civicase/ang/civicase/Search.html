@@ -1,0 +1,79 @@
+<div class="panel-header">
+  <div crm-ui-debug="filters"></div>
+  <form class="form-inline civicase-filters">
+    <input class="form-control" ng-list crm-ui-select="{allowClear: true, multiple: true, placeholder: ts('Case Type: Any'), data: caseTypeOptions}" ng-model="filters.case_type_id" />
+    <input class="form-control" ng-list crm-ui-select="{allowClear: true, multiple: true, placeholder: ts('Status: All open cases'), data: caseStatusOptions}" ng-model="filters.status_id" />
+    <button class="btn btn-primary btn-sm pull-right" ng-click="showMore()" ng-show="!expanded">
+      <i class="fa fa-gear"></i> {{ filterDescription.length ? ts('Edit Search') : ts('Other Criteria') }}
+    </button>
+    <button class="btn btn-primary btn-sm pull-right" ng-click="doSearch()" ng-show="expanded">
+      <i class="fa fa-search"></i> {{ ts('Search') }}
+    </button>
+  </form>
+</div>
+<form class="panel-body form-horizontal" ng-show="expanded">
+  <div class="form-group">
+    <label ng-if="isEnabled('id')" class="control-label col-lg-2">{{ ts('Case ID') }}</label>
+    <div class="col-lg-4">
+      <input ng-if="isEnabled('id')" class="form-control" type="number" ng-model="filters.id" />
+    </div>
+  </div>
+  <div class="form-group">
+    <label ng-if="isEnabled('contact_id')" class="control-label col-lg-2">{{ ts('Client Name or Email') }}</label>
+    <div class="col-lg-4">
+      <input ng-if="isEnabled('contact_id')" class="form-control" ng-list crm-entityref="{entity: 'Contact', select: {multiple: true}}" ng-model="filters.contact_id" />
+    </div>
+    <div class="col-lg-6">
+      <div ng-if="checkPerm('administer CiviCase') && isEnabled('is_deleted')">
+        <input type="checkbox" ng-model="filters.is_deleted" id="case_search_field_is_deleted" />
+        <label for="case_search_field_is_deleted" class="control-label">{{ ts('Deleted Cases') }}</label>
+      </div>
+    </div>
+  </div>
+  <div class="form-group" ng-if="isEnabled('case_manager')">
+    <label for="case_search_field_case_manager" class="control-label col-lg-2">{{ ts('Case Manager') }}</label>
+    <div class="col-lg-4">
+      <input class="form-control" ng-list crm-entityref="{entity: 'Contact', select: {multiple: true}}" ng-model="filters.case_manager" id="case_search_field_case_manager" />
+    </div>
+    <div class="col-lg-6">
+      <input type="checkbox" ng-click="setCaseManager()" ng-checked="caseManagerIsMe()" id="case_search_field_case_manager_me" />
+      <label for="case_search_field_case_manager_me" class="control-label">{{ ts('Only my cases') }}</label>
+    </div>
+  </div>
+  <div class="form-group">
+    <label ng-if="isEnabled('start_date')" class="control-label col-lg-2">{{ ts('Case Start Date') }}</label>
+    <div class="col-lg-4">
+      <div ng-if="isEnabled('start_date')" crm-ui-date-range="filters.start_date"></div>
+    </div>
+  </div>
+  <div class="form-group">
+    <label ng-if="isEnabled('end_date')" class="control-label col-lg-2">{{ ts('Case End Date') }}</label>
+    <div class="col-lg-4">
+      <div ng-if="isEnabled('end_date')" crm-ui-date-range="filters.end_date"></div>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="control-label col-lg-2">{{ ts('Tagged') }}</label>
+    <div class="col-lg-4">
+      <input class="form-control" ng-list crm-entityref="{entity: 'Tag', api: {params: {used_for: {'LIKE':'%civicrm_case%'}, is_selectable: 1}}, select: {multiple: true}}" ng-model="filters.tag_id">
+    </div>
+  </div>
+  
+  <div ng-include="'~/civicase/CaseSearchCustom.html'"></div>
+  <hr />
+  <div>
+    <button class="btn btn-primary btn-sm" ng-click="doSearch()" ng-show="expanded">
+      <i class="fa fa-search"></i> {{ ts('Search') }}
+    </button>
+  </div>
+</form>
+<div class="panel-body" ng-if="!expanded && filterDescription.length">
+  <button class="btn btn-danger btn-sm pull-right" ng-click="clearSearch()">
+    <i class="fa fa-ban"></i> {{ ts('Clear Search') }}
+  </button>
+  <ul class="civicase-search-description">
+    <li ng-repeat="des in filterDescription" class="col-lg-6">
+      <strong>{{ des.label }}:</strong> {{ des.text }}
+    </li>
+  </ul>
+</div>

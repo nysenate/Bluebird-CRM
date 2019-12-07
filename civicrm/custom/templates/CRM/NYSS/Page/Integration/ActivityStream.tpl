@@ -25,7 +25,7 @@
 *}
 {*debug*}
 
-<div class="crm-web-activity-stream">
+<div class="crm-web-activity-stream nyss-integration-tab">
   <h3>Website Activity Stream</h3>
   <div class="crm-accordion-wrapper crm-search_filters-accordion">
     <div class="crm-accordion-header">

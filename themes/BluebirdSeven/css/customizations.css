@@ -1,0 +1,104 @@
+/*menu*/
+li#crm-qsearch a input#crm-qsearch-input {
+  width: 130px !important;
+}
+
+/*news feed*/
+div#newsFeeds {
+  padding: 20px;
+}
+
+/*contact summary*/
+li.crm-delete-action.crm-contact-delete {
+  display: none;
+}
+.crm-summary-block .crm-address-block .crm-collapsible {
+  padding: 5px 10px !important;
+}
+.crm-summary-block .crm-address-block .crm-collapsible .collapsible-title,
+.page-civicrm-contact-view .crm-contact-page #mainTabContainer li.crm-tab-button a {
+  font-size: 14px !important;
+}
+.page-civicrm-contact-view .crm-contact-page #mainTabContainer li.crm-tab-button.ui-tabs-active {
+  background-color: #DADAD2;
+  box-shadow: none;
+}
+.page-civicrm-contact-view .crm-contact-page #mainTabContainer .crm-contact-tabs-list {
+  box-shadow: none;
+}
+.page-civicrm-contact-view .crm-contact-page #mainTabContainer li.crm-tab-button {
+  /*box-shadow: 3px 0 18px 0 #adadad;*/
+  /*background:url('../images/shadow.png') 100% 0% repeat-y;*/
+}
+.nyss-integration-tab h3 {
+  background: #393D3F !important;
+  color: #fff !important;
+  border-radius: 3px 3px 0 0;
+  font: 600 18px "Open Sans","Helvetica Neue",Helvetica,Arial,sans-serif;
+  margin: 0;
+  padding: 12px 20px;
+  border-bottom: 1px solid #e8eef0;
+}
+.nyss-integration-tab td {
+  padding: 16px;
+}
+.crm-container .nyss-integration-tab table.crm-info-panel td.label {
+  font-weight: bold;
+}
+
+/*tags tab*/
+div#Tag li#j1_1 > i.jstree-icon,
+div#Tag li#j1_1 > a#tag_291 {
+  display: none;
+}
+#tagtree ul.jstree-children ul.jstree-children ul.jstree-children {
+  margin-left: 1.5em !important;
+}
+.page-civicrm-contact-view .CRM_Tag_Form_Tag #Tag .jstree-default .jstree-wholerow-hovered,
+.page-civicrm-contact-view .CRM_Tag_Form_Tag #Tag .jstree-default .jstree-wholerow-clicked {
+  background: #e8eef0 !important;
+}
+input[type=color] {
+  display: none;
+}
+
+/*relationship tab 12077*/
+.crm-relationship-form-block-is_permission_a_b,
+.crm-relationship-form-block-is_permission_b_a,
+#contact-summary-relationship-tab div#permission-legend {
+  display: none;
+}
+
+/*search builder*/
+#crm-container .CRM_Contact_Form_Search_Builder .crm-search-builder-add-row input.submit-link,
+#crm-container .CRM_Contact_Form_Search_Builder .crm-search-builder-add-block input.submit-link,
+.crm-container .CRM_Contact_Form_Search_Builder .crm-search-builder-add-row .form-item::before,
+.crm-container .CRM_Contact_Form_Search_Builder .crm-search-builder-add-block::before {
+  color: white !important;
+}
+
+/*dashboard*/
+.crm-container #civicrm-dashboard .column .widget-wrapper .widget-controls {
+  padding: 10px;
+}
+.crm-container .crm-dashboard-controls {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/*groups*/
+.crm-container.ui-dialog .ui-dialog-content .crm-submit-buttons {
+  display: block !important;
+}
+
+/*********** BELOW SHOULD BE TEMPORARY! *************/
+
+/*remove old icons (should be unnecessary in future release of shoreditch...)*/
+.page-civicrm-contact-view:not([class*='page-civicrm-contact-view-']) .crm-contact-tabs-list a::before {
+  content: none !important;
+  margin-right: 0 !important;
+}
+/*submenu arrows are showing and shouldn't be in the markup*/
+ul#civicrm-menu li span.sub-arrow {
+  display: none;
+}

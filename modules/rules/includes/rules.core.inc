@@ -113,8 +113,9 @@ class RulesEntityController extends EntityAPIControllerExportable {
       $error_msg = t('Unable to parse the pasted export.');
       return FALSE;
     }
-    // The key ist the configuration name and the value the actual export.
-    list($name, $export) = each($export);
+    // The key is the configuration name and the value the actual export.
+    $name = key($export);
+    $export = current($export);
     if (!isset($export['PLUGIN'])) {
       $error_msg = t('Export misses plugin information.');
       return FALSE;
@@ -1124,7 +1125,8 @@ abstract class RulesPlugin extends RulesExtendable {
         elseif ($this->plugin == 'reaction rule') {
           // Clear event sets cached for evaluation.
           cache_clear_all('event_', 'cache_rules', TRUE);
-          variable_del('rules_event_whitelist');
+          // Clear event whitelist for rebuild.
+          cache_clear_all('rules_event_whitelist', 'cache_rules', TRUE);
         }
         drupal_static_reset('rules_get_cache');
         drupal_static_reset('rules_config_update_dirty_flag');
@@ -1804,16 +1806,22 @@ abstract class RulesAbstractPlugin extends RulesPlugin {
   }
 
   protected function getFileName($function, $includes) {
-    $reflector = new ReflectionFunction($function);
-    // On windows the path contains backslashes instead of slashes, fix that.
-    $file = str_replace('\\', '/', $reflector->getFileName());
-    foreach ($includes as $include) {
-      $pos = strpos($file, $include . '.inc');
-      // Test whether the file ends with the given filename.inc.
-      if ($pos !== FALSE && strlen($file) - $pos == strlen($include) + 4) {
-        return $include;
+    static $filenames;
+    if (!isset($filenames) || !array_key_exists($function, $filenames)) {
+      $filenames[$function] = NULL;
+      $reflector = new ReflectionFunction($function);
+      // On windows the path contains backslashes instead of slashes, fix that.
+      $file = str_replace('\\', '/', $reflector->getFileName());
+      foreach ($includes as $include) {
+        $pos = strpos($file, $include . '.inc');
+        // Test whether the file ends with the given filename.inc.
+        if ($pos !== FALSE && strlen($file) - $pos == strlen($include) + 4) {
+          $filenames[$function] = $include;
+          return $include;
+        }
       }
     }
+    return $filenames[$function];
   }
 }
 

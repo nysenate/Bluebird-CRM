@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2018                                |
+ | Copyright CiviCRM LLC (c) 2004-2019                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2018
+ * @copyright CiviCRM LLC (c) 2004-2019
  */
 class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custom_Base implements CRM_Contact_Form_Search_Interface {
 
@@ -48,7 +48,7 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
    */
   public function __construct(&$formValues) {
     $this->_formValues = $formValues;
-    $this->_columns = array(
+    $this->_columns = [
       ts('Contact ID') => 'contact_id',
       ts('Contact Type') => 'contact_type',
       ts('Name') => 'sort_name',
@@ -56,12 +56,12 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
       ts('Tag Name') => 'tname',
       ts('Street Address') => 'street_address',//NYSS
       ts('City') => 'city'//NYSS
-    );
+    ];
 
-    $this->_includeGroups = CRM_Utils_Array::value('includeGroups', $this->_formValues, array());
-    $this->_excludeGroups = CRM_Utils_Array::value('excludeGroups', $this->_formValues, array());
-    $this->_includeTags = CRM_Utils_Array::value('includeTags', $this->_formValues, array());
-    $this->_excludeTags = CRM_Utils_Array::value('excludeTags', $this->_formValues, array());
+    $this->_includeGroups = CRM_Utils_Array::value('includeGroups', $this->_formValues, []);
+    $this->_excludeGroups = CRM_Utils_Array::value('excludeGroups', $this->_formValues, []);
+    $this->_includeTags = CRM_Utils_Array::value('includeTags', $this->_formValues, []);
+    $this->_excludeTags = CRM_Utils_Array::value('excludeTags', $this->_formValues, []);
 
     //define variables
     $this->_allSearch = FALSE;
@@ -143,12 +143,12 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
       CRM_Utils_System::redirect($url);
     }
 
-    $select2style = array(
+    $select2style = [
       'multiple' => TRUE,
       'style' => 'width: 100%; max-width: 60em;',
       'class' => 'crm-select2',
       'placeholder' => ts('- select -'),
-    );
+    ];
 
     $form->add('select', 'includeGroups',
       ts('Include Group(s)'),
@@ -164,14 +164,14 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
       $select2style
     );
 
-    $andOr = array(
+    $andOr = [
       '1' => ts('Show contacts that meet the Groups criteria AND the Tags criteria'),
       '0' => ts('Show contacts that meet the Groups criteria OR  the Tags criteria'),
-    );
+    ];
     $form->addRadio('andOr', ts('AND/OR'), $andOr, NULL, '<br />', TRUE);
 
     //NYSS set default
-    $form->setDefaults(array('andOr' => 1));
+    $form->setDefaults(['andOr' => 1]);
 
     $form->add('select', 'includeTags',
       ts('Include Tag(s)'),
@@ -191,17 +191,18 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
      * if you are using the standard template, this array tells the template what elements
      * are part of the search criteria
      */
-    $form->assign('elements', array('includeGroups', 'excludeGroups', 'andOr', 'includeTags', 'excludeTags'));
+    $form->assign('elements', ['includeGroups', 'excludeGroups', 'andOr', 'includeTags', 'excludeTags']);
   }
 
   /**
    * @param int $offset
    * @param int $rowcount
-   * @param NULL $sort
+   * @param string $sort
    * @param bool $includeContactIDs
    * @param bool $justIDs
    *
    * @return string
+   * @throws \Exception
    */
   public function all(
     $offset = 0, $rowcount = 0, $sort = NULL,
@@ -294,7 +295,7 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
     $this->_tableName = "civicrm_temp_custom_{$randomNum}";
 
     //block for Group search
-    $smartGroup = array();
+    $smartGroup = [];
     if ($this->_groups || $this->_allSearch) {
       $group = new CRM_Contact_DAO_Group();
       $group->is_active = 1;
@@ -550,8 +551,8 @@ WHERE  gcc.group_id = {$ssGroup->id}
     /*
      * Set from statement depending on array sel
      */
-    $whereitems = array();
-    foreach (array('Ig', 'It') as $inc) {
+    $whereitems = [];
+    foreach (['Ig', 'It'] as $inc) {
       if ($this->_andOr == 1) {
         if ($$inc) {
           $from .= " INNER JOIN {$inc}_{$this->_tableName} temptable$inc ON (contact_a.id = temptable$inc.contact_id)";
@@ -567,7 +568,7 @@ WHERE  gcc.group_id = {$ssGroup->id}
       }
     }
     $this->_where = $whereitems ? "(" . implode(' OR ', $whereitems) . ')' : '(1)';
-    foreach (array('Xg', 'Xt') as $exc) {
+    foreach (['Xg', 'Xt'] as $exc) {
       if ($$exc) {
         $from .= " LEFT JOIN {$exc}_{$this->_tableName} temptable$exc ON (contact_a.id = temptable$exc.contact_id)";
         $this->_where .= " AND temptable$exc.contact_id IS NULL";
@@ -601,7 +602,7 @@ WHERE  gcc.group_id = {$ssGroup->id}
    */
   public function where($includeContactIDs = FALSE) {
     if ($includeContactIDs) {
-      $contactIDs = array();
+      $contactIDs = [];
 
       foreach ($this->_formValues as $id => $value) {
         if ($value &&
@@ -641,10 +642,11 @@ WHERE  gcc.group_id = {$ssGroup->id}
   /**
    * @param int $offset
    * @param int $rowcount
-   * @param NULL $sort
+   * @param string $sort
    * @param bool $returnSQL
    *
    * @return string
+   * @throws \Exception
    */
   public function contactIDs($offset = 0, $rowcount = 0, $sort = NULL, $returnSQL = FALSE) {
     return $this->all($offset, $rowcount, $sort, FALSE, TRUE);

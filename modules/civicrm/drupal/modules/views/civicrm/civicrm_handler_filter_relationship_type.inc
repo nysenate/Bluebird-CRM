@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -32,7 +32,8 @@
  *
  */
 class civicrm_handler_filter_relationship_type extends views_handler_filter_in_operator {
-  static $_relationshipType;
+  public static $_relationshipType;
+
   public function construct() {
     parent::construct();
     if (!self::$_relationshipType) {

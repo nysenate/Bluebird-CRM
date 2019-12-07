@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2018                                |
+ | Copyright CiviCRM LLC (c) 2004-2019                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -31,7 +31,7 @@
  * was added to advanced search.
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2018
+ * @copyright CiviCRM LLC (c) 2004-2019
  */
 class CRM_Contact_Form_Search_Custom_Proximity extends CRM_Contact_Form_Search_Custom_Base implements CRM_Contact_Form_Search_Interface {
 
@@ -58,25 +58,7 @@ class CRM_Contact_Form_Search_Custom_Proximity extends CRM_Contact_Form_Search_C
 
     if (!empty($this->_formValues)) {
       // add the country and state
-      if (!empty($this->_formValues['country_id'])) {
-        $this->_formValues['country'] = CRM_Core_PseudoConstant::country($this->_formValues['country_id']);
-      }
-
-      if (!empty($this->_formValues['state_province_id'])) {
-        $this->_formValues['state_province'] = CRM_Core_PseudoConstant::stateProvince($this->_formValues['state_province_id']);
-      }
-
-      // use the address to get the latitude and longitude
-      //CRM_Utils_Geocode_Google::format($this->_formValues);
-      CRM_Utils_SAGE::geocode($this->_formValues);//NYSS 11478
-
-      if (!is_numeric(CRM_Utils_Array::value('geo_code_1', $this->_formValues)) ||
-        !is_numeric(CRM_Utils_Array::value('geo_code_2', $this->_formValues)) ||
-        !isset($this->_formValues['distance'])
-      ) {
-        CRM_Core_Error::fatal(ts('Could not geocode input'));
-      }
-
+      self::addGeocodingData($this->_formValues);
       $this->_latitude = $this->_formValues['geo_code_1'];
       $this->_longitude = $this->_formValues['geo_code_2'];
 
@@ -92,7 +74,7 @@ class CRM_Contact_Form_Search_Custom_Proximity extends CRM_Contact_Form_Search_C
 
     $this->_tag = CRM_Utils_Array::value('tag', $this->_formValues);
 
-    $this->_columns = array(
+    $this->_columns = [
       ts('&nbsp;') => 'contact_type', //NYSS 4899
       ts('Name') => 'sort_name',
       ts('Street Address') => 'street_address',
@@ -100,7 +82,7 @@ class CRM_Contact_Form_Search_Custom_Proximity extends CRM_Contact_Form_Search_C
       ts('Postal Code') => 'postal_code',
       ts('State') => 'state_province',
       //ts('Country') => 'country',//NYSS
-    );
+    ];
   }
 
   /**
@@ -122,41 +104,50 @@ class CRM_Contact_Form_Search_Custom_Proximity extends CRM_Contact_Form_Search_C
 
     $form->add('text', 'distance', ts('Distance'), NULL, TRUE);
 
-    $proxUnits = array('km' => ts('km'), 'miles' => ts('miles'));
+    $proxUnits = ['km' => ts('km'), 'miles' => ts('miles')];
     $form->add('select', 'prox_distance_unit', ts('Units'), $proxUnits, TRUE);
 
+    //NYSS 13034 make required
     $form->add('text',
       'street_address',
-      ts('Street Address')
+      ts('Street Address'),
+      NULL,
+      TRUE
     );
 
+    //NYSS 13034 make required
     $form->add('text',
       'city',
-      ts('City')
+      ts('City'),
+      NULL,
+      TRUE
     );
 
+    //NYSS 13034 make required
     $form->add('text',
       'postal_code',
-      ts('Postal Code')
+      ts('Postal Code'),
+      NULL,
+      TRUE
     );
 
-    $defaults = array();
+    $defaults = [];
     if ($countryDefault) {
       $defaults['country_id'] = $countryDefault;
     }
     $form->addChainSelect('state_province_id');
 
-    $country = array('' => ts('- select -')) + CRM_Core_PseudoConstant::country();
-    $form->add('select', 'country_id', ts('Country'), $country, TRUE, array('class' => 'crm-select2'));
+    $country = ['' => ts('- select -')] + CRM_Core_PseudoConstant::country();
+    $form->add('select', 'country_id', ts('Country'), $country, TRUE, ['class' => 'crm-select2']);
 
     $form->add('text', 'geo_code_1', ts('Latitude'));
     $form->add('text', 'geo_code_2', ts('Longitude'));
 
-    $group = array('' => ts('- any group -')) + CRM_Core_PseudoConstant::nestedGroup();
-    $form->addElement('select', 'group', ts('Group'), $group, array('class' => 'crm-select2 huge'));
+    $group = ['' => ts('- any group -')] + CRM_Core_PseudoConstant::nestedGroup();
+    $form->addElement('select', 'group', ts('Group'), $group, ['class' => 'crm-select2 huge']);
 
-    $tag = array('' => ts('- any tag -')) + CRM_Core_PseudoConstant::get('CRM_Core_DAO_EntityTag', 'tag_id', array('onlyActive' => FALSE));
-    $form->addElement('select', 'tag', ts('Tag'), $tag, array('class' => 'crm-select2 huge'));
+    $tag = ['' => ts('- any tag -')] + CRM_Core_PseudoConstant::get('CRM_Core_DAO_EntityTag', 'tag_id', ['onlyActive' => FALSE]);
+    $form->addElement('select', 'tag', ts('Tag'), $tag, ['class' => 'crm-select2 huge']);
 
     /**
      * You can define a custom title for the search form
@@ -167,7 +158,7 @@ class CRM_Contact_Form_Search_Custom_Proximity extends CRM_Contact_Form_Search_C
      * if you are using the standard template, this array tells the template what elements
      * are part of the search criteria
      */
-    $form->assign('elements', array(
+    $form->assign('elements', [
       'distance',
       'prox_distance_unit',
       'street_address',
@@ -177,7 +168,7 @@ class CRM_Contact_Form_Search_Custom_Proximity extends CRM_Contact_Form_Search_C
       'state_province_id',
       'group',
       'tag',
-    ));
+    ]);
   }
 
   /**
@@ -193,22 +184,7 @@ class CRM_Contact_Form_Search_Custom_Proximity extends CRM_Contact_Form_Search_C
     $offset = 0, $rowcount = 0, $sort = NULL,
     $includeContactIDs = FALSE, $justIDs = FALSE
   ) {
-    if ($justIDs) {
-      $selectClause = "contact_a.id as contact_id";
-    }
-    else {
-      //NYSS add contact type
-      $selectClause = "
-contact_a.id           as contact_id    ,
-contact_a.sort_name    as sort_name     ,
-contact_a.contact_type as contact_type  ,
-address.street_address as street_address,
-address.city           as city          ,
-address.postal_code    as postal_code   ,
-state_province.name    as state_province,
-country.name           as country
-";
-    }
+    $selectClause = $justIDs ? "contact_a.id as contact_id" : NULL;
 
     return $this->sql($selectClause,
       $offset, $rowcount, $sort,
@@ -282,47 +258,15 @@ country.name           as country
     //unused
     return '';
   }
+
   /**
    * @param bool $includeContactIDs
    *
    * @return string
    */
   public function where($includeContactIDs = FALSE) {
-    $params = array();
-    $clause = array();
-
-    $where = CRM_Contact_BAO_ProximityQuery::where($this->_latitude,
-      $this->_longitude,
-      $this->_distance,
-      'address'
-    );
-
-    if ($this->_tag) {
-      $where .= "
-AND t.tag_id = {$this->_tag}
-";
-    }
-    if ($this->_group) {
-      $where .= "
-AND cgc.group_id = {$this->_group}
- ";
-    }
-
-    $where .= " AND contact_a.is_deleted != 1 ";
-
-    if ($this->_aclWhere) {
-      $where .= " AND {$this->_aclWhere} ";
-    }
-
-    //NYSS
-    if (!empty($this->_formValues['contact_type']) ) {
-      $where .= " AND contact_a.contact_type LIKE '%{$this->_formValues['contact_type']}%'";
-    }
-
-    //NYSS standard clauses
-    $where .= " AND is_deleted = 0 AND is_deceased = 0 ";
-
-    return $this->whereClause($where, $params);
+    //unused
+    return '';
   }
 
   /**
@@ -342,7 +286,7 @@ AND cgc.group_id = {$this->_group}
     $config = CRM_Core_Config::singleton();
     $countryDefault = $config->defaultContactCountry;
     $stateprovinceDefault = $config->defaultContactStateProvince;
-    $defaults = array();
+    $defaults = [];
 
     if ($countryDefault) {
       if ($countryDefault == '1228' || $countryDefault == '1226') {
@@ -420,7 +364,9 @@ AND cgc.group_id = {$this->_group}
     if (!empty($fields['state_province_id'])) {
       $fields['state_province'] = CRM_Core_PseudoConstant::stateProvince($fields['state_province_id']);
     }
-    CRM_Core_BAO_Address::addGeocoderData($fields);
+    //NYSS 11478
+    //CRM_Core_BAO_Address::addGeocoderData($fields);
+    CRM_Utils_SAGE::geocode($fields);
   }
 
 }

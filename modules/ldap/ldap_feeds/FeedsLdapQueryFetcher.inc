@@ -5,7 +5,6 @@
  * FeedsLdapQueryFetcher
  */
 
-
 /**
  * FeedsLdapQueryFetcherResult
  */
@@ -29,12 +28,17 @@ class FeedsLdapQueryFetcherResult extends FeedsFetcherResult {
   public function getRaw() {
 
     $results = array();
+    $count = 0;
     foreach ($this->query_ids as $i => $query_id) {
       $ldapQuery = ldap_query_get_queries($query_id, 'enabled', TRUE);
       $more_results = $ldapQuery->query();
       if (is_array($more_results)) {
+        $count += $more_results['count'];
         $results = array_merge($results, $more_results);
       }
+    }
+    if ($count) {
+      $results['count'] = $count;
     }
     return $results;
   }
@@ -96,7 +100,7 @@ class FeedsLdapQueryFetcher extends FeedsFetcher {
   public function sourceForm($source_config) {
 
     $tokens = array(
-      '!edit_link' => l(t('Edit Feed'), 'admin/structure/feeds/edit/' . $this->id),
+      '!edit_link' => l(t('Edit Feed'), 'admin/structure/feeds/' . $this->id),
     );
 
     $form_state = array();

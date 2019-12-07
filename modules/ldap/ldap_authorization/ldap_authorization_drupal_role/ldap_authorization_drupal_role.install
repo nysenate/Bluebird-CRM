@@ -1,9 +1,15 @@
 <?php
-// $Id: ldap_authorization_drupal_role.install,v 1.2 2010/12/29 01:37:47 johnbarclay Exp $
 
 /**
  * @file
  * Install, update and uninstall functions for the LDAP authorization module.
  */
 
-
+/**
+ * Implements hook_uninstall().
+ */
+function ldap_authorization_drupal_role_uninstall() {
+  module_load_include('inc', 'ldap_servers', 'ldap_servers.user_data_remove');
+  batch_set(ldap_severs_user_data_setup_batch('drupal_role'));
+  $batch =& batch_get();
+}

@@ -1,6 +1,7 @@
 <?php
 
 class civicrm_handler_field_contact_image extends views_handler_field {
+
   public function option_definition() {
     $options = parent::option_definition();
     $options['url_only'] = array(
@@ -86,7 +87,7 @@ class civicrm_handler_field_contact_image extends views_handler_field {
       '#dependency' => array(
         'edit-options-url-only' => array(0),
       ),
-            '#prefix' => t('If you do not see Drupal image styles here, it may be worth checking CiviCRM "Custom files directory" <br> at <strong>"CiviCRM > Administer > System Settings > Directories" </strong> : it <strong>has to </strong> contain <italic>[civicrm.files]</italic> token'), 
+      '#prefix' => t('If you do not see Drupal image styles here, it may be worth checking CiviCRM "Custom files directory" <br> at <strong>"CiviCRM > Administer > System Settings > Directories" </strong> : it <strong>has to </strong> contain <italic>[civicrm.files]</italic> token'),
     );
 
     $form['height'] = array(

@@ -1,0 +1,10 @@
+<div style="border-left-color: {{ activity.color }}; border-right-color: {{ activity.color }};" 
+  class="act-feed-item activity-card act-category-{{ activity.category.join(' act-category-') || 'none' }} {{ activity.status_css }}"
+  ng-class="{'is-completed': activity.is_completed, 'is-incomplete': !activity.is_completed, 'activity-overdue': activity.is_overdue}"
+  ng-click="viewInPopup($event, activity)"
+>
+  <div class="act-feed-inner">
+    <div class="pull-right" ng-include="'~/civicase/ActivityCardMenu.html'"></div>
+    <div ng-include="'~/civicase/ActivityItemInnerWrapper.html'"></div>
+  </div>
+</div>

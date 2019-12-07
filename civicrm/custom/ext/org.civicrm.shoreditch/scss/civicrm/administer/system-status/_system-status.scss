@@ -1,0 +1,107 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder, property-no-vendor-prefix */
+
+// System Status
+#crm-status-list {
+  @include civicrm-panel;
+  overflow: hidden;
+
+  .ui-tabs .ui-tabs-panel {
+    padding: 20px;
+
+    .crm-status-item {
+      background: $crm-white;
+
+      &:not(:last-of-type) {
+        margin-bottom: 15px;
+      }
+
+      h3 {
+        @include section-title;
+
+        &.crm-severity-alert,
+        &.crm-severity-critical,
+        &.crm-severity-emergency,
+        &.crm-severity-error {
+          background: $brand-danger;
+          color: $crm-white;
+        }
+
+        &.crm-severity-warning {
+          background: $btn-warning-bg;
+          color: $gray-darker;
+        }
+
+        &.crm-severity-info,
+        &.crm-severity-debug {
+          background: $btn-success-bg;
+          color: $gray-darker;
+        }
+
+        &.crm-severity-notice {
+          background: $brand-primary;
+          color: $crm-white;
+        }
+      }
+
+      .crm-status-message-body {
+        color: $gray-dark;
+        font-size: $font-size-base;
+        margin: 0;
+        padding: 15px;
+      }
+
+      button {
+        background: $crm-white;
+        border: 0;
+        border-radius: $border-radius-base;
+        color: $gray-dark;
+        cursor: pointer;
+        height: auto;
+        margin: 5px 0;
+        padding: 5px 10px;
+      }
+
+      .crm-status-item-actions {
+        button {
+          @include button-variant($crm-white, $gray-dark, $gray-dark);
+          @include button-remove-border-color();
+          font-size: $font-size-base;
+          margin: 10px 10px 0 0;
+          padding: 11px 12px;
+
+          &:hover {
+            background-color: darken($crm-copy, $crm-darken-percentage);
+          }
+        }
+      }
+
+      .hush-menu {
+        ul {
+          @include box-shadow($box-shadow);
+          background: $crm-white;
+          border: 0;
+          list-style: none;
+          top: 22px;
+          z-index: 1;
+
+          > li {
+            background: $crm-white;
+            border: 0;
+            color: $gray-dark;
+            padding: 10px;
+
+            &:hover {
+              background: $gray-light;
+              border: 0;
+            }
+
+            // remove jquery's margin: -1px;
+            &.ui-state-focus {
+              margin: 0;
+            }
+          }
+        }
+      }
+    }
+  }
+}

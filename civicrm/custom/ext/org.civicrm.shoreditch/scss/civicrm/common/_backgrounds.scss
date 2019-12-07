@@ -1,0 +1,30 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder, property-no-vendor-prefix */
+
+.page-civicrm {
+  %block-with-shadow {
+    background: $crm-white;
+    box-shadow: $box-shadow;
+  }
+
+  #crm-main-content-wrapper {
+    background: $crm-background !important;
+  }
+
+  .crm-container {
+    .crm-form-block {
+      @extend %block-with-shadow;
+      border-radius: 0;
+      margin-bottom: 15px;
+      padding: 0;
+
+      &.crm-api-import-uploadfile-form-block,
+      .crm-form-block {
+        padding: 10px 15px;
+      }
+    }
+
+    #crm-main-content-wrapper > .crm-form-block {
+      padding: 0;
+    }
+  }
+}

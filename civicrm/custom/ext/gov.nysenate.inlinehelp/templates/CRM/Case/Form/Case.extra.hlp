@@ -1,0 +1,13 @@
+{*NYSS 5696*}
+{htxt id="id-details" override=1}
+{if $params.activityTypeFile EQ 'OpenCase'}
+    <ul>
+    <li>{ts}Introduce yourself and your role within the office.{/ts}</li>
+    <li>{ts}&quot;Please tell me what you would like to discuss.&quot;{/ts}</li>
+    <li>{ts}Review details with the consituent. Make sure you have names, agencies, government bodies, and other facts recorded accurately.{/ts}</li>
+    <li>{ts}Provide feedback and let them know what the next steps will be.{/ts}</li>
+    </ul>
+{else}
+    {ts}Record details about this activity here.{/ts}
+{/if}
+{/htxt}

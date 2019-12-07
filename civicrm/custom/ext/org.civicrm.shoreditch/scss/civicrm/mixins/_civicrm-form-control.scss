@@ -1,0 +1,9 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder */
+
+@mixin civicrm-form-control() {
+  @extend .form-control;
+  box-sizing: border-box;
+  font-family: $font-family-base;
+  height: $crm-control-height;
+  line-height: $crm-control-height;
+}

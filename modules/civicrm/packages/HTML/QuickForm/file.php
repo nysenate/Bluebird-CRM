@@ -17,9 +17,9 @@
  * @author      Adam Daniel <adaniel1@eesus.jnj.com>
  * @author      Bertrand Mansion <bmansion@mamasam.com>
  * @author      Alexey Borzov <avb@php.net>
- * @copyright   2001-2009 The PHP Group
+ * @copyright   2001-2011 The PHP Group
  * @license     http://www.php.net/license/3_01.txt PHP License 3.01
- * @version     CVS: $Id: file.php,v 1.25 2009/04/04 21:34:02 avb Exp $
+ * @version     CVS: $Id$
  * @link        http://pear.php.net/package/HTML_QuickForm
  */
 
@@ -44,7 +44,7 @@ if (class_exists('HTML_QuickForm')) {
  * @author      Adam Daniel <adaniel1@eesus.jnj.com>
  * @author      Bertrand Mansion <bmansion@mamasam.com>
  * @author      Alexey Borzov <avb@php.net>
- * @version     Release: 3.2.11
+ * @version     Release: 3.2.16
  * @since       1.0
  */
 class HTML_QuickForm_file extends HTML_QuickForm_input
@@ -320,10 +320,12 @@ class HTML_QuickForm_file extends HTML_QuickForm_input
     * Needs to be redefined here as $_FILES is populated differently from
     * other arrays when element name is of the form foo[bar]
     *
+    * @param bool $sc1   unused, for signature compatibility
+    *
     * @access    private
     * @return    mixed
     */
-    function _findValue(&$values)
+    function _findValue(&$sc1 = null)
     {
         if (empty($_FILES)) {
             return null;
@@ -332,23 +334,21 @@ class HTML_QuickForm_file extends HTML_QuickForm_input
         if (isset($_FILES[$elementName])) {
             return $_FILES[$elementName];
         } elseif (false !== ($pos = strpos($elementName, '['))) {
-            $base  = str_replace(
-                        array('\\', '\''), array('\\\\', '\\\''),
-                        substr($elementName, 0, $pos)
-                    );
-            $idx   = "['" . str_replace(
-                        array('\\', '\'', ']', '['), array('\\\\', '\\\'', '', "']['"),
-                        substr($elementName, $pos + 1, -1)
-                     ) . "']";
-            $props = array('name', 'type', 'size', 'tmp_name', 'error');
-            $code  = "if (!isset(\$_FILES['{$base}']['name']{$idx})) {\n" .
-                     "    return null;\n" .
-                     "} else {\n" .
-                     "    \$value = array();\n";
-            foreach ($props as $prop) {
-                $code .= "    \$value['{$prop}'] = \$_FILES['{$base}']['{$prop}']{$idx};\n";
+            $base = substr($elementName, 0, $pos);
+            $idx = explode('][', str_replace(["['", "']", '["', '"]'], ['[', ']', '[', ']'], substr($elementName, $pos + 1, -1)));
+            $idx = array_merge([$base, 'name'], $idx);
+            if (!CRM_Utils_Array::pathIsset($_FILES, $idx)) {
+                return NULL;
             }
-            return eval($code . "    return \$value;\n}\n");
+            else {
+                $props = ['name', 'type', 'size', 'tmp_name', 'error'];
+                $value = [];
+                foreach ($props as $prop) {
+                    $idx[1] = $prop;
+                    $value[$prop] = CRM_Utils_Array::pathGet($_FILES, $idx);
+                }
+                return $value;
+            }
         } else {
             return null;
         }

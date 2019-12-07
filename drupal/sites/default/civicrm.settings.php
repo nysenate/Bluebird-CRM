@@ -138,6 +138,7 @@ $prefsCore['syncCMSEmail'] = false;
 $prefsCore['wkhtmltopdfPath'] = get_config_value($bbcfg, 'wkhtmltopdf.path', '/usr/local/bin/wkhtmltopdf');
 $prefsCore['versionCheck'] = false;
 $prefsCore['checksumTimeout'] = 7;
+$prefsCore['menubar_color'] = '#DADAD2';
 
 // Address settings, from Address.setting.php
 // address_standardization_provider
@@ -214,7 +215,7 @@ $prefsExt['ext_repo_url'] = false;
 // Mailing settings, from Mailing.setting.php
 $prefsMail['profile_double_optin'] = false;
 $prefsMail['track_civimail_replies'] = false;
-$prefsMail['civimail_workflow'] = true;
+$prefsMail['civimail_workflow'] = false;//TODO 12879
 $prefsMail['civimail_server_wide_lock'] = true;
 // replyTo
 $prefsMail['mailing_backend'] = [
@@ -270,6 +271,7 @@ $prefsSearch['includeEmailInName'] = get_config_value($bbcfg, 'search.include_em
 $prefsSearch['smartGroupCacheTimeout'] = 10;
 // defaultSearchProfileID
 $prefsSearch['searchPrimaryDetailsOnly'] = false;
+$prefsSearch['quicksearch_options'] = ['sort_name', 'first_name', 'last_name', 'email', 'phone_numeric', 'street_address', 'city', 'postal_code'];
 
 // URL settings, from Url.setting.php
 $prefsUrl['userFrameworkResourceURL'] = 'sites/all/modules/civicrm/';

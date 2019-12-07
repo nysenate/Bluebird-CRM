@@ -23,13 +23,13 @@
     }
     query = query || '';
     var frag = path.split('?');
-    var url = tplURL[mode].replace("*path*", frag[0]);
+    var url = tplURL[mode].replace("civicrm-placeholder-url-path", frag[0]);
 
     if (!query) {
-      url = url.replace(/[?&]\*query\*/, '');
+      url = url.replace(/[?&]civicrm-placeholder-url-query=1/, '');
     }
     else {
-      url = url.replace("*query*", typeof query === 'string' ? query : $.param(query));
+      url = url.replace("civicrm-placeholder-url-query=1", typeof query === 'string' ? query : $.param(query));
     }
     if (frag[1]) {
       url += (url.indexOf('?') < 0 ? '?' : '&') + frag[1];
@@ -68,7 +68,7 @@
       url: CRM.url('civicrm/ajax/rest'),
       dataType: 'json',
       data: params,
-      type: params.action.indexOf('get') < 0 ? 'POST' : 'GET'
+      type: params.action.indexOf('get') === 0 ? 'GET' : 'POST'
     });
     if (status) {
       // Default status messages
@@ -164,11 +164,11 @@
         return false;
       }
       // Compare arguments
-      $.each(newUrl.split('?')[1].split('&'), function(k, v) {
+      $.each((newUrl.split('?')[1] || '').split('&'), function(k, v) {
         var arg = v.split('=');
         args[arg[0]] = arg[1];
       });
-      $.each(oldUrl.split('?')[1].split('&'), function(k, v) {
+      $.each((oldUrl.split('?')[1] || '').split('&'), function(k, v) {
         var arg = v.split('=');
         if (args[arg[0]] !== undefined && arg[1] !== args[arg[0]]) {
           same = false;
@@ -456,7 +456,7 @@
         var buttonContainers = '.crm-submit-buttons, .action-link',
           buttons = [],
           added = [];
-        $(buttonContainers, $el).find('input.crm-form-submit, a.button').each(function() {
+        $(buttonContainers, $el).find('input.crm-form-submit, a.button, button').each(function() {
           var $el = $(this),
             label = $el.is('input') ? $el.attr('value') : $el.text(),
             identifier = $el.attr('name') || $el.attr('href');
@@ -572,8 +572,11 @@
           var currentHeight = $wrapper.outerHeight(),
             padding = currentHeight - $dialog.height(),
             newHeight = $dialog.prop('scrollHeight') + padding,
-            menuHeight = $('#civicrm-menu').outerHeight(),
-            maxHeight = $(window).height() - menuHeight;
+            menuHeight = $('#civicrm-menu').outerHeight();
+          if ($('body').hasClass('crm-menubar-below-cms-menu')) {
+            menuHeight += $('#civicrm-menu').offset().top;
+          }
+          var maxHeight = $(window).height() - menuHeight;
           newHeight = newHeight > maxHeight ? maxHeight : newHeight;
           if (newHeight > (currentHeight + 15)) {
             $dialog.dialog('option', {

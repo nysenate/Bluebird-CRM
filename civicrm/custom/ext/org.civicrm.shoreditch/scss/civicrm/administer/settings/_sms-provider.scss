@@ -1,0 +1,20 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id */
+
+&#{civi-page('admin-sms-provider')} {
+  .crm-container {
+    .crm-content-block {
+      overflow: hidden;
+    }
+
+    #ltype {
+      tr.columnheader {
+        border: 0;
+        border-bottom: 1px solid $gray-light;
+      }
+    }
+
+    .status.no-popup {
+      margin: $crm-status-bar-no-bottom;
+    }
+  }
+}

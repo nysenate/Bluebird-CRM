@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2018                                |
+ | Copyright CiviCRM LLC (c) 2004-2019                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,15 +28,18 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2018
+ * @copyright CiviCRM LLC (c) 2004-2019
  */
 
 /**
  * Class to represent the actions that can be performed on a group of contacts used by the search forms.
  */
 class CRM_Contact_Task extends CRM_Core_Task {
+
+  /**
+   * Contact tasks
+   */
   const
-    // Contact tasks
     HOUSEHOLD_CONTACTS = 101,
     ORGANIZATION_CONTACTS = 102,
     RECORD_CONTACTS = 103,
@@ -51,7 +54,10 @@ class CRM_Contact_Task extends CRM_Core_Task {
     EXPORT_PRINTPROD = 1000, //NYSS export print production task
     EXPORT_DISTRICT = 1001; //NYSS export district merger/purge task
 
-  static $objectType = 'contact';
+  /**
+   * @var string
+   */
+  public static $objectType = 'contact';
 
   public static function tasks() {
     if (!self::$_tasks) {
@@ -327,11 +333,18 @@ class CRM_Contact_Task extends CRM_Core_Task {
         $tasks[self::MAP_CONTACTS] = self::$_tasks[self::MAP_CONTACTS]['title'];
       }
 
-      if (isset(self::$_tasks[self::CREATE_MAILING]) &&
-        !empty(self::$_tasks[self::CREATE_MAILING]['title'])
-      ) {
-        $tasks[self::CREATE_MAILING] = self::$_tasks[self::CREATE_MAILING]['title'];
+      foreach ([
+        self::MAP_CONTACTS,
+        self::CREATE_MAILING,
+        self::TASK_SMS,
+      ] as $task) {
+        if (isset(self::$_tasks[$task]) &&
+          !empty(self::$_tasks[$task]['title'])
+        ) {
+          $tasks[$task] = self::$_tasks[$task]['title'];
+        }
       }
+
       //NYSS 3205 allow print prod to work with groups
       if ( CRM_Core_Permission::check( 'export print production files' ) ) {
         $tasks[1] = self::$_tasks[1]['title'];

@@ -1,0 +1,36 @@
+<div  class="crm-mosaico-page">
+  <div crm-ui-debug="crmMosaicoTemplates.getBases()"></div>
+  <div crm-ui-debug="crmMosaicoTemplates.getConfigured()"></div>
+
+  <div>
+    <h3>{{ts('New from base template:')}}</h3>
+    <div class="mosaico-templates-wrapper">
+      <div ng-repeat="template in crmMosaicoTemplates.getBases() | orderBy:'type'">
+        <div
+          class="crm-mosaico-unselected"
+          crm-mosaico-template-item="{state:'new', title: template.type, img: template.thumbnail}"
+          on-item-click="createTpl(template)">
+        </div>
+      </div>
+      <div style="clear: both"></div>
+    </div>
+  </div>
+
+  <div ng-show="crmMosaicoTemplates.getConfigured().length > 0">
+    <h3>{{ts('Configured templates:')}}</h3>
+    <div class="mosaico-templates-wrapper">
+      <div ng-repeat="template in crmMosaicoTemplates.getConfigured() | orderBy:'title'">
+        <div
+          class="crm-mosaico-unselected"
+          crm-mosaico-template-item="{state:'configure', title: template.title, subtitle: template.type, img: template.thumbnail}"
+          on-item-click="editTpl(template)"
+          on-item-copy="copyTpl(template)"
+          on-item-settings="renameTpl(template)"
+          on-item-delete="deleteTpl(template)"
+          check-item-delete="canDelete()">
+        </div>
+      </div>
+      <div style="clear: both"></div>
+    </div>
+  </div>
+</div>

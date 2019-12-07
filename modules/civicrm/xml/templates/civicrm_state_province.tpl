@@ -1,7 +1,7 @@
 -- +--------------------------------------------------------------------+
--- | CiviCRM version 4.7                                                |
+-- | CiviCRM version 5                                                  |
 -- +--------------------------------------------------------------------+
--- | Copyright CiviCRM LLC (c) 2004-2018                                |
+-- | Copyright CiviCRM LLC (c) 2004-2019                                |
 -- +--------------------------------------------------------------------+
 -- | This file is a part of CiviCRM.                                    |
 -- |                                                                    |
@@ -4120,4 +4120,7 @@ INSERT INTO civicrm_state_province (id, country_id, abbreviation, name) VALUES
 (NULL, 1080, "06", "Ogooué-Ivindo"),
 (NULL, 1080, "07", "Ogooué-Lolo"),
 (NULL, 1080, "08", "Ogooué-Maritime"),
-(NULL, 1080, "09", "Woleu-Ntem");
+(NULL, 1080, "09", "Woleu-Ntem"),
+
+-- dev/Core#131 Missing UK State
+(NULL, 1226, "MON", "Monmouthshire");

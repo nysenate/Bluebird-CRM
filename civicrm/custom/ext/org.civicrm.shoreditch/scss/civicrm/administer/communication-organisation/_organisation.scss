@@ -1,0 +1,23 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder, property-no-vendor-prefix */
+
+&#{civi-page('admin-domain')} {
+  .crm-form-block {
+    .crm-edit-address-form {
+      td {
+        padding: 0;
+      }
+    }
+
+    .form-layout-compressed:not(.crm-edit-address-form) {
+      margin-left: 10px;
+
+      td {
+        padding: 5px 10px;
+      }
+    }
+
+    div.description {
+      margin: 20px;
+    }
+  }
+}

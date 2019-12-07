@@ -122,6 +122,26 @@ function activity_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
   _activity_civix_civicrm_alterSettingsFolders($metaDataFolders);
 }
 
+function activity_civicrm_buildForm($formName, &$form) {
+  /*Civi::log()->debug('activity_civicrm_buildForm', array(
+    'formName' => $formName,
+    'form' => $form,
+  ));*/
+
+  //13050 assignee filter
+  if ($formName == 'CRM_Activity_Form_Activity') {
+    if ($form->elementExists('assignee_contact_id')) {
+      $ele =& $form->getElement('assignee_contact_id');
+      $apiParams = json_decode($ele->_attributes['data-api-params'], TRUE);
+      $staffGroupID = civicrm_api3('group', 'getvalue',
+        ['name' => 'Office_Staff', 'return' => 'id']);
+      $apiParams['params']['group'] = $staffGroupID;
+      $ele->_attributes['data-api-params'] = json_encode($apiParams);
+      $ele->_attributes['data-create-links'] = FALSE;
+    }
+  }
+}
+
 function activity_civicrm_postProcess($formName, &$form) {
   /*Civi::log()->debug('activity_civicrm_postProcess', array(
     'formName' => $formName,

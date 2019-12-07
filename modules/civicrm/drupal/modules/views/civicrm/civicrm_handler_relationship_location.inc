@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,9 +30,9 @@
  */
 class civicrm_handler_relationship_location extends views_handler_relationship {
 
-  static $_locationTypes;
-  static $_locationOps;
-  static $location_op;
+  public static $_locationTypes;
+  public static $_locationOps;
+  public static $location_op;
 
   public function construct() {
     parent::construct();
@@ -125,7 +125,6 @@ class civicrm_handler_relationship_location extends views_handler_relationship {
     }
     return $extra;
   }
-
 
   public function join_required($join = array()) {
     if (!empty($this->options['required'])) {

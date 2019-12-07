@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<menu>
+  <!-- TODO: do we use comma or semicolon for boolean OR? -->
+  <item>
+    <path>civicrm/case/a</path>
+    <page_callback>CRM_Civicase_Page_CaseAngular</page_callback>
+    <access_arguments>access all cases and activities,access my cases and activities</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/case/contact-case-tab</path>
+    <page_callback>CRM_Civicase_Page_ContactCaseTab</page_callback>
+    <access_arguments>access all cases and activities;access my cases and activities;basic case information</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/case/contact-act-tab</path>
+    <page_callback>CRM_Civicase_Page_ContactActivityTab</page_callback>
+    <title>ContactActivityTab</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+</menu>

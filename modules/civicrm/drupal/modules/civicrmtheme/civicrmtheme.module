@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2018                                |
+ | Copyright CiviCRM LLC (c) 2004-2019                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2018
+ * @copyright CiviCRM LLC (c) 2004-2019
  * $Id$
  *
  */
@@ -69,7 +69,8 @@ function civicrmtheme_form_system_themes_admin_form_alter(&$form, $form_state) {
   $form['admin_theme']['civicrm']['civicrm_admin'] = array(
     '#type' => 'select',
     '#options' => array(
-      0 => t('Default theme')) + $theme_list,
+      0 => t('Default theme'),
+    ) + $theme_list,
     '#title' => t('CiviCRM Administration theme'),
     '#description' => t('Choose theme for CiviCRM administration/backend pages.'),
     '#default_value' => variable_get('civicrmtheme_theme_admin', 0),
@@ -78,7 +79,8 @@ function civicrmtheme_form_system_themes_admin_form_alter(&$form, $form_state) {
   $form['admin_theme']['civicrm']['civicrm_public'] = array(
     '#type' => 'select',
     '#options' => array(
-      0 => t('Default theme')) + $theme_list,
+      0 => t('Default theme'),
+    ) + $theme_list,
     '#title' => t('CiviCRM Public theme'),
     '#description' => t('Choose theme for CiviCRM frontend pages.'),
     '#default_value' => variable_get('civicrmtheme_theme_public', 0),
@@ -115,17 +117,10 @@ function civicrmtheme_custom_theme() {
     return;
   }
 
-  // Get the menu items.
-  $args = explode('?', $_GET['q']);
-  $path = $args[0];
-
-  // Get the menu for above URL.
-  $item = CRM_Core_Menu::get($path);
-
   // Check for public pages
   // If public page and civicrm public theme is set, apply civicrm public theme
   // If user does not have access to CiviCRM use the public page for the error message
-  if (!user_access('access CiviCRM') || CRM_Utils_Array::value('is_public', $item)) {
+  if (!user_access('access CiviCRM') || CRM_Core_Config::singleton()->userSystem->isFrontEndPage()) {
     if ($public_theme) {
       return $public_theme;
     }

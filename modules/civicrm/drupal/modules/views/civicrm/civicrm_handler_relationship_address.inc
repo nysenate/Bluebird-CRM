@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -72,7 +72,6 @@ class civicrm_handler_relationship_address extends civicrm_handler_relationship_
     $join = $this->join_address($join);
     return $join;
   }
-
 
   /**
    * Called to implement a relationship in a query.

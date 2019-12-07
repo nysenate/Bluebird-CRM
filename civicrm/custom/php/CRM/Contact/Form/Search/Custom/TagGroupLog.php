@@ -71,7 +71,7 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
     $form->addRadio('search_type', ts('Search Type'), $searchType, NULL, '&nbsp;', TRUE);
 
     //construct tags/groups
-    $groups = CRM_Core_PseudoConstant::group();
+    $groups = CRM_Core_PseudoConstant::nestedGroup();
 
     $tags = CRM_Core_BAO_Tag::getTags();
     $keywords = CRM_Core_BAO_Tag::getTagsUsedFor($usedFor = array('civicrm_contact'),
@@ -147,9 +147,6 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
     $form->assign('elements', $formfields);
     
     $form->add('hidden', 'form_message');
-
-    $resetUrl = CRM_Utils_System::url('civicrm/contact/search/custom', 'csid=17&reset=1');
-    $form->assign('resetUrl', $resetUrl);
 
     $form->setDefaults($this->setDefaultValues());
     $form->addFormRule(array('CRM_Contact_Form_Search_Custom_TagGroupLog', 'formRule'), $this);
@@ -228,8 +225,10 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
     
     //CRM_Core_Error::debug('select',$selectClause); exit();
     $sql = $this->sql($selectClause, $offset, $rowcount, $sort,
-                      $includeContactIDs, null);
-    //CRM_Core_Error::debug('$sql',$sql); exit();
+      $includeContactIDs, NULL);
+
+    //Civi::log()->debug('', ['sql' => $sql]);
+
     return $sql;
   }
 

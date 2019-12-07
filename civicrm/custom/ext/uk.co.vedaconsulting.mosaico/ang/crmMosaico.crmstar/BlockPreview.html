@@ -1,0 +1,55 @@
+<!--
+Vars: mailing:obj, testContact:obj, testGroup:obj, crmMailing:FormController
+-->
+<div class="crm-mosaico-block-preview">
+  <div class="form-group">
+    <h3>
+      <label>{{ts('Preview:')}}</label>
+    </h3>
+    <div ng-show="!mailing.body_html && !mailing.body_text">
+      <em>({{ts('No content to preview')}})</em>
+    </div>
+    <div ng-hide="!mailing.body_html">
+      <div>
+        <a class="btn btn-primary" ng-disabled="crmMailing.$invalid" ng-click="doPreview('html')">{{ts('Preview as HTML')}}</a>
+      </div>
+    </div>
+    <div ng-hide="!mailing.body_html && !mailing.body_text" style="margin-top: 1em;">
+      <div>
+        <a class="btn btn-primary" ng-disabled="crmMailing.$invalid" ng-click="doPreview('text')">{{ts('Preview as Plain Text')}}</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <h3>
+      <label for="preview_test_email">{{ts('Send test email:')}} <a crm-ui-help="hs({id: 'test', title: ts('Test Email')})"></a> </label>
+    </h3>
+    <input
+      name="preview_test_email"
+      type="email"
+      class="crm-form-text margin-bottom-10 full-width-force"
+      ng-model="testContact.email"
+      placeholder="example@example.org" />
+    <!--fa-paper-plane-->
+    <a class="btn btn-sm btn-primary" title="{{crmMailing.$invalid || !testContact.email ? ts('Complete all required-mark fields first') : ts('Send test message to %1', {1: testContact.email})}}" ng-disabled="crmMailing.$invalid || !testContact.email" ng-click="doSend({email: testContact.email})">{{ts('Send test')}}</a>
+  </div>
+
+  <div class="form-group">
+    <h3>
+      <label for="preview_test_group">{{ts('Send test email to group:')}} <a crm-ui-help="hs({id: 'test', title: ts('Test Email')})"></a> </label>
+    </h3>
+    <select
+      name="preview_test_group"
+      ui-jq="crmSelect2"
+      ui-options="{dropdownAutoWidth : true, allowClear: true, placeholder: ts('Select Group')}"
+      ng-model="testGroup.gid"
+      ng-options="group.id as group.title for group in groupNames|orderBy:'title'"
+      class="margin-bottom-10 full-width-force">
+      <option value=""></option>
+    </select>
+    <!--fa-paper-plane-->
+    <a class="btn btn-sm btn-primary" title="{{crmMailing.$invalid || !testGroup.gid ? ts('Complete all required-mark fields first') : ts('Send test message to group')}}" ng-disabled="crmMailing.$invalid || !testGroup.gid" crm-confirm="{resizable: true, width: '40%', height: '40%', open: previewTestGroup}"
+       on-yes="doSend({gid: testGroup.gid})">{{ts('Send test')}}</a>
+  </div>
+</div>

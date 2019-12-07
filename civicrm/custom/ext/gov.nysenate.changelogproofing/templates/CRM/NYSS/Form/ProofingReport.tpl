@@ -7,6 +7,14 @@
       padding-right: 1.6%;
     }
   </style>
+  <script type="text/javascript">
+    CRM.$(function($) {
+      $('#proofing-report input.crm-form-submit').click(function(){
+        $('div.ui-notify-message a.ui-notify-close').click();
+        $('span.crm-error').remove();
+      });
+    });
+  </script>
 {/literal}
 
 <div class="crm-block">
@@ -78,5 +86,7 @@
       </div>
       <div class="clear"></div>
     </div>
+
+    <div class="clear"></div>
   </div>
 </div>

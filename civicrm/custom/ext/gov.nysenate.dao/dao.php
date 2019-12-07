@@ -130,7 +130,7 @@ function dao_civicrm_entityTypes(&$entityTypes) {
     //set fields that should not be exportable
     $fields['user_unique_id']['export'] = FALSE;//2719
     $fields['contact_sub_type']['export'] = FALSE;
-    $fields['current_employer_id']['export'] = FALSE;
+    //$fields['current_employer_id']['export'] = FALSE; //13123 this breaks things downstream with API calls
     $fields['hash']['export'] = FALSE;
     $fields['image_URL']['export'] = FALSE;
   };

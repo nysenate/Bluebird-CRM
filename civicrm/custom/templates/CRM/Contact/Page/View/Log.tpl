@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2018                                |
+ | Copyright CiviCRM LLC (c) 2004-2019                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,10 +23,9 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-<div id="changeLog" class="view-content">
+<div id="changeLog" class="view-content nyss-integration-tab">{*NYSS*}
     <h3>{ts}Change Log:{/ts} {$displayName}</h3>{*NYSS*}
    {if $useLogging}
-     <br />
      <div class='instance_data'><div class="crm-loading-element"></div></div>
    {else}
     <div class="form-item">

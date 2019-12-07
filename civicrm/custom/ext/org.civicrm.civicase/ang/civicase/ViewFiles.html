@@ -1,0 +1,13 @@
+<div civicase-util="caseutil"></div>
+<div civicase-api3-ctrl="getfiles"
+     civicase-api3="['Case','getfiles', {case_id: item.id, text: '', options: {xref:1, limit:0}}]"
+     on-refresh="caseutil.formatActivities(result.xref.activity)">
+</div>
+
+<div civicase-uploader="item" on-upload="getfiles.refresh()"></div>
+
+<div crm-ui-debug="getfiles"></div>
+<div class="panel panel-default act-feed-panel">
+  <div class="panel-header" civicase-file-filter="getfiles"></div>
+  <div class="panel-body clearfix" civicase-file-list="getfiles"></div>
+</div>

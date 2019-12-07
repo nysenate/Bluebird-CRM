@@ -1,0 +1,123 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id */
+
+#branding {
+  display: none;
+}
+
+#page {
+  margin: 0;
+  padding: 0;
+}
+
+.crm-summary-block-wrap {
+  display: inline-block;
+  height: 100%;
+  vertical-align: top;
+}
+
+#crm-contact-thumbnail {
+  float: left;
+  margin: 10px $contact-avatar/2 0;
+  padding-top: 5px;
+}
+
+.crm-image-popup {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  border-radius: 50%;
+  display: block;
+  height: $contact-avatar;
+  width: $contact-avatar;
+}
+
+.crm-summary-contactname-block-without-contract {
+  background: $brand-danger !important;
+}
+
+.crm-contact-detail {
+  color: $gray-lighter;
+  margin-right: 15px;
+
+  strong {
+    color: $crm-white;
+  }
+}
+
+.crm-contact-detail-wrap {
+  line-height: 20px;
+  margin-top: 8px;
+}
+
+#crm-container {
+  div.crm-summary-contactname-block {
+    background: $crm-page-topbar-bg;
+    color: $crm-white;
+    min-height: $crm-contact-info-block-min-height;
+    padding-bottom: $crm-contact-info-block-padding-bottom;
+    padding-top: $crm-contact-info-block-padding-top;
+    position: relative;
+  }
+
+  .crm-contact-page {
+    padding: 0;
+  }
+}
+
+.crm-actions-ribbon {
+  background: $crm-gray-bright;
+  color: $crm-white;
+  margin-bottom: 0 !important;
+  padding: 15px 20px;
+
+  .button {
+    background-color: $brand-primary !important;
+    border: 0 !important;
+
+    &.delete {
+      background-color: $brand-danger !important;
+    }
+
+    .crm-i {
+      top: 0;
+    }
+  }
+
+  .crm-next-action,
+  .crm-previous-action {
+    .button {
+      background-color: transparent !important;
+      border: 1px solid $crm-white !important;
+      padding: 7px 6px 7px 0 !important;
+      width: 90px;
+
+      .crm-i {
+        display: none;
+      }
+    }
+  }
+
+  .crm-i {
+    position: relative;
+    top: -2px;
+  }
+}
+
+.crm-summary-display_name {
+  font-size: $font-size-h1 !important;
+  font-weight: $headings-font-weight;
+  padding-top: 12px;
+
+  .crm-summary-link {
+    .crm-icon {
+      @include contact-type-icons();
+
+      margin-right: 10px;
+
+      &::before {
+        color: $crm-white !important;
+        font-size: $font-size-h1 !important;
+      }
+    }
+  }
+}

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2018                                |
+ | Copyright CiviCRM LLC (c) 2004-2019                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -31,7 +31,7 @@
         </td>
         {*NYSS*}
         <td>{$form.mailing_subject.label}<br />
-          {$form.mailing_subject.html|crmReplace:class:big}
+          {$form.mailing_subject.html|crmAddClass:big}
         </td>
     </tr>
     <tr>

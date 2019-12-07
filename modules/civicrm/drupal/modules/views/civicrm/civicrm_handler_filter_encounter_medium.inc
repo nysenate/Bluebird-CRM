@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -33,7 +33,8 @@
  *
  */
 class civicrm_handler_filter_encounter_medium extends views_handler_filter_in_operator {
-  static $_encounter_medium;
+  public static $_encounter_medium;
+
   public function construct() {
     parent::construct();
     if (!self::$_encounter_medium) {

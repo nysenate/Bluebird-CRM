@@ -1,0 +1,47 @@
+.modal-content {
+  @include box-shadow($box-shadow);
+
+  border: 0;
+  border-radius: $border-radius-base;
+}
+
+.modal-footer {
+  padding: $crm-modal-footer-padding;
+
+  .modal-sm & {
+    padding: $crm-modal-sm-footer-padding;
+  }
+}
+
+.modal-header {
+  background: $gray-lighter;
+  border-bottom: 0;
+  border-radius: $border-radius-base;
+
+  .modal-sm & {
+    padding: $crm-modal-sm-title-padding;
+  }
+}
+
+@media (min-width: $screen-sm-min) {
+  .modal-dialog {
+    margin-top: 50px;
+  }
+}
+
+/**
+ * This is a custom class for the custom CTools modal with Bootstrap markup
+ * It cancels out the styles that CTools applies via JS
+ */
+.modal-civihr-bootstrap {
+  left: initial !important;
+  position: initial !important;
+  top: initial !important;
+
+  .loading-spinner {
+    left: initial !important;
+    margin: 0 auto -20px !important;
+    position: initial !important;
+    top: initial !important;
+  }
+}

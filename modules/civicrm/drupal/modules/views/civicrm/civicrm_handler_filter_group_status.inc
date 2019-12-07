@@ -1,7 +1,7 @@
 <?php
 /*
   +--------------------------------------------------------------------+
-  | CiviCRM version 4.7                                                |
+  | CiviCRM version 5                                                  |
   +--------------------------------------------------------------------+
   | This file is a part of CiviCRM.                                    |
   |                                                                    |
@@ -30,7 +30,8 @@
  */
 class civicrm_handler_filter_group_status extends views_handler_filter_in_operator {
 
-  static $groupContactStatus = NULL;
+  public static $groupContactStatus = NULL;
+
   public function construct() {
     parent::construct();
 

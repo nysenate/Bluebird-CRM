@@ -1,0 +1,29 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder, property-no-vendor-prefix */
+
+#{civi-page('report')} {
+  .action-link,
+  .crm-submit-buttons {
+    height: auto;
+    line-height: normal;
+  }
+
+  .crm-submit-buttons {
+    @include civicrm-submit-buttons;
+  }
+
+  .crm-hover-button {
+    &:hover {
+      background: none !important;
+    }
+  }
+
+  #Absence {
+    tr {
+      td {
+        &:last-child {
+          text-align: right;
+        }
+      }
+    }
+  }
+}

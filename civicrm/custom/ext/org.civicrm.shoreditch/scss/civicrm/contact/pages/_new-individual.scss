@@ -1,0 +1,291 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id */
+
+#{civi-page('contact-add')} {
+  .crm-search-form-block {
+    border-radius: $border-radius-child !important;
+  }
+
+  .crm-edit-address-form > tbody > tr:first-child td:last-child a:link {
+    color: $brand-danger;
+  }
+
+  @media (min-device-width: $screen-sm-min) {
+    .crm-container .crm-contactDetails-accordion {
+      .crm-accordion-header {
+        border-top: 1px solid $crm-grayblue-dark;
+      }
+
+      .contact_basic_information-section tr {
+        &:first-child td {
+          &:last-child {
+            min-width: $crm-table-label-column-width;
+          }
+
+          &:first-child {
+            min-width: 170px;
+          }
+        }
+
+        // Add padding to only select type markup
+        select.crm-form-select {
+          padding-right: 40px !important;
+        }
+
+        td {
+          &:last-child {
+            #s2id_suffix_id {
+              min-width: 80px !important;
+              width: 80px !important;
+            }
+          }
+        }
+      }
+
+      .crm-form-select {
+        min-width: 120px !important;
+        width: 120px !important;
+      }
+    }
+  }
+
+  .crm-container {
+    .form-layout-compressed {
+      td {
+        &.label {
+          text-align: left;
+          vertical-align: middle;
+        }
+      }
+    }
+
+    .crm-form-block.crm-form-block {
+      > .crm-submit-buttons:nth-child(3) {
+        display: none;
+      }
+
+      [class*='add-more-link-'] {
+        padding: 15px;
+
+        .crm-hover-button {
+          background-color: $crm-copy !important;
+          color: $crm-white !important;
+          padding: 7px 19px;
+        }
+
+        .crm-hover-button:hover {
+          background-color: $crm-light-gray-color !important;
+        }
+
+        .crm-hover-button .crm-i {
+          margin-right: 10px;
+        }
+      }
+    }
+
+    .crm-button_qf_Contact_refresh_dedupe {
+      border: 0;
+    }
+
+    #customFields {
+      width: auto !important;
+    }
+  }
+
+  .crm-accordion-body {
+    td {
+      label {
+        padding-left: 0 !important;
+      }
+
+      #s2id_employer_id {
+        width: 100% !important;
+      }
+
+      #s2id_contact_sub_type {
+        max-width: 180px;
+      }
+
+      #s2id_group {
+        max-width: 230px;
+      }
+    }
+  }
+
+  .contact_information-section {
+    position: relative;
+    table-layout: fixed;
+
+    tr {
+      td {
+        &:nth-child(2),
+        &:nth-child(3),
+        &:nth-child(4) {
+          position: relative;
+          text-align: left;
+          z-index: 1;
+        }
+      }
+    }
+
+    .email-signature {
+      // Position the "> Signature" button to the right side of the table
+      > .collapsible-title {
+        position: absolute;
+        // Discard paddings
+        right: -#{$crm-standard-gap * 2};
+        top: $crm-standard-gap;
+        // We need to discard the width to attach the "button"
+        // to the very right edge of the table. Because it is not overflown,
+        // it still we be visible and clickable.
+        width: 0;
+      }
+
+      #signatureBlock1 {
+        margin-top: $crm-standard-gap / 2;
+      }
+    }
+
+
+  }
+
+  #commPrefs {
+    table {
+      tr {
+        &:nth-child(1) {
+          td {
+            padding-bottom: 10px;
+          }
+        }
+
+        &:nth-child(3) {
+          td:nth-child(4) {
+            position: relative;
+            right: 35px;
+            top: 35px;
+          }
+        }
+
+        td {
+          max-width: 270px;
+
+          select {
+            max-width: 200px;
+            padding-right: 30px !important;
+          }
+        }
+      }
+    }
+  }
+
+  #demographics {
+    .form-item,
+    .fields {
+      margin: 0;
+    }
+  }
+
+  #customData1 {
+    table td {
+      padding-left: 0;
+      vertical-align: middle;
+    }
+  }
+
+  #tagtree {
+    li {
+      padding: 10px 0;
+
+      span {
+        background: none;
+      }
+
+      .form-checkbox {
+        display: none !important;
+      }
+    }
+  }
+
+  #addressBlock {
+    #addMoreAddress1 {
+      height: auto;
+      overflow: auto;
+      zoom: 1;
+    }
+
+    #Address-Primary-html {
+      padding-bottom: 10px;
+    }
+
+    label[for*='[use_shared_address]'] {
+      margin-bottom: 10px;
+    }
+
+    table[id^='address_table_'] {
+      tr {
+        &:nth-child(5) {
+          .crm-address-element {
+            td {
+              width: 33.3%;
+            }
+          }
+        }
+      }
+    }
+
+    .crm-add-address-wrapper {
+      .button {
+        margin: 5px !important;
+
+        i {
+          margin-right: 3px;
+          margin-top: -3px;
+        }
+      }
+    }
+  }
+
+  .collapsible-title {
+    border-bottom: 0;
+    font-size: 1.1em;
+    padding: 15px 20px;
+  }
+
+  #{civi-dialog()} {
+    .row-highlight {
+      @include expandable-table;
+      border-bottom: 1px solid $crm-grayblue-dark;
+      border-top: 1px solid $crm-grayblue-dark;
+    }
+
+    #individual_prefix,
+    #individual_suffix,
+    #phone_type,
+    #instant_messenger_service,
+    #website_type {
+      margin: 0 -20px;
+
+      + .action-link {
+        margin-top: 20px !important;
+      }
+    }
+  }
+
+  #contactDetails {
+    tr:not([id]) {
+      // Makes labels bold. We cannot use a specific selector because
+      // labels are just text inside <td>s. We also ignore <tr>s with "id"
+      // attributes because those definitely do not contain labels.
+      font-weight: $crm-font-weight-bold;
+
+      // Discarding bold font for links
+      a {
+        font-weight: $crm-font-weight-normal;
+      }
+    }
+  }
+
+  .email-signature > .collapsible-title {
+    font-size: $font-size-base;
+    font-weight: $crm-font-weight-bold;
+  }
+}

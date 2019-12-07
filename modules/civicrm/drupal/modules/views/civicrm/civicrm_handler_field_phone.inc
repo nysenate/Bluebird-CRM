@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                               |
+ | CiviCRM version 5                                                 |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
  * @ingroup civicrm_field_handlers
  */
 class civicrm_handler_field_phone extends civicrm_handler_field_location {
-  static $_phoneType;
+  public static $_phoneType;
 
   public function construct() {
     parent::construct();

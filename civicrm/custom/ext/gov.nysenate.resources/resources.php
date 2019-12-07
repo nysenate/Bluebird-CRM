@@ -166,6 +166,8 @@ function resources_civicrm_coreResourceList(&$list, $region) {
   Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/jquery.tokeninput.js', 10, 'html-header');
   Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/jquery-fieldselection.js', 10, 'html-header');
 
+  Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/jobId.js');
+
   //implement coreResourceList to define location of custom ckeditor config file
   $extPath = Civi::resources()->getUrl('gov.nysenate.resources');
   $config = array_keys(array_filter($list, function($v){return !empty($v['config']) ? true : false;}));
@@ -179,6 +181,16 @@ function resources_civicrm_coreResourceList(&$list, $region) {
     'maxImageWidth' => 600,
     'maxImageHeight' => 2048,
   );
+
+  //add special non-Admin css file
+  global $user;
+  $roles = $user->roles;
+  $adminRoles = ['Administrator', 'Superuser'];
+  $isAdmin = array_intersect($adminRoles, $roles);
+  if (empty($isAdmin)) {
+    CRM_Core_Resources::singleton()
+      ->addStyleFile('gov.nysenate.resources', 'css/nonAdmin.css');
+  }
 }
 
 function resources_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) {

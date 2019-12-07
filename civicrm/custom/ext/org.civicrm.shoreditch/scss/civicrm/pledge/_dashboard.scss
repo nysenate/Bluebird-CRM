@@ -1,0 +1,46 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder, property-no-vendor-prefix */
+
+#{civi-page('pledge')} {
+  .CRM_Pledge_Form_Search {
+    .description {
+      @include box-shadow($crm-form-layout-shadow-lower);
+      background: $crm-white;
+      padding: 20px !important;
+    }
+
+    .spacer {
+      display: none;
+    }
+
+    .selector,
+    .report {
+      @include expandable-table;
+      @include box-shadow($crm-form-layout-shadow-lower !important);
+    }
+
+    .selector {
+      border-top: 1px solid $crm-grayblue-dark !important;
+    }
+
+    .report {
+      margin-bottom: 20px;
+
+      tr {
+        th,
+        td {
+          font-size: $font-size-base !important;
+          padding: 15px 20px !important;
+        }
+      }
+    }
+  }
+
+  &:not(#{civi-page('pledge-add')}) {
+    .CRM_Pledge_Form_Pledge {
+      .crm-pledge-form-block {
+        line-height: 0;
+        padding: 0 !important;
+      }
+    }
+  }
+}

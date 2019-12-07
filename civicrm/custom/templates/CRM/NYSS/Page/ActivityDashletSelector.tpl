@@ -2,7 +2,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2018                                |
+ | Copyright CiviCRM LLC (c) 2004-2019                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,6 +29,7 @@
       {ts}Filter Activities{/ts}</a>
     </div><!-- /.crm-accordion-header -->
     <div class="crm-accordion-body">
+      <form><!-- form element is here to fool the datepicker widget -->
       <table class="no-border form-layout-compressed all-activity-search-options">
         <tr>
           <td class="crm-contact-form-block-activity_type_filter_id crm-inline-edit-field">
@@ -72,6 +73,7 @@
           </td>
         </tr>
       </table>
+      </form>
     </div><!-- /.crm-accordion-body -->
   </div><!-- /.crm-accordion-wrapper -->
   <table class="contact-allactivity-selector-{$context} crm-ajax-table">
@@ -82,7 +84,7 @@
       <th data-data="source_contact_name" class="crm-contact-activity-source_contact">{ts}Added By{/ts}</th>
       <th data-data="target_contact_name" data-orderable="false" class="crm-contact-activity-target_contact">{ts}With{/ts}</th>
       <th data-data="assignee_contact_name" data-orderable="false" class="crm-contact-activity-assignee_contact">{ts}Assigned{/ts}</th>
-      <th data-data="activity_date_time" class="crm-contact-activity-activity_date">{ts}Date{/ts}</th>
+      <th data-data="activity_date_time" class="crm-contact-activity-activity_date_time">{ts}Date{/ts}</th>
       <th data-data="status_id" cell-class="crmf-status_id crm-editable" cell-data-type="select" cell-data-refresh="true" class="crm-contact-activity-activity_status">{ts}Status{/ts}</th>
       <th data-data="links" data-orderable="false" class="crm-contact-activity-links">&nbsp;</th>
     </tr>

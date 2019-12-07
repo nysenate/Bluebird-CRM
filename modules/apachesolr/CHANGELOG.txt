@@ -1,6 +1,45 @@
 Apache Solr integration 7.x-1.x, xxxx-xx-xx
 -----------------------------
 
+Apache Solr integration 7.x-1.11, 2018-05-17
+-----------------------------
+#2860854 by lokapujya: apachesolr_taxonomy_term_update implements comment fix
+#2954804 and #2786477 by 8bitplateau, becassin, elavault: Reverting change from #2786477 which introduced a problem
+#2972819 by jack.minster: Hidden variable name typo
+#2863134 by KeyboardCowboy, janusman: Allow Watchdog Warnings for Indexing in Read-Only Mode to be Disabled
+#2635244 by Jon Nunan: Deleting an entity type from the index will drop the whole index
+#2834242 by dwebpoint: Adding CSS file using hook_init for single table
+Fixed: apachesolr_index_delete_entity_from_index() does not distinguish failures per-environment.
+
+Apache Solr integration 7.x-1.10, 2018-03-13
+-----------------------------
+#2950882 by janusman: Protect against running optimize on every single cron run
+#2605756 by volkerk: Entity type is not checked during delete
+#2946579 by oadaeh: Remove usage of deprecrated each() function for PHP 7.2+ future proofing
+#2786477 by jmoreira, janusman: Error: "multiple values encountered for non multiValued field" for multi-value entity reference fields
+#1596308 by travismark, wulff:  Apache Solr recommendations Block fix for custom filter or ADDITIONAL QUERY field
+#1844270 by amontero: Spelling mistake
+#2942932 by fadonascimento: Duplicates array keys
+#2109291 by jcamposanok: user_load should use uid instead of array in hook_apachesolr_index_document_build_ENTITY_TYPE()
+#2686685 by aprohl5, sandhya.addweb: typo on line 343 of apachesolr.api.php
+
+Apache Solr integration 7.x-1.9, 2017-10-25
+-----------------------------
+#[N/A] Added query argument to /admin/reports/apachesolr/*/conf/[filename] to avoid conflic with fast_404 behavior.
+#2609204 by janusman: Watchdog logging should indicate environment in use
+#2792283 by larsmw: apachesolr_entity_update unnessicarily calls entity_get_info()
+#2794597 by KarlShea: Not every entity has a status
+#2784939 by tamarpe: Fixes unecessary call to apachesolr_entity_update for new entities with status == 0
+#Issue #2614666 by nicrodgers: SQL error attempting to clone search page with a label longer than 23 characters
+
+#2338591 by mkalkbrenner: apachesolr_index_get_entities_to_index() randomly fails
+#2334725 by Xano: Remove apachesolr_search.pages.inc.orig
+#2343001 by mkalkbrenner: Retain filters checkbox is missing
+
+Apache Solr integration 7.x-1.8, 2015-12-02
+-----------------------------
+SA-CONTRIB-2015-170 by Dave Reid, theapi: fix for anonymous users can delete Solr environments that are not default.
+
 Apache Solr integration 7.x-1.7, 2014-08-29
 -----------------------------
 #2151325 by JulienD: Remove useless files[] directive from .info files.

@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,6 +28,7 @@
  *
  */
 class civicrm_handler_sort_pcp_raised_amount extends views_handler_sort {
+
   public function query() {
     $this->ensure_my_table();
 

@@ -708,7 +708,6 @@
         }
       };
     })
-
     // example <div crm-ui-tab id="tab-1" crm-title="ts('My Title')" count="3">...content...</div>
     // WISHLIST: use a full Angular component instead of an incomplete jQuery wrapper
     .directive('crmUiTab', function($parse) {
@@ -878,7 +877,6 @@
         link: function (scope, element, attrs) {
           scope.ts = CRM.ts(null);
 
-          //NYSS 12191
           element.find('.crm-wizard-buttons button[ng-click^=crmUiWizardCtrl]').click(function () {
             // These values are captured inside the click handler to ensure the
             // positions/sizes of the elements are captured at the time of the
@@ -1050,6 +1048,9 @@
 
     // Sets document title & page title; attempts to override CMS title markup for the latter
     // WARNING: Use only once per route!
+    // WARNING: This directive works only if your AngularJS base page does not
+    // set a custom title (i.e., it has an initial title of "CiviCRM"). See the
+    // global variables pageTitle and documentTitle.
     // Example (same title for both): <h1 crm-page-title>{{ts('Hello')}}</h1>
     // Example (separate document title): <h1 crm-document-title="ts('Hello')" crm-page-title><i class="crm-i fa-flag"></i>{{ts('Hello')}}</h1>
     .directive('crmPageTitle', function($timeout) {

@@ -1,0 +1,45 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder, property-no-vendor-prefix */
+
+.CRM_Contact_Form_Task_AlterPreferences {
+  .crm-contact-task-addtodonot-form-block {
+    .crm-submit-buttons {
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+      padding-left: 15px !important;
+      padding-right: 15px !important;
+    }
+
+    table.form-layout-compressed {
+      margin: 0 25px;
+
+      label {
+        padding: 15px 0;
+        position: relative;
+
+        &::after {
+          left: 4px;
+          top: 21px;
+        }
+      }
+
+      .crm-contact-task-addtodonot-form-block-pref label {
+        padding: 15px !important;
+        position: relative;
+
+        &::after {
+          left: 17px;
+        }
+      }
+
+      .listing-box {
+        border-color: $crm-background;
+        height: auto;
+        max-height: 216px;
+
+        > div {
+          background-color: $crm-white;
+        }
+      }
+    }
+  }
+}

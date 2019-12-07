@@ -1,0 +1,186 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id */
+
+table {
+  .crm-icon {
+    @include contact-type-icons();
+  }
+}
+
+%crm-table {
+  $border-color: $table-border-color;
+  border: 0;
+  border-radius: $border-radius-base;
+  font-family: $font-family-base;
+
+  tr {
+    background: $crm-white !important;
+  }
+
+  &.row-highlight tr:hover {
+    background: $gray-lighter !important;
+  }
+
+  th,
+  .columnheader td {
+    border-bottom: 0;
+    color: $gray-darker !important;
+    font-weight: bold !important;
+  }
+
+  .columnheader th {
+    background-color: $gray-lighter !important;
+  }
+
+  th,
+  tr,
+  tr td {
+    border: initial;
+    border-bottom: solid 1px $table-border-color;
+    line-height: 35px;
+  }
+
+  tr:last-child {
+    background: transparent !important;
+    border-bottom: 0;
+    border-left: 0;
+    border-radius: 0 0 $border-radius-base $border-radius-base;
+    border-right: 0;
+  }
+
+  thead {
+    background: $gray-lighter;
+
+    a.sorting,
+    a.sorting_asc,
+    a.sorting_desc {
+      background: none;
+    }
+
+    th.ui-state-default {
+      background-color: $gray-lighter;
+
+      &.sorting_disabled {
+        background: $gray-lighter;
+      }
+    }
+
+    > tr:first-child > th {
+      border-color: $crm-grayblue-dark;
+    }
+
+    div.sticky-header {
+      border-bottom: 1px solid $crm-grayblue-dark;
+    }
+  }
+
+  &:not(.table-bordered) > tbody > tr:first-child > td {
+    border-color: $crm-background;
+  }
+
+  td .crm-hover-button {
+    background: none !important;
+    border: 0;
+    color: $brand-primary;
+    text-transform: capitalize;
+
+    &:hover {
+      color: darken($brand-primary, $crm-darken-percentage);
+    }
+
+    &.crm-clear-link {
+      color: $brand-danger;
+
+      &:hover {
+        color: darken($brand-danger, $crm-darken-percentage);
+      }
+    }
+  }
+}
+
+%civihr-table {
+  @extend %crm-table;
+
+  &:not(.report-layout) {
+    box-shadow: $box-shadow;
+  }
+
+  td {
+    background: $crm-white !important;
+
+    &.label {
+      vertical-align: middle !important;
+    }
+  }
+
+  &.form-layout {
+    //For "New Activity" page
+    tr[class^='crm-activity-form'] > td:not(.label):not(.view-value) {
+      padding: 0;
+    }
+
+    > tbody > tr > td.label {
+      line-height: 25px;
+    }
+  }
+
+  tr {
+    &:first-child th {
+      &:first-child {
+        border-top-left-radius: $border-radius-base;
+      }
+
+      &:last-child {
+        border-top-right-radius: $border-radius-base;
+      }
+    }
+
+    &:last-child td {
+      .crm-hover-button:hover {
+        color: $brand-primary !important;
+      }
+
+      &:first-child {
+        border-bottom-left-radius: $border-radius-base;
+      }
+
+      &:last-child {
+        border-bottom-right-radius: $border-radius-base;
+      }
+    }
+
+    td {
+      color: $crm-copy;
+    }
+  }
+}
+
+.crm-container {
+  > table,
+  table.report-layout,
+  table.selector,
+  table.row-highlight,
+  table.dataTable,
+  table.crm-multifield-selector,
+  .ui-dialog table,
+  .CRM_HRRecruitment_Form_Search > table,
+  .CRM_Case_Form_Search .caseSelector,
+  .CRM_Activity_Form_Activity > .crm-activity-view-block > .crm-info-panel,
+  #preview-counts,
+  #summary-counts,
+  #DataTables_Table_0,
+  #DataTables_Table_1 {
+    @extend %civihr-table;
+  }
+
+  &.ui-dialog {
+    table {
+      box-shadow: none !important;
+
+      &.form-layout-compressed {
+        tr td {
+          line-height: initial;
+        }
+      }
+    }
+  }
+}

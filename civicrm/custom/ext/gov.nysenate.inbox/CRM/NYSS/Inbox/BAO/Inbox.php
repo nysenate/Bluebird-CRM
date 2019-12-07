@@ -3,19 +3,12 @@
 class CRM_NYSS_Inbox_BAO_Inbox {
 
   const STATUS_UNMATCHED = 0;
-
   const STATUS_MATCHED = 1;
-
   const STATUS_CLEARED = 7;
-
   const STATUS_DELETED = 9;
-
   const STATUS_UNPROCESSED = 99;
-
   const DEFAULT_ACTIVITY_STATUS = 'Completed';
-
   const DEFAULT_AUTH_GROUP = 'Authorized_Forwarders';
-
   const DEFAULT_CONTACT_ID = 1;
 
   /**
@@ -865,7 +858,10 @@ class CRM_NYSS_Inbox_BAO_Inbox {
           }
         }
 
-        if (!empty($values['activity_assignee']) || !empty($values['activity_status'])) {
+        if (!empty($values['activity_assignee']) ||
+          !empty($values['activity_status']) ||
+          !empty($values['case_id'])
+        ) {
           $params = ['id' => $row['activity_id']];
 
           if (!empty($values['activity_assignee'])) {
@@ -874,6 +870,10 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
           if (!empty($values['activity_status'])) {
             $params['status_id'] = $values['activity_status'];
+          }
+
+          if (!empty($values['case_id'])) {
+            $params['case_id'] = $values['case_id'];
           }
 
           try {

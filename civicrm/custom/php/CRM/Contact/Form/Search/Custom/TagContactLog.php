@@ -90,9 +90,6 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
     
     $form->add('hidden', 'form_message');
 
-    $resetUrl = CRM_Utils_System::url('civicrm/contact/search/custom', 'csid=19&reset=1');
-    $form->assign('resetUrl', $resetUrl);
-
     $form->setDefaults($this->setDefaultValues());
     $form->addFormRule(array('CRM_Contact_Form_Search_Custom_TagContactLog', 'formRule'), $this);
 

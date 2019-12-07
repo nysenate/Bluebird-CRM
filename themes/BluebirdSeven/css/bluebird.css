@@ -1,0 +1,383 @@
+body.page-civicrm.admin-menu.adminimal-menu:before {
+  height: auto;
+}
+#page {
+  padding-top: 0;
+}
+.bb-footer-left {
+  text-align: left;
+  float: left;
+}
+.bb-footer-right {
+  text-align: right;
+  float: right;
+}
+
+.page-civicrm #crm-main-content-wrapper {
+  background: none !important;
+}
+
+/*no user logged in page*/
+body.user-no-roles {
+  background-color: #C9DBD9;
+  padding: 50px;
+}
+body.user-no-roles #page {
+  display: none;
+}
+body.user-no-roles #userNoRoles {
+  margin: 0 40px 40px;
+  padding: 20px;
+  border: 8px solid #546A7B;
+}
+
+#civicrm-menu.sm #crm-qsearch-input {
+  font-family: FontAwesome,"Open Sans","Helvetica Neue",Helvetica,Arial,sans-serif;
+}
+ul#civicrm-menu.sm {
+  background: #DADAD2 url(../images/bluebirds_55x26.png) no-repeat scroll 92% bottom;
+  border-top: 2px solid #393D3F;
+}
+ul#civicrm-menu.sm ul {
+  padding: 0;
+}
+
+.page-civicrm-contact-view .crm-actions-ribbon {
+  padding: 10px !important;
+}
+.page-civicrm #branding {
+  position: fixed;
+  z-index: 10;
+  width: 100%;
+  bottom: 0;
+  padding: 10px 0 !important;
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+.not-logged-in #branding,
+.not-logged-in div#bb-header-title {
+  display: none;
+}
+.page-civicrm #page {
+  margin-top: 0;
+  margin-bottom: 30px !important;
+}
+.page-civicrm div#printer-friendly {
+  top: -6px !important;
+  right: -25px !important;
+  z-index: 50;
+}
+
+#bb-header-title h1.page-title {
+  width: 100%;
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+  font-weight: 600;
+  font-size: 1.3em;
+  padding: 0 40px !important;
+  line-height: 50px !important;
+  color: rgb(70, 67, 84);
+  margin: 0;
+}
+
+/*display branding bar (breadcrumbs, etc.), printer icon, on contact page*/
+.page-civicrm-contact-view #branding,
+.page-civicrm-contact-view:not([class*='page-civicrm-contact-view-']) #branding {
+  display: block !important;
+  min-height: 34px;
+}
+.page-civicrm-contact-view #bb-header-title h1.page-title {
+  display: none;
+}
+.page-civicrm.page-civicrm-contact-view #page {
+  margin-top: 12px;
+  margin-bottom: 66px !important;
+}
+
+/*contact summary + tabs*/
+.bb-contactsummary {
+  margin-right: 30px;
+  margin-top: 10px;
+  font-size: 0.9em;
+  float: right;
+  text-align: right;
+}
+.page-civicrm.page-civicrm-contact-view #crm-container div#printer-friendly {
+  color: white;
+}
+.page-civicrm-contact-view .ui-tabs-panel>div.help {
+  padding: 10px !important;
+}
+.page-civicrm-contact-view #Tag .contact-tagset label {
+  float: left;
+  width: 100%;
+  font-weight: bold;
+  margin-top: 10px;
+}
+.page-civicrm-contact-view #crm-container div.crm-summary-contactname-block,
+.page-civicrm-contact-view:not([class*='page-civicrm-contact-view-']) #crm-container div.crm-summary-contactname-block {
+  min-height: 56px;
+  padding-top: 0;
+}
+.page-civicrm-contact-view .crm-contact-page #mainTabContainer .ui-tabs-panel {
+  padding: 10px !important;
+}
+.page-civicrm-contact-view:not([class*='page-civicrm-contact-view-']) #crm-container #crm-contactname-content .crm-edit-help {
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100px;
+}
+.page-civicrm-contact-view:not([class*='page-civicrm-contact-view-']) .crm-contact-tabs-list .crm-tab-button#tab_custom_9,
+.page-civicrm-contact-view:not([class*='page-civicrm-contact-view-']) .crm-contact-tabs-list .crm-tab-button#tab_nyss_web_activitystream,
+.page-civicrm-contact-view:not([class*='page-civicrm-contact-view-']) .crm-contact-tabs-list .crm-tab-button#tab_nyss_web_tags {
+  background-color: #f4f4f4;
+}
+.page-civicrm-contact-view:not([class*='page-civicrm-contact-view-']) .crm-contact-tabs-list .crm-tab-button#tab_custom_9:hover,
+.page-civicrm-contact-view:not([class*='page-civicrm-contact-view-']) .crm-contact-tabs-list .crm-tab-button#tab_nyss_web_activitystream:hover,
+.page-civicrm-contact-view:not([class*='page-civicrm-contact-view-']) .crm-contact-tabs-list .crm-tab-button#tab_nyss_web_tags:hover {
+  background-color: #e8eef0;
+}
+.crm-activityLinks a {
+  width: 100%;
+}
+div#s2id_prefix_id {
+  min-width: 150px !important;
+}
+
+/*Contact Form*/
+.crm-container table.form-layout-compressed.individual-contact-details,
+.CRM_Contact_Form_Contact #commPrefs table.form-layout-compressed {
+  width: 100% !important;
+}
+div.subHeader {
+  font-size: 1.3em;
+}
+
+/*login*/
+.not-logged-in,
+.not-logged-in #page {
+  background-color: #C9DBD9;
+}
+.not-logged-in #block-user-login,.not-logged-in form#user-login {
+  background: transparent url(../images/login.png) no-repeat top center;
+  margin-top: 50px;
+  height: 235px;
+}
+.not-logged-in #block-user-login h2,
+.not-logged-in #block-user-login div.item-list,
+.not-logged-in #block-user-login .form-required{
+  display: none;
+}
+.not-logged-in #block-user-login div.content {
+  width: 230px;
+  margin: auto;
+  padding-top: 50px;
+}
+.not-logged-in #block-user-login .form-item {
+  margin-bottom: 20px;
+}
+.not-logged-in #block-user-login label {
+  display: block;
+  float: left;
+  color: white;
+  font-size: 110%;
+  font-weight: normal;
+  width: 40%;
+}
+.not-logged-in input.form-text {
+  border: none;
+  width: 120px;
+  font-size: 110%;
+  float: right;
+}
+.not-logged-in div.form-actions {
+  text-align: right;
+  padding-top: 10px;
+}
+.not-logged-in input.form-submit {
+  border-radius: 2px;
+  -webkit-border-radius: 2px;
+  font-size: .8em;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-right: 0;
+}
+
+/*Drupal admin pages*/
+.page-admin-people div.breadcrumb {
+  display: none;
+}
+#block-menu-menu-non-admin-drupal-menu {
+  position: fixed;
+  top: 10px;
+  right: 30px;
+  font-size: 120%;
+  font-style: italic;
+}
+#block-menu-menu-non-admin-drupal-menu ul li {
+  list-style: none;
+}
+
+/*DASHBOARD*/
+#crm-container .column-0 {
+  width: 100% !important;
+}
+#crm-container .column-1 {
+  width: 0 !important;
+  display: none;
+}
+#crm-container #dashlets-header-col-0,
+#crm-container #existing-dashlets-col-0 {
+  width: 100% !important;
+}
+#crm-container #dashlets-header-col-1,
+#crm-container #existing-dashlets-col-1 {
+  width: 0 !important;
+  display: none;
+}
+
+/*Footer*/
+#bb-header {
+  float: right;
+  margin-right: 50px;
+  font-size: 0.7em;
+  text-align: right;
+  line-height: normal;
+  color: white;
+}
+#bb-sitejob a {
+  color: white;
+}
+
+/*Recent Items - Footer*/
+#nyss-recentitems {
+  font-size: 0.7em;
+  color: white;
+  padding-left: 46px;
+  width: 70%;
+  float: left;
+  line-height: normal;
+}
+#nyss-recentitems-list {
+  list-style-type: none;
+  margin: 0;
+}
+#nyss-recentitems-list li {
+  display: inline;
+  margin-right: 6px;
+  white-space: nowrap;
+}
+#nyss-recentitems-list li a {
+  color: white;
+}
+
+/*changelog tab*/
+#changeLog .crm-report-form-block .crm-report-overlay td {
+  font-size: 0.95em;
+  padding: 10px;
+  width: 33% !important;
+}
+.page-civicrm-contact-view:not([class*='page-civicrm-contact-view-']) #crm-container #changeLog .crm-report-form-block .crm-report-overlay.form-layout-compressed {
+  width: 600px !important;
+}
+.crm-container #changeLog .crm-tooltip p {
+  color: #4d4d69;
+}
+
+/*Mailing*/
+.page-civicrm-mailing.page-civicrm #crm-main-content-wrapper {
+  background-color: white !important;
+}
+
+
+/*Search*/
+.CRM_Contact_Form_Search_Advanced .tag-section label,
+.CRM_Activity_Form_Search .tag-section label,
+.CRM_Case_Form_Search .tag-section label {
+  display: block;
+}
+.crm-container table.form-layout .nyss-search-issuecodes td,
+.crm-container div#searchForm table.form-layout .nyss-search-issuecodes td {
+  padding: 0 0 1em 0;
+}
+.crm-container .CRM_Case_Form_Search .crm-case-search-form-block .crm-accordion-body {
+  padding: 20px;
+}
+.page-civicrm-case-search .crm-accordion-body .form-layout>tbody:first-child>tr {
+  display: table-row !important;
+}
+.page-civicrm-case-search .crm-accordion-body .form-layout>tbody:first-child>tr>td,
+.page-civicrm-case-search .crm-accordion-body .form-layout>tbody:first-child>tr:nth-of-type(1)>td:nth-of-type(2) {
+  display: table-cell !important;
+}
+.CRM_Contact_Form_Search_Advanced #s2id_group {
+  width: 300px !important;
+}
+.CRM_Contact_Form_Search_Advanced #s2id_contact_type {
+  width: 200px !important;
+}
+.crm-container .CRM_Contact_Form_Search_Advanced span.crm-button>.crm-i {
+  margin-top: 2px !important;
+}
+.crm-container .CRM_Contact_Form_Search_Advanced .adv-search-top-submit span.crm-button>.crm-i {
+  margin-top: 7px !important;
+}
+.crm-container .CRM_Contact_Form_Search_Advanced .crm-form-block .crm-submit-buttons .crm-i {
+  display: inline-block !important;
+}
+
+/*ckeditor*/
+.cke_notification_info,
+.cke_notification {
+  width: 400px;
+  background-color: #7EA5AF;
+  padding: 10px;
+  color: white;
+  font-size: 0.9em;
+}
+p.cke_notification_message {
+  margin: 0;
+}
+.cke_notification_close {
+  display: block;
+  font-weight: bold;
+}
+
+/*11725/13053 user edit form*/
+form#user-profile-form div.form-item > label {
+  font-weight: bold;
+  font-size: 110%;
+  min-width: 130px;
+  display: inline-block;
+}
+form#user-profile-form div.form-item.form-type-checkbox > label,
+form#user-profile-form div.form-item.form-type-radio > label {
+  font-weight: normal;
+  font-size: 100%;
+}
+form#user-profile-form div#edit-roles,
+form#user-profile-form div#edit-status,
+div#edit-roleassign-roles {
+  margin-left: 20px;
+}
+form#user-profile-form div.nyss-roles-section-header {
+  margin-top: 10px;
+  font-weight: bold;
+  font-size: 110%;
+  color: #2a71b4;
+}
+form#user-profile-form div.nyss-roles-subsection-header {
+  margin-top: 5px;
+  font-weight: bold;
+}
+form#user-profile-form div.nyss-roles-description {
+  font-style: italic;
+}
+.page-admin-people #page ul.action-links {
+  display: none;
+}
+
+@media (min-device-width: 768px) {
+  .page-civicrm-contact-add .crm-container .crm-contactDetails-accordion .crm-form-select {
+    min-width: 160px !important;
+  }
+}

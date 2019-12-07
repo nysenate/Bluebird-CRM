@@ -77,9 +77,6 @@ class CRM_Contact_Form_Search_Custom_WebActivityStream
     $form->addDate('start_date', ts('Date from'), false, array('formatType' => 'birth'));
     $form->addDate('end_date', ts('Date to'), false, array('formatType' => 'birth'));
 
-    $resetUrl = CRM_Utils_System::url('civicrm/contact/search/custom', 'csid=18&reset=1');
-    $form->assign('resetUrl', $resetUrl);
-
     $form->setDefaults($this->setDefaultValues());
     $form->addFormRule(array('CRM_Contact_Form_Search_Custom_WebActivityStream', 'formRule'), $this);
   }//buildForm

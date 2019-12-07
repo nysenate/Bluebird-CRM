@@ -1,0 +1,19 @@
+#civicrm-menu>li.menumain {
+  padding: 0 10px;
+}
+div.nyss-logout {
+  float: right;
+  font-size: 70%;
+  text-transform: uppercase;
+  padding: 0px 6px;
+}
+.nyss-i {
+  display: inline-block;
+  font: normal normal normal 14px/1 FontAwesome;
+  font-size: inherit;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+}
+#civicrm-menu li[data-name="log_out"] {
+  float: right;
+}

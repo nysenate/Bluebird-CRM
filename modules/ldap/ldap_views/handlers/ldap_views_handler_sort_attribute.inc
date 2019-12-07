@@ -4,6 +4,7 @@
  * @file
  * Base sort handler for a ldap attributes
  */
+
 class ldap_views_handler_sort_attribute extends ldap_views_handler_sort {
   function option_definition() {
     $options = parent::option_definition();
@@ -16,7 +17,7 @@ class ldap_views_handler_sort_attribute extends ldap_views_handler_sort {
     $current_display = $this->view->display[$this->view->current_display];
     $did             = isset($current_display->display_options['query']['options']['did']) ? $current_display->display_options['query']['options']['did']
                                                                                            : $current_display->handler->default_display->display->display_options['query']['options']['did'];
-*/
+ */
     $ldap_data       = new LdapQuery(ldap_views_get_qid($this->view)); //ldap_data_load($did);
     if (empty($ldap_data)) {
       $form['attribute_name'] = array(

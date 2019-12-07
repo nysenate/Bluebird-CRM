@@ -1,4 +1,4 @@
-<div id="WebsiteAccount" class="crm-block crm-content-block">
+<div id="WebsiteAccount" class="crm-block crm-content-block nyss-integration-tab">
   <h3>Website Account Activity History</h3>
 
   <table class="report-layout display">

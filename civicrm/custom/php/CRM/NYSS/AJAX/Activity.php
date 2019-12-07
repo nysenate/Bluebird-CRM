@@ -59,16 +59,16 @@ class CRM_NYSS_AJAX_Activity
    * @return array
    */
   public static function getDashletActivities() {
-    $requiredParameters = array();
-    $optionalParameters = array(
+    $requiredParameters = [];
+    $optionalParameters = [
       'context' => 'String',
       'activity_type_id' => 'Integer',
       'activity_type_exclude_id' => 'Integer',
       'activity_status_id' => 'String',
-      'activity_date_relative' => 'String',
-      'activity_date_low' => 'String',
-      'activity_date_high' => 'String',
-    );
+      'activity_date_time_relative' => 'String',
+      'activity_date_time_low' => 'String',
+      'activity_date_time_high' => 'String',
+    ];
 
     $params = CRM_Core_Page_AJAX::defaultSortAndPagerParams();
     $params += CRM_Core_Page_AJAX::validateParams($requiredParameters, $optionalParameters);
@@ -105,9 +105,6 @@ class CRM_NYSS_AJAX_Activity
           elseif ($searchField == 'activity_status_id') {
             $activityFilter['status_id'] = explode(',', $activityFilter[$searchField]);
           }
-        }
-        elseif (in_array($searchField, array('activity_type_id', 'activity_type_exclude_id'))) {
-          $activityFilter[$formSearchField] = '';
         }
       }
 
@@ -150,28 +147,31 @@ class CRM_NYSS_AJAX_Activity
         $activityIcons[$type['value']] = $type['icon'];
       }
     }
+    CRM_Utils_Date::convertFormDateToApiFormat($params, 'activity_date_time');
     //Civi::log()->debug('getContactActivitySelector', array('$params' => $params));
 
     // Get contact activities.
-    $params['admin'] = TRUE;
-    $activities = CRM_Activity_BAO_Activity::deprecatedGetActivities($params);
+    $activities = CRM_Activity_BAO_Activity::getActivities($params);
     //Civi::log()->debug('getContactActivitySelector', array('activities' => $activities));
 
     // Add total.
-    $params['total'] = CRM_Activity_BAO_Activity::deprecatedGetActivitiesCount($params);
+    $params['total'] = CRM_Activity_BAO_Activity::getActivitiesCount($params);
     //Civi::log()->debug('getContactActivitySelector', array('$params' => $params));
 
     // Format params and add links.
-    $contactActivities = array();
+    $contactActivities = [];
 
     if (!empty($activities)) {
       $activityStatus = CRM_Core_PseudoConstant::activityStatus();
 
-      // Check logged in user for permission.
+      // Check logged in user for permission. //NYSS mods
       $page = new CRM_Core_Page();
       $contactId = CRM_Core_Session::getLoggedInContactID();
       CRM_Contact_Page_View::checkUserPermission($page, $contactId);
-      $permissions = array($page->_permission);
+      $permissions = [$page->_permission];
+      if (CRM_Core_Permission::check('delete activities')) {
+        $permissions[] = CRM_Core_Permission::DELETE;
+      }
 
       //NYSS 5507 remove edit if not permissioned
       if (!CRM_Core_Permission::check('access all cases and activities')) {
@@ -179,17 +179,14 @@ class CRM_NYSS_AJAX_Activity
         unset($permissions[array_search(CRM_Core_Permission::EDIT, $permissions)]);
       }
 
-      if (CRM_Core_Permission::check('delete activities')) {
-        $permissions[] = CRM_Core_Permission::DELETE;
-      }
-
       $mask = CRM_Core_Action::mask($permissions);
 
       foreach ($activities as $activityId => $values) {
-        $activity = array();
+        $activity = ['source_contact_name' => '', 'target_contact_name' => ''];
         $activity['DT_RowId'] = $activityId;
         // Add class to this row if overdue.
         $activity['DT_RowClass'] = "crm-entity status-id-{$values['status_id']}";
+        //NYSS
         if (CRM_Activity_BAO_Activity::isOverdue($values)) {
           $activity['DT_RowClass'] .= ' status-overdue';
         }
@@ -197,15 +194,14 @@ class CRM_NYSS_AJAX_Activity
           $activity['DT_RowClass'] .= ' status-ontime';
         }
 
-        $activity['DT_RowAttr'] = array();
+        $activity['DT_RowAttr'] = [];
         $activity['DT_RowAttr']['data-entity'] = 'activity';
         $activity['DT_RowAttr']['data-id'] = $activityId;
 
         $activity['activity_type'] = (!empty($activityIcons[$values['activity_type_id']]) ? '<span class="crm-i ' . $activityIcons[$values['activity_type_id']] . '"></span> ' : '') . $values['activity_type'];
         $activity['subject'] = $values['subject'];
 
-        $activity['source_contact_name'] = '';
-        if ($contactId == $values['source_contact_id']) {
+        if ($params['contact_id'] == $values['source_contact_id']) {
           $activity['source_contact_name'] = $values['source_contact_name'];
         }
         elseif ($values['source_contact_id']) {
@@ -223,17 +219,36 @@ class CRM_NYSS_AJAX_Activity
           $activity['source_contact_name'] = '<em>n/a</em>';
         }
 
-        $activity['target_contact_name'] = '';
-        if (isset($values['target_contact_counter']) && $values['target_contact_counter']) {
-          //grab the first contact
-          foreach ($values['target_contact_name'] as $tcID => $tcName) {
-            $targetLink = CRM_Utils_System::href($tcName, 'civicrm/contact/view', "reset=1&cid={$tcID}");
-            $activity['target_contact_name'] = $targetLink;
-            break;
+        if (isset($values['mailingId']) && !empty($values['mailingId'])) {
+          $activity['target_contact'] = CRM_Utils_System::href($values['recipients'],
+            'civicrm/mailing/report/event',
+            "mid={$values['source_record_id']}&reset=1&event=queue&cid={$params['contact_id']}&context=activitySelector");
+        }
+        elseif (!empty($values['recipients'])) {
+          $activity['target_contact_name'] = $values['recipients'];
+        }
+        elseif (isset($values['target_contact_count']) && $values['target_contact_count']) {
+          $activity['target_contact_name'] = '';
+          $firstTargetName = reset($values['target_contact_name']);
+          $firstTargetContactID = key($values['target_contact_name']);
+
+          $targetLink = CRM_Utils_System::href($firstTargetName, 'civicrm/contact/view', "reset=1&cid={$firstTargetContactID}");
+          if ($showContactOverlay) {
+            $targetTypeImage = CRM_Contact_BAO_Contact_Utils::getImage(
+              CRM_Contact_BAO_Contact::getContactType($firstTargetContactID),
+              FALSE,
+              $firstTargetContactID);
+            $activity['target_contact_name'] .= "<div>$targetTypeImage  $targetLink";
+          }
+          else {
+            $activity['target_contact_name'] .= $targetLink;
           }
 
-          if ($extraCount = $values['target_contact_counter'] - 1) {
-            $activity['target_contact_name'] .= ";<br />" . "(" . ts('%1 more', array(1 => $extraCount)) . ")";
+          if ($extraCount = $values['target_contact_count'] - 1) {
+            $activity['target_contact_name'] .= ";<br />" . "(" . ts('%1 more', [1 => $extraCount]) . ")";
+          }
+          if ($showContactOverlay) {
+            $activity['target_contact_name'] .= "</div> ";
           }
         }
         elseif (!$values['target_contact_name']) {
@@ -299,12 +314,12 @@ class CRM_NYSS_AJAX_Activity
 
         $activity['links'] = CRM_Core_Action::formLink($actionLinks,
           $actionMask,
-          array(
+          [
             'id' => $values['activity_id'],
-            'cid' => $contactId,
+            'cid' => $params['contact_id'],
             'cxt' => $context,
             'caseid' => CRM_Utils_Array::value('case_id', $values),
-          ),
+          ],
           ts('more'),
           FALSE,
           'activity.tab.row',
@@ -320,7 +335,7 @@ class CRM_NYSS_AJAX_Activity
       }
     }
 
-    $activitiesDT = array();
+    $activitiesDT = [];
     $activitiesDT['data'] = $contactActivities;
     $activitiesDT['recordsTotal'] = $params['total'];
     $activitiesDT['recordsFiltered'] = $params['total'];

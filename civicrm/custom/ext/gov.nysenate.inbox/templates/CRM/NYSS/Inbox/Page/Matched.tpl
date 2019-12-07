@@ -1,6 +1,4 @@
 <div class="crm-matchedmessages-selector">
-  <h2 class="crm-title">{$title}</h2>
-
   <div class="inbox-matchedmessages-actions crm-section crm-form-block">
     <div class="crm-contact-form-block-range_filter crm-left crm-margin-right">
       {$form.range_filter.html|crmAddClass:big}

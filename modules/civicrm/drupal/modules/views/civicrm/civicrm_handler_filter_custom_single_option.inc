@@ -1,7 +1,7 @@
 <?php
 /*
    +--------------------------------------------------------------------+
-   | CiviCRM version 4.7                                                |
+   | CiviCRM version 5                                                  |
    +--------------------------------------------------------------------+
    | This file is a part of CiviCRM.                                    |
    |                                                                    |
@@ -29,6 +29,7 @@
   * @author Matt Chapman <Matt@NinjitsuWeb.com>
   */
 class civicrm_handler_filter_custom_single_option extends views_handler_filter_in_operator {
+
   public function construct() {
     parent::construct();
     if (!civicrm_initialize()) {

@@ -56,10 +56,10 @@ define('INVALID_EMAIL_TEXT', "You do not have permission to forward e-mails to t
 // to forward messages to the CRM inbox.
 define('AUTH_FORWARDERS_GROUP_NAME', 'Authorized_Forwarders');
 
-error_reporting(E_ERROR | E_PARSE | E_WARNING);
+error_reporting(E_ERROR | E_PARSE | E_WARNING | E_NOTICE);
 
 /* enable for debugging only */
-//ini_set('error_reporting',-1);
+ini_set('error_reporting',0);
 
 if (!ini_get('date.timezone')) {
   date_default_timezone_set('America/New_York');
@@ -89,23 +89,6 @@ if (!empty($optlist['log-level'])) {
   set_bbscript_log_level($optlist['log-level']);
 }
 
-require_once 'CRM/Core/Config.php';
-$config =& CRM_Core_Config::singleton();
-$session =& CRM_Core_Session::singleton();
-require_once 'CRM/Contact/BAO/Contact.php';
-require_once 'CRM/Contact/BAO/GroupContact.php';
-require_once 'CRM/Activity/BAO/Activity.php';
-require_once 'CRM/Core/Transaction.php';
-require_once 'CRM/Core/BAO/CustomValueTable.php';
-require_once 'CRM/Core/PseudoConstant.php';
-require_once 'CRM/Core/Error.php';
-require_once 'api/api.php';
-require_once 'CRM/Core/DAO.php';
-require_once 'CRM/Utils/File.php';
-
-require_once 'CRM/NYSS/IMAP/Session.php';
-require_once 'CRM/NYSS/IMAP/Message.php';
-
 /* More than one IMAP account can be checked per CRM instance.
 ** The username and password for each account is specified in the Bluebird
 ** config file.
@@ -115,6 +98,7 @@ require_once 'CRM/NYSS/IMAP/Message.php';
 */
 
 $bbconfig = get_bluebird_instance_config();
+
 // Required Bluebird config parameters.
 $imap_validsenders = strtolower($bbconfig['imap.validsenders']);
 $imap_activity_status = $bbconfig['imap.activity.status.default'];
@@ -123,7 +107,7 @@ $site = $optlist['site'];
 $cmd = $optlist['cmd'];
 $g_crm_instance = $site;
 
-$all_params = array(
+$all_params = [
   // Each element is: paramName, optName, bbcfgName, defaultVal
   array('site', 'site', null, null),
   array('server', 'server', 'imap.server', DEFAULT_IMAP_SERVER),
@@ -134,9 +118,9 @@ $all_params = array(
   array('noarchive', 'no-archive', null, DEFAULT_IMAP_NO_ARCHIVE),
   array('noemail', 'no-email', null, DEFAULT_IMAP_NO_EMAIL),
   array('recheck', 'recheck-unmatched', null, DEFAULT_IMAP_RECHECK)
-);
+];
 
-$imap_params = array();
+$imap_params = [];
 
 foreach ($all_params as $param) {
   $val = getImapParam($optlist, $param[1], $bbconfig, $param[2], $param[3]);
@@ -166,6 +150,9 @@ else {
   exit(1);
 }
 
+$config = CRM_Core_Config::singleton();
+$session = CRM_Core_Session::singleton();
+
 // Grab default values for activities (priority, status, type).
 $aActivityPriority = CRM_Core_PseudoConstant::get('CRM_Activity_DAO_Activity', 'priority_id');
 $aActivityType = CRM_Core_PseudoConstant::activityType();
@@ -181,10 +168,11 @@ else{
   $activityStatus = array_search($imap_activity_status, $aActivityStatus);
 }
 
-
-$activityDefaults = array('priority' => $activityPriority,
-                          'status' => $activityStatus,
-                          'type' => $activityType);
+$activityDefaults = [
+  'priority' => $activityPriority,
+  'status' => $activityStatus,
+  'type' => $activityType
+];
 
 // Set the session ID for who created the activity
 $session->set('userID', 1);
@@ -644,7 +632,6 @@ function storeMessage($imapMsg, $db, $params)
 } // storeMessage()
 
 
-
 // Process each message, looking for a match between the sender's email
 // address in the message and a contact record with the same email address.
 // If there is a single match on a contact record, an inbound email activity
@@ -846,13 +833,12 @@ function searchForMatches($db, $params)
   mysqli_stmt_close($sql_stmt);
   mysqli_free_result($mres);
   bbscript_log(LL::DEBUG, "Finished processing unprocessed/unmatched messages");
+
   return;
 } // searchForMatches()
 
 
-
-function listMailboxes($imapSess, $params)
-{
+function listMailboxes($imapSess, $params) {
   $inboxes = $imapSess->listFolders('*', true);
   foreach ($inboxes as $inbox) {
     echo "$inbox\n";
@@ -861,27 +847,23 @@ function listMailboxes($imapSess, $params)
 } // listMailboxes()
 
 
-
-function deleteArchiveBox($imapSess, $params)
-{
+function deleteArchiveBox($imapSess, $params) {
   $crm_archivebox = '{'.$params['server'].'}'.$params['archivebox'];
   bbscript_log(LL::NOTICE, "Deleting archive mailbox: $crm_archivebox");
   return imap_deletemailbox($imapSess->getConnection(), $crm_archivebox);
 } // deleteArchiveBox()
 
 
-
-function sendDenialEmail($site, $email)
-{
-  require_once 'CRM/Utils/Mail.php';
+function sendDenialEmail($site, $email) {
   $subj = INVALID_EMAIL_SUBJECT." [$site]";
   $text = "CRM Instance: $site\n\n".INVALID_EMAIL_TEXT;
-  $mailParams = array('from'    => INVALID_EMAIL_FROM,
-                      'toEmail' => $email,
-                      'subject' => $subj,
-                      'html'    => str_replace("\n", '<br/>', $text),
-                      'text'    => $text
-                     );
+  $mailParams = [
+    'from' => INVALID_EMAIL_FROM,
+    'toEmail' => $email,
+    'subject' => $subj,
+    'html' => str_replace("\n", '<br/>', $text),
+    'text' => $text
+  ];
 
   $rc = CRM_Utils_Mail::send($mailParams);
   if ($rc == true) {
@@ -894,8 +876,7 @@ function sendDenialEmail($site, $email)
 } // sendDenialEmail()
 
 
-function getImapParam($optlist, $optname, $bbcfg, $cfgname, $defval)
-{
+function getImapParam($optlist, $optname, $bbcfg, $cfgname, $defval) {
   if (!empty($optlist[$optname])) {
     return $optlist[$optname];
   }
@@ -906,5 +887,3 @@ function getImapParam($optlist, $optname, $bbcfg, $cfgname, $defval)
     return $defval;
   }
 } // getImapParam()
-
-?>

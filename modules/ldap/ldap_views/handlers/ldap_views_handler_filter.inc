@@ -5,6 +5,7 @@
  * Basic textfield filter to handle string filtering commands
  * including equality, contains, not contains, etc.
  */
+
 class ldap_views_handler_filter extends views_handler_filter {
   // exposed filter options
   var $always_multiple = TRUE;

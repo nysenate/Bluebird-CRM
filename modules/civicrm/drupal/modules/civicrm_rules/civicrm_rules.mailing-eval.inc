@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2018                                |
+ | Copyright CiviCRM LLC (c) 2004-2019                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,19 +28,20 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2018
+ * @copyright CiviCRM LLC (c) 2004-2019
  * $Id$
  *
  */
 
 require_once 'civicrm_rules_utils.inc';
+
 function civicrm_rules_rules_action_mailing_send_email($to,
   $subject,
   $message,
   $from = NULL,
   $settings,
-  RulesState$state,
-  RulesPlugin$element
+  RulesState $state,
+  RulesPlugin $element
 ) {
   if (isset($state->variables['mailing']) && $state->variables['mailing']->id) {
     $to = str_replace(array("\r", "\n"), ',', $to);
@@ -59,7 +60,8 @@ function civicrm_rules_rules_action_mailing_send_email($to,
 
     $params            = array();
     $params['from']    = !empty($from) ? str_replace(array(
-      "\r", "\n"), '', $from) : 'Admin';
+      "\r", "\n",
+    ), '', $from) : 'Admin';
     $params['subject'] = CRM_Utils_Token::replaceMailingTokens($subject, $state->variables['mailing'], NULL, $tokens);
     $params['html']    = CRM_Utils_Token::replaceMailingTokens($message, $state->variables['mailing'], NULL, $tokens);
 

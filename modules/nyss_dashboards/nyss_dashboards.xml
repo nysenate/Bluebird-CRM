@@ -22,11 +22,6 @@
     <page_callback>CRM_Dashlet_Page_AllCases</page_callback>
     <access_arguments>access all cases and activities</access_arguments>
   </item>
-  <item>
-    <path>civicrm/dashlet/districtstats</path>
-    <title>District Stats</title>
-    <page_callback>CRM_Dashlet_Page_DistrictStats</page_callback>
-  </item> 
 
   <!--add so we override core perm and allow create mailings to access-->
   <item> 
@@ -181,38 +176,6 @@
     <path>civicrm/ajax/getsubjectlist</path>
     <page_callback>CRM_NYSS_AJAX_Activity::getSubjectList</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
-  </item>
-
-  <!--5581-->
-  <item>
-    <path>civicrm/nyss/subscription/manage</path>
-    <page_callback>CRM_NYSS_Subscription_Form_Manage</page_callback>
-    <access_arguments>view public CiviMail content</access_arguments>
-    <is_public>true</is_public>
-  </item>
-  <item>
-    <path>civicrm/nyss/subscription/view</path>
-    <page_callback>CRM_NYSS_Subscription_Page_View</page_callback>
-    <access_arguments>view public CiviMail content</access_arguments>
-    <is_public>true</is_public>
-  </item>
-  <!--7889-->
-  <item>
-    <path>civicrm/nyss/subscription/admin</path>
-    <page_callback>CRM_NYSS_Subscription_Form_Admin</page_callback>
-    <access_arguments>edit all contacts</access_arguments>
-  </item>
-  <item>
-    <path>civicrm/nyss/subscription/admin/process</path>
-    <page_callback>CRM_NYSS_Subscription_Form_Admin::_processSubscriptions</page_callback>
-    <access_arguments>edit all contacts</access_arguments>
-  </item>
-  <!--8970-->
-  <item>
-    <path>civicrm/nyss/subscription/expired</path>
-    <page_callback>CRM_NYSS_Subscription_Page_ChecksumExpired</page_callback>
-    <access_arguments>view public CiviMail content</access_arguments>
-    <is_public>true</is_public>
   </item>
 
   <!-- website integration -->

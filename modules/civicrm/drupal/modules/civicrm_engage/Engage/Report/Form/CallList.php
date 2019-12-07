@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2018                                |
+ | Copyright CiviCRM LLC (c) 2004-2019                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2018
+ * @copyright CiviCRM LLC (c) 2004-2019
  * @copyright DharmaTech  (c) 2009
  * $Id$
  *
@@ -40,6 +40,7 @@ require_once 'Engage/Report/Form/List.php';
  *  Generate a phone call list report
  */
 class Engage_Report_Form_CallList extends Engage_Report_Form_List {
+
   public function __construct() {
 
     parent::__construct();

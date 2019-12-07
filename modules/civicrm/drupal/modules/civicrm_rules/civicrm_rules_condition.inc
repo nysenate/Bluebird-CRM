@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2018                                |
+ | Copyright CiviCRM LLC (c) 2004-2019                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2018
+ * @copyright CiviCRM LLC (c) 2004-2019
  * $Id$
  *
  */
@@ -85,7 +85,8 @@ function civicrm_rules_condition_parameter($label, $type = 'contact') {
         'type' => 'list<integer>',
         'label' => t('Participant role'),
         'options list' => 'civicrm_rules_get_participant_role_options',
-      ));
+      ),
+    );
   }
 
   if ($type == 'event') {
@@ -94,7 +95,8 @@ function civicrm_rules_condition_parameter($label, $type = 'contact') {
         'type' => 'list<integer>',
         'label' => t('CiviCRM event type'),
         'options list' => 'civicrm_rules_get_event_type_options',
-      ));
+      ),
+    );
   }
 
   return $default;

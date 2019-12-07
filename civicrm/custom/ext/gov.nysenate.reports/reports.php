@@ -122,6 +122,23 @@ function reports_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
   _reports_civix_civicrm_alterSettingsFolders($metaDataFolders);
 }
 
+function reports_civicrm_buildForm($formName, &$form) {
+  /*Civi::log()->debug('reports_civicrm_buildForm', array(
+    '$formName' => $formName,
+    '$form' => $form,
+  ));*/
+
+  if (strpos($formName, 'CRM_Report_Form_') !== FALSE) {
+    CRM_Core_Resources::singleton()
+      ->addStyleFile('gov.nysenate.reports', 'css/Reports.css');
+
+    if ($form->elementExists('grouprole')) {
+      $ele = &$form->getElement('grouprole');
+      _reports_GroupRole($ele);
+    }
+  }
+}
+
 function reports_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
   /*Civi::log()->debug('reports_civicrm_validateForm', [
     'formName' => $formName,
@@ -141,7 +158,7 @@ function reports_civicrm_alterReportVar($varType, &$var, &$object) {
   /*Civi::log()->debug('alterReportVar', array(
     'varType' => $varType,
     'var' => $var,
-    //'object' => $object,
+    'object' => $object,
   ));*/
 
   $class = get_class($object);
@@ -150,6 +167,10 @@ function reports_civicrm_alterReportVar($varType, &$var, &$object) {
       switch ($class) {
         case 'CRM_Report_Form_Case_Detail':
           _reports_CaseDetail_col($var, $object);
+          break;
+
+        case 'CRM_Report_Form_Case_Summary':
+          _reports_CaseSummary_col($var, $object);
           break;
 
         default:
@@ -185,6 +206,37 @@ function reports_civicrm_alterReportVar($varType, &$var, &$object) {
       break;
 
     default:
+  }
+}
+
+/**
+ * @param $ele
+ *
+ * simplify the list of groups/roles in the Access tab
+ * note: passed by reference
+ */
+function _reports_GroupRole(&$ele) {
+  //Civi::log()->debug('', ['ele' => $ele]);
+
+  $permittedRoles = [
+    'Office Administrator',
+    'Office Manager',
+    'Staff',
+    'Data Entry',
+    'Volunteer',
+    'Mailing Approver',
+    'Mailing Creator',
+    'Mailing Scheduler',
+    'Mailing Viewer',
+    'Manage Bluebird Inbox',
+    'Analytics User',
+    'Conference Services',
+  ];
+
+  foreach ($ele->_options as $key => &$opt) {
+    if (!in_array($opt['text'], $permittedRoles)) {
+      unset($ele->_options[$key]);
+    }
   }
 }
 
@@ -271,6 +323,12 @@ function _reports_CaseDetail_sql(&$var, &$object) {
 
   $groupBy = $var->_groupBy;
   $var->_groupBy = str_replace(', tag_civireport.id', '', $groupBy);
+}
+
+function _reports_CaseSummary_col(&$var, &$object) {
+  //12635
+  $relTypes = CRM_Utils_Array::index(['name_a_b'], CRM_Core_PseudoConstant::relationshipType('name'));
+  $var['civicrm_relationship']['filters']['relationship_type_id']['default'] = [$relTypes['Case Manager']['id']];
 }
 
 //12558
@@ -413,5 +471,4 @@ function _reports_DistrictInfo_sql(&$var, &$object) {
     ";
     $var->setVar('_from', $from);
   }
-
 }

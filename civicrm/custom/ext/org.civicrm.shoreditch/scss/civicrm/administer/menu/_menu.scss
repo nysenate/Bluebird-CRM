@@ -1,0 +1,29 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder, property-no-vendor-prefix */
+
+&#{civi-page('admin-menu')} {
+  .crm-content-block {
+    #new-menu-item {
+      background: $gray-lighter;
+      margin: 0;
+      padding: 20px;
+
+      #newMenuItem {
+        margin-left: 0 !important;
+      }
+    }
+
+    .nav-reset {
+      padding: 20px;
+    }
+
+    .spacer {
+      display: none;
+    }
+
+    #navigation-tree {
+      ul > li {
+        padding: 5px;
+      }
+    }
+  }
+}

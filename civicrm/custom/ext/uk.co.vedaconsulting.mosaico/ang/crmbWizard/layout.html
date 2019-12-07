@@ -1,0 +1,36 @@
+<div class="crmb-wizard crm_wizard">
+
+  <div class="panel panel-default crm_wizard__title">
+    <div class="panel-body">
+      <ul class="nav nav-pills">
+        <li ng-repeat="step in steps" ng-class="{'active':step.selected, 'disabled': !crmbWizardCtrl.isSelectable(step)}" class="{{crmbWizardNavClass}}">
+          <a href="" ng-click="crmbWizardCtrl.isSelectable(step) && crmbWizardCtrl.select(step)">
+            <span class="crm_wizard__title__number" ng-if="!crmbWizardCtrl.isStepDone(step)"> {{1 + $index}} </span>
+            <span class="crm_wizard__title__number success" ng-if="crmbWizardCtrl.isStepDone(step)"> <i class="fa fa-check" aria-hidden="true"></i> </span>
+            {{step.$parent.$eval(step.crmTitle)}}</a>
+          <!-- Don't know a good way to localize text like "1. Title" -->
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="panel panel-default crm_wizard__body">
+    <div class="panel-body">
+      <div class="crmb-wizard-body" ng-transclude/>
+    </div>
+  </div>
+
+  <div class="panel panel-default crm_wizard__footer">
+    <div class="panel-body">
+      <div class="row">
+        <div class="col-md-6" style="text-align: left">
+          <div class="crmb-wizard-button-left"></div>
+        </div>
+        <div class="col-md-6" style="text-align: right">
+          <div class="crmb-wizard-button-right"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

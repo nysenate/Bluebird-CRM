@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2018                                |
+ | Copyright CiviCRM LLC (c) 2004-2019                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2018
+ * @copyright CiviCRM LLC (c) 2004-2019
  */
 
 /**
@@ -64,7 +64,7 @@ class CRM_Core_BAO_Dashboard extends CRM_Core_DAO_Dashboard {
    *   array of dashlets
    */
   public static function getDashlets($all = TRUE, $checkPermission = TRUE) {
-    $dashlets = array();
+    $dashlets = [];
     $dao = new CRM_Core_DAO_Dashboard();
 
     if (!$all) {
@@ -91,7 +91,7 @@ class CRM_Core_BAO_Dashboard extends CRM_Core_DAO_Dashboard {
         }
       }
 
-      $values = array();
+      $values = [];
       CRM_Core_DAO::storeValues($dao, $values);
       $dashlets[$dao->id] = $values;
     }
@@ -113,15 +113,15 @@ class CRM_Core_BAO_Dashboard extends CRM_Core_DAO_Dashboard {
    */
   public static function getContactDashlets($contactID = NULL) {
     $contactID = $contactID ? $contactID : CRM_Core_Session::getLoggedInContactID();
-    $dashlets = array();
+    $dashlets = [];
 
     // Get contact dashboard dashlets.
-    $results = civicrm_api3('DashboardContact', 'get', array(
+    $results = civicrm_api3('DashboardContact', 'get', [
       'contact_id' => $contactID,
       'is_active' => 1,
       'dashboard_id.is_active' => 1,
-      'options' => array('sort' => 'weight', 'limit' => 0),
-      'return' => array(
+      'options' => ['sort' => 'weight', 'limit' => 0],
+      'return' => [
         'id',
         'weight',
         'column_no',
@@ -133,12 +133,12 @@ class CRM_Core_BAO_Dashboard extends CRM_Core_DAO_Dashboard {
         'dashboard_id.cache_minutes',
         'dashboard_id.permission',
         'dashboard_id.permission_operator',
-      ),
-    ));
+      ],
+    ]);
 
     foreach ($results['values'] as $item) {
       if (self::checkPermission(CRM_Utils_Array::value('dashboard_id.permission', $item), CRM_Utils_Array::value('dashboard_id.permission_operator', $item))) {
-        $dashlets[$item['id']] = array(
+        $dashlets[$item['id']] = [
           'dashboard_id' => $item['dashboard_id'],
           'weight' => $item['weight'],
           'column_no' => $item['column_no'],
@@ -147,14 +147,14 @@ class CRM_Core_BAO_Dashboard extends CRM_Core_DAO_Dashboard {
           'url' => $item['dashboard_id.url'],
           'cache_minutes' => $item['dashboard_id.cache_minutes'],
           'fullscreen_url' => CRM_Utils_Array::value('dashboard_id.fullscreen_url', $item),
-        );
+        ];
       }
     }
 
     // If empty, then initialize default dashlets for this user.
     if (!$results['count']) {
       // They may just have disabled all their dashlets. Check if any records exist for this contact.
-      if (!civicrm_api3('DashboardContact', 'getcount', array('contact_id' => $contactID))) {
+      if (!civicrm_api3('DashboardContact', 'getcount', ['contact_id' => $contactID])) {
         $dashlets = self::initializeDashlets();
       }
     }
@@ -166,16 +166,16 @@ class CRM_Core_BAO_Dashboard extends CRM_Core_DAO_Dashboard {
    * @return array
    */
   public static function getContactDashletsForJS() {
-    $data = array(array(), array());
+    $data = [[], []];
     foreach (self::getContactDashlets() as $item) {
-      $data[$item['column_no']][] = array(
+      $data[$item['column_no']][] = [
         'id' => (int) $item['dashboard_id'],
         'name' => $item['name'],
         'title' => $item['label'],
         'url' => self::parseUrl($item['url']),
         'cacheMinutes' => $item['cache_minutes'],
         'fullscreenUrl' => self::parseUrl($item['fullscreen_url']),
-      );
+      ];
     }
     return $data;
   }
@@ -187,27 +187,27 @@ class CRM_Core_BAO_Dashboard extends CRM_Core_DAO_Dashboard {
    * the default dashlets.
    *
    * @return array
-   *    Array of dashboard_id's
+   *   Array of dashboard_id's
    * @throws \CiviCRM_API3_Exception
    */
   public static function initializeDashlets() {
-    $dashlets = array();
-    $getDashlets = civicrm_api3("Dashboard", "get", array(
-        'domain_id' => CRM_Core_Config::domainID(),
-        'option.limit' => 0,
-      ));
+    $dashlets = [];
+    $getDashlets = civicrm_api3("Dashboard", "get", [
+      'domain_id' => CRM_Core_Config::domainID(),
+      'option.limit' => 0,
+    ]);
     $contactID = CRM_Core_Session::getLoggedInContactID();
-    $allDashlets = CRM_Utils_Array::index(array('name'), $getDashlets['values']);
-    $defaultDashlets = array();
-    $defaults = array('blog' => 1, 'getting-started' => '0');
+    $allDashlets = CRM_Utils_Array::index(['name'], $getDashlets['values']);
+    $defaultDashlets = [];
+    $defaults = ['blog' => 1, 'getting-started' => '0'];
     foreach ($defaults as $name => $column) {
       if (!empty($allDashlets[$name]) && !empty($allDashlets[$name]['id'])) {
-        $defaultDashlets[$name] = array(
+        $defaultDashlets[$name] = [
           'dashboard_id' => $allDashlets[$name]['id'],
           'is_active' => 1,
           'column_no' => $column,
           'contact_id' => $contactID,
-        );
+        ];
       }
     }
     CRM_Utils_Hook::dashboard_defaults($allDashlets, $defaultDashlets);
@@ -221,7 +221,7 @@ class CRM_Core_BAO_Dashboard extends CRM_Core_DAO_Dashboard {
         else {
           $assignDashlets = civicrm_api3("dashboard_contact", "create", $defaultDashlet);
           $values = $assignDashlets['values'][$assignDashlets['id']];
-          $dashlets[$assignDashlets['id']] = array(
+          $dashlets[$assignDashlets['id']] = [
             'dashboard_id' => $values['dashboard_id'],
             'weight' => $values['weight'],
             'column_no' => $values['column_no'],
@@ -230,7 +230,7 @@ class CRM_Core_BAO_Dashboard extends CRM_Core_DAO_Dashboard {
             'cache_minutes' => $dashlet['cache_minutes'],
             'url' => $dashlet['url'],
             'fullscreen_url' => CRM_Utils_Array::value('fullscreen_url', $dashlet),
-          );
+          ];
         }
       }
     }
@@ -283,10 +283,8 @@ class CRM_Core_BAO_Dashboard extends CRM_Core_DAO_Dashboard {
         }
 
         // hack to handle case permissions
-        if (!$componentName && in_array($key, array(
-            'access my cases and activities',
-            'access all cases and activities',
-          ))
+        if (!$componentName
+          && in_array($key, ['access my cases and activities', 'access all cases and activities'])
         ) {
           $componentName = 'CiviCase';
         }
@@ -347,7 +345,7 @@ class CRM_Core_BAO_Dashboard extends CRM_Core_DAO_Dashboard {
       throw new RuntimeException("Failed to determine contact ID");
     }
 
-    $dashletIDs = array();
+    $dashletIDs = [];
     if (is_array($columns)) {
       foreach ($columns as $colNo => $dashlets) {
         if (!is_int($colNo)) {
@@ -440,7 +438,7 @@ class CRM_Core_BAO_Dashboard extends CRM_Core_DAO_Dashboard {
 
     // if dashlet is created by admin then you need to add it all contacts.
     // else just add to contact who is creating this dashlet
-    $contactIDs = array();
+    $contactIDs = [];
     if ($admin) {
       $query = "SELECT distinct( contact_id )
                         FROM civicrm_dashboard_contact";
@@ -487,7 +485,7 @@ class CRM_Core_BAO_Dashboard extends CRM_Core_DAO_Dashboard {
    */
   public static function addContactDashletToDashboard(&$params) {
     $valuesString = NULL;
-    $columns = array();
+    $columns = [];
     foreach ($params as $dashboardIDs) {
       $contactID = CRM_Utils_Array::value('contact_id', $dashboardIDs);
       $dashboardID = CRM_Utils_Array::value('dashboard_id', $dashboardIDs);

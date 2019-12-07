@@ -19,7 +19,7 @@
     
     ; in case you want to use a different HTMLPurifier source, specify it here
     ; By default, those files are used that are being shipped with PHPIDS
-    HTML_Purifier_Path	= vendors/htmlpurifier/HTMLPurifier.auto.php
+    HTML_Purifier_Path	= vendors/htmlpurifier/HTMLPurifier.auto.php 
     HTML_Purifier_Cache = vendors/htmlpurifier/HTMLPurifier/DefinitionCache/Serializer
     
     ; define which fields contain html and need preparation before 

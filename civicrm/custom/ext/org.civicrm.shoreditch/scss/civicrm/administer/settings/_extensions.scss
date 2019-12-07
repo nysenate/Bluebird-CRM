@@ -1,0 +1,76 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id */
+
+&#{civi-page('admin-extensions')} {
+  .help {
+    margin: 0 20px 20px;
+  }
+
+  #mainTabContainer {
+    @include civicrm-table;
+    border-radius: none !important;
+    box-shadow: none !important;
+
+    #extensions-addnew,
+    #extensions-main {
+      border: 0;
+      padding: 0 !important;
+
+      table#option11,
+      table#option12 {
+        border-top: 0;
+
+        td:not(:first-of-type) {
+          text-overflow: clip;
+          width: 70px;
+        }
+
+        tr.hiddenElement {
+          background: $crm-white;
+
+          table.crm-info-panel {
+            width: 100%;
+
+            td {
+              text-overflow: clip;
+              width: auto;
+
+              &.label {
+                width: $crm-table-label-column-width;
+              }
+            }
+          }
+        }
+
+        tr.extension-installed {
+          td {
+            background: $crm-gray-lightest !important;
+          }
+        }
+      }
+
+      table#option12 td:last-of-type {
+        width: 140px;
+      }
+
+      .crm-extensions-upgrade {
+        background-color: $alert-warning-bg;
+        border-color: $brand-warning;
+        border-radius: $border-radius-base;
+        color: $gray-darker;
+        margin-top: 10px;
+        padding: 10px 20px;
+      }
+    }
+  }
+
+  .CRM_Admin_Form_Extensions {
+    .crm-admin-optionvalue-form-block {
+      box-shadow: none;
+
+      .crm-submit-buttons {
+        border-bottom-left-radius: $border-radius-base;
+        border-bottom-right-radius: $border-radius-base;
+      }
+    }
+  }
+}

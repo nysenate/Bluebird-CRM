@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,6 +29,7 @@
  * @ingroup civicrm_field_handlers
  */
 class civicrm_handler_field_custom extends views_handler_field {
+
   public function construct() {
     parent::construct();
     civicrm_initialize();
@@ -70,7 +71,7 @@ class civicrm_handler_field_custom extends views_handler_field {
         if (!is_null($value)) {
           // get the field id from the db
           if (!empty($this->definition['title'])) {
-            $customFieldID = CRM_Core_DAO::getFieldValue('CRM_Core_BAO_CustomField', $this->definition['title'], 'id', 'label');
+            $customFieldID = CRM_Core_DAO::getFieldValue('CRM_Core_BAO_CustomField', $this->real_field, 'id', 'column_name');
             return CRM_Core_BAO_CustomField::displayValue($value, $customFieldID);
           }
           // could not get custom id, lets just return what we have

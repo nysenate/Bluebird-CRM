@@ -1,0 +1,19 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder, property-no-vendor-prefix */
+
+@mixin responsive-search {
+  flex-direction: column;
+
+  td {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: 100%;
+
+    .crm-form-text,
+    #groupselect,
+    > div {
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+      width: 100% !important;
+    }
+  }
+}

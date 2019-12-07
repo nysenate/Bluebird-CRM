@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,6 +27,7 @@
  * Field hanlder to allow filtering by CiviCRM domain.
  */
 class civicrm_handler_filter_domain extends views_handler_filter_numeric {
+
   /**
    * Add an additonal operator which takes no arguments to the existing list provided by views_handler_filter_numeric.
    */

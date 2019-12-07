@@ -1,0 +1,183 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id */
+
+#{civi-page('civirule')} {
+  // "CiviRules Add Rule" and "CiviRules Update Rule" pages
+  &.page-civicrm-civirule-form-rule {
+    .crm-civirule-rule_label-block,
+    .crm-civirule-trigger-block {
+      @include block-form();
+    }
+
+    // "CiviRules Update Rule" page
+    .crm-civirule-trigger-block,
+    .crm-civirule-rule_condition-block,
+    .crm-civirule-rule_action-block {
+      > .crm-section {
+        margin-bottom: 0;
+      }
+
+      .dataTables_wrapper {
+        box-shadow: none;
+        margin-bottom: 0;
+
+        th,
+        td {
+          border-bottom: solid 1px $gray-light;
+          color: $crm-black;
+          padding-left: $crm-standard-gap;
+          padding-right: 0;
+
+          &:last-of-type {
+            padding-right: $crm-standard-gap;
+          }
+        }
+
+        tr {
+          background-color: transparent !important;
+
+          &:last-child td {
+            border: 0 !important;
+          }
+        }
+      }
+
+      // Table above will always have rows with bottom borders,
+      // so we remove the top border to eliminate the border duplication.
+      .crm-submit-buttons {
+        border-top: 0;
+      }
+    }
+
+    // Fix for the "Linked Trigger" container - it appears on both
+    // "CiviRules Add Rule" and "CiviRules Update Rule" pages,
+    // but on the "CiviRules Update Rule" it should not have vertical gaps
+    #civirule-triggerBlock-table {
+      margin-bottom: -#{$crm-standard-gap};
+      margin-top: -#{$crm-standard-gap};
+    }
+  }
+
+  // "CiviRules Add Condition", "CiviRules Add Action" and
+  // "CiviRules Edit Action Parameters" pages
+  &.page-civicrm-civirule-form-rule-condition,
+  &.page-civicrm-civirule-form-condition,
+  &.page-civicrm-civirule-form-rule-action,
+  &.page-civicrm-civirule-form-action {
+    .crm-form-block {
+      @include block-form();
+    }
+  }
+
+  &.page-civicrm-civirule-form-action {
+    // There is a switch between `.groups-single` and `.groups-multiple`
+    // and `.groups-single` is not a last child, but doesn't need that margin
+    .groups-single {
+      margin-bottom: 0;
+    }
+  }
+
+  // "CiviRules Add Action" page
+  &.page-civicrm-civirule-form-rule-action {
+    #XWeekDay_time_hour {
+      text-align: right;
+    }
+
+    #XWeekDay_time_hour,
+    #XWeekDay_time_minute {
+      width: 20px;
+    }
+  }
+}
+
+// "Find CiviRules Rules" page
+// This is the only reliable selector for this page because it is built as a
+// Custom Search page and it does not contain any Rules extension specific classes
+#civirule_helptext_dialog-block + .crm-form-block {
+  @include block-form();
+
+  padding-bottom: 0 !important;
+  padding-top: 0 !important;
+
+  + fieldset {
+    table.selector {
+      @include table-selector();
+    }
+
+    // This div is empty on the screen, it contains a <ul> which does not have
+    // any child elements inside. Thus, we remove it.
+    #alpha-filter {
+      display: none;
+    }
+  }
+}
+
+// Help icon in "Description" column on "Find CiviRules Rules" results page
+#civirule_help_text_icon {
+  margin-left: $crm-standard-gap / 4;
+}
+
+.CRM_CivirulesCronTrigger_Form_ActivityDate {
+  h3 + .crm-block {
+    padding-bottom: $crm-standard-gap;
+    padding-top: $crm-standard-gap;
+
+    .crm-section:last-of-type {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.CRM_Civirules_Form_RuleView {
+  .dataTables_wrapper {
+    box-shadow: none;
+  }
+
+  #civirule_wrapper + .action-link {
+    display: none;
+  }
+
+  .action-link {
+    margin: $crm-standard-gap;
+    margin-top: $crm-standard-gap * 2;
+  }
+
+  .civirule-view-table {
+    &,
+    tr {
+      display: block;
+    }
+
+    td {
+      // Need that so we can break items
+      display: block;
+      float: left;
+
+      // Breaks to the new line
+      &:nth-of-type(5),
+      &:nth-of-type(9) {
+        clear: left;
+      }
+
+      // "Submit" button
+      &:nth-of-type(9) {
+        margin-left: $crm-standard-gap;
+        padding-left: 0;
+      }
+    }
+
+    .content {
+      padding-top: $crm-standard-gap / 2;
+    }
+
+    .label,
+    .civirule_view_include_disabled {
+      padding-top: $crm-standard-gap / 4 * 3;
+    }
+  }
+
+  .dataTable {
+    td:nth-of-type(2) {
+      padding-left: $crm-standard-gap;
+    }
+  }
+}

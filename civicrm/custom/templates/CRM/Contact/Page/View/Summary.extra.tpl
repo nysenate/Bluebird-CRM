@@ -9,7 +9,7 @@
   cj('a.delete.button').parent('li.crm-delete-action.crm-contact-delete').remove();
 
   //7367 move display name inline block; shrink form blocks
-  cj('div.crm-summary-contactname-block').insertBefore('div.contactTopBar');
+  //cj('div.crm-summary-contactname-block').insertBefore('div.contactTopBar');
 
   //remove move privacy notes set
   cj('div.crm-custom-set-block-8').remove();
@@ -21,7 +21,7 @@
   cj('div.contactTopBar div.contactCardRight').replaceWith(cj('div.crm-summary-demographic-block').parent());
 
   //move comm pref above file attachments
-  cj('div.crm-summary-comm-pref-block').insertBefore('div.crm-custom-set-block-5');
+  //cj('div.crm-summary-comm-pref-block').insertBefore('div.crm-custom-set-block-5');
 
   //5779 truncate file name
   cj('.crm-fileURL a').each(function(){

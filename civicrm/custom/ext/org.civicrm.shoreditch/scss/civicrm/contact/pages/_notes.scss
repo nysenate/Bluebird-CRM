@@ -1,0 +1,157 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id */
+
+#{civi-page('contact')} {
+  .ui-widget-content .action-link .button {
+    box-shadow: $box-shadow;
+  }
+
+  #notes .dataTables_wrapper {
+    background: $crm-white;
+    border-radius: $border-radius-child;
+    box-shadow: $box-shadow;
+    margin: 20px 0;
+
+    .dataTables_length,
+    .dataTables_info {
+      padding: 15px;
+    }
+
+    .dataTables_paginate {
+      padding-top: 10px;
+    }
+
+    .ui-widget-header {
+      background: $gray-lighter;
+      border: 0;
+      border-bottom: 1px solid $crm-background;
+      font-family: $font-family-base;
+      font-size: $font-size-base;
+      line-height: 2em;
+      padding: 10px 20px;
+
+      .dataTables_length,
+      .dataTables_info {
+        padding: 0;
+      }
+
+      .dataTables_paginate {
+        margin: 0;
+        padding: 0;
+      }
+    }
+
+    table + .ui-widget-header {
+      background: $crm-gray-lightest;
+    }
+
+    table {
+      background: transparent;
+      border: 0;
+      border-top: 1px solid $crm-grayblue-dark;
+      font-family: $font-family-base;
+      width: 100% !important;
+
+      thead tr {
+        border-bottom: 1px solid $crm-grayblue-dark;
+
+        th {
+          background: $gray-lighter;
+          border: 0;
+          color: $gray-darker;
+          padding: 16px 20px;
+          vertical-align: middle;
+        }
+
+        th div {
+          padding: 0;
+        }
+      }
+    }
+
+    table tbody tr {
+      background: $crm-white;
+      border-bottom: 1px solid $crm-background;
+      border-left: 0;
+      border-right: 0;
+
+      td {
+        background: $crm-white;
+        border: 0;
+        color: $gray-dark;
+        line-height: 1.1em;
+        padding: 12px 15px !important;
+        vertical-align: middle;
+
+        &:first-child {
+          padding-left: 20px !important;
+        }
+
+        &:last-child {
+          padding: 12px 20px 12px 10px !important;
+          text-align: right;
+        }
+
+        a {
+          color: $brand-primary !important;
+
+          &.action-item {
+            text-transform: none;
+          }
+        }
+      }
+
+      td .btn-slide {
+        color: $brand-primary;
+        text-transform: none;
+
+        &:hover {
+          background: none;
+        }
+      }
+
+      td .btn-slide a {
+        color: $crm-copy !important;
+
+        &:hover {
+          background: none;
+        }
+      }
+    }
+
+    table#options {
+      thead tr th {
+        &:first-child {
+          display: none;
+        }
+
+        &:nth-child(6) {
+          text-transform: none !important;
+        }
+      }
+
+      tbody tr td:first-child {
+        display: none;
+      }
+    }
+  }
+
+  #Note {
+    .crm-note-form-block {
+      padding-bottom: 0;
+
+      .crm-activity-form-block-attachment {
+        td {
+          padding-bottom: 0;
+
+          .crm-accordion-wrapper {
+            margin: 0 -25px;
+          }
+        }
+      }
+    }
+
+    .form-layout {
+      margin-bottom: -23px;
+    }
+  }
+}

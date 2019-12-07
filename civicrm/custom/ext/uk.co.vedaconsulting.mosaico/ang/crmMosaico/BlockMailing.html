@@ -1,0 +1,107 @@
+<div ng-form="subform" crm-ui-id-scope>
+
+  <div class="form-group-lg">
+    <label for="inputTitle" class="control-label required-mark">{{ts('Mailing Name')}}
+      <a crm-ui-help="hs({id: 'name', title: ts('Mailing Name')})"></a></label>
+    <input type="text" class="form-control" id="inputTitle" placeholder="{{ts('Mailing Name')}}" ng-model="mailing.name" required>
+  </div>
+
+  <div class="form-group" ng-show="crmMailingConst.campaignEnabled">
+    <label for="inputCampaign" class="control-label">{{ts('Campaign')}}
+      <a crm-ui-help="hs({id: 'id-campaign_id', title: ts('Campaign'), file: 'CRM/Campaign/Form/addCampaignToComponent'})"></a></label>
+    <br/><!-- class="form-control" doesn't work with crmEntityref -->
+    <input
+        id="inputCampaign"
+        name="campaign"
+        ng-model="mailing.campaign_id"
+        crm-entityref="{entity: 'Campaign', select: {allowClear: true, placeholder: ts('Select Campaign')}}"
+    />
+  </div>
+
+  <div class="form-group">
+    <label for="inputFrom" class="control-label required-mark">{{ts('From')}}
+      <a crm-ui-help="hs({id: 'from_email', title: ts('From')})"></a></label>
+    <div ng-controller="EmailAddrCtrl" crm-mailing-from-address="fromPlaceholder" crm-mailing="mailing">
+      <select
+          id="inputFrom"
+          class="form-control"
+          crm-ui-select="{dropdownAutoWidth : true, allowClear: false}"
+          name="fromAddress"
+          ng-model="fromPlaceholder.label"
+          required>
+        <option ng-repeat="frm in crmFromAddresses.getAll() | filter:{is_active:1} | orderBy:'weight'"
+                value="{{frm.label}}">{{frm.label}}
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <div class="form-group" ng-show="crmMailingConst.enableReplyTo">
+    <label for="inputReplyTo" class="control-label">{{ts('Reply-To')}}</label>
+    <div ng-controller="EmailAddrCtrl">
+      <select
+          id="inputReplyTo"
+          class="form-control"
+          crm-ui-select="{dropdownAutoWidth : true, allowClear: true, placeholder: ts('Email address')}"
+          name="replyTo"
+          ng-change="checkReplyToChange(mailing)"
+          ng-model="mailing.replyto_email"
+      >
+        <option value=""></option>
+        <option ng-repeat="frm in crmFromAddresses.getAll() | filter:{is_active:1} | orderBy:'weight'" value="{{frm.label}}">{{frm.label}}</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="inputRecipients" class="control-label required-mark">{{ts('Recipients')}}</label>
+    <div crm-mailing-block-recipients="{name: 'recipients', id: 'subform.recipients'}" crm-mailing="mailing"></div>
+  </div>
+
+  <div class="form-group">
+    <label for="inputSubject" class="control-label required-mark">{{ts('Subject')}}</label>
+    <div>
+      <div style="float: right;" class="token-holder">
+        <input class="form-control" crm-mailing-token on-select="$broadcast('insert:subject', token.name)" tabindex="-1"/>
+      </div>
+      <input
+        id="inputSubject"
+        crm-ui-insert-rx="insert:subject"
+        name="subject"
+        type="text"
+        class="form-control"
+        placeholder="{{ts('Subject')}}"
+        ng-model="mailing.subject"
+        required
+      />
+    </div>
+  </div>
+
+  <span ng-controller="EditUnsubGroupCtrl">
+    <div class="form-group" ng-if="isUnsubGroupRequired(mailing)">
+      <label for="inputUnsubscribeGroup" class="control-label required-mark">{{ts('Unsubscribe Group')}}</label>
+      <input
+        crm-entityref="{entity: 'Group', api: {params: {is_hidden: 0, is_active: 1}}, select: {allowClear:true, minimumInputLength: 0}}"
+        class="form-control"
+        id="inputUnsubscribeGroup"
+        name="baseGroup"
+        ng-model="mailing.recipients.groups.base[0]"
+        ng-required="true"
+      />
+    </div>
+  </span>
+
+  <div class="form-group" ng-if="crmMailingConst.isMultiLingual">
+    <label for="inputLanguage" class="control-label required-mark">{{ts('Language')}}</label>
+    <select
+        id="inputLanguage"
+        name="language"
+        ng-model="mailing.language"
+        required
+    >
+      <option value=""></option><!-- ?? -->
+      <option ng-repeat="(key,val) in crmMailingConst.enabledLanguages" value="{{key}}">{{val}}</option>
+    </select>
+  </div>
+
+</div>

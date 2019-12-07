@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +30,8 @@
  *
  */
 class civicrm_handler_field_county extends civicrm_handler_field_address {
-  static $_counties;
+  public static $_counties;
+
   public function construct() {
     parent::construct();
     if (!self::$_counties) {

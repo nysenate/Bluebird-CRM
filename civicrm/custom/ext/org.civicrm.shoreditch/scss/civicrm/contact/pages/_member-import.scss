@@ -1,0 +1,98 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder, property-no-vendor-prefix */
+
+#{civi-page('member-import')} {
+  #DataSource,
+  #MapField,
+  #Summary {
+    .crm-submit-buttons {
+      border: 0;
+      margin: 0 !important;
+      padding: 15px 20px !important;
+    }
+  }
+
+  #DataSource {
+    td.label {
+      padding-left: 0;
+    }
+  }
+
+  .form-layout {
+    box-sizing: border-box;
+    display: block;
+    padding: 20px;
+
+    #uploadFile,
+    #upload-file,
+    #fieldSeparator {
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    #skipColumnHeader {
+      left: 80px;
+      position: relative;
+    }
+
+    input[type=radio] + label[for] {
+      margin-bottom: 5px;
+    }
+
+    .crm-import-datasource-form-block-fieldSeparator {
+      .helpicon {
+        bottom: 5px;
+        position: relative;
+      }
+    }
+  }
+
+  #map-field {
+    margin-left: -20px;
+    margin-right: -20px;
+    padding: 20px;
+
+    table {
+      @include expandable-table;
+      box-shadow: none !important;
+      margin-bottom: 20px;
+
+      th {
+        border-right: 0 !important;
+      }
+
+      td {
+        padding: 8px 10px 10px !important;
+        vertical-align: middle;
+      }
+
+      tr {
+        border-color: $table-border-color !important;
+
+        th {
+          line-height: 30px !important;
+        }
+      }
+    }
+  }
+
+  #preview-counts,
+  #summary-counts {
+    @include expandable-table;
+    box-shadow: none !important;
+    margin: 20px;
+    width: 96% !important;
+
+    th {
+      border-right: 0 !important;
+    }
+
+    td {
+      padding: 8px 10px 10px !important;
+      vertical-align: middle;
+    }
+
+    tr {
+      border-color: $table-border-color !important;
+    }
+  }
+}

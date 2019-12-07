@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2018                                |
+ | Copyright CiviCRM LLC (c) 2004-2019                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2018
+ * @copyright CiviCRM LLC (c) 2004-2019
  */
 
 /**
@@ -38,6 +38,7 @@ class CRM_Contact_Form_DedupeFind extends CRM_Admin_Form {
 
   /**
    *  Indicate if this form should warn users of unsaved changes
+   * @var bool
    */
   protected $unsavedChangesWarn = FALSE;
 
@@ -54,7 +55,6 @@ class CRM_Contact_Form_DedupeFind extends CRM_Admin_Form {
   public function buildQuickForm() {
 
     //NYSS 4053 - Allow crunching on import groups too!
-    require_once 'api/api.php';
     $params = array('version'=>3, 'group_type'=>'imported_contacts');
     $result = civicrm_api('group', 'get', $params);
     $importGroups = array(''=>'- All Contacts -');
@@ -67,25 +67,24 @@ class CRM_Contact_Form_DedupeFind extends CRM_Admin_Form {
     $groupList[''] = ts('- All Contacts -');
     asort($groupList);
 
-    $this->add('select', 'group_id', ts('Select Group'), $groupList, FALSE, array('class' => 'crm-select2 huge'));
+    $this->add('select', 'group_id', ts('Select Group'), $groupList, FALSE, ['class' => 'crm-select2 huge']);
     if (Civi::settings()->get('dedupe_default_limit')) {
       $this->add('text', 'limit', ts('No of contacts to find matches for '));
     }
-    $this->addButtons(array(
-        array(
-          'type' => 'next',
-          'name' => ts('Continue'),
-          'isDefault' => TRUE,
-        ),
-        //hack to support cancel button functionality
-        array(
-          'type' => 'submit',
-          'class' => 'cancel',
-          'icon' => 'fa-times',
-          'name' => ts('Cancel'),
-        ),
-      )
-    );
+    $this->addButtons([
+      [
+        'type' => 'next',
+        'name' => ts('Continue'),
+        'isDefault' => TRUE,
+      ],
+      //hack to support cancel button functionality
+      [
+        'type' => 'submit',
+        'class' => 'cancel',
+        'icon' => 'fa-times',
+        'name' => ts('Cancel'),
+      ],
+    ]);
   }
 
   /**
@@ -118,10 +117,10 @@ class CRM_Contact_Form_DedupeFind extends CRM_Admin_Form {
     }
 
     // NYSS 4053 - Now check multiple places for the group id.
-    if ( $gid = CRM_Utils_Array::value('group_id',$values) ) {
+    if ($gid = CRM_Utils_Array::value('group_id',$values)) {
       $url = CRM_Utils_System::url( 'civicrm/contact/dedupefind', "reset=1&action=update&rgid={$this->rgid}&gid=$gid" );
     }
-    else if($gid = CRM_Utils_Array::value('import_group_id',$values)) {
+    elseif ($gid = CRM_Utils_Array::value('import_group_id',$values)) {
       $url = CRM_Utils_System::url( 'civicrm/contact/dedupefind', "reset=1&action=update&rgid={$this->rgid}&gid=$gid" );
     }
     else {

@@ -1,0 +1,170 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder */
+
+@import 'base/scss/vendor/bootstrap/modals';
+@import 'bootstrap/overrides/style/modals';
+
+.crm-container.ui-dialog {
+  @include ui-dialog;
+}
+
+#popupContainer {
+  background-color: $crm-white !important;
+
+  #selectedRecords-_wrapper {
+    box-shadow: none;
+
+    td {
+      text-align: left;
+    }
+  }
+}
+
+.ui-dialog-content {
+  .messages.no-popup {
+    margin-bottom: $crm-standard-gap;
+  }
+
+  > form .crm-accordion-wrapper:last-of-type.collapsed > .crm-accordion-header {
+    border-bottom: 0;
+  }
+
+  table {
+    // @NOTE This selector is used for nested accordions.
+    // Unfortunately, this seems like the only way to determine it.
+    &.form-layout,
+    &.form-layout-compressed {
+      > tbody > tr > td[colspan='2'] {
+        padding: 0;
+      }
+
+      // @NOTE This discards the padding flushing for nested tables
+      .form-layout,
+      .form-layout-compressed {
+        td[colspan='2'] {
+          padding: $crm-table-form-cell-padding;
+        }
+      }
+    }
+
+    &.no-border {
+      margin: 0;
+      width: 100%;
+    }
+
+    &.crm-info-panel {
+      background: transparent;
+      border: 0;
+      box-shadow: none !important;
+      font-family: $font-family-base;
+
+      th,
+      td {
+        background-color: transparent !important;
+        border-bottom: 1px solid $crm-background !important;
+        color: $gray-darker !important;
+        padding-right: $crm-standard-gap;
+      }
+
+      tr:last-of-type td {
+        border: 0 !important;
+      }
+    }
+  }
+
+  thead.sticky {
+    border-bottom: 1px solid $crm-background !important;
+  }
+
+  td.label {
+    padding-left: $crm-standard-gap;
+  }
+
+  .crm-accordion-header,
+  .crm-info-panel,
+  .dataTables_wrapper {
+    margin: 0 -#{$crm-standard-gap};
+  }
+
+  .crm-accordion-wrapper {
+    margin: 0 !important;
+  }
+
+  .form-item,
+  .crm-accordion-wrapper {
+    padding: 0;
+  }
+
+  .crm-info-panel {
+    width: calc(100% + #{$crm-standard-gap * 2});
+  }
+
+  .crm-accordion-header:not(.crm-master-accordion-header)+.crm-accordion-body {
+    box-shadow: none;
+    padding: 20px 0 !important;
+
+    td.label {
+      padding-left: $crm-standard-gap;
+    }
+  }
+
+  .dataTables_length {
+    padding: $crm-standard-gap;
+  }
+
+  // Resets the padding for entries amount selectors inside pagers
+  .crm-datatable-pager-top .dataTables_length {
+    padding: 0;
+    padding-left: $crm-standard-gap;
+  }
+
+  // If the pager is the very first element in the modal, no top padding is needed
+  > .crm-form-block:first-child > .dataTables_wrapper:first-child >
+  .dataTables_length:first-child {
+    padding-top: 0;
+  }
+
+  .crm-accordion-body {
+    .dataTables_wrapper:first-child {
+      .dataTables_length {
+        padding-top: 0;
+      }
+    }
+
+    > table:not(.form-layout):not(.form-layout-compressed),
+    > div:not(.dataTables_wrapper) > table {
+      margin: 0 -#{$crm-standard-gap};
+      width: calc(100% + #{$crm-standard-gap * 2});
+
+      th,
+      td {
+        line-height: 1.5em;
+      }
+
+      th {
+        background: $gray-lighter;
+        border: 0;
+        color: $gray-darker;
+        padding: 15px $crm-standard-gap;
+        vertical-align: middle;
+
+        div {
+          padding: 0;
+        }
+      }
+
+      &:not(.crm-info-panel):not(.form-layout-compressed):not(.form-layout) {
+        td {
+          padding: $crm-standard-gap;
+        }
+      }
+    }
+  }
+
+  .dataTables_wrapper {
+    box-shadow: none;
+  }
+
+  .crm-form-block h3 {
+    padding: $crm-table-form-cell-padding 0 !important;
+  }
+}

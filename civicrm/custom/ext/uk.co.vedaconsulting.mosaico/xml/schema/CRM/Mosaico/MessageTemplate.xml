@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<table>
+  <base>CRM/Mosaico</base>
+  <class>MessageTemplate</class>
+  <name>civicrm_mosaico_msg_template</name>
+  <comment>Mosaico Templates Table</comment>
+  <log>true</log>
+
+  <field>
+    <name>id</name>
+    <type>int unsigned</type>
+    <required>true</required>
+    <comment>Unique Settings ID</comment>
+  </field>
+  <primaryKey>
+    <name>id</name>
+    <autoincrement>true</autoincrement>
+  </primaryKey>
+
+  <field>
+    <name>msg_tpl_id</name>
+    <type>int unsigned</type>
+    <title>message template ID</title>
+    <required>true</required>
+    <comment>FK to civicrm_msg_template.</comment>
+    <pseudoconstant>
+      <table>civicrm_msg_template</table>
+      <keyColumn>id</keyColumn>
+      <labelColumn>msg_title</labelColumn>
+    </pseudoconstant>
+    <html>
+      <type>Select</type>
+    </html>
+  </field>
+  <foreignKey>
+    <name>msg_tpl_id</name>
+    <table>civicrm_msg_template</table>
+    <key>id</key>
+    <onDelete>CASCADE</onDelete>
+  </foreignKey>
+
+  <field>
+    <name>hash_key</name>
+    <type>varchar</type>
+    <length>32</length>
+    <title>hash_key</title>
+    <unique>true</unique>
+  </field>
+
+  <field>
+    <name>name</name>
+    <type>varchar</type>
+    <length>32</length>
+    <comment>name</comment>
+    <title>name</title>
+  </field>
+
+  <field>
+    <name>html</name>
+    <title>HTML</title>
+    <type>longtext</type>
+    <html>
+      <type>RichTextEditor</type>
+      <rows>10</rows>
+      <cols>75</cols>
+    </html>
+    <comment>HTML</comment>
+  </field>
+
+  <field>
+    <name>metadata</name>
+    <title>metadata</title>
+    <type>longtext</type>
+    <html>
+      <type>RichTextEditor</type>
+      <rows>10</rows>
+      <cols>75</cols>
+    </html>
+    <comment>metadata</comment>
+  </field>
+
+  <field>
+    <name>template</name>
+    <title>template</title>
+    <type>longtext</type>
+    <html>
+      <type>RichTextEditor</type>
+      <rows>10</rows>
+      <cols>75</cols>
+    </html>
+    <comment>template</comment>
+  </field>
+</table>

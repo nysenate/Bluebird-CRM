@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -368,6 +368,19 @@ function civicrm_views_custom_data_cache(&$data, $entity_type, $group_id, $sub_t
           'field' => 'entity_id',
         );
       }
+
+      // Expose group custom data to group relationship.
+      if ($join_table == 'civicrm_group') {
+        $data[$current_group['table_name']]['table']['join']['civicrm_group'] = array(
+          'left_field' => 'id',
+          'field'      => 'entity_id',
+        );
+        $data[$current_group['table_name']]['table']['join']['civicrm_group_contact'] = array(
+          'left_table' => $join_table,
+          'left_field' => 'id',
+          'field'      => 'entity_id',
+        );
+      }
     }
 
     foreach ($current_group['fields'] as $key => $current_field) {
@@ -461,7 +474,7 @@ function civicrm_views_get_field($data_type, $html_type = NULL) {
   // Relying on html types as opposed to data types seems like a code smell.
   // Would love to be able to remove this logic.
   $customHTMLTypes = array(
-    'Select', 'Multi-Select', 'AdvMulti-Select', 'Radio', 'CheckBox',
+    'Select', 'Multi-Select', 'Radio', 'CheckBox',
     'Select State/Province', 'Select Country', 'Multi-Select Country',
     'Multi-Select State/Province', 'Autocomplete-Select',
   );
@@ -563,7 +576,7 @@ function civicrm_views_get_filter($data_type, $html_type = NULL, $option_group_i
   // Relying on html types as opposed to data types seems like a code smell.
   // Would love to be able to remove this logic.
   $customMultiValueHTMLTypes = array(
-    'Multi-Select', 'AdvMulti-Select', 'CheckBox', 'Multi-Select Country',
+    'Multi-Select', 'CheckBox', 'Multi-Select Country',
     'Multi-Select State/Province',
   );
   if ($html_type == 'Multi-Select Country') {
@@ -594,6 +607,7 @@ function civicrm_views_get_filter($data_type, $html_type = NULL, $option_group_i
 
     case "Float":
     case "Int":
+    case "Money":
       return array('handler' => 'views_handler_filter_numeric', 'allow empty' => TRUE);
 
     case "Date":

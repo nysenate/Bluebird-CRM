@@ -1,7 +1,7 @@
 <?php
 /*
    +--------------------------------------------------------------------+
-   | CiviCRM version 4.7                                                |
+   | CiviCRM version 5                                                  |
    +--------------------------------------------------------------------+
    | This file is a part of CiviCRM.                                    |
    |                                                                    |
@@ -30,6 +30,7 @@
  * based on civicrm_handler_filter_custom_option and civicrm_handler_filter_country
  */
 class civicrm_handler_filter_country_multi extends views_handler_filter_in_operator {
+
   public function construct() {
     parent::construct();
     if (!civicrm_initialize()) {

@@ -1,0 +1,8 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder, property-no-vendor-prefix */
+
+.crm-contact-task-createsmartgroup-form-block,
+.crm-event-savesearch-form-block {
+  .help {
+    margin: 20px;
+  }
+}

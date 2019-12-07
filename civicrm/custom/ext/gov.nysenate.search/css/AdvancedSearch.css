@@ -1,0 +1,16 @@
+div#s2id_activity_tags {
+  width: 333px !important;
+}
+
+/*13008*/
+div#s2id_mailing_id {
+  width: 300px !important;
+}
+#mailing_job_status {
+  width: 200px !important;
+}
+
+/*13009*/
+td.crm-case-common-form-block-case_id {
+  width: 250px;
+}

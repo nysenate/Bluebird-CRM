@@ -5,6 +5,7 @@
     cj('select[id$="_on_hold"]').each(function(){
       cj(this).children('option:first').text('- Active -');
     })
+    cj('input.email').removeClass('big').addClass('twenty');
   });
 </script>
 {/literal}

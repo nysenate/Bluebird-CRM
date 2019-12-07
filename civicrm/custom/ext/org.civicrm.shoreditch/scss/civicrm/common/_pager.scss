@@ -1,0 +1,49 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id */
+
+.crm-pager {
+  background: $crm-white;
+  border-radius: 0;
+  box-shadow: $box-shadow;
+  font-size: 13px;
+  margin: 15px 0;
+
+  &,
+  a {
+    color: $gray-darker !important;
+  }
+
+  a.ui-spinner-button:hover {
+    border-left: 1px solid $crm-grayblue-dark;
+  }
+
+  > .element-right {
+    margin-top: 3px;
+  }
+
+  .crm-hover-button {
+    position: relative;
+    text-transform: capitalize !important;
+    top: -2px;
+  }
+}
+
+.ui-spinner {
+  border: 1px solid $crm-grayblue-darker !important;
+  border-radius: 2px;
+  color: $crm-copy;
+  font-size: 13px;
+
+  > a {
+    background: none;
+
+    &:first-child {
+      border-bottom: 1px solid $crm-copy;
+    }
+  }
+}
+
+.dataTables_paginate {
+  .ui-button {
+    padding: 5px 10px;
+  }
+}

@@ -1148,7 +1148,20 @@ class DB_common extends PEAR
      */
     function modifyQuery($query)
     {
-        return $query;
+        // This section of code may run hundreds or thousands of times in a given request.
+        // Consequently, it is micro-optimized to use single lookup in typical case.
+        if (!isset(Civi::$statics['db_common_dispatcher'])) {
+            if (class_exists('Civi\Core\Container') && \Civi\Core\Container::isContainerBooted()) {
+                Civi::$statics['db_common_dispatcher'] = Civi\Core\Container::singleton()->get('dispatcher');
+            }
+            else {
+                return $query;
+            }
+        }
+
+        $e = new \Civi\Core\Event\QueryEvent($query);
+        Civi::$statics['db_common_dispatcher']->dispatch('civi.db.query', $e);
+        return $e->query;
     }
 
     // }}}
@@ -1342,7 +1355,8 @@ class DB_common extends PEAR
             }
         }
         // modifyLimitQuery() would be nice here, but it causes BC issues
-        if (sizeof($params) > 0) {
+        $params = (array) $params;
+        if (count($params) > 0) {
             $sth = $this->prepare($query);
             if (DB::isError($sth)) {
                 return $sth;
@@ -1650,7 +1664,8 @@ class DB_common extends PEAR
             }
         }
 
-        if (sizeof($params) > 0) {
+        $params = (array) $params;
+        if (count($params) > 0) {
             $sth = $this->prepare($query);
 
             if (DB::isError($sth)) {

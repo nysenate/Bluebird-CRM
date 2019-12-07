@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2018                                |
+ | Copyright CiviCRM LLC (c) 2004-2019                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -32,8 +32,6 @@
     {/if}
     <div class="crm-block crm-form-block crm-activity-form-block">
   {/if}
-  {* added onload javascript for source contact*}
-  {include file="CRM/Activity/Form/ActivityJs.tpl" tokenContext="activity"}
   {if !$action or ( $action eq 1 ) or ( $action eq 2 ) }
   <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
   {/if}
@@ -116,7 +114,7 @@
   {/if}
 
   <tr class="crm-activity-form-block-subject">
-    <td class="label">{$form.subject.label}</td><td class="view-value">{$form.subject.html|crmAddClass:huge}</td>
+    <td class="label">{$form.subject.label}</td><td class="view-value">{$form.subject.html}</td>
   </tr>
 
   {* CRM-7362 --add campaign to activities *}
@@ -137,7 +135,7 @@
   <tr class="crm-activity-form-block-activity_date_time">
     <td class="label">{$form.activity_date_time.label}</td>
     {if $action neq 4}
-      <td class="view-value">{include file="CRM/common/jcalendar.tpl" elementName=activity_date_time}</td>
+      <td class="view-value">{$form.activity_date_time.html}</td>
       {else}
       <td class="view-value">{$form.activity_date_time.value|crmDate}</td>
     {/if}
@@ -154,13 +152,19 @@
   </tr>
   <tr class="crm-activity-form-block-details">
     <td class="label">{$form.details.label}</td>
+    {* activityTypeName means label here not name, but it should be name (dev/core#1116-fixme) *}
     {if $activityTypeName eq "Print PDF Letter"}
       <td class="view-value">
       {$form.details.html}
       </td>
-      {else}
+    {* activityTypeName means label here not name, but it should be name (dev/core#1116-fixme) *}
+    {elseif $activityTypeName eq "Inbound Email"}
       <td class="view-value">
        {$form.details.html|crmStripAlternatives|nl2br}
+      </td>
+    {else}
+      <td class="view-value">
+       {$form.details.html|crmStripAlternatives}
       </td>
     {/if}
   </tr>
@@ -183,16 +187,17 @@
   {/if}
 
   {if $tagsetInfo.activity}
-    <tr class="crm-activity-form-block-tag_set">{include file="CRM/common/Tagset.tpl" tagsetType='activity' tableLayout=true}</tr>
+  <tr class="crm-activity-form-block-tag_set">{include file="CRM/common/Tagset.tpl" tagsetType='activity' tableLayout=true}</tr>
   {/if}
 
   {if $action neq 4 OR $viewCustomData}
   <tr class="crm-activity-form-block-custom_data">
     <td colspan="2">
       {if $action eq 4}
-      {include file="CRM/Custom/Page/CustomDataView.tpl"}
-        {else}
+        {include file="CRM/Custom/Page/CustomDataView.tpl"}
+      {else}
         <div id="customData"></div>
+        {include file="CRM/common/customDataBlock.tpl"}
       {/if}
     </td>
   </tr>
@@ -250,7 +255,7 @@
   {/if} {* End Delete vs. Add / Edit action *}
   </table>
   <div class="crm-submit-buttons">
-  {if $action eq 4 && $activityTName neq 'Inbound Email'}
+  {if $action eq 4 && ($activityTName neq 'Inbound Email' || $allow_edit_inbound_emails == 1)}
     {if !$context }
       {assign var="context" value='activity'}
     {/if}
@@ -279,29 +284,19 @@
 
 
   {if $action eq 1 or $action eq 2 or $context eq 'search' or $context eq 'smog'}
-    {*include custom data js file*}
-    {include file="CRM/common/customData.tpl"}
     {literal}
     <script type="text/javascript">
-    CRM.$(function($) {
-      var doNotNotifyAssigneeFor = {/literal}{$doNotNotifyAssigneeFor|@json_encode}{literal};
-      $('#activity_type_id').change(function() {
-        if ($.inArray($(this).val(), doNotNotifyAssigneeFor) != -1) {
-          $('#notify_assignee_msg').hide();
-        }
-        else {
-          $('#notify_assignee_msg').show();
-        }
+      CRM.$(function($) {
+        var doNotNotifyAssigneeFor = {/literal}{$doNotNotifyAssigneeFor|@json_encode}{literal};
+        $('#activity_type_id').change(function() {
+          if ($.inArray($(this).val(), doNotNotifyAssigneeFor) != -1) {
+            $('#notify_assignee_msg').hide();
+          }
+          else {
+            $('#notify_assignee_msg').show();
+          }
+        });
       });
-
-      {/literal}
-      {if $customDataSubType}
-        CRM.buildCustomData( '{$customDataType}', {$customDataSubType} );
-        {else}
-        CRM.buildCustomData( '{$customDataType}' );
-      {/if}
-      {literal}
-    });
     </script>
     {/literal}
   {/if}

@@ -1,0 +1,39 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder, property-no-vendor-prefix */
+
+.crmMailing {
+  #tab-mailing,
+  .ui-tabs-panel {
+    padding: 20px !important;
+  }
+
+  #tab-mailing {
+    .crm-accordion-header {
+      padding-left: 0;
+    }
+
+    .crm-accordion-body {
+      background-color: transparent;
+      padding: 0 !important;
+      position: relative;
+
+      [ng-controller='EmailBodyCtrl'] > div:first-child {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+      }
+    }
+
+    .cke_top {
+      box-sizing: border-box;
+      width: 100%;
+    }
+  }
+
+  .label {
+    text-align: left;
+
+    label {
+      font-weight: normal !important;
+    }
+  }
+}

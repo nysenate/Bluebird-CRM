@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,8 @@
  * @ingroup civicrm_field_handlers
  */
 class civicrm_handler_field_option extends civicrm_handler_field {
-  static $_options;
+  public static $_options;
+
   public function render($values) {
     $this->initialize();
 

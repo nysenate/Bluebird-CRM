@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2018                                |
+ | Copyright CiviCRM LLC (c) 2004-2019                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,15 +28,18 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2018
+ * @copyright CiviCRM LLC (c) 2004-2019
  */
 
 /**
  * Class to represent the actions that can be performed on a group of contacts used by the search forms.
  */
 class CRM_Contact_Task extends CRM_Core_Task {
+
+  /**
+   * Contact tasks
+   */
   const
-    // Contact tasks
     HOUSEHOLD_CONTACTS = 101,
     ORGANIZATION_CONTACTS = 102,
     RECORD_CONTACTS = 103,
@@ -49,7 +52,10 @@ class CRM_Contact_Task extends CRM_Core_Task {
     INDIVIDUAL_CONTACTS = 110,
     ADD_TO_CASE = 111;
 
-  static $objectType = 'contact';
+  /**
+   * @var string
+   */
+  public static $objectType = 'contact';
 
   public static function tasks() {
     if (!self::$_tasks) {
@@ -296,18 +302,17 @@ class CRM_Contact_Task extends CRM_Core_Task {
         self::LABEL_CONTACTS => self::$_tasks[self::LABEL_CONTACTS]['title'],
       );
 
-      if (isset(self::$_tasks[self::MAP_CONTACTS]) &&
-        !empty(self::$_tasks[self::MAP_CONTACTS]['title'])
-      ) {
-        $tasks[self::MAP_CONTACTS] = self::$_tasks[self::MAP_CONTACTS]['title'];
+      foreach ([
+        self::MAP_CONTACTS,
+        self::CREATE_MAILING,
+        self::TASK_SMS,
+      ] as $task) {
+        if (isset(self::$_tasks[$task]) &&
+          !empty(self::$_tasks[$task]['title'])
+        ) {
+          $tasks[$task] = self::$_tasks[$task]['title'];
+        }
       }
-
-      if (isset(self::$_tasks[self::CREATE_MAILING]) &&
-        !empty(self::$_tasks[self::CREATE_MAILING]['title'])
-      ) {
-        $tasks[self::CREATE_MAILING] = self::$_tasks[self::CREATE_MAILING]['title'];
-      }
-
     }
 
     $tasks = parent::corePermissionedTaskTitles($tasks, $permission, $params);

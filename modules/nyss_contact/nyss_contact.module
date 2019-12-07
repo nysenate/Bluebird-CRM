@@ -5,128 +5,6 @@ function nyss_contact_civicrm_buildForm($formName, &$form) {
   //CRM_Core_Error::debug_var('form',$form);
   //CRM_Core_Error::debug_var('$formName',$formName);
 
-  if ($formName == 'CRM_Contact_Form_Inline_Demographics') {
-    $defaults = array();
-    $contactID = $form->_contactId;
-    $form->assign('cid', $contactID);
-
-    //religion
-    $form->addElement('text', 'custom_63', ts('Religion'), $attributes['common'], 'size="30"');
-    $religion = civicrm_api('contact', 'getvalue', array(
-      'version' => 3,
-      'id' => $contactID,
-      'return' => 'custom_63',
-    ));
-    $defaults['custom_63'] = $religion;
-
-    //gender other
-    $form->addElement('text', 'custom_45', ts('Other Gender'), $attributes['common'], 'size="30"');
-    $genderother = civicrm_api('contact', 'getvalue', array(
-      'version' => 3,
-      'id' => $contactID,
-      'return' => 'custom_45',
-    ));
-    $defaults['custom_45'] = $genderother;
-
-    //ethnicity
-    $ethOpts = _getFldOpts(58);
-    $form->add('select', 'custom_58', ts('Ethnicity'), $ethOpts, FALSE,
-      array('id' => 'ethnicity', 'multiple' => 'multiple', 'title' => '- select -')
-    );
-    $ethnicity = civicrm_api('contact', 'getvalue', array(
-      'version' => 3,
-      'id' => $contactID,
-      'return' => 'custom_58',
-    ));
-    $defaults['custom_58'] = $ethnicity;
-
-    $form->addElement('text', 'custom_62', ts('Other Ethnicity'), $attributes['common'], 'size="30"');
-    $ethnicityother = civicrm_api('contact', 'getvalue', array(
-      'version' => 3,
-      'id' => $contactID,
-      'return' => 'custom_62',
-    ));
-    $defaults['custom_62'] = $ethnicityother;
-
-    $form->setDefaults($defaults);
-  }
-
-  if ($formName == 'CRM_Contact_Form_Inline_CommunicationPreferences') {
-    $defaults = array();
-    $contactID = $form->_contactId;
-    $form->assign('cid', $contactID);
-
-    //5784 add privacy option note
-    $form->addElement('textarea',
-      'custom_64',
-      ts('Privacy Option Notes'),
-      array(
-        'cols' => '40',
-        'rows' => '3',
-        'id' => 'custom_64',
-        'style' => 'width: 225px;'
-      )
-    );
-    $privacyNote = civicrm_api('contact', 'getvalue', array(
-      'version' => 3,
-      'id' => $contactID,
-      'return' => 'custom_64',
-    ));
-    $defaults['custom_64'] = $privacyNote;
-
-    $form->setDefaults($defaults);
-  }
-
-  if ($formName == 'CRM_Contact_Form_Inline_ContactInfo') {
-    $defaults = array();
-    $contactID = $form->_contactId;
-    $form->assign('cid', $contactID);
-
-    //contact source
-    $sourceOpts = _getFldOpts(60);
-    $form->add('select', 'custom_60', ts('Ethnicity'), $sourceOpts, FALSE,
-      array('id' => 'contact_source', 'title' => '- select -')
-    );
-    $contactSource = civicrm_api('contact', 'getvalue', array(
-      'version' => 3,
-      'id' => $contactID,
-      'return' => 'custom_60',
-    ));
-    $defaults['custom_60'] = $contactSource;
-
-    $indivCatOpts = _getFldOpts(42);
-    $form->add('select', 'custom_42', ts('Individual Category'), $indivCatOpts, FALSE,
-      array('id' => 'indiv_category', 'title' => '- select -')
-    );
-    $indivCat = civicrm_api('contact', 'getvalue', array(
-      'version' => 3,
-      'id' => $contactID,
-      'return' => 'custom_42',
-    ));
-    $defaults['custom_42'] = $indivCat;
-
-    $form->setDefaults($defaults);
-  }
-
-  //address edits
-  if ($formName == 'CRM_Contact_Form_Contact' ||
-    $formName == 'CRM_Contact_Form_Inline_Address'
-  ) {
-    //set US/New York as defaults
-    //we could potentially have as many as 6 addresses, so set for all
-    $i = 1;
-    while ($i <= 6) {
-      if (empty($form->_defaultValues['address'][$i]['country_id'])) {
-        $defaults['address'][$i]['country_id'] = 1228;
-      }
-      if (empty($form->_defaultValues['address'][$i]['state_province_id'])) {
-        $defaults['address'][$i]['state_province_id'] = 1031;
-      }
-      $i++;
-    }
-    $form->setDefaults($defaults);
-  }
-
   //contact form edits
   if ($formName == 'CRM_Contact_Form_Contact') {
     //3527 add js action to deceased field
@@ -186,7 +64,9 @@ function nyss_contact_civicrm_buildForm($formName, &$form) {
   if ($formName == 'CRM_Activity_Form_Search') {
     if ($form->elementExists('activity_test')) {
       CRM_Core_Resources::singleton()->addScript("
-        $('input[name=activity_test]').parent('td').text('');
+        CRM.$(function($) {
+          $('input[name=activity_test]').parent('td').text('');
+        });
       ");
     }
   }
@@ -207,16 +87,6 @@ function nyss_contact_civicrm_pageRun(&$page) {
 
   $pagename = $page->getVar('_name');
   //CRM_Core_Error::debug_var('pageRun $pagename', $pagename);
-
-  $contactPages = array(
-    'CRM_Contact_Page_View_Summary',
-    'CRM_Contact_Page_Inline_Demographics',
-    'CRM_Contact_Page_Inline_CommunicationPreferences',
-    'CRM_Contact_Page_Inline_ContactInfo',
-  );
-  if (in_array($pagename, $contactPages)) {
-    _getContactCustom($page);
-  }
 
   //5412
   if ($pagename == 'CRM_Contact_Page_Inline_Address') {
@@ -335,12 +205,13 @@ function nyss_contact_civicrm_pageRun(&$page) {
   //NYSS 11385
   if ($pagename == 'CRM_Dashlet_Page_Activity') {
     CRM_Core_Resources::singleton()->addScript("
-      $('li.widget-activity h3.widget-header').text('My Activities');
-      $('th.crm-contact-activity-activity_date').html('Activity Date');
+      CRM.$(function($) {
+        $('li.widget-activity h3.widget-header').text('My Activities');
+        $('th.crm-contact-activity-activity_date').html('Activity Date');
+      });
     ");
   }
 }//pageRun
-
 
 function nyss_contact_civicrm_postProcess($formName, &$form) {
   /*Civi::log()->debug('', array(
@@ -529,72 +400,41 @@ function nyss_contact_civicrm_tabset($tabsetName, &$tabs, $context) {
 
   if ($tabsetName == 'civicrm/contact/view') {
     //create new tab for website integration; only attach to individuals
-    $ctype = civicrm_api3('contact', 'getvalue', [
-      'id' => $context['contact_id'],
-      'return' => 'contact_type',
-    ]);
-    if ($ctype == 'Individual') {
-      /*$url_message = CRM_Utils_System::url('civicrm/nyss/web/message',
-        "reset=1&snippet=1&force=1&cid={$context['contact_id']}");
-      $tabs[] = array(
-        'id' => 'nyss_web_message',
-        'url' => $url_message,
-        'title' => 'Website Messages',
-        'weight' => 500
-      );*/
+    try {
+      $ctype = civicrm_api3('contact', 'getvalue', [
+        'id' => $context['contact_id'],
+        'return' => 'contact_type'
+      ]);
+      if ($ctype == 'Individual') {
+        /*$url_message = CRM_Utils_System::url('civicrm/nyss/web/message',
+          "reset=1&snippet=1&force=1&cid={$context['contact_id']}");
+        $tabs[] = [
+          'id' => 'nyss_web_message',
+          'url' => $url_message,
+          'title' => 'Website Messages',
+          'weight' => 500
+        ];*/
 
-      $url_tags = CRM_Utils_System::url('civicrm/nyss/web/tags',
-        "reset=1&snippet=1&force=1&cid={$context['contact_id']}");
-      $tabs[] = array(
-        'id' => 'nyss_web_tags',
-        'url' => $url_tags,
-        'title' => 'Website Tags',
-        'weight' => 500
-      );
+        $url_tags = CRM_Utils_System::url('civicrm/nyss/web/tags',
+          "reset=1&snippet=1&force=1&cid={$context['contact_id']}");
+        $tabs[] = [
+          'id' => 'nyss_web_tags',
+          'url' => $url_tags,
+          'title' => 'Website Tags',
+          'weight' => 500
+        ];
 
-      $url_activity = CRM_Utils_System::url('civicrm/nyss/web/activitystream',
-        "reset=1&snippet=1&force=1&cid={$context['contact_id']}");
-      $tabs[] = array(
-        'id' => 'nyss_web_activitystream',
-        'url' => $url_activity,
-        'title' => 'Website Activity',
-        'weight' => 500
-      );
-    }
-
-    //6698 reorder the tabs to insert mailings in a more appropriate order
-    $newTabs = array();
-    $weight = 10;
-
-    $order = array(
-      'activity',
-      'case',
-      'mailing',
-      'rel',
-      'group',
-      'note',
-      'tag',
-      'custom_9',
-      'nyss_web_account',
-      'nyss_web_message',
-      'nyss_web_tags',
-      'nyss_web_activitystream',
-      'log',
-    );
-
-    foreach ($order as $id) {
-      foreach ($tabs as $details) {
-        if ($details['id'] == $id) {
-          $details['weight'] = $weight;
-          $newTabs[] = $details;
-
-          $weight += 10;
-        }
+        $url_activity = CRM_Utils_System::url('civicrm/nyss/web/activitystream',
+          "reset=1&snippet=1&force=1&cid={$context['contact_id']}");
+        $tabs[] = [
+          'id' => 'nyss_web_activitystream',
+          'url' => $url_activity,
+          'title' => 'Website Activity',
+          'weight' => 500
+        ];
       }
     }
-
-    $tabs = $newTabs;
-    //CRM_Core_Error::debug_var('tabset $newTabs', $newTabs);
+    catch (CiviCRM_API3_Exception $e) {}
   }
 }//tabset
 
@@ -611,114 +451,6 @@ function nyss_contact_civicrm_alterTemplateFile($formName, &$form, $context, &$t
     $tplName = 'CRM/NYSS/ContactWebsiteProfileTab.tpl';
   }
 }//alterTemplateFile
-
-function _getContactCustom(&$obj, $return = FALSE) {
-  $contactId = CRM_Utils_Request::retrieve('cid', 'Positive');
-
-  //look for contact id in object if not in $_REQUEST
-  if (empty($contactId)) {
-    $contactId = $obj->getVar('_contactId');
-  }
-
-  //return immediately if no contact ID available; see 7370
-  if (empty($contactId)) {
-    return;
-  }
-
-  $params = array(
-    'version' => 3,
-    'id' => $contactId,
-  );
-  $contact = civicrm_api('contact', 'getsingle', $params);
-
-  //get all contact custom fields
-  $params = array(
-    'version' => 3,
-    'rowCount' => 100,
-  );
-  $custFlds = civicrm_api('custom_field', 'get', $params);
-  //CRM_Core_Error::debug_var('$custFlds', $custFlds);
-
-  $params = array(
-    'version' => 3,
-    'entity_id' => $contactId,
-    'rowCount' => 100,
-  );
-  $custom = civicrm_api('custom_value', 'get', $params);
-
-  foreach ($custom['values'] as $custID => $custVal) {
-    //if select/multi-select, we need to retrieve and set the label values
-    if (in_array($custFlds['values'][$custID]['html_type'], array('Select', 'Multi-Select'))) {
-      $params = array(
-        'version' => 3,
-        'option_group_id' => $custFlds['values'][$custID]['option_group_id'],
-      );
-      $opts = civicrm_api('option_value', 'get', $params);
-      //CRM_Core_Error::debug_var('$opts', $opts);
-      //CRM_Core_Error::debug_var('$custVal[latest]', $custVal['latest']);
-
-      foreach ($opts['values'] as $opt) {
-        if ($custFlds['values'][$custID]['html_type'] == 'Multi-Select') {
-          if (in_array($opt['value'], $custVal['latest'])) {
-            //CRM_Core_Error::debug_var('$opts', $opts);
-            //CRM_Core_Error::debug_var('$custVal', $custVal);
-            $key = array_search($opt['value'], $custVal['latest']);
-            $contact['custom_'.$custID][$key] = $opt['label'];
-          }
-        }
-        else {
-          if ($custVal['latest'] == $opt['value']) {
-            $contact['custom_'.$custID] = $opt['label'];
-            break;
-          }
-        }
-      }
-    }
-    else {
-      $contact['custom_'.$custID] = $custVal['latest'];
-    }
-  }
-
-  if ($return) {
-    return $contact;
-  }
-  else {
-    $obj->assign('contactDetails', $contact);
-  }
-
-  //CRM_Core_Error::debug_var('contactDetails', $contact);
-}//_getContactCustom
-
-function _getFldOpts($id) {
-  $params = array(
-    'version' => 3,
-    'id' => $id,
-  );
-  $fld = civicrm_api('custom_field', 'get', $params);
-  //CRM_Core_Error::debug_var('$fld', $fld);
-
-  $params = array(
-    'version' => 3,
-    'option_group_id' => $fld['values'][$id]['option_group_id'],
-  );
-  $opts = civicrm_api('option_value', 'get', $params);
-  //CRM_Core_Error::debug_var('$opts', $opts);
-
-  //if select list, prepend -select-
-  if ($fld['values'][$id]['html_type'] == 'Select') {
-    $optList = array('' => '- select -');
-  }
-  else {
-    $optList = array();
-  }
-
-  foreach ($opts['values'] as $opt) {
-    $optList[$opt['value']] = $opt['label'];
-  }
-  //CRM_Core_Error::debug_var('$optList', $optList);
-
-  return $optList;
-}//_getFldOpts
 
 function _setCustomData($formName, $vals) {
   //CRM_Core_Error::debug_var('$vals',$vals);
@@ -758,3 +490,34 @@ function _setCustomData($formName, $vals) {
     }
   }
 }//_setCustomData
+
+function _getFldOpts($id) {
+  $params = array(
+    'version' => 3,
+    'id' => $id,
+  );
+  $fld = civicrm_api('custom_field', 'get', $params);
+  //CRM_Core_Error::debug_var('$fld', $fld);
+
+  $params = array(
+    'version' => 3,
+    'option_group_id' => $fld['values'][$id]['option_group_id'],
+  );
+  $opts = civicrm_api('option_value', 'get', $params);
+  //CRM_Core_Error::debug_var('$opts', $opts);
+
+  //if select list, prepend -select-
+  if ($fld['values'][$id]['html_type'] == 'Select') {
+    $optList = array('' => '- select -');
+  }
+  else {
+    $optList = array();
+  }
+
+  foreach ($opts['values'] as $opt) {
+    $optList[$opt['value']] = $opt['label'];
+  }
+  //CRM_Core_Error::debug_var('$optList', $optList);
+
+  return $optList;
+}//_getFldOpts

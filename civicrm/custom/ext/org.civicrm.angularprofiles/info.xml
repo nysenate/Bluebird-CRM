@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<extension key="org.civicrm.angularprofiles" type="module">
+  <file>angularprofiles</file>
+  <name>Angular Profiles</name>
+  <description>A Utility extension that provides Profile support to AngularJS pages</description>
+  <license>AGPL-3.0</license>
+  <maintainer>
+    <author>Ginkgo Street Labs</author>
+    <email>inquire@ginkgostreet.com</email>
+  </maintainer>
+  <releaseDate>2018-06-29</releaseDate>
+  <version>4.7.31-1.1.2</version>
+  <develStage>stable</develStage>
+  <compatibility>
+    <ver>4.7</ver>
+    <ver>5.0</ver>
+  </compatibility>
+  <comments>
+    This extension is a utility for allowing AngularJS pages to load CiviCRM's Backbone.js-based profile editor/selector
+    widget. It comes prebuilt with a service for loading Backbone.js and necessary files as well as an AngularJS directive
+    to turn a standard input into the profile widget.
+  </comments>
+  <civix>
+    <namespace>CRM/AngularProfiles</namespace>
+  </civix>
+  <urls>
+    <url desc="Documentation">https://github.com/ginkgostreet/org.civicrm.angularprofiles</url>
+  </urls>
+</extension>

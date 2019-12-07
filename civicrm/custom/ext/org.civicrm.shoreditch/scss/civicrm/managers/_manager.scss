@@ -1,0 +1,46 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder, property-no-vendor-prefix */
+
+#contact-summary-relationship-tab.view-content {
+  font-family: $font-family-base;
+
+  div.action-link {
+    height: auto;
+
+    > a.button {
+      @extend .btn-primary;
+    }
+  }
+
+  .label.font-red {
+    @include box-shadow($box-shadow);
+    background-color: $brand-danger;
+    color: $crm-white !important;
+    font-size: $font-size-h2;
+    font-weight: $crm-font-weight-h2;
+  }
+
+  .crm-contact-relationship-current {
+    margin-bottom: 15px;
+  }
+
+  .crm-contact-relationship-selector-current,
+  .crm-contact-relationship-selector-past {
+    width: 100% !important;
+  }
+
+  .crm-datatable-pager-top,
+  .crm-datatable-pager-bottom {
+    background: $crm-white;
+    font-size: $font-size-base;
+    height: 20px;
+  }
+
+  .dataTables_paginate {
+    margin-top: -5px;
+    padding: 0;
+  }
+
+  .description {
+    @include box-shadow($box-shadow);
+  }
+}

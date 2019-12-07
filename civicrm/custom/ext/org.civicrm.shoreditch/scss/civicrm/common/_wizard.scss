@@ -1,0 +1,79 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder, property-no-vendor-prefix */
+
+ul.wizard-bar {
+  background-color: $crm-white;
+  border: 1px solid $crm-background !important;
+  height: 60px !important;
+  margin-top: 0 !important;
+  overflow: hidden;
+  padding: 0 !important;
+  text-align: left !important;
+  width: 100%;
+
+  > li {
+    background-color: $crm-white !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    color: $gray-darker !important;
+    display: inline-block !important;
+    font-size: $font-size-base !important;
+    font-weight: $crm-font-weight-bold;
+    height: 62px !important;
+    line-height: 62px !important;
+    padding: 0 20px !important;
+    position: relative;
+
+    &:first-child {
+      padding-left: 30px !important;
+    }
+
+    &:not(:first-child) {
+      padding-left: 50px !important;
+    }
+
+    &::before {
+      border-bottom: 200px solid transparent;
+      border-left: 40px solid $crm-white;
+      border-top: 200px solid transparent;
+      content: '';
+      height: 0;
+      position: absolute;
+      right: -20px;
+      top: -167px;
+      width: 0;
+      z-index: 11;
+    }
+
+    &::after {
+      border-bottom: 200px solid transparent;
+      border-left: 40px solid $crm-background;
+      border-top: 200px solid transparent;
+      content: '';
+      height: 0;
+      position: absolute;
+      right: -21px;
+      top: -167px;
+      width: 0;
+      z-index: 10;
+    }
+
+    &.current-step {
+      background-color: $crm-background !important;
+      color: $brand-primary !important;
+
+      &::before {
+        border-left-color: $crm-background;
+      }
+    }
+  }
+}
+
+#wizard-steps {
+  + h1,
+  + h2 {
+    &,
+    + .crm-submit-buttons {
+      display: none;
+    }
+  }
+}

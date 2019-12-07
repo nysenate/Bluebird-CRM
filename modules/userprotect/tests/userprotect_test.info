@@ -14,9 +14,9 @@ files[] = UserProtectPermissionsWebTest.test
 files[] = UserProtectProtectionWebTest.test
 files[] = UserProtectViewsBulkOperationsWebTest.test
 
-; Information added by Drupal.org packaging script on 2014-08-16
-version = "7.x-1.1"
+; Information added by Drupal.org packaging script on 2015-08-22
+version = "7.x-1.2"
 core = "7.x"
 project = "userprotect"
-datestamp = "1408174131"
+datestamp = "1440225540"
 

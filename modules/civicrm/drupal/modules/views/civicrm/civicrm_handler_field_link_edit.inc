@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,6 +29,7 @@
  * @ingroup civicrm_field_handlers
  */
 class civicrm_handler_field_link_edit extends civicrm_handler_field_link {
+
   /**
    * An example of field level access control.
    */

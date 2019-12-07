@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2018                                |
+ | Copyright CiviCRM LLC (c) 2004-2019                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -54,8 +54,6 @@
     {else}
       <td>&nbsp;</td>
     {/if}
-    {*NYSS 12559*}
-    <td>{$form.tag_search.label}  {help id="id-all-tags"}<br />{$form.tag_search.html}</td>
   </tr>
   <tr class="nyss-advsearch-grouptag"> {*NYSS 12559*}
   {if $form.group}
@@ -104,6 +102,17 @@
     {if $form.contact_tags}
       <td><label>{ts}Select Tag(s){/ts}</label>
         {$form.contact_tags.html}
+
+
+        {*NYSS 12559/13006*}
+        <br /><br />
+        {$form.tag_search.label}  {help id="id-all-tags"}<br />{$form.tag_search.html}
+
+        {*NYSS 13006*}
+        {if $form.all_tag_types}
+          <br /><br />
+          {$form.all_tag_types.html} {$form.all_tag_types.label} {help id="id-all-tag-types"}
+        {/if}
       </td>
     {else}
       <td>&nbsp;</td>
@@ -118,13 +127,7 @@
     {/if}
     <td>&nbsp;</td>
   </tr>
-  {if $form.all_tag_types}
-    <tr>
-      <td colspan="5">
-          {$form.all_tag_types.html} {$form.all_tag_types.label} {help id="id-all-tag-types"}
-      </td>
-    </tr>
-  {/if}
+
   <tr>
     <td>
       <div>
@@ -138,7 +141,8 @@
     <td>{$form.phone_phone_type_id.label}<br />{$form.phone_phone_type_id.html}</td>
   </tr>
   <tr>
-    <td colspan="2">
+    {*NYSS 1 col*}
+    <td colspan="1">
       <table class="form-layout-compressed">
       <tr>
         <td colspan="2">
@@ -166,11 +170,14 @@
         </script>
       {/literal}
     </td>
+    <td id="privacyOptionNotes_cell"></td>{*NYSS*}
     <td colspan="3">
       {$form.preferred_communication_method.label}<br />
       {$form.preferred_communication_method.html}<br />
       <div class="spacer"></div>
-      {$form.email_on_hold.html} {$form.email_on_hold.label}
+      {*NYSS 13006*}
+      {$form.email_on_hold.label}<br />
+      {$form.email_on_hold.html}
     </td>
   </tr>
   <tr>

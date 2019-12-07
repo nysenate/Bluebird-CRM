@@ -1,0 +1,35 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder, property-no-vendor-prefix */
+
+.collapsible-title {
+  background: transparent;
+  border-bottom: 1px solid $crm-background;
+  box-sizing: border-box;
+  font-family: 'Open Sans';
+  font-size: 16px;
+  padding-bottom: 15px;
+  width: 100%;
+}
+
+h3 {
+  &:not(.widget-header) {
+    @include panel-header();
+  }
+}
+
+.crm-form-block {
+  > h3:first-child {
+    @include panel-header();
+    box-shadow: none;
+    margin-bottom: 10px;
+  }
+
+  .ui-dialog-content & > h3,
+  .crm-form-block h3,
+  h3 {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    margin-bottom: 0;
+    padding: 4px 20px;
+  }
+}

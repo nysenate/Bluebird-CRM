@@ -4,6 +4,7 @@
  * @file
  * Basic textfield argument to handle dynamic ldap attributes
  */
+
 class ldap_views_handler_argument_attribute extends views_handler_argument {
 
   function option_definition() {
@@ -13,11 +14,11 @@ class ldap_views_handler_argument_attribute extends views_handler_argument {
   }
 
   function options_form(&$form, &$form_state) {
-/*
+/**
     $current_display = $this->view->display[$this->view->current_display];
     $qid             = isset($current_display->display_options['query']['options']['qid']) ? $current_display->display_options['query']['options']['qid']
                                                                                            : $current_display->handler->default_display->display->display_options['query']['options']['qid'];
-*/
+ */
     $ldap_data       = new LdapQuery(ldap_views_get_qid($this->view)); //ldap_data_load($qid);
 
     if (empty($ldap_data)) {
@@ -48,7 +49,7 @@ class ldap_views_handler_argument_attribute extends views_handler_argument {
   /**
    * Build the query
    */
-  function query() {
+  function query($group_by = FALSE) {
     $this->query->add_where(0, $this->options['attribute_name'], $this->argument, '=');
   }
 }

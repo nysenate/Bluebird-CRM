@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<extension key="org.civicrm.shoreditch" type="module">
+  <file>shoreditch</file>
+  <name>CiviCRM Bootstrap theme</name>
+  <description>A CiviCRM theme based on Bootstrap</description>
+  <license>AGPL-3.0</license>
+  <maintainer>
+    <author>Alessandro Verdura</author>
+    <email>alessandro@compucorp.co.uk</email>
+  </maintainer>
+  <urls>
+    <url desc="Main Extension Page">https://github.com/civicrm/org.civicrm.shoreditch</url>
+    <url desc="Documentation">https://github.com/civicrm/org.civicrm.shoreditch</url>
+    <url desc="Support">http://civicrm.stackexchange.com/</url>
+    <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
+  </urls>
+  <releaseDate>2019-09-10</releaseDate>
+  <version>0.1-alpha35</version>
+  <compatibility>
+    <ver>5.16</ver>
+  </compatibility>
+  <comments></comments>
+  <civix>
+    <namespace>CRM/Shoreditch</namespace>
+  </civix>
+</extension>

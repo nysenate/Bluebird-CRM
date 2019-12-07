@@ -641,7 +641,9 @@ class DB
                 . 'ALTER|GRANT|REVOKE|'
                 . 'SAVEPOINT|ROLLBACK|'
                 . 'LOCK|UNLOCK';
-        if (preg_match('/^\s*"?(' . $manips . ')\s+/i', $query)) {
+        // First strip any leading comments.
+        $queryString = (substr($query, 0, 2) === '/*') ? substr($query, strpos($query, '*/') + 2) : $query;
+        if (preg_match('/^\s*"?(' . $manips . ')\s+/i', $queryString)) {
             return true;
         }
         return false;
@@ -790,7 +792,7 @@ class DB
             $parsed['dbsyntax'] = $str;
         }
 
-        if (!count($dsn)) {
+        if (empty($dsn)) {
             return $parsed;
         }
 

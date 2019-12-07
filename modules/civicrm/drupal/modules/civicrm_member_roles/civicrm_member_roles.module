@@ -438,10 +438,10 @@ function civicrm_member_roles_add_rule_form_submit($form, &$form_state) {
   //If edit_flag is set then process as an edit form, if not then process as an add form.
   if (isset($form_state['values']['edit_flag'])) {
     $edit_rule = db_update('civicrm_member_roles_rules')->fields(array(
-        'rid' => (int) $form_state['values']['add_rule']['select_role'],
-        'type_id' => (int) $form_state['values']['add_rule']['select_membership'],
-        'status_codes' => serialize($codes),
-      ))->condition('rule_id', (int) $form_state['values']['edit_flag'])->execute();
+      'rid' => (int) $form_state['values']['add_rule']['select_role'],
+      'type_id' => (int) $form_state['values']['add_rule']['select_membership'],
+      'status_codes' => serialize($codes),
+    ))->condition('rule_id', (int) $form_state['values']['edit_flag'])->execute();
 
     if ($edit_rule) {
       drupal_set_message(t('Your association rule has been edited.'));
@@ -449,10 +449,10 @@ function civicrm_member_roles_add_rule_form_submit($form, &$form_state) {
   }
   else {
     $add_rule = db_insert('civicrm_member_roles_rules')->fields(array(
-        'rid' => (int) $form_state['values']['add_rule']['select_role'],
-        'type_id' => (int) $form_state['values']['add_rule']['select_membership'],
-        'status_codes' => serialize($codes),
-      ))->execute();
+      'rid' => (int) $form_state['values']['add_rule']['select_role'],
+      'type_id' => (int) $form_state['values']['add_rule']['select_membership'],
+      'status_codes' => serialize($codes),
+    ))->execute();
     if ($add_rule) {
       drupal_set_message(t('Your association rule has been added.'));
     }
@@ -575,7 +575,16 @@ function _civicrm_member_roles_sync($ext_uid = NULL, $cid = NULL, $sync_type = N
         $inactive[] = $value['id'];
       }
       foreach ($memberships['values'] as $key => $membership) {
-        if (in_array($membership['status_id'], $inactive)) {
+        //Do not unset if inactive membership status is chosen as an option for synchronization.
+        $inactiveStatusSync = FALSE;
+        if (!empty($memberroles[$membership['membership_type_id']])) {
+          foreach ($memberroles[$membership['membership_type_id']] as $rolerule) {
+            if (in_array($membership['status_id'], $rolerule['codes']['current'])) {
+              $inactiveStatusSync = TRUE;
+            }
+          }
+        }
+        if (in_array($membership['status_id'], $inactive) && !$inactiveStatusSync) {
           unset($memberships['values'][$key]);
         }
       }

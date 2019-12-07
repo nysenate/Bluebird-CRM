@@ -1,0 +1,61 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id */
+
+#crm-contact-actions-list {
+  background-image: none;
+  box-shadow: $box-shadow;
+  margin-top: 20px;
+  width: auto;
+
+  &::before {
+    border-bottom: 10px solid $crm-white;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    content: '';
+    height: 0;
+    left: 10px;
+    position: absolute;
+    top: -5px;
+    width: 0;
+  }
+
+  .crm-contact-actions-list-inner {
+    background-color: $crm-white;
+    padding: 10px 0 !important;
+
+    .crm-contact_actions-list {
+      border-color: $crm-background !important;
+      margin-left: 175px;
+      margin-right: 175px;
+      width: 175px;
+    }
+
+    .crm-contact_print-list {
+      width: 175px;
+
+      .crm-contact-print {
+        display: none;
+      }
+    }
+
+    ul {
+      height: auto;
+      padding: 0 !important;
+
+      li {
+        padding: 10px !important;
+
+        &:hover {
+          background: $crm-background !important;
+
+          a {
+            background: $crm-background !important;
+          }
+        }
+      }
+    }
+
+    a {
+      color: $gray-dark !important;
+    }
+  }
+}

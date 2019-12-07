@@ -1,5 +1,4 @@
 <?php
-// $Id: ldap_servers.admin.inc,v 1.4.2.1 2011/02/08 06:01:00 johnbarclay Exp $
 
 /**
  * @file
@@ -24,7 +23,7 @@ function ldap_servers_edit_index() {
  */
 function ldap_servers_servers_list($sid = NULL, $actions = FALSE) {
 
-  $variables =  array(
+  $variables = array(
     'ldap_servers' => $ldap_server = ldap_servers_get_servers($sid, 'all'),
     'action' => TRUE,
     'type' => 'table',
@@ -51,7 +50,7 @@ function ldap_servers_servers_list($sid = NULL, $actions = FALSE) {
  */
 
 function ldap_servers_admin_form($form, &$form_state, $op = NULL, $sid = NULL) {
-  ldap_server_module_load_include('php', 'ldap_servers', 'LdapServerAdmin.class');
+  ldap_servers_module_load_include('php', 'ldap_servers', 'LdapServerAdmin.class');
   $server = new LdapServerAdmin($sid);
   $form = $server->drupalForm($op);
   return $form;
@@ -63,7 +62,7 @@ function ldap_servers_admin_form($form, &$form_state, $op = NULL, $sid = NULL) {
 function ldap_servers_admin_form_validate($form, &$form_state) {
 
   $op = drupal_strtolower($form_state['clicked_button']['#value']);
-  ldap_server_module_load_include('php', 'ldap_servers', 'LdapServerAdmin.class');
+  ldap_servers_module_load_include('php', 'ldap_servers', 'LdapServerAdmin.class');
   $server = new LdapServerAdmin($form_state['values']['sid']);
 
   $errors = $server->drupalFormValidate($op, $form_state['values']);
@@ -86,7 +85,7 @@ function ldap_servers_admin_form_submit($form, &$form_state) {
   $button = drupal_strtolower($form_state['clicked_button']['#value']);
   $op = ($button == 'add') ? 'add' : 'edit';
   $verb = ($op == 'edit') ? 'edited' : $op . 'ed';
-  ldap_server_module_load_include('php', 'ldap_servers', 'LdapServerAdmin.class');
+  ldap_servers_module_load_include('php', 'ldap_servers', 'LdapServerAdmin.class');
   $server = new LdapServerAdmin($form_state['values']['sid']);
   $server->drupalFormSubmit($op, $form_state['values']);  // add form data to object and save or create
 
@@ -163,13 +162,13 @@ function ldap_servers_admin_delete($form, &$form_state, $op = NULL, $sid = NULL)
 function ldap_servers_admin_delete_submit($form, &$form_state) {
   $values = $form_state['values'];
   $sid = $values['sid'];
-  ldap_server_module_load_include('php', 'ldap_servers', 'LdapServerAdmin.class');
+  ldap_servers_module_load_include('php', 'ldap_servers', 'LdapServerAdmin.class');
   $ldap_server = new LdapServerAdmin($sid);
   if ($values['confirm'] && $sid) {
     if ($result = $ldap_server->delete($sid)) {
       $tokens = array('%name' => $ldap_server->name, '!sid' => $sid);
       drupal_set_message(t('LDAP Server %name (server id = !sid) has been deleted.', $tokens), 'status');
-      watchdog('ldap', 'LDAP Server deleted: %name (sid = !sid) ', $tokens);
+      watchdog('ldap_servers', 'LDAP Server deleted: %name (sid = !sid) ', $tokens);
     }
     else {
       drupal_set_message(t('LDAP Server delete failed.'), 'warning');
@@ -218,7 +217,7 @@ function ldap_servers_admin_enable_disable($form, &$form_state, $action = NULL, 
     );
     return confirm_form(
       $form,
-      t('Are you sure you want to') . t($action) . ' ' . t('the LDAP server named <em><strong>%name</strong></em>?', array('%name' =>  $ldap_server->name)),
+      t('Are you sure you want to') . t($action) . ' ' . t('the LDAP server named <em><strong>%name</strong></em>?', array('%name' => $ldap_server->name)),
       LDAP_SERVERS_MENU_BASE_PATH . '/servers/list',
       t('<p></p>'),
       t($action),
@@ -245,7 +244,7 @@ function ldap_servers_admin_enable_disable_submit($form, &$form_state) {
     $tokens = array('%name' => $values['name'], '!sid' => $sid, '!action' => t($values['action']) . 'd');
     drupal_set_message(t('LDAP Server Configuration %name (server id = !sid) has been !action.', $tokens));
     $message = t('LDAP Server !action: %name (sid = !sid) ', $tokens);
-    watchdog('ldap', $message);
+    watchdog('ldap_servers', $message);
 
   }
 

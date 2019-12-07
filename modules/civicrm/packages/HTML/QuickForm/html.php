@@ -3,7 +3,7 @@
 
 /**
  * A pseudo-element used for adding raw HTML to form
- * 
+ *
  * PHP versions 4 and 5
  *
  * LICENSE: This source file is subject to version 3.01 of the PHP license
@@ -15,9 +15,9 @@
  * @category    HTML
  * @package     HTML_QuickForm
  * @author      Alexey Borzov <avb@php.net>
- * @copyright   2001-2009 The PHP Group
+ * @copyright   2001-2011 The PHP Group
  * @license     http://www.php.net/license/3_01.txt PHP License 3.01
- * @version     CVS: $Id: html.php,v 1.3 2009/04/04 21:34:03 avb Exp $
+ * @version     CVS: $Id$
  * @link        http://pear.php.net/package/HTML_QuickForm
  */
 
@@ -28,14 +28,14 @@ require_once 'HTML/QuickForm/static.php';
 
 /**
  * A pseudo-element used for adding raw HTML to form
- * 
+ *
  * Intended for use with the default renderer only, template-based
  * ones may (and probably will) completely ignore this
  *
  * @category    HTML
  * @package     HTML_QuickForm
  * @author      Alexey Borzov <avb@php.net>
- * @version     Release: 3.2.11
+ * @version     Release: 3.2.16
  * @since       3.0
  * @deprecated  Please use the templates rather than add raw HTML via this element
  */
@@ -45,7 +45,7 @@ class HTML_QuickForm_html extends HTML_QuickForm_static
 
    /**
     * Class constructor
-    * 
+    *
     * @param string $text   raw HTML to add
     * @access public
     * @return void
@@ -63,10 +63,12 @@ class HTML_QuickForm_html extends HTML_QuickForm_static
     * Accepts a renderer
     *
     * @param HTML_QuickForm_Renderer    renderer object (only works with Default renderer!)
+    * @param bool $sc1                  unused, for signature compatibility
+    * @param bool $sc2                  unused, for signature compatibility
     * @access public
-    * @return void 
+    * @return void
     */
-    function accept(&$renderer)
+    function accept(&$renderer, $sc1 = false, $sc2 = null)
     {
         $renderer->renderHtml($this);
     } // end func accept

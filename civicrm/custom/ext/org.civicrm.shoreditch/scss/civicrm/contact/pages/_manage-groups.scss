@@ -1,0 +1,411 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder */
+
+#{civi-page('contact')} {
+  #GroupContact {
+    .dataTables_wrapper table tbody tr td:last-child {
+      text-align: right;
+    }
+
+    table {
+      background: transparent;
+      border: 0;
+      border-top: 1px solid $crm-grayblue-dark;
+      font-family: $font-family-base;
+
+      thead tr {
+        border-bottom: 1px solid $crm-grayblue-dark;
+        line-height: 30px;
+
+        th {
+          background: $gray-lighter;
+          border: 0;
+        }
+
+        th:first-child {
+          border-radius: $border-radius-small 0 0 0;
+        }
+
+        th:last-child {
+          border-radius: $border-radius-small 0 0 0;
+        }
+
+        th div {
+          padding: 0;
+        }
+      }
+
+      tbody tr {
+        background: $crm-white;
+        border-left: 0;
+        border-right: 0;
+        border-top: 1px solid $crm-background;
+        line-height: 30px;
+
+        td {
+          &.bold {
+            font-weight: $crm-font-weight-h4;
+          }
+
+          &.status-removed {
+            color: $brand-danger !important;
+          }
+
+          a {
+            color: $brand-primary !important;
+
+            &.action-item {
+              padding: 3px 15px;
+              text-transform: none;
+            }
+          }
+        }
+
+        &:last-child {
+          border-radius: 0 0 $border-radius-child $border-radius-child;
+
+          td:first-child {
+            border-bottom-right-radius: $border-radius-child;
+          }
+
+          td:last-child {
+            border-bottom-left-radius: $border-radius-child;
+          }
+        }
+      }
+    }
+
+    #option12_wrapper,
+    #option13_wrapper {
+      border-radius: $border-radius-child;
+      margin-bottom: 20px;
+    }
+
+    .dataTables_wrapper {
+      @include box-shadow($crm-form-layout-shadow-lower);
+      border-radius: 0 0 $border-radius-small $border-radius-small;
+    }
+
+    .accordion {
+      border-radius: $border-radius-small;
+      box-shadow: $box-shadow;
+      overflow: hidden;
+
+      .ht-one {
+        height: 0;
+      }
+
+      .description {
+        margin: 0 22px 15px;
+      }
+
+      .crm-accordion-header {
+        border-radius: $panel-border-radius $panel-border-radius 0 0 !important;
+
+        .collapsed .crm-accordion-header {
+          border-radius: $panel-border-radius !important;
+        }
+      }
+
+      .crm-accordion-body {
+        .section-shown {
+          padding: 0;
+        }
+
+        .status.no-popup {
+          margin: 0;
+        }
+      }
+    }
+
+    .description {
+      @include box-shadow($box-shadow);
+      background: $crm-white;
+      padding: 15px;
+    }
+
+    .spacer {
+      display: none;
+    }
+
+    #_qf_GroupContact_next {
+      margin-left: 5px;
+      padding: 4px 10px;
+      text-shadow: none;
+      vertical-align: middle;
+    }
+  }
+}
+
+#{civi-page('group')} {
+  #searchForm {
+    border: solid 1px $crm-grayblue-dark;
+    border-radius: 0 0 $panel-border-radius $panel-border-radius;
+    border-top: 0;
+    margin-bottom: $crm-standard-gap / 2;
+    padding: $crm-standard-gap;
+  }
+
+  .crm-group-search-form-block #DataTables_Table_0_wrapper {
+    box-shadow: none;
+    margin-left: -#{$crm-standard-gap};
+    margin-right: -#{$crm-standard-gap};
+    margin-top: $crm-standard-gap * 2;
+
+    .crm-datatable-pager-top {
+      background-color: transparent;
+      border-radius: 0;
+    }
+  }
+
+  .help {
+    margin: 0 0 20px;
+
+    + .crm-submit-buttons {
+      display: none;
+    }
+  }
+
+  .crm-submit-buttons {
+    border-top: 0 !important;
+    margin-bottom: 20px;
+    padding: 0 !important;
+
+    a.newGroup.button {
+      @extend %btn-civi-primary;
+
+      .crm-i {
+        bottom: 1px;
+        margin: 0;
+        position: relative;
+      }
+    }
+  }
+
+  .crm-group-search-form-block {
+    margin-bottom: 30px !important;
+    overflow: hidden;
+    padding: 20px !important;
+
+    h3 {
+      margin: -20px -20px 20px !important;
+    }
+
+    > table td {
+      padding: 0;
+    }
+
+    table tr td:nth-child(5) label[for*='group_status'] {
+      margin-top: 7px;
+    }
+
+    table tr td {
+      .font-italic {
+        font-style: normal;
+      }
+    }
+  }
+
+  .crm-block > .css_right {
+    margin-bottom: 5px;
+
+    .crm-hover-button {
+      color: $brand-primary !important;
+    }
+  }
+
+  .dataTables_wrapper {
+    border-radius: $border-radius-child;
+    box-shadow: $box-shadow;
+    margin: 20px 0;
+
+    .crm-datatable-pager-bottom {
+      .dataTables_info {
+        line-height: 2.3em;
+        padding-left: 20px;
+      }
+    }
+  }
+
+  #DataTables_Table_0 {
+    @include expandable-table;
+    box-shadow: none !important;
+
+    .crm-group-group_links {
+      min-width: 131px;
+      text-align: right;
+    }
+
+    .crm-group-group_links .btn-slide.crm-hover-button {
+      display: inline-block;
+      text-indent: -999999px;
+      text-transform: capitalize;
+      width: 5px;
+
+      &::after,
+      .panel {
+        text-indent: 0;
+      }
+    }
+
+    .crm-no-children {
+      padding-left: 0;
+    }
+
+    .crm-group-count,
+    .crm-row-child td:nth-child(2) {
+      text-align: center;
+    }
+  }
+
+  #crm-main-content-wrapper div[id*='DataTables_Table_'] {
+    div[id*='s2id_autogen'] {
+      background: $crm-white;
+    }
+
+    .dataTable thead tr {
+      border-bottom: 1px solid $crm-grayblue-dark;
+
+      th {
+        background-color: $gray-lighter !important;
+      }
+    }
+
+    span .show-children {
+      background: none;
+
+      &.collapsed::after {
+        @include fa-icon($content: $fa-var-chevron-right);
+        margin-left: -15px;
+      }
+
+      &.expanded::after {
+        @include fa-icon($content: $fa-var-chevron-down);
+        margin-left: -15px;
+      }
+    }
+  }
+
+  .ui-dialog .CRM_Group_Form_Edit .crm-form-block {
+    table tr {
+      border-bottom: 0 !important;
+
+      td {
+        border-bottom: 0 !important;
+      }
+
+      td.label,
+      td.report-label {
+        label {
+          padding: 8px 0;
+        }
+      }
+    }
+
+    #s2id_visibility::after {
+      display: none;
+    }
+
+    .crm-group-form-block-isReserved .report-label {
+      padding-top: 8px;
+      vertical-align: top;
+    }
+
+    div,
+    span {
+      &.description {
+        display: block;
+        line-height: 1.5em;
+      }
+    }
+  }
+
+  .crm-basic-criteria-form-block {
+    padding: 0 !important;
+
+    .crm-accordion-body {
+      padding: 20px !important;
+
+      .label {
+        text-align: left;
+      }
+
+      .crm-submit-buttons {
+        margin-top: 20px;
+      }
+    }
+  }
+
+  #alpha-filter {
+    background-color: $crm-white !important;
+    box-shadow: $box-shadow;
+    padding: 5px 20px !important;
+
+    li a {
+      color: $crm-copy;
+    }
+  }
+
+  table.selector {
+    span.privacy-flag {
+      position: relative;
+      top: 10px;
+    }
+
+    .crm-hover-button:hover {
+      background: none !important;
+    }
+  }
+
+  .CRM_Contact_Form_Task_Result {
+    .crm-submit-buttons {
+      padding-top: 10px !important;
+    }
+
+    #_qf_Result_done {
+      background: $brand-primary;
+      border-color: $brand-primary;
+      border-radius: $border-radius-base;
+      color: $crm-white;
+      font-family: $font-family-base;
+      font-size: $font-size-base;
+      opacity: 0.8;
+      padding: 8px 12px;
+      text-shadow: none;
+      text-transform: uppercase;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+
+  .CRM_Group_Form_Edit .crm-group-form-block {
+    .crm-submit-buttons {
+      border-top: 0;
+      margin: 20px 0 0 !important;
+    }
+  }
+
+  #group_type-block label {
+    margin-top: 7px;
+  }
+
+  #branding h1.page-title {
+    margin-bottom: 25px !important;
+  }
+}
+
+#{civi-page('group-add')} {
+  .CRM_Group_Form_Edit .crm-group-form-block {
+    padding: 15px;
+
+    #s2id_visibility::after {
+      display: none;
+    }
+  }
+
+  .custom-group.crm-accordion-wrapper {
+    margin-left: -#{$crm-standard-gap - 1px};
+    margin-right: -#{$crm-standard-gap - 1px};
+  }
+}

@@ -48,10 +48,8 @@ class CRM_Dashlet_Page_News extends CRM_Core_Page
    * @return none
    * @access public
    */
-  function run()
-  {
-    function rss_to_array($tag, $array, $url)
-    {
+  function run() {
+    function rss_to_array($tag, $array, $url) {
       $doc = new DOMdocument();
       $doc->load($url);
       $rss_array = array();
@@ -74,16 +72,17 @@ class CRM_Dashlet_Page_News extends CRM_Core_Page
       return $rss_array;
     } // rss_to_array()
 
-    $rss_tags = [ 'title',
-                  'pubDate',
-                  'description',
-                  'link',
-                  'category',
-                  'creator',
-                  'comments',
-                  'guid',
-                  'encoded',
-                ];
+    $rss_tags = [
+      'title',
+      'pubDate',
+      'description',
+      'link',
+      'category',
+      'creator',
+      'comments',
+      'guid',
+      'encoded',
+    ];
 
     $bbcfg = get_bluebird_instance_config();
     if (isset($bbcfg['news.url'])) {
@@ -95,7 +94,7 @@ class CRM_Dashlet_Page_News extends CRM_Core_Page
     $rss_url = "$news_url/feed.rss";
 
     $rssfeed = rss_to_array('item', $rss_tags, $rss_url);
-    //CRM_Core_Error::debug($rssfeed);
+    CRM_Core_Error::debug($rssfeed);
 
     $this->assign('newsurl', $news_url);
     $this->assign('newsfeed', $rssfeed);

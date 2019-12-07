@@ -3,7 +3,7 @@
 
 /**
  * Hidden select pseudo-element
- * 
+ *
  * PHP versions 4 and 5
  *
  * LICENSE: This source file is subject to version 3.01 of the PHP license
@@ -15,9 +15,9 @@
  * @category    HTML
  * @package     HTML_QuickForm
  * @author      Isaac Shepard <ishepard@bsiweb.com>
- * @copyright   2001-2009 The PHP Group
+ * @copyright   2001-2011 The PHP Group
  * @license     http://www.php.net/license/3_01.txt PHP License 3.01
- * @version     CVS: $Id: hiddenselect.php,v 1.7 2009/04/04 21:34:03 avb Exp $
+ * @version     CVS: $Id$
  * @link        http://pear.php.net/package/HTML_QuickForm
  */
 
@@ -38,16 +38,16 @@ require_once 'HTML/QuickForm/select.php';
  * @category    HTML
  * @package     HTML_QuickForm
  * @author      Isaac Shepard <ishepard@bsiweb.com>
- * @version     Release: 3.2.11
+ * @version     Release: 3.2.16
  * @since       2.1
  */
 class HTML_QuickForm_hiddenselect extends HTML_QuickForm_select
 {
     // {{{ constructor
-        
+
     /**
      * Class constructor
-     * 
+     *
      * @param     string    Select name attribute
      * @param     mixed     Label(s) for the select (not used)
      * @param     mixed     Data to be used to populate options
@@ -65,7 +65,7 @@ class HTML_QuickForm_hiddenselect extends HTML_QuickForm_select
             $this->load($options);
         }
     } //end constructor
-    
+
     // }}}
     // {{{ toHtml()
 
@@ -75,7 +75,7 @@ class HTML_QuickForm_hiddenselect extends HTML_QuickForm_select
      * @since     1.0
      * @access    public
      * @return    string
-     * @throws    
+     * @throws
      */
     function toHtml()
     {
@@ -101,14 +101,18 @@ class HTML_QuickForm_hiddenselect extends HTML_QuickForm_select
 
         return $strHtml;
     } //end func toHtml
-    
+
     // }}}
     // {{{ accept()
 
-   /**
-    * This is essentially a hidden element and should be rendered as one  
-    */
-    function accept(&$renderer)
+    /**
+     * This is essentially a hidden element and should be rendered as one
+     *
+     * @param HTML_QuickForm_Renderer    renderer object
+     * @param bool $sc1                  unused, for signature compatibility
+     * @param bool $sc2                  unused, for signature compatibility
+     */
+    function accept(&$renderer, $sc1 = false, $sc2 = null)
     {
         $renderer->renderHidden($this);
     }

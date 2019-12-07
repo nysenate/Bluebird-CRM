@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,7 +27,8 @@
  * CiviCRM handler for options with the in operator.
  */
 class civicrm_handler_filter_option extends views_handler_filter_in_operator {
-  static $_options;
+  public static $_options;
+
   public function get_value_options() {
     $this->initialize();
 

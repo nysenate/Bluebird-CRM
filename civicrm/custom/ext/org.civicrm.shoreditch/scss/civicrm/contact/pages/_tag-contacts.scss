@@ -1,0 +1,237 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id, scss/at-extend-no-missing-placeholder, property-no-vendor-prefix */
+
+#{civi-page('tag')} {
+  #branding .page-title {
+    margin-bottom: 20px !important;
+  }
+
+  .help {
+    margin-bottom: 20px;
+  }
+
+  .tabs-secondary {
+    float: left;
+  }
+
+  .ui-dialog-content td {
+    vertical-align: middle;
+  }
+
+  .tag-info {
+    border: 1px solid $crm-grayblue-dark;
+    border-radius: $border-radius-base;
+    box-shadow: none;
+    color: $gray-darker;
+    font-size: $font-size-base;
+    right: 20px;
+
+    h4 {
+      margin-top: 0;
+    }
+
+    .tdl {
+      color: $gray-darker;
+      font-weight: $crm-font-weight-h3;
+    }
+
+    .button {
+      margin-top: 10px !important;
+
+      &:hover {
+        .fa-trash {
+          color: $crm-white;
+        }
+      }
+    }
+
+    .clear-tag-selection {
+      color: $brand-danger;
+      opacity: 1;
+
+      .fa-ban {
+        &::before {
+          @include fa-icon($font-size-base,$fa-var-close, $brand-danger);
+        }
+      }
+
+      &:hover {
+        .fa-ban {
+          &::before {
+            color: darken($brand-danger, $crm-darken-percentage);
+          }
+        }
+      }
+    }
+  }
+
+  .tag-tree {
+    width: 50%;
+  }
+
+  .ui-tabs {
+    div.tag-tree-wrapper {
+      min-height: 350px;
+    }
+
+    input[name='filter_tag_tree'] {
+      margin: 0 0 20px 20px;
+
+      + .crm-hover-button {
+        margin: 0 0 20px !important;
+      }
+    }
+  }
+
+  #page {
+    .crm-form-block td {
+      display: table-cell;
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    .crm-tag-form-block-is_reserved,
+    .crm-tag-form-block-is_slectable {
+      td.label {
+        vertical-align: top;
+      }
+    }
+  }
+
+  .crm-submit-buttons a.button {
+    background: $brand-primary;
+
+    &:hover {
+      background: darken($brand-primary, $crm-darken-percentage);
+      color: $crm-white;
+    }
+  }
+
+  .CRM_Tag_Form_Edit {
+    table.form-layout-compressed {
+      margin: 0 25px;
+
+      td > input.crm-form-color {
+        min-width: 48px !important;
+        width: 48px !important;
+      }
+    }
+
+    div,
+    span {
+      &.description {
+        display: block;
+        line-height: 1.5em;
+      }
+    }
+  }
+
+  #cat {
+    box-shadow: $box-shadow;
+    margin: 30px 0;
+
+    table {
+      @include expandable-table;
+    }
+  }
+
+  a {
+    &.button {
+      i {
+        margin-right: 3px;
+      }
+    }
+  }
+}
+
+.CRM_Contact_Form_Task_AddToTag,
+.CRM_Contact_Form_Task_RemoveFromTag {
+  table {
+    &.form-layout-compressed {
+      margin: 25px;
+    }
+  }
+
+  .listing-box {
+    height: auto;
+    max-height: 216px;
+
+    > div {
+      background-color: $crm-white;
+      padding: 5px 15px;
+    }
+  }
+}
+
+.CRM_Tag_Form_Tag {
+  #Tag {
+    background: $crm-white;
+    box-shadow: $box-shadow;
+
+    #tagtree {
+      padding-top: $crm-standard-gap;
+
+      li {
+        margin: 10px 0;
+
+        span {
+          background: none;
+        }
+      }
+
+      // We don't want to indent the very first <ul>, just those that are nested
+      > ul ul {
+        margin-left: $crm-standard-gap / 4 * 5;
+      }
+    }
+  }
+}
+
+
+#{civi-page('contact-view')} {
+  .CRM_Tag_Form_Tag {
+    #Tag {
+      table {
+        th {
+          @include panel-header;
+          border-width: 0 0 1px;
+          box-shadow: none;
+        }
+
+        td {
+          border: 0;
+          padding: $crm-standard-gap;
+        }
+      }
+
+      .jstree-default {
+        .jstree-checkbox {
+          @include box-shadow($crm-input-shadow);
+          background: none;
+          border: 1px solid $crm-grayblue-darker;
+          border-radius: $border-radius-base;
+          height: 16px;
+          margin-right: $crm-standard-gap / 4;
+          position: relative;
+          top: 5px;
+          width: 16px;
+        }
+
+        .jstree-clicked {
+          > .jstree-checkbox {
+            &::after {
+              @include fa-icon($font-size-base,$fa-var-check);
+              left: 2px;
+              position: absolute;
+              top: -3px;
+            }
+          }
+        }
+
+        .jstree-wholerow-hovered,
+        .jstree-wholerow-clicked {
+          background: $crm-white;
+        }
+      }
+    }
+  }
+}

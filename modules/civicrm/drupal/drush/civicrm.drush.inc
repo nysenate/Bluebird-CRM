@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2018                                |
+ | Copyright CiviCRM LLC (c) 2004-2019                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2018
+ * @copyright CiviCRM LLC (c) 2004-2019
  */
 
 /**
@@ -226,6 +226,13 @@ function civicrm_drush_command() {
     'aliases' => array('cvsqlc'),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_CONFIGURATION,
   );
+  $items['civicrm-sql-rebuild-triggers'] = array(
+    'description' => 'Rebuild SQL triggers',
+    'aliases' => array('cvsqlrt'),
+    'options' => array(
+      'table' => 'Specific table to target. If omitted, triggers for all tables are rebuilt.',
+    ),
+  );
   $items['civicrm-process-mail-queue'] = array(
     'description' => "Process pending CiviMail mailing jobs.",
     'examples' => array(
@@ -298,7 +305,6 @@ function drush_civicrm_install_validate() {
 
   return TRUE;
 }
-
 
 /**
  * Implementation of command 'civicrm-install'
@@ -711,7 +717,8 @@ function drush_civicrm_upgrade_db() {
 
     // new since CiviCRM 4.1
     if (is_callable(array(
-      $upgrade, 'setPrint'))) {
+      $upgrade, 'setPrint',
+    ))) {
       $upgrade->setPrint(TRUE);
     }
 
@@ -731,7 +738,6 @@ function drush_civicrm_upgrade_db() {
 function drush_civicrm_update_cfg_validate() {
   return _civicrm_init();
 }
-
 
 /**
  * Implementation of command 'civicrm-update-cfg'
@@ -1077,13 +1083,6 @@ function drush_civicrm_restore() {
   drush_log(dt('Restore process completed.'), 'completed');
 
   _civicrm_dsn_close();
-}
-
-/**
- * ?? for command 'civicrm-civimail'
- */
-function drush_civicrm_civimail_cron() {
-  civicrm_api('Mailing', 'Process', array('version' => 3));
 }
 
 /**
@@ -1457,6 +1456,13 @@ function _civicrm_init($fail = TRUE, $load_config = TRUE) {
     return $init;
   }
 
+  if (!version_compare(phpversion(), CIVICRM_DRUPAL_PHP_MINIMUM, '>=')) {
+    return drush_set_error('CIVICRM_PHP_MINIMUM', dt('CiviCRM requires PHP @required+. Drush is running PHP @current.', [
+      '@current' => phpversion(),
+      '@required' => CIVICRM_DRUPAL_PHP_MINIMUM,
+    ]));
+  }
+
   global $cmsPath;
   $cmsPath = $drupal_root = drush_get_context('DRUSH_DRUPAL_ROOT');
   $site_root = drush_get_context('DRUSH_DRUPAL_SITE_ROOT', FALSE);
@@ -1604,4 +1610,34 @@ function drush_civicrm_sync_users_contacts() {
     );
   drush_print(dt($status));
   return $result;
+}
+
+function drush_civicrm_sql_rebuild_triggers() {
+  $table = drush_get_option('table', NULL);
+  civicrm_initialize();
+  $triggerService = Civi::service('sql_triggers');
+  $triggerService->rebuild($table, TRUE);
+  if (\Civi::settings()->get('logging_no_trigger_permission')) {
+    $file = $triggerService->getFile();
+    drush_print("Trigger SQL written to $file");
+  }
+  else {
+    drush_print("Triggers rebuilt");
+  }
+}
+
+/**
+ * Callback function for civicrm-process-mail-queue.
+ *
+ * Call the process_mailing job to process any outstanding mailing jobs. This
+ * command will need to be run as a user with the correct permissions to
+ * process mailings.
+ *
+ * @see civicrm_drush_command()
+ */
+function drush_civicrm_process_mail_queue() {
+  $init = _civicrm_init();
+  $facility = new CRM_Core_JobManager();
+  $facility->setSingleRunParams('Job', 'process_mailing', array(), 'Started by drush');
+  $facility->executeJobByAction('Job', 'process_mailing');
 }

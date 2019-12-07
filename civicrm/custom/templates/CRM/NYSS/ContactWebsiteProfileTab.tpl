@@ -24,7 +24,7 @@
  +--------------------------------------------------------------------+
 *}
 {* Custom Data view mode*}
-<div id="WebsiteProfile" class="view-content crm-block crm-content-block">
+<div id="WebsiteProfile" class="view-content crm-block crm-content-block nyss-integration-tab">
   <h3>Website Profile</h3>
 
   {if $webUserURL}

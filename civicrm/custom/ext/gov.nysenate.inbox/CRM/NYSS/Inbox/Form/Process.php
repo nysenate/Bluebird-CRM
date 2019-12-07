@@ -16,6 +16,7 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
 
   public function buildQuickForm() {
     CRM_NYSS_Inbox_BAO_Inbox::addResources('process');
+    $defaults = [];
 
     if ($isMultiple = CRM_Utils_Request::retrieve('multi', 'Boolean')) {
       $this->add('hidden', 'is_multiple', $isMultiple);
@@ -109,7 +110,8 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
     //tag tree
     $tags = CRM_Core_BAO_Tag::getColorTags('civicrm_contact');
     if (!empty($tags)) {
-      $this->add('select2', 'tag', ts('Issue Codes'), $tags, FALSE, array('class' => 'huge', 'placeholder' => ts('- select -'), 'multiple' => TRUE));
+      $this->add('select2', 'tag', ts('Issue Codes'), $tags,
+        FALSE, ['class' => 'huge', 'placeholder' => ts('- select -'), 'multiple' => TRUE]);
     }
 
     $this->addEntityRef('activity_keywords', 'Keywords', array(
@@ -131,7 +133,8 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
     ), FALSE);
 
     if (!empty($tags)) {
-      $this->add('select2', 'activity_tag', ts('Issue Codes'), $tags, FALSE, array('class' => 'huge', 'placeholder' => ts('- select -'), 'multiple' => TRUE));
+      $this->add('select2', 'activity_tag', ts('Issue Codes'), $tags,
+        FALSE, ['class' => 'huge', 'placeholder' => ts('- select -'), 'multiple' => TRUE]);
     }
 
     //groups
@@ -142,7 +145,8 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
     );
 
     //edit activity form elements
-    $staffGroupID = civicrm_api3('group', 'getvalue', array('name' => 'Office_Staff', 'return' => 'id'));
+    $staffGroupID = civicrm_api3('group', 'getvalue',
+      ['name' => 'Office_Staff', 'return' => 'id']);
     $this->addEntityRef('activity_assignee', 'Assign Activity to', array(
       'api' => array(
         'params' => array(
@@ -157,31 +161,54 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
     $statusTypes = CRM_Core_PseudoConstant::activityStatus();
     $this->add('select', 'activity_status', 'Status',
       array('' => '- select status -') + $statusTypes, FALSE);
+    $this->addEntityRef('case_id', ts('File on Case'), ['entity' => 'Case']);
 
-    $this->addButtons(array(
-      array(
+    //see if subject has [case #] hash and set as default case
+    if (!empty($details['activity_id'])) {
+      $matches = [];
+      $subjectToMatch = civicrm_api3('activity', 'getvalue', [
+        'id' => $details['activity_id'],
+        'return' => 'subject',
+      ]);
+      if (preg_match('/\[case #([0-9a-h]{7})\]/', $subjectToMatch, $matches)) {
+        $key = CRM_Core_DAO::escapeString(CIVICRM_SITE_KEY);
+        $hash = $matches[1];
+        $query = "SELECT id FROM civicrm_case WHERE SUBSTR(SHA1(CONCAT('$key', id)), 1, 7) = '" . CRM_Core_DAO::escapeString($hash) . "'";
+      }
+      elseif (preg_match('/\[case #(\d+)\]/', $subjectToMatch, $matches)) {
+        $query = "SELECT id FROM civicrm_case WHERE id = '" . CRM_Core_DAO::escapeString($matches[1]) . "'";
+      }
+
+      if ($query) {
+        $caseId = CRM_Core_DAO::singleValueQuery($query);
+        $defaults['case_id'] = $caseId;
+      }
+    }
+
+    $this->setDefaults($defaults);
+
+    $this->addButtons([
+      [
         'type' => 'upload',
         'subName' => 'update',
         'name' => ts('Update'),
         'isDefault' => TRUE,
-      ),
-      array(
+      ],
+      [
         'type' => 'upload',
         'subName' => 'updateclear',
         'name' => ts('Update and Clear'),
-        'isDefault' => TRUE,
-      ),
-      array(
+      ],
+      [
         'type' => 'upload',
         'subName' => 'clear',
         'name' => ts('Clear'),
-        'isDefault' => TRUE,
-      ),
-      array(
+      ],
+      [
         'type' => 'cancel',
         'name' => ts('Cancel'),
-      ),
-    ));
+      ],
+    ]);
 
     // export form elements
     $this->assign('elementNames', $this->getRenderableElementNames());

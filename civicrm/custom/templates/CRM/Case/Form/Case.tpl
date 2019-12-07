@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2018                                |
+ | Copyright CiviCRM LLC (c) 2004-2019                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -105,44 +105,25 @@
     </tr>
 {/if}
 
-  {*NYSS 12439*}
-  {if $form.tag.html}
+{*NYSS 12439*}
+{if $form.tag.html}
     <tr class="crm-case-form-block-tag">
       <td class="label">Issue Codes</td>
-      <td class="view-value">
-        <div class="crm-select-container">{$form.tag.html}</div>
+      <td class="view-value"><div class="crm-select-container">{$form.tag.html}</div>
       </td>
     </tr>
-  {/if}
-
-  {if $tagsetInfo.case}
-    <tr class="crm-case-form-block-tag_set">{include file="CRM/common/Tagset.tpl" tagsetType='case' tableLayout=true}</tr>
-  {/if}
+{/if}
 
 <tr class="crm-case-form-block-custom_data">
     <td colspan="2">
-        <div id="customData"></div>
+      {include file="CRM/common/customDataBlock.tpl"}
     </td>
 </tr>
 
-</table>
-{/if}
+{*NYSS 13029*}
+<tr class="crm-case-form-block-tag_set">{include file="CRM/common/Tagset.tpl" tagsetType='case' tableLayout=1}</tr>
 
-{if $action eq 1}
-    {*include custom data js file*}
-    {include file="CRM/common/customData.tpl"}
-    {literal}
-      <script type="text/javascript">
-      CRM.$(function($) {
-           var customDataSubType = $('#case_type_id').val();
-           if ( customDataSubType ) {
-              CRM.buildCustomData( {/literal}'{$customDataType}'{literal}, customDataSubType );
-           } else {
-              CRM.buildCustomData( {/literal}'{$customDataType}'{literal} );
-           }
-       });
-       </script>
-     {/literal}
+</table>
 {/if}
 
 <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>

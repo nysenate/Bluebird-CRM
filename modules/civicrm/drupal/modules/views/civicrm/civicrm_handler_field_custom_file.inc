@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -37,6 +37,7 @@
  * @ingroup civicrm_field_handlers
  */
 class civicrm_handler_field_custom_file extends views_handler_field {
+
   public function construct() {
     parent::construct();
     civicrm_initialize();
@@ -53,7 +54,8 @@ class civicrm_handler_field_custom_file extends views_handler_field {
       );
 
       if ($fileType && in_array($fileType, array(
-        "image/jpeg", "image/pjpeg", "image/gif", "image/x-png", "image/png"))) {
+        "image/jpeg", "image/pjpeg", "image/gif", "image/x-png", "image/png",
+      ))) {
         $uri = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_File',
           $value,
           'uri'
@@ -62,12 +64,9 @@ class civicrm_handler_field_custom_file extends views_handler_field {
         $path = sprintf('%s/imagefile', $path);
       }
       $entityField = $this->aliases['entity_id'];
-      $url = CRM_Utils_System::url($path,
-        "id={$value}&eid={$values->$entityField}",
-        TRUE, FALSE, FALSE, TRUE
-      );
+      $fileHash = CRM_Core_BAO_File::generateFileHash($values->$entityField, $value);
       return CRM_Utils_System::url($path,
-        "id={$value}&eid={$values->$entityField}",
+        "id={$value}&eid={$values->$entityField}&fcs={$fileHash}",
         TRUE, FALSE, FALSE, TRUE
       );
     }

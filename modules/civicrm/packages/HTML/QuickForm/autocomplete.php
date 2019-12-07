@@ -3,7 +3,7 @@
 
 /**
  * HTML class for an autocomplete element
- * 
+ *
  * PHP versions 4 and 5
  *
  * LICENSE: This source file is subject to version 3.01 of the PHP license
@@ -15,28 +15,28 @@
  * @category    HTML
  * @package     HTML_QuickForm
  * @author      Matteo Di Giovinazzo <matteodg@infinito.it>
- * @copyright   2001-2009 The PHP Group
+ * @copyright   2001-2011 The PHP Group
  * @license     http://www.php.net/license/3_01.txt PHP License 3.01
- * @version     CVS: $Id: autocomplete.php,v 1.8 2009/04/04 21:34:02 avb Exp $
+ * @version     CVS: $Id$
  * @link        http://pear.php.net/package/HTML_QuickForm
  */
 
 /**
  * HTML class for a text field
- */ 
+ */
 require_once 'HTML/QuickForm/text.php';
 
 /**
  * HTML class for an autocomplete element
- * 
+ *
  * Creates an HTML input text element that
  * at every keypressed javascript event checks in an array of options
  * if there's a match and autocompletes the text in case of match.
  *
  * For the JavaScript code thanks to Martin Honnen and Nicholas C. Zakas
  * See {@link http://www.faqts.com/knowledge_base/view.phtml/aid/13562} and
- * {@link http://www.sitepoint.com/article/1220} 
- * 
+ * {@link http://www.sitepoint.com/article/1220}
+ *
  * Example:
  * <code>
  * $autocomplete =& $form->addElement('autocomplete', 'fruit', 'Favourite fruit:');
@@ -47,7 +47,7 @@ require_once 'HTML/QuickForm/text.php';
  * @category    HTML
  * @package     HTML_QuickForm
  * @author      Matteo Di Giovinazzo <matteodg@infinito.it>
- * @version     Release: 3.2.11
+ * @version     Release: 3.2.16
  * @since       3.2
  */
 class HTML_QuickForm_autocomplete extends HTML_QuickForm_text
@@ -124,7 +124,7 @@ class HTML_QuickForm_autocomplete extends HTML_QuickForm_text
         $arrayName = str_replace(array('[', ']'), array('__', ''), $this->getName()) . '_values';
 
         $this->updateAttributes(array(
-            'onkeypress' => 'return autocomplete(this, event, ' . $arrayName . ');'
+            'onkeypress' => 'return window.autocomplete(this, event, ' . $arrayName . ');'
         ));
         if ($this->_flagFrozen) {
             $js = '';

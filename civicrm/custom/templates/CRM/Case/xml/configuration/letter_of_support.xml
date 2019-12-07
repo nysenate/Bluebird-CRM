@@ -2,6 +2,10 @@
 
 <CaseType>
   <name>Letter of Support</name>
+  <ActivityAsgmtGrps>
+    <Group>Office_Staff</Group>
+  </ActivityAsgmtGrps>
+  <RestrictActivityAsgmtToCmsUser>0</RestrictActivityAsgmtToCmsUser>
   
   <ActivityTypes>
     <ActivityType>
@@ -87,15 +91,19 @@
       <name>Case Manager</name>
       <creator>1</creator>
       <manager>1</manager>
+      <groups>Office_Staff</groups>
     </RelationshipType>
     <RelationshipType>
       <name>Case Coordinator</name>
+      <groups>Office_Staff</groups>
     </RelationshipType>
     <RelationshipType>
       <name>Support Staff</name>
+      <groups>Office_Staff</groups>
     </RelationshipType>
     <RelationshipType>
       <name>Non-District Staff</name>
+      <groups>Office_Staff</groups>
     </RelationshipType>
   </CaseRoles>
 

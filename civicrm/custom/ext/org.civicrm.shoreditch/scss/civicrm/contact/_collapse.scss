@@ -1,0 +1,46 @@
+// Collapse
+.crm-collapsible {
+  background: $crm-white;
+  border-radius: 0;
+  box-shadow: $box-shadow;
+  box-sizing: border-box;
+  margin-top: 14px;
+  padding: 15px 20px !important;
+
+  .crm-inline-block-content {
+    padding: 0 !important;
+  }
+
+  .crm-summary-block {
+    box-shadow: none !important;
+    margin-top: 15px;
+    padding-top: 10px;
+  }
+
+  .collapsible-title {
+    background-image: none !important;
+    border: 0;
+    color: $gray-darker;
+    font-family: 'Open Sans';
+    font-size: 18px;
+    font-weight: $crm-font-weight-bold;
+    padding: 0;
+
+    &:hover {
+      color: $gray-darker;
+    }
+
+    &::before {
+      @include fa-icon(13px, '\f078');
+      margin-right: 5px;
+    }
+  }
+
+  &.collapsed {
+    .collapsible-title {
+      &::before {
+        @include fa-icon(13px, '\f054');
+      }
+    }
+  }
+}
