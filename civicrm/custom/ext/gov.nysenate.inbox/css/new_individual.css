@@ -12,11 +12,11 @@ div.crm-profile-name-new_individual {
   min-width: 310px;
   float: left;
   border-right: 1px solid #aaaaaa;
-  margin-bottom: 10px;
+  margin-bottom: 50px;
 }
 form.CRM_Profile_Form_Edit div.message-details {
   float: right;
-  width: 630px;
+  width: 540px;
   margin-right: 10px;
 }
 form.CRM_Profile_Form_Edit div.message-details .content {
@@ -28,6 +28,11 @@ form.CRM_Profile_Form_Edit div.crm-submit-buttons {
 }
 div.ui-dialog-buttonpane {
   margin-top: 0 !important;
-  display: none;
+  display: none !important;
 }
-
+.crm-container.ui-dialog .button.cancel {
+  padding: 8px 12px !important;
+}
+.crm-container.ui-dialog .button.cancel i {
+  padding-right: 4px;
+}
