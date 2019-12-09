@@ -473,7 +473,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
             break;
           case 'matched':
             $urlProcess = CRM_Utils_System::url('civicrm/nyss/inbox/process',
-              "reset=1&id={$dao->id}&matched_id={$dao->matched_id}");
+              "reset=1&row_id={$dao->id}&matched_id={$dao->matched_id}");
             $urlClear = CRM_Utils_System::url('civicrm/nyss/inbox/clear',
               "reset=1&id={$dao->id}&matched_id={$dao->matched_id}");
             $links['process'] =
@@ -895,7 +895,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       }
 
       //if working with a single contact, check if email should be updated
-      if (!$values['is_multiple']) {
+      if (!CRM_Utils_Array::value('is_multiple', $values)) {
         $matchId = (!empty($values['assignee'])) ? $values['assignee'] : $row['current_assignee'];
         foreach (['phone', 'email'] as $type) {
           $new_val = CRM_Utils_Array::value("{$type}-" . $matchId, $_REQUEST);

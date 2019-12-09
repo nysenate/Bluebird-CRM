@@ -494,6 +494,8 @@ sql="
     (18, 'view all contacts', 'civicrm'),
     (18, 'view my contact', 'civicrm'),
 
+    (19, 'edit inbound email basic information', 'civicrm'),
+    (19, 'edit inbound email basic information and content', 'civicrm'),
     (19, 'access inbox polling', 'nyss_civihooks');
 "
 $execSql -q $instance -c "$sql" --drupal

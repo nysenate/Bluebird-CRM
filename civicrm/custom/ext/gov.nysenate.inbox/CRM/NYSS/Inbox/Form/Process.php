@@ -15,6 +15,8 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
   }
 
   public function buildQuickForm() {
+    //Civi::log()->debug('buildQuickForm', ['$_REQUEST' => $_REQUEST]);
+
     CRM_NYSS_Inbox_BAO_Inbox::addResources('process');
     $defaults = [];
 
@@ -64,7 +66,7 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
     }
     else {
       //get details about record
-      $rowId = CRM_Utils_Request::retrieve('id', 'Positive');
+      $rowId = CRM_Utils_Request::retrieve('row_id', 'Positive');
       $matchedId = CRM_Utils_Request::retrieve('matched_id', 'Positive');
 
       $this->add('hidden', 'row_id', $rowId);
@@ -179,7 +181,7 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
         $query = "SELECT id FROM civicrm_case WHERE id = '" . CRM_Core_DAO::escapeString($matches[1]) . "'";
       }
 
-      if ($query) {
+      if (!empty($query)) {
         $caseId = CRM_Core_DAO::singleValueQuery($query);
         $defaults['case_id'] = $caseId;
       }
@@ -251,7 +253,7 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
     //CRM_Core_Error::debug_var('classSub', $classSub);
 
     $rows = array($values['row_id']);
-    if ($values['is_multiple']) {
+    if (CRM_Utils_Array::value('is_multiple', $values)) {
       $rows = CRM_NYSS_Inbox_BAO_Inbox::getMultiRowIds(json_decode($values['multi_ids'], TRUE));
     }
 
@@ -279,6 +281,10 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
     CRM_Core_Session::setStatus($msg);
 
     parent::postProcess();
+
+    if (CRM_Utils_Request::retrieve('snippet', 'String') != 'json') {
+      CRM_Utils_System::redirect(CRM_Utils_System::url('civicrm/nyss/inbox/matched', 'reset=1'));
+    }
   }
 
   /**
