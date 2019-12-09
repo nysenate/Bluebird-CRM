@@ -139,6 +139,7 @@ $prefsCore['wkhtmltopdfPath'] = get_config_value($bbcfg, 'wkhtmltopdf.path', '/u
 $prefsCore['versionCheck'] = false;
 $prefsCore['checksumTimeout'] = 7;
 $prefsCore['menubar_color'] = '#DADAD2';
+$prefsCore['ajaxPopupsEnabled'] = 1;
 
 // Address settings, from Address.setting.php
 // address_standardization_provider
