@@ -26,7 +26,7 @@ function ldap_servers_uninstall() {
  * Implements hook_requirements().
  */
 function ldap_servers_requirements($phase) {
-  $requirements = array();
+  $requirements = [];
   $t = get_t();
 
   if ($phase == 'install') {
@@ -54,15 +54,14 @@ function ldap_servers_requirements($phase) {
       LDAP Servers is not automatic.  LDAP Servers will need to be configured by hand.
       See http://drupal.org/node/1023016. This message will go away when the ldapauth database table is removed.');
   }
-  // check that ldapauth not installed.
-
+  // Check that ldapauth not installed.
   // Check enabled LDAP servers are configured and Drupal can connect to them.
   if ($phase == 'runtime') {
-    $requirements['ldap_servers_enabled'] = array(
+    $requirements['ldap_servers_enabled'] = [
       'title' => $t('LDAP Server status'),
       'value' => $t('Disabled'),
       'severity' => REQUIREMENT_WARNING,
-    );
+    ];
 
     $servers = ldap_servers_get_servers(NULL, 'enabled');
     if (!empty($servers)) {
@@ -70,15 +69,15 @@ function ldap_servers_requirements($phase) {
 
       foreach ($servers as $server) {
         $server_req_key = 'ldap_servers_sid_' . $server->sid;
-        $server_tokens = array(
+        $server_tokens = [
           '@host' => $server->address,
           '@sid' => $server->sid,
-        );
-        $requirements[$server_req_key] = array(
+        ];
+        $requirements[$server_req_key] = [
           'title' => $t('LDAP Server status: @sid (@host)', $server_tokens),
           'value' => $t('Connection: Failed, check logs for details.', $server_tokens),
           'severity' => REQUIREMENT_ERROR,
-        );
+        ];
 
         try {
           $connect_result = $server->connect();
@@ -88,7 +87,8 @@ function ldap_servers_requirements($phase) {
               // The user has already logged in and so their is no dn or password
               // to check since LDAP doesn't store passwords.
               $bind_result = $server->bind(NULL, NULL, TRUE);
-            } else {
+            }
+            else {
               $bind_result = $server->bind();
             }
             if ($bind_result == LDAP_SUCCESS) {
@@ -112,25 +112,26 @@ function ldap_servers_requirements($phase) {
  */
 function ldap_servers_schema() {
   module_load_include('inc', 'ldap_servers', 'ldap_servers.functions');
-  module_load_include('module', 'ldap_servers', 'ldap_servers'); // to get the LDAP_SERVERS_ENC_TYPE_CLEARTEXT constants issue#1209576
+  // To get the LDAP_SERVERS_ENC_TYPE_CLEARTEXT constants issue#1209576.
+  module_load_include('module', 'ldap_servers', 'ldap_servers');
   module_load_include('php', 'ldap_servers', 'LdapServerAdmin.class');
 
-  $schema['ldap_servers'] = array(
-    'export' => array(
+  $schema['ldap_servers'] = [
+    'export' => [
       'key' => 'sid',
       'key name' => 'Server ID',
       'primary key' => 'numeric_sid',
       'identifier' => 'ldap_servers_conf',
-      'api' => array(
+      'api' => [
         'owner' => 'ldap_servers',
         'api' => 'ldap_servers',
         'minimum_version' => 1,
         'current_version' => 1,
-        ),
-      ),
-    'primary key' => array('numeric_sid'),
-    'unique keys' => array('name' => array('name')),
-  );
+      ],
+    ],
+    'primary key' => ['numeric_sid'],
+    'unique keys' => ['name' => ['name']],
+  ];
 
   $fields = LdapServerAdmin::fields();
   foreach ($fields as $name => $props) {
@@ -144,16 +145,15 @@ function ldap_servers_schema() {
 }
 
 /**
- * rename ldap_servers type field to ldap_type
+ * Rename ldap_servers type field to ldap_type.
  */
-
 function ldap_servers_update_7100() {
   if (!ldap_servers_db_field_exists('ldap_servers', 'ldap_type') && ldap_servers_db_field_exists('ldap_servers', 'type')) {
-    db_change_field('ldap_servers', 'type', 'ldap_type', array(
+    db_change_field('ldap_servers', 'type', 'ldap_type', [
       'type' => 'varchar',
       'length' => 20,
-      'not null' => FALSE
-    ));
+      'not null' => FALSE,
+    ]);
   }
 
   return t('ldap_servers table field "type" renamed to "ldap_type"');
@@ -161,70 +161,67 @@ function ldap_servers_update_7100() {
 }
 
 /**
- * ldap_server table field changes
+ * Ldap_server table field changes.
  */
-
 function ldap_servers_update_7101() {
 
   db_add_field(
     'ldap_servers',
     'allow_conflicting_drupal_accts',
-    array(
+    [
       'type' => 'int',
       'size' => 'tiny',
       'not null' => FALSE,
       'default' => 0,
-    )
+    ]
   );
 
   db_add_field(
     'ldap_servers',
     'unique_persistent_attr',
-    array(
+    [
       'type' => 'varchar',
       'length' => '64',
       'not null' => FALSE,
-    )
+    ]
   );
 
   db_add_field(
     'ldap_servers',
     'mail_template',
-    array(
+    [
       'type' => 'varchar',
       'length' => '255',
       'not null' => FALSE,
-    )
+    ]
   );
 
-  db_change_field('ldap_servers', 'ldap_to_drupal_user', 'ldap_to_drupal_user', array(
+  db_change_field('ldap_servers', 'ldap_to_drupal_user', 'ldap_to_drupal_user', [
     'type' => 'varchar',
     'length' => 1024,
-    'not null' => FALSE
-  ));
+    'not null' => FALSE,
+  ]);
 
-  db_change_field('ldap_servers', 'binddn', 'binddn', array(
+  db_change_field('ldap_servers', 'binddn', 'binddn', [
     'type' => 'varchar',
     'length' => 511,
-  ));
-
+  ]);
 
   return t('Updated LDAP Server to include "allow_conflicting_drupal_accts" and "unique_persistent_attr" fields.');
 }
 
-
 /**
- * add bind_method field to ldap_servers table
+ * Add bind_method field to ldap_servers table.
  */
 function ldap_servers_update_7102() {
 
   if (!ldap_servers_db_field_exists('ldap_servers', 'bind_method')) {
-    db_add_field('ldap_servers', 'bind_method', array(
+    db_add_field('ldap_servers', 'bind_method', [
       'type' => 'int',
       'size' => 'tiny',
       'not null' => TRUE,
       'default' => 0,
-    ));
+    ]);
     $msg = t('"bind_method" field added to ldap_servers table');
   }
 
@@ -232,90 +229,85 @@ function ldap_servers_update_7102() {
 }
 
 /**
- * add group_object_category field to ldap_servers table
+ * Add group_object_category field to ldap_servers table.
  */
 function ldap_servers_update_7103() {
 
   if (!ldap_servers_db_field_exists('ldap_servers', 'group_object_category')) {
-    db_add_field('ldap_servers', 'group_object_category', array(
+    db_add_field('ldap_servers', 'group_object_category', [
       'type' => 'varchar',
       'length' => 64,
       'not null' => FALSE,
-    ));
+    ]);
     $msg = t('"group_object_category" field added to ldap_servers table');
   }
 
   return ($msg) ? $msg : t('No database changes made.');
 }
 
-
 /**
- * add pagination fields to ldap_servers table
+ * Add pagination fields to ldap_servers table.
  */
 function ldap_servers_update_7104() {
 
   if (!ldap_servers_db_field_exists('ldap_servers', 'search_pagination')) {
-    db_add_field('ldap_servers', 'search_pagination', array(
+    db_add_field('ldap_servers', 'search_pagination', [
       'type' => 'int',
       'size' => 'tiny',
       'not null' => FALSE,
       'default' => 0,
-    ));
+    ]);
     $msg = t('"search_pagination" field added to ldap_servers table');
   }
 
   if (!ldap_servers_db_field_exists('ldap_servers', 'search_page_size')) {
-    db_add_field('ldap_servers', 'search_page_size', array(
+    db_add_field('ldap_servers', 'search_page_size', [
       'type' => 'int',
       'size' => 'medium',
       'not null' => FALSE,
       'default' => 1000,
-    ));
+    ]);
     $msg .= '<br/>' . t('"search_page_size" field added to ldap_servers table');
   }
 
   if (!ldap_servers_db_field_exists('ldap_servers', 'unique_persistent_attr_binary')) {
-    db_add_field('ldap_servers', 'unique_persistent_attr_binary', array(
+    db_add_field('ldap_servers', 'unique_persistent_attr_binary', [
       'type' => 'int',
       'size' => 'tiny',
       'not null' => FALSE,
       'default' => 0,
-    ));
+    ]);
     $msg = t('"unique_persistent_attr_binary" field added to ldap_servers table');
   }
-
-
 
   return ($msg) ? $msg : t('No database changes made.');
 }
 
 /**
- * enable ldap_user module
+ * Enable ldap_user module.
  */
 function ldap_servers_update_7105() {
 
   if (!module_exists('ldap_user')) {
-    module_enable(array('ldap_user'));
+    module_enable(['ldap_user']);
     $msg = t('LDAP User module enabled.  Some authentication and authorization functionality shifted to LDAP User module.');
   }
 
   return ($msg) ? $msg : t('LDAP User module was already enabled.  No action taken.');
 }
 
-
-
 /**
- * add account_name_attr field to ldap_servers table
+ * Add account_name_attr field to ldap_servers table.
  */
 function ldap_servers_update_7106() {
   if (!ldap_servers_db_field_exists('ldap_servers', 'account_name_attr')) {
-    db_add_field('ldap_servers', 'account_name_attr', array(
-    'description' => 'The attribute to be used as the account name if not the user_attr',
-    'type' => 'varchar',
-    'length' => 255,
-    'not null' => FALSE,
-    'default' => '',
-  ));
+    db_add_field('ldap_servers', 'account_name_attr', [
+      'description' => 'The attribute to be used as the account name if not the user_attr',
+      'type' => 'varchar',
+      'length' => 255,
+      'not null' => FALSE,
+      'default' => '',
+    ]);
     $msg = t('"account_name_attr" field added to ldap_servers table');
   }
 
@@ -323,7 +315,7 @@ function ldap_servers_update_7106() {
 }
 
 /**
- *  remove allow_conflicting_drupal_accts from ldap_servers table
+ * Remove allow_conflicting_drupal_accts from ldap_servers table.
  */
 function ldap_servers_update_7107() {
   if (ldap_servers_db_field_exists('ldap_servers', 'allow_conflicting_drupal_accts')) {
@@ -333,216 +325,216 @@ function ldap_servers_update_7107() {
   return ($msg) ? $msg : t('No database changes made.');
 }
 
-
-
+/**
+ *
+ */
 function ldap_servers_db_field_exists($table, $field_name) {
-  if (!db_field_exists($table, $field_name) && !db_field_exists($table, drupal_strtolower($field_name)) ) {
-    return false;
+  if (!db_field_exists($table, $field_name) && !db_field_exists($table, drupal_strtolower($field_name))) {
+    return FALSE;
   }
   else {
-    return true;
+    return TRUE;
   }
 }
+
 /**
- * add group related fields to ldap_servers table
+ * Add group related fields to ldap_servers table.
  */
 function ldap_servers_update_7108() {
 
-  foreach (array('groupFunctionalityUnused', 'groupNested', 'groupSearchAll', 'groupUserMembershipsAttrExists', 'groupDeriveFromDn', 'groupUserMembershipsAttrExists') as $tinyint_field_name) {
-    if (!ldap_servers_db_field_exists('ldap_servers', $tinyint_field_name))  {
-      db_add_field('ldap_servers', $tinyint_field_name, array(
+  foreach (['groupFunctionalityUnused', 'groupNested', 'groupSearchAll', 'groupUserMembershipsAttrExists', 'groupDeriveFromDn', 'groupUserMembershipsAttrExists'] as $tinyint_field_name) {
+    if (!ldap_servers_db_field_exists('ldap_servers', $tinyint_field_name)) {
+      db_add_field('ldap_servers', $tinyint_field_name, [
         'type' => 'int',
         'size' => 'tiny',
         'not null' => FALSE,
         'default' => 0,
-      ));
-      $msg = t('"!name" field added to ldap_servers table', array('!name' => $tinyint_field_name));
+      ]);
+      $msg = t('"!name" field added to ldap_servers table', ['!name' => $tinyint_field_name]);
     }
   }
-  foreach (array('groupUserMembershipsAttr', 'groupMembershipsAttr', 'groupTestGroupDn', 'groupUserMembershipsAttr', 'groupMembershipsAttrMatchingUserAttr') as $varchar255field_name) {
+  foreach (['groupUserMembershipsAttr', 'groupMembershipsAttr', 'groupTestGroupDn', 'groupUserMembershipsAttr', 'groupMembershipsAttrMatchingUserAttr'] as $varchar255field_name) {
     if (!ldap_servers_db_field_exists('ldap_servers', $varchar255field_name) && !ldap_servers_db_field_exists('ldap_servers', drupal_strtolower($varchar255field_name))) {
-      db_add_field('ldap_servers', $varchar255field_name, array(
+      db_add_field('ldap_servers', $varchar255field_name, [
         'type' => 'varchar',
         'length' => '255',
         'not null' => FALSE,
-      ));
-      $msg = t('"!name" field added to ldap_servers table', array('!name' => $varchar255field_name));
+      ]);
+      $msg = t('"!name" field added to ldap_servers table', ['!name' => $varchar255field_name]);
     }
   }
 }
 
-
 /**
- * adjust group related fields to ldap_servers table
+ * Adjust group related fields to ldap_servers table.
  */
 function ldap_servers_update_7109() {
 
   if (!ldap_servers_db_field_exists('ldap_servers', 'groupNested')) {
-    db_add_field('ldap_servers', 'groupNested', array(
+    db_add_field('ldap_servers', 'groupNested', [
       'type' => 'int',
       'size' => 'tiny',
       'not null' => FALSE,
       'default' => 0,
-    ));
+    ]);
     $msg = t('"groupNested" field added to ldap_servers table');
   }
 
   if (!ldap_servers_db_field_exists('ldap_servers', 'groupUseFirstAttr')) {
-    db_add_field('ldap_servers', 'groupUseFirstAttr', array(
+    db_add_field('ldap_servers', 'groupUseFirstAttr', [
       'type' => 'int',
       'size' => 'tiny',
       'not null' => FALSE,
       'default' => 0,
-    ));
+    ]);
     $msg .= '<br/>' . t('"groupUseFirstAttr" field added to ldap_servers table');
   }
 
   if (!ldap_servers_db_field_exists('ldap_servers', 'groupSearchAll')) {
-    db_add_field('ldap_servers', 'groupSearchAll', array(
+    db_add_field('ldap_servers', 'groupSearchAll', [
       'type' => 'int',
       'size' => 'tiny',
       'not null' => FALSE,
       'default' => 0,
-    ));
+    ]);
     $msg = t('"groupSearchAll" field added to ldap_servers table');
   }
 
   if (!ldap_servers_db_field_exists('ldap_servers', 'groupUserMembershipsAttrExists')) {
-    db_add_field('ldap_servers', 'groupUserMembershipsAttrExists', array(
+    db_add_field('ldap_servers', 'groupUserMembershipsAttrExists', [
       'type' => 'int',
       'size' => 'tiny',
       'not null' => FALSE,
       'default' => 0,
-    ));
+    ]);
     $msg = t('"groupUserMembershipsAttrExists" field added to ldap_servers table');
   }
 
   if (!ldap_servers_db_field_exists('ldap_servers', 'groupUserMembershipsAttr')) {
-    db_add_field('ldap_servers', 'groupUserMembershipsAttr', array(
+    db_add_field('ldap_servers', 'groupUserMembershipsAttr', [
       'type' => 'varchar',
       'length' => '255',
       'not null' => FALSE,
-    ));
+    ]);
     $msg = t('"groupUserMembershipsAttr" field added to ldap_servers table');
   }
 
   if (!ldap_servers_db_field_exists('ldap_servers', 'groupMembershipsAttr')) {
-    db_add_field('ldap_servers', 'groupMembershipsAttr', array(
+    db_add_field('ldap_servers', 'groupMembershipsAttr', [
       'type' => 'varchar',
       'length' => '255',
       'not null' => FALSE,
-    ));
+    ]);
     $msg = t('"groupMembershipsAttr" field added to ldap_servers table');
   }
 
   if (!ldap_servers_db_field_exists('ldap_servers', 'groupMembershipsAttrMatchingUserAttr')) {
-    db_add_field('ldap_servers', 'groupMembershipsAttrMatchingUserAttr', array(
+    db_add_field('ldap_servers', 'groupMembershipsAttrMatchingUserAttr', [
       'type' => 'varchar',
       'length' => '255',
       'not null' => FALSE,
-    ));
+    ]);
     $msg = t('"groupMembershipsAttrMatchingUserAttr" field added to ldap_servers table');
   }
 
   if (!ldap_servers_db_field_exists('ldap_servers', 'groupUserMembershipsAttrExists')) {
-    db_add_field('ldap_servers', 'groupUserMembershipsAttrExists', array(
+    db_add_field('ldap_servers', 'groupUserMembershipsAttrExists', [
       'type' => 'int',
       'size' => 'tiny',
       'not null' => FALSE,
       'default' => 0,
-    ));
+    ]);
     $msg = t('"groupUserMembershipsAttrExists" field added to ldap_servers table');
   }
 
   if (!ldap_servers_db_field_exists('ldap_servers', 'groupUserMembershipsAttr')) {
-    db_add_field('ldap_servers', 'groupUserMembershipsAttr', array(
+    db_add_field('ldap_servers', 'groupUserMembershipsAttr', [
       'type' => 'varchar',
       'length' => '255',
       'not null' => FALSE,
-    ));
+    ]);
     $msg = t('"groupUserMembershipsAttr" field added to ldap_servers table');
   }
 
 }
 
 /**
- * adjust group related fields to ldap_servers table
+ * Adjust group related fields to ldap_servers table.
  */
 function ldap_servers_update_7110() {
 
   if (!ldap_servers_db_field_exists('ldap_servers', 'groupFunctionalityUnused')) {
-    db_add_field('ldap_servers', 'groupFunctionalityUnused', array(
+    db_add_field('ldap_servers', 'groupFunctionalityUnused', [
       'type' => 'int',
       'size' => 'tiny',
       'not null' => FALSE,
       'default' => 0,
-    ));
+    ]);
     $msg = t('"groupFunctionalityUnused" field added to ldap_servers table');
   }
 
   if (!ldap_servers_db_field_exists('ldap_servers', 'groupTestGroupDn')) {
-    db_add_field('ldap_servers', 'groupTestGroupDn', array(
+    db_add_field('ldap_servers', 'groupTestGroupDn', [
       'type' => 'varchar',
       'length' => '255',
       'not null' => FALSE,
-    ));
+    ]);
     $msg = t('"groupTestGroupDn" field added to ldap_servers table');
   }
 
   if (!ldap_servers_db_field_exists('ldap_servers', 'groupTestGroupDnWriteable')) {
-    db_add_field('ldap_servers', 'groupTestGroupDnWriteable', array(
+    db_add_field('ldap_servers', 'groupTestGroupDnWriteable', [
       'type' => 'varchar',
       'length' => '255',
       'not null' => FALSE,
-    ));
+    ]);
     $msg = t('"groupTestGroupDnWriteable" field added to ldap_servers table');
   }
 
 }
 
 /**
- * add field groupTestGroupDnWriteable to ldap_servers table
+ * Add field groupTestGroupDnWriteable to ldap_servers table.
  */
 function ldap_servers_update_7111() {
 
   if (!ldap_servers_db_field_exists('ldap_servers', 'groupTestGroupDnWriteable')) {
-    db_add_field('ldap_servers', 'groupTestGroupDnWriteable', array(
+    db_add_field('ldap_servers', 'groupTestGroupDnWriteable', [
       'type' => 'varchar',
       'length' => '255',
       'not null' => FALSE,
-    ));
+    ]);
     $msg = t('"groupTestGroupDnWriteable" field added to ldap_servers table');
   }
 
 }
 
 /**
- * add field testingDrupalUserDn to ldap_servers table
+ * Add field testingDrupalUserDn to ldap_servers table.
  */
 function ldap_servers_update_7112() {
 
   if (!ldap_servers_db_field_exists('ldap_servers', 'testingDrupalUserDn')) {
-    db_add_field('ldap_servers', 'testingDrupalUserDn', array(
+    db_add_field('ldap_servers', 'testingDrupalUserDn', [
       'type' => 'varchar',
       'length' => '255',
       'not null' => FALSE,
-    ));
+    ]);
     $msg = t('"testingDrupalUserDn" field added to ldap_servers table');
   }
 
 }
 
-
 /**
- * upgrade as much as feasible for 7.1 to 7.2 branch
+ * Upgrade as much as feasible for 7.1 to 7.2 branch.
  */
 function ldap_servers_update_7201() {
 
-  $change_log = array();
+  $change_log = [];
 
-  // 1. ldap_user is now required for ldap_authentication and ldap_authorization
+  // 1. ldap_user is now required for ldap_authentication and ldap_authorization.
   if (module_exists('ldap_authentication') || module_exists('ldap_authorization')) {
-    module_enable(array('ldap_user'), TRUE);
+    module_enable(['ldap_user'], TRUE);
     $change_log[] = t('LDAP User Module Enabled');
   }
 
@@ -592,8 +584,7 @@ function ldap_servers_update_7201() {
    *
    */
 
-
-  // 2.  add any missing fields from schema
+  // 2.  add any missing fields from schema.
   ldap_servers_install_update_schema(ldap_servers_schema(), $change_log);
   if (module_exists('ldap_authorization')) {
     ldap_servers_install_update_schema(ldap_authorization_schema(), $change_log);
@@ -602,9 +593,9 @@ function ldap_servers_update_7201() {
     ldap_servers_install_update_schema(ldap_query_schema(), $change_log);
   }
 
-  // 3.  move configuration data that has changed location within ldap modules
-  $field_changes = array();
-  $ldap_server_records = array();
+  // 3.  move configuration data that has changed location within ldap modules.
+  $field_changes = [];
+  $ldap_server_records = [];
   $select = db_select('ldap_servers')
     ->fields('ldap_servers')
     ->execute();
@@ -617,10 +608,10 @@ function ldap_servers_update_7201() {
     $select = db_select('ldap_authorization', 'authz')
       ->fields('authz')
       ->execute();
-    // pick best ldap authorization conf to use to configure ldap server
+    // Pick best ldap authorization conf to use to configure ldap server.
     $max_weight = -1;
     foreach ($select as $record) {
-      $weight = (int)($record->status) + (int)($record->consumer_type == 'drupal_role');
+      $weight = (int) ($record->status) + (int) ($record->consumer_type == 'drupal_role');
       if ($weight > $max_weight) {
         $max_weight = $weight;
         $ldap_authorization_record = $record;
@@ -640,8 +631,10 @@ function ldap_servers_update_7201() {
           $field_changes['ldap_servers'][$sid]['groupUserMembershipsAttr'] = $ldap_authorization_record->derive_from_attr_attr;
         }
         if ($ldap_authorization_record->derive_from_entry) {
-          $field_changes['ldap_servers'][$sid]['groupMembershipsAttr'] = $ldap_authorization_record->derive_from_entry_attr; // eg members
-          $field_changes['ldap_servers'][$sid]['groupMembershipsAttrMatchingUserAttr'] = $ldap_authorization_record->derive_from_entry_entries_attr; // eg dn
+          // Eg members.
+          $field_changes['ldap_servers'][$sid]['groupMembershipsAttr'] = $ldap_authorization_record->derive_from_entry_attr;
+          // Eg dn.
+          $field_changes['ldap_servers'][$sid]['groupMembershipsAttrMatchingUserAttr'] = $ldap_authorization_record->derive_from_entry_entries_attr;
         }
         if ($ldap_authorization_record->derive_from_entry_nested) {
           $field_changes['ldap_servers'][$sid]['groupNested'] = 1;
@@ -665,11 +658,11 @@ function ldap_servers_update_7201() {
         continue;
       }
       if (count($field_data)) {
-        $change_log[] = t("!table_name where !id_field_name = !id values updated", array(
+        $change_log[] = t("!table_name where !id_field_name = !id values updated", [
           '!table_name' => $table_name,
           '!id_field_name' => $id_field_name,
           '!id' => $id,
-          ));
+        ]);
         $num_updated = db_update($table_name)
           ->fields($field_data)
           ->condition($id_field_name, $id, '=')
@@ -678,8 +671,8 @@ function ldap_servers_update_7201() {
     }
   }
 
-  // 4.  remove ldap_authorization fields that are unused
-  $ldap_authorization_fields_to_remove = array(
+  // 4.  remove ldap_authorization fields that are unused.
+  $ldap_authorization_fields_to_remove = [
     'derive_from_dn',
     'derive_from_dn_attr',
     'derive_from_attr',
@@ -691,29 +684,27 @@ function ldap_servers_update_7201() {
     'derive_from_entry_search_all',
     'derive_from_entry_use_first_attr',
     'derive_from_attr_use_first_attr',
-  );
+  ];
 
   foreach ($ldap_authorization_fields_to_remove as $ldap_authorization_field) {
     db_drop_field('ldap_authorization', $ldap_authorization_field);
   }
-  $change_log[] = t("ldap_authorization table fields removed: !fields_removed", array('!fields_removed' => join(', ', $ldap_authorization_fields_to_remove)));
+  $change_log[] = t("ldap_authorization table fields removed: !fields_removed", ['!fields_removed' => join(', ', $ldap_authorization_fields_to_remove)]);
 
-
-  //5. ldap_authentication and ldap_user changes are in variables, not tables
-
-  $ldap_authentication_conf_data = variable_get('ldap_authentication_conf', array());
+  // 5. ldap_authentication and ldap_user changes are in variables, not tables.
+  $ldap_authentication_conf_data = variable_get('ldap_authentication_conf', []);
   if (!is_array($ldap_authentication_conf_data['sids'])) {
-    $ldap_authentication_conf_data['sids'] = array();
+    $ldap_authentication_conf_data['sids'] = [];
   }
 
-  $ldap_user_conf_data = variable_get('ldap_user_conf', array());
+  $ldap_user_conf_data = variable_get('ldap_user_conf', []);
 
   $ldap_authentication_sids = array_keys($ldap_authentication_conf_data['sids']);
   if (count($ldap_authentication_sids) == 1) {
     $ldap_user_conf_data['drupalAcctProvisionServer'] = $ldap_authentication_sids[0];
   }
 
-  // conflict log vs resolve moved from ldap_authentication to ldap_user
+  // Conflict log vs resolve moved from ldap_authentication to ldap_user.
   if (!empty($ldap_authentication_conf_data['authenticationMode'])) {
     if ($ldap_authentication_conf_data['loginConflictResolve'] == LDAP_AUTHENTICATION_CONFLICT_LOG) {
       $ldap_user_conf_data['userConflictResolve'] = LDAP_USER_CONFLICT_LOG;
@@ -730,7 +721,6 @@ function ldap_servers_update_7201() {
     $ldap_user_conf_data['userConflictResolve'] = LDAP_USER_CONFLICT_RESOLVE_DEFAULT;
     $change_log[] = t('ldap_authentication_conf -> userConflictResolve set to') . LDAP_USER_CONFLICT_RESOLVE_DEFAULT;
   }
-
 
   if (isset($ldap_authentication_conf_data['acctCreation'])) {
     $ldap_user_conf_data['acctCreation'] = $ldap_authentication_conf_data['acctCreation'];
@@ -754,38 +744,38 @@ function ldap_servers_update_7201() {
   $summary = '<h2>' . t('Please check through all the LDAP module configuration pages.
     The update from 7.x-1.x to 7.x-2.x is not automatable!  The configuration pages
     must be read through and configured.') . '</h2>' .
-    theme('item_list', array(
+    theme('item_list', [
       'items' => $change_log,
       'type' => 'ul',
-      'title' => 'Changes in 7.x-1.x to 7.x-2.x update')
+      'title' => 'Changes in 7.x-1.x to 7.x-2.x update',
+    ]
     );
 
-  watchdog('ldap_servers', $summary, array(), WATCHDOG_INFO);
+  watchdog('ldap_servers', $summary, [], WATCHDOG_INFO);
   return $summary;
-
 
 }
 
 /**
- * make ldap_servers.bind_method field small int instead of tiny int for ctools bug
+ * Make ldap_servers.bind_method field small int instead of tiny int for ctools bug.
  */
 function ldap_servers_update_7202() {
 
-  db_change_field('ldap_servers', 'bind_method', 'bind_method', array(
+  db_change_field('ldap_servers', 'bind_method', 'bind_method', [
     'type' => 'int',
     'size' => 'small',
     'not null' => TRUE,
     'default' => 0,
-  ));
+  ]);
 
 }
 
 /**
- * make all schema field names lowercase in ldap server to deal with cronic case sensitivity issues
+ * Make all schema field names lowercase in ldap server to deal with cronic case sensitivity issues.
  */
 function ldap_servers_update_7203() {
   $schema = ldap_servers_schema();
-    $changes = array(
+  $changes = [
     'testingDrupalUserDn' => 'testing_drupal_user_dn',
     'group_object_category' => 'grp_object_cat',
     'groupFunctionalityUnused' => 'grp_unused',
@@ -797,8 +787,8 @@ function ldap_servers_update_7203() {
     'groupDeriveFromDn' => 'grp_derive_from_dn',
     'groupDeriveFromDnAttr' => 'grp_derive_from_dn_attr',
     'groupTestGroupDn' => 'grp_test_grp_dn',
-    'groupTestGroupDnWriteable' => 'grp_test_grp_dn_writeable'
-  );
+    'groupTestGroupDnWriteable' => 'grp_test_grp_dn_writeable',
+  ];
   foreach ($changes as $old_field_name => $new_field_name) {
     $field_schema = $schema['ldap_servers']['fields'][$new_field_name];
     if (ldap_servers_db_field_exists('ldap_servers', $old_field_name)) {
@@ -814,25 +804,24 @@ function ldap_servers_update_7203() {
 }
 
 /**
- * Add picture_attr field in schema
+ * Add picture_attr field in schema.
  */
 function ldap_servers_update_7204() {
   if (!ldap_servers_db_field_exists('ldap_servers', 'picture_attr')) {
     db_add_field(
       'ldap_servers',
       'picture_attr',
-      array(
+      [
         'type' => 'varchar',
         'length' => 255,
         'not null' => FALSE,
-      )
+      ]
     );
   }
 }
 
-
 /**
- * fix any double serialized ldap server basedns
+ * Fix any double serialized ldap server basedns.
  */
 function ldap_servers_update_7205() {
 
@@ -840,7 +829,7 @@ function ldap_servers_update_7205() {
   $ldap_servers = ldap_servers_get_servers();
   foreach ($ldap_servers as $sid => $ldap_server) {
     if ($ldap_server->basedn && is_scalar($ldap_server->basedn)) {
-      // these are still serialized after being loaded from db/ctools so were double serialized
+      // These are still serialized after being loaded from db/ctools so were double serialized.
       $ldap_server->basedn = unserialize($ldap_server->basedn);
       $ldap_server->save();
     }
@@ -848,21 +837,20 @@ function ldap_servers_update_7205() {
 
 }
 
-
 /**
- * Add LDAP Referrals fields in schema
+ * Add LDAP Referrals fields in schema.
  */
 function ldap_servers_update_7206() {
   if (!ldap_servers_db_field_exists('ldap_servers', 'followrefs')) {
     db_add_field(
       'ldap_servers',
       'followrefs',
-      array(
+      [
         'type' => 'int',
         'size' => 'tiny',
         'not null' => FALSE,
         'default' => 0,
-      )
+      ]
     );
   }
 }
@@ -871,10 +859,10 @@ function ldap_servers_update_7206() {
  * Fixes a typo in an LDAP variable name.
  */
 function ldap_servers_update_7207() {
-    if (!is_null($old_var = variable_get('ldap_servers_require_ssl_for_credentails'))) {
-      variable_set('ldap_servers_require_ssl_for_credentials', $old_var);
-      variable_del('ldap_servers_require_ssl_for_credentails');
-    }
+  if (!is_null($old_var = variable_get('ldap_servers_require_ssl_for_credentails'))) {
+    variable_set('ldap_servers_require_ssl_for_credentials', $old_var);
+    variable_del('ldap_servers_require_ssl_for_credentails');
+  }
 }
 
 /**
@@ -886,13 +874,29 @@ function ldap_servers_update_7208() {
 
 }
 
+/**
+ *
+ */
 function ldap_servers_install_update_schema($schema, &$change_log) {
   foreach ($schema as $table_name => $table_schema) {
     foreach ($table_schema['fields'] as $field_name => $field_schema) {
       if (!ldap_servers_db_field_exists($table_name, $field_name)) {
         db_add_field($table_name, $field_name, $field_schema);
-        $change_log[] = t("!field_name field added to !table_name table", array('!field_name' => $field_name, '!table_name' => $table_name));
+        $change_log[] = t("!field_name field added to !table_name table", ['!field_name' => $field_name, '!table_name' => $table_name]);
       }
     }
+  }
+}
+
+/**
+ * Change mcrypt to openssl.
+ */
+function ldap_servers_update_7209() {
+  if (variable_get('ldap_servers_encryption') != LDAP_SERVERS_ENC_TYPE_CLEARTEXT) {
+    variable_set('ldap_servers_encryption', LDAP_SERVERS_ENC_TYPE_OPENSSL);
+    if (!extension_loaded('openssl')) {
+      watchdog('ldap', 'Warning: OpenSSL missing, no alternative for encryption.');
+    }
+    return t('Encryption backend has changed, please re-enter your service account credentials.');
   }
 }

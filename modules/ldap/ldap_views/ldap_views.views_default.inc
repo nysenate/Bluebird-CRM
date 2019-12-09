@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Defines a default ldap_view
+ * Defines a default ldap_view.
  */
 
 /**
@@ -12,7 +12,7 @@ function ldap_views_views_default_views() {
   /*
    * View 'ad_users'
    */
-  $view = new view;
+  $view = new view();
   $view->name = 'ad_users_example';
   $view->description = 'Users from AD. You must define a ldap data source whith ad_users identifier, and mail, name and samaccountname attributes';
   $view->tag = 'default';
@@ -33,36 +33,36 @@ function ldap_views_views_default_views() {
   $handler->display->display_options['pager']['type'] = 'full';
   $handler->display->display_options['pager']['options']['items_per_page'] = '10';
   $handler->display->display_options['style_plugin'] = 'table';
-  $handler->display->display_options['style_options']['columns'] = array(
+  $handler->display->display_options['style_options']['columns'] = [
     'attribute' => 'attribute',
     'attribute_1' => 'attribute_1',
     'attribute_2' => 'attribute_2',
     'attribute_3' => 'attribute_3',
     'attribute_4' => 'attribute_4',
-  );
+  ];
   $handler->display->display_options['style_options']['default'] = '-1';
-  $handler->display->display_options['style_options']['info'] = array(
-    'attribute' => array(
+  $handler->display->display_options['style_options']['info'] = [
+    'attribute' => [
       'align' => '',
       'separator' => '',
-    ),
-    'attribute_1' => array(
+    ],
+    'attribute_1' => [
       'align' => '',
       'separator' => '',
-    ),
-    'attribute_2' => array(
+    ],
+    'attribute_2' => [
       'align' => '',
       'separator' => '',
-    ),
-    'attribute_3' => array(
+    ],
+    'attribute_3' => [
       'align' => '',
       'separator' => '',
-    ),
-    'attribute_4' => array(
+    ],
+    'attribute_4' => [
       'align' => '',
       'separator' => '',
-    ),
-  );
+    ],
+  ];
   $handler->display->display_options['style_options']['override'] = 1;
   $handler->display->display_options['style_options']['sticky'] = 0;
   $handler->display->display_options['style_options']['empty_table'] = 0;

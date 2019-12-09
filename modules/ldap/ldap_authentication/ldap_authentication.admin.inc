@@ -6,21 +6,21 @@
  */
 
 /**
- * form for adding, updating, and deleting a single ldap authorization mapping
+ * Form for adding, updating, and deleting a single ldap authorization mapping.
  *
- * @param <type> $form
- * @param <type> $form_state
+ * @param mixed $form
+ * @param mixed $form_state
+ *
  * @return array drupal form array
  */
 function ldap_authentication_admin_form($form, &$form_state) {
-    ldap_servers_module_load_include('php', 'ldap_authentication', 'LdapAuthenticationConfAdmin.class');
-    $auth_conf = new LdapAuthenticationConfAdmin();
-    return $auth_conf->drupalForm();
+  ldap_servers_module_load_include('php', 'ldap_authentication', 'LdapAuthenticationConfAdmin.class');
+  $auth_conf = new LdapAuthenticationConfAdmin();
+  return $auth_conf->drupalForm();
 }
 
-
 /**
- * validate handler for the ldap_authentication_admin_form
+ * Validate handler for the ldap_authentication_admin_form.
  */
 function ldap_authentication_admin_form_validate($form, &$form_state) {
 
@@ -33,16 +33,15 @@ function ldap_authentication_admin_form_validate($form, &$form_state) {
 
 }
 
-
 /**
- * submit handler function for ldap_authentication_admin_form
+ * Submit handler function for ldap_authentication_admin_form.
  */
-
 function ldap_authentication_admin_form_submit($form, &$form_state) {
 
   ldap_servers_module_load_include('php', 'ldap_authentication', 'LdapAuthenticationConfAdmin.class');
   $auth_conf = new LdapAuthenticationConfAdmin();
-  $auth_conf->drupalFormSubmit($form_state['values']);  // add form data to object and save or create
+  // Add form data to object and save or create.
+  $auth_conf->drupalFormSubmit($form_state['values']);
   if (!$auth_conf->hasEnabledAuthenticationServers()) {
     drupal_set_message(t('No LDAP servers are enabled for authentication,
       so no LDAP Authentication can take place.  This essentially disables

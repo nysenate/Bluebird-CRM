@@ -31,54 +31,54 @@ function ldap_authorization_cleanse_empty_og_fields(&$user) {
  */
 function ldap_authorization_menu() {
 
-  $items['admin/config/people/ldap/authorization'] = array(
+  $items['admin/config/people/ldap/authorization'] = [
     'title' => 'Authorization',
     'page callback' => 'ldap_authorizations_admin_index',
-    'page arguments' => array(),
+    'page arguments' => [],
     'type' => MENU_LOCAL_TASK,
-    'access arguments' => array('administer site configuration'),
+    'access arguments' => ['administer site configuration'],
     'file' => 'ldap_authorization.admin.inc',
     'weight' => 3,
-  );
+  ];
 
-  $items['admin/config/people/ldap/authorization/list'] = array(
+  $items['admin/config/people/ldap/authorization/list'] = [
     'title' => 'List',
     'type' => MENU_DEFAULT_LOCAL_TASK,
-  );
+  ];
 
-  $items['admin/config/people/ldap/authorization/edit/%'] = array(
+  $items['admin/config/people/ldap/authorization/edit/%'] = [
     'title' => 'Edit LDAP Authorization Configuration',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('ldap_authorization_admin_form', 6, 'edit'),
-    'access arguments' => array('administer site configuration'),
+    'page arguments' => ['ldap_authorization_admin_form', 6, 'edit'],
+    'access arguments' => ['administer site configuration'],
     'file' => 'ldap_authorization.admin.inc',
-  );
+  ];
 
-  $items['admin/config/people/ldap/authorization/delete/%'] = array(
+  $items['admin/config/people/ldap/authorization/delete/%'] = [
     'title' => 'Delete LDAP Authorization Configuration',
     'description' => 'Delete an ldap authorization configuration',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('ldap_authorization_admin_form', 6, 'delete'),
-    'access arguments' => array('administer site configuration'),
+    'page arguments' => ['ldap_authorization_admin_form', 6, 'delete'],
+    'access arguments' => ['administer site configuration'],
     'file' => 'ldap_authorization.admin.inc',
-  );
+  ];
 
-  $items['admin/config/people/ldap/authorization/test/%'] = array(
+  $items['admin/config/people/ldap/authorization/test/%'] = [
     'title' => 'Test LDAP Authorization Configuration',
     'description' => 'Test an ldap authorization configuration',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('ldap_authorization_test_form', 6, 'test'),
-    'access arguments' => array('administer site configuration'),
+    'page arguments' => ['ldap_authorization_test_form', 6, 'test'],
+    'access arguments' => ['administer site configuration'],
     'file' => 'ldap_authorization.admin.test.inc',
-  );
+  ];
 
-  $items['admin/config/people/ldap/authorization/add/%'] = array(
+  $items['admin/config/people/ldap/authorization/add/%'] = [
     'title' => 'Add Authorization Configuration',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('ldap_authorization_admin_form', 6, 'add'),
-    'access arguments' => array('administer site configuration'),
+    'page arguments' => ['ldap_authorization_admin_form', 6, 'add'],
+    'access arguments' => ['administer site configuration'],
     'file' => 'ldap_authorization.admin.inc',
-  );
+  ];
 
   return $items;
 }
@@ -90,8 +90,8 @@ function ldap_authorization_user_login(&$edit, $user) {
   list($authorizations, $notifications) = ldap_authorizations_user_authorizations($user, 'set', NULL, 'logon');
   if (variable_get('ldap_help_watchdog_detail', FALSE)) {
     foreach ($authorizations as $consumer_type => $authorization_ids) {
-      $ul = theme('item_list', array('title' => $consumer_type, 'items' => array_keys($authorization_ids), 'type' => 'ul'));
-      watchdog('ldap_authentication', 'ldap_authorization_user_login.authorizations' . $ul, array(), WATCHDOG_DEBUG);
+      $ul = theme('item_list', ['title' => $consumer_type, 'items' => array_keys($authorization_ids), 'type' => 'ul']);
+      watchdog('ldap_authentication', 'ldap_authorization_user_login.authorizations' . $ul, [], WATCHDOG_DEBUG);
     }
   }
 }
@@ -114,7 +114,7 @@ function ldap_authorization_maps_alter_invoke(&$user, &$user_ldap_entry, &$ldap_
  */
 function ldap_authorization_ldap_server_in_use($sid, $server_name) {
 
-  $use_warnings = array();
+  $use_warnings = [];
   $consumers = ldap_authorization_get_consumers();
   foreach (ldap_authorization_get_consumers() as $consumer_type => $consumer_conf) {
     $consumer_conf['%server_name'] = $server_name;
@@ -141,7 +141,6 @@ function ldap_authorization_ldap_attributes_needed_alter(&$attribute_maps, $para
       if ($consumer_conf->server->groupUserMembershipsAttrExists) {
         $attribute_name = $consumer_conf->server->groupUserMembershipsAttr;
         if ($attribute_name) {
-          // array($attribute_name, 0, NULL);.
           $attribute_maps[$attribute_name] = ldap_servers_set_attribute_map($attribute_name);
         }
       }
@@ -182,24 +181,24 @@ function ldap_authorization_ldap_authorization_maps_alter(&$user, &$user_ldap_en
  *
  */
 function ldap_authorization_theme() {
-  return array(
-    'ldap_authorization_test_results' => array(
-      'variables' => array('data' => NULL),
+  return [
+    'ldap_authorization_test_results' => [
+      'variables' => ['data' => NULL],
       'render element' => 'element',
       'file' => 'ldap_authorization.theme.inc',
-    ),
-    'ldap_authorization_admin_index' => array(
-      'variables' => array('consumers' => NULL),
+    ],
+    'ldap_authorization_admin_index' => [
+      'variables' => ['consumers' => NULL],
       'render element' => 'element',
       'file' => 'ldap_authorization.theme.inc',
-    ),
-  );
+    ],
+  ];
 }
 
 /**
  * Param string $consumer_type is machine name of consumer such as drupal_role.
  *
- * @return consumer object
+ * @return object
  */
 function ldap_authorization_get_consumer_object($consumer_type) {
 
@@ -240,7 +239,7 @@ function ldap_authorization_get_consumers($consumer_type = NULL, $reset = FALSE,
     return isset($consumers[$consumer_type]) ? $consumers[$consumer_type] : FALSE;
   }
   else {
-    return isset($consumers[$consumer_type]) ? array($consumer_type => $consumers[$consumer_type]) : array();
+    return isset($consumers[$consumer_type]) ? [$consumer_type => $consumers[$consumer_type]] : [];
   }
 
 }
@@ -249,7 +248,7 @@ function ldap_authorization_get_consumers($consumer_type = NULL, $reset = FALSE,
  * @rationale: need not be called from hook_user, so this function separated out
  * so it can be called from a batch synchronization process for example
  *
- * @param drupal user object $user
+ * @param object $user
  * @param string $op
  *   indicating operation such as query, set, test_query, etc.
  * @param string $consumer_type
@@ -266,8 +265,8 @@ function ldap_authorizations_user_authorizations(&$user, $op = 'query', $consume
   }
   else {
     $consumers = ldap_authorization_get_consumers();
-    $new_authorizations = array();
-    $notifications = array();
+    $new_authorizations = [];
+    $notifications = [];
     foreach ($consumers as $consumer_type => $consumer) {
       list($new_authorizations_i, $notifications_i) = _ldap_authorizations_user_authorizations($user, $op, $consumer_type, $context);
       $new_authorizations = $new_authorizations + $new_authorizations_i;
@@ -275,7 +274,7 @@ function ldap_authorizations_user_authorizations(&$user, $op = 'query', $consume
     }
 
   }
-  return array($new_authorizations, $notifications);
+  return [$new_authorizations, $notifications];
 }
 
 /**
@@ -287,9 +286,9 @@ function ldap_authorization_help($path, $arg) {
     user attributes, etc to determine user authorization (Drupal roles, organic group memberships,
     etc.)
     More detailed help is available on drupal.org at !helplink.',
-          array(
+          [
             '!helplink' => l(LDAP_SERVERS_DRUPAL_HELP_URL, LDAP_SERVERS_DRUPAL_HELP_URL),
-          ));
+          ]);
 
   switch ($path) {
     case 'admin/config/people/ldap/authorization':
@@ -305,15 +304,15 @@ function ldap_authorization_help($path, $arg) {
 /**
  * Just tokens for better watchdog and drupal_set_message arguments .**/
 function ldap_authorization_tokens($consumer) {
-  $tokens = array();
+  $tokens = [];
 
   if (is_object($consumer)) {
-    foreach (array('%', '!', '@') as $symbol) {
-      foreach (array('name', 'namePlural', 'shortName', 'shortNamePlural', 'consumerModule', 'consumerType', 'mappingDirections', 'testLink', 'editLink') as $property) {
+    foreach (['%', '!', '@'] as $symbol) {
+      foreach (['name', 'namePlural', 'shortName', 'shortNamePlural', 'consumerModule', 'consumerType', 'mappingDirections', 'testLink', 'editLink'] as $property) {
         $tokens[$symbol . 'consumer_' . $property] = $consumer->$property;
       }
       if (is_object($consumer->consumerConf)) {
-        foreach (array('sid', 'status') as $property) {
+        foreach (['sid', 'status'] as $property) {
           $tokens[$symbol . 'consumer_' . $property] = $consumer->consumerConf->$property;
         }
       }
@@ -354,7 +353,7 @@ function ldap_authorization_get_consumer_conf($consumer_type, $type = 'default',
 function ldap_authorization_ldap_user_attrs_list_alter(&$available_user_attrs, &$params) {
 
   // This is a case where a field is being denied synching configuration because its not meant to be used by other modules.
-  $available_user_attrs['[field.ldap_authorizations]'] = array(
+  $available_user_attrs['[field.ldap_authorizations]'] = [
     'name' => 'Field: LDAP Authorizations',
     'source' => 'LDAP Authorization modules',
     'configurable_to_drupal' => 0,
@@ -363,9 +362,9 @@ function ldap_authorization_ldap_user_attrs_list_alter(&$available_user_attrs, &
     'direction' => NULL,
     'enabled' => FALSE,
     'config_module' => 'ldap_authorization',
-    'prov_events' => array(),
+    'prov_events' => [],
     'prov_module' => 'ldap_authorization',
     'exclude_from_mapping_ui' => TRUE,
-  );
+  ];
 
 }

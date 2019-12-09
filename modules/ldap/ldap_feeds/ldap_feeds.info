@@ -10,10 +10,10 @@ dependencies[] = ldap_query
 configure = admin/structure/feeds
 
 core = 7.x
-php = 5.2
+php = 5.4
 
-; Information added by Drupal.org packaging script on 2018-08-13
-version = "7.x-2.4"
+; Information added by Drupal.org packaging script on 2019-04-20
+version = "7.x-2.5"
 core = "7.x"
 project = "ldap"
-datestamp = "1534201086"
+datestamp = "1555751588"

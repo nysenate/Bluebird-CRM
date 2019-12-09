@@ -27,21 +27,21 @@ function ldap_authorizations_admin_index() {
   foreach ($consumers as $consumer_type => $consumer) {
     $consumers[$consumer_type] = ldap_authorization_get_consumer_object($consumer_type);
   }
-  return theme('ldap_authorization_admin_index', array('consumers' => $consumers));
+  return theme('ldap_authorization_admin_index', ['consumers' => $consumers]);
 
 }
 
 /**
  * Form for adding, updating, and deleting a single ldap authorization configuration.
  *
- * @param form array $form
- * @param form state array $form_state
+ * @param array $form
+ * @param array $form_state
  * @param string $op
  *   (add, edit, or delete)
  * @param string $consumer_type
  *   e.g. drupal_roles, og_group, etc.  Only needed for adds.
  *
- * @return drupal form array
+ * @return array
  */
 function ldap_authorization_admin_form($form, &$form_state, $consumer_type, $op = NULL) {
   ldap_servers_module_load_include('php', 'ldap_authorization', 'LdapAuthorizationConsumerConfAdmin.class');
@@ -50,7 +50,7 @@ function ldap_authorization_admin_form($form, &$form_state, $consumer_type, $op 
   if ($op == 'add' && is_object($consumer->consumerConf) && $consumer->consumerConf->inDatabase) {
     drupal_set_message(t('Only one configuration is allowed per consumer type.
       Configuration already exists for the cosumer type %consumer_type.  Please edit that configuration.',
-      array('%consumer_type' => $consumer_type)), 'warning');
+      ['%consumer_type' => $consumer_type]), 'warning');
     drupal_goto(LDAP_SERVERS_MENU_BASE_PATH . '/authorization');
   }
 
@@ -105,7 +105,7 @@ function ldap_authorization_admin_form_submit($form, &$form_state) {
   $consumer_conf->drupalFormSubmit($op, $values);
 
   if ($consumer_conf->hasError == FALSE) {
-    drupal_set_message(t('LDAP Authorization %name !verb', array('!verb' => $op_past_tense, '%name' => $consumer->name)), 'status');
+    drupal_set_message(t('LDAP Authorization %name !verb', ['!verb' => $op_past_tense, '%name' => $consumer->name]), 'status');
     drupal_goto(LDAP_SERVERS_MENU_BASE_PATH . '/authorization');
   }
 
@@ -148,6 +148,6 @@ function _ldap_authorization_admin_parse_form($form, &$form_state) {
       break;
   }
 
-  return array($consumer, $op, $op_past_tense, $new);
+  return [$consumer, $op, $op_past_tense, $new];
 
 }

@@ -14,14 +14,14 @@ class LdapAuthorizationConsumerDrupalRole extends LdapAuthorizationConsumerAbstr
   public $consumerType = 'drupal_role';
   public $allowConsumerObjectCreation = TRUE;
 
-  public $defaultConsumerConfProperties = array(
+  public $defaultConsumerConfProperties = [
     'onlyApplyToLdapAuthenticated' => TRUE,
     'useMappingsAsFilter' => TRUE,
     'synchOnLogon' => TRUE,
     'revokeLdapProvisioned' => TRUE,
     'regrantLdapProvisioned' => TRUE,
     'createConsumers' => TRUE,
-  );
+  ];
 
   /**
    *
@@ -45,7 +45,7 @@ class LdapAuthorizationConsumerDrupalRole extends LdapAuthorizationConsumerAbstr
     elseif (drupal_strlen($consumer_id) > 63) {
       watchdog('ldap_authorization_drupal_role', 'Tried to create drupal role
         with name of over 63 characters (%group_name).  Please correct your
-        drupal ldap_authorization settings', array('%group_name' => $consumer_id));
+        drupal ldap_authorization settings', ['%group_name' => $consumer_id]);
       return FALSE;
     }
 
@@ -53,13 +53,13 @@ class LdapAuthorizationConsumerDrupalRole extends LdapAuthorizationConsumerAbstr
     $new_role->name = empty($consumer['value']) ? $consumer_id : $consumer['value'];
     if (!($status = user_role_save($new_role))) {
       // If role is not created, remove from array to user object doesn't have it stored as granted.
-      watchdog('user', 'failed to create drupal role %role in ldap_authorizations module', array('%role' => $new_role->name));
+      watchdog('user', 'failed to create drupal role %role in ldap_authorizations module', ['%role' => $new_role->name]);
       return FALSE;
     }
     else {
       // Flush existingRolesByRoleName cache after creating new role.
       $roles_by_consumer_id = $this->existingRolesByRoleName(TRUE);
-      watchdog('user', 'created drupal role %role in ldap_authorizations module', array('%role' => $new_role->name));
+      watchdog('user', 'created drupal role %role in ldap_authorizations module', ['%role' => $new_role->name]);
     }
     return TRUE;
   }
@@ -119,7 +119,7 @@ class LdapAuthorizationConsumerDrupalRole extends LdapAuthorizationConsumerAbstr
     }
     else {
       unset($user->roles[$rid]);
-      $user_edit = array('roles' => $user->roles);
+      $user_edit = ['roles' => $user->roles];
       $account = user_load($user->uid);
       $user = user_save($account, $user_edit);
       $result = ($user && !isset($user->roles[$rid]));
@@ -131,12 +131,12 @@ class LdapAuthorizationConsumerDrupalRole extends LdapAuthorizationConsumerAbstr
     if ($this->detailedWatchdogLog) {
       watchdog('ldap_authorization', 'LdapAuthorizationConsumerDrupalRole.revokeSingleAuthorization()
         revoked:  rid=%rid, role_name=%role_name for username=%username, result=%result',
-        array(
+        [
           '%rid' => $rid,
           '%role_name' => $role_name,
           '%username' => $user->name,
           '%result' => $result,
-        ), WATCHDOG_DEBUG);
+        ], WATCHDOG_DEBUG);
     }
 
     return $result;
@@ -154,15 +154,15 @@ class LdapAuthorizationConsumerDrupalRole extends LdapAuthorizationConsumerAbstr
     if (is_null($rid)) {
       watchdog('ldap_authorization', 'LdapAuthorizationConsumerDrupalRole.grantSingleAuthorization()
       failed to grant %username the role %role_name because role does not exist',
-      array('%role_name' => $role_name, '%username' => $user->name),
+      ['%role_name' => $role_name, '%username' => $user->name],
       WATCHDOG_ERROR);
       return FALSE;
     }
 
     $user->roles[$rid] = $role_name;
-    $user_edit = array('roles' => $user->roles);
+    $user_edit = ['roles' => $user->roles];
     if ($this->detailedWatchdogLog) {
-      watchdog('ldap_authorization', 'grantSingleAuthorization in drupal rold' . print_r($user, TRUE), array(), WATCHDOG_DEBUG);
+      watchdog('ldap_authorization', 'grantSingleAuthorization in drupal rold' . print_r($user, TRUE), [], WATCHDOG_DEBUG);
     }
 
     $account = user_load($user->uid);
@@ -172,12 +172,12 @@ class LdapAuthorizationConsumerDrupalRole extends LdapAuthorizationConsumerAbstr
     if ($this->detailedWatchdogLog) {
       watchdog('ldap_authorization', 'LdapAuthorizationConsumerDrupalRole.grantSingleAuthorization()
         granted: rid=%rid, role_name=%role_name for username=%username, result=%result',
-        array(
+        [
           '%rid' => $rid,
           '%role_name' => $role_name,
           '%username' => $user->name,
           '%result' => $result,
-        ), WATCHDOG_DEBUG);
+        ], WATCHDOG_DEBUG);
     }
 
     return $result;
@@ -188,7 +188,7 @@ class LdapAuthorizationConsumerDrupalRole extends LdapAuthorizationConsumerAbstr
    *
    */
   public function usersAuthorizations(&$user) {
-    $authorizations = array();
+    $authorizations = [];
     foreach ($user->roles as $rid => $role_name_mixed_case) {
       $authorizations[] = drupal_strtolower($role_name_mixed_case);
     }
@@ -204,7 +204,7 @@ class LdapAuthorizationConsumerDrupalRole extends LdapAuthorizationConsumerAbstr
     $message_type = NULL;
     $message_text = NULL;
     $role_name = $mapping['normalized'];
-    $tokens = array('!map_to' => $role_name);
+    $tokens = ['!map_to' => $role_name];
     $roles_by_name = $this->existingRolesByRoleName();
     $pass = isset($roles_by_name[drupal_strtolower($role_name)]);
 
@@ -229,7 +229,7 @@ class LdapAuthorizationConsumerDrupalRole extends LdapAuthorizationConsumerAbstr
         $message_text .= ' ' . t('Since automatic Drupal role creation is disabled, an existing role must be mapped to.  Either enable role creation or map to an existing role.');
       }
     }
-    return array($message_type, $message_text);
+    return [$message_type, $message_text];
   }
 
   /**
@@ -253,7 +253,7 @@ class LdapAuthorizationConsumerDrupalRole extends LdapAuthorizationConsumerAbstr
     static $roles_by_name;
 
     if ($reset || !is_array($roles_by_name)) {
-      $roles_by_name = array();
+      $roles_by_name = [];
       foreach (array_flip(user_roles(TRUE)) as $role_name => $rid) {
         $roles_by_name[drupal_strtolower($role_name)]['rid'] = $rid;
         $roles_by_name[drupal_strtolower($role_name)]['role_name'] = $role_name;
@@ -267,19 +267,19 @@ class LdapAuthorizationConsumerDrupalRole extends LdapAuthorizationConsumerAbstr
    */
   public function normalizeMappings($mappings) {
 
-    $new_mappings = array();
+    $new_mappings = [];
     // In rid => role name format.
     $roles = user_roles(TRUE);
     $roles_by_name = array_flip($roles);
     foreach ($mappings as $i => $mapping) {
-      $new_mapping = array();
+      $new_mapping = [];
       $new_mapping['user_entered'] = $mapping[1];
       $new_mapping['from'] = $mapping[0];
       $new_mapping['normalized'] = $mapping[1];
       $new_mapping['simplified'] = $mapping[1];
       $create_consumers = (boolean) ($this->allowConsumerObjectCreation && $this->consumerConf->createConsumers);
       $new_mapping['valid'] = (boolean) (!$create_consumers && !empty($roles_by_name[$mapping[1]]));
-      $new_mapping['error_message'] = ($new_mapping['valid']) ? '' : t("Role %role_name does not exist and role creation is not enabled.", array('%role' => $mapping[1]));
+      $new_mapping['error_message'] = ($new_mapping['valid']) ? '' : t("Role %role_name does not exist and role creation is not enabled.", ['%role' => $mapping[1]]);
       $new_mappings[] = $new_mapping;
     }
 
@@ -290,7 +290,7 @@ class LdapAuthorizationConsumerDrupalRole extends LdapAuthorizationConsumerAbstr
    * @see ldapAuthorizationConsumerAbstract::convertToFriendlyAuthorizationIds
    */
   public function convertToFriendlyAuthorizationIds($authorizations) {
-    $authorization_ids_friendly = array();
+    $authorization_ids_friendly = [];
     foreach ($authorizations as $authorization_id => $authorization) {
       $authorization_ids_friendly[] = $authorization['name'] . '  (' . $authorization_id . ')';
     }

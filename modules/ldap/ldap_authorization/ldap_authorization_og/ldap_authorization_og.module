@@ -9,7 +9,7 @@
  * Implements hook_ldap_authorization_consumer().
  */
 function ldap_authorization_og_ldap_authorization_consumer() {
-  $types['og_group'] = array(
+  $types['og_group'] = [
     'consumer_name' => t('OG group'),
     'consumer_name_plural' => t('OG groups'),
     'consumer_short_name' => t('group'),
@@ -18,7 +18,7 @@ function ldap_authorization_og_ldap_authorization_consumer() {
     'consumer_class_name' => 'LdapAuthorizationConsumerOG',
     'consumer_class_file' => 'LdapAuthorizationConsumerOG.class.php',
     'consumer_module' => 'ldap_authorization_og',
-  );
+  ];
 
   $types['og_group']['consumer_mapping_directions'] = 'Mappings should be of form:<br/>
     <code>[raw authorization id]|[og entity type]:[og entity id or title]:[og role id]</code>
@@ -85,7 +85,7 @@ function ldap_authorization_og2_get_group_from_name($entity_type, $group_name) {
     }
   }
 
-  return array($group_entity, $group_entity_id);
+  return [$group_entity, $group_entity_id];
 
 }
 
@@ -95,10 +95,10 @@ function ldap_authorization_og2_get_group_from_name($entity_type, $group_name) {
 function ldap_authorization_og2_has_consumer_id($consumer_id, $uid) {
   $parts = explode(':', $consumer_id);
   $result = FALSE;
-  $watchdog_tokens = array(
+  $watchdog_tokens = [
     '%consumer_id' => $consumer_id,
     '%uid' => $uid,
-  );
+  ];
   if (count($parts) == 3) {
     list($group_type, $gid, $rid) = $parts;
     // Need to make sure entity exists before calling og_get_user_roles which will throw fatal error.
@@ -154,7 +154,7 @@ function ldap_authorization_og2_rid_from_role_name($entity_type, $bundle, $gid, 
  *
  */
 function ldap_authorization_og_get_all_group_entities() {
-  $entities = array();
+  $entities = [];
   $group_entity_types = og_get_all_group_bundle();
   foreach ($group_entity_types as $entity_type => $group) {
     $entity_ids = og_get_all_group('node');

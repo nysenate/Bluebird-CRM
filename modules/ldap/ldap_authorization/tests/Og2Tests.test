@@ -1,7 +1,16 @@
 <?php
 
 /**
- * @file Simpletest for Ldap Authorization OG Module, for og 7.x-2.x.
+ * @file
+ * Simpletest for Ldap Authorization OG Module, for og 7.x-2.x.
+ */
+
+drupal_load('module', 'ldap_test');
+module_load_include('php', 'ldap_test', 'LdapTestCase.class');
+require_once drupal_get_path('module', 'ldap_authorization_og') . '/LdapAuthorizationConsumerOG.class.php';
+
+/**
+ * Simpletest for Ldap Authorization OG Module, for og 7.x-2.x.
  *
  * Manual testing to accompany simpletests:
  *  - logon with og authorization disabled and make sure nothing happens
@@ -9,38 +18,31 @@
  *  - change mappings so no roles granted
  *  - logon and make sure memberships revoked.
  */
-
-drupal_load('module', 'ldap_test');
-module_load_include('php', 'ldap_test', 'LdapTestCase.class');
-require_once drupal_get_path('module', 'ldap_authorization_og') . '/LdapAuthorizationConsumerOG.class.php';
-/**
- *
- */
 class LdapAuthorizationOg2Tests extends LdapTestCase {
 
   public $groupEntityType = 'node';
   public $groupBundle = 'group';
   public $groupType = 'node';
   public $group_content_type = NULL;
-  public $group_nodes = array();
+  public $group_nodes = [];
   public $user1;
   public $consumerType = 'og_group';
   public $module_name = 'ldap_authorization_og';
   protected $ldap_test_data;
-  public $customOgRoles = array(
-    'dungeon-master' => array('entity_type' => 'node', 'bundle_type' => 'group'),
-    'time-keeper' => array('entity_type' => 'node', 'bundle_type' => 'group'),
-  );
+  public $customOgRoles = [
+    'dungeon-master' => ['entity_type' => 'node', 'bundle_type' => 'group'],
+    'time-keeper' => ['entity_type' => 'node', 'bundle_type' => 'group'],
+  ];
 
   /**
    *
    */
   public static function getInfo() {
-    return array(
+    return [
       'group' => 'LDAP Authorization',
       'name' => 'OG 7.x-2.x Tests.',
       'description' => 'Test ldap authorization og 2.',
-    );
+    ];
   }
 
   /**
@@ -53,19 +55,19 @@ class LdapAuthorizationOg2Tests extends LdapTestCase {
   /**
    *
    */
-  public function setUp($addl_modules = array()) {
-    parent::setUp(array('ldap_authentication', 'ldap_authorization', 'ldap_authorization_og'));
+  public function setUp($addl_modules = []) {
+    parent::setUp(['ldap_authentication', 'ldap_authorization', 'ldap_authorization_og']);
     variable_set('ldap_simpletest', 2);
 
     $this->user1 = $this->drupalCreateUser();
-    $this->groups = array();
-    $this->prepTestData(LDAP_TEST_LDAP_NAME, array('activedirectory1'));
+    $this->groups = [];
+    $this->prepTestData(LDAP_TEST_LDAP_NAME, ['activedirectory1']);
 
     // Create group and group content node types.
-    $this->groupBundle = $this->drupalCreateContentType(array(
+    $this->groupBundle = $this->drupalCreateContentType([
       'type' => 'group',
       'name' => 'OG Group',
-    ))->type;
+    ])->type;
 
     og_create_field(OG_GROUP_FIELD, $this->groupEntityType, $this->groupBundle);
     og_create_field(OG_AUDIENCE_FIELD, $this->groupEntityType, $this->groupBundle);
@@ -75,7 +77,7 @@ class LdapAuthorizationOg2Tests extends LdapTestCase {
     $this->testFunctions->getCsvLdapData(LDAP_TEST_LDAP_NAME);
     foreach ($this->testFunctions->csvTables['groups'] as $guid => $group) {
       $label = $group['cn'];
-      $settings = array();
+      $settings = [];
       $settings['type'] = $this->groupBundle;
       $settings[OG_GROUP_FIELD][LANGUAGE_NONE][0]['value'] = 1;
       $settings['uid'] = $this->user1->uid;
@@ -106,13 +108,13 @@ class LdapAuthorizationOg2Tests extends LdapTestCase {
    * Get test data in convenient format, so tests are easier to read and write.
    */
   public function getTestData($debug = FALSE) {
-    $group_nodes = array();
-    $group_nids = array();
-    $group_entity_ids = array();
-    $roles = array();
-    $roles_by_name = array();
-    $consumer_ids = array();
-    foreach (array('gryffindor', 'students', 'faculty', 'users', 'hufflepuff', 'slytherin') as $i => $group_name) {
+    $group_nodes = [];
+    $group_nids = [];
+    $group_entity_ids = [];
+    $roles = [];
+    $roles_by_name = [];
+    $consumer_ids = [];
+    foreach (['gryffindor', 'students', 'faculty', 'users', 'hufflepuff', 'slytherin'] as $i => $group_name) {
       list($group_nodes[$group_name], $group_entity_ids[$group_name]) = ldap_authorization_og2_get_group_from_name($this->groupEntityType, $group_name);
       $nid = $group_nodes[$group_name]->nid;
       $group_nids[$group_name] = $nid;
@@ -126,7 +128,7 @@ class LdapAuthorizationOg2Tests extends LdapTestCase {
     if ($debug) {
       debug("group_nids"); debug($group_nids); debug("group_entity_ids"); debug($group_entity_ids); debug("roles"); debug($roles); debug("roles_by_name"); debug($roles_by_name);
     }
-    return array($group_nodes, $group_nids, $group_entity_ids, $roles_by_name, $consumer_ids);
+    return [$group_nodes, $group_nids, $group_entity_ids, $roles_by_name, $consumer_ids];
   }
 
   /**
@@ -169,12 +171,12 @@ class LdapAuthorizationOg2Tests extends LdapTestCase {
      *   og_is_member($group_type, $gid, $entity_type = 'user', $entity = NULL, $states = array(OG_STATE_ACTIVE))
      */
 
-    $values = array(
+    $values = [
       'entity_type' => 'user',
       'entity' => $web_user->uid,
       'field_name' => FALSE,
       'state' => OG_STATE_ACTIVE,
-    );
+    ];
     $og_gryffindor_membership = og_group($this->groupType, $group_nids['gryffindor'], $values);
     $og_faculty_membership = og_group($this->groupType, $group_nids['faculty'], $values);
 
@@ -185,7 +187,7 @@ class LdapAuthorizationOg2Tests extends LdapTestCase {
 
     // Need to reload because of issue with og_group and og_role_grant.
     $web_user = user_load($web_user->uid, TRUE);
-    $ids = array($web_user->uid);
+    $ids = [$web_user->uid];
     $user_entity = entity_load('user', $ids);
 
     $this->assertTrue(og_is_member($this->groupType, $group_nids['gryffindor'], 'user', $web_user),
@@ -217,12 +219,12 @@ class LdapAuthorizationOg2Tests extends LdapTestCase {
     $this->assertTrue($og_auth->hasAuthorization($web_user, ldap_authorization_og_authorization_id($group_nids['faculty'], $roles_by_name['faculty'][OG_ADMINISTRATOR_ROLE], 'node')),
       'hasAuthorization() method works for non LDAP provisioned og authorization, faculty admin role', $this->ldapTestId);
 
-    $should_haves = array(
+    $should_haves = [
       $consumer_ids['gryffindor'][OG_AUTHENTICATED_ROLE] => 'gryffindor member',
       $consumer_ids['faculty'][OG_AUTHENTICATED_ROLE] => 'faculty member',
       $consumer_ids['faculty'][OG_ADMINISTRATOR_ROLE] => 'faculty admin',
       $consumer_ids['faculty']['dungeon-master'] => 'faculty dungeon master',
-    );
+    ];
 
     foreach ($should_haves as $consumer_id => $descriptor) {
       $this->assertTrue(ldap_authorization_og2_has_consumer_id($consumer_id, $web_user->uid),
@@ -230,21 +232,21 @@ class LdapAuthorizationOg2Tests extends LdapTestCase {
     }
 
     $ldap_entry = NULL;
-    $user_data = array();
+    $user_data = [];
     $web_user = user_load($web_user->uid, TRUE);
 
     $this->assertTrue(ldap_authorization_og2_has_consumer_id($consumer_ids['faculty']['dungeon-master'], $web_user->uid),
       "LdapAuthorizationConsumerOG has faculty member role BEFORE authorizationRevoke() test revoke on member role " . $consumer_ids['faculty']['dungeon-master'], $this->ldapTestId);
 
     $web_user = user_load($web_user->uid, TRUE);
-    $consumers = array($consumer_ids['faculty']['dungeon-master'] => $og_auth->emptyConsumer);
+    $consumers = [$consumer_ids['faculty']['dungeon-master'] => $og_auth->emptyConsumer];
     $og_auth->authorizationRevoke($web_user, $user_data, $consumers, $ldap_entry, TRUE);
     $result = ldap_authorization_og2_has_consumer_id($consumer_ids['faculty']['dungeon-master'], $web_user->uid);
     $this->assertFalse($result,
       "LdapAuthorizationConsumerOG authorizationRevoke() test revoke on member role " . $consumer_ids['faculty']['dungeon-master'], $this->ldapTestId);
 
     $web_user = user_load($web_user->uid, TRUE);
-    $consumers = array($consumer_ids['faculty']['dungeon-master'] => $og_auth->emptyConsumer);
+    $consumers = [$consumer_ids['faculty']['dungeon-master'] => $og_auth->emptyConsumer];
     $og_auth->authorizationRevoke($web_user, $user_data, $consumers, $ldap_entry, TRUE);
     $this->assertFalse(ldap_authorization_og2_has_consumer_id($consumer_ids['faculty']['dungeon-master'], $web_user->uid),
       "LdapAuthorizationConsumerOG authorizationRevoke() test revoke on custom member role role " . $consumer_ids['faculty']['dungeon-master'], $this->ldapTestId);
@@ -253,30 +255,30 @@ class LdapAuthorizationOg2Tests extends LdapTestCase {
     $initial_user_authorizations = $og_auth->usersAuthorizations($web_user, TRUE, TRUE);
     debug("initial_user_authorizations authorizations:"); debug($initial_user_authorizations);
     debug("initial_user data:"); debug($web_user->data);
-    $og_auth->authorizationGrant($web_user, $user_data, array($consumer_ids['students'][OG_AUTHENTICATED_ROLE] => $og_auth->emptyConsumer), $ldap_entry, TRUE);
+    $og_auth->authorizationGrant($web_user, $user_data, [$consumer_ids['students'][OG_AUTHENTICATED_ROLE] => $og_auth->emptyConsumer], $ldap_entry, TRUE);
     $success = ldap_authorization_og2_has_consumer_id($consumer_ids['students'][OG_AUTHENTICATED_ROLE], $web_user->uid);
     $this->assertTrue($success, "LdapAuthorizationConsumerOG authorizationGrant() test grant on member role " . $consumer_ids['students'][OG_AUTHENTICATED_ROLE], $this->ldapTestId);
     if (!$success) {
-      debug(array($user_data, array($consumer_ids['students'][OG_AUTHENTICATED_ROLE] => $og_auth->emptyConsumer)));
+      debug([$user_data, [$consumer_ids['students'][OG_AUTHENTICATED_ROLE] => $og_auth->emptyConsumer]]);
       debug("user authorizations:"); debug($og_auth->usersAuthorizations($web_user, TRUE));
     }
     $web_user = user_load($web_user->uid, TRUE);
-    $result = $og_auth->authorizationRevoke($web_user, $user_data, array('node:454:44334' => $og_auth->emptyConsumer), $ldap_entry, TRUE);
+    $result = $og_auth->authorizationRevoke($web_user, $user_data, ['node:454:44334' => $og_auth->emptyConsumer], $ldap_entry, TRUE);
     $this->assertFalse($result,
       'LdapAuthorizationConsumerOG authorizationRevoke() test revoke of bogus authorization', $this->ldapTestId);
 
     $web_user = user_load($web_user->uid, TRUE);
-    $result = $og_auth->authorizationGrant($web_user, $user_data, array('node:454:44334' => $og_auth->emptyConsumer), $ldap_entry, TRUE);
+    $result = $og_auth->authorizationGrant($web_user, $user_data, ['node:454:44334' => $og_auth->emptyConsumer], $ldap_entry, TRUE);
     $this->assertFalse($result,
       'LdapAuthorizationConsumerOG authorizationGrant() test grant of bogus authorization', $this->ldapTestId);
 
     $web_user = user_load($web_user->uid, TRUE);
-    $result = $og_auth->authorizationRevoke($web_user, $user_data, array('bogusformat'), $ldap_entry, TRUE);
+    $result = $og_auth->authorizationRevoke($web_user, $user_data, ['bogusformat'], $ldap_entry, TRUE);
     $this->assertFalse($result,
       'LdapAuthorizationConsumerOG authorizationRevoke()  test revoke malformed params', $this->ldapTestId);
 
     $web_user = user_load($web_user->uid, TRUE);
-    $result = $og_auth->authorizationGrant($web_user, $user_data, array('bogusformat'), $ldap_entry, TRUE);
+    $result = $og_auth->authorizationGrant($web_user, $user_data, ['bogusformat'], $ldap_entry, TRUE);
     $this->assertFalse($result,
       'LdapAuthorizationConsumerOG authorizationGrant() test grant malformed params', $this->ldapTestId);
 
@@ -305,7 +307,7 @@ class LdapAuthorizationOg2Tests extends LdapTestCase {
     $sid = 'activedirectory1';
     $this->prepTestData(
     LDAP_TEST_LDAP_NAME,
-    array($sid),
+    [$sid],
     'provisionToDrupal',
     'default',
     'og_group2'
@@ -330,8 +332,8 @@ class LdapAuthorizationOg2Tests extends LdapTestCase {
     $this->consumerAdminConf['og_group']->status = 0;
     $this->consumerAdminConf['og_group']->save();
 
-    $user = $this->drupalCreateUser(array());
-    $hpotter = $this->testFunctions->drupalLdapUpdateUser(array('name' => 'hpotter', 'mail' => 'hpotter@hogwarts.edu'), TRUE, $user);
+    $user = $this->drupalCreateUser([]);
+    $hpotter = $this->testFunctions->drupalLdapUpdateUser(['name' => 'hpotter', 'mail' => 'hpotter@hogwarts.edu'], TRUE, $user);
 
     // Just see if the correct ones are derived.
     list($new_authorizations, $notifications) = ldap_authorizations_user_authorizations($hpotter, 'query');
@@ -364,8 +366,8 @@ class LdapAuthorizationOg2Tests extends LdapTestCase {
     $this->consumerAdminConf['og_group']->status = 1;
     $this->consumerAdminConf['og_group']->save();
 
-    $user = $this->drupalCreateUser(array());
-    $hgrainger = $this->testFunctions->drupalLdapUpdateUser(array('name' => 'hgrainger', 'mail' => 'hgrainger@hogwarts.edu'), TRUE, $user);
+    $user = $this->drupalCreateUser([]);
+    $hgrainger = $this->testFunctions->drupalLdapUpdateUser(['name' => 'hgrainger', 'mail' => 'hgrainger@hogwarts.edu'], TRUE, $user);
 
     // Remove old authmap in case it exists so test will work.
     db_delete('authmap')
@@ -390,10 +392,10 @@ class LdapAuthorizationOg2Tests extends LdapTestCase {
 
     $this->consumerAdminConf['og_group']->synchOnLogon = 0;
     $this->consumerAdminConf['og_group']->save();
-    $edit = array(
+    $edit = [
       'name' => 'hgrainger',
       'pass' => 'goodpwd',
-    );
+    ];
     $this->drupalPost('user', $edit, t('Log in'));
     $this->assertText(
       t('Member for'),
@@ -411,10 +413,10 @@ class LdapAuthorizationOg2Tests extends LdapTestCase {
 
     $this->consumerAdminConf['og_group']->synchOnLogon = 1;
     $this->consumerAdminConf['og_group']->save();
-    $edit = array(
+    $edit = [
       'name' => 'hgrainger',
       'pass' => 'goodpwd',
-    );
+    ];
     $this->drupalPost('user', $edit, t('Log in'));
     $this->assertText(t('Member for'), 'New Ldap user with good password authenticated.',
       'LDAP_authorz.Flags.synchOnLogon=1');
@@ -451,12 +453,12 @@ class LdapAuthorizationOg2Tests extends LdapTestCase {
     // Set correct roles manually.
     $hpotter = user_load_by_name('hpotter');
     user_delete($hpotter->uid);
-    $user = $this->drupalCreateUser(array());
-    $hpotter = $this->testFunctions->drupalLdapUpdateUser(array('name' => 'hpotter', 'mail' => 'hpotter@hogwarts.edu'), TRUE, $user);
-    $edit = array(
+    $user = $this->drupalCreateUser([]);
+    $hpotter = $this->testFunctions->drupalLdapUpdateUser(['name' => 'hpotter', 'mail' => 'hpotter@hogwarts.edu'], TRUE, $user);
+    $edit = [
       'name' => 'hpotter',
       'pass' => 'goodpwd',
-    );
+    ];
     $this->drupalPost('user', $edit, t('Log in'));
     $this->assertText(
       t('Member for'),
@@ -472,19 +474,19 @@ class LdapAuthorizationOg2Tests extends LdapTestCase {
     $roles[$troublemaker->rid] = $troublemaker->name;
     $roles[$superadmin->rid] = $superadmin->name;
 
-    $data = array(
+    $data = [
       'roles' => $roles,
-      'data' => array(
+      'data' => [
         'ldap_authorizations' =>
-      array(
+      [
         'og_group' =>
-        array(
+        [
           $superadmin->name =>
-          array('date_granted' => 1304216778),
-        ),
-      ),
-      ),
-    );
+          ['date_granted' => 1304216778],
+        ],
+      ],
+      ],
+    ];
     $hpotter = user_save($hpotter, $data);
 
     // Apply correct authorizations.  should remove the administrator role but not the manually created 'troublemaker' role.
@@ -513,7 +515,7 @@ class LdapAuthorizationOg2Tests extends LdapTestCase {
     $hpotter = user_load($hpotter->uid, TRUE);
     $roles = $hpotter->roles;
     unset($roles[$superadmin->rid]);
-    user_save($hpotter, array('roles' => $roles));
+    user_save($hpotter, ['roles' => $roles]);
     $hpotter = user_load($hpotter->uid, TRUE);
     list($new_authorizations, $notifications) = ldap_authorizations_user_authorizations($hpotter, 'set', 'og_group', 'logon');
     $hpotter = user_load($hpotter->uid, TRUE);
@@ -538,25 +540,25 @@ class LdapAuthorizationOg2Tests extends LdapTestCase {
       // @todo.  this needs to be finished when creation of og groups is added to ldap authorization og functionality
 
       // Add new mapping to and enable create consumers.
-      $this->prepTestData('hogwarts', array($sid), 'provisionToDrupal', 'default', 'drupal_role_default');
+      $this->prepTestData('hogwarts', [$sid], 'provisionToDrupal', 'default', 'drupal_role_default');
       $this->drupalGet('user/logout');
       $new_role = 'oompa-loompas';
       $this->consumerAdminConf['og_group']->createConsumers = 1;
-      $this->consumerAdminConf['og_group']->mappings[] = array(
+      $this->consumerAdminConf['og_group']->mappings[] = [
         'from' => 'cn=students,ou=groups,dc=hogwarts,dc=edu',
         'user_entered' => $new_role,
         'normalized' => 'node:' . $new_role . ':' . OG_AUTHENTICATED_ROLE,
         'simplified' => $new_role,
         'valid' => TRUE,
         'error_message' => '',
-      );
+      ];
 
       $this->consumerAdminConf['og_group']->save();
 
-      $edit = array(
+      $edit = [
         'name' => 'hpotter',
         'pass' => 'goodpwd',
-      );
+      ];
       $this->drupalPost('user', $edit, t('Log in'));
 
       $new_role_created = in_array($new_role, array_values(user_roles()));

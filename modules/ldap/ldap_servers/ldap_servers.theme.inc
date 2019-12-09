@@ -2,8 +2,7 @@
 
 /**
  * @file
- * theming functions for ldap_servers module
- *
+ * Theming functions for ldap_servers module.
  */
 
 /**
@@ -16,30 +15,35 @@
  *   - type:  'table', 'list', etc for style to render
  *
  * @ingroup themeable
+ *
+ * @return string
  */
 function theme_ldap_servers_list($variables) {
+  /** @var array $ldap_servers */
+  /** @var bool $actions */
+  /** @var string $type */
   extract($variables);
 
-  $table = array(
-    'header' => array(t('Name'), t('Type'), t('Enabled'), t('Server Address')),
-    'attributes' => array('id' => 'ldap_servers_servers', 'class' => 'data'),
-    'colgroups' => array(),
+  $table = [
+    'header' => [t('Name'), t('Type'), t('Enabled'), t('Server Address')],
+    'attributes' => ['id' => 'ldap_servers_servers', 'class' => 'data'],
+    'colgroups' => [],
     'sticky' => FALSE,
     'empty' => '',
     'caption' => 'LDAP Server Configurations',
-  );
+  ];
 
   if ($actions) {
     $table['header'][] = "Operations";
   }
   if (count($ldap_servers)) {
-    foreach ($ldap_servers as $sid => $ldap_server ) {
-      $row = array(
+    foreach ($ldap_servers as $sid => $ldap_server) {
+      $row = [
         $ldap_server->name,
         $ldap_server->ldap_type,
         ($ldap_server->status == 1) ? "Yes" : "No",
-        $ldap_server->address
-          );
+        $ldap_server->address,
+      ];
       if ($actions) {
         $admin = new LdapServerAdmin($ldap_server->sid);
         $row[] = join(' | ', $admin->getLdapServerActions());
@@ -48,7 +52,7 @@ function theme_ldap_servers_list($variables) {
     }
   }
   else {
-    $table['rows'] = array();
+    $table['rows'] = [];
   }
   $output = theme('table', $table);
 
@@ -60,18 +64,22 @@ function theme_ldap_servers_list($variables) {
  *
  * @param $variables
  *   An associative array containing:
- *   - ldap_servers_config: an array of one or more ldap server configurations.
+ *   - ldap_server: an array of one or more ldap server configurations.
  *   - actions:  true or false indicating include update, delete, etc. links
  *   - type:  'table', 'list', etc for style to render
  *
  * @ingroup themeable
+ *
+ * @return string
  */
-
 function theme_ldap_servers_server($variables) {
-  extract($variables);  // $ldap_server, $actions, $type (see above)
+  /** @var array $ldap_server */
+  /** @var bool $actions */
+  /** @var string $type */
+  extract($variables);
 
   ldap_servers_module_load_include('php', 'ldap_servers', 'LdapServer.class');
-  $properties = array();
+  $properties = [];
   foreach (LdapServer::field_to_properties_map() as $field_name => $property_name) {
     $properties[] = "$field_name = " . print_r($ldap_server->$property_name, TRUE);
   }
@@ -82,47 +90,53 @@ function theme_ldap_servers_server($variables) {
   }
 
   $output = theme_item_list(
-    array(
+    [
       'items' => $properties,
       'type' => 'ul',
       'title' => 'Server Properties',
-      'attributes' => array()
-      )
+      'attributes' => [],
+    ]
     );
 
   return $output;
 }
 
+/**
+ *
+ */
 function theme_ldap_server_token_table($variables) {
-  $header = array(
-    array('data' => 'Token', 'sort' => 'asc'),
-    array('data' => 'Value'),
-  );
+  $header = [
+    ['data' => 'Token', 'sort' => 'asc'],
+    ['data' => 'Value'],
+  ];
   foreach ($variables['tokens'] as $token => $value) {
-    $rows[] = array('data' => array($token, $value));
+    $rows[] = ['data' => [$token, $value]];
   }
   $token_table = '<div class="content"><h2>' . t('Available Tokens') . '</h2>' .
-    theme_table(array('colgroups' => NULL, 'caption' => 'tokens', 'header' => $header, 'rows' => $rows, 'sticky' => TRUE, 'attributes' => array(), 'empty' => 'No data')) .
+    theme_table(['colgroups' => NULL, 'caption' => 'tokens', 'header' => $header, 'rows' => $rows, 'sticky' => TRUE, 'attributes' => [], 'empty' => 'No data']) .
     '</div>';
 
   return $token_table;
 }
 
+/**
+ *
+ */
 function theme_ldap_server_ldap_entry_table($variables) {
   if (!isset($variables['entry']) || !is_array($variables['entry'])) {
     return '<p>' . t('No Entry Returned.') . t('</p>');
   }
 
-  $header = array('Attribute Name', 'Instance', 'Value', 'token');
-  $rows = array();
+  $header = ['Attribute Name', 'Instance', 'Value', 'token'];
+  $rows = [];
   foreach ($variables['entry'] as $key => $value) {
     if (is_numeric($key) || $key == 'count') {
     }
-    elseif (count($value) > 1) {
-      $count = (int)$value['count'];
+    elseif (is_array($value) && count($value) > 1) {
+      $count = (int) $value['count'];
       foreach ($value as $i => $value2) {
 
-        if ((string)$i == 'count') {
+        if ((string) $i == 'count') {
           continue;
         }
         elseif ($i == 0 && $count == 1) {
@@ -140,10 +154,23 @@ function theme_ldap_server_ldap_entry_table($variables) {
         else {
           $token = "";
         }
-        $rows[] = array('data' => array($key, $i, ldap_servers_string_binary_check($value2), $token));
+        $rows[] = ['data' => [$key, $i, ldap_servers_string_binary_check($value2), $token]];
       }
     }
   }
-  $entry_table = '<div class="content"><h2>' . t('LDAP Entry for %username (dn: %dn)', array('%dn' => $variables['dn'], '%username' => $variables['username'])) . '</h2>' . theme('table', array('colgroups' => NULL, 'caption' => 'ldap entry array', 'header' => $header, 'rows' => $rows, 'sticky' => TRUE, 'attributes' => array(), 'empty' => 'No data')) . '</div>';
+  $heading = sprintf('<h2>%s</h2>', t('LDAP Entry for %username (dn: %dn)', [
+    '%dn' => $variables['dn'],
+    '%username' => $variables['username'],
+  ]));
+  $table = theme('table', [
+    'colgroups' => NULL,
+    'caption' => 'ldap entry array',
+    'header' => $header,
+    'rows' => $rows,
+    'sticky' => TRUE,
+    'attributes' => [],
+    'empty' => 'No data',
+  ]);
+  $entry_table = '<div class="content">' . $heading . $table . '</div>';
   return $entry_table;
 }
