@@ -2,12 +2,13 @@
 
 /**
  * @file
- * Generic LDAP Implementation Details
- *
+ * Generic LDAP Implementation Details.
  */
 
 module_load_include('php', 'ldap_servers', 'ldap_types/LdapTypeAbstract.class');
-
+/**
+ *
+ */
 class LdapTypeDefault extends LdapTypeAbstract {
 
   public $name = 'Default LDAP';
@@ -20,11 +21,10 @@ class LdapTypeDefault extends LdapTypeAbstract {
   public $mail_attr = 'mail';
   public $supportsNestGroups = FALSE;
 
- /**
-   * Constructor Method
-   *
+  /**
+   * Constructor Method.
    */
-  function __construct($params = array()) {
+  public function __construct($params = []) {
     foreach ($params as $k => $v) {
       if (property_exists($this, $k)) {
         $this->{$k} = $v;

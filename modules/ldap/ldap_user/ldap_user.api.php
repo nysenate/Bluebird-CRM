@@ -2,14 +2,13 @@
 
 /**
  * @file
- * Hooks and functions relevant to developers
- *
+ * Hooks and functions relevant to developers.
  */
 
 /**
- * hook_ldap_user_attrs_alter().
+ * Hook_ldap_user_attrs_alter().
  *
- * alter list of available drupal user targets (fields, properties, etc.)
+ * Alter list of available drupal user targets (fields, properties, etc.)
  *   for ldap_user provisioning mapping form (admin/config/people/ldap/user)
  *
  * return array with elements of the form:
@@ -38,10 +37,9 @@
  *   'data' ($user->data array.  field_name will be used as key such as $user->data[<field_name>] = mapped value
  * 'field_name' machine name of property, field, profile2 field, or data associative array key
  */
-
 function hook_ldap_user_attrs_list_alter(&$available_user_attrs, &$params) {
 
- /** search for _ldap_user_attrs_list_alter for good examples
+  /** search for _ldap_user_attrs_list_alter for good examples
   * the general trick to implementing this hook is:
   *   make sure to specify config and synch module
   *   if its configurable by ldap_user module, don't specify convert, user_tokens, direction.  these will be set by UI and stored values
@@ -50,22 +48,19 @@ function hook_ldap_user_attrs_list_alter(&$available_user_attrs, &$params) {
 
 }
 
-
-
 /**
  * Allow modules to alter the user object in the context of an ldap entry
- * during synchronization
+ * during synchronization.
  *
  * @param array $edit
  *   The edit array (see hook_user_insert). Make changes to this object as
  *   required.
- * @param array $ldap_user, for structure @see LdapServer::userUserNameToExistingLdapEntry()
- *   Array, the ldap user object relating to the drupal user
+ * @param array $ldap_user,
+ *   for structure @see LdapServer::userUserNameToExistingLdapEntry()
+ *   Array, the ldap user object relating to the drupal user.
  * @param object $ldap_server
- *   The LdapServer object from which the ldap entry was fetched
+ *   The LdapServer object from which the ldap entry was fetched.
  * @param int $prov_event
- *
- *
  */
 function hook_ldap_user_edit_user_alter(&$edit, &$ldap_user, $ldap_server, $prov_event) {
   $edit['myfield'] = $ldap_server->getAttributeValue($ldap_user, 'myfield');

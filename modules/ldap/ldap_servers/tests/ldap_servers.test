@@ -2,7 +2,7 @@
 
 /**
  * @file
- * simpletest for ldap servers
+ * Simpletest for ldap servers.
  */
 
 if (function_exists('ldap_servers_module_load_include')) {
@@ -11,19 +11,28 @@ if (function_exists('ldap_servers_module_load_include')) {
 else {
   module_load_include('php', 'ldap_test', 'LdapTestCase.class');
 }
-
+/**
+ *
+ */
 class LdapServersTestCase extends LdapTestCase {
+
+  /**
+   *
+   */
   public static function getInfo() {
-    return array(
+    return [
       'name' => 'LDAP Servers Tests',
       'description' => 'Test ldap servers.  Servers module is primarily a storage
         tool for ldap server configuration, so most of testing is just form and db testing.
         there are some api like functions that are also tested.',
-      'group' => 'LDAP Servers'
-    );
+      'group' => 'LDAP Servers',
+    ];
   }
 
-  function __construct($test_id = NULL) {
+  /**
+   *
+   */
+  public function __construct($test_id = NULL) {
     parent::__construct($test_id);
   }
 
@@ -31,35 +40,41 @@ class LdapServersTestCase extends LdapTestCase {
   protected $ldap_test_data;
 
   /**
-   *  create one or more server configurations in such as way
-   *  that this setUp can be a prerequisite for ldap_authentication and ldap_authorization
+   * Create one or more server configurations in such as way
+   *  that this setUp can be a prerequisite for ldap_authentication and ldap_authorization.
    */
-
-  function setUp() {
-    parent::setUp(array('ldap_test'));
+  public function setUp() {
+    parent::setUp(['ldap_test']);
     variable_set('ldap_simpletest', 2);
   }
 
-  function tearDown() {
+  /**
+   *
+   */
+  public function tearDown() {
     parent::tearDown();
     variable_del('ldap_help_watchdog_detail');
     variable_del('ldap_simpletest');
   }
 
+  /**
+   *
+   */
   public function testApiFunctions() {
 
     $group = 'ldap_servers: functions';
 
-    foreach (array('openldap1', 'activedirectory1') as $sid) { // , 'activedirectory1'
+    // , 'activedirectory1'.
+    foreach (['openldap1', 'activedirectory1'] as $sid) {
       $ldap_type = ($sid == 'openldap1') ? 'Open Ldap' : 'Active Directory';
-      $this->prepTestData('hogwarts', array($sid));
+      $this->prepTestData('hogwarts', [$sid]);
 
       $group = "ldap_servers: functions: $ldap_type";
-      $test_data = variable_get('ldap_test_server__' . $sid, array());
+      $test_data = variable_get('ldap_test_server__' . $sid, []);
       ldap_servers_module_load_include('php', 'ldap_test', 'LdapServerTest.class');
       $ldap_server = LdapServerTest::getLdapServerObjects($sid, NULL, TRUE);
 
-      // check against csv data rather than ldap array to make sure csv to ldap conversion is correct
+      // Check against csv data rather than ldap array to make sure csv to ldap conversion is correct.
       $user_csv_entry = $test_data['csv']['users']['101'];
       $user_dn = $user_csv_entry['dn'];
       $user_cn = $user_csv_entry['cn'];
@@ -68,7 +83,7 @@ class LdapServersTestCase extends LdapTestCase {
       $username = $ldap_server->userUsernameFromLdapEntry($user_ldap_entry);
       $this->assertTrue($username == $user_csv_entry['cn'], 'LdapServer::userUsernameFromLdapEntry works when LdapServer::user_attr attribute used', $group);
 
-      $bogus_ldap_entry = array();
+      $bogus_ldap_entry = [];
       $username = $ldap_server->userUsernameFromLdapEntry($bogus_ldap_entry);
       $this->assertTrue($username === FALSE, 'LdapServer::userUsernameFromLdapEntry fails correctly', $group);
 
@@ -78,24 +93,24 @@ class LdapServersTestCase extends LdapTestCase {
       $username = $ldap_server->userUsernameFromDn('bogus dn');
       $this->assertTrue($username === FALSE, 'LdapServer::userUsernameFromDn fails correctly', $group);
 
-      $desired = array();
-      $desired[0] = array(
+      $desired = [];
+      $desired[0] = [
         0 => 'cn=gryffindor,ou=groups,dc=hogwarts,dc=edu',
         1 => 'cn=students,ou=groups,dc=hogwarts,dc=edu',
         2 => 'cn=honors students,ou=groups,dc=hogwarts,dc=edu',
-      );
-      $desired[1] = array_merge($desired[0], array('cn=users,ou=groups,dc=hogwarts,dc=edu'));
+      ];
+      $desired[1] = array_merge($desired[0], ['cn=users,ou=groups,dc=hogwarts,dc=edu']);
 
-      foreach (array(0, 1) as $nested) {
+      foreach ([0, 1] as $nested) {
 
         $nested_display = ($nested) ? 'nested' : 'not nested';
         $desired_count = ($nested) ? 4 : 3;
-        $ldap_module_user_entry = array('attr' => $user_ldap_entry, 'dn' => $user_dn);
+        $ldap_module_user_entry = ['attr' => $user_ldap_entry, 'dn' => $user_dn];
         $groups_desired = $desired[$nested];
 
-        $suffix = ",desired=$desired_count, nested=" . (boolean)$nested;
+        $suffix = ",desired=$desired_count, nested=" . (boolean) $nested;
 
-        // test parent function groupMembershipsFromUser
+        // Test parent function groupMembershipsFromUser.
         $groups = $ldap_server->groupMembershipsFromUser($ldap_module_user_entry, 'group_dns', $nested);
         $count = count($groups);
         $diff1 = array_diff($groups_desired, $groups);
@@ -106,7 +121,7 @@ class LdapServersTestCase extends LdapTestCase {
           debug('groupMembershipsFromUser');debug($groups);  debug($diff1);  debug($diff2);  debug($groups_desired);
         }
 
-        // test parent groupUserMembershipsFromUserAttr, for openldap should be false, for ad should work
+        // Test parent groupUserMembershipsFromUserAttr, for openldap should be false, for ad should work.
         $groups = $ldap_server->groupUserMembershipsFromUserAttr($ldap_module_user_entry, $nested);
         $count = is_array($groups) ? count($groups) : $count;
         $pass = $count === FALSE;
@@ -128,22 +143,25 @@ class LdapServersTestCase extends LdapTestCase {
         $pass = (count($diff1) == 0 && count($diff2) == 0 && $count == $desired_count);
         $this->assertTrue($pass, "LdapServer::groupUserMembershipsFromEntry $nested_display works", $group . $suffix);
         if (!$pass) {
-          debug('groupUserMembershipsFromEntry'); debug($groups);  debug($diff1);  debug($diff2);  debug($groups_desired );
+          debug('groupUserMembershipsFromEntry'); debug($groups);  debug($diff1);  debug($diff2);  debug($groups_desired);
         }
       }
     }
   }
 
-
+  /**
+   *
+   */
   public function testInstall() {
     // TODO: Fix failing tests, excluding to make branch pass.
     return;
     $group = 'ldap_servers: install and uninstall';
-    $install_tables = array('ldap_servers');
-    // disable, uninstall, and enable/install module
-    $modules = array($this->module_name);
-    $ldap_module_uninstall_sequence = array('ldap_authentication', 'ldap_test', 'ldap_user', 'ldap_group', 'ldap_servers');
-    module_disable($ldap_module_uninstall_sequence); // disable dependent modules
+    $install_tables = ['ldap_servers'];
+    // disable, uninstall, and enable/install module.
+    $modules = [$this->module_name];
+    $ldap_module_uninstall_sequence = ['ldap_authentication', 'ldap_test', 'ldap_user', 'ldap_group', 'ldap_servers'];
+    // Disable dependent modules.
+    module_disable($ldap_module_uninstall_sequence);
     drupal_uninstall_modules($ldap_module_uninstall_sequence);
     module_enable($modules, TRUE);
     foreach ($install_tables as $table) {
@@ -152,48 +170,48 @@ class LdapServersTestCase extends LdapTestCase {
     $var_created = $this->assertTrue(TRUE, 'ldap_servers_encryption variable initialized', $group);
     $var_created = $this->assertTrue(variable_get('ldap_servers_encrypt_key', drupal_get_hash_salt()), 'ldap_servers_encrypt_key variable initialized', $group);
 
-    module_disable($modules, TRUE); // disable dependent modules
-    drupal_uninstall_modules($modules, TRUE); // unistall dependent modules
+    // Disable dependent modules.
+    module_disable($modules, TRUE);
+    // Unistall dependent modules.
+    drupal_uninstall_modules($modules, TRUE);
     foreach ($install_tables as $table) {
       $this->assertFalse(db_table_exists($table), $table . ' table removed', $group);
     }
     $var_created = $this->assertFalse(variable_get('ldap_servers_encryption', FALSE), 'ldap_servers_encryption variable removed', $group);
     $var_created = $this->assertFalse(variable_get('ldap_servers_encrypt_key', FALSE), 'ldap_servers_encrypt_key variable removed', $group);
 
-
-    // test tokens, see http://drupal.org/node/1245736
-    $ldap_entry = array(
+    // Test tokens, see http://drupal.org/node/1245736
+    $ldap_entry = [
       'dn' => 'cn=hpotter,ou=people,dc=hogwarts,dc=edu',
-      'mail' => array( 0 => 'hpotter@hogwarts.edu', 'count' => 1),
-      'sAMAccountName' => array( 0 => 'hpotter', 'count' => 1),
-      'house' => array( 0 => 'Gryffindor', 1 => 'Privet Drive', 'count' => 2),
-      'guid' => array( 0 => 'sdafsdfsdf', 'count' => 1),
+      'mail' => [0 => 'hpotter@hogwarts.edu', 'count' => 1],
+      'sAMAccountName' => [0 => 'hpotter', 'count' => 1],
+      'house' => [0 => 'Gryffindor', 1 => 'Privet Drive', 'count' => 2],
+      'guid' => [0 => 'sdafsdfsdf', 'count' => 1],
       'count' => 3,
-    );
+    ];
 
     $this->ldapTestId = 'ldap_server.tokens';
 
     $dn = ldap_servers_token_replace($ldap_entry, '[dn]');
-    $this->assertTrue( $dn == $ldap_entry['dn'], t('[dn] token worked on ldap_servers_token_replace().'), $this->ldapTestId);
+    $this->assertTrue($dn == $ldap_entry['dn'], t('[dn] token worked on ldap_servers_token_replace().'), $this->ldapTestId);
 
     $house0 = ldap_servers_token_replace($ldap_entry, '[house:0]');
-    $this->assertTrue( $house0 == $ldap_entry['house'][0], t("[house:0] token worked ($house0) on ldap_servers_token_replace()."), $this->ldapTestId);
+    $this->assertTrue($house0 == $ldap_entry['house'][0], t("[house:0] token worked ($house0) on ldap_servers_token_replace()."), $this->ldapTestId);
 
     $mixed = ldap_servers_token_replace($ldap_entry, 'thisold[house:0]');
-    $this->assertTrue( $mixed == 'thisold' . $ldap_entry['house'][0], t("thisold[house:0] token worked ($mixed) on ldap_servers_token_replace()."), $this->ldapTestId);
+    $this->assertTrue($mixed == 'thisold' . $ldap_entry['house'][0], t("thisold[house:0] token worked ($mixed) on ldap_servers_token_replace()."), $this->ldapTestId);
 
     $compound = ldap_servers_token_replace($ldap_entry, '[samaccountname:0][house:0]');
-    $this->assertTrue( $compound == $ldap_entry['sAMAccountName'][0] . $ldap_entry['house'][0], t("[samaccountname:0][house:0] compound token worked ($mixed) on ldap_servers_token_replace()."), $this->ldapTestId);
-
+    $this->assertTrue($compound == $ldap_entry['sAMAccountName'][0] . $ldap_entry['house'][0], t("[samaccountname:0][house:0] compound token worked ($mixed) on ldap_servers_token_replace()."), $this->ldapTestId);
 
     $literalvalue = ldap_servers_token_replace($ldap_entry, 'literalvalue');
-    $this->assertTrue( $literalvalue == 'literalvalue', t("'literalvalue' token worked ($literalvalue) on ldap_servers_token_replace()."), $this->ldapTestId);
+    $this->assertTrue($literalvalue == 'literalvalue', t("'literalvalue' token worked ($literalvalue) on ldap_servers_token_replace()."), $this->ldapTestId);
 
     $house0 = ldap_servers_token_replace($ldap_entry, '[house]');
-    $this->assertTrue( $house0 == $ldap_entry['house'][0], t("[house] token worked ($house0) on ldap_servers_token_replace()."), $this->ldapTestId);
+    $this->assertTrue($house0 == $ldap_entry['house'][0], t("[house] token worked ($house0) on ldap_servers_token_replace()."), $this->ldapTestId);
 
     $house1 = ldap_servers_token_replace($ldap_entry, '[house:last]');
-    $this->assertTrue( $house1 == $ldap_entry['house'][1], t('[house:last] token worked on ldap_servers_token_replace().'), $this->ldapTestId);
+    $this->assertTrue($house1 == $ldap_entry['house'][1], t('[house:last] token worked on ldap_servers_token_replace().'), $this->ldapTestId);
 
     $sAMAccountName = ldap_servers_token_replace($ldap_entry, '[samaccountname:0]');
     $this->assertTrue($sAMAccountName == $ldap_entry['sAMAccountName'][0], t('[samaccountname:0] token worked on ldap_servers_token_replace().'), $this->ldapTestId);
@@ -218,88 +236,80 @@ class LdapServersTestCase extends LdapTestCase {
 
     $binary = ldap_servers_token_replace($ldap_entry, '[guid;binary]');
     $this->assertTrue($binary == ldap_servers_binary($ldap_entry['guid'][0]), t('[guid;binary] token worked on ldap_servers_token_replace().'), $this->ldapTestId);
-
-    /**
-     * @todo test tokens for 'user_account'
-     *
-    $account = new stdClass();
-    $account->
-    ldap_servers_token_replace($account, '[property.name]', 'user_account');
-     */
-
     module_enable($modules, TRUE);
   }
 
+  /**
+   *
+   */
   public function testUIForms() {
 
-    foreach (array(1) as $ctools_enabled) {
+    foreach ([1] as $ctools_enabled) {
       $this->ldapTestId = "testUIForms.ctools.$ctools_enabled";
       if ($ctools_enabled) {
-        module_enable(array('ctools'));
-      }
-      else {
-        // module_disable(array('ctools'));
+        module_enable(['ctools']);
       }
 
       $ldap_simpletest_initial = variable_get('ldap_simpletest', 2);
-      variable_del('ldap_simpletest'); // need to be out of fake server mode to test ui.
-      $this->privileged_user = $this->drupalCreateUser(array(
+      // Need to be out of fake server mode to test ui.
+      variable_del('ldap_simpletest');
+      $this->privileged_user = $this->drupalCreateUser([
         'administer site configuration',
-        ));
+      ]);
       $this->drupalLogin($this->privileged_user);
 
       $sid = 'server1';
-      $server_data = array();
-      $server_data[$sid] = array(
-        'sid'        => array($sid, $sid),
-        'name'       => array("Server $sid", "My Server $sid"),
-        'status'     => array(1, 1),
-        'ldap_type'  => array('openldap', 'ad'),
-        'address'    => array("${sid}.ldap.fake", "${sid}.ldap.fake"),
-        'port'       => array(389, 7000),
-        'tls'        => array(TRUE, FALSE),
-        'bind_method' => array(1, 3),
-        'binddn'  => array('cn=service-account,ou=people,dc=hogwarts,dc=edu', ''),
-        'bindpw'  => array('sdfsdafsdfasdf', 'sdfsdafsdfasdf'),
-        'user_attr' => array('sAMAccountName', 'blah'),
-        'account_name_attr' => array('sAMAccountName', 'blah'),
-        'mail_attr' => array('mail', ''),
-        'mail_template' => array('' , '[email]'),
-        'unique_persistent_attr' => array('dn', 'uniqueregistryid'),
-        'unique_persistent_attr_binary' => array(1, 1, 1, 1),
-        'user_dn_expression' => array('cn=%cn,%basedn', 'cn=%username,%basedn'),
-        'ldap_to_drupal_user' => array('code', 'different code'),
+      $server_data = [];
+      $server_data[$sid] = [
+        'sid'        => [$sid, $sid],
+        'name'       => ["Server $sid", "My Server $sid"],
+        'status'     => [1, 1],
+        'ldap_type'  => ['openldap', 'ad'],
+        'address'    => ["${sid}.ldap.fake", "${sid}.ldap.fake"],
+        'port'       => [389, 7000],
+        'tls'        => [TRUE, FALSE],
+        'bind_method' => [1, 3],
+        'binddn'  => ['cn=service-account,ou=people,dc=hogwarts,dc=edu', ''],
+        'bindpw'  => ['sdfsdafsdfasdf', 'sdfsdafsdfasdf'],
+        'user_attr' => ['sAMAccountName', 'blah'],
+        'account_name_attr' => ['sAMAccountName', 'blah'],
+        'mail_attr' => ['mail', ''],
+        'mail_template' => ['' , '[email]'],
+        'unique_persistent_attr' => ['dn', 'uniqueregistryid'],
+        'unique_persistent_attr_binary' => [1, 1, 1, 1],
+        'user_dn_expression' => ['cn=%cn,%basedn', 'cn=%username,%basedn'],
+        'ldap_to_drupal_user' => ['code', 'different code'],
 
-        'testing_drupal_username' => array('hpotter', 'hpotter'),
-        'testing_drupal_user_dn' => array('cn=hpotter,ou=people,dc=hogwarts,dc=edu', 'cn=hpotter,ou=people,dc=hogwarts,dc=edu'),
+        'testing_drupal_username' => ['hpotter', 'hpotter'],
+        'testing_drupal_user_dn' => ['cn=hpotter,ou=people,dc=hogwarts,dc=edu', 'cn=hpotter,ou=people,dc=hogwarts,dc=edu'],
 
-        'grp_unused' => array(FALSE, FALSE),
-        'grp_object_cat' => array('group', 'group'),
-        'grp_nested' => array(FALSE, FALSE),
+        'grp_unused' => [FALSE, FALSE],
+        'grp_object_cat' => ['group', 'group'],
+        'grp_nested' => [FALSE, FALSE],
 
-        'grp_user_memb_attr_exists' => array(1, 1),
-        'grp_user_memb_attr' => array('memberof', 'memberof'),
+        'grp_user_memb_attr_exists' => [1, 1],
+        'grp_user_memb_attr' => ['memberof', 'memberof'],
 
-        'grp_memb_attr' => array('member', 'member'),
-        'grp_memb_attr_match_user_attr' => array('dn', 'dn'),
+        'grp_memb_attr' => ['member', 'member'],
+        'grp_memb_attr_match_user_attr' => ['dn', 'dn'],
 
-        'grp_derive_from_dn' => array(1, 1),
-        'grp_derive_from_dn_attr' => array('ou', 'ou'),
+        'grp_derive_from_dn' => [1, 1],
+        'grp_derive_from_dn_attr' => ['ou', 'ou'],
 
-        'grp_test_grp_dn' => array('cn=students,ou=groups,dc=hogwarts,dc=edu', 'cn=students,ou=groups,dc=hogwarts,dc=edu'),
-        'grp_test_grp_dn_writeable' => array('cn=students,ou=groups,dc=hogwarts,dc=edu', 'cn=students,ou=groups,dc=hogwarts,dc=edu'),
+        'grp_test_grp_dn' => ['cn=students,ou=groups,dc=hogwarts,dc=edu', 'cn=students,ou=groups,dc=hogwarts,dc=edu'],
+        'grp_test_grp_dn_writeable' => ['cn=students,ou=groups,dc=hogwarts,dc=edu', 'cn=students,ou=groups,dc=hogwarts,dc=edu'],
 
-      );
+      ];
 
-      $lcase_transformed = array(
+      $lcase_transformed = [
         'user_attr',
         'account_name_attr',
         'mail_attr',
         'unique_persistent_attr',
         'grp_user_memb_attr',
         'grp_memb_attr_match_user_attr',
-        'grp_derive_from_dn_attr'
-        );
+        'grp_derive_from_dn_attr',
+      ];
 
       if (!module_exists('php')) {
         unset($server_data[$sid]['ldap_to_drupal_user']);
@@ -308,7 +318,7 @@ class LdapServersTestCase extends LdapTestCase {
       /** add server conf test **/
       $this->drupalGet('admin/config/people/ldap/servers/add');
 
-      $edit = array();
+      $edit = [];
       foreach ($server_data['server1'] as $input_name => $input_values) {
         $edit[$input_name] = $input_values[0];
       }
@@ -318,9 +328,8 @@ class LdapServersTestCase extends LdapTestCase {
       $ldap_servers = ldap_servers_get_servers(NULL, 'all', FALSE, TRUE);
       $this->assertTrue(count(array_keys($ldap_servers)) == 1, 'Add form for ldap server added server.', $this->ldapTestId . ' Add Server');
       $this->assertText('LDAP Server Server server1 added', 'Add form confirmation message', $this->ldapTestId . ' Add Server');
-      // assert one ldap server exists in db table
-
-      // assert load of server has correct properties for each input
+      // Assert one ldap server exists in db table
+      // Assert load of server has correct properties for each input.
       $mismatches = $this->compareFormToProperties($ldap_servers['server1'], $server_data['server1'], 0, $field_to_prop_map, $lcase_transformed);
       if (count($mismatches)) {
         debug('mismatches between ldap server properties and form submitted values');
@@ -330,12 +339,11 @@ class LdapServersTestCase extends LdapTestCase {
       }
       $this->assertTrue(count($mismatches) == 0, 'Add form for ldap server properties match values submitted.', $this->ldapTestId . ' Add Server');
 
-
       /** update server conf test **/
 
       $this->drupalGet('admin/config/people/ldap/servers/edit/server1');
 
-      $edit = array();
+      $edit = [];
       foreach ($server_data['server1'] as $input_name => $input_values) {
         if ($input_values[1] !== NULL) {
           $edit[$input_name] = $input_values[1];
@@ -346,10 +354,9 @@ class LdapServersTestCase extends LdapTestCase {
       $this->drupalPost('admin/config/people/ldap/servers/edit/server1', $edit, t('Update'));
       $ldap_servers = ldap_servers_get_servers(NULL, 'all', FALSE, TRUE);
       $this->assertTrue(count(array_keys($ldap_servers)) == 1, 'Update form for ldap server didnt delete or add another server.', $this->ldapTestId . '.Update Server');
-      // assert confirmation message without error
+      // Assert confirmation message without error
       // assert one ldap server exists in db table
-      // assert load of server has correct properties for each input
-     // unset($server_data['server1']['bindpw']);
+      // assert load of server has correct properties for each input.
       $mismatches = $this->compareFormToProperties($ldap_servers['server1'], $server_data['server1'], 1, $field_to_prop_map, $lcase_transformed);
       if (count($mismatches)) {
         debug('mismatches between ldap server properties and form submitted values'); debug($mismatches);
@@ -358,24 +365,31 @@ class LdapServersTestCase extends LdapTestCase {
 
       /** delete server conf test **/
       $this->drupalGet('admin/config/people/ldap/servers/delete/server1');
-      $this->drupalPost('admin/config/people/ldap/servers/delete/server1', array(), t('Delete'));
+      $this->drupalPost('admin/config/people/ldap/servers/delete/server1', [], t('Delete'));
 
       $ldap_servers = ldap_servers_get_servers(NULL, 'all', FALSE, TRUE);
 
       $this->assertTrue(count(array_keys($ldap_servers)) == 0, 'Delete form for ldap server deleted server.', $this->ldapTestId . '.Delete Server');
 
-      variable_set('ldap_simpletest', $ldap_simpletest_initial); // return to fake server mode
+      // Return to fake server mode.
+      variable_set('ldap_simpletest', $ldap_simpletest_initial);
     }
   }
 
+  /**
+   *
+   */
   public function serverConfCount() {
     $records = db_query('SELECT * FROM {ldap_servers}')->fetchAllAssoc('sid');
     return count(array_keys($records));
   }
 
+  /**
+   *
+   */
   public function compareFormToProperties($object, $data, $item_id, $map, $lcase_transformed) {
 
-    $mismatches = array();
+    $mismatches = [];
     foreach ($data as $field_id => $values) {
       $field_id = drupal_strtolower($field_id);
       if (!isset($map[$field_id])) {
@@ -387,9 +401,10 @@ class LdapServersTestCase extends LdapTestCase {
       }
       $property_value = $object->{$property};
 
-      $field_value = isset($values[$item_id + 2]) ? $values[$item_id + 2] : $values[$item_id]; // for cases where string input is not same as array.
+      // For cases where string input is not same as array.
+      $field_value = isset($values[$item_id + 2]) ? $values[$item_id + 2] : $values[$item_id];
 
-      if ($field_id == 'bindpw') {  //
+      if ($field_id == 'bindpw') {
         continue;
       }
       if ($field_id == 'basedn') {
@@ -422,6 +437,5 @@ class LdapServersTestCase extends LdapTestCase {
 
     return $mismatches;
   }
-
 
 }

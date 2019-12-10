@@ -2,15 +2,18 @@
 
 /**
  * @file
- * Defines functions for administrative interface for servers
- *
+ * Defines functions for administrative interface for servers.
  */
 
+/**
+ *
+ */
 function ldap_servers_edit_index() {
 
   return ldap_servers_servers_list(NULL, TRUE);
 
 }
+
 /**
  * LDAP servers list.
  *
@@ -18,22 +21,22 @@ function ldap_servers_edit_index() {
  *   server id.  if empty list all servers
  * @param $actions
  *   True or False indicating if server edit, delete, enable, disable, etc links should show
+ *
  * @return
  *   The HTML table with the servers list.
  */
 function ldap_servers_servers_list($sid = NULL, $actions = FALSE) {
 
-  $variables = array(
+  $variables = [
     'ldap_servers' => $ldap_server = ldap_servers_get_servers($sid, 'all'),
     'action' => TRUE,
     'type' => 'table',
-    );
+  ];
 
   $html = theme('ldap_servers_list', $variables);
 
   return $html;
 }
-
 
 /**
  * Implements the LDAP server edit page.
@@ -48,7 +51,6 @@ function ldap_servers_servers_list($sid = NULL, $actions = FALSE) {
  * @return
  *   The form structure.
  */
-
 function ldap_servers_admin_form($form, &$form_state, $op = NULL, $sid = NULL) {
   ldap_servers_module_load_include('php', 'ldap_servers', 'LdapServerAdmin.class');
   $server = new LdapServerAdmin($sid);
@@ -69,12 +71,12 @@ function ldap_servers_admin_form_validate($form, &$form_state) {
   foreach ($errors as $error_name => $error_text) {
     form_set_error($error_name, t($error_text));
   }
-  $warnings = $server->drupalFormWarnings($op, $form_state['values'], (boolean)(count($errors) > 0));
+  $warnings = $server->drupalFormWarnings($op, $form_state['values'], (boolean) (count($errors) > 0));
   foreach ($warnings as $warning_name => $warning_text) {
     drupal_set_message($warning_text, 'warning');
   }
 
-  $form_state['ldap_warnings'] = (boolean)(count($warnings) > 0);
+  $form_state['ldap_warnings'] = (boolean) (count($warnings) > 0);
 
 }
 
@@ -87,14 +89,15 @@ function ldap_servers_admin_form_submit($form, &$form_state) {
   $verb = ($op == 'edit') ? 'edited' : $op . 'ed';
   ldap_servers_module_load_include('php', 'ldap_servers', 'LdapServerAdmin.class');
   $server = new LdapServerAdmin($form_state['values']['sid']);
-  $server->drupalFormSubmit($op, $form_state['values']);  // add form data to object and save or create
+  // Add form data to object and save or create.
+  $server->drupalFormSubmit($op, $form_state['values']);
 
   if ($server->hasError() == FALSE) {
-    drupal_set_message(t('LDAP Server %name !verb.', array('!verb' => $verb, '%name' => $server->name)), 'status');
+    drupal_set_message(t('LDAP Server %name !verb.', ['!verb' => $verb, '%name' => $server->name]), 'status');
     ldap_servers_cache_clear();
     if ($form_state['ldap_warnings'] && $op != 'add') {
-      // do nothing, but don't redirect away from form.
-      // if there are warnings, want them to see form even if its been saved
+      // Do nothing, but don't redirect away from form.
+      // if there are warnings, want them to see form even if its been saved.
     }
     else {
       drupal_goto(LDAP_SERVERS_MENU_BASE_PATH . '/servers');
@@ -122,19 +125,20 @@ function ldap_servers_admin_delete($form, &$form_state, $op = NULL, $sid = NULL)
 
   if ($sid && ($ldap_server = ldap_servers_get_servers($sid, 'all', TRUE))) {
     // array()
-
-    $variables = array(
-      'ldap_server' => $ldap_server, 'actions' => FALSE, 'type' => 'detail'
-    );
+    $variables = [
+      'ldap_server' => $ldap_server,
+      'actions' => FALSE,
+      'type' => 'detail',
+    ];
     $form['#prefix'] = '<div>' . theme('ldap_servers_server', $variables) . '</div>';
-    $form['sid'] = array(
+    $form['sid'] = [
       '#type' => 'hidden',
       '#value' => $sid,
-    );
-    $form['name'] = array(
+    ];
+    $form['name'] = [
       '#type' => 'hidden',
       '#value' => $ldap_server->name,
-    );
+    ];
 
     $warnings = module_invoke_all('ldap_server_in_use', $sid, $ldap_server->name);
     if (count($warnings)) {
@@ -146,7 +150,7 @@ function ldap_servers_admin_delete($form, &$form_state, $op = NULL, $sid = NULL)
         $form,
         'Delete Confirmation Form',
         LDAP_SERVERS_MENU_BASE_PATH . '/servers/list',
-          '<p>' . t('Are you sure you want to delete the LDAP server named <em><strong>%name</strong></em> ?', array('%name' => $ldap_server->name)) . '</p><p>' .
+          '<p>' . t('Are you sure you want to delete the LDAP server named <em><strong>%name</strong></em> ?', ['%name' => $ldap_server->name]) . '</p><p>' .
           t('This action cannot be undone.') . '</p>',
         t('Delete'),
         t('Cancel')
@@ -166,7 +170,7 @@ function ldap_servers_admin_delete_submit($form, &$form_state) {
   $ldap_server = new LdapServerAdmin($sid);
   if ($values['confirm'] && $sid) {
     if ($result = $ldap_server->delete($sid)) {
-      $tokens = array('%name' => $ldap_server->name, '!sid' => $sid);
+      $tokens = ['%name' => $ldap_server->name, '!sid' => $sid];
       drupal_set_message(t('LDAP Server %name (server id = !sid) has been deleted.', $tokens), 'status');
       watchdog('ldap_servers', 'LDAP Server deleted: %name (sid = !sid) ', $tokens);
     }
@@ -181,7 +185,6 @@ function ldap_servers_admin_delete_submit($form, &$form_state) {
   drupal_goto(LDAP_SERVERS_MENU_BASE_PATH . '/servers/list');
 }
 
-
 /**
  * Implements the LDAP server delete page.
  *
@@ -193,31 +196,31 @@ function ldap_servers_admin_delete_submit($form, &$form_state) {
  * @return
  *   The form structure.
  */
-
-
 function ldap_servers_admin_enable_disable($form, &$form_state, $action = NULL, $sid = NULL) {
 
   if ($ldap_server = ldap_servers_get_servers($sid, 'all', TRUE)) {
-    $variables = array(
-      'ldap_server' => $ldap_server, 'actions' => FALSE, 'type' => 'detail'
-    );
+    $variables = [
+      'ldap_server' => $ldap_server,
+      'actions' => FALSE,
+      'type' => 'detail',
+    ];
     $form['#prefix'] = "<div>" . theme('ldap_servers_server', $variables) . "</div>";
 
-    $form['sid'] = array(
+    $form['sid'] = [
       '#type' => 'hidden',
       '#value' => $sid,
-    );
-    $form['name'] = array(
+    ];
+    $form['name'] = [
       '#type' => 'hidden',
       '#value' => $ldap_server->name,
-    );
-    $form['action'] = array(
+    ];
+    $form['action'] = [
       '#type' => 'hidden',
       '#value' => $action,
-    );
+    ];
     return confirm_form(
       $form,
-      t('Are you sure you want to') . t($action) . ' ' . t('the LDAP server named <em><strong>%name</strong></em>?', array('%name' => $ldap_server->name)),
+      t('Are you sure you want to') . t($action) . ' ' . t('the LDAP server named <em><strong>%name</strong></em>?', ['%name' => $ldap_server->name]),
       LDAP_SERVERS_MENU_BASE_PATH . '/servers/list',
       t('<p></p>'),
       t($action),
@@ -241,7 +244,7 @@ function ldap_servers_admin_enable_disable_submit($form, &$form_state) {
 
     $ldap_server->status = $status;
     $ldap_server->save('edit');
-    $tokens = array('%name' => $values['name'], '!sid' => $sid, '!action' => t($values['action']) . 'd');
+    $tokens = ['%name' => $values['name'], '!sid' => $sid, '!action' => t($values['action']) . 'd'];
     drupal_set_message(t('LDAP Server Configuration %name (server id = !sid) has been !action.', $tokens));
     $message = t('LDAP Server !action: %name (sid = !sid) ', $tokens);
     watchdog('ldap_servers', $message);

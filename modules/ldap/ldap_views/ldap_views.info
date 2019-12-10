@@ -5,6 +5,7 @@ package = Lightweight Directory Access Protocol
 dependencies[] = ldap_query
 dependencies[] = views
 core = 7.x
+php = 5.4
 
 files[] = ldap_views.module
 files[] = ldap_views.install
@@ -22,8 +23,8 @@ files[] = handlers/ldap_views_handler_filter_attribute.inc
 files[] = handlers/ldap_views_handler_sort.inc
 files[] = handlers/ldap_views_handler_sort_attribute.inc
 
-; Information added by Drupal.org packaging script on 2018-08-13
-version = "7.x-2.4"
+; Information added by Drupal.org packaging script on 2019-04-20
+version = "7.x-2.5"
 core = "7.x"
 project = "ldap"
-datestamp = "1534201086"
+datestamp = "1555751588"

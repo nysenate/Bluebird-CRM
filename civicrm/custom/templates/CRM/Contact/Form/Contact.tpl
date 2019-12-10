@@ -118,9 +118,6 @@
  </div><!-- /.crm-accordion-body -->
 </div><!-- /.crm-accordion-wrapper -->
 
-{*NYSS 8251*}
-{include file="CRM/Contact/Form/CurrentEmployer.tpl"}
-
 {*NYSS manually insert indiv custom fields so we can control layout/eliminate dups*}
 {if $contactType eq "Individual"}
 <div class="crm-accordion-wrapper crm-address-accordion crm-accordion-open">

@@ -2,32 +2,32 @@
 
 /**
  * @file
- * FeedsLdapQueryFetcher
+ * FeedsLdapQueryFetcher.
  */
 
 /**
- * FeedsLdapQueryFetcherResult
+ * FeedsLdapQueryFetcherResult.
  */
 class FeedsLdapQueryFetcherResult extends FeedsFetcherResult {
-  public $query_ids = array();
+  public $query_ids = [];
   public $ldap_result;
 
   /**
    * Constructor.
    */
   public function __construct($source_config) {
-    $this->query_ids = (isset($source_config['query_ids']) && is_array($source_config['query_ids'])) ? $source_config['query_ids'] : array();
+    $this->query_ids = (isset($source_config['query_ids']) && is_array($source_config['query_ids'])) ? $source_config['query_ids'] : [];
     parent::__construct('');
     $this->ldap_result = $this->getRaw();
     return $this->ldap_result;
   }
 
   /**
-   * Overrides parent::getRaw();
+   * Overrides parent::getRaw();.
    */
   public function getRaw() {
 
-    $results = array();
+    $results = [];
     $count = 0;
     foreach ($this->query_ids as $i => $query_id) {
       $ldapQuery = ldap_query_get_queries($query_id, 'enabled', TRUE);
@@ -42,6 +42,7 @@ class FeedsLdapQueryFetcherResult extends FeedsFetcherResult {
     }
     return $results;
   }
+
 }
 
 /**
@@ -58,27 +59,26 @@ class FeedsLdapQueryFetcher extends FeedsFetcher {
     return $result;
   }
 
-
   /**
    * Override parent::configDefaults().
    */
   public function configDefaults() {
-    return array(
-      'query_ids' => array(),
-    );
+    return [
+      'query_ids' => [],
+    ];
   }
 
-    /**
+  /**
    * Override parent::configForm().
    */
   public function configForm(&$form_state) {
     $queries = ldap_query_get_queries(NULL, 'enabled');
-    $query_options = array(0 => '--- select one or more queries ---');
+    $query_options = [0 => '--- select one or more queries ---'];
     foreach ($queries as $qid => $query) {
       $query_options[$qid] = $query->name;
     }
-    $form = array();
-    $form['query_ids'] = array(
+    $form = [];
+    $form['query_ids'] = [
       '#type' => 'select',
       '#title' => t('LDAP Query'),
       '#multiple' => TRUE,
@@ -86,10 +86,10 @@ class FeedsLdapQueryFetcher extends FeedsFetcher {
       '#required' => TRUE,
       '#default_value' => $this->config['query_ids'],
       '#description' => t('If more than one query is selected, results from all the queries will be returned.') .
-        ' ' .
-        t('Queries can be added and edited at !link', array('!link' => l(t('LDAP Query Admin'), LDAP_QUERY_INDEX_BASE_PATH))),
+      ' ' .
+      t('Queries can be added and edited at !link', ['!link' => l(t('LDAP Query Admin'), LDAP_QUERY_INDEX_BASE_PATH)]),
       '#options' => $query_options,
-    );
+    ];
 
     return $form;
   }
@@ -99,16 +99,16 @@ class FeedsLdapQueryFetcher extends FeedsFetcher {
    */
   public function sourceForm($source_config) {
 
-    $tokens = array(
+    $tokens = [
       '!edit_link' => l(t('Edit Feed'), 'admin/structure/feeds/' . $this->id),
-    );
+    ];
 
-    $form_state = array();
+    $form_state = [];
     $form = $this->configForm($form_state);
-    $form['preamble'] = array(
+    $form['preamble'] = [
       '#type' => 'markup',
       '#markup' => t('This import is configured at !edit_link.', $tokens),
-    );
+    ];
 
     return $form;
   }
@@ -117,7 +117,7 @@ class FeedsLdapQueryFetcher extends FeedsFetcher {
    * Override parent::sourceFormValidate().
    */
   public function sourceFormValidate(&$values) {
-     // could execute query and see if it returns anything for validation
+    // Could execute query and see if it returns anything for validation.
   }
 
 }

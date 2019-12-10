@@ -28,7 +28,7 @@ class LdapAuthorizationConsumerConf {
 
   public $useFirstAttrAsGroupId = FALSE;
 
-  public $mappings = array();
+  public $mappings = [];
   public $useMappingsAsFilter = TRUE;
 
   public $synchToLdap = FALSE;
@@ -65,7 +65,7 @@ class LdapAuthorizationConsumerConf {
       $this->inDatabase = TRUE;
       $exists = $this->loadFromDb();
       if (!$exists) {
-        watchdog('ldap_authorization', 'failed to load existing %consumer object', array('%consumer' => $consumer->consumerType), WATCHDOG_ERROR);
+        watchdog('ldap_authorization', 'failed to load existing %consumer object', ['%consumer' => $consumer->consumerType], WATCHDOG_ERROR);
       }
     }
     // Default value for deriveFromEntryAttrMatchingUserAttr set up this way for backward compatibility in 1.0 branch,
@@ -78,7 +78,7 @@ class LdapAuthorizationConsumerConf {
   protected function loadFromDb() {
     if (module_exists('ctools')) {
       ctools_include('export');
-      $result = ctools_export_load_object('ldap_authorization', 'names', array($this->consumerType));
+      $result = ctools_export_load_object('ldap_authorization', 'names', [$this->consumerType]);
 
       // @todo, this is technically wrong, but I don't quite grok what we're doing in the non-ctools case - justintime
       $server_record = array_pop($result);
@@ -117,10 +117,10 @@ class LdapAuthorizationConsumerConf {
    * Direct mapping of db to object properties.
    */
   public static function field_to_properties_map() {
-    return array(
+    return [
       'sid' => 'sid',
       'consumer_type' => 'consumerType',
-      'numeric_consumer_conf_id'  => 'numericConsumerConfId' ,
+      'numeric_consumer_conf_id'  => 'numericConsumerConfId',
       'status'  => 'status',
       'only_ldap_authenticated'  => 'onlyApplyToLdapAuthenticated',
       'use_first_attr_as_groupid'  => 'useFirstAttrAsGroupId',
@@ -131,14 +131,14 @@ class LdapAuthorizationConsumerConf {
       'regrant_ldap_provisioned'  => 'regrantLdapProvisioned',
       'revoke_ldap_provisioned' => 'revokeLdapProvisioned',
       'create_consumers'  => 'createConsumers',
-    );
+    ];
   }
 
   /**
    *
    */
   public static function field_to_properties_serialized() {
-    return array('mappings');
+    return ['mappings'];
   }
 
   /**
@@ -164,7 +164,7 @@ class LdapAuthorizationConsumerConf {
       }
     }
     else {
-      $array = array();
+      $array = [];
     }
     return $array;
   }
@@ -173,12 +173,12 @@ class LdapAuthorizationConsumerConf {
    *
    */
   protected function pipeListToArray($mapping_list_txt, $make_item0_lowercase = FALSE) {
-    $result_array = array();
+    $result_array = [];
     $mappings = preg_split('/[\n\r]+/', $mapping_list_txt);
     foreach ($mappings as $line) {
       if (count($mapping = explode('|', trim($line))) == 2) {
         $item_0 = ($make_item0_lowercase) ? drupal_strtolower(trim($mapping[0])) : trim($mapping[0]);
-        $result_array[] = array($item_0, trim($mapping[1]));
+        $result_array[] = [$item_0, trim($mapping[1])];
       }
     }
     return $result_array;

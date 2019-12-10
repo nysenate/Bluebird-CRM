@@ -3,9 +3,11 @@
 /**
  * @file
  * The ldap_help issues provides a filtered watchdog view for ldap issues.
- *
  */
 
+/**
+ *
+ */
 function ldap_help_issues() {
 
   $text = '<h3>' . t('LDAP Help Module') . '</h3><p>' .
@@ -53,7 +55,6 @@ Additional directions are at the beginning of the add issue form at
 </div>
 $ldap_config
 EOT;
-
 
   return $text;
 }

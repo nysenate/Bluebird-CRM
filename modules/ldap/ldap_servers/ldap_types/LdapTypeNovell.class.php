@@ -2,12 +2,13 @@
 
 /**
  * @file
- * Active Directory LDAP Implementation Details
- *
+ * Active Directory LDAP Implementation Details.
  */
 
 ldap_servers_module_load_include('php', 'ldap_servers', 'ldap_types/LdapTypeAbstract.class');
-
+/**
+ *
+ */
 class LdapTypeNovell extends LdapTypeAbstract {
 
   public $documentation = 'http://www.novell.com/documentation/edir873/index.html?page=/documentation/edir873/edir873/data/h0000007.html';

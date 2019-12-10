@@ -15,11 +15,11 @@ class LdapAuthorizationBasicTests extends LdapTestCase {
    *
    */
   public static function getInfo() {
-    return array(
+    return [
       'name' => 'LDAP Authorization Basic Tests',
       'description' => 'Test ldap authorization.',
       'group' => 'LDAP Authorization',
-    );
+    ];
   }
 
   /**
@@ -36,13 +36,13 @@ class LdapAuthorizationBasicTests extends LdapTestCase {
    *
    */
   public function setUp() {
-    parent::setUp(array(
+    parent::setUp([
       'ldap_authentication',
       'ldap_authorization',
       'ldap_authorization_drupal_role',
     // don't need any real servers, configured, just ldap_servers code base.
       'ldap_test',
-    ));
+    ]);
     variable_set('ldap_simpletest', 2);
   }
 
@@ -70,11 +70,11 @@ class LdapAuthorizationBasicTests extends LdapTestCase {
       );
     $this->assertTrue($setup_success, ' ldap_authorizations setup successful', 'LDAP Authorization: Test Setup Success');
 
-    $api_functions = array(
-      'ldap_authorization_get_consumer_object' => array(1, 1),
-      'ldap_authorization_get_consumers'  => array(3, 0),
-      'ldap_authorizations_user_authorizations'  => array(4, 1),
-    );
+    $api_functions = [
+      'ldap_authorization_get_consumer_object' => [1, 1],
+      'ldap_authorization_get_consumers'  => [3, 0],
+      'ldap_authorizations_user_authorizations'  => [4, 1],
+    ];
 
     foreach ($api_functions as $api_function_name => $param_count) {
       $reflector = new ReflectionFunction($api_function_name);
@@ -97,13 +97,13 @@ class LdapAuthorizationBasicTests extends LdapTestCase {
 
     $sid = 'activedirectory1';
     $testid = 'ExclusiveModeUserLogon3';
-    $sids = array($sid);
+    $sids = [$sid];
     $this->prepTestData(LDAP_TEST_LDAP_NAME, $sids, 'provisionToDrupal', 'default', 'drupal_role_default');
 
-    $hpotter_logon_edit = array(
+    $hpotter_logon_edit = [
       'name' => 'hpotter',
       'pass' => 'goodpwd',
-    );
+    ];
     $this->drupalPost('user', $hpotter_logon_edit, t('Log in'));
     $this->assertText(t('Member for'), 'New Ldap user with good password authenticated.', 'LDAP Authorization: Test Logon');
     $this->assertTrue(
@@ -114,7 +114,7 @@ class LdapAuthorizationBasicTests extends LdapTestCase {
 
     $hpotter = $this->testFunctions->userByNameFlushingCache('hpotter');
     $roles = array_values($hpotter->roles);
-    $desired_roles = array('students', 'authenticated user', 'cn=gryffindor,ou=groups,dc=hogwarts,dc=edu', 'cn=honors students,ou=groups,dc=hogwarts,dc=edu');
+    $desired_roles = ['students', 'authenticated user', 'cn=gryffindor,ou=groups,dc=hogwarts,dc=edu', 'cn=honors students,ou=groups,dc=hogwarts,dc=edu'];
     $diff1 = array_diff($roles, $desired_roles);
     $diff2 = array_diff($desired_roles, $roles);
     $correct_roles = (count($diff1) == 0 && count($diff2) == 0);
@@ -124,7 +124,7 @@ class LdapAuthorizationBasicTests extends LdapTestCase {
     }
     $this->assertTrue(
       $correct_roles,
-      t('hpotter granted correct roles on actual logon: %roles', array('%roles' => $roles_display)),
+      t('hpotter granted correct roles on actual logon: %roles', ['%roles' => $roles_display]),
       'LDAP Authorization: Test Logon for roles'
     );
 
@@ -214,7 +214,7 @@ class LdapAuthorizationBasicTests extends LdapTestCase {
     $sid = 'activedirectory1';
     $this->prepTestData(
     LDAP_TEST_LDAP_NAME,
-    array($sid),
+    [$sid],
     'provisionToDrupal',
     'default',
     'drupal_role_default'
@@ -224,19 +224,18 @@ class LdapAuthorizationBasicTests extends LdapTestCase {
    * LDAP_authorz.Flags.status=0: Disable ldap_authorization_drupal_role configuration and make sure no authorizations performed
    */
 
-    $user = $this->drupalCreateUser(array());
-    $hpotter = $this->testFunctions->drupalLdapUpdateUser(array('name' => 'hpotter', 'mail' => 'hpotter@hogwarts.edu'), TRUE, $user);
+    $user = $this->drupalCreateUser([]);
+    $hpotter = $this->testFunctions->drupalLdapUpdateUser(['name' => 'hpotter', 'mail' => 'hpotter@hogwarts.edu'], TRUE, $user);
     // Just see if the correct ones are derived.
     list($new_authorizations, $notifications) = ldap_authorizations_user_authorizations($hpotter, 'query');
     $roles1 = $new_authorizations['drupal_role'];
 
-    // $consumer_conf_admin = ldap_authorization_get_consumer_admin_object('drupal_role', FALSE);.
     $this->consumerAdminConf['drupal_role']->status = 0;
     $this->consumerAdminConf['drupal_role']->save();
 
     // Just see if the correct ones are derived.
     list($new_authorizations, $notifications) = ldap_authorizations_user_authorizations($hpotter, 'query', 'drupal_role');
-    $roles2 = isset($new_authorizations['drupal_role']) ? $new_authorizations['drupal_role'] : array();
+    $roles2 = isset($new_authorizations['drupal_role']) ? $new_authorizations['drupal_role'] : [];
     // Not worried about which roles here, just that some are granted.
     $correct_roles = (count($roles1) > 0 && count($roles2) == 0);
 
@@ -260,8 +259,8 @@ class LdapAuthorizationBasicTests extends LdapTestCase {
     $this->consumerAdminConf['drupal_role']->status = 1;
     $this->consumerAdminConf['drupal_role']->save();
 
-    $user = $this->drupalCreateUser(array());
-    $hgrainger = $this->testFunctions->drupalLdapUpdateUser(array('name' => 'hgrainger', 'mail' => 'hgrainger@hogwarts.edu'), TRUE, $user);
+    $user = $this->drupalCreateUser([]);
+    $hgrainger = $this->testFunctions->drupalLdapUpdateUser(['name' => 'hgrainger', 'mail' => 'hgrainger@hogwarts.edu'], TRUE, $user);
 
     // Remove authmap in case it exists so test will work.
     db_delete('authmap')
@@ -271,7 +270,7 @@ class LdapAuthorizationBasicTests extends LdapTestCase {
 
     // Just see if the correct ones are derived.
     list($new_authorizations, $notifications) = ldap_authorizations_user_authorizations($hgrainger, 'query');
-    $roles = isset($new_authorizations['drupal_role']) ? $new_authorizations['drupal_role'] : array();
+    $roles = isset($new_authorizations['drupal_role']) ? $new_authorizations['drupal_role'] : [];
     $success = (count($roles) == 0);
     $this->assertTrue(
       $success,
@@ -292,10 +291,10 @@ class LdapAuthorizationBasicTests extends LdapTestCase {
 
     $this->consumerAdminConf['drupal_role']->synchOnLogon = 0;
     $this->consumerAdminConf['drupal_role']->save();
-    $edit = array(
+    $edit = [
       'name' => 'hgrainger',
       'pass' => 'goodpwd',
-    );
+    ];
     $this->drupalPost('user', $edit, t('Log in'));
     $this->assertText(
       t('Member for'),
@@ -313,10 +312,10 @@ class LdapAuthorizationBasicTests extends LdapTestCase {
 
     $this->consumerAdminConf['drupal_role']->synchOnLogon = 1;
     $this->consumerAdminConf['drupal_role']->save();
-    $edit = array(
+    $edit = [
       'name' => 'hgrainger',
       'pass' => 'goodpwd',
-    );
+    ];
     $this->drupalPost('user', $edit, t('Log in'));
     $this->assertText(t('Member for'), 'New Ldap user with good password authenticated.',
       'LDAP_authorz.Flags.synchOnLogon=1');
@@ -353,12 +352,12 @@ class LdapAuthorizationBasicTests extends LdapTestCase {
     // Set correct roles manually.
     $hpotter = user_load_by_name('hpotter');
     user_delete($hpotter->uid);
-    $user = $this->drupalCreateUser(array());
-    $hpotter = $this->testFunctions->drupalLdapUpdateUser(array('name' => 'hpotter', 'mail' => 'hpotter@hogwarts.edu'), TRUE, $user);
-    $edit = array(
+    $user = $this->drupalCreateUser([]);
+    $hpotter = $this->testFunctions->drupalLdapUpdateUser(['name' => 'hpotter', 'mail' => 'hpotter@hogwarts.edu'], TRUE, $user);
+    $edit = [
       'name' => 'hpotter',
       'pass' => 'goodpwd',
-    );
+    ];
     $this->drupalPost('user', $edit, t('Log in'));
     $this->assertText(
       t('Member for'),
@@ -374,19 +373,19 @@ class LdapAuthorizationBasicTests extends LdapTestCase {
     $roles[$troublemaker->rid] = $troublemaker->name;
     $roles[$superadmin->rid] = $superadmin->name;
 
-    $data = array(
+    $data = [
       'roles' => $roles,
-      'data' => array(
+      'data' => [
         'ldap_authorizations' =>
-      array(
+      [
         'drupal_role' =>
-        array(
+        [
           $superadmin->name =>
-          array('date_granted' => 1304216778),
-        ),
-      ),
-      ),
-    );
+          ['date_granted' => 1304216778],
+        ],
+      ],
+      ],
+    ];
     $hpotter = user_save($hpotter, $data);
 
     // Apply correct authorizations.  should remove the administrator role but not the manually created 'troublemaker' role.
@@ -415,7 +414,7 @@ class LdapAuthorizationBasicTests extends LdapTestCase {
     $hpotter = user_load($hpotter->uid, TRUE);
     $roles = $hpotter->roles;
     unset($roles[$superadmin->rid]);
-    user_save($hpotter, array('roles' => $roles));
+    user_save($hpotter, ['roles' => $roles]);
     $hpotter = user_load($hpotter->uid, TRUE);
     list($new_authorizations, $notifications) = ldap_authorizations_user_authorizations($hpotter, 'set', 'drupal_role', 'logon');
     $hpotter = user_load($hpotter->uid, TRUE);
@@ -437,24 +436,24 @@ class LdapAuthorizationBasicTests extends LdapTestCase {
   */
 
     // Add new mapping to and enable create consumers.
-    $this->prepTestData(LDAP_TEST_LDAP_NAME, array($sid), 'provisionToDrupal', 'default', 'drupal_role_default');
+    $this->prepTestData(LDAP_TEST_LDAP_NAME, [$sid], 'provisionToDrupal', 'default', 'drupal_role_default');
     $this->drupalGet('user/logout');
     $new_role = 'oompa-loompas';
     $this->consumerAdminConf['drupal_role']->createConsumers = 1;
-    $this->consumerAdminConf['drupal_role']->mappings[] = array(
+    $this->consumerAdminConf['drupal_role']->mappings[] = [
       'from' => 'cn=students,ou=groups,dc=hogwarts,dc=edu',
       'user_entered' => $new_role,
       'normalized' => $new_role,
       'simplified' => $new_role,
       'valid' => TRUE,
       'error_message' => '',
-    );
+    ];
     $this->consumerAdminConf['drupal_role']->save();
 
-    $edit = array(
+    $edit = [
       'name' => 'hpotter',
       'pass' => 'goodpwd',
-    );
+    ];
     $this->drupalPost('user', $edit, t('Log in'));
 
     $new_role_created = in_array($new_role, array_values(user_roles()));
@@ -491,7 +490,7 @@ class LdapAuthorizationBasicTests extends LdapTestCase {
     variable_del('ldap_simpletest');
 
     $sid = 'activedirectory1';
-    $this->prepTestData(LDAP_TEST_LDAP_NAME, array($sid), 'provisionToDrupal', 'default');
+    $this->prepTestData(LDAP_TEST_LDAP_NAME, [$sid], 'provisionToDrupal', 'default');
 
     ldap_servers_module_load_include('php', 'ldap_servers', 'LdapServerAdmin.class');
     $ldap_server = new LdapServerAdmin($sid);
@@ -502,20 +501,20 @@ class LdapAuthorizationBasicTests extends LdapTestCase {
     }
     $ldap_server->save('add');
 
-    $consumer_form_data = array(
-      'sid'        => array('activedirectory1', 'activedirectory1'),
-      'status'     => array(TRUE, TRUE),
-      'only_ldap_authenticated'    => array(FALSE, TRUE),
-      'use_first_attr_as_groupid'       => array(FALSE, TRUE),
-      'mappings' => array("a|b", "a|b"),
-      'use_filter' => array(FALSE, TRUE),
-      'synchronization_modes[user_logon]' => array(TRUE, FALSE),
-      'synchronization_actions[revoke_ldap_provisioned]' => array(TRUE, FALSE),
-      'synchronization_actions[regrant_ldap_provisioned]' => array(FALSE, TRUE),
-      'synchronization_actions[create_consumers]' => array(TRUE, FALSE),
-    );
+    $consumer_form_data = [
+      'sid'        => ['activedirectory1', 'activedirectory1'],
+      'status'     => [TRUE, TRUE],
+      'only_ldap_authenticated'    => [FALSE, TRUE],
+      'use_first_attr_as_groupid'       => [FALSE, TRUE],
+      'mappings' => ["a|b", "a|b"],
+      'use_filter' => [FALSE, TRUE],
+      'synchronization_modes[user_logon]' => [TRUE, FALSE],
+      'synchronization_actions[revoke_ldap_provisioned]' => [TRUE, FALSE],
+      'synchronization_actions[regrant_ldap_provisioned]' => [FALSE, TRUE],
+      'synchronization_actions[create_consumers]' => [TRUE, FALSE],
+    ];
 
-    $this->privileged_user = $this->drupalCreateUser(array('administer site configuration'));
+    $this->privileged_user = $this->drupalCreateUser(['administer site configuration']);
     $this->drupalLogin($this->privileged_user);
     $ldap_server = ldap_servers_get_servers('activedirectory1', NULL, TRUE, TRUE);
     // This is just for debugging to show the server.
@@ -529,24 +528,24 @@ class LdapAuthorizationBasicTests extends LdapTestCase {
     }
     $this->drupalGet('admin/config/people/ldap/servers/edit/activedirectory1');
 
-    foreach (array(0) as $i) {
-      foreach (array('drupal_role') as $consumer_type) {
+    foreach ([0] as $i) {
+      foreach (['drupal_role'] as $consumer_type) {
         // May want to put this back in after ctools requirement is fixed.
-        foreach (array(1) as $ctools_enabled) {
+        foreach ([1] as $ctools_enabled) {
           $this->ldapTestId = "testUIForms.$i.$consumer_type.ctools.$ctools_enabled";
           if ($ctools_enabled) {
-            module_enable(array('ctools'));
+            module_enable(['ctools']);
           }
           else {
-            module_disable(array('ctools'));
+            module_disable(['ctools']);
           }
 
-          $lcase_transformed = array();
+          $lcase_transformed = [];
 
           /** add server conf test **/
           $this->drupalGet('admin/config/people/ldap/authorization/add/' . $consumer_type);
 
-          $edit = array();
+          $edit = [];
           foreach ($consumer_form_data as $input_name => $input_values) {
             $edit[$input_name] = $input_values[$i];
           }
@@ -569,7 +568,7 @@ class LdapAuthorizationBasicTests extends LdapTestCase {
 
           $this->drupalGet('admin/config/people/ldap/authorization/edit/' . $consumer_type);
 
-          $edit = array();
+          $edit = [];
           foreach ($consumer_form_data as $input_name => $input_values) {
             if ($input_values[$i] !== NULL) {
               $edit[$input_name] = $input_values[$i];
@@ -591,7 +590,7 @@ class LdapAuthorizationBasicTests extends LdapTestCase {
 
           /** delete server conf test **/
           $this->drupalGet('admin/config/people/ldap/authorization/delete/' . $consumer_type);
-          $this->drupalPost('admin/config/people/ldap/authorization/delete/' . $consumer_type, array(), t('Delete'));
+          $this->drupalPost('admin/config/people/ldap/authorization/delete/' . $consumer_type, [], t('Delete'));
           ctools_include('export');
           ctools_export_load_object_reset('ldap_authorization');
           $consumer_conf = ldap_authorization_get_consumer_conf($consumer_type);
