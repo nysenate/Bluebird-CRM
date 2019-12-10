@@ -188,6 +188,8 @@ sql="
     (4, 'delete in CiviMail', 'civicrm'),
     (4, 'edit all contacts', 'civicrm'),
     (4, 'edit groups', 'civicrm'),
+    (4, 'edit inbound email basic information', 'civicrm'),
+    (4, 'edit inbound email basic information and content', 'civicrm'),
     (4, 'edit message templates', 'civicrm'),
     (4, 'edit my contact', 'civicrm'),
     (4, 'edit users with no custom roles', 'administerusersbyrole'),
@@ -494,10 +496,11 @@ sql="
     (18, 'view all contacts', 'civicrm'),
     (18, 'view my contact', 'civicrm'),
 
+    (19, 'access inbox polling', 'nyss_civihooks'),
     (19, 'edit inbound email basic information', 'civicrm'),
-    (19, 'edit inbound email basic information and content', 'civicrm'),
-    (19, 'access inbox polling', 'nyss_civihooks');
+    (19, 'edit inbound email basic information and content', 'civicrm');
 "
+
 $execSql -q $instance -c "$sql" --drupal
 
 ## set role weights to 0 to defer to alpha order
