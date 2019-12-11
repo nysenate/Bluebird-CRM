@@ -208,6 +208,28 @@ function search_civicrm_buildForm($formName, &$form) {
   }
 }
 
+function search_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
+  /*Civi::log()->debug('', [
+    '$formName' => $formName,
+    '$fields' => $fields,
+    //'$files' => $files,
+    //'$form' => $form,
+    //'$errors' => $errors,
+  ]);*/
+
+  if ($formName == 'CRM_Activity_Form_Search') {
+    $data = &$form->controller->container();
+    //Civi::log()->debug('', ['data' => $data]);
+
+    if (!empty($data['values']['Search']['activity_text']) &&
+      strpos($data['values']['Search']['activity_text'],'%') === FALSE
+    ) {
+      $data['values']['Search']['activity_text'] = '%'.$data['values']['Search']['activity_text'].'%';
+    }
+    //Civi::log()->debug('post', ['data' => $data]);
+  }
+}
+
 /**
  * Implements hook_civicrm_pageRun().
  */
