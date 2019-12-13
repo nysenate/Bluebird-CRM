@@ -24,17 +24,6 @@
  +--------------------------------------------------------------------+
 *}
 {* This form is for Contact Add/Edit interface *}
-
-{*NYSS need to retrieve and assign custom record id as its unique to each record*}
-{foreach from=$form item=field}
-  {if $field.name|substring:0:6 eq 'custom'}
-    {assign var=customfield value="_"|explode:$field.name}
-    {if $customfield.2|substring:0:1 neq '-'}
-      {assign var=customId value=$customfield.2}
-    {/if}
-  {/if}
-{/foreach}
-
 {if $addBlock}
   {include file="CRM/Contact/Form/Edit/$blockName.tpl"}
 {else}
