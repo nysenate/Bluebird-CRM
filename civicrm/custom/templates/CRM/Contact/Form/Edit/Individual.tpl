@@ -77,31 +77,27 @@ CRM.$(function($) {
 
   <tr>
     {*NYSS*}
-	<td>
-		{$form.nick_name.label}<br />
-		{$form.nick_name.html|crmReplace:class:$formtextbig}
-	</td>
-	<td>
-		{assign var='custom_42' value=$groupTree.1.fields.42.element_name}
-    {$form.$custom_42.label}<br />
-		{$form.$custom_42.html}                    
-	</td>
-	<td>
-		{assign var='custom_60' value=$groupTree.1.fields.60.element_name}
-    {$form.$custom_60.label}<br />
-		{$form.$custom_60.html}                    
-	</td>
-	<td>
-		Other {$form.contact_source.label}<br />
-		{$form.contact_source.html|crmReplace:class:$formtextbig}
-	</td>
     <td>
-		{$form.external_identifier.label}<br />
-		{$form.external_identifier.value}
+      {$form.nick_name.label}<br />
+      {$form.nick_name.html|crmReplace:class:$formtextbig}
     </td>
     <td>
-		<label for="internal_identifier">{ts}Internal Id{/ts}</label><br />
-		{$contactId}
+      {assign var='custom_42' value=$groupTree.1.fields.42.element_name}
+      {$form.$custom_42.label}<br />
+      {$form.$custom_42.html}
+    </td>
+    <td>
+      {assign var='custom_60' value=$groupTree.1.fields.60.element_name}
+      {$form.$custom_60.label}<br />
+      {$form.$custom_60.html}
+    </td>
+    <td>
+      Other {$form.contact_source.label}<br />
+      {$form.contact_source.html|crmReplace:class:$formtextbig}
+    </td>
+    <td>
+      <label for="internal_identifier">{ts}Internal Id{/ts}</label>/{$form.external_identifier.label}<br />
+      {$contactId}{if $form.external_identifier.value}/{$form.external_identifier.value}{/if}
     </td>
   </tr>
 </table>

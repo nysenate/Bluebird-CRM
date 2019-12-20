@@ -158,7 +158,7 @@ function setFields($dbh, $tabname, $fields)
   else {
     return true;
   }
-} // setField()
+} // setFields()
 
 
 
@@ -192,7 +192,11 @@ function setAuthorizationField($dbh, $fldname, $fldval)
 
 function setServer($dbh, $serverFieldStr)
 {
-  $fields = [];
+  $fields = [
+    'grp_user_memb_attr_exists' => 0,
+    'grp_user_memb_attr' => ''
+  ];
+
   $field_list = explode('|', $serverFieldStr);
   foreach ($field_list as $field) {
     $s = explode('=', $field, 2);
@@ -201,6 +205,10 @@ function setServer($dbh, $serverFieldStr)
     if ($fldname == 'basedn') {
       // Special case:  Convert the BaseDN into a serialized array.
       $fldval = serialize([$fldval]);
+    }
+    else if ($fldname == 'grp_user_memb_attr') {
+      // If grp_user_memb_attr is set, then set the associated "exists" param.
+      $fields['grp_user_memb_attr_exists'] = 1;
     }
     $fields[$fldname] = $fldval;
   }
@@ -248,7 +256,13 @@ function setMappings($dbh, $mapping_str)
       $result[] = $new_mapping;
     }
   }
-  return setAuthorizationField($dbh, 'mappings', serialize($result));
+
+  if (setAuthorizationField($dbh, 'use_first_attr_as_groupid', 1) === true) {
+    return setAuthorizationField($dbh, 'mappings', serialize($result));
+  }
+  else {
+    return false;
+  }
 } // setMappings()
 
 

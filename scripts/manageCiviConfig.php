@@ -649,6 +649,9 @@ function setEmailDefaults(&$cfg)
   if (!isset($cfg['senator.address.satellite'])) {
     $cfg['senator.address.satellite'] = '';
   }
+  if (!isset($cfg['senator.address.satellite2'])) {
+    $cfg['senator.address.satellite2'] = '';
+  }
 } // setEmailDefaults()
 
 

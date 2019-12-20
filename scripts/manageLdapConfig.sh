@@ -30,6 +30,8 @@ map_param_to_field() {
     fld="bindpw"
   elif [ "$p" = "group_class" ]; then
     fld="grp_object_cat"
+  elif [ "$p" = "group_member" ]; then
+    fld="grp_user_memb_attr"
   else
     # port, basedn, user_attr, mail_attr
     fld="$p"
@@ -95,7 +97,7 @@ fi
 
 if [ "$cmd" = "setup" ]; then
   ldap_server=""
-  for p in host port type anonymous user pass basedn user_attr mail_attr group_class; do
+  for p in host port type anonymous user pass basedn user_attr mail_attr group_class group_member; do
     fld=`map_param_to_field $p`
     val=`$readConfig --ig $instance ldap.$p`
     if [ $? -eq 0 ]; then
