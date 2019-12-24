@@ -207,6 +207,14 @@ function reports_civicrm_alterReportVar($varType, &$var, &$object) {
       break;
 
     case 'rows':
+      switch ($class) {
+        case 'CRM_Report_Form_Mailing_Summary':
+          _reports_MailingSummary_rows($var, $object);
+          break;
+
+        default:
+      }
+
       break;
 
     default:
@@ -479,4 +487,31 @@ function _reports_DistrictInfo_sql(&$var, &$object) {
 
 function _reports_MailingSummary_col(&$var, &$object) {
   unset($var['civicrm_mailing_event_unsubscribe']['fields']['unsubscribe_count']);
+
+  $var['civicrm_mailing']['fields']['category']['title'] = 'Mailing Category';
+}
+
+function _reports_MailingSummary_rows(&$var, &$object) {
+  //13187 mailing category
+  $catOpts = _reports_CategoryOpts();
+  foreach ($var as &$row) {
+    $row['civicrm_mailing_category'] = CRM_Utils_Array::value($row['civicrm_mailing_category'], $catOpts);
+  }
+}
+
+function _reports_CategoryOpts() {
+  $mCats = [];
+  $opts = CRM_Core_DAO::executeQuery("
+    SELECT ov.label, ov.value
+    FROM civicrm_option_value ov
+    JOIN civicrm_option_group og
+      ON ov.option_group_id = og.id
+      AND og.name = 'mailing_categories'
+    ORDER BY ov.label
+  ");
+  while ($opts->fetch()) {
+    $mCats[$opts->value] = $opts->label;
+  }
+
+  return $mCats;
 }
