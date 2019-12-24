@@ -964,6 +964,37 @@ function mail_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) 
   }
 } // nyss_mail_civicrm_alterTemplateFile()
 
+function mail_civicrm_permission_check($permission, &$granted) {
+  /*Civi::log()->debug('mail_civicrm_permission_check', [
+    '$permission' => $permission,
+    '$granted' => $granted,
+  ]);*/
+
+  //13174 grant access to mailing tab if user has any of the mailing perms
+  if ($permission == 'access CiviMail') {
+    global $user;
+
+    /*Civi::log()->debug('mail_civicrm_permission_check', [
+      '$user' => $user,
+      '$_REQUEST' => $_REQUEST,
+      'current_path' => current_path(),
+    ]);*/
+
+    $allowedPerms = [
+      'Mailing Creator',
+      'Mailing Scheduler',
+      'Mailing Approver',
+      'Mailing Viewer',
+    ];
+    if (current_path() == 'civicrm/contact/view' &&
+      !empty(array_intersect($allowedPerms, $user->roles))
+    ) {
+      $granted = TRUE;
+    }
+  }
+
+}
+
 //NYSS 4870
 function _mail_removeOnHold($mailingID) {
   $sql = "
