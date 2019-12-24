@@ -19,7 +19,7 @@
   <script type="text/javascript">
     $(function() {
       if (!Mosaico.isCompatible()) {
-        alert('Update your browser!');
+        alert('Your browser is out of date or you have incompatible plugins.  See https://civicrm.stackexchange.com/q/26118/225');
         return;
       }
 

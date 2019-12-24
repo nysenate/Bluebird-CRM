@@ -1,27 +1,11 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 namespace Civi\FlexMailer\ClickTracker;
@@ -52,15 +36,27 @@ class HtmlClickTracker implements ClickTrackerInterface {
    *   String, HTML.
    */
   public static function replaceHrefUrls($html, $replace) {
-    $callback = function ($matches) use ($replace) {
-      return $matches[1] . $replace($matches[2]) . $matches[3];
+    $useNoFollow = TRUE;
+    $callback = function ($matches) use ($replace, $useNoFollow) {
+      $replacement = $replace($matches[2]);
+
+      // See: https://github.com/civicrm/civicrm-core/pull/12561
+      // If we track click-throughs on a link, then don't encourage search-engines to traverse them.
+      // At a policy level, I'm not sure I completely agree, but this keeps things consistent.
+      // You can tell if we're tracking a link because $replace() yields a diff URL.
+      $noFollow = '';
+      if ($useNoFollow && $replacement !== $matches[2]) {
+        $noFollow = " rel='nofollow'";
+      }
+
+      return $matches[1] . $replacement . $matches[3] . $noFollow;
     };
 
     // Find anything like href="..." or href='...' inside a tag.
     $tmp = preg_replace_callback(
       ';(\<[^>]*href *= *")([^">]+)(");', $callback, $html);
     return preg_replace_callback(
-      ';(\<[^>]*href *= *\')([^">]+)(\');', $callback, $tmp);
+      ';(\<[^>]*href *= *\')([^\'>]+)(\');', $callback, $tmp);
   }
 
   //  /**

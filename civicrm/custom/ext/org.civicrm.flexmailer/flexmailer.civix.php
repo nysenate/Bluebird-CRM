@@ -263,16 +263,17 @@ function _flexmailer_civix_find_files($dir, $pattern) {
  */
 function _flexmailer_civix_civicrm_managed(&$entities) {
   $mgdFiles = _flexmailer_civix_find_files(__DIR__, '*.mgd.php');
+  sort($mgdFiles);
   foreach ($mgdFiles as $file) {
     $es = include $file;
     foreach ($es as $e) {
       if (empty($e['module'])) {
         $e['module'] = E::LONG_NAME;
       }
-      $entities[] = $e;
       if (empty($e['params']['version'])) {
         $e['params']['version'] = '3';
       }
+      $entities[] = $e;
     }
   }
 }
@@ -352,8 +353,10 @@ function _flexmailer_civix_glob($pattern) {
  * Inserts a navigation menu item at a given place in the hierarchy.
  *
  * @param array $menu - menu hierarchy
- * @param string $path - path where insertion should happen (ie. Administer/System Settings)
- * @param array $item - menu you need to insert (parent/child attributes will be filled for you)
+ * @param string $path - path to parent of this item, e.g. 'my_extension/submenu'
+ *    'Mailing', or 'Administer/System Settings'
+ * @param array $item - the item to insert (parent/child attributes will be
+ *    filled for you)
  */
 function _flexmailer_civix_insert_navigation_menu(&$menu, $path, $item) {
   // If we are done going down the path, insert menu
@@ -442,4 +445,17 @@ function _flexmailer_civix_civicrm_alterSettingsFolders(&$metaDataFolders = NULL
   if (is_dir($settingsDir) && !in_array($settingsDir, $metaDataFolders)) {
     $metaDataFolders[] = $settingsDir;
   }
+}
+
+/**
+ * (Delegated) Implements hook_civicrm_entityTypes().
+ *
+ * Find any *.entityType.php files, merge their content, and return.
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_entityTypes
+ */
+
+function _flexmailer_civix_civicrm_entityTypes(&$entityTypes) {
+  $entityTypes = array_merge($entityTypes, array (
+  ));
 }

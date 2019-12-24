@@ -233,15 +233,6 @@ function mosaico_civicrm_check(&$messages) {
       'fa-chain-broken'
     );
   }
-  if (!CRM_Extension_System::singleton()->getMapper()->isActiveModule('shoreditch') && !CRM_Extension_System::singleton()->getMapper()->isActiveModule('bootstrapcivicrm')) {
-    $messages[] = new CRM_Utils_Check_Message(
-      'mosaico_shoreditch',
-      ts('Mosaico is optimized to work best with BootstrapCSS and Shoreditch. Please install the extension "org.civicrm.shoreditch".'),
-      ts('Shoreditch recommended'),
-      \Psr\Log\LogLevel::NOTICE,
-      'fa-rocket'
-    );
-  }
   if (!CRM_Extension_System::singleton()->getMapper()->isActiveModule('flexmailer')) {
     $messages[] = new CRM_Utils_Check_Message(
       'mosaico_flexmailer',
@@ -351,6 +342,9 @@ function _mosaico_civicrm_alterMailContent(&$content) {
     '[unsubscribe_link]' => '{action.unsubscribeUrl}',
   );
   $content = str_replace(array_keys($tokenAliases), array_values($tokenAliases), $content);
+
+  // Some existing and customized templates have awkward HTML <TITLE>s, which show up when viewing the mailing the browser.
+  $content = preg_replace(';(\<head.*\<title\>\s*)TITLE(\s*\</title\>.*\</head\>);ms', '\\1{mailing.subject}\\2', $content, 1);
 }
 
 /**
@@ -413,4 +407,16 @@ function mosaico_civicrm_container(\Symfony\Component\DependencyInjection\Contai
   }
   require_once 'CRM/Mosaico/Services.php';
   CRM_Mosaico_Services::registerServices($container);
+}
+
+/**
+ * Implements hook_civicrm_searchTasks();
+ */
+function mosaico_civicrm_searchTasks($objectName, &$tasks) {
+  if ($objectName == 'contact') {
+    $tasks[] = [
+      'title' => 'Email - schedule/send via CiviMail (traditional)',
+      'class' => 'CRM_Mosaico_Form_Task_AdhocMailingTraditional',
+    ];
+  }
 }

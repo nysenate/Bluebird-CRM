@@ -23,7 +23,15 @@ class MailingPreview {
     $params = $apiRequest['params'];
 
     /** @var \CRM_Mailing_BAO_Mailing $mailing */
-    $mailing = \CRM_Mailing_BAO_Mailing::findById($params['id']);
+    $mailing = new \CRM_Mailing_BAO_Mailing();
+    $mailingID = \CRM_Utils_Array::value('id', $params);
+    if ($mailingID) {
+      $mailing->id = $mailingID;
+      $mailing->find(TRUE);
+    }
+    else {
+      $mailing->copyValues($params);
+    }
 
     if (!Abdicator::isFlexmailPreferred($mailing)) {
       require_once 'api/v3/Mailing.php';
@@ -34,15 +42,15 @@ class MailingPreview {
       \CRM_Core_Session::singleton()->get('userID'));
 
     $job = new \CRM_Mailing_BAO_MailingJob();
-    $job->mailing_id = $mailing->id;
+    $job->mailing_id = $mailing->id ?: NULL;
     $job->is_test = 1;
     $job->status = 'Complete';
-    $job->save();
+    // $job->save();
 
     $flexMailer = new FlexMailer(array(
       'is_preview' => TRUE,
       'mailing' => $mailing,
-      'job' => $job, // HMM?
+      'job' => $job,
       'attachments' => \CRM_Core_BAO_File::getEntityFile('civicrm_mailing',
         $mailing->id),
     ));
@@ -57,12 +65,13 @@ class MailingPreview {
     $flexMailer->fireComposeBatch(array($task));
 
     return civicrm_api3_create_success(array(
-      'id' => $params['id'],
+      'id' => isset($params['id']) ? $params['id'] : NULL,
       'contact_id' => $contactID,
       'subject' => $task->getMailParam('Subject'),
       'body_html' => $task->getMailParam('html'),
       'body_text' => $task->getMailParam('text'),
-      '_rendered_by_' => 'flexmailer', // To support tests
+      // Flag our role in processing this - to support tests.
+      '_rendered_by_' => 'flexmailer',
     ));
   }
 

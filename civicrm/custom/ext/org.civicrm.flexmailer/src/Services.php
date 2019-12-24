@@ -1,27 +1,11 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 namespace Civi\FlexMailer;
@@ -41,9 +25,7 @@ use Civi\FlexMailer\FlexMailer as FM;
 class Services {
 
   public static function registerServices(ContainerBuilder $container) {
-    if (version_compare(\CRM_Utils_System::version(), '4.7.0', '>=')) {
-      $container->addResource(new \Symfony\Component\Config\Resource\FileResource(__FILE__));
-    }
+    $container->addResource(new \Symfony\Component\Config\Resource\FileResource(__FILE__));
 
     $apiOverrides = $container->setDefinition('civi_flexmailer_api_overrides', new Definition('Civi\API\Provider\ProviderInterface'));
     self::applyStaticFactory($apiOverrides, __CLASS__, 'createApiOverrides');
@@ -80,6 +62,7 @@ class Services {
     $container->setDefinition('civi_flexmailer_bounce_tracker', new Definition('Civi\FlexMailer\Listener\BounceTracker'));
     $container->setDefinition('civi_flexmailer_default_sender', new Definition('Civi\FlexMailer\Listener\DefaultSender'));
     $container->setDefinition('civi_flexmailer_hooks', new Definition('Civi\FlexMailer\Listener\HookAdapter'));
+    $container->setDefinition('civi_flexmailer_test_prefix', new Definition('Civi\FlexMailer\Listener\TestPrefix'));
 
     $container->setDefinition('civi_flexmailer_html_click_tracker', new Definition('Civi\FlexMailer\ClickTracker\HtmlClickTracker'));
     $container->setDefinition('civi_flexmailer_text_click_tracker', new Definition('Civi\FlexMailer\ClickTracker\TextClickTracker'));
@@ -126,6 +109,7 @@ class Services {
     $listenerSpecs[] = array(FM::EVENT_COMPOSE, array('civi_flexmailer_default_composer', 'onCompose'), FM::WEIGHT_MAIN - 100);
     $listenerSpecs[] = array(FM::EVENT_COMPOSE, array('civi_flexmailer_attachments', 'onCompose'), FM::WEIGHT_ALTER);
     $listenerSpecs[] = array(FM::EVENT_COMPOSE, array('civi_flexmailer_open_tracker', 'onCompose'), FM::WEIGHT_ALTER);
+    $listenerSpecs[] = array(FM::EVENT_COMPOSE, array('civi_flexmailer_test_prefix', 'onCompose'), FM::WEIGHT_ALTER);
     $listenerSpecs[] = array(FM::EVENT_COMPOSE, array('civi_flexmailer_hooks', 'onCompose'), FM::WEIGHT_ALTER - 100);
 
     $listenerSpecs[] = array(FM::EVENT_SEND, array('civi_flexmailer_default_sender', 'onSend'), FM::WEIGHT_END);

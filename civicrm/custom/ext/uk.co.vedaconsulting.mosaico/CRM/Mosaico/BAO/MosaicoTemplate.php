@@ -64,6 +64,8 @@ class CRM_Mosaico_BAO_MosaicoTemplate extends CRM_Mosaico_DAO_MosaicoTemplate {
           );
         }
       }
+      // Sort the base templates into alphabetical order
+      ksort($records, SORT_NATURAL | SORT_FLAG_CASE);
 
       if (class_exists('\Civi\Core\Event\GenericHookEvent')) {
         \Civi::dispatcher()->dispatch('hook_civicrm_mosaicoBaseTemplates',
