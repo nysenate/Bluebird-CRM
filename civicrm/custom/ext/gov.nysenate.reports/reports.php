@@ -158,7 +158,7 @@ function reports_civicrm_alterReportVar($varType, &$var, &$object) {
   /*Civi::log()->debug('alterReportVar', array(
     'varType' => $varType,
     'var' => $var,
-    'object' => $object,
+    //'object' => $object,
   ));*/
 
   $class = get_class($object);
@@ -171,6 +171,10 @@ function reports_civicrm_alterReportVar($varType, &$var, &$object) {
 
         case 'CRM_Report_Form_Case_Summary':
           _reports_CaseSummary_col($var, $object);
+          break;
+
+        case 'CRM_Report_Form_Mailing_Summary':
+          _reports_MailingSummary_col($var, $object);
           break;
 
         default:
@@ -471,4 +475,8 @@ function _reports_DistrictInfo_sql(&$var, &$object) {
     ";
     $var->setVar('_from', $from);
   }
+}
+
+function _reports_MailingSummary_col(&$var, &$object) {
+  unset($var['civicrm_mailing_event_unsubscribe']['fields']['unsubscribe_count']);
 }
