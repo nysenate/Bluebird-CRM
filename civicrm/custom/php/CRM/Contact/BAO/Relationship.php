@@ -1682,8 +1682,8 @@ SELECT relationship_type_id, relationship_direction
           }
           $relTypeIds = explode(CRM_Core_DAO::VALUE_SEPARATOR, $relTypeId);
           if (in_array($values[$cid]['relationshipTypeId'], $relTypeIds
-          //CRM-16300 check if owner membership exist for related membership
-          ) && !empty($membershipValues['owner_membership_id']) && !empty($values[$mainRelatedContactId]['memberships'][$membershipValues['owner_membership_id']])) {
+            //CRM-16300 check if owner membership exist for related membership
+            ) && !empty($membershipValues['owner_membership_id']) && !empty($values[$mainRelatedContactId]['memberships'][$membershipValues['owner_membership_id']])) {
             CRM_Member_BAO_Membership::deleteRelatedMemberships($membershipValues['owner_membership_id'], $membershipValues['membership_contact_id']);
           }
           continue;
@@ -1785,8 +1785,8 @@ SELECT count(*)
             $relIds = CRM_Utils_Array::value('relationship_ids', $params);
           }
           if (self::isRelatedMembershipExpired($relTypeIds, $contactId, $mainRelatedContactId, $relTypeId,
-          $relIds) && !empty($membershipValues['owner_membership_id']
-          ) && !empty($values[$mainRelatedContactId]['memberships'][$membershipValues['owner_membership_id']])) {
+              $relIds) && !empty($membershipValues['owner_membership_id']
+            ) && !empty($values[$mainRelatedContactId]['memberships'][$membershipValues['owner_membership_id']])) {
             $membershipValues['status_id'] = CRM_Core_DAO::getFieldValue('CRM_Member_DAO_MembershipStatus', 'Expired', 'id', 'label');
             $type = CRM_Core_DAO::getFieldValue('CRM_Member_DAO_MembershipType', $membershipValues['membership_type_id'], 'name', 'id');
             CRM_Member_BAO_Membership::add($membershipValues);
@@ -2304,8 +2304,8 @@ AND cc.sort_name LIKE '%$name%'";
         'contact_id_a' => $params['contact_id_a'],
         'contact_id_b' => $params['contact_id_b'],
       ])) {
-      return TRUE;
-    }
+        return TRUE;
+      }
     }
 
     return FALSE;

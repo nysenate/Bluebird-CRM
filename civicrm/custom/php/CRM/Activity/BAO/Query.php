@@ -290,20 +290,20 @@ class CRM_Activity_BAO_Query {
             !empty($query->_paramLookup['sort_name'][0][2])
           ) {
             $nameVal = $query->_paramLookup['sort_name'][0][2];
-            if ( strpos($nameVal, ',') !== FALSE ) {
-              $aValues = explode( ',', $nameVal );
-              foreach ( $aValues as $aVal ) {
+            if (strpos($nameVal, ',') !== FALSE) {
+              $aValues = explode(',', $nameVal);
+              foreach ($aValues as $aVal) {
                 $aVal = trim($aVal);
-                if ( !empty($aVal) ) {
+                if (!empty($aVal)) {
                   $aValArray[] = "contact_a.sort_name LIKE '%{$aVal}%'";
                 }
               }
-              $aString = implode( ' OR ', $aValArray );
+              $aString = implode(' OR ', $aValArray);
 
               //recreate query where string for sort_name
-              foreach ( $query->_where[0] as $wKey => $wVal ) {
-                if ( strpos($wVal, 'contact_a.sort_name') !== FALSE ) {
-                  $query->_where[0][$wKey] = "( {$aString} )";
+              foreach ($query->_where[0] as $wKey => $wVal) {
+                if (strpos($wVal, 'contact_a.sort_name') !== FALSE && !empty($aString)) {
+                  $query->_where[0][$wKey] = "({$aString})";
                 }
               }
             }
@@ -356,9 +356,9 @@ class CRM_Activity_BAO_Query {
         }
 
         $names = [];
-          foreach ($value as $k => $v) {
-            $names[] = $activityTags[$v];
-          }
+        foreach ($value as $k => $v) {
+          $names[] = $activityTags[$v];
+        }
 
         $query->_where[$grouping][] = "civicrm_activity_tag.tag_id IN (" . implode(",", $value) . ")";
         $query->_qill[$grouping][] = ts('Activity Tag %1', [1 => $op]) . ' ' . implode(' ' . ts('OR') . ' ', $names);
@@ -557,8 +557,8 @@ class CRM_Activity_BAO_Query {
           'class' => 'crm-select2',
           'placeholder' => ts('- select -'),
         ]
-        );
-      }
+      );
+    }
 
     $parentNames = CRM_Core_BAO_Tag::getTagSet('civicrm_activity');
     CRM_Core_Form_Tag::buildQuickForm($form, $parentNames, 'civicrm_activity', NULL, TRUE, TRUE);
