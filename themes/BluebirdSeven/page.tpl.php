@@ -37,26 +37,26 @@
 </div>
 
 <?php if (empty($userNoRoles)) { ?>
-  <div id="branding" class="clearfix">
-    <?php
-    if (isset($addlVars['recent_items'])) {
-      print $addlVars['recent_items'];
-    }
-    ?>
-
-    <div id="bb-header">
+  <?php if ($addlVars['isCiviCRM']) { ?>
+    <div id="branding" class="clearfix">
       <?php
-      if (isset($addlVars['isCiviCRM'])) {
+      if (isset($addlVars['recent_items'])) {
+        print $addlVars['recent_items'];
+      }
+      ?>
+
+      <div id="bb-header">
+        <?php
         if (isset($addlVars['bbheader'])) {
           print $addlVars['bbheader'];
         }
         if (isset($addlVars['bbjob'])) {
           print $addlVars['bbjob'];
         }
-      }
-      ?>
+        ?>
+      </div>
     </div>
-  </div>
+  <?php } ?>
 <?php } else { ?>
   <div id="userNoRoles">
     <p>Thank you for signing in. Please contact your Bluebird Office Administrator to assign your user role and access the system.</p>
@@ -138,7 +138,9 @@ function _bbSetupHeader()
     $params['isCiviCRM'] = true;
   }
 
-  $params['recent_items'] = bb_buildRecentItemsList();
+  if ($params['isCiviCRM']) {
+    $params['recent_items'] = bb_buildRecentItemsList();
+  }
 
   return $params;
 } // _bbSetupHeader()
