@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="iso-8859-1" ?>
-
+<?xml version="1.0" encoding="iso-8859-1"?>
 <menu>
   <!--5581-->
   <item>
@@ -31,5 +30,12 @@
     <page_callback>CRM_NYSS_Subscription_Page_ChecksumExpired</page_callback>
     <access_arguments>view public CiviMail content</access_arguments>
     <is_public>true</is_public>
+  </item>
+  <!--13173-->
+  <item>
+    <path>civicrm/mailing/recipientreview</path>
+    <page_callback>CRM_NYSS_Mail_Page_RecipientReview</page_callback>
+    <title>Mailing Recipient Review</title>
+    <access_arguments>access CiviCRM</access_arguments>
   </item>
 </menu>

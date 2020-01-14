@@ -72,7 +72,7 @@
 }
 
 
-#instance_confirm_text {
+.instance_confirm_text {
 	margin-top: 1%;
 	text-align:center;
 	display:block;

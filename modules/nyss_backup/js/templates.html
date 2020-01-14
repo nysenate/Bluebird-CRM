@@ -26,12 +26,12 @@
 </div>
 </script>
 <script type="text/html" id="tmpl_restore">
-  <div id="instance_confirm_text">
+  <div class="instance_confirm_text">
   Are you sure you want to <span class="hot">restore</span> from <b><%=file%></b>?
   </div>
 </script>
 <script type="text/html" id="tmpl_backup">
-  <div id="instance_confirm_text">
+  <div class="instance_confirm_text">
   Are you sure you want to <span class="hot">back up</span> this instance</b>?
   <% var date_obj = util.getFileNameDate(); %>
   <br/><span>File name: </span><input id="file_name" type="text" value="<%=date_obj.str%>" /><span id="file_ext">.zip</span>
@@ -39,7 +39,7 @@
   </div>
 </script>
 <script type="text/html" id="tmpl_delete">
-  <div id="instance_confirm_text">
+  <div class="instance_confirm_text">
   Are you sure you want to <span class="hot">delete</span> <b><%=file%></b>?
   </div>
 </script>
@@ -50,12 +50,12 @@
   </div>
 </script>
 <script type="text/html" id="tmpl_success_true">
-  <div id="instance_confirm_text">Success!</div>
+  <div class="instance_confirm_text">Success!</div>
 </script>
 <script type="text/html" id="tmpl_success_false">
-  <div id="instance_confirm_text" class="hot">Error!</div>
+  <div class="instance_confirm_text" class="hot">Error!</div>
 </script>
 <script type="text/html" id="tmpl_progress">
-  <span id="instance_confirm_text">Working...</span>
+  <span class="instance_confirm_text">Working...</span>
   <img id="instance_progress_image" src="/sites/default/themes/Bluebird/images/nyss_backup_loading.gif"></img>
 </script>

@@ -108,3 +108,20 @@
     <div class="messages help">{$help_post}</div>
   {/if}
 </div>
+{literal}
+  <script type="text/javascript">
+    CRM.$(function($) {
+      var $form = $('form.{/literal}{$form.formClass}{literal}');
+      $('[name=is_deceased]', $form).change(function() {
+        $('.editrow_deceased_date-section', $form).toggle($(this).is(':checked'));
+      }).change();
+      $('[name=is_deceased]', $form).change(function() {
+        if ($(this).is(':checked')) {
+          $('[name=deceased_date] + input', $form).focus();
+        } else {
+          $('[name=deceased_date]', $form).val('').change();
+        }
+      });
+    });
+  </script>
+{/literal}

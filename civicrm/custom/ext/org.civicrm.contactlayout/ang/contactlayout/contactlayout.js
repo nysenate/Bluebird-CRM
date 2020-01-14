@@ -456,6 +456,8 @@
         if (editingTabIcon) {
           $scope.$apply(function() {
             editingTabIcon.icon = 'crm-i ' + $('#cse-icon-picker').val();
+            editingTabIcon = null;
+            $('#cse-icon-picker').val('').change();
           });
         }
       });

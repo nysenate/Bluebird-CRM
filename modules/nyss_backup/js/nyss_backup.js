@@ -1,5 +1,5 @@
 jQuery(document).ready(function() {
-  var base_url = "/backupData?function=";
+  var base_url = "/backupdata?function=";
   var cur_action = null;
 
   function write_files(data) {

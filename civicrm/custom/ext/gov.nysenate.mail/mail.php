@@ -1,6 +1,7 @@
 <?php
 
 require_once 'mail.civix.php';
+use CRM_NYSS_Mail_ExtensionUtil as E;
 
 defined('FILTER_ALL') or define('FILTER_ALL', 0);
 defined('FILTER_IN_SD_ONLY') or define('FILTER_IN_SD_ONLY', 1);
@@ -458,6 +459,28 @@ function mail_civicrm_links($op, $objectName, $objectId, &$links, &$mask, &$valu
       }
     }
   }
+
+  if ($op == 'mailing.contact.action' && $objectName == 'Mailing') {
+    $viewPerm = FALSE;
+    $allowedPerms = [
+      'view mass email',
+      'access CiviMail',
+      'create mailings',
+      'approve mailings',
+      'schedule mailings',
+    ];
+
+    foreach ($allowedPerms as $perm) {
+      if (CRM_Core_Permission::check($perm)) {
+        $viewPerm = TRUE;
+      }
+    }
+
+    //if user does not have a mailing perm, hide all links
+    if (!$viewPerm) {
+      $links = [];
+    }
+  }
 }
 
 function mail_civicrm_mosaicoBaseTemplates(&$templates) {
@@ -497,7 +520,7 @@ function mail_civicrm_apiWrappers(&$wrappers, $apiRequest) {
 function mail_civicrm_buildForm($formName, &$form) {
   if ($formName == 'CRM_Mailing_Form_Group' && $form->_searchBasedMailing) {
     //get base mailing group, add to option list, set as default, freeze field
-    $params = array ('name' => BASE_SUBSCRIPTION_GROUP);
+    $params = ['name' => BASE_SUBSCRIPTION_GROUP];
     $groupObjects = CRM_Contact_BAO_Group::getGroups($params);
     $groupID = $groupObjects[0]->id;
     $groupTitle = $groupObjects[0]->title;
@@ -699,6 +722,26 @@ function mail_civicrm_buildForm($formName, &$form) {
     //CRM_Core_Error::debug_var('$contactEmails', $contactEmails);
     $form->assign('emails', $contactEmails);
     $form->setDefaults($defaults);
+  }
+
+  if ($formName == 'CRM_Mailing_Form_Approve') {
+    $recipContacts = [];
+
+    //get total count
+    $count = 0;
+    try {
+      $count = civicrm_api3('MailingRecipients', 'getcount', [
+        'mailing_id' => $form->_mailingID,
+      ]);
+    }
+    catch (CiviCRM_API3_Exception $e) {
+      Civi::log()->debug(__FUNCTION__, ['$e' => $e]);
+    }
+
+    $reviewUrl = CRM_Utils_System::url('civicrm/mailing/recipientreview', "id={$form->_mailingID}&count={$count}&reset=1");
+    CRM_Core_Resources::singleton()->addScriptFile(E::LONG_NAME, 'js/MailingApproval.js');
+    CRM_Core_Resources::singleton()->addStyleFile(E::LONG_NAME, 'css/MailingApproval.css');
+    CRM_Core_Resources::singleton()->addVars('NYSS', ['mailingCount' => $count, 'reviewUrl' => $reviewUrl]);
   }
 
   //CRM_Core_Error::debug_var('formName', $formName);
@@ -963,6 +1006,23 @@ function mail_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) 
     }
   }
 } // nyss_mail_civicrm_alterTemplateFile()
+
+function mail_civicrm_permission_check($permission, &$granted) {
+  /*Civi::log()->debug('mail_civicrm_permission_check', [
+    '$permission' => $permission,
+    '$granted' => $granted,
+  ]);*/
+
+  //13174 grant access to mailing tab if user has any of the mailing perms
+  if ($permission == 'access CiviMail') {
+    if (current_path() == 'civicrm/contact/view' &&
+      CRM_Core_Permission::check("view all contacts")
+    ) {
+      $granted = TRUE;
+    }
+  }
+
+}
 
 //NYSS 4870
 function _mail_removeOnHold($mailingID) {

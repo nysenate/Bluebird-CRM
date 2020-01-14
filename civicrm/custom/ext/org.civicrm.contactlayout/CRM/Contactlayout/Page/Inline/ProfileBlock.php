@@ -45,7 +45,12 @@ class CRM_Contactlayout_Page_Inline_ProfileBlock extends CRM_Core_Page {
       }
     }
     CRM_Core_BAO_UFGroup::getValues($contactId, $fields, $values, FALSE);
-    $result = [];
+    $result = $details = [];
+    // Load details if we need them for special field handling
+    if (array_intersect(['birth_date', 'deceased_date', 'is_deceased'], array_keys($fields))) {
+      $params = ['id' => $contactId];
+      CRM_Contact_BAO_Contact::getValues($params, $details);
+    }
     foreach ($fields as $name => $field) {
       // Special handling for group field (profiles only show public groups by default)
       if ($name == 'group') {
@@ -72,11 +77,34 @@ class CRM_Contactlayout_Page_Inline_ProfileBlock extends CRM_Core_Page {
           continue;
         }
       }
+      // Hide deceased fields if not applicable
+      if ($name == 'deceased_date' && empty($details['deceased_date'])) {
+        continue;
+      }
+      // Show Is Deceased message if no deceased date
+      if ($name == 'is_deceased') {
+        if ((!isset($fields['deceased_date']) || empty($details['deceased_date'])) && !empty($details['is_deceased'])) {
+          $result[] = [
+            'name' => $name,
+            'value' => '<span class="font-red upper">' . htmlspecialchars(ts('Contact is Deceased')) . '</span>',
+            'label' => '',
+          ];
+        }
+        continue;
+      }
       $result[] = [
         'name' => $name,
         'value' => CRM_Utils_Array::value($field['title'], $values),
         'label' => $field['title'],
       ];
+      // Birth date - show age
+      if ($name == 'birth_date' && !empty($details['age']) && empty($details['is_deceased'])) {
+        $result[] = [
+          'name' => 'age',
+          'label' => ts('Age'),
+          'value' => htmlspecialchars($details['age']['y'] ? ts('%count year', ['count' => $details['age']['y'], 'plural' => '%count years']) : ts('%count month', ['count' => $details['age']['m'], 'plural' => '%count months'])),
+        ];
+      }
     }
     return $result;
   }
@@ -103,7 +131,7 @@ class CRM_Contactlayout_Page_Inline_ProfileBlock extends CRM_Core_Page {
       foreach ($notes as $i => $note) {
         $result[] = [
           'name' => "note",
-          'value' => (empty($note['subject']) ? '' : '<strong>' . $note['subject'] . '</strong><br />') . $note['note'],
+          'value' => (empty($note['subject']) ? '' : '<strong>' . htmlspecialchars($note['subject']) . '</strong><br />') . $note['note'],
           'label' => $field['title'] . ' (' . CRM_Utils_Date::customFormat($note['modified_date'], $dateFormat) . ')',
         ];
       }
