@@ -47,7 +47,9 @@ function nyss_backup_page()
     }
   }
 
-  if ($_GET['function']) {
+  if (!empty($_GET['function'])) {
+    //error_log('function: '.$_GET['function']);
+
     $func = $_GET['function'];
     if ($func_map[$func]) {
       $data = call_user_func($func_map[$func], $bkupdir, $bbcfg);
@@ -62,30 +64,34 @@ function nyss_backup_page()
     exit();
   }
   else {
+    //get Civi path and remove oddly appended /drupal path
     $civipath = drupal_get_path('module', 'civicrm');
+    $civipath = str_replace('/drupal', '', $civipath);
+
     $modpath = drupal_get_path('module', 'nyss_backup');
+
     drupal_add_js("$civipath/bower_components/jquery/dist/jquery.min.js");
     drupal_add_js("$modpath/js/tmpl.js");
     drupal_add_js("$modpath/js/nyss_backup.js");
     drupal_add_css("$modpath/nyss_backup.css");
-    drupal_add_html_head(array(
+    drupal_add_html_head([
       '#type' => 'markup',
       '#markup' => file_get_contents("$modpath/js/templates.html")
-    ), 'included_template');
-    return "";
+    ], 'included_template');
+
+    return '';
   }
 } // nyss_backup_page()
 
 
-function nyss_backup_list($dir, $cfg)
-{
+function nyss_backup_list($dir, $cfg) {
   //fetch all instance backup files from the filesystem
-  $files = array();
+  $files = [];
   if ($handle = opendir($dir)) {
     while (false !== ($file = readdir($handle))) {
       if ($file != '.' && $file != '..' && !is_dir($dir.$file) && preg_match('/.*\.zip/', $file)) {
         $time = filemtime($dir.$file);
-        $files[$time] = array('file' => $file, 'time' => $time);
+        $files[$time] = ['file' => $file, 'time' => $time];
       }
     }
   }
