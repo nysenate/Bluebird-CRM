@@ -1,4 +1,6 @@
 (function(angular, $, _) {
+  // Autoload dependencies.
+  angular.module('contactlayout', CRM.angRequires('contactlayout'));
 
   angular.module('contactlayout').config(function($routeProvider) {
       $routeProvider.when('/contact-summary-editor', {
@@ -14,12 +16,12 @@
               blocks:  ['ContactLayout', 'getBlocks'],
               tabs:  ['ContactLayout', 'getTabs'],
               contactTypes: ['ContactType', 'get', {
-                where: [['is_active','=','1']],
+                where: [['is_active', '=', 1]],
                 orderBy: {label: 'ASC'}
               }],
               groups: ['Group', 'get', {
                 select: ['name','title','description'],
-                where: [['is_hidden','=','0'], ['is_active','=','1'], ['saved_search_id','IS NULL','']]
+                where: [['is_hidden', '=', 0], ['is_active', '=', 1], ['saved_search_id','IS NULL']]
               }]
             });
           }
@@ -28,10 +30,6 @@
     }
   );
 
-  // The controller uses *injection*. This default injects a few things:
-  //   $scope -- This is the set of variables shared between JS and HTML.
-  //   crmApi, crmStatus, crmUiHelp -- These are services provided by civicrm-core.
-  //   data -- defined above in config().
   angular.module('contactlayout').controller('Contactlayoutcontactlayout', function($scope, $timeout, crmApi4, crmStatus, crmUiHelp, data) {
     var ts = $scope.ts = CRM.ts('contactlayout');
     var hs = $scope.hs = crmUiHelp({file: 'CRM/contactlayout/contactlayout'});
