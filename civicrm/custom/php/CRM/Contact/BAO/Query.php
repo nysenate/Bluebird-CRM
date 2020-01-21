@@ -3850,6 +3850,10 @@ WHERE  $smartGroupClause
 
     if ($name == 'postal_code') {
       $this->_where[$grouping][] = self::buildClause($field, $op, $val, 'String');
+
+      //NYSS 13260 fix qill
+      $value = (is_array($value)) ? $values[2] : $value;
+
       $this->_qill[$grouping][] = ts('Postal code') . " {$op} {$value}";
     }
     elseif ($name == 'postal_code_low') {
