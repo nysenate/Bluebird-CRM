@@ -126,6 +126,7 @@ function search_civicrm_buildForm($formName, &$form) {
   /*Civi::log()->debug('search_civicrm_buildForm', array(
     'formName' => $formName,
     'form' => $form,
+      '_elementIndex' => $form->_elementIndex,
   ));*/
 
   if ($formName == 'CRM_Contact_Form_Search_Advanced') {
@@ -174,12 +175,19 @@ function search_civicrm_buildForm($formName, &$form) {
       CRM_Core_Resources::singleton()->addScript('cj("select#contact_tags").prev("label").text("Issue Codes")');
     }
 
+    //13256 adv search postal code field
+    if ($form->elementExists('postal_code')) {
+      $ele =& $form->getElement('postal_code');
+      $ele->_attributes['maxLength'] = 128;
+      $ele->_attributes['size'] = 45;
+    }
+
     //set defaults
-    $defaults = array(
+    $defaults = [
       'country' => '', //don't set US as default country in advanced search or contacts with no address are excluded
       'is_deceased' => 0, //3527 set deceased to no
       'activity_role' => 0, //4332 clear activity creator/assigned
-    );
+    ];
     $form->setDefaults($defaults);
   }
 
