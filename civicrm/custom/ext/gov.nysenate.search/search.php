@@ -123,11 +123,11 @@ function search_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
 }
 
 function search_civicrm_buildForm($formName, &$form) {
-  /*Civi::log()->debug('search_civicrm_buildForm', array(
+  /*Civi::log()->debug('search_civicrm_buildForm', [
     'formName' => $formName,
     'form' => $form,
-      '_elementIndex' => $form->_elementIndex,
-  ));*/
+    '_elementIndex' => $form->_elementIndex,
+  ]);*/
 
   if ($formName == 'CRM_Contact_Form_Search_Advanced') {
     //3815 add privacy option note
@@ -178,7 +178,7 @@ function search_civicrm_buildForm($formName, &$form) {
     //13256 adv search postal code field
     if ($form->elementExists('postal_code')) {
       $ele =& $form->getElement('postal_code');
-      $ele->_attributes['maxLength'] = 128;
+      $ele->_attributes['maxlength'] = 128;
       $ele->_attributes['size'] = 45;
     }
 
