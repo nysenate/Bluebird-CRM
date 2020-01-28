@@ -60,5 +60,8 @@ sql="
 "
 $execSql $instance -c "$sql" --drupal -q
 
+echo "$prog: #13210 enable backup extension"
+$drush $instance cvapi extension.install key=gov.nysenate.backup --quiet
+
 ## record completion
 echo "$prog: upgrade process is complete."
