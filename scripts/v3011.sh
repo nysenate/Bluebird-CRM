@@ -43,5 +43,14 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
+echo "$prog: #13259 update non-admin menu block"
+sql="
+  UPDATE block
+  SET pages = ''
+  WHERE delta = 'menu-non-admin-drupal-menu';
+    ('menu', 'menu-non-admin-drupal-menu', 'BluebirdSeven', 1, 0, 'content', 0, 1, 'admin/people\r\nuser/*\r\nimportData\r\nadmin/config/development/maintenance\r\nbackupdata', '<none>', -1);
+"
+$execSql $instance -c "$sql" --drupal -q
+
 ## record completion
 echo "$prog: upgrade process is complete."
