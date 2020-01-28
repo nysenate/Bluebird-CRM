@@ -364,7 +364,7 @@ function _buildManageMenu($manageID) {
         'attributes' => Array(
           'label' => 'Backup/Restore',
           'name' => 'Backup/Restore',
-          'url' => 'backupdata',
+          'url' => 'civicrm/backup/listing',
           'permission' => 'administer CiviCRM,export print production files',
           'operator' => 'OR',
           'separator' => 0,
