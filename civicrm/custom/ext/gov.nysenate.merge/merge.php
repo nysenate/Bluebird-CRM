@@ -377,11 +377,11 @@ function _merge_fixGreeting($gType, &$rows, &$conflicts) {
   }
 
   //perform fixup if one is customized and the other is not
-  if (_merge_isCustom($gMain) && !_merge_isCustom($gOther)) {
+  if (_merge_merge_isCustom($gMain) && !_merge_merge_isCustom($gOther)) {
     $conflicts[$gType] = $gOther;
     return;
   }
-  elseif (!_merge_isCustom($gMain) && _merge_isCustom($gOther)) {
+  elseif (!_merge_merge_isCustom($gMain) && _merge_merge_isCustom($gOther)) {
     $conflicts[$gType] = $gMain;
     return;
   }
