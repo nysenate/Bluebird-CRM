@@ -87,7 +87,7 @@ class CRM_Contactlayout_Page_Inline_ProfileBlock extends CRM_Core_Page {
           $result[] = [
             'name' => $name,
             'value' => '<span class="font-red upper">' . htmlspecialchars(ts('Contact is Deceased')) . '</span>',
-            'label' => '',
+            'label' => $field['title'],
           ];
         }
         continue;

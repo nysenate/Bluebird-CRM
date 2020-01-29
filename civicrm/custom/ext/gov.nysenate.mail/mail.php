@@ -476,9 +476,13 @@ function mail_civicrm_links($op, $objectName, $objectId, &$links, &$mask, &$valu
       }
     }
 
-    //if user does not have a mailing perm, hide all links
+    //13174 if user does not have a mailing perm, hide mailing report link
     if (!$viewPerm) {
-      $links = [];
+      foreach ($links as $k => $link) {
+        if ($link['name'] == 'Mailing Report') {
+          unset($links[$k]);
+        }
+      }
     }
   }
 }
@@ -1011,6 +1015,7 @@ function mail_civicrm_permission_check($permission, &$granted) {
   /*Civi::log()->debug('mail_civicrm_permission_check', [
     '$permission' => $permission,
     '$granted' => $granted,
+    'current_path' => current_path(),
   ]);*/
 
   //13174 grant access to mailing tab if user has any of the mailing perms
@@ -1022,6 +1027,14 @@ function mail_civicrm_permission_check($permission, &$granted) {
     }
   }
 
+  //13174 view email content
+  if ($permission == 'view public CiviMail content') {
+    if (current_path() == 'civicrm/mailing/view' &&
+      CRM_Core_Permission::check("view all contacts")
+    ) {
+      $granted = TRUE;
+    }
+  }
 }
 
 //NYSS 4870

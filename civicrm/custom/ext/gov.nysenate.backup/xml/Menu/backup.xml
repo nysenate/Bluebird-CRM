@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<menu>
+  <item>
+    <path>civicrm/backup/listing</path>
+    <page_callback>CRM_Backup_Page_BackupListing</page_callback>
+    <title>Backup Listing</title>
+    <access_arguments>export print production files</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/backup/restore</path>
+    <page_callback>CRM_Backup_Form_Restore</page_callback>
+    <title>Restore</title>
+    <access_arguments>export print production files</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/backup/delete</path>
+    <page_callback>CRM_Backup_Form_Delete</page_callback>
+    <title>Delete</title>
+    <access_arguments>export print production files</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/backup/create</path>
+    <page_callback>CRM_Backup_Form_Create</page_callback>
+    <title>Create</title>
+    <access_arguments>export print production files</access_arguments>
+  </item>
+</menu>

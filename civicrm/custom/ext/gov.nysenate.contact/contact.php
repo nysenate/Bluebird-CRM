@@ -169,3 +169,22 @@ function contact_civicrm_pageRun(&$page) {
     CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.contact', 'js/ActivityTab.js');
   }
 }
+
+function contact_civicrm_buildForm($formName, &$form) {
+  /*Civi::log()->debug(__FUNCTION__, [
+    'formName' => $formName,
+    'form' => $form,
+    '_elementIndex' => $form->_elementIndex,
+  ]);*/
+
+  //13249
+  if ($formName == 'CRM_Contact_Form_Inline_Address' ||
+    $formName == 'CRM_Contact_Form_Contact'
+  ) {
+    foreach ($form->_elementIndex as $ele => $val) {
+      if (strpos($ele, 'is_billing') !== FALSE) {
+        $form->removeElement($ele);
+      }
+    }
+  }
+}

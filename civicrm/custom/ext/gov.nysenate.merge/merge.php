@@ -252,11 +252,20 @@ function _merge_resolveConflicts(&$data, $mainId, $otherId) {
   if (array_key_exists('move_addressee', $conflicts)) {
     _merge_fixGreeting('move_addressee', $rows, $conflicts);
   }
+  if (array_key_exists('move_addressee_id', $conflicts)) {
+    _merge_fixGreeting('move_addressee_id', $rows, $conflicts);
+  }
   if (array_key_exists('move_email_greeting', $conflicts)) {
     _merge_fixGreeting('move_email_greeting', $rows, $conflicts);
   }
+  if (array_key_exists('move_email_greeting_id', $conflicts)) {
+    _merge_fixGreeting('move_email_greeting_id', $rows, $conflicts);
+  }
   if (array_key_exists('move_postal_greeting', $conflicts)) {
     _merge_fixGreeting('move_postal_greeting', $rows, $conflicts);
+  }
+  if (array_key_exists('move_postal_greeting_id', $conflicts)) {
+    _merge_fixGreeting('move_postal_greeting_id', $rows, $conflicts);
   }
   if (array_key_exists('move_addressee_custom', $conflicts)) {
     _merge_fixGreeting('move_addressee_custom', $rows, $conflicts);
@@ -377,11 +386,11 @@ function _merge_fixGreeting($gType, &$rows, &$conflicts) {
   }
 
   //perform fixup if one is customized and the other is not
-  if (_merge_isCustom($gMain) && !_merge_isCustom($gOther)) {
+  if (_merge_merge_isCustom($gMain) && !_merge_merge_isCustom($gOther)) {
     $conflicts[$gType] = $gOther;
     return;
   }
-  elseif (!_merge_isCustom($gMain) && _merge_isCustom($gOther)) {
+  elseif (!_merge_merge_isCustom($gMain) && _merge_merge_isCustom($gOther)) {
     $conflicts[$gType] = $gMain;
     return;
   }
@@ -416,6 +425,23 @@ function _merge_fixGreeting($gType, &$rows, &$conflicts) {
     }
 
     _merge_mD("custom greeting conflicted. retained: ", $rows[$gType]['main']);
+    return;
+  }
+
+  //if neither are customized, conflict with formulas; use default
+  if ($gMain != 'Customized' && $gOther != 'Customized') {
+    $contactType = $rows['move_contact_type']['main'];
+    $greetingType = str_replace('move_', '', str_replace('_id', '', $gType));
+    $defaultGreetingId = CRM_Contact_BAO_Contact_Utils::defaultGreeting($contactType, $greetingType);
+    $filter = [
+      'contact_type' => $contactType,
+      'greeting_type' => $greetingType,
+    ];
+    $allGreetings = CRM_Core_PseudoConstant::greeting($filter);
+    $defaultGreetingString = $greetingString = CRM_Utils_Array::value($defaultGreetingId, $allGreetings);
+    _merge_mD('setting default greeting string', $defaultGreetingString);
+
+    $conflicts[$gType] = $defaultGreetingString;
     return;
   }
 
