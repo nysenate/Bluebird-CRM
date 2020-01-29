@@ -430,7 +430,7 @@ class uploader {
             (
                 isset($this->config['_normalizeFilenames']) &&
                 $this->config['_normalizeFilenames'] &&
-                preg_match('/[^0-9a-z\.\- _]/si', $file)
+                preg_match('/[^0-9a-z\.\- _()]/si', $file)
             )
         )
             return false;
