@@ -1018,6 +1018,12 @@ function mail_civicrm_permission_check($permission, &$granted) {
     'current_path' => current_path(),
   ]);*/
 
+  //current_path() is not available via the CLI; we don't need the permission checks
+  //in that context anyway, so simply return early
+  if (!function_exists('current_path')) {
+    return;
+  }
+
   //13174 grant access to mailing tab if user has any of the mailing perms
   if ($permission == 'access CiviMail') {
     if (current_path() == 'civicrm/contact/view' &&
