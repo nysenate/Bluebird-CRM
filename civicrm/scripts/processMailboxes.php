@@ -130,8 +130,16 @@ foreach ($all_params as $param) {
 if (!empty($optlist['imap-user']) && !empty($optlist['imap-pass'])) {
   $imap_accounts = $optlist['imap-user'].'|'.$optlist['imap-pass'];
 }
-else {
+else if (isset($bbconfig['imap.accounts'])) {
   $imap_accounts = $bbconfig['imap.accounts'];
+}
+else {
+  $imap_accounts = '';
+}
+
+if (empty($imap_accounts)) {
+  echo "$prog: No IMAP accounts to process for CRM instance [$site]\n";
+  exit(1);
 }
 
 if ($cmd == 'list') {
@@ -175,11 +183,6 @@ $uploadInbox = $uploadDir."inbox";
 if (!is_dir($uploadInbox)) {
   mkdir($uploadInbox);
   chmod($uploadInbox, 0777);
-}
-
-if (empty($imap_accounts)) {
-  echo "$prog: No IMAP accounts to process for CRM instance [$site]\n";
-  exit(1);
 }
 
 $authForwarders = array(
