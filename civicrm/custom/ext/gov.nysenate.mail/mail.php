@@ -1020,14 +1020,14 @@ function mail_civicrm_permission_check($permission, &$granted) {
 
   //current_path() is not available via the CLI; we don't need the permission checks
   //in that context anyway, so simply return early
-  if (!function_exists('current_path')) {
+  if (!function_exists('current_path') || !function_exists('user_access')) {
     return;
   }
 
   //13174 grant access to mailing tab if user has any of the mailing perms
   if ($permission == 'access CiviMail') {
     if (current_path() == 'civicrm/contact/view' &&
-      CRM_Core_Permission::check("view all contacts")
+      user_access("view all contacts")
     ) {
       $granted = TRUE;
     }
@@ -1036,7 +1036,7 @@ function mail_civicrm_permission_check($permission, &$granted) {
   //13174 view email content
   if ($permission == 'view public CiviMail content') {
     if (current_path() == 'civicrm/mailing/view' &&
-      CRM_Core_Permission::check("view all contacts")
+      user_access("view all contacts")
     ) {
       $granted = TRUE;
     }
