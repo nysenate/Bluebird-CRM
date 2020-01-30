@@ -6,6 +6,7 @@
 # Authors: Brian Shaughnessy and Ken Zalewski
 # Organization: New York State Senate
 # Date: 2020-01-07
+# Revised: 2020-01-29
 #
 
 prog=`basename $0`
@@ -40,64 +41,38 @@ elif ! $readConfig --instance $instance --quiet; then
   exit 1
 fi
 
-base_sql="
-  FROM civicrm_email
-  WHERE email IS NULL
-    OR email = ''
-"
+email_sql="FROM civicrm_email WHERE email IS NULL OR email = ''"
 
-sql="SELECT count(*) $base_sql"
-cnt=`$execSql $instance -c "$sql" -q`
-echo "$prog: [@$instance] Number of empty email records: $cnt"
+phone_sql="FROM civicrm_phone WHERE (phone IS NULL OR phone = '')
+                                AND (phone_ext IS NULL OR phone_ext = '')"
 
-if [ $cnt -eq 0 ]; then
-  echo "$prog: [@$instance] No email records need to be deleted."
-fi
+for tab in email phone; do
+  sqlvar="${tab}_sql"
+  base_sql="${!sqlvar}"
 
-if [ $force_ok -eq 0 ]; then
-  echo
-  echo -n "Are you sure that you want to delete $cnt email records ([N]/y)? "
-  read ch
-  case "$ch" in
-    [yY]*) ;;
-    *) echo "Aborting."; exit 0 ;;
-  esac
-fi
+  sql="SELECT count(*) $base_sql"
+  cnt=`$execSql $instance -c "$sql" -q`
 
-sql="DELETE $base_sql"
-$execSql $instance -c "$sql" -q
-rc=$?
+  echo "$prog: [@$instance] Number of empty $tab records: $cnt"
 
-echo "$prog: [@$instance] Deleted $cnt empty email records"
+  if [ $cnt -eq 0 ]; then
+    echo "$prog: [@$instance] No $tab records need to be deleted."
+  else
+    if [ $force_ok -eq 0 ]; then
+      echo
+      echo -n "Are you sure that you want to delete $cnt $tab records ([N]/y)? "
+      read ch
+      case "$ch" in
+        [yY]*) ;;
+        *) echo "Aborting."; continue ;;
+      esac
+    fi
 
-base_sql="
-  FROM civicrm_phone
-  WHERE (phone IS NULL OR phone = '')
-    AND (phone_ext IS NULL OR phone_ext = '')
-"
-
-sql="SELECT count(*) $base_sql"
-cnt=`$execSql $instance -c "$sql" -q`
-echo "$prog: [@$instance] Number of empty phone records: $cnt"
-
-if [ $cnt -eq 0 ]; then
-  echo "$prog: [@$instance] No phone records need to be deleted."
-fi
-
-if [ $force_ok -eq 0 ]; then
-  echo
-  echo -n "Are you sure that you want to delete $cnt phone records ([N]/y)? "
-  read ch
-  case "$ch" in
-    [yY]*) ;;
-    *) echo "Aborting."; exit 0 ;;
-  esac
-fi
-
-sql="DELETE $base_sql"
-$execSql $instance -c "$sql" -q
-rc=$?
-
-echo "$prog: [@$instance] Deleted $cnt empty phone records"
+    sql="DELETE $base_sql"
+    $execSql $instance -c "$sql" -q
+    rc=$?
+    echo "$prog: [@$instance] Deleted $cnt empty $tab records"
+  fi
+done
 
 exit $rc
