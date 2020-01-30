@@ -509,11 +509,11 @@ function nyss_ioimport_form_submit($form, &$form_state) {
     }
 
     //import phone details; set key correctly for ref
-    $l['phone_contact_id']=$l['contact_id'];
+    $l['phone_contact_id'] = $l['contact_id'];
     nyss_ioimportData('civicrm_phone', $l, $dryrun, $logFile, $form_state);
 
     //import email details; set key correctly for ref
-    $l['email_contact_id']=$l['contact_id'];
+    $l['email_contact_id'] = $l['contact_id'];
     nyss_ioimportData('civicrm_email', $l, $dryrun, $logFile, $form_state);
 
     //import contact source details; set key correctly for ref
@@ -877,7 +877,7 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state)
       $l['country_id'] = 1228; //assume US
     }
 
-    if (array_key_exists('phone', $l)) {
+    if (!empty($l['phone'])) {
       $l['phone_type_id'] = 1; //set to phone
       if (empty($l['phone_location_type_id'])) {
         $l['phone_location_type_id'] = 1; //set to home
@@ -891,7 +891,7 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state)
       unset($l['phone_contact_id']);
     }
 
-    if (array_key_exists('email', $l)) {
+    if (!empty($l['email'])) {
       if (!$l['email_location_type_id']) {
         $l['email_location_type_id'] = 1; //set to home
       }
