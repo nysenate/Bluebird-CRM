@@ -89,10 +89,6 @@ if (!empty($optlist['log-level'])) {
   set_bbscript_log_level($optlist['log-level']);
 }
 
-// Bootstrap Drupal.  This is necessary because the current_path() Drupal
-// function is used by CiviCRM in CRM_Utils_File::makeFileName().
-drupal_script_init();
-
 /* More than one IMAP account can be checked per CRM instance.
 ** The username and password for each account is specified in the Bluebird
 ** config file.
