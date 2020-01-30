@@ -54,7 +54,7 @@ for tab in email phone; do
   cnt=`$execSql $instance -c "$sql" -q`
 
   echo "$prog: [@$instance] Number of empty $tab records: $cnt"
-cnt=1
+
   if [ $cnt -eq 0 ]; then
     echo "$prog: [@$instance] No $tab records need to be deleted."
   else
