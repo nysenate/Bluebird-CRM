@@ -40,7 +40,7 @@ define('IMAP_CMD_DELETE', 3);
 define('MAX_ATTACHMENT_SIZE', 2097152);
 
 // Allowed file extensions for "application" file type.
-define('ATTACHMENT_FILE_EXTS', 'pdf|txt|text|rtf|odt|doc|ppt|csv|doc|docx|xls');
+define('ATTACHMENT_FILE_EXT_REGEX', 'pdf|te?xt|rtf|odt|docx?|xlsx?|ppt|csv');
 
 // Status codes for the nyss_inbox_messages table.
 define('STATUS_UNMATCHED', 0);
@@ -442,7 +442,7 @@ function checkImapAccount($imapSess, $params)
 function storeAttachments($imapMsg, $db, $params, $rowId)
 {
   $bSuccess = true;
-  $pattern = '/^('.ATTACHMENT_FILE_EXTS.')$/';
+  $pattern = '/^('.ATTACHMENT_FILE_EXT_REGEX.')$/';
   $uploadInbox = $params['uploadInbox'];
 
   // Load attachment data and save to database and local filesystem.
