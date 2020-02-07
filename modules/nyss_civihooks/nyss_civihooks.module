@@ -35,9 +35,9 @@ function nyss_civihooks_form_alter(&$form, &$form_state, $form_id) {
     unset($form['account']['pass']);
 
     //inject js because the role modifications below don't work for non-super-admins
-    $form['#attached']['js'] = array(
+    $form['#attached']['js'] = [
       drupal_get_path('module', 'nyss_civihooks') . '/js/user_profile_form.js',
-    );
+    ];
 
     //roles
     $form['account']['roles']['#title'] = 'Assignable Roles';
