@@ -2,14 +2,6 @@ CRM.$(function($) {
   //7403 hide visibility filter
   $('.crm-group-search-form-block table select#visibility').parent('td').hide();
 
-  //6684 remove access control filter
-  $('td#group_type-block input#group_type_search_1').remove();
-  $('td#group_type-block label[for=group_type_search_1]').remove();
-  if ($('td#group_type-block').length) {
-    var emailList = cj('td#group_type-block').html();
-    $('td#group_type-block').html(emailList.replace(/&nbsp;/gi,''));
-  }
-
   //5855 help text tweaks
   $('div.help a.helpicon').remove();
   if ($('.nyss-groups-help').length === 0) {
