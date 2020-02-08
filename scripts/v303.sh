@@ -28,8 +28,14 @@ if ! $readConfig --instance $instance --quiet; then
   exit 1
 fi
 
-echo "running drupal db upgrade..."
+echo "running drupal db upgrade"
 $drush $instance updb -y -q
+
+echo "uninstall civicrm_error module"
+$drush $instance pmu civicrm_error -y -q
+
+echo "$prog: install reporterror extension"
+$drush $instance cvapi extension.install key=ca.bidon.reporterror --quiet
 
 echo "$prog: #13255 disable access control group type"
 sql="
