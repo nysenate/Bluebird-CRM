@@ -28,6 +28,9 @@ if ! $readConfig --instance $instance --quiet; then
   exit 1
 fi
 
+echo "running drupal db upgrade..."
+$drush $instance updb -y -q
+
 echo "$prog: #13255 disable access control group type"
 sql="
   UPDATE civicrm_option_value
