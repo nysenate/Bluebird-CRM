@@ -476,9 +476,13 @@ function mail_civicrm_links($op, $objectName, $objectId, &$links, &$mask, &$valu
       }
     }
 
-    //if user does not have a mailing perm, hide all links
+    //13174 if user does not have a mailing perm, hide mailing report link
     if (!$viewPerm) {
-      $links = [];
+      foreach ($links as $k => $link) {
+        if ($link['name'] == 'Mailing Report') {
+          unset($links[$k]);
+        }
+      }
     }
   }
 }
@@ -1011,17 +1015,32 @@ function mail_civicrm_permission_check($permission, &$granted) {
   /*Civi::log()->debug('mail_civicrm_permission_check', [
     '$permission' => $permission,
     '$granted' => $granted,
+    'current_path' => current_path(),
   ]);*/
+
+  //current_path() is not available via the CLI; we don't need the permission checks
+  //in that context anyway, so simply return early
+  if (!function_exists('current_path') || !function_exists('user_access')) {
+    return;
+  }
 
   //13174 grant access to mailing tab if user has any of the mailing perms
   if ($permission == 'access CiviMail') {
     if (current_path() == 'civicrm/contact/view' &&
-      CRM_Core_Permission::check("view all contacts")
+      user_access("view all contacts")
     ) {
       $granted = TRUE;
     }
   }
 
+  //13174 view email content
+  if ($permission == 'view public CiviMail content') {
+    if (current_path() == 'civicrm/mailing/view' &&
+      user_access("view all contacts")
+    ) {
+      $granted = TRUE;
+    }
+  }
 }
 
 //NYSS 4870

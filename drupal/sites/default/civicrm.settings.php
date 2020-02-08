@@ -90,6 +90,7 @@ $prefsMail = &$civicrm_setting['Mailing Preferences'];
 $prefsMap = &$civicrm_setting['Map Preferences'];
 $prefsSearch = &$civicrm_setting['Search Preferences'];
 $prefsUrl = &$civicrm_setting['URL Preferences'];
+$prefsReportError = &$civicrm_setting['reporterror'];
 
 // Core settings, from Core.setting.php
 // contact_view_options, contact_edit_options
@@ -280,6 +281,13 @@ $prefsUrl['imageUploadURL'] = "data/$datadirname/pubfiles";
 // customCSSURL
 $prefsUrl['extensionsURL'] = 'sites/all/ext';
 
+// Report Error extension settings
+$prefsReportError['reporterror_mailto'] = 'zalewski@nysenate.gov,dev+nyss@lcdservices.biz';
+$prefsReportError['reporterror_show_full_backtrace'] = TRUE;
+$prefsReportError['reporterror_show_post_data'] = TRUE;
+$prefsReportError['reporterror_smartgroups_autodisable'] = TRUE;
+$prefsReportError['reporterror_sendreport_profile'] = TRUE;
+$prefsReportError['reporterror_handle_profile'] = TRUE;
 
 if (isset($bbcfg['xhprof.profile']) && $bbcfg['xhprof.profile']) {
   function xhprof_shutdown_func($source, $run_id = null) {

@@ -1,24 +1,16 @@
 <?php
-// This file declares an Angular module which can be autoloaded
-// in CiviCRM. See also:
-// http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_angularModules
+// Declare contactlayout angular module
 
-return array (
-  'js' => 
-  array (
-    0 => 'ang/contactlayout.js',
-    1 => 'ang/contactlayout/*.js',
-    2 => 'ang/contactlayout/*/*.js',
-  ),
-  'css' => 
-  array (
-    0 => 'ang/contactlayout.css',
-  ),
-  'partials' => 
-  array (
-    0 => 'ang/contactlayout',
-  ),
-  'settings' => 
-  array (
-  ),
-);
+return [
+  'js' => [
+    'ang/contactlayout/*.js',
+    'ang/contactlayout/*/*.js',
+  ],
+  'css' => [
+    'ang/contactlayout.css',
+  ],
+  'partials' => [
+    'ang/contactlayout',
+  ],
+  'requires' => ['crmUi', 'crmUtil', 'ngRoute', 'ui.sortable', 'api4'],
+];

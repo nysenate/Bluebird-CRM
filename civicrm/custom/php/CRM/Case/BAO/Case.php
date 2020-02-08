@@ -974,8 +974,9 @@ SELECT civicrm_case.id, case_status.label AS case_status, status_id, civicrm_cas
     $sortBy = CRM_Utils_Array::value('sortBy', $params);
     if (!$sortBy) {
       // CRM-5081 - added id to act like creation date
+      //NYSS 13263 set different default order by
       $orderBy = "
-         ORDER BY overdue_date ASC, display_date DESC, weight DESC";
+         ORDER BY ca.activity_date_time DESC";
     }
     else {
       $sortBy = CRM_Utils_Type::escape($sortBy, 'String');

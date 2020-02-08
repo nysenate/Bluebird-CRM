@@ -1,0 +1,14 @@
+.page-civicrm-backup .crm-content-block {
+  background: #fff;
+  border-radius: 2px;
+  box-shadow: 0 3px 18px 0 rgba(48, 40, 40, 0.25);
+}
+.page-civicrm-backup #crm-main-content-wrapper .action-link {
+  margin: 0;
+  padding: 20px;
+}
+.page-civicrm-backup .crm-container .crm-content-block .backup-listing th,
+.page-civicrm-backup .crm-container .crm-content-block .backup-listing td {
+  padding: 8px 12px;
+  text-transform: unset;
+}

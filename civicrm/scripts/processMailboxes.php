@@ -14,6 +14,7 @@
 //                     - added --recheck-unmatched command line argument
 //                     - added more default value constants
 // Revised: 2019-04-17 - changed mangleHTML() to renderAsHtml()
+// Revised: 2020-01-30 - must bootstrap Drupal now
 //
 
 // Version number, used for debugging
@@ -25,7 +26,8 @@ define('DEFAULT_IMAP_PORT', 143);
 define('DEFAULT_IMAP_FLAGS', '/imap/notls');
 define('DEFAULT_IMAP_MAILBOX', 'INBOX');
 define('DEFAULT_IMAP_ARCHIVEBOX', 'Archive');
-define('DEFAULT_IMAP_PROCESS_UNREAD_ONLY', false);
+define('DEFAULT_IMAP_VALID_SENDERS', false);
+define('DEFAULT_IMAP_ACTIVITY_STATUS', 'Completed');
 define('DEFAULT_IMAP_NO_ARCHIVE', false);
 define('DEFAULT_IMAP_NO_EMAIL', false);
 define('DEFAULT_IMAP_RECHECK', false);
@@ -38,7 +40,7 @@ define('IMAP_CMD_DELETE', 3);
 define('MAX_ATTACHMENT_SIZE', 2097152);
 
 // Allowed file extensions for "application" file type.
-define('ATTACHMENT_FILE_EXTS', 'pdf|txt|text|rtf|odt|doc|ppt|csv|doc|docx|xls');
+define('ATTACHMENT_FILE_EXT_REGEX', 'pdf|te?xt|rtf|odt|docx?|xlsx?|ppt|csv');
 
 // Status codes for the nyss_inbox_messages table.
 define('STATUS_UNMATCHED', 0);
@@ -58,9 +60,6 @@ define('AUTH_FORWARDERS_GROUP_NAME', 'Authorized_Forwarders');
 
 error_reporting(E_ERROR | E_PARSE | E_WARNING | E_NOTICE);
 
-/* enable for debugging only */
-ini_set('error_reporting',0);
-
 if (!ini_get('date.timezone')) {
   date_default_timezone_set('America/New_York');
 }
@@ -72,10 +71,11 @@ $prog = basename(__FILE__);
 
 require_once 'script_utils.php';
 $stdusage = civicrm_script_usage();
-$usage = "[--server|-s imap_server]  [--port|-p imap_port]  [--imap-user|-u username]  [--imap-pass|-P password]  [--imap-flags|-f imap_flags]  [--cmd|-c <poll|list|delarchive>]  [--mailbox|-m name]  [--archivebox|-a name]  [--log-level|-l LEVEL] [--no-archive|-n]  [--no-email|-e]  [--recheck-unmatched|-r]";
-$shortopts = "s:p:u:P:f:c:m:a:l:ner";
-$longopts = array("server=", "port=", "imap-user=", "imap-pass=", "imap-flags=",
-                  "cmd=", "mailbox=", "archivebox=", "log-level=",
+$usage = "[--imap-user|-u username]  [--imap-pass|-P password]  [--cmd|-c <poll|list|delarchive>]  [--log-level|-l LEVEL]  [--server|-s imap_server]  [--port|-p imap_port]  [--imap-flags|-f imap_flags]  [--mailbox|-m name]  [--archivebox|-a name]  [--valid-senders|-v EMAILS]  [--default-activity-status|-d <Completed|Scheduled|Cancelled>]  [--no-archive|-n]  [--no-email|-e]  [--recheck-unmatched|-r]";
+$shortopts = "u:P:c:l:s:p:f:m:a:v:d:ner";
+$longopts = array("imap-user=", "imap-pass=", "cmd=", "log-level=",
+                  "server=", "port=", "imap-flags=", "mailbox=", "archivebox=",
+                  "valid-senders=", "default-activity-status=",
                   "no-archive", "no-email", "recheck-unmatched");
 
 $optlist = civicrm_script_init($shortopts, $longopts);
@@ -99,10 +99,6 @@ if (!empty($optlist['log-level'])) {
 
 $bbconfig = get_bluebird_instance_config();
 
-// Required Bluebird config parameters.
-$imap_validsenders = strtolower($bbconfig['imap.validsenders']);
-$imap_activity_status = $bbconfig['imap.activity.status.default'];
-
 $site = $optlist['site'];
 $cmd = $optlist['cmd'];
 $g_crm_instance = $site;
@@ -115,6 +111,8 @@ $all_params = [
   array('flags', 'imap-flags', 'imap.flags', DEFAULT_IMAP_FLAGS),
   array('mailbox', 'mailbox', 'imap.mailbox', DEFAULT_IMAP_MAILBOX),
   array('archivebox', 'archivebox', 'imap.archivebox', DEFAULT_IMAP_ARCHIVEBOX),
+  array('validsenders', 'valid-senders', 'imap.validsenders', DEFAULT_IMAP_VALID_SENDERS),
+  array('actstatus', 'default-activity-status', 'imap.activity.status.default', DEFAULT_IMAP_ACTIVITY_STATUS),
   array('noarchive', 'no-archive', null, DEFAULT_IMAP_NO_ARCHIVE),
   array('noemail', 'no-email', null, DEFAULT_IMAP_NO_EMAIL),
   array('recheck', 'recheck-unmatched', null, DEFAULT_IMAP_RECHECK)
@@ -132,8 +130,16 @@ foreach ($all_params as $param) {
 if (!empty($optlist['imap-user']) && !empty($optlist['imap-pass'])) {
   $imap_accounts = $optlist['imap-user'].'|'.$optlist['imap-pass'];
 }
-else {
+else if (isset($bbconfig['imap.accounts'])) {
   $imap_accounts = $bbconfig['imap.accounts'];
+}
+else {
+  $imap_accounts = '';
+}
+
+if (empty($imap_accounts)) {
+  echo "$prog: No IMAP accounts to process for CRM instance [$site]\n";
+  exit(1);
 }
 
 if ($cmd == 'list') {
@@ -159,14 +165,8 @@ $aActivityType = CRM_Core_PseudoConstant::activityType();
 $aActivityStatus = CRM_Core_PseudoConstant::activityStatus();
 
 $activityPriority = array_search('Normal', $aActivityPriority);
+$activityStatus = array_search($imap_params['actstatus'], $aActivityStatus);
 $activityType = array_search('Inbound Email', $aActivityType);
-
-if ($imap_activity_status == false || !isset($imap_activity_status)) {
-  $activityStatus = array_search('Completed', $aActivityStatus);
-}
-else{
-  $activityStatus = array_search($imap_activity_status, $aActivityStatus);
-}
 
 $activityDefaults = [
   'priority' => $activityPriority,
@@ -185,22 +185,17 @@ if (!is_dir($uploadInbox)) {
   chmod($uploadInbox, 0777);
 }
 
-if (empty($imap_accounts)) {
-  echo "$prog: No IMAP accounts to process for CRM instance [$site]\n";
-  exit(1);
-}
-
 $authForwarders = array(
   'emails' => getAuthorizedForwarders(),
   'patterns' => array()
 );
 
-if ($imap_validsenders) {
-  // If imap.validsenders was specified in the config file, then add those
-  // e-mail addresses to the list of authorized forwarders.  The contact ID
-  // for each of these "config file" forwarders will be 1 (Bluebird Admin).
+if ($imap_params['validsenders']) {
+  // If imap.validsenders was specified (via cli or config file), then add
+  // those e-mail addresses to the list of authorized forwarders.  The contact
+  // ID for each of these "config file" forwarders will be 1 (Bluebird Admin).
   // Patterns using wildcards '*' and '?' are acceptable from the config file.
-  $validSenders = preg_split('/[\s,]+/', $imap_validsenders, null, PREG_SPLIT_NO_EMPTY);
+  $validSenders = preg_split('/[\s,]+/', $imap_params['validsenders'], null, PREG_SPLIT_NO_EMPTY);
   foreach ($validSenders as $validSender) {
     if (strpbrk($validSender, '?*') !== false) {
       $senderType = 'patterns';
@@ -447,7 +442,7 @@ function checkImapAccount($imapSess, $params)
 function storeAttachments($imapMsg, $db, $params, $rowId)
 {
   $bSuccess = true;
-  $pattern = '/^('.ATTACHMENT_FILE_EXTS.')$/';
+  $pattern = '/^('.ATTACHMENT_FILE_EXT_REGEX.')$/';
   $uploadInbox = $params['uploadInbox'];
 
   // Load attachment data and save to database and local filesystem.
