@@ -4,6 +4,9 @@ CHANGELOG for Chain Menu Access API for Drupal 7
 
 chain_menu_access 7.x-2.x-dev:
 
+chain_menu_access 7.x-2.1 (2019-02-06):
+  - Issue #2995656 by somersoft, aburrows: Fix Function create_function() is deprecated.
+
 
 chain_menu_access 7.x-2.0 (2012-08-30):
   - Avoid a notice (no functional change).

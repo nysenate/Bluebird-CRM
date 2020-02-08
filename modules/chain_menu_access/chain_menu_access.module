@@ -56,7 +56,10 @@ function chain_menu_access_chain(array &$items, $path, $new_access_callback, arr
   }
 
   // Look through the child items for the MENU_DEFAULT_LOCAL_TASK.
-  $child_paths = array_filter(array_keys($items), create_function('$p', "return preg_match('#^$path/[^/]*$#', \$p);"));
+  $child_paths = array_filter(array_keys($items), function($p) use ($path) {
+    return preg_match("#^$path/[^/]*$#", $p);
+  });
+
   foreach ($child_paths as $child_path) {
     $child_item =& $items[$child_path];
     if (isset($child_item['type']) && $child_item['type'] == MENU_DEFAULT_LOCAL_TASK) {
