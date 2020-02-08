@@ -217,23 +217,20 @@
 
               rcpAjaxState.page_i = page_num - rcpAjaxState.page_n;
               var filterParams = {};
-              var params = {
-                page_num: rcpAjaxState.page_i
-              };
               switch(rcpAjaxState.entity) {
               case 'civicrm_group':
-                params['title'] = {"LIKE": "%" + input + "%"};
-                params['group_type'] = {"LIKE": "%2%"};
-                params['is_active'] = 1;
-                params['is_hidden'] = 0;
+                filterParams = { is_hidden: 0, is_active: 1, group_type: {"LIKE": "%2%"} };
                 break;
 
               case 'civicrm_mailing':
-                params['input'] = input;
                 filterParams = { is_hidden: 0, is_active: 1 };
                 break;
               }
-              params['params'] = filterParams;
+              var params = {
+                input: input,
+                page_num: rcpAjaxState.page_i,
+                params: filterParams,
+              };
 
               if('civicrm_mailing' === rcpAjaxState.entity) {
                 params["api.MailingRecipients.getcount"] = {};
@@ -248,8 +245,7 @@
             transport: function(params) {
               switch(rcpAjaxState.entity) {
               case 'civicrm_group':
-                CRM.api3('Group', 'get', params.data).then(params.success, params.error);
-                //console.log('params: ', params);
+                CRM.api3('Group', 'getlist', params.data).then(params.success, params.error);
                 break;
 
               case 'civicrm_mailing':
@@ -259,7 +255,6 @@
               }
             },
             results: function(data) {
-              //console.log('data: ', data);
               results = {
                 children: $.map(data.values, function(obj) {
                   if('civicrm_mailing' === rcpAjaxState.entity) {
