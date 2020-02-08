@@ -17,3 +17,8 @@ li[aria-controls=tab-tracking] {
 .crm-container .crm-hover-button[disabled] {
   cursor: pointer !important;
 }
+
+/*13201*/
+div.crmb-wizard-step button {
+  display: none !important;
+}
