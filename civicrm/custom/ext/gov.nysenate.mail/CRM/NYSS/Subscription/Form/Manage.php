@@ -48,7 +48,7 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
     }
 
     //get contact details from event queue and store in object
-    $contact = array();
+    $contact = [];
     $dao = CRM_Core_DAO::executeQuery("
       SELECT eq.email_id, eq.contact_id, c.display_name, e.email, e.on_hold, e.mailing_categories
       FROM civicrm_mailing_event_queue eq
@@ -60,14 +60,14 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
     ");
     if ( $dao->N ) {
       while ( $dao->fetch() ) {
-        $contact = array(
+        $contact = [
           'email_id' => $dao->email_id,
           'contact_id' => $dao->contact_id,
           'display_name' => $dao->display_name,
           'email' => $dao->email,
           'on_hold' => $dao->on_hold,
           'mailing_categories' => $dao->mailing_categories,
-        );
+        ];
       }
     }
 
@@ -124,13 +124,13 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
     $this->assign('contact', $this->_contact);
 
     //build form elements
-    $this->add('hidden', 'cs', $this->_cs, array('id' => 'cs'));
-    $this->add('hidden', 'eq', $this->_eq, array('id' => 'eq'));
-    $this->add('hidden', 'cid', $this->_contact['contact_id'], array('id' => 'cid'));
-    $this->add('hidden', 'emailID', $this->_contact['email_id'], array('id' => 'emailID'));
+    $this->add('hidden', 'cs', $this->_cs, ['id' => 'cs']);
+    $this->add('hidden', 'eq', $this->_eq, ['id' => 'eq']);
+    $this->add('hidden', 'cid', $this->_contact['contact_id'], ['id' => 'cid']);
+    $this->add('hidden', 'emailID', $this->_contact['email_id'], ['id' => 'emailID']);
 
     //get category options
-    $mCats = array();
+    $mCats = [];
     $opts = CRM_Core_DAO::executeQuery("
       SELECT ov.label, ov.value
       FROM civicrm_option_value ov
@@ -151,16 +151,16 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
     $this->removeElement('qfKey');
 
     $this->addButtons(
-      array(
-        array(
+      [
+        [
           'type' => 'submit',
           'name' => ts('Save Subscription Settings'),
-        ),
-      )
+        ],
+      ]
     );
 
     //set defaults; translate opt-outs to present as opt-ins
-    $defaults = array();
+    $defaults = [];
     $existingOptOuts = explode(',', $this->_contact['mailing_categories']);
     foreach ( $mCats as $mCatID => $mCatLabel ) {
       if ( !in_array($mCatID, $existingOptOuts) ) {
@@ -179,11 +179,7 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
    * @return None
    */
   public function postProcess() {
-    //CRM_Core_Error::debug_var('this', $this);
-    //CRM_Core_Error::debug_var('postProcess $_REQUEST', $_REQUEST);
-
     //get form parameters and create sql criteria
-    //$formParams = $this->controller->exportValues( $this->_name );
     $formParams = $_REQUEST;
     //CRM_Core_Error::debug_var('formParams', $formParams);
 
@@ -194,7 +190,7 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
     }
 
     //mailing categories
-    $mCats = array();
+    $mCats = [];
     $mc = 'null';
     $opts = CRM_Core_DAO::executeQuery("
       SELECT ov.label, ov.value
@@ -209,13 +205,13 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
     }
 
     //translate opt-outs to present as opt-ins
-    $unselectedOpts = array();
-    foreach ( $mCats as $mCatID => $mCatLabel ) {
-      if ( !array_key_exists($mCatID, $formParams['mailing_categories']) ) {
+    $unselectedOpts = [];
+    foreach ($mCats as $mCatID => $mCatLabel) {
+      if (!array_key_exists($mCatID, $formParams['mailing_categories'])) {
         $unselectedOpts[] = $mCatID;
       }
     }
-    if ( !empty($unselectedOpts) ) {
+    if (!empty($unselectedOpts)) {
       $mc = "'".implode(',', $unselectedOpts)."'";
     }
 
@@ -225,6 +221,8 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
     if (!empty($formParams['opt_out'])) {
       $opt = 2;
       $hold_date = "'".date('Y-m-d h:i:s')."'";
+
+      self::storeUnsubscribe($formParams['eq']);
     }
 
     //set values
@@ -245,4 +243,18 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
     CRM_Utils_System::redirect($url);
   }//postProcess
 
+  function storeUnsubscribe($eqId) {
+    try {
+      CRM_Core_DAO::executeQuery("
+      INSERT IGNORE INTO civicrm_mailing_event_unsubscribe
+      (event_queue_id, org_unsubscribe, time_stamp)
+      VALUES
+      (%1, 1, %2)
+    ", [
+        1 => [$eqId, 'Positive'],
+        2 => [date('YmdHis'), 'Timestamp'],
+      ]);
+    }
+    catch (CiviCRM_API3_Exception $e) {}
+  }
 }//end class
