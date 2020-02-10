@@ -327,3 +327,6 @@ div.nyss-buttons input {
   border: none;
   font-size: 1.4em;
 }
+div#printer-firendly {
+  display: none;
+}
