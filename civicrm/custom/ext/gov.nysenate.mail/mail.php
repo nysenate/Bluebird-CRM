@@ -826,18 +826,34 @@ function mail_civicrm_alterMailParams(&$params, $context) {
     $replyto = DEFAULT_REPLYTO;
   }
 
-  // A context of "civimail" indicates a mass email job, which requires
+  // A context of "civimail" or "flexmailer" indicates a mass email job, which requires
   // much more setup than a non-civimail message.
   if ($context == 'civimail' || $context == 'flexmailer') {
     $eventQueueID = $contactID = 0;
     $jobInfo = null;
     $extraContent = array_fill_keys($contentTypes, []);
 
+    //contact_id and event_queue_id are not included via flexmailer
+    if ((empty($params['event_queue_id']) || empty($params['contact_id'])) &&
+      $xCiviMail = CRM_Utils_Array::value('X-CiviMail-Bounce', $params)
+    ) {
+      $emailParts = explode('@', $xCiviMail);
+      $idParts = explode('.', $emailParts[0]);
+      $params['event_queue_id'] = $idParts[2];
+      try {
+        $eventQueue = civicrm_api3('MailingEventQueue', 'getsingle', ['id' => $params['event_queue_id']]);
+        $params['contact_id'] = CRM_Utils_Array::value('contact_id', $eventQueue);
+      }
+      catch (CiviCRM_API3_Exception $e) {
+        Civi::log()->debug(__FUNCTION__, ['e' => $e]);
+      }
+    }
+
     if (isset($params['event_queue_id'])) {
       $eventQueueID = $params['event_queue_id'];
       unset($params['event_queue_id']);
     }
-    else if (empty($params['is_test'])) {
+    elseif (empty($params['is_test'])) {
       CRM_Core_Error::debug_var('params: event_queue_id not found', $params);
     }
 
@@ -1445,6 +1461,7 @@ function _mail_get_browserview_clause($bbcfg) {
 function _mail_get_optout_clause($bbcfg, $cid, $qid) {
   $cs = CRM_Contact_BAO_Contact_Utils::generateChecksum($cid);
   $url = "http://pubfiles.nysenate.gov/{$bbcfg['envname']}/{$bbcfg['shortname']}/subscription/manage/$qid/$cs";
+  //Civi::log()->debug(__FUNCTION__, ['url' => $url, 'cs' => $cs]);
 
   $text = "To manage your email subscription settings or to unsubscribe, go to $url";
   $html = "<a href='{$url}' target='_blank' style='color: #386eff'>Click here</a> to manage your email subscription settings or to unsubscribe.";

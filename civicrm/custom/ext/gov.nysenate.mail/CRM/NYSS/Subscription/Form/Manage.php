@@ -188,7 +188,7 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
     //CRM_Core_Error::debug_var('formParams', $formParams);
 
     //validate checksum again
-    if ( !CRM_Contact_BAO_Contact_Utils::validChecksum($formParams['cid'], $formParams['cs']) ) {
+    if (!CRM_Contact_BAO_Contact_Utils::validChecksum($formParams['cid'], $formParams['cs'])) {
       CRM_Core_Error::debug_var('Failed attempt to validate checksum when storing subscription options. $formParams', $formParams);
       CRM_Utils_System::redirect('http://www.nysenate.gov');
     }
