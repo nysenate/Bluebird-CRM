@@ -9,6 +9,7 @@
 # Organization: New York State Senate
 # Date: 2010-04-12
 # Revised: 2010-04-30
+# Revised: 2020-02-06 - added parse_ssv()
 #
 # Parameters:
 #   string  = The string to parse.
@@ -157,16 +158,22 @@ function parse_csv_nl(string, csv, newline)
 function parse_csv(string, csv)
 {
   return parse_csv_nl(string, csv, "\n");
-} # parse_csv()  
+} # parse_csv()
 
 
 function parse_psv(string, psv)
 {
   return parse_xsv(string, psv, "|", "\"", "\"", "~", 1);
-} # parse_psv()  
+} # parse_psv()
+
+
+function parse_ssv(string, ssv)
+{
+  return parse_xsv(string, ssv, "~", "\"", "\"", "", 1);
+} # parse_ssv()
 
 
 function parse_tsv(string, tsv)
 {
   return parse_xsv(string, tsv, "	", "\"", "\"", "~", 1);
-} # parse_tsv()  
+} # parse_tsv()
