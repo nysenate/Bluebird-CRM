@@ -341,6 +341,34 @@ p.cke_notification_message {
   display: block;
   font-weight: bold;
 }
+/*civimail image properties box*/
+.page-civicrm-a table.cke_dialog > tbody > tr > td[role=presentation] {
+  padding: 0 !important;
+}
+.page-civicrm-a table.cke_dialog tr,
+.page-civicrm-a table.cke_dialog table[role=presentation] {
+  border: none !important;
+}
+.page-civicrm-a table.cke_dialog .cke_dialog_contents_body {
+  padding: 17px 10px 5px 10px !important;
+}
+.page-civicrm-a table.cke_dialog .cke_dialog_contents_body .cke_dialog_ui_vbox_child {
+  padding: 5px 0 !important;
+}
+.page-civicrm-a table.cke_dialog .cke_dialog_ui_hbox_first,
+.page-civicrm-a table.cke_dialog .cke_dialog_ui_hbox_child {
+  padding: 0 10px 0 0 !important;
+}
+.page-civicrm-a table.cke_dialog .cke_dialog_ui_hbox_last {
+  padding: 0 !important;
+}
+.page-civicrm-a table.cke_dialog .cke_dialog_footer {
+  padding: 0 !important;
+  background: #cfd1cf !important;
+}
+.page-civicrm-a table.cke_dialog .cke_dialog_ui_hbox {
+  background: transparent !important;
+}
 
 /*11725/13053 user edit form*/
 form#user-profile-form div.form-item > label {
