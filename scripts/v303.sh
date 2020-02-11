@@ -38,6 +38,12 @@ $drush $instance pm-uninstall civicrm_error -y -q
 echo "$prog: install reporterror extension"
 $drush $instance cvapi extension.install key=ca.bidon.reporterror --quiet
 
+echo "$prog: install tokens extension"
+$drush $instance cvapi extension.install key=gov.nysenate.tokens --quiet
+
+echo "$prog: run extension db upgrades"
+$drush $instance cvapi extension.upgrade --quiet
+
 echo "$prog: #13255 disable access control group type"
 sql="
   UPDATE civicrm_option_value
