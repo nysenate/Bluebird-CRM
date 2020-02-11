@@ -404,6 +404,7 @@ if (!CRM.vars) CRM.vars = {};
       return $(this).each(function() {
         $(this)
           .removeClass('crm-ajax-select')
+          .off('.crmSelect2') //NYSS 13046
           .select2('destroy');
       });
     }
@@ -438,6 +439,15 @@ if (!CRM.vars) CRM.vars = {};
           return out;
         };
       }
+
+      //NYSS 13046
+      // Titles for descriptions
+      $el.on('select2-loaded.crmSelect2', function() {
+        $('.crm-select2-row-description', '#select2-drop').each(function() {
+          $(this).closest('.select2-result-label').attr('title', $(this).text());
+        });
+      });
+
 
       // Defaults for single-selects
       if ($el.is('select:not([multiple])')) {
