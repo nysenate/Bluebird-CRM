@@ -400,6 +400,9 @@ form#user-profile-form div.nyss-roles-subsection-header {
 form#user-profile-form div.nyss-roles-description {
   font-style: italic;
 }
+.nyss-user-roles-wrapper {
+  margin-left: 20px;
+}
 .page-admin-people #page ul.action-links {
   display: none;
 }
