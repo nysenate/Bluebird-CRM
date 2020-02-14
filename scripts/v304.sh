@@ -31,6 +31,7 @@ fi
 echo "$prog: enable/disable role modules"
 $drush $instance pm-enable role_delegation -y
 $drush $instance pm-disable roleassign -y
+$drush $instance pm-uninstall roleassign -y
 
 echo "$prog: resetting roles and permissions"
 $script_dir/resetRolePerms.sh $instance
