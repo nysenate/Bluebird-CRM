@@ -31,6 +31,7 @@ CKEDITOR.editorConfig = function( config ) {
   config.pasteFromWordRemoveStyles = true;
   config.pasteFromWordRemoveFontStyles = false;
   config.pasteFromWordNumberedHeadingToList = true;
+  config.tabSpaces = 5;
 
   //NYSS additional plugins
   config.extraPlugins = 'font,aspell,justify,colorbutton,image2,lineheight';
