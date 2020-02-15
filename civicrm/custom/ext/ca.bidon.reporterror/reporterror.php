@@ -242,30 +242,37 @@ function reporterror_civicrm_generatereport($site_name, $vars, $redirect_path, $
 /**
  * Send the e-mail using CRM_Utils_Mail::send()
  */
-function reporterror_civicrm_send_mail($to, $subject, $output) {
-  $email = '';
+function reporterror_civicrm_send_mail($to, $subject, $output, $options_overrides) {
+  $email = reporterror_setting_get('reporterror_fromemail', $options_overrides);
 
-  $result = civicrm_api('OptionValue', 'get', array('option_group_name' => 'from_email_address', 'is_default' => TRUE, 'version' => 3));
+  //if email is not in the settings, use system default
+  if (empty($email)) {
+    $result = civicrm_api('OptionValue', 'get', [
+      'option_group_name' => 'from_email_address',
+      'is_default' => TRUE,
+      'version' => 3,
+    ]);
 
-  if ($result['is_error']) {
-    CRM_Core_Error::debug_log_message('Report Error Extension: failed to get the default from email address');
+    if ($result['is_error']) {
+      CRM_Core_Error::debug_log_message('Report Error Extension: failed to get the default from email address');
+      return;
+    }
+
+    $val = array_pop($result['values']);
+    $email = $val['label'];
+  }
+
+  if (!$email) {
     return;
   }
 
-  $val = array_pop($result['values']);
-  $email = $val['label'];
-
-  if (! $email) {
-    return;
-  }
-
-  $params = array(
+  $params = [
     'from' => $email,
     'toName' => 'Site Administrator',
     'toEmail' => $to,
     'subject' => $subject,
     'text' => $output,
-  );
+  ];
 
   $mail_sent = CRM_Utils_Mail::send($params);
 

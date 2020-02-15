@@ -8,6 +8,11 @@
         <div class="description">{ts domain="ca.bidon.reporterror"}This usually is your domain administrator's email. Separate multiple email addresses with a comma (','). If left empty, no e-mails will be sent.{/ts}</div></td>
     </tr>
     <tr class="crm-reporterror-form-block">
+      <td class="label">{$form.reporterror_fromemail.label}</td>
+      <td>{$form.reporterror_fromemail.html}
+        <div class="description">{ts domain="ca.bidon.reporterror"}From email address to be used when sending the report. If left empty, the system will use the default site email. <br />Include double-quotes (") around the name and angle-brackets (< >) around the email address. EXAMPLE: <em>"Error Email" &lt;error-no-reply@example.org&gt;</em>.{/ts}</div></td>
+    </tr>
+    <tr class="crm-reporterror-form-block">
       <td class="label">{$form.reporterror_show_full_backtrace.label}</td>
       <td>{$form.reporterror_show_full_backtrace.html}
         <div class="description">{ts}The full backtrace can provide more information on the variables passed to each function, but could expose more sensitive information.{/ts}</div>

@@ -283,6 +283,7 @@ $prefsUrl['extensionsURL'] = 'sites/all/ext';
 
 // Report Error extension settings
 $prefsReportError['reporterror_mailto'] = 'zalewski@nysenate.gov,dev+nyss@lcdservices.biz';
+$prefsReportError['reporterror_fromemail'] = '"Bluebird Error" <bluebird-no-reply@nysenate.gov>';
 $prefsReportError['reporterror_show_full_backtrace'] = TRUE;
 $prefsReportError['reporterror_show_post_data'] = TRUE;
 $prefsReportError['reporterror_smartgroups_autodisable'] = TRUE;

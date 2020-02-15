@@ -32,7 +32,7 @@ class CRM_ReportError_Utils {
 
       foreach ($destinations as $dest) {
         $dest = trim($dest);
-        reporterror_civicrm_send_mail($dest, $subject, $output);
+        reporterror_civicrm_send_mail($dest, $subject, $output, $options_overrides);
       }
     }
     else {
