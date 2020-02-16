@@ -41,6 +41,9 @@ ul#civicrm-menu.sm {
 ul#civicrm-menu.sm ul {
   padding: 0;
 }
+.nyss-qsearch-help {
+  padding-left: 4px;
+}
 
 .page-civicrm-contact-view .crm-actions-ribbon {
   padding: 10px !important;
