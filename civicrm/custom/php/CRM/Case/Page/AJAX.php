@@ -204,6 +204,9 @@ class CRM_Case_Page_AJAX {
     $params = CRM_Core_Page_AJAX::defaultSortAndPagerParams();
     $params += CRM_Core_Page_AJAX::validateParams($requiredParameters, $optionalParameters);
 
+    //NYSS 13330 sorting by contact_id should actually be by sort_name
+    $params['sortBy'] = str_replace('contact_id', 'sort_name', $params['sortBy']);
+
     $allCases = (bool) $params['all'];
 
     $cases = CRM_Case_BAO_Case::getCases($allCases, $params);
