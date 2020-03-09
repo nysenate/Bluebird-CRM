@@ -10,17 +10,10 @@ CRM.$(function($) {
 
     var iframeObj = $('iframe[crm-ui-iframe="model.body_html"]');
     if (iframeObj.length) {
-      var hIframe = iframeObj.contents().find('body').height();
-      //console.log('hIframe: ', hIframe);
-      var hParent = $('div#crm-container').height();
-      //console.log('hParent: ', hParent);
+      var h = $('div#crm-container').height();
+      //console.log('h: ', h);
 
-      //use the lesser of the heights (iframe, parent region) less 100px
-      var h = hIframe;
-      if (hParent < hIframe) {
-        h = hParent;
-      }
-      h = h - 100;
+      h = h - 120;
       iframeObj.height(h + 'px');
 
       //move location of modal
