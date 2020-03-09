@@ -22,3 +22,9 @@ li[aria-controls=tab-tracking] {
 div.crmb-wizard-step button {
   display: none !important;
 }
+
+.crm-container.ui-dialog .ui-dialog-content {
+  max-height: -moz-calc(100vh - 100px) !important;
+  max-height: -webkit-calc(100vh - 100px) !important;
+  max-height: calc(100vh - 100px) !important;
+}

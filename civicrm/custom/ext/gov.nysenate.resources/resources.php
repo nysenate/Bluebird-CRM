@@ -122,36 +122,6 @@ function resources_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
   _resources_civix_civicrm_alterSettingsFolders($metaDataFolders);
 }
 
-/**
- * Functions below this ship commented out. Uncomment as required.
- *
-
-/**
- * Implements hook_civicrm_preProcess().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_preProcess
- *
-function resources_civicrm_preProcess($formName, &$form) {
-
-} // */
-
-/**
- * Implements hook_civicrm_navigationMenu().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_navigationMenu
- *
-function resources_civicrm_navigationMenu(&$menu) {
-  _resources_civix_insert_navigation_menu($menu, NULL, array(
-    'label' => ts('The Page', array('domain' => 'gov.nysenate.resources')),
-    'name' => 'the_page',
-    'url' => 'civicrm/the-page',
-    'permission' => 'access CiviReport,access CiviContribute',
-    'operator' => 'OR',
-    'separator' => 0,
-  ));
-  _resources_civix_navigationMenu($menu);
-} // */
-
 function resources_civicrm_coreResourceList(&$list, $region) {
   /*Civi::log()->debug('resource_civicrm_coreResourceList', array(
     'list' => $list,
@@ -167,6 +137,7 @@ function resources_civicrm_coreResourceList(&$list, $region) {
   Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/jquery-fieldselection.js', 10, 'html-header');
 
   Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/jobId.js');
+  Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/menuBar.js');
 
   //implement coreResourceList to define location of custom ckeditor config file
   $extPath = Civi::resources()->getUrl('gov.nysenate.resources');

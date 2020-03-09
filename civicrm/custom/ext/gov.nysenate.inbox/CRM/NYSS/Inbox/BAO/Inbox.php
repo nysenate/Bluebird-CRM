@@ -366,14 +366,16 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     }
 
     $sql = "
-      SELECT SQL_CALC_FOUND_ROWS im.id, im.sender_name,
+      SELECT SQL_CALC_FOUND_ROWS im.id, TRIM(im.sender_name) sender_name,
         im.sender_email, im.subject, im.forwarder, im.updated_date,
-        im.email_date, im.matcher, imm.matched_id, mc.display_name matcher_name,
+        im.email_date, im.matcher, imm.matched_id, imm_contact.sort_name matched_sender_name, mc.display_name matcher_name,
         IFNULL(count(ia.file_name), '0') as attachments,
         count(e.id) AS email_count
       FROM nyss_inbox_messages im
       LEFT JOIN nyss_inbox_messages_matched imm 
         ON im.id = imm.row_id
+      LEFT JOIN civicrm_contact imm_contact
+        ON imm.matched_id = imm_contact.id
       LEFT JOIN (
           SELECT civicrm_email.id, email
           FROM civicrm_email
@@ -442,17 +444,10 @@ class CRM_NYSS_Inbox_BAO_Inbox {
               $matchTypeText = 'A';
               $matchString = 'Automatically matched';
             }
-            try {
-              $matchedName = civicrm_api3('contact', 'getvalue', [
-                'id' => $dao->matched_id,
-                'return' => 'sort_name',
-              ]);
-            }
-            catch (CiviCRM_API3_Exception $e) {
-            }
+
             $matchedUrl = CRM_Utils_System::url('civicrm/contact/view',
               "reset=1&cid={$dao->matched_id}");
-            $msg['sender_name'] = "<a href='{$matchedUrl}'>{$matchedName}</a>
+            $msg['matched_sender_name'] = "<a href='{$matchedUrl}'>{$dao->matched_sender_name}</a>
               <span class='matchbubble {$matchTypeCSS}' title='This email was {$matchString}'>{$matchTypeText}</span>";
             break;
 

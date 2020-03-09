@@ -25,6 +25,7 @@ class CRM_ReportError_Admin_Form_Settings extends CRM_Admin_Form_Setting {
     'reporterror_gelf_enable' => CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
     'reporterror_gelf_hostname' => CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
     'reporterror_gelf_port' => CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
+    'reporterror_fromemail' => CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
   ];
 
   /**
@@ -39,6 +40,11 @@ class CRM_ReportError_Admin_Form_Settings extends CRM_Admin_Form_Setting {
     $this->add('text', 'reporterror_mailto',
       E::ts('Error Report Recipient'),
       CRM_Utils_Array::value('mailto', $this->_values),
+      FALSE);
+
+    $this->add('text', 'reporterror_fromemail',
+      E::ts('Error Report From Email'),
+      ['class' => 'huge'],
       FALSE);
 
     $this->addYesNo('reporterror_show_full_backtrace', E::ts('Display a full backtrace in e-mails?'));
@@ -154,6 +160,26 @@ class CRM_ReportError_Admin_Form_Settings extends CRM_Admin_Form_Setting {
         'name' => ts('Cancel'),
       ),
     ]);
+
+    $this->addFormRule(['CRM_ReportError_Admin_Form_Settings', 'formRule'], $this);
+  }
+
+  public static function formRule($fields, $files, $self) {
+    $errors = [];
+
+    if (!empty($fromNameEmail = CRM_Utils_Array::value('reporterror_fromemail', $fields))) {
+      $fromEmail = CRM_Utils_Mail::pluckEmailFromHeader($fromNameEmail);
+      if (!CRM_Utils_Rule::email($fromEmail)) {
+        $errors['reporterror_fromemail'] = ts('Please enter a valid email address.');
+      }
+
+      $fromName = explode('"', $fromNameEmail);
+      if (empty($fromName[1]) || count($fromName) != 3) {
+        $errors['reporterror_fromemail'] = ts('Please follow the proper format for From Email Address');
+      }
+    }
+
+    return $errors;
   }
 
   /**
@@ -168,6 +194,11 @@ class CRM_ReportError_Admin_Form_Settings extends CRM_Admin_Form_Setting {
 
     foreach ($this->_settings as $setting => $group) {
       $value = $values[$setting];
+
+      if ($setting == 'reporterror_fromemail') {
+        $value = html_entity_decode($value);
+      }
+
       Civi::settings()->set($setting, $value);
     }
 

@@ -20,17 +20,17 @@ class CRM_NYSS_Inbox_Page_Matched extends CRM_Core_Page {
   static function getMatched() {
     //Civi::log()->debug('getMatched', array('$_GET' => $_GET));
 
-    $requiredParameters = array();
-    $optionalParameters = array(
+    $requiredParameters = [];
+    $optionalParameters = [
       'range' => 'Integer',
       'term' => 'String',
-    );
+    ];
     $params = CRM_Core_Page_AJAX::defaultSortAndPagerParams();
     $params += CRM_Core_Page_AJAX::validateParams($requiredParameters, $optionalParameters);
 
     //get matched records
     $matched = CRM_NYSS_Inbox_BAO_Inbox::getMessages($params, 'matched');
-    /*Civi::log()->debug('getMatched', array('matched' => $matched));*/
+    //Civi::log()->debug('getMatched', ['params' => $params, 'matched' => $matched]);
 
     CRM_Utils_JSON::output($matched);
   }

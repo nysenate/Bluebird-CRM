@@ -161,8 +161,9 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
         CRM_Utils_System::permissionDenied();
         CRM_Utils_System::civiExit();
       }
+      //NYSS fatal error when contactType missing; don't throw a fatal error; rely on the statusBounce;
       $this->_contactType = CRM_Utils_Request::retrieve('ct', 'String',
-        $this, TRUE, NULL, 'REQUEST'
+        $this, FALSE, NULL, 'REQUEST'
       );
       if (!in_array($this->_contactType,
         ['Individual', 'Household', 'Organization']

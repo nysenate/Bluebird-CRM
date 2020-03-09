@@ -232,4 +232,17 @@ return [
     'description' => 'Gelf server (Graylog2 or Logstash) server port (ex: 12201)',
     'help_text' => '',
   ],
+  'reporterror_fromemail' => [
+    'group_name' => 'domain',
+    'group' => 'reporterror',
+    'name' => 'reporterror_fromemail',
+    'type' => 'String',
+    'html_type' => 'text',
+    'default' => '',
+    'add' => '3.3',
+    'is_domain' => 1,
+    'is_contact' => 0,
+    'description' => 'From email name. If left empty, the site default from email will be used.',
+    'help_text' => 'Use the format: "From Name" <info@example.org>',
+  ],
 ];

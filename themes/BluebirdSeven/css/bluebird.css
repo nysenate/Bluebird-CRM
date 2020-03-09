@@ -17,6 +17,11 @@ body.page-civicrm.admin-menu.adminimal-menu:before {
   background: none !important;
 }
 
+/*13339 increase dialog z-index to overlap menu bar*/
+.crm-container.ui-dialog {
+  z-index: 100000 !important;
+}
+
 /*no user logged in page*/
 body.user-no-roles {
   background-color: #C9DBD9;
@@ -40,6 +45,10 @@ ul#civicrm-menu.sm {
 }
 ul#civicrm-menu.sm ul {
   padding: 0;
+}
+.nyss-qsearch-help {
+  padding-left: 4px;
+  color: #0071bd;
 }
 
 .page-civicrm-contact-view .crm-actions-ribbon {
@@ -399,6 +408,9 @@ form#user-profile-form div.nyss-roles-subsection-header {
 }
 form#user-profile-form div.nyss-roles-description {
   font-style: italic;
+}
+.nyss-user-roles-wrapper {
+  margin-left: 20px;
 }
 .page-admin-people #page ul.action-links {
   display: none;

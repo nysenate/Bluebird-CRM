@@ -2,20 +2,20 @@
 
 function nyss_civihooks_menu()
 {
-  $items = array();
-  $items['nyss_getfile'] = array(
+  $items = [];
+  $items['nyss_getfile'] = [
     'title' => t('NYSS Retrieve file'),
     'page callback' => 'nyss_civihooks_getfile',
-    'access arguments' => array('export print production files'),
+    'access arguments' => ['export print production files'],
     'type' => MENU_SUGGESTED_ITEM,
-  );
+  ];
   return $items;
 } // nyss_civihooks_menu()
 
 
 function nyss_civihooks_menu_alter(&$items) {
   //5253
-  $items['admin/user/user/create']['access arguments'] = array('create users');
+  $items['admin/user/user/create']['access arguments'] = ['create users'];
 
   //7264 remove view tab
   $items['user/%']['type'] = MENU_CALLBACK;
