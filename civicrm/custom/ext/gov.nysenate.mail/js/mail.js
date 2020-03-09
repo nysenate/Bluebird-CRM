@@ -17,7 +17,7 @@ CRM.$(function($) {
       iframeObj.height(h + 'px');
 
       //move location of modal
-      $('div.ui-dialog').css('top', '410px');
+      $('div.ui-dialog').css('top', '55px');
 
       clearInterval(checkExist);
     }
