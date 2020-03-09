@@ -153,7 +153,10 @@ function mail_civicrm_alterAngular(\Civi\Angular\Manager $angular) {
 }
 
 function mail_civicrm_pageRun(&$page) {
-  //Civi::log()->debug('mail_civicrm_pageRun', array('page' => $page));
+  Civi::log()->debug(__FUNCTION__, [
+    'page' => $page,
+    '$_GET' => $_GET,
+  ]);
 
   //11038
   if (is_a($page, 'Civi\Angular\Page\Main')) {

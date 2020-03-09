@@ -17,3 +17,9 @@ li[aria-controls=tab-tracking] {
 .crm-container .crm-hover-button[disabled] {
   cursor: pointer !important;
 }
+
+.crm-container.ui-dialog .ui-dialog-content {
+  max-height: -moz-calc(100vh - 100px) !important;
+  max-height: -webkit-calc(100vh - 100px) !important;
+  max-height: calc(100vh - 100px) !important;
+}

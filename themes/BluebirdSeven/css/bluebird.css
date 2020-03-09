@@ -17,6 +17,11 @@ body.page-civicrm.admin-menu.adminimal-menu:before {
   background: none !important;
 }
 
+/*13339 increase dialog z-index to overlap menu bar*/
+.crm-container.ui-dialog {
+  z-index: 100000 !important;
+}
+
 /*no user logged in page*/
 body.user-no-roles {
   background-color: #C9DBD9;
