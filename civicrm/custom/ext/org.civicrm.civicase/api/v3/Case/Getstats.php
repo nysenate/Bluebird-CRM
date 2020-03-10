@@ -37,11 +37,12 @@ function civicrm_api3_case_getstats($params) {
   }
   // Filter out deleted contacts
   $query->where("a.id IN (SELECT case_id FROM civicrm_case_contact ccc, civicrm_contact cc WHERE ccc.contact_id = cc.id AND cc.is_deleted = 0)");
+  $query->where("a.case_type_id IN (SELECT id FROM civicrm_case_type WHERE is_active = 1)");
   $isDeleted = (int) CRM_Utils_Array::value('is_deleted', $params, 0);
   $query->where('a.is_deleted = ' . $isDeleted);
 
   $result = $query->execute()->fetchAll();
-  $caseTypes = civicrm_api3('CaseType', 'get', array('options' => array('limit' => 0), 'return' => 'id'));
+  $caseTypes = civicrm_api3('CaseType', 'get', array('options' => array('limit' => 0), 'return' => 'id', 'is_active' => 1));
   $tabulated = array_fill_keys(array_keys($caseTypes['values']), array());
   $tabulated['all'] = array();
   foreach ($result as $row) {

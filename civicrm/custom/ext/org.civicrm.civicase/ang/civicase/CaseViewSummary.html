@@ -2,7 +2,7 @@
   <div class="row civicase-summary-top-outer">
     <div class="civicase-case-subject col-md-6">
       <label class="civicase-case-subject-label">Subject: </label>
-      <p crm-editable="item" data-field="subject" data-type="textarea" crm-form-success="onChangeSubject($data)"></p>
+      <p crm-editable="item" data-field="subject" data-type="text" crm-form-success="onChangeSubject($data)"></p>
       <div class="case-custom-data-first" ng-repeat="(index, customGroup) in item.customData" ng-if="!index" ng-include="'~/civicase/CaseViewCustomData.html'"></div>
     </div>
     <div class="civicase-view-next-activities col-md-6">

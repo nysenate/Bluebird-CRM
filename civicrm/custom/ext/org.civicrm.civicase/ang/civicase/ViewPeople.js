@@ -62,7 +62,7 @@
       // get relationship descriptions
       if(item["api.Relationship.get"]) {
         _.each(item["api.Relationship.get"].values, function (relationship) {
-          relDesc[relationship.contact_id_b + '_' + relationship.relationship_type_id] = relationship['description'] ? relationship['description'] : '';
+          relDesc[relationship.contact_id_b + '_' + relationship.relationship_type_id] = relationship.description || '';
         });
       }
       _.each(item.contacts, function (contact) {
@@ -86,7 +86,7 @@
       });
       _.each(caseRoles, function (role, index) {
         if(role && role.role != 'Client' && (role.contact_id + '_' + role.relationship_type_id in relDesc)) {
-          caseRoles[index]['desc'] = relDesc[role.contact_id + '_' + role.relationship_type_id];
+          caseRoles[index].desc = relDesc[role.contact_id + '_' + role.relationship_type_id];
         }
       });
       $scope.rolesCount = caseRoles.length;
@@ -116,7 +116,7 @@
     };
 
     $scope.assignRole = function(role, replace) {
-      var message = '<input name="caseRoleSelector" placeholder="' + ts('Select Coantact') + '" />';
+      var message = '<input name="caseRoleSelector" placeholder="' + ts('Select Contact') + '" />';
       if(role.role != 'Client') {
         message = message + '<br/><textarea rows="3" cols="35" name="description" class="crm-form-textarea" style="margin-top: 10px;padding-left: 10px;border-color: #C2CFDE;color: #9494A4;" placeholder="Description"></textarea>';
       }
@@ -137,7 +137,7 @@
           var newContact = $('[name=caseRoleSelector]', this).select2('data').extra.display_name;
           // Add case role
           if (role.relationship_type_id) {
-            params = {
+            var params = {
               relationship_type_id: role.relationship_type_id,
               start_date: 'now',
               contact_id_b: val,
@@ -145,7 +145,7 @@
               description: desc
             };
             _.each(item.client, function (client) {
-              params['contact_id_a'] = client.contact_id;
+              params.contact_id_a = client.contact_id;
               apiCalls.push(['Relationship', 'create', params]);
             });
           }

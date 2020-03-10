@@ -32,6 +32,7 @@ function civicrm_api3_case_gettypestats($params) {
   // Fetch metadata (to help with denormalization).
   $caseTypes = civicrm_api3('CaseType', 'get', array(
     'options' => array('limit' => 0),
+    'is_active' => 1,
     'return' => 'title',
   ));
   $caseStatuses = civicrm_api3('OptionValue', 'get', array(
@@ -45,6 +46,7 @@ function civicrm_api3_case_gettypestats($params) {
   $query = CRM_Utils_SQL_Select::from('civicrm_case a');
   $query->select(array('a.case_type_id as case_type_id, a.status_id as status_id, COUNT(a.id) as count'));
   $query->select('avg(datediff(coalesce(a.end_date, date(now())), a.start_date)) AS average_duration');
+  $query->where("a.case_type_id IN (SELECT id FROM civicrm_case_type WHERE is_active = 1)");
   if (!empty($params['my_cases'])) {
     \Civi\CCase\Utils::joinOnManager($query);
     $query->where('manager.id = ' . CRM_Core_Session::getLoggedInContactID());
