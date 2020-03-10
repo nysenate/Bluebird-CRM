@@ -8,11 +8,6 @@ li[aria-controls=tab-tracking] {
   display: none;
 }
 
-/*13021*/
-.crm-container.ui-dialog .ui-dialog-content {
-  height: 90% !important;
-}
-
 /*13116*/
 .crm-container .crm-hover-button[disabled] {
   cursor: pointer !important;
@@ -21,10 +16,4 @@ li[aria-controls=tab-tracking] {
 /*13201*/
 div.crmb-wizard-step button {
   display: none !important;
-}
-
-.crm-container.ui-dialog .ui-dialog-content {
-  max-height: -moz-calc(100vh - 100px) !important;
-  max-height: -webkit-calc(100vh - 100px) !important;
-  max-height: calc(100vh - 100px) !important;
 }
