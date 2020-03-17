@@ -332,9 +332,9 @@ class CRM_Civicase_Upgrader extends CRM_Civicase_Upgrader_Base {
    * Re-enable the extension's parts.
    */
   public function enable() {
-    $this->swapCaseMenuItems();
+    //$this->swapCaseMenuItems();
 
-    $this->toggleNav('Manage Cases', TRUE);
+    //$this->toggleNav('Manage Cases', TRUE);
   }
 
   /**
