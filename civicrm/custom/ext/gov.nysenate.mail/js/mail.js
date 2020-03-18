@@ -1,32 +1,49 @@
 CRM.$(function($) {
-  //13339 adjust iframe height/location
-  var hash = window.location.hash;
+  $(document).ready(function() {
+    var checkExists;
 
-  var checkExist = setInterval(function () {
-    //if this is not a mailing page, clear interval/exit now
-    if (hash.indexOf('mailing') === 0) {
-      clearInterval(checkExist);
+    //readjust iframe size
+    function testPreview(checkExists) {
+      //13339 adjust iframe height/location
+      checkExists = setInterval(function () {
+        var iframe = $('iframe[crm-ui-iframe="model.body_html"]');
+        if (iframe.length) {
+          var h = $(window).height();
+          h = h * 0.8;
+          iframe.height(h);
+
+          //move location of modal
+          $('div.ui-dialog').css('top', '25px').css('position', 'fixed');
+
+          clearInterval(checkExists);
+        }
+      }, 100); // check every 100ms
     }
 
-    var iframeObj = $('iframe[crm-ui-iframe="model.body_html"]');
-    if (iframeObj.length) {
-      var hIframe = iframeObj.contents().find('body').height();
-      //console.log('hIframe: ', hIframe);
-      var hParent = $('div#crm-container').height();
-      //console.log('hParent: ', hParent);
+    //check if this is mailing; check that preview link is present; trigger iframe resize
+    if (window.location.hash.indexOf('mailing') !== 0) {
+      var checkPreview = setInterval(function () {
+        var prevA = $('div.preview-popup a');
+        var prevB = $('div.form-group button.btn-primary');
 
-      //use the lesser of the heights (iframe, parent region) less 100px
-      var h = hIframe;
-      if (hParent < hIframe) {
-        h = hParent;
-      }
-      h = h - 100;
-      iframeObj.height(h + 'px');
+        //legacy
+        if (prevA.length > 0) {
+          prevA.click(function() {
+            testPreview(checkExists);
+          });
 
-      //move location of modal
-      $('div.ui-dialog').css('top', '410px');
+          clearInterval(checkPreview);
+        }
 
-      clearInterval(checkExist);
+        //mosaico
+        if (prevB.length > 0) {
+          prevB.click(function() {
+            testPreview(checkExists);
+          });
+
+          clearInterval(checkPreview);
+        }
+      }, 100);
     }
-  }, 100); // check every 100ms
+  });
 });
