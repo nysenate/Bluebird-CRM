@@ -23,3 +23,9 @@ li[aria-controls=tab-tracking] {
   max-height: -webkit-calc(100vh - 100px) !important;
   max-height: calc(100vh - 100px) !important;
 }
+
+/*13339*/
+body.ui-dialog-open {
+  position: fixed;
+  width: 100%;
+}

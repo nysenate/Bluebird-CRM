@@ -2,7 +2,7 @@ CRM.$(function($) {
   $(document).ready(function() {
     var checkExists;
 
-    //readjust iframe size
+    //13339 readjust iframe size
     function testPreview(checkExists) {
       //13339 adjust iframe height/location
       checkExists = setInterval(function () {
@@ -20,7 +20,7 @@ CRM.$(function($) {
       }, 100); // check every 100ms
     }
 
-    //check if this is mailing; check that preview link is present; trigger iframe resize
+    //13339 check if this is mailing; check that preview link is present; trigger iframe resize
     if (window.location.hash.indexOf('mailing') !== 0) {
       var checkPreview = setInterval(function () {
         var prevA = $('div.preview-popup a');
