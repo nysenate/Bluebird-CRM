@@ -12,8 +12,11 @@ CRM.$(function($) {
           h = h * 0.8;
           iframe.height(h);
 
-          //move location of modal
-          $('div.ui-dialog').css('top', '25px').css('position', 'fixed');
+          //move location of modal and fix to the window
+          $('div.ui-dialog')
+            .draggable({containment: 'window'})
+            .css('position', 'fixed')
+            .css('top', '25px');
 
           clearInterval(checkExists);
         }

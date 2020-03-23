@@ -18,14 +18,14 @@ li[aria-controls=tab-tracking] {
   cursor: pointer !important;
 }
 
-.crm-container.ui-dialog .ui-dialog-content {
-  max-height: -moz-calc(100vh - 100px) !important;
-  max-height: -webkit-calc(100vh - 100px) !important;
-  max-height: calc(100vh - 100px) !important;
-}
-
 /*13339*/
 body.ui-dialog-open {
   position: fixed;
   width: 100%;
+}
+
+.crm-container.ui-dialog .ui-dialog-content {
+  max-height: -moz-calc(100vh - 100px) !important;
+  max-height: -webkit-calc(100vh - 100px) !important;
+  max-height: calc(100vh - 100px) !important;
 }
