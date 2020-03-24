@@ -30,6 +30,22 @@ function mail_civicrm_xmlMenu(&$files) {
   _mail_civix_civicrm_xmlMenu($files);
 }
 
+function mail_civicrm_alterMenu(&$items) {
+  //https://github.com/veda-consulting/uk.co.vedaconsulting.mosaico/issues/347
+  $items['civicrm/mosaico/iframe'] = [
+    'page_callback' => 'CRM_NYSS_Page_MosaicoEditor',
+    'title' => 'Integration with Mosaico',
+    'access_arguments' => [
+      [
+        'access CiviMail',
+        'create mailings',
+        'edit message templates'
+      ],
+      'or'
+    ],
+  ];
+}
+
 /**
  * Implements hook_civicrm_install().
  *
@@ -151,6 +167,12 @@ function mail_civicrm_alterAngular(\Civi\Angular\Manager $angular) {
     ->alterHtml('~/crmMailing/BlockPreview.html', '_mail_alterMailingPreview');
   $angular->add($changeSet);
 }
+
+function mail_civicrm_mosaicoScripts(&$scripts) {
+  $extUrl = CRM_Core_Resources::singleton()->getUrl('gov.nysenate.mail');
+  $scripts[] = $extUrl.'/js/Mosaico.js';
+}
+
 
 function mail_civicrm_pageRun(&$page) {
   /*Civi::log()->debug(__FUNCTION__, [
