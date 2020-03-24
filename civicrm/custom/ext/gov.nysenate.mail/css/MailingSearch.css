@@ -1,0 +1,5 @@
+/*13305*/
+.crm-container .CRM_Mailing_Form_Search table.selector tr th,
+.crm-container .CRM_Mailing_Form_Search table.selector tr td {
+  border-right: 1px solid #efefef !important;
+}

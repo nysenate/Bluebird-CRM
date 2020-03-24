@@ -649,6 +649,8 @@ function mail_civicrm_buildForm($formName, &$form) {
   }
 
   if ($formName == 'CRM_Mailing_Form_Search') {
+    CRM_Core_Resources::singleton()->addStyleFile('gov.nysenate.mail', 'css/MailingSearch.css');
+
     $parent = $form->controller->getParent();
     $title  = $parent->getVar('_title');
 
