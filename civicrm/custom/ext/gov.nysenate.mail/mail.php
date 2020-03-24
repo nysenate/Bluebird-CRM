@@ -170,9 +170,13 @@ function mail_civicrm_alterAngular(\Civi\Angular\Manager $angular) {
 
 function mail_civicrm_mosaicoScripts(&$scripts) {
   $extUrl = CRM_Core_Resources::singleton()->getUrl('gov.nysenate.mail');
-  $scripts[] = $extUrl.'/js/Mosaico.js';
+  $scripts[] = $extUrl.'js/Mosaico.js';
 }
 
+function mail_civicrm_mosaicoStyles(&$styles) {
+  $extUrl = CRM_Core_Resources::singleton()->getUrl('gov.nysenate.mail');
+  $styles[] = $extUrl.'css/Mosaico.css';
+}
 
 function mail_civicrm_pageRun(&$page) {
   /*Civi::log()->debug(__FUNCTION__, [

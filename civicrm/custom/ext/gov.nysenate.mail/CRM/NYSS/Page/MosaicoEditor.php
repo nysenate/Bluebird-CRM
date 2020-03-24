@@ -34,7 +34,6 @@ class CRM_NYSS_Page_MosaicoEditor extends CRM_Mosaico_Page_Editor {
       );
     }
 
-    Civi::log()->debug(__FUNCTION__, ['scripts' => $scripts]);
     return $scripts;
   }
 

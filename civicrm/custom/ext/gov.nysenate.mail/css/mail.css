@@ -34,3 +34,6 @@ body.ui-dialog-open {
 a[title^="Preview a List of Recipients"] {
   font-family: Roboto, Helvetica, sans-serif !important;
 }
+.select2-drop {
+  z-index: 100000 !important;
+}
