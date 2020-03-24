@@ -29,3 +29,8 @@ body.ui-dialog-open {
   max-height: -webkit-calc(100vh - 100px) !important;
   max-height: calc(100vh - 100px) !important;
 }
+
+/*13305*/
+a[title^="Preview a List of Recipients"] {
+  font-family: Roboto, Helvetica, sans-serif !important;
+}
