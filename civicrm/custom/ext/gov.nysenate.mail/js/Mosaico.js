@@ -7,4 +7,23 @@ $(document).ready(function() {
       clearInterval(uploadExists);
     }
   }, 100);
+
+  //13305 change close button text
+  var closeExists = setInterval(function () {
+    var closeBtn = $('a[title="Save template"] span.ui-button-text');
+    if (closeBtn.length) {
+      closeBtn.text(closeBtn.text().replace('Close', 'Save and Continue'));
+      clearInterval(uploadExists);
+    }
+  }, 100);
+
+  //13305 change close button text
+  var testExists = setInterval(function () {
+    var testBtn = $('a[title="Show preview and send test"]');
+    if (testBtn.length) {
+      $('div#tooltabs ul').append(testBtn);
+      testBtn.wrap('<li></li>').removeClass().addClass('ui-tabs-anchor');
+      clearInterval(testExists);
+    }
+  }, 100);
 });
