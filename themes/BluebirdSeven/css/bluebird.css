@@ -21,6 +21,9 @@ body.page-civicrm.admin-menu.adminimal-menu:before {
 .crm-container.ui-dialog {
   z-index: 100000 !important;
 }
+.select2-drop {
+  z-index: 100000 !important;
+}
 
 /*no user logged in page*/
 body.user-no-roles {
