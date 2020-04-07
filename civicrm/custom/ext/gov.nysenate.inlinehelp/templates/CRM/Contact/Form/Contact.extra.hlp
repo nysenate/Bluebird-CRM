@@ -16,4 +16,14 @@
   <p>Department name, building name, complex, or extension of company name.</p>
 {/htxt}
 
+{htxt id="id-edit-street-elements-title" override=1}
+  Address Component Editing
+{/htxt}
 
+{htxt id="id-edit-complete-street-title" override=1}
+  Complete Address Editing
+{/htxt}
+
+{htxt id="id-sharedAddress-title" override=1}
+  {ts}Linked Address{/ts}
+{/htxt}
