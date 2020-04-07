@@ -32,3 +32,8 @@ a[title^="Preview a List of Recipients"] {
 .select2-drop {
   z-index: 100000 !important;
 }
+
+/*13304 hide advance mailing options*/
+div.crmb-wizard-step button {
+  display: none !important;
+}
