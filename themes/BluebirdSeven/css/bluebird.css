@@ -21,6 +21,9 @@ body.page-civicrm.admin-menu.adminimal-menu:before {
 .crm-container.ui-dialog {
   z-index: 100000 !important;
 }
+.select2-drop {
+  z-index: 100000 !important;
+}
 
 /*no user logged in page*/
 body.user-no-roles {
@@ -159,6 +162,15 @@ div#s2id_prefix_id {
 }
 div.subHeader {
   font-size: 1.3em;
+}
+.crm-container .CRM_Contact_Form_Contact input.big {
+  width: 10em;
+}
+div.crm-edit-address-block table.crm-edit-address-form {
+  width: 100% !important;
+}
+div.crm-edit-address-block span.is_primary-address-element {
+  margin-left: 20px;
 }
 
 /*login*/

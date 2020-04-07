@@ -1,6 +1,7 @@
 CRM.$(function($) {
   $(document).ready(function() {
     var checkExists;
+    var checkDeleteExists;
 
     //13339 readjust iframe size
     function testPreview(checkExists) {
@@ -21,6 +22,22 @@ CRM.$(function($) {
           clearInterval(checkExists);
         }
       }, 100); // check every 100ms
+    }
+
+    function deleteDraft(checkDeleteExists) {
+      checkDeleteExists = setInterval(function() {
+        var modalDelete = $('div.ui-dialog span.ui-dialog-title').text();
+
+        //legacy
+        if (modalDelete.length && modalDelete === 'Delete Draft') {
+          $('div.ui-dialog')
+            .draggable({containment: 'window'})
+            .css('position', 'fixed')
+            .css('top', '25px');
+
+          clearInterval(checkDeleteExists);
+        }
+      }, 100);
     }
 
     //13339 check if this is mailing; check that preview link is present; trigger iframe resize
@@ -45,6 +62,18 @@ CRM.$(function($) {
           });
 
           clearInterval(checkPreview);
+        }
+      }, 100);
+
+      var checkDelete = setInterval(function () {
+        var btnDel = $('button[crm-icon=fa-trash]');
+
+        if (btnDel.length) {
+          btnDel.click(function() {
+            deleteDraft(checkDeleteExists);
+          });
+
+          clearInterval(checkDelete);
         }
       }, 100);
     }

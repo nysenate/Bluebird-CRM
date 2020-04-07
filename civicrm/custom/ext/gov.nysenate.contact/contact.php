@@ -186,5 +186,7 @@ function contact_civicrm_buildForm($formName, &$form) {
         $form->removeElement($ele);
       }
     }
+
+    CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.contact', 'js/InlineAddress.js');
   }
 }

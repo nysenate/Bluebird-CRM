@@ -7,3 +7,23 @@
 <p>{ts}Contacts with 'Do not email' will be excluded from receiving CiviMail mailings, and the Send Email activity will be disabled for them.{/ts}
 <p>{ts}Contacts with 'Do not mail' will be excluded when mailing labels are created.{/ts}</p>
 {/htxt}
+
+{*NYSS 13373*}
+{htxt id="id-supplemental-address-title" override=1}
+  Mailing Address
+{/htxt}
+{htxt id="id-supplemental-address" override=1}
+  <p>Department name, building name, complex, or extension of company name.</p>
+{/htxt}
+
+{htxt id="id-edit-street-elements-title" override=1}
+  Address Component Editing
+{/htxt}
+
+{htxt id="id-edit-complete-street-title" override=1}
+  Complete Address Editing
+{/htxt}
+
+{htxt id="id-sharedAddress-title" override=1}
+  {ts}Linked Address{/ts}
+{/htxt}

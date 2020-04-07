@@ -964,7 +964,7 @@ function mail_civicrm_alterMailParams(&$params, $context) {
       }
 
       // If a SHAREON_FACEBOOK_URL token appears in the HTML content, then
-      // suppress the auto-appending of the "share on Facebook" link.
+      // suppress the auto-appending of the "Share on Facebook" link.
       $is_shareon_token = strpos($params['html'], '%SHAREON_FACEBOOK_URL%');
       if ($is_shareon_token === false &&
         !empty($bbconfig['email.extras.include_shareon'])) {
@@ -1492,7 +1492,6 @@ function _mail_get_browserview_clause($bbcfg) {
 function _mail_get_optout_clause($bbcfg, $cid, $qid) {
   $cs = CRM_Contact_BAO_Contact_Utils::generateChecksum($cid);
   $url = "http://pubfiles.nysenate.gov/{$bbcfg['envname']}/{$bbcfg['shortname']}/subscription/manage/$qid/$cs";
-  //Civi::log()->debug(__FUNCTION__, ['url' => $url, 'cs' => $cs]);
 
   $text = "To manage your email subscription settings or to unsubscribe, go to $url";
   $html = "<a href='{$url}' target='_blank' style='color: #386eff'>Click here</a> to manage your email subscription settings or to unsubscribe.";
@@ -1505,8 +1504,8 @@ function _mail_get_shareon_clause($bbcfg) {
   $fbimg = "http://pubfiles.nysenate.gov/{$bbcfg['envname']}/{$bbcfg['shortname']}/common/images/social_media/facebook_share_68x25.png";
 
   $text = 'To share this on Facebook, go to %SHAREON_FACEBOOK_URL%';
-  $html = '<a style="color:#386eff; text-decoration:underline;" href="https://www.facebook.com/sharer/sharer.php?u=%SHAREON_FACEBOOK_URL%" target="_blank">Share&nbsp;on&nbsp;Facebook.</a>';
-  return ['text' => $text, 'html' => $html];
+  $html = '<a style="color:#386eff; text-decoration:underline;" href="%SHAREON_FACEBOOK_URL%" target="_blank">Share&nbsp;on&nbsp;Facebook.</a>';
+  return array('text' => $text, 'html' => $html);
 } // _mail_get_shareon_clause()
 
 
