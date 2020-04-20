@@ -259,8 +259,11 @@ class CRM_Contact_Form_Search_Criteria {
    * @throws \CiviCRM_API3_Exception
    */
   public static function getSearchFieldMetadata() {
+    //NYSS 13372
     $fields = [
       'sort_name' => ['title' => ts('Complete OR Partial Name'), 'template_grouping' => 'basic'],
+      'first_name' => ['template_grouping' => 'basic'],
+      'last_name' => ['template_grouping' => 'basic'],
       'email' => ['title' => ts('Complete OR Partial Email'), 'entity' => 'Email', 'template_grouping' => 'basic'],
       'contact_tags' => ['name' => 'contact_tags', 'type' => CRM_Utils_Type::T_INT, 'is_pseudofield' => TRUE, 'template_grouping' => 'basic'],
     ];
@@ -268,6 +271,7 @@ class CRM_Contact_Form_Search_Criteria {
     foreach ($fields as $fieldName => $field) {
       $fields[$fieldName] = array_merge(CRM_Utils_Array::value($fieldName, $metadata, []), $field);
     }
+    Civi::log()->debug(__FUNCTION__, ['fields' => $fields]);
     return $fields;
   }
 
