@@ -5127,6 +5127,7 @@ civicrm_relationship.start_date > {$today}
     list($select, $from, $where) = $this->query(FALSE, FALSE, FALSE, $onlyDeleted);
     $select .= sprintf(", (%s) AS _wgt", $this->createSqlCase('contact_a.id', $cids));
 
+    //NYSS 13186
     //tables we must consider when appending our is_primary criteria
     $isPrimaryTables = [
       'civicrm_address',
@@ -5135,20 +5136,20 @@ civicrm_relationship.start_date > {$today}
       'civicrm_im',
     ];
 
-    $outerWhere = '(1)';
+    $innerOrder = 'ORDER BY contact_id';
     foreach ($this->_tables as $table => $dnc) {
       if (in_array($table, $isPrimaryTables)) {
         $splitTbl = explode('_', $table);
         $select .= ", {$table}.is_primary {$splitTbl[1]}_is_primary";
-        $outerWhere .= " AND ({$splitTbl[1]}_is_primary = 1 OR {$splitTbl[1]}_is_primary IS NULL)";
+        $innerOrder .= ", {$splitTbl[1]}_is_primary DESC";
       }
     }
 
     $where .= sprintf(' AND contact_a.id IN (%s)', implode(',', $cids));
-    $order = 'ORDER BY _wgt';
     $groupBy = $this->_useGroupBy ? ' GROUP BY contact_id' : '';
+    $order = 'ORDER BY _wgt';
     $limit = '';
-    $query = "SELECT * FROM ({$select} {$from} {$where}) tmp WHERE $outerWhere $groupBy $order $limit";
+    $query = "SELECT * FROM ($select $from $where $innerOrder) tmp $groupBy $order $limit";
     //Civi::log()->debug(__FUNCTION__, ['query' => $query]);
 
     $result = CRM_Core_DAO::executeQuery($query);
