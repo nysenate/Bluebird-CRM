@@ -271,7 +271,7 @@ class CRM_Contact_Form_Search_Criteria {
     foreach ($fields as $fieldName => $field) {
       $fields[$fieldName] = array_merge(CRM_Utils_Array::value($fieldName, $metadata, []), $field);
     }
-    Civi::log()->debug(__FUNCTION__, ['fields' => $fields]);
+
     return $fields;
   }
 
