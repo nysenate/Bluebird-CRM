@@ -5126,11 +5126,30 @@ civicrm_relationship.start_date > {$today}
     $onlyDeleted = in_array(['deleted_contacts', '=', '1', '0', '0'], $this->_params);
     list($select, $from, $where) = $this->query(FALSE, FALSE, FALSE, $onlyDeleted);
     $select .= sprintf(", (%s) AS _wgt", $this->createSqlCase('contact_a.id', $cids));
+
+    //tables we must consider when appending our is_primary criteria
+    $isPrimaryTables = [
+      'civicrm_address',
+      'civicrm_email',
+      'civicrm_phone',
+      'civicrm_im',
+    ];
+
+    $outerWhere = '(1)';
+    foreach ($this->_tables as $table => $dnc) {
+      if (in_array($table, $isPrimaryTables)) {
+        $splitTbl = explode('_', $table);
+        $select .= ", {$table}.is_primary {$splitTbl[1]}_is_primary";
+        $outerWhere .= " AND ({$splitTbl[1]}_is_primary = 1 OR {$splitTbl[1]}_is_primary IS NULL)";
+      }
+    }
+
     $where .= sprintf(' AND contact_a.id IN (%s)', implode(',', $cids));
     $order = 'ORDER BY _wgt';
-    $groupBy = $this->_useGroupBy ? ' GROUP BY contact_a.id' : '';
+    $groupBy = $this->_useGroupBy ? ' GROUP BY contact_id' : '';
     $limit = '';
-    $query = "$select $from $where $groupBy $order $limit";
+    $query = "SELECT * FROM ({$select} {$from} {$where}) tmp WHERE $outerWhere $groupBy $order $limit";
+    //Civi::log()->debug(__FUNCTION__, ['query' => $query]);
 
     $result = CRM_Core_DAO::executeQuery($query);
     CRM_Core_DAO::reenableFullGroupByMode();
