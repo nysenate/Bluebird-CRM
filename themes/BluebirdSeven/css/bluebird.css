@@ -12,6 +12,9 @@ body.page-civicrm.admin-menu.adminimal-menu:before {
   text-align: right;
   float: right;
 }
+a.helpicon {
+  padding-left: 4px;
+}
 
 .page-civicrm #crm-main-content-wrapper {
   background: none !important;
