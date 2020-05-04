@@ -149,7 +149,7 @@ function boe_civicrm_buildForm($formName, &$form) {
 
     $values = $form->_values;
     if (!empty($_POST)) $values = $_POST;
-    Civi::log()->debug(__FUNCTION__, ['$values' => $values]);
+    //Civi::log()->debug(__FUNCTION__, ['$values' => $values]);
 
     $locationTypes = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Address', 'location_type_id');
     $boardOfElectionId = array_search('BOE', $locationTypes);
@@ -373,8 +373,8 @@ function _boe_lockElement(&$form, $elementName) {
 }
 
 function _boe_unsetLocTypeOptions(&$form, $name, $blockId) {
-  Civi::log()->debug(__FUNCTION__, ['$name' => $name]);
-  Civi::log()->debug(__FUNCTION__, ['$blockId' => $blockId]);
+  //Civi::log()->debug(__FUNCTION__, ['$name' => $name]);
+  //Civi::log()->debug(__FUNCTION__, ['$blockId' => $blockId]);
 
   $newOptions = [];
   $elementName = "{$name}[{$blockId}][location_type_id]";
