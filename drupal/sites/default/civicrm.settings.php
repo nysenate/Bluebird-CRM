@@ -271,7 +271,7 @@ $prefsSearch['includeEmailInName'] = get_config_value($bbcfg, 'search.include_em
 // includeNickNameInName
 // includeAlphabeticalPager
 $prefsSearch['smartGroupCacheTimeout'] = 10;
-// defaultSearchProfileID
+$prefsSearch['defaultSearchProfileID'] = 11;
 $prefsSearch['searchPrimaryDetailsOnly'] = false;
 $prefsSearch['quicksearch_options'] = ['sort_name', 'first_name', 'last_name', 'email', 'phone_numeric', 'street_address', 'city', 'postal_code'];
 
