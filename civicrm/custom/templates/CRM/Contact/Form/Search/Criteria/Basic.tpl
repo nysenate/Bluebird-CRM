@@ -58,8 +58,8 @@
             $('#sortnameselect').hide();
             $('#indivfldselect').show();
             $('#sort_name').val('');
-            $('#first_name').removeClass('big').addClass('eight');
-            $('#last_name').removeClass('big').addClass('eight');
+            $('#first_name').removeClass('big').addClass('eight').attr('placeholder', ts('First Name'));
+            $('#last_name').removeClass('big').addClass('eight').attr('placeholder', ts('Last Name'));
             return false;
           }
           function showSortNameSearch() {
