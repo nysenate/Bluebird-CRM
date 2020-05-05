@@ -162,6 +162,12 @@ function mail_civicrm_alterAngular(\Civi\Angular\Manager $angular) {
     ->alterHtml('~/crmMailing/BlockReview.html', '_mail_alterMailingReview');
   $angular->add($changeSet);
 
+  //13402 adjust Mosaico mailing schedule
+  CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.mail', 'js/MosaicoReview.js');
+  $changeSet = \Civi\Angular\ChangeSet::create('modify_schedule')
+    ->alterHtml('~/crmMosaico/BlockSchedule.html', '_mail_alterMailingSchedule');
+  $angular->add($changeSet);
+
   //12136 mailing test group
   $changeSet = \Civi\Angular\ChangeSet::create('modify_preview')
     ->alterHtml('~/crmMailing/BlockPreview.html', '_mail_alterMailingPreview');
@@ -1164,6 +1170,12 @@ function _mail_alterMailingReview(phpQueryObject $doc) {
   $extDir = CRM_Core_Resources::singleton()->getPath('gov.nysenate.mail');
   $html = file_get_contents($extDir.'/html/BlockReview.html');
   $doc->find('.crm-group')->html($html);
+}
+
+function _mail_alterMailingSchedule(phpQueryObject $doc) {
+  $extDir = CRM_Core_Resources::singleton()->getPath('gov.nysenate.mail');
+  $html = file_get_contents($extDir.'/html/BlockSchedule.html');
+  $doc->find('.crmMosaico-schedule-outer')->prepend($html);
 }
 
 function _mail_alterMailingPreview(phpQueryObject $doc) {
