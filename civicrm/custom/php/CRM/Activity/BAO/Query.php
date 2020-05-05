@@ -334,19 +334,38 @@ class CRM_Activity_BAO_Query {
         );
         break;
 
+      //NYSS
       case 'activity_taglist':
+        $activityTags = CRM_Core_PseudoConstant::get('CRM_Core_DAO_EntityTag', 'tag_id', ['onlyActive' => FALSE]);
+        $tagSets = civicrm_api3('Tag', 'get', [
+          'return' => ["name", "used_for", "description", "created_id.display_name", "created_date", "is_reserved"],
+          'is_tagset' => 1,
+          'options' => ['limit' => 0],
+        ]);
+        //Civi::log()->debug(__FUNCTION__, ['$activityTags' => $activityTags, '$tagSets' => $tagSets]);
+
         $taglist = $value;
         $value = [];
-        foreach ($taglist as $val) {
-          if ($val) {
-            $val = explode(',', $val);
+        foreach ($taglist as $tagSetId => $tagIds) {
+          if (!empty($tagIds)) {
+            $tagSet = $tagSets['values'][$tagSetId]['name'];
+            $val = explode(',', $tagIds);
+            $names = [];
             foreach ($val as $tId) {
               if (is_numeric($tId)) {
-                $value[$tId] = 1;
+                $value[] = $tId;
+                $names[] = $activityTags[$tId];
               }
             }
+
+            $query->_where[$grouping][] = "civicrm_activity_tag.tag_id IN (" . implode(",", $value) . ")";
+            $query->_qill[$grouping][] = ts("{$tagSet} %1", [1 => $op]) . ' ' . implode(' ' . ts('OR') . ' ', $names);
+            $query->_tables['civicrm_activity_tag'] = $query->_whereTables['civicrm_activity_tag'] = 1;
           }
         }
+        //Civi::log()->debug(__FUNCTION__, ['value' => $value]);
+
+        break;
 
       case 'activity_tags':
         $activityTags = CRM_Core_PseudoConstant::get('CRM_Core_DAO_EntityTag', 'tag_id', ['onlyActive' => FALSE]);
