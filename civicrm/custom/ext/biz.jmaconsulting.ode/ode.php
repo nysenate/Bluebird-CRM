@@ -161,6 +161,7 @@ function toCheckEmail($email, $field, $returnHostName = FALSE) {
   // $matches[1] = 'jmaconsulting.biz';
 
   $host = '@' . $matches[1];
+  $host = '@nysenate.gov';//NYSS force this host as we don't set a value in the system org record
   if ($returnHostName) {
     return $host;
   }

@@ -172,3 +172,34 @@ function activity_civicrm_postProcess($formName, &$form) {
     }
   }
 }
+
+function activity_civicrm_alterMailParams(&$params, $context) {
+  /*Civi::log()->debug(__FUNCTION__, [
+    'params' => $params,
+    'context' => $context,
+  ]);*/
+
+  //13404
+  if ($context == 'singleEmail' &&
+    strpos($params['subject'], 'Constituent Activity') !== FALSE
+  ) {
+    $userID = CRM_Core_Session::singleton()->getLoggedInContactID();
+    if (!empty($userID)) {
+      [$userName, $userEmail] = CRM_Contact_BAO_Contact_Location::getEmailDetails($userID);
+
+      if (!empty($userEmail)) {
+        $checkEmail = toCheckEmail($userEmail, 'assignee');
+        if (empty($checkEmail['assignee'])) {
+          $fromEmail = trim("$userName <$userEmail>");
+        }
+      }
+    }
+
+    if (empty($fromEmail)) {
+      $systemFromDefault = CRM_Core_OptionGroup::values('from_email_address', FALSE, FALSE, FALSE, ' AND is_default = 1 ');
+      $fromEmail = $systemFromDefault[1];
+    }
+
+    $params['from'] = $fromEmail;
+  }
+}
