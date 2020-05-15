@@ -154,10 +154,10 @@ $prefsCore['ajaxPopupsEnabled'] = 1;
 // petition_contacts
 
 // Case settings, from Case.setting.php
-// civicaseRedactActivityEmail
-// civicaseAllowMultipleClients
-// civicaseNaturalActivityTypeSort
-$prefsCase['civicaseActivityRevisions'] = true;
+$prefsCase['civicaseRedactActivityEmail'] = 'default';
+$prefsCase['civicaseAllowMultipleClients'] = 1;
+$prefsCase['civicaseNaturalActivityTypeSort'] = 'default';
+$prefsCase['civicaseActivityRevisions'] = false;
 
 // Contribute settings, from Contribute.setting.php
 // cvv_backoffice_required
