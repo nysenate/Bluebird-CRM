@@ -3131,6 +3131,7 @@ ORDER BY civicrm_mailing.name";
           // OR
           [
             'access CiviMail',
+            'create mailings',//NYSS 13392
             'schedule mailings',
             'approve mailings',
           ],
