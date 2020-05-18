@@ -17,13 +17,17 @@ $(document).ready(function() {
     }
   }, 100);
 
-  //13305 change close button text
+  //13305 change test button text
   var testExists = setInterval(function () {
     var testBtn = $('a[title="Show preview and send test"]');
     if (testBtn.length) {
       $('div#tooltabs ul').append(testBtn);
       testBtn.wrap('<li></li>').removeClass().addClass('ui-tabs-anchor');
       clearInterval(testExists);
+
+      testBtn.click(function() {
+        console.log('test clicked');
+      });
     }
   }, 100);
 });

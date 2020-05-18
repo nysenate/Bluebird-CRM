@@ -28,12 +28,12 @@ class CRM_Mosaico_Utils {
    *   Array (string $machineName => string $label).
    */
   public static function getLayoutOptions() {
-    return array(
+    return [
       'auto' => E::ts('Automatically select a layout'),
       'crmstar-single' => E::ts('Single Page (crm-*)'),
       'bootstrap-single' => E::ts('Single Page (Bootstrap CSS)'),
       'bootstrap-wizard' => E::ts('Wizard (Bootstrap CSS)'),
-    );
+    ];
   }
 
   /**
@@ -62,11 +62,11 @@ class CRM_Mosaico_Utils {
     $layout = CRM_Core_BAO_Setting::getItem('Mosaico Preferences', 'mosaico_layout');
     $prefix = '~/crmMosaico/EditMailingCtrl';
 
-    $paths = array(
+    $paths = [
       'crmstar-single' => "$prefix/crmstar-single.html",
       'bootstrap-single' => "$prefix/bootstrap-single.html",
       'bootstrap-wizard' => "$prefix/bootstrap-wizard.html",
-    );
+    ];
 
     if (empty($layout) || $layout === 'auto') {
       return CRM_Extension_System::singleton()->getMapper()->isActiveModule('shoreditch')
@@ -137,12 +137,12 @@ class CRM_Mosaico_Utils {
   }
 
   public static function getConfig() {
-    static $mConfig = array();
+    static $mConfig = [];
 
     if (empty($mConfig)) {
       $civiConfig = CRM_Core_Config::singleton();
 
-      $mConfig = array(
+      $mConfig = [
         /* base url for image folders */
         'BASE_URL' => $civiConfig->imageUploadURL,
 
@@ -172,7 +172,7 @@ class CRM_Mosaico_Utils {
         'THUMBNAIL_HEIGHT' => 90,
 
         'MOBILE_MIN_WIDTH' => 246,
-      );
+      ];
     }
 
     return $mConfig;
@@ -187,7 +187,7 @@ class CRM_Mosaico_Utils {
 
     global $http_return_code;
 
-    $messages = array();
+    $messages = [];
     _mosaico_civicrm_check_dirs($messages);
     if (!empty($messages)) {
       CRM_Core_Error::debug_log_message('Mosaico uploader failed. Check system status for directory errors.');
@@ -195,7 +195,7 @@ class CRM_Mosaico_Utils {
       return;
     }
 
-    $files = array();
+    $files = [];
 
     if ($_SERVER["REQUEST_METHOD"] == "GET") {
       $dir = scandir($config['BASE_DIR'] . $config['UPLOADS_DIR']);
@@ -206,11 +206,11 @@ class CRM_Mosaico_Utils {
         if (is_file($file_path)) {
           $size = filesize($file_path);
 
-          $file = array(
+          $file = [
             "name" => $file_name,
             "url" => $config['BASE_URL'] . $config['UPLOADS_DIR'] . $file_name,
             "size" => $size,
-          );
+          ];
 
           if (file_exists($config['BASE_DIR'] . $config['THUMBNAILS_DIR'] . $file_name)) {
             $file["thumbnailUrl"] = $config['BASE_URL'] . $config['THUMBNAILS_URL'] . $file_name;
@@ -235,21 +235,15 @@ class CRM_Mosaico_Utils {
           if (move_uploaded_file($tmp_name, $file_path) === TRUE) {
             $size = filesize($file_path);
 
-            $image = new Imagick($file_path);
+            $thumbnail_path = $config['BASE_DIR'] . $config[ 'THUMBNAILS_DIR' ] . $file_name;
+            Civi::service('mosaico_graphics')->createResizedImage($file_path, $thumbnail_path, $config['THUMBNAIL_WIDTH'], $config['THUMBNAIL_HEIGHT']);
 
-            $image->resizeImage($config['THUMBNAIL_WIDTH'], $config['THUMBNAIL_HEIGHT'], Imagick::FILTER_LANCZOS, 1.0, TRUE);
-            // $image->writeImage( $config['BASE_DIR'] . $config[ THUMBNAILS_DIR ] . $file_name );
-            if ($f = fopen($config['BASE_DIR'] . $config['THUMBNAILS_DIR'] . $file_name, "w")) {
-              $image->writeImageFile($f);
-            }
-            $image->destroy();
-
-            $file = array(
+            $file = [
               "name" => $file_name,
               "url" => $config['BASE_URL'] . $config['UPLOADS_DIR'] . $file_name,
               "size" => $size,
               "thumbnailUrl" => $config['BASE_URL'] . $config['THUMBNAILS_URL'] . $file_name,
-            );
+            ];
 
             $files[] = $file;
           }
@@ -268,7 +262,7 @@ class CRM_Mosaico_Utils {
     header("Content-Type: application/json; charset=utf-8");
     header("Connection: close");
 
-    echo json_encode(array("files" => $files));
+    echo json_encode(["files" => $files]);
     CRM_Utils_System::civiExit();
   }
 

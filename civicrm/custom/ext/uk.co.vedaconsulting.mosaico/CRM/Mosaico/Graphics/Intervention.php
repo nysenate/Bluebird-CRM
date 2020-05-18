@@ -41,20 +41,20 @@ class CRM_Mosaico_Graphics_Intervention implements CRM_Mosaico_Graphics_Interfac
     $y = 0;
     $size = 40;
     while ($y < $height) {
-      $points = array(
+      $points = [
         ["x" => $x, "y" => $y],
         ["x" => $x + $size, "y" => $y],
         ["x" => $x + $size * 2, "y" => $y + $size],
         ["x" => $x + $size * 2, "y" => $y + $size * 2],
-      );
+      ];
       $img->polygon(self::flattenPoints($points), function ($draw) {
         $draw->background("#808080");
       });
-      $points = array(
+      $points = [
         ["x" => $x, "y" => $y + $size],
         ["x" => $x + $size, "y" => $y + $size * 2],
         ["x" => $x, "y" => $y + $size * 2],
-      );
+      ];
       $img->polygon(self::flattenPoints($points), function ($draw) {
         $draw->background("#808080");
       });

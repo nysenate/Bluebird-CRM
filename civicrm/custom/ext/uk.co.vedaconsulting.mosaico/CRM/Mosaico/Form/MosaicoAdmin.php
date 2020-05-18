@@ -9,12 +9,12 @@ use CRM_Mosaico_ExtensionUtil as E;
  */
 class CRM_Mosaico_Form_MosaicoAdmin extends CRM_Admin_Form_Setting {
 
-  protected $_settings = array(
+  protected $_settings = [
     'mosaico_layout' => 'Mosaico Preferences',
     'mosaico_graphics' => 'Mosaico Preferences',
     'mosaico_custom_templates_dir' => 'Mosaico Custom Templates Directory',
     'mosaico_custom_templates_url' => 'Mosaico Custom Templates URL'
-  );
+  ];
 
   /**
    * Build the form object.

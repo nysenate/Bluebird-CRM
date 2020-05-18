@@ -14,27 +14,26 @@ class CRM_Mosaico_Form_Task_AdhocMailingTraditional extends CRM_Contact_Form_Tas
       }
     }
     list ($groupId) = $this->createHiddenGroup();
-    $mailing = civicrm_api3('Mailing', 'create', array(
+    $mailing = civicrm_api3('Mailing', 'create', [
       'name' => "",
       'campaign_id' => NULL,
       'replyto_email' => "",
       'template_type' => $templateTypes[$tradTemplateType]['name'],
-      'template_options' => array('nonce' => 1),
+      'template_options' => ['nonce' => 1],
       'subject' => "",
       'body_html' => "",
       'body_text' => "",
-      'groups' => array(
-        'include' => array($groupId),
-        'exclude' => array(),
-        'base' => array(),
-      ),
-      'mailings' => array(
-        'include' => array(),
-        'exclude' => array(),
-      ),
-    ));
+      'groups' => [
+        'include' => [$groupId],
+        'exclude' => [],
+        'base' => [],
+      ],
+      'mailings' => [
+        'include' => [],
+        'exclude' => [],
+      ],
+    ]);
 
     CRM_Utils_System::redirect(CRM_Utils_System::url('civicrm/a/', NULL, TRUE, '/mailing/' . $mailing['id']));
   }
 }
-  

@@ -22,13 +22,13 @@ function _civicrm_api3_job_mosaico_migrate_spec(&$spec) {
  * @throws API_Exception
  */
 function civicrm_api3_job_mosaico_migrate($params) {
-  $newTpls = array();
+  $newTpls = [];
   $dao = new CRM_Mosaico_DAO_MessageTemplate();
   $dao->find();
   while ($dao->fetch()) {
     $metadata = json_decode($dao->metadata, TRUE);
 
-    $newTpl = array();
+    $newTpl = [];
     $newTpl['title'] = $dao->name;
     $newTpl['html'] = $dao->html;
     $newTpl['metadata'] = $dao->metadata;
@@ -48,7 +48,7 @@ function civicrm_api3_job_mosaico_migrate($params) {
     $newTpls[] = $newTpl;
   }
 
-  $results = array();
+  $results = [];
   foreach ($newTpls as $newTpl) {
     $result = civicrm_api3('MosaicoTemplate', 'create', $newTpl);
     $results[$result['id']] = $result['values'][$result['id']];

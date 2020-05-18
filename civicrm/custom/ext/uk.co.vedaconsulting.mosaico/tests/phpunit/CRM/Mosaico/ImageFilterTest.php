@@ -30,7 +30,7 @@ class CRM_Mosaico_ImageFilterTest extends CRM_Mosaico_TestCase implements EndToE
 
     $htmlTpl = '<p>Hello <img src="%s"> world.</p>';
 
-    $cases = array();
+    $cases = [];
 
     $cases[] = [
       $dmasterConfig,

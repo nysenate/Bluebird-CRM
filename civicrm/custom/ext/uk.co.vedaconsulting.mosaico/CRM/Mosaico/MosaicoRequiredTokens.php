@@ -16,7 +16,7 @@ use CRM_Mosaico_ExtensionUtil as E;
 class CRM_Mosaico_MosaicoRequiredTokens extends RequiredTokens {
 
   public function __construct() {
-    parent::__construct(array('mosaico'), array());
+    parent::__construct(['mosaico'], []);
   }
 
   public function getRequiredTokens() {
@@ -39,7 +39,7 @@ class CRM_Mosaico_MosaicoRequiredTokens extends RequiredTokens {
   }
 
   public function findMissingTokens($str) {
-    $content = array('body_unspecified' => $str);
+    $content = ['body_unspecified' => $str];
     _mosaico_civicrm_alterMailContent($content);
     return parent::findMissingTokens($content['body_unspecified']);
   }

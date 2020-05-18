@@ -65,18 +65,18 @@ function _civicrm_api3_mosaico_template_clone_spec(&$spec) {
  * @throws \CiviCRM_API3_Exception
  */
 function civicrm_api3_mosaico_template_clone($params) {
-  $BLACKLIST = array('id');
+  $BLACKLIST = ['id'];
 
-  $newParams = CRM_Utils_Array::subset($params, array(
+  $newParams = CRM_Utils_Array::subset($params, [
     'debug',
     'title',
     'base',
     'html',
     'metadata',
     'content',
-  ));
+  ]);
 
-  $get = civicrm_api3('MosaicoTemplate', 'getsingle', array('id' => $params['id']));
+  $get = civicrm_api3('MosaicoTemplate', 'getsingle', ['id' => $params['id']]);
   foreach ($get as $field => $value) {
     if (!isset($newParams[$field]) && !in_array($field, $BLACKLIST)) {
       $newParams[$field] = $value;

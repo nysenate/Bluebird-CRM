@@ -36,20 +36,20 @@ class CRM_Mosaico_Graphics_Imagick implements CRM_Mosaico_Graphics_Interface {
     while ($y < $height) {
       $draw->setFillColor("#808080");
 
-      $points = array(
-        array("x" => $x, "y" => $y),
-        array("x" => $x + $size, "y" => $y),
-        array("x" => $x + $size * 2, "y" => $y + $size),
-        array("x" => $x + $size * 2, "y" => $y + $size * 2),
-      );
+      $points = [
+        ["x" => $x, "y" => $y],
+        ["x" => $x + $size, "y" => $y],
+        ["x" => $x + $size * 2, "y" => $y + $size],
+        ["x" => $x + $size * 2, "y" => $y + $size * 2],
+      ];
 
       $draw->polygon($points);
 
-      $points = array(
-        array("x" => $x, "y" => $y + $size),
-        array("x" => $x + $size, "y" => $y + $size * 2),
-        array("x" => $x, "y" => $y + $size * 2),
-      );
+      $points = [
+        ["x" => $x, "y" => $y + $size],
+        ["x" => $x + $size, "y" => $y + $size * 2],
+        ["x" => $x, "y" => $y + $size * 2],
+      ];
 
       $draw->polygon($points);
 

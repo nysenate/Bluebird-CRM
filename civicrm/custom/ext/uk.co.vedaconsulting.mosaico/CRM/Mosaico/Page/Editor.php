@@ -22,7 +22,7 @@ class CRM_Mosaico_Page_Editor extends CRM_Core_Page {
     $cacheCode = CRM_Core_Resources::singleton()->getCacheCode();
     $mosaicoDistUrl = CRM_Mosaico_Utils::getMosaicoDistUrl('relative');
     $mosaicoExtUrl = CRM_Core_Resources::singleton()->getUrl('uk.co.vedaconsulting.mosaico');
-    return array(
+    return [
       "{$mosaicoDistUrl}/vendor/knockout.js?r={$cacheCode}",
       "{$mosaicoDistUrl}/vendor/jquery.min.js?r={$cacheCode}",
       "{$mosaicoDistUrl}/vendor/jquery-ui.min.js?r={$cacheCode}",
@@ -37,17 +37,17 @@ class CRM_Mosaico_Page_Editor extends CRM_Core_Page {
       "{$mosaicoDistUrl}/vendor/knockout-jqueryui.min.js?r={$cacheCode}",
       "{$mosaicoDistUrl}/vendor/tinymce.min.js?r={$cacheCode}",
       "{$mosaicoDistUrl}/mosaico.min.js?v=0.15?&={$cacheCode}",
-    );
+    ];
   }
 
   protected function getStyleUrls() {
     $cacheCode = CRM_Core_Resources::singleton()->getCacheCode();
     $mosaicoDistUrl = CRM_Mosaico_Utils::getMosaicoDistUrl('relative');
     // $mosaicoExtUrl = CRM_Core_Resources::singleton()->getUrl('uk.co.vedaconsulting.mosaico');
-    return array(
+    return [
       "{$mosaicoDistUrl}/mosaico-material.min.css?v=0.10&r={$cacheCode}",
       "{$mosaicoDistUrl}/vendor/notoregular/stylesheet.css?r={$cacheCode}",
-    );
+    ];
   }
 
 
@@ -58,53 +58,54 @@ class CRM_Mosaico_Page_Editor extends CRM_Core_Page {
    */
   protected function createMosaicoConfig() {
     $res = CRM_Core_Resources::singleton();
-    $mailTokens = civicrm_api3('Mailing', 'gettokens', array(
-      'entity' => array('contact', 'mailing'),
+    $mailTokens = civicrm_api3('Mailing', 'gettokens', [
+      'entity' => ['contact', 'mailing'],
       'sequential' => 1,
-    ));
+    ]);
 
-    $config = array(
+    $config = [
       'imgProcessorBackend' => $this->getUrl('civicrm/mosaico/img', NULL, TRUE),
       'emailProcessorBackend' => 'unused-emailProcessorBackend',
       'titleToken' => 'MOSAICO Responsive Email Designer',
-      'fileuploadConfig' => array(
+      'fileuploadConfig' => [
         'url' => $this->getUrl('civicrm/mosaico/upload', NULL, FALSE),
         'maxFileSize' => $this->getMaxFileSize(),
         // messages??
-      ),
+      ],
 
       // Note: Mosaico displays TinyMCE using two configurations.
       // "tinymceConfig": The standard/base configuration for headings, etc.
       // "tinymceConfigFull": A derivative configuration for paragraphs, etc.
       //    It extends "tinymceConfig" and adds more plugins/buttons.
       // See also: https://www.tinymce.com/docs/configure/integration-and-setup/
-      'tinymceConfig' => array(
+      'tinymceConfig' => [
         'convert_urls' => FALSE,
-        'external_plugins' => array(
+        'external_plugins' => [
           'civicrmtoken' => $res->getUrl('uk.co.vedaconsulting.mosaico', 'js/tinymce-plugins/civicrmtoken/plugin.js', 1),
-        ),
-        'plugins' => array('paste civicrmtoken'),
+        ],
+        'plugins' => ['paste civicrmtoken'],
         'toolbar1' => 'bold italic civicrmtoken',
-        'civicrmtoken' => array(
+        'civicrmtoken' => [
           'tokens' => $mailTokens['values'],
-          'hotlist' => array(
+          'hotlist' => [
             ts('First Name') => '{contact.first_name}',
             ts('Last Name') => '{contact.last_name}',
             ts('Display Name') => '{contact.display_name}',
             ts('Contact ID') => '{contact.contact_id}',
-          ),
-        ),
-      ),
-      'tinymceConfigFull' => array(
-        'plugins' => array('link hr paste lists textcolor code civicrmtoken'),
+          ],
+        ],
+        'browser_spellcheck' => TRUE,
+      ],
+      'tinymceConfigFull' => [
+        'plugins' => ['link hr paste lists textcolor code civicrmtoken'],
         'toolbar1' => 'bold italic forecolor backcolor hr styleselect removeformat | civicrmtoken | link unlink | pastetext code',
-      ),
-    );
+      ],
+    ];
 
     // Adding translation strings if exist
     $locale = CRM_Core_I18n::getLocale();
     $lang = CRM_Core_I18n_PseudoConstant::shortForLong($locale);
-    $translationFile = CRM_Core_Resources::singleton()->getPath(E::LONG_NAME, "packages/mosaico/res/lang/mosaico-{$lang}.json");
+    $translationFile = CRM_Core_Resources::singleton()->getPath(E::LONG_NAME, "packages/mosaico/dist/lang/mosaico-{$lang}.json");
     if (file_exists($translationFile)) {
       $config['strings'] = json_decode(file_get_contents($translationFile));
     }
@@ -112,9 +113,9 @@ class CRM_Mosaico_Page_Editor extends CRM_Core_Page {
     // Allow configuration to be modified by a hook
     if (class_exists('\Civi\Core\Event\GenericHookEvent')) {
       \Civi::dispatcher()->dispatch('hook_civicrm_mosaicoConfig',
-        \Civi\Core\Event\GenericHookEvent::create(array(
+        \Civi\Core\Event\GenericHookEvent::create([
           'config' => &$config,
-        ))
+        ])
       );
     }
 
