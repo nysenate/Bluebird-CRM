@@ -40,5 +40,8 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
+echo "$prog: enable newversion extension"
+$drush $instance cvapi extension.install key=gov.nysenate.newversion --quiet
+
 ## record completion
 echo "$prog: upgrade process is complete."
