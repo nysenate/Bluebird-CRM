@@ -211,7 +211,7 @@ function mosaico_civicrm_check(&$messages) {
       'fa-chain-broken'
     );
   }
-  if (CRM_Mailing_Info::workflowEnabled()) {
+  /*if (CRM_Mailing_Info::workflowEnabled()) {
     $messages[] = new CRM_Utils_Check_Message(
       'mosaico_workflow',
       E::ts('CiviMail is configured to support advanced workflows. This is currently incompatible with the Mosaico mailer. Navigate to "Administer => CiviMail => CiviMail Component Settings" to disable it.'),
@@ -219,7 +219,7 @@ function mosaico_civicrm_check(&$messages) {
       \Psr\Log\LogLevel::CRITICAL,
       'fa-chain-broken'
     );
-  }
+  }*/
   if (!CRM_Extension_System::singleton()->getMapper()->isActiveModule('flexmailer')) {
     $messages[] = new CRM_Utils_Check_Message(
       'mosaico_flexmailer',
