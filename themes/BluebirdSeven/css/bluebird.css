@@ -12,6 +12,9 @@ body.page-civicrm.admin-menu.adminimal-menu:before {
   text-align: right;
   float: right;
 }
+a.helpicon {
+  padding-left: 4px;
+}
 
 .page-civicrm #crm-main-content-wrapper {
   background: none !important;
@@ -24,6 +27,10 @@ body.page-civicrm.admin-menu.adminimal-menu:before {
 .select2-drop {
   z-index: 100000 !important;
 }
+.ui-datepicker {
+  z-index: 100001 !important;
+}
+
 
 /*no user logged in page*/
 body.user-no-roles {
@@ -171,6 +178,15 @@ div.crm-edit-address-block table.crm-edit-address-form {
 }
 div.crm-edit-address-block span.is_primary-address-element {
   margin-left: 20px;
+}
+tr#addressElements_2 td {
+  white-space: nowrap;
+}
+tr#addressElements_2 a {
+  padding-left: 4px;
+}
+table.crm-edit-address-form div[id$="_location_type_id"] {
+  padding-left: 4px;
 }
 
 /*login*/

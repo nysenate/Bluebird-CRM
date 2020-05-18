@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<menu>
+  <item>
+    <path>civicrm/ode/settings</path>
+    <page_callback>CRM_Ode_Form_Ode</page_callback>
+    <title>Outbound Domain Enforcement Preferences</title>
+    <access_arguments>administer CiviCRM</access_arguments>
+  </item>
+</menu>

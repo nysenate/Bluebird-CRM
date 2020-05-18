@@ -1,11 +1,11 @@
 #!/bin/sh
 #
-# v305.sh
+# v306.sh
 #
 # Project: BluebirdCRM
 # Authors: Brian Shaughnessy and Ken Zalewski
 # Organization: New York State Senate
-# Date: 2020-04-06
+# Date: 2020-05-15
 #
 
 prog=`basename $0`
@@ -28,11 +28,20 @@ if ! $readConfig --instance $instance --quiet; then
   exit 1
 fi
 
-echo "$prog: enable new boe extension"
-$drush $instance cvapi extension.install key=gov.nysenate.boe --quiet
+echo "$prog: enable ode extension"
+$drush $instance cvapi extension.install key=biz.jmaconsulting.ode --quiet
 
-echo "$prog: disable old boe modules"
-$drush $instance pm-disable nyss_boe -y
+echo "$prog: ode setting"
+sql="
+  INSERT IGNORE INTO civicrm_setting
+  (name, value, domain_id, is_domain, created_date, created_id)
+  VALUES
+  ('ode_from_allowed', 's:1:\"1\";', 1, 1, NOW(), 1)
+"
+$execSql $instance -c "$sql" -q
+
+echo "$prog: enable newversion extension"
+$drush $instance cvapi extension.install key=gov.nysenate.newversion --quiet
 
 ## record completion
 echo "$prog: upgrade process is complete."
