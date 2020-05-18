@@ -179,6 +179,15 @@ div.crm-edit-address-block table.crm-edit-address-form {
 div.crm-edit-address-block span.is_primary-address-element {
   margin-left: 20px;
 }
+tr#addressElements_2 td {
+  white-space: nowrap;
+}
+tr#addressElements_2 a {
+  padding-left: 4px;
+}
+table.crm-edit-address-form div[id$="_location_type_id"] {
+  padding-left: 4px;
+}
 
 /*login*/
 .not-logged-in,
