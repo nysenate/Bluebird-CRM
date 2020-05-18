@@ -45,4 +45,10 @@
     <title>Preview Mailing</title>
     <access_arguments>view mass email;access CiviMail;create mailings;schedule mailings;approve mailings;</access_arguments>
   </item>
+  <item>
+    <path>civicrm/nyss/previewmailingiframe</path>
+    <page_callback>CRM_NYSS_Mail_Page_PreviewMailingIframe</page_callback>
+    <title>Preview Mailing</title>
+    <access_arguments>view mass email;access CiviMail;create mailings;schedule mailings;approve mailings;</access_arguments>
+  </item>
 </menu>
