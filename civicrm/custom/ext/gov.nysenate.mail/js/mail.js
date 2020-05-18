@@ -61,7 +61,8 @@ CRM.$(function($) {
             testPreview(checkExists);
           });
 
-          clearInterval(checkPreview);
+          //13021 keep checking as we may need to reload/resize after the test dialog is closed and reopened
+          //clearInterval(checkPreview);
         }
       }, 100);
 

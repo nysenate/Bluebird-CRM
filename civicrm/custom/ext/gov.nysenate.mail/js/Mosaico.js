@@ -24,10 +24,6 @@ $(document).ready(function() {
       $('div#tooltabs ul').append(testBtn);
       testBtn.wrap('<li></li>').removeClass().addClass('ui-tabs-anchor');
       clearInterval(testExists);
-
-      testBtn.click(function() {
-        console.log('test clicked');
-      });
     }
   }, 100);
 });
