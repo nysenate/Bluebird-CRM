@@ -77,6 +77,15 @@ CRM.$(function($) {
           clearInterval(checkDelete);
         }
       }, 100);
+
+      //13426 when in mosaico, move notification popup higher up tree so it can be displayed
+      var checkNotificationContainer = setInterval(function () {
+        var notCont = $('div#crm-notification-container');
+
+        if (notCont.length && $('body > div#crm-notification-container').length === 0) {
+          notCont.insertBefore('body div.ui-widget-overlay');
+        }
+      }, 100);
     }
   });
 });
