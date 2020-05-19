@@ -179,10 +179,10 @@ div.crm-edit-address-block table.crm-edit-address-form {
 div.crm-edit-address-block span.is_primary-address-element {
   margin-left: 20px;
 }
-tr#addressElements_2 td {
+tr[id^=addressElements_] td {
   white-space: nowrap;
 }
-tr#addressElements_2 a {
+tr[id^=addressElements_] a {
   padding-left: 4px;
 }
 table.crm-edit-address-form div[id$="_location_type_id"] {
