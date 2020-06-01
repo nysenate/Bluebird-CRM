@@ -378,6 +378,10 @@ p.cke_notification_message {
   display: block;
   font-weight: bold;
 }
+.cke_dialog {
+  z-index: 100000 !important;
+}
+
 /*civimail image properties box*/
 .page-civicrm-a table.cke_dialog > tbody > tr > td[role=presentation] {
   padding: 0 !important;
