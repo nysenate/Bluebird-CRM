@@ -1,36 +1,41 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2019
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 class CRM_Contact_BAO_Contact_Permission {
+
+  /**
+   * @var bool
+   */
+  public static $useTempTable = TRUE;
+
+  /**
+   * Set whether to use a temporary table or not when building ACL Cache
+   * @param bool $useTemporaryTable
+   */
+  public static function setUseTemporaryTable($useTemporaryTable = TRUE) {
+    self::$useTempTable = $useTemporaryTable;
+  }
+
+  /**
+   * Get variable for determining if we should use Temporary Table or not
+   * @return bool
+   */
+  public static function getUseTemporaryTable() {
+    return self::$useTempTable;
+  }
 
   /**
    * Check which of the given contact IDs the logged in user
@@ -187,12 +192,12 @@ WHERE contact_a.id = %1 AND $permission
   }
 
   /**
-   * Fill the acl contact cache for this contact id if empty.
+   * Fill the acl contact cache for this ACLed contact id if empty.
    *
-   * @param int $userID
+   * @param int $userID - contact_id of the ACLed user
    * @param int|string $type the type of operation (view|edit)
-   * @param bool $force
-   *   Should we force a recompute.
+   * @param bool $force - Should we force a recompute.
+   *
    */
   public static function cache($userID, $type = CRM_Core_Permission::VIEW, $force = FALSE) {
     // FIXME: maybe find a better way of keeping track of this. @eileen pointed out
@@ -236,6 +241,17 @@ AND    $operationClause
       }
     }
 
+    // grab a lock so other processes don't compete and do the same query
+    $lock = Civi::lockManager()->acquire("data.core.aclcontact.{$userID}");
+    if (!$lock->isAcquired()) {
+      // this can cause inconsistent results since we don't know if the other process
+      // will fill up the cache before our calling routine needs it.
+      // The default 3 second timeout should be enough for the other process to finish.
+      // However this routine does not return the status either, so basically
+      // its a "lets return and hope for the best"
+      return;
+    }
+
     $tables = [];
     $whereTables = [];
 
@@ -266,10 +282,11 @@ AND ac.user_id IS NULL
       ($type == CRM_Core_Permission::VIEW && CRM_Core_Permission::check('view my contact'))) {
       if (!CRM_Core_DAO::singleValueQuery("
         SELECT count(*) FROM civicrm_acl_contact_cache WHERE user_id = %1 AND contact_id = %1 AND operation = '{$operation}' LIMIT 1", $queryParams)) {
-        CRM_Core_DAO::executeQuery("INSERT INTO civicrm_acl_contact_cache ( user_id, contact_id, operation ) VALUES(%1, %1, '{$operation}')", $queryParams);
+        CRM_Core_DAO::executeQuery("INSERT IGNORE INTO civicrm_acl_contact_cache ( user_id, contact_id, operation ) VALUES(%1, %1, '{$operation}')", $queryParams);
       }
     }
     Civi::$statics[__CLASS__]['processed'][$type][$userID] = 1;
+    $lock->release();
   }
 
   /**

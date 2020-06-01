@@ -1,38 +1,23 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2019
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
 
   public $optimisedForOnlyFullGroupBy = FALSE;
+
   /**
    * Class constructor.
    */
@@ -274,7 +259,7 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
 
       $date = CRM_Utils_Date::isoToMysql($row['log_civicrm_entity_log_date']);
 
-      if ('Update' == CRM_Utils_Array::value('log_civicrm_entity_log_action', $row)) {
+      if (in_array(CRM_Utils_Array::value('log_civicrm_entity_log_action', $row), ['Update', 'Delete'])) {
         $row = $this->addDetailReportLinksToRow($baseQueryCriteria, $row);
       }
 
@@ -313,7 +298,7 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
 
     $detail = $this->_logTables[$entity];
     $tableName = CRM_Utils_Array::value('table_name', $detail, $entity);
-    $clause = CRM_Utils_Array::value('entity_table', $detail);
+    $clause = $detail['entity_table'] ?? NULL;
     $clause = $clause ? "AND entity_log_civireport.entity_table = 'civicrm_contact'" : NULL;
 
     $joinClause = "
@@ -321,7 +306,7 @@ INNER JOIN civicrm_contact modified_contact_civireport
         ON (entity_log_civireport.{$detail['fk']} = modified_contact_civireport.id {$clause})";
 
     if (!empty($detail['joins'])) {
-      $clause = CRM_Utils_Array::value('entity_table', $detail);
+      $clause = $detail['entity_table'] ?? NULL;
       $clause = $clause ? "AND fk_table.entity_table = 'civicrm_contact'" : NULL;
       $joinClause = "
 INNER JOIN `{$this->loggingDB}`.{$detail['joins']['table']} fk_table ON {$detail['joins']['join']}
