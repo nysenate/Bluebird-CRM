@@ -1,0 +1,13 @@
+{
+    "name": "civicrm/civicrm-core:lodash-compat",
+    "url": "https://github.com/lodash/lodash-compat/archive/3.0.1.zip",
+    "checksum": "23bf4958a67f29b5c4a9864a5b52320817c7150f0eba6e169d5b5b3636d124cc",
+    "ignore": [
+        ".*",
+        "*.log",
+        "*.md",
+        "component.json",
+        "package.json",
+        "node_modules"
+    ]
+}

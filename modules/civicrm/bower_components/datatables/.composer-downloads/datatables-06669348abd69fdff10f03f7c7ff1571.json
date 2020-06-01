@@ -1,0 +1,13 @@
+{
+    "name": "civicrm/civicrm-core:datatables",
+    "url": "https://github.com/DataTables/DataTables/archive/1.10.19.zip",
+    "checksum": "ec4dbe239d1959e1022b4f755dde98b3105b62a7c0728ebbcb738e2d9038b013",
+    "ignore": [
+        "/.*",
+        "examples",
+        "media/unit_testing",
+        "composer.json",
+        "dataTables.jquery.json",
+        "package.json"
+    ]
+}

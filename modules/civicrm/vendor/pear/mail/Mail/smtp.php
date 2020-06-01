@@ -255,14 +255,6 @@ class Mail_smtp extends Mail {
      */
     public function send($recipients, $headers, $body)
     {
-        if (defined('CIVICRM_MAIL_LOG')) {
-            CRM_Utils_Mail::logger($recipients, $headers, $body);
-            // Note: "CIVICRM_MAIL_LOG_AND SEND" (space not underscore) was a typo that existed for some years, so kept here for compatibility, but it should not be used.
-            if (!defined('CIVICRM_MAIL_LOG_AND_SEND') && !defined('CIVICRM_MAIL_LOG_AND SEND')) {
-                return true;
-            }
-        }
-
         $result = $this->send_or_fail($recipients, $headers, $body);
 
         /* If persistent connections are disabled, destroy our SMTP object. */

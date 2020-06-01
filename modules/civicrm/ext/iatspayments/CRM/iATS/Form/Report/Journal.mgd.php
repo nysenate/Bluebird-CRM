@@ -11,14 +11,14 @@
 return array(
   0 =>
   array(
-    'name' => 'CRM_iATS_Form_Report_Journal',
+    'name' => 'CRM_Iats_Form_Report_Journal',
     'entity' => 'ReportTemplate',
     'params' =>
     array(
       'version' => 3,
       'label' => 'iATS Payments - Journal',
       'description' => 'iATS Payments - Journal Report',
-      'class_name' => 'CRM_iATS_Form_Report_Journal',
+      'class_name' => 'CRM_Iats_Form_Report_Journal',
       'report_url' => 'com.iatspayments.com/journal',
       'component' => 'CiviContribute',
     ),

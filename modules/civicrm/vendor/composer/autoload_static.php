@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit3324202d05d7a3ae8de98f2b862178d5
+class ComposerStaticInit36ec71c631e397a60b32ad2c921d6a0e
 {
     public static $files = array (
         '320cde22f66dd4f5d3fd621d3e88b98f' => __DIR__ . '/..' . '/symfony/polyfill-ctype/bootstrap.php',
@@ -12,22 +12,32 @@ class ComposerStaticInit3324202d05d7a3ae8de98f2b862178d5
         '3919eeb97e98d4648304477f8ef734ba' => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib/Crypt/Random.php',
         'a0edc8309cc5e1d60e3047b5df6b7052' => __DIR__ . '/..' . '/guzzlehttp/psr7/src/functions_include.php',
         'c964ee0ededf28c96ebd9db5099ef910' => __DIR__ . '/..' . '/guzzlehttp/promises/src/functions_include.php',
-        '5636a0a89fc28f9cfa8624493b142015' => __DIR__ . '/..' . '/civicrm/civicrm-setup/civicrm-setup-autoload.php',
         '37a3dc5111fe8f707ab4c132ef1dbc62' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/functions_include.php',
         '9e4824c5afbdc1482b6025ce3d4dfde8' => __DIR__ . '/..' . '/league/csv/src/functions_include.php',
         'def43f6c87e4f8dfd0c9e1b1bab14fe8' => __DIR__ . '/..' . '/symfony/polyfill-iconv/bootstrap.php',
+        'bad842bce63596a608e2623519fb382c' => __DIR__ . '/..' . '/xkerman/restricted-unserialize/src/function.php',
     );
 
     public static $prefixLengthsPsr4 = array (
+        'x' => 
+        array (
+            'xKerman\\Restricted\\' => 19,
+        ),
         'c' => 
         array (
             'cweagans\\Composer\\' => 18,
         ),
         'Z' => 
         array (
-            'Zend\\Validator\\' => 15,
-            'Zend\\Stdlib\\' => 12,
             'Zend\\Escaper\\' => 13,
+        ),
+        'W' => 
+        array (
+            'When\\' => 5,
+        ),
+        'T' => 
+        array (
+            'TYPO3\\PharStreamWrapper\\' => 24,
         ),
         'S' => 
         array (
@@ -39,6 +49,7 @@ class ComposerStaticInit3324202d05d7a3ae8de98f2b862178d5
             'Symfony\\Component\\EventDispatcher\\' => 34,
             'Symfony\\Component\\DependencyInjection\\' => 38,
             'Symfony\\Component\\Config\\' => 25,
+            'Svg\\' => 4,
         ),
         'P' => 
         array (
@@ -51,13 +62,14 @@ class ComposerStaticInit3324202d05d7a3ae8de98f2b862178d5
         ),
         'M' => 
         array (
-            'MimeType\\' => 9,
+            'MimeTyper\\' => 10,
             'MJS\\TopSort\\Tests\\' => 18,
             'MJS\\TopSort\\' => 12,
         ),
         'L' => 
         array (
             'League\\Csv\\' => 11,
+            'LastCall\\DownloadsPlugin\\' => 25,
         ),
         'G' => 
         array (
@@ -76,27 +88,32 @@ class ComposerStaticInit3324202d05d7a3ae8de98f2b862178d5
         'C' => 
         array (
             'Civi\\Cxn\\Rpc\\' => 13,
+            'Civi\\' => 5,
             'Cache\\TagInterop\\' => 17,
             'Cache\\IntegrationTests\\' => 23,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
+        'xKerman\\Restricted\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/xkerman/restricted-unserialize/src',
+        ),
         'cweagans\\Composer\\' => 
         array (
             0 => __DIR__ . '/..' . '/cweagans/composer-patches/src',
         ),
-        'Zend\\Validator\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/zendframework/zend-validator/src',
-        ),
-        'Zend\\Stdlib\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/zendframework/zend-stdlib/src',
-        ),
         'Zend\\Escaper\\' => 
         array (
             0 => __DIR__ . '/..' . '/zendframework/zend-escaper/src',
+        ),
+        'When\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/tplaner/when/src',
+        ),
+        'TYPO3\\PharStreamWrapper\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/typo3/phar-stream-wrapper/src',
         ),
         'Symfony\\Polyfill\\Iconv\\' => 
         array (
@@ -130,6 +147,10 @@ class ComposerStaticInit3324202d05d7a3ae8de98f2b862178d5
         array (
             0 => __DIR__ . '/..' . '/symfony/config',
         ),
+        'Svg\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/phenx/php-svg-lib/src/Svg',
+        ),
         'Psr\\SimpleCache\\' => 
         array (
             0 => __DIR__ . '/..' . '/psr/simple-cache/src',
@@ -154,9 +175,9 @@ class ComposerStaticInit3324202d05d7a3ae8de98f2b862178d5
         array (
             0 => __DIR__ . '/..' . '/phpoffice/common/src/Common',
         ),
-        'MimeType\\' => 
+        'MimeTyper\\' => 
         array (
-            0 => __DIR__ . '/..' . '/katzien/php-mime-type/src',
+            0 => __DIR__ . '/..' . '/adrienrn/php-mimetyper/src',
         ),
         'MJS\\TopSort\\Tests\\' => 
         array (
@@ -169,6 +190,10 @@ class ComposerStaticInit3324202d05d7a3ae8de98f2b862178d5
         'League\\Csv\\' => 
         array (
             0 => __DIR__ . '/..' . '/league/csv/src',
+        ),
+        'LastCall\\DownloadsPlugin\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/civicrm/composer-downloads-plugin/src',
         ),
         'GuzzleHttp\\Psr7\\' => 
         array (
@@ -194,6 +219,10 @@ class ComposerStaticInit3324202d05d7a3ae8de98f2b862178d5
         array (
             0 => __DIR__ . '/..' . '/civicrm/civicrm-cxn-rpc/src',
         ),
+        'Civi\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/setup/src',
+        ),
         'Cache\\TagInterop\\' => 
         array (
             0 => __DIR__ . '/..' . '/cache/tag-interop',
@@ -212,15 +241,18 @@ class ComposerStaticInit3324202d05d7a3ae8de98f2b862178d5
                 0 => __DIR__ . '/..' . '/pear/validate_finance_creditcard',
             ),
         ),
+        'T' => 
+        array (
+            'TOGoS_GitIgnore_' => 
+            array (
+                0 => __DIR__ . '/..' . '/togos/gitignore/src/main/php',
+            ),
+        ),
         'S' => 
         array (
             'System' => 
             array (
                 0 => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib',
-            ),
-            'Svg\\' => 
-            array (
-                0 => __DIR__ . '/..' . '/phenx/php-svg-lib/src',
             ),
             'Sabberworm\\CSS' => 
             array (
@@ -270,6 +302,13 @@ class ComposerStaticInit3324202d05d7a3ae8de98f2b862178d5
             'File' => 
             array (
                 0 => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib',
+            ),
+        ),
+        'D' => 
+        array (
+            'Dflydev\\ApacheMimeTypes' => 
+            array (
+                0 => __DIR__ . '/..' . '/dflydev/apache-mime-types/src',
             ),
         ),
         'C' => 
@@ -456,11 +495,11 @@ class ComposerStaticInit3324202d05d7a3ae8de98f2b862178d5
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit3324202d05d7a3ae8de98f2b862178d5::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit3324202d05d7a3ae8de98f2b862178d5::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInit3324202d05d7a3ae8de98f2b862178d5::$prefixesPsr0;
-            $loader->fallbackDirsPsr0 = ComposerStaticInit3324202d05d7a3ae8de98f2b862178d5::$fallbackDirsPsr0;
-            $loader->classMap = ComposerStaticInit3324202d05d7a3ae8de98f2b862178d5::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit36ec71c631e397a60b32ad2c921d6a0e::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit36ec71c631e397a60b32ad2c921d6a0e::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInit36ec71c631e397a60b32ad2c921d6a0e::$prefixesPsr0;
+            $loader->fallbackDirsPsr0 = ComposerStaticInit36ec71c631e397a60b32ad2c921d6a0e::$fallbackDirsPsr0;
+            $loader->classMap = ComposerStaticInit36ec71c631e397a60b32ad2c921d6a0e::$classMap;
 
         }, null, ClassLoader::class);
     }

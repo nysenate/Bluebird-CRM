@@ -98,6 +98,9 @@ class Manager {
       $angularModules['ui.sortable'] = include "$civicrm_root/ang/ui.sortable.ang.php";
       $angularModules['unsavedChanges'] = include "$civicrm_root/ang/unsavedChanges.ang.php";
       $angularModules['statuspage'] = include "$civicrm_root/ang/crmStatusPage.ang.php";
+      $angularModules['exportui'] = include "$civicrm_root/ang/exportui.ang.php";
+      $angularModules['api4Explorer'] = include "$civicrm_root/ang/api4Explorer.ang.php";
+      $angularModules['api4'] = include "$civicrm_root/ang/api4.ang.php";
 
       foreach (\CRM_Core_Component::getEnabledComponents() as $component) {
         $angularModules = array_merge($angularModules, $component->getAngularModules());
@@ -224,7 +227,9 @@ class Manager {
    */
   public function getRawPartials($name) {
     $module = $this->getModule($name);
-    $result = [];
+    $result = !empty($module['partialsCallback'])
+      ? \Civi\Core\Resolver::singleton()->call($module['partialsCallback'], [$name, $module])
+      : [];
     if (isset($module['partials'])) {
       foreach ($module['partials'] as $partialDir) {
         $partialDir = $this->res->getPath($module['ext']) . '/' . $partialDir;

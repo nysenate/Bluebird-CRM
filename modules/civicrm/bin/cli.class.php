@@ -211,7 +211,7 @@ class civicrm_cli {
         }
         // all other arguments are parameters
         $key = ltrim($arg, '--');
-        $this->_params[$key] = isset($value) ? $value : NULL;
+        $this->_params[$key] = $value ?? NULL;
       }
     }
     return TRUE;
@@ -294,8 +294,7 @@ class civicrm_cli {
    * @return bool
    */
   private function _validateOptions() {
-    $required = $this->_required_arguments;
-    while (list(, $var) = each($required)) {
+    foreach ($this->_required_arguments as $var) {
       $index = '_' . $var;
       if (empty($this->$index)) {
         $missing_arg = '--' . $var;

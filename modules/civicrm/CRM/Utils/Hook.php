@@ -1,34 +1,18 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
 /**
  *
  * @package CiviCRM_Hook
- * @copyright CiviCRM LLC (c) 2004-2019
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 abstract class CRM_Utils_Hook {
 
@@ -73,7 +57,7 @@ abstract class CRM_Utils_Hook {
   private $commonIncluded = FALSE;
 
   /**
-   * @var array(string)
+   * @var array|string
    */
   private $commonCiviModules = [];
 
@@ -175,7 +159,8 @@ abstract class CRM_Utils_Hook {
     // quantities of low-importance data or the table not having an id field, which could cause a fatal error.
     // Instead of not calling any hooks we only call those we know to be frequently important - if a particular extension wanted
     // to avoid this they could do an early return on CRM_Core_Config::singleton()->isUpgradeMode
-    $upgradeFriendlyHooks = ['civicrm_alterSettingsFolders', 'civicrm_alterSettingsMetaData', 'civicrm_triggerInfo', 'civicrm_alterLogTables', 'civicrm_container'];
+    // Futther discussion is happening at https://lab.civicrm.org/dev/core/issues/1460
+    $upgradeFriendlyHooks = ['civicrm_alterSettingsFolders', 'civicrm_alterSettingsMetaData', 'civicrm_triggerInfo', 'civicrm_alterLogTables', 'civicrm_container', 'civicrm_permission', 'civicrm_managed', 'civicrm_config'];
     if (CRM_Core_Config::singleton()->isUpgradeMode() && !in_array($fnSuffix, $upgradeFriendlyHooks)) {
       return;
     }
@@ -188,6 +173,11 @@ abstract class CRM_Utils_Hook {
       return $event->getReturnValues();
     }
     else {
+      // We need to ensure tht we will still run known bootstrap related hooks even if the container is not booted.
+      $prebootContainerHooks = array_merge($upgradeFriendlyHooks, ['civicrm_entityTypes', 'civicrm_config']);
+      if (!\Civi\Core\Container::isContainerBooted() && !in_array($fnSuffix, $prebootContainerHooks)) {
+        return;
+      }
       $count = is_array($names) ? count($names) : $names;
       return $this->invokeViaUF($count, $arg1, $arg2, $arg3, $arg4, $arg5, $arg6, $fnSuffix);
     }
@@ -259,7 +249,7 @@ abstract class CRM_Utils_Hook {
    * @param mixed $arg6
    *
    * @return array|bool
-   * @throws \Exception
+   * @throws \CRM_Core_Exception
    */
   public function runHooks(
     $civiModules, $fnSuffix, $numParams,
@@ -317,8 +307,7 @@ abstract class CRM_Utils_Hook {
           break;
 
         default:
-          CRM_Core_Error::fatal(ts('Invalid hook invocation'));
-          break;
+          throw new CRM_Core_Exception(ts('Invalid hook invocation'));
       }
 
       if (!empty($fResult) &&
@@ -366,6 +355,11 @@ abstract class CRM_Utils_Hook {
    *   the return value is ignored
    */
   public static function pre($op, $objectName, $id, &$params) {
+    // Dev/core#1449 DO not dispatch hook_civicrm_pre if we are in an upgrade as this cases the upgrade to fail
+    // Futher discussion is happening at https://lab.civicrm.org/dev/core/issues/1460
+    if (CRM_Core_Config::singleton()->isUpgradeMode()) {
+      return;
+    }
     $event = new \Civi\Core\Event\PreEvent($op, $objectName, $id, $params);
     \Civi::dispatcher()->dispatch('hook_civicrm_pre', $event);
     return $event->getReturnValues();
@@ -388,8 +382,43 @@ abstract class CRM_Utils_Hook {
    *                           an error message which aborts the operation
    */
   public static function post($op, $objectName, $objectId, &$objectRef = NULL) {
+    // Dev/core#1449 DO not dispatch hook_civicrm_post if we are in an upgrade as this cases the upgrade to fail
+    // Futher discussion is happening at https://lab.civicrm.org/dev/core/issues/1460
+    if (CRM_Core_Config::singleton()->isUpgradeMode()) {
+      return;
+    }
     $event = new \Civi\Core\Event\PostEvent($op, $objectName, $objectId, $objectRef);
     \Civi::dispatcher()->dispatch('hook_civicrm_post', $event);
+    return $event->getReturnValues();
+  }
+
+  /**
+   * This hook is equivalent to post(), except that it is guaranteed to run
+   * outside of any SQL transaction. The objectRef is not modifiable.
+   *
+   * This hook is defined for two cases:
+   *
+   * 1. If the original action runs within a transaction, then the hook fires
+   *    after the transaction commits.
+   * 2. If the original action runs outside a transaction, then the data was
+   *    committed immediately, and we can run the hook immediately.
+   *
+   * @param string $op
+   *   The type of operation being performed.
+   * @param string $objectName
+   *   The name of the object.
+   * @param int $objectId
+   *   The unique identifier for the object.
+   * @param object $objectRef
+   *   The reference to the object if available.
+   *
+   * @return mixed
+   *   based on op. pre-hooks return a boolean or
+   *                           an error message which aborts the operation
+   */
+  public static function postCommit($op, $objectName, $objectId, $objectRef = NULL) {
+    $event = new \Civi\Core\Event\PostEvent($op, $objectName, $objectId, $objectRef);
+    \Civi::dispatcher()->dispatch('hook_civicrm_postCommit', $event);
     return $event->getReturnValues();
   }
 
@@ -1368,7 +1397,7 @@ abstract class CRM_Utils_Hook {
    *
    * @return mixed
    */
-  public static function export(&$exportTempTable, &$headerRows, &$sqlColumns, &$exportMode, &$componentTable, &$ids) {
+  public static function export(&$exportTempTable, &$headerRows, &$sqlColumns, $exportMode, $componentTable, $ids) {
     return self::singleton()->invoke(['exportTempTable', 'headerRows', 'sqlColumns', 'exportMode', 'componentTable', 'ids'],
       $exportTempTable, $headerRows, $sqlColumns,
       $exportMode, $componentTable, $ids,
@@ -2116,32 +2145,6 @@ abstract class CRM_Utils_Hook {
   }
 
   /**
-   * Deprecated: Misnamed version of alterMailer(). Remove post-4.7.x.
-   * Modify or replace the Mailer object used for outgoing mail.
-   *
-   * @param object $mailer
-   *   The default mailer produced by normal configuration; a PEAR "Mail" class (like those returned by Mail::factory)
-   * @param string $driver
-   *   The type of the default mailer (eg "smtp", "sendmail", "mock", "CRM_Mailing_BAO_Spool")
-   * @param array $params
-   *   The default mailer config options
-   *
-   * @return mixed
-   * @see Mail::factory
-   * @deprecated
-   */
-  public static function alterMail(&$mailer, $driver, $params) {
-    // This has been deprecated on the premise it MIGHT be called externally for a long time.
-    // We don't have a clear policy on how much we support external extensions calling internal
-    // hooks (ie. in general we say 'don't call internal functions', but some hooks like pre hooks
-    // are expected to be called externally.
-    // It's really really unlikely anyone uses this - but let's add deprecations for a couple
-    // of releases first.
-    CRM_Core_Error::deprecatedFunctionWarning('CRM_Utils_Hook::alterMailer');
-    return CRM_Utils_Hook::alterMailer($mailer, $driver, $params);
-  }
-
-  /**
    * This hook is called while building the core search query,
    * so hook implementers can provide their own query objects which alters/extends core search.
    *
@@ -2244,6 +2247,10 @@ abstract class CRM_Utils_Hook {
    *    - js: array, list of JS files or globs.
    *    - css: array, list of CSS files or globs.
    *    - partials: array, list of base-dirs containing HTML.
+   *    - partialsCallback: mixed, a callback function which generates a list of HTML
+   *        function(string $moduleName, array $moduleDefn) => array(string $file => string $html)
+   *        For future-proofing, use a serializable callback (e.g. string/array).
+   *        See also: Civi\Core\Resolver.
    *    - requires: array, list of required Angular modules.
    *    - basePages: array, uncondtionally load this module onto the given Angular pages. [v4.7.21+]
    *      If omitted, default to "array('civicrm/a')" for backward compat.
@@ -2498,9 +2505,10 @@ abstract class CRM_Utils_Hook {
    * @see CRM_Core_Resources::entityRefFilters
    *
    * @param array $filters
+   * @param array $links
    */
-  public static function entityRefFilters(&$filters) {
-    self::singleton()->invoke(['filters'], $filters, self::$_nullObject, self::$_nullObject,
+  public static function entityRefFilters(&$filters, &$links = NULL) {
+    self::singleton()->invoke(['filters', 'links'], $filters, $links, self::$_nullObject,
       self::$_nullObject, self::$_nullObject, self::$_nullObject,
       'civicrm_entityRefFilters'
     );
@@ -2624,6 +2632,38 @@ abstract class CRM_Utils_Hook {
       $IPNData, self::$_nullObject, self::$_nullObject,
       self::$_nullObject, self::$_nullObject, self::$_nullObject,
       'civicrm_postIPNProcess'
+    );
+  }
+
+  /**
+   * Allow extensions to modify the array of acceptable fields to be included on profiles
+   * @param array $fields
+   *   format is [Entity => array of DAO fields]
+   * @return mixed
+   */
+  public static function alterUFFields(&$fields) {
+    return self::singleton()->invoke(['fields'],
+      $fields, self::$_nullObject, self::$_nullObject,
+      self::$_nullObject, self::$_nullObject, self::$_nullObject,
+      'civicrm_alterUFFields'
+    );
+  }
+
+  /**
+   * This hook is called to alter Custom field value before its displayed.
+   *
+   * @param string $displayValue
+   * @param mixed $value
+   * @param int $entityId
+   * @param array $fieldInfo
+   *
+   * @return mixed
+   */
+  public static function alterCustomFieldDisplayValue(&$displayValue, $value, $entityId, $fieldInfo) {
+    return self::singleton()->invoke(
+      ['displayValue', 'value', 'entityId', 'fieldInfo'],
+      $displayValue, $value, $entityId, $fieldInfo, self::$_nullObject,
+      self::$_nullObject, 'civicrm_alterCustomFieldDisplayValue'
     );
   }
 

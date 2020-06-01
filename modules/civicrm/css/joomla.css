@@ -155,9 +155,6 @@ br.clear {
 #header, #content {
   width: 100%;
 }
-#header {
-  background-color: #69c;
-}
 #logo {
   vertical-align: middle;
   border: 0;
@@ -372,6 +369,11 @@ div#toolbar-box, div#toolbar-box div.m{
   background-color: inherit;
   width: inherit;
   display: block;
+}
+
+/* dev/core#874 the width:auto styling above causes the menubar colour picker to be squeezed */
+.crm-container input.crm-form-color {
+  width: 3.6em;
 }
 
 /* Remove Joomla subhead toolbar & whitespace border */

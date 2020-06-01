@@ -1,0 +1,6 @@
+{
+    "name": "civicrm/civicrm-core:angular-sanitize",
+    "url": "https://github.com/angular/bower-angular-sanitize/archive/v1.5.11.zip",
+    "checksum": "adc8684ea4bc8a11c51ab1c1ff3a92aa7a2b5f1eaf7f51a054fd1758b3a78df0",
+    "ignore": null
+}

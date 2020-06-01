@@ -1,34 +1,18 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2019
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 class CRM_Contribute_BAO_ContributionRecur extends CRM_Contribute_DAO_ContributionRecur {
 
@@ -82,7 +66,7 @@ class CRM_Contribute_BAO_ContributionRecur extends CRM_Contribute_DAO_Contributi
 
     $recurring = new CRM_Contribute_BAO_ContributionRecur();
     $recurring->copyValues($params);
-    $recurring->id = CRM_Utils_Array::value('id', $params);
+    $recurring->id = $params['id'] ?? NULL;
 
     // set currency for CRM-1496
     if (empty($params['id']) && !isset($recurring->currency)) {
@@ -119,9 +103,9 @@ class CRM_Contribute_BAO_ContributionRecur extends CRM_Contribute_DAO_Contributi
    *   true if duplicate, false otherwise
    */
   public static function checkDuplicate($params, &$duplicates) {
-    $id = CRM_Utils_Array::value('id', $params);
-    $trxn_id = CRM_Utils_Array::value('trxn_id', $params);
-    $invoice_id = CRM_Utils_Array::value('invoice_id', $params);
+    $id = $params['id'] ?? NULL;
+    $trxn_id = $params['trxn_id'] ?? NULL;
+    $invoice_id = $params['invoice_id'] ?? NULL;
 
     $clause = [];
     $params = [];
@@ -197,7 +181,7 @@ class CRM_Contribute_BAO_ContributionRecur extends CRM_Contribute_DAO_Contributi
       'id' => $recurID,
       'return' => ['payment_processor_id'],
     ]);
-    return (int) CRM_Utils_Array::value('payment_processor_id', $recur, 0);
+    return (int) ($recur['payment_processor_id'] ?? 0);
   }
 
   /**
@@ -266,7 +250,7 @@ class CRM_Contribute_BAO_ContributionRecur extends CRM_Contribute_DAO_Contributi
     }
     $activityParams = [
       'subject' => !empty($params['membership_id']) ? ts('Auto-renewal membership cancelled') : ts('Recurring contribution cancelled'),
-      'details' => CRM_Utils_Array::value('processor_message', $params),
+      'details' => $params['processor_message'] ?? NULL,
     ];
 
     $cancelledId = CRM_Core_PseudoConstant::getKey('CRM_Contribute_BAO_ContributionRecur', 'contribution_status_id', 'Cancelled');
@@ -280,18 +264,19 @@ class CRM_Contribute_BAO_ContributionRecur extends CRM_Contribute_DAO_Contributi
       $recur->start_date = CRM_Utils_Date::isoToMysql($recur->start_date);
       $recur->create_date = CRM_Utils_Date::isoToMysql($recur->create_date);
       $recur->modified_date = CRM_Utils_Date::isoToMysql($recur->modified_date);
-      $recur->cancel_reason = CRM_Utils_Array::value('cancel_reason', $params);
+      $recur->cancel_reason = $params['cancel_reason'] ?? NULL;
       $recur->cancel_date = date('YmdHis');
       $recur->save();
 
+      // @fixme https://lab.civicrm.org/dev/core/issues/927 Cancelling membership etc is not desirable for all use-cases and we should be able to disable it
       $dao = CRM_Contribute_BAO_ContributionRecur::getSubscriptionDetails($recurId);
       if ($dao && $dao->recur_id) {
-        $details = CRM_Utils_Array::value('details', $activityParams);
+        $details = $activityParams['details'] ?? NULL;
         if ($dao->auto_renew && $dao->membership_id) {
           // its auto-renewal membership mode
           $membershipTypes = CRM_Member_PseudoConstant::membershipType();
           $membershipType = CRM_Core_DAO::getFieldValue('CRM_Member_DAO_Membership', $dao->membership_id, 'membership_type_id');
-          $membershipType = CRM_Utils_Array::value($membershipType, $membershipTypes);
+          $membershipType = $membershipTypes[$membershipType] ?? NULL;
           $details .= '
 <br/>' . ts('Automatic renewal of %1 membership cancelled.', [1 => $membershipType]);
         }
@@ -425,16 +410,36 @@ INNER JOIN civicrm_contribution       con ON ( con.id = mp.contribution_id )
    *
    * @return array
    * @throws \CiviCRM_API3_Exception
+   * @throws \Civi\API\Exception\UnauthorizedException
    */
   public static function getTemplateContribution($id, $overrides = []) {
-    $templateContribution = civicrm_api3('Contribution', 'get', [
-      'contribution_recur_id' => $id,
-      'options' => ['limit' => 1, 'sort' => ['id DESC']],
-      'sequential' => 1,
-      'contribution_test' => '',
+    // use api3 because api4 doesn't handle ContributionRecur yet...
+    $is_test = civicrm_api3('ContributionRecur', 'getvalue', [
+      'return' => "is_test",
+      'id' => $id,
     ]);
-    if ($templateContribution['count']) {
-      $result = array_merge($templateContribution['values'][0], $overrides);
+    // First look for new-style template contribution with is_template=1
+    $templateContributions = \Civi\Api4\Contribution::get()
+      ->setCheckPermissions(FALSE)
+      ->addWhere('contribution_recur_id', '=', $id)
+      ->addWhere('is_template', '=', 1)
+      ->addWhere('is_test', '=', $is_test)
+      ->addOrderBy('id', 'DESC')
+      ->setLimit(1)
+      ->execute();
+    if (!$templateContributions->count()) {
+      // Fall back to old style template contributions
+      $templateContributions = \Civi\Api4\Contribution::get()
+        ->setCheckPermissions(FALSE)
+        ->addWhere('contribution_recur_id', '=', $id)
+        ->addWhere('is_test', '=', $is_test)
+        ->addOrderBy('id', 'DESC')
+        ->setLimit(1)
+        ->execute();
+    }
+    if ($templateContributions->count()) {
+      $templateContribution = $templateContributions->first();
+      $result = array_merge($templateContribution, $overrides);
       $result['line_item'] = CRM_Contribute_BAO_ContributionRecur::calculateRecurLineItems($id, $result['total_amount'], $result['financial_type_id']);
       return $result;
     }
@@ -756,7 +761,7 @@ INNER JOIN civicrm_contribution       con ON ( con.id = mp.contribution_id )
 
     // Add field for contribution status
     $form->addSelect('contribution_recur_contribution_status_id',
-      ['entity' => 'contribution', 'multiple' => 'multiple', 'context' => 'search', 'options' => CRM_Contribute_PseudoConstant::contributionStatus()]
+      ['entity' => 'contribution', 'multiple' => 'multiple', 'context' => 'search', 'options' => CRM_Contribute_BAO_Contribution::buildOptions('contribution_status_id', 'search')]
     );
 
     $form->addElement('text', 'contribution_recur_processor_id', ts('Processor ID'), CRM_Core_DAO::getAttribute('CRM_Contribute_DAO_ContributionRecur', 'processor_id'));
@@ -914,7 +919,11 @@ INNER JOIN civicrm_contribution       con ON ( con.id = mp.contribution_id )
           // CRM-17718 allow for possibility of changed financial type ID having been set prior to calling this.
           $lineItem['financial_type_id'] = $financial_type_id;
         }
-        if ($lineItem['line_total'] != $total_amount) {
+        $taxAmountMatches = FALSE;
+        if ((!empty($lineItem['tax_amount']) && ($lineItem['line_total'] + $lineItem['tax_amount']) == $total_amount)) {
+          $taxAmountMatches = TRUE;
+        }
+        if ($lineItem['line_total'] != $total_amount && !$taxAmountMatches) {
           // We are dealing with a changed amount! Per CRM-16397 we can work out what to do with these
           // if there is only one line item, and the UI should prevent this situation for those with more than one.
           $lineItem['line_total'] = $total_amount;

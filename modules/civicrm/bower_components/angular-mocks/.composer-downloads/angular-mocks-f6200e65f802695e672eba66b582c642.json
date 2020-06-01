@@ -1,0 +1,6 @@
+{
+    "name": "civicrm/civicrm-core:angular-mocks",
+    "url": "https://github.com/angular/bower-angular-mocks/archive/v1.5.11.zip",
+    "checksum": "77f429f3cb5ac4ca022e69d7dddcd201f874abc08ad485281a8330fa9458f2ca",
+    "ignore": null
+}

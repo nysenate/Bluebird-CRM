@@ -44,32 +44,18 @@ abstract class SimpleCacheTest extends TestCase
     }
 
     /**
-     * Data provider for invalid cache keys.
+     * Data provider for invalid keys.
      *
      * @return array
      */
     public static function invalidKeys()
-    {
-        return array_merge(
-            self::invalidArrayKeys(),
-            [
-                [2],
-            ]
-        );
-    }
-
-    /**
-     * Data provider for invalid array keys.
-     *
-     * @return array
-     */
-    public static function invalidArrayKeys()
     {
         return [
             [''],
             [true],
             [false],
             [null],
+            [2],
             [2.5],
             ['{str'],
             ['rand{'],
@@ -228,13 +214,6 @@ abstract class SimpleCacheTest extends TestCase
         $this->assertTrue($result, 'setMultiple() must return true if success');
         $this->assertEquals('value0', $this->cache->get('key0'));
         $this->assertEquals('value1', $this->cache->get('key1'));
-    }
-
-    public function testSetMultipleWithIntegerArrayKey()
-    {
-        if (isset($this->skippedTests[__FUNCTION__])) {
-            $this->markTestSkipped($this->skippedTests[__FUNCTION__]);
-        }
 
         $result = $this->cache->setMultiple(['0' => 'value0']);
         $this->assertTrue($result, 'setMultiple() must return true if success');
@@ -391,25 +370,6 @@ abstract class SimpleCacheTest extends TestCase
         $this->assertTrue($this->cache->has('key0'));
     }
 
-    public function testBasicUsageWithLongKey()
-    {
-        if (isset($this->skippedTests[__FUNCTION__])) {
-            $this->markTestSkipped($this->skippedTests[__FUNCTION__]);
-        }
-
-        $key = str_repeat('a', 300);
-
-        $this->assertFalse($this->cache->has($key));
-        $this->assertTrue($this->cache->set($key, 'value'));
-
-        $this->assertTrue($this->cache->has($key));
-        $this->assertSame('value', $this->cache->get($key));
-
-        $this->assertTrue($this->cache->delete($key));
-
-        $this->assertFalse($this->cache->has($key));
-    }
-
     /**
      * @expectedException \Psr\SimpleCache\InvalidArgumentException
      * @dataProvider invalidKeys
@@ -463,12 +423,16 @@ abstract class SimpleCacheTest extends TestCase
 
     /**
      * @expectedException \Psr\SimpleCache\InvalidArgumentException
-     * @dataProvider invalidArrayKeys
+     * @dataProvider invalidKeys
      */
     public function testSetMultipleInvalidKeys($key)
     {
         if (isset($this->skippedTests[__FUNCTION__])) {
             $this->markTestSkipped($this->skippedTests[__FUNCTION__]);
+        }
+
+        if (is_int($key)) {
+            $this->markTestSkipped('As keys, strings are always casted to ints so they should be accepted');
         }
 
         $values = function () use ($key) {

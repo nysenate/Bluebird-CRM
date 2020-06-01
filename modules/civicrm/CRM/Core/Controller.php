@@ -1,27 +1,11 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
@@ -38,7 +22,7 @@
  * for other useful tips and suggestions
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2019
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 
 require_once 'HTML/QuickForm/Controller.php';
@@ -224,7 +208,7 @@ class CRM_Core_Controller extends HTML_QuickForm_Controller {
 
     parent::__construct($name, $modal);
 
-    $snippet = CRM_Utils_Array::value('snippet', $_REQUEST);
+    $snippet = $_REQUEST['snippet'] ?? NULL;
     if ($snippet) {
       if ($snippet == 3) {
         $this->_print = CRM_Core_Smarty::PRINT_PDF;
@@ -300,7 +284,7 @@ class CRM_Core_Controller extends HTML_QuickForm_Controller {
       return NULL;
     }
 
-    $key = CRM_Utils_Array::value('qfKey', $_REQUEST, NULL);
+    $key = $_REQUEST['qfKey'] ?? NULL;
     if (!$key && $_SERVER['REQUEST_METHOD'] === 'GET') {
       $key = CRM_Core_Key::get($name, $addSequence);
     }
@@ -433,8 +417,8 @@ class CRM_Core_Controller extends HTML_QuickForm_Controller {
     $pages = $stateMachine->getPages();
     foreach ($pages as $name => $value) {
       $className = CRM_Utils_Array::value('className', $value, $name);
-      $title = CRM_Utils_Array::value('title', $value);
-      $options = CRM_Utils_Array::value('options', $value);
+      $title = $value['title'] ?? NULL;
+      $options = $value['options'] ?? NULL;
       $stateName = CRM_Utils_String::getClassName($className);
       if (!empty($value['className'])) {
         $formName = $name;
@@ -480,7 +464,7 @@ class CRM_Core_Controller extends HTML_QuickForm_Controller {
    */
   public function getButtonName() {
     $data = &$this->container();
-    return CRM_Utils_Array::value('_qf_button_name', $data);
+    return $data['_qf_button_name'] ?? NULL;
   }
 
   /**

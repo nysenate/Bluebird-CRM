@@ -1,34 +1,18 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2019
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  *
  */
 class CRM_Profile_Page_MultipleRecordFieldsListing extends CRM_Core_Page_Basic {
@@ -236,7 +220,7 @@ class CRM_Profile_Page_MultipleRecordFieldsListing extends CRM_Core_Page_Basic {
           $dateFields[$fieldIDs[$key]] = 1;
           $actualPHPFormats = CRM_Utils_Date::datePluginToPHPFormats();
           $dateFormat = (array) CRM_Utils_Array::value($returnValues['date_format'], $actualPHPFormats);
-          $timeFormat = CRM_Utils_Array::value('time_format', $returnValues);
+          $timeFormat = $returnValues['time_format'] ?? NULL;
         }
 
         $optionValuePairs = CRM_Core_BAO_CustomOption::getCustomOption($fieldIDs[$key]);
@@ -249,12 +233,12 @@ class CRM_Profile_Page_MultipleRecordFieldsListing extends CRM_Core_Page_Basic {
         $options[$fieldIDs[$key]]['attributes']['html_type'] = $returnValues['html_type'];
         $options[$fieldIDs[$key]]['attributes']['data_type'] = $returnValues['data_type'];
         $options[$fieldIDs[$key]]['attributes']['is_required'] = !empty($returnValues['is_required']);
-        $options[$fieldIDs[$key]]['attributes']['default_value'] = CRM_Utils_Array::value('default_value', $returnValues);
-        $options[$fieldIDs[$key]]['attributes']['is_view'] = CRM_Utils_Array::value('is_view', $returnValues);
+        $options[$fieldIDs[$key]]['attributes']['default_value'] = $returnValues['default_value'] ?? NULL;
+        $options[$fieldIDs[$key]]['attributes']['is_view'] = $returnValues['is_view'] ?? NULL;
 
         $options[$fieldIDs[$key]]['attributes']['format']
-          = $options[$fieldIDs[$key]]['attributes']['date_format'] = CRM_Utils_Array::value('date_format', $returnValues);
-        $options[$fieldIDs[$key]]['attributes']['time_format'] = CRM_Utils_Array::value('time_format', $returnValues);
+          = $options[$fieldIDs[$key]]['attributes']['date_format'] = $returnValues['date_format'] ?? NULL;
+        $options[$fieldIDs[$key]]['attributes']['time_format'] = $returnValues['time_format'] ?? NULL;
       }
       $linkAction = array_sum(array_keys($this->links()));
     }

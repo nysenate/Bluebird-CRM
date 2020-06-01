@@ -1,34 +1,18 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2019
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 
 /**
@@ -44,6 +28,15 @@ class CRM_Admin_Form_Setting_Smtp extends CRM_Admin_Form_Setting {
    * Build the form object.
    */
   public function buildQuickForm() {
+    $props = [];
+    $settings = Civi::settings()->getMandatory('mailing_backend') ?? [];
+    //Load input as readonly whose values are overridden in civicrm.settings.php.
+    foreach ($settings as $setting => $value) {
+      if (isset($value)) {
+        $props[$setting]['readonly'] = TRUE;
+        $setStatus = TRUE;
+      }
+    }
 
     $outBoundOption = [
       CRM_Mailing_Config::OUTBOUND_OPTION_MAIL => ts('mail()'),
@@ -52,16 +45,16 @@ class CRM_Admin_Form_Setting_Smtp extends CRM_Admin_Form_Setting {
       CRM_Mailing_Config::OUTBOUND_OPTION_DISABLED => ts('Disable Outbound Email'),
       CRM_Mailing_Config::OUTBOUND_OPTION_REDIRECT_TO_DB => ts('Redirect to Database'),
     ];
-    $this->addRadio('outBound_option', ts('Select Mailer'), $outBoundOption);
+    $this->addRadio('outBound_option', ts('Select Mailer'), $outBoundOption, $props['outBound_option'] ?? []);
 
     CRM_Utils_System::setTitle(ts('Settings - Outbound Mail'));
     $this->add('text', 'sendmail_path', ts('Sendmail Path'));
     $this->add('text', 'sendmail_args', ts('Sendmail Argument'));
-    $this->add('text', 'smtpServer', ts('SMTP Server'));
-    $this->add('text', 'smtpPort', ts('SMTP Port'));
-    $this->addYesNo('smtpAuth', ts('Authentication?'));
-    $this->addElement('text', 'smtpUsername', ts('SMTP Username'));
-    $this->addElement('password', 'smtpPassword', ts('SMTP Password'));
+    $this->add('text', 'smtpServer', ts('SMTP Server'), CRM_Utils_Array::value('smtpServer', $props));
+    $this->add('text', 'smtpPort', ts('SMTP Port'), CRM_Utils_Array::value('smtpPort', $props));
+    $this->addYesNo('smtpAuth', ts('Authentication?'), CRM_Utils_Array::value('smtpAuth', $props));
+    $this->addElement('text', 'smtpUsername', ts('SMTP Username'), CRM_Utils_Array::value('smtpUsername', $props));
+    $this->addElement('password', 'smtpPassword', ts('SMTP Password'), CRM_Utils_Array::value('smtpPassword', $props));
 
     $this->_testButtonName = $this->getButtonName('refresh', 'test');
 
@@ -70,6 +63,10 @@ class CRM_Admin_Form_Setting_Smtp extends CRM_Admin_Form_Setting {
     $buttons = $this->getElement('buttons')->getElements();
     $buttons[] = $this->createElement('submit', $this->_testButtonName, ts('Save & Send Test Email'), ['crm-icon' => 'fa-envelope-o']);
     $this->getElement('buttons')->setElements($buttons);
+
+    if (!empty($setStatus)) {
+      CRM_Core_Session::setStatus("Some fields are loaded as 'readonly' as they have been set (overridden) in civicrm.settings.php.", '', 'info', array('expires' => 0));
+    }
   }
 
   /**
@@ -105,8 +102,8 @@ class CRM_Admin_Form_Setting_Smtp extends CRM_Admin_Form_Setting {
         list($domainEmailName, $domainEmailAddress) = CRM_Core_BAO_Domain::getNameAndEmail();
 
         if (!$domainEmailAddress || $domainEmailAddress == 'info@EXAMPLE.ORG') {
-          $fixUrl = CRM_Utils_System::url("civicrm/admin/domain", 'action=update&reset=1');
-          CRM_Core_Error::statusBounce(ts('The site administrator needs to enter a valid email address in <a href="%1">Administer CiviCRM &raquo; Communications &raquo; Organization Address and Contact Info</a>. The email address used may need to be a valid mail account with your email service provider.', [1 => $fixUrl]));
+          $fixUrl = CRM_Utils_System::url("civicrm/admin/options/from_email_address", 'action=update&reset=1');
+          CRM_Core_Error::statusBounce(ts('The site administrator needs to enter a valid \'FROM Email Address\' in <a href="%1">Administer CiviCRM &raquo; System Settings &raquo; Option Groups &raquo; From Email Address</a>. The email address used may need to be a valid mail account with your email service provider.', [1 => $fixUrl]));
         }
         if (!$toEmail) {
           CRM_Core_Error::statusBounce(ts('Cannot send a test email because your user record does not have a valid email address.'));
@@ -167,7 +164,7 @@ class CRM_Admin_Form_Setting_Smtp extends CRM_Admin_Form_Setting {
           'Subject' => $subject,
         ];
 
-        $mailer = Mail::factory($mailerName, $params);
+        $mailer = CRM_Utils_Mail::_createMailer($mailerName, $params);
 
         $errorScope = CRM_Core_TemporaryErrorScope::ignoreException();
         $result = $mailer->send($toEmail, $headers, $message);

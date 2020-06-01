@@ -1,0 +1,6 @@
+{
+    "name": "civicrm/civicrm-core:angular-ui-sortable",
+    "url": "https://github.com/angular-ui/ui-sortable/archive/v0.19.0.zip",
+    "checksum": "d0ff44faaca9ea2c7b517563a786ed7758bdddc2ab7a1ea96b3673eb9d896407",
+    "ignore": null
+}

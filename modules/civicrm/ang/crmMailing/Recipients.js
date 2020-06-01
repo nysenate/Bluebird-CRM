@@ -156,7 +156,7 @@
               mids.push(0);
             }
 
-            CRM.api3('Group', 'getlist', { params: { id: { IN: gids }, options: { limit: 0 } }, extra: ["is_hidden"] }).then(
+            CRM.api3('Group', 'getlist', { params: { id: { IN: gids }, options: { limit: 0 } }, extra: ["is_hidden"] } ).then(
               function(glist) {
                 CRM.api3('Mailing', 'getlist', { params: { id: { IN: mids }, options: { limit: 0 } } }).then(
                   function(mlist) {
@@ -167,8 +167,8 @@
 
                     $(glist.values).each(function (idx, group) {
                       var key = group.id + ' civicrm_group include';
-
                       groupNames.push({id: parseInt(group.id), title: group.label, is_hidden: group.extra.is_hidden});
+
                       if (values.indexOf(key) >= 0) {
                         datamap.push({id: key, text: group.label});
                       }

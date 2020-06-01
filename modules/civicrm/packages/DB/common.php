@@ -5,7 +5,7 @@
 /**
  * Contains the DB_common base class
  *
- * PHP versions 4 and 5
+ * PHP version 5
  *
  * LICENSE: This source file is subject to version 3.0 of the PHP license
  * that is available through the world-wide-web at the following URI:
@@ -20,7 +20,7 @@
  * @author     Daniel Convissor <danielc@php.net>
  * @copyright  1997-2007 The PHP Group
  * @license    http://www.php.net/license/3_0.txt  PHP License 3.0
- * @version    CVS: $Id: common.php,v 1.143 2007/09/21 13:40:41 aharvey Exp $
+ * @version    CVS: $Id$
  * @link       http://pear.php.net/package/DB
  */
 
@@ -42,7 +42,7 @@ require_once 'PEAR.php';
  * @author     Daniel Convissor <danielc@php.net>
  * @copyright  1997-2007 The PHP Group
  * @license    http://www.php.net/license/3_0.txt  PHP License 3.0
- * @version    Release: 1.7.13
+ * @version    Release: 1.9.3
  * @link       http://pear.php.net/package/DB
  */
 class DB_common extends PEAR
@@ -204,7 +204,7 @@ class DB_common extends PEAR
     function __wakeup()
     {
         if ($this->was_connected) {
-            $this->connect($this->dsn, $this->options);
+            $this->connect($this->dsn, $this->options['persistent']);
         }
     }
 
@@ -261,7 +261,7 @@ class DB_common extends PEAR
      */
     function quoteString($string)
     {
-        $string = $this->quote($string);
+        $string = $this->quoteSmart($string);
         if ($string{0} == "'") {
             return substr($string, 1, -1);
         }
@@ -284,8 +284,7 @@ class DB_common extends PEAR
      */
     function quote($string = null)
     {
-        return ($string === null) ? 'NULL'
-                                  : "'" . str_replace("'", "''", $string) . "'";
+        return $this->quoteSmart($string);
     }
 
     // }}}
@@ -1148,6 +1147,7 @@ class DB_common extends PEAR
      */
     function modifyQuery($query)
     {
+        // CRM-20445 Add query dispatcher to allow query modification.
         // This section of code may run hundreds or thousands of times in a given request.
         // Consequently, it is micro-optimized to use single lookup in typical case.
         if (!isset(Civi::$statics['db_common_dispatcher'])) {
@@ -1161,6 +1161,7 @@ class DB_common extends PEAR
 
         $e = new \Civi\Core\Event\QueryEvent($query);
         Civi::$statics['db_common_dispatcher']->dispatch('civi.db.query', $e);
+        // CRM-20445 ends.
         return $e->query;
     }
 
@@ -1216,7 +1217,8 @@ class DB_common extends PEAR
      */
     function &query($query, $params = array())
     {
-        if (sizeof($params) > 0) {
+        $params = (array)$params;
+        if (count($params)) {
             $sth = $this->prepare($query);
             if (DB::isError($sth)) {
                 return $sth;
@@ -1262,7 +1264,7 @@ class DB_common extends PEAR
             return $query;
         }
         $result = $this->query($query, $params);
-        if (is_a($result, 'DB_result')) {
+        if (is_object($result) && is_a($result, 'DB_result')) {
             $result->setOption('limit_from', $from);
             $result->setOption('limit_count', $count);
         }
@@ -1355,8 +1357,8 @@ class DB_common extends PEAR
             }
         }
         // modifyLimitQuery() would be nice here, but it causes BC issues
-        $params = (array) $params;
-        if (count($params) > 0) {
+        $params = (array)$params;
+        if (count($params)) {
             $sth = $this->prepare($query);
             if (DB::isError($sth)) {
                 return $sth;
@@ -1664,8 +1666,8 @@ class DB_common extends PEAR
             }
         }
 
-        $params = (array) $params;
-        if (count($params) > 0) {
+        $params = (array)$params;
+        if (count($params)) {
             $sth = $this->prepare($query);
 
             if (DB::isError($sth)) {
@@ -1883,21 +1885,24 @@ class DB_common extends PEAR
      *                 query and native error code.
      * @param mixed   native error code, integer or string depending the
      *                 backend
+     * @param mixed   dummy parameter for E_STRICT compatibility with
+     *                 PEAR::raiseError
+     * @param mixed   dummy parameter for E_STRICT compatibility with
+     *                 PEAR::raiseError
      *
      * @return object  the PEAR_Error object
      *
      * @see PEAR_Error
      */
     function raiseError($code = DB_ERROR, $mode = null, $options = null,
-        $userinfo = null, $nativecode = null,
-        $argToMatchParentSignature1 = null,
-        $argToMatchParentSignature2 = null)
+                         $userinfo = null, $nativecode = null, $dummy1 = null,
+                         $dummy2 = null)
     {
         // The error is yet a DB error object
         if (is_object($code)) {
             // because we the static PEAR::raiseError, our global
             // handler should be used if it is set
-            if ($mode === null && isset($this) && !empty($this->_default_error_mode)) {
+            if ($mode === null && !empty($this->_default_error_mode)) {
                 $mode    = $this->_default_error_mode;
                 $options = $this->_default_error_options;
             }
@@ -1906,7 +1911,7 @@ class DB_common extends PEAR
             return $tmp;
         }
 
-        if ($userinfo === null && isset($this)) {
+        if ($userinfo === null) {
             $userinfo = $this->last_query;
         }
 
@@ -2261,10 +2266,21 @@ class DB_common extends PEAR
         }
     }
 
-    function lastInsertId() {
+    // }}}
+    // {{{ lastInsertId()
+
+   /**
+    * Get the most recently inserted Id
+    *
+    * @throws RuntimeException
+    */
+    function lastInsertId()
+    {
         throw new \RuntimeException("Not implemented: " . get_class($this) . '::lastInsertId');
     }
+
     // }}}
+
 }
 
 /*

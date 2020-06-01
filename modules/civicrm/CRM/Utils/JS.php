@@ -1,35 +1,19 @@
 <?php
 /*
-+--------------------------------------------------------------------+
-| CiviCRM version 5                                                  |
-+--------------------------------------------------------------------+
-| Copyright CiviCRM LLC (c) 2004-2019                                |
-+--------------------------------------------------------------------+
-| This file is a part of CiviCRM.                                    |
-|                                                                    |
-| CiviCRM is free software; you can copy, modify, and distribute it  |
-| under the terms of the GNU Affero General Public License           |
-| Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
-|                                                                    |
-| CiviCRM is distributed in the hope that it will be useful, but     |
-| WITHOUT ANY WARRANTY; without even the implied warranty of         |
-| MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
-| See the GNU Affero General Public License for more details.        |
-|                                                                    |
-| You should have received a copy of the GNU Affero General Public   |
-| License and the CiviCRM Licensing Exception along                  |
-| with this program; if not, contact CiviCRM LLC                     |
-| at info[AT]civicrm[DOT]org. If you have questions about the        |
-| GNU Affero General Public License or the licensing of CiviCRM,     |
-| see the CiviCRM license FAQ at http://civicrm.org/licensing        |
-+--------------------------------------------------------------------+
+ +--------------------------------------------------------------------+
+ | Copyright CiviCRM LLC. All rights reserved.                        |
+ |                                                                    |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
+ +--------------------------------------------------------------------+
  */
 
 /**
  * Parse Javascript content and extract translatable strings.
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2019
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 class CRM_Utils_JS {
 
@@ -143,11 +127,14 @@ class CRM_Utils_JS {
    */
   public static function decode($js) {
     $js = trim($js);
-    if ($js[0] === "'" || $js[0] === '"') {
+    $first = substr($js, 0, 1);
+    $last = substr($js, -1);
+    if ($last === $first && ($first === "'" || $first === '"')) {
       // Use a temp placeholder for escaped backslashes
-      return str_replace(['\\\\', "\\'", '\\"', '\\&', '\\/', '**backslash**'], ['**backslash**', "'", '"', '&', '/', '\\'], substr($js, 1, -1));
+      $backslash = chr(0) . 'backslash' . chr(0);
+      return str_replace(['\\\\', "\\'", '\\"', '\\&', '\\/', $backslash], [$backslash, "'", '"', '&', '/', '\\'], substr($js, 1, -1));
     }
-    if ($js[0] === '{' || $js[0] === '[') {
+    if (($first === '{' && $last === '}') || ($first === '[' && $last === ']')) {
       $obj = self::getRawProps($js);
       foreach ($obj as $idx => $item) {
         $obj[$idx] = self::decode($item);
@@ -155,6 +142,35 @@ class CRM_Utils_JS {
       return $obj;
     }
     return json_decode($js);
+  }
+
+  /**
+   * Encodes a variable to js notation (not strict json) suitable for e.g. an angular attribute.
+   *
+   * Like json_encode() but the output looks more like native javascript,
+   * with single quotes around strings and no unnecessary quotes around object keys.
+   *
+   * Ex input: [
+   *   'a' => 'Apple',
+   *   'b' => 'Banana',
+   *   'c' => [1, 2, 3],
+   * ]
+   * Ex output: {a: 'Apple', b: 'Banana', c: [1, 2, 3]}
+   *
+   * @param mixed $value
+   * @return string
+   */
+  public static function encode($value) {
+    if (is_array($value)) {
+      return self::writeObject($value, TRUE);
+    }
+    $result = json_encode($value, JSON_UNESCAPED_SLASHES);
+    // Convert double-quotes around string to single quotes
+    if (is_string($value) && substr($result, 0, 1) === '"' && substr($result, -1) === '"') {
+      $backslash = chr(0) . 'backslash' . chr(0);
+      return "'" . str_replace(['\\\\', '\\"', "'", $backslash], [$backslash, '"', "\\'", '\\\\'], substr($result, 1, -1)) . "'";
+    }
+    return $result;
   }
 
   /**
@@ -256,7 +272,7 @@ class CRM_Utils_JS {
     $brackets = isset($obj[0]) && array_keys($obj) === range(0, count($obj) - 1) ? ['[', ']'] : ['{', '}'];
     foreach ($obj as $key => $val) {
       if ($encodeValues) {
-        $val = json_encode($val, JSON_UNESCAPED_SLASHES);
+        $val = self::encode($val);
       }
       if ($brackets[0] == '{') {
         // Enclose the key in quotes unless it is purely alphanumeric
