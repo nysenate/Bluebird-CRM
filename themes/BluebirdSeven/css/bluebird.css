@@ -20,17 +20,12 @@ a.helpicon {
   background: none !important;
 }
 
-/*13339 increase dialog z-index to overlap menu bar*/
-.crm-container.ui-dialog {
-  z-index: 100000 !important;
+/*13339 allow ui-dialogs to overlap menu bar*/
+@media (min-width: 768px) {
+  body.crm-menubar-over-cms-menu #civicrm-menu {
+    z-index: 99;
+  }
 }
-.select2-drop {
-  z-index: 100000 !important;
-}
-.ui-datepicker {
-  z-index: 100001 !important;
-}
-
 
 /*no user logged in page*/
 body.user-no-roles {
