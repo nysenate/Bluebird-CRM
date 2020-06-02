@@ -2514,7 +2514,8 @@ INNER JOIN  civicrm_option_group grp ON (grp.id = option_group_id AND grp.name =
     $viewOnlyActivities = [
       'Email' => CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'activity_type_id', 'Email'),
     ];
-    if (self::checkEditInboundEmailsPermissions()) {
+    //NYSS 12523 correct display logic
+    if (!self::checkEditInboundEmailsPermissions()) {
       $viewOnlyActivities['Inbound Email'] = CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'activity_type_id', 'Inbound Email');
     }
     return $viewOnlyActivities;
