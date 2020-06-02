@@ -126,9 +126,9 @@ function export_civicrm_buildForm( $formName, &$form ) {
   if ($formName == 'CRM_Export_Form_Select') {
     $form->addElement('checkbox', 'street_long', ts('Street Address Long Form'), NULL);
 
-    CRM_Core_Region::instance('form-body')->add(array(
+    CRM_Core_Region::instance('form-body')->add([
       'template' => 'CRM/NYSS/ExportSelect.tpl',
-    ));
+    ]);
     CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.export', 'js/ExportSelect.js');
   }
 
@@ -169,25 +169,25 @@ function export_civicrm_export($exportTempTable, $headerRows, $sqlColumns, $expo
 
   //field exclusions; only implement for primary export option
   if ($_POST['exportOption'] == 1) {
-    $headerRemove = array(
+    $headerRemove = [
       'IM Service Provider',
       'Group(s)',
       'Tag(s)',
       'Note(s)',
-    );
+    ];
     foreach ($headerRows as $key => $headerRow) {
       if (in_array( $headerRow, $headerRemove) ) {
         unset( $headerRows[$key] );
       }
     }
 
-    $sqlRemove = array(
+    $sqlRemove = [
       'provider_id',
       'groups',
       'tags',
       'notes',
       'case_activity_subject',//TODO should really just address in headers
-    );
+    ];
     foreach ($sqlRemove as $sqlField) {
       unset($sqlColumns[$sqlField]);
     }
@@ -245,7 +245,7 @@ function export_civicrm_export($exportTempTable, $headerRows, $sqlColumns, $expo
   //4426 change street suffix to long form
   if ($_POST['street_long'] == 1) {
     //construct pattern array from address_abbreviations
-    $patReplace = array();
+    $patReplace = [];
 
     $sql = "
       SELECT DISTINCT normalized, long_form
@@ -304,7 +304,6 @@ function export_civicrm_export($exportTempTable, $headerRows, $sqlColumns, $expo
       }
     }
     $dao->free();
-
   } //end street_long
 
   //CRM_Core_Error::debug('exportTempTable',$exportTempTable);exit();
@@ -326,7 +325,7 @@ function export_civicrm_export($exportTempTable, $headerRows, $sqlColumns, $expo
   }
 
   //3665 code copied from CRM_Export_BAO_Export::writeCSVFromTable, just to modify the order clause
-  $writeHeader = true;
+  $writeHeader = TRUE;
   $offset = 0;
   $limit = 100;
 
@@ -355,7 +354,7 @@ function export_civicrm_export($exportTempTable, $headerRows, $sqlColumns, $expo
   if ($exportMode == CRM_Export_Form_Select::ACTIVITY_EXPORT &&
     $_POST['exportOption'] == 1
   ) {
-    $rm = array(
+    $rm = [
       'source_record_id',
       'activity_is_test',
       'activity_campaign_id',
@@ -365,7 +364,7 @@ function export_civicrm_export($exportTempTable, $headerRows, $sqlColumns, $expo
       'Campaign ID',
       'Campaign Title',
       'Engagement Index',
-    );
+    ];
     foreach ($headerRows as $key => $headerRow) {
       if (in_array( $headerRow, $rm)) {
         unset($headerRows[$key]);
@@ -386,13 +385,13 @@ function export_civicrm_export($exportTempTable, $headerRows, $sqlColumns, $expo
       break;
     }
 
-    $componentDetails = array( );
+    $componentDetails = [];
     while ($dao->fetch()) {
-      $row = array();
+      $row = [];
 
       foreach ($sqlColumns as $column => $dontCare) {
         //9018 apply activity details cleanup
-        if (in_array($column, array('activity_details', 'case_activity_details'))) {
+        if (in_array($column, ['activity_details', 'case_activity_details'])) {
           $row[$column] = _cleanHTML($dao->$column);
         }
         else {
@@ -408,9 +407,9 @@ function export_civicrm_export($exportTempTable, $headerRows, $sqlColumns, $expo
 
     CRM_Core_Report_Excel::writeCSVFile(
       $obj->getExportFileName(),
-      $headerRows, $componentDetails, null, $writeHeader );
+      $headerRows, $componentDetails, $writeHeader );
 
-    $writeHeader = false;
+    $writeHeader = FALSE;
     $offset += $limit;
   }
 
