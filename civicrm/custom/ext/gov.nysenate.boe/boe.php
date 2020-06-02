@@ -164,14 +164,14 @@ function boe_civicrm_buildForm($formName, &$form) {
     }
     //Civi::log()->debug(__FUNCTION__, ['addressOptions' => $addressOptions]);
 
+    $boeAddressBlockId = NULL;
+
     foreach ($blocks as $label => $name) {
       foreach ($values[$name] as $blockId => $block) {
         //process BOE locking, etc.
         if ($boardOfElectionId == CRM_Utils_Array::value('location_type_id', $block)) {
           if ($name == 'address') {
-            CRM_Core_Resources::singleton()->addVars('NYSS', [
-              'boeAddressBlockId' => $blockId,
-            ]);
+            $boeAddressBlockId = $blockId;
 
             foreach ($addressOptions as $key => $value) {
               //empty means the option is not enabled and can be skipped
@@ -196,12 +196,6 @@ function boe_civicrm_buildForm($formName, &$form) {
 
               //process address data element.
               _boe_lockElement($form, "address[$blockId][$key]");
-            }
-
-            //hide 'Use Shared Address' for BOE
-            if ($form->elementExists("address[{$blockId}][use_shared_address]")) {
-              //$form->removeElement("address[{$blockId}][use_shared_address]");
-              //$form->removeElement("address[{$blockId}][master_contact_id]");
             }
           }
           else {
@@ -234,6 +228,10 @@ function boe_civicrm_buildForm($formName, &$form) {
         _boe_unsetLocTypeOptions($form, $name, 1);
       }
     }
+
+    CRM_Core_Resources::singleton()->addVars('NYSS', [
+      'boeAddressBlockId' => $boeAddressBlockId,
+    ]);
   }
 
   $inlineBlockBOE = [
