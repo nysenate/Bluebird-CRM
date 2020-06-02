@@ -1,34 +1,18 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2019
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  * $Id$
  *
  */
@@ -106,7 +90,7 @@ class CRM_Custom_Form_Field extends CRM_Core_Form {
       $params = ['id' => $this->_id];
       CRM_Core_BAO_CustomField::retrieve($params, $this->_values);
       // note_length is an alias for the text_length field
-      $this->_values['note_length'] = CRM_Utils_Array::value('text_length', $this->_values);
+      $this->_values['note_length'] = $this->_values['text_length'] ?? NULL;
       // custom group id
       $this->_gid = $this->_values['custom_group_id'];
     }
@@ -587,7 +571,7 @@ class CRM_Custom_Form_Field extends CRM_Core_Form {
    *                  true otherwise
    */
   public static function formRule($fields, $files, $self) {
-    $default = CRM_Utils_Array::value('default_value', $fields);
+    $default = $fields['default_value'] ?? NULL;
 
     $errors = [];
 

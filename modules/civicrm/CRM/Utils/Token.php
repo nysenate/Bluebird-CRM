@@ -1,34 +1,18 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2019
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 
 /**
@@ -51,6 +35,7 @@ class CRM_Utils_Token {
     ],
     'mailing' => [
       'id',
+      'key',
       'name',
       'group',
       'subject',
@@ -466,6 +451,14 @@ class CRM_Utils_Token {
         $value = $mailing ? $mailing->id : 'undefined';
         break;
 
+      // Key is the ID, or the hash when the hash URLs setting is enabled
+      case 'key':
+        $value = $mailing->id;
+        if ($hash = CRM_Mailing_BAO_Mailing::getMailingHash($value)) {
+          $value = $hash;
+        }
+        break;
+
       case 'name':
         $value = $mailing ? $mailing->name : 'Mailing Name';
         break;
@@ -608,10 +601,10 @@ class CRM_Utils_Token {
       $value = "{action.$token}";
     }
     else {
-      $value = CRM_Utils_Array::value($token, $addresses);
+      $value = $addresses[$token] ?? NULL;
 
       if ($value == NULL) {
-        $value = CRM_Utils_Array::value($token, $urls);
+        $value = $urls[$token] ?? NULL;
       }
 
       if ($value && $html) {
@@ -729,7 +722,7 @@ class CRM_Utils_Token {
       $noReplace = TRUE;
     }
     elseif ($token == 'checksum') {
-      $hash = CRM_Utils_Array::value('hash', $contact);
+      $hash = $contact['hash'] ?? NULL;
       $contactID = CRM_Utils_Array::retrieveValueRecursive($contact, 'contact_id');
       $cs = CRM_Contact_BAO_Contact_Utils::generateChecksum($contactID,
         NULL,
@@ -851,7 +844,7 @@ class CRM_Utils_Token {
     $html = FALSE,
     $escapeSmarty = FALSE
   ) {
-    $value = CRM_Utils_Array::value("{$category}.{$token}", $contact);
+    $value = $contact["{$category}.{$token}"] ?? NULL;
 
     if ($value && !$html) {
       $value = str_replace('&amp;', '&', $value);
@@ -1619,7 +1612,7 @@ class CRM_Utils_Token {
 
   /**
    * @param int $caseId
-   * @param int $str
+   * @param string $str
    * @param array $knownTokens
    * @param bool $escapeSmarty
    * @return string
@@ -1648,7 +1641,7 @@ class CRM_Utils_Token {
     }
     $field = civicrm_api3($entity, 'getfield', ['action' => 'get', 'name' => $token, 'get_options' => 'get']);
     $field = $field['values'];
-    $fieldType = CRM_Utils_Array::value('type', $field);
+    $fieldType = $field['type'] ?? NULL;
     // Boolean fields
     if ($fieldType == CRM_Utils_Type::T_BOOLEAN && empty($field['options'])) {
       $field['options'] = [ts('No'), ts('Yes')];
@@ -1891,7 +1884,7 @@ class CRM_Utils_Token {
       else {
         $split = explode('.', trim($k, '{}'));
         if (isset($split[1])) {
-          $entity = array_key_exists($split[1], CRM_Core_DAO_Address::export()) ? 'Address' : ucfirst($split[0]);
+          $entity = array_key_exists($split[1], CRM_Core_DAO_Address::export()) ? 'Address' : ucwords(str_replace('_', ' ', $split[0]));
         }
         else {
           $entity = 'Contact';

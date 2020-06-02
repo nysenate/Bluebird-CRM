@@ -1,4 +1,5 @@
 .DS_Store
+Net_SMTP-*.tgz
 
 # Tests
 run-tests.log

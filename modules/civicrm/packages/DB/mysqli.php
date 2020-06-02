@@ -6,7 +6,7 @@
  * The PEAR DB driver for PHP's mysqli extension
  * for interacting with MySQL databases
  *
- * PHP versions 4 and 5
+ * PHP version 5
  *
  * LICENSE: This source file is subject to version 3.0 of the PHP license
  * that is available through the world-wide-web at the following URI:
@@ -19,7 +19,7 @@
  * @author     Daniel Convissor <danielc@php.net>
  * @copyright  1997-2007 The PHP Group
  * @license    http://www.php.net/license/3_0.txt  PHP License 3.0
- * @version    CVS: $Id: mysqli.php,v 1.82 2007/09/21 13:40:41 aharvey Exp $
+ * @version    CVS: $Id$
  * @link       http://pear.php.net/package/DB
  */
 
@@ -43,7 +43,7 @@ require_once 'DB/common.php';
  * @author     Daniel Convissor <danielc@php.net>
  * @copyright  1997-2007 The PHP Group
  * @license    http://www.php.net/license/3_0.txt  PHP License 3.0
- * @version    Release: 1.7.13
+ * @version    Release: 1.9.3
  * @link       http://pear.php.net/package/DB
  * @since      Class functional since Release 1.6.3
  */
@@ -112,6 +112,8 @@ class DB_mysqli extends DB_common
         1136 => DB_ERROR_VALUE_COUNT_ON_ROW,
         1142 => DB_ERROR_ACCESS_VIOLATION,
         1146 => DB_ERROR_NOSUCHTABLE,
+        1205 => DB_ERROR_LOCK_TIMEOUT,
+        1213 => DB_ERROR_DEADLOCK,
         1216 => DB_ERROR_CONSTRAINT,
         1217 => DB_ERROR_CONSTRAINT,
         1356 => DB_ERROR_INVALID_VIEW,
@@ -225,7 +227,7 @@ class DB_mysqli extends DB_common
     // {{{ constructor
 
     /**
-     * This constructor calls <kbd>$this->DB_common()</kbd>
+     * This constructor calls <kbd>parent::__construct()</kbd>
      *
      * @return void
      */
@@ -254,7 +256,7 @@ class DB_mysqli extends DB_common
      * Example of how to connect using SSL:
      * <code>
      * require_once 'DB.php';
-     * 
+     *
      * $dsn = array(
      *     'phptype'  => 'mysqli',
      *     'username' => 'someuser',
@@ -267,11 +269,11 @@ class DB_mysqli extends DB_common
      *     'capath'   => '/path/to/ca/dir',
      *     'cipher'   => 'AES',
      * );
-     * 
+     *
      * $options = array(
      *     'ssl' => true,
      * );
-     * 
+     *
      * $db = DB::connect($dsn, $options);
      * if (PEAR::isError($db)) {
      *     die($db->getMessage());
@@ -498,7 +500,7 @@ class DB_mysqli extends DB_common
      */
     function freeResult($result)
     {
-       if (!$result instanceof mysqli_result) {
+        if (! $result instanceof mysqli_result) {
             return false;
         }
         mysqli_free_result($result);
@@ -998,7 +1000,7 @@ class DB_mysqli extends DB_common
             $got_string = false;
         }
 
-        if (!is_a($id, 'mysqli_result')) {
+        if (!is_object($id) || !is_a($id, 'mysqli_result')) {
             return $this->mysqliRaiseError(DB_ERROR_NEED_MORE_DATA);
         }
 
@@ -1036,6 +1038,10 @@ class DB_mysqli extends DB_common
                                     ? $this->mysqli_types[$tmp->type]
                                     : 'unknown',
                 // http://bugs.php.net/?id=36579
+                //  Doc Bug #36579: mysqli_fetch_field length handling
+                // https://bugs.php.net/bug.php?id=62426
+                //  Bug #62426: mysqli_fetch_field_direct returns incorrect
+                //  length on UTF8 fields
                 'len'   => $tmp->length,
                 'flags' => $flags,
             );
@@ -1084,10 +1090,14 @@ class DB_mysqli extends DB_common
     }
 
     // }}}
+    // {{{ lastInsertId()
 
-    function lastInsertId() {
+    function lastInsertId()
+    {
         return mysqli_insert_id($this->connection);
     }
+
+    // }}}
 
 }
 

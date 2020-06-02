@@ -1,34 +1,18 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2019
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 class CRM_Contact_Form_Search_Criteria {
 
@@ -36,9 +20,10 @@ class CRM_Contact_Form_Search_Criteria {
    * @param CRM_Contact_Form_Search_Advanced $form
    *
    * @throws \CRM_Core_Exception
+   * @throws \CiviCRM_API3_Exception
    */
   public static function basic(&$form) {
-    $form->addSearchFieldMetadata(['Contact' => self::getSearchFieldMetadata()]);
+    $form->addSearchFieldMetadata(['Contact' => self::getFilteredSearchFieldMetadata('basic')]);
     $form->addFormFieldsFromMetadata();
     self::setBasicSearchFields($form);
     $form->addElement('hidden', 'hidden_basic', 1);
@@ -266,12 +251,49 @@ class CRM_Contact_Form_Search_Criteria {
       'last_name' => ['template_grouping' => 'basic'],
       'email' => ['title' => ts('Complete OR Partial Email'), 'entity' => 'Email', 'template_grouping' => 'basic'],
       'contact_tags' => ['name' => 'contact_tags', 'type' => CRM_Utils_Type::T_INT, 'is_pseudofield' => TRUE, 'template_grouping' => 'basic'],
+      'created_date' => ['name' => 'created_date', 'template_grouping' => 'changeLog'],
+      'modified_date' => ['name' => 'modified_date', 'template_grouping' => 'changeLog'],
+      'birth_date' => ['name' => 'birth_date', 'template_grouping' => 'demographic'],
+      'deceased_date' => ['name' => 'deceased_date', 'template_grouping' => 'demographic'],
+      'is_deceased' => ['is_deceased', 'template_grouping' => 'demographic'],
+      'relationship_start_date' => ['name' => 'relationship_start_date', 'template_grouping' => 'relationship'],
+      'relationship_end_date' => ['name' => 'relationship_end_date', 'template_grouping' => 'relationship'],
+       // PseudoRelationship date field.
+      'relation_active_period_date' => [
+        'name' => 'relation_active_period_date',
+        'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
+        'title' => ts('Active Period'),
+        'table_name' => 'civicrm_relationship',
+        'where' => 'civicrm_relationship.start_date',
+        'where_end' => 'civicrm_relationship.end_date',
+        'html' => ['type' => 'SelectDate', 'formatType' => 'activityDateTime'],
+        'template_grouping' => 'relationship',
+      ],
     ];
-    $metadata = civicrm_api3('Contact', 'getfields', [])['values'];
+
+    $metadata = civicrm_api3('Relationship', 'getfields', [])['values'];
+    $metadata = array_merge($metadata, civicrm_api3('Contact', 'getfields', [])['values']);
     foreach ($fields as $fieldName => $field) {
       $fields[$fieldName] = array_merge(CRM_Utils_Array::value($fieldName, $metadata, []), $field);
     }
+    return $fields;
+  }
 
+  /**
+   * Get search field metadata filtered by the template grouping field.
+   *
+   * @param string $filter
+   *
+   * @return array
+   * @throws \CiviCRM_API3_Exception
+   */
+  public static function getFilteredSearchFieldMetadata($filter) {
+    $fields = self::getSearchFieldMetadata();
+    foreach ($fields as $index => $field) {
+      if ($field['template_grouping'] !== $filter) {
+        unset($fields[$index]);
+      }
+    }
     return $fields;
   }
 
@@ -279,13 +301,13 @@ class CRM_Contact_Form_Search_Criteria {
    * Defines the fields that can be displayed for the basic search section.
    *
    * @param CRM_Core_Form $form
+   *
+   * @throws \CiviCRM_API3_Exception
    */
   protected static function setBasicSearchFields($form) {
     $searchFields = [];
-    foreach (self::getSearchFieldMetadata() as $fieldName => $field) {
-      if ($field['template_grouping'] === 'basic') {
-        $searchFields[$fieldName] = $field;
-      }
+    foreach (self::getFilteredSearchFieldMetadata('basic') as $fieldName => $field) {
+      $searchFields[$fieldName] = $field;
     }
     $form->assign('basicSearchFields', array_merge(self::getBasicSearchFields(), $searchFields));
   }
@@ -296,74 +318,64 @@ class CRM_Contact_Form_Search_Criteria {
    *
    */
   public static function getBasicSearchFields() {
+    $userFramework = CRM_Core_Config::singleton()->userFramework;
     return [
-      'sort_name' => ['name' => 'sort_name', 'data_type' => 'String'],
-      'email' => ['name' => 'email', 'data_type' => 'String'],
-      'email_on_hold' => ['name' => 'email_on_hold', 'data_type' => 'CommaSeparatedIntegers'],
-      'contact_type' => ['name' => 'contact_type', 'data_type' => 'String'],
+      // For now an empty array is still left in place for ordering.
+      'sort_name' => [],
+      'email' => ['name' => 'email'],
+      'contact_type' => ['name' => 'contact_type'],
       'group' => [
         'name' => 'group',
         'template' => 'CRM/Contact/Form/Search/Criteria/Fields/group.tpl',
-        'data_type' => 'CommaSeparatedIntegers',
       ],
-      'contact_tags' => ['name' => 'contact_tags', 'data_type' => 'CommaSeparatedIntegers'],
-      'tag_types_text' => ['name' => 'tag_types_text', 'data_type' => 'String'],
+      'contact_tags' => ['name' => 'contact_tags'],
+      'tag_types_text' => ['name' => 'tag_types_text'],
       'tag_search' => [
         'name' => 'tag_search',
         'help' => ['id' => 'id-all-tags'],
-        'data_type' => 'String',
       ],
       'tag_set' => [
         'name' => 'tag_set',
         'is_custom' => TRUE,
         'template' => 'CRM/Contact/Form/Search/Criteria/Fields/tag_set.tpl',
-        'data_type' => 'CommaSeparatedIntegers',
       ],
       'all_tag_types' => [
         'name' => 'all_tag_types',
         'class' => 'search-field__span-3 search-field__checkbox',
         'help' => ['id' => 'id-all-tag-types'],
-        'data_type' => 'String',
       ],
       'phone_numeric' => [
         'name' => 'phone_numeric',
         'description' => ts('Punctuation and spaces are ignored.'),
-        'data_type' => 'String',
       ],
-      'phone_location_type_id' => ['name' => 'phone_location_type_id', 'data_type' => 'Integer'],
-      'phone_phone_type_id' => ['name' => 'phone_phone_type_id', 'data_type' => 'Integer'],
+      'phone_location_type_id' => ['name' => 'phone_location_type_id'],
+      'phone_phone_type_id' => ['name' => 'phone_phone_type_id'],
       'privacy_toggle' => [
         'name' => 'privacy_toggle',
         'class' => 'search-field__span-2',
         'template' => 'CRM/Contact/Form/Search/Criteria/Fields/privacy_toggle.tpl',
-        'data_type' => 'Integer',
       ],
       'preferred_communication_method' => [
         'name' => 'preferred_communication_method',
         'template' => 'CRM/Contact/Form/Search/Criteria/Fields/preferred_communication_method.tpl',
-        'data_type' => 'String',
       ],
       'contact_source' => [
         'name' => 'contact_source',
         'help' => ['id' => 'id-source', 'file' => 'CRM/Contact/Form/Contact'],
-        'data_type' => 'String',
       ],
-      'job_title' => ['name' => 'job_title', 'data_type' => 'String'],
-      'preferred_language' => ['name' => 'preferred_language', 'data_type' => 'String'],
+      'job_title' => ['name' => 'job_title'],
+      'preferred_language' => ['name' => 'preferred_language'],
       'contact_id' => [
         'name' => 'contact_id',
         'help' => ['id' => 'id-contact-id', 'file' => 'CRM/Contact/Form/Contact'],
-        'data_type' => 'Integer',
       ],
       'external_identifier' => [
         'name' => 'external_identifier',
         'help' => ['id' => 'id-external-id', 'file' => 'CRM/Contact/Form/Contact'],
-        'data_type' => 'String',
       ],
       'uf_user' => [
         'name' => 'uf_user',
-        'description' => ts('Does the contact have a %1 Account?', [CRM_Core_Config::singleton()->userFramework]),
-        'data_type' => 'Positive',
+        'description' => ts('Does the contact have a %1 Account?', [$userFramework]),
       ],
     ];
   }
@@ -565,17 +577,15 @@ class CRM_Contact_Form_Search_Criteria {
 
   /**
    * @param CRM_Core_Form $form
+   *
+   * @throws \CiviCRM_API3_Exception
    */
   public static function changeLog(&$form) {
     $form->add('hidden', 'hidden_changeLog', 1);
-
+    $form->addSearchFieldMetadata(['Contact' => self::getFilteredSearchFieldMetadata('changeLog')]);
+    $form->addFormFieldsFromMetadata();
     // block for change log
     $form->addElement('text', 'changed_by', ts('Modified By'), NULL);
-
-    $dates = [1 => ts('Added'), 2 => ts('Modified')];
-    $form->addRadio('log_date', NULL, $dates, ['allowClear' => TRUE]);
-
-    CRM_Core_Form_Date::buildDateRange($form, 'log_date', 1, '_low', '_high', ts('From:'), FALSE, FALSE);
   }
 
   /**
@@ -586,12 +596,15 @@ class CRM_Contact_Form_Search_Criteria {
   }
 
   /**
-   * @param $form
+   * @param CRM_Core_Form_Search $form
+   *
+   * @throws \CiviCRM_API3_Exception
    */
   public static function relationship(&$form) {
     $form->add('hidden', 'hidden_relationship', 1);
-
-    $allRelationshipType = [];
+    $form->addSearchFieldMetadata(['Relationship' => self::getFilteredSearchFieldMetadata('relationship')]);
+    $form->addFormFieldsFromMetadata();
+    $form->add('text', 'relation_description', ts('Description'), ['class' => 'twenty']);
     $allRelationshipType = CRM_Contact_BAO_Relationship::getContactRelationshipType(NULL, NULL, NULL, NULL, TRUE);
     $form->add('select', 'relation_type_id', ts('Relationship Type'), ['' => ts('- select -')] + $allRelationshipType, FALSE, ['multiple' => TRUE, 'class' => 'crm-select2']);
     $form->addElement('text', 'relation_target_name', ts('Target Contact'), CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Contact', 'sort_name'));
@@ -610,13 +623,6 @@ class CRM_Contact_Form_Search_Criteria {
         ['id' => 'relation_target_group', 'multiple' => 'multiple', 'class' => 'crm-select2']
       );
     }
-    CRM_Core_Form_Date::buildDateRange($form, 'relation_start_date', 1, '_low', '_high', ts('From:'), FALSE, FALSE);
-    CRM_Core_Form_Date::buildDateRange($form, 'relation_end_date', 1, '_low', '_high', ts('From:'), FALSE, FALSE);
-
-    CRM_Core_Form_Date::buildDateRange($form, 'relation_active_period_date', 1, '_low', '_high', ts('From:'), FALSE, FALSE);
-
-    // Add reltionship dates
-    CRM_Core_Form_Date::buildDateRange($form, 'relation_date', 1, '_low', '_high', ts('From:'), FALSE, FALSE);
 
     // add all the custom  searchable fields
     CRM_Core_BAO_Query::addCustomFormFields($form, ['Relationship']);
@@ -624,37 +630,29 @@ class CRM_Contact_Form_Search_Criteria {
 
   /**
    * @param CRM_Core_Form_Search $form
+   *
+   * @throws \CiviCRM_API3_Exception
    */
   public static function demographics(&$form) {
     $form->add('hidden', 'hidden_demographics', 1);
-
-    //NYSS 12133
-    foreach (self::getDemographicsSearchFields() as $name => $attributes) {
-      if ($name == 'gender_id') {
-        // radio button for gender
-        $genderOptions = array();
-        $gender = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'gender_id');
-        foreach ($gender as $key => $var) {
-          $genderOptions[$key] = $form->createElement('radio', NULL,
-            ts('Gender'), $var, $key,
-            array('id' => "civicrm_gender_{$var}_{$key}")
-          );
-        }
-        $form->addGroup($genderOptions, 'gender_id', $attributes['title'])->setAttribute('allowClear', TRUE);
-      }
-      elseif (strstr($name, 'age_')) {
-        $form->add('text', $name, $attributes['title'], array('size' => 6));
-        $form->addRule($name, ts('Please enter a positive integer'), 'positiveInteger');
-        $form->addDate('age_asof_date', ts('Age as of Date'), FALSE, array('formatType' => 'searchDate'));
-      }
-      elseif (in_array($name, ['birth_date', 'deceased_date'])) {
-        CRM_Core_Form_Date::buildDateRange($form, $name, 1, '_low', '_high', ts('From'), FALSE, FALSE, 'birth');
-      }
-      elseif ($name == 'is_deceased') {
-        // radio button for is_deceased
-        $form->addYesNo($name, $attributes['title'], TRUE);
-      }
+    $form->addSearchFieldMetadata(['Contact' => self::getFilteredSearchFieldMetadata('demographic')]);
+    $form->addFormFieldsFromMetadata();
+    // radio button for gender
+    $genderOptions = [];
+    $gender = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'gender_id');
+    foreach ($gender as $key => $var) {
+      $genderOptions[$key] = $form->createElement('radio', NULL,
+        ts('Gender'), $var, $key,
+        ['id' => "civicrm_gender_{$var}_{$key}"]
+      );
     }
+    $form->addGroup($genderOptions, 'gender_id', ts('Gender'))->setAttribute('allowClear', TRUE);
+
+    $form->add('number', 'age_low', ts('Min Age'), ['class' => 'four', 'min' => 0]);
+    $form->addRule('age_low', ts('Please enter a positive integer'), 'positiveInteger');
+    $form->add('number', 'age_high', ts('Max Age'), ['class' => 'four', 'min' => 0]);
+    $form->addRule('age_high', ts('Please enter a positive integer'), 'positiveInteger');
+    $form->add('datepicker', 'age_asof_date', ts('As of'), NULL, FALSE, ['time' => FALSE]);
   }
 
   /**
@@ -679,6 +677,8 @@ class CRM_Contact_Form_Search_Criteria {
    * Generate the custom Data Fields based for those with is_searchable = 1.
    *
    * @param CRM_Contact_Form_Search $form
+   *
+   * @throws \CiviCRM_API3_Exception
    */
   public static function custom(&$form) {
     $form->add('hidden', 'hidden_custom', 1);
@@ -698,8 +698,8 @@ class CRM_Contact_Form_Search_Criteria {
       foreach ($group['fields'] as $field) {
         $fieldId = $field['id'];
         $elementName = 'custom_' . $fieldId;
-        if ($field['data_type'] == 'Date' && $field['is_search_range']) {
-          CRM_Core_Form_Date::buildDateRange($form, $elementName, 1, '_from', '_to', ts('From:'), FALSE);
+        if ($field['data_type'] === 'Date' && $field['is_search_range']) {
+          $form->addDatePickerRange($elementName, $field['label']);
         }
         else {
           CRM_Core_BAO_CustomField::addQuickFormElement($form, $elementName, $fieldId, FALSE, TRUE);

@@ -1,34 +1,18 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2019
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 
 /**
@@ -81,48 +65,43 @@ class CRM_Core_Permission {
 
   /**
    * Given a permission string or array, check for access requirements
+   *
+   * Ex 1: Must have 'access CiviCRM'
+   * (string) 'access CiviCRM'
+   *
+   *  Ex 2: Must have 'access CiviCRM' and 'access Ajax API'
+   *    ['access CiviCRM', 'access Ajax API']
+   *
+   * Ex 3: Must have 'access CiviCRM' or 'access Ajax API'
+   *   [
+   *     ['access CiviCRM', 'access Ajax API'],
+   *   ],
+   *
+   * Ex 4: Must have 'access CiviCRM' or 'access Ajax API' AND 'access CiviEvent'
+   *   [
+   *     ['access CiviCRM', 'access Ajax API'],
+   *     'access CiviEvent',
+   *   ],
+   *
+   * Note that in permissions.php this is keyed by the action eg.
+   *   (access Civi || access AJAX) && (access CiviEvent || access CiviContribute)
+   *   'myaction' => [
+   *     ['access CiviCRM', 'access Ajax API'],
+   *     ['access CiviEvent', 'access CiviContribute']
+   *   ],
+   *
    * @param string|array $permissions
    *   The permission to check as an array or string -see examples.
    *
    * @param int $contactId
    *   Contact id to check permissions for. Defaults to current logged-in user.
    *
-   *  Ex 1
-   *
-   *  Must have 'access CiviCRM'
-   *  (string) 'access CiviCRM'
-   *
-   *
-   *  Ex 2 Must have 'access CiviCRM' and 'access Ajax API'
-   *   array('access CiviCRM', 'access Ajax API')
-   *
-   *  Ex 3 Must have 'access CiviCRM' or 'access Ajax API'
-   *   array(
-   *      array('access CiviCRM', 'access Ajax API'),
-   *   ),
-   *
-   *  Ex 4 Must have 'access CiviCRM' or 'access Ajax API' AND 'access CiviEvent'
-   *  array(
-   *    array('access CiviCRM', 'access Ajax API'),
-   *    'access CiviEvent',
-   *   ),
-   *
-   *  Note that in permissions.php this is keyed by the action eg.
-   *  (access Civi || access AJAX) && (access CiviEvent || access CiviContribute)
-   *  'myaction' => array(
-   *    array('access CiviCRM', 'access Ajax API'),
-   *    array('access CiviEvent', 'access CiviContribute')
-   *  ),
-   *
    * @return bool
-   *   true if yes, else false
+   *   true if contact has permission(s), else false
    */
   public static function check($permissions, $contactId = NULL) {
     $permissions = (array) $permissions;
-    $userId = NULL;
-    if ($contactId) {
-      $userId = CRM_Core_BAO_UFMatch::getUFId($contactId);
-    }
+    $userId = CRM_Core_BAO_UFMatch::getUFId($contactId);
 
     /** @var CRM_Core_Permission_Temp $tempPerm */
     $tempPerm = CRM_Core_Config::singleton()->userPermissionTemp;
@@ -299,7 +278,7 @@ class CRM_Core_Permission {
     }
 
     $groups = self::ufGroup($type);
-    return !empty($groups) && in_array($gid, $groups) ? TRUE : FALSE;
+    return !empty($groups) && in_array($gid, $groups);
   }
 
   /**
@@ -486,7 +465,7 @@ class CRM_Core_Permission {
         'CiviMail' => 'access CiviMail',
         'CiviAuction' => 'add auction items',
       ];
-      $permissionName = CRM_Utils_Array::value($module, $editPermissions);
+      $permissionName = $editPermissions[$module] ?? NULL;
     }
 
     if ($module == 'CiviCase' && !$permissionName) {
@@ -976,6 +955,12 @@ class CRM_Core_Permission {
       'duplicatecheck' => [
         'access CiviCRM',
       ],
+      'merge' => ['merge duplicate contacts'],
+    ];
+
+    $permissions['dedupe'] = [
+      'getduplicates' => ['access CiviCRM'],
+      'getstatistics' => ['access CiviCRM'],
     ];
 
     // CRM-16963 - Permissions for country.
@@ -1179,6 +1164,15 @@ class CRM_Core_Permission {
         'edit all events',
       ],
     ];
+    // Exception refers to dedupe_exception.
+    $permissions['exception'] = [
+      'default' => ['merge duplicate contacts'],
+    ];
+
+    $permissions['job'] = [
+      'process_batch_merge' => ['merge duplicate contacts'],
+    ];
+    $permissions['rule_group']['get'] = [['merge duplicate contacts', 'administer CiviCRM']];
     // Loc block is only used for events
     $permissions['loc_block'] = $permissions['event'];
 
@@ -1633,7 +1627,7 @@ class CRM_Core_Permission {
    * @return bool
    */
   public static function isMultisiteEnabled() {
-    return Civi::settings()->get('is_enabled') ? TRUE : FALSE;
+    return (bool) Civi::settings()->get('is_enabled');
   }
 
   /**

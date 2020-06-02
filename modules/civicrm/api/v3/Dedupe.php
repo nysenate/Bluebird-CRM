@@ -1,27 +1,11 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
@@ -107,7 +91,8 @@ function civicrm_api3_dedupe_getstatistics($params) {
     $params['rule_group_id'],
     CRM_Utils_Array::value('group_id', $params),
     CRM_Utils_Array::value('criteria', $params, []),
-    CRM_Utils_Array::value('check_permissions', $params, [])
+    !empty($params['check_permissions']),
+    CRM_Utils_Array::value('search_limit', $params, 0)
   ));
   return civicrm_api3_create_success($stats);
 }
@@ -135,6 +120,11 @@ function _civicrm_api3_dedupe_getstatistics_spec(&$params) {
     'title' => ts('Criteria'),
     'description' => ts('Dedupe search criteria, as parsable by v3 Contact.get api'),
   ];
+  $spec['search_limit'] = [
+    'title' => ts('Number of contacts to look for matches for.'),
+    'type' => CRM_Utils_Type::T_INT,
+    'api.default' => (int) Civi::settings()->get('dedupe_default_limit'),
+  ];
 
 }
 
@@ -150,7 +140,7 @@ function _civicrm_api3_dedupe_getstatistics_spec(&$params) {
  */
 function civicrm_api3_dedupe_getduplicates($params) {
   $options = _civicrm_api3_get_options_from_params($params);
-  $dupePairs = CRM_Dedupe_Merger::getDuplicatePairs($params['rule_group_id'], NULL, TRUE, $options['limit'], FALSE, TRUE, $params['criteria'], CRM_Utils_Array::value('check_permissions', $params), CRM_Utils_Array::value('search_limit', $params, 0));
+  $dupePairs = CRM_Dedupe_Merger::getDuplicatePairs($params['rule_group_id'], NULL, TRUE, $options['limit'], FALSE, TRUE, $params['criteria'], CRM_Utils_Array::value('check_permissions', $params), CRM_Utils_Array::value('search_limit', $params, 0), CRM_Utils_Array::value('is_force_new_search', $params));
   return civicrm_api3_create_success($dupePairs);
 }
 
@@ -177,6 +167,10 @@ function _civicrm_api3_dedupe_getduplicates_spec(&$params) {
     'title' => ts('Number of contacts to look for matches for.'),
     'type' => CRM_Utils_Type::T_INT,
     'api.default' => (int) Civi::settings()->get('dedupe_default_limit'),
+  ];
+  $spec['is_force_new_search'] = [
+    'title' => ts('Force a new search, refreshing any cached search'),
+    'type' => CRM_Utils_Type::T_BOOLEAN,
   ];
 
 }

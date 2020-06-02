@@ -7,7 +7,7 @@
 /**
  *
  */
-class CRM_iATS_Page_json {
+class CRM_Iats_Page_json {
 
   /**
    *
@@ -46,8 +46,7 @@ class CRM_iATS_Page_json {
     }
     // TODO: bail here if I don't have enough for my service request
     // use the iATSService object for interacting with iATS.
-    require_once "CRM/iATS/iATSService.php";
-    $iats = new iATS_Service_Request($options);
+    $iats = new CRM_Iats_iATSServiceRequest($options);
     $request['customerIPAddress'] = (function_exists('ip_address') ? ip_address() : $_SERVER['REMOTE_ADDR']);
     // Make the soap request.
     $response = $iats->request($credentials, $request);

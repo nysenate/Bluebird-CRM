@@ -1,34 +1,18 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2019
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  *
  */
 
@@ -106,7 +90,6 @@ class CRM_Case_Page_AJAX {
    */
   public function caseDetails() {
     $caseId = CRM_Utils_Type::escape($_GET['caseId'], 'Positive');
-    $cid = CRM_Utils_Type::escape($_GET['cid'], 'Positive');//NYSS 12189
 
     $case = civicrm_api3('Case', 'getsingle', [
       'id' => $caseId,
@@ -116,7 +99,6 @@ class CRM_Case_Page_AJAX {
 
     $caseStatuses = CRM_Case_PseudoConstant::caseStatus();
     $caseTypes = CRM_Case_PseudoConstant::caseType('title', FALSE);
-    //NYSS 12189 future core
     $caseDetails = "<table><tr><td>" . ts('Case Subject') . "</td><td>{$case['subject']}</td></tr>
                                   <tr><td>" . ts('Case Type') . "</td><td>{$caseTypes[$case['case_type_id']]}</td></tr>
                                   <tr><td>" . ts('Case Status') . "</td><td>{$caseStatuses[$case['status_id']]}</td></tr>

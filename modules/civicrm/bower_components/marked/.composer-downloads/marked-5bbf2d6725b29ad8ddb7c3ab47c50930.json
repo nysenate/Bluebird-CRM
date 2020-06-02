@@ -1,0 +1,12 @@
+{
+    "name": "civicrm/civicrm-core:marked",
+    "url": "https://github.com/markedjs/marked/archive/v0.8.0.zip",
+    "checksum": "fa5270a192bf88c02e698f2b20f8b15bc556bd8c3ca2e77baefba5c5c7c91904",
+    "ignore": [
+        ".*",
+        "*.json",
+        "*.md",
+        "Makefile",
+        "*/*"
+    ]
+}

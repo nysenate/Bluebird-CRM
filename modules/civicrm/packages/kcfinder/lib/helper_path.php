@@ -98,22 +98,23 @@ class path {
 
         // Backslash to slash convert
         if (strtoupper(substr(PHP_OS, 0, 3)) == "WIN") {
-            $path = strtr($path, '\\', '/');
+            $path = preg_replace('/([^\\\])\\\+([^\\\])/s', "$1/$2", $path);
+            if (substr($path, -1) == "\\") $path = substr($path, 0, -1);
+            if (substr($path, 0, 1) == "\\") $path = "/" . substr($path, 1);
         }
 
-        // Reduce the path by eliminating unnecessary ".", "..", and "//"
-        $parts = explode('/', $path);
-        $newparts = [];
-        foreach ($parts as $idx => $part) {
-          if ($part == '..' && count($newparts) > 0) {
-            array_pop($newparts);
-          }
-          elseif ($idx == 0 || ($part != '' && $part != '.')) {
-            $newparts[] = $part;
-          }
-        }
+        $path = preg_replace('/\/+/s', "/", $path);
 
-        $path = implode('/', $newparts);
+        $path = "/$path";
+        if (substr($path, -1) != "/")
+            $path .= "/";
+
+        $expr = '/\/([^\/]{1}|[^\.\/]{2}|[^\/]{3,})\/\.\.\//s';
+        while (preg_match($expr, $path))
+            $path = preg_replace($expr, "/", $path);
+
+        $path = substr($path, 0, -1);
+        $path = substr($path, 1);
         return $path;
     }
 

@@ -15,7 +15,7 @@
  * @author     Alan Knowles <alan@akbkhome.com>
  * @copyright  1997-2006 The PHP Group
  * @license    http://www.php.net/license/3_01.txt  PHP License 3.01
- * @version    CVS: $Id: DataObject.php 284150 2009-07-15 23:27:59Z alan_k $
+ * @version    CVS: $Id: DataObject.php 336751 2015-05-12 04:39:50Z alan_k $
  * @link       http://pear.php.net/package/DB_DataObject
  */
 
@@ -176,6 +176,10 @@ $GLOBALS['_DB_DATAOBJECT']['QUERYENDTIME'] = 0;
 
 
 // this will be horrifically slow!!!!
+// these two are BC/FC handlers for call in PHP4/5
+
+
+if (!defined('DB_DATAOBJECT_NO_OVERLOAD')) {
 
     class DB_DataObject_Overload
     {
@@ -190,6 +194,14 @@ $GLOBALS['_DB_DATAOBJECT']['QUERYENDTIME'] = 0;
             return array_keys(get_object_vars($this)) ;
         }
     }
+} else {
+    class DB_DataObject_Overload {}
+}
+
+
+
+
+
 
 
  /*
@@ -207,7 +219,7 @@ class DB_DataObject extends DB_DataObject_Overload
     * @access   private
     * @var      string
     */
-    var $_DB_DataObject_version = "1.8.12";
+    var $_DB_DataObject_version = "1.11.3";
 
     /**
      * The Database table (used by table extends)
@@ -262,7 +274,7 @@ class DB_DataObject extends DB_DataObject_Overload
             $v = $k;
             $keys = $this->keys();
             if (!$keys) {
-                $this->raiseError("No Keys available for {$this->__table}", DB_DATAOBJECT_ERROR_INVALIDCONFIG);
+                $this->raiseError("No Keys available for {$this->tableName()}", DB_DATAOBJECT_ERROR_INVALIDCONFIG);
                 return false;
             }
             $k = $keys[0];
@@ -280,65 +292,85 @@ class DB_DataObject extends DB_DataObject_Overload
     }
 
     /**
-     * An autoloading, caching static get method  using key, value (based on get)
+     * Get the value of the primary id
      *
-     * Usage:
-     * $object = DB_DataObject::staticGet("DbTable_mytable",12);
-     * or
-     * $object =  DB_DataObject::staticGet("DbTable_mytable","name","fred");
+     * While I normally use 'id' as the PRIMARY KEY value, some database use
+     * {table}_id as the column name.
      *
-     * or write it into your extended class:
-     * function &staticGet($k,$v=NULL) { return DB_DataObject::staticGet("This_Class",$k,$v);  }
+     * To save a bit of typing,
      *
-     * @param   string  $class class name
-     * @param   string  $k     column (or value if using keys)
-     * @param   string  $v     value (optional)
-     * @access  public
-     * @return  object
+     * $id = $do->pid();
+     *
+     * @return the id
      */
-    function &staticGet($class, $k, $v = null)
+    function pid()
     {
-        $lclass = strtolower($class);
-        global $_DB_DATAOBJECT;
-        if (empty($_DB_DATAOBJECT['CONFIG'])) {
-            DB_DataObject::_loadConfig();
+        $keys = $this->keys();
+        if (!$keys) {
+            $this->raiseError("No Keys available for {$this->tableName()}",
+                            DB_DATAOBJECT_ERROR_INVALIDCONFIG);
+            return false;
         }
-
-
-
-        $key = "$k:$v";
-        if ($v === null) {
-            $key = $k;
+        $k = $keys[0];
+        if (empty($this->$k)) { // we do not
+            $this->raiseError("pid() called on Object where primary key value not available",
+                            DB_DATAOBJECT_ERROR_NODATA);
+            return false;
         }
-        if (!empty($_DB_DATAOBJECT['CONFIG']['debug'])) {
-            DB_DataObject::debug("$class $key","STATIC GET - TRY CACHE");
-        }
-        if (!empty($_DB_DATAOBJECT['CACHE'][$lclass][$key])) {
-            return $_DB_DATAOBJECT['CACHE'][$lclass][$key];
-        }
-        if (!empty($_DB_DATAOBJECT['CONFIG']['debug'])) {
-            DB_DataObject::debug("$class $key","STATIC GET - NOT IN CACHE");
-        }
-
-        $obj = DB_DataObject::factory(substr($class,strlen($_DB_DATAOBJECT['CONFIG']['class_prefix'])));
-        if (PEAR::isError($obj)) {
-            DB_DataObject::raiseError("could not autoload $class", DB_DATAOBJECT_ERROR_NOCLASS);
-            $r = false;
-            return $r;
-        }
-
-        if (!isset($_DB_DATAOBJECT['CACHE'][$lclass])) {
-            $_DB_DATAOBJECT['CACHE'][$lclass] = array();
-        }
-        if (!$obj->get($k,$v)) {
-            DB_DataObject::raiseError("No Data return from get $k $v", DB_DATAOBJECT_ERROR_NODATA);
-
-            $r = false;
-            return $r;
-        }
-        $_DB_DATAOBJECT['CACHE'][$lclass][$key] = $obj;
-        return $_DB_DATAOBJECT['CACHE'][$lclass][$key];
+        return $this->$k;
     }
+
+
+
+    /**
+     * build the basic select query.
+     *
+     * @access private
+     */
+
+    function _build_select()
+    {
+        global $_DB_DATAOBJECT;
+        $quoteIdentifiers = !empty($_DB_DATAOBJECT['CONFIG']['quote_identifiers']);
+        if ($quoteIdentifiers) {
+            $this->_connect();
+            $DB = $_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
+        }
+        $tn = ($quoteIdentifiers ? $DB->quoteIdentifier($this->tableName()) : $this->tableName()) ;
+        if (!empty($this->_query['derive_table']) && !empty($this->_query['derive_select']) ) {
+
+            // this is a derived select..
+            // not much support in the api yet..
+
+             $sql = 'SELECT ' .
+               $this->_query['derive_select']
+               .' FROM ( SELECT'.
+                    $this->_query['data_select'] . " \n" .
+                    " FROM   $tn  " . $this->_query['useindex'] . " \n" .
+                    $this->_join . " \n" .
+                    $this->_query['condition'] . " \n" .
+                    $this->_query['group_by'] . " \n" .
+                    $this->_query['having'] . " \n" .
+                ') ' . $this->_query['derive_table'];
+
+            return $sql;
+
+
+        }
+
+
+
+        $sql = 'SELECT ' .
+            $this->_query['data_select'] . " \n" .
+            " FROM   $tn  " . $this->_query['useindex'] . " \n" .
+            $this->_join . " \n" .
+            $this->_query['condition'] . " \n" .
+            $this->_query['group_by'] . " \n" .
+            $this->_query['having'] . " \n";
+
+        return $sql;
+    }
+
 
     /**
      * find results, either normal or crosstable
@@ -352,6 +384,10 @@ class DB_DataObject extends DB_DataObject_Overload
      *
      * will set $object->N to number of rows, and expects next command to fetch rows
      * will return $object->N
+     *
+     * if an error occurs $object->N will be set to false and return value will also be false;
+     * if numRows is not supported it will
+     *
      *
      * @param   boolean $n Fetch first result
      * @access  public
@@ -374,7 +410,7 @@ class DB_DataObject extends DB_DataObject_Overload
         if (!empty($_DB_DATAOBJECT['CONFIG']['debug'])) {
             $this->debug($n, "find",1);
         }
-        if (!$this->__table) {
+        if (!strlen($this->tableName())) {
             // xdebug can backtrace this!
             trigger_error("NO \$__table SPECIFIED in class definition",E_USER_ERROR);
         }
@@ -382,20 +418,21 @@ class DB_DataObject extends DB_DataObject_Overload
         $query_before = $this->_query;
         $this->_build_condition($this->table()) ;
 
-        $quoteIdentifiers = !empty($_DB_DATAOBJECT['CONFIG']['quote_identifiers']);
+
         $this->_connect();
-        $DB = &$_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
+        $DB = $_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
+
+
+        $sql = $this->_build_select();
+
+        foreach ($this->_query['unions'] as $union_ar) {
+            $sql .=   $union_ar[1] .   $union_ar[0]->_build_select() . " \n";
+        }
+
+        $sql .=  $this->_query['order_by']  . " \n";
+
 
         /* We are checking for method modifyLimitQuery as it is PEAR DB specific */
-        $sql = 'SELECT ' .
-            $this->_query['data_select'] . " \n" .
-            ' FROM ' . ($quoteIdentifiers ? $DB->quoteIdentifier($this->__table) : $this->__table) . " \n" .
-            $this->_join . " \n" .
-            $this->_query['condition'] . " \n" .
-            $this->_query['group_by']  . " \n" .
-            $this->_query['having']    . " \n" .
-            $this->_query['order_by']  . " \n";
-
         if ((!isset($_DB_DATAOBJECT['CONFIG']['db_driver'])) ||
             ($_DB_DATAOBJECT['CONFIG']['db_driver'] == 'DB')) {
             /* PEAR DB specific */
@@ -406,11 +443,15 @@ class DB_DataObject extends DB_DataObject_Overload
         } else {
             /* theoretically MDB2! */
             if (isset($this->_query['limit_start']) && strlen($this->_query['limit_start'] . $this->_query['limit_count'])) {
-              $DB->setLimit($this->_query['limit_count'],$this->_query['limit_start']);
-          }
+	            $DB->setLimit($this->_query['limit_count'],$this->_query['limit_start']);
+	        }
         }
 
-        $this->_query($sql);
+
+        $err = $this->_query($sql);
+        if (is_a($err,'PEAR_Error')) {
+            return false;
+        }
 
         if (!empty($_DB_DATAOBJECT['CONFIG']['debug'])) {
             $this->debug("CHECK autofetchd $n", "find", 1);
@@ -482,7 +523,7 @@ class DB_DataObject extends DB_DataObject_Overload
         }
 
         if (empty($_DB_DATAOBJECT['RESULTS'][$this->_DB_resultid]) ||
-            !is_object($result = &$_DB_DATAOBJECT['RESULTS'][$this->_DB_resultid]))
+            !is_object($result = $_DB_DATAOBJECT['RESULTS'][$this->_DB_resultid]))
         {
             if (!empty($_DB_DATAOBJECT['CONFIG']['debug'])) {
                 $this->debug('fetched on object after fetch completed (no results found)');
@@ -527,7 +568,6 @@ class DB_DataObject extends DB_DataObject_Overload
             // note: we dont declare this to keep the print_r size down.
             $_DB_DATAOBJECT['RESULTFIELDS'][$this->_DB_resultid]= array_flip(array_keys($array));
         }
-
         $keys = str_replace(array("."," "), "_", array_keys($array));
         $i = 0;
         foreach($array as $val) {
@@ -541,12 +581,90 @@ class DB_DataObject extends DB_DataObject_Overload
         // set link flag
         $this->_link_loaded=false;
         if (!empty($_DB_DATAOBJECT['CONFIG']['debug'])) {
-            $this->debug("{$this->__table} DONE", "fetchrow",2);
+            $this->debug("{$this->tableName()} DONE", "fetchrow",2);
         }
         if (($this->_query !== false) &&  empty($_DB_DATAOBJECT['CONFIG']['keep_query_after_fetch'])) {
             $this->_query = false;
         }
         return true;
+    }
+
+
+     /**
+     * fetches all results as an array,
+     *
+     * return format is dependant on args.
+     * if selectAdd() has not been called on the object, then it will add the correct columns to the query.
+     *
+     * A) Array of values (eg. a list of 'id')
+     *
+     * $x = DB_DataObject::factory('mytable');
+     * $x->whereAdd('something = 1')
+     * $ar = $x->fetchAll('id');
+     * -- returns array(1,2,3,4,5)
+     *
+     * B) Array of values (not from table)
+     *
+     * $x = DB_DataObject::factory('mytable');
+     * $x->whereAdd('something = 1');
+     * $x->selectAdd();
+     * $x->selectAdd('distinct(group_id) as group_id');
+     * $ar = $x->fetchAll('group_id');
+     * -- returns array(1,2,3,4,5)
+     *     *
+     * C) A key=>value associative array
+     *
+     * $x = DB_DataObject::factory('mytable');
+     * $x->whereAdd('something = 1')
+     * $ar = $x->fetchAll('id','name');
+     * -- returns array(1=>'fred',2=>'blogs',3=> .......
+     *
+     * D) array of objects
+     * $x = DB_DataObject::factory('mytable');
+     * $x->whereAdd('something = 1');
+     * $ar = $x->fetchAll();
+     *
+     * E) array of arrays (for example)
+     * $x = DB_DataObject::factory('mytable');
+     * $x->whereAdd('something = 1');
+     * $ar = $x->fetchAll(false,false,'toArray');
+     *
+     *
+     * @param    string|false  $k key
+     * @param    string|false  $v value
+     * @param    string|false  $method method to call on each result to get array value (eg. 'toArray')
+     * @access  public
+     * @return  array  format dependant on arguments, may be empty
+     */
+    function fetchAll($k= false, $v = false, $method = false)
+    {
+        // should it even do this!!!?!?
+        if ($k !== false &&
+                (   // only do this is we have not been explicit..
+                    empty($this->_query['data_select']) ||
+                    ($this->_query['data_select'] == '*')
+                )
+            ) {
+            $this->selectAdd();
+            $this->selectAdd($k);
+            if ($v !== false) {
+                $this->selectAdd($v);
+            }
+        }
+
+        $this->find();
+        $ret = array();
+        while ($this->fetch()) {
+            if ($v !== false) {
+                $ret[$this->$k] = $this->$v;
+                continue;
+            }
+            $ret[] = $k === false ?
+                ($method == false ? clone($this)  : $this->$method())
+                : $this->$k;
+        }
+        return $ret;
+
     }
 
     /**
@@ -573,8 +691,7 @@ class DB_DataObject extends DB_DataObject_Overload
         }
 
         if ($cond === false) {
-            $r = isset( $this->_query['condition'] ) ?
-                $this->_query['condition'] : null;
+            $r = isset($this->_query['condition']) ? $this->_query['condition'] : null;
             $_query['condition'] = '';
             $this->_query = $_query;
             return preg_replace('/^\s+WHERE\s+/','',$r);
@@ -593,6 +710,48 @@ class DB_DataObject extends DB_DataObject_Overload
         $this->_query = $_query;
         return $r;
     }
+
+    /**
+    * Adds a 'IN' condition to the WHERE statement
+    *
+    * $object->whereAddIn('id', $array, 'int'); //minimal usage
+    * $object->whereAddIn('price', $array, 'float', 'OR');  // cast to float, and call whereAdd with 'OR'
+    * $object->whereAddIn('name', $array, 'string');  // quote strings
+    *
+    * @param    string  $key  key column to match
+    * @param    array  $list  list of values to match
+    * @param    string  $type  string|int|integer|float|bool  cast to type.
+    * @param    string  $logic optional logic to call whereAdd with eg. "OR" (defaults to "AND")
+    * @access   public
+    * @return   string|PEAR::Error - previous condition or Error when invalid args found
+    */
+    function whereAddIn($key, $list, $type, $logic = 'AND')
+    {
+        $not = '';
+        if ($key[0] == '!') {
+            $not = 'NOT ';
+            $key = substr($key, 1);
+        }
+        // fix type for short entry.
+        $type = $type == 'int' ? 'integer' : $type;
+
+        if ($type == 'string') {
+            $this->_connect();
+        }
+
+        $ar = array();
+        foreach($list as $k) {
+            settype($k, $type);
+            $ar[] = $type == 'string' ? $this->_quote($k) : $k;
+        }
+
+        if (!$ar) {
+            return $not ? $this->_query['condition'] : $this->whereAdd("1=0");
+        }
+        return $this->whereAdd("$key $not IN (". implode(',', $ar). ')', $logic );
+    }
+
+
 
     /**
      * Adds a order by condition
@@ -633,10 +792,10 @@ class DB_DataObject extends DB_DataObject_Overload
      * Return affected rows for current connection.
      * Override the mysql affectedRows w/ db object.
      */
-    function affectedRows( ) {
+    function affectedRows() {
         global $_DB_DATAOBJECT;
-        $DB = &$_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
-        return $DB->affectedRows( );
+        $DB = $_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
+        return $DB->affectedRows();
     }
 
     /**
@@ -711,6 +870,43 @@ class DB_DataObject extends DB_DataObject_Overload
     }
 
     /**
+     * Adds a using Index
+     *
+     * $object->useIndex(); //reset the use Index
+     * $object->useIndex("some_index");
+     *
+     * Note do not put unfiltered user input into theis method.
+     * This is mysql specific at present? - might need altering to support other databases.
+     *
+     * @param  string|array  $index  index or indexes to use.
+     * @access public
+     * @return none|PEAR::Error - invalid args only
+     */
+    function useIndex($index = false)
+    {
+        if ($this->_query === false) {
+            $this->raiseError(
+                "You cannot do two queries on the same object (copy it before finding)",
+                DB_DATAOBJECT_ERROR_INVALIDARGS);
+            return false;
+        }
+        if ($index=== false) {
+            $this->_query['useindex'] = '';
+            return;
+        }
+        // check input...= 0 or '    ' == error!
+        if ((is_string($index) && !trim($index)) || (is_array($index) && !count($index)) ) {
+            return $this->raiseError("Having: No Valid Arguments", DB_DATAOBJECT_ERROR_INVALIDARGS);
+        }
+        $index = is_array($index) ? implode(', ', $index) : $index;
+
+        if (!$this->_query['useindex']) {
+            $this->_query['useindex'] = " USE INDEX ({$index}) ";
+            return;
+        }
+        $this->_query['useindex'] =  substr($this->_query['useindex'],0, -2) . ", {$index}) ";
+    }
+    /**
      * Sets the Limit
      *
      * $boject->limit(); // clear limit
@@ -747,7 +943,7 @@ class DB_DataObject extends DB_DataObject_Overload
         }
         global $_DB_DATAOBJECT;
         $this->_connect();
-        $DB = &$_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
+        $DB = $_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
 
         $this->_query['limit_start'] = ($b == null) ? 0 : (int)$a;
         $this->_query['limit_count'] = ($b == null) ? (int)$a : (int)$b;
@@ -778,8 +974,7 @@ class DB_DataObject extends DB_DataObject_Overload
             return false;
         }
         if ($k === null) {
-            $old = isset( $this->_query['data_select'] ) ?
-                $this->_query['data_select'] : null;
+            $old = isset($this->_query['data_select']) ? $this->_query['data_select'] : null;
             $this->_query['data_select'] = '';
             return $old;
         }
@@ -828,9 +1023,9 @@ class DB_DataObject extends DB_DataObject_Overload
         }
 
 
-        $table = $this->__table;
+        $table = $this->tableName();
         if (is_object($from)) {
-            $table = $from->__table;
+            $table = $from->tableName();
             $from = array_keys($from->table());
         }
 
@@ -840,7 +1035,7 @@ class DB_DataObject extends DB_DataObject_Overload
         $s = '%s';
         if (!empty($_DB_DATAOBJECT['CONFIG']['quote_identifiers'])) {
             $this->_connect();
-            $DB = &$_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
+            $DB = $_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
             $s      = $DB->quoteIdentifier($s);
             $format = $DB->quoteIdentifier($format);
         }
@@ -878,25 +1073,24 @@ class DB_DataObject extends DB_DataObject_Overload
 
         $quoteIdentifiers  = !empty($_DB_DATAOBJECT['CONFIG']['quote_identifiers']);
 
-        $DB = &$_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
+        $DB = $_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
 
-        $items =  isset($_DB_DATAOBJECT['INI'][$this->_database][$this->__table]) ?
-            $_DB_DATAOBJECT['INI'][$this->_database][$this->__table] : $this->table();
+        $items = $this->table();
 
         if (!$items) {
-            $this->raiseError("insert:No table definition for {$this->__table}",
+            $this->raiseError("insert:No table definition for {$this->tableName()}",
                 DB_DATAOBJECT_ERROR_INVALIDCONFIG);
             return false;
         }
-        $options = &$_DB_DATAOBJECT['CONFIG'];
+        $options = $_DB_DATAOBJECT['CONFIG'];
 
 
         $datasaved = 1;
         $leftq     = '';
         $rightq    = '';
 
-        $seqKeys   = isset($_DB_DATAOBJECT['SEQUENCE'][$this->_database][$this->__table]) ?
-                        $_DB_DATAOBJECT['SEQUENCE'][$this->_database][$this->__table] :
+        $seqKeys   = isset($_DB_DATAOBJECT['SEQUENCE'][$this->_database][$this->tableName()]) ?
+                        $_DB_DATAOBJECT['SEQUENCE'][$this->_database][$this->tableName()] :
                         $this->sequenceKey();
 
         $key       = isset($seqKeys[0]) ? $seqKeys[0] : false;
@@ -913,7 +1107,7 @@ class DB_DataObject extends DB_DataObject_Overload
         if (($key !== false) && !$useNative) {
 
             if (!$seq) {
-                $keyvalue =  $DB->nextId($this->__table);
+                $keyvalue =  $DB->nextId($this->tableName());
             } else {
                 $f = $DB->getOption('seqname_format');
                 $DB->setOption('seqname_format','%s');
@@ -927,6 +1121,10 @@ class DB_DataObject extends DB_DataObject_Overload
             $this->$key = $keyvalue;
         }
 
+        // if we haven't set disable_null_strings to "full"
+        $ignore_null = !isset($options['disable_null_strings'])
+                    || !is_string($options['disable_null_strings'])
+                    || strtolower($options['disable_null_strings']) !== 'full' ;
 
 
         foreach($items as $k => $v) {
@@ -937,7 +1135,10 @@ class DB_DataObject extends DB_DataObject_Overload
             }
 
 
-            if (!isset($this->$k)) {
+            // Ignore INTEGERS which aren't set to a value - or empty string..
+            if ( (!isset($this->$k) || ($v == 1 && $this->$k === ''))
+                    && $ignore_null
+            ) {
                 continue;
             }
 
@@ -949,7 +1150,7 @@ class DB_DataObject extends DB_DataObject_Overload
             $leftq .= ($quoteIdentifiers ? ($DB->quoteIdentifier($k) . ' ')  : "$k ");
 
             /***
-            if (is_a($this->$k,'DB_DataObject_Cast')) {
+            if (is_object($this->$k) && is_a($this->$k,'DB_DataObject_Cast')) {
                 $value = $this->$k->toString($v,$DB);
                 if (PEAR::isError($value)) {
                     $this->raiseError($value->toString() ,DB_DATAOBJECT_ERROR_INVALIDARGS);
@@ -960,25 +1161,27 @@ class DB_DataObject extends DB_DataObject_Overload
             }
             **/
 
-
-
-            if (!isset($options['disable_null_strings']) && is_string($this->$k) && (strtolower($this->$k) === 'null') && $this->$k !== 'Null' && !($v & DB_DATAOBJECT_NOTNULL)) {
+            if (!($v & DB_DATAOBJECT_NOTNULL) && DB_DataObject::_is_null($this,$k)) {
                 $rightq .= " NULL ";
                 continue;
             }
-          if (($v & DB_DATAOBJECT_DATE) || ($v & DB_DATAOBJECT_TIME) || $v & DB_DATAOBJECT_MYSQLTIMESTAMP) {
-            if (strpos($this->$k, '-') !== FALSE) {
-              /*
-               * per CRM-14986 we have been having ongoing problems with the format returned from $dao->find(TRUE) NOT
-               * being acceptable for an immediate save. This has resulted in the codebase being smattered with
-               * instances of CRM_Utils_Date::isoToMysql for date fields retrieved in this way
-               * which seems both risky (have to remember to do it for every field) & cludgey.
-               * doing it here should be safe as only fields with a '-' in them will be affected - if they are
-               *  already formatted or empty then this line will not be hit
-               */
-              $this->$k = CRM_Utils_Date::isoToMysql($this->$k);
+
+            // CRM-14986 starts
+            if (($v & DB_DATAOBJECT_DATE) || ($v & DB_DATAOBJECT_TIME) || $v & DB_DATAOBJECT_MYSQLTIMESTAMP) {
+              if (strpos($this->$k, '-') !== FALSE) {
+                /*
+                 * per CRM-14986 we have been having ongoing problems with the format returned from $dao->find(TRUE) NOT
+                 * being acceptable for an immediate save. This has resulted in the codebase being smattered with
+                 * instances of CRM_Utils_Date::isoToMysql for date fields retrieved in this way
+                 * which seems both risky (have to remember to do it for every field) & cludgey.
+                 * doing it here should be safe as only fields with a '-' in them will be affected - if they are
+                 *  already formatted or empty then this line will not be hit
+                 */
+                $this->$k = CRM_Utils_Date::isoToMysql($this->$k);
+              }
             }
-          }
+            // CRM-14986 ends
+
             // DATE is empty... on a col. that can be null..
             // note: this may be usefull for time as well..
             if (!$this->$k &&
@@ -1001,16 +1204,18 @@ class DB_DataObject extends DB_DataObject_Overload
                 continue;
             }
 
+            // CiviCRM hack CRM-14476: Extend CaseType API to return/save XML
+            // https://issues.civicrm.org/jira/browse/CRM-14476
             if ($v & DB_DATAOBJECT_TXT) {
                 $rightq .= $this->_quote((string) $this->$k ) . ' ';
                 continue;
             }
 
-           if ($v & DB_DATAOBJECT_BLOB) {
-              $rightq .= $this->_quote( $this->$k ) . ' ';
-              continue;
-           }
-
+            if ($v & DB_DATAOBJECT_BLOB) {
+               $rightq .= $this->_quote( $this->$k ) . ' ';
+               continue;
+            }
+            // CRM-14476 hack ends
 
             if (is_numeric($this->$k)) {
                 $rightq .=" {$this->$k} ";
@@ -1031,7 +1236,7 @@ class DB_DataObject extends DB_DataObject_Overload
 
 
         if ($leftq || $useNative) {
-            $table = ($quoteIdentifiers ? $DB->quoteIdentifier($this->__table)    : $this->__table);
+            $table = ($quoteIdentifiers ? $DB->quoteIdentifier($this->tableName())    : $this->tableName());
 
 
             if (($dbtype == 'pgsql') && empty($leftq)) {
@@ -1083,7 +1288,7 @@ class DB_DataObject extends DB_DataObject_Overload
 
                     case 'pgsql':
                         if (!$seq) {
-                            $seq = $DB->getSequenceName(strtolower($this->__table));
+                            $seq = $DB->getSequenceName(strtolower($this->tableName()));
                         }
                         $db_driver = empty($options['db_driver']) ? 'DB' : $options['db_driver'];
                         $method = ($db_driver  == 'DB') ? 'getOne' : 'queryOne';
@@ -1166,19 +1371,18 @@ class DB_DataObject extends DB_DataObject_Overload
 
         $original_query =  $this->_query;
 
-        $items =  isset($_DB_DATAOBJECT['INI'][$this->_database][$this->__table]) ?
-            $_DB_DATAOBJECT['INI'][$this->_database][$this->__table] : $this->table();
+        $items = $this->table();
 
         // only apply update against sequence key if it is set?????
 
         $seq    = $this->sequenceKey();
         if ($seq[0] !== false) {
             $keys = array($seq[0]);
-            if (empty($this->{$keys[0]}) && $dataObject !== true) {
+            if (!isset($this->{$keys[0]}) && $dataObject !== true) {
                 $this->raiseError("update: trying to perform an update without
                         the key set, and argument to update is not
                         DB_DATAOBJECT_WHEREADD_ONLY
-                    ", DB_DATAOBJECT_ERROR_INVALIDARGS);
+                    ". print_r(array('seq' => $seq , 'keys'=>$keys), true), DB_DATAOBJECT_ERROR_INVALIDARGS);
                 return false;
             }
         } else {
@@ -1187,22 +1391,31 @@ class DB_DataObject extends DB_DataObject_Overload
 
 
         if (!$items) {
-            $this->raiseError("update:No table definition for {$this->__table}", DB_DATAOBJECT_ERROR_INVALIDCONFIG);
+            $this->raiseError("update:No table definition for {$this->tableName()}", DB_DATAOBJECT_ERROR_INVALIDCONFIG);
             return false;
         }
         $datasaved = 1;
         $settings  = '';
         $this->_connect();
 
-        $DB            = &$_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
+        $DB            = $_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
         $dbtype        = $DB->dsn["phptype"];
         $quoteIdentifiers = !empty($_DB_DATAOBJECT['CONFIG']['quote_identifiers']);
         $options = $_DB_DATAOBJECT['CONFIG'];
 
 
+        $ignore_null = !isset($options['disable_null_strings'])
+                    || !is_string($options['disable_null_strings'])
+                    || strtolower($options['disable_null_strings']) !== 'full' ;
+
+
         foreach($items as $k => $v) {
-            if (!isset($this->$k)) {
-                continue;
+
+            // I think this is ignoring empty vlalues
+            if ((!isset($this->$k) || ($v == 1 && $this->$k === ''))
+                    && $ignore_null
+            ) {
+                 continue;
             }
             // ignore stuff thats
 
@@ -1223,7 +1436,7 @@ class DB_DataObject extends DB_DataObject_Overload
             $kSql = ($quoteIdentifiers ? $DB->quoteIdentifier($k) : $k);
 
             /***
-            if (is_a($this->$k,'DB_DataObject_Cast')) {
+            if (is_object($this->$k) && is_a($this->$k,'DB_DataObject_Cast')) {
                 $value = $this->$k->toString($v,$DB);
                 if (PEAR::isError($value)) {
                     $this->raiseError($value->getMessage() ,DB_DATAOBJECT_ERROR_INVALIDARG);
@@ -1235,23 +1448,27 @@ class DB_DataObject extends DB_DataObject_Overload
             ***/
 
             // special values ... at least null is handled...
-            if (!isset($options['disable_null_strings']) && is_string($this->$k) && (strtolower($this->$k) === 'null') && $this->$k !== 'Null' && !($v & DB_DATAOBJECT_NOTNULL)) {
+            if (!($v & DB_DATAOBJECT_NOTNULL) && DB_DataObject::_is_null($this,$k)) {
                 $settings .= "$kSql = NULL ";
                 continue;
             }
-          if (($v & DB_DATAOBJECT_DATE) || ($v & DB_DATAOBJECT_TIME) || $v & DB_DATAOBJECT_MYSQLTIMESTAMP) {
-            if (strpos($this->$k, '-') !== FALSE) {
-             /*
-              * per CRM-14986 we have been having ongoing problems with the format returned from $dao->find(TRUE) NOT
-              * being acceptable for an immediate save. This has resulted in the codebase being smattered with
-              * instances of CRM_Utils_Date::isoToMysql for date fields retrieved in this way
-              * which seems both risky (have to remember to do it for every field) & cludgey.
-              * doing it here should be safe as only fields with a '-' in them will be affected - if they are
-              *  already formatted or empty then this line will not be hit
-              */
-              $this->$k = CRM_Utils_Date::isoToMysql($this->$k);
+
+            // CRM-14986 starts
+            if (($v & DB_DATAOBJECT_DATE) || ($v & DB_DATAOBJECT_TIME) || $v & DB_DATAOBJECT_MYSQLTIMESTAMP) {
+              if (strpos($this->$k, '-') !== FALSE) {
+               /*
+                * per CRM-14986 we have been having ongoing problems with the format returned from $dao->find(TRUE) NOT
+                * being acceptable for an immediate save. This has resulted in the codebase being smattered with
+                * instances of CRM_Utils_Date::isoToMysql for date fields retrieved in this way
+                * which seems both risky (have to remember to do it for every field) & cludgey.
+                * doing it here should be safe as only fields with a '-' in them will be affected - if they are
+                *  already formatted or empty then this line will not be hit
+                */
+                $this->$k = CRM_Utils_Date::isoToMysql($this->$k);
+              }
             }
-          }
+            // CRM-14986 ends
+
             // DATE is empty... on a col. that can be null..
             // note: this may be usefull for time as well..
             if (!$this->$k &&
@@ -1274,6 +1491,8 @@ class DB_DataObject extends DB_DataObject_Overload
                 continue;
             }
 
+            // CiviCRM hack CRM-14476: Extend CaseType API to return/save XML
+            // https://issues.civicrm.org/jira/browse/CRM-14476
             if ($v & DB_DATAOBJECT_TXT) {
                 $settings .= "$kSql = " . $this->_quote((string) $this->$k ) . ' ';
                 continue;
@@ -1283,6 +1502,7 @@ class DB_DataObject extends DB_DataObject_Overload
               $settings .= "$kSql = " . $this->_quote($this->$k ) . ' ';
               continue;
             }
+            // CRM-14725 ends
 
             if (is_numeric($this->$k)) {
                 $settings .= "$kSql = {$this->$k} ";
@@ -1292,6 +1512,7 @@ class DB_DataObject extends DB_DataObject_Overload
             // - V2 may store additional data about float/int
             $settings .= "$kSql = " . intval($this->$k) . ' ';
         }
+
 
         if (!empty($_DB_DATAOBJECT['CONFIG']['debug'])) {
             $this->debug("got keys as ".serialize($keys),3);
@@ -1313,7 +1534,7 @@ class DB_DataObject extends DB_DataObject_Overload
         //  echo " $settings, $this->condition ";
         if ($settings && isset($this->_query) && $this->_query['condition']) {
 
-            $table = ($quoteIdentifiers ? $DB->quoteIdentifier($this->__table) : $this->__table);
+            $table = ($quoteIdentifiers ? $DB->quoteIdentifier($this->tableName()) : $this->tableName());
 
             $r = $this->_query("UPDATE  {$table}  SET {$settings} {$this->_query['condition']} ");
 
@@ -1340,8 +1561,8 @@ class DB_DataObject extends DB_DataObject_Overload
         }
 
         // $this->raiseError(
-        //     "update: No Data specifed for query $settings , {$this->_query['condition']}",
-        //     DB_DATAOBJECT_ERROR_NODATA);
+        //    "update: No Data specifed for query $settings , {$this->_query['condition']}",
+        //    DB_DATAOBJECT_ERROR_NODATA);
         // return false;
         // we allow empty updates always [CiviCRM]
         return true;
@@ -1378,7 +1599,7 @@ class DB_DataObject extends DB_DataObject_Overload
         global $_DB_DATAOBJECT;
         // connect will load the config!
         $this->_connect();
-        $DB = &$_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
+        $DB = $_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
         $quoteIdentifiers  = !empty($_DB_DATAOBJECT['CONFIG']['quote_identifiers']);
 
         $extra_cond = ' ' . (isset($this->_query['order_by']) ? $this->_query['order_by'] : '');
@@ -1400,7 +1621,7 @@ class DB_DataObject extends DB_DataObject_Overload
         // don't delete without a condition
         if (($this->_query !== false) && $this->_query['condition']) {
 
-            $table = ($quoteIdentifiers ? $DB->quoteIdentifier($this->__table) : $this->__table);
+            $table = ($quoteIdentifiers ? $DB->quoteIdentifier($this->tableName()) : $this->tableName());
             $sql = "DELETE ";
             // using a joined delete. - with useWhere..
             $sql .= (!empty($this->_join) && $useWhere) ?
@@ -1462,9 +1683,9 @@ class DB_DataObject extends DB_DataObject_Overload
             $this->_loadConfig();
         }
         if (!empty($_DB_DATAOBJECT['CONFIG']['debug'])) {
-            $this->debug("{$this->__table} $row of {$this->N}", "fetchrow",3);
+            $this->debug("{$this->tableName()} $row of {$this->N}", "fetchrow",3);
         }
-        if (!$this->__table) {
+        if (!$this->tableName()) {
             $this->raiseError("fetchrow: No table", DB_DATAOBJECT_ERROR_INVALIDCONFIG);
             return false;
         }
@@ -1477,17 +1698,16 @@ class DB_DataObject extends DB_DataObject_Overload
             return false;
         }
         if (!empty($_DB_DATAOBJECT['CONFIG']['debug'])) {
-            $this->debug("{$this->__table} $row of {$this->N}", "fetchrow",3);
+            $this->debug("{$this->tableName()} $row of {$this->N}", "fetchrow",3);
         }
 
 
-        $result = &$_DB_DATAOBJECT['RESULTS'][$this->_DB_resultid];
+        $result = $_DB_DATAOBJECT['RESULTS'][$this->_DB_resultid];
         $array  = $result->fetchrow(DB_DATAOBJECT_FETCHMODE_ASSOC,$row);
         if (!is_array($array)) {
             $this->raiseError("fetchrow: No results available", DB_DATAOBJECT_ERROR_NODATA);
             return false;
         }
-
         $keys = str_replace(array("."," "), "_", array_keys($array));
         $i = 0;
         foreach($array as $val) {
@@ -1499,7 +1719,7 @@ class DB_DataObject extends DB_DataObject_Overload
         }
 
         if (!empty($_DB_DATAOBJECT['CONFIG']['debug'])) {
-            $this->debug("{$this->__table} DONE", "fetchrow", 3);
+            $this->debug("{$this->tableName()} DONE", "fetchrow", 3);
         }
         return true;
     }
@@ -1553,7 +1773,7 @@ class DB_DataObject extends DB_DataObject_Overload
             return false;
         }
         $this->_connect();
-        $DB = &$_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
+        $DB = $_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
 
 
         if (!$whereAddOnly && $items)  {
@@ -1568,7 +1788,7 @@ class DB_DataObject extends DB_DataObject_Overload
             return false;
 
         }
-        $table   = ($quoteIdentifiers ? $DB->quoteIdentifier($this->__table) : $this->__table);
+        $table   = ($quoteIdentifiers ? $DB->quoteIdentifier($this->tableName()) : $this->tableName());
         $key_col = empty($keys[0]) ? '' : (($quoteIdentifiers ? $DB->quoteIdentifier($keys[0]) : $keys[0]));
         $as      = ($quoteIdentifiers ? $DB->quoteIdentifier('DATAOBJECT_NUM') : 'DATAOBJECT_NUM');
 
@@ -1585,11 +1805,13 @@ class DB_DataObject extends DB_DataObject_Overload
             return false;
         }
 
-        $result  = &$_DB_DATAOBJECT['RESULTS'][$t->_DB_resultid];
+        $result  = $_DB_DATAOBJECT['RESULTS'][$t->_DB_resultid];
         $l = $result->fetchRow(DB_DATAOBJECT_FETCHMODE_ORDERED);
         // free the results - essential on oracle.
         $t->free();
-
+        if (!empty($_DB_DATAOBJECT['CONFIG']['debug'])) {
+            $this->debug('Count returned '. $l[0] ,1);
+        }
         return (int) $l[0];
     }
 
@@ -1623,7 +1845,7 @@ class DB_DataObject extends DB_DataObject_Overload
     {
         global $_DB_DATAOBJECT;
         $this->_connect();
-        $DB = &$_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
+        $DB = $_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
         // mdb2 uses escape...
         $dd = empty($_DB_DATAOBJECT['CONFIG']['db_driver']) ? 'DB' : $_DB_DATAOBJECT['CONFIG']['db_driver'];
         $ret = ($dd == 'DB') ? $DB->escapeSimple($string) : $DB->escape($string);
@@ -1682,9 +1904,13 @@ class DB_DataObject extends DB_DataObject_Overload
         'group_by'    => '', // the GROUP BY condition
         'order_by'    => '', // the ORDER BY condition
         'having'      => '', // the HAVING condition
+        'useindex'   => '', // the USE INDEX condition
         'limit_start' => '', // the LIMIT condition
         'limit_count' => '', // the LIMIT condition
         'data_select' => '*', // the columns to be SELECTed
+        'unions'      => array(), // the added unions,
+        'derive_table' => '', // derived table name (BETA)
+        'derive_select' => '', // derived table select (BETA)
     );
 
 
@@ -1753,7 +1979,7 @@ class DB_DataObject extends DB_DataObject_Overload
                 $x = new DB_DataObject;
                 $x->_database = $args[0];
                 $this->_connect();
-                $DB = &$_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
+                $DB = $_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
 
                 $tables = $DB->getListOf('tables');
                 class_exists('DB_DataObject_Generator') ? '' :
@@ -1784,31 +2010,40 @@ class DB_DataObject extends DB_DataObject_Overload
             $this->_connect();
         }
 
-        // loaded already?
-        if (!empty($_DB_DATAOBJECT['INI'][$this->_database])) {
 
-            // database loaded - but this is table is not available..
-            if (
-                    empty($_DB_DATAOBJECT['INI'][$this->_database][$this->__table])
-                    && !empty($_DB_DATAOBJECT['CONFIG']['proxy'])
-                ) {
-                if (!empty($_DB_DATAOBJECT['CONFIG']['debug'])) {
-                    $this->debug("Loading Generator to fetch Schema",1);
-                }
-                class_exists('DB_DataObject_Generator') ? '' :
-                    require_once 'DB/DataObject/Generator.php';
-
-
-                $x = new DB_DataObject_Generator;
-                $x->fillTableSchema($this->_database,$this->__table);
-            }
+        // if this table is already loaded this table..
+        if (!empty($_DB_DATAOBJECT['INI'][$this->_database][$this->tableName()])) {
             return true;
         }
 
+        // initialize the ini data.. if empt..
+        if (empty($_DB_DATAOBJECT['INI'][$this->_database])) {
+            $_DB_DATAOBJECT['INI'][$this->_database] = array();
+        }
 
         if (empty($_DB_DATAOBJECT['CONFIG'])) {
             DB_DataObject::_loadConfig();
         }
+
+        // we do not have the data for this table yet...
+
+        // if we are configured to use the proxy..
+
+        if ( !empty($_DB_DATAOBJECT['CONFIG']['proxy']) ) {
+            if (!empty($_DB_DATAOBJECT['CONFIG']['debug'])) {
+                $this->debug("Loading Generator to fetch Schema",1);
+            }
+            class_exists('DB_DataObject_Generator') ? '' :
+                require_once 'DB/DataObject/Generator.php';
+
+
+            $x = new DB_DataObject_Generator;
+            $x->fillTableSchema($this->_database,$this->tableName());
+            return true;
+        }
+
+
+
 
         // if you supply this with arguments, then it will take those
         // as the database and links array...
@@ -1824,10 +2059,15 @@ class DB_DataObject extends DB_DataObject_Overload
         }
 
 
-
+        $_DB_DATAOBJECT['INI'][$this->_database] = array();
         foreach ($schemas as $ini) {
              if (file_exists($ini) && is_file($ini)) {
-                $_DB_DATAOBJECT['INI'][$this->_database] = parse_ini_file($ini, true);
+
+                $_DB_DATAOBJECT['INI'][$this->_database] = array_merge(
+                    $_DB_DATAOBJECT['INI'][$this->_database],
+                    parse_ini_file($ini, true)
+                );
+
                 if (!empty($_DB_DATAOBJECT['CONFIG']['debug'])) {
                     if (!is_readable ($ini)) {
                         $this->debug("ini file is not readable: $ini","databaseStructure",1);
@@ -1842,9 +2082,18 @@ class DB_DataObject extends DB_DataObject_Overload
             }
 
         }
+        // are table name lowecased..
+        if (!empty($_DB_DATAOBJECT['CONFIG']['portability']) && $_DB_DATAOBJECT['CONFIG']['portability'] & 1) {
+            foreach($_DB_DATAOBJECT['INI'][$this->_database] as $k=>$v) {
+                // results in duplicate cols.. but not a big issue..
+                $_DB_DATAOBJECT['INI'][$this->_database][strtolower($k)] = $v;
+            }
+        }
+
+
         // now have we loaded the structure..
 
-        if (!empty($_DB_DATAOBJECT['INI'][$this->_database][$this->__table])) {
+        if (!empty($_DB_DATAOBJECT['INI'][$this->_database][$this->tableName()])) {
             return true;
         }
         // - if not try building it..
@@ -1853,11 +2102,11 @@ class DB_DataObject extends DB_DataObject_Overload
                 require_once 'DB/DataObject/Generator.php';
 
             $x = new DB_DataObject_Generator;
-            $x->fillTableSchema($this->_database,$this->__table);
+            $x->fillTableSchema($this->_database,$this->tableName());
             // should this fail!!!???
             return true;
         }
-        $this->debug("Cant find database schema: {$this->_database}/{$this->__table} \n".
+        $this->debug("Cant find database schema: {$this->_database}/{$this->tableName()} \n".
                     "in links file data: " . print_r($_DB_DATAOBJECT['INI'],true),"databaseStructure",5);
         // we have to die here!! - it causes chaos if we dont (including looping forever!)
         $this->raiseError( "Unable to load schema for database and table (turn debugging up to 5 for full error message)", DB_DATAOBJECT_ERROR_INVALIDARGS, PEAR_ERROR_DIE);
@@ -1879,9 +2128,16 @@ class DB_DataObject extends DB_DataObject_Overload
      */
     function tableName()
     {
+        global $_DB_DATAOBJECT;
         $args = func_get_args();
         if (count($args)) {
             $this->__table = $args[0];
+        }
+        if (empty($this->__table)) {
+            return '';
+        }
+        if (!empty($_DB_DATAOBJECT['CONFIG']['portability']) && $_DB_DATAOBJECT['CONFIG']['portability'] & 1) {
+            return strtolower($this->__table);
         }
         return $this->__table;
     }
@@ -1898,7 +2154,10 @@ class DB_DataObject extends DB_DataObject_Overload
         $args = func_get_args();
         if (count($args)) {
             $this->_database = $args[0];
+        } else {
+            $this->_connect();
         }
+
         return $this->_database;
     }
 
@@ -1928,16 +2187,16 @@ class DB_DataObject extends DB_DataObject_Overload
             $this->_connect();
         }
 
-        if (isset($_DB_DATAOBJECT['INI'][$this->_database][$this->__table])) {
-            return $_DB_DATAOBJECT['INI'][$this->_database][$this->__table];
+        if (isset($_DB_DATAOBJECT['INI'][$this->_database][$this->tableName()])) {
+            return $_DB_DATAOBJECT['INI'][$this->_database][$this->tableName()];
         }
 
         $this->databaseStructure();
 
 
         $ret = array();
-        if (isset($_DB_DATAOBJECT['INI'][$this->_database][$this->__table])) {
-            $ret =  $_DB_DATAOBJECT['INI'][$this->_database][$this->__table];
+        if (isset($_DB_DATAOBJECT['INI'][$this->_database][$this->tableName()])) {
+            $ret =  $_DB_DATAOBJECT['INI'][$this->_database][$this->tableName()];
         }
 
         return $ret;
@@ -1952,7 +2211,7 @@ class DB_DataObject extends DB_DataObject_Overload
      * or you do not want to use ini tables, you can override this.
      * @param  string optional set the key
      * @param  *   optional  set more keys
-     * @access private
+     * @access public
      * @return array
      */
     function keys()
@@ -1971,13 +2230,13 @@ class DB_DataObject extends DB_DataObject_Overload
         if (!isset($_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5])) {
             $this->_connect();
         }
-        if (isset($_DB_DATAOBJECT['INI'][$this->_database][$this->__table."__keys"])) {
-            return array_keys($_DB_DATAOBJECT['INI'][$this->_database][$this->__table."__keys"]);
+        if (isset($_DB_DATAOBJECT['INI'][$this->_database][$this->tableName()."__keys"])) {
+            return array_keys($_DB_DATAOBJECT['INI'][$this->_database][$this->tableName()."__keys"]);
         }
         $this->databaseStructure();
 
-        if (isset($_DB_DATAOBJECT['INI'][$this->_database][$this->__table."__keys"])) {
-            return array_keys($_DB_DATAOBJECT['INI'][$this->_database][$this->__table."__keys"]);
+        if (isset($_DB_DATAOBJECT['INI'][$this->_database][$this->tableName()."__keys"])) {
+            return array_keys($_DB_DATAOBJECT['INI'][$this->_database][$this->tableName()."__keys"]);
         }
         return array();
     }
@@ -1992,7 +2251,7 @@ class DB_DataObject extends DB_DataObject_Overload
      * @param  string  optional the key sequence/autoinc. key
      * @param  boolean optional use native increment. default false
      * @param  false|string optional native sequence name
-     * @access private
+     * @access public
      * @return array (column,use_native,sequence_name)
      */
     function sequenceKey()
@@ -2013,10 +2272,10 @@ class DB_DataObject extends DB_DataObject_Overload
         if (count($args)) {
             $args[1] = isset($args[1]) ? $args[1] : false;
             $args[2] = isset($args[2]) ? $args[2] : false;
-            $_DB_DATAOBJECT['SEQUENCE'][$this->_database][$this->__table] = $args;
+            $_DB_DATAOBJECT['SEQUENCE'][$this->_database][$this->tableName()] = $args;
         }
-        if (isset($_DB_DATAOBJECT['SEQUENCE'][$this->_database][$this->__table])) {
-            return $_DB_DATAOBJECT['SEQUENCE'][$this->_database][$this->__table];
+        if (isset($_DB_DATAOBJECT['SEQUENCE'][$this->_database][$this->tableName()])) {
+            return $_DB_DATAOBJECT['SEQUENCE'][$this->_database][$this->tableName()];
         }
         // end call setting (eg. $do->sequenceKeys(a,b,c); )
 
@@ -2025,13 +2284,12 @@ class DB_DataObject extends DB_DataObject_Overload
 
         $keys = $this->keys();
         if (!$keys) {
-            return $_DB_DATAOBJECT['SEQUENCE'][$this->_database][$this->__table]
+            return $_DB_DATAOBJECT['SEQUENCE'][$this->_database][$this->tableName()]
                 = array(false,false,false);
         }
 
 
-        $table =  isset($_DB_DATAOBJECT['INI'][$this->_database][$this->__table]) ?
-            $_DB_DATAOBJECT['INI'][$this->_database][$this->__table] : $this->table();
+        $table =  $this->table();
 
         $dbtype    = $_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5]->dsn['phptype'];
 
@@ -2041,35 +2299,35 @@ class DB_DataObject extends DB_DataObject_Overload
 
         $seqname = false;
 
-        if (!empty($_DB_DATAOBJECT['CONFIG']['sequence_'.$this->__table])) {
-            $usekey = $_DB_DATAOBJECT['CONFIG']['sequence_'.$this->__table];
-            if (strpos($usekey,':') !== false) {
-                list($usekey,$seqname) = explode(':',$usekey);
+        if (!empty($_DB_DATAOBJECT['CONFIG']['sequence_'.$this->tableName()])) {
+            $seqname = $_DB_DATAOBJECT['CONFIG']['sequence_'.$this->tableName()];
+            if (strpos($seqname,':') !== false) {
+                list($usekey,$seqname) = explode(':',$seqname);
             }
         }
 
 
         // if the key is not an integer - then it's not a sequence or native
         if (empty($table[$usekey]) || !($table[$usekey] & DB_DATAOBJECT_INT)) {
-                return $_DB_DATAOBJECT['SEQUENCE'][$this->_database][$this->__table] = array(false,false,false);
+                return $_DB_DATAOBJECT['SEQUENCE'][$this->_database][$this->tableName()] = array(false,false,false);
         }
 
 
         if (!empty($_DB_DATAOBJECT['CONFIG']['ignore_sequence_keys'])) {
             $ignore =  $_DB_DATAOBJECT['CONFIG']['ignore_sequence_keys'];
             if (is_string($ignore) && (strtoupper($ignore) == 'ALL')) {
-                return $_DB_DATAOBJECT['SEQUENCE'][$this->_database][$this->__table] = array(false,false,$seqname);
+                return $_DB_DATAOBJECT['SEQUENCE'][$this->_database][$this->tableName()] = array(false,false,$seqname);
             }
             if (is_string($ignore)) {
                 $ignore = $_DB_DATAOBJECT['CONFIG']['ignore_sequence_keys'] = explode(',',$ignore);
             }
-            if (in_array($this->__table,$ignore)) {
-                return $_DB_DATAOBJECT['SEQUENCE'][$this->_database][$this->__table] = array(false,false,$seqname);
+            if (in_array($this->tableName(),$ignore)) {
+                return $_DB_DATAOBJECT['SEQUENCE'][$this->_database][$this->tableName()] = array(false,false,$seqname);
             }
         }
 
 
-        $realkeys = $_DB_DATAOBJECT['INI'][$this->_database][$this->__table."__keys"];
+        $realkeys = $_DB_DATAOBJECT['INI'][$this->_database][$this->tableName()."__keys"];
 
         // if you are using an old ini file - go back to old behaviour...
         if (is_numeric($realkeys[$usekey])) {
@@ -2078,25 +2336,38 @@ class DB_DataObject extends DB_DataObject_Overload
 
         // multiple unique primary keys without a native sequence...
         if (($realkeys[$usekey] == 'K') && (count($keys) > 1)) {
-            return $_DB_DATAOBJECT['SEQUENCE'][$this->_database][$this->__table] = array(false,false,$seqname);
+            return $_DB_DATAOBJECT['SEQUENCE'][$this->_database][$this->tableName()] = array(false,false,$seqname);
         }
         // use native sequence keys...
         // technically postgres native here...
         // we need to get the new improved tabledata sorted out first.
 
+        // support named sequence keys.. - currently postgres only..
+
+        if (    in_array($dbtype , array('pgsql')) &&
+                ($table[$usekey] & DB_DATAOBJECT_INT) &&
+                isset($realkeys[$usekey]) && strlen($realkeys[$usekey]) > 1) {
+            return $_DB_DATAOBJECT['SEQUENCE'][$this->_database][$this->tableName()] = array($usekey,true, $realkeys[$usekey]);
+        }
+
         if (    in_array($dbtype , array('pgsql', 'mysql', 'mysqli', 'mssql', 'ifx')) &&
                 ($table[$usekey] & DB_DATAOBJECT_INT) &&
                 isset($realkeys[$usekey]) && ($realkeys[$usekey] == 'N')
                 ) {
-            return $_DB_DATAOBJECT['SEQUENCE'][$this->_database][$this->__table] = array($usekey,true,$seqname);
+            return $_DB_DATAOBJECT['SEQUENCE'][$this->_database][$this->tableName()] = array($usekey,true,$seqname);
         }
+
+
         // if not a native autoinc, and we have not assumed all primary keys are sequence
         if (($realkeys[$usekey] != 'N') &&
             !empty($_DB_DATAOBJECT['CONFIG']['dont_use_pear_sequences'])) {
             return array(false,false,false);
         }
+
+
+
         // I assume it's going to try and be a nextval DB sequence.. (not native)
-        return $_DB_DATAOBJECT['SEQUENCE'][$this->_database][$this->__table] = array($usekey,false,$seqname);
+        return $_DB_DATAOBJECT['SEQUENCE'][$this->_database][$this->tableName()] = array($usekey,false,$seqname);
     }
 
 
@@ -2208,13 +2479,13 @@ class DB_DataObject extends DB_DataObject_Overload
         // it's not currently connected!
         // try and work out what to use for the dsn !
 
-        $options= &$_DB_DATAOBJECT['CONFIG'];
+        $options= $_DB_DATAOBJECT['CONFIG'];
         // if the databse dsn dis defined in the object..
         $dsn = isset($this->_database_dsn) ? $this->_database_dsn : null;
 
         if (!$dsn) {
-            if (!$this->_database) {
-                $this->_database = isset($options["table_{$this->__table}"]) ? $options["table_{$this->__table}"] : null;
+            if (!$this->_database && !strlen($this->tableName())) {
+                $this->_database = isset($options["table_{$this->tableName()}"]) ? $options["table_{$this->tableName()}"] : null;
             }
             if (!empty($_DB_DATAOBJECT['CONFIG']['debug'])) {
                 $this->debug("Checking for database specific ini ('{$this->_database}') : database_{$this->_database} in options","CONNECT");
@@ -2300,12 +2571,13 @@ class DB_DataObject extends DB_DataObject_Overload
 
         }
 
-        // change the connection and results charsets to UTF-8 if we're using MySQL 4.1+
+        // Change the connection and results charsets to utf8mb4 if we're using MySQL 5.5.3+
         $civicrmConfig = CRM_Core_Config::singleton();
         $this->query("/*!40101 SET NAMES utf8 */");
+        $this->query("/*!50503 SET NAMES utf8mb4 */");
 
         if (!empty($_DB_DATAOBJECT['CONFIG']['debug'])) {
-            $this->debug(serialize($_DB_DATAOBJECT['CONNECTIONS']), "CONNECT",5);
+            $this->debug(print_r($_DB_DATAOBJECT['CONNECTIONS'],true), "CONNECT",5);
         }
         if (PEAR::isError($_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5])) {
             $this->debug($_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5]->toString(), "CONNECT FAILED",5);
@@ -2332,7 +2604,6 @@ class DB_DataObject extends DB_DataObject_Overload
         }
 
         // Oracle need to optimize for portibility - not sure exactly what this does though :)
-        $c = &$_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
 
         return true;
     }
@@ -2347,14 +2618,15 @@ class DB_DataObject extends DB_DataObject_Overload
      */
     function _query($string)
     {
-        global $_DB_DATAOBJECT, $queries, $user;
+        global $_DB_DATAOBJECT;
         $this->_connect();
 
-        // Logging the query first makes sure it gets logged even if it fails.
+        // CRM-18093 Logging the query first makes sure it gets logged even if it fails.
         CRM_Core_Error::debug_query($string);
-        $DB = &$_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
 
-        $options = &$_DB_DATAOBJECT['CONFIG'];
+        $DB = $_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
+
+        $options = $_DB_DATAOBJECT['CONFIG'];
 
         $_DB_driver = empty($_DB_DATAOBJECT['CONFIG']['db_driver']) ?
                     'DB':  $_DB_DATAOBJECT['CONFIG']['db_driver'];
@@ -2364,15 +2636,24 @@ class DB_DataObject extends DB_DataObject_Overload
 
         }
 
-        if (strtoupper($string) == 'BEGIN') {
+        if (
+            strtoupper($string) == 'BEGIN' ||
+            strtoupper($string) == 'START TRANSACTION'
+        ) {
             if ($_DB_driver == 'DB') {
                 $DB->autoCommit(false);
+                // dev/core#1675 and dev/core#1695
+                // This was added when DB was upgraded in 5.23 but it's
+                // causing problems with CRM_Core_Transaction where some
+                // transactions aren't getting committed. It's not clear
+                // yet what the best fix is.
+                // $DB->simpleQuery('BEGIN');
             } else {
                 $DB->beginTransaction();
             }
-            // db backend adds begin anyway from now on..
             return true;
         }
+
         if (strtoupper($string) == 'COMMIT') {
             $res = $DB->commit();
             if ($_DB_driver == 'DB') {
@@ -2415,22 +2696,27 @@ class DB_DataObject extends DB_DataObject_Overload
             $result = $DB->query($string);
           }
           catch (PEAR_Exception $e) {
+            if ($tries == 0) {
+              // The original sin was what triggered the retry. Sometimes the retry fails because mysql has done an internal rollback
+              // of previous queries in the transaction so it has essentially failed to recover from the deadlock. If we can't
+              // recover we should return the original error.
+              $firstError = $e;
+            }
             // CRM-21489 If we have caught a DB lock - let it go around the loop until our tries limit is hit.
             // else rethrow the exception. The 2 locks we are looking at are mysql code 1205 (lock) and
             // 1213 (deadlock).
             $dbErrorMessage = $e->getCause()->getUserInfo();
             if (!stristr($dbErrorMessage, 'nativecode=1205') && !stristr($dbErrorMessage, 'nativecode=1213')) {
-              throw $e;
+              throw $firstError;
             }
             $message = (stristr($dbErrorMessage, 'nativecode=1213') ? 'Database deadlock encountered' : 'Database lock encountered');
             if (($tries + 1) === $maxTries) {
-              throw new CRM_Core_Exception($message, 0, array('sql' => $string, 'trace' => $e->getTrace()));
+              throw new CRM_Core_Exception($message, 0, array('sql' => $string, 'trace' => $firstError->getTrace()));
             }
             CRM_Core_Error::debug_log_message("Retrying after $message hit on attempt " . ($tries + 1) . ' at query : ' . $string);
             continue;
           }
-
-        } else {
+            } else {
                 switch (strtolower(substr(trim($string),0,6))) {
 
                     case 'insert':
@@ -2445,8 +2731,9 @@ class DB_DataObject extends DB_DataObject_Overload
                 }
             }
 
-            // See CRM-21489 for why I believe this is never hit.
-            if (!is_a($result,'PEAR_Error')) {
+            // see if we got a failure.. - try again a few times..
+            // See CRM-21489 for why Eileen believes this is never hit.
+            if (!is_object($result) || !is_a($result,'PEAR_Error')) {
                 break;
             }
             if ($result->getCode() != -14) {  // *DB_ERROR_NODBSELECTED
@@ -2456,22 +2743,26 @@ class DB_DataObject extends DB_DataObject_Overload
             $DB->connect($DB->dsn);
         }
 
-        if (is_a($result,'PEAR_Error')) {
+
+        if (is_object($result) && is_a($result,'PEAR_Error')) {
             if (!empty($_DB_DATAOBJECT['CONFIG']['debug'])) {
                 $this->debug($result->toString(), "Query Error",1 );
             }
+            $this->N = false;
             return $this->raiseError($result);
         }
-        // Strip any prepended comments
+
+        // CRM-18093 starts.
+        // CRM-20445 starts Strip any prepended comments
         $queryString = (substr($string, 0, 2) === '/*') ? substr($string, strpos($string, '*/') + 2) : $string;
         $action = strtolower(substr(trim($queryString),0,6));
+        // CRM-20445 ends
 
         if (!empty($_DB_DATAOBJECT['CONFIG']['debug']) || defined('CIVICRM_DEBUG_LOG_QUERY')) {
           $timeTaken = sprintf("%0.6f", microtime(TRUE) - $time);
           $alertLevel = $this->getAlertLevel($timeTaken);
-
           $message = "$alertLevel QUERY DONE IN $timeTaken  seconds.";
-          if (in_array($action, array('insert', 'update', 'delete')) && $_DB_driver == 'DB') {
+          if (in_array($action, ['insert', 'update', 'delete']) && $_DB_driver === 'DB') {
             $message .= " " . $DB->affectedRows() . " row(s)s subject to $action action";
           }
           elseif (is_a($result, 'DB_result') && method_exists($result, 'numrows')) {
@@ -2490,6 +2781,7 @@ class DB_DataObject extends DB_DataObject_Overload
             $this->debug($message, 'query', 1);
           }
         }
+      // CRM-18093 ends.
 
         switch ($action) {
             case 'insert':
@@ -2503,10 +2795,7 @@ class DB_DataObject extends DB_DataObject_Overload
         }
         if (is_object($result)) {
             // lets hope that copying the result object is OK!
-            // fix notices in unit test.
-            if ( !CRM_Utils_Array::value( 'RESULTSEQ', $GLOBALS['_DB_DATAOBJECT'] ) ) {
-                $GLOBALS['_DB_DATAOBJECT']['RESULTSEQ'] = 1;
-            }
+
             $_DB_resultid  = $GLOBALS['_DB_DATAOBJECT']['RESULTSEQ']++;
             $_DB_DATAOBJECT['RESULTS'][$_DB_resultid] = $result;
             $this->_DB_resultid = $_DB_resultid;
@@ -2515,14 +2804,17 @@ class DB_DataObject extends DB_DataObject_Overload
         if (!empty($_DB_DATAOBJECT['CONFIG']['debug'])) {
             $this->debug(serialize($result), 'RESULT',5);
         }
-        if (method_exists($result, 'numrows')) {
+        if (method_exists($result, 'numRows')) {
             if ($_DB_driver == 'DB') {
                 $DB->expectError(DB_ERROR_UNSUPPORTED);
             } else {
                 $DB->expectError(MDB2_ERROR_UNSUPPORTED);
             }
-            $this->N = $result->numrows();
-            if (is_a($this->N,'PEAR_Error')) {
+
+            $this->N = $result->numRows();
+            //var_dump($this->N);
+
+            if (is_object($this->N) && is_a($this->N,'PEAR_Error')) {
                 $this->N = true;
             }
             $DB->popExpect();
@@ -2542,7 +2834,7 @@ class DB_DataObject extends DB_DataObject_Overload
     {
         global $_DB_DATAOBJECT;
         $this->_connect();
-        $DB = &$_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
+        $DB = $_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
 
         $quoteIdentifiers  = !empty($_DB_DATAOBJECT['CONFIG']['quote_identifiers']);
         $options = $_DB_DATAOBJECT['CONFIG'];
@@ -2552,6 +2844,7 @@ class DB_DataObject extends DB_DataObject_Overload
             $x = new DB_DataObject;
             $this->_query= $x->_query;
         }
+
 
         foreach($keys as $k => $v) {
             // index keys is an indexed array
@@ -2573,13 +2866,12 @@ class DB_DataObject extends DB_DataObject_Overload
             }
 
             $kSql = $quoteIdentifiers
-                ? ( $DB->quoteIdentifier($this->__table) . '.' . $DB->quoteIdentifier($k) )
-                : "{$this->__table}.{$k}";
-
+                ? ( $DB->quoteIdentifier($this->tableName()) . '.' . $DB->quoteIdentifier($k) )
+                : "{$this->tableName()}.{$k}";
 
 
             /***
-            if (is_a($this->$k,'DB_DataObject_Cast')) {
+            if (is_object($this->$k) && is_a($this->$k,'DB_DataObject_Cast')) {
                 $dbtype = $DB->dsn["phptype"];
                 $value = $this->$k->toString($v,$DB);
                 if (PEAR::isError($value)) {
@@ -2595,7 +2887,7 @@ class DB_DataObject extends DB_DataObject_Overload
             }
             ***/
 
-            if (!isset($options['disable_null_strings']) && is_string($this->$k) && (strtolower($this->$k) === 'null') && $this->$k !== 'Null' && !($v & DB_DATAOBJECT_NOTNULL)) {
+            if (!($v & DB_DATAOBJECT_NOTNULL) && DB_DataObject::_is_null($this,$k)) {
                 $this->whereAdd(" $kSql  IS NULL");
                 continue;
             }
@@ -2621,28 +2913,6 @@ class DB_DataObject extends DB_DataObject_Overload
         }
     }
 
-    /**
-     * autoload Class relating to a table
-     * (depreciated - use ::factory)
-     *
-     * @param  string  $table  table
-     * @access private
-     * @return string classname on Success
-     */
-    function staticAutoloadTable($table)
-    {
-        global $_DB_DATAOBJECT;
-        if (empty($_DB_DATAOBJECT['CONFIG'])) {
-            DB_DataObject::_loadConfig();
-        }
-        $p = isset($_DB_DATAOBJECT['CONFIG']['class_prefix']) ?
-            $_DB_DATAOBJECT['CONFIG']['class_prefix'] : '';
-        $class = $p . preg_replace('/[^A-Z0-9]/i','_',ucfirst($table));
-
-        $ce = substr(phpversion(),0,1) > 4 ? class_exists($class,false) : class_exists($class);
-        $class = $ce ? $class  : DB_DataObject::_autoloadClass($class);
-        return $class;
-    }
 
 
      /**
@@ -2666,7 +2936,8 @@ class DB_DataObject extends DB_DataObject_Overload
 
 
 
-    function factory($table = '') {
+    function factory($table = '')
+    {
         global $_DB_DATAOBJECT;
 
 
@@ -2683,16 +2954,17 @@ class DB_DataObject extends DB_DataObject_Overload
         }
         // no configuration available for database
         if (!empty($database) && empty($_DB_DATAOBJECT['CONFIG']['database_'.$database])) {
-                return DB_DataObject::raiseError(
+                $do = new DB_DataObject();
+                $do->raiseError(
                     "unable to find database_{$database} in Configuration, It is required for factory with database"
                     , 0, PEAR_ERROR_DIE );
        }
 
 
-
+        /*
         if ($table === '') {
-            if (is_a($this,'DB_DataObject') && strlen($this->__table)) {
-                $table = $this->__table;
+            if (is_a($this,'DB_DataObject') && strlen($this->tableName())) {
+                $table = $this->tableName();
             } else {
                 return DB_DataObject::raiseError(
                     "factory did not recieve a table name",
@@ -2700,16 +2972,34 @@ class DB_DataObject extends DB_DataObject_Overload
             }
         }
 
+        */
         // does this need multi db support??
-        $p = isset($_DB_DATAOBJECT['CONFIG']['class_prefix']) ?
-            $_DB_DATAOBJECT['CONFIG']['class_prefix'] : '';
-        $class = $p . preg_replace('/[^A-Z0-9]/i','_',ucfirst($table));
-        $ce = substr(phpversion(),0,1) > 4 ? class_exists($class,false) : class_exists($class);
+        $cp = isset($_DB_DATAOBJECT['CONFIG']['class_prefix']) ?
+            explode(PATH_SEPARATOR, $_DB_DATAOBJECT['CONFIG']['class_prefix']) : '';
 
-        $class = $ce ? $class  : DB_DataObject::_autoloadClass($class);
+        //print_r($cp);
 
+        // multiprefix support.
+        $tbl = preg_replace('/[^A-Z0-9]/i','_',ucfirst($table));
+        if (is_array($cp)) {
+            $class = array();
+            foreach($cp as $cpr) {
+                $ce = substr(phpversion(),0,1) > 4 ? class_exists($cpr . $tbl,false) : class_exists($cpr . $tbl);
+                if ($ce) {
+                    $class = $cpr . $tbl;
+                    break;
+                }
+                $class[] = $cpr . $tbl;
+            }
+        } else {
+            $class = $tbl;
+            $ce = substr(phpversion(),0,1) > 4 ? class_exists($class,false) : class_exists($class);
+        }
+
+
+        $rclass = $ce ? $class  : DB_DataObject::_autoloadClass($class, $table);
         // proxy = full|light
-        if (!$class && isset($_DB_DATAOBJECT['CONFIG']['proxy'])) {
+        if (!$rclass && isset($_DB_DATAOBJECT['CONFIG']['proxy'])) {
 
             DB_DataObject::debug("FAILED TO Autoload  $database.$table - using proxy.","FACTORY",1);
 
@@ -2722,7 +3012,9 @@ class DB_DataObject extends DB_DataObject_Overload
             $d = new DB_DataObject;
 
             $d->__table = $table;
-            if (is_a($ret = $d->_connect(), 'PEAR_Error')) {
+
+            $ret = $d->_connect();
+            if (is_object($ret) && is_a($ret, 'PEAR_Error')) {
                 return $ret;
             }
 
@@ -2730,12 +3022,17 @@ class DB_DataObject extends DB_DataObject_Overload
             return $x->$proxyMethod( $d->_database, $table);
         }
 
-        if (!$class) {
-            return DB_DataObject::raiseError(
-                "factory could not find class $class from $table",
+        if (!$rclass || !class_exists($rclass)) {
+            $dor = new DB_DataObject();
+            return $dor->raiseError(
+                "factory could not find class " .
+                (is_array($class) ? implode(PATH_SEPARATOR, $class)  : $class  ).
+                "from $table",
                 DB_DATAOBJECT_ERROR_INVALIDCONFIG);
         }
-        $ret = new $class;
+
+        $ret = new $rclass();
+
         if (!empty($database)) {
             DB_DataObject::debug("Setting database to $database","FACTORY",1);
             $ret->database($database);
@@ -2745,11 +3042,12 @@ class DB_DataObject extends DB_DataObject_Overload
     /**
      * autoload Class
      *
-     * @param  string  $class  Class
+     * @param  string|array  $class  Class
+     * @param  string  $table  Table trying to load.
      * @access private
      * @return string classname on Success
      */
-    function _autoloadClass($class)
+    function _autoloadClass($class, $table=false)
     {
         global $_DB_DATAOBJECT;
 
@@ -2759,32 +3057,63 @@ class DB_DataObject extends DB_DataObject_Overload
         $class_prefix = empty($_DB_DATAOBJECT['CONFIG']['class_prefix']) ?
                 '' : $_DB_DATAOBJECT['CONFIG']['class_prefix'];
 
-        $table   = substr($class,strlen($class_prefix));
+        $table   = $table ? $table : substr($class,strlen($class_prefix));
 
         // only include the file if it exists - and barf badly if it has parse errors :)
         if (!empty($_DB_DATAOBJECT['CONFIG']['proxy']) || empty($_DB_DATAOBJECT['CONFIG']['class_location'])) {
             return false;
         }
+        // support for:
+        // class_location = mydir/ => maps to mydir/Tablename.php
+        // class_location = mydir/myfile_%s.php => maps to mydir/myfile_Tablename
+        // with directory sepr
+        // class_location = mydir/:mydir2/: => tries all of thes locations.
+        $cl = $_DB_DATAOBJECT['CONFIG']['class_location'];
 
 
-        if (strpos($_DB_DATAOBJECT['CONFIG']['class_location'],'%s') !== false) {
-            $file = sprintf($_DB_DATAOBJECT['CONFIG']['class_location'], preg_replace('/[^A-Z0-9]/i','_',ucfirst($table)));
-        } else {
-            $file = $_DB_DATAOBJECT['CONFIG']['class_location'].'/'.preg_replace('/[^A-Z0-9]/i','_',ucfirst($table)).".php";
+        switch (true) {
+            case (strpos($cl ,'%s') !== false):
+                $file = sprintf($cl , preg_replace('/[^A-Z0-9]/i','_',ucfirst($table)));
+                break;
+
+            case (strpos($cl , PATH_SEPARATOR) !== false):
+                $file = array();
+                foreach(explode(PATH_SEPARATOR, $cl ) as $p) {
+                    $file[] =  $p .'/'.preg_replace('/[^A-Z0-9]/i','_',ucfirst($table)).".php";
+                }
+                break;
+            default:
+                $file = $cl .'/'.preg_replace('/[^A-Z0-9]/i','_',ucfirst($table)).".php";
+                break;
         }
 
-        if (!file_exists($file)) {
+        $cls = is_array($class) ? $class : array($class);
+
+        if (is_array($file) || !file_exists($file)) {
             $found = false;
-            foreach(explode(PATH_SEPARATOR, ini_get('include_path')) as $p) {
-                if (file_exists("$p/$file")) {
-                    $file = "$p/$file";
-                    $found = true;
+
+            $file = is_array($file) ? $file : array($file);
+            $search = implode(PATH_SEPARATOR, $file);
+            foreach($file as $f) {
+                foreach(explode(PATH_SEPARATOR, '' . PATH_SEPARATOR . ini_get('include_path')) as $p) {
+                    $ff = empty($p) ? $f : "$p/$f";
+
+                    if (file_exists($ff)) {
+                        $file = $ff;
+                        $found = true;
+                        break;
+                    }
+                }
+                if ($found) {
                     break;
                 }
             }
             if (!$found) {
-                DB_DataObject::raiseError(
-                    "autoload:Could not find class {$class} using class_location value",
+                $dor = new DB_DataObject();
+                $dor->raiseError(
+                    "autoload:Could not find class " . implode(',', $cls) .
+                    " using class_location value :" . $search .
+                    " using include_path value :" . ini_get('include_path'),
                     DB_DATAOBJECT_ERROR_INVALIDCONFIG);
                 return false;
             }
@@ -2793,11 +3122,18 @@ class DB_DataObject extends DB_DataObject_Overload
         include_once $file;
 
 
-        $ce = substr(phpversion(),0,1) > 4 ? class_exists($class,false) : class_exists($class);
-
+        $ce = false;
+        foreach($cls as $c) {
+            $ce = substr(phpversion(),0,1) > 4 ? class_exists($c,false) : class_exists($c);
+            if ($ce) {
+                $class = $c;
+                break;
+            }
+        }
         if (!$ce) {
-            DB_DataObject::raiseError(
-                "autoload:Could not autoload {$class}",
+            $dor = new DB_DataObject();
+            $dor->raiseError(
+                "autoload:Could not autoload " . implode(',', $cls) ,
                 DB_DATAOBJECT_ERROR_INVALIDCONFIG);
             return false;
         }
@@ -2823,11 +3159,14 @@ class DB_DataObject extends DB_DataObject_Overload
     * Should look a bit like
     *       [local_col_name] => "related_tablename:related_col_name"
     *
+    * @param    array $new_links optional - force update of the links for this table
+    *               You probably want to restore it to it's original state after,
+    *               as modifying here does it for the whole PHP request.
     *
     * @return   array|null
     *           array       = if there are links defined for this table.
     *           empty array - if there is a links.ini file, but no links on this table
-    *           null        - if no links.ini exists for this database (hence try auto_links).
+    *           false       - if no links.ini exists for this database (hence try auto_links).
     * @access   public
     * @see      DB_DataObject::getLinks(), DB_DataObject::getLink()
     */
@@ -2841,75 +3180,159 @@ class DB_DataObject extends DB_DataObject_Overload
         // have to connect.. -> otherwise things break later.
         $this->_connect();
 
-        if (isset($_DB_DATAOBJECT['LINKS'][$this->_database][$this->__table])) {
-            return $_DB_DATAOBJECT['LINKS'][$this->_database][$this->__table];
+        // alias for shorter code..
+        $lcfg  = &$_DB_DATAOBJECT['LINKS'];
+        $cfg   =  $_DB_DATAOBJECT['CONFIG'];
+
+        if ($args = func_get_args()) {
+            // an associative array was specified, that updates the current
+            // schema... - be careful doing this
+            if (empty( $lcfg[$this->_database])) {
+                $lcfg[$this->_database] = array();
+            }
+            $lcfg[$this->_database][$this->tableName()] = $args[0];
+
+        }
+        // loaded and available.
+        if (isset($lcfg[$this->_database][$this->tableName()])) {
+            return $lcfg[$this->_database][$this->tableName()];
         }
 
+        // loaded
+        if (isset($lcfg[$this->_database])) {
+            // either no file, or empty..
+            return $lcfg[$this->_database] === false ? null : array();
+        }
 
+        // links are same place as schema by default.
+        $schemas = isset($cfg['schema_location']) ?
+            array("{$cfg['schema_location']}/{$this->_database}.ini") :
+            array() ;
 
+        // if ini_* is set look there instead.
+        // and support multiple locations.
+        if (isset($cfg["ini_{$this->_database}"])) {
+            $schemas = is_array($cfg["ini_{$this->_database}"]) ?
+                $cfg["ini_{$this->_database}"] :
+                explode(PATH_SEPARATOR,$cfg["ini_{$this->_database}"]);
+        }
 
+        // default to not available.
+        $lcfg[$this->_database] = false;
 
-        // attempt to load links file here..
+        foreach ($schemas as $ini) {
 
-        if (!isset($_DB_DATAOBJECT['LINKS'][$this->_database])) {
-            $schemas = isset($_DB_DATAOBJECT['CONFIG']['schema_location']) ?
-                array("{$_DB_DATAOBJECT['CONFIG']['schema_location']}/{$this->_database}.ini") :
-                array() ;
+            $links = isset($cfg["links_{$this->_database}"]) ?
+                    $cfg["links_{$this->_database}"] :
+                    str_replace('.ini','.links.ini',$ini);
 
-            if (isset($_DB_DATAOBJECT['CONFIG']["ini_{$this->_database}"])) {
-                $schemas = is_array($_DB_DATAOBJECT['CONFIG']["ini_{$this->_database}"]) ?
-                    $_DB_DATAOBJECT['CONFIG']["ini_{$this->_database}"] :
-                    explode(PATH_SEPARATOR,$_DB_DATAOBJECT['CONFIG']["ini_{$this->_database}"]);
-            }
-
-
-
-            foreach ($schemas as $ini) {
-
-                $links =
-                    isset($_DB_DATAOBJECT['CONFIG']["links_{$this->_database}"]) ?
-                        $_DB_DATAOBJECT['CONFIG']["links_{$this->_database}"] :
-                        str_replace('.ini','.links.ini',$ini);
-
-                if (empty($_DB_DATAOBJECT['LINKS'][$this->_database]) && file_exists($links) && is_file($links)) {
-                    /* not sure why $links = ... here  - TODO check if that works */
-                    $_DB_DATAOBJECT['LINKS'][$this->_database] = parse_ini_file($links, true);
-                    if (!empty($_DB_DATAOBJECT['CONFIG']['debug'])) {
-                        $this->debug("Loaded links.ini file: $links","links",1);
-                    }
-                } else {
-                    if (!empty($_DB_DATAOBJECT['CONFIG']['debug'])) {
-                        $this->debug("Missing links.ini file: $links","links",1);
-                    }
+            // file really exists..
+            if (!file_exists($links) || !is_file($links)) {
+                if (!empty($cfg['debug'])) {
+                    $this->debug("Missing links.ini file: $links","links",1);
                 }
+                continue;
             }
+
+            // set to empty array - as we have at least one file now..
+            $lcfg[$this->_database] = empty($lcfg[$this->_database]) ? array() : $lcfg[$this->_database];
+
+            // merge schema file into lcfg..
+            $lcfg[$this->_database] = array_merge(
+                $lcfg[$this->_database],
+                parse_ini_file($links, true)
+            );
+
+
+            if (!empty($cfg['debug'])) {
+                $this->debug("Loaded links.ini file: $links","links",1);
+            }
+
         }
 
+        if (!empty($_DB_DATAOBJECT['CONFIG']['portability']) && $_DB_DATAOBJECT['CONFIG']['portability'] & 1) {
+            foreach($lcfg[$this->_database] as $k=>$v) {
+
+                $nk = strtolower($k);
+                // results in duplicate cols.. but not a big issue..
+                $lcfg[$this->_database][$nk] = isset($lcfg[$this->_database][$nk])
+                    ? $lcfg[$this->_database][$nk]  : array();
+
+                foreach($v as $kk =>$vv) {
+                    //var_Dump($vv);exit;
+                    $vv =explode(':', $vv);
+                    $vv[0] = strtolower($vv[0]);
+                    $lcfg[$this->_database][$nk][$kk] = implode(':', $vv);
+                }
+
+
+            }
+        }
+        //echo '<PRE>';print_r($lcfg);exit;
 
         // if there is no link data at all on the file!
         // we return null.
-        if (!isset($_DB_DATAOBJECT['LINKS'][$this->_database])) {
+        if ($lcfg[$this->_database] === false) {
             return null;
         }
 
-        if (isset($_DB_DATAOBJECT['LINKS'][$this->_database][$this->__table])) {
-            return $_DB_DATAOBJECT['LINKS'][$this->_database][$this->__table];
+        if (isset($lcfg[$this->_database][$this->tableName()])) {
+            return $lcfg[$this->_database][$this->tableName()];
         }
 
         return array();
     }
+
+
     /**
+     * generic getter/setter for links
+     *
+     * This is the new 'recommended' way to get get/set linked objects.
+     * must be used with links.ini
+     *
+     * usage:
+     *  get:
+     *  $obj = $do->link('company_id');
+     *  $obj = $do->link(array('local_col', 'linktable:linked_col'));
+     *
+     *  set:
+     *  $do->link('company_id',0);
+     *  $do->link('company_id',$obj);
+     *  $do->link('company_id', array($obj));
+     *
+     *  example function
+     *
+     *  function company() {
+     *     $this->link(array('company_id','company:id'), func_get_args());
+     *   }
+     *
+     *
+     *
+     * @param  mixed $link_spec              link specification (normally a string)
+     *                                       uses similar rules to  joinAdd() array argument.
+     * @param  mixed $set_value (optional)   int, DataObject, or array('set')
+     * @author Alan Knowles
+     * @access public
+     * @return mixed true or false on setting, object on getting
+     */
+    function link($field, $set_args = array())
+    {
+        require_once 'DB/DataObject/Links.php';
+        $l = new DB_DataObject_Links($this);
+        return  $l->link($field,$set_args) ;
+
+    }
+
+      /**
      * load related objects
      *
-     * There are two ways to use this, one is to set up a <dbname>.links.ini file
-     * into a static property named <dbname>.links and specifies the table joins,
-     * the other highly dependent on naming columns 'correctly' :)
-     * using colname = xxxxx_yyyyyy
-     * xxxxxx = related table; (yyyyy = user defined..)
-     * looks up table xxxxx, for value id=$this->xxxxx
-     * stores it in $this->_xxxxx_yyyyy
-     * you can change what object vars the links are stored in by
-     * changeing the format parameter
+     * Generally not recommended to use this.
+     * The generator should support creating getter_setter methods which are better suited.
+     *
+     * Relies on  <dbname>.links.ini
+     *
+     * Sets properties on the calling dataobject  you can change what
+     * object vars the links are stored in by  changeing the format parameter
      *
      *
      * @param  string format (default _%s) where %s is the table name.
@@ -2919,159 +3342,28 @@ class DB_DataObject extends DB_DataObject_Overload
      */
     function getLinks($format = '_%s')
     {
+        require_once 'DB/DataObject/Links.php';
+         $l = new DB_DataObject_Links($this);
+        return $l->applyLinks($format);
 
-        // get table will load the options.
-        if ($this->_link_loaded) {
-            return true;
-        }
-        $this->_link_loaded = false;
-        $cols  = $this->table();
-        $links = $this->links();
-
-        $loaded = array();
-
-        if ($links) {
-            foreach($links as $key => $match) {
-                list($table,$link) = explode(':', $match);
-                $k = sprintf($format, str_replace('.', '_', $key));
-                // makes sure that '.' is the end of the key;
-                if ($p = strpos($key,'.')) {
-                      $key = substr($key, 0, $p);
-                }
-
-                $this->$k = $this->getLink($key, $table, $link);
-
-                if (is_object($this->$k)) {
-                    $loaded[] = $k;
-                }
-            }
-            $this->_link_loaded = $loaded;
-            return true;
-        }
-        // this is the autonaming stuff..
-        // it sends the column name down to getLink and lets that sort it out..
-        // if there is a links file then it is not used!
-        // IT IS DEPRECIATED!!!! - USE
-        if (!is_null($links)) {
-            return false;
-        }
-
-
-        foreach (array_keys($cols) as $key) {
-            if (!($p = strpos($key, '_'))) {
-                continue;
-            }
-            // does the table exist.
-            $k =sprintf($format, $key);
-            $this->$k = $this->getLink($key);
-            if (is_object($this->$k)) {
-                $loaded[] = $k;
-            }
-        }
-        $this->_link_loaded = $loaded;
-        return true;
     }
 
     /**
-     * return name from related object
-     *
-     * There are two ways to use this, one is to set up a <dbname>.links.ini file
-     * into a static property named <dbname>.links and specifies the table joins,
-     * the other is highly dependant on naming columns 'correctly' :)
-     *
-     * NOTE: the naming convention is depreciated!!! - use links.ini
-     *
-     * using colname = xxxxx_yyyyyy
-     * xxxxxx = related table; (yyyyy = user defined..)
-     * looks up table xxxxx, for value id=$this->xxxxx
-     * stores it in $this->_xxxxx_yyyyy
-     *
-     * you can also use $this->getLink('thisColumnName','otherTable','otherTableColumnName')
-     *
-     *
-     * @param string $row    either row or row.xxxxx
-     * @param string $table  name of table to look up value in
-     * @param string $link   name of column in other table to match
-     * @author Tim White <tim@cyface.com>
-     * @access public
-     * @return mixed object on success
+     * deprecited : @use link()
      */
     function getLink($row, $table = null, $link = false)
     {
+        require_once 'DB/DataObject/Links.php';
+        $l = new DB_DataObject_Links($this);
+        return $l->getLink($row, $table === null ? false: $table, $link);
 
-
-        // GUESS THE LINKED TABLE.. (if found - recursevly call self)
-
-        if ($table === null) {
-            $links = $this->links();
-
-            if (is_array($links)) {
-
-                if ($links[$row]) {
-                    list($table,$link) = explode(':', $links[$row]);
-                    if ($p = strpos($row,".")) {
-                        $row = substr($row,0,$p);
-                    }
-                    return $this->getLink($row,$table,$link);
-
-                }
-
-                $this->raiseError(
-                    "getLink: $row is not defined as a link (normally this is ok)",
-                    DB_DATAOBJECT_ERROR_NODATA);
-
-                $r = false;
-                return $r;// technically a possible error condition?
-
-            }
-            // use the old _ method - this shouldnt happen if called via getLinks()
-            if (!($p = strpos($row, '_'))) {
-                $r = null;
-                return $r;
-            }
-            $table = substr($row, 0, $p);
-            return $this->getLink($row, $table);
-
-
-        }
-
-
-
-        if (!isset($this->$row)) {
-            $this->raiseError("getLink: row not set $row", DB_DATAOBJECT_ERROR_NODATA);
-            return false;
-        }
-
-        // check to see if we know anything about this table..
-
-        $obj = $this->factory($table);
-
-        if (!is_a($obj,'DB_DataObject')) {
-            $this->raiseError(
-                "getLink:Could not find class for row $row, table $table",
-                DB_DATAOBJECT_ERROR_INVALIDCONFIG);
-            return false;
-        }
-        if ($link) {
-            if ($obj->get($link, $this->$row)) {
-                $obj->free();
-                return $obj;
-            }
-            return  false;
-        }
-
-        if ($obj->get($this->$row)) {
-            $obj->free();
-            return $obj;
-        }
-        return false;
 
     }
 
     /**
-     * IS THIS SUPPORTED/USED ANYMORE????
-     *return a list of options for a linked table
-     *
+     * getLinkArray
+     * Fetch an array of related objects. This should be used in conjunction with a <dbname>.links.ini file configuration (see the introduction on linking for details on this).
+     * You may also use this with all parameters to specify, the column and related table.
      * This is highly dependant on naming columns 'correctly' :)
      * using colname = xxxxx_yyyyyy
      * xxxxxx = related table; (yyyyy = user defined..)
@@ -3079,50 +3371,69 @@ class DB_DataObject extends DB_DataObject_Overload
      * stores it in $this->_xxxxx_yyyyy
      *
      * @access public
-     * @return array of results (empty array on failure)
+     * @param string $column - either column or column.xxxxx
+     * @param string $table - name of table to look up value in
+     * @return array - array of results (empty array on failure)
+     *
+     * Example - Getting the related objects
+     *
+     * $person = new DataObjects_Person;
+     * $person->get(12);
+     * $children = $person->getLinkArray('children');
+     *
+     * echo 'There are ', count($children), ' descendant(s):<br />';
+     * foreach ($children as $child) {
+     *     echo $child->name, '<br />';
+     * }
+     *
      */
-    function &getLinkArray($row, $table = null)
+    function getLinkArray($row, $table = null)
     {
+        require_once 'DB/DataObject/Links.php';
+        $l = new DB_DataObject_Links($this);
+        return $l->getLinkArray($row, $table === null ? false: $table);
 
-        $ret = array();
-        if (!$table) {
-            $links = $this->links();
+    }
 
-            if (is_array($links)) {
-                if (!isset($links[$row])) {
-                    // failed..
-                    return $ret;
-                }
-                list($table,$link) = explode(':',$links[$row]);
-            } else {
-                if (!($p = strpos($row,'_'))) {
-                    return $ret;
-                }
-                $table = substr($row,0,$p);
-            }
-        }
+     /**
+     * unionAdd - adds another dataobject to this, building a unioned query.
+     *
+     * usage:
+     * $doTable1 = DB_DataObject::factory("table1");
+     * $doTable2 = DB_DataObject::factory("table2");
+     *
+     * $doTable1->selectAdd();
+     * $doTable1->selectAdd("col1,col2");
+     * $doTable1->whereAdd("col1 > 100");
+     * $doTable1->orderBy("col1");
+     *
+     * $doTable2->selectAdd();
+     * $doTable2->selectAdd("col1, col2");
+     * $doTable2->whereAdd("col2 = 'v'");
+     *
+     * $doTable1->unionAdd($doTable2);
+     * $doTable1->find();
+      *
+     * Note: this model may be a better way to implement joinAdd?, eg. do the building in find?
+     *
+     *
+     * @param             $obj       object|false the union object or false to reset
+     * @param    optional $is_all    string 'ALL' to do all.
+     * @returns           $obj       object|array the added object, or old list if reset.
+     */
 
-        $c  = $this->factory($table);
-
-        if (!is_a($c,'DB_DataObject')) {
-            $this->raiseError(
-                "getLinkArray:Could not find class for row $row, table $table",
-                DB_DATAOBJECT_ERROR_INVALIDCONFIG
-            );
+    function unionAdd($obj,$is_all= '')
+    {
+        if ($obj === false) {
+            $ret = $this->_query['unions'];
+            $this->_query['unions'] = array();
             return $ret;
         }
-
-        // if the user defined method list exists - use it...
-        if (method_exists($c, 'listFind')) {
-            $c->listFind($this->id);
-        } else {
-            $c->find();
-        }
-        while ($c->fetch()) {
-            $ret[] = $c;
-        }
-        return $ret;
+        $this->_query['unions'][] = array($obj, 'UNION ' . $is_all . ' ') ;
+        return $obj;
     }
+
+
 
     /**
      * The JOIN condition
@@ -3161,9 +3472,10 @@ class DB_DataObject extends DB_DataObject_Overload
      * @param    optional $obj       object |array    the joining object (no value resets the join)
      *                                          If you use an array here it should be in the format:
      *                                          array('local_column','remotetable:remote_column');
-     *                                          if remotetable does not have a definition, you should
-     *                                          use @ to hide the include error message..
-     *
+     *                                             if remotetable does not have a definition, you should
+     *                                             use @ to hide the include error message..
+     *                                          array('local_column',  $dataobject , 'remote_column');
+     *                                             if array has 3 args, then second is assumed to be the linked dataobject.
      *
      * @param    optional $joinType  string | array
      *                                          'LEFT'|'INNER'|'RIGHT'|'' Inner is default, '' indicates
@@ -3223,14 +3535,21 @@ class DB_DataObject extends DB_DataObject_Overload
         $toTable = false;
         if (is_array($obj)) {
             $tfield = $obj[0];
-            list($toTable,$ofield) = explode(':',$obj[1]);
-            $obj = DB_DataObject::factory($toTable);
 
-            if (!$obj || is_a($obj,'PEAR_Error')) {
-                $obj = new DB_DataObject;
-                $obj->__table = $toTable;
+            if (count($obj) == 3) {
+                $ofield = $obj[2];
+                $obj = $obj[1];
+            } else {
+                list($toTable,$ofield) = explode(':',$obj[1]);
+
+                $obj = is_string($toTable) ? DB_DataObject::factory($toTable) : $toTable;
+
+                if (!$obj || !is_object($obj) || is_a($obj,'PEAR_Error')) {
+                    $obj = new DB_DataObject;
+                    $obj->__table = $toTable;
+                }
+                $obj->_connect();
             }
-            $obj->_connect();
             // set the table items to nothing.. - eg. do not try and match
             // things in the child table...???
             $items = array();
@@ -3241,7 +3560,7 @@ class DB_DataObject extends DB_DataObject_Overload
         }
         /*  make sure $this->_database is set.  */
         $this->_connect();
-        $DB = &$_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
+        $DB = $_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
 
 
         /// CHANGED 26 JUN 2009 - we prefer links from our local table over the remote one.
@@ -3249,31 +3568,46 @@ class DB_DataObject extends DB_DataObject_Overload
         /* otherwise see if there are any links from this table to the obj. */
         //print_r($this->links());
         if (($ofield === false) && ($links = $this->links())) {
-            foreach ($links as $k => $v) {
-                /* link contains {this column} = {linked table}:{linked column} */
-                $ar = explode(':', $v);
-                // Feature Request #4266 - Allow joins with multiple keys
-                if (strpos($k, ',') !== false) {
-                    $k = explode(',', $k);
-                }
-                if (strpos($ar[1], ',') !== false) {
-                    $ar[1] = explode(',', $ar[1]);
-                }
+            // this enables for support for arrays of links in ini file.
+            // link contains this_column[] =  linked_table:linked_column
+            // or standard way.
+            // link contains this_column =  linked_table:linked_column
+            foreach ($links as $k => $linkVar) {
 
-                if ($ar[0] == $obj->__table) {
+                if (!is_array($linkVar)) {
+                    $linkVar  = array($linkVar);
+                }
+                foreach($linkVar as $v) {
+
+
+
+                    /* link contains {this column} = {linked table}:{linked column} */
+                    $ar = explode(':', $v);
+                    // Feature Request #4266 - Allow joins with multiple keys
+                    if (strpos($k, ',') !== false) {
+                        $k = explode(',', $k);
+                    }
+                    if (strpos($ar[1], ',') !== false) {
+                        $ar[1] = explode(',', $ar[1]);
+                    }
+
+                    if ($ar[0] != $obj->tableName()) {
+                        continue;
+                    }
                     if ($joinCol !== false) {
                         if ($k == $joinCol) {
+                            // got it!?
                             $tfield = $k;
                             $ofield = $ar[1];
                             break;
-                        } else {
-                            continue;
                         }
-                    } else {
-                        $tfield = $k;
-                        $ofield = $ar[1];
-                        break;
+                        continue;
+
                     }
+                    $tfield = $k;
+                    $ofield = $ar[1];
+                    break;
+
                 }
             }
         }
@@ -3281,23 +3615,30 @@ class DB_DataObject extends DB_DataObject_Overload
         //print_r($obj->links());
         if (!$ofield && ($olinks = $obj->links())) {
 
-            foreach ($olinks as $k => $v) {
-                /* link contains {this column} = {linked table}:{linked column} */
-                $ar = explode(':', $v);
-
-                // Feature Request #4266 - Allow joins with multiple keys
-
-                $links_key_array = strpos($k,',');
-                if ($links_key_array !== false) {
-                    $k = explode(',', $k);
+            foreach ($olinks as $k => $linkVar) {
+                /* link contains {this column} = array ( {linked table}:{linked column} )*/
+                if (!is_array($linkVar)) {
+                    $linkVar  = array($linkVar);
                 }
+                foreach($linkVar as $v) {
 
-                $ar_array = strpos($ar[1],',');
-                if ($ar_array !== false) {
-                    $ar[1] = explode(',', $ar[1]);
-                }
+                    /* link contains {this column} = {linked table}:{linked column} */
+                    $ar = explode(':', $v);
 
-                if ($ar[0] == $this->__table) {
+                    // Feature Request #4266 - Allow joins with multiple keys
+                    $links_key_array = strpos($k,',');
+                    if ($links_key_array !== false) {
+                        $k = explode(',', $k);
+                    }
+
+                    $ar_array = strpos($ar[1],',');
+                    if ($ar_array !== false) {
+                        $ar[1] = explode(',', $ar[1]);
+                    }
+
+                    if ($ar[0] != $this->tableName()) {
+                        continue;
+                    }
 
                     // you have explictly specified the column
                     // and the col is listed here..
@@ -3306,7 +3647,7 @@ class DB_DataObject extends DB_DataObject_Overload
                     if ($joinCol !== false) {
                         $this->raiseError(
                             "joinAdd: You cannot target a join column in the " .
-                            "'link from' table ({$obj->__table}). " .
+                            "'link from' table ({$obj->tableName()}). " .
                             "Either remove the fourth argument to joinAdd() ".
                             "({$joinCol}), or alter your links.ini file.",
                             DB_DATAOBJECT_ERROR_NODATA);
@@ -3316,6 +3657,7 @@ class DB_DataObject extends DB_DataObject_Overload
                     $ofield = $k;
                     $tfield = $ar[1];
                     break;
+
                 }
             }
         }
@@ -3331,7 +3673,7 @@ class DB_DataObject extends DB_DataObject_Overload
 
         if ($ofield === false) {
             $this->raiseError(
-                "joinAdd: {$obj->__table} has no link with {$this->__table}",
+                "joinAdd: {$obj->tableName()} has no link with {$this->tableName()}",
                 DB_DATAOBJECT_ERROR_NODATA);
             return false;
         }
@@ -3340,7 +3682,7 @@ class DB_DataObject extends DB_DataObject_Overload
         // we default to joining as the same name (this is remvoed later..)
 
         if ($joinAs === false) {
-            $joinAs = $obj->__table;
+            $joinAs = $obj->tableName();
         }
 
         $quoteIdentifiers = !empty($_DB_DATAOBJECT['CONFIG']['quote_identifiers']);
@@ -3348,8 +3690,8 @@ class DB_DataObject extends DB_DataObject_Overload
 
         // not sure  how portable adding database prefixes is..
         $objTable = $quoteIdentifiers ?
-                $DB->quoteIdentifier($obj->__table) :
-                 $obj->__table ;
+                $DB->quoteIdentifier($obj->tableName()) :
+                 $obj->tableName() ;
 
         $dbPrefix  = '';
         if (strlen($obj->_database) && in_array($DB->dsn['phptype'],array('mysql','mysqli'))) {
@@ -3388,18 +3730,27 @@ class DB_DataObject extends DB_DataObject_Overload
 
             if (!$items) {
                 $this->raiseError(
-                    "joinAdd: No table definition for {$obj->__table}",
+                    "joinAdd: No table definition for {$obj->tableName()}",
                     DB_DATAOBJECT_ERROR_INVALIDCONFIG);
                 return false;
             }
 
+            $ignore_null = !isset($options['disable_null_strings'])
+                    || !is_string($options['disable_null_strings'])
+                    || strtolower($options['disable_null_strings']) !== 'full' ;
+
+
             foreach($items as $k => $v) {
-                if (!isset($obj->$k)) {
+                if (!isset($obj->$k) && $ignore_null) {
                     continue;
                 }
 
                 $kSql = ($quoteIdentifiers ? $DB->quoteIdentifier($k) : $k);
 
+                if (DB_DataObject::_is_null($obj,$k)) {
+                	$obj->whereAdd("{$joinAs}.{$kSql} IS NULL");
+                	continue;
+                }
 
                 if ($v & DB_DATAOBJECT_STR) {
                     $obj->whereAdd("{$joinAs}.{$kSql} = " . $this->_quote((string) (
@@ -3416,19 +3767,14 @@ class DB_DataObject extends DB_DataObject_Overload
                     continue;
                 }
 
-                if (is_a($obj->$k,'DB_DataObject_Cast')) {
+                if (is_object($obj->$k) && is_a($obj->$k,'DB_DataObject_Cast')) {
                     $value = $obj->$k->toString($v,$DB);
                     if (PEAR::isError($value)) {
                         $this->raiseError($value->getMessage() ,DB_DATAOBJECT_ERROR_INVALIDARG);
                         return false;
                     }
-                    if (!isset($options['disable_null_strings']) && strtolower($value) === 'null' && $value !== 'Null' ) {
-                        $obj->whereAdd("{$joinAs}.{$kSql} IS NULL");
-                        continue;
-                    } else {
-                        $obj->whereAdd("{$joinAs}.{$kSql} = $value");
-                        continue;
-                    }
+                    $obj->whereAdd("{$joinAs}.{$kSql} = $value");
+                    continue;
                 }
 
 
@@ -3478,7 +3824,7 @@ class DB_DataObject extends DB_DataObject_Overload
 
 
 
-        $table = $this->__table;
+        $table = $this->tableName();
 
         if ($quoteIdentifiers) {
             $joinAs   = $DB->quoteIdentifier($joinAs);
@@ -3490,7 +3836,7 @@ class DB_DataObject extends DB_DataObject_Overload
 
 
         $fullJoinAs = '';
-        $addJoinAs  = ($quoteIdentifiers ? $DB->quoteIdentifier($obj->__table) : $obj->__table) != $joinAs;
+        $addJoinAs  = ($quoteIdentifiers ? $DB->quoteIdentifier($obj->tableName()) : $obj->tableName()) != $joinAs;
         if ($addJoinAs) {
             // join table a AS b - is only supported by a few databases and is probably not needed
             // , however since it makes the whole Statement alot clearer we are leaving it in
@@ -3511,18 +3857,18 @@ class DB_DataObject extends DB_DataObject_Overload
                 $jadd = "\n {$joinType} JOIN {$objTable} {$fullJoinAs}";
                 //$this->_join .= "\n {$joinType} JOIN {$objTable} {$fullJoinAs}";
                 if (is_array($ofield)) {
-                  $key_count = count($ofield);
+                	$key_count = count($ofield);
                     for($i = 0; $i < $key_count; $i++) {
-                      if ($i == 0) {
-                        $jadd .= " ON ({$joinAs}.{$ofield[$i]}={$table}.{$tfield[$i]}) ";
-                      }
-                      else {
-                        $jadd .= " AND {$joinAs}.{$ofield[$i]}={$table}.{$tfield[$i]} ";
-                      }
+                    	if ($i == 0) {
+                    		$jadd .= " ON ({$joinAs}.{$ofield[$i]}={$table}.{$tfield[$i]}) ";
+                    	}
+                    	else {
+                    		$jadd .= " AND {$joinAs}.{$ofield[$i]}={$table}.{$tfield[$i]} ";
+                    	}
                     }
                     $jadd .= ' ' . $appendJoin . ' ';
                 } else {
-                  $jadd .= " ON ({$joinAs}.{$ofield}={$table}.{$tfield}) {$appendJoin} ";
+	                $jadd .= " ON ({$joinAs}.{$ofield}={$table}.{$tfield}) {$appendJoin} ";
                 }
                 // jadd avaliable for debugging join build.
                 //echo $jadd ."\n";
@@ -3538,6 +3884,254 @@ class DB_DataObject extends DB_DataObject_Overload
         return true;
 
     }
+
+    /**
+     * autoJoin - using the links.ini file, it builds a query with all the joins
+     * usage:
+     * $x = DB_DataObject::factory('mytable');
+     * $x->autoJoin();
+     * $x->get(123);
+     *   will result in all of the joined data being added to the fetched object..
+     *
+     * $x = DB_DataObject::factory('mytable');
+     * $x->autoJoin();
+     * $ar = $x->fetchAll();
+     *   will result in an array containing all the data from the table, and any joined tables..
+     *
+     * $x = DB_DataObject::factory('mytable');
+     * $jdata = $x->autoJoin();
+     * $x->selectAdd(); //reset..
+     * foreach($_REQUEST['requested_cols'] as $c) {
+     *    if (!isset($jdata[$c])) continue; // ignore columns not available..
+     *    $x->selectAdd( $jdata[$c] . ' as ' . $c);
+     * }
+     * $ar = $x->fetchAll();
+     *   will result in only the columns requested being fetched...
+     *
+     *
+     *
+     * @param     array     Configuration
+     *          exclude  Array of columns to exclude from results (eg. modified_by_id)
+     *          links    The equivilant links.ini data for this table eg.
+     *                    array( 'person_id' => 'person:id', .... )
+     *          include  Array of columns to include
+     *          distinct Array of distinct columns.
+     *
+     * @return   array      info about joins
+     *                      cols => map of resulting {joined_tablename}.{joined_table_column_name}
+     *                      join_names => map of resulting {join_name_as}.{joined_table_column_name}
+     *                      count => the column to count on.
+     * @access   public
+     */
+    function autoJoin($cfg = array())
+    {
+        global $_DB_DATAOBJECT;
+        //var_Dump($cfg);exit;
+        $pre_links = $this->links();
+        if (!empty($cfg['links'])) {
+            $this->links(array_merge( $pre_links , $cfg['links']));
+        }
+        $map = $this->links( );
+
+        $this->databaseStructure();
+        $dbstructure = $_DB_DATAOBJECT['INI'][$this->_database];
+        //print_r($map);
+        $tabdef = $this->table();
+
+        // we need this as normally it's only cleared by an empty selectAs call.
+
+
+        $keys = array_keys($tabdef);
+        if (!empty($cfg['exclude'])) {
+            $keys = array_intersect($keys, array_diff($keys, $cfg['exclude']));
+        }
+        if (!empty($cfg['include'])) {
+
+            $keys =  array_intersect($keys,  $cfg['include']);
+        }
+
+        $selectAs = array();
+
+        if (!empty($keys)) {
+            $selectAs = array(array( $keys , '%s', false));
+        }
+
+        $ret = array(
+            'cols' => array(),
+            'join_names' => array(),
+            'count' => false,
+        );
+
+
+
+        $has_distinct = false;
+        if (!empty($cfg['distinct']) && $keys) {
+
+            // reset the columsn?
+            $cols = array();
+
+             //echo '<PRE>' ;print_r($xx);exit;
+            foreach($keys as $c) {
+                //var_dump($c);
+
+                if (  $cfg['distinct'] == $c) {
+                    $has_distinct = 'DISTINCT( ' . $this->tableName() .'.'. $c .') as ' . $c;
+                    $ret['count'] =  'DISTINCT  ' . $this->tableName() .'.'. $c .'';
+                    continue;
+                }
+                // cols is in our filtered keys...
+                $cols = $c;
+
+            }
+            // apply our filtered version, which excludes the distinct column.
+
+            $selectAs = empty($cols) ?  array() : array(array(array(  $cols) , '%s', false)) ;
+
+
+
+        }
+
+        foreach($keys as $k) {
+            $ret['cols'][$k] = $this->tableName(). '.' . $k;
+        }
+
+
+
+        foreach($map as $ocl=>$info) {
+
+            list($tab,$col) = explode(':', $info);
+            // what about multiple joins on the same table!!!
+
+            // if links point to a table that does not exist - ignore.
+            if (!isset($dbstructure[$tab])) {
+                continue;
+            }
+
+            $xx = DB_DataObject::factory($tab);
+            if (!is_object($xx) || !is_a($xx, 'DB_DataObject')) {
+                continue;
+            }
+            // skip columns that are excluded.
+
+            // we ignore include here... - as
+
+            // this is borked ... for multiple jions..
+            $this->joinAdd($xx, 'LEFT', 'join_'.$ocl.'_'. $col, $ocl);
+
+            if (!empty($cfg['exclude']) && in_array($ocl, $cfg['exclude'])) {
+                continue;
+            }
+
+            $tabdef = $xx->table();
+            $table = $xx->tableName();
+
+            $keys = array_keys($tabdef);
+
+
+            if (!empty($cfg['exclude'])) {
+                $keys = array_intersect($keys, array_diff($keys, $cfg['exclude']));
+
+                foreach($keys as $k) {
+                    if (in_array($ocl.'_'.$k, $cfg['exclude'])) {
+                        $keys = array_diff($keys, $k); // removes the k..
+                    }
+                }
+
+            }
+
+            if (!empty($cfg['include'])) {
+                // include will basically be BASECOLNAME_joinedcolname
+                $nkeys = array();
+                foreach($keys as $k) {
+                    if (in_array( sprintf($ocl.'_%s', $k), $cfg['include'])) {
+                        $nkeys[] = $k;
+                    }
+                }
+                $keys = $nkeys;
+            }
+
+            if (empty($keys)) {
+                continue;
+            }
+            // got distinct, and not yet found it..
+            if (!$has_distinct && !empty($cfg['distinct']))  {
+                $cols = array();
+                foreach($keys as $c) {
+                    $tn = sprintf($ocl.'_%s', $c);
+
+                    if ( $tn == $cfg['distinct']) {
+
+                        $has_distinct = 'DISTINCT( ' . 'join_'.$ocl.'_'.$col.'.'.$c .')  as ' . $tn ;
+                        $ret['count'] =  'DISTINCT  join_'.$ocl.'_'.$col.'.'.$c;
+                       // var_dump($this->countWhat );
+                        continue;
+                    }
+                    $cols[] = $c;
+
+                }
+
+                if (!empty($cols)) {
+                    $selectAs[] = array($cols, $ocl.'_%s', 'join_'.$ocl.'_'. $col);
+                }
+
+            } else {
+                $selectAs[] = array($keys, $ocl.'_%s', 'join_'.$ocl.'_'. $col);
+            }
+
+            foreach($keys as $k) {
+                $ret['cols'][sprintf('%s_%s', $ocl, $k)] = $tab.'.'.$k;
+                $ret['join_names'][sprintf('%s_%s', $ocl, $k)] = sprintf('join_%s_%s.%s',$ocl, $col, $k);
+            }
+
+        }
+
+        // fill in the select details..
+        $this->selectAdd();
+
+        if ($has_distinct) {
+            $this->selectAdd($has_distinct);
+        }
+
+        foreach($selectAs as $ar) {
+            $this->selectAs($ar[0], $ar[1], $ar[2]);
+        }
+        // restore links..
+        $this->links( $pre_links );
+
+        return $ret;
+
+    }
+
+    /**
+     * Factory method for calling DB_DataObject_Cast
+     *
+     * if used with 1 argument DB_DataObject_Cast::sql($value) is called
+     *
+     * if used with 2 arguments DB_DataObject_Cast::$value($callvalue) is called
+     * valid first arguments are: blob, string, date, sql
+     *
+     * eg. $member->updated = $member->sqlValue('NOW()');
+     *
+     *
+     * might handle more arguments for escaping later...
+     *
+     *
+     * @param string $value (or type if used with 2 arguments)
+     * @param string $callvalue (optional) used with date/null etc..
+     */
+
+    function sqlValue($value)
+    {
+        $method = 'sql';
+        if (func_num_args() == 2) {
+            $method = $value;
+            $value = func_get_arg(1);
+        }
+        require_once 'DB/DataObject/Cast.php';
+        return call_user_func(array('DB_DataObject_Cast', $method), $value);
+
+    }
+
 
     /**
      * Copies items that are in the table definitions from an
@@ -3556,9 +4150,10 @@ class DB_DataObject extends DB_DataObject_Overload
         global $_DB_DATAOBJECT;
         $keys  = $this->keys();
         $items = $this->table();
+
         if (!$items) {
             $this->raiseError(
-                "setFrom:Could not find table definition for {$this->__table}",
+                "setFrom:Could not find table definition for {$this->tableName()}",
                 DB_DATAOBJECT_ERROR_INVALIDCONFIG);
             return;
         }
@@ -3570,7 +4165,14 @@ class DB_DataObject extends DB_DataObject_Overload
             if (!$k) {
                 continue; // ignore empty keys!!! what
             }
-            if (is_object($from) && isset($from->{sprintf($format,$k)})) {
+
+            $chk = is_object($from) &&
+                (version_compare(phpversion(), "5.1.0" , ">=") ?
+                    property_exists($from, sprintf($format,$k)) :  // php5.1
+                    array_key_exists( sprintf($format,$k), get_class_vars($from)) //older
+                );
+            // if from has property ($format($k)
+            if ($chk) {
                 $kk = (strtolower($k) == 'from') ? '_from' : $k;
                 if (method_exists($this,'set'.$kk)) {
                     $ret = $this->{'set'.$kk}($from->{sprintf($format,$k)});
@@ -3591,7 +4193,7 @@ class DB_DataObject extends DB_DataObject_Overload
                 continue;
             }
 
-            if (!isset($from[sprintf($format,$k)])) {
+            if (!isset($from[sprintf($format,$k)]) && !DB_DataObject::_is_null($from, sprintf($format,$k))) {
                 continue;
             }
 
@@ -3603,13 +4205,15 @@ class DB_DataObject extends DB_DataObject_Overload
                 }
                 continue;
             }
-            if (is_object($from[sprintf($format,$k)])) {
+            $val = $from[sprintf($format,$k)];
+            if (is_a($val, 'DB_DataObject_Cast')) {
+                $this->$k = $val;
                 continue;
             }
-            if (is_array($from[sprintf($format,$k)])) {
+            if (is_object($val) || is_array($val)) {
                 continue;
             }
-            $ret = $this->fromValue($k,$from[sprintf($format,$k)]);
+            $ret = $this->fromValue($k,$val);
             if ($ret !== true)  {
                 $overload_return[$k] = 'Not A Valid Value';
             }
@@ -3632,55 +4236,52 @@ class DB_DataObject extends DB_DataObject_Overload
      * will also return links converted to arrays.
      *
      * @param   string  sprintf format for array
-     * @param   bool    empty only return elemnts that have a value set.
+     * @param   bool||number    [true = elemnts that have a value set],
+     *                          [false = table + returned colums] ,
+     *                          [0 = returned columsn only]
      *
      * @access   public
      * @return   array of key => value for row
      */
 
-    function toArray($format = null, $hideEmpty = false)
+    function toArray($format = '%s', $hideEmpty = false)
     {
         global $_DB_DATAOBJECT;
+
+        // we use false to ignore sprintf.. (speed up..)
+        $format = $format == '%s' ? false : $format;
+
         $ret = array();
         $rf = ($this->_resultFields !== false) ? $this->_resultFields :
-                (isset($_DB_DATAOBJECT['RESULTFIELDS'][$this->_DB_resultid]) ? $_DB_DATAOBJECT['RESULTFIELDS'][$this->_DB_resultid] : false);
+                (isset($_DB_DATAOBJECT['RESULTFIELDS'][$this->_DB_resultid]) ?
+                 $_DB_DATAOBJECT['RESULTFIELDS'][$this->_DB_resultid] : false);
+
         $ar = ($rf !== false) ?
-            array_merge($_DB_DATAOBJECT['RESULTFIELDS'][$this->_DB_resultid],$this->table()) :
+            (($hideEmpty === 0) ? $rf : array_merge($rf, $this->table())) :
             $this->table();
 
         foreach($ar as $k=>$v) {
 
             if (!isset($this->$k)) {
                 if (!$hideEmpty) {
-                    if ($format === null)
-                        $ret[$k] = '';
-                    else
-                        $ret[sprintf($format,$k)] = '';
+                    $ret[$format === false ? $k : sprintf($format,$k)] = '';
                 }
                 continue;
             }
             // call the overloaded getXXXX() method. - except getLink and getLinks
             if (method_exists($this,'get'.$k) && !in_array(strtolower($k),array('links','link'))) {
-                if ($format === null)
-                    $ret[$k] = $this->{'get'.$k}();
-                else
-                    $ret[sprintf($format,$k)] = $this->{'get'.$k}();
+                $ret[$format === false ? $k : sprintf($format,$k)] = $this->{'get'.$k}();
                 continue;
             }
             // should this call toValue() ???
-            if ($format === null)
-                $ret[$k] = $this->$k;
-            else
-                $ret[sprintf($format,$k)] = $this->$k;
+            $ret[$format === false ? $k : sprintf($format,$k)] = $this->$k;
         }
         if (!$this->_link_loaded) {
             return $ret;
         }
         foreach($this->_link_loaded as $k) {
-            if ($format === null)
-                $ret[$k] = $this->$k->toArray();
-            else
-                $ret[sprintf($format,$k)] = $this->$k->toArray();
+            $ret[$format === false ? $k : sprintf($format,$k)] = $this->$k->toArray();
+
         }
 
         return $ret;
@@ -3731,7 +4332,7 @@ class DB_DataObject extends DB_DataObject_Overload
 
             // if not null - and it's not set.......
 
-            if (!isset($this->$key) && ($val & DB_DATAOBJECT_NOTNULL)) {
+            if ($val & DB_DATAOBJECT_NOTNULL && DB_DataObject::_is_null($this, $key)) {
                 // dont check empty sequence key values..
                 if (($key == $seq[0]) && ($seq[1] == true)) {
                     continue;
@@ -3741,7 +4342,7 @@ class DB_DataObject extends DB_DataObject_Overload
             }
 
 
-            if (!isset($options['disable_null_strings']) && is_string($this->$key) && (strtolower($this->$key) == 'null') && $this->$key !== 'Null') {
+             if (DB_DataObject::_is_null($this, $key)) {
                 if ($val & DB_DATAOBJECT_NOTNULL) {
                     $this->debug("'null' field used for '$key', but it is defined as NOT NULL", 'VALIDATION', 4);
                     $ret[$key] = false;
@@ -3792,7 +4393,7 @@ class DB_DataObject extends DB_DataObject_Overload
      * @access public
      * @return object The DB connection
      */
-    function &getDatabaseConnection()
+    function getDatabaseConnection()
     {
         global $_DB_DATAOBJECT;
 
@@ -3815,7 +4416,7 @@ class DB_DataObject extends DB_DataObject_Overload
      * @return object The DB result object
      */
 
-    function &getDatabaseResult()
+    function getDatabaseResult()
     {
         global $_DB_DATAOBJECT;
         $this->_connect();
@@ -3947,20 +4548,21 @@ class DB_DataObject extends DB_DataObject_Overload
         $options = $_DB_DATAOBJECT['CONFIG'];
         $cols = $this->table();
         // dont know anything about this col..
-        if (!isset($cols[$col])) {
+        if (!isset($cols[$col]) || is_a($value, 'DB_DataObject_Cast')) {
             $this->$col = $value;
             return true;
         }
         //echo "FROM VALUE $col, {$cols[$col]}, $value\n";
         switch (true) {
             // set to null and column is can be null...
-            case (!isset($options['disable_null_strings']) && (strtolower($value) == 'null') && $value !== 'Null' && (!($cols[$col] & DB_DATAOBJECT_NOTNULL))):
+            case ((!($cols[$col] & DB_DATAOBJECT_NOTNULL)) && DB_DataObject::_is_null($value, false)):
             case (is_object($value) && is_a($value,'DB_DataObject_Cast')):
                 $this->$col = $value;
                 return true;
 
             // fail on setting null on a not null field..
-            case (!isset($options['disable_null_strings']) && (strtolower($value) == 'null') && $value !== 'Null' && ($cols[$col] & DB_DATAOBJECT_NOTNULL)):
+            case (($cols[$col] & DB_DATAOBJECT_NOTNULL) && DB_DataObject::_is_null($value,false)):
+
                 return false;
 
             case (($cols[$col] & DB_DATAOBJECT_DATE) &&  ($cols[$col] & DB_DATAOBJECT_TIME)):
@@ -4163,9 +4765,12 @@ class DB_DataObject extends DB_DataObject_Overload
      * @param   int     $v  level
      * @access  public
      * @return  none
+     *
+     * CRM-15212 fix visibility.
      */
     public static function debugLevel($v = null)
     {
+        // CRM-15212. ends
         global $_DB_DATAOBJECT;
         if (empty($_DB_DATAOBJECT['CONFIG'])) {
             DB_DataObject::_loadConfig();
@@ -4206,16 +4811,9 @@ class DB_DataObject extends DB_DataObject_Overload
         if ($behaviour == PEAR_ERROR_DIE && !empty($_DB_DATAOBJECT['CONFIG']['dont_die'])) {
             $behaviour = null;
         }
+
         $error = PEAR::getStaticProperty('DB_DataObject','lastError');
 
-        // this will never work totally with PHP's object model.
-        // as this is passed on static calls (like staticGet in our case)
-
-        if (isset($this) && is_object($this) && is_subclass_of($this,'db_dataobject')) {
-            $this->_lastError = $error;
-        }
-
-        $_DB_DATAOBJECT['LASTERROR'] = $error;
 
         // no checks for production here?....... - we log  errors before we throw them.
         DB_DataObject::debug($message,'ERROR',1);
@@ -4225,9 +4823,18 @@ class DB_DataObject extends DB_DataObject_Overload
             $error = $message;
         } else {
             require_once 'DB/DataObject/Error.php';
-            $error = PEAR::raiseError($message, $type, $behaviour,
+            $dor = new PEAR();
+            $error = $dor->raiseError($message, $type, $behaviour,
                             $opts=null, $userinfo=null, 'DB_DataObject_Error'
                         );
+        }
+        // this will never work totally with PHP's object model.
+        // as this is passed on static calls (like staticGet in our case)
+
+        $_DB_DATAOBJECT['LASTERROR'] = $error;
+
+        if (isset($this) && is_object($this) && is_subclass_of($this,'db_dataobject')) {
+            $this->_lastError = $error;
         }
 
         return $error;
@@ -4275,20 +4882,145 @@ class DB_DataObject extends DB_DataObject_Overload
         if (isset($_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5])) {
             $_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5]->num_rows = array();
         }
+
         if (is_array($this->_link_loaded)) {
             foreach ($this->_link_loaded as $do) {
                 if (
                         !empty($this->{$do}) &&
                         is_object($this->{$do}) &&
-                       method_exists($this->{$do}, 'free')
+                        method_exists($this->{$do}, 'free')
                     ) {
                     $this->{$do}->free();
                 }
             }
         }
 
+
+    }
+    /**
+    * Evaluate whether or not a value is set to null, taking the 'disable_null_strings' option into account.
+    * If the value is a string set to "null" and the "disable_null_strings" option is not set to
+    * true, then the value is considered to be null.
+    * If the value is actually a PHP NULL value, and "disable_null_strings" has been set to
+    * the value "full", then it will also be considered null. - this can not differenticate between not set
+    *
+    *
+    * @param  object|array $obj_or_ar
+    * @param  string|false $prop prperty
+
+    * @access private
+    * @return bool  object
+    */
+    function _is_null($obj_or_ar , $prop)
+    {
+    	global $_DB_DATAOBJECT;
+
+
+        $isset = $prop === false ? isset($obj_or_ar) :
+            (is_array($obj_or_ar) ? isset($obj_or_ar[$prop]) : isset($obj_or_ar->$prop));
+
+        $value = $isset ?
+            ($prop === false ? $obj_or_ar :
+                (is_array($obj_or_ar) ? $obj_or_ar[$prop] : $obj_or_ar->$prop))
+            : null;
+
+
+
+    	$options = $_DB_DATAOBJECT['CONFIG'];
+
+        $null_strings = !isset($options['disable_null_strings'])
+                    || $options['disable_null_strings'] === false;
+
+        $crazy_null = isset($options['disable_null_strings'])
+                && is_string($options['disable_null_strings'])
+                && strtolower($options['disable_null_strings'] === 'full');
+
+        // CRM-15522 Ensure that Last name of Null is validly stored.
+        if ( $null_strings && $isset  && is_string($value)  && (strtolower($value) === 'null')  && $value !== 'Null') {
+        // CRM-15522 ends
+            return true;
+        }
+
+        if ( $crazy_null && !$isset )  {
+        	return true;
+        }
+
+        return false;
+
+
     }
 
+    /**
+     * (deprecated - use ::get / and your own caching method)
+     */
+    static function staticGet($class, $k, $v = null)
+    {
+        $lclass = strtolower($class);
+        global $_DB_DATAOBJECT;
+        if (empty($_DB_DATAOBJECT['CONFIG'])) {
+            DB_DataObject::_loadConfig();
+        }
+
+
+
+        $key = "$k:$v";
+        if ($v === null) {
+            $key = $k;
+        }
+        if (!empty($_DB_DATAOBJECT['CONFIG']['debug'])) {
+            DB_DataObject::debug("$class $key","STATIC GET - TRY CACHE");
+        }
+        if (!empty($_DB_DATAOBJECT['CACHE'][$lclass][$key])) {
+            return $_DB_DATAOBJECT['CACHE'][$lclass][$key];
+        }
+        if (!empty($_DB_DATAOBJECT['CONFIG']['debug'])) {
+            DB_DataObject::debug("$class $key","STATIC GET - NOT IN CACHE");
+        }
+
+        $obj = DB_DataObject::factory(substr($class,strlen($_DB_DATAOBJECT['CONFIG']['class_prefix'])));
+        if (PEAR::isError($obj)) {
+            $dor = new DB_DataObject();
+            $dor->raiseError("could not autoload $class", DB_DATAOBJECT_ERROR_NOCLASS);
+            $r = false;
+            return $r;
+        }
+
+        if (!isset($_DB_DATAOBJECT['CACHE'][$lclass])) {
+            $_DB_DATAOBJECT['CACHE'][$lclass] = array();
+        }
+        if (!$obj->get($k,$v)) {
+            $dor = new DB_DataObject();
+            $dor->raiseError("No Data return from get $k $v", DB_DATAOBJECT_ERROR_NODATA);
+
+            $r = false;
+            return $r;
+        }
+        $_DB_DATAOBJECT['CACHE'][$lclass][$key] = $obj;
+        return $_DB_DATAOBJECT['CACHE'][$lclass][$key];
+    }
+
+    /**
+     * autoload Class relating to a table
+     * (deprecited - use ::factory)
+     *
+     * @param  string  $table  table
+     * @access private
+     * @return string classname on Success
+     */
+    function staticAutoloadTable($table)
+    {
+        global $_DB_DATAOBJECT;
+        if (empty($_DB_DATAOBJECT['CONFIG'])) {
+            DB_DataObject::_loadConfig();
+        }
+        $p = isset($_DB_DATAOBJECT['CONFIG']['class_prefix']) ?
+            $_DB_DATAOBJECT['CONFIG']['class_prefix'] : '';
+        $class = $p . preg_replace('/[^A-Z0-9]/i','_',ucfirst($table));
+
+        $ce = substr(phpversion(),0,1) > 4 ? class_exists($class,false) : class_exists($class);
+        $class = $ce ? $class  : DB_DataObject::_autoloadClass($class);
+        return $class;
+    }
 
     /* ---- LEGACY BC METHODS - NOT DOCUMENTED - See Documentation on New Methods. ---*/
 
@@ -4303,6 +5035,8 @@ class DB_DataObject extends DB_DataObject_Overload
    * @param float $timeTaken
    *
    * @return string
+   *
+   * function only needed for CRM-18093.
    */
   public function getAlertLevel($timeTaken) {
     if ($timeTaken >= 20) {
@@ -4320,11 +5054,6 @@ class DB_DataObject extends DB_DataObject_Overload
     return '';
   }
 
-  public function lastInsertId() {
-    $DB = &$_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5];
-    return $DB->lastInsertId();
-  }
-
 }
 // technially 4.3.2RC1 was broken!!
 // looks like 4.3.3 may have problems too....
@@ -4337,4 +5066,5 @@ if (!defined('DB_DATAOBJECT_NO_OVERLOAD')) {
         $GLOBALS['_DB_DATAOBJECT']['OVERLOADED'] = true;
     }
 }
+
 

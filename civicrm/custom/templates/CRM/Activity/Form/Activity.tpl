@@ -1,26 +1,10 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
 *}
 {* this template is used for adding/editing other (custom) activities. *}
@@ -81,7 +65,7 @@
     </td>
   </tr>
 
-  {if $form.separation }
+  {if $form.separation}
     <tr class="crm-activity-form-block-separation crm-is-multi-activity-wrapper">
       <td class="label">{$form.separation.label}</td>
       <td>{$form.separation.html} {help id="separation"}</td>
@@ -152,13 +136,11 @@
   </tr>
   <tr class="crm-activity-form-block-details">
     <td class="label">{$form.details.label}</td>
-    {* activityTypeName means label here not name, but it should be name (dev/core#1116-fixme) *}
-    {if $activityTypeName eq "Print PDF Letter"}
+    {if $activityTypeNameAndLabel.machineName eq "Print PDF Letter"}
       <td class="view-value">
       {$form.details.html}
       </td>
-    {* activityTypeName means label here not name, but it should be name (dev/core#1116-fixme) *}
-    {elseif $activityTypeName eq "Inbound Email"}
+    {elseif $activityTypeNameAndLabel.machineName eq "Inbound Email"}
       <td class="view-value">
        {$form.details.html|crmStripAlternatives|nl2br}
       </td>
@@ -187,7 +169,9 @@
   {/if}
 
   {if $tagsetInfo.activity}
-  <tr class="crm-activity-form-block-tag_set">{include file="CRM/common/Tagset.tpl" tagsetType='activity' tableLayout=true}</tr>
+    <tr class="crm-activity-form-block-tag_set">
+      {include file="CRM/common/Tagset.tpl" tagsetType='activity' tableLayout=true}
+    </tr>
   {/if}
 
   {if $action neq 4 OR $viewCustomData}
@@ -196,7 +180,6 @@
       {if $action eq 4}
         {include file="CRM/Custom/Page/CustomDataView.tpl"}
       {else}
-        <div id="customData"></div>
         {include file="CRM/common/customDataBlock.tpl"}
       {/if}
     </td>
@@ -255,7 +238,7 @@
   {/if} {* End Delete vs. Add / Edit action *}
   </table>
   <div class="crm-submit-buttons">
-  {if $action eq 4 && ($activityTName neq 'Inbound Email' || $allow_edit_inbound_emails == 1)}
+  {if $action eq 4 && ($activityTypeNameAndLabel.machineName neq 'Inbound Email' || $allow_edit_inbound_emails == 1)}
     {if !$context }
       {assign var="context" value='activity'}
     {/if}

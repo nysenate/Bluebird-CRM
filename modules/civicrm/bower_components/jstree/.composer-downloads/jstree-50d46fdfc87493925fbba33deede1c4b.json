@@ -1,0 +1,21 @@
+{
+    "name": "civicrm/civicrm-core:jstree",
+    "url": "https://github.com/vakata/jstree/archive/3.3.8.zip",
+    "checksum": "54ea10f0fb10ed8f97875c5dd916b767b0f26e7290a183098add5f496f18c29e",
+    "ignore": [
+        ".*",
+        "docs",
+        "demo",
+        "libs",
+        "node_modules",
+        "test",
+        "libs",
+        "jstree.jquery.json",
+        "gruntfile.js",
+        "package.json",
+        "bower.json",
+        "component.json",
+        "LICENCE-MIT",
+        "README.md"
+    ]
+}

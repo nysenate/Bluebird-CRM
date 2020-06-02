@@ -11,14 +11,14 @@
 return array(
   0 =>
   array(
-    'name' => 'CRM_iATS_Form_Report_Recur',
+    'name' => 'CRM_Iats_Form_Report_Recur',
     'entity' => 'ReportTemplate',
     'params' =>
     array(
       'version' => 3,
       'label' => 'iATS Payments - Recurring Contributions',
       'description' => 'iATS Payments - Recurring Contributions Report',
-      'class_name' => 'CRM_iATS_Form_Report_Recur',
+      'class_name' => 'CRM_Iats_Form_Report_Recur',
       'report_url' => 'com.iatspayments.com/recur',
       'component' => 'CiviContribute',
     ),

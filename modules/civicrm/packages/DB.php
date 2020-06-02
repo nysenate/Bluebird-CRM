@@ -5,7 +5,7 @@
 /**
  * Database independent query interface
  *
- * PHP versions 4 and 5
+ * PHP version 5
  *
  * LICENSE: This source file is subject to version 3.0 of the PHP license
  * that is available through the world-wide-web at the following URI:
@@ -20,7 +20,7 @@
  * @author     Daniel Convissor <danielc@php.net>
  * @copyright  1997-2007 The PHP Group
  * @license    http://www.php.net/license/3_0.txt  PHP License 3.0
- * @version    CVS: $Id: DB.php,v 1.88 2007/08/12 05:27:25 aharvey Exp $
+ * @version    CVS: $Id$
  * @link       http://pear.php.net/package/DB
  */
 
@@ -49,9 +49,7 @@ define('DB_OK', 1);
 /**
  * Unkown error
  */
-if (!defined('DB_ERROR')) {
-    define('DB_ERROR', -1);
-}
+define('DB_ERROR', -1);
 
 /**
  * Syntax error
@@ -187,8 +185,17 @@ define('DB_ERROR_CONSTRAINT_NOT_NULL',-29);
  * Invalid view or no permissions
  */
 define('DB_ERROR_INVALID_VIEW', -100);
-/**#@-*/
 
+/**
+ * Database lock timeout exceeded.
+ */
+define('DB_ERROR_LOCK_TIMEOUT', -30);
+
+/**
+ * Database deadlock encountered.
+ */
+define('DB_ERROR_DEADLOCK', -31);
+/**#@-*/
 
 // }}}
 // {{{ prepared statement-related
@@ -433,12 +440,12 @@ define('DB_PORTABILITY_ALL', 63);
  * @author     Daniel Convissor <danielc@php.net>
  * @copyright  1997-2007 The PHP Group
  * @license    http://www.php.net/license/3_0.txt  PHP License 3.0
- * @version    Release: 1.7.13
+ * @version    Release: 1.9.3
  * @link       http://pear.php.net/package/DB
  */
 class DB
 {
-    // {{{ &factory()
+    // {{{ factory()
 
     /**
      * Create a new DB object for the specified database type but don't
@@ -451,7 +458,7 @@ class DB
      *
      * @see DB_common::setOption()
      */
-    function &factory($type, $options = false)
+    public static function factory($type, $options = false)
     {
         if (!is_array($options)) {
             $options = array('persistent' => $options);
@@ -487,7 +494,7 @@ class DB
     }
 
     // }}}
-    // {{{ &connect()
+    // {{{ connect()
 
     /**
      * Create a new DB object including a connection to the specified database
@@ -522,7 +529,7 @@ class DB
      *
      * @uses DB::parseDSN(), DB_common::setOption(), PEAR::isError()
      */
-    static function &connect($dsn, $options = array())
+    public static function connect($dsn, $options = array())
     {
         $dsninfo = DB::parseDSN($dsn);
         $type = $dsninfo['phptype'];
@@ -539,15 +546,15 @@ class DB
             // expose php errors with sufficient debug level
             include_once "DB/${type}.php";
         } else {
-            include_once "DB/${type}.php";
+            @include_once "DB/${type}.php";
         }
 
         $classname = "DB_${type}";
         if (!class_exists($classname)) {
-            $obj = new PEAR;
-            $tmp = $obj->raiseError(null, DB_ERROR_NOT_FOUND, null, null,
+            $tmp = PEAR::raiseError(null, DB_ERROR_NOT_FOUND, null, null,
                                     "Unable to include the DB/{$type}.php"
-                                    . " file for '$dsn'",
+                                    . " file for '"
+                                    . DB::getDSNString($dsn, true) . "'",
                                     'DB_Error', true);
             return $tmp;
         }
@@ -584,7 +591,7 @@ class DB
      */
     function apiVersion()
     {
-        return '1.7.13';
+        return '1.9.3';
     }
 
     // }}}
@@ -597,9 +604,9 @@ class DB
      *
      * @return bool  whether $value is DB_Error object
      */
-    static function isError($value)
+    public static function isError($value)
     {
-        return is_a($value, 'DB_Error');
+        return is_object($value) && is_a($value, 'DB_Error');
     }
 
     // }}}
@@ -612,7 +619,7 @@ class DB
      *
      * @return bool  whether $value is a DB_<driver> object
      */
-    function isConnection($value)
+    public static function isConnection($value)
     {
         return (is_object($value) &&
                 is_subclass_of($value, 'db_common') &&
@@ -633,15 +640,16 @@ class DB
      *
      * @return boolean  whether $query is a data manipulation query
      */
-    static function isManip($query)
+    public static function isManip($query)
     {
         $manips = 'INSERT|UPDATE|DELETE|REPLACE|'
                 . 'CREATE|DROP|'
                 . 'LOAD DATA|SELECT .* INTO .* FROM|COPY|'
                 . 'ALTER|GRANT|REVOKE|'
+                // CRM_Core_Transaction Tests fail without the following line.
                 . 'SAVEPOINT|ROLLBACK|'
                 . 'LOCK|UNLOCK';
-        // First strip any leading comments.
+        // First strip any leading comments
         $queryString = (substr($query, 0, 2) === '/*') ? substr($query, strpos($query, '*/') + 2) : $query;
         if (preg_match('/^\s*"?(' . $manips . ')\s+/i', $queryString)) {
             return true;
@@ -660,7 +668,7 @@ class DB
      * @return string  the error message or false if the error code was
      *                  not recognized
      */
-    static function errorMessage($value)
+    public static function errorMessage($value)
     {
         static $errorMessages;
         if (!isset($errorMessages)) {
@@ -694,6 +702,8 @@ class DB
                 DB_ERROR_TRUNCATED          => 'truncated',
                 DB_ERROR_VALUE_COUNT_ON_ROW => 'value count on row',
                 DB_OK                       => 'no error',
+                DB_ERROR_DEADLOCK           => 'deadlock',
+                DB_ERROR_LOCK_TIMEOUT       => 'database lock timeout',
             );
         }
 
@@ -742,8 +752,9 @@ class DB
      *  + username: User name for login
      *  + password: Password for login
      */
-	 static function parseDSN($dsn)
+    public static function parseDSN($dsn)
     {
+
         if (defined('DB_DSN_MODE') && DB_DSN_MODE === 'auto') {
             if (extension_loaded('mysqli')) {
                 $dsn = preg_replace('/^mysql:/', 'mysqli:', $dsn);
@@ -880,7 +891,7 @@ class DB
      * @param boolean true to hide the password, false to include it
      * @return string
      */
-    function getDSNString($dsn, $hidePassword) {
+    public static function getDSNString($dsn, $hidePassword) {
         /* Calling parseDSN will ensure that we have all the array elements
          * defined, and means that we deal with strings and array in the same
          * manner. */
@@ -961,7 +972,7 @@ class DB
  * @author     Stig Bakken <ssb@php.net>
  * @copyright  1997-2007 The PHP Group
  * @license    http://www.php.net/license/3_0.txt  PHP License 3.0
- * @version    Release: 1.7.13
+ * @version    Release: 1.9.3
  * @link       http://pear.php.net/package/DB
  */
 class DB_Error extends PEAR_Error
@@ -991,6 +1002,20 @@ class DB_Error extends PEAR_Error
         }
     }
 
+    /**
+     * Workaround to both avoid the "Redefining already defined constructor"
+     * PHP error and provide backward compatibility in case someone is calling
+     * DB_Error() dynamically
+     */
+    public function __call($method, $arguments)
+    {
+        if ($method == 'DB_Error') {
+            return call_user_func_array(array($this, '__construct'), $arguments);
+        }
+        trigger_error(
+            'Call to undefined method DB_Error::' . $method . '()', E_USER_ERROR
+        );
+    }
     // }}}
 }
 
@@ -1008,7 +1033,7 @@ class DB_Error extends PEAR_Error
  * @author     Stig Bakken <ssb@php.net>
  * @copyright  1997-2007 The PHP Group
  * @license    http://www.php.net/license/3_0.txt  PHP License 3.0
- * @version    Release: 1.7.13
+ * @version    Release: 1.9.3
  * @link       http://pear.php.net/package/DB
  */
 class DB_result
@@ -1405,9 +1430,12 @@ class DB_result
     function free()
     {
         $err = $this->dbh->freeResult($this->result);
+        if (DB::isError($err)) {
+            return $err;
+        }
         $this->result = false;
         $this->statement = false;
-        return $err;
+        return true;
     }
 
     // }}}
@@ -1470,7 +1498,7 @@ class DB_result
  * @author     Stig Bakken <ssb@php.net>
  * @copyright  1997-2007 The PHP Group
  * @license    http://www.php.net/license/3_0.txt  PHP License 3.0
- * @version    Release: 1.7.13
+ * @version    Release: 1.9.3
  * @link       http://pear.php.net/package/DB
  * @see        DB_common::setFetchMode()
  */

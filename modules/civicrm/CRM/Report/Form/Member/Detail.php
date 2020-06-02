@@ -1,34 +1,18 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2019
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 class CRM_Report_Form_Member_Detail extends CRM_Report_Form {
 
@@ -115,7 +99,7 @@ class CRM_Report_Form_Member_Detail extends CRM_Report_Form {
           'source' => ['title' => ts('Source')],
         ],
         'filters' => [
-          'join_date' => ['operatorType' => CRM_Report_Form::OP_DATE],
+          'membership_join_date' => ['operatorType' => CRM_Report_Form::OP_DATE],
           'membership_start_date' => ['operatorType' => CRM_Report_Form::OP_DATE],
           'membership_end_date' => ['operatorType' => CRM_Report_Form::OP_DATE],
           'owner_membership_id' => [
@@ -225,7 +209,7 @@ class CRM_Report_Form_Member_Detail extends CRM_Report_Form {
           'contribution_status_id' => [
             'title' => ts('Contribution Status'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => CRM_Contribute_PseudoConstant::contributionStatus(),
+            'options' => CRM_Contribute_BAO_Contribution::buildOptions('contribution_status_id', 'search'),
             'type' => CRM_Utils_Type::T_INT,
           ],
           'total_amount' => ['title' => ts('Contribution Amount')],
@@ -317,7 +301,7 @@ class CRM_Report_Form_Member_Detail extends CRM_Report_Form {
     $checkList = [];
 
     $contributionTypes = CRM_Contribute_PseudoConstant::financialType();
-    $contributionStatus = CRM_Contribute_PseudoConstant::contributionStatus();
+    $contributionStatus = CRM_Contribute_PseudoConstant::contributionStatus(NULL, 'label');
     $paymentInstruments = CRM_Contribute_PseudoConstant::paymentInstrument();
 
     $repeatFound = FALSE;

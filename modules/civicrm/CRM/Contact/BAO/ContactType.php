@@ -1,34 +1,18 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2019
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 class CRM_Contact_BAO_ContactType extends CRM_Contact_DAO_ContactType {
 
@@ -62,7 +46,7 @@ class CRM_Contact_BAO_ContactType extends CRM_Contact_DAO_ContactType {
    */
   public static function isActive($contactType) {
     $contact = self::contactTypeInfo(FALSE);
-    $active = array_key_exists($contactType, $contact) ? TRUE : FALSE;
+    $active = array_key_exists($contactType, $contact);
     return $active;
   }
 
@@ -149,65 +133,45 @@ WHERE  parent_id IS NULL
    *   ..
    * @param bool $all
    * @param bool $ignoreCache
-   * @param bool $reset
    *
    * @return array
    *   Array of sub type information
    */
-  public static function subTypeInfo($contactType = NULL, $all = FALSE, $ignoreCache = FALSE, $reset = FALSE) {
-    static $_cache = NULL;
-
-    if ($reset === TRUE) {
-      $_cache = NULL;
-    }
-
-    if ($_cache === NULL) {
-      $_cache = [];
-    }
-    if ($contactType && !is_array($contactType)) {
-      $contactType = [$contactType];
-    }
-
+  public static function subTypeInfo($contactType = NULL, $all = FALSE, $ignoreCache = FALSE) {
     $argString = $all ? 'CRM_CT_STI_1_' : 'CRM_CT_STI_0_';
     if (!empty($contactType)) {
+      $contactType = (array) $contactType;
       $argString .= implode('_', $contactType);
     }
+    if (!Civi::cache('contactTypes')->has($argString) || $ignoreCache) {
+      $ctWHERE = '';
+      if (!empty($contactType)) {
+        $ctWHERE = " AND parent.name IN ('" . implode("','", $contactType) . "')";
+      }
 
-    if ((!array_key_exists($argString, $_cache)) || $ignoreCache) {
-      $cache = CRM_Utils_Cache::singleton();
-      $_cache[$argString] = $cache->get($argString);
-      if (!$_cache[$argString] || $ignoreCache) {
-        $_cache[$argString] = [];
-
-        $ctWHERE = '';
-        if (!empty($contactType)) {
-          $ctWHERE = " AND parent.name IN ('" . implode("','", $contactType) . "')";
-        }
-
-        $sql = "
+      $sql = "
 SELECT subtype.*, parent.name as parent, parent.label as parent_label
 FROM   civicrm_contact_type subtype
 INNER JOIN civicrm_contact_type parent ON subtype.parent_id = parent.id
 WHERE  subtype.name IS NOT NULL AND subtype.parent_id IS NOT NULL {$ctWHERE}
 ";
-        if ($all === FALSE) {
-          $sql .= " AND subtype.is_active = 1 AND parent.is_active = 1 ORDER BY parent.id";
-        }
-        $dao = CRM_Core_DAO::executeQuery($sql, [],
-          FALSE, 'CRM_Contact_DAO_ContactType'
-        );
-        while ($dao->fetch()) {
-          $value = [];
-          CRM_Core_DAO::storeValues($dao, $value);
-          $value['parent'] = $dao->parent;
-          $value['parent_label'] = $dao->parent_label;
-          $_cache[$argString][$dao->name] = $value;
-        }
-
-        $cache->set($argString, $_cache[$argString]);
+      if ($all === FALSE) {
+        $sql .= " AND subtype.is_active = 1 AND parent.is_active = 1 ORDER BY parent.id";
       }
+      $dao = CRM_Core_DAO::executeQuery($sql, [],
+        FALSE, 'CRM_Contact_DAO_ContactType'
+      );
+      $values = [];
+      while ($dao->fetch()) {
+        $value = [];
+        CRM_Core_DAO::storeValues($dao, $value);
+        $value['parent'] = $dao->parent;
+        $value['parent_label'] = $dao->parent_label;
+        $values[$dao->name] = $value;
+      }
+      Civi::cache('contactTypes')->set($argString, $values);
     }
-    return $_cache[$argString];
+    return Civi::cache('contactTypes')->get($argString);
   }
 
   /**
@@ -378,6 +342,7 @@ WHERE  type.name IS NOT NULL
     $isSeparator = TRUE,
     $separator = '__'
   ) {
+    // @todo - use Cache class - ie like Civi::cache('contactTypes')
     static $_cache = NULL;
 
     if ($_cache === NULL) {
@@ -467,6 +432,7 @@ AND   ( p.is_active = 1 OR p.id IS NULL )
    *   basicTypes.
    */
   public static function getBasicType($subType) {
+    // @todo - use Cache class - ie like Civi::cache('contactTypes')
     static $_cache = NULL;
     if ($_cache === NULL) {
       $_cache = [];
@@ -549,7 +515,7 @@ WHERE  subtype.name IN ('" . implode("','", $subType) . "' )";
     foreach ($contactTypes as $key => $value) {
       if ($key) {
         $typeValue = explode(CRM_Core_DAO::VALUE_SEPARATOR, $key);
-        $cType = CRM_Utils_Array::value('0', $typeValue);
+        $cType = $typeValue['0'] ?? NULL;
         $typeUrl = 'ct=' . $cType;
         if ($csType = CRM_Utils_Array::value('1', $typeValue)) {
           $typeUrl .= "&cst=$csType";
@@ -617,8 +583,9 @@ DELETE
 FROM civicrm_navigation
 WHERE name = %1";
       $params = [1 => ["New $name", 'String']];
-      $dao = CRM_Core_DAO::executeQuery($sql, $params);
+      CRM_Core_DAO::executeQuery($sql, $params);
       CRM_Core_BAO_Navigation::resetNavigation();
+      Civi::cache('contactTypes')->clear();
     }
     return TRUE;
   }
@@ -645,7 +612,7 @@ WHERE name = %1";
 
     $contactType = new CRM_Contact_DAO_ContactType();
     $contactType->copyValues($params);
-    $contactType->id = CRM_Utils_Array::value('id', $params);
+    $contactType->id = $params['id'] ?? NULL;
     $contactType->is_active = CRM_Utils_Array::value('is_active', $params, 0);
 
     $contactType->save();
@@ -680,9 +647,7 @@ WHERE name = %1";
       CRM_Core_BAO_Navigation::add($navigation);
     }
     CRM_Core_BAO_Navigation::resetNavigation();
-
-    // reset the cache after adding
-    self::subTypeInfo(NULL, FALSE, FALSE, TRUE);
+    Civi::cache('contactTypes')->clear();
 
     return $contactType;
   }

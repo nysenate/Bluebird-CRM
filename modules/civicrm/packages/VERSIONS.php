@@ -107,9 +107,8 @@
  * Contact_Vcard_Build           1.1.2      PHP 3          local changes
  * Contact_Vcard_Parse           1.32.0     PHP 3.0
  * Date                          1.4.7      BSD 3-cl.
- * DB                            1.7.13     PHP 3.0
- * DB_DataObject                 1.8.12     PHP 3          local changes
- * DB_Table                      1.5.6      BSD 3-cl.
+ * DB                            1.9.3      PHP 3.0
+ * DB_DataObject                 1.11.3     PHP 3          local changes
  * HTML_Common                   1.2.5      PHP 3
  * HTML_QuickForm                3.2.16     PHP 3          local changes, hierselect.php from a very old version (PHP 2)
  * HTML_QuickForm_advmultiselect 1.5.1      BSD 3-cl.      local changes
@@ -123,16 +122,12 @@
  * Net_Curl                      1.2.5      BSD 3-cl.
  * Net_DIME                      1.0.1      BSD 3-cl.
  * Net_URL                       1.0.15     BSD 3-cl.
- * Net_UserAgent_Detect          2.5.1      PHP 2
  * Pager                         2.4.8      BSD 3-cl.
  * PEAR                          1.9.0      PHP 3.0
  * PHP_Beautifier                0.1.14     PHP 3.0
  * Services_Twilio               3.10.0     MIT
- * Structures_Graph              1.0.2      LGPL 2.1+
- * System_Command                1.0.6      PHP 2
  * Validate                      0.8.2      BSD 3-cl.
  * Validate_Finance              0.5.4      BSD 3-cl.
- * Validate_Finance_CreditCard   0.5.3      BSD 3-cl.      local changes
  * XML_RPC                       1.5.3      PHP 3
  * XML_Util                      1.2.1      BSD 3-cl.
  *
@@ -147,7 +142,6 @@
  * eZ Components  2009.1.2   BSD 3-cl.   http://ezcomponents.org/                                      local changes
  * html2text      0.9.1      GPL 3+      http://roundcube.net/download             copied from program/lib/Roundcube/rcube_html2text.php
  * reCAPTCHA      1.10       X11         http://recaptcha.net/
- * OpenFlashChart 2.0        LGPL        http://teethgrinder.co.uk/open-flash-chart-2/
  * Snappy         ??         X11         https://github.com/knplabs/snappy
  * Backbone       0.9.9      X11/MIT     http://backbonejs.org/
  * Backone Forms  c6920b3c89 X11/MIT     https://github.com/powmedia/backbone-forms

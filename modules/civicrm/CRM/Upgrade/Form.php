@@ -1,34 +1,18 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2019
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  * $Id$
  *
  */
@@ -46,13 +30,6 @@ class CRM_Upgrade_Form extends CRM_Core_Form {
    * Minimum previous CiviCRM version we can directly upgrade from
    */
   const MINIMUM_UPGRADABLE_VERSION = '4.2.9';
-
-  /**
-   * Minimum php version required to run (equal to or lower than the minimum install version)
-   *
-   * As of Civi 5.16, using PHP 5.x will lead to a hard crash during bootstrap.
-   */
-  const MINIMUM_PHP_VERSION = '7.0.0';
 
   /**
    * @var \CRM_Core_Config
@@ -324,7 +301,7 @@ SET    version = '$version'
       $version, 'id',
       'version'
     );
-    return $domainID ? TRUE : FALSE;
+    return (bool) $domainID;
   }
 
   /**
@@ -471,10 +448,10 @@ SET    version = '$version'
       );
     }
 
-    if (version_compare(phpversion(), self::MINIMUM_PHP_VERSION) < 0) {
+    if (version_compare(phpversion(), CRM_Upgrade_Incremental_General::MIN_INSTALL_PHP_VER) < 0) {
       $error = ts('CiviCRM %3 requires PHP version %1 (or newer), but the current system uses %2 ',
         [
-          1 => self::MINIMUM_PHP_VERSION,
+          1 => CRM_Upgrade_Incremental_General::MIN_INSTALL_PHP_VER,
           2 => phpversion(),
           3 => $latestVer,
         ]);
@@ -637,25 +614,52 @@ SET    version = '$version'
   }
 
   /**
-   * Disable any extensions not compatible with this new version.
+   * Disable/uninstall any extensions not compatible with this new version.
    *
    * @param \CRM_Queue_TaskContext $ctx
    * @param string $postUpgradeMessageFile
    * @return bool
    */
   public static function disableOldExtensions(CRM_Queue_TaskContext $ctx, $postUpgradeMessageFile) {
-    $compatInfo = CRM_Extension_System::getCompatibilityInfo();
-    $disabled = [];
+    $messages = [];
     $manager = CRM_Extension_System::singleton()->getManager();
-    foreach ($compatInfo as $key => $ext) {
-      if (!empty($ext['obsolete']) && $manager->getStatus($key) == $manager::STATUS_INSTALLED) {
-        $disabled[$key] = sprintf("<li>%s</li>", ts('The extension %1 is now obsolete and has been disabled.', [1 => $key]));
+    foreach ($manager->getStatuses() as $key => $status) {
+      $obsolete = $manager->isIncompatible($key);
+      if ($obsolete) {
+        if (!empty($obsolete['disable']) && in_array($status, [$manager::STATUS_INSTALLED, $manager::STATUS_INSTALLED_MISSING])) {
+          try {
+            $manager->disable($key);
+            // Update the status for the sake of uninstall below.
+            $status = $status == $manager::STATUS_INSTALLED ? $manager::STATUS_DISABLED : $manager::STATUS_DISABLED_MISSING;
+            // This message is intentionally overwritten by uninstall below as it would be redundant
+            $messages[$key] = ts('The extension %1 is now obsolete and has been disabled.', [1 => $key]);
+          }
+          catch (CRM_Extension_Exception $e) {
+            $messages[] = ts('The obsolete extension %1 could not be removed due to an error. It is recommended to remove this extension manually.', [1 => $key]);
+          }
+        }
+        if (!empty($obsolete['uninstall']) && in_array($status, [$manager::STATUS_DISABLED, $manager::STATUS_DISABLED_MISSING])) {
+          try {
+            $manager->uninstall($key);
+            $messages[$key] = ts('The extension %1 is now obsolete and has been uninstalled.', [1 => $key]);
+            if ($status == $manager::STATUS_DISABLED) {
+              $messages[$key] .= ' ' . ts('You can remove it from your extensions directory.');
+            }
+          }
+          catch (CRM_Extension_Exception $e) {
+            $messages[] = ts('The obsolete extension %1 could not be removed due to an error. It is recommended to remove this extension manually.', [1 => $key]);
+          }
+        }
+        if (!empty($obsolete['force-uninstall'])) {
+          CRM_Core_DAO::executeQuery('UPDATE civicrm_extension SET is_active = 0 WHERE full_name = %1', [
+            1 => [$key, 'String'],
+          ]);
+        }
       }
     }
-    if ($disabled) {
-      $manager->disable(array_keys($disabled));
+    if ($messages) {
       file_put_contents($postUpgradeMessageFile,
-        '<br/><br/><ul>' . implode("\n", $disabled) . '</ul>',
+        '<br/><br/><ul><li>' . implode("</li>\n<li>", $messages) . '</li></ul>',
         FILE_APPEND
       );
     }
@@ -783,6 +787,8 @@ SET    version = '$version'
     // Rebuild all triggers and re-enable logging if needed
     $logging = new CRM_Logging_Schema();
     $logging->fixSchemaDifferences();
+
+    CRM_Core_ManagedEntities::singleton(TRUE)->reconcile(TRUE);
   }
 
   /**

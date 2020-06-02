@@ -1,34 +1,18 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2019
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 class CRM_Report_Form_Contribute_Detail extends CRM_Report_Form {
 
@@ -86,278 +70,296 @@ class CRM_Report_Form_Contribute_Detail extends CRM_Report_Form {
    */
   public function __construct() {
     $this->_autoIncludeIndexedFieldsAsOrderBys = 1;
-    $this->_columns = array_merge($this->getColumns('Contact', [
-      'order_bys_defaults' => ['sort_name' => 'ASC '],
-      'fields_defaults' => ['sort_name'],
-      'fields_excluded' => ['id'],
-      'fields_required' => ['id'],
-      'filters_defaults' => ['is_deleted' => 0],
-      'no_field_disambiguation' => TRUE,
-    ]), [
-      'civicrm_email' => [
-        'dao' => 'CRM_Core_DAO_Email',
-        'fields' => [
-          'email' => [
-            'title' => ts('Donor Email'),
-            'default' => TRUE,
-          ],
-        ],
-        'grouping' => 'contact-fields',
-      ],
-      'civicrm_line_item' => [
-        'dao' => 'CRM_Price_DAO_LineItem',
-      ],
-      'civicrm_phone' => [
-        'dao' => 'CRM_Core_DAO_Phone',
-        'fields' => [
-          'phone' => [
-            'title' => ts('Donor Phone'),
-            'default' => TRUE,
-            'no_repeat' => TRUE,
-          ],
-        ],
-        'grouping' => 'contact-fields',
-      ],
-      'civicrm_contribution' => [
-        'dao' => 'CRM_Contribute_DAO_Contribution',
-        'fields' => [
-          'contribution_id' => [
-            'name' => 'id',
-            'no_display' => TRUE,
-            'required' => TRUE,
-          ],
-          'list_contri_id' => [
-            'name' => 'id',
-            'title' => ts('Contribution ID'),
-          ],
-          'financial_type_id' => [
-            'title' => ts('Financial Type'),
-            'default' => TRUE,
-          ],
-          'contribution_status_id' => [
-            'title' => ts('Contribution Status'),
-          ],
-          'contribution_page_id' => [
-            'title' => ts('Contribution Page'),
-          ],
-          'source' => [
-            'title' => ts('Source'),
-          ],
-          'payment_instrument_id' => [
-            'title' => ts('Payment Type'),
-          ],
-          'check_number' => [
-            'title' => ts('Check Number'),
-          ],
-          'currency' => [
-            'required' => TRUE,
-            'no_display' => TRUE,
-          ],
-          'trxn_id' => NULL,
-          'receive_date' => ['default' => TRUE],
-          'receipt_date' => NULL,
-          'thankyou_date' => NULL,
-          'total_amount' => [
-            'title' => ts('Amount'),
-            'required' => TRUE,
-          ],
-          'non_deductible_amount' => [
-            'title' => ts('Non-deductible Amount'),
-          ],
-          'fee_amount' => NULL,
-          'net_amount' => NULL,
-          'contribution_or_soft' => [
-            'title' => ts('Contribution OR Soft Credit?'),
-            'dbAlias' => "'Contribution'",
-          ],
-          'soft_credits' => [
-            'title' => ts('Soft Credits'),
-            'dbAlias' => "NULL",
-          ],
-          'soft_credit_for' => [
-            'title' => ts('Soft Credit For'),
-            'dbAlias' => "NULL",
-          ],
-          'cancel_date' => [
-            'title' => ts('Cancelled / Refunded Date'),
-            'name' => 'contribution_cancel_date',
-          ],
-          'cancel_reason' => [
-            'title' => ts('Cancellation / Refund Reason'),
-          ],
-        ],
-        'filters' => [
-          'contribution_or_soft' => [
-            'title' => ts('Contribution OR Soft Credit?'),
-            'clause' => "(1)",
-            'operatorType' => CRM_Report_Form::OP_SELECT,
-            'type' => CRM_Utils_Type::T_STRING,
-            'options' => [
-              'contributions_only' => ts('Contributions Only'),
-              'soft_credits_only' => ts('Soft Credits Only'),
-              'both' => ts('Both'),
+    $this->_columns = array_merge(
+      $this->getColumns('Contact', [
+        'order_bys_defaults' => ['sort_name' => 'ASC '],
+        'fields_defaults' => ['sort_name'],
+        'fields_excluded' => ['id'],
+        'fields_required' => ['id'],
+        'filters_defaults' => ['is_deleted' => 0],
+        'no_field_disambiguation' => TRUE,
+      ]),
+      [
+        'civicrm_email' => [
+          'dao' => 'CRM_Core_DAO_Email',
+          'fields' => [
+            'email' => [
+              'title' => ts('Donor Email'),
+              'default' => TRUE,
             ],
           ],
-          'receive_date' => ['operatorType' => CRM_Report_Form::OP_DATE],
-          'thankyou_date' => ['operatorType' => CRM_Report_Form::OP_DATE],
-          'contribution_source' => [
-            'title' => ts('Source'),
-            'name' => 'source',
-            'type' => CRM_Utils_Type::T_STRING,
-          ],
-          'currency' => [
-            'title' => ts('Currency'),
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => CRM_Core_OptionGroup::values('currencies_enabled'),
-            'default' => NULL,
-            'type' => CRM_Utils_Type::T_STRING,
-          ],
-          'non_deductible_amount' => [
-            'title' => ts('Non-deductible Amount'),
-          ],
-          'financial_type_id' => [
-            'title' => ts('Financial Type'),
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => CRM_Financial_BAO_FinancialType::getAvailableFinancialTypes(),
-            'type' => CRM_Utils_Type::T_INT,
-          ],
-          'contribution_page_id' => [
-            'title' => ts('Contribution Page'),
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => CRM_Contribute_PseudoConstant::contributionPage(),
-            'type' => CRM_Utils_Type::T_INT,
-          ],
-          'payment_instrument_id' => [
-            'title' => ts('Payment Type'),
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => CRM_Contribute_PseudoConstant::paymentInstrument(),
-            'type' => CRM_Utils_Type::T_INT,
-          ],
-          'contribution_status_id' => [
-            'title' => ts('Contribution Status'),
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => CRM_Contribute_PseudoConstant::contributionStatus(),
-            'default' => [1],
-            'type' => CRM_Utils_Type::T_INT,
-          ],
-          'total_amount' => ['title' => ts('Contribution Amount')],
-          'cancel_date' => [
-            'title' => ts('Cancelled / Refunded Date'),
-            'operatorType' => CRM_Report_Form::OP_DATE,
-            'name' => 'contribution_cancel_date',
-          ],
-          'cancel_reason' => [
-            'title' => ts('Cancellation / Refund Reason'),
-          ],
+          'grouping' => 'contact-fields',
         ],
-        'order_bys' => [
-          'financial_type_id' => ['title' => ts('Financial Type')],
-          'contribution_status_id' => ['title' => ts('Contribution Status')],
-          'payment_instrument_id' => ['title' => ts('Payment Method')],
-          'receive_date' => ['title' => ts('Date Received')],
-          'thankyou_date' => ['title' => ts('Thank-you Date')],
+        'civicrm_line_item' => [
+          'dao' => 'CRM_Price_DAO_LineItem',
         ],
-        'group_bys' => [
-          'contribution_id' => [
-            'name' => 'id',
-            'required' => TRUE,
-            'default' => TRUE,
-            'title' => ts('Contribution'),
-          ],
-        ],
-        'grouping' => 'contri-fields',
-      ],
-      'civicrm_contribution_soft' => [
-        'dao' => 'CRM_Contribute_DAO_ContributionSoft',
-        'fields' => [
-          'soft_credit_type_id' => ['title' => ts('Soft Credit Type')],
-          'soft_credit_amount' => ['title' => ts('Soft Credit amount'), 'name' => 'amount', 'type' => CRM_Utils_Type::T_MONEY],
-        ],
-        'filters' => [
-          'soft_credit_type_id' => [
-            'title' => ts('Soft Credit Type'),
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => CRM_Core_OptionGroup::values('soft_credit_type'),
-            'default' => NULL,
-            'type' => CRM_Utils_Type::T_STRING,
-          ],
-        ],
-        'group_bys' => [
-          'soft_credit_id' => [
-            'name' => 'id',
-            'title' => ts('Soft Credit'),
-          ],
-        ],
-      ],
-      'civicrm_financial_trxn' => [
-        'dao' => 'CRM_Financial_DAO_FinancialTrxn',
-        'fields' => [
-          'card_type_id' => [
-            'title' => ts('Credit Card Type'),
-          ],
-        ],
-        'filters' => [
-          'card_type_id' => [
-            'title' => ts('Credit Card Type'),
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => CRM_Financial_DAO_FinancialTrxn::buildOptions('card_type_id'),
-            'default' => NULL,
-            'type' => CRM_Utils_Type::T_STRING,
-          ],
-        ],
-      ],
-      'civicrm_batch' => [
-        'dao' => 'CRM_Batch_DAO_EntityBatch',
-        'grouping' => 'contri-fields',
-        'fields' => [
-          'batch_id' => [
-            'name' => 'batch_id',
-            'title' => ts('Batch Name'),
-          ],
-        ],
-        'filters' => [
-          'bid' => [
-            'title' => ts('Batch Name'),
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => CRM_Batch_BAO_Batch::getBatches(),
-            'type' => CRM_Utils_Type::T_INT,
-            'dbAlias' => 'batch_civireport.batch_id',
-          ],
-        ],
-      ],
-      'civicrm_contribution_ordinality' => [
-        'dao' => 'CRM_Contribute_DAO_Contribution',
-        'alias' => 'cordinality',
-        'filters' => [
-          'ordinality' => [
-            'title' => ts('Contribution Ordinality'),
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => [
-              0 => 'First by Contributor',
-              1 => 'Second or Later by Contributor',
+        'civicrm_phone' => [
+          'dao' => 'CRM_Core_DAO_Phone',
+          'fields' => [
+            'phone' => [
+              'title' => ts('Donor Phone'),
+              'default' => TRUE,
+              'no_repeat' => TRUE,
             ],
-            'type' => CRM_Utils_Type::T_INT,
+          ],
+          'grouping' => 'contact-fields',
+        ],
+        'civicrm_contribution' => [
+          'dao' => 'CRM_Contribute_DAO_Contribution',
+          'fields' => [
+            'contribution_id' => [
+              'name' => 'id',
+              'no_display' => TRUE,
+              'required' => TRUE,
+            ],
+            'list_contri_id' => [
+              'name' => 'id',
+              'title' => ts('Contribution ID'),
+            ],
+            'financial_type_id' => [
+              'title' => ts('Financial Type'),
+              'default' => TRUE,
+            ],
+            'contribution_status_id' => [
+              'title' => ts('Contribution Status'),
+            ],
+            'contribution_page_id' => [
+              'title' => ts('Contribution Page'),
+            ],
+            'source' => [
+              'title' => ts('Source'),
+            ],
+            'payment_instrument_id' => [
+              'title' => ts('Payment Type'),
+            ],
+            'check_number' => [
+              'title' => ts('Check Number'),
+            ],
+            'currency' => [
+              'required' => TRUE,
+              'no_display' => TRUE,
+            ],
+            'trxn_id' => NULL,
+            'receive_date' => ['default' => TRUE],
+            'receipt_date' => NULL,
+            'thankyou_date' => NULL,
+            'total_amount' => [
+              'title' => ts('Amount'),
+              'required' => TRUE,
+            ],
+            'non_deductible_amount' => [
+              'title' => ts('Non-deductible Amount'),
+            ],
+            'fee_amount' => NULL,
+            'net_amount' => NULL,
+            'contribution_or_soft' => [
+              'title' => ts('Contribution OR Soft Credit?'),
+              'dbAlias' => "'Contribution'",
+            ],
+            'soft_credits' => [
+              'title' => ts('Soft Credits'),
+              'dbAlias' => "NULL",
+            ],
+            'soft_credit_for' => [
+              'title' => ts('Soft Credit For'),
+              'dbAlias' => "NULL",
+            ],
+            'cancel_date' => [
+              'title' => ts('Cancelled / Refunded Date'),
+              'name' => 'contribution_cancel_date',
+            ],
+            'cancel_reason' => [
+              'title' => ts('Cancellation / Refund Reason'),
+            ],
+          ],
+          'filters' => [
+            'contribution_or_soft' => [
+              'title' => ts('Contribution OR Soft Credit?'),
+              'clause' => "(1)",
+              'operatorType' => CRM_Report_Form::OP_SELECT,
+              'type' => CRM_Utils_Type::T_STRING,
+              'options' => [
+                'contributions_only' => ts('Contributions Only'),
+                'soft_credits_only' => ts('Soft Credits Only'),
+                'both' => ts('Both'),
+              ],
+            ],
+            'receive_date' => ['operatorType' => CRM_Report_Form::OP_DATE],
+            'thankyou_date' => ['operatorType' => CRM_Report_Form::OP_DATE],
+            'contribution_source' => [
+              'title' => ts('Source'),
+              'name' => 'source',
+              'type' => CRM_Utils_Type::T_STRING,
+            ],
+            'currency' => [
+              'title' => ts('Currency'),
+              'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+              'options' => CRM_Core_OptionGroup::values('currencies_enabled'),
+              'default' => NULL,
+              'type' => CRM_Utils_Type::T_STRING,
+            ],
+            'non_deductible_amount' => [
+              'title' => ts('Non-deductible Amount'),
+            ],
+            'financial_type_id' => [
+              'title' => ts('Financial Type'),
+              'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+              'options' => CRM_Financial_BAO_FinancialType::getAvailableFinancialTypes(),
+              'type' => CRM_Utils_Type::T_INT,
+            ],
+            'contribution_page_id' => [
+              'title' => ts('Contribution Page'),
+              'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+              'options' => CRM_Contribute_PseudoConstant::contributionPage(),
+              'type' => CRM_Utils_Type::T_INT,
+            ],
+            'payment_instrument_id' => [
+              'title' => ts('Payment Type'),
+              'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+              'options' => CRM_Contribute_PseudoConstant::paymentInstrument(),
+              'type' => CRM_Utils_Type::T_INT,
+            ],
+            'contribution_status_id' => [
+              'title' => ts('Contribution Status'),
+              'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+              'options' => CRM_Contribute_BAO_Contribution::buildOptions('contribution_status_id', 'search'),
+              'default' => [1],
+              'type' => CRM_Utils_Type::T_INT,
+            ],
+            'total_amount' => ['title' => ts('Contribution Amount')],
+            'cancel_date' => [
+              'title' => ts('Cancelled / Refunded Date'),
+              'operatorType' => CRM_Report_Form::OP_DATE,
+              'name' => 'contribution_cancel_date',
+            ],
+            'cancel_reason' => [
+              'title' => ts('Cancellation / Refund Reason'),
+            ],
+          ],
+          'order_bys' => [
+            'financial_type_id' => ['title' => ts('Financial Type')],
+            'contribution_status_id' => ['title' => ts('Contribution Status')],
+            'payment_instrument_id' => ['title' => ts('Payment Method')],
+            'receive_date' => ['title' => ts('Date Received')],
+            'thankyou_date' => ['title' => ts('Thank-you Date')],
+          ],
+          'group_bys' => [
+            'contribution_id' => [
+              'name' => 'id',
+              'required' => TRUE,
+              'default' => TRUE,
+              'title' => ts('Contribution'),
+            ],
+          ],
+          'grouping' => 'contri-fields',
+        ],
+        'civicrm_contribution_soft' => [
+          'dao' => 'CRM_Contribute_DAO_ContributionSoft',
+          'fields' => [
+            'soft_credit_type_id' => ['title' => ts('Soft Credit Type')],
+            'soft_credit_amount' => ['title' => ts('Soft Credit amount'), 'name' => 'amount', 'type' => CRM_Utils_Type::T_MONEY],
+          ],
+          'filters' => [
+            'soft_credit_type_id' => [
+              'title' => ts('Soft Credit Type'),
+              'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+              'options' => CRM_Core_OptionGroup::values('soft_credit_type'),
+              'default' => NULL,
+              'type' => CRM_Utils_Type::T_STRING,
+            ],
+          ],
+          'group_bys' => [
+            'soft_credit_id' => [
+              'name' => 'id',
+              'title' => ts('Soft Credit'),
+            ],
+          ],
+        ],
+        'civicrm_financial_trxn' => [
+          'dao' => 'CRM_Financial_DAO_FinancialTrxn',
+          'fields' => [
+            'card_type_id' => [
+              'title' => ts('Credit Card Type'),
+            ],
+          ],
+          'filters' => [
+            'card_type_id' => [
+              'title' => ts('Credit Card Type'),
+              'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+              'options' => CRM_Financial_DAO_FinancialTrxn::buildOptions('card_type_id'),
+              'default' => NULL,
+              'type' => CRM_Utils_Type::T_STRING,
+            ],
+          ],
+        ],
+        'civicrm_batch' => [
+          'dao' => 'CRM_Batch_DAO_EntityBatch',
+          'grouping' => 'contri-fields',
+          'fields' => [
+            'batch_id' => [
+              'name' => 'batch_id',
+              'title' => ts('Batch Name'),
+            ],
+          ],
+          'filters' => [
+            'bid' => [
+              'title' => ts('Batch Name'),
+              'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+              'options' => CRM_Batch_BAO_Batch::getBatches(),
+              'type' => CRM_Utils_Type::T_INT,
+              'dbAlias' => 'batch_civireport.batch_id',
+            ],
+          ],
+        ],
+        'civicrm_contribution_ordinality' => [
+          'dao' => 'CRM_Contribute_DAO_Contribution',
+          'alias' => 'cordinality',
+          'filters' => [
+            'ordinality' => [
+              'title' => ts('Contribution Ordinality'),
+              'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+              'options' => [
+                0 => 'First by Contributor',
+                1 => 'Second or Later by Contributor',
+              ],
+              'type' => CRM_Utils_Type::T_INT,
+            ],
+          ],
+        ],
+        'civicrm_note' => [
+          'dao' => 'CRM_Core_DAO_Note',
+          'fields' => [
+            'contribution_note' => [
+              'name' => 'note',
+              'title' => ts('Contribution Note'),
+            ],
+          ],
+          'filters' => [
+            'note' => [
+              'name' => 'note',
+              'title' => ts('Contribution Note'),
+              'operator' => 'like',
+              'type' => CRM_Utils_Type::T_STRING,
+            ],
+          ],
+        ],
+        'civicrm_pledge_payment' => [
+          'dao' => 'CRM_Pledge_DAO_PledgePayment',
+          'fields' => [
+            'pledge_id' => [
+              'title' => ts('Pledge ID'),
+            ],
+          ],
+          'filters' => [
+            'pledge_id' => [
+              'title' => ts('Pledge ID'),
+              'type' => CRM_Utils_Type::T_INT,
+            ],
           ],
         ],
       ],
-      'civicrm_note' => [
-        'dao' => 'CRM_Core_DAO_Note',
-        'fields' => [
-          'contribution_note' => [
-            'name' => 'note',
-            'title' => ts('Contribution Note'),
-          ],
-        ],
-        'filters' => [
-          'note' => [
-            'name' => 'note',
-            'title' => ts('Contribution Note'),
-            'operator' => 'like',
-            'type' => CRM_Utils_Type::T_STRING,
-          ],
-        ],
-      ],
-    ]) + $this->addAddressFields(FALSE);
+      $this->getColumns('Address')
+    );
     // The tests test for this variation of the sort_name field. Don't argue with the tests :-).
     $this->_columns['civicrm_contact']['fields']['sort_name']['title'] = ts('Donor Name');
     $this->_groupFilter = TRUE;
@@ -380,7 +382,7 @@ class CRM_Report_Form_Contribute_Detail extends CRM_Report_Form {
     $contributionOrSoftVal = $this->getElementValue('contribution_or_soft_value');
     if ($contributionOrSoftVal[0] == 'contributions_only') {
       $groupBySoft = $this->getElementValue('group_bys');
-      if (CRM_Utils_Array::value('soft_credit_id', $groupBySoft)) {
+      if (!empty($groupBySoft['soft_credit_id'])) {
         $this->setElementError('group_bys', ts('You cannot group by soft credit when displaying contributions only.  Please uncheck "Soft Credit" in the Grouping tab.'));
       }
     }
@@ -530,7 +532,7 @@ GROUP BY {$this->_aliases['civicrm_contribution']}.currency";
       $this->noDisplayContributionOrSoftColumn = TRUE;
     }
 
-    if (CRM_Utils_Array::value('contribution_or_soft_value', $this->_params) == 'contributions_only') {
+    if (CRM_Utils_Array::value('contribution_or_soft_value', $this->_params, 'contributions_only') == 'contributions_only') {
       $this->isContributionBaseMode = TRUE;
     }
     if ($this->isContributionBaseMode &&
@@ -633,7 +635,7 @@ UNION ALL
     $entryFound = FALSE;
     $display_flag = $prev_cid = $cid = 0;
     $contributionTypes = CRM_Contribute_PseudoConstant::financialType();
-    $contributionStatus = CRM_Contribute_PseudoConstant::contributionStatus();
+    $contributionStatus = CRM_Contribute_PseudoConstant::contributionStatus(NULL, 'label');
     $paymentInstruments = CRM_Contribute_PseudoConstant::paymentInstrument();
     $contributionPages = CRM_Contribute_PseudoConstant::contributionPage();
     $batches = CRM_Batch_BAO_Batch::getBatches();
@@ -708,7 +710,7 @@ UNION ALL
         $entryFound = TRUE;
       }
       if (!empty($row['civicrm_batch_batch_id'])) {
-        $rows[$rowNum]['civicrm_batch_batch_id'] = CRM_Utils_Array::value($row['civicrm_batch_batch_id'], $batches);
+        $rows[$rowNum]['civicrm_batch_batch_id'] = $batches[$row['civicrm_batch_batch_id']] ?? NULL;
         $entryFound = TRUE;
       }
       if (!empty($row['civicrm_financial_trxn_card_type_id'])) {
@@ -802,6 +804,27 @@ WHERE  civicrm_contribution_contribution_id={$row['civicrm_contribution_contribu
           'soft_credit_type_id',
           $row['civicrm_contribution_soft_soft_credit_type_id']
         );
+      }
+
+      // Contribution amount links to viewing contribution
+      if ($value = CRM_Utils_Array::value('civicrm_pledge_payment_pledge_id', $row)) {
+        if (CRM_Core_Permission::check('access CiviContribute')) {
+          $url = CRM_Utils_System::url(
+            "civicrm/contact/view/pledge",
+            [
+              'reset' => 1,
+              'id' => $row['civicrm_pledge_payment_pledge_id'],
+              'cid' => $row['civicrm_contact_id'],
+              'action' => 'view',
+              'context' => 'pledge',
+              'selectedChild' => 'pledge',
+            ],
+            $this->_absoluteUrl
+          );
+          $rows[$rowNum]['civicrm_pledge_payment_pledge_id_link'] = $url;
+          $rows[$rowNum]['civicrm_pledge_payment_pledge_id_hover'] = ts("View Details of this Pledge.");
+        }
+        $entryFound = TRUE;
       }
 
       $entryFound = $this->alterDisplayAddressFields($row, $rows, $rowNum, 'contribute/detail', 'List all contribution(s) for this ') ? TRUE : $entryFound;
@@ -976,6 +999,12 @@ WHERE  civicrm_contribution_contribution_id={$row['civicrm_contribution_contribu
     }
     // for credit card type
     $this->addFinancialTrxnFromClause();
+
+    if ($this->isTableSelected('civicrm_pledge_payment')) {
+      $this->_from .= "
+        LEFT JOIN civicrm_pledge_payment {$this->_aliases['civicrm_pledge_payment']} ON {$this->_aliases['civicrm_pledge_payment']}.contribution_id = {$this->_aliases['civicrm_contribution']}.id
+      ";
+    }
   }
 
   /**

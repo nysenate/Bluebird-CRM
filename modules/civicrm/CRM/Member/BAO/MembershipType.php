@@ -1,34 +1,18 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2019
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  * $Id$
  *
  */
@@ -101,13 +85,13 @@ class CRM_Member_BAO_MembershipType extends CRM_Member_DAO_MembershipType {
       if (isset($ids['membershipType'])) {
         Civi::log()->warning('Deprecated: Passing membershipType by $ids array in CRM_Member_BAO_MembershipType::add');
       }
-      $params['id'] = CRM_Utils_Array::value('membershipType', $ids);
+      $params['id'] = $ids['membershipType'] ?? NULL;
     }
 
     $hook = empty($params['id']) ? 'create' : 'edit';
     CRM_Utils_Hook::pre($hook, 'MembershipType', CRM_Utils_Array::value('id', $params), $params);
 
-    $membershipTypeId = CRM_Utils_Array::value('id', $params);
+    $membershipTypeId = $params['id'] ?? NULL;
 
     if (!$membershipTypeId) {
       if (!isset($params['is_active'])) {
@@ -156,6 +140,7 @@ class CRM_Member_BAO_MembershipType extends CRM_Member_DAO_MembershipType {
     CRM_Member_PseudoConstant::membershipType(NULL, TRUE);
     civicrm_api3('membership', 'getfields', ['cache_clear' => 1, 'fieldname' => 'membership_type_id']);
     civicrm_api3('profile', 'getfields', ['action' => 'submit', 'cache_clear' => 1]);
+    Civi::cache('metadata')->clear();
   }
 
   /**
@@ -266,6 +251,8 @@ class CRM_Member_BAO_MembershipType extends CRM_Member_DAO_MembershipType {
   /**
    * Get membership Types.
    *
+   * @deprecated  use getAllMembershipTypes.
+   *
    * @param bool $public
    *
    * @return array
@@ -287,6 +274,8 @@ class CRM_Member_BAO_MembershipType extends CRM_Member_DAO_MembershipType {
 
   /**
    * Get membership Type Details.
+   *
+   * @deprecated use getMembershipType.
    *
    * @param int $membershipTypeId
    *
@@ -626,27 +615,6 @@ class CRM_Member_BAO_MembershipType extends CRM_Member_DAO_MembershipType {
   }
 
   /**
-   * @deprecated Please use the Membership API
-   * Retrieve all Membership Types associated with an Organization
-   *
-   * @param int $orgID
-   *   Id of Organization.
-   *
-   * @return array
-   *   array of the details of membership types
-   */
-  public static function getMembershipTypesByOrg($orgID) {
-    CRM_Core_Error::deprecatedFunctionWarning('membership_type api');
-    $memberTypesSameParentOrg = civicrm_api3('MembershipType', 'get', [
-      'member_of_contact_id' => $orgID,
-      'options' => [
-        'limit' => 0,
-      ],
-    ]);
-    return CRM_Utils_Array::value('values', $memberTypesSameParentOrg, []);
-  }
-
-  /**
    * Retrieve all Membership Types with Member of Contact id.
    *
    * @param array $membershipTypes
@@ -749,15 +717,15 @@ class CRM_Member_BAO_MembershipType extends CRM_Member_DAO_MembershipType {
       $fieldParams['is_display_amounts'] = $fieldParams['is_required'] = 0;
       $fieldParams['weight'] = $fieldParams['option_weight'][1] = 1;
       $fieldParams['option_label'][1] = $params['name'];
-      $fieldParams['option_description'][1] = CRM_Utils_Array::value('description', $params);
+      $fieldParams['option_description'][1] = $params['description'] ?? NULL;
 
       $fieldParams['membership_type_id'][1] = $membershipTypeId;
       $fieldParams['option_amount'][1] = empty($params['minimum_fee']) ? 0 : $params['minimum_fee'];
-      $fieldParams['financial_type_id'] = CRM_Utils_Array::value('financial_type_id', $params);
+      $fieldParams['financial_type_id'] = $params['financial_type_id'] ?? NULL;
 
       if ($previousID) {
         CRM_Member_Form_MembershipType::checkPreviousPriceField($previousID, $priceSetId, $membershipTypeId, $optionsIds);
-        $fieldParams['option_id'] = CRM_Utils_Array::value('option_id', $optionsIds);
+        $fieldParams['option_id'] = $optionsIds['option_id'] ?? NULL;
       }
       CRM_Price_BAO_PriceField::create($fieldParams);
     }
@@ -791,8 +759,8 @@ class CRM_Member_BAO_MembershipType extends CRM_Member_DAO_MembershipType {
           $optionsIds['id'] = current(CRM_Utils_Array::value('option_id', $optionsIds));
         }
       }
-      $results['financial_type_id'] = CRM_Utils_Array::value('financial_type_id', $params);
-      $results['description'] = CRM_Utils_Array::value('description', $params);
+      $results['financial_type_id'] = $params['financial_type_id'] ?? NULL;
+      $results['description'] = $params['description'] ?? NULL;
       CRM_Price_BAO_PriceFieldValue::add($results, $optionsIds);
     }
   }
@@ -833,12 +801,81 @@ class CRM_Member_BAO_MembershipType extends CRM_Member_DAO_MembershipType {
             $updateParams['visibility_id'] = CRM_Price_BAO_PriceField::getVisibilityOptionID(strtolower($params['visibility']));
           }
           else {
-            $updateParams[$value] = CRM_Utils_Array::value($key, $params);
+            $updateParams[$value] = $params[$key] ?? NULL;
           }
         }
         CRM_Price_BAO_PriceFieldValue::add($updateParams);
       }
     }
+  }
+
+  /**
+   * Cached wrapper for membership types.
+   *
+   * Since this is used from the batched script caching helps.
+   *
+   * Caching is by domain - if that hits any issues we should add a new function getDomainMembershipTypes
+   * or similar rather than 'just add another param'! but this is closer to earlier behaviour so 'should' be OK.
+   *
+   * @throws \CiviCRM_API3_Exception
+   */
+  public static function getAllMembershipTypes() {
+    $cacheString = __CLASS__ . __FUNCTION__ . CRM_Core_Config::domainID();
+    if (!Civi::cache('metadata')->has($cacheString)) {
+      $types = civicrm_api3('MembershipType', 'get', ['options' => ['limit' => 0, 'sort' => 'weight']])['values'];
+      $taxRates = CRM_Core_PseudoConstant::getTaxRates();
+      $keys = ['description', 'relationship_type_id', 'relationship_direction', 'max_related'];
+      // In order to avoid down-stream e-notices we undo api v3 filtering of NULL values. This is covered
+      // in Unit tests & ideally we might switch to apiv4 but I would argue we should build caching
+      // of metadata entities like this directly into apiv4.
+      foreach ($types as $id => $type) {
+        foreach ($keys as $key) {
+          if (!isset($type[$key])) {
+            $types[$id][$key] = NULL;
+          }
+        }
+        if (isset($type['contribution_type_id'])) {
+          unset($types[$id]['contribution_type_id']);
+        }
+        $types[$id]['tax_rate'] = (float) ($taxRates[$type['financial_type_id']] ?? 0.0);
+        $multiplier = 1;
+        if ($types[$id]['tax_rate'] !== 0.0) {
+          $multiplier += ($types[$id]['tax_rate'] / 100);
+        }
+        $types[$id]['minimum_fee_with_tax'] = (float) $types[$id]['minimum_fee'] * $multiplier;
+      }
+      Civi::cache('metadata')->set($cacheString, $types);
+    }
+    return Civi::cache('metadata')->get($cacheString);
+  }
+
+  /**
+   * Get a specific membership type (leveraging the cache).
+   *
+   * @param int $id
+   *
+   * @return mixed
+   * @throws \CiviCRM_API3_Exception
+   */
+  public static function getMembershipType($id) {
+    return self::getAllMembershipTypes()[$id];
+  }
+
+  /**
+   * Get an array of all membership types the contact is permitted to access.
+   *
+   * @throws \CiviCRM_API3_Exception
+   */
+  public static function getPermissionedMembershipTypes() {
+    $types = self::getAllMembershipTypes();
+    $financialTypes = NULL;
+    $financialTypes = CRM_Financial_BAO_FinancialType::getAvailableFinancialTypes($financialTypes, CRM_Core_Action::ADD);
+    foreach ($types as $id => $type) {
+      if (!isset($financialTypes[$type['financial_type_id']])) {
+        unset($types[$id]);
+      }
+    }
+    return $types;
   }
 
 }

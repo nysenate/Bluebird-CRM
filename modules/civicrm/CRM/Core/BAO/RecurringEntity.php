@@ -1,37 +1,21 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2019
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 
-require_once 'packages/When/When.php';
+use When\When;
 
 /**
  * Class CRM_Core_BAO_RecurringEntity.
@@ -240,7 +224,7 @@ class CRM_Core_BAO_RecurringEntity extends CRM_Core_DAO_RecurringEntity {
    */
   public function generateRecursion() {
     // return if already generated
-    if (is_a($this->recursion, 'When')) {
+    if (is_a($this->recursion, 'When\When')) {
       return $this->recursion;
     }
 
@@ -334,8 +318,8 @@ class CRM_Core_BAO_RecurringEntity extends CRM_Core_DAO_RecurringEntity {
     $this->generateRecursion();
 
     $recursionDates = [];
-    if (is_a($this->recursion, 'When')) {
-      $initialCount = CRM_Utils_Array::value('start_action_offset', $this->schedule);
+    if (is_a($this->recursion, 'When\When')) {
+      $initialCount = $this->schedule['start_action_offset'] ?? NULL;
 
       $exRangeStart = $exRangeEnd = NULL;
       if (!empty($this->excludeDateRangeColumns)) {
@@ -343,8 +327,12 @@ class CRM_Core_BAO_RecurringEntity extends CRM_Core_DAO_RecurringEntity {
         $exRangeEnd = $this->excludeDateRangeColumns[1];
       }
 
+      if (CRM_Core_Config::singleton()->userFramework == 'UnitTests') {
+        $this->recursion->RFC5545_COMPLIANT = When::IGNORE;
+      }
       $count = 1;
-      while ($result = $this->recursion->next()) {
+      $result = $this->recursion_start_date;
+      while ($result = $this->getNextOccurrence($result)) {
         $skip = FALSE;
         if ($result == $this->recursion_start_date) {
           // skip the recursion-start-date from the list we going to generate
@@ -598,6 +586,8 @@ class CRM_Core_BAO_RecurringEntity extends CRM_Core_DAO_RecurringEntity {
 
       CRM_Core_BAO_RecurringEntity::quickAdd($object->id, $newObject->id, $entityTable);
     }
+
+    CRM_Utils_Hook::copy(CRM_Core_DAO_AllCoreTables::getBriefName($daoName), $newObject);
     return $newObject;
   }
 
@@ -904,7 +894,7 @@ class CRM_Core_BAO_RecurringEntity extends CRM_Core_DAO_RecurringEntity {
     //For Repeats on:(weekly case)
     if ($formParams['repetition_frequency_unit'] == 'week') {
       if (!empty($formParams['start_action_condition'])) {
-        $repeats_on = CRM_Utils_Array::value('start_action_condition', $formParams);
+        $repeats_on = $formParams['start_action_condition'] ?? NULL;
         $dbParams['start_action_condition'] = implode(",", array_keys($repeats_on));
       }
     }
@@ -917,7 +907,7 @@ class CRM_Core_BAO_RecurringEntity extends CRM_Core_DAO_RecurringEntity {
         }
       }
       if ($formParams['repeats_by'] == 2) {
-        if (CRM_Utils_Array::value('entity_status_1', $formParams) && CRM_Utils_Array::value('entity_status_2', $formParams)) {
+        if (!empty($formParams['entity_status_1']) && !empty($formParams['entity_status_2'])) {
           $dbParams['entity_status'] = $formParams['entity_status_1'] . " " . $formParams['entity_status_2'];
         }
       }
@@ -1004,14 +994,14 @@ class CRM_Core_BAO_RecurringEntity extends CRM_Core_DAO_RecurringEntity {
       }
       $start = new DateTime($currDate);
       $this->recursion_start_date = $start;
-      if ($scheduleReminderDetails['repetition_frequency_unit']) {
-        $repetition_frequency_unit = $scheduleReminderDetails['repetition_frequency_unit'];
-        if ($repetition_frequency_unit == "day") {
-          $repetition_frequency_unit = "dai";
-        }
-        $repetition_frequency_unit = $repetition_frequency_unit . 'ly';
-        $r->recur($start, $repetition_frequency_unit);
+      $repetition_frequency_unit = $scheduleReminderDetails['repetition_frequency_unit'];
+      if ($repetition_frequency_unit == "day") {
+        $repetition_frequency_unit = "dai";
       }
+      $repetition_frequency_unit = $repetition_frequency_unit . 'ly';
+      $r->startDate($start)
+        ->exclusions([$start])
+        ->freq($repetition_frequency_unit);
 
       if ($scheduleReminderDetails['repetition_frequency_interval']) {
         $r->interval($scheduleReminderDetails['repetition_frequency_interval']);
@@ -1156,7 +1146,7 @@ class CRM_Core_BAO_RecurringEntity extends CRM_Core_DAO_RecurringEntity {
   public static function updateModeLinkedEntity($entityId, $linkedEntityTable, $mainEntityTable) {
     $result = [];
     if ($entityId && $linkedEntityTable && $mainEntityTable) {
-      if (CRM_Utils_Array::value($linkedEntityTable, self::$_tableDAOMapper)) {
+      if (!empty(self::$_tableDAOMapper[$linkedEntityTable])) {
         $dao = self::$_tableDAOMapper[$linkedEntityTable];
       }
       else {
@@ -1256,6 +1246,24 @@ class CRM_Core_BAO_RecurringEntity extends CRM_Core_DAO_RecurringEntity {
     }
 
     return $finalResult;
+  }
+
+  /**
+   * Get next occurrence for the given date
+   *
+   * @param \DateTime $occurDate
+   * @param bool $strictly_after
+   *
+   * @return bool
+   */
+  private function getNextOccurrence($occurDate, $strictly_after = TRUE) {
+    try {
+      return $this->recursion->getNextOccurrence($occurDate, $strictly_after);
+    }
+    catch (Exception $exception) {
+      CRM_Core_Session::setStatus(ts($exception->getMessage()));
+    }
+    return FALSE;
   }
 
 }
