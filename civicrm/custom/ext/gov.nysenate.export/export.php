@@ -144,13 +144,33 @@ function export_civicrm_buildForm( $formName, &$form ) {
 } //end buildForm
 
 function export_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
+  /*Civi::log()->debug(__FUNCTION__, [
+    'formName' => $formName,
+    'fields' => $fields,
+  ]);*/
+
   //6248
   if ($formName == 'CRM_Export_Form_Map') {
     if ($form->_streetLong) {
       $streetAddressFound = FALSE;
+
+      //with new export selection interface, field mapping may be json
+      if (!empty($fields['export_field_map']) && !is_array($fields['export_field_map'])) {
+        $mapping = json_decode($fields['export_field_map']);
+        //Civi::log()->debug(__FUNCTION__, ['mapping' => $mapping]);
+
+        foreach ($mapping as $field) {
+          if ($field->name == 'street_address') {
+            $streetAddressFound = TRUE;
+            break;
+          }
+        }
+      }
+
       foreach ($fields['mapper'][1] as $f) {
         if ($f[1] == 'street_address') {
           $streetAddressFound = TRUE;
+          break;
         }
       }
       if (!$streetAddressFound) {
