@@ -1,3 +1,257 @@
+1.18.0 / 2018-09-09
+===================
+
+## Additional
+  * Add Brazillian PIS/NIS number validation method (#2204)
+  * Add validation method for Polish telephone number (#2136)
+  * Updated link to EAN docs in creditcard.js (#2120)
+  * Allow N11 exchange for non-geo US phone (#2098)
+  * Add new BIN range for MasterCard (#2088)
+  * Add maxfiles, maxsize and maxsizetotal methods (#2087)
+  * Add greaterThan and lessThan methods (#2061)
+
+## Build
+  * Test on node 6.x and drop node 0.12.x (#2133)
+  * Generate sub-resource integrity hashes of the distribution files (#2082)
+  * Include localization files in tagged releases (#2057)
+  * Include minified version of additional methods in npm package (#2057)
+
+## Core
+  * Don't call submitHandler when in debug mode (#2193)
+  * Cast empty data attributes to 'true' (#2182)
+  * Ignore elements that belong to other/nested forms (#2147)
+  * Use element.isContentEditable instead of hasAttribute (#2142)
+  * Add deprecation warning to 'date' method (#2138)
+  * Allow the normalizer to return any value (#2054)
+  * Guard against null & undefined values in required method (#2053)
+
+## Demo
+  * Add sample code for Bootstrap 4 usage (#2173)
+
+## Localization
+  * Added Czech and Slovak translations for STEP method (#2197)
+  * Add localized methods for italian culture (it) (#2195)
+  * Add step validation string to message_zh (#2177)
+  * Fix typo in pt-BR localization file (#2139)
+  * Add message for phonePL method (#2136)
+  * Update Norwegian language file (#2132)
+  * Update Persian language file (#2122)
+  * Update German language file (#2115)
+  * Fix meaning in Bulgarian sentence (#2112)
+  * Add remote translation to no (#2097)
+  * Fixed wrong placeholder in vi translation (#2085)
+  * Add missing format method in message_{fr,tr}.js files (#2075)
+  * Fix typos in messages_pt_BR.js (#2073)
+  * Add new danish translations (#2067)
+  * Add Swedish validation message for remote (#2066)
+
+## Test
+  * Cast empty data attributes to 'true' (#2182)
+  * Ignore elements that belong to other/nested forms (#2147)
+  * Add tests for phonePL method (#2136)
+  * Add missing description to a test (#2055)
+  * Required method should return false for null & undefined values (#2053)
+
+1.17.0 / 2017-07-20
+==================
+
+## Core
+  * Pass on the value of the used submit button for scripted submits (#2019)
+  * Removed aria-required attribute (#2012)
+  * Assign rules to contenteditable via `.validate()` and `.rules()` (#1947)
+  * Count invalid fields with empty message in `numberOfInvalids()` (#1942)
+  * Added support for button elements with descendants (#1901)
+  * Add support for defining a global normalizer (#1905)
+
+## Additional
+  * Add localized number validation to methods_nl.js (#2014)
+  * Remove unreachable return from `cifES.js` (#1994)
+  * Add optional support to cifES, nifES and nieES (#1966)
+  * Add netmask validation method (#1955)
+  * Add Polish tax id validation method (#1850)
+  * Fixed validation for specific case for Spanish NIFs (#1914)
+
+## Localization
+  * Added Step Range Validation  to messages_ja (#1936)
+  * Add hungarian step message (#1888)
+  * Add Sindhi locale (#1900)
+  * Added norsk step translation (#1918)
+  * Add missing french step translation (#1928)
+  * Added nl- translation for "step" property (#1902)
+  * Add French translation for notEqualTo method (#2033)
+
+## Readme
+  * Add note about trimming whitespaces inside required method (#2028)
+
+## Tests
+  * Pass on the value of the used submit button for scripted submits (#2019)
+  * Use assert#pushResult instead of assert#push (#2018)
+  
+## All
+  * Fix links after move to organization
+  * Use https
+
+## Build
+  * Upgrade QUnit to 2.3.3 (#2018)
+
+1.16.0 / 2016-12-01
+==================
+
+## Additional
+  * Refine cifES and nieES algorithms. Closes #1826
+
+## Build
+  * Include Minified Version in NPM Package
+  * Bump dev-dependencies to latest versions
+
+## Core
+  * Add binding for input with button type. Closes #1891
+  * Support jquery3. Closes #1866
+  * Change jQuery alias 'expr[":"]' to 'expr.pseudos'
+
+## Localisation
+  * Add Urdu translation. Closes #1873.
+
+## Localization
+  * Fixed wrong file-extension for az translation. Closes #1890.
+  * Added missing translation in pt-BR (Closes #1897)
+  * Fixed typo in arabien language file.
+
+## Tests
+  * Upgrade QUnit to 2.0.
+
+## UMD
+  * Better support for CommonJS.
+
+1.15.1 / 2016-07-22
+==================
+
+## Additional
+  * Fix multiple mime-type validation
+  * IBAN require at least 5 chars (Closes #1797, Fixes #1674)
+  * Correct notEqualTo jQuery reference
+
+## Core
+  * Added failing test for #1805
+  * Fix group validation with 3 and more fields
+  * Fix regressions introduced in #1644 and #1657 (Closes #1800)
+  * Update step validation to handle floating points correctly
+  * Fix error when calling $.fn.rules() on a non-form element
+  * Call `errorPlacement` in validator scope
+  * Fixed issue with contenteditable elements in forms where events for single input validation would cause exceptions
+
+## Demo
+  * Add links to Bootstrap and Semantic-UI demos to index.html
+  * Use `.on()` instead of `.validateDelegate()`
+
+## Localization
+  * Added Azeri language
+
+## Tests
+  * Added regression unit tests for PR #1760
+
+1.15.0 / 2016-02-24
+==================
+
+## All
+  * Fixed code style issues
+
+## Core
+  * `resetForm` should also remove `valid` class from elements.
+  * Unhighlighting field if already highlighted when using remote rule.
+  * Bind the `blur` event just once in `equalTo` rule
+  * Fixed error when calling .rules() on empty jquery set.
+  * Fix handling of error messages with input groups.
+  * Fix TypeError in `showLabel` when using `groups` settings
+  * Adding a way to pass method name to remote
+  * Validation fails to trigger when next field is already filled out (Fixes #1508)
+  * Required rule take precedence over number & digits rules
+  * Error hidden but input error class not removed
+  * Remote validation uses wrong error messages
+  * Fixed field highlighting with remote validation.
+  * Fixed `:filled` selector for multiple select elements.
+  * Added doc reference to jQuery.validator.methods
+  * Move message processing from `formatAndAdd` to `defaultMessage`
+  * ErrorList should contain only the errors that it should
+  * Extract the file name without including "C:\fakepath\"
+  * HTML5 step attribute support. Fixes #1295
+  * Added support for "pending" class on outstanding requests
+  * Added normalizer (#1602)
+  * Split out `creditcard` method
+  * Escape errorID for use in the regex, not to build aria-describedby
+  * Escape single quotes in names avoiding a Sizzle Error being thrown
+  * Instead of using validating field's value to skip api call, use the serialized data object of the request
+  * Add support for contentEditable tags
+
+## Additional
+  * BIC: allow digits 1-9 in second place of location
+  * Accept method regex should be escaped properly.
+  * Case-insensitive check for BIC
+  * Correct postalCodeCA to exclude invalid combinations
+  * Make postalCodeCA method more lenient
+
+## Localization
+  * Added Macedonian localization.
+  * Added missing pattern message in Polish (adamwojtkiewicz)
+  * Fixed Persian translation of min/max message.
+  * Updated messages_sk.js
+  * Update Malay translation
+  * Included messages from additional methods
+  * Improving pt_BR translation and fixing a typo on the 'cifES' key.
+
+1.14.0 / 2015-06-30
+==================
+
+## Core
+  * Remove unused removeAttrs method
+  * Replace regex for url method
+  * Remove bad url param in $.ajax, overwritten by $.extend
+  * Properly handle nested cancel submit button
+  * Fix indent
+  * Refactor attributeRules and dataRules to share noramlizer
+  * dataRules method to convert value to number for number inputs
+  * Update url method to allow for protocol-relative URLs
+  * Remove deprecated $.format placeholder
+  * Use jQuery 1.7+ on/off, add destroy method
+  * IE8 compatibility changed .indexOf to $.inArray
+  * Cast NaN value attributes to undefined for Opera Mini
+  * Stop trimming value inside required method
+  * Use :disabled selector to match disabled elements
+  * Exclude some keyboard keys to prevent revalidating the field
+  * Do not search the whole DOM for radio/checkbox elements
+  * Throw better errors for bad rule methods
+  * Fixed number validation error
+  * Fix reference to whatwg spec
+  * Focus invalid element when validating a custom set of inputs
+  * Reset element styles when using custom highlight methods
+  * Escape dollar sign in error id
+  * Revert "Ignore readonly as well as disabled fields."
+  * Update link in comment for Luhn algorithm
+
+## Additionals
+  * Update dateITA to address timezone issue
+  * Fix extension method to only method period
+  * Fix accept method to match period only
+  * Update time method to allow single digit hour
+  * Drop bad test for notEqualTo method
+  * Add notEqualTo method
+  * Use correct jQuery reference via `$`
+  * Remove useless regex check in iban method
+  * Brazilian CPF number
+
+## Localization
+  * Update messages_tr.js
+  * Update messages_sr_lat.js
+  * Adding Perú Spanish (ES PE)
+  * Adding Georgian (ქართული, ge)
+  * Fixed typo in catalan translation
+  * Improve Finnish (fi) translation
+  * Add armenian (hy_AM) locale
+  * Extend italian (it) translation with currency method
+  * Add bn_BD locale
+  * Update zh locale
+  * Remove full stop at the end of italian messages
+
 1.13.1 / 2014-10-14
 ==================
 

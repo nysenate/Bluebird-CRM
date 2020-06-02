@@ -1,34 +1,18 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2019
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 class CRM_Financial_BAO_FinancialAccount extends CRM_Financial_DAO_FinancialAccount {
 
@@ -271,6 +255,19 @@ WHERE cft.id = %1
   }
 
   /**
+   * Get the sales tax financial account id for the financial type id.
+   *
+   * This is a helper wrapper to make the function name more readable.
+   *
+   * @param int $financialAccountID
+   *
+   * @return int
+   */
+  public static function getSalesTaxFinancialAccount($financialAccountID) {
+    return self::getFinancialAccountForFinancialTypeByRelationship($financialAccountID, 'Sales Tax Account is');
+  }
+
+  /**
    * Get Financial Account type relations.
    *
    * @param $flip bool
@@ -382,7 +379,7 @@ LIMIT 1";
     if (!Civi::settings()->get('deferred_revenue_enabled')) {
       return FALSE;
     }
-    $recognitionDate = CRM_Utils_Array::value('revenue_recognition_date', $params);
+    $recognitionDate = $params['revenue_recognition_date'] ?? NULL;
     if (!(!CRM_Utils_System::isNull($recognitionDate)
       || ($contributionID && isset($params['prevContribution'])
         && !CRM_Utils_System::isNull($params['prevContribution']->revenue_recognition_date)))
@@ -390,8 +387,8 @@ LIMIT 1";
       return FALSE;
     }
 
-    $lineItems = CRM_Utils_Array::value('line_item', $params);
-    $financialTypeID = CRM_Utils_Array::value('financial_type_id', $params);
+    $lineItems = $params['line_item'] ?? NULL;
+    $financialTypeID = $params['financial_type_id'] ?? NULL;
     if (!$financialTypeID) {
       $financialTypeID = $params['prevContribution']->financial_type_id;
     }

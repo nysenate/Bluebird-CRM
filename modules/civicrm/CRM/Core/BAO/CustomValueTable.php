@@ -1,34 +1,18 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2019
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  * $Id$
  *
  */
@@ -108,7 +92,7 @@ class CRM_Core_BAO_CustomValueTable {
                       CRM_Core_PseudoConstant::stateProvinceAbbreviation(), TRUE
                     );
                   }
-                  $validStates[] = CRM_Utils_Array::value('state_province_id', $states);
+                  $validStates[] = $states['state_province_id'] ?? NULL;
                 }
                 $value = implode(CRM_Core_DAO::VALUE_SEPARATOR,
                   $validStates
@@ -148,7 +132,7 @@ class CRM_Core_BAO_CustomValueTable {
                       CRM_Core_PseudoConstant::countryIsoCode(), TRUE
                     );
                   }
-                  $validCountries[] = CRM_Utils_Array::value('country_id', $countries);
+                  $validCountries[] = $countries['country_id'] ?? NULL;
                 }
                 $value = implode(CRM_Core_DAO::VALUE_SEPARATOR,
                   $validCountries
@@ -233,7 +217,7 @@ class CRM_Core_BAO_CustomValueTable {
             $count++;
           }
 
-          $fieldExtends = CRM_Utils_Array::value('extends', $field);
+          $fieldExtends = $field['extends'] ?? NULL;
           if (
             CRM_Utils_Array::value('entity_table', $field) == 'civicrm_contact'
             || $fieldExtends == 'Contact'
@@ -241,7 +225,7 @@ class CRM_Core_BAO_CustomValueTable {
             || $fieldExtends == 'Organization'
             || $fieldExtends == 'Household'
           ) {
-            $paramFieldsExtendContactForEntities[$entityID]['custom_' . CRM_Utils_Array::value('custom_field_id', $field)] = CRM_Utils_Array::value('custom_field_id', $field);
+            $paramFieldsExtendContactForEntities[$entityID]['custom_' . CRM_Utils_Array::value('custom_field_id', $field)] = $field['custom_field_id'] ?? NULL;
           }
         }
 
@@ -361,7 +345,7 @@ class CRM_Core_BAO_CustomValueTable {
           'custom_group_id' => $customValue['custom_group_id'],
           'table_name' => $customValue['table_name'],
           'column_name' => $customValue['column_name'],
-          'is_multiple' => CRM_Utils_Array::value('is_multiple', $customValue),
+          'is_multiple' => $customValue['is_multiple'] ?? NULL,
           'file_id' => $customValue['file_id'],
         ];
 
@@ -489,7 +473,7 @@ AND    $cond
       }
       $fields[$dao->table_name][] = $dao->fieldID;
       $select[$dao->table_name][] = "{$dao->column_name} AS custom_{$dao->fieldID}";
-      $isMultiple[$dao->table_name] = $dao->is_multiple ? TRUE : FALSE;
+      $isMultiple[$dao->table_name] = (bool) $dao->is_multiple;
       $file[$dao->table_name][$dao->fieldID] = $dao->fieldDataType;
     }
 
@@ -589,6 +573,7 @@ SELECT cg.table_name  as table_name ,
        cg.extends     as extends,
        cf.column_name as column_name,
        cf.id          as cf_id      ,
+       cf.html_type   as html_type  ,
        cf.data_type   as data_type
 FROM   civicrm_custom_group cg,
        civicrm_custom_field cf
@@ -602,6 +587,10 @@ AND    cf.id IN ( $fieldIDList )
     while ($dao->fetch()) {
       $dataType = $dao->data_type == 'Date' ? 'Timestamp' : $dao->data_type;
       foreach ($fieldValues[$dao->cf_id] as $fieldValue) {
+        // Serialize array values
+        if (is_array($fieldValue['value']) && CRM_Core_BAO_CustomField::isSerialized($dao)) {
+          $fieldValue['value'] = CRM_Utils_Array::implodePadded($fieldValue['value']);
+        }
         // Format null values correctly
         if ($fieldValue['value'] === NULL || $fieldValue['value'] === '') {
           switch ($dataType) {

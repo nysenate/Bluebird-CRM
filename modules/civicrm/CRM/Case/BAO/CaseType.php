@@ -1,34 +1,18 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2019
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 
 /**
@@ -61,7 +45,7 @@ class CRM_Case_BAO_CaseType extends CRM_Case_DAO_CaseType {
     $caseTypeDAO = new CRM_Case_DAO_CaseType();
 
     // form the name only if missing: CRM-627
-    $nameParam = CRM_Utils_Array::value('name', $params, NULL);
+    $nameParam = $params['name'] ?? NULL;
     if (!$nameParam && empty($params['id'])) {
       $params['name'] = CRM_Utils_String::titleToVar($params['title']);
     }
@@ -183,7 +167,7 @@ class CRM_Case_BAO_CaseType extends CRM_Case_DAO_CaseType {
       foreach ($definition['caseRoles'] as $values) {
         $xmlFile .= "<RelationshipType>\n";
         foreach ($values as $key => $value) {
-          $xmlFile .= "<{$key}>" . (is_array($value) ? implode(',', array_map(['\CRM_Case_BAO_CaseType', 'encodeXmlString'], $value)) : self::encodeXmlString($value)) . "</{$key}>\n";
+          $xmlFile .= "<{$key}>" . ($key == 'groups' ? implode(',', array_map(['\CRM_Case_BAO_CaseType', 'encodeXmlString'], (array) $value)) : self::encodeXmlString($value)) . "</{$key}>\n";
         }
         $xmlFile .= "</RelationshipType>\n";
       }
@@ -196,7 +180,7 @@ class CRM_Case_BAO_CaseType extends CRM_Case_DAO_CaseType {
 
     if (!empty($definition['activityAsgmtGrps'])) {
       $xmlFile .= "<ActivityAsgmtGrps>\n";
-      foreach ($definition['activityAsgmtGrps'] as $value) {
+      foreach ((array) $definition['activityAsgmtGrps'] as $value) {
         $xmlFile .= "<Group>$value</Group>\n";
       }
       $xmlFile .= "</ActivityAsgmtGrps>\n";

@@ -1,34 +1,18 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2019
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 
 /**
@@ -446,7 +430,7 @@ AND    domain_id    = %4
           'email' => $emailAddress,
           'is_primary' => 1,
         ]);
-        $emailID = $result->id;
+        $emailID = $result['id'];
       }
 
       CRM_Core_BAO_Log::register($contactId,
@@ -535,9 +519,11 @@ AND    domain_id    = %4
   }
 
   /**
+   * @deprecated
    * @return bool
    */
   public static function isEmptyTable() {
+    CRM_Core_Error::deprecatedFunctionWarning('unused function to be removed');
     $sql = "SELECT count(id) FROM civicrm_uf_match";
     return CRM_Core_DAO::singleValueQuery($sql) > 0 ? FALSE : TRUE;
   }
@@ -545,11 +531,12 @@ AND    domain_id    = %4
   /**
    * Get the list of contact_id.
    *
-   *
+   * @deprecated
    * @return int
    *   contact_id on success, null otherwise
    */
   public static function getContactIDs() {
+    CRM_Core_Error::deprecatedFunctionWarning('unused function to be removed');
     $id = [];
     $dao = new CRM_Core_DAO_UFMatch();
     $dao->find();
@@ -562,13 +549,14 @@ AND    domain_id    = %4
   /**
    * See if this user exists, and if so, if they're allowed to login
    *
-   *
+   * @deprecated
    * @param int $openId
    *
    * @return bool
    *   true if allowed to login, false otherwise
    */
   public static function getAllowedToLogin($openId) {
+    CRM_Core_Error::deprecatedFunctionWarning('unused function to be removed');
     $ufmatch = new CRM_Core_DAO_UFMatch();
     $ufmatch->uf_name = $openId;
     $ufmatch->allowed_to_login = 1;
@@ -582,11 +570,12 @@ AND    domain_id    = %4
    * Get the next unused uf_id value, since the standalone UF doesn't
    * have id's (it uses OpenIDs, which go in a different field)
    *
-   *
+   * @deprecated
    * @return int
    *   next highest unused value for uf_id
    */
   public static function getNextUfIdValue() {
+    CRM_Core_Error::deprecatedFunctionWarning('unused function to be removed');
     $query = "SELECT MAX(uf_id)+1 AS next_uf_id FROM civicrm_uf_match";
     $dao = CRM_Core_DAO::executeQuery($query);
     if ($dao->fetch()) {
@@ -601,10 +590,11 @@ AND    domain_id    = %4
 
   /**
    * @param $email
-   *
+   * @deprecated
    * @return bool
    */
   public static function isDuplicateUser($email) {
+    CRM_Core_Error::deprecatedFunctionWarning('unused function to be removed');
     $session = CRM_Core_Session::singleton();
     $contactID = $session->get('userID');
     if (!empty($email) && isset($contactID)) {

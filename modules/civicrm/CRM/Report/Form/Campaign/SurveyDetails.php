@@ -1,34 +1,18 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2019
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  * $Id$
  *
  */
@@ -266,7 +250,7 @@ class CRM_Report_Form_Campaign_SurveyDetails extends CRM_Report_Form {
           $select[] = "{$field['dbAlias']} as {$tableName}_{$fieldName}";
 
           // Set default title
-          $title = CRM_Utils_Array::value('title', $field);
+          $title = $field['title'] ?? NULL;
           // Check for an override.
           if (!empty($this->_columnTitleOverrides["{$tableName}_{$fieldName}"])) {
             $title = $this->_columnTitleOverrides["{$tableName}_{$fieldName}"];
@@ -325,14 +309,14 @@ class CRM_Report_Form_Campaign_SurveyDetails extends CRM_Report_Form {
           $clause = NULL;
 
           if (CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_DATE) {
-            $relative = CRM_Utils_Array::value("{$fieldName}_relative", $this->_params);
-            $from = CRM_Utils_Array::value("{$fieldName}_from", $this->_params);
-            $to = CRM_Utils_Array::value("{$fieldName}_to", $this->_params);
+            $relative = $this->_params["{$fieldName}_relative"] ?? NULL;
+            $from = $this->_params["{$fieldName}_from"] ?? NULL;
+            $to = $this->_params["{$fieldName}_to"] ?? NULL;
 
             $clause = $this->dateClause($field['name'], $relative, $from, $to, $field['type']);
           }
           else {
-            $op = CRM_Utils_Array::value("{$fieldName}_op", $this->_params);
+            $op = $this->_params["{$fieldName}_op"] ?? NULL;
             if ($op) {
               $clause = $this->whereClause($field,
                 $op,
@@ -387,7 +371,7 @@ class CRM_Report_Form_Campaign_SurveyDetails extends CRM_Report_Form {
    */
   private function _surveyCoverSheet() {
     $coverSheet = NULL;
-    $surveyIds = CRM_Utils_Array::value('survey_id_value', $this->_params);
+    $surveyIds = $this->_params['survey_id_value'] ?? NULL;
     if (CRM_Utils_System::isNull($surveyIds)) {
       return $coverSheet;
     }
@@ -514,7 +498,7 @@ INNER JOIN  civicrm_option_value val ON ( val.option_group_id = survey.result_id
    * @param $rows
    */
   private function _formatSurveyResult(&$rows) {
-    $surveyIds = CRM_Utils_Array::value('survey_id_value', $this->_params);
+    $surveyIds = $this->_params['survey_id_value'] ?? NULL;
     if (CRM_Utils_System::isNull($surveyIds) ||
       empty($this->_params['fields']['result']) ||
       !in_array($this->_outputMode, array('print', 'pdf'))
@@ -539,16 +523,16 @@ INNER JOIN  civicrm_survey survey ON ( survey.result_id = grp.id )
       $resultSet[$result->id][$result->value] = $result->label;
     }
 
-    $statusId = CRM_Utils_Array::value('status_id_value', $this->_params);
-    $respondentStatus = CRM_Utils_Array::value($statusId, self::$_surveyRespondentStatus);
+    $statusId = $this->_params['status_id_value'] ?? NULL;
+    $respondentStatus = self::$_surveyRespondentStatus[$statusId] ?? NULL;
 
-    $surveyId = CRM_Utils_Array::value(0, $surveyIds);
+    $surveyId = $surveyIds[0] ?? NULL;
     foreach ($rows as & $row) {
       if (!empty($row['civicrm_activity_survey_id'])) {
         $surveyId = $row['civicrm_activity_survey_id'];
       }
       $result = CRM_Utils_Array::value($surveyId, $resultSet, array());
-      $resultLabel = CRM_Utils_Array::value('civicrm_activity_result', $row);
+      $resultLabel = $row['civicrm_activity_result'] ?? NULL;
       if ($respondentStatus == 'Reserved') {
         $row['civicrm_activity_result'] = implode(' | ', array_keys($result));
       }
@@ -565,7 +549,7 @@ INNER JOIN  civicrm_survey survey ON ( survey.result_id = grp.id )
    * @param $rows
    */
   private function _formatSurveyResponseData(&$rows) {
-    $surveyIds = CRM_Utils_Array::value('survey_id_value', $this->_params);
+    $surveyIds = $this->_params['survey_id_value'] ?? NULL;
     if (CRM_Utils_System::isNull($surveyIds) ||
       empty($this->_params['fields']['survey_response'])
     ) {
@@ -602,8 +586,8 @@ INNER JOIN  civicrm_survey survey ON ( survey.result_id = grp.id )
     }
 
     //do check respondent status.
-    $statusId = CRM_Utils_Array::value('status_id_value', $this->_params);
-    $respondentStatus = CRM_Utils_Array::value($statusId, self::$_surveyRespondentStatus);
+    $statusId = $this->_params['status_id_value'] ?? NULL;
+    $respondentStatus = self::$_surveyRespondentStatus[$statusId] ?? NULL;
 
     if (!$hasResponseData &&
       ($respondentStatus != 'Reserved')
@@ -671,7 +655,7 @@ INNER JOIN  civicrm_custom_group cg ON ( cg.id = cf.custom_group_id )
         if ($respondentStatus == 'Reserved' &&
           in_array($this->_outputMode, array('print', 'pdf'))
         ) {
-          $optGrpId = CRM_Utils_Array::value('option_group_id', $responseFields[$name]);
+          $optGrpId = $responseFields[$name]['option_group_id'] ?? NULL;
           $options = CRM_Utils_Array::value($optGrpId, $fieldValueMap, array());
           $value = implode(' | ', array_keys($options));
         }
@@ -687,7 +671,7 @@ INNER JOIN  civicrm_custom_group cg ON ( cg.id = cf.custom_group_id )
   }
 
   private function _addSurveyResponseColumns() {
-    $surveyIds = CRM_Utils_Array::value('survey_id_value', $this->_params);
+    $surveyIds = $this->_params['survey_id_value'] ?? NULL;
     if (CRM_Utils_System::isNull($surveyIds) ||
       empty($this->_params['fields']['survey_response'])
     ) {
@@ -757,14 +741,11 @@ INNER  JOIN  civicrm_custom_field cf ON ( cg.id = cf.custom_group_id )
       if (empty($this->_columns[$resTable]['alias'])) {
         $this->_columns[$resTable]['alias'] = "{$resTable}_survey_response";
       }
-      if (!is_array(CRM_Utils_Array::value('fields', $this->_columns[$resTable]))) {
-        $this->_columns[$resTable]['fields'] = array();
+      if (empty($this->_columns[$resTable]['fields'])) {
+        $this->_columns[$resTable]['fields'] = [];
       }
 
-      if (in_array($this->_outputMode, array(
-        'print',
-        'pdf',
-      ))) {
+      if (in_array($this->_outputMode, ['print', 'pdf'])) {
         $this->_columnTitleOverrides["{$resTable}_{$fieldName}"] = 'Q' . $fieldCnt;
         $fieldCnt++;
       }

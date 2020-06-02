@@ -1,0 +1,6 @@
+{
+    "name": "civicrm/civicrm-core:angular",
+    "url": "https://github.com/angular/bower-angular/archive/v1.5.11.zip",
+    "checksum": "ce8ecba711e2d10f58e8f969f96fb3d2a69a974c22a7ef6afa63bfb75b6bcece",
+    "ignore": null
+}

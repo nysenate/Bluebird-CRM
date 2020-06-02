@@ -1,25 +1,9 @@
 -- +--------------------------------------------------------------------+
--- | CiviCRM version 5                                                  |
--- +--------------------------------------------------------------------+
--- | Copyright CiviCRM LLC (c) 2004-2019                                |
--- +--------------------------------------------------------------------+
--- | This file is a part of CiviCRM.                                    |
+-- | Copyright CiviCRM LLC. All rights reserved.                        |
 -- |                                                                    |
--- | CiviCRM is free software; you can copy, modify, and distribute it  |
--- | under the terms of the GNU Affero General Public License           |
--- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
--- |                                                                    |
--- | CiviCRM is distributed in the hope that it will be useful, but     |
--- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
--- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
--- | See the GNU Affero General Public License for more details.        |
--- |                                                                    |
--- | You should have received a copy of the GNU Affero General Public   |
--- | License and the CiviCRM Licensing Exception along                  |
--- | with this program; if not, contact CiviCRM LLC                     |
--- | at info[AT]civicrm[DOT]org. If you have questions about the        |
--- | GNU Affero General Public License or the licensing of CiviCRM,     |
--- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+-- | This work is published under the GNU AGPLv3 license with some      |
+-- | permitted exceptions and without any warranty. For full license    |
+-- | and copyright information, see https://civicrm.org/licensing       |
 -- +--------------------------------------------------------------------+
 --
 -- Generated from schema.tpl
@@ -28,27 +12,11 @@
 
 
 -- +--------------------------------------------------------------------+
--- | CiviCRM version 5                                                  |
--- +--------------------------------------------------------------------+
--- | Copyright CiviCRM LLC (c) 2004-2019                                |
--- +--------------------------------------------------------------------+
--- | This file is a part of CiviCRM.                                    |
+-- | Copyright CiviCRM LLC. All rights reserved.                        |
 -- |                                                                    |
--- | CiviCRM is free software; you can copy, modify, and distribute it  |
--- | under the terms of the GNU Affero General Public License           |
--- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
--- |                                                                    |
--- | CiviCRM is distributed in the hope that it will be useful, but     |
--- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
--- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
--- | See the GNU Affero General Public License for more details.        |
--- |                                                                    |
--- | You should have received a copy of the GNU Affero General Public   |
--- | License and the CiviCRM Licensing Exception along                  |
--- | with this program; if not, contact CiviCRM LLC                     |
--- | at info[AT]civicrm[DOT]org. If you have questions about the        |
--- | GNU Affero General Public License or the licensing of CiviCRM,     |
--- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+-- | This work is published under the GNU AGPLv3 license with some      |
+-- | permitted exceptions and without any warranty. For full license    |
+-- | and copyright information, see https://civicrm.org/licensing       |
 -- +--------------------------------------------------------------------+
 --
 -- Generated from drop.tpl
@@ -202,7 +170,6 @@ DROP TABLE IF EXISTS `civicrm_acl`;
 DROP TABLE IF EXISTS `civicrm_recurring_entity`;
 DROP TABLE IF EXISTS `civicrm_action_mapping`;
 DROP TABLE IF EXISTS `civicrm_prevnext_cache`;
-DROP TABLE IF EXISTS `civicrm_persistent`;
 DROP TABLE IF EXISTS `civicrm_component`;
 DROP TABLE IF EXISTS `civicrm_worldregion`;
 DROP TABLE IF EXISTS `civicrm_system_log`;
@@ -489,28 +456,6 @@ CREATE TABLE `civicrm_component` (
 
 -- /*******************************************************
 -- *
--- * civicrm_persistent
--- *
--- * DB Template Customization strings
--- *
--- *******************************************************/
-CREATE TABLE `civicrm_persistent` (
-
-
-     `id` int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Persistent Record Id',
-     `context` varchar(255) NOT NULL   COMMENT 'Context for which name data pair is to be stored',
-     `name` varchar(255) NOT NULL   COMMENT 'Name of Context',
-     `data` longtext    COMMENT 'data associated with name',
-     `is_config` tinyint NOT NULL  DEFAULT 0 COMMENT 'Config Settings' 
-,
-        PRIMARY KEY (`id`)
- 
- 
- 
-)  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
-
--- /*******************************************************
--- *
 -- * civicrm_prevnext_cache
 -- *
 -- * Table to cache items for navigation on civicrm searched results.
@@ -764,6 +709,12 @@ CREATE TABLE `civicrm_contact` (
       , sort_name
       , id
   )
+  ,     INDEX `index_created_date`(
+        created_date
+  )
+  ,     INDEX `index_modified_date`(
+        modified_date
+  )
   
 ,          CONSTRAINT FK_civicrm_contact_primary_contact_id FOREIGN KEY (`primary_contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL,          CONSTRAINT FK_civicrm_contact_employer_id FOREIGN KEY (`employer_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL  
 )  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
@@ -843,9 +794,8 @@ CREATE TABLE `civicrm_saved_search` (
      `form_values` text    COMMENT 'Submitted form values for this search',
      `mapping_id` int unsigned    COMMENT 'Foreign key to civicrm_mapping used for saved search-builder searches.',
      `search_custom_id` int unsigned    COMMENT 'Foreign key to civicrm_option value table used for saved custom searches.',
-     `where_clause` text    COMMENT 'the sql where clause if a saved search acl',
-     `select_tables` text    COMMENT 'the tables to be included in a select data',
-     `where_tables` text    COMMENT 'the tables to be included in the count statement' 
+     `api_entity` varchar(255)    COMMENT 'Entity name for API based search',
+     `api_params` text    COMMENT 'Parameters for API based search' 
 ,
         PRIMARY KEY (`id`)
  
@@ -1135,16 +1085,16 @@ CREATE TABLE `civicrm_payment_processor_type` (
 
 
      `id` int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Payment Processor Type ID',
-     `name` varchar(64)    COMMENT 'Payment Processor Name.',
-     `title` varchar(127)    COMMENT 'Payment Processor Name.',
+     `name` varchar(64) NOT NULL   COMMENT 'Payment Processor Type Name.',
+     `title` varchar(127) NOT NULL   COMMENT 'Payment Processor Type Title.',
      `description` varchar(255)    COMMENT 'Payment Processor Description.',
-     `is_active` tinyint    COMMENT 'Is this processor active?',
-     `is_default` tinyint    COMMENT 'Is this processor the default?',
+     `is_active` tinyint   DEFAULT 1 COMMENT 'Is this processor active?',
+     `is_default` tinyint   DEFAULT 0 COMMENT 'Is this processor the default?',
      `user_name_label` varchar(255)    ,
      `password_label` varchar(255)    ,
      `signature_label` varchar(255)    ,
      `subject_label` varchar(255)    ,
-     `class_name` varchar(255)    ,
+     `class_name` varchar(255) NOT NULL   ,
      `url_site_default` varchar(255)    ,
      `url_api_default` varchar(255)    ,
      `url_recur_default` varchar(255)    ,
@@ -1732,7 +1682,7 @@ CREATE TABLE `civicrm_cxn` (
 CREATE TABLE `civicrm_cache` (
 
 
-     `id` int unsigned NOT NULL AUTO_INCREMENT  ,
+     `id` int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Unique table ID',
      `group_name` varchar(32) NOT NULL   COMMENT 'group name for cache element, useful in cleaning cache elements',
      `path` varchar(255)    COMMENT 'Unique path name for cache element',
      `data` longtext    COMMENT 'data associated with this path',
@@ -1894,7 +1844,6 @@ CREATE TABLE `civicrm_domain` (
      `id` int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Domain ID',
      `name` varchar(64)    COMMENT 'Name of Domain / Organization',
      `description` varchar(255)    COMMENT 'Description of Domain.',
-     `config_backend` text    COMMENT 'Backend configuration.',
      `version` varchar(32)    COMMENT 'The civicrm version this instance is running',
      `contact_id` int unsigned    COMMENT 'FK to Contact ID. This is specifically not an FK to avoid circular constraints',
      `locales` text    COMMENT 'list of locales supported by the current db state (NULL for single-lang install)',
@@ -1923,7 +1872,7 @@ CREATE TABLE `civicrm_email` (
      `contact_id` int unsigned    COMMENT 'FK to Contact ID',
      `location_type_id` int unsigned    COMMENT 'Which Location does this email belong to.',
      `email` varchar(254)    COMMENT 'Email address',
-     `is_primary` tinyint   DEFAULT 0 COMMENT 'Is this the primary?',
+     `is_primary` tinyint   DEFAULT 0 COMMENT 'Is this the primary email address',
      `is_billing` tinyint   DEFAULT 0 COMMENT 'Is this the billing?',
      `on_hold` int unsigned NOT NULL  DEFAULT 0 COMMENT 'Implicit FK to civicrm_option_value where option_group = email_on_hold.',
      `is_bulkmail` tinyint NOT NULL  DEFAULT 0 COMMENT 'Is this address for bulk mail ?',
@@ -2241,7 +2190,7 @@ CREATE TABLE `civicrm_note` (
      `entity_id` int unsigned NOT NULL   COMMENT 'Foreign key to the referenced item.',
      `note` text    COMMENT 'Note and/or Comment.',
      `contact_id` int unsigned    COMMENT 'FK to Contact ID creator',
-     `modified_date` date    COMMENT 'When was this note last modified/edited',
+     `modified_date` timestamp   DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'When was this note last modified/edited',
      `subject` varchar(255)    COMMENT 'subject of note description',
      `privacy` varchar(255)    COMMENT 'Foreign Key to Note Privacy Level (which is an option value pair and hence an implicit FK)' 
 ,
@@ -2542,7 +2491,7 @@ CREATE TABLE `civicrm_print_label` (
 
 
      `id` int unsigned NOT NULL AUTO_INCREMENT  ,
-     `title` varchar(255)    COMMENT 'User title for for this label layout',
+     `title` varchar(255)    COMMENT 'User title for this label layout',
      `name` varchar(255)    COMMENT 'variable name/programmatic handle for this field.',
      `description` text    COMMENT 'Description of this label layout',
      `label_format_name` varchar(255)    COMMENT 'This refers to name column of civicrm_option_value row in name_badge option group',
@@ -2602,7 +2551,8 @@ CREATE TABLE `civicrm_status_pref` (
      `hush_until` date   DEFAULT NULL COMMENT 'expires ignore_severity.  NULL never hushes.',
      `ignore_severity` int unsigned   DEFAULT 1 COMMENT 'Hush messages up to and including this severity.',
      `prefs` varchar(255)    COMMENT 'These settings are per-check, and can\'t be compared across checks.',
-     `check_info` varchar(255)    COMMENT 'These values are per-check, and can\'t be compared across checks.' 
+     `check_info` varchar(255)    COMMENT 'These values are per-check, and can\'t be compared across checks.',
+     `is_active` tinyint   DEFAULT 1 COMMENT 'Is this status check active?' 
 ,
         PRIMARY KEY (`id`)
  
@@ -2632,6 +2582,9 @@ CREATE TABLE `civicrm_acl_cache` (
  
     ,     INDEX `index_acl_id`(
         acl_id
+  )
+  ,     INDEX `index_modified_date`(
+        modified_date
   )
   
 ,          CONSTRAINT FK_civicrm_acl_cache_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE,          CONSTRAINT FK_civicrm_acl_cache_acl_id FOREIGN KEY (`acl_id`) REFERENCES `civicrm_acl`(`id`) ON DELETE CASCADE  
@@ -2871,7 +2824,8 @@ CREATE TABLE `civicrm_contribution_page` (
      `currency` varchar(3)   DEFAULT NULL COMMENT '3 character string, value from config setting or input via user.',
      `campaign_id` int unsigned    COMMENT 'The campaign for which we are collecting contributions with this page.',
      `is_share` tinyint   DEFAULT 1 COMMENT 'Can people share the contribution page through social media?',
-     `is_billing_required` tinyint   DEFAULT 0 COMMENT 'if true - billing block is required for online contribution page' 
+     `is_billing_required` tinyint   DEFAULT 0 COMMENT 'if true - billing block is required for online contribution page',
+     `frontend_title` varchar(255)   DEFAULT NULL COMMENT 'Contribution Page Public title' 
 ,
         PRIMARY KEY (`id`)
  
@@ -2984,10 +2938,10 @@ CREATE TABLE `civicrm_payment_processor` (
      `name` varchar(64)    COMMENT 'Payment Processor Name.',
      `title` varchar(127)    COMMENT 'Payment Processor Descriptive Name.',
      `description` varchar(255)    COMMENT 'Payment Processor Description.',
-     `payment_processor_type_id` int unsigned    ,
-     `is_active` tinyint    COMMENT 'Is this processor active?',
-     `is_default` tinyint    COMMENT 'Is this processor the default?',
-     `is_test` tinyint    COMMENT 'Is this processor for a test site?',
+     `payment_processor_type_id` int unsigned NOT NULL   ,
+     `is_active` tinyint   DEFAULT 1 COMMENT 'Is this processor active?',
+     `is_default` tinyint   DEFAULT 0 COMMENT 'Is this processor the default?',
+     `is_test` tinyint   DEFAULT 0 COMMENT 'Is this processor for a test site?',
      `user_name` varchar(255)    ,
      `password` varchar(255)    ,
      `signature` text    ,
@@ -3260,7 +3214,7 @@ CREATE TABLE `civicrm_report_instance` (
      `description` varchar(255)    COMMENT 'Report Instance description.',
      `permission` varchar(255)    COMMENT 'permission required to be able to run this instance',
      `grouprole` varchar(1024)    COMMENT 'role required to be able to run this instance',
-     `form_values` text    COMMENT 'Submitted form values for this report',
+     `form_values` longtext    COMMENT 'Submitted form values for this report',
      `is_active` tinyint    COMMENT 'Is this entry active?',
      `created_id` int unsigned    COMMENT 'FK to contact table.',
      `owner_id` int unsigned    COMMENT 'FK to contact table.',
@@ -3381,7 +3335,7 @@ CREATE TABLE `civicrm_dashboard` (
         PRIMARY KEY (`id`)
  
  
-,          CONSTRAINT FK_civicrm_dashboard_domain_id FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain`(`id`)   
+,          CONSTRAINT FK_civicrm_dashboard_domain_id FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain`(`id`) ON DELETE CASCADE  
 )  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
 
 -- /*******************************************************
@@ -3682,7 +3636,7 @@ CREATE TABLE `civicrm_dashboard_contact` (
      `id` int unsigned NOT NULL AUTO_INCREMENT  ,
      `dashboard_id` int unsigned NOT NULL   COMMENT 'Dashboard ID',
      `contact_id` int unsigned NOT NULL   COMMENT 'Contact ID',
-     `column_no` tinyint   DEFAULT 0 COMMENT 'column no for this widget',
+     `column_no` int   DEFAULT 0 COMMENT 'column no for this widget',
      `is_active` tinyint   DEFAULT 0 COMMENT 'Is this widget active?',
      `weight` int   DEFAULT 0 COMMENT 'Ordering of the widgets.' 
 ,
@@ -3758,7 +3712,7 @@ CREATE TABLE `civicrm_mailing` (
      `open_tracking` tinyint    COMMENT 'Should we track when recipients open/read this mailing?',
      `is_completed` tinyint    COMMENT 'Has at least one job associated with this mailing finished?',
      `msg_template_id` int unsigned    COMMENT 'FK to the message template.',
-     `override_verp` tinyint   DEFAULT 0 COMMENT 'Should we overrite VERP address in Reply-To',
+     `override_verp` tinyint   DEFAULT 0 COMMENT 'Overwrite the VERP address in Reply-To',
      `created_id` int unsigned    COMMENT 'FK to Contact ID who first created this mailing',
      `created_date` timestamp NULL  DEFAULT NULL COMMENT 'Date and time this mailing was created.',
      `modified_date` timestamp NULL  DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'When the mailing (or closely related entity) was created or modified or deleted.',
@@ -3893,7 +3847,7 @@ CREATE TABLE `civicrm_mailing_spool` (
 
      `id` int unsigned NOT NULL AUTO_INCREMENT  ,
      `job_id` int unsigned NOT NULL   COMMENT 'The ID of the Job .',
-     `recipient_email` text    COMMENT 'The email of the receipients this mail is to be sent.',
+     `recipient_email` text    COMMENT 'The email of the recipients this mail is to be sent.',
      `headers` text    COMMENT 'The header information of this mailing .',
      `body` text    COMMENT 'The body of this mailing.',
      `added_at` timestamp NULL  DEFAULT NULL COMMENT 'date on which this job was added.',
@@ -4156,7 +4110,8 @@ CREATE TABLE `civicrm_financial_trxn` (
      `payment_instrument_id` int unsigned    COMMENT 'FK to payment_instrument option group values',
      `card_type_id` int unsigned    COMMENT 'FK to accept_creditcard option group values',
      `check_number` varchar(255)    COMMENT 'Check number',
-     `pan_truncation` varchar(4)    COMMENT 'Last 4 digits of credit card' 
+     `pan_truncation` varchar(4)    COMMENT 'Last 4 digits of credit card',
+     `order_reference` varchar(255)    COMMENT 'Payment Processor external order reference' 
 ,
         PRIMARY KEY (`id`)
  
@@ -4509,6 +4464,10 @@ CREATE TABLE `civicrm_address` (
   ,     INDEX `index_city`(
         city
   )
+  ,     INDEX `index_geo_code_1_geo_code_2`(
+        geo_code_1
+      , geo_code_2
+  )
   
 ,          CONSTRAINT FK_civicrm_address_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE,          CONSTRAINT FK_civicrm_address_county_id FOREIGN KEY (`county_id`) REFERENCES `civicrm_county`(`id`) ON DELETE SET NULL,          CONSTRAINT FK_civicrm_address_state_province_id FOREIGN KEY (`state_province_id`) REFERENCES `civicrm_state_province`(`id`) ON DELETE SET NULL,          CONSTRAINT FK_civicrm_address_country_id FOREIGN KEY (`country_id`) REFERENCES `civicrm_country`(`id`) ON DELETE SET NULL,          CONSTRAINT FK_civicrm_address_master_id FOREIGN KEY (`master_id`) REFERENCES `civicrm_address`(`id`) ON DELETE SET NULL  
 )  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
@@ -4603,7 +4562,8 @@ CREATE TABLE `civicrm_contribution` (
      `campaign_id` int unsigned    COMMENT 'The campaign for which this contribution has been triggered.',
      `creditnote_id` varchar(255)    COMMENT 'unique credit note id, system generated or passed in',
      `tax_amount` decimal(20,2)    COMMENT 'Total tax amount of this contribution.',
-     `revenue_recognition_date` datetime    COMMENT 'Stores the date when revenue should be recognized.' 
+     `revenue_recognition_date` datetime    COMMENT 'Stores the date when revenue should be recognized.',
+     `is_template` tinyint   DEFAULT 0 COMMENT 'Shows this is a template for recurring contributions.' 
 ,
         PRIMARY KEY (`id`)
  

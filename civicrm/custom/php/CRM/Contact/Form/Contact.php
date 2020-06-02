@@ -1,34 +1,18 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2019
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 
 /**
@@ -217,8 +201,8 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
           CRM_Core_Error::statusBounce(ts('A Contact with that ID does not exist: %1', [1 => $this->_contactId]));
         }
 
-        $this->_contactType = CRM_Utils_Array::value('contact_type', $defaults);
-        $this->_contactSubType = CRM_Utils_Array::value('contact_sub_type', $defaults);
+        $this->_contactType = $defaults['contact_type'] ?? NULL;
+        $this->_contactSubType = $defaults['contact_sub_type'] ?? NULL;
 
         // check for permissions
         $session = CRM_Core_Session::singleton();
@@ -228,7 +212,7 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
 
         $displayName = CRM_Contact_BAO_Contact::displayName($this->_contactId);
         if ($defaults['is_deceased']) {
-          $displayName .= '  <span class="crm-contact-deceased">(deceased)</span>';
+          $displayName .= '  <span class="crm-contact-deceased">(' . ts('deceased') . ')</span>';
         }
         $displayName = ts('Edit %1', [1 => $displayName]);
 
@@ -339,7 +323,7 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
 
     // retain the multiple count custom fields value
     if (!empty($_POST['hidden_custom'])) {
-      $customGroupCount = CRM_Utils_Array::value('hidden_custom_group_count', $_POST);
+      $customGroupCount = $_POST['hidden_custom_group_count'] ?? NULL;
 
       if ($contactSubType = CRM_Utils_Array::value('contact_sub_type', $_POST)) {
         $paramSubType = implode(',', $contactSubType);
@@ -522,7 +506,7 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
           $defaults[$name][$instance]['location_type_id'] = $locationType->id;
         }
         else {
-          $locTypeId = isset($locationTypeKeys[$instance - 1]) ? $locationTypeKeys[$instance - 1] : $locationType->id;
+          $locTypeId = $locationTypeKeys[$instance - 1] ?? $locationType->id;
           $defaults[$name][$instance]['location_type_id'] = $locTypeId;
         }
 
@@ -635,7 +619,7 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
           $dataExists = self::blockDataExists($blockValues);
 
           if (!$dataExists && $name == 'address') {
-            $dataExists = CRM_Utils_Array::value('use_shared_address', $fields['address'][$instance]);
+            $dataExists = $fields['address'][$instance]['use_shared_address'] ?? NULL;
           }
 
           if ($dataExists) {
@@ -673,8 +657,8 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
 
           if ($name == 'openid' && !empty($blockValues[$name])) {
             $oid = new CRM_Core_DAO_OpenID();
-            $oid->openid = $openIds[$instance] = CRM_Utils_Array::value($name, $blockValues);
-            $cid = isset($contactId) ? $contactId : 0;
+            $oid->openid = $openIds[$instance] = $blockValues[$name];
+            $cid = $contactId ?? 0;
             if ($oid->find(TRUE) && ($oid->contact_id != $cid)) {
               $errors["{$name}[$instance][openid]"] = ts('%1 already exist.', [1 => $blocks['OpenID']]);
             }
@@ -890,7 +874,7 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
       $params['preferred_communication_method'] = 'null';
     }
 
-    $group = CRM_Utils_Array::value('group', $params);
+    $group = $params['group'] ?? NULL;
     //NYSS 12137/13257
     if (!empty($group)) {
       $group = is_array($group) ? $group : explode(',', $group);
@@ -928,16 +912,6 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
     if ($this->_contactType == 'Individual' && !empty($this->_editOptions['Demographics']) && empty($params['is_deceased'])) {
       $params['is_deceased'] = FALSE;
       $params['deceased_date'] = NULL;
-    }
-
-    if (isset($params['contact_id'])) {
-      // process membership status for deceased contact
-      $deceasedParams = [
-        'contact_id' => CRM_Utils_Array::value('contact_id', $params),
-        'is_deceased' => CRM_Utils_Array::value('is_deceased', $params, FALSE),
-        'deceased_date' => CRM_Utils_Array::value('deceased_date', $params, NULL),
-      ];
-      $updateMembershipMsg = $this->updateMembershipStatus($deceasedParams);
     }
 
     // action is taken depending upon the mode
@@ -1042,9 +1016,6 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
 
     if (!empty($parseStatusMsg)) {
       $message .= "<br />$parseStatusMsg";
-    }
-    if (!empty($updateMembershipMsg)) {
-      $message .= "<br />$updateMembershipMsg";
     }
 
     $session = CRM_Core_Session::singleton();
@@ -1284,7 +1255,7 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
       }
 
       // main parse string.
-      $parseString = CRM_Utils_Array::value($parseFieldName, $address);
+      $parseString = $address[$parseFieldName] ?? NULL;
 
       // parse address field.
       $parsedFields = CRM_Core_BAO_Address::parseStreetAddress($parseString);
@@ -1316,7 +1287,7 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
             $streetAddress .= ' ';
           }
           // CRM-17619 - if the street number suffix begins with a number, add a space
-          $thesuffix = CRM_Utils_Array::value('street_number_suffix', $address);
+          $thesuffix = $address['street_number_suffix'] ?? NULL;
           if ($fld === 'street_number_suffix' && $thesuffix) {
             if (ctype_digit(substr($thesuffix, 0, 1))) {
               $streetAddress .= ' ';
@@ -1420,103 +1391,6 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
     }
 
     return "$number$str";
-  }
-
-  /**
-   * Update membership status to deceased.
-   * function return the status message for updated membership.
-   *
-   * @param array $deceasedParams
-   *   having contact id and deceased value.
-   *
-   * @return null|string
-   *   $updateMembershipMsg string  status message for updated membership.
-   */
-  public function updateMembershipStatus($deceasedParams) {
-    $updateMembershipMsg = NULL;
-    $contactId = CRM_Utils_Array::value('contact_id', $deceasedParams);
-    $deceasedDate = CRM_Utils_Array::value('deceased_date', $deceasedParams);
-
-    // process to set membership status to deceased for both active/inactive membership
-    if ($contactId &&
-      $this->_contactType == 'Individual' && !empty($deceasedParams['is_deceased'])
-    ) {
-
-      $session = CRM_Core_Session::singleton();
-      $userId = $session->get('userID');
-      if (!$userId) {
-        $userId = $contactId;
-      }
-
-      // get deceased status id
-      $allStatus = CRM_Member_PseudoConstant::membershipStatus();
-      $deceasedStatusId = array_search('Deceased', $allStatus);
-      if (!$deceasedStatusId) {
-        return $updateMembershipMsg;
-      }
-
-      $today = time();
-      if ($deceasedDate && strtotime($deceasedDate) > $today) {
-        return $updateMembershipMsg;
-      }
-
-      // get non deceased membership
-      $dao = new CRM_Member_DAO_Membership();
-      $dao->contact_id = $contactId;
-      $dao->whereAdd("status_id != $deceasedStatusId");
-      $dao->find();
-      $activityTypes = CRM_Core_PseudoConstant::activityType(TRUE, FALSE, FALSE, 'name');
-      $allStatus = CRM_Member_PseudoConstant::membershipStatus();
-      $memCount = 0;
-      while ($dao->fetch()) {
-        // update status to deceased (for both active/inactive membership )
-        CRM_Core_DAO::setFieldValue('CRM_Member_DAO_Membership', $dao->id,
-          'status_id', $deceasedStatusId
-        );
-
-        // add membership log
-        $membershipLog = [
-          'membership_id' => $dao->id,
-          'status_id' => $deceasedStatusId,
-          'start_date' => CRM_Utils_Date::isoToMysql($dao->start_date),
-          'end_date' => CRM_Utils_Date::isoToMysql($dao->end_date),
-          'modified_id' => $userId,
-          'modified_date' => date('Ymd'),
-          'membership_type_id' => $dao->membership_type_id,
-          'max_related' => $dao->max_related,
-        ];
-
-        CRM_Member_BAO_MembershipLog::add($membershipLog);
-
-        //create activity when membership status is changed
-        $activityParam = [
-          'subject' => "Status changed from {$allStatus[$dao->status_id]} to {$allStatus[$deceasedStatusId]}",
-          'source_contact_id' => $userId,
-          'target_contact_id' => $dao->contact_id,
-          'source_record_id' => $dao->id,
-          'activity_type_id' => array_search('Change Membership Status', $activityTypes),
-          'status_id' => 2,
-          'version' => 3,
-          'priority_id' => 2,
-          'activity_date_time' => date('Y-m-d H:i:s'),
-          'is_auto' => 0,
-          'is_current_revision' => 1,
-          'is_deleted' => 0,
-        ];
-        $activityResult = civicrm_api('activity', 'create', $activityParam);
-
-        $memCount++;
-      }
-
-      // set status msg
-      if ($memCount) {
-        $updateMembershipMsg = ts("%1 Current membership(s) for this contact have been set to 'Deceased' status.",
-          [1 => $memCount]
-        );
-      }
-    }
-
-    return $updateMembershipMsg;
   }
 
 }

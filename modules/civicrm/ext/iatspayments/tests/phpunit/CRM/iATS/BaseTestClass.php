@@ -16,7 +16,7 @@ use Civi\Test\TransactionalInterface;
  *       a. Do all that using setupHeadless() and Civi\Test.
  *       b. Disable TransactionalInterface, and handle all setup/teardown yourself.
  */
-abstract class BaseTestClass extends \PHPUnit_Framework_TestCase implements HeadlessInterface, HookInterface, TransactionalInterface {
+abstract class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInterface, HookInterface, TransactionalInterface {
   //class BaseTestClass extends \PHPUnit_Framework_TestCase implements HeadlessInterface, HookInterface {
 
   /**

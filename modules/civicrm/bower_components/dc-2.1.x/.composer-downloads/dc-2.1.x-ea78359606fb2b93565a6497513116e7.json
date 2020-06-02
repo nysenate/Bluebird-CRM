@@ -1,0 +1,25 @@
+{
+    "name": "civicrm/civicrm-core:dc-2.1.x",
+    "url": "https://github.com/NickQiZhu/dc.js/archive/2.1.10.zip",
+    "checksum": "8b35c4d5111c3098b82b91200140f56634b1ac8284993e9125263fd124148ed3",
+    "ignore": [
+        ".*",
+        "style",
+        "web",
+        "*.json",
+        "regression",
+        "scripts",
+        "spec",
+        "src",
+        "docs",
+        "grunt",
+        "Gruntfile.js",
+        "Changelog.md",
+        "welcome.md",
+        "class-hierarchy.dot",
+        "index.js",
+        "CONTRIBUTING.md",
+        "LICENSE_BANNER",
+        "AUTHORS"
+    ]
+}

@@ -9,31 +9,29 @@ require_once 'CRM/Core/Page.php';
 /**
  *
  */
-class CRM_iATS_Page_iATSAdmin extends CRM_Core_Page {
+class CRM_Iats_Page_iATSAdmin extends CRM_Core_Page {
 
   /**
    *
    */
   public function run() {
     // Reset the saved version of the extension.
-    require_once 'CRM/iATS/iATSService.php';
-    $iats_extension_version = iATS_Service_Request::iats_extension_version(1);
+    $iats_extension_version = CRM_Iats_iATSServiceRequest::iats_extension_version(1);
     // The current time.
     $this->assign('currentVersion', $iats_extension_version);
     $this->assign('currentTime', date('Y-m-d H:i:s'));
     $this->assign('jobLastRunWarning', '0');
     // Check if I've got any recurring contributions setup. In theory I should only worry about iATS, but it's a problem regardless ..
-    $params = array('version' => 3, 'sequential' => 1);
-    $result = civicrm_api('ContributionRecur', 'getcount', $params);
+    $result = civicrm_api3('ContributionRecur', 'getcount');
     if (!empty($result)) {
       $this->assign('jobLastRunWarning', '1');
-      $params['api_action'] = 'Iatsrecurringcontributions';
-      $job = civicrm_api('Job', 'getSingle', $params);
-      $last_run = isset($job['last_run']) ? strtotime($job['last_run']) : '';
-      $this->assign('jobLastRun', $job['last_run']);
+      $params = ['api_action' => 'Iatsrecurringcontributions', 'is_active' => 1, 'sequential' => 1, 'options' => ['sort' => 'last_run']];
+      $jobs = civicrm_api3('Job', 'get', $params);
+      $job_last_run = count($jobs['values']) > 0 ? strtotime($jobs['values'][0]['last_run']) : 0;
+      $this->assign('jobLastRun', ($job_last_run ? date('Y-m-d H:i:s', $job_last_run) : ''));
       $this->assign('jobOverdue', '');
-      $overdueHours  = (time() - $last_run) / (60 * 60);
-      if (24 < $overdueHours) {
+      $overdueHours  = (time() - $job_last_run) / (60 * 60);
+      if (36 < $overdueHours) {
         $this->assign('jobOverdue', $overdueHours);
       }
     }
@@ -76,7 +74,6 @@ class CRM_iATS_Page_iATSAdmin extends CRM_Core_Page {
     $className = get_class($dao);
     $internal = array_keys(get_class_vars($className));
     // Get some customer data while i'm at it
-    // require_once("CRM/iATS/iATSService.php");
     // todo: fix iats_domain below
     // $iats_service_params = array('type' => 'customer', 'method' => 'get_customer_code_detail', 'iats_domain' => 'www.iatspayments.com');.
     while ($dao->fetch()) {

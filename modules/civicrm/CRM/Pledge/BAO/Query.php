@@ -1,34 +1,18 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2019
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 class CRM_Pledge_BAO_Query extends CRM_Core_BAO_Query {
 
@@ -79,6 +63,12 @@ class CRM_Pledge_BAO_Query extends CRM_Core_BAO_Query {
     if (!empty($query->_returnProperties['pledge_create_date'])) {
       $query->_select['pledge_create_date'] = 'civicrm_pledge.create_date as pledge_create_date';
       $query->_element['pledge_create_date'] = 1;
+      $query->_tables['civicrm_pledge'] = $query->_whereTables['civicrm_pledge'] = 1;
+    }
+
+    if (!empty($query->_returnProperties['pledge_end_date'])) {
+      $query->_select['pledge_end_date'] = 'civicrm_pledge.end_date as pledge_end_date';
+      $query->_element['pledge_end_date'] = 1;
       $query->_tables['civicrm_pledge'] = $query->_whereTables['civicrm_pledge'] = 1;
     }
 
@@ -239,43 +229,24 @@ class CRM_Pledge_BAO_Query extends CRM_Core_BAO_Query {
   }
 
   /**
-   * @param $values
-   * @param $query
+   * Get where clause for field.
+   *
+   * @todo most of this could be replaced by using metadata.
+   *
+   * @param array $values
+   * @param \CRM_Contact_BAO_Query $query
+   *
+   * @throws \CRM_Core_Exception
    */
   public static function whereClauseSingle(&$values, &$query) {
+    if ($query->buildDateRangeQuery($values)) {
+      // @todo - move this to Contact_Query in or near the call to
+      // $this->buildRelativeDateQuery($values);
+      return;
+    }
     list($name, $op, $value, $grouping, $wildcard) = $values;
 
     switch ($name) {
-      case 'pledge_create_date_low':
-      case 'pledge_create_date_high':
-        // process to / from date
-        $query->dateQueryBuilder($values,
-          'civicrm_pledge', 'pledge_create_date', 'create_date', 'Pledge Made'
-        );
-      case 'pledge_start_date_low':
-      case 'pledge_start_date_high':
-        // process to / from date
-        $query->dateQueryBuilder($values,
-          'civicrm_pledge', 'pledge_start_date', 'start_date', 'Pledge Start Date'
-        );
-        return;
-
-      case 'pledge_end_date_low':
-      case 'pledge_end_date_high':
-        // process to / from date
-        $query->dateQueryBuilder($values,
-          'civicrm_pledge', 'pledge_end_date', 'end_date', 'Pledge End Date'
-        );
-        return;
-
-      case 'pledge_payment_date_low':
-      case 'pledge_payment_date_high':
-        // process to / from date
-        $query->dateQueryBuilder($values,
-          'civicrm_pledge_payment', 'pledge_payment_date', 'scheduled_date', 'Payment Scheduled'
-        );
-        return;
-
       case 'pledge_amount':
       case 'pledge_amount_low':
       case 'pledge_amount_high':
@@ -531,13 +502,29 @@ class CRM_Pledge_BAO_Query extends CRM_Core_BAO_Query {
   public static function getSearchFieldMetadata() {
     $fields = [
       'pledge_status_id',
+      'pledge_start_date',
+      'pledge_end_date',
+      'pledge_create_date',
     ];
     $metadata = civicrm_api3('Pledge', 'getfields', [])['values'];
     return array_intersect_key($metadata, array_flip($fields));
   }
 
   /**
-   * Build the search for for pledges.
+   * Get the metadata for fields to be included on the grant search form.
+   *
+   * @throws \CiviCRM_API3_Exception
+   */
+  public static function getPledgePaymentSearchFieldMetadata() {
+    $fields = [
+      'pledge_payment_scheduled_date',
+    ];
+    $metadata = civicrm_api3('PledgePayment', 'getfields', [])['values'];
+    return array_intersect_key($metadata, array_flip($fields));
+  }
+
+  /**
+   * Build the search for pledges.
    *
    * @param CRM_Pledge_Form_Search|\CRM_Contact_Form_Search_Advanced $form
    *
@@ -547,13 +534,8 @@ class CRM_Pledge_BAO_Query extends CRM_Core_BAO_Query {
   public static function buildSearchForm(&$form) {
     // pledge related dates
     $form->addSearchFieldMetadata(['Pledge' => self::getSearchFieldMetadata()]);
+    $form->addSearchFieldMetadata(['PledgePayment' => self::getPledgePaymentSearchFieldMetadata()]);
     $form->addFormFieldsFromMetadata();
-    CRM_Core_Form_Date::buildDateRange($form, 'pledge_start_date', 1, '_low', '_high', ts('From'), FALSE);
-    CRM_Core_Form_Date::buildDateRange($form, 'pledge_end_date', 1, '_low', '_high', ts('From'), FALSE);
-    CRM_Core_Form_Date::buildDateRange($form, 'pledge_create_date', 1, '_low', '_high', ts('From'), FALSE);
-
-    // pledge payment related dates
-    CRM_Core_Form_Date::buildDateRange($form, 'pledge_payment_date', 1, '_low', '_high', ts('From'), FALSE);
 
     $form->addYesNo('pledge_test', ts('Pledge is a Test?'), TRUE);
     $form->add('text', 'pledge_amount_low', ts('From'), ['size' => 8, 'maxlength' => 8]);

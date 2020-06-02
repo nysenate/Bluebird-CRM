@@ -1,34 +1,18 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2019
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 class CRM_Dedupe_Merger {
 
@@ -49,6 +33,7 @@ class CRM_Dedupe_Merger {
       $title = $userRecordUrl = '';
 
       $config = CRM_Core_Config::singleton();
+      // @todo - this user url stuff is only needed for the form layer - move to CRM_Contact_Form_Merge
       if ($config->userSystem->is_drupal) {
         $userRecordUrl = CRM_Utils_System::url('user/%ufid');
         $title = ts('%1 User: %2; user id: %3', [
@@ -652,8 +637,8 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
       if (strpos($key, '_')) {
         continue;
       }
-      $key1 = CRM_Utils_Array::value($key, $mainEvs);
-      $key2 = CRM_Utils_Array::value($key, $otherEvs);
+      $key1 = $mainEvs[$key] ?? NULL;
+      $key2 = $otherEvs[$key] ?? NULL;
       // We wish to retain '0' as it has a different meaning than NULL on a checkbox.
       // However I can't think of a case where an empty string is more meaningful than null
       // or where it would be FALSE or something else nullish.
@@ -691,11 +676,21 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
    *  If not set explicitly this is calculated but it is preferred that it be set
    *  per comments on isSelected above.
    *
+   * @param int $searchLimit
+   *   Limit on number of contacts to search for duplicates for.
+   *   This means that if the limit is 1000 then only duplicates for the first 1000 contacts
+   *   matching criteria will be found and batchMerged (the number of merges could be less than or greater than 100)
+   *
    * @return array|bool
+   *
+   * @throws \CRM_Core_Exception
+   * @throws \CiviCRM_API3_Exception
    */
-  public static function batchMerge($rgid, $gid = NULL, $mode = 'safe', $batchLimit = 1, $isSelected = 2, $criteria = [], $checkPermissions = TRUE, $reloadCacheIfEmpty = NULL) {
-    $redirectForPerformance = ($batchLimit > 1) ? TRUE : FALSE;
-
+  public static function batchMerge($rgid, $gid = NULL, $mode = 'safe', $batchLimit = 1, $isSelected = 2, $criteria = [], $checkPermissions = TRUE, $reloadCacheIfEmpty = NULL, $searchLimit = 0) {
+    $redirectForPerformance = $batchLimit > 1;
+    if ($mode === 'aggressive' && $checkPermissions && !CRM_Core_Permission::check('force merge duplicate contacts')) {
+      throw new CRM_Core_Exception(ts('Insufficient permissions for aggressive mode batch merge'));
+    }
     if (!isset($reloadCacheIfEmpty)) {
       $reloadCacheIfEmpty = (!$redirectForPerformance && $isSelected == 2);
     }
@@ -703,10 +698,10 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
       // explicitly set to NULL if not 1 or 0 as part of grandfathering out the mystical '2' value.
       $isSelected = NULL;
     }
-    $dupePairs = self::getDuplicatePairs($rgid, $gid, $reloadCacheIfEmpty, $batchLimit, $isSelected, ($mode == 'aggressive'), $criteria, $checkPermissions);
+    $dupePairs = self::getDuplicatePairs($rgid, $gid, $reloadCacheIfEmpty, $batchLimit, $isSelected, ($mode == 'aggressive'), $criteria, $checkPermissions, $searchLimit);
 
     $cacheParams = [
-      'cache_key_string' => self::getMergeCacheKeyString($rgid, $gid, $criteria, $checkPermissions),
+      'cache_key_string' => self::getMergeCacheKeyString($rgid, $gid, $criteria, $checkPermissions, $searchLimit),
       // @todo stop passing these parameters in & instead calculate them in the merge function based
       // on the 'real' params like $isRespectExclusions $batchLimit and $isSelected.
       'join' => self::getJoinOnDedupeTable(),
@@ -777,12 +772,12 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
 
     // store the updated stats
     $data = [
-      'merged' => $merged,
-      'skipped' => $skipped,
+      'merged' => (int) $merged,
+      'skipped' => (int) $skipped,
     ];
-    $data = CRM_Core_DAO::escapeString(serialize($data));
 
-    CRM_Core_BAO_PrevNextCache::setItem('civicrm_contact', 0, 0, $cacheKeyString . '_stats', $data);
+    CRM_Core_DAO::executeQuery("INSERT INTO civicrm_prevnext_cache (entity_table, entity_id1, entity_id2, cacheKey, data) VALUES
+        ('civicrm_contact', 0, 0, %1, %2)", [1 => [$cacheKeyString . '_stats', 'String'], 2 => [serialize($data), 'String']]);
   }
 
   /**
@@ -856,11 +851,15 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
    *   Respect logged in user permissions.
    *
    * @return array|bool
+   *
+   * @throws \API_Exception
+   * @throws \CRM_Core_Exception
+   * @throws \CiviCRM_API3_Exception
    */
   public static function merge($dupePairs = [], $cacheParams = [], $mode = 'safe',
                                $redirectForPerformance = FALSE, $checkPermissions = TRUE
   ) {
-    $cacheKeyString = CRM_Utils_Array::value('cache_key_string', $cacheParams);
+    $cacheKeyString = $cacheParams['cache_key_string'] ?? NULL;
     $resultStats = ['merged' => [], 'skipped' => []];
 
     // we don't want dupe caching to get reset after every-merge, and therefore set the
@@ -873,16 +872,17 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
           unset($dupePairs[$index]);
           continue;
         }
-        CRM_Utils_Hook::merge('flip', $dupes, $dupes['dstID'], $dupes['srcID']);
-        $mainId = $dupes['dstID'];
-        $otherId = $dupes['srcID'];
-
-        if (!$mainId || !$otherId) {
-          // return error
-          return FALSE;
+        if (($result = self::dedupePair($dupes, $mode, $checkPermissions, $cacheKeyString)) === FALSE) {
+          unset($dupePairs[$index]);
+          continue;
         }
-
-        self::dedupePair($resultStats, $deletedContacts, $mode, $checkPermissions, $mainId, $otherId, $cacheKeyString);
+        if (!empty($result['merged'])) {
+          $deletedContacts[] = $result['merged'][0]['other_id'];
+          $resultStats['merged'][] = ($result['merged'][0]);
+        }
+        else {
+          $resultStats['skipped'][] = ($result['skipped'][0]);
+        }
       }
 
       if ($cacheKeyString && !$redirectForPerformance) {
@@ -934,13 +934,11 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
    */
   public static function skipMerge($mainId, $otherId, &$migrationInfo, $mode = 'safe', &$conflicts = []) {
 
-    $conflicts = self::getConflicts($migrationInfo, $mainId, $otherId, $mode);
-
-    if (!empty($conflicts)) {
-      // if there are conflicts and mode is aggressive, allow hooks to decide if to skip merges
-      return (bool) $migrationInfo['skip_merge'];
-    }
-    return FALSE;
+    $conflicts = self::getConflicts($migrationInfo, $mainId, $otherId, $mode)['conflicts'];
+    // A hook could have set skip_merge in order to alter merge behaviour.
+    // This is a something we might ideally deprecate since they really 'should'
+    // mess with the conflicts array instead.
+    return (bool) ($migrationData['skip_merge'] ?? !empty($conflicts));
   }
 
   /**
@@ -1076,73 +1074,38 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
         // CRM-15681 don't display sub-types in UI
         continue;
       }
-      foreach (['main' => $main, 'other' => $other] as $moniker => $contact) {
-        $value = $label = CRM_Utils_Array::value($field, $contact);
-        $fieldSpec = $fields[$field];
-        if (!empty($fieldSpec['serialize']) && is_array($value)) {
-          // In practice this only applies to preferred_communication_method as the sub types are skipped above
-          // and no others are serialized.
-          $labels = [];
-          foreach ($value as $individualValue) {
-            $labels[] = CRM_Core_PseudoConstant::getLabel('CRM_Contact_BAO_Contact', $field, $individualValue);
-          }
-          $label = implode(', ', $labels);
-          // We serialize this due to historic handling but it's likely that if we just left it as an
-          // array all would be well & we would have less code.
-          $value = CRM_Core_DAO::serializeField($value, $fieldSpec['serialize']);
-        }
-        elseif (!empty($fieldSpec['type']) && $fieldSpec['type'] == CRM_Utils_Type::T_DATE) {
-          if ($value) {
-            $value = str_replace('-', '', $value);
-            $label = CRM_Utils_Date::customFormat($label);
-          }
-          else {
-            $value = "null";
-          }
-        }
-        elseif (!empty($fields[$field]['type']) && $fields[$field]['type'] == CRM_Utils_Type::T_BOOLEAN) {
-          if ($label === '0') {
-            $label = ts('[ ]');
-          }
-          if ($label === '1') {
-            $label = ts('[x]');
-          }
-        }
-        elseif (!empty($fieldSpec['pseudoconstant'])) {
-          $label = CRM_Core_PseudoConstant::getLabel('CRM_Contact_BAO_Contact', $field, $value);
-        }
-        elseif ($field == 'current_employer_id' && !empty($value)) {
-          $label = "$value (" . CRM_Contact_BAO_Contact::displayName($value) . ")";
-        }
-        $rows["move_$field"][$moniker] = $label;
-        if ($moniker == 'other') {
-          //CRM-14334
-          if ($value === NULL || $value == '') {
-            $value = 'null';
-          }
-          if ($value === 0 or $value === '0') {
-            $value = $qfZeroBug;
-          }
-          if (is_array($value) && empty($value[1])) {
-            $value[1] = NULL;
-          }
+      $rows["move_$field"] = [
+        'main' => self::getFieldValueAndLabel($field, $main)['label'],
+        'other' => self::getFieldValueAndLabel($field, $other)['label'],
+        'title' => $fields[$field]['title'],
+      ];
 
-          // Display a checkbox to migrate, only if the values are different
-          if ($value != $main[$field]) {
-            $elements[] = [
-              'advcheckbox',
-              "move_$field",
-              NULL,
-              NULL,
-              NULL,
-              $value,
-            ];
-          }
-
-          $migrationInfo["move_$field"] = $value;
-        }
+      $value = self::getFieldValueAndLabel($field, $other)['value'];
+      //CRM-14334
+      if ($value === NULL || $value == '') {
+        $value = 'null';
       }
-      $rows["move_$field"]['title'] = $fields[$field]['title'];
+      if ($value === 0 or $value === '0') {
+        $value = $qfZeroBug;
+      }
+      if (is_array($value) && empty($value[1])) {
+        $value[1] = NULL;
+      }
+
+      // Display a checkbox to migrate, only if the values are different
+      if ($value != $main[$field]) {
+        $elements[] = [
+          0 => 'advcheckbox',
+          1 => "move_$field",
+          2 => NULL,
+          3 => NULL,
+          4 => NULL,
+          5 => $value,
+          'is_checked' => (!isset($main[$field]) || $main[$field] === ''),
+        ];
+      }
+
+      $migrationInfo["move_$field"] = $value;
     }
 
     // Handle location blocks.
@@ -1151,254 +1114,25 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
     // Set up useful information about the location blocks
     $locationBlocks = self::getLocationBlockInfo();
 
-    $locations = [
-      'main' => [],
-      'other' => [],
-    ];
-
-    // @todo This could probably be defined and used earlier
-    $mergeTargets = [
-      'main' => $mainId,
-      'other' => $otherId,
-    ];
+    $locations = ['main' => [], 'other' => []];
 
     foreach ($locationBlocks as $blockName => $blockInfo) {
-
-      // Collect existing fields from both 'main' and 'other' contacts first
-      // This allows us to match up location/types when building the table rows
-      foreach ($mergeTargets as $moniker => $cid) {
-        $searchParams = [
-          'contact_id' => $cid,
-          // CRM-17556 Order by field-specific criteria
-          'options' => [
-            'sort' => $blockInfo['sortString'],
-          ],
-        ];
-        $values = civicrm_api3($blockName, 'get', $searchParams);
-        if ($values['count']) {
-          $cnt = 0;
-          foreach ($values['values'] as $value) {
-            $locations[$moniker][$blockName][$cnt] = $value;
-            // Fix address display
-            if ($blockName == 'address') {
-              CRM_Core_BAO_Address::fixAddress($value);
-              $locations[$moniker][$blockName][$cnt]['display'] = CRM_Utils_Address::format($value);
-            }
-            // Fix email display
-            elseif ($blockName == 'email') {
-              $locations[$moniker][$blockName][$cnt]['display'] = CRM_Utils_Mail::format($value);
-            }
-
-            $cnt++;
-          }
-        }
-      }
-
-      // Now, build the table rows appropriately, based off the information on
-      // the 'other' contact
-      if (!empty($locations['other']) && !empty($locations['other'][$blockName])) {
-        foreach ($locations['other'][$blockName] as $count => $value) {
-
-          $displayValue = $value[$blockInfo['displayField']];
-
-          // Add this value to the table rows
-          $rows["move_location_{$blockName}_{$count}"]['other'] = $displayValue;
-
-          // CRM-17556 Only display 'main' contact value if it's the same location + type
-          // Look it up from main values...
-
-          $lookupLocation = FALSE;
-          if ($blockInfo['hasLocation']) {
-            $lookupLocation = $value['location_type_id'];
-          }
-
-          $lookupType = FALSE;
-          if ($blockInfo['hasType']) {
-            $lookupType = CRM_Utils_Array::value($blockInfo['hasType'], $value);
-          }
-
-          // Hold ID of main contact's matching block
-          $mainContactBlockId = 0;
-
-          if (!empty($locations['main'][$blockName])) {
-            foreach ($locations['main'][$blockName] as $mainValueCheck) {
-              // No location/type, or matching location and type
-              if (
-                (empty($lookupLocation) || $lookupLocation == $mainValueCheck['location_type_id'])
-                && (empty($lookupType) || $lookupType == $mainValueCheck[$blockInfo['hasType']])
-              ) {
-                // Set this value as the default against the 'other' contact value
-                $rows["move_location_{$blockName}_{$count}"]['main'] = $mainValueCheck[$blockInfo['displayField']];
-                $rows["move_location_{$blockName}_{$count}"]['main_is_primary'] = $mainValueCheck['is_primary'];
-                $rows["move_location_{$blockName}_{$count}"]['location_entity'] = $blockName;
-                $mainContactBlockId = $mainValueCheck['id'];
-                break;
-              }
-            }
-          }
-
-          // Add checkbox to migrate data from 'other' to 'main'
-          $elements[] = ['advcheckbox', "move_location_{$blockName}_{$count}"];
-
-          // Add checkbox to set the 'other' location as primary
-          $elements[] = [
-            'advcheckbox',
-            "location_blocks[$blockName][$count][set_other_primary]",
-            NULL,
-            ts('Set as primary'),
-          ];
-
-          // Flag up this field to skipMerge function (@todo: do we need to?)
-          $migrationInfo["move_location_{$blockName}_{$count}"] = 1;
-
-          // Add a hidden field to store the ID of the target main contact block
-          $elements[] = [
-            'hidden',
-            "location_blocks[$blockName][$count][mainContactBlockId]",
-            $mainContactBlockId,
-          ];
-
-          // Setup variables
-          $thisTypeId = FALSE;
-          $thisLocId = FALSE;
-
-          // Provide a select drop-down for the location's location type
-          // eg: Home, Work...
-
-          if ($blockInfo['hasLocation']) {
-
-            // Load the location options for this entity
-            $locationOptions = civicrm_api3($blockName, 'getoptions', ['field' => 'location_type_id']);
-
-            $thisLocId = $value['location_type_id'];
-
-            // Put this field's location type at the top of the list
-            $tmpIdList = $locationOptions['values'];
-            $defaultLocId = [$thisLocId => $tmpIdList[$thisLocId]];
-            unset($tmpIdList[$thisLocId]);
-
-            // Add the element
-            $elements[] = [
-              'select',
-              "location_blocks[$blockName][$count][locTypeId]",
-              NULL,
-              $defaultLocId + $tmpIdList,
-            ];
-
-            // Add the relevant information to the $migrationInfo
-            // Keep location-type-id same as that of other-contact
-            // @todo Check this logic out
-            $migrationInfo['location_blocks'][$blockName][$count]['locTypeId'] = $thisLocId;
-            if ($blockName != 'address') {
-              $elements[] = [
-                'advcheckbox',
-                "location_blocks[{$blockName}][$count][operation]",
-                NULL,
-                ts('Add new'),
-              ];
-              // always use add operation
-              $migrationInfo['location_blocks'][$blockName][$count]['operation'] = 1;
-            }
-
-          }
-
-          // Provide a select drop-down for the location's type/provider
-          // eg websites: Google+, Facebook...
-
-          if ($blockInfo['hasType']) {
-
-            // Load the type options for this entity
-            $typeOptions = civicrm_api3($blockName, 'getoptions', ['field' => $blockInfo['hasType']]);
-
-            $thisTypeId = CRM_Utils_Array::value($blockInfo['hasType'], $value);
-
-            // Put this field's location type at the top of the list
-            $tmpIdList = $typeOptions['values'];
-            $defaultTypeId = [$thisTypeId => CRM_Utils_Array::value($thisTypeId, $tmpIdList)];
-            unset($tmpIdList[$thisTypeId]);
-
-            // Add the element
-            $elements[] = [
-              'select',
-              "location_blocks[$blockName][$count][typeTypeId]",
-              NULL,
-              $defaultTypeId + $tmpIdList,
-            ];
-
-            // Add the information to the migrationInfo
-            $migrationInfo['location_blocks'][$blockName][$count]['typeTypeId'] = $thisTypeId;
-
-          }
-
-          // Set the label for this row
-          $rowTitle = $blockInfo['label'] . ' ' . ($count + 1);
-          if (!empty($thisLocId)) {
-            $rowTitle .= ' (' . $locationOptions['values'][$thisLocId] . ')';
-          }
-          if (!empty($thisTypeId)) {
-            $rowTitle .= ' (' . $typeOptions['values'][$thisTypeId] . ')';
-          }
-          $rows["move_location_{$blockName}_$count"]['title'] = $rowTitle;
-
-        } // End loop through 'other' locations of this type
-
-      } // End if 'other' location for this type exists
-
+      list($locations, $rows, $elements, $migrationInfo) = self::addLocationFieldInfo($mainId, $otherId, $blockInfo, $blockName, $locations, $rows, $elements, $migrationInfo);
     } // End loop through each location block entity
 
     // add the related tables and unset the ones that don't sport any of the duplicate contact's info
-    $config = CRM_Core_Config::singleton();
-    $mainUfId = CRM_Core_BAO_UFMatch::getUFId($mainId);
-    $mainUser = NULL;
-    if ($mainUfId) {
-      // d6 compatible
-      if ($config->userSystem->is_drupal == '1' && function_exists($mainUser)) {
-        $mainUser = user_load($mainUfId);
-      }
-      elseif ($config->userFramework == 'Joomla') {
-        $mainUser = JFactory::getUser($mainUfId);
-      }
-    }
-    $otherUfId = CRM_Core_BAO_UFMatch::getUFId($otherId);
-    $otherUser = NULL;
-    if ($otherUfId) {
-      // d6 compatible
-      if ($config->userSystem->is_drupal == '1' && function_exists($mainUser)) {
-        $otherUser = user_load($otherUfId);
-      }
-      elseif ($config->userFramework == 'Joomla') {
-        $otherUser = JFactory::getUser($otherUfId);
-      }
-    }
-
-    $relTables = CRM_Dedupe_Merger::relTables();
-    $activeRelTables = CRM_Dedupe_Merger::getActiveRelTables($otherId);
-    $activeMainRelTables = CRM_Dedupe_Merger::getActiveRelTables($mainId);
+    $mergeHandler = new CRM_Dedupe_MergeHandler((int) $mainId, (int) $otherId);
+    $relTables = $mergeHandler->getTablesRelatedToTheMergePair();
     foreach ($relTables as $name => $null) {
-      if (!in_array($name, $activeRelTables) &&
-        !(($name == 'rel_table_users') && in_array($name, $activeMainRelTables))
-      ) {
-        unset($relTables[$name]);
-        continue;
-      }
-
       $relTableElements[] = ['checkbox', "move_$name"];
       $migrationInfo["move_$name"] = 1;
 
       $relTables[$name]['main_url'] = str_replace('$cid', $mainId, $relTables[$name]['url']);
       $relTables[$name]['other_url'] = str_replace('$cid', $otherId, $relTables[$name]['url']);
-      if ($name == 'rel_table_users') {
-        $relTables[$name]['main_url'] = str_replace('%ufid', $mainUfId, $relTables[$name]['url']);
-        $relTables[$name]['other_url'] = str_replace('%ufid', $otherUfId, $relTables[$name]['url']);
-        $find = ['$ufid', '$ufname'];
-        if ($mainUser) {
-          $replace = [$mainUfId, $mainUser->name];
-          $relTables[$name]['main_title'] = str_replace($find, $replace, $relTables[$name]['title']);
-        }
-        if ($otherUser) {
-          $replace = [$otherUfId, $otherUser->name];
-          $relTables[$name]['other_title'] = str_replace($find, $replace, $relTables[$name]['title']);
-        }
+      if ($name === 'rel_table_users') {
+        // @todo - this user url stuff is only needed for the form layer - move to CRM_Contact_Form_Merge
+        $relTables[$name]['main_url'] = str_replace('%ufid', CRM_Core_BAO_UFMatch::getUFId($otherId), $relTables[$name]['url']);
+        $relTables[$name]['other_url'] = str_replace('%ufid', CRM_Core_BAO_UFMatch::getUFId($otherId), $relTables[$name]['url']);
       }
       if ($name == 'rel_table_memberships') {
         //Enable 'add new' checkbox if main contact does not contain any membership similar to duplicate contact.
@@ -1434,25 +1168,24 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
     );
 
     foreach ($otherTree as $gid => $group) {
-      $foundField = FALSE;
       if (!isset($group['fields'])) {
         continue;
       }
 
       foreach ($group['fields'] as $fid => $field) {
+        $mainContactValue = $mainTree[$gid]['fields'][$fid]['customValue'] ?? NULL;
+        $otherContactValue = $otherTree[$gid]['fields'][$fid]['customValue'] ?? NULL;
         if (in_array($fid, $compareFields['custom'])) {
-          if (!$foundField) {
-            $rows["custom_group_$gid"]['title'] = $group['title'];
-            $foundField = TRUE;
-          }
-          if (!empty($mainTree[$gid]['fields'][$fid]['customValue'])) {
-            foreach ($mainTree[$gid]['fields'][$fid]['customValue'] as $valueId => $values) {
+          $rows["custom_group_$gid"]['title'] = $rows["custom_group_$gid"]['title'] ?? $group['title'];
+
+          if ($mainContactValue) {
+            foreach ($mainContactValue as $valueId => $values) {
               $rows["move_custom_$fid"]['main'] = CRM_Core_BAO_CustomField::displayValue($values['data'], $fid);
             }
           }
-          $value = "null";
-          if (!empty($otherTree[$gid]['fields'][$fid]['customValue'])) {
-            foreach ($otherTree[$gid]['fields'][$fid]['customValue'] as $valueId => $values) {
+          $value = 'null';
+          if ($otherContactValue) {
+            foreach ($otherContactValue as $valueId => $values) {
               $rows["move_custom_$fid"]['other'] = CRM_Core_BAO_CustomField::displayValue($values['data'], $fid);
               if ($values['data'] === 0 || $values['data'] === '0') {
                 $values['data'] = $qfZeroBug;
@@ -1463,12 +1196,13 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
           $rows["move_custom_$fid"]['title'] = $field['label'];
 
           $elements[] = [
-            'advcheckbox',
-            "move_custom_$fid",
-            NULL,
-            NULL,
-            NULL,
-            $value,
+            0 => 'advcheckbox',
+            1 => "move_custom_$fid",
+            2 => NULL,
+            3 => NULL,
+            4 => NULL,
+            5 => $value,
+            'is_checked' => (!isset($rows["move_custom_$fid"]['main']) || $rows["move_custom_$fid"]['main'] === ''),
           ];
           $migrationInfo["move_custom_$fid"] = $value;
         }
@@ -1623,7 +1357,7 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
       'id' => $otherId,
       'return' => ['created_date'],
     ])['created_date'];
-    if ($otherCreatedDate < $mainCreatedDate) {
+    if ($otherCreatedDate < $mainCreatedDate && !empty($otherCreatedDate)) {
       CRM_Core_DAO::executeQuery("UPDATE civicrm_contact SET created_date = %1 WHERE id = %2", [
         1 => [$otherCreatedDate, 'String'],
         2 => [$mainId, 'Positive'],
@@ -1833,20 +1567,23 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
    * @param int $searchLimit
    *   Limit to searching for matches against this many contacts.
    *
+   * @param int $isForceNewSearch
+   *   Should a new search be forced, bypassing any cache retrieval.
+   *
    * @return array
    *   Array of matches meeting the criteria.
    *
    * @throws \CRM_Core_Exception
    * @throws \CiviCRM_API3_Exception
    */
-  public static function getDuplicatePairs($rule_group_id, $group_id, $reloadCacheIfEmpty, $batchLimit, $isSelected, $includeConflicts = TRUE, $criteria = [], $checkPermissions = TRUE, $searchLimit = 0) {
-    $dupePairs = self::getCachedDuplicateMatches($rule_group_id, $group_id, $batchLimit, $isSelected, $includeConflicts, $criteria, $checkPermissions);
+  public static function getDuplicatePairs($rule_group_id, $group_id, $reloadCacheIfEmpty, $batchLimit, $isSelected, $includeConflicts = TRUE, $criteria = [], $checkPermissions = TRUE, $searchLimit = 0, $isForceNewSearch = 0) {
+    $dupePairs = $isForceNewSearch ? [] : self::getCachedDuplicateMatches($rule_group_id, $group_id, $batchLimit, $isSelected, $includeConflicts, $criteria, $checkPermissions, $searchLimit);
     if (empty($dupePairs) && $reloadCacheIfEmpty) {
       // If we haven't found any dupes, probably cache is empty.
       // Try filling cache and give another try. We don't need to specify include conflicts here are there will not be any
       // until we have done some processing.
       CRM_Core_BAO_PrevNextCache::refillCache($rule_group_id, $group_id, $criteria, $checkPermissions, $searchLimit);
-      return self::getCachedDuplicateMatches($rule_group_id, $group_id, $batchLimit, $isSelected, FALSE, $criteria, $checkPermissions);
+      return self::getCachedDuplicateMatches($rule_group_id, $group_id, $batchLimit, $isSelected, FALSE, $criteria, $checkPermissions, $searchLimit);
     }
     return $dupePairs;
   }
@@ -1859,17 +1596,21 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
    * @param array $criteria
    *   Additional criteria to narrow down the merge group.
    *   Currently we are only supporting the key 'contact' within it.
-   *
    * @param bool $checkPermissions
    *   Respect the users permissions.
+   * @param int $searchLimit
+   *   Number of contacts to seek dupes for (we need this because if
+   *   we change it the results won't be refreshed otherwise. Changing the limit
+   *   from 100 to 1000 SHOULD result in a new dedupe search).
    *
    * @return string
    */
-  public static function getMergeCacheKeyString($rule_group_id, $group_id, $criteria = [], $checkPermissions = TRUE) {
+  public static function getMergeCacheKeyString($rule_group_id, $group_id, $criteria, $checkPermissions, $searchLimit) {
     $contactType = CRM_Dedupe_BAO_RuleGroup::getContactTypeForRuleGroup($rule_group_id);
     $cacheKeyString = "merge_{$contactType}";
     $cacheKeyString .= $rule_group_id ? "_{$rule_group_id}" : '_0';
     $cacheKeyString .= $group_id ? "_{$group_id}" : '_0';
+    $cacheKeyString .= '_' . (int) $searchLimit;
     $cacheKeyString .= !empty($criteria) ? md5(serialize($criteria)) : '_0';
     if ($checkPermissions) {
       $contactID = CRM_Core_Session::getLoggedInContactID();
@@ -1975,7 +1716,7 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
       // @todo Tidy this up
       $operation = 0;
       if ($fieldName != 'website') {
-        $operation = CRM_Utils_Array::value('operation', $migrationInfo['location_blocks'][$fieldName][$fieldCount]);
+        $operation = $migrationInfo['location_blocks'][$fieldName][$fieldCount]['operation'] ?? NULL;
       }
       // default operation is overwrite.
       if (!$operation) {
@@ -2003,7 +1744,7 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
         $billingDAOId = (array_key_exists($name, $billingBlockIds)) ? array_pop($billingBlockIds[$name]) : NULL;
 
         foreach ($block as $blkCount => $values) {
-          $otherBlockId = CRM_Utils_Array::value('id', $migrationInfo['other_details']['location_blocks'][$name][$blkCount]);
+          $otherBlockId = $migrationInfo['other_details']['location_blocks'][$name][$blkCount]['id'] ?? NULL;
           $mainBlockId = CRM_Utils_Array::value('mainContactBlockId', $migrationInfo['location_blocks'][$name][$blkCount], 0);
           if (!$otherBlockId) {
             continue;
@@ -2018,18 +1759,18 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
 
           // Add/update location and type information from the form, if applicable
           if ($locationBlocks[$name]['hasLocation']) {
-            $locTypeId = CRM_Utils_Array::value('locTypeId', $migrationInfo['location_blocks'][$name][$blkCount]);
+            $locTypeId = $migrationInfo['location_blocks'][$name][$blkCount]['locTypeId'] ?? NULL;
             $otherBlockDAO->location_type_id = $locTypeId;
           }
           if ($locationBlocks[$name]['hasType']) {
-            $typeTypeId = CRM_Utils_Array::value('typeTypeId', $migrationInfo['location_blocks'][$name][$blkCount]);
+            $typeTypeId = $migrationInfo['location_blocks'][$name][$blkCount]['typeTypeId'] ?? NULL;
             $otherBlockDAO->{$locationBlocks[$name]['hasType']} = $typeTypeId;
           }
 
           // If we're deliberately setting this as primary then add the flag
           // and remove it from the current primary location (if there is one).
           // But only once for each entity.
-          $set_primary = CRM_Utils_Array::value('set_other_primary', $migrationInfo['location_blocks'][$name][$blkCount]);
+          $set_primary = $migrationInfo['location_blocks'][$name][$blkCount]['set_other_primary'] ?? NULL;
           if (!$changePrimary && $set_primary == "1") {
             $otherBlockDAO->is_primary = 1;
             if ($primaryDAOId) {
@@ -2090,29 +1831,37 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
   /**
    * Dedupe a pair of contacts.
    *
-   * @param array $resultStats
-   * @param array $deletedContacts
+   * @param array $dupes
    * @param string $mode
    * @param bool $checkPermissions
-   * @param int $mainId
-   * @param int $otherId
    * @param string $cacheKeyString
    *
+   * @return bool|array
    * @throws \CRM_Core_Exception
    * @throws \CiviCRM_API3_Exception
    * @throws \API_Exception
    */
-  protected static function dedupePair(&$resultStats, &$deletedContacts, $mode, $checkPermissions, $mainId, $otherId, $cacheKeyString) {
+  protected static function dedupePair($dupes, $mode = 'safe', $checkPermissions = TRUE, $cacheKeyString = NULL) {
+    CRM_Utils_Hook::merge('flip', $dupes, $dupes['dstID'], $dupes['srcID']);
+    $mainId = $dupes['dstID'];
+    $otherId = $dupes['srcID'];
+    $resultStats = [];
 
+    if (!$mainId || !$otherId) {
+      // return error
+      return FALSE;
+    }
     $migrationInfo = [];
     $conflicts = [];
+    // Try to lock the contacts before we load the data as we don't want it changing under us.
+    // https://lab.civicrm.org/dev/core/issues/1355
+    $locks = self::getLocksOnContacts([$mainId, $otherId]);
     if (!CRM_Dedupe_Merger::skipMerge($mainId, $otherId, $migrationInfo, $mode, $conflicts)) {
       CRM_Dedupe_Merger::moveAllBelongings($mainId, $otherId, $migrationInfo, $checkPermissions);
       $resultStats['merged'][] = [
         'main_id' => $mainId,
         'other_id' => $otherId,
       ];
-      $deletedContacts[] = $otherId;
     }
     else {
       $resultStats['skipped'][] = [
@@ -2128,6 +1877,8 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
     else {
       CRM_Core_BAO_PrevNextCache::deletePair($mainId, $otherId, $cacheKeyString);
     }
+    self::releaseLocks($locks);
+    return $resultStats;
   }
 
   /**
@@ -2374,7 +2125,7 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
 
           // Load the address we're inspecting from the 'other' contact
           $addressRecord = $migrationInfo['other_details']['location_blocks'][$fieldName][$fieldCount];
-          $addressRecordLocTypeId = CRM_Utils_Array::value('location_type_id', $addressRecord);
+          $addressRecordLocTypeId = $addressRecord['location_type_id'] ?? NULL;
 
           // If it exists on the 'main' contact already, skip it. Otherwise
           // if the location type exists already, log a conflict.
@@ -2413,14 +2164,13 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
     // allow hook to override / manipulate migrationInfo as well
     $migrationInfo = $migrationData['migration_info'];
     foreach ($conflicts as $key => $val) {
-      if ($val !== NULL || $mode !== 'safe') {
-        // copy over the resolved values
-        $migrationInfo[$key] = $val;
-        unset($conflicts[$key]);
-      }
+      // Copy over the resolved values. If we are in aggressive mode we update to null
+      // so as not to copy over. Why it's different to safe mode is a bit murky.
+      // Working theory is it doesn't matter what we do in safe mode here if $val is NULL.
+      // as the merge is not gonna happen if $val == NULL
+      $migrationInfo[$key] = $val ?? ($mode === 'safe' ? $migrationInfo[$key] : NULL);
     }
-    $migrationInfo['skip_merge'] = $migrationData['skip_merge'] ?? !empty($conflicts);
-    return self::formatConflictArray($conflicts, $migrationInfo['rows'], $migrationInfo['main_details']['location_blocks'], $migrationInfo['other_details']['location_blocks'], $mainId, $otherId);
+    return self::formatConflictArray($conflicts, $migrationInfo['rows'], $migrationInfo['main_details']['location_blocks'], $migrationInfo['other_details']['location_blocks'], $mainId, $otherId, $mode);
   }
 
   /**
@@ -2430,12 +2180,29 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
    * @param $toRemoveContactLocationBlocks
    * @param $toKeepID
    * @param $toRemoveID
+   * @param string $mode
    *
    * @return mixed
    * @throws \CRM_Core_Exception
    */
-  protected static function formatConflictArray($conflicts, $migrationInfo, $toKeepContactLocationBlocks, $toRemoveContactLocationBlocks, $toKeepID, $toRemoveID) {
+  protected static function formatConflictArray($conflicts, $migrationInfo, $toKeepContactLocationBlocks, $toRemoveContactLocationBlocks, $toKeepID, $toRemoveID, $mode) {
     $return = [];
+    $resolved = [];
+    foreach ($conflicts as $key => $val) {
+      if ($val !== NULL) {
+        // copy over the resolved values
+        $resolved[$key] = $val;
+        unset($conflicts[$key]);
+      }
+      elseif ($mode === 'aggressive') {
+        unset($conflicts[$key]);
+        if (strpos($key, 'move_location_') !== 0) {
+          // @todo - just handling plain contact fields for now because I think I need a bigger refactor
+          // of the below to handle locations & will do as a follow up.
+          $resolved['contact'][substr($key, 5)] = $migrationInfo[$key]['main'];
+        }
+      }
+    }
     foreach (array_keys($conflicts) as $index) {
       if (substr($index, 0, 14) === 'move_location_') {
         $parts = explode('_', $index);
@@ -2450,7 +2217,7 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
           if (in_array($fieldName, self::ignoredFields())) {
             continue;
           }
-          $toRemoveValue = CRM_Utils_Array::value($fieldName, $toRemoveContactLocationBlocks[$entity][$blockIndex]);
+          $toRemoveValue = $toRemoveContactLocationBlocks[$entity][$blockIndex][$fieldName] ?? NULL;
           if ($fieldValue !== $toRemoveValue) {
             $entityConflicts[$fieldName] = [
               $toKeepID => $fieldValue,
@@ -2474,7 +2241,7 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
         throw new CRM_Core_Exception(ts('Unknown parameter') . $index);
       }
     }
-    return $return;
+    return ['conflicts' => $return, 'resolved' => $resolved];
   }
 
   /**
@@ -2487,12 +2254,13 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
    * @param bool $includeConflicts
    * @param array $criteria
    * @param int $checkPermissions
+   * @param int $searchLimit
    *
    * @return array
    */
-  protected static function getCachedDuplicateMatches($rule_group_id, $group_id, $batchLimit, $isSelected, $includeConflicts, $criteria, $checkPermissions) {
+  protected static function getCachedDuplicateMatches($rule_group_id, $group_id, $batchLimit, $isSelected, $includeConflicts, $criteria, $checkPermissions, $searchLimit = 0) {
     return CRM_Core_BAO_PrevNextCache::retrieve(
-      self::getMergeCacheKeyString($rule_group_id, $group_id, $criteria, $checkPermissions),
+      self::getMergeCacheKeyString($rule_group_id, $group_id, $criteria, $checkPermissions, $searchLimit),
       self::getJoinOnDedupeTable(),
       self::getWhereString($isSelected),
       0, $batchLimit,
@@ -2515,6 +2283,328 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
       'hold_date',
     ];
     return $keysToIgnore;
+  }
+
+  /**
+   * Get the field value & label for the given field.
+   *
+   * @param $field
+   * @param $contact
+   *
+   * @return array
+   * @throws \Exception
+   */
+  private static function getFieldValueAndLabel($field, $contact): array {
+    $fields = self::getMergeFieldsMetadata();
+    $value = $label = $contact[$field] ?? NULL;
+    $fieldSpec = $fields[$field];
+    if (!empty($fieldSpec['serialize']) && is_array($value)) {
+      // In practice this only applies to preferred_communication_method as the sub types are skipped above
+      // and no others are serialized.
+      $labels = [];
+      foreach ($value as $individualValue) {
+        $labels[] = CRM_Core_PseudoConstant::getLabel('CRM_Contact_BAO_Contact', $field, $individualValue);
+      }
+      $label = implode(', ', $labels);
+      // We serialize this due to historic handling but it's likely that if we just left it as an
+      // array all would be well & we would have less code.
+      $value = CRM_Core_DAO::serializeField($value, $fieldSpec['serialize']);
+    }
+    elseif (!empty($fieldSpec['type']) && $fieldSpec['type'] == CRM_Utils_Type::T_DATE) {
+      if ($value) {
+        $value = str_replace('-', '', $value);
+        $label = CRM_Utils_Date::customFormat($label);
+      }
+      else {
+        $value = "null";
+      }
+    }
+    elseif (!empty($fields[$field]['type']) && $fields[$field]['type'] == CRM_Utils_Type::T_BOOLEAN) {
+      if ($label === '0') {
+        $label = ts('[ ]');
+      }
+      if ($label === '1') {
+        $label = ts('[x]');
+      }
+    }
+    elseif (!empty($fieldSpec['pseudoconstant'])) {
+      $label = CRM_Core_PseudoConstant::getLabel('CRM_Contact_BAO_Contact', $field, $value);
+    }
+    elseif ($field == 'current_employer_id' && !empty($value)) {
+      $label = "$value (" . CRM_Contact_BAO_Contact::displayName($value) . ")";
+    }
+    return ['label' => $label, 'value' => $value];
+  }
+
+  /**
+   * Build up the location block for the contact in dedupe-screen display format.
+   *
+   * @param integer $cid
+   * @param array $blockInfo
+   * @param string $blockName
+   *
+   * @return array
+   *
+   * @throws \CiviCRM_API3_Exception
+   */
+  private static function buildLocationBlockForContact($cid, $blockInfo, $blockName): array {
+    $searchParams = [
+      'contact_id' => $cid,
+      // CRM-17556 Order by field-specific criteria
+      'options' => [
+        'sort' => $blockInfo['sortString'],
+      ],
+    ];
+    $locationBlock = [];
+    $values = civicrm_api3($blockName, 'get', $searchParams);
+    if ($values['count']) {
+      $cnt = 0;
+      foreach ($values['values'] as $value) {
+        $locationBlock[$cnt] = $value;
+        // Fix address display
+        if ($blockName == 'address') {
+          // For performance avoid geocoding while merging https://issues.civicrm.org/jira/browse/CRM-21786
+          // we can expect existing geocode values to be retained.
+          $value['skip_geocode'] = TRUE;
+          CRM_Core_BAO_Address::fixAddress($value);
+          unset($value['skip_geocode']);
+          $locationBlock[$cnt]['display'] = CRM_Utils_Address::format($value);
+        }
+        // Fix email display
+        elseif ($blockName == 'email') {
+          $locationBlock[$cnt]['display'] = CRM_Utils_Mail::format($value);
+        }
+
+        $cnt++;
+      }
+    }
+    return $locationBlock;
+  }
+
+  /**
+   * Get a lock on the given contact.
+   *
+   * The lock is like a gentleman's agreement between php & mysql. It is reserved at the
+   * mysql level so it works across php processes but it doesn't actually lock the database.
+   *
+   * Instead php can check the lock to see if it has been acquired before taking an action.
+   *
+   * In this case we really don't want to attempt to dedupe contacts if another process is
+   * trying to act on the specific contact as it could result in messy deadlocks & possibly data corruption.
+   * In most databases this would be a rare event but if multiple dedupe processes are running
+   * at once (for example) or there is also an import process in play there is potential for them to crash.
+   * By throwing a specific error the calling process can catch it and determine it is worth trying again later without a lot of
+   * noise.
+   *
+   * As of writing no other processes DO grab contact locks but it would be reasonable to consider
+   * grabbing them doing contact edits in general as well as imports etc.
+   *
+   * @param array $contacts
+   *
+   * @return array
+   *
+   * @throws \CRM_Core_Exception
+   * @throws \CRM_Core_Exception_ResourceConflictException
+   */
+  protected static function getLocksOnContacts($contacts):array {
+    $locks = [];
+    if (!CRM_Utils_SQL::supportsMultipleLocks()) {
+      return $locks;
+    }
+    foreach ($contacts as $contactID) {
+      $lock = Civi::lockManager()->acquire("data.core.contact.{$contactID}");
+      if ($lock->isAcquired()) {
+        $locks[] = $lock;
+      }
+      else {
+        self::releaseLocks($locks);
+        throw new CRM_Core_Exception_ResourceConflictException(ts('Contact is in Use'), 'contact_lock');
+      }
+    }
+    return $locks;
+  }
+
+  /**
+   * Release contact locks so another process can alter them if it wants.
+   *
+   * @param array $locks
+   */
+  protected static function releaseLocks(array $locks) {
+    foreach ($locks as $lock) {
+      /* @var Civi\Core\Lock\LockInterface $lock */
+      $lock->release();
+    }
+  }
+
+  /**
+   * @param $mainId
+   * @param $otherId
+   * @param $blockInfo
+   * @param $blockName
+   * @param array $locations
+   * @param array $rows
+   * @param array $elements
+   * @param array $migrationInfo
+   *
+   * @return array
+   * @throws \CiviCRM_API3_Exception
+   */
+  protected static function addLocationFieldInfo($mainId, $otherId, $blockInfo, $blockName, array $locations, array $rows, array $elements, array $migrationInfo): array {
+    // Collect existing fields from both 'main' and 'other' contacts first
+    // This allows us to match up location/types when building the table rows
+    $locations['main'][$blockName] = self::buildLocationBlockForContact($mainId, $blockInfo, $blockName);
+    $locations['other'][$blockName] = self::buildLocationBlockForContact($otherId, $blockInfo, $blockName);
+
+    // Now, build the table rows appropriately, based off the information on
+    // the 'other' contact
+    if (!empty($locations['other']) && !empty($locations['other'][$blockName])) {
+      foreach ($locations['other'][$blockName] as $count => $value) {
+
+        $displayValue = $value[$blockInfo['displayField']];
+
+        // Add this value to the table rows
+        $rows["move_location_{$blockName}_{$count}"]['other'] = $displayValue;
+
+        // CRM-17556 Only display 'main' contact value if it's the same location + type
+        // Look it up from main values...
+
+        $lookupLocation = FALSE;
+        if ($blockInfo['hasLocation']) {
+          $lookupLocation = $value['location_type_id'];
+        }
+
+        $lookupType = FALSE;
+        if ($blockInfo['hasType']) {
+          $lookupType = $value[$blockInfo['hasType']] ?? NULL;
+        }
+
+        // Hold ID of main contact's matching block
+        $mainContactBlockId = 0;
+
+        if (!empty($locations['main'][$blockName])) {
+          foreach ($locations['main'][$blockName] as $mainValueCheck) {
+            // No location/type, or matching location and type
+            if (
+              (empty($lookupLocation) || $lookupLocation == $mainValueCheck['location_type_id'])
+              && (empty($lookupType) || $lookupType == $mainValueCheck[$blockInfo['hasType']])
+            ) {
+              // Set this value as the default against the 'other' contact value
+              $rows["move_location_{$blockName}_{$count}"]['main'] = $mainValueCheck[$blockInfo['displayField']];
+              $rows["move_location_{$blockName}_{$count}"]['main_is_primary'] = $mainValueCheck['is_primary'];
+              $rows["move_location_{$blockName}_{$count}"]['location_entity'] = $blockName;
+              $mainContactBlockId = $mainValueCheck['id'];
+              break;
+            }
+          }
+        }
+
+        // Add checkbox to migrate data from 'other' to 'main'
+        $elements[] = ['advcheckbox', "move_location_{$blockName}_{$count}"];
+
+        // Add checkbox to set the 'other' location as primary
+        $elements[] = [
+          'advcheckbox',
+          "location_blocks[$blockName][$count][set_other_primary]",
+          NULL,
+          ts('Set as primary'),
+        ];
+
+        // Flag up this field to skipMerge function (@todo: do we need to?)
+        $migrationInfo["move_location_{$blockName}_{$count}"] = 1;
+
+        // Add a hidden field to store the ID of the target main contact block
+        $elements[] = [
+          'hidden',
+          "location_blocks[$blockName][$count][mainContactBlockId]",
+          $mainContactBlockId,
+        ];
+
+        // Setup variables
+        $thisTypeId = FALSE;
+        $thisLocId = FALSE;
+
+        // Provide a select drop-down for the location's location type
+        // eg: Home, Work...
+
+        if ($blockInfo['hasLocation']) {
+
+          // Load the location options for this entity
+          $locationOptions = civicrm_api3($blockName, 'getoptions', ['field' => 'location_type_id']);
+
+          $thisLocId = $value['location_type_id'];
+
+          // Put this field's location type at the top of the list
+          $tmpIdList = $locationOptions['values'];
+          $defaultLocId = [$thisLocId => $tmpIdList[$thisLocId]];
+          unset($tmpIdList[$thisLocId]);
+
+          // Add the element
+          $elements[] = [
+            'select',
+            "location_blocks[$blockName][$count][locTypeId]",
+            NULL,
+            $defaultLocId + $tmpIdList,
+          ];
+
+          // Add the relevant information to the $migrationInfo
+          // Keep location-type-id same as that of other-contact
+          // @todo Check this logic out
+          $migrationInfo['location_blocks'][$blockName][$count]['locTypeId'] = $thisLocId;
+          if ($blockName != 'address') {
+            $elements[] = [
+              'advcheckbox',
+              "location_blocks[{$blockName}][$count][operation]",
+              NULL,
+              ts('Add new'),
+            ];
+            // always use add operation
+            $migrationInfo['location_blocks'][$blockName][$count]['operation'] = 1;
+          }
+
+        }
+
+        // Provide a select drop-down for the location's type/provider
+        // eg websites: Facebook...
+
+        if ($blockInfo['hasType']) {
+
+          // Load the type options for this entity
+          $typeOptions = civicrm_api3($blockName, 'getoptions', ['field' => $blockInfo['hasType']]);
+
+          $thisTypeId = $value[$blockInfo['hasType']] ?? NULL;
+
+          // Put this field's location type at the top of the list
+          $tmpIdList = $typeOptions['values'];
+          $defaultTypeId = [$thisTypeId => CRM_Utils_Array::value($thisTypeId, $tmpIdList)];
+          unset($tmpIdList[$thisTypeId]);
+
+          // Add the element
+          $elements[] = [
+            'select',
+            "location_blocks[$blockName][$count][typeTypeId]",
+            NULL,
+            $defaultTypeId + $tmpIdList,
+          ];
+
+          // Add the information to the migrationInfo
+          $migrationInfo['location_blocks'][$blockName][$count]['typeTypeId'] = $thisTypeId;
+
+        }
+
+        // Set the label for this row
+        $rowTitle = $blockInfo['label'] . ' ' . ($count + 1);
+        if (!empty($thisLocId)) {
+          $rowTitle .= ' (' . $locationOptions['values'][$thisLocId] . ')';
+        }
+        if (!empty($thisTypeId)) {
+          $rowTitle .= ' (' . $typeOptions['values'][$thisTypeId] . ')';
+        }
+        $rows["move_location_{$blockName}_$count"]['title'] = $rowTitle;
+
+      } // End loop through 'other' locations of this type
+
+    }
+    return [$locations, $rows, $elements, $migrationInfo];
   }
 
 }

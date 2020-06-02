@@ -10,7 +10,7 @@ require_once('CRM/Report/Form.php');
  *
  * $Id$
  */
-class CRM_iATS_Form_Report_Journal extends CRM_Report_Form {
+class CRM_Iats_Form_Report_Journal extends CRM_Report_Form {
 
   // protected $_customGroupExtends = array('Contact');
 

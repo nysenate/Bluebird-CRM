@@ -1,0 +1,8 @@
+{
+    "name": "civicrm/civicrm-core:angular-file-upload",
+    "url": "https://github.com/nervgh/angular-file-upload/archive/v1.1.6.zip",
+    "checksum": "5270549e05fc3223f21c401c6ebd738f7ac1eff372ff78a4dd31aff974586951",
+    "ignore": [
+        "examples"
+    ]
+}

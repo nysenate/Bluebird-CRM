@@ -1,7 +1,27 @@
-1.8.4 - [RELEASEDATE]
+1.9.1 - Friday 17 January 2020
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+- Fixed syntax errors introduced in 1.9.0.
+
+
+1.9.0 - Thursday 16 January 2020
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Fixed #31: Provide a listLimit option to prevent fetch queries from exceeding
+  the server's query size limit. (Mark Burdett)
+- Fixed #77: Curly-brace syntax for array and string access is deprecated in
+  PHP 7.4
+- Add support for XOAUTH2 authentication method for IMAP. (Seamus Lee)
+
+
+1.8.4 - Thursday 17 October 2019
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Fixed #51: User names and passwords need to be escaped if they contain
+  spaces. (Mark Burdett)
 - Fixed #61: create_function() is deprecated in PHP 7.2. (Derick Rethans)
+- Fixed implode() argument order. (Michael Kliewe)
+- Fixed regexp patterns for PHP 7.3 and later. (Derick Rethans)
 
 
 1.8.3 - Saturday 18 November 2017

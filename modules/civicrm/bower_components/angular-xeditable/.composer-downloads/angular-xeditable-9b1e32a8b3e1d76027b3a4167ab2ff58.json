@@ -1,0 +1,21 @@
+{
+    "name": "civicrm/civicrm-core:angular-xeditable",
+    "url": "https://github.com/vitalets/angular-xeditable/archive/0.9.0.zip",
+    "checksum": "30ee56284018f11bca7cd4d1c6c0ea0de39ca6a94164cc79cd00e2c7159fe37f",
+    "ignore": [
+        ".*",
+        "node_modules",
+        "bower_components",
+        "playground",
+        "test",
+        "libs",
+        "docs",
+        "zip",
+        "src",
+        "starter",
+        "Gruntfile.js",
+        "index.html",
+        "jsdoc.conf.json",
+        "package.json"
+    ]
+}

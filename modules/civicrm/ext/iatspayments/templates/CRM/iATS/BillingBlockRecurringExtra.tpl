@@ -7,4 +7,3 @@
     <div class="clear"></div>
   </div>
 </div>
-{literal}<script type="text/javascript">cj(function ($) { iatsRecurStartRefresh();});</script>{/literal}

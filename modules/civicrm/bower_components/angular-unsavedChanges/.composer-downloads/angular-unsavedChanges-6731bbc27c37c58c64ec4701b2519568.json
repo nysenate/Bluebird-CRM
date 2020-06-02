@@ -1,0 +1,12 @@
+{
+    "name": "civicrm/civicrm-core:angular-unsavedchanges",
+    "url": "https://github.com/facultymatt/angular-unsavedChanges/archive/v0.1.1.zip",
+    "checksum": "0e5bb0d1d492215e6294992f2d39a0975aebf9ca641b5285ef26920ef496b414",
+    "ignore": [
+        ".*",
+        "node_modules",
+        "bower_components",
+        "test",
+        "tests"
+    ]
+}
