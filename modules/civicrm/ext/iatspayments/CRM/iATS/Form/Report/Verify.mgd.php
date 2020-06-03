@@ -11,14 +11,14 @@
 return array(
   0 =>
   array(
-    'name' => 'CRM_iATS_Form_Report_Verify',
+    'name' => 'CRM_Iats_Form_Report_Verify',
     'entity' => 'ReportTemplate',
     'params' =>
     array(
       'version' => 3,
       'label' => 'iATS Payments - Verify',
       'description' => 'iATS Payments - Verify Report',
-      'class_name' => 'CRM_iATS_Form_Report_Verify',
+      'class_name' => 'CRM_Iats_Form_Report_Verify',
       'report_url' => 'com.iatspayments.com/verify',
       'component' => 'CiviContribute',
     ),

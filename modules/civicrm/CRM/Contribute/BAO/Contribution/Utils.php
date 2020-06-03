@@ -1,34 +1,18 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2019
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 class CRM_Contribute_BAO_Contribution_Utils {
 
@@ -101,7 +85,7 @@ class CRM_Contribute_BAO_Contribution_Utils {
 
     if ($isPaymentTransaction) {
       $contributionParams = [
-        'id' => CRM_Utils_Array::value('contribution_id', $paymentParams),
+        'id' => $paymentParams['contribution_id'] ?? NULL,
         'contact_id' => $contactID,
         'is_test' => $isTest,
         'source' => CRM_Utils_Array::value('source', $paymentParams, CRM_Utils_Array::value('description', $paymentParams)),
@@ -162,7 +146,7 @@ class CRM_Contribute_BAO_Contribution_Utils {
         $paymentParams['source'] = $paymentParams['contribution_source'];
       }
 
-      if (CRM_Utils_Array::value('is_recur', $form->_params) && $contribution->contribution_recur_id) {
+      if (!empty($form->_params['is_recur']) && $contribution->contribution_recur_id) {
         $paymentParams['contributionRecurID'] = $contribution->contribution_recur_id;
       }
       if (isset($paymentParams['contribution_source'])) {
@@ -196,8 +180,8 @@ class CRM_Contribute_BAO_Contribution_Utils {
             $contribution->payment_status_id = $result['payment_status_id'];
           }
           $result['contribution'] = $contribution;
-          if ($result['payment_status_id'] == CRM_Core_PseudoConstant::getKey('CRM_Contribute_BAO_Contribution',
-            'status_id', 'Pending') && $payment->isSendReceiptForPending()) {
+          if ($result['payment_status_id'] == CRM_Core_PseudoConstant::getKey('CRM_Contribute_BAO_Contribution', 'contribution_status_id', 'Pending')
+            && $payment->isSendReceiptForPending()) {
             CRM_Contribute_BAO_ContributionPage::sendMail($contactID,
               $form->_values,
               $contribution->is_test
@@ -253,7 +237,7 @@ class CRM_Contribute_BAO_Contribution_Utils {
    * @return bool
    */
   protected static function isPaymentTransaction($form) {
-    return ($form->_amount >= 0.0) ? TRUE : FALSE;
+    return $form->_amount >= 0.0;
   }
 
   /**
@@ -538,47 +522,59 @@ LIMIT 1
    *   Array of contribution statuses in array('status id' => 'label') format
    */
   public static function getContributionStatuses($usedFor = 'contribution', $id = NULL) {
-    if ($usedFor == 'pledge') {
+    if ($usedFor === 'pledge') {
       $statusNames = CRM_Pledge_BAO_Pledge::buildOptions('status_id', 'validate');
     }
     else {
       $statusNames = CRM_Contribute_BAO_Contribution::buildOptions('contribution_status_id', 'validate');
     }
 
-    $statusNamesToUnset = [];
+    $statusNamesToUnset = [
+      // For records which represent a data template for a recurring
+      // contribution that may not yet have a payment. This status should not
+      // be available from forms. 'Template' contributions should only be created
+      // in conjunction with a ContributionRecur record, and should have their
+      // is_template field set to 1. This status excludes them from reports
+      // that are still ignorant of the is_template field.
+      'Template',
+    ];
     // on create fetch statuses on basis of component
     if (!$id) {
-      $statusNamesToUnset = [
+      $statusNamesToUnset = array_merge($statusNamesToUnset, [
         'Refunded',
         'Chargeback',
         'Pending refund',
-      ];
+      ]);
 
-      // Event registration and New Membership backoffice form support partially paid payment,
-      //  so exclude this status only for 'New Contribution' form
-      if ($usedFor == 'contribution') {
+      if ($usedFor === 'contribution') {
         $statusNamesToUnset = array_merge($statusNamesToUnset, [
           'In Progress',
           'Overdue',
           'Partially paid',
         ]);
       }
-      elseif ($usedFor == 'participant') {
+      elseif ($usedFor === 'participant') {
         $statusNamesToUnset = array_merge($statusNamesToUnset, [
           'Cancelled',
           'Failed',
-        ]);
-      }
-      elseif ($usedFor == 'membership') {
-        $statusNamesToUnset = array_merge($statusNamesToUnset, [
           'In Progress',
           'Overdue',
+          'Partially paid',
+        ]);
+      }
+      elseif ($usedFor === 'membership') {
+        $statusNamesToUnset = array_merge($statusNamesToUnset, [
+          'In Progress',
+          'Cancelled',
+          'Failed',
+          'Overdue',
+          'Partially paid',
         ]);
       }
     }
     else {
       $contributionStatus = CRM_Core_DAO::getFieldValue('CRM_Contribute_DAO_Contribution', $id, 'contribution_status_id');
-      $name = CRM_Utils_Array::value($contributionStatus, $statusNames);
+      $name = $statusNames[$contributionStatus] ?? NULL;
       switch ($name) {
         case 'Completed':
           // [CRM-17498] Removing unsupported status change options.
@@ -650,6 +646,19 @@ LIMIT 1
   public static function overrideDefaultCurrency($params) {
     $config = CRM_Core_Config::singleton();
     $config->defaultCurrency = CRM_Utils_Array::value('currency', $params, $config->defaultCurrency);
+  }
+
+  /**
+   * Get either the public title if set or the title of a contribution page for use in workflow message template.
+   * @param int $contribution_page_id
+   * @return string
+   */
+  public static function getContributionPageTitle($contribution_page_id) {
+    $title = CRM_Core_DAO::getFieldValue('CRM_Contribute_DAO_ContributionPage', $contribution_page_id, 'frontend_title');
+    if (empty($title)) {
+      $title = CRM_Core_DAO::getFieldValue('CRM_Contribute_DAO_ContributionPage', $contribution_page_id, 'title');
+    }
+    return $title;
   }
 
 }

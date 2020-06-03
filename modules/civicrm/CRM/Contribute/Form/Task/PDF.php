@@ -1,34 +1,18 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2019
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 
 /**
@@ -170,12 +154,12 @@ AND    {$this->_componentClause}";
       $ids['contribution'] = $contribID;
       $ids['contributionRecur'] = NULL;
       $ids['contributionPage'] = NULL;
-      $ids['membership'] = CRM_Utils_Array::value('membership', $detail);
-      $ids['participant'] = CRM_Utils_Array::value('participant', $detail);
-      $ids['event'] = CRM_Utils_Array::value('event', $detail);
+      $ids['membership'] = $detail['membership'] ?? NULL;
+      $ids['participant'] = $detail['participant'] ?? NULL;
+      $ids['event'] = $detail['event'] ?? NULL;
 
       if (!$elements['baseIPN']->validateData($input, $ids, $objects, FALSE)) {
-        CRM_Core_Error::fatal();
+        throw new CRM_Core_Exception('invalid data');
       }
 
       $contribution = &$objects['contribution'];
@@ -186,7 +170,7 @@ AND    {$this->_componentClause}";
       $input['fee_amount'] = $contribution->fee_amount;
       $input['net_amount'] = $contribution->net_amount;
       $input['trxn_id'] = $contribution->trxn_id;
-      $input['trxn_date'] = isset($contribution->trxn_date) ? $contribution->trxn_date : NULL;
+      $input['trxn_date'] = $contribution->trxn_date ?? NULL;
       $input['receipt_update'] = $params['receipt_update'];
       $input['contribution_status_id'] = $contribution->contribution_status_id;
       $input['paymentProcessor'] = empty($contribution->trxn_id) ? NULL :

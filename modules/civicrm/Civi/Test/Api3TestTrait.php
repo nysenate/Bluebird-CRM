@@ -4,6 +4,7 @@ namespace Civi\Test;
 
 use Civi\API\Exception\NotImplementedException;
 
+require_once 'api/v3/utils.php';
 /**
  * Class Api3TestTrait
  * @package Civi\Test
@@ -103,7 +104,7 @@ trait Api3TestTrait {
     if (!empty($apiResult['trace'])) {
       $errorMessage .= "\n" . print_r($apiResult['trace'], TRUE);
     }
-    $this->assertEmpty(\CRM_Utils_Array::value('is_error', $apiResult), $prefix . $errorMessage);
+    $this->assertEmpty($apiResult['is_error'] ?? NULL, $prefix . $errorMessage);
   }
 
   /**
@@ -142,6 +143,8 @@ trait Api3TestTrait {
    *   better or worse )
    *
    * @return array|int
+   *
+   * @throws \CRM_Core_Exception
    */
   public function callAPISuccess($entity, $action, $params = [], $checkAgainst = NULL) {
     $params = array_merge([
@@ -281,7 +284,7 @@ trait Api3TestTrait {
    * @return array|int
    */
   public function civicrm_api($entity, $action, $params = []) {
-    if (\CRM_Utils_Array::value('version', $params) == 4) {
+    if (($params['version'] ?? 0) == 4) {
       return $this->runApi4Legacy($entity, $action, $params);
     }
     return civicrm_api($entity, $action, $params);
@@ -310,13 +313,12 @@ trait Api3TestTrait {
     if (!empty($v3Params['filters']['is_current']) || !empty($v3Params['isCurrent'])) {
       $v4Params['current'] = TRUE;
     }
-    $language = !empty($v3Params['options']['language']) ? $v3Params['options']['language'] : \CRM_Utils_Array::value('option.language', $v3Params);
+    $language = $v3Params['options']['language'] ?? $v3Params['option.language'] ?? NULL;
     if ($language) {
       $v4Params['language'] = $language;
     }
     $toRemove = ['option.', 'return', 'api.', 'format.'];
-    $chains = [];
-    $custom = [];
+    $chains = $joins = $custom = [];
     foreach ($v3Params as $key => $val) {
       foreach ($toRemove as $remove) {
         if (strpos($key, $remove) === 0) {
@@ -339,12 +341,12 @@ trait Api3TestTrait {
 
     if ($v4Entity == 'Setting') {
       $indexBy = NULL;
-      $v4Params['domainId'] = \CRM_Utils_Array::value('domain_id', $v3Params);
+      $v4Params['domainId'] = $v3Params['domain_id'] ?? NULL;
       if ($v3Action == 'getfields') {
         if (!empty($v3Params['name'])) {
           $v3Params['filters']['name'] = $v3Params['name'];
         }
-        foreach (\CRM_Utils_Array::value('filters', $v3Params, []) as $filter => $val) {
+        foreach ($v3Params['filters'] ?? [] as $filter => $val) {
           $v4Params['where'][] = [$filter, '=', $val];
         }
       }
@@ -371,7 +373,7 @@ trait Api3TestTrait {
 
     foreach ($v3Fields as $name => $field) {
       // Resolve v3 aliases
-      foreach (\CRM_Utils_Array::value('api.aliases', $field, []) as $alias) {
+      foreach ($field['api.aliases'] ?? [] as $alias) {
         if (isset($v3Params[$alias])) {
           $v3Params[$field['name']] = $v3Params[$alias];
           unset($v3Params[$alias]);
@@ -392,6 +394,14 @@ trait Api3TestTrait {
           unset($options['return'][$name]);
         }
       }
+
+      if ($name === 'option_group_id' && isset($v3Params[$name]) && !is_numeric($v3Params[$name])) {
+        // This is a per field hack (bad) but we can't solve everything at once
+        // & a cleverer way turned out to be too much for this round.
+        // Being in the test class it's tested....
+        $v3Params['option_group.name'] = $v3Params['option_group_id'];
+        unset($v3Params['option_group_id']);
+      }
     }
 
     switch ($v3Action) {
@@ -405,6 +415,17 @@ trait Api3TestTrait {
       case 'get':
         if ($options['return'] && $v3Action !== 'getcount') {
           $v4Params['select'] = array_keys($options['return']);
+          // Ensure id field is returned as v3 always expects it
+          if ($v4Entity != 'Setting' && !in_array('id', $v4Params['select'])) {
+            $v4Params['select'][] = 'id';
+          }
+          // Convert join syntax
+          foreach ($v4Params['select'] as &$select) {
+            if (strstr($select, '_id.')) {
+              $joins[$select] = explode('.', str_replace('_id.', '.', $select));
+              $select = str_replace('_id.', '.', $select);
+            }
+          }
         }
         if ($options['limit'] && $v4Entity != 'Setting') {
           $v4Params['limit'] = $options['limit'];
@@ -442,7 +463,7 @@ trait Api3TestTrait {
         break;
 
       case 'delete':
-        if (!empty($v3Params['id'])) {
+        if (isset($v3Params['id'])) {
           $v4Params['where'][] = ['id', '=', $v3Params['id']];
         }
         break;
@@ -514,7 +535,7 @@ trait Api3TestTrait {
       ];
     }
 
-    if (($v3Action == 'getsingle' || $v3Action == 'getvalue') && count($result) != 1) {
+    if (($v3Action == 'getsingle' || $v3Action == 'getvalue' || $v3Action == 'delete') && count($result) != 1) {
       return $onlySuccess ? 0 : [
         'is_error' => 1,
         'error_message' => "Expected one $v4Entity but found " . count($result),
@@ -535,11 +556,12 @@ trait Api3TestTrait {
     }
 
     if ($v3Action == 'getvalue' && $v4Entity == 'Setting') {
-      return \CRM_Utils_Array::value('value', $result->first());
+      return $result->first()['value'] ?? NULL;
     }
 
     if ($v3Action == 'getvalue') {
-      return \CRM_Utils_Array::value(array_keys($options['return'])[0], $result->first());
+      $returnKey = array_keys($options['return'])[0];
+      return $result->first()[$returnKey] ?? NULL;
     }
 
     // Mimic api3 behavior when using 'replace' action to delete all
@@ -570,15 +592,17 @@ trait Api3TestTrait {
       foreach ($chains as $key => $params) {
         $result[$index][$key] = $this->runApi4LegacyChain($key, $params, $v4Entity, $row, $sequential);
       }
+      // Convert join format
+      foreach ($joins as $api3Key => $api4Path) {
+        $result[$index][$api3Key] = \CRM_Utils_Array::pathGet($result[$index], $api4Path);
+      }
       // Resolve custom field names
       foreach ($custom as $group => $fields) {
-        if (isset($row[$group])) {
-          foreach ($fields as $field => $v3FieldName) {
-            if (isset($row[$group][$field])) {
-              $result[$index][$v3FieldName] = $row[$group][$field];
-            }
+        foreach ($fields as $field => $v3FieldName) {
+          if (isset($row["$group.$field"])) {
+            $result[$index][$v3FieldName] = $row["$group.$field"];
+            unset($result[$index]["$group.$field"]);
           }
-          unset($result[$index][$group]);
         }
       }
     }
@@ -592,7 +616,7 @@ trait Api3TestTrait {
       'version' => 4,
       'count' => count($result),
       'values' => (array) $result,
-      'id' => is_object($result) && count($result) == 1 ? \CRM_Utils_Array::value('id', $result->first()) : NULL,
+      'id' => is_object($result) && count($result) == 1 ? ($result->first()['id'] ?? NULL) : NULL,
     ];
   }
 
@@ -629,7 +653,7 @@ trait Api3TestTrait {
     foreach ($params as $name => $param) {
       if (is_string($param) && strpos($param, '$value.') === 0) {
         $param = substr($param, 7);
-        $params[$name] = \CRM_Utils_Array::value($param, $result);
+        $params[$name] = $result[$param] ?? NULL;
       }
     }
 
@@ -665,7 +689,7 @@ trait Api3TestTrait {
       'Im' => 'IM',
       'Acl' => 'ACL',
     ];
-    return \CRM_Utils_Array::value($api4Name, $map, $api4Name);
+    return $map[$api4Name] ?? $api4Name;
   }
 
 }

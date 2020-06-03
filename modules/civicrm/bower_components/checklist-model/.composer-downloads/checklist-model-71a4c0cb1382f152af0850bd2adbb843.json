@@ -1,0 +1,14 @@
+{
+    "name": "civicrm/civicrm-core:checklist-model",
+    "url": "https://github.com/vitalets/checklist-model/archive/1.0.0.zip",
+    "checksum": "137cdbefccb3eea1c62e526b67c147d05e68a362e24f6f3a92a865c1afaa75d1",
+    "ignore": [
+        ".*",
+        "node_modules",
+        "docs",
+        "Gruntfile.js",
+        "index.html",
+        "package.json",
+        "test"
+    ]
+}

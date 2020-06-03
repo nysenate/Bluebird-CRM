@@ -1,0 +1,9 @@
+{
+    "name": "civicrm/civicrm-core:smartmenus",
+    "url": "https://github.com/vadikom/smartmenus/archive/1.1.0.zip",
+    "checksum": "b533a0234fdaa0ff5c6e0e690cff71248e46520a35339315ba098a505c824b12",
+    "ignore": [
+        ".gitignore",
+        "Gruntfile.js"
+    ]
+}

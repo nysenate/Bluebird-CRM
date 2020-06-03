@@ -1,34 +1,18 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2019
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 class CRM_Core_I18n {
 
@@ -209,7 +193,7 @@ class CRM_Core_I18n {
           if (preg_match('/^[a-z][a-z]_[A-Z][A-Z]$/', $filename)) {
             $codes[] = $filename;
             if (!isset($all[$filename])) {
-              $all[$filename] = $labels[$filename];
+              $all[$filename] = $labels[$filename] ?? "($filename)";
             }
           }
         }
@@ -298,11 +282,7 @@ class CRM_Core_I18n {
    * @return string
    */
   public static function getResourceDir() {
-    static $dir = NULL;
-    if ($dir === NULL) {
-      $dir = dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR . 'l10n' . DIRECTORY_SEPARATOR;
-    }
-    return $dir;
+    return CRM_Utils_File::addTrailingSlash(\Civi::paths()->getPath('[civicrm.l10n]/.'));
   }
 
   /**
@@ -326,6 +306,7 @@ class CRM_Core_I18n {
    *   The params of the translation (if any).
    *   - domain: string|array a list of translation domains to search (in order)
    *   - context: string
+   *   - skip_translation: flag (do only escape/replacement, skip the actual translation)
    *
    * @return string
    *   the translated string
@@ -378,23 +359,25 @@ class CRM_Core_I18n {
     $raw = !empty($params['raw']);
     unset($params['raw']);
 
-    if (!empty($domain)) {
-      // It might be prettier to cast to an array, but this is high-traffic stuff.
-      if (is_array($domain)) {
-        foreach ($domain as $d) {
-          $candidate = $this->crm_translate_raw($text, $d, $count, $plural, $context);
-          if ($candidate != $text) {
-            $text = $candidate;
-            break;
+    if (!isset($params['skip_translation'])) {
+      if (!empty($domain)) {
+        // It might be prettier to cast to an array, but this is high-traffic stuff.
+        if (is_array($domain)) {
+          foreach ($domain as $d) {
+            $candidate = $this->crm_translate_raw($text, $d, $count, $plural, $context);
+            if ($candidate != $text) {
+              $text = $candidate;
+              break;
+            }
           }
+        }
+        else {
+          $text = $this->crm_translate_raw($text, $domain, $count, $plural, $context);
         }
       }
       else {
-        $text = $this->crm_translate_raw($text, $domain, $count, $plural, $context);
+        $text = $this->crm_translate_raw($text, NULL, $count, $plural, $context);
       }
-    }
-    else {
-      $text = $this->crm_translate_raw($text, NULL, $count, $plural, $context);
     }
 
     // replace the numbered %1, %2, etc. params if present
@@ -437,17 +420,7 @@ class CRM_Core_I18n {
 
     // do all wildcard translations first
 
-    // FIXME: Is there a constant we can reference instead of hardcoding en_US?
-    $replacementsLocale = $this->locale ? $this->locale : 'en_US';
-    if (!isset(Civi::$statics[__CLASS__]) || !array_key_exists($replacementsLocale, Civi::$statics[__CLASS__])) {
-      if (defined('CIVICRM_DSN') && !CRM_Core_Config::isUpgradeMode()) {
-        Civi::$statics[__CLASS__][$replacementsLocale] = CRM_Core_BAO_WordReplacement::getLocaleCustomStrings($replacementsLocale);
-      }
-      else {
-        Civi::$statics[__CLASS__][$replacementsLocale] = [];
-      }
-    }
-    $stringTable = Civi::$statics[__CLASS__][$replacementsLocale];
+    $stringTable = $this->getWordReplacements();
 
     $exactMatch = FALSE;
     if (isset($stringTable['enabled']['exactMatch'])) {
@@ -475,7 +448,7 @@ class CRM_Core_I18n {
       if (isset($count) && isset($plural)) {
 
         if ($this->_phpgettext) {
-          $text = $this->_phpgettext->ngettext($text, $plural, $count);
+          $text = $this->_phpgettext->ngettext($text, $plural, (int) $count);
         }
         else {
           // if the locale's not set, we do ngettext work by hand
@@ -754,6 +727,28 @@ class CRM_Core_I18n {
     return $tsLocale ? $tsLocale : 'en_US';
   }
 
+  /**
+   * @return array
+   *   Ex: $stringTable['enabled']['wildcardMatch']['foo'] = 'bar';
+   */
+  private function getWordReplacements() {
+    if (isset(Civi::$statics['testPreInstall'])) {
+      return [];
+    }
+
+    // FIXME: Is there a constant we can reference instead of hardcoding en_US?
+    $replacementsLocale = $this->locale ? $this->locale : 'en_US';
+    if ((!isset(Civi::$statics[__CLASS__]) || !array_key_exists($replacementsLocale, Civi::$statics[__CLASS__]))) {
+      if (defined('CIVICRM_DSN') && !CRM_Core_Config::isUpgradeMode()) {
+        Civi::$statics[__CLASS__][$replacementsLocale] = CRM_Core_BAO_WordReplacement::getLocaleCustomStrings($replacementsLocale);
+      }
+      else {
+        Civi::$statics[__CLASS__][$replacementsLocale] = [];
+      }
+    }
+    return Civi::$statics[__CLASS__][$replacementsLocale];
+  }
+
 }
 
 /**
@@ -768,7 +763,7 @@ class CRM_Core_I18n {
  *   the translated string
  */
 function ts($text, $params = []) {
-  static $areSettingsAvailable = FALSE;
+  static $bootstrapReady = FALSE;
   static $lastLocale = NULL;
   static $i18n = NULL;
   static $function = NULL;
@@ -778,9 +773,10 @@ function ts($text, $params = []) {
   }
 
   // When the settings become available, lookup customTranslateFunction.
-  if (!$areSettingsAvailable) {
-    $areSettingsAvailable = (bool) \Civi\Core\Container::getBootService('settings_manager');
-    if ($areSettingsAvailable) {
+  if (!$bootstrapReady) {
+    $bootstrapReady = (bool) \Civi\Core\Container::isContainerBooted();
+    if ($bootstrapReady) {
+      // just got ready: determine whether there is a working custom translation function
       $config = CRM_Core_Config::singleton();
       if (isset($config->customTranslateFunction) and function_exists($config->customTranslateFunction)) {
         $function = $config->customTranslateFunction;

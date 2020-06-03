@@ -1,34 +1,18 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2019
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 class CRM_Contact_Page_DedupeMerge extends CRM_Core_Page {
 
@@ -70,7 +54,7 @@ class CRM_Contact_Page_DedupeMerge extends CRM_Core_Page {
     ];
 
     $criteria = json_decode($criteria, TRUE);
-    $cacheKeyString = CRM_Dedupe_Merger::getMergeCacheKeyString($rgid, $gid, $criteria);
+    $cacheKeyString = CRM_Dedupe_Merger::getMergeCacheKeyString($rgid, $gid, $criteria, TRUE, $limit);
 
     if ($mode == 'aggressive' && !CRM_Core_Permission::check('force merge duplicate contacts')) {
       CRM_Core_Session::setStatus(ts('You do not have permission to force merge duplicate contact records'), ts('Permission Denied'), 'error');
@@ -98,7 +82,7 @@ class CRM_Contact_Page_DedupeMerge extends CRM_Core_Page {
     for ($i = 1; $i <= ceil($total / self::BATCHLIMIT); $i++) {
       $task = new CRM_Queue_Task(
         ['CRM_Contact_Page_DedupeMerge', 'callBatchMerge'],
-        [$rgid, $gid, $mode, self::BATCHLIMIT, $onlyProcessSelected, $criteria],
+        [$rgid, $gid, $mode, self::BATCHLIMIT, $onlyProcessSelected, $criteria, $limit],
         "Processed " . $i * self::BATCHLIMIT . " pair of duplicates out of " . $total
       );
 
@@ -132,11 +116,15 @@ class CRM_Contact_Page_DedupeMerge extends CRM_Core_Page {
    * @param int $batchLimit
    * @param int $isSelected
    * @param array $criteria
+   * @param int $searchLimit
    *
    * @return int
+   *
+   * @throws \CRM_Core_Exception
+   * @throws \CiviCRM_API3_Exception
    */
-  public static function callBatchMerge(CRM_Queue_TaskContext $ctx, $rgid, $gid, $mode = 'safe', $batchLimit, $isSelected, $criteria) {
-    CRM_Dedupe_Merger::batchMerge($rgid, $gid, $mode, $batchLimit, $isSelected, $criteria, TRUE, FALSE);
+  public static function callBatchMerge(CRM_Queue_TaskContext $ctx, $rgid, $gid, $mode = 'safe', $batchLimit, $isSelected, $criteria, $searchLimit) {
+    CRM_Dedupe_Merger::batchMerge($rgid, $gid, $mode, $batchLimit, $isSelected, $criteria, TRUE, FALSE, $searchLimit);
     return CRM_Queue_Task::TASK_SUCCESS;
   }
 

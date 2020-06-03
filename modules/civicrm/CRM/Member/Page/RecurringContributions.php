@@ -76,7 +76,7 @@ class CRM_Member_Page_RecurringContributions extends CRM_Core_Page {
       'membership_id' => $membershipID,
     ]);
     $recurringContributions = [];
-    $contributionStatuses = CRM_Contribute_PseudoConstant::contributionStatus();
+    $contributionStatuses = CRM_Contribute_PseudoConstant::contributionStatus(NULL, 'label');
 
     foreach ($result['values'] as $payment) {
       $recurringContributionID = $payment['contribution_id.contribution_recur_id.id'];
@@ -96,7 +96,7 @@ class CRM_Member_Page_RecurringContributions extends CRM_Core_Page {
 
       $recurringContributions[$recurringContributionID]['id'] = $recurringContributionID;
       $recurringContributions[$recurringContributionID]['contactId'] = $contactID;
-      $recurringContributions[$recurringContributionID]['contribution_status'] = CRM_Utils_Array::value($contributionStatusID, $contributionStatuses);
+      $recurringContributions[$recurringContributionID]['contribution_status'] = $contributionStatuses[$contributionStatusID] ?? NULL;
 
       $this->setActionsForRecurringContribution($recurringContributionID, $recurringContributions[$recurringContributionID]);
     }

@@ -26,7 +26,7 @@
  * Drupal module file.
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2019
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 require_once 'civicrm_user.inc';
 
@@ -35,15 +35,13 @@ define('CIVICRM_UF_HEAD', TRUE);
 /**
  * Minimum required PHP
  *
- * Note: This duplicates CRM_Upgrade_Form::MINIMUM_PHP_VERSION. The
- * duplication helps avoid a dependency-loop. (Reading `Form::MINIMUM_PHP_VERSION`
- * requires loading `civicrm.settings.php`, but that triggers a parse-error
- * on PHP 5.x.)
+ * Note: This duplicates CRM_Upgrade_Incremental_General::MIN_INSTALL_PHP_VER.
+ * The duplication helps avoid a dependency-loop.
  *
- * @see CRM_Upgrade_Form::MINIMUM_PHP_VERSION
+ * @see CRM_Upgrade_Incremental_General::MIN_INSTALL_PHP_VER
  * @see CiviDrupal\PhpVersionTest::testConstantMatch()
  */
-define('CIVICRM_DRUPAL_PHP_MINIMUM', '7.0.0');
+define('CIVICRM_DRUPAL_PHP_MINIMUM', '7.1.0');
 
 /**
  * Adds CiviCRM CSS and JS resources into the header.

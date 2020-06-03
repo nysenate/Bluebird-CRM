@@ -1,34 +1,18 @@
 <?php
 /*
-  +--------------------------------------------------------------------+
-  | CiviCRM version 5                                                  |
-  +--------------------------------------------------------------------+
-  | Copyright CiviCRM LLC (c) 2004-2019                                |
-  +--------------------------------------------------------------------+
-  | This file is a part of CiviCRM.                                    |
-  |                                                                    |
-  | CiviCRM is free software; you can copy, modify, and distribute it  |
-  | under the terms of the GNU Affero General Public License           |
-  | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
-  |                                                                    |
-  | CiviCRM is distributed in the hope that it will be useful, but     |
-  | WITHOUT ANY WARRANTY; without even the implied warranty of         |
-  | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
-  | See the GNU Affero General Public License for more details.        |
-  |                                                                    |
-  | You should have received a copy of the GNU Affero General Public   |
-  | License and the CiviCRM Licensing Exception along                  |
-  | with this program; if not, contact CiviCRM LLC                     |
-  | at info[AT]civicrm[DOT]org. If you have questions about the        |
-  | GNU Affero General Public License or the licensing of CiviCRM,     |
-  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
-  +--------------------------------------------------------------------+
+ +--------------------------------------------------------------------+
+ | Copyright CiviCRM LLC. All rights reserved.                        |
+ |                                                                    |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
+ +--------------------------------------------------------------------+
  */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2019
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 class CRM_Contribute_Form_AdditionalInfo {
 
@@ -187,7 +171,7 @@ class CRM_Contribute_Form_AdditionalInfo {
    */
   public static function processPremium($params, $contributionID, $premiumID = NULL, $options = []) {
     $selectedProductID = $params['product_name'][0];
-    $selectedProductOptionID = CRM_Utils_Array::value(1, $params['product_name']);
+    $selectedProductOptionID = $params['product_name'][1] ?? NULL;
 
     $dao = new CRM_Contribute_DAO_ContributionProduct();
     $dao->contribution_id = $contributionID;
@@ -202,7 +186,7 @@ class CRM_Contribute_Form_AdditionalInfo {
 
     $productDetails = [];
     CRM_Contribute_BAO_Product::retrieve($premiumParams, $productDetails);
-    $dao->financial_type_id = CRM_Utils_Array::value('financial_type_id', $productDetails);
+    $dao->financial_type_id = $productDetails['financial_type_id'] ?? NULL;
     if (!empty($options[$selectedProductID])) {
       $dao->product_option = $options[$selectedProductID][$selectedProductOptionID];
     }
@@ -223,9 +207,9 @@ class CRM_Contribute_Form_AdditionalInfo {
     //CRM-11106
     if ($premiumID == NULL || $isDeleted) {
       $premiumParams = [
-        'cost' => CRM_Utils_Array::value('cost', $productDetails),
-        'currency' => CRM_Utils_Array::value('currency', $productDetails),
-        'financial_type_id' => CRM_Utils_Array::value('financial_type_id', $productDetails),
+        'cost' => $productDetails['cost'] ?? NULL,
+        'currency' => $productDetails['currency'] ?? NULL,
+        'financial_type_id' => $productDetails['financial_type_id'] ?? NULL,
         'contributionId' => $contributionID,
       ];
       if ($isDeleted) {
@@ -284,7 +268,7 @@ class CRM_Contribute_Form_AdditionalInfo {
       'contribution_page_id',
     ];
     foreach ($fields as $f) {
-      $formatted[$f] = CRM_Utils_Array::value($f, $params);
+      $formatted[$f] = $params[$f] ?? NULL;
     }
 
     if (!empty($params['thankyou_date']) && !CRM_Utils_System::isNull($params['thankyou_date'])) {
@@ -453,7 +437,7 @@ class CRM_Contribute_Form_AdditionalInfo {
     $taxAmt = $template->get_template_vars('dataArray');
     $eventTaxAmt = $template->get_template_vars('totalTaxAmount');
     $prefixValue = Civi::settings()->get('contribution_invoice_settings');
-    $invoicing = CRM_Utils_Array::value('invoicing', $prefixValue);
+    $invoicing = $prefixValue['invoicing'] ?? NULL;
     if ((!empty($taxAmt) || isset($eventTaxAmt)) && (isset($invoicing) && isset($prefixValue['is_email_pdf']))) {
       $isEmailPdf = TRUE;
     }

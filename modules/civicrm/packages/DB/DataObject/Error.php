@@ -21,11 +21,11 @@
  * @version    CVS: $Id: Error.php 287158 2009-08-12 13:58:31Z alan_k $
  * @link       http://pear.php.net/package/DB_DataObject
  */
-  
- 
+
+
 class DB_DataObject_Error extends PEAR_Error
 {
-    
+
     /**
      * DB_DataObject_Error constructor.
      *
@@ -42,12 +42,12 @@ class DB_DataObject_Error extends PEAR_Error
               $level = E_USER_NOTICE)
     {
         parent::__construct('DB_DataObject Error: ' . $message, $code, $mode, $level);
-        
+
     }
-    
-    
+
+
     // todo : - support code -> message handling, and translated error messages...
-    
-    
-    
+
+
+
 }

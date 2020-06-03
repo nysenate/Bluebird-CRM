@@ -1,0 +1,14 @@
+{
+    "name": "civicrm/civicrm-core:js-yaml",
+    "url": "https://github.com/nodeca/js-yaml/archive/3.13.1.zip",
+    "checksum": "76c61a4e5cb0ebcab218eea78f2a87f35d3b1683deecee6338fd746dbc82fef4",
+    "ignore": [
+        "benchmark",
+        "bin",
+        "demo",
+        "examples",
+        "lib",
+        "support",
+        "test"
+    ]
+}

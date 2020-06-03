@@ -1,0 +1,14 @@
+{
+    "name": "civicrm/civicrm-core:font-awesome",
+    "url": "https://github.com/FortAwesome/Font-Awesome/archive/v4.7.0.zip",
+    "checksum": "e36b674d1b841bf063e56e04fa0f9bd79df1cc8d968f5b07e42d6aa54b7b4e01",
+    "ignore": [
+        "*/.*",
+        "*.json",
+        "src",
+        "*.yml",
+        "Gemfile",
+        "Gemfile.lock",
+        "*.md"
+    ]
+}

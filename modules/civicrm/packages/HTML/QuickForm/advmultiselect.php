@@ -1010,10 +1010,7 @@ class HTML_QuickForm_advmultiselect extends HTML_QuickForm_select
      */
     function getElementJs($raw = true, $min = false)
     {
-        global $civicrm_root;
-        $js = $civicrm_root . DIRECTORY_SEPARATOR
-            . 'packages' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR
-            . 'HTML_QuickForm_advmultiselect' . DIRECTORY_SEPARATOR;
+        $js = Civi::paths()->getPath('[civicrm.packages]/data/HTML_QuickForm_advmultiselect/');
 
         if ($min) {
             $js .= 'qfamsHandler-min.js';

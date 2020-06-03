@@ -33,11 +33,10 @@
  * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  */
-class CRM_iATS_Form_Report_Recur extends CRM_Report_Form {
+class CRM_Iats_Form_Report_Recur extends CRM_Report_Form {
 
   protected $_customGroupExtends = array('Contact');
 
-  static private $nscd_fid = '';
   static private $processors = array();
   static private $version = array();
   static private $financial_types = array();
@@ -49,7 +48,6 @@ class CRM_iATS_Form_Report_Recur extends CRM_Report_Form {
    */
   public function __construct() {
 
-    self::$nscd_fid = _iats_civicrm_nscd_fid();
     self::$version = _iats_civicrm_domain_info('version');
     self::$financial_types = (self::$version[0] <= 4 && self::$version[1] <= 2) ? array() : CRM_Contribute_PseudoConstant::financialType();
     if (self::$version[0] <= 4 && self::$version[1] < 4) {
@@ -129,13 +127,11 @@ class CRM_iATS_Form_Report_Recur extends CRM_Report_Form {
             'required' => TRUE,
             'dbAlias' => "GROUP_CONCAT(contribution_civireport.id SEPARATOR ', ')",
           ),
-          'total_amount' => array(
-            'title' => ts('Amount Contributed to date'),
-            'required' => TRUE,
-            'statistics' => array(
-              'sum' => ts("Total Amount contributed"),
-            ),
-          ),
+          'total_amount_sum' => array(
+	    'title' => ts('Amount - to date'),
+	    'required' => TRUE,
+	    'dbAlias' => "SUM(contribution_civireport.total_amount)",
+	  ),
         ),
         'filters' => array(
           'total_amount' => array(
@@ -145,18 +141,18 @@ class CRM_iATS_Form_Report_Recur extends CRM_Report_Form {
           ),
         ),
       ),
-      'civicrm_iats_customer_codes' =>
+      'civicrm_payment_token' =>
         array(
           'dao' => 'CRM_Contribute_DAO_Contribution',
           'order_bys' => array(
-            'expiry' => array(
+            'expiry_date' => array(
               'title' => ts("Expiry Date"),
             ),
           ),
           'fields' =>
             array(
-              'customer_code' => array('title' => 'customer code', 'default' => TRUE),
-              'expiry' => array('title' => 'Expiry Date', 'default' => TRUE),
+              'token' => array('title' => 'customer code', 'default' => TRUE),
+              'expiry_date' => array('title' => 'Expiry Date', 'default' => TRUE),
             ),
         ),
       'civicrm_contribution_recur' => array(
@@ -174,7 +170,7 @@ class CRM_iATS_Form_Report_Recur extends CRM_Report_Form {
           'modified_date' => array(
             'title' => ts('Modified Date'),
           ),
-          self::$nscd_fid  => array(
+          'next_sched_contribution_date' => array(
             'title' => ts('Next Scheduled Contribution Date'),
           ),
           'cycle_day'  => array(
@@ -240,7 +236,7 @@ class CRM_iATS_Form_Report_Recur extends CRM_Report_Form {
           'cancel_date' => array(
             'title' => ts('Cancel Date'),
           ),
-          self::$nscd_fid => array(
+          'next_sched_contribution_date' => array(
             'title' => ts('Next Scheduled Contribution Date'),
             'default' => TRUE,
           ),
@@ -290,7 +286,7 @@ class CRM_iATS_Form_Report_Recur extends CRM_Report_Form {
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Core_OptionGroup::values('recur_frequency_units'),
           ),
-          self::$nscd_fid  => array(
+          'next_sched_contribution_date' => array(
             'title' => ts('Next Scheduled Contribution Date'),
             'operatorType' => CRM_Report_Form::OP_DATE,
             'type' => CRM_Utils_Type::T_DATE,
@@ -401,8 +397,8 @@ class CRM_iATS_Form_Report_Recur extends CRM_Report_Form {
         ON ({$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_phone']}.contact_id AND
           {$this->_aliases['civicrm_phone']}.is_primary = 1)";
     $this->_from .= "
-      LEFT JOIN civicrm_iats_customer_codes {$this->_aliases['civicrm_iats_customer_codes']}
-        ON ({$this->_aliases['civicrm_iats_customer_codes']}.recur_id = {$this->_aliases['civicrm_contribution_recur']}.id)";
+      LEFT JOIN civicrm_payment_token {$this->_aliases['civicrm_payment_token']}
+        ON ({$this->_aliases['civicrm_payment_token']}.id = {$this->_aliases['civicrm_contribution_recur']}.payment_token_id)";
   }
 
   /**
@@ -443,16 +439,6 @@ class CRM_iATS_Form_Report_Recur extends CRM_Report_Form {
         $rows[$rowNum]['civicrm_contribution_recur_id_link'] = $url;
         $rows[$rowNum]['civicrm_contribution_recur_id_hover'] = ts("View Details of this Recurring Series.");
         $entryFound = TRUE;
-      }
-
-      // Handle expiry date.
-      if ($value = CRM_Utils_Array::value('civicrm_iats_customer_codes_expiry', $row)) {
-        if ($rows[$rowNum]['civicrm_iats_customer_codes_expiry'] == '0000') {
-          $rows[$rowNum]['civicrm_iats_customer_codes_expiry'] = ' ';
-        }
-        elseif ($rows[$rowNum]['civicrm_iats_customer_codes_expiry'] != '0000') {
-          $rows[$rowNum]['civicrm_iats_customer_codes_expiry'] = '20' . substr($rows[$rowNum]['civicrm_iats_customer_codes_expiry'], 0, 2) . '/' . substr($rows[$rowNum]['civicrm_iats_customer_codes_expiry'], 2, 2);
-        }
       }
 
       // Handle contribution status id.

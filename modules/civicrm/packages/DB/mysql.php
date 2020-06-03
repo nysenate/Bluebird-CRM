@@ -6,7 +6,7 @@
  * The PEAR DB driver for PHP's mysql extension
  * for interacting with MySQL databases
  *
- * PHP versions 4 and 5
+ * PHP version 5
  *
  * LICENSE: This source file is subject to version 3.0 of the PHP license
  * that is available through the world-wide-web at the following URI:
@@ -20,7 +20,7 @@
  * @author     Daniel Convissor <danielc@php.net>
  * @copyright  1997-2007 The PHP Group
  * @license    http://www.php.net/license/3_0.txt  PHP License 3.0
- * @version    CVS: $Id: mysql.php,v 1.126 2007/09/21 13:32:52 aharvey Exp $
+ * @version    CVS: $Id$
  * @link       http://pear.php.net/package/DB
  */
 
@@ -41,7 +41,7 @@ require_once 'DB/common.php';
  * @author     Daniel Convissor <danielc@php.net>
  * @copyright  1997-2007 The PHP Group
  * @license    http://www.php.net/license/3_0.txt  PHP License 3.0
- * @version    Release: 1.7.13
+ * @version    Release: 1.9.3
  * @link       http://pear.php.net/package/DB
  */
 class DB_mysql extends DB_common
@@ -109,6 +109,8 @@ class DB_mysql extends DB_common
         1136 => DB_ERROR_VALUE_COUNT_ON_ROW,
         1142 => DB_ERROR_ACCESS_VIOLATION,
         1146 => DB_ERROR_NOSUCHTABLE,
+        1205 => DB_ERROR_LOCK_TIMEOUT,
+        1213 => DB_ERROR_DEADLOCK,
         1216 => DB_ERROR_CONSTRAINT,
         1217 => DB_ERROR_CONSTRAINT,
         1356 => DB_ERROR_INVALID_VIEW,
@@ -163,7 +165,7 @@ class DB_mysql extends DB_common
     // {{{ constructor
 
     /**
-     * This constructor calls <kbd>$this->DB_common()</kbd>
+     * This constructor calls <kbd>parent::__construct()</kbd>
      *
      * @return void
      */
@@ -774,17 +776,6 @@ class DB_mysql extends DB_common
     }
 
     // }}}
-    // {{{ quote()
-
-    /**
-     * @deprecated  Deprecated in release 1.6.0
-     */
-    function quote($str = null)
-    {
-        return $this->quoteSmart($str);
-    }
-
-    // }}}
     // {{{ escapeSimple()
 
     /**
@@ -799,7 +790,11 @@ class DB_mysql extends DB_common
      */
     function escapeSimple($str)
     {
-        return @mysql_real_escape_string($str, $this->connection);
+        if (function_exists('mysql_real_escape_string')) {
+            return @mysql_real_escape_string($str, $this->connection);
+        } else {
+            return @mysql_escape_string($str);
+        }
     }
 
     // }}}
@@ -1029,10 +1024,14 @@ class DB_mysql extends DB_common
     }
 
     // }}}
+    // {{{ lastInsertId()
 
-    function lastInsertId() {
+    function lastInsertId()
+    {
         return mysql_insert_id($this->connection);
     }
+
+    // }}}
 
 }
 

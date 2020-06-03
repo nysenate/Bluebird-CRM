@@ -1,5 +1,5 @@
 PACKAGE = php-gettext-$(VERSION)
-VERSION = 1.0.10
+VERSION = 1.0.12
 
 DIST_FILES = \
 	gettext.php \
@@ -34,5 +34,8 @@ dist: check
 	    rm -rf $(PACKAGE); \
 	fi;
 
+sign: dist
+	gpg --armor --sign --detach-sig $(PACKAGE).tar.gz
+
 clean:
-	rm -f $(PACKAGE).tar.gz
+	rm -f $(PACKAGE).tar.gz $(PACKAGE).tar.gz.asc

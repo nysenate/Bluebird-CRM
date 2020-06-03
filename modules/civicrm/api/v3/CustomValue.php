@@ -1,27 +1,11 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
@@ -363,14 +347,14 @@ function civicrm_api3_custom_value_gettree($params) {
     $result[$group['name']] = [];
     $groupToReturn = $toReturn['custom_group'] ? $toReturn['custom_group'] : array_keys($group);
     foreach ($groupToReturn as $item) {
-      $result[$group['name']][$item] = CRM_Utils_Array::value($item, $group);
+      $result[$group['name']][$item] = $group[$item] ?? NULL;
     }
     $result[$group['name']]['fields'] = [];
     foreach ($group['fields'] as $fieldInfo) {
       $field = ['value' => NULL];
       $fieldToReturn = $toReturn['custom_field'] ? $toReturn['custom_field'] : array_keys($fieldInfo);
       foreach ($fieldToReturn as $item) {
-        $field[$item] = CRM_Utils_Array::value($item, $fieldInfo);
+        $field[$item] = $fieldInfo[$item] ?? NULL;
       }
       unset($field['customValue']);
       if (!empty($fieldInfo['customValue'])) {
@@ -393,4 +377,51 @@ function civicrm_api3_custom_value_gettree($params) {
     }
   }
   return civicrm_api3_create_success($result, $params, 'CustomValue', 'gettree');
+}
+
+/**
+ * CustomValue.getdisplayvalue API specification
+ *
+ * @param array $spec description of fields supported by this API call
+ */
+function _civicrm_api3_custom_value_getdisplayvalue_spec(&$spec) {
+  $spec['entity_id'] = [
+    'title' => 'Entity Id',
+    'description' => 'Id of entity',
+    'type' => CRM_Utils_Type::T_INT,
+    'api.required' => 1,
+  ];
+  $spec['custom_field_id'] = [
+    'title' => 'Custom Field ID',
+    'description' => 'Id of custom field',
+    'type' => CRM_Utils_Type::T_INT,
+    'api.required' => 1,
+  ];
+  $spec['custom_field_value'] = [
+    'title' => 'Custom Field value',
+    'description' => 'Specify the value of the custom field to return as displayed value',
+    'type' => CRM_Utils_Type::T_STRING,
+    'api.required' => 0,
+  ];
+}
+
+/**
+ * CustomValue.getdisplayvalue API
+ *
+ * @param array $params
+ *
+ * @return array API result
+ * @throws \CiviCRM_API3_Exception
+ */
+function civicrm_api3_custom_value_getdisplayvalue($params) {
+  if (empty($params['custom_field_value'])) {
+    $params['custom_field_value'] = civicrm_api3('CustomValue', 'getsingle', [
+      'return' => ["custom_{$params['custom_field_id']}"],
+      'entity_id' => $params['entity_id'],
+    ]);
+    $params['custom_field_value'] = $params['custom_field_value']['latest'];
+  }
+  $values[$params['custom_field_id']]['display'] = CRM_Core_BAO_CustomField::displayValue($params['custom_field_value'], $params['custom_field_id'], CRM_Utils_Array::value('entity_id', $params));
+  $values[$params['custom_field_id']]['raw'] = $params['custom_field_value'];
+  return civicrm_api3_create_success($values, $params, 'CustomValue', 'getdisplayvalue');
 }

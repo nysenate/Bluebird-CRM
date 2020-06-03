@@ -350,6 +350,10 @@ class gettext_reader {
    * @return int array index of the right plural form
    */
   function select_string($n) {
+    if (!is_int($n)) {
+      throw new InvalidArgumentException(
+        "Select_string only accepts integers: " . $n);
+    }
     $string = $this->get_plural_forms();
     $string = str_replace('nplurals',"\$total",$string);
     $string = str_replace("n",$n,$string);
@@ -418,8 +422,14 @@ class gettext_reader {
   }
 
   function npgettext($context, $singular, $plural, $number) {
-    $singular = $context . chr(4) . $singular;
-    return $this->ngettext($singular, $plural, $number);
+    $key = $context . chr(4) . $singular;
+    $ret = $this->ngettext($key, $plural, $number);
+    if (strpos($ret, "\004") !== FALSE) {
+      return $singular;
+    } else {
+      return $ret;
+    }
+
   }
 }
 
