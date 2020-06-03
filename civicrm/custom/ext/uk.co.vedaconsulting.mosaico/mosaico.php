@@ -211,6 +211,7 @@ function mosaico_civicrm_check(&$messages) {
       'fa-chain-broken'
     );
   }
+  //NYSS
   /*if (CRM_Mailing_Info::workflowEnabled()) {
     $messages[] = new CRM_Utils_Check_Message(
       'mosaico_workflow',

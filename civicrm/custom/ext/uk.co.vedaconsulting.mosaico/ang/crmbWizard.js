@@ -40,6 +40,15 @@
           this.$validStep = function() {
             return steps[selectedIndex] && steps[selectedIndex].isStepValid();
           };
+          //NYSS
+          this.check = function() {
+            if (this.$index() == 1) {
+              return !(CRM.crmMailing.workflowEnabled && !CRM.checkPerm('create mailings') && !CRM.checkPerm('access CiviMail'));
+            }
+            else {
+              return true;
+            }
+          }
           this.iconFor = function(index) {
             if (index < this.$index()) return '√';
             if (index === this.$index()) return '»';
@@ -51,7 +60,8 @@
 
             if (stepIndex <= selectedIndex) return true;
             for (var i = 0; i < stepIndex; i++) {
-              if (!steps[i].isStepValid()) return false;
+              //NYSS
+              if (!steps[i].isStepValid() || (i == 1 && (CRM.crmMailing.workflowEnabled && !CRM.checkPerm('create mailings') && !CRM.checkPerm('access CiviMail')))) return false;
             }
             return true;
           };

@@ -35,8 +35,8 @@
       <span class="btn-icon"><i class="fa fa-floppy-o"></i></span>
       {{ts('Save Draft')}}
     </button>
-
-      <button class="btn btn-primary" crmb-wizard-button-position="right" title="{{!crmbWizardCtrl.$validStep() ? ts('Complete all required-mark fields first') : ts('Next step')}}" ng-click="crmbWizardCtrl.next()" ng-show="!crmbWizardCtrl.$last()" ng-disabled="!crmbWizardCtrl.$validStep()">
+<!--NYSS-->
+      <button class="btn btn-primary" crmb-wizard-button-position="right" title="{{!crmbWizardCtrl.$validStep() ? ts('Complete all required-mark fields first') : !crmbWizardCtrl.check() ? ts('You do not have sufficient permission to proceed') : ts('Next step')}}" ng-click="crmbWizardCtrl.next()" ng-show="!crmbWizardCtrl.$last()" ng-disabled="!crmbWizardCtrl.$validStep() || !crmbWizardCtrl.check()">
       <span class="btn-icon"><i class="fa fa-chevron-right"></i></span>
       {{ts('Continue')}}
     </button>
