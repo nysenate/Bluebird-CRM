@@ -36,5 +36,55 @@ $drush $instance updb -y -q
 echo "running civicrm db upgrade..."
 $drush $instance civicrm-upgrade-db -y -q
 
+## field mapping cleanup
+echo "cleaning up saved export field mappings..."
+
+# fix prefix/suffix fields
+sql="
+  UPDATE civicrm_mapping_field
+  JOIN civicrm_mapping
+    ON civicrm_mapping_field.mapping_id = civicrm_mapping.id
+    AND civicrm_mapping.mapping_type_id = 7
+  SET civicrm_mapping_field.name = 'prefix_id'
+  WHERE civicrm_mapping_field.name = 'individual_prefix'
+"
+$execSql $instance -c "$sql" -q
+
+sql="
+  UPDATE civicrm_mapping_field
+  JOIN civicrm_mapping
+    ON civicrm_mapping_field.mapping_id = civicrm_mapping.id
+    AND civicrm_mapping.mapping_type_id = 7
+  SET civicrm_mapping_field.name = 'suffix_id'
+  WHERE civicrm_mapping_field.name = 'individual_suffix'
+"
+$execSql $instance -c "$sql" -q
+
+# update contact_type column
+sql="
+  UPDATE civicrm_mapping_field
+  JOIN civicrm_mapping
+    ON civicrm_mapping_field.mapping_id = civicrm_mapping.id
+    AND civicrm_mapping.mapping_type_id = 7
+  SET civicrm_mapping_field.contact_type = 'Contact'
+  WHERE civicrm_mapping_field.contact_type IN ('Individual', 'Household', 'Organization')
+"
+$execSql $instance -c "$sql" -q
+
+# remove duplicates
+sql="
+  DELETE t1
+  FROM civicrm_mapping_field t1
+  JOIN civicrm_mapping_field t2
+  WHERE t1.id < t2.id
+    AND t1.mapping_id = t2.mapping_id
+    AND t1.name = t2.name
+    AND (t1.location_type_id = t2.location_type_id OR (t1.location_type_id IS NULL AND t2.location_type_id IS NULL))
+    AND (t1.phone_type_id = t2.phone_type_id OR (t1.phone_type_id IS NULL AND t2.phone_type_id IS NULL))
+    AND (t1.relationship_type_id = t2.relationship_type_id OR (t1.relationship_type_id IS NULL AND t2.relationship_type_id IS NULL))
+    AND (t1.website_type_id = t2.website_type_id OR (t1.website_type_id IS NULL AND t2.website_type_id IS NULL))
+"
+$execSql $instance -c "$sql" -q
+
 ## record completion
 echo "$prog: upgrade process is complete."
