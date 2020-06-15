@@ -354,20 +354,24 @@ SELECT f.id, f.label, f.data_type,
             //NYSS build district id fields using IN to allow multiple values
             $field['data_type'] = 'Integer';
 
-            if ( $op == '=' ) {
-              $distinfo = array(46, 47, 48, 49, 50, 51, 53, 54, 55);
-              if (in_array($id, $distinfo)) {
+            $distinfo = [46, 47, 48, 49, 50, 51, 53, 54, 55];
+            if (in_array($id, $distinfo)) {
+              if ($op == '=') {
                 $op = 'IN';
                 $field['data_type'] = 'nyss_Integer'; //flag for processing
 
                 //check for value existence
-                if ( empty($value) ) {
+                if (empty($value)) {
                   continue;
                 }
               }
+              //13461 allow a percentage symbol
+              elseif ($op == 'LIKE') {
+                $field['data_type'] = 'String';
+              }
             }
 
-            $this->_where[$grouping][] = CRM_Contact_BAO_Query::buildClause( $fieldName, $op, $value, $field['data_type'] ); //NYSS
+            $this->_where[$grouping][] = CRM_Contact_BAO_Query::buildClause($fieldName, $op, $value, $field['data_type']); //NYSS
             $this->_qill[$grouping][] = ts("%1 %2 %3", array(1 => $field['label'], 2 => $qillOp, 3 => $qillValue));
 
             //NYSS reset data type
