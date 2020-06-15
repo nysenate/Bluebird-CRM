@@ -878,12 +878,14 @@ function mail_civicrm_alterMailParams(&$params, $context) {
       $emailParts = explode('@', $xCiviMail);
       $idParts = explode('.', $emailParts[0]);
       $params['event_queue_id'] = $idParts[2];
-      try {
-        $eventQueue = civicrm_api3('MailingEventQueue', 'getsingle', ['id' => $params['event_queue_id']]);
-        $params['contact_id'] = CRM_Utils_Array::value('contact_id', $eventQueue);
-      }
-      catch (CiviCRM_API3_Exception $e) {
-        Civi::log()->debug(__FUNCTION__, ['e' => $e]);
+
+      if (!empty($params['event_queue_id'])) {
+        try {
+          $eventQueue = civicrm_api3('MailingEventQueue', 'getsingle', ['id' => $params['event_queue_id']]);
+          $params['contact_id'] = CRM_Utils_Array::value('contact_id', $eventQueue);
+        } catch (CiviCRM_API3_Exception $e) {
+          Civi::log()->debug(__FUNCTION__, ['e' => $e]);
+        }
       }
     }
 

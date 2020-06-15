@@ -14,6 +14,8 @@
   <div class="crm-section">
     <div class="label"><label>Recipients</label></div>
     <div class="content">
+      <a class="crm-hover-button action-item crm-popup" href="/civicrm/nyss/previewrecipients?id={{mailing.id}}"><i class="crm-i fa-user"></i> Preview Recipients</a>
+
       <div ng-show="getIncludesAsString(mailing)">
         <strong>{{ts('Include:')}}</strong> {{getIncludesAsString(mailing)}}
       </div>
