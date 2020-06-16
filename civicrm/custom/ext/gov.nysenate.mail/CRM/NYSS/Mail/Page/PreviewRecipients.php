@@ -15,8 +15,8 @@ class CRM_NYSS_Mail_Page_PreviewRecipients extends CRM_Core_Page {
 
     try {
       $recipients = civicrm_api3('MailingRecipients', 'get', [
-        'sequential' => $mailingId,
-        'mailing_id' => 1221,
+        'sequential' => 1,
+        'mailing_id' => $mailingId,
         'options' => ['limit' => 50],
       ]);
       //Civi::log()->debug(__FUNCTION__, ['recipients' => $recipients]);
