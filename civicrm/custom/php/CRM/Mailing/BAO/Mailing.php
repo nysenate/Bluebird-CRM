@@ -176,12 +176,6 @@ class CRM_Mailing_BAO_Mailing extends CRM_Mailing_DAO_Mailing {
     // Create a temp table for contact exclusion.
     $excludeTempTable = CRM_Utils_SQL_TempTable::build()->setCategory('exrecipient')->setMemory()->createWithColumns('contact_id int primary key');
     $excludeTempTablename = $excludeTempTable->getName();
-    $includedTempTablename = "included_recipients_temp" . substr(sha1(rand()), 0, 4);
-    $mailingGroup->query(
-      "CREATE TEMPORARY TABLE $excludeTempTablename
-            (contact_id int primary key)
-            ENGINE=HEAP"
-    );
     // populate exclude temp-table with recipients to be excluded from the list
     //  on basis of selected recipients groups and/or previous mailing
     if (!empty($recipientsGroup['Exclude'])) {
