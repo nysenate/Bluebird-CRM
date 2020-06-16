@@ -168,6 +168,11 @@ function mail_civicrm_alterAngular(\Civi\Angular\Manager $angular) {
     ->alterHtml('~/crmMosaico/BlockSchedule.html', '_mail_alterMailingSchedule');
   $angular->add($changeSet);
 
+  //13305 add Senate custom fields
+  $changeSet = \Civi\Angular\ChangeSet::create('inject_options_mosaico')
+    ->alterHtml('~/crmMosaico/BlockMailing.html', '_mail_alterMailingBlockMosaico');
+  $angular->add($changeSet);
+
   //12136 mailing test group
   $changeSet = \Civi\Angular\ChangeSet::create('modify_preview')
     ->alterHtml('~/crmMailing/BlockPreview.html', '_mail_alterMailingPreview');
@@ -1164,6 +1169,64 @@ function _mail_alterMailingBlock(phpQueryObject $doc) {
         ng-true-value="\'1\'"
         ng-false-value="\'0\'"
       >
+    </div>
+  ');
+}
+
+/**
+ * @param phpQueryObject $doc
+ *
+ * inject custom fields
+ * #13305
+ */
+function _mail_alterMailingBlockMosaico(phpQueryObject $doc) {
+  //NYSS 5581 - mailing category options
+  $catOptions = "<option value=''>- select -</option>";
+  $opts = CRM_Core_DAO::executeQuery("
+    SELECT ov.label, ov.value
+    FROM civicrm_option_value ov
+    JOIN civicrm_option_group og
+      ON ov.option_group_id = og.id
+      AND og.name = 'mailing_categories'
+    ORDER BY ov.label
+  ");
+  while ($opts->fetch()) {
+    $catOptions .= "<option value='{$opts->value}'>{$opts->label}</option>";
+  }
+  //Civi::log()->debug(__FUNCTION__, ['doc->html()' => $doc->html()]);
+
+  $doc->find('div:first')->append('
+    <div class="form-group">
+      <label for="category" class="control-label">{{ts("Mailing Category")}}
+        <a crm-ui-help="hs({id: \'category\', title: ts(\'Mailing Category\')})"></a></label>
+      <div ng-controller="EmailAddrCtrl" crm-mailing="mailing">
+        <select
+          id="category"
+          class="form-control"
+          crm-ui-id="subform.nyss"
+          crm-ui-select="{dropdownAutoWidth : true, allowClear: true, placeholder: ts(\'Category\')}"
+          name="category"
+          ng-model="mailing.category"
+        >
+        '.$catOptions.'
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="all_emails" class="control-label">{{ts(\'Send to all contact emails?\')}}
+        <a crm-ui-help="hs({id: \'all-emails\', title: ts(\'Send to all contact emails\')})"></a></label>
+      <div>
+        <input
+          id="all_emails"
+          name="all_emails"
+          type="checkbox"
+          crm-ui-id="subform.nyss"
+          ng-model="mailing.all_emails"
+          ng-true-value="\'1\'"
+          ng-false-value="\'0\'"
+        />
+      </div>
     </div>
   ');
 }
