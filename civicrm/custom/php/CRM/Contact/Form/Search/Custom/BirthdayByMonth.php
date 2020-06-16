@@ -48,20 +48,20 @@ class CRM_Contact_Form_Search_Custom_BirthdayByMonth
   function __construct(&$formValues) {
     parent::__construct($formValues);
 
-    $this->_columns = array(
+    $this->_columns = [
       ts('&nbsp;') => 'contact_type', //NYSS 4899
       ts('Name') => 'sort_name' ,
       ts('Birth Date') => 'birth_date',
       ts('Age') => 'age',
       ts('Street Address') => 'street_address',
       ts('City') => 'city'
-    );
+    ];
   }
 
 
   function buildForm(&$form) {
     $this->setTitle('Birthday Search');
-    $month = array(
+    $month = [
       ''  => '- select month -',
       '1' => 'January',
       '2' => 'February',
@@ -75,7 +75,7 @@ class CRM_Contact_Form_Search_Custom_BirthdayByMonth
       '10' => 'October',
       '11' => 'November',
       '12' => 'December'
-    );
+    ];
 
     $form->add('select', 'birth_month', ts('Individual\'s Birth Month (1-12)'), $month, false);
     
@@ -88,8 +88,10 @@ class CRM_Contact_Form_Search_Custom_BirthdayByMonth
     $form->add('text', 'age_start', ts('Age greater than'), array('size' => 3, 'maxlength' => 3));
     $form->add('text', 'age_end', ts('Age less than'), array('size' => 3, 'maxlength' => 3));
     
-    $form->addDate('start_date', ts('Birthday after (date)'), false, array('formatType' => 'birth'));
-    $form->addDate('end_date', ts('Birthday before (date)'), false, array('formatType' => 'birth'));
+    //$form->addDate('start_date', ts('Birthday after (date)'), false, array('formatType' => 'birth'));
+    //$form->addDate('end_date', ts('Birthday before (date)'), false, array('formatType' => 'birth'));
+    $form->add('datepicker', 'start_date', ts('Birthday after (date)'), [], FALSE, ['time' => FALSE]);
+    $form->add('datepicker', 'end_date', ts('Birthday before (date)'), [], FALSE, ['time' => FALSE]);
     
     $formfields = array(
       'start_date',
