@@ -1,0 +1,16 @@
+<li ng-repeat="customAction in customActionsForActivity" ng-if="isActionEnabled(customAction)">
+  <a ng-href="{{ customAction.url }}">
+    <i class="material-icons">{{customAction.icon}}</i> {{ ts(customAction.title) }}
+  </a>
+</li>
+
+<li
+  ng-repeat-start='action in activityActions'
+  ng-if="action.showDividerBeforeThisAction" class="divider">
+</li>
+
+<li ng-repeat-end ng-if="isActionEnabled(action)">
+  <a href ng-click="doAction(action)">
+    <i class="material-icons">{{action.icon}}</i> {{ ts(action.title) }}
+  </a>
+</li>

@@ -1,0 +1,193 @@
+.civicase__case-tab--people {
+  .nav-tabs {
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    box-shadow: $box-shadow-checkbox;
+  }
+
+  .civicase__checkbox {
+    margin-right: 16px;
+
+    .civicase__people-tab__table-checkbox {
+      cursor: pointer;
+      height: 100%;
+      left: 0;
+      opacity: 0;
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 100%;
+      z-index: 11;
+    }
+  }
+
+  .civicase__people-tab-link {
+    line-height: 18px;
+    padding-bottom: 15px;
+    padding-top: 12px;
+  }
+
+  .civicase__people-tab__table-header {
+    .civicase__people-tab__table-column {
+      line-height: 18px;
+      padding: 16px 24px;
+    }
+  }
+
+  .civicase__people-tab__table-body {
+    .civicase__people-tab__table-column {
+      padding: 16px 20px;
+    }
+  }
+}
+
+.civicase__people-tab {
+  background: $crm-white;
+  border-radius: 2px;
+  box-shadow: $box-shadow-block;
+}
+
+.civicase__people-tab__sub-tab {
+  .civicase__add-btn {
+    margin-right: -6px;
+    margin-top: -4px;
+  }
+}
+
+.civicase__people-tab__search {
+  background: $crm-white;
+  padding: 20px 30px;
+
+  h3 {
+    margin: 0;
+  }
+
+  .btn {
+    .material-icons {
+      margin-right: 5px;
+      position: relative;
+      top: 2px;
+    }
+  }
+
+  .dropdown-menu {
+    left: auto !important;
+    right: 0;
+    top: 100% !important;
+  }
+
+  .civicase__bulkactions-actions-dropdown {
+    .dropdown-menu {
+      right: auto;
+    }
+  }
+}
+
+.civicase__people-tab__selection {
+  align-items: center;
+  display: flex;
+  padding: 16px 0;
+
+  > input {
+    margin: 0 5px 0 9px;
+  }
+
+  label {
+    line-height: 18px;
+    margin-bottom: 0;
+    position: relative;
+    top: 1px;
+  }
+}
+
+.civicase__people-tab__select-box {
+  .form-control {
+    width: 240px;
+  }
+}
+
+.civicase__people-tab__filter {
+  align-items: center;
+  border-bottom: 1px solid $gray-light;
+  border-top: 1px solid $gray-light;
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 24px;
+}
+
+.civicase__people-tab__filter-role {
+  .form-control {
+    width: 160px;
+  }
+}
+
+.civicase__people-tab__filter-alpha-pager {
+  color: $gray-darker;
+  margin: 0 3px;
+  padding: 2px;
+
+  &.all,
+  &.active {
+    color: $brand-primary;
+    text-decoration: none;
+  }
+
+  &:first-child {
+    margin-left: 0;
+    padding-left: 0;
+  }
+}
+
+.civicase__people-tab__table-column--first {
+  display: flex;
+
+  em {
+    font-weight: normal;
+  }
+
+  input {
+    margin: 0;
+  }
+}
+
+.civicase__people-tab__table-column--last {
+  padding: 20px 0 !important;
+
+  .dropdown-menu {
+    left: auto !important;
+    right: 20px;
+    top: 100% !important;
+  }
+
+  .btn {
+    padding: 0;
+  }
+
+  .open {
+    position: relative;
+
+    .dropdown-toggle {
+      background: none !important;
+      box-shadow: none;
+    }
+  }
+
+  .material-icons {
+    font-size: 18px;
+    padding: 0;
+  }
+}
+
+.civicase__people-tab__table-assign-icon {
+  cursor: pointer;
+
+  &:hover {
+    color: $brand-primary;
+  }
+}
+
+.civicase__people-tab-counter {
+  border-top: 1px solid $gray-light;
+  line-height: 18px;
+  padding: 16px 24px;
+}

@@ -1,0 +1,48 @@
+.civicase__case-tab--files {
+  .civicase__activity-feed__list {
+    margin-left: auto;
+    margin-right: auto;
+    width: 685px;
+
+    &::before {
+      content: none;
+    }
+  }
+}
+
+.civicase__file-tab-actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  margin-bottom: 24px;
+}
+
+.civicase__file-filters-container {
+  display: flex;
+}
+
+.civicase__file-filters {
+  margin-left: 16px;
+  width: 180px;
+
+  .select2-container {
+    height: auto !important;
+  }
+
+  &:not(:nth-child(2)) {
+    .form-control:not(.select2-container) {
+      width: 180px;
+    }
+  }
+
+  .input-group-addon {
+    font-size: 14px;
+    padding: 0;
+    width: 30px !important;
+
+    .material-icons {
+      position: relative;
+      top: 2px;
+    }
+  }
+}

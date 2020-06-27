@@ -1,0 +1,38 @@
+<div id="bootstrap-theme" class="civicase__container">
+  <div class="civicase__dashboard">
+    <h1 class="hidden" crm-page-title crm-document-title="myCasesOnly ? ts('CiviCase Dashboard - My Cases') : ts('CiviCase Dashboard - All Cases')"></h1>
+
+    <div class="civicase__dashboard__tab-container clearfix">
+      <uib-tabset
+        civicase-dashboard-tabset-affix active="activeTab" type="pills"
+        uib-tabset-class="civicase__affix__activity-filters nav-pills-horizontal nav-pills-horizontal-primary clearfix">
+        <!-- Dashboard Tab -->
+        <uib-tab index="0" heading="{{ ts('Dashboard') }}" select="navTabs()">
+          <civicase-dashboard-tab ng-if="activeTab === 0"></civicase-dashboard-tab>
+        </uib-tab>
+        <!-- End - Dashboard Tab -->
+        <!-- Activities Tab -->
+        <uib-tab index="1" heading="{{ts('Activities')}}">
+          <div
+            ng-if="activeTab === 1"
+            civicase-activity-feed="{filters: activityFilters}"
+            hide-quick-nav-when-details-is-visible="true"
+            show-bulk-actions="true"
+            class="civicase__dashboard-activites-feed">
+          </div>
+        </uib-tab>
+        <!-- End - Activities Tab -->
+        <div class="pull-right">
+          <input
+            class="form-control civicase__dashboard__relation-filter"
+            crm-ui-select="{allowClear: false, multiple: false, data: caseRelationshipOptions}"
+            ng-model="filters.caseRelationshipType" />
+          <span
+            ng-repeat="actionBarItem in actionBarItems">
+            <ng-include src="actionBarItem.templateUrl"></ng-include>
+          </span>
+        </div>
+      </uib-tabset>
+    </div>
+  </div>
+</div>

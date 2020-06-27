@@ -1,0 +1,18 @@
+.dropdown-menu {
+  padding: 10px 0;
+
+  > li {
+    > a {
+      line-height: 18px;
+      padding: 6px 16px;
+    }
+
+    .material-icons {
+      color: $crm-gray-matte;
+      font-size: 13px;
+      margin-right: 3px;
+      position: relative;
+      top: 2px;
+    }    
+  }
+}

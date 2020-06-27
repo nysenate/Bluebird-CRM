@@ -1,0 +1,245 @@
+
+.civicase__case-card {
+  border-radius: 0 !important; // Todo remove important after general.css is refactored.
+  box-shadow: none;
+  cursor: pointer;
+  height: 100%;
+  margin-bottom: 0;
+
+  &:hover {
+    background: $case-card-hover;
+  }
+
+  .panel-body {
+    background-color: transparent;
+    border: 0 !important;
+  }
+
+  .civicase__contact-card {
+    font-size: 14px;
+    font-weight: $font-weight-heading;
+    line-height: 18px;
+
+    > span {
+      display: flex;
+    }
+  }
+
+  .civicase__contact-icon {
+    color: $crm-grayblue-darker;
+    font-size: 24px;
+    margin-top: -3px;
+  }
+
+  .civicase__checkbox {
+    left: 20px;
+    top: 15px;
+  }
+}
+
+.civicase__case-card--closed {
+  background-image: repeating-linear-gradient(60deg, $gray-light, $gray-light 2px, $gray-lighter 2px, $gray-lighter 20px);
+  min-height: 149px;
+
+  .civicase__contact-name,
+  .civicase__case-card-subject,
+  .civicase__contact-additional__container,
+  .civicase__case-card__type {
+    text-decoration: line-through;
+  }
+
+  .civicase__case-card__next-milestone-date,
+  .civicase__case-card__activity-count {
+    color: inherit;
+    font-weight: $font-weight-content;
+  }
+}
+
+.civicase__case-card--case-list {
+  .civicase__case-card__activity-info {
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .civicase__contact-name,
+  .civicase__contact-name-additional {
+    max-width: 100px;
+  }
+}
+
+.civicase__case-card--other {
+  border-bottom: 1px solid $gray-light;
+  min-height: auto;
+
+  .civicase__contact-name,
+  .civicase__contact-additional__container {
+    color: $gray-darker;
+    font-size: 16px;
+  }
+
+  .civicase__contact-name {
+    max-width: none;
+  }
+
+  .civicase__case-card__activity-info {
+    display: inline-flex;
+  }
+
+  .civicase__case-card__next-milestone {
+    margin-right: 30px;
+  }
+}
+
+.civicase__case-card__right_container {
+  color: $crm-gray-matte;
+}
+
+.civicase__case-card__dates {
+  margin-right: 16px;
+  vertical-align: text-top;
+}
+
+.civicase__case-card__link-type {
+  font-size: 16px;
+  margin-left: 16px;
+  vertical-align: middle;
+}
+
+.civicase__case-card--active {
+  border-bottom: 1px solid $brand-primary !important;
+  border-right: 1px solid $brand-primary !important;
+  border-top: 1px solid $brand-primary !important;
+}
+
+.civicase__case-card__additional-information {
+  line-height: normal;
+  position: absolute;
+  right: 20px;
+  top: 15px;
+}
+
+.civicase__case-card__case-id {
+  color: $crm-gray-matte;
+}
+
+.civicase__case-card__lock {
+  color: $crm-grayblue-darker;
+  font-size: 24px;
+  line-height: 0;
+  position: relative;
+  top: 5px;
+}
+
+.civicase__case-card__type {
+  color: $gray-dark;
+}
+
+.civicase__case-card__contact,
+.civicase__case-card__type,
+.civicase__case-card__activity-info,
+.civicase__case-card__next-milestone {
+  margin-bottom: 3px;
+}
+
+.civicase__case-card__next-milestone,
+.civicase__case-card__activity-info {
+  color: $crm-gray-matte;
+}
+
+.civicase__case-card__next-milestone-date,
+.civicase__case-card__activity-count {
+  color: $brand-primary;
+  font-weight: $font-weight-heading;
+
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+.civicase__case-card__activity-count--zero {
+  color: $crm-gray-matte;
+}
+
+.civicase__case-card__activity-count-container {
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.civicase__case-card--detached {
+  background: $crm-white;
+  border-radius: 2px !important;
+  box-shadow: $box-shadow-block;
+  color: $crm-gray-matte;
+  margin-bottom: 10px;
+
+  > .panel-body {
+    padding: 0;
+  }
+
+  .civicase__case-card__date {
+    color: $gray-dark;
+  }
+
+  .civicase__contact-icon {
+    font-size: $font-size-h2;
+    vertical-align: middle;
+  }
+
+  .crm_notification-badge {
+    vertical-align: unset;
+  }
+
+  .civicase__case-card-subject {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: calc(100% - 300px);
+  }
+
+  &.civicase__case-card--closed {
+    background: $gray-lighter;
+    min-height: auto;
+
+    .civicase__case-card-role,
+    .civicase__case-card-subject {
+      color: inherit;
+    }
+  }
+
+  &.civicase__case-card--active {
+    box-shadow: 0 0 0 5px $activity-feed-active-bg;
+  }
+}
+
+.civicase__case-card-role-container {
+  > * {
+    vertical-align: middle;
+  }
+
+  .material-icons {
+    margin-right: 5px;
+  }
+}
+
+.civicase__case-card-role,
+.civicase__case-card-subject {
+  color: $gray-dark;
+  line-height: 18px;
+}
+
+.civicase__case-card__row {
+  border-bottom: 1px solid $gray-light;
+  clear: both;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+}
+
+.civicase__case-card__row--primary {
+  padding: 15px;
+}
+
+.civicase__case-card__row--secondary {
+  padding: 10px 15px;
+}

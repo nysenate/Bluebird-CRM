@@ -1,0 +1,65 @@
+<span class="civicase__contact-card">
+  <span ng-if="!isAvatar" class="civicase__contact-name-container">
+    <!-- Contact Icons -->
+    <span ng-if="!noIcon">
+      <civicase-contact-icon
+        case-id="caseId"
+        contact-id="contacts[0].contact_id"
+      ></civicase-contact-icon>
+    </span>
+    <!-- End - Contact Icons -->
+    <!-- Contact Name -->
+    <a
+      class="civicase__contact-name"
+      href="{{ url('civicrm/contact/view', {cid: contacts[0].contact_id}) }}"
+      title="{{ ts('View Contact') }}">{{ contacts[0].display_name }}
+    </a>
+    <!-- End - Contact Name -->
+  </span>
+  <span ng-if="isAvatar">
+    <!-- Contact Avatar -->
+    <a
+      href="{{ url('civicrm/contact/view', {cid: contacts[0].contact_id}) }}"
+      class="civicase__contact-avatar crm_notification-badge"
+      ng-class="{'civicase__contact-avatar--image': contacts[0].image_URL}"
+      title="{{contacts[0].display_name}}">
+      <img ng-if="contacts[0].image_URL" ng-src={{contacts[0].image_URL}}>
+      <span ng-if="!contacts[0].image_URL">{{contacts[0].avatar}}</span>
+    </a>
+    <!-- End - Contact Avatar -->
+  </span>
+  <!-- Additional Contact Dropdown -->
+  <civicase-popover
+    popover-class="civicase__contact-additional__popover"
+    ng-if="contacts.length > 1">
+    <civicase-popover-toggle-button
+      ng-class="{
+        'crm_notification-badge': isAvatar,
+        'civicase__contact-additional__container--avatar': isAvatar,
+        'civicase__contact-additional__container': !isAvatar
+      }">
+      +{{ contacts.length - 1 }}
+    </civicase-popover-toggle-button>
+    <civicase-popover-content>
+      <div ng-include="'additional-contacts.html'"></div>
+    </civicase-popover-content>
+  </civicase-popover>
+  <!-- End - Additional Contact Dropdown -->
+
+  <script type="text/ng-template" id="additional-contacts.html">
+    <ul class="civicase__contact-additional__list">
+      <li ng-repeat="(index, contact) in contacts" ng-if="index">
+        <a
+          title="{{ ts('View Contact') }}"
+          href="{{ url('civicrm/contact/view', {cid: contact.contact_id}) }}">
+          <civicase-contact-icon
+            auto-close-other-popovers="false"
+            case-id="caseId"
+            contact-id="contact.contact_id"
+          ></civicase-contact-icon>
+          <span class="civicase__contact-name-additional">{{ contact.display_name }}</span>
+        </a>
+      </li>
+    </ul>
+  </script>
+</span>

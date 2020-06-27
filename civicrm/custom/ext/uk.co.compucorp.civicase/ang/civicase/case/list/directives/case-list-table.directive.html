@@ -1,0 +1,119 @@
+<div crm-ui-debug="selectedCases"></div>
+<div class="civicase__case-list" ng-class="{'civicase__case-list--summary': viewingCase}">
+  <civicase-bulk-actions-message
+    selected-items="selectedCases.length" total-count="totalCount"
+    is-select-all-available="isSelectAllAvailable" show-checkboxes="showCheckboxes"
+    ng-hide="viewingCase">
+  </civicase-bulk-actions-message>
+  <div ng-show="viewingCase"
+    class="civicase__case-list-column--first--detached"
+    ng-include="'~/civicase/case/list/directives/case-list-table-first-column-header.html'">
+  </div>
+  <div
+    class="panel panel-default civicase__case-list-panel"
+    ng-class="{'civicase__case-list-panel--summary': viewingCase, 'civicase__case-list-panel--focused': caseIsFocused}">
+    <div class="civicase__case-list-table-container" civicase-sticky-table-header>
+      <table ng-show="!caseIsFocused" class="table civicase__case-list-table" >
+        <thead class="civicase__case-list-table__header">
+        <tr>
+          <th
+            ng-show="!viewingCase"
+            class="civicase__case-list-column--fixed civicase__case-list-column--first"
+            ng-include="'~/civicase/case/list/directives/case-list-table-first-column-header.html'">
+          </th>
+          <th
+            ng-if="!viewingCase"
+            ng-repeat="header in headers"
+            civicase-case-list-sort-header="{{ header.sort }}">{{ ts(header.label) }}
+          </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-if="!isLoading" ng-repeat="item in cases" >
+          <td ng-click="viewCase(item.id, $event)">
+            <civicase-case-card mode="case-list" case="item"></civicase-case-card>
+          </td>
+          <td
+            ng-if="!viewingCase"
+            ng-repeat="header in headers"
+            ng-class="{'case-activity-card-wrapper': header.display_type == 'activity_card'}">
+
+            <span ng-switch on="header.display_type">
+              <span ng-switch-when="activity_card">
+                <div
+                  ng-if="!item.lock"
+                  case-activity-card="item[header.name]"
+                  refresh-callback="refresh"
+                  case="item"
+                  crm-popup-form-success="refresh()"
+                >
+                </div>
+              </span>
+              <span ng-switch-when="status_badge" class="crm_notification-badge" style="background-color: {{ item.color }};">
+                {{ item.status }}
+              </span>
+              <span ng-switch-when="contact_reference">{{ item[header.name].display_name }}</span>
+              <span ng-switch-when="date">{{ CRM.utils.formatDate(item[header.name]) }}</span>
+              <span ng-switch-when="multiple_values">{{ item[header.name].join(', ') }}</span>
+              <span ng-switch-default>{{ item[header.name] }}</span>
+            </span>
+          </td>
+        </tr>
+        <!-- Loading state HTML -->
+        <tr class="civicase__case-placeholder-row" ng-repeat="placeholder in casePlaceholders" ng-if="isLoading">
+          <td>
+            <div class="civicase__case-card panel-default panel-strip-primary civicase__loading-placeholder__oneline-strip">
+              <div class="panel-body">
+                <h2 style="width: 60%; margin-top: 10px;" class="civicase__loading-placeholder__oneline"></h2>
+                <div style="width: 80%; margin-top: 10px;" class="civicase__loading-placeholder__oneline"></div>
+                <div style="width: 60%; margin-top: 10px;" class="civicase__loading-placeholder__oneline"></div>
+                <div style="width: 80%; margin-top: 10px;" class="civicase__loading-placeholder__oneline"></div>
+                <div style="width: 50%; margin-top: 10px;" class="civicase__loading-placeholder__oneline"></div>
+              </div>
+            </div>
+          </td>
+          <td ng-if="!viewingCase"><div class="civicase__loading-placeholder__activity-card"><div></div></div></td>
+          <td ng-if="!viewingCase" ng-repeat="i in [1,2,3,4,5,6,7]"><div class="civicase__loading-placeholder__oneline"></div></td>
+        </tr>
+        <!-- Empty State HTML -->
+        <tr ng-if="!cases.length && !isLoading" class="civicase__panel-empty">
+          <td></td>
+          <td colspan="{{ headers.length }}">
+            <i class="fa fa-folder-o fa-big"></i>
+            <div class="empty-label">{{ ts('No cases found matching the search criteria.') }}</div>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div
+    class="center-block civicase__pager" civicase-sticky-footer-pager
+    ng-class="{
+      'civicase__pager--viewing-case': viewingCase,
+      'civicase__pager--case-focused': caseIsFocused
+    }">
+    <paging
+      ng-show="!caseIsFocused && page.total > 1"
+      page="page.num"
+      page-size="page.size"
+      total="totalCount"
+      adjacent="1"
+      dots="..."
+      show-prev-next="true"
+      show-first-last="true"
+      text-first="&laquo;"
+      text-last="&raquo;"
+      text-next="&rsaquo;"
+      text-prev="&lsaquo;"
+    ></paging>
+  </div>
+  <div
+    class="panel panel-default civicase__case-details-panel"
+    ng-class="{'civicase__case-details-panel--focused': caseIsFocused, 'civicase__case-details-panel--summary': viewingCase}"
+    civicase-case-details="viewingCaseDetails"
+    civicase-tab="viewingCaseTab"
+    civicase-focused="caseIsFocused"
+    case-type-category="filters.case_type_category">
+  </div>
+</div>

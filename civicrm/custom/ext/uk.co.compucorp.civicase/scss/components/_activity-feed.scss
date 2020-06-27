@@ -1,0 +1,228 @@
+$feed-child-min-height: 400px;
+
+.civicase__activity-feed {
+  box-shadow: none;
+  margin-bottom: 0;
+
+  .panel-body {
+    background: transparent;
+    border-top: 0 !important;
+    padding: 15px;
+  }
+
+  > .panel-body {
+    padding-bottom: 0;
+    padding-top: 8px;
+  }
+
+  .civicase__panel-transparent-header {
+    margin: auto;
+
+    > .panel-body {
+      background: transparent;
+      border-top: 0;
+      box-shadow: none;
+      padding: 0;
+    }
+
+    .panel-title.civicase__overdue-activity-icon--before {
+      color: $gray-darker !important;
+      padding-left: 35px;
+
+      &::before,
+      &::after {
+        font-size: 14px;
+        height: 20px;
+        line-height: 20px;
+        top: 8px;
+        width: 20px;
+      }
+    }
+  }
+
+  .civicase__bulkactions-message {
+    margin: 0 85px;
+
+    .alert {
+      border-bottom: 1px solid $crm-grayblue-dark !important;
+      box-shadow: none;
+    }
+  }
+}
+
+.civicase__activity-feed__activity-container {
+  display: inline-block;
+  margin-left: 5px;
+  width: calc(100% - 50px); // 50px = width of contact icon + gap
+}
+
+.civicase__activity-feed__list {
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 6px;
+  position: relative;
+
+  &.active {
+    background: $activity-feed-active-bg;
+    border-radius: $card-border-radius;
+  }
+
+  &.civicase__animated-checkbox-card--expanded {
+    padding-left: 50px;
+  }
+}
+
+.civicase__activity-feed__list__vertical_bar {
+  &::before {
+    background-color: $crm-grayblue-darker;
+    bottom: 1px;
+    content: '';
+    left: 17px;
+    position: absolute;
+    top: 50px;
+    width: 8px;
+    z-index: 1;
+  }
+}
+
+.civicase__activity-feed__list-item {
+  display: inline-block;
+  position: relative;
+  width: 100%;
+
+  > .civicase__contact-card {
+    display: inline-block;
+    margin-top: 2px;
+    position: relative;
+    vertical-align: top;
+    z-index: 2;
+
+    .civicase__contact-avatar {
+      height: 40px;
+      line-height: 30px;
+      width: 40px;
+    }
+
+    .civicase__contact-avatar--image img { /* stylelint-disable selector-max-compound-selectors */
+      height: 40px;
+      width: 40px;
+    }
+  }
+
+  .civicase__activity-card {
+    margin-bottom: 5px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+  }
+}
+
+.civicase__checkbox--bulk-action {
+  display: inline-block;
+  margin-right: 20px;
+  top: 13px;
+  vertical-align: top;
+}
+
+.civicase__activity-feed-pager {
+  .material-icons {
+    font-size: 28px;
+  }
+}
+
+.civicase__activity-feed-pager--down {
+  .civicase__activity-feed-pager__no-more,
+  .civicase__activity-feed-pager__more {
+    > .btn {
+      margin-top: 40px;
+    }
+  }
+
+  .civicase__spinner {
+    margin-top: 40px;
+  }
+}
+
+
+.civicase__activity-feed-pager__no-more {
+  > .btn {
+    background: transparent;
+    border: 0;
+    font-weight: $font-weight-heading;
+  }
+}
+
+.civicase__activity-feed__body {
+  display: flex;
+  justify-content: center;
+  margin: auto;
+  max-width: 1330px;
+}
+
+.civicase__activity-feed__body__list {
+  flex-grow: 1;
+  max-width: 630px;
+  min-height: $feed-child-min-height;
+  overflow: auto;
+}
+
+.civicase__activity-feed__body__details {
+  box-sizing: content-box;
+  min-height: $feed-child-min-height;
+  min-width: 550px;
+  overflow-y: auto;
+  padding-left: 15px;
+  padding-right: 10px;
+  padding-top: 8px;
+  width: 550px;
+}
+
+.civicase__activity-feed__body__month-nav {
+  margin-left: 15px;
+  min-height: $feed-child-min-height;
+  overflow-x: hidden;
+  overflow-y: auto;
+  width: 125px;
+}
+
+.civicase__activity-feed__placeholder {
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
+
+  .civicase__panel-transparent-header {
+    width: 100%;
+  }
+}
+
+@media (max-width: $activity-feed-responsive-width-breakpoint) {
+  .civicase__activity-feed {
+    .civicase__activity-card--long {
+      .civicase__activity-date__with-year {
+        display: none;
+      }
+
+      .civicase__activity-date__without-year {
+        display: inline-block;
+      }
+
+      &.civicase__activity-card--ribbon {
+        .panel-body {
+          padding: 15px 10px 15px 15px;
+        }
+      }
+
+      .civicase__tags-container {
+        .badge {
+          max-width: 35px;
+        }
+      }
+    }
+  }
+
+  .civicase__activity-feed__body__list--details-visible {
+    .civicase__contact-name {
+      max-width: 40px;
+    }
+  }
+}

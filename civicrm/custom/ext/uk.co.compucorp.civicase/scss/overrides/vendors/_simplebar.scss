@@ -1,0 +1,26 @@
+.simplebar-track {
+  background: $gray-light;
+  overflow: hidden;
+
+  &.horizontal {
+    position: relative;
+    height: 11px;
+
+    &[style="visibility: hidden;"] {
+      height: 0;
+    }
+
+    .simplebar-scrollbar {
+      height: 5px;
+      top: 3px;
+    }
+  }
+}
+
+.simplebar-scrollbar {
+  &::before {
+    background: $crm-grayblue-darker;
+    border-radius: 2.5;
+    opacity: 1;
+  }
+}

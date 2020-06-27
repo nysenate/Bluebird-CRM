@@ -1,0 +1,180 @@
+.civicase__activity-card--big {
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  min-height: 264px;
+  width: 100%;
+
+  .panel {
+    flex-grow: 1;
+
+    .panel-body {
+      padding: 16px 24px 24px;
+    }
+  }
+
+  .civicase__tooltip {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .material-icons {
+    vertical-align: middle;
+  }
+
+  .civicase__activity-card-menu {
+    top: -2px;
+  }
+
+  .civicase__activity-type {
+    flex: 1 0 0;
+    font-size: 16px;
+    line-height: 22px;
+    margin-bottom: 12px;
+  }
+
+  .civicase__activity-date {
+    color: $gray-dark;
+
+    .material-icons {
+      font-size: 22px;
+      margin-right: 5px;
+      position: relative;
+      top: -2px;
+    }
+  }
+
+  .civicase__activity-card {
+    .civicase__checkbox {
+      margin-left: 2px;
+      margin-right: 10px;
+    }
+  }
+
+  .civicase__contact-additional__container--avatar {
+    margin-left: 5px;
+    margin-top: 1px;
+  }
+
+  .civicase__contact-avatar {
+    margin-top: 0;
+  }
+
+  .civicase__contact-icon {
+    margin-top: -3px;
+  }
+
+  .civicase__activity-card-row {
+    align-items: flex-start;
+
+    &.civicase__activity-card-row--first {
+      border-bottom: 1px solid $gray-light;
+      margin: 0 -24px 15px;
+      padding: 1px 16px 16px;
+    }
+  }
+
+  .civicase__activity-icon-container {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    width: auto;
+
+    span:not(.civicase__activity-icon-ribbon) {
+      margin: 0 8px;
+    }
+
+    .civicase__activity-icon-ribbon {
+      border-bottom-width: 10px;
+      border-left-width: 20px;
+      border-right-width: 20px;
+      height: 62px;
+      left: 16px;
+    }
+
+    .civicase__activity-icon {
+      font-size: 22px;
+      left: 2px;
+      vertical-align: middle;
+    }
+  }
+
+  .civicase__tags-container {
+    margin-bottom: 10px;
+  }
+
+  .civicase__activity-subject {
+    color: $crm-gray-matte;
+    font-size: 13px;
+    font-weight: $font-weight-content;
+    line-height: 18px;
+    margin: 5px 0 17px;
+  }
+
+  .civicase__activity-attachment__container,
+  .civicase__activity-star__container {
+    position: relative;
+  }
+
+  .civicase__activity-star__container {
+    margin-left: 4px;
+  }
+}
+
+/* Empty state styles */
+.civicase__activity-card--big--empty {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 265px;
+  text-align: center;
+  width: 100%;
+
+  &.civicase__activity-card--big--empty--list-view {
+    border: 1px solid $crm-grayblue-dark;
+    border-radius: 2px;
+    min-height: 265px;
+  }
+}
+
+
+
+.civicase__activity-card--big--empty-title {
+  font-size: 20px;
+  font-weight: $font-weight-heading;
+  line-height: 27px;
+  margin: 15px 0 5px;
+}
+
+.civicase__activity-card--big--empty-description {
+  color: $crm-gray-matte;
+  margin-bottom: 20px;
+  padding: 0 5px;
+}
+
+.civicase__activity-card--big--empty-button {
+  border-color: $brand-primary !important;
+  font-size: $font-size-base;
+  font-weight: $crm-font-weight-h3;
+  line-height: $font-size-h2;
+  padding: 10px 16px;
+
+
+  .material-icons {
+    color: $brand-primary;
+    margin-right: 8px;
+    position: relative;
+    top: -1px;
+  }
+
+  i:nth-last-child(1) {
+    margin-left: 8px;
+  }
+
+  &:hover,
+  &:hover .material-icons {
+    background-color: $brand-primary;
+    color: $crm-white;
+  }
+}

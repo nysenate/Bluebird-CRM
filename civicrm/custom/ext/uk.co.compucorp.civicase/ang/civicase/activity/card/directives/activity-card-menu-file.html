@@ -1,0 +1,23 @@
+<div class="btn-group btn-group-sm civicase__activity-card-menu">
+  <button
+    type="button"
+    class="btn btn-default dropdown-toggle"
+    data-toggle="dropdown"
+    title="{{ ts('Actions') }}"
+  >
+    <i class="material-icons">more_vert</i>
+  </button>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a title="{{ ts('Download') }}" href="{{ file.url }}">
+        <i class="material-icons">file_download</i> {{ts('Download')}}
+      </a>
+    </li>
+    <li class="divider"></li>
+    <li>
+      <a title="{{ ts('Delete') }}" ng-click="deleteFile(activity, file)">
+        <i class="material-icons">delete</i> {{ ts('Delete') }}
+      </a>
+    </li>
+  </ul>
+</div>

@@ -1,0 +1,32 @@
+/* stylelint-disable max-nesting-depth, selector-max-compound-selectors */
+#{$outside-namespace-marker} {
+  .civicase__contact-activity-tab__add {
+    .select2-container {
+      .select2-choice {
+        background: $gray-dark;
+        border: 0;
+        box-shadow: none;
+        height: auto;
+        line-height: initial;
+        padding: 7px 19px;
+        width: 155px !important;
+      }
+
+      .select2-chosen {
+        color: $crm-white !important;
+        margin: 0;
+        text-transform: uppercase;
+      }
+
+      .select2-arrow {
+        background: transparent !important;
+        border: 0;
+        line-height: 34px;
+
+        &::before {
+          color: $crm-white !important;
+        }
+      }
+    }
+  }
+}

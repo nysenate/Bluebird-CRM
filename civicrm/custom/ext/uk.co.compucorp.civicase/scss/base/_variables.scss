@@ -1,0 +1,47 @@
+/**
+ * @file
+ * File contains variables used for the app (e.g. path variables and color variables etc.)
+ */
+
+// Material icons related variables
+$material-icon-font-name: 'Material Icons';
+$material-icon-font-url: '../resources/fonts/material-design-icons/';
+
+// Custom
+$box-shadow-activity-card: 0 1px 4px 0 rgba(49, 40, 40, 0.2);
+$box-shadow-checkbox: 0 6px 20px 0 rgba(49, 40, 40, 0.03);
+$box-shadow-block: 0 3px 8px 0 rgba(49, 40, 40, 0.15);
+$box-shadow-panel-secondary-card: 0 3px 12px 0 rgba(49, 40, 40, 0.14);
+$box-shadow-tooltip: 0 2px 4px 0 rgba(49, 40, 40, 0.13);
+
+$activities-calendar-active-day-background: #cde1ed;
+$activity-feed-active-bg: #b3d5ec;
+$activity-month-nav-divider: #d9e1e6;
+$contact-avatar-background: #99c6e5;
+$case-card-hover: #d9edf7;
+$calendar-due-text-color: #a9a9b7;
+$placeholder-grey: #edf3f5;
+$upload-icon-color: #bfcfd9;
+
+// Panel secondary
+$case-panel-secondary-padding: 24px;
+$case-panel-secondary-padding-small: 16px;
+
+// Font weights
+$font-weight-heading:   600 !default;
+$font-weight-content:   400 !default;
+
+//Widths and other sizes
+$basic-gutter: 5px;
+$activity-card-short-width: 280px;
+$attachment-icon-width: 18px;
+$case-card-width: 300px;
+$contact-popover-width: 708px;
+
+// card/panel border-radius
+$card-border-radius: 5px;
+
+$case-gutter-width: 30px;
+$case-max-width: 1081px;
+$activity-filter-responsive-width-breakpoint: 1420px;
+$activity-feed-responsive-width-breakpoint: 1300px;

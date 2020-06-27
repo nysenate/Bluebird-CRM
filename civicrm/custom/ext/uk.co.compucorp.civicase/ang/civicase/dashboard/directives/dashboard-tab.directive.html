@@ -1,0 +1,109 @@
+<div class="civicase__dashboard__tab">
+  <div class="civicase__dashboard__tab__top">
+    <civicase-case-overview
+      case-filter="activityFilters.case_filter"
+      link-to-manage-case="linkToManageCase"
+    ></civicase-case-overview>
+  </div>
+  <div class="civicase__dashboard__tab__main">
+    <div class="civicase__dashboard__tab__col-wrapper">
+      <div class="civicase__dashboard__tab__col civicase__dashboard__tab__col--left">
+        <civicase-activities-calendar case-params="calendarCaseParams" refresh-callback="activityCardRefreshCalendar" ng-if="calendarCaseParams"></civicase-activities-calendar>
+        <civicase-activities-calendar-placeholder ng-if="!calendarCaseParams" style="padding-top: 0;"></civicase-activities-calendar-placeholder>
+      </div>
+      <div class="civicase__dashboard__tab__col civicase__dashboard__tab__col--right">
+        <!-- New Cases -->
+        <civicase-panel-query
+          query="newCasesPanel.query"
+          handlers="newCasesPanel.handlers"
+          config="newCasesPanel.config"
+          custom-data="newCasesPanel.custom">
+          <panel-query-actions>
+            <a class="panel-heading-control" ng-href="{{customData.viewCasesLink.url}}">
+              {{customData.viewCasesLink.label}}
+            </a>
+          </panel-query-actions>
+          <panel-query-title>
+            You have {{loading.full ? '-' : total}} new {{ts("cases")}}
+          </panel-query-title>
+          <panel-query-results>
+            <civicase-case-card ng-repeat="case in results" ng-click="customData.caseClick(case)" mode="dashboard" case="case"></civicase-case-card>
+          </panel-query-results>
+          <panel-query-empty>
+            <div class="civicase__activity-card--empty">
+              <div class="civicase__activity-no-result-icon civicase__activity-no-result-icon--case"></div>
+              <div class="civicase__activity-card--big--empty-title">No new {{customData.itemName}}</div>
+              <div class="civicase__activity-card--big--empty-description">
+                You have no new {{customData.itemName}} this {{selectedRange}}
+              </div>
+            </div>
+          </panel-query-empty>
+        </civicase-panel-query>
+        <!-- New Milestones -->
+        <civicase-panel-query
+          config="newMilestonesPanel.config"
+          name="{{newMilestonesPanel.name}}"
+          query="newMilestonesPanel.query"
+          handlers="newMilestonesPanel.handlers"
+          custom-data="newMilestonesPanel.custom">
+          <panel-query-title>
+            You have {{loading.full ? '-' : total}} milestones due
+          </panel-query-title>
+          <panel-query-actions>
+            <div ng-if="customData.involvementFilter" civicase-activity-filters-contact="customData.involvementFilter" class="panel-heading-control"></div>
+          </panel-query-actions>
+          <panel-query-results>
+            <div ng-repeat="activity in results"
+              case-activity-card="activity"
+              refresh-callback="customData.cardRefresh"
+              mode="long"
+              refresh-on-checkbox-toggle="true"
+              bulk-allowed="false">
+            </div>
+          </panel-query-results>
+          <panel-query-empty>
+            <div class="civicase__activity-card--empty">
+              <div class="civicase__activity-no-result-icon civicase__activity-no-result-icon--milestone"></div>
+              <div class="civicase__activity-card--big--empty-title">No upcoming {{customData.itemName}}</div>
+              <div class="civicase__activity-card--big--empty-description">
+                You have no {{customData.itemName}} due this {{selectedRange}}
+              </div>
+            </div>
+          </panel-query-empty>
+        </civicase-panel-query>
+        <!-- Activities -->
+        <civicase-panel-query
+          config="activitiesPanel.config"
+          name="{{activitiesPanel.name}}"
+          query="activitiesPanel.query"
+          handlers="activitiesPanel.handlers"
+          custom-data="activitiesPanel.custom">
+          <panel-query-title>
+            You have {{loading.full ? '-' : total}} {{customData.itemName}} due
+          </panel-query-title>
+          <panel-query-actions>
+            <div ng-if="customData.involvementFilter" civicase-activity-filters-contact="customData.involvementFilter" class="panel-heading-control"></div>
+          </panel-query-actions>
+          <panel-query-results>
+            <div ng-repeat="activity in results"
+              case-activity-card="activity"
+              refresh-callback="customData.cardRefresh"
+              mode="long"
+              refresh-on-checkbox-toggle="true"
+              bulk-allowed="false">
+            </div>
+          </panel-query-results>
+          <panel-query-empty>
+            <div class="civicase__activity-card--empty">
+              <div class="civicase__activity-no-result-icon civicase__activity-no-result-icon--activity"></div>
+              <div class="civicase__activity-card--big--empty-title">No upcoming {{customData.itemName}}</div>
+              <div class="civicase__activity-card--big--empty-description">
+                You have no {{customData.itemName}} due this {{selectedRange}}
+              </div>
+            </div>
+          </panel-query-empty>
+        </civicase-panel-query>
+      </div>
+    </div>
+  </div>
+</div>

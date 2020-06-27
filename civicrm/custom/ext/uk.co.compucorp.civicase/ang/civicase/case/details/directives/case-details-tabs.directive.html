@@ -1,0 +1,82 @@
+<div class="panel-body civicase__case-body">
+  <div>
+    <ul
+      ng-if="isMainContentVisible()"
+      civicase-case-tab-affix
+      class="civicase__case-body_tab civicase__affix__activity-filters nav nav-pills nav-pills-horizontal nav-pills-horizontal-primary">
+      <li ng-repeat="tab in tabs" ng-class="{active: activeTab === tab.name}">
+        <a href ng-click="selectTab(tab.name)">
+          {{ tab.label }}
+          <span class="sr-only" ng-if="activeTab === tab.name">{{ ts('Current') }}</span>
+        </a>
+      </li>
+      <li class="pull-right" civicase-dropdown>
+        <div class="civicase__case-details__add-new-dropdown">
+          <button type="button" class="btn btn-primary" civicase-dropdown-toggle>
+            <i class="material-icons">add_circle</i>Add new<i class="fa fa-caret-down"></i>
+          </button>
+          <ul class="dropdown-menu">
+            <li>
+              <a
+                class="crm-popup" href ng-click="createEmail()">
+                <i class="material-icons">email</i>
+                {{ts('Create email')}}
+              </a>
+            </li>
+            <li>
+              <a
+                class="crm-popup" href
+                ng-click="createPDFLetter()">
+                <i class="material-icons">picture_as_pdf</i>
+                {{ts('Create PDF letter')}}
+              </a>
+            </li>
+            <li class="divider"></li>
+            <li class="civicase__activity-dropdown" civicase-dropdown civicase-dropdown-trigger="hover">
+              <a href civicase-dropdown-toggle>
+                {{ts('Add activity')}}
+                <i class="fa fa-caret-right pull-right"></i>
+              </a>
+              <civicase-add-activity-menu
+                case="item"
+                crm-popup-form-success="pushCaseData($data.civicase_reload[0])">
+              </civicase-add-activity-menu>
+            </li>
+            <li class="civicase__timeline-dropdown" civicase-dropdown civicase-dropdown-trigger="hover">
+              <a href civicase-dropdown-toggle>
+                {{ts('Add timeline')}}
+                <i class="fa fa-caret-right pull-right"></i>
+              </a>
+              <ul class="dropdown-menu civicase__dropdown-menu--filters">
+                <li class="form-group has-feedback">
+                  <input class="form-control" type="text" ng-model="activitySetSearchText" />
+                  <i class="material-icons form-control-feedback">search</i>
+                </li>
+                <li class="divider"></li>
+                <li ng-repeat="timeline in item.definition.activitySets | filter:{label: activitySetSearchText}">
+                  <a href crm-confirm="{message: ts('Add all activities from %1 to this case?', {1: timeline.label})}" on-yes="addTimeline(timeline.name)">
+                    {{timeline.label}}
+                  </a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </li>
+    </ul>
+
+    <!-- Placeholder -->
+    <nav
+      ng-if="isPlaceHolderVisible()"
+      class="navbar nav-pills-horizontal-primary"
+      style="margin-bottom: 0;">
+    </nav>
+    <!-- End - Placeholder -->
+
+    <div
+      class="tab-content"
+      ng-if="activeTabContentUrl"
+      ng-include src="activeTabContentUrl">
+    </div>
+  </div>
+</div>

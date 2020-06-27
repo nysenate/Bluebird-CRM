@@ -1,0 +1,44 @@
+<div class="civicase__bulkactions-checkbox">
+  <span class="civicase__checkbox civicase__bulkactions-checkbox-toggle" ng-click="toggleCheckbox()">
+    <i
+      class="civicase__checkbox--checked material-icons"
+      ng-class="{'civicase__checkbox--checked--hide': !showCheckboxes}">
+      {{showCheckboxes ? 'check_box' : 'check'}}
+    </i>
+  </span>
+  <button
+    type="button"
+    class="civicase__bulkactions-select-mode-dropdown dropdown-toggle"
+    ng-class="{disabled: !showCheckboxes}"
+    data-toggle="dropdown">
+    <i class="fa fa-caret-down"></i>
+  </button>
+  <ul class="dropdown-menu">
+    <li>
+      <a
+        href=""
+        ng-disabled="!isSelectAllAvailable"
+        ng-class="{'civicase__link-disabled disabled': !isSelectAllAvailable}"
+        ng-click="select('all')"
+        ng-attr-title="{{isSelectAllAvailable ? 'Select everything that matches search.' : 'Loading, Please wait! ...'}}">
+        Everything ({{everythingCount}})
+      </a>
+    </li>
+    <li>
+      <a
+        href=""
+        ng-click="select('visible')"
+        title="Select all displayed items">
+        Displayed ({{displayedCount}})
+      </a>
+    </li>
+    <li>
+      <a
+        href=""
+        ng-click="select('none')"
+        title="Deselect all items">
+        None
+      </a>
+    </li>
+  </ul>
+</div>

@@ -1,0 +1,72 @@
+<div class="panel panel-default civicase__summary-tab__basic-details">
+  <div ng-if="isMainContentVisible()" class="panel-body">
+    <div class="civicase__summary-tab__subject-container">
+      <div class="civicase__summary-tab__subject">
+        <p crm-editable="item" data-field="subject" data-type="text" data-placeholder="Click to add subject" crm-form-success="onChangeSubject($data)"></p>
+      </div>
+      <div class="civicase__summary-tab__description">
+        <p
+          crm-editable="item"
+          data-field="details"
+          data-type="textarea"
+          data-placeholder="{{ ts('This case doesn\'t currently have a description. Click here to add now.') }}">
+        </p>
+      </div>
+      <div class="civicase__summary-tab__last-updated">
+        <span class="civicase__summary-tab__last-updated__label">{{ts("Case last updated: ")}}</span>
+        <span>{{formatDate(item.modified_date, 'DD MMMM YYYY' )}}</span>
+      </div>
+    </div>
+    <div class="civicase__summary-activity-count">
+      <a ng-href="{{getActivityFeedUrl({ caseId: item.id, category: 'task', statusType: 'incomplete' })}}">
+        <div class="civicase__summary-activity-count__number">{{item.category_count.task.incomplete || 0}}</div>
+        <div class="civicase__summary-activity-count__description">Open Tasks</div>
+        <div
+          ng-class="{ 'invisible': !item.category_count.task.overdue }"
+          class="text-danger civicase__summary-overdue-count">
+          {{item.category_count.task.overdue}} overdue
+        </div>
+      </a>
+    </div>
+    <div class="civicase__summary-activity-count">
+      <a ng-href="{{getActivityFeedUrl({ caseId: item.id, category: 'communication', statusType: 'incomplete' })}}">
+        <div class="civicase__summary-activity-count__number">{{item.category_count.communication.incomplete || 0}}</div>
+        <div class="civicase__summary-activity-count__description">Unread Comms</div>
+        <div
+          ng-class="{ 'invisible': !item.category_count.communication.overdue }"
+          class="text-danger civicase__summary-overdue-count">
+          {{item.category_count.communication.overdue}} overdue
+        </div>
+      </a>
+    </div>
+    <div class="civicase__summary-activity-count">
+      <a ng-href="{{getActivityFeedUrl({ caseId: item.id, status: 'Scheduled' })}}">
+        <div class="civicase__summary-activity-count__number">{{item.status_count.scheduled.count}}</div>
+        <div class="civicase__summary-activity-count__description">Scheduled Activities</div>
+        <div
+          ng-class="{ 'invisible': !item.status_count.scheduled.overdue }"
+          class="text-danger civicase__summary-overdue-count">
+          {{item.status_count.scheduled.overdue}} overdue
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Placeholder -->
+  <div ng-if="isPlaceHolderVisible()" class="panel-body">
+    <div class="civicase__summary-tab__subject-container">
+      <div class="civicase__loading-placeholder__oneline" style="width: 12em;"></div>
+      <div class="civicase__loading-placeholder__oneline" style="width: 18em; margin-top: 8px;"></div>
+      <div class="civicase__loading-placeholder__oneline" style="width: 8em; margin-top: 8px;"></div>
+    </div>
+    <div class="civicase__summary-activity-count">
+      <div class="civicase__loading-placeholder__oneline civicase__summary-activity-count__number" style="display: inline-block; width: 1em;"></div>
+    </div>
+    <div class="civicase__summary-activity-count">
+      <div class="civicase__loading-placeholder__oneline civicase__summary-activity-count__number" style="display: inline-block; width: 1em;"></div>
+    </div>
+    <div class="civicase__summary-activity-count">
+      <div class="civicase__loading-placeholder__oneline civicase__summary-activity-count__number" style="display: inline-block; width: 1em;"></div>
+    </div>
+  </div>
+</div>

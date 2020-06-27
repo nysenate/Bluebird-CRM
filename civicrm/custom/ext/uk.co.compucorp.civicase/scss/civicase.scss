@@ -1,0 +1,20 @@
+/**
+ * @file
+ * The file contains all the scss imports required for the civicase extension
+ * Base partials like variables, mixins, typographys are imported first
+ * followed by components and pages.
+ */
+
+@import 'SCSSROOT/org.civicrm.shoreditch/scss/bootstrap/overrides/variables';
+@import 'SCSSROOT/org.civicrm.shoreditch/base/scss/vendor/bootstrap/variables';
+@import 'SCSSROOT/org.civicrm.shoreditch/base/scss/vendor/bootstrap/mixins/buttons';
+
+@import 'base/variables';
+@import 'base/animations';
+@import 'base/mixins/**';
+@import 'base/typography/**';
+
+@import 'overrides/**';
+
+@import 'components/**';
+@import 'pages/**';

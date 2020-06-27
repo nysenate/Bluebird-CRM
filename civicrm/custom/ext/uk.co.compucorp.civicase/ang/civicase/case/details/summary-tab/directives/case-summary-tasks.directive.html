@@ -1,0 +1,64 @@
+<div ng-if="isMainContentVisible()" class="panel-heading clearfix">
+  <h3 class="panel-title pull-left">
+    <span class="panel-title-inner">{{ ts('Tasks') }}</span>
+    <span class="civicase__case-card__activity-count"> {{item.category_count.task.incomplete || 0}} </span>
+    <span class="civicase__pipe" ng-if="item.category_count.task.overdue"> | </span>
+    <span
+      class="civicase__case-card__activity-count civicase__overdue-activity-icon civicase__overdue-activity-icon--before"
+      ng-if="item.category_count.task.overdue">
+      {{item.category_count.task.overdue}} </span>
+  </h3>
+  <a class="pull-right"
+     ng-href="{{ getActivityFeedUrl({ caseId: item.id, category: 'task', statusType: 'completed' }) }}"
+     ng-if="item.category_count.task.incomplete"
+     title="{{ ts('View All') }}"
+  >{{ ts('View All') }}</a>
+</div>
+<div ng-if="isMainContentVisible()" class="panel-body">
+  <div
+    ng-repeat="activity in item.tasks"
+    ng-if="item.tasks.length"
+    case-activity-card="activity"
+    crm-popup-form-success="pushCaseData($data.civicase_reload[0])"
+    refresh-callback="refresh"
+    bulk-allowed="bulkAllowed"
+    mode="long"
+    type="'activity'">
+  </div>
+  <div ng-if="item.tasks.length === 0" class="civicase__activity-card--big--empty civicase__activity-card--big--empty--list-view">
+    <div class="civicase__activity-no-result-icon civicase__activity-no-result-icon--tasks"></div>
+    <div class="civicase__activity-card--big--empty-title"> No new tasks </div>
+    <div class="civicase__activity-card--big--empty-description"> {{ ts('Click on the button below to add a task to this case') }} </div>
+    <span civicase-dropdown>
+      <div class="civicase__activity-card--big--empty-button btn"
+        civicase-dropdown-toggle>
+        <i class="material-icons">add_circle</i>Create new tasks <i class="fa fa-caret-down"></i>
+      </div>
+      <civicase-add-activity-menu
+        case="item"
+        filter-activities-by="task"
+        crm-popup-form-success="pushCaseData($data.civicase_reload[0])">
+      </civicase-add-activity-menu>
+    </span>
+  </div>
+</div>
+
+<!-- Placeholder -->
+<div ng-if="isPlaceHolderVisible()" class="panel-heading clearfix">
+  <div class="civicase__loading-placeholder__oneline pull-left" style="width: 8em; margin-bottom: 10px;"></div>
+  <div class="civicase__loading-placeholder__oneline pull-right" style="width: 4em; margin-bottom: 10px;"></div>
+</div>
+<div ng-if="isPlaceHolderVisible()" class="panel-body">
+  <div class="civicase__activity-card civicase__activity-card--long" ng-repeat="i in [0,1,2,3,4]">
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <div class="civicase__activity-card-row" style="margin-bottom: 8px;">
+          <div class="civicase__loading-placeholder__oneline" style="width: 0.8em; font-size: 24px; margin-right: 10px;"></div>
+          <div class="civicase__loading-placeholder__oneline" style="width: 8em; font-size: 18px;"></div>
+          <div class="civicase__activity__right-container civicase__loading-placeholder__oneline" style="width: 7em;"></div>
+        </div>
+        <div class="civicase__activity-card-row--file civicase__loading-placeholder__oneline" style="width: 8em; margin-bottom: 10px;"></div>
+      </div>
+    </div>
+  </div>
+</div>

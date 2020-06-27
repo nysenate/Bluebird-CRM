@@ -1,0 +1,50 @@
+<civicase-bulk-actions-checkboxes
+  ng-show="!viewingCase && selectedCases && bulkAllowed && !item.lock"
+  class="pull-left"
+  show-checkboxes="$parent.showCheckboxes"
+  is-select-all-available="isSelectAllAvailable"
+  selected-items="selectedCases.length"
+  everything-count="totalCount"
+  displayed-count="cases.length">
+</civicase-bulk-actions-checkboxes>
+<span
+  class="civicase__bulkactions-actions-dropdown btn-group btn-group-sm"
+  ng-if="!viewingCase && selectedCases && bulkAllowed && !item.lock">
+  <div class="btn-group">
+    <button
+      type="button" class="btn btn-default civicase__bulkactions-actions-dropdown__text"
+      ng-class="{disabled: !selectedCases.length || !showCheckboxes}"
+      data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      {{ ts('Actions') }}
+    </button>
+    <button
+      type="button" class="btn btn-default dropdown-toggle"
+      ng-class="{disabled: !selectedCases.length || !showCheckboxes}"
+      data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu" mode="case-bulk-actions" civicase-case-actions="selectedCases" is-bulk-mode="true" refresh-callback="refresh"></ul>
+  </div>
+</span>
+<span class="btn-group btn-group-sm pull-right" ng-if="sort.sortable">
+  <select class="form-control civicase__case-sort-dropdown" ng-model="sort.field" crm-ui-select>
+    <option value="id">{{ ts('Case ID') }}</option>
+    <option value="contact_id.sort_name">{{ ts('Case Client') }}</option>
+    <option value="subject">{{ ts('Subject') }}</option>
+    <option value="status_id.label">{{ ts('Status') }}</option>
+    <option value="case_type_id.title">{{ ts('Type') }}</option>
+    <option value="start_date">{{ ts('Start Date') }}</option>
+    <option value="end_date">{{ ts('End Date') }}</option>
+    <option value="created_date">{{ ts('Date Created') }}</option>
+    <option value="modified_date">{{ ts('Last Updated') }}</option>
+    <option value="case_manager.sort_name">{{ ts('Case Manager') }}</option>
+    <option value="my_role.label_b_a">{{ ts('My Role') }}</option>
+    <option value="next_activity">{{ ts('Next Activity') }}</option>
+    <option value="next_activity_category_milestone">{{ ts('Next Milestone') }}</option>
+    <option value="next_activity_category_task">{{ ts('Next Task') }}</option>
+    <option value="next_activity_category_communication">{{ ts('Next Communication') }}</option>
+  </select>
+  <i class="civicase__case-list__toggle-sort material-icons" ng-click="changeSortDir()">
+    import_export
+  </i>
+</span>

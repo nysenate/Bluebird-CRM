@@ -1,0 +1,202 @@
+{
+  "scenarios": [
+    {
+      "label": "Manage Cases - List Loading",
+      "url": "{url}/civicrm/case/a/#/case/list",
+      "captureLoadingScreen": true
+    },
+    {
+      "label": "Manage Cases - List",
+      "url": "{url}/civicrm/case/a/#/case/list",
+      "waitForLoadingComplete": ".civicase__case-list-panel"
+    },
+    {
+      "label": "Manage Cases - Other Criterion/Find Case",
+      "url": "{url}/civicrm/case/a/#/case/list",
+      "waitForLoadingComplete": ".civicase__case-list-panel",
+      "clickSelector": ".civicase__case-filter-panel__button[ng-show=\"!expanded\"]"
+    },
+    {
+      "label": "Manage Cases - Case Overview",
+      "url": "{url}/civicrm/case/a/#/case/list?caseId={caseId}",
+      "waitForLoadingComplete": ".civicase__summary-tab",
+      "apiCalls": [
+        "setting.create civicaseAllowLinkedCasesTab=0"
+      ],
+      "viewports": [
+        {
+          "label": "Full Vertical Screen",
+          "width": 1680,
+          "height": 3000
+        }
+      ]
+    },
+    {
+      "label": "Manage Cases - Case Overview - Loading",
+      "url": "{url}/civicrm/case/a/#/case/list?caseId={caseId}",
+      "captureLoadingScreen": true
+    },
+    {
+      "label": "Manage Cases - Case Overview - Full Screen",
+      "url": "{url}/civicrm/case/a/#/case/list?caseId={caseId}",
+      "clickSelector": ".civicase__case-header__expand_button",
+      "delay": 300
+    },
+    {
+      "label": "Manage Cases - Case Overview - Empty Case",
+      "url": "{url}/civicrm/case/a/#/case/list?caseId={emptyCaseId}"
+    },
+    {
+      "label": "Manage Cases - Case Overview - Activity Calendar open",
+      "url": "{url}/civicrm/case/a/#/case/list?caseId={caseId}",
+      "clickSelector": ".civicase__activities-calendar__day-status"
+    },
+    {
+      "label": "Manage Cases - Case Overview - Edit Custom Data",
+      "url": "{url}/civicrm/case/a/#/case/list?caseId={caseId}",
+      "clickSelector": ".civicase__case-custom-fields__container .crm-editable-enabled"
+    },
+    {
+      "label": "Manage Cases - Case Overview - Add New menu",
+      "url": "{url}/civicrm/case/a/#/case/list?caseId={caseId}",
+      "clickSelectors": [
+        ".civicase__case-details__add-new-dropdown .btn-primary",
+        ".civicase__activity-dropdown",
+        ".civicase__activity-dropdown"
+      ]
+    },
+    {
+      "label": "Manage Cases - Case Overview - People tab",
+      "url": "{url}/civicrm/case/a/#/case/list?caseId={caseId}&tab=People"
+    },
+    {
+      "label": "Manage Cases - Case Overview - People tab - Loading",
+      "url": "{url}/civicrm/case/a/#/case/list?caseId={caseId}&tab=People",
+      "captureLoadingScreen": true
+    },
+    {
+      "label": "Manage Cases - Case Overview - People tab - Other Relationships",
+      "url": "{url}/civicrm/case/a/#/case/list?caseId={caseId}&tab=People&peopleTab=relations"
+    },
+    {
+      "label": "Manage Cases - Case Overview - People tab - Other Relationships - Loading",
+      "url": "{url}/civicrm/case/a/#/case/list?caseId={caseId}&tab=People",
+      "onReadyScript": "manage-cases/people-tab-other-relationships-loading.js"
+    },
+    {
+      "label": "Manage Cases - Case Overview - Files tab - Loading",
+      "url": "{url}/civicrm/case/a/#/case/list?caseId={caseId}&tab=Files",
+      "captureLoadingScreen": true
+    },
+    {
+      "label": "Manage Cases - Case Overview - Files tab",
+      "url": "{url}/civicrm/case/a/#/case/list?caseId={caseId}&tab=Files"
+    },
+    {
+      "label": "Manage Cases - Case Overview - Files tab - Upload File",
+      "url": "{url}/civicrm/case/a/#/case/list?caseId={caseId}&tab=Files",
+      "onReadyScript": "manage-cases/files-tab-upload-file.js"
+    },
+    {
+      "label": "Manage Cases - Case Overview - Linked Cases Tab",
+      "url": "{url}/civicrm/case/a/#/case/list?caseId={caseId}&tab=LinkedCases",
+      "waitForLoadingComplete": "#crm-main-content-wrapper",
+      "apiCalls": [
+        "setting.create civicaseAllowLinkedCasesTab=1"
+      ]
+    },
+    {
+      "label": "Manage Cases - List - Bulk action with checkbox selected and dropdown opened",
+      "url": "{url}/civicrm/case/a/#/case/list",
+      "onReadyScript": "manage-cases/bulk-actions.js"
+    },
+    {
+      "label": "Manage Cases - List - Sort Dropdown",
+      "url": "{url}/civicrm/case/a/#/case/list",
+      "onReadyScript": "manage-cases/sort-dropdown.js"
+    },
+    {
+      "label": "Manage Cases - Case Overview - Action Dropdown",
+      "url": "{url}/civicrm/case/a/#/case/list?caseId={caseId}",
+      "onReadyScript": "manage-cases/action-dropdown.js"
+    },
+    {
+      "label": "Manage Cases - Case Overview - Action Dropdown - Change case status",
+      "url": "{url}/civicrm/case/a/#/case/list?caseId={caseId}",
+      "onReadyScript": "manage-cases/action-dropdown-change-status.js"
+    },
+    {
+      "label": "Manage Cases - Case Overview - Action Dropdown - Edit tags",
+      "url": "{url}/civicrm/case/a/#/case/list?caseId={caseId}",
+      "onReadyScript": "manage-cases/action-dropdown-edit-tags.js"
+    },
+    {
+      "label": "Manage Cases - Case Overview - Action Dropdown - Email Case Manager",
+      "url": "{url}/civicrm/case/a/#/case/list?caseId={caseId}",
+      "onReadyScript": "manage-cases/action-dropdown-email-case-manager.js"
+    },
+    {
+      "label": "Manage Cases - Case Overview - Action Dropdown - Print/Merge Document",
+      "url": "{url}/civicrm/case/a/#/case/list?caseId={caseId}",
+      "onReadyScript": "manage-cases/action-dropdown-print-merge.js"
+    },
+    {
+      "label": "Manage Cases - Case Overview - Action Dropdown - Export cases",
+      "url": "{url}/civicrm/case/a/#/case/list?caseId={caseId}",
+      "onReadyScript": "manage-cases/action-dropdown-export.js"
+    },
+    {
+      "label": "Manage Cases - Case Overview - Action Dropdown - Link cases",
+      "url": "{url}/civicrm/case/a/#/case/list?caseId={caseId}",
+      "onReadyScript": "manage-cases/action-dropdown-link.js"
+    },
+    {
+      "label": "Manage Cases - Case Overview - Action Dropdown - Lock case",
+      "url": "{url}/civicrm/case/a/#/case/list?caseId={caseId}",
+      "onReadyScript": "manage-cases/action-dropdown-lock.js"
+    },
+    {
+      "label": "Manage Cases - Case Overview - Action Dropdown - Delete case",
+      "url": "{url}/civicrm/case/a/#/case/list?caseId={caseId}",
+      "onReadyScript": "manage-cases/action-dropdown-delete.js"
+    },
+    {
+      "label": "Manage Cases - Case Overview - Status Dropdown",
+      "url": "{url}/civicrm/case/a/#/case/list?caseId={caseId}",
+      "onReadyScript": "manage-cases/status-dropdown.js"
+    },
+    {
+      "label": "Manage Cases - Case Overview - Status Dropdown - Change status",
+      "url": "{url}/civicrm/case/a/#/case/list?caseId={caseId}",
+      "onReadyScript": "manage-cases/status-dropdown-change-status.js"
+    },
+    {
+      "label": "Manage Cases - Case Overview - Status Dropdown - Change status",
+      "url": "{url}/civicrm/case/a/#/case/list?caseId={caseId}",
+      "onReadyScript": "manage-cases/status-dropdown-change-status.js"
+    },
+    {
+      "label": "Manage Cases - Case Overview - People tab - Case role dropdown",
+      "url": "{url}/civicrm/case/a/#/case/list?caseId={caseId}&tab=People",
+      "onReadyScript": "manage-cases/people-tab-add-case-role-dropdown.js"
+    },
+    {
+      "label": "Manage Cases - Case Overview - People tab - Assign role to a client",
+      "url": "{url}/civicrm/case/a/#/case/list?caseId={caseId}&tab=People",
+      "onReadyScript": "manage-cases/people-tab-add-case-role-to-client.js"
+    },
+    {
+      "label": "Manage Cases - Case Overview - People tab - Assign role to a non client",
+      "url": "{url}/civicrm/case/a/#/case/list?caseId={caseId}&tab=People",
+      "onReadyScript": "manage-cases/people-tab-add-case-role-to-non-client.js"
+    },
+    {
+      "label": "Manage Cases - Case Overview - People tab - Remove role",
+      "url": "{url}/civicrm/case/a/#/case/list?caseId={caseId}&tab=People",
+      "clickSelectors": [
+        ".civicase__people-tab__table-body tr:first-child .btn",
+        ".civicase__people-tab__table-body tr:first-child .dropdown-menu li:nth-child(3) a"
+      ]
+    }
+  ]
+}

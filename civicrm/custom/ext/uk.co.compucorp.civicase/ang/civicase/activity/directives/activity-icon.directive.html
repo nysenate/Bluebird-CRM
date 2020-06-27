@@ -1,0 +1,20 @@
+<span
+  class="civicase__activity-icon-container"
+  ng-class="{'civicase__activity-icon-container--ribbon': activity.category.indexOf('milestone') > -1}">
+  <span>
+    <i
+      ng-class="{
+        'text-danger': activity.is_overdue && !activity.is_completed,
+        'civicase__text-success': activity.category.indexOf('alert') === -1 && activity.is_completed,
+        'civicase__text-warning': activity.category.indexOf('alert') > -1
+      }"
+      class="civicase__activity-icon fa {{activity.icon}}"></i>
+
+    <i
+      ng-if="direction"
+      ng-class="{'text-danger': activity.is_overdue && !activity.is_completed, 'civicase__text-success': activity.is_completed}"
+      class="civicase__activity-icon-arrow fa fa-arrow-{{ direction }}"></i>
+  </span>
+  <!-- Activity Ribbon -->
+  <span ng-if="activity.category.indexOf('milestone') > -1" ng-class="{'text-danger': activity.is_overdue && !activity.is_completed, 'civicase__text-success': activity.is_completed}" class="civicase__activity-icon-ribbon"></span>
+</span>

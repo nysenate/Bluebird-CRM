@@ -1,0 +1,95 @@
+<div class="panel panel-secondary civicase__case-overview">
+  <div class="panel-body" ng-init="loadStatsData()">
+    <div class="civicase__case-overview-container" civicase-custom-scrollbar scrollbar-config="{autoHide: false}">
+      <div class="civicase__case-overview__flow">
+        <div class="civicase__case-overview__flow-status">
+          <civicase-popover
+            class="civicase__case-overview__flow-status-settings"
+            popover-class="civicase__case-overview__popup">
+            <civicase-popover-toggle-button class="btn btn-link dropdown-toggle">
+              <i class="material-icons civicase__case-overview__flow-status__icon civicase__case-overview__flow-status__icon--settings">settings</i>
+              <i class="fa fa-caret-down civicase__case-overview__flow-status__icon civicase__case-overview__flow-status__icon--settings"></i>
+            </civicase-popover-toggle-button>
+            <civicase-popover-content>
+              <ul class="dropdown-menu" role="menu">
+                <li ng-repeat="status in caseStatuses">
+                  <a class="civicase__checkbox-container"
+                    href ng-click="toggleStatusVisibility($event, status.value)">
+                    <span class="civicase__checkbox">
+                      <i ng-if="!hiddenCaseStatuses[status.value]" class="civicase__checkbox--checked material-icons">check_box</i>
+                    </span>
+                    <span>
+                      {{ status.label }}
+                    </span>
+                  </a>
+                </li>
+              </ul>
+            </civicase-popover-content>
+          </civicase-popover>
+          Overview
+          <i
+            class="material-icons civicase__case-overview__flow-status__icon"
+            ng-click="toggleBreakdownVisibility()"
+            ng-if="caseTypes.length > 0">
+            {{showBreakdown ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}}
+          </i>
+        </div>
+        <div
+          class="civicase__case-overview__flow-status civicase__case-overview__flow-status--hoverable"
+          ng-if="!hiddenCaseStatuses[status.value]"
+          ng-repeat="status in caseStatuses"
+          uib-popover="{{ status.label }}"
+          popover-trigger="'mouseenter'"
+          popover-placement="bottom"
+          popover-append-to-body="true"
+          popover-class="civicase__tooltip-popup-list">
+          <div class="civicase__case-overview__flow-status__count">
+            <a ng-href="{{ linkToManageCase(null, status.value) }}">
+              {{ summaryData.all[status.value] || '0' }}
+            </a>
+          </div>
+          <div class="civicase__case-overview__flow-status__description">
+            <span>
+              {{ status.label }}
+            </span>
+          </div>
+          <span class="civicase__case-overview__flow-status__border"  ng-style="{'background-color': status.color}"></span>
+        </div>
+        <div class="civicase__case-overview__flow-status" ng-if="areAllStatusesHidden()">
+          <div class="civicase__case-overview__flow-status__empty-state">
+            <h3>No status selected</h3>
+            <p class="description">Select status from the drop down on the left to see an overview</p>
+          </div>
+           <span>-</span>
+        </div>
+      </div>
+      <div
+        class="civicase__case-overview__breakdown"
+        ng-repeat="caseType in caseTypes"
+        ng-if="showBreakdown">
+        <div class="civicase__case-overview__breakdown-field  civicase__case-overview__breakdown-field--hoverable"
+          uib-popover="{{ caseType.title }}"
+          popover-trigger="'mouseenter'"
+          popover-placement="bottom"
+          popover-append-to-body="true"
+          popover-class="civicase__tooltip-popup-list">
+          <a ng-href="{{ linkToManageCase(caseType.name) }}">
+            {{ caseType.title }}
+          </a>
+          <span
+            ng-repeat="caseTypeItem in getItemsForCaseType(caseType.name)"
+            ng-include="caseTypeItem.templateUrl"></span>
+        </div>
+        <div
+          class="civicase__case-overview__breakdown-field"
+          ng-if="!hiddenCaseStatuses[status.value]"
+          ng-repeat="status in caseStatuses">
+          <a ng-href="{{ linkToManageCase(caseType.name, status.value) }}">
+            {{ summaryData[caseType.id][status.value] || '0' }}
+          </a>
+        </div>
+        <div class="civicase__case-overview__breakdown-field" ng-if="areAllStatusesHidden()"> - </div>
+      </div>
+    </div>
+  </div>
+</div>

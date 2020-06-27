@@ -1,0 +1,53 @@
+name: Tests
+
+on: pull_request
+
+jobs:
+  run-unit-tests:
+
+    runs-on: ubuntu-latest
+    container: compucorp/civicrm-buildkit:1.0.0-chrome
+
+    env:
+      CIVICRM_EXTENSIONS_DIR: site/web/sites/all/modules/civicrm/tools/extensions
+
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+        - 3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+
+      - name: Config mysql database as per CiviCRM requirement
+        run: echo "SET GLOBAL sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));" | mysql -u root --password=root --host=mysql
+
+      - name: Config amp
+        run : amp config:set --mysql_dsn=mysql://root:root@mysql:3306
+
+      - name: Build Drupal site
+        run: civibuild create drupal-clean --civi-ver 5.24.6 --web-root $GITHUB_WORKSPACE/site
+
+      - uses: actions/checkout@v2
+        with:
+            path: ${{ env.CIVICRM_EXTENSIONS_DIR }}/uk.co.compucorp.civicase
+
+      - name: Installing CiviCase and its dependencies
+        working-directory: ${{ env.CIVICRM_EXTENSIONS_DIR }}
+        run: |
+          git clone --depth 1 https://github.com/civicrm/org.civicrm.shoreditch.git
+          cv en shoreditch civicase
+
+      - name: Run JS unit tests
+        working-directory: ${{ env.CIVICRM_EXTENSIONS_DIR }}/uk.co.compucorp.civicase
+        run: |
+          npm install
+          npx gulp test
+
+      - name: Run phpunit tests
+        if: ${{ always() }}
+        working-directory: ${{ env.CIVICRM_EXTENSIONS_DIR }}/uk.co.compucorp.civicase
+        run: phpunit5

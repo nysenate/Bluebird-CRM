@@ -1,0 +1,47 @@
+<div
+  class="panel panel-default panel-strip-primary civicase__case-card civicase__case-card--case-list civicase__animated-checkbox-card"
+  ng-style="{'border-left-color': data.color}"
+  ng-class="{
+    'civicase__case-card--active': $parent.viewingCase === data.id,
+    'civicase__case-card--closed': data.status === 'Resolved',
+    'civicase__animated-checkbox-card--expanded': $parent.showCheckboxes && !$parent.viewingCase && $parent.bulkAllowed}"
+  >
+  <div class="panel-body">
+    <span
+      class="civicase__checkbox civicase__checkbox--bulk-action"
+      ng-if="!$parent.viewingCase && $parent.selectedCases && $parent.bulkAllowed"
+      role="checkbox"
+      tabindex="0"
+      aria-labelledby="Select/Unselect"
+      ng-click="toggleSelected(); $event.stopPropagation();">
+      <i ng-if="data.selected" class="civicase__checkbox--checked material-icons">check_box</i>
+    </span>
+    <div
+      civicase-contact-card
+      class="civicase__case-card__contact"
+      case-id="data.id"
+      contacts="data.client"
+    ></div>
+    <div class="civicase__case-card__additional-information">
+      <span class="civicase__case-card__case-id">
+        {{ ts("Case ID:") }} {{ data.id }}
+      </span>
+      <i class="material-icons civicase__case-card__lock" ng-if="data.lock">lock</i>
+    </div>
+    <div class="civicase__case-card__type">{{ data.case_type }}</div>
+    <div class="civicase__case-card__next-milestone" ng-if="data.activity_summary.milestone.length > 0">
+      <span>Next Milestone: </span>
+      <a class="civicase__case-card__next-milestone-date"
+         ng-class="{'civicase__overdue-activity-icon': data.activity_summary.milestone[0].is_overdue}"
+         ng-href="{{getActivityFeedUrl({ caseId: data.id, category: 'milestone', statusType: 'incomplete', activityId: data.activity_summary.milestone[0].id })}}"
+         title="{{data.activity_summary.milestone[0].subject || data.activity_summary.milestone[0].type;}}"
+      >{{ formatDate(data.activity_summary.milestone[0].activity_date_time, 'DD/MM/YYYY') }} </a>
+    </div>
+    <div class="civicase__case-card__activity-info" civicase-case-activity-count>
+    </div>
+    <civicase-tags-container
+      tags="data.tag_id"
+      show-ellipsis-after="3">
+    </civicase-tags-container>
+  </div>
+</div>

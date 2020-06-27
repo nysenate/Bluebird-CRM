@@ -1,0 +1,11 @@
+<div class="civicase__case-tab--linked-cases civicase__case-tab__container">
+  <civicase-case-details-linked-cases-tab
+    ng-if="isMainContentVisible()"
+    linked-cases="item.relatedCases"
+  ></civicase-case-details-linked-cases-tab>
+
+  <div
+    ng-if="isPlaceHolderVisible()"
+    ng-include="'~/civicase/case/details/linked-cases-tab/directives/case-details-linked-cases-tab--placeholder.directive.html'"
+  ></div>
+</div>
