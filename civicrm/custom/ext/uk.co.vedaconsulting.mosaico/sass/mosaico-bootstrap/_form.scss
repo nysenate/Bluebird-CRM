@@ -25,10 +25,6 @@
     width: 70%;
   }
 
-  .select2-container-multi .select2-choices:before {
-    top: 7px;
-  }
-
   input[type=radio]:not(.old-radiocheckbox-style):checked+label[for]::after {
     left: 3px;
     top: 7px;

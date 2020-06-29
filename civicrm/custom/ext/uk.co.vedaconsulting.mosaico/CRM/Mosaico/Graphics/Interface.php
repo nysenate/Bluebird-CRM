@@ -10,7 +10,7 @@
  * probably be better. As long as it remains internal, we have some
  * flexibility to clean it up.
  */
-interface CRM_Mosaico_Graphics_Interface {
+abstract class CRM_Mosaico_Graphics_Interface {
 
   /**
    * Generate a placeholder image.
@@ -19,7 +19,7 @@ interface CRM_Mosaico_Graphics_Interface {
    * @param int $height
    * @return mixed
    */
-  public function sendPlaceholder($width, $height);
+  abstract public function sendPlaceholder($width, $height);
 
   /**
    * Generate a scaled version of the image.
@@ -40,7 +40,7 @@ interface CRM_Mosaico_Graphics_Interface {
    *   NOTE: NULL or 0 are interpreted "auto-scaled".
    * @return mixed
    */
-  public function createResizedImage($src, $dest, $width, $height);
+  abstract public function createResizedImage($src, $dest, $width, $height);
 
   /**
    * Generate a "cover" version of the image.
@@ -61,6 +61,56 @@ interface CRM_Mosaico_Graphics_Interface {
    *   NOTE: NULL or 0 are interpreted "auto-scaled".
    * @return mixed
    */
-  public function createCoveredImage($src, $dest, $width, $height);
+  abstract public function createCoveredImage($src, $dest, $width, $height);
+
+  /**
+   * Adjust resize dimensions in order to preserve the best possible resolution for the image.
+   *
+   * @param int $imgWidth
+   *   Image width in pixels.
+   * @param int $imgHeight
+   *   Image height in pixels.
+   * @param int|NULL $resizeWidth
+   *   Resize width in pixels.
+   * @param int|NULL $resizeHeight
+   *   Resize height in pixels.
+   * @return float|null
+   */
+  public function adjustResizeDimensions($imgWidth, $imgHeight, &$resizeWidth, &$resizeHeight) {
+    $scaleFactor = NULL;
+    $scales[Civi::settings()->get('mosaico_scale_width_limit1')] = Civi::settings()->get('mosaico_scale_factor1');
+    $scales[Civi::settings()->get('mosaico_scale_width_limit2')] = Civi::settings()->get('mosaico_scale_factor2');
+    $scales = array_filter($scales);
+    ksort($scales, SORT_NUMERIC);
+    if (!empty($scales) && $resizeWidth) {
+      foreach ($scales as $width => $slevel) {
+        if ($resizeWidth <= $width) {
+          $scaleFactor = $slevel;
+          break;
+        }
+      }
+    }
+    if (empty($scaleFactor)) {
+      return NULL;
+    }
+    // If scale-factor make new width bigger than that of image itself, re-compute scale-factor to
+    // maximum possible.
+    if ($scaleFactor && $resizeWidth && $imgWidth && ($imgWidth < ($resizeWidth * $scaleFactor))) {
+      $possibleLevels[] = $imgWidth / $resizeWidth;
+    }
+    if ($scaleFactor && $resizeHeight && $imgHeight && ($imgHeight < ($resizeHeight * $scaleFactor))) {
+      $possibleLevels[] = $imgHeight / $resizeHeight;
+    }
+    if (!empty($possibleLevels)) {
+      $scaleFactor = max($possibleLevels);
+    }
+    if ($scaleFactor && $resizeWidth) {
+      $resizeWidth = round($resizeWidth * $scaleFactor);
+    }
+    if ($scaleFactor && $resizeHeight) {
+      $resizeHeight = round($resizeHeight * $scaleFactor);
+    }
+    return $scaleFactor;
+  }
 
 }

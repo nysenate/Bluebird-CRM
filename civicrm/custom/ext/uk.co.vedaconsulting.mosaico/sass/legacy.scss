@@ -1,11 +1,8 @@
 @import 'SCSSROOT/org.civicrm.shoreditch/scss/bootstrap/mixins/ALL';
 @import 'SCSSROOT/org.civicrm.shoreditch/scss/bootstrap/overrides/variables';
-@import 'SCSSROOT/org.civicrm.shoreditch/scss/civicrm/common/ui-dialog';
 
 @import 'variables';
 
 @import 'civicrm-override/4.6';
 @import 'civicrm-override/calender';
 @import 'civicrm-override/form';
-
-@import 'vendor-override/select2/select2-bootstrap';

@@ -18,12 +18,12 @@ class CRM_Mosaico_Services {
     if (!CRM_Extension_System::singleton()->getMapper()->isActiveModule('flexmailer')) {
       return;
     }
-    $container->setDefinition('mosaico_flexmail_composer', new Definition('CRM_Mosaico_MosaicoComposer'));
-    $container->setDefinition('mosaico_flexmail_url_filter', new Definition('CRM_Mosaico_UrlFilter'));
-    $container->setDefinition('mosaico_image_filter', new Definition('CRM_Mosaico_ImageFilter'));
-    $container->setDefinition('mosaico_required_tokens', new Definition('CRM_Mosaico_MosaicoRequiredTokens'));
+    $container->setDefinition('mosaico_flexmail_composer', new Definition('CRM_Mosaico_MosaicoComposer'))->setPublic(TRUE);
+    $container->setDefinition('mosaico_flexmail_url_filter', new Definition('CRM_Mosaico_UrlFilter'))->setPublic(TRUE);
+    $container->setDefinition('mosaico_image_filter', new Definition('CRM_Mosaico_ImageFilter'))->setPublic(TRUE);
+    $container->setDefinition('mosaico_required_tokens', new Definition('CRM_Mosaico_MosaicoRequiredTokens'))->setPublic(TRUE);
     $container->setDefinition('mosaico_graphics', new Definition('CRM_Mosaico_Graphics_Interface'))
-      ->setFactory([__CLASS__, 'createGraphics']);
+      ->setFactory([__CLASS__, 'createGraphics'])->setPublic(TRUE);
 
     foreach (self::getListenerSpecs() as $listenerSpec) {
       $container->findDefinition('dispatcher')->addMethodCall('addListenerService', $listenerSpec);

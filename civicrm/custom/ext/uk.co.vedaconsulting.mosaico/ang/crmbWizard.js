@@ -21,8 +21,6 @@
           var crmbWizardCtrl = this;
           var maxVisited = 0;
           var selectedIndex = null;
-          //NYSS
-          $scope.checkPerm = CRM.checkPerm;
 
           var findIndex = function() {
             var found = null;
@@ -42,21 +40,6 @@
           this.$validStep = function() {
             return steps[selectedIndex] && steps[selectedIndex].isStepValid();
           };
-          //NYSS
-          this.workFlowEnabled = function() {
-            return CRM.crmMailing.workflowEnabled;
-          };
-          this.check = function() {
-            if (this.$index() == 1 || this.$index() == 0) {
-              return !(CRM.crmMailing.workflowEnabled && !CRM.checkPerm('create mailings') && !CRM.checkPerm('access CiviMail'));
-            }
-            if (this.$index() == 2) {
-              return !(CRM.crmMailing.workflowEnabled && !CRM.checkPerm('schedule mailings') && !CRM.checkPerm('access CiviMail'));
-            }
-            else {
-              return true;
-            }
-          }
           this.iconFor = function(index) {
             if (index < this.$index()) return '√';
             if (index === this.$index()) return '»';
@@ -68,8 +51,7 @@
 
             if (stepIndex <= selectedIndex) return true;
             for (var i = 0; i < stepIndex; i++) {
-              //NYSS
-              if (!steps[i].isStepValid() || (i == 1 && (CRM.crmMailing.workflowEnabled && !CRM.checkPerm('create mailings') && !CRM.checkPerm('access CiviMail')))) return false;
+              if (!steps[i].isStepValid()) return false;
             }
             return true;
           };

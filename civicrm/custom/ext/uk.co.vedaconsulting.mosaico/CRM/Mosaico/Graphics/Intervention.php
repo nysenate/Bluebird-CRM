@@ -9,7 +9,7 @@ use Intervention\Image\ImageManagerStatic as Image;
  * @see https://github.com/voidlabs/mosaico/blob/master/backend/README.txt
  * @see http://image.intervention.io/getting_started/introduction
  */
-class CRM_Mosaico_Graphics_Intervention implements CRM_Mosaico_Graphics_Interface {
+class CRM_Mosaico_Graphics_Intervention extends CRM_Mosaico_Graphics_Interface {
 
   const FONT_PATH = 'packages/mosaico/dist/vendor/notoregular/NotoSans-Regular-webfont.ttf';
 
@@ -96,6 +96,7 @@ class CRM_Mosaico_Graphics_Intervention implements CRM_Mosaico_Graphics_Interfac
   public function createResizedImage($srcFile, $destFile, $width, $height) {
     $config = CRM_Mosaico_Utils::getConfig();
     $img = Image::make($srcFile);
+    $this->adjustResizeDimensions($img->width(), $img->height(), $width, $height);
 
     if ($width && $height) {
       $img->resize($width, $height);
@@ -114,6 +115,7 @@ class CRM_Mosaico_Graphics_Intervention implements CRM_Mosaico_Graphics_Interfac
 
   public function createCoveredImage($srcFile, $destFile, $width, $height) {
     $img = Image::make($srcFile);
+    $this->adjustResizeDimensions($img->width(), $img->height(), $width, $height);
 
     $ratios = [];
     if ($width) {

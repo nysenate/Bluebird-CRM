@@ -23,6 +23,30 @@ class CRM_Mosaico_BAO_MosaicoTemplate extends CRM_Mosaico_DAO_MosaicoTemplate {
   } */
 
   /**
+   * Helps updating the URLs in templates so they can be reused
+   * after restoring a dump database in a new server.
+   * 
+   * @param string $fromUrl URL of the server where the
+   *   templates were created
+   * @param string $toUrl URL of the current server
+   */
+  public static function replaceUrls($fromUrl, $toUrl) {
+    $replaceQuery = "UPDATE civicrm_mosaico_template
+      SET metadata = json_replace(metadata, '$.template',
+          replace(
+              json_unquote(
+                  json_extract(metadata, '$.template')
+              ),
+          %1, %2)
+      );";
+
+    CRM_Core_DAO::executeQuery($replaceQuery, [
+      1 => [$fromUrl, 'String'],
+      2 => [$toUrl, 'String'],
+    ]);
+  }
+
+  /**
    * @return mixed
    */
   public static function findBaseTemplates() {
