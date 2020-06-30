@@ -155,11 +155,11 @@ function reports_civicrm_queryObjects(&$queryObjects, $type) {
 }
 
 function reports_civicrm_alterReportVar($varType, &$var, &$object) {
-  /*Civi::log()->debug('alterReportVar', array(
+  /*Civi::log()->debug('alterReportVar', [
     'varType' => $varType,
     'var' => $var,
     //'object' => $object,
-  ));*/
+  ]);*/
 
   $class = get_class($object);
   switch ($varType) {
@@ -294,6 +294,10 @@ function _reports_CaseDetail_col(&$var, &$object) {
     ],
     'grouping' => 'case-fields',
   ];
+
+  //13469
+  $var['civicrm_address']['fields']['city'] = [];
+  $var['civicrm_address']['fields']['postal_code'] = [];
 }
 
 function _reports_CaseDetail_sql(&$var, &$object) {
