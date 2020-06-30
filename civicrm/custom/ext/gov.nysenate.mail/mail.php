@@ -179,6 +179,7 @@ function mail_civicrm_alterAngular(\Civi\Angular\Manager $angular) {
   $angular->add($changeSet);
 }
 
+//https://github.com/veda-consulting-company/uk.co.vedaconsulting.mosaico/issues/347#issuecomment-555785659
 function mail_civicrm_mosaicoScripts(&$scripts) {
   $extUrl = CRM_Core_Resources::singleton()->getUrl('gov.nysenate.mail');
   $scripts[] = $extUrl.'js/Mosaico.js';

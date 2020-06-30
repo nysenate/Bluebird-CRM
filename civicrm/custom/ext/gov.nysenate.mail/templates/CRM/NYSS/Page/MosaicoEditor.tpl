@@ -22,7 +22,7 @@
         return;
       }
 
-      var plugins = [];
+      var plugins = {/literal}{$mosaicoPlugins}{literal};
       var config = {/literal}{$mosaicoConfig}{literal};
       if (window.top.crmMosaicoIframe) {
         window.top.crmMosaicoIframe(window, Mosaico, config, plugins);
