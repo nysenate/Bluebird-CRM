@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<menu>
+  <item>
+    <path>civicrm/mosaicoimageditor/storefrie</path>
+    <page_callback>CRM_Mosaicoimageeditor_Page_StoreFrie</page_callback>
+    <title>StoreFrie</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+</menu>
