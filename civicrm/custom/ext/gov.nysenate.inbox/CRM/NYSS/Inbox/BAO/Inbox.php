@@ -1067,8 +1067,8 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       PREG_SET_ORDER);
 
     // Find possible phone numbers
-    preg_match_all('/(?:([\D]|^))([(]\d{3}[)] *|\d{3}[\-\.\ ])?\d{3}[\-\.]\d{4}/', $text, $phones);
-    $res['phones'] = array_unique($phones[0]);
+    preg_match_all('/(?:^|[^\d+]|[+]1 *)((([(]\d{3}[)] *|\d{3}[\-\.\ ])?\d{3}[\-\.]\d{4})|\d{10})/', $text, $phones);
+    $res['phones'] = array_unique($phones[1]);
 
     // Expand state abbreviations into full state names.
     foreach ($addresses as $id => &$addrInfo) {
