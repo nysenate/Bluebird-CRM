@@ -149,7 +149,7 @@ function _newversion_check() {
   $smarty = CRM_Core_Smarty::singleton();
   $bbVersion = trim($smarty->fetch('CRM/common/bbversion.tpl'));
 
-  $userVersion = CRM_Core_DAO::singleValueQuery("
+  $userVersionVal = CRM_Core_DAO::singleValueQuery("
     SELECT value
     FROM civicrm_setting
     WHERE name = 'versioncheck'
@@ -158,6 +158,14 @@ function _newversion_check() {
   ", [
     1 => [(int) CRM_Core_Session::getLoggedInContactID(), 'Integer'],
   ]);
+
+  if ($userVersionVal) {
+    $userVersion = unserialize($userVersionVal);
+  }
+  else {
+    $userVersion = '';
+  }
+
   /*Civi::log()->debug(__FUNCTION__, [
     'bbVersion' => $bbVersion,
     'userVersion' => $userVersion,
@@ -170,7 +178,7 @@ function _newversion_check() {
       VALUES
       ('versioncheck', %1, 1, %2, %3, 1)
     ", [
-      1 => [$bbVersion, 'String'],
+      1 => [serialize($bbVersion), 'String'],
       2 => [(int) CRM_Core_Session::getLoggedInContactID(), 'Integer'],
       3 => [date('YmdHis'), 'Timestamp'],
     ]);
@@ -178,5 +186,5 @@ function _newversion_check() {
     return TRUE;
   }
 
-  return FALSe;
+  return FALSE;
 }
