@@ -566,6 +566,7 @@
           });
           scope.crmMailingConst = CRM.crmMailing;
           scope.ts = CRM.ts(null);
+          scope.checkPerm = CRM.checkPerm;//NYSS 13392
           scope.hs = crmUiHelp({file: 'CRM/Mailing/MailingUI'});
           scope[directiveName] = attr[directiveName] ? scope.$parent.$eval(attr[directiveName]) : {};
           $q.when(crmMetadata.getFields('Mailing'), function(fields) {
