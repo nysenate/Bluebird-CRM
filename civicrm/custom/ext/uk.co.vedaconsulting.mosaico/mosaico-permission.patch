@@ -79,16 +79,6 @@ index 006fdf7..b2b7309 100644
            this.iconFor = function(index) {
              if (index < this.$index()) return '√';
              if (index === this.$index()) return '»';
-@@ -48,8 +63,8 @@
-           this.isSelectable = function(step) {
-             var stepIndex;
-             for (stepIndex = 0; steps[stepIndex] !== step; stepIndex++) {}
--
-             if (stepIndex <= selectedIndex) return true;
-+
-             for (var i = 0; i < stepIndex; i++) {
-               if (!steps[i].isStepValid()) return false;
-             }
 diff --git a/mosaico.php b/mosaico.php
 index 35e29a7..f0fda0d 100644
 --- a/mosaico.php

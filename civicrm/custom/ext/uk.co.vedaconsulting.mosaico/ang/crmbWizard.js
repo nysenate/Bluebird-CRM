@@ -60,16 +60,7 @@
             if (index === this.$index()) return '»';
             return ' ';
           };
-          this.isSelectable = function(step) {
-            var stepIndex;
-            for (stepIndex = 0; steps[stepIndex] !== step; stepIndex++) {}
-            if (stepIndex <= selectedIndex) return true;
 
-            for (var i = 0; i < stepIndex; i++) {
-              if (!steps[i].isStepValid()) return false;
-            }
-            return true;
-          };
           /*** @param Object step the $scope of the step */
           this.isStepDone = function(step) {
             var stepIndex;
