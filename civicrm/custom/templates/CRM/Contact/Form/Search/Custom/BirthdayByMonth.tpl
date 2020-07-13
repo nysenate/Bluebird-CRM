@@ -37,11 +37,11 @@
         <table class="form-layout-compressed">
             <tr class="crm-contact-custom-search-form-row-start_date">
             	<td class="label"><label for="start_date">Birth date =</label></td>
-            	<td>{include file="CRM/common/jcalendar.tpl" elementName=start_date}&nbsp;&nbsp;or later</td>
+            	<td>{$form.start_date.html}&nbsp;&nbsp;or later</td>
             </tr>
             <tr class="crm-contact-custom-search-form-row-end_date">
             	<td class="label"><label for="end_date">Birth date =</label></td>
-            	<td>{include file="CRM/common/jcalendar.tpl" elementName=end_date}&nbsp;&nbsp;or earlier</td>
+            	<td>{$form.end_date.html}&nbsp;&nbsp;or earlier</td>
             </tr>
             <tr class="crm-contact-custom-search-form-row-age_start">
             	<td class="label"><label for="age_start">Age =</label></td>
@@ -106,7 +106,7 @@
       {/if}
         
       {strip}
-      <table class="selector" summary="{ts}Search results listings.{/ts}">
+      <table class="selector row-highlight" summary="{ts}Search results listings.{/ts}">
         <thead class="sticky">
           <tr>
             <th scope="col" title="Select All Rows">{$form.toggleSelect.html}</th>
@@ -143,12 +143,6 @@
         {/foreach}
       </table>
       {/strip}
-
-      <script type="text/javascript">
-        {* this function is called to change the color of selected row(s) *}
-        var fname = "{$form.formName}";	
-        on_load_init_checkboxes(fname);
-      </script>
 
       {include file="CRM/common/pager.tpl" location="bottom"}
 

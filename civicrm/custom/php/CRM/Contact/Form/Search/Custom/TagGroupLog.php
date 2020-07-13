@@ -155,9 +155,10 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
     $formValues = $form->get('formValues');
     if (!empty($formValues)) {
       $qfKey = $form->get('qfKey');
-      CRM_Core_BAO_Cache::setItem($formValues, 'CRM_Contact_Form_Search_Custom_TagGroupLog', $qfKey);
+      Civi::cache()->set('TagGroupLog-'.$qfKey, $formValues);
+
       $quickExportUrl = CRM_Utils_System::url('civicrm/search/custom/taggroup/quickexport',
-        http_build_query(array('qfKey' => $qfKey)));
+        http_build_query(['qfKey' => $qfKey]));
       $form->assign('quickExportUrl', $quickExportUrl);
     }
   }//buildForm
@@ -413,10 +414,9 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
   static function quickExport() {
     //CRM_Core_Error::debug_var('$_REQUEST', $_REQUEST);
 
-    if (!empty($_REQUEST['qfKey'])) {
+    if (!empty($qfKey = CRM_Utils_Request::retrieve('qfKey', 'String'))) {
       $_REQUEST['is_quick_export'] = true;
-      $qfKey = $_REQUEST['qfKey'];
-      $formValues = CRM_Core_BAO_Cache::getItem('CRM_Contact_Form_Search_Custom_TagGroupLog', $qfKey);
+      $formValues = Civi::cache()->get('TagGroupLog-'.$qfKey);
 
       CRM_Export_BAO_Export::exportCustom($formValues['customSearchClass'],
         $formValues,
