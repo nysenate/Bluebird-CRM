@@ -179,13 +179,13 @@ function case_civicrm_post($op, $objectName, $objectId, &$objectRef) {
   ));*/
 
   //2450 - notify case worker/coordinator when role created/changed
-  if (in_array($op, array('edit', 'create')) &&
+  if (in_array($op, ['edit', 'create']) &&
     $objectName == 'Relationship' &&
     $objectRef->case_id
   ) {
     //notify case worker with an email
     $caseID = $objectRef->case_id;
-    $caseDetails = civicrm_api3('case', 'getsingle', array('id' => $caseID));
+    $caseDetails = civicrm_api3('case', 'getsingle', ['id' => $caseID]);
     //Civi::log()->debug('case_civicrm_post', array('caseDetails' => $caseDetails));
 
     //get client ID
@@ -196,14 +196,26 @@ function case_civicrm_post($op, $objectName, $objectId, &$objectRef) {
       }
     }
 
+    //get role contact ID (whichever id is NOT the clientID)
+    if ($objectRef->contact_id_a != $clientID) {
+      $roleContactId = $objectRef->contact_id_a;
+    }
+    elseif ($objectRef->contact_id_b != $clientID) {
+      $roleContactId = $objectRef->contact_id_b;
+    }
+    else {
+      //can't determine the role contact ID, so exit
+      return;
+    }
+
     //get case role email
-    $roleEmail = civicrm_api3('contact', 'getvalue', array(
-      'id' => $objectRef->contact_id_b,
+    $roleEmail = civicrm_api3('contact', 'getvalue', [
+      'id' => $roleContactId,
       'return' => 'email',
-    ));
+    ]);
     //Civi::log()->debug('case_civicrm_post', array('$roleEmail' => $roleEmail));
 
-    if (!empty($clientID)) {
+    if (!empty($clientID) && $clientID != $roleContactId) {
       $url = CRM_Utils_System::url(
         'civicrm/contact/view/case',
         "reset=1&action=view&cid={$clientID}&id={$caseID}",
