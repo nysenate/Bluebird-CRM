@@ -319,6 +319,10 @@ table.crm-edit-address-form div[id$="_location_type_id"] {
 .page-civicrm-mailing.page-civicrm #crm-main-content-wrapper {
   background-color: white !important;
 }
+/*13516*/
+.CRM_Mailing_Form_Search table.selector td:last-child {
+  white-space: nowrap;
+}
 
 
 /*Search*/
