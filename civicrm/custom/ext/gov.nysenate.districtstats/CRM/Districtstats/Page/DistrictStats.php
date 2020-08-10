@@ -109,7 +109,7 @@ class CRM_Districtstats_Page_DistrictStats extends CRM_Core_Page {
         ON c.id = ce.contact_id
         AND ( ( ce.is_primary = 1 AND ce.is_bulkmail = 0 )
           OR ( ce.is_primary = 0 AND ce.is_bulkmail = 1 ) )
-        AND ce.on_hold = 1
+        AND ce.on_hold != 0
         AND ce.email IS NOT NULL
         AND ce.email != ''
       WHERE is_deleted != 1;
@@ -207,7 +207,7 @@ class CRM_Districtstats_Page_DistrictStats extends CRM_Core_Page {
     $this->assign('emailCounts', $emailCounts);
 
     //misc contact stats
-    $miscCounts = array();
+    $miscCounts = [];
 
     //phone contacts
     $sql_phone = "
