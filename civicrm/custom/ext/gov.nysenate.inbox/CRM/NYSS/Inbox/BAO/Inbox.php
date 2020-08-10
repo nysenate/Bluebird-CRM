@@ -1416,4 +1416,12 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       'long' => date('M d, Y h:i A', $unixTime),
       'short' => $shortForm);
   } // expandDate()
+
+  static function formatDate($date, $format = 'Y-m-d H:i:s') {
+    if (!empty($date)) {
+      return date($format, strtotime($date));
+    }
+
+    return NULL;
+  }
 }
