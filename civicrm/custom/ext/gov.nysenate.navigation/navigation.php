@@ -599,10 +599,10 @@ function _buildEmailMenu($emailID) {
       ],
       $emailID+2 => [
         'attributes' => [
-          'label' => 'Draft and Unscheduled Emails',
-          'name' => 'Draft and Unscheduled Emails',
-          'url' => 'civicrm/mailing/browse/unscheduled?reset=1&scheduled=false',
-          'permission' => 'access CiviMail,create mailings,schedule mailings',
+          'label' => 'New Mass Email (legacy)',
+          'name' => 'New Mass Email (legacy)',
+          'url' => 'civicrm/a/#/mailing/new/traditional',
+          'permission' => 'access CiviMail,approve mailings,create mailings,schedule mailings',
           'operator' => 'OR',
           'separator' => 0,
           'parentID' => $emailID,
@@ -612,10 +612,10 @@ function _buildEmailMenu($emailID) {
       ],
       $emailID+3 => [
         'attributes' => [
-          'label' => 'Scheduled and Sent Emails',
-          'name' => 'Scheduled and Sent Emails',
-          'url' => 'civicrm/mailing/browse/scheduled?reset=1&scheduled=true',
-          'permission' => 'access CiviMail,approve mailings,create mailings,schedule mailings',
+          'label' => 'Draft and Unscheduled Emails',
+          'name' => 'Draft and Unscheduled Emails',
+          'url' => 'civicrm/mailing/browse/unscheduled?reset=1&scheduled=false',
+          'permission' => 'access CiviMail,create mailings,schedule mailings',
           'operator' => 'OR',
           'separator' => 0,
           'parentID' => $emailID,
@@ -625,9 +625,9 @@ function _buildEmailMenu($emailID) {
       ],
       $emailID+4 => [
         'attributes' => [
-          'label' => 'Find Mailings',
-          'name' => 'Find Mailings',
-          'url' => 'civicrm/mailing/browse?reset=1',
+          'label' => 'Scheduled and Sent Emails',
+          'name' => 'Scheduled and Sent Emails',
+          'url' => 'civicrm/mailing/browse/scheduled?reset=1&scheduled=true',
           'permission' => 'access CiviMail,approve mailings,create mailings,schedule mailings',
           'operator' => 'OR',
           'separator' => 0,
@@ -638,9 +638,9 @@ function _buildEmailMenu($emailID) {
       ],
       $emailID+5 => [
         'attributes' => [
-          'label' => 'Mailing Templates',
-          'name' => 'Mailing Templates',
-          'url' => 'civicrm/a/#/mosaico-template',
+          'label' => 'Find Mailings',
+          'name' => 'Find Mailings',
+          'url' => 'civicrm/mailing/browse?reset=1',
           'permission' => 'access CiviMail,approve mailings,create mailings,schedule mailings',
           'operator' => 'OR',
           'separator' => 0,
@@ -651,9 +651,9 @@ function _buildEmailMenu($emailID) {
       ],
       $emailID+6 => [
         'attributes' => [
-          'label' => 'New Mass Email (legacy)',
-          'name' => 'New Mass Email (legacy)',
-          'url' => 'civicrm/a/#/mailing/new/traditional',
+          'label' => 'Mailing Templates',
+          'name' => 'Mailing Templates',
+          'url' => 'civicrm/a/#/mosaico-template',
           'permission' => 'access CiviMail,approve mailings,create mailings,schedule mailings',
           'operator' => 'OR',
           'separator' => 0,
