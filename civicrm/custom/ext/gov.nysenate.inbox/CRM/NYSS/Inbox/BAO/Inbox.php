@@ -188,8 +188,8 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         'matched_id' => $dao->matched_id,
         'matched_to_display' => implode(', ', $matched),
         'activity_id' => $dao->activity_id,
-        'updated_date' => date('m/d/Y', strtotime($dao->updated_date)),
-        'date_email' => date('m/d/Y', strtotime($dao->email_date)),
+        'updated_date' => self::formatDate($dao->updated_date, 'm/d/Y'),
+        'date_email' => self::formatDate($dao->email_date, 'm/d/Y'),
         'attachments' => $dao->attachments,
         'email_count' => $dao->email_count,
         'email_ids' => $dao->email_ids,
@@ -528,6 +528,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
     $message = self::getDetails($rowId);
     $forwarder = self::getForwarder($message['forwarded_by']);
+    //Civi::log()->debug(__FUNCTION__, ['$message' => $message]);
 
     //exit immediately if the message has already been matched
     if ($message['status'] != self::STATUS_UNMATCHED) {
@@ -550,7 +551,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         'subject' => $subject,
         'is_auto' => 0,
         'status_id' => $status,
-        'activity_date_time' => $message['date_updated'],
+        'activity_date_time' => (!empty($message['date_email'])) ? $message['date_email'] : $message['updated_date'],
         'details' => $message['body'],
       ];
       /*Civi::log()->debug('assignMessage', array(
@@ -915,7 +916,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
                 if ($primary[$type] == $orig_val) {
                   civicrm_api3($type, 'delete', [
-                    'id' => $primaryEmail['id'],
+                    'id' => $primary['id'],
                   ]);
                 }
               }
@@ -1418,7 +1419,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
   } // expandDate()
 
   static function formatDate($date, $format = 'Y-m-d H:i:s') {
-    if (!empty($date)) {
+    if (!empty($date) && $date != '0000-00-00 00:00:00') {
       return date($format, strtotime($date));
     }
 
