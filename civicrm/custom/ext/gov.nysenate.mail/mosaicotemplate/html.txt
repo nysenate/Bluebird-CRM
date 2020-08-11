@@ -133,7 +133,7 @@
         &lt;table width="570" class="vb-container fullwidth" cellpadding="0" border="0" bgcolor="#ffffff" align="center" cellspacing="0" style="border-collapse: separate; padding-left: 0; padding-right: 0; width: 100%; max-width: 570px; background-color: #ffffff;"&gt;
           &lt;tbody&gt;&lt;tr&gt;
             &lt;td valign="top" align="center"&gt;
-              &lt;a target="_new" href="CRM_SENATOR_URL" style="color: #3f3f3f; color: #3f3f3f; text-decoration: none;"&gt;&lt;img hspace="0" border="0" vspace="0" width="570" class="mobile-full" alt="CRM_SENATOR_NAME" style="border: 0px; max-width: 570px; display: block; border-radius: 0px; width: 100%; height: auto; font-size: 13px; font-family: Arial, Helvetica, sans-serif; color: #3f3f3f;" src="CRM_URL/civicrm/mosaico/img?src=CRM_URL%2Fdata%2FCRM_SHORTNAME%2Fpubfiles%2Fimages%2Ftemplate%2Fheader.png&amp;method=resize&amp;params=570%2Cnull"&gt;&lt;/a&gt;
+              &lt;a target="_new" href="CRM_SENATOR_URL" style="color: #3f3f3f; color: #3f3f3f; text-decoration: none;"&gt;&lt;img hspace="0" border="0" vspace="0" width="570" class="mobile-full" alt="CRM_SENATOR_NAME" style="border: 0px; max-width: 570px; display: block; border-radius: 0px; width: 100%; height: auto; font-size: 13px; font-family: Arial, Helvetica, sans-serif; color: #3f3f3f;" src="CRM_URL/civicrm/mosaico/img?src=CRM_URL%2Fdata%2FCRM_SHORTNAME%2Fpubfiles%2Fimages%2Fuploads%2Fheader.png&amp;method=resize&amp;params=570%2Cnull"&gt;&lt;/a&gt;
             &lt;/td&gt;
           &lt;/tr&gt;
         &lt;/tbody&gt;&lt;/table&gt;
@@ -251,7 +251,7 @@
         &lt;table width="570" class="vb-container fullwidth" cellpadding="0" border="0" bgcolor="#ffffff" align="center" cellspacing="0" style="border-collapse: separate; padding-left: 0; padding-right: 0; width: 100%; max-width: 570px; background-color: #ffffff;"&gt;
           &lt;tbody&gt;&lt;tr&gt;
             &lt;td valign="top" align="center"&gt;
-              &lt;a target="_new" href="https://nysenate.gov" style="color: #3f3f3f; color: #3f3f3f; text-decoration: none;"&gt;&lt;img hspace="0" border="0" vspace="0" width="570" class="mobile-full" alt="New York State Senate" style="border: 0px; max-width: 570px; display: block; border-radius: 0px; width: 100%; height: auto; font-size: 13px; font-family: Arial, Helvetica, sans-serif; color: #3f3f3f;" src="CRM_URL/civicrm/mosaico/img?src=CRM_URL%2Fdata%2FCRM_SHORTNAME%2Fpubfiles%2Fimages%2Ftemplate%2Ffooter.png&amp;method=resize&amp;params=570%2Cnull"&gt;&lt;/a&gt;
+              &lt;a target="_new" href="https://nysenate.gov" style="color: #3f3f3f; color: #3f3f3f; text-decoration: none;"&gt;&lt;img hspace="0" border="0" vspace="0" width="570" class="mobile-full" alt="New York State Senate" style="border: 0px; max-width: 570px; display: block; border-radius: 0px; width: 100%; height: auto; font-size: 13px; font-family: Arial, Helvetica, sans-serif; color: #3f3f3f;" src="CRM_URL/civicrm/mosaico/img?src=CRM_URL%2Fdata%2FCRM_SHORTNAME%2Fpubfiles%2Fimages%2Fuploads%2Ffooter.png&amp;method=resize&amp;params=570%2Cnull"&gt;&lt;/a&gt;
             &lt;/td&gt;
           &lt;/tr&gt;
         &lt;/tbody&gt;&lt;/table&gt;
