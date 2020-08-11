@@ -227,16 +227,26 @@ div.crm-section-matches {
 .match-details-row .content.match-details {
   display: inline-block;
   margin-left: 2%;
+  width: 24%;
+  overflow: hidden;
+  white-space: nowrap;
 }
 .match-details-row a.crm-summary-link {
   margin-right: .75em;
 }
 #matched-contacts .match-details input[type=text] {
   margin: 0;
+  background-color: #eee;
+  padding: 4px;
+  width: 100%;
 }
 #matched-contacts {
   font-size: 90%;
 }
+.match-details .crm-i {
+  margin-right: 0.75em;
+}
+
 #process-reassign i.crm-i:before {
   font-size: 1.75em;
   margin-right: .4em;

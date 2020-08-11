@@ -27,6 +27,11 @@
       <div class="clear"></div>
     </div>
     <div class="crm-section">
+      <div class="label">Email Date:</div>
+      <div class="content">{if $details.date_email}{$details.date_email}{else}(unknown){/if}</div>
+      <div class="clear"></div>
+    </div>
+    <div class="crm-section">
       <div class="label">Forwarded By:</div>
       <div class="content">{$details.forwarded_by}</div>
       <div class="clear"></div>
