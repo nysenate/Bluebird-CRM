@@ -599,8 +599,8 @@ function _buildEmailMenu($emailID) {
       ],
       $emailID+2 => [
         'attributes' => [
-          'label' => 'New Mass Email (legacy)',
-          'name' => 'New Mass Email (legacy)',
+          'label' => 'New Mass Email (classic)',
+          'name' => 'New Mass Email (classic)',
           'url' => 'civicrm/a/#/mailing/new/traditional',
           'permission' => 'access CiviMail,approve mailings,create mailings,schedule mailings',
           'operator' => 'OR',
