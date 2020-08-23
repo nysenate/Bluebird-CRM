@@ -1,9 +1,9 @@
 <div ng-form="subform" crm-ui-id-scope>
 
   <div class="form-group-lg">
-    <label for="inputTitle" ng-class="checkPerm('create mailings') ? 'control-label' : 'control-label required-mark'">{{ts('Mailing Name')}}
+    <label for="inputTitle" class="control-label required-mark">{{ts('Mailing Name')}}
       <a crm-ui-help="hs({id: 'name', title: ts('Mailing Name')})"></a></label>
-    <input type="text" class="form-control" id="inputTitle" placeholder="{{ts('Mailing Name')}}" ng-model="mailing.name" ng-required="!checkPerm('create mailings')">
+    <input type="text" class="form-control" id="inputTitle" placeholder="{{ts('Mailing Name')}}" ng-model="mailing.name" required>
   </div>
 
   <div class="form-group" ng-show="crmMailingConst.campaignEnabled">
