@@ -19,9 +19,7 @@
  */
 class CRM_Contact_Form_Search_Custom_Proximity extends CRM_Contact_Form_Search_Custom_Base implements CRM_Contact_Form_Search_Interface {
 
-  protected $_latitude = NULL;
-  protected $_longitude = NULL;
-  protected $_distance = NULL;
+  //NYSS 13533 (removed properties)
   protected $_aclFrom = NULL;
   protected $_aclWhere = NULL;
 
@@ -40,20 +38,8 @@ class CRM_Contact_Form_Search_Custom_Proximity extends CRM_Contact_Form_Search_C
     unset($this->_formValues['component_mode']);
     unset($this->_formValues['operator']);
 
-    if (!empty($this->_formValues)) {
-      // add the country and state
-      self::addGeocodingData($this->_formValues);
-      $this->_latitude = $this->_formValues['geo_code_1'];
-      $this->_longitude = $this->_formValues['geo_code_2'];
+    //NYSS 13533 removed blcok
 
-      if ($this->_formValues['prox_distance_unit'] == "miles") {
-        $conversionFactor = 1609.344;
-      }
-      else {
-        $conversionFactor = 1000;
-      }
-      $this->_distance = $this->_formValues['distance'] * $conversionFactor;
-    }
     $this->_group = $this->_formValues['group'] ?? NULL;
 
     $this->_tag = $this->_formValues['tag'] ?? NULL;
@@ -200,6 +186,11 @@ class CRM_Contact_Form_Search_Custom_Proximity extends CRM_Contact_Form_Search_C
     $isCountOnly = FALSE;
     if ($selectClause === 'count(distinct contact_a.id) as total') {
       $isCountOnly = TRUE;
+    }
+
+    //NYSS 13533
+    if (empty($this->_formValues['geo_code_1']) ||  empty($this->_formValues['geo_code_2'])) {
+      self::addGeocodingData($this->_formValues);
     }
 
     $searchParams = [
