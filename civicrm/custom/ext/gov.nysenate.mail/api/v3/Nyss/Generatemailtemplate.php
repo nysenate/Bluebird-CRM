@@ -35,7 +35,7 @@ function _civicrm_api3_nyss_Generatemailtemplate_spec(&$spec) {
  */
 function civicrm_api3_nyss_Generatemailtemplate($params) {
   $bbcfg = get_bluebird_instance_config();
-  Civi::log()->debug(__FUNCTION__, ['$bbcfg' => $bbcfg]);
+  //Civi::log()->debug(__FUNCTION__, ['$bbcfg' => $bbcfg]);
   $senator = CRM_Utils_Array::value('senator', $params);
 
   $info = _mget_retrieveSenatorInfo($bbcfg, $senator);
@@ -106,7 +106,7 @@ function _mget_retrieveSenatorInfo($bbcfg, $senator) {
     else {
       // Convert the single object into an array.
       $info = (array)$info;
-      Civi::log()->debug(__FUNCTION__, ['info' => $info]);
+      //Civi::log()->debug(__FUNCTION__, ['info' => $info]);
 
       return $info;
     }
@@ -130,13 +130,13 @@ function _mget_generateContent($file, $info, $bbcfg) {
     'CRM_SENATOR_URL' => $info['url'],
     'CRM_SENATOR_NAME' => $info['full_name'],
   ];
-  Civi::log()->debug(__FUNCTION__, ['$map' => $map]);
+  //Civi::log()->debug(__FUNCTION__, ['$map' => $map]);
 
   //string replacements
   foreach ($map as $placeholder => $value) {
     $content = str_replace($placeholder, $value, $content);
   }
-  Civi::log()->debug(__FUNCTION__, ['$content' => $content]);
+  //Civi::log()->debug(__FUNCTION__, ['$content' => $content]);
 
   return $content;
 }
