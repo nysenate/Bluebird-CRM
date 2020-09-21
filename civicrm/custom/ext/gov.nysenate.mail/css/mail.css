@@ -37,3 +37,12 @@ a[title^="Preview a List of Recipients"] {
 div.crmb-wizard-step button {
   display: none !important;
 }
+
+/*13556*/
+label[for=all_emails] {
+  float: left;
+  margin-right: 10px;
+}
+input[name=all_emails] {
+  margin-top: 0 !important;
+}
