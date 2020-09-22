@@ -47,5 +47,17 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
+## 13569
+echo "create roommate relationship type"
+
+sql="
+  DELETE FROM civicrm_relationship_type WHERE name_a_b = 'roommate_is';
+  INSERT INTO civicrm_relationship_type
+  (name_a_b, label_a_b, name_b_a, label_b_a, contact_type_a, contact_type_b, is_active)
+  VALUES
+  ('roommate_is', 'Roommate is', 'roommate_is', 'Roommate is', 'Individual', 'Individual', 1);
+"
+$execSql $instance -c "$sql" -q
+
 ## record completion
 echo "$prog: upgrade process is complete."
