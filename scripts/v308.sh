@@ -59,5 +59,8 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
+echo "$prog: resetting roles and permissions..."
+$script_dir/resetRolePerms.sh $instance
+
 ## record completion
 echo "$prog: upgrade process is complete."
