@@ -471,6 +471,7 @@ sql="
 
     (14, 'create mailings', 'civicrm'),
     (14, 'delete in CiviMail', 'civicrm'),
+    (14, 'edit message templates', 'civicrm'),
     (14, 'use text format 1', 'filter'),
 
     (15, 'schedule mailings', 'civicrm'),
