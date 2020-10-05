@@ -45,7 +45,8 @@
       {{ts('Continue')}}
     </button>
 
-      <button ng-if="!checkPerm('approve mailings') && !checkPerm('access CiviMail')" class="btn btn-primary" crmb-wizard-button-position="right" ng-show="crmbWizardCtrl.$last()" ng-disabled="block.check() || !crmbWizardCtrl.$validStep()" ng-click="submit()">
+      <!--NYSS 13568-->
+      <button ng-if="!checkPerm('approve mailings') && !checkPerm('access CiviMail') && !checkPerm('create mailings')" class="btn btn-primary" crmb-wizard-button-position="right" ng-show="crmbWizardCtrl.$last()" ng-disabled="block.check() || !crmbWizardCtrl.$validStep()" ng-click="submit()">
       <span class="btn-icon"><i class="fa fa-send"></i></span>
       {{checkPerm('schedule mailings') ? ts('Schedule Mailing') : ts('Submit Mailing')}}
     </button>
