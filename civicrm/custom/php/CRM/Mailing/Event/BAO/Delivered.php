@@ -151,7 +151,7 @@ class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
     $dao = new CRM_Core_DAO();
 
     //$delivered  = self::getTableName();
-	$delivered  = 'civicrm_mailing_event_sendgrid_delivered'; //NYSS 4765
+	  $delivered  = 'civicrm_mailing_event_sendgrid_delivered'; //NYSS 4765
     $bounce = CRM_Mailing_Event_BAO_Bounce::getTableName();
     $queue = CRM_Mailing_Event_BAO_Queue::getTableName();
     $mailing = CRM_Mailing_BAO_Mailing::getTableName();
