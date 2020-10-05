@@ -46,3 +46,8 @@ label[for=all_emails] {
 input[name=all_emails] {
   margin-top: 0 !important;
 }
+
+/*13581*/
+ul#civicrm-menu {
+  z-index: 99999 !important;
+}

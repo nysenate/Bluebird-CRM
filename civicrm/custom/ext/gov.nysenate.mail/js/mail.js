@@ -110,7 +110,6 @@ CRM.$(function($) {
           clearInterval(checkWizardNumber);
         }
       }, 100);
-
     }
   });
 });
