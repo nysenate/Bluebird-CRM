@@ -62,4 +62,57 @@ class CRM_NYSS_BAO_NYSS {
     }
     CRM_Utils_System::civiExit();
   }
+
+  /**
+   * @param $mailingId
+   * @param $jobId
+   *
+   * @return array
+   *
+   * This is a simplified stripped down version of CRM_Mailing_Event_BAO_Delivered::getRows
+   * for our purposes. That method is modified to support our handling of delivered
+   * values via a Sendgrid table. But in doing so, we lose the ability to track
+   * and "attempted" delivery in real time. This function queries the standard tables
+   * in order to verify test mailings immediately.
+   */
+  static function verifyTestEmail($mailingId, $jobId) {
+    $sql = "
+      SELECT med.id, c.id contact_id, c.display_name, e.email, med.time_stamp date
+      FROM civicrm_mailing_job mj
+      JOIN civicrm_mailing_event_queue meq
+        ON mj.id = meq.job_id
+      JOIN civicrm_mailing_event_delivered med
+        ON meq.id = med.event_queue_id
+      JOIN civicrm_contact c
+        ON meq.contact_id = c.id
+      JOIN civicrm_email e
+        ON meq.email_id = e.id
+      LEFT JOIN civicrm_mailing_event_bounce meb
+        ON meq.id = meb.event_queue_id
+      WHERE mj.mailing_id = %1
+        AND mj.id = %2
+        AND meb.id IS NULL
+      LIMIT 1
+    ";
+    $dao = CRM_Core_DAO::executeQuery($sql, [
+      1 => [$mailingId, 'Positive'],
+      2 => [$jobId, 'Positive'],
+    ]);
+
+    $mailDelivered = [];
+
+    while ($dao->fetch()) {
+      $url = CRM_Utils_System::url('civicrm/contact/view',
+        "reset=1&cid={$dao->contact_id}"
+      );
+      $mailDelivered[$dao->id] = [
+        'contact_id' => $dao->contact_id,
+        'name' => "<a href=\"$url\">{$dao->display_name}</a>",
+        'email' => $dao->email,
+        'date' => CRM_Utils_Date::customFormat($dao->date),
+      ];
+    }
+
+    return $mailDelivered;
+  }
 }
