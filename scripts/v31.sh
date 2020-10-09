@@ -31,6 +31,10 @@ if ! $readConfig --instance $instance --quiet; then
   exit 1
 fi
 
+$drush $instance cvapi extension.install key=org.civicrm.flexmailer --quiet
+$drush $instance cvapi extension.install key=uk.co.vedaconsulting.mosaico --quiet
+$drush $instance cvapi extension.install key=biz.lcdservices.mosaicoimageeditor --quiet
+
 # copy header/footer to uploads path
 cp "$pubfiles_dir/common/images/template/header.png" "$pubfiles_dir/images/uploads/header.png"
 cp "$pubfiles_dir/common/images/template/footer.png" "$pubfiles_dir/images/uploads/footer.png"
