@@ -212,7 +212,8 @@ class CRM_Contact_Form_Search_Custom_Proximity extends CRM_Contact_Form_Search_C
       $display = ['contact_id' => 1];
     }
 
-    $this->_query = new CRM_Contact_BAO_Query($searchParams, $display);
+    $this->_query = new CRM_Contact_BAO_Query($searchParams, $display, NULL, FALSE,
+      FALSE, 1, FALSE, TRUE, TRUE, NULL, 'AND', NULL, TRUE);
     return $this->_query->searchQuery(
       $offset,
       $rowcount,
