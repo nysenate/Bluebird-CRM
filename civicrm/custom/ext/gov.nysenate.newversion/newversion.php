@@ -176,7 +176,7 @@ function _newversion_check() {
       REPLACE INTO civicrm_setting
       (name, value, domain_id, contact_id, created_date, created_id)
       VALUES
-      ('versioncheck', %1, 1, %2, %3, 1)
+      ('versioncheck', %1, 1, %2, %3, %2)
     ", [
       1 => [serialize($bbVersion), 'String'],
       2 => [(int) CRM_Core_Session::getLoggedInContactID(), 'Integer'],
