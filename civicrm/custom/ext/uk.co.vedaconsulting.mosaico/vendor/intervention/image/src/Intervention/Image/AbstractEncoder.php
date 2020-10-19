@@ -117,9 +117,11 @@ abstract class AbstractEncoder
 
             case 'jpg':
             case 'jpeg':
+            case 'jfif'; //NYSS 13567
             case 'image/jpg':
             case 'image/jpeg':
             case 'image/pjpeg':
+            case 'image/jfif': //NYSS 13567
                 $this->result = $this->processJpeg();
                 break;
 

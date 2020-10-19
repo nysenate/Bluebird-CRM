@@ -2,6 +2,8 @@
 
 use CRM_Mosaico_ExtensionUtil as E;
 use Intervention\Image\ImageManagerStatic as Image;
+//NYSS 13567
+use Intervention\Image\Exception\NotSupportedException as ImageException;
 
 /**
  * Class CRM_Mosaico_Graphics_Intervention
@@ -110,7 +112,13 @@ class CRM_Mosaico_Graphics_Intervention extends CRM_Mosaico_Graphics_Interface {
       $img->heighten(max($height, $mobileMinHeight));
     }
 
-    $img->save($destFile);
+    //NYSS 13567
+    try {
+      $img->save($destFile);
+    }
+    catch (ImageException $e)  {
+      throw new \Exception($e->getMessage());
+    }
   }
 
   public function createCoveredImage($srcFile, $destFile, $width, $height) {
