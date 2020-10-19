@@ -61,5 +61,22 @@ VALUES (
 );"
 $execSql -i $instance -c "$sql" -q
 
+## 13600
+echo "create friend/neighbor relationship type"
+sql="
+  DELETE FROM civicrm_relationship_type WHERE name_a_b = 'friend_is';
+  INSERT INTO civicrm_relationship_type
+  (name_a_b, label_a_b, name_b_a, label_b_a, contact_type_a, contact_type_b, is_active)
+  VALUES
+  ('friend_is', 'Friend is', 'friend_is', 'Friend is', 'Individual', 'Individual', 1);
+
+  DELETE FROM civicrm_relationship_type WHERE name_a_b = 'neighbor_is';
+  INSERT INTO civicrm_relationship_type
+  (name_a_b, label_a_b, name_b_a, label_b_a, contact_type_a, contact_type_b, is_active)
+  VALUES
+  ('neighbor_is', 'Neighbor is', 'neighbor_is', 'Neighbor is', 'Individual', 'Individual', 1);
+"
+$execSql $instance -c "$sql" -q
+
 ## record completion
 echo "$prog: upgrade process is complete."
