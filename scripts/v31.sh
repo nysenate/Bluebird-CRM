@@ -35,6 +35,15 @@ $drush $instance cvapi extension.install key=org.civicrm.flexmailer --quiet
 $drush $instance cvapi extension.install key=uk.co.vedaconsulting.mosaico --quiet
 $drush $instance cvapi extension.install key=biz.lcdservices.mosaicoimageeditor --quiet
 
+# create Mosaico image folders
+mkdir "$pubfiles_dir/images/uploads"
+mkdir "$pubfiles_dir/images/uploads/thumbnails"
+mkdir "$pubfiles_dir/images/uploads/static"
+
+chown apache:bluebird "$pubfiles_dir/images/uploads"
+chown apache:bluebird "$pubfiles_dir/images/uploads/thumbnails"
+chown apache:bluebird "$pubfiles_dir/images/uploads/static"
+
 # copy header/footer to uploads path
 if test -e "$pubfiles_dir/images/template/header.png"; then
   cp `readlink -f "$pubfiles_dir/images/template/header.png"` "$pubfiles_dir/images/uploads/header.png"
