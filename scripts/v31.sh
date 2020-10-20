@@ -36,12 +36,29 @@ $drush $instance cvapi extension.install key=uk.co.vedaconsulting.mosaico --quie
 $drush $instance cvapi extension.install key=biz.lcdservices.mosaicoimageeditor --quiet
 
 # copy header/footer to uploads path
-cp "$pubfiles_dir/common/images/template/header.png" "$pubfiles_dir/images/uploads/header.png"
-cp "$pubfiles_dir/common/images/template/footer.png" "$pubfiles_dir/images/uploads/footer.png"
-chown apache:bluebird "$pubfiles_dir/images/uploads/header.png"
-chown apache:bluebird "$pubfiles_dir/images/uploads/footer.png"
-chmod 664 "$pubfiles_dir/images/uploads/header.png"
-chmod 664 "$pubfiles_dir/images/uploads/footer.png"
+if test -e "$pubfiles_dir/images/template/header.png"; then
+  cp `readlink -f "$pubfiles_dir/images/template/header.png"` "$pubfiles_dir/images/uploads/header.png"
+  chown apache:bluebird "$pubfiles_dir/images/uploads/header.png"
+  chmod 664 "$pubfiles_dir/images/uploads/header.png"
+else
+  echo "Unable to locate instance header.png file. Using generic default."
+
+  cp "$data_rootdir/common/pubfiles/images/template/header.png" "$pubfiles_dir/images/uploads/header.png"
+  chown apache:bluebird "$pubfiles_dir/images/uploads/header.png"
+  chmod 664 "$pubfiles_dir/images/uploads/header.png"
+fi
+
+if test -e "$pubfiles_dir/images/template/footer.png"; then
+  cp `readlink -f "$pubfiles_dir/images/template/footer.png"` "$pubfiles_dir/images/uploads/footer.png"
+  chown apache:bluebird "$pubfiles_dir/images/uploads/footer.png"
+  chmod 664 "$pubfiles_dir/images/uploads/footer.png"
+else
+  echo "Unable to locate instance footer.png file. Using generic default."
+
+  cp "$data_rootdir/common/pubfiles/images/template/footer.png" "$pubfiles_dir/images/uploads/footer.png"
+  chown apache:bluebird "$pubfiles_dir/images/uploads/footer.png"
+  chmod 664 "$pubfiles_dir/images/uploads/footer.png"
+fi
 
 echo "$prog: header/footer images copied to Mosaico image folder."
 

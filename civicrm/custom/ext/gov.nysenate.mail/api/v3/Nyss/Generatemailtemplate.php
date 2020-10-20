@@ -34,14 +34,33 @@ function _civicrm_api3_nyss_Generatemailtemplate_spec(&$spec) {
  * @throws API_Exception
  */
 function civicrm_api3_nyss_Generatemailtemplate($params) {
+  $response = ['result' => ''];
+
   $bbcfg = get_bluebird_instance_config();
   //Civi::log()->debug(__FUNCTION__, ['$bbcfg' => $bbcfg]);
   $senator = CRM_Utils_Array::value('senator', $params);
 
   $info = _mget_retrieveSenatorInfo($bbcfg, $senator);
 
+  //if we were unable to retrieve remote details, flag warning and set default values
   if (!$info) {
-    throw new API_Exception('Could not retrieve Senate office information.', 9001);
+    $response['warnings'][] = 'Could not retrieve Senate office information. Using generic values.';
+    $info = [
+      'full_name' => 'John Doe',
+      'url' => 'https://www.nysenate.gov/senators/',
+      'offices' => [
+        [
+          'name' => 'Albany Office',
+          'last_name' => 'Doe',
+          'street' => 'Legislative Office Building',
+          'additional' => 'Basement',
+          'city' => 'Albany',
+          'province' => 'NY',
+          'postal_code' => 12247,
+          'phone' => '800-123-4567',
+        ],
+      ],
+    ];
   }
 
   foreach (['content', 'html', 'metadata'] as $file) {
@@ -71,12 +90,20 @@ function civicrm_api3_nyss_Generatemailtemplate($params) {
       break;
 
     case 'Update':
-      $sqlParams[5] = [_mget_getTemplateId($title), 'Positive'];
-      $sql = "
-        UPDATE civicrm_mosaico_template
-        SET html = %2, metadata = %3, content = %4
-        WHERE id = %5
-      ";
+      $mId = _mget_getTemplateId($title);
+
+      if ($mId) {
+        $sqlParams[5] = [$mId, 'Positive'];
+        $sql = "
+          UPDATE civicrm_mosaico_template
+          SET html = %2, metadata = %3, content = %4
+          WHERE id = %5
+        ";
+      }
+      else {
+        $response['warnings'][] = 'Could not update template. No existing template found. Try rerunning in Add mode.';
+      }
+
       break;
 
     default:
@@ -84,7 +111,12 @@ function civicrm_api3_nyss_Generatemailtemplate($params) {
 
   CRM_Core_DAO::executeQuery($sql, $sqlParams);
 
-  return civicrm_api3_create_success(TRUE, $params, 'Nyss', 'Generatemailtemplate');
+  $response['result'] = 'Completed successfully';
+  if (!empty($response['warnings'])) {
+    $response['result'] = 'Completed with warnings.';
+  }
+
+  return civicrm_api3_create_success($response, $params, 'Nyss', 'Generatemailtemplate');
 }
 
 function _mget_retrieveSenatorInfo($bbcfg, $senator) {
@@ -112,7 +144,7 @@ function _mget_retrieveSenatorInfo($bbcfg, $senator) {
     }
   }
   else {
-    return null;
+    return NULL;
   }
 }
 
